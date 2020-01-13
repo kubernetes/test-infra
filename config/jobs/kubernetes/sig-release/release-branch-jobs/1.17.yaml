@@ -11,7 +11,7 @@ periodics:
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew-beta
+  name: ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew-stable1
   spec:
     containers:
     - args:
@@ -63,19 +63,19 @@ periodics:
       name: ""
       resources: {}
 - annotations:
-    fork-per-release-cron: 0 3-23/6 * * *, 0 8-23/12 * * *, 0 8-23/24 * * *
+    fork-per-release-cron: 0 8-23/12 * * *, 0 8-23/24 * * *
     fork-per-release-generic-suffix: "true"
     testgrid-alert-email: gke-kubernetes-accelerators-bugs@google.com
     testgrid-alert-stale-results-hours: "24"
     testgrid-dashboards: sig-release-1.17-blocking, google-gce
     testgrid-num-failures-to-alert: "12"
     testgrid-tab-name: gce-device-plugin-gpu-1.17
-  cron: 0 0-23/2 * * *
+  cron: 0 3-23/6 * * *
   labels:
     preset-ci-gce-device-plugin-gpu: "true"
     preset-k8s-ssh: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-e2e-gce-device-plugin-gpu-beta
+  name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable1
   spec:
     containers:
     - args:
@@ -95,11 +95,11 @@ periodics:
       name: ""
       resources: {}
 - annotations:
-    fork-per-release-periodic-interval: 2h 6h 24h
+    fork-per-release-periodic-interval: 6h 24h
     testgrid-alert-email: kubernetes-sig-node+testgrid@googlegroups.com
     testgrid-dashboards: sig-release-1.17-blocking, sig-node-kubelet
     testgrid-tab-name: node-kubelet-1.17
-  interval: 1h
+  interval: 2h
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
@@ -167,7 +167,7 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-build-beta
+  name: ci-kubernetes-build-stable1
   spec:
     containers:
     - args:
@@ -178,7 +178,7 @@ periodics:
       - --scenario=kubernetes_build
       - --
       - --allow-dup
-      - --extra-publish-file=k8s-beta
+      - --extra-publish-file=k8s-stable1
       - --hyperkube
       - --registry=gcr.io/kubernetes-ci-images
       image: gcr.io/k8s-testimages/bootstrap:v20191203-6fb6647
@@ -190,19 +190,19 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    fork-per-release-cron: 0 0/12 * * *, 0 4-16/12 * * *, 0 8-20/12 * * *
+    fork-per-release-cron: 0 4-16/12 * * *, 0 8-20/12 * * *
     fork-per-release-generic-suffix: "true"
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com
     testgrid-dashboards: sig-release-1.17-blocking, sig-scalability-gce, google-gce,
       google-gci
     testgrid-num-failures-to-alert: "2"
     testgrid-tab-name: gce-cos-1.17-scalability-100
-  cron: 0 */6 * * *
+  cron: 0 0/12 * * *
   labels:
     preset-e2e-scalability-common: "true"
     preset-k8s-ssh: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-e2e-gci-gce-scalability-beta
+  name: ci-kubernetes-e2e-gci-gce-scalability-stable1
   spec:
     containers:
     - args:
@@ -254,18 +254,18 @@ periodics:
   - 'perfDashJobType: performance'
   - 'perfDashBuildsCount: 500'
 - annotations:
-    fork-per-release-cron: 0 9 * * *, 0 15 * * *, 0 21 * * *
+    fork-per-release-cron: 0 15 * * *, 0 21 * * *
     fork-per-release-generic-suffix: "true"
     testgrid-dashboards: sig-scalability-kubemark, sig-release-job-config-errors
     testgrid-num-failures-to-alert: "1"
     testgrid-tab-name: kubemark-1.17-500
-  cron: 0 3 * * *
+  cron: 0 9 * * *
   labels:
     preset-dind-enabled: "true"
     preset-e2e-kubemark-common: "true"
     preset-k8s-ssh: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-kubemark-500-gce-beta
+  name: ci-kubernetes-kubemark-500-gce-stable1
   spec:
     containers:
     - args:
@@ -386,38 +386,39 @@ periodics:
       resources: {}
 - annotations:
     fork-per-release-generic-suffix: "true"
-    fork-per-release-periodic-interval: 2h 6h 24h
+    fork-per-release-periodic-interval: 6h 24h
     testgrid-alert-email: kubernetes-release-team@googlegroups.com
     testgrid-dashboards: sig-release-1.17-blocking, google-unit
     testgrid-tab-name: integration-1.17
+  decorate: true
+  extra_refs:
+  - base_ref: release-1.17
+    org: kubernetes
+    path_alias: k8s.io/kubernetes
+    repo: kubernetes
   interval: 2h
   labels:
     preset-dind-enabled: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-integration-beta
-  decorate: true
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: release-1.17
-    path_alias: k8s.io/kubernetes
+  name: ci-kubernetes-integration-stable1
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200118-eaed6c6-1.17
+    - args:
+      - ./hack/jenkins/test-dockerized.sh
       command:
       - runner.sh
-      args:
-      - ./hack/jenkins/test-dockerized.sh
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200118-eaed6c6-1.17
+      name: ""
       resources:
         requests:
-          cpu: 4
+          cpu: "4"
+      securityContext:
+        privileged: true
 - annotations:
     fork-per-release-generic-suffix: "true"
-    fork-per-release-periodic-interval: 2h 6h 24h
-    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com, release-managers@kubernetes.io
+    fork-per-release-periodic-interval: 6h 24h
+    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com,
+      release-managers@kubernetes.io
     testgrid-dashboards: sig-release-1.17-blocking, google-unit
     testgrid-tab-name: verify-1.17
   decorate: true
@@ -430,7 +431,7 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-verify-beta
+  name: ci-kubernetes-verify-stable1
   spec:
     containers:
     - args:
@@ -628,7 +629,6 @@ presubmits:
         - --gcp-zone=us-west1-b
         - --ginkgo-parallel=30
         - --provider=gce
-        # Panic if anything mutates a shared informer cache
         - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
         - --runtime-config=batch/v2alpha1=true
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce
@@ -889,14 +889,13 @@ presubmits:
     branches:
     - release-1.17
     labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
       preset-bazel-scratch-dir: "true"
       preset-e2e-scalability-common: "true"
       preset-e2e-scalability-presubmits: "true"
+      preset-k8s-ssh: "true"
+      preset-service-account: "true"
     max_concurrency: 12
     name: pull-kubernetes-e2e-gce-100-performance
-    skip_report: false
     spec:
       containers:
       - args:
@@ -939,9 +938,10 @@ presubmits:
         - --timeout=100m
         - --use-logexporter
         image: gcr.io/k8s-testimages/kubekins-e2e:v20200118-eaed6c6-master
+        name: ""
         resources:
           requests:
-            memory: "6Gi"
+            memory: 6Gi
   - always_run: true
     branches:
     - release-1.17
@@ -949,9 +949,9 @@ presubmits:
       preset-bazel-scratch-dir: "true"
       preset-dind-enabled: "true"
       preset-e2e-kubemark-common: "true"
+      preset-e2e-scalability-presubmits: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
-      preset-e2e-scalability-presubmits: "true"
     max_concurrency: 12
     name: pull-kubernetes-kubemark-e2e-gce-big
     spec:
