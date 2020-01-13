@@ -29,7 +29,7 @@ _DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
 _CURRENT_YEAR = datetime.datetime.utcnow().year
 
 
-class TestOutput:
+class TestOutput(object):
     def __init__(self):
         self._lines = []
         self._start = None
@@ -81,7 +81,8 @@ def _get_tests(log):
             current_test = TestOutput()
             if len(ended_test) <= 1:
                 continue
-            yield ended_test
+            else:
+                yield ended_test
         else:
             current_test.append(match.group(1))
     yield current_test

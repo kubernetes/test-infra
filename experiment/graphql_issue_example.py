@@ -16,6 +16,9 @@
 
 # USAGE: find_issues.py <github_token>
 
+# Required for pylint: 1.9.4 to tokenize the python3 print function.
+from __future__ import print_function
+
 import sys
 import json
 import argparse

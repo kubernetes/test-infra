@@ -36,5 +36,6 @@ export PYLINTHOME=$TEST_TMPDIR
 
 shopt -s extglob globstar
 
-# TODO(clarketm): remove `boskos` exclusion after upgrading to PY3.
-"$DIR/pylint_bin" !(gubernator|external|vendor|jenkins|scenarios|triage|boskos|bazel-*)/**/*.py
+# TODO(clarketm) there is no version of `pylint` that supports "both" PY2 and PY3
+# I am disabling pylint checks for python3 files until migration complete
+"$DIR/pylint_bin" !(kettle|metrics|triage|velodrome|hack|gubernator|external|vendor|testgrid|bazel-*)/**/*.py

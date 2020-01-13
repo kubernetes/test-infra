@@ -65,7 +65,7 @@ def do_jq(jq_filter, data_filename, out_filename, jq_bin='jq'):
         check([jq_bin, jq_filter, data_filename], stdout=out_file)
 
 
-class BigQuerier:
+class BigQuerier(object):
     def __init__(self, project, bucket_path, backfill_days, influx_client):
         if not project:
             raise ValueError('project', project)
