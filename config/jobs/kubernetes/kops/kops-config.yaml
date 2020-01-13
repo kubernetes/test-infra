@@ -398,7 +398,40 @@ presubmits:
     annotations:
       testgrid-dashboards: presubmits-kops
       testgrid-tab-name: verify-staticcheck
-
+  - name: pull-kops-verify
+    branches:
+    - master
+    optional: true
+    labels:
+      preset-service-account: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+    decorate: true
+    decoration_config:
+      timeout: 15m
+    path_alias: k8s.io/kops
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200110-80c1ae9-experimental
+        command:
+        - runner.sh
+        args:
+        - "make"
+        # Once we migrate to this job we can consolidate these into a single target
+        - "govet"
+        - "verify-bazel"
+        - "verify-boilerplate"
+        - "verify-generate"
+        - "verify-gofmt"
+        - "verify-gomod"
+        - "verify-packages"
+        - "verify-staticcheck"
+        resources:
+          requests:
+            memory: "2Gi"
+    annotations:
+      testgrid-dashboards: presubmits-kops
+      testgrid-tab-name: verify
 periodics:
 - interval: 30m
   name: ci-kops-build
