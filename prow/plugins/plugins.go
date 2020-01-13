@@ -20,9 +20,10 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"k8s.io/test-infra/pkg/genyaml"
 	"sync"
 	"time"
+
+	"k8s.io/test-infra/pkg/genyaml"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
@@ -145,7 +146,7 @@ type Agent struct {
 	SlackClient               *slack.Client
 	BugzillaClient            bugzilla.Client
 
-	OwnersClient *repoowners.Client
+	OwnersClient repoowners.Interface
 
 	// Metrics exposes metrics that can be updated by plugins
 	Metrics *Metrics
@@ -208,7 +209,7 @@ type ClientAgent struct {
 	BuildClusterCoreV1Clients map[string]corev1.CoreV1Interface
 	GitClient                 git.ClientFactory
 	SlackClient               *slack.Client
-	OwnersClient              *repoowners.Client
+	OwnersClient              repoowners.Interface
 	BugzillaClient            bugzilla.Client
 }
 
