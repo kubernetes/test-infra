@@ -15,7 +15,7 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_file")
 load("@io_bazel_rules_appengine//appengine:py_appengine.bzl", "py_appengine_repositories")
 load(
-    "@py_deps//:requirements.bzl",
+    "@py3_deps//:requirements.bzl",
     "pip_install",
 )
 
