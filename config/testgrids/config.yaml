@@ -290,11 +290,14 @@ dashboards:
     base_options: exclude-filter-by-regex=^BeforeSuite$
     alert_options:
       alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
-  - name: gce-device-plugin-gpu-beta
-    test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu-beta
-    base_options: exclude-filter-by-regex=^BeforeSuite$
-    alert_options:
-      alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
+  # TODO(release-manager): BRANCH MANAGEMENT
+  #     After branch cut: Uncomment this dashboard tab prior to branch job generation
+  #     After release: Comment out this dashboard tab
+  #- name: gce-device-plugin-gpu-beta
+  #  test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu-beta
+  #  base_options: exclude-filter-by-regex=^BeforeSuite$
+  #  alert_options:
+  #    alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
   - name: gce-device-plugin-gpu-stable1
     test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable1
     base_options: exclude-filter-by-regex=^BeforeSuite$
