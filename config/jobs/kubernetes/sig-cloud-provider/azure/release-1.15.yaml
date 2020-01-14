@@ -3,6 +3,7 @@ presubmits:
   - name: pull-kubernetes-e2e-aks-engine-azure
     always_run: false
     optional: true
+    run_if_changed: 'azure.*\.go'
     branches:
     - release-1.15
     labels:
@@ -49,6 +50,7 @@ presubmits:
   - name: pull-kubernetes-e2e-azure-disk
     always_run: false
     optional: true
+    run_if_changed: 'azure.*\.go'
     branches:
     - release-1.15
     labels:
@@ -96,6 +98,7 @@ presubmits:
   - name: pull-kubernetes-e2e-azure-disk-vmss
     always_run: false
     optional: true
+    run_if_changed: 'azure.*\.go'
     branches:
     - release-1.15
     labels:
