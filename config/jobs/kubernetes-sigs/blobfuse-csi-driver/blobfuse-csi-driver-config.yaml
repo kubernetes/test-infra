@@ -129,7 +129,7 @@ presubmits:
         - --aksengine-agentvmsize=Standard_D4s_v3
         - --aksengine-location=eastus2
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
-        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/linux.json
+        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/blobfuse-csi-driver/master/test/manifest/linux.json
         - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.39.1/aks-engine-v0.39.1-linux-amd64.tar.gz
         - --test-blobfuse-csi-driver
         # Specific test args
