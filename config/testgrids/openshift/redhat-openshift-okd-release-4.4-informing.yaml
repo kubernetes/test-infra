@@ -1,6 +1,6 @@
 dashboards:
 - dashboard_tab:
-  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
@@ -21,5 +21,6 @@ dashboards:
     test_group_name: release-openshift-okd-installer-e2e-aws-4.4
   name: redhat-openshift-okd-release-4.4-informing
 test_groups:
-- gcs_prefix: origin-ci-test/logs/release-openshift-okd-installer-e2e-aws-4.4
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/release-openshift-okd-installer-e2e-aws-4.4
   name: release-openshift-okd-installer-e2e-aws-4.4
