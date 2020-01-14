@@ -90,11 +90,17 @@ func TestGetJobDestination(t *testing.T) {
 		DefaultOrg:   "kubernetes",
 		DefaultRepo:  "kubernetes",
 	}
+	standardRefs := &prowv1.Refs{
+		Org:   "kubernetes",
+		Repo:  "test-infra",
+		Pulls: []prowv1.Pull{{Number: 12345}},
+	}
 	tests := []struct {
 		name              string
 		defaultGcsConfigs map[string]*prowv1.GCSConfiguration
 		prowjobGcsConfig  *prowv1.GCSConfiguration
 		prowjobType       prowv1.ProwJobType
+		prowjobRefs       *prowv1.Refs
 		expectBucket      string
 		expectDir         string // tip: this will always end in "my-little-job/123"
 		expectErr         bool
@@ -152,12 +158,14 @@ func TestGetJobDestination(t *testing.T) {
 			},
 			prowjobGcsConfig: nil,
 			prowjobType:      prowv1.PeriodicJob,
+			prowjobRefs:      standardRefs,
 			expectBucket:     "kubernetes-jenkins",
 			expectDir:        "some-prefix/logs/my-little-job/123",
 		},
 		{
 			name:             "prowjob type is respected",
 			prowjobGcsConfig: standardGcsConfig,
+			prowjobRefs:      standardRefs,
 			prowjobType:      prowv1.PresubmitJob,
 			expectBucket:     "kubernetes-jenkins",
 			expectDir:        "some-prefix/pr-logs/pull/test-infra/12345/my-little-job/123",
@@ -168,12 +176,8 @@ func TestGetJobDestination(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			pj := &prowv1.ProwJob{
 				Spec: prowv1.ProwJobSpec{
-					Type: tc.prowjobType,
-					Refs: &prowv1.Refs{
-						Org:   "kubernetes",
-						Repo:  "test-infra",
-						Pulls: []prowv1.Pull{{Number: 12345}},
-					},
+					Type:             tc.prowjobType,
+					Refs:             tc.prowjobRefs,
 					Agent:            prowv1.KubernetesAgent,
 					Job:              "my-little-job",
 					DecorationConfig: &prowv1.DecorationConfig{GCSConfiguration: tc.prowjobGcsConfig},

@@ -193,7 +193,12 @@ func (gr *gcsReporter) getJobDestination(pj *prowv1.ProwJob) (bucket, dir string
 	// jobs are not decorated, so we guess that we should use the default location
 	// for those jobs. This assumption is usually (but not always) correct.
 	// The TestGrid configurator uses the same assumption.
-	ddc := gr.cfg().Plank.GetDefaultDecorationConfigs(pj.Spec.Refs.Org + "/" + pj.Spec.Refs.Repo)
+	repo := "*"
+	if pj.Spec.Refs != nil {
+		repo = pj.Spec.Refs.Org + "/" + pj.Spec.Refs.Repo
+	}
+
+	ddc := gr.cfg().Plank.GetDefaultDecorationConfigs(repo)
 
 	var gcsConfig *prowv1.GCSConfiguration
 	if pj.Spec.DecorationConfig != nil && pj.Spec.DecorationConfig.GCSConfiguration != nil {
