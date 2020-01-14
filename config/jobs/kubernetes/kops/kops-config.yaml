@@ -403,6 +403,7 @@ presubmits:
     - master
     optional: true
     labels:
+      preset-dind-enabled: "true"
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
       preset-bazel-remote-cache-enabled: "true"
