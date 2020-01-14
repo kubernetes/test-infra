@@ -11,7 +11,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200110-80c1ae9-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200114-6d2c483-master
         args:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
@@ -62,7 +62,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200110-80c1ae9-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200114-6d2c483-master
         args:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
@@ -114,7 +114,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200110-80c1ae9-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200114-6d2c483-master
         args:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
@@ -173,7 +173,7 @@ presubmits:
       path_alias: sigs.k8s.io/azurefile-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200107-164c5e8-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200114-6d2c483-master
         command:
         - runner.sh
         - kubetest

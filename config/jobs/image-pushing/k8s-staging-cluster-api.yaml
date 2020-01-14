@@ -14,7 +14,7 @@ postsubmits:
         - ^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
       spec:
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200107-6bdb17e
+          - image: gcr.io/k8s-testimages/image-builder:v20200114-6d2c483
             command:
               - /run.sh
             args:
@@ -47,7 +47,7 @@ postsubmits:
         - ^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
       spec:
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200107-6bdb17e
+          - image: gcr.io/k8s-testimages/image-builder:v20200114-6d2c483
             command:
               - /run.sh
             args:
@@ -77,7 +77,7 @@ postsubmits:
         - ^master$
       spec:
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200107-6bdb17e
+          - image: gcr.io/k8s-testimages/image-builder:v20200114-6d2c483
             command:
               - /run.sh
             args:
@@ -109,7 +109,7 @@ postsubmits:
         - ^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
       spec:
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200107-6bdb17e
+          - image: gcr.io/k8s-testimages/image-builder:v20200114-6d2c483
             command:
               - /run.sh
             args:
@@ -141,7 +141,7 @@ postsubmits:
         - ^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
       spec:
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200107-6bdb17e
+          - image: gcr.io/k8s-testimages/image-builder:v20200114-6d2c483
             command:
               - /run.sh
             args:
