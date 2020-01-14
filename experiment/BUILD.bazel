@@ -1,4 +1,4 @@
-load("@py_deps//:requirements.bzl", "requirement")
+load("@py3_deps//:requirements.bzl", "requirement")
 
 py_binary(
     name = "flakedetector",
