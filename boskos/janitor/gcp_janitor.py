@@ -34,38 +34,38 @@ DEMOLISH_ORDER = [
 
     # compute resources
     Resource('', 'compute', 'instances', None, 'zone', None, False, True),
+    Resource('', 'compute', 'addresses', None, 'global', None, False, True),
     Resource('', 'compute', 'addresses', None, 'region', None, False, True),
     Resource('', 'compute', 'disks', None, 'zone', None, False, True),
     Resource('', 'compute', 'disks', None, 'region', None, False, True),
     Resource('', 'compute', 'firewall-rules', None, None, None, False, True),
     Resource('', 'compute', 'routes', None, None, None, False, True),
-    Resource('', 'compute', 'forwarding-rules', None, None, None, False, True),
-    Resource('beta', 'compute', 'forwarding-rules', None, 'region', None, False, True),
-    Resource('', 'compute', 'target-http-proxies', None, None, None, False, True),
-    Resource('beta', 'compute', 'target-http-proxies', None, 'region', None, False, True),
-    Resource('', 'compute', 'target-https-proxies', None, None, None, False, True),
-    Resource('beta', 'compute', 'target-https-proxies', None, 'region', None, False, True),
+    Resource('', 'compute', 'forwarding-rules', None, 'global', None, False, True),
+    Resource('', 'compute', 'forwarding-rules', None, 'region', None, False, True),
+    Resource('', 'compute', 'target-http-proxies', None, 'global', None, False, True),
+    Resource('', 'compute', 'target-http-proxies', None, 'region', None, False, True),
+    Resource('', 'compute', 'target-https-proxies', None, 'global', None, False, True),
+    Resource('', 'compute', 'target-https-proxies', None, 'region', None, False, True),
     Resource('', 'compute', 'target-tcp-proxies', None, None, None, False, True),
-    Resource('beta', 'compute', 'target-tcp-proxies', None, 'region', None, False, True),
-    Resource('', 'compute', 'target-tcp-proxies', None, None, None, False, True),
-    Resource('beta', 'compute', 'target-tcp-proxies', None, 'region', None, False, True),
-    Resource('', 'compute', 'ssl-certificates', None, None, None, False, True),
-    Resource('beta', 'compute', 'ssl-certificates', None, 'region', None, False, True),
-    Resource('', 'compute', 'url-maps', None, None, None, False, True),
-    Resource('beta', 'compute', 'url-maps', None, 'region', None, False, True),
+    Resource('', 'compute', 'ssl-certificates', None, 'global', None, False, True),
+    Resource('', 'compute', 'ssl-certificates', None, 'region', None, False, True),
+    Resource('', 'compute', 'url-maps', None, 'global', None, False, True),
+    Resource('', 'compute', 'url-maps', None, 'region', None, False, True),
+    Resource('', 'compute', 'backend-services', None, 'global', None, False, True),
     Resource('', 'compute', 'backend-services', None, 'region', None, False, True),
     Resource('', 'compute', 'target-pools', None, 'region', None, False, True),
-    Resource('', 'compute', 'health-checks', None, None, None, False, True),
-    Resource('beta', 'compute', 'health-checks', None, 'region', None, False, True),
+    Resource('', 'compute', 'health-checks', None, 'global', None, False, True),
+    Resource('', 'compute', 'health-checks', None, 'region', None, False, True),
     Resource('', 'compute', 'http-health-checks', None, None, None, False, True),
+    Resource('', 'compute', 'instance-groups', None, 'region', 'Yes', False, True),
     Resource('', 'compute', 'instance-groups', None, 'zone', 'Yes', False, True),
     Resource('', 'compute', 'instance-groups', None, 'zone', 'No', False, True),
     Resource('', 'compute', 'instance-templates', None, None, None, False, True),
     Resource('', 'compute', 'sole-tenancy', 'node-groups', 'zone', None, False, True),
     Resource('', 'compute', 'sole-tenancy', 'node-templates', 'region', None, False, True),
-    Resource('beta', 'compute', 'network-endpoint-groups', None, 'zone', None, False, False),
+    Resource('', 'compute', 'network-endpoint-groups', None, 'zone', None, False, False),
     Resource('', 'compute', 'networks', 'subnets', 'region', None, True, True),
-    Resource('', 'compute', 'networks', None, '', None, False, True),
+    Resource('', 'compute', 'networks', None, None, None, False, True),
     Resource('', 'compute', 'routes', None, None, None, False, True),
     Resource('', 'compute', 'routers', None, 'region', None, False, True),
 
@@ -182,18 +182,33 @@ def collect(project, age, resource, filt, clear_all):
         if 'name' not in item:
             raise ValueError('missing key: name - %r' % item)
 
-        if resource.condition and resource.condition in item:
-            colname = item[resource.condition]
-            log('looking for items in %s=%s' % (resource.condition, colname))
-        else:
-            colname = ''
+        colname = ''
+        if resource.condition is not None:
+            # This subcommand will want either a --global, --region, or --zone
+            # flag, so segment items accordingly.
+            if resource.condition == 'global':
+                if 'zone' in item or 'region' in item:
+                    # This item is zonal or regional, so don't include it in
+                    # the global list.
+                    continue
+            elif resource.condition in item:
+                # Looking for zonal or regional items, and this matches.
+                # The zone or region is sometimes a full URL (why?), but
+                # subcommands want just the name, not the full URL, so strip it.
+                colname = item[resource.condition].rsplit('/', 1)[-1]
+                log('looking for items in %s=%s' % (resource.condition, colname))
+            else:
+                # This item doesn't match the condition, so don't include it.
+                continue
 
         if validate_item(item, age, resource, clear_all):
             col[colname].append(item['name'])
     return col
 
 def asyncCall(cmd, tolerate, name, errs, lock, hide_output):
-    log('Call %r' % cmd)
+    log('%sCall %r' % ('[DRYRUN] ' if ARGS.dryrun else '', cmd))
+    if ARGS.dryrun:
+        return
     try:
         if hide_output:
             FNULL = open(os.devnull, 'w')
@@ -228,11 +243,6 @@ def clear_resources(project, cols, resource, rate_limit):
         rate_limit = 1
 
     for col, items in cols.items():
-        if ARGS.dryrun:
-            log('Resource type %r(%r) to be deleted: %r' %
-                (resource.name, resource.subgroup, list(items)))
-            continue
-
         manage_key = {'Yes': 'managed', 'No': 'unmanaged'}
 
         # construct the customized gcloud command
@@ -243,11 +253,10 @@ def clear_resources(project, cols, resource, rate_limit):
         base.append('--project=%s' % project)
 
         condition = None
-        if resource.condition:
-            if col:
-                condition = '--%s=%s' % (resource.condition, col)
-            else:
-                condition = '--global'
+        if resource.condition and col:
+            condition = '--%s=%s' % (resource.condition, col)
+        elif resource.condition == 'global':
+            condition = '--global'
 
         log('going to delete %d %s' % (len(items), resource.name))
         # try to delete at most $rate_limit items at a time
@@ -374,7 +383,8 @@ def main(project, days, hours, filt, rate_limit, service_account):
 
     if not err:
         for res in DEMOLISH_ORDER:
-            log('Try to search for %r with condition %r' % (res.name, res.condition))
+            log('Try to search for %r with condition %r, managed %r' % (
+                res.name, res.condition, res.managed))
             try:
                 col = collect(project, age, res, filt, clear_all)
                 if col:
