@@ -24,20 +24,19 @@ cd "$(git rev-parse --show-toplevel)"
 # Script triggered by prow postsubmit job
 # Update boskos configmap in prow
 
-if [[ -a "${PROW_SERVICE_ACCOUNT:-}" ]] ; then
-	gcloud auth activate-service-account --key-file="${PROW_SERVICE_ACCOUNT}"
+if [[ -a "${PROW_SERVICE_ACCOUNT:-}" ]] ; then # TODO(fejta): delete this in a subsequent PR
+  echo "Use GOOGLE_APPLICATION_CREDENTIALS='$PROW_SERVICE_ACCOUNT' " >&2
+  echo "Migrate away from PROW_SERVICE_ACCOUNT" >&2
+  gcloud auth activate-service-account --key-file="${PROW_SERVICE_ACCOUNT}"
+elif [[ -a "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]] ; then
+  gcloud auth activate-service-account --key-file="${GOOGLE_APPLICATION_CREDENTIALS}"
 fi
 
 if ! [ -x "$(command -v kubectl)" ]; then
-	gcloud components install kubectl
+  gcloud components install kubectl
 fi
 
 # TODO(fejta): deploy this using the bazel target
 gcloud container clusters get-credentials --project=k8s-prow-builds --zone=us-central1-f prow
 kubectl create configmap resources --from-file=config=prow/cluster/boskos-resources.yaml --dry-run -o yaml | \
     kubectl --context=gke_k8s-prow-builds_us-central1-f_prow --namespace=test-pods replace configmap resources -f -
-
-# switch back to default service account for uploading logs
-if [[ -a "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]] ; then
-	gcloud auth activate-service-account --key-file="${GOOGLE_APPLICATION_CREDENTIALS}"
-fi
