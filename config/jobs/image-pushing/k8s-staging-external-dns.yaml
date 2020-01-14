@@ -9,6 +9,7 @@ postsubmits:
       decorate: true
       branches:
         - ^master$
+        - ^v[0-9].*
       spec:
         containers:
           - image: gcr.io/k8s-testimages/image-builder:v20200107-6bdb17e
