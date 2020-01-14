@@ -178,6 +178,9 @@ presubmits:
           value: "true"
         - name: IP_FAMILY
           value: DualStack
+        # enable IPV6 in bootstrap image
+        - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
+          value: "true"
         - name: BUILD_TYPE
           value: bazel
         # we need privileged mode in order to do docker in docker
