@@ -96,8 +96,8 @@ presubmits:
         securityContext:
           privileged: true
         env:
-          - name: AZURE_STORAGE_DRIVER
-            value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
+        - name: AZURE_STORAGE_DRIVER
+          value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
     annotations:
       testgrid-dashboards: provider-azure-upstream, provider-azure-presubmit
       testgrid-tab-name: pr-k8s-azure-disk-e2e-master
@@ -148,10 +148,65 @@ presubmits:
         securityContext:
           privileged: true
         env:
-          - name: AZURE_STORAGE_DRIVER
-            value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
+        - name: AZURE_STORAGE_DRIVER
+          value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
     annotations:
       testgrid-dashboards: provider-azure-upstream, provider-azure-presubmit
       testgrid-tab-name: pr-k8s-azure-disk-e2e-vmss-master
       description: Run Azure Disk e2e test on a VMSS-based cluster with Azure Disk in-tree volume plugin.
       testgrid-num-columns-recent: '30'
+  - name: pull-kubernetes-e2e-azure-file
+    decorate: true
+    always_run: false
+    optional: true
+    path_alias: k8s.io/kubernetes
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+      preset-azure-cred: "true"
+      preset-dind-enabled: "true"
+    extra_refs:
+    - org: kubernetes-sigs
+      repo: azurefile-csi-driver
+      base_ref: master
+      path_alias: sigs.k8s.io/azurefile-csi-driver
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200107-164c5e8-master
+        command:
+        - runner.sh
+        - kubetest
+        args:
+        # Generic e2e test args
+        - --test
+        - --up
+        - --down
+        - --build=quick
+        # Azure-specific test args
+        - --provider=skeleton
+        - --deployment=aksengine
+        - --aksengine-agentpoolcount=2
+        - --aksengine-admin-username=azureuser
+        - --aksengine-creds=$(AZURE_CREDENTIALS)
+        - --aksengine-orchestratorRelease=1.18
+        - --aksengine-mastervmsize=Standard_DS2_v2
+        - --aksengine-agentvmsize=Standard_DS2_v2
+        - --aksengine-deploy-custom-k8s
+        - --aksengine-location=westus2
+        - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
+        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azurefile-csi-driver/master/test/e2e/manifest/in-tree.json
+        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
+        - --test-azure-file-csi-driver
+        # Specific test args
+        - --ginkgo-parallel=1
+        - --timeout=420m
+        securityContext:
+          privileged: true
+        env:
+        - name: AZURE_STORAGE_DRIVER
+          value: kubernetes.io/azure-file # In-tree Azure file storage class
+    annotations:
+      testgrid-dashboards: provider-azure-upstream, provider-azure-presubmit
+      testgrid-tab-name: pr-k8s-azure-file-e2e-master
+      description: Run Azure File e2e test with Azure File in-tree volume plugin.
