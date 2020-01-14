@@ -45,7 +45,7 @@ PROW_CONFIG_TEMPLATE = """
       containers:
       - args:
         env:
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200107-164c5e8-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200110-80c1ae9-master
 """
 
 
@@ -97,11 +97,12 @@ def write_testgrid_config_file(output_file, testgrid_config):
 
 def apply_job_overrides(envs_or_args, job_envs_or_args):
     '''Applies the envs or args overrides defined in the job level'''
+    original_envs_or_args = envs_or_args[:]
     for job_env_or_arg in job_envs_or_args:
         name = job_env_or_arg.split('=', 1)[0]
         env_or_arg = next(
-            (x for x in envs_or_args if (x.strip().startswith('%s=' % name) or
-                                         x.strip() == name)), None)
+            (x for x in original_envs_or_args if (x.strip().startswith('%s=' % name) or
+                                                  x.strip() == name)), None)
         if env_or_arg:
             envs_or_args.remove(env_or_arg)
         envs_or_args.append(job_env_or_arg)
