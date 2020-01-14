@@ -39,7 +39,6 @@ DEMOLISH_ORDER = [
     Resource('', 'compute', 'disks', None, 'zone', None, False, True),
     Resource('', 'compute', 'disks', None, 'region', None, False, True),
     Resource('', 'compute', 'firewall-rules', None, None, None, False, True),
-    Resource('', 'compute', 'routes', None, None, None, False, True),
     Resource('', 'compute', 'forwarding-rules', None, 'global', None, False, True),
     Resource('', 'compute', 'forwarding-rules', None, 'region', None, False, True),
     Resource('', 'compute', 'target-http-proxies', None, 'global', None, False, True),
@@ -64,10 +63,10 @@ DEMOLISH_ORDER = [
     Resource('', 'compute', 'sole-tenancy', 'node-groups', 'zone', None, False, True),
     Resource('', 'compute', 'sole-tenancy', 'node-templates', 'region', None, False, True),
     Resource('', 'compute', 'network-endpoint-groups', None, 'zone', None, False, False),
-    Resource('', 'compute', 'networks', 'subnets', 'region', None, True, True),
-    Resource('', 'compute', 'networks', None, None, None, False, True),
     Resource('', 'compute', 'routes', None, None, None, False, True),
     Resource('', 'compute', 'routers', None, 'region', None, False, True),
+    Resource('', 'compute', 'networks', 'subnets', 'region', None, True, True),
+    Resource('', 'compute', 'networks', None, None, None, False, True),
 
     # logging resources
     Resource('', 'logging', 'sinks', None, None, None, False, False),
