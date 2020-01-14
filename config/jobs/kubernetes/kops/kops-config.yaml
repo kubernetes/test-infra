@@ -422,6 +422,8 @@ presubmits:
         resources:
           requests:
             memory: "2Gi"
+        securityContext:
+          privileged: true
     annotations:
       testgrid-dashboards: presubmits-kops
       testgrid-tab-name: verify
