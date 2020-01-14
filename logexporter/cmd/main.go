@@ -21,7 +21,6 @@ package main
 
 import (
 	"bytes"
-	"flag"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -32,18 +31,20 @@ import (
 	"time"
 
 	"github.com/golang/glog"
+	"github.com/spf13/pflag"
 )
 
 // Initialize the log exporter's configuration related flags.
 var (
-	nodeName             = flag.String("node-name", "", "Name of the node this log exporter is running on")
-	gcsPath              = flag.String("gcs-path", "", "Path to the GCS directory under which to upload logs, for eg: gs://my-logs-bucket/logs")
-	journalPath          = flag.String("journal-path", "/var/log/journal", "Path where the systemd journal dir is mounted")
-	cloudProvider        = flag.String("cloud-provider", "", "Cloud provider for this node (gce/gke/aws/kubemark/..)")
-	gcloudAuthFilePath   = flag.String("gcloud-auth-file-path", "/etc/service-account/service-account.json", "Path to gcloud service account file, for authenticating gsutil to write to GCS bucket")
-	enableHollowNodeLogs = flag.Bool("enable-hollow-node-logs", false, "Enable uploading hollow node logs too. Relevant only for kubemark nodes")
-	sleepDuration        = flag.Duration("sleep-duration", 60*time.Second, "Duration to sleep before exiting with success. Useful for making pods schedule with hard anti-affinity when run as a job on a k8s cluster")
-	dumpSystemdJournal   = flag.Bool("dump-systemd-journal", false, "Whether to dump the full systemd journal")
+	nodeName             = pflag.String("node-name", "", "Name of the node this log exporter is running on")
+	gcsPath              = pflag.String("gcs-path", "", "Path to the GCS directory under which to upload logs, for eg: gs://my-logs-bucket/logs")
+	journalPath          = pflag.String("journal-path", "/var/log/journal", "Path where the systemd journal dir is mounted")
+	cloudProvider        = pflag.String("cloud-provider", "", "Cloud provider for this node (gce/gke/aws/kubemark/..)")
+	gcloudAuthFilePath   = pflag.String("gcloud-auth-file-path", "/etc/service-account/service-account.json", "Path to gcloud service account file, for authenticating gsutil to write to GCS bucket")
+	enableHollowNodeLogs = pflag.Bool("enable-hollow-node-logs", false, "Enable uploading hollow node logs too. Relevant only for kubemark nodes")
+	sleepDuration        = pflag.Duration("sleep-duration", 60*time.Second, "Duration to sleep before exiting with success. Useful for making pods schedule with hard anti-affinity when run as a job on a k8s cluster")
+	dumpSystemdJournal   = pflag.Bool("dump-systemd-journal", false, "Whether to dump the full systemd journal")
+	extraLogFiles        = pflag.StringSlice("extra-log-files", []string{}, "Extra log files to dump")
 )
 
 var (
@@ -149,6 +150,7 @@ func createSystemdLogfiles(outputDir string) {
 func prepareLogfiles(logDir string) {
 	glog.Info("Preparing logfiles relevant to this node")
 	logfiles := nodeLogs[:]
+	logfiles = append(logfiles, *extraLogFiles...)
 
 	switch *cloudProvider {
 	case "gce", "gke":
@@ -238,7 +240,7 @@ func runCommand(name string, arg ...string) error {
 }
 
 func main() {
-	flag.Parse()
+	pflag.Parse()
 	if err := checkConfigValidity(); err != nil {
 		glog.Fatalf("Bad config provided: %v", err)
 	}
