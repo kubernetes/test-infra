@@ -200,8 +200,9 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 
 	switch change.Status {
 	case client.Merged:
-		postsubmits := c.config().Postsubmits[cloneURI.String()]
-		postsubmits = append(postsubmits, c.config().Postsubmits[cloneURI.Host+"/"+cloneURI.Path]...)
+		// TODO: Do we want to add support for dynamic postsubmits?
+		postsubmits := c.config().PostsubmitsStatic[cloneURI.String()]
+		postsubmits = append(postsubmits, c.config().PostsubmitsStatic[cloneURI.Host+"/"+cloneURI.Path]...)
 		for _, postsubmit := range postsubmits {
 			if shouldRun, err := postsubmit.ShouldRun(change.Branch, changedFiles); err != nil {
 				return fmt.Errorf("failed to determine if postsubmit %q should run: %v", postsubmit.Name, err)

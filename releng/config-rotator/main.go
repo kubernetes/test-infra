@@ -23,8 +23,9 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"sigs.k8s.io/yaml"
 	"strings"
+
+	"sigs.k8s.io/yaml"
 
 	"k8s.io/test-infra/prow/config"
 )
@@ -90,7 +91,7 @@ func updateEverything(c *config.JobConfig, old, new string) {
 			updateJobBase(&presubmits[i].JobBase, old, new)
 		}
 	}
-	for _, postsubmits := range c.Postsubmits {
+	for _, postsubmits := range c.PostsubmitsStatic {
 		for i := range postsubmits {
 			updateJobBase(&postsubmits[i].JobBase, old, new)
 		}
@@ -138,7 +139,7 @@ func main() {
 
 	output, err := yaml.Marshal(map[string]interface{}{
 		"presubmits":  c.PresubmitsStatic,
-		"postsubmits": c.Postsubmits,
+		"postsubmits": c.PostsubmitsStatic,
 		"periodics":   c.Periodics,
 	})
 	if err != nil {

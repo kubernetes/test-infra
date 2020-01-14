@@ -241,7 +241,7 @@ func (f fallbackHandler) getURL(jobName string) string {
 		}
 	}
 	if spec == nil {
-		for _, post := range cfg.AllPostsubmits(nil) {
+		for _, post := range cfg.AllStaticPostsubmits(nil) {
 			if jobName == post.Name {
 				spec = pjutil.PostsubmitToJobSpec(post)
 				break

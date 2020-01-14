@@ -22,7 +22,7 @@ import (
 	"os"
 	"testing"
 
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 
 	cfg "k8s.io/test-infra/prow/config"
@@ -100,7 +100,7 @@ func TestMountsHaveVolumes(t *testing.T) {
 			validateVolumesAndMounts(job.Name, job.Spec, t)
 		}
 	}
-	for _, job := range c.AllPostsubmits(nil) {
+	for _, job := range c.AllStaticPostsubmits(nil) {
 		if job.Spec != nil {
 			validateVolumesAndMounts(job.Name, job.Spec, t)
 		}
@@ -196,7 +196,7 @@ func allJobs() ([]cfg.Presubmit, []cfg.Postsubmit, []cfg.Periodic, error) {
 	{ // Find all postsubmit jobs
 		q := []cfg.Postsubmit{}
 
-		for _, p := range c.Postsubmits {
+		for _, p := range c.PostsubmitsStatic {
 			for _, p2 := range p {
 				q = append(q, p2)
 			}

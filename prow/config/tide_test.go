@@ -504,17 +504,20 @@ func TestConfigGetTideContextPolicy(t *testing.T) {
 			name: "jobs from inrepoconfig are considered",
 			config: Config{
 				JobConfig: JobConfig{
-					ProwYAMLGetter: fakeProwYAMLGetterFactory([]Presubmit{
-						{
-							AlwaysRun: true,
-							Reporter:  Reporter{Context: "ir0"},
+					ProwYAMLGetter: fakeProwYAMLGetterFactory(
+						[]Presubmit{
+							{
+								AlwaysRun: true,
+								Reporter:  Reporter{Context: "ir0"},
+							},
+							{
+								AlwaysRun: true,
+								Optional:  true,
+								Reporter:  Reporter{Context: "ir1"},
+							},
 						},
-						{
-							AlwaysRun: true,
-							Optional:  true,
-							Reporter:  Reporter{Context: "ir1"},
-						},
-					}),
+						nil,
+					),
 				},
 				ProwConfig: ProwConfig{
 					InRepoConfig: InRepoConfig{
@@ -549,17 +552,20 @@ func TestConfigGetTideContextPolicy(t *testing.T) {
 							},
 						},
 					},
-					ProwYAMLGetter: fakeProwYAMLGetterFactory([]Presubmit{
-						{
-							AlwaysRun: true,
-							Reporter:  Reporter{Context: "ir0"},
+					ProwYAMLGetter: fakeProwYAMLGetterFactory(
+						[]Presubmit{
+							{
+								AlwaysRun: true,
+								Reporter:  Reporter{Context: "ir0"},
+							},
+							{
+								AlwaysRun: true,
+								Optional:  true,
+								Reporter:  Reporter{Context: "ir1"},
+							},
 						},
-						{
-							AlwaysRun: true,
-							Optional:  true,
-							Reporter:  Reporter{Context: "ir1"},
-						},
-					}),
+						nil,
+					),
 				},
 				ProwConfig: ProwConfig{
 					InRepoConfig: InRepoConfig{
@@ -1034,10 +1040,11 @@ func TestTideContextPolicy_MissingRequiredContexts(t *testing.T) {
 	}
 }
 
-func fakeProwYAMLGetterFactory(presubmits []Presubmit) ProwYAMLGetter {
+func fakeProwYAMLGetterFactory(presubmits []Presubmit, postsubmits []Postsubmit) ProwYAMLGetter {
 	return func(_ *Config, _ git.ClientFactory, _, _ string, _ ...string) (*ProwYAML, error) {
 		return &ProwYAML{
-			Presubmits: presubmits,
+			Presubmits:  presubmits,
+			Postsubmits: postsubmits,
 		}, nil
 	}
 }

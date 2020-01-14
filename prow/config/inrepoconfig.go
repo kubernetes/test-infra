@@ -20,9 +20,10 @@ const (
 )
 
 // ProwYAML represents the content of a .prow.yaml file
-// used to version Presubmits inside the tested repo.
+// used to version Presubmits and Postsubmits inside the tested repo.
 type ProwYAML struct {
-	Presubmits []Presubmit `json:"presubmits"`
+	Presubmits  []Presubmit  `json:"presubmits"`
+	Postsubmits []Postsubmit `json:"postsubmits"`
 }
 
 // ProwYAMLGetter is used to retrieve a ProwYAML. Tests should provide
@@ -101,7 +102,7 @@ func defaultProwYAMLGetter(
 		return nil, err
 	}
 
-	log.Debugf("Successfully got %d presubmits from %q.", len(prowYAML.Presubmits), inRepoConfigFileName)
+	log.Debugf("Successfully got %d presubmits and %d postsubmits from %q.", len(prowYAML.Presubmits), len(prowYAML.Postsubmits), inRepoConfigFileName)
 	return prowYAML, nil
 }
 
@@ -109,17 +110,31 @@ func DefaultAndValidateProwYAML(c *Config, p *ProwYAML, identifier string) error
 	if err := defaultPresubmits(p.Presubmits, c, identifier); err != nil {
 		return err
 	}
+	if err := defaultPostsubmits(p.Postsubmits, c, identifier); err != nil {
+		return err
+	}
 	if err := validatePresubmits(append(p.Presubmits, c.PresubmitsStatic[identifier]...), c.PodNamespace); err != nil {
+		return err
+	}
+	if err := validatePostsubmits(append(p.Postsubmits, c.PostsubmitsStatic[identifier]...), c.PodNamespace); err != nil {
 		return err
 	}
 
 	var errs []error
-	for _, ps := range p.Presubmits {
-		if ps.Branches != nil || ps.SkipBranches != nil {
-			errs = append(errs, fmt.Errorf("job %q contains branchconfig. This is not allowed for jobs in %q", ps.Name, inRepoConfigFileName))
+	for _, pre := range p.Presubmits {
+		if pre.Branches != nil || pre.SkipBranches != nil {
+			errs = append(errs, fmt.Errorf("presubmit job %q contains branchconfig. This is not allowed for jobs in %q", pre.Name, inRepoConfigFileName))
 		}
-		if !c.InRepoConfigAllowsCluster(ps.Cluster, identifier) {
-			errs = append(errs, fmt.Errorf("cluster %q is not allowed for repository %q", ps.Cluster, identifier))
+		if !c.InRepoConfigAllowsCluster(pre.Cluster, identifier) {
+			errs = append(errs, fmt.Errorf("cluster %q is not allowed for repository %q", pre.Cluster, identifier))
+		}
+	}
+	for _, post := range p.Postsubmits {
+		if post.Branches != nil || post.SkipBranches != nil {
+			errs = append(errs, fmt.Errorf("postsubmit job %q contains branchconfig. This is not allowed for jobs in %q", post.Name, inRepoConfigFileName))
+		}
+		if !c.InRepoConfigAllowsCluster(post.Cluster, identifier) {
+			errs = append(errs, fmt.Errorf("cluster %q is not allowed for repository %q", post.Cluster, identifier))
 		}
 	}
 

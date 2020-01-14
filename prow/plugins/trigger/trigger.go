@@ -265,7 +265,6 @@ func skipRequested(c Client, pr *github.PullRequest, skippedJobs []config.Presub
 }
 
 func getPresubmits(log *logrus.Entry, gc git.ClientFactory, cfg *config.Config, orgRepo string, baseSHAGetter, headSHAGetter config.RefGetter) []config.Presubmit {
-
 	presubmits, err := cfg.GetPresubmits(gc, orgRepo, baseSHAGetter, headSHAGetter)
 	if err != nil {
 		// Fall back to static presubmits to avoid deadlocking when a presubmit is used to verify
@@ -274,4 +273,14 @@ func getPresubmits(log *logrus.Entry, gc git.ClientFactory, cfg *config.Config, 
 		presubmits = cfg.PresubmitsStatic[orgRepo]
 	}
 	return presubmits
+}
+
+func getPostsubmits(log *logrus.Entry, gc git.ClientFactory, cfg *config.Config, orgRepo string, baseSHAGetter config.RefGetter) []config.Postsubmit {
+	postsubmits, err := cfg.GetPostsubmits(gc, orgRepo, baseSHAGetter)
+	if err != nil {
+		// Fall back to static postsubmits, loading inrepoconfig returned an error.
+		log.WithError(err).Error("Failed to get postsubmits")
+		postsubmits = cfg.PostsubmitsStatic[orgRepo]
+	}
+	return postsubmits
 }
