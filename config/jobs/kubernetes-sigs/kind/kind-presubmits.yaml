@@ -143,6 +143,54 @@ presubmits:
             memory: "9000Mi"
             # during the tests more like 3-20m is used
             cpu: 2000m
+  # conformance test against kubernetes master branch with `kind`, skipping
+  # serial tests so it runs in ~20m
+  # Dual Stack enabled variant
+  - name: pull-kind-conformance-parallel-dual-stack-ipv4-ipv6
+    always_run: false
+    optional: true
+    labels:
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    decorate: true
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    path_alias: sigs.k8s.io/kind
+    decoration_config:
+      timeout: 40m
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/krte:v20200107-164c5e8-master
+        command:
+        - wrapper.sh
+        - bash
+        - -c
+        - cd ./../../k8s.io/kubernetes && ./../../sigs.k8s.io/kind/hack/ci/e2e.sh
+        env:
+        - name: FOCUS
+          value: \[Conformance\]|IPv6DualStack
+        - name: PARALLEL
+          value: "true"
+        - name: IP_FAMILY
+          value: DualStack
+        - name: BUILD_TYPE
+          value: bazel
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            # TODO(BenTheElder): adjust these everywhere
+            # these are both a bit below peak usage during build
+            # this is mostly for building kubernetes
+            memory: "9000Mi"
+            # during the tests more like 3-20m is used
+            cpu: 2000m
   # conformance test against kubernetes release-1.16 branch with `kind`, skipping
   # serial tests so it runs in ~20m
   - name: pull-kind-conformance-parallel-1-16
