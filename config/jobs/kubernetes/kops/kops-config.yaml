@@ -417,15 +417,7 @@ presubmits:
         - runner.sh
         args:
         - "make"
-        # Once we migrate to this job we can consolidate these into a single target
-        - "govet"
-        - "verify-bazel"
-        - "verify-boilerplate"
-        - "verify-generate"
-        - "verify-gofmt"
-        - "verify-gomod"
-        - "verify-packages"
-        - "verify-staticcheck"
+        - "verify"
         resources:
           requests:
             memory: "2Gi"
