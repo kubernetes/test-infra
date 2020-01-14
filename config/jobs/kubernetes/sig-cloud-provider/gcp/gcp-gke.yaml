@@ -28,7 +28,7 @@ presubmits:
         - --extract=local
         - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
         - --gcp-node-image=gci
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-west1-c
         - --ginkgo-parallel=30
         - --gke-create-command=container clusters create --quiet --addons=HttpLoadBalancing,HorizontalPodAutoscaling
         - --gke-environment=test
@@ -61,7 +61,7 @@ periodics:
       - --extract=ci/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-west1-c
       - --ginkgo-parallel
       - --gke-create-command=container clusters create --quiet --addons=HttpLoadBalancing,HorizontalPodAutoscaling
       - --gke-environment=test
@@ -91,7 +91,7 @@ periodics:
       - --extract=ci/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-west1-c
       - --gke-create-command=container clusters create --quiet --enable-kubernetes-alpha
       - --gke-environment=test
       - --provider=gke
@@ -120,7 +120,7 @@ periodics:
       - --extract=ci/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-west1-c
       - --ginkgo-parallel
       - --gke-create-command=container clusters create --quiet --enable-kubernetes-alpha
       - --gke-environment=test
@@ -150,7 +150,7 @@ periodics:
       - --extract=ci/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-west1-c
       - --gke-environment=test
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Flaky\] --ginkgo.skip=\[Feature:.+\] --minStartupPods=8
@@ -178,7 +178,7 @@ periodics:
       - --extract=ci/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-west1-c
       - --ginkgo-parallel
       - --gke-environment=test
       - --gke-node-locations=us-central1-f,us-central1-a,us-central1-b
@@ -208,7 +208,7 @@ periodics:
       - --extract=ci/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-west1-c
       - --gke-environment=test
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
@@ -236,7 +236,7 @@ periodics:
       - --extract=ci/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-west1-c
       - --gke-environment=test
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
@@ -264,7 +264,7 @@ periodics:
       - --extract=ci/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-west1-c
       - --ginkgo-parallel
       - --gke-environment=test
       - --provider=gke
@@ -292,7 +292,7 @@ periodics:
       - --extract=ci/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-west1-c
       - --ginkgo-parallel
       - --gke-environment=test
       - --provider=gke
@@ -404,7 +404,7 @@ periodics:
       - --extract=ci/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-west1-c
       - --ginkgo-parallel
       - --gke-environment=test
       - --provider=gke
@@ -434,7 +434,7 @@ periodics:
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-project=k8s-jkns-gke-gci-soak
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-west1-c
       - --gke-environment=test
       - --provider=gke
       - --save=gs://kubernetes-e2e-soak-configs/ci-kubernetes-soak-gke-gci
@@ -470,7 +470,7 @@ periodics:
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-project-type=istio-project
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-west1-c
       - --gke-command-group=alpha
       - --gke-create-command=container clusters create --quiet --num-nodes=4 --no-enable-legacy-authorization --addons=Istio --istio-config=auth=NONE
       - --gke-environment=test

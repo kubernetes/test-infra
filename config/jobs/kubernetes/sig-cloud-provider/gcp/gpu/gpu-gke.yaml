@@ -17,7 +17,7 @@ periodics:
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-project-type=gpu-project
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-west1-c
       - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-k80,count=2
       - --gke-environment=test
       - --provider=gke
@@ -47,7 +47,7 @@ periodics:
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-project-type=gpu-project
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-west1-c
       - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-k80,count=2
       - --gke-environment=test
       - --provider=gke
@@ -77,7 +77,7 @@ periodics:
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-project-type=gpu-project
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-west1-c
       - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-k80,count=2
       - --gke-environment=test
       - --provider=gke
@@ -105,7 +105,7 @@ periodics:
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-project-type=gpu-project
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-west1-c
       - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-p100,count=2
       - --gke-environment=test
       - --provider=gke
@@ -135,7 +135,7 @@ periodics:
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-project-type=gpu-project
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-west1-c
       - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-p100,count=2
       - --gke-environment=test
       - --provider=gke
@@ -165,7 +165,7 @@ periodics:
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-project-type=gpu-project
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-west1-c
       - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-p100,count=2
       - --gke-environment=test
       - --provider=gke
@@ -195,7 +195,7 @@ periodics:
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-project-type=gpu-project
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-west1-c
       - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-p100,count=2
       - --gke-environment=test
       - --provider=gke
@@ -225,7 +225,7 @@ periodics:
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-project-type=gpu-project
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-west1-c
       - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-k80,count=2
       - --gke-environment=test
       - --provider=gke
@@ -255,7 +255,7 @@ periodics:
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-project-type=gpu-project
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-west1-c
       - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-k80,count=2
       - --gke-environment=test
       - --provider=gke
@@ -286,7 +286,7 @@ periodics:
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=ubuntu
       - --gcp-project-type=gpu-project
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-west1-c
       - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-k80,count=2
       - --gke-environment=test
       - --provider=gke

@@ -72,7 +72,7 @@ periodics:
       - --extract=ci/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-west1-c
       - --ginkgo-parallel
       - --gke-environment=test
       - --provider=gke
