@@ -19,7 +19,7 @@ periodics:
       - --deployment=gke
       - --extract=gke
       - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-west1-c
       - --gke-environment=prod
       - --provider=gke
       - --test=false

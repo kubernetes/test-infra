@@ -713,7 +713,7 @@ presubmits:
         - --extract=local
         - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
         - --gcp-node-image=gci
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-west1-c
         - --ginkgo-parallel=30
         - --gke-create-command=container clusters create --quiet --addons=HttpLoadBalancing,HorizontalPodAutoscaling
         - --gke-environment=test
@@ -799,7 +799,7 @@ presubmits:
         - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
         - --gcp-node-image=gci
         - --gcp-project=k8s-gke-gpu-pr
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-west1-c
         - --ginkgo-parallel=30
         - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-k80,count=2
         - --gke-environment=test
