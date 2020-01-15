@@ -298,7 +298,7 @@ def clean_gke_cluster(project, age, filt):
             'gcloud', 'container', '-q', 'clusters', 'list',
             '--project=%s' % project,
             '--filter=%s' % filt,
-            '--format=json(name,createTime,zone)'
+            '--format=json(name,createTime,region,zone)'
         ]
         log('running %s' % cmd)
 
@@ -312,8 +312,10 @@ def clean_gke_cluster(project, age, filt):
 
         for item in json.loads(output):
             log('cluster info: %r' % item)
-            if 'name' not in item or 'createTime' not in item or 'zone' not in item:
-                raise ValueError('name, createTime and zone must present: %r' % item)
+            if 'name' not in item or 'createTime' not in item:
+                raise ValueError('name and createTime must be present: %r' % item)
+            if not ('zone' in item or 'region' in item):
+                raise ValueError('either zone or region must be present: %r' % item)
 
             # The raw createTime string looks like 2017-08-30T18:33:14+00:00
             # Which python 2.7 does not support timezones.
@@ -329,8 +331,11 @@ def clean_gke_cluster(project, age, filt):
                     'gcloud', 'container', '-q', 'clusters', 'delete',
                     item['name'],
                     '--project=%s' % project,
-                    '--zone=%s' % item['zone'],
                 ]
+                if 'zone' in item:
+                    delete.append('--zone=%s' % item['zone'])
+                elif 'region' in item:
+                    delete.append('--region=%s' % item['region'])
                 thread = threading.Thread(
                     target=asyncCall, args=(delete, False, item['name'], errs, lock, True))
                 threads.append(thread)
