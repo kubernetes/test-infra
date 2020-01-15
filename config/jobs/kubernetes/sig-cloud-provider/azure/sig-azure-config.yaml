@@ -3,6 +3,7 @@ presubmits:
   - name: pull-kubernetes-e2e-aks-engine-azure
     always_run: false
     optional: true
+    run_if_changed: 'azure.*\.go'
     branches:
     - master
     labels:
@@ -54,6 +55,7 @@ presubmits:
   - name: pull-kubernetes-e2e-azure-disk
     always_run: false
     optional: true
+    run_if_changed: 'azure.*\.go'
     branches:
     - master
     labels:
@@ -106,6 +108,7 @@ presubmits:
   - name: pull-kubernetes-e2e-azure-disk-vmss
     always_run: false
     optional: true
+    run_if_changed: 'azure.*\.go'
     branches:
     - master
     labels:
@@ -159,6 +162,7 @@ presubmits:
     decorate: true
     always_run: false
     optional: true
+    run_if_changed: 'azure.*\.go'
     path_alias: k8s.io/kubernetes
     branches:
     - master
