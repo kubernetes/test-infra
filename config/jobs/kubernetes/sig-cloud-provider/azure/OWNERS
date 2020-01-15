@@ -7,6 +7,7 @@ approvers:
 - justaugustus
 - karataliu
 - khenidak
+- chewong
 
 labels:
 - area/provider/azure
