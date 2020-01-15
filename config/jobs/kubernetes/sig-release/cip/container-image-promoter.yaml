@@ -76,6 +76,34 @@ presubmits:
           secretName: k8s-cip-test-prod-service-account
     annotations:
       testgrid-dashboards: sig-release-misc
+  - name: pull-cip-auditor-e2e
+    decorate: true
+    path_alias: "sigs.k8s.io/k8s-container-image-promoter"
+    skip_report: false
+    always_run: true
+    # Because we run e2e tests, we cannot run more than 1 instance at a time
+    # (the e2e test resources are not isolated across test runs).
+    max_concurrency: 1
+    branches:
+    - ^master$
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200114-6d2c483-master
+        command:
+        - "./test-e2e/cip-auditor/entrypoint-from-container.sh"
+        env:
+        - name: CIP_E2E_KEY_FILE
+          value: "/etc/k8s-gcr-audit-test-prod-service-account/service-account.json"
+        volumeMounts:
+        - name: k8s-gcr-audit-test-prod-service-account-creds
+          mountPath: /etc/k8s-gcr-audit-test-prod-service-account
+          readOnly: true
+      volumes:
+      - name: k8s-gcr-audit-test-prod-service-account-creds
+        secret:
+          secretName: k8s-gcr-audit-test-prod-service-account
+    annotations:
+      testgrid-dashboards: sig-release-misc
   # Build all binaries and also run unit tests.
   - name: pull-cip-unit-tests
     decorate: true
