@@ -4,3 +4,6 @@ approvers:
 - andyzhangx
 - feiskyer
 - chewong
+
+labels:
+- area/provider/azure
