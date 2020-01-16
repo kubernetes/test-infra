@@ -148,7 +148,7 @@ periodics:
       - --env=KUBE_SSH_USER=centos
       - --extract=ci/latest
       - --ginkgo-parallel
-      - --kops-args=--image=ami-4bf3d731
+      - --kops-args=--image=ami-02eac2c0129f6376b
       - --kops-ssh-user=centos
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt
       - --kops-zones=us-east-1c
