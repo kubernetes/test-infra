@@ -19,6 +19,7 @@ package logrusutil
 
 import (
 	"bytes"
+	"fmt"
 	"strings"
 
 	"github.com/sirupsen/logrus"
@@ -98,7 +99,6 @@ const censored = "CENSORED"
 
 var (
 	censoredBytes = []byte(censored)
-	standardLog   = logrus.NewEntry(logrus.StandardLogger())
 )
 
 // Censor replaces sensitive parts of the content with a placeholder.
@@ -106,11 +106,11 @@ func (f CensoringFormatter) censor(content []byte) []byte {
 	for _, secret := range f.getSecrets().List() {
 		trimmedSecret := strings.TrimSpace(secret)
 		if trimmedSecret != secret {
-			standardLog.Warning("Secret is not trimmed")
+			fmt.Println("Secret is not trimmed")
 			secret = trimmedSecret
 		}
 		if secret == "" {
-			standardLog.Warning("Secret is an empty string, ignoring")
+			fmt.Println("Secret is an empty string, ignoring")
 			continue
 		}
 		content = bytes.ReplaceAll(content, []byte(secret), censoredBytes)
