@@ -128,7 +128,7 @@ periodics:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-aws-ubuntu-18.04
 
-- interval: 4h
+- interval: 1h
   name: ci-kubernetes-e2e-kops-aws-imagecentos7
   labels:
     preset-service-account: "true"
