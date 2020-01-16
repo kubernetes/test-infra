@@ -256,7 +256,7 @@ periodics:
     description: Runs tests on a Kubernetes cluster with Windows containerd nodes on GCE
 
 - name: ci-kubernetes-e2e-windows-node-throughput
-  interval: 2h
+  interval: 4h
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -297,7 +297,7 @@ periodics:
       - --test-cmd-args=--testconfig=testing/node-throughput/config.yaml
       - --test-cmd-args=--testoverrides=./testing/node-throughput/windows_override.yaml
       - --test-cmd-name=ClusterLoaderV2
-      - --timeout=60m
+      - --timeout=180m
 
 presubmits:
   kubernetes/kubernetes:
