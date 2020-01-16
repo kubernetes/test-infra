@@ -159,31 +159,32 @@ func (gr *gcsReporter) reportProwjob(ctx context.Context, pj *prowv1.ProwJob) er
 }
 
 func (gr *gcsReporter) writeContent(ctx context.Context, bucket, path string, overwrite bool, content []byte) error {
+	gr.logger.WithFields(logrus.Fields{"bucket": bucket, "path": path}).Debugf("Uploading to gs://%s/%s; overwrite: %v", bucket, path, overwrite)
 	w := gr.author.NewWriter(ctx, bucket, path, overwrite)
 	_, err := w.Write(content)
 	var reportErr error
-	if isErrUnexpected(err) {
+	if gr.isErrUnexpected(err) {
 		reportErr = err
 		gr.logger.WithError(err).WithFields(logrus.Fields{"bucket": bucket, "path": path}).Warn("Uploading info to GCS failed (write)")
 	}
 	err = w.Close()
-	if isErrUnexpected(err) {
+	if gr.isErrUnexpected(err) {
 		reportErr = err
 		gr.logger.WithError(err).WithFields(logrus.Fields{"bucket": bucket, "path": path}).Warn("Uploading info to GCS failed (close)")
 	}
 	return reportErr
 }
 
-func isErrUnexpected(err error) bool {
+func (gr *gcsReporter) isErrUnexpected(err error) bool {
 	if err == nil {
 		return false
 	}
 	// Precondition Failed is expected and we can silently ignore it.
 	if e, ok := err.(*googleapi.Error); ok {
 		if e.Code == http.StatusPreconditionFailed {
+			gr.logger.WithError(err).Debug("Precondition failed")
 			return false
 		}
-		return true
 	}
 	return true
 }

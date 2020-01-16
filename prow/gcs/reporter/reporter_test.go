@@ -72,9 +72,10 @@ func TestIsErrUnexpected(t *testing.T) {
 		},
 	}
 
+	gr := newWithAuthor(fca{}.Config, nil, false)
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			result := isErrUnexpected(tc.err)
+			result := gr.isErrUnexpected(tc.err)
 			if result != tc.unexpected {
 				t.Errorf("Expected isErrUnexpected() to return %v, got %v", tc.unexpected, result)
 			}
