@@ -1060,7 +1060,7 @@ func (c *Cluster) DumpClusterLogs(localPath, gcsPath string) error {
 		return fmt.Errorf("error downloading log dump script: %v", err)
 	}
 	if err := control.FinishRunning(exec.Command("chmod", "+x", logDumpScript)); err != nil {
-		return fmt.Errorf("error changing access premission for %s: %v", logDumpScript, err)
+		return fmt.Errorf("error changing access permission for %s: %v", logDumpScript, err)
 	}
 	if _, err := downloadFromURL(logDumpURLPrefix+"log-dump-daemonset.yaml", path.Join(c.outputDir, "log-dump-daemonset.yaml"), 2); err != nil {
 		return fmt.Errorf("error downloading log dump manifest: %v", err)
