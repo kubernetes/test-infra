@@ -33,7 +33,8 @@ cluster-identity() {
 }
 
 pool-identities() {
-  call-gcloud node-pools list "--cluster=$cluster" --format='value(name,config.workloadMetadataConfig.nodeMetadata)'
+  call-gcloud node-pools list "--cluster=$cluster" --format='value(name)' \
+    --filter="config.workloadMetadataConfig.nodeMetadata != $pool_metadata"
 }
 
 fix_service=
@@ -50,15 +51,7 @@ if [[ "$actual" != "$cluster_namespace" ]]; then
   fix_cluster=yes
 fi
 
-fix_pools=()
-
-for line in "$(IFS=\n pool-identities)"; do
-  pool=${line//$'\t'*}
-  meta=${line##*$'\t'}
-  if [[ "$meta" != "$pool_metadata" ]]; then
-    fix_pools+=("$pool")
-  fi
-done
+fix_pools=($(pool-identities))
 
 if [[ -z "$fix_service" && -z "$fix_cluster" && ${#fix_pools[@]} == 0 ]]; then
   echo "Nothing to do"
