@@ -619,14 +619,14 @@ dashboards:
       - key: body
         value: <test-url>
       url: https://github.com/openshift/origin/issues/new
-    name: release-openshift-origin-installer-e2e-aws-upgrade-4.4-to-4.5
+    name: release-openshift-origin-installer-e2e-aws-upgrade-4.4-stable-to-4.5-ci
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: release-openshift-origin-installer-e2e-aws-upgrade-4.4-to-4.5
+    test_group_name: release-openshift-origin-installer-e2e-aws-upgrade-4.4-stable-to-4.5-ci
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -892,8 +892,8 @@ test_groups:
   gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-shared-vpc-4.5
   name: release-openshift-origin-installer-e2e-aws-shared-vpc-4.5
 - days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-4.4-to-4.5
-  name: release-openshift-origin-installer-e2e-aws-upgrade-4.4-to-4.5
+  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-4.4-stable-to-4.5-ci
+  name: release-openshift-origin-installer-e2e-aws-upgrade-4.4-stable-to-4.5-ci
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.4-to-4.5
   name: release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.4-to-4.5
