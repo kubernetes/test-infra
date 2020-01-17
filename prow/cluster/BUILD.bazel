@@ -61,6 +61,7 @@ release(
     component("tide", "service", "deployment"),
     component("tls-ing", "ingress"),
     component("tot", "service", "deployment"),
+    component("trusted_serviceaccounts", MULTI_KIND),
     component(
         "tune-sysctls",
         "daemonset",
