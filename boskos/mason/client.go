@@ -62,20 +62,16 @@ func (c *Client) Acquire(rtype, state, dest string) (*common.Resource, error) {
 			return nil, err
 		}
 	}
-	var legacyLeasedResources common.LegacyLeasedResource
-	switch leasedResources := leasedRes.(type) {
-	case common.LegacyLeasedResource:
-		legacyLeasedResources = leasedResources
-	case common.LeasedResources:
-		legacyLeasedResources = leasedResources.Flatten()
-	}
+
 	resourcesToRelease = append(resourcesToRelease, *res)
-	resources, err := c.basic.AcquireByState(res.Name, dest, legacyLeasedResources)
-	if err != nil {
-		releaseOnFailure()
-		return nil, err
+	if leasedRes != nil {
+		resources, err := c.basic.AcquireByState(res.Name, dest, leasedRes.Flatten())
+		if err != nil {
+			releaseOnFailure()
+			return nil, err
+		}
+		resourcesToRelease = append(resourcesToRelease, resources...)
 	}
-	resourcesToRelease = append(resourcesToRelease, resources...)
 	c.updateResource(*res)
 	return res, nil
 }
@@ -103,19 +99,13 @@ func (c *Client) ReleaseOne(name, dest string) (allErrors error) {
 		}
 	}
 
-	var legacyLeasedResources common.LegacyLeasedResource
-	switch leasedResources := leasedRes.(type) {
-	case common.LegacyLeasedResource:
-		legacyLeasedResources = leasedResources
-	case common.LeasedResources:
-		legacyLeasedResources = leasedResources.Flatten()
-	}
-
-	resourceNames = append(resourceNames, legacyLeasedResources...)
-	for _, n := range resourceNames {
-		if err := c.basic.ReleaseOne(n, dest); err != nil {
-			logrus.WithError(err).Warningf("failed to release resource %s", n)
-			allErrors = multierror.Append(allErrors, err)
+	if leasedRes != nil {
+		resourceNames = append(resourceNames, leasedRes.Flatten()...)
+		for _, n := range resourceNames {
+			if err := c.basic.ReleaseOne(n, dest); err != nil {
+				logrus.WithError(err).Warningf("failed to release resource %s", n)
+				allErrors = multierror.Append(allErrors, err)
+			}
 		}
 	}
 	c.deleteResource(name)

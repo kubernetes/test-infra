@@ -94,7 +94,17 @@ func (fc *fakeConfig) Construct(ctx context.Context, res common.Resource, typeTo
 	return common.UserDataFromMap(common.UserDataMap{"fakeConfig": "unused"}), fc.err
 }
 
-func (fc *fakeConfig) Destruct(ctx context.Context, resource *common.Resource, leasedResources interface{}) error {
+func (fc *fakeConfig) Destruct(ctx context.Context, resource *common.Resource) error {
+	leasedRes, _ := CheckUserData(*resource)
+	if leasedRes != nil {
+		for resType, values := range leasedRes {
+			id := "destroyed-" + resType
+			if resType == "" {
+				id = "~legacyResourcesDestroyed~"
+			}
+			resource.UserData.Set(id, strings.Join(values, ","))
+		}
+	}
 	return resource.UserData.Set("destruct", "true")
 }
 
@@ -265,23 +275,31 @@ func TestRecycleDestruct(t *testing.T) {
 	rStorage, mClient, _ := createFakeBoskos(tc)
 	m := NewMason(1, mClient.basic, defaultWaitPeriod, defaultWaitPeriod, rStorage)
 	m.RegisterConfigConverter(fakeConfigType, fakeConfigConverter)
-	ctx, cancel := context.WithCancel(context.Background())
-	m.cancel = cancel
-	m.start(ctx, m.recycleAll)
-	select {
-	case <-m.pending:
-		break
-	case <-time.After(1 * time.Second):
-		t.Errorf("Timeout")
+	ctx := context.Background()
+	res, _ := mClient.basic.Acquire("type2", common.Dirty, common.Dirty)
+	req := requirements{
+		resource:    *res,
+		needs:       *tc["type2"].resourceNeeds,
+		fulfillment: common.TypeToResources{},
 	}
-	m.Stop()
+	if err := m.fulfillOne(ctx, &req); err != nil {
+		t.Errorf("unexpected error during fulfill: %v", err)
+	}
+
+	if _, err := m.recycleOne(ctx, res); err != nil {
+		t.Errorf("unexpected error during recycle: %v", err)
+	}
 	res2, _ := rStorage.GetResource("type2_0")
 	var actualDestruct string
 	res2.UserData.Extract("destruct", &actualDestruct)
 	if actualDestruct != "true" {
 		t.Errorf("recycle did not run destruct")
 	}
-
+	var destroyedRes string
+	res2.UserData.Extract("destroyed-type1", &destroyedRes)
+	if destroyedRes != "type1_0" {
+		t.Errorf("expected type1_0 to be destroyed but wasn't")
+	}
 }
 
 func TestRecycleNoLeasedResources(t *testing.T) {

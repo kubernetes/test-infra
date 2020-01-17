@@ -104,16 +104,8 @@ func (c *Cleaner) recycleOne(res *common.Resource) {
 		return
 	}
 
-	var legacyLeasedResources common.LegacyLeasedResource
-	switch leasedResources := leasedRes.(type) {
-	case common.LegacyLeasedResource:
-		legacyLeasedResources = leasedResources
-	case common.LeasedResources:
-		legacyLeasedResources = leasedResources.Flatten()
-	}
-
-	if legacyLeasedResources != nil {
-		resources, err := c.client.AcquireByState(res.Name, common.Cleaning, legacyLeasedResources)
+	if leasedRes != nil {
+		resources, err := c.client.AcquireByState(res.Name, common.Cleaning, leasedRes.Flatten())
 		if err != nil {
 			logrus.WithError(err).Warningf("could not acquire some leased resources for %s", res.Name)
 		}
