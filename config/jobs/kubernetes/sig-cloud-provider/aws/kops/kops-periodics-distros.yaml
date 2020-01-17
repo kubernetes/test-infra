@@ -1,6 +1,6 @@
 periodics:
 
-- interval: 4h
+- interval: 8h
   name: ci-kubernetes-e2e-kops-aws-imagedebian9
   labels:
     preset-service-account: "true"
@@ -32,7 +32,7 @@ periodics:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-aws-debian-9
 
-- interval: 4h
+- interval: 8h
   name: ci-kubernetes-e2e-kops-aws-imagedebian10
   labels:
     preset-service-account: "true"
@@ -64,7 +64,7 @@ periodics:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-aws-debian-10
 
-- interval: 4h
+- interval: 8h
   name: ci-kubernetes-e2e-kops-aws-imageubuntu1604
   labels:
     preset-service-account: "true"
@@ -96,7 +96,7 @@ periodics:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-aws-ubuntu-16.04
 
-- interval: 1h
+- interval: 8h
   name: ci-kubernetes-e2e-kops-aws-imageubuntu1804
   labels:
     preset-service-account: "true"
@@ -128,7 +128,7 @@ periodics:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-aws-ubuntu-18.04
 
-- interval: 4h
+- interval: 8h
   name: ci-kubernetes-e2e-kops-aws-imagecentos7
   labels:
     preset-service-account: "true"
@@ -161,7 +161,7 @@ periodics:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-aws-centos-7
 
-- interval: 4h
+- interval: 8h
   name: ci-kubernetes-e2e-kops-aws-imageamazonlinux2
   labels:
     preset-service-account: "true"
@@ -193,7 +193,7 @@ periodics:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-aws-amazonlinux-2
 
-- interval: 4h
+- interval: 8h
   name: ci-kubernetes-e2e-kops-aws-imagerhel7
   labels:
     preset-service-account: "true"
@@ -225,7 +225,7 @@ periodics:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-aws-rhel-7
 
-- interval: 4h
+- interval: 8h
   name: ci-kubernetes-e2e-kops-aws-imagerhel8
   labels:
     preset-service-account: "true"
@@ -257,7 +257,7 @@ periodics:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-aws-rhel-8
 
-- interval: 4h
+- interval: 8h
   name: ci-kubernetes-e2e-kops-aws-imagecoreos
   labels:
     preset-service-account: "true"
@@ -289,7 +289,7 @@ periodics:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-aws-coreos
 
-- interval: 4h
+- interval: 8h
   name: ci-kubernetes-e2e-kops-aws-imageflatcar
   labels:
     preset-service-account: "true"
