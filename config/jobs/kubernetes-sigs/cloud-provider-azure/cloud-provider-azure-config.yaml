@@ -8,7 +8,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6b79ed4-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-master
         args:
         - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -34,7 +34,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6b79ed4-1.17
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-1.17
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/kubernetes=release-1.17"
@@ -86,7 +86,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6b79ed4-1.17
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-1.17
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/kubernetes=release-1.17"
@@ -135,7 +135,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6b79ed4-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-master
         args:
         - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -164,7 +164,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6b79ed4-1.17
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-1.17
       args:
       - --job=$(JOB_NAME)
       - --repo=k8s.io/kubernetes=release-1.17
@@ -224,7 +224,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6b79ed4-1.17
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-1.17
       args:
       - --job=$(JOB_NAME)
       - --repo=k8s.io/kubernetes=release-1.17
@@ -286,7 +286,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6b79ed4-1.17
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-1.17
       args:
       - --job=$(JOB_NAME)
       - --repo=k8s.io/kubernetes=release-1.17
@@ -346,7 +346,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6b79ed4-1.17
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-1.17
       args:
       - --job=$(JOB_NAME)
       - --repo=k8s.io/kubernetes=release-1.17
@@ -407,7 +407,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6b79ed4-1.17
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-1.17
       args:
       - --job=$(JOB_NAME)
       - --repo=k8s.io/kubernetes=release-1.17
@@ -477,7 +477,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6b79ed4-1.17
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-1.17
       args:
       - --job=$(JOB_NAME)
       - --repo=k8s.io/kubernetes=release-1.17
@@ -537,7 +537,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6b79ed4-1.17
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-1.17
       args:
       - --job=$(JOB_NAME)
       - --repo=k8s.io/kubernetes=release-1.17
@@ -597,7 +597,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6b79ed4-1.17
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-1.17
       args:
       - --job=$(JOB_NAME)
       - --repo=k8s.io/kubernetes=release-1.17
@@ -657,7 +657,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6b79ed4-1.17
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-1.17
       args:
       - --job=$(JOB_NAME)
       - --repo=k8s.io/kubernetes=release-1.17
@@ -729,7 +729,7 @@ periodics:
     description: "Runs kubemark tests (100 nodes) with the Azure cloud provider enabled."
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6b79ed4-1.17
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-1.17
       args:
       - --job=$(JOB_NAME)
       - --repo=k8s.io/kubernetes=release-1.17
