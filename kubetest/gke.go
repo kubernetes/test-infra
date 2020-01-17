@@ -54,6 +54,7 @@ var (
 	gkeCustomSubnet                = flag.String("gke-custom-subnet", "", "(gke only) if specified, we create a custom subnet with the specified options and use it for the gke cluster. The format should be '<subnet-name> --region=<subnet-gcp-region> --range=<subnet-cidr> <any other optional params>'.")
 	gkeReleaseChannel              = flag.String("gke-release-channel", "", "(gke only) if specified, bring up GKE clusters from that release channel.")
 	gkeSingleZoneNodeInstanceGroup = flag.Bool("gke-single-zone-node-instance-group", true, "(gke only) Add instance groups from a single zone to the NODE_INSTANCE_GROUP env variable.")
+	gkeNodePorts                   = flag.String("gke-node-ports", "", "(gke only) List of ports on nodes to open, allowing e.g. master to connect to pods on private nodes. The format should be 'protocol[:port[-port]],[...]' as in gcloud compute firewall-rules create --allow.")
 
 	// poolRe matches instance group URLs of the form `https://www.googleapis.com/compute/v1/projects/some-project/zones/a-zone/instanceGroupManagers/gke-some-cluster-some-pool-90fcb815-grp`. Match meaning:
 	// m[0]: path starting with zones/
@@ -78,6 +79,7 @@ type gkeDeployer struct {
 	location                    string
 	additionalZones             string
 	nodeLocations               string
+	nodePorts                   string
 	cluster                     string
 	shape                       map[string]gkeNodePool
 	network                     string
@@ -153,6 +155,7 @@ func newGKE(provider, project, zone, region, network, image, imageFamily, imageP
 
 	g.additionalZones = *gkeAdditionalZones
 	g.nodeLocations = *gkeNodeLocations
+	g.nodePorts = *gkeNodePorts
 
 	err := json.Unmarshal([]byte(*gkeShape), &g.shape)
 	if err != nil {
@@ -529,10 +532,14 @@ func (g *gkeDeployer) ensureFirewall() error {
 		return fmt.Errorf("instances list returned no instances (or instance has no tags)")
 	}
 
+	allowPorts := e2eAllow
+	if g.nodePorts != "" {
+		allowPorts += "," + g.nodePorts
+	}
 	if err := control.FinishRunning(exec.Command("gcloud", "compute", "firewall-rules", "create", firewall,
 		"--project="+g.project,
 		"--network="+g.network,
-		"--allow="+e2eAllow,
+		"--allow="+allowPorts,
 		"--target-tags="+tag)); err != nil {
 		return fmt.Errorf("error creating e2e firewall: %v", err)
 	}
