@@ -864,20 +864,19 @@ func (c *Cluster) uploadToAzureStorage(filePath string) (string, error) {
 	return blobURLString.String(), nil
 }
 
-func getApiModelTemplate(url string, downloadPath string, retry int) (string, error) {
-
-	f, err := os.Create(downloadPath)
+func downloadFromURL(url string, destination string, retry int) (string, error) {
+	f, err := os.Create(destination)
 	if err != nil {
 		return "", err
 	}
 	defer f.Close()
 
 	for i := 0; i < retry; i++ {
-		log.Printf("downloading %v from %v.", downloadPath, url)
+		log.Printf("downloading %v from %v", destination, url)
 		if err := httpRead(url, f); err == nil {
 			break
 		}
-		err = fmt.Errorf("url=%s failed get %v: %v.", url, downloadPath, err)
+		err = fmt.Errorf("url=%s failed get %v: %v", url, destination, err)
 		if i == retry-1 {
 			return "", err
 		}
@@ -885,8 +884,7 @@ func getApiModelTemplate(url string, downloadPath string, retry int) (string, er
 		sleep(time.Duration(i) * time.Second)
 	}
 	f.Chmod(0644)
-	return downloadPath, nil
-
+	return destination, nil
 }
 
 func getZipBuildScript(buildScriptURL string, retry int) (string, error) {
@@ -938,26 +936,26 @@ func (c *Cluster) buildWinZip() error {
 
 func (c *Cluster) Up() error {
 	var err error
-	if *aksCcm == true {
+	if *aksCcm {
 		err = c.buildAzureCloudComponents()
 		if err != nil {
 			return fmt.Errorf("error building Azure cloud components: %v", err)
 		}
 	}
-	if *aksHyperKube == true || c.aksDeploymentMethod == customHyperkube {
+	if *aksHyperKube || c.aksDeploymentMethod == customHyperkube {
 		err = c.buildHyperKube()
 		if err != nil {
 			return fmt.Errorf("error building hyperkube %v", err)
 		}
 	}
-	if *aksWinBinaries == true {
+	if *aksWinBinaries {
 		err = c.buildWinZip()
 		if err != nil {
 			return fmt.Errorf("error building windowsZipFile %v", err)
 		}
 	}
 	if c.apiModelPath != "" {
-		templateFile, err := getApiModelTemplate(c.apiModelPath, path.Join(c.outputDir, "kubernetes.json"), 2)
+		templateFile, err := downloadFromURL(c.apiModelPath, path.Join(c.outputDir, "kubernetes.json"), 2)
 		if err != nil {
 			return fmt.Errorf("error downloading ApiModel template: %v with error %v", c.apiModelPath, err)
 		}
@@ -1051,26 +1049,24 @@ func (c *Cluster) Down() error {
 }
 
 func (c *Cluster) DumpClusterLogs(localPath, gcsPath string) error {
-	if *aksCcm == false {
-		log.Println("Skippng DumpClusterLogs due to CCM not being enabled.")
-		return nil
-	}
 	if err := os.Setenv("ARTIFACTS", localPath); err != nil {
 		return err
 	}
 
-	logDumpDir := util.K8sSigs("cloud-provider-azure", "hack", "log-dump")
-	if _, err := os.Stat(filepath.Join(logDumpDir, "log-dump.sh")); os.IsNotExist(err) {
-		return fmt.Errorf("log-dump.sh not found in cloud-provider-azure repo")
+	// Extract log dump script and manifest from cloud-provider-azure repo
+	const logDumpURLPrefix string = "https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/hack/log-dump/"
+	logDumpScript, err := downloadFromURL(logDumpURLPrefix+"log-dump.sh", path.Join(c.outputDir, "log-dump.sh"), 2)
+	if err != nil {
+		return fmt.Errorf("error downloading log dump script: %v", err)
 	}
-	if _, err := os.Stat(filepath.Join(logDumpDir, "log-dump-daemonset.yaml")); os.IsNotExist(err) {
-		return fmt.Errorf("log-dump-daemonset.yaml not found in cloud-provider-azure repo")
+	if err := control.FinishRunning(exec.Command("chmod", "+x", logDumpScript)); err != nil {
+		return fmt.Errorf("error changing access permission for %s: %v", logDumpScript, err)
+	}
+	if _, err := downloadFromURL(logDumpURLPrefix+"log-dump-daemonset.yaml", path.Join(c.outputDir, "log-dump-daemonset.yaml"), 2); err != nil {
+		return fmt.Errorf("error downloading log dump manifest: %v", err)
 	}
 
-	cmd := exec.Command("bash", "-c", "./log-dump.sh")
-	cmd.Dir = logDumpDir
-	err := control.FinishRunning(cmd)
-	return err
+	return control.FinishRunning(exec.Command("bash", "-c", logDumpScript))
 }
 
 func (c *Cluster) GetClusterCreated(clusterName string) (time.Time, error) {
@@ -1079,7 +1075,7 @@ func (c *Cluster) GetClusterCreated(clusterName string) (time.Time, error) {
 
 func (c *Cluster) TestSetup() error {
 	// set env vars required by the ccm e2e tests
-	if *testCcm == true {
+	if *testCcm {
 		if err := os.Setenv("K8S_AZURE_TENANTID", c.credentials.TenantID); err != nil {
 			return err
 		}
