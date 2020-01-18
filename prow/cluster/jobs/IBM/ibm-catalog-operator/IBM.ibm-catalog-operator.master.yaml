@@ -5,6 +5,8 @@ presubmits:
     - ^master$
     decorate: true
     always_run: true
+    labels:
+      preset-service-account: "true"
     path_alias: github.com/IBM/ibm-catalog-operator
     rerun_command: /test build ibm-catalog-operator
     spec:
@@ -12,7 +14,7 @@ presubmits:
       - command:
         - make
         - build
-        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
+        image: quay.io/multicloudlab/multicloudlab-builder:v20191217-d33a10d
         name: ""
         securityContext:
           privileged: true
