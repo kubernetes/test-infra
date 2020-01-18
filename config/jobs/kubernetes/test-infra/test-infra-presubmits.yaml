@@ -10,7 +10,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: launcher.gcr.io/google/bazel:0.29.1
+      - image: launcher.gcr.io/google/bazel:2.0.0
         command:
         - hack/bazel.sh
         args:
