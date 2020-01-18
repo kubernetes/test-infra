@@ -36,24 +36,6 @@ presubmits:
         securityContext:
           privileged: true
     trigger: '(?m)^/test (?:.*? )?check(?: .*?)?$'
-  - name: test_ibm-catalog-operator
-    branches:
-    - ^master$
-    decorate: true
-    always_run: true
-    path_alias: github.com/IBM/ibm-catalog-operator
-    rerun_command: /test test ibm-catalog-operator
-    spec:
-      containers:
-      - command:
-        - make
-        - test
-        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
-        name: ""
-        securityContext:
-          privileged: true
-    trigger: '(?m)^/test (?:.*? )?test(?: .*?)?$'
-
 postsubmits:
   IBM/ibm-catalog-operator:
   - name: check_ibm-catalog-operator_postsubmit
@@ -68,40 +50,6 @@ postsubmits:
         - check
         image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
         name: ""
-        securityContext:
-          privileged: true
-  - name: test_ibm-catalog-operator_postsubmit
-    branches:
-    - ^master$
-    decorate: true
-    path_alias: github.com/IBM/ibm-catalog-operator
-    spec:
-      containers:
-      - command:
-        - make
-        - test
-        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
-        name: ""
-        securityContext:
-          privileged: true
-  - name: coverage_ibm-catalog-operator_postsubmit
-    branches:
-    - ^master$
-    decorate: true
-    path_alias: github.com/IBM/ibm-catalog-operator
-    spec:
-      containers:
-      - command:
-        - make
-        - coverage
-        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
-        name: ""
-        env:
-        - name: CODECOV_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: ibm-ibm-catalog-operator-codecov-token
-              key: codecov-token
         securityContext:
           privileged: true
   - name: build_ibm-catalog-operator_postsubmit
