@@ -130,7 +130,6 @@ func mergeConfigs(local *rest.Config, foreign map[string]rest.Config, currentCon
 	if _, ok := ret[DefaultClusterAlias]; !ok {
 		ret[DefaultClusterAlias] = ret[InClusterContext]
 	}
-	logrus.Infof("%+v", ret)
 	return ret, nil
 }
 
