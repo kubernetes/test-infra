@@ -22,6 +22,7 @@ tide:
     rh-ibm-synergy/multicloud-operators-foundation: squash
     IBM/go-repo-template: squash
     IBM/test-infra: squash
+    IBM/common-service-operator: squash
     IBM/ibm-catalog-operator: squash
     IBM/ibm-metering-operator: squash
     IBM/multicloud-operators-subscription-release: squash
@@ -43,6 +44,7 @@ tide:
     - rh-ibm-synergy/multicloud-operators-foundation
     - IBM/go-repo-template
     - IBM/test-infra
+    - IBM/common-service-operator
     - IBM/ibm-catalog-operator
     - IBM/ibm-metering-operator
     - IBM/multicloud-operators-subscription-release
