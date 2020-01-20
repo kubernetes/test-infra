@@ -33,6 +33,9 @@ periodics:
       - name: creds
         secret:
           secretName: deployer-service-account
+  rerun_auth_config:
+    github_team_ids:
+      - 2241179 # release-managers
   annotations:
     # TODO(justaugustus): Enable forking for prototype GCB-based build jobs.
     testgrid-dashboards: sig-release-prototype-master-blocking
@@ -73,6 +76,9 @@ periodics:
       - name: creds
         secret:
           secretName: deployer-service-account
+  rerun_auth_config:
+    github_team_ids:
+      - 2241179 # release-managers
   annotations:
     testgrid-dashboards: sig-release-prototype-master-blocking
     testgrid-tab-name: build-master-fast
@@ -112,6 +118,9 @@ postsubmits:
           - name: creds
             secret:
               secretName: deployer-service-account
+      rerun_auth_config:
+        github_team_ids:
+          - 2241179 # release-managers
     - name: post-release-push-image-releng-ci-bazel
       cluster: test-infra-trusted
       annotations:
@@ -143,6 +152,9 @@ postsubmits:
           - name: creds
             secret:
               secretName: deployer-service-account
+      rerun_auth_config:
+        github_team_ids:
+          - 2241179 # release-managers
     - name: post-release-push-image-kubepkg
       cluster: test-infra-trusted
       annotations:
@@ -174,3 +186,6 @@ postsubmits:
           - name: creds
             secret:
               secretName: deployer-service-account
+        rerun_auth_config:
+          github_team_ids:
+            - 2241179 # release-managers

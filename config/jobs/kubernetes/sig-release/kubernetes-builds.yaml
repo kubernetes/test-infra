@@ -56,6 +56,9 @@ periodics:
         requests:
           cpu: 4
           memory: "8Gi"
+  rerun_auth_config:
+    github_team_ids:
+      - 2241179 # release-managers
   annotations:
     fork-per-release: "true"
     fork-per-release-replacements: "--extra-publish-file=k8s-master -> --extra-publish-file=k8s-beta"
@@ -88,6 +91,9 @@ periodics:
         requests:
           cpu: 4
           memory: "8Gi"
+  rerun_auth_config:
+    github_team_ids:
+      - 2241179 # release-managers
   annotations:
     testgrid-dashboards: sig-release-master-blocking, google-unit
     testgrid-tab-name: build-master-fast
@@ -109,6 +115,9 @@ periodics:
         requests:
           cpu: 4
           memory: "8Gi"
+  rerun_auth_config:
+    github_team_ids:
+      - 2241179 # release-managers
   annotations:
     testgrid-alert-email: release-managers@kubernetes.io
     testgrid-dashboards: sig-release-master-informing
@@ -129,6 +138,9 @@ periodics:
         requests:
           cpu: 4
           memory: "8Gi"
+  rerun_auth_config:
+    github_team_ids:
+      - 2241179 # release-managers
   annotations:
     testgrid-alert-email: release-managers@kubernetes.io
     testgrid-dashboards: sig-release-master-informing

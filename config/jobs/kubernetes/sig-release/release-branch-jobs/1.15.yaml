@@ -295,6 +295,9 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-1.15
       name: ""
       resources: {}
+  rerun_auth_config:
+    github_team_ids:
+      - 2241179 # release-managers
 - annotations:
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
     testgrid-dashboards: sig-release-1.15-blocking, google-unit
@@ -466,6 +469,9 @@ postsubmits:
         resources:
           requests:
             memory: 6Gi
+    rerun_auth_config:
+      github_team_ids:
+        - 2241179 # release-managers
   - annotations:
       testgrid-dashboards: sig-release-job-config-errors
     branches:

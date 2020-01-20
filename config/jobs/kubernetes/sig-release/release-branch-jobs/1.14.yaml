@@ -194,6 +194,9 @@ periodics:
       resources:
         requests:
           memory: 6Gi
+  rerun_auth_config:
+    github_team_ids:
+      - 2241179 # release-managers
 - annotations:
     testgrid-dashboards: sig-release-1.14-blocking, google-unit
     testgrid-tab-name: bazel-test-1.14
@@ -455,6 +458,9 @@ postsubmits:
         resources:
           requests:
             memory: 6Gi
+    rerun_auth_config:
+      github_team_ids:
+        - 2241179 # release-managers
   - annotations:
       testgrid-dashboards: sig-release-job-config-errors
     branches:
