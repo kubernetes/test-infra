@@ -412,7 +412,7 @@ notconfig_updater:
       name: plugins
 size:
   s: 1`),
-			expectedErr: fmt.Errorf("unknown fields present in toplvl.yaml: notconfig_updater"),
+			expectedErr: unknownFieldError("toplvl.yaml", "notconfig_updater"),
 		},
 		{
 			name:     "invalid second-level property",
@@ -425,7 +425,7 @@ size:
 size:
   xs: 1
   s: 5`),
-			expectedErr: fmt.Errorf("unknown fields present in seclvl.yaml: size.xs"),
+			expectedErr: unknownFieldError("seclvl.yaml", "xs"),
 		},
 		{
 			name:     "invalid array element",
@@ -440,7 +440,7 @@ triggers:
   - kube/kube
 - repoz:
   - kube/kubez`),
-			expectedErr: fmt.Errorf("unknown fields present in home/array.yaml: triggers[1].repoz"),
+			expectedErr: unknownFieldError("home/array.yaml", "repoz"),
 		},
 		{
 			name:     "invalid map entry",
@@ -459,10 +459,10 @@ config_updater:
       validation: config
 size:
   s: 1`),
-			expectedErr: fmt.Errorf("unknown fields present in map.yaml: " +
-				"config_updater.maps.kube/config.yaml.validation"),
+			expectedErr: unknownFieldError("map.yaml", "validation"),
 		},
 		{
+			//only one invalid element is printed in the error
 			name:     "multiple invalid elements",
 			filename: "multiple.yaml",
 			cfg:      &plugins.Configuration{},
@@ -478,11 +478,10 @@ triggers:
 size:
   s: 1
   xs: 1`),
-			expectedErr: fmt.Errorf("unknown fields present in multiple.yaml: " +
-				"size.xs, triggers[0].repoz"),
+			expectedErr: unknownFieldError("multiple.yaml", "xs"),
 		},
 		{
-			name:     "embedded structs",
+			name:     "embedded structs - kube",
 			filename: "embedded.yaml",
 			cfg:      &config.Config{},
 			configBytes: []byte(`presubmits:
@@ -495,15 +494,26 @@ size:
     spec:
       containers:
       - image: alpine
-        command: ["/bin/printenv"]
-tide:
+        command: ["/bin/printenv"]`),
+			expectedErr: unknownFieldError("embedded.yaml", "never_run"),
+		},
+		{
+			name:     "embedded structs - tide",
+			filename: "embedded.yaml",
+			cfg:      &config.Config{},
+			configBytes: []byte(`tide:
   squash_label: sq
-  not-a-property: true
-size:
+  not-a-property: true`),
+			expectedErr: unknownFieldError("embedded.yaml", "not-a-property"),
+		},
+		{
+			name:     "embedded structs - size",
+			filename: "embedded.yaml",
+			cfg:      &config.Config{},
+			configBytes: []byte(`size:
   s: 1
   xs: 1`),
-			expectedErr: fmt.Errorf("unknown fields present in embedded.yaml: " +
-				"presubmits.kube/kube[0].never_run, size, tide.not-a-property"),
+			expectedErr: unknownFieldError("embedded.yaml", "size"),
 		},
 		{
 			name:     "pointer to a slice",
@@ -515,8 +525,7 @@ size:
       statuses:
       - foobar
       extra: oops`),
-			expectedErr: fmt.Errorf("unknown fields present in pointer.yaml: " +
-				"bugzilla.default.*.extra"),
+			expectedErr: unknownFieldError("pointer.yaml", "extra"),
 		},
 	}
 
@@ -532,6 +541,12 @@ size:
 			}
 		})
 	}
+}
+
+func unknownFieldError(file string, field string) error {
+	return fmt.Errorf("unknown fields or bad config in %s: "+
+		"error unmarshaling JSON: while decoding JSON: json: unknown field "+
+		"\"%s\"", file, field)
 }
 
 func TestValidateStrictBranches(t *testing.T) {
