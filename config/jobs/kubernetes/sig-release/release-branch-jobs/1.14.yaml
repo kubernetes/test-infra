@@ -827,7 +827,9 @@ presubmits:
         - --root=/go/src
         - --job=$(JOB_NAME)
         - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
-        - --repo=k8s.io/perf-tests=master
+        # Use newer perf-tests branch with additional fixes for kubemark
+        # This mismatch is intended only for release branches older than 1.16
+        - --repo=k8s.io/perf-tests=release-1.16
         - --repo=k8s.io/release
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-jenkins/pr-logs
