@@ -366,7 +366,7 @@ func TestOrgRepoUnion(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			got := tc.a.union(tc.b)
 			if !reflect.DeepEqual(got, tc.expected) {
-				t.Errorf("%s: did not get expected config:\n%v", tc.name, diff.ObjectGoPrintDiff(tc.expected, got))
+				t.Errorf("%s: did not get expected config:\n%v", tc.name, cmp.Diff(tc.expected, got))
 			}
 		})
 	}
@@ -529,7 +529,6 @@ size:
 			if !reflect.DeepEqual(got, tc.expectedErr) {
 				t.Errorf("%s: did not get expected validation error:\n%v", tc.name,
 					cmp.Diff(tc.expectedErr.Error(), got.Error()))
-				// cmp.Diff(tc.expectedErr.Error(), got.Error(), cmp.AllowUnexported()))
 			}
 		})
 	}
@@ -1204,7 +1203,7 @@ func TestValidateJobExtraRefs(t *testing.T) {
 			}
 			if err := validateJobExtraRefs(config); !reflect.DeepEqual(err, errorutil.NewAggregate(tc.expected)) {
 				t.Errorf("%s: did not get expected validation error:\n%v", tc.name,
-					diff.ObjectGoPrintDiff(tc.expected, err))
+					cmp.Diff(tc.expected, err))
 			}
 		})
 	}
