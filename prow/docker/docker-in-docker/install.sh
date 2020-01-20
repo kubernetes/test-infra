@@ -34,8 +34,9 @@ apt-get -qqy --no-install-recommends install \
 
 # install golang
 GO_VERSION='1.13'
+GOARCH=$(uname -m | sed 's/x86_64/amd64/g')
 GO_BASE_URL="https://storage.googleapis.com/golang"
-GO_ARCHIVE="go${GO_VERSION}.linux-amd64.tar.gz"
+GO_ARCHIVE="go${GO_VERSION}.linux-${GOARCH}.tar.gz"
 GO_URL="${GO_BASE_URL}/${GO_ARCHIVE}"
 
 export GOPATH=/home/go
@@ -46,11 +47,12 @@ export PATH=${GOPATH}/bin:/usr/local/go/bin:${PATH}
 rm -rf "${GO_ARCHIVE}"
 
 # install docker
+DOCKER_ARCH=$(dpkg --print-architecture)
 DOCKER_VERSION=18.06.1
 VERSION_SUFFIX="~ce~3-0~ubuntu"
 
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
-add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+add-apt-repository "deb [arch=${DOCKER_ARCH}] https://download.docker.com/linux/ubuntu \
  $(lsb_release -cs) stable"
 apt-get update
 apt-get -qqy install docker-ce="${DOCKER_VERSION}${VERSION_SUFFIX}"
@@ -67,7 +69,7 @@ sed -i -e 's/true/false/' /usr/lib/google-cloud-sdk/lib/googlecloudsdk/core/conf
 gcloud -q components update
 
 # install kubectl
-curl -LO https://storage.googleapis.com/kubernetes-release/release/"$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)"/bin/linux/amd64/kubectl
+curl -LO https://storage.googleapis.com/kubernetes-release/release/"$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)"/bin/linux/${GOARCH}/kubectl
 chmod +x ./kubectl
 mv ./kubectl /usr/local/bin/kubectl
 
