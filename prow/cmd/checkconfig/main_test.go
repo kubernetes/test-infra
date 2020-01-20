@@ -25,6 +25,7 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"sigs.k8s.io/yaml"
@@ -527,7 +528,8 @@ size:
 			got := validateUnknownFields(tc.cfg, tc.configBytes, tc.filename)
 			if !reflect.DeepEqual(got, tc.expectedErr) {
 				t.Errorf("%s: did not get expected validation error:\n%v", tc.name,
-					diff.ObjectGoPrintDiff(tc.expectedErr, got))
+					cmp.Diff(tc.expectedErr.Error(), got.Error()))
+				// cmp.Diff(tc.expectedErr.Error(), got.Error(), cmp.AllowUnexported()))
 			}
 		})
 	}
