@@ -84,11 +84,16 @@ def update_generated_config(path, latest_version):
     suffixes = ['beta', 'stable1', 'stable2', 'stable3']
     for i, s in enumerate(suffixes):
         vs = "%d.%d" % (v[0], v[1] + 1 - i)
-        config['k8sVersions'][s]['version'] = vs
+        markers = config['k8sVersions'][s]
+        markers['version'] = vs
+        for j, arg in enumerate(markers['args']):
+            markers['args'][j] = re.sub(
+                r'latest(-\d+\.\d+)?', 'latest-%s' % vs, arg)
+
         node = config['nodeK8sVersions'][s]
-        for j, arg in enumerate(node['args']):
-            node['args'][j] = re.sub(
-                r'release-\d+\.\d+', 'release-%s' % vs, arg)
+        for k, arg in enumerate(node['args']):
+            node['args'][k] = re.sub(
+                r'master|release-\d+\.\d+', 'release-%s' % vs, arg)
         node['prowImage'] = node['prowImage'].rpartition('-')[0] + '-' + vs
 
     with open(path, 'w') as f:

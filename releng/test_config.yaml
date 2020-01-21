@@ -810,19 +810,19 @@ k8sVersions:
     version: master
   beta:
     args:
-    - --extract=ci/k8s-beta
+    - --extract=ci/latest-1.17
     version: '1.17'
   stable1:
     args:
-    - --extract=ci/k8s-stable1
+    - --extract=ci/latest-1.16
     version: '1.16'
   stable2:
     args:
-    - --extract=ci/k8s-stable2
+    - --extract=ci/latest-1.15
     version: '1.15'
   stable3:
     args:
-    - --extract=ci/k8s-stable3
+    - --extract=ci/latest-1.14
     version: '1.14'
 
 testSuites:
