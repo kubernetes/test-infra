@@ -1,0 +1,86 @@
+presubmits:
+  IBM/ibm-cloudctl-operator:
+  - name: build_ibm-cloudctl-operator
+    branches:
+    - ^master$
+    decorate: true
+    always_run: true
+    labels:
+      preset-service-account: "true"
+    path_alias: github.com/IBM/ibm-cloudctl-operator
+    rerun_command: /test build ibm-cloudctl-operator
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build
+        image: quay.io/multicloudlab/multicloudlab-builder:v20191217-d33a10d
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?build(?: .*?)?$'
+  - name: check_ibm-cloudctl-operator
+    branches:
+    - ^master$
+    decorate: true
+    always_run: true
+    path_alias: github.com/IBM/ibm-cloudctl-operator
+    rerun_command: /test check ibm-cloudctl-operator
+    spec:
+      containers:
+      - command:
+        - make
+        - check
+        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?check(?: .*?)?$'
+postsubmits:
+  IBM/ibm-cloudctl-operator:
+  - name: check_ibm-cloudctl-operator_postsubmit
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/ibm-cloudctl-operator
+    spec:
+      containers:
+      - command:
+        - make
+        - check
+        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
+        name: ""
+        securityContext:
+          privileged: true
+  - name: build_ibm-cloudctl-operator_postsubmit
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/ibm-cloudctl-operator
+    spec:
+      containers:
+      - command:
+        - make
+        - build
+        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
+        name: ""
+        securityContext:
+          privileged: true
+  - name: images_ibm-cloudctl-operator_postsubmit
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/ibm-cloudctl-operator
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - images
+        image: quay.io/multicloudlab/multicloudlab-builder:v20191217-d33a10d
+        name: ""
+        securityContext:
+          privileged: true
