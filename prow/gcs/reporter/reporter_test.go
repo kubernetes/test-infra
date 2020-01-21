@@ -255,40 +255,28 @@ func (ta *testAuthor) NewWriter(ctx context.Context, bucket, path string, overwr
 	return &testAuthorWriteCloser{author: ta}
 }
 
-func TestReportJobState(t *testing.T) {
+func TestReportJobFinished(t *testing.T) {
 	completionTime := &metav1.Time{Time: time.Date(2010, 10, 10, 19, 00, 0, 0, time.UTC)}
 	tests := []struct {
 		jobState       prowv1.ProwJobState
-		expectedFile   string
 		completionTime *metav1.Time
 		passed         bool
 	}{
 		{
-			jobState:     prowv1.TriggeredState,
-			expectedFile: "started.json",
-		},
-		{
-			jobState: prowv1.PendingState,
-		},
-		{
 			jobState:       prowv1.SuccessState,
-			expectedFile:   "finished.json",
 			completionTime: completionTime,
 			passed:         true,
 		},
 		{
 			jobState:       prowv1.AbortedState,
-			expectedFile:   "finished.json",
 			completionTime: completionTime,
 		},
 		{
 			jobState:       prowv1.ErrorState,
-			expectedFile:   "finished.json",
 			completionTime: completionTime,
 		},
 		{
 			jobState:       prowv1.FailureState,
-			expectedFile:   "finished.json",
 			completionTime: completionTime,
 		},
 	}
@@ -333,41 +321,96 @@ func TestReportJobState(t *testing.T) {
 				},
 			}
 
-			err := reporter.reportJobState(ctx, pj)
+			err := reporter.reportFinishedJob(ctx, pj)
 			if err != nil {
 				t.Fatalf("Unexpected error: %v", err)
 			}
 
-			if !strings.HasSuffix(ta.path, tc.expectedFile) {
-				t.Errorf("Expected file to be written to %q, but got %q", tc.expectedFile, ta.path)
+			if !strings.HasSuffix(ta.path, "finished.json") {
+				t.Errorf("Expected file to be written to finished.json, but got %q", ta.path)
 			}
 			if ta.overwrite {
 				t.Errorf("Expected file to be written without overwriting, but overwrite was enabled")
 			}
 
-			if tc.expectedFile == "started.json" {
-				var result metadata.Started
-				if err := json.Unmarshal(ta.content, &result); err != nil {
-					t.Errorf("Couldn't decode result as metadata.Started: %v", err)
-				}
-				if result.Timestamp != pj.Status.StartTime.Unix() {
-					t.Errorf("Expected started.json timestamp to be %d, but got %d", pj.Status.StartTime.Unix(), result.Timestamp)
-				}
-			} else if tc.expectedFile == "finished.json" {
-				var result metadata.Finished
-				if err := json.Unmarshal(ta.content, &result); err != nil {
-					t.Errorf("Couldn't decode result as metadata.Finished: %v", err)
-				}
-				if result.Timestamp == nil {
-					t.Errorf("Expected finished.json timestamp to be %d, but it was nil", pj.Status.CompletionTime.Unix())
-				} else if *result.Timestamp != pj.Status.CompletionTime.Unix() {
-					t.Errorf("Expected finished.json timestamp to be %d, but got %d", pj.Status.CompletionTime.Unix(), *result.Timestamp)
-				}
-				if result.Passed == nil {
-					t.Errorf("Expected finished.json passed to be %v, but it was nil", tc.passed)
-				} else if *result.Passed != tc.passed {
-					t.Errorf("Expected finished.json passed to be %v, but got %v", tc.passed, *result.Passed)
-				}
+			var result metadata.Finished
+			if err := json.Unmarshal(ta.content, &result); err != nil {
+				t.Errorf("Couldn't decode result as metadata.Finished: %v", err)
+			}
+			if result.Timestamp == nil {
+				t.Errorf("Expected finished.json timestamp to be %d, but it was nil", pj.Status.CompletionTime.Unix())
+			} else if *result.Timestamp != pj.Status.CompletionTime.Unix() {
+				t.Errorf("Expected finished.json timestamp to be %d, but got %d", pj.Status.CompletionTime.Unix(), *result.Timestamp)
+			}
+			if result.Passed == nil {
+				t.Errorf("Expected finished.json passed to be %v, but it was nil", tc.passed)
+			} else if *result.Passed != tc.passed {
+				t.Errorf("Expected finished.json passed to be %v, but got %v", tc.passed, *result.Passed)
+			}
+		})
+	}
+}
+
+func TestReportJobStarted(t *testing.T) {
+	states := []prowv1.ProwJobState{prowv1.TriggeredState, prowv1.PendingState, prowv1.SuccessState, prowv1.AbortedState, prowv1.ErrorState, prowv1.FailureState}
+	for _, state := range states {
+		t.Run(fmt.Sprintf("report %s job started", state), func(t *testing.T) {
+			ctx := context.Background()
+			cfg := fca{c: config.Config{
+				ProwConfig: config.ProwConfig{
+					Plank: config.Plank{
+						DefaultDecorationConfigs: map[string]*prowv1.DecorationConfig{"*": {
+							GCSConfiguration: &prowv1.GCSConfiguration{
+								Bucket:       "kubernetes-jenkins",
+								PathPrefix:   "some-prefix",
+								PathStrategy: prowv1.PathStrategyLegacy,
+								DefaultOrg:   "kubernetes",
+								DefaultRepo:  "kubernetes",
+							},
+						}},
+					},
+				},
+			}}.Config
+			ta := &testAuthor{}
+			reporter := newWithAuthor(cfg, ta, false)
+
+			pj := &prowv1.ProwJob{
+				Spec: prowv1.ProwJobSpec{
+					Type: prowv1.PresubmitJob,
+					Refs: &prowv1.Refs{
+						Org:   "kubernetes",
+						Repo:  "test-infra",
+						Pulls: []prowv1.Pull{{Number: 12345}},
+					},
+					Agent: prowv1.KubernetesAgent,
+					Job:   "my-little-job",
+				},
+				Status: prowv1.ProwJobStatus{
+					State:     state,
+					StartTime: metav1.Time{Time: time.Date(2010, 10, 10, 18, 30, 0, 0, time.UTC)},
+					PodName:   "some-pod",
+					BuildID:   "123",
+				},
+			}
+
+			err := reporter.reportStartedJob(ctx, pj)
+			if err != nil {
+				t.Fatalf("Unexpected error: %v", err)
+			}
+
+			if !strings.HasSuffix(ta.path, "started.json") {
+				t.Errorf("Expected file to be written to started.json, but got %q", ta.path)
+			}
+			if ta.overwrite {
+				t.Errorf("Expected file to be written without overwriting, but overwrite was enabled")
+			}
+
+			var result metadata.Started
+			if err := json.Unmarshal(ta.content, &result); err != nil {
+				t.Errorf("Couldn't decode result as metadata.Started: %v", err)
+			}
+			if result.Timestamp != pj.Status.StartTime.Unix() {
+				t.Errorf("Expected started.json timestamp to be %d, but got %d", pj.Status.StartTime.Unix(), result.Timestamp)
 			}
 		})
 	}
