@@ -2,6 +2,7 @@ dashboard_groups:
 - name: conformance
   dashboard_names:
     - conformance-all
+    - conformance-apisnoop
     - conformance-gce
     - conformance-kind
     - conformance-cloud-provider-openstack
@@ -161,6 +162,7 @@ dashboards:
       alert_options:
         alert_mail_to_addresses: cncf_ci_dashboard_ww_grp@oracle.com
 
+- name: conformance-apisnoop
 - name: conformance-gce
 - name: conformance-cloud-provider-openstack
   dashboard_tab:
