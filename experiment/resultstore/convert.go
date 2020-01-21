@@ -37,7 +37,7 @@ func convertSuiteMeta(suiteMeta gcs.SuitesMeta) resultstore.Suite {
 		Files: []resultstore.File{
 			{
 				ContentType: "text/xml",
-				ID:          resultstore.UUID(),
+				ID:          path.Base(suiteMeta.Path),
 				URL:         suiteMeta.Path, // ensure the junit.xml file appears in artifacts list
 			},
 		},
@@ -46,6 +46,18 @@ func convertSuiteMeta(suiteMeta gcs.SuitesMeta) resultstore.Suite {
 		child := resultstore.Suite{
 			Name:     suite.Name,
 			Duration: dur(suite.Time),
+		}
+
+		for _, test := range suite.Results {
+			if test.Properties != nil {
+				for _, p := range test.Properties.PropertyList {
+					resultProperty := resultstore.Property{
+						Key:   fmt.Sprintf("%s:%s", test.Name, p.Name),
+						Value: p.Value,
+					}
+					child.Properties = append(child.Properties, resultProperty)
+				}
+			}
 		}
 		switch {
 		case suite.Failures > 0 && suite.Tests >= suite.Failures:
@@ -66,8 +78,8 @@ func convertSuiteMeta(suiteMeta gcs.SuitesMeta) resultstore.Suite {
 				class += " " + strings.Join(tags, " ")
 			}
 			c := resultstore.Case{
-				Name:     name,
-				Class:    class,
+				Name:     strings.TrimSpace(name),
+				Class:    strings.TrimSpace(class),
 				Duration: dur(result.Time),
 				Result:   resultstore.Completed,
 			}
@@ -242,6 +254,13 @@ func convert(project, details string, url gcs.Path, result downloadResult) (resu
 		Duration:    inv.Duration,
 		Status:      inv.Status,
 		Description: inv.Description,
+		Properties:  []resultstore.Property{},
+	}
+
+	for _, suites := range test.Suite.Suites {
+		for _, s := range suites.Suites {
+			target.Properties = append(target.Properties, s.Properties...)
+		}
 	}
 
 	return inv, target, test
