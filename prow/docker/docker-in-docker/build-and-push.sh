@@ -17,11 +17,13 @@
 DOCKER_REGISTRY="quay.io"
 DOCKER_USERNAME="multicloudlab"
 
+ARCH=$(uname -m | sed 's/x86_64/amd64/g')
+
 # support other container tools, e.g. podman
 CONTAINER_CLI=${CONTAINER_CLI:-docker}
 HUB="${DOCKER_REGISTRY}/${DOCKER_USERNAME}"
 IMAGE="multicloudlab-builder"
 VERSION=$(date +v%Y%m%d)-$(git describe --tags --always --dirty)
 
-${CONTAINER_CLI} build -t "${HUB}/${IMAGE}:${VERSION}" .
-${CONTAINER_CLI} push "${HUB}/${IMAGE}:${VERSION}"
+${CONTAINER_CLI} build -t "${HUB}/${IMAGE}-${ARCH}:${VERSION}" -f Dockerfile.${ARCH} .
+${CONTAINER_CLI} push "${HUB}/${IMAGE}-${ARCH}:${VERSION}"
