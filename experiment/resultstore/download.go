@@ -45,12 +45,12 @@ func download(ctx context.Context, client *storage.Client, build gcs.Build) (*do
 
 	log := logrus.WithFields(logrus.Fields{"build": build})
 	log.Debug("Read started...")
-	started, err := build.Started()
+	started, err := build.Started(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("started: %v", err)
 	}
 	log.Debug("Read finished...")
-	finished, err := build.Finished()
+	finished, err := build.Finished(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("finished: %v", err)
 	}
@@ -61,7 +61,7 @@ func download(ctx context.Context, client *storage.Client, build gcs.Build) (*do
 	log.Debug("List suites...")
 	go func() { // err1
 		defer close(artifacts)
-		err := build.Artifacts(artifacts)
+		err := build.Artifacts(ctx, artifacts)
 		if err != nil {
 			err = fmt.Errorf("artifacts: %v", err)
 		}
@@ -87,7 +87,7 @@ func download(ctx context.Context, client *storage.Client, build gcs.Build) (*do
 
 	go func() { // err2
 		defer close(suitesChan)
-		err := build.Suites(artifacts, suitesChan)
+		err := build.Suites(ctx, artifacts, suitesChan)
 		if err != nil {
 			err = fmt.Errorf("suites: %v", err)
 		}
