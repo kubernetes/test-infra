@@ -114,6 +114,9 @@ func (gr *gcsReporter) reportStartedJob(ctx context.Context, pj *prowv1.ProwJob)
 
 // reportFinishedJob uploads a finished.json for the job, iff one did not already exist.
 func (gr *gcsReporter) reportFinishedJob(ctx context.Context, pj *prowv1.ProwJob) error {
+	if !pj.Complete() {
+		return errors.New("cannot report finished.json for incomplete job")
+	}
 	completion := pj.Status.CompletionTime.Unix()
 	passed := pj.Status.State == prowv1.SuccessState
 	f := metadata.Finished{

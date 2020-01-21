@@ -102,8 +102,9 @@ func TestGetJobDestination(t *testing.T) {
 		prowjobGcsConfig  *prowv1.GCSConfiguration
 		prowjobType       prowv1.ProwJobType
 		prowjobRefs       *prowv1.Refs
+		buildID           string
 		expectBucket      string
-		expectDir         string // tip: this will always end in "my-little-job/123"
+		expectDir         string // tip: this will always end in "my-little-job/[buildID]"
 		expectErr         bool
 	}{
 		{
@@ -111,6 +112,7 @@ func TestGetJobDestination(t *testing.T) {
 			defaultGcsConfigs: nil,
 			prowjobGcsConfig:  standardGcsConfig,
 			prowjobType:       prowv1.PeriodicJob,
+			buildID:           "123",
 			expectBucket:      "kubernetes-jenkins",
 			expectDir:         "some-prefix/logs/my-little-job/123",
 		},
@@ -127,6 +129,7 @@ func TestGetJobDestination(t *testing.T) {
 			},
 			prowjobGcsConfig: standardGcsConfig,
 			prowjobType:      prowv1.PeriodicJob,
+			buildID:          "123",
 			expectBucket:     "kubernetes-jenkins",
 			expectDir:        "some-prefix/logs/my-little-job/123",
 		},
@@ -135,6 +138,7 @@ func TestGetJobDestination(t *testing.T) {
 			defaultGcsConfigs: map[string]*prowv1.GCSConfiguration{"*": standardGcsConfig},
 			prowjobGcsConfig:  nil,
 			prowjobType:       prowv1.PeriodicJob,
+			buildID:           "123",
 			expectBucket:      "kubernetes-jenkins",
 			expectDir:         "some-prefix/logs/my-little-job/123",
 		},
@@ -143,6 +147,7 @@ func TestGetJobDestination(t *testing.T) {
 			defaultGcsConfigs: nil,
 			prowjobGcsConfig:  nil,
 			prowjobType:       prowv1.PeriodicJob,
+			buildID:           "123",
 			expectErr:         true,
 		},
 		{
@@ -160,6 +165,7 @@ func TestGetJobDestination(t *testing.T) {
 			prowjobGcsConfig: nil,
 			prowjobType:      prowv1.PeriodicJob,
 			prowjobRefs:      standardRefs,
+			buildID:          "123",
 			expectBucket:     "kubernetes-jenkins",
 			expectDir:        "some-prefix/logs/my-little-job/123",
 		},
@@ -168,8 +174,16 @@ func TestGetJobDestination(t *testing.T) {
 			prowjobGcsConfig: standardGcsConfig,
 			prowjobRefs:      standardRefs,
 			prowjobType:      prowv1.PresubmitJob,
+			buildID:          "123",
 			expectBucket:     "kubernetes-jenkins",
 			expectDir:        "some-prefix/pr-logs/pull/test-infra/12345/my-little-job/123",
+		},
+		{
+			name:              "reporting a prowjob with no BuildID is an error",
+			defaultGcsConfigs: nil,
+			prowjobGcsConfig:  standardGcsConfig,
+			prowjobType:       prowv1.PeriodicJob,
+			expectErr:         true,
 		},
 	}
 
@@ -187,7 +201,7 @@ func TestGetJobDestination(t *testing.T) {
 					State:     prowv1.TriggeredState,
 					StartTime: metav1.Time{Time: time.Date(2010, 10, 10, 18, 30, 0, 0, time.UTC)},
 					PodName:   "some-pod",
-					BuildID:   "123",
+					BuildID:   tc.buildID,
 				},
 			}
 			decorationConfigs := map[string]*prowv1.DecorationConfig{}
@@ -261,7 +275,16 @@ func TestReportJobFinished(t *testing.T) {
 		jobState       prowv1.ProwJobState
 		completionTime *metav1.Time
 		passed         bool
+		expectErr      bool
 	}{
+		{
+			jobState:  prowv1.TriggeredState,
+			expectErr: true,
+		},
+		{
+			jobState:  prowv1.PendingState,
+			expectErr: true,
+		},
 		{
 			jobState:       prowv1.SuccessState,
 			completionTime: completionTime,
@@ -322,7 +345,12 @@ func TestReportJobFinished(t *testing.T) {
 			}
 
 			err := reporter.reportFinishedJob(ctx, pj)
-			if err != nil {
+			if tc.expectErr {
+				if err == nil {
+					t.Fatalf("Expected an error, but didn't get one.")
+				}
+				return
+			} else if err != nil {
 				t.Fatalf("Unexpected error: %v", err)
 			}
 
@@ -474,5 +502,45 @@ func TestReportProwJob(t *testing.T) {
 	}
 	if !cmp.Equal(*pj, result) {
 		t.Fatalf("Input prowjob mismatches output prowjob:\n%s", cmp.Diff(*pj, result))
+	}
+}
+
+func TestShouldReport(t *testing.T) {
+	tests := []struct {
+		name         string
+		buildID      string
+		shouldReport bool
+	}{
+		{
+			name:         "tests with a build ID should be reported",
+			buildID:      "123",
+			shouldReport: true,
+		},
+		{
+			name:         "tests without a build ID should not be reported",
+			buildID:      "",
+			shouldReport: false,
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			pj := &prowv1.ProwJob{
+				Spec: prowv1.ProwJobSpec{
+					Type:  prowv1.PostsubmitJob,
+					Agent: prowv1.KubernetesAgent,
+					Job:   "my-little-job",
+				},
+				Status: prowv1.ProwJobStatus{
+					State:     prowv1.TriggeredState,
+					StartTime: metav1.Time{Time: time.Date(2010, 10, 10, 18, 30, 0, 0, time.UTC)},
+					BuildID:   tc.buildID,
+				},
+			}
+			gr := newWithAuthor(fca{}.Config, nil, false)
+			result := gr.ShouldReport(pj)
+			if result != tc.shouldReport {
+				t.Errorf("Got ShouldReport() returned %v, but expected %v", result, tc.shouldReport)
+			}
+		})
 	}
 }
