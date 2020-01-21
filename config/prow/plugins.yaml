@@ -844,8 +844,30 @@ plugins:
   - wip
 
   cncf/apisnoop:
+  - wip
+  - trigger
+  - assign
+  - cla
   - cat # /meow replies with cat pictures
   - dog # /bark replies with dog pictures
+  - goose
+  - heart
+  - help
+  - hold
+  - label
+  - lgtm
+  - retitle
+  - shrug
+  - size
+
+  cncf/k8s-conformance:
+  - cat # /meow replies with cat pictures
+  - dog # /bark replies with dog pictures
+  - goose
+  - wip
+  - assign
+  - hold
+  - lgtm
 
 external_plugins:
   kubernetes:
