@@ -123,7 +123,7 @@ has test coverage in a variety of environments. For more info please see
 [kubernetes-sig-testing@]: https://groups.google.com/forum/#!forum/kubernetes-sig-testing
 
 [good-first-issue]: https://github.com/issues?q=repo%3Akubernetes%2Ftest-infra+is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22+
-[good-first-issue-docs]: https://git.k8s.io/community/contributors/guide/help-wanted.md#good-first-issue
+[good-first-issue-docs]: https://github.com/kubernetes/community/blob/master/contributors/guide/help-wanted.md#good-first-issue
 [help-wanted]: https://github.com/issues?q=repo%3Akubernetes%2Ftest-infra+is%3Aissue+is%3Aopen+label%3A"help+wanted"
 [help-wanted-docs]: https://git.k8s.io/community/contributors/guide/help-wanted.md#help-wanted
 
