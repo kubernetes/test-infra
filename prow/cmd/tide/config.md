@@ -102,7 +102,7 @@ tide:
   merge_method:
     kubeflow/community: squash
 
-  target_url: https://prow.k8s.io/tide.html
+  target_url: https://prow.k8s.io/tide
 
   queries:
   - repos:
