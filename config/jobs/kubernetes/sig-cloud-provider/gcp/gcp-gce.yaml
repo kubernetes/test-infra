@@ -55,7 +55,7 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
         - --timeout=80m # thinking about making this longer? don't! 80m is a hard cap, and should get down to no more than 60m.
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200118-eaed6c6-master
         resources:
           requests:
             memory: "6Gi"
@@ -86,7 +86,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200118-eaed6c6-master
         command:
         - ../test-infra/scenarios/kubernetes_e2e.py
         args:
@@ -137,7 +137,7 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-alpha-features
         - --test_args=--ginkgo.focus=\[Feature:(StorageVersionHash|Audit|PodPreset|ExpandCSIVolumes|ExpandInUseVolumes|RunAsGroup|TTLAfterFinished|NodeLease|VolumeSnapshotDataSource|CSIInlineVolume)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes|csi-hostpath-v0 --minStartupPods=8
         - --timeout=180m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200118-eaed6c6-master
         resources:
           requests:
             memory: "6Gi"
@@ -169,7 +169,7 @@ periodics:
       - --publish=gs://kubernetes-release-dev/ci/latest-green.txt
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200118-eaed6c6-master
   annotations:
     testgrid-dashboards: sig-release-master-blocking, google-gce, google-gci
     testgrid-tab-name: gce-cos-master-default
@@ -201,7 +201,7 @@ periodics:
       - --runtime-config=api/all=true
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|csi-hostpath-v0 --minStartupPods=8
       - --timeout=70m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200118-eaed6c6-master
   annotations:
     testgrid-dashboards: google-gce
     testgrid-tab-name: gci-gce-alpha-enabled-default
@@ -229,7 +229,7 @@ periodics:
       - --runtime-config=api/all=true
       - --test_args=--ginkgo.focus=\[Feature:(StorageVersionHash|Audit|PodPreset|ExpandCSIVolumes|ExpandInUseVolumes|RunAsGroup|TTLAfterFinished|NodeLease|VolumeSnapshotDataSource|CSIInlineVolume)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes|csi-hostpath-v0 --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200118-eaed6c6-master
   annotations:
     testgrid-dashboards: sig-release-master-blocking, google-gce
     testgrid-tab-name: gce-cos-master-alpha-features
@@ -255,7 +255,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Flaky\] --ginkgo.skip=\[Feature:.+\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200118-eaed6c6-master
   annotations:
     testgrid-dashboards: google-gce
     testgrid-tab-name: gci-gce-flaky
@@ -281,7 +281,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200118-eaed6c6-master
   annotations:
     testgrid-dashboards: google-gce
     testgrid-tab-name: gci-gce-single-flake-attempt
@@ -306,7 +306,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200118-eaed6c6-master
   annotations:
     testgrid-dashboards: sig-release-master-informing, google-gce
     testgrid-tab-name: gce-cos-master-reboot
@@ -333,7 +333,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=500m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200118-eaed6c6-master
   annotations:
     testgrid-dashboards: sig-release-master-informing, google-gce, google-gci
     testgrid-tab-name: gce-cos-master-serial
@@ -362,7 +362,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=150m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200118-eaed6c6-master
   annotations:
     testgrid-dashboards: sig-release-master-informing, google-gce, google-gci
     testgrid-tab-name: gce-cos-master-slow
@@ -395,7 +395,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=150m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200118-eaed6c6-master
   annotations:
     testgrid-dashboards: google-gce
     testgrid-tab-name: gce-multizone
@@ -425,7 +425,7 @@ periodics:
       - --test_args=--ginkgo.skip=\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --clean-start=true --minStartupPods=8
       - --timeout=1400m
       - --up=false
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200118-eaed6c6-master
   annotations:
     testgrid-dashboards: google-soak
     testgrid-tab-name: gce-gci
@@ -455,7 +455,7 @@ periodics:
       - --test_args=--ginkgo.skip=\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --clean-start=true --minStartupPods=8
       - --timeout=1400m
       - --up=false
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200118-eaed6c6-master
   annotations:
     testgrid-dashboards: google-gce
     testgrid-tab-name: soak-gci-gce-1.15
@@ -485,7 +485,7 @@ periodics:
       - --test_args=--ginkgo.skip=\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --clean-start=true --minStartupPods=8
       - --timeout=1400m
       - --up=false
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200118-eaed6c6-master
   annotations:
     testgrid-dashboards: google-gce
     testgrid-tab-name: soak-gci-gce-1.14
@@ -514,7 +514,7 @@ periodics:
       - --test_args=--ginkgo.skip=\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --clean-start=true --minStartupPods=8
       - --timeout=1400m
       - --up=false
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200118-eaed6c6-master
   annotations:
     testgrid-dashboards: google-gce
     testgrid-tab-name: soak-gci-gce-1.13
@@ -543,7 +543,7 @@ periodics:
       - --test_args=--ginkgo.skip=\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --clean-start=true --minStartupPods=8
       - --timeout=1400m
       - --up=false
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200118-eaed6c6-master
   annotations:
     testgrid-dashboards: google-gce
     testgrid-tab-name: soak-gci-gce-1.12
