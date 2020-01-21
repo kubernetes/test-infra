@@ -19,6 +19,7 @@ package reporter
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -78,13 +79,12 @@ func (gr *gcsReporter) Report(pj *prowv1.ProwJob) ([]*prowv1.ProwJob, error) {
 }
 
 func (gr *gcsReporter) reportJobState(ctx context.Context, pj *prowv1.ProwJob) error {
-	if pj.Status.State == prowv1.TriggeredState {
-		return gr.reportStartedJob(ctx, pj)
-	}
+	startedErr := gr.reportStartedJob(ctx, pj)
+	var finishedErr error
 	if pj.Complete() {
-		return gr.reportFinishedJob(ctx, pj)
+		finishedErr = gr.reportFinishedJob(ctx, pj)
 	}
-	return nil
+	return errorutil.NewAggregate(startedErr, finishedErr)
 }
 
 // reportStartedJob uploads a started.json for the job. This will almost certainly
@@ -114,6 +114,9 @@ func (gr *gcsReporter) reportStartedJob(ctx context.Context, pj *prowv1.ProwJob)
 
 // reportFinishedJob uploads a finished.json for the job, iff one did not already exist.
 func (gr *gcsReporter) reportFinishedJob(ctx context.Context, pj *prowv1.ProwJob) error {
+	if !pj.Complete() {
+		return errors.New("cannot report finished.json for incomplete job")
+	}
 	completion := pj.Status.CompletionTime.Unix()
 	passed := pj.Status.State == prowv1.SuccessState
 	f := metadata.Finished{
@@ -190,6 +193,10 @@ func (gr *gcsReporter) isErrUnexpected(err error) bool {
 }
 
 func (gr *gcsReporter) getJobDestination(pj *prowv1.ProwJob) (bucket, dir string, err error) {
+	// We can't divine a destination for jobs that don't have a build ID, so don't try.
+	if pj.Status.BuildID == "" {
+		return "", "", errors.New("cannot get job destination for job with no BuildID")
+	}
 	// The decoration config is always provided for decorated jobs, but many
 	// jobs are not decorated, so we guess that we should use the default location
 	// for those jobs. This assumption is usually (but not always) correct.
@@ -221,7 +228,10 @@ func (gr *gcsReporter) GetName() string {
 }
 
 func (gr *gcsReporter) ShouldReport(pj *prowv1.ProwJob) bool {
-	return true
+	// We can only report jobs once they have a build ID. By denying responsibility
+	// for it until it has one, crier will not mark us as having handled it until
+	// it is possible for us to handle it, ensuring that we get a chance to see it.
+	return pj.Status.BuildID != ""
 }
 
 func New(cfg config.Getter, storage *storage.Client, dryRun bool) *gcsReporter {
