@@ -6,7 +6,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200118-eaed6c6-master
       args:
       - "--repo=sigs.k8s.io/gcp-compute-persistent-disk-csi-driver=release-0.5.0"
       - "--root=/go/src"
@@ -35,7 +35,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200118-eaed6c6-master
       args:
       - "--repo=sigs.k8s.io/gcp-compute-persistent-disk-csi-driver=release-0.4.0"
       - "--root=/go/src"
@@ -66,7 +66,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200118-eaed6c6-master
       args:
       - "--repo=sigs.k8s.io/gcp-compute-persistent-disk-csi-driver"
       - "--root=/go/src"
@@ -95,7 +95,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200118-eaed6c6-master
       args:
       - "--repo=sigs.k8s.io/gcp-compute-persistent-disk-csi-driver"
       - "--root=/go/src"
@@ -131,7 +131,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200118-eaed6c6-master
       args:
       - "--repo=sigs.k8s.io/gcp-compute-persistent-disk-csi-driver"
       - "--root=/go/src"
