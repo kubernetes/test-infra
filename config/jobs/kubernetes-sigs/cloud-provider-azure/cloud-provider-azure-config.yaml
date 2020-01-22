@@ -437,13 +437,9 @@ periodics:
       - --aksengine-location=westus2
       - --aksengine-public-key=$KUBE_SSH_PUBLIC_KEY_PATH
       - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-vmss-serial.json
-      - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.45.0/aks-engine-v0.45.0-linux-amd64.tar.gz
-      # Skip four kinds of test cases:
-      # 1. regular resource usage tracking, haven't found the cause of the failures.
-      # 2. validates MaxPods limit number of pods that are allowed to run, related to issue kubernetes/kubernetes#80177
-      # 3. Checks that the node becomes unreachable, the external IP is unavailable since the corresponding configuration in aks-engine is set to false.
-      # 4. Pod should be scheduled to node that don't match the PodAntiAffinity terms - deploying CSI drivers messes up the CPU and memory calculation in the test case. This is fixed in Azure/aks-engine#2541 by limiting CPU and memory usage of CSI containers
-      - --test_args=--num-nodes=2 --ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\]|regular\sresource\susage\stracking\sresource\stracking\sfor|validates\sMaxPods\slimit\snumber\sof\spods\sthat\sare\sallowed\sto\srun|Checks\sthat\sthe\snode\sbecomes\sunreachable|Pod\sshould\sbe\sscheduled\sto\snode\sthat\sdon.t\smatch\sthe\sPodAntiAffinity\sterms --minStartupPods=8
+      - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.46.0/aks-engine-v0.46.0-linux-amd64.tar.gz
+      # Check https://github.com/kubernetes-sigs/cloud-provider-azure/issues/224 for the status of each skipped test
+      - --test_args=--num-nodes=2 --ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\]|regular\sresource\susage\stracking\sresource\stracking\sfor|validates\sMaxPods\slimit\snumber\sof\spods\sthat\sare\sallowed\sto\srun --minStartupPods=8
       - --timeout=600m
       securityContext:
         privileged: true
@@ -688,13 +684,9 @@ periodics:
       - --aksengine-location=eastus2
       - --aksengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE
       - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-vmss-multi-zones.json
-      - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.45.0/aks-engine-v0.45.0-linux-amd64.tar.gz
-      # Four kinds of cases should be skipped:
-      # 1. ssh related cases
-      # 2. PSP related cases, reason: https://github.com/Azure/aks-engine/blob/master/parts/k8s/addons/kubernetesmasteraddons-pod-security-policy.yaml#L41
-      # 3. cases in which PV will be created, for these shall be failed since AzureDisk will be disabled when ccm is enabled
-      # 4. cases requiring node's public IP
-      - --test_args=--num-nodes=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|Delete\sGrace\sPeriod|Should\srecreate\sevicted\sstatefulset|runs\sReplicaSets\sto\sverify\spreemption\srunning\spath|client\-go\sshould\snegotiate|should\scontain\scustom\scolumns\sfor\seach\sresource|Network\sshould\sset\sTCP\sCLOSE_WAIT\stimeout|Mount\spropagation\sshould\spropagate\smounts\sto\sthe\shost|PodSecurityPolicy|PVC\sProtection\sVerify|should\sprovide\sbasic\sidentity|should\sadopt\smatching\sorphans\sand\srelease|should\snot\sdeadlock\swhen\sa\spod's\spredecessor\sfails|should\sperform\srolling\supdates\sand\sroll\sbacks\sof\stemplate\smodifications\swith\sPVCs|should\sperform\srolling\supdates\sand\sroll\sbacks\sof\stemplate\smodifications|Services\sshould\sbe\sable\sto\screate\sa\sfunctioning\sNodePort\sservice$|volumeMode\sshould\snot\smount\s/\smap\sunused\svolumes\sin\sa\spod
+      - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.46.0/aks-engine-v0.46.0-linux-amd64.tar.gz
+      # Check https://github.com/kubernetes-sigs/cloud-provider-azure/issues/224 for the status of each skipped test
+      - --test_args=--num-nodes=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|Delete\sGrace\sPeriod|runs\sReplicaSets\sto\sverify\spreemption\srunning\spath|client\-go\sshould\snegotiate|should\scontain\scustom\scolumns\sfor\seach\sresource|Network\sshould\sset\sTCP\sCLOSE_WAIT\stimeout
       - --timeout=420m
       securityContext:
         privileged: true
