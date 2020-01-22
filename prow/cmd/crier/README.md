@@ -7,7 +7,7 @@ Crier reports your prowjobs on their status changes.
 For any reporter you want to use, you need to mount your prow configs and specify `--config-path` and `job-config-path`
 flag as most of other prow controllers do.
 
-### [Gerrit reporter](/prow/gerrit/reporter)
+### [Gerrit reporter](/prow/crier/reporters/gerrit)
 
 You can enable gerrit reporter in crier by specifying `--gerrit-workers=n` flag.
 
@@ -34,7 +34,7 @@ Pubsub reporter will report whenever prowjob has a state transition.
 
 You can check the reported result by [list the pubsub topic](https://cloud.google.com/sdk/gcloud/reference/pubsub/topics/list).
 
-### [GitHub reporter](/prow/github/reporter)
+### [GitHub reporter](/prow/crier/reporters/github)
 
 You can enable github reporter in crier by specifying `--github-workers=1` flag. (We only support single worker for github, due to [#13306](https://github.com/kubernetes/test-infra/issues/13306))
 
@@ -44,7 +44,7 @@ If you have a [ghproxy](/ghproxy) deployed, also remember to point `--github-end
 
 The actual report logic is in the [github report library](/prow/github/report) for your reference.
 
-### [Slack reporter](/prow/slack/reporter)
+### [Slack reporter](/prow/crier/reporters/slack)
 
 > **NOTE:** if enabling the slack reporter for the *first* time, Crier will message to the Slack channel for **all** ProwJobs matching the configured filtering criteria.
 

@@ -35,15 +35,15 @@ import (
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/crier"
+	gcsreporter "k8s.io/test-infra/prow/crier/reporters/gcs"
+	gerritreporter "k8s.io/test-infra/prow/crier/reporters/gerrit"
+	githubreporter "k8s.io/test-infra/prow/crier/reporters/github"
+	slackreporter "k8s.io/test-infra/prow/crier/reporters/slack"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
-	gcsreporter "k8s.io/test-infra/prow/gcs/reporter"
 	gerritclient "k8s.io/test-infra/prow/gerrit/client"
-	gerritreporter "k8s.io/test-infra/prow/gerrit/reporter"
-	githubreporter "k8s.io/test-infra/prow/github/reporter"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
 	pubsubreporter "k8s.io/test-infra/prow/pubsub/reporter"
-	slackreporter "k8s.io/test-infra/prow/slack/reporter"
 )
 
 const (
