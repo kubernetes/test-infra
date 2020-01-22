@@ -835,8 +835,8 @@ func TestSyncResources(t *testing.T) {
 			expectedLCs: []common.DynamicResourceLifeCycle{
 				{
 					Type:     "dt",
-					MinCount: 1,
-					MaxCount: 2,
+					MinCount: 0,
+					MaxCount: 0,
 				},
 			},
 		},
@@ -872,8 +872,8 @@ func TestSyncResources(t *testing.T) {
 			expectedLCs: []common.DynamicResourceLifeCycle{
 				{
 					Type:     "dt",
-					MinCount: 1,
-					MaxCount: 2,
+					MinCount: 0,
+					MaxCount: 0,
 				},
 			},
 		},
@@ -1135,6 +1135,83 @@ func TestSyncResources(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "decrease max count with resources being deleted",
+			currentRes: []common.Resource{
+				common.NewResource("dt_1", "dt", common.Free, "", startTime),
+				common.NewResource("dt_2", "dt", common.Free, "", startTime),
+				common.NewResource("dt_3", "dt", common.Free, "", startTime),
+				common.NewResource("dt_4", "dt", common.ToBeDeleted, "", startTime),
+				common.NewResource("dt_5", "dt", common.Tombstone, "", startTime),
+			},
+			currentLCs: []common.DynamicResourceLifeCycle{
+				{
+					Type:     "dt",
+					MinCount: 1,
+					MaxCount: 6,
+				},
+			},
+			config: &common.BoskosConfig{
+				Resources: []common.ResourceEntry{
+					{
+						Type:     "dt",
+						MinCount: 1,
+						MaxCount: 1,
+					},
+				},
+			},
+			expectedRes: []common.Resource{
+				common.NewResource("dt_1", "dt", common.Free, "", startTime),
+				common.NewResource("dt_2", "dt", common.ToBeDeleted, "", fakeNow),
+				common.NewResource("dt_3", "dt", common.ToBeDeleted, "", fakeNow),
+				common.NewResource("dt_4", "dt", common.ToBeDeleted, "", startTime),
+			},
+			expectedLCs: []common.DynamicResourceLifeCycle{
+				{
+					Type:     "dt",
+					MinCount: 1,
+					MaxCount: 1,
+				},
+			},
+		},
+		{
+			name: "increase min count with resources being deleted",
+			currentRes: []common.Resource{
+				common.NewResource("dt_1", "dt", common.Free, "", startTime),
+				common.NewResource("dt_2", "dt", common.ToBeDeleted, "", startTime),
+				common.NewResource("dt_3", "dt", common.ToBeDeleted, "", startTime),
+				common.NewResource("dt_4", "dt", common.Tombstone, "", startTime),
+			},
+			currentLCs: []common.DynamicResourceLifeCycle{
+				{
+					Type:     "dt",
+					MinCount: 1,
+					MaxCount: 6,
+				},
+			},
+			config: &common.BoskosConfig{
+				Resources: []common.ResourceEntry{
+					{
+						Type:     "dt",
+						MinCount: 4,
+						MaxCount: 6,
+					},
+				},
+			},
+			expectedRes: []common.Resource{
+				common.NewResource("dt_1", "dt", common.Free, "", startTime),
+				common.NewResource("dt_2", "dt", common.ToBeDeleted, "", startTime),
+				common.NewResource("dt_3", "dt", common.ToBeDeleted, "", startTime),
+				common.NewResource("new-dynamic-res-1", "dt", common.Free, "", fakeNow),
+			},
+			expectedLCs: []common.DynamicResourceLifeCycle{
+				{
+					Type:     "dt",
+					MinCount: 4,
+					MaxCount: 6,
+				},
+			},
+		},
 	}
 
 	for _, tc := range testcases {
@@ -1153,6 +1230,304 @@ func TestSyncResources(t *testing.T) {
 		lfs, err := c.Storage.GetDynamicResourceLifeCycles()
 		if err != nil {
 			t.Errorf("failed to get dynamic resources life cycles: %v", err)
+			continue
+		}
+		sort.SliceStable(lfs, func(i, j int) bool {
+			{
+				return lfs[i].GetName() < lfs[j].GetName()
+			}
+		})
+		sort.SliceStable(tc.expectedLCs, func(i, j int) bool {
+			{
+				return tc.expectedLCs[i].GetName() < tc.expectedLCs[j].GetName()
+			}
+		})
+		if !reflect.DeepEqual(lfs, tc.expectedLCs) {
+			t.Errorf("Test %v: \n got \t\t%v, \n expected %v", tc.name, lfs, tc.expectedLCs)
+		}
+	}
+}
+
+func TestUpdateAllDynamicResources(t *testing.T) {
+	var testcases = []struct {
+		name                    string
+		currentRes, expectedRes []common.Resource
+		currentLCs, expectedLCs []common.DynamicResourceLifeCycle
+	}{
+		{
+			name: "empty",
+		},
+		{
+			name: "do nothing",
+			currentRes: []common.Resource{
+				common.NewResource("dt_1", "dt", common.Free, "", startTime),
+				common.NewResource("t_1", "t", common.Free, "", startTime),
+			},
+			currentLCs: []common.DynamicResourceLifeCycle{
+				{
+					Type:     "dt",
+					MinCount: 1,
+					MaxCount: 4,
+				},
+			},
+			expectedRes: []common.Resource{
+				common.NewResource("dt_1", "dt", common.Free, "", startTime),
+				common.NewResource("t_1", "t", common.Free, "", startTime),
+			},
+			expectedLCs: []common.DynamicResourceLifeCycle{
+				{
+					Type:     "dt",
+					MinCount: 1,
+					MaxCount: 4,
+				},
+			},
+		},
+		{
+			name: "delete expired free resources",
+			currentRes: []common.Resource{
+				setExpiration(
+					common.NewResource("dt_1", "dt", common.Free, "", startTime),
+					fakeNow.Add(time.Hour)),
+				setExpiration(
+					common.NewResource("dt_2", "dt", common.Free, "", startTime),
+					startTime),
+				setExpiration(
+					common.NewResource("dt_3", "dt", common.Busy, "owner", startTime),
+					startTime),
+				setExpiration(
+					common.NewResource("dt_4", "dt", common.ToBeDeleted, "", startTime),
+					startTime),
+			},
+			currentLCs: []common.DynamicResourceLifeCycle{
+				{
+					Type:     "dt",
+					MinCount: 1,
+					MaxCount: 4,
+				},
+			},
+			expectedRes: []common.Resource{
+				// Unchanged because expiration is in the future
+				setExpiration(
+					common.NewResource("dt_1", "dt", common.Free, "", startTime),
+					fakeNow.Add(time.Hour)),
+				// Newly deleted
+				setExpiration(
+					common.NewResource("dt_2", "dt", common.ToBeDeleted, "", fakeNow),
+					startTime),
+				// Unchanged because owned
+				setExpiration(
+					common.NewResource("dt_3", "dt", common.Busy, "owner", startTime),
+					startTime),
+				// Unchanged because already being deleted
+				setExpiration(
+					common.NewResource("dt_4", "dt", common.ToBeDeleted, "", startTime),
+					startTime),
+			},
+			expectedLCs: []common.DynamicResourceLifeCycle{
+				{
+					Type:     "dt",
+					MinCount: 1,
+					MaxCount: 4,
+				},
+			},
+		},
+		{
+			name: "no dynamic resources, nothing to make",
+			currentLCs: []common.DynamicResourceLifeCycle{
+				{
+					Type:     "dt",
+					MinCount: 0,
+					MaxCount: 4,
+				},
+			},
+			expectedLCs: []common.DynamicResourceLifeCycle{
+				{
+					Type:     "dt",
+					MinCount: 0,
+					MaxCount: 4,
+				},
+			},
+		},
+		{
+			name: "no dynamic resources, make some",
+			currentLCs: []common.DynamicResourceLifeCycle{
+				{
+					Type:     "dt",
+					MinCount: 2,
+					MaxCount: 4,
+				},
+			},
+			expectedRes: []common.Resource{
+				common.NewResource("new-dynamic-res-1", "dt", common.Free, "", fakeNow),
+				common.NewResource("new-dynamic-res-2", "dt", common.Free, "", fakeNow),
+			},
+			expectedLCs: []common.DynamicResourceLifeCycle{
+				{
+					Type:     "dt",
+					MinCount: 2,
+					MaxCount: 4,
+				},
+			},
+		},
+		{
+			name: "scale down",
+			currentRes: []common.Resource{
+				common.NewResource("dt_1", "dt", common.Free, "", startTime),
+				common.NewResource("dt_2", "dt", common.Free, "", startTime),
+				common.NewResource("dt_4", "dt", common.Busy, "owner", startTime),
+			},
+			currentLCs: []common.DynamicResourceLifeCycle{
+				{
+					Type:     "dt",
+					MinCount: 1,
+					MaxCount: 2,
+				},
+			},
+			expectedRes: []common.Resource{
+				common.NewResource("dt_1", "dt", common.Free, "", startTime),
+				common.NewResource("dt_2", "dt", common.ToBeDeleted, "", fakeNow),
+				common.NewResource("dt_4", "dt", common.Busy, "owner", startTime),
+			},
+			expectedLCs: []common.DynamicResourceLifeCycle{
+				{
+					Type:     "dt",
+					MinCount: 1,
+					MaxCount: 2,
+				},
+			},
+		},
+		{
+			name: "replace some resources",
+			currentRes: []common.Resource{
+				common.NewResource("dt_1", "dt", common.Free, "", startTime),
+				common.NewResource("dt_2", "dt", common.Busy, "owner", startTime),
+				common.NewResource("dt_3", "dt", common.ToBeDeleted, "", startTime),
+				common.NewResource("dt_4", "dt", common.Tombstone, "", startTime),
+			},
+			currentLCs: []common.DynamicResourceLifeCycle{
+				{
+					Type:     "dt",
+					MinCount: 4,
+					MaxCount: 8,
+				},
+			},
+			expectedRes: []common.Resource{
+				common.NewResource("dt_1", "dt", common.Free, "", startTime),
+				common.NewResource("dt_2", "dt", common.Busy, "owner", startTime),
+				common.NewResource("dt_3", "dt", common.ToBeDeleted, "", startTime),
+				common.NewResource("new-dynamic-res-1", "dt", common.Free, "", fakeNow),
+			},
+			expectedLCs: []common.DynamicResourceLifeCycle{
+				{
+					Type:     "dt",
+					MinCount: 4,
+					MaxCount: 8,
+				},
+			},
+		},
+		{
+			name: "scale down, busy > maxcount",
+			currentRes: []common.Resource{
+				common.NewResource("dt_1", "dt", common.Free, "", startTime),
+				common.NewResource("dt_2", "dt", common.Busy, "owner", startTime),
+				common.NewResource("dt_3", "dt", common.Busy, "owner", startTime),
+				common.NewResource("dt_4", "dt", common.Busy, "owner", startTime),
+			},
+			currentLCs: []common.DynamicResourceLifeCycle{
+				{
+					Type:     "dt",
+					MinCount: 1,
+					MaxCount: 2,
+				},
+			},
+			expectedRes: []common.Resource{
+				common.NewResource("dt_1", "dt", common.ToBeDeleted, "", fakeNow),
+				common.NewResource("dt_2", "dt", common.Busy, "owner", startTime),
+				common.NewResource("dt_3", "dt", common.Busy, "owner", startTime),
+				common.NewResource("dt_4", "dt", common.Busy, "owner", startTime),
+			},
+			expectedLCs: []common.DynamicResourceLifeCycle{
+				{
+					Type:     "dt",
+					MinCount: 1,
+					MaxCount: 2,
+				},
+			},
+		},
+		{
+			name: "delete all free when DRLC is being removed",
+			currentRes: []common.Resource{
+				common.NewResource("dt_1", "dt", common.Free, "", startTime),
+				common.NewResource("dt_2", "dt", common.Free, "", startTime),
+				common.NewResource("dt_3", "dt", common.Tombstone, "", startTime),
+				common.NewResource("dt_4", "dt", common.Busy, "owner", startTime),
+			},
+			currentLCs: []common.DynamicResourceLifeCycle{
+				{
+					Type:     "dt",
+					MinCount: 0,
+					MaxCount: 0,
+				},
+			},
+			expectedRes: []common.Resource{
+				common.NewResource("dt_1", "dt", common.ToBeDeleted, "", fakeNow),
+				common.NewResource("dt_2", "dt", common.ToBeDeleted, "", fakeNow),
+				common.NewResource("dt_4", "dt", common.Busy, "owner", startTime),
+			},
+			expectedLCs: []common.DynamicResourceLifeCycle{
+				{
+					Type:     "dt",
+					MinCount: 0,
+					MaxCount: 0,
+				},
+			},
+		},
+		{
+			name: "delete DRLC when no resources remain",
+			currentLCs: []common.DynamicResourceLifeCycle{
+				{
+					Type:     "dt",
+					MinCount: 0,
+					MaxCount: 0,
+				},
+			},
+		},
+		{
+			name: "delete DRLC when all resources tombstoned",
+			currentRes: []common.Resource{
+				common.NewResource("dt_1", "dt", common.Tombstone, "", startTime),
+				common.NewResource("dt_3", "dt", common.Tombstone, "", startTime),
+			},
+			currentLCs: []common.DynamicResourceLifeCycle{
+				{
+					Type:     "dt",
+					MinCount: 0,
+					MaxCount: 0,
+				},
+			},
+		},
+	}
+
+	for _, tc := range testcases {
+		c := MakeTestRanch(tc.currentRes, tc.currentLCs)
+		err := c.Storage.UpdateAllDynamicResources()
+		if err != nil {
+			t.Errorf("Test %v: error updating dynamic resources: %v", tc.name, err)
+			continue
+		}
+		resources, err := c.Storage.GetResources()
+		if err != nil {
+			t.Errorf("Test %v: failed to get resources: %v", tc.name, err)
+			continue
+		}
+		sort.Stable(common.ResourceByName(resources))
+		sort.Stable(common.ResourceByName(tc.expectedRes))
+		if !reflect.DeepEqual(resources, tc.expectedRes) {
+			t.Errorf("Test %v: \n got \t\t%v, \n expected \t%v", tc.name, resources, tc.expectedRes)
+		}
+		lfs, err := c.Storage.GetDynamicResourceLifeCycles()
+		if err != nil {
+			t.Errorf("Test %v: failed to get dynamic resources life cycles: %v", tc.name, err)
 			continue
 		}
 		sort.SliceStable(lfs, func(i, j int) bool {
