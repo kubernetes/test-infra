@@ -19,3 +19,6 @@ presubmits:
           apt-get install -y curl build-essential
           curl -sSL https://get.haskellstack.org/ | sh
           stack test
+    annotations:
+      testgrid-dashboards: client-haskell
+      testgrid-tab-name: client-haskell-presubmits

@@ -1,0 +1,12 @@
+dashboard_groups:
+- name: clients
+  dashboard_names:
+    - client-haskell
+
+dashboards:
+- name: client-haskell
+  dashboard_tab:
+    - name: client-haskell-presubmits
+      test_group_name: client-haskell-presubmits
+      base_options: include-filter-by-regex=clients
+      description: presubmits for haskell client
