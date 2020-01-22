@@ -129,7 +129,7 @@ presubmits:
     optional: true
     decorate: true
     decoration_config:
-      timeout: 3h
+      timeout: 4h
     max_concurrency: 5
     labels:
       preset-dind-enabled: "true"
