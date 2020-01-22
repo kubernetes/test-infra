@@ -27,6 +27,7 @@ filegroup(
     name = "all-srcs",
     srcs = [
         ":package-srcs",
+        "//prow/crier/reporters/gcs/internal/testutil:all-srcs",
         "//prow/crier/reporters/gcs/internal/util:all-srcs",
     ],
     tags = ["automanaged"],

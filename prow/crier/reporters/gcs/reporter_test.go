@@ -20,7 +20,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"strings"
 	"testing"
 	"time"
@@ -30,49 +29,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/crier/reporters/gcs/internal/testutil"
 )
-
-type fca struct {
-	c config.Config
-}
-
-func (ca fca) Config() *config.Config {
-	return &ca.c
-}
-
-type testAuthor struct {
-	alreadyUsed bool
-	bucket      string
-	path        string
-	content     []byte
-	overwrite   bool
-	closed      bool
-}
-
-type testAuthorWriteCloser struct {
-	author *testAuthor
-}
-
-func (wc *testAuthorWriteCloser) Write(p []byte) (int, error) {
-	wc.author.content = append(wc.author.content, p...)
-	return len(p), nil
-}
-
-func (wc *testAuthorWriteCloser) Close() error {
-	wc.author.closed = true
-	return nil
-}
-
-func (ta *testAuthor) NewWriter(ctx context.Context, bucket, path string, overwrite bool) io.WriteCloser {
-	if ta.alreadyUsed {
-		panic(fmt.Sprintf("NewWriter called on testAuthor twice: first for %q/%q, now for %q/%q", ta.bucket, ta.path, bucket, path))
-	}
-	ta.alreadyUsed = true
-	ta.bucket = bucket
-	ta.path = path
-	ta.overwrite = overwrite
-	return &testAuthorWriteCloser{author: ta}
-}
 
 func TestReportJobFinished(t *testing.T) {
 	completionTime := &metav1.Time{Time: time.Date(2010, 10, 10, 19, 00, 0, 0, time.UTC)}
@@ -111,7 +69,7 @@ func TestReportJobFinished(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(fmt.Sprintf("report %s job", tc.jobState), func(t *testing.T) {
 			ctx := context.Background()
-			cfg := fca{c: config.Config{
+			cfg := testutil.Fca{C: config.Config{
 				ProwConfig: config.ProwConfig{
 					Plank: config.Plank{
 						DefaultDecorationConfigs: map[string]*prowv1.DecorationConfig{"*": {
@@ -126,7 +84,7 @@ func TestReportJobFinished(t *testing.T) {
 					},
 				},
 			}}.Config
-			ta := &testAuthor{}
+			ta := &testutil.TestAuthor{}
 			reporter := newWithAuthor(cfg, ta, false)
 
 			pj := &prowv1.ProwJob{
@@ -159,15 +117,15 @@ func TestReportJobFinished(t *testing.T) {
 				t.Fatalf("Unexpected error: %v", err)
 			}
 
-			if !strings.HasSuffix(ta.path, "finished.json") {
-				t.Errorf("Expected file to be written to finished.json, but got %q", ta.path)
+			if !strings.HasSuffix(ta.Path, "finished.json") {
+				t.Errorf("Expected file to be written to finished.json, but got %q", ta.Path)
 			}
-			if ta.overwrite {
+			if ta.Overwrite {
 				t.Errorf("Expected file to be written without overwriting, but overwrite was enabled")
 			}
 
 			var result metadata.Finished
-			if err := json.Unmarshal(ta.content, &result); err != nil {
+			if err := json.Unmarshal(ta.Content, &result); err != nil {
 				t.Errorf("Couldn't decode result as metadata.Finished: %v", err)
 			}
 			if result.Timestamp == nil {
@@ -189,7 +147,7 @@ func TestReportJobStarted(t *testing.T) {
 	for _, state := range states {
 		t.Run(fmt.Sprintf("report %s job started", state), func(t *testing.T) {
 			ctx := context.Background()
-			cfg := fca{c: config.Config{
+			cfg := testutil.Fca{C: config.Config{
 				ProwConfig: config.ProwConfig{
 					Plank: config.Plank{
 						DefaultDecorationConfigs: map[string]*prowv1.DecorationConfig{"*": {
@@ -204,7 +162,7 @@ func TestReportJobStarted(t *testing.T) {
 					},
 				},
 			}}.Config
-			ta := &testAuthor{}
+			ta := &testutil.TestAuthor{}
 			reporter := newWithAuthor(cfg, ta, false)
 
 			pj := &prowv1.ProwJob{
@@ -231,15 +189,15 @@ func TestReportJobStarted(t *testing.T) {
 				t.Fatalf("Unexpected error: %v", err)
 			}
 
-			if !strings.HasSuffix(ta.path, "started.json") {
-				t.Errorf("Expected file to be written to started.json, but got %q", ta.path)
+			if !strings.HasSuffix(ta.Path, "started.json") {
+				t.Errorf("Expected file to be written to started.json, but got %q", ta.Path)
 			}
-			if ta.overwrite {
+			if ta.Overwrite {
 				t.Errorf("Expected file to be written without overwriting, but overwrite was enabled")
 			}
 
 			var result metadata.Started
-			if err := json.Unmarshal(ta.content, &result); err != nil {
+			if err := json.Unmarshal(ta.Content, &result); err != nil {
 				t.Errorf("Couldn't decode result as metadata.Started: %v", err)
 			}
 			if result.Timestamp != pj.Status.StartTime.Unix() {
@@ -251,7 +209,7 @@ func TestReportJobStarted(t *testing.T) {
 
 func TestReportProwJob(t *testing.T) {
 	ctx := context.Background()
-	cfg := fca{c: config.Config{
+	cfg := testutil.Fca{C: config.Config{
 		ProwConfig: config.ProwConfig{
 			Plank: config.Plank{
 				DefaultDecorationConfigs: map[string]*prowv1.DecorationConfig{"*": {
@@ -266,7 +224,7 @@ func TestReportProwJob(t *testing.T) {
 			},
 		},
 	}}.Config
-	ta := &testAuthor{}
+	ta := &testutil.TestAuthor{}
 	reporter := newWithAuthor(cfg, ta, false)
 
 	pj := &prowv1.ProwJob{
@@ -293,16 +251,16 @@ func TestReportProwJob(t *testing.T) {
 		t.Fatalf("Unexpected error calling reportProwjob: %v", err)
 	}
 
-	if !strings.HasSuffix(ta.path, "/prowjob.json") {
-		t.Errorf("Expected prowjob to be written to prowjob.json, got %q", ta.path)
+	if !strings.HasSuffix(ta.Path, "/prowjob.json") {
+		t.Errorf("Expected prowjob to be written to prowjob.json, got %q", ta.Path)
 	}
 
-	if !ta.overwrite {
+	if !ta.Overwrite {
 		t.Errorf("Expected prowjob.json to be written with overwrite enabled, but it was not.")
 	}
 
 	var result prowv1.ProwJob
-	if err := json.Unmarshal(ta.content, &result); err != nil {
+	if err := json.Unmarshal(ta.Content, &result); err != nil {
 		t.Fatalf("Couldn't unmarshal prowjob.json: %v", err)
 	}
 	if !cmp.Equal(*pj, result) {
@@ -341,7 +299,7 @@ func TestShouldReport(t *testing.T) {
 					BuildID:   tc.buildID,
 				},
 			}
-			gr := newWithAuthor(fca{}.Config, nil, false)
+			gr := newWithAuthor(testutil.Fca{}.Config, nil, false)
 			result := gr.ShouldReport(pj)
 			if result != tc.shouldReport {
 				t.Errorf("Got ShouldReport() returned %v, but expected %v", result, tc.shouldReport)
