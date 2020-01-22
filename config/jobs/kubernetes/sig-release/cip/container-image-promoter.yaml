@@ -87,21 +87,11 @@ presubmits:
     branches:
     - ^master$
     spec:
+      serviceAccountName: k8s-gcr-audit-test-prod
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200114-6d2c483-master
         command:
         - "./test-e2e/cip-auditor/entrypoint-from-container.sh"
-        env:
-        - name: CIP_E2E_KEY_FILE
-          value: "/etc/k8s-gcr-audit-test-prod-service-account/service-account.json"
-        volumeMounts:
-        - name: k8s-gcr-audit-test-prod-service-account-creds
-          mountPath: /etc/k8s-gcr-audit-test-prod-service-account
-          readOnly: true
-      volumes:
-      - name: k8s-gcr-audit-test-prod-service-account-creds
-        secret:
-          secretName: k8s-gcr-audit-test-prod-service-account
     annotations:
       testgrid-dashboards: sig-release-misc
   # Build all binaries and also run unit tests.
