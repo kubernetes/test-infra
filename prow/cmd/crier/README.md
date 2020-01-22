@@ -15,7 +15,7 @@ Similar to the [gerrit adapter](/prow/cmd/gerrit), you'll need to specify `--ger
 your gerrit projects, and also `--cookiefile` for the gerrit auth token (leave it unset for anonymous).
 
 Gerrit reporter will send an aggregated summary message, when all [gerrit adapter](/prow/cmd/gerrit)
-scheduled prowjob finishes on a revision, aka, on `SuccessState`, `FailureState`, `AbortedState` or `ErrorState`.
+scheduled prowjobs with the same report label finish on a revision.
 It will also attach a report url so people can find logs of the job.
 
 The reporter will also cast a +1/-1 vote on the `prow.k8s.io/gerrit-report-label` label of your prowjob,
