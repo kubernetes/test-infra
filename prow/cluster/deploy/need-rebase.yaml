@@ -1,0 +1,73 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: needs-rebase
+  name: needs-rebase
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: needs-rebase
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: needs-rebase
+    spec:
+      containers:
+      - args:
+        - --dry-run=false
+        - --github-endpoint=http://ghproxy
+        - --github-endpoint=https://api.github.com
+        image: gcr.io/k8s-prow/needs-rebase:v20191011-80f304f54
+        imagePullPolicy: IfNotPresent
+        name: needs-rebase
+        ports:
+        - containerPort: 8888
+          name: http
+          protocol: TCP
+        volumeMounts:
+        - mountPath: /etc/webhook
+          name: hmac
+          readOnly: true
+        - mountPath: /etc/github
+          name: oauth
+          readOnly: true
+        - mountPath: /etc/plugins
+          name: plugins
+          readOnly: true
+      volumes:
+      - name: hmac
+        secret:
+          defaultMode: 420
+          secretName: hmac-token
+      - name: oauth
+        secret:
+          defaultMode: 420
+          secretName: oauth-token
+      - configMap:
+          defaultMode: 420
+          name: plugins
+        name: plugins
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: needs-rebase
+  namespace: default
+spec:
+  ports:
+  - nodePort: 31255
+    port: 80
+    protocol: TCP
+    targetPort: 8888
+  selector:
+    app: needs-rebase
+  type: NodePort
+---
