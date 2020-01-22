@@ -35,6 +35,7 @@ filegroup(
         "//prow/crier/reporters/gcs:all-srcs",
         "//prow/crier/reporters/gerrit:all-srcs",
         "//prow/crier/reporters/github:all-srcs",
+        "//prow/crier/reporters/pubsub:all-srcs",
         "//prow/crier/reporters/slack:all-srcs",
     ],
     tags = ["automanaged"],

@@ -22,7 +22,7 @@ go_test(
 go_library(
     name = "go_default_library",
     srcs = ["reporter.go"],
-    importpath = "k8s.io/test-infra/prow/pubsub/reporter",
+    importpath = "k8s.io/test-infra/prow/crier/reporters/pubsub",
     deps = [
         "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/config:go_default_library",

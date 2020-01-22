@@ -38,12 +38,12 @@ import (
 	gcsreporter "k8s.io/test-infra/prow/crier/reporters/gcs"
 	gerritreporter "k8s.io/test-infra/prow/crier/reporters/gerrit"
 	githubreporter "k8s.io/test-infra/prow/crier/reporters/github"
+	pubsubreporter "k8s.io/test-infra/prow/crier/reporters/pubsub"
 	slackreporter "k8s.io/test-infra/prow/crier/reporters/slack"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	gerritclient "k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
-	pubsubreporter "k8s.io/test-infra/prow/pubsub/reporter"
 )
 
 const (
