@@ -135,6 +135,7 @@ type KubernetesConfig struct {
 	CustomKubeProxyImage             string            `json:"customKubeProxyImage,omitempty"`
 	CustomKubeSchedulerImage         string            `json:"customKubeSchedulerImage,omitempty"`
 	CustomKubeBinaryURL              string            `json:"customKubeBinaryURL,omitempty"`
+	UseManagedIdentity               *bool             `json:"useManagedIdentity,omitempty"`
 }
 
 type OrchestratorProfile struct {
@@ -327,4 +328,11 @@ func stringPointer(s string) *string {
 
 func boolPointer(b bool) *bool {
 	return &b
+}
+
+func toBool(b *bool) bool {
+	if b == nil {
+		return false
+	}
+	return *b
 }

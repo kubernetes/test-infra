@@ -483,8 +483,11 @@ func (c *Cluster) populateAPIModelTemplate() error {
 	v.Properties.LinuxProfile.SSHKeys.PublicKeys = []PublicKey{{
 		KeyData: c.sshPublicKey,
 	}}
-	v.Properties.ServicePrincipalProfile.ClientID = c.credentials.ClientID
-	v.Properties.ServicePrincipalProfile.Secret = c.credentials.ClientSecret
+
+	if !toBool(v.Properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity) {
+		v.Properties.ServicePrincipalProfile.ClientID = c.credentials.ClientID
+		v.Properties.ServicePrincipalProfile.Secret = c.credentials.ClientSecret
+	}
 
 	if c.aksCustomWinBinariesURL != "" {
 		v.Properties.OrchestratorProfile.KubernetesConfig.CustomWindowsPackageURL = c.aksCustomWinBinariesURL
