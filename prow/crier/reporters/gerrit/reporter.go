@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 // Package reporter implements a reporter interface for gerrit
-package reporter
+package gerrit
 
 import (
 	"fmt"

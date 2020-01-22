@@ -30,7 +30,13 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [":package-srcs"],
+    srcs = [
+        ":package-srcs",
+        "//prow/crier/reporters/gcs:all-srcs",
+        "//prow/crier/reporters/gerrit:all-srcs",
+        "//prow/crier/reporters/github:all-srcs",
+        "//prow/crier/reporters/slack:all-srcs",
+    ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
 )

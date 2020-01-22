@@ -3,7 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 go_library(
     name = "go_default_library",
     srcs = ["reporter.go"],
-    importpath = "k8s.io/test-infra/prow/github/reporter",
+    importpath = "k8s.io/test-infra/prow/crier/reporters/github",
     visibility = ["//visibility:public"],
     deps = [
         "//prow/apis/prowjobs/v1:go_default_library",

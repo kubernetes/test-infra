@@ -16,7 +16,7 @@ limitations under the License.
 
 // Package reporter implements a reporter interface for github
 // TODO(krzyzacy): move logic from report.go here
-package reporter
+package github
 
 import (
 	"k8s.io/test-infra/prow/apis/prowjobs/v1"
