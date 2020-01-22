@@ -16,7 +16,7 @@ limitations under the License.
 
 // Package reporter contains helpers for publishing statues to Pub
 // statuses in GitHub.
-package reporter
+package pubsub
 
 import (
 	"context"

@@ -14,11 +14,15 @@ You can enable gerrit reporter in crier by specifying `--gerrit-workers=n` flag.
 Similar to the [gerrit adapter](/prow/cmd/gerrit), you'll need to specify `--gerrit-projects` for
 your gerrit projects, and also `--cookiefile` for the gerrit auth token (leave it unset for anonymous).
 
-Gerrit reporter will send a gerrit code review, when all [gerrit adapter](/prow/cmd/gerrit)
+Gerrit reporter will send an aggregated summary message, when all [gerrit adapter](/prow/cmd/gerrit)
 scheduled prowjob finishes on a revision, aka, on `SuccessState`, `FailureState`, `AbortedState` or `ErrorState`.
 It will also attach a report url so people can find logs of the job.
 
-### [Pubsub reporter](/prow/pubsub/reporter)
+The reporter will also cast a +1/-1 vote on the `prow.k8s.io/gerrit-report-label` label of your prowjob,
+or by default it will vote on `CodeReview` label. Where `+1` means all jobs on the patshset pass and `-1`
+means one or more jobs failed on the patchset.
+
+### [Pubsub reporter](/prow/crier/reporters/pubsub)
 
 You can enable pubsub reporter in crier by specifying `--pubsub-workers=n` flag.
 
