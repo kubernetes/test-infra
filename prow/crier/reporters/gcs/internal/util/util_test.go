@@ -27,15 +27,8 @@ import (
 
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/crier/reporters/gcs/internal/testutil"
 )
-
-type fca struct {
-	c config.Config
-}
-
-func (ca fca) Config() *config.Config {
-	return &ca.c
-}
 
 func TestIsErrUnexpected(t *testing.T) {
 	tests := []struct {
@@ -200,7 +193,7 @@ func TestGetJobDestination(t *testing.T) {
 			for k, v := range tc.defaultGcsConfigs {
 				decorationConfigs[k] = &prowv1.DecorationConfig{GCSConfiguration: v}
 			}
-			cfg := fca{c: config.Config{
+			cfg := testutil.Fca{C: config.Config{
 				ProwConfig: config.ProwConfig{
 					Plank: config.Plank{
 						DefaultDecorationConfigs: decorationConfigs,

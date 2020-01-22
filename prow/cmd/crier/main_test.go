@@ -55,8 +55,9 @@ func TestOptions(t *testing.T) {
 				gerritProjects: map[string][]string{
 					"foo": {"bar"},
 				},
-				configPath: "foo",
-				github:     defaultGitHubOptions,
+				configPath:        "foo",
+				github:            defaultGitHubOptions,
+				k8sReportFraction: 1.0,
 			},
 		},
 		{
@@ -71,8 +72,9 @@ func TestOptions(t *testing.T) {
 				gerritProjects: map[string][]string{
 					"foo": {"bar"},
 				},
-				configPath: "foo",
-				github:     defaultGitHubOptions,
+				configPath:        "foo",
+				github:            defaultGitHubOptions,
+				k8sReportFraction: 1.0,
 			},
 		},
 		//PubSub Reporter
@@ -80,10 +82,11 @@ func TestOptions(t *testing.T) {
 			name: "pubsub workers, sets workers",
 			args: []string{"--pubsub-workers=7", "--config-path=baz"},
 			expected: &options{
-				pubsubWorkers:  7,
-				configPath:     "baz",
-				github:         defaultGitHubOptions,
-				gerritProjects: defaultGerritProjects,
+				pubsubWorkers:     7,
+				configPath:        "baz",
+				github:            defaultGitHubOptions,
+				gerritProjects:    defaultGerritProjects,
+				k8sReportFraction: 1.0,
 			},
 		},
 		{
@@ -95,11 +98,12 @@ func TestOptions(t *testing.T) {
 			name: "slack workers, sets workers",
 			args: []string{"--slack-workers=13", "--slack-token-file=/bar/baz", "--config-path=foo"},
 			expected: &options{
-				slackWorkers:   13,
-				slackTokenFile: "/bar/baz",
-				configPath:     "foo",
-				github:         defaultGitHubOptions,
-				gerritProjects: defaultGerritProjects,
+				slackWorkers:      13,
+				slackTokenFile:    "/bar/baz",
+				configPath:        "foo",
+				github:            defaultGitHubOptions,
+				gerritProjects:    defaultGerritProjects,
+				k8sReportFraction: 1.0,
 			},
 		},
 		{
@@ -117,8 +121,9 @@ func TestOptions(t *testing.T) {
 				client: prowflagutil.KubernetesOptions{
 					DeckURI: "http://www.example.com",
 				},
-				github:         defaultGitHubOptions,
-				gerritProjects: defaultGerritProjects,
+				github:            defaultGitHubOptions,
+				gerritProjects:    defaultGerritProjects,
+				k8sReportFraction: 1.0,
 			},
 		},
 		{
