@@ -67,6 +67,7 @@ RUN echo "Installing Packages ..." \
         python \
         python-dev \
         python-pip \
+        rsync \
         software-properties-common \
         unzip \
     && rm -rf /var/lib/apt/lists/* \
