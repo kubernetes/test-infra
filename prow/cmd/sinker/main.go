@@ -26,7 +26,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
-	corev1api "k8s.io/api/core/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -300,12 +299,12 @@ func (c *controller) clean() {
 	metrics.prowJobsCreated = len(prowJobs.Items)
 
 	// Only delete pod if its prowjob is marked as finished
-	isExist := sets.NewString()
+	pjMap := map[string]*prowapi.ProwJob{}
 	isFinished := sets.NewString()
 
 	maxProwJobAge := c.config().Sinker.MaxProwJobAge.Duration
-	for _, prowJob := range prowJobs.Items {
-		isExist.Insert(prowJob.ObjectMeta.Name)
+	for i, prowJob := range prowJobs.Items {
+		pjMap[prowJob.ObjectMeta.Name] = &prowJobs.Items[i]
 		// Handle periodics separately.
 		if prowJob.Spec.Type == prowapi.PeriodicJob {
 			continue
@@ -376,7 +375,19 @@ func (c *controller) clean() {
 		for _, pod := range pods.Items {
 			reason := ""
 			clean := false
-			terminationTime := podTerminationTime(&pod)
+
+			// by default, use the pod name as the key to match the associated prow job
+			// this is to support legacy plank in case the kube.ProwJobIDLabel label is not set
+			podJobName := pod.ObjectMeta.Name
+			// if the pod has the kube.ProwJobIDLabel label, use this instead of the pod name
+			if value, ok := pod.ObjectMeta.Labels[kube.ProwJobIDLabel]; ok {
+				podJobName = value
+			}
+			terminationTime := time.Time{}
+			if pj, ok := pjMap[podJobName]; ok && pj.Complete() {
+				terminationTime = pj.Status.CompletionTime.Time
+			}
+
 			switch {
 			case !pod.Status.StartTime.IsZero() && time.Since(pod.Status.StartTime.Time) > maxPodAge:
 				clean = true
@@ -386,20 +397,12 @@ func (c *controller) clean() {
 				reason = reasonPodTTLed
 			}
 
-			// by default, use the pod name as the key to match the associated prow job
-			// this is to support legacy plank in case the kube.ProwJobIDLabel label is not set
-			podJobName := pod.ObjectMeta.Name
-			// if the pod has the kube.ProwJobIDLabel label, use this instead of the pod name
-			if value, ok := pod.ObjectMeta.Labels[kube.ProwJobIDLabel]; ok {
-				podJobName = value
-			}
-
 			if !isFinished.Has(podJobName) {
 				// prowjob exists and is not marked as completed yet
 				// deleting the pod now will result in plank creating a brand new pod
 				clean = false
 			}
-			if !isExist.Has(podJobName) {
+			if _, ok := pjMap[podJobName]; !ok {
 				// prowjob has gone, we want to clean orphan pods regardless of the state
 				reason = reasonPodOrphaned
 				clean = true
@@ -437,28 +440,4 @@ func (c *controller) clean() {
 		sinkerMetrics.prowJobsCleaningErrors.WithLabelValues(k).Set(float64(v))
 	}
 	c.logger.Info("Sinker reconciliation complete.")
-}
-
-// podTerminationTime returns the "termination time" of the pod (a concept that
-// pods do not actually have), calculating it as the termination time of the
-// last pod to terminate.
-// This is probably meaningless for pods that restart containers.
-func podTerminationTime(pod *corev1api.Pod) time.Time {
-	var endTime time.Time
-	if pod.Status.Phase != corev1api.PodSucceeded && pod.Status.Phase != corev1api.PodFailed {
-		return endTime
-	}
-
-	for _, container := range pod.Status.InitContainerStatuses {
-		if container.State.Terminated != nil && container.State.Terminated.FinishedAt.After(endTime) {
-			endTime = container.State.Terminated.FinishedAt.Time
-		}
-	}
-
-	for _, container := range pod.Status.ContainerStatuses {
-		if container.State.Terminated != nil && container.State.Terminated.FinishedAt.After(endTime) {
-			endTime = container.State.Terminated.FinishedAt.Time
-		}
-	}
-	return endTime
 }

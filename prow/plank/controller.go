@@ -441,14 +441,7 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]corev1.Pod
 			pj.SetComplete()
 			pj.Status.State = prowapi.ErrorState
 			pj.Status.Description = "Pod pending timeout."
-			client, ok := c.buildClients[pj.ClusterAlias()]
-			if !ok {
-				return fmt.Errorf("pending pod %s: unknown cluster alias %q", pod.Name, pj.ClusterAlias())
-			}
-			if err := client.Delete(c.ctx, &pod); err != nil {
-				return fmt.Errorf("failed to delete pod %s that was in pending timeout: %v", pod.Name, err)
-			}
-			c.log.WithFields(pjutil.ProwJobFields(&pj)).Info("Deleted stale pending pod.")
+			c.log.WithFields(pjutil.ProwJobFields(&pj)).Info("Marked job for stale pending pod as errored.")
 
 		case corev1.PodRunning:
 			maxPodRunning := c.config().Plank.PodRunningTimeout.Duration

@@ -373,6 +373,28 @@ func TestClean(t *testing.T) {
 				},
 			},
 		},
+		&corev1api.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "completed-prowjob-ttl-expired-while-pod-still-pending",
+				Namespace: "ns",
+				Labels: map[string]string{
+					kube.CreatedByProw: "true",
+				},
+			},
+			Status: corev1api.PodStatus{
+				Phase:     corev1api.PodPending,
+				StartTime: startTime(time.Now().Add(-terminatedPodTTL * 2)),
+				ContainerStatuses: []corev1api.ContainerStatus{
+					{
+						State: corev1api.ContainerState{
+							Waiting: &corev1api.ContainerStateWaiting{
+								Reason: "ImgPullBackoff",
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 	deletedPods := sets.NewString(
 		"job-complete-pod-failed",
@@ -387,6 +409,7 @@ func TestClean(t *testing.T) {
 		"old-pending-abort",
 		"old-running",
 		"ttl-expired",
+		"completed-prowjob-ttl-expired-while-pod-still-pending",
 	)
 	setComplete := func(d time.Duration) *metav1.Time {
 		completed := metav1.NewTime(time.Now().Add(d))
@@ -567,6 +590,16 @@ func TestClean(t *testing.T) {
 			Status: prowv1.ProwJobStatus{
 				StartTime:      metav1.NewTime(time.Now().Add(-terminatedPodTTL * 2)),
 				CompletionTime: setComplete(-time.Second),
+			},
+		},
+		&prowv1.ProwJob{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "completed-prowjob-ttl-expired-while-pod-still-pending",
+				Namespace: "ns",
+			},
+			Status: prowv1.ProwJobStatus{
+				StartTime:      metav1.NewTime(time.Now().Add(-terminatedPodTTL * 2)),
+				CompletionTime: setComplete(-terminatedPodTTL - time.Second),
 			},
 		},
 	}
