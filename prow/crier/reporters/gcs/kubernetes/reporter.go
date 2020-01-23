@@ -64,10 +64,16 @@ type k8sResourceGetter struct {
 }
 
 func (rg k8sResourceGetter) GetPod(cluster, namespace, name string) (*v1.Pod, error) {
+	if _, ok := rg.podClientSets[cluster]; !ok {
+		return nil, fmt.Errorf("couldn't find cluster %q", cluster)
+	}
 	return rg.podClientSets[cluster].Pods(namespace).Get(name, metav1.GetOptions{})
 }
 
 func (rg k8sResourceGetter) GetEvents(cluster, namespace string, pod *v1.Pod) ([]v1.Event, error) {
+	if _, ok := rg.podClientSets[cluster]; !ok {
+		return nil, fmt.Errorf("couldn't find cluster %q", cluster)
+	}
 	events, err := rg.podClientSets[cluster].Events(namespace).Search(scheme.Scheme, pod)
 	if err != nil {
 		return nil, err
@@ -81,7 +87,7 @@ func (gr *gcsK8sReporter) Report(pj *prowv1.ProwJob) ([]*prowv1.ProwJob, error) 
 
 	_, _, err := util.GetJobDestination(gr.cfg, pj)
 	if err != nil {
-		gr.logger.Infof("Not uploading %q (%s#%s) because we couldn't find a destination: %v", pj.Name, pj.Spec.Job, pj.Status.BuildID, err)
+		gr.logger.Warnf("Not uploading %q (%s#%s) because we couldn't find a destination: %v", pj.Name, pj.Spec.Job, pj.Status.BuildID, err)
 		return []*prowv1.ProwJob{pj}, nil
 	}
 

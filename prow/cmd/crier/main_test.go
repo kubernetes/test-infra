@@ -130,6 +130,36 @@ func TestOptions(t *testing.T) {
 			name: "Dry run with no --deck-url, rejects",
 			args: []string{"--slack-workers=13", "--slack-token-file=/bar/baz", "--config-path=foo", "--dry-run"},
 		},
+		{
+			name: "k8s-gcs enables k8s-gcs",
+			args: []string{"--kubernetes-gcs-workers=3", "--config-path=foo"},
+			expected: &options{
+				k8sGCSWorkers:     3,
+				configPath:        "foo",
+				github:            defaultGitHubOptions,
+				gerritProjects:    defaultGerritProjects,
+				k8sReportFraction: 1.0,
+			},
+		},
+		{
+			name: "k8s-gcs with report fraction sets report fraction",
+			args: []string{"--kubernetes-gcs-workers=3", "--config-path=foo", "--kubernetes-report-fraction=0.5"},
+			expected: &options{
+				k8sGCSWorkers:     3,
+				configPath:        "foo",
+				github:            defaultGitHubOptions,
+				gerritProjects:    defaultGerritProjects,
+				k8sReportFraction: 0.5,
+			},
+		},
+		{
+			name: "k8s-gcs with too large report fraction rejects",
+			args: []string{"--kubernetes-gcs-workers=3", "--config-path=foo", "--kubernetes-report-fraction=1.5"},
+		},
+		{
+			name: "k8s-gcs with negative report fraction rejects",
+			args: []string{"--kubernetes-gcs-workers=3", "--config-path=foo", "--kubernetes-report-fraction=-1.2"},
+		},
 	}
 
 	for _, tc := range cases {
