@@ -45,7 +45,11 @@ spec:
         - --gcs-credentials-file=/etc/service-account/service-account.json
         - --kubernetes-gcs-workers=1
         - --kubernetes-report-fraction=0.1
+        - --build-cluster=/etc/cluster/cluster
         volumeMounts:
+        - mountPath: /etc/cluster
+          name: cluster
+          readOnly: true
         - name: config
           mountPath: /etc/config
           readOnly: true
@@ -77,3 +81,7 @@ spec:
       - name: service-account
         secret:
           secretName: service-account
+      - name: cluster
+        secret:
+          defaultMode: 420
+          secretName: build-cluster
