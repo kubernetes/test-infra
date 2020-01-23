@@ -58,7 +58,7 @@ presubmits:
         image: gcr.io/k8s-testimages/kubekins-e2e:v20200123-f79dd58-master
         resources:
           requests:
-            memory: "8Gi"
+            memory: "6Gi"
 
   - name: pull-kubernetes-e2e-gce-rbe
     always_run: true
