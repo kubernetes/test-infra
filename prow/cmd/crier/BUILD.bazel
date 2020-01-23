@@ -13,6 +13,7 @@ go_library(
         "//prow/config/secret:go_default_library",
         "//prow/crier:go_default_library",
         "//prow/crier/reporters/gcs:go_default_library",
+        "//prow/crier/reporters/gcs/kubernetes:go_default_library",
         "//prow/crier/reporters/gerrit:go_default_library",
         "//prow/crier/reporters/github:go_default_library",
         "//prow/crier/reporters/pubsub:go_default_library",

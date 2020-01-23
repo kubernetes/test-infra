@@ -21,21 +21,17 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
-	"net/http"
 	"path"
 	"time"
 
 	"cloud.google.com/go/storage"
 	"github.com/GoogleCloudPlatform/testgrid/metadata"
 	"github.com/sirupsen/logrus"
-	"google.golang.org/api/googleapi"
+	"k8s.io/test-infra/prow/crier/reporters/gcs/internal/util"
 	"k8s.io/test-infra/prow/errorutil"
 
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/gcsupload"
-	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 )
 
 const reporterName = "gcsreporter"
@@ -44,30 +40,14 @@ type gcsReporter struct {
 	cfg    config.Getter
 	dryRun bool
 	logger *logrus.Entry
-	author author
-}
-
-type author interface {
-	NewWriter(ctx context.Context, bucket, path string, overwrite bool) io.WriteCloser
-}
-
-type storageAuthor struct {
-	client *storage.Client
-}
-
-func (sa storageAuthor) NewWriter(ctx context.Context, bucket, path string, overwrite bool) io.WriteCloser {
-	obj := sa.client.Bucket(bucket).Object(path)
-	if !overwrite {
-		obj = obj.If(storage.Conditions{DoesNotExist: true})
-	}
-	return obj.NewWriter(ctx)
+	author util.Author
 }
 
 func (gr *gcsReporter) Report(pj *prowv1.ProwJob) ([]*prowv1.ProwJob, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second) // TODO: pass through a global context?
 	defer cancel()
 
-	_, _, err := gr.getJobDestination(pj)
+	_, _, err := util.GetJobDestination(gr.cfg, pj)
 	if err != nil {
 		gr.logger.Infof("Not uploading %q (%s#%s) because we couldn't find a destination: %v", pj.Name, pj.Spec.Job, pj.Status.BuildID, err)
 		return []*prowv1.ProwJob{pj}, nil
@@ -100,7 +80,7 @@ func (gr *gcsReporter) reportStartedJob(ctx context.Context, pj *prowv1.ProwJob)
 		return fmt.Errorf("failed to marshal started metadata: %v", err)
 	}
 
-	bucketName, dir, err := gr.getJobDestination(pj)
+	bucketName, dir, err := util.GetJobDestination(gr.cfg, pj)
 	if err != nil {
 		return fmt.Errorf("failed to get job destination: %v", err)
 	}
@@ -109,7 +89,7 @@ func (gr *gcsReporter) reportStartedJob(ctx context.Context, pj *prowv1.ProwJob)
 		gr.logger.Infof("Would upload started.json to %q/%q", bucketName, dir)
 		return nil
 	}
-	return gr.writeContent(ctx, bucketName, path.Join(dir, "started.json"), false, output)
+	return util.WriteContent(ctx, gr.logger, gr.author, bucketName, path.Join(dir, "started.json"), false, output)
 }
 
 // reportFinishedJob uploads a finished.json for the job, iff one did not already exist.
@@ -130,7 +110,7 @@ func (gr *gcsReporter) reportFinishedJob(ctx context.Context, pj *prowv1.ProwJob
 		return fmt.Errorf("failed to marshal finished metadata: %v", err)
 	}
 
-	bucketName, dir, err := gr.getJobDestination(pj)
+	bucketName, dir, err := util.GetJobDestination(gr.cfg, pj)
 	if err != nil {
 		return fmt.Errorf("failed to get job destination: %v", err)
 	}
@@ -139,7 +119,7 @@ func (gr *gcsReporter) reportFinishedJob(ctx context.Context, pj *prowv1.ProwJob
 		gr.logger.Infof("Would upload finished.json info to %q/%q", bucketName, dir)
 		return nil
 	}
-	return gr.writeContent(ctx, bucketName, path.Join(dir, "finished.json"), false, output)
+	return util.WriteContent(ctx, gr.logger, gr.author, bucketName, path.Join(dir, "finished.json"), false, output)
 }
 
 func (gr *gcsReporter) reportProwjob(ctx context.Context, pj *prowv1.ProwJob) error {
@@ -149,7 +129,7 @@ func (gr *gcsReporter) reportProwjob(ctx context.Context, pj *prowv1.ProwJob) er
 		return fmt.Errorf("failed to marshal prowjob: %v", err)
 	}
 
-	bucketName, dir, err := gr.getJobDestination(pj)
+	bucketName, dir, err := util.GetJobDestination(gr.cfg, pj)
 	if err != nil {
 		return fmt.Errorf("failed to get job destination: %v", err)
 	}
@@ -158,69 +138,7 @@ func (gr *gcsReporter) reportProwjob(ctx context.Context, pj *prowv1.ProwJob) er
 		gr.logger.Infof("Would upload pod info to %q/%q", bucketName, dir)
 		return nil
 	}
-	return gr.writeContent(ctx, bucketName, path.Join(dir, "prowjob.json"), true, output)
-}
-
-func (gr *gcsReporter) writeContent(ctx context.Context, bucket, path string, overwrite bool, content []byte) error {
-	gr.logger.WithFields(logrus.Fields{"bucket": bucket, "path": path}).Debugf("Uploading to gs://%s/%s; overwrite: %v", bucket, path, overwrite)
-	w := gr.author.NewWriter(ctx, bucket, path, overwrite)
-	_, err := w.Write(content)
-	var reportErr error
-	if gr.isErrUnexpected(err) {
-		reportErr = err
-		gr.logger.WithError(err).WithFields(logrus.Fields{"bucket": bucket, "path": path}).Warn("Uploading info to GCS failed (write)")
-	}
-	err = w.Close()
-	if gr.isErrUnexpected(err) {
-		reportErr = err
-		gr.logger.WithError(err).WithFields(logrus.Fields{"bucket": bucket, "path": path}).Warn("Uploading info to GCS failed (close)")
-	}
-	return reportErr
-}
-
-func (gr *gcsReporter) isErrUnexpected(err error) bool {
-	if err == nil {
-		return false
-	}
-	// Precondition Failed is expected and we can silently ignore it.
-	if e, ok := err.(*googleapi.Error); ok {
-		if e.Code == http.StatusPreconditionFailed {
-			gr.logger.WithError(err).Debug("Precondition failed")
-			return false
-		}
-	}
-	return true
-}
-
-func (gr *gcsReporter) getJobDestination(pj *prowv1.ProwJob) (bucket, dir string, err error) {
-	// We can't divine a destination for jobs that don't have a build ID, so don't try.
-	if pj.Status.BuildID == "" {
-		return "", "", errors.New("cannot get job destination for job with no BuildID")
-	}
-	// The decoration config is always provided for decorated jobs, but many
-	// jobs are not decorated, so we guess that we should use the default location
-	// for those jobs. This assumption is usually (but not always) correct.
-	// The TestGrid configurator uses the same assumption.
-	repo := "*"
-	if pj.Spec.Refs != nil {
-		repo = pj.Spec.Refs.Org + "/" + pj.Spec.Refs.Repo
-	}
-
-	ddc := gr.cfg().Plank.GetDefaultDecorationConfigs(repo)
-
-	var gcsConfig *prowv1.GCSConfiguration
-	if pj.Spec.DecorationConfig != nil && pj.Spec.DecorationConfig.GCSConfiguration != nil {
-		gcsConfig = pj.Spec.DecorationConfig.GCSConfiguration
-	} else if ddc != nil && ddc.GCSConfiguration != nil {
-		gcsConfig = ddc.GCSConfiguration
-	} else {
-		return "", "", fmt.Errorf("couldn't figure out a GCS config for %q", pj.Spec.Job)
-	}
-
-	ps := downwardapi.NewJobSpec(pj.Spec, pj.Status.BuildID, pj.Name)
-	_, d, _ := gcsupload.PathsForJob(gcsConfig, &ps, "")
-
-	return gcsConfig.Bucket, d, nil
+	return util.WriteContent(ctx, gr.logger, gr.author, bucketName, path.Join(dir, "prowjob.json"), true, output)
 }
 
 func (gr *gcsReporter) GetName() string {
@@ -235,10 +153,10 @@ func (gr *gcsReporter) ShouldReport(pj *prowv1.ProwJob) bool {
 }
 
 func New(cfg config.Getter, storage *storage.Client, dryRun bool) *gcsReporter {
-	return newWithAuthor(cfg, storageAuthor{client: storage}, dryRun)
+	return newWithAuthor(cfg, util.StorageAuthor{Client: storage}, dryRun)
 }
 
-func newWithAuthor(cfg config.Getter, author author, dryRun bool) *gcsReporter {
+func newWithAuthor(cfg config.Getter, author util.Author, dryRun bool) *gcsReporter {
 	return &gcsReporter{
 		cfg:    cfg,
 		dryRun: dryRun,

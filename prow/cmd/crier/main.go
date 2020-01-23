@@ -36,6 +36,7 @@ import (
 	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/crier"
 	gcsreporter "k8s.io/test-infra/prow/crier/reporters/gcs"
+	k8sgcsreporter "k8s.io/test-infra/prow/crier/reporters/gcs/kubernetes"
 	gerritreporter "k8s.io/test-infra/prow/crier/reporters/gerrit"
 	githubreporter "k8s.io/test-infra/prow/crier/reporters/github"
 	pubsubreporter "k8s.io/test-infra/prow/crier/reporters/pubsub"
@@ -65,10 +66,13 @@ type options struct {
 	githubWorkers int
 	slackWorkers  int
 	gcsWorkers    int
+	k8sGCSWorkers int
 
 	slackTokenFile string
 
 	gcsCredentialsFile string
+
+	k8sReportFraction float64
 
 	dryrun      bool
 	reportAgent string
@@ -91,8 +95,12 @@ func (o *options) validate() error {
 		o.githubWorkers = 1
 	}
 
-	if o.gerritWorkers+o.pubsubWorkers+o.githubWorkers+o.slackWorkers+o.gcsWorkers <= 0 {
+	if o.gerritWorkers+o.pubsubWorkers+o.githubWorkers+o.slackWorkers+o.gcsWorkers+o.k8sGCSWorkers <= 0 {
 		return errors.New("crier need to have at least one report worker to start")
+	}
+
+	if o.k8sReportFraction < 0 || o.k8sReportFraction > 1 {
+		return errors.New("--kubernetes-report-fraction must be a float between 0 and 1")
 	}
 
 	if o.gerritWorkers > 0 {
@@ -135,6 +143,8 @@ func (o *options) parseArgs(fs *flag.FlagSet, args []string) error {
 	fs.IntVar(&o.githubWorkers, "github-workers", 0, "Number of github report workers (0 means disabled)")
 	fs.IntVar(&o.slackWorkers, "slack-workers", 0, "Number of Slack report workers (0 means disabled)")
 	fs.IntVar(&o.gcsWorkers, "gcs-workers", 0, "Number of GCS report workers (0 means disabled)")
+	fs.IntVar(&o.k8sGCSWorkers, "kubernetes-gcs-workers", 0, "Number of Kubernetes-specific GCS report workers (0 means disabled)")
+	fs.Float64Var(&o.k8sReportFraction, "kubernetes-report-fraction", 1.0, "Approximate portion of jobs to report pod information for, if kubernetes-gcs-workers are enabled (0 - > none, 1.0 -> all)")
 	fs.StringVar(&o.gcsCredentialsFile, "gcs-credentials-file", "", "Location of the GCS credentials file, if gcs-workers is non-zero")
 	fs.StringVar(&o.slackTokenFile, "slack-token-file", "", "Path to a Slack token file")
 	fs.StringVar(&o.reportAgent, "report-agent", "", "Only report specified agent - empty means report to all agents (effective for github and Slack only)")
@@ -261,27 +271,46 @@ func main() {
 				o.githubWorkers))
 	}
 
-	if o.gcsWorkers > 0 {
-		var c *storage.Client
+	if o.gcsWorkers > 0 || o.k8sGCSWorkers > 0 {
+		var s *storage.Client
 		var opts []option.ClientOption
 		if o.gcsCredentialsFile != "" {
 			opts = append(opts, option.WithCredentialsFile(o.gcsCredentialsFile))
 		}
-		c, err = storage.NewClient(context.Background(), opts...)
+		s, err = storage.NewClient(context.Background(), opts...)
 
 		if err != nil {
 			logrus.WithError(err).Fatal("Error creating storage client for gcs workers.")
 		}
 
-		gcsReporter := gcsreporter.New(cfg, c, o.dryrun)
-		controllers = append(
-			controllers,
-			crier.NewController(
-				prowjobClientset,
-				kube.RateLimiter(gcsReporter.GetName()),
-				prowjobInformerFactory.Prow().V1().ProwJobs(),
-				gcsReporter,
-				o.gcsWorkers))
+		if o.gcsWorkers > 0 {
+			gcsReporter := gcsreporter.New(cfg, s, o.dryrun)
+			controllers = append(
+				controllers,
+				crier.NewController(
+					prowjobClientset,
+					kube.RateLimiter(gcsReporter.GetName()),
+					prowjobInformerFactory.Prow().V1().ProwJobs(),
+					gcsReporter,
+					o.gcsWorkers))
+		}
+
+		if o.k8sGCSWorkers > 0 {
+			coreClients, err := o.client.BuildClusterCoreV1Clients(o.dryrun)
+			if err != nil {
+				logrus.WithError(err).Fatal("Error building pod client sets for Kubernetes GCS workers")
+			}
+
+			k8sGcsReporter := k8sgcsreporter.New(cfg, s, coreClients, float32(o.k8sReportFraction), o.dryrun)
+			controllers = append(
+				controllers,
+				crier.NewController(
+					prowjobClientset,
+					kube.RateLimiter(k8sGcsReporter.GetName()),
+					prowjobInformerFactory.Prow().V1().ProwJobs(),
+					k8sGcsReporter,
+					o.k8sGCSWorkers))
+		}
 	}
 
 	if len(controllers) == 0 {
