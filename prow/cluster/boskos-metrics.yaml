@@ -21,11 +21,11 @@ spec:
   selector:
     app: boskos-metrics
   ports:
-  - name: default
+  - name: metrics
     protocol: TCP
-    port: 80
+    port: 9090
     targetPort: 9090
-  loadBalancerIP: 104.197.27.114
+  loadBalancerIP: 104.197.27.114  # boskos-metrics
   type: LoadBalancer
 ---
 apiVersion: apps/v1
