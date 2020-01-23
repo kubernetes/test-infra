@@ -43,6 +43,8 @@ spec:
         - --slack-token-file=/etc/slack/token
         - --gcs-workers=1
         - --gcs-credentials-file=/etc/service-account/service-account.json
+        - --kubernetes-gcs-workers=1
+        - --kubernetes-report-fraction=0.1
         volumeMounts:
         - name: config
           mountPath: /etc/config
