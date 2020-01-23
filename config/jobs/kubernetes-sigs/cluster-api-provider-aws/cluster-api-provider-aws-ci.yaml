@@ -13,7 +13,7 @@ periodics:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200121-15ca052-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200123-f79dd58-master
       command:
       - "./scripts/ci-aws-cred-test.sh"
   annotations:
@@ -35,7 +35,7 @@ periodics:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200121-15ca052-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200123-f79dd58-master
       command:
         - "runner.sh"
         - "./scripts/ci-e2e.sh"
@@ -69,7 +69,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200121-15ca052-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200123-f79dd58-master
         command:
           - "runner.sh"
           - "./scripts/ci-e2e.sh"
@@ -103,7 +103,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200121-15ca052-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200123-f79dd58-master
         command:
           - "runner.sh"
           - "./scripts/ci-e2e-conformance.sh"
@@ -146,7 +146,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200121-15ca052-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200123-f79dd58-experimental
         env:
           - name: CAPI_BRANCH
             value: "master"
@@ -199,7 +199,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200121-15ca052-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200123-f79dd58-experimental
         env:
           - name: CI_VERSION
             value: "v1.16.3"
@@ -254,7 +254,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200121-15ca052-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200123-f79dd58-experimental
         env:
           - name: CAPI_BRANCH
             value: "stable"
@@ -297,7 +297,7 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200121-15ca052-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200123-f79dd58-master
         command:
         - "runner.sh"
         - "./scripts/ci-e2e.sh"
@@ -327,7 +327,7 @@ postsubmits:
       - release-0.4
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200121-15ca052-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200123-f79dd58-master
           command:
             - "runner.sh"
             - "./scripts/ci-e2e.sh"
@@ -359,7 +359,7 @@ postsubmits:
       - release-0.4
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200121-15ca052-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200123-f79dd58-master
           command:
             - "runner.sh"
             - "./scripts/ci-e2e-conformance.sh"
