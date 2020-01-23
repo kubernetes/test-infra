@@ -686,7 +686,7 @@ periodics:
       - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-vmss-multi-zones.json
       - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.46.0/aks-engine-v0.46.0-linux-amd64.tar.gz
       # Check https://github.com/kubernetes-sigs/cloud-provider-azure/issues/224 for the status of each skipped test
-      - --test_args=--num-nodes=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|Delete\sGrace\sPeriod|runs\sReplicaSets\sto\sverify\spreemption\srunning\spath|client\-go\sshould\snegotiate|should\scontain\scustom\scolumns\sfor\seach\sresource|Network\sshould\sset\sTCP\sCLOSE_WAIT\stimeout
+      - --test_args=--num-nodes=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|Delete\sGrace\sPeriod|runs\sReplicaSets\sto\sverify\spreemption\srunning\spath|client\-go\sshould\snegotiate|should\scontain\scustom\scolumns\sfor\seach\sresource|Network\sshould\sset\sTCP\sCLOSE_WAIT\stimeout|PodSecurityPolicy
       - --timeout=420m
       securityContext:
         privileged: true
