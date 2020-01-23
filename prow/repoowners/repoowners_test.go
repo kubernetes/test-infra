@@ -253,23 +253,25 @@ labels:
 		return nil, nil, fmt.Errorf("cannot get commit SHA: %v", err)
 	}
 	return &Client{
-			git:    git,
-			ghc:    ghc,
 			logger: logrus.WithField("client", "repoowners"),
-			cache:  cache,
+			delegate: &delegate{
+				git:   git,
+				ghc:   ghc,
+				cache: cache,
 
-			mdYAMLEnabled: func(org, repo string) bool {
-				return enableMdYaml
-			},
-			skipCollaborators: func(org, repo string) bool {
-				return skipCollab
-			},
-			ownersDirBlacklist: func() prowConf.OwnersDirBlacklist {
-				return prowConf.OwnersDirBlacklist{
-					Repos:                       ownersDirBlacklistByRepo,
-					Default:                     ownersDirBlacklistDefault,
-					IgnorePreconfiguredDefaults: ignorePreconfiguredDefaults,
-				}
+				mdYAMLEnabled: func(org, repo string) bool {
+					return enableMdYaml
+				},
+				skipCollaborators: func(org, repo string) bool {
+					return skipCollab
+				},
+				ownersDirBlacklist: func() prowConf.OwnersDirBlacklist {
+					return prowConf.OwnersDirBlacklist{
+						Repos:                       ownersDirBlacklistByRepo,
+						Default:                     ownersDirBlacklistDefault,
+						IgnorePreconfiguredDefaults: ignorePreconfiguredDefaults,
+					}
+				},
 			},
 		},
 		// Clean up function

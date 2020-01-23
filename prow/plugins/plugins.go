@@ -174,7 +174,7 @@ func NewAgent(configAgent *config.Agent, pluginConfigAgent *ConfigAgent, clientA
 		ProwJobClient:             clientAgent.ProwJobClient,
 		GitClient:                 clientAgent.GitClient,
 		SlackClient:               clientAgent.SlackClient,
-		OwnersClient:              clientAgent.OwnersClient,
+		OwnersClient:              clientAgent.OwnersClient.WithFields(logger.Data),
 		BugzillaClient:            clientAgent.BugzillaClient,
 		Metrics:                   metrics,
 		Config:                    prowConfig,

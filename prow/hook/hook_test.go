@@ -26,6 +26,7 @@ import (
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/phony"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/repoowners"
 )
 
 var ice = github.IssueCommentEvent{
@@ -61,6 +62,7 @@ func TestHook(t *testing.T) {
 	ca := &config.Agent{}
 	clientAgent := &plugins.ClientAgent{
 		GitHubClient: github.NewFakeClient(),
+		OwnersClient: repoowners.NewClient(nil, nil, func(org, repo string) bool { return false }, func(org, repo string) bool { return false }, func() config.OwnersDirBlacklist { return config.OwnersDirBlacklist{} }),
 	}
 	metrics := NewMetrics()
 
