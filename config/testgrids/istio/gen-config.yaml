@@ -698,6 +698,13 @@ dashboards:
     test_group_name: integ-security-local-tests_istio
   - code_search_url_template:
       url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-conformance-local-tests_istio
+    name: integ-conformance-local-tests_istio
+    open_bug_template:
+      url: https://github.com/istio/istio/issues/
+    test_group_name: integ-conformance-local-tests_istio
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
     description: integ-galley-k8s-tests_istio
     name: integ-galley-k8s-tests_istio
     open_bug_template:
@@ -738,6 +745,13 @@ dashboards:
     open_bug_template:
       url: https://github.com/istio/istio/issues/
     test_group_name: integ-istioio-k8s-tests_istio
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-conformance-k8s-tests_istio
+    name: integ-conformance-k8s-tests_istio
+    open_bug_template:
+      url: https://github.com/istio/istio/issues/
+    test_group_name: integ-conformance-k8s-tests_istio
   - code_search_url_template:
       url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
     description: e2e-mixer-no_auth_istio
@@ -3857,69 +3871,6 @@ test_groups:
 - gcs_prefix: istio-prow/logs/istio-upgrade-using-istioctl-1.4.3-master
   name: istio-upgrade-using-istioctl-1.4.3-master
   num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/lint_common-files_postsubmit
-  name: lint_common-files_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/update-common_common-files_postsubmit
-  name: update-common_common-files_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/lint_common-files_release-1.4_postsubmit
-  name: lint_common-files_release-1.4_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/lint_release-builder_postsubmit
-  name: lint_release-builder_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/test_release-builder_postsubmit
-  name: test_release-builder_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/gencheck_release-builder_postsubmit
-  name: gencheck_release-builder_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/dry-run_release-builder_postsubmit
-  name: dry-run_release-builder_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/build-release_release-builder_postsubmit
-  name: build-release_release-builder_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/publish-release_release-builder_postsubmit
-  name: publish-release_release-builder_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/lint_release-builder_release-1.4_postsubmit
-  name: lint_release-builder_release-1.4_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/test_release-builder_release-1.4_postsubmit
-  name: test_release-builder_release-1.4_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/gencheck_release-builder_release-1.4_postsubmit
-  name: gencheck_release-builder_release-1.4_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/dry-run_release-builder_release-1.4_postsubmit
-  name: dry-run_release-builder_release-1.4_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/build-release_release-builder_release-1.4_postsubmit
-  name: build-release_release-builder_release-1.4_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/publish-release_release-builder_release-1.4_postsubmit
-  name: publish-release_release-builder_release-1.4_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/build_client-go_postsubmit
-  name: build_client-go_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/lint_client-go_postsubmit
-  name: lint_client-go_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/gencheck_client-go_postsubmit
-  name: gencheck_client-go_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/build_client-go_release-1.4_postsubmit
-  name: build_client-go_release-1.4_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/lint_client-go_release-1.4_postsubmit
-  name: lint_client-go_release-1.4_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/gencheck_client-go_release-1.4_postsubmit
-  name: gencheck_client-go_release-1.4_postsubmit
-  num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/build_installer_postsubmit
   name: build_installer_postsubmit
   num_failures_to_alert: 1
@@ -3953,246 +3904,11 @@ test_groups:
 - gcs_prefix: istio-prow/logs/base_installer_release-1.4_postsubmit
   name: base_installer_release-1.4_postsubmit
   num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/release-daily_pipeline_release-1.1_postsubmit
-  name: release-daily_pipeline_release-1.1_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/release-monthly_pipeline_release-1.1_postsubmit
-  name: release-monthly_pipeline_release-1.1_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/release-daily_pipeline_release-1.3_postsubmit
-  name: release-daily_pipeline_release-1.3_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/release-monthly_pipeline_release-1.3_postsubmit
-  name: release-monthly_pipeline_release-1.3_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/lint_test-infra_postsubmit
-  name: lint_test-infra_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/test_test-infra_postsubmit
-  name: test_test-infra_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/gencheck_test-infra_postsubmit
-  name: gencheck_test-infra_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/deploy-prow_test-infra_postsubmit
-  name: deploy-prow_test-infra_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/push-authentikos_test-infra_postsubmit
-  name: push-authentikos_test-infra_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/push-genjobs_test-infra_postsubmit
-  name: push-genjobs_test-infra_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/post-istio-test-infra-upload-testgrid-config
-  name: post-istio-test-infra-upload-testgrid-config
-- gcs_prefix: istio-prow/logs/build_tools_postsubmit
-  name: build_tools_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/lint_tools_postsubmit
-  name: lint_tools_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/test_tools_postsubmit
-  name: test_tools_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/gencheck_tools_postsubmit
-  name: gencheck_tools_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/containers_tools_postsubmit
-  name: containers_tools_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/build_tools_release-1.4_postsubmit
-  name: build_tools_release-1.4_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/lint_tools_release-1.4_postsubmit
-  name: lint_tools_release-1.4_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/test_tools_release-1.4_postsubmit
-  name: test_tools_release-1.4_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/tools-containers_release-1.4
-  name: tools-containers_release-1.4
 - gcs_prefix: istio-prow/logs/release_proxy_postsubmit
   name: release_proxy_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/proxy-postsubmit
   name: proxy-postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/build_cni_postsubmit
-  name: build_cni_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/install_cni_postsubmit
-  name: install_cni_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/e2e_cni_postsubmit
-  name: e2e_cni_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/lint_cni_postsubmit
-  name: lint_cni_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/gencheck_cni_postsubmit
-  name: gencheck_cni_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/build_cni_release-1.3_postsubmit
-  name: build_cni_release-1.3_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/install_cni_release-1.3_postsubmit
-  name: install_cni_release-1.3_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/e2e_cni_release-1.3_postsubmit
-  name: e2e_cni_release-1.3_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/buildmodern_cni_release-1.3_postsubmit
-  name: buildmodern_cni_release-1.3_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/lintmodern_cni_release-1.3_postsubmit
-  name: lintmodern_cni_release-1.3_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/build_cni_release-1.4_postsubmit
-  name: build_cni_release-1.4_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/install_cni_release-1.4_postsubmit
-  name: install_cni_release-1.4_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/e2e_cni_release-1.4_postsubmit
-  name: e2e_cni_release-1.4_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/lint_cni_release-1.4_postsubmit
-  name: lint_cni_release-1.4_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/lint_community_postsubmit
-  name: lint_community_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/test_community_postsubmit
-  name: test_community_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/sync-org_community_postsubmit
-  name: sync-org_community_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/lint_istio.io_postsubmit
-  name: lint_istio.io_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/lint_istio.io_release-1.3_postsubmit
-  name: lint_istio.io_release-1.3_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/lint_istio.io_release-1.4_postsubmit
-  name: lint_istio.io_release-1.4_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/lint_operator_postsubmit
-  name: lint_operator_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/mesh_operator_postsubmit
-  name: mesh_operator_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/test_operator_postsubmit
-  name: test_operator_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/mandiff_operator_postsubmit
-  name: mandiff_operator_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/gencheck_operator_postsubmit
-  name: gencheck_operator_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/e2e_operator_postsubmit
-  name: e2e_operator_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/release_operator_postsubmit
-  name: release_operator_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/lint_operator_release-1.3_postsubmit
-  name: lint_operator_release-1.3_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/mesh_operator_release-1.3_postsubmit
-  name: mesh_operator_release-1.3_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/test_operator_release-1.3_postsubmit
-  name: test_operator_release-1.3_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/mandiff_operator_release-1.3_postsubmit
-  name: mandiff_operator_release-1.3_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/manifest-apply_operator_release-1.3_postsubmit
-  name: manifest-apply_operator_release-1.3_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/lint_operator_release-1.4_postsubmit
-  name: lint_operator_release-1.4_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/mesh_operator_release-1.4_postsubmit
-  name: mesh_operator_release-1.4_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/test_operator_release-1.4_postsubmit
-  name: test_operator_release-1.4_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/mandiff_operator_release-1.4_postsubmit
-  name: mandiff_operator_release-1.4_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/release_operator_release-1.4_postsubmit
-  name: release_operator_release-1.4_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/build_api_postsubmit
-  name: build_api_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/gencheck_api_postsubmit
-  name: gencheck_api_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/gen_client-go_api_postsubmit
-  name: gen_client-go_api_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/gen_istio_api_postsubmit
-  name: gen_istio_api_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/api-postsubmit
-  name: api-postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/build_api_release-1.4_postsubmit
-  name: build_api_release-1.4_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/gencheck_api_release-1.4_postsubmit
-  name: gencheck_api_release-1.4_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/build_cri_postsubmit
-  name: build_cri_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/lint_cri_postsubmit
-  name: lint_cri_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/test_cri_postsubmit
-  name: test_cri_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/gencheck_cri_postsubmit
-  name: gencheck_cri_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/build_bots_postsubmit
-  name: build_bots_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/lint_bots_postsubmit
-  name: lint_bots_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/test_bots_postsubmit
-  name: test_bots_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/gencheck_bots_postsubmit
-  name: gencheck_bots_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/deploy-policybot_bots_postsubmit
-  name: deploy-policybot_bots_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/build_gogo-genproto_postsubmit
-  name: build_gogo-genproto_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/lint_gogo-genproto_postsubmit
-  name: lint_gogo-genproto_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/gencheck_gogo-genproto_postsubmit
-  name: gencheck_gogo-genproto_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/build_gogo-genproto_release-1.4_postsubmit
-  name: build_gogo-genproto_release-1.4_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/lint_gogo-genproto_release-1.4_postsubmit
-  name: lint_gogo-genproto_release-1.4_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/gencheck_gogo-genproto_release-1.4_postsubmit
-  name: gencheck_gogo-genproto_release-1.4_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/build_pkg_postsubmit
   name: build_pkg_postsubmit
@@ -4224,6 +3940,95 @@ test_groups:
 - gcs_prefix: istio-prow/logs/test_pkg_release-1.4_postsubmit
   name: test_pkg_release-1.4_postsubmit
   num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/build_gogo-genproto_postsubmit
+  name: build_gogo-genproto_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/lint_gogo-genproto_postsubmit
+  name: lint_gogo-genproto_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/gencheck_gogo-genproto_postsubmit
+  name: gencheck_gogo-genproto_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/build_gogo-genproto_release-1.4_postsubmit
+  name: build_gogo-genproto_release-1.4_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/lint_gogo-genproto_release-1.4_postsubmit
+  name: lint_gogo-genproto_release-1.4_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/gencheck_gogo-genproto_release-1.4_postsubmit
+  name: gencheck_gogo-genproto_release-1.4_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/release-daily_pipeline_release-1.1_postsubmit
+  name: release-daily_pipeline_release-1.1_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/release-monthly_pipeline_release-1.1_postsubmit
+  name: release-monthly_pipeline_release-1.1_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/release-daily_pipeline_release-1.3_postsubmit
+  name: release-daily_pipeline_release-1.3_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/release-monthly_pipeline_release-1.3_postsubmit
+  name: release-monthly_pipeline_release-1.3_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/build_api_postsubmit
+  name: build_api_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/gencheck_api_postsubmit
+  name: gencheck_api_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/gen_client-go_api_postsubmit
+  name: gen_client-go_api_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/gen_istio_api_postsubmit
+  name: gen_istio_api_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/api-postsubmit
+  name: api-postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/build_api_release-1.4_postsubmit
+  name: build_api_release-1.4_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/gencheck_api_release-1.4_postsubmit
+  name: gencheck_api_release-1.4_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/build_client-go_postsubmit
+  name: build_client-go_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/lint_client-go_postsubmit
+  name: lint_client-go_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/gencheck_client-go_postsubmit
+  name: gencheck_client-go_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/build_client-go_release-1.4_postsubmit
+  name: build_client-go_release-1.4_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/lint_client-go_release-1.4_postsubmit
+  name: lint_client-go_release-1.4_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/gencheck_client-go_release-1.4_postsubmit
+  name: gencheck_client-go_release-1.4_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/lint_test-infra_postsubmit
+  name: lint_test-infra_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/test_test-infra_postsubmit
+  name: test_test-infra_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/gencheck_test-infra_postsubmit
+  name: gencheck_test-infra_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/deploy-prow_test-infra_postsubmit
+  name: deploy-prow_test-infra_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/push-authentikos_test-infra_postsubmit
+  name: push-authentikos_test-infra_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/push-genjobs_test-infra_postsubmit
+  name: push-genjobs_test-infra_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/post-istio-test-infra-upload-testgrid-config
+  name: post-istio-test-infra-upload-testgrid-config
 - gcs_prefix: istio-prow/logs/unit-tests_istio_postsubmit
   name: unit-tests_istio_postsubmit
   num_failures_to_alert: 1
@@ -4527,105 +4332,259 @@ test_groups:
 - gcs_prefix: istio-prow/logs/gencheck_istio_release-1.4_postsubmit
   name: gencheck_istio_release-1.4_postsubmit
   num_failures_to_alert: 1
-- gcs_prefix: istio-prow/pr-logs/directory/e2e-simpleTests_pipeline_release-1.3
-  name: e2e-simpleTests_pipeline_release-1.3
-  num_columns_recent: 20
+- gcs_prefix: istio-prow/logs/lint_istio.io_postsubmit
+  name: lint_istio.io_postsubmit
   num_failures_to_alert: 1
-- gcs_prefix: istio-prow/pr-logs/directory/upgrade-tests-1.1.7_pipeline_release-1.3
-  name: upgrade-tests-1.1.7_pipeline_release-1.3
-  num_columns_recent: 20
+- gcs_prefix: istio-prow/logs/lint_istio.io_release-1.3_postsubmit
+  name: lint_istio.io_release-1.3_postsubmit
   num_failures_to_alert: 1
-- gcs_prefix: istio-prow/pr-logs/directory/istio-unit-tests_pipeline_release-1.3
-  name: istio-unit-tests_pipeline_release-1.3
-  num_columns_recent: 20
+- gcs_prefix: istio-prow/logs/lint_istio.io_release-1.4_postsubmit
+  name: lint_istio.io_release-1.4_postsubmit
   num_failures_to_alert: 1
-- gcs_prefix: istio-prow/pr-logs/directory/istioctl-tests_pipeline_release-1.3
-  name: istioctl-tests_pipeline_release-1.3
-  num_columns_recent: 20
+- gcs_prefix: istio-prow/logs/lint_release-builder_postsubmit
+  name: lint_release-builder_postsubmit
   num_failures_to_alert: 1
-- gcs_prefix: istio-prow/pr-logs/directory/e2e-pilot-no_auth_pipeline_release-1.3
-  name: e2e-pilot-no_auth_pipeline_release-1.3
-  num_columns_recent: 20
+- gcs_prefix: istio-prow/logs/test_release-builder_postsubmit
+  name: test_release-builder_postsubmit
   num_failures_to_alert: 1
-- gcs_prefix: istio-prow/pr-logs/directory/e2e-bookInfoTests_pipeline_release-1.3
-  name: e2e-bookInfoTests_pipeline_release-1.3
-  num_columns_recent: 20
+- gcs_prefix: istio-prow/logs/gencheck_release-builder_postsubmit
+  name: gencheck_release-builder_postsubmit
   num_failures_to_alert: 1
-- gcs_prefix: istio-prow/pr-logs/directory/e2e-mixer-no_auth_pipeline_release-1.3
-  name: e2e-mixer-no_auth_pipeline_release-1.3
-  num_columns_recent: 20
+- gcs_prefix: istio-prow/logs/dry-run_release-builder_postsubmit
+  name: dry-run_release-builder_postsubmit
   num_failures_to_alert: 1
-- gcs_prefix: istio-prow/pr-logs/directory/e2e-dashboard_pipeline_release-1.3
-  name: e2e-dashboard_pipeline_release-1.3
-  num_columns_recent: 20
+- gcs_prefix: istio-prow/logs/build-release_release-builder_postsubmit
+  name: build-release_release-builder_postsubmit
   num_failures_to_alert: 1
-- gcs_prefix: istio-prow/pr-logs/directory/e2e-stackdriver_pipeline_release-1.3
-  name: e2e-stackdriver_pipeline_release-1.3
-  num_columns_recent: 20
+- gcs_prefix: istio-prow/logs/publish-release_release-builder_postsubmit
+  name: publish-release_release-builder_postsubmit
   num_failures_to_alert: 1
-- gcs_prefix: istio-prow/pr-logs/directory/release-build_pipeline_release-1.3
-  name: release-build_pipeline_release-1.3
-  num_columns_recent: 20
+- gcs_prefix: istio-prow/logs/lint_release-builder_release-1.4_postsubmit
+  name: lint_release-builder_release-1.4_postsubmit
   num_failures_to_alert: 1
-- gcs_prefix: istio-prow/pr-logs/directory/build_cri
-  name: build_cri
+- gcs_prefix: istio-prow/logs/test_release-builder_release-1.4_postsubmit
+  name: test_release-builder_release-1.4_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/gencheck_release-builder_release-1.4_postsubmit
+  name: gencheck_release-builder_release-1.4_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/dry-run_release-builder_release-1.4_postsubmit
+  name: dry-run_release-builder_release-1.4_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/build-release_release-builder_release-1.4_postsubmit
+  name: build-release_release-builder_release-1.4_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/publish-release_release-builder_release-1.4_postsubmit
+  name: publish-release_release-builder_release-1.4_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/lint_common-files_postsubmit
+  name: lint_common-files_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/update-common_common-files_postsubmit
+  name: update-common_common-files_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/lint_common-files_release-1.4_postsubmit
+  name: lint_common-files_release-1.4_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/lint_operator_postsubmit
+  name: lint_operator_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/mesh_operator_postsubmit
+  name: mesh_operator_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/test_operator_postsubmit
+  name: test_operator_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/mandiff_operator_postsubmit
+  name: mandiff_operator_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/gencheck_operator_postsubmit
+  name: gencheck_operator_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/e2e_operator_postsubmit
+  name: e2e_operator_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/release_operator_postsubmit
+  name: release_operator_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/lint_operator_release-1.3_postsubmit
+  name: lint_operator_release-1.3_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/mesh_operator_release-1.3_postsubmit
+  name: mesh_operator_release-1.3_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/test_operator_release-1.3_postsubmit
+  name: test_operator_release-1.3_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/mandiff_operator_release-1.3_postsubmit
+  name: mandiff_operator_release-1.3_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/manifest-apply_operator_release-1.3_postsubmit
+  name: manifest-apply_operator_release-1.3_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/lint_operator_release-1.4_postsubmit
+  name: lint_operator_release-1.4_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/mesh_operator_release-1.4_postsubmit
+  name: mesh_operator_release-1.4_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/test_operator_release-1.4_postsubmit
+  name: test_operator_release-1.4_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/mandiff_operator_release-1.4_postsubmit
+  name: mandiff_operator_release-1.4_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/release_operator_release-1.4_postsubmit
+  name: release_operator_release-1.4_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/build_cni_postsubmit
+  name: build_cni_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/install_cni_postsubmit
+  name: install_cni_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/e2e_cni_postsubmit
+  name: e2e_cni_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/lint_cni_postsubmit
+  name: lint_cni_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/gencheck_cni_postsubmit
+  name: gencheck_cni_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/build_cni_release-1.3_postsubmit
+  name: build_cni_release-1.3_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/install_cni_release-1.3_postsubmit
+  name: install_cni_release-1.3_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/e2e_cni_release-1.3_postsubmit
+  name: e2e_cni_release-1.3_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/buildmodern_cni_release-1.3_postsubmit
+  name: buildmodern_cni_release-1.3_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/lintmodern_cni_release-1.3_postsubmit
+  name: lintmodern_cni_release-1.3_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/build_cni_release-1.4_postsubmit
+  name: build_cni_release-1.4_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/install_cni_release-1.4_postsubmit
+  name: install_cni_release-1.4_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/e2e_cni_release-1.4_postsubmit
+  name: e2e_cni_release-1.4_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/lint_cni_release-1.4_postsubmit
+  name: lint_cni_release-1.4_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/build_cri_postsubmit
+  name: build_cri_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/lint_cri_postsubmit
+  name: lint_cri_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/test_cri_postsubmit
+  name: test_cri_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/gencheck_cri_postsubmit
+  name: gencheck_cri_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/build_bots_postsubmit
+  name: build_bots_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/lint_bots_postsubmit
+  name: lint_bots_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/test_bots_postsubmit
+  name: test_bots_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/gencheck_bots_postsubmit
+  name: gencheck_bots_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/deploy-policybot_bots_postsubmit
+  name: deploy-policybot_bots_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/build_tools_postsubmit
+  name: build_tools_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/lint_tools_postsubmit
+  name: lint_tools_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/test_tools_postsubmit
+  name: test_tools_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/gencheck_tools_postsubmit
+  name: gencheck_tools_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/containers_tools_postsubmit
+  name: containers_tools_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/build_tools_release-1.4_postsubmit
+  name: build_tools_release-1.4_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/lint_tools_release-1.4_postsubmit
+  name: lint_tools_release-1.4_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/test_tools_release-1.4_postsubmit
+  name: test_tools_release-1.4_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/tools-containers_release-1.4
+  name: tools-containers_release-1.4
+- gcs_prefix: istio-prow/logs/lint_community_postsubmit
+  name: lint_community_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/test_community_postsubmit
+  name: test_community_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/sync-org_community_postsubmit
+  name: sync-org_community_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/pr-logs/directory/lint_operator
+  name: lint_operator
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/lint_cri
-  name: lint_cri
+- gcs_prefix: istio-prow/pr-logs/directory/mesh_operator
+  name: mesh_operator
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/test_cri
-  name: test_cri
+- gcs_prefix: istio-prow/pr-logs/directory/test_operator
+  name: test_operator
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/gencheck_cri
-  name: gencheck_cri
+- gcs_prefix: istio-prow/pr-logs/directory/mandiff_operator
+  name: mandiff_operator
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/build_installer
-  name: build_installer
+- gcs_prefix: istio-prow/pr-logs/directory/gencheck_operator
+  name: gencheck_operator
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/lint_installer
-  name: lint_installer
+- gcs_prefix: istio-prow/pr-logs/directory/e2e_operator
+  name: e2e_operator
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/demo_installer
-  name: demo_installer
+- gcs_prefix: istio-prow/pr-logs/directory/lint_operator_release-1.3
+  name: lint_operator_release-1.3
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/noauth_installer
-  name: noauth_installer
+- gcs_prefix: istio-prow/pr-logs/directory/mesh_operator_release-1.3
+  name: mesh_operator_release-1.3
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/base_installer
-  name: base_installer
+- gcs_prefix: istio-prow/pr-logs/directory/test_operator_release-1.3
+  name: test_operator_release-1.3
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/gencheck_installer
-  name: gencheck_installer
+- gcs_prefix: istio-prow/pr-logs/directory/mandiff_operator_release-1.3
+  name: mandiff_operator_release-1.3
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/build_installer_release-1.4
-  name: build_installer_release-1.4
+- gcs_prefix: istio-prow/pr-logs/directory/manifest-apply_operator_release-1.3
+  name: manifest-apply_operator_release-1.3
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/lintmodern_installer_release-1.4
-  name: lintmodern_installer_release-1.4
+- gcs_prefix: istio-prow/pr-logs/directory/lint_operator_release-1.4
+  name: lint_operator_release-1.4
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/demo_installer_release-1.4
-  name: demo_installer_release-1.4
+- gcs_prefix: istio-prow/pr-logs/directory/mesh_operator_release-1.4
+  name: mesh_operator_release-1.4
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/noauth_installer_release-1.4
-  name: noauth_installer_release-1.4
+- gcs_prefix: istio-prow/pr-logs/directory/test_operator_release-1.4
+  name: test_operator_release-1.4
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/base_installer_release-1.4
-  name: base_installer_release-1.4
-  num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/build_api
-  name: build_api
-  num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/gencheck_api
-  name: gencheck_api
-  num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/api-presubmit
-  name: api-presubmit
-  num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/build_api_release-1.4
-  name: build_api_release-1.4
-  num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/gencheck_api_release-1.4
-  name: gencheck_api_release-1.4
+- gcs_prefix: istio-prow/pr-logs/directory/mandiff_operator_release-1.4
+  name: mandiff_operator_release-1.4
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/unit-tests_istio
   name: unit-tests_istio
@@ -4645,6 +4604,9 @@ test_groups:
 - gcs_prefix: istio-prow/pr-logs/directory/integ-security-local-tests_istio
   name: integ-security-local-tests_istio
   num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/integ-conformance-local-tests_istio
+  name: integ-conformance-local-tests_istio
+  num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/integ-galley-k8s-tests_istio
   name: integ-galley-k8s-tests_istio
   num_columns_recent: 20
@@ -4662,6 +4624,9 @@ test_groups:
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/integ-istioio-k8s-tests_istio
   name: integ-istioio-k8s-tests_istio
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/integ-conformance-k8s-tests_istio
+  name: integ-conformance-k8s-tests_istio
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/e2e-mixer-no_auth_istio
   name: e2e-mixer-no_auth_istio
@@ -4870,48 +4835,6 @@ test_groups:
 - gcs_prefix: istio-prow/pr-logs/directory/gencheck_istio_release-1.4
   name: gencheck_istio_release-1.4
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/build_gogo-genproto
-  name: build_gogo-genproto
-  num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/lint_gogo-genproto
-  name: lint_gogo-genproto
-  num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/gencheck_gogo-genproto
-  name: gencheck_gogo-genproto
-  num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/build_gogo-genproto_release-1.4
-  name: build_gogo-genproto_release-1.4
-  num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/lint_gogo-genproto_release-1.4
-  name: lint_gogo-genproto_release-1.4
-  num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/gencheck_gogo-genproto_release-1.4
-  name: gencheck_gogo-genproto_release-1.4
-  num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/build_tools
-  name: build_tools
-  num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/lint_tools
-  name: lint_tools
-  num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/test_tools
-  name: test_tools
-  num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/gencheck_tools
-  name: gencheck_tools
-  num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/containers-test_tools
-  name: containers-test_tools
-  num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/build_tools_release-1.4
-  name: build_tools_release-1.4
-  num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/lint_tools_release-1.4
-  name: lint_tools_release-1.4
-  num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/test_tools_release-1.4
-  name: test_tools_release-1.4
-  num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/test_proxy
   name: test_proxy
   num_columns_recent: 20
@@ -4939,11 +4862,23 @@ test_groups:
 - gcs_prefix: istio-prow/pr-logs/directory/proxy-presubmit-release
   name: proxy-presubmit-release
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/lint_common-files
-  name: lint_common-files
+- gcs_prefix: istio-prow/pr-logs/directory/build_gogo-genproto
+  name: build_gogo-genproto
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/lint_common-files_release-1.4
-  name: lint_common-files_release-1.4
+- gcs_prefix: istio-prow/pr-logs/directory/lint_gogo-genproto
+  name: lint_gogo-genproto
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/gencheck_gogo-genproto
+  name: gencheck_gogo-genproto
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/build_gogo-genproto_release-1.4
+  name: build_gogo-genproto_release-1.4
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/lint_gogo-genproto_release-1.4
+  name: lint_gogo-genproto_release-1.4
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/gencheck_gogo-genproto_release-1.4
+  name: gencheck_gogo-genproto_release-1.4
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/build_bots
   name: build_bots
@@ -4957,83 +4892,81 @@ test_groups:
 - gcs_prefix: istio-prow/pr-logs/directory/gencheck_bots
   name: gencheck_bots
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/lint_community
-  name: lint_community
+- gcs_prefix: istio-prow/pr-logs/directory/e2e-simpleTests_pipeline_release-1.3
+  name: e2e-simpleTests_pipeline_release-1.3
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/test_community
-  name: test_community
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/pr-logs/directory/upgrade-tests-1.1.7_pipeline_release-1.3
+  name: upgrade-tests-1.1.7_pipeline_release-1.3
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/build_client-go
-  name: build_client-go
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/pr-logs/directory/istio-unit-tests_pipeline_release-1.3
+  name: istio-unit-tests_pipeline_release-1.3
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/lint_client-go
-  name: lint_client-go
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/pr-logs/directory/istioctl-tests_pipeline_release-1.3
+  name: istioctl-tests_pipeline_release-1.3
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/gencheck_client-go
-  name: gencheck_client-go
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/pr-logs/directory/e2e-pilot-no_auth_pipeline_release-1.3
+  name: e2e-pilot-no_auth_pipeline_release-1.3
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/build_client-go_release-1.4
-  name: build_client-go_release-1.4
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/pr-logs/directory/e2e-bookInfoTests_pipeline_release-1.3
+  name: e2e-bookInfoTests_pipeline_release-1.3
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/lint_client-go_release-1.4
-  name: lint_client-go_release-1.4
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/pr-logs/directory/e2e-mixer-no_auth_pipeline_release-1.3
+  name: e2e-mixer-no_auth_pipeline_release-1.3
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/gencheck_client-go_release-1.4
-  name: gencheck_client-go_release-1.4
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/pr-logs/directory/e2e-dashboard_pipeline_release-1.3
+  name: e2e-dashboard_pipeline_release-1.3
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/lint_test-infra
-  name: lint_test-infra
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/pr-logs/directory/e2e-stackdriver_pipeline_release-1.3
+  name: e2e-stackdriver_pipeline_release-1.3
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/test_test-infra
-  name: test_test-infra
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/pr-logs/directory/release-build_pipeline_release-1.3
+  name: release-build_pipeline_release-1.3
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/gencheck_test-infra
-  name: gencheck_test-infra
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/pr-logs/directory/build_pkg
+  name: build_pkg
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/lint_operator
-  name: lint_operator
+- gcs_prefix: istio-prow/pr-logs/directory/lint_pkg
+  name: lint_pkg
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/mesh_operator
-  name: mesh_operator
+- gcs_prefix: istio-prow/pr-logs/directory/test_pkg
+  name: test_pkg
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/test_operator
-  name: test_operator
+- gcs_prefix: istio-prow/pr-logs/directory/gencheck_pkg
+  name: gencheck_pkg
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/mandiff_operator
-  name: mandiff_operator
+- gcs_prefix: istio-prow/pr-logs/directory/build_pkg_release-1.3
+  name: build_pkg_release-1.3
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/gencheck_operator
-  name: gencheck_operator
+- gcs_prefix: istio-prow/pr-logs/directory/lint_pkg_release-1.3
+  name: lint_pkg_release-1.3
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/e2e_operator
-  name: e2e_operator
+- gcs_prefix: istio-prow/pr-logs/directory/test_pkg_release-1.3
+  name: test_pkg_release-1.3
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/lint_operator_release-1.3
-  name: lint_operator_release-1.3
+- gcs_prefix: istio-prow/pr-logs/directory/build_pkg_release-1.4
+  name: build_pkg_release-1.4
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/mesh_operator_release-1.3
-  name: mesh_operator_release-1.3
+- gcs_prefix: istio-prow/pr-logs/directory/lint_pkg_release-1.4
+  name: lint_pkg_release-1.4
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/test_operator_release-1.3
-  name: test_operator_release-1.3
+- gcs_prefix: istio-prow/pr-logs/directory/test_pkg_release-1.4
+  name: test_pkg_release-1.4
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/mandiff_operator_release-1.3
-  name: mandiff_operator_release-1.3
+- gcs_prefix: istio-prow/pr-logs/directory/lint_common-files
+  name: lint_common-files
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/manifest-apply_operator_release-1.3
-  name: manifest-apply_operator_release-1.3
-  num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/lint_operator_release-1.4
-  name: lint_operator_release-1.4
-  num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/mesh_operator_release-1.4
-  name: mesh_operator_release-1.4
-  num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/test_operator_release-1.4
-  name: test_operator_release-1.4
-  num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/mandiff_operator_release-1.4
-  name: mandiff_operator_release-1.4
+- gcs_prefix: istio-prow/pr-logs/directory/lint_common-files_release-1.4
+  name: lint_common-files_release-1.4
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/build_cni
   name: build_cni
@@ -5077,35 +5010,17 @@ test_groups:
 - gcs_prefix: istio-prow/pr-logs/directory/lint_cni_release-1.4
   name: lint_cni_release-1.4
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/build_pkg
-  name: build_pkg
+- gcs_prefix: istio-prow/pr-logs/directory/build_cri
+  name: build_cri
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/lint_pkg
-  name: lint_pkg
+- gcs_prefix: istio-prow/pr-logs/directory/lint_cri
+  name: lint_cri
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/test_pkg
-  name: test_pkg
+- gcs_prefix: istio-prow/pr-logs/directory/test_cri
+  name: test_cri
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/gencheck_pkg
-  name: gencheck_pkg
-  num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/build_pkg_release-1.3
-  name: build_pkg_release-1.3
-  num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/lint_pkg_release-1.3
-  name: lint_pkg_release-1.3
-  num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/test_pkg_release-1.3
-  name: test_pkg_release-1.3
-  num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/build_pkg_release-1.4
-  name: build_pkg_release-1.4
-  num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/lint_pkg_release-1.4
-  name: lint_pkg_release-1.4
-  num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/test_pkg_release-1.4
-  name: test_pkg_release-1.4
+- gcs_prefix: istio-prow/pr-logs/directory/gencheck_cri
+  name: gencheck_cri
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/lint_release-builder
   name: lint_release-builder
@@ -5143,6 +5058,90 @@ test_groups:
 - gcs_prefix: istio-prow/pr-logs/directory/publish-warning_release-builder_release-1.4
   name: publish-warning_release-builder_release-1.4
   num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/build_tools
+  name: build_tools
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/lint_tools
+  name: lint_tools
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/test_tools
+  name: test_tools
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/gencheck_tools
+  name: gencheck_tools
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/containers-test_tools
+  name: containers-test_tools
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/build_tools_release-1.4
+  name: build_tools_release-1.4
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/lint_tools_release-1.4
+  name: lint_tools_release-1.4
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/test_tools_release-1.4
+  name: test_tools_release-1.4
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/lint_test-infra
+  name: lint_test-infra
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/test_test-infra
+  name: test_test-infra
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/gencheck_test-infra
+  name: gencheck_test-infra
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/build_installer
+  name: build_installer
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/lint_installer
+  name: lint_installer
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/demo_installer
+  name: demo_installer
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/noauth_installer
+  name: noauth_installer
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/base_installer
+  name: base_installer
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/gencheck_installer
+  name: gencheck_installer
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/build_installer_release-1.4
+  name: build_installer_release-1.4
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/lintmodern_installer_release-1.4
+  name: lintmodern_installer_release-1.4
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/demo_installer_release-1.4
+  name: demo_installer_release-1.4
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/noauth_installer_release-1.4
+  name: noauth_installer_release-1.4
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/base_installer_release-1.4
+  name: base_installer_release-1.4
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/build_client-go
+  name: build_client-go
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/lint_client-go
+  name: lint_client-go
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/gencheck_client-go
+  name: gencheck_client-go
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/build_client-go_release-1.4
+  name: build_client-go_release-1.4
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/lint_client-go_release-1.4
+  name: lint_client-go_release-1.4
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/gencheck_client-go_release-1.4
+  name: gencheck_client-go_release-1.4
+  num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/lint_istio.io
   name: lint_istio.io
   num_columns_recent: 20
@@ -5151,4 +5150,25 @@ test_groups:
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/lint_istio.io_release-1.4
   name: lint_istio.io_release-1.4
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/lint_community
+  name: lint_community
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/test_community
+  name: test_community
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/build_api
+  name: build_api
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/gencheck_api
+  name: gencheck_api
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/api-presubmit
+  name: api-presubmit
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/build_api_release-1.4
+  name: build_api_release-1.4
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/gencheck_api_release-1.4
+  name: gencheck_api_release-1.4
   num_columns_recent: 20
