@@ -100,6 +100,12 @@ func CollectGitHubTokenMetrics(tokenHash, apiVersion string, headers http.Header
 	if err != nil {
 		logrus.WithError(err).Infof("Couldn't convert number of remaining token requests into gauge value (float)")
 	}
+	if remainingFloat == 0 {
+		logrus.WithFields(logrus.Fields{
+			"header":     remaining,
+			"user-agent": headers.Get("User-Agent"),
+		}).Debug("Parsed GitHub header as indicating no remaining rate-limit.")
+	}
 
 	muxTokenUsage.Lock()
 	isAfter := lastGitHubResponse.After(responseTime)
