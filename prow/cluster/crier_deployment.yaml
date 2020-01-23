@@ -44,7 +44,7 @@ spec:
         - --gcs-workers=1
         - --gcs-credentials-file=/etc/service-account/service-account.json
         - --kubernetes-gcs-workers=1
-        - --kubernetes-report-fraction=0.1
+        - --kubernetes-report-fraction=0.5
         - --build-cluster=/etc/cluster/cluster
         volumeMounts:
         - mountPath: /etc/cluster
