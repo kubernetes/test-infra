@@ -90,6 +90,10 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
  
+ - *January 23, 2020* The mason interface now adds a `Destruct` phase during resource recycling which enables
+   custom cleanup implementations. `LeasedResources` are now a map from `type->value` instead of just a list of values.
+   During migration, all the previously leased resources will be added to the map with an empty type (`""`) key.
+   Details: https://github.com/kubernetes/test-infra/pull/14295
  - *November 21, 2019* The boskos metrics component replaced the existing prometheus
    metrics with a single, label-qualified metric. Metrics are now served at `/metrics`
    on port 9090. This actually happened August 5th, but is being documented now. 
