@@ -98,7 +98,7 @@ postsubmits:
         - name: CODECOV_TOKEN
           valueFrom:
             secretKeyRef:
-              name: ibm-common-service-operator-codecov-token
+              name: common-service-operator-codecov-token
               key: codecov-token
         securityContext:
           privileged: true
