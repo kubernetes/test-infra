@@ -1,21 +1,53 @@
-presubmits:
-
 postsubmits:
   IBM/test-infra:
   - name: create-build-tool-images
+    cluster: default
     decorate: true
     branches:
     - ^master$
     labels:
       preset-service-account: "true"
-    run_if_changed: 'prow/docker/*'
+    run_if_changed: 'prow/docker/build-tools/*'
     spec:
       containers:
-        - image: quay.io/multicloudlab/multicloudlab-builder:v20191217-d33a10d
+        - image: quay.io/multicloudlab/multicloudlab-builder-amd64:v20200123-4f4560f62
+          securityContext:
+            privileged: true
+          command:
+            - entrypoint
+            - make
+            - build-tool-image
+  - name: create-docker-in-docker-builer-amd64-image
+    decorate: true
+    branches:
+    - ^master$
+    labels:
+      preset-service-account: "true"
+    run_if_changed: 'prow/docker/docker-in-docker/*'
+    spec:
+      containers:
+        - image: quay.io/multicloudlab/multicloudlab-builder-amd64:v20200123-4f4560f62
           # docker in docker
           securityContext:
             privileged: true
           command:
             - entrypoint
             - make
-            - images
+            - docker-in-docker-builder-image
+  - name: create-docker-in-docker-builer-ppc64le-image
+    decorate: true
+    branches:
+    - ^master$
+    labels:
+      preset-service-account: "true"
+    run_if_changed: 'prow/docker/docker-in-docker/*'
+    spec:
+      containers:
+        - image: quay.io/multicloudlab/multicloudlab-builder-ppc64le:v20200123-4f4560f62
+          # docker in docker
+          securityContext:
+            privileged: true
+          command:
+            - entrypoint
+            - make
+            - docker-in-docker-builder-image
