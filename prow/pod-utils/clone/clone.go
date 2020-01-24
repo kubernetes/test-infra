@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"net/url"
 	"os/exec"
+	"path"
 	"strconv"
 	"strings"
 	"time"
@@ -96,11 +97,7 @@ func PathForRefs(baseDir string, refs prowapi.Refs) string {
 		clonePath = fmt.Sprintf("github.com/%s/%s", refs.Org, refs.Repo)
 	}
 
-	// Support a baseDir of root "/"
-	if baseDir == "/" {
-		return fmt.Sprintf("%ssrc/%s", baseDir, clonePath)
-	}
-	return fmt.Sprintf("%s/src/%s", baseDir, clonePath)
+	return path.Join(baseDir, "src", clonePath)
 }
 
 // gitCtx collects a few common values needed for all git commands.
