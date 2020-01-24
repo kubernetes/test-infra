@@ -1112,7 +1112,7 @@ func TestSyncPendingJob(t *testing.T) {
 				},
 			},
 			expectedState:    prowapi.ErrorState,
-			expectedNumPods:  0,
+			expectedNumPods:  1,
 			expectedComplete: true,
 			expectedReport:   true,
 			expectedURL:      "nightmare/error",
