@@ -19,6 +19,7 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"reflect"
 	"testing"
 	"time"
@@ -29,7 +30,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/sets"
 	corev1fake "k8s.io/client-go/kubernetes/fake"
-	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	clienttesting "k8s.io/client-go/testing"
 	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
 
@@ -78,6 +78,15 @@ func (f *fca) Config() *config.Config {
 func startTime(s time.Time) *metav1.Time {
 	start := metav1.NewTime(s)
 	return &start
+}
+
+type unreachableCluster struct{}
+
+func (unreachableCluster) Delete(name string, options *metav1.DeleteOptions) error {
+	return fmt.Errorf("I can't hear you.")
+}
+func (unreachableCluster) List(opts metav1.ListOptions) (*corev1api.PodList, error) {
+	return nil, fmt.Errorf("I can't hear you.")
 }
 
 func TestClean(t *testing.T) {
@@ -632,7 +641,7 @@ func TestClean(t *testing.T) {
 
 	fpjc := fakectrlruntimeclient.NewFakeClient(prowJobs...)
 	fkc := []*corev1fake.Clientset{corev1fake.NewSimpleClientset(pods...), corev1fake.NewSimpleClientset(podsTrusted...)}
-	var fpc []corev1.PodInterface
+	fpc := []podInterface{unreachableCluster{}}
 	for _, fakeClient := range fkc {
 		fpc = append(fpc, fakeClient.CoreV1().Pods("ns"))
 	}
