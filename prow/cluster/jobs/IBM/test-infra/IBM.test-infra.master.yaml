@@ -17,7 +17,7 @@ presubmits:
         name: ""
         securityContext:
           privileged: true
-    trigger: '(?m)^/test (?:.*? )?check(?: .*?)?$'
+    trigger: '(?m)^/test (?:.*? )?check(?:.*?)?$'
   - name: test-infra-prow-checkconfig
     cluster: default
     branches:
@@ -39,7 +39,7 @@ presubmits:
         - --exclude-warning=mismatched-tide
         - --exclude-warning=unknown-fields
         - --exclude-warning=non-decorated-jobs
-    trigger: '(?m)^/test (?:.*? )?checkconfig(?: .*?)?$'
+    trigger: '(?m)^/test (?:.*? )?checkconfig(?:.*?)?$'
   - name: test-test-infra
     cluster: default
     branches:
@@ -57,7 +57,7 @@ presubmits:
         name: ""
         securityContext:
           privileged: true
-    trigger: '(?m)^/test (?:.*? )?test(?: .*?)?$'
+    trigger: '(?m)^/test (?:.*? )?test(?:.*?)?$'
   - name: build-test-infra
     cluster: default
     branches:
@@ -75,4 +75,4 @@ presubmits:
         name: ""
         securityContext:
           privileged: true
-    trigger: '(?m)^/test (?:.*? )?build(?: .*?)?$'
+    trigger: '(?m)^/test (?:.*? )?build(?:.*?)?$'
