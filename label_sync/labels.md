@@ -199,6 +199,7 @@ larger set of contributors to apply/remove them.
 | <a id="area/cn-summit" href="#area/cn-summit">`area/cn-summit`</a> | Issues or PRs related to the Contributor Summit in China| label | |
 | <a id="area/code-organization" href="#area/code-organization">`area/code-organization`</a> | Issues or PRs related to kubernetes code organization| label | |
 | <a id="area/conformance" href="#area/conformance">`area/conformance`</a> | Issues or PRs related to kubernetes conformance tests| label | |
+| <a id="area/contributor-comms" href="#area/contributor-comms">`area/contributor-comms`</a> | Issues or PRs related to the upstream marketing team| humans | |
 | <a id="area/contributor-guide" href="#area/contributor-guide">`area/contributor-guide`</a> | Issues or PRs related to the contributor guide| label | |
 | <a id="area/contributor-summit" href="#area/contributor-summit">`area/contributor-summit`</a> | Issues or PRs related to all Contributor Summit events| label | |
 | <a id="area/deflake" href="#area/deflake">`area/deflake`</a> | Issues or PRs related to deflaking kubernetes tests| label | |
