@@ -23,8 +23,10 @@ import (
 	"os"
 	"reflect"
 	"regexp"
+	"strings"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"sigs.k8s.io/yaml"
@@ -365,7 +367,7 @@ func TestOrgRepoUnion(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			got := tc.a.union(tc.b)
 			if !reflect.DeepEqual(got, tc.expected) {
-				t.Errorf("%s: did not get expected config:\n%v", tc.name, diff.ObjectGoPrintDiff(tc.expected, got))
+				t.Errorf("%s: did not get expected config:\n%v", tc.name, cmp.Diff(tc.expected, got))
 			}
 		})
 	}
@@ -377,7 +379,7 @@ func TestValidateUnknownFields(t *testing.T) {
 		cfg            interface{}
 		configBytes    []byte
 		config         interface{}
-		expectedErr    error
+		expectedErr    string
 	}{
 		{
 			name:     "valid config",
@@ -394,7 +396,7 @@ config_updater:
       name: plugins
 size:
   s: 1`),
-			expectedErr: nil,
+			expectedErr: "",
 		},
 		{
 			name:     "invalid top-level property",
@@ -411,7 +413,7 @@ notconfig_updater:
       name: plugins
 size:
   s: 1`),
-			expectedErr: fmt.Errorf("unknown fields present in toplvl.yaml: notconfig_updater"),
+			expectedErr: "notconfig_updater",
 		},
 		{
 			name:     "invalid second-level property",
@@ -424,7 +426,7 @@ size:
 size:
   xs: 1
   s: 5`),
-			expectedErr: fmt.Errorf("unknown fields present in seclvl.yaml: size.xs"),
+			expectedErr: "xs",
 		},
 		{
 			name:     "invalid array element",
@@ -439,7 +441,7 @@ triggers:
   - kube/kube
 - repoz:
   - kube/kubez`),
-			expectedErr: fmt.Errorf("unknown fields present in home/array.yaml: triggers[1].repoz"),
+			expectedErr: "repoz",
 		},
 		{
 			name:     "invalid map entry",
@@ -458,10 +460,10 @@ config_updater:
       validation: config
 size:
   s: 1`),
-			expectedErr: fmt.Errorf("unknown fields present in map.yaml: " +
-				"config_updater.maps.kube/config.yaml.validation"),
+			expectedErr: "validation",
 		},
 		{
+			//only one invalid element is printed in the error
 			name:     "multiple invalid elements",
 			filename: "multiple.yaml",
 			cfg:      &plugins.Configuration{},
@@ -477,11 +479,10 @@ triggers:
 size:
   s: 1
   xs: 1`),
-			expectedErr: fmt.Errorf("unknown fields present in multiple.yaml: " +
-				"size.xs, triggers[0].repoz"),
+			expectedErr: "xs",
 		},
 		{
-			name:     "embedded structs",
+			name:     "embedded structs - kube",
 			filename: "embedded.yaml",
 			cfg:      &config.Config{},
 			configBytes: []byte(`presubmits:
@@ -494,15 +495,26 @@ size:
     spec:
       containers:
       - image: alpine
-        command: ["/bin/printenv"]
-tide:
+        command: ["/bin/printenv"]`),
+			expectedErr: "never_run",
+		},
+		{
+			name:     "embedded structs - tide",
+			filename: "embedded.yaml",
+			cfg:      &config.Config{},
+			configBytes: []byte(`tide:
   squash_label: sq
-  not-a-property: true
-size:
+  not-a-property: true`),
+			expectedErr: "not-a-property",
+		},
+		{
+			name:     "embedded structs - size",
+			filename: "embedded.yaml",
+			cfg:      &config.Config{},
+			configBytes: []byte(`size:
   s: 1
   xs: 1`),
-			expectedErr: fmt.Errorf("unknown fields present in embedded.yaml: " +
-				"presubmits.kube/kube[0].never_run, size, tide.not-a-property"),
+			expectedErr: "size",
 		},
 		{
 			name:     "pointer to a slice",
@@ -514,8 +526,7 @@ size:
       statuses:
       - foobar
       extra: oops`),
-			expectedErr: fmt.Errorf("unknown fields present in pointer.yaml: " +
-				"bugzilla.default.*.extra"),
+			expectedErr: "extra",
 		},
 	}
 
@@ -525,9 +536,17 @@ size:
 				t.Fatalf("Unable to unmarhsal yaml: %v", err)
 			}
 			got := validateUnknownFields(tc.cfg, tc.configBytes, tc.filename)
-			if !reflect.DeepEqual(got, tc.expectedErr) {
-				t.Errorf("%s: did not get expected validation error:\n%v", tc.name,
-					diff.ObjectGoPrintDiff(tc.expectedErr, got))
+
+			if tc.expectedErr == "" {
+				if got != nil {
+					t.Errorf("%s: expected nil error but got:\n%v", tc.name, got)
+				}
+			} else { // check substrings in case yaml lib changes err fmt
+				for _, s := range []string{"unknown field", tc.filename, tc.expectedErr} {
+					if !strings.Contains(got.Error(), s) {
+						t.Errorf("%s: did not get expected validation error: expected substring in error message:\n%s\n but got:\n%s", tc.name, s, got)
+					}
+				}
 			}
 		})
 	}
@@ -1202,7 +1221,7 @@ func TestValidateJobExtraRefs(t *testing.T) {
 			}
 			if err := validateJobExtraRefs(config); !reflect.DeepEqual(err, errorutil.NewAggregate(tc.expected)) {
 				t.Errorf("%s: did not get expected validation error:\n%v", tc.name,
-					diff.ObjectGoPrintDiff(tc.expected, err))
+					cmp.Diff(tc.expected, err))
 			}
 		})
 	}

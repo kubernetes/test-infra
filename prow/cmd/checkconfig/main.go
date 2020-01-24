@@ -24,8 +24,6 @@ import (
 	"io/ioutil"
 	"net/url"
 	"os"
-	"reflect"
-	"sort"
 	"strings"
 
 	"github.com/sirupsen/logrus"
@@ -425,92 +423,11 @@ func validateURLs(c config.ProwConfig) error {
 }
 
 func validateUnknownFields(cfg interface{}, cfgBytes []byte, filePath string) error {
-	var obj interface{}
-	err := yaml.Unmarshal(cfgBytes, &obj)
+	err := yaml.Unmarshal(cfgBytes, &cfg, yaml.DisallowUnknownFields)
 	if err != nil {
-		return fmt.Errorf("error while unmarshaling yaml: %v", err)
-	}
-	unknownFields := checkUnknownFields("", obj, reflect.ValueOf(cfg))
-	if len(unknownFields) > 0 {
-		sort.Strings(unknownFields)
-		return fmt.Errorf("unknown fields present in %s: %v", filePath, strings.Join(unknownFields, ", "))
+		return fmt.Errorf("unknown fields or bad config in %s: %v", filePath, err)
 	}
 	return nil
-}
-
-func checkUnknownFields(keyPref string, obj interface{}, cfg reflect.Value) []string {
-	var uf []string
-	switch concreteVal := obj.(type) {
-	case map[string]interface{}:
-		// Iterate over map and check every value
-		for key, val := range concreteVal {
-			fullKey := fmt.Sprintf("%s.%s", keyPref, key)
-			subCfg := getSubCfg(key, cfg)
-			if !subCfg.IsValid() {
-				// Append fullKey without leading "."
-				uf = append(uf, fullKey[1:])
-			} else {
-				subUf := checkUnknownFields(fullKey, val, subCfg)
-				uf = append(uf, subUf...)
-			}
-		}
-	case []interface{}:
-		for i, val := range concreteVal {
-			fullKey := fmt.Sprintf("%s[%v]", keyPref, i)
-			var subCfg reflect.Value
-			if cfg.Kind() == reflect.Ptr {
-				subCfg = cfg.Elem().Index(i)
-			} else {
-				subCfg = cfg.Index(i)
-			}
-			uf = append(uf, checkUnknownFields(fullKey, val, subCfg)...)
-		}
-	}
-	return uf
-}
-
-func getSubCfg(key string, cfg reflect.Value) reflect.Value {
-	cfgElem := cfg
-	if cfg.Kind() == reflect.Interface || cfg.Kind() == reflect.Ptr {
-		cfgElem = cfg.Elem()
-	}
-	switch cfgElem.Kind() {
-	case reflect.Map:
-		for _, k := range cfgElem.MapKeys() {
-			strK := fmt.Sprintf("%v", k.Interface())
-			if strK == key {
-				return cfgElem.MapIndex(k)
-			}
-		}
-	case reflect.Struct:
-		for i := 0; i < cfgElem.NumField(); i++ {
-			structField := cfgElem.Type().Field(i)
-			// Check if field is embedded struct
-			if structField.Anonymous {
-				subStruct := getSubCfg(key, cfgElem.Field(i))
-				if subStruct.IsValid() {
-					return subStruct
-				}
-			} else {
-				field := getJSONTagName(structField)
-				if field == key {
-					return cfgElem.Field(i)
-				}
-			}
-		}
-	}
-	return reflect.Value{}
-}
-
-func getJSONTagName(field reflect.StructField) string {
-	jsonTag := field.Tag.Get("json")
-	if jsonTag != "" && jsonTag != "-" {
-		if commaIdx := strings.Index(jsonTag, ","); commaIdx > 0 {
-			return jsonTag[:commaIdx]
-		}
-		return jsonTag
-	}
-	return ""
 }
 
 func validateJobRequirements(c config.JobConfig) error {
