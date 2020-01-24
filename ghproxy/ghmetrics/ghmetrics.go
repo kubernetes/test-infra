@@ -93,6 +93,9 @@ func init() {
 // `github_token_usage` as well as `github_token_reset` on prometheus.
 func CollectGitHubTokenMetrics(tokenHash, apiVersion string, headers http.Header, reqStartTime, responseTime time.Time) {
 	remaining := headers.Get("X-RateLimit-Remaining")
+	if remaining == "" {
+		return
+	}
 	timeUntilReset := timestampStringToTime(headers.Get("X-RateLimit-Reset"))
 	durationUntilReset := timeUntilReset.Sub(reqStartTime)
 
