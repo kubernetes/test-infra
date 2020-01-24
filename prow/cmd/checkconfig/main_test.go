@@ -23,6 +23,7 @@ import (
 	"os"
 	"reflect"
 	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -378,7 +379,7 @@ func TestValidateUnknownFields(t *testing.T) {
 		cfg            interface{}
 		configBytes    []byte
 		config         interface{}
-		expectedErr    error
+		expectedErr    string
 	}{
 		{
 			name:     "valid config",
@@ -395,7 +396,7 @@ config_updater:
       name: plugins
 size:
   s: 1`),
-			expectedErr: nil,
+			expectedErr: "",
 		},
 		{
 			name:     "invalid top-level property",
@@ -412,7 +413,7 @@ notconfig_updater:
       name: plugins
 size:
   s: 1`),
-			expectedErr: unknownFieldError("toplvl.yaml", "notconfig_updater"),
+			expectedErr: "notconfig_updater",
 		},
 		{
 			name:     "invalid second-level property",
@@ -425,7 +426,7 @@ size:
 size:
   xs: 1
   s: 5`),
-			expectedErr: unknownFieldError("seclvl.yaml", "xs"),
+			expectedErr: "xs",
 		},
 		{
 			name:     "invalid array element",
@@ -440,7 +441,7 @@ triggers:
   - kube/kube
 - repoz:
   - kube/kubez`),
-			expectedErr: unknownFieldError("home/array.yaml", "repoz"),
+			expectedErr: "repoz",
 		},
 		{
 			name:     "invalid map entry",
@@ -459,7 +460,7 @@ config_updater:
       validation: config
 size:
   s: 1`),
-			expectedErr: unknownFieldError("map.yaml", "validation"),
+			expectedErr: "validation",
 		},
 		{
 			//only one invalid element is printed in the error
@@ -478,7 +479,7 @@ triggers:
 size:
   s: 1
   xs: 1`),
-			expectedErr: unknownFieldError("multiple.yaml", "xs"),
+			expectedErr: "xs",
 		},
 		{
 			name:     "embedded structs - kube",
@@ -495,7 +496,7 @@ size:
       containers:
       - image: alpine
         command: ["/bin/printenv"]`),
-			expectedErr: unknownFieldError("embedded.yaml", "never_run"),
+			expectedErr: "never_run",
 		},
 		{
 			name:     "embedded structs - tide",
@@ -504,7 +505,7 @@ size:
 			configBytes: []byte(`tide:
   squash_label: sq
   not-a-property: true`),
-			expectedErr: unknownFieldError("embedded.yaml", "not-a-property"),
+			expectedErr: "not-a-property",
 		},
 		{
 			name:     "embedded structs - size",
@@ -513,7 +514,7 @@ size:
 			configBytes: []byte(`size:
   s: 1
   xs: 1`),
-			expectedErr: unknownFieldError("embedded.yaml", "size"),
+			expectedErr: "size",
 		},
 		{
 			name:     "pointer to a slice",
@@ -525,7 +526,7 @@ size:
       statuses:
       - foobar
       extra: oops`),
-			expectedErr: unknownFieldError("pointer.yaml", "extra"),
+			expectedErr: "extra",
 		},
 	}
 
@@ -535,18 +536,20 @@ size:
 				t.Fatalf("Unable to unmarhsal yaml: %v", err)
 			}
 			got := validateUnknownFields(tc.cfg, tc.configBytes, tc.filename)
-			if !reflect.DeepEqual(got, tc.expectedErr) {
-				t.Errorf("%s: did not get expected validation error:\n%v", tc.name,
-					cmp.Diff(tc.expectedErr.Error(), got.Error()))
+
+			if tc.expectedErr == "" {
+				if got != nil {
+					t.Errorf("%s: expected nil error but got:\n%v", tc.name, got)
+				}
+			} else { // check substrings in case yaml lib changes err fmt
+				for _, s := range []string{"unknown field", tc.filename, tc.expectedErr} {
+					if !strings.Contains(got.Error(), s) {
+						t.Errorf("%s: did not get expected validation error: expected substring in error message:\n%s\n but got:\n%s", tc.name, s, got)
+					}
+				}
 			}
 		})
 	}
-}
-
-func unknownFieldError(file string, field string) error {
-	return fmt.Errorf("unknown fields or bad config in %s: "+
-		"error unmarshaling JSON: while decoding JSON: json: unknown field "+
-		"\"%s\"", file, field)
 }
 
 func TestValidateStrictBranches(t *testing.T) {
