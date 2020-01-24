@@ -1,29 +1,13 @@
 presubmits:
   multicloudlab/oasis:
-  - name: build_oasis
+  - name: check-oasis
+    cluster: default
     always_run: true
     branches:
     - ^master$
     decorate: true
     path_alias: github.com/multicloudlab/oasis
-    rerun_command: /test build oasis
-    spec:
-      containers:
-      - command:
-        - make
-        - build
-        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
-        name: ""
-        securityContext:
-          privileged: true
-    trigger: '(?m)^/test (?:.*? )?build(?: .*?)?$'
-  - name: check_oasis
-    always_run: true
-    branches:
-    - ^master$
-    decorate: true
-    path_alias: github.com/multicloudlab/oasis
-    rerun_command: /test check oasis
+    rerun_command: /test check-oasis
     spec:
       containers:
       - command:
@@ -34,13 +18,14 @@ presubmits:
         securityContext:
           privileged: true
     trigger: '(?m)^/test (?:.*? )?check(?: .*?)?$'
-  - name: test_oasis
+  - name: test-oasis
+    cluster: default
     always_run: true
     branches:
     - ^master$
     decorate: true
     path_alias: github.com/multicloudlab/oasis
-    rerun_command: /test test oasis
+    rerun_command: /test test-oasis
     spec:
       containers:
       - command:
@@ -51,24 +36,48 @@ presubmits:
         securityContext:
           privileged: true
     trigger: '(?m)^/test (?:.*? )?test(?: .*?)?$'
-
-postsubmits:
-  multicloudlab/oasis:
-  - name: build_oasis_postsubmit
+  - name: build-oasis-amd64
+    cluster: default
+    always_run: true
     branches:
     - ^master$
     decorate: true
     path_alias: github.com/multicloudlab/oasis
+    rerun_command: /test build-oasis-amd64
     spec:
       containers:
       - command:
+        - entrypoint
         - make
         - build
-        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
+        image: quay.io/multicloudlab/multicloudlab-builder-amd64:v20200123-4f4560f62
         name: ""
         securityContext:
           privileged: true
-  - name: check_oasis_postsubmit
+    trigger: '(?m)^/test (?:.*? )?build(?: .*?)?$'
+  - name: build-oasis-ppc64le
+    cluster: power
+    always_run: true
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/multicloudlab/oasis
+    rerun_command: /test build-oasis-ppc64le
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build
+        image: quay.io/multicloudlab/multicloudlab-builder-ppc64le:v20200123-4f4560f62
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?build(?: .*?)?$'
+postsubmits:
+  multicloudlab/oasis:
+  - name: check-oasis-postsubmit
+    cluster: default
     branches:
     - ^master$
     decorate: true
@@ -82,7 +91,8 @@ postsubmits:
         name: ""
         securityContext:
           privileged: true
-  - name: test_oasis_postsubmit
+  - name: test-oasis-postsubmit
+    cluster: default
     branches:
     - ^master$
     decorate: true
@@ -96,7 +106,8 @@ postsubmits:
         name: ""
         securityContext:
           privileged: true
-  - name: coverage_oasis_postsubmit
+  - name: coverage-oasis-postsubmit
+    cluster: default
     branches:
     - ^master$
     decorate: true
@@ -114,5 +125,81 @@ postsubmits:
             secretKeyRef:
               name: multicloudlab-oasis-codecov-token
               key: codecov-token
+        securityContext:
+          privileged: true
+  - name: build-oasis-amd64-postsubmit
+    cluster: default
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/multicloudlab/oasis
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build
+        image: quay.io/multicloudlab/multicloudlab-builder-amd64:v20200123-4f4560f62
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?build(?: .*?)?$'
+  - name: build-oasis-ppc64le-postsubmit
+    cluster: power
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/multicloudlab/oasis
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build
+        image: quay.io/multicloudlab/multicloudlab-builder-ppc64le:v20200123-4f4560f62
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?build(?: .*?)?$'
+  - name: images-amd64-oasis-postsubmit
+    cluster: default
+    branches:
+    - ^master$
+    decorate: true
+    decoration_config:
+      ssh_key_secrets:
+      - ssh-secret
+    labels:
+      preset-service-account: "true"
+    path_alias: github.com/multicloudlab/oasis
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - images
+        image: quay.io/multicloudlab/multicloudlab-builder-amd64:v20200123-4f4560f62
+        name: ""
+        securityContext:
+          privileged: true
+  - name: images-ppc64le-oasis-postsubmit
+    cluster: power
+    branches:
+    - ^master$
+    decorate: true
+    decoration_config:
+      ssh_key_secrets:
+      - ssh-secret
+    labels:
+      preset-service-account: "true"
+    path_alias: github.com/multicloudlab/oasis
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - images
+        image: quay.io/multicloudlab/multicloudlab-builder-ppc64le:v20200123-4f4560f62
+        name: ""
         securityContext:
           privileged: true
