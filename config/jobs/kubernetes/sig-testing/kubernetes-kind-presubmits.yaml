@@ -24,7 +24,7 @@ presubmits:
       path_alias: sigs.k8s.io/kind
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200123-f79dd58-1.14
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200123-0a8437a-1.14
         command:
         - runner.sh
         - kubetest
@@ -97,7 +97,7 @@ presubmits:
       path_alias: sigs.k8s.io/kind
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200123-f79dd58-1.15
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200123-0a8437a-1.15
         command:
         - runner.sh
         - kubetest
@@ -170,7 +170,7 @@ presubmits:
       path_alias: sigs.k8s.io/kind
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200123-f79dd58-1.16
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200123-0a8437a-1.16
         command:
         - runner.sh
         - kubetest
@@ -235,7 +235,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20200107-164c5e8-master
+      - image: gcr.io/k8s-testimages/krte:v20200123-dd36597-master
         command:
         - wrapper.sh
         - bash
@@ -334,7 +334,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20200107-164c5e8-master
+      - image: gcr.io/k8s-testimages/krte:v20200123-dd36597-master
         command:
         - wrapper.sh
         - bash

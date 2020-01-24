@@ -18,7 +18,7 @@ spec:
       terminationGracePeriodSeconds: 300
       containers:
       - name: boskos-janitor
-        image: gcr.io/k8s-prow/boskos/janitor:v20200121-9a9eed662
+        image: gcr.io/k8s-prow/boskos/janitor:v20200123-0a8437ab4
         args:
         - --boskos-url=http://boskos.test-pods.svc.cluster.local.
         - --resource-type=gke-project
@@ -55,7 +55,7 @@ spec:
       terminationGracePeriodSeconds: 300
       containers:
       - name: boskos-janitor-nongke
-        image: gcr.io/k8s-prow/boskos/janitor:v20200121-9a9eed662
+        image: gcr.io/k8s-prow/boskos/janitor:v20200123-0a8437ab4
         args:
         - --boskos-url=http://boskos.test-pods.svc.cluster.local.
         - --resource-type=gce-project,gpu-project,ingress-project,istio-project,scalability-presubmit-project,scalability-project
@@ -92,6 +92,6 @@ spec:
       terminationGracePeriodSeconds: 300
       containers:
       - name: boskos-janitor-aws
-        image: gcr.io/k8s-prow/boskos/aws-janitor-boskos:v20200121-9a9eed662
+        image: gcr.io/k8s-prow/boskos/aws-janitor-boskos:v20200123-0a8437ab4
         args:
         - --boskos-url=http://boskos.test-pods.svc.cluster.local.
