@@ -92,8 +92,6 @@ presubmits:
         command:
         - ../test-infra/scenarios/kubernetes_e2e.py
         args:
-        # cap bazel's JVM memory usage to resources.requests.memory - 2Gi
-        - --inject-bazelrc=startup --host_jvm_args=-Xmx4g
         - --inject-bazelrc=build --config=ci
         - --build=bazel
         - --cluster=
@@ -106,9 +104,6 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
         - --timeout=80m # thinking about making this longer? don't! 80m is a hard cap, and should get down to no more than 60m.
-        resources:
-          requests:
-            memory: "6Gi"
 
   - name: pull-kubernetes-e2e-gce-alpha-features
     optional: true
