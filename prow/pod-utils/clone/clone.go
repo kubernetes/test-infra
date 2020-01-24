@@ -96,7 +96,6 @@ func PathForRefs(baseDir string, refs prowapi.Refs) string {
 	} else {
 		clonePath = fmt.Sprintf("github.com/%s/%s", refs.Org, refs.Repo)
 	}
-
 	return path.Join(baseDir, "src", clonePath)
 }
 
