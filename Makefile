@@ -76,14 +76,16 @@ build:
 # images section
 ############################################################
 
-images: build-push-images
+images: build-tool-image docker-in-docker-builder-image
 
-build-push-images: config-docker
+build-tool-image: config-docker
 	@cd prow/docker/build-tools && ./build-and-push.sh
+
+docker-in-docker-builder-image: config-docker
 	@cd prow/docker/docker-in-docker && ./build-and-push.sh
 
 ############################################################
 # clean section
 ############################################################
 clean:
-	rm -f xxx
+	@rm -f xxx
