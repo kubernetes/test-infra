@@ -1,11 +1,30 @@
 presubmits:
   IBM/test-infra:
-  - name: pull-test-infra-prow-checkconfig
+  - name: check-test-infra
+    cluster: default
+    branches:
+    - ^master$
+    decorate: true
+    always_run: true
+    path_alias: github.com/IBM/test-infra
+    rerun_command: /test check-test-infra
+    spec:
+      containers:
+      - command:
+        - make
+        - check
+        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?check(?: .*?)?$'
+  - name: test-infra-prow-checkconfig
+    cluster: default
     branches:
       - ^master$
     decorate: true
     path_alias: github.com/IBM/test-infra
-    rerun_command: /test checkconfig test-infra
+    rerun_command: /test checkconfig-test-infra
     run_if_changed: '^prow/(config|plugins|cluster/jobs/.*)\.yaml$'
     spec:
       containers:
@@ -21,47 +40,14 @@ presubmits:
         - --exclude-warning=unknown-fields
         - --exclude-warning=non-decorated-jobs
     trigger: '(?m)^/test (?:.*? )?checkconfig(?: .*?)?$'
-  - name: build_test-infra
+  - name: test-test-infra
+    cluster: default
     branches:
     - ^master$
     decorate: true
     always_run: true
     path_alias: github.com/IBM/test-infra
-    rerun_command: /test build test-infra
-    spec:
-      containers:
-      - command:
-        - make
-        - build
-        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
-        name: ""
-        securityContext:
-          privileged: true
-    trigger: '(?m)^/test (?:.*? )?build(?: .*?)?$'
-  - name: check_test-infra
-    branches:
-    - ^master$
-    decorate: true
-    always_run: true
-    path_alias: github.com/IBM/test-infra
-    rerun_command: /test check test-infra
-    spec:
-      containers:
-      - command:
-        - make
-        - check
-        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
-        name: ""
-        securityContext:
-          privileged: true
-    trigger: '(?m)^/test (?:.*? )?check(?: .*?)?$'
-  - name: test_test-infra
-    branches:
-    - ^master$
-    decorate: true
-    always_run: true
-    path_alias: github.com/IBM/test-infra
-    rerun_command: /test test test-infra
+    rerun_command: /test test-test-infra
     spec:
       containers:
       - command:
@@ -72,5 +58,21 @@ presubmits:
         securityContext:
           privileged: true
     trigger: '(?m)^/test (?:.*? )?test(?: .*?)?$'
-
-postsubmits:
+  - name: build-test-infra
+    cluster: default
+    branches:
+    - ^master$
+    decorate: true
+    always_run: true
+    path_alias: github.com/IBM/test-infra
+    rerun_command: /test build-test-infra
+    spec:
+      containers:
+      - command:
+        - make
+        - build
+        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?build(?: .*?)?$'
