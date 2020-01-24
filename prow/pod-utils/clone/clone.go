@@ -95,6 +95,11 @@ func PathForRefs(baseDir string, refs prowapi.Refs) string {
 	} else {
 		clonePath = fmt.Sprintf("github.com/%s/%s", refs.Org, refs.Repo)
 	}
+
+	// Support a baseDir of root "/"
+	if baseDir == "/" {
+		return fmt.Sprintf("%ssrc/%s", baseDir, clonePath)
+	}
 	return fmt.Sprintf("%s/src/%s", baseDir, clonePath)
 }
 
