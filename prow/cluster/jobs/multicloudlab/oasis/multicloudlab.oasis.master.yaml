@@ -17,7 +17,7 @@ presubmits:
         name: ""
         securityContext:
           privileged: true
-    trigger: '(?m)^/test (?:.*? )?check(?: .*?)?$'
+    trigger: '(?m)^/test (?:.*? )?check(?:.*?)?$'
   - name: test-oasis
     cluster: default
     always_run: true
@@ -35,7 +35,7 @@ presubmits:
         name: ""
         securityContext:
           privileged: true
-    trigger: '(?m)^/test (?:.*? )?test(?: .*?)?$'
+    trigger: '(?m)^/test (?:.*? )?test(?:.*?)?$'
   - name: build-oasis-amd64
     cluster: default
     always_run: true
@@ -54,7 +54,7 @@ presubmits:
         name: ""
         securityContext:
           privileged: true
-    trigger: '(?m)^/test (?:.*? )?build(?: .*?)?$'
+    trigger: '(?m)^/test (?:.*? )?build(?:.*?)?$'
   - name: build-oasis-ppc64le
     cluster: power
     always_run: true
@@ -73,7 +73,7 @@ presubmits:
         name: ""
         securityContext:
           privileged: true
-    trigger: '(?m)^/test (?:.*? )?build(?: .*?)?$'
+    trigger: '(?m)^/test (?:.*? )?build(?:.*?)?$'
 postsubmits:
   multicloudlab/oasis:
   - name: check-oasis-postsubmit
@@ -143,7 +143,6 @@ postsubmits:
         name: ""
         securityContext:
           privileged: true
-    trigger: '(?m)^/test (?:.*? )?build(?: .*?)?$'
   - name: build-oasis-ppc64le-postsubmit
     cluster: power
     branches:
@@ -160,7 +159,6 @@ postsubmits:
         name: ""
         securityContext:
           privileged: true
-    trigger: '(?m)^/test (?:.*? )?build(?: .*?)?$'
   - name: images-amd64-oasis-postsubmit
     cluster: default
     branches:
