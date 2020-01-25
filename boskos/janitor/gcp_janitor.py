@@ -263,7 +263,7 @@ def clean_gke_cluster(project, age, filt):
     endpoints = [
         'https://test-container.sandbox.googleapis.com/',  # test
         'https://staging-container.sandbox.googleapis.com/',  # staging
-        'https://staging2-container.sandbox.googleapis.com.', # staging2
+        'https://staging2-container.sandbox.googleapis.com/', # staging2
         'https://container.googleapis.com/',  # prod
     ]
 
