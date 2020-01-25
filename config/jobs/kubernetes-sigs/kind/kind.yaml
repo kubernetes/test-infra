@@ -43,7 +43,7 @@ periodics:
       securityContext:
         privileged: true
     annotations:
-      testgrid-dashboards: sig-testing-kkind
+      testgrid-dashboards: sig-testing-kind
       testgrid-tab-name: ci unit test
       testgrid-alert-email: bentheelder@google.com
       description: kind CI unit test
