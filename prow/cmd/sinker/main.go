@@ -26,10 +26,10 @@ import (
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
+	corev1api "k8s.io/api/core/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
-	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	ctrlruntimelog "sigs.k8s.io/controller-runtime/pkg/runtime/log"
@@ -139,7 +139,7 @@ func main() {
 		logrus.WithError(err).Fatal("Error creating build cluster clients.")
 	}
 
-	var podClients []corev1.PodInterface
+	var podClients []podInterface
 	for _, client := range buildClusterClients {
 		// sinker doesn't care about build cluster aliases
 		podClients = append(podClients, client)
@@ -161,12 +161,17 @@ func main() {
 	}
 }
 
+type podInterface interface {
+	Delete(name string, options *metav1.DeleteOptions) error
+	List(opts metav1.ListOptions) (*corev1api.PodList, error)
+}
+
 type controller struct {
 	ctx           context.Context
 	cancel        context.CancelFunc
 	logger        *logrus.Entry
 	prowJobClient ctrlruntimeclient.Client
-	podClients    []corev1.PodInterface
+	podClients    []podInterface
 	config        config.Getter
 	runOnce       bool
 }
@@ -363,11 +368,12 @@ func (c *controller) clean() {
 
 	// Now clean up old pods.
 	selector := fmt.Sprintf("%s = %s", kube.CreatedByProw, "true")
-	for _, client := range c.podClients {
+	for cluster, client := range c.podClients {
+		log := c.logger.WithField("cluster", cluster)
 		pods, err := client.List(metav1.ListOptions{LabelSelector: selector})
 		if err != nil {
-			c.logger.WithError(err).Error("Error listing pods.")
-			return
+			log.WithError(err).Error("Error listing pods.")
+			continue
 		}
 		metrics.podsCreated += len(pods.Items)
 		maxPodAge := c.config().Sinker.MaxPodAge.Duration
@@ -414,10 +420,10 @@ func (c *controller) clean() {
 
 			// Delete old finished or orphan pods. Don't quit if we fail to delete one.
 			if err := client.Delete(pod.ObjectMeta.Name, &metav1.DeleteOptions{}); err == nil {
-				c.logger.WithFields(logrus.Fields{"pod": pod.ObjectMeta.Name, "reason": reason}).Info("Deleted old completed pod.")
+				log.WithFields(logrus.Fields{"pod": pod.ObjectMeta.Name, "reason": reason}).Info("Deleted old completed pod.")
 				metrics.podsRemoved[reason]++
 			} else {
-				c.logger.WithField("pod", pod.ObjectMeta.Name).WithError(err).Error("Error deleting pod.")
+				log.WithField("pod", pod.ObjectMeta.Name).WithError(err).Error("Error deleting pod.")
 				metrics.podRemovalErrors[string(k8serrors.ReasonForError(err))]++
 			}
 		}
