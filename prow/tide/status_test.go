@@ -56,6 +56,7 @@ func TestExpectedStatus(t *testing.T) {
 		blocks            []int
 		prowJobs          []runtime.Object
 		requiredContexts  []string
+		mergeConflicts    bool
 
 		state string
 		desc  string
@@ -468,6 +469,13 @@ func TestExpectedStatus(t *testing.T) {
 			state: github.StatusPending,
 			desc:  "Not mergeable. Retesting 2 jobs.",
 		},
+		{
+			name:           "mergeconflicts",
+			inPool:         true,
+			mergeConflicts: true,
+			state:          github.StatusError,
+			desc:           "Not mergeable. PR has merge conflicts.",
+		},
 	}
 
 	for _, tc := range testcases {
@@ -529,6 +537,9 @@ func TestExpectedStatus(t *testing.T) {
 					Title githubql.String
 				}{githubql.String(tc.milestone)}
 			}
+			if tc.mergeConflicts {
+				pr.Mergeable = githubql.MergeableStateConflicting
+			}
 			var pool map[string]PullRequest
 			if tc.inPool {
 				pool = map[string]PullRequest{"#0": {}}
@@ -546,8 +557,13 @@ func TestExpectedStatus(t *testing.T) {
 			if err != nil {
 				t.Fatalf("failed to get statusController: %v", err)
 			}
-			cc := &config.TideContextPolicy{RequiredContexts: tc.requiredContexts}
-			state, desc := sc.expectedStatus(sc.logger, queriesByRepo, &pr, pool, cc, blocks, tc.baseref)
+			ccg := func() (contextChecker, error) {
+				return &config.TideContextPolicy{RequiredContexts: tc.requiredContexts}, nil
+			}
+			state, desc, err := sc.expectedStatus(sc.logger, queriesByRepo, &pr, pool, ccg, blocks, tc.baseref)
+			if err != nil {
+				t.Fatalf("error calling expectedStatus(): %v", err)
+			}
 			if state != tc.state {
 				t.Errorf("Expected status state %q, but got %q.", string(tc.state), string(state))
 			}
