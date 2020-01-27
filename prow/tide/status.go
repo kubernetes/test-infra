@@ -148,6 +148,18 @@ func requirementDiff(pr *PullRequest, q *config.TideQuery, cc contextChecker) (s
 		}
 	}
 
+	qAuthor := github.NormLogin(q.Author)
+	prAuthor := github.NormLogin(string(pr.Author.Login))
+
+	// Weight incorrect author with very high diff so that we select the query
+	// for the correct author.
+	if qAuthor != "" && prAuthor != qAuthor {
+		diff += 1000
+		if desc == "" {
+			desc = fmt.Sprintf(" Must be by author %s.", qAuthor)
+		}
+	}
+
 	// Weight incorrect milestone with relatively high diff so that we select the
 	// query for the correct milestone (but choose favor query for correct branch).
 	if q.Milestone != "" && (pr.Milestone == nil || string(pr.Milestone.Title) != q.Milestone) {

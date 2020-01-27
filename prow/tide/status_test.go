@@ -42,17 +42,20 @@ func TestExpectedStatus(t *testing.T) {
 	testcases := []struct {
 		name string
 
-		baseref          string
-		branchWhitelist  []string
-		branchBlacklist  []string
-		sameBranchReqs   bool
-		labels           []string
-		milestone        string
-		contexts         []Context
-		inPool           bool
-		blocks           []int
-		prowJobs         []runtime.Object
-		requiredContexts []string
+		baseref           string
+		branchWhitelist   []string
+		branchBlacklist   []string
+		sameBranchReqs    bool
+		labels            []string
+		author            string
+		firstQueryAuthor  string
+		secondQueryAuthor string
+		milestone         string
+		contexts          []Context
+		inPool            bool
+		blocks            []int
+		prowJobs          []runtime.Object
+		requiredContexts  []string
 
 		state string
 		desc  string
@@ -65,45 +68,60 @@ func TestExpectedStatus(t *testing.T) {
 			desc:  statusInPool,
 		},
 		{
-			name:      "check truncation of label list",
-			milestone: "v1.0",
-			inPool:    false,
+			name:              "check truncation of label list",
+			author:            "batman",
+			firstQueryAuthor:  "batman",
+			secondQueryAuthor: "batman",
+			milestone:         "v1.0",
+			inPool:            false,
 
 			state: github.StatusPending,
 			desc:  fmt.Sprintf(statusNotInPool, " Needs need-1, need-2 labels."),
 		},
 		{
-			name:      "check truncation of label list is not excessive",
-			labels:    append([]string{}, neededLabels[:2]...),
-			milestone: "v1.0",
-			inPool:    false,
+			name:              "check truncation of label list is not excessive",
+			labels:            append([]string{}, neededLabels[:2]...),
+			author:            "batman",
+			firstQueryAuthor:  "batman",
+			secondQueryAuthor: "batman",
+			milestone:         "v1.0",
+			inPool:            false,
 
 			state: github.StatusPending,
 			desc:  fmt.Sprintf(statusNotInPool, " Needs need-a-very-super-duper-extra-not-short-at-all-label-name label."),
 		},
 		{
-			name:      "has forbidden labels",
-			labels:    append(append([]string{}, neededLabels...), forbiddenLabels...),
-			milestone: "v1.0",
-			inPool:    false,
+			name:              "has forbidden labels",
+			labels:            append(append([]string{}, neededLabels...), forbiddenLabels...),
+			author:            "batman",
+			firstQueryAuthor:  "batman",
+			secondQueryAuthor: "batman",
+			milestone:         "v1.0",
+			inPool:            false,
 
 			state: github.StatusPending,
 			desc:  fmt.Sprintf(statusNotInPool, " Should not have forbidden-1, forbidden-2 labels."),
 		},
 		{
-			name:      "has one forbidden label",
-			labels:    append(append([]string{}, neededLabels...), forbiddenLabels[0]),
-			milestone: "v1.0",
-			inPool:    false,
+			name:              "has one forbidden label",
+			labels:            append(append([]string{}, neededLabels...), forbiddenLabels[0]),
+			author:            "batman",
+			firstQueryAuthor:  "batman",
+			secondQueryAuthor: "batman",
+			milestone:         "v1.0",
+			inPool:            false,
 
 			state: github.StatusPending,
 			desc:  fmt.Sprintf(statusNotInPool, " Should not have forbidden-1 label."),
 		},
 		{
-			name:      "only mention one requirement class",
-			labels:    append(append([]string{}, neededLabels[1:]...), forbiddenLabels[0]),
-			milestone: "v1.0",
-			inPool:    false,
+			name:              "only mention one requirement class",
+			labels:            append(append([]string{}, neededLabels[1:]...), forbiddenLabels[0]),
+			author:            "batman",
+			firstQueryAuthor:  "batman",
+			secondQueryAuthor: "batman",
+			milestone:         "v1.0",
+			inPool:            false,
 
 			state: github.StatusPending,
 			desc:  fmt.Sprintf(statusNotInPool, " Needs need-1 label."),
@@ -131,40 +149,52 @@ func TestExpectedStatus(t *testing.T) {
 			desc:  fmt.Sprintf(statusNotInPool, " Merging to branch bad is forbidden."),
 		},
 		{
-			name:            "choose query for correct branch",
-			baseref:         "bad",
-			branchWhitelist: []string{"good"},
-			milestone:       "v1.0",
-			labels:          neededLabels,
-			inPool:          false,
+			name:              "choose query for correct branch",
+			baseref:           "bad",
+			branchWhitelist:   []string{"good"},
+			author:            "batman",
+			firstQueryAuthor:  "batman",
+			secondQueryAuthor: "batman",
+			milestone:         "v1.0",
+			labels:            neededLabels,
+			inPool:            false,
 
 			state: github.StatusPending,
 			desc:  fmt.Sprintf(statusNotInPool, " Needs 1, 2, 3, 4, 5, 6, 7 labels."),
 		},
 		{
-			name:      "only failed tide context",
-			labels:    neededLabels,
-			milestone: "v1.0",
-			contexts:  []Context{{Context: githubql.String(statusContext), State: githubql.StatusStateError}},
-			inPool:    false,
+			name:              "only failed tide context",
+			labels:            neededLabels,
+			author:            "batman",
+			firstQueryAuthor:  "batman",
+			secondQueryAuthor: "batman",
+			milestone:         "v1.0",
+			contexts:          []Context{{Context: githubql.String(statusContext), State: githubql.StatusStateError}},
+			inPool:            false,
 
 			state: github.StatusPending,
 			desc:  fmt.Sprintf(statusNotInPool, ""),
 		},
 		{
-			name:      "single bad context",
-			labels:    neededLabels,
-			contexts:  []Context{{Context: githubql.String("job-name"), State: githubql.StatusStateError}},
-			milestone: "v1.0",
-			inPool:    false,
+			name:              "single bad context",
+			labels:            neededLabels,
+			contexts:          []Context{{Context: githubql.String("job-name"), State: githubql.StatusStateError}},
+			author:            "batman",
+			firstQueryAuthor:  "batman",
+			secondQueryAuthor: "batman",
+			milestone:         "v1.0",
+			inPool:            false,
 
 			state: github.StatusPending,
 			desc:  fmt.Sprintf(statusNotInPool, " Job job-name has not succeeded."),
 		},
 		{
-			name:      "multiple bad contexts",
-			labels:    neededLabels,
-			milestone: "v1.0",
+			name:              "multiple bad contexts",
+			labels:            neededLabels,
+			author:            "batman",
+			firstQueryAuthor:  "batman",
+			secondQueryAuthor: "batman",
+			milestone:         "v1.0",
 			contexts: []Context{
 				{Context: githubql.String("job-name"), State: githubql.StatusStateError},
 				{Context: githubql.String("other-job-name"), State: githubql.StatusStateError},
@@ -175,40 +205,78 @@ func TestExpectedStatus(t *testing.T) {
 			desc:  fmt.Sprintf(statusNotInPool, " Jobs job-name, other-job-name have not succeeded."),
 		},
 		{
-			name:      "wrong milestone",
-			labels:    neededLabels,
-			milestone: "v1.1",
-			contexts:  []Context{{Context: githubql.String("job-name"), State: githubql.StatusStateSuccess}},
-			inPool:    false,
+			name:              "wrong author",
+			labels:            neededLabels,
+			author:            "robin",
+			firstQueryAuthor:  "batman",
+			secondQueryAuthor: "batman",
+			milestone:         "v1.0",
+			contexts:          []Context{{Context: githubql.String("job-name"), State: githubql.StatusStateSuccess}},
+			inPool:            false,
+
+			state: github.StatusPending,
+			desc:  fmt.Sprintf(statusNotInPool, " Must be by author batman."),
+		},
+		{
+			name:              "wrong author; use lowest diff",
+			labels:            neededLabels,
+			author:            "robin",
+			firstQueryAuthor:  "penguin",
+			secondQueryAuthor: "batman",
+			milestone:         "v1.0",
+			contexts:          []Context{{Context: githubql.String("job-name"), State: githubql.StatusStateSuccess}},
+			inPool:            false,
+
+			state: github.StatusPending,
+			desc:  fmt.Sprintf(statusNotInPool, " Must be by author penguin."),
+		},
+		{
+			name:              "wrong milestone",
+			labels:            neededLabels,
+			author:            "batman",
+			firstQueryAuthor:  "batman",
+			secondQueryAuthor: "batman",
+			milestone:         "v1.1",
+			contexts:          []Context{{Context: githubql.String("job-name"), State: githubql.StatusStateSuccess}},
+			inPool:            false,
 
 			state: github.StatusPending,
 			desc:  fmt.Sprintf(statusNotInPool, " Must be in milestone v1.0."),
 		},
 		{
-			name:      "unknown requirement",
-			labels:    neededLabels,
-			milestone: "v1.0",
-			contexts:  []Context{{Context: githubql.String("job-name"), State: githubql.StatusStateSuccess}},
-			inPool:    false,
+			name:              "unknown requirement",
+			labels:            neededLabels,
+			author:            "batman",
+			firstQueryAuthor:  "batman",
+			secondQueryAuthor: "batman",
+			milestone:         "v1.0",
+			contexts:          []Context{{Context: githubql.String("job-name"), State: githubql.StatusStateSuccess}},
+			inPool:            false,
 
 			state: github.StatusPending,
 			desc:  fmt.Sprintf(statusNotInPool, ""),
 		},
 		{
-			name:      "check that min diff query is used",
-			labels:    []string{"3", "4", "5", "6", "7"},
-			milestone: "v1.0",
-			inPool:    false,
+			name:              "check that min diff query is used",
+			labels:            []string{"3", "4", "5", "6", "7"},
+			author:            "batman",
+			firstQueryAuthor:  "batman",
+			secondQueryAuthor: "batman",
+			milestone:         "v1.0",
+			inPool:            false,
 
 			state: github.StatusPending,
 			desc:  fmt.Sprintf(statusNotInPool, " Needs 1, 2 labels."),
 		},
 		{
-			name:      "check that blockers take precedence over other queries",
-			labels:    []string{"3", "4", "5", "6", "7"},
-			milestone: "v1.0",
-			inPool:    false,
-			blocks:    []int{1, 2},
+			name:              "check that blockers take precedence over other queries",
+			labels:            []string{"3", "4", "5", "6", "7"},
+			author:            "batman",
+			firstQueryAuthor:  "batman",
+			secondQueryAuthor: "batman",
+			milestone:         "v1.0",
+			inPool:            false,
+			blocks:            []int{1, 2},
 
 			state: github.StatusError,
 			desc:  fmt.Sprintf(statusNotInPool, " Merging is blocked by issues 1, 2."),
@@ -407,6 +475,7 @@ func TestExpectedStatus(t *testing.T) {
 			secondQuery := config.TideQuery{
 				Orgs:      []string{""},
 				Labels:    []string{"1", "2", "3", "4", "5", "6", "7"}, // lots of requirements
+				Author:    tc.secondQueryAuthor,
 				Milestone: "v1.0",
 			}
 			if tc.sameBranchReqs {
@@ -420,6 +489,7 @@ func TestExpectedStatus(t *testing.T) {
 					IncludedBranches: tc.branchWhitelist,
 					Labels:           neededLabels,
 					MissingLabels:    forbiddenLabels,
+					Author:           tc.firstQueryAuthor,
 					Milestone:        "v1.0",
 				},
 				secondQuery,
@@ -451,6 +521,9 @@ func TestExpectedStatus(t *testing.T) {
 					},
 				)
 			}
+			pr.Author = struct {
+				Login githubql.String
+			}{githubql.String(tc.author)}
 			if tc.milestone != "" {
 				pr.Milestone = &struct {
 					Title githubql.String

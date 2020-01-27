@@ -206,6 +206,8 @@ type TideQuery struct {
 	Repos         []string `json:"repos,omitempty"`
 	ExcludedRepos []string `json:"excludedRepos,omitempty"`
 
+	Author string `json:"author,omitempty"`
+
 	ExcludedBranches []string `json:"excludedBranches,omitempty"`
 	IncludedBranches []string `json:"includedBranches,omitempty"`
 
@@ -228,6 +230,9 @@ func (tq *TideQuery) Query() string {
 	}
 	for _, r := range tq.ExcludedRepos {
 		toks = append(toks, fmt.Sprintf("-repo:\"%s\"", r))
+	}
+	if tq.Author != "" {
+		toks = append(toks, fmt.Sprintf("author:\"%s\"", tq.Author))
 	}
 	for _, b := range tq.ExcludedBranches {
 		toks = append(toks, fmt.Sprintf("-base:\"%s\"", b))
