@@ -7,7 +7,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200123-0a8437a-1.16
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200127-8d34d6e-1.16
       args:
       - --job=$(JOB_NAME)
       - --repo=k8s.io/kubernetes=release-1.16
@@ -53,7 +53,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200123-0a8437a-1.17
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200127-8d34d6e-1.17
       args:
       - --job=$(JOB_NAME)
       - --repo=k8s.io/kubernetes=release-1.17
@@ -99,7 +99,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200123-0a8437a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200127-8d34d6e-master
       args:
       - --job=$(JOB_NAME)
       - --repo=k8s.io/kubernetes=master
