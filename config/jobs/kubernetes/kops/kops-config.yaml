@@ -81,6 +81,8 @@ presubmits:
         - --aws-cluster-domain=test-cncf-aws.k8s.io
         - --check-leaked-resources=false
         - --cluster=
+        - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
+        - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release/
         - --extract=release/latest
         - --ginkgo-parallel
         - --kops-build
@@ -123,7 +125,8 @@ presubmits:
         - --aws-cluster-domain=test-cncf-aws.k8s.io
         - --check-leaked-resources=false
         - --cluster=
-        - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release-dev/ci/latest-1.15.txt
+        - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.15.txt
+        - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release/
         - --extract=release/stable-1.15
         - --ginkgo-parallel
         - --kops-build
@@ -166,7 +169,8 @@ presubmits:
         - --aws-cluster-domain=test-cncf-aws.k8s.io
         - --check-leaked-resources=false
         - --cluster=
-        - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release-dev/ci/latest-1.16.txt
+        - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt
+        - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release/
         - --extract=release/stable-1.16
         - --ginkgo-parallel
         - --kops-build
@@ -209,7 +213,8 @@ presubmits:
         - --aws-cluster-domain=test-cncf-aws.k8s.io
         - --check-leaked-resources=false
         - --cluster=
-        - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release-dev/ci/latest-1.17.txt
+        - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
+        - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release/
         - --extract=release/stable-1.17
         - --ginkgo-parallel
         - --kops-build
