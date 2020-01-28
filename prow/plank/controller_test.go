@@ -50,9 +50,8 @@ type fca struct {
 }
 
 const (
-	podPendingTimeout     = time.Hour
-	podRunningTimeout     = time.Hour * 2
-	podUnscheduledTimeout = time.Minute * 5
+	podPendingTimeout = time.Hour
+	podRunningTimeout = time.Hour * 2
 )
 
 func newFakeConfigAgent(t *testing.T, maxConcurrency int) *fca {
@@ -92,9 +91,8 @@ func newFakeConfigAgent(t *testing.T, maxConcurrency int) *fca {
 						MaxConcurrency: maxConcurrency,
 						MaxGoroutines:  20,
 					},
-					PodPendingTimeout:     &metav1.Duration{Duration: podPendingTimeout},
-					PodRunningTimeout:     &metav1.Duration{Duration: podRunningTimeout},
-					PodUnscheduledTimeout: &metav1.Duration{Duration: podUnscheduledTimeout},
+					PodPendingTimeout: &metav1.Duration{Duration: podPendingTimeout},
+					PodRunningTimeout: &metav1.Duration{Duration: podRunningTimeout},
 				},
 			},
 			JobConfig: config.JobConfig{
@@ -1104,9 +1102,8 @@ func TestSyncPendingJob(t *testing.T) {
 			pods: []v1.Pod{
 				{
 					ObjectMeta: metav1.ObjectMeta{
-						Name:              "nightmare",
-						Namespace:         "pods",
-						CreationTimestamp: metav1.Time{Time: time.Now().Add(-podPendingTimeout)},
+						Name:      "nightmare",
+						Namespace: "pods",
 					},
 					Status: v1.PodStatus{
 						Phase:     v1.PodPending,
@@ -1136,9 +1133,8 @@ func TestSyncPendingJob(t *testing.T) {
 			pods: []v1.Pod{
 				{
 					ObjectMeta: metav1.ObjectMeta{
-						Name:              "endless",
-						Namespace:         "pods",
-						CreationTimestamp: metav1.Time{Time: time.Now().Add(-podRunningTimeout)},
+						Name:      "endless",
+						Namespace: "pods",
 					},
 					Status: v1.PodStatus{
 						Phase:     v1.PodRunning,
@@ -1151,66 +1147,6 @@ func TestSyncPendingJob(t *testing.T) {
 			expectedComplete: true,
 			expectedReport:   true,
 			expectedURL:      "endless/aborted",
-		},
-		{
-			name: "stale unschedulable prow job",
-			pj: prowapi.ProwJob{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "homeless",
-					Namespace: "prowjobs",
-				},
-				Spec: prowapi.ProwJobSpec{},
-				Status: prowapi.ProwJobStatus{
-					State:   prowapi.PendingState,
-					PodName: "homeless",
-				},
-			},
-			pods: []v1.Pod{
-				{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:              "homeless",
-						Namespace:         "pods",
-						CreationTimestamp: metav1.Time{Time: time.Now().Add(-podUnscheduledTimeout - time.Second)},
-					},
-					Status: v1.PodStatus{
-						Phase: v1.PodPending,
-					},
-				},
-			},
-			expectedState:    prowapi.ErrorState,
-			expectedNumPods:  1,
-			expectedComplete: true,
-			expectedReport:   true,
-			expectedURL:      "homeless/error",
-		},
-		{
-			name: "scheduled, pending started more than podUnscheduledTimeout ago",
-			pj: prowapi.ProwJob{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "slowpoke",
-					Namespace: "prowjobs",
-				},
-				Spec: prowapi.ProwJobSpec{},
-				Status: prowapi.ProwJobStatus{
-					State:   prowapi.PendingState,
-					PodName: "slowpoke",
-				},
-			},
-			pods: []v1.Pod{
-				{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:              "slowpoke",
-						Namespace:         "pods",
-						CreationTimestamp: metav1.Time{Time: time.Now().Add(-podUnscheduledTimeout * 2)},
-					},
-					Status: v1.PodStatus{
-						Phase:     v1.PodPending,
-						StartTime: startTime(time.Now().Add(-podUnscheduledTimeout * 2)),
-					},
-				},
-			},
-			expectedState:   prowapi.PendingState,
-			expectedNumPods: 1,
 		},
 	}
 	for _, tc := range testcases {
