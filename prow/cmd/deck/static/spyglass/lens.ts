@@ -202,8 +202,10 @@ class SpyglassImpl implements Spyglass {
   }
 
   private fixAnchorLink(a: HTMLAnchorElement): void {
-    a.href = location.href.split('#')[0] + a.getAttribute('href');
-    a.target = "_self";
+    if (!a.dataset.preserveAnchor) {
+      a.href = location.href.split('#')[0] + a.getAttribute('href');
+      a.target = "_self";
+    }
   }
 }
 
