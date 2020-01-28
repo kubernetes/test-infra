@@ -24,7 +24,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"math"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -534,7 +533,7 @@ type Sinker struct {
 	MaxPodAge *metav1.Duration `json:"max_pod_age,omitempty"`
 	// TerminatedPodTTL is how long a Pod can live after termination before it is
 	// garbage collected.
-	// Defaults to infinite.
+	// Defaults to matching MaxPodAge.
 	TerminatedPodTTL *metav1.Duration `json:"terminated_pod_ttl,omitempty"`
 }
 
@@ -1477,8 +1476,7 @@ func parseProwConfig(c *Config) error {
 	}
 
 	if c.Sinker.TerminatedPodTTL == nil {
-		// "Forever"
-		c.Sinker.TerminatedPodTTL = &metav1.Duration{Duration: math.MaxInt64}
+		c.Sinker.TerminatedPodTTL = &metav1.Duration{Duration: c.Sinker.MaxPodAge.Duration}
 	}
 
 	if c.Tide.SyncPeriod == nil {
