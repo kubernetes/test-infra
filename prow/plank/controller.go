@@ -430,19 +430,29 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]corev1.Pod
 
 		case corev1.PodPending:
 			maxPodPending := c.config().Plank.PodPendingTimeout.Duration
-			if pod.Status.StartTime.IsZero() || time.Since(pod.Status.StartTime.Time) < maxPodPending {
-				// Pod is running. Do nothing.
-				c.incrementNumPendingJobs(pj.Spec.Job)
-				return nil
+			maxPodUnscheduled := c.config().Plank.PodUnscheduledTimeout.Duration
+			if pod.Status.StartTime.IsZero() {
+				if time.Since(pod.CreationTimestamp.Time) >= maxPodUnscheduled {
+					// Pod is stuck in unscheduled state longer than maxPodUncheduled
+					// abort the job, and talk to GitHub
+					pj.SetComplete()
+					pj.Status.State = prowapi.ErrorState
+					pj.Status.Description = "Pod scheduling timeout."
+					c.log.WithFields(pjutil.ProwJobFields(&pj)).Info("Marked job for stale unscheduled pod as errored.")
+					break
+				}
+			} else if time.Since(pod.Status.StartTime.Time) >= maxPodPending {
+				// Pod is stuck in pending state longer than maxPodPending
+				// abort the job, and talk to GitHub
+				pj.SetComplete()
+				pj.Status.State = prowapi.ErrorState
+				pj.Status.Description = "Pod pending timeout."
+				c.log.WithFields(pjutil.ProwJobFields(&pj)).Info("Marked job for stale pending pod as errored.")
+				break
 			}
-
-			// Pod is stuck in pending state longer than maxPodPending
-			// abort the job, and talk to GitHub
-			pj.SetComplete()
-			pj.Status.State = prowapi.ErrorState
-			pj.Status.Description = "Pod pending timeout."
-			c.log.WithFields(pjutil.ProwJobFields(&pj)).Info("Marked job for stale pending pod as errored.")
-
+			// Pod is running. Do nothing.
+			c.incrementNumPendingJobs(pj.Spec.Job)
+			return nil
 		case corev1.PodRunning:
 			maxPodRunning := c.config().Plank.PodRunningTimeout.Duration
 			if pod.Status.StartTime.IsZero() || time.Since(pod.Status.StartTime.Time) < maxPodRunning {
