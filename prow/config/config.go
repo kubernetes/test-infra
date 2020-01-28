@@ -446,9 +446,6 @@ type Plank struct {
 	// PodRunningTimeout is after how long the controller will abort a prowjob pod
 	// stuck in running state. Defaults to two days.
 	PodRunningTimeout *metav1.Duration `json:"pod_running_timeout,omitempty"`
-	// PodUnscheduledTimeout is after how long the controller will abort a prowjob
-	// stuck in an unscheduled state. Defaults to one day.
-	PodUnscheduledTimeout *metav1.Duration `json:"pod_unscheduled_timeout,omitempty"`
 	// DefaultDecorationConfig are defaults for shared fields for ProwJobs
 	// that request to have their PodSpecs decorated.
 	// This will be deprecated on April 2020, and it will be replaces with DefaultDecorationConfigs['*'] instead.
@@ -1335,10 +1332,6 @@ func parseProwConfig(c *Config) error {
 
 	if c.Plank.PodRunningTimeout == nil {
 		c.Plank.PodRunningTimeout = &metav1.Duration{Duration: 48 * time.Hour}
-	}
-
-	if c.Plank.PodUnscheduledTimeout == nil {
-		c.Plank.PodUnscheduledTimeout = &metav1.Duration{Duration: 24 * time.Hour}
 	}
 
 	if c.Plank.AllowCancellations != nil {
