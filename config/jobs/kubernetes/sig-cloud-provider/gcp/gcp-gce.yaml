@@ -239,6 +239,36 @@ periodics:
     description: Uses kubetest to run e2e tests (+Feature:many, -many) against a cluster created with cluster/kube-up.sh
 
 - interval: 30m
+  name: ci-kubernetes-e2e-gci-gce-flaky-repro
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=70
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --env=ENABLE_POD_SECURITY_POLICY=true
+      - --extract=ci/latest
+      - --gcp-master-image=gci
+      - --gcp-node-image=gci
+      - --gcp-nodes=4
+      - --gcp-zone=us-west1-b
+      - --ginkgo-parallel=30
+      - --provider=gce
+      - --publish=gs://kubernetes-release-dev/ci/latest-green.txt
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Feature:.+\] --minStartupPods=8
+      - --timeout=50m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200127-8d34d6e-master
+  annotations:
+    testgrid-dashboards: google-gce, google-gci
+    testgrid-tab-name: gce-cos-master-flaky-repro
+    description: Same config as ci-kubernetes-e2e-gci-gce but with Flaky tests included, intended to reproduce conditions that cause flakes to appear
+
+- interval: 30m
   name: ci-kubernetes-e2e-gci-gce-flaky
   labels:
     preset-service-account: "true"
