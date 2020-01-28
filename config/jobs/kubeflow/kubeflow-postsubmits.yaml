@@ -251,7 +251,7 @@ postsubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200127-8d34d6e-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200128-8dae294-master
         command:
         - ./test/postsubmit-tests-with-pipeline-deployment.sh
         args:
@@ -272,7 +272,7 @@ postsubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200127-8d34d6e-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200128-8dae294-master
         command:
         - ./test/postsubmit-tests-with-pipeline-deployment.sh
         args:
@@ -295,7 +295,7 @@ postsubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200127-8d34d6e-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200128-8dae294-master
         command:
         - ./test/postsubmit-tests-with-pipeline-deployment.sh
         args:
@@ -318,7 +318,7 @@ postsubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200127-8d34d6e-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200128-8dae294-master
         command:
         - ./test/postsubmit-tests-with-pipeline-deployment.sh
         args:
