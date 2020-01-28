@@ -423,7 +423,7 @@ presubmits:
 
   - name: pull-perf-tests-util-images
     always_run: false
-    skip_report: true
+    skip_report: false
     max_concurrency: 10
     run_if_changed: ^util-images/.*$
     branches:
