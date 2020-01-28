@@ -27,7 +27,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200127-8d34d6e-1.17
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200128-8dae294-1.17
         command:
         - infra/gcp/backup_tools/backup_test.sh
         env:
@@ -60,7 +60,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200127-8d34d6e-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200128-8dae294-master
         command:
         - "./test-e2e/cip/e2e-entrypoint-from-container.sh"
         env:
@@ -88,7 +88,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200127-8d34d6e-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200128-8dae294-master
         command:
         - "./test-e2e/cip-auditor/entrypoint-from-container.sh"
         env:
@@ -114,7 +114,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200127-8d34d6e-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200128-8dae294-master
         command:
         - "make"
         args:

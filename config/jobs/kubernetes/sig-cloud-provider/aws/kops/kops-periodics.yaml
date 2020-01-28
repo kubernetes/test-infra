@@ -23,7 +23,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200127-8d34d6e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200128-8dae294-master
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-aws
@@ -241,7 +241,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.focus=\[k8s.io\]\sNetworking.*\[Conformance\]
       - --timeout=30m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200127-8d34d6e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200128-8dae294-master
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-aws-updown
@@ -271,7 +271,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200127-8d34d6e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200128-8dae294-master
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-aws-weave
@@ -301,7 +301,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200127-8d34d6e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200128-8dae294-master
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-aws-vpc-cni
@@ -330,7 +330,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200127-8d34d6e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200128-8dae294-master
   annotations:
     testgrid-dashboards: google-kops-gce, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-gce
@@ -359,7 +359,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200127-8d34d6e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200128-8dae294-master
   annotations:
     testgrid-dashboards: google-kops-gce, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-gce-channelalpha
@@ -388,7 +388,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200127-8d34d6e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200128-8dae294-master
   annotations:
     testgrid-dashboards: google-kops-gce, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-gce-ha
