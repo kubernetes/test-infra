@@ -1212,6 +1212,34 @@ func TestSyncPendingJob(t *testing.T) {
 			expectedState:   prowapi.PendingState,
 			expectedNumPods: 1,
 		},
+		{
+			name: "unscheduled, created less than podUnscheduledTimeout ago",
+			pj: prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "just-waiting",
+					Namespace: "prowjobs",
+				},
+				Spec: prowapi.ProwJobSpec{},
+				Status: prowapi.ProwJobStatus{
+					State:   prowapi.PendingState,
+					PodName: "just-waiting",
+				},
+			},
+			pods: []v1.Pod{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:              "just-waiting",
+						Namespace:         "pods",
+						CreationTimestamp: metav1.Time{Time: time.Now().Add(-time.Second)},
+					},
+					Status: v1.PodStatus{
+						Phase: v1.PodPending,
+					},
+				},
+			},
+			expectedState:   prowapi.PendingState,
+			expectedNumPods: 1,
+		},
 	}
 	for _, tc := range testcases {
 		t.Logf("Running test case %q", tc.name)
