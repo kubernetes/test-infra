@@ -420,3 +420,34 @@ presubmits:
               memory: "6Gi"
           securityContext:
             privileged: true
+
+  - name: pull-perf-tests-util-images
+    always_run: false
+    skip_report: true
+    max_concurrency: 10
+    run_if_changed: ^util-images/.*$
+    branches:
+      - master
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    annotations:
+      testgrid-dashboards: presubmits-kubernetes-scalability
+      testgrid-tab-name: pull-perf-tests-util-images
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/bootstrap:v20200124-81ee414
+          args:
+          - --root=/go/src
+          - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
+          - --timeout=60
+          - --scenario=execute
+          - --
+          - /go/src/k8s.io/perf-tests/util-images/presubmit.sh
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: 1
+              memory: "2Gi"
