@@ -150,7 +150,7 @@ presubmits:
   - name: pull-kubernetes-node-kubelet-serial-cpu-manager
     always_run: false
     optional: true
-    skip_report: true
+    skip_report: false
     skip_branches:
     - release-\d+\.\d+  # per-release image
     annotations:
@@ -183,7 +183,7 @@ presubmits:
   - name: pull-kubernetes-node-kubelet-serial-topology-manager
     always_run: false
     optional: true
-    skip_report: true
+    skip_report: false
     skip_branches:
     - release-\d+\.\d+  # per-release image
     annotations:
