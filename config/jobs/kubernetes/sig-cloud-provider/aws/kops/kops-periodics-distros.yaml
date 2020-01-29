@@ -161,7 +161,7 @@ periodics:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-aws-centos-7
 
-- interval: 8h
+- interval: 2h
   name: ci-kubernetes-e2e-kops-aws-imageamazonlinux2
   labels:
     preset-service-account: "true"
@@ -181,7 +181,7 @@ periodics:
       - --env=KUBE_SSH_USER=ec2-user
       - --extract=ci/latest
       - --ginkgo-parallel
-      - --kops-args=--image=137112412989/amzn2-ami-hvm-2.0.20191217.0-x86_64-gp2
+      - --kops-args=--image=137112412989/amzn2-ami-hvm-2.0.20191217.0-x86_64-gp2 --container-runtime=containerd --networking=calico
       - --kops-ssh-user=ec2-user
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
