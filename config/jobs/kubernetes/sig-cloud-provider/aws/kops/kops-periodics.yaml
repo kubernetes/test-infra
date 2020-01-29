@@ -216,7 +216,7 @@ periodics:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-aws-newrunner
 
-- interval: 1h
+- interval: 30m
   name: ci-kubernetes-e2e-kops-aws-updown
   labels:
     preset-service-account: "true"
@@ -224,7 +224,7 @@ periodics:
     preset-aws-credential: "true"
   decorate: true
   decoration_config:
-    timeout: 50m
+    timeout: 25m
   spec:
     containers:
     - command:
