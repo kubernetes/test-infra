@@ -32,6 +32,7 @@ presubmits:
     decorate: true
     labels:
       preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
@@ -42,21 +43,6 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        volumeMounts:
-        - mountPath: /lib/modules
-          name: modules
-          readOnly: true
-        - mountPath: /sys/fs/cgroup
-          name: cgroup
-      volumes:
-      - name: modules
-        hostPath:
-          path: /lib/modules
-          type: Directory
-      - name: cgroup
-        hostPath:
-          path: /sys/fs/cgroup
-          type: Directory
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
       testgrid-tab-name: pr-integration
@@ -69,7 +55,6 @@ presubmits:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200128-8dae294-master
         command:
-        - "runner.sh"
         - "make"
         - "verify"
     annotations:
@@ -150,6 +135,10 @@ presubmits:
               value: "us-west-2"
           securityContext:
             privileged: true
+          resources:
+            requests:
+              cpu: 1
+              memory: "4Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
       testgrid-tab-name: pr-e2e
@@ -159,6 +148,8 @@ presubmits:
     always_run: false
     optional: true
     decorate: true
+    decoration_config:
+      timeout: 4h
     max_concurrency: 5
     labels:
       preset-dind-enabled: "true"
@@ -179,6 +170,10 @@ presubmits:
               value: "us-west-2"
           securityContext:
             privileged: true
+          resources:
+            requests:
+              cpu: 1
+              memory: "4Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
       testgrid-tab-name: pr-e2e-conformance
