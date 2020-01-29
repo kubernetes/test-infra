@@ -489,6 +489,9 @@ periodics:
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
+      env:
+      - name: WINDOWS_NODE_OS_DISTRIBUTION
+        value: "win2019"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200131-0997840-1.17
       name: ""
       resources: {}
