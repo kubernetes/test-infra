@@ -304,7 +304,7 @@ periodics:
       - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_statefulsets.yaml
       - --test-cmd-args=--testoverrides=./testing/load/kubemark/500_nodes/override.yaml
       - --test-cmd-name=ClusterLoaderV2
-      - --timeout=70m
+      - --timeout=80m
       - --use-logexporter
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200128-8dae294-1.17
       name: ""

@@ -201,7 +201,7 @@ periodics:
       - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_statefulsets.yaml
       - --test-cmd-args=--testoverrides=./testing/load/kubemark/500_nodes/override.yaml
       - --test-cmd-name=ClusterLoaderV2
-      - --timeout=70m
+      - --timeout=80m
       - --use-logexporter
       # docker-in-docker needs privilged mode
       securityContext:
