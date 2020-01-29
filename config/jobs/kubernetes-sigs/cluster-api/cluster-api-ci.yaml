@@ -43,32 +43,6 @@ periodics:
     testgrid-tab-name: unit tests
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
     testgrid-num-failures-to-alert: "2"
-- name: periodic-cluster-api-e2e-tests
-  interval: 1h
-  decorate: true
-  extra_refs:
-  - org: kubernetes-sigs
-    repo: cluster-api
-    base_ref: master
-    path_alias: sigs.k8s.io/cluster-api
-  labels:
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-  spec:
-    containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200128-8dae294-master
-        args:
-          - runner.sh
-          - "./scripts/ci-capi-e2e.sh"
-        resources:
-          requests:
-            cpu: 4
-            memory: "6Gi"
-  annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-    testgrid-tab-name: capi e2e tests
-    testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
-    testgrid-num-failures-to-alert: "2"
 - name: periodic-cluster-api-capd-e2e-test
   interval: 1h
   decorate: true
@@ -144,10 +118,12 @@ periodics:
     testgrid-num-failures-to-alert: "2"
 postsubmits:
   kubernetes-sigs/cluster-api:
-  - name: ci-cluster-api-e2e-tests-master
+  - name: postsubmit-cluster-api-capd-e2e-tests-master
     interval: 1h
     decorate: true
     path_alias: sigs.k8s.io/cluster-api
+    branches:
+    - master
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -156,13 +132,13 @@ postsubmits:
         - image: gcr.io/k8s-testimages/kubekins-e2e:v20200128-8dae294-master
           args:
             - runner.sh
-            - "./scripts/ci-capi-e2e.sh"
+            - "./scripts/ci-capd-e2e.sh"
           resources:
             requests:
               cpu: 4
               memory: "6Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-      testgrid-tab-name: capi e2e tests-master
+      testgrid-tab-name: capd e2e tests-master
       testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
       testgrid-num-failures-to-alert: "2"
