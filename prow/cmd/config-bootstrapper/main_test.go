@@ -64,9 +64,23 @@ func TestRun(t *testing.T) {
 		t.Fatalf("Add commit: %v", err)
 	}
 
+	if err := lg.MakeFakeRepo("openshift", "other"); err != nil {
+		t.Fatalf("Making fake repo: %v", err)
+	}
+	if err := lg.Checkout("openshift", "other", "master"); err != nil {
+		t.Fatalf("Checkout new branch: %v", err)
+	}
+
+	if err := lg.AddCommit("openshift", "other", map[string][]byte{
+		"config/FOO.yaml": []byte(`#FOO.yaml`),
+		"config/BAR.yaml": []byte(`#BAR.yaml`),
+	}); err != nil {
+		t.Fatalf("Add commit: %v", err)
+	}
+
 	testcases := []struct {
 		name                      string
-		sourcePath                string
+		sourcePaths               []string
 		defaultNamespace          string
 		configUpdater             plugins.ConfigUpdater
 		buildClusterCoreV1Clients map[string]corev1.CoreV1Interface
@@ -77,7 +91,7 @@ func TestRun(t *testing.T) {
 	}{
 		{
 			name:             "issues/15570 is covered",
-			sourcePath:       filepath.Join(lg.Dir, "openshift/release"),
+			sourcePaths:      []string{filepath.Join(lg.Dir, "openshift/release")},
 			defaultNamespace: defaultNamespace,
 			configUpdater: plugins.ConfigUpdater{
 				Maps: map[string]plugins.ConfigMapSpec{
@@ -114,12 +128,78 @@ func TestRun(t *testing.T) {
 				},
 			},
 		},
+		{
+			name:             "multiple sources",
+			sourcePaths:      []string{filepath.Join(lg.Dir, "openshift/release"), filepath.Join(lg.Dir, "openshift/other")},
+			defaultNamespace: defaultNamespace,
+			configUpdater: plugins.ConfigUpdater{
+				Maps: map[string]plugins.ConfigMapSpec{
+					"config/foo.yaml": {
+						Name: "multikey-config",
+						Clusters: map[string][]string{
+							"default": {defaultNamespace},
+						},
+					},
+					"config/bar.yaml": {
+						Name: "multikey-config",
+					},
+					"config/FOO.yaml": {
+						Name: "other",
+						Clusters: map[string][]string{
+							"default": {defaultNamespace},
+						},
+					},
+					"config/BAR.yaml": {
+						Name: "bar",
+					},
+				},
+			},
+			existConfigMaps: []runtime.Object{
+				&coreapi.ConfigMap{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "multikey-config",
+						Namespace: defaultNamespace,
+					},
+					Data: map[string]string{},
+				},
+			},
+			expectedConfigMaps: []*coreapi.ConfigMap{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "multikey-config",
+						Namespace: defaultNamespace,
+					},
+					Data: map[string]string{
+						"foo.yaml": "#foo.yaml",
+						"bar.yaml": "#bar.yaml",
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "other",
+						Namespace: defaultNamespace,
+					},
+					Data: map[string]string{
+						"FOO.yaml": "#FOO.yaml",
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "bar",
+						Namespace: defaultNamespace,
+					},
+					Data: map[string]string{
+						"BAR.yaml": "#BAR.yaml",
+					},
+				},
+			},
+		},
 	}
 
 	for _, tc := range testcases {
 		fkc := fake.NewSimpleClientset(tc.existConfigMaps...)
 		tc.configUpdater.SetDefaults()
-		actual := run(tc.sourcePath, tc.defaultNamespace, tc.configUpdater, fkc, nil)
+		actual := run(tc.sourcePaths, tc.defaultNamespace, tc.configUpdater, fkc, nil)
 		if tc.expected != actual {
 			t.Errorf("%s: incorrect errors '%d': expecting '%d'", tc.name, actual, tc.expected)
 		}
