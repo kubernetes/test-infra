@@ -42,8 +42,6 @@ presubmits:
         - --timeout=105
         - --scenario=kubernetes_e2e
         - --
-        # cap bazel's JVM memory usage to resources.requests.memory - 2Gi
-        - --inject-bazelrc=startup --host_jvm_args=-Xmx4g
         - --build=bazel
         - --cluster=
         - --extract=local
