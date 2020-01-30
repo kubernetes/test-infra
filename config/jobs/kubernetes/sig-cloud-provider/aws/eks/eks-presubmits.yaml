@@ -13,7 +13,7 @@ presubmits:
       preset-kubernetes-e2e-aws-eks-1-13: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200128-8dae294-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200130-73a0fc5-master
         imagePullPolicy: Always
         args:
         - --root=/go/src
