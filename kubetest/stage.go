@@ -26,11 +26,12 @@ import (
 )
 
 type stageStrategy struct {
-	bucket         string
-	ci             bool
-	gcsSuffix      string
-	versionSuffix  string
-	dockerRegistry string
+	bucket                string
+	ci                    bool
+	gcsSuffix             string
+	versionSuffix         string
+	dockerRegistry        string
+	shutdownBazelPreStage bool
 }
 
 // Return something like gs://bucket/ci/suffix
@@ -67,6 +68,9 @@ func (s *stageStrategy) Enabled() bool {
 // Stage the release build to GCS.
 // Essentially release/push-build.sh --bucket=B --ci? --gcs-suffix=S --noupdatelatest
 func (s *stageStrategy) Stage(noAllowDup bool) error {
+	if s.shutdownBazelPreStage {
+		util.ShutdownBazel()
+	}
 	name := util.K8s("release", "push-build.sh")
 	b := s.bucket
 	if strings.HasPrefix(b, "gs://") {

@@ -275,3 +275,12 @@ func FlushMem() {
 		log.Printf("flushMem error (page cache): %v", err)
 	}
 }
+
+// ShutdownBazel will shut down the local bazel server if it is running
+func ShutdownBazel() {
+	log.Println("Shutting down local bazel server.")
+	err := exec.Command("bazel", "shutdown").Run()
+	if err != nil {
+		log.Printf("bazel shutdown error: %v", err)
+	}
+}
