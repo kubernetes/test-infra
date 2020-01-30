@@ -403,10 +403,10 @@ periodics:
     testgrid-tab-name: gce-windows-1.15
   decorate: true
   extra_refs:
-  - base_ref: master
-    org: yujuhong
-    path_alias: k8s.io/gce-k8s-windows-testing
-    repo: gce-k8s-windows-testing
+  - org: kubernetes-sigs
+    repo: windows-testing
+    base_ref: master
+    path_alias: k8s.io/windows-testing
   interval: 2h
   labels:
     preset-common-gce-windows: "true"
@@ -428,7 +428,7 @@ periodics:
       - --provider=gce
       - --gcp-nodes=2
       - --test=false
-      - --test-cmd=$GOPATH/src/k8s.io/gce-k8s-windows-testing/run-e2e.sh
+      - --test-cmd=$GOPATH/src/k8s.io/windows-testing/gce/run-e2e.sh
       - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]
         --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
       - --test-cmd-args=--node-os-distro=windows
