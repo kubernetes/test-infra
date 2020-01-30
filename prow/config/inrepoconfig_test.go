@@ -122,33 +122,19 @@ func TestDefaultProwYAMLGetter(t *testing.T) {
 			},
 		},
 		{
-			name: "Branchconfig on presubmit is not allowed",
+			name: "Branchconfig on presubmit is allowed",
 			baseContent: map[string][]byte{
 				".prow.yaml": []byte(`presubmits: [{"name": "hans", "spec": {"containers": [{}]}, "branches":["master"]}]`),
 			},
-			validate: func(_ *ProwYAML, err error) error {
-				if err == nil {
-					return errors.New("error is nil")
+			validate: func(p *ProwYAML, err error) error {
+				if err != nil {
+					return fmt.Errorf("unexpected error: %v", err)
 				}
-				expectedErrMsg := `presubmit job "hans" contains branchconfig. This is not allowed for jobs in ".prow.yaml"`
-				if err.Error() != expectedErrMsg {
-					return fmt.Errorf("expected error message to be %q, was %q", expectedErrMsg, err.Error())
+				if n := len(p.Presubmits); n != 1 || p.Presubmits[0].Name != "hans" {
+					return fmt.Errorf(`expected exactly one postsubmit with name "hans", got %v`, p.Presubmits)
 				}
-				return nil
-			},
-		},
-		{
-			name: "Multiple errors are aggregated (presubmits)",
-			baseContent: map[string][]byte{
-				".prow.yaml": []byte(`presubmits: [{"name": "hans", "spec": {"containers": [{}]}, "branches":["master"]},{"name": "gretel", "spec": {"containers": [{}]}, "branches":["master"]}]`),
-			},
-			validate: func(_ *ProwYAML, err error) error {
-				if err == nil {
-					return errors.New("error is nil")
-				}
-				expectedErrMsg := `[presubmit job "hans" contains branchconfig. This is not allowed for jobs in ".prow.yaml", presubmit job "gretel" contains branchconfig. This is not allowed for jobs in ".prow.yaml"]`
-				if err.Error() != expectedErrMsg {
-					return fmt.Errorf("expected error message to be %q, was %q", expectedErrMsg, err.Error())
+				if n := len(p.Presubmits[0].Branches); n != 1 || p.Presubmits[0].Branches[0] != "master" {
+					return fmt.Errorf(`expected exactly one postsubmit branch with name "master", got %v`, p.Presubmits[0].Branches)
 				}
 				return nil
 			},
@@ -241,33 +227,19 @@ func TestDefaultProwYAMLGetter(t *testing.T) {
 			},
 		},
 		{
-			name: "Branchconfig on postsubmit is not allowed",
+			name: "Branchconfig on postsubmit is allowed",
 			baseContent: map[string][]byte{
 				".prow.yaml": []byte(`postsubmits: [{"name": "hans", "spec": {"containers": [{}]}, "branches":["master"]}]`),
 			},
-			validate: func(_ *ProwYAML, err error) error {
-				if err == nil {
-					return errors.New("error is nil")
+			validate: func(p *ProwYAML, err error) error {
+				if err != nil {
+					return fmt.Errorf("unexpected error: %v", err)
 				}
-				expectedErrMsg := `postsubmit job "hans" contains branchconfig. This is not allowed for jobs in ".prow.yaml"`
-				if err.Error() != expectedErrMsg {
-					return fmt.Errorf("expected error message to be %q, was %q", expectedErrMsg, err.Error())
+				if n := len(p.Postsubmits); n != 1 || p.Postsubmits[0].Name != "hans" {
+					return fmt.Errorf(`expected exactly one postsubmit with name "hans", got %v`, p.Postsubmits)
 				}
-				return nil
-			},
-		},
-		{
-			name: "Multiple errors are aggregated (postsubmits)",
-			baseContent: map[string][]byte{
-				".prow.yaml": []byte(`postsubmits: [{"name": "hans", "spec": {"containers": [{}]}, "branches":["master"]},{"name": "gretel", "spec": {"containers": [{}]}, "branches":["master"]}]`),
-			},
-			validate: func(_ *ProwYAML, err error) error {
-				if err == nil {
-					return errors.New("error is nil")
-				}
-				expectedErrMsg := `[postsubmit job "hans" contains branchconfig. This is not allowed for jobs in ".prow.yaml", postsubmit job "gretel" contains branchconfig. This is not allowed for jobs in ".prow.yaml"]`
-				if err.Error() != expectedErrMsg {
-					return fmt.Errorf("expected error message to be %q, was %q", expectedErrMsg, err.Error())
+				if n := len(p.Postsubmits[0].Branches); n != 1 || p.Postsubmits[0].Branches[0] != "master" {
+					return fmt.Errorf(`expected exactly one postsubmit branch with name "master", got %v`, p.Postsubmits[0].Branches)
 				}
 				return nil
 			},
