@@ -9,7 +9,7 @@ postsubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200128-8dae294-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200130-73a0fc5-master
         command:
         - runner.sh
         - ./hack/ci/push-latest-cli.sh
@@ -29,7 +29,7 @@ postsubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200128-8dae294-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200130-73a0fc5-master
         command:
         - runner.sh
         - make

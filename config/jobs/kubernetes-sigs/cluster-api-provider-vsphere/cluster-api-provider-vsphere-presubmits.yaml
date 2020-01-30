@@ -69,7 +69,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200128-8dae294-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200130-73a0fc5-master
         command:
         - hack/check-format.sh
     annotations:
@@ -85,7 +85,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200128-8dae294-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200130-73a0fc5-master
         command:
         - hack/check-lint.sh
     annotations:
@@ -101,7 +101,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200128-8dae294-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200130-73a0fc5-master
         command:
         - hack/check-vet.sh
     annotations:
@@ -156,7 +156,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200128-8dae294-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200130-73a0fc5-master
         command:
         - hack/verify-crds.sh
     annotations:
@@ -172,7 +172,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200128-8dae294-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200130-73a0fc5-master
         resources:
           requests:
             cpu: "500m"
@@ -199,7 +199,7 @@ presubmits:
     max_concurrency: 3
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200128-8dae294-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200130-73a0fc5-master
         command:
         - runner.sh
         args:
