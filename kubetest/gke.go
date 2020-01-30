@@ -189,6 +189,8 @@ func newGKE(provider, project, zone, region, network, image, imageFamily, imageP
 		endpoint = "https://test-container.sandbox.googleapis.com/"
 	case env == "staging":
 		endpoint = "https://staging-container.sandbox.googleapis.com/"
+	case env == "staging2":
+		endpoint = "https://staging2-container.sandbox.googleapis.com/"
 	case env == "prod":
 		endpoint = "https://container.googleapis.com/"
 	case urlRe.MatchString(env):
