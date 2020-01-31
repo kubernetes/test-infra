@@ -52,6 +52,10 @@ deck:
         - artifacts/filtered.cov
       optional_files:
         - artifacts/filtered.html
+    - lens:
+        name: podinfo
+      required_files:
+        - podinfo.json
   tide_update_period: 1s
   hidden_repos:
   - kubernetes-security
