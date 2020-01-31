@@ -418,7 +418,6 @@ func transferLatest(ctx context.Context, storageClient *storage.Client, rsClient
 func transferBuild(ctx context.Context, storageClient *storage.Client, rsClient *resultstore.Client, project string, path gcs.Path, override bool, includePending bool) error {
 	build := gcs.Build{
 		Bucket:     storageClient.Bucket(path.Bucket()),
-		Context:    ctx,
 		Prefix:     trailingSlash(path.Object()),
 		BucketPath: path.Bucket(),
 	}
@@ -537,7 +536,7 @@ func updateStarted(ctx context.Context, storageClient *storage.Client, path gcs.
 		return fmt.Errorf("encode started.json: %v", err)
 	}
 	// TODO(fejta): compare and swap
-	if err := gcs.Upload(ctx, storageClient, *startedPath, buf, gcs.Default); err != nil {
+	if err := gcs.Upload(ctx, storageClient, *startedPath, buf, gcs.DefaultAcl, ""); err != nil {
 		return fmt.Errorf("upload started.json: %v", err)
 	}
 	return nil
