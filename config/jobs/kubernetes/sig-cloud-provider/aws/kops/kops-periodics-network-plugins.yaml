@@ -1,6 +1,6 @@
 periodics:
 
-- interval: 2h
+- interval: 1h
   name: ci-kubernetes-e2e-kops-aws-cni-amazon-vpc
   labels:
     preset-service-account: "true"
@@ -17,7 +17,7 @@ periodics:
       args:
       - --cluster=e2e-kops-aws-cni-amazon-vpc.test-cncf-aws.k8s.io
       - --deployment=kops
-      - --env=KUBE_SSH_USER=admin
+      - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --extract=release/latest
@@ -32,7 +32,7 @@ periodics:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-aws-cni-amazon-vpc
 
-- interval: 2h
+- interval: 1h
   name: ci-kubernetes-e2e-kops-aws-cni-calico
   labels:
     preset-service-account: "true"
@@ -49,7 +49,7 @@ periodics:
       args:
       - --cluster=e2e-kops-aws-cni-calico.test-cncf-aws.k8s.io
       - --deployment=kops
-      - --env=KUBE_SSH_USER=admin
+      - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --extract=release/latest
@@ -64,7 +64,7 @@ periodics:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-aws-cni-calico
 
-- interval: 2h
+- interval: 1h
   name: ci-kubernetes-e2e-kops-aws-cni-canal
   labels:
     preset-service-account: "true"
@@ -81,7 +81,7 @@ periodics:
       args:
       - --cluster=e2e-kops-aws-cni-canal.test-cncf-aws.k8s.io
       - --deployment=kops
-      - --env=KUBE_SSH_USER=admin
+      - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --extract=release/latest
@@ -96,7 +96,7 @@ periodics:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-aws-cni-canal
 
-- interval: 2h
+- interval: 1h
   name: ci-kubernetes-e2e-kops-aws-cni-cilium
   labels:
     preset-service-account: "true"
@@ -113,7 +113,7 @@ periodics:
       args:
       - --cluster=e2e-kops-aws-cni-cilium.test-cncf-aws.k8s.io
       - --deployment=kops
-      - --env=KUBE_SSH_USER=admin
+      - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --extract=release/latest
@@ -128,7 +128,7 @@ periodics:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-aws-cni-cilium
 
-- interval: 2h
+- interval: 1h
   name: ci-kubernetes-e2e-kops-aws-cni-flannel
   labels:
     preset-service-account: "true"
@@ -145,7 +145,7 @@ periodics:
       args:
       - --cluster=e2e-kops-aws-cni-flannel.test-cncf-aws.k8s.io
       - --deployment=kops
-      - --env=KUBE_SSH_USER=admin
+      - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --extract=release/latest
@@ -160,7 +160,7 @@ periodics:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-aws-cni-flannel
 
-- interval: 2h
+- interval: 1h
   name: ci-kubernetes-e2e-kops-aws-cni-kopeio
   labels:
     preset-service-account: "true"
@@ -177,7 +177,7 @@ periodics:
       args:
       - --cluster=e2e-kops-aws-cni-kopeio.test-cncf-aws.k8s.io
       - --deployment=kops
-      - --env=KUBE_SSH_USER=admin
+      - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --extract=release/latest
@@ -192,7 +192,7 @@ periodics:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-aws-cni-kopeio
 
-- interval: 2h
+- interval: 1h
   name: ci-kubernetes-e2e-kops-aws-cni-weave
   labels:
     preset-service-account: "true"
@@ -209,7 +209,7 @@ periodics:
       args:
       - --cluster=e2e-kops-aws-cni-weave.test-cncf-aws.k8s.io
       - --deployment=kops
-      - --env=KUBE_SSH_USER=admin
+      - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --extract=release/latest
