@@ -430,6 +430,15 @@ export KUBE_NODE_OS_DISTRIBUTION='%[3]s'
 	} else {
 		dumpCmd = fmt.Sprintf("./cluster/log-dump/log-dump.sh '%s' '%s'", localPath, gcsPath)
 	}
+
+	// Make sure the firewall rule is created. It's needed so the log-dump.sh can ssh into nodes.
+	// If cluster-up operation failed for some reasons (e.g. some nodes didn't register) the
+	// firewall rule isn't automatically created as the TestSetup is not being executed. If firewall
+	// rule was successfully created, the ensureFirewall call will be no-op.
+	if err := g.ensureFirewall(); err != nil {
+		log.Printf("error while ensuring firewall rule: %v", err)
+	}
+
 	return control.FinishRunning(exec.Command("bash", "-c", fmt.Sprintf(gkeLogDumpTemplate,
 		g.project,
 		g.zone,
