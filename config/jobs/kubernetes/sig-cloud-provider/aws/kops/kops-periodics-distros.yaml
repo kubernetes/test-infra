@@ -124,7 +124,7 @@ periodics:
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --extract=release/latest
       - --ginkgo-parallel
-      - --kops-args=--image=099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20191113
+      - --kops-args=--image=099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20200112
       - --kops-ssh-user=ubuntu
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
@@ -171,7 +171,7 @@ periodics:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-aws-centos-7
 
-- interval: 2h
+- interval: 8h
   name: ci-kubernetes-e2e-kops-aws-imageamazonlinux2
   labels:
     preset-service-account: "true"
