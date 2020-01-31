@@ -193,7 +193,7 @@ periodics:
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --extract=release/latest
       - --ginkgo-parallel
-      - --kops-args=--image=137112412989/amzn2-ami-hvm-2.0.20191217.0-x86_64-gp2 --container-runtime=containerd --networking=calico
+      - --kops-args=--image=137112412989/amzn2-ami-hvm-2.0.20191217.0-x86_64-gp2 --container-runtime=containerd --networking=amazon-vpc-routed-eni --node-size=t3.large
       - --kops-ssh-user=ec2-user
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
