@@ -116,7 +116,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200130-73a0fc5-1.15
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200130-73a0fc5-experimental
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -160,7 +160,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200130-73a0fc5-1.16
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200130-73a0fc5-experimental
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -204,7 +204,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200130-73a0fc5-1.17
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200130-73a0fc5-experimental
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
