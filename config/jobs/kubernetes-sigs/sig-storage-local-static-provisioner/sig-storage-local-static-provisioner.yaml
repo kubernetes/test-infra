@@ -65,7 +65,7 @@ presubmits:
         securityContext:
           privileged: true
   - name: pull-sig-storage-local-static-provisioner-e2e-gke
-    always_run: true
+    always_run: false
     decorate: true
     path_alias: sigs.k8s.io/sig-storage-local-static-provisioner
     labels:
