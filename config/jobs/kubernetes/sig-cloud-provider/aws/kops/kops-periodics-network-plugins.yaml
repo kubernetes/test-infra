@@ -17,12 +17,13 @@ periodics:
       args:
       - --cluster=e2e-kops-aws-cni-amazon-vpc.test-cncf-aws.k8s.io
       - --deployment=kops
-      - --env=KUBE_SSH_USER=ec2-user
+      - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --extract=release/latest
       - --ginkgo-parallel
       - --kops-args=--networking=amazon-vpc-routed-eni --node-size=t3.large --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20200112
+      - --kops-ssh-user=ubuntu
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
@@ -49,12 +50,13 @@ periodics:
       args:
       - --cluster=e2e-kops-aws-cni-calico.test-cncf-aws.k8s.io
       - --deployment=kops
-      - --env=KUBE_SSH_USER=ec2-user
+      - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --extract=release/latest
       - --ginkgo-parallel
       - --kops-args=--networking=calico --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20200112
+      - --kops-ssh-user=ubuntu
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
@@ -81,12 +83,13 @@ periodics:
       args:
       - --cluster=e2e-kops-aws-cni-canal.test-cncf-aws.k8s.io
       - --deployment=kops
-      - --env=KUBE_SSH_USER=ec2-user
+      - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --extract=release/latest
       - --ginkgo-parallel
       - --kops-args=--networking=canal --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20200112
+      - --kops-ssh-user=ubuntu
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
@@ -113,12 +116,13 @@ periodics:
       args:
       - --cluster=e2e-kops-aws-cni-cilium.test-cncf-aws.k8s.io
       - --deployment=kops
-      - --env=KUBE_SSH_USER=ec2-user
+      - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --extract=release/latest
       - --ginkgo-parallel
       - --kops-args=--networking=cilium --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20200112
+      - --kops-ssh-user=ubuntu
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
@@ -145,12 +149,13 @@ periodics:
       args:
       - --cluster=e2e-kops-aws-cni-flannel.test-cncf-aws.k8s.io
       - --deployment=kops
-      - --env=KUBE_SSH_USER=ec2-user
+      - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --extract=release/latest
       - --ginkgo-parallel
       - --kops-args=--networking=flannel --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20200112
+      - --kops-ssh-user=ubuntu
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
@@ -177,12 +182,13 @@ periodics:
       args:
       - --cluster=e2e-kops-aws-cni-kopeio.test-cncf-aws.k8s.io
       - --deployment=kops
-      - --env=KUBE_SSH_USER=ec2-user
+      - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --extract=release/latest
       - --ginkgo-parallel
       - --kops-args=--networking=kopeio --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20200112
+      - --kops-ssh-user=ubuntu
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
@@ -209,12 +215,13 @@ periodics:
       args:
       - --cluster=e2e-kops-aws-cni-weave.test-cncf-aws.k8s.io
       - --deployment=kops
-      - --env=KUBE_SSH_USER=ec2-user
+      - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --extract=release/latest
       - --ginkgo-parallel
       - --kops-args=--networking=weave --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20200112
+      - --kops-ssh-user=ubuntu
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
