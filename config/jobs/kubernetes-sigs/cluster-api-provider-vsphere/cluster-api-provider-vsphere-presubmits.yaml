@@ -22,10 +22,38 @@ presets:
       secretKeyRef:
         name: clusterapi-provider-vsphere-ci-prow
         key: vsphere-password
+  - name: TARGET_VM_SSH
+    valueFrom:
+      secretKeyRef:
+        name: clusterapi-provider-vsphere-ci-prow
+        key: target-vm-ssh
+  - name: TARGET_VM_SSH_PUB
+    valueFrom:
+      secretKeyRef:
+        name: clusterapi-provider-vsphere-ci-prow
+        key: target-vm-ssh-pub
   volumeMounts:
+  - name: jumphost-key
+    mountPath: /root/ssh/.jumphost
+  - name: bootstrapper-key
+    mountPath: /root/ssh/.bootstrapper
   - name: vpn-conf
     mountPath: /root/.openvpn
   volumes:
+  - name: jumphost-key
+    secret:
+      secretName: clusterapi-provider-vsphere-ci-prow
+      defaultMode: 256
+      items:
+      - key: jumphost-key
+        path: jumphost-key
+  - name: bootstrapper-key
+    secret:
+      secretName: clusterapi-provider-vsphere-ci-prow
+      defaultMode: 256
+      items:
+      - key: bootstrapper-key
+        path: bootstrapper-key
   - name: vpn-conf
     secret:
       secretName: cluster-api-provider-vsphere-vpn-config
@@ -191,6 +219,7 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-cluster-api-provider-vsphere-e2e-config: "true"
+      preset-cluster-api-provider-vsphere-gcs-creds: "true"
       preset-kind-volume-mounts: "true"
     always_run: false
     run_if_changed: '^((api|cmd|config|contrib|controllers|pkg|test)/|Dockerfile|Makefile|hack/e2e\.sh)'
