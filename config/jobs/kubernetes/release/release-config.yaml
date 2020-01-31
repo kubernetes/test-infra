@@ -60,8 +60,39 @@ presubmits:
       testgrid-tab-name: release-test
       testgrid-alert-email: release-managers@kubernetes.io
       testgrid-num-columns-recent: '30'
-# package tests
 periodics:
+- interval: 2h
+  name: ci-release-anago-stage
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: release
+    base_ref: master
+    path_alias: k8s.io/release
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-release-test/k8s-cloud-builder:latest
+      command:
+        - ./gcbmgr
+      args:
+        - stage
+        - master
+        - --attended
+      env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /creds/service-account.json
+      volumeMounts:
+        - name: creds
+          mountPath: /creds
+    volumes:
+      - name: creds
+        secret:
+          secretName: deployer-service-account
+  annotations:
+    testgrid-dashboards: sig-release-releng-informing
+    testgrid-alert-email: release-managers@kubernetes.io
+
+# package tests
 - name: periodic-release-verify-packages-debs
   interval: 6h
   annotations:
