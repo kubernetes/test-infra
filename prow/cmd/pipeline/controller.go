@@ -339,7 +339,7 @@ func (c *controller) createPipelineResource(context, namespace string, pr *pipel
 	if err != nil {
 		return nil, err
 	}
-	return pc.client.TektonV1alpha1().PipelineResources(namespace).Create(pr)
+	return pc.resourceClient.TektonV1alpha1().PipelineResources(namespace).Create(pr)
 }
 
 func (c *controller) now() metav1.Time {

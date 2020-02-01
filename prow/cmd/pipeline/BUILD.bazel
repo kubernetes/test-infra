@@ -33,6 +33,7 @@ go_library(
         "@com_github_tektoncd_pipeline//pkg/client/clientset/versioned:go_default_library",
         "@com_github_tektoncd_pipeline//pkg/client/informers/externalversions:go_default_library",
         "@com_github_tektoncd_pipeline//pkg/client/informers/externalversions/pipeline/v1alpha1:go_default_library",
+        "@com_github_tektoncd_pipeline//pkg/client/resource/clientset/versioned:go_default_library",
         "@dev_knative_pkg//apis:go_default_library",
         "@io_k8s_api//core/v1:go_default_library",
         "@io_k8s_apimachinery//pkg/api/errors:go_default_library",
