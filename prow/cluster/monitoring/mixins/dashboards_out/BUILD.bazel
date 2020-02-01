@@ -16,6 +16,16 @@ k8s_configmap(
 )
 
 k8s_configmap(
+    name = "grafana-dashboard-boskos-http",
+    cluster = "{STABLE_PROW_CLUSTER}",
+    data = {
+        "boskos-http.json": "//prow/cluster/monitoring/mixins/grafana_dashboards:boskos-http",
+    },
+    namespace = "prow-monitoring",
+    visibility = ["//visibility:public"],
+)
+
+k8s_configmap(
     name = "grafana-dashboard-deck",
     cluster = "{STABLE_PROW_CLUSTER}",
     data = {

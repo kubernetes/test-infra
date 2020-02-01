@@ -16,6 +16,21 @@ jsonnet_to_json(
 )
 
 jsonnet_to_json(
+    name = "boskos-http",
+    src = "boskos-http.jsonnet",
+    outs = ["boskos-http.json"],
+    imports = [
+        "../lib/",
+        "../vendor/",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//prow/cluster/monitoring/mixins/lib",
+        "//prow/cluster/monitoring/mixins/vendor/grafonnet",
+    ],
+)
+
+jsonnet_to_json(
     name = "deck",
     src = "deck.jsonnet",
     outs = ["deck.json"],
