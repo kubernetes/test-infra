@@ -401,7 +401,7 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    description: Runs tests on a Kubernetes 1.16 cluster with Windows nodes on GCE
+    description: Runs tests on a Kubernetes 1.16 cluster with Windows 2019 nodes on GCE
     testgrid-dashboards: google-windows, sig-release-1.16-informing, sig-windows
     testgrid-tab-name: gce-windows-1.16
   decorate: true
@@ -436,6 +436,9 @@ periodics:
         --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
       - --test-cmd-args=--node-os-distro=windows
       - --timeout=120m
+      env:
+      - name: WINDOWS_NODE_OS_DISTRIBUTION
+        value: "win2019"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200131-0997840-1.16
 
 postsubmits:
