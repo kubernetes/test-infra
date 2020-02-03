@@ -12,7 +12,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200131-0997840-1.15
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200203-25ff2bb-1.15
         args:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
@@ -59,7 +59,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200131-0997840-1.15
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200203-25ff2bb-1.15
         args:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
@@ -107,7 +107,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200131-0997840-1.15
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200203-25ff2bb-1.15
         args:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
@@ -162,7 +162,7 @@ presubmits:
       path_alias: sigs.k8s.io/azurefile-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200131-0997840-1.15
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200203-25ff2bb-1.15
         command:
         - runner.sh
         - kubetest
@@ -204,7 +204,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200131-0997840-1.15
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200203-25ff2bb-1.15
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -252,7 +252,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200131-0997840-1.15
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200203-25ff2bb-1.15
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -310,7 +310,7 @@ periodics:
     path_alias: sigs.k8s.io/azurefile-csi-driver
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200131-0997840-1.15
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200203-25ff2bb-1.15
       command:
       - runner.sh
       - kubetest
