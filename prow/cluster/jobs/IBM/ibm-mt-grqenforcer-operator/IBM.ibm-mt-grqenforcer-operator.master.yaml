@@ -1,0 +1,135 @@
+presubmits:
+  IBM/ibm-mt-grqenforcer-operator:
+  - name: build_ibm-mt-grqenforcer-operator
+    branches:
+    - ^master$
+    decorate: true
+    always_run: true
+    path_alias: github.com/IBM/ibm-mt-grqenforcer-operator
+    rerun_command: /test build ibm-mt-grqenforcer-operator
+    spec:
+      containers:
+      - command:
+        - make
+        - build
+        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?build(?: .*?)?$'
+  - name: check_ibm-mt-grqenforcer-operator
+    branches:
+    - ^master$
+    decorate: true
+    always_run: true
+    path_alias: github.com/IBM/ibm-mt-grqenforcer-operator
+    rerun_command: /test check ibm-mt-grqenforcer-operator
+    spec:
+      containers:
+      - command:
+        - make
+        - check
+        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?check(?: .*?)?$'
+  - name: test_ibm-mt-grqenforcer-operator
+    branches:
+    - ^master$
+    decorate: true
+    always_run: true
+    path_alias: github.com/IBM/ibm-mt-grqenforcer-operator
+    rerun_command: /test test ibm-mt-grqenforcer-operator
+    spec:
+      containers:
+      - command:
+        - make
+        - test
+        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?test(?: .*?)?$'
+
+postsubmits:
+  IBM/ibm-mt-grqenforcer-operator:
+  - name: check_ibm-mt-grqenforcer-operator_postsubmit
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/ibm-mt-grqenforcer-operator
+    spec:
+      containers:
+      - command:
+        - make
+        - check
+        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
+        name: ""
+        securityContext:
+          privileged: true
+  - name: test_ibm-mt-grqenforcer-operator_postsubmit
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/ibm-mt-grqenforcer-operator
+    spec:
+      containers:
+      - command:
+        - make
+        - test
+        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
+        name: ""
+        securityContext:
+          privileged: true
+  - name: coverage_ibm-mt-grqenforcer-operator_postsubmit
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/ibm-mt-grqenforcer-operator
+    spec:
+      containers:
+      - command:
+        - make
+        - coverage
+        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
+        name: ""
+        env:
+        - name: CODECOV_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: ibm-mt-grqenforcer-operator-codecov-token
+              key: codecov-token
+        securityContext:
+          privileged: true
+  - name: build_ibm-mt-grqenforcer-operator_postsubmit
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/ibm-mt-grqenforcer-operator
+    spec:
+      containers:
+      - command:
+        - make
+        - build
+        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
+        name: ""
+        securityContext:
+          privileged: true
+  - name: images_ibm-mt-grqenforcer-operator_postsubmit
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/ibm-mt-grqenforcer-operator
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - images
+        image: quay.io/multicloudlab/multicloudlab-builder:v20191217-d33a10d
+        name: ""
+        securityContext:
+          privileged: true
