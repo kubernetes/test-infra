@@ -92,7 +92,7 @@ periodics:
         value: "win1909"
       - name: OVERRIDE_NODE_BINARY_TAR_URL
         value: "https://storage.googleapis.com/kubernetes-release/release/v1.17.2/kubernetes-node-windows-amd64.tar.gz"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200131-0997840-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200203-25ff2bb-master
       resources:
         requests:
           memory: "8Gi"
@@ -134,7 +134,7 @@ periodics:
       env:
       - name: WINDOWS_NODE_OS_DISTRIBUTION
         value: "win2019"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200131-0997840-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200203-25ff2bb-master
   annotations:
     fork-per-release: "true"
     fork-per-release-replacements: "--extract=ci/k8s-master -> --extract=ci/k8s-beta"
@@ -176,7 +176,7 @@ periodics:
       env:
       - name: WINDOWS_NODE_OS_DISTRIBUTION
         value: "win1909"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200127-8d34d6e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200203-25ff2bb-master
   annotations:
     fork-per-release: "true"
     fork-per-release-replacements: "--extract=ci/k8s-master -> --extract=ci/k8s-beta"
@@ -220,7 +220,7 @@ periodics:
         value: "win2019"
       - name: KUBE_FEATURE_GATES
         value: "WindowsGMSA=true"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200131-0997840-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200203-25ff2bb-master
   annotations:
     testgrid-dashboards: google-windows, sig-windows
     testgrid-tab-name: gce-windows-2019-master-alpha-features
@@ -262,7 +262,7 @@ periodics:
       env:
       - name: WINDOWS_NODE_OS_DISTRIBUTION
         value: "win2019"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200131-0997840-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200203-25ff2bb-master
   annotations:
     testgrid-dashboards: google-windows
     testgrid-tab-name: gce-windows-2019-serial
@@ -302,7 +302,7 @@ periodics:
       env:
       - name: WINDOWS_NODE_OS_DISTRIBUTION
         value: "win2019"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200131-0997840-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200203-25ff2bb-master
   annotations:
     fork-per-release: "true"
     fork-per-release-replacements: "--extract=ci/k8s-master -> --extract=ci/k8s-beta"
@@ -335,7 +335,7 @@ periodics:
     - command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200131-0997840-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200203-25ff2bb-master
       args:
       - --check-leaked-resources
       - --cluster=
@@ -405,7 +405,7 @@ presubmits:
         env:
         - name: WINDOWS_NODE_OS_DISTRIBUTION
           value: "win2019"
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200131-0997840-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200203-25ff2bb-master
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
