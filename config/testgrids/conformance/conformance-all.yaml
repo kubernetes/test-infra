@@ -146,6 +146,11 @@ dashboards:
       description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Microsoft Azure"
       test_group_name: ci-gardener-e2e-conformance-azure-v1.10
 
+    - name: OCI, v1.15 (release)
+      description: Runs conformance tests using kubetest against kubernetes release 1.15 stable tag on Oracle Cloud Infrastructure
+      test_group_name: cloud-provider-oci-e2e-conformance-stable-v1.15
+      alert_options:
+        alert_mail_to_addresses: cncf_ci_dashboard_ww_grp@oracle.com
     - name: OCI, v1.14 (release)
       description: Runs conformance tests using kubetest against kubernetes release 1.14 stable tag on Oracle Cloud Infrastructure
       test_group_name: cloud-provider-oci-e2e-conformance-stable-v1.14
@@ -156,24 +161,19 @@ dashboards:
       test_group_name: cloud-provider-oci-e2e-conformance-stable-v1.13
       alert_options:
         alert_mail_to_addresses: cncf_ci_dashboard_ww_grp@oracle.com
-    - name: OCI, v1.12 (release)
-      description: Runs conformance tests using kubetest against kubernetes release 1.12 stable tag on Oracle Cloud Infrastructure
-      test_group_name: cloud-provider-oci-e2e-conformance-stable-v1.12
+    - name: OKE, v1.14 (release)
+      description: Runs conformance tests using kubetest against kubernetes release 1.14 stable tag on Oracle Cloud Infrastructure Container Engine for Kubernetes
+      test_group_name: cloud-provider-oci-oke-e2e-conformance-stable-v1.14
+      alert_options:
+        alert_mail_to_addresses: cncf_ci_dashboard_ww_grp@oracle.com
+    - name: OKE, v1.13 (release)
+      description: Runs conformance tests using kubetest against kubernetes release 1.13 stable tag on Oracle Cloud Infrastructure Container Engine for Kubernetes
+      test_group_name: cloud-provider-oci-oke-e2e-conformance-stable-v1.13
       alert_options:
         alert_mail_to_addresses: cncf_ci_dashboard_ww_grp@oracle.com
     - name: OKE, v1.12 (release)
       description: Runs conformance tests using kubetest against kubernetes release 1.12 stable tag on Oracle Cloud Infrastructure Container Engine for Kubernetes
       test_group_name: cloud-provider-oci-oke-e2e-conformance-stable-v1.12
-      alert_options:
-        alert_mail_to_addresses: cncf_ci_dashboard_ww_grp@oracle.com
-    - name: OKE, v1.11 (release)
-      description: Runs conformance tests using kubetest against kubernetes release 1.11 stable tag on Oracle Cloud Infrastructure Container Engine for Kubernetes
-      test_group_name: cloud-provider-oci-oke-e2e-conformance-stable-v1.11
-      alert_options:
-        alert_mail_to_addresses: cncf_ci_dashboard_ww_grp@oracle.com
-    - name: OKE, v1.10 (release)
-      description: Runs conformance tests using kubetest against kubernetes release 1.10 stable tag on Oracle Cloud Infrastructure Container Engine for Kubernetes
-      test_group_name: cloud-provider-oci-oke-e2e-conformance-stable-v1.10
       alert_options:
         alert_mail_to_addresses: cncf_ci_dashboard_ww_grp@oracle.com
 
@@ -257,6 +257,11 @@ dashboards:
 
 - name: conformance-oracle-cloud-infrastructure
   dashboard_tab:
+    - name: OCI, v1.15 (release)
+      description: Runs conformance tests using kubetest against kubernetes release 1.15 stable tag on Oracle Cloud Infrastructure
+      test_group_name: cloud-provider-oci-e2e-conformance-stable-v1.15
+      alert_options:
+        alert_mail_to_addresses: cncf_ci_dashboard_ww_grp@oracle.com
     - name: OCI, v1.14 (release)
       description: Runs conformance tests using kubetest against kubernetes release 1.14 stable tag on Oracle Cloud Infrastructure
       test_group_name: cloud-provider-oci-e2e-conformance-stable-v1.14
@@ -267,24 +272,19 @@ dashboards:
       test_group_name: cloud-provider-oci-e2e-conformance-stable-v1.13
       alert_options:
         alert_mail_to_addresses: cncf_ci_dashboard_ww_grp@oracle.com
-    - name: OCI, v1.12 (release)
-      description: Runs conformance tests using kubetest against kubernetes release 1.12 stable tag on Oracle Cloud Infrastructure
-      test_group_name: cloud-provider-oci-e2e-conformance-stable-v1.12
+    - name: OKE, v1.14 (release)
+      description: Runs conformance tests using kubetest against kubernetes release 1.14 stable tag on Oracle Cloud Infrastructure Container Engine for Kubernetes
+      test_group_name: cloud-provider-oci-oke-e2e-conformance-stable-v1.14
+      alert_options:
+        alert_mail_to_addresses: cncf_ci_dashboard_ww_grp@oracle.com
+    - name: OKE, v1.13 (release)
+      description: Runs conformance tests using kubetest against kubernetes release 1.13 stable tag on Oracle Cloud Infrastructure Container Engine for Kubernetes
+      test_group_name: cloud-provider-oci-oke-e2e-conformance-stable-v1.13
       alert_options:
         alert_mail_to_addresses: cncf_ci_dashboard_ww_grp@oracle.com
     - name: OKE, v1.12 (release)
       description: Runs conformance tests using kubetest against kubernetes release 1.12 stable tag on Oracle Cloud Infrastructure Container Engine for Kubernetes
       test_group_name: cloud-provider-oci-oke-e2e-conformance-stable-v1.12
-      alert_options:
-        alert_mail_to_addresses: cncf_ci_dashboard_ww_grp@oracle.com
-    - name: OKE, v1.11 (release)
-      description: Runs conformance tests using kubetest against kubernetes release 1.11 stable tag on Oracle Cloud Infrastructure Container Engine for Kubernetes
-      test_group_name: cloud-provider-oci-oke-e2e-conformance-stable-v1.11
-      alert_options:
-        alert_mail_to_addresses: cncf_ci_dashboard_ww_grp@oracle.com
-    - name: OKE, v1.10 (release)
-      description: Runs conformance tests using kubetest against kubernetes release 1.10 stable tag on Oracle Cloud Infrastructure Container Engine for Kubernetes
-      test_group_name: cloud-provider-oci-oke-e2e-conformance-stable-v1.10
       alert_options:
         alert_mail_to_addresses: cncf_ci_dashboard_ww_grp@oracle.com
 
@@ -517,23 +517,23 @@ test_groups:
   gcs_prefix: k8s-conformance-alibaba/cloud-provider-alibaba-cloud/e2e-conformance-release-v1.11
 
 # Oracle Cloud Infrastructure(OCI) Test Groups
+- name: cloud-provider-oci-e2e-conformance-stable-v1.15
+  gcs_prefix: k8s-conformance-oracle-cloud/cloud-provider-oci/e2e-conformance-stable-1.15
+
 - name: cloud-provider-oci-e2e-conformance-stable-v1.14
   gcs_prefix: k8s-conformance-oracle-cloud/cloud-provider-oci/e2e-conformance-stable-1.14
 
 - name: cloud-provider-oci-e2e-conformance-stable-v1.13
   gcs_prefix: k8s-conformance-oracle-cloud/cloud-provider-oci/e2e-conformance-stable-1.13
 
-- name: cloud-provider-oci-e2e-conformance-stable-v1.12
-  gcs_prefix: k8s-conformance-oracle-cloud/cloud-provider-oci/e2e-conformance-stable-1.12
+- name: cloud-provider-oci-oke-e2e-conformance-stable-v1.14
+  gcs_prefix: k8s-conformance-oracle-cloud/cloud-provider-oci-oke/e2e-conformance-stable-1.14
+
+- name: cloud-provider-oci-oke-e2e-conformance-stable-v1.13
+  gcs_prefix: k8s-conformance-oracle-cloud/cloud-provider-oci-oke/e2e-conformance-stable-1.13
 
 - name: cloud-provider-oci-oke-e2e-conformance-stable-v1.12
   gcs_prefix: k8s-conformance-oracle-cloud/cloud-provider-oci-oke/e2e-conformance-stable-1.12
-
-- name: cloud-provider-oci-oke-e2e-conformance-stable-v1.11
-  gcs_prefix: k8s-conformance-oracle-cloud/cloud-provider-oci-oke/e2e-conformance-stable-1.11
-
-- name: cloud-provider-oci-oke-e2e-conformance-stable-v1.10
-  gcs_prefix: k8s-conformance-oracle-cloud/cloud-provider-oci-oke/e2e-conformance-stable-1.10
 
 # Docker node conformance test group
 - name: ce18.09-ubuntu16.04-k8s1.13.x-conformance
