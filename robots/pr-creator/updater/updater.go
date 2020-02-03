@@ -46,7 +46,7 @@ func UpdatePR(org, repo, title, body, matchTitle string, gc updateClient) (*int,
 		return nil, fmt.Errorf("bot name: %v", err)
 	}
 
-	issues, err := gc.FindIssues("is:open is:pr archived:false in:title author:"+me+" "+matchTitle, "updated", false)
+	issues, err := gc.FindIssues("is:open is:pr archived:false in:title repo:"+org+"/"+repo+" author:"+me+" author:"+me+" "+matchTitle, "updated", false)
 	if err != nil {
 		return nil, fmt.Errorf("find issues: %v", err)
 	} else if len(issues) == 0 {
