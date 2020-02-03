@@ -44,12 +44,15 @@ import (
 )
 
 const (
-	defaultRequestTTL      = 30 * time.Second
-	defaultRequestGCPeriod = time.Minute
+	defaultDynamicResourceUpdatePeriod = 10 * time.Minute
+	defaultRequestTTL                  = 30 * time.Second
+	defaultRequestGCPeriod             = time.Minute
 )
 
 var (
-	configPath        = flag.String("config", "config.yaml", "Path to init resource file")
+	configPath                  = flag.String("config", "config.yaml", "Path to init resource file")
+	dynamicResourceUpdatePeriod = flag.Duration("dynamic-resource-update-period", defaultDynamicResourceUpdatePeriod,
+		"Period at which to update dynamic resources. Set to 0 to disable.")
 	storagePath       = flag.String("storage", "", "Path to persistent volume to load the state")
 	requestTTL        = flag.Duration("request-ttl", defaultRequestTTL, "request TTL before losing priority in the queue")
 	kubeClientOptions crds.KubernetesClientOptions
@@ -143,6 +146,7 @@ func main() {
 		}
 	})
 
+	r.StartDynamicResourceUpdater(*dynamicResourceUpdatePeriod)
 	r.StartRequestGC(defaultRequestGCPeriod)
 
 	logrus.Info("Start Service")

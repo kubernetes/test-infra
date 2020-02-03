@@ -378,6 +378,26 @@ func (r *Ranch) SyncConfig(configPath string) error {
 	return nil
 }
 
+// StartDynamicResourceUpdater starts a goroutine which periodically
+// updates all dynamic resources.
+func (r *Ranch) StartDynamicResourceUpdater(updatePeriod time.Duration) {
+	if updatePeriod == 0 {
+		return
+	}
+	go func() {
+		updateTick := time.NewTicker(updatePeriod).C
+		for {
+			select {
+			case <-updateTick:
+				// TODO(ixdy): do we really need to acquire this lock?
+				r.resourcesLock.Lock()
+				r.Storage.UpdateAllDynamicResources()
+				r.resourcesLock.Unlock()
+			}
+		}
+	}()
+}
+
 // StartRequestGC starts the GC of expired requests
 func (r *Ranch) StartRequestGC(gcPeriod time.Duration) {
 	r.requestMgr.StartGC(gcPeriod)
