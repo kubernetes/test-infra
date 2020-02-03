@@ -55,6 +55,8 @@ var (
 	gkeReleaseChannel              = flag.String("gke-release-channel", "", "(gke only) if specified, bring up GKE clusters from that release channel.")
 	gkeSingleZoneNodeInstanceGroup = flag.Bool("gke-single-zone-node-instance-group", true, "(gke only) Add instance groups from a single zone to the NODE_INSTANCE_GROUP env variable.")
 	gkeNodePorts                   = flag.String("gke-node-ports", "", "(gke only) List of ports on nodes to open, allowing e.g. master to connect to pods on private nodes. The format should be 'protocol[:port[-port]],[...]' as in gcloud compute firewall-rules create --allow.")
+	gkeCreateNat                   = flag.Bool("gke-create-nat", false, "(gke only) Configure Cloud NAT allowing outbound connections in cluster with private nodes.")
+	gkeNatMinPortsPerVm            = flag.Int("gke-nat-min-ports-per-vm", 64, "(gke only) Specify number of ports per cluster VM for NAT router. Number of ports * number of nodes / 64k = number of auto-allocated IP addresses (there is a hard limit of 100 IPs).")
 
 	// poolRe matches instance group URLs of the form `https://www.googleapis.com/compute/v1/projects/some-project/zones/a-zone/instanceGroupManagers/gke-some-cluster-some-pool-90fcb815-grp`. Match meaning:
 	// m[0]: path starting with zones/
@@ -85,6 +87,8 @@ type gkeDeployer struct {
 	network                     string
 	subnetwork                  string
 	subnetworkRegion            string
+	createNat                   bool
+	natMinPortsPerVm            int
 	image                       string
 	imageFamily                 string
 	imageProject                string
@@ -156,6 +160,8 @@ func newGKE(provider, project, zone, region, network, image, imageFamily, imageP
 	g.additionalZones = *gkeAdditionalZones
 	g.nodeLocations = *gkeNodeLocations
 	g.nodePorts = *gkeNodePorts
+	g.createNat = *gkeCreateNat
+	g.natMinPortsPerVm = *gkeNatMinPortsPerVm
 
 	err := json.Unmarshal([]byte(*gkeShape), &g.shape)
 	if err != nil {
@@ -461,6 +467,9 @@ func (g *gkeDeployer) TestSetup() error {
 	if err := g.ensureFirewall(); err != nil {
 		return err
 	}
+	if err := g.ensureNat(); err != nil {
+		return err
+	}
 	if err := g.setupEnv(); err != nil {
 		return err
 	}
@@ -619,6 +628,100 @@ func (g *gkeDeployer) cleanupNetworkFirewalls() (int, error) {
 	return 0, nil
 }
 
+func (g *gkeDeployer) ensureNat() error {
+	if !g.createNat {
+		return nil
+	}
+	if g.network == "default" {
+		return fmt.Errorf("NAT router should be set manually for the default network")
+	}
+	region, err := g.getRegion(g.region, g.zone)
+	if err != nil {
+		return fmt.Errorf("error finding region for NAT router: %v", err)
+	}
+	nat := g.getNatName()
+
+	// Create this unique router only if it does not exist yet.
+	if control.NoOutput(exec.Command("gcloud", "compute", "routers", "describe", nat,
+		"--project="+g.project,
+		"--region="+region,
+		"--format=value(name)")) != nil {
+		log.Printf("Couldn't describe router '%s', assuming it doesn't exist and creating it", nat)
+		if err := control.FinishRunning(exec.Command("gcloud", "compute", "routers", "create", nat,
+			"--project="+g.project,
+			"--network="+g.network,
+			"--region="+region)); err != nil {
+			return fmt.Errorf("error creating NAT router: %v", err)
+		}
+	}
+	// Create this unique NAT configuration only if it does not exist yet.
+	if control.NoOutput(exec.Command("gcloud", "compute", "routers", "nats", "describe", nat,
+		"--project="+g.project,
+		"--router="+nat,
+		"--router-region="+region,
+		"--format=value(name)")) != nil {
+		log.Printf("Couldn't describe NAT '%s', assuming it doesn't exist and creating it", nat)
+		if err := control.FinishRunning(exec.Command("gcloud", "compute", "routers", "nats", "create", nat,
+			"--project="+g.project,
+			"--router="+nat,
+			"--router-region="+region,
+			"--auto-allocate-nat-external-ips",
+			"--min-ports-per-vm="+strconv.Itoa(g.natMinPortsPerVm),
+			"--nat-primary-subnet-ip-ranges")); err != nil {
+			return fmt.Errorf("error adding NAT to a router: %v", err)
+		}
+	}
+
+	return nil
+}
+
+func (g *gkeDeployer) getRegion(region, zone string) (string, error) {
+	if region != "" {
+		return region, nil
+	}
+	result, err := exec.Command("gcloud", "compute", "zones", "list",
+		"--filter=name="+zone,
+		"--format=value(region)",
+		"--project="+g.project).Output()
+	if err != nil {
+		return "", fmt.Errorf("error resolving region of %s zone: %v", zone, err)
+	}
+	return strings.TrimSuffix(string(result), "\n"), nil
+}
+
+func (g *gkeDeployer) getNatName() string {
+	return "nat-router-" + g.cluster
+}
+
+func (g *gkeDeployer) cleanupNat() error {
+	if !g.createNat {
+		return nil
+	}
+	region, err := g.getRegion(g.region, g.zone)
+	if err != nil {
+		return fmt.Errorf("error finding region for NAT router: %v", err)
+	}
+	nat := g.getNatName()
+
+	// Delete NAT router. That will remove NAT configuration as well.
+	if control.NoOutput(exec.Command("gcloud", "compute", "routers", "describe", nat,
+		"--project="+g.project,
+		"--region="+region,
+		"--format=value(name)")) == nil {
+		log.Printf("Found NAT router '%s', deleting", nat)
+		err = control.FinishRunning(exec.Command("gcloud", "compute", "routers", "delete", "-q", nat,
+			"--project="+g.project,
+			"--region="+region))
+		if err != nil {
+			return fmt.Errorf("error deleting NAT router: %v", err)
+		}
+	} else {
+		log.Printf("Found no NAT router '%s', assuming resources are clean", nat)
+	}
+
+	return nil
+}
+
 func (g *gkeDeployer) Down() error {
 	firewall, err := g.getClusterFirewall()
 	if err != nil {
@@ -652,6 +755,9 @@ func (g *gkeDeployer) Down() error {
 		log.Printf("Found no rules for firewall '%s', assuming resources are clean", firewall)
 	}
 	numLeakedFWRules, errCleanFirewalls := g.cleanupNetworkFirewalls()
+
+	errNat := g.cleanupNat()
+
 	var errSubnet error
 	if g.subnetwork != "" {
 		errSubnet = control.FinishRunning(exec.Command("gcloud", "compute", "networks", "subnets", "delete", "-q", g.subnetwork,
@@ -667,6 +773,9 @@ func (g *gkeDeployer) Down() error {
 	}
 	if errCleanFirewalls != nil {
 		return fmt.Errorf("error cleaning-up firewalls: %v", errCleanFirewalls)
+	}
+	if errNat != nil {
+		return fmt.Errorf("error cleaning-up NAT: %v", errNat)
 	}
 	if errSubnet != nil {
 		return fmt.Errorf("error deleting subnetwork: %v", errSubnet)
