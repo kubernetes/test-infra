@@ -23,9 +23,10 @@ import (
 	"os/exec"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/sirupsen/logrus"
-
+	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/git/localgit"
 	"k8s.io/test-infra/prow/github"
 )
@@ -478,6 +479,55 @@ func TestMerging(t *testing.T) {
 				if _, err := r.MergeWithStrategy("origin/"+branch, tc.strategy); err != nil {
 					t.Fatalf("mergeWithStrategy %s: %v", branch, err)
 				}
+			}
+		})
+	}
+}
+
+func TestBackoff(t *testing.T) {
+	testCases := []struct {
+		name          string
+		retry         int
+		backoffFactor float64
+		expected      time.Duration
+	}{
+		{
+			name:          "Retry 0 (i.e. try 1) with a backoff factor 1 should backoff for 1 seconds",
+			retry:         0,
+			backoffFactor: 1,
+			expected:      1 * time.Second,
+		},
+		{
+			name:          "Retry 4 with a backoff factor 1 should backoff for 16 seconds",
+			retry:         4,
+			backoffFactor: 1,
+			expected:      16 * time.Second,
+		},
+		{
+			name:          "Retry 2 with a backoff factor 0.5 should backoff for 2 seconds",
+			retry:         2,
+			backoffFactor: 0.5,
+			expected:      2 * time.Second,
+		},
+		{
+			name:          "Negative backoff factor should return 0 backoff time",
+			retry:         3,
+			backoffFactor: -2,
+			expected:      0,
+		},
+		{
+			name:          "Negative retry number should return 0 backoff time",
+			retry:         -5,
+			backoffFactor: 1,
+			expected:      0,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			actual := git.GetBackoffTime(tc.backoffFactor, tc.retry)
+			if tc.expected != actual {
+				t.Errorf("expected: %v != actual: %v", tc.expected, actual)
 			}
 		})
 	}

@@ -23,6 +23,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"math"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -164,7 +165,7 @@ func (c *Client) Clone(organization, repository string) (*Repo, error) {
 			return nil, err
 		}
 		remote := fmt.Sprintf("%s/%s", base, repo)
-		if b, err := retryCmd(c.logger, "", c.git, "clone", "--mirror", remote, cache); err != nil {
+		if b, err := retryCmd(c.logger, 5, 1, "", c.git, "clone", "--mirror", remote, cache); err != nil {
 			return nil, fmt.Errorf("git cache clone error: %v. output: %s", err, string(b))
 		}
 	} else if err != nil {
@@ -172,7 +173,7 @@ func (c *Client) Clone(organization, repository string) (*Repo, error) {
 	} else {
 		// Cache hit. Do a git fetch to keep updated.
 		c.logger.Infof("Fetching %s.", repo)
-		if b, err := retryCmd(c.logger, cache, c.git, "fetch"); err != nil {
+		if b, err := retryCmd(c.logger, 5, 1, cache, c.git, "fetch"); err != nil {
 			return nil, fmt.Errorf("git fetch error: %v. output: %s", err, string(b))
 		}
 	}
@@ -410,7 +411,7 @@ func (r *Repo) Push(branch string) error {
 // CheckoutPullRequest does exactly that.
 func (r *Repo) CheckoutPullRequest(number int) error {
 	r.logger.Infof("Fetching and checking out %s/%s#%d.", r.org, r.repo, number)
-	if b, err := retryCmd(r.logger, r.dir, r.git, "fetch", r.base+"/"+r.org+"/"+r.repo, fmt.Sprintf("pull/%d/head:pull%d", number, number)); err != nil {
+	if b, err := retryCmd(r.logger, 5, 1, r.dir, r.git, "fetch", r.base+"/"+r.org+"/"+r.repo, fmt.Sprintf("pull/%d/head:pull%d", number, number)); err != nil {
 		return fmt.Errorf("git fetch failed for PR %d: %v. output: %s", number, err, string(b))
 	}
 	co := r.gitCommand("checkout", fmt.Sprintf("pull%d", number))
@@ -429,20 +430,23 @@ func (r *Repo) Config(key, value string) error {
 	return nil
 }
 
-// retryCmd will retry the command a few times with backoff. Use this for any
-// commands that will be talking to GitHub, such as clones or fetches.
-func retryCmd(l *logrus.Entry, dir, cmd string, arg ...string) ([]byte, error) {
+// GetBackoffTime returns a backoff time calculated using formula: `{backoff factor} * 2 ^ {# of retries}`
+func GetBackoffTime(factor float64, retry int) time.Duration {
+	return time.Duration(math.Max(factor*math.Exp2(float64(retry)), 0)) * time.Second
+}
+
+// retryCmd will try the command `tries` times with a backoff (in seconds). Use this for any commands that
+// will be talking to GitHub, such as clones or fetches.
+func retryCmd(l *logrus.Entry, tries int, backoffFactor float64, dir, cmd string, arg ...string) ([]byte, error) {
 	var b []byte
 	var err error
-	sleepyTime := time.Second
-	for i := 0; i < 3; i++ {
+	for i := 0; i < tries; i++ {
 		c := exec.Command(cmd, arg...)
 		c.Dir = dir
 		b, err = c.CombinedOutput()
 		if err != nil {
 			l.Warningf("Running %s %v returned error %v with output %s.", cmd, arg, err, string(b))
-			time.Sleep(sleepyTime)
-			sleepyTime *= 2
+			time.Sleep(GetBackoffTime(backoffFactor, i))
 			continue
 		}
 		break
