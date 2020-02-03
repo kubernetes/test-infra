@@ -146,7 +146,7 @@ func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data stri
 	return buf.String()
 }
 
-var failedMountRegex = regexp.MustCompile(`MountVolume.SetUp failed for volume "(.+?)" : (.+?)`)
+var failedMountRegex = regexp.MustCompile(`MountVolume.SetUp failed for volume "(.+?)" : (.+)`)
 
 func hintFromPodInfo(buf []byte) string {
 	var report k8sreporter.PodReport
@@ -192,7 +192,7 @@ func hintFromPodInfo(buf []byte) string {
 			}
 		}
 		if failedMount {
-			return fmt.Sprintf("The job could not start because one or more of the volumes could not be mounted.")
+			return fmt.Sprintf("The job could not started because one or more of the volumes could not be mounted.")
 		}
 	}
 	// Check if we cannot be scheduled
@@ -212,7 +212,7 @@ func hintFromPodInfo(buf []byte) string {
 	// There are a bunch of fun ways for the node to fail that we've seen before
 	for _, e := range report.Events {
 		if e.Reason == "FailedCreatePodSandbox" || e.Reason == "FailedSync" || e.Reason == "FailedKillPod" {
-			return "The job may have executed on an unhealthy node. Contact your prow maintainers or check the detailed pod information."
+			return "The job may have executed on an unhealthy node. Contact your prow maintainers with a link to this page or check the detailed pod information."
 		}
 	}
 
