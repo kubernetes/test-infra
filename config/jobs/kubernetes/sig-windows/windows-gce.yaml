@@ -269,12 +269,14 @@ periodics:
 
 - name: ci-kubernetes-e2e-windows-containerd-gce
   decorate: true
+  decoration_config:
+    timeout: 4h
   extra_refs:
   - org: kubernetes-sigs
     repo: windows-testing
     base_ref: master
     path_alias: k8s.io/windows-testing
-  interval: 2h
+  interval: 4h
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
@@ -298,7 +300,7 @@ periodics:
       - --test-cmd=$GOPATH/src/k8s.io/windows-testing/gce/run-e2e.sh
       - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
       - --test-cmd-args=--node-os-distro=windows
-      - --timeout=150m
+      - --timeout=230m
       env:
       - name: WINDOWS_NODE_OS_DISTRIBUTION
         value: "win2019"
