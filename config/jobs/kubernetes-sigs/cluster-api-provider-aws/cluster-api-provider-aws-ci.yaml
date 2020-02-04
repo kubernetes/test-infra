@@ -260,7 +260,6 @@ periodics:
     testgrid-num-columns-recent: '20'
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
 - name: ci-cluster-api-provider-aws-make-conformance-stable-k8s-ci-artifacts
-  interval: 3h
   max_concurrency: 5
   labels:
     preset-dind-enabled: "true"
@@ -271,6 +270,9 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
   decorate: true
+  decoration_config:
+    timeout: 3h
+  interval: 4h
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-aws
