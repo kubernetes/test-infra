@@ -38,30 +38,42 @@ func TestShouldReport(t *testing.T) {
 		name         string
 		agent        prowv1.ProwJobAgent
 		isComplete   bool
+		hasBuildID   bool
 		shouldReport bool
 	}{
 		{
 			name:         "completed kubernetes tests are reported",
 			agent:        prowv1.KubernetesAgent,
 			isComplete:   true,
+			hasBuildID:   true,
 			shouldReport: true,
 		},
 		{
 			name:         "incomplete kubernetes tests are not reported",
 			agent:        prowv1.KubernetesAgent,
 			isComplete:   false,
+			hasBuildID:   true,
 			shouldReport: false,
 		},
 		{
 			name:         "complete non-kubernetes tests are not reported",
 			agent:        prowv1.JenkinsAgent,
 			isComplete:   true,
+			hasBuildID:   true,
 			shouldReport: false,
 		},
 		{
 			name:         "incomplete non-kubernetes tests are not reported",
 			agent:        prowv1.JenkinsAgent,
 			isComplete:   false,
+			hasBuildID:   true,
+			shouldReport: false,
+		},
+		{
+			name:         "complete kubernetes tests with no build ID are not reported",
+			agent:        prowv1.KubernetesAgent,
+			isComplete:   true,
+			hasBuildID:   false,
 			shouldReport: false,
 		},
 	}
@@ -80,6 +92,9 @@ func TestShouldReport(t *testing.T) {
 			if tc.isComplete {
 				pj.Status.State = prowv1.SuccessState
 				pj.Status.CompletionTime = &metav1.Time{Time: time.Now()}
+			}
+			if tc.hasBuildID {
+				pj.Status.BuildID = "123456789"
 			}
 
 			kgr := internalNew(testutil.Fca{}.Config, nil, nil, 1.0, false)
