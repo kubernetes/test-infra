@@ -49,7 +49,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: metrics
-        image: gcr.io/k8s-prow/boskos/metrics:v20200128-8dae29413
+        image: gcr.io/k8s-prow/boskos/metrics:v20200203-a909b961a
         args:
         - --resource-type=gce-project,gke-project,gpu-project,ingress-project,istio-project,scalability-presubmit-project,scalability-project,aws-account
         ports:
