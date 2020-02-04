@@ -38,7 +38,16 @@ postsubmits:
             volumeMounts:
               - name: creds
                 mountPath: /creds
+              - name: windows-cert
+                mountPath: /root/.docker-1809
+              - name: windows-cert
+                mountPath: /root/.docker-1903
+              - name: windows-cert
+                mountPath: /root/.docker-1909
         volumes:
           - name: creds
             secret:
               secretName: deployer-service-account
+          - name: windows-cert
+            secret:
+              secretName: windows-img-promoter-cert
