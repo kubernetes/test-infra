@@ -7,7 +7,7 @@ postsubmits:
       cluster: test-infra-trusted
       annotations:
         # This is the name of some testgrid dashboard to report to.
-        testgrid-dashboards: sig-scheduling-descheduler
+        testgrid-dashboards: sig-scheduling
       decorate: true
       branches:
         - ^master$
