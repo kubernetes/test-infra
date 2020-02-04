@@ -1,12 +1,12 @@
 presubmits:
-  IBM/common-service-operator:
-  - name: build_common-service-operator
+  IBM/meta-operator:
+  - name: build_meta-operator
     branches:
     - ^master$
     decorate: true
     always_run: true
-    path_alias: github.com/IBM/common-service-operator
-    rerun_command: /test build common-service-operator
+    path_alias: github.com/IBM/meta-operator
+    rerun_command: /test build meta-operator
     spec:
       containers:
       - command:
@@ -17,13 +17,13 @@ presubmits:
         securityContext:
           privileged: true
     trigger: '(?m)^/test (?:.*? )?build(?: .*?)?$'
-  - name: check_common-service-operator
+  - name: check_meta-operator
     branches:
     - ^master$
     decorate: true
     always_run: true
-    path_alias: github.com/IBM/common-service-operator
-    rerun_command: /test check common-service-operator
+    path_alias: github.com/IBM/meta-operator
+    rerun_command: /test check meta-operator
     spec:
       containers:
       - command:
@@ -34,13 +34,13 @@ presubmits:
         securityContext:
           privileged: true
     trigger: '(?m)^/test (?:.*? )?check(?: .*?)?$'
-  - name: test_common-service-operator
+  - name: test_meta-operator
     branches:
     - ^master$
     decorate: true
     always_run: true
-    path_alias: github.com/IBM/common-service-operator
-    rerun_command: /test test common-service-operator
+    path_alias: github.com/IBM/meta-operator
+    rerun_command: /test test meta-operator
     spec:
       containers:
       - command:
@@ -53,12 +53,12 @@ presubmits:
     trigger: '(?m)^/test (?:.*? )?test(?: .*?)?$'
 
 postsubmits:
-  IBM/common-service-operator:
-  - name: check_common-service-operator_postsubmit
+  IBM/meta-operator:
+  - name: check_meta-operator_postsubmit
     branches:
     - ^master$
     decorate: true
-    path_alias: github.com/IBM/common-service-operator
+    path_alias: github.com/IBM/meta-operator
     spec:
       containers:
       - command:
@@ -68,11 +68,11 @@ postsubmits:
         name: ""
         securityContext:
           privileged: true
-  - name: test_common-service-operator_postsubmit
+  - name: test_meta-operator_postsubmit
     branches:
     - ^master$
     decorate: true
-    path_alias: github.com/IBM/common-service-operator
+    path_alias: github.com/IBM/meta-operator
     spec:
       containers:
       - command:
@@ -82,11 +82,11 @@ postsubmits:
         name: ""
         securityContext:
           privileged: true
-  - name: coverage_common-service-operator_postsubmit
+  - name: coverage_meta-operator_postsubmit
     branches:
     - ^master$
     decorate: true
-    path_alias: github.com/IBM/common-service-operator
+    path_alias: github.com/IBM/meta-operator
     spec:
       containers:
       - command:
@@ -98,15 +98,15 @@ postsubmits:
         - name: CODECOV_TOKEN
           valueFrom:
             secretKeyRef:
-              name: common-service-operator-codecov-token
+              name: meta-operator-codecov-token
               key: codecov-token
         securityContext:
           privileged: true
-  - name: build_common-service-operator_postsubmit
+  - name: build_meta-operator_postsubmit
     branches:
     - ^master$
     decorate: true
-    path_alias: github.com/IBM/common-service-operator
+    path_alias: github.com/IBM/meta-operator
     spec:
       containers:
       - command:
@@ -116,11 +116,11 @@ postsubmits:
         name: ""
         securityContext:
           privileged: true
-  - name: images_common-service-operator_postsubmit
+  - name: images_meta-operator_postsubmit
     branches:
     - ^master$
     decorate: true
-    path_alias: github.com/IBM/common-service-operator
+    path_alias: github.com/IBM/meta-operator
     labels:
       preset-service-account: "true"
     spec:
