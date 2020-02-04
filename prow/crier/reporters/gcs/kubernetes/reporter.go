@@ -153,8 +153,8 @@ func (gr *gcsK8sReporter) GetName() string {
 func (gr *gcsK8sReporter) ShouldReport(pj *prowv1.ProwJob) bool {
 	// This reporting only makes sense for the Kubernetes agent (otherwise we don't
 	// have a pod to look up). It is only particularly useful for us to look at
-	// complete jobs.
-	if pj.Spec.Agent != prowv1.KubernetesAgent || !pj.Complete() {
+	// complete jobs that have a build ID.
+	if pj.Spec.Agent != prowv1.KubernetesAgent || !pj.Complete() || pj.Status.BuildID == "" {
 		return false
 	}
 
