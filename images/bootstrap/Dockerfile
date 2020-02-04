@@ -43,6 +43,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python-openssl \
     python-pip \
     rsync \
+    sudo \
     unzip \
     wget \
     xz-utils \
