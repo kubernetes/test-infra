@@ -136,6 +136,7 @@ type KubernetesConfig struct {
 	CustomKubeSchedulerImage         string            `json:"customKubeSchedulerImage,omitempty"`
 	CustomKubeBinaryURL              string            `json:"customKubeBinaryURL,omitempty"`
 	UseManagedIdentity               *bool             `json:"useManagedIdentity,omitempty"`
+	UserAssignedID                   string            `json:"userAssignedID,omitempty"`
 }
 
 type OrchestratorProfile struct {
