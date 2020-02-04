@@ -9,7 +9,7 @@ presubmits:
       - ssh-secret
     clone_uri: "git@github.com:rh-ibm-synergy/multicloud-operators-foundation.git"
     always_run: true
-    path_alias: github.ibm.com/IBMPrivateCloud/multicloud-operators-foundation
+    path_alias: github.com/open-cluster-management/multicloud-operators-foundation
     rerun_command: /test build multicloud-operators-foundation
     spec:
       containers:
@@ -30,7 +30,7 @@ presubmits:
       - ssh-secret
     clone_uri: "git@github.com:rh-ibm-synergy/multicloud-operators-foundation.git"
     always_run: true
-    path_alias: github.ibm.com/IBMPrivateCloud/multicloud-operators-foundation
+    path_alias: github.com/open-cluster-management/multicloud-operators-foundation
     rerun_command: /test check multicloud-operators-foundation
     spec:
       containers:
@@ -55,7 +55,7 @@ presubmits:
       - ssh-secret
     clone_uri: "git@github.com:rh-ibm-synergy/multicloud-operators-foundation.git"
     always_run: true
-    path_alias: github.ibm.com/IBMPrivateCloud/multicloud-operators-foundation
+    path_alias: github.com/open-cluster-management/multicloud-operators-foundation
     rerun_command: /test test multicloud-operators-foundation
     spec:
       containers:
@@ -78,7 +78,7 @@ postsubmits:
       ssh_key_secrets:
       - ssh-secret
     clone_uri: "git@github.com:rh-ibm-synergy/multicloud-operators-foundation.git"
-    path_alias: github.ibm.com/IBMPrivateCloud/multicloud-operators-foundation
+    path_alias: github.com/open-cluster-management/multicloud-operators-foundation
     spec:
       containers:
       - command:
@@ -96,7 +96,7 @@ postsubmits:
       ssh_key_secrets:
       - ssh-secret
     clone_uri: "git@github.com:rh-ibm-synergy/multicloud-operators-foundation.git"
-    path_alias: github.ibm.com/IBMPrivateCloud/multicloud-operators-foundation
+    path_alias: github.com/open-cluster-management/multicloud-operators-foundation
     spec:
       containers:
       - command:
@@ -138,7 +138,7 @@ postsubmits:
       ssh_key_secrets:
       - ssh-secret
     clone_uri: "git@github.com:rh-ibm-synergy/multicloud-operators-foundation.git"
-    path_alias: github.ibm.com/IBMPrivateCloud/multicloud-operators-foundation
+    path_alias: github.com/open-cluster-management/multicloud-operators-foundation
     spec:
       containers:
       - command:
@@ -156,7 +156,7 @@ postsubmits:
       ssh_key_secrets:
       - ssh-secret
     clone_uri: "git@github.com:rh-ibm-synergy/multicloud-operators-foundation.git"
-    path_alias: github.ibm.com/IBMPrivateCloud/multicloud-operators-foundation
+    path_alias: github.com/open-cluster-management/multicloud-operators-foundation
     labels:
       preset-service-account: "true"
     spec:
