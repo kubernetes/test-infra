@@ -180,8 +180,6 @@ periodics:
       - --check-leaked-resources
       - --cluster=e2e-big
       - --extract=ci/latest-1.16
-      # TODO(https://github.com/kubernetes/perf-tests/issues/1005): Check whether it helps
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/rc
       - --gcp-node-image=gci
       - --gcp-nodes=100
       - --gcp-project-type=scalability-project
