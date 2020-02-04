@@ -38,6 +38,8 @@ deck:
         name: metadata
       required_files:
       - started.json|finished.json
+      optional_files:
+      - podinfo.json
     - lens:
         name: buildlog
       required_files:
