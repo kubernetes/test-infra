@@ -31,7 +31,7 @@ periodics:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-aws-1.18
 
-- interval: 8h
+- interval: 2h
   name: ci-kubernetes-e2e-kops-aws-1-17
   labels:
     preset-service-account: "true"
@@ -63,7 +63,7 @@ periodics:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-aws-1.17
 
-- interval: 8h
+- interval: 2h
   name: ci-kubernetes-e2e-kops-aws-1-16
   labels:
     preset-service-account: "true"
