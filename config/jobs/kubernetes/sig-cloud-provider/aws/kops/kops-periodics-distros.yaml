@@ -23,6 +23,7 @@ periodics:
       - --extract=release/latest
       - --ginkgo-parallel
       - --kops-args=--image=379101102735/debian-stretch-hvm-x86_64-gp2-2019-11-13-63558
+      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-ssh-user=admin
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
@@ -57,6 +58,7 @@ periodics:
       - --extract=release/latest
       - --ginkgo-parallel
       - --kops-args=--image=136693071363/debian-10-amd64-20191117-80
+      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-ssh-user=admin
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
@@ -91,6 +93,7 @@ periodics:
       - --extract=release/latest
       - --ginkgo-parallel
       - --kops-args=--image=099720109477/ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-20191114
+      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-ssh-user=ubuntu
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
@@ -125,6 +128,7 @@ periodics:
       - --extract=release/latest
       - --ginkgo-parallel
       - --kops-args=--image=099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20200112
+      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-ssh-user=ubuntu
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
@@ -159,6 +163,7 @@ periodics:
       - --extract=release/latest
       - --ginkgo-parallel
       - --kops-args=--image=ami-02eac2c0129f6376b
+      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-ssh-user=centos
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --kops-zones=us-east-1c
@@ -194,6 +199,7 @@ periodics:
       - --extract=release/latest
       - --ginkgo-parallel
       - --kops-args=--image=137112412989/amzn2-ami-hvm-2.0.20191217.0-x86_64-gp2 --container-runtime=containerd --networking=amazon-vpc-routed-eni --node-size=t3.large
+      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-ssh-user=ec2-user
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
@@ -228,6 +234,7 @@ periodics:
       - --extract=release/latest
       - --ginkgo-parallel
       - --kops-args=--image=309956199498/RHEL-7.7_HVM-20191119-x86_64-2-Hourly2-GP2
+      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-ssh-user=ec2-user
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
@@ -262,6 +269,7 @@ periodics:
       - --extract=release/latest
       - --ginkgo-parallel
       - --kops-args=--image=309956199498/RHEL-8.1.0_HVM-20191029-x86_64-0-Hourly2-GP2
+      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-ssh-user=ec2-user
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
@@ -296,6 +304,7 @@ periodics:
       - --extract=release/latest
       - --ginkgo-parallel
       - --kops-args=--image=595879546273/CoreOS-stable-2303.3.0-hvm
+      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-ssh-user=core
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
@@ -330,6 +339,7 @@ periodics:
       - --extract=release/latest
       - --ginkgo-parallel
       - --kops-args=--image=075585003325/Flatcar-stable-2303.3.1-hvm
+      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-ssh-user=core
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
