@@ -60,7 +60,7 @@ var (
 )
 
 var (
-	httpRequestDuration = metrics.HttpRequestDuration("boskos", 0.005, 360)
+	httpRequestDuration = metrics.HttpRequestDuration("boskos", 0.005, 1200)
 	httpResponseSize    = metrics.HttpResponseSize("boskos", 128, 65536)
 	traceHandler        = metrics.TraceHandler(simplifier, httpRequestDuration, httpResponseSize)
 )
