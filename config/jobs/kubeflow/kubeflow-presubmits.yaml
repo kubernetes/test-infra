@@ -312,6 +312,24 @@ presubmits:
         args:
         - -c
         - cd ./frontend && npm run test:ci:prow
+  - name: kubeflow-pipeline-backend-test
+    always_run: false
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: l.gcr.io/google/bazel:0.24.0
+        command:
+          - "bazel"
+        args:
+          - "--host_jvm_args=-Xmx500m"
+          - "--host_jvm_args=-Xms500m"
+          - "test"
+          - "--noshow_progress"
+          - "--noshow_loading_progress"
+          - "--define=grpc_no_ares=true"
+          - "//backend/..."
   - name: kubeflow-pipeline-e2e-test
     always_run: true
     decorate: true
