@@ -32,6 +32,7 @@ import (
 	"github.com/GoogleCloudPlatform/testgrid/metadata"
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
+	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	k8sreporter "k8s.io/test-infra/prow/crier/reporters/gcs/kubernetes"
 	"k8s.io/test-infra/prow/pod-utils/gcs"
 	"k8s.io/test-infra/prow/spyglass/lenses"
@@ -113,6 +114,12 @@ func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data stri
 			metadataViewData.Status = finished.Result
 		case "podinfo.json":
 			metadataViewData.Hint = hintFromPodInfo(read)
+		case "prowjob.json":
+			// Only show the prowjob-based hint if we don't have a pod-based one
+			// (the pod-based ones are probably more useful when they exist)
+			if metadataViewData.Hint == "" {
+				metadataViewData.Hint = hintFromProwJob(read)
+			}
 		}
 	}
 
@@ -217,6 +224,20 @@ func hintFromPodInfo(buf []byte) string {
 	}
 
 	// We've got nothing.
+	return ""
+}
+
+func hintFromProwJob(buf []byte) string {
+	var pj prowv1.ProwJob
+	if err := json.Unmarshal(buf, &pj); err != nil {
+		logrus.WithError(err).Info("Failed to decode prowjob.json")
+		return ""
+	}
+
+	if pj.Status.State == prowv1.ErrorState {
+		return fmt.Sprintf("Job execution failed: %s", pj.Status.Description)
+	}
+
 	return ""
 }
 
