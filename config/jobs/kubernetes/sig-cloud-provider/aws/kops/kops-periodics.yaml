@@ -17,10 +17,11 @@ periodics:
       args:
       - --cluster=e2e-kops-aws.test-cncf-aws.k8s.io
       - --deployment=kops
-      - --env=KOPS_PUBLISH_GREEN_PATH=gs://kops-ci/bin/latest-ci-green.txt
       - --extract=ci/latest
       - --ginkgo-parallel
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
+      - --kops-publish=gs://kops-ci/bin/latest-ci-green.txt
+      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
       - --timeout=120m
