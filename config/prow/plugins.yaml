@@ -77,12 +77,13 @@ approve:
   require_self_approval: false
 - repos:
   - bazelbuild
+  - kubernetes-sigs/kind
+  - kubernetes-sigs/slack-infra
   - kubernetes/community
+  - kubernetes/k8s.io
   - kubernetes/org
   - kubernetes/repo-infra
-  - kubernetes-sigs/kind
   - kubernetes/test-infra
-  - kubernetes-sigs/slack-infra
   require_self_approval: false
   ignore_review_state: false
 - repos:
