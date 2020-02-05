@@ -52,13 +52,23 @@ func init() {
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	var configInfo map[string]string
 	if len(enabledRepos) == 1 {
-		msg := fmt.Sprintf(
-			"The main configuration is kept in sync with '%s/%s'.\nThe plugin configuration is kept in sync with '%s/%s'.",
-			enabledRepos[0],
-			config.ConfigUpdater.ConfigFile,
-			enabledRepos[0],
-			config.ConfigUpdater.PluginFile,
-		)
+		msg := ""
+		for configFileName, configMapSpec := range config.ConfigUpdater.Maps {
+			msg = msg + fmt.Sprintf(
+				"Files matching %s/%s are used to populate the %s ConfigMap in ",
+				enabledRepos[0],
+				configFileName,
+				configMapSpec.Name,
+			)
+			if len(configMapSpec.AdditionalNamespaces) == 0 {
+				msg = msg + fmt.Sprintf("the %s namespace.\n", configMapSpec.Namespace)
+			} else {
+				for _, nameSpace := range configMapSpec.AdditionalNamespaces {
+					msg = msg + fmt.Sprintf("%s, ", nameSpace)
+				}
+				msg = msg + fmt.Sprintf("and %s namespaces.\n", configMapSpec.Namespace)
+			}
+		}
 		configInfo = map[string]string{"": msg}
 	}
 	return &pluginhelp.PluginHelp{
