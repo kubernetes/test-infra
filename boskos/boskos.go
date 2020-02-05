@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"runtime"
 	"strings"
 	"time"
 
@@ -43,19 +44,23 @@ import (
 )
 
 const (
-	defaultRequestTTL      = 30 * time.Second
-	defaultRequestGCPeriod = time.Minute
+	defaultDynamicResourceUpdatePeriod = 10 * time.Minute
+	defaultRequestTTL                  = 30 * time.Second
+	defaultRequestGCPeriod             = time.Minute
 )
 
 var (
-	configPath        = flag.String("config", "config.yaml", "Path to init resource file")
+	configPath                  = flag.String("config", "config.yaml", "Path to init resource file")
+	dynamicResourceUpdatePeriod = flag.Duration("dynamic-resource-update-period", defaultDynamicResourceUpdatePeriod,
+		"Period at which to update dynamic resources. Set to 0 to disable.")
 	storagePath       = flag.String("storage", "", "Path to persistent volume to load the state")
 	requestTTL        = flag.Duration("request-ttl", defaultRequestTTL, "request TTL before losing priority in the queue")
 	kubeClientOptions crds.KubernetesClientOptions
+	logLevel          = flag.String("log-level", "info", fmt.Sprintf("Log level is one of %v.", logrus.AllLevels))
 )
 
 var (
-	httpRequestDuration = metrics.HttpRequestDuration("boskos", 0.005, 120)
+	httpRequestDuration = metrics.HttpRequestDuration("boskos", 0.005, 360)
 	httpResponseSize    = metrics.HttpResponseSize("boskos", 128, 65536)
 	traceHandler        = metrics.TraceHandler(simplifier, httpRequestDuration, httpResponseSize)
 )
@@ -66,12 +71,12 @@ func init() {
 }
 
 var simplifier = simplifypath.NewSimplifier(l("", // shadow element mimicing the root
-	l("/acquire"),
-	l("/acquirebystate"),
-	l("/release"),
-	l("/reset"),
-	l("/update"),
-	l("/metric"),
+	l("acquire"),
+	l("acquirebystate"),
+	l("release"),
+	l("reset"),
+	l("update"),
+	l("metric"),
 ))
 
 // l keeps the tree legible
@@ -80,11 +85,20 @@ func l(fragment string, children ...simplifypath.Node) simplifypath.Node {
 }
 
 func main() {
+	logrusutil.ComponentInit("boskos")
 	kubeClientOptions.AddFlags(flag.CommandLine)
 	flag.Parse()
+	level, err := logrus.ParseLevel(*logLevel)
+	if err != nil {
+		logrus.WithError(err).Fatal("invalid log level specified")
+	}
+	logrus.SetLevel(level)
 	kubeClientOptions.Validate()
 
-	logrusutil.ComponentInit("boskos")
+	// collect data on mutex holders and blocking profiles
+	runtime.SetBlockProfileRate(1)
+	runtime.SetMutexProfileFraction(1)
+
 	defer interrupts.WaitForGracefulShutdown()
 	pjutil.ServePProf()
 	metrics.ExposeMetrics("boskos", config.PushGateway{})
@@ -132,6 +146,7 @@ func main() {
 		}
 	})
 
+	r.StartDynamicResourceUpdater(*dynamicResourceUpdatePeriod)
 	r.StartRequestGC(defaultRequestGCPeriod)
 
 	logrus.Info("Start Service")

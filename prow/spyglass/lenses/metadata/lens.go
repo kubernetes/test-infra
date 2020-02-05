@@ -20,6 +20,9 @@ package metadata
 import (
 	"bytes"
 	"encoding/json"
+	"regexp"
+	"sort"
+	"strings"
 	"time"
 
 	"fmt"
@@ -28,6 +31,8 @@ import (
 
 	"github.com/GoogleCloudPlatform/testgrid/metadata"
 	"github.com/sirupsen/logrus"
+	v1 "k8s.io/api/core/v1"
+	k8sreporter "k8s.io/test-infra/prow/crier/reporters/gcs/kubernetes"
 	"k8s.io/test-infra/prow/pod-utils/gcs"
 	"k8s.io/test-infra/prow/spyglass/lenses"
 )
@@ -81,6 +86,7 @@ func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data stri
 		StartTime    time.Time
 		FinishedTime time.Time
 		Elapsed      time.Duration
+		Hint         string
 		Metadata     map[string]interface{}
 	}
 	metadataViewData := MetadataViewData{Status: "Pending"}
@@ -91,12 +97,13 @@ func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data stri
 		if err != nil {
 			logrus.WithError(err).Error("Failed reading from artifact.")
 		}
-		if a.JobPath() == "started.json" {
+		switch a.JobPath() {
+		case "started.json":
 			if err = json.Unmarshal(read, &started); err != nil {
 				logrus.WithError(err).Error("Error unmarshaling started.json")
 			}
 			metadataViewData.StartTime = time.Unix(started.Timestamp, 0)
-		} else if a.JobPath() == "finished.json" {
+		case "finished.json":
 			if err = json.Unmarshal(read, &finished); err != nil {
 				logrus.WithError(err).Error("Error unmarshaling finished.json")
 			}
@@ -104,6 +111,8 @@ func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data stri
 				metadataViewData.FinishedTime = time.Unix(*finished.Timestamp, 0)
 			}
 			metadataViewData.Status = finished.Result
+		case "podinfo.json":
+			metadataViewData.Hint = hintFromPodInfo(read)
 		}
 	}
 
@@ -135,6 +144,80 @@ func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data stri
 		logrus.WithError(err).Error("Error executing template.")
 	}
 	return buf.String()
+}
+
+var failedMountRegex = regexp.MustCompile(`MountVolume.SetUp failed for volume "(.+?)" : (.+)`)
+
+func hintFromPodInfo(buf []byte) string {
+	var report k8sreporter.PodReport
+	if err := json.Unmarshal(buf, &report); err != nil {
+		logrus.WithError(err).Info("Failed to decode podinfo.json")
+		// This error isn't worth highlighting here, and will be reported in the
+		// podinfo lens if that is enabled.
+		return ""
+	}
+
+	// We're more likely to pick a relevant event if we use the last ones first.
+	sort.Slice(report.Events, func(i, j int) bool {
+		a := &report.Events[i]
+		b := &report.Events[j]
+		return b.LastTimestamp.Before(&a.LastTimestamp)
+	})
+
+	// If the pod completed successfully there's probably not much to say.
+	if report.Pod.Status.Phase == v1.PodSucceeded {
+		return ""
+	}
+	// Check if we have any images that didn't pull
+	for _, s := range append(report.Pod.Status.InitContainerStatuses, report.Pod.Status.ContainerStatuses...) {
+		if s.State.Waiting != nil && s.State.Waiting.Reason == "ImagePullBackOff" {
+			return fmt.Sprintf("The %s container could not start because it could not pull %q. Check your images.", s.Name, s.Image)
+		}
+	}
+	// Check if we're trying to mount a volume
+	if report.Pod.Status.Phase == v1.PodPending {
+		failedMount := false
+		for _, e := range report.Events {
+			if e.Reason == "FailedMount" {
+				failedMount = true
+				if strings.HasPrefix(e.Message, "MountVolume.SetUp") {
+					// Annoyingly, parsing this message is the only way to get this information.
+					// If we can't parse it, we'll fall through to a generic bad volume message below.
+					results := failedMountRegex.FindStringSubmatch(e.Message)
+					if results == nil {
+						continue
+					}
+					return fmt.Sprintf("The pod could not start because it could not mount the volume %q: %s", results[1], results[2])
+				}
+			}
+		}
+		if failedMount {
+			return fmt.Sprintf("The job could not started because one or more of the volumes could not be mounted.")
+		}
+	}
+	// Check if we cannot be scheduled
+	// This is unlikely - we only outright fail if a pod is actually scheduled to a node that can't support it.
+	if report.Pod.Status.Phase == v1.PodFailed && report.Pod.Status.Reason == "MatchNodeSelector" {
+		return fmt.Sprintf("The job could not start because it was scheduled to a node that does not satisfy its NodeSelector")
+	}
+	// Usually we would fail to schedule it at all, so it will be pending forever.
+	if report.Pod.Status.Phase == v1.PodPending {
+		for _, e := range report.Events {
+			if e.Reason == "FailedScheduling" {
+				return fmt.Sprintf("There are no nodes that your pod can schedule to - check your requests, tolerations, and node selectors (%s)", e.Message)
+			}
+		}
+	}
+
+	// There are a bunch of fun ways for the node to fail that we've seen before
+	for _, e := range report.Events {
+		if e.Reason == "FailedCreatePodSandbox" || e.Reason == "FailedSync" || e.Reason == "FailedKillPod" {
+			return "The job may have executed on an unhealthy node. Contact your prow maintainers with a link to this page or check the detailed pod information."
+		}
+	}
+
+	// We've got nothing.
+	return ""
 }
 
 // flattenMetadata flattens the metadata for use by Body.

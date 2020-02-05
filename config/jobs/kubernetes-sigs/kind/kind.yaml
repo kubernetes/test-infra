@@ -14,7 +14,7 @@ periodics:
       preset-service-account: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
       command:
       - runner.sh
       - ./hack/ci/push-latest-cli.sh
@@ -34,7 +34,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
       command:
       - runner.sh
       - make
@@ -43,7 +43,7 @@ periodics:
       securityContext:
         privileged: true
     annotations:
-      testgrid-dashboards: sig-testing-kkind
+      testgrid-dashboards: sig-testing-kind
       testgrid-tab-name: ci unit test
       testgrid-alert-email: bentheelder@google.com
       description: kind CI unit test
@@ -58,7 +58,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -99,16 +99,8 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
   spec:
-    # run on the ubuntu node pool, which has ipv6 modules
-    tolerations:
-    - key: "dedicated"
-      operator: "Equal"
-      value: "ubuntu"
-      effect: "NoSchedule"
-    nodeSelector:
-      dedicated: "ubuntu"
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
       env:
       # enable IPV6 in bootstrap image
       - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
@@ -157,7 +149,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
       env:
       # skip serial tests and run with --ginkgo-parallel
       - name: "PARALLEL"
@@ -201,16 +193,8 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
   spec:
-    # run on the ubuntu node pool, which has ipv6 modules
-    tolerations:
-    - key: "dedicated"
-      operator: "Equal"
-      value: "ubuntu"
-      effect: "NoSchedule"
-    nodeSelector:
-      dedicated: "ubuntu"
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
       env:
       # enable IPV6 in bootstrap image
       - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
@@ -345,7 +329,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-1.14
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-1.14
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -387,7 +371,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-1.15
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-1.15
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"

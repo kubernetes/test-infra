@@ -43,9 +43,12 @@ type DynamicResourceLifeCycle struct {
 	Type string `json:"type"`
 	// Initial state to be created as
 	InitialState string `json:"state"`
-	// Minimum Number of resources to be use a buffer
+	// Minimum number of resources to be use as a buffer.
+	// Resources in the process of being deleted and cleaned up are included in this count.
 	MinCount int `json:"min-count"`
-	// Maximum resources expected
+	// Maximum number of resources expected. This maximum may be temporarily
+	// exceeded while resources are in the process of being deleted, though this
+	// is only expected when MaxCount is lowered.
 	MaxCount int `json:"max-count"`
 	// Lifespan of a resource, time after which the resource should be reset.
 	LifeSpan *time.Duration `json:"lifespan,omitempty"`

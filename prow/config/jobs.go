@@ -500,7 +500,7 @@ func (c *JobConfig) SetPostsubmits(jobs map[string][]Postsubmit) error {
 			return err
 		}
 	}
-	c.Postsubmits = nj
+	c.PostsubmitsStatic = nj
 	return nil
 }
 
@@ -530,10 +530,13 @@ func (c *JobConfig) AllStaticPresubmits(repos []string) []Presubmit {
 
 // AllPostsubmits returns all prow postsubmit jobs in repos.
 // if repos is empty, return all postsubmits.
-func (c *JobConfig) AllPostsubmits(repos []string) []Postsubmit {
+// Be aware that this does not return Postsubmits that are versioned inside
+// the repo via the `inrepoconfig` feature and hence this list may be
+// incomplete.
+func (c *JobConfig) AllStaticPostsubmits(repos []string) []Postsubmit {
 	var res []Postsubmit
 
-	for repo, v := range c.Postsubmits {
+	for repo, v := range c.PostsubmitsStatic {
 		if len(repos) == 0 {
 			res = append(res, v...)
 		} else {

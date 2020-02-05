@@ -19,22 +19,29 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-if [[ "$#" != 2 ]]; then
-  echo "Usage: $(basename "$0") <json creds> <name>" >&2
+if [[ "$#" == 0 ]]; then
+  echo "Usage: $(basename "$0") [json creds] <name>" >&2
   exit 1
 fi
 
-creds="$1"
-name="$2"
-
-if [[ ! -f "$creds" ]]; then
-  echo "Not found: $creds" >&2
-  exit 1
+if [[ $# == 2 ]]; then
+  creds="$1"
+  shift
+else
+  creds=
 fi
-gcloud auth activate-service-account --key-file="$creds"
-gcloud auth list
+name="$1"
 
-user="$(grep -o -E '[^"]+@[^"]+' "$creds")"
+if [[ -n "$creds" ]]; then
+  echo "Activating $creds..." >&2
+  if [[ ! -f "$creds" ]]; then
+    echo "Not found: $creds" >&2
+    exit 1
+  fi
+  gcloud auth activate-service-account --key-file="$creds"
+  gcloud auth list
+fi
+
 create=yes
 
 print-token() {

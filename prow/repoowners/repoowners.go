@@ -29,7 +29,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/test-infra/prow/git"
+	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 
 	prowConf "k8s.io/test-infra/prow/config"
@@ -94,6 +94,8 @@ func (entry cacheEntry) fullyLoaded() bool {
 type Interface interface {
 	LoadRepoAliases(org, repo, base string) (RepoAliases, error)
 	LoadRepoOwners(org, repo, base string) (RepoOwner, error)
+
+	WithFields(fields logrus.Fields) Interface
 }
 
 // Client is an implementation of the Interface.
@@ -101,9 +103,13 @@ var _ Interface = &Client{}
 
 // Client is the repoowners client
 type Client struct {
-	git    *git.Client
-	ghc    githubClient
 	logger *logrus.Entry
+	*delegate
+}
+
+type delegate struct {
+	git git.ClientFactory
+	ghc githubClient
 
 	mdYAMLEnabled      func(org, repo string) bool
 	skipCollaborators  func(org, repo string) bool
@@ -113,23 +119,34 @@ type Client struct {
 	cache map[string]cacheEntry
 }
 
+// WithFields clones the client, keeping the underlying delegate the same but adding
+// fields to the logging context
+func (c *Client) WithFields(fields logrus.Fields) Interface {
+	return &Client{
+		logger:   c.logger.WithFields(fields),
+		delegate: c.delegate,
+	}
+}
+
 // NewClient is the constructor for Client
 func NewClient(
-	gc *git.Client,
+	gc git.ClientFactory,
 	ghc github.Client,
 	mdYAMLEnabled func(org, repo string) bool,
 	skipCollaborators func(org, repo string) bool,
 	ownersDirBlacklist func() prowConf.OwnersDirBlacklist,
 ) *Client {
 	return &Client{
-		git:    gc,
-		ghc:    ghc,
 		logger: logrus.WithField("client", "repoowners"),
-		cache:  make(map[string]cacheEntry),
+		delegate: &delegate{
+			git:   gc,
+			ghc:   ghc,
+			cache: make(map[string]cacheEntry),
 
-		mdYAMLEnabled:      mdYAMLEnabled,
-		skipCollaborators:  skipCollaborators,
-		ownersDirBlacklist: ownersDirBlacklist,
+			mdYAMLEnabled:      mdYAMLEnabled,
+			skipCollaborators:  skipCollaborators,
+			ownersDirBlacklist: ownersDirBlacklist,
+		},
 	}
 }
 
@@ -189,7 +206,7 @@ func (c *Client) LoadRepoAliases(org, repo, base string) (RepoAliases, error) {
 	entry, ok := c.cache[fullName]
 	if !ok || entry.sha != sha {
 		// entry is non-existent or stale.
-		gitRepo, err := c.git.Clone(org, repo)
+		gitRepo, err := c.git.ClientFor(org, repo)
 		if err != nil {
 			return nil, fmt.Errorf("failed to clone %s: %v", cloneRef, err)
 		}
@@ -223,7 +240,7 @@ func (c *Client) LoadRepoOwners(org, repo, base string) (RepoOwner, error) {
 	defer c.lock.Unlock()
 	entry, ok := c.cache[fullName]
 	if !ok || entry.sha != sha || entry.owners == nil || !entry.matchesMDYAML(mdYaml) {
-		gitRepo, err := c.git.Clone(org, repo)
+		gitRepo, err := c.git.ClientFor(org, repo)
 		if err != nil {
 			return nil, fmt.Errorf("failed to clone %s: %v", cloneRef, err)
 		}

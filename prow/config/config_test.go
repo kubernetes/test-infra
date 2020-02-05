@@ -1712,96 +1712,142 @@ postsubmits:
 				return nil
 			},
 		},
+		{
+			name: "InRepoConfigAllowedClusters gets defaulted if unset",
+			verify: func(c *Config) error {
+				if len(c.InRepoConfig.AllowedClusters) != 1 ||
+					len(c.InRepoConfig.AllowedClusters["*"]) != 1 ||
+					c.InRepoConfig.AllowedClusters["*"][0] != kube.DefaultClusterAlias {
+					return fmt.Errorf("expected c.InRepoConfig.AllowedClusters to contain exactly one global entry to allow the buildcluster, was %v", c.InRepoConfig.AllowedClusters)
+				}
+				return nil
+			},
+		},
+		{
+			name: "InRepoConfigAllowedClusters gets defaulted if no global setting",
+			prowConfig: `
+in_repo_config:
+  allowed_clusters:
+    foo/bar: ["my-cluster"]
+`,
+			verify: func(c *Config) error {
+				if len(c.InRepoConfig.AllowedClusters) != 2 ||
+					len(c.InRepoConfig.AllowedClusters["*"]) != 1 ||
+					c.InRepoConfig.AllowedClusters["*"][0] != kube.DefaultClusterAlias {
+					return fmt.Errorf("expected c.InRepoConfig.AllowedClusters to contain exactly one global entry to allow the buildcluster, was %v", c.InRepoConfig.AllowedClusters)
+				}
+				return nil
+			},
+		},
+		{
+			name: "InRepoConfigAllowedClusters doesn't get overwritten",
+			prowConfig: `
+in_repo_config:
+  allowed_clusters:
+    foo/bar: ["my-cluster"]
+`,
+			verify: func(c *Config) error {
+				if len(c.InRepoConfig.AllowedClusters) != 2 ||
+					len(c.InRepoConfig.AllowedClusters["foo/bar"]) != 1 ||
+					c.InRepoConfig.AllowedClusters["foo/bar"][0] != "my-cluster" {
+					return fmt.Errorf("expected c.InRepoConfig.AllowedClusters to contain exactly one entry for foo/bar, was %v", c.InRepoConfig.AllowedClusters)
+				}
+				return nil
+			},
+		},
 	}
 
 	for _, tc := range testCases {
-		// save the config
-		prowConfigDir, err := ioutil.TempDir("", "prowConfig")
-		if err != nil {
-			t.Fatalf("fail to make tempdir: %v", err)
-		}
-		defer os.RemoveAll(prowConfigDir)
+		t.Run(tc.name, func(t *testing.T) {
 
-		prowConfig := filepath.Join(prowConfigDir, "config.yaml")
-		if err := ioutil.WriteFile(prowConfig, []byte(tc.prowConfig), 0666); err != nil {
-			t.Fatalf("fail to write prow config: %v", err)
-		}
-
-		jobConfig := ""
-		if len(tc.jobConfigs) > 0 {
-			jobConfigDir, err := ioutil.TempDir("", "jobConfig")
+			// save the config
+			prowConfigDir, err := ioutil.TempDir("", "prowConfig")
 			if err != nil {
 				t.Fatalf("fail to make tempdir: %v", err)
 			}
-			defer os.RemoveAll(jobConfigDir)
+			defer os.RemoveAll(prowConfigDir)
 
-			// cover both job config as a file & a dir
-			if len(tc.jobConfigs) == 1 {
-				// a single file
-				jobConfig = filepath.Join(jobConfigDir, "config.yaml")
-				if err := ioutil.WriteFile(jobConfig, []byte(tc.jobConfigs[0]), 0666); err != nil {
-					t.Fatalf("fail to write job config: %v", err)
+			prowConfig := filepath.Join(prowConfigDir, "config.yaml")
+			if err := ioutil.WriteFile(prowConfig, []byte(tc.prowConfig), 0666); err != nil {
+				t.Fatalf("fail to write prow config: %v", err)
+			}
+
+			jobConfig := ""
+			if len(tc.jobConfigs) > 0 {
+				jobConfigDir, err := ioutil.TempDir("", "jobConfig")
+				if err != nil {
+					t.Fatalf("fail to make tempdir: %v", err)
 				}
-			} else {
-				// a dir
-				jobConfig = jobConfigDir
-				for idx, config := range tc.jobConfigs {
-					subConfig := filepath.Join(jobConfigDir, fmt.Sprintf("config_%d.yaml", idx))
-					if err := ioutil.WriteFile(subConfig, []byte(config), 0666); err != nil {
+				defer os.RemoveAll(jobConfigDir)
+
+				// cover both job config as a file & a dir
+				if len(tc.jobConfigs) == 1 {
+					// a single file
+					jobConfig = filepath.Join(jobConfigDir, "config.yaml")
+					if err := ioutil.WriteFile(jobConfig, []byte(tc.jobConfigs[0]), 0666); err != nil {
 						t.Fatalf("fail to write job config: %v", err)
 					}
-				}
-			}
-		}
-
-		cfg, err := Load(prowConfig, jobConfig)
-		if tc.expectError && err == nil {
-			t.Errorf("tc %s: Expect error, but got nil", tc.name)
-		} else if !tc.expectError && err != nil {
-			t.Errorf("tc %s: Expect no error, but got error %v", tc.name, err)
-		}
-
-		if err == nil {
-			if tc.expectPodNameSpace == "" {
-				tc.expectPodNameSpace = "default"
-			}
-
-			if cfg.PodNamespace != tc.expectPodNameSpace {
-				t.Errorf("tc %s: Expect PodNamespace %s, but got %v", tc.name, tc.expectPodNameSpace, cfg.PodNamespace)
-			}
-
-			if len(tc.expectEnv) > 0 {
-				for _, j := range cfg.AllStaticPresubmits(nil) {
-					if envs, ok := tc.expectEnv[j.Name]; ok {
-						if !reflect.DeepEqual(envs, j.Spec.Containers[0].Env) {
-							t.Errorf("tc %s: expect env %v for job %s, got %+v", tc.name, envs, j.Name, j.Spec.Containers[0].Env)
-						}
-					}
-				}
-
-				for _, j := range cfg.AllPostsubmits(nil) {
-					if envs, ok := tc.expectEnv[j.Name]; ok {
-						if !reflect.DeepEqual(envs, j.Spec.Containers[0].Env) {
-							t.Errorf("tc %s: expect env %v for job %s, got %+v", tc.name, envs, j.Name, j.Spec.Containers[0].Env)
-						}
-					}
-				}
-
-				for _, j := range cfg.AllPeriodics() {
-					if envs, ok := tc.expectEnv[j.Name]; ok {
-						if !reflect.DeepEqual(envs, j.Spec.Containers[0].Env) {
-							t.Errorf("tc %s: expect env %v for job %s, got %+v", tc.name, envs, j.Name, j.Spec.Containers[0].Env)
+				} else {
+					// a dir
+					jobConfig = jobConfigDir
+					for idx, config := range tc.jobConfigs {
+						subConfig := filepath.Join(jobConfigDir, fmt.Sprintf("config_%d.yaml", idx))
+						if err := ioutil.WriteFile(subConfig, []byte(config), 0666); err != nil {
+							t.Fatalf("fail to write job config: %v", err)
 						}
 					}
 				}
 			}
-		}
 
-		if tc.verify != nil {
-			if err := tc.verify(cfg); err != nil {
-				t.Fatalf("verify failed:  %v", err)
+			cfg, err := Load(prowConfig, jobConfig)
+			if tc.expectError && err == nil {
+				t.Errorf("tc %s: Expect error, but got nil", tc.name)
+			} else if !tc.expectError && err != nil {
+				t.Errorf("tc %s: Expect no error, but got error %v", tc.name, err)
 			}
-		}
+
+			if err == nil {
+				if tc.expectPodNameSpace == "" {
+					tc.expectPodNameSpace = "default"
+				}
+
+				if cfg.PodNamespace != tc.expectPodNameSpace {
+					t.Errorf("tc %s: Expect PodNamespace %s, but got %v", tc.name, tc.expectPodNameSpace, cfg.PodNamespace)
+				}
+
+				if len(tc.expectEnv) > 0 {
+					for _, j := range cfg.AllStaticPresubmits(nil) {
+						if envs, ok := tc.expectEnv[j.Name]; ok {
+							if !reflect.DeepEqual(envs, j.Spec.Containers[0].Env) {
+								t.Errorf("tc %s: expect env %v for job %s, got %+v", tc.name, envs, j.Name, j.Spec.Containers[0].Env)
+							}
+						}
+					}
+
+					for _, j := range cfg.AllStaticPostsubmits(nil) {
+						if envs, ok := tc.expectEnv[j.Name]; ok {
+							if !reflect.DeepEqual(envs, j.Spec.Containers[0].Env) {
+								t.Errorf("tc %s: expect env %v for job %s, got %+v", tc.name, envs, j.Name, j.Spec.Containers[0].Env)
+							}
+						}
+					}
+
+					for _, j := range cfg.AllPeriodics() {
+						if envs, ok := tc.expectEnv[j.Name]; ok {
+							if !reflect.DeepEqual(envs, j.Spec.Containers[0].Env) {
+								t.Errorf("tc %s: expect env %v for job %s, got %+v", tc.name, envs, j.Name, j.Spec.Containers[0].Env)
+							}
+						}
+					}
+				}
+			}
+
+			if tc.verify != nil {
+				if err := tc.verify(cfg); err != nil {
+					t.Fatalf("verify failed:  %v", err)
+				}
+			}
+		})
 	}
 }
 
@@ -3608,7 +3654,7 @@ func TestInRepoConfigEnabled(t *testing.T) {
 	}
 }
 
-func TestGetPresubmitsDoesNotCallRefGettersWhenInrepoconfigIsDisabled(t *testing.T) {
+func TestGetProwYAMLDoesNotCallRefGettersWhenInrepoconfigIsDisabled(t *testing.T) {
 	t.Parallel()
 
 	var baseSHAGetterCalled, headSHAGetterCalled bool
@@ -3622,8 +3668,8 @@ func TestGetPresubmitsDoesNotCallRefGettersWhenInrepoconfigIsDisabled(t *testing
 	}
 
 	c := &Config{}
-	if _, err := c.GetPresubmits(nil, "test", baseSHAGetter, headSHAGetter); err != nil {
-		t.Fatalf("error calling GetPresubmits: %v", err)
+	if _, err := c.getProwYAML(nil, "test", baseSHAGetter, headSHAGetter); err != nil {
+		t.Fatalf("error calling GetProwYAML: %v", err)
 	}
 	if baseSHAGetterCalled {
 		t.Error("baseSHAGetter got called")
@@ -3648,9 +3694,14 @@ func TestGetPresubmitsReturnsStaticAndInrepoconfigPresubmits(t *testing.T) {
 					Reporter: Reporter{Context: "my-static-presubmit"},
 				}},
 			},
-			ProwYAMLGetter: fakeProwYAMLGetterFactory([]Presubmit{{
-				JobBase: JobBase{Name: "hans"},
-			}}),
+			ProwYAMLGetter: fakeProwYAMLGetterFactory(
+				[]Presubmit{
+					{
+						JobBase: JobBase{Name: "hans"},
+					},
+				},
+				nil,
+			),
 		},
 	}
 
@@ -3663,5 +3714,118 @@ func TestGetPresubmitsReturnsStaticAndInrepoconfigPresubmits(t *testing.T) {
 		presubmits[0].Name != "my-static-presubmit" ||
 		presubmits[1].Name != "hans" {
 		t.Errorf(`expected exactly two presubmits named "my-static-presubmit" and "hans", got %d (%v)`, n, presubmits)
+	}
+}
+
+func TestGetPostsubmitsReturnsStaticAndInrepoconfigPostsubmits(t *testing.T) {
+	t.Parallel()
+
+	org, repo := "org", "repo"
+	c := &Config{
+		ProwConfig: ProwConfig{
+			InRepoConfig: InRepoConfig{Enabled: map[string]*bool{"*": utilpointer.BoolPtr(true)}},
+		},
+		JobConfig: JobConfig{
+			PostsubmitsStatic: map[string][]Postsubmit{
+				org + "/" + repo: {{
+					JobBase:  JobBase{Name: "my-static-postsubmits"},
+					Reporter: Reporter{Context: "my-static-postsubmits"},
+				}},
+			},
+			ProwYAMLGetter: fakeProwYAMLGetterFactory(
+				nil,
+				[]Postsubmit{
+					{
+						JobBase: JobBase{Name: "hans"},
+					},
+				},
+			),
+		},
+	}
+
+	postsubmits, err := c.GetPostsubmits(nil, org+"/"+repo, func() (string, error) { return "", nil })
+	if err != nil {
+		t.Fatalf("Error calling GetPostsubmits: %v", err)
+	}
+
+	if n := len(postsubmits); n != 2 ||
+		postsubmits[0].Name != "my-static-postsubmits" ||
+		postsubmits[1].Name != "hans" {
+		t.Errorf(`expected exactly two postsubmits named "my-static-postsubmits" and "hans", got %d (%v)`, n, postsubmits)
+	}
+}
+
+func TestInRepoConfigAllowsCluster(t *testing.T) {
+	const clusterName = "that-cluster"
+
+	testCases := []struct {
+		name            string
+		repoIdentifier  string
+		allowedClusters map[string][]string
+
+		expectedResult bool
+	}{
+		{
+			name:           "Nothing configured, nothing allowed",
+			repoIdentifier: "foo",
+			expectedResult: false,
+		},
+		{
+			name:            "Allowed on repolevel",
+			repoIdentifier:  "foo/repo",
+			allowedClusters: map[string][]string{"foo/repo": {clusterName}},
+			expectedResult:  true,
+		},
+		{
+			name:            "Not allowed on repolevel",
+			repoIdentifier:  "foo/repo",
+			allowedClusters: map[string][]string{"foo/repo": {"different-cluster"}},
+			expectedResult:  false,
+		},
+		{
+			name:            "Allowed for different repo",
+			repoIdentifier:  "foo/repo",
+			allowedClusters: map[string][]string{"bar/repo": {clusterName}},
+			expectedResult:  false,
+		},
+		{
+			name:            "Allowed on orglevel",
+			repoIdentifier:  "foo/repo",
+			allowedClusters: map[string][]string{"foo": {clusterName}},
+			expectedResult:  true,
+		},
+		{
+			name:            "Not allowed on orglevel",
+			repoIdentifier:  "foo/repo",
+			allowedClusters: map[string][]string{"foo": {"different-cluster"}},
+			expectedResult:  false,
+		},
+		{
+			name:            "Allowed on for different org",
+			repoIdentifier:  "foo/repo",
+			allowedClusters: map[string][]string{"bar": {clusterName}},
+			expectedResult:  false,
+		},
+		{
+			name:            "Allowed globally",
+			repoIdentifier:  "foo/repo",
+			allowedClusters: map[string][]string{"*": {clusterName}},
+			expectedResult:  true,
+		},
+	}
+
+	for idx := range testCases {
+		tc := testCases[idx]
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			cfg := &Config{
+				ProwConfig: ProwConfig{InRepoConfig: InRepoConfig{AllowedClusters: tc.allowedClusters}},
+			}
+
+			if actual := cfg.InRepoConfigAllowsCluster(clusterName, tc.repoIdentifier); actual != tc.expectedResult {
+				t.Errorf("expected result %t, got result %t", tc.expectedResult, actual)
+			}
+		})
 	}
 }

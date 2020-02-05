@@ -11,11 +11,12 @@ periodics:
     path_alias: sigs.k8s.io/structured-merge-diff
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
       command:
       - go
       args:
       - test
+      - -race
       - ./...
   annotations:
     testgrid-dashboards: sig-api-machinery-structured-merge-diff
@@ -32,7 +33,7 @@ periodics:
     path_alias: sigs.k8s.io/structured-merge-diff
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
       command:
       - bash
       - -c

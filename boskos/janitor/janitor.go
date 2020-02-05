@@ -38,18 +38,25 @@ var (
 	boskosURL       = flag.String("boskos-url", "http://boskos", "Boskos URL")
 	username        = flag.String("username", "", "Username used to access the Boskos server")
 	passwordFile    = flag.String("password-file", "", "The path to password file used to access the Boskos server")
+	logLevel        = flag.String("log-level", "info", fmt.Sprintf("Log level is one of %v.", logrus.AllLevels))
 )
 
 func init() {
 	flag.Var(&rTypes, "resource-type", "comma-separated list of resources need to be cleaned up")
 	flag.IntVar(&poolSize, "pool-size", 20, "number of concurrent janitor goroutine")
-	flag.DurationVar(&updateFrequency, "update-freqency", 5*time.Minute, "How often to heartbeat owning resources.")
+	flag.DurationVar(&updateFrequency, "update-frequency", 5*time.Minute, "How often to heartbeat owning resources.")
 }
 
 func main() {
 	// Activate service account
 	flag.Parse()
 	extraJanitorFlags := flag.CommandLine.Args()
+
+	level, err := logrus.ParseLevel(*logLevel)
+	if err != nil {
+		logrus.WithError(err).Fatal("invalid log level specified")
+	}
+	logrus.SetLevel(level)
 
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 	boskos, err := client.NewClient("Janitor", *boskosURL, *username, *passwordFile)
@@ -94,7 +101,7 @@ func janitorClean(resource *common.Resource, flags []string) error {
 	cmd := exec.Command(*janitorPath, args...)
 	b, err := cmd.CombinedOutput()
 	if err != nil {
-		logrus.WithError(err).Debugf("failed to clean up project %s, error info: %s", resource.Name, string(b))
+		logrus.WithError(err).Infof("failed to clean up project %s, error info: %s", resource.Name, string(b))
 	} else {
 		logrus.Tracef("output from janitor: %s", string(b))
 		logrus.Infof("successfully cleaned up resource %s", resource.Name)

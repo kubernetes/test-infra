@@ -29,7 +29,7 @@ import (
 	"golang.org/x/lint"
 
 	"k8s.io/test-infra/prow/genfiles"
-	"k8s.io/test-infra/prow/git"
+	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
@@ -141,7 +141,7 @@ func newProblems(cs []github.ReviewComment, ps map[string]map[int]lint.Problem) 
 
 // problemsInFiles runs golint on the files. It returns a map from the file to
 // a map from the line in the patch to the problem.
-func problemsInFiles(r *git.Repo, files map[string]string) (map[string]map[int]lint.Problem, []github.DraftReviewComment) {
+func problemsInFiles(r git.RepoClient, files map[string]string) (map[string]map[int]lint.Problem, []github.DraftReviewComment) {
 	problems := make(map[string]map[int]lint.Problem)
 	var lintErrorComments []github.DraftReviewComment
 	l := new(lint.Linter)
@@ -196,7 +196,7 @@ func problemsInFiles(r *git.Repo, files map[string]string) (map[string]map[int]l
 	return problems, lintErrorComments
 }
 
-func handle(minimumConfidence float64, ghc githubClient, gc *git.Client, log *logrus.Entry, e *github.GenericCommentEvent) error {
+func handle(minimumConfidence float64, ghc githubClient, gc git.ClientFactory, log *logrus.Entry, e *github.GenericCommentEvent) error {
 	// Only handle open PRs and new requests.
 	if e.IssueState != "open" || !e.IsPR || e.Action != github.GenericCommentActionCreated {
 		return nil
@@ -225,7 +225,7 @@ func handle(minimumConfidence float64, ghc githubClient, gc *git.Client, log *lo
 
 	// Clone the repo, checkout the PR.
 	startClone := time.Now()
-	r, err := gc.Clone(org, repo)
+	r, err := gc.ClientFor(org, repo)
 	if err != nil {
 		return err
 	}
@@ -265,7 +265,7 @@ func handle(minimumConfidence float64, ghc githubClient, gc *git.Client, log *lo
 	}
 
 	// Make the list of comments.
-	var comments []github.DraftReviewComment = lintErrorComments
+	var comments = lintErrorComments
 	for f, ls := range nps {
 		for l, p := range ls {
 			var suggestion = suggestion.SuggestCodeChange(p)

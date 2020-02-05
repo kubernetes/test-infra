@@ -309,4 +309,21 @@ dashboard.new(
     x: 0,
     y: 18,
   })
+.addPanel(
+    (graphPanel.new(
+        'GitHub Request Timeout Rates: Overview by path with ${range}',
+        description='GitHub request timeout rates by path.',
+        datasource='prometheus',
+        legend_alignAsTable=true,
+        legend_rightSide=true,
+    ) + legendConfig)
+    .addTarget(prometheus.target(
+        'sum(rate(github_request_timeouts_bucket[${range}])) by (path)',
+         legendFormat='{{path}}',
+    )), gridPos={
+    h: 9,
+    w: 24,
+    x: 0,
+    y: 18,
+  })
 + dashboardConfig

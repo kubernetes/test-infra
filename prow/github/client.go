@@ -564,7 +564,7 @@ func IsNotFound(err error) bool {
 		return false
 	}
 
-	requestErr, ok := err.(*requestError)
+	requestErr, ok := err.(requestError)
 	if !ok {
 		return false
 	}

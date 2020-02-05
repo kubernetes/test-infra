@@ -1,5 +1,8 @@
 periodics:
 - name: ci-kubernetes-e2e-gce-node-throughput
+  tags:
+  - "perfDashPrefix: docker-node-throughput"
+  - "perfDashJobType: throughput"
   interval: 1h
   labels:
     preset-service-account: "true"
@@ -10,7 +13,7 @@ periodics:
     testgrid-tab-name: node-throughput
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -31,34 +34,36 @@ periodics:
       - --test-cmd-args=--provider=gce
       - --test-cmd-args=--report-dir=/workspace/_artifacts
       - --test-cmd-args=--testconfig=testing/node-throughput/config.yaml
+      - --test-cmd-args=--testoverrides=./testing/node-throughput/docker_override.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=40m
       - --use-logexporter
 - name: ci-kubernetes-e2e-gce-node-containerd-throughput
+  tags:
+  - "perfDashPrefix: containerd-node-throughput"
+  - "perfDashJobType: throughput"
   interval: 1h
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
-    preset-e2e-scalability-node-containerd: "true"
+    preset-e2e-scalability-node: "true"
   annotations:
     testgrid-dashboards: sig-scalability-node
     testgrid-tab-name: node-containerd-throughput
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
-      - --repo=github.com/containerd/cri=master
       - --root=/go/src
       - --timeout=60
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
       - --cluster=
-      # We need to override KUBELET_TEST_ARGS to concatenation of things
-      # from the two presents we use that set it.
-      - --env=KUBELET_TEST_ARGS="--enable-debugging-handlers --kube-api-qps=100 --kube-api-burst=100 --runtime-cgroups=/system.slice/containerd.service"
+      - --env=KUBE_CONTAINER_RUNTIME=containerd
+      - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-nodes=1
@@ -70,6 +75,7 @@ periodics:
       - --test-cmd-args=--provider=gce
       - --test-cmd-args=--report-dir=/workspace/_artifacts
       - --test-cmd-args=--testconfig=testing/node-throughput/config.yaml
+      - --test-cmd-args=--testoverrides=./testing/node-throughput/containerd_override.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=40m
       - --use-logexporter
@@ -93,7 +99,7 @@ periodics:
     testgrid-num-failures-to-alert: '1'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -149,12 +155,16 @@ periodics:
     preset-dind-enabled: "true"
     preset-e2e-kubemark-common: "true"
   annotations:
+    fork-per-release: "true"
+    fork-per-release-cron: 0 3 * * *, 0 9 * * *, 0 15 * * *, 0 21 * * *
+    fork-per-release-generic-suffix: "true"
+    fork-per-release-replacements: "kubemark-500Nodes -> kubemark-500Nodes-{{.Version}}, perf-tests=master -> perf-tests=release-{{.Version}}, gcp-project=k8s-jenkins-blocking-kubemark -> gcp-project-type=scalability-project, us-central1-f -> us-east1-b"
     testgrid-dashboards: sig-scalability-kubemark
-    testgrid-tab-name: kubemark-500
+    testgrid-tab-name: kubemark-master-500
     testgrid-num-failures-to-alert: '1'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -191,7 +201,7 @@ periodics:
       - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_statefulsets.yaml
       - --test-cmd-args=--testoverrides=./testing/load/kubemark/500_nodes/override.yaml
       - --test-cmd-name=ClusterLoaderV2
-      - --timeout=70m
+      - --timeout=80m
       - --use-logexporter
       # docker-in-docker needs privilged mode
       securityContext:
@@ -215,7 +225,7 @@ periodics:
     testgrid-num-columns-recent: '3'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -227,7 +237,7 @@ periodics:
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-node-size=n1-standard-8
-      - --gcp-nodes=83
+      - --gcp-nodes=84
       - --gcp-project=kubemark-scalability-testing
       - --gcp-zone=us-east1-b
       - --kubemark
@@ -279,7 +289,7 @@ periodics:
     testgrid-num-failures-to-alert: '1'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -331,7 +341,7 @@ periodics:
     testgrid-tab-name: kubemark-100-benchmark
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
       args:
       - --repo=k8s.io/perf-tests=master
       - --root=/go/src
@@ -358,7 +368,7 @@ periodics:
     timeout: 1h55m
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
       command:
       - ./hack/jenkins/benchmark-dockerized.sh
       args:
@@ -366,6 +376,8 @@ periodics:
       env:
       - name: KUBE_TIMEOUT
         value: --timeout=1h50m
+      - name: TEST_PREFIX
+        value: BenchmarkScheduling
 
 - name: ci-benchmark-kube-dns-master
   interval: 2h
@@ -380,7 +392,7 @@ periodics:
     testgrid-tab-name: kube-dns
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -415,7 +427,7 @@ periodics:
     testgrid-tab-name: node-local-dns
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master

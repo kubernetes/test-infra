@@ -12,7 +12,7 @@ periodics:
     testgrid-tab-name: gce-private-cluster-correctness
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
       args:
       - --timeout=300
       - --bare
@@ -29,7 +29,7 @@ periodics:
       - --gcp-zone=us-east1-b
       - --ginkgo-parallel=5
       - --provider=gce
-      - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[DisabledForLargeClusters\] --minStartupPods=8 --node-schedulable-timeout=90m
+      - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[DisabledForLargeClusters\] --minStartupPods=8 --node-schedulable-timeout=90m
       - --timeout=240m
       - --use-logexporter
 
@@ -47,7 +47,7 @@ periodics:
 #    testgrid-tab-name: max-persistent-vol-per-pod
 #  spec:
 #    containers:
-#      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+#      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
 #        args:
 #          - --repo=k8s.io/kubernetes=master
 #          - --repo=k8s.io/perf-tests=master
@@ -89,7 +89,7 @@ periodics:
 #    testgrid-tab-name: max-persistent-vol-per-node
 #  spec:
 #    containers:
-#      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+#      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
 #        args:
 #          - --repo=k8s.io/kubernetes=master
 #          - --repo=k8s.io/perf-tests=master
@@ -130,7 +130,7 @@ periodics:
     testgrid-tab-name: storage
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -169,7 +169,7 @@ periodics:
     testgrid-tab-name: calico
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
       env:
       - name: NETWORK_POLICY_PROVIDER
         value: "calico"
@@ -196,7 +196,7 @@ periodics:
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
       - --test-cmd-args=cluster-loader2
       - --test-cmd-args=--experimental-gcp-snapshot-prometheus-disk=true
-      - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=${JOB_NAME}-${BUILD_ID}
+      - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=ci-kubernetes-e2e-gci-gce-scalability-np-${BUILD_ID}
       - --test-cmd-args=--nodes=100
       - --test-cmd-args=--prometheus-scrape-node-exporter
       - --test-cmd-args=--provider=gce

@@ -38,7 +38,7 @@ import (
 
 	"k8s.io/test-infra/pkg/io"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/git"
+	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/tide/blockers"
 )
@@ -66,7 +66,7 @@ type statusController struct {
 	logger   *logrus.Entry
 	config   config.Getter
 	ghc      githubClient
-	gc       *git.Client
+	gc       git.ClientFactory
 
 	// newPoolPending is a size 1 chan that signals that the main Tide loop has
 	// updated the 'poolPRs' field with a freshly updated pool.
@@ -145,6 +145,18 @@ func requirementDiff(pr *PullRequest, q *config.TideQuery, cc contextChecker) (s
 		diff += 1000
 		if desc == "" {
 			desc = fmt.Sprintf(" Merging to branch %s is forbidden.", pr.BaseRef.Name)
+		}
+	}
+
+	qAuthor := github.NormLogin(q.Author)
+	prAuthor := github.NormLogin(string(pr.Author.Login))
+
+	// Weight incorrect author with very high diff so that we select the query
+	// for the correct author.
+	if qAuthor != "" && prAuthor != qAuthor {
+		diff += 1000
+		if desc == "" {
+			desc = fmt.Sprintf(" Must be by author %s.", qAuthor)
 		}
 	}
 
@@ -300,7 +312,7 @@ func targetURL(c config.Getter, pr *PullRequest, log *logrus.Entry) string {
 	var link string
 	if tideURL := c().Tide.TargetURL; tideURL != "" {
 		link = tideURL
-	} else if baseURL := c().Tide.PRStatusBaseURL; baseURL != "" {
+	} else if baseURL := c().Tide.GetPRStatusBaseURL(string(pr.Repository.Owner.Login), string(pr.Repository.Name)); baseURL != "" {
 		parseURL, err := url.Parse(baseURL)
 		if err != nil {
 			log.WithError(err).Error("Failed to parse PR status base URL")
@@ -600,7 +612,7 @@ func indexFuncPassingJobs(obj runtime.Object) []string {
 	return result
 }
 
-func getContextCheckerWithRequiredContexts(cfg *config.Config, gc *git.Client, org, repo, branch string, baseSHAGetter config.RefGetter, headSHA string, requiredContexts []string) (contextChecker, error) {
+func getContextCheckerWithRequiredContexts(cfg *config.Config, gc git.ClientFactory, org, repo, branch string, baseSHAGetter config.RefGetter, headSHA string, requiredContexts []string) (contextChecker, error) {
 	contextPolicy, err := cfg.GetTideContextPolicy(gc, org, repo, branch, baseSHAGetter, headSHA)
 	if err != nil {
 		return nil, err

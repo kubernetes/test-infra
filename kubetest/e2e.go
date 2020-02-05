@@ -204,7 +204,7 @@ func run(deploy deployer, o options) error {
 	var kubemarkUpErr error
 	if o.kubemark {
 		errs = util.AppendError(errs, control.XMLWrap(&suite, "Kubemark Overall", func() error {
-			if kubemarkUpErr = kubemarkUp(dump, o, deploy); err != nil {
+			if kubemarkUpErr = kubemarkUp(dump, o, deploy); kubemarkUpErr != nil {
 				return kubemarkUpErr
 			}
 			// running test in clusterloader, or other custom commands, skip the ginkgo call

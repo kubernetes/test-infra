@@ -50,6 +50,7 @@ func newLogDumper(sshClientFactory sshClientFactory, artifactsDir string) (*logD
 	d.services = []string{
 		"node-problem-detector",
 		"kubelet",
+		"containerd",
 		"docker",
 		"kops-configuration",
 		"protokube",
@@ -59,6 +60,7 @@ func newLogDumper(sshClientFactory sshClientFactory, artifactsDir string) (*logD
 		"kube-scheduler",
 		"rescheduler",
 		"kube-controller-manager",
+		"kops-controller",
 		"etcd",
 		"etcd-events",
 		"glbc",

@@ -146,7 +146,7 @@ func (sg *Spyglass) ResolveSymlink(src string) (string, error) {
 	case gcsKeyType:
 		parts := strings.SplitN(key, "/", 2)
 		if len(parts) != 2 {
-			return "", fmt.Errorf("gcs path should have both a bucket and a path")
+			return "", fmt.Errorf("gcs path should look like '{bucket}/{path}', missing at least one.")
 		}
 		bucketName := parts[0]
 		prefix := parts[1]

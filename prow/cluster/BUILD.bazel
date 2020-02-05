@@ -30,8 +30,6 @@ release(
         "deployment",
         cluster = BUILD_CLUSTER,
     ),
-    component("cert-manager", MULTI_KIND),
-    component("cluster-issuer", MULTI_KIND),
     component("crier", "deployment"),
     component("crier_rbac", MULTI_KIND),
     component("deck", "service", "deployment"),
@@ -54,6 +52,8 @@ release(
     component("pipeline", "deployment"),
     component("plank", "service", "deployment"),
     component("prow-canary-k8s-io", "managedcertificate"),
+    component("prow-k8s-io", "managedcertificate"),
+    component("prow-kubernetes-io", "managedcertificate"),
     component("prowjob", "customresourcedefinition"),
     component("pushgateway", "deployment"),
     component("sinker", "service", "deployment"),
@@ -64,6 +64,11 @@ release(
     component(
         "tune-sysctls",
         "daemonset",
+        cluster = BUILD_CLUSTER,
+    ),
+    component(
+        "build_serviceaccounts",
+        MULTI_KIND,
         cluster = BUILD_CLUSTER,
     ),
 )

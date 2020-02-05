@@ -21,6 +21,7 @@ release(
     component("prow", "alertmanager"),
     component("ing", "ingress"),
     component("monitoring-prow-canary-k8s-io", "managedcertificate"),
+    component("monitoring-prow-k8s-io", "managedcertificate"),
     component("additional-scrape-configs", "secret"),
     component("blackbox_prober", MULTI_KIND),
 )
@@ -73,6 +74,7 @@ k8s_objects(
         ":servicemonitor_crd",
         "//prow/cluster/monitoring/mixins/prometheus_out:prow_prometheusrule",
         "//prow/cluster/monitoring/mixins/dashboards_out:grafana-dashboard-boskos",
+        "//prow/cluster/monitoring/mixins/dashboards_out:grafana-dashboard-boskos-http",
         "//prow/cluster/monitoring/mixins/dashboards_out:grafana-dashboard-deck",
         "//prow/cluster/monitoring/mixins/dashboards_out:grafana-dashboard-ghproxy",
         "//prow/cluster/monitoring/mixins/dashboards_out:grafana-dashboard-hook",

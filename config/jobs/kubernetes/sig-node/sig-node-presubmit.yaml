@@ -15,7 +15,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -31,7 +31,7 @@ presubmits:
         - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
         - --node-tests=true
         - --provider=gce
-        - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]" --flakeAttempts=2
+        - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"
         - --timeout=65m
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
         resources:
@@ -74,7 +74,7 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-containerd-gce
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:RuntimeHandler\] --minStartupPods=8
         - --timeout=80m     # thinking about making this longer? don't! 80m is a hard cap, and should get down to no more than 60m.
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
         resources:
           requests:
             memory: "6Gi"
@@ -89,7 +89,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
         args:
         - --root=/go/src
         - --job=$(JOB_NAME)
@@ -105,7 +105,7 @@ presubmits:
         - '--node-test-args=--container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
         - --node-tests=true
         - --provider=gce
-        - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]" --flakeAttempts=2
+        - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"
         - --timeout=65m
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/image-config.yaml
         resources:
@@ -123,7 +123,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -139,7 +139,7 @@ presubmits:
         - --node-test-args=--feature-gates=AllAlpha=true,CSIMigration=false,RotateKubeletServerCertificate=false --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
         - --node-tests=true
         - --provider=gce
-        - --test_args=--nodes=8 --focus="\[NodeConformance\]|\[NodeAlphaFeature:.+\]" --skip="\[Flaky\]|\[Serial\] --flakeAttempts=2"
+        - --test_args=--nodes=8 --focus="\[NodeConformance\]|\[NodeAlphaFeature:.+\]" --skip="\[Flaky\]|\[Serial\]"
         - --timeout=65m
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
         resources:
@@ -147,3 +147,69 @@ presubmits:
             memory: "6Gi"
     annotations:
       testgrid-create-test-group: 'true'
+  - name: pull-kubernetes-node-kubelet-serial-cpu-manager
+    always_run: false
+    optional: true
+    skip_report: true
+    skip_branches:
+    - release-\d+\.\d+  # per-release image
+    annotations:
+      testgrid-dashboards: wg-resource-management
+      testgrid-tab-name: pr-kubelet-serial-gce-e2e-cpu-manager
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
+          args:
+            - --repo=k8s.io/kubernetes=master
+            - --timeout=240
+            - --root=/go/src
+            - --scenario=kubernetes_e2e
+            - --
+            - --deployment=node
+            - --gcp-project=k8s-jkns-pr-node-e2e
+            - --gcp-zone=us-west1-b
+            - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-serial-cpu-manager.yaml
+            - --node-test-args=--feature-gates=DynamicKubeletConfig=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
+            - --node-tests=true
+            - --provider=gce
+            - --test_args=--nodes=1 --skip="" --focus="\[Feature:CPUManager\]"
+            - --timeout=180m
+          env:
+            - name: GOPATH
+              value: /go
+  - name: pull-kubernetes-node-kubelet-serial-topology-manager
+    always_run: false
+    optional: true
+    skip_report: true
+    skip_branches:
+    - release-\d+\.\d+  # per-release image
+    annotations:
+      testgrid-dashboards: wg-resource-management
+      testgrid-tab-name: pr-kubelet-serial-gce-e2e-topology-manager
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
+          args:
+            - --repo=k8s.io/kubernetes=master
+            - --timeout=240
+            - --root=/go/src
+            - --scenario=kubernetes_e2e
+            - --
+            - --deployment=node
+            - --gcp-project=k8s-jkns-pr-node-e2e
+            - --gcp-zone=us-west1-b
+            - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-serial-cpu-manager.yaml
+            - --node-test-args=--feature-gates=DynamicKubeletConfig=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
+            - --node-tests=true
+            - --provider=gce
+            - --test_args=--nodes=1 --skip="" --focus="\[Feature:TopologyManager\]"
+            - --timeout=180m
+          env:
+            - name: GOPATH
+              value: /go

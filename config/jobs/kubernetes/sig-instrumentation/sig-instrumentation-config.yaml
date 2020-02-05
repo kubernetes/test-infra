@@ -1,78 +1,5 @@
 periodics:
 - interval: 30m
-  name: ci-kubernetes-e2e-gce-influxdb
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=70
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
-      - --check-leaked-resources
-      - --env=KUBE_ENABLE_CLUSTER_MONITORING=influxdb
-      - --extract=ci/latest
-      - --gcp-zone=us-west1-b
-      - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:InfluxdbMonitoring\]
-      - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
-
-  annotations:
-    testgrid-dashboards: google-gce
-    testgrid-tab-name: gce-influxdb
-- interval: 30m
-  name: ci-kubernetes-e2e-gce-prometheus
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=70
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
-      - --env=KUBE_ENABLE_PROMETHEUS_MONITORING=true
-      - --extract=ci/latest
-      - --gcp-zone=us-west1-b
-      - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:PrometheusMonitoring\] --minStartupPods=8
-      - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
-
-  annotations:
-    testgrid-dashboards: google-gce
-    testgrid-tab-name: gce-prometheus
-- interval: 30m
-  name: ci-kubernetes-e2e-gce-stackdriver
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=70
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
-      - --check-leaked-resources
-      - --env=KUBE_ENABLE_CLUSTER_MONITORING=stackdriver
-      - --env=KUBE_ENABLE_METADATA_AGENT=stackdriver
-      - --extract=ci/latest
-      - --gcp-project=k8s-jkns-e2e-gce-stackdriver
-      - --gcp-zone=us-west1-b
-      - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:StackdriverMonitoring\]|\[Feature:StackdriverCustomMetrics\]|\[Feature:StackdriverMetadataAgent\]|\[Feature:StackdriverExternalMetrics\] --minStartupPods=8
-      - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
-
-  annotations:
-    testgrid-dashboards: google-gce
-    testgrid-tab-name: gce-stackdriver
-- interval: 30m
   name: ci-kubernetes-e2e-gci-gce-es-logging
   labels:
     preset-service-account: "true"
@@ -93,7 +20,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:Elasticsearch\] --minStartupPods=8
       - --timeout=90m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
 
   annotations:
     testgrid-dashboards: google-gce
@@ -119,7 +46,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:StackdriverLogging\] --minStartupPods=8
       - --timeout=1320m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
 
   annotations:
     testgrid-dashboards: google-gce
@@ -141,12 +68,12 @@ periodics:
       - --extract=ci/k8s-beta
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-west1-c
       - --gke-environment=test
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:StackdriverLogging\] --minStartupPods=8
       - --timeout=1320m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
 
   annotations:
     testgrid-dashboards: google-gke-stackdriver
@@ -168,12 +95,12 @@ periodics:
       - --extract=ci/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-west1-c
       - --gke-environment=test
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:StackdriverLogging\] --minStartupPods=8
       - --timeout=1320m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
 
   annotations:
     testgrid-dashboards: google-gke-stackdriver
@@ -195,12 +122,12 @@ periodics:
       - --extract=ci/k8s-stable1
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-west1-c
       - --gke-environment=test
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:StackdriverLogging\] --minStartupPods=8
       - --timeout=1320m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
 
   annotations:
     testgrid-dashboards: google-gke-stackdriver
@@ -222,12 +149,12 @@ periodics:
       - --extract=ci/k8s-beta
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=ubuntu
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-west1-c
       - --gke-environment=test
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:StackdriverLogging\] --minStartupPods=8
       - --timeout=1320m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
 
   annotations:
     testgrid-dashboards: google-gke-stackdriver
@@ -249,12 +176,12 @@ periodics:
       - --extract=ci/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=ubuntu
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-west1-c
       - --gke-environment=test
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:StackdriverLogging\] --minStartupPods=8
       - --timeout=1320m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
 
   annotations:
     testgrid-dashboards: google-gke-stackdriver
@@ -276,12 +203,12 @@ periodics:
       - --extract=ci/k8s-stable1
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=ubuntu
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-west1-c
       - --gke-environment=test
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:StackdriverLogging\] --minStartupPods=8
       - --timeout=1320m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
 
   annotations:
     testgrid-dashboards: google-gke-stackdriver
@@ -304,12 +231,12 @@ periodics:
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-project=k8s-jkns-e2e-gke-stackdriver
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-west1-c
       - --gke-environment=test
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:StackdriverMonitoring\]|\[Feature:StackdriverCustomMetrics\]|\[Feature:StackdriverMetadataAgent\]|\[Feature:StackdriverExternalMetrics\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
   annotations:
     testgrid-dashboards: google-gke-stackdriver
     testgrid-tab-name: gke-stackdriver

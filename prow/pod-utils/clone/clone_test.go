@@ -90,6 +90,27 @@ func TestCommandsForRefs(t *testing.T) {
 			},
 		},
 		{
+			name: "simple case, root dir",
+			refs: prowapi.Refs{
+				Org:     "org",
+				Repo:    "repo",
+				BaseRef: "master",
+			},
+			dir: "/",
+			expectedBase: []cloneCommand{
+				{dir: "/", command: "mkdir", args: []string{"-p", "/src/github.com/org/repo"}},
+				{dir: "/src/github.com/org/repo", command: "git", args: []string{"init"}},
+				{dir: "/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "--tags", "--prune"}},
+				{dir: "/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "master"}},
+				{dir: "/src/github.com/org/repo", command: "git", args: []string{"checkout", "FETCH_HEAD"}},
+				{dir: "/src/github.com/org/repo", command: "git", args: []string{"branch", "--force", "master", "FETCH_HEAD"}},
+				{dir: "/src/github.com/org/repo", command: "git", args: []string{"checkout", "master"}},
+			},
+			expectedPull: []cloneCommand{
+				{dir: "/src/github.com/org/repo", command: "git", args: []string{"submodule", "update", "--init", "--recursive"}},
+			},
+		},
+		{
 			name: "minimal refs with git user name",
 			refs: prowapi.Refs{
 				Org:     "org",

@@ -308,6 +308,13 @@ func (da *DashboardAgent) QueryPullRequests(ctx context.Context, ghc githubClien
 		totalCost += int(sq.RateLimit.Cost)
 		remaining = int(sq.RateLimit.Remaining)
 		for _, n := range sq.Search.Nodes {
+			org := string(n.PullRequest.Repository.Owner.Login)
+			repo := string(n.PullRequest.Repository.Name)
+			ref := string(n.PullRequest.HeadRefOID)
+			if org == "" || repo == "" || ref == "" {
+				da.log.Warningf("Skipped empty pull request returned by query \"%s\": %v", query, n.PullRequest)
+				continue
+			}
 			prs = append(prs, n.PullRequest)
 		}
 		if !sq.Search.PageInfo.HasNextPage {

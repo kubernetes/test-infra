@@ -658,6 +658,11 @@ func decorate(spec *coreapi.PodSpec, pj *prowapi.ProwJob, rawEnv map[string]stri
 		spec.Volumes = append(spec.Volumes, append(cloneVolumes, codeVolume)...)
 	}
 
+	if spec.TerminationGracePeriodSeconds == nil && pj.Spec.DecorationConfig.GracePeriod != nil {
+		gracePeriodSeconds := int64(pj.Spec.DecorationConfig.GracePeriod.Seconds())
+		spec.TerminationGracePeriodSeconds = &gracePeriodSeconds
+	}
+
 	return nil
 }
 

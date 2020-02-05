@@ -21,11 +21,11 @@ spec:
   selector:
     app: boskos-metrics
   ports:
-  - name: default
+  - name: metrics
     protocol: TCP
-    port: 80
+    port: 9090
     targetPort: 9090
-  loadBalancerIP: 104.197.27.114
+  loadBalancerIP: 104.197.27.114  # boskos-metrics
   type: LoadBalancer
 ---
 apiVersion: apps/v1
@@ -49,7 +49,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: metrics
-        image: gcr.io/k8s-prow/boskos/metrics:v20191204-a3f3e1686
+        image: gcr.io/k8s-prow/boskos/metrics:v20200203-a909b961a
         args:
         - --resource-type=gce-project,gke-project,gpu-project,ingress-project,istio-project,scalability-presubmit-project,scalability-project,aws-account
         ports:

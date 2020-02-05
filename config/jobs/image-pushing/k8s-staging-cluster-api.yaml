@@ -10,9 +10,11 @@ postsubmits:
       branches:
         - ^master$
         - ^release-0.2$
+        # this is a regex for semver, from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
+        - ^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
       spec:
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20191126-282e49f
+          - image: gcr.io/k8s-testimages/image-builder:v20200114-6d2c483
             command:
               - /run.sh
             args:
@@ -41,9 +43,11 @@ postsubmits:
       branches:
         - ^master$
         - ^release-0.4$
+        # this is a regex for semver, from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
+        - ^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
       spec:
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20191126-282e49f
+          - image: gcr.io/k8s-testimages/image-builder:v20200114-6d2c483
             command:
               - /run.sh
             args:
@@ -73,7 +77,7 @@ postsubmits:
         - ^master$
       spec:
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20191126-282e49f
+          - image: gcr.io/k8s-testimages/image-builder:v20200114-6d2c483
             command:
               - /run.sh
             args:
@@ -101,9 +105,11 @@ postsubmits:
       branches:
         - ^master$
         - ^release-0.2$
+        # this is a regex for semver, from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
+        - ^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
       spec:
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20191126-282e49f
+          - image: gcr.io/k8s-testimages/image-builder:v20200114-6d2c483
             command:
               - /run.sh
             args:
@@ -131,9 +137,11 @@ postsubmits:
       decorate: true
       branches:
         - ^master$
+        # this is a regex for semver, from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
+        - ^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
       spec:
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20191126-282e49f
+          - image: gcr.io/k8s-testimages/image-builder:v20200114-6d2c483
             command:
               - /run.sh
             args:

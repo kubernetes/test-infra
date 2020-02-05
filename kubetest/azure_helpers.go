@@ -29,7 +29,7 @@ import (
 	"github.com/Azure/go-autorest/autorest/azure"
 )
 
-type AksEngineAPIModel struct {
+type AKSEngineAPIModel struct {
 	Location   string            `json:"location,omitempty"`
 	Name       string            `json:"name,omitempty"`
 	Tags       map[string]string `json:"tags,omitempty"`
@@ -135,6 +135,8 @@ type KubernetesConfig struct {
 	CustomKubeProxyImage             string            `json:"customKubeProxyImage,omitempty"`
 	CustomKubeSchedulerImage         string            `json:"customKubeSchedulerImage,omitempty"`
 	CustomKubeBinaryURL              string            `json:"customKubeBinaryURL,omitempty"`
+	UseManagedIdentity               *bool             `json:"useManagedIdentity,omitempty"`
+	UserAssignedID                   string            `json:"userAssignedID,omitempty"`
 }
 
 type OrchestratorProfile struct {
@@ -327,4 +329,11 @@ func stringPointer(s string) *string {
 
 func boolPointer(b bool) *bool {
 	return &b
+}
+
+func toBool(b *bool) bool {
+	if b == nil {
+		return false
+	}
+	return *b
 }

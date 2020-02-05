@@ -17,13 +17,13 @@ periodics:
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-project-type=gpu-project
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-west1-c
       - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-k80,count=2
       - --gke-environment=test
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
   annotations:
     testgrid-dashboards: google-gke
     testgrid-tab-name: gke-device-plugin-gpu
@@ -47,13 +47,13 @@ periodics:
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-project-type=gpu-project
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-west1-c
       - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-k80,count=2
       - --gke-environment=test
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
   annotations:
     testgrid-dashboards: google-gke
     testgrid-tab-name: gke-device-plugin-gpu-1.16
@@ -77,13 +77,13 @@ periodics:
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-project-type=gpu-project
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-west1-c
       - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-k80,count=2
       - --gke-environment=test
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:StackdriverAcceleratorMonitoring\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
   annotations:
     testgrid-num-failures-to-alert: '8'
     testgrid-alert-stale-results-hours: '24'
@@ -105,13 +105,13 @@ periodics:
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-project-type=gpu-project
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-west1-c
       - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-p100,count=2
       - --gke-environment=test
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
   annotations:
     testgrid-dashboards: google-gke
     testgrid-tab-name: gke-device-plugin-gpu-p100
@@ -135,13 +135,13 @@ periodics:
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-project-type=gpu-project
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-west1-c
       - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-p100,count=2
       - --gke-environment=test
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
   annotations:
     testgrid-dashboards: google-gke
     testgrid-tab-name: gke-device-plugin-gpu-p100-1.16
@@ -165,13 +165,13 @@ periodics:
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-project-type=gpu-project
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-west1-c
       - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-p100,count=2
       - --gke-environment=test
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
   annotations:
     testgrid-dashboards: google-gke
     testgrid-tab-name: gke-device-plugin-gpu-p100-1.15
@@ -195,13 +195,13 @@ periodics:
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-project-type=gpu-project
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-west1-c
       - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-p100,count=2
       - --gke-environment=test
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
   annotations:
     testgrid-dashboards: google-gke
     testgrid-tab-name: gke-device-plugin-gpu-p100-1.14
@@ -225,13 +225,13 @@ periodics:
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-project-type=gpu-project
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-west1-c
       - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-k80,count=2
       - --gke-environment=test
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
   annotations:
     testgrid-dashboards: google-gke
     testgrid-tab-name: gke-device-plugin-gpu-1.15
@@ -255,13 +255,13 @@ periodics:
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-project-type=gpu-project
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-west1-c
       - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-k80,count=2
       - --gke-environment=test
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
   annotations:
     testgrid-dashboards: google-gke
     testgrid-tab-name: gke-device-plugin-gpu-1.14
@@ -286,13 +286,13 @@ periodics:
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=ubuntu
       - --gcp-project-type=gpu-project
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-west1-c
       - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-k80,count=2
       - --gke-environment=test
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
   annotations:
     testgrid-num-failures-to-alert: '12'
     testgrid-alert-stale-results-hours: '24'

@@ -92,6 +92,7 @@ Prow is used by the following organizations and projects:
 - [KubeEdge (Kubernetes Native Edge Computing Framework)](https://github.com/kubeedge/kubeedge)
 - [Volcano (Kubernetes Native Batch System)](https://github.com/volcano-sh/volcano)
 - [Loodse](https://public-prow.loodse.com/)
+- [Feast](https://github.com/gojek/feast)
 
 [Jenkins X](https://jenkins-x.io/) uses [Prow as part of Serverless Jenkins](https://medium.com/@jdrawlings/serverless-jenkins-with-jenkins-x-9134cbfe6870).
 

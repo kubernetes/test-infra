@@ -45,7 +45,7 @@ import (
 )
 
 // kopsAWSMasterSize is the default ec2 instance type for kops on aws
-const kopsAWSMasterSize = "c4.large"
+const kopsAWSMasterSize = "c5.large"
 
 var (
 
@@ -381,7 +381,7 @@ func (k kops) Up() error {
 
 	var featureFlags []string
 
-	// We are defaulting the master size to c4.large on AWS because m3.larges are getting less previlent.
+	// We are defaulting the master size to c5.large on AWS because it's cheapest non-throttled instance type.
 	// When we are using GCE, then we need to handle the flag differently.
 	// If we are not using gce then add the masters size flag, or if we are using gce, and the
 	// master size is not set to the aws default, then add the master size flag.
@@ -429,10 +429,10 @@ func (k kops) Up() error {
 		os.Setenv("KOPS_FEATURE_FLAGS", strings.Join(featureFlags, ","))
 	}
 	if err := control.FinishRunning(exec.Command(k.path, createArgs...)); err != nil {
-		return fmt.Errorf("kops configuration failed: %v", err)
+		return fmt.Errorf("kops create cluster failed: %v", err)
 	}
 	if err := control.FinishRunning(exec.Command(k.path, "update", "cluster", k.cluster, "--yes")); err != nil {
-		return fmt.Errorf("kops bringup failed: %v", err)
+		return fmt.Errorf("kops update cluster failed: %v", err)
 	}
 
 	// We require repeated successes, so we know that the cluster is stable
@@ -441,10 +441,17 @@ func (k kops) Up() error {
 	// propagate across multiple servers / caches
 	requiredConsecutiveSuccesses := 10
 
-	// TODO(zmerlynn): More cluster validation. This should perhaps be
-	// added to kops and not here, but this is a fine place to loop
-	// for now.
-	return waitForReadyNodes(k.nodes+1, *kopsUpTimeout, requiredConsecutiveSuccesses)
+	// Wait for nodes to become ready
+	if err := waitForReadyNodes(k.nodes+1, *kopsUpTimeout, requiredConsecutiveSuccesses); err != nil {
+		return fmt.Errorf("kops nodes not ready: %v", err)
+	}
+
+	// TODO: Once this gets support for N checks in a row, it can replace the above node readiness check
+	if err := control.FinishRunning(exec.Command(k.path, "validate", "cluster", k.cluster, "--wait", "5m")); err != nil {
+		return fmt.Errorf("kops validate cluster failed: %v", err)
+	}
+
+	return nil
 }
 
 func (k kops) IsUp() error {

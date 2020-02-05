@@ -1,0 +1,53 @@
+postsubmits:
+  # This is the github repo we'll build from. This block needs to be repeated
+  # for each repo.
+  kubernetes/kubernetes:
+    # The name should be changed to match the repo name above
+    - name: post-kubernetes-push-images
+      # TODO: move this to a more appropriate cluster.
+      cluster: test-infra-trusted
+      annotations:
+        # This is the name of some testgrid dashboard to report to.
+        # If this is the first one for your sig, you may need to create one
+        testgrid-dashboards: sig-testing-images
+      decorate: true
+      # we only need to run if the test images have been changed.
+      run_if_changed: '^test\/images\/'
+      # this causes the job to only run on the master branch. Remove it if your
+      # job makes sense on every branch (unless it's setting a `latest` tag it
+      # probably does).
+      branches:
+        - ^master$
+      spec:
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20200114-6d2c483
+            command:
+              - /run.sh
+            args:
+              # this is the project GCB will run in, which is the same as the GCR
+              # images are pushed to.
+              - --project=k8s-staging-e2e-test-images
+              # This is the same as above, but with -gcb appended.
+              - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - --build-dir=.
+              - test/images
+            env:
+              - name: GOOGLE_APPLICATION_CREDENTIALS
+                value: /creds/service-account.json
+            volumeMounts:
+              - name: creds
+                mountPath: /creds
+              - name: windows-cert
+                mountPath: /root/.docker-1809
+              - name: windows-cert
+                mountPath: /root/.docker-1903
+              - name: windows-cert
+                mountPath: /root/.docker-1909
+        volumes:
+          - name: creds
+            secret:
+              secretName: deployer-service-account
+          - name: windows-cert
+            secret:
+              secretName: windows-img-promoter-cert

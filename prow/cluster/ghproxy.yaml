@@ -53,7 +53,7 @@ spec:
     spec:
       containers:
       - name: ghproxy
-        image: gcr.io/k8s-prow/ghproxy:v20191206-ec60c28a0
+        image: gcr.io/k8s-prow/ghproxy:v20200204-7e8cd997a
         args:
         - --cache-dir=/cache
         - --cache-sizeGB=99
@@ -94,4 +94,4 @@ spec:
     port: 9090
   selector:
     app: ghproxy
-  type: NodePort # TODO(fejta): remove this?
+  type: ClusterIP

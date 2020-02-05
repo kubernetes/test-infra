@@ -24,7 +24,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/git"
+	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
@@ -69,7 +69,7 @@ func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error 
 	return handle(pc.GitHubClient, pc.Logger, &e, pc.Config, pc.GitClient, honorOkToTest)
 }
 
-func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, c *config.Config, gitClient *git.Client, honorOkToTest bool) error {
+func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, c *config.Config, gitClient git.ClientFactory, honorOkToTest bool) error {
 	if !e.IsPR || e.IssueState != "open" || e.Action != github.GenericCommentActionCreated {
 		return nil
 	}

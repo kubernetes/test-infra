@@ -43,9 +43,6 @@ gs://k8s-conformance-openstack/:
 gs://k8s-conformance-gardener:
   contact: "OlegLoewen"
   prefix: "gardener:"
-gs://pivotal-e2e-results:
-  contact: "benmoss"
-  prefix: "pivotal:"
 gs://k8s-conformance-docker:
   contact: "jeffqwb2017"
   prefix: "docker:"

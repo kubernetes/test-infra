@@ -118,7 +118,8 @@ func TestController_Run(t *testing.T) {
 			knownJobs: map[string]*prowv1.ProwJob{
 				"foo": {
 					Spec: prowv1.ProwJobSpec{
-						Job: "foo",
+						Job:    "foo",
+						Report: true,
 					},
 					Status: prowv1.ProwJobStatus{
 						State: prowv1.TriggeredState,
@@ -135,7 +136,8 @@ func TestController_Run(t *testing.T) {
 			knownJobs: map[string]*prowv1.ProwJob{
 				"foo": {
 					Spec: prowv1.ProwJobSpec{
-						Job: "foo",
+						Job:    "foo",
+						Report: true,
 					},
 					Status: prowv1.ProwJobStatus{
 						State: prowv1.TriggeredState,
@@ -161,6 +163,19 @@ func TestController_Run(t *testing.T) {
 		//	},
 		//},
 		{
+			name:        "doesn't report when SkipReport=true (i.e. Spec.Report=false)",
+			jobsOnQueue: []string{"foo"},
+			knownJobs: map[string]*prowv1.ProwJob{
+				"foo": {
+					Spec: prowv1.ProwJobSpec{
+						Job:    "foo",
+						Report: false,
+					},
+				},
+			},
+			shouldReport: false,
+		},
+		{
 			name:        "doesn't report empty job",
 			jobsOnQueue: []string{"foo"},
 			knownJobs: map[string]*prowv1.ProwJob{
@@ -174,7 +189,8 @@ func TestController_Run(t *testing.T) {
 			knownJobs: map[string]*prowv1.ProwJob{
 				"foo": {
 					Spec: prowv1.ProwJobSpec{
-						Job: "foo",
+						Job:    "foo",
+						Report: true,
 					},
 					Status: prowv1.ProwJobStatus{
 						State: prowv1.TriggeredState,
@@ -191,7 +207,8 @@ func TestController_Run(t *testing.T) {
 			knownJobs: map[string]*prowv1.ProwJob{
 				"foo": {
 					Spec: prowv1.ProwJobSpec{
-						Job: "foo",
+						Job:    "foo",
+						Report: true,
 					},
 					Status: prowv1.ProwJobStatus{
 						State: prowv1.TriggeredState,

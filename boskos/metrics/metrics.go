@@ -108,7 +108,8 @@ func update(boskos *client.Client) error {
 	for _, resource := range resources {
 		metric, err := boskos.Metric(resource)
 		if err != nil {
-			return fmt.Errorf("fail to get metric for %s : %v", resource, err)
+			logrus.WithError(err).Errorf("failed to get metric for %s", resource)
+			continue
 		}
 		// Filtering metrics states
 		for state, value := range metric.Current {

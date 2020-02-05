@@ -4,13 +4,16 @@ presubmits:
     always_run: true
     skip_report: false
     max_concurrency: 12
-    branches:
-    - master
+    skip_branches:
+    - release-\d+\.\d+  # per-release image
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
       preset-bazel-scratch-dir: "true"
       preset-e2e-scalability-common: "true"
+      preset-e2e-scalability-presubmits: "true"
+    annotations:
+      fork-per-release: "true"
     spec:
       containers:
       - args:
@@ -52,7 +55,7 @@ presubmits:
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=100m
         - --use-logexporter
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
         resources:
           requests:
             memory: "6Gi"
@@ -67,6 +70,7 @@ presubmits:
       preset-k8s-ssh: "true"
       preset-bazel-scratch-dir: "true"
       preset-e2e-scalability-common: "true"
+      preset-e2e-scalability-presubmits: "true"
     spec:
       containers:
       - args:
@@ -100,7 +104,7 @@ presubmits:
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=240m
         - --use-logexporter
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
         resources:
           requests:
             memory: "6Gi"
@@ -115,6 +119,7 @@ presubmits:
       preset-k8s-ssh: "true"
       preset-bazel-scratch-dir: "true"
       preset-e2e-scalability-common: "true"
+      preset-e2e-scalability-presubmits: "true"
     spec:
       containers:
       - args:
@@ -149,7 +154,7 @@ presubmits:
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=540m
         - --use-logexporter
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
         resources:
           requests:
             memory: "6Gi"
@@ -166,12 +171,13 @@ presubmits:
       preset-bazel-scratch-dir: "true"
       preset-dind-enabled: "true"
       preset-e2e-kubemark-common: "true"
+      preset-e2e-scalability-presubmits: "true"
     annotations:
       fork-per-release: "true"
       testgrid-create-test-group: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -241,9 +247,10 @@ presubmits:
       preset-dind-enabled: "true"
       preset-e2e-kubemark-common: "true"
       preset-e2e-kubemark-gce-scale: "true"
+      preset-e2e-scalability-presubmits: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -259,7 +266,7 @@ presubmits:
         - --cluster=
         - --extract=local
         - --gcp-node-size=n1-standard-8
-        - --gcp-nodes=83
+        - --gcp-nodes=84
         - --gcp-project=k8s-presubmit-scale
         - --gcp-zone=us-east1-b
         - --kubemark
@@ -301,6 +308,7 @@ presubmits:
       preset-k8s-ssh: "true"
       preset-bazel-scratch-dir: "true"
       preset-e2e-scalability-common: "true"
+      preset-e2e-scalability-presubmits: "true"
     run_if_changed: ^clusterloader2/.*$
     spec:
       containers:
@@ -341,7 +349,7 @@ presubmits:
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=100m
         - --use-logexporter
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
         resources:
           requests:
             memory: "6Gi"
@@ -358,6 +366,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
       preset-dind-enabled: "true"
       preset-e2e-kubemark-common: "true"
+      preset-e2e-scalability-presubmits: "true"
     run_if_changed: ^clusterloader2/.*$
     spec:
       containers:
@@ -405,9 +414,40 @@ presubmits:
             - --test-cmd-name=ClusterLoaderV2
             - --timeout=100m
             - --use-logexporter
-          image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+          image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
           resources:
             requests:
               memory: "6Gi"
           securityContext:
             privileged: true
+
+  - name: pull-perf-tests-util-images
+    always_run: false
+    skip_report: false
+    max_concurrency: 10
+    run_if_changed: ^util-images/.*$
+    branches:
+      - master
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    annotations:
+      testgrid-dashboards: presubmits-kubernetes-scalability
+      testgrid-tab-name: pull-perf-tests-util-images
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/bootstrap:v20200124-81ee414
+          args:
+          - --root=/go/src
+          - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
+          - --timeout=60
+          - --scenario=execute
+          - --
+          - /go/src/k8s.io/perf-tests/util-images/presubmit.sh
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: 1
+              memory: "2Gi"

@@ -179,7 +179,8 @@ class Clusters {
   refilter(opts) {
     var out = [];
     for (let cluster of this.data) {
-      if (opts.reText && !opts.reText.test(cluster.text)) {
+      if ((opts.reText && !opts.reText.test(cluster.text)) ||
+          (opts.reXText && opts.reXText.test(cluster.text))) {
         continue;
       }
       if (opts.sig && opts.sig.length && opts.sig.indexOf(cluster.owner) < 0) {
@@ -187,12 +188,14 @@ class Clusters {
       }
       var testsOut = [];
       for (let test of cluster.tests) {
-        if (opts.reTest && !opts.reTest.test(test.name)) {
+        if ((opts.reTest && !opts.reTest.test(test.name)) ||
+            (opts.reXTest && opts.reXTest.test(test.name))) {
           continue;
         }
         var jobsOut = [];
         for (let job of test.jobs) {
-          if (opts.reJob && !opts.reJob.test(job.name)) {
+          if ((opts.reJob && !opts.reJob.test(job.name)) ||
+              (opts.reXJob && opts.reXJob.test(job.name))) {
             continue;
           }
           if (job.name.startsWith("pr:")) {

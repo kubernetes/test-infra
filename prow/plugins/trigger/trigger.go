@@ -25,7 +25,7 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/errorutil"
-	"k8s.io/test-infra/prow/git"
+	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pluginhelp"
@@ -127,7 +127,7 @@ type Client struct {
 	ProwJobClient prowJobClient
 	Config        *config.Config
 	Logger        *logrus.Entry
-	GitClient     *git.Client
+	GitClient     git.ClientFactory
 }
 
 // trustedUserClient is used to check is user member and repo collaborator
@@ -264,8 +264,7 @@ func skipRequested(c Client, pr *github.PullRequest, skippedJobs []config.Presub
 	return errorutil.NewAggregate(errors...)
 }
 
-func getPresubmits(log *logrus.Entry, gc *git.Client, cfg *config.Config, orgRepo string, baseSHAGetter, headSHAGetter config.RefGetter) []config.Presubmit {
-
+func getPresubmits(log *logrus.Entry, gc git.ClientFactory, cfg *config.Config, orgRepo string, baseSHAGetter, headSHAGetter config.RefGetter) []config.Presubmit {
 	presubmits, err := cfg.GetPresubmits(gc, orgRepo, baseSHAGetter, headSHAGetter)
 	if err != nil {
 		// Fall back to static presubmits to avoid deadlocking when a presubmit is used to verify
@@ -274,4 +273,14 @@ func getPresubmits(log *logrus.Entry, gc *git.Client, cfg *config.Config, orgRep
 		presubmits = cfg.PresubmitsStatic[orgRepo]
 	}
 	return presubmits
+}
+
+func getPostsubmits(log *logrus.Entry, gc git.ClientFactory, cfg *config.Config, orgRepo string, baseSHAGetter config.RefGetter) []config.Postsubmit {
+	postsubmits, err := cfg.GetPostsubmits(gc, orgRepo, baseSHAGetter)
+	if err != nil {
+		// Fall back to static postsubmits, loading inrepoconfig returned an error.
+		log.WithError(err).Error("Failed to get postsubmits")
+		postsubmits = cfg.PostsubmitsStatic[orgRepo]
+	}
+	return postsubmits
 }

@@ -13,6 +13,7 @@ dashboard_groups:
   - sig-release-1.15-informing
   - sig-release-1.14-blocking
   - sig-release-1.14-informing
+  - sig-release-releng-informing
   - sig-release-image-pushes
   - sig-release-misc
   - sig-release-publishing-bot
@@ -34,6 +35,7 @@ dashboards:
 - name: sig-release-1.15-informing
 - name: sig-release-1.14-blocking
 - name: sig-release-1.14-informing
+- name: sig-release-releng-informing
   dashboard_tab:
   - name: Conformance - OpenStack
     test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance

@@ -17,7 +17,7 @@ query: |
       group by name
       having name not in ('Test', 'DiffResources', 'DumpClusterLogs', 'DumpFederationLogs')  /* uninteresting tests */
       order by flakes desc
-      limit 3 /* top three flakiest tests in this job */
+      limit 10 /* top ten flakiest tests in this job */
     ) flakiest
   from (
     select

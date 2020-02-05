@@ -12,7 +12,7 @@ periodics:
     path_alias: "k8s.io/release"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/image-builder:v20191126-282e49f
+    - image: gcr.io/k8s-testimages/image-builder:v20200114-6d2c483
       command:
         - /run.sh
       args:
@@ -34,8 +34,7 @@ periodics:
         secret:
           secretName: deployer-service-account
   annotations:
-    fork-per-release: "true"
-    fork-per-release-generic-suffix: "true"
+    # TODO(justaugustus): Enable forking for prototype GCB-based build jobs.
     testgrid-dashboards: sig-release-prototype-master-blocking
     testgrid-tab-name: build-master
     testgrid-alert-email: release-managers@kubernetes.io
@@ -53,7 +52,7 @@ periodics:
     path_alias: "k8s.io/release"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/image-builder:v20191126-282e49f
+    - image: gcr.io/k8s-testimages/image-builder:v20200114-6d2c483
       command:
         - /run.sh
       args:
@@ -93,7 +92,7 @@ postsubmits:
         - ^master$
       spec:
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20191126-282e49f
+          - image: gcr.io/k8s-testimages/image-builder:v20200114-6d2c483
             command:
               - /run.sh
             args:
@@ -113,25 +112,25 @@ postsubmits:
           - name: creds
             secret:
               secretName: deployer-service-account
-    - name: post-release-push-image-deb-builder
+    - name: post-release-push-image-releng-ci-bazel
       cluster: test-infra-trusted
       annotations:
         testgrid-dashboards: sig-release-image-pushes, sig-release-master-informing
         testgrid-alert-email: release-managers@kubernetes.io
       decorate: true
-      run_if_changed: '^build\/'
+      run_if_changed: '^images\/'
       branches:
         - ^master$
       spec:
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20191126-282e49f
+          - image: gcr.io/k8s-testimages/image-builder:v20200114-6d2c483
             command:
               - /run.sh
             args:
               - --project=k8s-staging-release-test
               - --scratch-bucket=gs://k8s-staging-release-test-gcb
               - --env-passthrough=PULL_BASE_REF
-              - build/debs
+              - images/releng-ci-bazel
             env:
               - name: GOOGLE_APPLICATION_CREDENTIALS
                 value: /creds/service-account.json
@@ -144,25 +143,25 @@ postsubmits:
           - name: creds
             secret:
               secretName: deployer-service-account
-    - name: post-release-push-image-rpm-builder
+    - name: post-release-push-image-kubepkg
       cluster: test-infra-trusted
       annotations:
         testgrid-dashboards: sig-release-image-pushes, sig-release-master-informing
         testgrid-alert-email: release-managers@kubernetes.io
       decorate: true
-      run_if_changed: '^build\/'
       branches:
         - ^master$
       spec:
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20191126-282e49f
+          - image: gcr.io/k8s-testimages/image-builder:v20200114-6d2c483
             command:
               - /run.sh
             args:
               - --project=k8s-staging-release-test
               - --scratch-bucket=gs://k8s-staging-release-test-gcb
               - --env-passthrough=PULL_BASE_REF
-              - build/rpms
+              - --gcb-config=./cloudbuild-kubepkg.yaml
+              - .
             env:
               - name: GOOGLE_APPLICATION_CREDENTIALS
                 value: /creds/service-account.json

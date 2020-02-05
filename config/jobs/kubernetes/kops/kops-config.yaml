@@ -9,22 +9,21 @@ presubmits:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
       preset-bazel-remote-cache-enabled: "true"
+    decorate: true
+    decoration_config:
+      timeout: 10m
+    path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-experimental
+        command:
+        - runner.sh
         args:
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--scenario=kubernetes_execute_bazel"
-        - "--" # end bootstrap args, scenario args below
         - "make"
         - "bazel-build"
         resources:
           requests:
             memory: "2Gi"
-
     annotations:
       testgrid-dashboards: presubmits-kops
       testgrid-tab-name: bazel-build
@@ -37,22 +36,21 @@ presubmits:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
       preset-bazel-remote-cache-enabled: "true"
+    decorate: true
+    decoration_config:
+      timeout: 10m
+    path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-experimental
+        command:
+        - runner.sh
         args:
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--scenario=kubernetes_execute_bazel"
-        - "--" # end bootstrap args, scenario args below
         - "make"
         - "bazel-test"
         resources:
           requests:
             memory: "2Gi"
-
     annotations:
       testgrid-dashboards: presubmits-kops
       testgrid-tab-name: bazel-test
@@ -64,29 +62,32 @@ presubmits:
       preset-service-account: "true"
       preset-aws-ssh: "true"
       preset-aws-credential: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
       preset-e2e-platform-aws: "true"
+    decorate: true
+    decoration_config:
+      timeout: 90m
+    path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-experimental
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
         args:
-        - --root=/go/src
-        - --job=$(JOB_NAME)
-        - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --timeout=90
-        - --scenario=kubernetes_e2e
-        - --
         - --aws
         - --aws-cluster-domain=test-cncf-aws.k8s.io
         - --check-leaked-resources=false
         - --cluster=
-        - --extract=ci/latest
+        - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
+        - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
+        - --extract=release/latest
         - --ginkgo-parallel
         - --kops-build
         - --provider=aws
-        - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
+        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
         - --timeout=55m
         # docker-in-docker needs privileged mode
         securityContext:
@@ -105,30 +106,32 @@ presubmits:
       preset-service-account: "true"
       preset-aws-ssh: "true"
       preset-aws-credential: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
       preset-e2e-platform-aws: "true"
+    decorate: true
+    decoration_config:
+      timeout: 90m
+    path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-experimental
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
         args:
-        - --root=/go/src
-        - --job=$(JOB_NAME)
-        - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --timeout=90
-        - --scenario=kubernetes_e2e
-        - --
         - --aws
         - --aws-cluster-domain=test-cncf-aws.k8s.io
         - --check-leaked-resources=false
         - --cluster=
-        - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release-dev/ci/latest-1.15.txt
-        - --extract=ci/latest-1.15
+        - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.15.txt
+        - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
+        - --extract=release/stable-1.15
         - --ginkgo-parallel
         - --kops-build
         - --provider=aws
-        - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
+        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
         - --timeout=55m
         # docker-in-docker needs privileged mode
         securityContext:
@@ -147,30 +150,32 @@ presubmits:
       preset-service-account: "true"
       preset-aws-ssh: "true"
       preset-aws-credential: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
       preset-e2e-platform-aws: "true"
+    decorate: true
+    decoration_config:
+      timeout: 90m
+    path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-experimental
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
         args:
-        - --root=/go/src
-        - --job=$(JOB_NAME)
-        - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --timeout=90
-        - --scenario=kubernetes_e2e
-        - --
         - --aws
         - --aws-cluster-domain=test-cncf-aws.k8s.io
         - --check-leaked-resources=false
         - --cluster=
-        - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release-dev/ci/latest-1.16.txt
-        - --extract=ci/latest-1.16
+        - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt
+        - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
+        - --extract=release/stable-1.16
         - --ginkgo-parallel
         - --kops-build
         - --provider=aws
-        - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
+        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|In-tree.*Volumes.*\[Driver:.*aws\]
         - --timeout=55m
         # docker-in-docker needs privileged mode
         securityContext:
@@ -181,65 +186,110 @@ presubmits:
     annotations:
       testgrid-dashboards: presubmits-kops
       testgrid-tab-name: e2e-1-16
-
+  - name: pull-kops-e2e-kubernetes-aws-1-17
+    branches:
+    - release-1.17
+    always_run: true
+    labels:
+      preset-service-account: "true"
+      preset-aws-ssh: "true"
+      preset-aws-credential: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-dind-enabled: "true"
+      preset-e2e-platform-aws: "true"
+    decorate: true
+    decoration_config:
+      timeout: 90m
+    path_alias: k8s.io/kops
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-experimental
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --aws
+        - --aws-cluster-domain=test-cncf-aws.k8s.io
+        - --check-leaked-resources=false
+        - --cluster=
+        - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
+        - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
+        - --extract=release/stable-1.17
+        - --ginkgo-parallel
+        - --kops-build
+        - --provider=aws
+        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
+        - --timeout=55m
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "6Gi"
+    annotations:
+      testgrid-dashboards: presubmits-kops
+      testgrid-tab-name: e2e-1-17
   - name: pull-kops-verify-bazel
     branches:
     - master
     always_run: true
     labels:
       preset-service-account: "true"
+    decorate: true
+    decoration_config:
+      timeout: 10m
+    path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20190125-cc5d6ecff3
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-experimental
+        command:
+        - runner.sh
         args:
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--root=/go/src"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - --scenario=execute
-        - --
-        - ./hack/verify-bazel.sh
-
+        - "make"
+        - "verify-bazel"
     annotations:
       testgrid-dashboards: presubmits-kops
       testgrid-tab-name: verify-bazel
-
   - name: pull-kops-verify-generated
     branches:
     - master
     always_run: true
     labels:
       preset-service-account: "true"
+    decorate: true
+    decoration_config:
+      timeout: 10m
+    path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-experimental
+        command:
+        - runner.sh
         args:
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--root=/go/src"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - --scenario=execute
-        - --
-        - ./hack/verify-generate.sh
+        - "make"
+        - "verify-generate"
     annotations:
       testgrid-dashboards: presubmits-kops
       testgrid-tab-name: verify-generated
-
   - name: pull-kops-verify-gomod
     branches:
     - master
     always_run: true
     labels:
       preset-service-account: "true"
+    decorate: true
+    decoration_config:
+      timeout: 10m
+    path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20190125-cc5d6ecff3
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-experimental
+        command:
+        - runner.sh
         args:
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--root=/go/src"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - --scenario=execute
-        - --
-        - ./hack/verify-gomod
-
+        - "make"
+        - "verify-gomod"
     annotations:
       testgrid-dashboards: presubmits-kops
       testgrid-tab-name: verify-gomod
@@ -249,17 +299,18 @@ presubmits:
     always_run: true
     labels:
       preset-service-account: "true"
+    decorate: true
+    decoration_config:
+      timeout: 10m
+    path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20190125-cc5d6ecff3
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-experimental
+        command:
+        - runner.sh
         args:
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--root=/go/src"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - --scenario=execute
-        - --
-        - ./hack/verify-boilerplate.sh
-
+        - "make"
+        - "verify-boilerplate"
     annotations:
       testgrid-dashboards: presubmits-kops
       testgrid-tab-name: verify-boilerplate
@@ -271,21 +322,21 @@ presubmits:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
       preset-bazel-remote-cache-enabled: "true"
+    decorate: true
+    decoration_config:
+      timeout: 10m
+    path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-experimental
+        command:
+        - runner.sh
         args:
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--scenario=kubernetes_execute_bazel"
-        - "--" # end bootstrap args, scenario args below
-        - ./hack/verify-gofmt.sh
+        - "make"
+        - "verify-gofmt"
         resources:
           requests:
             memory: "2Gi"
-
     annotations:
       testgrid-dashboards: presubmits-kops
       testgrid-tab-name: verify-gofmt
@@ -295,18 +346,18 @@ presubmits:
     always_run: true
     labels:
       preset-service-account: "true"
+    decorate: true
+    decoration_config:
+      timeout: 10m
+    path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20190125-cc5d6ecff3
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-experimental
+        command:
+        - runner.sh
         args:
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--root=/go/src"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - --scenario=execute
-        - --
-        - make
-        - govet
-
+        - "make"
+        - "govet"
     annotations:
       testgrid-dashboards: presubmits-kops
       testgrid-tab-name: verify-govet
@@ -316,20 +367,71 @@ presubmits:
     always_run: true
     labels:
       preset-service-account: "true"
+    decorate: true
+    decoration_config:
+      timeout: 10m
+    path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20190125-cc5d6ecff3
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-experimental
+        command:
+        - runner.sh
         args:
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--root=/go/src"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - --scenario=execute
-        - --
-        - ./hack/verify-packages.sh
-
+        - "make"
+        - "verify-packages"
     annotations:
       testgrid-dashboards: presubmits-kops
       testgrid-tab-name: verify-packages
+  - name: pull-kops-verify-staticcheck
+    branches:
+      - master
+    always_run: true
+    labels:
+      preset-service-account: "true"
+    decorate: true
+    decoration_config:
+      timeout: 10m
+    path_alias: k8s.io/kops
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-experimental
+        command:
+        - runner.sh
+        args:
+        - "make"
+        - "verify-staticcheck"
+    annotations:
+      testgrid-dashboards: presubmits-kops
+      testgrid-tab-name: verify-staticcheck
+  - name: pull-kops-verify
+    branches:
+    - master
+    optional: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-service-account: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+    decorate: true
+    decoration_config:
+      timeout: 15m
+    path_alias: k8s.io/kops
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-experimental
+        command:
+        - runner.sh
+        args:
+        - "make"
+        - "verify"
+        resources:
+          requests:
+            memory: "2Gi"
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: presubmits-kops
+      testgrid-tab-name: verify
 periodics:
 - interval: 30m
   name: ci-kops-build
@@ -338,7 +440,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-experimental
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-experimental
       args:
       - --repo=k8s.io/kops
       - --repo=k8s.io/release
@@ -352,7 +454,6 @@ periodics:
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-
   annotations:
     testgrid-dashboards: sig-release-misc
     testgrid-tab-name: kops-build
@@ -366,17 +467,16 @@ postsubmits:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
       preset-bazel-remote-cache-enabled: "true"
+    decorate: true
+    decoration_config:
+      timeout: 10m
+    path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-experimental
+        command:
+        - runner.sh
         args:
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/logs"
-        - "--timeout=60"
-        - "--scenario=kubernetes_execute_bazel"
-        - "--" # end bootstrap args, scenario args below
         - "make"
         - "prow-postsubmit"
         - "UPLOAD_DEST=gs://kubernetes-release-dev/kops/ci"

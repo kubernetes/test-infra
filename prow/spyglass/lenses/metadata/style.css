@@ -6,8 +6,15 @@
 .test-summary {
     color: #e8e8e8;
     padding-left: 17px;
-    padding-bottom: 15px;
     margin: 0;
+}
+
+.failure-hint {
+    font-weight: bold;
+}
+
+#bottom-padding {
+    padding-bottom: 15px;
 }
 
 body {

@@ -120,11 +120,11 @@ func TestPresubmits(t *testing.T) {
 
 // TODO(krzyzacy): technically this, and TestPresubmits above should belong to config/ instead of prow/
 func TestPostsubmits(t *testing.T) {
-	if len(c.Postsubmits) == 0 {
+	if len(c.PostsubmitsStatic) == 0 {
 		t.Fatalf("No jobs found in presubmit.yaml.")
 	}
 
-	for _, rootJobs := range c.Postsubmits {
+	for _, rootJobs := range c.PostsubmitsStatic {
 		for i, job := range rootJobs {
 			if job.Name == "" {
 				t.Errorf("Job %v needs a name.", job)
@@ -211,7 +211,7 @@ func TestListPresubmit(t *testing.T) {
 					{JobBase: JobBase{Name: "d"}},
 				},
 			},
-			Postsubmits: map[string][]Postsubmit{
+			PostsubmitsStatic: map[string][]Postsubmit{
 				"r1": {{JobBase: JobBase{Name: "e"}}},
 			},
 			Periodics: []Periodic{
@@ -263,7 +263,7 @@ func TestListPostsubmit(t *testing.T) {
 			PresubmitsStatic: map[string][]Presubmit{
 				"r1": {{JobBase: JobBase{Name: "a"}}},
 			},
-			Postsubmits: map[string][]Postsubmit{
+			PostsubmitsStatic: map[string][]Postsubmit{
 				"r1": {
 					{
 						JobBase: JobBase{
@@ -298,7 +298,7 @@ func TestListPostsubmit(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		actual := c.AllPostsubmits(tc.repos)
+		actual := c.AllStaticPostsubmits(tc.repos)
 		if len(actual) != len(tc.expected) {
 			t.Fatalf("%s - Wrong number of jobs. Got %v, expected %v", tc.name, actual, tc.expected)
 		}
@@ -323,7 +323,7 @@ func TestListPeriodic(t *testing.T) {
 			PresubmitsStatic: map[string][]Presubmit{
 				"r1": {{JobBase: JobBase{Name: "a"}}},
 			},
-			Postsubmits: map[string][]Postsubmit{
+			PostsubmitsStatic: map[string][]Postsubmit{
 				"r1": {{JobBase: JobBase{Name: "b"}}},
 			},
 			Periodics: []Periodic{
@@ -420,7 +420,7 @@ func TestValidPodNames(t *testing.T) {
 			t.Errorf("Job \"%s\" must match regex \"%s\".", j.Name, podRe.String())
 		}
 	}
-	for _, j := range c.AllPostsubmits([]string{}) {
+	for _, j := range c.AllStaticPostsubmits([]string{}) {
 		if !podRe.MatchString(j.Name) {
 			t.Errorf("Job \"%s\" must match regex \"%s\".", j.Name, podRe.String())
 		}
@@ -436,7 +436,7 @@ func TestNoDuplicateJobs(t *testing.T) {
 	// Presubmit test is covered under TestPresubmits() above
 
 	allJobs := make(map[string]bool)
-	for _, j := range c.AllPostsubmits([]string{}) {
+	for _, j := range c.AllStaticPostsubmits([]string{}) {
 		if allJobs[j.Name] {
 			t.Errorf("Found duplicate job in postsubmit: %s.", j.Name)
 		}

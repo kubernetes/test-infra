@@ -24,6 +24,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/test-infra/pkg/io"
 	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 	"k8s.io/test-infra/prow/pjutil"
 
@@ -36,14 +37,22 @@ import (
 )
 
 // NewController constructs a new controller to reconcile stauses on config change
-func NewController(continueOnError bool, addedPresubmitBlacklist sets.String, prowJobClient prowv1.ProwJobInterface, githubClient github.Client, configAgent *config.Agent, pluginAgent *plugins.ConfigAgent) *Controller {
+func NewController(continueOnError bool, addedPresubmitBlacklist sets.String, opener io.Opener, configPath, jobConfigPath, statusURI string, prowJobClient prowv1.ProwJobInterface, githubClient github.Client, pluginAgent *plugins.ConfigAgent) *Controller {
+	sc := &statusController{
+		logger:        logrus.WithField("client", "statusController"),
+		opener:        opener,
+		statusURI:     statusURI,
+		configPath:    configPath,
+		jobConfigPath: jobConfigPath,
+	}
+
 	return &Controller{
 		continueOnError:         continueOnError,
 		addedPresubmitBlacklist: addedPresubmitBlacklist,
 		prowJobTriggerer: &kubeProwJobTriggerer{
 			prowJobClient: prowJobClient,
 			githubClient:  githubClient,
-			configAgent:   configAgent,
+			configGetter:  sc.Config,
 			pluginAgent:   pluginAgent,
 		},
 		githubClient: githubClient,
@@ -55,6 +64,7 @@ func NewController(continueOnError bool, addedPresubmitBlacklist sets.String, pr
 			githubClient: githubClient,
 			pluginAgent:  pluginAgent,
 		},
+		statusClient: sc,
 	}
 }
 
@@ -89,7 +99,7 @@ type prowJobTriggerer interface {
 type kubeProwJobTriggerer struct {
 	prowJobClient prowv1.ProwJobInterface
 	githubClient  github.Client
-	configAgent   *config.Agent
+	configGetter  config.Getter
 	pluginAgent   *plugins.ConfigAgent
 }
 
@@ -103,7 +113,7 @@ func (t *kubeProwJobTriggerer) runAndSkip(pr *github.PullRequest, requestedJobs,
 		trigger.Client{
 			GitHubClient:  t.githubClient,
 			ProwJobClient: t.prowJobClient,
-			Config:        t.configAgent.Config(),
+			Config:        t.configGetter(),
 			Logger:        logrus.WithField("client", "trigger"),
 		},
 		pr, baseSHA, requestedJobs, skippedJobs, "none", *t.pluginAgent.Config().TriggerFor(org, repo).ElideSkippedContexts,
@@ -141,11 +151,18 @@ type Controller struct {
 	githubClient            githubClient
 	statusMigrator          statusMigrator
 	trustedChecker          trustedChecker
+	statusClient            statusClient
 }
 
 // Run monitors the incoming configuration changes to determine when statuses need to be
 // reconciled on PRs in flight when blocking presubmits change
-func (c *Controller) Run(ctx context.Context, changes <-chan config.Delta) {
+func (c *Controller) Run(ctx context.Context) {
+	changes, err := c.statusClient.Load()
+	if err != nil {
+		logrus.WithError(err).Error("Error loading saved status.")
+		return
+	}
+
 	for {
 		select {
 		case change := <-changes:
@@ -154,6 +171,7 @@ func (c *Controller) Run(ctx context.Context, changes <-chan config.Delta) {
 				logrus.WithError(err).Error("Error reconciling statuses.")
 			}
 			logrus.WithField("duration", fmt.Sprintf("%v", time.Since(start))).Info("Statuses reconciled")
+			c.statusClient.Save()
 		case <-ctx.Done():
 			logrus.Info("status-reconciler is shutting down...")
 			return

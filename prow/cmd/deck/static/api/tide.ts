@@ -8,6 +8,7 @@ export interface TideQuery {
   includedBranches?: string[];
   labels?: string[];
   missingLabels?: string[];
+  author?: string;
   milestone?: string;
   reviewApprovedRequired?: boolean;
 }

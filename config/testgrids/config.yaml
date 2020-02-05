@@ -6,48 +6,6 @@
 
 # Start testgroups
 test_groups:
-- name: ci-kubernetes-node-kubelet-benchmark
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-benchmark
-  test_name_config:
-    name_elements:
-    - target_config: Tests name
-    - target_config: Context
-    name_format: '%s [%s]'
-- name: ci-kubernetes-node-kubelet
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet
-  test_name_config:
-    name_elements:
-    - target_config: Tests name
-    - target_config: Context
-    name_format: '%s [%s]'
-- name: ci-kubernetes-node-kubelet-features
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-features
-  test_name_config:
-    name_elements:
-    - target_config: Tests name
-    - target_config: Context
-    name_format: '%s [%s]'
-- name: ci-kubernetes-node-kubelet-orphans
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-orphans
-  test_name_config:
-    name_elements:
-    - target_config: Tests name
-    - target_config: Context
-    name_format: '%s [%s]'
-- name: ci-kubernetes-node-kubelet-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-serial
-  test_name_config:
-    name_elements:
-    - target_config: Tests name
-    - target_config: Context
-    name_format: '%s [%s]'
-- name: ci-kubernetes-node-kubelet-serial-cpu-manager
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-serial-cpu-manager
-  test_name_config:
-    name_elements:
-    - target_config: Tests name
-    - target_config: Context
-    name_format: '%s [%s]'
 - name: ci-cri-containerd-node-e2e
   gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-node-e2e
   test_name_config:
@@ -141,62 +99,6 @@ test_groups:
   days_of_results: 60
   num_columns_recent: 3
   num_failures_to_alert: 1
-- name: ci-kubernetes-node-kubelet-flaky
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-flaky
-  test_name_config:
-    name_elements:
-    - target_config: Tests name
-    - target_config: Context
-    name_format: '%s [%s]'
-- name: ci-kubernetes-node-kubelet-conformance
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-conformance
-  test_name_config:
-    name_elements:
-    - target_config: Tests name
-    - target_config: Context
-    name_format: '%s [%s]'
-- name: ci-kubernetes-node-kubelet-alpha
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-alpha
-  test_name_config:
-    name_elements:
-    - target_config: Tests name
-    - target_config: Context
-    name_format: '%s [%s]'
-- name: ci-kubernetes-node-kubelet-beta
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-beta
-  test_name_config:
-    name_elements:
-    - target_config: Tests name
-    - target_config: Context
-    name_format: '%s [%s]'
-- name: ci-kubernetes-node-kubelet-features-beta
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-features-beta
-  test_name_config:
-    name_elements:
-    - target_config: Tests name
-    - target_config: Context
-    name_format: '%s [%s]'
-- name: ci-kubernetes-node-kubelet-stable1
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-stable1
-  test_name_config:
-    name_elements:
-    - target_config: Tests name
-    - target_config: Context
-    name_format: '%s [%s]'
-- name: ci-kubernetes-node-kubelet-stable2
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-stable2
-  test_name_config:
-    name_elements:
-    - target_config: Tests name
-    - target_config: Context
-    name_format: '%s [%s]'
-- name: ci-kubernetes-node-kubelet-stable3
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-stable3
-  test_name_config:
-    name_elements:
-    - target_config: Tests name
-    - target_config: Context
-    name_format: '%s [%s]'
 
 # Canonical Distribution of Kubernetes (contact: @chuckbutler on github)
 - name: canonical-kubernetes-e2e-gce
@@ -221,10 +123,6 @@ test_groups:
 # OVN-OVS CNI on Windows test groups
 - name: ci-kubernetes-e2e-ovn-ovs-master-windows
   gcs_prefix: k8s-ovn/ci-kubernetes-e2e-ovn-ovs-master-windows
-
-# Pivotal Windows test groups
-- name: ci-kubernetes-e2e-windows-cfcr
-  gcs_prefix: pivotal-e2e-results/kubo-windows-2019
 
 #
 # Start dashboards
@@ -346,37 +244,37 @@ dashboards:
 - name: google-gci
 - name: google-gke
   dashboard_tab:
-  - name: gke-cos-1.11-ingress
+  - name: gke-cos-k8sstable3-ingress
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-ingress
-  - name: gke-cos-1.11-reboot
+  - name: gke-cos-k8sstable3-reboot
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-reboot
-  - name: gke-cos-1.11-default
+  - name: gke-cos-k8sstable3-default
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-default
-  - name: gke-cos-1.11-serial
+  - name: gke-cos-k8sstable3-serial
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-serial
-  - name: gke-cos-1.11-slow
+  - name: gke-cos-k8sstable3-slow
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-slow
   # K8S stable2 branch on GKE
-  - name: gke-cos-1.12-ingress
+  - name: gke-cos-k8sstable2-ingress
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-ingress
-  - name: gke-cos-1.12-reboot
+  - name: gke-cos-k8sstable2-reboot
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-reboot
-  - name: gke-cos-1.12-default
+  - name: gke-cos-k8sstable2-default
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-default
-  - name: gke-cos-1.12-serial
+  - name: gke-cos-k8sstable2-serial
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-serial
-  - name: gke-cos-1.12-slow
+  - name: gke-cos-k8sstable2-slow
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-slow
   # K8S stable1 branch on GKE
-  - name: gke-cos-1.13-ingress
+  - name: gke-cos-k8sstable1-ingress
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-ingress
-  - name: gke-cos-1.13-reboot
+  - name: gke-cos-k8sstable1-reboot
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-reboot
-  - name: gke-cos-1.13-default
+  - name: gke-cos-k8sstable1-default
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-default
-  - name: gke-cos-1.13-serial
+  - name: gke-cos-k8sstable1-serial
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-serial
-  - name: gke-cos-1.13-slow
+  - name: gke-cos-k8sstable1-slow
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-slow
 - name: google-gke-stackdriver
 - name: google-gke-upgrade
@@ -392,12 +290,12 @@ dashboards:
     base_options: exclude-filter-by-regex=^BeforeSuite$
     alert_options:
       alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
-  - name: gce-device-plugin-gpu-1.12
+  - name: gce-device-plugin-gpu-beta
     test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu-beta
     base_options: exclude-filter-by-regex=^BeforeSuite$
     alert_options:
       alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
-  - name: gce-device-plugin-gpu-1.11
+  - name: gce-device-plugin-gpu-stable1
     test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable1
     base_options: exclude-filter-by-regex=^BeforeSuite$
     alert_options:
@@ -407,12 +305,12 @@ dashboards:
     base_options: exclude-filter-by-regex=^BeforeSuite$
     alert_options:
       alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
-  - name: gke-device-plugin-gpu-1.12
+  - name: gke-device-plugin-gpu-beta
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-beta
     base_options: exclude-filter-by-regex=^BeforeSuite$
     alert_options:
       alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
-  - name: gke-device-plugin-gpu-1.11
+  - name: gke-device-plugin-gpu-stable1
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable1
     base_options: exclude-filter-by-regex=^BeforeSuite$
     alert_options:
@@ -422,12 +320,12 @@ dashboards:
     base_options: exclude-filter-by-regex=^BeforeSuite$
     alert_options:
       alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
-  - name: gke-device-plugin-gpu-p100-1.12
+  - name: gke-device-plugin-gpu-p100-beta
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-beta
     base_options: exclude-filter-by-regex=^BeforeSuite$
     alert_options:
       alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
-  - name: gke-device-plugin-gpu-p100-1.11
+  - name: gke-device-plugin-gpu-p100-stable1
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-stable1
     base_options: exclude-filter-by-regex=^BeforeSuite$
     alert_options:
@@ -442,32 +340,32 @@ dashboards:
     base_options: exclude-filter-by-regex=^BeforeSuite$
     alert_options:
       alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
-  - name: gce-1.11-1.12-gpu-master-upgrade
+  - name: gce-stable1-beta-gpu-master-upgrade
     test_group_name: ci-kubernetes-e2e-gce-gpu-stable1-beta-master-upgrade
     base_options: exclude-filter-by-regex=^BeforeSuite$
     alert_options:
       alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
-  - name: gce-1.11-1.12-gpu-cluster-upgrade
+  - name: gce-stable1-beta-gpu-cluster-upgrade
     test_group_name: ci-kubernetes-e2e-gce-gpu-stable1-beta-cluster-upgrade
     base_options: exclude-filter-by-regex=^BeforeSuite$
     alert_options:
       alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
-  - name: gce-1.11-master-gpu-master-upgrade
+  - name: gce-stable1-master-gpu-master-upgrade
     test_group_name: ci-kubernetes-e2e-gce-gpu-stable1-master-master-upgrade
     base_options: exclude-filter-by-regex=^BeforeSuite$
     alert_options:
       alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
-  - name: gce-1.11-master-gpu-cluster-upgrade
+  - name: gce-stable1-master-gpu-cluster-upgrade
     test_group_name: ci-kubernetes-e2e-gce-gpu-stable1-master-cluster-upgrade
     base_options: exclude-filter-by-regex=^BeforeSuite$
     alert_options:
       alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
-  - name: gce-1.12-1.11-gpu-cluster-downgrade
+  - name: gce-beta-stable1-gpu-cluster-downgrade
     test_group_name: ci-kubernetes-e2e-gce-gpu-beta-stable1-cluster-downgrade
     base_options: exclude-filter-by-regex=^BeforeSuite$
     alert_options:
       alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
-  - name: gce-master-1.11-gpu-cluster-downgrade
+  - name: gce-master-stable1-gpu-cluster-downgrade
     test_group_name: ci-kubernetes-e2e-gce-gpu-master-stable1-cluster-downgrade
     base_options: exclude-filter-by-regex=^BeforeSuite$
     alert_options:
@@ -515,6 +413,11 @@ dashboards:
 
 - name: presubmits-kubernetes-blocking
   dashboard_tab:
+  - name: pull-kubernetes-e2e-kind
+    test_group_name: pull-kubernetes-e2e-kind
+    base_options: width=10
+    alert_options:
+      alert_mail_to_addresses: bentheelder+alerts@google.com, antonio.ojea.garcia@gmail.com
   - name: pull-kubernetes-bazel-build
     test_group_name: pull-kubernetes-bazel-build
     base_options: width=10
@@ -557,21 +460,20 @@ dashboards:
   - name: pull-kubernetes-e2e-gce-rbe
     test_group_name: pull-kubernetes-e2e-gce-rbe
     base_options: width=10
-  - name: pull-kubernetes-e2e-kind
-    test_group_name: pull-kubernetes-e2e-kind
+  - name: pull-kubernetes-e2e-gce-canary
+    test_group_name: pull-kubernetes-e2e-gce-canary
     base_options: width=10
-    alert_options:
-      alert_mail_to_addresses: bentheelder+alerts@google.com
   - name: pull-kubernetes-e2e-kind-canary
     test_group_name: pull-kubernetes-e2e-kind-canary
     base_options: width=10
-    alert_options:
-      alert_mail_to_addresses: bentheelder+alerts@google.com
   - name: pull-kubernetes-e2e-kind-ipv6-canary
+    test_group_name: pull-kubernetes-e2e-kind-ipv6-canary
+    base_options: width=10
+  - name: pull-kubernetes-e2e-kind-ipv6
     test_group_name: pull-kubernetes-e2e-kind-ipv6
     base_options: width=10
     alert_options:
-      alert_mail_to_addresses: antonio.ojea.garcia@gmail.com
+      alert_mail_to_addresses: bentheelder+alerts@google.com, antonio.ojea.garcia@gmail.com
   - name: pull-kubernetes-e2e-aks-engine-azure
     test_group_name: pull-kubernetes-e2e-aks-engine-azure
     base_options: width=10
@@ -648,27 +550,6 @@ dashboards:
     test_group_name: pull-perf-tests-clusterloader2-kubemark
     base_options: width=10
 
-- name: presubmits-test-infra
-  dashboard_tab:
-  - name: bazel
-    test_group_name: pull-test-infra-bazel
-    base_options: width=10
-  - name: bazel-canary
-    test_group_name: pull-test-infra-bazel-canary
-    base_options: width=10
-  - name: gubernator
-    test_group_name: pull-test-infra-gubernator
-    base_options: width=10
-  - name: repo-infra
-    test_group_name: pull-repo-infra-tests
-    base_options: width=10
-  - name: verify-file-perms
-    test_group_name: pull-test-infra-verify-file-perms
-    base_options: width=10
-  - name: verify-yaml
-    test_group_name: pull-test-infra-yamllint
-    base_options: width=10
-
 - name: presubmits-cluster-registry
   dashboard_tab:
   - name: verify-gensrc
@@ -688,9 +569,6 @@ dashboards:
 # sig-windows dashboard
 - name: sig-windows
   dashboard_tab:
-  - name: cfcr-vsphere-windows-master
-    description: Runs Windows verification tests on a master-branch Kubernetes cluster provided by CFCR (https://github.com/cloudfoundry-incubator/kubo-release) on vSphere"
-    test_group_name: ci-kubernetes-e2e-windows-cfcr
   - name: flannel-l2bridge-windows-master
     description: Runs Windows e2e tests on K8s clusters on Openstack vms with Flannel CNI in l2bridge network mode.
     test_group_name: ci-kubernetes-e2e-flannel-l2bridge-master-windows

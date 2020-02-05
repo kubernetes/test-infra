@@ -103,7 +103,7 @@ Official description of the individual files and their content is described by [
 ## Publishing test results in TestGrid
 
 To have the [TestGrid](https://testgrid.k8s.io/) consume the new build results, one needs to extend the TestGrid
-configuration file at https://github.com/kubernetes/test-infra/blob/master/testgrid/config/config.yaml.
+configuration file at https://github.com/kubernetes/test-infra/blob/master/config/testgrids/config.yaml.
 
 The header of the file describes what needs to be done to add new build.
 The current jobs have been added through https://github.com/kubernetes/test-infra/pull/5693 PR.

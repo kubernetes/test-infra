@@ -1,11 +1,37 @@
+/*
+Copyright 2019 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package git
 
 import (
 	"errors"
+	"fmt"
+	"strings"
 
 	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
 )
+
+func OrgRepo(full string) (string, string, error) {
+	if strings.Count(full, "/") != 1 {
+		return "", "", fmt.Errorf("full repo name %s does not follow the org/repo format", full)
+	}
+	parts := strings.Split(full, "/")
+	return parts[0], parts[1], nil
+}
 
 // ClientFactoryFrom adapts the v1 client to a v2 client
 func ClientFactoryFrom(c *git.Client) ClientFactory {
@@ -49,7 +75,7 @@ func (a *repoClientAdapter) Commit(title, body string) error {
 }
 
 func (a *repoClientAdapter) ForcePush(branch string) error {
-	return errors.New("no ForcePush implementation exists in the v1 repo client")
+	return a.Repo.Push(branch)
 }
 
 func (a *repoClientAdapter) MirrorClone() error {

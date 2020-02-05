@@ -27,7 +27,7 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/test-infra/prow/git"
+	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 )
 
@@ -101,7 +101,12 @@ type Tide struct {
 	// PRStatusBaseURL is the base URL for the PR status page.
 	// This is used to link to a merge requirements overview
 	// in the tide status context.
+	// Will be deprecated on June 2020.
 	PRStatusBaseURL string `json:"pr_status_base_url,omitempty"`
+
+	// PRStatusBaseURLs is the base URL for the PR status page
+	// mapped by org or org/repo level.
+	PRStatusBaseURLs map[string]string `json:"pr_status_base_urls,omitempty"`
 
 	// BlockerLabel is an optional label that is used to identify merge blocking
 	// GitHub issues.
@@ -182,12 +187,26 @@ func (t *Tide) MergeCommitTemplate(org, repo string) TideMergeCommitTemplate {
 	return v
 }
 
+func (t *Tide) GetPRStatusBaseURL(org, repo string) string {
+	orgRepo := fmt.Sprintf("%s/%s", org, repo)
+
+	if byOrgRepo, ok := t.PRStatusBaseURLs[orgRepo]; ok {
+		return byOrgRepo
+	} else if byOrg, ok := t.PRStatusBaseURLs[org]; ok {
+		return byOrg
+	}
+
+	return t.PRStatusBaseURLs["*"]
+}
+
 // TideQuery is turned into a GitHub search query. See the docs for details:
 // https://help.github.com/articles/searching-issues-and-pull-requests/
 type TideQuery struct {
 	Orgs          []string `json:"orgs,omitempty"`
 	Repos         []string `json:"repos,omitempty"`
 	ExcludedRepos []string `json:"excludedRepos,omitempty"`
+
+	Author string `json:"author,omitempty"`
 
 	ExcludedBranches []string `json:"excludedBranches,omitempty"`
 	IncludedBranches []string `json:"includedBranches,omitempty"`
@@ -211,6 +230,9 @@ func (tq *TideQuery) Query() string {
 	}
 	for _, r := range tq.ExcludedRepos {
 		toks = append(toks, fmt.Sprintf("-repo:\"%s\"", r))
+	}
+	if tq.Author != "" {
+		toks = append(toks, fmt.Sprintf("author:\"%s\"", tq.Author))
 	}
 	for _, b := range tq.ExcludedBranches {
 		toks = append(toks, fmt.Sprintf("-base:\"%s\"", b))
@@ -489,7 +511,7 @@ func parseTideContextPolicyOptions(org, repo, branch string, options TideContext
 // GetTideContextPolicy parses the prow config to find context merge options.
 // If none are set, it will use the prow jobs configured and use the default github combined status.
 // Otherwise if set it will use the branch protection setting, or the listed jobs.
-func (c Config) GetTideContextPolicy(gitClient *git.Client, org, repo, branch string, baseSHAGetter RefGetter, headSHA string) (*TideContextPolicy, error) {
+func (c Config) GetTideContextPolicy(gitClient git.ClientFactory, org, repo, branch string, baseSHAGetter RefGetter, headSHA string) (*TideContextPolicy, error) {
 	options := parseTideContextPolicyOptions(org, repo, branch, c.Tide.ContextOptions)
 	// Adding required and optional contexts from options
 	required := sets.NewString(options.RequiredContexts...)

@@ -77,12 +77,13 @@ approve:
   require_self_approval: false
 - repos:
   - bazelbuild
+  - kubernetes-sigs/kind
+  - kubernetes-sigs/slack-infra
   - kubernetes/community
+  - kubernetes/k8s.io
   - kubernetes/org
   - kubernetes/repo-infra
-  - kubernetes-sigs/kind
   - kubernetes/test-infra
-  - kubernetes-sigs/slack-infra
   require_self_approval: false
   ignore_review_state: false
 - repos:
@@ -304,6 +305,11 @@ milestone_applier:
     master: v1.18
   kubernetes/test-infra:
     master: v1.18
+  kubernetes/kops:
+    master: v1.18
+    release-1.17: v1.17
+    release-1.16: v1.16
+    release-1.15: v1.15
 
 repo_milestone:
   # Default maintainer
@@ -385,9 +391,7 @@ config_updater:
   maps:
     label_sync/labels.yaml:
       name: label-config
-      clusters:
-        test-infra-trusted:
-          - test-pods
+      namespace: test-pods
     config/prow/config.yaml:
       name: config
     config/prow/plugins.yaml:
@@ -426,16 +430,48 @@ require_matching_label:
   issues: true
   regexp: ^(sig|wg|committee)/
   missing_comment: |
-    There are no sig labels on this issue. Please add a sig label by either:
+    There are no sig labels on this issue. Please add an appropriate label by using one of the following commands:
+    - `/sig <group-name>`
+    - `/wg <group-name>`
+    - `/committee <group-name>`
 
-    1. mentioning a sig: `@kubernetes/sig-<group-name>-<group-suffix>`
-        e.g., `@kubernetes/sig-contributor-experience-<group-suffix>` to notify the contributor experience sig, OR
+    Please see the [group list](https://git.k8s.io/community/sig-list.md) for a listing of the SIGs, working groups, and committees available.
+- missing_label: needs-sig
+  org: kubernetes
+  repo: community
+  issues: true
+  regexp: ^(sig|wg|committee)/
+  missing_comment: |
+    There are no sig labels on this issue. Please add an appropriate label by using one of the following commands:
+    - `/sig <group-name>`
+    - `/wg <group-name>`
+    - `/committee <group-name>`
 
-    2. specifying the label manually: `/sig <group-name>`
-        e.g., `/sig scalability` to apply the `sig/scalability` label
+    Please see the [group list](https://git.k8s.io/community/sig-list.md) for a listing of the SIGs, working groups, and committees available.
+- missing_label: needs-sig
+  org: kubernetes
+  repo: enhancements
+  issues: true
+  regexp: ^(sig|wg|committee)/
+  missing_comment: |
+    There are no sig labels on this issue. Please add an appropriate label by using one of the following commands:
+    - `/sig <group-name>`
+    - `/wg <group-name>`
+    - `/committee <group-name>`
 
-    Note: Method 1 will trigger an email to the group. See the [group list](https://git.k8s.io/community/sig-list.md).
-    The `<group-suffix>` in method 1 has to be replaced with one of these: _**bugs, feature-requests, pr-reviews, test-failures, proposals**_.
+    Please see the [group list](https://git.k8s.io/community/sig-list.md) for a listing of the SIGs, working groups, and committees available.
+- missing_label: needs-sig
+  org: kubernetes-sigs
+  repo: contributor-playground
+  issues: true
+  regexp: ^(sig|wg|committee)/
+  missing_comment: |
+    There are no sig labels on this issue. Please add an appropriate label by using one of the following commands:
+    - `/sig <group-name>`
+    - `/wg <group-name>`
+    - `/committee <group-name>`
+
+    Please see the [group list](https://git.k8s.io/community/sig-list.md) for a listing of the SIGs, working groups, and committees available.
 - missing_label: needs-priority
   org: kubernetes
   repo: kubernetes
@@ -553,17 +589,21 @@ plugins:
   kubernetes/community:
   - blockade
   - milestone
-  - require-sig
+  - require-matching-label
+
+  kubernetes/dashboard:
+  - override
 
   kubernetes/enhancements:
   - blockade
   - milestone
   - milestoneapplier
-  - require-sig
+  - require-matching-label
   - stage
 
   kubernetes/kops:
   - milestone
+  - milestoneapplier
 
   kubernetes/kubernetes:
   - blockade
@@ -756,7 +796,7 @@ plugins:
   - milestone
 
   kubernetes-sigs/contributor-playground:
-  - require-sig
+  - require-matching-label
 
   containerd/cri:
   - assign
@@ -805,8 +845,30 @@ plugins:
   - wip
 
   cncf/apisnoop:
+  - wip
+  - trigger
+  - assign
+  - cla
   - cat # /meow replies with cat pictures
   - dog # /bark replies with dog pictures
+  - goose
+  - heart
+  - help
+  - hold
+  - label
+  - lgtm
+  - retitle
+  - shrug
+  - size
+
+  cncf/k8s-conformance:
+  - cat # /meow replies with cat pictures
+  - dog # /bark replies with dog pictures
+  - goose
+  - wip
+  - assign
+  - hold
+  - lgtm
 
 external_plugins:
   kubernetes:

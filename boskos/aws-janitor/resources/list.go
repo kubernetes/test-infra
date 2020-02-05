@@ -39,7 +39,7 @@ var RegionalTypeList = []Type{
 	LaunchConfigurations{},
 	Instances{},
 	// Addresses
-	// NetworkInterfaces
+	NetworkInterfaces{},
 	Subnets{},
 	SecurityGroups{},
 	// NetworkACLs

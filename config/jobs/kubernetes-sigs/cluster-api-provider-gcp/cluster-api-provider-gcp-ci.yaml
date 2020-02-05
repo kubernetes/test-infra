@@ -1,34 +1,42 @@
 periodics:
 - name: ci-cluster-api-provider-gcp-build
   interval: 1h
+  decorate: true
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-gcp
+    base_ref: master
+    path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
   labels:
     preset-service-account: "true"
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/gcloud-in-go:v20190125-cc5d6ecff3
-      args:
-      - "--repo=sigs.k8s.io/cluster-api-provider-gcp"
-      - "--root=/go/src"
-      - "--upload=gs://kubernetes-jenkins/logs"
-      - "--scenario=execute"
-      - "--"
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-experimental
+      command:
+      - "runner.sh"
       - "./scripts/ci-build.sh"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
     testgrid-tab-name: build
 - name: ci-cluster-api-provider-gcp-test
   interval: 1h
+  decorate: true
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-gcp
+    base_ref: master
+    path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
   labels:
     preset-service-account: "true"
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/cluster-api:v20190114-652973a54
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-experimental
       args:
-      - "--repo=sigs.k8s.io/cluster-api-provider-gcp"
-      - "--root=/go/src"
-      - "--upload=gs://kubernetes-jenkins/logs"
-      - "--scenario=execute"
-      - "--"
+      - "runner.sh"
       - "./scripts/ci-test.sh"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
@@ -61,7 +69,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-experimental
         env:
           - name: "CAPI_BRANCH"
             value: "master"
@@ -113,7 +121,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-experimental
         env:
           - name: "CAPI_BRANCH"
             value: "stable"
@@ -138,7 +146,6 @@ periodics:
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
     testgrid-num-failures-to-alert: "2"
 - name: ci-cluster-api-provider-gcp-make-conformance-stable-k8s-ci-artifacts
-  interval: 3h
   labels:
     preset-service-account: "true"
     preset-bazel-scratch-dir: "true"
@@ -146,6 +153,9 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
   decorate: true
+  decoration_config:
+    timeout: 3h
+  interval: 4h
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-gcp
@@ -165,7 +175,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-experimental
         env:
           - name: "CAPI_BRANCH"
             value: "stable"

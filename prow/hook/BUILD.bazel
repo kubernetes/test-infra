@@ -18,6 +18,7 @@ go_test(
         "//prow/github:go_default_library",
         "//prow/phony:go_default_library",
         "//prow/plugins:go_default_library",
+        "//prow/repoowners:go_default_library",
     ],
 )
 

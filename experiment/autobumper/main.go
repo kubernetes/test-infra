@@ -39,7 +39,7 @@ const (
 )
 
 var extraFiles = map[string]bool{
-	"experiment/generate_tests.py":   true,
+	"releng/generate_tests.py":       true,
 	"images/kubekins-e2e/Dockerfile": true,
 }
 

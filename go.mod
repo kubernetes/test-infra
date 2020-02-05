@@ -22,13 +22,14 @@ require (
 	github.com/Azure/azure-sdk-for-go v21.1.0+incompatible
 	github.com/Azure/azure-storage-blob-go v0.0.0-20190123011202-457680cc0804
 	github.com/Azure/go-autorest v11.1.2+incompatible
-	github.com/GoogleCloudPlatform/testgrid v0.0.1-alpha.3
+	github.com/GoogleCloudPlatform/testgrid v0.0.1-alpha.4
 	github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46
 	github.com/andygrunwald/go-gerrit v0.0.0-20190120104749-174420ebee6c
 	github.com/aws/aws-k8s-tester v0.0.0-20190114231546-b411acf57dfe
 	github.com/aws/aws-sdk-go v1.23.22
 	github.com/bazelbuild/buildtools v0.0.0-20190917191645-69366ca98f89
 	github.com/beorn7/perks v1.0.1 // indirect
+	github.com/blang/semver v3.5.1+incompatible
 	github.com/bwmarrin/snowflake v0.0.0
 	github.com/clarketm/json v1.13.4
 	github.com/client9/misspell v0.3.4

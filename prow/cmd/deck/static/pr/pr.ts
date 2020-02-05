@@ -32,6 +32,7 @@ interface ProcessedQuery {
   missingLabels: ProcessedLabel[];
   excludedBranches?: string[];
   includedBranches?: string[];
+  author?: string;
   milestone?: string;
 }
 
@@ -46,6 +47,7 @@ class TideQuery {
     public missingLabels?: string[];
     public excludedBranches?: string[];
     public includedBranches?: string[];
+    public author?: string;
     public milestone?: string;
 
     constructor(query: ITideQuery) {
@@ -56,6 +58,7 @@ class TideQuery {
         this.missingLabels = query.missingLabels;
         this.excludedBranches = query.excludedBranches;
         this.includedBranches = query.includedBranches;
+        this.author = query.author;
         this.milestone = query.milestone;
     }
 
@@ -476,7 +479,7 @@ function createTidePoolLabel(pr: PullRequest, tidePool?: TidePool): HTMLElement 
  */
 function createTitleLabel(isMerge: boolean, jobStatus: VagueState, noQuery: boolean,
                           labelConflict: boolean, mergeConflict: boolean,
-                          branchConflict: boolean, milestoneConflict: boolean): HTMLElement {
+                          branchConflict: boolean, authorConflict: boolean, milestoneConflict: boolean): HTMLElement {
     const label = document.createElement("span");
     label.classList.add("title-label");
 
@@ -486,6 +489,9 @@ function createTitleLabel(isMerge: boolean, jobStatus: VagueState, noQuery: bool
     } else if (isMerge) {
         label.textContent = "Merged";
         label.classList.add("merging");
+    } else if (authorConflict) {
+        label.textContent = "Blocked from merging by current author";
+        label.classList.add("pending");
     } else if (branchConflict) {
         label.textContent = "Blocked from merging into target branch";
         label.classList.add("pending");
@@ -517,7 +523,7 @@ function createTitleLabel(isMerge: boolean, jobStatus: VagueState, noQuery: bool
 function createPRCardTitle(pr: PullRequest, tidePools: TidePool[], jobStatus: VagueState,
                            noQuery: boolean, labelConflict: boolean,
                            mergeConflict: boolean, branchConflict: boolean,
-                           milestoneConflict: boolean): HTMLElement {
+                           authorConflict: boolean, milestoneConflict: boolean): HTMLElement {
     const prTitle = document.createElement("div");
     prTitle.classList.add("mdl-card__title");
 
@@ -547,7 +553,7 @@ function createPRCardTitle(pr: PullRequest, tidePools: TidePool[], jobStatus: Va
     });
     let tidePoolLabel = createTidePoolLabel(pr, pool[0]);
     if (!tidePoolLabel) {
-        tidePoolLabel = createTitleLabel(pr.Merged, jobStatus, noQuery, labelConflict, mergeConflict, branchConflict, milestoneConflict);
+        tidePoolLabel = createTitleLabel(pr.Merged, jobStatus, noQuery, labelConflict, mergeConflict, branchConflict, authorConflict, milestoneConflict);
     }
     prTitle.appendChild(tidePoolLabel);
 
@@ -756,7 +762,7 @@ function appendLabelsToContainer(container: HTMLElement, labels: string[]): void
 }
 
 /**
- * Fills query details. The details will be either the milestone or
+ * Fills query details. The details will be either the author, milestone or
  * included/excluded branches.
  * @param selector
  * @param data
@@ -803,6 +809,7 @@ function createQueryDetailsBtn(query: ProcessedQuery): HTMLTableDataCellElement 
     const allRequired = document.getElementById("query-all-required")!;
     const allForbidden = document.getElementById("query-all-forbidden")!;
     iconButton.addEventListener("click", () => {
+        fillDetail("#query-detail-author", query.author);
         fillDetail("#query-detail-milestone", query.milestone);
         fillDetail("#query-detail-exclude", query.excludedBranches);
         fillDetail("#query-detail-include", query.includedBranches);
@@ -976,34 +983,16 @@ function createStatusHelp(title: string, content: HTMLElement[]): HTMLElement {
 }
 
 /**
- * Creates the branch conflict status.
+ * Creates a generic conflict status.
  */
-function createBranchConflictStatus(pr: PullRequest, branchConflict: boolean): HTMLElement {
+function createGenericConflictStatus(pr: PullRequest, hasConflict: boolean, message: string): HTMLElement {
     const statusContainer = document.createElement("div");
     statusContainer.classList.add("status-container");
     const status = document.createElement("div");
-    if (branchConflict) {
+    if (hasConflict) {
         status.appendChild(createIcon("error", "", ["status-icon", "failed"]));
         status.appendChild(
-            document.createTextNode(`Merging into branch ${pr.BaseRef.Name} is currently forbidden`));
-        status.classList.add("status");
-        statusContainer.appendChild(status);
-    }
-    return statusContainer;
-}
-
-/**
- * Creates the milestone conflict status.
- */
-function createMilestoneConflictStatus(pr: PullRequest, queries: ProcessedQuery[],
-                                       milestoneConflict: boolean): HTMLElement {
-    const statusContainer = document.createElement("div");
-    statusContainer.classList.add("status-container");
-    const status = document.createElement("div");
-    if (milestoneConflict) {
-        status.appendChild(createIcon("error", "", ["status-icon", "failed"]));
-        status.appendChild(
-            document.createTextNode(`Only merges into milestone ${queries[0].milestone} are currently allowed`));
+            document.createTextNode(message));
         status.classList.add("status");
         statusContainer.appendChild(status);
     }
@@ -1012,7 +1001,7 @@ function createMilestoneConflictStatus(pr: PullRequest, queries: ProcessedQuery[
 
 function createPRCardBody(pr: PullRequest, builds: UnifiedContext[], queries: ProcessedQuery[],
                           mergeable: boolean, branchConflict: boolean,
-                          milestoneConflict: boolean): HTMLElement {
+                          authorConflict: boolean, milestoneConflict: boolean): HTMLElement {
     const cardBody = document.createElement("div");
     const title = document.createElement("h3");
     title.textContent = pr.Title;
@@ -1023,8 +1012,9 @@ function createPRCardBody(pr: PullRequest, builds: UnifiedContext[], queries: Pr
     const nodes = pr.Labels && pr.Labels.Nodes ? pr.Labels.Nodes : [];
     cardBody.appendChild(createMergeLabelStatus(nodes, queries));
     cardBody.appendChild(createMergeConflictStatus(mergeable));
-    cardBody.appendChild(createBranchConflictStatus(pr, branchConflict));
-    cardBody.appendChild(createMilestoneConflictStatus(pr, queries, milestoneConflict));
+    cardBody.appendChild(createGenericConflictStatus(pr, branchConflict, `Merging into branch ${pr.BaseRef.Name} is currently forbidden`));
+    cardBody.appendChild(createGenericConflictStatus(pr, authorConflict, `Only merges with author ${queries[0].author} are currently allowed`));
+    cardBody.appendChild(createGenericConflictStatus(pr, milestoneConflict, `Only merges into milestone ${queries[0].milestone} are currently allowed`));
 
     return cardBody;
 }
@@ -1081,6 +1071,7 @@ function closestMatchingQueries(pr: PullRequest, queries: TideQuery[]): Processe
         score = (labels.length + missingLabels.length > 0) ? score
             / (labels.length + missingLabels.length) : 1.0;
         processedQueries.push({
+            author: query.author,
             excludedBranches: query.excludedBranches,
             includedBranches: query.includedBranches,
             labels,
@@ -1116,6 +1107,19 @@ function closestMatchingQueries(pr: PullRequest, queries: TideQuery[]): Processe
                 return q1Included + q2Included;
             }
         }
+
+        const prAuthor = pr.Author && normLogin(pr.Author.Login);
+        const q1Author = normLogin(q1.author);
+        const q2Author = normLogin(q2.author);
+
+        if (prAuthor && q1Author !== q2Author) {
+            if (q1.author && prAuthor === q1Author) {
+                return -1;
+            }
+            if (q2.author && prAuthor === q2Author) {
+                return 1;
+            }
+        }
         if (pr.Milestone && pr.Milestone.Title && q1.milestone !== q2.milestone) {
             if (q1.milestone && pr.Milestone.Title === q1.milestone) {
                 return -1;
@@ -1133,6 +1137,13 @@ function closestMatchingQueries(pr: PullRequest, queries: TideQuery[]): Processe
 }
 
 /**
+ * Normalizes GitHub login strings
+ */
+function normLogin(login: string = ""): string {
+    return login.toLowerCase().replace(/^@/, "");
+}
+
+/**
  * Creates a PR card.
  */
 function createPRCard(pr: PullRequest, builds: UnifiedContext[] = [], queries: ProcessedQuery[] = [], tidePools: TidePool[] = []): HTMLElement {
@@ -1146,10 +1157,11 @@ function createPRCard(pr: PullRequest, builds: UnifiedContext[] = [], queries: P
     const branchConflict = !!((pr.BaseRef && pr.BaseRef.Name && hasMatchingQuery) &&
         ((queries[0].excludedBranches && queries[0].excludedBranches!.indexOf(pr.BaseRef.Name) !== -1) ||
             (queries[0].includedBranches && queries[0].includedBranches!.indexOf(pr.BaseRef.Name) === -1)));
+    const authorConflict = hasMatchingQuery && queries[0].author ? (!pr.Author || !pr.Author.Login || normLogin(pr.Author.Login) !== normLogin(queries[0].author)) : false;
     const milestoneConflict = hasMatchingQuery && queries[0].milestone ? (!pr.Milestone || !pr.Milestone.Title || pr.Milestone.Title !== queries[0].milestone) : false;
     const labelConflict = hasMatchingQuery ? !hasResolvedLabels(queries[0]) : false;
-    prCard.appendChild(createPRCardTitle(pr, tidePools, jobVagueState(builds), !hasMatchingQuery, labelConflict, mergeConflict, branchConflict, milestoneConflict));
-    prCard.appendChild(createPRCardBody(pr, builds, queries, mergeConflict, branchConflict, milestoneConflict));
+    prCard.appendChild(createPRCardTitle(pr, tidePools, jobVagueState(builds), !hasMatchingQuery, labelConflict, mergeConflict, branchConflict, authorConflict, milestoneConflict));
+    prCard.appendChild(createPRCardBody(pr, builds, queries, mergeConflict, branchConflict, authorConflict, milestoneConflict));
     return prCard;
 }
 

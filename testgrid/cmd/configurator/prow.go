@@ -185,7 +185,7 @@ func applyProwjobAnnotations(c *configpb.Configuration, reconcile *yamlcfg.Defau
 		}
 	}
 
-	for repo, js := range jobs.Postsubmits {
+	for repo, js := range jobs.PostsubmitsStatic {
 		for _, j := range js {
 			if err := applySingleProwjobAnnotations(c, pc, j.JobBase, prowapi.PostsubmitJob, repo, reconcile); err != nil {
 				return err

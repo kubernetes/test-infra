@@ -228,6 +228,7 @@ the build.
 
 Variable | Periodic | Postsubmit | Batch | Presubmit | Description | Example
 --- |:---:|:---:|:---:|:---:| --- | ---
+`CI` | ✓ | ✓ | ✓ | ✓ | Represents whether the current environment is a CI environment | `true`
 `ARTIFACTS` | ✓ | ✓ | ✓ | ✓ | Directory in which to place files to be uploaded when the job completes | `/logs/artifacts`
 `JOB_NAME` | ✓ | ✓ | ✓ | ✓ | Name of the job. | `pull-test-infra-bazel`
 `JOB_TYPE` | ✓ | ✓ | ✓ | ✓ | Type of job. | `presubmit`

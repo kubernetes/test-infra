@@ -123,37 +123,6 @@ func TestSetDefault_Maps(t *testing.T) {
 			},
 		},
 		{
-			name: "deprecated config",
-			config: ConfigUpdater{
-				ConfigFile: "foo.yaml",
-			},
-			expected: map[string]ConfigMapSpec{
-				"foo.yaml":                 {Name: "config", Namespaces: []string{""}, Clusters: map[string][]string{"default": {""}}},
-				"config/prow/plugins.yaml": {Name: "plugins", Namespaces: []string{""}, Clusters: map[string][]string{"default": {""}}},
-			},
-		},
-		{
-			name: "deprecated plugins",
-			config: ConfigUpdater{
-				PluginFile: "bar.yaml",
-			},
-			expected: map[string]ConfigMapSpec{
-				"bar.yaml":                {Name: "plugins", Namespaces: []string{""}, Clusters: map[string][]string{"default": {""}}},
-				"config/prow/config.yaml": {Name: "config", Namespaces: []string{""}, Clusters: map[string][]string{"default": {""}}},
-			},
-		},
-		{
-			name: "deprecated both",
-			config: ConfigUpdater{
-				ConfigFile: "foo.yaml",
-				PluginFile: "bar.yaml",
-			},
-			expected: map[string]ConfigMapSpec{
-				"foo.yaml": {Name: "config", Namespaces: []string{""}, Clusters: map[string][]string{"default": {""}}},
-				"bar.yaml": {Name: "plugins", Namespaces: []string{""}, Clusters: map[string][]string{"default": {""}}},
-			},
-		},
-		{
 			name: "both current and deprecated",
 			config: ConfigUpdater{
 				Maps: map[string]ConfigMapSpec{
@@ -161,8 +130,6 @@ func TestSetDefault_Maps(t *testing.T) {
 					"plugins.yaml":       {Name: "overwrite-plugins"},
 					"unconflicting.yaml": {Name: "ignored"},
 				},
-				ConfigFile: "config.yaml",
-				PluginFile: "plugins.yaml",
 			},
 			expected: map[string]ConfigMapSpec{
 				"config.yaml":        {Name: "overwrite-config", Namespaces: []string{""}, Clusters: map[string][]string{"default": {""}}},

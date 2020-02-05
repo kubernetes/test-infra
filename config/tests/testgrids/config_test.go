@@ -44,6 +44,7 @@ var (
 		"cos",
 		"cri-o",
 		"istio",
+		"googleoss",
 		"google",
 		"kopeio",
 		"redhat",
@@ -388,7 +389,7 @@ func TestKubernetesProwInstanceJobsMustHaveMatchingTestgridEntries(t *testing.T)
 		}
 	}
 
-	for _, job := range prowConfig.AllPostsubmits([]string{}) {
+	for _, job := range prowConfig.AllStaticPostsubmits([]string{}) {
 		jobs[job.Name] = false
 	}
 

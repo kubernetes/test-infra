@@ -2,86 +2,6 @@
 
 presubmits:
   kubernetes-csi/external-resizer:
-  - name: pull-kubernetes-csi-external-resizer-1-14-on-kubernetes-1-14
-    always_run: true
-    optional: false
-    decorate: true
-    skip_report: false
-    skip_branches: []
-    labels:
-      preset-service-account: "true"
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    annotations:
-      testgrid-dashboards: sig-storage-csi-external-resizer
-      testgrid-tab-name: 1-14-on-kubernetes-1-14
-      description: Kubernetes-CSI pull job in repo external-resizer for non-alpha tests, using deployment 1.14 on Kubernetes 1.14
-    spec:
-      containers:
-      # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
-        command:
-        - runner.sh
-        args:
-        - ./.prow.sh
-        env:
-        # We pick some version for which there are pre-built images for kind.
-        # Update only when the newer version is known to not cause issues,
-        # otherwise presubmit jobs may start to fail for reasons that are
-        # unrelated to the PR. Testing against the latest Kubernetes is covered
-        # by periodic jobs (see https://k8s-testgrid.appspot.com/sig-storage-csi-ci#Summary).
-        - name: CSI_PROW_KUBERNETES_VERSION
-          value: "1.14.6"
-        - name: CSI_PROW_KUBERNETES_DEPLOYMENT
-          value: "1.14"
-        - name: CSI_PROW_TESTS
-          value: "sanity serial parallel"
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            cpu: 2000m
-  - name: pull-kubernetes-csi-external-resizer-1-14-on-kubernetes-master
-    # Explicitly needs to be started with /test.
-    # This cannot be enabled by default because there's always the risk
-    # that something changes in master which breaks the pre-merge check.
-    always_run: false
-    optional: true
-    decorate: true
-    skip_report: false
-    labels:
-      preset-service-account: "true"
-      preset-dind-enabled: "true"
-      preset-bazel-remote-cache-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    annotations:
-      testgrid-dashboards: sig-storage-csi-external-resizer
-      testgrid-tab-name: 1-14-on-kubernetes-master
-      description: Kubernetes-CSI pull job in repo external-resizer for non-alpha tests, using deployment 1.14 on Kubernetes master
-    spec:
-      containers:
-      # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
-        command:
-        - runner.sh
-        args:
-        - ./.prow.sh
-        env:
-        - name: CSI_PROW_KUBERNETES_VERSION
-          value: "latest"
-        - name: CSI_PROW_TESTS
-          value: "sanity serial parallel"
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-      resources:
-        requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "9000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
   - name: pull-kubernetes-csi-external-resizer-1-15-on-kubernetes-1-15
     always_run: true
     optional: false
@@ -99,7 +19,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
         command:
         - runner.sh
         args:
@@ -142,7 +62,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
         command:
         - runner.sh
         args:
@@ -164,7 +84,7 @@ presubmits:
           cpu: 2000m
   - name: pull-kubernetes-csi-external-resizer-1-16-on-kubernetes-1-16
     always_run: true
-    optional: true
+    optional: false
     decorate: true
     skip_report: false
     skip_branches: []
@@ -179,7 +99,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
         command:
         - runner.sh
         args:
@@ -222,7 +142,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
         command:
         - runner.sh
         args:
@@ -242,6 +162,46 @@ presubmits:
           memory: "9000Mi"
           # during the tests more like 3-20m is used
           cpu: 2000m
+  - name: pull-kubernetes-csi-external-resizer-1-17-on-kubernetes-1-17
+    always_run: true
+    optional: false
+    decorate: true
+    skip_report: false
+    skip_branches: []
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    annotations:
+      testgrid-dashboards: sig-storage-csi-external-resizer
+      testgrid-tab-name: 1-17-on-kubernetes-1-17
+      description: Kubernetes-CSI pull job in repo external-resizer for non-alpha tests, using deployment 1.17 on Kubernetes 1.17
+    spec:
+      containers:
+      # We need this image because it has Docker in Docker and go.
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
+        command:
+        - runner.sh
+        args:
+        - ./.prow.sh
+        env:
+        # We pick some version for which there are pre-built images for kind.
+        # Update only when the newer version is known to not cause issues,
+        # otherwise presubmit jobs may start to fail for reasons that are
+        # unrelated to the PR. Testing against the latest Kubernetes is covered
+        # by periodic jobs (see https://k8s-testgrid.appspot.com/sig-storage-csi-ci#Summary).
+        - name: CSI_PROW_KUBERNETES_VERSION
+          value: "1.17.0"
+        - name: CSI_PROW_KUBERNETES_DEPLOYMENT
+          value: "1.17"
+        - name: CSI_PROW_TESTS
+          value: "sanity serial parallel"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 2000m
   - name: pull-kubernetes-csi-external-resizer-1-17-on-kubernetes-master
     # Explicitly needs to be started with /test.
     # This cannot be enabled by default because there's always the risk
@@ -262,7 +222,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
         command:
         - runner.sh
         args:
@@ -282,7 +242,7 @@ presubmits:
           memory: "9000Mi"
           # during the tests more like 3-20m is used
           cpu: 2000m
-  - name: pull-kubernetes-csi-external-resizer-alpha-1-16-on-kubernetes-1-16
+  - name: pull-kubernetes-csi-external-resizer-alpha-1-17-on-kubernetes-1-17
     always_run: false
     optional: true
     decorate: true
@@ -294,12 +254,12 @@ presubmits:
       preset-kind-volume-mounts: "true"
     annotations:
       testgrid-dashboards: sig-storage-csi-external-resizer
-      testgrid-tab-name: alpha-1-16-on-kubernetes-1-16
-      description: Kubernetes-CSI pull job in repo external-resizer for alpha tests, using deployment 1.16 on Kubernetes 1.16
+      testgrid-tab-name: alpha-1-17-on-kubernetes-1-17
+      description: Kubernetes-CSI pull job in repo external-resizer for alpha tests, using deployment 1.17 on Kubernetes 1.17
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
         command:
         - runner.sh
         args:
@@ -311,9 +271,9 @@ presubmits:
         # unrelated to the PR. Testing against the latest Kubernetes is covered
         # by periodic jobs (see https://k8s-testgrid.appspot.com/sig-storage-csi-ci#Summary).
         - name: CSI_PROW_KUBERNETES_VERSION
-          value: "1.16.2"
+          value: "1.17.0"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
-          value: "1.16"
+          value: "1.17"
         - name: CSI_PROW_TESTS
           value: "serial-alpha parallel-alpha"
         # docker-in-docker needs privileged mode
@@ -322,7 +282,7 @@ presubmits:
         resources:
           requests:
             cpu: 2000m
-  - name: pull-kubernetes-csi-external-resizer-alpha-1-16-on-kubernetes-master
+  - name: pull-kubernetes-csi-external-resizer-alpha-1-17-on-kubernetes-master
     # Explicitly needs to be started with /test.
     # This cannot be enabled by default because there's always the risk
     # that something changes in master which breaks the pre-merge check.
@@ -337,12 +297,12 @@ presubmits:
       preset-kind-volume-mounts: "true"
     annotations:
       testgrid-dashboards: sig-storage-csi-external-resizer
-      testgrid-tab-name: alpha-1-16-on-kubernetes-master
-      description: Kubernetes-CSI pull job in repo external-resizer for alpha tests, using deployment 1.16 on Kubernetes master
+      testgrid-tab-name: alpha-1-17-on-kubernetes-master
+      description: Kubernetes-CSI pull job in repo external-resizer for alpha tests, using deployment 1.17 on Kubernetes master
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
         command:
         - runner.sh
         args:
@@ -379,7 +339,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200204-8eefa86-master
         command:
         - runner.sh
         args:

@@ -86,3 +86,11 @@ def repositories():
         repository = "cloud-marketplace-containers/google/bazel",
         tag = "1.2.0",
     )
+
+    container_pull(
+        name = "cloud-sdk-slim",
+        digest = "sha256:6dafecdad80abf6470eae9e0b57fc083d1f3413fa15b9fab7c2ad3a102d244c4",  # 2020/01/21
+        registry = "gcr.io",
+        repository = "google.com/cloudsdktool/cloud-sdk",
+        tag = "277.0.0-slim",
+    )

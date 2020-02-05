@@ -26,6 +26,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/diff"
+	utilpointer "k8s.io/utils/pointer"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/clonerefs"
@@ -495,6 +496,7 @@ func TestProwJobToPod(t *testing.T) {
 								{Name: "MY_ENV", Value: "rocks"},
 								{Name: "BUILD_ID", Value: "blabla"},
 								{Name: "BUILD_NUMBER", Value: "blabla"},
+								{Name: "CI", Value: "true"},
 								{Name: "JOB_NAME", Value: "job-name"},
 								{Name: "JOB_SPEC", Value: `{"type":"presubmit","job":"job-name","buildid":"blabla","prowjobid":"pod","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}]}}`},
 								{Name: "JOB_TYPE", Value: "presubmit"},
@@ -658,6 +660,7 @@ func TestProwJobToPod(t *testing.T) {
 								{Name: "ARTIFACTS", Value: "/logs/artifacts"},
 								{Name: "BUILD_ID", Value: "blabla"},
 								{Name: "BUILD_NUMBER", Value: "blabla"},
+								{Name: "CI", Value: "true"},
 								{Name: "GOPATH", Value: "/home/prow/go"},
 								{Name: "JOB_NAME", Value: "job-name"},
 								{Name: "JOB_SPEC", Value: `{"type":"presubmit","job":"job-name","buildid":"blabla","prowjobid":"pod","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"}}`},
@@ -707,6 +710,7 @@ func TestProwJobToPod(t *testing.T) {
 							},
 						},
 					},
+					TerminationGracePeriodSeconds: utilpointer.Int64Ptr(10),
 					Volumes: []coreapi.Volume{
 						{
 							Name: "logs",
@@ -890,6 +894,7 @@ func TestProwJobToPod(t *testing.T) {
 								{Name: "ARTIFACTS", Value: "/logs/artifacts"},
 								{Name: "BUILD_ID", Value: "blabla"},
 								{Name: "BUILD_NUMBER", Value: "blabla"},
+								{Name: "CI", Value: "true"},
 								{Name: "GOPATH", Value: "/home/prow/go"},
 								{Name: "JOB_NAME", Value: "job-name"},
 								{Name: "JOB_SPEC", Value: `{"type":"presubmit","job":"job-name","buildid":"blabla","prowjobid":"pod","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"}}`},
@@ -939,6 +944,7 @@ func TestProwJobToPod(t *testing.T) {
 							},
 						},
 					},
+					TerminationGracePeriodSeconds: utilpointer.Int64Ptr(10),
 					Volumes: []coreapi.Volume{
 						{
 							Name: "logs",
@@ -1131,6 +1137,7 @@ func TestProwJobToPod(t *testing.T) {
 								{Name: "ARTIFACTS", Value: "/logs/artifacts"},
 								{Name: "BUILD_ID", Value: "blabla"},
 								{Name: "BUILD_NUMBER", Value: "blabla"},
+								{Name: "CI", Value: "true"},
 								{Name: "GOPATH", Value: "/home/prow/go"},
 								{Name: "JOB_NAME", Value: "job-name"},
 								{Name: "JOB_SPEC", Value: `{"type":"presubmit","job":"job-name","buildid":"blabla","prowjobid":"pod","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"}}`},
@@ -1180,6 +1187,7 @@ func TestProwJobToPod(t *testing.T) {
 							},
 						},
 					},
+					TerminationGracePeriodSeconds: utilpointer.Int64Ptr(10),
 					Volumes: []coreapi.Volume{
 						{
 							Name: "logs",
@@ -1388,6 +1396,7 @@ func TestProwJobToPod(t *testing.T) {
 								{Name: "ARTIFACTS", Value: "/logs/artifacts"},
 								{Name: "BUILD_ID", Value: "blabla"},
 								{Name: "BUILD_NUMBER", Value: "blabla"},
+								{Name: "CI", Value: "true"},
 								{Name: "GOPATH", Value: "/home/prow/go"},
 								{Name: "JOB_NAME", Value: "job-name"},
 								{Name: "JOB_SPEC", Value: `{"type":"presubmit","job":"job-name","buildid":"blabla","prowjobid":"pod","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"}}`},
@@ -1437,6 +1446,7 @@ func TestProwJobToPod(t *testing.T) {
 							},
 						},
 					},
+					TerminationGracePeriodSeconds: utilpointer.Int64Ptr(10),
 					Volumes: []coreapi.Volume{
 						{
 							Name: "logs",
@@ -1593,6 +1603,7 @@ func TestProwJobToPod(t *testing.T) {
 								{Name: "ARTIFACTS", Value: "/logs/artifacts"},
 								{Name: "BUILD_ID", Value: "blabla"},
 								{Name: "BUILD_NUMBER", Value: "blabla"},
+								{Name: "CI", Value: "true"},
 								{Name: "GOPATH", Value: "/home/prow/go"},
 								{Name: "JOB_NAME", Value: "job-name"},
 								{Name: "JOB_SPEC", Value: `{"type":"periodic","job":"job-name","buildid":"blabla","prowjobid":"pod"}`},
@@ -1631,6 +1642,7 @@ func TestProwJobToPod(t *testing.T) {
 							},
 						},
 					},
+					TerminationGracePeriodSeconds: utilpointer.Int64Ptr(10),
 					Volumes: []coreapi.Volume{
 						{
 							Name: "logs",
@@ -1779,6 +1791,7 @@ func TestProwJobToPod(t *testing.T) {
 								{Name: "ARTIFACTS", Value: "/logs/artifacts"},
 								{Name: "BUILD_ID", Value: "blabla"},
 								{Name: "BUILD_NUMBER", Value: "blabla"},
+								{Name: "CI", Value: "true"},
 								{Name: "GOPATH", Value: "/home/prow/go"},
 								{Name: "JOB_NAME", Value: "job-name"},
 								{Name: "JOB_SPEC", Value: `{"type":"presubmit","job":"job-name","buildid":"blabla","prowjobid":"pod","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"},"extra_refs":[{"org":"extra-org","repo":"extra-repo"}]}`},
@@ -1824,6 +1837,7 @@ func TestProwJobToPod(t *testing.T) {
 							},
 						},
 					},
+					TerminationGracePeriodSeconds: utilpointer.Int64Ptr(10),
 					Volumes: []coreapi.Volume{
 						{
 							Name: "logs",
@@ -1919,6 +1933,54 @@ func TestProwJobToPod(t *testing.T) {
 				if err := checkEnv(*got, "test", entrypoint.NewOptions()); err != nil {
 					t.Errorf("bad test entrypoint: %v", err)
 				}
+			}
+		})
+	}
+}
+
+func TestProwJobToPod_setsTerminationGracePeriodSeconds(t *testing.T) {
+	testCases := []struct {
+		name                                  string
+		prowjob                               *prowapi.ProwJob
+		expectedTerminationGracePeriodSeconds int64
+	}{
+		{
+			name: "GracePeriodSeconds from decoration config",
+			prowjob: &prowapi.ProwJob{
+				Spec: prowapi.ProwJobSpec{
+					PodSpec: &coreapi.PodSpec{Containers: []coreapi.Container{{}}},
+					DecorationConfig: &prowapi.DecorationConfig{
+						UtilityImages: &prowapi.UtilityImages{},
+						GracePeriod:   &prowapi.Duration{Duration: 10 * time.Second},
+					},
+				},
+			},
+			expectedTerminationGracePeriodSeconds: 10,
+		},
+		{
+			name: "Existing GracePeriodSeconds is not overwritten",
+			prowjob: &prowapi.ProwJob{
+				Spec: prowapi.ProwJobSpec{
+					PodSpec: &coreapi.PodSpec{TerminationGracePeriodSeconds: utilpointer.Int64Ptr(60), Containers: []coreapi.Container{{}}},
+					DecorationConfig: &prowapi.DecorationConfig{
+						UtilityImages: &prowapi.UtilityImages{},
+						Timeout:       &prowapi.Duration{Duration: 10 * time.Second},
+					},
+				},
+			},
+			expectedTerminationGracePeriodSeconds: 60,
+		},
+	}
+
+	for idx := range testCases {
+		tc := testCases[idx]
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			if err := decorate(tc.prowjob.Spec.PodSpec, tc.prowjob, map[string]string{}, ""); err != nil {
+				t.Fatalf("decoration failed: %v", err)
+			}
+			if tc.prowjob.Spec.PodSpec.TerminationGracePeriodSeconds == nil || *tc.prowjob.Spec.PodSpec.TerminationGracePeriodSeconds != tc.expectedTerminationGracePeriodSeconds {
+				t.Errorf("expected pods TerminationGracePeriodSeconds to be %d was %v", tc.expectedTerminationGracePeriodSeconds, tc.prowjob.Spec.PodSpec.TerminationGracePeriodSeconds)
 			}
 		})
 	}

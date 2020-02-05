@@ -6,7 +6,7 @@ go_library(
     importpath = "k8s.io/test-infra/prow/plugins/mergecommitblocker",
     visibility = ["//visibility:public"],
     deps = [
-        "//prow/git:go_default_library",
+        "//prow/git/v2:go_default_library",
         "//prow/github:go_default_library",
         "//prow/labels:go_default_library",
         "//prow/pluginhelp:go_default_library",

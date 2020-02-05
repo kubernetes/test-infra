@@ -50,9 +50,12 @@ function readOptions() {
     date: read('date'),
     ci: read('job-ci'),
     pr: read('job-pr'),
-    reText: read('filter-text'),
-    reJob: read('filter-job'),
-    reTest: read('filter-test'),
+    reText: read('filter-include-text'),
+    reJob: read('filter-include-job'),
+    reTest: read('filter-include-test'),
+    reXText: read('filter-exclude-text'),
+    reXJob: read('filter-exclude-job'),
+    reXTest: read('filter-exclude-test'),
     showNormalize: read('show-normalize'),
     sort: read('sort'),
     sig: readSigs(),
@@ -63,8 +66,10 @@ function readOptions() {
   if (!opts.ci) url += '&ci=0';
   if (opts.pr) url += '&pr=1';
   if (opts.sig.length) url += '&sig=' + opts.sig.join(',');
-  for (var name of ["text", "job", "test"]) {
-    var re = opts['re' + name[0].toUpperCase() + name.slice(1)];
+  for (var name of ["text", "job", "test", "xtext", "xjob", "xtest"]) {
+    var re = (name[0] == 'x') ?
+      opts['reX' + name[1].toUpperCase() + name.slice(2)] :
+      opts['re'  + name[0].toUpperCase() + name.slice(1)];
     if (re) {
       var baseRe = re.toString().replace(/im$/, '').replace(/\\\//g, '/').slice(1, -1);
       url += '&' + name + '=' + encodeURIComponent(baseRe);
@@ -118,9 +123,12 @@ function setOptionsFromURL() {
   write('date', qs.date);
   write('job-ci', qs.ci);
   write('job-pr', qs.pr);
-  write('filter-text', qs.text);
-  write('filter-job', qs.job);
-  write('filter-test', qs.test);
+  write('filter-include-text', qs.text);
+  write('filter-include-job', qs.job);
+  write('filter-include-test', qs.test);
+  write('filter-exclude-text', qs.xtext);
+  write('filter-exclude-job', qs.xjob);
+  write('filter-exclude-test', qs.xtest);
   writeSigs(qs.sig);
 }
 

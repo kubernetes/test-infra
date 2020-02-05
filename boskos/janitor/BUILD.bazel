@@ -42,7 +42,7 @@ pkg_tar(
 
 container_image(
     name = "janitor_image",
-    base = "@gcloud-go//image",
+    base = "@cloud-sdk-slim//image",
     tars = [":janitor_tar"],
 )
 
