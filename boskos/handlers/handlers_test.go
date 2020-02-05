@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package handlers
 
 import (
 	"encoding/json"
@@ -29,6 +29,13 @@ import (
 	"k8s.io/test-infra/boskos/crds"
 	"k8s.io/test-infra/boskos/ranch"
 )
+
+// json does not serialized time with nanosecond precision
+func now() time.Time {
+	format := "2006-01-02 15:04:05.000"
+	now, _ := time.Parse(format, time.Now().Format(format))
+	return now
+}
 
 var (
 	fakeNow = now()

@@ -41,6 +41,7 @@ filegroup(
         "//boskos/cmd/reaper:all-srcs",
         "//boskos/common:all-srcs",
         "//boskos/crds:all-srcs",
+        "//boskos/handlers:all-srcs",
         "//boskos/mason:all-srcs",
         "//boskos/ranch:all-srcs",
         "//boskos/storage:all-srcs",
