@@ -63,7 +63,7 @@ def clean_project(project, hours=24, dryrun=False, ratelimit=None, filt=None):
         return
     CHECKED.add(project)
 
-    cmd = ['python', test_infra('boskos/janitor/gcp_janitor.py'), '--project=%s' % project]
+    cmd = ['python', test_infra('boskos/cmd/janitor/gcp_janitor.py'), '--project=%s' % project]
     cmd.append('--hour=%d' % hours)
     if dryrun:
         cmd.append('--dryrun')

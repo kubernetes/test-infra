@@ -19,7 +19,7 @@ go_binary(
 go_library(
     name = "go_default_library",
     srcs = ["janitor.go"],
-    importpath = "k8s.io/test-infra/boskos/janitor",
+    importpath = "k8s.io/test-infra/boskos/cmd/janitor",
     deps = [
         "//boskos/client:go_default_library",
         "//boskos/common:go_default_library",
