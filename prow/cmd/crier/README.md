@@ -92,12 +92,16 @@ spec:
     spec:
       containers:
       - name: crier
-        image: gcr.io/k8s-prow/crier:v20191010-78fe9feb7
+        image: gcr.io/k8s-prow/crier:v20200205-656133e91
         args:
         - --slack-workers=1
         - --slack-token-file=/etc/slack/token
+        - --config-path=/etc/config/config.yaml
         - --dry-run=false
         volumeMounts:
+        - mountPath: /etc/config
+          name: config
+          readOnly: true
         - name: slack
           mountPath: /etc/slack
           readOnly: true
@@ -105,6 +109,9 @@ spec:
       - name: slack
         secret:
           secretName: slack-token
+      - name: config
+        configMap:
+          name: config
 ```
 
 Additionally, in order for it to work with Prow you must add the following to your `config.yaml`:
