@@ -8,6 +8,7 @@ go_library(
     importpath = "k8s.io/test-infra/prow/spyglass/lenses/metadata",
     visibility = ["//visibility:public"],
     deps = [
+        "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/crier/reporters/gcs/kubernetes:go_default_library",
         "//prow/pod-utils/gcs:go_default_library",
         "//prow/spyglass/lenses:go_default_library",
@@ -70,6 +71,7 @@ go_test(
     srcs = ["lens_test.go"],
     embed = [":go_default_library"],
     deps = [
+        "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/crier/reporters/gcs/kubernetes:go_default_library",
         "@com_github_google_go_cmp//cmp:go_default_library",
         "@io_k8s_api//core/v1:go_default_library",
