@@ -153,7 +153,7 @@ periodics:
     testgrid-num-failures-to-alert: "2"
 - name: ci-cluster-api-provider-aws-make-conformance-master
   interval: 3h
-  max_concurrency: 5
+  max_concurrency: 1
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -206,7 +206,7 @@ periodics:
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
 - name: ci-cluster-api-provider-aws-make-conformance-stable
   interval: 3h
-  max_concurrency: 5
+  max_concurrency: 1
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -260,7 +260,7 @@ periodics:
     testgrid-num-columns-recent: '20'
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
 - name: ci-cluster-api-provider-aws-make-conformance-stable-k8s-ci-artifacts
-  max_concurrency: 5
+  max_concurrency: 1
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -322,7 +322,7 @@ postsubmits:
     decorate: true
     decoration_config:
       timeout: 4h
-    max_concurrency: 5
+    max_concurrency: 1
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -356,7 +356,7 @@ postsubmits:
     decorate: true
     decoration_config:
       timeout: 3h
-    max_concurrency: 5
+    max_concurrency: 1
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
