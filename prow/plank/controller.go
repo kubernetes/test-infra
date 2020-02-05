@@ -374,7 +374,7 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]corev1.Pod
 			}
 			pj.Status.State = prowapi.ErrorState
 			pj.SetComplete()
-			pj.Status.Description = "Job cannot be processed."
+			pj.Status.Description = fmt.Sprintf("Job cannot be processed: %v", err)
 			c.log.WithFields(pjutil.ProwJobFields(&pj)).WithError(err).Warning("Unprocessable pod.")
 		} else {
 			pj.Status.BuildID = id
@@ -519,7 +519,7 @@ func (c *Controller) syncTriggeredJob(pj prowapi.ProwJob, pm map[string]corev1.P
 			}
 			pj.Status.State = prowapi.ErrorState
 			pj.SetComplete()
-			pj.Status.Description = "Job cannot be processed."
+			pj.Status.Description = fmt.Sprintf("Job cannot be processed: %v", err)
 			logrus.WithField("job", pj.Spec.Job).WithError(err).Warning("Unprocessable pod.")
 		}
 	} else {
