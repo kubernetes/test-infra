@@ -25,10 +25,10 @@ import (
 	"testing"
 	"time"
 
-	"k8s.io/test-infra/kubetest/util"
+	"k8s.io/test-infra/kubetest/test"
 )
 
-var suite util.TestSuite
+var suite test.TestSuite
 
 func TestXMLWrap(t *testing.T) {
 	cases := []struct {

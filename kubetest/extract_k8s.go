@@ -174,7 +174,7 @@ func ensureKube() (string, error) {
 		return "", err
 	}
 	defer f.Close()
-	if err := httpRead("https://get.k8s.io", f); err != nil {
+	if err := util.HttpRead("https://get.k8s.io", f); err != nil {
 		return "", err
 	}
 	i, err = f.Stat()
@@ -198,7 +198,7 @@ func getNamedBinaries(url, version, tarball string, retry int) error {
 
 	for i := 0; i < retry; i++ {
 		log.Printf("downloading %v from %v", tarball, full)
-		if err := httpRead(full, f); err == nil {
+		if err := util.HttpRead(full, f); err == nil {
 			break
 		}
 		err = fmt.Errorf("url=%s version=%s failed get %v: %v", url, version, tarball, err)
@@ -370,7 +370,7 @@ func setupGciVars(family string) (string, error) {
 	}
 	if family == "gci-canary-test" {
 		var b bytes.Buffer
-		if err := httpRead("https://api.github.com/repos/docker/docker/releases", &b); err != nil {
+		if err := util.HttpRead("https://api.github.com/repos/docker/docker/releases", &b); err != nil {
 			return "", err
 		}
 		var v []map[string]interface{}

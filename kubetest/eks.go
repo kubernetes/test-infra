@@ -313,7 +313,7 @@ func (dp *eksDeployer) fetchAWSK8sTester() error {
 	if err != nil {
 		return err
 	}
-	if err = httpRead(awsK8sTesterDownloadURL, f); err != nil {
+	if err = util.HttpRead(awsK8sTesterDownloadURL, f); err != nil {
 		return err
 	}
 	if err = f.Close(); err != nil {

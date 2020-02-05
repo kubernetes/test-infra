@@ -31,10 +31,10 @@ import (
 	"syscall"
 	"time"
 
-	"k8s.io/test-infra/kubetest/util"
+	"k8s.io/test-infra/kubetest/test"
 )
 
-// Control can commands until a timeout is reached, at which point it signals and then terminates them.
+// Control executes a process with a given timeout. If exceeded, Control will signal/terminate the process.
 type Control struct {
 	termLock    *sync.RWMutex
 	terminated  bool
@@ -48,7 +48,7 @@ type Control struct {
 	verbose bool
 }
 
-// NewControl constructs a Control with the specified arguments, instiating other necessary fields.
+// NewControl returns a Control struct used to interact with system level processes.
 func NewControl(timeout time.Duration, interrupt, terminate *time.Timer, verbose bool) *Control {
 	return &Control{
 		termLock:    new(sync.RWMutex),
@@ -62,10 +62,10 @@ func NewControl(timeout time.Duration, interrupt, terminate *time.Timer, verbose
 	}
 }
 
-// WriteXML creates a util.TestCase{} junit_runner.xml file inside the dump dir.
-func (c *Control) WriteXML(suite *util.TestSuite, dump string, start time.Time) {
+// WriteXML creates a TestCase{} junit_runner.xml file inside the dump dir.
+func (c *Control) WriteXML(suite *test.TestSuite, dump string, start time.Time) {
 	// Note whether timeout occurred
-	tc := util.TestCase{
+	tc := test.TestCase{
 		Name:      "Timeout",
 		ClassName: "e2e.go",
 		Time:      c.Timeout.Seconds(),
@@ -97,12 +97,12 @@ func (c *Control) WriteXML(suite *util.TestSuite, dump string, start time.Time) 
 }
 
 // XMLWrap returns f(), adding junit xml testcase result for name
-func (c *Control) XMLWrap(suite *util.TestSuite, name string, f func() error) error {
+func (c *Control) XMLWrap(suite *test.TestSuite, name string, f func() error) error {
 	alreadyInterrupted := c.isInterrupted()
 	start := time.Now()
 	err := f()
 	duration := time.Since(start)
-	tc := util.TestCase{
+	tc := test.TestCase{
 		Name:      name,
 		ClassName: "e2e.go",
 		Time:      duration.Seconds(),

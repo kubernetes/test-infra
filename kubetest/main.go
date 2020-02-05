@@ -41,6 +41,7 @@ import (
 	"k8s.io/test-infra/kubetest/kind"
 	"k8s.io/test-infra/kubetest/kubeadmdind"
 	"k8s.io/test-infra/kubetest/process"
+	"k8s.io/test-infra/kubetest/test"
 	"k8s.io/test-infra/kubetest/util"
 )
 
@@ -198,7 +199,7 @@ func defineFlags() *options {
 	return &o
 }
 
-var suite util.TestSuite
+var suite test.TestSuite
 
 func validWorkingDirectory() error {
 	cwd, err := os.Getwd()
@@ -1015,5 +1016,5 @@ func publish(pub string) error {
 		return err
 	}
 	log.Printf("Set %s version to %s", pub, string(v))
-	return gcsWrite(pub, v)
+	return util.GcsWrite(pub, v, control)
 }

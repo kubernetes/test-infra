@@ -282,7 +282,7 @@ func newKops(provider, gcpProject, cluster string) (*kops, error) {
 		}
 
 		var b bytes.Buffer
-		if err := httpRead(*kopsVersion, &b); err != nil {
+		if err := util.HttpRead(*kopsVersion, &b); err != nil {
 			return nil, err
 		}
 		latest := strings.TrimSpace(b.String())
@@ -315,7 +315,7 @@ func newKops(provider, gcpProject, cluster string) (*kops, error) {
 			return nil, fmt.Errorf("error creating file %q: %v", kopsBin, err)
 		}
 		defer f.Close()
-		if err := httpRead(kopsBinURL, f); err != nil {
+		if err := util.HttpRead(kopsBinURL, f); err != nil {
 			return nil, err
 		}
 		if err := util.EnsureExecutable(kopsBin); err != nil {
@@ -691,7 +691,7 @@ func (k kops) Publish() error {
 
 	return control.XMLWrap(&suite, "Publish kops version", func() error {
 		log.Printf("Set %s version to %s", k.kopsPublish, k.kopsVersion)
-		return gcsWrite(k.kopsPublish, []byte(k.kopsVersion))
+		return util.GcsWrite(k.kopsPublish, []byte(k.kopsVersion), control)
 	})
 }
 

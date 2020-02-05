@@ -577,7 +577,7 @@ func (c *Cluster) getAKSEngine(retry int) error {
 
 	for i := 0; i < retry; i++ {
 		log.Printf("downloading %v from %v.", downloadPath, *aksEngineURL)
-		if err := httpRead(*aksEngineURL, f); err == nil {
+		if err := util.HttpRead(*aksEngineURL, f); err == nil {
 			break
 		}
 		err = fmt.Errorf("url=%s failed get %v: %v.", *aksEngineURL, downloadPath, err)
@@ -876,7 +876,7 @@ func downloadFromURL(url string, destination string, retry int) (string, error) 
 
 	for i := 0; i < retry; i++ {
 		log.Printf("downloading %v from %v", destination, url)
-		if err := httpRead(url, f); err == nil {
+		if err := util.HttpRead(url, f); err == nil {
 			break
 		}
 		err = fmt.Errorf("url=%s failed get %v: %v", url, destination, err)
@@ -900,7 +900,7 @@ func getZipBuildScript(buildScriptURL string, retry int) (string, error) {
 
 	for i := 0; i < retry; i++ {
 		log.Printf("downloading %v from %v.", downloadPath, buildScriptURL)
-		if err := httpRead(buildScriptURL, f); err == nil {
+		if err := util.HttpRead(buildScriptURL, f); err == nil {
 			break
 		}
 		err = fmt.Errorf("url=%s failed get %v: %v.", buildScriptURL, downloadPath, err)
@@ -1121,7 +1121,7 @@ func (c *Cluster) TestSetup() error {
 	defer f.Close()
 
 	log.Printf("downloading %v from %v.", downloadPath, downloadUrl)
-	err = httpRead(downloadUrl, f)
+	err = util.HttpRead(downloadUrl, f)
 
 	if err != nil {
 		return fmt.Errorf("url=%s failed get %v: %v.", downloadUrl, downloadPath, err)

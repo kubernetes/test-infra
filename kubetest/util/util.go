@@ -20,12 +20,18 @@ import (
 	"encoding/json"
 	"fmt"
 	"go/build"
+	"io"
+	"io/ioutil"
 	"log"
+	"net/http"
 	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
+
+	"k8s.io/test-infra/kubetest/process"
 )
 
 // K8s returns $GOPATH/src/k8s.io/...
@@ -274,4 +280,108 @@ func FlushMem() {
 	if err != nil {
 		log.Printf("flushMem error (page cache): %v", err)
 	}
+}
+
+var httpTransport *http.Transport
+
+func init() {
+	httpTransport = new(http.Transport)
+	httpTransport.Proxy = http.ProxyFromEnvironment
+	httpTransport.RegisterProtocol("file", http.NewFileTransport(http.Dir("/")))
+}
+
+// Essentially curl url | writer
+func HttpRead(url string, writer io.Writer) error {
+	log.Printf("curl %s", url)
+	c := &http.Client{Transport: httpTransport}
+	r, err := c.Get(url)
+	if err != nil {
+		return err
+	}
+	defer r.Body.Close()
+	if r.StatusCode >= 400 {
+		return fmt.Errorf("%v returned %d", url, r.StatusCode)
+	}
+	_, err = io.Copy(writer, r.Body)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type instanceGroup struct {
+	Name              string `json:"name"`
+	CreationTimestamp string `json:"creationTimestamp"`
+}
+
+// getLatestClusterUpTime returns latest created instanceGroup timestamp from gcloud parsing results
+func GetLatestClusterUpTime(gcloudJSON string) (time.Time, error) {
+	igs := []instanceGroup{}
+	if err := json.Unmarshal([]byte(gcloudJSON), &igs); err != nil {
+		return time.Time{}, fmt.Errorf("error when unmarshal json: %v", err)
+	}
+
+	latest := time.Time{}
+
+	for _, ig := range igs {
+		created, err := time.Parse(time.RFC3339, ig.CreationTimestamp)
+		if err != nil {
+			return time.Time{}, fmt.Errorf("error when parse time from %s: %v", ig.CreationTimestamp, err)
+		}
+
+		if created.After(latest) {
+			latest = created
+		}
+	}
+
+	// this returns time.Time{} if no ig exists, which will always force a new cluster
+	return latest, nil
+}
+
+// gcsWrite uploads contents to the dest location in GCS.
+// It currently shells out to gsutil, but this could change in future.
+func GcsWrite(dest string, contents []byte, ctl *process.Control) error {
+	f, err := ioutil.TempFile("", "")
+	if err != nil {
+		return fmt.Errorf("error creating temp file: %v", err)
+	}
+
+	defer func() {
+		if err := os.Remove(f.Name()); err != nil {
+			log.Printf("error removing temp file: %v", err)
+		}
+	}()
+
+	if _, err := f.Write(contents); err != nil {
+		return fmt.Errorf("error writing temp file: %v", err)
+	}
+
+	if err := f.Close(); err != nil {
+		return fmt.Errorf("error closing temp file: %v", err)
+	}
+
+	return ctl.FinishRunning(exec.Command("gsutil", "cp", f.Name(), dest))
+}
+
+func SetKubeShhBastionEnv(gcpProject, gcpZone, sshProxyInstanceName string, ctl *process.Control) error {
+	value, err := ctl.Output(exec.Command(
+		"gcloud", "compute", "instances", "describe",
+		sshProxyInstanceName,
+		"--project="+gcpProject,
+		"--zone="+gcpZone,
+		"--format=get(networkInterfaces[0].accessConfigs[0].natIP)"))
+	if err != nil {
+		return fmt.Errorf("failed to get the external IP address of the '%s' instance: %v",
+			sshProxyInstanceName, err)
+	}
+	address := strings.TrimSpace(string(value))
+	if address == "" {
+		return fmt.Errorf("instance '%s' doesn't have an external IP address", sshProxyInstanceName)
+	}
+	address += ":22"
+	if err := os.Setenv("KUBE_SSH_BASTION", address); err != nil {
+		return err
+	}
+	log.Printf("KUBE_SSH_BASTION set to: %v\n", address)
+	return nil
 }

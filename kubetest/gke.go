@@ -474,7 +474,7 @@ func (g *gkeDeployer) TestSetup() error {
 		return err
 	}
 	if g.sshProxyInstanceName != "" {
-		if err := setKubeShhBastionEnv(g.project, g.zone, g.sshProxyInstanceName); err != nil {
+		if err := util.SetKubeShhBastionEnv(g.project, g.zone, g.sshProxyInstanceName, control); err != nil {
 			return err
 		}
 	}
@@ -805,7 +805,7 @@ func (g *gkeDeployer) GetClusterCreated(gcpProject string) (time.Time, error) {
 		return time.Time{}, fmt.Errorf("list instance-group failed : %v", err)
 	}
 
-	created, err := getLatestClusterUpTime(string(res))
+	created, err := util.GetLatestClusterUpTime(string(res))
 	if err != nil {
 		return time.Time{}, fmt.Errorf("parse time failed : got gcloud res %s, err %v", string(res), err)
 	}
@@ -813,3 +813,115 @@ func (g *gkeDeployer) GetClusterCreated(gcpProject string) (time.Time, error) {
 }
 
 func (g *gkeDeployer) KubectlCommand() (*exec.Cmd, error) { return nil, nil }
+
+// (only works on gke)
+// getLatestGKEVersion will return newest validMasterVersions.
+// Pass in releasePrefix to get latest valid version of a specific release.
+// Empty releasePrefix means use latest across all available releases.
+func getLatestGKEVersion(project, zone, region, releasePrefix string) (string, error) {
+	cmd := []string{
+		"container",
+		"get-server-config",
+		fmt.Sprintf("--project=%v", project),
+		"--format=value(validMasterVersions)",
+	}
+
+	// --gkeCommandGroup is from gke.go
+	if *gkeCommandGroup != "" {
+		cmd = append([]string{*gkeCommandGroup}, cmd...)
+	}
+
+	// zone can be empty for regional cluster
+	if zone != "" {
+		cmd = append(cmd, fmt.Sprintf("--zone=%v", zone))
+	} else if region != "" {
+		cmd = append(cmd, fmt.Sprintf("--region=%v", region))
+	}
+
+	res, err := control.Output(exec.Command("gcloud", cmd...))
+	if err != nil {
+		return "", err
+	}
+	versions := strings.Split(strings.TrimSpace(string(res)), ";")
+	latestValid := ""
+	for _, version := range versions {
+		if strings.HasPrefix(version, releasePrefix) {
+			latestValid = version
+			break
+		}
+	}
+	if latestValid == "" {
+		return "", fmt.Errorf("cannot find valid gke release %s version from: %s", releasePrefix, string(res))
+	}
+	return "v" + latestValid, nil
+}
+
+// (only works on gke)
+// getChannelGKEVersion will return master version from a GKE release channel.
+func getChannelGKEVersion(project, zone, region, gkeChannel string) (string, error) {
+	cmd := []string{
+		"container",
+		"get-server-config",
+		fmt.Sprintf("--project=%v", project),
+		"--format=json(channels)",
+	}
+
+	/*
+		sample output:
+		{
+		  "channels": [
+		    {
+		      "channel": "RAPID",
+		      "defaultVersion": "1.14.3-gke.9"
+		    },
+		    {
+		      "channel": "REGULAR",
+		      "defaultVersion": "1.12.8-gke.10"
+		    },
+		    {
+		      "channel": "STABLE",
+		      "defaultVersion": "1.12.8-gke.10"
+		    }
+		  ]
+		}
+	*/
+
+	type channel struct {
+		Channel        string `json:"channel"`
+		DefaultVersion string `json:"defaultVersion"`
+	}
+
+	type channels struct {
+		Channels []channel `json:"channels"`
+	}
+
+	// --gkeCommandGroup is from gke.go
+	if *gkeCommandGroup != "" {
+		cmd = append([]string{*gkeCommandGroup}, cmd...)
+	}
+
+	// zone can be empty for regional cluster
+	if zone != "" {
+		cmd = append(cmd, fmt.Sprintf("--zone=%v", zone))
+	} else if region != "" {
+		cmd = append(cmd, fmt.Sprintf("--region=%v", region))
+	}
+
+	res, err := control.Output(exec.Command("gcloud", cmd...))
+	if err != nil {
+		return "", err
+	}
+
+	var c channels
+	if err := json.Unmarshal(res, &c); err != nil {
+		return "", err
+	}
+
+	for _, channel := range c.Channels {
+		if strings.EqualFold(channel.Channel, gkeChannel) {
+			return "v" + channel.DefaultVersion, nil
+		}
+	}
+
+	return "", fmt.Errorf("cannot find a valid version for channel %s", gkeChannel)
+}

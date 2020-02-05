@@ -301,7 +301,7 @@ func run(deploy deployer, o options) error {
 				return err
 			}
 			log.Printf("Set %s version to %s", o.publish, string(v))
-			return gcsWrite(o.publish, v)
+			return util.GcsWrite(o.publish, v, control)
 		}))
 	}
 

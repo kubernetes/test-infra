@@ -22,6 +22,8 @@ import (
 	"os/exec"
 	"strconv"
 	"time"
+
+	"k8s.io/test-infra/kubetest/util"
 )
 
 type bashDeployer struct {
@@ -62,7 +64,7 @@ func (b *bashDeployer) DumpClusterLogs(localPath, gcsPath string) error {
 
 func (b *bashDeployer) TestSetup() error {
 	if b.provider == "gce" && b.gcpSSHProxyInstanceName != "" {
-		if err := setKubeShhBastionEnv(b.gcpProject, b.gcpZone, b.gcpSSHProxyInstanceName); err != nil {
+		if err := util.SetKubeShhBastionEnv(b.gcpProject, b.gcpZone, b.gcpSSHProxyInstanceName, control); err != nil {
 			return err
 		}
 	}
@@ -85,7 +87,7 @@ func (b *bashDeployer) GetClusterCreated(gcpProject string) (time.Time, error) {
 		return time.Time{}, fmt.Errorf("list instance-group failed : %v", err)
 	}
 
-	created, err := getLatestClusterUpTime(string(res))
+	created, err := util.GetLatestClusterUpTime(string(res))
 	if err != nil {
 		return time.Time{}, fmt.Errorf("parse time failed : got gcloud res %s, err %v", string(res), err)
 	}
