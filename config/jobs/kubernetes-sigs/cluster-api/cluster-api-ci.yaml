@@ -133,6 +133,9 @@ postsubmits:
           args:
             - runner.sh
             - "./scripts/ci-capd-e2e.sh"
+          # we need privileged mode in order to do docker in docker
+          securityContext:
+            privileged: true
           resources:
             requests:
               cpu: 4
