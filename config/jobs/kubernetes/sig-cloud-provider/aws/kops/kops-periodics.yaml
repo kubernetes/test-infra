@@ -15,11 +15,12 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --aws
       - --cluster=e2e-kops-aws.test-cncf-aws.k8s.io
+      - --deployment=kops
       - --env=KOPS_PUBLISH_GREEN_PATH=gs://kops-ci/bin/latest-ci-green.txt
       - --extract=ci/latest
       - --ginkgo-parallel
+      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
       - --timeout=120m
