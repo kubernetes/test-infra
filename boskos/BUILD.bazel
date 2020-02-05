@@ -43,6 +43,7 @@ filegroup(
         "//boskos/crds:all-srcs",
         "//boskos/handlers:all-srcs",
         "//boskos/mason:all-srcs",
+        "//boskos/metrics:all-srcs",
         "//boskos/ranch:all-srcs",
         "//boskos/storage:all-srcs",
     ],
