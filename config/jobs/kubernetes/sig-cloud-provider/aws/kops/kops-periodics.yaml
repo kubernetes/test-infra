@@ -59,7 +59,7 @@ periodics:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-aws-channelalpha
 
-- interval: 1h
+- interval: 30m
   name: ci-kubernetes-e2e-kops-aws-ena-nvme
   labels:
     preset-service-account: "true"
@@ -80,6 +80,7 @@ periodics:
       - --extract=ci/latest
       - --ginkgo-parallel
       - --kops-args=--node-size=m5.large --master-size=m5.large --channel=alpha --image kope.io/k8s-1.15-debian-stretch-amd64-hvm-ebs-2019-09-26
+      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --kops-zones=us-west-2a
       - --provider=aws
