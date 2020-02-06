@@ -645,6 +645,7 @@ func (c *client) requestRetry(method, path, accept string, body interface{}) (*h
 				// retry more than a couple times in this case, because a 404 may
 				// be caused by a bad API call and we'll just burn through API
 				// tokens.
+				c.logger.WithField("backoff", backoff.String()).Debug("Retrying 404")
 				c.time.Sleep(backoff)
 				backoff *= 2
 			} else if resp.StatusCode == 403 {
@@ -657,6 +658,7 @@ func (c *client) requestRetry(method, path, accept string, body interface{}) (*h
 						// sleep. If it's going to take too long, then break.
 						sleepTime := c.time.Until(time.Unix(int64(t), 0)) + time.Second
 						if sleepTime < c.maxSleepTime {
+							c.logger.WithField("backoff", sleepTime.String()).Debug("Retrying after token budget reset")
 							c.time.Sleep(sleepTime)
 						} else {
 							err = fmt.Errorf("sleep time for token reset exceeds max sleep time (%v > %v)", sleepTime, c.maxSleepTime)
@@ -677,6 +679,7 @@ func (c *client) requestRetry(method, path, accept string, body interface{}) (*h
 						// sleep. If it's going to take too long, then break.
 						sleepTime := time.Duration(t+1) * time.Second
 						if sleepTime < c.maxSleepTime {
+							c.logger.WithField("backoff", sleepTime.String()).Debug("Retrying after abuse ratelimit reset")
 							c.time.Sleep(sleepTime)
 						} else {
 							err = fmt.Errorf("sleep time for abuse rate limit exceeds max sleep time (%v > %v)", sleepTime, c.maxSleepTime)
@@ -702,12 +705,19 @@ func (c *client) requestRetry(method, path, accept string, body interface{}) (*h
 				break
 			} else {
 				// Retry 500 after a break.
+				c.logger.WithField("backoff", backoff.String()).Debug("Retrying 5XX")
 				c.time.Sleep(backoff)
 				backoff *= 2
 			}
 		} else {
 			// Connection problem. Try a different host.
+			oldHostIndex := hostIndex
 			hostIndex = (hostIndex + 1) % len(c.bases)
+			c.logger.WithFields(logrus.Fields{
+				"backoff":      backoff.String(),
+				"old-endpoint": c.bases[oldHostIndex],
+				"new-endpoint": c.bases[hostIndex],
+			}).Debug("Retrying request due to connection problem")
 			c.time.Sleep(backoff)
 			backoff *= 2
 		}

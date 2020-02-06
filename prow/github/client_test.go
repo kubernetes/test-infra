@@ -33,6 +33,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/utils/diff"
 
@@ -56,7 +57,10 @@ func getClient(url string) *client {
 		return []byte("")
 	}
 
+	logger := logrus.New()
+	logger.SetLevel(logrus.DebugLevel)
 	return &client{
+		logger: logrus.NewEntry(logger),
 		delegate: &delegate{
 			time:     &testTime{},
 			getToken: getToken,
