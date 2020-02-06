@@ -29,7 +29,7 @@ periodics:
   interval: 30m
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/triage:latest
+    - image: gcr.io/k8s-testimages/triage:v20191223-1c70f8f
       imagePullPolicy: Always
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
