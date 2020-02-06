@@ -905,13 +905,13 @@ func TestMakeResources(t *testing.T) {
 				pj.Spec.PipelineRunSpec.Resources = []pipelinev1alpha1.PipelineResourceBinding{
 					{
 						Name:        "implicit git resource",
-						ResourceRef: pipelinev1alpha1.PipelineResourceRef{Name: config.ProwImplicitGitResource},
+						ResourceRef: &pipelinev1alpha1.PipelineResourceRef{Name: config.ProwImplicitGitResource},
 					},
 				}
 				return pj
 			},
 			pipelineRun: func(pr pipelinev1alpha1.PipelineRun) pipelinev1alpha1.PipelineRun {
-				pr.Spec.Resources[0].ResourceRef = pipelinev1alpha1.PipelineResourceRef{
+				pr.Spec.Resources[0].ResourceRef = &pipelinev1alpha1.PipelineResourceRef{
 					Name: pr.Name + "-implicit-ref",
 				}
 				pr.Spec.Params[4].Value = pipelinev1alpha1.ArrayOrString{
@@ -984,20 +984,20 @@ func TestMakeResources(t *testing.T) {
 				pj.Spec.PipelineRunSpec.Resources = []pipelinev1alpha1.PipelineResourceBinding{
 					{
 						Name:        "git resource A",
-						ResourceRef: pipelinev1alpha1.PipelineResourceRef{Name: "PROW_EXTRA_GIT_REF_0"},
+						ResourceRef: &pipelinev1alpha1.PipelineResourceRef{Name: "PROW_EXTRA_GIT_REF_0"},
 					},
 					{
 						Name:        "git resource B",
-						ResourceRef: pipelinev1alpha1.PipelineResourceRef{Name: "PROW_EXTRA_GIT_REF_1"},
+						ResourceRef: &pipelinev1alpha1.PipelineResourceRef{Name: "PROW_EXTRA_GIT_REF_1"},
 					},
 				}
 				return pj
 			},
 			pipelineRun: func(pr pipelinev1alpha1.PipelineRun) pipelinev1alpha1.PipelineRun {
-				pr.Spec.Resources[0].ResourceRef = pipelinev1alpha1.PipelineResourceRef{
+				pr.Spec.Resources[0].ResourceRef = &pipelinev1alpha1.PipelineResourceRef{
 					Name: pr.Name + "-extra-ref-0",
 				}
-				pr.Spec.Resources[1].ResourceRef = pipelinev1alpha1.PipelineResourceRef{
+				pr.Spec.Resources[1].ResourceRef = &pipelinev1alpha1.PipelineResourceRef{
 					Name: pr.Name + "-extra-ref-1",
 				}
 				return pr
@@ -1015,11 +1015,11 @@ func TestMakeResources(t *testing.T) {
 				pj.Spec.PipelineRunSpec.Resources = []pipelinev1alpha1.PipelineResourceBinding{
 					{
 						Name:        "git resource A",
-						ResourceRef: pipelinev1alpha1.PipelineResourceRef{Name: "PROW_EXTRA_GIT_REF_LOL_JK"},
+						ResourceRef: &pipelinev1alpha1.PipelineResourceRef{Name: "PROW_EXTRA_GIT_REF_LOL_JK"},
 					},
 					{
 						Name:        "git resource B",
-						ResourceRef: pipelinev1alpha1.PipelineResourceRef{Name: "some-other-ref"},
+						ResourceRef: &pipelinev1alpha1.PipelineResourceRef{Name: "some-other-ref"},
 					},
 				}
 				return pj
@@ -1231,7 +1231,9 @@ func TestProwJobStatus(t *testing.T) {
 		{
 			name: "unfinished job returns running",
 			input: pipelinev1alpha1.PipelineRunStatus{
-				StartTime: now.DeepCopy(),
+				PipelineRunStatusFields: pipelinev1alpha1.PipelineRunStatusFields{
+					StartTime: now.DeepCopy(),
+				},
 				Status: duckv1beta1.Status{
 					Conditions: []apis.Condition{
 						{
@@ -1249,8 +1251,10 @@ func TestProwJobStatus(t *testing.T) {
 		{
 			name: "pipelines with unknown success status are still running",
 			input: pipelinev1alpha1.PipelineRunStatus{
-				StartTime:      now.DeepCopy(),
-				CompletionTime: later.DeepCopy(),
+				PipelineRunStatusFields: pipelinev1alpha1.PipelineRunStatusFields{
+					StartTime:      now.DeepCopy(),
+					CompletionTime: later.DeepCopy(),
+				},
 				Status: duckv1beta1.Status{
 					Conditions: []apis.Condition{
 						{
@@ -1268,8 +1272,10 @@ func TestProwJobStatus(t *testing.T) {
 		{
 			name: "completed pipelines without a succeeded condition end in error",
 			input: pipelinev1alpha1.PipelineRunStatus{
-				StartTime:      now.DeepCopy(),
-				CompletionTime: later.DeepCopy(),
+				PipelineRunStatusFields: pipelinev1alpha1.PipelineRunStatusFields{
+					StartTime:      now.DeepCopy(),
+					CompletionTime: later.DeepCopy(),
+				},
 			},
 			state: prowjobv1.ErrorState,
 			desc:  descMissingCondition,
