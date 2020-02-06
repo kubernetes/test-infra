@@ -14,7 +14,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200205-602500d-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200206-f88edef-master
       command:
       - runner.sh
       args:
