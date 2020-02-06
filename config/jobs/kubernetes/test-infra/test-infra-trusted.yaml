@@ -1122,7 +1122,7 @@ periodics:
   spec:
     containers:
     - name: branchprotector
-      image: gcr.io/k8s-prow/branchprotector:v20200205-e3ca7a9f2
+      image: gcr.io/k8s-prow/branchprotector:v20200206-93acd944c
       command:
       - /app/prow/cmd/branchprotector/app.binary
       args:
@@ -1156,7 +1156,7 @@ periodics:
   spec:
     containers:
     - name: label-sync
-      image: gcr.io/k8s-prow/label_sync:v20200205-e3ca7a9f2
+      image: gcr.io/k8s-prow/label_sync:v20200206-93acd944c
       command:
       - /app/label_sync/app.binary
       args:
@@ -1245,7 +1245,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200205-602500d-1.17
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200206-f88edef-1.17
       command:
       - infra/gcp/backup_tools/backup.sh
       env:
