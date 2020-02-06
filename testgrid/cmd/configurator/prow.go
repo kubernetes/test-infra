@@ -19,6 +19,7 @@ package main
 import (
 	"fmt"
 	"path"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -173,32 +174,85 @@ func applySingleProwjobAnnotations(c *configpb.Configuration, pc *prowConfig.Con
 	return nil
 }
 
+// sortPeriodics sorts all periodics by name (ascending).
+func sortPeriodics(per []prowConfig.Periodic) {
+	sort.Slice(per, func(a, b int) bool {
+		return per[a].Name < per[b].Name
+	})
+}
+
+// sortPostsubmits sorts all postsubmits by name and returns a sorted list of org/repos (ascending).
+func sortPostsubmits(post map[string][]prowConfig.Postsubmit) []string {
+	postRepos := make([]string, 0, len(post))
+
+	for k := range post {
+		postRepos = append(postRepos, k)
+	}
+
+	sort.Strings(postRepos)
+
+	for _, orgrepo := range postRepos {
+		sort.Slice(post[orgrepo], func(a, b int) bool {
+			return post[orgrepo][a].Name < post[orgrepo][b].Name
+		})
+	}
+
+	return postRepos
+}
+
+// sortPresubmits sorts all presubmits by name and returns a sorted list of org/repos (ascending).
+func sortPresubmits(pre map[string][]prowConfig.Presubmit) []string {
+	preRepos := make([]string, 0, len(pre))
+
+	for k := range pre {
+		preRepos = append(preRepos, k)
+	}
+
+	sort.Strings(preRepos)
+
+	for _, orgrepo := range preRepos {
+		sort.Slice(pre[orgrepo], func(a, b int) bool {
+			return pre[orgrepo][a].Name < pre[orgrepo][b].Name
+		})
+	}
+
+	return preRepos
+}
+
 func applyProwjobAnnotations(c *configpb.Configuration, reconcile *yamlcfg.DefaultConfiguration, prowConfigAgent *prowConfig.Agent) error {
 	pc := prowConfigAgent.Config()
 	if pc == nil {
 		return nil
 	}
 	jobs := prowConfigAgent.Config().JobConfig
-	for _, j := range jobs.AllPeriodics() {
+
+	per := jobs.AllPeriodics()
+	sortPeriodics(per)
+	for _, j := range per {
 		if err := applySingleProwjobAnnotations(c, pc, j.JobBase, prowapi.PeriodicJob, "", reconcile); err != nil {
 			return err
 		}
 	}
 
-	for repo, js := range jobs.PostsubmitsStatic {
-		for _, j := range js {
-			if err := applySingleProwjobAnnotations(c, pc, j.JobBase, prowapi.PostsubmitJob, repo, reconcile); err != nil {
+	post := jobs.PostsubmitsStatic
+	postReposSorted := sortPostsubmits(post)
+	for _, orgrepo := range postReposSorted {
+		for _, j := range post[orgrepo] {
+			if err := applySingleProwjobAnnotations(c, pc, j.JobBase, prowapi.PostsubmitJob, orgrepo, reconcile); err != nil {
 				return err
 			}
 		}
 	}
 
-	for repo, js := range jobs.PresubmitsStatic {
-		for _, j := range js {
-			if err := applySingleProwjobAnnotations(c, pc, j.JobBase, prowapi.PresubmitJob, repo, reconcile); err != nil {
+	pre := jobs.PresubmitsStatic
+	preReposSorted := sortPresubmits(pre)
+	for _, orgrepo := range preReposSorted {
+		for _, j := range pre[orgrepo] {
+			if err := applySingleProwjobAnnotations(c, pc, j.JobBase, prowapi.PresubmitJob, orgrepo, reconcile); err != nil {
 				return err
 			}
 		}
 	}
+
 	return nil
 }

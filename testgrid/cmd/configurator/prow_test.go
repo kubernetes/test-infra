@@ -571,6 +571,356 @@ func Test_applySingleProwjobAnnotation_WithDefaults(t *testing.T) {
 
 }
 
+func TestSortPresubmitRepoOrder(t *testing.T) {
+	tests := []struct {
+		name          string
+		presubmits    map[string][]prowConfig.Presubmit
+		expectedRepos []string
+	}{
+		{
+			name:          "empty list of presubmits",
+			presubmits:    map[string][]prowConfig.Presubmit{},
+			expectedRepos: []string{},
+		},
+		{
+			name: "unordered list of presubmits",
+			presubmits: map[string][]prowConfig.Presubmit{
+				"istio/proxy": {
+					prowConfig.Presubmit{
+						JobBase: prowConfig.JobBase{
+							Name: "lint_release-1.5",
+						},
+					},
+					prowConfig.Presubmit{
+						JobBase: prowConfig.JobBase{
+							Name: "gen_check_master",
+						},
+					},
+					prowConfig.Presubmit{
+						JobBase: prowConfig.JobBase{
+							Name: "lint_master",
+						},
+					},
+				},
+				"kubernetes/test-infra": {
+					prowConfig.Presubmit{
+						JobBase: prowConfig.JobBase{
+							Name: "pull-test-bazel",
+						},
+					},
+				},
+				"helm/helm": {
+					prowConfig.Presubmit{
+						JobBase: prowConfig.JobBase{
+							Name: "pull-test-go",
+						},
+					},
+				},
+			},
+			expectedRepos: []string{"helm/helm", "istio/proxy", "kubernetes/test-infra"},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			actualRepos := sortPresubmits(test.presubmits)
+
+			if !reflect.DeepEqual(test.expectedRepos, actualRepos) {
+				t.Fatalf("Presubmit repos do not match; actual: %v\n expected %v\n", test.expectedRepos, actualRepos)
+			}
+		})
+	}
+}
+
+func TestSortPostsubmitRepoOrder(t *testing.T) {
+	tests := []struct {
+		name          string
+		postsubmits   map[string][]prowConfig.Postsubmit
+		expectedRepos []string
+	}{
+		{
+			name:          "empty list of postsubmits",
+			postsubmits:   map[string][]prowConfig.Postsubmit{},
+			expectedRepos: []string{},
+		},
+		{
+			name: "unordered list of postsubmits",
+			postsubmits: map[string][]prowConfig.Postsubmit{
+				"GoogleCloudPlatform/oss-test-infra": {
+					prowConfig.Postsubmit{
+						JobBase: prowConfig.JobBase{
+							Name: "pull-test-infra-go-test",
+						},
+					},
+				},
+				"kubernetes/kubernetes": {
+					prowConfig.Postsubmit{
+						JobBase: prowConfig.JobBase{
+							Name: "ci-kubernetes-e2e",
+						},
+					},
+					prowConfig.Postsubmit{
+						JobBase: prowConfig.JobBase{
+							Name: "ci-kubernetes-unit",
+						},
+					},
+				},
+				"containerd/cri": {
+					prowConfig.Postsubmit{
+						JobBase: prowConfig.JobBase{
+							Name: "pull-cri-containerd-build",
+						},
+					},
+				},
+			},
+			expectedRepos: []string{"GoogleCloudPlatform/oss-test-infra", "containerd/cri", "kubernetes/kubernetes"},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			actualRepos := sortPostsubmits(test.postsubmits)
+
+			if !reflect.DeepEqual(test.expectedRepos, actualRepos) {
+				t.Fatalf("Postsubmit repos do not match; actual: %v\n expected %v\n", test.expectedRepos, actualRepos)
+			}
+		})
+	}
+}
+
+func TestSortPeriodicJobOrder(t *testing.T) {
+	tests := []struct {
+		name              string
+		periodics         []prowConfig.Periodic
+		expectedPeriodics []prowConfig.Periodic
+	}{
+		{
+			name:              "empty list of periodics",
+			periodics:         []prowConfig.Periodic{},
+			expectedPeriodics: []prowConfig.Periodic{},
+		},
+		{
+			name: "unordered list of periodics",
+			periodics: []prowConfig.Periodic{
+				{
+					JobBase: prowConfig.JobBase{
+						Name: "ESPv2-continuous-build",
+					},
+				},
+				{
+					JobBase: prowConfig.JobBase{
+						Name: "everlast-bump",
+					},
+				},
+				{
+					JobBase: prowConfig.JobBase{
+						Name: "ci-oss-test-infra-autobump-prow",
+					},
+				},
+			},
+			expectedPeriodics: []prowConfig.Periodic{
+				{
+					JobBase: prowConfig.JobBase{
+						Name: "ESPv2-continuous-build",
+					},
+				},
+				{
+					JobBase: prowConfig.JobBase{
+						Name: "ci-oss-test-infra-autobump-prow",
+					},
+				},
+				{
+					JobBase: prowConfig.JobBase{
+						Name: "everlast-bump",
+					},
+				},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			sortPeriodics(test.periodics)
+
+			if !reflect.DeepEqual(test.expectedPeriodics, test.periodics) {
+				t.Fatalf("Periodic jobs do not match; actual: %v\n expected %v\n", test.expectedPeriodics, test.periodics)
+			}
+		})
+	}
+}
+
+func TestSortPresubmitJobOrder(t *testing.T) {
+	tests := []struct {
+		name               string
+		presubmits         map[string][]prowConfig.Presubmit
+		expectedPresubmits map[string][]prowConfig.Presubmit
+	}{
+		{
+			name:               "empty list of presubmits",
+			presubmits:         map[string][]prowConfig.Presubmit{},
+			expectedPresubmits: map[string][]prowConfig.Presubmit{},
+		},
+		{
+			name: "unordered list of presubmits",
+			presubmits: map[string][]prowConfig.Presubmit{
+				"istio/proxy": {
+					prowConfig.Presubmit{
+						JobBase: prowConfig.JobBase{
+							Name: "lint_release-1.5",
+						},
+					},
+					prowConfig.Presubmit{
+						JobBase: prowConfig.JobBase{
+							Name: "gen_check_master",
+						},
+					},
+					prowConfig.Presubmit{
+						JobBase: prowConfig.JobBase{
+							Name: "lint_master",
+						},
+					},
+				},
+				"kubernetes/test-infra": {
+					prowConfig.Presubmit{
+						JobBase: prowConfig.JobBase{
+							Name: "pull-test-go",
+						},
+					},
+					prowConfig.Presubmit{
+						JobBase: prowConfig.JobBase{
+							Name: "pull-test-bazel",
+						},
+					},
+				},
+			},
+			expectedPresubmits: map[string][]prowConfig.Presubmit{
+				"istio/proxy": {
+					prowConfig.Presubmit{
+						JobBase: prowConfig.JobBase{
+							Name: "gen_check_master",
+						},
+					},
+					prowConfig.Presubmit{
+						JobBase: prowConfig.JobBase{
+							Name: "lint_master",
+						},
+					},
+					prowConfig.Presubmit{
+						JobBase: prowConfig.JobBase{
+							Name: "lint_release-1.5",
+						},
+					},
+				},
+				"kubernetes/test-infra": {
+					prowConfig.Presubmit{
+						JobBase: prowConfig.JobBase{
+							Name: "pull-test-bazel",
+						},
+					},
+					prowConfig.Presubmit{
+						JobBase: prowConfig.JobBase{
+							Name: "pull-test-go",
+						},
+					},
+				},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			sortPresubmits(test.presubmits)
+
+			for orgrepo := range test.expectedPresubmits {
+				if !reflect.DeepEqual(test.expectedPresubmits[orgrepo], test.presubmits[orgrepo]) {
+					t.Fatalf("Presubmit jobs do not match for repo: %s; actual: %v\n expected %v\n", orgrepo, test.expectedPresubmits[orgrepo], test.presubmits[orgrepo])
+				}
+			}
+		})
+	}
+}
+
+func TestSortPostsubmitJobOrder(t *testing.T) {
+	tests := []struct {
+		name                string
+		postsubmits         map[string][]prowConfig.Postsubmit
+		expectedPostsubmits map[string][]prowConfig.Postsubmit
+	}{
+		{
+			name:                "empty list of postsubmits",
+			postsubmits:         map[string][]prowConfig.Postsubmit{},
+			expectedPostsubmits: map[string][]prowConfig.Postsubmit{},
+		},
+		{
+			name: "unordered list of postsubmits",
+			postsubmits: map[string][]prowConfig.Postsubmit{
+				"GoogleCloudPlatform/oss-test-infra": {
+					prowConfig.Postsubmit{
+						JobBase: prowConfig.JobBase{
+							Name: "pull-test-infra-go-test",
+						},
+					},
+					prowConfig.Postsubmit{
+						JobBase: prowConfig.JobBase{
+							Name: "pull-cri-containerd-build",
+						},
+					},
+				},
+				"kubernetes/kubernetes": {
+					prowConfig.Postsubmit{
+						JobBase: prowConfig.JobBase{
+							Name: "ci-kubernetes-e2e",
+						},
+					},
+					prowConfig.Postsubmit{
+						JobBase: prowConfig.JobBase{
+							Name: "ci-kubernetes-unit",
+						},
+					},
+				},
+			},
+			expectedPostsubmits: map[string][]prowConfig.Postsubmit{
+				"GoogleCloudPlatform/oss-test-infra": {
+					prowConfig.Postsubmit{
+						JobBase: prowConfig.JobBase{
+							Name: "pull-cri-containerd-build",
+						},
+					},
+					prowConfig.Postsubmit{
+						JobBase: prowConfig.JobBase{
+							Name: "pull-test-infra-go-test",
+						},
+					},
+				},
+				"kubernetes/kubernetes": {
+					prowConfig.Postsubmit{
+						JobBase: prowConfig.JobBase{
+							Name: "ci-kubernetes-e2e",
+						},
+					},
+					prowConfig.Postsubmit{
+						JobBase: prowConfig.JobBase{
+							Name: "ci-kubernetes-unit",
+						},
+					},
+				},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			sortPostsubmits(test.postsubmits)
+
+			for orgrepo := range test.expectedPostsubmits {
+				if !reflect.DeepEqual(test.expectedPostsubmits[orgrepo], test.postsubmits[orgrepo]) {
+					t.Fatalf("Postsubmit jobs do not match for repo: %s; actual: %v\n expected %v\n", orgrepo, test.expectedPostsubmits[orgrepo], test.postsubmits[orgrepo])
+				}
+			}
+		})
+	}
+}
+
 func fakeProwConfig() *prowConfig.Config {
 	return &prowConfig.Config{
 		ProwConfig: prowConfig.ProwConfig{
