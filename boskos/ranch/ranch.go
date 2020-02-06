@@ -23,6 +23,7 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/util/sets"
 
 	"k8s.io/test-infra/boskos/common"
 )
@@ -142,30 +143,35 @@ func (r *Ranch) Acquire(rType, state, dest, owner, requestID string) (*common.Re
 	typeCount := 0
 	for idx := range resources {
 		res := resources[idx]
-		if rType == res.Type {
-			typeCount++
-			if state == res.State && res.Owner == "" {
-				matchingResoucesCount++
-				if matchingResoucesCount >= rank {
-					logger = logger.WithField("resource", res.Name)
-					res.Owner = owner
-					res.State = dest
-					logger.Debug("Updating resource.")
-					updatedRes, err := r.Storage.UpdateResource(res)
-					if err != nil {
-						logger.WithError(err).Errorf("could not update resource %s", res.Name)
-						return nil, err
-					}
-					// Deleting this request since it has been fulfilled
-					if requestID != "" {
-						logger.Debug("Cleaning up requests.")
-						r.requestMgr.Delete(ts, requestID)
-					}
-					logger.Debug("Successfully acquired resource.")
-					return &updatedRes, nil
-				}
-			}
+		if rType != res.Type {
+			continue
 		}
+		typeCount++
+
+		if state != res.State || res.Owner != "" {
+			continue
+		}
+		matchingResoucesCount++
+
+		if matchingResoucesCount < rank {
+			continue
+		}
+		logger = logger.WithField("resource", res.Name)
+		res.Owner = owner
+		res.State = dest
+		logger.Debug("Updating resource.")
+		updatedRes, err := r.Storage.UpdateResource(res)
+		if err != nil {
+			logger.WithError(err).Errorf("could not update resource %s", res.Name)
+			return nil, err
+		}
+		// Deleting this request since it has been fulfilled
+		if requestID != "" {
+			logger.Debug("Cleaning up requests.")
+			r.requestMgr.Delete(ts, requestID)
+		}
+		logger.Debug("Successfully acquired resource.")
+		return &updatedRes, nil
 	}
 
 	if new {
@@ -206,10 +212,7 @@ func (r *Ranch) AcquireByState(state, dest, owner string, names []string) ([]com
 		return nil, fmt.Errorf("must provide names of expected resources")
 	}
 
-	rNames := map[string]bool{}
-	for _, t := range names {
-		rNames[t] = true
-	}
+	rNames := sets.NewString(names...)
 
 	allResources, err := r.Storage.GetResources()
 	if err != nil {
@@ -221,26 +224,24 @@ func (r *Ranch) AcquireByState(state, dest, owner string, names []string) ([]com
 
 	for idx := range allResources {
 		res := allResources[idx]
-		if state == res.State {
-			if res.Owner != "" {
-				continue
-			}
-			if rNames[res.Name] {
-				res.Owner = owner
-				res.State = dest
-				updatedRes, err := r.Storage.UpdateResource(res)
-				if err != nil {
-					logrus.WithError(err).Errorf("could not update resource %s", res.Name)
-					return nil, err
-				}
-				resources = append(resources, updatedRes)
-				delete(rNames, res.Name)
-			}
+		if state != res.State || res.Owner != "" || !rNames.Has(res.Name) {
+			continue
 		}
+
+		res.Owner = owner
+		res.State = dest
+		updatedRes, err := r.Storage.UpdateResource(res)
+		if err != nil {
+			logrus.WithError(err).Errorf("could not update resource %s", res.Name)
+			return nil, err
+		}
+		resources = append(resources, updatedRes)
+		rNames.Delete(res.Name)
 	}
-	if len(rNames) != 0 {
+
+	if rNames.Len() != 0 {
 		var missingResources []string
-		for n := range rNames {
+		for _, n := range rNames.List() {
 			missingResources = append(missingResources, n)
 		}
 		err := &ResourceNotFound{state}
@@ -346,16 +347,16 @@ func (r *Ranch) Reset(rtype, state string, expire time.Duration, dest string) (m
 
 	for idx := range resources {
 		res := resources[idx]
-		if rtype == res.Type && state == res.State && res.Owner != "" {
-			if r.now().Sub(res.LastUpdate) > expire {
-				ret[res.Name] = res.Owner
-				res.Owner = ""
-				res.State = dest
-				if _, err := r.Storage.UpdateResource(res); err != nil {
-					logrus.WithError(err).Errorf("could not update resource %s", res.Name)
-					return ret, err
-				}
-			}
+		if rtype != res.Type || state != res.State || res.Owner == "" || r.now().Sub(res.LastUpdate) < expire {
+			continue
+		}
+
+		ret[res.Name] = res.Owner
+		res.Owner = ""
+		res.State = dest
+		if _, err := r.Storage.UpdateResource(res); err != nil {
+			logrus.WithError(err).Errorf("could not update resource %s", res.Name)
+			return ret, err
 		}
 	}
 	return ret, nil
