@@ -315,15 +315,11 @@ periodics:
       - --test-cmd-args=--nodes=600
       - --test-cmd-args=--provider=kubemark
       - --test-cmd-args=--report-dir=/workspace/_artifacts
-      - --test-cmd-args=--testconfig=testing/density/config.yaml
+      # TODO(https://github.com/kubernetes/perf-tests/issues/1007): load test should be used to test high-density.
+      - --test-cmd-args=--testconfig=testing/density/high-density-config.yaml
       - --test-cmd-args=--testoverrides=./testing/density/600_nodes/high_density_override.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
-      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_configmaps.yaml
-      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_daemonsets.yaml
-      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_jobs.yaml
-      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_secrets.yaml
-      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_statefulsets.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=280m
       - --use-logexporter
