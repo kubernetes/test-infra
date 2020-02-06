@@ -139,6 +139,8 @@ func main() {
 	v.WatchConfig()
 	v.OnConfigChange(func(in fsnotify.Event) {
 		logrus.Infof("Updating Boskos Config")
+		// TODO: We need retrying here, as we do not delete
+		// resources that currently have an owner
 		if err := r.SyncConfig(*configPath); err != nil {
 			logrus.WithError(err).Errorf("Failed to update config")
 		} else {
