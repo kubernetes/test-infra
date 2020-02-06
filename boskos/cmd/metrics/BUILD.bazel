@@ -1,22 +1,34 @@
 package(default_visibility = ["//visibility:public"])
 
 load("//prow:def.bzl", "prow_image")
-load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
+licenses(["notice"])
+
+load(
+    "@io_bazel_rules_go//go:def.bzl",
+    "go_binary",
+    "go_library",
+)
 
 go_binary(
-    name = "reaper",
+    name = "metrics",
     embed = [":go_default_library"],
     pure = "on",
 )
 
 go_library(
     name = "go_default_library",
-    srcs = ["reaper.go"],
-    importpath = "k8s.io/test-infra/boskos/reaper",
+    srcs = ["metrics.go"],
+    importpath = "k8s.io/test-infra/boskos/cmd/metrics",
     deps = [
         "//boskos/client:go_default_library",
         "//boskos/common:go_default_library",
+        "//prow/config:go_default_library",
+        "//prow/logrusutil:go_default_library",
+        "//prow/metrics:go_default_library",
+        "@com_github_prometheus_client_golang//prometheus:go_default_library",
         "@com_github_sirupsen_logrus//:go_default_library",
+        "@io_k8s_apimachinery//pkg/util/sets:go_default_library",
     ],
 )
 

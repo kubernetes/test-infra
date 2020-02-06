@@ -14,7 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+// This is an xtest because it imports the crds package, but the crds package
+// also imports storage, creating a cycle.
+package storage_test
 
 import (
 	"fmt"

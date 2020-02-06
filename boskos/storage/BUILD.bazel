@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library")
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "go_default_library",
@@ -6,6 +6,16 @@ go_library(
     importpath = "k8s.io/test-infra/boskos/storage",
     visibility = ["//visibility:public"],
     deps = ["//boskos/common:go_default_library"],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = ["storage_test.go"],
+    embed = [":go_default_library"],
+    deps = [
+        "//boskos/common:go_default_library",
+        "//boskos/crds:go_default_library",
+    ],
 )
 
 filegroup(

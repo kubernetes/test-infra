@@ -14,146 +14,38 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package handlers
 
 import (
 	"bytes"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"io"
 	"net/http"
-	"runtime"
 	"strings"
 	"time"
 
-	"github.com/fsnotify/fsnotify"
-	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
-
 	"k8s.io/test-infra/boskos/common"
-	"k8s.io/test-infra/boskos/crds"
 	"k8s.io/test-infra/boskos/ranch"
-	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/interrupts"
-	"k8s.io/test-infra/prow/logrusutil"
-	"k8s.io/test-infra/prow/metrics"
-	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/simplifypath"
 )
-
-const (
-	defaultDynamicResourceUpdatePeriod = 10 * time.Minute
-	defaultRequestTTL                  = 30 * time.Second
-	defaultRequestGCPeriod             = time.Minute
-)
-
-var (
-	configPath                  = flag.String("config", "config.yaml", "Path to init resource file")
-	dynamicResourceUpdatePeriod = flag.Duration("dynamic-resource-update-period", defaultDynamicResourceUpdatePeriod,
-		"Period at which to update dynamic resources. Set to 0 to disable.")
-	storagePath       = flag.String("storage", "", "Path to persistent volume to load the state")
-	requestTTL        = flag.Duration("request-ttl", defaultRequestTTL, "request TTL before losing priority in the queue")
-	kubeClientOptions crds.KubernetesClientOptions
-	logLevel          = flag.String("log-level", "info", fmt.Sprintf("Log level is one of %v.", logrus.AllLevels))
-)
-
-var (
-	httpRequestDuration = metrics.HttpRequestDuration("boskos", 0.005, 1200)
-	httpResponseSize    = metrics.HttpResponseSize("boskos", 128, 65536)
-	traceHandler        = metrics.TraceHandler(simplifier, httpRequestDuration, httpResponseSize)
-)
-
-func init() {
-	prometheus.MustRegister(httpRequestDuration)
-	prometheus.MustRegister(httpResponseSize)
-}
-
-var simplifier = simplifypath.NewSimplifier(l("", // shadow element mimicing the root
-	l("acquire"),
-	l("acquirebystate"),
-	l("release"),
-	l("reset"),
-	l("update"),
-	l("metric"),
-))
 
 // l keeps the tree legible
 func l(fragment string, children ...simplifypath.Node) simplifypath.Node {
 	return simplifypath.L(fragment, children...)
 }
 
-func main() {
-	logrusutil.ComponentInit("boskos")
-	kubeClientOptions.AddFlags(flag.CommandLine)
-	flag.Parse()
-	level, err := logrus.ParseLevel(*logLevel)
-	if err != nil {
-		logrus.WithError(err).Fatal("invalid log level specified")
-	}
-	logrus.SetLevel(level)
-	kubeClientOptions.Validate()
-
-	// collect data on mutex holders and blocking profiles
-	runtime.SetBlockProfileRate(1)
-	runtime.SetMutexProfileFraction(1)
-
-	defer interrupts.WaitForGracefulShutdown()
-	pjutil.ServePProf()
-	metrics.ExposeMetrics("boskos", config.PushGateway{})
-	// signal to the world that we are healthy
-	// this needs to be in a separate port as we don't start the
-	// main server with the main mux until we're ready
-	health := pjutil.NewHealth()
-
-	rc, err := kubeClientOptions.Client(crds.ResourceType)
-	if err != nil {
-		logrus.WithError(err).Fatal("unable to create a Resource CRD client")
-	}
-	dc, err := kubeClientOptions.Client(crds.DRLCType)
-	if err != nil {
-		logrus.WithError(err).Fatal("unable to create a DynamicResourceLifeCycle CRD client")
-	}
-
-	resourceStorage := crds.NewCRDStorage(rc)
-	dRLCStorage := crds.NewCRDStorage(dc)
-	storage, err := ranch.NewStorage(resourceStorage, dRLCStorage, *storagePath)
-	if err != nil {
-		logrus.WithError(err).Fatal("failed to create storage")
-	}
-
-	r, err := ranch.NewRanch(*configPath, storage, *requestTTL)
-	if err != nil {
-		logrus.WithError(err).Fatalf("failed to create ranch! Config: %v", *configPath)
-	}
-
-	boskos := &http.Server{
-		Handler: traceHandler(NewBoskosHandler(r)),
-		Addr:    ":8080",
-	}
-
-	v := viper.New()
-	v.SetConfigFile(*configPath)
-	v.SetConfigType("yaml")
-	v.WatchConfig()
-	v.OnConfigChange(func(in fsnotify.Event) {
-		logrus.Infof("Updating Boskos Config")
-		if err := r.SyncConfig(*configPath); err != nil {
-			logrus.WithError(err).Errorf("Failed to update config")
-		} else {
-			logrus.Infof("Updated Boskos Config successfully")
-		}
-	})
-
-	r.StartDynamicResourceUpdater(*dynamicResourceUpdatePeriod)
-	r.StartRequestGC(defaultRequestGCPeriod)
-
-	logrus.Info("Start Service")
-	interrupts.ListenAndServe(boskos, 5*time.Second)
-
-	// signal to the world that we're ready
-	health.ServeReady()
+// NewBoskosSimplifier returns a Simplifier for all Boskos URIs to be used with metrics collection.
+func NewBoskosSimplifier() simplifypath.Simplifier {
+	return simplifypath.NewSimplifier(l("", // shadow element mimicing the root
+		l("acquire"),
+		l("acquirebystate"),
+		l("release"),
+		l("reset"),
+		l("update"),
+		l("metric"),
+	))
 }
 
 //NewBoskosHandler constructs the boskos handler.
@@ -169,8 +61,8 @@ func NewBoskosHandler(r *ranch.Ranch) *http.ServeMux {
 	return mux
 }
 
-// ErrorToStatus translates error into http code
-func ErrorToStatus(err error) int {
+// errorToStatus translates error into http code
+func errorToStatus(err error) int {
 	switch err.(type) {
 	default:
 		return http.StatusInternalServerError
@@ -229,14 +121,14 @@ func handleAcquire(r *ranch.Ranch) http.HandlerFunc {
 
 		if err != nil {
 			logrus.WithError(err).Errorf("No available resource")
-			http.Error(res, err.Error(), ErrorToStatus(err))
+			http.Error(res, err.Error(), errorToStatus(err))
 			return
 		}
 
 		resJSON, err := json.Marshal(resource)
 		if err != nil {
 			logrus.WithError(err).Errorf("json.Marshal failed: %v, resource will be released", resource)
-			http.Error(res, err.Error(), ErrorToStatus(err))
+			http.Error(res, err.Error(), errorToStatus(err))
 			// release the resource, though this is not expected to happen.
 			err = r.Release(resource.Name, state, owner)
 			if err != nil {
@@ -288,7 +180,7 @@ func handleAcquireByState(r *ranch.Ranch) http.HandlerFunc {
 
 		if err != nil {
 			logrus.WithError(err).Errorf("No available resources")
-			http.Error(res, err.Error(), ErrorToStatus(err))
+			http.Error(res, err.Error(), errorToStatus(err))
 			return
 		}
 
@@ -296,7 +188,7 @@ func handleAcquireByState(r *ranch.Ranch) http.HandlerFunc {
 
 		if err := json.NewEncoder(resBytes).Encode(resources); err != nil {
 			logrus.WithError(err).Errorf("json.Marshal failed: %v, resources will be released", resources)
-			http.Error(res, err.Error(), ErrorToStatus(err))
+			http.Error(res, err.Error(), errorToStatus(err))
 			for _, resource := range resources {
 				err := r.Release(resource.Name, state, owner)
 				if err != nil {
@@ -339,7 +231,7 @@ func handleRelease(r *ranch.Ranch) http.HandlerFunc {
 
 		if err := r.Release(name, dest, owner); err != nil {
 			logrus.WithError(err).Errorf("Done failed: %v - %v (from %v)", name, dest, owner)
-			http.Error(res, err.Error(), ErrorToStatus(err))
+			http.Error(res, err.Error(), errorToStatus(err))
 			return
 		}
 
@@ -395,7 +287,7 @@ func handleReset(r *ranch.Ranch) http.HandlerFunc {
 		resJSON, err := json.Marshal(rmap)
 		if err != nil {
 			logrus.WithError(err).Errorf("json.Marshal failed: %v", rmap)
-			http.Error(res, err.Error(), ErrorToStatus(err))
+			http.Error(res, err.Error(), errorToStatus(err))
 			return
 		}
 		logrus.Infof("Resource %v reset successful, %d items moved to state %v", rtype, len(rmap), dest)
@@ -448,7 +340,7 @@ func handleUpdate(r *ranch.Ranch) http.HandlerFunc {
 
 		if err := r.Update(name, owner, state, &userData); err != nil {
 			logrus.WithError(err).Errorf("Update failed: %v - %v (%v)", name, state, owner)
-			http.Error(res, err.Error(), ErrorToStatus(err))
+			http.Error(res, err.Error(), errorToStatus(err))
 			return
 		}
 
@@ -479,14 +371,14 @@ func handleMetric(r *ranch.Ranch) http.HandlerFunc {
 		metric, err := r.Metric(rtype)
 		if err != nil {
 			logrus.WithError(err).Errorf("Metric for %s failed", rtype)
-			http.Error(res, err.Error(), ErrorToStatus(err))
+			http.Error(res, err.Error(), errorToStatus(err))
 			return
 		}
 
 		js, err := json.Marshal(metric)
 		if err != nil {
 			logrus.WithError(err).Error("Fail to marshal metric")
-			http.Error(res, err.Error(), ErrorToStatus(err))
+			http.Error(res, err.Error(), errorToStatus(err))
 			return
 		}
 

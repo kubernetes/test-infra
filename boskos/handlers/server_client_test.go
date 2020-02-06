@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package handlers
 
 import (
 	"fmt"
@@ -30,13 +30,6 @@ import (
 	"k8s.io/test-infra/boskos/common"
 	"k8s.io/test-infra/boskos/ranch"
 )
-
-// json does not serialized time with nanosecond precision
-func now() time.Time {
-	format := "2006-01-02 15:04:05.000"
-	now, _ := time.Parse(format, time.Now().Format(format))
-	return now
-}
 
 func makeTestBoskos(r *ranch.Ranch) *httptest.Server {
 	handler := NewBoskosHandler(r)
