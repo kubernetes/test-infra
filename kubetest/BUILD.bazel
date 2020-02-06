@@ -37,6 +37,8 @@ go_library(
         "@com_github_aws_aws_sdk_go//aws:go_default_library",
         "@com_github_aws_aws_sdk_go//aws/session:go_default_library",
         "@com_github_aws_aws_sdk_go//service/ec2:go_default_library",
+        "@com_github_azure_azure_sdk_for_go//services/authorization/mgmt/2015-07-01/authorization:go_default_library",
+        "@com_github_azure_azure_sdk_for_go//services/preview/msi/mgmt/2015-08-31-preview/msi:go_default_library",
         "@com_github_azure_azure_sdk_for_go//services/resources/mgmt/2018-05-01/resources:go_default_library",
         "@com_github_azure_azure_storage_blob_go//azblob:go_default_library",
         "@com_github_azure_go_autorest//autorest:go_default_library",
