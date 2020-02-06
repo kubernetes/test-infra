@@ -69,9 +69,12 @@ RUN wget -q "https://storage.googleapis.com/golang/${GO_TARBALL}" && \
     rm "${GO_TARBALL}"
 
 # install bazel
+COPY ./install-bazel.sh /
+ENV BAZEL_VERSION 0.25.2
+RUN bash /install-bazel.sh
+
 ARG BAZEL_VERSION_ARG
 ENV BAZEL_VERSION=${BAZEL_VERSION_ARG}
-COPY ./install-bazel.sh /
 RUN bash /install-bazel.sh
 
 # if UPGRADE_DOCKER_ARG, then install the latest docker over whatever we have
