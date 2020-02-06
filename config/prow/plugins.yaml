@@ -117,6 +117,9 @@ label:
     - platform/gcp
     - platform/minikube
     - platform/other
+    - tide/merge-method-merge
+    - tide/merge-method-rebase
+    - tide/merge-method-squash
 
 lgtm:
 - repos:
