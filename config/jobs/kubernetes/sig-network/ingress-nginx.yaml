@@ -254,7 +254,7 @@ presubmits:
         - name: REPO_INFO
           value: https://github.com/kubernetes/ingress-nginx
         - name: K8S_VERSION
-          value: v1.17.0
+          value: v1.17.2@sha256:59df31fc61d1da5f46e8a61ef612fa53d3f9140f82419d1ef1a6b9656c6b737c
         - name: DIND_TASKS
           value: "false"
         resources:
