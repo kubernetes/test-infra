@@ -2,32 +2,62 @@ test_groups:
 # OpenShift Dedicated integration
 - name: osd-int-4.2
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-master-e2e-int-4.2
+  column_header:
+  - configuration_value: cluster-version
 - name: osd-int-4.3
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-master-e2e-int-4.3
+  column_header:
+  - configuration_value: cluster-version
 - name: osd-upgrade-int-4.2-4.2
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-master-e2e-int-4.2-4.2
+  column_header:
+  - configuration_value: cluster-version
+  - configuration_value: upgrade-version
 - name: osd-upgrade-int-4.2-4.3
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-master-e2e-int-4.2-4.3
+  column_header:
+  - configuration_value: cluster-version
+  - configuration_value: upgrade-version
 - name: osd-upgrade-int-4.3-4.3
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-master-e2e-int-4.3-4.3
+  column_header:
+  - configuration_value: cluster-version
+  - configuration_value: upgrade-version
 
 # OpenShift Dedicated staging
 - name: osd-stage-4.2
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-master-e2e-stage-4.2
+  column_header:
+  - configuration_value: cluster-version
 - name: osd-stage-4.3
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-master-e2e-stage-4.3
+  column_header:
+  - configuration_value: cluster-version
 - name: osd-upgrade-stage-4.2-4.2
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-master-e2e-stage-4.2-4.2
+  column_header:
+  - configuration_value: cluster-version
+  - configuration_value: upgrade-version
 - name: osd-upgrade-stage-4.2-4.3
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-master-e2e-stage-4.2-4.3
+  column_header:
+  - configuration_value: cluster-version
+  - configuration_value: upgrade-version
 
 # OpenShift Dedicated production
 - name: osd-prod-default
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-master-e2e-prod-default
+  column_header:
+  - configuration_value: cluster-version
 - name: osd-prod-next
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-master-e2e-prod-next
+  column_header:
+  - configuration_value: cluster-version
 - name: osd-upgrade-prod-default-next
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-master-e2e-prod-default-next
+  column_header:
+  - configuration_value: cluster-version
+  - configuration_value: upgrade-version
 
 dashboards:
 # OpenShift Dedicated integration dashboard
