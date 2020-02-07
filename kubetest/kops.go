@@ -69,6 +69,7 @@ var (
 	kopsPublish      = flag.String("kops-publish", "", "(kops only) Publish kops version to the specified gs:// path on success")
 	kopsMasterSize   = flag.String("kops-master-size", kopsAWSMasterSize, "(kops only) master instance type")
 	kopsMasterCount  = flag.Int("kops-master-count", 1, "(kops only) Number of masters to run")
+	kopsDNSProvider  = flag.String("kops-dns-provider", "", "(kops only) DNS Provider. CoreDNS or KubeDNS")
 	kopsEtcdVersion  = flag.String("kops-etcd-version", "", "(kops only) Etcd Version")
 	kopsNetworkMode  = flag.String("kops-network-mode", "", "(kops only) Networking mode to use. kubenet (default), classic, external, kopeio-vxlan (or kopeio), weave, flannel-vxlan (or flannel), flannel-udp, calico, canal, kube-router, romana, amazon-vpc-routed-eni, cilium.")
 	kopsOverrides    = pflag.StringSlice("kops-overrides", []string{}, "(kops only) Kops cluster configuration overrides, comma delimited. This flag can be used multiple times.")
@@ -129,6 +130,9 @@ type kops struct {
 
 	// masterCount denotes how many masters to start
 	masterCount int
+
+	// dnsProvider is the DNS Provider the cluster will use (CoreDNS or KubeDNS)
+	dnsProvider string
 
 	// etcdVersion is the etcd version to run
 	etcdVersion string
@@ -343,6 +347,7 @@ func newKops(provider, gcpProject, cluster string) (*kops, error) {
 		kopsVersion:   *kopsBaseURL,
 		kopsPublish:   *kopsPublish,
 		masterCount:   *kopsMasterCount,
+		dnsProvider:   *kopsDNSProvider,
 		etcdVersion:   *kopsEtcdVersion,
 		masterSize:    *kopsMasterSize,
 		networkMode:   *kopsNetworkMode,
@@ -417,6 +422,9 @@ func (k kops) Up() error {
 	}
 	if k.args != "" {
 		createArgs = append(createArgs, strings.Split(k.args, " ")...)
+	}
+	if k.dnsProvider != "" {
+		k.overrides = append(k.overrides, "spec.kubeDNS.provider="+k.dnsProvider)
 	}
 	if k.etcdVersion != "" {
 		k.overrides = append(k.overrides, "cluster.spec.etcdClusters[*].version="+k.etcdVersion)
