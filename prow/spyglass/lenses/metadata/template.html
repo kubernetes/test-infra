@@ -5,12 +5,12 @@
 
 {{define "body"}}
 {{$len := len .Metadata}}
-{{$passed := eq .Status "SUCCESS"}}
-{{$failed := eq .Status "FAILURE" "FAILED"}}
-<p class="test-summary">Test started <abbr id="summary-start-time" title="{{.StartTime}}">{{.StartTime}}</abbr> {{if $passed -}}
+<p class="test-summary">Test started <abbr id="summary-start-time" title="{{.StartTime}}">{{.StartTime}}</abbr> {{if .Finished -}}
+{{- if .Passed -}}
   <span class="passed">passed</span>
-{{- else if $failed -}}
+{{- else -}}
   <span class="failed">failed</span>
+{{- end -}}
 {{- else -}}
   is still running
 {{- end}} after {{.Elapsed}}. (<a href="#" id="show-table-link">more info</a>)</p>
@@ -20,10 +20,6 @@
 <div id="bottom-padding"></div>
 <table class="mdl-data-table mdl-js-data-table metadata-table hidden" id="data-table">
   <tbody>
-  <tr class="test-row">
-    <td class="mdl-data-table__cell--non-numeric">Status</td>
-    <td class="mdl-data-table__cell--non-numeric" style="color: {{if $passed}}#00FF00{{else if $failed}}#ff4040{{end}}">{{.Status}}</td>
-  </tr>
   <tr>
     <td class="mdl-data-table__cell--non-numeric">Started</td>
     <td class="mdl-data-table__cell--non-numeric" id="start_time">{{.StartTime}}</td>

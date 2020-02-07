@@ -83,14 +83,15 @@ func (lens Lens) Callback(artifacts []lenses.Artifact, resourceDir string, data 
 func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data string, config json.RawMessage) string {
 	var buf bytes.Buffer
 	type MetadataViewData struct {
-		Status       string
 		StartTime    time.Time
 		FinishedTime time.Time
+		Finished     bool
+		Passed       bool
 		Elapsed      time.Duration
 		Hint         string
 		Metadata     map[string]interface{}
 	}
-	metadataViewData := MetadataViewData{Status: "Pending"}
+	metadataViewData := MetadataViewData{}
 	started := gcs.Started{}
 	finished := gcs.Finished{}
 	for _, a := range artifacts {
@@ -108,10 +109,15 @@ func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data stri
 			if err = json.Unmarshal(read, &finished); err != nil {
 				logrus.WithError(err).Error("Error unmarshaling finished.json")
 			}
+			metadataViewData.Finished = true
 			if finished.Timestamp != nil {
 				metadataViewData.FinishedTime = time.Unix(*finished.Timestamp, 0)
 			}
-			metadataViewData.Status = finished.Result
+			if finished.Passed != nil {
+				metadataViewData.Passed = *finished.Passed
+			} else {
+				metadataViewData.Passed = finished.Result == "SUCCESS"
+			}
 		case "podinfo.json":
 			metadataViewData.Hint = hintFromPodInfo(read)
 		case "prowjob.json":
