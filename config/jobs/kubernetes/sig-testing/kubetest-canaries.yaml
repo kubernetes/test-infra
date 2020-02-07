@@ -220,6 +220,7 @@ periodics:
       - --kops-etcd-version=3.2.24
       - --kops-master-count=3
       - --kops-multiple-zones
+      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
@@ -248,6 +249,7 @@ periodics:
       - --deployment=kops
       - --extract=ci/latest
       - --ginkgo-parallel=30
+      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --kops-zones=us-central1-c
       - --provider=gce
