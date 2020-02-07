@@ -128,6 +128,38 @@ periodics:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-aws-containerd
 
+- interval: 30m
+  name: ci-kubernetes-e2e-kops-aws-coredns
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+    preset-e2e-platform-aws: "true"
+  decorate: true
+  decoration_config:
+    timeout: 140m
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --cluster=e2e-kops-aws-coredns.test-cncf-aws.k8s.io
+      - --deployment=kops
+      - --extract=ci/latest
+      - --ginkgo-parallel
+      - --kops-overrides=spec.kubeDNS.provider=CoreDNS
+      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
+      - --kops-publish=gs://kops-ci/bin/latest-ci-green.txt
+      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
+      - --provider=aws
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
+      - --timeout=120m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200206-f88edef-master
+  annotations:
+    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-tab-name: kops-aws-coredns
+
 - interval: 1h
   name: ci-kubernetes-e2e-kops-aws-newrunner
   labels:
