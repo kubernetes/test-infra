@@ -342,7 +342,11 @@ func newAKSEngine() (*Cluster, error) {
 	tempdir, _ := ioutil.TempDir(os.Getenv("HOME"), "aks")
 	sshKey, err := ioutil.ReadFile(*aksSSHPublicKeyPath)
 	if err != nil {
-		return nil, fmt.Errorf("error reading SSH Key %v %v", *aksSSHPublicKeyPath, err)
+		if os.IsNotExist(err) {
+			sshKey = []byte{}
+		} else {
+			return nil, fmt.Errorf("error reading SSH Key %v %v", *aksSSHPublicKeyPath, err)
+		}
 	}
 	// assume the private key is at the same location as the public key.
 	// since it is only used for log collection purposes, we issue a warning if the log collection script
