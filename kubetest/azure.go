@@ -76,7 +76,8 @@ var (
 	aksIdentitySystem      = flag.String("aksengine-identity-system", "azure_ad", "identity system (default:`azure_ad`, `adfs`)")
 	aksCustomCloudURL      = flag.String("aksengine-custom-cloud-url", "", "management portal URL to use in custom Azure cloud (i.e Azure Stack etc)")
 	aksDeployCustomK8s     = flag.Bool("aksengine-deploy-custom-k8s", false, "Set to True if you want to deploy custom-built k8s via aks-engine")
-	aksCanary              = flag.Bool("aksengine-canary", false, "Set to True if you are testing in a canary region")
+	aksCheckParams         = flag.Bool("aksengine-check-params", true, "Set to True if you want to validate your input parameters")
+	aksDumpClusterLogs     = flag.Bool("aksengine-dump-cluster-logs", true, "Set to True if you want to dump cluster logs")
 	testCcm                = flag.Bool("test-ccm", false, "Set to True if you want kubetest to run e2e tests for ccm")
 	testAzureFileCSIDriver = flag.Bool("test-azure-file-csi-driver", false, "Set to True if you want kubetest to run e2e tests for Azure File CSI driver")
 	testAzureDiskCSIDriver = flag.Bool("test-azure-disk-csi-driver", false, "Set to True if you want kubetest to run e2e tests for Azure Disk CSI driver")
@@ -294,8 +295,8 @@ func randomAKSEngineLocation() string {
 }
 
 func checkParams() error {
-	// Skip flag validation when testing in canary
-	if *aksCanary {
+	if !*aksCheckParams {
+		log.Print("Skipping checkParams")
 		return nil
 	}
 
@@ -1078,7 +1079,8 @@ func (c *Cluster) Down() error {
 }
 
 func (c *Cluster) DumpClusterLogs(localPath, gcsPath string) error {
-	if *aksCanary {
+	if !*aksDumpClusterLogs {
+		log.Print("Skipping DumpClusterLogs")
 		return nil
 	}
 
