@@ -133,7 +133,7 @@ func main() {
 		for i, err := range errors {
 			logrus.WithError(err).Error(i)
 		}
-		logrus.Fatalf("Encountered %d errors protecting branches", n)
+		logrus.Errorf("Encountered %d errors protecting branches", n)
 	}
 }
 
