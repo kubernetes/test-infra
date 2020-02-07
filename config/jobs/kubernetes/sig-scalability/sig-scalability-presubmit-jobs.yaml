@@ -309,6 +309,9 @@ presubmits:
       preset-bazel-scratch-dir: "true"
       preset-e2e-scalability-common: "true"
       preset-e2e-scalability-presubmits: "true"
+    annotations:
+      fork-per-release: "true"
+      fork-per-release-replacements: "extract=ci/latest -> extract=ci/latest-{{.Version}}"
     run_if_changed: ^clusterloader2/.*$
     spec:
       containers:
@@ -368,6 +371,9 @@ presubmits:
       preset-dind-enabled: "true"
       preset-e2e-kubemark-common: "true"
       preset-e2e-scalability-presubmits: "true"
+    annotations:
+      fork-per-release: "true"
+      fork-per-release-replacements: "extract=ci/latest -> extract=ci/latest-{{.Version}}"
     run_if_changed: ^clusterloader2/.*$
     spec:
       containers:

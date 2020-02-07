@@ -913,3 +913,108 @@ presubmits:
         resources:
           requests:
             memory: 6Gi
+  kubernetes/perf-tests:
+  - always_run: false
+    branches:
+    - release-1.14
+    labels:
+      preset-bazel-scratch-dir: "true"
+      preset-e2e-scalability-common: "true"
+      preset-e2e-scalability-presubmits: "true"
+      preset-k8s-ssh: "true"
+      preset-service-account: "true"
+    max_concurrency: 3
+    name: pull-perf-tests-clusterloader2
+    run_if_changed: ^clusterloader2/.*$
+    spec:
+      containers:
+      - args:
+        - --root=/go/src
+        - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --timeout=120
+        - --scenario=kubernetes_e2e
+        - --
+        - --cluster=
+        - --extract=ci/latest-1.14
+        - --gcp-nodes=100
+        - --gcp-project-type=scalability-presubmit-project
+        - --gcp-zone=us-east1-b
+        - --provider=gce
+        - --tear-down-previous
+        - --test=false
+        - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+        - --test-cmd-args=cluster-loader2
+        - --test-cmd-args=--nodes=100
+        - --test-cmd-args=--prometheus-scrape-node-exporter
+        - --test-cmd-args=--provider=gce
+        - --test-cmd-args=--report-dir=/workspace/_artifacts
+        - --test-cmd-args=--testconfig=testing/density/config.yaml
+        - --test-cmd-args=--testconfig=testing/load/config.yaml
+        - --test-cmd-args=--testoverrides=./testing/load/gce/throughput_override.yaml
+        - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
+        - --test-cmd-name=ClusterLoaderV2
+        - --timeout=100m
+        - --use-logexporter
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200206-f88edef-1.14
+        name: ""
+        resources:
+          requests:
+            memory: 6Gi
+  - always_run: false
+    branches:
+    - release-1.14
+    labels:
+      preset-bazel-scratch-dir: "true"
+      preset-dind-enabled: "true"
+      preset-e2e-kubemark-common: "true"
+      preset-e2e-scalability-presubmits: "true"
+      preset-k8s-ssh: "true"
+      preset-service-account: "true"
+    max_concurrency: 3
+    name: pull-perf-tests-clusterloader2-kubemark
+    run_if_changed: ^clusterloader2/.*$
+    spec:
+      containers:
+      - args:
+        - --root=/go/src
+        - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --service-account=/etc/service-account/service-account.json
+        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --timeout=120
+        - --scenario=kubernetes_e2e
+        - --
+        - --cluster=
+        - --extract=ci/latest-1.14
+        - --gcp-master-size=n1-standard-2
+        - --gcp-node-size=n1-standard-4
+        - --gcp-nodes=4
+        - --gcp-project-type=scalability-presubmit-project
+        - --gcp-zone=us-east1-b
+        - --kubemark
+        - --kubemark-nodes=100
+        - --provider=gce
+        - --tear-down-previous
+        - --test=false
+        - --test_args=--ginkgo.focus=xxxx
+        - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+        - --test-cmd-args=cluster-loader2
+        - --test-cmd-args=--nodes=100
+        - --test-cmd-args=--prometheus-scrape-node-exporter
+        - --test-cmd-args=--provider=kubemark
+        - --test-cmd-args=--report-dir=/workspace/_artifacts
+        - --test-cmd-args=--testconfig=testing/density/config.yaml
+        - --test-cmd-args=--testconfig=testing/load/config.yaml
+        - --test-cmd-args=--testoverrides=./testing/load/kubemark/throughput_override.yaml
+        - --test-cmd-name=ClusterLoaderV2
+        - --timeout=100m
+        - --use-logexporter
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200206-f88edef-1.14
+        name: ""
+        resources:
+          requests:
+            memory: 6Gi
+        securityContext:
+          privileged: true
