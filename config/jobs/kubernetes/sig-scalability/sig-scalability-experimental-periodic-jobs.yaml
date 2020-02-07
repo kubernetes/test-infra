@@ -1,38 +1,4 @@
 periodics:
-# Experimental config for testing private gce clusters.
-- name: ci-kubernetes-e2e-gce-private-cluster-correctness
-  # TODO(mm4tt): Lower the timeout once we know how long the test takes.
-  interval: 6h
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-    preset-e2e-scalability-common: "true"
-  annotations:
-    testgrid-dashboards: sig-scalability-experiments
-    testgrid-tab-name: gce-private-cluster-correctness
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200206-f88edef-master
-      args:
-      - --timeout=300
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=private-gce-test
-      - --env=HEAPSTER_MACHINE_TYPE=n1-standard-1
-      - --env=KUBE_GCE_PRIVATE_CLUSTER=true
-      - --extract=ci/latest
-      - --gcp-master-image=gci
-      - --gcp-node-image=gci
-      - --gcp-nodes=5
-      - --gcp-ssh-proxy-instance-name=private-gce-test-master
-      - --gcp-zone=us-east1-b
-      - --ginkgo-parallel=5
-      - --provider=gce
-      - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[DisabledForLargeClusters\] --minStartupPods=8 --node-schedulable-timeout=90m
-      - --timeout=240m
-      - --use-logexporter
-
 #- name: ci-kubernetes-storage-scalability-max-persistent-vol-per-pod
 #  tags:
 #    - "perfDashPrefix: storage-max-persistent-vol-per-pod"
