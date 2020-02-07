@@ -1010,6 +1010,26 @@ branch-protection:
 				},
 			},
 		},
+		{
+			name:     "protect branches with special characters",
+			branches: []string{"cfgdef/repo1=test_#123"},
+			config: `
+branch-protection:
+  protect: true
+  orgs:
+    cfgdef:
+`,
+			expected: []requirements{
+				{
+					Org:    "cfgdef",
+					Repo:   "repo1",
+					Branch: "test_#123",
+					Request: &github.BranchProtectionRequest{
+						EnforceAdmins: &no,
+					},
+				},
+			},
+		},
 	}
 
 	for _, tc := range cases {
