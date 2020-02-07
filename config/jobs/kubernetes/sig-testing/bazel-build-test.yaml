@@ -25,7 +25,7 @@ presubmits:
         args:
         - -c
         - |
-          ../test-infra/hack/bazel.sh build --config=remote --remote_instance_name=projects/k8s-prow-builds/instances/default_instance $(bazel query --keep_going --noshow_progress "kind(.*_binary, rdeps(//... -//vendor/..., //...)) except attr('tags', 'manual', //...)") //build/release-tars
+          ../test-infra/hack/bazel.sh build --config=remote --remote_instance_name=projects/k8s-prow-builds/instances/default_instance -- //... -//vendor/... -//build/... //build/release-tars
   - name: pull-kubernetes-bazel-test
     decorate: true
     always_run: true
