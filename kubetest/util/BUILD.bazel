@@ -2,12 +2,10 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "go_default_library",
-    srcs = [
-        "suite.go",
-        "util.go",
-    ],
+    srcs = ["util.go"],
     importpath = "k8s.io/test-infra/kubetest/util",
     visibility = ["//visibility:public"],
+    deps = ["//kubetest/process:go_default_library"],
 )
 
 go_test(
