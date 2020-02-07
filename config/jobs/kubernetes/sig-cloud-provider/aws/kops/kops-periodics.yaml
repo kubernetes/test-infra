@@ -128,7 +128,7 @@ periodics:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-aws-containerd
 
-- interval: 30m
+- interval: 4h
   name: ci-kubernetes-e2e-kops-aws-coredns
   labels:
     preset-service-account: "true"
