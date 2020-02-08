@@ -34,7 +34,6 @@ import (
 	pipelineset "github.com/tektoncd/pipeline/pkg/client/clientset/versioned"
 	pipelineinfo "github.com/tektoncd/pipeline/pkg/client/informers/externalversions"
 	pipelineinfov1alpha1 "github.com/tektoncd/pipeline/pkg/client/informers/externalversions/pipeline/v1alpha1"
-	resourceset "github.com/tektoncd/pipeline/pkg/client/resource/clientset/versioned"
 
 	"github.com/sirupsen/logrus"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -81,19 +80,13 @@ func (o *options) parse(flags *flag.FlagSet, args []string) error {
 }
 
 type pipelineConfig struct {
-	client         pipelineset.Interface
-	resourceClient resourceset.Interface
-	informer       pipelineinfov1alpha1.PipelineRunInformer
+	client   pipelineset.Interface
+	informer pipelineinfov1alpha1.PipelineRunInformer
 }
 
 // newPipelineConfig returns a client and informer capable of mutating and monitoring the specified config.
 func newPipelineConfig(cfg rest.Config, stop <-chan struct{}) (*pipelineConfig, error) {
 	bc, err := pipelineset.NewForConfig(&cfg)
-	if err != nil {
-		return nil, err
-	}
-
-	rc, err := resourceset.NewForConfig(&cfg)
 	if err != nil {
 		return nil, err
 	}
@@ -109,9 +102,8 @@ func newPipelineConfig(cfg rest.Config, stop <-chan struct{}) (*pipelineConfig, 
 	bif.Tekton().V1alpha1().PipelineRuns().Lister()
 	go bif.Start(stop)
 	return &pipelineConfig{
-		client:         bc,
-		resourceClient: rc,
-		informer:       bif.Tekton().V1alpha1().PipelineRuns(),
+		client:   bc,
+		informer: bif.Tekton().V1alpha1().PipelineRuns(),
 	}, nil
 }
 
