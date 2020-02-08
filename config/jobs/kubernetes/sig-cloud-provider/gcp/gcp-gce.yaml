@@ -274,6 +274,81 @@ periodics:
     testgrid-alert-email: kubernetes-release-team@googlegroups.com
     description: Uses kubetest to run e2e tests (-Slow|Serial|Disruptive|Flaky|Feature) against a cluster created with cluster/kube-up.sh
 
+- interval: 120m
+  name: ci-kubernetes-e2e-ubuntu-gce
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+      - args:
+          - --timeout=70
+          - --bare
+          - --scenario=kubernetes_e2e
+          - --
+          - --check-leaked-resources
+          - --env=ENABLE_POD_SECURITY_POLICY=true
+          - --extract=ci/latest
+          - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
+          - --env=KUBE_GCE_MASTER_IMAGE=ubuntu-1804-bionic-v20200108
+          - --env=KUBE_GCE_MASTER_PROJECT=ubuntu-os-cloud
+          - --env=KUBE_NODE_OS_DISTRIBUTION=ubuntu
+          - --env=KUBE_GCE_NODE_IMAGE=ubuntu-1804-bionic-v20200108
+          - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
+          - --gcp-master-image=ubuntu
+          - --gcp-node-image=ubuntu
+          - --gcp-nodes=4
+          - --gcp-zone=us-west1-b
+          - --ginkgo-parallel=30
+          - --provider=gce
+          - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+          - --timeout=50m
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200206-f88edef-master
+  annotations:
+    testgrid-dashboards: sig-release-master-informing, google-gce, google-gci
+    testgrid-tab-name: gce-ubuntu-master-default
+    testgrid-num-failures-to-alert: '6'
+    testgrid-alert-email: kubernetes-release-team@googlegroups.com
+    description: Uses kubetest to run e2e tests (-Slow|Serial|Disruptive|Flaky|Feature) against a cluster (ubuntu based) created with cluster/kube-up.sh
+
+- interval: 120m
+  name: ci-kubernetes-e2e-ubuntu-gce-containerd
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+      - args:
+          - --timeout=70
+          - --bare
+          - --scenario=kubernetes_e2e
+          - --
+          - --check-leaked-resources
+          - --env=ENABLE_POD_SECURITY_POLICY=true
+          - --extract=ci/latest
+          - --env=KUBE_CONTAINER_RUNTIME=containerd
+          - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
+          - --env=KUBE_GCE_MASTER_IMAGE=ubuntu-1804-bionic-v20200108
+          - --env=KUBE_GCE_MASTER_PROJECT=ubuntu-os-cloud
+          - --env=KUBE_NODE_OS_DISTRIBUTION=ubuntu
+          - --env=KUBE_GCE_NODE_IMAGE=ubuntu-1804-bionic-v20200108
+          - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
+          - --gcp-master-image=ubuntu
+          - --gcp-node-image=ubuntu
+          - --gcp-nodes=4
+          - --gcp-zone=us-west1-b
+          - --ginkgo-parallel=30
+          - --provider=gce
+          - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+          - --timeout=50m
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200206-f88edef-master
+  annotations:
+    testgrid-dashboards: sig-release-master-informing, google-gce, google-gci
+    testgrid-tab-name: gce-ubuntu-master-containerd
+    testgrid-num-failures-to-alert: '6'
+    testgrid-alert-email: kubernetes-release-team@googlegroups.com
+    description: Uses kubetest to run e2e tests (-Slow|Serial|Disruptive|Flaky|Feature) against a cluster (ubuntu based and uses containerd) created with cluster/kube-up.sh
+
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gce-alpha-enabled-default
   labels:
