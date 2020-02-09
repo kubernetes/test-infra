@@ -327,6 +327,8 @@ periodics:
           - --env=ENABLE_POD_SECURITY_POLICY=true
           - --extract=ci/latest
           - --env=KUBE_CONTAINER_RUNTIME=containerd
+          - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.3.3
+          - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.0.0-rc10
           - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
           - --env=KUBE_GCE_MASTER_IMAGE=ubuntu-1804-bionic-v20200108
           - --env=KUBE_GCE_MASTER_PROJECT=ubuntu-os-cloud
