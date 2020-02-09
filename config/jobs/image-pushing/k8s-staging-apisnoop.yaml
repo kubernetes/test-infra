@@ -4,7 +4,7 @@ postsubmits:
       cluster: test-infra-trusted
       annotations:
         testgrid-dashboards: conformance-apisnoop
-        testgrid-tab-name: apisnoop-auditlogger-image
+        testgrid-tab-name: apisnoop-webapp-image
         testgrid-alert-email: apisnoop@ii.coop
         description: Builds the webapp image for APISnoop deployments
       decorate: true
@@ -35,9 +35,9 @@ postsubmits:
       cluster: test-infra-trusted
       annotations:
         testgrid-dashboards: conformance-apisnoop
-        testgrid-tab-name: apisnoop-auditlogger-image
+        testgrid-tab-name: apisnoop-kubemacs-image
         testgrid-alert-email: apisnoop@ii.coop
-        description: Builds the webapp image for APISnoop deployments
+        description: Builds the kubemacs image for APISnoop deployments
       decorate: true
       branches:
         - ^master$
