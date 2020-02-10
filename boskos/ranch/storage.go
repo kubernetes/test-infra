@@ -17,7 +17,9 @@ limitations under the License.
 package ranch
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"reflect"
@@ -27,14 +29,20 @@ import (
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/sirupsen/logrus"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
+	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
+
 	"k8s.io/test-infra/boskos/common"
-	"k8s.io/test-infra/boskos/storage"
+	"k8s.io/test-infra/boskos/crds"
 )
 
 // Storage is used to decouple ranch functionality with the resource persistence layer
 type Storage struct {
-	resources, dynamicResourceLifeCycles storage.PersistenceLayer
-	resourcesLock                        sync.RWMutex
+	ctx           context.Context
+	client        ctrlruntimeclient.Client
+	namespace     string
+	resourcesLock sync.RWMutex
 
 	// For testing
 	now          func() time.Time
@@ -42,22 +50,22 @@ type Storage struct {
 }
 
 // NewTestingStorage is used only for testing.
-func NewTestingStorage(res, lf storage.PersistenceLayer, updateTime func() time.Time) *Storage {
+func NewTestingStorage(client ctrlruntimeclient.Client, namespace string, updateTime func() time.Time) *Storage {
 	return &Storage{
-		resources:                 res,
-		dynamicResourceLifeCycles: lf,
-		now:                       updateTime,
+		client:    client,
+		namespace: namespace,
+		now:       updateTime,
 	}
 }
 
 // NewStorage instantiates a new Storage with a PersistenceLayer implementation
 // If storage string is not empty, it will read resource data from the file
-func NewStorage(res, lf storage.PersistenceLayer, storage string) (*Storage, error) {
+func NewStorage(client ctrlruntimeclient.Client, namespace, storage string) (*Storage, error) {
 	s := &Storage{
-		resources:                 res,
-		dynamicResourceLifeCycles: lf,
-		now:                       func() time.Time { return time.Now() },
-		generateName:              common.GenerateDynamicResourceName,
+		client:       client,
+		namespace:    namespace,
+		now:          func() time.Time { return time.Now() },
+		generateName: common.GenerateDynamicResourceName,
 	}
 
 	if storage != "" {
@@ -87,115 +95,134 @@ func NewStorage(res, lf storage.PersistenceLayer, storage string) (*Storage, err
 
 // AddResource adds a new resource
 func (s *Storage) AddResource(resource common.Resource) error {
-	return s.resources.Add(resource)
+	o := &crds.ResourceObject{}
+	o.FromItem(resource)
+	o.Namespace = s.namespace
+	return s.client.Create(s.ctx, o)
 }
 
 // DeleteResource deletes a resource if it exists, errors otherwise
 func (s *Storage) DeleteResource(name string) error {
-	return s.resources.Delete(name)
+	o := &crds.ResourceObject{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: s.namespace,
+		},
+	}
+	return s.client.Delete(s.ctx, o)
 }
 
 // UpdateResource updates a resource if it exists, errors otherwise
 func (s *Storage) UpdateResource(resource common.Resource) (common.Resource, error) {
 	resource.LastUpdate = s.now()
-	i, err := s.resources.Update(resource)
-	if err != nil {
-		return common.Resource{}, err
+
+	o := &crds.ResourceObject{}
+	name := types.NamespacedName{Namespace: s.namespace, Name: resource.GetName()}
+	if err := s.client.Get(s.ctx, name, o); err != nil {
+		return common.Resource{}, fmt.Errorf("failed to get resource %s before patching it: %v", resource.GetName(), err)
 	}
-	var res common.Resource
-	res, err = common.ItemToResource(i)
-	if err != nil {
-		return common.Resource{}, err
+
+	o.FromItem(resource)
+	if err := s.client.Update(s.ctx, o); err != nil {
+		return common.Resource{}, fmt.Errorf("failed to update resources %s after patching it: %v", resource.GetName(), err)
 	}
-	return res, nil
+
+	return common.ItemToResource(o.ToItem())
 }
 
 // GetResource gets an existing resource, errors otherwise
 func (s *Storage) GetResource(name string) (common.Resource, error) {
-	i, err := s.resources.Get(name)
-	if err != nil {
-		return common.Resource{}, err
+	o := &crds.ResourceObject{}
+	nn := types.NamespacedName{Namespace: s.namespace, Name: name}
+	if err := s.client.Get(s.ctx, nn, o); err != nil {
+		return common.Resource{}, fmt.Errorf("failed to get resource %s: %v", name, err)
 	}
-	var res common.Resource
-	res, err = common.ItemToResource(i)
-	if err != nil {
-		return common.Resource{}, err
-	}
-	return res, nil
+
+	return common.ItemToResource(o.ToItem())
 }
 
 // GetResources list all resources
 func (s *Storage) GetResources() ([]common.Resource, error) {
-	var resources []common.Resource
-	items, err := s.resources.List()
-	if err != nil {
-		return resources, err
+	resourceList := &crds.ResourceObjectList{}
+	if err := s.client.List(s.ctx, resourceList, ctrlruntimeclient.InNamespace(s.namespace)); err != nil {
+		return nil, fmt.Errorf("failed to list resources; %v", err)
 	}
-	for _, i := range items {
-		var res common.Resource
-		res, err = common.ItemToResource(i)
+
+	var resources []common.Resource
+	for _, resource := range resourceList.Items {
+		res, err := common.ItemToResource(resource.ToItem())
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to convert item %s to resource: %v", resource.Name, err)
 		}
 		resources = append(resources, res)
 	}
+
 	sort.Stable(common.ResourceByUpdateTime(resources))
 	return resources, nil
 }
 
 // AddDynamicResourceLifeCycle adds a new dynamic resource life cycle
 func (s *Storage) AddDynamicResourceLifeCycle(resource common.DynamicResourceLifeCycle) error {
-	return s.dynamicResourceLifeCycles.Add(resource)
+	o := &crds.DRLCObject{}
+	o.FromItem(resource)
+	o.Namespace = s.namespace
+	return s.client.Create(s.ctx, o)
 }
 
 // DeleteDynamicResourceLifeCycle deletes a dynamic resource life cycle if it exists, errors otherwise
 func (s *Storage) DeleteDynamicResourceLifeCycle(name string) error {
-	return s.dynamicResourceLifeCycles.Delete(name)
+	o := &crds.DRLCObject{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: s.namespace,
+		},
+	}
+	return s.client.Delete(s.ctx, o)
 }
 
 // UpdateDynamicResourceLifeCycle updates a dynamic resource life cycle. if it exists, errors otherwise
 func (s *Storage) UpdateDynamicResourceLifeCycle(resource common.DynamicResourceLifeCycle) (common.DynamicResourceLifeCycle, error) {
-	i, err := s.dynamicResourceLifeCycles.Update(resource)
-	if err != nil {
-		return common.DynamicResourceLifeCycle{}, err
+	dlrc := &crds.DRLCObject{}
+	name := types.NamespacedName{Namespace: s.namespace, Name: resource.GetName()}
+	if err := s.client.Get(s.ctx, name, dlrc); err != nil {
+		return common.DynamicResourceLifeCycle{}, fmt.Errorf("failed to get dlrc %s before patching it: %v", resource.GetName(), err)
 	}
-	var res common.DynamicResourceLifeCycle
-	res, err = common.ItemToDynamicResourceLifeCycle(i)
-	if err != nil {
-		return common.DynamicResourceLifeCycle{}, err
+
+	dlrc.FromItem(resource)
+	if err := s.client.Update(s.ctx, dlrc); err != nil {
+		return common.DynamicResourceLifeCycle{}, fmt.Errorf("failed to update dlrc %s after patching it: %v", resource.GetName(), err)
 	}
-	return res, nil
+
+	return common.ItemToDynamicResourceLifeCycle(dlrc.ToItem())
 }
 
 // GetDynamicResourceLifeCycle gets an existing dynamic resource life cycle, errors otherwise
 func (s *Storage) GetDynamicResourceLifeCycle(name string) (common.DynamicResourceLifeCycle, error) {
-	i, err := s.dynamicResourceLifeCycles.Get(name)
-	if err != nil {
-		return common.DynamicResourceLifeCycle{}, err
+	dlrc := &crds.DRLCObject{}
+	nn := types.NamespacedName{Namespace: s.namespace, Name: name}
+	if err := s.client.Get(s.ctx, nn, dlrc); err != nil {
+		return common.DynamicResourceLifeCycle{}, fmt.Errorf("failed to get dlrc %s: %q", name, err)
 	}
-	var res common.DynamicResourceLifeCycle
-	res, err = common.ItemToDynamicResourceLifeCycle(i)
-	if err != nil {
-		return common.DynamicResourceLifeCycle{}, err
-	}
-	return res, nil
+
+	return common.ItemToDynamicResourceLifeCycle(dlrc.ToItem())
 }
 
 // GetDynamicResourceLifeCycles list all dynamic resource life cycle
 func (s *Storage) GetDynamicResourceLifeCycles() ([]common.DynamicResourceLifeCycle, error) {
-	var resources []common.DynamicResourceLifeCycle
-	items, err := s.dynamicResourceLifeCycles.List()
-	if err != nil {
-		return resources, err
+	dlrcList := &crds.DRLCObjectList{}
+	if err := s.client.List(s.ctx, dlrcList, ctrlruntimeclient.InNamespace(s.namespace)); err != nil {
+		return nil, fmt.Errorf("failed to list dlrcs: %v", err)
 	}
-	for _, i := range items {
-		var res common.DynamicResourceLifeCycle
-		res, err = common.ItemToDynamicResourceLifeCycle(i)
+
+	var resources []common.DynamicResourceLifeCycle
+	for _, dlrc := range dlrcList.Items {
+		res, err := common.ItemToDynamicResourceLifeCycle(dlrc.ToItem())
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to convert dlrc %s: %v", dlrc.GetName(), err)
 		}
 		resources = append(resources, res)
 	}
+
 	return resources, nil
 }
 
