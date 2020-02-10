@@ -13,7 +13,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-etcdadm
       testgrid-tab-name: pr-verify
-  - name: pull-etcdadm-test-init
+  - name: pull-etcdadm-test-cluster
     labels:
       preset-dind-enabled: "true"
     path_alias: "sigs.k8s.io/etcdadm"
@@ -27,7 +27,7 @@ presubmits:
           privileged: true
         command:
         - "runner.sh"
-        - "./test/e2e/init.sh"
+        - "./test/e2e/cluster.sh"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-etcdadm
-      testgrid-tab-name: pr-test-init
+      testgrid-tab-name: pr-test-cluster
