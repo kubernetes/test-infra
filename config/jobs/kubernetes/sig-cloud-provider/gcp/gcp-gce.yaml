@@ -157,6 +157,60 @@ presubmits:
           requests:
             memory: "6Gi"
 
+  - name: pull-kubernetes-e2e-gce-ubuntu-containerd
+    always_run: false
+    skip_report: false
+    skip_branches:
+      - release-\d+\.\d+ # per-release image
+    annotations:
+      fork-per-release: "true"
+      testgrid-alert-stale-results-hours: "24"
+      testgrid-create-test-group: "true"
+      testgrid-num-failures-to-alert: "10"
+      testgrid-dashboards: google-gce
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-pull-kubernetes-e2e: "true"
+      preset-pull-kubernetes-e2e-gce: "true"
+    spec:
+      containers:
+        - args:
+            - --root=/go/src
+            - --repo=k8s.io/kubernetes=$(PULL_REFS)
+            - --repo=k8s.io/release
+            - --upload=gs://kubernetes-jenkins/pr-logs
+            - --timeout=105
+            - --scenario=kubernetes_e2e
+            - --
+            - --build=bazel
+            - --cluster=
+            - --env=KUBE_CONTAINER_RUNTIME=containerd
+            - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.3.3
+            - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.0.0-rc10
+            - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
+            - --env=KUBE_GCE_MASTER_IMAGE=ubuntu-1804-bionic-v20200108
+            - --env=KUBE_GCE_MASTER_PROJECT=ubuntu-os-cloud
+            - --env=KUBE_NODE_OS_DISTRIBUTION=ubuntu
+            - --env=KUBE_GCE_NODE_IMAGE=ubuntu-1804-bionic-v20200108
+            - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
+            - --extract=local
+            - --gcp-master-image=ubuntu
+            - --gcp-node-image=ubuntu
+            - --gcp-zone=us-west1-b
+            - --ginkgo-parallel=30
+            - --provider=gce
+            - --runtime-config=batch/v2alpha1=true
+            - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-ubuntu-containerd
+            - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+            - --timeout=80m # thinking about making this longer? don't! 80m is a hard cap, and should get down to no more than 60m.
+          image: gcr.io/k8s-testimages/kubekins-e2e:v20200203-25ff2bb-master
+          resources:
+            requests:
+              memory: "6Gi"
+
   - name: pull-kubernetes-e2e-gce-rbe
     always_run: true
     skip_report: true
