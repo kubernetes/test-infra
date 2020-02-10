@@ -148,14 +148,15 @@ periodics:
       - --deployment=kops
       - --extract=ci/latest
       - --ginkgo-parallel
-      - --kops-overrides=spec.kubeDNS.provider=CoreDNS
+      - --kops-dns-provider=CoreDNS
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-publish=gs://kops-ci/bin/latest-ci-green.txt
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200206-f88edef-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+      imagePullPolicy: Always
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-aws-coredns
