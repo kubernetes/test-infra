@@ -13,7 +13,7 @@ periodics:
 #    testgrid-tab-name: max-persistent-vol-per-pod
 #  spec:
 #    containers:
-#      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200206-f88edef-master
+#      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-master
 #        args:
 #          - --repo=k8s.io/kubernetes=master
 #          - --repo=k8s.io/perf-tests=master
@@ -55,7 +55,7 @@ periodics:
 #    testgrid-tab-name: max-persistent-vol-per-node
 #  spec:
 #    containers:
-#      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200206-f88edef-master
+#      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-master
 #        args:
 #          - --repo=k8s.io/kubernetes=master
 #          - --repo=k8s.io/perf-tests=master
@@ -96,7 +96,7 @@ periodics:
     testgrid-tab-name: storage
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200206-f88edef-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -135,7 +135,7 @@ periodics:
     testgrid-tab-name: calico
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200206-f88edef-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-master
       env:
       - name: NETWORK_POLICY_PROVIDER
         value: "calico"
@@ -197,7 +197,7 @@ periodics:
     testgrid-tab-name: experimental-load
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200206-f88edef-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-master
         args:
           - --timeout=140
           - --repo=k8s.io/kubernetes=master
@@ -255,7 +255,7 @@ periodics:
     testgrid-tab-name: experimental-load-containerd
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200206-f88edef-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-master
         args:
           - --timeout=140
           - --repo=k8s.io/kubernetes=master
@@ -314,7 +314,7 @@ periodics:
     testgrid-tab-name: experimental-access-tokens
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200206-f88edef-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-master
       args:
       - --timeout=140
       - --repo=k8s.io/kubernetes=master
