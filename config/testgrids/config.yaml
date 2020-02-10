@@ -239,6 +239,15 @@ dashboards:
         value: 'osconfig-stable issue: <test-name>'
       - key: body
         value: <test-url>
+  - name: osconfig-head-images
+    test_group_name: osconfig-head-images
+    file_bug_template:
+      url: https://github.com/GoogleCloudPlatform/osconfig/issues/new
+      options:
+      - key: title
+        value: 'osconfig-head-images issue: <test-name>'
+      - key: body
+        value: <test-url>
 
 - name: google-kops-gce
 - name: google-gci
