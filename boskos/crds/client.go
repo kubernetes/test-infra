@@ -34,11 +34,6 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-const (
-	group   = "boskos.k8s.io"
-	version = "v1"
-)
-
 // KubernetesClientOptions are flag options used to create a kube client.
 type KubernetesClientOptions struct {
 	inMemory   bool
