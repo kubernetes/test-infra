@@ -1,0 +1,145 @@
+presubmits:
+  IBM/go-repo-template:
+  - name: check-go-repo-template
+    cluster: default
+    always_run: true
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/go-repo-template
+    rerun_command: /test check-go-repo-template
+    spec:
+      containers:
+      - command:
+        - make
+        - check
+        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?check(?:.*?)?$'
+  - name: test-go-repo-template
+    cluster: default
+    always_run: true
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/go-repo-template
+    rerun_command: /test test-go-repo-template
+    spec:
+      containers:
+      - command:
+        - make
+        - test
+        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?test(?:.*?)?$'
+  - name: build-go-repo-template
+    cluster: default
+    always_run: true
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/go-repo-template
+    rerun_command: /test build-go-repo-template
+    spec:
+      containers:
+      - command:
+        - make
+        - build
+        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?build(?:.*?)?$'
+postsubmits:
+  IBM/go-repo-template:
+  - name: check-go-repo-template-postsubmit
+    cluster: default
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/go-repo-template
+    spec:
+      containers:
+      - command:
+        - make
+        - check
+        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
+        name: ""
+        securityContext:
+          privileged: true
+  - name: test-go-repo-template-postsubmit
+    cluster: default
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/go-repo-template
+    spec:
+      containers:
+      - command:
+        - make
+        - test
+        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
+        name: ""
+        securityContext:
+          privileged: true
+  - name: coverage-go-repo-template-postsubmit
+    cluster: default
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/go-repo-template
+    spec:
+      containers:
+      - command:
+        - make
+        - coverage
+        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
+        name: ""
+        env:
+        - name: CODECOV_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: ibm-go-repo-template-codecov-token
+              key: codecov-token
+        securityContext:
+          privileged: true
+  - name: build-go-repo-template-postsubmit
+    cluster: default
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/go-repo-template
+    spec:
+      containers:
+      - command:
+        - make
+        - build
+        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
+        name: ""
+        securityContext:
+          privileged: true
+  - name: images-go-repo-template-postsubmit
+    cluster: default
+    branches:
+    - ^master$
+    decorate: true
+    decoration_config:
+      ssh_key_secrets:
+      - ssh-secret
+    labels:
+      preset-service-account: "true"
+    path_alias: github.com/IBM/go-repo-template
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - images
+        image: quay.io/multicloudlab/multicloudlab-builder:v20191217-d33a10d
+        name: ""
+        securityContext:
+          privileged: true
