@@ -30,11 +30,11 @@ var (
 	// DRLCType is the DynamicResourceLifeCycle CRD type
 	DRLCType = Type{
 		Kind:       reflect.TypeOf(DRLCObject{}).Name(),
-		ListKind:   reflect.TypeOf(DRLCList{}).Name(),
+		ListKind:   reflect.TypeOf(DRLCObjectList{}).Name(),
 		Singular:   "dynamicresourcelifecycle",
 		Plural:     "dynamicresourcelifecycles",
 		Object:     &DRLCObject{},
-		Collection: &DRLCList{},
+		Collection: &DRLCObjectList{},
 	}
 )
 
@@ -62,8 +62,8 @@ type DRLCSpec struct {
 	Needs        common.ResourceNeeds `json:"needs"`
 }
 
-// DRLCList implements the Collections interface
-type DRLCList struct {
+// DRLCObjectList implements the Collections interface
+type DRLCObjectList struct {
 	v1.TypeMeta `json:",inline"`
 	v1.ListMeta `json:"metadata,omitempty"`
 	Items       []DRLCObject `json:"items"`
@@ -134,7 +134,7 @@ func (in *DRLCObject) FromItem(i common.Item) {
 }
 
 // GetItems implements the Collection interface
-func (in *DRLCList) GetItems() []Object {
+func (in *DRLCObjectList) GetItems() []Object {
 	var items []Object
 	for idx := range in.Items {
 		items = append(items, &in.Items[idx])
@@ -143,7 +143,7 @@ func (in *DRLCList) GetItems() []Object {
 }
 
 // SetItems implements the Collection interface
-func (in *DRLCList) SetItems(objects []Object) {
+func (in *DRLCObjectList) SetItems(objects []Object) {
 	var items []DRLCObject
 	for _, b := range objects {
 		items = append(items, *(b.(*DRLCObject)))
@@ -151,24 +151,24 @@ func (in *DRLCList) SetItems(objects []Object) {
 	in.Items = items
 }
 
-func (in *DRLCList) deepCopyInto(out *DRLCList) {
+func (in *DRLCObjectList) deepCopyInto(out *DRLCObjectList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
 	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	out.Items = in.Items
 }
 
-func (in *DRLCList) deepCopy() *DRLCList {
+func (in *DRLCObjectList) deepCopy() *DRLCObjectList {
 	if in == nil {
 		return nil
 	}
-	out := new(DRLCList)
+	out := new(DRLCObjectList)
 	in.deepCopyInto(out)
 	return out
 }
 
 // DeepCopyObject implements the runtime.Object interface
-func (in *DRLCList) DeepCopyObject() runtime.Object {
+func (in *DRLCObjectList) DeepCopyObject() runtime.Object {
 	if c := in.deepCopy(); c != nil {
 		return c
 	}
