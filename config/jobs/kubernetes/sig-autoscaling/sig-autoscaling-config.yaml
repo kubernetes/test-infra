@@ -123,6 +123,37 @@ periodics:
   annotations:
     testgrid-dashboards: sig-autoscaling-vpa
     testgrid-tab-name: autoscaling-vpa-recommender
+- name: ci-kubernetes-e2e-autoscaling-vpa-updater
+  interval: 2h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200128-8dae294-master
+      args:
+      - --repo=k8s.io/autoscaler=master
+      - --root=/go/src
+      - --timeout=80
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-zone=us-west1-b
+      - --provider=gce
+      - --test=false
+      - --test-cmd=../vertical-pod-autoscaler/hack/run-e2e.sh
+      - --test-cmd-args=updater
+      - --timeout=60m
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+
+  annotations:
+    testgrid-dashboards: sig-autoscaling-vpa
+    testgrid-tab-name: autoscaling-vpa-updater
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gce-autoscaling
   labels:
