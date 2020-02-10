@@ -1,5 +1,67 @@
 postsubmits:
   cncf/apisnoop:
+    - name: apisnoop-push-webapp-images
+      cluster: test-infra-trusted
+      annotations:
+        testgrid-dashboards: conformance-apisnoop
+        testgrid-tab-name: apisnoop-webapp-image
+        testgrid-alert-email: apisnoop@ii.coop
+        description: Builds the webapp image for APISnoop deployments
+      decorate: true
+      branches:
+        - ^master$
+      spec:
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20200205-602500d
+            command:
+              - /run.sh
+            args:
+              # this is the project GCB will run in, which is the same as the GCR images are pushed to.
+              - --project=k8s-staging-apisnoop
+              - --scratch-bucket=gs://k8s-staging-apisnoop-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - apps/webapp/
+            env:
+              - name: GOOGLE_APPLICATION_CREDENTIALS
+                value: /creds/service-account.json
+            volumeMounts:
+              - name: creds
+                mountPath: /creds
+        volumes:
+          - name: creds
+            secret:
+              secretName: deployer-service-account
+    - name: apisnoop-push-kubemacs-images
+      cluster: test-infra-trusted
+      annotations:
+        testgrid-dashboards: conformance-apisnoop
+        testgrid-tab-name: apisnoop-kubemacs-image
+        testgrid-alert-email: apisnoop@ii.coop
+        description: Builds the kubemacs image for APISnoop deployments
+      decorate: true
+      branches:
+        - ^master$
+      spec:
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20200205-602500d
+            command:
+              - /run.sh
+            args:
+              # this is the project GCB will run in, which is the same as the GCR images are pushed to.
+              - --project=k8s-staging-apisnoop
+              - --scratch-bucket=gs://k8s-staging-apisnoop-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - apps/kubemacs/
+            env:
+              - name: GOOGLE_APPLICATION_CREDENTIALS
+                value: /creds/service-account.json
+            volumeMounts:
+              - name: creds
+                mountPath: /creds
+        volumes:
+          - name: creds
+            secret:
+              secretName: deployer-service-account
     - name: apisnoop-push-auditlogger-images
       cluster: test-infra-trusted
       annotations:
