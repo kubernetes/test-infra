@@ -149,7 +149,7 @@ periodics:
       - -c
       - |
         local result=0
-        go install k8s.io/kubernetes/vendor/gotest.tools/gotestsum || result=$?
+        GO111MODULE=off go install k8s.io/kubernetes/vendor/gotest.tools/gotestsum || result=$?
         make test KUBE_COVER=y KUBE_COVER_REPORT_DIR="${ARTIFACTS}" || result=$?
         grep -v -E 'zz_generated|generated\.pb\.go' "${ARTIFACTS}/combined-coverage.out" > "${ARTIFACTS}/filtered.cov" || result=$?
         go tool cover -html="${ARTIFACTS}/filtered.cov" -o "${ARTIFACTS}/filtered.html" || result=$?
