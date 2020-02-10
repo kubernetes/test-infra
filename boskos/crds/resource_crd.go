@@ -38,11 +38,6 @@ var (
 	}
 )
 
-// NewTestResourceClient creates a fake CRD rest client for common.Resource
-func NewTestResourceClient() ClientInterface {
-	return newDummyClient(ResourceType)
-}
-
 // ResourceObject represents common.ResourceObject. It implements the Object interface.
 type ResourceObject struct {
 	v1.TypeMeta   `json:",inline"`

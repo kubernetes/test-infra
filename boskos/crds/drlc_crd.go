@@ -38,11 +38,6 @@ var (
 	}
 )
 
-// NewTestDRLCClient creates a fake CRD rest client for common.Resource
-func NewTestDRLCClient() ClientInterface {
-	return newDummyClient(DRLCType)
-}
-
 // DRLCObject holds generalized configuration information about how the
 // resource needs to be created.
 // Some Resource might not have a ResourcezConfig (Example Project)
