@@ -25,6 +25,7 @@ tide:
     IBM/ibm-catalog-operator: squash
     IBM/ibm-cert-manager-operator: squash
     IBM/ibm-cloudctl-operator: squash
+    IBM/ibm-iam-operator: squash
     IBM/ibm-licensing-operator: squash
     IBM/ibm-metering-operator: squash
     IBM/ibm-mt-grqenforcer-operator: squash
@@ -51,6 +52,7 @@ tide:
     - IBM/ibm-catalog-operator
     - IBM/ibm-cert-manager-operator
     - IBM/ibm-cloudctl-operator
+    - IBM/ibm-iam-operator
     - IBM/ibm-licensing-operator
     - IBM/ibm-metering-operator
     - IBM/ibm-mt-grqenforcer-operator
