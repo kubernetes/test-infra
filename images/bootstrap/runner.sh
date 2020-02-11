@@ -26,11 +26,11 @@ fi
 
 # runs custom docker data root cleanup binary and debugs remaining resources
 cleanup_dind() {
-    barnacle || true
-    # list what images and volumes remain
-    echo "Remaining docker images and volumes are:"
-    docker images --all || true
-    docker volume ls || true
+    if [[ "{DOCKER_IN_DOCKER_ENABLED:-false}" == "true" ]]; then
+        echo "Cleaning up after docker"
+        docker ps -aq | xargs -r docker rm -f || true
+        service docker stop || true
+    fi
     # cleanup binfmt_misc
     echo "Cleaning up binfmt_misc ..."
 }
