@@ -156,6 +156,12 @@ func (u upstreamTransport) RoundTrip(req *http.Request) (*http.Response, error) 
 		logrus.Warn("Couldn't retrieve 'Authorization' header, adding to unknown bucket")
 		authHeader = "unknown"
 	}
+	logrus.WithFields(logrus.Fields{
+		"words":      len(strings.Split(authHeader, " ")),
+		"length":     len(authHeader),
+		"user-agent": req.Header.Get("User-Agent"),
+		"source-ip":  req.RemoteAddr,
+	}).Debug("Hashing auth header.")
 	hasher := sha256.New()
 	hasher.Write([]byte(authHeader))
 	authHeaderHash := fmt.Sprintf("%x", hasher.Sum(nil)) // use %x to make this a utf-8 string for use as a label

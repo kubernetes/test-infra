@@ -69,15 +69,10 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 	configInfo := map[string]string{}
 	for _, orgRepo := range enabledRepos {
 		parts := strings.Split(orgRepo, "/")
-		var opts *plugins.Lgtm
-		switch len(parts) {
-		case 1:
-			opts = config.LgtmFor(orgRepo, "")
-		case 2:
-			opts = config.LgtmFor(parts[0], parts[1])
-		default:
+		if len(parts) != 2 {
 			return nil, fmt.Errorf("invalid repo in enabledRepos: %q", orgRepo)
 		}
+		opts := config.LgtmFor(parts[0], parts[1])
 		var isConfigured bool
 		var configInfoStrings []string
 		configInfoStrings = append(configInfoStrings, "The plugin has the following configuration:<ul>")

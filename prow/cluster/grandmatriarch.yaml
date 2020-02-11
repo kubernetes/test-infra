@@ -53,7 +53,7 @@ spec:
       serviceAccountName: grandmatriarch
       containers:
       - name: bakery
-        image: gcr.io/k8s-prow/grandmatriarch:v20200117-903ce628f
+        image: gcr.io/k8s-prow/grandmatriarch:v20200210-9e2e0d510
         args:
         - /etc/robot/service-account.json
         - http-cookiefile

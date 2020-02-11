@@ -10,7 +10,7 @@ presubmits:
     - gh-pages
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-master
         command:
         - runner.sh
         - ./scripts/ci-build.sh
@@ -34,7 +34,7 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-master
         resources:
           requests:
             memory: "6Gi"
@@ -51,7 +51,7 @@ presubmits:
     - gh-pages
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-master
         command:
         - "runner.sh"
         - "make"
@@ -69,7 +69,7 @@ presubmits:
     - gh-pages
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-master
         args:
         - runner.sh
         - ./scripts/ci-test.sh
@@ -90,7 +90,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-master
         command:
         - runner.sh
         - ./scripts/ci-integration.sh
@@ -109,12 +109,15 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     decorate: true
+    skip_branches:
+      - gh-pages
+      - release-0.2
     path_alias: sigs.k8s.io/cluster-api
     optional: true
-    always_run: false
+    always_run: true
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-master
           args:
             - runner.sh
             - "./scripts/ci-capd-e2e.sh"

@@ -24,7 +24,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Conformance\]
       - --timeout=200m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-1.15
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-1.15
       name: ""
       resources: {}
 - annotations:
@@ -56,7 +56,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-1.15
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-1.15
       name: ""
       resources: {}
 - annotations:
@@ -89,7 +89,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-1.15
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-1.15
       name: ""
       resources: {}
 - annotations:
@@ -120,7 +120,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-1.15
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-1.15
       name: ""
       resources: {}
 - annotations:
@@ -146,7 +146,7 @@ periodics:
       - --extra-publish-file=k8s-stable2
       - --hyperkube
       - --registry=gcr.io/kubernetes-ci-images
-      image: gcr.io/k8s-testimages/bootstrap:v20191203-6fb6647
+      image: gcr.io/k8s-testimages/bootstrap:v20200206-f88edef
       name: ""
       resources:
         requests:
@@ -196,7 +196,7 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=120m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-1.15
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-1.15
       name: ""
       resources: {}
   tags:
@@ -249,9 +249,9 @@ periodics:
       - --test-cmd-args=--testconfig=testing/load/config.yaml
       - --test-cmd-args=--testoverrides=./testing/load/kubemark/500_nodes/override.yaml
       - --test-cmd-name=ClusterLoaderV2
-      - --timeout=70m
+      - --timeout=80m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-1.15
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-1.15
       name: ""
       resources: {}
       securityContext:
@@ -292,7 +292,7 @@ periodics:
             --publish-version=gs://kubernetes-release-dev/ci/latest-bazel-1.15.txt
       command:
       - bash
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-1.15
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-1.15
       name: ""
       resources: {}
 - annotations:
@@ -350,7 +350,7 @@ periodics:
       - --branch=release-1.15
       - --force
       - --prow
-      image: gcr.io/k8s-testimages/bootstrap:v20191203-6fb6647
+      image: gcr.io/k8s-testimages/bootstrap:v20200206-f88edef
       name: ""
       resources:
         requests:
@@ -389,7 +389,7 @@ periodics:
         value: release-1.15
       - name: REPO_DIR
         value: /workspace/k8s.io/kubernetes
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-1.15
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-1.15
       imagePullPolicy: Always
       name: ""
       resources:
@@ -398,15 +398,15 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    description: Runs tests on a Kubernetes 1.15 cluster with Windows nodes on GCE
+    description: Runs tests on a Kubernetes 1.15 cluster with Windows 2019 nodes on GCE
     testgrid-dashboards: google-windows, sig-release-1.15-informing, sig-windows
     testgrid-tab-name: gce-windows-1.15
   decorate: true
   extra_refs:
-  - base_ref: master
-    org: yujuhong
-    path_alias: k8s.io/gce-k8s-windows-testing
-    repo: gce-k8s-windows-testing
+  - org: kubernetes-sigs
+    repo: windows-testing
+    base_ref: master
+    path_alias: k8s.io/windows-testing
   interval: 2h
   labels:
     preset-common-gce-windows: "true"
@@ -428,12 +428,15 @@ periodics:
       - --provider=gce
       - --gcp-nodes=2
       - --test=false
-      - --test-cmd=$GOPATH/src/k8s.io/gce-k8s-windows-testing/run-e2e.sh
+      - --test-cmd=$GOPATH/src/k8s.io/windows-testing/gce/run-e2e.sh
       - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]
         --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
       - --test-cmd-args=--node-os-distro=windows
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-1.15
+      env:
+      - name: WINDOWS_NODE_OS_DISTRIBUTION
+        value: "win2019"
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-1.15
 
 postsubmits:
   kubernetes/kubernetes:
@@ -461,7 +464,7 @@ postsubmits:
         - --gcs=gs://kubernetes-release-dev/ci
         - --version-suffix=-bazel
         - --publish-version=gs://kubernetes-release-dev/ci/latest-bazel-1.15.txt
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-1.15
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-1.15
         name: ""
         resources:
           requests:
@@ -537,7 +540,7 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-kops-aws
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
         - --timeout=55m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-1.15
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-1.15
         name: ""
         resources:
           requests:
@@ -579,7 +582,7 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-device-plugin-gpu
         - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
         - --timeout=60m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-1.15
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-1.15
         name: ""
         resources:
           requests:
@@ -621,7 +624,7 @@ presubmits:
         - --stage-suffix=pull-kubernetes-e2e-gke-device-plugin-gpu
         - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
         - --timeout=60m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-1.15
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-1.15
         name: ""
         resources:
           requests:
@@ -662,7 +665,7 @@ presubmits:
         env:
         - name: GINKGO_TOLERATE_FLAKES
           value: "y"
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-1.15
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-1.15
         name: ""
         resources:
           requests:
@@ -711,7 +714,7 @@ presubmits:
         - --timeout=80m
         command:
         - ../test-infra/scenarios/kubernetes_e2e.py
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-1.15
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-1.15
         name: ""
         resources: {}
   - always_run: false
@@ -750,7 +753,7 @@ presubmits:
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
           --minStartupPods=8
         - --timeout=65m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-1.15
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-1.15
         name: ""
         resources:
           requests:
@@ -783,7 +786,7 @@ presubmits:
         - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"
         - --timeout=65m
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-1.15
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-1.15
         name: ""
         resources:
           requests:
@@ -827,7 +830,7 @@ presubmits:
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:RuntimeHandler\]
           --minStartupPods=8
         - --timeout=80m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-1.15
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-1.15
         name: ""
         resources:
           requests:
@@ -877,7 +880,7 @@ presubmits:
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=100m
         - --use-logexporter
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-master
         resources:
           requests:
             memory: "6Gi"
@@ -933,7 +936,7 @@ presubmits:
         - --test-cmd-args=--testoverrides=./testing/load/kubemark/500_nodes/override.yaml
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=100m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-1.15
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-1.15
         name: ""
         resources:
           requests:
@@ -1006,6 +1009,6 @@ presubmits:
         env:
         - name: WHAT
           value: typecheck
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-1.15
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-1.15
         name: main
         resources: {}

@@ -163,6 +163,8 @@ type Cluster struct {
 	networkPlugin                    string
 	azureClient                      *AzureClient
 	aksDeploymentMethod              aksDeploymentMethod
+	useManagedIdentity               bool
+	identityName                     string
 }
 
 // IsAzureStackCloud return true if the cloud is AzureStack
@@ -358,13 +360,15 @@ func newAKSEngine() (*Cluster, error) {
 		customKubeBinaryURL:              "",
 		aksEngineBinaryPath:              "aks-engine", // use the one in path by default
 		aksDeploymentMethod:              getAKSDeploymentMethod(*aksOrchestratorRelease),
+		useManagedIdentity:               false,
+		identityName:                     "",
 	}
 	c.getAzCredentials()
 	err = c.SetCustomCloudProfileEnvironment()
 	if err != nil {
 		return nil, fmt.Errorf("failed to create custom cloud profile file: %v", err)
 	}
-	err = c.getARMClient(c.ctx)
+	err = c.getAzureClient(c.ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate ARM client: %v", err)
 	}
@@ -483,8 +487,19 @@ func (c *Cluster) populateAPIModelTemplate() error {
 	v.Properties.LinuxProfile.SSHKeys.PublicKeys = []PublicKey{{
 		KeyData: c.sshPublicKey,
 	}}
-	v.Properties.ServicePrincipalProfile.ClientID = c.credentials.ClientID
-	v.Properties.ServicePrincipalProfile.Secret = c.credentials.ClientSecret
+
+	if !toBool(v.Properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity) {
+		v.Properties.ServicePrincipalProfile.ClientID = c.credentials.ClientID
+		v.Properties.ServicePrincipalProfile.Secret = c.credentials.ClientSecret
+	} else {
+		c.useManagedIdentity = true
+		if v.Properties.OrchestratorProfile.KubernetesConfig.UserAssignedID != "" {
+			c.identityName = v.Properties.OrchestratorProfile.KubernetesConfig.UserAssignedID
+		} else {
+			c.identityName = c.resourceGroup + "-id"
+			v.Properties.OrchestratorProfile.KubernetesConfig.UserAssignedID = c.identityName
+		}
+	}
 
 	if c.aksCustomWinBinariesURL != "" {
 		v.Properties.OrchestratorProfile.KubernetesConfig.CustomWindowsPackageURL = c.aksCustomWinBinariesURL
@@ -642,7 +657,7 @@ func (c *Cluster) loadARMTemplates() error {
 	return nil
 }
 
-func (c *Cluster) getARMClient(ctx context.Context) error {
+func (c *Cluster) getAzureClient(ctx context.Context) error {
 	// instantiate Azure Resource Manager Client
 	env, err := azure.EnvironmentFromName(c.azureEnvironment)
 	var client *AzureClient
@@ -680,20 +695,28 @@ func (c *Cluster) createCluster() error {
 	if err != nil {
 		return fmt.Errorf("could not ensure resource group: %v", err)
 	}
+
 	log.Printf("Validating deployment ARM templates.")
 	if _, err := c.azureClient.ValidateDeployment(
 		c.ctx, c.resourceGroup, c.name, &c.templateJSON, &c.parametersJSON,
 	); err != nil {
 		return fmt.Errorf("ARM template invalid: %v", err)
 	}
+
 	log.Printf("Deploying cluster %v in resource group %v.", c.name, c.resourceGroup)
 	if _, err := c.azureClient.DeployTemplate(
 		c.ctx, c.resourceGroup, c.name, &c.templateJSON, &c.parametersJSON,
 	); err != nil {
 		return fmt.Errorf("cannot deploy: %v", err)
 	}
-	return nil
 
+	if c.useManagedIdentity && c.identityName != "" {
+		log.Printf("Assigning 'Owner' role to %s in %s", c.identityName, c.resourceGroup)
+		if err := c.azureClient.AssignOwnerRoleToIdentity(c.ctx, c.resourceGroup, c.identityName); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (c *Cluster) populateAzureCloudConfig(isVMSS bool) error {

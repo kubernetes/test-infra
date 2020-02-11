@@ -30,8 +30,8 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	reporter "k8s.io/test-infra/prow/crier/reporters/gerrit"
 	"k8s.io/test-infra/prow/gerrit/client"
-	"k8s.io/test-infra/prow/gerrit/reporter"
 	"k8s.io/test-infra/prow/pjutil"
 )
 
@@ -284,7 +284,7 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 		}
 		labels[client.GerritRevision] = change.CurrentRevision
 
-		if gerritLabel, ok := labels[client.GerritReportLabel]; !ok || gerritLabel == "" {
+		if _, ok := labels[client.GerritReportLabel]; !ok {
 			labels[client.GerritReportLabel] = client.CodeReview
 		}
 

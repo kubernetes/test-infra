@@ -306,9 +306,13 @@ func getBuildData(bucket storageBucket, dir string) (buildData, error) {
 		b.Result = "Pending"
 		logrus.Debugf("failed to read finished.json (job might be unfinished): %v", err)
 	}
-	if finished.Revision != "" {
-		b.commitHash = finished.Revision
+	// Testgrid metadata.Finished is deprecating the Revision field, however
+	// the actual finished.json is still using revision and maps to DeprecatedRevision.
+	// TODO(ttyang): update both to match when fejta completely removes DeprecatedRevision.
+	if finished.DeprecatedRevision != "" {
+		b.commitHash = finished.DeprecatedRevision
 	}
+
 	if finished.Timestamp != nil {
 		b.Duration = time.Unix(*finished.Timestamp, 0).Sub(b.Started)
 	} else {

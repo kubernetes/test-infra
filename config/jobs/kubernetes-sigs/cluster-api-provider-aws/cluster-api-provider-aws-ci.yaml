@@ -1,27 +1,9 @@
 periodics:
-- name: periodic-cluster-api-provider-aws-test-creds
-  decorate: true
-  interval: 4h
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
-  extra_refs:
-  - org: kubernetes-sigs
-    repo: cluster-api-provider-aws
-    base_ref: master
-    path_alias: "sigs.k8s.io/cluster-api-provider-aws"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-master
-      command:
-      - "./scripts/ci-aws-cred-test.sh"
-  annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
-    testgrid-tab-name: test-creds
 - name: periodic-cluster-api-provider-aws-e2e-master
   decorate: true
-  interval: 1h
+  decoration_config:
+    timeout: 4h
+  interval: 5h
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -35,7 +17,7 @@ periodics:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-master
       command:
         - "runner.sh"
         - "./scripts/ci-e2e.sh"
@@ -46,6 +28,10 @@ periodics:
         value: "us-west-2"
       securityContext:
         privileged: true
+      resources:
+        requests:
+          cpu: 1
+          memory: "4Gi"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
     testgrid-tab-name: periodic-e2e-master
@@ -54,8 +40,8 @@ periodics:
 - name: periodic-cluster-api-provider-aws-e2e-release-0-4
   decorate: true
   decoration_config:
-    timeout: 3h
-  interval: 1h
+    timeout: 4h
+  interval: 5h
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -69,7 +55,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-master
         command:
           - "runner.sh"
           - "./scripts/ci-e2e.sh"
@@ -80,9 +66,51 @@ periodics:
             value: "us-west-2"
         securityContext:
           privileged: true
+        resources:
+          requests:
+            cpu: 1
+            memory: "4Gi"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
     testgrid-tab-name: periodic-e2e-release-0-4
+    testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
+    testgrid-num-failures-to-alert: "2"
+- name: periodic-cluster-api-provider-aws-e2e-conformance-master
+  decorate: true
+  decoration_config:
+    timeout: 3h
+  interval: 4h
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+  extra_refs:
+    - org: kubernetes-sigs
+      repo: cluster-api-provider-aws
+      base_ref: master
+      path_alias: "sigs.k8s.io/cluster-api-provider-aws"
+  spec:
+    containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-master
+        command:
+          - "runner.sh"
+          - "./scripts/ci-e2e-conformance.sh"
+        env:
+          - name: BOSKOS_HOST
+            value: "boskos.test-pods.svc.cluster.local"
+          - name: AWS_REGION
+            value: "us-west-2"
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 1
+            memory: "4Gi"
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
+    testgrid-tab-name: periodic-e2e-conformance-master
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
     testgrid-num-failures-to-alert: "2"
 - name: periodic-cluster-api-provider-aws-e2e-conformance-release-0-4
@@ -103,7 +131,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-master
         command:
           - "runner.sh"
           - "./scripts/ci-e2e-conformance.sh"
@@ -114,6 +142,10 @@ periodics:
             value: "us-west-2"
         securityContext:
           privileged: true
+        resources:
+          requests:
+            cpu: 1
+            memory: "4Gi"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
     testgrid-tab-name: periodic-e2e-conformance-release-0-4
@@ -121,7 +153,7 @@ periodics:
     testgrid-num-failures-to-alert: "2"
 - name: ci-cluster-api-provider-aws-make-conformance-master
   interval: 3h
-  max_concurrency: 5
+  max_concurrency: 1
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -146,7 +178,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-experimental
         env:
           - name: CAPI_BRANCH
             value: "master"
@@ -174,7 +206,7 @@ periodics:
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
 - name: ci-cluster-api-provider-aws-make-conformance-stable
   interval: 3h
-  max_concurrency: 5
+  max_concurrency: 1
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -199,7 +231,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-experimental
         env:
           - name: CI_VERSION
             value: "v1.16.3"
@@ -228,8 +260,7 @@ periodics:
     testgrid-num-columns-recent: '20'
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
 - name: ci-cluster-api-provider-aws-make-conformance-stable-k8s-ci-artifacts
-  interval: 3h
-  max_concurrency: 5
+  max_concurrency: 1
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -239,6 +270,9 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
   decorate: true
+  decoration_config:
+    timeout: 3h
+  interval: 4h
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-aws
@@ -254,7 +288,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-experimental
         env:
           - name: CAPI_BRANCH
             value: "stable"
@@ -283,21 +317,21 @@ periodics:
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
 postsubmits:
   kubernetes-sigs/cluster-api-provider-aws:
-  - name: ci-cluster-api-provider-aws-e2e-master
+  - name: ci-cluster-api-provider-aws-e2e
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     decorate: true
-    max_concurrency: 5
+    decoration_config:
+      timeout: 4h
+    max_concurrency: 1
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
       preset-service-account: "true"
       preset-aws-ssh: "true"
       preset-aws-credential: "true"
-    branches:
-    - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-master
         command:
         - "runner.sh"
         - "./scripts/ci-e2e.sh"
@@ -308,58 +342,30 @@ postsubmits:
           value: "us-west-2"
         securityContext:
           privileged: true
+        resources:
+          requests:
+            cpu: 1
+            memory: "4Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
-      testgrid-tab-name: ci-e2e-master
+      testgrid-tab-name: ci-e2e
       testgrid-num-columns-recent: '20'
       testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
-  - name: ci-cluster-api-provider-aws-e2e-release-0-4
-    path_alias: "sigs.k8s.io/cluster-api-provider-aws"
-    decorate: true
-    max_concurrency: 5
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-      preset-service-account: "true"
-      preset-aws-ssh: "true"
-      preset-aws-credential: "true"
-    branches:
-      - release-0.4
-    spec:
-      containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-master
-          command:
-            - "runner.sh"
-            - "./scripts/ci-e2e.sh"
-          env:
-            - name: BOSKOS_HOST
-              value: "boskos.test-pods.svc.cluster.local"
-            - name: AWS_REGION
-              value: "us-west-2"
-          securityContext:
-            privileged: true
-    annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
-      testgrid-tab-name: ci-e2e-release-0-4
-      testgrid-num-columns-recent: '20'
-      testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
-  - name: ci-cluster-api-provider-aws-e2e-conformance-release-0-4
+  - name: ci-cluster-api-provider-aws-e2e-conformance
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     decorate: true
     decoration_config:
       timeout: 3h
-    max_concurrency: 5
+    max_concurrency: 1
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
       preset-service-account: "true"
       preset-aws-ssh: "true"
       preset-aws-credential: "true"
-    branches:
-      - release-0.4
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-master
           command:
             - "runner.sh"
             - "./scripts/ci-e2e-conformance.sh"
@@ -370,8 +376,12 @@ postsubmits:
               value: "us-west-2"
           securityContext:
             privileged: true
+          resources:
+            requests:
+              cpu: 1
+              memory: "4Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
-      testgrid-tab-name: ci-e2e-conformance-release-0-4
+      testgrid-tab-name: ci-e2e-conformance
       testgrid-num-columns-recent: '20'
       testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com

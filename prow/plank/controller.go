@@ -33,9 +33,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	reporter "k8s.io/test-infra/prow/crier/reporters/github"
 	"k8s.io/test-infra/prow/github"
 	reportlib "k8s.io/test-infra/prow/github/report"
-	"k8s.io/test-infra/prow/github/reporter"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pod-utils/decorate"
@@ -374,7 +374,7 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]corev1.Pod
 			}
 			pj.Status.State = prowapi.ErrorState
 			pj.SetComplete()
-			pj.Status.Description = "Job cannot be processed."
+			pj.Status.Description = fmt.Sprintf("Job cannot be processed: %v", err)
 			c.log.WithFields(pjutil.ProwJobFields(&pj)).WithError(err).Warning("Unprocessable pod.")
 		} else {
 			pj.Status.BuildID = id
@@ -430,26 +430,29 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]corev1.Pod
 
 		case corev1.PodPending:
 			maxPodPending := c.config().Plank.PodPendingTimeout.Duration
-			if pod.Status.StartTime.IsZero() || time.Since(pod.Status.StartTime.Time) < maxPodPending {
-				// Pod is running. Do nothing.
-				c.incrementNumPendingJobs(pj.Spec.Job)
-				return nil
+			maxPodUnscheduled := c.config().Plank.PodUnscheduledTimeout.Duration
+			if pod.Status.StartTime.IsZero() {
+				if time.Since(pod.CreationTimestamp.Time) >= maxPodUnscheduled {
+					// Pod is stuck in unscheduled state longer than maxPodUncheduled
+					// abort the job, and talk to GitHub
+					pj.SetComplete()
+					pj.Status.State = prowapi.ErrorState
+					pj.Status.Description = "Pod scheduling timeout."
+					c.log.WithFields(pjutil.ProwJobFields(&pj)).Info("Marked job for stale unscheduled pod as errored.")
+					break
+				}
+			} else if time.Since(pod.Status.StartTime.Time) >= maxPodPending {
+				// Pod is stuck in pending state longer than maxPodPending
+				// abort the job, and talk to GitHub
+				pj.SetComplete()
+				pj.Status.State = prowapi.ErrorState
+				pj.Status.Description = "Pod pending timeout."
+				c.log.WithFields(pjutil.ProwJobFields(&pj)).Info("Marked job for stale pending pod as errored.")
+				break
 			}
-
-			// Pod is stuck in pending state longer than maxPodPending
-			// abort the job, and talk to GitHub
-			pj.SetComplete()
-			pj.Status.State = prowapi.ErrorState
-			pj.Status.Description = "Pod pending timeout."
-			client, ok := c.buildClients[pj.ClusterAlias()]
-			if !ok {
-				return fmt.Errorf("pending pod %s: unknown cluster alias %q", pod.Name, pj.ClusterAlias())
-			}
-			if err := client.Delete(c.ctx, &pod); err != nil {
-				return fmt.Errorf("failed to delete pod %s that was in pending timeout: %v", pod.Name, err)
-			}
-			c.log.WithFields(pjutil.ProwJobFields(&pj)).Info("Deleted stale pending pod.")
-
+			// Pod is running. Do nothing.
+			c.incrementNumPendingJobs(pj.Spec.Job)
+			return nil
 		case corev1.PodRunning:
 			maxPodRunning := c.config().Plank.PodRunningTimeout.Duration
 			if pod.Status.StartTime.IsZero() || time.Since(pod.Status.StartTime.Time) < maxPodRunning {
@@ -516,7 +519,7 @@ func (c *Controller) syncTriggeredJob(pj prowapi.ProwJob, pm map[string]corev1.P
 			}
 			pj.Status.State = prowapi.ErrorState
 			pj.SetComplete()
-			pj.Status.Description = "Job cannot be processed."
+			pj.Status.Description = fmt.Sprintf("Job cannot be processed: %v", err)
 			logrus.WithField("job", pj.Spec.Job).WithError(err).Warning("Unprocessable pod.")
 		}
 	} else {

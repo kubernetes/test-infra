@@ -30,7 +30,6 @@ import (
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
-	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	ctrlruntimelog "sigs.k8s.io/controller-runtime/pkg/runtime/log"
@@ -140,7 +139,7 @@ func main() {
 		logrus.WithError(err).Fatal("Error creating build cluster clients.")
 	}
 
-	var podClients []corev1.PodInterface
+	var podClients []podInterface
 	for _, client := range buildClusterClients {
 		// sinker doesn't care about build cluster aliases
 		podClients = append(podClients, client)
@@ -162,12 +161,17 @@ func main() {
 	}
 }
 
+type podInterface interface {
+	Delete(name string, options *metav1.DeleteOptions) error
+	List(opts metav1.ListOptions) (*corev1api.PodList, error)
+}
+
 type controller struct {
 	ctx           context.Context
 	cancel        context.CancelFunc
 	logger        *logrus.Entry
 	prowJobClient ctrlruntimeclient.Client
-	podClients    []corev1.PodInterface
+	podClients    []podInterface
 	config        config.Getter
 	runOnce       bool
 }
@@ -300,12 +304,12 @@ func (c *controller) clean() {
 	metrics.prowJobsCreated = len(prowJobs.Items)
 
 	// Only delete pod if its prowjob is marked as finished
-	isExist := sets.NewString()
+	pjMap := map[string]*prowapi.ProwJob{}
 	isFinished := sets.NewString()
 
 	maxProwJobAge := c.config().Sinker.MaxProwJobAge.Duration
-	for _, prowJob := range prowJobs.Items {
-		isExist.Insert(prowJob.ObjectMeta.Name)
+	for i, prowJob := range prowJobs.Items {
+		pjMap[prowJob.ObjectMeta.Name] = &prowJobs.Items[i]
 		// Handle periodics separately.
 		if prowJob.Spec.Type == prowapi.PeriodicJob {
 			continue
@@ -364,11 +368,12 @@ func (c *controller) clean() {
 
 	// Now clean up old pods.
 	selector := fmt.Sprintf("%s = %s", kube.CreatedByProw, "true")
-	for _, client := range c.podClients {
+	for cluster, client := range c.podClients {
+		log := c.logger.WithField("cluster", cluster)
 		pods, err := client.List(metav1.ListOptions{LabelSelector: selector})
 		if err != nil {
-			c.logger.WithError(err).Error("Error listing pods.")
-			return
+			log.WithError(err).Error("Error listing pods.")
+			continue
 		}
 		metrics.podsCreated += len(pods.Items)
 		maxPodAge := c.config().Sinker.MaxPodAge.Duration
@@ -376,7 +381,19 @@ func (c *controller) clean() {
 		for _, pod := range pods.Items {
 			reason := ""
 			clean := false
-			terminationTime := podTerminationTime(&pod)
+
+			// by default, use the pod name as the key to match the associated prow job
+			// this is to support legacy plank in case the kube.ProwJobIDLabel label is not set
+			podJobName := pod.ObjectMeta.Name
+			// if the pod has the kube.ProwJobIDLabel label, use this instead of the pod name
+			if value, ok := pod.ObjectMeta.Labels[kube.ProwJobIDLabel]; ok {
+				podJobName = value
+			}
+			terminationTime := time.Time{}
+			if pj, ok := pjMap[podJobName]; ok && pj.Complete() {
+				terminationTime = pj.Status.CompletionTime.Time
+			}
+
 			switch {
 			case !pod.Status.StartTime.IsZero() && time.Since(pod.Status.StartTime.Time) > maxPodAge:
 				clean = true
@@ -386,20 +403,12 @@ func (c *controller) clean() {
 				reason = reasonPodTTLed
 			}
 
-			// by default, use the pod name as the key to match the associated prow job
-			// this is to support legacy plank in case the kube.ProwJobIDLabel label is not set
-			podJobName := pod.ObjectMeta.Name
-			// if the pod has the kube.ProwJobIDLabel label, use this instead of the pod name
-			if value, ok := pod.ObjectMeta.Labels[kube.ProwJobIDLabel]; ok {
-				podJobName = value
-			}
-
 			if !isFinished.Has(podJobName) {
 				// prowjob exists and is not marked as completed yet
 				// deleting the pod now will result in plank creating a brand new pod
 				clean = false
 			}
-			if !isExist.Has(podJobName) {
+			if _, ok := pjMap[podJobName]; !ok {
 				// prowjob has gone, we want to clean orphan pods regardless of the state
 				reason = reasonPodOrphaned
 				clean = true
@@ -411,10 +420,10 @@ func (c *controller) clean() {
 
 			// Delete old finished or orphan pods. Don't quit if we fail to delete one.
 			if err := client.Delete(pod.ObjectMeta.Name, &metav1.DeleteOptions{}); err == nil {
-				c.logger.WithFields(logrus.Fields{"pod": pod.ObjectMeta.Name, "reason": reason}).Info("Deleted old completed pod.")
+				log.WithFields(logrus.Fields{"pod": pod.ObjectMeta.Name, "reason": reason}).Info("Deleted old completed pod.")
 				metrics.podsRemoved[reason]++
 			} else {
-				c.logger.WithField("pod", pod.ObjectMeta.Name).WithError(err).Error("Error deleting pod.")
+				log.WithField("pod", pod.ObjectMeta.Name).WithError(err).Error("Error deleting pod.")
 				metrics.podRemovalErrors[string(k8serrors.ReasonForError(err))]++
 			}
 		}
@@ -437,28 +446,4 @@ func (c *controller) clean() {
 		sinkerMetrics.prowJobsCleaningErrors.WithLabelValues(k).Set(float64(v))
 	}
 	c.logger.Info("Sinker reconciliation complete.")
-}
-
-// podTerminationTime returns the "termination time" of the pod (a concept that
-// pods do not actually have), calculating it as the termination time of the
-// last pod to terminate.
-// This is probably meaningless for pods that restart containers.
-func podTerminationTime(pod *corev1api.Pod) time.Time {
-	var endTime time.Time
-	if pod.Status.Phase != corev1api.PodSucceeded && pod.Status.Phase != corev1api.PodFailed {
-		return endTime
-	}
-
-	for _, container := range pod.Status.InitContainerStatuses {
-		if container.State.Terminated != nil && container.State.Terminated.FinishedAt.After(endTime) {
-			endTime = container.State.Terminated.FinishedAt.Time
-		}
-	}
-
-	for _, container := range pod.Status.ContainerStatuses {
-		if container.State.Terminated != nil && container.State.Terminated.FinishedAt.After(endTime) {
-			endTime = container.State.Terminated.FinishedAt.Time
-		}
-	}
-	return endTime
 }

@@ -7,7 +7,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-master
         command:
         - "./scripts/ci-test.sh"
     annotations:
@@ -20,7 +20,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-master
         command:
         - "./scripts/ci-build.sh"
     annotations:
@@ -32,31 +32,17 @@ presubmits:
     decorate: true
     labels:
       preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-master
         command:
         - "runner.sh"
         - "./scripts/ci-integration.sh"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        volumeMounts:
-        - mountPath: /lib/modules
-          name: modules
-          readOnly: true
-        - mountPath: /sys/fs/cgroup
-          name: cgroup
-      volumes:
-      - name: modules
-        hostPath:
-          path: /lib/modules
-          type: Directory
-      - name: cgroup
-        hostPath:
-          path: /sys/fs/cgroup
-          type: Directory
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
       testgrid-tab-name: pr-integration
@@ -67,9 +53,8 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-master
         command:
-        - "runner.sh"
         - "make"
         - "verify"
     annotations:
@@ -100,7 +85,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-experimental
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-experimental
           command:
             - "runner.sh"
             - "./scripts/ci-conformance.sh"
@@ -129,7 +114,7 @@ presubmits:
     optional: true
     decorate: true
     decoration_config:
-      timeout: 3h
+      timeout: 4h
     max_concurrency: 5
     labels:
       preset-dind-enabled: "true"
@@ -139,7 +124,7 @@ presubmits:
       preset-aws-credential: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-master
           command:
             - "runner.sh"
             - "./scripts/ci-e2e.sh"
@@ -150,6 +135,10 @@ presubmits:
               value: "us-west-2"
           securityContext:
             privileged: true
+          resources:
+            requests:
+              cpu: 1
+              memory: "4Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
       testgrid-tab-name: pr-e2e
@@ -159,6 +148,8 @@ presubmits:
     always_run: false
     optional: true
     decorate: true
+    decoration_config:
+      timeout: 4h
     max_concurrency: 5
     labels:
       preset-dind-enabled: "true"
@@ -168,7 +159,7 @@ presubmits:
       preset-aws-credential: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-master
           command:
             - "runner.sh"
             - "./scripts/ci-e2e-conformance.sh"
@@ -179,6 +170,10 @@ presubmits:
               value: "us-west-2"
           securityContext:
             privileged: true
+          resources:
+            requests:
+              cpu: 1
+              memory: "4Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
       testgrid-tab-name: pr-e2e-conformance

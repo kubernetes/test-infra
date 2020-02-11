@@ -138,17 +138,11 @@ func DefaultAndValidateProwYAML(c *Config, p *ProwYAML, identifier string) error
 
 	var errs []error
 	for _, pre := range p.Presubmits {
-		if pre.Branches != nil || pre.SkipBranches != nil {
-			errs = append(errs, fmt.Errorf("presubmit job %q contains branchconfig. This is not allowed for jobs in %q", pre.Name, inRepoConfigFileName))
-		}
 		if !c.InRepoConfigAllowsCluster(pre.Cluster, identifier) {
 			errs = append(errs, fmt.Errorf("cluster %q is not allowed for repository %q", pre.Cluster, identifier))
 		}
 	}
 	for _, post := range p.Postsubmits {
-		if post.Branches != nil || post.SkipBranches != nil {
-			errs = append(errs, fmt.Errorf("postsubmit job %q contains branchconfig. This is not allowed for jobs in %q", post.Name, inRepoConfigFileName))
-		}
 		if !c.InRepoConfigAllowsCluster(post.Cluster, identifier) {
 			errs = append(errs, fmt.Errorf("cluster %q is not allowed for repository %q", post.Cluster, identifier))
 		}

@@ -13,7 +13,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-experimental
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-experimental
       command:
       - "runner.sh"
       - "./scripts/ci-build.sh"
@@ -34,7 +34,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-experimental
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-experimental
       args:
       - "runner.sh"
       - "./scripts/ci-test.sh"
@@ -69,7 +69,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-experimental
         env:
           - name: "CAPI_BRANCH"
             value: "master"
@@ -121,7 +121,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-experimental
         env:
           - name: "CAPI_BRANCH"
             value: "stable"
@@ -146,7 +146,6 @@ periodics:
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
     testgrid-num-failures-to-alert: "2"
 - name: ci-cluster-api-provider-gcp-make-conformance-stable-k8s-ci-artifacts
-  interval: 3h
   labels:
     preset-service-account: "true"
     preset-bazel-scratch-dir: "true"
@@ -154,6 +153,9 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
   decorate: true
+  decoration_config:
+    timeout: 3h
+  interval: 4h
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-gcp
@@ -173,7 +175,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-experimental
         env:
           - name: "CAPI_BRANCH"
             value: "stable"

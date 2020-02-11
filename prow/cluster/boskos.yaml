@@ -62,7 +62,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: boskos
-        image: gcr.io/k8s-prow/boskos/boskos:v20200117-6384054e3
+        image: gcr.io/k8s-prow/boskos/boskos:v20200206-f88edefe8
         args:
         - --config=/etc/config/config
         - --namespace=test-pods
@@ -91,3 +91,19 @@ spec:
     protocol: TCP
     port: 80
     targetPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: boskos-http-metrics
+  namespace: test-pods
+spec:
+  selector:
+    app: boskos
+  ports:
+  - name: metrics
+    port: 9090
+    protocol: TCP
+    targetPort: 9090
+  loadBalancerIP: 34.70.169.97  # boskos-http-metrics
+  type: LoadBalancer

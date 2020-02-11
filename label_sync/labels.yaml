@@ -780,6 +780,11 @@ repos:
         name: area/slack-management
         target: both
         addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to the upstream marketing team
+        name: area/contributor-comms
+        target: both
+        addedBy: humans
   kubernetes/enhancements:
     labels:
       - color: 0052cc
@@ -805,6 +810,36 @@ repos:
       - color: 0052cc
         description: Indicates an issue related to DNS records.
         name: area/dns
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to auditing for the Kubernetes project infrastructure
+        name: area/infra/auditing
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to monitoring of the Kubernetes project infrastructure
+        name: area/infra/monitoring
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: Issues or PR related to reliability of the Kubernetes project infrastructure
+        name: area/infra/reliability
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to Publishing bot
+        name: area/infra/publishing-bot
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to Cert Manager
+        name: area/infra/cert-manager
         target: both
         prowPlugin: label
         addedBy: anyone

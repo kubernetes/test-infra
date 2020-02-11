@@ -17,10 +17,17 @@ limitations under the License.
 package metadata
 
 import (
+	"encoding/json"
 	"reflect"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+
+	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
+
+	k8sreporter "k8s.io/test-infra/prow/crier/reporters/gcs/kubernetes"
 )
 
 func TestFlattenMetadata(t *testing.T) {
@@ -93,5 +100,326 @@ func TestFlattenMetadata(t *testing.T) {
 		if !reflect.DeepEqual(flattenedMetadata, test.expectedMap) {
 			t.Errorf("%s: resulting map did not match expected map: %v", test.name, cmp.Diff(flattenedMetadata, test.expectedMap))
 		}
+	}
+}
+
+func TestHintFromPodInfo(t *testing.T) {
+	tests := []struct {
+		name     string
+		info     k8sreporter.PodReport
+		expected string
+	}{
+		{
+			name: "normal failed run has no output",
+			info: k8sreporter.PodReport{
+				Pod: &v1.Pod{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "8ef160fc-46b6-11ea-a907-1a9873703b03",
+					},
+					Spec: v1.PodSpec{
+						Containers: []v1.Container{
+							{
+								Name:  "test",
+								Image: "gcr.io/k8s-testimages/kubekins-e2e:v20200131-0997840-master",
+							},
+						},
+					},
+					Status: v1.PodStatus{
+						Phase: v1.PodFailed,
+						ContainerStatuses: []v1.ContainerStatus{
+							{
+								Name:  "test",
+								Image: "gcr.io/k8s-testimages/kubekins-e2e:v20200131-0997840-master",
+								Ready: false,
+								State: v1.ContainerState{
+									Terminated: &v1.ContainerStateTerminated{
+										ExitCode: 1,
+										Reason:   "Completed",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name:     "stuck images are reported by name",
+			expected: `The test container could not start because it could not pull "gcr.io/k8s-testimages/kubekins-e2e:v20200131-0997840-master". Check your images.`,
+			info: k8sreporter.PodReport{
+				Pod: &v1.Pod{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "8ef160fc-46b6-11ea-a907-1a9873703b03",
+					},
+					Spec: v1.PodSpec{
+						Containers: []v1.Container{
+							{
+								Name:  "test",
+								Image: "gcr.io/k8s-testimages/kubekins-e2e:v20200131-0997840-master",
+							},
+						},
+					},
+					Status: v1.PodStatus{
+						Phase: v1.PodPending,
+						ContainerStatuses: []v1.ContainerStatus{
+							{
+								Name:  "test",
+								Image: "gcr.io/k8s-testimages/kubekins-e2e:v20200131-0997840-master",
+								Ready: false,
+								State: v1.ContainerState{
+									Waiting: &v1.ContainerStateWaiting{
+										Reason: "ImagePullBackOff",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name:     "stuck volumes are reported by name",
+			expected: `The pod could not start because it could not mount the volume "some-volume": secrets "no-such-secret" not found`,
+			info: k8sreporter.PodReport{
+				Pod: &v1.Pod{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "8ef160fc-46b6-11ea-a907-1a9873703b03",
+					},
+					Spec: v1.PodSpec{
+						Containers: []v1.Container{
+							{
+								Name:  "test",
+								Image: "gcr.io/k8s-testimages/kubekins-e2e:v20200131-0997840-master",
+								VolumeMounts: []v1.VolumeMount{
+									{
+										Name:      "some-volume",
+										MountPath: "/mnt/some-volume",
+									},
+								},
+							},
+						},
+						Volumes: []v1.Volume{
+							{
+								Name: "some-volume",
+								VolumeSource: v1.VolumeSource{
+									Secret: &v1.SecretVolumeSource{
+										SecretName: "no-such-secret",
+									},
+								},
+							},
+						},
+					},
+					Status: v1.PodStatus{
+						Phase: v1.PodPending,
+						ContainerStatuses: []v1.ContainerStatus{
+							{
+								Name:  "test",
+								Image: "gcr.io/k8s-testimages/kubekins-e2e:v20200131-0997840-master",
+								Ready: false,
+								State: v1.ContainerState{
+									Waiting: &v1.ContainerStateWaiting{
+										Reason: "ContainerCreating",
+									},
+								},
+							},
+						},
+					},
+				},
+				Events: []v1.Event{
+					{
+						Type:    "Warning",
+						Reason:  "FailedMount",
+						Message: `MountVolume.SetUp failed for volume "some-volume" : secrets "no-such-secret" not found`,
+					},
+				},
+			},
+		},
+		{
+			name:     "pod scheduled to an illegal node is reported",
+			expected: "The job could not start because it was scheduled to a node that does not satisfy its NodeSelector",
+			info: k8sreporter.PodReport{
+				Pod: &v1.Pod{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "8ef160fc-46b6-11ea-a907-1a9873703b03",
+					},
+					Spec: v1.PodSpec{
+						Containers: []v1.Container{
+							{
+								Name:  "test",
+								Image: "gcr.io/k8s-testimages/kubekins-e2e:v20200131-0997840-master",
+							},
+						},
+					},
+					Status: v1.PodStatus{
+						Phase:  v1.PodFailed,
+						Reason: "MatchNodeSelector",
+					},
+				},
+			},
+		},
+		{
+			name:     "pod that could not be scheduled is reported",
+			expected: "There are no nodes that your pod can schedule to - check your requests, tolerations, and node selectors (0/3 nodes are available: 3 node(s) didn't match node selector.)",
+			info: k8sreporter.PodReport{
+				Pod: &v1.Pod{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "8ef160fc-46b6-11ea-a907-1a9873703b03",
+					},
+					Spec: v1.PodSpec{
+						Containers: []v1.Container{
+							{
+								Name:  "test",
+								Image: "gcr.io/k8s-testimages/kubekins-e2e:v20200131-0997840-master",
+							},
+						},
+					},
+					Status: v1.PodStatus{
+						Phase: v1.PodPending,
+					},
+				},
+				Events: []v1.Event{
+					{
+						Type:    "Warning",
+						Reason:  "FailedScheduling",
+						Message: "0/3 nodes are available: 3 node(s) didn't match node selector.",
+					},
+				},
+			},
+		},
+		{
+			name:     "apparent node failure is reported as such",
+			expected: "The job may have executed on an unhealthy node. Contact your prow maintainers with a link to this page or check the detailed pod information.",
+			info: k8sreporter.PodReport{
+				Pod: &v1.Pod{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "8ef160fc-46b6-11ea-a907-1a9873703b03",
+					},
+					Spec: v1.PodSpec{
+						Containers: []v1.Container{
+							{
+								Name:  "test",
+								Image: "gcr.io/k8s-testimages/kubekins-e2e:v20200131-0997840-master",
+							},
+						},
+					},
+					Status: v1.PodStatus{
+						Phase: v1.PodPending,
+						ContainerStatuses: []v1.ContainerStatus{
+							{
+								Name:  "test",
+								Image: "gcr.io/k8s-testimages/kubekins-e2e:v20200131-0997840-master",
+								Ready: false,
+								State: v1.ContainerState{
+									Waiting: &v1.ContainerStateWaiting{
+										Reason: "ContainerCreating",
+									},
+								},
+							},
+						},
+					},
+				},
+				Events: []v1.Event{
+					{
+						Type:   "Warning",
+						Reason: "FailedCreatePodSandbox",
+					},
+				},
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			b, err := json.Marshal(tc.info)
+			if err != nil {
+				t.Fatalf("Unexpected failed to marshal pod to JSON (this wasn't even part of the test!): %v", err)
+			}
+			result := hintFromPodInfo(b)
+			if result != tc.expected {
+				t.Errorf("Expected hint %q, but got %q", tc.expected, result)
+			}
+		})
+	}
+}
+
+func TestHintFromProwJob(t *testing.T) {
+	tests := []struct {
+		name     string
+		expected string
+		pj       prowv1.ProwJob
+	}{
+		{
+			name:     "errored job has its description reported",
+			expected: "Job execution failed: this is the description",
+			pj: prowv1.ProwJob{
+				Status: prowv1.ProwJobStatus{
+					State:       prowv1.ErrorState,
+					Description: "this is the description",
+				},
+			},
+		},
+		{
+			name:     "failed prowjob reports nothing",
+			expected: "",
+			pj: prowv1.ProwJob{
+				Status: prowv1.ProwJobStatus{
+					State:       prowv1.FailureState,
+					Description: "this is another description",
+				},
+			},
+		},
+		{
+			name:     "aborted prowjob reports nothing",
+			expected: "",
+			pj: prowv1.ProwJob{
+				Status: prowv1.ProwJobStatus{
+					State:       prowv1.AbortedState,
+					Description: "this is another description",
+				},
+			},
+		},
+		{
+			name:     "successful prowjob reports nothing",
+			expected: "",
+			pj: prowv1.ProwJob{
+				Status: prowv1.ProwJobStatus{
+					State:       prowv1.SuccessState,
+					Description: "this is another description",
+				},
+			},
+		},
+		{
+			name:     "pending prowjob reports nothing",
+			expected: "",
+			pj: prowv1.ProwJob{
+				Status: prowv1.ProwJobStatus{
+					State:       prowv1.PendingState,
+					Description: "this is another description",
+				},
+			},
+		},
+		{
+			name:     "triggered prowjob reports nothing",
+			expected: "",
+			pj: prowv1.ProwJob{
+				Status: prowv1.ProwJobStatus{
+					State:       prowv1.TriggeredState,
+					Description: "this is another description",
+				},
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			b, err := json.Marshal(tc.pj)
+			if err != nil {
+				t.Fatalf("Unexpected failed to marshal prowjob to JSON (this wasn't even part of the test!): %v", err)
+			}
+			result := hintFromProwJob(b)
+			if result != tc.expected {
+				t.Errorf("Expected hint %q, but got %q", tc.expected, result)
+			}
+		})
 	}
 }

@@ -12,7 +12,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e:v01042020-8fb2695d5
+      - image: quay.io/kubernetes-ingress-controller/e2e:v01262020-44fb2a873
         command:
         - ./hack/verify-boilerplate.sh
         env:
@@ -33,7 +33,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e:v01042020-8fb2695d5
+      - image: quay.io/kubernetes-ingress-controller/e2e:v01262020-44fb2a873
         command:
         - ./hack/verify-codegen.sh
         env:
@@ -52,7 +52,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e:v01042020-8fb2695d5
+      - image: quay.io/kubernetes-ingress-controller/e2e:v01262020-44fb2a873
         command:
         - ./hack/verify-gofmt.sh
         env:
@@ -73,7 +73,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e:v01042020-8fb2695d5
+      - image: quay.io/kubernetes-ingress-controller/e2e:v01262020-44fb2a873
         command:
         - ./hack/verify-golint.sh
         env:
@@ -92,7 +92,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e:v01042020-8fb2695d5
+      - image: quay.io/kubernetes-ingress-controller/e2e:v01262020-44fb2a873
         command:
         - ./hack/verify-lualint.sh
         env:
@@ -113,7 +113,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e:v01042020-8fb2695d5
+      - image: quay.io/kubernetes-ingress-controller/e2e:v01262020-44fb2a873
         command:
         - make
         - lua-test
@@ -135,7 +135,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e:v01042020-8fb2695d5
+      - image: quay.io/kubernetes-ingress-controller/e2e:v01262020-44fb2a873
         command:
         - /bin/bash
         - -c
@@ -171,7 +171,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e-prow:v01042020-8fb2695d5
+      - image: quay.io/kubernetes-ingress-controller/e2e-prow:v01252020-13391d92e
         command:
         - /usr/local/bin/runner.sh
         args:
@@ -183,10 +183,8 @@ presubmits:
         env:
         - name: REPO_INFO
           value: https://github.com/kubernetes/ingress-nginx
-        - name: E2E_NODES
-          value: "15"
         - name: K8S_VERSION
-          value: v1.15.6
+          value: v1.15.7
         - name: DIND_TASKS
           value: "false"
         resources:
@@ -208,7 +206,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e-prow:v01042020-8fb2695d5
+      - image: quay.io/kubernetes-ingress-controller/e2e-prow:v01252020-13391d92e
         command:
         - /usr/local/bin/runner.sh
         args:
@@ -220,10 +218,8 @@ presubmits:
         env:
         - name: REPO_INFO
           value: https://github.com/kubernetes/ingress-nginx
-        - name: E2E_NODES
-          value: "15"
         - name: K8S_VERSION
-          value: v1.16.3
+          value: v1.16.4
         - name: DIND_TASKS
           value: "false"
         resources:
@@ -245,7 +241,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e-prow:v01042020-8fb2695d5
+      - image: quay.io/kubernetes-ingress-controller/e2e-prow:v01252020-13391d92e
         command:
         - /usr/local/bin/runner.sh
         args:
@@ -257,10 +253,8 @@ presubmits:
         env:
         - name: REPO_INFO
           value: https://github.com/kubernetes/ingress-nginx
-        - name: E2E_NODES
-          value: "15"
         - name: K8S_VERSION
-          value: v1.17.0
+          value: v1.17.2@sha256:59df31fc61d1da5f46e8a61ef612fa53d3f9140f82419d1ef1a6b9656c6b737c
         - name: DIND_TASKS
           value: "false"
         resources:
@@ -289,7 +283,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: quay.io/kubernetes-ingress-controller/e2e-prow:v01042020-8fb2695d5
+    - image: quay.io/kubernetes-ingress-controller/e2e-prow:v01252020-13391d92e
       command:
       - /usr/local/bin/runner.sh
       args:
@@ -301,8 +295,6 @@ periodics:
       env:
       - name: REPO_INFO
         value: https://github.com/kubernetes/ingress-nginx
-      - name: E2E_NODES
-        value: "15"
       - name: DIND_TASKS
         value: "false"
       resources:

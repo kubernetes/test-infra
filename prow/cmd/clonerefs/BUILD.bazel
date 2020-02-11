@@ -24,7 +24,10 @@ go_binary(
 prow_image(
     name = "image",
     base = "@git-base//image",
-    files = ["ssh_config"],
+    files = [
+        "github_known_hosts",
+        "ssh_config",
+    ],
     symlinks = {
         "/clonerefs": "/app/prow/cmd/clonerefs/app.binary",
         "/etc/ssh/ssh_config": "/ssh_config",

@@ -47,15 +47,10 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 	configInfo := map[string]string{}
 	for _, orgRepo := range enabledRepos {
 		parts := strings.Split(orgRepo, "/")
-		var trigger plugins.Trigger
-		switch len(parts) {
-		case 1:
-			trigger = config.TriggerFor(orgRepo, "")
-		case 2:
-			trigger = config.TriggerFor(parts[0], parts[1])
-		default:
+		if len(parts) != 2 {
 			return nil, fmt.Errorf("invalid repo in enabledRepos: %q", orgRepo)
 		}
+		trigger := config.TriggerFor(parts[0], parts[1])
 		org := parts[0]
 		if trigger.TrustedOrg != "" {
 			org = trigger.TrustedOrg

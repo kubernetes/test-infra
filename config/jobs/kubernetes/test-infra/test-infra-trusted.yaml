@@ -124,7 +124,7 @@ postsubmits:
     decorate: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20200114-e65b322-0.29.1 # whatever image you use here must have bash 4.4+
+      - image: gcr.io/k8s-testimages/bazelbuild:v20200205-602500d-0.29.1 # whatever image you use here must have bash 4.4+
         command:
         - prow/push.sh
         env:
@@ -189,7 +189,7 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20200114-e65b322-0.29.1 # whatever image you use here must have bash 4.4+
+      - image: gcr.io/k8s-testimages/bazelbuild:v20200205-602500d-0.29.1 # whatever image you use here must have bash 4.4+
         command:
         - boskos/push.sh
         env:
@@ -724,7 +724,7 @@ postsubmits:
     decorate: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20200114-e65b322-0.29.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20200205-602500d-0.29.1
         command:
         - ./testgrid/config-upload.sh
         volumeMounts:
@@ -752,7 +752,7 @@ postsubmits:
     decorate: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20200114-e65b322-0.29.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20200205-602500d-0.29.1
         command:
         - ./boskos/update_prow_config.sh
         env:
@@ -879,7 +879,7 @@ postsubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/image-builder:v20200114-6d2c483
+      - image: gcr.io/k8s-testimages/image-builder:v20200205-602500d
         command:
         - /run.sh
         args:
@@ -945,7 +945,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20200114-e65b322-0.29.1
+    - image: gcr.io/k8s-testimages/bazelbuild:v20200205-602500d-0.29.1
       command:
       - hack/autodeps.sh
       args:
@@ -982,7 +982,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20200114-e65b322-0.29.1
+    - image: gcr.io/k8s-testimages/bazelbuild:v20200205-602500d-0.29.1
       command:
       - hack/autodeps.sh
       args:
@@ -1019,7 +1019,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20200114-e65b322-0.29.1
+    - image: gcr.io/k8s-testimages/bazelbuild:v20200205-602500d-0.29.1
       command:
       - bazel
       - run
@@ -1058,7 +1058,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: launcher.gcr.io/google/bazel:0.29.1
+    - image: launcher.gcr.io/google/bazel:2.0.0
       command:
       - bazel
       args:
@@ -1122,7 +1122,7 @@ periodics:
   spec:
     containers:
     - name: branchprotector
-      image: gcr.io/k8s-prow/branchprotector:v20200117-903ce628f
+      image: gcr.io/k8s-prow/branchprotector:v20200210-9e2e0d510
       command:
       - /app/prow/cmd/branchprotector/app.binary
       args:
@@ -1156,7 +1156,7 @@ periodics:
   spec:
     containers:
     - name: label-sync
-      image: gcr.io/k8s-prow/label_sync:v20200117-903ce628f
+      image: gcr.io/k8s-prow/label_sync:v20200210-9e2e0d510
       command:
       - /app/label_sync/app.binary
       args:
@@ -1245,7 +1245,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-1.17
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-1.17
       command:
       - infra/gcp/backup_tools/backup.sh
       env:

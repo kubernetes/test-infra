@@ -715,7 +715,7 @@ func TestValidatePipelineRunSpec(t *testing.T) {
 			spec: func(s *pipelinev1alpha1.PipelineRunSpec) {
 				s.Resources = append(s.Resources, pipelinev1alpha1.PipelineResourceBinding{
 					Name:        "git ref",
-					ResourceRef: pipelinev1alpha1.PipelineResourceRef{Name: "PROW_IMPLICIT_GIT_REF"},
+					ResourceRef: &pipelinev1alpha1.PipelineResourceRef{Name: "PROW_IMPLICIT_GIT_REF"},
 				})
 			},
 			pass: false,
@@ -726,7 +726,7 @@ func TestValidatePipelineRunSpec(t *testing.T) {
 			spec: func(s *pipelinev1alpha1.PipelineRunSpec) {
 				s.Resources = append(s.Resources, pipelinev1alpha1.PipelineResourceBinding{
 					Name:        "git ref",
-					ResourceRef: pipelinev1alpha1.PipelineResourceRef{Name: "PROW_IMPLICIT_GIT_REF"},
+					ResourceRef: &pipelinev1alpha1.PipelineResourceRef{Name: "PROW_IMPLICIT_GIT_REF"},
 				})
 			},
 			pass: true,
@@ -737,7 +737,7 @@ func TestValidatePipelineRunSpec(t *testing.T) {
 			spec: func(s *pipelinev1alpha1.PipelineRunSpec) {
 				s.Resources = append(s.Resources, pipelinev1alpha1.PipelineResourceBinding{
 					Name:        "git ref",
-					ResourceRef: pipelinev1alpha1.PipelineResourceRef{Name: "PROW_IMPLICIT_GIT_REF"},
+					ResourceRef: &pipelinev1alpha1.PipelineResourceRef{Name: "PROW_IMPLICIT_GIT_REF"},
 				})
 			},
 			pass: true,
@@ -747,7 +747,7 @@ func TestValidatePipelineRunSpec(t *testing.T) {
 			spec: func(s *pipelinev1alpha1.PipelineRunSpec) {
 				s.Resources = append(s.Resources, pipelinev1alpha1.PipelineResourceBinding{
 					Name:        "git ref",
-					ResourceRef: pipelinev1alpha1.PipelineResourceRef{Name: "PROW_EXTRA_GIT_REF_0"},
+					ResourceRef: &pipelinev1alpha1.PipelineResourceRef{Name: "PROW_EXTRA_GIT_REF_0"},
 				})
 			},
 			pass: false,
@@ -757,7 +757,7 @@ func TestValidatePipelineRunSpec(t *testing.T) {
 			spec: func(s *pipelinev1alpha1.PipelineRunSpec) {
 				s.Resources = append(s.Resources, pipelinev1alpha1.PipelineResourceBinding{
 					Name:        "git ref",
-					ResourceRef: pipelinev1alpha1.PipelineResourceRef{Name: "PROW_EXTRA_GIT_REF_0"},
+					ResourceRef: &pipelinev1alpha1.PipelineResourceRef{Name: "PROW_EXTRA_GIT_REF_0"},
 				})
 			},
 			extraRefs: []prowapi.Refs{{Org: "o", Repo: "r"}},
@@ -768,7 +768,7 @@ func TestValidatePipelineRunSpec(t *testing.T) {
 			spec: func(s *pipelinev1alpha1.PipelineRunSpec) {
 				s.Resources = append(s.Resources, pipelinev1alpha1.PipelineResourceBinding{
 					Name:        "git ref",
-					ResourceRef: pipelinev1alpha1.PipelineResourceRef{Name: "PROW_EXTRA_GIT_REF_1"},
+					ResourceRef: &pipelinev1alpha1.PipelineResourceRef{Name: "PROW_EXTRA_GIT_REF_1"},
 				})
 			},
 			extraRefs: []prowapi.Refs{{Org: "o", Repo: "r"}},
@@ -784,7 +784,7 @@ func TestValidatePipelineRunSpec(t *testing.T) {
 			spec: func(s *pipelinev1alpha1.PipelineRunSpec) {
 				s.Resources = append(s.Resources, pipelinev1alpha1.PipelineResourceBinding{
 					Name:        "git ref",
-					ResourceRef: pipelinev1alpha1.PipelineResourceRef{Name: "some-other-ref"},
+					ResourceRef: &pipelinev1alpha1.PipelineResourceRef{Name: "some-other-ref"},
 				})
 			},
 			pass: true,
@@ -794,7 +794,7 @@ func TestValidatePipelineRunSpec(t *testing.T) {
 			spec: func(s *pipelinev1alpha1.PipelineRunSpec) {
 				s.Resources = append(s.Resources, pipelinev1alpha1.PipelineResourceBinding{
 					Name:        "git ref",
-					ResourceRef: pipelinev1alpha1.PipelineResourceRef{Name: "PROW_EXTRA_GIT_REF_000"},
+					ResourceRef: &pipelinev1alpha1.PipelineResourceRef{Name: "PROW_EXTRA_GIT_REF_000"},
 				})
 			},
 			extraRefs: []prowapi.Refs{{Org: "o", Repo: "r"}},

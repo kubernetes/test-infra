@@ -18,10 +18,10 @@ load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository", "new_git_r
 def repositories():
     http_archive(
         name = "io_k8s_repo_infra",
-        sha256 = "5ee2a8e306af0aaf2844b5e2c79b5f3f53fc9ce3532233f0615b8d0265902b2a",
-        strip_prefix = "repo-infra-0.0.1-alpha.1",
+        sha256 = "56917f066cf18d6ca0c6ca5dcbca492766e0b9a424756c35ed26ff28ed6c9f88",
+        strip_prefix = "repo-infra-0.0.1",
         urls = [
-            "https://github.com/kubernetes/repo-infra/archive/v0.0.1-alpha.1.tar.gz",
+            "https://github.com/kubernetes/repo-infra/archive/v0.0.1.tar.gz",
         ],
     )
     http_archive(

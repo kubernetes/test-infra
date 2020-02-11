@@ -3,16 +3,17 @@ plank:
   report_template: '[Full PR test history](https://prow.k8s.io/pr-history?org={{.Spec.Refs.Org}}&repo={{.Spec.Refs.Repo}}&pr={{with index .Spec.Refs.Pulls 0}}{{.Number}}{{end}}). [Your PR dashboard](https://gubernator.k8s.io/pr/{{with index .Spec.Refs.Pulls 0}}{{.Author}}{{end}}). Please help us cut down on flakes by [linking to](https://git.k8s.io/community/contributors/devel/sig-testing/flaky-tests.md#filing-issues-for-flaky-tests) an [open issue](https://github.com/{{.Spec.Refs.Org}}/{{.Spec.Refs.Repo}}/issues?q=is:issue+is:open) when you hit one in your PR.'
   job_url_prefix_config:
     '*': https://prow.k8s.io/view/gcs/
-  pod_pending_timeout: 60m
+  pod_pending_timeout: 15m
+  pod_unscheduled_timeout: 1m
   default_decoration_configs:
     '*':
       timeout: 2h
       grace_period: 15s
       utility_images:
-        clonerefs: "gcr.io/k8s-prow/clonerefs:v20200117-903ce628f"
-        initupload: "gcr.io/k8s-prow/initupload:v20200117-903ce628f"
-        entrypoint: "gcr.io/k8s-prow/entrypoint:v20200117-903ce628f"
-        sidecar: "gcr.io/k8s-prow/sidecar:v20200117-903ce628f"
+        clonerefs: "gcr.io/k8s-prow/clonerefs:v20200210-9e2e0d510"
+        initupload: "gcr.io/k8s-prow/initupload:v20200210-9e2e0d510"
+        entrypoint: "gcr.io/k8s-prow/entrypoint:v20200210-9e2e0d510"
+        sidecar: "gcr.io/k8s-prow/sidecar:v20200210-9e2e0d510"
       gcs_configuration:
         bucket: "kubernetes-jenkins"
         path_strategy: "legacy"
@@ -37,6 +38,8 @@ deck:
         name: metadata
       required_files:
       - started.json|finished.json
+      optional_files:
+      - podinfo.json
     - lens:
         name: buildlog
       required_files:
@@ -51,6 +54,10 @@ deck:
         - artifacts/filtered.cov
       optional_files:
         - artifacts/filtered.html
+    - lens:
+        name: podinfo
+      required_files:
+        - podinfo.json
   tide_update_period: 1s
   hidden_repos:
   - kubernetes-security

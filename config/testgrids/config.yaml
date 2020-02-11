@@ -460,6 +460,12 @@ dashboards:
   - name: pull-kubernetes-e2e-gce-rbe
     test_group_name: pull-kubernetes-e2e-gce-rbe
     base_options: width=10
+  - name: pull-kubernetes-e2e-gce-canary
+    test_group_name: pull-kubernetes-e2e-gce-canary
+    base_options: width=10
+  - name: pull-kubernetes-e2e-gce-ubuntu
+    test_group_name: pull-kubernetes-e2e-gce-ubuntu
+    base_options: width=10
   - name: pull-kubernetes-e2e-kind-canary
     test_group_name: pull-kubernetes-e2e-kind-canary
     base_options: width=10

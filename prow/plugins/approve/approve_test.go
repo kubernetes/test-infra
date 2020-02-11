@@ -1773,12 +1773,7 @@ func TestHelpProvider(t *testing.T) {
 		{
 			name:         "Empty config",
 			config:       &plugins.Configuration{},
-			enabledRepos: []string{"org1", "org2/repo"},
-		},
-		{
-			name:         "Overlapping org and org/repo",
-			config:       &plugins.Configuration{},
-			enabledRepos: []string{"org2", "org2/repo"},
+			enabledRepos: []string{"org1/repo", "org2/repo"},
 		},
 		{
 			name:         "Invalid enabledRepos",
@@ -1791,7 +1786,7 @@ func TestHelpProvider(t *testing.T) {
 			config: &plugins.Configuration{
 				Approve: []plugins.Approve{
 					{
-						Repos:               []string{"org2"},
+						Repos:               []string{"org2/repo"},
 						IssueRequired:       true,
 						RequireSelfApproval: &[]bool{true}[0],
 						LgtmActsAsApprove:   true,
@@ -1799,7 +1794,7 @@ func TestHelpProvider(t *testing.T) {
 					},
 				},
 			},
-			enabledRepos: []string{"org1", "org2/repo"},
+			enabledRepos: []string{"org1/repo", "org2/repo"},
 		},
 	}
 	for _, c := range cases {

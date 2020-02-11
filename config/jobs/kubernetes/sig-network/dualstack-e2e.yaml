@@ -7,7 +7,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-1.16
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-1.16
       args:
       - --job=$(JOB_NAME)
       - --repo=k8s.io/kubernetes=release-1.16
@@ -22,7 +22,7 @@ periodics:
       - --up=true
       - --down=true
       - --deployment=aksengine
-      - --build=host-go
+      - --build=quick
       - --provider=skeleton
       - --ginkgo-parallel=1
       - --aksengine-agentpoolcount=2
@@ -31,11 +31,11 @@ periodics:
       - --aksengine-orchestratorRelease=1.16
       - --aksengine-mastervmsize=Standard_DS2_v2
       - --aksengine-agentvmsize=Standard_D4s_v3
-      - --aksengine-hyperkube=True
+      - --aksengine-deploy-custom-k8s=True
       - --aksengine-location=westus2
       - --aksengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE
       - --aksengine-template-url=https://raw.githubusercontent.com/Azure/aks-engine/master/examples/dualstack/kubernetes.json
-      - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.42.0/aks-engine-v0.42.0-linux-amd64.tar.gz
+      - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.46.0/aks-engine-v0.46.0-linux-amd64.tar.gz
       - --timeout=450m
       - --test_args=--ginkgo.focus=\[Feature:IPv6DualStackAlphaFeature\]
       securityContext:
@@ -53,7 +53,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-1.17
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-1.17
       args:
       - --job=$(JOB_NAME)
       - --repo=k8s.io/kubernetes=release-1.17
@@ -68,21 +68,20 @@ periodics:
       - --up=true
       - --down=true
       - --deployment=aksengine
-      - --build=host-go
+      - --build=quick
       - --provider=skeleton
       - --ginkgo-parallel=1
       - --aksengine-agentpoolcount=2
       - --aksengine-admin-username=azureuser
       - --aksengine-creds=$AZURE_CREDENTIALS
-      # TODO (aramase) change this to 1.17 when kubetest available with custom k8s components
-      - --aksengine-orchestratorRelease=1.16
+      - --aksengine-orchestratorRelease=1.17
       - --aksengine-mastervmsize=Standard_DS2_v2
       - --aksengine-agentvmsize=Standard_D4s_v3
-      - --aksengine-hyperkube=True
+      - --aksengine-deploy-custom-k8s=True
       - --aksengine-location=westus2
       - --aksengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE
       - --aksengine-template-url=https://gist.githubusercontent.com/aramase/21c3bdb44509c0f70f71389903d49c67/raw/1a9957626edc2b5c7913c741b9487fde123d0570/dualstack-prow.json
-      - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.44.0/aks-engine-v0.44.0-linux-amd64.tar.gz
+      - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.46.0/aks-engine-v0.46.0-linux-amd64.tar.gz
       - --timeout=450m
       - --test_args=--ginkgo.focus=\[Feature:IPv6DualStackAlphaFeature\]
       securityContext:
@@ -100,7 +99,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-master
       args:
       - --job=$(JOB_NAME)
       - --repo=k8s.io/kubernetes=master
@@ -115,21 +114,20 @@ periodics:
       - --up=true
       - --down=true
       - --deployment=aksengine
-      - --build=host-go
+      - --build=quick
       - --provider=skeleton
       - --ginkgo-parallel=1
       - --aksengine-agentpoolcount=2
       - --aksengine-admin-username=azureuser
       - --aksengine-creds=$AZURE_CREDENTIALS
-      # TODO (aramase) change this to 1.17 when kubetest available with custom k8s components
-      - --aksengine-orchestratorRelease=1.16
+      - --aksengine-orchestratorRelease=1.17
       - --aksengine-mastervmsize=Standard_DS2_v2
       - --aksengine-agentvmsize=Standard_D4s_v3
-      - --aksengine-hyperkube=True
+      - --aksengine-deploy-custom-k8s=True
       - --aksengine-location=westus2
       - --aksengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE
       - --aksengine-template-url=https://gist.githubusercontent.com/aramase/21c3bdb44509c0f70f71389903d49c67/raw/1a9957626edc2b5c7913c741b9487fde123d0570/dualstack-prow.json
-      - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.44.0/aks-engine-v0.44.0-linux-amd64.tar.gz
+      - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.46.0/aks-engine-v0.46.0-linux-amd64.tar.gz
       - --timeout=450m
       - --test_args=--ginkgo.focus=\[Feature:IPv6DualStackAlphaFeature\]
       securityContext:

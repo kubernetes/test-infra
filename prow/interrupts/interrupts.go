@@ -76,7 +76,7 @@ var signalsLock = sync.Mutex{}
 // signals allows for injection of mock signals in testing
 var signals = func() <-chan os.Signal {
 	sig := make(chan os.Signal, 1)
-	signal.Notify(sig, os.Interrupt, syscall.SIGTERM, syscall.SIGABRT)
+	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
 	return sig
 }
 

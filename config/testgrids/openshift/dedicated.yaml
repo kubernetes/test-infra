@@ -2,32 +2,62 @@ test_groups:
 # OpenShift Dedicated integration
 - name: osd-int-4.2
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-master-e2e-int-4.2
+  column_header:
+  - configuration_value: cluster-version
 - name: osd-int-4.3
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-master-e2e-int-4.3
+  column_header:
+  - configuration_value: cluster-version
 - name: osd-upgrade-int-4.2-4.2
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-master-e2e-int-4.2-4.2
+  column_header:
+  - configuration_value: cluster-version
+  - configuration_value: upgrade-version
 - name: osd-upgrade-int-4.2-4.3
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-master-e2e-int-4.2-4.3
+  column_header:
+  - configuration_value: cluster-version
+  - configuration_value: upgrade-version
 - name: osd-upgrade-int-4.3-4.3
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-master-e2e-int-4.3-4.3
+  column_header:
+  - configuration_value: cluster-version
+  - configuration_value: upgrade-version
 
 # OpenShift Dedicated staging
 - name: osd-stage-4.2
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-master-e2e-stage-4.2
+  column_header:
+  - configuration_value: cluster-version
 - name: osd-stage-4.3
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-master-e2e-stage-4.3
+  column_header:
+  - configuration_value: cluster-version
 - name: osd-upgrade-stage-4.2-4.2
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-master-e2e-stage-4.2-4.2
+  column_header:
+  - configuration_value: cluster-version
+  - configuration_value: upgrade-version
 - name: osd-upgrade-stage-4.2-4.3
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-master-e2e-stage-4.2-4.3
+  column_header:
+  - configuration_value: cluster-version
+  - configuration_value: upgrade-version
 
 # OpenShift Dedicated production
-- name: osd-prod-4.2
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-master-e2e-prod-4.2
-- name: osd-upgrade-prod-4.2-4.2
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-master-e2e-prod-4.2-4.2
-- name: osd-upgrade-prod-4.2-4.3
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-master-e2e-prod-4.2-4.3
+- name: osd-prod-default
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-master-e2e-prod-default
+  column_header:
+  - configuration_value: cluster-version
+- name: osd-prod-next
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-master-e2e-prod-next
+  column_header:
+  - configuration_value: cluster-version
+- name: osd-upgrade-prod-default-next
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-master-e2e-prod-default-next
+  column_header:
+  - configuration_value: cluster-version
+  - configuration_value: upgrade-version
 
 dashboards:
 # OpenShift Dedicated integration dashboard
@@ -221,9 +251,9 @@ dashboards:
 # OpenShift Dedicated production dashboard
 - name: redhat-osd-prod
   dashboard_tab:
-  - name: osd-prod-4.2
-    description: Runs cluster acceptance tests on an OpenShift Dedicated 4.2 production cluster.
-    test_group_name: osd-prod-4.2
+  - name: osd-prod-default
+    description: Runs cluster acceptance tests on an OpenShift Dedicated production cluster using the current default version.
+    test_group_name: osd-prod-default
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
       url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
@@ -241,9 +271,9 @@ dashboards:
     code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
     code_search_url_template: # The URL template to visit when searching for changelists
       url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
-  - name: osd-upgrade-prod-4.2-4.2
-    description: Runs upgrade tests between OpenShift Dedicated 4.2 and 4.2 in production.
-    test_group_name: osd-upgrade-prod-4.2-4.2
+  - name: osd-prod-next
+    description: Runs cluster acceptance tests on an OpenShift Dedicated production cluster using the latest version.
+    test_group_name: osd-prod-next
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
       url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
@@ -261,9 +291,9 @@ dashboards:
     code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
     code_search_url_template: # The URL template to visit when searching for changelists
       url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
-  - name: osd-upgrade-prod-4.2-4.3
-    description: Runs upgrade tests between OpenShift Dedicated 4.2 and 4.3 in production.
-    test_group_name: osd-upgrade-prod-4.2-4.3
+  - name: osd-upgrade-prod-default-next
+    description: Runs upgrade tests between OpenShift Dedicated current default version and latest in production.
+    test_group_name: osd-upgrade-prod-default-next
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
       url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>

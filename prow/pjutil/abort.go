@@ -30,7 +30,7 @@ import (
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	"k8s.io/test-infra/prow/github/reporter"
+	reporter "k8s.io/test-infra/prow/crier/reporters/github"
 )
 
 // patchClient a minimalistic prow client required by the aborter

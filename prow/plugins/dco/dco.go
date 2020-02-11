@@ -70,16 +70,10 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 	configInfo := map[string]string{}
 	for _, orgRepo := range enabledRepos {
 		parts := strings.Split(orgRepo, "/")
-		var opts *plugins.Dco
-		switch len(parts) {
-		case 1:
-			opts = config.DcoFor(parts[0], "")
-		case 2:
-			opts = config.DcoFor(parts[0], parts[1])
-		default:
+		if len(parts) != 2 {
 			return nil, fmt.Errorf("invalid repo in enabledRepos: %q", orgRepo)
 		}
-
+		opts := config.DcoFor(parts[0], parts[1])
 		if opts.SkipDCOCheckForMembers || opts.SkipDCOCheckForCollaborators {
 			configInfo[orgRepo] = fmt.Sprintf("The trusted GitHub organization for this repository is %q.", orgRepo)
 		}

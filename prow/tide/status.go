@@ -148,6 +148,18 @@ func requirementDiff(pr *PullRequest, q *config.TideQuery, cc contextChecker) (s
 		}
 	}
 
+	qAuthor := github.NormLogin(q.Author)
+	prAuthor := github.NormLogin(string(pr.Author.Login))
+
+	// Weight incorrect author with very high diff so that we select the query
+	// for the correct author.
+	if qAuthor != "" && prAuthor != qAuthor {
+		diff += 1000
+		if desc == "" {
+			desc = fmt.Sprintf(" Must be by author %s.", qAuthor)
+		}
+	}
+
 	// Weight incorrect milestone with relatively high diff so that we select the
 	// query for the correct milestone (but choose favor query for correct branch).
 	if q.Milestone != "" && (pr.Milestone == nil || string(pr.Milestone.Title) != q.Milestone) {
@@ -233,9 +245,19 @@ func requirementDiff(pr *PullRequest, q *config.TideQuery, cc contextChecker) (s
 // in order to generate a diff for the status description. We choose the query
 // for the repo that the PR is closest to meeting (as determined by the number
 // of unmet/violated requirements).
-func (sc *statusController) expectedStatus(log *logrus.Entry, queryMap *config.QueryMap, pr *PullRequest, pool map[string]PullRequest, cc contextChecker, blocks blockers.Blockers, baseSHA string) (string, string) {
+func (sc *statusController) expectedStatus(log *logrus.Entry, queryMap *config.QueryMap, pr *PullRequest, pool map[string]PullRequest, ccg contextCheckerGetter, blocks blockers.Blockers, baseSHA string) (string, string, error) {
 	org := string(pr.Repository.Owner.Login)
 	repo := string(pr.Repository.Name)
+
+	if pr.Mergeable == githubql.MergeableStateConflicting {
+		return github.StatusError, fmt.Sprintf(statusNotInPool, " PR has merge conflicts."), nil
+	}
+
+	cc, err := ccg()
+	if err != nil {
+		return "", "", fmt.Errorf("failed to set up context register: %v", err)
+	}
+
 	if _, ok := pool[prKey(pr)]; !ok {
 		// if the branch is blocked forget checking for a diff
 		blockingIssues := blocks.GetApplicable(string(pr.Repository.Owner.Login), string(pr.Repository.Name), string(pr.BaseRef.Name))
@@ -248,7 +270,7 @@ func (sc *statusController) expectedStatus(log *logrus.Entry, queryMap *config.Q
 			if len(numbers) > 1 {
 				s = "s"
 			}
-			return github.StatusError, fmt.Sprintf(statusNotInPool, fmt.Sprintf(" Merging is blocked by issue%s %s.", s, strings.Join(numbers, ", ")))
+			return github.StatusError, fmt.Sprintf(statusNotInPool, fmt.Sprintf(" Merging is blocked by issue%s %s.", s, strings.Join(numbers, ", "))), nil
 		}
 		minDiffCount := -1
 		var minDiff string
@@ -259,7 +281,7 @@ func (sc *statusController) expectedStatus(log *logrus.Entry, queryMap *config.Q
 				minDiff = diff
 			}
 		}
-		return github.StatusPending, fmt.Sprintf(statusNotInPool, minDiff)
+		return github.StatusPending, fmt.Sprintf(statusNotInPool, minDiff), nil
 	}
 
 	indexKey := indexKeyPassingJobs(org, repo, baseSHA, string(pr.HeadRefOID))
@@ -267,7 +289,7 @@ func (sc *statusController) expectedStatus(log *logrus.Entry, queryMap *config.Q
 	if err := sc.pjClient.List(context.Background(), passingUpToDatePJs, ctrlruntimeclient.MatchingField(indexNamePassingJobs, indexKey)); err != nil {
 		// Just log the error and return success, as the PR is in the merge pool
 		log.WithError(err).Error("Failed to list ProwJobs.")
-		return github.StatusSuccess, statusInPool
+		return github.StatusSuccess, statusInPool, nil
 	}
 
 	var passingUpToDateContexts []string
@@ -275,9 +297,9 @@ func (sc *statusController) expectedStatus(log *logrus.Entry, queryMap *config.Q
 		passingUpToDateContexts = append(passingUpToDateContexts, pj.Spec.Context)
 	}
 	if diff := cc.MissingRequiredContexts(passingUpToDateContexts); len(diff) > 0 {
-		return github.StatePending, retestingStatus(diff)
+		return github.StatePending, retestingStatus(diff), nil
 	}
-	return github.StatusSuccess, statusInPool
+	return github.StatusSuccess, statusInPool, nil
 }
 
 func retestingStatus(retested []string) string {
@@ -338,13 +360,13 @@ func (sc *statusController) setStatuses(all []PullRequest, pool map[string]PullR
 		baseSHA := baseSHAs[poolKey(org, repo, branch)]
 		baseSHAGetter := newBaseSHAGetter(baseSHAs, sc.ghc, org, repo, branch)
 
-		cr, err := getContextCheckerWithRequiredContexts(sc.config(), sc.gc, org, repo, branch, baseSHAGetter, headSHA, requiredContexts[prKey(pr)])
+		cr := contextCheckerGetterFactory(sc.config(), sc.gc, org, repo, branch, baseSHAGetter, headSHA, requiredContexts[prKey(pr)])
+
+		wantState, wantDesc, err := sc.expectedStatus(log, queryMap, pr, pool, cr, blocks, baseSHA)
 		if err != nil {
-			log.WithError(err).Error("setting up context register")
+			log.WithError(err).Error("getting expected status")
 			return
 		}
-
-		wantState, wantDesc := sc.expectedStatus(log, queryMap, pr, pool, cr, blocks, baseSHA)
 		var actualState githubql.StatusState
 		var actualDesc string
 		for _, ctx := range contexts {
@@ -600,11 +622,15 @@ func indexFuncPassingJobs(obj runtime.Object) []string {
 	return result
 }
 
-func getContextCheckerWithRequiredContexts(cfg *config.Config, gc git.ClientFactory, org, repo, branch string, baseSHAGetter config.RefGetter, headSHA string, requiredContexts []string) (contextChecker, error) {
-	contextPolicy, err := cfg.GetTideContextPolicy(gc, org, repo, branch, baseSHAGetter, headSHA)
-	if err != nil {
-		return nil, err
+type contextCheckerGetter = func() (contextChecker, error)
+
+func contextCheckerGetterFactory(cfg *config.Config, gc git.ClientFactory, org, repo, branch string, baseSHAGetter config.RefGetter, headSHA string, requiredContexts []string) contextCheckerGetter {
+	return func() (contextChecker, error) {
+		contextPolicy, err := cfg.GetTideContextPolicy(gc, org, repo, branch, baseSHAGetter, headSHA)
+		if err != nil {
+			return nil, err
+		}
+		contextPolicy.RequiredContexts = requiredContexts
+		return contextPolicy, nil
 	}
-	contextPolicy.RequiredContexts = requiredContexts
-	return contextPolicy, nil
 }

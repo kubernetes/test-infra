@@ -30,6 +30,11 @@ release(
         "deployment",
         cluster = BUILD_CLUSTER,
     ),
+    component(
+        "create-loop-devs",
+        "daemonset",
+        cluster = BUILD_CLUSTER,
+    ),
     component("crier", "deployment"),
     component("crier_rbac", MULTI_KIND),
     component("deck", "service", "deployment"),
@@ -64,6 +69,11 @@ release(
     component(
         "tune-sysctls",
         "daemonset",
+        cluster = BUILD_CLUSTER,
+    ),
+    component(
+        "build_serviceaccounts",
+        MULTI_KIND,
         cluster = BUILD_CLUSTER,
     ),
 )

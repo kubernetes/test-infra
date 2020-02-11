@@ -58,15 +58,10 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 	}
 	for _, repo := range enabledRepos {
 		parts := strings.Split(repo, "/")
-		var mw *plugins.MergeWarning
-		switch len(parts) {
-		case 1:
-			mw = getMergeWarning(config.Slack.MergeWarnings, parts[0], "")
-		case 2:
-			mw = getMergeWarning(config.Slack.MergeWarnings, parts[0], parts[1])
-		default:
+		if len(parts) != 2 {
 			return nil, fmt.Errorf("invalid repo in enabledRepos: %q", repo)
 		}
+		mw := getMergeWarning(config.Slack.MergeWarnings, parts[0], parts[1])
 		if mw != nil {
 			configInfo[repo] = fmt.Sprintf("In this repo merges are considered "+
 				"manual and trigger manual merge warnings if the user who merged is not "+

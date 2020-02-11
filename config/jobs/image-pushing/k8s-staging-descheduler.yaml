@@ -1,0 +1,38 @@
+postsubmits:
+  # This is the github repo we'll build from. This block needs to be repeated
+  # for each repo.
+  kubernetes-sigs/descheduler:
+    # The name should be changed to match the repo name above
+    - name: post-descheduler-push-images
+      cluster: test-infra-trusted
+      annotations:
+        # This is the name of some testgrid dashboard to report to.
+        testgrid-dashboards: sig-scheduling
+      decorate: true
+      branches:
+        - ^master$
+        # this is a regex for semver, from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
+        - ^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
+      spec:
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20200205-602500d
+            command:
+              - /run.sh
+            args:
+              # this is the project GCB will run in, which is the same as the GCR
+              # images are pushed to.
+              - --project=k8s-staging-descheduler
+              # This is the same as above, but with -gcb appended.
+              - --scratch-bucket=gs://k8s-staging-descheduler-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - .
+            env:
+              - name: GOOGLE_APPLICATION_CREDENTIALS
+                value: /creds/service-account.json
+            volumeMounts:
+              - name: creds
+                mountPath: /creds
+        volumes:
+          - name: creds
+            secret:
+              secretName: deployer-service-account

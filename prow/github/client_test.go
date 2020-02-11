@@ -33,6 +33,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/utils/diff"
 
@@ -56,7 +57,10 @@ func getClient(url string) *client {
 		return []byte("")
 	}
 
+	logger := logrus.New()
+	logger.SetLevel(logrus.DebugLevel)
 	return &client{
+		logger: logrus.NewEntry(logger),
 		delegate: &delegate{
 			time:     &testTime{},
 			getToken: getToken,
@@ -599,6 +603,55 @@ func TestRemoveLabelNotFound(t *testing.T) {
 
 	if err != nil {
 		t.Fatalf("RemoveLabel expected no error, got one: %v", err)
+	}
+}
+
+func TestIsNotFound(t *testing.T) {
+	testCases := []struct {
+		name       string
+		code       int
+		body       string
+		isNotFound bool
+	}{
+		{
+			name:       "should be not found when status code is 404",
+			code:       404,
+			body:       `{"message":"not found","errors":[{"resource":"fake resource","field":"fake field","code":"404","message":"status code 404"}]}`,
+			isNotFound: true,
+		},
+		{
+			name:       "should not be not found when status code is 200",
+			code:       200,
+			body:       `{"message": "ok"}`,
+			isNotFound: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				http.Error(w, tc.body, tc.code)
+			}))
+			defer ts.Close()
+
+			c := getClient(ts.URL)
+
+			code, _, err := c.requestRaw(&request{
+				method:    http.MethodGet,
+				path:      fmt.Sprintf("/repos/%s/%s/branches/%s/protection", "org", "repo", "branch"),
+				exitCodes: []int{200},
+			})
+
+			if code != tc.code {
+				t.Fatalf("Expected code to be %d, but got %d", tc.code, code)
+			}
+
+			isNotFound := IsNotFound(err)
+
+			if isNotFound != tc.isNotFound {
+				t.Fatalf("Expected isNotFound to be %t, but got %t", tc.isNotFound, isNotFound)
+			}
+		})
 	}
 }
 

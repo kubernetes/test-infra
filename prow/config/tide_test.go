@@ -35,6 +35,7 @@ var testQuery = TideQuery{
 	Repos:                  []string{"k/k", "k/t-i"},
 	Labels:                 []string{labels.LGTM, labels.Approved},
 	MissingLabels:          []string{"foo"},
+	Author:                 "batman",
 	Milestone:              "milestone",
 	ReviewApprovedRequired: true,
 }
@@ -55,6 +56,7 @@ func TestTideQuery(t *testing.T) {
 	checkTok("label:\"lgtm\"")
 	checkTok("label:\"approved\"")
 	checkTok("-label:\"foo\"")
+	checkTok("author:\"batman\"")
 	checkTok("milestone:\"milestone\"")
 	checkTok("review:approved")
 }

@@ -24,7 +24,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-master
         args:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
@@ -73,7 +73,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-master
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -118,7 +118,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-1.14
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-1.14
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -136,6 +136,7 @@ periodics:
       - "--aksengine-admin-username=azureuser"
       - "--aksengine-admin-password=AdminPassw0rd"
       - "--aksengine-creds=$AZURE_CREDENTIALS"
+      # Note: Updating aks-engine version for 1.14 + Windows configs has caused issues in the past - update this config with caution!
       - "--aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.31.2/aks-engine-v0.31.2-linux-amd64.tar.gz"
       - "--aksengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
       - "--aksengine-winZipBuildScript=$WIN_BUILD"
@@ -163,7 +164,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-1.15
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-1.15
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -181,7 +182,7 @@ periodics:
       - "--aksengine-admin-username=azureuser"
       - "--aksengine-admin-password=AdminPassw0rd"
       - "--aksengine-creds=$AZURE_CREDENTIALS"
-      - "--aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.45.0/aks-engine-v0.45.0-linux-amd64.tar.gz"
+      - "--aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.46.3/aks-engine-v0.46.3-linux-amd64.tar.gz"
       - "--aksengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
       - "--aksengine-winZipBuildScript=$WIN_BUILD"
       - "--aksengine-orchestratorRelease=1.15"
@@ -208,7 +209,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-1.16
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-1.16
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -226,7 +227,7 @@ periodics:
       - "--aksengine-admin-username=azureuser"
       - "--aksengine-admin-password=AdminPassw0rd"
       - "--aksengine-creds=$AZURE_CREDENTIALS"
-      - "--aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.45.0/aks-engine-v0.45.0-linux-amd64.tar.gz"
+      - "--aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.46.3/aks-engine-v0.46.3-linux-amd64.tar.gz"
       - "--aksengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
       - "--aksengine-winZipBuildScript=$WIN_BUILD"
       - "--aksengine-orchestratorRelease=1.16"
@@ -239,7 +240,7 @@ periodics:
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-windows, sig-release-1.16-informing, sig-release-master-informing, provider-azure-windows, provider-azure-periodic
+    testgrid-dashboards: sig-windows, sig-release-1.16-informing, provider-azure-windows, provider-azure-periodic
     testgrid-tab-name: aks-engine-azure-1-16-windows
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs SIG-Windows release tests on K8s clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
@@ -253,7 +254,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-1.17
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-1.17
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -272,7 +273,7 @@ periodics:
       - "--aksengine-admin-username=azureuser"
       - "--aksengine-admin-password=AdminPassw0rd"
       - "--aksengine-creds=$AZURE_CREDENTIALS"
-      - "--aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.45.0/aks-engine-v0.45.0-linux-amd64.tar.gz"
+      - "--aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.46.3/aks-engine-v0.46.3-linux-amd64.tar.gz"
       - "--aksengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
       - "--aksengine-winZipBuildScript=$WIN_BUILD"
       - "--aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_staging.json"
@@ -283,7 +284,7 @@ periodics:
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-windows, sig-release-1.17-informing, sig-release-master-informing, provider-azure-windows, provider-azure-periodic
+    testgrid-dashboards: sig-windows, sig-release-1.17-informing, provider-azure-windows, provider-azure-periodic
     testgrid-tab-name: aks-engine-azure-1-17-windows
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs SIG-Windows release tests on K8s 1.17 clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
@@ -297,7 +298,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-master
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -342,7 +343,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-master
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"

@@ -10,7 +10,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: launcher.gcr.io/google/bazel:0.29.1
+      - image: launcher.gcr.io/google/bazel:2.0.0
         command:
         - hack/bazel.sh
         args:
@@ -50,7 +50,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200117-6384054-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-experimental
         command:
         - ./hack/verify-file-perms.sh
     annotations:
@@ -78,7 +78,7 @@ presubmits:
     run_if_changed: '^(config/prow/(config|plugins).yaml$|config/jobs/.*.yaml$)'
     spec:
       containers:
-      - image: gcr.io/k8s-prow/checkconfig:v20200117-903ce628f
+      - image: gcr.io/k8s-prow/checkconfig:v20200210-9e2e0d510
         command:
         - /checkconfig
         args:

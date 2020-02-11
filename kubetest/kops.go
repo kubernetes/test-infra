@@ -69,6 +69,7 @@ var (
 	kopsPublish      = flag.String("kops-publish", "", "(kops only) Publish kops version to the specified gs:// path on success")
 	kopsMasterSize   = flag.String("kops-master-size", kopsAWSMasterSize, "(kops only) master instance type")
 	kopsMasterCount  = flag.Int("kops-master-count", 1, "(kops only) Number of masters to run")
+	kopsDNSProvider  = flag.String("kops-dns-provider", "", "(kops only) DNS Provider. CoreDNS or KubeDNS")
 	kopsEtcdVersion  = flag.String("kops-etcd-version", "", "(kops only) Etcd Version")
 	kopsNetworkMode  = flag.String("kops-network-mode", "", "(kops only) Networking mode to use. kubenet (default), classic, external, kopeio-vxlan (or kopeio), weave, flannel-vxlan (or flannel), flannel-udp, calico, canal, kube-router, romana, amazon-vpc-routed-eni, cilium.")
 	kopsOverrides    = pflag.StringSlice("kops-overrides", []string{}, "(kops only) Kops cluster configuration overrides, comma delimited. This flag can be used multiple times.")
@@ -129,6 +130,9 @@ type kops struct {
 
 	// masterCount denotes how many masters to start
 	masterCount int
+
+	// dnsProvider is the DNS Provider the cluster will use (CoreDNS or KubeDNS)
+	dnsProvider string
 
 	// etcdVersion is the etcd version to run
 	etcdVersion string
@@ -343,6 +347,7 @@ func newKops(provider, gcpProject, cluster string) (*kops, error) {
 		kopsVersion:   *kopsBaseURL,
 		kopsPublish:   *kopsPublish,
 		masterCount:   *kopsMasterCount,
+		dnsProvider:   *kopsDNSProvider,
 		etcdVersion:   *kopsEtcdVersion,
 		masterSize:    *kopsMasterSize,
 		networkMode:   *kopsNetworkMode,
@@ -418,6 +423,9 @@ func (k kops) Up() error {
 	if k.args != "" {
 		createArgs = append(createArgs, strings.Split(k.args, " ")...)
 	}
+	if k.dnsProvider != "" {
+		k.overrides = append(k.overrides, "spec.kubeDNS.provider="+k.dnsProvider)
+	}
 	if k.etcdVersion != "" {
 		k.overrides = append(k.overrides, "cluster.spec.etcdClusters[*].version="+k.etcdVersion)
 	}
@@ -429,10 +437,10 @@ func (k kops) Up() error {
 		os.Setenv("KOPS_FEATURE_FLAGS", strings.Join(featureFlags, ","))
 	}
 	if err := control.FinishRunning(exec.Command(k.path, createArgs...)); err != nil {
-		return fmt.Errorf("kops configuration failed: %v", err)
+		return fmt.Errorf("kops create cluster failed: %v", err)
 	}
 	if err := control.FinishRunning(exec.Command(k.path, "update", "cluster", k.cluster, "--yes")); err != nil {
-		return fmt.Errorf("kops bringup failed: %v", err)
+		return fmt.Errorf("kops update cluster failed: %v", err)
 	}
 
 	// We require repeated successes, so we know that the cluster is stable
@@ -441,10 +449,17 @@ func (k kops) Up() error {
 	// propagate across multiple servers / caches
 	requiredConsecutiveSuccesses := 10
 
-	// TODO(zmerlynn): More cluster validation. This should perhaps be
-	// added to kops and not here, but this is a fine place to loop
-	// for now.
-	return waitForReadyNodes(k.nodes+1, *kopsUpTimeout, requiredConsecutiveSuccesses)
+	// Wait for nodes to become ready
+	if err := waitForReadyNodes(k.nodes+1, *kopsUpTimeout, requiredConsecutiveSuccesses); err != nil {
+		return fmt.Errorf("kops nodes not ready: %v", err)
+	}
+
+	// TODO: Once this gets support for N checks in a row, it can replace the above node readiness check
+	if err := control.FinishRunning(exec.Command(k.path, "validate", "cluster", k.cluster, "--wait", "5m")); err != nil {
+		return fmt.Errorf("kops validate cluster failed: %v", err)
+	}
+
+	return nil
 }
 
 func (k kops) IsUp() error {
@@ -489,6 +504,8 @@ func (k kops) DumpClusterLogs(localPath, gcsPath string) error {
 	go func() {
 		finished <- k.dumpAllNodes(ctx, logDumper)
 	}()
+
+	logDumper.dumpPods(ctx, "kube-system", []string{"k8s-app=kops-controller"})
 
 	for {
 		select {

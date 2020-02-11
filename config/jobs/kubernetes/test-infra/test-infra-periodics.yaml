@@ -11,7 +11,7 @@ periodics:
     preset-bazel-scratch-dir: "true"
   spec:
     containers:
-    - image: launcher.gcr.io/google/bazel:0.29.1
+    - image: launcher.gcr.io/google/bazel:2.0.0
       command:
       - hack/bazel.sh
       args:
@@ -37,7 +37,6 @@ periodics:
       command:
       - "timeout"
       args:
-      - "-t"
       - "10800"
       - "/update_summaries.sh"
       volumeMounts:

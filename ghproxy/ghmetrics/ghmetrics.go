@@ -93,12 +93,21 @@ func init() {
 // `github_token_usage` as well as `github_token_reset` on prometheus.
 func CollectGitHubTokenMetrics(tokenHash, apiVersion string, headers http.Header, reqStartTime, responseTime time.Time) {
 	remaining := headers.Get("X-RateLimit-Remaining")
+	if remaining == "" {
+		return
+	}
 	timeUntilReset := timestampStringToTime(headers.Get("X-RateLimit-Reset"))
 	durationUntilReset := timeUntilReset.Sub(reqStartTime)
 
 	remainingFloat, err := strconv.ParseFloat(remaining, 64)
 	if err != nil {
 		logrus.WithError(err).Infof("Couldn't convert number of remaining token requests into gauge value (float)")
+	}
+	if remainingFloat == 0 {
+		logrus.WithFields(logrus.Fields{
+			"header":     remaining,
+			"user-agent": headers.Get("User-Agent"),
+		}).Debug("Parsed GitHub header as indicating no remaining rate-limit.")
 	}
 
 	muxTokenUsage.Lock()
