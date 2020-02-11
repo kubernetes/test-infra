@@ -105,7 +105,6 @@ filegroup(
         "//gopherage:all-srcs",
         "//greenhouse:all-srcs",
         "//hack:all-srcs",
-        "//images/bootstrap/barnacle:all-srcs",
         "//images/builder:all-srcs",
         "//images/krte:all-srcs",
         "//images/kubekins-e2e:all-srcs",

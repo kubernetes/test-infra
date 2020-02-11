@@ -1,17 +1,4 @@
 steps:
-  - name: golang:$_GO_VERSION
-    args:
-    - go
-    - build
-    - -o=/workspace/images/bootstrap/barnacle/barnacle
-    - ./images/bootstrap/barnacle/
-    env:
-    - CGO_ENABLED=0
-    - GOOS=linux
-    - GOARCH=amd64
-    - GO111MODULE=on
-    - GOPROXY=https://proxy.golang.org
-    - GOSUMDB=sum.golang.org
   - name: busybox
     args: ['cp', '-r', 'scenarios', './images/bootstrap/scenarios']
   - name: gcr.io/cloud-builders/docker
