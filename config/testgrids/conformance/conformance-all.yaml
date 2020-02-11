@@ -230,6 +230,9 @@ dashboards:
 
 - name: conformance-arm
   dashboard_tab:
+    - name: Periodic Arm64 conformance test
+      test_group_name: arm64-conformance
+      description: Runs conformance test by using kubetest against latest version of kubernetes on arm64
     - name: Periodic Arm64 conformance test on AWS
       test_group_name: arm64-conformance-aws-cluster
       description: Runs conformance tests by using kubetest against latest version of kubernetes on AWS"
