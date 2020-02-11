@@ -24,6 +24,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -176,6 +177,44 @@ func (d *logDumper) dumpNode(ctx context.Context, name string, ip string) error 
 		log.Printf("error closing connection: %v", err)
 	}
 
+	return nil
+}
+
+func (d *logDumper) dumpPods(ctx context.Context, namespace string, labelSelector []string) error {
+	pods, err := kubectlGetPods(ctx, namespace, labelSelector)
+	if err != nil {
+		return err
+	}
+	for _, pod := range pods.Items {
+		err = d.dumpPodLogs(ctx, pod)
+		if err != nil {
+			log.Printf("error dumping pod logs %s: %v", pod.Metadata.Name, err)
+		}
+	}
+	return nil
+}
+
+func (d *logDumper) dumpPodLogs(ctx context.Context, pod pod) error {
+	logfileName := filepath.Join(d.artifactsDir, pod.Spec.NodeName, fmt.Sprintf("%v.log", pod.Metadata.Name))
+
+	if err := os.MkdirAll(filepath.Dir(logfileName), 0755); err != nil {
+		log.Printf("unable to mkdir on %q: %v", filepath.Dir(logfileName), err)
+		return err
+	}
+	logfile, err := os.Create(logfileName)
+	if err != nil {
+		log.Printf("unable to create file %q: %v", logfileName, err)
+		return err
+	}
+	defer logfile.Close()
+
+	args := []string{"-n", pod.Metadata.Namespace, "logs", "--all-containers", pod.Metadata.Name}
+	cmd := exec.CommandContext(ctx, "kubectl", args...)
+	cmd.Stdout = logfile
+	cmd.Stderr = logfile
+	if err := control.FinishRunning(cmd); err != nil {
+		return err
+	}
 	return nil
 }
 
