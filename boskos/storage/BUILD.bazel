@@ -12,10 +12,7 @@ go_test(
     name = "go_default_test",
     srcs = ["storage_test.go"],
     embed = [":go_default_library"],
-    deps = [
-        "//boskos/common:go_default_library",
-        "//boskos/crds:go_default_library",
-    ],
+    deps = ["//boskos/common:go_default_library"],
 )
 
 filegroup(
