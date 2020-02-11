@@ -2,7 +2,7 @@
 # needed.
 #
 # Normally, new nodes are created dynamically by the kernel. But nodes
-# in a KinD cluster are started with a copy of /dev from the host and
+# in a KIND cluster are started with a copy of /dev from the host and
 # loop devices created later on do not show up in that static /dev
 # (https://github.com/kubernetes-sigs/kind/issues/1248). Creating
 # "enough" (100 in this daemonset) in advance avoids running out of
