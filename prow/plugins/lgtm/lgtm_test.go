@@ -1196,13 +1196,7 @@ func TestHelpProvider(t *testing.T) {
 		{
 			name:               "Empty config",
 			config:             &plugins.Configuration{},
-			enabledRepos:       []string{"org1", "org2/repo"},
-			configInfoExcludes: []string{configInfoReviewActsAsLgtm, configInfoStoreTreeHash, configInfoStickyLgtmTeam("team1")},
-		},
-		{
-			name:               "Overlapping org and org/repo",
-			config:             &plugins.Configuration{},
-			enabledRepos:       []string{"org2", "org2/repo"},
+			enabledRepos:       []string{"org1/repo", "org2/repo"},
 			configInfoExcludes: []string{configInfoReviewActsAsLgtm, configInfoStoreTreeHash, configInfoStickyLgtmTeam("team1")},
 		},
 		{
@@ -1216,12 +1210,12 @@ func TestHelpProvider(t *testing.T) {
 			config: &plugins.Configuration{
 				Lgtm: []plugins.Lgtm{
 					{
-						Repos:         []string{"org2"},
+						Repos:         []string{"org2/repo"},
 						StoreTreeHash: true,
 					},
 				},
 			},
-			enabledRepos:       []string{"org1", "org2/repo"},
+			enabledRepos:       []string{"org1/repo", "org2/repo"},
 			configInfoExcludes: []string{configInfoReviewActsAsLgtm, configInfoStickyLgtmTeam("team1")},
 			configInfoIncludes: []string{configInfoStoreTreeHash},
 		},
@@ -1230,14 +1224,14 @@ func TestHelpProvider(t *testing.T) {
 			config: &plugins.Configuration{
 				Lgtm: []plugins.Lgtm{
 					{
-						Repos:            []string{"org2"},
+						Repos:            []string{"org2/repo"},
 						ReviewActsAsLgtm: true,
 						StoreTreeHash:    true,
 						StickyLgtmTeam:   "team1",
 					},
 				},
 			},
-			enabledRepos:       []string{"org1", "org2/repo"},
+			enabledRepos:       []string{"org1/repo", "org2/repo"},
 			configInfoIncludes: []string{configInfoReviewActsAsLgtm, configInfoStoreTreeHash, configInfoStickyLgtmTeam("team1")},
 		},
 	}

@@ -48,12 +48,7 @@ func TestHelpProvider(t *testing.T) {
 		{
 			name:         "Empty config",
 			config:       &plugins.Configuration{},
-			enabledRepos: []string{"org1", "org2/repo"},
-		},
-		{
-			name:         "Overlapping org and org/repo",
-			config:       &plugins.Configuration{},
-			enabledRepos: []string{"org2", "org2/repo"},
+			enabledRepos: []string{"org1/repo", "org2/repo"},
 		},
 		{
 			name:         "Invalid enabledRepos",
@@ -66,7 +61,7 @@ func TestHelpProvider(t *testing.T) {
 			config: &plugins.Configuration{
 				Triggers: []plugins.Trigger{
 					{
-						Repos:          []string{"org2"},
+						Repos:          []string{"org2/repo"},
 						TrustedOrg:     "org2",
 						JoinOrgURL:     "https://join.me",
 						OnlyOrgMembers: true,
@@ -74,7 +69,7 @@ func TestHelpProvider(t *testing.T) {
 					},
 				},
 			},
-			enabledRepos: []string{"org1", "org2/repo"},
+			enabledRepos: []string{"org1/repo", "org2/repo"},
 		},
 	}
 	for _, c := range cases {
