@@ -61,28 +61,6 @@ presubmits:
       testgrid-alert-email: release-managers@kubernetes.io
       testgrid-num-columns-recent: '30'
 periodics:
-- interval: 2h
-  name: ci-release-anago-stage
-  decorate: true
-  extra_refs:
-  - org: kubernetes
-    repo: release
-    base_ref: master
-    path_alias: k8s.io/release
-  spec:
-    #erviceAccountName: deployer -- TODO- this is not valid for the untrusted cluster, fix
-    containers:
-    - image: gcr.io/k8s-staging-release-test/k8s-cloud-builder:latest
-      command:
-        - ./gcbmgr
-      args:
-        - stage
-        - master
-        - --attended
-  annotations:
-    testgrid-dashboards: sig-release-releng-informing
-    testgrid-alert-email: release-managers@kubernetes.io
-
 # package tests
 - name: periodic-release-verify-packages-debs
   interval: 6h
