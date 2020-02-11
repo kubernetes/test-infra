@@ -11,6 +11,9 @@ presubmits:
       containers:
       - image: launcher.gcr.io/google/bazel
         imagePullPolicy: Always
+        env:
+        - name: USE_BAZEL_VERSION
+          value: real  # Ignore .bazelversion
         command:
         - hack/bazel.sh
         args:
