@@ -52,6 +52,7 @@ type Storage struct {
 // NewTestingStorage is used only for testing.
 func NewTestingStorage(client ctrlruntimeclient.Client, namespace string, updateTime func() time.Time) *Storage {
 	return &Storage{
+		ctx:       context.Background(),
 		client:    client,
 		namespace: namespace,
 		now:       updateTime,
@@ -60,7 +61,7 @@ func NewTestingStorage(client ctrlruntimeclient.Client, namespace string, update
 
 // NewStorage instantiates a new Storage with a PersistenceLayer implementation
 // If storage string is not empty, it will read resource data from the file
-func NewStorage(client ctrlruntimeclient.Client, namespace, storage string) (*Storage, error) {
+func NewStorage(ctx context.Context, client ctrlruntimeclient.Client, namespace, storage string) (*Storage, error) {
 	s := &Storage{
 		client:       client,
 		namespace:    namespace,

@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"flag"
 	"os"
 	"os/signal"
@@ -66,7 +67,7 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("failed to construct kube client")
 	}
-	st, _ := ranch.NewStorage(kubeClient, namespace, "")
+	st, _ := ranch.NewStorage(context.Background(), kubeClient, namespace, "")
 
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 	client, err := client.NewClient(defaultOwner, boskosURL, username, passwordFile)

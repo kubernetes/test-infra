@@ -98,7 +98,7 @@ func (fc *fakeConfig) Construct(ctx context.Context, res common.Resource, typeTo
 func createFakeBoskos(tc testConfig) (*ranch.Storage, *Client, chan releasedResource) {
 	names := make(chan releasedResource, 100)
 	configNames := map[string]bool{}
-	s, _ := ranch.NewStorage(fakectrlruntimeclient.NewFakeClient(), "test", "")
+	s, _ := ranch.NewStorage(context.Background(), fakectrlruntimeclient.NewFakeClient(), "test", "")
 	r, _ := ranch.NewRanch("", s, testTTL)
 
 	for rtype, c := range tc {

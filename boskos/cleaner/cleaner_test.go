@@ -17,6 +17,7 @@ limitations under the License.
 package cleaner
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -44,7 +45,7 @@ type fakeBoskos struct {
 // Create a fake client
 func createFakeBoskos(resources []common.Resource, dlrcs []common.DynamicResourceLifeCycle) (*ranch.Storage, boskosClient, chan releasedResource) {
 	names := make(chan releasedResource, 100)
-	s, _ := ranch.NewStorage(fakectrlruntimeclient.NewFakeClient(), "", "")
+	s, _ := ranch.NewStorage(context.Background(), fakectrlruntimeclient.NewFakeClient(), "", "")
 	r, _ := ranch.NewRanch("", s, testTTL)
 
 	for _, lc := range dlrcs {

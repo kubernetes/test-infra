@@ -17,6 +17,7 @@ limitations under the License.
 package ranch
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"sort"
@@ -60,7 +61,7 @@ func fakeTime(t time.Time) time.Time {
 }
 
 func MakeTestRanch(resources []common.Resource, dResources []common.DynamicResourceLifeCycle) *Ranch {
-	s, _ := NewStorage(fakectrlruntimeclient.NewFakeClient(), "test", "")
+	s, _ := NewStorage(context.Background(), fakectrlruntimeclient.NewFakeClient(), "test", "")
 	s.now = func() time.Time {
 		return fakeNow
 	}
