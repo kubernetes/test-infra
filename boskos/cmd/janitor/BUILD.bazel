@@ -54,7 +54,7 @@ prow_image(
     entrypoint = [
         "/bin/sh",
         "-c",
-        "/bin/echo started && /app/boskos/janitor/app.binary \"$@\"",
+        "/bin/echo started && /app/boskos/cmd/janitor/app.binary \"$@\"",
         "--",
     ],
     visibility = ["//visibility:public"],
