@@ -2,7 +2,11 @@
 
 approvers:
 - krzyzacy
+- ixdy
 - sebastienvas
+
+reviewers:
+- ixdy
 
 labels:
 - area/boskos
