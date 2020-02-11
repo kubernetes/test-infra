@@ -24,14 +24,14 @@ import (
 	"syscall"
 	"time"
 
-	"k8s.io/test-infra/boskos/crds"
-	"k8s.io/test-infra/boskos/ranch"
-
 	"github.com/sirupsen/logrus"
+	corev1 "k8s.io/api/core/v1"
 
 	"k8s.io/test-infra/boskos/client"
 	"k8s.io/test-infra/boskos/common"
+	"k8s.io/test-infra/boskos/crds"
 	"k8s.io/test-infra/boskos/mason"
+	"k8s.io/test-infra/boskos/ranch"
 )
 
 const (
@@ -47,6 +47,7 @@ var (
 	username          = flag.String("username", "", "Username used to access the Boskos server")
 	passwordFile      = flag.String("password-file", "", "The path to password file used to access the Boskos server")
 	cleanerCount      = flag.Int("cleaner-count", defaultCleanerCount, "Number of threads running cleanup")
+	namespace         = flag.String("namespace", corev1.NamespaceDefault, "namespace to install on")
 	kubeClientOptions crds.KubernetesClientOptions
 )
 
@@ -68,13 +69,12 @@ func main() {
 
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 
-	dc, err := kubeClientOptions.Client(crds.DRLCType)
+	kubeClient, err := kubeClientOptions.Client()
 	if err != nil {
-		logrus.WithError(err).Fatal("unable to create a DynamicResourceLifeCycle CRD client")
+		logrus.WithError(err).Fatal("failed to create kubeClient")
 	}
 
-	dRLCStorage := crds.NewCRDStorage(dc)
-	st, _ := ranch.NewStorage(nil, dRLCStorage, "")
+	st, _ := ranch.NewStorage(context.Background(), kubeClient, *namespace, "")
 
 	flag.Parse()
 	logrus.SetFormatter(&logrus.JSONFormatter{})

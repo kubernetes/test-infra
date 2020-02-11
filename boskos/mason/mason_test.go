@@ -17,16 +17,16 @@ limitations under the License.
 package mason
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"testing"
 	"time"
 
-	"context"
+	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
 
 	"k8s.io/test-infra/boskos/common"
 	"k8s.io/test-infra/boskos/ranch"
-	"k8s.io/test-infra/boskos/storage"
 )
 
 var (
@@ -98,7 +98,7 @@ func (fc *fakeConfig) Construct(ctx context.Context, res common.Resource, typeTo
 func createFakeBoskos(tc testConfig) (*ranch.Storage, *Client, chan releasedResource) {
 	names := make(chan releasedResource, 100)
 	configNames := map[string]bool{}
-	s, _ := ranch.NewStorage(storage.NewMemoryStorage(), storage.NewMemoryStorage(), "")
+	s, _ := ranch.NewStorage(context.Background(), fakectrlruntimeclient.NewFakeClient(), "test", "")
 	r, _ := ranch.NewRanch("", s, testTTL)
 
 	for rtype, c := range tc {

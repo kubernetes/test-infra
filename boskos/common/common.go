@@ -318,7 +318,7 @@ func (ud *UserData) FromMap(m UserDataMap) {
 func ItemToResource(i Item) (Resource, error) {
 	res, ok := i.(Resource)
 	if !ok {
-		return Resource{}, fmt.Errorf("cannot construct Resource from received object %v", i)
+		return Resource{}, fmt.Errorf("expected item to be of type Resource, was %T", i)
 	}
 	return res, nil
 }
