@@ -43,6 +43,8 @@ presubmits:
         - --
         - make
         - unit-test
+        securityContext:
+          privileged: true
     annotations:
       testgrid-dashboards: provider-azure-azuredisk-csi-driver, provider-azure-presubmit
       testgrid-tab-name: pr-azuredisk-csi-driver-unit
