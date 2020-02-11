@@ -220,9 +220,7 @@ periodics:
     containers:
     - args:
       - --repo=k8s.io/kubernetes=release-1.15
-      # Use newer perf-tests branch with additional fixes for kubemark
-      # This mismatch is intended only for release branches older than 1.16
-      - --repo=k8s.io/perf-tests=release-1.16
+      - --repo=k8s.io/perf-tests=release-1.15
       - --root=/go/src
       - --timeout=140
       - --scenario=kubernetes_e2e
