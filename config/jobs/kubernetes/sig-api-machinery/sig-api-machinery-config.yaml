@@ -27,14 +27,13 @@ periodics:
 
 - interval: 24h
   name: ci-kubernetes-e2e-gci-gce-network-proxy
-  decorate: true
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   spec:
     containers:
     - args:
-      - --timeout=70
+      - --timeout=80
       - --bare
       - --scenario=kubernetes_e2e
       - --
@@ -55,18 +54,19 @@ presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-e2e-gce-network-proxy
     always_run: false
-    decorate: true
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
     spec:
       containers:
       - args:
-        - --timeout=70
-        - --bare
+        - --root=/go/src
+        - --repo=k8s.io/kubernetes=$(PULL_REFS)
+        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-network-proxy
+        - --timeout=80
         - --scenario=kubernetes_e2e
         - --
-        - --check-leaked-resources
         - --env=ENABLE_EGRESS_VIA_KONNECTIVITY_SERVICE=true
         - --extract=ci/latest
         - --gcp-node-image=gci
