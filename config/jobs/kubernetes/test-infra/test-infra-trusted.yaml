@@ -136,6 +136,8 @@ postsubmits:
         command:
         - prow/push.sh
         env:
+        - name: USE_BAZEL_VERSION
+          value: real  # Ignore .bazelversion
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /creds/service-account.json
         volumeMounts:
@@ -203,6 +205,8 @@ postsubmits:
         command:
         - boskos/push.sh
         env:
+        - name: USE_BAZEL_VERSION
+          value: real  # Ignore .bazelversion
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /creds/service-account.json
         volumeMounts:
@@ -767,6 +771,9 @@ postsubmits:
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bazelbuild:v20200212-b304d89-2.0.0
+        env:
+        - name: USE_BAZEL_VERSION
+          value: real  # Ignore .bazelversion
         command:
         - ./testgrid/config-upload.sh
         volumeMounts:
@@ -798,6 +805,8 @@ postsubmits:
         command:
         - ./boskos/update_prow_config.sh
         env:
+        - name: USE_BAZEL_VERSION
+          value: real  # Ignore .bazelversion
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /creds/service-account.json
         volumeMounts:
@@ -990,6 +999,9 @@ periodics:
   spec:
     containers:
     - image: gcr.io/k8s-testimages/bazelbuild:v20200212-b304d89-2.0.0
+      env:
+      - name: USE_BAZEL_VERSION
+        value: real  # Ignore .bazelversion
       command:
       - hack/autodeps.sh
       args:
@@ -1027,6 +1039,9 @@ periodics:
   spec:
     containers:
     - image: gcr.io/k8s-testimages/bazelbuild:v20200212-b304d89-2.0.0
+      env:
+      - name: USE_BAZEL_VERSION
+        value: real  # Ignore .bazelversion
       command:
       - hack/autodeps.sh
       args:
@@ -1064,6 +1079,9 @@ periodics:
   spec:
     containers:
     - image: gcr.io/k8s-testimages/bazelbuild:v20200212-b304d89-2.0.0
+      env:
+      - name: USE_BAZEL_VERSION
+        value: real  # Ignore .bazelversion
       command:
       - bazel
       - run
