@@ -2,8 +2,8 @@ periodics:
 - name: periodic-cluster-api-provider-aws-e2e-master
   decorate: true
   decoration_config:
-    timeout: 4h
-  interval: 5h
+    timeout: 5h
+  interval: 6h
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -40,8 +40,8 @@ periodics:
 - name: periodic-cluster-api-provider-aws-e2e-release-0-4
   decorate: true
   decoration_config:
-    timeout: 4h
-  interval: 5h
+    timeout: 5h
+  interval: 6h
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -321,7 +321,7 @@ postsubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     decorate: true
     decoration_config:
-      timeout: 4h
+      timeout: 5h
     max_concurrency: 1
     labels:
       preset-dind-enabled: "true"
