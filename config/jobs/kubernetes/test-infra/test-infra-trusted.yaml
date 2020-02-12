@@ -132,7 +132,7 @@ postsubmits:
     decorate: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20200205-602500d-0.29.1 # whatever image you use here must have bash 4.4+
+      - image: gcr.io/k8s-testimages/bazelbuild:v20200212-b304d89-2.0.0 # whatever image you use here must have bash 4.4+
         command:
         - prow/push.sh
         env:
@@ -199,7 +199,7 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20200205-602500d-0.29.1 # whatever image you use here must have bash 4.4+
+      - image: gcr.io/k8s-testimages/bazelbuild:v20200212-b304d89-2.0.0 # whatever image you use here must have bash 4.4+
         command:
         - boskos/push.sh
         env:
@@ -766,7 +766,7 @@ postsubmits:
     decorate: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20200205-602500d-0.29.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20200212-b304d89-2.0.0
         command:
         - ./testgrid/config-upload.sh
         volumeMounts:
@@ -794,7 +794,7 @@ postsubmits:
     decorate: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20200205-602500d-0.29.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20200212-b304d89-2.0.0
         command:
         - ./boskos/update_prow_config.sh
         env:
@@ -989,7 +989,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20200205-602500d-0.29.1
+    - image: gcr.io/k8s-testimages/bazelbuild:v20200212-b304d89-2.0.0
       command:
       - hack/autodeps.sh
       args:
@@ -1026,7 +1026,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20200205-602500d-0.29.1
+    - image: gcr.io/k8s-testimages/bazelbuild:v20200212-b304d89-2.0.0
       command:
       - hack/autodeps.sh
       args:
@@ -1063,7 +1063,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20200205-602500d-0.29.1
+    - image: gcr.io/k8s-testimages/bazelbuild:v20200212-b304d89-2.0.0
       command:
       - bazel
       - run
