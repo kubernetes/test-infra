@@ -91,9 +91,9 @@ func main() {
 	// main server with the main mux until we're ready
 	health := pjutil.NewHealth()
 
-	client, err := kubeClientOptions.CacheBackedClient(*namespace, &crds.ResourceObject{}, &crds.DRLCObject{})
+	client, err := kubeClientOptions.Client()
 	if err != nil {
-		logrus.WithError(err).Fatal("unable to get client")
+		logrus.WithError(err).Fatal("unable to construct client")
 	}
 
 	storage, err := ranch.NewStorage(interrupts.Context(), client, *namespace, *storagePath)
