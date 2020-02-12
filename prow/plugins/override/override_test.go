@@ -759,7 +759,7 @@ func TestHelpProvider(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		help, err := helpProvider(&tc.config, []string{})
+		help, err := helpProvider(&tc.config, []plugins.Repo{})
 		if err != nil {
 			t.Errorf("%s: unexpected error: %v", tc.name, err)
 		}

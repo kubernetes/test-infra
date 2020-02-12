@@ -44,7 +44,7 @@ func init() {
 }
 
 // helpProvider provides information on the plugin
-func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+func helpProvider(config *plugins.Configuration, enabledRepos []plugins.Repo) (*pluginhelp.PluginHelp, error) {
 	// Only the Description field is specified because this plugin is not triggered with commands and is not configurable.
 	return &pluginhelp.PluginHelp{
 		Description: fmt.Sprintf("The merge commit blocker plugin adds the %s label to pull requests that contain merge commits", labels.MergeCommits),

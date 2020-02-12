@@ -755,6 +755,10 @@ func checkCards(expectedColumnCards, projectColumnCards map[int][]github.Project
 
 func TestHelpProvider(t *testing.T) {
 	var i int = 0
+	enabledRepos := []plugins.Repo{
+		{Org: "org1", Repo: "repo"},
+		{Org: "org2", Repo: "repo"},
+	}
 	managedCol1 := plugins.ManagedColumn{ID: &i, Name: "col1", State: "open", Labels: []string{"area/conformance", "area/testing"}, Org: "org1"}
 	managedCol2 := plugins.ManagedColumn{ID: &i, Name: "col2", State: "open", Labels: []string{"area/conformance2", "area/testing2"}, Org: "org2"}
 	managedProj := plugins.ManagedProject{Columns: []plugins.ManagedColumn{managedCol1, managedCol2}}
@@ -762,7 +766,7 @@ func TestHelpProvider(t *testing.T) {
 	cases := []struct {
 		name           string
 		config         *plugins.Configuration
-		enabledRepos   []string
+		enabledRepos   []plugins.Repo
 		expectedConfig string
 		expectedKey    string
 		err            bool
@@ -770,18 +774,7 @@ func TestHelpProvider(t *testing.T) {
 		{
 			name:         "Empty config",
 			config:       &plugins.Configuration{},
-			enabledRepos: []string{"org1", "org2/repo"},
-		},
-		{
-			name:         "Overlapping org and org/repo",
-			config:       &plugins.Configuration{},
-			enabledRepos: []string{"org2", "org2/repo"},
-		},
-		{
-			name:         "Invalid enabledRepos",
-			config:       &plugins.Configuration{},
-			enabledRepos: []string{"org1", "org2/repo/extra"},
-			err:          true,
+			enabledRepos: enabledRepos,
 		},
 		{
 			name: "Empty projects in ProjectManager Config",
@@ -790,7 +783,7 @@ func TestHelpProvider(t *testing.T) {
 					OrgRepos: map[string]plugins.ManagedOrgRepo{},
 				},
 			},
-			enabledRepos:   []string{"org1", "org2/repo"},
+			enabledRepos:   enabledRepos,
 			expectedConfig: "",
 			expectedKey:    "Config",
 		},
@@ -801,7 +794,7 @@ func TestHelpProvider(t *testing.T) {
 					OrgRepos: map[string]plugins.ManagedOrgRepo{"org1": managedOrgRepo},
 				},
 			},
-			enabledRepos: []string{"org1", "org2/repo"},
+			enabledRepos: enabledRepos,
 		},
 	}
 

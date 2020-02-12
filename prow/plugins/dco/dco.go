@@ -66,16 +66,12 @@ func init() {
 	plugins.RegisterGenericCommentHandler(pluginName, handleCommentEvent, helpProvider)
 }
 
-func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+func helpProvider(config *plugins.Configuration, enabledRepos []plugins.Repo) (*pluginhelp.PluginHelp, error) {
 	configInfo := map[string]string{}
-	for _, orgRepo := range enabledRepos {
-		parts := strings.Split(orgRepo, "/")
-		if len(parts) != 2 {
-			return nil, fmt.Errorf("invalid repo in enabledRepos: %q", orgRepo)
-		}
-		opts := config.DcoFor(parts[0], parts[1])
+	for _, repo := range enabledRepos {
+		opts := config.DcoFor(repo.Org, repo.Repo)
 		if opts.SkipDCOCheckForMembers || opts.SkipDCOCheckForCollaborators {
-			configInfo[orgRepo] = fmt.Sprintf("The trusted GitHub organization for this repository is %q.", orgRepo)
+			configInfo[repo.String()] = fmt.Sprintf("The trusted GitHub organization for this repository is %q.", repo)
 		}
 	}
 

@@ -1185,10 +1185,14 @@ func TestRemoveTreeHashComment(t *testing.T) {
 }
 
 func TestHelpProvider(t *testing.T) {
+	enabledRepos := []plugins.Repo{
+		{Org: "org1", Repo: "repo"},
+		{Org: "org2", Repo: "repo"},
+	}
 	cases := []struct {
 		name               string
 		config             *plugins.Configuration
-		enabledRepos       []string
+		enabledRepos       []plugins.Repo
 		err                bool
 		configInfoIncludes []string
 		configInfoExcludes []string
@@ -1196,14 +1200,8 @@ func TestHelpProvider(t *testing.T) {
 		{
 			name:               "Empty config",
 			config:             &plugins.Configuration{},
-			enabledRepos:       []string{"org1/repo", "org2/repo"},
+			enabledRepos:       enabledRepos,
 			configInfoExcludes: []string{configInfoReviewActsAsLgtm, configInfoStoreTreeHash, configInfoStickyLgtmTeam("team1")},
-		},
-		{
-			name:         "Invalid enabledRepos",
-			config:       &plugins.Configuration{},
-			enabledRepos: []string{"org1", "org2/repo/extra"},
-			err:          true,
 		},
 		{
 			name: "StoreTreeHash enabled",
@@ -1215,7 +1213,7 @@ func TestHelpProvider(t *testing.T) {
 					},
 				},
 			},
-			enabledRepos:       []string{"org1/repo", "org2/repo"},
+			enabledRepos:       enabledRepos,
 			configInfoExcludes: []string{configInfoReviewActsAsLgtm, configInfoStickyLgtmTeam("team1")},
 			configInfoIncludes: []string{configInfoStoreTreeHash},
 		},
@@ -1231,7 +1229,7 @@ func TestHelpProvider(t *testing.T) {
 					},
 				},
 			},
-			enabledRepos:       []string{"org1/repo", "org2/repo"},
+			enabledRepos:       enabledRepos,
 			configInfoIncludes: []string{configInfoReviewActsAsLgtm, configInfoStoreTreeHash, configInfoStickyLgtmTeam("team1")},
 		},
 	}

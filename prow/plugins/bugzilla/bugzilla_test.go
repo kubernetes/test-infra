@@ -90,7 +90,12 @@ orgs:
 	}
 
 	pc := &plugins.Configuration{Bugzilla: config}
-	help, err := helpProvider(pc, []string{"some-org/some-repo", "my-org/some-repo", "my-org/my-repo"})
+	enabledRepos := []plugins.Repo{
+		{Org: "some-org", Repo: "some-repo"},
+		{Org: "my-org", Repo: "some-repo"},
+		{Org: "my-org", Repo: "my-repo"},
+	}
+	help, err := helpProvider(pc, enabledRepos)
 	if err != nil {
 		t.Fatalf("unexpected error creating help provider: %v", err)
 	}

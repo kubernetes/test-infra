@@ -648,34 +648,27 @@ func TestHandlePR(t *testing.T) {
 }
 
 func TestHelpProvider(t *testing.T) {
+	enabledRepos := []plugins.Repo{
+		{Org: "org1", Repo: "repo"},
+		{Org: "org2", Repo: "repo"},
+	}
 	cases := []struct {
 		name         string
 		config       *plugins.Configuration
-		enabledRepos []string
+		enabledRepos []plugins.Repo
 		err          bool
 	}{
 		{
 			name:         "Empty config",
 			config:       &plugins.Configuration{},
-			enabledRepos: []string{"org1", "org2/repo"},
-		},
-		{
-			name:         "Overlapping org and org/repo",
-			config:       &plugins.Configuration{},
-			enabledRepos: []string{"org2", "org2/repo"},
-		},
-		{
-			name:         "Invalid enabledRepos",
-			config:       &plugins.Configuration{},
-			enabledRepos: []string{"org1", "org2/repo/extra"},
-			err:          true,
+			enabledRepos: enabledRepos,
 		},
 		{
 			name: "Empty sizes",
 			config: &plugins.Configuration{
 				Size: plugins.Size{},
 			},
-			enabledRepos: []string{"org1", "org2/repo"},
+			enabledRepos: enabledRepos,
 		},
 		{
 			name: "Sizes specified",
@@ -688,7 +681,7 @@ func TestHelpProvider(t *testing.T) {
 					Xxl: 51,
 				},
 			},
-			enabledRepos: []string{"org1", "org2/repo"},
+			enabledRepos: enabledRepos,
 		},
 	}
 	for _, c := range cases {

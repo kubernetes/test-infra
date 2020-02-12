@@ -68,7 +68,7 @@ func init() {
 	plugins.RegisterIssueHandler(pluginName, handleIssue, helpProvider)
 }
 
-func helpProvider(config *plugins.Configuration, _ []string) (*pluginhelp.PluginHelp, error) {
+func helpProvider(config *plugins.Configuration, _ []plugins.Repo) (*pluginhelp.PluginHelp, error) {
 	url := config.RequireSIG.GroupListURL
 	if url == "" {
 		url = "<no url provided>"

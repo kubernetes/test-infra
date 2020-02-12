@@ -53,19 +53,19 @@ func init() {
 	plugins.RegisterGenericCommentHandler(pluginName, handleGenericComment, helpProvider)
 }
 
-func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+func helpProvider(config *plugins.Configuration, enabledRepos []plugins.Repo) (*pluginhelp.PluginHelp, error) {
 	msgForTeam := func(team plugins.Milestone) string {
 		return fmt.Sprintf(milestoneTeamMsg, team.MaintainersTeam, team.MaintainersID)
 	}
 
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "The milestone plugin allows members of a configurable GitHub team to set the milestone on an issue or pull request.",
-		Config: func(repos []string) map[string]string {
+		Config: func(repos []plugins.Repo) map[string]string {
 			configMap := make(map[string]string)
 			for _, repo := range repos {
-				team, exists := config.RepoMilestone[repo]
+				team, exists := config.RepoMilestone[repo.String()]
 				if exists {
-					configMap[repo] = msgForTeam(team)
+					configMap[repo.String()] = msgForTeam(team)
 				}
 			}
 			configMap[""] = msgForTeam(config.RepoMilestone[""])

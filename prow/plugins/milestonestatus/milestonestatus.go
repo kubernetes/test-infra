@@ -53,7 +53,7 @@ func init() {
 	plugins.RegisterGenericCommentHandler(pluginName, handleGenericComment, helpProvider)
 }
 
-func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+func helpProvider(config *plugins.Configuration, enabledRepos []plugins.Repo) (*pluginhelp.PluginHelp, error) {
 	msgForTeam := func(team plugins.Milestone) string {
 		return fmt.Sprintf(milestoneTeamMsg, team.MaintainersTeam, team.MaintainersID)
 	}
@@ -63,9 +63,9 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 		Config: func() map[string]string {
 			configMap := make(map[string]string)
 			for _, repo := range enabledRepos {
-				team, exists := config.RepoMilestone[repo]
+				team, exists := config.RepoMilestone[repo.String()]
 				if exists {
-					configMap[repo] = msgForTeam(team)
+					configMap[repo.String()] = msgForTeam(team)
 				}
 			}
 			configMap[""] = msgForTeam(config.RepoMilestone[""])

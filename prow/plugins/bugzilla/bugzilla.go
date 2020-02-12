@@ -49,17 +49,10 @@ func init() {
 	plugins.RegisterPullRequestHandler(PluginName, handlePullRequest, helpProvider)
 }
 
-func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+func helpProvider(config *plugins.Configuration, enabledRepos []plugins.Repo) (*pluginhelp.PluginHelp, error) {
 	configInfo := make(map[string]string)
-	for _, orgRepo := range enabledRepos {
-		parts := strings.Split(orgRepo, "/")
-		var opts map[string]plugins.BugzillaBranchOptions
-		switch len(parts) {
-		case 2:
-			opts = config.Bugzilla.OptionsForRepo(parts[0], parts[1])
-		default:
-			return nil, fmt.Errorf("invalid repo in enabledRepos: %q", orgRepo)
-		}
+	for _, repo := range enabledRepos {
+		opts := config.Bugzilla.OptionsForRepo(repo.Org, repo.Repo)
 		if len(opts) == 0 {
 			continue
 		}
@@ -133,7 +126,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 		}
 		configInfoStrings = append(configInfoStrings, "</ul>")
 
-		configInfo[orgRepo] = strings.Join(configInfoStrings, "\n")
+		configInfo[repo.String()] = strings.Join(configInfoStrings, "\n")
 	}
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "The bugzilla plugin ensures that pull requests reference a valid Bugzilla bug in their title.",
