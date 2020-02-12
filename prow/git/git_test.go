@@ -284,7 +284,7 @@ func TestMergeAndCheckout(t *testing.T) {
 			err:           "merge strategy \"rebase\" is not supported",
 		},
 		{
-			name:       "No pullRequestHead, error",
+			name:       "No pullRequestHead, no error",
 			setBaseSHA: true,
 		},
 		{
