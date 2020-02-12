@@ -1150,24 +1150,16 @@ periodics:
   cluster: test-infra-trusted
   decorate: true
   spec:
+    serviceAccountName: resultstore
     containers:
     - image: gcr.io/k8s-testimages/resultstore:v20190311-3fc08c042
       command:
       - /app/experiment/resultstore/app.binary
       args:
-      - --service-account=/etc/creds/service-account.json
       - --upload=k8s-prow
       - --deadline=10m
       - --latest=5
       - --gcs-auth
-      volumeMounts:
-      - name: creds
-        mountPath: /etc/creds
-        readOnly: true
-    volumes:
-    - name: creds
-      secret:
-        secretName: resultstore-service-account
   annotations:
     testgrid-dashboards: sig-testing-prow
     testgrid-tab-name: resultstore-upload
