@@ -23,7 +23,7 @@ periodics:
     timeout: 6h
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200212-1f7b8ac-master
       command:
       - runner.sh
       - bash
@@ -86,7 +86,7 @@ periodics:
     timeout: 3h
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200212-1f7b8ac-master
       command:
       - runner.sh
       - bash
@@ -141,7 +141,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200212-1f7b8ac-master
       command:
       - runner.sh
       - bash
