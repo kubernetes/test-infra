@@ -34,7 +34,7 @@ the image for general e2e tests.
 
 ## Installation
 
-Please run `go get -u k8s.io/test-infra/kubetest` to install kubetest.
+Please clone this repo and then run `GO111MODULE=on go install ./kubetest` from the clone.
 
 Common alternatives:
 ```
