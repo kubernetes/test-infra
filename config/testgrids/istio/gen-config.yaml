@@ -687,13 +687,6 @@ dashboards:
     test_group_name: codecov_istio
   - code_search_url_template:
       url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
-    description: e2e-bookInfoTests-envoyv2-v1alpha3_istio
-    name: e2e-bookInfoTests-envoyv2-v1alpha3_istio
-    open_bug_template:
-      url: https://github.com/istio/istio/issues/
-    test_group_name: e2e-bookInfoTests-envoyv2-v1alpha3_istio
-  - code_search_url_template:
-      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
     description: e2e-dashboard_istio
     name: e2e-dashboard_istio
     open_bug_template:
@@ -806,20 +799,6 @@ dashboards:
     test_group_name: lint_istio
   - code_search_url_template:
       url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
-    description: pilot-e2e-envoyv2-v1alpha3_istio
-    name: pilot-e2e-envoyv2-v1alpha3_istio
-    open_bug_template:
-      url: https://github.com/istio/istio/issues/
-    test_group_name: pilot-e2e-envoyv2-v1alpha3_istio
-  - code_search_url_template:
-      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
-    description: pilot-multicluster-e2e_istio
-    name: pilot-multicluster-e2e_istio
-    open_bug_template:
-      url: https://github.com/istio/istio/issues/
-    test_group_name: pilot-multicluster-e2e_istio
-  - code_search_url_template:
-      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
     description: release-test_istio
     name: release-test_istio
     open_bug_template:
@@ -872,33 +851,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/istio/istio/issues/
     test_group_name: codecov_istio_postsubmit
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
-    description: e2e-bookInfoTests-envoyv2-v1alpha3_istio_postsubmit
-    name: e2e-bookInfoTests-envoyv2-v1alpha3_istio_postsubmit
-    open_bug_template:
-      url: https://github.com/istio/istio/issues/
-    test_group_name: e2e-bookInfoTests-envoyv2-v1alpha3_istio_postsubmit
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
-    description: e2e-bookInfoTests-non-mcp_istio_postsubmit
-    name: e2e-bookInfoTests-non-mcp_istio_postsubmit
-    open_bug_template:
-      url: https://github.com/istio/istio/issues/
-    test_group_name: e2e-bookInfoTests-non-mcp_istio_postsubmit
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
-    description: e2e-bookInfoTests-trustdomain_istio_postsubmit
-    name: e2e-bookInfoTests-trustdomain_istio_postsubmit
-    open_bug_template:
-      url: https://github.com/istio/istio/issues/
-    test_group_name: e2e-bookInfoTests-trustdomain_istio_postsubmit
   - alert_options:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
     code_search_url_template:
@@ -1070,24 +1022,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/istio/istio/issues/
     test_group_name: lint_istio_postsubmit
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
-    description: pilot-e2e-envoyv2-v1alpha3_istio_postsubmit
-    name: pilot-e2e-envoyv2-v1alpha3_istio_postsubmit
-    open_bug_template:
-      url: https://github.com/istio/istio/issues/
-    test_group_name: pilot-e2e-envoyv2-v1alpha3_istio_postsubmit
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
-    description: pilot-multicluster-e2e_istio_postsubmit
-    name: pilot-multicluster-e2e_istio_postsubmit
-    open_bug_template:
-      url: https://github.com/istio/istio/issues/
-    test_group_name: pilot-multicluster-e2e_istio_postsubmit
   - alert_options:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
     code_search_url_template:
@@ -5106,9 +5040,6 @@ test_groups:
 - gcs_prefix: istio-prow/logs/codecov_istio_release-1.5_postsubmit
   name: codecov_istio_release-1.5_postsubmit
   num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/e2e-bookInfoTests-envoyv2-v1alpha3_istio_postsubmit
-  name: e2e-bookInfoTests-envoyv2-v1alpha3_istio_postsubmit
-  num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/e2e-bookInfoTests-envoyv2-v1alpha3_istio_release-1.3_postsubmit
   name: e2e-bookInfoTests-envoyv2-v1alpha3_istio_release-1.3_postsubmit
   num_failures_to_alert: 1
@@ -5118,9 +5049,6 @@ test_groups:
 - gcs_prefix: istio-prow/logs/e2e-bookInfoTests-envoyv2-v1alpha3_istio_release-1.5_postsubmit
   name: e2e-bookInfoTests-envoyv2-v1alpha3_istio_release-1.5_postsubmit
   num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/e2e-bookInfoTests-non-mcp_istio_postsubmit
-  name: e2e-bookInfoTests-non-mcp_istio_postsubmit
-  num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/e2e-bookInfoTests-non-mcp_istio_release-1.3_postsubmit
   name: e2e-bookInfoTests-non-mcp_istio_release-1.3_postsubmit
   num_failures_to_alert: 1
@@ -5129,9 +5057,6 @@ test_groups:
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/e2e-bookInfoTests-non-mcp_istio_release-1.5_postsubmit
   name: e2e-bookInfoTests-non-mcp_istio_release-1.5_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/e2e-bookInfoTests-trustdomain_istio_postsubmit
-  name: e2e-bookInfoTests-trustdomain_istio_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/e2e-bookInfoTests-trustdomain_istio_release-1.3_postsubmit
   name: e2e-bookInfoTests-trustdomain_istio_release-1.3_postsubmit
@@ -5415,9 +5340,6 @@ test_groups:
 - gcs_prefix: istio-prow/logs/lint_istio_release-1.5_postsubmit
   name: lint_istio_release-1.5_postsubmit
   num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/pilot-e2e-envoyv2-v1alpha3_istio_postsubmit
-  name: pilot-e2e-envoyv2-v1alpha3_istio_postsubmit
-  num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/pilot-e2e-envoyv2-v1alpha3_istio_release-1.3_postsubmit
   name: pilot-e2e-envoyv2-v1alpha3_istio_release-1.3_postsubmit
   num_failures_to_alert: 1
@@ -5426,9 +5348,6 @@ test_groups:
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/pilot-e2e-envoyv2-v1alpha3_istio_release-1.5_postsubmit
   name: pilot-e2e-envoyv2-v1alpha3_istio_release-1.5_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/pilot-multicluster-e2e_istio_postsubmit
-  name: pilot-multicluster-e2e_istio_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/pilot-multicluster-e2e_istio_release-1.3_postsubmit
   name: pilot-multicluster-e2e_istio_release-1.3_postsubmit
@@ -5951,9 +5870,6 @@ test_groups:
 - gcs_prefix: istio-prow/pr-logs/directory/codecov_istio_release-1.5
   name: codecov_istio_release-1.5
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/e2e-bookInfoTests-envoyv2-v1alpha3_istio
-  name: e2e-bookInfoTests-envoyv2-v1alpha3_istio
-  num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/e2e-bookInfoTests-envoyv2-v1alpha3_istio_release-1.3
   name: e2e-bookInfoTests-envoyv2-v1alpha3_istio_release-1.3
   num_columns_recent: 20
@@ -6191,9 +6107,6 @@ test_groups:
 - gcs_prefix: istio-prow/pr-logs/directory/lint_istio_release-1.5
   name: lint_istio_release-1.5
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/pilot-e2e-envoyv2-v1alpha3_istio
-  name: pilot-e2e-envoyv2-v1alpha3_istio
-  num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/pilot-e2e-envoyv2-v1alpha3_istio_release-1.3
   name: pilot-e2e-envoyv2-v1alpha3_istio_release-1.3
   num_columns_recent: 20
@@ -6202,9 +6115,6 @@ test_groups:
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/pilot-e2e-envoyv2-v1alpha3_istio_release-1.5
   name: pilot-e2e-envoyv2-v1alpha3_istio_release-1.5
-  num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/pilot-multicluster-e2e_istio
-  name: pilot-multicluster-e2e_istio
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/pilot-multicluster-e2e_istio_release-1.3
   name: pilot-multicluster-e2e_istio_release-1.3
