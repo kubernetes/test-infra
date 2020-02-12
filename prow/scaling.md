@@ -10,14 +10,26 @@ You may also be interested in ["Getting more out of Prow"](/prow/more_prow.md).
 
 It is frequently not secure to run all ProwJobs in the same cluster that runs
 Prow's service components (`hook`, `plank`, etc.). In particular, ProwJobs that
-execute presubmit tests should typically be isolated from Prow's microservices.
-This isolation prevents a malicious PR author from modifying the presubmit test
-to do something evil like breaking out of the container and stealing secrets
-that live in the cluster.
+execute presubmit tests for OSS projects should typically be isolated from
+Prow's microservices. This isolation prevents a malicious PR author from
+modifying the presubmit test to do something evil like breaking out of the
+container and stealing secrets that live in the cluster or DOSing a
+cluster-internal Prow component service.
 
-More than one build cluster can be used in order to isolate specific jobs from
-each other, improve scalability, and offer different node shapes.
-Instructions for configuring jobs to run in different clusters can be found [here](/prow/getting_started_deploy.md#Run-test-pods-in-different-clusters).
+Any number of build clusters can be used in order to isolate specific jobs from
+each other, improve scalability, or allow tenants to provide and manage their
+own execution environments. Instructions for configuring jobs to run in
+different clusters can be found
+[here](/prow/getting_started_deploy.md#Run-test-pods-in-different-clusters).
+
+Production Prow instances should run most ProwJobs in a build cluster separate
+from the Prow service cluster (the cluster where the Prow components live). Any
+'trusted' jobs that require secrets or services that should not be exposed to
+presubmit jobs, such as publishing or deployment jobs, should run in a different
+cluster from the rest of the 'untrusted' jobs.
+It is common for the Prow service cluster to be reused as a build cluster for
+these 'trusted' jobs since they are typically fast and few in number so running
+and managing an additional build cluster would be wasteful.
 
 ### Pull Request Merge Automation
 
@@ -32,13 +44,24 @@ batch whenever possible.
 ### Config File Split
 
 If your Prow config starts to grow too large, consider splitting the job config
-files into more specific and easily reviewed files. To use this pattern simply
-aggregate all job configs in a directory of files with unique base names and
-supply the directory path to components via `--job-config-path`. 
+files into more specific and easily reviewed files. This is particularly useful
+for delegating ownership of ProwJob config to different users or groups via the
+use of OWNERS files with the [`approve` plugin](/prow/plugins/approve) and
+[`Tide`](/prow/cmd/tide). It is common to enforce custom config policies for
+jobs defined in certain files or directories via presubmit unit tests. This
+makes it safe for Prow admins to delegate job config ownership by enforcing
+limitations on what can be configured and by whom. For example, we use a golang
+unit test in a presubmit job to validate that all jobs that are configured to
+run in the `test-infra-trusted` build cluster are defined in a file controlled
+by test-infra oncall.
+([examples](https://github.com/kubernetes/test-infra/tree/5c388ffe5e45f44ac4b46a0d25e941d7fe22b126/config/tests/jobs))
 
-The [`updateconfig` plugin](/prow/plugins/updateconfig) supports this pattern by
-allowing multiple files to loaded into a single configmap under different keys
-(different files once mounted to a container).
+To use this pattern simply aggregate all job configs in a directory of files
+with unique base names and supply the directory path to components via
+`--job-config-path`. The [`updateconfig` plugin](/prow/plugins/updateconfig) and
+[`config-bootstrapper`](/prow/cmd/config-bootstrapper) support this pattern by
+allowing multiple files to be loaded into a single configmap under different
+keys (different files once mounted to a container).
 
 ### GitHub API Cache
 
