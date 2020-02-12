@@ -17,7 +17,6 @@ limitations under the License.
 package main
 
 import (
-	"context"
 	"flag"
 	"os"
 	"os/signal"
@@ -25,7 +24,6 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
-	corev1 "k8s.io/api/core/v1"
 
 	"k8s.io/test-infra/boskos/cleaner"
 	"k8s.io/test-infra/boskos/client"
@@ -45,7 +43,6 @@ var (
 	boskosURL    string
 	username     string
 	passwordFile string
-	namespace    string
 	cleanerCount int
 )
 
@@ -54,7 +51,6 @@ func init() {
 	flag.StringVar(&username, "username", "", "Username used to access the Boskos server")
 	flag.StringVar(&passwordFile, "password-file", "", "The path to password file used to access the Boskos server")
 	flag.IntVar(&cleanerCount, "cleaner-count", defaultCleanerCount, "Number of threads running cleanup")
-	flag.StringVar(&namespace, "namespace", corev1.NamespaceDefault, "namespace to install on")
 	kubeClientOptions.AddFlags(flag.CommandLine)
 }
 
@@ -63,11 +59,13 @@ func main() {
 	kubeClientOptions.Validate()
 
 	logrus.SetFormatter(&logrus.JSONFormatter{})
-	kubeClient, err := kubeClientOptions.Client()
+	dc, err := kubeClientOptions.Client(crds.DRLCType)
 	if err != nil {
-		logrus.WithError(err).Fatal("failed to construct kube client")
+		logrus.WithError(err).Fatal("unable to create a Resource CRD client")
 	}
-	st, _ := ranch.NewStorage(context.Background(), kubeClient, namespace, "")
+
+	resStorage := crds.NewCRDStorage(dc)
+	st, _ := ranch.NewStorage(nil, resStorage, "")
 
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 	client, err := client.NewClient(defaultOwner, boskosURL, username, passwordFile)

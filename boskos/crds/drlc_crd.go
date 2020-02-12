@@ -30,13 +30,18 @@ var (
 	// DRLCType is the DynamicResourceLifeCycle CRD type
 	DRLCType = Type{
 		Kind:       reflect.TypeOf(DRLCObject{}).Name(),
-		ListKind:   reflect.TypeOf(DRLCObjectList{}).Name(),
+		ListKind:   reflect.TypeOf(DRLCCollection{}).Name(),
 		Singular:   "dynamicresourcelifecycle",
 		Plural:     "dynamicresourcelifecycles",
 		Object:     &DRLCObject{},
-		Collection: &DRLCObjectList{},
+		Collection: &DRLCCollection{},
 	}
 )
+
+// NewTestDRLCClient creates a fake CRD rest client for common.Resource
+func NewTestDRLCClient() ClientInterface {
+	return newDummyClient(DRLCType)
+}
 
 // DRLCObject holds generalized configuration information about how the
 // resource needs to be created.
@@ -57,11 +62,11 @@ type DRLCSpec struct {
 	Needs        common.ResourceNeeds `json:"needs"`
 }
 
-// DRLCObjectList implements the Collections interface
-type DRLCObjectList struct {
+// DRLCCollection implements the Collections interface
+type DRLCCollection struct {
 	v1.TypeMeta `json:",inline"`
 	v1.ListMeta `json:"metadata,omitempty"`
-	Items       []DRLCObject `json:"items"`
+	Items       []*DRLCObject `json:"items"`
 }
 
 // GetName implements the Object interface
@@ -129,41 +134,41 @@ func (in *DRLCObject) FromItem(i common.Item) {
 }
 
 // GetItems implements the Collection interface
-func (in *DRLCObjectList) GetItems() []Object {
+func (in *DRLCCollection) GetItems() []Object {
 	var items []Object
-	for idx := range in.Items {
-		items = append(items, &in.Items[idx])
+	for _, i := range in.Items {
+		items = append(items, i)
 	}
 	return items
 }
 
 // SetItems implements the Collection interface
-func (in *DRLCObjectList) SetItems(objects []Object) {
-	var items []DRLCObject
+func (in *DRLCCollection) SetItems(objects []Object) {
+	var items []*DRLCObject
 	for _, b := range objects {
-		items = append(items, *(b.(*DRLCObject)))
+		items = append(items, b.(*DRLCObject))
 	}
 	in.Items = items
 }
 
-func (in *DRLCObjectList) deepCopyInto(out *DRLCObjectList) {
+func (in *DRLCCollection) deepCopyInto(out *DRLCCollection) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
 	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	out.Items = in.Items
 }
 
-func (in *DRLCObjectList) deepCopy() *DRLCObjectList {
+func (in *DRLCCollection) deepCopy() *DRLCCollection {
 	if in == nil {
 		return nil
 	}
-	out := new(DRLCObjectList)
+	out := new(DRLCCollection)
 	in.deepCopyInto(out)
 	return out
 }
 
 // DeepCopyObject implements the runtime.Object interface
-func (in *DRLCObjectList) DeepCopyObject() runtime.Object {
+func (in *DRLCCollection) DeepCopyObject() runtime.Object {
 	if c := in.deepCopy(); c != nil {
 		return c
 	}

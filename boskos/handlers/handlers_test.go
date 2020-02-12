@@ -25,9 +25,8 @@ import (
 	"testing"
 	"time"
 
-	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
-
 	"k8s.io/test-infra/boskos/common"
+	"k8s.io/test-infra/boskos/crds"
 	"k8s.io/test-infra/boskos/ranch"
 )
 
@@ -44,7 +43,9 @@ var (
 )
 
 func MakeTestRanch(resources []common.Resource) *ranch.Ranch {
-	s := ranch.NewTestingStorage(fakectrlruntimeclient.NewFakeClient(), "test", func() time.Time { return fakeNow })
+	resourceClient := crds.NewTestResourceClient()
+	dRLCClient := crds.NewTestDRLCClient()
+	s := ranch.NewTestingStorage(crds.NewCRDStorage(resourceClient), crds.NewCRDStorage(dRLCClient), func() time.Time { return fakeNow })
 	for _, r := range resources {
 		s.AddResource(r)
 	}

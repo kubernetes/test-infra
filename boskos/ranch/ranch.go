@@ -59,7 +59,7 @@ type ResourceTypeNotFound struct {
 }
 
 func (r ResourceTypeNotFound) Error() string {
-	return fmt.Sprintf("resource type %q does not exist", r.rType)
+	return fmt.Sprintf("resource type %s does not exist", r.rType)
 }
 
 // OwnerNotMatch will be returned if request owner does not match current owner for target resource.
@@ -178,7 +178,7 @@ func (r *Ranch) Acquire(rType, state, dest, owner, requestID string) (*common.Re
 	if new {
 		logger.Debug("Checking for associated dynamic resource type...")
 		lifeCycle, err := r.Storage.GetDynamicResourceLifeCycle(rType)
-		// Assuming error means no associated dynamic resource.
+		// Assuming error means no associated dynamic resource
 		if err == nil {
 			if typeCount < lifeCycle.MaxCount {
 				logger.Debug("Adding new dynamic resources...")
@@ -188,8 +188,6 @@ func (r *Ranch) Acquire(rType, state, dest, owner, requestID string) (*common.Re
 				}
 				logger.Infof("Added dynamic resource %s of type %s", res.Name, res.Type)
 			}
-		} else {
-			logrus.WithError(err).Debug("Failed listing DRLC")
 		}
 	}
 

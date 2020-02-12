@@ -17,7 +17,6 @@ limitations under the License.
 package ranch
 
 import (
-	"context"
 	"fmt"
 	"reflect"
 	"sort"
@@ -25,16 +24,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/sirupsen/logrus"
-	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
-
 	"k8s.io/test-infra/boskos/common"
+	"k8s.io/test-infra/boskos/crds"
 )
-
-// Make debugging a bit easier
-func init() {
-	logrus.SetLevel(logrus.DebugLevel)
-}
 
 var (
 	startTime = fakeTime(time.Now())
@@ -61,7 +53,9 @@ func fakeTime(t time.Time) time.Time {
 }
 
 func MakeTestRanch(resources []common.Resource, dResources []common.DynamicResourceLifeCycle) *Ranch {
-	s, _ := NewStorage(context.Background(), fakectrlruntimeclient.NewFakeClient(), "test", "")
+	rs := crds.NewCRDStorage(crds.NewTestResourceClient())
+	lfs := crds.NewCRDStorage(crds.NewTestDRLCClient())
+	s, _ := NewStorage(rs, lfs, "")
 	s.now = func() time.Time {
 		return fakeNow
 	}
@@ -233,9 +227,7 @@ func TestAcquirePriority(t *testing.T) {
 	if _, err := r.Acquire(res.Type, res.State, common.Dirty, owner, "request_id_1"); err == nil {
 		t.Errorf("should fail as there are not resource available")
 	}
-	if err := r.Storage.AddResource(res); err != nil {
-		t.Fatalf("failed to add resource: %v", err)
-	}
+	r.Storage.AddResource(res)
 	// Attempting to acquire this resource without priority
 	if _, err := r.Acquire(res.Type, res.State, common.Dirty, owner, ""); err == nil {
 		t.Errorf("should fail as there is only resource, and it is prioritizes to request_id_1")
@@ -246,7 +238,7 @@ func TestAcquirePriority(t *testing.T) {
 	}
 	// Attempting with the first request
 	if _, err := r.Acquire(res.Type, res.State, common.Dirty, owner, "request_id_1"); err != nil {
-		t.Fatalf("should succeed since the request priority should match its rank in the queue. got %v", err)
+		t.Errorf("should succeed since the request priority should match its rank in the queue. got %v", err)
 	}
 	r.Release(res.Name, common.Free, "tester")
 	// Attempting with the first request
@@ -309,9 +301,9 @@ func TestAcquireOnDemand(t *testing.T) {
 		t.Errorf("should fail since there is not resource yet")
 	}
 	if resources, err := c.Storage.GetResources(); err != nil {
-		t.Fatal(err)
+		t.Error(err)
 	} else if len(resources) != 1 {
-		t.Fatal("A resource should have been created")
+		t.Errorf("A resource should have been created")
 	}
 	// Attempting to create another resource
 	if _, err := c.Acquire(rType, common.Free, common.Busy, owner, requestID1); err == nil {

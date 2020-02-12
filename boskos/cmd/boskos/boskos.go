@@ -27,7 +27,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	corev1 "k8s.io/api/core/v1"
 
 	"k8s.io/test-infra/boskos/crds"
 	"k8s.io/test-infra/boskos/handlers"
@@ -54,7 +53,6 @@ var (
 	requestTTL        = flag.Duration("request-ttl", defaultRequestTTL, "request TTL before losing priority in the queue")
 	kubeClientOptions crds.KubernetesClientOptions
 	logLevel          = flag.String("log-level", "info", fmt.Sprintf("Log level is one of %v.", logrus.AllLevels))
-	namespace         = flag.String("namespace", corev1.NamespaceDefault, "namespace to install on")
 )
 
 var (
@@ -91,12 +89,18 @@ func main() {
 	// main server with the main mux until we're ready
 	health := pjutil.NewHealth()
 
-	client, err := kubeClientOptions.Client()
+	rc, err := kubeClientOptions.Client(crds.ResourceType)
 	if err != nil {
-		logrus.WithError(err).Fatal("unable to construct client")
+		logrus.WithError(err).Fatal("unable to create a Resource CRD client")
+	}
+	dc, err := kubeClientOptions.Client(crds.DRLCType)
+	if err != nil {
+		logrus.WithError(err).Fatal("unable to create a DynamicResourceLifeCycle CRD client")
 	}
 
-	storage, err := ranch.NewStorage(interrupts.Context(), client, *namespace, *storagePath)
+	resourceStorage := crds.NewCRDStorage(rc)
+	dRLCStorage := crds.NewCRDStorage(dc)
+	storage, err := ranch.NewStorage(resourceStorage, dRLCStorage, *storagePath)
 	if err != nil {
 		logrus.WithError(err).Fatal("failed to create storage")
 	}
