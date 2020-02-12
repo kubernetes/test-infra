@@ -102,6 +102,12 @@ presubmits:
       preset-service-account: "true"
       preset-azure-cred: "true"
       preset-dind-enabled: "true"
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+      workdir: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-master
@@ -148,6 +154,12 @@ presubmits:
       preset-service-account: "true"
       preset-azure-cred: "true"
       preset-dind-enabled: "true"
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+      workdir: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-master
@@ -195,6 +207,12 @@ presubmits:
       preset-service-account: "true"
       preset-azure-cred: "true"
       preset-dind-enabled: "true"
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+      workdir: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-master
@@ -244,6 +262,12 @@ presubmits:
       preset-service-account: "true"
       preset-azure-cred: "true"
       preset-dind-enabled: "true"
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+      workdir: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-master
