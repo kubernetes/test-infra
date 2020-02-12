@@ -171,6 +171,18 @@ recognize this is going to depend on review latency.
 
 For more details, please refer to [How to Test a ProwJob](/prow/build_test_update.md#how-to-test-a-prowjob)
 
+## Running a Production Job
+
+Normally prow will automatically schedule your job, however if for some reason you
+need to trigger it again you have a few options:
+
+- you can use the rerun feature in prow.k8s.io to run the job again *with the same config*
+- you can use [`config/mkpj.sh`](/config/mkpj.sh) to create a prowjob CR from your local config
+- you can use `bazel run //prow/cmd/mkpj -- --job=foo ...` to create a prowjob CR from your local config
+
+For the latter two options you'll need to submit the resulting CR via `kubectl` configured against
+the prow services cluster.
+
 ## Generated Jobs
 
 There are some sets of jobs that are generated and should not be edited by hand.
