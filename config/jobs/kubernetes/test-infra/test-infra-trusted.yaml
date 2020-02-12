@@ -131,6 +131,7 @@ postsubmits:
     run_if_changed: '^(prow|ghproxy|label_sync|robots/commenter|robots/pr-creator|robots/issue-creator|testgrid/cmd/transfigure)/'
     decorate: true
     spec:
+      serviceAccountName: pusher
       containers:
       - image: gcr.io/k8s-testimages/bazelbuild:v20200212-b304d89-2.0.0 # whatever image you use here must have bash 4.4+
         command:
@@ -138,15 +139,6 @@ postsubmits:
         env:
         - name: USE_BAZEL_VERSION
           value: real  # Ignore .bazelversion
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /creds/service-account.json
-        volumeMounts:
-        - name: creds
-          mountPath: /creds
-      volumes:
-      - name: creds
-        secret:
-          secretName: pusher-service-account
     annotations:
       testgrid-dashboards: sig-testing-prow
       testgrid-tab-name: push-prow
@@ -200,6 +192,7 @@ postsubmits:
     branches:
     - master
     spec:
+      serviceAccountName: pusher
       containers:
       - image: gcr.io/k8s-testimages/bazelbuild:v20200212-b304d89-2.0.0 # whatever image you use here must have bash 4.4+
         command:
@@ -207,15 +200,6 @@ postsubmits:
         env:
         - name: USE_BAZEL_VERSION
           value: real  # Ignore .bazelversion
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /creds/service-account.json
-        volumeMounts:
-        - name: creds
-          mountPath: /creds
-      volumes:
-      - name: creds
-        secret:
-          secretName: pusher-service-account
   - name: post-test-infra-push-kettle
     cluster: test-infra-trusted
     annotations:
@@ -849,7 +833,7 @@ postsubmits:
       volumes:
       - name: service-account
         secret:
-          secretName: pusher-service-account
+          secretName: pusher-service-account # TODO(fejta): use pusher serviceAccountName
     annotations:
       testgrid-dashboards: sig-testing-prow
       testgrid-tab-name: cip-prow
