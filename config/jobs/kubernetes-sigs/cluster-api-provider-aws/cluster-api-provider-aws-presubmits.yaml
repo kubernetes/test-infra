@@ -114,8 +114,8 @@ presubmits:
     optional: true
     decorate: true
     decoration_config:
-      timeout: 4h
-    max_concurrency: 5
+      timeout: 5h
+    max_concurrency: 2
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -150,7 +150,7 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 4h
-    max_concurrency: 5
+    max_concurrency: 2
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
