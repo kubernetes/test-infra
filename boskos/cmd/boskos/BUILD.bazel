@@ -21,6 +21,7 @@ go_library(
     deps = [
         "//boskos/crds:go_default_library",
         "//boskos/handlers:go_default_library",
+        "//boskos/metrics:go_default_library",
         "//boskos/ranch:go_default_library",
         "//prow/config:go_default_library",
         "//prow/interrupts:go_default_library",

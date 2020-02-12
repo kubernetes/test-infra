@@ -706,6 +706,95 @@ func TestMetric(t *testing.T) {
 	}
 }
 
+func TestAllMetrics(t *testing.T) {
+	var testcases = []struct {
+		name          string
+		resources     []common.Resource
+		expectMetrics []common.Metric
+	}{
+		{
+			name:          "ranch has no resource",
+			resources:     []common.Resource{},
+			expectMetrics: []common.Metric{},
+		},
+		{
+			name: "one resource",
+			resources: []common.Resource{
+				common.NewResource("res", "t", "s", "merlin", time.Now()),
+			},
+			expectMetrics: []common.Metric{
+				{
+					Type: "t",
+					Current: map[string]int{
+						"s": 1,
+					},
+					Owners: map[string]int{
+						"merlin": 1,
+					},
+				},
+			},
+		},
+		{
+			name: "multiple resources",
+			resources: []common.Resource{
+				common.NewResource("res-1", "t", "s", "merlin", time.Now()),
+				common.NewResource("res-2", "t", "p", "pony", time.Now()),
+				common.NewResource("res-3", "t", "s", "pony", time.Now()),
+				common.NewResource("res-4", "foo", "s", "pony", time.Now()),
+				common.NewResource("res-5", "t", "d", "merlin", time.Now()),
+				common.NewResource("res-6", "foo", "x", "mars", time.Now()),
+				common.NewResource("res-7", "bar", "d", "merlin", time.Now()),
+			},
+			expectMetrics: []common.Metric{
+				{
+					Type: "bar",
+					Current: map[string]int{
+						"d": 1,
+					},
+					Owners: map[string]int{
+						"merlin": 1,
+					},
+				},
+				{
+					Type: "foo",
+					Current: map[string]int{
+						"s": 1,
+						"x": 1,
+					},
+					Owners: map[string]int{
+						"pony": 1,
+						"mars": 1,
+					},
+				},
+				{
+					Type: "t",
+					Current: map[string]int{
+						"s": 2,
+						"d": 1,
+						"p": 1,
+					},
+					Owners: map[string]int{
+						"merlin": 2,
+						"pony":   2,
+					},
+				},
+			},
+		},
+	}
+
+	for _, tc := range testcases {
+		c := MakeTestRanch(tc.resources, nil)
+		metrics, err := c.AllMetrics()
+		if err != nil {
+			t.Errorf("%s - Got error %v", tc.name, err)
+			continue
+		}
+		if !reflect.DeepEqual(metrics, tc.expectMetrics) {
+			t.Errorf("%s - wrong metrics, got %v, want %v", tc.name, metrics, tc.expectMetrics)
+		}
+	}
+}
+
 func setExpiration(res common.Resource, exp time.Time) common.Resource {
 	res.ExpirationDate = &exp
 	return res

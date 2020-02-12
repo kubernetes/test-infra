@@ -18,6 +18,7 @@ package ranch
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -408,11 +409,7 @@ func (r *Ranch) StartRequestGC(gcPeriod time.Duration) {
 
 // Metric returns a metric object with metrics filled in
 func (r *Ranch) Metric(rtype string) (common.Metric, error) {
-	metric := common.Metric{
-		Type:    rtype,
-		Current: map[string]int{},
-		Owners:  map[string]int{},
-	}
+	metric := common.NewMetric(rtype)
 
 	resources, err := r.Storage.GetResources()
 	if err != nil {
@@ -425,14 +422,6 @@ func (r *Ranch) Metric(rtype string) (common.Metric, error) {
 			continue
 		}
 
-		if _, ok := metric.Current[res.State]; !ok {
-			metric.Current[res.State] = 0
-		}
-
-		if _, ok := metric.Owners[res.Owner]; !ok {
-			metric.Owners[res.Owner] = 0
-		}
-
 		metric.Current[res.State]++
 		metric.Owners[res.Owner]++
 	}
@@ -442,4 +431,35 @@ func (r *Ranch) Metric(rtype string) (common.Metric, error) {
 	}
 
 	return metric, nil
+}
+
+// AllMetrics returns a list of Metric objects for all resource types.
+func (r *Ranch) AllMetrics() ([]common.Metric, error) {
+	resources, err := r.Storage.GetResources()
+	if err != nil {
+		logrus.WithError(err).Error("cannot get resources")
+		return nil, err
+	}
+
+	metrics := map[string]common.Metric{}
+
+	for _, res := range resources {
+		metric, ok := metrics[res.Type]
+		if !ok {
+			metric = common.NewMetric(res.Type)
+			metrics[res.Type] = metric
+		}
+
+		metric.Current[res.State]++
+		metric.Owners[res.Owner]++
+	}
+
+	result := make([]common.Metric, 0, len(metrics))
+	for _, metric := range metrics {
+		result = append(result, metric)
+	}
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].Type < result[j].Type
+	})
+	return result, nil
 }

@@ -31,11 +31,12 @@ import (
 
 	"k8s.io/test-infra/boskos/crds"
 	"k8s.io/test-infra/boskos/handlers"
+	"k8s.io/test-infra/boskos/metrics"
 	"k8s.io/test-infra/boskos/ranch"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/logrusutil"
-	"k8s.io/test-infra/prow/metrics"
+	prowmetrics "k8s.io/test-infra/prow/metrics"
 	"k8s.io/test-infra/prow/pjutil"
 )
 
@@ -57,9 +58,9 @@ var (
 )
 
 var (
-	httpRequestDuration = metrics.HttpRequestDuration("boskos", 0.005, 1200)
-	httpResponseSize    = metrics.HttpResponseSize("boskos", 128, 65536)
-	traceHandler        = metrics.TraceHandler(handlers.NewBoskosSimplifier(), httpRequestDuration, httpResponseSize)
+	httpRequestDuration = prowmetrics.HttpRequestDuration("boskos", 0.005, 1200)
+	httpResponseSize    = prowmetrics.HttpResponseSize("boskos", 128, 65536)
+	traceHandler        = prowmetrics.TraceHandler(handlers.NewBoskosSimplifier(), httpRequestDuration, httpResponseSize)
 )
 
 func init() {
@@ -84,7 +85,7 @@ func main() {
 
 	defer interrupts.WaitForGracefulShutdown()
 	pjutil.ServePProf()
-	metrics.ExposeMetrics("boskos", config.PushGateway{})
+	prowmetrics.ExposeMetrics("boskos", config.PushGateway{})
 	// signal to the world that we are healthy
 	// this needs to be in a separate port as we don't start the
 	// main server with the main mux until we're ready
@@ -123,6 +124,7 @@ func main() {
 		}
 	})
 
+	prometheus.MustRegister(metrics.NewResourcesCollector(r))
 	r.StartDynamicResourceUpdater(*dynamicResourceUpdatePeriod)
 	r.StartRequestGC(defaultRequestGCPeriod)
 

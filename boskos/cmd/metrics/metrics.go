@@ -25,64 +25,54 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
-	"k8s.io/apimachinery/pkg/util/sets"
 
 	"k8s.io/test-infra/boskos/client"
 	"k8s.io/test-infra/boskos/common"
+	"k8s.io/test-infra/boskos/metrics"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/logrusutil"
-	"k8s.io/test-infra/prow/metrics"
+	prowmetrics "k8s.io/test-infra/prow/metrics"
 )
 
 var (
-	resourceMetric = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "boskos_resources",
-		Help: "Number of resources recorded in Boskos",
-	}, []string{"type", "state"})
-	boskosURL         string
-	username          string
-	passwordFile      string
-	resources, states common.CommaSeparatedStrings
-	defaultStates     = []string{
-		common.Busy,
-		common.Cleaning,
-		common.Dirty,
-		common.Free,
-		common.Leased,
-		common.ToBeDeleted,
-		common.Tombstone,
-	}
+	resourcesMetric = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: metrics.ResourcesMetricName,
+		Help: metrics.ResourcesMetricDescription,
+	}, metrics.ResourcesMetricLabels)
+	boskosURL      string
+	username       string
+	passwordFile   string
+	rtypes, states common.CommaSeparatedStrings
 )
 
 func init() {
 	flag.StringVar(&boskosURL, "boskos-url", "http://boskos", "Boskos Server URL")
 	flag.StringVar(&username, "username", "", "Username used to access the Boskos server")
 	flag.StringVar(&passwordFile, "password-file", "", "The path to password file used to access the Boskos server")
-	flag.Var(&resources, "resource-type", "comma-separated list of resources need to have metrics collected.")
+	flag.Var(&rtypes, "resource-type", "comma-separated list of resources need to have metrics collected.")
 	flag.Var(&states, "resource-state", "comma-separated list of states need to have metrics collected.")
-	prometheus.MustRegister(resourceMetric)
+	prometheus.MustRegister(resourcesMetric)
 }
 
 func main() {
 	logrusutil.ComponentInit("boskos-metrics")
+	flag.Parse()
 	boskos, err := client.NewClient("Metrics", boskosURL, username, passwordFile)
 	if err != nil {
 		logrus.WithError(err).Fatal("unable to create a Boskos client")
 	}
-	logrus.Infof("Initialzied boskos client!")
 
-	flag.Parse()
 	if states == nil {
-		states = defaultStates
+		states = common.KnownStates
 	}
 
-	metrics.ExposeMetrics("boskos", config.PushGateway{})
+	prowmetrics.ExposeMetrics("boskos", config.PushGateway{})
 
 	go func() {
-		logTick := time.NewTicker(30 * time.Second).C
-		for range logTick {
-			if err := update(boskos); err != nil {
-				logrus.WithError(err).Warning("Update failed!")
+		tick := time.NewTicker(30 * time.Second).C
+		for range tick {
+			if err := updateResourcesMetric(boskos); err != nil {
+				logrus.WithError(err).Warning("failed to update resource metrics")
 			}
 		}
 	}()
@@ -93,39 +83,19 @@ func main() {
 	logrus.WithError(http.ListenAndServe(":8080", metricsMux)).Fatal("ListenAndServe returned.")
 }
 
-func update(boskos *client.Client) error {
-	// initialize resources counted by type, then state
-	resourcesByState := map[string]map[string]float64{}
-	for _, resource := range resources {
-		resourcesByState[resource] = map[string]float64{}
-		for _, state := range states {
-			resourcesByState[resource][state] = 0
-		}
-	}
-
-	// record current states
-	knownStates := sets.NewString(states...)
-	for _, resource := range resources {
-		metric, err := boskos.Metric(resource)
+func updateResourcesMetric(boskos *client.Client) error {
+	ms := []common.Metric{}
+	for _, rtype := range rtypes {
+		metric, err := boskos.Metric(rtype)
 		if err != nil {
-			logrus.WithError(err).Errorf("failed to get metric for %s", resource)
+			logrus.WithError(err).Errorf("failed to get metric for %s", rtype)
 			continue
 		}
-		// Filtering metrics states
-		for state, value := range metric.Current {
-			if !knownStates.Has(state) {
-				state = common.Other
-			}
-			resourcesByState[resource][state] = float64(value)
-		}
+		ms = append(ms, metric)
 	}
-
-	// expose current states
-	for resource, states := range resourcesByState {
-		for state, amount := range states {
-			resourceMetric.WithLabelValues(resource, state).Set(amount)
-		}
-	}
+	metrics.NormalizeResourceMetrics(ms, states, func(rtype, state string, count float64) {
+		resourcesMetric.WithLabelValues(rtype, state).Set(count)
+	})
 	return nil
 }
 
