@@ -1,7 +1,9 @@
 presubmits:
   kubernetes-sigs/azuredisk-csi-driver:
   - name: pull-azuredisk-csi-driver-verify
+    decorate: true
     always_run: true
+    path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - master
     labels:
@@ -9,14 +11,9 @@ presubmits:
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-master
+        command:
+        - runner.sh
         args:
-        - "--job=$(JOB_NAME)"
-        - "--root=/go/src"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--scenario=execute"
-        - --
         - make
         - verify
     annotations:
@@ -25,7 +22,9 @@ presubmits:
       description: "Run code verification tests for Azure Disk CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-unit
+    decorate: true
     always_run: true
+    path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - master
     labels:
@@ -33,14 +32,9 @@ presubmits:
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-master
+        command:
+        - runner.sh
         args:
-        - "--job=$(JOB_NAME)"
-        - "--root=/go/src"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--scenario=execute"
-        - --
         - make
         - unit-test
         securityContext:
@@ -51,7 +45,9 @@ presubmits:
       description: "Run unit tests for Azure Disk CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-sanity
+    decorate: true
     always_run: true
+    path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - master
     labels:
@@ -60,14 +56,9 @@ presubmits:
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-master
+        command:
+        - runner.sh
         args:
-        - "--job=$(JOB_NAME)"
-        - "--root=/go/src"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--scenario=execute"
-        - --
         - make
         - sanity-test
         securityContext:
@@ -78,7 +69,9 @@ presubmits:
       description: "Run sanity tests for Azure Disk CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-integration
+    decorate: true
     always_run: true
+    path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - master
     labels:
@@ -87,14 +80,9 @@ presubmits:
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-master
+        command:
+        - runner.sh
         args:
-        - "--job=$(JOB_NAME)"
-        - "--root=/go/src"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--scenario=execute"
-        - --
         - make
         - integration-test
         securityContext:
@@ -105,7 +93,9 @@ presubmits:
       description: "Run integration tests for Azure Disk CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-e2e-single-az
+    decorate: true
     always_run: true
+    path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - master
     labels:
@@ -115,33 +105,29 @@ presubmits:
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-master
+        command:
+        - runner.sh
+        - kubetest
         args:
-        - "--job=$(JOB_NAME)"
-        - "--root=/go/src"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--repo=k8s.io/kubernetes"
-        - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--scenario=kubernetes_e2e"
-        - "--timeout=450"
-        - --
-        - "--gce-ssh="
-        - "--test=true"
-        - "--up=true"
-        - "--down=true"
-        - "--deployment=aksengine"
-        - "--build=host-go"
-        - "--provider=skeleton"
-        - "--ginkgo-parallel=1"
-        - "--aksengine-admin-username=azureuser"
-        - "--aksengine-creds=$AZURE_CREDENTIALS"
-        - "--aksengine-orchestratorRelease=1.17"
-        - "--aksengine-location=westus2"
-        - "--aksengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
-        - "--aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/single-az.json"
-        - "--aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.46.0/aks-engine-v0.46.0-linux-amd64.tar.gz"
-        - "--test-azure-disk-csi-driver=True"
-        - "--timeout=420m"
+        # Generic e2e test args
+        - --test
+        - --up
+        - --down
+        - --dump=$(ARTIFACTS)
+        # Azure-specific test args
+        - --provider=skeleton
+        - --deployment=aksengine
+        - --aksengine-admin-username=azureuser
+        - --aksengine-creds=$(AZURE_CREDENTIALS)
+        - --aksengine-orchestratorRelease=1.17
+        - --aksengine-location=westus2
+        - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
+        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/single-az.json
+        - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.46.0/aks-engine-v0.46.0-linux-amd64.tar.gz
+        - --test-azure-disk-csi-driver
+        # Specific test args
+        - --ginkgo-parallel=1
+        - --timeout=420m
         securityContext:
           privileged: true
         env:
@@ -153,7 +139,9 @@ presubmits:
       description: "Run E2E tests on a single-az cluster for Azure Disk CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-e2e-multi-az
+    decorate: true
     always_run: true
+    path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - master
     labels:
@@ -163,33 +151,29 @@ presubmits:
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-master
+        command:
+        - runner.sh
+        - kubetest
         args:
-        - "--job=$(JOB_NAME)"
-        - "--root=/go/src"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--repo=k8s.io/kubernetes"
-        - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--scenario=kubernetes_e2e"
-        - "--timeout=450"
-        - --
-        - "--gce-ssh="
-        - "--test=true"
-        - "--up=true"
-        - "--down=true"
-        - "--deployment=aksengine"
-        - "--build=host-go"
-        - "--provider=skeleton"
-        - "--ginkgo-parallel=1"
-        - "--aksengine-admin-username=azureuser"
-        - "--aksengine-creds=$AZURE_CREDENTIALS"
-        - "--aksengine-orchestratorRelease=1.17"
-        - "--aksengine-location=eastus2"
-        - "--aksengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
-        - "--aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/multi-az.json"
-        - "--aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.46.0/aks-engine-v0.46.0-linux-amd64.tar.gz"
-        - "--test-azure-disk-csi-driver=True"
-        - "--timeout=420m"
+        # Generic e2e test args
+        - --test
+        - --up
+        - --down
+        - --dump=$(ARTIFACTS)
+        # Azure-specific test args
+        - --provider=skeleton
+        - --deployment=aksengine
+        - --aksengine-admin-username=azureuser
+        - --aksengine-creds=$(AZURE_CREDENTIALS)
+        - --aksengine-orchestratorRelease=1.17
+        - --aksengine-location=westus2
+        - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
+        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/multi-az.json
+        - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.46.0/aks-engine-v0.46.0-linux-amd64.tar.gz
+        - --test-azure-disk-csi-driver
+        # Specific test args
+        - --ginkgo-parallel=1
+        - --timeout=420m
         securityContext:
           privileged: true
         env:
@@ -201,7 +185,9 @@ presubmits:
       description: "Run E2E tests on a multi-az cluster for Azure Disk CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-in-tree-azure-disk-e2e
+    decorate: true
     always_run: false
+    path_alias: sigs.k8s.io/azuredisk-csi-driver
     optional: true
     branches:
     - master
@@ -212,34 +198,31 @@ presubmits:
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-master
+        command:
+        - runner.sh
+        - kubetest
         args:
-        - "--job=$(JOB_NAME)"
-        - "--root=/go/src"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--repo=k8s.io/kubernetes"
-        - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--scenario=kubernetes_e2e"
-        - "--timeout=450"
-        - --
-        - "--gce-ssh="
-        - "--test=true"
-        - "--up=true"
-        - "--down=true"
-        - "--deployment=aksengine"
-        - "--build=quick"
-        - "--provider=skeleton"
-        - "--ginkgo-parallel=1"
-        - "--aksengine-admin-username=azureuser"
-        - "--aksengine-creds=$AZURE_CREDENTIALS"
-        - "--aksengine-orchestratorRelease=1.18"
-        - "--aksengine-deploy-custom-k8s=True"
-        - "--aksengine-location=westus2"
-        - "--aksengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
-        - "--aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/in-tree.json"
-        - "--aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.46.0/aks-engine-v0.46.0-linux-amd64.tar.gz"
-        - "--test-azure-disk-csi-driver=True"
-        - "--timeout=420m"
+        # Generic e2e test args
+        - --test
+        - --up
+        - --down
+        - --build=quick
+        - --dump=$(ARTIFACTS)
+        # Azure-specific test args
+        - --provider=skeleton
+        - --deployment=aksengine
+        - --aksengine-admin-username=azureuser
+        - --aksengine-creds=$(AZURE_CREDENTIALS)
+        - --aksengine-orchestratorRelease=1.18
+        - --aksengine-deploy-custom-k8s
+        - --aksengine-location=westus2
+        - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
+        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/in-tree.json
+        - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.46.0/aks-engine-v0.46.0-linux-amd64.tar.gz
+        - --test-azure-disk-csi-driver
+        # Specific test args
+        - --ginkgo-parallel=1
+        - --timeout=420m
         securityContext:
           privileged: true
         env:
@@ -251,7 +234,9 @@ presubmits:
       description: "Run Azure Disk e2e test with Azure Disk in-tree volume plugin."
       testgrid-num-columns-recent: '30'
   - name: pull-in-tree-azure-disk-e2e-vmss
+    decorate: true
     always_run: false
+    path_alias: sigs.k8s.io/azuredisk-csi-driver
     optional: true
     branches:
     - master
@@ -262,34 +247,31 @@ presubmits:
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-master
+        command:
+        - runner.sh
+        - kubetest
         args:
-        - "--job=$(JOB_NAME)"
-        - "--root=/go/src"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--repo=k8s.io/kubernetes"
-        - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--scenario=kubernetes_e2e"
-        - "--timeout=450"
-        - --
-        - "--gce-ssh="
-        - "--test=true"
-        - "--up=true"
-        - "--down=true"
-        - "--deployment=aksengine"
-        - "--build=quick"
-        - "--provider=skeleton"
-        - "--ginkgo-parallel=1"
-        - "--aksengine-admin-username=azureuser"
-        - "--aksengine-creds=$AZURE_CREDENTIALS"
-        - "--aksengine-orchestratorRelease=1.18"
-        - "--aksengine-deploy-custom-k8s=True"
-        - "--aksengine-location=westus2"
-        - "--aksengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
-        - "--aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/in-tree-vmss.json"
-        - "--aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.46.0/aks-engine-v0.46.0-linux-amd64.tar.gz"
-        - "--test-azure-disk-csi-driver=True"
-        - "--timeout=420m"
+        # Generic e2e test args
+        - --test
+        - --up
+        - --down
+        - --build=quick
+        - --dump=$(ARTIFACTS)
+        # Azure-specific test args
+        - --provider=skeleton
+        - --deployment=aksengine
+        - --aksengine-admin-username=azureuser
+        - --aksengine-creds=$(AZURE_CREDENTIALS)
+        - --aksengine-orchestratorRelease=1.18
+        - --aksengine-deploy-custom-k8s
+        - --aksengine-location=westus2
+        - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
+        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/in-tree-vmss.json
+        - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.46.0/aks-engine-v0.46.0-linux-amd64.tar.gz
+        - --test-azure-disk-csi-driver
+        # Specific test args
+        - --ginkgo-parallel=1
+        - --timeout=420m
         securityContext:
           privileged: true
         env:
@@ -301,7 +283,9 @@ presubmits:
       description: "Run Azure Disk e2e test on a VMSS-based cluster with Azure Disk in-tree volume plugin."
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-windows-build
+    decorate: true
     always_run: true
+    path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - master
     labels:
@@ -309,14 +293,9 @@ presubmits:
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-master
+        command:
+        - runner.sh
         args:
-        - "--job=$(JOB_NAME)"
-        - "--root=/go/src"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--scenario=execute"
-        - --
         - make
         - azuredisk-windows
     annotations:
