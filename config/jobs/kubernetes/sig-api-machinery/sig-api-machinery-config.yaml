@@ -20,7 +20,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200212-1f7b8ac-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-a79910c-master
   annotations:
     testgrid-dashboards: google-gce
     testgrid-tab-name: gci-gce-proto
@@ -46,7 +46,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=9
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200212-1f7b8ac-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-a79910c-master
   annotations:
     testgrid-dashboards: sig-api-machinery-network-proxy
 
@@ -81,6 +81,6 @@ presubmits:
         - --provider=gce
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=9
         - --timeout=60m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200212-1f7b8ac-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-a79910c-master
     annotations:
       testgrid-dashboards: sig-api-machinery-network-proxy
