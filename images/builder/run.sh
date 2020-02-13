@@ -18,8 +18,11 @@
 
 set -e
 
-echo "Activating service account..."
-gcloud auth activate-service-account --key-file="${GOOGLE_APPLICATION_CREDENTIALS}"
+if [[ -n "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]]; then
+  echo "Activating service account..."
+  gcloud auth activate-service-account --key-file="${GOOGLE_APPLICATION_CREDENTIALS}"
+fi
+
 
 echo "Running..."
 if [ -n "${ARTIFACTS}" ] && [ -z "${LOG_TO_STDOUT}" ]; then
