@@ -20,7 +20,7 @@ spec:
   group: boskos.k8s.io
   names:
     kind: DRLCObject
-    listKind: DRLCCollection
+    listKind: DRLCObjectList
     plural: dynamicresourcelifecycles
     singular: dynamicresourcelifecycle
   scope: Namespaced
@@ -38,7 +38,7 @@ spec:
   group: boskos.k8s.io
   names:
     kind: ResourceObject
-    listKind: ResourceCollection
+    listKind: ResourceObjectList
     plural: resources
     singular: resource
   scope: Namespaced
@@ -99,7 +99,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: boskos
-        image: gcr.io/k8s-prow/boskos/boskos:v20200206-f88edefe8
+        image: gcr.io/k8s-prow/boskos/boskos:v20200213-7790e5cec
         args:
         - --config=/etc/config/config
         - --namespace=test-pods
