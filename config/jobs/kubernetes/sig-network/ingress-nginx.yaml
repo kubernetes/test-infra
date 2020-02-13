@@ -12,7 +12,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e:v01262020-44fb2a873
+      - image: quay.io/kubernetes-ingress-controller/e2e:v02042020-08e19a278
         command:
         - ./hack/verify-boilerplate.sh
         env:
@@ -33,7 +33,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e:v01262020-44fb2a873
+      - image: quay.io/kubernetes-ingress-controller/e2e:v02042020-08e19a278
         command:
         - ./hack/verify-codegen.sh
         env:
@@ -52,7 +52,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e:v01262020-44fb2a873
+      - image: quay.io/kubernetes-ingress-controller/e2e:v02042020-08e19a278
         command:
         - ./hack/verify-gofmt.sh
         env:
@@ -73,7 +73,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e:v01262020-44fb2a873
+      - image: quay.io/kubernetes-ingress-controller/e2e:v02042020-08e19a278
         command:
         - ./hack/verify-golint.sh
         env:
@@ -92,7 +92,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e:v01262020-44fb2a873
+      - image: quay.io/kubernetes-ingress-controller/e2e:v02042020-08e19a278
         command:
         - ./hack/verify-lualint.sh
         env:
@@ -113,7 +113,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e:v01262020-44fb2a873
+      - image: quay.io/kubernetes-ingress-controller/e2e:v02042020-08e19a278
         command:
         - make
         - lua-test
@@ -135,7 +135,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e:v01262020-44fb2a873
+      - image: quay.io/kubernetes-ingress-controller/e2e:v02042020-08e19a278
         command:
         - /bin/bash
         - -c
@@ -163,7 +163,7 @@ presubmits:
     always_run: true
     decorate: true
     decoration_config:
-      timeout: 40m
+      timeout: 50m
     max_concurrency: 5
     path_alias: k8s.io/ingress-nginx
     labels:
@@ -198,7 +198,7 @@ presubmits:
     always_run: true
     decorate: true
     decoration_config:
-      timeout: 40m
+      timeout: 50m
     max_concurrency: 5
     path_alias: k8s.io/ingress-nginx
     labels:
@@ -233,7 +233,7 @@ presubmits:
     always_run: true
     decorate: true
     decoration_config:
-      timeout: 40m
+      timeout: 50m
     max_concurrency: 5
     path_alias: k8s.io/ingress-nginx
     labels:
@@ -271,7 +271,7 @@ periodics:
   path_alias: k8s.io/ingress-nginx
   decorate: true
   decoration_config:
-    timeout: 40m
+    timeout: 50m
   extra_refs:
   - org: kubernetes
     repo: ingress-nginx
