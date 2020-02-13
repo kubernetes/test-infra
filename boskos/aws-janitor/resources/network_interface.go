@@ -55,11 +55,13 @@ func (NetworkInterfaces) MarkAndSweep(sess *session.Session, account string, reg
 	}
 
 	for _, eni := range toDelete {
-		detachInput := &ec2.DetachNetworkInterfaceInput{
-			AttachmentId: aws.String(eni.AttachmentID),
-		}
-		if _, err := svc.DetachNetworkInterface(detachInput); err != nil {
-			klog.Warningf("%s: detach failed: %v", eni.ARN(), err)
+		if eni.AttachmentID != "" {
+			detachInput := &ec2.DetachNetworkInterfaceInput{
+				AttachmentId: aws.String(eni.AttachmentID),
+			}
+			if _, err := svc.DetachNetworkInterface(detachInput); err != nil {
+				klog.Warningf("%s: detach failed: %v", eni.ARN(), err)
+			}
 		}
 
 		deleteInput := &ec2.DeleteNetworkInterfaceInput{
