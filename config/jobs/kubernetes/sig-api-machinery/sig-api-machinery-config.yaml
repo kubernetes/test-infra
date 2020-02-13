@@ -75,6 +75,7 @@ presubmits:
         - --env=ENABLE_EGRESS_VIA_KONNECTIVITY_SERVICE=true
         - --gcp-node-image=gci
         - --gcp-zone=us-west1-b
+        - --gcp-project=k8s-network-proxy-e2e
         - --ginkgo-parallel=25
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-network-proxy
         - --provider=gce
