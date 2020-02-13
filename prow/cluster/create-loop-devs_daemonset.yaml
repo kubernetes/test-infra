@@ -34,9 +34,8 @@ spec:
         - |
           while true; do
             for i in $(seq 0 100); do
-                if ! [ -e /dev/loop$i ]; then
-                    mknod /dev/loop$i c 7 $i
-                fi
+                rm -f /dev/loop$i
+                mknod /dev/loop$i b 7 $i
             done
             sleep 100000000
           done
