@@ -21,11 +21,6 @@ release(
         cluster = BUILD_CLUSTER,
     ),
     component(
-        "boskos-metrics",
-        MULTI_KIND,
-        cluster = BUILD_CLUSTER,
-    ),
-    component(
         "boskos-reaper",
         "deployment",
         cluster = BUILD_CLUSTER,

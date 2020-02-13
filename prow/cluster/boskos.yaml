@@ -161,7 +161,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: boskos-http-metrics
+  name: boskos-metrics
   namespace: test-pods
 spec:
   selector:
@@ -171,5 +171,5 @@ spec:
     port: 9090
     protocol: TCP
     targetPort: 9090
-  loadBalancerIP: 34.70.169.97  # boskos-http-metrics
+  loadBalancerIP: 104.197.27.114  # external ip boskos-metrics
   type: LoadBalancer
