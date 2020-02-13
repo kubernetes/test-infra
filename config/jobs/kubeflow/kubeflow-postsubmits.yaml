@@ -249,6 +249,9 @@ postsubmits:
     decorate: true
     labels:
       preset-service-account: "true"
+    env:
+    - name: DOCKER_IN_DOCKER_ENABLED
+      value: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-master
