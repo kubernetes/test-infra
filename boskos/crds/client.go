@@ -98,7 +98,11 @@ func (o *KubernetesClientOptions) CacheBackedClient(namespace string, startCache
 		return nil, fmt.Errorf("failed to create CRDs: %v", err)
 	}
 
-	mgr, err := manager.New(cfg, manager.Options{LeaderElection: false, Namespace: namespace})
+	mgr, err := manager.New(cfg, manager.Options{
+		LeaderElection:     false,
+		Namespace:          namespace,
+		MetricsBindAddress: "0",
+	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to construct manager: %v", err)
 	}
