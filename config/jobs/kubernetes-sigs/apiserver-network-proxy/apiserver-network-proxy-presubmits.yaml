@@ -16,3 +16,19 @@ presubmits:
       testgrid-dashboards: sig-cloud-provider-apiserver-network-proxy
       testgrid-tab-name: pr-test
       description: Tests the apiserver-network-proxy
+  - name: pull-apiserver-network-proxy-docker-build-all
+    always_run: true
+    skip_report: false
+    decorate: true
+    path_alias: sigs.k8s.io/apiserver-network-proxy
+    spec:
+      containers:
+      - image: golang:1.12
+        command:
+        - make
+        args:
+        - docker-build-all
+    annotations:
+      testgrid-dashboards: sig-cloud-provider-apiserver-network-proxy
+      testgrid-tab-name: pr-docker-build-all
+      description: Build via Docker all the arch release for the apiserver-network-proxy
