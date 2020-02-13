@@ -28,8 +28,11 @@ tide:
     IBM/ibm-cert-manager-operator: squash
     IBM/ibm-cloudctl-operator: squash
     IBM/ibm-commonui-operator: squash
+    IBM/ibm-helm-api-operator: squash
+    IBM/ibm-helm-repo-operator: squash
     IBM/ibm-iam-operator: squash
     IBM/ibm-licensing-operator: squash
+    IBM/ibm-management-repo-operator: squash
     IBM/ibm-metering-operator: squash
     IBM/ibm-mongodb-operator: squash
     IBM/ibm-mt-grqenforcer-operator: squash
@@ -59,8 +62,11 @@ tide:
     - IBM/ibm-cert-manager-operator
     - IBM/ibm-cloudctl-operator
     - IBM/ibm-commonui-operator
+    - IBM/ibm-helm-api-operator
+    - IBM/ibm-helm-repo-operator
     - IBM/ibm-iam-operator
     - IBM/ibm-licensing-operator
+    - IBM/ibm-management-repo-operator
     - IBM/ibm-metering-operator
     - IBM/ibm-mongodb-operator
     - IBM/ibm-mt-grqenforcer-operator
