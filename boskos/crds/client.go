@@ -25,10 +25,6 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
-	apiextensionsv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
-	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -74,10 +70,6 @@ func (o *KubernetesClientOptions) Client() (ctrlruntimeclient.Client, error) {
 		return nil, err
 	}
 
-	if err := registerResources(cfg); err != nil {
-		return nil, fmt.Errorf("failed to create CRDs: %v", err)
-	}
-
 	return ctrlruntimeclient.New(cfg, ctrlruntimeclient.Options{})
 }
 
@@ -92,10 +84,6 @@ func (o *KubernetesClientOptions) CacheBackedClient(namespace string, startCache
 	cfg, err := o.cfg()
 	if err != nil {
 		return nil, err
-	}
-
-	if err := registerResources(cfg); err != nil {
-		return nil, fmt.Errorf("failed to create CRDs: %v", err)
 	}
 
 	mgr, err := manager.New(cfg, manager.Options{
@@ -177,52 +165,4 @@ type Collection interface {
 	runtime.Object
 	SetItems([]Object)
 	GetItems() []Object
-}
-
-// registerResources sends a request to create CRDs
-func registerResources(config *rest.Config) error {
-	c, err := apiextensionsclient.NewForConfig(config)
-	if err != nil {
-		return err
-	}
-
-	resourceCRD := &apiextensionsv1beta1.CustomResourceDefinition{
-		ObjectMeta: v1.ObjectMeta{
-			Name: fmt.Sprintf("%s.%s", ResourceType.Plural, group),
-		},
-		Spec: apiextensionsv1beta1.CustomResourceDefinitionSpec{
-			Group:   group,
-			Version: version,
-			Scope:   apiextensionsv1beta1.NamespaceScoped,
-			Names: apiextensionsv1beta1.CustomResourceDefinitionNames{
-				Singular: ResourceType.Singular,
-				Plural:   ResourceType.Plural,
-				Kind:     ResourceType.Kind,
-				ListKind: ResourceType.ListKind,
-			},
-		},
-	}
-	if _, err := c.ApiextensionsV1beta1().CustomResourceDefinitions().Create(resourceCRD); err != nil && !apierrors.IsAlreadyExists(err) {
-		return err
-	}
-	dlrcCRD := &apiextensionsv1beta1.CustomResourceDefinition{
-		ObjectMeta: v1.ObjectMeta{
-			Name: fmt.Sprintf("%s.%s", DRLCType.Plural, group),
-		},
-		Spec: apiextensionsv1beta1.CustomResourceDefinitionSpec{
-			Group:   group,
-			Version: version,
-			Scope:   apiextensionsv1beta1.NamespaceScoped,
-			Names: apiextensionsv1beta1.CustomResourceDefinitionNames{
-				Singular: DRLCType.Singular,
-				Plural:   DRLCType.Plural,
-				Kind:     DRLCType.Kind,
-				ListKind: DRLCType.ListKind,
-			},
-		},
-	}
-	if _, err := c.ApiextensionsV1beta1().CustomResourceDefinitions().Create(dlrcCRD); err != nil && !apierrors.IsAlreadyExists(err) {
-		return err
-	}
-	return nil
 }

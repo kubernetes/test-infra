@@ -55,7 +55,7 @@ metadata:
 rules:
 - apiGroups: ["apiextensions.k8s.io"]
   verbs: ["*"]
-  resources: ["customresourcedefinitions"]
+  resources: ["customresourcedefinitions"]  # TODO(#16281): remove once Boskos no longer attempts to create CRDs itself
 - apiGroups: ["boskos.k8s.io"]
   verbs: ["*"]
   resources: ["*"]
