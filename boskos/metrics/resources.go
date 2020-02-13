@@ -27,7 +27,7 @@ import (
 
 const (
 	// ResourcesMetricName is the name of the Prometheus metric used to monitor Boskos resources.
-	ResourcesMetricName = "boskos_resourcess"
+	ResourcesMetricName = "boskos_resources"
 	// ResourcesMetricDescription is the description for the Prometheus metric used to monitor Boskos resources.
 	ResourcesMetricDescription = "Number of resources recorded in Boskos by resource type and state."
 )
