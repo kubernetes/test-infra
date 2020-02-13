@@ -31,6 +31,7 @@ tide:
     IBM/ibm-iam-operator: squash
     IBM/ibm-licensing-operator: squash
     IBM/ibm-metering-operator: squash
+    IBM/ibm-mongodb-operator: squash
     IBM/ibm-mt-grqenforcer-operator: squash
     IBM/meta-operator: squash
     IBM/multicloud-operators-subscription-release: squash
@@ -61,6 +62,7 @@ tide:
     - IBM/ibm-iam-operator
     - IBM/ibm-licensing-operator
     - IBM/ibm-metering-operator
+    - IBM/ibm-mongodb-operator
     - IBM/ibm-mt-grqenforcer-operator
     - IBM/meta-operator
     - IBM/multicloud-operators-subscription-release
