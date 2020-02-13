@@ -65,14 +65,10 @@ func init() {
 	plugins.RegisterReviewEventHandler(PluginName, handlePullRequestReviewEvent, helpProvider)
 }
 
-func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+func helpProvider(config *plugins.Configuration, enabledRepos []plugins.Repo) (*pluginhelp.PluginHelp, error) {
 	configInfo := map[string]string{}
-	for _, orgRepo := range enabledRepos {
-		parts := strings.Split(orgRepo, "/")
-		if len(parts) != 2 {
-			return nil, fmt.Errorf("invalid repo in enabledRepos: %q", orgRepo)
-		}
-		opts := config.LgtmFor(parts[0], parts[1])
+	for _, repo := range enabledRepos {
+		opts := config.LgtmFor(repo.Org, repo.Repo)
 		var isConfigured bool
 		var configInfoStrings []string
 		configInfoStrings = append(configInfoStrings, "The plugin has the following configuration:<ul>")
@@ -90,7 +86,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 		}
 		configInfoStrings = append(configInfoStrings, fmt.Sprintf("</ul>"))
 		if isConfigured {
-			configInfo[orgRepo] = strings.Join(configInfoStrings, "\n")
+			configInfo[repo.String()] = strings.Join(configInfoStrings, "\n")
 		}
 	}
 	pluginHelp := &pluginhelp.PluginHelp{

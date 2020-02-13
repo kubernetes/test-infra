@@ -39,22 +39,20 @@ import (
 )
 
 func TestHelpProvider(t *testing.T) {
+	enabledRepos := []plugins.Repo{
+		{Org: "org1", Repo: "repo"},
+		{Org: "org2", Repo: "repo"},
+	}
 	cases := []struct {
 		name         string
 		config       *plugins.Configuration
-		enabledRepos []string
+		enabledRepos []plugins.Repo
 		err          bool
 	}{
 		{
 			name:         "Empty config",
 			config:       &plugins.Configuration{},
-			enabledRepos: []string{"org1/repo", "org2/repo"},
-		},
-		{
-			name:         "Invalid enabledRepos",
-			config:       &plugins.Configuration{},
-			enabledRepos: []string{"org1", "org2/repo/extra"},
-			err:          true,
+			enabledRepos: enabledRepos,
 		},
 		{
 			name: "All configs enabled",
@@ -69,7 +67,7 @@ func TestHelpProvider(t *testing.T) {
 					},
 				},
 			},
-			enabledRepos: []string{"org1/repo", "org2/repo"},
+			enabledRepos: enabledRepos,
 		},
 	}
 	for _, c := range cases {

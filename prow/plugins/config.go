@@ -584,6 +584,16 @@ type RequireMatchingLabel struct {
 	GracePeriodDuration time.Duration `json:"-"`
 }
 
+// Repo supercedes org/repo string handling
+type Repo struct {
+	Org  string
+	Repo string
+}
+
+func (repo Repo) String() string {
+	return fmt.Sprintf("%s/%s", repo.Org, repo.Repo)
+}
+
 // validate checks the following properties:
 // - Org, Regexp, MissingLabel, and GracePeriod must be non-empty.
 // - Repo does not contain a '/' (should use Org+Repo).

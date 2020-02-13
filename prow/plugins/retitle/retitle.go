@@ -41,7 +41,7 @@ func init() {
 	plugins.RegisterGenericCommentHandler(pluginName, handleGenericCommentEvent, helpProvider)
 }
 
-func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+func helpProvider(config *plugins.Configuration, enabledRepos []plugins.Repo) (*pluginhelp.PluginHelp, error) {
 	var configMsg string
 	if config.Retitle.AllowClosedIssues {
 		configMsg = "The retitle plugin also allows retitling closed/merged issues and PRs."

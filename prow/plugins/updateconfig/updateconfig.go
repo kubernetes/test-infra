@@ -49,7 +49,7 @@ func init() {
 	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest, helpProvider)
 }
 
-func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+func helpProvider(config *plugins.Configuration, enabledRepos []plugins.Repo) (*pluginhelp.PluginHelp, error) {
 	var configInfo map[string]string
 	if len(enabledRepos) == 1 {
 		msg := ""

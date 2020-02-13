@@ -582,28 +582,21 @@ func makePatch(b []byte) string {
 }
 
 func TestHelpProvider(t *testing.T) {
+	enabledRepos := []plugins.Repo{
+		{Org: "org1", Repo: "repo"},
+		{Org: "org2", Repo: "repo"},
+	}
 	cases := []struct {
 		name               string
 		config             *plugins.Configuration
-		enabledRepos       []string
+		enabledRepos       []plugins.Repo
 		err                bool
 		configInfoIncludes []string
 	}{
 		{
 			name:         "Empty config",
 			config:       &plugins.Configuration{},
-			enabledRepos: []string{"org1", "org2/repo"},
-		},
-		{
-			name:         "Overlapping org and org/repo",
-			config:       &plugins.Configuration{},
-			enabledRepos: []string{"org2", "org2/repo"},
-		},
-		{
-			name:         "Invalid enabledRepos",
-			config:       &plugins.Configuration{},
-			enabledRepos: []string{"org1", "org2/repo/extra"},
-			err:          true,
+			enabledRepos: enabledRepos,
 		},
 		{
 			name: "ReviewerCount specified",
@@ -612,7 +605,7 @@ func TestHelpProvider(t *testing.T) {
 					LabelsBlackList: []string{"label1", "label2"},
 				},
 			},
-			enabledRepos:       []string{"org1", "org2/repo"},
+			enabledRepos:       enabledRepos,
 			configInfoIncludes: []string{"label1, label2"},
 		},
 	}

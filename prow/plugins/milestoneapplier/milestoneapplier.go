@@ -41,15 +41,14 @@ func init() {
 	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest, helpProvider)
 }
 
-func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+func helpProvider(config *plugins.Configuration, enabledRepos []plugins.Repo) (*pluginhelp.PluginHelp, error) {
 	configInfo := map[string]string{}
-	for _, orgRepo := range enabledRepos {
+	for _, repo := range enabledRepos {
 		var branchesToMilestone []string
-		for branch, milestone := range config.MilestoneApplier[orgRepo] {
+		for branch, milestone := range config.MilestoneApplier[repo.String()] {
 			branchesToMilestone = append(branchesToMilestone, fmt.Sprintf("- `%s`: `%s`", branch, milestone))
 		}
-		configInfo[orgRepo] = fmt.Sprintf("The configured branches and milestones for this repo are:\n%s", strings.Join(branchesToMilestone, "\n"))
-
+		configInfo[repo.String()] = fmt.Sprintf("The configured branches and milestones for this repo are:\n%s", strings.Join(branchesToMilestone, "\n"))
 	}
 
 	// The {WhoCanUse, Usage, Examples} fields are omitted because this plugin is not triggered with commands.

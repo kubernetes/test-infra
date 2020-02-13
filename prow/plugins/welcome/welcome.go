@@ -21,7 +21,6 @@ import (
 	"bytes"
 	"fmt"
 	"html/template"
-	"strings"
 
 	"github.com/sirupsen/logrus"
 
@@ -49,15 +48,11 @@ func init() {
 	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest, helpProvider)
 }
 
-func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+func helpProvider(config *plugins.Configuration, enabledRepos []plugins.Repo) (*pluginhelp.PluginHelp, error) {
 	welcomeConfig := map[string]string{}
 	for _, repo := range enabledRepos {
-		parts := strings.Split(repo, "/")
-		if len(parts) != 2 {
-			return nil, fmt.Errorf("invalid repo in enabledRepos: %q", repo)
-		}
-		messageTemplate := welcomeMessageForRepo(config, parts[0], parts[1])
-		welcomeConfig[repo] = fmt.Sprintf("The welcome plugin is configured to post using following welcome template: %s.", messageTemplate)
+		messageTemplate := welcomeMessageForRepo(config, repo.Org, repo.Repo)
+		welcomeConfig[repo.String()] = fmt.Sprintf("The welcome plugin is configured to post using following welcome template: %s.", messageTemplate)
 	}
 
 	// The {WhoCanUse, Usage, Examples} fields are omitted because this plugin is not triggered with commands.

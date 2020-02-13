@@ -178,11 +178,19 @@ func TestGeneratePluginHelp(t *testing.T) {
 	checkPluginHelp("helpful-external", helpfulExternalHelp, help.ExternalPluginHelp["helpful-external"], externalExpectedEvents["helpful-external"])
 }
 
+func reposToStrings(vs []plugins.Repo) []string {
+	vsm := make([]string, len(vs))
+	for i, v := range vs {
+		vsm[i] = v.String()
+	}
+	return vsm
+}
+
 func registerNormalPlugins(t *testing.T, pluginsToEvents map[string][]string, pluginHelp map[string]pluginhelp.PluginHelp, expectedRepos map[string][]string) {
 	for plugin, events := range pluginsToEvents {
 		plugin := plugin
-		helpProvider := func(_ *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
-			if got, expected := sets.NewString(enabledRepos...), sets.NewString(expectedRepos[plugin]...); !got.Equal(expected) {
+		helpProvider := func(_ *plugins.Configuration, enabledRepos []plugins.Repo) (*pluginhelp.PluginHelp, error) {
+			if got, expected := sets.NewString(reposToStrings(enabledRepos)...), sets.NewString(expectedRepos[plugin]...); !got.Equal(expected) {
 				t.Errorf("Plugin '%s' expected to be enabled on repos %q, but got %q.", plugin, expected.List(), got.List())
 			}
 			help := pluginHelp[plugin]

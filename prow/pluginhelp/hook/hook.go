@@ -83,7 +83,12 @@ func (ha *HelpAgent) generateNormalPluginHelp(config *plugins.Configuration, rev
 			ha.log.Warnf("No help is provided for plugin %q.", name)
 			continue
 		}
-		help, err := provider(config, revMap[name])
+		var enabledRepos []plugins.Repo
+		for _, repo := range revMap[name] {
+			parts := strings.Split(repo, "/")
+			enabledRepos = append(enabledRepos, plugins.Repo{Org: parts[0], Repo: parts[1]})
+		}
+		help, err := provider(config, enabledRepos)
 		if err != nil {
 			ha.log.WithError(err).Errorf("Generating help from normal plugin %q.", name)
 			continue
