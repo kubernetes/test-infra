@@ -739,23 +739,13 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/image-builder:v20200205-602500d
+      - image: gcr.io/k8s-testimages/image-builder:v20200213-0032cdb
         command:
         - /run.sh
         args:
         - --scratch-bucket=gs://kubernetes-tools-scratch
         - --project=kubernetes-tools
         - .
-        env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS # TODO(fejta): stop requiring this
-          value: /creds/service-account.json
-        volumeMounts:
-        - name: creds
-          mountPath: /creds
-      volumes:
-      - name: creds
-        secret:
-          secretName: deployer-service-account
 
 
 periodics:
