@@ -769,6 +769,7 @@ postsubmits:
     run_if_changed: '^config/(jobs|testgrids)/.*$'
     decorate: true
     spec:
+      serviceAccountName: testgrid-config-updater
       containers:
       - image: gcr.io/k8s-testimages/bazelbuild:v20200212-b304d89-2.0.0
         env:
@@ -776,17 +777,9 @@ postsubmits:
           value: real  # Ignore .bazelversion
         command:
         - ./testgrid/config-upload.sh
-        volumeMounts:
-        - name: testgrid-service-account
-          mountPath: /etc/service-account
-          readOnly: true
         resources:
           requests:
             memory: "1Gi"
-      volumes:
-      - name: testgrid-service-account
-        secret:
-          secretName: testgrid-config-updater-service-account
     annotations:
       testgrid-dashboards: sig-testing-maintenance
       testgrid-tab-name: testgrid-config-upload
