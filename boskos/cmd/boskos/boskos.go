@@ -111,18 +111,23 @@ func main() {
 		Addr:    ":8080",
 	}
 
-	v := viper.New()
-	v.SetConfigFile(*configPath)
-	v.SetConfigType("yaml")
-	v.WatchConfig()
-	v.OnConfigChange(func(in fsnotify.Event) {
-		logrus.Infof("Updating Boskos Config")
-		if err := r.SyncConfig(*configPath); err != nil {
-			logrus.WithError(err).Errorf("Failed to update config")
-		} else {
-			logrus.Infof("Updated Boskos Config successfully")
-		}
-	})
+	// Viper defaults the configfile name to `config` and `SetConfigFile` only
+	// has an effect when the configfile name is not an empty string, so we
+	// just disable it entirely if there is no config.
+	if *configPath != "" {
+		v := viper.New()
+		v.SetConfigFile(*configPath)
+		v.SetConfigType("yaml")
+		v.WatchConfig()
+		v.OnConfigChange(func(in fsnotify.Event) {
+			logrus.Infof("Updating Boskos Config")
+			if err := r.SyncConfig(*configPath); err != nil {
+				logrus.WithError(err).Errorf("Failed to update config")
+			} else {
+				logrus.Infof("Updated Boskos Config successfully")
+			}
+		})
+	}
 
 	prometheus.MustRegister(metrics.NewResourcesCollector(r))
 	r.StartDynamicResourceUpdater(*dynamicResourceUpdatePeriod)
