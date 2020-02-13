@@ -141,6 +141,7 @@ type Cluster struct {
 	parametersJSON                   map[string]interface{}
 	outputDir                        string
 	sshPublicKey                     string
+	sshPrivateKeyPath                string
 	adminUsername                    string
 	adminPassword                    string
 	masterVMSize                     string
@@ -309,6 +310,7 @@ func checkParams() error {
 	if *aksSSHPublicKeyPath == "" {
 		*aksSSHPublicKeyPath = os.Getenv("HOME") + "/.ssh/id_rsa.pub"
 	}
+
 	if *aksTemplateURL == "" {
 		return fmt.Errorf("no ApiModel URL specified.")
 	}
@@ -329,6 +331,11 @@ func newAKSEngine() (*Cluster, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error reading SSH Key %v %v", *aksSSHPublicKeyPath, err)
 	}
+	// assume the private key is at the same location as the public key.
+	// since it is only used for log collection purposes, we issue a warning if the log collection script
+	// does not find the key. No need to abandon the whole test run is the key is not found.
+	sshPrivateKeyPath := strings.TrimSuffix(*aksSSHPublicKeyPath, filepath.Ext(*aksSSHPublicKeyPath))
+
 	c := Cluster{
 		ctx:                              context.Background(),
 		apiModelPath:                     *aksTemplateURL,
@@ -338,6 +345,7 @@ func newAKSEngine() (*Cluster, error) {
 		resourceGroup:                    *aksResourceGroupName,
 		outputDir:                        tempdir,
 		sshPublicKey:                     fmt.Sprintf("%s", sshKey),
+		sshPrivateKeyPath:                sshPrivateKeyPath,
 		credentials:                      &Creds{},
 		masterVMSize:                     *aksMasterVMSize,
 		agentVMSize:                      *aksAgentVMSize,
@@ -1076,20 +1084,54 @@ func (c *Cluster) DumpClusterLogs(localPath, gcsPath string) error {
 		return err
 	}
 
-	// Extract log dump script and manifest from cloud-provider-azure repo
-	const logDumpURLPrefix string = "https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/hack/log-dump/"
-	logDumpScript, err := downloadFromURL(logDumpURLPrefix+"log-dump.sh", path.Join(c.outputDir, "log-dump.sh"), 2)
-	if err != nil {
-		return fmt.Errorf("error downloading log dump script: %v", err)
-	}
-	if err := control.FinishRunning(exec.Command("chmod", "+x", logDumpScript)); err != nil {
-		return fmt.Errorf("error changing access permission for %s: %v", logDumpScript, err)
-	}
-	if _, err := downloadFromURL(logDumpURLPrefix+"log-dump-daemonset.yaml", path.Join(c.outputDir, "log-dump-daemonset.yaml"), 2); err != nil {
-		return fmt.Errorf("error downloading log dump manifest: %v", err)
+	logDumper := func() error {
+		// Extract log dump script and manifest from cloud-provider-azure repo
+		const logDumpURLPrefix string = "https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/hack/log-dump/"
+		logDumpScript, err := downloadFromURL(logDumpURLPrefix+"log-dump.sh", path.Join(c.outputDir, "log-dump.sh"), 2)
+		if err != nil {
+			return fmt.Errorf("error downloading log dump script: %v", err)
+		}
+		if err := control.FinishRunning(exec.Command("chmod", "+x", logDumpScript)); err != nil {
+			return fmt.Errorf("error changing access permission for %s: %v", logDumpScript, err)
+		}
+		if _, err := downloadFromURL(logDumpURLPrefix+"log-dump-daemonset.yaml", path.Join(c.outputDir, "log-dump-daemonset.yaml"), 2); err != nil {
+			return fmt.Errorf("error downloading log dump manifest: %v", err)
+		}
+
+		if err := control.FinishRunning(exec.Command("bash", "-c", logDumpScript)); err != nil {
+			return fmt.Errorf("error running log collection script %s: %v", logDumpScript, err)
+		}
+		return nil
 	}
 
-	return control.FinishRunning(exec.Command("bash", "-c", logDumpScript))
+	logDumperWindows := func() error {
+		const winLogDumpScriptUrl string = "https://raw.githubusercontent.com/adelina-t/windows-testing/logs_collector/scripts/win-ci-logs-collector.sh"
+		winLogDumpScript, err := downloadFromURL(winLogDumpScriptUrl, path.Join(c.outputDir, "win-ci-logs-collector.sh"), 2)
+
+		masterFQDN := fmt.Sprintf("%s.%s.cloudapp.azure.com", c.dnsPrefix, c.location)
+		if err != nil {
+			return fmt.Errorf("error downloading windows logs dump script: %v", err)
+		}
+		if err := control.FinishRunning(exec.Command("chmod", "+x", winLogDumpScript)); err != nil {
+			return fmt.Errorf("error changing permission for script %s: %v", winLogDumpScript, err)
+		}
+		if err := control.FinishRunning(exec.Command("bash", "-c", fmt.Sprintf("%s %s %s %s", winLogDumpScript, masterFQDN, c.outputDir, c.sshPrivateKeyPath))); err != nil {
+			return fmt.Errorf("error while running Windows log collector script: %v", err)
+		}
+		return nil
+	}
+
+	var errors []string
+	if err := logDumper(); err != nil {
+		errors = append(errors, err.Error())
+	}
+	if err := logDumperWindows(); err != nil {
+		errors = append(errors, err.Error())
+	}
+	if len(errors) != 0 {
+		return fmt.Errorf(strings.Join(errors, "\n"))
+	}
+	return nil
 }
 
 func (c *Cluster) GetClusterCreated(clusterName string) (time.Time, error) {
