@@ -1373,3 +1373,10 @@ repos:
         target: both
         prowPlugin: label
         addedBy: anyone
+  kubernetes-sigs/service-apis:
+    labels:
+      - color: c7def8
+        description: Categorizes an issue as capturing a user story
+        name: kind/user-story
+        target: issues
+        addedBy: humans
