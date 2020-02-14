@@ -57,7 +57,7 @@ type githubClient interface {
 }
 
 // HelpProvider construct the pluginhelp.PluginHelp for this plugin.
-func HelpProvider(enabledRepos []plugins.Repo) (*pluginhelp.PluginHelp, error) {
+func HelpProvider(_ []plugins.Repo) (*pluginhelp.PluginHelp, error) {
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: `The cherrypick plugin is used for cherrypicking PRs across branches. For every successful cherrypick invocation a new PR is opened against the target branch and assigned to the requester. If the parent PR contains a release note, it is copied to the cherrypick PR.`,
 	}

@@ -40,7 +40,7 @@ const pluginName = "refresh"
 
 var refreshRe = regexp.MustCompile(`(?mi)^/refresh\s*$`)
 
-func helpProvider(enabledRepos []plugins.Repo) (*pluginhelp.PluginHelp, error) {
+func helpProvider(_ []plugins.Repo) (*pluginhelp.PluginHelp, error) {
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: `The refresh plugin is used for refreshing status contexts in PRs. Useful in case GitHub breaks down.`,
 	}

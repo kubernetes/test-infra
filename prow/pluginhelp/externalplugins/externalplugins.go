@@ -34,7 +34,7 @@ import (
 
 // ExternalPluginHelpProvider is a func type that returns a PluginHelp struct for an external
 // plugin based on the specified enabledRepos.
-type ExternalPluginHelpProvider func(enabledRepos []plugins.Repo) (*pluginhelp.PluginHelp, error)
+type ExternalPluginHelpProvider func([]plugins.Repo) (*pluginhelp.PluginHelp, error)
 
 // ServeExternalPluginHelp returns a HandlerFunc that serves plugin help information that is
 // provided by the specified ExternalPluginHelpProvider.
