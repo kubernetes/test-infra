@@ -7,8 +7,7 @@ steps:
     - 'IMAGE_ARG=gcr.io/$PROJECT_ID/gubernator:$_GIT_TAG'
     - '--cache=true'
     - '--cache-ttl=6h'
+    - '--context=.'
     dir: images/pull-test-infra-gubernator
 substitutions:
   _GIT_TAG: '12345'
-images:
-  - 'gcr.io/$PROJECT_ID/gubernator:$_GIT_TAG'

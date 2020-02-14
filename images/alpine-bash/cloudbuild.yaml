@@ -9,9 +9,7 @@ steps:
     - 'IMAGE_ARG=gcr.io/$PROJECT_ID/alpine-bash:$_GIT_TAG'
     - '--cache=true'
     - '--cache-ttl=6h'
+    - '--context=.'
     dir: images/alpine-bash/
 substitutions:
   _GIT_TAG: '12345'
-images:
-  - 'gcr.io/$PROJECT_ID/alpine-bash:$_GIT_TAG'
-  - 'gcr.io/$PROJECT_ID/alpine-bash:latest'

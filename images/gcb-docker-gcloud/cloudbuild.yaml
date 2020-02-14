@@ -7,8 +7,7 @@ steps:
     - 'IMAGE_ARG=gcr.io/$PROJECT_ID/gcb-docker-gcloud:$_GIT_TAG'
     - '--cache=true'
     - '--cache-ttl=6h'
+    - '--context=.'
     dir: images/gcb-docker-gcloud/
 substitutions:
   _GIT_TAG: '12345'
-images:
-  - 'gcr.io/$PROJECT_ID/gcb-docker-gcloud:$_GIT_TAG'

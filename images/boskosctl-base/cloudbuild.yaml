@@ -12,6 +12,3 @@ steps:
     dir: images/boskosctl-base/
 substitutions:
   _GIT_TAG: '12345'
-images:
-  - 'gcr.io/$PROJECT_ID/boskosctl-base:$_GIT_TAG'
-  - 'gcr.io/$PROJECT_ID/boskosctl-base:latest'

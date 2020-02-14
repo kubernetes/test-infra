@@ -18,10 +18,8 @@ steps:
     - --destination=gcr.io/$PROJECT_ID/image-builder:latest
     - --cache=true
     - --cache-ttl=6h
+    - --context=.
     dir: images/builder
 substitutions:
   _GIT_TAG: '12345'
   _GO_VERSION: 1.12.12
-images:
-  - 'gcr.io/$PROJECT_ID/image-builder:$_GIT_TAG'
-  - 'gcr.io/$PROJECT_ID/image-builder:latest'

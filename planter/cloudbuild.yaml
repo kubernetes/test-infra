@@ -7,6 +7,7 @@ steps:
     - 'BAZEL_VERSION=$_BAZEL_VERSION'
     - '--cache=true'
     - '--cache-ttl=6h'
+    - '--context=.'
     dir: planter/
   - name: gcr.io/kaniko-project/executor
     - '--destination'
@@ -17,11 +18,9 @@ steps:
     - 'BASEIMAGE=gcr.io/$PROJECT_ID/planter:$_BAZEL_VERSION',
     - '--cache=true'
     - '--cache-ttl=6h'
+    - '--context=.'
     dir: planter/
 substitutions:
   _BAZEL_VERSION: '0.25.2'
 options:
   substitution_option: ALLOW_LOOSE  # because _GIT_TAG is provided but not used.
-images:
-  - 'gcr.io/$PROJECT_ID/planter:$_BAZEL_VERSION'
-  - 'gcr.io/$PROJECT_ID/planter:$_BAZEL_VERSION-cross'

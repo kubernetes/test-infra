@@ -11,12 +11,10 @@ steps:
     - 'IMAGE_ARG=gcr.io/$PROJECT_ID/bazelbuild:$_GIT_TAG-$_BAZEL_VERSION'
     - '--cache=true'
     - '--cache-ttl=6h'
+    - '--context=.'
     dir: images/bazelbuild/
 substitutions:
   _GIT_TAG: '12345'
   _BAZEL_VERSION: something
 options:
   substitution_option: ALLOW_LOOSE
-images:
-  - 'gcr.io/$PROJECT_ID/bazelbuild:$_GIT_TAG-$_BAZEL_VERSION'
-  - 'gcr.io/$PROJECT_ID/bazelbuild:latest-$_BAZEL_VERSION'

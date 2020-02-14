@@ -9,10 +9,8 @@ steps:
     - './Dockerfile-$_VERSION'
     - '--cache=true'
     - '--cache-ttl=6h'
+    - '--context=.'
     dir: images/kubekins-test
 substitutions:
   _VERSION: '1.14'
   _GIT_TAG: '12345'
-images:
-  - 'gcr.io/$PROJECT_ID/kubekins-test:$_VERSION-$_GIT_TAG'
-  - 'gcr.io/$PROJECT_ID/kubekins-test:$_VERSION-latest'

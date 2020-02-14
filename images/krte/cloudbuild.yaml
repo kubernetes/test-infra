@@ -11,6 +11,7 @@ steps:
     - --build-arg=IMAGE_ARG=gcr.io/$PROJECT_ID/krte:$_GIT_TAG-$_CONFIG
     - --cache=true
     - --cache-ttl=6h
+    - --context=.
     dir: images/krte
 substitutions:
   _GIT_TAG: '12345'
@@ -22,6 +23,3 @@ substitutions:
   _CFSSL_VERSION: R1.2
 options:
   substitution_option: ALLOW_LOOSE
-images:
-  - 'gcr.io/$PROJECT_ID/krte:$_GIT_TAG-$_CONFIG'
-  - 'gcr.io/$PROJECT_ID/krte:latest-$_CONFIG'
