@@ -56,6 +56,10 @@ presubmits:
         - "runner.sh"
         - "make"
         - "verify"
+        resources:
+          requests:
+            cpu: "6000m"
+            memory: "6Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
       testgrid-tab-name: pr-verify
@@ -117,17 +121,17 @@ presubmits:
     always_run: true
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-          args:
-            - runner.sh
-            - "./scripts/ci-capd-e2e.sh"
-          # we need privileged mode in order to do docker in docker
-          securityContext:
-            privileged: true
-          resources:
-            requests:
-              cpu: "4000m"
-              memory: "6Gi"
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+        args:
+          - runner.sh
+          - "./scripts/ci-capd-e2e.sh"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: "6000m"
+            memory: "6Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
       testgrid-tab-name: pr-e2e
