@@ -661,6 +661,26 @@ func TestValidatePodSpec(t *testing.T) {
 				s.Volumes = append(s.Volumes, v1.Volume{Name: decorate.VolumeMounts()[0]})
 			},
 		},
+		{
+			name: "reject duplicate env",
+			spec: func(s *v1.PodSpec) {
+				s.Containers[0].Env = append(s.Containers[0].Env, v1.EnvVar{Name: "foo", Value: "bar"})
+				s.Containers[0].Env = append(s.Containers[0].Env, v1.EnvVar{Name: "foo", Value: "baz"})
+			},
+		},
+		{
+			name: "reject duplicate volume",
+			spec: func(s *v1.PodSpec) {
+				s.Volumes = append(s.Volumes, v1.Volume{Name: "foo"})
+				s.Volumes = append(s.Volumes, v1.Volume{Name: "foo"})
+			},
+		},
+		{
+			name: "reject undefined volume reference",
+			spec: func(s *v1.PodSpec) {
+				s.Containers[0].VolumeMounts = append(s.Containers[0].VolumeMounts, v1.VolumeMount{Name: "foo", MountPath: "/not-used-by-decoration-utils"})
+			},
+		},
 	}
 
 	spec := v1.PodSpec{
