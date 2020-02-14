@@ -263,7 +263,7 @@ postsubmits:
     - name: docker-graph
       mountPath: /docker-graph
     - name: docker-root
-      mountPath: /var/lib/docker    
+      mountPath: /var/lib/docker
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200210-f51bb12-master
