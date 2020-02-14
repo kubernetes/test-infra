@@ -1,8 +1,12 @@
 steps:
-  - name: gcr.io/cloud-builders/docker
-    args: ['build', '-t', 'gcr.io/$PROJECT_ID/gcb-docker-gcloud:$_GIT_TAG',
-           '--build-arg', 'IMAGE_ARG=gcr.io/$PROJECT_ID/gcb-docker-gcloud:$_GIT_TAG',
-           '.']
+  - name: gcr.io/kaniko-project/executor
+    args:
+    - '--destination'
+    - 'gcr.io/$PROJECT_ID/gcb-docker-gcloud:$_GIT_TAG'
+    - '--build-arg'
+    - 'IMAGE_ARG=gcr.io/$PROJECT_ID/gcb-docker-gcloud:$_GIT_TAG'
+    - '--cache=true'
+    - '--cache-ttl=6h'
     dir: images/gcb-docker-gcloud/
 substitutions:
   _GIT_TAG: '12345'

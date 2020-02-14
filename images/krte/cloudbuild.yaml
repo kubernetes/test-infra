@@ -1,21 +1,16 @@
 steps:
-  - name: gcr.io/cloud-builders/docker
+  - name: gcr.io/kaniko-project/executor
     args:
-    - build
-    - --tag=gcr.io/$PROJECT_ID/krte:$_GIT_TAG-$_CONFIG
+    - --destination=gcr.io/$PROJECT_ID/krte:$_GIT_TAG-$_CONFIG
+    - --destination=gcr.io/$PROJECT_ID/krte:latest-$_CONFIG
     - --build-arg=GO_VERSION=$_GO_VERSION
     - --build-arg=K8S_RELEASE=$_K8S_RELEASE
     - --build-arg=BAZEL_VERSION_ARG=$_BAZEL_VERSION
     - --build-arg=CFSSL_VERSION=$_CFSSL_VERSION
     - --build-arg=UPGRADE_DOCKER_ARG=$_UPGRADE_DOCKER
     - --build-arg=IMAGE_ARG=gcr.io/$PROJECT_ID/krte:$_GIT_TAG-$_CONFIG
-    - .
-    dir: images/krte
-  - name: gcr.io/cloud-builders/docker
-    args:
-    - tag
-    - gcr.io/$PROJECT_ID/krte:$_GIT_TAG-$_CONFIG
-    - gcr.io/$PROJECT_ID/krte:latest-$_CONFIG
+    - --cache=true
+    - --cache-ttl=6h
     dir: images/krte
 substitutions:
   _GIT_TAG: '12345'

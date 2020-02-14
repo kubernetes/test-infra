@@ -12,11 +12,12 @@ steps:
     - GO111MODULE=on
     - GOPROXY=https://proxy.golang.org
     - GOSUMDB=sum.golang.org
-  - name: gcr.io/cloud-builders/docker
+  - name: gcr.io/kaniko-project/executor
     args:
-    - build
-    - --tag=gcr.io/$PROJECT_ID/github-$_COMPONENT:$_GIT_TAG
-    - .
+    - '--destination'
+    - 'gcr.io/$PROJECT_ID/github-$_COMPONENT:$_GIT_TAG'
+    - '--cache=true'
+    - '--cache-ttl=6h'
     dir: velodrome/$_COMPONENT
 substitutions:
   _COMPONENT: fetcher

@@ -12,23 +12,18 @@ steps:
     - GO111MODULE=on
     - GOPROXY=https://proxy.golang.org
     - GOSUMDB=sum.golang.org
-  - name: gcr.io/cloud-builders/docker
+  - name: gcr.io/kaniko-project/executor
     args:
-    - build
-    - --tag=gcr.io/$PROJECT_ID/kubekins-e2e:$_GIT_TAG-$_CONFIG
+    - --destination=gcr.io/$PROJECT_ID/kubekins-e2e:$_GIT_TAG-$_CONFIG
+    - --destination=gcr.io/$PROJECT_ID/kubekins-e2e:latest-$_CONFIG
     - --build-arg=GO_VERSION=$_GO_VERSION
     - --build-arg=K8S_RELEASE=$_K8S_RELEASE
     - --build-arg=BAZEL_VERSION_ARG=$_BAZEL_VERSION
     - --build-arg=CFSSL_VERSION=$_CFSSL_VERSION
     - --build-arg=UPGRADE_DOCKER_ARG=$_UPGRADE_DOCKER
     - --build-arg=IMAGE_ARG=gcr.io/$PROJECT_ID/kubekins-e2e:$_GIT_TAG-$_CONFIG
-    - .
-    dir: images/kubekins-e2e
-  - name: gcr.io/cloud-builders/docker
-    args:
-    - tag
-    - gcr.io/$PROJECT_ID/kubekins-e2e:$_GIT_TAG-$_CONFIG
-    - gcr.io/$PROJECT_ID/kubekins-e2e:latest-$_CONFIG
+    - --cache=true
+    - --cache-ttl=6h
     dir: images/kubekins-e2e
 substitutions:
   _GIT_TAG: '12345'

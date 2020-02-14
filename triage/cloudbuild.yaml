@@ -1,9 +1,13 @@
 steps:
-  - name: gcr.io/cloud-builders/docker
-    args: [ 'build', '-t', 'gcr.io/$PROJECT_ID/triage:$_GIT_TAG', '.' ]
+  - name: gcr.io/kaniko-project/executor
+    args:
+    - '--destination'
+    - 'gcr.io/$PROJECT_ID/triage:$_GIT_TAG'
+    - '--destination'
+    - 'gcr.io/$PROJECT_ID/triage:latest'
+    - '--cache=true'
+    - '--cache-ttl=6h'
     dir: triage/
-  - name: gcr.io/cloud-builders/docker
-    args: [ 'tag', 'gcr.io/$PROJECT_ID/triage:$_GIT_TAG', 'gcr.io/$PROJECT_ID/triage:latest']
 substitutions:
   _GIT_TAG: '12345'
 images:

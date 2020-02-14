@@ -12,12 +12,15 @@ steps:
     - GO111MODULE=on
     - GOPROXY=https://proxy.golang.org
     - GOSUMDB=sum.golang.org
-  - name: gcr.io/cloud-builders/docker
+  - name: gcr.io/kaniko-project/executor
     args:
-    - build
-    - --tag=gcr.io/$PROJECT_ID/logexporter:$_GIT_TAG
-    - --tag=gcr.io/$PROJECT_ID/logexporter:latest
-    - cmd
+    - '--destination'
+    - 'gcr.io/$PROJECT_ID/logexporter:$_GIT_TAG'
+    - '--destination'
+    - 'gcr.io/$PROJECT_ID/logexporter:latest'
+    - '--context=cmd'
+    - '--cache=true'
+    - '--cache-ttl=6h'
     dir: logexporter/
 substitutions:
   _GIT_TAG: '12345'
