@@ -439,6 +439,8 @@ periodics:
       env:
       - name: WINDOWS_NODE_OS_DISTRIBUTION
         value: "win2019"
+      - name: PREPULL_YAML
+        value: "prepull-1.16.yaml"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-a79910c-1.16
 
 postsubmits:
