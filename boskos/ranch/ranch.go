@@ -27,6 +27,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 
 	"k8s.io/test-infra/boskos/common"
+	"k8s.io/test-infra/boskos/crds"
 )
 
 // Ranch is the place which all of the Resource objects lives.
@@ -115,7 +116,7 @@ type acquireRequestPriorityKey struct {
 //     requestID - request ID to get a priority in the queue
 // Out: A valid Resource object on success, or
 //      ResourceNotFound error if target type resource does not exist in target state.
-func (r *Ranch) Acquire(rType, state, dest, owner, requestID string) (*common.Resource, error) {
+func (r *Ranch) Acquire(rType, state, dest, owner, requestID string) (*crds.ResourceObject, error) {
 	logger := logrus.WithFields(logrus.Fields{
 		"type":       rType,
 		"state":      state,
@@ -137,19 +138,19 @@ func (r *Ranch) Acquire(rType, state, dest, owner, requestID string) (*common.Re
 		logger.WithError(err).Errorf("could not get resources")
 		return nil, &ResourceNotFound{rType}
 	}
-	logger.Debugf("Considering %d resources.", len(resources))
+	logger.Debugf("Considering %d resources.", len(resources.Items))
 
 	// For request priority we need to go over all the list until a matching rank
 	matchingResoucesCount := 0
 	typeCount := 0
-	for idx := range resources {
-		res := resources[idx]
-		if rType != res.Type {
+	for idx := range resources.Items {
+		res := resources.Items[idx]
+		if rType != res.Spec.Type {
 			continue
 		}
 		typeCount++
 
-		if state != res.State || res.Owner != "" {
+		if state != res.Status.State || res.Status.Owner != "" {
 			continue
 		}
 		matchingResoucesCount++
@@ -158,10 +159,10 @@ func (r *Ranch) Acquire(rType, state, dest, owner, requestID string) (*common.Re
 			continue
 		}
 		logger = logger.WithField("resource", res.Name)
-		res.Owner = owner
-		res.State = dest
+		res.Status.Owner = owner
+		res.Status.State = dest
 		logger.Debug("Updating resource.")
-		updatedRes, err := r.Storage.UpdateResource(res)
+		updatedRes, err := r.Storage.UpdateResource(&res)
 		if err != nil {
 			logger.WithError(err).Errorf("could not update resource %s", res.Name)
 			return nil, err
@@ -172,7 +173,7 @@ func (r *Ranch) Acquire(rType, state, dest, owner, requestID string) (*common.Re
 			r.requestMgr.Delete(ts, requestID)
 		}
 		logger.Debug("Successfully acquired resource.")
-		return &updatedRes, nil
+		return updatedRes, nil
 	}
 
 	if new {
@@ -180,13 +181,13 @@ func (r *Ranch) Acquire(rType, state, dest, owner, requestID string) (*common.Re
 		lifeCycle, err := r.Storage.GetDynamicResourceLifeCycle(rType)
 		// Assuming error means no associated dynamic resource.
 		if err == nil {
-			if typeCount < lifeCycle.MaxCount {
+			if typeCount < lifeCycle.Spec.MaxCount {
 				logger.Debug("Adding new dynamic resources...")
-				res := common.NewResourceFromNewDynamicResourceLifeCycle(r.Storage.generateName(), &lifeCycle, r.now())
+				res := newResourceFromNewDynamicResourceLifeCycle(r.Storage.generateName(), lifeCycle, r.now())
 				if err := r.Storage.AddResource(res); err != nil {
 					logger.WithError(err).Warningf("unable to add a new resource of type %s", rType)
 				}
-				logger.Infof("Added dynamic resource %s of type %s", res.Name, res.Type)
+				logger.Infof("Added dynamic resource %s of type %s", res.Name, res.Spec.Type)
 			}
 		} else {
 			logrus.WithError(err).Debug("Failed listing DRLC")
@@ -207,7 +208,7 @@ func (r *Ranch) Acquire(rType, state, dest, owner, requestID string) (*common.Re
 //     names - names of resource to acquire
 // Out: A valid list of Resource object on success, or
 //      ResourceNotFound error if target type resource does not exist in target state.
-func (r *Ranch) AcquireByState(state, dest, owner string, names []string) ([]common.Resource, error) {
+func (r *Ranch) AcquireByState(state, dest, owner string, names []string) ([]*crds.ResourceObject, error) {
 	r.resourcesLock.Lock()
 	defer r.resourcesLock.Unlock()
 
@@ -223,17 +224,17 @@ func (r *Ranch) AcquireByState(state, dest, owner string, names []string) ([]com
 		return nil, &ResourceNotFound{state}
 	}
 
-	var resources []common.Resource
+	var resources []*crds.ResourceObject
 
-	for idx := range allResources {
-		res := allResources[idx]
-		if state != res.State || res.Owner != "" || !rNames.Has(res.Name) {
+	for idx := range allResources.Items {
+		res := allResources.Items[idx]
+		if state != res.Status.State || res.Status.Owner != "" || !rNames.Has(res.Name) {
 			continue
 		}
 
-		res.Owner = owner
-		res.State = dest
-		updatedRes, err := r.Storage.UpdateResource(res)
+		res.Status.Owner = owner
+		res.Status.State = dest
+		updatedRes, err := r.Storage.UpdateResource(&res)
 		if err != nil {
 			logrus.WithError(err).Errorf("could not update resource %s", res.Name)
 			return nil, err
@@ -270,22 +271,22 @@ func (r *Ranch) Release(name, dest, owner string) error {
 		logrus.WithError(err).Errorf("unable to release resource %s", name)
 		return &ResourceNotFound{name}
 	}
-	if owner != res.Owner {
-		return &OwnerNotMatch{request: owner, owner: res.Owner}
+	if owner != res.Status.Owner {
+		return &OwnerNotMatch{request: owner, owner: res.Status.Owner}
 	}
 
-	res.Owner = ""
-	res.State = dest
+	res.Status.Owner = ""
+	res.Status.State = dest
 
-	if lf, err := r.Storage.GetDynamicResourceLifeCycle(res.Type); err == nil {
+	if lf, err := r.Storage.GetDynamicResourceLifeCycle(res.Spec.Type); err == nil {
 		// Assuming error means not existing as the only way to differentiate would be to list
 		// all resources and find the right one which is more costly.
-		if lf.LifeSpan != nil {
-			expirationTime := r.now().Add(*lf.LifeSpan)
-			res.ExpirationDate = &expirationTime
+		if lf.Spec.LifeSpan != nil {
+			expirationTime := r.now().Add(*lf.Spec.LifeSpan)
+			res.Status.ExpirationDate = &expirationTime
 		}
 	} else {
-		res.ExpirationDate = nil
+		res.Status.ExpirationDate = nil
 	}
 
 	if _, err := r.Storage.UpdateResource(res); err != nil {
@@ -313,16 +314,16 @@ func (r *Ranch) Update(name, owner, state string, ud *common.UserData) error {
 		logrus.WithError(err).Errorf("could not find resource %s for update", name)
 		return &ResourceNotFound{name}
 	}
-	if owner != res.Owner {
-		return &OwnerNotMatch{request: owner, owner: res.Owner}
+	if owner != res.Status.Owner {
+		return &OwnerNotMatch{request: owner, owner: res.Status.Owner}
 	}
-	if state != res.State {
-		return &StateNotMatch{res.State, state}
+	if state != res.Status.State {
+		return &StateNotMatch{res.Status.State, state}
 	}
-	if res.UserData == nil {
-		res.UserData = &common.UserData{}
+	if res.Status.UserData == nil {
+		res.Status.UserData = &common.UserData{}
 	}
-	res.UserData.Update(ud)
+	res.Status.UserData.Update(ud)
 	if _, err := r.Storage.UpdateResource(res); err != nil {
 		logrus.WithError(err).Errorf("could not update resource %s", res.Name)
 		return err
@@ -348,16 +349,16 @@ func (r *Ranch) Reset(rtype, state string, expire time.Duration, dest string) (m
 		return nil, err
 	}
 
-	for idx := range resources {
-		res := resources[idx]
-		if rtype != res.Type || state != res.State || res.Owner == "" || r.now().Sub(res.LastUpdate) < expire {
+	for idx := range resources.Items {
+		res := resources.Items[idx]
+		if rtype != res.Spec.Type || state != res.Status.State || res.Status.Owner == "" || r.now().Sub(res.Status.LastUpdate) < expire {
 			continue
 		}
 
-		ret[res.Name] = res.Owner
-		res.Owner = ""
-		res.State = dest
-		if _, err := r.Storage.UpdateResource(res); err != nil {
+		ret[res.Name] = res.Status.Owner
+		res.Status.Owner = ""
+		res.Status.State = dest
+		if _, err := r.Storage.UpdateResource(&res); err != nil {
 			logrus.WithError(err).Errorf("could not update resource %s", res.Name)
 			return ret, err
 		}
@@ -417,13 +418,13 @@ func (r *Ranch) Metric(rtype string) (common.Metric, error) {
 		return metric, &ResourceNotFound{rtype}
 	}
 
-	for _, res := range resources {
-		if res.Type != rtype {
+	for _, res := range resources.Items {
+		if res.Spec.Type != rtype {
 			continue
 		}
 
-		metric.Current[res.State]++
-		metric.Owners[res.Owner]++
+		metric.Current[res.Status.State]++
+		metric.Owners[res.Status.Owner]++
 	}
 
 	if len(metric.Current) == 0 && len(metric.Owners) == 0 {
@@ -443,15 +444,15 @@ func (r *Ranch) AllMetrics() ([]common.Metric, error) {
 
 	metrics := map[string]common.Metric{}
 
-	for _, res := range resources {
-		metric, ok := metrics[res.Type]
+	for _, res := range resources.Items {
+		metric, ok := metrics[res.Spec.Type]
 		if !ok {
-			metric = common.NewMetric(res.Type)
-			metrics[res.Type] = metric
+			metric = common.NewMetric(res.Spec.Type)
+			metrics[res.Spec.Type] = metric
 		}
 
-		metric.Current[res.State]++
-		metric.Owners[res.Owner]++
+		metric.Current[res.Status.State]++
+		metric.Owners[res.Status.Owner]++
 	}
 
 	result := make([]common.Metric, 0, len(metrics))
@@ -462,4 +463,10 @@ func (r *Ranch) AllMetrics() ([]common.Metric, error) {
 		return result[i].Type < result[j].Type
 	})
 	return result, nil
+}
+
+// newResourceFromNewDynamicResourceLifeCycle creates a resource from DynamicResourceLifeCycle given a name and a time.
+// Using this method helps make sure all the resources are created the same way.
+func newResourceFromNewDynamicResourceLifeCycle(name string, dlrc *crds.DRLCObject, now time.Time) *crds.ResourceObject {
+	return crds.NewResource(name, dlrc.Name, dlrc.Spec.InitialState, "", now)
 }

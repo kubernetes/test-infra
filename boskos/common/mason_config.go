@@ -85,12 +85,6 @@ func NewDynamicResourceLifeCycleFromConfig(e ResourceEntry) DynamicResourceLifeC
 	}
 }
 
-// NewResourceFromNewDynamicResourceLifeCycle creates a resource from DynamicResourceLifeCycle given a name and a time.
-// Using this method helps make sure all the resources are created the same way.
-func NewResourceFromNewDynamicResourceLifeCycle(name string, dlrc *DynamicResourceLifeCycle, now time.Time) Resource {
-	return NewResource(name, dlrc.Type, dlrc.InitialState, "", now)
-}
-
 // Copy returns a copy of the TypeToResources
 func (t TypeToResources) Copy() TypeToResources {
 	n := TypeToResources{}

@@ -155,11 +155,6 @@ func NewMetric(rtype string) Metric {
 	}
 }
 
-// IsInUse reports if the resource is owned by anything else than Boskos.
-func (res *Resource) IsInUse() bool {
-	return res.Owner != ""
-}
-
 // NewResource creates a new Boskos Resource.
 func NewResource(name, rtype, state, owner string, t time.Time) Resource {
 	// If no state defined, mark as Free
@@ -202,13 +197,6 @@ type UserDataNotFound struct {
 func (ud *UserDataNotFound) Error() string {
 	return fmt.Sprintf("user data ID %s does not exist", ud.ID)
 }
-
-// ResourceByUpdateTime helps sorting resources by update time
-type ResourceByUpdateTime []Resource
-
-func (ut ResourceByUpdateTime) Len() int           { return len(ut) }
-func (ut ResourceByUpdateTime) Swap(i, j int)      { ut[i], ut[j] = ut[j], ut[i] }
-func (ut ResourceByUpdateTime) Less(i, j int) bool { return ut[i].LastUpdate.Before(ut[j].LastUpdate) }
 
 // ResourceByName helps sorting resources by name
 type ResourceByName []Resource

@@ -118,14 +118,13 @@ func handleAcquire(r *ranch.Ranch) http.HandlerFunc {
 		logrus.Infof("Request for a %v %v from %v, dest %v", state, rtype, owner, dest)
 
 		resource, err := r.Acquire(rtype, state, dest, owner, requestID)
-
 		if err != nil {
 			logrus.WithError(err).Errorf("No available resource")
 			http.Error(res, err.Error(), errorToStatus(err))
 			return
 		}
 
-		resJSON, err := json.Marshal(resource)
+		resJSON, err := json.Marshal(resource.ToResource())
 		if err != nil {
 			logrus.WithError(err).Errorf("json.Marshal failed: %v, resource will be released", resource)
 			http.Error(res, err.Error(), errorToStatus(err))

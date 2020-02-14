@@ -31,6 +31,7 @@ import (
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/sets"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"k8s.io/test-infra/boskos/common"
@@ -85,7 +86,7 @@ func NewStorage(ctx context.Context, client ctrlruntimeclient.Client, namespace,
 		}
 
 		for _, res := range data.Resources {
-			if err := s.AddResource(res); err != nil {
+			if err := s.AddResource(crds.FromResource(res)); err != nil {
 				logrus.WithError(err).Errorf("Failed Adding Resource: %s - %s.", res.Name, res.State)
 			}
 			logrus.Infof("Successfully Added Resource: %s - %s.", res.Name, res.State)
@@ -95,11 +96,9 @@ func NewStorage(ctx context.Context, client ctrlruntimeclient.Client, namespace,
 }
 
 // AddResource adds a new resource
-func (s *Storage) AddResource(resource common.Resource) error {
-	o := &crds.ResourceObject{}
-	o.FromItem(resource)
-	o.Namespace = s.namespace
-	return s.client.Create(s.ctx, o)
+func (s *Storage) AddResource(resource *crds.ResourceObject) error {
+	resource.Namespace = s.namespace
+	return s.client.Create(s.ctx, resource)
 }
 
 // DeleteResource deletes a resource if it exists, errors otherwise
@@ -114,60 +113,45 @@ func (s *Storage) DeleteResource(name string) error {
 }
 
 // UpdateResource updates a resource if it exists, errors otherwise
-func (s *Storage) UpdateResource(resource common.Resource) (common.Resource, error) {
-	resource.LastUpdate = s.now()
+func (s *Storage) UpdateResource(resource *crds.ResourceObject) (*crds.ResourceObject, error) {
+	resource.Status.LastUpdate = s.now()
 
-	o := &crds.ResourceObject{}
-	name := types.NamespacedName{Namespace: s.namespace, Name: resource.GetName()}
-	if err := s.client.Get(s.ctx, name, o); err != nil {
-		return common.Resource{}, fmt.Errorf("failed to get resource %s before patching it: %v", resource.GetName(), err)
+	if err := s.client.Update(s.ctx, resource); err != nil {
+		return nil, fmt.Errorf("failed to update resources %s after patching it: %v", resource.Name, err)
 	}
 
-	o.FromItem(resource)
-	if err := s.client.Update(s.ctx, o); err != nil {
-		return common.Resource{}, fmt.Errorf("failed to update resources %s after patching it: %v", resource.GetName(), err)
-	}
-
-	return common.ItemToResource(o.ToItem())
+	return resource, nil
 }
 
 // GetResource gets an existing resource, errors otherwise
-func (s *Storage) GetResource(name string) (common.Resource, error) {
+func (s *Storage) GetResource(name string) (*crds.ResourceObject, error) {
 	o := &crds.ResourceObject{}
 	nn := types.NamespacedName{Namespace: s.namespace, Name: name}
 	if err := s.client.Get(s.ctx, nn, o); err != nil {
-		return common.Resource{}, fmt.Errorf("failed to get resource %s: %v", name, err)
+		return nil, fmt.Errorf("failed to get resource %s: %v", name, err)
 	}
 
-	return common.ItemToResource(o.ToItem())
+	return o, nil
 }
 
 // GetResources list all resources
-func (s *Storage) GetResources() ([]common.Resource, error) {
+func (s *Storage) GetResources() (*crds.ResourceObjectList, error) {
 	resourceList := &crds.ResourceObjectList{}
 	if err := s.client.List(s.ctx, resourceList, ctrlruntimeclient.InNamespace(s.namespace)); err != nil {
 		return nil, fmt.Errorf("failed to list resources; %v", err)
 	}
 
-	var resources []common.Resource
-	for _, resource := range resourceList.Items {
-		res, err := common.ItemToResource(resource.ToItem())
-		if err != nil {
-			return nil, fmt.Errorf("failed to convert item %s to resource: %v", resource.Name, err)
-		}
-		resources = append(resources, res)
-	}
+	sort.SliceStable(resourceList.Items, func(i, j int) bool {
+		return resourceList.Items[i].Status.LastUpdate.Before(resourceList.Items[j].Status.LastUpdate)
+	})
 
-	sort.Stable(common.ResourceByUpdateTime(resources))
-	return resources, nil
+	return resourceList, nil
 }
 
 // AddDynamicResourceLifeCycle adds a new dynamic resource life cycle
-func (s *Storage) AddDynamicResourceLifeCycle(resource common.DynamicResourceLifeCycle) error {
-	o := &crds.DRLCObject{}
-	o.FromItem(resource)
-	o.Namespace = s.namespace
-	return s.client.Create(s.ctx, o)
+func (s *Storage) AddDynamicResourceLifeCycle(resource *crds.DRLCObject) error {
+	resource.Namespace = s.namespace
+	return s.client.Create(s.ctx, resource)
 }
 
 // DeleteDynamicResourceLifeCycle deletes a dynamic resource life cycle if it exists, errors otherwise
@@ -182,49 +166,34 @@ func (s *Storage) DeleteDynamicResourceLifeCycle(name string) error {
 }
 
 // UpdateDynamicResourceLifeCycle updates a dynamic resource life cycle. if it exists, errors otherwise
-func (s *Storage) UpdateDynamicResourceLifeCycle(resource common.DynamicResourceLifeCycle) (common.DynamicResourceLifeCycle, error) {
-	dlrc := &crds.DRLCObject{}
-	name := types.NamespacedName{Namespace: s.namespace, Name: resource.GetName()}
-	if err := s.client.Get(s.ctx, name, dlrc); err != nil {
-		return common.DynamicResourceLifeCycle{}, fmt.Errorf("failed to get dlrc %s before patching it: %v", resource.GetName(), err)
+func (s *Storage) UpdateDynamicResourceLifeCycle(resource *crds.DRLCObject) (*crds.DRLCObject, error) {
+	resource.Namespace = s.namespace
+	if err := s.client.Update(s.ctx, resource); err != nil {
+		return nil, fmt.Errorf("failed to update dlrc %s: %v", resource.Name, err)
 	}
 
-	dlrc.FromItem(resource)
-	if err := s.client.Update(s.ctx, dlrc); err != nil {
-		return common.DynamicResourceLifeCycle{}, fmt.Errorf("failed to update dlrc %s after patching it: %v", resource.GetName(), err)
-	}
-
-	return common.ItemToDynamicResourceLifeCycle(dlrc.ToItem())
+	return resource, nil
 }
 
 // GetDynamicResourceLifeCycle gets an existing dynamic resource life cycle, errors otherwise
-func (s *Storage) GetDynamicResourceLifeCycle(name string) (common.DynamicResourceLifeCycle, error) {
-	dlrc := &crds.DRLCObject{}
+func (s *Storage) GetDynamicResourceLifeCycle(name string) (*crds.DRLCObject, error) {
+	drlc := &crds.DRLCObject{}
 	nn := types.NamespacedName{Namespace: s.namespace, Name: name}
-	if err := s.client.Get(s.ctx, nn, dlrc); err != nil {
-		return common.DynamicResourceLifeCycle{}, fmt.Errorf("failed to get dlrc %s: %q", name, err)
+	if err := s.client.Get(s.ctx, nn, drlc); err != nil {
+		return nil, fmt.Errorf("failed to get dlrc %s: %q", name, err)
 	}
 
-	return common.ItemToDynamicResourceLifeCycle(dlrc.ToItem())
+	return drlc, nil
 }
 
 // GetDynamicResourceLifeCycles list all dynamic resource life cycle
-func (s *Storage) GetDynamicResourceLifeCycles() ([]common.DynamicResourceLifeCycle, error) {
-	dlrcList := &crds.DRLCObjectList{}
-	if err := s.client.List(s.ctx, dlrcList, ctrlruntimeclient.InNamespace(s.namespace)); err != nil {
-		return nil, fmt.Errorf("failed to list dlrcs: %v", err)
+func (s *Storage) GetDynamicResourceLifeCycles() (*crds.DRLCObjectList, error) {
+	drlcList := &crds.DRLCObjectList{}
+	if err := s.client.List(s.ctx, drlcList, ctrlruntimeclient.InNamespace(s.namespace)); err != nil {
+		return nil, fmt.Errorf("failed to list drlcs: %v", err)
 	}
 
-	var resources []common.DynamicResourceLifeCycle
-	for _, dlrc := range dlrcList.Items {
-		res, err := common.ItemToDynamicResourceLifeCycle(dlrc.ToItem())
-		if err != nil {
-			return nil, fmt.Errorf("failed to convert dlrc %s: %v", dlrc.GetName(), err)
-		}
-		resources = append(resources, res)
-	}
-
-	return resources, nil
+	return drlcList, nil
 }
 
 // SyncResources will update static and dynamic resources.
@@ -237,17 +206,17 @@ func (s *Storage) SyncResources(config *common.BoskosConfig) error {
 		return nil
 	}
 
-	newSRByName := map[string]common.Resource{}
-	existingSRByName := map[string]common.Resource{}
-	newDRLCByType := map[string]common.DynamicResourceLifeCycle{}
-	existingDRLCByType := map[string]common.DynamicResourceLifeCycle{}
+	newSRByName := map[string]crds.ResourceObject{}
+	existingSRByName := map[string]crds.ResourceObject{}
+	newDRLCByType := map[string]crds.DRLCObject{}
+	existingDRLCByType := map[string]crds.DRLCObject{}
 
 	for _, entry := range config.Resources {
 		if entry.IsDRLC() {
-			newDRLCByType[entry.Type] = common.NewDynamicResourceLifeCycleFromConfig(entry)
+			newDRLCByType[entry.Type] = *crds.FromDynamicResourceLifecycle(common.NewDynamicResourceLifeCycleFromConfig(entry))
 		} else {
 			for _, res := range common.NewResourcesFromConfig(entry) {
-				newSRByName[res.Name] = res
+				newSRByName[res.Name] = *crds.FromResource(res)
 			}
 		}
 	}
@@ -258,32 +227,32 @@ func (s *Storage) SyncResources(config *common.BoskosConfig) error {
 
 		resources, err := s.GetResources()
 		if err != nil {
-			logrus.WithError(err).Error("cannot find resources")
+			logrus.WithError(err).Error("cannot list resources")
 			return err
 		}
 		existingDRLC, err := s.GetDynamicResourceLifeCycles()
 		if err != nil {
-			logrus.WithError(err).Error("cannot find dynamicResourceLifeCycles")
+			logrus.WithError(err).Error("cannot list dynamicResourceLifeCycles")
 			return err
 		}
-		for _, dRLC := range existingDRLC {
-			existingDRLCByType[dRLC.Type] = dRLC
+		for _, dRLC := range existingDRLC.Items {
+			existingDRLCByType[dRLC.Name] = dRLC
 		}
 
 		// Split resources between static and dynamic resources
-		lifeCycleTypes := map[string]bool{}
+		lifeCycleTypes := sets.String{}
 
-		for _, lc := range existingDRLC {
-			lifeCycleTypes[lc.Type] = true
+		for _, lc := range existingDRLC.Items {
+			lifeCycleTypes.Insert(lc.Name)
 		}
 		// Considering the migration case from mason resources to dynamic resources.
 		// Dynamic resources already exist but they don't have an associated DRLC
 		for _, lc := range newDRLCByType {
-			lifeCycleTypes[lc.Type] = true
+			lifeCycleTypes.Insert(lc.Name)
 		}
 
-		for _, res := range resources {
-			if !lifeCycleTypes[res.Type] {
+		for _, res := range resources.Items {
+			if !lifeCycleTypes.Has(res.Spec.Type) {
 				existingSRByName[res.Name] = res
 			}
 		}
@@ -308,26 +277,26 @@ func (s *Storage) SyncResources(config *common.BoskosConfig) error {
 // updateDynamicResources updates dynamic resource based on an existing dynamic resource life cycle.
 // It will make sure than MinCount of resource exists, and attempt to delete expired and resources over MaxCount.
 // If resources are held by another user than Boskos, they will be deleted in a following cycle.
-func (s *Storage) updateDynamicResources(lifecycle common.DynamicResourceLifeCycle, resources []common.Resource) (toAdd, toDelete []common.Resource) {
-	var notInUseRes []common.Resource
+func (s *Storage) updateDynamicResources(lifecycle *crds.DRLCObject, resources []crds.ResourceObject) (toAdd, toDelete []crds.ResourceObject) {
+	var notInUseRes []crds.ResourceObject
 	tombStoned := 0
 	toBeDeleted := 0
 	for _, r := range resources {
-		if r.IsInUse() {
+		if r.Status.Owner != "" {
 			// We can only delete resources not in use.
 			continue
 		}
-		if r.State == common.Tombstone {
+		if r.Status.State == common.Tombstone {
 			// Ready to be fully deleted.
 			toDelete = append(toDelete, r)
 			tombStoned++
-		} else if r.State == common.ToBeDeleted {
+		} else if r.Status.State == common.ToBeDeleted {
 			// Already in the process of cleaning up.
 			// Don't create new resources yet, but also don't delete additional
 			// resources.
 			toBeDeleted++
 		} else {
-			if r.ExpirationDate != nil && s.now().After(*r.ExpirationDate) {
+			if r.Status.ExpirationDate != nil && s.now().After(*r.Status.ExpirationDate) {
 				// Expired. Don't decrement the active count until it's tombstoned,
 				// however, as it might be depending on other resources that need
 				// to be released first.
@@ -341,25 +310,27 @@ func (s *Storage) updateDynamicResources(lifecycle common.DynamicResourceLifeCyc
 
 	// Tombstoned resources are ready to be fully deleted, so replace them if necessary.
 	activeCount := len(resources) - tombStoned
-	for i := activeCount; i < lifecycle.MinCount; i++ {
-		res := common.NewResourceFromNewDynamicResourceLifeCycle(s.generateName(), &lifecycle, s.now())
-		toAdd = append(toAdd, res)
+	for i := activeCount; i < lifecycle.Spec.MinCount; i++ {
+		res := newResourceFromNewDynamicResourceLifeCycle(s.generateName(), lifecycle, s.now())
+		toAdd = append(toAdd, *res)
 		activeCount++
 	}
 
 	// ToBeDeleted resources may take some time to be fully cleaned up.
 	// We can temporarily exceed MaxCount while these are being cleaned up,
 	// particularly if MaxCount was recently lowered.
-	numberOfResToDelete := activeCount - toBeDeleted - lifecycle.MaxCount
+	numberOfResToDelete := activeCount - toBeDeleted - lifecycle.Spec.MaxCount
 	// Sorting to get consistent deletion mechanism (ease testing)
-	sort.Stable(sort.Reverse(common.ResourceByName(notInUseRes)))
+	sort.SliceStable(notInUseRes, func(i, j int) bool {
+		return notInUseRes[i].Name > notInUseRes[j].Name
+	})
 	for i := 0; i < len(notInUseRes); i++ {
 		res := notInUseRes[i]
 		if i < numberOfResToDelete {
 			toDelete = append(toDelete, res)
 		}
 	}
-	logrus.Infof("DRLC type %s: adding %+v, deleting %+v", lifecycle.Type, toAdd, toDelete)
+	logrus.Infof("DRLC type %s: adding %+v, deleting %+v", lifecycle.Name, toAdd, toDelete)
 	return
 }
 
@@ -369,10 +340,10 @@ func (s *Storage) updateDynamicResources(lifecycle common.DynamicResourceLifeCyc
 // any expired resources are deleted, and that any Tombstoned resources are
 // completely removed.
 func (s *Storage) UpdateAllDynamicResources() error {
-	var resToAdd, resToDelete []common.Resource
-	var dRLCToDelete []common.DynamicResourceLifeCycle
-	existingDRLCByType := map[string]common.DynamicResourceLifeCycle{}
-	existingDRsByType := map[string][]common.Resource{}
+	var resToAdd, resToDelete []crds.ResourceObject
+	var dRLCToDelete []crds.DRLCObject
+	existingDRLCByType := map[string]crds.DRLCObject{}
+	existingDRsByType := map[string][]crds.ResourceObject{}
 
 	s.resourcesLock.Lock()
 	defer s.resourcesLock.Unlock()
@@ -387,24 +358,24 @@ func (s *Storage) UpdateAllDynamicResources() error {
 		logrus.WithError(err).Error("cannot find DynamicResourceLifeCycles")
 		return err
 	}
-	for _, dRLC := range existingDRLC {
-		existingDRLCByType[dRLC.Type] = dRLC
+	for _, dRLC := range existingDRLC.Items {
+		existingDRLCByType[dRLC.Name] = dRLC
 	}
 
 	// Filter to only look at dynamic resources
-	for _, res := range resources {
-		if _, ok := existingDRLCByType[res.Type]; ok {
-			existingDRsByType[res.Type] = append(existingDRsByType[res.Type], res)
+	for _, res := range resources.Items {
+		if _, ok := existingDRLCByType[res.Spec.Type]; ok {
+			existingDRsByType[res.Spec.Type] = append(existingDRsByType[res.Spec.Type], res)
 		}
 	}
 
 	for resType, dRLC := range existingDRLCByType {
 		existingDRs := existingDRsByType[resType]
-		toAdd, toDelete := s.updateDynamicResources(dRLC, existingDRs)
+		toAdd, toDelete := s.updateDynamicResources(&dRLC, existingDRs)
 		resToAdd = append(resToAdd, toAdd...)
 		resToDelete = append(resToDelete, toDelete...)
 
-		if dRLC.MinCount == 0 && dRLC.MaxCount == 0 {
+		if dRLC.Spec.MinCount == 0 && dRLC.Spec.MaxCount == 0 {
 			currentCount := len(existingDRs)
 			addCount := len(resToAdd)
 			delCount := len(resToDelete)
@@ -433,26 +404,26 @@ func (s *Storage) UpdateAllDynamicResources() error {
 // configuration, it is updated to indicate that its dynamic resources should
 // be removed.
 // No dynamic resources are created, deleted, or modified by this function.
-func (s *Storage) syncDynamicResourceLifeCycles(newDRLCByType, existingDRLCByType map[string]common.DynamicResourceLifeCycle) error {
+func (s *Storage) syncDynamicResourceLifeCycles(newDRLCByType, existingDRLCByType map[string]crds.DRLCObject) error {
 	var finalError error
-	var dRLCToUpdate, dRLCToAdd []common.DynamicResourceLifeCycle
+	var dRLCToUpdate, dRLCToAdd []crds.DRLCObject
 
 	for _, existingDRLC := range existingDRLCByType {
-		newDRLC, existsInNew := newDRLCByType[existingDRLC.Type]
+		newDRLC, existsInNew := newDRLCByType[existingDRLC.Name]
 		if existsInNew {
 			if !reflect.DeepEqual(existingDRLC, newDRLC) {
 				dRLCToUpdate = append(dRLCToUpdate, newDRLC)
 			}
 		} else {
 			// Mark for deletion of all associated dynamic resources.
-			existingDRLC.MinCount = 0
-			existingDRLC.MaxCount = 0
+			existingDRLC.Spec.MinCount = 0
+			existingDRLC.Spec.MaxCount = 0
 			dRLCToUpdate = append(dRLCToUpdate, existingDRLC)
 		}
 	}
 
 	for _, newDRLC := range newDRLCByType {
-		_, exists := existingDRLCByType[newDRLC.Type]
+		_, exists := existingDRLCByType[newDRLC.Name]
 		if !exists {
 			dRLCToAdd = append(dRLCToAdd, newDRLC)
 		}
@@ -464,44 +435,45 @@ func (s *Storage) syncDynamicResourceLifeCycles(newDRLCByType, existingDRLCByTyp
 	return finalError
 }
 
-func (s *Storage) persistResources(resToAdd, resToDelete []common.Resource, dynamic bool) error {
+func (s *Storage) persistResources(resToAdd, resToDelete []crds.ResourceObject, dynamic bool) error {
 	var finalError error
 	for _, r := range resToDelete {
 		// If currently busy, yield deletion to later cycles.
-		if !r.IsInUse() {
-			if dynamic {
-				// Only delete resource in tombsone state and mark the other as to deleted
-				// This is necessary for dynamic resources that depends on other resources
-				// as they need to be released to prevent leak.
-				if r.State == common.Tombstone {
-					logrus.Infof("Deleting resource %s", r.Name)
-					if err := s.DeleteResource(r.Name); err != nil {
-						finalError = multierror.Append(finalError, err)
-						logrus.WithError(err).Errorf("unable to delete resource %s", r.Name)
-					}
-				} else if r.State != common.ToBeDeleted {
-					r.State = common.ToBeDeleted
-					logrus.Infof("Marking resource to be deleted %s", r.Name)
-					if _, err := s.UpdateResource(r); err != nil {
-						finalError = multierror.Append(finalError, err)
-						logrus.WithError(err).Errorf("unable to update resource %s", r.Name)
-					}
-				}
-			} else {
-				// Static resources can be deleted right away.
+		if r.Status.Owner != "" {
+			continue
+		}
+		if dynamic {
+			// Only delete resource in tombsone state and mark the other as to deleted
+			// This is necessary for dynamic resources that depends on other resources
+			// as they need to be released to prevent leak.
+			if r.Status.State == common.Tombstone {
 				logrus.Infof("Deleting resource %s", r.Name)
 				if err := s.DeleteResource(r.Name); err != nil {
 					finalError = multierror.Append(finalError, err)
 					logrus.WithError(err).Errorf("unable to delete resource %s", r.Name)
 				}
+			} else if r.Status.State != common.ToBeDeleted {
+				r.Status.State = common.ToBeDeleted
+				logrus.Infof("Marking resource to be deleted %s", r.Name)
+				if _, err := s.UpdateResource(&r); err != nil {
+					finalError = multierror.Append(finalError, err)
+					logrus.WithError(err).Errorf("unable to update resource %s", r.Name)
+				}
+			}
+		} else {
+			// Static resources can be deleted right away.
+			logrus.Infof("Deleting resource %s", r.Name)
+			if err := s.DeleteResource(r.Name); err != nil {
+				finalError = multierror.Append(finalError, err)
+				logrus.WithError(err).Errorf("unable to delete resource %s", r.Name)
 			}
 		}
 	}
 
 	for _, r := range resToAdd {
 		logrus.Infof("Adding resource %s", r.Name)
-		r.LastUpdate = s.now()
-		if err := s.AddResource(r); err != nil {
+		r.Status.LastUpdate = s.now()
+		if err := s.AddResource(&r); err != nil {
 			finalError = multierror.Append(finalError, err)
 			logrus.WithError(err).Errorf("unable to delete resource %s", r.Name)
 		}
@@ -510,54 +482,54 @@ func (s *Storage) persistResources(resToAdd, resToDelete []common.Resource, dyna
 	return finalError
 }
 
-func (s *Storage) persistDynamicResourceLifeCycles(dRLCToUpdate, dRLCToAdd, dRLCToDelelete []common.DynamicResourceLifeCycle) error {
+func (s *Storage) persistDynamicResourceLifeCycles(dRLCToUpdate, dRLCToAdd, dRLCToDelelete []crds.DRLCObject) error {
 	var finalError error
 	remainingTypes := map[string]bool{}
 	updatedResources, err := s.GetResources()
 	if err != nil {
 		return err
 	}
-	for _, res := range updatedResources {
-		remainingTypes[res.Type] = true
+	for _, res := range updatedResources.Items {
+		remainingTypes[res.Spec.Type] = true
 	}
 
 	for _, dRLC := range dRLCToDelelete {
 		// Only delete a dynamic resource if all resources are gone
-		if !remainingTypes[dRLC.Type] {
-			logrus.Infof("Deleting resource type life cycle %s", dRLC.Type)
-			if err := s.DeleteDynamicResourceLifeCycle(dRLC.Type); err != nil {
+		if !remainingTypes[dRLC.Name] {
+			logrus.Infof("Deleting resource type life cycle %s", dRLC.Name)
+			if err := s.DeleteDynamicResourceLifeCycle(dRLC.Name); err != nil {
 				finalError = multierror.Append(finalError, err)
-				logrus.WithError(err).Errorf("unable to delete resource type life cycle %s", dRLC.Type)
+				logrus.WithError(err).Errorf("unable to delete resource type life cycle %s", dRLC.Name)
 			}
 		} else {
 			// Mark this DRLC as pending deletion by setting min and max count to zero.
-			dRLC.MinCount = 0
-			dRLC.MaxCount = 0
+			dRLC.Spec.MinCount = 0
+			dRLC.Spec.MaxCount = 0
 			dRLCToUpdate = append(dRLCToUpdate, dRLC)
 		}
 	}
 
 	for _, DRLC := range dRLCToAdd {
-		logrus.Infof("Adding resource type life cycle %s", DRLC.Type)
-		if err := s.AddDynamicResourceLifeCycle(DRLC); err != nil {
+		logrus.Infof("Adding resource type life cycle %s", DRLC.Name)
+		if err := s.AddDynamicResourceLifeCycle(&DRLC); err != nil {
 			finalError = multierror.Append(finalError, err)
-			logrus.WithError(err).Errorf("unable to add resource type life cycle %s", DRLC.Type)
+			logrus.WithError(err).Errorf("unable to add resource type life cycle %s", DRLC.Name)
 		}
 	}
 
 	for _, dRLC := range dRLCToUpdate {
-		logrus.Infof("Updating resource type life cycle %s", dRLC.Type)
-		if _, err := s.UpdateDynamicResourceLifeCycle(dRLC); err != nil {
+		logrus.Infof("Updating resource type life cycle %s", dRLC.Name)
+		if _, err := s.UpdateDynamicResourceLifeCycle(&dRLC); err != nil {
 			finalError = multierror.Append(finalError, err)
-			logrus.WithError(err).Errorf("unable to update resource type life cycle %s", dRLC.Type)
+			logrus.WithError(err).Errorf("unable to update resource type life cycle %s", dRLC.Name)
 		}
 	}
 
 	return finalError
 }
 
-func (s *Storage) syncStaticResources(newResourcesByName, existingResourcesByName map[string]common.Resource) error {
-	var resToAdd, resToDelete []common.Resource
+func (s *Storage) syncStaticResources(newResourcesByName, existingResourcesByName map[string]crds.ResourceObject) error {
+	var resToAdd, resToDelete []crds.ResourceObject
 
 	// Delete resources
 	for _, res := range existingResourcesByName {

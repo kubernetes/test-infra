@@ -1684,3 +1684,25 @@ func newResource(name, rtype, state, owner string, t time.Time) *crds.ResourceOb
 		},
 	}
 }
+
+func sortResourcesLists(rls ...*crds.ResourceObjectList) {
+	for _, rl := range rls {
+		sort.Slice(rl.Items, func(i, j int) bool {
+			return rl.Items[i].Name < rl.Items[j].Name
+		})
+		if len(rl.Items) == 0 {
+			rl.Items = nil
+		}
+	}
+}
+
+func sortDRLCList(drlcs ...*crds.DRLCObjectList) {
+	for _, drlc := range drlcs {
+		sort.Slice(drlc.Items, func(i, j int) bool {
+			return drlc.Items[i].Name < drlc.Items[j].Name
+		})
+		if len(drlc.Items) == 0 {
+			drlc.Items = nil
+		}
+	}
+}
