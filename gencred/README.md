@@ -146,6 +146,15 @@ users:
     client-key-data: fake-key-data
 ```
 
+#### Merging into a kubeconfig in a Kubernetes secret.
+If you store kubeconfig files in kubernetes secrets to allow pods to access other kubernetes clusters (like many of Prow's components require) consider using [`merge_kubeconfig_secret.py`](/gencred/merge_kubeconfig_secret.py) to merge the kubeconfig produced by `gencred` into the secret.
+
+```shell
+# Generate a kubeconfig.yaml as described and shown above, then run something like:
+./merge_kubeconfig_secret.py --src-key=config-old --dest-key=config-new kubeconfig.yaml
+# Update references (e.g. `--kubeconfig` flags) to point to config-new instead of config-old.
+```
+
 ### Library
 
 #### Generate a service account token for a cluster. 
