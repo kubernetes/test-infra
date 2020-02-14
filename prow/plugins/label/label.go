@@ -33,10 +33,10 @@ const pluginName = "label"
 
 var (
 	defaultLabels          = []string{"kind", "priority", "area"}
-	labelRegex             = regexp.MustCompile(`(?m)^/(area|committee|kind|language|priority|sig|triage|wg)\s*(.*)$`)
-	removeLabelRegex       = regexp.MustCompile(`(?m)^/remove-(area|committee|kind|language|priority|sig|triage|wg)\s*(.*)$`)
-	customLabelRegex       = regexp.MustCompile(`(?m)^/label\s*(.*)$`)
-	customRemoveLabelRegex = regexp.MustCompile(`(?m)^/remove-label\s*(.*)$`)
+	labelRegex             = regexp.MustCompile(`(?m)^/(area|committee|kind|language|priority|sig|triage|wg)\s*(.*?)\s*$`)
+	removeLabelRegex       = regexp.MustCompile(`(?m)^/remove-(area|committee|kind|language|priority|sig|triage|wg)\s*(.*?)\s*$`)
+	customLabelRegex       = regexp.MustCompile(`(?m)^/label\s*(.*?)\s*$`)
+	customRemoveLabelRegex = regexp.MustCompile(`(?m)^/remove-label\s*(.*?)\s*$`)
 )
 
 func init() {
