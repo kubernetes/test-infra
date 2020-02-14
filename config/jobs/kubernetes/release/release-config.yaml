@@ -112,6 +112,9 @@ periodics:
       command:
       - make
       - verify-published-debs
+  rerun_auth_config:
+    github_team_ids:
+      - 2241179 # release-managers
 - name: periodic-release-verify-packages-rpms
   interval: 6h
   annotations:
@@ -131,3 +134,6 @@ periodics:
       command:
       - make
       - verify-published-rpms
+  rerun_auth_config:
+    github_team_ids:
+      - 2241179 # release-managers

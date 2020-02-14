@@ -90,6 +90,9 @@ postsubmits:
         resources:
           requests:
             memory: "6Gi"
+    rerun_auth_config:
+      github_team_ids:
+        - 2241179 # release-managers
   - name: post-kubernetes-bazel-build
     branches:
     - master
@@ -225,6 +228,9 @@ periodics:
             --gcs=gs://kubernetes-release-dev/ci-periodic \
             --version-suffix=-bazel \
             --publish-version=gs://kubernetes-release-dev/ci/latest-bazel-periodic.txt
+  rerun_auth_config:
+    github_team_ids:
+      - 2241179 # release-managers
 
 - name: periodic-kubernetes-bazel-build-canary
   annotations:
@@ -262,6 +268,9 @@ periodics:
             --gcs=gs://kubernetes-release-dev/ci-canary \
             --version-suffix=-bazel \
             --publish-version=gs://kubernetes-release-dev/ci/latest-bazel-canary.txt
+  rerun_auth_config:
+    github_team_ids:
+      - 2241179 # release-managers
 
 # periodic bazel test jobs
 - name: periodic-kubernetes-bazel-test-master
