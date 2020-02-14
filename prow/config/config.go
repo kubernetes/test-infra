@@ -1761,7 +1761,13 @@ func validatePodSpec(jobType prowapi.ProwJobType, spec *v1.PodSpec) error {
 		return fmt.Errorf("pod spec must specify exactly 1 container, found: %d", n)
 	}
 
+	envNames := sets.String{}
 	for _, env := range spec.Containers[0].Env {
+		if envNames.Has(env.Name) {
+			return fmt.Errorf("env var named %q is defined more than once", env.Name)
+		}
+		envNames.Insert(env.Name)
+
 		for _, prowEnv := range downwardapi.EnvForType(jobType) {
 			if env.Name == prowEnv {
 				// TODO(fejta): consider allowing this
@@ -1770,7 +1776,24 @@ func validatePodSpec(jobType prowapi.ProwJobType, spec *v1.PodSpec) error {
 		}
 	}
 
+	volumeNames := sets.String{}
+	for _, volume := range spec.Volumes {
+		if volumeNames.Has(volume.Name) {
+			return fmt.Errorf("volume named %q is defined more than once", volume.Name)
+		}
+		volumeNames.Insert(volume.Name)
+
+		for _, prowVolume := range decorate.VolumeMounts() {
+			if volume.Name == prowVolume {
+				return fmt.Errorf("volume %s is a reserved for decoration", volume.Name)
+			}
+		}
+	}
+
 	for _, mount := range spec.Containers[0].VolumeMounts {
+		if !volumeNames.Has(mount.Name) {
+			return fmt.Errorf("volumeMount named %q is undefined", mount.Name)
+		}
 		for _, prowMount := range decorate.VolumeMounts() {
 			if mount.Name == prowMount {
 				return fmt.Errorf("volumeMount name %s is reserved for decoration", prowMount)
@@ -1779,14 +1802,6 @@ func validatePodSpec(jobType prowapi.ProwJobType, spec *v1.PodSpec) error {
 		for _, prowMountPath := range decorate.VolumeMountPaths() {
 			if strings.HasPrefix(mount.MountPath, prowMountPath) || strings.HasPrefix(prowMountPath, mount.MountPath) {
 				return fmt.Errorf("mount %s at %s conflicts with decoration mount at %s", mount.Name, mount.MountPath, prowMountPath)
-			}
-		}
-	}
-
-	for _, volume := range spec.Volumes {
-		for _, prowVolume := range decorate.VolumeMounts() {
-			if volume.Name == prowVolume {
-				return fmt.Errorf("volume %s is a reserved for decoration", volume.Name)
 			}
 		}
 	}
