@@ -8,7 +8,7 @@ periodics:
     preset-kubernetes-e2e-aws-eks-1-13: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-a79910c-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
       imagePullPolicy: Always
       args:
       - --timeout=200
@@ -36,7 +36,7 @@ periodics:
     preset-kubernetes-e2e-aws-eks-1-13: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-a79910c-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
       imagePullPolicy: Always
       args:
       - --timeout=200
@@ -64,7 +64,7 @@ periodics:
     preset-kubernetes-e2e-aws-eks-1-13: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-a79910c-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
       imagePullPolicy: Always
       args:
       - --timeout=320
