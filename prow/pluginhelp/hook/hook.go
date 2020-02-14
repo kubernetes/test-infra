@@ -75,7 +75,7 @@ func NewHelpAgent(pa pluginAgent, ghc githubClient) *HelpAgent {
 	}
 }
 
-func (ha *HelpAgent) generateNormalPluginHelp(config *plugins.Configuration, revMap map[string][]string) (allPlugins []string, pluginHelp map[string]pluginhelp.PluginHelp) {
+func (ha *HelpAgent) generateNormalPluginHelp(config *plugins.Configuration, revMap map[string][]plugins.Repo) (allPlugins []string, pluginHelp map[string]pluginhelp.PluginHelp) {
 	pluginHelp = map[string]pluginhelp.PluginHelp{}
 	for name, provider := range plugins.HelpProviders() {
 		allPlugins = append(allPlugins, name)
@@ -83,12 +83,7 @@ func (ha *HelpAgent) generateNormalPluginHelp(config *plugins.Configuration, rev
 			ha.log.Warnf("No help is provided for plugin %q.", name)
 			continue
 		}
-		var enabledRepos []plugins.Repo
-		for _, repo := range revMap[name] {
-			parts := strings.Split(repo, "/")
-			enabledRepos = append(enabledRepos, plugins.Repo{Org: parts[0], Repo: parts[1]})
-		}
-		help, err := provider(config, enabledRepos)
+		help, err := provider(config, revMap[name])
 		if err != nil {
 			ha.log.WithError(err).Errorf("Generating help from normal plugin %q.", name)
 			continue
@@ -99,7 +94,7 @@ func (ha *HelpAgent) generateNormalPluginHelp(config *plugins.Configuration, rev
 	return
 }
 
-func (ha *HelpAgent) generateExternalPluginHelp(config *plugins.Configuration, revMap map[string][]string) (allPlugins []string, pluginHelp map[string]pluginhelp.PluginHelp) {
+func (ha *HelpAgent) generateExternalPluginHelp(config *plugins.Configuration, revMap map[string][]plugins.Repo) (allPlugins []string, pluginHelp map[string]pluginhelp.PluginHelp) {
 	externals := map[string]plugins.ExternalPlugin{}
 	for _, exts := range config.ExternalPlugins {
 		for _, ext := range exts {
@@ -203,7 +198,7 @@ func allRepos(config *plugins.Configuration, orgToRepos map[string]sets.String) 
 }
 
 func externalHelpProvider(log *logrus.Entry, endpoint string) externalplugins.ExternalPluginHelpProvider {
-	return func(enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+	return func(enabledRepos []plugins.Repo) (*pluginhelp.PluginHelp, error) {
 		u, err := url.Parse(endpoint)
 		if err != nil {
 			return nil, fmt.Errorf("error parsing url: %s err: %v", endpoint, err)
@@ -236,28 +231,28 @@ func externalHelpProvider(log *logrus.Entry, endpoint string) externalplugins.Ex
 // reversePluginMaps inverts the Configuration.Plugins and Configuration.ExternalPlugins maps and
 // expands any org strings to org/repo strings.
 // The returned values map plugin names to the set of org/repo strings they are enabled on.
-func reversePluginMaps(config *plugins.Configuration, orgToRepos map[string]sets.String) (normal, external map[string][]string) {
-	normal = map[string][]string{}
+func reversePluginMaps(config *plugins.Configuration, orgToRepos map[string]sets.String) (normal, external map[string][]plugins.Repo) {
+	normal = map[string][]plugins.Repo{}
 	for repo, enabledPlugins := range config.Plugins {
-		var repos []string
+		var repos []plugins.Repo
 		if !strings.Contains(repo, "/") {
 			if flattened, ok := orgToRepos[repo]; ok {
-				repos = flattened.List()
+				repos = plugins.StringsToRepos(flattened.List())
 			}
 		} else {
-			repos = []string{repo}
+			repos = []plugins.Repo{*plugins.NewRepo(repo)}
 		}
 		for _, plugin := range enabledPlugins {
 			normal[plugin] = append(normal[plugin], repos...)
 		}
 	}
-	external = map[string][]string{}
+	external = map[string][]plugins.Repo{}
 	for repo, extPlugins := range config.ExternalPlugins {
-		var repos []string
+		var repos []plugins.Repo
 		if flattened, ok := orgToRepos[repo]; ok {
-			repos = flattened.List()
+			repos = plugins.StringsToRepos(flattened.List())
 		} else {
-			repos = []string{repo}
+			repos = []plugins.Repo{*plugins.NewRepo(repo)}
 		}
 		for _, plugin := range extPlugins {
 			external[plugin.Name] = append(external[plugin.Name], repos...)
