@@ -76,7 +76,7 @@ func init() {
 	plugins.RegisterPullRequestHandler(PluginName, handlePullRequest, helpProvider)
 }
 
-func helpProvider(config *plugins.Configuration, enabledRepos []plugins.Repo) (*pluginhelp.PluginHelp, error) {
+func helpProvider(config *plugins.Configuration, _ []plugins.Repo) (*pluginhelp.PluginHelp, error) {
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: `The releasenote plugin implements a release note process that uses a markdown 'releasenote' code block to associate a release note with a pull request. Until the 'releasenote' block in the pull request body is populated the PR will be assigned the '` + ReleaseNoteLabelNeeded + `' label.
 <br>There are three valid types of release notes that can replace this label:

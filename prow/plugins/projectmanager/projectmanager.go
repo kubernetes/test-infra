@@ -70,7 +70,7 @@ func init() {
 	plugins.RegisterIssueHandler(pluginName, handleIssueOrPullRequest, helpProvider)
 }
 
-func helpProvider(config *plugins.Configuration, enabledRepos []plugins.Repo) (*pluginhelp.PluginHelp, error) {
+func helpProvider(config *plugins.Configuration, _ []plugins.Repo) (*pluginhelp.PluginHelp, error) {
 	projectConfig := config.ProjectManager
 	if len(projectConfig.OrgRepos) == 0 {
 		pluginHelp := &pluginhelp.PluginHelp{
