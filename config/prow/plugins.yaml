@@ -628,6 +628,7 @@ plugins:
   - stage
 
   kubernetes/kops:
+  - mergecommitblocker
   - milestone
   - milestoneapplier
 
