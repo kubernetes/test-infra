@@ -7,6 +7,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//gencred/pkg/kubeconfig:go_default_library",
+        "@io_k8s_api//authorization/v1beta1:go_default_library",
         "@io_k8s_api//core/v1:go_default_library",
         "@io_k8s_api//rbac/v1:go_default_library",
         "@io_k8s_apimachinery//pkg/apis/meta/v1:go_default_library",
@@ -34,9 +35,12 @@ go_test(
     srcs = ["serviceaccount_test.go"],
     embed = [":go_default_library"],
     deps = [
+        "@io_k8s_api//authorization/v1beta1:go_default_library",
         "@io_k8s_api//core/v1:go_default_library",
         "@io_k8s_apimachinery//pkg/apis/meta/v1:go_default_library",
+        "@io_k8s_apimachinery//pkg/runtime:go_default_library",
         "@io_k8s_client_go//kubernetes:go_default_library",
         "@io_k8s_client_go//kubernetes/fake:go_default_library",
+        "@io_k8s_client_go//testing:go_default_library",
     ],
 )
