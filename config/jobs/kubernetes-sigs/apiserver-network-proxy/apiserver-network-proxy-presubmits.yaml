@@ -7,7 +7,7 @@ presubmits:
     path_alias: sigs.k8s.io/apiserver-network-proxy
     spec:
       containers:
-      - image: golang:1.12
+      - image: golang:1.13
         command:
         - make
         args:
@@ -21,13 +21,18 @@ presubmits:
     skip_report: false
     decorate: true
     path_alias: sigs.k8s.io/apiserver-network-proxy
+    labels:
+      preset-dind-enabled: "true"
     spec:
       containers:
-      - image: golang:1.12
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-a79910c-master
         command:
         - make
         args:
         - docker-build-all
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
     annotations:
       testgrid-dashboards: sig-cloud-provider-apiserver-network-proxy
       testgrid-tab-name: pr-docker-build-all
