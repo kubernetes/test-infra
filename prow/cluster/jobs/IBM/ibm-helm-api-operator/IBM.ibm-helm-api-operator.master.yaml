@@ -5,14 +5,17 @@ presubmits:
     - ^master$
     decorate: true
     always_run: true
+    labels:
+      preset-service-account: "true"
     path_alias: github.com/IBM/ibm-helm-api-operator
     rerun_command: /test build ibm-helm-api-operator
     spec:
       containers:
       - command:
+        - entrypoint
         - make
         - build
-        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
+        image: quay.io/multicloudlab/multicloudlab-builder:v20191217-d33a10d
         name: ""
         securityContext:
           privileged: true
@@ -34,24 +37,6 @@ presubmits:
         securityContext:
           privileged: true
     trigger: '(?m)^/test (?:.*? )?check(?: .*?)?$'
-  - name: test_ibm-helm-api-operator
-    branches:
-    - ^master$
-    decorate: true
-    always_run: true
-    path_alias: github.com/IBM/ibm-helm-api-operator
-    rerun_command: /test test ibm-helm-api-operator
-    spec:
-      containers:
-      - command:
-        - make
-        - test
-        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
-        name: ""
-        securityContext:
-          privileged: true
-    trigger: '(?m)^/test (?:.*? )?test(?: .*?)?$'
-
 postsubmits:
   IBM/ibm-helm-api-operator:
   - name: check_ibm-helm-api-operator_postsubmit
@@ -66,40 +51,6 @@ postsubmits:
         - check
         image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
         name: ""
-        securityContext:
-          privileged: true
-  - name: test_ibm-helm-api-operator_postsubmit
-    branches:
-    - ^master$
-    decorate: true
-    path_alias: github.com/IBM/ibm-helm-api-operator
-    spec:
-      containers:
-      - command:
-        - make
-        - test
-        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
-        name: ""
-        securityContext:
-          privileged: true
-  - name: coverage_ibm-helm-api-operator_postsubmit
-    branches:
-    - ^master$
-    decorate: true
-    path_alias: github.com/IBM/ibm-helm-api-operator
-    spec:
-      containers:
-      - command:
-        - make
-        - coverage
-        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
-        name: ""
-        env:
-        - name: CODECOV_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: ibm-helm-api-operator-codecov-token
-              key: codecov-token
         securityContext:
           privileged: true
   - name: build_ibm-helm-api-operator_postsubmit
