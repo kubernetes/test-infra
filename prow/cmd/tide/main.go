@@ -55,17 +55,26 @@ type options struct {
 	github     prowflagutil.GitHubOptions
 
 	maxRecordsPerPool int
-	// The following are used for reading/writing to GCS.
+	// gcsCredentialsFile string is used for reading/writing to GCS block storage.
+	// If you want to write to local paths, this parameter is optional.
+	// If set, this file is used to read/write to gs:// paths
+	// If not, credential auto-discovery is used
 	gcsCredentialsFile string
+	// 	s3CredentialsFile string is used for reading/writing to s3 block storage.
+	// If you want to write to local paths, this parameter is optional.
+	// If set, this file is used to read/write to s3:// paths
+	// If not, go cloud credential auto-discovery is used
+	// For more details see the pkg/io/providers pkg.
+	s3CredentialsFile string
 	// historyURI where Tide should store its action history.
-	// Can be a /local/path or gs://path/to/object.
+	// Can be /local/path, gs://path/to/object or s3://path/to/object.
 	// GCS writes will use the bucket's default acl for new objects. Ensure both that
 	// a) the gcs credentials can write to this bucket
 	// b) the default acls do not expose any private info
 	historyURI string
 
 	// statusURI where Tide store status update state.
-	// Can be a /local/path or gs://path/to/object.
+	// Can be a /local/path, gs://path/to/object or s3://path/to/object.
 	// GCS writes will use the bucket's default acl for new objects. Ensure both that
 	// a) the gcs credentials can write to this bucket
 	// b) the default acls do not expose any private info
@@ -96,9 +105,10 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.IntVar(&o.statusThrottle, "status-hourly-tokens", 400, "The maximum number of tokens per hour to be used by the status controller.")
 
 	fs.IntVar(&o.maxRecordsPerPool, "max-records-per-pool", 1000, "The maximum number of history records stored for an individual Tide pool.")
-	fs.StringVar(&o.gcsCredentialsFile, "gcs-credentials-file", "", "File where Google Cloud authentication credentials are stored. Required for GCS writes.")
-	fs.StringVar(&o.historyURI, "history-uri", "", "The /local/path or gs://path/to/object to store tide action history. GCS writes will use the default object ACL for the bucket")
-	fs.StringVar(&o.statusURI, "status-path", "", "The /local/path or gs://path/to/object to store status controller state. GCS writes will use the default object ACL for the bucket.")
+	fs.StringVar(&o.gcsCredentialsFile, "gcs-credentials-file", "", "File where GCS credentials are stored")
+	fs.StringVar(&o.s3CredentialsFile, "s3-credentials-file", "", "File where s3 credentials are stored. For the exact format see https://github.com/kubernetes/test-infra/blob/master/pkg/io/providers/providers.go")
+	fs.StringVar(&o.historyURI, "history-uri", "", "The /local/path,gs://path/to/object or s3://path/to/object to store tide action history. GCS writes will use the default object ACL for the bucket")
+	fs.StringVar(&o.statusURI, "status-path", "", "The /local/path, gs://path/to/object or s3://path/to/object to store status controller state. GCS writes will use the default object ACL for the bucket.")
 
 	fs.Parse(args)
 	o.configPath = config.ConfigPath(o.configPath)
@@ -117,11 +127,14 @@ func main() {
 		logrus.WithError(err).Fatal("Invalid options")
 	}
 
-	opener, err := io.NewOpener(context.Background(), o.gcsCredentialsFile)
+	opener, err := io.NewOpener(context.Background(), o.gcsCredentialsFile, o.s3CredentialsFile)
 	if err != nil {
 		entry := logrus.WithError(err)
 		if p := o.gcsCredentialsFile; p != "" {
 			entry = entry.WithField("gcs-credentials-file", p)
+		}
+		if p := o.s3CredentialsFile; p != "" {
+			entry = entry.WithField("s3-credentials-file", p)
 		}
 		entry.Fatal("Cannot create opener")
 	}
