@@ -34,7 +34,7 @@ spec:
       - name: crier
         image: gcr.io/k8s-prow/crier:v20200214-db7f45788
         args:
-        - --github-workers=1
+        - --github-workers=5
         - --config-path=/etc/config/config.yaml
         - --job-config-path=/etc/job-config
         - --github-endpoint=http://ghproxy
