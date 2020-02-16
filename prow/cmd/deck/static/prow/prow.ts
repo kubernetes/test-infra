@@ -499,6 +499,7 @@ function redraw(fz: FuzzySearch): void {
             spec: {
                 type = "",
                 job = "",
+                agent = "",
                 refs: {org = "", repo = "", repo_link = "", base_sha = "", base_link = "", pulls = [], base_ref = ""} = {},
             },
             status: {startTime, completionTime = "", state = "", pod_name, build_id = "", url = ""},
@@ -569,7 +570,7 @@ function redraw(fz: FuzzySearch): void {
         displayedJob++;
         const r = document.createElement("tr");
         r.appendChild(cell.state(state));
-        if (pod_name) {
+        if ((agent === "kubernetes" && pod_name) || agent !== "kubernetes") {
             const logIcon = icon.create("description", "Build log");
             logIcon.href = `log?job=${job}&id=${build_id}`;
             const c = document.createElement("td");
