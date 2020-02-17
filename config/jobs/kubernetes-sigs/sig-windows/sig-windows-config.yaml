@@ -378,3 +378,47 @@ periodics:
     testgrid-tab-name: aks-engine-azure-windows-1903-master
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs SIG-Windows release tests on K8s clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
+- interval: 10h
+  name: ci-kubernetes-e2e-aks-engine-azure-master-windows-1909
+  labels:
+    preset-service-account: "true"
+    preset-azure-windows: "true"
+    preset-azure-cred: "true"
+    preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191231-77c7890-master
+      args:
+      - "--job=$(JOB_NAME)"
+      - "--root=/go/src"
+      - "--repo=k8s.io/kubernetes=master"
+      - "--upload=gs://kubernetes-jenkins/logs/"
+      - "--timeout=650"
+      - "--scenario=kubernetes_e2e"
+      - --
+      - "--test=true"
+      - "--up=true"
+      - "--down=true"
+      - "--deployment=aksengine"
+      - "--provider=skeleton"
+      - "--build=quick"
+      - "--aksengine-admin-username=azureuser"
+      - "--aksengine-admin-password=AdminPassw0rd"
+      - "--aksengine-creds=$AZURE_CREDENTIALS"
+      - "--aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz"
+      - "--aksengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
+      - "--aksengine-winZipBuildScript=$WIN_BUILD"
+      - "--aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_1909_master.json"
+      - "--aksengine-win-binaries"
+      - "--aksengine-deploy-custom-k8s"
+      - "--aksengine-agentpoolcount=2"
+      - "--test_args=--ginkgo.flakeAttempts=2 --num-nodes=2 --node-os-distro=windows --ginkgo.focus=\\[Conformance\\]|\\[NodeConformance\\]|\\[sig-windows\\]|\\[sig-apps\\].CronJob|\\[sig-api-machinery\\].ResourceQuota|\\[sig-scheduling\\].SchedulerPreemption|\\[sig-autoscaling\\].\\[Feature:HPA\\]  --ginkgo.skip=\\[LinuxOnly\\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application"
+      - "--timeout=620m"
+      securityContext:
+        privileged: true
+  annotations:
+    testgrid-dashboards: sig-windows, provider-azure-periodic, provider-azure-windows
+    testgrid-tab-name: aks-engine-azure-windows-1909-master
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    description: Runs SIG-Windows release tests on K8s clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
