@@ -1,0 +1,135 @@
+presubmits:
+  IBM/ingress-nginx-operator:
+  - name: build_ingress-nginx-operator
+    branches:
+    - ^master$
+    decorate: true
+    always_run: true
+    path_alias: github.com/IBM/ingress-nginx-operator
+    rerun_command: /test build ingress-nginx-operator
+    spec:
+      containers:
+      - command:
+        - make
+        - build
+        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?build(?: .*?)?$'
+  - name: check_ingress-nginx-operator
+    branches:
+    - ^master$
+    decorate: true
+    always_run: true
+    path_alias: github.com/IBM/ingress-nginx-operator
+    rerun_command: /test check ingress-nginx-operator
+    spec:
+      containers:
+      - command:
+        - make
+        - check
+        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?check(?: .*?)?$'
+  - name: test_ingress-nginx-operator
+    branches:
+    - ^master$
+    decorate: true
+    always_run: true
+    path_alias: github.com/IBM/ingress-nginx-operator
+    rerun_command: /test test ingress-nginx-operator
+    spec:
+      containers:
+      - command:
+        - make
+        - test
+        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?test(?: .*?)?$'
+
+postsubmits:
+  IBM/ingress-nginx-operator:
+  - name: check_ingress-nginx-operator_postsubmit
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/ingress-nginx-operator
+    spec:
+      containers:
+      - command:
+        - make
+        - check
+        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
+        name: ""
+        securityContext:
+          privileged: true
+  - name: test_ingress-nginx-operator_postsubmit
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/ingress-nginx-operator
+    spec:
+      containers:
+      - command:
+        - make
+        - test
+        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
+        name: ""
+        securityContext:
+          privileged: true
+  - name: coverage_ingress-nginx-operator_postsubmit
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/ingress-nginx-operator
+    spec:
+      containers:
+      - command:
+        - make
+        - coverage
+        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
+        name: ""
+        env:
+        - name: CODECOV_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: ingress-nginx-operator-codecov-token
+              key: codecov-token
+        securityContext:
+          privileged: true
+  - name: build_ingress-nginx-operator_postsubmit
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/ingress-nginx-operator
+    spec:
+      containers:
+      - command:
+        - make
+        - build
+        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
+        name: ""
+        securityContext:
+          privileged: true
+  - name: images_ingress-nginx-operator_postsubmit
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/ingress-nginx-operator
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - images
+        image: quay.io/multicloudlab/multicloudlab-builder:v20191217-d33a10d
+        name: ""
+        securityContext:
+          privileged: true
