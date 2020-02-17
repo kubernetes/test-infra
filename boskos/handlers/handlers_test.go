@@ -25,9 +25,12 @@ import (
 	"testing"
 	"time"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
 
 	"k8s.io/test-infra/boskos/common"
+	"k8s.io/test-infra/boskos/crds"
 	"k8s.io/test-infra/boskos/ranch"
 )
 
@@ -43,11 +46,12 @@ var (
 	testTTL = time.Millisecond
 )
 
-func MakeTestRanch(resources []common.Resource) *ranch.Ranch {
-	s := ranch.NewTestingStorage(fakectrlruntimeclient.NewFakeClient(), "test", func() time.Time { return fakeNow })
-	for _, r := range resources {
-		s.AddResource(r)
+func MakeTestRanch(resources []runtime.Object) *ranch.Ranch {
+	const ns = "test"
+	for _, obj := range resources {
+		obj.(metav1.Object).SetNamespace(ns)
 	}
+	s := ranch.NewTestingStorage(fakectrlruntimeclient.NewFakeClient(resources...), ns, func() time.Time { return fakeNow })
 	r, _ := ranch.NewRanch("", s, testTTL)
 	return r
 }
@@ -55,112 +59,118 @@ func MakeTestRanch(resources []common.Resource) *ranch.Ranch {
 func TestAcquire(t *testing.T) {
 	var testcases = []struct {
 		name      string
-		resources []common.Resource
+		resources []runtime.Object
 		path      string
 		code      int
 		method    string
 	}{
 		{
-			name:      "reject get method",
-			resources: []common.Resource{},
-			path:      "?type=t&state=s&dest=d&owner=o",
-			code:      http.StatusMethodNotAllowed,
-			method:    http.MethodGet,
+			name:   "reject get method",
+			path:   "?type=t&state=s&dest=d&owner=o",
+			code:   http.StatusMethodNotAllowed,
+			method: http.MethodGet,
 		},
 		{
-			name:      "reject request no arg",
-			resources: []common.Resource{},
-			path:      "",
-			code:      http.StatusBadRequest,
-			method:    http.MethodPost,
+			name:   "reject request no arg",
+			path:   "",
+			code:   http.StatusBadRequest,
+			method: http.MethodPost,
 		},
 		{
-			name:      "reject request missing type",
-			resources: []common.Resource{},
-			path:      "?state=s&dest=d&owner=o",
-			code:      http.StatusBadRequest,
-			method:    http.MethodPost,
+			name:   "reject request missing type",
+			path:   "?state=s&dest=d&owner=o",
+			code:   http.StatusBadRequest,
+			method: http.MethodPost,
 		},
 		{
-			name:      "reject request missing state",
-			resources: []common.Resource{},
-			path:      "?type=t&dest=d&owner=o",
-			code:      http.StatusBadRequest,
-			method:    http.MethodPost,
+			name:   "reject request missing state",
+			path:   "?type=t&dest=d&owner=o",
+			code:   http.StatusBadRequest,
+			method: http.MethodPost,
 		},
 		{
-			name:      "reject request missing owner",
-			resources: []common.Resource{},
-			path:      "?type=t&state=s&dest=d",
-			code:      http.StatusBadRequest,
-			method:    http.MethodPost,
+			name:   "reject request missing owner",
+			path:   "?type=t&state=s&dest=d",
+			code:   http.StatusBadRequest,
+			method: http.MethodPost,
 		},
 		{
-			name:      "reject request missing dest",
-			resources: []common.Resource{},
-			path:      "?type=t&state=s&owner=o",
-			code:      http.StatusBadRequest,
-			method:    http.MethodPost,
+			name:   "reject request missing dest",
+			path:   "?type=t&state=s&owner=o",
+			code:   http.StatusBadRequest,
+			method: http.MethodPost,
 		},
 		{
-			name:      "ranch has no resource",
-			resources: []common.Resource{},
-			path:      "?type=t&state=s&dest=d&owner=o",
-			code:      http.StatusNotFound,
-			method:    http.MethodPost,
+			name:   "ranch has no resource",
+			path:   "?type=t&state=s&dest=d&owner=o",
+			code:   http.StatusNotFound,
+			method: http.MethodPost,
 		},
 		{
 			name: "no match type",
-			resources: []common.Resource{
-				{
-					Name:  "res",
-					Type:  "wrong",
-					State: "s",
-					Owner: "",
+			resources: []runtime.Object{&crds.ResourceObject{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "res",
 				},
-			},
+				Spec: crds.ResourceSpec{
+					Type: "wrong",
+				},
+				Status: crds.ResourceStatus{
+					State: "s",
+				},
+			}},
 			path:   "?type=t&state=s&dest=d&owner=o",
 			code:   http.StatusNotFound,
 			method: http.MethodPost,
 		},
 		{
 			name: "no match state",
-			resources: []common.Resource{
-				{
-					Name:  "res",
-					Type:  "t",
-					State: "wrong",
-					Owner: "",
+			resources: []runtime.Object{&crds.ResourceObject{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "res",
 				},
-			},
+				Spec: crds.ResourceSpec{
+					Type: "t",
+				},
+				Status: crds.ResourceStatus{
+					State: "wrong",
+				},
+			}},
 			path:   "?type=t&state=s&dest=d&owner=o",
 			code:   http.StatusNotFound,
 			method: http.MethodPost,
 		},
 		{
 			name: "busy",
-			resources: []common.Resource{
-				{
-					Name:  "res",
-					Type:  "t",
+			resources: []runtime.Object{&crds.ResourceObject{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "res",
+				},
+				Spec: crds.ResourceSpec{
+					Type: "t",
+				},
+				Status: crds.ResourceStatus{
 					State: "s",
 					Owner: "user",
 				},
-			},
+			}},
 			path:   "?type=t&state=s&dest=d&owner=o",
 			code:   http.StatusNotFound,
 			method: http.MethodPost,
 		},
 		{
 			name: "ok",
-			resources: []common.Resource{
-				{
-					Name:  "res",
-					Type:  "t",
-					State: "s",
-					Owner: "",
+			resources: []runtime.Object{&crds.ResourceObject{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "res",
 				},
-			},
+				Spec: crds.ResourceSpec{
+					Type: "t",
+				},
+				Status: crds.ResourceStatus{
+					State: "s",
+				},
+			}},
 			path:   "?type=t&state=s&dest=d&owner=o",
 			code:   http.StatusOK,
 			method: http.MethodPost,
@@ -211,91 +221,97 @@ func TestAcquire(t *testing.T) {
 func TestRelease(t *testing.T) {
 	var testcases = []struct {
 		name      string
-		resources []common.Resource
+		resources []runtime.Object
 		path      string
 		code      int
 		method    string
 	}{
 		{
-			name:      "reject get method",
-			resources: []common.Resource{},
-			path:      "?name=res&dest=d&owner=foo",
-			code:      http.StatusMethodNotAllowed,
-			method:    http.MethodGet,
+			name:   "reject get method",
+			path:   "?name=res&dest=d&owner=foo",
+			code:   http.StatusMethodNotAllowed,
+			method: http.MethodGet,
 		},
 		{
-			name:      "reject request no arg",
-			resources: []common.Resource{},
-			path:      "",
-			code:      http.StatusBadRequest,
-			method:    http.MethodPost,
+			name:   "reject request no arg",
+			path:   "",
+			code:   http.StatusBadRequest,
+			method: http.MethodPost,
 		},
 		{
-			name:      "reject request missing name",
-			resources: []common.Resource{},
-			path:      "?dest=d&owner=foo",
-			code:      http.StatusBadRequest,
-			method:    http.MethodPost,
+			name:   "reject request missing name",
+			path:   "?dest=d&owner=foo",
+			code:   http.StatusBadRequest,
+			method: http.MethodPost,
 		},
 		{
-			name:      "reject request missing dest",
-			resources: []common.Resource{},
-			path:      "?name=res&owner=foo",
-			code:      http.StatusBadRequest,
-			method:    http.MethodPost,
+			name:   "reject request missing dest",
+			path:   "?name=res&owner=foo",
+			code:   http.StatusBadRequest,
+			method: http.MethodPost,
 		},
 		{
-			name:      "reject request missing owner",
-			resources: []common.Resource{},
-			path:      "?name=res&dest=d",
-			code:      http.StatusBadRequest,
-			method:    http.MethodPost,
+			name:   "reject request missing owner",
+			path:   "?name=res&dest=d",
+			code:   http.StatusBadRequest,
+			method: http.MethodPost,
 		},
 		{
-			name:      "ranch has no resource",
-			resources: []common.Resource{},
-			path:      "?name=res&dest=d&owner=foo",
-			code:      http.StatusNotFound,
-			method:    http.MethodPost,
+			name:   "ranch has no resource",
+			path:   "?name=res&dest=d&owner=foo",
+			code:   http.StatusNotFound,
+			method: http.MethodPost,
 		},
 		{
 			name: "wrong owner",
-			resources: []common.Resource{
-				{
-					Name:  "res",
-					Type:  "t",
+			resources: []runtime.Object{&crds.ResourceObject{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "res",
+				},
+				Spec: crds.ResourceSpec{
+					Type: "t",
+				},
+				Status: crds.ResourceStatus{
 					State: "s",
 					Owner: "merlin",
 				},
-			},
+			}},
 			path:   "?name=res&dest=d&owner=foo",
 			code:   http.StatusUnauthorized,
 			method: http.MethodPost,
 		},
 		{
 			name: "no match name",
-			resources: []common.Resource{
-				{
-					Name:  "foo",
-					Type:  "t",
+			resources: []runtime.Object{&crds.ResourceObject{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "foo",
+				},
+				Spec: crds.ResourceSpec{
+					Type: "t",
+				},
+				Status: crds.ResourceStatus{
 					State: "s",
 					Owner: "merlin",
 				},
-			},
+			}},
 			path:   "?name=res&dest=d&owner=merlin",
 			code:   http.StatusNotFound,
 			method: http.MethodPost,
 		},
 		{
 			name: "ok",
-			resources: []common.Resource{
-				{
-					Name:  "res",
-					Type:  "t",
+			resources: []runtime.Object{&crds.ResourceObject{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "res",
+				},
+				Spec: crds.ResourceSpec{
+					Type: "t",
+				},
+				Status: crds.ResourceStatus{
 					State: "s",
 					Owner: "merlin",
 				},
-			},
+			}},
 			path:   "?name=res&dest=d&owner=merlin",
 			code:   http.StatusOK,
 			method: http.MethodPost,
@@ -340,132 +356,141 @@ func TestRelease(t *testing.T) {
 func TestReset(t *testing.T) {
 	var testcases = []struct {
 		name       string
-		resources  []common.Resource
+		resources  []runtime.Object
 		path       string
 		code       int
 		method     string
 		hasContent bool
 	}{
 		{
-			name:      "reject get method",
-			resources: []common.Resource{},
-			path:      "?type=t&state=s&expire=10m&dest=d",
-			code:      http.StatusMethodNotAllowed,
-			method:    http.MethodGet,
+			name:   "reject get method",
+			path:   "?type=t&state=s&expire=10m&dest=d",
+			code:   http.StatusMethodNotAllowed,
+			method: http.MethodGet,
 		},
 		{
-			name:      "reject request no arg",
-			resources: []common.Resource{},
-			path:      "",
-			code:      http.StatusBadRequest,
-			method:    http.MethodPost,
+			name:   "reject request no arg",
+			path:   "",
+			code:   http.StatusBadRequest,
+			method: http.MethodPost,
 		},
 		{
-			name:      "reject request missing type",
-			resources: []common.Resource{},
-			path:      "?state=s&expire=10m&dest=d",
-			code:      http.StatusBadRequest,
-			method:    http.MethodPost,
+			name:   "reject request missing type",
+			path:   "?state=s&expire=10m&dest=d",
+			code:   http.StatusBadRequest,
+			method: http.MethodPost,
 		},
 		{
-			name:      "reject request missing state",
-			resources: []common.Resource{},
-			path:      "?type=t&expire=10m&dest=d",
-			code:      http.StatusBadRequest,
-			method:    http.MethodPost,
+			name:   "reject request missing state",
+			path:   "?type=t&expire=10m&dest=d",
+			code:   http.StatusBadRequest,
+			method: http.MethodPost,
 		},
 		{
-			name:      "reject request missing expire",
-			resources: []common.Resource{},
-			path:      "?type=t&state=s&dest=d",
-			code:      http.StatusBadRequest,
-			method:    http.MethodPost,
+			name:   "reject request missing expire",
+			path:   "?type=t&state=s&dest=d",
+			code:   http.StatusBadRequest,
+			method: http.MethodPost,
 		},
 		{
-			name:      "reject request missing dest",
-			resources: []common.Resource{},
-			path:      "?type=t&state=s&expire=10m",
-			code:      http.StatusBadRequest,
-			method:    http.MethodPost,
+			name:   "reject request missing dest",
+			path:   "?type=t&state=s&expire=10m",
+			code:   http.StatusBadRequest,
+			method: http.MethodPost,
 		},
 		{
-			name:      "reject request bad expire",
-			resources: []common.Resource{},
-			path:      "?type=t&state=s&expire=woooo&dest=d",
-			code:      http.StatusBadRequest,
-			method:    http.MethodPost,
+			name:   "reject request bad expire",
+			path:   "?type=t&state=s&expire=woooo&dest=d",
+			code:   http.StatusBadRequest,
+			method: http.MethodPost,
 		},
 		{
 			name: "empty - has no owner",
-			resources: []common.Resource{
-				{
-					Name:       "res",
-					Type:       "t",
+			resources: []runtime.Object{&crds.ResourceObject{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "res",
+				},
+				Spec: crds.ResourceSpec{
+					Type: "t",
+				},
+				Status: crds.ResourceStatus{
 					State:      "s",
-					Owner:      "",
 					LastUpdate: time.Now().Add(-time.Minute * 20),
 				},
-			},
+			}},
 			path:   "?type=t&state=s&expire=10m&dest=d",
 			code:   http.StatusOK,
 			method: http.MethodPost,
 		},
 		{
 			name: "empty - not expire",
-			resources: []common.Resource{
-				{
-					Name:       "res",
-					Type:       "t",
+			resources: []runtime.Object{&crds.ResourceObject{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "res",
+				},
+				Spec: crds.ResourceSpec{
+					Type: "t",
+				},
+				Status: crds.ResourceStatus{
 					State:      "s",
-					Owner:      "",
 					LastUpdate: time.Now(),
 				},
-			},
+			}},
 			path:   "?type=t&state=s&expire=10m&dest=d",
 			code:   http.StatusOK,
 			method: http.MethodPost,
 		},
 		{
 			name: "empty - no match type",
-			resources: []common.Resource{
-				{
-					Name:       "res",
-					Type:       "wrong",
+			resources: []runtime.Object{&crds.ResourceObject{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "res",
+				},
+				Spec: crds.ResourceSpec{
+					Type: "wrong",
+				},
+				Status: crds.ResourceStatus{
 					State:      "s",
-					Owner:      "",
 					LastUpdate: time.Now().Add(-time.Minute * 20),
 				},
-			},
+			}},
 			path:   "?type=t&state=s&expire=10m&dest=d",
 			code:   http.StatusOK,
 			method: http.MethodPost,
 		},
 		{
 			name: "empty - no match state",
-			resources: []common.Resource{
-				{
-					Name:       "res",
-					Type:       "t",
+			resources: []runtime.Object{&crds.ResourceObject{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "res",
+				},
+				Spec: crds.ResourceSpec{
+					Type: "t",
+				},
+				Status: crds.ResourceStatus{
 					State:      "wrong",
-					Owner:      "",
 					LastUpdate: time.Now().Add(-time.Minute * 20),
 				},
-			},
+			}},
 			path:   "?type=t&state=s&expire=10m&dest=d",
 			code:   http.StatusOK,
 			method: http.MethodPost,
 		},
 		{
 			name: "ok",
-			resources: []common.Resource{
-				{
-					Name:       "res",
-					Type:       "t",
+			resources: []runtime.Object{&crds.ResourceObject{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "res",
+				},
+				Spec: crds.ResourceSpec{
+					Type: "t",
+				},
+				Status: crds.ResourceStatus{
 					State:      "s",
 					Owner:      "user",
 					LastUpdate: time.Now().Add(-time.Minute * 20),
 				},
-			},
+			}},
 			path:       "?type=t&state=s&expire=10m&dest=d",
 			code:       http.StatusOK,
 			method:     http.MethodPost,
@@ -512,121 +537,135 @@ func TestUpdate(t *testing.T) {
 
 	var testcases = []struct {
 		name      string
-		resources []common.Resource
+		resources []runtime.Object
 		path      string
 		code      int
 		method    string
 	}{
 		{
-			name:      "reject get method",
-			resources: []common.Resource{},
-			path:      "?name=foo",
-			code:      http.StatusMethodNotAllowed,
-			method:    http.MethodGet,
+			name:   "reject get method",
+			path:   "?name=foo",
+			code:   http.StatusMethodNotAllowed,
+			method: http.MethodGet,
 		},
 		{
-			name:      "reject request no arg",
-			resources: []common.Resource{},
-			path:      "",
-			code:      http.StatusBadRequest,
-			method:    http.MethodPost,
+			name:   "reject request no arg",
+			path:   "",
+			code:   http.StatusBadRequest,
+			method: http.MethodPost,
 		},
 		{
-			name:      "reject request missing name",
-			resources: []common.Resource{},
-			path:      "?state=s&owner=merlin",
-			code:      http.StatusBadRequest,
-			method:    http.MethodPost,
+			name:   "reject request missing name",
+			path:   "?state=s&owner=merlin",
+			code:   http.StatusBadRequest,
+			method: http.MethodPost,
 		},
 		{
-			name:      "reject request missing owner",
-			resources: []common.Resource{},
-			path:      "?name=res&state=s",
-			code:      http.StatusBadRequest,
-			method:    http.MethodPost,
+			name:   "reject request missing owner",
+			path:   "?name=res&state=s",
+			code:   http.StatusBadRequest,
+			method: http.MethodPost,
 		},
 		{
-			name:      "reject request missing state",
-			resources: []common.Resource{},
-			path:      "?name=res&owner=merlin",
-			code:      http.StatusBadRequest,
-			method:    http.MethodPost,
+			name:   "reject request missing state",
+			path:   "?name=res&owner=merlin",
+			code:   http.StatusBadRequest,
+			method: http.MethodPost,
 		},
 		{
-			name:      "ranch has no resource",
-			resources: []common.Resource{},
-			path:      "?name=res&state=s&owner=merlin",
-			code:      http.StatusNotFound,
-			method:    http.MethodPost,
+			name:   "ranch has no resource",
+			path:   "?name=res&state=s&owner=merlin",
+			code:   http.StatusNotFound,
+			method: http.MethodPost,
 		},
 		{
 			name: "wrong owner",
-			resources: []common.Resource{
-				{
-					Name:  "res",
-					Type:  "t",
+			resources: []runtime.Object{&crds.ResourceObject{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "res",
+				},
+				Spec: crds.ResourceSpec{
+					Type: "t",
+				},
+				Status: crds.ResourceStatus{
 					State: "s",
 					Owner: "evil",
 				},
-			},
+			}},
 			path:   "?name=res&state=s&owner=merlin",
 			code:   http.StatusUnauthorized,
 			method: http.MethodPost,
 		},
 		{
 			name: "wrong state",
-			resources: []common.Resource{
-				{
-					Name:  "res",
-					Type:  "t",
+			resources: []runtime.Object{&crds.ResourceObject{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "res",
+				},
+				Spec: crds.ResourceSpec{
+					Type: "t",
+				},
+				Status: crds.ResourceStatus{
 					State: "s",
 					Owner: "merlin",
 				},
-			},
+			}},
 			path:   "?name=res&state=d&owner=merlin",
 			code:   http.StatusConflict,
 			method: http.MethodPost,
 		},
 		{
 			name: "no matched resource",
-			resources: []common.Resource{
-				{
-					Name:  "res",
-					Type:  "t",
+			resources: []runtime.Object{&crds.ResourceObject{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "res",
+				},
+				Spec: crds.ResourceSpec{
+					Type: "t",
+				},
+				Status: crds.ResourceStatus{
 					State: "s",
 					Owner: "merlin",
 				},
-			},
+			}},
 			path:   "?name=foo&state=s&owner=merlin",
 			code:   http.StatusNotFound,
 			method: http.MethodPost,
 		},
 		{
 			name: "ok",
-			resources: []common.Resource{
-				{
-					Name:       "res",
-					Type:       "t",
+			resources: []runtime.Object{&crds.ResourceObject{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "res",
+				},
+				Spec: crds.ResourceSpec{
+					Type: "t",
+				},
+				Status: crds.ResourceStatus{
 					State:      "s",
 					Owner:      "merlin",
 					LastUpdate: FakeNow,
 				},
-			},
+			}},
 			path:   "?name=res&state=s&owner=merlin",
 			code:   http.StatusOK,
 			method: http.MethodPost,
 		},
 		{
 			name: "ok",
-			resources: []common.Resource{
-				{
-					Name:       "res",
-					Type:       "t",
+			resources: []runtime.Object{&crds.ResourceObject{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "res",
+				},
+				Spec: crds.ResourceSpec{
+					Type: "t",
+				},
+				Status: crds.ResourceStatus{
 					State:      "s",
 					Owner:      "merlin",
 					LastUpdate: FakeNow,
 				},
-			},
+			}},
 			path:   "?name=res&state=s&owner=merlin",
 			code:   http.StatusOK,
 			method: http.MethodPost,
@@ -667,57 +706,62 @@ func TestUpdate(t *testing.T) {
 func TestGetMetric(t *testing.T) {
 	var testcases = []struct {
 		name      string
-		resources []common.Resource
+		resources []runtime.Object
 		path      string
 		code      int
 		method    string
 		expect    common.Metric
 	}{
 		{
-			name:      "reject none-get method",
-			resources: []common.Resource{},
-			path:      "?type=t",
-			code:      http.StatusMethodNotAllowed,
-			method:    http.MethodPost,
+			name:   "reject none-get method",
+			path:   "?type=t",
+			code:   http.StatusMethodNotAllowed,
+			method: http.MethodPost,
 		},
 		{
-			name:      "reject request no type",
-			resources: []common.Resource{},
-			path:      "",
-			code:      http.StatusBadRequest,
-			method:    http.MethodGet,
+			name:   "reject request no type",
+			path:   "",
+			code:   http.StatusBadRequest,
+			method: http.MethodGet,
 		},
 		{
-			name:      "ranch has no resource",
-			resources: []common.Resource{},
-			path:      "?type=t",
-			code:      http.StatusNotFound,
-			method:    http.MethodGet,
+			name:   "ranch has no resource",
+			path:   "?type=t",
+			code:   http.StatusNotFound,
+			method: http.MethodGet,
 		},
 		{
 			name: "wrong type",
-			resources: []common.Resource{
-				{
-					Name:  "res",
-					Type:  "t",
+			resources: []runtime.Object{&crds.ResourceObject{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "res",
+				},
+				Spec: crds.ResourceSpec{
+					Type: "t",
+				},
+				Status: crds.ResourceStatus{
 					State: "s",
 					Owner: "evil",
 				},
-			},
+			}},
 			path:   "?type=foo",
 			code:   http.StatusNotFound,
 			method: http.MethodGet,
 		},
 		{
 			name: "ok",
-			resources: []common.Resource{
-				{
-					Name:  "res",
-					Type:  "t",
+			resources: []runtime.Object{&crds.ResourceObject{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "res",
+				},
+				Spec: crds.ResourceSpec{
+					Type: "t",
+				},
+				Status: crds.ResourceStatus{
 					State: "s",
 					Owner: "merlin",
 				},
-			},
+			}},
 			path:   "?type=t",
 			code:   http.StatusOK,
 			method: http.MethodGet,
