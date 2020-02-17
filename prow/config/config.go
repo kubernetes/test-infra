@@ -1268,45 +1268,47 @@ func validatePeriodics(periodics []Periodic, podNamespace string) error {
 // if you are mutating the jobs, please add it to finalizeJobConfig above
 func (c *Config) validateJobConfig() error {
 
+	var errs []error
+
 	// Validate presubmits.
 	for _, jobs := range c.PresubmitsStatic {
 		if err := validatePresubmits(jobs, c.PodNamespace); err != nil {
-			return err
+			errs = append(errs, err)
 		}
 	}
 
 	// Validate postsubmits.
 	for _, jobs := range c.PostsubmitsStatic {
 		if err := validatePostsubmits(jobs, c.PodNamespace); err != nil {
-			return err
+			errs = append(errs, err)
 		}
 	}
 
 	if err := validatePeriodics(c.Periodics, c.PodNamespace); err != nil {
-		return err
+		errs = append(errs, err)
 	}
 
 	// Set the interval on the periodic jobs. It doesn't make sense to do this
 	// for child jobs.
 	for j, p := range c.Periodics {
 		if p.Cron != "" && p.Interval != "" {
-			return fmt.Errorf("cron and interval cannot be both set in periodic %s", p.Name)
+			errs = append(errs, fmt.Errorf("cron and interval cannot be both set in periodic %s", p.Name))
 		} else if p.Cron == "" && p.Interval == "" {
-			return fmt.Errorf("cron and interval cannot be both empty in periodic %s", p.Name)
+			errs = append(errs, fmt.Errorf("cron and interval cannot be both empty in periodic %s", p.Name))
 		} else if p.Cron != "" {
 			if _, err := cron.Parse(p.Cron); err != nil {
-				return fmt.Errorf("invalid cron string %s in periodic %s: %v", p.Cron, p.Name, err)
+				errs = append(errs, fmt.Errorf("invalid cron string %s in periodic %s: %v", p.Cron, p.Name, err))
 			}
 		} else {
 			d, err := time.ParseDuration(c.Periodics[j].Interval)
 			if err != nil {
-				return fmt.Errorf("cannot parse duration for %s: %v", c.Periodics[j].Name, err)
+				errs = append(errs, fmt.Errorf("cannot parse duration for %s: %v", c.Periodics[j].Name, err))
 			}
 			c.Periodics[j].interval = d
 		}
 	}
 
-	return nil
+	return utilerrors.NewAggregate(errs)
 }
 
 // DefaultConfigPath will be used if a --config-path is unset
