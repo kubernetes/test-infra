@@ -123,7 +123,7 @@ func processRegexMatches(matches []string) (string, string, bool, string) {
 	// Take care of clear
 	if strings.HasPrefix(content, clearKeyword) {
 		shouldClear = true
-		content = strings.Replace(content, clearKeyword, "", 1)
+		content = strings.TrimSpace(strings.Replace(content, clearKeyword, "", 1))
 	}
 
 	// Normalize " to ' for easier handle

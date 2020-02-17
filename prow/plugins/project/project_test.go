@@ -382,6 +382,13 @@ func TestParseCommand(t *testing.T) {
 		},
 		{
 			hasMatches:      true,
+			command:         "/project clear 0.0.0 Backlog",
+			proposedProject: "0.0.0",
+			proposedColumn:  "Backlog",
+			shouldClear:     true,
+		},
+		{
+			hasMatches:      true,
 			command:         "/project clear",
 			proposedProject: "",
 			proposedColumn:  "",
