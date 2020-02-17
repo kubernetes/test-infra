@@ -167,7 +167,6 @@ func NewResource(name, rtype, state, owner string, t time.Time) Resource {
 		State:      state,
 		Owner:      owner,
 		LastUpdate: t,
-		UserData:   &UserData{},
 	}
 }
 

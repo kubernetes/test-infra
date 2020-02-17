@@ -67,11 +67,6 @@ type ResourceStatus struct {
 	ExpirationDate *time.Time       `json:"expirationDate,omitempty"`
 }
 
-// GetName returns a unique identifier for a given resource
-func (in *ResourceObject) GetName() string {
-	return in.Name
-}
-
 func (in *ResourceObject) deepCopyInto(out *ResourceObject) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
