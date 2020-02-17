@@ -471,7 +471,7 @@ func TestParseCommand(t *testing.T) {
 			}
 			continue
 		}
-		proposedProject, proposedColumn, shouldClear, _ := processRegexMatches(matches)
+		proposedProject, proposedColumn, shouldClear, _ := processRegexMatches(matches[1])
 		if proposedProject != test.proposedProject ||
 			proposedColumn != test.proposedColumn ||
 			shouldClear != test.shouldClear {

@@ -113,12 +113,12 @@ func updateProjectNameToIDMap(projects []github.Project) {
 // processRegexMatches processes the user command regex matches and returns the proposed project name,
 // proposed column name, whether the command is to remove issue/PR from project,
 // and the error message
-func processRegexMatches(matches []string) (string, string, bool, string) {
+func processRegexMatches(match string) (string, string, bool, string) {
 	proposedProject := ""
 	proposedColumnName := ""
 
 	var shouldClear = false
-	content := strings.TrimSpace(matches[1])
+	content := strings.TrimSpace(match)
 
 	// Take care of clear
 	if strings.HasPrefix(content, clearKeyword) {
@@ -177,7 +177,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 
 	org := e.Repo.Owner.Login
 	repo := e.Repo.Name
-	proposedProject, proposedColumnName, shouldClear, msg := processRegexMatches(matches)
+	proposedProject, proposedColumnName, shouldClear, msg := processRegexMatches(matches[1])
 	if proposedProject == "" {
 		return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg))
 	}
