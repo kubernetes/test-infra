@@ -20,6 +20,7 @@ package deployer
 import (
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/spf13/pflag"
@@ -52,11 +53,14 @@ type deployer struct {
 	// generic parts
 	commonOptions types.Options
 	// kind specific details
-	nodeImage   string // name of the node image built / deployed
-	clusterName string // --name flag value for kind
-	logLevel    string // log level for kind commands
-	logsDir     string // dir to export logs to
-	buildType   string // --type flag to kind build node-image
+	nodeImage      string // name of the node image built / deployed
+	clusterName    string // --name flag value for kind
+	logLevel       string // log level for kind commands
+	logsDir        string // dir to export logs to
+	buildType      string // --type flag to kind build node-image
+	configPath     string // --config flag for kind create cluster
+	kubeconfigPath string // --kubeconfig flag for kind create cluster
+	verbosity      int    // --verbosity for kind
 }
 
 // helper used to create & bind a flagset to the deployer
@@ -73,6 +77,15 @@ func bindFlags(d *deployer) *pflag.FlagSet {
 	)
 	flags.StringVar(
 		&d.nodeImage, "build-type", "", "--type for kind build node-image",
+	)
+	flags.StringVar(
+		&d.configPath, "config", "", "--config for kind create cluster",
+	)
+	flags.StringVar(
+		&d.kubeconfigPath, "kubeconfig", "", "--kubeconfig flag for kind create cluster",
+	)
+	flags.IntVar(
+		&d.verbosity, "verbosity", 0, "--verbosity flag for kind",
 	)
 	return flags
 }
@@ -98,6 +111,15 @@ func (d *deployer) Up() error {
 		// NOTE: this is safe in the face of upstream changes, because
 		// we use the same logic / constant for Build()
 		args = append(args, "--image", kindDefaultBuiltImageName)
+	}
+	if d.configPath != "" {
+		args = append(args, "--config", d.configPath)
+	}
+	if d.kubeconfigPath != "" {
+		args = append(args, "--kubeconfig", d.kubeconfigPath)
+	}
+	if d.verbosity > 0 {
+		args = append(args, "--verbosity", strconv.Itoa(d.verbosity))
 	}
 
 	println("Up(): creating kind cluster...\n")
