@@ -21,9 +21,12 @@ import (
 	"testing"
 	"time"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
 
 	"k8s.io/test-infra/boskos/common"
+	"k8s.io/test-infra/boskos/crds"
 	"k8s.io/test-infra/boskos/mason"
 	"k8s.io/test-infra/boskos/ranch"
 )
@@ -32,37 +35,50 @@ const (
 	testOwner      = "cleaner"
 	testWaitPeriod = time.Millisecond
 	testTTL        = time.Millisecond
+	testNS         = "test"
 )
 
 type releasedResource struct {
 	name, state string
 }
 
+// fakeBoskos implements boskosClient
+var _ boskosClient = &fakeBoskos{}
+
 type fakeBoskos struct {
 	ranch *ranch.Ranch
 }
 
 // Create a fake client
-func createFakeBoskos(resources []common.Resource, dlrcs []common.DynamicResourceLifeCycle) (*ranch.Storage, boskosClient, chan releasedResource) {
+func createFakeBoskos(objects ...runtime.Object) (*ranch.Storage, boskosClient, chan releasedResource) {
+	for _, obj := range objects {
+		obj.(metav1.Object).SetNamespace(testNS)
+	}
 	names := make(chan releasedResource, 100)
-	s, _ := ranch.NewStorage(context.Background(), fakectrlruntimeclient.NewFakeClient(), "", "")
+	s, _ := ranch.NewStorage(context.Background(), fakectrlruntimeclient.NewFakeClient(objects...), testNS, "")
 	r, _ := ranch.NewRanch("", s, testTTL)
 
-	for _, lc := range dlrcs {
-		s.AddDynamicResourceLifeCycle(lc)
-	}
-	for _, res := range resources {
-		s.AddResource(res)
-	}
 	return s, &fakeBoskos{ranch: r}, names
 }
 
 func (fb *fakeBoskos) Acquire(rtype, state, dest string) (*common.Resource, error) {
-	return fb.ranch.Acquire(rtype, state, dest, testOwner, "")
+	crdRes, err := fb.ranch.Acquire(rtype, state, dest, testOwner, "")
+	if err != nil {
+		return nil, err
+	}
+	res := crdRes.ToResource()
+	return &res, nil
 }
 
 func (fb *fakeBoskos) AcquireByState(state, dest string, names []string) ([]common.Resource, error) {
-	return fb.ranch.AcquireByState(state, dest, testOwner, names)
+	resList, err := fb.ranch.AcquireByState(state, dest, testOwner, names)
+	// Not an oversight, this should return resources even on error
+	var res []common.Resource
+	for _, item := range resList {
+		res = append(res, item.ToResource())
+	}
+
+	return res, err
 }
 
 func (fb *fakeBoskos) ReleaseOne(name, dest string) error {
@@ -78,10 +94,11 @@ func (fb *fakeBoskos) ReleaseAll(state string) error {
 	return nil
 }
 
-func testResource(name, rType, state, owner string, leasedResources []string) common.Resource {
+func testResource(name, rType, state, owner string, leasedResources []string) *crds.ResourceObject {
 	res := common.NewResource(name, rType, state, owner, time.Now())
+	res.UserData = &common.UserData{}
 	res.UserData.Set(mason.LeasedResources, &leasedResources)
-	return res
+	return crds.FromResource(res)
 }
 
 func testDRLC(rType string) common.DynamicResourceLifeCycle {
@@ -96,13 +113,12 @@ func testDRLC(rType string) common.DynamicResourceLifeCycle {
 func TestRecycleResources(t *testing.T) {
 	for _, tc := range []struct {
 		name           string
-		resources      []common.Resource
-		drlcs          []common.DynamicResourceLifeCycle
+		resources      []runtime.Object
 		expectedStates map[string]string
 	}{
 		{
 			name: "nothingToDo",
-			resources: []common.Resource{
+			resources: []runtime.Object{
 				testResource("static_3", "static", common.Free, "", nil),
 			},
 			expectedStates: map[string]string{
@@ -111,18 +127,18 @@ func TestRecycleResources(t *testing.T) {
 		},
 		{
 			name: "noLeasedResources",
-			resources: []common.Resource{
+			resources: []runtime.Object{
 				testResource("static_1", "static", "dynamic_1", "", nil),
 				testResource("static_2", "static", "dynamic_1", "", nil),
 				testResource("static_3", "static", common.Free, "", nil),
 				testResource("dynamic_1", "dynamic", common.Free, "", []string{"static_1", "static_2"}),
 				testResource("dynamic_2", "dynamic", common.ToBeDeleted, "", nil),
-			},
-			drlcs: []common.DynamicResourceLifeCycle{
-				{
-					Type:     "dynamic",
-					MinCount: 2,
-					MaxCount: 2,
+				&crds.DRLCObject{
+					ObjectMeta: metav1.ObjectMeta{Name: "dynamic"},
+					Spec: crds.DRLCSpec{
+						MinCount: 2,
+						MaxCount: 2,
+					},
 				},
 			},
 			expectedStates: map[string]string{
@@ -135,18 +151,18 @@ func TestRecycleResources(t *testing.T) {
 		},
 		{
 			name: "leasedResources",
-			resources: []common.Resource{
+			resources: []runtime.Object{
 				testResource("static_1", "static", "dynamic_1", "", nil),
 				testResource("static_2", "static", "dynamic_1", "", nil),
 				testResource("static_3", "static", "dynamic_2", "", nil),
 				testResource("dynamic_1", "dynamic", common.ToBeDeleted, "", []string{"static_1", "static_2"}),
 				testResource("dynamic_2", "dynamic", common.ToBeDeleted, "", []string{"static_3"}),
-			},
-			drlcs: []common.DynamicResourceLifeCycle{
-				{
-					Type:     "dynamic",
-					MinCount: 2,
-					MaxCount: 2,
+				&crds.DRLCObject{
+					ObjectMeta: metav1.ObjectMeta{Name: "dynamic"},
+					Spec: crds.DRLCSpec{
+						MinCount: 2,
+						MaxCount: 2,
+					},
 				},
 			},
 			expectedStates: map[string]string{
@@ -159,18 +175,18 @@ func TestRecycleResources(t *testing.T) {
 		},
 		{
 			name: "missingLeasedResource",
-			resources: []common.Resource{
+			resources: []runtime.Object{
 				testResource("static_1", "static", "dynamic_1", "", nil),
 				testResource("static_2", "static", common.Free, "", nil),
 				testResource("static_3", "static", common.Free, "", nil),
 				testResource("dynamic_1", "dynamic", common.ToBeDeleted, "", []string{"static_1", "static_2"}),
 				testResource("dynamic_2", "dynamic", common.ToBeDeleted, "", []string{"static_3"}),
-			},
-			drlcs: []common.DynamicResourceLifeCycle{
-				{
-					Type:     "dynamic",
-					MinCount: 2,
-					MaxCount: 2,
+				&crds.DRLCObject{
+					ObjectMeta: metav1.ObjectMeta{Name: "dynamic"},
+					Spec: crds.DRLCSpec{
+						MinCount: 2,
+						MaxCount: 2,
+					},
 				},
 			},
 			expectedStates: map[string]string{
@@ -183,7 +199,7 @@ func TestRecycleResources(t *testing.T) {
 		},
 	} {
 		t.Run(tc.name, func(t1 *testing.T) {
-			rStorage, mClient, _ := createFakeBoskos(tc.resources, tc.drlcs)
+			rStorage, mClient, _ := createFakeBoskos(tc.resources...)
 			c := NewCleaner(5, mClient, testWaitPeriod, rStorage)
 			c.Start()
 			time.Sleep(50 * time.Millisecond)
@@ -192,8 +208,8 @@ func TestRecycleResources(t *testing.T) {
 				if err != nil {
 					t1.Errorf("unable to find resource %s. %v", name, err)
 				}
-				if existingRes.State != state {
-					t1.Errorf("resource %s state %s does not match expected %s", name, existingRes.State, state)
+				if existingRes.Status.State != state {
+					t1.Errorf("resource %s state %s does not match expected %s", name, existingRes.Status.State, state)
 				}
 			}
 			// Terminating cleaner

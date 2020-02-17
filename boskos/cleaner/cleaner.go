@@ -23,6 +23,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/boskos/common"
+	"k8s.io/test-infra/boskos/crds"
 	"k8s.io/test-infra/boskos/mason"
 )
 
@@ -47,7 +48,7 @@ type Cleaner struct {
 }
 
 type cleanerStorage interface {
-	GetDynamicResourceLifeCycles() ([]common.DynamicResourceLifeCycle, error)
+	GetDynamicResourceLifeCycles() (*crds.DRLCObjectList, error)
 }
 
 // NewCleaner creates and initialized a new Cleaner object
@@ -80,8 +81,8 @@ func (c *Cleaner) recycleAll(ctx context.Context) {
 				logrus.WithError(err).Warn("could not get resources")
 				continue
 			}
-			for _, r := range dRLCs {
-				if res, err := c.client.Acquire(r.Type, common.ToBeDeleted, common.Cleaning); err != nil {
+			for _, r := range dRLCs.Items {
+				if res, err := c.client.Acquire(r.Name, common.ToBeDeleted, common.Cleaning); err != nil {
 					logrus.WithError(err).Debug("boskos acquire failed!")
 				} else {
 					c.recycleOne(res)
