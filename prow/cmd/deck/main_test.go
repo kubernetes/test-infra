@@ -19,16 +19,13 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
-	"github.com/gorilla/sessions"
-	"github.com/sirupsen/logrus"
-	"golang.org/x/oauth2"
 	"io"
 	"io/ioutil"
-	"k8s.io/test-infra/prow/githuboauth"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -37,24 +34,31 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gorilla/sessions"
+	"github.com/sirupsen/logrus"
+	"golang.org/x/oauth2"
+	"k8s.io/test-infra/prow/github/fakegithub"
+	"k8s.io/test-infra/prow/githuboauth"
+	"k8s.io/test-infra/prow/plugins"
+
 	"github.com/google/go-github/github"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/sets"
-	clienttesting "k8s.io/client-go/testing"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/flagutil"
-	prowgithub "k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	_ "k8s.io/test-infra/prow/spyglass/lenses/buildlog"
 	_ "k8s.io/test-infra/prow/spyglass/lenses/junit"
 	_ "k8s.io/test-infra/prow/spyglass/lenses/metadata"
 	"k8s.io/test-infra/prow/tide"
 	"k8s.io/test-infra/prow/tide/history"
+	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
+	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/yaml"
 )
 
@@ -158,7 +162,7 @@ func TestHandleLog(t *testing.T) {
 			code: http.StatusNotFound,
 		},
 	}
-	handler := handleLog(flc(0))
+	handler := handleLog(flc(0), logrus.WithField("handler", "/log"))
 	for _, tc := range testcases {
 		req, err := http.NewRequest(http.MethodGet, "", nil)
 		if err != nil {
@@ -232,7 +236,7 @@ func TestProwJob(t *testing.T) {
 			State: prowapi.PendingState,
 		},
 	})
-	handler := handleProwJob(fakeProwJobClient.ProwV1().ProwJobs("prowjobs"))
+	handler := handleProwJob(fakeProwJobClient.ProwV1().ProwJobs("prowjobs"), logrus.WithField("handler", "/prowjob"))
 	req, err := http.NewRequest(http.MethodGet, "/prowjob?prowjob=wowsuch", nil)
 	if err != nil {
 		t.Fatalf("Error making request: %v", err)
@@ -270,23 +274,6 @@ func (getter mockGitHubConfigGetter) GetGitHubClient(accessToken string, dryRun 
 
 func (getter mockGitHubConfigGetter) GetUser(login string) (*github.User, error) {
 	return &github.User{Login: &getter.githubLogin}, nil
-}
-
-type mockRerunClient struct {
-	members []string
-}
-
-func (cli mockRerunClient) TeamHasMember(teamID int, login string) (bool, error) {
-	for _, member := range cli.members {
-		if login == member {
-			return true, nil
-		}
-	}
-	return false, nil
-}
-
-func (cli mockRerunClient) GetTeamBySlug(slug string, org string) (*prowgithub.Team, error) {
-	return nil, nil
 }
 
 // TestRerun just checks that the result can be unmarshaled properly, has an
@@ -363,8 +350,18 @@ func TestRerun(t *testing.T) {
 			httpMethod:          http.MethodPost,
 		},
 		{
-			name:                "User on permitted GitHub team",
-			login:               "teammember",
+			name:                "User on permitted team",
+			login:               "sig-lead",
+			authorized:          []string{},
+			allowAnyone:         false,
+			rerunCreatesJob:     true,
+			shouldCreateProwJob: true,
+			httpCode:            http.StatusOK,
+			httpMethod:          http.MethodPost,
+		},
+		{
+			name:                "Org member permitted for presubmits",
+			login:               "org-member",
 			authorized:          []string{},
 			allowAnyone:         false,
 			rerunCreatesJob:     true,
@@ -388,13 +385,16 @@ func TestRerun(t *testing.T) {
 						Org:  "org",
 						Repo: "repo",
 						Pulls: []prowapi.Pull{
-							{Number: 1},
+							{
+								Number: 1,
+								Author: tc.login,
+							},
 						},
 					},
 					RerunAuthConfig: prowapi.RerunAuthConfig{
 						AllowAnyone:   false,
 						GitHubUsers:   []string{"authorized", "alsoauthorized"},
-						GitHubTeamIDs: []int{1},
+						GitHubTeamIDs: []int{42},
 					},
 				},
 				Status: prowapi.ProwJobStatus{
@@ -409,6 +409,9 @@ func TestRerun(t *testing.T) {
 			}
 
 			req, err := http.NewRequest(tc.httpMethod, "/rerun?prowjob=wowsuch", nil)
+			if err != nil {
+				t.Fatalf("Error making request: %v", err)
+			}
 			req.AddCookie(&http.Cookie{
 				Name:    "github_login",
 				Value:   tc.login,
@@ -423,17 +426,15 @@ func TestRerun(t *testing.T) {
 			}
 			session.Values["access-token"] = &oauth2.Token{AccessToken: "validtoken"}
 
-			if err != nil {
-				t.Fatalf("Error making request: %v", err)
-			}
 			rr := httptest.NewRecorder()
-			mockConfig := &config.GitHubOAuthConfig{
+			mockConfig := &githuboauth.Config{
 				CookieStore: mockCookieStore,
 			}
 			goa := githuboauth.NewAgent(mockConfig, &logrus.Entry{})
 			ghc := mockGitHubConfigGetter{githubLogin: tc.login}
-			rc := mockRerunClient{members: []string{"teammember"}}
-			handler := handleRerun(fakeProwJobClient.ProwV1().ProwJobs("prowjobs"), tc.rerunCreatesJob, configGetter, goa, ghc, rc)
+			rc := &fakegithub.FakeClient{OrgMembers: map[string][]string{"org": {"org-member"}}}
+			pca := plugins.NewFakeConfigAgent()
+			handler := handleRerun(fakeProwJobClient.ProwV1().ProwJobs("prowjobs"), tc.rerunCreatesJob, configGetter, goa, ghc, rc, &pca, logrus.WithField("handler", "/rerun"))
 			handler.ServeHTTP(rr, req)
 			if rr.Code != tc.httpCode {
 				t.Fatalf("Bad error code: %d", rr.Code)
@@ -494,7 +495,10 @@ func TestTide(t *testing.T) {
 		},
 	})
 	ta := tideAgent{
-		path:         s.URL,
+		path: s.URL,
+		hiddenRepos: func() []string {
+			return []string{}
+		},
 		updatePeriod: func() time.Duration { return time.Minute },
 	}
 	if err := ta.updatePools(); err != nil {
@@ -506,7 +510,7 @@ func TestTide(t *testing.T) {
 	if ta.pools[0].Org != "o" {
 		t.Errorf("Wrong org in pool. Got %s, expected o in %v", ta.pools[0].Org, ta.pools)
 	}
-	handler := handleTidePools(ca.Config, &ta)
+	handler := handleTidePools(ca.Config, &ta, logrus.WithField("handler", "/tide.js"))
 	req, err := http.NewRequest(http.MethodGet, "/tide.js", nil)
 	if err != nil {
 		t.Fatalf("Error making request: %v", err)
@@ -555,7 +559,10 @@ func TestTideHistory(t *testing.T) {
 	}))
 
 	ta := tideAgent{
-		path:         s.URL,
+		path: s.URL,
+		hiddenRepos: func() []string {
+			return []string{}
+		},
 		updatePeriod: func() time.Duration { return time.Minute },
 	}
 	if err := ta.updateHistory(); err != nil {
@@ -565,7 +572,7 @@ func TestTideHistory(t *testing.T) {
 		t.Fatalf("Expected tideAgent history:\n%#v\n,but got:\n%#v\n", testHist, ta.history)
 	}
 
-	handler := handleTideHistory(&ta)
+	handler := handleTideHistory(&ta, logrus.WithField("handler", "/tide-history.js"))
 	req, err := http.NewRequest(http.MethodGet, "/tide-history.js", nil)
 	if err != nil {
 		t.Fatalf("Error making request: %v", err)
@@ -610,7 +617,7 @@ func TestHelp(t *testing.T) {
 	ha := &helpAgent{
 		path: s.URL,
 	}
-	handler := handlePluginHelp(ha)
+	handler := handlePluginHelp(ha, logrus.WithField("handler", "/plugin-help.js"))
 	handleAndCheck := func() {
 		req, err := http.NewRequest(http.MethodGet, "/plugin-help.js", nil)
 		if err != nil {
@@ -828,6 +835,37 @@ func TestListProwJobs(t *testing.T) {
 			expected:    sets.NewString("first", "second"),
 			showHidden:  true,
 		},
+		{
+			name: "setting pj.Spec.Hidden hides it",
+			prowJobs: []func(*prowapi.ProwJob) runtime.Object{
+				func(in *prowapi.ProwJob) runtime.Object {
+					in.Name = "hidden"
+					in.Spec.Hidden = true
+					return in
+				},
+				func(in *prowapi.ProwJob) runtime.Object {
+					in.Name = "shown"
+					return in
+				},
+			},
+			expected: sets.NewString("shown"),
+		},
+		{
+			name: "hidden repo or org in extra_refs hides it",
+			prowJobs: []func(*prowapi.ProwJob) runtime.Object{
+				func(in *prowapi.ProwJob) runtime.Object {
+					in.Name = "hidden-repo"
+					in.Spec.ExtraRefs = []prowapi.Refs{{Org: "hide", Repo: "me"}}
+					return in
+				},
+				func(in *prowapi.ProwJob) runtime.Object {
+					in.Name = "hidden-org"
+					in.Spec.ExtraRefs = []prowapi.Refs{{Org: "hidden-org"}}
+					return in
+				},
+			},
+			hiddenRepos: sets.NewString("hide/me", "hidden-org"),
+		},
 	}
 
 	for _, testCase := range testCases {
@@ -835,17 +873,17 @@ func TestListProwJobs(t *testing.T) {
 		for _, generator := range testCase.prowJobs {
 			data = append(data, generator(templateJob.DeepCopy()))
 		}
-		fakeProwJobClient := fake.NewSimpleClientset(data...)
-		if testCase.listErr {
-			fakeProwJobClient.PrependReactor("*", "*", func(action clienttesting.Action) (handled bool, ret runtime.Object, err error) {
-				return true, nil, errors.New("could not list ProwJobs")
-			})
+		fakeProwJobClient := &possiblyErroringFakeCtrlRuntimeClient{
+			Client:      fakectrlruntimeclient.NewFakeClient(data...),
+			shouldError: testCase.listErr,
 		}
 		lister := filteringProwJobLister{
-			client:      fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
-			hiddenRepos: testCase.hiddenRepos,
-			hiddenOnly:  testCase.hiddenOnly,
-			showHidden:  testCase.showHidden,
+			client: fakeProwJobClient,
+			hiddenRepos: func() sets.String {
+				return testCase.hiddenRepos
+			},
+			hiddenOnly: testCase.hiddenOnly,
+			showHidden: testCase.showHidden,
 		}
 
 		filtered, err := lister.ListProwJobs(testCase.selector)
@@ -928,7 +966,7 @@ func Test_gatherOptions(t *testing.T) {
 				staticFilesLocation:   "/static",
 				templateFilesLocation: "/template",
 				spyglassFilesLocation: "/lenses",
-				kubernetes:            flagutil.ExperimentalKubernetesOptions{},
+				kubernetes:            flagutil.KubernetesOptions{},
 				github:                ghoptions,
 			}
 			if tc.expected != nil {
@@ -959,7 +997,7 @@ func Test_gatherOptions(t *testing.T) {
 			case tc.err:
 				t.Errorf("failed to receive expected error")
 			case !reflect.DeepEqual(*expected, actual):
-				t.Errorf("%#v != expected %#v", actual, *expected)
+				t.Errorf("\n%#v\n!= expected\n%#v", actual, *expected)
 			}
 		})
 	}
@@ -970,7 +1008,7 @@ func TestHandleConfig(t *testing.T) {
 	trueVal := true
 	c := config.Config{
 		JobConfig: config.JobConfig{
-			Presubmits: map[string][]config.Presubmit{
+			PresubmitsStatic: map[string][]config.Presubmit{
 				"org/repo": {
 					{
 						Reporter: config.Reporter{
@@ -1010,7 +1048,7 @@ func TestHandleConfig(t *testing.T) {
 	configGetter := func() *config.Config {
 		return &c
 	}
-	handler := handleConfig(configGetter)
+	handler := handleConfig(configGetter, logrus.WithField("handler", "/config"))
 	req, err := http.NewRequest(http.MethodGet, "/config", nil)
 	if err != nil {
 		t.Fatalf("Error making request: %v", err)
@@ -1036,4 +1074,61 @@ func TestHandleConfig(t *testing.T) {
 	if !reflect.DeepEqual(c, res) {
 		t.Errorf("Invalid config. Got %v, expected %v", res, c)
 	}
+}
+
+func TestHandlePluginConfig(t *testing.T) {
+	c := plugins.Configuration{
+		Plugins: map[string][]string{
+			"org/repo": {
+				"approve",
+				"lgtm",
+			},
+		},
+		Blunderbuss: plugins.Blunderbuss{
+			ExcludeApprovers: true,
+		},
+	}
+	pluginAgent := &plugins.ConfigAgent{}
+	pluginAgent.Set(&c)
+	handler := handlePluginConfig(pluginAgent, logrus.WithField("handler", "/plugin-config"))
+	req, err := http.NewRequest(http.MethodGet, "/config", nil)
+	if err != nil {
+		t.Fatalf("Error making request: %v", err)
+	}
+	rr := httptest.NewRecorder()
+	handler.ServeHTTP(rr, req)
+	if rr.Code != http.StatusOK {
+		t.Fatalf("Bad error code: %d", rr.Code)
+	}
+	if h := rr.Header().Get("Content-Type"); h != "text/plain" {
+		t.Fatalf("Bad Content-Type, expected: 'text/plain', got: %v", h)
+	}
+	resp := rr.Result()
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatalf("Error reading response body: %v", err)
+	}
+	var res plugins.Configuration
+	if err := yaml.Unmarshal(body, &res); err != nil {
+		t.Fatalf("Error unmarshaling: %v", err)
+	}
+	if !reflect.DeepEqual(c, res) {
+		t.Errorf("Invalid config. Got %v, expected %v", res, c)
+	}
+}
+
+type possiblyErroringFakeCtrlRuntimeClient struct {
+	ctrlruntimeclient.Client
+	shouldError bool
+}
+
+func (p *possiblyErroringFakeCtrlRuntimeClient) List(
+	ctx context.Context,
+	pjl *prowapi.ProwJobList,
+	opts ...ctrlruntimeclient.ListOption) error {
+	if p.shouldError {
+		return errors.New("could not list ProwJobs")
+	}
+	return p.Client.List(ctx, pjl, opts...)
 }

@@ -40,7 +40,7 @@ func init() {
 	plugins.RegisterGenericCommentHandler("stage", stageHandleGenericComment, help)
 }
 
-func help(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+func help(config *plugins.Configuration, _ []plugins.Repo) (*pluginhelp.PluginHelp, error) {
 	// The Config field is omitted because this plugin is not configurable.
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "Label the stage of an issue as alpha/beta/stable",

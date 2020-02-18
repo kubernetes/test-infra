@@ -212,11 +212,12 @@ func (bucket gcsBucket) listBuildIDs(root string) ([]int64, error) {
 			return ids, fmt.Errorf("failed to list GCS directories: %v", err)
 		}
 		for _, dir := range dirs {
-			i, err := strconv.ParseInt(path.Base(dir), 10, 64)
+			leaf := path.Base(dir)
+			i, err := strconv.ParseInt(leaf, 10, 64)
 			if err == nil {
 				ids = append(ids, i)
 			} else {
-				logrus.Warningf("unrecognized directory name (expected int64): %s", dir)
+				logrus.WithField("gcs-path", dir).Warningf("unrecognized directory name (expected int64): %s", leaf)
 			}
 		}
 	} else {
@@ -302,13 +303,20 @@ func getBuildData(bucket storageBucket, dir string) (buildData, error) {
 	finished := gcs.Finished{}
 	err = readJSON(bucket, path.Join(dir, "finished.json"), &finished)
 	if err != nil {
-		logrus.Infof("failed to read finished.json (job might be unfinished): %v", err)
+		b.Result = "Pending"
+		logrus.Debugf("failed to read finished.json (job might be unfinished): %v", err)
 	}
-	if finished.Revision != "" {
-		b.commitHash = finished.Revision
+	// Testgrid metadata.Finished is deprecating the Revision field, however
+	// the actual finished.json is still using revision and maps to DeprecatedRevision.
+	// TODO(ttyang): update both to match when fejta completely removes DeprecatedRevision.
+	if finished.DeprecatedRevision != "" {
+		b.commitHash = finished.DeprecatedRevision
 	}
+
 	if finished.Timestamp != nil {
 		b.Duration = time.Unix(*finished.Timestamp, 0).Sub(b.Started)
+	} else {
+		b.Duration = time.Now().Sub(b.Started).Round(time.Second)
 	}
 	if finished.Result != "" {
 		b.Result = finished.Result

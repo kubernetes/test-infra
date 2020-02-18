@@ -18,6 +18,8 @@ package repoowners
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
 	"path/filepath"
 	"reflect"
 	"regexp"
@@ -25,6 +27,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/apimachinery/pkg/util/sets"
 	prowConf "k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/git/localgit"
@@ -250,23 +253,25 @@ labels:
 		return nil, nil, fmt.Errorf("cannot get commit SHA: %v", err)
 	}
 	return &Client{
-			git:    git,
-			ghc:    ghc,
 			logger: logrus.WithField("client", "repoowners"),
-			cache:  cache,
+			delegate: &delegate{
+				git:   git,
+				ghc:   ghc,
+				cache: cache,
 
-			mdYAMLEnabled: func(org, repo string) bool {
-				return enableMdYaml
-			},
-			skipCollaborators: func(org, repo string) bool {
-				return skipCollab
-			},
-			ownersDirBlacklist: func() prowConf.OwnersDirBlacklist {
-				return prowConf.OwnersDirBlacklist{
-					Repos:                       ownersDirBlacklistByRepo,
-					Default:                     ownersDirBlacklistDefault,
-					IgnorePreconfiguredDefaults: ignorePreconfiguredDefaults,
-				}
+				mdYAMLEnabled: func(org, repo string) bool {
+					return enableMdYaml
+				},
+				skipCollaborators: func(org, repo string) bool {
+					return skipCollab
+				},
+				ownersDirBlacklist: func() prowConf.OwnersDirBlacklist {
+					return prowConf.OwnersDirBlacklist{
+						Repos:                       ownersDirBlacklistByRepo,
+						Default:                     ownersDirBlacklistDefault,
+						IgnorePreconfiguredDefaults: ignorePreconfiguredDefaults,
+					}
+				},
 			},
 		},
 		// Clean up function
@@ -1163,6 +1168,7 @@ func TestExpandAliases(t *testing.T) {
 	testAliases := RepoAliases{
 		"team/t1": sets.NewString("u1", "u2"),
 		"team/t2": sets.NewString("u1", "u3"),
+		"team/t3": sets.NewString(),
 	}
 	tests := []struct {
 		name             string
@@ -1194,6 +1200,11 @@ func TestExpandAliases(t *testing.T) {
 			unexpanded:       sets.NewString("Team/T1"),
 			expectedExpanded: sets.NewString("u1", "u2"),
 		},
+		{
+			name:             "Empty team.",
+			unexpanded:       sets.NewString("Team/T3"),
+			expectedExpanded: sets.NewString(),
+		},
 	}
 
 	for _, test := range tests {
@@ -1206,5 +1217,138 @@ func TestExpandAliases(t *testing.T) {
 				got.List(),
 			)
 		}
+	}
+}
+
+func TestSaveSimpleConfig(t *testing.T) {
+	dir, err := ioutil.TempDir("", "simpleConfig")
+	if err != nil {
+		t.Errorf("unexpected error when creating temp dir")
+	}
+	defer os.RemoveAll(dir)
+
+	tests := []struct {
+		name     string
+		given    SimpleConfig
+		expected string
+	}{
+		{
+			name: "No expansions.",
+			given: SimpleConfig{
+				Config: Config{
+					Approvers: []string{"david", "sig-alias", "Alice"},
+					Reviewers: []string{"adam", "sig-alias"},
+				},
+			},
+			expected: `approvers:
+- david
+- sig-alias
+- Alice
+options: {}
+reviewers:
+- adam
+- sig-alias
+`,
+		},
+	}
+
+	for _, test := range tests {
+		file := filepath.Join(dir, fmt.Sprintf("%s.yaml", test.name))
+		err := SaveSimpleConfig(test.given, file)
+		if err != nil {
+			t.Errorf("unexpected error when writing simple config")
+		}
+		b, err := ioutil.ReadFile(file)
+		if err != nil {
+			t.Errorf("unexpected error when reading file: %s", file)
+		}
+		s := string(b)
+		if test.expected != s {
+			t.Errorf("result '%s' is differ from expected: '%s'", s, test.expected)
+		}
+		simple, err := LoadSimpleConfig(b)
+		if err != nil {
+			t.Errorf("unexpected error when load simple config: %v", err)
+		}
+		if !reflect.DeepEqual(simple, test.given) {
+			t.Errorf("unexpected error when loading simple config from: '%s'", diff.ObjectReflectDiff(simple, test.given))
+		}
+	}
+}
+
+func TestSaveFullConfig(t *testing.T) {
+	dir, err := ioutil.TempDir("", "fullConfig")
+	if err != nil {
+		t.Errorf("unexpected error when creating temp dir")
+	}
+	defer os.RemoveAll(dir)
+
+	tests := []struct {
+		name     string
+		given    FullConfig
+		expected string
+	}{
+		{
+			name: "No expansions.",
+			given: FullConfig{
+				Filters: map[string]Config{
+					".*": {
+						Approvers: []string{"alice", "bob", "carol", "david"},
+						Reviewers: []string{"adam", "bob", "carol"},
+					},
+				},
+			},
+			expected: `filters:
+  .*:
+    approvers:
+    - alice
+    - bob
+    - carol
+    - david
+    reviewers:
+    - adam
+    - bob
+    - carol
+options: {}
+`,
+		},
+	}
+
+	for _, test := range tests {
+		file := filepath.Join(dir, fmt.Sprintf("%s.yaml", test.name))
+		err := SaveFullConfig(test.given, file)
+		if err != nil {
+			t.Errorf("unexpected error when writing full config")
+		}
+		b, err := ioutil.ReadFile(file)
+		if err != nil {
+			t.Errorf("unexpected error when reading file: %s", file)
+		}
+		s := string(b)
+		if test.expected != s {
+			t.Errorf("result '%s' is differ from expected: '%s'", s, test.expected)
+		}
+		full, err := LoadFullConfig(b)
+		if err != nil {
+			t.Errorf("unexpected error when load full config: %v", err)
+		}
+		if !reflect.DeepEqual(full, test.given) {
+			t.Errorf("unexpected error when loading simple config from: '%s'", diff.ObjectReflectDiff(full, test.given))
+		}
+	}
+}
+
+func TestTopLevelApprovers(t *testing.T) {
+	expectedApprovers := []string{"alice", "bob"}
+	ro := &RepoOwners{
+		approvers: map[string]map[*regexp.Regexp]sets.String{
+			baseDir: regexpAll(expectedApprovers...),
+			leafDir: regexpAll("carl", "dave"),
+		},
+	}
+
+	foundApprovers := ro.TopLevelApprovers()
+	if !foundApprovers.Equal(sets.NewString(expectedApprovers...)) {
+		t.Errorf("Expected Owners: %v\tFound Owners: %v ", expectedApprovers, foundApprovers)
 	}
 }

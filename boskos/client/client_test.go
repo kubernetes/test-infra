@@ -73,7 +73,10 @@ func TestAcquire(t *testing.T) {
 		}))
 		defer ts.Close()
 
-		c := NewClient("user", ts.URL)
+		c, err := NewClient("user", ts.URL, "", "")
+		if err != nil {
+			t.Fatalf("failed to create the Boskos client")
+		}
 		res, err := c.Acquire("t", "s", "d")
 
 		if !AreErrorsEqual(err, tc.expectErr) {
@@ -136,11 +139,13 @@ func TestRelease(t *testing.T) {
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
 		defer ts.Close()
 
-		c := NewClient("user", ts.URL)
+		c, err := NewClient("user", ts.URL, "", "")
+		if err != nil {
+			t.Fatalf("failed to create the Boskos client")
+		}
 		for _, r := range tc.resources {
 			c.storage.Add(common.Resource{Name: r})
 		}
-		var err error
 		if tc.res == "" {
 			err = c.ReleaseAll("d")
 		} else {
@@ -199,12 +204,14 @@ func TestUpdate(t *testing.T) {
 	for _, tc := range testcases {
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
 		defer ts.Close()
-		c := NewClient("user", ts.URL)
+		c, err := NewClient("user", ts.URL, "", "")
+		if err != nil {
+			t.Fatalf("failed to create the Boskos client")
+		}
 		for _, r := range tc.resources {
 			c.storage.Add(common.Resource{Name: r})
 		}
 
-		var err error
 		if tc.res == "" {
 			err = c.UpdateAll("s")
 		} else {
@@ -223,7 +230,10 @@ func TestReset(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	c := NewClient("user", ts.URL)
+	c, err := NewClient("user", ts.URL, "", "")
+	if err != nil {
+		t.Fatalf("failed to create the Boskos client")
+	}
 	rmap, err := c.Reset("t", "s", time.Minute, "d")
 	if err != nil {
 		t.Errorf("Error in reset : %v", err)
@@ -249,7 +259,10 @@ func TestMetric(t *testing.T) {
 		},
 	}
 
-	c := NewClient("user", ts.URL)
+	c, err := NewClient("user", ts.URL, "", "")
+	if err != nil {
+		t.Fatalf("failed to create the Boskos client")
+	}
 	metric, err := c.Metric("t")
 	if err != nil {
 		t.Errorf("Error in reset : %v", err)

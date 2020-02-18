@@ -1,0 +1,32 @@
+postsubmits:
+  # this is the github repo we'll build from; this block needs to be repeated for each repo.
+  kubernetes-sigs/k8s-container-image-promoter:
+    - name: cip-postsubmit-push-to-staging
+      cluster: test-infra-trusted
+      annotations:
+        # this is the name of some testgrid dashboard to report to.
+        testgrid-dashboards: sig-release-misc
+      decorate: true
+      branches:
+        - ^master$
+      spec:
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20200213-0032cdb
+            command:
+              - /run.sh
+            args:
+              # this is the project GCB will run in, which is the same as the GCR images are pushed to.
+              - --project=k8s-staging-artifact-promoter
+              - --scratch-bucket=gs://k8s-staging-artifact-promoter-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - .
+            env:
+              - name: GOOGLE_APPLICATION_CREDENTIALS
+                value: /creds/service-account.json
+            volumeMounts:
+              - name: creds
+                mountPath: /creds
+        volumes:
+          - name: creds
+            secret:
+              secretName: deployer-service-account

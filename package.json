@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "code-prettify": "^0.1.0",
     "color": "^3.1.2",
     "dialog-polyfill": "^0.5.0",
     "moment": "^2.22.2",
@@ -7,8 +8,8 @@
   },
   "devDependencies": {
     "@bazel/bazel": "0.27.0",
-    "@bazel/jasmine": "0.32.2",
-    "@bazel/typescript": "0.32.2",
+    "@bazel/jasmine": "0.36.0",
+    "@bazel/typescript": "0.36.0",
     "@types/color": "^3.0.0",
     "@types/google.visualization": "^0.0.43",
     "@types/gtag.js": "^0.0.0",

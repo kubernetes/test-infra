@@ -32,7 +32,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/genfiles"
-	"k8s.io/test-infra/prow/git"
+	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
@@ -49,7 +49,7 @@ func init() {
 	plugins.RegisterGenericCommentHandler(pluginName, handleGenericComment, helpProvider)
 }
 
-func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+func helpProvider(config *plugins.Configuration, _ []plugins.Repo) (*pluginhelp.PluginHelp, error) {
 	// The Config field is omitted because this plugin is not configurable.
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "The buildifier plugin runs buildifier on changes made to Bazel files in a PR. It then creates a new review on the pull request and leaves warnings at the appropriate lines of code.",
@@ -124,10 +124,10 @@ func uniqProblems(problems []string) []string {
 
 // problemsInFiles runs buildifier on the files. It returns a map from the file to
 // a list of problems with that file.
-func problemsInFiles(r *git.Repo, files map[string]string) (map[string][]string, error) {
+func problemsInFiles(r git.RepoClient, files map[string]string) (map[string][]string, error) {
 	problems := make(map[string][]string)
 	for f := range files {
-		src, err := ioutil.ReadFile(filepath.Join(r.Dir, f))
+		src, err := ioutil.ReadFile(filepath.Join(r.Directory(), f))
 		if err != nil {
 			return nil, err
 		}
@@ -149,7 +149,7 @@ func problemsInFiles(r *git.Repo, files map[string]string) (map[string][]string,
 	return problems, nil
 }
 
-func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, e *github.GenericCommentEvent) error {
+func handle(ghc githubClient, gc git.ClientFactory, log *logrus.Entry, e *github.GenericCommentEvent) error {
 	// Only handle open PRs and new requests.
 	if e.IssueState != "open" || !e.IsPR || e.Action != github.GenericCommentActionCreated {
 		return nil
@@ -178,7 +178,7 @@ func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, e *github.Gener
 
 	// Clone the repo, checkout the PR.
 	startClone := time.Now()
-	r, err := gc.Clone(e.Repo.FullName)
+	r, err := gc.ClientFor(org, repo)
 	if err != nil {
 		return err
 	}

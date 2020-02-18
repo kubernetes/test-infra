@@ -25,13 +25,13 @@ import (
 	"log"
 	"net/url"
 	"os"
-	"path/filepath"
 	"strings"
 	"time"
 
+	tgCfgUtil "github.com/GoogleCloudPlatform/testgrid/config"
+	"github.com/GoogleCloudPlatform/testgrid/config/yamlcfg"
+	"github.com/GoogleCloudPlatform/testgrid/util/gcs"
 	prowConfig "k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/testgrid/util/gcs"
-	"sigs.k8s.io/yaml"
 
 	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
@@ -128,7 +128,7 @@ func announceChanges(ctx context.Context, paths []string, channel chan []string)
 		}
 
 		// Check given locations for new or modified files
-		err := walkForYAMLFiles(paths, func(path string, info os.FileInfo) error {
+		err := yamlcfg.SeekYAMLFiles(paths, func(path string, info os.FileInfo) error {
 			lastModTime, present := modified[path]
 
 			if t := info.ModTime(); !present || t.After(lastModTime) {
@@ -169,58 +169,8 @@ func announceProwChanges(ctx context.Context, pca *prowConfig.Agent, channel cha
 	}
 }
 
-func readToConfig(c *Config, paths []string) error {
-	err := walkForYAMLFiles(paths, func(path string, info os.FileInfo) error {
-		// Read YAML file and update config
-		b, err := ioutil.ReadFile(path)
-		if err != nil {
-			return fmt.Errorf("failed to read %s: %v", path, err)
-		}
-		if err = c.Update(b); err != nil {
-			return fmt.Errorf("failed to merge %s into config: %v", path, err)
-		}
+func write(ctx context.Context, client *storage.Client, path string, bytes []byte, worldReadable bool, cacheControl string) error {
 
-		return nil
-	})
-
-	return err
-}
-
-// walks through paths and directories, calling the passed function on each YAML file
-// future modifications to what Configurator sees as a "config file" can be made here
-func walkForYAMLFiles(paths []string, callFunc func(path string, info os.FileInfo) error) error {
-	for _, path := range paths {
-		_, err := os.Stat(path)
-		if err != nil {
-			return fmt.Errorf("Failed status call on %s: %v", path, err)
-		}
-
-		err = filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
-			if err != nil {
-				logrus.WithError(err).Errorf("walking path %q.", path)
-				// bad file should not stop us from parsing the directory
-				return nil
-			}
-
-			if filepath.Ext(path) != ".yaml" && filepath.Ext(path) != ".yml" {
-				return nil
-			}
-
-			if info.IsDir() {
-				return nil
-			}
-
-			return callFunc(path, info)
-		})
-
-		if err != nil {
-			return fmt.Errorf("Failed to walk through %s: %v", path, err)
-		}
-	}
-	return nil
-}
-
-func write(ctx context.Context, client *storage.Client, path string, bytes []byte, worldReadable bool) error {
 	u, err := url.Parse(path)
 	if err != nil {
 		return fmt.Errorf("invalid url %s: %v", path, err)
@@ -232,50 +182,46 @@ func write(ctx context.Context, client *storage.Client, path string, bytes []byt
 	if err = p.SetURL(u); err != nil {
 		return err
 	}
-	return gcs.Upload(ctx, client, p, bytes, worldReadable)
-}
-
-func marshallYAML(c *Config) ([]byte, error) {
-	bytes, err := yaml.Marshal(c.config)
-	if err != nil {
-		return nil, fmt.Errorf("could not write config to yaml: %v", err)
-	}
-	return bytes, nil
+	return gcs.Upload(ctx, client, p, bytes, worldReadable, cacheControl)
 }
 
 // Ignores what changed for now and recomputes everything
 func doOneshot(ctx context.Context, client *storage.Client, opt options, prowConfigAgent *prowConfig.Agent) error {
 
 	// Read Data Sources: Default, YAML configs, Prow Annotations
-	var c Config
+	c, err := yamlcfg.ReadConfig(opt.inputs, opt.defaultYAML)
+	if err != nil {
+		return fmt.Errorf("could not read testgrid config: %v", err)
+	}
+
+	// Remains nil if no default YAML
+	var d *yamlcfg.DefaultConfiguration
 	if opt.defaultYAML != "" {
 		b, err := ioutil.ReadFile(opt.defaultYAML)
 		if err != nil {
 			return err
 		}
-		if err := c.UpdateDefaults(b); err != nil {
+		val, err := yamlcfg.LoadDefaults(b)
+		if err != nil {
 			return err
 		}
+		d = &val
+
 	}
 
-	err := readToConfig(&c, opt.inputs)
-	if err != nil {
-		return fmt.Errorf("could not read config: %v", err)
-	}
-
-	if err := applyProwjobAnnotations(&c, prowConfigAgent); err != nil {
+	if err := applyProwjobAnnotations(&c, d, prowConfigAgent); err != nil {
 		return fmt.Errorf("could not apply prowjob annotations: %v", err)
 	}
 
 	// Print proto if requested
 	if opt.printText {
 		if opt.writeYAML {
-			b, err := marshallYAML(&c)
+			b, err := yamlcfg.MarshalYAML(c)
 			if err != nil {
 				return fmt.Errorf("could not print yaml config: %v", err)
 			}
 			os.Stdout.Write(b)
-		} else if err := c.MarshalText(os.Stdout); err != nil {
+		} else if err := tgCfgUtil.MarshalText(c, os.Stdout); err != nil {
 			return fmt.Errorf("could not print config: %v", err)
 		}
 	}
@@ -285,12 +231,12 @@ func doOneshot(ctx context.Context, client *storage.Client, opt options, prowCon
 		var b []byte
 		var err error
 		if opt.writeYAML {
-			b, err = marshallYAML(&c)
+			b, err = yamlcfg.MarshalYAML(c)
 		} else {
-			b, err = c.MarshalBytes()
+			b, err = tgCfgUtil.MarshalBytes(c)
 		}
 		if err == nil {
-			err = write(ctx, client, opt.output, b, opt.worldReadable)
+			err = write(ctx, client, opt.output, b, opt.worldReadable, "")
 		}
 		if err != nil {
 			return fmt.Errorf("could not write config: %v", err)
@@ -324,13 +270,17 @@ func main() {
 		return
 	}
 
-	// Setup GCS client
+	// Set up GCS client if output is to GCS
 	var client *storage.Client
-	if opt.output != "" {
+	if strings.HasPrefix(opt.output, "gs://") {
 		var err error
-		client, err = gcs.ClientWithCreds(ctx, opt.creds)
+		var creds []string
+		if opt.creds != "" {
+			creds = append(creds, opt.creds)
+		}
+		client, err = gcs.ClientWithCreds(ctx, creds...)
 		if err != nil {
-			log.Fatalf("Failed to create storage client: %v", err)
+			log.Fatalf("failed to create gcs client: %v", err)
 		}
 	}
 

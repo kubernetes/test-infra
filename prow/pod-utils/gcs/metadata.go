@@ -22,7 +22,7 @@ import (
 
 	"cloud.google.com/go/storage"
 
-	"k8s.io/test-infra/testgrid/metadata"
+	"github.com/GoogleCloudPlatform/testgrid/metadata"
 )
 
 // TODO(fejta): migrate usage off type alias.

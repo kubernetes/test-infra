@@ -31,22 +31,23 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"text/template"
 	"time"
 
 	"github.com/sirupsen/logrus"
-	cron "gopkg.in/robfig/cron.v2"
+	"gopkg.in/robfig/cron.v2"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation"
 	"sigs.k8s.io/yaml"
 
-	buildapi "github.com/knative/build/pkg/apis/build/v1alpha1"
 	pipelinev1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	"k8s.io/test-infra/prow/git"
+	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pod-utils/decorate"
@@ -70,12 +71,27 @@ type Config struct {
 type JobConfig struct {
 	// Presets apply to all job types.
 	Presets []Preset `json:"presets,omitempty"`
-	// Full repo name (such as "kubernetes/kubernetes") -> list of jobs.
-	Presubmits  map[string][]Presubmit  `json:"presubmits,omitempty"`
-	Postsubmits map[string][]Postsubmit `json:"postsubmits,omitempty"`
+	// .PresubmitsStatic contains the presubmits in Prows main config.
+	// **Warning:** This does not return dynamic Presubmits configured
+	// inside the code repo, hence giving an incomplete view. Use
+	// `GetPresubmits` instead if possible.
+	PresubmitsStatic map[string][]Presubmit `json:"presubmits,omitempty"`
+	// .PostsubmitsStatic contains the Postsubmits in Prows main config.
+	// **Warning:** This does not return dynamic postsubmits configured
+	// inside the code repo, hence giving an incomplete view. Use
+	// `GetPostsubmits` instead if possible.
+	PostsubmitsStatic map[string][]Postsubmit `json:"postsubmits,omitempty"`
 
 	// Periodics are not associated with any repo.
 	Periodics []Periodic `json:"periodics,omitempty"`
+
+	// AllRepos contains all Repos that have one or more jobs configured or
+	// for which a tide query is configured.
+	AllRepos sets.String `json:"-"`
+
+	// ProwYAMLGetter is the function to get a ProwYAML. Tests should
+	// provide their own implementation.
+	ProwYAMLGetter ProwYAMLGetter `json:"-"`
 }
 
 // ProwConfig is config for all prow controllers
@@ -87,7 +103,10 @@ type ProwConfig struct {
 	BranchProtection BranchProtection `json:"branch-protection,omitempty"`
 	Gerrit           Gerrit           `json:"gerrit,omitempty"`
 	GitHubReporter   GitHubReporter   `json:"github_reporter,omitempty"`
-	SlackReporter    *SlackReporter   `json:"slack_reporter,omitempty"`
+	// Deprecated: this option will be removed in May 2020.
+	SlackReporter        *SlackReporter       `json:"slack_reporter,omitempty"`
+	SlackReporterConfigs SlackReporterConfigs `json:"slack_reporter_configs,omitempty"`
+	InRepoConfig         InRepoConfig         `json:"in_repo_config"`
 
 	// TODO: Move this out of the main config.
 	JenkinsOperators []JenkinsOperator `json:"jenkins_operators,omitempty"`
@@ -136,40 +155,216 @@ type ProwConfig struct {
 	DefaultJobTimeout *metav1.Duration `json:"default_job_timeout,omitempty"`
 }
 
-// PresubmitsStatic returns the presubmits in Prows main config.
-// **Warning:** This does not return dynamic Presubmits configured
-// inside the code repo, hence giving an incomplete view. Use
-// `GetPresubmits` instead if possible.
-func (c *Config) PresubmitsStatic() map[string][]Presubmit {
-	return c.Presubmits
+type InRepoConfig struct {
+	// Enabled describes whether InRepoConfig is enabled for a given repository. This can
+	// be set globally, per org or per repo using '*', 'org' or 'org/repo' as key. The
+	// narrowest match always takes precedence.
+	Enabled map[string]*bool `json:"enabled,omitempty"`
+	// AllowedClusters is a list of allowed clusternames that can be used for jobs on
+	// a given repo. All clusters that are allowed for the specific repo, its org or
+	// globally can be used.
+	AllowedClusters map[string][]string `json:"allowed_clusters,omitempty"`
 }
 
-// GetPresubmits will return all presumits for the given identifier.
-// Once https://github.com/kubernetes/test-infra/issues/13370 is resolved, it will
-// also return Presubmits that are versioned inside the tested repo, if that feature
-// is enabled.
-func (c *Config) GetPresubmits(gc *git.Client, identifier, baseSHA string, headRefs ...string) ([]Presubmit, error) {
-	if gc == nil {
-		return nil, errors.New("gitClient is nil")
+// InRepoConfigEnabled returns whether InRepoConfig is enabled for a given repository.
+func (c *Config) InRepoConfigEnabled(identifier string) bool {
+	if c.InRepoConfig.Enabled[identifier] != nil {
+		return *c.InRepoConfig.Enabled[identifier]
 	}
+	identifierSlashSplit := strings.Split(identifier, "/")
+	if len(identifierSlashSplit) == 2 && c.InRepoConfig.Enabled[identifierSlashSplit[0]] != nil {
+		return *c.InRepoConfig.Enabled[identifierSlashSplit[0]]
+	}
+	if c.InRepoConfig.Enabled["*"] != nil {
+		return *c.InRepoConfig.Enabled["*"]
+	}
+	return false
+}
+
+// InRepoConfigAllowsCluster determines if a given cluster may be used for a given repository
+func (c *Config) InRepoConfigAllowsCluster(clusterName, repoIdentifier string) bool {
+	for _, allowedCluster := range c.InRepoConfig.AllowedClusters[repoIdentifier] {
+		if allowedCluster == clusterName {
+			return true
+		}
+	}
+
+	identifierSlashSplit := strings.Split(repoIdentifier, "/")
+	if len(identifierSlashSplit) == 2 {
+		for _, allowedCluster := range c.InRepoConfig.AllowedClusters[identifierSlashSplit[0]] {
+			if allowedCluster == clusterName {
+				return true
+			}
+		}
+	}
+
+	for _, allowedCluster := range c.InRepoConfig.AllowedClusters["*"] {
+		if allowedCluster == clusterName {
+			return true
+		}
+	}
+	return false
+}
+
+// RefGetter is used to retrieve a Git Reference. Its purpose is
+// to be able to defer calling out to GitHub in the context of
+// inrepoconfig to make sure its only done when we actually need
+// to have that info.
+type RefGetter = func() (string, error)
+
+type refGetterForGitHubPullRequestClient interface {
+	GetPullRequest(org, repo string, number int) (*github.PullRequest, error)
+	GetRef(org, repo, ref string) (string, error)
+}
+
+// NewRefGetterForGitHubPullRequest returns a brand new RefGetterForGitHubPullRequest
+func NewRefGetterForGitHubPullRequest(ghc refGetterForGitHubPullRequestClient, org, repo string, number int) *RefGetterForGitHubPullRequest {
+	return &RefGetterForGitHubPullRequest{
+		ghc:    ghc,
+		org:    org,
+		repo:   repo,
+		number: number,
+		lock:   &sync.Mutex{},
+	}
+}
+
+// RefGetterForGitHubPullRequest is used to get the Presubmits for a GitHub PullRequest
+// when that PullRequest wasn't fetched yet. It will only fetch it if someone calls
+// its .PullRequest() func. It is threadsafe.
+type RefGetterForGitHubPullRequest struct {
+	ghc     refGetterForGitHubPullRequestClient
+	org     string
+	repo    string
+	number  int
+	lock    *sync.Mutex
+	pr      *github.PullRequest
+	baseSHA string
+}
+
+func (rg *RefGetterForGitHubPullRequest) PullRequest() (*github.PullRequest, error) {
+	rg.lock.Lock()
+	defer rg.lock.Unlock()
+	if rg.pr != nil {
+		return rg.pr, nil
+	}
+
+	pr, err := rg.ghc.GetPullRequest(rg.org, rg.repo, rg.number)
+	if err != nil {
+		return nil, err
+	}
+
+	rg.pr = pr
+	return rg.pr, nil
+}
+
+// HeadSHA is a RefGetter that returns the headSHA for the PullRequst
+func (rg *RefGetterForGitHubPullRequest) HeadSHA() (string, error) {
+	if rg.pr == nil {
+		if _, err := rg.PullRequest(); err != nil {
+			return "", err
+		}
+	}
+	return rg.pr.Head.SHA, nil
+}
+
+// BaseSHA is a RefGetter that returns the baseRef for the PullRequest
+func (rg *RefGetterForGitHubPullRequest) BaseSHA() (string, error) {
+	if rg.pr == nil {
+		if _, err := rg.PullRequest(); err != nil {
+			return "", err
+		}
+	}
+
+	// rg.PullRequest also wants the lock, so we must not acquire it before
+	// caling that
+	rg.lock.Lock()
+	defer rg.lock.Unlock()
+
+	if rg.baseSHA != "" {
+		return rg.baseSHA, nil
+	}
+
+	baseSHA, err := rg.ghc.GetRef(rg.org, rg.repo, "heads/"+rg.pr.Base.Ref)
+	if err != nil {
+		return "", err
+	}
+	rg.baseSHA = baseSHA
+
+	return rg.baseSHA, nil
+}
+
+// getProwYAML will load presubmits and postsubmits for the given identifier that are
+// versioned inside the tested repo, if the inrepoconfig feature is enabled.
+// Consumers that pass in a RefGetter implementation that does a call to GitHub and who
+// also need the result of that GitHub call just keep a pointer to its result, but must
+// nilcheck that pointer before accessing it.
+func (c *Config) getProwYAML(gc git.ClientFactory, identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) (*ProwYAML, error) {
 	if identifier == "" {
 		return nil, errors.New("no identifier for repo given")
 	}
-	if baseSHA == "" {
-		return nil, errors.New("baseSHA is empty")
+	if !c.InRepoConfigEnabled(identifier) {
+		return &ProwYAML{}, nil
 	}
-	return c.Presubmits[identifier], nil
+
+	baseSHA, err := baseSHAGetter()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get baseSHA: %v", err)
+	}
+	var headSHAs []string
+	for _, headSHAGetter := range headSHAGetters {
+		headSHA, err := headSHAGetter()
+		if err != nil {
+			return nil, fmt.Errorf("failed to get headRef: %v", err)
+		}
+		headSHAs = append(headSHAs, headSHA)
+	}
+	prowYAML, err := c.ProwYAMLGetter(c, gc, identifier, baseSHA, headSHAs...)
+	if err != nil {
+		return nil, err
+	}
+
+	return prowYAML, nil
+}
+
+// GetPresubmits will return all presubmits for the given identifier. This includes
+// Presubmits that are versioned inside the tested repo, if the inrepoconfig feature
+// is enabled.
+// Consumers that pass in a RefGetter implementation that does a call to GitHub and who
+// also need the result of that GitHub call just keep a pointer to its result, but must
+// nilcheck that pointer before accessing it.
+func (c *Config) GetPresubmits(gc git.ClientFactory, identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Presubmit, error) {
+	prowYAML, err := c.getProwYAML(gc, identifier, baseSHAGetter, headSHAGetters...)
+	if err != nil {
+		return nil, err
+	}
+
+	return append(c.PresubmitsStatic[identifier], prowYAML.Presubmits...), nil
+}
+
+// GetPostsubmits will return all postsubmits for the given identifier. This includes
+// Postsubmits that are versioned inside the tested repo, if the inrepoconfig feature
+// is enabled.
+// Consumers that pass in a RefGetter implementation that does a call to GitHub and who
+// also need the result of that GitHub call just keep a pointer to its result, but must
+// nilcheck that pointer before accessing it.
+func (c *Config) GetPostsubmits(gc git.ClientFactory, identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Postsubmit, error) {
+	prowYAML, err := c.getProwYAML(gc, identifier, baseSHAGetter, headSHAGetters...)
+	if err != nil {
+		return nil, err
+	}
+
+	return append(c.PostsubmitsStatic[identifier], prowYAML.Postsubmits...), nil
 }
 
 // OwnersDirBlacklist is used to configure regular expressions matching directories
 // to ignore when searching for OWNERS{,_ALIAS} files in a repo.
 type OwnersDirBlacklist struct {
 	// Repos configures a directory blacklist per repo (or org)
-	Repos map[string][]string `json:"repos"`
+	Repos map[string][]string `json:"repos,omitempty"`
 	// Default configures a default blacklist for all repos (or orgs).
 	// Some directories like ".git", "_output" and "vendor/.*/OWNERS"
 	// are already preconfigured to be blacklisted, and need not be included here.
-	Default []string `json:"default"`
+	Default []string `json:"default,omitempty"`
 	// By default, some directories like ".git", "_output" and "vendor/.*/OWNERS"
 	// are preconfigured to be blacklisted.
 	// If set, IgnorePreconfiguredDefaults will not add these preconfigured directories
@@ -233,9 +428,12 @@ type Controller struct {
 	// number.
 	MaxGoroutines int `json:"max_goroutines,omitempty"`
 
-	// AllowCancellations enables aborting presubmit jobs for commits that
-	// have been superseded by newer commits in GitHub pull requests.
-	AllowCancellations bool `json:"allow_cancellations,omitempty"`
+	// Deprecated: AllowCancellations enables aborting presubmit jobs for
+	// commits that have been superseded by newer commits in GitHub pull
+	// requests.
+	// This option will be removed and set to always true in March 2020.
+	// TODO(fejta): delete this Mar 2020
+	AllowCancellations *bool `json:"allow_cancellations,omitempty"`
 }
 
 // Plank is config for the plank controller.
@@ -247,17 +445,35 @@ type Plank struct {
 	// PodRunningTimeout is after how long the controller will abort a prowjob pod
 	// stuck in running state. Defaults to two days.
 	PodRunningTimeout *metav1.Duration `json:"pod_running_timeout,omitempty"`
+	// PodUnscheduledTimeout is after how long the controller will abort a prowjob
+	// stuck in an unscheduled state. Defaults to one day.
+	PodUnscheduledTimeout *metav1.Duration `json:"pod_unscheduled_timeout,omitempty"`
 	// DefaultDecorationConfig are defaults for shared fields for ProwJobs
-	// that request to have their PodSpecs decorated
+	// that request to have their PodSpecs decorated.
+	// This will be deprecated on April 2020, and it will be replaces with DefaultDecorationConfigs['*'] instead.
 	DefaultDecorationConfig *prowapi.DecorationConfig `json:"default_decoration_config,omitempty"`
-	// Deprecated, use JobURLPrefixConfig instead
-	// JobURLPrefix is the host and path prefix under
-	// which job details will be viewable
-	// TODO @alvaroaleman: Remove in September 2019
-	JobURLPrefix string `json:"job_url_prefix,omitempty"`
+
+	// DefaultDecorationConfigs holds the default decoration config for specific values.
+	// This config will be used on each Presubmit and Postsubmit's corresponding org/repo, and on Periodics
+	// if extraRefs[0] exists. The missing fields will be merged with the DefaultDecorationConfig.
+	// Use `org/repo`, `org` or `*` as a key.
+	DefaultDecorationConfigs map[string]*prowapi.DecorationConfig `json:"default_decoration_configs,omitempty"`
+
 	// JobURLPrefixConfig is the host and path prefix under which job details
 	// will be viewable. Use `org/repo`, `org` or `*`as key and an url as value
 	JobURLPrefixConfig map[string]string `json:"job_url_prefix_config,omitempty"`
+}
+
+func (p Plank) GetDefaultDecorationConfigs(repo string) *prowapi.DecorationConfig {
+	def := p.DefaultDecorationConfigs["*"]
+	if dcByRepo, ok := p.DefaultDecorationConfigs[repo]; ok {
+		return dcByRepo.ApplyDefault(def)
+	}
+	org := strings.Split(repo, "/")[0]
+	if dcByOrg, ok := p.DefaultDecorationConfigs[org]; ok {
+		return dcByOrg.ApplyDefault(def)
+	}
+	return def
 }
 
 func (p Plank) GetJobURLPrefix(refs *prowapi.Refs) string {
@@ -318,6 +534,10 @@ type Sinker struct {
 	// MaxPodAge is how old a Pod can be before it is garbage-collected.
 	// Defaults to one day.
 	MaxPodAge *metav1.Duration `json:"max_pod_age,omitempty"`
+	// TerminatedPodTTL is how long a Pod can live after termination before it is
+	// garbage collected.
+	// Defaults to matching MaxPodAge.
+	TerminatedPodTTL *metav1.Duration `json:"terminated_pod_ttl,omitempty"`
 }
 
 // LensConfig names a specific lens, and optionally provides some configuration for it.
@@ -326,7 +546,7 @@ type LensConfig struct {
 	Name string `json:"name"`
 	// Config is some lens-specific configuration. Interpreting it is the responsibility of the
 	// lens in question.
-	Config json.RawMessage `json:"config"`
+	Config json.RawMessage `json:"config,omitempty"`
 }
 
 // LensFileConfig is a single entry under Lenses, describing how to configure a lens
@@ -443,7 +663,7 @@ type GitHubOptions struct {
 
 	// LinkURL is the url representation of LinkURLFromConfig. This variable should be used
 	// in all places internally.
-	LinkURL *url.URL
+	LinkURL *url.URL `json:"-"`
 }
 
 // SlackReporter represents the config for the Slack reporter. The channel can be overridden
@@ -453,6 +673,26 @@ type SlackReporter struct {
 	JobStatesToReport []prowapi.ProwJobState `json:"job_states_to_report"`
 	Channel           string                 `json:"channel"`
 	ReportTemplate    string                 `json:"report_template"`
+}
+
+// SlackReporterConfigs represents the config for the Slack reporter(s).
+// Use `org/repo`, `org` or `*` as key and an `SlackReporter` struct as value.
+type SlackReporterConfigs map[string]SlackReporter
+
+func (cfg SlackReporterConfigs) GetSlackReporter(refs *prowapi.Refs) SlackReporter {
+	if refs == nil {
+		return cfg["*"]
+	}
+
+	if slack, exists := cfg[fmt.Sprintf("%s/%s", refs.Org, refs.Repo)]; exists {
+		return slack
+	}
+
+	if slack, exists := cfg[refs.Org]; exists {
+		return slack
+	}
+
+	return cfg["*"]
 }
 
 func (cfg *SlackReporter) DefaultAndValidate() error {
@@ -586,6 +826,23 @@ func loadConfig(prowConfig, jobConfig string) (*Config, error) {
 		return nil, err
 	}
 
+	nc.AllRepos = sets.String{}
+	for _, query := range nc.Tide.Queries {
+		for _, repo := range query.Repos {
+			nc.AllRepos.Insert(repo)
+		}
+	}
+
+	nc.ProwYAMLGetter = defaultProwYAMLGetter
+
+	if nc.InRepoConfig.AllowedClusters == nil {
+		nc.InRepoConfig.AllowedClusters = map[string][]string{}
+	}
+
+	if len(nc.InRepoConfig.AllowedClusters["*"]) == 0 {
+		nc.InRepoConfig.AllowedClusters["*"] = []string{kube.DefaultClusterAlias}
+	}
+
 	// TODO(krzyzacy): temporary allow empty jobconfig
 	//                 also temporary allow job config in prow config
 	if jobConfig == "" {
@@ -619,22 +876,22 @@ func yamlToConfig(path string, nc interface{}) error {
 	case *Config:
 		jc = &v.JobConfig
 	}
-	for rep := range jc.Presubmits {
+	for rep := range jc.PresubmitsStatic {
 		var fix func(*Presubmit)
 		fix = func(job *Presubmit) {
 			job.SourcePath = path
 		}
-		for i := range jc.Presubmits[rep] {
-			fix(&jc.Presubmits[rep][i])
+		for i := range jc.PresubmitsStatic[rep] {
+			fix(&jc.PresubmitsStatic[rep][i])
 		}
 	}
-	for rep := range jc.Postsubmits {
+	for rep := range jc.PostsubmitsStatic {
 		var fix func(*Postsubmit)
 		fix = func(job *Postsubmit) {
 			job.SourcePath = path
 		}
-		for i := range jc.Postsubmits[rep] {
-			fix(&jc.Postsubmits[rep][i])
+		for i := range jc.PostsubmitsStatic[rep] {
+			fix(&jc.PostsubmitsStatic[rep][i])
 		}
 	}
 
@@ -670,18 +927,18 @@ func ReadFileMaybeGZIP(path string) ([]byte, error) {
 
 func (c *Config) mergeJobConfig(jc JobConfig) error {
 	m, err := mergeJobConfigs(JobConfig{
-		Presets:     c.Presets,
-		Presubmits:  c.Presubmits,
-		Periodics:   c.Periodics,
-		Postsubmits: c.Postsubmits,
+		Presets:           c.Presets,
+		PresubmitsStatic:  c.PresubmitsStatic,
+		Periodics:         c.Periodics,
+		PostsubmitsStatic: c.PostsubmitsStatic,
 	}, jc)
 	if err != nil {
 		return err
 	}
 	c.Presets = m.Presets
-	c.Presubmits = m.Presubmits
+	c.PresubmitsStatic = m.PresubmitsStatic
 	c.Periodics = m.Periodics
-	c.Postsubmits = m.Postsubmits
+	c.PostsubmitsStatic = m.PostsubmitsStatic
 	return nil
 }
 
@@ -713,69 +970,121 @@ func mergeJobConfigs(a, b JobConfig) (JobConfig, error) {
 	c.Periodics = append(a.Periodics, b.Periodics...)
 
 	// *** Presubmits ***
-	c.Presubmits = make(map[string][]Presubmit)
-	for repo, jobs := range a.Presubmits {
-		c.Presubmits[repo] = jobs
+	c.PresubmitsStatic = make(map[string][]Presubmit)
+	for repo, jobs := range a.PresubmitsStatic {
+		c.PresubmitsStatic[repo] = jobs
 	}
-	for repo, jobs := range b.Presubmits {
-		c.Presubmits[repo] = append(c.Presubmits[repo], jobs...)
+	for repo, jobs := range b.PresubmitsStatic {
+		c.PresubmitsStatic[repo] = append(c.PresubmitsStatic[repo], jobs...)
 	}
 
 	// *** Postsubmits ***
-	c.Postsubmits = make(map[string][]Postsubmit)
-	for repo, jobs := range a.Postsubmits {
-		c.Postsubmits[repo] = jobs
+	c.PostsubmitsStatic = make(map[string][]Postsubmit)
+	for repo, jobs := range a.PostsubmitsStatic {
+		c.PostsubmitsStatic[repo] = jobs
 	}
-	for repo, jobs := range b.Postsubmits {
-		c.Postsubmits[repo] = append(c.Postsubmits[repo], jobs...)
+	for repo, jobs := range b.PostsubmitsStatic {
+		c.PostsubmitsStatic[repo] = append(c.PostsubmitsStatic[repo], jobs...)
 	}
 	return c, nil
 }
 
-func setPresubmitDecorationDefaults(c *Config, ps *Presubmit) {
+func setPresubmitDecorationDefaults(c *Config, ps *Presubmit, repo string) {
 	if ps.Decorate {
-		ps.DecorationConfig = ps.DecorationConfig.ApplyDefault(c.Plank.DefaultDecorationConfig)
+		def := c.Plank.GetDefaultDecorationConfigs(repo)
+		ps.DecorationConfig = ps.DecorationConfig.ApplyDefault(def)
 	}
 }
 
-func setPostsubmitDecorationDefaults(c *Config, ps *Postsubmit) {
+func setPostsubmitDecorationDefaults(c *Config, ps *Postsubmit, repo string) {
 	if ps.Decorate {
-		ps.DecorationConfig = ps.DecorationConfig.ApplyDefault(c.Plank.DefaultDecorationConfig)
+		def := c.Plank.GetDefaultDecorationConfigs(repo)
+		ps.DecorationConfig = ps.DecorationConfig.ApplyDefault(def)
 	}
 }
 
 func setPeriodicDecorationDefaults(c *Config, ps *Periodic) {
 	if ps.Decorate {
-		ps.DecorationConfig = ps.DecorationConfig.ApplyDefault(c.Plank.DefaultDecorationConfig)
+		var orgRepo string
+		if len(ps.UtilityConfig.ExtraRefs) > 0 {
+			orgRepo = fmt.Sprintf("%s/%s", ps.UtilityConfig.ExtraRefs[0].Org, ps.UtilityConfig.ExtraRefs[0].Repo)
+		}
+
+		def := c.Plank.GetDefaultDecorationConfigs(orgRepo)
+		ps.DecorationConfig = ps.DecorationConfig.ApplyDefault(def)
 	}
+}
+
+// defaultPresubmits defaults the presubmits for one repo
+func defaultPresubmits(presubmits []Presubmit, c *Config, repo string) error {
+	var errs []error
+	for idx, ps := range presubmits {
+		setPresubmitDecorationDefaults(c, &presubmits[idx], repo)
+		if err := resolvePresets(ps.Name, ps.Labels, ps.Spec, c.Presets); err != nil {
+			errs = append(errs, err)
+		}
+	}
+	c.defaultPresubmitFields(presubmits)
+	if err := SetPresubmitRegexes(presubmits); err != nil {
+		errs = append(errs, fmt.Errorf("could not set regex: %v", err))
+	}
+
+	return utilerrors.NewAggregate(errs)
+}
+
+// defaultPostsubmits defaults the postsubmits for one repo
+func defaultPostsubmits(postsubmits []Postsubmit, c *Config, repo string) error {
+	var errs []error
+	for idx, ps := range postsubmits {
+		setPostsubmitDecorationDefaults(c, &postsubmits[idx], repo)
+		if err := resolvePresets(ps.Name, ps.Labels, ps.Spec, c.Presets); err != nil {
+			errs = append(errs, err)
+		}
+	}
+	c.defaultPostsubmitFields(postsubmits)
+	if err := SetPostsubmitRegexes(postsubmits); err != nil {
+		errs = append(errs, fmt.Errorf("could not set regex: %v", err))
+	}
+	return utilerrors.NewAggregate(errs)
+}
+
+// defaultPeriodics defaults periodics
+func defaultPeriodics(periodics []Periodic, c *Config) error {
+	var errs []error
+	c.defaultPeriodicFields(periodics)
+	for _, periodic := range periodics {
+		if err := resolvePresets(periodic.Name, periodic.Labels, periodic.Spec, c.Presets); err != nil {
+			errs = append(errs, err)
+		}
+	}
+	return utilerrors.NewAggregate(errs)
 }
 
 // finalizeJobConfig mutates and fixes entries for jobspecs
 func (c *Config) finalizeJobConfig() error {
 	if c.decorationRequested() {
-		if c.Plank.DefaultDecorationConfig == nil {
-			return errors.New("no default decoration config provided for plank")
-		}
-		if c.Plank.DefaultDecorationConfig.UtilityImages == nil {
-			return errors.New("no default decoration image pull specs provided for plank")
-		}
-		if c.Plank.DefaultDecorationConfig.GCSConfiguration == nil {
-			return errors.New("no default GCS decoration config provided for plank")
-		}
-		if c.Plank.DefaultDecorationConfig.GCSCredentialsSecret == "" {
-			return errors.New("no default GCS credentials secret provided for plank")
+
+		if c.Plank.DefaultDecorationConfig != nil {
+			if len(c.Plank.DefaultDecorationConfigs) > 0 {
+				return errors.New("both default_decoration_config and default_decoration_configs are specified")
+			}
+
+			logrus.Warning("default_decoration_config will be deprecated on April 2020, and it will be replaced with default_decoration_configs['*'].")
+			c.Plank.DefaultDecorationConfigs = make(map[string]*prowapi.DecorationConfig)
+			c.Plank.DefaultDecorationConfigs["*"] = c.Plank.DefaultDecorationConfig
 		}
 
-		for _, vs := range c.Presubmits {
-			for i := range vs {
-				setPresubmitDecorationDefaults(c, &vs[i])
-			}
+		if len(c.Plank.DefaultDecorationConfigs) == 0 {
+			return errors.New("both default_decoration_config and default_decoration_configs['*'] are missing")
+
 		}
 
-		for _, js := range c.Postsubmits {
-			for i := range js {
-				setPostsubmitDecorationDefaults(c, &js[i])
-			}
+		if _, ok := c.Plank.DefaultDecorationConfigs["*"]; !ok {
+			return errors.New("default_decoration_configs['*'] is missing")
+		}
+
+		if err := c.Plank.DefaultDecorationConfigs["*"].Validate(); err != nil {
+			return fmt.Errorf("decoration config validation error: %v", err)
 		}
 
 		for i := range c.Periodics {
@@ -783,38 +1092,22 @@ func (c *Config) finalizeJobConfig() error {
 		}
 	}
 
-	// Ensure that regexes are valid and set defaults.
-	for _, vs := range c.Presubmits {
-		c.defaultPresubmitFields(vs)
-		if err := SetPresubmitRegexes(vs); err != nil {
-			return fmt.Errorf("could not set regex: %v", err)
-		}
-	}
-	for _, js := range c.Postsubmits {
-		c.defaultPostsubmitFields(js)
-		if err := SetPostsubmitRegexes(js); err != nil {
-			return fmt.Errorf("could not set regex: %v", err)
-		}
-	}
-
-	c.defaultPeriodicFields(c.Periodics)
-
-	for _, v := range c.AllPresubmits(nil) {
-		if err := resolvePresets(v.Name, v.Labels, v.Spec, v.BuildSpec, c.Presets); err != nil {
+	for repo, jobs := range c.PresubmitsStatic {
+		if err := defaultPresubmits(jobs, c, repo); err != nil {
 			return err
 		}
+		c.AllRepos.Insert(repo)
 	}
 
-	for _, v := range c.AllPostsubmits(nil) {
-		if err := resolvePresets(v.Name, v.Labels, v.Spec, v.BuildSpec, c.Presets); err != nil {
+	for repo, jobs := range c.PostsubmitsStatic {
+		if err := defaultPostsubmits(jobs, c, repo); err != nil {
 			return err
 		}
+		c.AllRepos.Insert(repo)
 	}
 
-	for _, v := range c.AllPeriodics() {
-		if err := resolvePresets(v.Name, v.Labels, v.Spec, v.BuildSpec, c.Presets); err != nil {
-			return err
-		}
+	if err := defaultPeriodics(c.Periodics, c); err != nil {
+		return err
 	}
 
 	return nil
@@ -822,20 +1115,32 @@ func (c *Config) finalizeJobConfig() error {
 
 // validateComponentConfig validates the infrastructure component configuration
 func (c *Config) validateComponentConfig() error {
-	if c.Plank.JobURLPrefix != "" && c.Plank.JobURLPrefixConfig["*"] != "" {
-		return errors.New(`Planks job_url_prefix must be unset when job_url_prefix_config["*"] is set. The former is deprecated, use the latter`)
-	}
 	for k, v := range c.Plank.JobURLPrefixConfig {
 		if _, err := url.Parse(v); err != nil {
 			return fmt.Errorf(`Invalid value for Planks job_url_prefix_config["%s"]: %v`, k, err)
 		}
 	}
 
+	// TODO(@clarketm): Remove in May 2020
 	if c.SlackReporter != nil {
-		if err := c.SlackReporter.DefaultAndValidate(); err != nil {
-			return fmt.Errorf("failed to validate slackreporter config: %v", err)
+		logrus.Warning("slack_reporter will be deprecated on May 2020, and it will be replaced with slack_reporter_configs['*'].")
+
+		if c.SlackReporterConfigs != nil {
+			return errors.New("slack_reporter and slack_reporter_configs['*'] are mutually exclusive")
+		}
+
+		c.SlackReporterConfigs = map[string]SlackReporter{"*": *c.SlackReporter}
+	}
+
+	if c.SlackReporterConfigs != nil {
+		for k, config := range c.SlackReporterConfigs {
+			if err := config.DefaultAndValidate(); err != nil {
+				return fmt.Errorf("failed to validate slackreporter config: %v", err)
+			}
+			c.SlackReporterConfigs[k] = config
 		}
 	}
+
 	return nil
 }
 
@@ -862,99 +1167,148 @@ func validateJobBase(v JobBase, jobType prowapi.ProwJobType, podNamespace string
 		return err
 	}
 	if v.Spec == nil || len(v.Spec.Containers) == 0 {
-		return nil // knative-build and jenkins jobs have no spec
+		return nil // jenkins jobs have no spec
 	}
-	if v.RerunAuthConfig != nil && v.RerunAuthConfig.AllowAnyone && (len(v.RerunAuthConfig.GitHubUsers) > 0 || len(v.RerunAuthConfig.GitHubTeamIDs) > 0 || len(v.RerunAuthConfig.GitHubTeamSlugs) > 0) {
+	if v.RerunAuthConfig != nil && v.RerunAuthConfig.AllowAnyone && (len(v.RerunAuthConfig.GitHubUsers) > 0 || len(v.RerunAuthConfig.GitHubTeamIDs) > 0 || len(v.RerunAuthConfig.GitHubTeamSlugs) > 0 || len(v.RerunAuthConfig.GitHubOrgs) > 0) {
 		return errors.New("allow anyone is set to true and permitted users or groups are specified")
 	}
+	if err := v.UtilityConfig.Validate(); err != nil {
+		return err
+	}
 	return validateDecoration(v.Spec.Containers[0], v.DecorationConfig)
+}
+
+// validatePresubmits validates the presubmits for one repo
+func validatePresubmits(presubmits []Presubmit, podNamespace string) error {
+	validPresubmits := map[string][]Presubmit{}
+
+	var errs []error
+	for _, ps := range presubmits {
+		// Checking that no duplicate job in prow config exists on the same branch.
+		for _, existingJob := range validPresubmits[ps.Name] {
+			if existingJob.Brancher.Intersects(ps.Brancher) {
+				errs = append(errs, fmt.Errorf("duplicated presubmit job: %s", ps.Name))
+			}
+		}
+		if err := validateJobBase(ps.JobBase, prowapi.PresubmitJob, podNamespace); err != nil {
+			errs = append(errs, fmt.Errorf("invalid presubmit job %s: %v", ps.Name, err))
+		}
+		if err := validateTriggering(ps); err != nil {
+			errs = append(errs, err)
+		}
+		validPresubmits[ps.Name] = append(validPresubmits[ps.Name], ps)
+	}
+
+	return utilerrors.NewAggregate(errs)
+}
+
+// ValidateRefs validates the extra refs on a presubmit for one repo
+func ValidateRefs(repo string, jobBase JobBase) error {
+	gitRefs := map[string]int{
+		repo: 1,
+	}
+	for _, ref := range jobBase.UtilityConfig.ExtraRefs {
+		gitRefs[fmt.Sprintf("%s/%s", ref.Org, ref.Repo)]++
+	}
+
+	dupes := sets.NewString()
+	for gitRef, count := range gitRefs {
+		if count > 1 {
+			dupes.Insert(gitRef)
+		}
+	}
+
+	if dupes.Len() > 0 {
+		return fmt.Errorf("Invalid job %s on repo %s: the following refs specified more than once: %s",
+			jobBase.Name, repo, strings.Join(dupes.List(), ","))
+	}
+	return nil
+}
+
+// validatePostsubmits validates the postsubmits for one repo
+func validatePostsubmits(postsubmits []Postsubmit, podNamespace string) error {
+	validPostsubmits := map[string][]Postsubmit{}
+
+	for _, ps := range postsubmits {
+		// Checking that no duplicate job in prow config exists on the same repo / branch.
+		for _, existingJob := range validPostsubmits[ps.Name] {
+			if existingJob.Brancher.Intersects(ps.Brancher) {
+				return fmt.Errorf("duplicated postsubmit job: %s", ps.Name)
+			}
+		}
+		if err := validateJobBase(ps.JobBase, prowapi.PostsubmitJob, podNamespace); err != nil {
+			return fmt.Errorf("invalid postsubmit job %s: %v", ps.Name, err)
+		}
+		validPostsubmits[ps.Name] = append(validPostsubmits[ps.Name], ps)
+	}
+
+	return nil
+}
+
+// validatePeriodics validates a set of periodics
+func validatePeriodics(periodics []Periodic, podNamespace string) error {
+
+	// validate no duplicated periodics
+	validPeriodics := sets.NewString()
+	// Ensure that the periodic durations are valid and specs exist.
+	for _, p := range periodics {
+		if validPeriodics.Has(p.Name) {
+			return fmt.Errorf("duplicated periodic job : %s", p.Name)
+		}
+		validPeriodics.Insert(p.Name)
+		if err := validateJobBase(p.JobBase, prowapi.PeriodicJob, podNamespace); err != nil {
+			return fmt.Errorf("invalid periodic job %s: %v", p.Name, err)
+		}
+	}
+
+	return nil
 }
 
 // validateJobConfig validates if all the jobspecs/presets are valid
 // if you are mutating the jobs, please add it to finalizeJobConfig above
 func (c *Config) validateJobConfig() error {
-	type orgRepoJobName struct {
-		orgRepo, jobName string
-	}
+
+	var errs []error
 
 	// Validate presubmits.
-	// Checking that no duplicate job in prow config exists on the same org / repo / branch.
-	validPresubmits := map[orgRepoJobName][]Presubmit{}
-	for repo, jobs := range c.Presubmits {
-		for _, job := range jobs {
-			repoJobName := orgRepoJobName{repo, job.Name}
-			for _, existingJob := range validPresubmits[repoJobName] {
-				if existingJob.Brancher.Intersects(job.Brancher) {
-					return fmt.Errorf("duplicated presubmit job: %s", job.Name)
-				}
-			}
-			validPresubmits[repoJobName] = append(validPresubmits[repoJobName], job)
-		}
-	}
-
-	for _, v := range c.AllPresubmits(nil) {
-		if err := validateJobBase(v.JobBase, prowapi.PresubmitJob, c.PodNamespace); err != nil {
-			return fmt.Errorf("invalid presubmit job %s: %v", v.Name, err)
-		}
-		if err := validateTriggering(v); err != nil {
-			return err
+	for _, jobs := range c.PresubmitsStatic {
+		if err := validatePresubmits(jobs, c.PodNamespace); err != nil {
+			errs = append(errs, err)
 		}
 	}
 
 	// Validate postsubmits.
-	// Checking that no duplicate job in prow config exists on the same org / repo / branch.
-	validPostsubmits := map[orgRepoJobName][]Postsubmit{}
-	for repo, jobs := range c.Postsubmits {
-		for _, job := range jobs {
-			repoJobName := orgRepoJobName{repo, job.Name}
-			for _, existingJob := range validPostsubmits[repoJobName] {
-				if existingJob.Brancher.Intersects(job.Brancher) {
-					return fmt.Errorf("duplicated postsubmit job: %s", job.Name)
-				}
-			}
-			validPostsubmits[repoJobName] = append(validPostsubmits[repoJobName], job)
+	for _, jobs := range c.PostsubmitsStatic {
+		if err := validatePostsubmits(jobs, c.PodNamespace); err != nil {
+			errs = append(errs, err)
 		}
 	}
 
-	for _, j := range c.AllPostsubmits(nil) {
-		if err := validateJobBase(j.JobBase, prowapi.PostsubmitJob, c.PodNamespace); err != nil {
-			return fmt.Errorf("invalid postsubmit job %s: %v", j.Name, err)
-		}
+	if err := validatePeriodics(c.Periodics, c.PodNamespace); err != nil {
+		errs = append(errs, err)
 	}
 
-	// validate no duplicated periodics
-	validPeriodics := sets.NewString()
-	// Ensure that the periodic durations are valid and specs exist.
-	for _, p := range c.AllPeriodics() {
-		if validPeriodics.Has(p.Name) {
-			return fmt.Errorf("duplicated periodic job : %s", p.Name)
-		}
-		validPeriodics.Insert(p.Name)
-		if err := validateJobBase(p.JobBase, prowapi.PeriodicJob, c.PodNamespace); err != nil {
-			return fmt.Errorf("invalid periodic job %s: %v", p.Name, err)
-		}
-	}
 	// Set the interval on the periodic jobs. It doesn't make sense to do this
 	// for child jobs.
 	for j, p := range c.Periodics {
 		if p.Cron != "" && p.Interval != "" {
-			return fmt.Errorf("cron and interval cannot be both set in periodic %s", p.Name)
+			errs = append(errs, fmt.Errorf("cron and interval cannot be both set in periodic %s", p.Name))
 		} else if p.Cron == "" && p.Interval == "" {
-			return fmt.Errorf("cron and interval cannot be both empty in periodic %s", p.Name)
+			errs = append(errs, fmt.Errorf("cron and interval cannot be both empty in periodic %s", p.Name))
 		} else if p.Cron != "" {
 			if _, err := cron.Parse(p.Cron); err != nil {
-				return fmt.Errorf("invalid cron string %s in periodic %s: %v", p.Cron, p.Name, err)
+				errs = append(errs, fmt.Errorf("invalid cron string %s in periodic %s: %v", p.Cron, p.Name, err))
 			}
 		} else {
 			d, err := time.ParseDuration(c.Periodics[j].Interval)
 			if err != nil {
-				return fmt.Errorf("cannot parse duration for %s: %v", c.Periodics[j].Name, err)
+				errs = append(errs, fmt.Errorf("cannot parse duration for %s: %v", c.Periodics[j].Name, err))
 			}
 			c.Periodics[j].interval = d
 		}
 	}
 
-	return nil
+	return utilerrors.NewAggregate(errs)
 }
 
 // DefaultConfigPath will be used if a --config-path is unset
@@ -982,6 +1336,14 @@ func parseProwConfig(c *Config) error {
 
 	if c.Plank.PodRunningTimeout == nil {
 		c.Plank.PodRunningTimeout = &metav1.Duration{Duration: 48 * time.Hour}
+	}
+
+	if c.Plank.PodUnscheduledTimeout == nil {
+		c.Plank.PodUnscheduledTimeout = &metav1.Duration{Duration: 24 * time.Hour}
+	}
+
+	if c.Plank.AllowCancellations != nil {
+		logrus.Warning("The plank.allow_cancellations setting is deprecated. It will be removed and set to always true in March 2020")
 	}
 
 	if c.Gerrit.TickInterval == nil {
@@ -1020,6 +1382,10 @@ func parseProwConfig(c *Config) error {
 		if len(c.JenkinsOperators) == 1 && c.JenkinsOperators[0].LabelSelectorString != "" {
 			return errors.New("label_selector is invalid when used for a single jenkins-operator")
 		}
+
+		if c.JenkinsOperators[i].AllowCancellations != nil {
+			logrus.Warning("The `jenkins_operators.allow_cancellations` setting is deprecated. It will be removed and set to always true in March 2020")
+		}
 	}
 
 	for i, agentToTmpl := range c.Deck.ExternalAgentLogs {
@@ -1049,7 +1415,7 @@ func parseProwConfig(c *Config) error {
 
 	// If a whitelist is specified, the user probably does not intend for anyone to be able
 	// to rerun any job.
-	if c.Deck.RerunAuthConfig.AllowAnyone && (len(c.Deck.RerunAuthConfig.GitHubUsers) > 0 || len(c.Deck.RerunAuthConfig.GitHubTeamIDs) > 0 || len(c.Deck.RerunAuthConfig.GitHubTeamSlugs) > 0) {
+	if c.Deck.RerunAuthConfig.AllowAnyone && (len(c.Deck.RerunAuthConfig.GitHubUsers) > 0 || len(c.Deck.RerunAuthConfig.GitHubTeamIDs) > 0 || len(c.Deck.RerunAuthConfig.GitHubTeamSlugs) > 0 || len(c.Deck.RerunAuthConfig.GitHubOrgs) > 0) {
 		return fmt.Errorf("allow_anyone is set to true and authorized users or teams are specified.")
 	}
 
@@ -1118,6 +1484,10 @@ func parseProwConfig(c *Config) error {
 		c.Sinker.MaxPodAge = &metav1.Duration{Duration: 24 * time.Hour}
 	}
 
+	if c.Sinker.TerminatedPodTTL == nil {
+		c.Sinker.TerminatedPodTTL = &metav1.Duration{Duration: c.Sinker.MaxPodAge.Duration}
+	}
+
 	if c.Tide.SyncPeriod == nil {
 		c.Tide.SyncPeriod = &metav1.Duration{Duration: time.Minute}
 	}
@@ -1131,6 +1501,25 @@ func parseProwConfig(c *Config) error {
 	}
 	if c.Tide.MaxGoroutines <= 0 {
 		return fmt.Errorf("tide has invalid max_goroutines (%d), it needs to be a positive number", c.Tide.MaxGoroutines)
+	}
+
+	if c.Tide.PRStatusBaseURLs == nil {
+		c.Tide.PRStatusBaseURLs = map[string]string{}
+	}
+
+	if len(c.Tide.PRStatusBaseURL) > 0 {
+		if len(c.Tide.PRStatusBaseURLs) > 0 {
+			return fmt.Errorf("both pr_status_base_url and pr_status_base_urls are defined")
+		} else {
+			logrus.Warning("The `pr_status_base_url` setting is deprecated and it has been replaced by `pr_status_base_urls`. It will be removed in June 2020")
+			c.Tide.PRStatusBaseURLs["*"] = c.Tide.PRStatusBaseURL
+		}
+	}
+
+	if len(c.Tide.PRStatusBaseURLs) > 0 {
+		if _, ok := c.Tide.PRStatusBaseURLs["*"]; !ok {
+			return fmt.Errorf("pr_status_base_urls is defined but the default value ('*') is missing")
+		}
 	}
 
 	for name, method := range c.Tide.MergeType {
@@ -1181,13 +1570,6 @@ func parseProwConfig(c *Config) error {
 	if c.Plank.JobURLPrefixConfig == nil {
 		c.Plank.JobURLPrefixConfig = map[string]string{}
 	}
-	if c.Plank.JobURLPrefix != "" && c.Plank.JobURLPrefixConfig["*"] == "" {
-		c.Plank.JobURLPrefixConfig["*"] = c.Plank.JobURLPrefix
-		// Set JobURLPrefix to an empty string to indicate we've moved
-		// it to JobURLPrefixConfig["*"] without overwriting the latter
-		// so validation succeeds
-		c.Plank.JobURLPrefix = ""
-	}
 
 	if c.GitHubOptions.LinkURLFromConfig == "" {
 		c.GitHubOptions.LinkURLFromConfig = "https://github.com"
@@ -1220,7 +1602,7 @@ func parseProwConfig(c *Config) error {
 }
 
 func (c *JobConfig) decorationRequested() bool {
-	for _, vs := range c.Presubmits {
+	for _, vs := range c.PresubmitsStatic {
 		for i := range vs {
 			if vs[i].Decorate {
 				return true
@@ -1228,7 +1610,7 @@ func (c *JobConfig) decorationRequested() bool {
 		}
 	}
 
-	for _, js := range c.Postsubmits {
+	for _, js := range c.PostsubmitsStatic {
 		for i := range js {
 			if js[i].Decorate {
 				return true
@@ -1264,10 +1646,9 @@ func validateLabels(labels map[string]string) error {
 
 func validateAgent(v JobBase, podNamespace string) error {
 	k := string(prowapi.KubernetesAgent)
-	b := string(prowapi.KnativeBuildAgent)
 	j := string(prowapi.JenkinsAgent)
 	p := string(prowapi.TektonAgent)
-	agents := sets.NewString(k, b, j, p)
+	agents := sets.NewString(k, j, p)
 	agent := v.Agent
 	switch {
 	case !agents.Has(agent):
@@ -1277,24 +1658,20 @@ func validateAgent(v JobBase, podNamespace string) error {
 		return fmt.Errorf("job specs require agent: %s (found %q)", k, agent)
 	case agent == k && v.Spec == nil:
 		return errors.New("kubernetes jobs require a spec")
-	case v.BuildSpec != nil && agent != b:
-		return fmt.Errorf("job build_specs require agent: %s (found %q)", b, agent)
-	case agent == b && v.BuildSpec == nil:
-		return errors.New("knative-build jobs require a build_spec")
 	case v.PipelineRunSpec != nil && agent != p:
 		return fmt.Errorf("job pipeline_run_spec require agent: %s (found %q)", p, agent)
 	case agent == p && v.PipelineRunSpec == nil:
 		return fmt.Errorf("agent: %s jobs require a pipeline_run_spec", p)
-	case v.DecorationConfig != nil && agent != k && agent != b:
+	case v.DecorationConfig != nil && agent != k:
 		// TODO(fejta): only source decoration supported...
-		return fmt.Errorf("decoration requires agent: %s or %s (found %q)", k, b, agent)
+		return fmt.Errorf("decoration requires agent: %s (found %q)", k, agent)
 	case v.ErrorOnEviction && agent != k:
 		return fmt.Errorf("error_on_eviction only applies to agent: %s (found %q)", k, agent)
 	case v.Namespace == nil || *v.Namespace == "":
 		return fmt.Errorf("failed to default namespace")
-	case *v.Namespace != podNamespace && agent != b && agent != p:
+	case *v.Namespace != podNamespace && agent != p:
 		// TODO(fejta): update plank to allow this (depends on client change)
-		return fmt.Errorf("namespace customization requires agent: %s or %s (found %q)", b, p, agent)
+		return fmt.Errorf("namespace customization requires agent: %s (found %q)", p, agent)
 	}
 	return nil
 }
@@ -1315,17 +1692,11 @@ func validateDecoration(container v1.Container, config *prowapi.DecorationConfig
 	return nil
 }
 
-func resolvePresets(name string, labels map[string]string, spec *v1.PodSpec, buildSpec *buildapi.BuildSpec, presets []Preset) error {
+func resolvePresets(name string, labels map[string]string, spec *v1.PodSpec, presets []Preset) error {
 	for _, preset := range presets {
 		if spec != nil {
 			if err := mergePreset(preset, labels, spec.Containers, &spec.Volumes); err != nil {
 				return fmt.Errorf("job %s failed to merge presets for podspec: %v", name, err)
-			}
-		}
-
-		if buildSpec != nil {
-			if err := mergePreset(preset, labels, buildSpec.Steps, &buildSpec.Volumes); err != nil {
-				return fmt.Errorf("job %s failed to merge presets for buildspec: %v", name, err)
 			}
 		}
 	}
@@ -1384,45 +1755,63 @@ func validatePodSpec(jobType prowapi.ProwJobType, spec *v1.PodSpec) error {
 		return nil
 	}
 
+	var errs []error
+
 	if len(spec.InitContainers) != 0 {
-		return errors.New("pod spec may not use init containers")
+		errs = append(errs, errors.New("pod spec may not use init containers"))
 	}
 
 	if n := len(spec.Containers); n != 1 {
-		return fmt.Errorf("pod spec must specify exactly 1 container, found: %d", n)
+		// We must return here to not cause an out of bounds panic in the remaining validation
+		return utilerrors.NewAggregate(append(errs, fmt.Errorf("pod spec must specify exactly 1 container, found: %d", n)))
 	}
 
+	envNames := sets.String{}
 	for _, env := range spec.Containers[0].Env {
+		if envNames.Has(env.Name) {
+			errs = append(errs, fmt.Errorf("env var named %q is defined more than once", env.Name))
+		}
+		envNames.Insert(env.Name)
+
 		for _, prowEnv := range downwardapi.EnvForType(jobType) {
 			if env.Name == prowEnv {
 				// TODO(fejta): consider allowing this
-				return fmt.Errorf("env %s is reserved", env.Name)
+				errs = append(errs, fmt.Errorf("env %s is reserved", env.Name))
+			}
+		}
+	}
+
+	volumeNames := sets.String{}
+	for _, volume := range spec.Volumes {
+		if volumeNames.Has(volume.Name) {
+			errs = append(errs, fmt.Errorf("volume named %q is defined more than once", volume.Name))
+		}
+		volumeNames.Insert(volume.Name)
+
+		for _, prowVolume := range decorate.VolumeMounts() {
+			if volume.Name == prowVolume {
+				errs = append(errs, fmt.Errorf("volume %s is a reserved for decoration", volume.Name))
 			}
 		}
 	}
 
 	for _, mount := range spec.Containers[0].VolumeMounts {
+		if !volumeNames.Has(mount.Name) {
+			errs = append(errs, fmt.Errorf("volumeMount named %q is undefined", mount.Name))
+		}
 		for _, prowMount := range decorate.VolumeMounts() {
 			if mount.Name == prowMount {
-				return fmt.Errorf("volumeMount name %s is reserved for decoration", prowMount)
+				errs = append(errs, fmt.Errorf("volumeMount name %s is reserved for decoration", prowMount))
 			}
 		}
 		for _, prowMountPath := range decorate.VolumeMountPaths() {
 			if strings.HasPrefix(mount.MountPath, prowMountPath) || strings.HasPrefix(prowMountPath, mount.MountPath) {
-				return fmt.Errorf("mount %s at %s conflicts with decoration mount at %s", mount.Name, mount.MountPath, prowMountPath)
+				errs = append(errs, fmt.Errorf("mount %s at %s conflicts with decoration mount at %s", mount.Name, mount.MountPath, prowMountPath))
 			}
 		}
 	}
 
-	for _, volume := range spec.Volumes {
-		for _, prowVolume := range decorate.VolumeMounts() {
-			if volume.Name == prowVolume {
-				return fmt.Errorf("volume %s is a reserved for decoration", volume.Name)
-			}
-		}
-	}
-
-	return nil
+	return utilerrors.NewAggregate(errs)
 }
 
 func validateTriggering(job Presubmit) error {

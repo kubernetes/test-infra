@@ -17,10 +17,14 @@ limitations under the License.
 package secret
 
 import (
-	"github.com/sirupsen/logrus"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"testing"
+
+	"github.com/sirupsen/logrus"
+
+	"k8s.io/test-infra/prow/logrusutil"
 )
 
 func TestCensoringFormatter(t *testing.T) {
@@ -65,8 +69,13 @@ func TestCensoringFormatter(t *testing.T) {
 			expected:    "level=panic msg=\"A CENSORED is a CENSORED\"\n",
 		},
 		{
-			description: "occurrences of a multiple secrets in a field",
+			description: "occurrences of multiple secrets in a field",
 			entry:       &logrus.Entry{Message: "message", Data: logrus.Fields{"key": "A SECRET is a MYSTERY"}},
+			expected:    "level=panic msg=message key=\"A CENSORED is a CENSORED\"\n",
+		},
+		{
+			description: "occurrences of a secret in a non-string field",
+			entry:       &logrus.Entry{Message: "message", Data: logrus.Fields{"key": fmt.Errorf("A SECRET is a MYSTERY")}},
 			expected:    "level=panic msg=message key=\"A CENSORED is a CENSORED\"\n",
 		},
 	}
@@ -75,7 +84,7 @@ func TestCensoringFormatter(t *testing.T) {
 		DisableColors:    true,
 		DisableTimestamp: true,
 	}
-	formatter := agent.GetCensoringFormatter(baseFormatter)
+	formatter := logrusutil.NewCensoringFormatter(baseFormatter, agent.getSecrets)
 
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {

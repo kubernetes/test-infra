@@ -1,11 +1,11 @@
 periodics:
 - annotations:
-    testgrid-dashboards: sig-release-1.15-informing, conformance-all, conformance-gce
-    testgrid-tab-name: GCE, 1.15 (dev)
-    testgrid-num-failures-to-alert: '1'
-    testgrid-alert-stale-results-hours: '24'
-    testgrid-num-columns-recent: '3'
-  interval: 6h
+    testgrid-alert-stale-results-hours: "24"
+    testgrid-dashboards: sig-release-1.15-blocking, conformance-all, conformance-gce
+    testgrid-num-columns-recent: "3"
+    testgrid-num-failures-to-alert: "1"
+    testgrid-tab-name: Conformance - GCE - 1.15
+  interval: 3h
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
@@ -24,23 +24,23 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Conformance\]
       - --timeout=200m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-1.15
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-1.15
       name: ""
       resources: {}
 - annotations:
-    fork-per-release-cron: 0 3-23/6 * * *, 0 8-23/12 * * *, 0 8-23/24 * * *
+    fork-per-release-cron: 0 8-23/24 * * *
     fork-per-release-generic-suffix: "true"
     testgrid-alert-email: gke-kubernetes-accelerators-bugs@google.com
+    testgrid-alert-stale-results-hours: "24"
     testgrid-dashboards: sig-release-1.15-blocking
+    testgrid-num-failures-to-alert: "12"
     testgrid-tab-name: gce-device-plugin-gpu-1.15
-    testgrid-num-failures-to-alert: '12'
-    testgrid-alert-stale-results-hours: '24'
-  cron: 0 0-23/2 * * *
+  cron: 0 8-23/12 * * *
   labels:
     preset-ci-gce-device-plugin-gpu: "true"
     preset-k8s-ssh: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-e2e-gce-device-plugin-gpu-beta
+  name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable2
   spec:
     containers:
     - args:
@@ -49,27 +49,26 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
-      - --extract=ci/latest
+      - --extract=ci/latest-1.15
       - --gcp-node-image=gci
       - --gcp-project-type=gpu-project
       - --gcp-zone=us-west1-b
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-1.15
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-1.15
       name: ""
       resources: {}
 - annotations:
-    fork-per-release-generic-suffix: "true"
-    fork-per-release-periodic-interval: 2h 6h 24h
+    fork-per-release-periodic-interval: 24h
     testgrid-alert-email: kubernetes-sig-node+testgrid@googlegroups.com
     testgrid-dashboards: sig-release-1.15-blocking, sig-node-kubelet
     testgrid-tab-name: node-kubelet-1.15
-  interval: 1h
+  interval: 6h
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-node-kubelet-beta
+  name: ci-kubernetes-node-kubelet-1-15
   spec:
     containers:
     - args:
@@ -90,17 +89,17 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-1.15
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-1.15
       name: ""
       resources: {}
 - annotations:
-    fork-per-release-generic-suffix: "true"
-    testgrid-dashboards: sig-release-1.15-all
+    testgrid-dashboards: sig-node-kubelet, sig-release-1.15-informing
+    testgrid-tab-name: node-kubelet-features-1.15
   interval: 1h
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-node-kubelet-features-beta
+  name: ci-kubernetes-node-kubelet-features-1-15
   spec:
     containers:
     - args:
@@ -121,19 +120,19 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-1.15
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-1.15
       name: ""
       resources: {}
 - annotations:
     fork-per-release-generic-suffix: "true"
-    testgrid-alert-email: kubernetes-release-team@googlegroups.com
-    testgrid-dashboards: sig-release-1.15-blocking, google-unit
+    testgrid-alert-email: release-managers@kubernetes.io, kubernetes-release-team@googlegroups.com
+    testgrid-dashboards: sig-release-1.15-blocking
     testgrid-tab-name: build-1.15
   interval: 1h
   labels:
     preset-dind-enabled: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-build-beta
+  name: ci-kubernetes-build-stable2
   spec:
     containers:
     - args:
@@ -144,10 +143,10 @@ periodics:
       - --scenario=kubernetes_build
       - --
       - --allow-dup
-      - --extra-publish-file=k8s-beta
+      - --extra-publish-file=k8s-stable2
       - --hyperkube
       - --registry=gcr.io/kubernetes-ci-images
-      image: gcr.io/k8s-testimages/bootstrap:v20190703-1f4d616
+      image: gcr.io/k8s-testimages/bootstrap:v20200212-baf02ac
       name: ""
       resources:
         requests:
@@ -156,30 +155,31 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    fork-per-release-cron: 0 0/12 * * *, 0 4-16/12 * * *, 0 8-20/12 * * *
+    fork-per-release-cron: 0 8-20/12 * * *
     fork-per-release-generic-suffix: "true"
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com
-    testgrid-dashboards: sig-release-1.15-blocking, sig-scalability-gce, google-gce
+    testgrid-dashboards: sig-release-1.15-blocking, sig-scalability-gce,
+      google-gce
+    testgrid-num-failures-to-alert: "1"
     testgrid-tab-name: gce-cos-1.15-scalability-100
-    testgrid-num-failures-to-alert: '1'
-  cron: 0 */6 * * *
+  cron: 0 4-16/12 * * *
   labels:
     preset-e2e-scalability-common: "true"
     preset-k8s-ssh: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-e2e-gci-gce-scalability-beta
+  name: ci-kubernetes-e2e-gci-gce-scalability-stable2
   spec:
     containers:
     - args:
       - --timeout=140
       - --repo=k8s.io/kubernetes=release-1.15
-      - --repo=k8s.io/perf-tests=master
+      - --repo=k8s.io/perf-tests=release-1.15
       - --root=/go/src
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
       - --cluster=e2e-big
-      - --extract=ci/latest
+      - --extract=ci/latest-1.15
       - --gcp-node-image=gci
       - --gcp-nodes=100
       - --gcp-project-type=scalability-project
@@ -189,24 +189,78 @@ periodics:
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
       - --test-cmd-args=cluster-loader2
       - --test-cmd-args=--nodes=100
-      - --test-cmd-args=--prometheus-scrape-etcd
       - --test-cmd-args=--provider=gce
       - --test-cmd-args=--report-dir=/workspace/_artifacts
       - --test-cmd-args=--testconfig=testing/density/config.yaml
       - --test-cmd-args=--testconfig=testing/load/config.yaml
-      - --test-cmd-args=--testoverrides=./testing/density/100_nodes/override.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=120m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-1.15
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-1.15
       name: ""
       resources: {}
   tags:
-  - 'perfDashPrefix: gce-100Nodes'
+  - 'perfDashPrefix: gce-100Nodes-1.15'
   - 'perfDashJobType: performance'
   - 'perfDashBuildsCount: 500'
 - annotations:
-    testgrid-dashboards: sig-release-1.15-all
+    fork-per-release-cron: 0 21 * * *
+    fork-per-release-generic-suffix: "true"
+    testgrid-dashboards: sig-scalability-kubemark, sig-release-job-config-errors
+    testgrid-num-failures-to-alert: "1"
+    testgrid-tab-name: kubemark-1.15-500
+  cron: 0 15 * * *
+  labels:
+    preset-dind-enabled: "true"
+    preset-e2e-kubemark-common: "true"
+    preset-k8s-ssh: "true"
+    preset-service-account: "true"
+  name: ci-kubernetes-kubemark-500-gce-stable2
+  spec:
+    containers:
+    - args:
+      - --repo=k8s.io/kubernetes=release-1.15
+      - --repo=k8s.io/perf-tests=release-1.15
+      - --root=/go/src
+      - --timeout=140
+      - --scenario=kubernetes_e2e
+      - --
+      - --cluster=kubemark-500
+      - --extract=ci/latest-1.15
+      - --gcp-master-size=n1-standard-4
+      - --gcp-node-image=gci
+      - --gcp-node-size=n1-standard-8
+      - --gcp-nodes=8
+      - --gcp-project-type=scalability-project
+      - --gcp-zone=us-east1-b
+      - --kubemark
+      - --kubemark-nodes=500
+      - --provider=gce
+      - --test=false
+      - --test_args=--ginkgo.focus=xxxx
+      - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+      - --test-cmd-args=cluster-loader2
+      - --test-cmd-args=--nodes=500
+      - --test-cmd-args=--provider=kubemark
+      - --test-cmd-args=--report-dir=/workspace/_artifacts
+      - --test-cmd-args=--testconfig=testing/density/config.yaml
+      - --test-cmd-args=--testconfig=testing/load/config.yaml
+      - --test-cmd-args=--testoverrides=./testing/load/kubemark/500_nodes/override.yaml
+      - --test-cmd-name=ClusterLoaderV2
+      - --timeout=80m
+      - --use-logexporter
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-1.15
+      name: ""
+      resources: {}
+      securityContext:
+        privileged: true
+  tags:
+  - 'perfDashPrefix: kubemark-500Nodes-1.15'
+  - 'perfDashJobType: performance'
+- annotations:
+    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+    testgrid-dashboards: sig-release-1.15-blocking, google-unit
+    testgrid-tab-name: bazel-build-1.15
   decorate: true
   extra_refs:
   - base_ref: release-1.15
@@ -236,11 +290,16 @@ periodics:
             --publish-version=gs://kubernetes-release-dev/ci/latest-bazel-1.15.txt
       command:
       - bash
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-1.15
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-1.15
       name: ""
       resources: {}
+  rerun_auth_config:
+    github_team_ids:
+      - 2241179 # release-managers
 - annotations:
-    testgrid-dashboards: sig-release-1.15-all
+    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+    testgrid-dashboards: sig-release-1.15-blocking, google-unit
+    testgrid-tab-name: bazel-test-1.15
   decorate: true
   extra_refs:
   - base_ref: release-1.15
@@ -273,15 +332,15 @@ periodics:
       resources: {}
 - annotations:
     fork-per-release-generic-suffix: "true"
-    fork-per-release-periodic-interval: 2h 6h 24h
+    fork-per-release-periodic-interval: 24h
     testgrid-alert-email: kubernetes-release-team@googlegroups.com
     testgrid-dashboards: sig-release-1.15-blocking, google-unit
     testgrid-tab-name: integration-1.15
-  interval: 2h
+  interval: 6h
   labels:
     preset-dind-enabled: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-integration-beta
+  name: ci-kubernetes-integration-stable2
   spec:
     containers:
     - args:
@@ -292,7 +351,7 @@ periodics:
       - --branch=release-1.15
       - --force
       - --prow
-      image: gcr.io/k8s-testimages/bootstrap:v20190703-1f4d616
+      image: gcr.io/k8s-testimages/bootstrap:v20200212-baf02ac
       name: ""
       resources:
         requests:
@@ -301,8 +360,8 @@ periodics:
         privileged: true
 - annotations:
     fork-per-release-generic-suffix: "true"
-    fork-per-release-periodic-interval: 2h 6h 24h
-    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+    fork-per-release-periodic-interval: 24h
+    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com, release-managers@kubernetes.io
     testgrid-dashboards: sig-release-1.15-blocking, google-unit
     testgrid-tab-name: verify-1.15
   decorate: true
@@ -311,11 +370,11 @@ periodics:
     org: kubernetes
     path_alias: k8s.io/kubernetes
     repo: kubernetes
-  interval: 2h
+  interval: 6h
   labels:
     preset-dind-enabled: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-verify-beta
+  name: ci-kubernetes-verify-stable2
   spec:
     containers:
     - args:
@@ -331,7 +390,7 @@ periodics:
         value: release-1.15
       - name: REPO_DIR
         value: /workspace/k8s.io/kubernetes
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-1.15
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-1.15
       imagePullPolicy: Always
       name: ""
       resources:
@@ -339,12 +398,53 @@ periodics:
           cpu: "4"
       securityContext:
         privileged: true
+- annotations:
+    description: Runs tests on a Kubernetes 1.15 cluster with Windows 2019 nodes on GCE
+    testgrid-dashboards: google-windows, sig-release-1.15-informing, sig-windows
+    testgrid-tab-name: gce-windows-1.15
+  decorate: true
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: windows-testing
+    base_ref: master
+    path_alias: k8s.io/windows-testing
+  interval: 2h
+  labels:
+    preset-common-gce-windows: "true"
+    preset-e2e-gce-windows: "true"
+    preset-k8s-ssh: "true"
+    preset-service-account: "true"
+  name: ci-kubernetes-e2e-windows-gce-stable2
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --check-leaked-resources
+      - --cluster=
+      - --extract=ci/latest-1.15
+      - --gcp-zone=us-west1-b
+      - --ginkgo-parallel=8
+      - --provider=gce
+      - --gcp-nodes=2
+      - --test=false
+      - --test-cmd=$GOPATH/src/k8s.io/windows-testing/gce/run-e2e.sh
+      - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]
+        --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
+      - --test-cmd-args=--node-os-distro=windows
+      - --timeout=120m
+      env:
+      - name: WINDOWS_NODE_OS_DISTRIBUTION
+        value: "win2019"
+      - name: PREPULL_YAML
+        value: "prepull-1.15.yaml"
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-1.15
+
 postsubmits:
   kubernetes/kubernetes:
   - annotations:
-      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-      testgrid-dashboards: sig-release-1.15-blocking, google-unit
-      testgrid-tab-name: bazel-build-1.15
+      testgrid-dashboards: sig-release-job-config-errors
     branches:
     - release-1.15
     labels:
@@ -367,13 +467,16 @@ postsubmits:
         - --gcs=gs://kubernetes-release-dev/ci
         - --version-suffix=-bazel
         - --publish-version=gs://kubernetes-release-dev/ci/latest-bazel-1.15.txt
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-1.15
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-1.15
         name: ""
         resources:
           requests:
             memory: 6Gi
+    rerun_auth_config:
+      github_team_ids:
+        - 2241179 # release-managers
   - annotations:
-      testgrid-dashboards: sig-release-1.15-all
+      testgrid-dashboards: sig-release-job-config-errors
     branches:
     - release-1.15
     decorate: true
@@ -441,9 +544,9 @@ presubmits:
         - --ginkgo-parallel
         - --provider=aws
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-kops-aws
-        - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
+        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
         - --timeout=55m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-1.15
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-1.15
         name: ""
         resources:
           requests:
@@ -485,7 +588,7 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-device-plugin-gpu
         - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
         - --timeout=60m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-1.15
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-1.15
         name: ""
         resources:
           requests:
@@ -518,7 +621,7 @@ presubmits:
         - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
         - --gcp-node-image=gci
         - --gcp-project=k8s-gke-gpu-pr
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-west1-c
         - --ginkgo-parallel=30
         - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-k80,count=2
         - --gke-environment=test
@@ -527,7 +630,7 @@ presubmits:
         - --stage-suffix=pull-kubernetes-e2e-gke-device-plugin-gpu
         - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
         - --timeout=60m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-1.15
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-1.15
         name: ""
         resources:
           requests:
@@ -562,14 +665,22 @@ presubmits:
         - --provider=gce
         - --runtime-config=batch/v2alpha1=true
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce
-        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
+          --minStartupPods=8
         - --timeout=80m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-1.15
+        env:
+        - name: GINKGO_TOLERATE_FLAKES
+          value: "y"
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-1.15
         name: ""
         resources:
           requests:
             memory: 6Gi
   - always_run: true
+    annotations:
+      testgrid-alert-stale-results-hours: "24"
+      testgrid-create-test-group: "true"
+      testgrid-num-failures-to-alert: "10"
     branches:
     - release-1.15
     decorate: true
@@ -604,17 +715,14 @@ presubmits:
         - --provider=gce
         - --runtime-config=batch/v2alpha1=true
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce
-        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
+          --minStartupPods=8
         - --timeout=80m
         command:
         - ../test-infra/scenarios/kubernetes_e2e.py
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-1.15
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-1.15
         name: ""
         resources: {}
-    annotations:
-      testgrid-num-failures-to-alert: '10'
-      testgrid-alert-stale-results-hours: '24'
-      testgrid-create-test-group: 'true'
   - always_run: false
     branches:
     - release-1.15
@@ -640,7 +748,7 @@ presubmits:
         - --extract=local
         - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
         - --gcp-node-image=gci
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-west1-c
         - --ginkgo-parallel=30
         - --gke-create-command=container clusters create --quiet --addons=HttpLoadBalancing,HorizontalPodAutoscaling
         - --gke-environment=test
@@ -648,9 +756,10 @@ presubmits:
         - --provider=gke
         - --stage=gs://kubernetes-release-dev/ci
         - --stage-suffix=pull-kubernetes-e2e-gke
-        - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
+          --minStartupPods=8
         - --timeout=65m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-1.15
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-1.15
         name: ""
         resources:
           requests:
@@ -680,15 +789,18 @@ presubmits:
         - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
         - --node-tests=true
         - --provider=gce
-        - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]" --flakeAttempts=2
+        - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"
         - --timeout=65m
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-1.15
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-1.15
         name: ""
         resources:
           requests:
             memory: 6Gi
   - always_run: false
+    annotations:
+      testgrid-create-test-group: "true"
+      testgrid-num-failures-to-alert: "10"
     branches:
     - release-1.15
     labels:
@@ -721,16 +833,63 @@ presubmits:
         - --provider=gce
         - --runtime-config=batch/v2alpha1=true
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-containerd-gce
-        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:RuntimeHandler\] --minStartupPods=8
+        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:RuntimeHandler\]
+          --minStartupPods=8
         - --timeout=80m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-1.15
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-1.15
         name: ""
         resources:
           requests:
             memory: 6Gi
-    annotations:
-      testgrid-num-failures-to-alert: '10'
-      testgrid-create-test-group: 'true'
+  - always_run: true
+    branches:
+    - release-1.15
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-e2e-scalability-common: "true"
+      preset-e2e-scalability-presubmits: "true"
+    max_concurrency: 12
+    name: pull-kubernetes-e2e-gce-100-performance
+    skip_report: false
+    spec:
+      containers:
+      - args:
+        - --root=/go/src
+        - --repo=k8s.io/kubernetes=$(PULL_REFS)
+        - --repo=k8s.io/perf-tests=release-1.15
+        - --repo=k8s.io/release
+        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --timeout=120
+        - --scenario=kubernetes_e2e
+        - --
+        - --build=bazel
+        - --cluster=
+        - --extract=local
+        - --gcp-nodes=100
+        - --gcp-project-type=scalability-presubmit-project
+        - --gcp-zone=us-east1-b
+        - --provider=gce
+        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-100-performance
+        - --tear-down-previous
+        - --test=false
+        - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+        - --test-cmd-args=cluster-loader2
+        - --test-cmd-args=--nodes=100
+        - --test-cmd-args=--provider=gce
+        - --test-cmd-args=--report-dir=/workspace/_artifacts
+        - --test-cmd-args=--testconfig=testing/density/config.yaml
+        - --test-cmd-args=--testconfig=testing/load/config.yaml
+        - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
+        - --test-cmd-args=--testoverrides=./testing/load/gce/throughput_override.yaml
+        - --test-cmd-name=ClusterLoaderV2
+        - --timeout=100m
+        - --use-logexporter
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+        resources:
+          requests:
+            memory: "6Gi"
   - always_run: true
     branches:
     - release-1.15
@@ -740,6 +899,7 @@ presubmits:
       preset-e2e-kubemark-common: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
+      preset-e2e-scalability-presubmits: "true"
     max_concurrency: 12
     name: pull-kubernetes-kubemark-e2e-gce-big
     spec:
@@ -748,7 +908,9 @@ presubmits:
         - --root=/go/src
         - --job=$(JOB_NAME)
         - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
-        - --repo=k8s.io/perf-tests=master
+        # Use newer perf-tests branch with additional fixes for kubemark
+        # This mismatch is intended only for release branches older than 1.16
+        - --repo=k8s.io/perf-tests=release-1.16
         - --repo=k8s.io/release
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-jenkins/pr-logs
@@ -780,7 +942,7 @@ presubmits:
         - --test-cmd-args=--testoverrides=./testing/load/kubemark/500_nodes/override.yaml
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=100m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-1.15
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-1.15
         name: ""
         resources:
           requests:
@@ -853,6 +1015,111 @@ presubmits:
         env:
         - name: WHAT
           value: typecheck
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-1.15
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-1.15
         name: main
         resources: {}
+  kubernetes/perf-tests:
+  - always_run: false
+    branches:
+    - release-1.15
+    labels:
+      preset-bazel-scratch-dir: "true"
+      preset-e2e-scalability-common: "true"
+      preset-e2e-scalability-presubmits: "true"
+      preset-k8s-ssh: "true"
+      preset-service-account: "true"
+    max_concurrency: 3
+    name: pull-perf-tests-clusterloader2
+    run_if_changed: ^clusterloader2/.*$
+    spec:
+      containers:
+      - args:
+        - --root=/go/src
+        - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --timeout=120
+        - --scenario=kubernetes_e2e
+        - --
+        - --cluster=
+        - --extract=ci/latest-1.15
+        - --gcp-nodes=100
+        - --gcp-project-type=scalability-presubmit-project
+        - --gcp-zone=us-east1-b
+        - --provider=gce
+        - --tear-down-previous
+        - --test=false
+        - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+        - --test-cmd-args=cluster-loader2
+        - --test-cmd-args=--nodes=100
+        - --test-cmd-args=--prometheus-scrape-node-exporter
+        - --test-cmd-args=--provider=gce
+        - --test-cmd-args=--report-dir=/workspace/_artifacts
+        - --test-cmd-args=--testconfig=testing/density/config.yaml
+        - --test-cmd-args=--testconfig=testing/load/config.yaml
+        - --test-cmd-args=--testoverrides=./testing/load/gce/throughput_override.yaml
+        - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
+        - --test-cmd-name=ClusterLoaderV2
+        - --timeout=100m
+        - --use-logexporter
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200206-f88edef-1.15
+        name: ""
+        resources:
+          requests:
+            memory: 6Gi
+  - always_run: false
+    branches:
+    - release-1.15
+    labels:
+      preset-bazel-scratch-dir: "true"
+      preset-dind-enabled: "true"
+      preset-e2e-kubemark-common: "true"
+      preset-e2e-scalability-presubmits: "true"
+      preset-k8s-ssh: "true"
+      preset-service-account: "true"
+    max_concurrency: 3
+    name: pull-perf-tests-clusterloader2-kubemark
+    run_if_changed: ^clusterloader2/.*$
+    spec:
+      containers:
+      - args:
+        - --root=/go/src
+        - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --service-account=/etc/service-account/service-account.json
+        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --timeout=120
+        - --scenario=kubernetes_e2e
+        - --
+        - --cluster=
+        - --extract=ci/latest-1.15
+        - --gcp-master-size=n1-standard-2
+        - --gcp-node-size=n1-standard-4
+        - --gcp-nodes=4
+        - --gcp-project-type=scalability-presubmit-project
+        - --gcp-zone=us-east1-b
+        - --kubemark
+        - --kubemark-nodes=100
+        - --provider=gce
+        - --tear-down-previous
+        - --test=false
+        - --test_args=--ginkgo.focus=xxxx
+        - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+        - --test-cmd-args=cluster-loader2
+        - --test-cmd-args=--nodes=100
+        - --test-cmd-args=--prometheus-scrape-node-exporter
+        - --test-cmd-args=--provider=kubemark
+        - --test-cmd-args=--report-dir=/workspace/_artifacts
+        - --test-cmd-args=--testconfig=testing/density/config.yaml
+        - --test-cmd-args=--testconfig=testing/load/config.yaml
+        - --test-cmd-args=--testoverrides=./testing/load/kubemark/throughput_override.yaml
+        - --test-cmd-name=ClusterLoaderV2
+        - --timeout=100m
+        - --use-logexporter
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200206-f88edef-1.15
+        name: ""
+        resources:
+          requests:
+            memory: 6Gi
+        securityContext:
+          privileged: true

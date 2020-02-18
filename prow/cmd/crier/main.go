@@ -17,30 +17,35 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"errors"
 	"flag"
 	"os"
-	"os/signal"
-	"sync"
-	"syscall"
 	"time"
 
+	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
-	"k8s.io/test-infra/prow/pjutil"
+	"google.golang.org/api/option"
 
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowjobinformer "k8s.io/test-infra/prow/client/informers/externalversions"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/crier"
+	gcsreporter "k8s.io/test-infra/prow/crier/reporters/gcs"
+	k8sgcsreporter "k8s.io/test-infra/prow/crier/reporters/gcs/kubernetes"
+	gerritreporter "k8s.io/test-infra/prow/crier/reporters/gerrit"
+	githubreporter "k8s.io/test-infra/prow/crier/reporters/github"
+	pubsubreporter "k8s.io/test-infra/prow/crier/reporters/pubsub"
+	slackreporter "k8s.io/test-infra/prow/crier/reporters/slack"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	gerritclient "k8s.io/test-infra/prow/gerrit/client"
-	gerritreporter "k8s.io/test-infra/prow/gerrit/reporter"
-	githubreporter "k8s.io/test-infra/prow/github/reporter"
+	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
-	pubsubreporter "k8s.io/test-infra/prow/pubsub/reporter"
-	slackreporter "k8s.io/test-infra/prow/slack/reporter"
+	"k8s.io/test-infra/prow/metrics"
+	"k8s.io/test-infra/prow/pjutil"
 )
 
 const (
@@ -49,7 +54,7 @@ const (
 )
 
 type options struct {
-	client         prowflagutil.ExperimentalKubernetesOptions
+	client         prowflagutil.KubernetesOptions
 	cookiefilePath string
 	gerritProjects gerritclient.ProjectsFlag
 	github         prowflagutil.GitHubOptions
@@ -61,8 +66,14 @@ type options struct {
 	pubsubWorkers int
 	githubWorkers int
 	slackWorkers  int
+	gcsWorkers    int
+	k8sGCSWorkers int
 
 	slackTokenFile string
+
+	gcsCredentialsFile string
+
+	k8sReportFraction float64
 
 	dryrun      bool
 	reportAgent string
@@ -85,8 +96,12 @@ func (o *options) validate() error {
 		o.githubWorkers = 1
 	}
 
-	if o.gerritWorkers+o.pubsubWorkers+o.githubWorkers+o.slackWorkers <= 0 {
+	if o.gerritWorkers+o.pubsubWorkers+o.githubWorkers+o.slackWorkers+o.gcsWorkers+o.k8sGCSWorkers <= 0 {
 		return errors.New("crier need to have at least one report worker to start")
+	}
+
+	if o.k8sReportFraction < 0 || o.k8sReportFraction > 1 {
+		return errors.New("--kubernetes-report-fraction must be a float between 0 and 1")
 	}
 
 	if o.gerritWorkers > 0 {
@@ -128,6 +143,10 @@ func (o *options) parseArgs(fs *flag.FlagSet, args []string) error {
 	fs.IntVar(&o.pubsubWorkers, "pubsub-workers", 0, "Number of pubsub report workers (0 means disabled)")
 	fs.IntVar(&o.githubWorkers, "github-workers", 0, "Number of github report workers (0 means disabled)")
 	fs.IntVar(&o.slackWorkers, "slack-workers", 0, "Number of Slack report workers (0 means disabled)")
+	fs.IntVar(&o.gcsWorkers, "gcs-workers", 0, "Number of GCS report workers (0 means disabled)")
+	fs.IntVar(&o.k8sGCSWorkers, "kubernetes-gcs-workers", 0, "Number of Kubernetes-specific GCS report workers (0 means disabled)")
+	fs.Float64Var(&o.k8sReportFraction, "kubernetes-report-fraction", 1.0, "Approximate portion of jobs to report pod information for, if kubernetes-gcs-workers are enabled (0 - > none, 1.0 -> all)")
+	fs.StringVar(&o.gcsCredentialsFile, "gcs-credentials-file", "", "Location of the GCS credentials file, if gcs-workers is non-zero")
 	fs.StringVar(&o.slackTokenFile, "slack-token-file", "", "Path to a Slack token file")
 	fs.StringVar(&o.reportAgent, "report-agent", "", "Only report specified agent - empty means report to all agents (effective for github and Slack only)")
 
@@ -160,6 +179,8 @@ func main() {
 
 	o := parseOptions()
 
+	defer interrupts.WaitForGracefulShutdown()
+
 	pjutil.ServePProf()
 
 	configAgent := &config.Agent{}
@@ -177,15 +198,12 @@ func main() {
 
 	var controllers []*crier.Controller
 
-	// track all worker status before shutdown
-	wg := &sync.WaitGroup{}
-
 	if o.slackWorkers > 0 {
-		if cfg().SlackReporter == nil {
+		if cfg().SlackReporter == nil && cfg().SlackReporterConfigs == nil {
 			logrus.Fatal("slackreporter is enabled but has no config")
 		}
-		slackConfig := func() *config.SlackReporter {
-			return cfg().SlackReporter
+		slackConfig := func(refs *prowapi.Refs) config.SlackReporter {
+			return cfg().SlackReporterConfigs.GetSlackReporter(refs)
 		}
 		slackReporter, err := slackreporter.New(slackConfig, o.dryrun, o.slackTokenFile)
 		if err != nil {
@@ -198,8 +216,7 @@ func main() {
 				kube.RateLimiter(slackReporter.GetName()),
 				prowjobInformerFactory.Prow().V1().ProwJobs(),
 				slackReporter,
-				o.slackWorkers,
-				wg))
+				o.slackWorkers))
 	}
 
 	if o.gerritWorkers > 0 {
@@ -216,8 +233,7 @@ func main() {
 				kube.RateLimiter(gerritReporter.GetName()),
 				informer,
 				gerritReporter,
-				o.gerritWorkers,
-				wg))
+				o.gerritWorkers))
 	}
 
 	if o.pubsubWorkers > 0 {
@@ -229,8 +245,7 @@ func main() {
 				kube.RateLimiter(pubsubReporter.GetName()),
 				prowjobInformerFactory.Prow().V1().ProwJobs(),
 				pubsubReporter,
-				o.pubsubWorkers,
-				wg))
+				o.pubsubWorkers))
 	}
 
 	if o.githubWorkers > 0 {
@@ -254,43 +269,64 @@ func main() {
 				kube.RateLimiter(githubReporter.GetName()),
 				prowjobInformerFactory.Prow().V1().ProwJobs(),
 				githubReporter,
-				o.githubWorkers,
-				wg))
+				o.githubWorkers))
+	}
+
+	if o.gcsWorkers > 0 || o.k8sGCSWorkers > 0 {
+		var s *storage.Client
+		var opts []option.ClientOption
+		if o.gcsCredentialsFile != "" {
+			opts = append(opts, option.WithCredentialsFile(o.gcsCredentialsFile))
+		}
+		s, err = storage.NewClient(context.Background(), opts...)
+
+		if err != nil {
+			logrus.WithError(err).Fatal("Error creating storage client for gcs workers.")
+		}
+
+		if o.gcsWorkers > 0 {
+			gcsReporter := gcsreporter.New(cfg, s, o.dryrun)
+			controllers = append(
+				controllers,
+				crier.NewController(
+					prowjobClientset,
+					kube.RateLimiter(gcsReporter.GetName()),
+					prowjobInformerFactory.Prow().V1().ProwJobs(),
+					gcsReporter,
+					o.gcsWorkers))
+		}
+
+		if o.k8sGCSWorkers > 0 {
+			coreClients, err := o.client.BuildClusterCoreV1Clients(o.dryrun)
+			if err != nil {
+				logrus.WithError(err).Fatal("Error building pod client sets for Kubernetes GCS workers")
+			}
+
+			k8sGcsReporter := k8sgcsreporter.New(cfg, s, coreClients, float32(o.k8sReportFraction), o.dryrun)
+			controllers = append(
+				controllers,
+				crier.NewController(
+					prowjobClientset,
+					kube.RateLimiter(k8sGcsReporter.GetName()),
+					prowjobInformerFactory.Prow().V1().ProwJobs(),
+					k8sGcsReporter,
+					o.k8sGCSWorkers))
+		}
 	}
 
 	if len(controllers) == 0 {
 		logrus.Fatalf("should have at least one controller to start crier.")
 	}
 
-	stopCh := make(chan struct{})
-	defer close(stopCh)
+	// Push metrics to the configured prometheus pushgateway endpoint or serve them
+	metrics.ExposeMetrics("crier", cfg().PushGateway)
 
 	// run the controller loop to process items
-	prowjobInformerFactory.Start(stopCh)
-	for _, controller := range controllers {
-		go controller.Run(stopCh)
-	}
-
-	sigTerm := make(chan os.Signal, 1)
-	signal.Notify(sigTerm, syscall.SIGTERM)
-	signal.Notify(sigTerm, syscall.SIGINT)
-
-	<-sigTerm
-	logrus.Info("Crier received a termination signal and is shutting down...")
-	for range controllers {
-		stopCh <- struct{}{}
-	}
-
-	// waiting for all crier worker to finish
-	c := make(chan struct{})
-	go func() {
-		defer close(c)
-		wg.Wait()
-	}()
-	select {
-	case <-c:
-		logrus.Info("All worker finished, exiting crier")
-	case <-time.After(10 * time.Second):
-		logrus.Info("timed out waiting for all worker to finish")
+	prowjobInformerFactory.Start(interrupts.Context().Done())
+	for i := range controllers {
+		controller := controllers[i]
+		interrupts.Run(func(ctx context.Context) {
+			controller.Run(ctx)
+		})
 	}
 }

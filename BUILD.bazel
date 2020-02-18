@@ -1,5 +1,5 @@
 # gazelle:prefix k8s.io/test-infra
-# gazelle:proto disable_global
+# gazelle:proto disable
 # gazelle:exclude vendor/k8s.io/code-generator/_examples/
 # gazelle:exclude hack
 # gazelle:exclude node_modules
@@ -81,6 +81,7 @@ filegroup(
         ["**"],
         exclude = [
             "bazel-*/**",
+            "node_modules/**",
             ".git/**",
             "*.db",
             "*.gz",
@@ -99,12 +100,13 @@ filegroup(
         "//experiment:all-srcs",
         "//gcsweb/cmd/gcsweb:all-srcs",
         "//gcsweb/pkg/version:all-srcs",
+        "//gencred:all-srcs",
         "//ghproxy:all-srcs",
         "//gopherage:all-srcs",
         "//greenhouse:all-srcs",
         "//hack:all-srcs",
-        "//images/bootstrap/barnacle:all-srcs",
         "//images/builder:all-srcs",
+        "//images/krte:all-srcs",
         "//images/kubekins-e2e:all-srcs",
         "//jenkins:all-srcs",
         "//jobs:all-srcs",
@@ -114,14 +116,15 @@ filegroup(
         "//label_sync:all-srcs",
         "//linkcheck:all-srcs",
         "//logexporter/cmd:all-srcs",
-        "//maintenance/aws-janitor:all-srcs",
         "//maintenance/migratestatus:all-srcs",
         "//metrics:all-srcs",
         "//pkg/benchmarkjunit:all-srcs",
         "//pkg/flagutil:all-srcs",
+        "//pkg/genyaml:all-srcs",
         "//pkg/ghclient:all-srcs",
         "//pkg/io:all-srcs",
         "//prow:all-srcs",
+        "//releng:all-srcs",
         "//robots/commenter:all-srcs",
         "//robots/coverage:all-srcs",
         "//robots/issue-creator:all-srcs",
@@ -131,7 +134,6 @@ filegroup(
         "//testgrid:all-srcs",
         "//triage:all-srcs",
         "//velodrome:all-srcs",
-        "//vendor:all-srcs",
     ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
@@ -143,7 +145,11 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
-exports_files(["tsconfig.json"])
+exports_files([
+    "tsconfig.json",
+    "go.mod",
+    "go.sum",
+])
 
 platform(
     name = "rbe_with_network",

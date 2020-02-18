@@ -17,29 +17,20 @@ limitations under the License.
 package pjutil
 
 import (
+	"context"
+	"errors"
 	"testing"
 	"time"
 
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/sets"
+	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
+	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
+
 	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
-
-type fakeProwClient struct {
-	repalcedJobs map[string]*prowjobv1.ProwJob
-}
-
-func newFakeProwClient() *fakeProwClient {
-	return &fakeProwClient{
-		repalcedJobs: map[string]*prowjobv1.ProwJob{},
-	}
-}
-
-func (c *fakeProwClient) ReplaceProwJob(name string, pj prowjobv1.ProwJob) (prowjobv1.ProwJob, error) {
-	c.repalcedJobs[name] = pj.DeepCopy()
-	return pj, nil
-}
 
 func TestTerminateOlderJobs(t *testing.T) {
 	fakePJNS := "prow-job"
@@ -131,7 +122,7 @@ func TestTerminateOlderJobs(t *testing.T) {
 			terminateddPJs: sets.NewString("old", "older"),
 		},
 		{
-			name: "terminate all older batch jobs",
+			name: "Don't terminate older batch jobs",
 			pjs: []prowjobv1.ProwJob{
 				{
 					ObjectMeta: metav1.ObjectMeta{Name: "newest", Namespace: fakePJNS},
@@ -205,7 +196,7 @@ func TestTerminateOlderJobs(t *testing.T) {
 					},
 				},
 			},
-			terminateddPJs: sets.NewString("old", "older"),
+			terminateddPJs: sets.NewString(),
 		},
 		{
 			name: "terminate older jobs with different orders of refs",
@@ -213,7 +204,7 @@ func TestTerminateOlderJobs(t *testing.T) {
 				{
 					ObjectMeta: metav1.ObjectMeta{Name: "newest", Namespace: fakePJNS},
 					Spec: prowjobv1.ProwJobSpec{
-						Type: prowjobv1.BatchJob,
+						Type: prowjobv1.PresubmitJob,
 						Job:  "j1",
 						Refs: &prowjobv1.Refs{
 							Repo:  "test",
@@ -227,7 +218,7 @@ func TestTerminateOlderJobs(t *testing.T) {
 				{
 					ObjectMeta: metav1.ObjectMeta{Name: "old", Namespace: fakePJNS},
 					Spec: prowjobv1.ProwJobSpec{
-						Type: prowjobv1.BatchJob,
+						Type: prowjobv1.PresubmitJob,
 						Job:  "j1",
 						Refs: &prowjobv1.Refs{
 							Repo:  "test",
@@ -247,7 +238,7 @@ func TestTerminateOlderJobs(t *testing.T) {
 				{
 					ObjectMeta: metav1.ObjectMeta{Name: "newest", Namespace: fakePJNS},
 					Spec: prowjobv1.ProwJobSpec{
-						Type: prowjobv1.BatchJob,
+						Type: prowjobv1.PresubmitJob,
 						Job:  "j1",
 						Refs: &prowjobv1.Refs{
 							Repo:  "test",
@@ -271,7 +262,7 @@ func TestTerminateOlderJobs(t *testing.T) {
 				{
 					ObjectMeta: metav1.ObjectMeta{Name: "old", Namespace: fakePJNS},
 					Spec: prowjobv1.ProwJobSpec{
-						Type: prowjobv1.BatchJob,
+						Type: prowjobv1.PresubmitJob,
 						Job:  "j1",
 						Refs: &prowjobv1.Refs{
 							Repo:  "test",
@@ -301,7 +292,7 @@ func TestTerminateOlderJobs(t *testing.T) {
 				{
 					ObjectMeta: metav1.ObjectMeta{Name: "newest", Namespace: fakePJNS},
 					Spec: prowjobv1.ProwJobSpec{
-						Type: prowjobv1.BatchJob,
+						Type: prowjobv1.PresubmitJob,
 						Job:  "j1",
 						ExtraRefs: []prowjobv1.Refs{
 							{
@@ -317,7 +308,7 @@ func TestTerminateOlderJobs(t *testing.T) {
 				{
 					ObjectMeta: metav1.ObjectMeta{Name: "old", Namespace: fakePJNS},
 					Spec: prowjobv1.ProwJobSpec{
-						Type: prowjobv1.BatchJob,
+						Type: prowjobv1.PresubmitJob,
 						Job:  "j1",
 						ExtraRefs: []prowjobv1.Refs{
 							{
@@ -339,7 +330,7 @@ func TestTerminateOlderJobs(t *testing.T) {
 				{
 					ObjectMeta: metav1.ObjectMeta{Name: "newest", Namespace: fakePJNS},
 					Spec: prowjobv1.ProwJobSpec{
-						Type: prowjobv1.BatchJob,
+						Type: prowjobv1.PresubmitJob,
 						Job:  "j1",
 						Refs: &prowjobv1.Refs{
 							Repo:    "test",
@@ -354,7 +345,7 @@ func TestTerminateOlderJobs(t *testing.T) {
 				{
 					ObjectMeta: metav1.ObjectMeta{Name: "old", Namespace: fakePJNS},
 					Spec: prowjobv1.ProwJobSpec{
-						Type: prowjobv1.BatchJob,
+						Type: prowjobv1.PresubmitJob,
 						Job:  "j1",
 						Refs: &prowjobv1.Refs{
 							Repo:    "test",
@@ -375,7 +366,7 @@ func TestTerminateOlderJobs(t *testing.T) {
 				{
 					ObjectMeta: metav1.ObjectMeta{Name: "newest", Namespace: fakePJNS},
 					Spec: prowjobv1.ProwJobSpec{
-						Type: prowjobv1.BatchJob,
+						Type: prowjobv1.PresubmitJob,
 						Job:  "j1",
 						Refs: &prowjobv1.Refs{
 							Repo:    "test",
@@ -390,7 +381,7 @@ func TestTerminateOlderJobs(t *testing.T) {
 				{
 					ObjectMeta: metav1.ObjectMeta{Name: "old", Namespace: fakePJNS},
 					Spec: prowjobv1.ProwJobSpec{
-						Type: prowjobv1.BatchJob,
+						Type: prowjobv1.PresubmitJob,
 						Job:  "j1",
 						Refs: &prowjobv1.Refs{
 							Repo:    "test",
@@ -411,7 +402,7 @@ func TestTerminateOlderJobs(t *testing.T) {
 				{
 					ObjectMeta: metav1.ObjectMeta{Name: "newest", Namespace: fakePJNS},
 					Spec: prowjobv1.ProwJobSpec{
-						Type: prowjobv1.BatchJob,
+						Type: prowjobv1.PresubmitJob,
 						Job:  "j1",
 						Refs: &prowjobv1.Refs{
 							Repo:  "test",
@@ -425,7 +416,7 @@ func TestTerminateOlderJobs(t *testing.T) {
 				{
 					ObjectMeta: metav1.ObjectMeta{Name: "old", Namespace: fakePJNS},
 					Spec: prowjobv1.ProwJobSpec{
-						Type: prowjobv1.BatchJob,
+						Type: prowjobv1.PresubmitJob,
 						Job:  "j1",
 						Refs: &prowjobv1.Refs{
 							Repo:  "test",
@@ -443,10 +434,14 @@ func TestTerminateOlderJobs(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			pjc := newFakeProwClient()
+			var prowJobs []runtime.Object
+			for i := range tc.pjs {
+				prowJobs = append(prowJobs, &tc.pjs[i])
+			}
+			fakeProwJobClient := &patchTrackingFakeClient{Client: fakectrlruntimeclient.NewFakeClient(prowJobs...)}
 			log := logrus.NewEntry(logrus.StandardLogger())
 			cleanedupPJs := sets.NewString()
-			err := TerminateOlderJobs(pjc, log, tc.pjs, func(pj prowjobv1.ProwJob) error {
+			err := TerminateOlderJobs(fakeProwJobClient, log, tc.pjs, func(pj prowjobv1.ProwJob) error {
 				cleanedupPJs.Insert(pj.GetName())
 				return nil
 			})
@@ -461,13 +456,7 @@ func TestTerminateOlderJobs(t *testing.T) {
 				t.Errorf("%s: found unexpectedly cleaned up jobs: %v", tc.name, extra.List())
 			}
 
-			replacedJobs := sets.NewString()
-			for _, pj := range pjc.repalcedJobs {
-				if pj.Status.State != prowjobv1.AbortedState {
-					t.Errorf("%s: did not aborted the prow job: name=%s, state=%s", tc.name, pj.GetName(), pj.Status.State)
-				}
-				replacedJobs.Insert(pj.GetName())
-			}
+			replacedJobs := fakeProwJobClient.patched
 			if missing := tc.terminateddPJs.Difference(replacedJobs); missing.Len() > 0 {
 				t.Errorf("%s: did not replace the expected jobs: %v", tc.name, missing.Len())
 			}
@@ -476,4 +465,21 @@ func TestTerminateOlderJobs(t *testing.T) {
 			}
 		})
 	}
+}
+
+type patchTrackingFakeClient struct {
+	ctrlruntimeclient.Client
+	patched sets.String
+}
+
+func (c *patchTrackingFakeClient) Patch(ctx context.Context, obj runtime.Object, patch ctrlruntimeclient.Patch, opts ...ctrlruntimeclient.PatchOption) error {
+	if c.patched == nil {
+		c.patched = sets.NewString()
+	}
+	metaObject, ok := obj.(metav1.Object)
+	if !ok {
+		return errors.New("Object is no metav1.Object")
+	}
+	c.patched.Insert(metaObject.GetName())
+	return c.Client.Patch(ctx, obj, patch, opts...)
 }

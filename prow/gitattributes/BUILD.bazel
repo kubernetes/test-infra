@@ -10,7 +10,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//prow/github:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
+        "@io_k8s_apimachinery//pkg/util/sets:go_default_library",
     ],
 )
 

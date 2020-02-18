@@ -82,7 +82,7 @@ func (c *fakeGitHubClient) GetPullRequest(org, repo string, num int) (*github.Pu
 	return c.pr, nil
 }
 
-func (f *fakeGitHubClient) Query(ctx context.Context, q interface{}, vars map[string]interface{}) error {
+func (c *fakeGitHubClient) Query(ctx context.Context, q interface{}, vars map[string]interface{}) error {
 	sq, ok := q.(*githubAvailabilityQuery)
 	if !ok {
 		return errors.New("unexpected query type")
@@ -180,6 +180,10 @@ func (foc *fakeOwnersClient) ParseFullConfig(path string) (repoowners.FullConfig
 	full := new(repoowners.FullConfig)
 	err = yaml.Unmarshal(b, full)
 	return *full, err
+}
+
+func (foc *fakeOwnersClient) TopLevelApprovers() sets.String {
+	return sets.String{}
 }
 
 var (
@@ -773,30 +777,21 @@ func TestHandlePullRequestEvent(t *testing.T) {
 }
 
 func TestHelpProvider(t *testing.T) {
+	enabledRepos := []plugins.Repo{
+		{Org: "org1", Repo: "repo"},
+		{Org: "org2", Repo: "repo"},
+	}
 	cases := []struct {
 		name               string
 		config             *plugins.Configuration
-		enabledRepos       []string
+		enabledRepos       []plugins.Repo
 		err                bool
 		configInfoIncludes []string
 	}{
 		{
 			name:               "Empty config",
 			config:             &plugins.Configuration{},
-			enabledRepos:       []string{"org1", "org2/repo"},
-			configInfoIncludes: []string{configString(0)},
-		},
-		{
-			name:               "Overlapping org and org/repo",
-			config:             &plugins.Configuration{},
-			enabledRepos:       []string{"org2", "org2/repo"},
-			configInfoIncludes: []string{configString(0)},
-		},
-		{
-			name:               "Invalid enabledRepos",
-			config:             &plugins.Configuration{},
-			enabledRepos:       []string{"org1", "org2/repo/extra"},
-			err:                true,
+			enabledRepos:       enabledRepos,
 			configInfoIncludes: []string{configString(0)},
 		},
 		{
@@ -806,7 +801,7 @@ func TestHelpProvider(t *testing.T) {
 					ReviewerCount: &[]int{2}[0],
 				},
 			},
-			enabledRepos:       []string{"org1", "org2/repo"},
+			enabledRepos:       enabledRepos,
 			configInfoIncludes: []string{configString(2)},
 		},
 		{
@@ -816,7 +811,7 @@ func TestHelpProvider(t *testing.T) {
 					FileWeightCount: &[]int{2}[0],
 				},
 			},
-			enabledRepos:       []string{"org1", "org2/repo"},
+			enabledRepos:       enabledRepos,
 			configInfoIncludes: []string{configString(2)},
 		},
 	}

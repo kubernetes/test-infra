@@ -33,8 +33,10 @@ import (
 
 type options struct {
 	// common, used to create the client
-	serverURL string
-	ownerName string
+	serverURL    string
+	username     string
+	passwordFile string
+	ownerName    string
 
 	c *client.Client
 
@@ -44,8 +46,13 @@ type options struct {
 	heartbeat heartbeatOptions
 }
 
-func (o *options) initializeClient() {
-	o.c = client.NewClient(o.ownerName, o.serverURL)
+func (o *options) initializeClient() error {
+	c, err := client.NewClient(o.ownerName, o.serverURL, o.username, o.passwordFile)
+	if err != nil {
+		return err
+	}
+	o.c = c
+	return nil
 }
 
 type acquireOptions struct {
@@ -68,6 +75,7 @@ type heartbeatOptions struct {
 	resourceJSON string
 	period       time.Duration
 	timeout      time.Duration
+	retries      int
 }
 
 // for test mocking
@@ -92,6 +100,8 @@ scripts with a simple interface.`,
 		Args: cobra.NoArgs,
 	}
 	root.PersistentFlags().StringVar(&options.serverURL, "server-url", "", "URL of the Boskos server")
+	root.PersistentFlags().StringVar(&options.username, "username", "", "Username used to access the Boskos server")
+	root.PersistentFlags().StringVar(&options.passwordFile, "password-file", "", "The path to password file used to access the Boskos server")
 	root.PersistentFlags().StringVar(&options.ownerName, "owner-name", "", "Name identifying the user of this client")
 	for _, flag := range []string{"server-url", "owner-name"} {
 		if err := root.MarkPersistentFlagRequired(flag); err != nil {
@@ -122,7 +132,10 @@ Examples:
   # Acquire one new "my-thing" and mark it old when leasing, block until successfully leased
   $ boskosctl acquire --type my-thing --state new --target-state old --timeout 30s`,
 		Run: func(cmd *cobra.Command, args []string) {
-			options.initializeClient()
+			if err := options.initializeClient(); err != nil {
+				fmt.Fprintf(cmd.ErrOrStderr(), "failed to initialize the Boskos client: %v\n", err)
+				return
+			}
 			acquireFunc := options.c.Acquire
 			if options.acquire.timeout != 0*time.Second {
 				acquireFunc = func(rtype, state, dest string) (resource *common.Resource, e error) {
@@ -181,7 +194,10 @@ Examples:
   # Release a lease on "my-thing" and mark it dirty when releasing
   $ boskosctl release --name my-thing --target-state dirty`,
 		Run: func(cmd *cobra.Command, args []string) {
-			options.initializeClient()
+			if err := options.initializeClient(); err != nil {
+				fmt.Fprintf(cmd.ErrOrStderr(), "failed to initialize the Boskos client: %v\n", err)
+				return
+			}
 			err := options.c.Release(options.release.name, options.release.targetState)
 			if err != nil {
 				fmt.Fprintf(cmd.ErrOrStderr(), "failed to release resource %q: %v\n", options.release.name, err)
@@ -216,7 +232,10 @@ Examples:
   # Check metrics for "my-thing"
   $ boskosctl metrics --type my-thing`,
 		Run: func(cmd *cobra.Command, args []string) {
-			options.initializeClient()
+			if err := options.initializeClient(); err != nil {
+				fmt.Fprintf(cmd.ErrOrStderr(), "failed to initialize the Boskos client: %v\n", err)
+				return
+			}
 			metric, err := options.c.Metric(options.metrics.requestedType)
 			if err != nil {
 				fmt.Fprintf(cmd.ErrOrStderr(), "failed to get metrics for resource %q: %v\n", options.metrics.requestedType, err)
@@ -262,7 +281,10 @@ Examples:
   # Send periodic heartbeat for the lease with custom period and timeout
   $ boskosctl heartbeat --resource "${resource}" --period 3s --timeout 1h`,
 		Run: func(cmd *cobra.Command, args []string) {
-			options.initializeClient()
+			if err := options.initializeClient(); err != nil {
+				fmt.Fprintf(cmd.ErrOrStderr(), "failed to initialize the Boskos client: %v\n", err)
+				return
+			}
 			var resource common.Resource
 			if err := json.Unmarshal([]byte(options.heartbeat.resourceJSON), &resource); err != nil {
 				fmt.Fprintf(cmd.ErrOrStderr(), "failed to parse resource: %v\n", err)
@@ -284,15 +306,22 @@ Examples:
 			}()
 
 			tick := time.Tick(options.heartbeat.period)
+			// transient network issues should not cause us to stop trying
+			var failures int
 			work := func() bool {
 				select {
 				case <-tick:
 					if err := options.c.Update(resource.Name, resource.State, resource.UserData); err != nil {
 						fmt.Fprintf(cmd.ErrOrStderr(), "failed to send heartbeat for resource %q: %v\n", resource.Name, err)
-						exit(1)
-						return true
+						failures++
+						if failures > options.heartbeat.retries {
+							exit(1)
+							return true
+						}
+					} else {
+						failures = 0
+						fmt.Fprintf(cmd.OutOrStdout(), "heartbeat sent for resource %q\n", resource.Name)
 					}
-					fmt.Fprintf(cmd.OutOrStdout(), "heartbeat sent for resource %q\n", resource.Name)
 				case <-sig:
 					fmt.Fprintf(cmd.OutOrStdout(), "received interrupt, stopping heartbeats for resource %q\n", resource.Name)
 					return true
@@ -321,6 +350,7 @@ Examples:
 	}
 	heartbeat.Flags().DurationVar(&options.heartbeat.period, "period", 30*time.Second, "Period to send heartbeats on")
 	heartbeat.Flags().DurationVar(&options.heartbeat.timeout, "timeout", 5*time.Hour, "How long to send heartbeats for")
+	heartbeat.Flags().IntVar(&options.heartbeat.retries, "retries", 10, "How many failed heartbeats to tolerate")
 	root.AddCommand(heartbeat)
 
 	return root
@@ -328,6 +358,7 @@ Examples:
 
 func main() {
 	exit = os.Exit
+	rand.Seed(time.Now().UTC().UnixNano())
 	randId = func() string {
 		return strconv.Itoa(rand.Int())
 	}

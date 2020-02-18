@@ -55,8 +55,9 @@ func TestOptions(t *testing.T) {
 				gerritProjects: map[string][]string{
 					"foo": {"bar"},
 				},
-				configPath: "foo",
-				github:     defaultGitHubOptions,
+				configPath:        "foo",
+				github:            defaultGitHubOptions,
+				k8sReportFraction: 1.0,
 			},
 		},
 		{
@@ -71,8 +72,9 @@ func TestOptions(t *testing.T) {
 				gerritProjects: map[string][]string{
 					"foo": {"bar"},
 				},
-				configPath: "foo",
-				github:     defaultGitHubOptions,
+				configPath:        "foo",
+				github:            defaultGitHubOptions,
+				k8sReportFraction: 1.0,
 			},
 		},
 		//PubSub Reporter
@@ -80,10 +82,11 @@ func TestOptions(t *testing.T) {
 			name: "pubsub workers, sets workers",
 			args: []string{"--pubsub-workers=7", "--config-path=baz"},
 			expected: &options{
-				pubsubWorkers:  7,
-				configPath:     "baz",
-				github:         defaultGitHubOptions,
-				gerritProjects: defaultGerritProjects,
+				pubsubWorkers:     7,
+				configPath:        "baz",
+				github:            defaultGitHubOptions,
+				gerritProjects:    defaultGerritProjects,
+				k8sReportFraction: 1.0,
 			},
 		},
 		{
@@ -95,11 +98,12 @@ func TestOptions(t *testing.T) {
 			name: "slack workers, sets workers",
 			args: []string{"--slack-workers=13", "--slack-token-file=/bar/baz", "--config-path=foo"},
 			expected: &options{
-				slackWorkers:   13,
-				slackTokenFile: "/bar/baz",
-				configPath:     "foo",
-				github:         defaultGitHubOptions,
-				gerritProjects: defaultGerritProjects,
+				slackWorkers:      13,
+				slackTokenFile:    "/bar/baz",
+				configPath:        "foo",
+				github:            defaultGitHubOptions,
+				gerritProjects:    defaultGerritProjects,
+				k8sReportFraction: 1.0,
 			},
 		},
 		{
@@ -114,16 +118,47 @@ func TestOptions(t *testing.T) {
 				slackTokenFile: "/bar/baz",
 				configPath:     "foo",
 				dryrun:         true,
-				client: prowflagutil.ExperimentalKubernetesOptions{
+				client: prowflagutil.KubernetesOptions{
 					DeckURI: "http://www.example.com",
 				},
-				github:         defaultGitHubOptions,
-				gerritProjects: defaultGerritProjects,
+				github:            defaultGitHubOptions,
+				gerritProjects:    defaultGerritProjects,
+				k8sReportFraction: 1.0,
 			},
 		},
 		{
 			name: "Dry run with no --deck-url, rejects",
 			args: []string{"--slack-workers=13", "--slack-token-file=/bar/baz", "--config-path=foo", "--dry-run"},
+		},
+		{
+			name: "k8s-gcs enables k8s-gcs",
+			args: []string{"--kubernetes-gcs-workers=3", "--config-path=foo"},
+			expected: &options{
+				k8sGCSWorkers:     3,
+				configPath:        "foo",
+				github:            defaultGitHubOptions,
+				gerritProjects:    defaultGerritProjects,
+				k8sReportFraction: 1.0,
+			},
+		},
+		{
+			name: "k8s-gcs with report fraction sets report fraction",
+			args: []string{"--kubernetes-gcs-workers=3", "--config-path=foo", "--kubernetes-report-fraction=0.5"},
+			expected: &options{
+				k8sGCSWorkers:     3,
+				configPath:        "foo",
+				github:            defaultGitHubOptions,
+				gerritProjects:    defaultGerritProjects,
+				k8sReportFraction: 0.5,
+			},
+		},
+		{
+			name: "k8s-gcs with too large report fraction rejects",
+			args: []string{"--kubernetes-gcs-workers=3", "--config-path=foo", "--kubernetes-report-fraction=1.5"},
+		},
+		{
+			name: "k8s-gcs with negative report fraction rejects",
+			args: []string{"--kubernetes-gcs-workers=3", "--config-path=foo", "--kubernetes-report-fraction=-1.2"},
 		},
 	}
 

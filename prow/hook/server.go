@@ -31,6 +31,7 @@ import (
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
+	_ "k8s.io/test-infra/prow/hook/plugin-imports"
 	"k8s.io/test-infra/prow/plugins"
 )
 
@@ -74,7 +75,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (s *Server) demuxEvent(eventType, eventGUID string, payload []byte, h http.Header) error {
 	l := logrus.WithFields(
 		logrus.Fields{
-			"event-type":     eventType,
+			eventTypeField:   eventType,
 			github.EventGUID: eventGUID,
 		},
 	)

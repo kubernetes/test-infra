@@ -1,0 +1,99 @@
+dashboard_groups:
+- name: sig-node
+  dashboard_names:
+    - sig-node-cadvisor
+    - sig-node-kubelet
+    - sig-node-containerd
+    - sig-node-ppc64le
+    - sig-node-cri-o
+    - sig-node-cri
+    - sig-node-arm64
+    - sig-node-docker
+    - sig-node-node-problem-detector
+
+dashboards:
+- name: sig-node-cadvisor
+- name: sig-node-kubelet
+  dashboard_tab:
+    - name: conformance-node-rhel
+      test_group_name: ci-kubernetes-conformance-node-e2e-rhel
+    - name: conformance-node-containerized-rhel
+      test_group_name: ci-kubernetes-conformance-node-e2e-containerized-rhel
+
+- name: sig-node-containerd
+  dashboard_tab:
+    - name: pull-node-e2e
+      test_group_name: pull-kubernetes-node-e2e-containerd
+      base_options: width=10
+    - name: pull-e2e-gci
+      test_group_name: pull-kubernetes-e2e-containerd-gce
+      base_options: width=10
+
+- name: sig-node-ppc64le
+  dashboard_tab:
+    - name: conformance
+      test_group_name: ppc64le-conformance
+      description: conformance test results for ppc64le ****This is moved under conformance dashboard, WILL BE REMOVED FROM HERE IN THE FUTURE****
+    - name: unit-tests
+      test_group_name: ppc64le-unit
+      description: unit test results for ppc64le
+
+- name: sig-node-cri-o
+  dashboard_tab:
+    - name: crio-e2e-fedora
+      test_group_name: test_pull_request_crio_e2e_fedora
+      open_test_template:
+        url: https://gcsweb-ci.svc.ci.openshift.org/gcs/<gcs_prefix>/<changelist>.txt
+      results_url_template:
+        url: https://gcsweb-ci.svc.ci.openshift.org/gcs/<gcs_prefix>
+      base_options: width=10
+    - name: crio-e2e-rhel
+      test_group_name: test_pull_request_crio_e2e_rhel
+      open_test_template:
+        url: https://gcsweb-ci.svc.ci.openshift.org/gcs/<gcs_prefix>/<changelist>.txt
+      results_url_template:
+        url: https://gcsweb-ci.svc.ci.openshift.org/gcs/<gcs_prefix>
+      base_options: width=10
+
+- name: sig-node-cri
+- name: sig-node-arm64
+  dashboard_tab:
+    - name: conformance
+      test_group_name: arm64-conformance
+      description: Runs conformance test by using kubetest against latest version of kubernetes on arm64
+
+  #Docker node conformance dashboard
+- name: sig-node-docker
+  dashboard_tab:
+    - name: ce18.09-node-ubuntu16.04-k8s1.13
+      test_group_name: ce18.09-ubuntu16.04-k8s1.13.x-conformance
+      description: k8s1.13.x node conformance test results for docker ce-18.09 on ubuntu16.04
+    - name: ce19.03-node-ubuntu16.04-k8s1.14
+      test_group_name: ce19.03-ubuntu16.04-k8s1.14.x-conformance
+      description: k8s1.14.x node conformance test results for ce-19.03 on ubuntu16.04
+    - name: ee17.06-node-rhel7.5-k8s1.12
+      test_group_name: ee17.06-rhel7.5-k8s1.12.x-conformance
+      description: k8s1.12.x node conformance test results for ee-17.06 on rhel7.5
+    - name: ee17.06-node-ubuntu16.04-k8s1.12
+      test_group_name: ee17.06-ubuntu16.04-k8s1.12.x-conformance
+      description: k8s1.12.x node conformance test results for ee-17.06 on ubuntu16.04
+    - name: ee18.09-node-rhel7.5-k8s1.13
+      test_group_name: ee18.09-rhel7.5-k8s1.13.x-conformance
+      description: k8s1.13.x node conformance test results for ee-18.09 on rhel7.5
+    - name: ee18.09-node-ubuntu16.04-k8s1.14
+      test_group_name: ee18.09-ubuntu16.04-k8s1.14.x-conformance
+      description: k8s1.14.x node conformance test results for ee-18.09 on ubuntu16.04
+    - name: ee19.03-node-ubuntu16.04-k8s1.14
+      test_group_name: ee19.03-ubuntu16.04-k8s1.14.x-conformance
+      description: k8s1.14.x node conformance test results for ee-19.03 on ubuntu16.04
+
+- name: sig-node-node-problem-detector
+
+test_groups:
+- name: ci-kubernetes-node-kubelet-serial-alpha
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-serial-alpha
+  test_name_config:
+    name_elements:
+    - target_config: Tests name
+    - target_config: Context
+    name_format: '%s [%s]'

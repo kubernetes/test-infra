@@ -21,7 +21,6 @@ import (
 	"bytes"
 	"fmt"
 	"html/template"
-	"strings"
 
 	"github.com/sirupsen/logrus"
 
@@ -29,6 +28,7 @@ import (
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/plugins/trigger"
 )
 
 const (
@@ -48,20 +48,11 @@ func init() {
 	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest, helpProvider)
 }
 
-func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+func helpProvider(config *plugins.Configuration, enabledRepos []plugins.Repo) (*pluginhelp.PluginHelp, error) {
 	welcomeConfig := map[string]string{}
 	for _, repo := range enabledRepos {
-		parts := strings.Split(repo, "/")
-		var messageTemplate string
-		switch len(parts) {
-		case 1:
-			messageTemplate = welcomeMessageForRepo(config, repo, "")
-		case 2:
-			messageTemplate = welcomeMessageForRepo(config, parts[0], parts[1])
-		default:
-			return nil, fmt.Errorf("invalid repo in enabledRepos: %q", repo)
-		}
-		welcomeConfig[repo] = fmt.Sprintf("The welcome plugin is configured to post using following welcome template: %s.", messageTemplate)
+		messageTemplate := welcomeMessageForRepo(config, repo.Org, repo.Repo)
+		welcomeConfig[repo.String()] = fmt.Sprintf("The welcome plugin is configured to post using following welcome template: %s.", messageTemplate)
 	}
 
 	// The {WhoCanUse, Usage, Examples} fields are omitted because this plugin is not triggered with commands.
@@ -75,6 +66,8 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 type githubClient interface {
 	CreateComment(owner, repo string, number int, comment string) error
 	FindIssues(query, sort string, asc bool) ([]github.Issue, error)
+	IsCollaborator(org, repo, user string) (bool, error)
+	IsMember(org, user string) (bool, error)
 }
 
 type client struct {
@@ -90,19 +83,34 @@ func getClient(pc plugins.Agent) client {
 }
 
 func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
-	return handlePR(getClient(pc), pre, welcomeMessageForRepo(pc.PluginConfig, pre.Repo.Owner.Login, pre.Repo.Name))
+	t := pc.PluginConfig.TriggerFor(pre.PullRequest.Base.Repo.Owner.Login, pre.PullRequest.Base.Repo.Name)
+	return handlePR(getClient(pc), t, pre, welcomeMessageForRepo(pc.PluginConfig, pre.Repo.Owner.Login, pre.Repo.Name))
 }
 
-func handlePR(c client, pre github.PullRequestEvent, welcomeTemplate string) error {
+func handlePR(c client, t plugins.Trigger, pre github.PullRequestEvent, welcomeTemplate string) error {
 	// Only consider newly opened PRs
 	if pre.Action != github.PullRequestActionOpened {
 		return nil
 	}
 
-	// search for PRs from the author in this repo
+	// ignore bots, we can't query their PRs
+	if pre.PullRequest.User.Type != github.UserTypeUser {
+		return nil
+	}
+
 	org := pre.PullRequest.Base.Repo.Owner.Login
 	repo := pre.PullRequest.Base.Repo.Name
 	user := pre.PullRequest.User.Login
+
+	trusted, err := trigger.TrustedUser(c.GitHubClient, t.OnlyOrgMembers, t.TrustedOrg, user, org, repo)
+	if err != nil {
+		return fmt.Errorf("check if user %s is trusted: %v", user, err)
+	}
+	if trusted {
+		return nil
+	}
+
+	// search for PRs from the author in this repo
 	query := fmt.Sprintf("is:pr repo:%s/%s author:%s", org, repo, user)
 	issues, err := c.GitHubClient.FindIssues(query, "", false)
 	if err != nil {

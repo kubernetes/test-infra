@@ -58,7 +58,7 @@ type commentPruner interface {
 
 // HelpProvider constructs the PluginHelp for this plugin that takes into account enabled repositories.
 // HelpProvider defines the type for function that construct the PluginHelp for plugins.
-func HelpProvider(enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+func HelpProvider(_ []plugins.Repo) (*pluginhelp.PluginHelp, error) {
 	return &pluginhelp.PluginHelp{
 			Description: `The needs-rebase plugin manages the '` + labels.NeedsRebase + `' label by removing it from Pull Requests that are mergeable and adding it to those which are not.
 The plugin reacts to commit changes on PRs in addition to periodically scanning all open PRs for any changes to mergeability that could have resulted from changes in other PRs.`,
@@ -131,7 +131,7 @@ func HandleAll(log *logrus.Entry, ghc githubClient, config *plugins.Configuratio
 		return nil
 	}
 	var buf bytes.Buffer
-	fmt.Fprint(&buf, "is:pr is:open")
+	fmt.Fprint(&buf, "archived:false is:pr is:open")
 	for _, org := range orgs {
 		fmt.Fprintf(&buf, " org:\"%s\"", org)
 	}

@@ -17,19 +17,20 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"flag"
 	"os"
-	"os/signal"
-	"syscall"
+	"time"
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
 
 	"k8s.io/test-infra/pkg/flagutil"
+	"k8s.io/test-infra/pkg/io"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
-	_ "k8s.io/test-infra/prow/hook"
+	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/plugins"
@@ -49,11 +50,20 @@ type options struct {
 	continueOnError         bool
 	addedPresubmitBlacklist prowflagutil.Strings
 	dryRun                  bool
-	kubernetes              prowflagutil.ExperimentalKubernetesOptions
+	kubernetes              prowflagutil.KubernetesOptions
 	github                  prowflagutil.GitHubOptions
 
 	tokenBurst    int
 	tokensPerHour int
+
+	// The following are used for reading/writing to GCS.
+	gcsCredentialsFile string
+	// statusURI where Status-reconciler stores last known state, i.e. configuration.
+	// Can be a /local/path or gs://path/to/object.
+	// GCS writes will use the bucket's default acl for new objects. Ensure both that
+	// a) the gcs credentials can write to this bucket
+	// b) the default acls do not expose any private info
+	statusURI string
 }
 
 func gatherOptions() options {
@@ -63,6 +73,7 @@ func gatherOptions() options {
 	fs.StringVar(&o.configPath, "config-path", "/etc/config/config.yaml", "Path to config.yaml.")
 	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
 	fs.StringVar(&o.pluginConfig, "plugin-config", "/etc/plugins/plugins.yaml", "Path to plugin config file.")
+	fs.StringVar(&o.statusURI, "status-path", "", "The /local/path or gs://path/to/object to store status controller state. GCS writes will use the default object ACL for the bucket.")
 
 	fs.BoolVar(&o.continueOnError, "continue-on-error", false, "Indicates that the migration should continue if context migration fails for an individual PR.")
 	fs.Var(&o.addedPresubmitBlacklist, "blacklist", "Org or org/repo to ignore new added presubmits for, set more than once to add more.")
@@ -95,14 +106,14 @@ func main() {
 		logrus.WithError(err).Fatal("Invalid options")
 	}
 
+	defer interrupts.WaitForGracefulShutdown()
+
 	pjutil.ServePProf()
 
 	configAgent := &config.Agent{}
 	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
-	changes := make(chan config.Delta)
-	configAgent.Subscribe(changes)
 
 	secretAgent := &secret.Agent{}
 	if o.github.TokenPath != "" {
@@ -112,7 +123,7 @@ func main() {
 	}
 
 	pluginAgent := &plugins.ConfigAgent{}
-	if err := pluginAgent.Start(o.pluginConfig); err != nil {
+	if err := pluginAgent.Start(o.pluginConfig, false); err != nil {
 		logrus.WithError(err).Fatal("Error starting plugin configuration agent.")
 	}
 
@@ -129,9 +140,19 @@ func main() {
 		logrus.WithError(err).Fatal("Error getting kube client.")
 	}
 
-	sig := make(chan os.Signal, 1)
-	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	opener, err := io.NewOpener(ctx, o.gcsCredentialsFile)
+	if err != nil {
+		entry := logrus.WithError(err)
+		if p := o.gcsCredentialsFile; p != "" {
+			entry = entry.WithField("gcs-credentials-file", p)
+		}
+		entry.Fatal("Cannot create opener")
+	}
 
-	c := statusreconciler.NewController(o.continueOnError, sets.NewString(o.addedPresubmitBlacklist.Strings()...), prowJobClient, githubClient, configAgent, pluginAgent)
-	c.Run(sig, changes)
+	c := statusreconciler.NewController(o.continueOnError, sets.NewString(o.addedPresubmitBlacklist.Strings()...), opener, o.configPath, o.jobConfigPath, o.statusURI, prowJobClient, githubClient, pluginAgent)
+	interrupts.Run(func(ctx context.Context) {
+		c.Run(ctx)
+	})
 }

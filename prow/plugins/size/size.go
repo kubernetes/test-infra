@@ -48,7 +48,7 @@ func init() {
 	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest, helpProvider)
 }
 
-func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+func helpProvider(config *plugins.Configuration, _ []plugins.Repo) (*pluginhelp.PluginHelp, error) {
 	sizes := sizesOrDefault(config.Size)
 	return &pluginhelp.PluginHelp{
 			Description: "The size plugin manages the 'size/*' labels, maintaining the appropriate label on each pull request as it is updated. Generated files identified by the config file '.generated_files' at the repo root are ignored. Labels are applied based on the total number of lines of changes (additions and deletions).",
@@ -169,13 +169,13 @@ const (
 const (
 	labelPrefix = "size/"
 
-	labelXS     = "size/XS"
-	labelS      = "size/S"
-	labelM      = "size/M"
-	labelL      = "size/L"
-	labelXL     = "size/XL"
-	labelXXL    = "size/XXL"
-	labelUnkown = "size/?"
+	labelXS      = "size/XS"
+	labelS       = "size/S"
+	labelM       = "size/M"
+	labelL       = "size/L"
+	labelXL      = "size/XL"
+	labelXXL     = "size/XXL"
+	labelUnknown = "size/?"
 )
 
 func (s size) label() string {
@@ -194,7 +194,7 @@ func (s size) label() string {
 		return labelXXL
 	}
 
-	return labelUnkown
+	return labelUnknown
 }
 
 func bucket(lineCount int, sizes plugins.Size) size {

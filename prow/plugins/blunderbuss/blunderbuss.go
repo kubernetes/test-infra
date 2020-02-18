@@ -57,7 +57,7 @@ func configString(reviewCount int) string {
 	return fmt.Sprintf("Blunderbuss is currently configured to request reviews from %d reviewer%s.", reviewCount, pluralSuffix)
 }
 
-func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+func helpProvider(config *plugins.Configuration, _ []plugins.Repo) (*pluginhelp.PluginHelp, error) {
 	var reviewCount int
 	if config.Blunderbuss.ReviewerCount != nil {
 		reviewCount = *config.Blunderbuss.ReviewerCount

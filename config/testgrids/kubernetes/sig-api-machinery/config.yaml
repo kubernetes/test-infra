@@ -4,6 +4,8 @@ dashboard_groups:
     - sig-api-machinery-gce-gke
     - sig-api-machinery-kube-storage-version-migrator
     - sig-api-machinery-structured-merge-diff
+    - sig-api-machinery-kubebuilder
+    - sig-api-machinery-network-proxy
 
 dashboards:
 - name: sig-api-machinery-gce-gke
@@ -50,3 +52,5 @@ dashboards:
       description: apimachinery gke serial e2e tests for master branch
 - name: sig-api-machinery-kube-storage-version-migrator
 - name: sig-api-machinery-structured-merge-diff
+- name: sig-api-machinery-kubebuilder
+- name: sig-api-machinery-network-proxy

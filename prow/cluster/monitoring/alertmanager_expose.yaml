@@ -15,4 +15,3 @@ spec:
   selector:
     alertmanager: prow
     app: alertmanager
-

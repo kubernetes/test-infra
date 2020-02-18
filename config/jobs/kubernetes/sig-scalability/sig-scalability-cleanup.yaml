@@ -1,0 +1,27 @@
+periodics:
+- interval: 24h
+  name: ci-kubernetes-e2e-scalability-cleanup
+  labels:
+     preset-service-account: "true"
+  annotations:
+    testgrid-dashboards: sig-scalability-experiments
+    testgrid-tab-name: snapshots-cleanup
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      args:
+      - --repo=k8s.io/perf-tests=master
+      - --root=/go/src
+      - --timeout=60
+      - --scenario=execute
+      - --
+      - $GOPATH/src/k8s.io/perf-tests/clusterloader2/clean-up-old-snapshots.sh
+      # Command (list|delete)
+      - delete
+      # Comma-separated list of projects to process
+      # It should match projects list for type: scalability-project in prow/cluster/boskos-resources.yaml
+      - k8s-e2e-gce-scalability-1-1,k8s-e2e-gce-scalability-1-2,k8s-e2e-gci-gce-scale-1-4,k8s-e2e-gci-gce-scale-1-5,k8s-jenkins-gci-scalability,k8s-jenkins-gci-scalability-2,k8s-jenkins-kubemark,k8s-jenkins-scalability-2,k8s-jenkins-scalability-3,k8s-jenkins-scalability-4,k8s-jenkins-scalability-5
+      # Comma-separated list of snapshot prefixes to delete
+      - ci-kubernetes-e2e-gci-gce-scalability
+      # Delete snapshots older than x days
+      - "30"

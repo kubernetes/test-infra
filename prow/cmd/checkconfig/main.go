@@ -24,8 +24,6 @@ import (
 	"io/ioutil"
 	"net/url"
 	"os"
-	"reflect"
-	"sort"
 	"strings"
 
 	"github.com/sirupsen/logrus"
@@ -40,7 +38,7 @@ import (
 	needsrebase "k8s.io/test-infra/prow/external-plugins/needs-rebase/plugin"
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
-	_ "k8s.io/test-infra/prow/hook"
+	_ "k8s.io/test-infra/prow/hook/plugin-imports"
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/plugins"
@@ -62,6 +60,9 @@ type options struct {
 	configPath    string
 	jobConfigPath string
 	pluginConfig  string
+
+	prowYAMLRepoName string
+	prowYAMLPath     string
 
 	warnings        flagutil.Strings
 	excludeWarnings flagutil.Strings
@@ -90,6 +91,7 @@ const (
 	tideStrictBranchWarning      = "tide-strict-branch"
 	nonDecoratedJobsWarning      = "non-decorated-jobs"
 	jobNameLengthWarning         = "long-job-names"
+	jobRefsDuplicationWarning    = "duplicate-job-refs"
 	needsOkToTestWarning         = "needs-ok-to-test"
 	validateOwnersWarning        = "validate-owners"
 	missingTriggerWarning        = "missing-trigger"
@@ -104,6 +106,7 @@ var defaultWarnings = []string{
 	mismatchedTideLenientWarning,
 	nonDecoratedJobsWarning,
 	jobNameLengthWarning,
+	jobRefsDuplicationWarning,
 	needsOkToTestWarning,
 	validateOwnersWarning,
 	missingTriggerWarning,
@@ -123,10 +126,19 @@ func getAllWarnings() []string {
 	return all
 }
 
-func (o *options) Validate() error {
+func (o *options) DefaultAndValidate() error {
 	allWarnings := getAllWarnings()
 	if o.configPath == "" {
 		return errors.New("required flag --config-path was unset")
+	}
+
+	if o.prowYAMLPath != "" && o.prowYAMLRepoName == "" {
+		return errors.New("--prow-yaml-repo-path requires --prow-yaml-repo-name to be set")
+	}
+	if o.prowYAMLRepoName != "" {
+		if o.prowYAMLPath == "" {
+			o.prowYAMLPath = fmt.Sprintf("/home/prow/go/src/github.com/%s/.prow.yaml", o.prowYAMLRepoName)
+		}
 	}
 	for _, warning := range o.warnings.Strings() {
 		found := false
@@ -143,27 +155,41 @@ func (o *options) Validate() error {
 	return nil
 }
 
-func gatherOptions() options {
+func parseOptions() (options, error) {
 	o := options{}
-	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
-	fs.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
-	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
-	fs.StringVar(&o.pluginConfig, "plugin-config", "", "Path to plugin config file.")
-	fs.Var(&o.warnings, "warnings", "Warnings to validate. Use repeatedly to provide a list of warnings")
-	fs.Var(&o.excludeWarnings, "exclude-warning", "Warnings to exclude. Use repeatedly to provide a list of warnings to exclude")
-	fs.BoolVar(&o.expensive, "expensive-checks", false, "If set, additional expensive warnings will be enabled")
-	fs.BoolVar(&o.strict, "strict", false, "If set, consider all warnings as errors.")
-	o.github.AddFlagsWithoutDefaultGitHubTokenPath(fs)
-	fs.Parse(os.Args[1:])
-	return o
+
+	if err := o.gatherOptions(flag.CommandLine, os.Args[1:]); err != nil {
+		return options{}, err
+	}
+	return o, nil
+}
+
+func (o *options) gatherOptions(flag *flag.FlagSet, args []string) error {
+	flag.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
+	flag.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
+	flag.StringVar(&o.pluginConfig, "plugin-config", "", "Path to plugin config file.")
+	flag.StringVar(&o.prowYAMLRepoName, "prow-yaml-repo-name", "", "Name of the repo whose .prow.yaml should be checked.")
+	flag.StringVar(&o.prowYAMLPath, "prow-yaml-path", "", "Path to the .prow.yaml file to check. Requires --prow-yaml-repo-name to be set. Defaults to `/home/prow/go/src/github.com/<< prow-yaml-repo-name >>/.prow.yaml`")
+	flag.Var(&o.warnings, "warnings", "Warnings to validate. Use repeatedly to provide a list of warnings")
+	flag.Var(&o.excludeWarnings, "exclude-warning", "Warnings to exclude. Use repeatedly to provide a list of warnings to exclude")
+	flag.BoolVar(&o.expensive, "expensive-checks", false, "If set, additional expensive warnings will be enabled")
+	flag.BoolVar(&o.strict, "strict", false, "If set, consider all warnings as errors.")
+	o.github.AddFlagsWithoutDefaultGitHubTokenPath(flag)
+	if err := flag.Parse(args); err != nil {
+		return fmt.Errorf("parse flags: %v", err)
+	}
+	if err := o.DefaultAndValidate(); err != nil {
+		return fmt.Errorf("Invalid options: %v", err)
+	}
+	return nil
 }
 
 func main() {
 	logrusutil.ComponentInit("checkconfig")
 
-	o := gatherOptions()
-	if err := o.Validate(); err != nil {
-		logrus.Fatalf("Invalid options: %v", err)
+	o, err := parseOptions()
+	if err != nil {
+		logrus.Fatalf("Error parsing options - %v", err)
 	}
 
 	// use all warnings by default
@@ -181,10 +207,16 @@ func main() {
 	}
 	cfg := configAgent.Config()
 
+	if o.prowYAMLRepoName != "" {
+		if err := validateInRepoConfig(cfg, o.prowYAMLPath, o.prowYAMLRepoName); err != nil {
+			logrus.WithError(err).Fatal("Error validating .prow.yaml")
+		}
+	}
+
 	pluginAgent := plugins.ConfigAgent{}
 	var pcfg *plugins.Configuration
 	if o.pluginConfig != "" {
-		if err := pluginAgent.Load(o.pluginConfig); err != nil {
+		if err := pluginAgent.Load(o.pluginConfig, true); err != nil {
 			logrus.WithError(err).Fatal("Error loading Prow plugin config.")
 		}
 		pcfg = pluginAgent.Config()
@@ -234,6 +266,11 @@ func main() {
 	}
 	if o.warningEnabled(jobNameLengthWarning) {
 		if err := validateJobRequirements(cfg.JobConfig); err != nil {
+			errs = append(errs, err)
+		}
+	}
+	if o.warningEnabled(jobRefsDuplicationWarning) {
+		if err := validateJobExtraRefs(cfg.JobConfig); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -386,102 +423,21 @@ func validateURLs(c config.ProwConfig) error {
 }
 
 func validateUnknownFields(cfg interface{}, cfgBytes []byte, filePath string) error {
-	var obj interface{}
-	err := yaml.Unmarshal(cfgBytes, &obj)
+	err := yaml.Unmarshal(cfgBytes, &cfg, yaml.DisallowUnknownFields)
 	if err != nil {
-		return fmt.Errorf("error while unmarshaling yaml: %v", err)
-	}
-	unknownFields := checkUnknownFields("", obj, reflect.ValueOf(cfg))
-	if len(unknownFields) > 0 {
-		sort.Strings(unknownFields)
-		return fmt.Errorf("unknown fields present in %s: %v", filePath, strings.Join(unknownFields, ", "))
+		return fmt.Errorf("unknown fields or bad config in %s: %v", filePath, err)
 	}
 	return nil
 }
 
-func checkUnknownFields(keyPref string, obj interface{}, cfg reflect.Value) []string {
-	var uf []string
-	switch concreteVal := obj.(type) {
-	case map[string]interface{}:
-		// Iterate over map and check every value
-		for key, val := range concreteVal {
-			fullKey := fmt.Sprintf("%s.%s", keyPref, key)
-			subCfg := getSubCfg(key, cfg)
-			if !subCfg.IsValid() {
-				// Append fullKey without leading "."
-				uf = append(uf, fullKey[1:])
-			} else {
-				subUf := checkUnknownFields(fullKey, val, subCfg)
-				uf = append(uf, subUf...)
-			}
-		}
-	case []interface{}:
-		for i, val := range concreteVal {
-			fullKey := fmt.Sprintf("%s[%v]", keyPref, i)
-			var subCfg reflect.Value
-			if cfg.Kind() == reflect.Ptr {
-				subCfg = cfg.Elem().Index(i)
-			} else {
-				subCfg = cfg.Index(i)
-			}
-			uf = append(uf, checkUnknownFields(fullKey, val, subCfg)...)
-		}
-	}
-	return uf
-}
-
-func getSubCfg(key string, cfg reflect.Value) reflect.Value {
-	cfgElem := cfg
-	if cfg.Kind() == reflect.Interface || cfg.Kind() == reflect.Ptr {
-		cfgElem = cfg.Elem()
-	}
-	switch cfgElem.Kind() {
-	case reflect.Map:
-		for _, k := range cfgElem.MapKeys() {
-			strK := fmt.Sprintf("%v", k.Interface())
-			if strK == key {
-				return cfgElem.MapIndex(k)
-			}
-		}
-	case reflect.Struct:
-		for i := 0; i < cfgElem.NumField(); i++ {
-			structField := cfgElem.Type().Field(i)
-			// Check if field is embedded struct
-			if structField.Anonymous {
-				subStruct := getSubCfg(key, cfgElem.Field(i))
-				if subStruct.IsValid() {
-					return subStruct
-				}
-			} else {
-				field := getJSONTagName(structField)
-				if field == key {
-					return cfgElem.Field(i)
-				}
-			}
-		}
-	}
-	return reflect.Value{}
-}
-
-func getJSONTagName(field reflect.StructField) string {
-	jsonTag := field.Tag.Get("json")
-	if jsonTag != "" && jsonTag != "-" {
-		if commaIdx := strings.Index(jsonTag, ","); commaIdx > 0 {
-			return jsonTag[:commaIdx]
-		}
-		return jsonTag
-	}
-	return ""
-}
-
 func validateJobRequirements(c config.JobConfig) error {
 	var validationErrs []error
-	for repo, jobs := range c.Presubmits {
+	for repo, jobs := range c.PresubmitsStatic {
 		for _, job := range jobs {
 			validationErrs = append(validationErrs, validatePresubmitJob(repo, job))
 		}
 	}
-	for repo, jobs := range c.Postsubmits {
+	for repo, jobs := range c.PostsubmitsStatic {
 		for _, job := range jobs {
 			validationErrs = append(validationErrs, validatePostsubmitJob(repo, job))
 		}
@@ -507,6 +463,18 @@ func validatePostsubmitJob(repo string, job config.Postsubmit) error {
 	// Prow labels k8s resources with job names. Labels are capped at 63 chars.
 	if job.Agent == string(v1.KubernetesAgent) && len(job.Name) > validation.LabelValueMaxLength {
 		validationErrs = append(validationErrs, fmt.Errorf("name of Postsubmit job %q (for repo %q) too long (should be at most 63 characters)", job.Name, repo))
+	}
+	return errorutil.NewAggregate(validationErrs...)
+}
+
+func validateJobExtraRefs(cfg config.JobConfig) error {
+	var validationErrs []error
+	for repo, presubmits := range cfg.PresubmitsStatic {
+		for _, presubmit := range presubmits {
+			if err := config.ValidateRefs(repo, presubmit.JobBase); err != nil {
+				validationErrs = append(validationErrs, err)
+			}
+		}
 	}
 	return errorutil.NewAggregate(validationErrs...)
 }
@@ -795,13 +763,13 @@ func ensureValidConfiguration(plugin, label, verb string, tideSubSet, tideSuperS
 
 func validateDecoratedJobs(cfg *config.Config) error {
 	var nonDecoratedJobs []string
-	for _, presubmit := range cfg.AllPresubmits([]string{}) {
+	for _, presubmit := range cfg.AllStaticPresubmits([]string{}) {
 		if presubmit.Agent == string(v1.KubernetesAgent) && !presubmit.Decorate {
 			nonDecoratedJobs = append(nonDecoratedJobs, presubmit.Name)
 		}
 	}
 
-	for _, postsubmit := range cfg.AllPostsubmits([]string{}) {
+	for _, postsubmit := range cfg.AllStaticPostsubmits([]string{}) {
 		if postsubmit.Agent == string(v1.KubernetesAgent) && !postsubmit.Decorate {
 			nonDecoratedJobs = append(nonDecoratedJobs, postsubmit.Name)
 		}
@@ -873,7 +841,7 @@ func verifyOwnersPresence(cfg *plugins.Configuration, rc FileInRepoExistsChecker
 		}
 
 		for _, repo := range repos {
-			if excluded.Has(repo.FullName) {
+			if excluded.Has(repo.FullName) || repo.Archived {
 				continue
 			}
 			if _, err := rc.GetFile(repo.Owner.Login, repo.Name, "OWNERS", ""); err != nil {
@@ -925,10 +893,10 @@ func verifyOwnersPlugin(cfg *plugins.Configuration) error {
 
 func validateTriggers(cfg *config.Config, pcfg *plugins.Configuration) error {
 	configuredRepos := sets.NewString()
-	for orgRepo := range cfg.JobConfig.Presubmits {
+	for orgRepo := range cfg.JobConfig.PresubmitsStatic {
 		configuredRepos.Insert(orgRepo)
 	}
-	for orgRepo := range cfg.JobConfig.Postsubmits {
+	for orgRepo := range cfg.JobConfig.PostsubmitsStatic {
 		configuredRepos.Insert(orgRepo)
 	}
 
@@ -938,5 +906,26 @@ func validateTriggers(cfg *config.Config, pcfg *plugins.Configuration) error {
 	if missing := configured.difference(enabled).items(); len(missing) > 0 {
 		return fmt.Errorf("the following repos have jobs configured but do not have the %s plugin enabled: %s", trigger.PluginName, strings.Join(missing, ", "))
 	}
+	return nil
+}
+
+func validateInRepoConfig(cfg *config.Config, filePath, repoIdentifier string) error {
+	data, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		if !os.IsNotExist(err) {
+			return fmt.Errorf("failed to read file %q: %v", filePath, err)
+		}
+		return nil
+	}
+
+	prowYAML := &config.ProwYAML{}
+	if err := yaml.Unmarshal(data, prowYAML); err != nil {
+		return fmt.Errorf("failed to deserialize content of %q: %v", filePath, err)
+	}
+
+	if err := config.DefaultAndValidateProwYAML(cfg, prowYAML, repoIdentifier); err != nil {
+		return fmt.Errorf("failed to validate .prow.yaml: %v", err)
+	}
+
 	return nil
 }

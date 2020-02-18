@@ -28,7 +28,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"google.golang.org/api/option"
 
-	"k8s.io/test-infra/testgrid/util/gcs" // TODO(fejta): move this logic here
+	"github.com/GoogleCloudPlatform/testgrid/util/gcs" // TODO(fejta): move this logic here
 )
 
 type storageClient interface {

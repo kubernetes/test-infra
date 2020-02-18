@@ -12,7 +12,7 @@ go_test(
     embed = [":go_default_library"],
     deps = [
         "//prow/github:go_default_library",
-        "//vendor/github.com/pkg/errors:go_default_library",
+        "@com_github_pkg_errors//:go_default_library",
     ],
 )
 
@@ -23,7 +23,7 @@ go_library(
     deps = [
         "//prow/errorutil:go_default_library",
         "//prow/github:go_default_library",
-        "//vendor/github.com/golang/glog:go_default_library",
+        "@com_github_golang_glog//:go_default_library",
     ],
 )
 

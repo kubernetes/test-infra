@@ -40,10 +40,11 @@ func specToStarted(spec *downwardapi.JobSpec, cloneRecords []clone.Record) gcs.S
 	}
 
 	if mainRefs := spec.MainRefs(); mainRefs != nil {
-		started.RepoVersion = shaForRefs(*mainRefs, cloneRecords)
+		started.DeprecatedRepoVersion = shaForRefs(*mainRefs, cloneRecords)
 	}
-	if started.RepoVersion == "" {
-		started.RepoVersion = downwardapi.GetRevisionFromSpec(spec)
+
+	if started.DeprecatedRepoVersion == "" {
+		started.DeprecatedRepoVersion = downwardapi.GetRevisionFromSpec(spec)
 	}
 
 	// TODO(fejta): VM name

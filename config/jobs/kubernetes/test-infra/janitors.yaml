@@ -1,4 +1,24 @@
 periodics:
+- interval: 1h
+  name: maintenance-ci-aws-janitor
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+  decorate: true
+  spec:
+    containers:
+    - command:
+      - /app/boskos/aws-janitor/app.binary
+      args:
+      - --ttl=2h30m
+      - --path=s3://k8s-kops-prow/objs.json
+      image: gcr.io/k8s-prow/boskos/aws-janitor:v20200213-a79910c4a
+  annotations:
+    testgrid-dashboards: sig-testing-maintenance
+    testgrid-tab-name: ci-aws-janitor
+    description: Deletes old AWS resources
+
 - interval: 24h
   name: maintenance-ci-janitor
   labels:
@@ -17,14 +37,18 @@ periodics:
       - go
       - run
       - experiment/ci-janitor/main.go
-      - --config-path=prow/config.yaml
+      - --config-path=config/prow/config.yaml
       - --job-config-path=config/jobs
-      - --janitor-path=boskos/janitor/gcp_janitor.py
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+      - --janitor-path=boskos/cmd/janitor/gcp_janitor.py
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
       resources:
         requests:
           cpu: 5
           memory: "8Gi"
+  annotations:
+    testgrid-dashboards: sig-testing-maintenance
+    testgrid-tab-name: ci-janitor
+    description: Deletes old GCP resources from periodic jobs
 
 - interval: 1h
   name: maintenance-pull-janitor
@@ -41,11 +65,15 @@ periodics:
       - --
       - --mode=pr
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-experimental
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-experimental
       resources:
         requests:
           cpu: 5
           memory: "8Gi"
+  annotations:
+    testgrid-dashboards: sig-testing-maintenance
+    testgrid-tab-name: pull-janitor
+    description: Deletes old GCP resources from presubmit jobs
 
 - interval: 1h
   name: maintenance-pull-scale-janitor
@@ -63,8 +91,12 @@ periodics:
       - --mode=scale
       - --ratelimit=5
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-experimental
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-experimental
       resources:
         requests:
           cpu: 5
           memory: "8Gi"
+  annotations:
+    testgrid-dashboards: sig-testing-maintenance
+    testgrid-tab-name: pull-scale-janitor
+    description: Deletes old GCP resources from scalability presubmit jobs

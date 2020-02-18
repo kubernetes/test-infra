@@ -39,12 +39,19 @@ const (
 type fakeClient struct {
 	commentsAdded map[int][]string
 	prs           map[string]sets.Int
+
+	// orgMembers maps org name to a list of member names.
+	orgMembers map[string][]string
+
+	// collaborators is a list of collaborators names.
+	collaborators []string
 }
 
 func newFakeClient() *fakeClient {
 	return &fakeClient{
 		commentsAdded: make(map[int][]string),
 		prs:           make(map[string]sets.Int),
+		orgMembers:    make(map[string][]string),
 	}
 }
 
@@ -68,13 +75,41 @@ func (fc *fakeClient) NumComments() int {
 	return n
 }
 
+// IsMember returns true if user is in org.
+func (fc *fakeClient) IsMember(org, user string) (bool, error) {
+	for _, m := range fc.orgMembers[org] {
+		if m == user {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+// IsCollaborator returns true if the user is a collaborator of the repo.
+func (fc *fakeClient) IsCollaborator(org, repo, login string) (bool, error) {
+	for _, collab := range fc.collaborators {
+		if collab == login {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+func (fc *fakeClient) addOrgMember(org, user string) {
+	fc.orgMembers[org] = append(fc.orgMembers[org], user)
+}
+
+func (fc *fakeClient) addCollaborator(user string) {
+	fc.collaborators = append(fc.collaborators, user)
+}
+
 var (
 	expectedQueryRegex = regexp.MustCompile(`is:pr repo:(.+)/(.+) author:(.+)`)
 )
 
 // AddPR records an PR in the client
-func (fc *fakeClient) AddPR(owner, repo, author string, number int) {
-	key := fmt.Sprintf("%s,%s,%s", owner, repo, author)
+func (fc *fakeClient) AddPR(owner, repo string, author github.User, number int) {
+	key := fmt.Sprintf("%s,%s,%s", github.NormLogin(owner), github.NormLogin(repo), github.NormLogin(author.Login))
 	if _, ok := fc.prs[key]; !ok {
 		fc.prs[key] = sets.Int{}
 	}
@@ -95,7 +130,7 @@ func (fc *fakeClient) FindIssues(query, sort string, asc bool) ([]github.Issue, 
 	}
 	// "find" results
 	owner, repo, author := fields[1], fields[2], fields[3]
-	key := fmt.Sprintf("%s,%s,%s", owner, repo, author)
+	key := fmt.Sprintf("%s,%s,%s", github.NormLogin(owner), github.NormLogin(repo), github.NormLogin(author))
 
 	issues := []github.Issue{}
 	for _, number := range fc.prs[key].List() {
@@ -106,7 +141,7 @@ func (fc *fakeClient) FindIssues(query, sort string, asc bool) ([]github.Issue, 
 	return issues, nil
 }
 
-func makeFakePullRequestEvent(owner, repo, author string, number int, action github.PullRequestEventAction) github.PullRequestEvent {
+func makeFakePullRequestEvent(owner, repo string, user github.User, number int, action github.PullRequestEventAction) github.PullRequestEvent {
 	return github.PullRequestEvent{
 		Action: action,
 		Number: number,
@@ -119,26 +154,59 @@ func makeFakePullRequestEvent(owner, repo, author string, number int, action git
 					Name: repo,
 				},
 			},
-			User: github.User{
-				Login: author,
-				Name:  author + "fullname",
-			},
+			User: user,
 		},
 	}
 }
 
 func TestHandlePR(t *testing.T) {
 	fc := newFakeClient()
+
+	newContributor := github.User{
+		Login: "newContributor",
+		Name:  "newContributor fullname",
+		Type:  github.UserTypeUser,
+	}
+	contributorA := github.User{
+		Login: "contributorA",
+		Name:  "contributorA fullname",
+		Type:  github.UserTypeUser,
+	}
+	contributorB := github.User{
+		Login: "contributorB",
+		Name:  "contributorB fullname",
+		Type:  github.UserTypeUser,
+	}
+	member := github.User{
+		Login: "member",
+		Name:  "Member Member",
+		Type:  github.UserTypeUser,
+	}
+	collaborator := github.User{
+		Login: "collab",
+		Name:  "Collab Collab",
+		Type:  github.UserTypeUser,
+	}
+	robot := github.User{
+		Login: "robot",
+		Name:  "robot fullname",
+		Type:  github.UserTypeBot,
+	}
+
 	// old PRs
-	fc.AddPR("kubernetes", "test-infra", "contributorA", 1)
-	fc.AddPR("kubernetes", "test-infra", "contributorB", 2)
-	fc.AddPR("kubernetes", "test-infra", "contributorB", 3)
+	fc.AddPR("kubernetes", "test-infra", contributorA, 1)
+	fc.AddPR("kubernetes", "test-infra", contributorB, 2)
+	fc.AddPR("kubernetes", "test-infra", contributorB, 3)
+
+	// members & collaborators
+	fc.addOrgMember("kubernetes", member.Login)
+	fc.addCollaborator(collaborator.Login)
 
 	testCases := []struct {
 		name          string
 		repoOwner     string
 		repoName      string
-		author        string
+		author        github.User
 		prNumber      int
 		prAction      github.PullRequestEventAction
 		addPR         bool
@@ -148,7 +216,7 @@ func TestHandlePR(t *testing.T) {
 			name:          "existing contributorA",
 			repoOwner:     "kubernetes",
 			repoName:      "test-infra",
-			author:        "contributorA",
+			author:        contributorA,
 			prNumber:      20,
 			prAction:      github.PullRequestActionOpened,
 			expectComment: false,
@@ -157,7 +225,7 @@ func TestHandlePR(t *testing.T) {
 			name:          "existing contributorB",
 			repoOwner:     "kubernetes",
 			repoName:      "test-infra",
-			author:        "contributorB",
+			author:        contributorB,
 			prNumber:      40,
 			prAction:      github.PullRequestActionOpened,
 			expectComment: false,
@@ -166,7 +234,7 @@ func TestHandlePR(t *testing.T) {
 			name:          "new contributor",
 			repoOwner:     "kubernetes",
 			repoName:      "test-infra",
-			author:        "newContributor",
+			author:        newContributor,
 			prAction:      github.PullRequestActionOpened,
 			prNumber:      50,
 			expectComment: true,
@@ -175,7 +243,7 @@ func TestHandlePR(t *testing.T) {
 			name:          "new contributor and API recorded PR already",
 			repoOwner:     "kubernetes",
 			repoName:      "test-infra",
-			author:        "newContributor",
+			author:        newContributor,
 			prAction:      github.PullRequestActionOpened,
 			prNumber:      50,
 			expectComment: true,
@@ -185,9 +253,36 @@ func TestHandlePR(t *testing.T) {
 			name:          "new contributor, not PR open event",
 			repoOwner:     "kubernetes",
 			repoName:      "test-infra",
-			author:        "newContributor",
+			author:        newContributor,
 			prAction:      github.PullRequestActionEdited,
 			prNumber:      50,
+			expectComment: false,
+		},
+		{
+			name:          "new contributor, but is a bot",
+			repoOwner:     "kubernetes",
+			repoName:      "test-infra",
+			author:        robot,
+			prAction:      github.PullRequestActionOpened,
+			prNumber:      500,
+			expectComment: false,
+		},
+		{
+			name:          "new contribution from the org member",
+			repoOwner:     "kubernetes",
+			repoName:      "test-infra",
+			author:        member,
+			prNumber:      101,
+			prAction:      github.PullRequestActionOpened,
+			expectComment: false,
+		},
+		{
+			name:          "new contribution from collaborator",
+			repoOwner:     "kubernetes",
+			repoName:      "test-infra",
+			author:        collaborator,
+			prNumber:      102,
+			prAction:      github.PullRequestActionOpened,
 			expectComment: false,
 		},
 	}
@@ -206,8 +301,13 @@ func TestHandlePR(t *testing.T) {
 			fc.AddPR(tc.repoOwner, tc.repoName, tc.author, tc.prNumber)
 		}
 
+		tr := plugins.Trigger{
+			TrustedOrg:     "kubernetes",
+			OnlyOrgMembers: false,
+		}
+
 		// try handling it
-		if err := handlePR(c, event, testWelcomeTemplate); err != nil {
+		if err := handlePR(c, tr, event, testWelcomeTemplate); err != nil {
 			t.Fatalf("did not expect error handling PR for case '%s': %v", tc.name, err)
 		}
 
@@ -291,7 +391,7 @@ func TestWelcomeConfig(t *testing.T) {
 func TestPluginConfig(t *testing.T) {
 	pa := &plugins.ConfigAgent{}
 
-	b, err := ioutil.ReadFile("../../plugins.yaml")
+	b, err := ioutil.ReadFile("../../../config/prow/plugins.yaml")
 	if err != nil {
 		t.Fatalf("Failed to read plugin config: %v.", err)
 	}
@@ -327,39 +427,32 @@ func TestPluginConfig(t *testing.T) {
 }
 
 func TestHelpProvider(t *testing.T) {
+	enabledRepos := []plugins.Repo{
+		{Org: "org1", Repo: "repo"},
+		{Org: "org2", Repo: "repo"},
+	}
 	cases := []struct {
 		name         string
 		config       *plugins.Configuration
-		enabledRepos []string
+		enabledRepos []plugins.Repo
 		err          bool
 	}{
 		{
 			name:         "Empty config",
 			config:       &plugins.Configuration{},
-			enabledRepos: []string{"org1", "org2/repo"},
-		},
-		{
-			name:         "Overlapping org and org/repo",
-			config:       &plugins.Configuration{},
-			enabledRepos: []string{"org2", "org2/repo"},
-		},
-		{
-			name:         "Invalid enabledRepos",
-			config:       &plugins.Configuration{},
-			enabledRepos: []string{"org1", "org2/repo/extra"},
-			err:          true,
+			enabledRepos: enabledRepos,
 		},
 		{
 			name: "All configs enabled",
 			config: &plugins.Configuration{
 				Welcome: []plugins.Welcome{
 					{
-						Repos:           []string{"org2"},
+						Repos:           []string{"org2/repo"},
 						MessageTemplate: "Hello, welcome!",
 					},
 				},
 			},
-			enabledRepos: []string{"org1", "org2/repo"},
+			enabledRepos: enabledRepos,
 		},
 	}
 	for _, c := range cases {

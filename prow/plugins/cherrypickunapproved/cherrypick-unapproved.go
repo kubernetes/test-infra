@@ -41,7 +41,7 @@ func init() {
 	plugins.RegisterPullRequestHandler(PluginName, handlePullRequest, helpProvider)
 }
 
-func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+func helpProvider(config *plugins.Configuration, _ []plugins.Repo) (*pluginhelp.PluginHelp, error) {
 	// Only the 'Config' and Description' fields are necessary because this
 	// plugin does not react to any commands.
 	pluginHelp := &pluginhelp.PluginHelp{

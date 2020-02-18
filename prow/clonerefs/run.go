@@ -48,8 +48,20 @@ func (o Options) Run() error {
 		}
 	}
 	if len(o.HostFingerprints) > 0 {
-		if err := addHostFingerprints(o.HostFingerprints); err != nil {
+		envVar, err := addHostFingerprints(o.HostFingerprints)
+		if err != nil {
 			logrus.WithError(err).Error("failed to add host fingerprints")
+		}
+		env = append(env, envVar)
+	}
+
+	var oauthToken string
+	if len(o.OauthTokenFile) > 0 {
+		data, err := ioutil.ReadFile(o.OauthTokenFile)
+		if err != nil {
+			logrus.WithError(err).Error("Failed to read oauth key file.")
+		} else {
+			oauthToken = strings.TrimSpace(string(data))
 		}
 	}
 
@@ -69,7 +81,7 @@ func (o Options) Run() error {
 		go func() {
 			defer wg.Done()
 			for ref := range input {
-				output <- cloneFunc(ref, o.SrcRoot, o.GitUserName, o.GitUserEmail, o.CookiePath, env)
+				output <- cloneFunc(ref, o.SrcRoot, o.GitUserName, o.GitUserEmail, o.CookiePath, env, oauthToken)
 			}
 		}()
 	}
@@ -82,8 +94,13 @@ func (o Options) Run() error {
 	wg.Wait()
 	close(output)
 
+	var hasFailedRecord bool
 	var results []clone.Record
 	for record := range output {
+		if record.Failed {
+			hasFailedRecord = true
+		}
+
 		results = append(results, record)
 	}
 
@@ -96,22 +113,41 @@ func (o Options) Run() error {
 		return fmt.Errorf("failed to write clone records: %v", err)
 	}
 
+	if o.Fail && hasFailedRecord {
+		return fmt.Errorf("one or more of the records are in failed state")
+	}
+
 	return nil
 }
 
-func addHostFingerprints(fingerprints []string) error {
-	path := filepath.Join(os.Getenv("HOME"), ".ssh", "known_hosts")
-	f, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+func addHostFingerprints(fingerprints []string) (string, error) {
+	// let's try to create the tmp dir if it doesn't exist
+	sshDir := "/tmp"
+	if _, err := os.Stat(sshDir); os.IsNotExist(err) {
+		err := os.MkdirAll(sshDir, 0755)
+		if err != nil {
+			return "", fmt.Errorf("could not create sshDir %s: %v", sshDir, err)
+		}
+	}
+
+	knownHostsFile := filepath.Join(sshDir, "known_hosts")
+	f, err := os.OpenFile(knownHostsFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
-		return fmt.Errorf("could not create/append to %s: %v", path, err)
+		return "", fmt.Errorf("could not create/append to %s: %v", knownHostsFile, err)
 	}
 	if _, err := f.Write([]byte(strings.Join(fingerprints, "\n"))); err != nil {
-		return fmt.Errorf("failed to write fingerprints to %s: %v", path, err)
+		return "", fmt.Errorf("failed to write fingerprints to %s: %v", knownHostsFile, err)
 	}
 	if err := f.Close(); err != nil {
-		return fmt.Errorf("failed to close %s: %v", path, err)
+		return "", fmt.Errorf("failed to close %s: %v", knownHostsFile, err)
 	}
-	return nil
+	logrus.Infof("Updated known_hosts in file: %s", knownHostsFile)
+
+	ssh, err := exec.LookPath("ssh")
+	if err != nil {
+		return "", fmt.Errorf("could not find ssh binary: %v", err)
+	}
+	return fmt.Sprintf("GIT_SSH_COMMAND=%s -o UserKnownHostsFile=%s", ssh, knownHostsFile), nil
 }
 
 // addSSHKeys will start the ssh-agent and add all the specified

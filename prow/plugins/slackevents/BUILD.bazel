@@ -26,7 +26,7 @@ go_library(
         "//prow/github:go_default_library",
         "//prow/pluginhelp:go_default_library",
         "//prow/plugins:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
+        "@io_k8s_apimachinery//pkg/util/sets:go_default_library",
     ],
 )
 

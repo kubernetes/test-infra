@@ -30,7 +30,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/git"
+	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
@@ -48,7 +48,8 @@ type githubClient interface {
 	CreatePullRequest(org, repo, title, body, head, base string, canModify bool) (int, error)
 	GetPullRequest(org, repo string, number int) (*github.PullRequest, error)
 	GetPullRequestPatch(org, repo string, number int) ([]byte, error)
-	GetRepo(owner, name string) (github.Repo, error)
+	GetPullRequests(org, repo string) ([]github.PullRequest, error)
+	GetRepo(owner, name string) (github.FullRepo, error)
 	IsMember(org, user string) (bool, error)
 	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error)
 	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
@@ -56,7 +57,7 @@ type githubClient interface {
 }
 
 // HelpProvider construct the pluginhelp.PluginHelp for this plugin.
-func HelpProvider(enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+func HelpProvider(_ []plugins.Repo) (*pluginhelp.PluginHelp, error) {
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: `The cherrypick plugin is used for cherrypicking PRs across branches. For every successful cherrypick invocation a new PR is opened against the target branch and assigned to the requester. If the parent PR contains a release note, it is copied to the cherrypick PR.`,
 	}
@@ -78,9 +79,9 @@ type Server struct {
 	botName        string
 	email          string
 
-	gc *git.Client
+	gc git.ClientFactory
 	// Used for unit testing
-	push func(repo, newBranch string) error
+	push func(newBranch string) error
 	ghc  githubClient
 	log  *logrus.Entry
 
@@ -228,7 +229,7 @@ func (s *Server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent
 
 func (s *Server) handlePullRequest(l *logrus.Entry, pre github.PullRequestEvent) error {
 	// Only consider newly merged PRs
-	if pre.Action != github.PullRequestActionClosed {
+	if pre.Action != github.PullRequestActionClosed && pre.Action != github.PullRequestActionLabeled {
 		return nil
 	}
 
@@ -357,7 +358,7 @@ func (s *Server) handle(l *logrus.Entry, requestor string, comment *github.Issue
 
 	// Clone the repo, checkout the target branch.
 	startClone := time.Now()
-	r, err := s.gc.Clone(org + "/" + repo)
+	r, err := s.gc.ClientFor(org, repo)
 	if err != nil {
 		return err
 	}
@@ -390,8 +391,26 @@ func (s *Server) handle(l *logrus.Entry, requestor string, comment *github.Issue
 		return err
 	}
 
-	// Checkout a new branch for the cherry-pick.
+	// New branch for the cherry-pick.
 	newBranch := fmt.Sprintf(cherryPickBranchFmt, num, targetBranch)
+
+	// Check if that branch already exists, which means there is already a PR for that cherry-pick.
+	if r.BranchExists(newBranch) {
+		// Find the PR and link to it.
+		prs, err := s.ghc.GetPullRequests(org, repo)
+		if err != nil {
+			return err
+		}
+		for _, pr := range prs {
+			if pr.Head.Ref == fmt.Sprintf("%s:%s", s.botName, newBranch) {
+				resp := fmt.Sprintf("Looks like #%d has already been cherry picked in %s", num, pr.HTMLURL)
+				s.log.WithFields(l.Data).Info(resp)
+				return s.createComment(org, repo, num, comment, resp)
+			}
+		}
+	}
+
+	// Create the branch for the cherry-pick.
 	if err := r.CheckoutNewBranch(newBranch); err != nil {
 		return err
 	}
@@ -403,12 +422,12 @@ func (s *Server) handle(l *logrus.Entry, requestor string, comment *github.Issue
 		return s.createComment(org, repo, num, comment, resp)
 	}
 
-	push := r.Push
+	push := r.ForcePush
 	if s.push != nil {
 		push = s.push
 	}
 	// Push the new branch in the bot's fork.
-	if err := push(repo, newBranch); err != nil {
+	if err := push(newBranch); err != nil {
 		resp := fmt.Sprintf("failed to push cherry-picked changes in GitHub: %v", err)
 		s.log.WithFields(l.Data).Info(resp)
 		return s.createComment(org, repo, num, comment, resp)
@@ -490,7 +509,7 @@ func waitForRepo(owner, name string, ghc githubClient) error {
 				continue
 			}
 			ghErr = ""
-			if repoExists(owner+"/"+name, []github.Repo{repo}) {
+			if repoExists(owner+"/"+name, []github.Repo{repo.Repo}) {
 				return nil
 			}
 		case <-after:

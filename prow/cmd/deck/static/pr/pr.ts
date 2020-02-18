@@ -2,15 +2,16 @@ import dialogPolyfill from "dialog-polyfill";
 
 import {Context} from '../api/github';
 import {Label, PullRequest, UserData} from '../api/pr';
-import {Job, JobState} from '../api/prow';
+import {ProwJob, ProwJobList, ProwJobState} from '../api/prow';
 import {Blocker, TideData, TidePool, TideQuery as ITideQuery} from '../api/tide';
 import {getCookieByName, tidehistory} from '../common/common';
+import {relativeURL} from "../common/urls";
 
 declare const tideData: TideData;
-declare const allBuilds: Job[];
+declare const allBuilds: ProwJobList;
 declare const csrfToken: string;
 
-type UnifiedState = JobState | "expected" | "error" | "failure" | "pending" | "success";
+type UnifiedState = ProwJobState | "expected";
 
 interface UnifiedContext {
   context: string;
@@ -31,6 +32,7 @@ interface ProcessedQuery {
   missingLabels: ProcessedLabel[];
   excludedBranches?: string[];
   includedBranches?: string[];
+  author?: string;
   milestone?: string;
 }
 
@@ -45,6 +47,7 @@ class TideQuery {
     public missingLabels?: string[];
     public excludedBranches?: string[];
     public includedBranches?: string[];
+    public author?: string;
     public milestone?: string;
 
     constructor(query: ITideQuery) {
@@ -55,6 +58,7 @@ class TideQuery {
         this.missingLabels = query.missingLabels;
         this.excludedBranches = query.excludedBranches;
         this.includedBranches = query.includedBranches;
+        this.author = query.author;
         this.milestone = query.milestone;
     }
 
@@ -324,7 +328,7 @@ function createSearchCard(): HTMLElement {
  * all pr contexts and only replaces contexts that have existing Prow Jobs. Tide
  * context will be omitted from the list.
  */
-function getFullPRContext(builds: Job[], contexts: Context[]): UnifiedContext[] {
+function getFullPRContext(builds: ProwJob[], contexts: Context[]): UnifiedContext[] {
     const contextMap: Map<string, UnifiedContext> = new Map();
     if (contexts) {
         for (const context of contexts) {
@@ -339,27 +343,36 @@ function getFullPRContext(builds: Job[], contexts: Context[]): UnifiedContext[] 
             });
         }
     }
-    if (builds) {
-        for (const build of builds) {
-            let discrepancy = null;
-            // If GitHub context exits, check if mismatch or not.
-            if (contextMap.has(build.context)) {
-                const githubContext = contextMap.get(build.context)!;
-                // TODO (qhuynh96): ProwJob's states and GitHub contexts states
-                // are not equivalent in some states.
-                if (githubContext.state !== build.state) {
-                    discrepancy = "GitHub context and Prow Job states mismatch";
-                }
+
+    for (const build of builds) {
+        const {
+            spec: {
+                context = "",
+            },
+            status: {
+                url = "", description = "", state = "",
+            },
+        } = build;
+
+        let discrepancy = null;
+        // If GitHub context exits, check if mismatch or not.
+        if (contextMap.has(context)) {
+            const githubContext = contextMap.get(context)!;
+            // TODO (qhuynh96): ProwJob's states and GitHub contexts states
+            // are not equivalent in some states.
+            if (githubContext.state !== state) {
+                discrepancy = "GitHub context and Prow Job states mismatch";
             }
-            contextMap.set(build.context, {
-                context: build.context,
-                description: build.description,
-                discrepancy,
-                state: build.state,
-                url: build.url,
-            });
         }
+        contextMap.set(context, {
+            context,
+            description,
+            discrepancy,
+            state,
+            url,
+        });
     }
+
     return Array.from(contextMap.values());
 }
 
@@ -387,17 +400,24 @@ function loadPrStatus(prData: UserData): void {
         // we only need to keep the first build for each job name.
         const pr = prWithContext.PullRequest;
         const seenJobs: {[key: string]: boolean} = {};
-        const builds: Job[] = [];
-        for (const build of allBuilds) {
-            if (build.type === 'presubmit' &&
-                build.refs.repo === pr.Repository.NameWithOwner &&
-                build.refs.base_ref === pr.BaseRef.Name &&
-                build.refs.pulls &&
-                build.refs.pulls.length > 0 &&
-                build.refs.pulls[0].number === pr.Number &&
-                build.refs.pulls[0].sha === pr.HeadRefOID) {
-                if (!seenJobs[build.job]) {  // First (latest) build for job.
-                    seenJobs[build.job] = true;
+        const builds: ProwJob[] = [];
+        for (const build of allBuilds.items) {
+            const {
+                spec: {
+                    type = "",
+                    job = "",
+                    refs: {repo = "", pulls = [], base_ref = ""} = {},
+                },
+            } = build;
+
+            if (type === 'presubmit' &&
+                repo === pr.Repository.NameWithOwner &&
+                base_ref === pr.BaseRef.Name &&
+                pulls.length &&
+                pulls[0].number === pr.Number &&
+                pulls[0].sha === pr.HeadRefOID) {
+                if (!seenJobs[job]) {  // First (latest) build for job.
+                    seenJobs[job] = true;
                     builds.push(build);
                 }
             }
@@ -459,7 +479,7 @@ function createTidePoolLabel(pr: PullRequest, tidePool?: TidePool): HTMLElement 
  */
 function createTitleLabel(isMerge: boolean, jobStatus: VagueState, noQuery: boolean,
                           labelConflict: boolean, mergeConflict: boolean,
-                          branchConflict: boolean, milestoneConflict: boolean): HTMLElement {
+                          branchConflict: boolean, authorConflict: boolean, milestoneConflict: boolean): HTMLElement {
     const label = document.createElement("span");
     label.classList.add("title-label");
 
@@ -469,6 +489,9 @@ function createTitleLabel(isMerge: boolean, jobStatus: VagueState, noQuery: bool
     } else if (isMerge) {
         label.textContent = "Merged";
         label.classList.add("merging");
+    } else if (authorConflict) {
+        label.textContent = "Blocked from merging by current author";
+        label.classList.add("pending");
     } else if (branchConflict) {
         label.textContent = "Blocked from merging into target branch";
         label.classList.add("pending");
@@ -500,7 +523,7 @@ function createTitleLabel(isMerge: boolean, jobStatus: VagueState, noQuery: bool
 function createPRCardTitle(pr: PullRequest, tidePools: TidePool[], jobStatus: VagueState,
                            noQuery: boolean, labelConflict: boolean,
                            mergeConflict: boolean, branchConflict: boolean,
-                           milestoneConflict: boolean): HTMLElement {
+                           authorConflict: boolean, milestoneConflict: boolean): HTMLElement {
     const prTitle = document.createElement("div");
     prTitle.classList.add("mdl-card__title");
 
@@ -530,7 +553,7 @@ function createPRCardTitle(pr: PullRequest, tidePools: TidePool[], jobStatus: Va
     });
     let tidePoolLabel = createTidePoolLabel(pr, pool[0]);
     if (!tidePoolLabel) {
-        tidePoolLabel = createTitleLabel(pr.Merged, jobStatus, noQuery, labelConflict, mergeConflict, branchConflict, milestoneConflict);
+        tidePoolLabel = createTitleLabel(pr.Merged, jobStatus, noQuery, labelConflict, mergeConflict, branchConflict, authorConflict, milestoneConflict);
     }
     prTitle.appendChild(tidePoolLabel);
 
@@ -739,7 +762,7 @@ function appendLabelsToContainer(container: HTMLElement, labels: string[]): void
 }
 
 /**
- * Fills query details. The details will be either the milestone or
+ * Fills query details. The details will be either the author, milestone or
  * included/excluded branches.
  * @param selector
  * @param data
@@ -786,6 +809,7 @@ function createQueryDetailsBtn(query: ProcessedQuery): HTMLTableDataCellElement 
     const allRequired = document.getElementById("query-all-required")!;
     const allForbidden = document.getElementById("query-all-forbidden")!;
     iconButton.addEventListener("click", () => {
+        fillDetail("#query-detail-author", query.author);
         fillDetail("#query-detail-milestone", query.milestone);
         fillDetail("#query-detail-exclude", query.excludedBranches);
         fillDetail("#query-detail-include", query.includedBranches);
@@ -959,34 +983,16 @@ function createStatusHelp(title: string, content: HTMLElement[]): HTMLElement {
 }
 
 /**
- * Creates the branch conflict status.
+ * Creates a generic conflict status.
  */
-function createBranchConflictStatus(pr: PullRequest, branchConflict: boolean): HTMLElement {
+function createGenericConflictStatus(pr: PullRequest, hasConflict: boolean, message: string): HTMLElement {
     const statusContainer = document.createElement("div");
     statusContainer.classList.add("status-container");
     const status = document.createElement("div");
-    if (branchConflict) {
+    if (hasConflict) {
         status.appendChild(createIcon("error", "", ["status-icon", "failed"]));
         status.appendChild(
-            document.createTextNode(`Merging into branch ${pr.BaseRef.Name} is currently forbidden`));
-        status.classList.add("status");
-        statusContainer.appendChild(status);
-    }
-    return statusContainer;
-}
-
-/**
- * Creates the milestone conflict status.
- */
-function createMilestoneConflictStatus(pr: PullRequest, queries: ProcessedQuery[],
-                                       milestoneConflict: boolean): HTMLElement {
-    const statusContainer = document.createElement("div");
-    statusContainer.classList.add("status-container");
-    const status = document.createElement("div");
-    if (milestoneConflict) {
-        status.appendChild(createIcon("error", "", ["status-icon", "failed"]));
-        status.appendChild(
-            document.createTextNode(`Only merges into milestone ${queries[0].milestone} are currently allowed`));
+            document.createTextNode(message));
         status.classList.add("status");
         statusContainer.appendChild(status);
     }
@@ -995,7 +1001,7 @@ function createMilestoneConflictStatus(pr: PullRequest, queries: ProcessedQuery[
 
 function createPRCardBody(pr: PullRequest, builds: UnifiedContext[], queries: ProcessedQuery[],
                           mergeable: boolean, branchConflict: boolean,
-                          milestoneConflict: boolean): HTMLElement {
+                          authorConflict: boolean, milestoneConflict: boolean): HTMLElement {
     const cardBody = document.createElement("div");
     const title = document.createElement("h3");
     title.textContent = pr.Title;
@@ -1006,8 +1012,9 @@ function createPRCardBody(pr: PullRequest, builds: UnifiedContext[], queries: Pr
     const nodes = pr.Labels && pr.Labels.Nodes ? pr.Labels.Nodes : [];
     cardBody.appendChild(createMergeLabelStatus(nodes, queries));
     cardBody.appendChild(createMergeConflictStatus(mergeable));
-    cardBody.appendChild(createBranchConflictStatus(pr, branchConflict));
-    cardBody.appendChild(createMilestoneConflictStatus(pr, queries, milestoneConflict));
+    cardBody.appendChild(createGenericConflictStatus(pr, branchConflict, `Merging into branch ${pr.BaseRef.Name} is currently forbidden`));
+    cardBody.appendChild(createGenericConflictStatus(pr, authorConflict, `Only merges with author ${queries[0].author} are currently allowed`));
+    cardBody.appendChild(createGenericConflictStatus(pr, milestoneConflict, `Only merges into milestone ${queries[0].milestone} are currently allowed`));
 
     return cardBody;
 }
@@ -1064,6 +1071,7 @@ function closestMatchingQueries(pr: PullRequest, queries: TideQuery[]): Processe
         score = (labels.length + missingLabels.length > 0) ? score
             / (labels.length + missingLabels.length) : 1.0;
         processedQueries.push({
+            author: query.author,
             excludedBranches: query.excludedBranches,
             includedBranches: query.includedBranches,
             labels,
@@ -1099,6 +1107,19 @@ function closestMatchingQueries(pr: PullRequest, queries: TideQuery[]): Processe
                 return q1Included + q2Included;
             }
         }
+
+        const prAuthor = pr.Author && normLogin(pr.Author.Login);
+        const q1Author = normLogin(q1.author);
+        const q2Author = normLogin(q2.author);
+
+        if (prAuthor && q1Author !== q2Author) {
+            if (q1.author && prAuthor === q1Author) {
+                return -1;
+            }
+            if (q2.author && prAuthor === q2Author) {
+                return 1;
+            }
+        }
         if (pr.Milestone && pr.Milestone.Title && q1.milestone !== q2.milestone) {
             if (q1.milestone && pr.Milestone.Title === q1.milestone) {
                 return -1;
@@ -1116,6 +1137,13 @@ function closestMatchingQueries(pr: PullRequest, queries: TideQuery[]): Processe
 }
 
 /**
+ * Normalizes GitHub login strings
+ */
+function normLogin(login: string = ""): string {
+    return login.toLowerCase().replace(/^@/, "");
+}
+
+/**
  * Creates a PR card.
  */
 function createPRCard(pr: PullRequest, builds: UnifiedContext[] = [], queries: ProcessedQuery[] = [], tidePools: TidePool[] = []): HTMLElement {
@@ -1129,10 +1157,11 @@ function createPRCard(pr: PullRequest, builds: UnifiedContext[] = [], queries: P
     const branchConflict = !!((pr.BaseRef && pr.BaseRef.Name && hasMatchingQuery) &&
         ((queries[0].excludedBranches && queries[0].excludedBranches!.indexOf(pr.BaseRef.Name) !== -1) ||
             (queries[0].includedBranches && queries[0].includedBranches!.indexOf(pr.BaseRef.Name) === -1)));
+    const authorConflict = hasMatchingQuery && queries[0].author ? (!pr.Author || !pr.Author.Login || normLogin(pr.Author.Login) !== normLogin(queries[0].author)) : false;
     const milestoneConflict = hasMatchingQuery && queries[0].milestone ? (!pr.Milestone || !pr.Milestone.Title || pr.Milestone.Title !== queries[0].milestone) : false;
     const labelConflict = hasMatchingQuery ? !hasResolvedLabels(queries[0]) : false;
-    prCard.appendChild(createPRCardTitle(pr, tidePools, jobVagueState(builds), !hasMatchingQuery, labelConflict, mergeConflict, branchConflict, milestoneConflict));
-    prCard.appendChild(createPRCardBody(pr, builds, queries, mergeConflict, branchConflict, milestoneConflict));
+    prCard.appendChild(createPRCardTitle(pr, tidePools, jobVagueState(builds), !hasMatchingQuery, labelConflict, mergeConflict, branchConflict, authorConflict, milestoneConflict));
+    prCard.appendChild(createPRCardBody(pr, builds, queries, mergeConflict, branchConflict, authorConflict, milestoneConflict));
     return prCard;
 }
 
@@ -1140,7 +1169,7 @@ function createPRCard(pr: PullRequest, builds: UnifiedContext[] = [], queries: P
  * Redirect to initiate github login flow.
  */
 function forceGitHubLogin(): void {
-    window.location.href = window.location.origin + "/github-login?dest=%2Fpr";
+    window.location.href = window.location.origin + `/github-login?dest=${relativeURL()}`;
 }
 
 type VagueState = "succeeded" | "failed" | "pending" | "unknown";

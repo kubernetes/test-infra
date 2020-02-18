@@ -65,7 +65,7 @@ func init() {
 	plugins.RegisterGenericCommentHandler(pluginName, handleCommentEvent, helpProvider)
 }
 
-func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+func helpProvider(config *plugins.Configuration, _ []plugins.Repo) (*pluginhelp.PluginHelp, error) {
 	// The {WhoCanUse, Usage, Examples, Config} fields are omitted because this plugin cannot be
 	// manually triggered and is not configurable.
 	pluginHelp := &pluginhelp.PluginHelp{

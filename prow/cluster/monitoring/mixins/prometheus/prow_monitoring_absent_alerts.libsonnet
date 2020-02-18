@@ -10,7 +10,7 @@
           |||,
           'for': '5m',
           labels: { 
-            severity: 'slack',
+            severity: 'critical',
           },
           annotations: {
             message: 'The service {{ $labels.job }} has at most 1 instance for 5 minutes.',
@@ -23,7 +23,7 @@
             ||| % name,
             'for': '5m',
             labels: {
-              severity: 'slack',
+              severity: 'critical',
             },
             annotations: {
               message: 'The service %s has been down for 5 minutes.' % name,

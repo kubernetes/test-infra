@@ -39,15 +39,33 @@ do_clean=${5:-}
 
 ensure-in-gopath() {
   fake_gopath=$(mktemp -d -t codegen.gopath.XXXX)
-  trap 'rm -rf "$fake_gopath"' EXIT
 
   fake_repopath=$fake_gopath/src/k8s.io/test-infra
   mkdir -p "$(dirname "$fake_repopath")"
-  ln -s "$BUILD_WORKSPACE_DIRECTORY" "$fake_repopath"
+  if [[ -n "$do_clean" ]]; then
+    cp -LR "$BUILD_WORKSPACE_DIRECTORY/" "$fake_repopath"
+  else
+    cp -R "$BUILD_WORKSPACE_DIRECTORY/" "$fake_repopath"
+  fi
 
   export GOPATH=$fake_gopath
   export GOROOT=$go_sdk
   cd "$fake_repopath"
+}
+
+# copyfiles will copy all files in 'path' in the fake gopath over to the
+# workspace directory as the code generators output directly into GOPATH,
+# meaning without this function the generated files are left in /tmp
+copyfiles() {
+  path=$1
+  name=$2
+  if [[ ! -d "$path" ]]; then
+    return 0
+  fi
+  (
+    cd "$GOPATH/src/k8s.io/test-infra/$path"
+    find "." -name "$name" -exec cp {} "$BUILD_WORKSPACE_DIRECTORY/$path/{}" \;
+  )
 }
 
 # clean will delete files matching name in path.
@@ -62,6 +80,7 @@ clean() {
     return 0
   fi
   find "$path" -name "$name" -delete
+  find "$BUILD_WORKSPACE_DIRECTORY"/"$path" -name "$name" -delete
 }
 
 gen-deepcopy() {
@@ -72,6 +91,7 @@ gen-deepcopy() {
     --input-dirs k8s.io/test-infra/prow/apis/prowjobs/v1 \
     --output-file-base zz_generated.deepcopy \
     --bounding-dirs k8s.io/test-infra/prow/apis
+  copyfiles "prow/apis" "zz_generated.deepcopy.go"
 }
 
 gen-client() {
@@ -83,6 +103,7 @@ gen-client() {
     --input-base "" \
     --input k8s.io/test-infra/prow/apis/prowjobs/v1 \
     --output-package k8s.io/test-infra/prow/client/clientset
+  copyfiles "./prow/client/clientset" "*.go"
 }
 
 gen-lister() {
@@ -92,6 +113,7 @@ gen-lister() {
     --go-header-file hack/boilerplate/boilerplate.generated.go.txt \
     --input-dirs k8s.io/test-infra/prow/apis/prowjobs/v1 \
     --output-package k8s.io/test-infra/prow/client/listers
+  copyfiles "./prow/client/listers" "*.go"
 }
 
 gen-informer() {
@@ -103,11 +125,21 @@ gen-informer() {
     --versioned-clientset-package k8s.io/test-infra/prow/client/clientset/versioned \
     --listers-package k8s.io/test-infra/prow/client/listers \
     --output-package k8s.io/test-infra/prow/client/informers
+  copyfiles "./prow/client/informers" "*.go"
 }
 
 export GO111MODULE=off
 ensure-in-gopath
+old=${GOCACHE:-}
+export GOCACHE=$(mktemp -d -t codegen.gocache.XXXX)
+export GO111MODULE=on
+export GOPROXY=https://proxy.golang.org
+export GOSUMDB=sum.golang.org
+"$go_sdk/bin/go" mod vendor
+export GO111MODULE=off
+export GOCACHE=$old
 gen-deepcopy
 gen-client
 gen-lister
 gen-informer
+export GO111MODULE=on

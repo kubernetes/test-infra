@@ -254,6 +254,12 @@ default:
       target: both
       prowPlugin: label
       addedBy: anyone
+    - color: e11d21
+      description: Categorizes issue or PR as related to a feature/enhancement marked for deprecation.
+      name: kind/deprecation
+      target: both
+      prowPlugin: label
+      addedBy: anyone
     - color: c7def8
       description: Categorizes issue or PR as related to design.
       name: kind/design
@@ -500,6 +506,7 @@ default:
       target: both
       prowPlugin: label
       addedBy: anyone
+      deleteAfter: 2019-12-17T00:00:00+00:00
     - color: d2b48c
       description: Categorizes an issue or PR as relevant to sig-pm.
       name: sig/pm
@@ -628,6 +635,12 @@ default:
       addedBy: anyone
       previously:
       - name: sig/big-data
+    - color: d2b48c
+      description: Categorizes an issue or PR as relevant to ug-vmware.
+      name: ug/vmware
+      target: both
+      prowPlugin: label
+      addedBy: anyone
     - color: ee9900
       description: Denotes a PR that changes 100-499 lines, ignoring generated files.
       name: size/L
@@ -767,6 +780,11 @@ repos:
         name: area/slack-management
         target: both
         addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to the upstream marketing team
+        name: area/contributor-comms
+        target: both
+        addedBy: humans
   kubernetes/enhancements:
     labels:
       - color: 0052cc
@@ -792,6 +810,36 @@ repos:
       - color: 0052cc
         description: Indicates an issue related to DNS records.
         name: area/dns
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to auditing for the Kubernetes project infrastructure
+        name: area/infra/auditing
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to monitoring of the Kubernetes project infrastructure
+        name: area/infra/monitoring
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: Issues or PR related to reliability of the Kubernetes project infrastructure
+        name: area/infra/reliability
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to Publishing bot
+        name: area/infra/publishing-bot
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to Cert Manager
+        name: area/infra/cert-manager
         target: both
         prowPlugin: label
         addedBy: anyone
@@ -1125,6 +1173,12 @@ repos:
           - name: area/release-infra
         target: both
         addedBy: label
+      - color: f7c6c7
+        description: Categorizes issue or PR as tracked by test-infra oncall.
+        name: kind/oncall-hotlist
+        target: both
+        prowPlugin: label
+        addedBy: anyone
   kubernetes/website:
     labels:
       - color: 0052cc
@@ -1207,8 +1261,32 @@ repos:
         target: both
         prowPlugin: label
         addedBy: anyone
+      - color: e9b3f9
+        description: Issues or PRs related to Russian language
+        name: language/ru
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: e9b3f9
+        description: Issues or PRs related to Vietnamese language
+        name: language/vi
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: e9b3f9
+        description: Issues or PRs related to Polish language
+        name: language/pl
+        target: both
+        prowPlugin: label
+        addedBy: anyone
   kubernetes-sigs/cluster-api:
     labels:
+      - color: c7def8
+        description: Issues or PRs related to proposals.
+        name: kind/proposal
+        target: both
+        prowPlugin: label
+        addedBy: anyone
       - color: 0052cc
         description: Issues or PRs related to clusterctl
         name: area/clusterctl
@@ -1263,6 +1341,12 @@ repos:
         target: both
         prowPlugin: label
         addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to bootstrap providers
+        name: area/bootstrap
+        target: both
+        prowPlugin: label
+        addedBy: anyone
   kubernetes-sigs/krew:
     labels:
       - color: ee0000
@@ -1289,3 +1373,10 @@ repos:
         target: both
         prowPlugin: label
         addedBy: anyone
+  kubernetes-sigs/service-apis:
+    labels:
+      - color: c7def8
+        description: Categorizes an issue as capturing a user story
+        name: kind/user-story
+        target: issues
+        addedBy: humans

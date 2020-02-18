@@ -21,7 +21,7 @@ To enable spyglass, just pass the `--spyglass` flag to your `deck` instance. Onc
 it will expose itself under `/view/` on your `deck` instance.
 
 In order to make Spyglass useful, you may want to set your job URLs to point at it. You can do so by
-setting `plank.job_url_prefix` to `https://your.deck/view/gcs/`, and possibly `plank.job_url_template`
+setting `plank.job_url_prefix_config['*']` to `https://your.deck/view/gcs/`, and possibly `plank.job_url_template`
 to reference something similar depending on your setup.
 
 If you are not using the images we provide, you may also need to provide `--spyglass-files-location`,
@@ -41,7 +41,7 @@ The `spyglass` block has the following properties:
 | `testgrid_config` | No | `gs://k8s-testgrid/config` | If you have a TestGrid instance available, `testgrid_config` should point to the TestGrid config proto on GCS. If omitted, no TestGrid link will be visible.
 | `testgrid_root` | No | `https://testgrid.k8s.io/` | If you have a TestGrid instance available, `testgrid_root` should point to the root of the TestGrid web interface. If omitted, no TestGrid link will be visible.
 | `announcement` | No | `"Remember: friendship is magic!"` | If announcement is set, the string will appear at the top of the page. `announcement` is parsed as a Go template. The only value provided is `.ArtifactPath`, which is of the form `gcs-bucket/path/to/job/root/`.
-| `lenses` | Yes | (see below) | `lenses` configures the lenses you want, when they should be visible, what artifacts they should receive, and  
+| `lenses` | Yes | (see below) | `lenses` configures the lenses you want, when they should be visible, what artifacts they should receive, and
 
 #### Configuring Lenses
 
@@ -65,6 +65,8 @@ The following lenses are available:
   hiding the rest behind expandable folders. You can configure what it considers "interesting" by
   providing `highlight_regexes`, a list of regexes to highlight. If not specified, it uses defaults
   optimised for highlighting Kubernetes test results.
+- `coverage`: displays go coverage content
+- `restcoverage`: displays REST API statistics
 
 #### Example Configuration
 
@@ -78,7 +80,7 @@ deck:
     announcement: "The old job viewer has been deprecated."
     lenses:
     - lens:
-        name: metadata   
+        name: metadata
       required_files:
       - started.json
       optional_files:
@@ -89,11 +91,11 @@ deck:
           highlight_regexes:
           - timed out
           - 'ERROR:'
-          - (\s|^)(FAIL|Failure \[)\b
-          - (\s|^)panic\b
+          - (FAIL|Failure \[)\b
+          - panic\b
           - ^E\d{4} \d\d:\d\d:\d\d\.\d\d\d]
       required_files:
-            - build-log.txt
+      - build-log.txt
     - lens:
         name: junit
       required_files:

@@ -31,6 +31,7 @@ import (
 	"fmt"
 	"net/http"
 	"path"
+	"strconv"
 	"strings"
 	"time"
 
@@ -76,16 +77,6 @@ func CacheModeIsFree(mode CacheResponseMode) bool {
 	return false
 }
 
-// cacheCounter provides the 'ghcache_responses' counter vec that is indexed
-// by the cache response mode.
-var cacheCounter = prometheus.NewCounterVec(
-	prometheus.CounterOpts{
-		Name: "ghcache_responses",
-		Help: "How many cache responses of each cache response mode there are.",
-	},
-	[]string{"mode"},
-)
-
 // outboundConcurrencyGauge provides the 'concurrent_outbound_requests' gauge that
 // is global to the proxy.
 var outboundConcurrencyGauge = prometheus.NewGauge(prometheus.GaugeOpts{
@@ -101,7 +92,7 @@ var pendingOutboundConnectionsGauge = prometheus.NewGauge(prometheus.GaugeOpts{
 })
 
 func init() {
-	prometheus.MustRegister(cacheCounter)
+
 	prometheus.MustRegister(outboundConcurrencyGauge)
 	prometheus.MustRegister(pendingOutboundConnectionsGauge)
 }
@@ -165,6 +156,12 @@ func (u upstreamTransport) RoundTrip(req *http.Request) (*http.Response, error) 
 		logrus.Warn("Couldn't retrieve 'Authorization' header, adding to unknown bucket")
 		authHeader = "unknown"
 	}
+	logrus.WithFields(logrus.Fields{
+		"words":      len(strings.Split(authHeader, " ")),
+		"length":     len(authHeader),
+		"user-agent": req.Header.Get("User-Agent"),
+		"source-ip":  req.RemoteAddr,
+	}).Debug("Hashing auth header.")
 	hasher := sha256.New()
 	hasher.Write([]byte(authHeader))
 	authHeaderHash := fmt.Sprintf("%x", hasher.Sum(nil)) // use %x to make this a utf-8 string for use as a label
@@ -173,7 +170,8 @@ func (u upstreamTransport) RoundTrip(req *http.Request) (*http.Response, error) 
 	// Don't modify request, just pass to delegate.
 	resp, err := u.delegate.RoundTrip(req)
 	if err != nil {
-		logrus.WithField("cache-key", req.URL.String()).WithError(err).Error("Error from upstream (GitHub).")
+		ghmetrics.CollectRequestTimeoutMetrics(authHeaderHash, req.URL.Path, req.Header.Get("User-Agent"), reqStartTime, time.Now())
+		logrus.WithField("cache-key", req.URL.String()).WithError(err).Warn("Error from upstream (GitHub).")
 		return nil, err
 	}
 	responseTime := time.Now()
@@ -191,11 +189,12 @@ func (u upstreamTransport) RoundTrip(req *http.Request) (*http.Response, error) 
 
 	apiVersion := "v3"
 	if strings.HasPrefix(req.URL.Path, "graphql") || strings.HasPrefix(req.URL.Path, "/graphql") {
+		resp.Header.Set("Cache-Control", "no-store")
 		apiVersion = "v4"
 	}
 
 	ghmetrics.CollectGitHubTokenMetrics(authHeaderHash, apiVersion, resp.Header, reqStartTime, responseTime)
-	ghmetrics.CollectGitHubRequestMetrics(authHeaderHash, req.URL.Path, string(resp.StatusCode), roundTripTime.Seconds())
+	ghmetrics.CollectGitHubRequestMetrics(authHeaderHash, req.URL.Path, strconv.Itoa(resp.StatusCode), req.Header.Get("User-Agent"), roundTripTime.Seconds())
 
 	return resp, nil
 }

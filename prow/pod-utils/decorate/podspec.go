@@ -56,6 +56,7 @@ const (
 	gcsCredentialsMountPath = "/secrets/gcs"
 	outputMountName         = "output"
 	outputMountPath         = "/output"
+	oauthTokenFilename      = "oauth-token"
 )
 
 // Labels returns a string slice with label consts from kube.
@@ -144,6 +145,7 @@ func LabelsAndAnnotationsForJob(pj prowapi.ProwJob) (map[string]string, map[stri
 		extraAnnotations = map[string]string{}
 	}
 	extraLabels[kube.ProwJobIDLabel] = pj.ObjectMeta.Name
+	extraLabels[kube.ProwBuildIDLabel] = pj.Status.BuildID
 	return LabelsAndAnnotationsForSpec(pj.Spec, extraLabels, extraAnnotations)
 }
 
@@ -219,6 +221,45 @@ func cloneEnv(opt clonerefs.Options) ([]coreapi.EnvVar, error) {
 		return nil, err
 	}
 	return KubeEnv(map[string]string{clonerefs.JSONConfigEnvVar: cloneConfigEnv}), nil
+}
+
+// tmpVolume creates an emptyDir volume and mount for a tmp folder
+// This is e.g. used by CloneRefs to store the known hosts file
+func tmpVolume(name string) (coreapi.Volume, coreapi.VolumeMount) {
+	v := coreapi.Volume{
+		Name: name,
+		VolumeSource: coreapi.VolumeSource{
+			EmptyDir: &coreapi.EmptyDirVolumeSource{},
+		},
+	}
+
+	vm := coreapi.VolumeMount{
+		Name:      name,
+		MountPath: "/tmp",
+		ReadOnly:  false,
+	}
+
+	return v, vm
+}
+
+func oauthVolume(secret, key string) (coreapi.Volume, coreapi.VolumeMount) {
+	name := strings.Join([]string{"oauth-secret", secret}, "-")
+	return coreapi.Volume{
+			Name: name,
+			VolumeSource: coreapi.VolumeSource{
+				Secret: &coreapi.SecretVolumeSource{
+					SecretName: secret,
+					Items: []coreapi.KeyToPath{{
+						Key:  key,
+						Path: fmt.Sprintf("./%s", oauthTokenFilename),
+					}},
+				},
+			},
+		}, coreapi.VolumeMount{
+			Name:      name,
+			MountPath: "/secrets/oauth",
+			ReadOnly:  true,
+		}
 }
 
 // sshVolume converts a secret holding ssh keys into the corresponding volume and mount.
@@ -324,6 +365,18 @@ func CloneRefs(pj prowapi.ProwJob, codeMount, logMount coreapi.VolumeMount) (*co
 		cloneVolumes = append(cloneVolumes, volume)
 	}
 
+	var oauthMountPath string
+	if pj.Spec.DecorationConfig.OauthTokenSecret != nil {
+		oauthVolume, oauthMount := oauthVolume(pj.Spec.DecorationConfig.OauthTokenSecret.Name, pj.Spec.DecorationConfig.OauthTokenSecret.Key)
+		cloneMounts = append(cloneMounts, oauthMount)
+		oauthMountPath = filepath.Join(oauthMount.MountPath, oauthTokenFilename)
+		cloneVolumes = append(cloneVolumes, oauthVolume)
+	}
+
+	volume, mount := tmpVolume("clonerefs-tmp")
+	cloneMounts = append(cloneMounts, mount)
+	cloneVolumes = append(cloneVolumes, volume)
+
 	var cloneArgs []string
 	var cookiefilePath string
 
@@ -344,6 +397,7 @@ func CloneRefs(pj prowapi.ProwJob, codeMount, logMount coreapi.VolumeMount) (*co
 		KeyFiles:         sshKeyPaths,
 		Log:              CloneLogPath(logMount),
 		SrcRoot:          codeMount.MountPath,
+		OauthTokenFile:   oauthMountPath,
 	})
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("clone env: %v", err)
@@ -602,6 +656,11 @@ func decorate(spec *coreapi.PodSpec, pj *prowapi.ProwJob, rawEnv map[string]stri
 		spec.Containers[0].WorkingDir = DetermineWorkDir(codeMount.MountPath, refs)
 		spec.Containers[0].VolumeMounts = append(spec.Containers[0].VolumeMounts, codeMount)
 		spec.Volumes = append(spec.Volumes, append(cloneVolumes, codeVolume)...)
+	}
+
+	if spec.TerminationGracePeriodSeconds == nil && pj.Spec.DecorationConfig.GracePeriod != nil {
+		gracePeriodSeconds := int64(pj.Spec.DecorationConfig.GracePeriod.Seconds())
+		spec.TerminationGracePeriodSeconds = &gracePeriodSeconds
 	}
 
 	return nil

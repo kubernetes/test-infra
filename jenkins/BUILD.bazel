@@ -1,3 +1,5 @@
+load("@py_deps//:requirements.bzl", "requirement")
+
 py_test(
     name = "bootstrap_test",
     srcs = [
@@ -6,11 +8,13 @@ py_test(
     ],
     data = [
         "//jobs",
-        "//prow:config.yaml",
+        "//config/prow:config.yaml",
     ] + glob(["fake/**"]),
     python_version = "PY2",
     tags = ["local"],  # TODO(fejta): https://github.com/kubernetes/test-infra/issues/12195
-    deps = ["@yaml"],
+    deps = [
+        requirement("PyYAML"),
+    ],
 )
 
 filegroup(

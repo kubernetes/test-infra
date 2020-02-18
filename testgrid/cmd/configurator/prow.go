@@ -18,10 +18,14 @@ package main
 
 import (
 	"fmt"
-	"k8s.io/test-infra/testgrid/config"
 	"path"
+	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/GoogleCloudPlatform/testgrid/config"
+	"github.com/GoogleCloudPlatform/testgrid/config/yamlcfg"
+	configpb "github.com/GoogleCloudPlatform/testgrid/pb/config"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowConfig "k8s.io/test-infra/prow/config"
@@ -41,7 +45,7 @@ const minPresubmitNumColumnsRecent = 20
 
 // Talk to @michelle192837 if you're thinking about adding more of these!
 
-func applySingleProwjobAnnotations(c *Config, pc *prowConfig.Config, j prowConfig.JobBase, jobType prowapi.ProwJobType, repo string) error {
+func applySingleProwjobAnnotations(c *configpb.Configuration, pc *prowConfig.Config, j prowConfig.JobBase, jobType prowapi.ProwJobType, repo string, dc *yamlcfg.DefaultConfiguration) error {
 	tabName := j.Name
 	testGroupName := j.Name
 	description := j.Name
@@ -50,10 +54,10 @@ func applySingleProwjobAnnotations(c *Config, pc *prowConfig.Config, j prowConfi
 	mustNotMakeGroup := j.Annotations[testgridCreateTestGroupAnnotation] == "false"
 	dashboards, addToDashboards := j.Annotations[testgridDashboardsAnnotation]
 	mightMakeGroup := (mustMakeGroup || addToDashboards || jobType != prowapi.PresubmitJob) && !mustNotMakeGroup
-	var testGroup *config.TestGroup
+	var testGroup *configpb.TestGroup
 
 	if mightMakeGroup {
-		if testGroup = c.config.FindTestGroup(testGroupName); testGroup != nil {
+		if testGroup = config.FindTestGroup(testGroupName, c); testGroup != nil {
 			if mustMakeGroup {
 				return fmt.Errorf("test group %q already exists", testGroupName)
 			}
@@ -61,23 +65,23 @@ func applySingleProwjobAnnotations(c *Config, pc *prowConfig.Config, j prowConfi
 			var prefix string
 			if j.DecorationConfig != nil && j.DecorationConfig.GCSConfiguration != nil {
 				prefix = path.Join(j.DecorationConfig.GCSConfiguration.Bucket, j.DecorationConfig.GCSConfiguration.PathPrefix)
-			} else if pc.Plank.DefaultDecorationConfig != nil && pc.Plank.DefaultDecorationConfig.GCSConfiguration != nil {
-				prefix = path.Join(pc.Plank.DefaultDecorationConfig.GCSConfiguration.Bucket, pc.Plank.DefaultDecorationConfig.GCSConfiguration.PathPrefix)
+			} else if pc.Plank.GetDefaultDecorationConfigs(repo) != nil && pc.Plank.GetDefaultDecorationConfigs(repo).GCSConfiguration != nil {
+				prefix = path.Join(pc.Plank.GetDefaultDecorationConfigs(repo).GCSConfiguration.Bucket, pc.Plank.GetDefaultDecorationConfigs(repo).GCSConfiguration.PathPrefix)
 			} else {
 				return fmt.Errorf("job %s: couldn't figure out a default decoration config", j.Name)
 			}
 
-			testGroup = &config.TestGroup{
+			testGroup = &configpb.TestGroup{
 				Name:      testGroupName,
 				GcsPrefix: path.Join(prefix, prowGCS.RootForSpec(&downwardapi.JobSpec{Job: j.Name, Type: jobType})),
 			}
-			if c.defaultConfig != nil {
-				ReconcileTestGroup(testGroup, c.defaultConfig.DefaultTestGroup)
+			if dc != nil {
+				yamlcfg.ReconcileTestGroup(testGroup, dc.DefaultTestGroup)
 			}
-			c.config.TestGroups = append(c.config.TestGroups, testGroup)
+			c.TestGroups = append(c.TestGroups, testGroup)
 		}
 	} else {
-		testGroup = c.config.FindTestGroup(testGroupName)
+		testGroup = config.FindTestGroup(testGroupName, c)
 	}
 
 	if testGroup == nil {
@@ -129,7 +133,7 @@ func applySingleProwjobAnnotations(c *Config, pc *prowConfig.Config, j prowConfi
 		firstDashboard := true
 		for _, dashboardName := range strings.Split(dashboards, ",") {
 			dashboardName = strings.TrimSpace(dashboardName)
-			d := c.config.FindDashboard(dashboardName)
+			d := config.FindDashboard(dashboardName, c)
 			if d == nil {
 				return fmt.Errorf("couldn't find dashboard %q for job %q", dashboardName, j.Name)
 			}
@@ -138,26 +142,30 @@ func applySingleProwjobAnnotations(c *Config, pc *prowConfig.Config, j prowConfi
 					repo = fmt.Sprintf("%s/%s", j.ExtraRefs[0].Org, j.ExtraRefs[0].Repo)
 				}
 			}
-			var linkTemplate *config.LinkTemplate
+			var codeSearchLinkTemplate, openBugLinkTemplate *configpb.LinkTemplate
 			if repo != "" {
-				linkTemplate = &config.LinkTemplate{
+				codeSearchLinkTemplate = &configpb.LinkTemplate{
 					Url: fmt.Sprintf("https://github.com/%s/compare/<start-custom-0>...<end-custom-0>", repo),
 				}
+				openBugLinkTemplate = &configpb.LinkTemplate{
+					Url: fmt.Sprintf("https://github.com/%s/issues/", repo),
+				}
 			}
-			dt := &config.DashboardTab{
+			dt := &configpb.DashboardTab{
 				Name:                  tabName,
 				TestGroupName:         testGroupName,
 				Description:           description,
-				CodeSearchUrlTemplate: linkTemplate,
+				CodeSearchUrlTemplate: codeSearchLinkTemplate,
+				OpenBugTemplate:       openBugLinkTemplate,
 			}
 			if firstDashboard {
 				firstDashboard = false
 				if emails, ok := j.Annotations[testgridEmailAnnotation]; ok {
-					dt.AlertOptions = &config.DashboardTabAlertOptions{AlertMailToAddresses: emails}
+					dt.AlertOptions = &configpb.DashboardTabAlertOptions{AlertMailToAddresses: emails}
 				}
 			}
-			if c.defaultConfig != nil {
-				ReconcileDashboardTab(dt, c.defaultConfig.DefaultDashboardTab)
+			if dc != nil {
+				yamlcfg.ReconcileDashboardTab(dt, dc.DefaultDashboardTab)
 			}
 			d.DashboardTab = append(d.DashboardTab, dt)
 		}
@@ -166,32 +174,85 @@ func applySingleProwjobAnnotations(c *Config, pc *prowConfig.Config, j prowConfi
 	return nil
 }
 
-func applyProwjobAnnotations(c *Config, prowConfigAgent *prowConfig.Agent) error {
+// sortPeriodics sorts all periodics by name (ascending).
+func sortPeriodics(per []prowConfig.Periodic) {
+	sort.Slice(per, func(a, b int) bool {
+		return per[a].Name < per[b].Name
+	})
+}
+
+// sortPostsubmits sorts all postsubmits by name and returns a sorted list of org/repos (ascending).
+func sortPostsubmits(post map[string][]prowConfig.Postsubmit) []string {
+	postRepos := make([]string, 0, len(post))
+
+	for k := range post {
+		postRepos = append(postRepos, k)
+	}
+
+	sort.Strings(postRepos)
+
+	for _, orgrepo := range postRepos {
+		sort.Slice(post[orgrepo], func(a, b int) bool {
+			return post[orgrepo][a].Name < post[orgrepo][b].Name
+		})
+	}
+
+	return postRepos
+}
+
+// sortPresubmits sorts all presubmits by name and returns a sorted list of org/repos (ascending).
+func sortPresubmits(pre map[string][]prowConfig.Presubmit) []string {
+	preRepos := make([]string, 0, len(pre))
+
+	for k := range pre {
+		preRepos = append(preRepos, k)
+	}
+
+	sort.Strings(preRepos)
+
+	for _, orgrepo := range preRepos {
+		sort.Slice(pre[orgrepo], func(a, b int) bool {
+			return pre[orgrepo][a].Name < pre[orgrepo][b].Name
+		})
+	}
+
+	return preRepos
+}
+
+func applyProwjobAnnotations(c *configpb.Configuration, reconcile *yamlcfg.DefaultConfiguration, prowConfigAgent *prowConfig.Agent) error {
 	pc := prowConfigAgent.Config()
 	if pc == nil {
 		return nil
 	}
 	jobs := prowConfigAgent.Config().JobConfig
-	for _, j := range jobs.AllPeriodics() {
-		if err := applySingleProwjobAnnotations(c, pc, j.JobBase, prowapi.PeriodicJob, ""); err != nil {
+
+	per := jobs.AllPeriodics()
+	sortPeriodics(per)
+	for _, j := range per {
+		if err := applySingleProwjobAnnotations(c, pc, j.JobBase, prowapi.PeriodicJob, "", reconcile); err != nil {
 			return err
 		}
 	}
 
-	for repo, js := range jobs.Postsubmits {
-		for _, j := range js {
-			if err := applySingleProwjobAnnotations(c, pc, j.JobBase, prowapi.PostsubmitJob, repo); err != nil {
+	post := jobs.PostsubmitsStatic
+	postReposSorted := sortPostsubmits(post)
+	for _, orgrepo := range postReposSorted {
+		for _, j := range post[orgrepo] {
+			if err := applySingleProwjobAnnotations(c, pc, j.JobBase, prowapi.PostsubmitJob, orgrepo, reconcile); err != nil {
 				return err
 			}
 		}
 	}
 
-	for repo, js := range jobs.Presubmits {
-		for _, j := range js {
-			if err := applySingleProwjobAnnotations(c, pc, j.JobBase, prowapi.PresubmitJob, repo); err != nil {
+	pre := jobs.PresubmitsStatic
+	preReposSorted := sortPresubmits(pre)
+	for _, orgrepo := range preReposSorted {
+		for _, j := range pre[orgrepo] {
+			if err := applySingleProwjobAnnotations(c, pc, j.JobBase, prowapi.PresubmitJob, orgrepo, reconcile); err != nil {
 				return err
 			}
 		}
 	}
+
 	return nil
 }

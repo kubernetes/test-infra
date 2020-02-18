@@ -17,13 +17,15 @@ limitations under the License.
 package cleaner
 
 import (
+	"context"
 	"testing"
 	"time"
+
+	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
 
 	"k8s.io/test-infra/boskos/common"
 	"k8s.io/test-infra/boskos/mason"
 	"k8s.io/test-infra/boskos/ranch"
-	"k8s.io/test-infra/boskos/storage"
 )
 
 const (
@@ -43,7 +45,7 @@ type fakeBoskos struct {
 // Create a fake client
 func createFakeBoskos(resources []common.Resource, dlrcs []common.DynamicResourceLifeCycle) (*ranch.Storage, boskosClient, chan releasedResource) {
 	names := make(chan releasedResource, 100)
-	s, _ := ranch.NewStorage(storage.NewMemoryStorage(), storage.NewMemoryStorage(), "")
+	s, _ := ranch.NewStorage(context.Background(), fakectrlruntimeclient.NewFakeClient(), "", "")
 	r, _ := ranch.NewRanch("", s, testTTL)
 
 	for _, lc := range dlrcs {

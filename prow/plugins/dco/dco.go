@@ -66,22 +66,12 @@ func init() {
 	plugins.RegisterGenericCommentHandler(pluginName, handleCommentEvent, helpProvider)
 }
 
-func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+func helpProvider(config *plugins.Configuration, enabledRepos []plugins.Repo) (*pluginhelp.PluginHelp, error) {
 	configInfo := map[string]string{}
-	for _, orgRepo := range enabledRepos {
-		parts := strings.Split(orgRepo, "/")
-		var opts *plugins.Dco
-		switch len(parts) {
-		case 1:
-			opts = config.DcoFor(parts[0], "")
-		case 2:
-			opts = config.DcoFor(parts[0], parts[1])
-		default:
-			return nil, fmt.Errorf("invalid repo in enabledRepos: %q", orgRepo)
-		}
-
+	for _, repo := range enabledRepos {
+		opts := config.DcoFor(repo.Org, repo.Repo)
 		if opts.SkipDCOCheckForMembers || opts.SkipDCOCheckForCollaborators {
-			configInfo[orgRepo] = fmt.Sprintf("The trusted GitHub organization for this repository is %q.", orgRepo)
+			configInfo[repo.String()] = fmt.Sprintf("The trusted GitHub organization for this repository is %q.", repo)
 		}
 	}
 
@@ -117,47 +107,43 @@ type commentPruner interface {
 	PruneComments(shouldPrune func(github.IssueComment) bool)
 }
 
-// checkTrustedUser checks are all commits from a trusted user
-func checkTrustedUser(gc gitHubClient, l *logrus.Entry, skipDCOCheckForCollaborators bool, trustedOrg, org, repo string, number int) (bool, error) {
-	allCommits, err := gc.ListPRCommits(org, repo, number)
-	if err != nil {
-		return false, fmt.Errorf("error listing commits for pull request: %v", err)
-	}
+// filterTrustedUsers checks whether the commits are from a trusted user and returns those that are not
+func filterTrustedUsers(gc gitHubClient, l *logrus.Entry, skipDCOCheckForCollaborators bool, trustedOrg, org, repo string, allCommits []github.RepositoryCommit) ([]github.RepositoryCommit, error) {
+	untrustedCommits := make([]github.RepositoryCommit, 0, len(allCommits))
 
 	for _, commit := range allCommits {
 		trusted, err := trigger.TrustedUser(gc, !skipDCOCheckForCollaborators, trustedOrg, commit.Author.Login, org, repo)
 		if err != nil {
-			return false, fmt.Errorf("Error checking is member trusted: %v", err)
+			return nil, fmt.Errorf("Error checking is member trusted: %v", err)
 		}
 		if !trusted {
 			l.Debugf("Member %s is not trusted", commit.Author.Login)
-			return false, nil
+			untrustedCommits = append(untrustedCommits, commit)
 		}
 	}
 
-	return true, nil
+	l.Debugf("Unsigned commits from untrusted users: %d", len(untrustedCommits))
+	return untrustedCommits, nil
 }
 
 // checkCommitMessages will perform the actual DCO check by retrieving all
 // commits contained within the PR with the given number.
 // *All* commits in the pull request *must* match the 'testRe' in order to pass.
-func checkCommitMessages(gc gitHubClient, l *logrus.Entry, org, repo string, number int) ([]github.GitCommit, error) {
+func checkCommitMessages(gc gitHubClient, l *logrus.Entry, org, repo string, number int) ([]github.RepositoryCommit, error) {
 	allCommits, err := gc.ListPRCommits(org, repo, number)
 	if err != nil {
 		return nil, fmt.Errorf("error listing commits for pull request: %v", err)
 	}
 	l.Debugf("Found %d commits in PR", len(allCommits))
 
-	var commitsMissingDCO []github.GitCommit
+	var commitsMissingDCO []github.RepositoryCommit
 	for _, commit := range allCommits {
 		if !testRe.MatchString(commit.Commit.Message) {
-			c := commit.Commit
-			c.SHA = commit.SHA
-			commitsMissingDCO = append(commitsMissingDCO, c)
+			commitsMissingDCO = append(commitsMissingDCO, commit)
 		}
 	}
 
-	l.Debugf("All commits in PR have DCO signoff: %t", len(commitsMissingDCO) == 0)
+	l.Debugf("Commits in PR missing DCO signoff: %d", len(commitsMissingDCO))
 	return commitsMissingDCO, nil
 }
 
@@ -203,14 +189,14 @@ func checkExistingLabels(gc gitHubClient, l *logrus.Entry, org, repo string, num
 
 // takeAction will take appropriate action on the pull request according to its
 // current state.
-func takeAction(gc gitHubClient, cp commentPruner, l *logrus.Entry, org, repo string, pr github.PullRequest, commitsMissingDCO []github.GitCommit, existingStatus string, hasYesLabel, hasNoLabel, addComment, trustedUser bool) error {
+func takeAction(gc gitHubClient, cp commentPruner, l *logrus.Entry, org, repo string, pr github.PullRequest, commitsMissingDCO []github.RepositoryCommit, existingStatus string, hasYesLabel, hasNoLabel, addComment bool) error {
 	targetURL := fmt.Sprintf("https://github.com/%s/%s/blob/master/CONTRIBUTING.md", org, repo)
 
 	signedOff := len(commitsMissingDCO) == 0
 
 	// handle the 'all commits signed off' case by adding appropriate labels
 	// TODO: clean-up old comments?
-	if signedOff || trustedUser {
+	if signedOff {
 		if hasNoLabel {
 			l.Debugf("Removing %q label", dcoNoLabel)
 			// remove 'dco-signoff: no' label
@@ -290,20 +276,18 @@ func takeAction(gc gitHubClient, cp commentPruner, l *logrus.Entry, org, repo st
 func handle(config plugins.Dco, gc gitHubClient, cp commentPruner, log *logrus.Entry, org, repo string, pr github.PullRequest, addComment bool) error {
 	l := log.WithField("pr", pr.Number)
 
-	var err error
-	var trustedUser bool
-	if config.SkipDCOCheckForMembers || config.SkipDCOCheckForCollaborators {
-		trustedUser, err = checkTrustedUser(gc, l, config.SkipDCOCheckForCollaborators, config.TrustedOrg, org, repo, pr.Number)
-		if err != nil {
-			l.WithError(err).Infof("Error running trusted org member check against commits in PR")
-			return err
-		}
-	}
-
 	commitsMissingDCO, err := checkCommitMessages(gc, l, org, repo, pr.Number)
 	if err != nil {
 		l.WithError(err).Infof("Error running DCO check against commits in PR")
 		return err
+	}
+
+	if config.SkipDCOCheckForMembers || config.SkipDCOCheckForCollaborators {
+		commitsMissingDCO, err = filterTrustedUsers(gc, l, config.SkipDCOCheckForCollaborators, config.TrustedOrg, org, repo, commitsMissingDCO)
+		if err != nil {
+			l.WithError(err).Infof("Error running trusted org member check against commits in PR")
+			return err
+		}
 	}
 
 	existingStatus, err := checkExistingStatus(gc, l, org, repo, pr.Head.SHA)
@@ -318,11 +302,11 @@ func handle(config plugins.Dco, gc gitHubClient, cp commentPruner, log *logrus.E
 		return err
 	}
 
-	return takeAction(gc, cp, l, org, repo, pr, commitsMissingDCO, existingStatus, hasYesLabel, hasNoLabel, addComment, trustedUser)
+	return takeAction(gc, cp, l, org, repo, pr, commitsMissingDCO, existingStatus, hasYesLabel, hasNoLabel, addComment)
 }
 
-// MardkownSHAList prints the list of commits in a markdown-friendly way.
-func MarkdownSHAList(org, repo string, list []github.GitCommit) string {
+// MarkdownSHAList prints the list of commits in a markdown-friendly way.
+func MarkdownSHAList(org, repo string, list []github.RepositoryCommit) string {
 	lines := make([]string, len(list))
 	lineFmt := "- [%s](https://github.com/%s/%s/commits/%s) %s"
 	for i, commit := range list {
@@ -337,7 +321,7 @@ func MarkdownSHAList(org, repo string, list []github.GitCommit) string {
 		}
 
 		// get the first line of the commit
-		message := strings.Split(commit.Message, "\n")[0]
+		message := strings.Split(commit.Commit.Message, "\n")[0]
 
 		lines[i] = fmt.Sprintf(lineFmt, shortSHA, org, repo, commit.SHA, message)
 	}

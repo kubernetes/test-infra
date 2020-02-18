@@ -21,18 +21,19 @@ import (
 	"flag"
 	"net/http"
 	"os"
-	"os/signal"
 	"strconv"
-	"syscall"
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/interrupts"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	"k8s.io/test-infra/pkg/flagutil"
 	"k8s.io/test-infra/pkg/io"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
+	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
 	"k8s.io/test-infra/prow/pjutil"
@@ -50,7 +51,7 @@ type options struct {
 
 	dryRun     bool
 	runOnce    bool
-	kubernetes prowflagutil.ExperimentalKubernetesOptions
+	kubernetes prowflagutil.KubernetesOptions
 	github     prowflagutil.GitHubOptions
 
 	maxRecordsPerPool int
@@ -107,6 +108,8 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 func main() {
 	logrusutil.ComponentInit("tide")
 
+	defer interrupts.WaitForGracefulShutdown()
+
 	pjutil.ServePProf()
 
 	o := gatherOptions(flag.NewFlagSet(os.Args[0], flag.ExitOnError), os.Args[1:]...)
@@ -157,18 +160,38 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting Git client.")
 	}
-	defer gitClient.Clean()
 
-	kubeClient, err := o.kubernetes.ProwJobClient(cfg().ProwJobNamespace, o.dryRun)
+	kubeCfg, err := o.kubernetes.InfrastructureClusterConfig(o.dryRun)
 	if err != nil {
-		logrus.WithError(err).Fatal("Error getting Kubernetes client.")
+		logrus.WithError(err).Fatal("Error getting kubeconfig.")
 	}
-
-	c, err := tide.NewController(githubSync, githubStatus, kubeClient, cfg, gitClient, o.maxRecordsPerPool, opener, o.historyURI, o.statusURI, nil)
+	// Do not activate leader election here, as we do not use the `mgr` to control the lifecylcle of our cotrollers,
+	// this would just be a no-op.
+	mgr, err := manager.New(kubeCfg, manager.Options{Namespace: cfg().ProwJobNamespace, MetricsBindAddress: "0"})
+	if err != nil {
+		logrus.WithError(err).Fatal("Error constructing mgr.")
+	}
+	c, err := tide.NewController(githubSync, githubStatus, mgr, cfg, git.ClientFactoryFrom(gitClient), o.maxRecordsPerPool, opener, o.historyURI, o.statusURI, nil)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating Tide controller.")
 	}
-	defer c.Shutdown()
+	interrupts.Run(func(ctx context.Context) {
+		if err := mgr.Start(ctx.Done()); err != nil {
+			logrus.WithError(err).Fatal("Mgr failed.")
+		}
+		logrus.Info("Mgr finished gracefully.")
+	})
+	mgrSyncCtx, mgrSyncCtxCancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer mgrSyncCtxCancel()
+	if synced := mgr.GetCache().WaitForCacheSync(mgrSyncCtx.Done()); !synced {
+		logrus.Fatal("Timed out waiting for cachesync")
+	}
+	interrupts.OnInterrupt(func() {
+		c.Shutdown()
+		if err := gitClient.Clean(); err != nil {
+			logrus.WithError(err).Error("Could not clean up git client cache.")
+		}
+	})
 	http.Handle("/", c)
 	http.Handle("/history", c.History)
 	server := &http.Server{Addr: ":" + strconv.Itoa(o.port)}
@@ -181,26 +204,17 @@ func main() {
 	if o.runOnce {
 		return
 	}
-	go func() {
-		sig := make(chan os.Signal, 1)
-		signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
-		for {
-			select {
-			case <-time.After(time.Until(start.Add(cfg().Tide.SyncPeriod.Duration))):
-				start = time.Now()
-				sync(c)
-			case <-sig:
-				logrus.Info("Tide is shutting down...")
-				// Shutdown the http server with a 10s timeout then return to execute
-				// deferred c.Shutdown()
-				ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
-				defer cancel() // frees ctx resources
-				server.Shutdown(ctx)
-				return
-			}
-		}
-	}()
-	logrus.WithError(server.ListenAndServe()).Warn("Tide HTTP server stopped.")
+
+	// serve data
+	interrupts.ListenAndServe(server, 10*time.Second)
+
+	// run the controller, but only after one sync period expires after our first run
+	time.Sleep(time.Until(start.Add(cfg().Tide.SyncPeriod.Duration)))
+	interrupts.Tick(func() {
+		sync(c)
+	}, func() time.Duration {
+		return cfg().Tide.SyncPeriod.Duration
+	})
 }
 
 func sync(c *tide.Controller) {

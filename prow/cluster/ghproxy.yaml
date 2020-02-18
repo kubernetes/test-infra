@@ -34,7 +34,7 @@ spec:
   #    created with: `kubectl create -f prow/cluster/gce-ssd-retain_storageclass.yaml
   storageClassName: gce-ssd-retain
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   namespace: default
@@ -42,6 +42,9 @@ metadata:
   labels:
     app: ghproxy
 spec:
+  selector:
+    matchLabels:
+      app: ghproxy
   replicas: 1  # TODO(fejta): this should be HA
   template:
     metadata:
@@ -50,7 +53,7 @@ spec:
     spec:
       containers:
       - name: ghproxy
-        image: gcr.io/k8s-prow/ghproxy:v20190808-5e69697af
+        image: gcr.io/k8s-prow/ghproxy:v20200214-db7f45788
         args:
         - --cache-dir=/cache
         - --cache-sizeGB=99
@@ -91,4 +94,4 @@ spec:
     port: 9090
   selector:
     app: ghproxy
-  type: NodePort # TODO(fejta): remove this?
+  type: ClusterIP

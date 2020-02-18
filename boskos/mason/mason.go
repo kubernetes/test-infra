@@ -284,7 +284,10 @@ func (m *Mason) recycleAll(ctx context.Context) {
 			}
 			var configTypes []string
 			for _, c := range configs {
-				configTypes = append(configTypes, c.GetName())
+				_, isRegistered := m.configConverters[c.Config.Type]
+				if isRegistered {
+					configTypes = append(configTypes, c.GetName())
+				}
 			}
 			for _, r := range configTypes {
 				if res, err := m.client.Acquire(r, common.Dirty, common.Cleaning); err != nil {

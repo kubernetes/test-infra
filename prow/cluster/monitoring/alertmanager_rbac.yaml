@@ -4,4 +4,3 @@ kind: ServiceAccount
 metadata:
   name: alertmanager
   namespace: prow-monitoring
-

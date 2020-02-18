@@ -24,7 +24,6 @@ import (
 	"strings"
 	"time"
 
-	buildv1alpha1 "github.com/knative/build/pkg/apis/build/v1alpha1"
 	pipelinev1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -73,8 +72,6 @@ const (
 	KubernetesAgent ProwJobAgent = "kubernetes"
 	// JenkinsAgent means prow will schedule the job on jenkins.
 	JenkinsAgent ProwJobAgent = "jenkins"
-	// KnativeBuildAgent means prow will schedule the job via a build-crd resource.
-	KnativeBuildAgent ProwJobAgent = "knative-build"
 	// TektonAgent means prow will schedule the job via a tekton PipelineRun CRD resource.
 	TektonAgent = "tekton-pipeline"
 )
@@ -122,7 +119,7 @@ type ProwJobSpec struct {
 	// need to be cloned, determined from config
 	ExtraRefs []Refs `json:"extra_refs,omitempty"`
 	// Report determines if the result of this job should
-	// be posted as a status on GitHub
+	// be reported (e.g. status on GitHub, message in Slack, etc.)
 	Report bool `json:"report,omitempty"`
 	// Context is the name of the status context used to
 	// report back to GitHub
@@ -143,11 +140,6 @@ type ProwJobSpec struct {
 	// a Kubernetes agent
 	PodSpec *corev1.PodSpec `json:"pod_spec,omitempty"`
 
-	// BuildSpec provides the basis for running the test as
-	// a build-crd resource
-	// https://github.com/knative/build
-	BuildSpec *buildv1alpha1.BuildSpec `json:"build_spec,omitempty"`
-
 	// JenkinsSpec holds configuration specific to Jenkins jobs
 	JenkinsSpec *JenkinsSpec `json:"jenkins_spec,omitempty"`
 
@@ -165,6 +157,13 @@ type ProwJobSpec struct {
 
 	// RerunAuthConfig holds information about which users can rerun the job
 	RerunAuthConfig RerunAuthConfig `json:"rerun_auth_config,omitempty"`
+
+	// Hidden specifies if the Job is considered hidden.
+	// Hidden jobs are only shown by deck instances that have the
+	// `--hiddenOnly=true` or `--show-hidden=true` flag set.
+	// Presubmits and Postsubmits can also be set to hidden by
+	// adding their repository in Decks `hidden_repo` setting.
+	Hidden bool `json:"hidden,omitempty"`
 }
 
 type GitHubTeamSlug struct {
@@ -186,6 +185,8 @@ type RerunAuthConfig struct {
 	GitHubTeamSlugs []GitHubTeamSlug `json:"github_team_slugs,omitempty"`
 	// GitHubUsers contains names of individual users who can rerun the job
 	GitHubUsers []string `json:"github_users,omitempty"`
+	// GitHubOrgs contains names of GitHub organizations whose members can rerun the job
+	GitHubOrgs []string `json:"github_orgs,omitempty"`
 }
 
 // IsSpecifiedUser returns true if AllowAnyone is set to true or if the given user is
@@ -202,6 +203,15 @@ func (rac *RerunAuthConfig) IsAuthorized(user string, cli prowgithub.RerunClient
 	// if there is no client, no token was provided, so we cannot access the teams
 	if cli == nil {
 		return false, nil
+	}
+	for _, gho := range rac.GitHubOrgs {
+		isOrgMember, err := cli.IsMember(gho, user)
+		if err != nil {
+			return false, fmt.Errorf("GitHub failed to fetch members of org %v: %v", gho, err)
+		}
+		if isOrgMember {
+			return true, nil
+		}
 	}
 	for _, ght := range rac.GitHubTeamIDs {
 		member, err := cli.TeamHasMember(ght, user)
@@ -303,6 +313,18 @@ type DecorationConfig struct {
 	// CookieFileSecret is the name of a kubernetes secret that contains
 	// a git http.cookiefile, which should be used during the cloning process.
 	CookiefileSecret string `json:"cookiefile_secret,omitempty"`
+	// OauthTokenSecret is a Kubernetes secret that contains the OAuth token,
+	// which is going to be used for fetching a private repository.
+	OauthTokenSecret *OauthTokenSecret `json:"oauth_token_secret,omitempty"`
+}
+
+// OauthTokenSecret holds the information of the oauth token's secret name and key.
+type OauthTokenSecret struct {
+	// Name is the name of a kubernetes secret.
+	Name string `json:"name,omitempty"`
+	// Key is the a key of the corresponding kubernetes secret that
+	// holds the value of the OAuth token.
+	Key string `json:"key,omitempty"`
 }
 
 // ApplyDefault applies the defaults for the ProwJob decoration. If a field has a zero value, it
@@ -378,6 +400,9 @@ func (d *DecorationConfig) Validate() error {
 	}
 	if err := d.GCSConfiguration.Validate(); err != nil {
 		return fmt.Errorf("GCS configuration is invalid: %v", err)
+	}
+	if d.OauthTokenSecret != nil && len(d.SSHKeySecrets) > 0 {
+		return errors.New("both OAuth token and SSH key secrets are specified")
 	}
 	return nil
 }
@@ -525,7 +550,11 @@ func (g *GCSConfiguration) Validate() error {
 
 // ProwJobStatus provides runtime metadata, such as when it finished, whether it is running, etc.
 type ProwJobStatus struct {
-	StartTime      metav1.Time  `json:"startTime,omitempty"`
+	// StartTime is equal to the creation time of the ProwJob
+	StartTime metav1.Time `json:"startTime,omitempty"`
+	// PendingTime is the timestamp for when the job moved from triggered to pending
+	PendingTime *metav1.Time `json:"pendingTime,omitempty"`
+	// CompletionTime is the timestamp for when the job goes to a final state
 	CompletionTime *metav1.Time `json:"completionTime,omitempty"`
 	State          ProwJobState `json:"state,omitempty"`
 	Description    string       `json:"description,omitempty"`

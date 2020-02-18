@@ -1,65 +1,51 @@
 presubmits:
   kubernetes-sigs/cluster-api-provider-aws:
-  - name: pull-cluster-api-provider-aws-bazel-test
+  - name: pull-cluster-api-provider-aws-test
     always_run: true
     optional: false
     decorate: true
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
         command:
-        - "./scripts/ci-bazel-test.sh"
+        - "./scripts/ci-test.sh"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
-      testgrid-tab-name: bazel-pr-test
-  - name: pull-cluster-api-provider-aws-bazel-build
+      testgrid-tab-name: pr-test
+  - name: pull-cluster-api-provider-aws-build
     always_run: true
     optional: false
     decorate: true
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
         command:
-        - "./scripts/ci-bazel-build.sh"
+        - "./scripts/ci-build.sh"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
-      testgrid-tab-name: bazel-pr-build
-  - name: pull-cluster-api-provider-aws-bazel-integration
+      testgrid-tab-name: pr-build
+  - name: pull-cluster-api-provider-aws-integration
     always_run: true
     optional: true
     decorate: true
     labels:
       preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
         command:
         - "runner.sh"
-        - "./scripts/ci-bazel-integration.sh"
+        - "./scripts/ci-integration.sh"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        volumeMounts:
-        - mountPath: /lib/modules
-          name: modules
-          readOnly: true
-        - mountPath: /sys/fs/cgroup
-          name: cgroup
-      volumes:
-      - name: modules
-        hostPath:
-          path: /lib/modules
-          type: Directory
-      - name: cgroup
-        hostPath:
-          path: /sys/fs/cgroup
-          type: Directory
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
-      testgrid-tab-name: bazel-pr-integration
+      testgrid-tab-name: pr-integration
   - name: pull-cluster-api-provider-aws-verify
     always_run: true
     optional: false
@@ -67,11 +53,128 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
         command:
-        - "runner.sh"
         - "make"
         - "verify"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
       testgrid-tab-name: verify
+  # conformance test against kubernetes master branch with `kind` + cluster-api-provider-aws
+  - name: pull-cluster-api-provider-aws-make-conformance
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-service-account: "true"
+      preset-aws-ssh: "true"
+      preset-aws-credential: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+    path_alias: "sigs.k8s.io/cluster-api-provider-aws"
+    always_run: false
+    optional: true
+    decorate: true
+    extra_refs:
+    - org: kubernetes-sigs
+      repo: image-builder
+      base_ref: master
+      path_alias: "sigs.k8s.io/image-builder"
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-experimental
+          command:
+            - "runner.sh"
+            - "./scripts/ci-conformance.sh"
+          env:
+            - name: BOSKOS_HOST
+              value: "boskos.test-pods.svc.cluster.local"
+            - name: AWS_REGION
+              value: "us-west-2"
+          # we need privileged mode in order to do docker in docker
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              # these are both a bit below peak usage during build
+              # this is mostly for building kubernetes
+              memory: "9000Mi"
+              # during the tests more like 3-20m is used
+              cpu: 2000m
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
+      testgrid-tab-name: pr-conformance
+      testgrid-num-columns-recent: '20'
+  - name: pull-cluster-api-provider-aws-e2e
+    path_alias: "sigs.k8s.io/cluster-api-provider-aws"
+    always_run: false
+    optional: true
+    decorate: true
+    decoration_config:
+      timeout: 5h
+    max_concurrency: 2
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-service-account: "true"
+      preset-aws-ssh: "true"
+      preset-aws-credential: "true"
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+          command:
+            - "runner.sh"
+            - "./scripts/ci-e2e.sh"
+          env:
+            - name: BOSKOS_HOST
+              value: "boskos.test-pods.svc.cluster.local"
+            - name: AWS_REGION
+              value: "us-west-2"
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: 1
+              memory: "4Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
+      testgrid-tab-name: pr-e2e
+      testgrid-num-columns-recent: '20'
+  - name: pull-cluster-api-provider-aws-e2e-conformance
+    path_alias: "sigs.k8s.io/cluster-api-provider-aws"
+    always_run: false
+    optional: true
+    decorate: true
+    decoration_config:
+      timeout: 4h
+    max_concurrency: 2
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-service-account: "true"
+      preset-aws-ssh: "true"
+      preset-aws-credential: "true"
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+          command:
+            - "runner.sh"
+            - "./scripts/ci-e2e-conformance.sh"
+          env:
+            - name: BOSKOS_HOST
+              value: "boskos.test-pods.svc.cluster.local"
+            - name: AWS_REGION
+              value: "us-west-2"
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: 1
+              memory: "4Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
+      testgrid-tab-name: pr-e2e-conformance
+      testgrid-num-columns-recent: '20'

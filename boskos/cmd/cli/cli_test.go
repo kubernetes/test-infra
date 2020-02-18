@@ -23,6 +23,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
 	"reflect"
 	"testing"
 
@@ -42,6 +43,20 @@ type response struct {
 }
 
 func TestCommand(t *testing.T) {
+
+	file, err := ioutil.TempFile("", "test")
+	if err != nil {
+		t.Fatalf("Failed to create temp file: %v", err)
+	}
+	defer func() {
+		if err := os.Remove(file.Name()); err != nil {
+			t.Fatalf("Failed to remove temp file: %v", err)
+		}
+	}()
+	if err := ioutil.WriteFile(file.Name(), []byte("secret"), 0755); err != nil {
+		t.Fatalf("Failed to write temp file: %v", err)
+	}
+
 	var testCases = []struct {
 		name           string
 		args           []string
@@ -67,8 +82,10 @@ Flags:
       --type string           Type of resource to acquire
 
 Global Flags:
-      --owner-name string   Name identifying the user of this client
-      --server-url string   URL of the Boskos server
+      --owner-name string      Name identifying the user of this client
+      --password-file string   The path to password file used to access the Boskos server
+      --server-url string      URL of the Boskos server
+      --username string        Username used to access the Boskos server
 
 `,
 		},
@@ -84,6 +101,24 @@ Global Flags:
 			expectedCalls: []request{{
 				method: http.MethodPost,
 				url:    url.URL{Path: "/acquire", RawQuery: `dest=old&owner=test&state=new&type=thing`},
+				body:   []byte{},
+			}},
+			expectedOutput: `{"type":"thing","name":"87527b0c-eac2-4f83-9a03-791b2239e093","state":"old","owner":"test","lastupdate":"2019-07-24T23:30:40.094116858Z","userdata":{}}
+`,
+		},
+		{
+			name: "normal acquire sends a request with basic auth and succeeds",
+			args: []string{"acquire", "--state=new", "--type=thing", "--target-state=old", "--username=test", fmt.Sprintf("--password-file=%s", file.Name())},
+			responses: map[string]response{
+				"/acquire": {
+					code: http.StatusOK,
+					data: []byte(`{"type":"thing","name":"87527b0c-eac2-4f83-9a03-791b2239e093","state":"old","owner":"test","lastupdate":"2019-07-24T23:30:40.094116858Z","userdata":{}}`),
+				},
+			},
+			expectedCalls: []request{{
+				method: http.MethodPost,
+				url:    url.URL{Path: "/acquire", RawQuery: `dest=old&owner=test&state=new&type=thing`},
+				header: map[string][]string{"Authorization": {"Basic dGVzdDpzZWNyZXQ="}},
 				body:   []byte{},
 			}},
 			expectedOutput: `{"type":"thing","name":"87527b0c-eac2-4f83-9a03-791b2239e093","state":"old","owner":"test","lastupdate":"2019-07-24T23:30:40.094116858Z","userdata":{}}
@@ -171,8 +206,10 @@ Flags:
       --target-state string   Move resource to this state after releasing
 
 Global Flags:
-      --owner-name string   Name identifying the user of this client
-      --server-url string   URL of the Boskos server
+      --owner-name string      Name identifying the user of this client
+      --password-file string   The path to password file used to access the Boskos server
+      --server-url string      URL of the Boskos server
+      --username string        Username used to access the Boskos server
 
 `,
 		},
@@ -223,8 +260,10 @@ Flags:
       --type string   Type of resource to get metics for
 
 Global Flags:
-      --owner-name string   Name identifying the user of this client
-      --server-url string   URL of the Boskos server
+      --owner-name string      Name identifying the user of this client
+      --password-file string   The path to password file used to access the Boskos server
+      --server-url string      URL of the Boskos server
+      --username string        Username used to access the Boskos server
 
 `,
 		},
@@ -284,17 +323,20 @@ Flags:
   -h, --help               help for heartbeat
       --period duration    Period to send heartbeats on (default 30s)
       --resource string    JSON resource lease object to send heartbeat for
+      --retries int        How many failed heartbeats to tolerate (default 10)
       --timeout duration   How long to send heartbeats for (default 5h0m0s)
 
 Global Flags:
-      --owner-name string   Name identifying the user of this client
-      --server-url string   URL of the Boskos server
+      --owner-name string      Name identifying the user of this client
+      --password-file string   The path to password file used to access the Boskos server
+      --server-url string      URL of the Boskos server
+      --username string        Username used to access the Boskos server
 
 `,
 		},
 		{
 			name: "failed heartbeat sends a request and fails",
-			args: []string{"heartbeat", "--period=100ms", "--timeout=250ms", `--resource={"type":"thing","name":"87527b0c-eac2-4f83-9a03-791b2239e093","state":"new","owner":"test","lastupdate":"2019-07-24T23:30:40.094116858Z","userdata":{}}`},
+			args: []string{"heartbeat", "--period=100ms", "--timeout=250ms", `--resource={"type":"thing","name":"87527b0c-eac2-4f83-9a03-791b2239e093","state":"new","owner":"test","lastupdate":"2019-07-24T23:30:40.094116858Z","userdata":{}}`, "--retries=0"},
 			responses: map[string]response{
 				"/update": {
 					code: http.StatusNotFound,
@@ -309,6 +351,32 @@ Global Flags:
 			}},
 			expectedCode: 1,
 			expectedOutput: `failed to send heartbeat for resource "87527b0c-eac2-4f83-9a03-791b2239e093": status 404 Not Found, status code 404 updating 87527b0c-eac2-4f83-9a03-791b2239e093
+`,
+		},
+		{
+			name: "failed heartbeat sends a request, retries and fails",
+			args: []string{"heartbeat", "--period=100ms", "--timeout=250ms", `--resource={"type":"thing","name":"87527b0c-eac2-4f83-9a03-791b2239e093","state":"new","owner":"test","lastupdate":"2019-07-24T23:30:40.094116858Z","userdata":{}}`, "--retries=1"},
+			responses: map[string]response{
+				"/update": {
+					code: http.StatusNotFound,
+				},
+			},
+			expectedCalls: []request{{
+				method: http.MethodPost,
+				url:    url.URL{Path: "/update", RawQuery: `owner=test&state=new&name=87527b0c-eac2-4f83-9a03-791b2239e093`},
+				header: map[string][]string{"Content-Type": {"application/json"}},
+				body: []byte(`{}
+`),
+			}, {
+				method: http.MethodPost,
+				url:    url.URL{Path: "/update", RawQuery: `owner=test&state=new&name=87527b0c-eac2-4f83-9a03-791b2239e093`},
+				header: map[string][]string{"Content-Type": {"application/json"}},
+				body: []byte(`{}
+`),
+			}},
+			expectedCode: 1,
+			expectedOutput: `failed to send heartbeat for resource "87527b0c-eac2-4f83-9a03-791b2239e093": status 404 Not Found, status code 404 updating 87527b0c-eac2-4f83-9a03-791b2239e093
+failed to send heartbeat for resource "87527b0c-eac2-4f83-9a03-791b2239e093": status 404 Not Found, status code 404 updating 87527b0c-eac2-4f83-9a03-791b2239e093
 `,
 		},
 	}
@@ -389,9 +457,14 @@ Global Flags:
 				t.Errorf("%s: request %d: incorrect content-type header, expected %s, saw %s", testCase.name, i, expected, actual)
 			}
 
+			if expected, actual := testCase.expectedCalls[i].header.Get("Authorization"), request.header.Get("Authorization"); expected != actual {
+				t.Errorf("%s: request %d: incorrect Authorization header, expected %s, saw %s", testCase.name, i, expected, actual)
+			}
+
 			if expected, actual := testCase.expectedCalls[i].body, request.body; !reflect.DeepEqual(expected, actual) {
 				t.Errorf("%s: request %d: incorrect body: %s", testCase.name, i, diff.StringDiff(string(expected), string(actual)))
 			}
 		}
+		server.Close()
 	}
 }

@@ -28,8 +28,8 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 
 	artifact_uploader "k8s.io/test-infra/prow/artifact-uploader"
+	prow "k8s.io/test-infra/prow/client/clientset/versioned"
 	"k8s.io/test-infra/prow/gcsupload"
-	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/pod-utils/options"
 )
@@ -135,12 +135,12 @@ func (o *Options) Run() error {
 		return err
 	}
 
-	prowJobClient, err := kube.NewClientInCluster(o.ProwJobNamespace)
+	prowJobClient, err := prow.NewForConfig(clusterConfig)
 	if err != nil {
 		return err
 	}
 
-	controller := artifact_uploader.NewController(client.CoreV1(), prowJobClient, o.Options)
+	controller := artifact_uploader.NewController(client.CoreV1(), prowJobClient.ProwV1().ProwJobs(o.ProwJobNamespace), o.Options)
 
 	stop := make(chan struct{})
 	defer close(stop)

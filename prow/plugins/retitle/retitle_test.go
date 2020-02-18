@@ -28,21 +28,35 @@ import (
 
 func TestHandleGenericComment(t *testing.T) {
 	var testCases = []struct {
-		name            string
-		state           string
-		action          github.GenericCommentEventAction
-		isPr            bool
-		body            string
-		trusted         func(string) (bool, error)
-		expectedTitle   string
-		expectedErr     bool
-		expectedComment string
+		name              string
+		state             string
+		allowClosedIssues bool
+		action            github.GenericCommentEventAction
+		isPr              bool
+		body              string
+		trusted           func(string) (bool, error)
+		expectedTitle     string
+		expectedErr       bool
+		expectedComment   string
 	}{
 		{
-			name:   "comment on closed issue is ignored",
-			state:  "closed",
-			action: github.GenericCommentActionCreated,
-			body:   "/retitle foobar",
+			name:              "when closed issues are not allowed, comment on closed issue is ignored",
+			state:             "closed",
+			allowClosedIssues: false,
+			action:            github.GenericCommentActionCreated,
+			body:              "/retitle foobar",
+		},
+		{
+			name:              "when closed issues are allowed, trusted user edits PR title on closed issue",
+			state:             "closed",
+			allowClosedIssues: true,
+			action:            github.GenericCommentActionCreated,
+			body:              "/retitle foobar",
+			isPr:              true,
+			trusted: func(user string) (bool, error) {
+				return true, nil
+			},
+			expectedTitle: "foobar",
 		},
 		{
 			name:   "edited comment on open issue is ignored",
@@ -154,7 +168,7 @@ Instructions for interacting with me using PR comments are available [here](http
 				IssueComments: map[int][]github.IssueComment{},
 			}
 
-			err := handleGenericComment(&gc, testCase.trusted, logrus.WithField("test-case", testCase.name), gce)
+			err := handleGenericComment(&gc, testCase.trusted, testCase.allowClosedIssues, logrus.WithField("test-case", testCase.name), gce)
 			if err == nil && testCase.expectedErr {
 				t.Errorf("%s: expected an error but got none", testCase.name)
 			}

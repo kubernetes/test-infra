@@ -41,8 +41,8 @@ to verify.
 
 ## Testing
 
-Run `bazel test //testgrid/...` to run all unit tests in TestGrid. Note that this also validates
-the [testgrid.k8s.io config].
+Run `bazel test //testgrid/...` to run all unit tests in TestGrid. Note that this does not validate
+the [testgrid.k8s.io config]; those tests are in `bazel test //config/tests/testgrids/...`
 
 Run `bazel test //...` for repository-wide testing, such as ensuring that
 every job in our CI system appears somewhere in testgrid, etc.

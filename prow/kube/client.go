@@ -139,6 +139,7 @@ type request struct {
 	method      string
 	path        string
 	deckPath    string
+	contentType string
 	query       map[string]string
 	requestBody interface{}
 }
@@ -161,7 +162,7 @@ func (c *Client) retry(r *request) (*http.Response, error) {
 	var err error
 	backoff := retryDelay
 	for retries := 0; retries < maxRetries; retries++ {
-		resp, err = c.doRequest(r.method, r.deckPath, r.path, r.query, r.requestBody)
+		resp, err = c.doRequest(r.method, r.deckPath, r.path, r.contentType, r.query, r.requestBody)
 		if err == nil {
 			if resp.StatusCode < 500 {
 				break
@@ -221,7 +222,7 @@ func (c *Client) requestRetry(r *request) ([]byte, error) {
 	return rb, nil
 }
 
-func (c *Client) doRequest(method, deckPath, urlPath string, query map[string]string, body interface{}) (*http.Response, error) {
+func (c *Client) doRequest(method, deckPath, urlPath, contentType string, query map[string]string, body interface{}) (*http.Response, error) {
 	url := c.baseURL + urlPath
 	if c.deckURL != "" && deckPath != "" {
 		url = c.deckURL + deckPath
@@ -241,8 +242,8 @@ func (c *Client) doRequest(method, deckPath, urlPath string, query map[string]st
 	if c.token != "" {
 		req.Header.Set("Authorization", "Bearer "+c.token)
 	}
-	if method == http.MethodPatch {
-		req.Header.Set("Content-Type", "application/strategic-merge-patch+json")
+	if contentType != "" {
+		req.Header.Set("Content-Type", contentType)
 	} else {
 		req.Header.Set("Content-Type", "application/json")
 	}

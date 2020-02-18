@@ -9,7 +9,7 @@ go_library(
     deps = [
         "//boskos/client:go_default_library",
         "//boskos/common:go_default_library",
-        "//vendor/github.com/spf13/cobra:go_default_library",
+        "@com_github_spf13_cobra//:go_default_library",
     ],
 )
 
@@ -43,5 +43,5 @@ go_test(
     name = "go_default_test",
     srcs = ["cli_test.go"],
     embed = [":go_default_library"],
-    deps = ["//vendor/k8s.io/apimachinery/pkg/util/diff:go_default_library"],
+    deps = ["@io_k8s_apimachinery//pkg/util/diff:go_default_library"],
 )

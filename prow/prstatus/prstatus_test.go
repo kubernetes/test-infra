@@ -32,8 +32,9 @@ import (
 	"github.com/sirupsen/logrus"
 	"sigs.k8s.io/yaml"
 
-	"k8s.io/test-infra/prow/config"
+	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/githuboauth"
 )
 
 type MockQueryHandler struct {
@@ -75,18 +76,19 @@ func newMockQueryHandler(prs []PullRequest, contextMap map[int][]Context) *MockQ
 	}
 }
 
-func createMockAgent(repos []string, config *config.GitHubOAuthConfig) *DashboardAgent {
+func createMockAgent(repos []string, config *githuboauth.Config) *DashboardAgent {
 	return &DashboardAgent{
-		repos: repos,
-		goac:  config,
-		log:   logrus.WithField("unit-test", "dashboard-agent"),
+		repos:  repos,
+		goac:   config,
+		log:    logrus.WithField("unit-test", "dashboard-agent"),
+		github: prowflagutil.NewGitHubOptions(),
 	}
 }
 
 func TestHandlePrStatusWithoutLogin(t *testing.T) {
 	repos := []string{"mock/repo", "kubernetes/test-infra", "foo/bar"}
 	mockCookieStore := sessions.NewCookieStore([]byte("secret-key"))
-	mockConfig := &config.GitHubOAuthConfig{
+	mockConfig := &githuboauth.Config{
 		CookieStore: mockCookieStore,
 	}
 	mockAgent := createMockAgent(repos, mockConfig)
@@ -122,7 +124,7 @@ func TestHandlePrStatusWithInvalidToken(t *testing.T) {
 	logrus.SetLevel(logrus.ErrorLevel)
 	repos := []string{"mock/repo", "kubernetes/test-infra", "foo/bar"}
 	mockCookieStore := sessions.NewCookieStore([]byte("secret-key"))
-	mockConfig := &config.GitHubOAuthConfig{
+	mockConfig := &githuboauth.Config{
 		CookieStore: mockCookieStore,
 	}
 	mockAgent := createMockAgent(repos, mockConfig)
@@ -158,7 +160,7 @@ func TestHandlePrStatusWithInvalidToken(t *testing.T) {
 func TestHandlePrStatusWithLogin(t *testing.T) {
 	repos := []string{"mock/repo", "kubernetes/test-infra", "foo/bar"}
 	mockCookieStore := sessions.NewCookieStore([]byte("secret-key"))
-	mockConfig := &config.GitHubOAuthConfig{
+	mockConfig := &githuboauth.Config{
 		CookieStore: mockCookieStore,
 	}
 	mockAgent := createMockAgent(repos, mockConfig)
@@ -307,7 +309,7 @@ func TestHandlePrStatusWithLogin(t *testing.T) {
 func TestGetHeadContexts(t *testing.T) {
 	repos := []string{"mock/repo", "kubernetes/test-infra", "foo/bar"}
 	mockCookieStore := sessions.NewCookieStore([]byte("secret-key"))
-	mockConfig := &config.GitHubOAuthConfig{
+	mockConfig := &githuboauth.Config{
 		CookieStore: mockCookieStore,
 	}
 	mockAgent := createMockAgent(repos, mockConfig)
@@ -379,7 +381,7 @@ func TestGetHeadContexts(t *testing.T) {
 func TestConstructSearchQuery(t *testing.T) {
 	repos := []string{"mock/repo", "kubernetes/test-infra", "foo/bar"}
 	mockCookieStore := sessions.NewCookieStore([]byte("secret-key"))
-	mockConfig := &config.GitHubOAuthConfig{
+	mockConfig := &githuboauth.Config{
 		CookieStore: mockCookieStore,
 	}
 	mockAgent := createMockAgent(repos, mockConfig)

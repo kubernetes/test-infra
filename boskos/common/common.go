@@ -30,12 +30,12 @@ import (
 const (
 	// Busy state defines a resource being used.
 	Busy = "busy"
+	// Cleaning state defines a resource being cleaned
+	Cleaning = "cleaning"
 	// Dirty state defines a resource that needs cleaning
 	Dirty = "dirty"
 	// Free state defines a resource that is usable
 	Free = "free"
-	// Cleaning state defines a resource being cleaned
-	Cleaning = "cleaning"
 	// Leased state defines a resource being leased in order to make a new resource
 	Leased = "leased"
 	// ToBeDeleted is used for resources about to be deleted, they will be verified by a cleaner which mark them as tombstone
@@ -44,6 +44,19 @@ const (
 	Tombstone = "tombstone"
 	// Other is used to agglomerate unspecified states for metrics reporting
 	Other = "other"
+)
+
+var (
+	// KnownStates is the set of all known states, excluding "other".
+	KnownStates = []string{
+		Busy,
+		Cleaning,
+		Dirty,
+		Free,
+		Leased,
+		ToBeDeleted,
+		Tombstone,
+	}
 )
 
 // UserData is a map of Name to user defined interface, serialized into a string
@@ -133,9 +146,18 @@ type Metric struct {
 	// TODO: implements state transition metrics
 }
 
+// NewMetric returns a new Metric struct.
+func NewMetric(rtype string) Metric {
+	return Metric{
+		Type:    rtype,
+		Current: map[string]int{},
+		Owners:  map[string]int{},
+	}
+}
+
 // IsInUse reports if the resource is owned by anything else than Boskos.
-func (r *Resource) IsInUse() bool {
-	return r.Owner != ""
+func (res *Resource) IsInUse() bool {
+	return res.Owner != ""
 }
 
 // NewResource creates a new Boskos Resource.
@@ -318,7 +340,7 @@ func (ud *UserData) FromMap(m UserDataMap) {
 func ItemToResource(i Item) (Resource, error) {
 	res, ok := i.(Resource)
 	if !ok {
-		return Resource{}, fmt.Errorf("cannot construct Resource from received object %v", i)
+		return Resource{}, fmt.Errorf("expected item to be of type Resource, was %T", i)
 	}
 	return res, nil
 }

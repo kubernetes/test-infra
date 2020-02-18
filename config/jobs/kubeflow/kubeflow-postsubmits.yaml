@@ -1,8 +1,6 @@
 postsubmits:
   kubeflow/examples:
   - name: kubeflow-examples-postsubmit
-    branches:
-    - master
     labels:
       preset-service-account: "true"
     spec:
@@ -13,6 +11,18 @@ postsubmits:
     annotations:
       testgrid-dashboards: sig-big-data
       description: Postsubmit kubeflow/examples.
+  kubeflow/internal-acls:
+  - name: kubeflow-internal-acls-postsubmit
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+
+    annotations:
+      testgrid-dashboards: sig-big-data
+      description: Postsubmit tests for kubeflow/internal-acls.
   kubeflow/kubeflow:
   - name: kubeflow-postsubmit
     labels:
@@ -25,6 +35,9 @@ postsubmits:
     annotations:
       testgrid-dashboards: sig-big-data
       description: Postsubmit tests for Kubeflow.
+      # TODO: use a public email group
+      testgrid-alert-email: kubeflow-engineering@google.com
+      testgrid-num-failures-to-alert: "3"
   kubeflow/kfctl:
   - name: kubeflow-kfctl-postsubmit
     labels:
@@ -37,10 +50,20 @@ postsubmits:
     annotations:
       testgrid-dashboards: sig-big-data
       description: Postsubmit tests for kubeflow/kfctl.
+  kubeflow/manifests:
+  - name: kubeflow-manifests-postsubmit
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+
+    annotations:
+      testgrid-dashboards: sig-big-data
+      description: Postsubmit tests for kubeflow/manifests.
   kubeflow/pytorch-operator:
   - name: kubeflow-pytorch-operator-postsubmit
-    branches:
-    - master
     labels:
       preset-service-account: "true"
     spec:
@@ -53,8 +76,6 @@ postsubmits:
       description: Postsubmit kubeflow/pytorch-operator.
   kubeflow/reporting:
   - name: kubeflow-reporting-postsubmit
-    branches:
-    - master
     labels:
       preset-service-account: "true"
     spec:
@@ -79,8 +100,6 @@ postsubmits:
       description: Postsubmit kubeflow/website.
   kubeflow/testing:
   - name: kubeflow-testing-postsubmit
-    branches:
-    - master
     labels:
       preset-service-account: "true"
     spec:
@@ -165,8 +184,6 @@ postsubmits:
       description: Postsubmit kubeflow/caffe2-operator.
   kubeflow/kubebench:
   - name: kubeflow-kubebench-postsubmit
-    branches:
-    - master
     labels:
       preset-service-account: "true"
     spec:
@@ -179,8 +196,6 @@ postsubmits:
       description: Postsubmit tests for kubeflow/kubebench.
   kubeflow/mpi-operator:
   - name: kubeflow-mpi-operator-postsubmit
-    branches:
-    - master
     labels:
       preset-service-account: "true"
     spec:
@@ -193,8 +208,6 @@ postsubmits:
       description: Postsubmit tests for kubeflow/mpi-operator.
   kubeflow/chainer-operator:
   - name: kubeflow-chainer-operator-postsubmit
-    branches:
-    - master
     labels:
       preset-service-account: "true"
     spec:
@@ -207,8 +220,6 @@ postsubmits:
       description: Postsubmit tests for kubeflow/chainer-operator.
   kubeflow/mxnet-operator:
   - name: kubeflow-mxnet-operator-postsubmit
-    branches:
-    - master
     labels:
       preset-service-account: "true"
     spec:
@@ -221,8 +232,6 @@ postsubmits:
       description: Postsubmit kubeflow/mxnet-operator.
   kubeflow/arena:
   - name: kubeflow-arena-postsubmit
-    branches:
-    - master
     labels:
       preset-service-account: "true"
     spec:
@@ -234,15 +243,15 @@ postsubmits:
       testgrid-dashboards: sig-big-data
       description: Postsubmit tests for kubeflow/arena.
   kubeflow/pipelines:
-  - name: kubeflow-pipeline-postsubmit
-    decorate: true
+  - name: kubeflow-pipeline-postsubmit-standalone-component-test
     branches:
-    - master
+    - ^master$
+    decorate: true
     labels:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
         command:
         - ./test/postsubmit-tests-with-pipeline-deployment.sh
         args:
@@ -255,3 +264,84 @@ postsubmits:
     annotations:
       testgrid-dashboards: sig-big-data
       description: Postsubmit tests for kubeflow/pipeline.
+  - name: kubeflow-pipeline-postsubmit-mkp-component-test
+    branches:
+    - ^master$
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/ml-pipeline-test/test-worker:latest
+        command:
+        - ./test/postsubmit-tests-with-pipeline-deployment.sh
+        args:
+        - --kfp_deployment
+        - mkp
+        - --workflow_file
+        - component_test.yaml
+        - --test_result_folder
+        - sample_test
+        - --timeout
+        - "7200"
+    annotations:
+      testgrid-dashboards: sig-big-data
+      description: Postsubmit tests for kubeflow/pipeline.
+  - name: kubeflow-pipeline-postsubmit-mkp-e2e-test
+    branches:
+    - ^master$
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+        command:
+        - ./test/postsubmit-tests-with-pipeline-deployment.sh
+        args:
+        - --kfp_deployment
+        - mkp
+        - --workflow_file
+        - e2e_test_gke_v2.yaml
+        - --test_result_folder
+        - e2e_test
+        - --timeout
+        - "7200"
+    annotations:
+      testgrid-dashboards: sig-big-data
+      description: Postsubmit tests for kubeflow/pipeline.
+  - name: kubeflow-pipeline-postsubmit-mkp-sample-test
+    branches:
+    - ^master$
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+        command:
+        - ./test/postsubmit-tests-with-pipeline-deployment.sh
+        args:
+        - --kfp_deployment
+        - mkp
+        - --workflow_file
+        - sample_test.yaml
+        - --test_result_folder
+        - sample_test
+        - --timeout
+        - "3600"
+    annotations:
+      testgrid-dashboards: sig-big-data
+      description: Postsubmit tests for kubeflow/pipeline.
+  kubeflow/xgboost-operator:
+  - name: kubeflow-xgboost-operator-postsubmit
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+
+    annotations:
+      testgrid-dashboards: sig-big-data
+      description: Postsubmit tests for kubeflow/xgboost-operator.

@@ -58,7 +58,7 @@ func init() {
 	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest, helpProvider)
 }
 
-func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+func helpProvider(config *plugins.Configuration, _ []plugins.Repo) (*pluginhelp.PluginHelp, error) {
 	// Only the Description field is specified because this plugin is not triggered with commands and is not configurable.
 	return &pluginhelp.PluginHelp{
 			Description: "The invalidcommitmsg plugin applies the '" + invalidCommitMsgLabel + "' label to pull requests whose commit messages contain @ mentions or keywords which can automatically close issues.",
@@ -110,12 +110,10 @@ func handle(gc githubClient, log *logrus.Entry, pr github.PullRequestEvent, cp c
 	}
 	log.Debugf("Found %d commits in PR", len(allCommits))
 
-	var invalidCommits []github.GitCommit
+	var invalidCommits []github.RepositoryCommit
 	for _, commit := range allCommits {
 		if closeIssueRegex.MatchString(commit.Commit.Message) || atMentionRegex.MatchString(commit.Commit.Message) {
-			c := commit.Commit
-			c.SHA = commit.SHA
-			invalidCommits = append(invalidCommits, c)
+			invalidCommits = append(invalidCommits, commit)
 		}
 	}
 

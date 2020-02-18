@@ -4,7 +4,9 @@ This folder contains the manifest files for monitoring prow resources.
 
 ## Deploy
 
-The deployment has been integrated into our CI system, except `secret` objects.
+The deployment has been
+[integrated into our CI system](https://github.com/kubernetes/test-infra/blob/201c7788b244ab2fc3efae7249fb939223ef6e1e/prow/deploy.sh#L91-L92),
+except `secret` objects.
 Cluster admins need to create `secret`s  manually.
 
 ```
@@ -13,6 +15,10 @@ $ kubectl create -f grafana_secret.yaml
 $ kubectl create -f alertmanager-prow_secret.yaml
 
 ```
+
+The grafana `Ingress` in [grafana_expose.yaml](grafana_expose.yaml) has
+GCE specific annotations. It can be modified/removed if [other ways](https://cloud.google.com/kubernetes-engine/docs/how-to/exposing-apps)
+of exposing a service are preferred.
 
 A successful deploy will spawn a stack of monitoring for prow in namespace `prow-monitoring`: _prometheus_, _alertmanager_, and _grafana_.
 
@@ -75,6 +81,10 @@ Developing a new dashboard can be achieved by
 
 * Use the configMap above in [grafana_deployment.yaml](grafana_deployment.yaml).
 
+As an alternative to `bazel`, the Makefile in [mixin](mixins/Makefile) folder can be used to generate the yaml/json
+files from `jsonnet` for debugging locally. As prerequisites, [`jsonnet`](https://github.com/google/jsonnet)
+and [`gojsontoyaml`](https://github.com/brancz/gojsontoyaml) should be included in `${PATH}`.
+
 ## Access components' Web page
 
 * For `grafana`, visit [monitoring.prow.k8s.io](https://monitoring.prow.k8s.io). Anonymous users are with read-only mode.
@@ -86,10 +96,10 @@ Cluster admins can use [k8s port-forward](https://kubernetes.io/docs/tasks/acces
 access the web.
 
     ```
-    $ kubectl -n prow-monitoring port-forward $( kubectl -n prow-monitoring get pods --selector app=prometheus -o jsonpath={.items[0].metadata.name} ) 9000
+    $ kubectl -n prow-monitoring port-forward $( kubectl -n prow-monitoring get pods --selector app=prometheus -o jsonpath={.items[0].metadata.name} ) 9090
     $ kubectl -n prow-monitoring port-forward $( kubectl -n prow-monitoring get pods --selector app=alertmanager -o jsonpath={.items[0].metadata.name} ) 9093
     ```
 
-    Then, visit [127.0.0.1:9000](http://127.0.0.1:9000) for the `prometheus` pod and [127.0.0.1:9093](http://127.0.0.1:9093) for the `alertmanager` pod.
+    Then, visit [127.0.0.1:9090](http://127.0.0.1:9090) for the `prometheus` pod and [127.0.0.1:9093](http://127.0.0.1:9093) for the `alertmanager` pod.
 
     As a result of no public domain for those two components, some of the links on the UI do not work, eg, the links on the slack alerts.

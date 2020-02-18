@@ -11,6 +11,9 @@ presubmits:
       containers:
       - image: launcher.gcr.io/google/bazel
         imagePullPolicy: Always
+        env:
+        - name: USE_BAZEL_VERSION
+          value: real  # Ignore .bazelversion
         command:
         - hack/bazel.sh
         args:
@@ -19,7 +22,9 @@ presubmits:
         - --nobuild_tests_only
         - //...
     annotations:
-      testgrid-create-test-group: 'true'
+      testgrid-dashboards: sig-testing-canaries, presubmits-test-infra
+      testgrid-tab-name: test-infra-bazel-canary
+
 # Testing to make sure things still update.
 periodics:
 - interval: 10m
@@ -53,7 +58,11 @@ periodics:
       - --output=$(ARTIFACTS)/junit_benchmarks.xml
       - --pass-on-error
       - ./experiment/dummybenchmarks/...
+      env:
+      - name: GO111MODULE
+        value: "on"
   annotations:
+    testgrid-alert-email: colew@google.com
     testgrid-dashboards: sig-testing-canaries
     testgrid-tab-name: benchmark-demo
     description: Demoing JUnit golang benchmark results.

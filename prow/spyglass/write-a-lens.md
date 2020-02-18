@@ -105,6 +105,7 @@ ts_library(
 
 rollup_bundle(
     name = "script_bundle",
+    enable_code_splitting = False,
     entry_point = ":sample.ts",
     deps = [
         ":script",

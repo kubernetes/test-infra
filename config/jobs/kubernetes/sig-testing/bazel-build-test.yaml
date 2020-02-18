@@ -7,6 +7,9 @@ presubmits:
     - release-\d+.\d+ # per-release job
     annotations:
       fork-per-release: "true"
+      testgrid-alert-stale-results-hours: "24"
+      testgrid-create-test-group: "true"
+      testgrid-num-failures-to-alert: "10"
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
@@ -22,7 +25,7 @@ presubmits:
         args:
         - -c
         - |
-          ../test-infra/hack/bazel.sh build --config=remote --remote_instance_name=projects/k8s-prow-builds/instances/default_instance $(bazel query --keep_going --noshow_progress "kind(.*_binary, rdeps(//... -//vendor/..., //...)) except attr('tags', 'manual', //...)") //build/release-tars
+          ../test-infra/hack/bazel.sh build --config=remote --remote_instance_name=projects/k8s-prow-builds/instances/default_instance -- //... -//vendor/... -//build/... //build/release-tars
   - name: pull-kubernetes-bazel-test
     decorate: true
     always_run: true
@@ -30,6 +33,9 @@ presubmits:
     - release-\d+.\d+ # per-release job
     annotations:
       fork-per-release: "true"
+      testgrid-alert-stale-results-hours: "24"
+      testgrid-create-test-group: "true"
+      testgrid-num-failures-to-alert: "10"
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
@@ -59,9 +65,7 @@ postsubmits:
     annotations:
       fork-per-release: "true"
       fork-per-release-replacements: "latest-bazel.txt -> latest-bazel-{{.Version}}.txt"
-      testgrid-dashboards: sig-release-master-blocking, google-unit
-      testgrid-tab-name: bazel-build-master
-      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+      testgrid-dashboards: google-unit
       description: "Builds kubernetes using bazel"
     labels:
       preset-service-account: "true"
@@ -69,7 +73,7 @@ postsubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -86,6 +90,9 @@ postsubmits:
         resources:
           requests:
             memory: "6Gi"
+    rerun_auth_config:
+      github_team_ids:
+        - 2241179 # release-managers
   - name: post-kubernetes-bazel-build
     branches:
     - master
@@ -99,7 +106,7 @@ postsubmits:
       repo: test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
         command:
         - bash
         args:
@@ -111,7 +118,7 @@ postsubmits:
               --config=ci \
               "--build=//... -//vendor/..." \
               --release=//build/release-tars \
-              --gcs=gs://kubernetes-release-dev/ci \
+              --gcs=gs://kubernetes-release-dev/ci-rbe \
               --version-suffix=-bazel-rbe \
               --publish-version=gs://kubernetes-release-dev/ci/latest-bazel-rbe.txt
 
@@ -125,10 +132,8 @@ postsubmits:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
     annotations:
-      testgrid-dashboards: sig-release-master-blocking, google-unit
-      testgrid-tab-name: bazel-test-master
-      testgrid-alert-email: kubernetes-sig-testing-alert@googlegroups.com
-      description: "OWNER: sig-testing. Tests kubernetes using bazel."
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+      testgrid-dashboards: google-unit
     extra_refs:
     - base_ref: master
       org: kubernetes
@@ -158,9 +163,9 @@ postsubmits:
       preset-bazel-scratch-dir: "true"
     annotations:
       fork-per-release: "true"
-      testgrid-dashboards: sig-release-master-informing
-      testgrid-tab-name: bazel-test-master
-      description: 'OWNER: sig-testing; Runs kubernetes unit tests using bazel'
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+      testgrid-dashboards: sig-release-master-informing, google-unit
+      description: 'OWNER: sig-testing; Runs kubernetes unit tests at each commit using bazel'
     extra_refs:
     - base_ref: master
       org: kubernetes
@@ -186,17 +191,19 @@ postsubmits:
 periodics:
 # periodic bazel build jobs
 - name: periodic-kubernetes-bazel-build-master
+  annotations:
+    fork-per-release: "true"
+    fork-per-release-replacements: "latest-bazel.txt -> latest-bazel-{{.Version}}.txt"
+    fork-per-release-periodic-interval: 6h
+    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+    testgrid-dashboards: sig-release-master-blocking, google-unit
+    testgrid-tab-name: bazel-build-master
+    description: run bazel build //... -//vendor/...
   interval: 5m
   decorate: true
   labels:
     preset-service-account: "true"
     preset-bazel-scratch-dir: "true"
-  annotations:
-    fork-per-release: "true"
-    fork-per-release-replacements: "latest-bazel.txt -> latest-bazel-{{.Version}}.txt"
-    fork-per-release-periodic-interval: 6h
-    testgrid-dashboards: google-unit
-    testgrid-tab-name: periodic-bazel-build-master
   extra_refs:
   - base_ref: master
     org: kubernetes
@@ -206,7 +213,7 @@ periodics:
     repo: test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
       command:
       - bash
       args:
@@ -218,11 +225,18 @@ periodics:
             --config=ci \
             "--build=//... -//vendor/..." \
             --release=//build/release-tars \
-            --gcs=gs://kubernetes-release-dev/ci \
+            --gcs=gs://kubernetes-release-dev/ci-periodic \
             --version-suffix=-bazel \
-            --publish-version=gs://kubernetes-release-dev/ci/latest-bazel.txt
+            --publish-version=gs://kubernetes-release-dev/ci/latest-bazel-periodic.txt
+  rerun_auth_config:
+    github_team_ids:
+      - 2241179 # release-managers
 
 - name: periodic-kubernetes-bazel-build-canary
+  annotations:
+    testgrid-dashboards: sig-testing-canaries
+    testgrid-tab-name: bazel-build
+    description: run kubernetes-bazel-build with latest image
   interval: 1h
   decorate: true
   labels:
@@ -251,26 +265,27 @@ periodics:
             --config=ci \
             "--build=//... -//vendor/..." \
             --release=//build/release-tars \
-            --gcs=gs://kubernetes-release-dev/ci \
+            --gcs=gs://kubernetes-release-dev/ci-canary \
             --version-suffix=-bazel \
-            --publish-version=gs://kubernetes-release-dev/ci/latest-bazel.txt
+            --publish-version=gs://kubernetes-release-dev/ci/latest-bazel-canary.txt
+  rerun_auth_config:
+    github_team_ids:
+      - 2241179 # release-managers
 
 # periodic bazel test jobs
+- name: periodic-kubernetes-bazel-test-master
   annotations:
-    testgrid-dashboards: sig-testing-canaries
-    testgrid-tab-name: bazel-build
-    description: run kubernetes-bazel-build with latest image
-- interval: 5m
-  name: periodic-kubernetes-bazel-test-master
+    fork-per-release: "true"
+    fork-per-release-periodic-interval: 6h
+    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+    testgrid-dashboards: sig-release-master-blocking, google-unit
+    testgrid-tab-name: bazel-test-master
+    description: "runs bazel test //... //hack:verify-all -//build/... -//vendor/..."
+  interval: 5m
   decorate: true
   labels:
     preset-service-account: "true"
     preset-bazel-scratch-dir: "true"
-  annotations:
-    fork-per-release: "true"
-    fork-per-release-periodic-interval: 6h
-    testgrid-dashboards: google-unit
-    testgrid-tab-name: periodic-bazel-test-master
   extra_refs:
   - base_ref: master
     org: kubernetes
@@ -293,8 +308,12 @@ periodics:
       - --
       - -//build/...
       - -//vendor/...
-- interval: 1h
-  name: periodic-kubernetes-bazel-test-canary
+- name: periodic-kubernetes-bazel-test-canary
+  annotations:
+    testgrid-dashboards: sig-testing-canaries
+    testgrid-tab-name: bazel-test
+    description: run kubernetes-bazel-test with latest image
+  interval: 1h
   decorate: true
   labels:
     preset-service-account: "true"
@@ -321,7 +340,3 @@ periodics:
       - --
       - -//build/...
       - -//vendor/...
-  annotations:
-    testgrid-dashboards: sig-testing-canaries
-    testgrid-tab-name: bazel-test
-    description: run kubernetes-bazel-test with latest image

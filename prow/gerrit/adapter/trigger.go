@@ -25,8 +25,8 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	reporter "k8s.io/test-infra/prow/crier/reporters/gerrit"
 	"k8s.io/test-infra/prow/gerrit/client"
-	"k8s.io/test-infra/prow/gerrit/reporter"
 	"k8s.io/test-infra/prow/pjutil"
 )
 
@@ -48,7 +48,7 @@ func messageFilter(lastUpdate time.Time, change client.ChangeInfo, presubmits []
 			}
 			for _, presubmit := range presubmits {
 				j, ok := jobs[presubmit.Name]
-				if ok && strings.ToLower(j.State) == string(v1.FailureState) {
+				if ok && (strings.ToLower(j.State) == string(v1.FailureState) || strings.ToLower(j.State) == string(v1.ErrorState)) {
 					failedContexts.Insert(presubmit.Name)
 				}
 			}

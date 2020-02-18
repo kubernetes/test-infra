@@ -23,6 +23,9 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/apimachinery/pkg/util/sets"
+	utilpointer "k8s.io/utils/pointer"
+
+	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
 )
@@ -32,6 +35,7 @@ var testQuery = TideQuery{
 	Repos:                  []string{"k/k", "k/t-i"},
 	Labels:                 []string{labels.LGTM, labels.Approved},
 	MissingLabels:          []string{"foo"},
+	Author:                 "batman",
 	Milestone:              "milestone",
 	ReviewApprovedRequired: true,
 }
@@ -52,6 +56,7 @@ func TestTideQuery(t *testing.T) {
 	checkTok("label:\"lgtm\"")
 	checkTok("label:\"approved\"")
 	checkTok("-label:\"foo\"")
+	checkTok("author:\"batman\"")
 	checkTok("milestone:\"milestone\"")
 	checkTok("review:approved")
 }
@@ -382,7 +387,7 @@ func TestConfigGetTideContextPolicy(t *testing.T) {
 					},
 				},
 				JobConfig: JobConfig{
-					Presubmits: map[string][]Presubmit{
+					PresubmitsStatic: map[string][]Presubmit{
 						"org/repo": {
 							Presubmit{
 								Reporter: Reporter{
@@ -497,20 +502,105 @@ func TestConfigGetTideContextPolicy(t *testing.T) {
 				SkipUnknownContexts:       &yes,
 			},
 		},
+		{
+			name: "jobs from inrepoconfig are considered",
+			config: Config{
+				JobConfig: JobConfig{
+					ProwYAMLGetter: fakeProwYAMLGetterFactory(
+						[]Presubmit{
+							{
+								AlwaysRun: true,
+								Reporter:  Reporter{Context: "ir0"},
+							},
+							{
+								AlwaysRun: true,
+								Optional:  true,
+								Reporter:  Reporter{Context: "ir1"},
+							},
+						},
+						nil,
+					),
+				},
+				ProwConfig: ProwConfig{
+					InRepoConfig: InRepoConfig{
+						Enabled: map[string]*bool{"*": utilpointer.BoolPtr(true)},
+					},
+				},
+			},
+			expected: TideContextPolicy{
+				RequiredContexts:          []string{"ir0"},
+				RequiredIfPresentContexts: []string{},
+				OptionalContexts:          []string{"ir1"},
+			},
+		},
+		{
+			name: "both static and inrepoconfig jobs are consired",
+			config: Config{
+				JobConfig: JobConfig{
+					PresubmitsStatic: map[string][]Presubmit{
+						"org/repo": {
+							Presubmit{
+								Reporter: Reporter{
+									Context: "pr1",
+								},
+								AlwaysRun: true,
+							},
+							Presubmit{
+								Reporter: Reporter{
+									Context: "po1",
+								},
+								AlwaysRun: true,
+								Optional:  true,
+							},
+						},
+					},
+					ProwYAMLGetter: fakeProwYAMLGetterFactory(
+						[]Presubmit{
+							{
+								AlwaysRun: true,
+								Reporter:  Reporter{Context: "ir0"},
+							},
+							{
+								AlwaysRun: true,
+								Optional:  true,
+								Reporter:  Reporter{Context: "ir1"},
+							},
+						},
+						nil,
+					),
+				},
+				ProwConfig: ProwConfig{
+					InRepoConfig: InRepoConfig{
+						Enabled: map[string]*bool{"*": utilpointer.BoolPtr(true)},
+					},
+				},
+			},
+			expected: TideContextPolicy{
+				RequiredContexts:          []string{"ir0", "pr1"},
+				RequiredIfPresentContexts: []string{},
+				OptionalContexts:          []string{"ir1", "po1"},
+			},
+		},
 	}
 
 	for _, tc := range testCases {
-		p, err := tc.config.GetTideContextPolicy(org, repo, branch)
-		if !reflect.DeepEqual(p, &tc.expected) {
-			t.Errorf("%s - did not get expected policy: %s", tc.name, diff.ObjectReflectDiff(&tc.expected, p))
-		}
-		if err != nil {
-			if err.Error() != tc.error {
-				t.Errorf("%s - expected error %v got %v", tc.name, tc.error, err.Error())
+		t.Run(tc.name, func(t *testing.T) {
+
+			baseSHAGetter := func() (string, error) {
+				return "baseSHA", nil
 			}
-		} else if tc.error != "" {
-			t.Errorf("%s - expected error %v got nil", tc.name, tc.error)
-		}
+			p, err := tc.config.GetTideContextPolicy(nil, org, repo, branch, baseSHAGetter, "some-sha")
+			if !reflect.DeepEqual(p, &tc.expected) {
+				t.Errorf("%s - did not get expected policy: %s", tc.name, diff.ObjectReflectDiff(&tc.expected, p))
+			}
+			if err != nil {
+				if err.Error() != tc.error {
+					t.Errorf("%s - expected error %v got %v", tc.name, tc.error, err.Error())
+				}
+			} else if tc.error != "" {
+				t.Errorf("%s - expected error %v got nil", tc.name, tc.error)
+			}
+		})
 	}
 }
 
@@ -949,5 +1039,14 @@ func TestTideContextPolicy_MissingRequiredContexts(t *testing.T) {
 		if !sets.NewString(missingContexts...).Equal(sets.NewString(tc.expectedContexts...)) {
 			t.Errorf("%s - expected %v got %v", tc.name, tc.expectedContexts, missingContexts)
 		}
+	}
+}
+
+func fakeProwYAMLGetterFactory(presubmits []Presubmit, postsubmits []Postsubmit) ProwYAMLGetter {
+	return func(_ *Config, _ git.ClientFactory, _, _ string, _ ...string) (*ProwYAML, error) {
+		return &ProwYAML{
+			Presubmits:  presubmits,
+			Postsubmits: postsubmits,
+		}, nil
 	}
 }

@@ -1,20 +1,5 @@
 postsubmits:
   kubernetes/test-infra:
-  - name: post-test-infra-build-smoke
-    agent: knative-build
-    decorate: true
-    build_spec:
-      steps:
-      - name: first
-        image: busybox
-        args: ["echo", "hello"]
-      - name: second
-        image: busybox
-        args: ["echo", "world"]
-      - name: third
-        image: busybox
-        args: ["cat", "config/jobs/kubernetes/test-infra/test-infra-postsubmits.yaml"]
-
   - name: post-test-infra-bazel
     branches:
     - master
@@ -24,7 +9,10 @@ postsubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: launcher.gcr.io/google/bazel:0.27.0
+      - image: launcher.gcr.io/google/bazel:2.0.0
+        env:
+        - name: USE_BAZEL_VERSION
+          value: real  # Ignore .bazelversion
         command:
         - hack/bazel.sh
         args:
@@ -32,46 +20,7 @@ postsubmits:
         - --config=ci
         - --nobuild_tests_only
         - //...
-
-  - name: maintenance-boskos-config-upload
-    branches:
-    - master
-    labels:
-      preset-service-account: "true"
-    run_if_changed: '^boskos/.*$'
-    decorate: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20190628-265d81f-0.27.0
-        command:
-        - ./boskos/update_prow_config.sh
-        env:
-        - name: PROW_SERVICE_ACCOUNT
-          value: /etc/prow-build-service/prow-build-service.json
-        volumeMounts:
-        - name: prow-build-service
-          mountPath: /etc/prow-build-service
-          readOnly: true
-      volumes:
-      - name: prow-build-service
-        secret:
-          secretName: prow-build-service
-
-  - name: maintenance-ci-testgrid-config-upload
-    branches:
-    - master
-    labels:
-      preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-    run_if_changed: '^config/(jobs|testgrids)/.*$'
-    decorate: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20190628-265d81f-0.27.0
-        command:
-        - ./testgrid/config-upload.sh
-        resources:
-          requests:
-            memory: "1Gi"
     annotations:
-      testgrid-num-failures-to-alert: '2'
+      testgrid-dashboards: sig-testing-misc
+      testgrid-tab-name: post-bazel
+      description: Runs bazel test //... on the test-infra repo on each commit

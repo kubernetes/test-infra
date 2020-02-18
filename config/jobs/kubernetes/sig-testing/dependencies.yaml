@@ -20,7 +20,33 @@ presubmits:
       - name: main
         command:
         - runner.sh
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+        args:
+        - make
+        - verify
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        env:
+        # Space separated list of the checks to run
+        - name: WHAT
+          value: "vendor vendor-licenses"
+  - name: pull-kubernetes-dependencies
+    path_alias: "k8s.io/kubernetes"
+    decorate: true
+    branches:
+    - release-1.16
+    always_run: true
+    skip_report: false
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - name: main
+        command:
+        - runner.sh
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-1.16
         args:
         - make
         - verify
@@ -46,7 +72,7 @@ presubmits:
       - name: main
         command:
         - runner.sh
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-1.15
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-1.15
         args:
         - make
         - verify
@@ -72,7 +98,7 @@ presubmits:
       - name: main
         command:
         - runner.sh
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
         args:
         - make
         - verify
@@ -104,7 +130,7 @@ presubmits:
       - name: main
         command:
         - runner.sh
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
         args:
         - make
         - verify

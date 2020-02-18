@@ -20,7 +20,7 @@ import time
 import zlib
 
 
-class Database(object):
+class Database:
     """
     Store build and test result information, and support incremental updates to results.
     """
@@ -103,9 +103,9 @@ class Database(object):
         """
         Insert a junit dictionary {gcs_path: contents} for a given build's rowid.
         """
-        for path, data in junits.iteritems():
+        for path, data in junits.items():
             self.db.execute('replace into file values(?,?)',
-                            (path, buffer(zlib.compress(data, 9))))
+                            (path, memoryview(zlib.compress(data.encode('utf-8'), 9))))
         self.db.execute('delete from build_junit_missing where build_id=?', (build_id,))
 
     ### make_json
@@ -156,7 +156,7 @@ class Database(object):
         for dataz, in self.db.execute(
                 'select data from file where path between ? and ?',
                 (path, path + '\x7F')):
-            data = zlib.decompress(dataz)
+            data = zlib.decompress(dataz).decode('utf-8')
             if data:
                 results.append(data)
         return results

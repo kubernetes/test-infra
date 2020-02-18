@@ -320,12 +320,13 @@ def distill_events(events, distilled_events=None):
     relevant to determining user state.
     """
     bots = [
+        'google-oss-robot',
+        'istio-testing',
         'k8s-bot',
         'k8s-ci-robot',
         'k8s-merge-robot',
         'k8s-oncall',
         'k8s-reviewable',
-        'istio-testing',
     ]
     skip_comments = get_skip_comments(events, bots)
 

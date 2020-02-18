@@ -24,6 +24,8 @@ import (
 
 var (
 	metricLabels = []string{
+		// namespace of the job
+		"job_namespace",
 		// name of the job
 		"job_name",
 		// type of the prowjob: presubmit, postsubmit, periodic, batch
@@ -48,16 +50,17 @@ var (
 )
 
 type jobLabel struct {
-	jobName string
-	jobType string
-	state   string
-	org     string
-	repo    string
-	baseRef string
+	jobNamespace string
+	jobName      string
+	jobType      string
+	state        string
+	org          string
+	repo         string
+	baseRef      string
 }
 
 func (jl *jobLabel) values() []string {
-	return []string{jl.jobName, jl.jobType, jl.state, jl.org, jl.repo, jl.baseRef}
+	return []string{jl.jobNamespace, jl.jobName, jl.jobType, jl.state, jl.org, jl.repo, jl.baseRef}
 }
 
 func init() {
@@ -75,7 +78,7 @@ func getJobLabelMap(pjs []prowapi.ProwJob) map[jobLabel]float64 {
 }
 
 func getJobLabel(pj prowapi.ProwJob) jobLabel {
-	jl := jobLabel{jobName: pj.Spec.Job, jobType: string(pj.Spec.Type), state: string(pj.Status.State)}
+	jl := jobLabel{jobNamespace: pj.Namespace, jobName: pj.Spec.Job, jobType: string(pj.Spec.Type), state: string(pj.Status.State)}
 
 	if pj.Spec.Refs != nil {
 		jl.org = pj.Spec.Refs.Org

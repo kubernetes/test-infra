@@ -17,7 +17,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
         args:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
@@ -27,25 +27,137 @@ presubmits:
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--scenario=execute"
         - "--"
-            # the script must run from kubernetes, but we're checking out kind
+        # the script must run from kubernetes, but we're checking out kind
         - "bash"
         - "--"
         - "-c"
         - "cd ./../../k8s.io/kubernetes && source ./../test-infra/experiment/kind-conformance-image-e2e.sh"
-          # we need privileged mode in order to do docker in docker
+        # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
         resources:
           requests:
-              # these are both a bit below peak usage during build
-              # this is mostly for building kubernetes
+            # these are both a bit below peak usage during build
+            # this is mostly for building kubernetes
             memory: "9000Mi"
-              # during the tests more like 3-20m is used
+            # during the tests more like 3-20m is used
             cpu: 2000m
     annotations:
       testgrid-create-test-group: 'true'
+      testgrid-dashboards: sig-testing-misc
+      description: Runs conformance tests using kind and the conformance image
+  - name: pull-kubernetes-conformance-kind-ipv6
+    branches:
+    - master
+    always_run: false
+    skip_report: false
+    max_concurrency: 8
+    optional: true
+    labels:
+      preset-service-account: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    spec:
+      # run on the ubuntu node pool, which has ipv6 modules
+      tolerations:
+      - key: "dedicated"
+        operator: "Equal"
+        value: "ubuntu"
+        effect: "NoSchedule"
+      nodeSelector:
+        dedicated: "ubuntu"
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+        env:
+        # enable IPV6 in bootstrap image
+        - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
+          value: "true"
+        # tell kind CI script to use ipv6
+        - name: "IP_FAMILY"
+          value: "ipv6"
+        args:
+        - "--job=$(JOB_NAME)"
+        - "--root=/go/src"
+        - "--repo=k8s.io/kubernetes=$(PULL_REFS)"
+        - "--repo=sigs.k8s.io/kind=master"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--scenario=execute"
+        - "--"
+        - "./../../sigs.k8s.io/kind/hack/ci/e2e.sh"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            # these are both a bit below peak usage during build
+            # this is mostly for building kubernetes
+            memory: "9000Mi"
+            # during the tests more like 3-20m is used
+            cpu: 2000m
+    annotations:
+      testgrid-dashboards: sig-testing-kind
+      description: Use kind to run e2e Conformance tests against a latest kubernetes master IPv6 cluster created with sigs.k8s.io/kind
+      testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
+      testgrid-num-failures-to-alert: "15"
+
+  - name: pull-kubernetes-conformance-kind-ipv6-parallel
+    branches:
+    - master
+    always_run: false
+    skip_report: false
+    max_concurrency: 8
+    optional: true
+    run_if_changed: '^test/'
+    labels:
+      preset-service-account: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+        env:
+        # enable IPV6 in bootstrap image
+        - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
+          value: "true"
+        # tell kind CI script to use ipv6
+        - name: "IP_FAMILY"
+          value: "ipv6"
+        # skip serial tests and run with --ginkgo-parallel
+        - name: "PARALLEL"
+          value: "true"
+        args:
+        - "--job=$(JOB_NAME)"
+        - "--root=/go/src"
+        - "--repo=k8s.io/kubernetes=$(PULL_REFS)"
+        - "--repo=sigs.k8s.io/kind=master"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--scenario=execute"
+        - "--"
+        - "./../../sigs.k8s.io/kind/hack/ci/e2e.sh"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            # these are both a bit below peak usage during build
+            # this is mostly for building kubernetes
+            memory: "9000Mi"
+            # during the tests more like 3-20m is used
+            cpu: 2000m
+    annotations:
+      testgrid-dashboards: sig-testing-kind
+      description: Use kind to run e2e tests (+Conformance, -Serial) against a latest kubernetes master IPv6 cluster created with sigs.k8s.io/kind
+      testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
+      testgrid-num-failures-to-alert: "15"
+
 periodics:
-  # conformance test using image against kubernetes master branch with `kind`
+# conformance test using image against kubernetes master branch with `kind`
 - interval: 1h
   name: ci-kubernetes-conformance-image-test
   labels:
@@ -56,7 +168,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -66,20 +178,20 @@ periodics:
       - "--upload=gs://kubernetes-jenkins/logs"
       - "--scenario=execute"
       - "--"
-            # the script must run from kubernetes, but we're checking out kind
+      # the script must run from kubernetes, but we're checking out kind
       - "bash"
       - "--"
       - "-c"
       - "cd ./../../k8s.io/kubernetes && source ./../test-infra/experiment/kind-conformance-image-e2e.sh"
-          # we need privileged mode in order to do docker in docker
+      # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
       resources:
         requests:
-              # these are both a bit below peak usage during build
-              # this is mostly for building kubernetes
+          # these are both a bit below peak usage during build
+          # this is mostly for building kubernetes
           memory: "9000Mi"
-              # during the tests more like 3-20m is used
+          # during the tests more like 3-20m is used
           cpu: 2000m
   # conformance test using image against kubernetes 1.14 branch with `kind`
   annotations:
@@ -98,7 +210,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-1.15
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-1.15
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -108,20 +220,20 @@ periodics:
       - "--upload=gs://kubernetes-jenkins/logs"
       - "--scenario=execute"
       - "--"
-            # the script must run from kubernetes, but we're checking out kind
+      # the script must run from kubernetes, but we're checking out kind
       - "bash"
       - "--"
       - "-c"
       - "cd ./../../k8s.io/kubernetes && source ./../test-infra/experiment/kind-conformance-image-e2e.sh"
-          # we need privileged mode in order to do docker in docker
+      # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
       resources:
         requests:
-              # these are both a bit below peak usage during build
-              # this is mostly for building kubernetes
+          # these are both a bit below peak usage during build
+          # this is mostly for building kubernetes
           memory: "9000Mi"
-              # during the tests more like 3-20m is used
+          # during the tests more like 3-20m is used
           cpu: 2000m
   annotations:
     testgrid-dashboards: conformance-all, conformance-kind, sig-testing-kind
@@ -139,7 +251,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-1.14
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-1.14
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -149,20 +261,20 @@ periodics:
       - "--upload=gs://kubernetes-jenkins/logs"
       - "--scenario=execute"
       - "--"
-            # the script must run from kubernetes, but we're checking out kind
+      # the script must run from kubernetes, but we're checking out kind
       - "bash"
       - "--"
       - "-c"
       - "cd ./../../k8s.io/kubernetes && source ./../test-infra/experiment/kind-conformance-image-e2e.sh"
-          # we need privileged mode in order to do docker in docker
+      # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
       resources:
         requests:
-              # these are both a bit below peak usage during build
-              # this is mostly for building kubernetes
+          # these are both a bit below peak usage during build
+          # this is mostly for building kubernetes
           memory: "9000Mi"
-              # during the tests more like 3-20m is used
+          # during the tests more like 3-20m is used
           cpu: 2000m
   annotations:
     testgrid-dashboards: conformance-all, conformance-kind, sig-testing-kind

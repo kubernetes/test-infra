@@ -4,6 +4,8 @@ Peribolos allows the org settings, teams and memberships to be declared in a yam
 
 See the [kubernetes/org] repo, in particular the [merge] and [`update.sh`] parts of that repo for this tool in action.
 
+Peribolos was the subject of a KubeCon talk: [How Kubernetes Uses GitOps to Manage GitHub Communities at Scale][kubecon talk]
+
 ### Etymology
 
 A [peribolos] is a wall that encloses a court in Greek/Roman architecture.
@@ -170,7 +172,7 @@ See `bazel run //prow/cmd/peribolos -- --help` for the full and current list of 
 
 
 
-[`config.yaml`]: /prow/config.yaml
+[`config.yaml`]: /config/prow/config.yaml
 [edit team]: https://developer.github.com/v3/teams/#edit-team
 [edit org]: https://developer.github.com/v3/orgs/#edit-an-organization
 [peribolos]: https://en.wikipedia.org/wiki/Peribolos
@@ -179,3 +181,4 @@ See `bazel run //prow/cmd/peribolos -- --help` for the full and current list of 
 [merge]: https://github.com/kubernetes/org/tree/master/cmd/merge
 [kubernetes/org]: https://github.com/kubernetes/org
 [`update.sh`]: https://github.com/kubernetes/org/blob/master/admin/update.sh
+[kubecon talk]: https://www.youtube.com/watch?v=te3Xj2zr1Co

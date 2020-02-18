@@ -31,7 +31,7 @@ import (
 // Make sure that our plugins are valid.
 func TestPlugins(t *testing.T) {
 	pa := &plugins.ConfigAgent{}
-	if err := pa.Load("../../plugins.yaml"); err != nil {
+	if err := pa.Load("../../../config/prow/plugins.yaml", true); err != nil {
 		t.Fatalf("Could not load plugins: %v.", err)
 	}
 }
@@ -100,7 +100,7 @@ func Test_gatherOptions(t *testing.T) {
 				pluginConfig:      "/etc/plugins/plugins.yaml",
 				dryRun:            true,
 				gracePeriod:       180 * time.Second,
-				kubernetes:        flagutil.ExperimentalKubernetesOptions{DeckURI: "http://whatever"},
+				kubernetes:        flagutil.KubernetesOptions{DeckURI: "http://whatever"},
 				webhookSecretFile: "/etc/webhook/hmac",
 			}
 			expectedfs := flag.NewFlagSet("fake-flags", flag.PanicOnError)

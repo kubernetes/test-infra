@@ -1,0 +1,14 @@
+aliases:
+  # business hours oncall for prow etc (https://go.k8s.io/oncall)
+  test-infra-oncall:
+  - BenTheElder
+  - chases2
+  - cjwagner
+  - fejta
+  - Katharine
+  - michelle192837
+
+  sig-scalability-leads:
+  - mm4tt
+  - shyamjvs
+  - wojtek-t

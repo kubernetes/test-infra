@@ -12,13 +12,16 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e:v06232019-5bb168152
+      - image: quay.io/kubernetes-ingress-controller/e2e:v02042020-08e19a278
         command:
         - ./hack/verify-boilerplate.sh
-
+        env:
+        - name: DIND_TASKS
+          value: "false"
     annotations:
       testgrid-dashboards: sig-network-ingress-nginx
       testgrid-tab-name: boilerplate
+
   - name: pull-ingress-nginx-codegen
     always_run: true
     decorate: true
@@ -30,13 +33,16 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e:v06232019-5bb168152
+      - image: quay.io/kubernetes-ingress-controller/e2e:v02042020-08e19a278
         command:
         - ./hack/verify-codegen.sh
-
+        env:
+        - name: DIND_TASKS
+          value: "false"
     annotations:
       testgrid-dashboards: sig-network-ingress-nginx
       testgrid-tab-name: codegen
+
   - name: pull-ingress-nginx-gofmt
     always_run: true
     decorate: true
@@ -46,13 +52,16 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e:v06232019-5bb168152
+      - image: quay.io/kubernetes-ingress-controller/e2e:v02042020-08e19a278
         command:
         - ./hack/verify-gofmt.sh
-
+        env:
+        - name: DIND_TASKS
+          value: "false"
     annotations:
       testgrid-dashboards: sig-network-ingress-nginx
       testgrid-tab-name: gofmt
+
   - name: pull-ingress-nginx-golint
     always_run: true
     decorate: true
@@ -64,10 +73,12 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e:v06232019-5bb168152
+      - image: quay.io/kubernetes-ingress-controller/e2e:v02042020-08e19a278
         command:
         - ./hack/verify-golint.sh
-
+        env:
+        - name: DIND_TASKS
+          value: "false"
     annotations:
       testgrid-dashboards: sig-network-ingress-nginx
       testgrid-tab-name: golint
@@ -81,13 +92,16 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e:v06232019-5bb168152
+      - image: quay.io/kubernetes-ingress-controller/e2e:v02042020-08e19a278
         command:
         - ./hack/verify-lualint.sh
-
+        env:
+        - name: DIND_TASKS
+          value: "false"
     annotations:
       testgrid-dashboards: sig-network-ingress-nginx
       testgrid-tab-name: lualint
+
   - name: pull-ingress-nginx-test-lua
     always_run: true
     decorate: true
@@ -99,14 +113,17 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e:v06232019-5bb168152
+      - image: quay.io/kubernetes-ingress-controller/e2e:v02042020-08e19a278
         command:
         - make
         - lua-test
-
+        env:
+        - name: DIND_TASKS
+          value: "false"
     annotations:
       testgrid-dashboards: sig-network-ingress-nginx
       testgrid-tab-name: test-lua
+
   - name: pull-ingress-nginx-test
     always_run: true
     decorate: true
@@ -118,7 +135,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e:v06232019-5bb168152
+      - image: quay.io/kubernetes-ingress-controller/e2e:v02042020-08e19a278
         command:
         - /bin/bash
         - -c
@@ -129,6 +146,8 @@ presubmits:
             secretKeyRef:
               name: ingress-nginx-codecov-token
               key: ingress-nginx-codecov-token
+        - name: DIND_TASKS
+          value: "false"
     volumes:
     - name: ingress-nginx-codecov-token
       secret:
@@ -136,120 +155,15 @@ presubmits:
         items:
         - key: ingress-nginx-codecov-token
           path: ingress-nginx-codecov-token
-
     annotations:
       testgrid-dashboards: sig-network-ingress-nginx
       testgrid-tab-name: test
-  - name: pull-ingress-nginx-e2e-1-12
-    always_run: true
-    decorate: true
-    decoration_config:
-      timeout: 25m
-    max_concurrency: 5
-    path_alias: k8s.io/ingress-nginx
-    labels:
-      preset-kind-volume-mounts: "true"
-      preset-dind-enabled: "true"
-    spec:
-      containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e-prow:v06292019-7c6ffeaea
-        command:
-        - /usr/local/bin/runner.sh
-        args:
-        - make
-        - kind-e2e-test
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        env:
-        - name: REPO_INFO
-          value: https://github.com/kubernetes/ingress-nginx
-        - name: E2E_NODES
-          value: "15"
-        - name: K8S_VERSION
-          value: v1.12.9
-        resources:
-          requests:
-            cpu: 2
 
-    annotations:
-      testgrid-dashboards: sig-network-ingress-nginx
-      testgrid-tab-name: e2e-1-12
-  - name: pull-ingress-nginx-e2e-1-13
-    always_run: true
-    decorate: true
-    decoration_config:
-      timeout: 25m
-    max_concurrency: 5
-    path_alias: k8s.io/ingress-nginx
-    labels:
-      preset-kind-volume-mounts: "true"
-      preset-dind-enabled: "true"
-    spec:
-      containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e-prow:v06292019-7c6ffeaea
-        command:
-        - /usr/local/bin/runner.sh
-        args:
-        - make
-        - kind-e2e-test
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        env:
-        - name: REPO_INFO
-          value: https://github.com/kubernetes/ingress-nginx
-        - name: E2E_NODES
-          value: "15"
-        - name: K8S_VERSION
-          value: v1.13.7
-        resources:
-          requests:
-            cpu: 2
-
-    annotations:
-      testgrid-dashboards: sig-network-ingress-nginx
-      testgrid-tab-name: e2e-1-13
-  - name: pull-ingress-nginx-e2e-1-14
-    always_run: true
-    decorate: true
-    decoration_config:
-      timeout: 25m
-    max_concurrency: 5
-    path_alias: k8s.io/ingress-nginx
-    labels:
-      preset-kind-volume-mounts: "true"
-      preset-dind-enabled: "true"
-    spec:
-      containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e-prow:v06292019-7c6ffeaea
-        command:
-        - /usr/local/bin/runner.sh
-        args:
-        - make
-        - kind-e2e-test
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        env:
-        - name: REPO_INFO
-          value: https://github.com/kubernetes/ingress-nginx
-        - name: E2E_NODES
-          value: "15"
-        - name: K8S_VERSION
-          value: v1.14.3
-        resources:
-          requests:
-            cpu: 2
-
-    annotations:
-      testgrid-dashboards: sig-network-ingress-nginx
-      testgrid-tab-name: e2e-1-14
   - name: pull-ingress-nginx-e2e-1-15
     always_run: true
     decorate: true
     decoration_config:
-      timeout: 25m
+      timeout: 50m
     max_concurrency: 5
     path_alias: k8s.io/ingress-nginx
     labels:
@@ -257,7 +171,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e-prow:v06292019-7c6ffeaea
+      - image: quay.io/kubernetes-ingress-controller/e2e-prow:v01252020-13391d92e
         command:
         - /usr/local/bin/runner.sh
         args:
@@ -269,26 +183,95 @@ presubmits:
         env:
         - name: REPO_INFO
           value: https://github.com/kubernetes/ingress-nginx
-        - name: E2E_NODES
-          value: "15"
         - name: K8S_VERSION
-          value: v1.15.0
+          value: v1.15.7
+        - name: DIND_TASKS
+          value: "false"
         resources:
           requests:
             cpu: 2
-
     annotations:
       testgrid-dashboards: sig-network-ingress-nginx
       testgrid-tab-name: e2e-1-15
-periodics:
 
+  - name: pull-ingress-nginx-e2e-1-16
+    always_run: true
+    decorate: true
+    decoration_config:
+      timeout: 50m
+    max_concurrency: 5
+    path_alias: k8s.io/ingress-nginx
+    labels:
+      preset-kind-volume-mounts: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: quay.io/kubernetes-ingress-controller/e2e-prow:v01252020-13391d92e
+        command:
+        - /usr/local/bin/runner.sh
+        args:
+        - make
+        - kind-e2e-test
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        env:
+        - name: REPO_INFO
+          value: https://github.com/kubernetes/ingress-nginx
+        - name: K8S_VERSION
+          value: v1.16.4
+        - name: DIND_TASKS
+          value: "false"
+        resources:
+          requests:
+            cpu: 2
+    annotations:
+      testgrid-dashboards: sig-network-ingress-nginx
+      testgrid-tab-name: e2e-1-16
+
+  - name: pull-ingress-nginx-e2e-1-17
+    always_run: true
+    decorate: true
+    decoration_config:
+      timeout: 50m
+    max_concurrency: 5
+    path_alias: k8s.io/ingress-nginx
+    labels:
+      preset-kind-volume-mounts: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: quay.io/kubernetes-ingress-controller/e2e-prow:v01252020-13391d92e
+        command:
+        - /usr/local/bin/runner.sh
+        args:
+        - make
+        - kind-e2e-test
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        env:
+        - name: REPO_INFO
+          value: https://github.com/kubernetes/ingress-nginx
+        - name: K8S_VERSION
+          value: v1.17.2@sha256:59df31fc61d1da5f46e8a61ef612fa53d3f9140f82419d1ef1a6b9656c6b737c
+        - name: DIND_TASKS
+          value: "false"
+        resources:
+          requests:
+            cpu: 2
+    annotations:
+      testgrid-dashboards: sig-network-ingress-nginx
+      testgrid-tab-name: e2e-1-17
+
+periodics:
 - name: ci-ingress-nginx-e2e
   interval: 12h
   max_concurrency: 1
   path_alias: k8s.io/ingress-nginx
   decorate: true
   decoration_config:
-    timeout: 25m
+    timeout: 50m
   extra_refs:
   - org: kubernetes
     repo: ingress-nginx
@@ -300,7 +283,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: quay.io/kubernetes-ingress-controller/e2e-prow:v06292019-7c6ffeaea
+    - image: quay.io/kubernetes-ingress-controller/e2e-prow:v01252020-13391d92e
       command:
       - /usr/local/bin/runner.sh
       args:
@@ -312,8 +295,8 @@ periodics:
       env:
       - name: REPO_INFO
         value: https://github.com/kubernetes/ingress-nginx
-      - name: E2E_NODES
-        value: "15"
+      - name: DIND_TASKS
+        value: "false"
       resources:
         requests:
           cpu: 2

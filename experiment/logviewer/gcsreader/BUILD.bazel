@@ -10,10 +10,10 @@ go_library(
     importpath = "k8s.io/test-infra/experiment/logviewer/gcsreader",
     visibility = ["//visibility:private"],
     deps = [
-        "//vendor/cloud.google.com/go/storage:go_default_library",
-        "//vendor/github.com/klauspost/pgzip:go_default_library",
-        "//vendor/google.golang.org/api/option:go_default_library",
-        "//vendor/k8s.io/klog:go_default_library",
+        "@com_github_klauspost_pgzip//:go_default_library",
+        "@com_google_cloud_go//storage:go_default_library",
+        "@io_k8s_klog//:go_default_library",
+        "@org_golang_google_api//option:go_default_library",
     ],
 )
 

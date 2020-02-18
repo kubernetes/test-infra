@@ -9,7 +9,7 @@ go_library(
     ],
     importpath = "k8s.io/test-infra/gopherage/pkg/cov/junit/calculation",
     visibility = ["//visibility:public"],
-    deps = ["//vendor/golang.org/x/tools/cover:go_default_library"],
+    deps = ["@org_golang_x_tools//cover:go_default_library"],
 )
 
 go_test(
@@ -19,7 +19,7 @@ go_test(
         "coverage_test.go",
     ],
     embed = [":go_default_library"],
-    deps = ["//vendor/golang.org/x/tools/cover:go_default_library"],
+    deps = ["@org_golang_x_tools//cover:go_default_library"],
 )
 
 filegroup(

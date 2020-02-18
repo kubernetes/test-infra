@@ -243,6 +243,10 @@ func (foc *fakeOwnersClient) ParseFullConfig(path string) (repoowners.FullConfig
 	return *full, err
 }
 
+func (foc *fakeOwnersClient) TopLevelApprovers() sets.String {
+	return sets.String{}
+}
+
 func makeFakeRepoOwnersClient() fakeRepoownersClient {
 	return fakeRepoownersClient{
 		foc: &fakeOwnersClient{},
@@ -545,7 +549,7 @@ func TestParseOwnersFile(t *testing.T) {
 				Patch:    test.patch,
 			}
 
-			r, err := c.Clone("org/repo")
+			r, err := c.ClientFor("org", "repo")
 			if err != nil {
 				t.Fatalf("error cloning the repo: %v", err)
 			}
@@ -555,7 +559,7 @@ func TestParseOwnersFile(t *testing.T) {
 				}
 			}()
 
-			path := filepath.Join(r.Dir, "OWNERS")
+			path := filepath.Join(r.Directory(), "OWNERS")
 			message, _ := parseOwnersFile(&fakeOwnersClient{}, path, change, &logrus.Entry{}, []string{})
 			if message != nil {
 				if test.errLine == 0 {
@@ -578,28 +582,21 @@ func makePatch(b []byte) string {
 }
 
 func TestHelpProvider(t *testing.T) {
+	enabledRepos := []plugins.Repo{
+		{Org: "org1", Repo: "repo"},
+		{Org: "org2", Repo: "repo"},
+	}
 	cases := []struct {
 		name               string
 		config             *plugins.Configuration
-		enabledRepos       []string
+		enabledRepos       []plugins.Repo
 		err                bool
 		configInfoIncludes []string
 	}{
 		{
 			name:         "Empty config",
 			config:       &plugins.Configuration{},
-			enabledRepos: []string{"org1", "org2/repo"},
-		},
-		{
-			name:         "Overlapping org and org/repo",
-			config:       &plugins.Configuration{},
-			enabledRepos: []string{"org2", "org2/repo"},
-		},
-		{
-			name:         "Invalid enabledRepos",
-			config:       &plugins.Configuration{},
-			enabledRepos: []string{"org1", "org2/repo/extra"},
-			err:          true,
+			enabledRepos: enabledRepos,
 		},
 		{
 			name: "ReviewerCount specified",
@@ -608,7 +605,7 @@ func TestHelpProvider(t *testing.T) {
 					LabelsBlackList: []string{"label1", "label2"},
 				},
 			},
-			enabledRepos:       []string{"org1", "org2/repo"},
+			enabledRepos:       enabledRepos,
 			configInfoIncludes: []string{"label1, label2"},
 		},
 	}
@@ -628,7 +625,7 @@ func TestHelpProvider(t *testing.T) {
 }
 
 var ownersFiles = map[string][]byte{
-	"nonCollaboratorAdditions": []byte(`reviewers:
+	"nonCollaborators": []byte(`reviewers:
 - phippy
 - alice
 approvers:
@@ -651,39 +648,67 @@ approvers:
 }
 
 var ownersPatch = map[string]string{
+	"collaboratorAdditions": `@@ -1,4 +1,6 @@
+ reviewers:
+ - phippy
++- alice
+ approvers:
+ - zee
++- bob
+`,
+	"collaboratorRemovals": `@@ -1,8 +1,6 @@
+ reviewers:
+ - phippy
+ - alice
+-- bob
+ approvers:
+ - zee
+ - bob
+-- alice
+`,
 	"nonCollaboratorAdditions": `@@ -1,4 +1,6 @@
-reviewers:
+ reviewers:
 +- phippy
-- alice
-approvers:
+ - alice
+ approvers:
 +- zee
-- bob
+ - bob
+`,
+	"nonCollaboratorRemovals": `@@ -1,8 +1,6 @@
+ reviewers:
+ - phippy
+ - alice
+-- al
+ approvers:
+ - zee
+ - bob
+-- bo
 `,
 	"nonCollaboratorsWithAliases": `@@ -1,4 +1,6 @@
-reviewers:
+ reviewers:
 +- foo-reviewers
-- alice
+ - alice
 +- goldie
-approvers:
-- bob
+ approvers:
+ - bob
 `,
-	"collaboratorsWtihAliases": `@@ -1,2 +1,5 @@
+	"collaboratorsWithAliases": `@@ -1,2 +1,5 @@
 +reviewers:
 +- foo-reviewers
 +- alice
-approvers:
-- bob
+ approvers:
+ - bob
 `,
 }
 
 var ownersAliases = map[string][]byte{
-	"nonCollaboratorAdditions": []byte(`aliases:
+	"nonCollaborators": []byte(`aliases:
   foo-reviewers:
   - alice
   - phippy
   - zee
 `),
-	"collaboratorAdditions": []byte(`aliases:
+	"collaborators": []byte(`aliases:
   foo-reviewers:
   - alice
 `),
@@ -691,16 +716,34 @@ var ownersAliases = map[string][]byte{
 
 var ownersAliasesPatch = map[string]string{
 	"nonCollaboratorAdditions": `@@ -1,3 +1,5 @@
-aliases:
-  foo-reviewers:
-  - alice
-+ - phippy
-+ - zee
+ aliases:
+   foo-reviewers:
+   - alice
++  - phippy
++  - zee
 `,
-	"collaboratorAdditions": `@@ -0,0 +1,3 @@
-+aliases:
-+ foo-reviewers:
-+ - alice
+	"nonCollaboratorRemovals": `@@ -1,6 +1,5 @@
+ aliases:
+   foo-reviewers:
+   - alice
+-  - al
+   - phippy
+   - zee
+`,
+	"collaboratorAdditions": `@@ -1,4 +1,5 @@
+ aliases:
+   foo-reviewers:
++  - alice
+   - phippy
+   - zee
+`,
+	"collaboratorRemovals": `@@ -1,6 +1,5 @@
+ aliases:
+   foo-reviewers:
+   - alice
+-  - bob
+   - phippy
+   - zee
 `,
 }
 
@@ -718,17 +761,41 @@ func TestNonCollaborators(t *testing.T) {
 		shouldComment        bool
 	}{
 		{
+			name:          "collaborators additions in OWNERS file",
+			filesChanged:  []string{"OWNERS"},
+			ownersFile:    "nonCollaborators",
+			ownersPatch:   "collaboratorAdditions",
+			shouldLabel:   false,
+			shouldComment: false,
+		},
+		{
+			name:          "collaborators removals in OWNERS file",
+			filesChanged:  []string{"OWNERS"},
+			ownersFile:    "nonCollaborators",
+			ownersPatch:   "collaboratorRemovals",
+			shouldLabel:   false,
+			shouldComment: false,
+		},
+		{
 			name:          "non-collaborators additions in OWNERS file",
 			filesChanged:  []string{"OWNERS"},
-			ownersFile:    "nonCollaboratorAdditions",
+			ownersFile:    "nonCollaborators",
 			ownersPatch:   "nonCollaboratorAdditions",
 			shouldLabel:   true,
 			shouldComment: true,
 		},
 		{
+			name:          "non-collaborators removal in OWNERS file",
+			filesChanged:  []string{"OWNERS"},
+			ownersFile:    "nonCollaborators",
+			ownersPatch:   "nonCollaboratorRemovals",
+			shouldLabel:   false,
+			shouldComment: false,
+		},
+		{
 			name:                 "non-collaborators additions in OWNERS file, with skipTrustedUserCheck=true",
 			filesChanged:         []string{"OWNERS"},
-			ownersFile:           "nonCollaboratorAdditions",
+			ownersFile:           "nonCollaborators",
 			ownersPatch:          "nonCollaboratorAdditions",
 			skipTrustedUserCheck: true,
 			shouldLabel:          false,
@@ -738,16 +805,43 @@ func TestNonCollaborators(t *testing.T) {
 			name:               "non-collaborators additions in OWNERS_ALIASES file",
 			filesChanged:       []string{"OWNERS_ALIASES"},
 			ownersFile:         "collaboratorsWithAliases",
-			ownersAliasesFile:  "nonCollaboratorAdditions",
+			ownersAliasesFile:  "nonCollaborators",
 			ownersAliasesPatch: "nonCollaboratorAdditions",
 			shouldLabel:        true,
 			shouldComment:      true,
 		},
 		{
+			name:               "non-collaborators removals in OWNERS_ALIASES file",
+			filesChanged:       []string{"OWNERS_ALIASES"},
+			ownersFile:         "collaboratorsWithAliases",
+			ownersAliasesFile:  "nonCollaborators",
+			ownersAliasesPatch: "nonCollaboratorRemovals",
+			shouldLabel:        false,
+			shouldComment:      false,
+		},
+		{
+			name:               "collaborators additions in OWNERS_ALIASES file",
+			filesChanged:       []string{"OWNERS_ALIASES"},
+			ownersFile:         "collaboratorsWithAliases",
+			ownersAliasesFile:  "nonCollaborators",
+			ownersAliasesPatch: "collaboratorAdditions",
+			shouldLabel:        false,
+			shouldComment:      false,
+		},
+		{
+			name:               "collaborators removals in OWNERS_ALIASES file",
+			filesChanged:       []string{"OWNERS_ALIASES"},
+			ownersFile:         "collaboratorsWithAliases",
+			ownersAliasesFile:  "nonCollaborators",
+			ownersAliasesPatch: "collaboratorRemovals",
+			shouldLabel:        false,
+			shouldComment:      false,
+		},
+		{
 			name:                 "non-collaborators additions in OWNERS_ALIASES file, with skipTrustedUserCheck=true",
 			filesChanged:         []string{"OWNERS_ALIASES"},
 			ownersFile:           "collaboratorsWithAliases",
-			ownersAliasesFile:    "nonCollaboratorAdditions",
+			ownersAliasesFile:    "nonCollaborators",
 			ownersAliasesPatch:   "nonCollaboratorAdditions",
 			skipTrustedUserCheck: true,
 			shouldLabel:          false,
@@ -758,7 +852,7 @@ func TestNonCollaborators(t *testing.T) {
 			filesChanged:       []string{"OWNERS", "OWNERS_ALIASES"},
 			ownersFile:         "nonCollaboratorsWithAliases",
 			ownersPatch:        "nonCollaboratorsWithAliases",
-			ownersAliasesFile:  "nonCollaboratorAdditions",
+			ownersAliasesFile:  "nonCollaborators",
 			ownersAliasesPatch: "nonCollaboratorAdditions",
 			shouldLabel:        true,
 			shouldComment:      true,
@@ -767,8 +861,8 @@ func TestNonCollaborators(t *testing.T) {
 			name:               "collaborator additions in both OWNERS and OWNERS_ALIASES file",
 			filesChanged:       []string{"OWNERS", "OWNERS_ALIASES"},
 			ownersFile:         "collaboratorsWithAliases",
-			ownersPatch:        "collaboratorsWtihAliases",
-			ownersAliasesFile:  "collaboratorAdditions",
+			ownersPatch:        "collaboratorsWithAliases",
+			ownersAliasesFile:  "collaborators",
 			ownersAliasesPatch: "collaboratorAdditions",
 			shouldLabel:        false,
 			shouldComment:      false,
@@ -776,7 +870,7 @@ func TestNonCollaborators(t *testing.T) {
 		{
 			name:          "non-collaborators additions in OWNERS file in vendor subdir",
 			filesChanged:  []string{"vendor/k8s.io/client-go/OWNERS"},
-			ownersFile:    "nonCollaboratorAdditions",
+			ownersFile:    "nonCollaborators",
 			ownersPatch:   "nonCollaboratorAdditions",
 			shouldLabel:   false,
 			shouldComment: false,
@@ -784,7 +878,7 @@ func TestNonCollaborators(t *testing.T) {
 		{
 			name:                "non-collaborators additions in OWNERS file in vendor subdir, but include it",
 			filesChanged:        []string{"vendor/k8s.io/client-go/OWNERS"},
-			ownersFile:          "nonCollaboratorAdditions",
+			ownersFile:          "nonCollaborators",
 			ownersPatch:         "nonCollaboratorAdditions",
 			includeVendorOwners: true,
 			shouldLabel:         true,
@@ -793,7 +887,7 @@ func TestNonCollaborators(t *testing.T) {
 		{
 			name:          "non-collaborators additions in OWNERS file in vendor dir",
 			filesChanged:  []string{"vendor/OWNERS"},
-			ownersFile:    "nonCollaboratorAdditions",
+			ownersFile:    "nonCollaborators",
 			ownersPatch:   "nonCollaboratorAdditions",
 			shouldLabel:   true,
 			shouldComment: true,

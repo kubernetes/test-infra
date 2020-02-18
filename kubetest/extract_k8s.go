@@ -37,19 +37,19 @@ import (
 type extractMode int
 
 const (
-	none    extractMode = iota
-	local               // local
-	gci                 // gci/FAMILY
-	gciCi               // gci/FAMILY/CI_VERSION
-	gke                 // gke(deprecated), gke-default, gke-latest, gke-channel-CHANNEL_NAME
-	ci                  // ci/latest, ci/latest-1.5
-	rc                  // release/latest, release/latest-1.5
-	stable              // release/stable, release/stable-1.5
-	version             // v1.5.0, v1.5.0-beta.2
-	gcs                 // gs://bucket/prefix/v1.6.0-alpha.0
-	load                // Load a --save cluster
-	bazel               // A pre/postsubmit bazel build version, prefixed with bazel/
-	ciCross             // ci-cross/latest
+	none       extractMode = iota
+	localBazel             // local bazel
+	local                  // local
+	gci                    // gci/FAMILY
+	gciCi                  // gci/FAMILY/CI_VERSION
+	gke                    // gke(deprecated), gke-default, gke-latest, gke-channel-CHANNEL_NAME
+	ci                     // ci/latest, ci/latest-1.5
+	rc                     // release/latest, release/latest-1.5
+	stable                 // release/stable, release/stable-1.5
+	version                // v1.5.0, v1.5.0-beta.2
+	gcs                    // gs://bucket/prefix/v1.6.0-alpha.0
+	load                   // Load a --save cluster
+	bazel                  // A pre/postsubmit bazel build version, prefixed with bazel/
 )
 
 type extractStrategy struct {
@@ -72,7 +72,8 @@ func (l *extractStrategies) String() string {
 // Converts --extract=release/stable, etc into an extractStrategy{}
 func (l *extractStrategies) Set(value string) error {
 	var strategies = map[string]extractMode{
-		`^(local)`: local,
+		`^(bazel)$`: localBazel,
+		`^(local)`:  local,
 		`^gke-?(default|channel-(rapid|regular|stable)|latest(-\d+.\d+)?)?$`: gke,
 		`^gci/([\w-]+)$`:              gci,
 		`^gci/([\w-]+)/(.+)$`:         gciCi,
@@ -82,7 +83,6 @@ func (l *extractStrategies) Set(value string) error {
 		`^(v\d+\.\d+\.\d+[\w.\-+]*)$`: version,
 		`^(gs://.*)$`:                 gcs,
 		`^(bazel/.*)$`:                bazel,
-		`^ci-cross/(.+)$`:             ciCross,
 	}
 
 	if len(*l) == 2 {
@@ -400,6 +400,22 @@ func setReleaseFromGci(image string, getSrc bool) error {
 
 func (e extractStrategy) Extract(project, zone, region string, extractSrc bool) error {
 	switch e.mode {
+	case localBazel:
+		vFile := util.K8s("kubernetes", "bazel-bin", "version")
+		vByte, err := ioutil.ReadFile(vFile)
+		if err != nil {
+			return err
+		}
+		version := strings.TrimSpace(string(vByte))
+		log.Printf("extracting version %v\n", version)
+		root := util.K8s("kubernetes", "bazel-bin", "build")
+		src := filepath.Join(root, "release-tars")
+		dst := filepath.Join(root, version)
+		log.Printf("copying files from %v to %v\n", src, dst)
+		if err := os.Rename(src, dst); err != nil {
+			return err
+		}
+		return getKube(fmt.Sprintf("file://%s", root), version, extractSrc)
 	case local:
 		url := util.K8s("kubernetes", "_output", "gcs-stage")
 		files, err := ioutil.ReadDir(url)
@@ -444,7 +460,7 @@ func (e extractStrategy) Extract(project, zone, region string, extractSrc bool) 
 			if err != nil {
 				return fmt.Errorf("failed to get latest gke version: %s", err)
 			}
-			return getKube("https://storage.googleapis.com/kubernetes-release-gke/release", version, extractSrc)
+			return getKube("https://storage.googleapis.com/gke-release-staging/kubernetes/release", version, extractSrc)
 		}
 
 		if strings.HasPrefix(e.option, "channel") {
@@ -453,7 +469,7 @@ func (e extractStrategy) Extract(project, zone, region string, extractSrc bool) 
 			if err != nil {
 				return fmt.Errorf("failed to get gke version from channel %s: %s", e.ciVersion, err)
 			}
-			return getKube("https://storage.googleapis.com/kubernetes-release-gke/release", version, extractSrc)
+			return getKube("https://storage.googleapis.com/gke-release-staging/kubernetes/release", version, extractSrc)
 		}
 
 		// TODO(krzyzacy): clean up gke-default logic
@@ -481,7 +497,7 @@ func (e extractStrategy) Extract(project, zone, region string, extractSrc bool) 
 		return setReleaseFromGcs("kubernetes-release-dev/ci", "latest-"+mat[1], extractSrc)
 	case ci:
 		if strings.HasPrefix(e.option, "gke-") {
-			return setReleaseFromGcs("kubernetes-release-gke/release", e.option, extractSrc)
+			return setReleaseFromGcs("gke-release-staging/kubernetes/release", e.option, extractSrc)
 		}
 
 		return setReleaseFromHTTP("kubernetes-release-dev/ci", e.option, extractSrc)
@@ -492,7 +508,7 @@ func (e extractStrategy) Extract(project, zone, region string, extractSrc bool) 
 		release := e.option
 		re := regexp.MustCompile(`(v\d+\.\d+\.\d+-gke.\d+)$`) // v1.8.0-gke.0
 		if re.FindStringSubmatch(release) != nil {
-			url = "https://storage.googleapis.com/kubernetes-release-gke/release"
+			url = "https://storage.googleapis.com/gke-release-staging/kubernetes/release"
 		} else if strings.Contains(release, "+") {
 			url = "https://storage.googleapis.com/kubernetes-release-dev/ci"
 		} else {
@@ -513,9 +529,6 @@ func (e extractStrategy) Extract(project, zone, region string, extractSrc bool) 
 		return loadState(e.option, extractSrc)
 	case bazel:
 		return getKube("", e.option, extractSrc)
-	case ciCross:
-		prefix := "kubernetes-release-dev/ci-cross"
-		return setReleaseFromHTTP(prefix, e.option, extractSrc)
 	}
 	return fmt.Errorf("Unrecognized extraction: %v(%v)", e.mode, e.value)
 }

@@ -29,7 +29,7 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-release-cluster-up
         - --test_args=--ginkgo.focus=definitely-not-a-real-focus
         - --timeout=65m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
         resources:
           requests:
             memory: "6Gi"
@@ -38,47 +38,61 @@ presubmits:
       testgrid-tab-name: release-cluster-up
       testgrid-alert-email: release-managers@kubernetes.io
       testgrid-num-columns-recent: '30'
-  - name: pull-release-unit
+  - name: pull-release-test
     always_run: true
     decorate: true
     path_alias: k8s.io/release
+    extra_refs:
+    - org: kubernetes
+      repo: test-infra
+      base_ref: master
+      path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: golang:1.12
+      - image: gcr.io/k8s-staging-release-test/releng-ci-bazel:latest
         command:
-        - go
+        - ../test-infra/hack/bazel.sh
         args:
         - test
-        - ./...
+        - //...
     annotations:
       testgrid-dashboards: sig-release-misc
-      testgrid-tab-name: release-unit
+      testgrid-tab-name: release-test
       testgrid-alert-email: release-managers@kubernetes.io
       testgrid-num-columns-recent: '30'
-  - name: pull-release-verify
-    always_run: true
-    optional: true
-    decorate: true
-    path_alias: k8s.io/release
-    labels:
-      preset-dind-enabled: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
-        command:
-        - runner.sh
-        args:
-        - make
-        - verify
-        securityContext:
-          privileged: true
-    annotations:
-      testgrid-dashboards: sig-release-misc
-      testgrid-tab-name: release-verify
-      testgrid-alert-email: release-managers@kubernetes.io
-      testgrid-num-columns-recent: '30'
-# package tests
 periodics:
+- interval: 2h
+  name: ci-release-anago-stage
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: release
+    base_ref: master
+    path_alias: k8s.io/release
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-release-test/k8s-cloud-builder:latest
+      command:
+        - ./gcbmgr
+      args:
+        - stage
+        - master
+        - --attended
+      env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /creds/service-account.json
+      volumeMounts:
+        - name: creds
+          mountPath: /creds
+    volumes:
+      - name: creds
+        secret:
+          secretName: deployer-service-account
+  annotations:
+    testgrid-dashboards: sig-release-releng-informing
+    testgrid-alert-email: release-managers@kubernetes.io
+
+# package tests
 - name: periodic-release-verify-packages-debs
   interval: 6h
   annotations:
@@ -98,6 +112,9 @@ periodics:
       command:
       - make
       - verify-published-debs
+  rerun_auth_config:
+    github_team_ids:
+      - 2241179 # release-managers
 - name: periodic-release-verify-packages-rpms
   interval: 6h
   annotations:
@@ -117,3 +134,6 @@ periodics:
       command:
       - make
       - verify-published-rpms
+  rerun_auth_config:
+    github_team_ids:
+      - 2241179 # release-managers

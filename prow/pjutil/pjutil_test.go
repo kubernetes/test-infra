@@ -25,7 +25,9 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/diff"
 
@@ -572,6 +574,22 @@ func TestNewProwJob(t *testing.T) {
 				"extraannotation":      "foo",
 			},
 		},
+		{
+			name: "job with podspec",
+			spec: prowapi.ProwJobSpec{
+				Job:     "job",
+				Type:    prowapi.PeriodicJob,
+				PodSpec: &corev1.PodSpec{}, // Needed to catch race
+			},
+			expectedLabels: map[string]string{
+				kube.CreatedByProw:     "true",
+				kube.ProwJobAnnotation: "job",
+				kube.ProwJobTypeLabel:  "periodic",
+			},
+			expectedAnnotations: map[string]string{
+				kube.ProwJobAnnotation: "job",
+			},
+		},
 	}
 	for _, testCase := range testCases {
 		pj := NewProwJob(testCase.spec, testCase.labels, testCase.annotations)
@@ -583,6 +601,30 @@ func TestNewProwJob(t *testing.T) {
 		}
 		if actual, expected := pj.Annotations, testCase.expectedAnnotations; !reflect.DeepEqual(actual, expected) {
 			t.Errorf("%s: incorrect ProwJob annotations created: %s", testCase.name, diff.ObjectReflectDiff(actual, expected))
+		}
+		if pj.Spec.PodSpec != nil {
+			futzWithPodSpec := func(spec *corev1.PodSpec, val string) {
+				if spec == nil {
+					return
+				}
+				if spec.NodeSelector == nil {
+					spec.NodeSelector = map[string]string{}
+				}
+				spec.NodeSelector["foo"] = val
+				for i := range spec.Containers {
+					c := &spec.Containers[i]
+					if c.Resources.Limits == nil {
+						c.Resources.Limits = corev1.ResourceList{}
+					}
+					if c.Resources.Requests == nil {
+						c.Resources.Requests = corev1.ResourceList{}
+					}
+					c.Resources.Limits[corev1.ResourceCPU] = resource.MustParse(val)
+					c.Resources.Requests[corev1.ResourceCPU] = resource.MustParse(val)
+				}
+			}
+			go futzWithPodSpec(pj.Spec.PodSpec, "12M")
+			futzWithPodSpec(testCase.spec.PodSpec, "34M")
 		}
 	}
 }
@@ -748,10 +790,12 @@ func TestCreateRefs(t *testing.T) {
 func TestSpecFromJobBase(t *testing.T) {
 	permittedGroups := []int{1234, 5678}
 	permittedUsers := []string{"authorized_user", "another_authorized_user"}
+	permittedOrgs := []string{"kubernetes", "kubernetes-sigs"}
 	rerunAuthConfig := prowapi.RerunAuthConfig{
 		AllowAnyone:   false,
 		GitHubTeamIDs: permittedGroups,
 		GitHubUsers:   permittedUsers,
+		GitHubOrgs:    permittedOrgs,
 	}
 	testCases := []struct {
 		name    string
@@ -796,6 +840,21 @@ func TestSpecFromJobBase(t *testing.T) {
 				if pj.RerunAuthConfig.GitHubUsers == nil {
 					return errors.New("Expected RerunAuthConfig.GitHubUsers to be non-nil")
 				}
+				if pj.RerunAuthConfig.GitHubOrgs == nil {
+					return errors.New("Expected RerunAuthConfig.GitHubOrgs to be non-nil")
+				}
+				return nil
+			},
+		},
+		{
+			name: "Verify hidden property gets copied",
+			jobBase: config.JobBase{
+				Hidden: true,
+			},
+			verify: func(pj prowapi.ProwJobSpec) error {
+				if !pj.Hidden {
+					return errors.New("hidden property didnt get copied")
+				}
 				return nil
 			},
 		},
@@ -808,5 +867,30 @@ func TestSpecFromJobBase(t *testing.T) {
 				t.Fatalf("Verification failed: %v", err)
 			}
 		})
+	}
+}
+
+func TestPeriodicSpec(t *testing.T) {
+	testCases := []struct {
+		name   string
+		config config.Periodic
+		verify func(prowapi.ProwJobSpec) error
+	}{
+		{
+			name:   "Report gets set to true",
+			config: config.Periodic{},
+			verify: func(p prowapi.ProwJobSpec) error {
+				if !p.Report {
+					return errors.New("report is not true")
+				}
+				return nil
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		if err := tc.verify(PeriodicSpec(tc.config)); err != nil {
+			t.Error(err)
+		}
 	}
 }

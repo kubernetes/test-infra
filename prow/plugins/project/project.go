@@ -71,22 +71,18 @@ func init() {
 	plugins.RegisterGenericCommentHandler(pluginName, handleGenericComment, helpProvider)
 }
 
-func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+func helpProvider(config *plugins.Configuration, enabledRepos []plugins.Repo) (*pluginhelp.PluginHelp, error) {
 	projectConfig := config.Project
 	configInfo := map[string]string{}
 	for _, repo := range enabledRepos {
-		parts := strings.Split(repo, "/")
-		if len(parts) != 2 {
-			return nil, fmt.Errorf("invalid repo in enabledRepos: %q", repo)
-		}
-		if maintainerTeamID := projectConfig.GetMaintainerTeam(parts[0], parts[1]); maintainerTeamID != -1 {
-			configInfo[repo] = fmt.Sprintf(projectTeamMsg, maintainerTeamID)
+		if maintainerTeamID := projectConfig.GetMaintainerTeam(repo.Org, repo.Repo); maintainerTeamID != -1 {
+			configInfo[repo.String()] = fmt.Sprintf(projectTeamMsg, maintainerTeamID)
 		} else {
-			configInfo[repo] = "There are no maintainer team specified for this repo or its org."
+			configInfo[repo.String()] = "There are no maintainer team specified for this repo or its org."
 		}
 
-		if columnMap := projectConfig.GetColumnMap(parts[0], parts[1]); len(columnMap) != 0 {
-			configInfo[repo] = fmt.Sprintf(columnsMsg, columnMap)
+		if columnMap := projectConfig.GetColumnMap(repo.Org, repo.Repo); len(columnMap) != 0 {
+			configInfo[repo.String()] = fmt.Sprintf(columnsMsg, columnMap)
 		}
 	}
 
@@ -315,10 +311,9 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 			}
 			msg = fmt.Sprintf(successClearingProjectMsg, proposedProject)
 			return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg))
-		} else {
-			msg = fmt.Sprintf(failedClearingProjectMsg, proposedProject, e.Number)
-			return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg))
 		}
+		msg = fmt.Sprintf(failedClearingProjectMsg, proposedProject, e.Number)
+		return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg))
 	}
 
 	// Move this issue/PR to the new column if there's already a project card for this issue/PR in this project

@@ -18,12 +18,16 @@ limitations under the License.
 package secret
 
 import (
+	"bytes"
 	"os"
-	"strings"
 	"sync"
 	"time"
 
 	"github.com/sirupsen/logrus"
+
+	"k8s.io/apimachinery/pkg/util/sets"
+
+	"k8s.io/test-infra/prow/logrusutil"
 )
 
 // Agent watches a path and automatically loads the secrets stored.
@@ -48,7 +52,7 @@ func (a *Agent) Start(paths []string) error {
 		go a.reloadSecret(secretPath)
 	}
 
-	logrus.SetFormatter(a.GetCensoringFormatter(logrus.StandardLogger().Formatter))
+	logrus.SetFormatter(logrusutil.NewCensoringFormatter(logrus.StandardLogger().Formatter, a.getSecrets))
 
 	return nil
 }
@@ -110,45 +114,25 @@ func (a *Agent) GetTokenGenerator(secretPath string) func() []byte {
 	}
 }
 
-type censoringFormatter struct {
-	agent    *Agent
-	delegate logrus.Formatter
+const censored = "CENSORED"
+
+var censoredBytes = []byte(censored)
+
+// Censor replaces sensitive parts of the content with a placeholder.
+func (a *Agent) Censor(content []byte) []byte {
+	for sKey := range a.secretsMap {
+		secret := a.GetSecret(sKey)
+		content = bytes.ReplaceAll(content, secret, censoredBytes)
+	}
+	return content
 }
 
-func (f censoringFormatter) Format(entry *logrus.Entry) ([]byte, error) {
-	const censored = "CENSORED"
-	message := entry.Message
-	data := make(logrus.Fields, len(entry.Data))
-	for key, value := range entry.Data {
-		data[key] = value
+func (a *Agent) getSecrets() sets.String {
+	a.RLock()
+	defer a.RUnlock()
+	secrets := sets.NewString()
+	for _, v := range a.secretsMap {
+		secrets.Insert(string(v))
 	}
-
-	for sKey := range f.agent.secretsMap {
-		secret := f.agent.GetSecret(sKey)
-		message = strings.ReplaceAll(message, string(secret), censored)
-
-		for key, value := range data {
-			if valueString, ok := value.(string); ok {
-				data[key] = strings.ReplaceAll(valueString, string(secret), censored)
-			}
-		}
-	}
-
-	return f.delegate.Format(&logrus.Entry{
-		Logger:  entry.Logger,
-		Data:    data,
-		Time:    entry.Time,
-		Level:   entry.Level,
-		Message: message,
-		Caller:  entry.Caller,
-	})
-}
-
-// GetCensoringFormatter returns a logrus Formatter that censors values of the
-// stored secrets from the logged message.
-func (a *Agent) GetCensoringFormatter(f logrus.Formatter) logrus.Formatter {
-	return censoringFormatter{
-		agent:    a,
-		delegate: f,
-	}
+	return secrets
 }

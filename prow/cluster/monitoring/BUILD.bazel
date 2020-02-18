@@ -19,6 +19,11 @@ release(
     component("alertmanager_rbac", MULTI_KIND),
     component("alertmanager_expose", MULTI_KIND),
     component("prow", "alertmanager"),
+    component("ing", "ingress"),
+    component("monitoring-prow-canary-k8s-io", "managedcertificate"),
+    component("monitoring-prow-k8s-io", "managedcertificate"),
+    component("additional-scrape-configs", "secret"),
+    component("blackbox_prober", MULTI_KIND),
 )
 
 load("@io_bazel_rules_k8s//k8s:object.bzl", "k8s_object")
@@ -27,28 +32,28 @@ k8s_object(
     name = "alertmanager_crd",
     cluster = "{STABLE_PROW_CLUSTER}",
     kind = None,
-    template = "@operator_framework_community_operators//:upstream-community-operators/prometheus/alertmanager.crd.yaml",
+    template = "@com_github_operator_framework_community_operators//:upstream-community-operators/prometheus/alertmanager.crd.yaml",
 )
 
 k8s_object(
     name = "prometheus_crd",
     cluster = "{STABLE_PROW_CLUSTER}",
     kind = None,
-    template = "@operator_framework_community_operators//:upstream-community-operators/prometheus/prometheus.crd.yaml",
+    template = "@com_github_operator_framework_community_operators//:upstream-community-operators/prometheus/prometheus.crd.yaml",
 )
 
 k8s_object(
     name = "prometheusrule_crd",
     cluster = "{STABLE_PROW_CLUSTER}",
     kind = None,
-    template = "@operator_framework_community_operators//:upstream-community-operators/prometheus/prometheusrule.crd.yaml",
+    template = "@com_github_operator_framework_community_operators//:upstream-community-operators/prometheus/prometheusrule.crd.yaml",
 )
 
 k8s_object(
     name = "servicemonitor_crd",
     cluster = "{STABLE_PROW_CLUSTER}",
     kind = None,
-    template = "@operator_framework_community_operators//:upstream-community-operators/prometheus/servicemonitor.crd.yaml",
+    template = "@com_github_operator_framework_community_operators//:upstream-community-operators/prometheus/servicemonitor.crd.yaml",
 )
 
 k8s_object(
@@ -68,6 +73,8 @@ k8s_objects(
         ":prometheusrule_crd",
         ":servicemonitor_crd",
         "//prow/cluster/monitoring/mixins/prometheus_out:prow_prometheusrule",
+        "//prow/cluster/monitoring/mixins/dashboards_out:grafana-dashboard-boskos",
+        "//prow/cluster/monitoring/mixins/dashboards_out:grafana-dashboard-boskos-http",
         "//prow/cluster/monitoring/mixins/dashboards_out:grafana-dashboard-deck",
         "//prow/cluster/monitoring/mixins/dashboards_out:grafana-dashboard-ghproxy",
         "//prow/cluster/monitoring/mixins/dashboards_out:grafana-dashboard-hook",
@@ -91,6 +98,7 @@ filegroup(
         ":package-srcs",
         "//prow/cluster/monitoring/mixins/dashboards_out:all-srcs",
         "//prow/cluster/monitoring/mixins/grafana_dashboards:all-srcs",
+        "//prow/cluster/monitoring/mixins/lib:all-srcs",
         "//prow/cluster/monitoring/mixins/prometheus:all-srcs",
         "//prow/cluster/monitoring/mixins/prometheus_out:all-srcs",
         "//prow/cluster/monitoring/mixins/vendor/grafonnet:all-srcs",

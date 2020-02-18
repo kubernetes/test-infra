@@ -1,0 +1,191 @@
+periodics:
+# TODO(justaugustus): Decrease interval to 1hr once we cut build over to k8s-infra.
+#                     ref: https://github.com/kubernetes/release/issues/911
+- interval: 4h
+  name: ci-kubernetes-prototype-build
+  cluster: test-infra-trusted
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: release
+    base_ref: master
+    path_alias: "k8s.io/release"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/image-builder:v20200213-0032cdb
+      command:
+        - /run.sh
+      args:
+        - --project=k8s-staging-release-test
+        - --scratch-bucket=gs://k8s-staging-release-test-gcb
+        - --variant=build-ci
+        - --no-source
+        - gcb/build
+      env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /creds/service-account.json
+        - name: LOG_TO_STDOUT
+          value: "y"
+      volumeMounts:
+        - name: creds
+          mountPath: /creds
+    volumes:
+      - name: creds
+        secret:
+          secretName: deployer-service-account
+  rerun_auth_config:
+    github_team_ids:
+      - 2241179 # release-managers
+  annotations:
+    # TODO(justaugustus): Enable forking for prototype GCB-based build jobs.
+    testgrid-dashboards: sig-release-prototype-master-blocking
+    testgrid-tab-name: build-master
+    testgrid-alert-email: release-managers@kubernetes.io
+
+# TODO(justaugustus): Decrease interval to 5m once we cut build over to k8s-infra.
+#                     ref: https://github.com/kubernetes/release/issues/911
+- interval: 12h
+  name: ci-kubernetes-prototype-build-fast
+  cluster: test-infra-trusted
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: release
+    base_ref: master
+    path_alias: "k8s.io/release"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/image-builder:v20200213-0032cdb
+      command:
+        - /run.sh
+      args:
+        - --project=k8s-staging-release-test
+        - --scratch-bucket=gs://k8s-staging-release-test-gcb
+        - --variant=build-ci-fast
+        - --no-source
+        - gcb/build
+      env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /creds/service-account.json
+        - name: LOG_TO_STDOUT
+          value: "y"
+      volumeMounts:
+        - name: creds
+          mountPath: /creds
+    volumes:
+      - name: creds
+        secret:
+          secretName: deployer-service-account
+  rerun_auth_config:
+    github_team_ids:
+      - 2241179 # release-managers
+  annotations:
+    testgrid-dashboards: sig-release-prototype-master-blocking
+    testgrid-tab-name: build-master-fast
+    testgrid-alert-email: release-managers@kubernetes.io
+    description: 'Ends up running: make quick-release'
+
+postsubmits:
+  kubernetes/release:
+    - name: post-release-push-image-k8s-cloud-builder
+      cluster: test-infra-trusted
+      annotations:
+        testgrid-dashboards: sig-release-image-pushes, sig-release-master-informing
+        testgrid-alert-email: release-managers@kubernetes.io
+      decorate: true
+      run_if_changed: '^images\/'
+      branches:
+        - ^master$
+      spec:
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20200213-0032cdb
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-release-test
+              - --scratch-bucket=gs://k8s-staging-release-test-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - images/k8s-cloud-builder
+            env:
+              - name: GOOGLE_APPLICATION_CREDENTIALS
+                value: /creds/service-account.json
+              - name: LOG_TO_STDOUT
+                value: "y"
+            volumeMounts:
+              - name: creds
+                mountPath: /creds
+        volumes:
+          - name: creds
+            secret:
+              secretName: deployer-service-account
+      rerun_auth_config:
+        github_team_ids:
+          - 2241179 # release-managers
+    - name: post-release-push-image-releng-ci-bazel
+      cluster: test-infra-trusted
+      annotations:
+        testgrid-dashboards: sig-release-image-pushes, sig-release-master-informing
+        testgrid-alert-email: release-managers@kubernetes.io
+      decorate: true
+      run_if_changed: '^images\/'
+      branches:
+        - ^master$
+      spec:
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20200213-0032cdb
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-release-test
+              - --scratch-bucket=gs://k8s-staging-release-test-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - images/releng-ci-bazel
+            env:
+              - name: GOOGLE_APPLICATION_CREDENTIALS
+                value: /creds/service-account.json
+              - name: LOG_TO_STDOUT
+                value: "y"
+            volumeMounts:
+              - name: creds
+                mountPath: /creds
+        volumes:
+          - name: creds
+            secret:
+              secretName: deployer-service-account
+      rerun_auth_config:
+        github_team_ids:
+          - 2241179 # release-managers
+    - name: post-release-push-image-kubepkg
+      cluster: test-infra-trusted
+      annotations:
+        testgrid-dashboards: sig-release-image-pushes, sig-release-master-informing
+        testgrid-alert-email: release-managers@kubernetes.io
+      decorate: true
+      branches:
+        - ^master$
+      spec:
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20200213-0032cdb
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-release-test
+              - --scratch-bucket=gs://k8s-staging-release-test-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - --gcb-config=./cloudbuild-kubepkg.yaml
+              - .
+            env:
+              - name: GOOGLE_APPLICATION_CREDENTIALS
+                value: /creds/service-account.json
+              - name: LOG_TO_STDOUT
+                value: "y"
+            volumeMounts:
+              - name: creds
+                mountPath: /creds
+        volumes:
+          - name: creds
+            secret:
+              secretName: deployer-service-account
+        rerun_auth_config:
+          github_team_ids:
+            - 2241179 # release-managers

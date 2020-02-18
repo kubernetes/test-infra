@@ -23,6 +23,7 @@ dashboard, add annotations to that Prow job.
 
 If it's a Prow job in [the k8s.io instance](/config/jobs), you don't need to do anything else.
 
+If it's a Prow job in another instance of Prow, use [`transfigure`](cmd/transfigure).
 
 Add this to your Prow job:
 
@@ -43,7 +44,7 @@ annotations:
 ```
 
 This functionality is provided by [Configurator](cmd/configurator). If you have Prow jobs in a _different_
-instance of Prow, you may want to invoke Configurator [differently](cmd/configurator#deserialization-options).
+instance of Prow, you may want to use [Transfigure](cmd/transfigure) instead.
 
 If you need to create a new dashboard, or do anything more advanced, read on.
 
@@ -117,10 +118,7 @@ dashboard_groups:
 
 ## Testing your configuration
 
-Run `bazel test //testgrid/...` to ensure the configuration is valid.
-
-This finds common problems such as malformed yaml, a tab referring to a
-non-existent test group, a test group never appearing on any tab, etc.
+Run [`bazel test //config/tests/testgrids/..`](/config/tests/testgrids) to ensure the configuration is valid.
 
 ## Advanced configuration
 See [`config.proto`] for an extensive list of configuration options. Here are some commonly-used ones.

@@ -57,6 +57,7 @@ func TestLabel(t *testing.T) {
 		expectedBotComment    bool
 		repoLabels            []string
 		issueLabels           []string
+		expectedCommentText   string
 	}
 	testcases := []testCase{
 		{
@@ -148,6 +149,8 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     formatLabels(),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
+			expectedBotComment:    true,
+			expectedCommentText:   "The label(s) `priority/critical` cannot be applied, because the repository doesn't have them",
 		},
 		{
 			name:                  "Non Org Member Can't Add",
@@ -175,6 +178,8 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     formatLabels(),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
+			expectedBotComment:    true,
+			expectedCommentText:   "The label(s) `area/lgtm` cannot be applied, because the repository doesn't have them",
 		},
 		{
 			name:                  "Add Multiple Area Labels",
@@ -211,6 +216,8 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     formatLabels(),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
+			expectedBotComment:    true,
+			expectedCommentText:   "The label(s) `area/urgent` cannot be applied, because the repository doesn't have them",
 		},
 		{
 			name:                  "Label Prefix Must Match Command (Priority-Area Mismatch)",
@@ -220,6 +227,8 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     formatLabels(),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
+			expectedBotComment:    true,
+			expectedCommentText:   "The label(s) `priority/infra` cannot be applied, because the repository doesn't have them",
 		},
 		{
 			name:                  "Add Multiple Area Labels (Some Valid)",
@@ -229,6 +238,8 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     formatLabels("area/infra"),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
+			expectedBotComment:    true,
+			expectedCommentText:   "The label(s) `area/lgtm` cannot be applied, because the repository doesn't have them",
 		},
 		{
 			name:                  "Add Multiple Committee Labels (Some Valid)",
@@ -238,6 +249,8 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     formatLabels("committee/steering"),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
+			expectedBotComment:    true,
+			expectedCommentText:   "The label(s) `committee/calamity` cannot be applied, because the repository doesn't have them",
 		},
 		{
 			name:                  "Add Multiple Types of Labels Different Lines",
@@ -399,6 +412,36 @@ func TestLabel(t *testing.T) {
 			commenter:             orgMember,
 		},
 		{
+			name:                  "Add custom label with trailing space",
+			body:                  "/label orchestrator/foo ",
+			extraLabels:           []string{"orchestrator/foo", "orchestrator/bar"},
+			repoLabels:            []string{"orchestrator/foo"},
+			issueLabels:           []string{},
+			expectedNewLabels:     formatLabels("orchestrator/foo"),
+			expectedRemovedLabels: []string{},
+			commenter:             orgMember,
+		},
+		{
+			name:                  "Add custom label with trailing LF newline",
+			body:                  "/label orchestrator/foo\n",
+			extraLabels:           []string{"orchestrator/foo", "orchestrator/bar"},
+			repoLabels:            []string{"orchestrator/foo"},
+			issueLabels:           []string{},
+			expectedNewLabels:     formatLabels("orchestrator/foo"),
+			expectedRemovedLabels: []string{},
+			commenter:             orgMember,
+		},
+		{
+			name:                  "Add custom label with trailing CRLF newline",
+			body:                  "/label orchestrator/foo\r\n",
+			extraLabels:           []string{"orchestrator/foo", "orchestrator/bar"},
+			repoLabels:            []string{"orchestrator/foo"},
+			issueLabels:           []string{},
+			expectedNewLabels:     formatLabels("orchestrator/foo"),
+			expectedRemovedLabels: []string{},
+			commenter:             orgMember,
+		},
+		{
 			name:                  "Cannot add missing custom label",
 			body:                  "/label orchestrator/foo",
 			extraLabels:           []string{"orchestrator/jar", "orchestrator/bar"},
@@ -407,10 +450,42 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
+			expectedBotComment:    true,
+			expectedCommentText:   "The label(s) `/label orchestrator/foo` cannot be applied. These labels are supported: `orchestrator/jar, orchestrator/bar`",
 		},
 		{
 			name:                  "Remove custom label",
 			body:                  "/remove-label orchestrator/foo",
+			extraLabels:           []string{"orchestrator/foo", "orchestrator/bar"},
+			repoLabels:            []string{"orchestrator/foo"},
+			issueLabels:           []string{"orchestrator/foo"},
+			expectedNewLabels:     []string{},
+			expectedRemovedLabels: formatLabels("orchestrator/foo"),
+			commenter:             orgMember,
+		},
+		{
+			name:                  "Remove custom label with trailing space",
+			body:                  "/remove-label orchestrator/foo ",
+			extraLabels:           []string{"orchestrator/foo", "orchestrator/bar"},
+			repoLabels:            []string{"orchestrator/foo"},
+			issueLabels:           []string{"orchestrator/foo"},
+			expectedNewLabels:     []string{},
+			expectedRemovedLabels: formatLabels("orchestrator/foo"),
+			commenter:             orgMember,
+		},
+		{
+			name:                  "Remove custom label with trailing LF newline",
+			body:                  "/remove-label orchestrator/foo\n",
+			extraLabels:           []string{"orchestrator/foo", "orchestrator/bar"},
+			repoLabels:            []string{"orchestrator/foo"},
+			issueLabels:           []string{"orchestrator/foo"},
+			expectedNewLabels:     []string{},
+			expectedRemovedLabels: formatLabels("orchestrator/foo"),
+			commenter:             orgMember,
+		},
+		{
+			name:                  "Remove custom label with trailing CRLF newline",
+			body:                  "/remove-label orchestrator/foo\r\n",
 			extraLabels:           []string{"orchestrator/foo", "orchestrator/bar"},
 			repoLabels:            []string{"orchestrator/foo"},
 			issueLabels:           []string{"orchestrator/foo"},
@@ -427,6 +502,8 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
+			expectedBotComment:    true,
+			expectedCommentText:   "The label(s) `/remove-label orchestrator/jar` cannot be applied. These labels are supported: `orchestrator/foo, orchestrator/bar`",
 		},
 	}
 
@@ -480,34 +557,33 @@ func TestLabel(t *testing.T) {
 		if len(fakeClient.IssueCommentsAdded) == 0 && tc.expectedBotComment {
 			t.Error("expected a bot comment but got none")
 		}
+		if tc.expectedBotComment && len(tc.expectedCommentText) > 0 {
+			if len(fakeClient.IssueComments) < 1 {
+				t.Errorf("expected actual: %v", fakeClient.IssueComments)
+			}
+			if len(fakeClient.IssueComments[1]) != 1 || strings.Index(fakeClient.IssueComments[1][0].Body, tc.expectedCommentText) == -1 {
+				t.Errorf("expected: `%v`, actual: `%v`", tc.expectedCommentText, fakeClient.IssueComments[1][0].Body)
+			}
+		}
 	}
 }
 
 func TestHelpProvider(t *testing.T) {
+	enabledRepos := []plugins.Repo{
+		{Org: "org1", Repo: "repo"},
+		{Org: "org2", Repo: "repo"},
+	}
 	cases := []struct {
 		name               string
 		config             *plugins.Configuration
-		enabledRepos       []string
+		enabledRepos       []plugins.Repo
 		err                bool
 		configInfoIncludes []string
 	}{
 		{
 			name:               "Empty config",
 			config:             &plugins.Configuration{},
-			enabledRepos:       []string{"org1", "org2/repo"},
-			configInfoIncludes: []string{configString(defaultLabels)},
-		},
-		{
-			name:               "Overlapping org and org/repo",
-			config:             &plugins.Configuration{},
-			enabledRepos:       []string{"org2", "org2/repo"},
-			configInfoIncludes: []string{configString(defaultLabels)},
-		},
-		{
-			name:               "Invalid enabledRepos",
-			config:             &plugins.Configuration{},
-			enabledRepos:       []string{"org1", "org2/repo/extra"},
-			err:                true,
+			enabledRepos:       enabledRepos,
 			configInfoIncludes: []string{configString(defaultLabels)},
 		},
 		{
@@ -517,7 +593,7 @@ func TestHelpProvider(t *testing.T) {
 					AdditionalLabels: []string{"sig", "triage", "wg"},
 				},
 			},
-			enabledRepos:       []string{"org1", "org2/repo"},
+			enabledRepos:       enabledRepos,
 			configInfoIncludes: []string{configString(append(defaultLabels, "sig", "triage", "wg"))},
 		},
 	}

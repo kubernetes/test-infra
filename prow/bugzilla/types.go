@@ -143,7 +143,8 @@ type Flag struct {
 // https://bugzilla.readthedocs.io/en/latest/api/core/v1/bug.html#update-bug
 type BugUpdate struct {
 	// Status is the current status of the bug.
-	Status string `json:"status,omitempty"`
+	Status     string `json:"status,omitempty"`
+	Resolution string `json:"resolution,omitempty"`
 }
 
 // ExternalBug contains details about an external bug linked to a Bugzilla bug.

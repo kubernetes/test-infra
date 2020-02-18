@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Copyright 2018 The Kubernetes Authors.
 #
@@ -24,7 +24,7 @@
 # hack/recreate_prow_configmaps.py [--wet]
 #
 
-from __future__ import print_function
+
 
 from argparse import ArgumentParser
 import os
@@ -95,20 +95,20 @@ def main():
     parser.add_argument("--prow-configmap", default="config",
                         help="name of prow primary configmap")
     parser.add_argument(
-        "--prow-config-path", default="prow/config.yaml",
+        "--prow-config-path", default="config/prow/config.yaml",
         help="path to the primary prow config")
     # plugins config
     parser.add_argument("--plugins-configmap", default="plugins",
                         help="name of prow plugins configmap")
     parser.add_argument(
-        "--plugins-config-path", default="prow/plugins.yaml",
+        "--plugins-config-path", default="config/prow/plugins.yaml",
         help="path to the prow plugins config")
     # wet or dry?
     parser.add_argument("--wet", action="store_true")
     args = parser.parse_args()
 
     # debug the current context
-    out = subprocess.check_output(['kubectl', 'config', 'current-context'])
+    out = subprocess.check_output(['kubectl', 'config', 'current-context'], encoding='utf-8')
     print('Current KUBECONFIG context: '+out)
 
     # require additional confirmation in --wet mode
@@ -117,7 +117,7 @@ def main():
         "\n!!    ARE YOU SURE YOU WANT TO DO THIS? IF SO, ENTER 'YES'.    !! "
     ) + '\n' + '!'*65 + '\n\n: '
     if args.wet:
-        if raw_input(prompt) != "YES":
+        if input(prompt) != "YES":
             print("you did not enter 'YES'")
             sys.exit(-1)
 

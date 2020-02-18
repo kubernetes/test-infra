@@ -1,5 +1,8 @@
+[Velodrome](http://velodrome.k8s.io/)
+=========
+
 Overview
-========
+--------
 
 Velodrome is the dashboard, monitoring and metrics for Kubernetes Developer
 Productivity. It is hosted at:
@@ -29,7 +32,7 @@ productivity. It has the following components:
     tokens
 
 GitHub statistics
-=================
+-----------------
 
 Here is how the github statistics are communicating between each other:
 
@@ -42,7 +45,7 @@ GitHub* <= Fetcher -> Cloud SQL* <= Transform -> InfluxDb
 ```
 
 Other metrics/monitoring components
-===================================
+-----------------------------------
 
 One can set-up monitoring components in two different ways:
 
@@ -60,7 +63,7 @@ As an example, the token counter measures the usage of our github-tokens, and
 has a new value every hour. We can push the new value to InfluxDB.
 
 Naming convention
-=================
+-----------------
 
 To disambiguate how each word is used, let's give a description of the naming
 convention used by velodrome:

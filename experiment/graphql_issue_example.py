@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Copyright 2017 The Kubernetes Authors.
 #
@@ -15,7 +15,6 @@
 # limitations under the License.
 
 # USAGE: find_issues.py <github_token>
-from __future__ import print_function
 
 import sys
 import json

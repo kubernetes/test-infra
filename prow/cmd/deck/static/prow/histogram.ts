@@ -1,4 +1,4 @@
-import {JobState} from "../api/prow";
+import {ProwJobState} from "../api/prow";
 
 export class JobHistogram {
   public start: number;
@@ -73,7 +73,7 @@ export class JobHistogram {
 export class JobSample {
   constructor(public start: number,
               public duration: number,
-              public state: JobState,
+              public state: ProwJobState,
               public row: number) {}
 }
 

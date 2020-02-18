@@ -6,11 +6,6 @@ run --workspace_status_command=./hack/print-workspace-status.sh
 build --incompatible_disable_deprecated_attr_params=false
 query --incompatible_disable_deprecated_attr_params=false
 
-# https://github.com/kubernetes/test-infra/issues/13239
-# https://github.com/bazelbuild/rules_docker/issues/842
-# https://github.com/bazelbuild/bazel/issues/7899
-build --host_force_python=PY2
-
 # enable data race detection
 test --features=race --test_output=errors
 
@@ -45,8 +40,22 @@ build:remote --define=EXECUTOR=remote
 build:remote --remote_executor=grpcs://remotebuildexecution.googleapis.com
 build:remote --remote_timeout=3600
 
+# Minimize what is downloaded
+build:inmemory --experimental_inmemory_jdeps_files
+build:inmemory --experimental_inmemory_dotd_files
+
+# Minimize what is downloaded
+build:toplevel --config=inmemory
+build:toplevel --experimental_remote_download_outputs=toplevel
+
+build:minimal --config=inmemory
+build:minimal --experimental_remote_download_outputs=minimal
+
 # --google_credentials=some_file.json
 build:remote --google_default_credentials=true
+build:remote --config=toplevel
+
+run:remote --experimental_remote_download_outputs=all --noexperimental_inmemory_jdeps_files --noexperimental_inmemory_dotd_files
 
 # Compose the remote configs with an instance name
 # A couple examples below:

@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 # Copyright 2017 The Kubernetes Authors.
 #
@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import cStringIO as StringIO
+import io as StringIO
 import json
 import time
 import unittest
@@ -26,7 +26,7 @@ import model
 class ValidateBuckets(unittest.TestCase):
     def test_buckets(self):
         prefixes = set()
-        for name, options in sorted(make_json.BUCKETS.iteritems()):
+        for name, options in sorted(make_json.BUCKETS.items()):
             if name == 'gs://kubernetes-jenkins/logs/':
                 continue  # only bucket without a prefix
             prefix = options.get('prefix', '')
@@ -135,7 +135,7 @@ class MakeJsonTest(unittest.TestCase):
             for needle in negneedles:
                 # Only match negative needles in the middle of a word, to avoid
                 # failures on timestamps that happen to contain a short number.
-                self.assertNotRegexpMatches(result, r'\b%s\b' % needle)
+                self.assertNotRegexpMatches(result, r'\b%s\b' % needle) # pylint: disable=deprecated-method
 
         add_build('some-job/123', last_month, last_month + 10, 'SUCCESS', junits)
         add_build('some-job/456', now - 10, now, 'FAILURE', junits)

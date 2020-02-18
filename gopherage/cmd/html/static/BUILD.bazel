@@ -47,7 +47,8 @@ ts_library(
 )
 
 rollup_bundle(
-    name = "browser_bundle",
+    name = "zz.browser_bundle",
+    enable_code_splitting = False,
     entry_point = ":browser.ts",
     deps = [
         ":browser",

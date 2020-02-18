@@ -1,4 +1,4 @@
-load("@py_deps//:requirements.bzl", "requirement")
+load("@py3_deps//:requirements.bzl", "requirement")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -34,7 +34,7 @@ py_binary(
         ":darwin": ["@jq_osx//file"],
         ":k8": ["@jq_linux//file"],
     }),
-    python_version = "PY2",
+    python_version = "PY3",
     deps = [
         requirement("certifi"),
         requirement("chardet"),
@@ -42,7 +42,7 @@ py_binary(
         requirement("influxdb"),
         requirement("python-dateutil"),
         requirement("pytz"),
-        requirement("PyYAML"),
+        requirement("ruamel.yaml"),
         requirement("requests"),
         requirement("six"),
         requirement("urllib3"),
@@ -63,7 +63,7 @@ py_test(
         ":k8": ["@jq_linux//file"],
         ":darwin": ["@jq_osx//file"],
     }),
-    python_version = "PY2",
+    python_version = "PY3",
     deps = [
         requirement("certifi"),
         requirement("chardet"),
@@ -71,7 +71,7 @@ py_test(
         requirement("influxdb"),
         requirement("python-dateutil"),
         requirement("pytz"),
-        requirement("PyYAML"),
+        requirement("ruamel.yaml"),
         requirement("requests"),
         requirement("six"),
         requirement("urllib3"),

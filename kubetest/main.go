@@ -53,7 +53,7 @@ var (
 	terminate = time.NewTimer(time.Duration(0)) // terminate testing at this time.
 	verbose   = false
 	timeout   = time.Duration(0)
-	boskos    = client.NewClient(os.Getenv("JOB_NAME"), "http://boskos.test-pods.svc.cluster.local.")
+	boskos, _ = client.NewClient(os.Getenv("JOB_NAME"), "http://boskos.test-pods.svc.cluster.local.", "", "")
 	control   = process.NewControl(timeout, interrupt, terminate, verbose)
 )
 
@@ -256,8 +256,8 @@ func getDeployer(o *options) (deployer, error) {
 		return noneDeploy{}, nil
 	case "local":
 		return newLocalCluster(), nil
-	case "acsengine":
-		return newAcsEngine()
+	case "aksengine":
+		return newAKSEngine()
 	default:
 		return nil, fmt.Errorf("unknown deployment strategy %q", o.deployment)
 	}
@@ -415,6 +415,10 @@ func acquireKubernetes(o *options, d deployer) error {
 		// kind deployer manages build
 		if k, ok := d.(*kind.Deployer); ok {
 			err = control.XMLWrap(&suite, "Build", k.Build)
+		} else if c, ok := d.(*Cluster); ok { // Azure deployer
+			err = control.XMLWrap(&suite, "Build", func() error {
+				return c.BuildK8s(o.build)
+			})
 		} else {
 			err = control.XMLWrap(&suite, "Build", o.build.Build)
 		}

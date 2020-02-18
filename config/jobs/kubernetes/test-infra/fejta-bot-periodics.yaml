@@ -9,7 +9,7 @@ periodics:
     testgrid-tab-name: api-review-help
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20190808-5e69697af
+    - image: gcr.io/k8s-prow/commenter:v20200214-db7f45788
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -55,7 +55,7 @@ periodics:
     testgrid-tab-name: cla
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20190808-5e69697af
+    - image: gcr.io/k8s-prow/commenter:v20200214-db7f45788
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -95,7 +95,7 @@ periodics:
     testgrid-tab-name: close
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20190808-5e69697af
+    - image: gcr.io/k8s-prow/commenter:v20200214-db7f45788
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -130,9 +130,13 @@ periodics:
 - name: periodic-test-infra-retester
   interval: 20m  # Retest at most 1 PR per 20m, which should not DOS the queue.
   decorate: true
+  annotations:
+    testgrid-dashboards: sig-testing-fejtabot
+    testgrid-tab-name: retester
+    description: Automatically /retest for approved PRs that failed retesting
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20190808-5e69697af
+    - image: gcr.io/k8s-prow/commenter:v20200214-db7f45788
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -151,6 +155,7 @@ periodics:
         -label:needs-rebase
         -label:needs-ok-to-test
         -label:"cncf-cla: no"
+        repo:kubernetes/kops
         repo:kubernetes/kubernetes
         repo:kubernetes/test-infra
       - --token=/etc/token/bot-github-token
@@ -182,7 +187,7 @@ periodics:
     testgrid-tab-name: rotten
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20190808-5e69697af
+    - image: gcr.io/k8s-prow/commenter:v20200214-db7f45788
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -226,7 +231,7 @@ periodics:
     testgrid-tab-name: stale
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20190808-5e69697af
+    - image: gcr.io/k8s-prow/commenter:v20200214-db7f45788
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -266,9 +271,12 @@ periodics:
   labels:
     preset-service-account: "true"
   decorate: true
+  annotations:
+    testgrid-dashboards: sig-testing-fejtabot
+    description: Creates github issues based on data from various 'IssueSource's.
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/issue-creator:v20170907-5240cca5
+    - image: gcr.io/k8s-testimages/issue-creator:v20200123-1ec7f94ed
       command:
       - /issue-creator
       args:
@@ -277,7 +285,6 @@ periodics:
       - --org=kubernetes
       - --project=kubernetes
       - --token-file=/etc/token/bot-github-token
-      - --test-owners-csv=/test_owners.csv
       - --triage-window=1
       - --triage-count=10
       - --flakyjob-count=3
@@ -298,7 +305,7 @@ periodics:
     testgrid-tab-name: enhancements-unfreeze
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20190808-5e69697af
+    - image: gcr.io/k8s-prow/commenter:v20200214-db7f45788
       command:
       - /app/robots/commenter/app.binary
       args:

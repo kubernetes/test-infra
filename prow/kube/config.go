@@ -99,6 +99,10 @@ func buildConfigs(buildCluster string) (map[string]rest.Config, error) {
 		if err != nil {
 			return nil, fmt.Errorf("create %s client: %v", context, err)
 		}
+		// An arbitrary high number we expect to not exceed. There are various components that need more than the default 5 QPS/10 Burst, e.G.
+		// hook for creating ProwJobs and Plank for creating Pods.
+		contextCfg.QPS = 100
+		contextCfg.Burst = 1000
 		configs[context] = *contextCfg
 	}
 	return configs, nil

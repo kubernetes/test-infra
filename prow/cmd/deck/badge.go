@@ -85,7 +85,11 @@ func makeShield(subject, status, color string) []byte {
 
 // pickLatestJobs returns the most recent run of each job matching the selector,
 // which is comma-separated list of globs, for example "ci-ti-*,ci-other".
+// jobs will be sorted
 func pickLatestJobs(jobs []prowapi.ProwJob, selector string) []prowapi.ProwJob {
+	sort.Slice(jobs, func(i, j int) bool {
+		return jobs[i].Status.StartTime.Before(&jobs[j].Status.StartTime)
+	})
 	var out []prowapi.ProwJob
 	have := make(map[string]bool)
 	want := strings.Split(selector, ",")

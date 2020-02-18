@@ -17,9 +17,9 @@ limitations under the License.
 package crier
 
 import (
+	"context"
 	"reflect"
 	"sort"
-	"sync"
 	"testing"
 	"time"
 
@@ -118,7 +118,8 @@ func TestController_Run(t *testing.T) {
 			knownJobs: map[string]*prowv1.ProwJob{
 				"foo": {
 					Spec: prowv1.ProwJobSpec{
-						Job: "foo",
+						Job:    "foo",
+						Report: true,
 					},
 					Status: prowv1.ProwJobStatus{
 						State: prowv1.TriggeredState,
@@ -135,7 +136,8 @@ func TestController_Run(t *testing.T) {
 			knownJobs: map[string]*prowv1.ProwJob{
 				"foo": {
 					Spec: prowv1.ProwJobSpec{
-						Job: "foo",
+						Job:    "foo",
+						Report: true,
 					},
 					Status: prowv1.ProwJobStatus{
 						State: prowv1.TriggeredState,
@@ -161,6 +163,19 @@ func TestController_Run(t *testing.T) {
 		//	},
 		//},
 		{
+			name:        "doesn't report when SkipReport=true (i.e. Spec.Report=false)",
+			jobsOnQueue: []string{"foo"},
+			knownJobs: map[string]*prowv1.ProwJob{
+				"foo": {
+					Spec: prowv1.ProwJobSpec{
+						Job:    "foo",
+						Report: false,
+					},
+				},
+			},
+			shouldReport: false,
+		},
+		{
 			name:        "doesn't report empty job",
 			jobsOnQueue: []string{"foo"},
 			knownJobs: map[string]*prowv1.ProwJob{
@@ -174,7 +189,8 @@ func TestController_Run(t *testing.T) {
 			knownJobs: map[string]*prowv1.ProwJob{
 				"foo": {
 					Spec: prowv1.ProwJobSpec{
-						Job: "foo",
+						Job:    "foo",
+						Report: true,
 					},
 					Status: prowv1.ProwJobStatus{
 						State: prowv1.TriggeredState,
@@ -191,7 +207,8 @@ func TestController_Run(t *testing.T) {
 			knownJobs: map[string]*prowv1.ProwJob{
 				"foo": {
 					Spec: prowv1.ProwJobSpec{
-						Job: "foo",
+						Job:    "foo",
+						Report: true,
 					},
 					Status: prowv1.ProwJobStatus{
 						State: prowv1.TriggeredState,
@@ -223,18 +240,21 @@ func TestController_Run(t *testing.T) {
 			}
 			cs := fake.NewSimpleClientset()
 			nmwrk := 2
-			wg := &sync.WaitGroup{}
-			c := NewController(cs, q, inf, &rp, nmwrk, wg)
+			c := NewController(cs, q, inf, &rp, nmwrk)
 
-			stopCh := make(chan struct{})
-			go c.Run(stopCh)
+			done := make(chan struct{}, 1)
+			ctx, cancel := context.WithCancel(context.Background())
+			go func() {
+				c.Run(ctx)
+				close(done)
+			}()
 
 			wait.Poll(10*time.Millisecond, testTimeout, func() (done bool, err error) {
 				return c.queue.Len() == 0, nil
 			})
 
-			close(stopCh)
-			wg.Wait()
+			cancel()
+			<-done
 
 			if c.queue.Len() != 0 {
 				t.Errorf("%d messages were unconsumed", c.queue.Len())

@@ -516,7 +516,10 @@ def annotate_owners(data, builds, owners):
                     continue
                 job_path = job_paths[job['name']]
                 for build in job['builds']:
-                    if builds['%s/%s' % (job_path, build)]['started'] > yesterday:
+                    bucket_key = '%s/%s' % (job_path, build)
+                    if bucket_key not in builds:
+                        continue
+                    elif builds[bucket_key]['started'] > yesterday:
                         counts[0] += 1
                     else:
                         counts[1] += 1

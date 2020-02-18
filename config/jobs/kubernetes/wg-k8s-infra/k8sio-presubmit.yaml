@@ -1,0 +1,19 @@
+presubmits:
+  kubernetes/k8s.io:
+  - name: pull-k8sio-groups-test
+    decorate: true
+    path_alias: k8s.io/k8s.io
+    run_if_changed: "^groups/"
+    branches:
+    - ^master$
+    spec:
+      containers:
+      - image: golang:1.12
+        command:
+        - bash
+        args:
+        - -c
+        - "cd groups && go test ./..."
+        env:
+        - name: GO111MODULE
+          value: "on"

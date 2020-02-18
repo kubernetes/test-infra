@@ -38,6 +38,7 @@ func TestEnvironmentForSpec(t *testing.T) {
 				ProwJobID: "prowjob",
 			},
 			expected: map[string]string{
+				"CI":          "true",
 				"JOB_NAME":    "job-name",
 				"BUILD_ID":    "0",
 				"PROW_JOB_ID": "prowjob",
@@ -60,6 +61,7 @@ func TestEnvironmentForSpec(t *testing.T) {
 				},
 			},
 			expected: map[string]string{
+				"CI":            "true",
 				"JOB_NAME":      "job-name",
 				"BUILD_ID":      "0",
 				"PROW_JOB_ID":   "prowjob",
@@ -96,6 +98,7 @@ func TestEnvironmentForSpec(t *testing.T) {
 				},
 			},
 			expected: map[string]string{
+				"CI":            "true",
 				"JOB_NAME":      "job-name",
 				"BUILD_ID":      "0",
 				"PROW_JOB_ID":   "prowjob",
@@ -128,6 +131,7 @@ func TestEnvironmentForSpec(t *testing.T) {
 				},
 			},
 			expected: map[string]string{
+				"CI":            "true",
 				"JOB_NAME":      "job-name",
 				"BUILD_ID":      "0",
 				"PROW_JOB_ID":   "prowjob",
@@ -152,6 +156,7 @@ func TestEnvironmentForSpec(t *testing.T) {
 				agent:     prowapi.KubernetesAgent,
 			},
 			expected: map[string]string{
+				"CI":           "true",
 				"JOB_NAME":     "job-name",
 				"BUILD_ID":     "0",
 				"PROW_JOB_ID":  "prowjob",
@@ -170,6 +175,7 @@ func TestEnvironmentForSpec(t *testing.T) {
 				agent:     prowapi.JenkinsAgent,
 			},
 			expected: map[string]string{
+				"CI":          "true",
 				"JOB_NAME":    "job-name",
 				"BUILD_ID":    "0",
 				"PROW_JOB_ID": "prowjob",

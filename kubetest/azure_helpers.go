@@ -20,21 +20,33 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"time"
 
-	resources "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
+	"github.com/Azure/azure-sdk-for-go/services/authorization/mgmt/2015-07-01/authorization"
+	"github.com/Azure/azure-sdk-for-go/services/preview/msi/mgmt/2015-08-31-preview/msi"
+	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/adal"
 	"github.com/Azure/go-autorest/autorest/azure"
+	uuid "github.com/satori/go.uuid"
 )
 
-type AcsEngineAPIModel struct {
+const (
+	// aadOwnerRoleID is the role id that exists in every subscription for 'Owner'
+	aadOwnerRoleID = "8e3af657-a8ff-443c-a75c-2fe8c4bcb635"
+	// aadRoleReferenceTemplate is a template for a roleDefinitionId
+	aadRoleReferenceTemplate = "/subscriptions/%s/providers/Microsoft.Authorization/roleDefinitions/%s"
+	// aadRoleResourceGroupScopeTemplate is a template for a roleDefinition scope
+	aadRoleResourceGroupScopeTemplate = "/subscriptions/%s"
+)
+
+type AKSEngineAPIModel struct {
 	Location   string            `json:"location,omitempty"`
 	Name       string            `json:"name,omitempty"`
 	Tags       map[string]string `json:"tags,omitempty"`
-	APIVersion string            `json:"APIVersion"`
-
-	Properties *Properties `json:"properties"`
+	APIVersion string            `json:"apiVersion"`
+	Properties *Properties       `json:"properties"`
 }
 
 type Properties struct {
@@ -46,6 +58,7 @@ type Properties struct {
 	ServicePrincipalProfile *ServicePrincipalProfile `json:"servicePrincipalProfile,omitempty"`
 	ExtensionProfiles       []map[string]string      `json:"extensionProfiles,omitempty"`
 	CustomCloudProfile      *CustomCloudProfile      `json:"customCloudProfile,omitempty"`
+	FeatureFlags            *FeatureFlags            `json:"featureFlags,omitempty"`
 }
 
 type ServicePrincipalProfile struct {
@@ -88,31 +101,56 @@ type KubernetesContainerSpec struct {
 	MemoryLimits   string `json:"memoryLimits,omitempty"`
 }
 
+// AddonNodePoolsConfig defines configuration for pool-specific cluster-autoscaler configuration
+type AddonNodePoolsConfig struct {
+	Name   string            `json:"name,omitempty"`
+	Config map[string]string `json:"config,omitempty"`
+}
+
 // KubernetesAddon defines a list of addons w/ configuration to include with the cluster deployment
 type KubernetesAddon struct {
 	Name       string                    `json:"name,omitempty"`
 	Enabled    *bool                     `json:"enabled,omitempty"`
+	Mode       string                    `json:"mode,omitempty"`
 	Containers []KubernetesContainerSpec `json:"containers,omitempty"`
 	Config     map[string]string         `json:"config,omitempty"`
+	Pools      []AddonNodePoolsConfig    `json:"pools,omitempty"`
 	Data       string                    `json:"data,omitempty"`
 }
 
 type KubernetesConfig struct {
-	CustomWindowsPackageURL      string            `json:"customWindowsPackageURL,omitempty"`
-	CustomHyperkubeImage         string            `json:"customHyperkubeImage,omitempty"`
-	CustomCcmImage               string            `json:"customCcmImage,omitempty"` // Image for cloud-controller-manager
-	UseCloudControllerManager    *bool             `json:"useCloudControllerManager,omitempty"`
-	NetworkPlugin                string            `json:"networkPlugin,omitempty"`
-	PrivateAzureRegistryServer   string            `json:"privateAzureRegistryServer,omitempty"`
-	AzureCNIURLLinux             string            `json:"azureCNIURLLinux,omitempty"`
-	AzureCNIURLWindows           string            `json:"azureCNIURLWindows,omitempty"`
-	Addons                       []KubernetesAddon `json:"addons,omitempty"`
-	NetworkPolicy                string            `json:"networkPolicy,omitempty"`
-	CloudProviderRateLimitQPS    float64           `json:"cloudProviderRateLimitQPS,omitempty"`
-	CloudProviderRateLimitBucket int               `json:"cloudProviderRateLimitBucket,omitempty"`
-	APIServerConfig              map[string]string `json:"apiServerConfig,omitempty"`
-	KubernetesImageBase          string            `json:"kubernetesImageBase,omitempty"`
+	CustomWindowsPackageURL          string            `json:"customWindowsPackageURL,omitempty"`
+	CustomHyperkubeImage             string            `json:"customHyperkubeImage,omitempty"`
+	CustomCcmImage                   string            `json:"customCcmImage,omitempty"` // Image for cloud-controller-manager
+	UseCloudControllerManager        *bool             `json:"useCloudControllerManager,omitempty"`
+	NetworkPlugin                    string            `json:"networkPlugin,omitempty"`
+	PrivateAzureRegistryServer       string            `json:"privateAzureRegistryServer,omitempty"`
+	AzureCNIURLLinux                 string            `json:"azureCNIURLLinux,omitempty"`
+	AzureCNIURLWindows               string            `json:"azureCNIURLWindows,omitempty"`
+	Addons                           []KubernetesAddon `json:"addons,omitempty"`
+	NetworkPolicy                    string            `json:"networkPolicy,omitempty"`
+	CloudProviderRateLimitQPS        float64           `json:"cloudProviderRateLimitQPS,omitempty"`
+	CloudProviderRateLimitBucket     int               `json:"cloudProviderRateLimitBucket,omitempty"`
+	APIServerConfig                  map[string]string `json:"apiServerConfig,omitempty"`
+	KubernetesImageBase              string            `json:"kubernetesImageBase,omitempty"`
+	ControllerManagerConfig          map[string]string `json:"controllerManagerConfig,omitempty"`
+	KubeletConfig                    map[string]string `json:"kubeletConfig,omitempty"`
+	KubeProxyMode                    string            `json:"kubeProxyMode,omitempty"`
+	LoadBalancerSku                  string            `json:"loadBalancerSku,omitempty"`
+	ExcludeMasterFromStandardLB      *bool             `json:"excludeMasterFromStandardLB,omitempty"`
+	ServiceCidr                      string            `json:"serviceCidr,omitempty"`
+	DNSServiceIP                     string            `json:"dnsServiceIP,omitempty"`
+	OutboundRuleIdleTimeoutInMinutes int32             `json:"outboundRuleIdleTimeoutInMinutes,omitempty"`
+	ClusterSubnet                    string            `json:"clusterSubnet,omitempty"`
+	CustomKubeAPIServerImage         string            `json:"customKubeAPIServerImage,omitempty"`
+	CustomKubeControllerManagerImage string            `json:"customKubeControllerManagerImage,omitempty"`
+	CustomKubeProxyImage             string            `json:"customKubeProxyImage,omitempty"`
+	CustomKubeSchedulerImage         string            `json:"customKubeSchedulerImage,omitempty"`
+	CustomKubeBinaryURL              string            `json:"customKubeBinaryURL,omitempty"`
+	UseManagedIdentity               *bool             `json:"useManagedIdentity,omitempty"`
+	UserAssignedID                   string            `json:"userAssignedID,omitempty"`
 }
+
 type OrchestratorProfile struct {
 	OrchestratorType    string            `json:"orchestratorType"`
 	OrchestratorRelease string            `json:"orchestratorRelease"`
@@ -120,13 +158,15 @@ type OrchestratorProfile struct {
 }
 
 type MasterProfile struct {
-	Count          int                 `json:"count"`
-	Distro         string              `json:"distro"`
-	DNSPrefix      string              `json:"dnsPrefix"`
-	VMSize         string              `json:"vmSize" validate:"required"`
-	IPAddressCount int                 `json:"ipAddressCount,omitempty"`
-	Extensions     []map[string]string `json:"extensions,omitempty"`
-	OSDiskSizeGB   int                 `json:"osDiskSizeGB,omitempty" validate:"min=0,max=1023"`
+	Count               int                 `json:"count"`
+	Distro              string              `json:"distro"`
+	DNSPrefix           string              `json:"dnsPrefix"`
+	VMSize              string              `json:"vmSize" validate:"required"`
+	IPAddressCount      int                 `json:"ipAddressCount,omitempty"`
+	Extensions          []map[string]string `json:"extensions,omitempty"`
+	OSDiskSizeGB        int                 `json:"osDiskSizeGB,omitempty" validate:"min=0,max=1023"`
+	AvailabilityProfile string              `json:"availabilityProfile,omitempty"`
+	AvailabilityZones   []string            `json:"availabilityZones,omitempty"`
 }
 
 type AgentPoolProfile struct {
@@ -136,6 +176,7 @@ type AgentPoolProfile struct {
 	VMSize                 string              `json:"vmSize"`
 	OSType                 string              `json:"osType,omitempty"`
 	AvailabilityProfile    string              `json:"availabilityProfile"`
+	AvailabilityZones      []string            `json:"availabilityZones,omitempty"`
 	IPAddressCount         int                 `json:"ipAddressCount,omitempty"`
 	PreProvisionExtension  map[string]string   `json:"preProvisionExtension,omitempty"`
 	Extensions             []map[string]string `json:"extensions,omitempty"`
@@ -144,10 +185,16 @@ type AgentPoolProfile struct {
 }
 
 type AzureClient struct {
-	environment       azure.Environment
-	subscriptionID    string
-	deploymentsClient resources.DeploymentsClient
-	groupsClient      resources.GroupsClient
+	environment         azure.Environment
+	subscriptionID      string
+	deploymentsClient   resources.DeploymentsClient
+	groupsClient        resources.GroupsClient
+	msiClient           msi.UserAssignedIdentitiesClient
+	authorizationClient authorization.RoleAssignmentsClient
+}
+
+type FeatureFlags struct {
+	EnableIPv6DualStack bool `json:"enableIPv6DualStack,omitempty"`
 }
 
 // CustomCloudProfile defines configuration for custom cloud profile( for ex: Azure Stack)
@@ -209,9 +256,15 @@ func (az *AzureClient) DeployTemplate(ctx context.Context, resourceGroupName, de
 func (az *AzureClient) EnsureResourceGroup(ctx context.Context, name, location string, managedBy *string) (resourceGroup *resources.Group, err error) {
 	var tags map[string]*string
 	group, err := az.groupsClient.Get(ctx, name)
-	if err == nil {
+	if err == nil && group.Tags != nil {
 		tags = group.Tags
+	} else {
+		tags = make(map[string]*string)
 	}
+	// Tags for correlating resource groups with prow jobs on testgrid
+	tags["buildID"] = stringPointer(os.Getenv("BUILD_ID"))
+	tags["jobName"] = stringPointer(os.Getenv("JOB_NAME"))
+	tags["creationTimestamp"] = stringPointer(time.Now().UTC().Format(time.RFC3339))
 
 	response, err := az.groupsClient.CreateOrUpdate(ctx, name, resources.Group{
 		Name:      &name,
@@ -243,6 +296,31 @@ func (az *AzureClient) DeleteResourceGroup(ctx context.Context, groupName string
 	return nil
 }
 
+func (az *AzureClient) AssignOwnerRoleToIdentity(ctx context.Context, resourceGroupName, identityName string) error {
+	identity, err := az.msiClient.Get(ctx, resourceGroupName, identityName)
+	if err != nil {
+		return fmt.Errorf("failed to get identity's client ID: %v", err)
+	}
+
+	identityPrincipalID := identity.PrincipalID.String()
+	// Grant the identity 'Owner' access to the subscription
+	// so it can pull images from private registry
+	roleDefinitionID := fmt.Sprintf(aadRoleReferenceTemplate, az.subscriptionID, aadOwnerRoleID)
+	scope := fmt.Sprintf(aadRoleResourceGroupScopeTemplate, az.subscriptionID)
+	roleAssignmentParameters := authorization.RoleAssignmentCreateParameters{
+		Properties: &authorization.RoleAssignmentProperties{
+			RoleDefinitionID: stringPointer(roleDefinitionID),
+			PrincipalID:      stringPointer(identityPrincipalID),
+		},
+	}
+
+	if _, err := az.authorizationClient.Create(ctx, scope, uuid.NewV1().String(), roleAssignmentParameters); err != nil {
+		return fmt.Errorf("failed to assign 'Owner' role to user assigned identity: %v", err)
+	}
+
+	return nil
+}
+
 func getOAuthConfig(env azure.Environment, subscriptionID, tenantID string) (*adal.OAuthConfig, error) {
 
 	oauthConfig, err := adal.NewOAuthConfig(env.ActiveDirectoryEndpoint, tenantID)
@@ -269,17 +347,35 @@ func getAzureClient(env azure.Environment, subscriptionID, clientID, tenantID, c
 
 func getClient(env azure.Environment, subscriptionID, tenantID string, armSpt *adal.ServicePrincipalToken) *AzureClient {
 	c := &AzureClient{
-		environment:    env,
-		subscriptionID: subscriptionID,
-
-		deploymentsClient: resources.NewDeploymentsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
-		groupsClient:      resources.NewGroupsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
+		environment:         env,
+		subscriptionID:      subscriptionID,
+		deploymentsClient:   resources.NewDeploymentsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
+		groupsClient:        resources.NewGroupsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
+		msiClient:           msi.NewUserAssignedIdentitiesClient(subscriptionID),
+		authorizationClient: authorization.NewRoleAssignmentsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
 	}
 
 	authorizer := autorest.NewBearerAuthorizer(armSpt)
 	c.deploymentsClient.Authorizer = authorizer
 	c.deploymentsClient.PollingDuration = 60 * time.Minute
 	c.groupsClient.Authorizer = authorizer
+	c.msiClient.Authorizer = authorizer
+	c.authorizationClient.Authorizer = authorizer
 
 	return c
+}
+
+func stringPointer(s string) *string {
+	return &s
+}
+
+func boolPointer(b bool) *bool {
+	return &b
+}
+
+func toBool(b *bool) bool {
+	if b == nil {
+		return false
+	}
+	return *b
 }

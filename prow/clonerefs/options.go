@@ -52,6 +52,9 @@ type Options struct {
 	// when cloning. Will be added to `ssh-agent`.
 	KeyFiles []string `json:"key_files,omitempty"`
 
+	// OauthTokenFile is the path of a file that contains an OAuth token.
+	OauthTokenFile string `json:"oauth_token_file,omitempty"`
+
 	// HostFingerPrints are ssh-keyscan host fingerprint lines to use
 	// when cloning. Will be added to ~/.ssh/known_hosts
 	HostFingerprints []string `json:"host_fingerprints,omitempty"`
@@ -60,6 +63,8 @@ type Options struct {
 	// can be cloned in parallel. If 0, interpreted as no
 	// limit to parallelism
 	MaxParallelWorkers int `json:"max_parallel_workers,omitempty"`
+
+	Fail bool `json:"fail,omitempty"`
 
 	// used to hold flag values
 	refs       gitRefs
@@ -87,7 +92,7 @@ func (o *Options) Validate() error {
 	for _, ref := range o.GitRefs {
 		if _, seenOrg := seen[ref.Org]; seenOrg {
 			if seen[ref.Org].Has(ref.Repo) {
-				return errors.New("sync config for %s/%s provided more than once")
+				return fmt.Errorf("sync config for %s/%s provided more than once", ref.Org, ref.Repo)
 			}
 			seen[ref.Org].Insert(ref.Repo)
 		} else {
@@ -153,6 +158,7 @@ func (o *Options) AddFlags(fs *flag.FlagSet) {
 	fs.Var(&o.cloneURI, "uri-prefix", "Format string for the URI prefix to clone from")
 	fs.IntVar(&o.MaxParallelWorkers, "max-workers", 0, "Maximum number of parallel workers, unset for unlimited.")
 	fs.StringVar(&o.CookiePath, "cookiefile", "", "Path to git http.cookiefile")
+	fs.BoolVar(&o.Fail, "fail", false, "Exit with failure if any of the refs can't be fetched.")
 }
 
 type gitRefs struct {

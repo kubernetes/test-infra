@@ -1,0 +1,25 @@
+dashboard_groups:
+- name: provider-azure
+  dashboard_names:
+    - provider-azure-azuredisk-csi-driver
+    - provider-azure-azurefile-csi-driver
+    - provider-azure-blobfuse-csi-driver
+    - provider-azure-cloud-provider-azure
+    - provider-azure-dualstack
+    - provider-azure-periodic
+    - provider-azure-presubmit
+    - provider-azure-scalability
+    - provider-azure-upstream
+    - provider-azure-windows
+
+dashboards:
+- name: provider-azure-azuredisk-csi-driver
+- name: provider-azure-azurefile-csi-driver
+- name: provider-azure-blobfuse-csi-driver
+- name: provider-azure-cloud-provider-azure
+- name: provider-azure-dualstack
+- name: provider-azure-periodic
+- name: provider-azure-presubmit
+- name: provider-azure-scalability
+- name: provider-azure-upstream
+- name: provider-azure-windows

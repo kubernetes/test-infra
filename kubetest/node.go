@@ -57,7 +57,7 @@ func (n nodeDeploy) GetClusterCreated(gcpProject string) (time.Time, error) {
 	return time.Time{}, errors.New("not implemented")
 }
 
-func (_ nodeDeploy) KubectlCommand() (*exec.Cmd, error) {
+func (n nodeDeploy) KubectlCommand() (*exec.Cmd, error) {
 	log.Print("Noop - Node KubectlCommand()")
 	return nil, nil
 }

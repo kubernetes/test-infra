@@ -32,12 +32,102 @@ import (
 	"k8s.io/client-go/kubernetes/fake"
 	clienttesting "k8s.io/client-go/testing"
 
+	"k8s.io/test-infra/prow/git/localgit"
+	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
+	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/plugins"
 )
 
 const defaultNamespace = "default"
+
+var remoteFiles = map[string]map[string]string{
+	"prow/config.yaml": {
+		"master": "old-config",
+		"12345":  "new-config",
+	},
+	"prow/binary.yaml": {
+		"master": "old-binary\x00\xFF\xFF",
+		"12345":  "new-binary\x00\xFF\xFF",
+	},
+	"prow/becoming-binary.yaml": {
+		"master": "not-yet-binary",
+		"12345":  "now-binary\x00\xFF\xFF",
+	},
+	"prow/becoming-text.yaml": {
+		"master": "not-yet-text\x00\xFF\xFF",
+		"12345":  "now-text",
+	},
+	"prow/plugins.yaml": {
+		"master": "old-plugins",
+		"12345":  "new-plugins",
+	},
+	"boskos/resources.yaml": {
+		"master": "old-boskos-config",
+		"12345":  "new-boskos-config",
+	},
+	"config/foo.yaml": {
+		"master": "old-foo-config",
+		"12345":  "new-foo-config",
+	},
+	"config/bar.yaml": {
+		"master": "old-bar-config",
+		"12345":  "new-bar-config",
+	},
+	"dir/subdir/fejta.yaml": {
+		"master": "old-fejta-config",
+		"12345":  "new-fejta-config",
+	},
+	"dir/subdir/fejtaverse/krzyzacy.yaml": {
+		"master": "old-krzyzacy-config",
+		"12345":  "new-krzyzacy-config",
+	},
+	"dir/subdir/fejtaverse/fejtabot.yaml": {
+		"54321": "new-fejtabot-config",
+	},
+	"dir/subdir/fejtaverse/sig-foo/added.yaml": {
+		"12345": "new-added-config",
+	},
+	"dir/subdir/fejtaverse/sig-bar/removed.yaml": {
+		"master": "old-removed-config",
+	},
+}
+
+func setupLocalGitRepo(t *testing.T, org, repo string) git.ClientFactory {
+	lg, c, err := localgit.New()
+	if err != nil {
+		t.Fatalf("Making local git repo: %v", err)
+	}
+	if err := lg.MakeFakeRepo(org, repo); err != nil {
+		t.Fatalf("Making fake repo: %v", err)
+	}
+	if err := lg.Checkout(org, repo, "master"); err != nil {
+		t.Fatalf("Checkout new branch: %v", err)
+	}
+	if err := lg.AddCommit(org, repo, getFileMap("master")); err != nil {
+		t.Fatalf("Add commit: %v", err)
+	}
+	if err := lg.CheckoutNewBranch(org, repo, "12345"); err != nil {
+		t.Fatalf("Checkout new branch: %v", err)
+	}
+	if err := lg.AddCommit(org, repo, getFileMap("12345")); err != nil {
+		t.Fatalf("Add commit: %v", err)
+	}
+	if err := lg.Checkout(org, repo, "master"); err != nil {
+		t.Fatalf("Checkout new branch: %v", err)
+	}
+	if err := lg.CheckoutNewBranch(org, repo, "54321"); err != nil {
+		t.Fatalf("Checkout new branch: %v", err)
+	}
+	if err := lg.AddCommit(org, repo, getFileMap("54321")); err != nil {
+		t.Fatalf("Add commit: %v", err)
+	}
+	if err := lg.Checkout(org, repo, "master"); err != nil {
+		t.Fatalf("Checkout new branch: %v", err)
+	}
+	return c
+}
 
 func TestUpdateConfig(t *testing.T) {
 	basicPR := github.PullRequest{
@@ -1009,57 +1099,6 @@ func TestUpdateConfig(t *testing.T) {
 				basicPR.Number: tc.changes,
 			},
 			IssueComments: map[int][]github.IssueComment{},
-			RemoteFiles: map[string]map[string]string{
-				"prow/config.yaml": {
-					"master": "old-config",
-					"12345":  "new-config",
-				},
-				"prow/binary.yaml": {
-					"master": "old-binary\x00\xFF\xFF",
-					"12345":  "new-binary\x00\xFF\xFF",
-				},
-				"prow/becoming-binary.yaml": {
-					"master": "not-yet-binary",
-					"12345":  "now-binary\x00\xFF\xFF",
-				},
-				"prow/becoming-text.yaml": {
-					"master": "not-yet-text\x00\xFF\xFF",
-					"12345":  "now-text",
-				},
-				"prow/plugins.yaml": {
-					"master": "old-plugins",
-					"12345":  "new-plugins",
-				},
-				"boskos/resources.yaml": {
-					"master": "old-boskos-config",
-					"12345":  "new-boskos-config",
-				},
-				"config/foo.yaml": {
-					"master": "old-foo-config",
-					"12345":  "new-foo-config",
-				},
-				"config/bar.yaml": {
-					"master": "old-bar-config",
-					"12345":  "new-bar-config",
-				},
-				"dir/subdir/fejta.yaml": {
-					"master": "old-fejta-config",
-					"12345":  "new-fejta-config",
-				},
-				"dir/subdir/fejtaverse/krzyzacy.yaml": {
-					"master": "old-krzyzacy-config",
-					"12345":  "new-krzyzacy-config",
-				},
-				"dir/subdir/fejtaverse/fejtabot.yaml": {
-					"54321": "new-fejtabot-config",
-				},
-				"dir/subdir/fejtaverse/sig-foo/added.yaml": {
-					"12345": "new-added-config",
-				},
-				"dir/subdir/fejtaverse/sig-bar/removed.yaml": {
-					"master": "old-removed-config",
-				},
-			},
 		}
 		fkc := fake.NewSimpleClientset(tc.existConfigMaps...)
 
@@ -1092,7 +1131,11 @@ func TestUpdateConfig(t *testing.T) {
 		}
 		m.SetDefaults()
 
-		if err := handle(fgc, fkc.CoreV1(), defaultNamespace, log, event, *m, nil); err != nil {
+		org := event.PullRequest.Base.Repo.Owner.Login
+		repo := event.PullRequest.Base.Repo.Name
+		c := setupLocalGitRepo(t, org, repo)
+
+		if err := handle(fgc, c, fkc.CoreV1(), nil, defaultNamespace, log, event, *m, nil); err != nil {
 			t.Errorf("%s: unexpected error handling: %s", tc.name, err)
 			continue
 		}
@@ -1155,6 +1198,272 @@ func TestUpdateConfig(t *testing.T) {
 			}
 		}
 	}
+}
+
+func TestHandleDefaultNamespace(t *testing.T) {
+	testcases := []struct {
+		name     string
+		given    map[plugins.ConfigMapID][]ConfigMapUpdate
+		expected map[plugins.ConfigMapID][]ConfigMapUpdate
+	}{
+		{
+			name:     "nil map",
+			given:    nil,
+			expected: map[plugins.ConfigMapID][]ConfigMapUpdate{},
+		},
+		{
+			name:     "empty map",
+			given:    map[plugins.ConfigMapID][]ConfigMapUpdate{},
+			expected: map[plugins.ConfigMapID][]ConfigMapUpdate{},
+		},
+		{
+			name: "no empty string as namespace",
+			given: map[plugins.ConfigMapID][]ConfigMapUpdate{
+				{Name: "some-config", Namespace: "ns1", Cluster: "build01"}: {
+					{Key: "foo.yaml", Filename: "config/foo.yaml"},
+				},
+				{Name: "other-config", Namespace: "default", Cluster: "default"}: {
+					{Key: "foo.yaml", Filename: "config/foo.yaml"},
+					{Key: "bar.yaml", Filename: "config/bar.yaml"},
+				},
+			},
+			expected: map[plugins.ConfigMapID][]ConfigMapUpdate{
+				{Name: "some-config", Namespace: "ns1", Cluster: "build01"}: {
+					{Key: "foo.yaml", Filename: "config/foo.yaml"},
+				},
+				{Name: "other-config", Namespace: "default", Cluster: "default"}: {
+					{Key: "foo.yaml", Filename: "config/foo.yaml"},
+					{Key: "bar.yaml", Filename: "config/bar.yaml"},
+				},
+			},
+		},
+		{
+			name: "some empty string as namespace",
+			given: map[plugins.ConfigMapID][]ConfigMapUpdate{
+				{Name: "some-config", Namespace: "ns1", Cluster: "build01"}: {
+					{Key: "foo.yaml", Filename: "config/foo.yaml"},
+				},
+				{Name: "other-config", Cluster: "default"}: {
+					{Key: "foo.yaml", Filename: "config/foo.yaml"},
+					{Key: "bar.yaml", Filename: "config/bar.yaml"},
+				},
+			},
+			expected: map[plugins.ConfigMapID][]ConfigMapUpdate{
+				{Name: "some-config", Namespace: "ns1", Cluster: "build01"}: {
+					{Key: "foo.yaml", Filename: "config/foo.yaml"},
+				},
+				{Name: "other-config", Namespace: "default", Cluster: "default"}: {
+					{Key: "foo.yaml", Filename: "config/foo.yaml"},
+					{Key: "bar.yaml", Filename: "config/bar.yaml"},
+				},
+			},
+		},
+		{
+			name: "some empty string as namespace with potential conflicting id",
+			given: map[plugins.ConfigMapID][]ConfigMapUpdate{
+				{Name: "some-config", Namespace: "ns1", Cluster: "build01"}: {
+					{Key: "foo.yaml", Filename: "config/foo.yaml"},
+				},
+				{Name: "multikey-config", Cluster: "default"}: {
+					{Key: "foo.yaml", Filename: "config/foo.yaml"},
+				},
+				{Name: "multikey-config", Namespace: "default", Cluster: "default"}: {
+					{Key: "bar.yaml", Filename: "config/bar.yaml"},
+				},
+			},
+			expected: map[plugins.ConfigMapID][]ConfigMapUpdate{
+				{Name: "some-config", Namespace: "ns1", Cluster: "build01"}: {
+					{Key: "foo.yaml", Filename: "config/foo.yaml"},
+				},
+				{Name: "multikey-config", Namespace: "default", Cluster: "default"}: {
+					{Key: "bar.yaml", Filename: "config/bar.yaml"},
+					{Key: "foo.yaml", Filename: "config/foo.yaml"},
+				},
+			},
+		},
+	}
+
+	for _, tc := range testcases {
+		actual := handleDefaultNamespace(tc.given, defaultNamespace)
+		if !equality.Semantic.DeepEqual(tc.expected, actual) {
+			t.Errorf("%s: incorrect changes: %v", tc.name, diff.ObjectReflectDiff(tc.expected, actual))
+		}
+	}
+}
+
+func TestUpdate(t *testing.T) {
+
+	testcases := []struct {
+		name              string
+		updates           []ConfigMapUpdate
+		existConfigMap    runtime.Object
+		expectedConfigMap *coreapi.ConfigMap
+		config            *plugins.ConfigUpdater
+		bootstrap         bool
+	}{
+		{
+			name:      "stale key removed in bootstrap mode",
+			bootstrap: true,
+			updates: []ConfigMapUpdate{
+				{
+					Filename: "config/foo.yaml",
+					Key:      "foo.yaml",
+				},
+			},
+			existConfigMap: runtime.Object(
+				&coreapi.ConfigMap{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "multikey-config",
+						Namespace: defaultNamespace,
+					},
+					Data: map[string]string{
+						"foo.yaml": "old-foo-config",
+						"bar.yaml": "old-bar-config",
+					},
+				},
+			),
+			expectedConfigMap: &coreapi.ConfigMap{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "multikey-config",
+					Namespace: defaultNamespace,
+				},
+				Data: map[string]string{
+					"foo.yaml": "new-foo-config",
+				},
+			},
+		},
+		{
+			name:      "stale key kept when not in bootstrap mode",
+			bootstrap: false,
+			updates: []ConfigMapUpdate{
+				{
+					Filename: "config/foo.yaml",
+					Key:      "foo.yaml",
+				},
+			},
+			existConfigMap: runtime.Object(
+				&coreapi.ConfigMap{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "multikey-config",
+						Namespace: defaultNamespace,
+					},
+					Data: map[string]string{
+						"foo.yaml": "old-foo-config",
+						"bar.yaml": "old-bar-config",
+					},
+				},
+			),
+			expectedConfigMap: &coreapi.ConfigMap{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "multikey-config",
+					Namespace: defaultNamespace,
+				},
+				Data: map[string]string{
+					"foo.yaml": "new-foo-config",
+					"bar.yaml": "old-bar-config",
+				},
+			},
+		},
+	}
+
+	for _, tc := range testcases {
+		log := logrus.WithField("plugin", pluginName)
+		fkc := fake.NewSimpleClientset(tc.existConfigMap)
+		configMapClient, err := GetConfigMapClient(fkc.CoreV1(), tc.expectedConfigMap.Namespace, nil, kube.DefaultClusterAlias)
+		if err != nil {
+			log.WithError(err).Errorf("Failed to find configMap client")
+			continue
+		}
+
+		m := tc.config
+		if m == nil {
+			m = &plugins.ConfigUpdater{
+				Maps: map[string]plugins.ConfigMapSpec{
+					"prow/config.yaml": {
+						Name: "config",
+					},
+					"prow/plugins.yaml": {
+						Name: "plugins",
+						Key:  "test-key",
+					},
+					"boskos/resources.yaml": {
+						Name:      "boskos-config",
+						Namespace: "boskos",
+					},
+					"config/foo.yaml": {
+						Name: "multikey-config",
+					},
+					"config/bar.yaml": {
+						Name: "multikey-config",
+					},
+					"dir/subdir/**/*.yaml": {
+						Name: "glob-config",
+					},
+				},
+			}
+		}
+		m.SetDefaults()
+
+		org := "org"
+		repo := "repo"
+		c := setupLocalGitRepo(t, org, repo)
+
+		gitRepo, err := c.ClientFor(org, repo)
+		if err != nil {
+			t.Fatalf("Failed to clone: %v.", err)
+		}
+		defer func() {
+			if err := c.Clean(); err != nil {
+				t.Errorf("Could not clean up git client cache: %v.", err)
+			}
+		}()
+		if err := gitRepo.Checkout("12345"); err != nil {
+			t.Errorf("Failed to checkout 12345: %v.", err)
+			continue
+		}
+		if err := Update(&OSFileGetter{Root: gitRepo.Directory()}, configMapClient, tc.expectedConfigMap.Name, tc.expectedConfigMap.Namespace, tc.updates, tc.bootstrap, nil, log); err != nil {
+			t.Errorf("%s: unexpected error updating: %s", tc.name, err)
+			continue
+		}
+
+		modifiedConfigMaps := sets.NewString()
+		for _, action := range fkc.Fake.Actions() {
+			var obj runtime.Object
+			switch action := action.(type) {
+			case clienttesting.CreateActionImpl:
+				obj = action.Object
+			case clienttesting.UpdateActionImpl:
+				obj = action.Object
+			default:
+				continue
+			}
+			objectMeta, err := meta.Accessor(obj)
+			if err != nil {
+				t.Fatalf("%s: client saw an action for something that wasn't an object: %v", tc.name, err)
+			}
+			modifiedConfigMaps.Insert(objectMeta.GetName())
+		}
+
+		expected := tc.expectedConfigMap
+		actual, err := fkc.CoreV1().ConfigMaps(expected.Namespace).Get(expected.Name, metav1.GetOptions{})
+		if err != nil && errors.IsNotFound(err) {
+			t.Errorf("%s: Should have updated or created configmap for '%s'", tc.name, expected)
+		} else if !equality.Semantic.DeepEqual(expected, actual) {
+			t.Errorf("%s: incorrect ConfigMap state after update: %v", tc.name, diff.ObjectReflectDiff(expected, actual))
+		}
+	}
+}
+
+func getFileMap(s string) map[string][]byte {
+	result := map[string][]byte{}
+	for file, v := range remoteFiles {
+		for sha, content := range v {
+			if sha == s {
+				result[file] = []byte(content)
+			}
+		}
+	}
+	return result
 }
 
 func boolPtr(b bool) *bool {

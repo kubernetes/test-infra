@@ -1,0 +1,62 @@
+presubmits:
+  kubernetes-sigs/alibaba-cloud-csi-driver:
+
+  - name: pull-alibaba-cloud-csi-driver-verify-fmt
+    always_run: true
+    decorate: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+        command:
+        - make
+        args:
+        - fmt
+    annotations:
+      testgrid-dashboards: presubmits-alibaba-cloud-csi-driver
+      testgrid-tab-name: pr-verify-fmt
+      description: Verifies the Golang sources have been formatted
+
+  - name: pull-alibaba-cloud-csi-driver-verify-lint
+    always_run: true
+    decorate: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+        command:
+        - make
+        args:
+        - lint
+    annotations:
+      testgrid-dashboards: presubmits-alibaba-cloud-csi-driver
+      testgrid-tab-name: pr-verify-lint
+      description: Verifies the Golang sources are linted
+
+  - name: pull-alibaba-cloud-csi-driver-verify-vet
+    always_run: true
+    decorate: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+        command:
+        - make
+        args:
+        - vet
+    annotations:
+      testgrid-dashboards: presubmits-alibaba-cloud-csi-driver
+      testgrid-tab-name: pr-verify-vet
+      description: Vets the Golang sources have been vetted
+
+  - name: pull-alibaba-cloud-csi-driver-verify-unit
+    always_run: true
+    decorate: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+        command:
+        - make
+        args:
+        - test
+    annotations:
+      testgrid-dashboards: presubmits-alibaba-cloud-csi-driver
+      testgrid-tab-name: pr-verify-unit
+      description: Alibaba cloud csi driver unit test

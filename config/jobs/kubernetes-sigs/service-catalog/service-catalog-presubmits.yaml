@@ -1,6 +1,13 @@
+build_image_cfg: &build_image_cfg
+  decorate: true
+  decoration_config:
+    timeout: 45m
+  always_run: true
+  skip_report: false
+
 presubmits:
   kubernetes-sigs/service-catalog:
-  - name: pull-service-catalog-unit
+  - name: pull-service-catalog-test-unit
     always_run: true
     skip_report: false
     decorate: true
@@ -14,17 +21,13 @@ presubmits:
         env:
         - name: NO_DOCKER
           value: "1"
-  - name: pull-service-catalog-integration
-    decorate: true
-    decoration_config:
-      timeout: 45m
-    always_run: true
-    skip_report: false
+  - name: pull-service-catalog-test-integration
+    <<: *build_image_cfg
     labels:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh
@@ -34,24 +37,143 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-  - name: pull-service-catalog-xbuild
+  - name: pull-service-catalog-test-e2e
+    <<: *build_image_cfg
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    # Setting that job optional to check how it behaves
+    optional: true
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+          command:
+            # generic runner script, handles DIND, bazelrc for caching, etc.
+            - runner.sh
+          args:
+            - make
+            - test-e2e
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+  # This job executes test which checks if migration from Service Catalog v2 to v3 is working.
+  # Can be removed when support for v2 will be ended.
+  - name: pull-service-catalog-test-migration
     decorate: true
     decoration_config:
-      timeout: 90m
+      timeout: 45m
     always_run: true
     skip_report: false
     labels:
       preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    # Run only on PR created to master branch
+    branches:
+      - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+          command:
+            # generic runner script, handles DIND, bazelrc for caching, etc.
+            - runner.sh
+          args:
+            - ./contrib/hack/ci/run-migration-tests.sh
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+  - name: pull-build-all-images-for-amd64
+    <<: *build_image_cfg
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh
         args:
         - make
-        - images-all
-        - svcat-all
+        - arch-image-amd64
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
+  - name: pull-build-all-images-for-arm
+    <<: *build_image_cfg
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+          command:
+            # generic runner script, handles DIND, bazelrc for caching, etc.
+            - runner.sh
+          args:
+            - make
+            - arch-image-arm
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+  - name: pull-build-all-images-for-arm64
+    <<: *build_image_cfg
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+          command:
+            # generic runner script, handles DIND, bazelrc for caching, etc.
+            - runner.sh
+          args:
+            - make
+            - arch-image-arm64
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+  - name: pull-build-all-images-for-ppc64le
+    <<: *build_image_cfg
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+          command:
+            # generic runner script, handles DIND, bazelrc for caching, etc.
+            - runner.sh
+          args:
+            - make
+            - arch-image-ppc64le
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+  - name: pull-build-all-images-for-s390x
+    <<: *build_image_cfg
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+          command:
+            # generic runner script, handles DIND, bazelrc for caching, etc.
+            - runner.sh
+          args:
+            - make
+            - arch-image-ppc64le
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+  - name: pull-build-all-images-for-svcat
+    <<: *build_image_cfg
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+          command:
+            # generic runner script, handles DIND, bazelrc for caching, etc.
+            - runner.sh
+          args:
+            - make
+            - svcat-all
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true

@@ -14,7 +14,7 @@
 
 # Includes basic workspace setup, with gcloud and a bootstrap runner
 
-FROM debian:stretch
+FROM debian:buster
 
 WORKDIR /workspace
 RUN mkdir -p /workspace
@@ -98,9 +98,12 @@ RUN curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID"
 # Trying to remount these makes for a very noisy error block in the beginning of
 # the pod logs, so we just comment out the call to it... :shrug:
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends docker-ce=5:18.09.* && \
+    apt-get install -y --no-install-recommends docker-ce=5:19.03.* && \
     rm -rf /var/lib/apt/lists/* && \
-    sed -i 's/cgroupfs_mount$/#cgroupfs_mount\n/' /etc/init.d/docker
+    sed -i 's/cgroupfs_mount$/#cgroupfs_mount\n/' /etc/init.d/docker \
+    && update-alternatives --set iptables /usr/sbin/iptables-legacy \
+    && update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
+
 
 
 # Move Docker's storage location
@@ -109,9 +112,6 @@ RUN echo 'DOCKER_OPTS="${DOCKER_OPTS} --data-root=/docker-graph"' | \
 # NOTE this should be mounted and persisted as a volume ideally (!)
 # We will make a fallback one now just in case
 RUN mkdir /docker-graph
-
-# add custom docker cleanup binary
-COPY ["barnacle/barnacle", "/usr/local/bin/"]
 
 #
 # END: DOCKER IN DOCKER SETUP

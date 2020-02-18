@@ -36,7 +36,7 @@ func init() {
 	plugins.RegisterGenericCommentHandler("lifecycle", lifecycleHandleGenericComment, help)
 }
 
-func help(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+func help(config *plugins.Configuration, _ []plugins.Repo) (*pluginhelp.PluginHelp, error) {
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "Close, reopen, flag and/or unflag an issue or PR as frozen/stale/rotten",
 	}

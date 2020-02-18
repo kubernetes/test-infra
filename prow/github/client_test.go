@@ -17,6 +17,7 @@ limitations under the License.
 package github
 
 import (
+	"bytes"
 	"context"
 	"crypto/tls"
 	"encoding/base64"
@@ -32,7 +33,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/utils/diff"
+
 	"k8s.io/test-infra/ghproxy/ghcache"
 )
 
@@ -53,10 +57,16 @@ func getClient(url string) *client {
 		return []byte("")
 	}
 
+	logger := logrus.New()
+	logger.SetLevel(logrus.DebugLevel)
 	return &client{
+		logger: logrus.NewEntry(logger),
 		delegate: &delegate{
 			time:     &testTime{},
 			getToken: getToken,
+			censor: func(content []byte) []byte {
+				return content
+			},
 			client: &http.Client{
 				Transport: &http.Transport{
 					TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
@@ -229,6 +239,36 @@ func TestCreateComment(t *testing.T) {
 	}))
 	defer ts.Close()
 	c := getClient(ts.URL)
+	if err := c.CreateComment("k8s", "kuber", 5, "hello"); err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	}
+}
+
+func TestCreateCommentCensored(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/repos/k8s/kuber/issues/5/comments" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		b, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			t.Fatalf("Could not read request body: %v", err)
+		}
+		var ic IssueComment
+		if err := json.Unmarshal(b, &ic); err != nil {
+			t.Errorf("Could not unmarshal request: %v", err)
+		} else if ic.Body != "CENSORED" {
+			t.Errorf("Wrong body: %s", ic.Body)
+		}
+		http.Error(w, "201 Created", http.StatusCreated)
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	c.delegate.censor = func(content []byte) []byte {
+		return bytes.ReplaceAll(content, []byte("hello"), []byte("CENSORED"))
+	}
 	if err := c.CreateComment("k8s", "kuber", 5, "hello"); err != nil {
 		t.Errorf("Didn't expect error: %v", err)
 	}
@@ -563,6 +603,55 @@ func TestRemoveLabelNotFound(t *testing.T) {
 
 	if err != nil {
 		t.Fatalf("RemoveLabel expected no error, got one: %v", err)
+	}
+}
+
+func TestIsNotFound(t *testing.T) {
+	testCases := []struct {
+		name       string
+		code       int
+		body       string
+		isNotFound bool
+	}{
+		{
+			name:       "should be not found when status code is 404",
+			code:       404,
+			body:       `{"message":"not found","errors":[{"resource":"fake resource","field":"fake field","code":"404","message":"status code 404"}]}`,
+			isNotFound: true,
+		},
+		{
+			name:       "should not be not found when status code is 200",
+			code:       200,
+			body:       `{"message": "ok"}`,
+			isNotFound: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				http.Error(w, tc.body, tc.code)
+			}))
+			defer ts.Close()
+
+			c := getClient(ts.URL)
+
+			code, _, err := c.requestRaw(&request{
+				method:    http.MethodGet,
+				path:      fmt.Sprintf("/repos/%s/%s/branches/%s/protection", "org", "repo", "branch"),
+				exitCodes: []int{200},
+			})
+
+			if code != tc.code {
+				t.Fatalf("Expected code to be %d, but got %d", tc.code, code)
+			}
+
+			isNotFound := IsNotFound(err)
+
+			if isNotFound != tc.isNotFound {
+				t.Fatalf("Expected isNotFound to be %t, but got %t", tc.isNotFound, isNotFound)
+			}
+		})
 	}
 }
 
@@ -1389,7 +1478,10 @@ func TestIsCollaborator(t *testing.T) {
 }
 
 func TestListCollaborators(t *testing.T) {
-	ts := simpleTestServer(t, "/repos/org/repo/collaborators", []User{{Login: "foo"}, {Login: "bar"}})
+	ts := simpleTestServer(t, "/repos/org/repo/collaborators", []User{
+		{Login: "foo", Permissions: RepoPermissions{Pull: true}},
+		{Login: "bar", Permissions: RepoPermissions{Push: true}},
+	})
 	defer ts.Close()
 	c := getClient(ts.URL)
 	users, err := c.ListCollaborators("org", "repo")
@@ -1402,11 +1494,37 @@ func TestListCollaborators(t *testing.T) {
 	if users[0].Login != "foo" {
 		t.Errorf("Wrong user login for index 0: %v", users[0])
 	}
+	if !reflect.DeepEqual(users[0].Permissions, RepoPermissions{Pull: true}) {
+		t.Errorf("Wrong permissions for index 0: %v", users[0])
+	}
 	if users[1].Login != "bar" {
 		t.Errorf("Wrong user login for index 1: %v", users[1])
 	}
+	if !reflect.DeepEqual(users[1].Permissions, RepoPermissions{Push: true}) {
+		t.Errorf("Wrong permissions for index 1: %v", users[1])
+	}
 }
 
+func TestListRepoTeams(t *testing.T) {
+	expectedTeams := []Team{
+		{ID: 1, Slug: "foo", Permission: RepoPull},
+		{ID: 2, Slug: "bar", Permission: RepoPush},
+		{ID: 3, Slug: "foobar", Permission: RepoAdmin},
+	}
+	ts := simpleTestServer(t, "/repos/org/repo/teams", expectedTeams)
+	defer ts.Close()
+	c := getClient(ts.URL)
+	teams, err := c.ListRepoTeams("org", "repo")
+	if err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	} else if len(teams) != 3 {
+		t.Errorf("Expected three teams, found %d: %v", len(teams), teams)
+		return
+	}
+	if !reflect.DeepEqual(teams, expectedTeams) {
+		t.Errorf("Wrong list of teams, expected: %v, got: %v", expectedTeams, teams)
+	}
+}
 func TestListIssueEvents(t *testing.T) {
 	ts := simpleTestServer(
 		t,
@@ -1905,5 +2023,194 @@ func TestCombinedStatus(t *testing.T) {
 		t.Errorf("Expected two statuses, found %d: %v", len(combined.Statuses), combined.Statuses)
 	} else if combined.Statuses[0].Context != "foo" || combined.Statuses[1].Context != "bar" {
 		t.Errorf("Wrong review IDs: %v", combined.Statuses)
+	}
+}
+
+func TestCreateRepo(t *testing.T) {
+	org := "org"
+	usersRepoName := "users-repository"
+	orgsRepoName := "orgs-repository"
+	repoDesc := "description of users-repository"
+	testCases := []struct {
+		description string
+		isUser      bool
+		repo        RepoCreateRequest
+		statusCode  int
+
+		expectError bool
+		expectRepo  *FullRepo
+	}{
+		{
+			description: "create repo as user",
+			isUser:      true,
+			repo: RepoCreateRequest{
+				RepoRequest: RepoRequest{
+					Name:        &usersRepoName,
+					Description: &repoDesc,
+				},
+			},
+			statusCode: http.StatusCreated,
+			expectRepo: &FullRepo{
+				Repo: Repo{
+					Name:        "users-repository",
+					Description: "CREATED",
+				},
+			},
+		},
+		{
+			description: "create repo as org",
+			isUser:      false,
+			repo: RepoCreateRequest{
+				RepoRequest: RepoRequest{
+					Name:        &orgsRepoName,
+					Description: &repoDesc,
+				},
+			},
+			statusCode: http.StatusCreated,
+			expectRepo: &FullRepo{
+				Repo: Repo{
+					Name:        "orgs-repository",
+					Description: "CREATED",
+				},
+			},
+		},
+		{
+			description: "errors are handled",
+			isUser:      false,
+			repo: RepoCreateRequest{
+				RepoRequest: RepoRequest{
+					Name:        &orgsRepoName,
+					Description: &repoDesc,
+				},
+			},
+			statusCode:  http.StatusForbidden,
+			expectError: true,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.description, func(t *testing.T) {
+			ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if r.Method != http.MethodPost {
+					t.Errorf("Bad method: %s", r.Method)
+				}
+				if tc.isUser && r.URL.Path != "/user/repos" {
+					t.Errorf("Bad request path to create user-owned repo: %s", r.URL.Path)
+				} else if !tc.isUser && r.URL.Path != "/orgs/org/repos" {
+					t.Errorf("Bad request path to create org-owned repo: %s", r.URL.Path)
+				}
+				b, err := ioutil.ReadAll(r.Body)
+				if err != nil {
+					t.Fatalf("Could not read request body: %v", err)
+				}
+				var repo Repo
+				switch err := json.Unmarshal(b, &repo); {
+				case err != nil:
+					t.Errorf("Could not unmarshal request: %v", err)
+				case repo.Name == "":
+					t.Errorf("client should reject empty names")
+				}
+				repo.Description = "CREATED"
+				b, err = json.Marshal(repo)
+				if err != nil {
+					t.Fatalf("Didn't expect error: %v", err)
+				}
+				w.WriteHeader(tc.statusCode) // 201
+				fmt.Fprint(w, string(b))
+			}))
+			defer ts.Close()
+			c := getClient(ts.URL)
+			switch repo, err := c.CreateRepo(org, tc.isUser, tc.repo); {
+			case err != nil && !tc.expectError:
+				t.Errorf("unexpected error: %v", err)
+			case err == nil && tc.expectError:
+				t.Errorf("expected error, but got none")
+			case err == nil && !reflect.DeepEqual(repo, tc.expectRepo):
+				t.Errorf("%s: repo differs from expected:\n%s", tc.description, diff.ObjectReflectDiff(tc.expectRepo, repo))
+			}
+		})
+	}
+}
+
+func TestUpdateRepo(t *testing.T) {
+	org := "org"
+	repoName := "repository"
+	yes := true
+	testCases := []struct {
+		description string
+		repo        RepoUpdateRequest
+		statusCode  int
+
+		expectError bool
+		expectRepo  *FullRepo
+	}{
+		{
+			description: "Update repository",
+			repo: RepoUpdateRequest{
+				RepoRequest: RepoRequest{
+					Name: &repoName,
+				},
+				Archived: &yes,
+			},
+			statusCode: http.StatusOK,
+			expectRepo: &FullRepo{
+				Repo: Repo{
+					Name:        "repository",
+					Description: "UPDATED",
+					Archived:    true,
+				},
+			},
+		},
+		{
+			description: "errors are handled",
+			repo: RepoUpdateRequest{
+				RepoRequest: RepoRequest{
+					Name: &repoName,
+				},
+				Archived: &yes,
+			},
+			statusCode:  http.StatusForbidden,
+			expectError: true,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.description, func(t *testing.T) {
+			ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if r.Method != http.MethodPatch {
+					t.Errorf("Bad method: %s (expected %s)", r.Method, http.MethodPatch)
+				}
+				expectedPath := "/repos/org/repository"
+				if r.URL.Path != expectedPath {
+					t.Errorf("Bad request path to create user-owned repo: %s (expected %s)", r.URL.Path, expectedPath)
+				}
+				b, err := ioutil.ReadAll(r.Body)
+				if err != nil {
+					t.Fatalf("Could not read request body: %v", err)
+				}
+				var repo Repo
+				switch err := json.Unmarshal(b, &repo); {
+				case err != nil:
+					t.Errorf("Could not unmarshal request: %v", err)
+				case repo.Name == "":
+					t.Errorf("client should reject empty names")
+				}
+				repo.Description = "UPDATED"
+				b, err = json.Marshal(repo)
+				if err != nil {
+					t.Fatalf("Didn't expect error: %v", err)
+				}
+				w.WriteHeader(tc.statusCode) // 200
+				fmt.Fprint(w, string(b))
+			}))
+			defer ts.Close()
+			c := getClient(ts.URL)
+			switch repo, err := c.UpdateRepo(org, repoName, tc.repo); {
+			case err != nil && !tc.expectError:
+				t.Errorf("unexpected error: %v", err)
+			case err == nil && tc.expectError:
+				t.Errorf("expected error, but got none")
+			case err == nil && !reflect.DeepEqual(repo, tc.expectRepo):
+				t.Errorf("%s: repo differs from expected:\n%s", tc.description, diff.ObjectReflectDiff(tc.expectRepo, repo))
+			}
+		})
 	}
 }

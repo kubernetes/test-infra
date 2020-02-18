@@ -10,15 +10,18 @@ presubmits:
     - release-\d+.\d+ # per-release job
     annotations:
       fork-per-release: "true"
+      testgrid-alert-stale-results-hours: "24"
+      testgrid-create-test-group: "true"
+      testgrid-num-failures-to-alert: "10"
     spec:
       containers:
       - name: main
         command:
         - make
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
         args:
         - verify
         env:
         # Space separated list of the checks to run
         - name: WHAT
-          value: typecheck
+          value: typecheck typecheck-providerless

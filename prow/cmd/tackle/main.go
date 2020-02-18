@@ -318,7 +318,7 @@ func createCluster(proj, choice string) (*cluster, error) {
 		return nil, fmt.Errorf("select current zone for cluster: %v", err)
 	}
 
-	cmd := exec.Command("gcloud", "container", "clusters", "create", choice, "--zone="+zone)
+	cmd := exec.Command("gcloud", "container", "clusters", "create", choice, "--zone="+zone, "--enable-legacy-authorization", "--issue-client-certificate")
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -564,10 +564,11 @@ func githubClient(tokenPath string, dry bool) (github.Client, error) {
 	}
 
 	gen := secretAgent.GetTokenGenerator(tokenPath)
+	censor := secretAgent.Censor
 	if dry {
-		return github.NewDryRunClient(gen, github.DefaultGraphQLEndpoint, github.DefaultAPIEndpoint), nil
+		return github.NewDryRunClient(gen, censor, github.DefaultGraphQLEndpoint, github.DefaultAPIEndpoint), nil
 	}
-	return github.NewClient(gen, github.DefaultGraphQLEndpoint, github.DefaultAPIEndpoint), nil
+	return github.NewClient(gen, censor, github.DefaultGraphQLEndpoint, github.DefaultAPIEndpoint), nil
 }
 
 func applySecret(ctx, ns, name, key, path string) error {

@@ -1,6 +1,6 @@
 # Configuring Tide
 
-Configuration of Tide is located under the [prow/config.yaml](/prow/config.yaml) file. All configuration for merge behavior and criteria belongs in the `tide` yaml struct, but it may be necessary to also configure presubmits for Tide to run against PRs (see ['Configuring Presubmit Jobs'](#configuring-presubmit-jobs) below).
+Configuration of Tide is located under the [config/prow/config.yaml](/config/prow/config.yaml) file. All configuration for merge behavior and criteria belongs in the `tide` yaml struct, but it may be necessary to also configure presubmits for Tide to run against PRs (see ['Configuring Presubmit Jobs'](#configuring-presubmit-jobs) below).
 
 This document will describe the fields of the `tide` configuration and how to populate them, but you can also check out the [GoDocs](https://godoc.org/github.com/kubernetes/test-infra/prow/config#Tide) for the most up to date configuration specification.
 
@@ -32,7 +32,7 @@ The following configuration fields are available:
 
 Tide supports temporary holds on merging into branches via the `blocker_label` configuration option.
 In order to use this option, set the `blocker_label` configuration option for the Tide deployment.
-Then, when blocking merges is required, if an issue is found with the label it will block merges to
+Then, when blocking merges is required, if an open issue is found with the label it will block merges to
 all branches for the repo. In order to scope the branches which are blocked, add a `branch:name` token
 to the issue title. These tokens can be repeated to select multiple branches and the tokens also support
 quoting, so `branch:"name"` will block the `name` branch just as `branch:name` would.
@@ -49,6 +49,7 @@ It can consist of the following dictionary of fields:
 * `missingLabels`: List of labels any given PR must not posses.
 * `excludedBranches`: List of branches that get excluded when querying the `repos`.
 * `includedBranches`: List of branches that get included when querying the `repos`.
+* `author`: The author of the PR.
 * `reviewApprovedRequired`: If set, each PR in the query must have at
   least one [approved GitHub pull request
   review](https://help.github.com/articles/about-pull-request-reviews/)
@@ -66,6 +67,7 @@ The field to search token correspondence is based on the following mapping:
 * `missingLabels` -> `-label:do-not-merge`
 * `excludedBranches` -> `-branch:dev`
 * `includedBranches` -> `branch:master`
+* `author` -> `author:batman`
 * `reviewApprovedRequired` -> `review:approved`
 
 **Important**: Each query must return a different set of PRs. No two queries are allowed to contain the same PR.
@@ -102,7 +104,7 @@ tide:
   merge_method:
     kubeflow/community: squash
 
-  target_url: https://prow.k8s.io/tide.html
+  target_url: https://prow.k8s.io/tide
 
   queries:
   - repos:

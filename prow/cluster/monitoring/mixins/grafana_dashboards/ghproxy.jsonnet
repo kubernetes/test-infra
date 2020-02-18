@@ -1,3 +1,4 @@
+local config =  import 'config.libsonnet';
 local grafana = import 'grafonnet/grafana.libsonnet';
 local dashboard = grafana.dashboard;
 local graphPanel = grafana.graphPanel;
@@ -10,10 +11,28 @@ local legendConfig = {
             sideWidth: 250,
         },
     };
-    
+
 local dashboardConfig = {
-        uid: 'd72fe8d0400b2912e319b1e95d0ab1b3',
+        uid: config._config.grafanaDashboardIDs['ghproxy.json'],
     };
+
+local histogramQuantileTarget(phi) = prometheus.target(
+        std.format('histogram_quantile(%s, sum(rate(github_request_duration_bucket{job="ghproxy", token_hash="${token}", path="${path}", status="${status}"}[5m])) by (le))', phi),
+        legendFormat=std.format('phi=%s', phi),
+    );
+
+local histogramQuantileTargetOverview(phi) = prometheus.target(
+        std.format('histogram_quantile(%s, sum(rate(github_request_duration_bucket{job="ghproxy"}[5m])) by (le))', phi),
+        legendFormat=std.format('phi=%s', phi),
+    );
+
+local mytemplate(name, labelInQuery) = template.new(
+        name,
+        'prometheus',
+        std.format('label_values(github_request_duration_count{job="ghproxy"}, %s)', labelInQuery),
+        label=name,
+        refresh='time',
+    );
 
 dashboard.new(
         'GitHub Cache',
@@ -21,6 +40,50 @@ dashboard.new(
         schemaVersion=18,
         refresh='1m',
       )
+.addTemplate(mytemplate('token', 'token_hash'))
+.addTemplate(mytemplate('path', 'path'))
+.addTemplate(mytemplate('status', 'status'))
+.addTemplate(
+  {
+        "allValue": null,
+        "current": {
+          "text": "30m",
+          "value": "30m"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "range",
+        "multi": false,
+        "name": "range",
+        "options":
+        [
+          {
+            "selected": false,
+            "text": '%s' % r,
+            "value": '%s'% r,
+          },
+          for r in ['24h', '12h', '6h', '3h', '1h']
+        ] +
+        [
+          {
+            "selected": true,
+            "text": '30m',
+            "value": '30m',
+          }
+        ] +
+        [
+          {
+            "selected": false,
+            "text": '%s' % r,
+            "value": '%s'% r,
+          },
+          for r in ['30m', '15m', '10m', '5m']
+        ],
+        "query": "3h,1h,30m,15m,10m,5m",
+        "skipUrlSync": false,
+        "type": "custom"
+      }
+)
 .addPanel(
     (graphPanel.new(
         'Cache Requests (per hour)',
@@ -80,47 +143,16 @@ dashboard.new(
         legend_rightSide=true,
         legend_values=true,
         legend_current=true,
-        min='0',
-        max='1',
-        formatY1='percentunit',
+        stack=true,
     ) + legendConfig)
     .addTarget(prometheus.target(
-        'avg(ghcache_disk_used/(ghcache_disk_used+ghcache_disk_free)) without(instance)',
-        legendFormat='% Used',
-    ))
-    .addTarget(prometheus.target(
-        'avg(ghcache_disk_used) without(instance)',
+        'avg(ghcache_disk_used) without (instance,pod)',
         legendFormat='GB Used',
     ))
     .addTarget(prometheus.target(
-        'avg(ghcache_disk_free) without(instance)',
+        'avg(ghcache_disk_free) without (instance,pod)',
         legendFormat='GB Free',
-    ))
-    .addSeriesOverride({
-              alias: 'GB Used',
-              lines: false,
-              yaxis: 2,
-            })
-    .addSeriesOverride({
-              alias: 'GB Free',
-              lines: false,
-              yaxis: 2,
-            })
-    .resetYaxes()
-    .addYaxis(
-      format='percentunit',
-      min=0,
-      max=1,
-      label=null,
-      show=true,
-    )
-    .addYaxis(
-      format='decgbytes',
-      min=0,
-      max=105,
-      label=null,
-      show=false,
-    ), gridPos={
+    )), gridPos={
     h: 6,
     w: 16,
     x: 0,
@@ -158,5 +190,140 @@ dashboard.new(
     w: 4,
     x: 20,
     y: 0,
+  })
+.addPanel(
+    (graphPanel.new(
+        'Token Usage',
+        description='GitHub token usage by token identifier and API version.',
+        datasource='prometheus',
+        legend_alignAsTable=true,
+        legend_rightSide=true,
+        legend_values=true,
+        legend_current=true,
+        min='0',
+        max='5000',
+    ) + legendConfig)
+    .addTarget(prometheus.target(
+        'label_replace(sum(github_token_usage) by (api_version, token_hash), "token_hash_short", "$1", "token_hash", "([a-z0-9]{5})(.*)")',
+         legendFormat='{{api_version}}:{{token_hash_short}}',
+    )), gridPos={
+    h: 9,
+    w: 24,
+    x: 0,
+    y: 18,
+  })
+.addPanel(
+    (graphPanel.new(
+        'Request Rates: Overview by status with ${range}',
+        description='GitHub request rates by status.',
+        datasource='prometheus',
+        legend_alignAsTable=true,
+        legend_rightSide=true,
+    ) + legendConfig)
+    .addTarget(prometheus.target(
+        'sum(rate(github_request_duration_count{job="ghproxy"}[${range}])) by (status)',
+         legendFormat='{{status}}',
+    )), gridPos={
+    h: 9,
+    w: 24,
+    x: 0,
+    y: 18,
+  })
+.addPanel(
+    (graphPanel.new(
+        'Request Rates: Overview by path for ${status} with ${range}',
+        description='GitHub request rates by path.',
+        datasource='prometheus',
+        legend_alignAsTable=true,
+        legend_rightSide=true,
+    ) + legendConfig)
+    .addTarget(prometheus.target(
+        'sum(rate(github_request_duration_count{status="${status}",job="ghproxy"}[${range}])) by (path)',
+         legendFormat='{{path}}',
+    )), gridPos={
+    h: 9,
+    w: 24,
+    x: 0,
+    y: 18,
+  })
+.addPanel(
+    (graphPanel.new(
+        'Request Rates: ${token}, ${path}, and ${status} with ${range}',
+        description='GitHub request rates by token identifier, path and status.',
+        datasource='prometheus',
+        legend_alignAsTable=true,
+        legend_rightSide=true,
+        legend_values=true,
+        legend_current=true,
+        legend_sort='current',
+        legend_sortDesc=true,
+    ) + legendConfig)
+    .addTarget(prometheus.target(
+        'label_replace(sum(rate(github_request_duration_count{job="ghproxy", token_hash="${token}", path="${path}", status="${status}"}[${range}])) by (token_hash, path, status), "token_hash_short", "$1", "token_hash", "([a-z0-9]{5})(.*)")',
+         legendFormat='{{status}}:{{token_hash_short}}:{{path}}',
+    )), gridPos={
+    h: 9,
+    w: 24,
+    x: 0,
+    y: 18,
+  })
+.addPanel(
+    (graphPanel.new(
+        'Latency Distribution Overview with ${range}',
+        description='histogram_quantile(<phi>, sum(rate(github_request_duration_bucket{job="ghproxy"}[${range}])) by (le))',
+        datasource='prometheus',
+        legend_alignAsTable=true,
+        legend_rightSide=true,
+        legend_values=true,
+        legend_current=true,
+        legend_avg=true,
+        legend_sort='avg',
+        legend_sortDesc=true,
+    ) + legendConfig)
+    .addTarget(histogramQuantileTargetOverview('0.99'))
+    .addTarget(histogramQuantileTargetOverview('0.95'))
+    .addTarget(histogramQuantileTargetOverview('0.5')), gridPos={
+    h: 9,
+    w: 24,
+    x: 0,
+    y: 18,
+  })
+.addPanel(
+    (graphPanel.new(
+        'Latency Distribution for ${token}, ${path}, and ${status} with ${range}',
+        description='histogram_quantile(<phi>, sum(rate(github_request_duration_bucket{job="ghproxy", token_hash=~"${token}", path=~"${path}", status=~"${status}"}[${range}])) by (le))',
+        datasource='prometheus',
+        legend_alignAsTable=true,
+        legend_rightSide=true,
+        legend_values=true,
+        legend_current=true,
+        legend_avg=true,
+        legend_sort='avg',
+        legend_sortDesc=true,
+    ) + legendConfig)
+    .addTarget(histogramQuantileTarget('0.99'))
+    .addTarget(histogramQuantileTarget('0.95'))
+    .addTarget(histogramQuantileTarget('0.5')), gridPos={
+    h: 9,
+    w: 24,
+    x: 0,
+    y: 18,
+  })
+.addPanel(
+    (graphPanel.new(
+        'GitHub Request Timeout Rates: Overview by path with ${range}',
+        description='GitHub request timeout rates by path.',
+        datasource='prometheus',
+        legend_alignAsTable=true,
+        legend_rightSide=true,
+    ) + legendConfig)
+    .addTarget(prometheus.target(
+        'sum(rate(github_request_timeouts_bucket[${range}])) by (path)',
+         legendFormat='{{path}}',
+    )), gridPos={
+    h: 9,
+    w: 24,
+    x: 0,
+    y: 18,
   })
 + dashboardConfig

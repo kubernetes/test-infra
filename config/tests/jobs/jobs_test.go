@@ -40,7 +40,7 @@ import (
 	cfg "k8s.io/test-infra/prow/config"
 )
 
-var configPath = flag.String("config", "../../../prow/config.yaml", "Path to prow config")
+var configPath = flag.String("config", "../../../config/prow/config.yaml", "Path to prow config")
 var jobConfigPath = flag.String("job-config", "../../jobs", "Path to prow job config")
 var deckPath = flag.String("deck-path", "https://prow.k8s.io", "Path to deck")
 var bucket = flag.String("bucket", "kubernetes-jenkins", "Gcs bucket for log upload")
@@ -267,7 +267,7 @@ func checkContext(t *testing.T, repo string, p cfg.Presubmit) {
 }
 
 func TestContextMatches(t *testing.T) {
-	for repo, presubmits := range c.Presubmits {
+	for repo, presubmits := range c.PresubmitsStatic {
 		for _, p := range presubmits {
 			checkContext(t, repo, p)
 		}
@@ -284,7 +284,7 @@ func checkRetest(t *testing.T, repo string, presubmits []cfg.Presubmit) {
 }
 
 func TestRetestMatchJobsName(t *testing.T) {
-	for repo, presubmits := range c.Presubmits {
+	for repo, presubmits := range c.PresubmitsStatic {
 		checkRetest(t, repo, presubmits)
 	}
 }
@@ -313,20 +313,26 @@ func TestTrustedJobs(t *testing.T) {
 	// that uses a foo-trusted cluster
 	const trusted = "test-infra-trusted"
 	trustedPath := path.Join(*jobConfigPath, "kubernetes", "test-infra", "test-infra-trusted.yaml")
+	imagePushingDir := path.Join(*jobConfigPath, "image-pushing") + "/"
 
 	// Presubmits may not use trusted clusters.
-	for _, pre := range c.AllPresubmits(nil) {
+	for _, pre := range c.AllStaticPresubmits(nil) {
 		if pre.Cluster == trusted {
 			t.Errorf("%s: presubmits cannot use trusted clusters", pre.Name)
 		}
 	}
 
 	// Trusted postsubmits must be defined in trustedPath
-	for _, post := range c.AllPostsubmits(nil) {
+	for _, post := range c.AllStaticPostsubmits(nil) {
 		if post.Cluster != trusted {
 			continue
 		}
-		if post.SourcePath != trustedPath {
+		if strings.HasPrefix(post.SourcePath, imagePushingDir) {
+			if err := validateImagePushingImage(post.Spec); err != nil {
+				t.Errorf("%s defined in %s %s", post.Name, post.SourcePath, err)
+			}
+		}
+		if post.SourcePath != trustedPath && !strings.HasPrefix(post.SourcePath, imagePushingDir) {
 			t.Errorf("%s defined in %s may not run in trusted cluster", post.Name, post.SourcePath)
 		}
 	}
@@ -336,10 +342,27 @@ func TestTrustedJobs(t *testing.T) {
 		if per.Cluster != trusted {
 			continue
 		}
-		if per.SourcePath != trustedPath {
+		if strings.HasPrefix(per.SourcePath, imagePushingDir) {
+			if err := validateImagePushingImage(per.Spec); err != nil {
+				t.Errorf("%s defined in %s %s", per.Name, per.SourcePath, err)
+			}
+		}
+		if per.SourcePath != trustedPath && !strings.HasPrefix(per.SourcePath, imagePushingDir) {
 			t.Errorf("%s defined in %s may not run in trusted cluster", per.Name, per.SourcePath)
 		}
 	}
+}
+
+func validateImagePushingImage(spec *coreapi.PodSpec) error {
+	const imagePushingImage = "gcr.io/k8s-testimages/image-builder"
+
+	for _, c := range spec.Containers {
+		if !strings.HasPrefix(c.Image, imagePushingImage+":") {
+			return fmt.Errorf("must use a pinned version of %s", imagePushingImage)
+		}
+	}
+
+	return nil
 }
 
 // Unit test only postsubmit/periodic jobs in config/jobs/<org>/<project>/<project>-trusted.yaml can use
@@ -396,7 +419,7 @@ func TestTrustedJobSecretsRestricted(t *testing.T) {
 	}
 
 	// All presubmit jobs should not use any restricted secrets.
-	for _, job := range c.AllPresubmits(nil) {
+	for _, job := range c.AllStaticPresubmits(nil) {
 		if job.Cluster != prowapi.DefaultClusterAlias {
 			// check against default public cluster only
 			continue
@@ -427,7 +450,7 @@ func TestTrustedJobSecretsRestricted(t *testing.T) {
 	// config/jobs/<org>/<project>/<project>-trusted.yaml can and only can use restricted
 	// secrets for <org>/repo>.
 	jobs := []cfg.JobBase{}
-	for _, job := range c.AllPostsubmits(nil) {
+	for _, job := range c.AllStaticPostsubmits(nil) {
 		jobs = append(jobs, job.JobBase)
 	}
 	for _, job := range c.AllPeriodics() {
@@ -454,7 +477,7 @@ func TestTrustedJobSecretsRestricted(t *testing.T) {
 // Unit test jobs outside kubernetes-security do not use the security cluster
 // and that jobs inside kubernetes-security DO
 func TestConfigSecurityClusterRestricted(t *testing.T) {
-	for repo, jobs := range c.Presubmits {
+	for repo, jobs := range c.PresubmitsStatic {
 		if strings.HasPrefix(repo, "kubernetes-security/") {
 			for _, job := range jobs {
 				if job.Agent != "jenkins" && job.Cluster != "security" {
@@ -469,7 +492,7 @@ func TestConfigSecurityClusterRestricted(t *testing.T) {
 			}
 		}
 	}
-	for repo, jobs := range c.Postsubmits {
+	for repo, jobs := range c.PostsubmitsStatic {
 		if strings.HasPrefix(repo, "kubernetes-security/") {
 			for _, job := range jobs {
 				if job.Agent != "jenkins" && job.Cluster != "security" {
@@ -505,7 +528,7 @@ func checkDockerSocketVolumes(volumes []coreapi.Volume) error {
 
 // Make sure jobs are not using the docker socket as a host path
 func TestJobDoesNotHaveDockerSocket(t *testing.T) {
-	for _, presubmit := range c.AllPresubmits(nil) {
+	for _, presubmit := range c.AllStaticPresubmits(nil) {
 		if presubmit.Spec != nil {
 			if err := checkDockerSocketVolumes(presubmit.Spec.Volumes); err != nil {
 				t.Errorf("Error in presubmit: %v", err)
@@ -513,7 +536,7 @@ func TestJobDoesNotHaveDockerSocket(t *testing.T) {
 		}
 	}
 
-	for _, postsubmit := range c.AllPostsubmits(nil) {
+	for _, postsubmit := range c.AllStaticPostsubmits(nil) {
 		if postsubmit.Spec != nil {
 			if err := checkDockerSocketVolumes(postsubmit.Spec.Volumes); err != nil {
 				t.Errorf("Error in postsubmit: %v", err)
@@ -555,7 +578,7 @@ func checkLatestUsesImagePullPolicy(spec *coreapi.PodSpec) error {
 
 // Make sure jobs that use `latest-*` tags specify `imagePullPolicy: Always`
 func TestLatestUsesImagePullPolicy(t *testing.T) {
-	for _, presubmit := range c.AllPresubmits(nil) {
+	for _, presubmit := range c.AllStaticPresubmits(nil) {
 		if presubmit.Spec != nil {
 			if err := checkLatestUsesImagePullPolicy(presubmit.Spec); err != nil {
 				t.Errorf("Error in presubmit %q: %v", presubmit.Name, err)
@@ -563,7 +586,7 @@ func TestLatestUsesImagePullPolicy(t *testing.T) {
 		}
 	}
 
-	for _, postsubmit := range c.AllPostsubmits(nil) {
+	for _, postsubmit := range c.AllStaticPostsubmits(nil) {
 		if postsubmit.Spec != nil {
 			if err := checkLatestUsesImagePullPolicy(postsubmit.Spec); err != nil {
 				t.Errorf("Error in postsubmit %q: %v", postsubmit.Name, err)
@@ -653,7 +676,7 @@ func TestValidPresets(t *testing.T) {
 		return
 	}
 
-	for _, presubmit := range c.AllPresubmits(nil) {
+	for _, presubmit := range c.AllStaticPresubmits(nil) {
 		if presubmit.Spec != nil && !presubmit.Decorate {
 			if err := checkKubekinsPresets(presubmit.Name, presubmit.Spec, presubmit.Labels, validLabels); err != nil {
 				t.Errorf("Error in presubmit %q: %v", presubmit.Name, err)
@@ -661,7 +684,7 @@ func TestValidPresets(t *testing.T) {
 		}
 	}
 
-	for _, postsubmit := range c.AllPostsubmits(nil) {
+	for _, postsubmit := range c.AllStaticPostsubmits(nil) {
 		if postsubmit.Spec != nil && !postsubmit.Decorate {
 			if err := checkKubekinsPresets(postsubmit.Name, postsubmit.Spec, postsubmit.Labels, validLabels); err != nil {
 				t.Errorf("Error in postsubmit %q: %v", postsubmit.Name, err)
@@ -732,15 +755,15 @@ func checkScenarioArgs(jobName, imageName string, args []string) error {
 	}
 
 	// shared build args
-	use_shared_build_in_args := hasArg("--use-shared-build", args)
-	extract_in_args := hasArg("--extract", args)
-	build_in_args := hasArg("--build", args)
+	useSharedBuildInArgs := hasArg("--use-shared-build", args)
+	extractInArgs := hasArg("--extract", args)
+	buildInArgs := hasArg("--build", args)
 
-	if use_shared_build_in_args && extract_in_args {
+	if useSharedBuildInArgs && extractInArgs {
 		return fmt.Errorf("job %s: --use-shared-build and --extract cannot be combined", jobName)
 	}
 
-	if use_shared_build_in_args && build_in_args {
+	if useSharedBuildInArgs && buildInArgs {
 		return fmt.Errorf("job %s: --use-shared-build and --build cannot be combined", jobName)
 	}
 
@@ -832,34 +855,34 @@ func checkScenarioArgs(jobName, imageName string, args []string) error {
 
 	// test_args should not have double slashes on ginkgo flags
 	for _, arg := range args {
-		ginkgo_args := ""
+		ginkgoArgs := ""
 		if strings.HasPrefix(arg, "--test_args=") {
 			split := strings.SplitN(arg, "=", 2)
-			ginkgo_args = split[1]
+			ginkgoArgs = split[1]
 		} else if strings.HasPrefix(arg, "--upgrade_args=") {
 			split := strings.SplitN(arg, "=", 2)
-			ginkgo_args = split[1]
+			ginkgoArgs = split[1]
 		}
 
-		if strings.Contains(ginkgo_args, "\\\\") {
+		if strings.Contains(ginkgoArgs, "\\\\") {
 			return fmt.Errorf("jobs %s - double slashes in ginkgo args should be single slash now : arg %s", jobName, arg)
 		}
 	}
 
 	// timeout should be valid
-	bootstrap_timeout := 0 * time.Minute
-	kubetest_timeout := 0 * time.Minute
+	bootstrapTimeout := 0 * time.Minute
+	kubetestTimeout := 0 * time.Minute
 	var err error
 	kubetest := false
 	for _, arg := range args {
 		if strings.HasPrefix(arg, "--timeout=") {
 			timeout := strings.SplitN(arg, "=", 2)[1]
 			if kubetest {
-				if kubetest_timeout, err = time.ParseDuration(timeout); err != nil {
+				if kubetestTimeout, err = time.ParseDuration(timeout); err != nil {
 					return fmt.Errorf("jobs %s - invalid kubetest timeout : arg %s", jobName, arg)
 				}
 			} else {
-				if bootstrap_timeout, err = time.ParseDuration(timeout + "m"); err != nil {
+				if bootstrapTimeout, err = time.ParseDuration(timeout + "m"); err != nil {
 					return fmt.Errorf("jobs %s - invalid bootstrap timeout : arg %s", jobName, arg)
 				}
 			}
@@ -870,9 +893,9 @@ func checkScenarioArgs(jobName, imageName string, args []string) error {
 		}
 	}
 
-	if bootstrap_timeout.Minutes()-kubetest_timeout.Minutes() < 20.0 {
+	if bootstrapTimeout.Minutes()-kubetestTimeout.Minutes() < 20.0 {
 		return fmt.Errorf(
-			"jobs %s - kubetest timeout(%v), bootstrap timeout(%v): bootstrap timeout need to be 20min more than kubetest timeout!", jobName, kubetest_timeout, bootstrap_timeout)
+			"jobs %s - kubetest timeout(%v), bootstrap timeout(%v): bootstrap timeout need to be 20min more than kubetest timeout!", jobName, kubetestTimeout, bootstrapTimeout)
 	}
 
 	return nil
@@ -880,7 +903,7 @@ func checkScenarioArgs(jobName, imageName string, args []string) error {
 
 // TestValidScenarioArgs makes sure all scenario args in job configs are valid
 func TestValidScenarioArgs(t *testing.T) {
-	for _, job := range c.AllPresubmits(nil) {
+	for _, job := range c.AllStaticPresubmits(nil) {
 		if job.Spec != nil && !job.Decorate {
 			if err := checkScenarioArgs(job.Name, job.Spec.Containers[0].Image, job.Spec.Containers[0].Args); err != nil {
 				t.Errorf("Invalid Scenario Args : %s", err)
@@ -888,7 +911,7 @@ func TestValidScenarioArgs(t *testing.T) {
 		}
 	}
 
-	for _, job := range c.AllPostsubmits(nil) {
+	for _, job := range c.AllStaticPostsubmits(nil) {
 		if job.Spec != nil && !job.Decorate {
 			if err := checkScenarioArgs(job.Name, job.Spec.Containers[0].Image, job.Spec.Containers[0].Args); err != nil {
 				t.Errorf("Invalid Scenario Args : %s", err)

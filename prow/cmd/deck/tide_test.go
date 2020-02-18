@@ -212,10 +212,12 @@ func TestFilterHidden(t *testing.T) {
 		t.Logf("running scenario %q", test.name)
 
 		ta := &tideAgent{
-			hiddenRepos: test.hiddenRepos,
-			hiddenOnly:  test.hiddenOnly,
-			showHidden:  test.showHidden,
-			log:         logrus.WithField("agent", "tide"),
+			hiddenRepos: func() []string {
+				return test.hiddenRepos
+			},
+			hiddenOnly: test.hiddenOnly,
+			showHidden: test.showHidden,
+			log:        logrus.WithField("agent", "tide"),
 		}
 
 		gotQueries := ta.filterHiddenQueries(test.queries)

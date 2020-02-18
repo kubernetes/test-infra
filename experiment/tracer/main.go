@@ -38,7 +38,7 @@ type options struct {
 	dryRun   bool
 	headless bool
 
-	kubernetes prowflagutil.ExperimentalKubernetesOptions
+	kubernetes prowflagutil.KubernetesOptions
 }
 
 func (o *options) Validate() error {

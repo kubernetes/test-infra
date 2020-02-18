@@ -32,14 +32,23 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: crier
-        image: gcr.io/k8s-prow/crier:v20190808-5e69697af
+        image: gcr.io/k8s-prow/crier:v20200214-db7f45788
         args:
         - --github-workers=1
         - --config-path=/etc/config/config.yaml
         - --job-config-path=/etc/job-config
         - --github-endpoint=http://ghproxy
         - --github-endpoint=https://api.github.com
+        - --slack-workers=1
+        - --slack-token-file=/etc/slack/token
+        - --gcs-workers=1
+        - --gcs-credentials-file=/etc/service-account/service-account.json
+        - --kubernetes-gcs-workers=1
+        - --build-cluster=/etc/cluster/cluster
         volumeMounts:
+        - mountPath: /etc/cluster
+          name: cluster
+          readOnly: true
         - name: config
           mountPath: /etc/config
           readOnly: true
@@ -48,6 +57,12 @@ spec:
           readOnly: true
         - name: oauth
           mountPath: /etc/github
+          readOnly: true
+        - name: slack
+          mountPath: /etc/slack
+          readOnly: true
+        - name: service-account
+          mountPath: /etc/service-account
           readOnly: true
       volumes:
       - name: config
@@ -59,3 +74,13 @@ spec:
       - name: oauth
         secret:
           secretName: oauth-token
+      - name: slack
+        secret:
+          secretName: slack-token
+      - name: service-account
+        secret:
+          secretName: service-account
+      - name: cluster
+        secret:
+          defaultMode: 420
+          secretName: build-cluster

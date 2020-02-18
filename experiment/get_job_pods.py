@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Copyright 2017 The Kubernetes Authors.
 #
@@ -25,7 +25,7 @@
 # will get you something like:
 # pull-kubernetes-bazel-test: ['c9e634a5-cbe6-11e7-9149-0a580a6c0216']
 
-from __future__ import print_function
+
 
 from argparse import ArgumentParser
 from collections import defaultdict
@@ -36,7 +36,7 @@ def get_pods_json(show_all):
     cmd = ["kubectl", "get", "po", "-n=test-pods", "-o=json"]
     if show_all:
         cmd.append("--show-all")
-    res = subprocess.check_output(cmd)
+    res = subprocess.check_output(cmd, encoding='utf-8')
     return json.loads(res)["items"]
 
 def get_pods_by_job(show_all):
