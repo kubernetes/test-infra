@@ -26,11 +26,9 @@ import (
 	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/api/option"
-	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	"k8s.io/test-infra/prow/interrupts"
-	"k8s.io/test-infra/prow/pjutil"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowjobinformer "k8s.io/test-infra/prow/client/informers/externalversions"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
@@ -43,8 +41,11 @@ import (
 	slackreporter "k8s.io/test-infra/prow/crier/reporters/slack"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	gerritclient "k8s.io/test-infra/prow/gerrit/client"
+	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
+	"k8s.io/test-infra/prow/metrics"
+	"k8s.io/test-infra/prow/pjutil"
 )
 
 const (
@@ -316,6 +317,9 @@ func main() {
 	if len(controllers) == 0 {
 		logrus.Fatalf("should have at least one controller to start crier.")
 	}
+
+	// Push metrics to the configured prometheus pushgateway endpoint or serve them
+	metrics.ExposeMetrics("crier", cfg().PushGateway)
 
 	// run the controller loop to process items
 	prowjobInformerFactory.Start(interrupts.Context().Done())
