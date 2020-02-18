@@ -22,12 +22,12 @@ tide:
     rh-ibm-synergy/multicloud-operators-foundation: squash
     IBM/go-repo-template: squash
     IBM/test-infra: squash
-    IBM/healthcheck-service-operator: squash
     IBM/ibm-auditlogging-operator: squash
     IBM/ibm-catalog-operator: squash
     IBM/ibm-cert-manager-operator: squash
     IBM/ibm-cloudctl-operator: squash
     IBM/ibm-commonui-operator: squash
+    IBM/ibm-healthcheck-operator: squash
     IBM/ibm-helm-api-operator: squash
     IBM/ibm-helm-repo-operator: squash
     IBM/ibm-iam-operator: squash
@@ -58,12 +58,12 @@ tide:
     - rh-ibm-synergy/multicloud-operators-foundation
     - IBM/go-repo-template
     - IBM/test-infra
-    - IBM/healthcheck-service-operator
     - IBM/ibm-auditlogging-operator
     - IBM/ibm-catalog-operator
     - IBM/ibm-cert-manager-operator
     - IBM/ibm-cloudctl-operator
     - IBM/ibm-commonui-operator
+    - IBM/ibm-healthcheck-operator
     - IBM/ibm-helm-api-operator
     - IBM/ibm-helm-repo-operator
     - IBM/ibm-iam-operator

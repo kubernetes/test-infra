@@ -1,12 +1,12 @@
 presubmits:
-  IBM/healthcheck-service-operator:
-  - name: build_healthcheck-service-operator
+  IBM/ibm-healthcheck-operator:
+  - name: build_ibm-healthcheck-operator
     branches:
     - ^master$
     decorate: true
     always_run: true
-    path_alias: github.com/IBM/healthcheck-service-operator
-    rerun_command: /test build healthcheck-service-operator
+    path_alias: github.com/IBM/ibm-healthcheck-operator
+    rerun_command: /test build ibm-healthcheck-operator
     spec:
       containers:
       - command:
@@ -17,13 +17,13 @@ presubmits:
         securityContext:
           privileged: true
     trigger: '(?m)^/test (?:.*? )?build(?: .*?)?$'
-  - name: check_healthcheck-service-operator
+  - name: check_ibm-healthcheck-operator
     branches:
     - ^master$
     decorate: true
     always_run: true
-    path_alias: github.com/IBM/healthcheck-service-operator
-    rerun_command: /test check healthcheck-service-operator
+    path_alias: github.com/IBM/ibm-healthcheck-operator
+    rerun_command: /test check ibm-healthcheck-operator
     spec:
       containers:
       - command:
@@ -34,13 +34,13 @@ presubmits:
         securityContext:
           privileged: true
     trigger: '(?m)^/test (?:.*? )?check(?: .*?)?$'
-  - name: test_healthcheck-service-operator
+  - name: test_ibm-healthcheck-operator
     branches:
     - ^master$
     decorate: true
     always_run: true
-    path_alias: github.com/IBM/healthcheck-service-operator
-    rerun_command: /test test healthcheck-service-operator
+    path_alias: github.com/IBM/ibm-healthcheck-operator
+    rerun_command: /test test ibm-healthcheck-operator
     spec:
       containers:
       - command:
@@ -53,12 +53,12 @@ presubmits:
     trigger: '(?m)^/test (?:.*? )?test(?: .*?)?$'
 
 postsubmits:
-  IBM/healthcheck-service-operator:
-  - name: check_healthcheck-service-operator_postsubmit
+  IBM/ibm-healthcheck-operator:
+  - name: check_ibm-healthcheck-operator_postsubmit
     branches:
     - ^master$
     decorate: true
-    path_alias: github.com/IBM/healthcheck-service-operator
+    path_alias: github.com/IBM/ibm-healthcheck-operator
     spec:
       containers:
       - command:
@@ -68,11 +68,11 @@ postsubmits:
         name: ""
         securityContext:
           privileged: true
-  - name: test_healthcheck-service-operator_postsubmit
+  - name: test_ibm-healthcheck-operator_postsubmit
     branches:
     - ^master$
     decorate: true
-    path_alias: github.com/IBM/healthcheck-service-operator
+    path_alias: github.com/IBM/ibm-healthcheck-operator
     spec:
       containers:
       - command:
@@ -82,11 +82,11 @@ postsubmits:
         name: ""
         securityContext:
           privileged: true
-  - name: coverage_healthcheck-service-operator_postsubmit
+  - name: coverage_ibm-healthcheck-operator_postsubmit
     branches:
     - ^master$
     decorate: true
-    path_alias: github.com/IBM/healthcheck-service-operator
+    path_alias: github.com/IBM/ibm-healthcheck-operator
     spec:
       containers:
       - command:
@@ -98,15 +98,15 @@ postsubmits:
         - name: CODECOV_TOKEN
           valueFrom:
             secretKeyRef:
-              name: healthcheck-service-operator-codecov-token
+              name: ibm-healthcheck-operator-codecov-token
               key: codecov-token
         securityContext:
           privileged: true
-  - name: build_healthcheck-service-operator_postsubmit
+  - name: build_ibm-healthcheck-operator_postsubmit
     branches:
     - ^master$
     decorate: true
-    path_alias: github.com/IBM/healthcheck-service-operator
+    path_alias: github.com/IBM/ibm-healthcheck-operator
     spec:
       containers:
       - command:
@@ -116,11 +116,11 @@ postsubmits:
         name: ""
         securityContext:
           privileged: true
-  - name: images_healthcheck-service-operator_postsubmit
+  - name: images_ibm-healthcheck-operator_postsubmit
     branches:
     - ^master$
     decorate: true
-    path_alias: github.com/IBM/healthcheck-service-operator
+    path_alias: github.com/IBM/ibm-healthcheck-operator
     labels:
       preset-service-account: "true"
     spec:
