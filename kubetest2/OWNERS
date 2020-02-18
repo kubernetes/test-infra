@@ -4,6 +4,10 @@ approvers:
 - BenTheElder
 - krzyzacy
 
+reviewers:
+- amwat
+- cofyc
+
 labels:
 # TODO(bentheelder): should we add a kubetest2 label?
 - area/kubetest
