@@ -28,19 +28,19 @@ periodics:
       name: ""
       resources: {}
 - annotations:
-    fork-per-release-cron: 0 8-23/24 * * *
+    fork-per-release-cron: ""
     fork-per-release-generic-suffix: "true"
     testgrid-alert-email: gke-kubernetes-accelerators-bugs@google.com
     testgrid-alert-stale-results-hours: "24"
     testgrid-dashboards: sig-release-1.15-blocking
     testgrid-num-failures-to-alert: "12"
     testgrid-tab-name: gce-device-plugin-gpu-1.15
-  cron: 0 8-23/12 * * *
+  cron: 0 8-23/24 * * *
   labels:
     preset-ci-gce-device-plugin-gpu: "true"
     preset-k8s-ssh: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable2
+  name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable3
   spec:
     containers:
     - args:
@@ -60,11 +60,11 @@ periodics:
       name: ""
       resources: {}
 - annotations:
-    fork-per-release-periodic-interval: 24h
+    fork-per-release-periodic-interval: ""
     testgrid-alert-email: kubernetes-sig-node+testgrid@googlegroups.com
     testgrid-dashboards: sig-release-1.15-blocking, sig-node-kubelet
     testgrid-tab-name: node-kubelet-1.15
-  interval: 6h
+  interval: 24h
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
@@ -132,7 +132,7 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-build-stable2
+  name: ci-kubernetes-build-stable3
   spec:
     containers:
     - args:
@@ -143,7 +143,7 @@ periodics:
       - --scenario=kubernetes_build
       - --
       - --allow-dup
-      - --extra-publish-file=k8s-stable2
+      - --extra-publish-file=k8s-stable3
       - --hyperkube
       - --registry=gcr.io/kubernetes-ci-images
       image: gcr.io/k8s-testimages/bootstrap:v20200212-baf02ac
@@ -155,19 +155,18 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    fork-per-release-cron: 0 8-20/12 * * *
+    fork-per-release-cron: ""
     fork-per-release-generic-suffix: "true"
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com
-    testgrid-dashboards: sig-release-1.15-blocking, sig-scalability-gce,
-      google-gce
+    testgrid-dashboards: sig-release-1.15-blocking, sig-scalability-gce, google-gce
     testgrid-num-failures-to-alert: "1"
     testgrid-tab-name: gce-cos-1.15-scalability-100
-  cron: 0 4-16/12 * * *
+  cron: 0 8-20/12 * * *
   labels:
     preset-e2e-scalability-common: "true"
     preset-k8s-ssh: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-e2e-gci-gce-scalability-stable2
+  name: ci-kubernetes-e2e-gci-gce-scalability-stable3
   spec:
     containers:
     - args:
@@ -204,18 +203,18 @@ periodics:
   - 'perfDashJobType: performance'
   - 'perfDashBuildsCount: 500'
 - annotations:
-    fork-per-release-cron: 0 21 * * *
+    fork-per-release-cron: ""
     fork-per-release-generic-suffix: "true"
     testgrid-dashboards: sig-scalability-kubemark, sig-release-job-config-errors
     testgrid-num-failures-to-alert: "1"
     testgrid-tab-name: kubemark-1.15-500
-  cron: 0 15 * * *
+  cron: 0 21 * * *
   labels:
     preset-dind-enabled: "true"
     preset-e2e-kubemark-common: "true"
     preset-k8s-ssh: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-kubemark-500-gce-stable2
+  name: ci-kubernetes-kubemark-500-gce-stable3
   spec:
     containers:
     - args:
@@ -274,6 +273,9 @@ periodics:
     preset-bazel-scratch-dir: "true"
     preset-service-account: "true"
   name: periodic-kubernetes-bazel-build-1-15
+  rerun_auth_config:
+    github_team_ids:
+    - 2241179
   spec:
     containers:
     - args:
@@ -293,9 +295,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-1.15
       name: ""
       resources: {}
-  rerun_auth_config:
-    github_team_ids:
-      - 2241179 # release-managers
 - annotations:
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
     testgrid-dashboards: sig-release-1.15-blocking, google-unit
@@ -332,15 +331,15 @@ periodics:
       resources: {}
 - annotations:
     fork-per-release-generic-suffix: "true"
-    fork-per-release-periodic-interval: 24h
+    fork-per-release-periodic-interval: ""
     testgrid-alert-email: kubernetes-release-team@googlegroups.com
     testgrid-dashboards: sig-release-1.15-blocking, google-unit
     testgrid-tab-name: integration-1.15
-  interval: 6h
+  interval: 24h
   labels:
     preset-dind-enabled: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-integration-stable2
+  name: ci-kubernetes-integration-stable3
   spec:
     containers:
     - args:
@@ -360,8 +359,9 @@ periodics:
         privileged: true
 - annotations:
     fork-per-release-generic-suffix: "true"
-    fork-per-release-periodic-interval: 24h
-    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com, release-managers@kubernetes.io
+    fork-per-release-periodic-interval: ""
+    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com,
+      release-managers@kubernetes.io
     testgrid-dashboards: sig-release-1.15-blocking, google-unit
     testgrid-tab-name: verify-1.15
   decorate: true
@@ -370,11 +370,11 @@ periodics:
     org: kubernetes
     path_alias: k8s.io/kubernetes
     repo: kubernetes
-  interval: 6h
+  interval: 24h
   labels:
     preset-dind-enabled: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-verify-stable2
+  name: ci-kubernetes-verify-stable3
   spec:
     containers:
     - args:
@@ -399,28 +399,26 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    description: Runs tests on a Kubernetes 1.15 cluster with Windows 2019 nodes on GCE
+    description: Runs tests on a Kubernetes 1.15 cluster with Windows 2019 nodes on
+      GCE
     testgrid-dashboards: google-windows, sig-release-1.15-informing, sig-windows
     testgrid-tab-name: gce-windows-1.15
   decorate: true
   extra_refs:
-  - org: kubernetes-sigs
-    repo: windows-testing
-    base_ref: master
+  - base_ref: master
+    org: kubernetes-sigs
     path_alias: k8s.io/windows-testing
+    repo: windows-testing
   interval: 2h
   labels:
     preset-common-gce-windows: "true"
     preset-e2e-gce-windows: "true"
     preset-k8s-ssh: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-e2e-windows-gce-stable2
+  name: ci-kubernetes-e2e-windows-gce-stable3
   spec:
     containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
+    - args:
       - --check-leaked-resources
       - --cluster=
       - --extract=ci/latest-1.15
@@ -434,13 +432,17 @@ periodics:
         --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
       - --test-cmd-args=--node-os-distro=windows
       - --timeout=120m
+      command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
       env:
       - name: WINDOWS_NODE_OS_DISTRIBUTION
-        value: "win2019"
+        value: win2019
       - name: PREPULL_YAML
-        value: "prepull-1.15.yaml"
+        value: prepull-1.15.yaml
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-1.15
-
+      name: ""
+      resources: {}
 postsubmits:
   kubernetes/kubernetes:
   - annotations:
@@ -452,6 +454,9 @@ postsubmits:
       preset-bazel-scratch-dir: "true"
       preset-service-account: "true"
     name: ci-kubernetes-bazel-build-1-15
+    rerun_auth_config:
+      github_team_ids:
+      - 2241179
     spec:
       containers:
       - args:
@@ -472,9 +477,6 @@ postsubmits:
         resources:
           requests:
             memory: 6Gi
-    rerun_auth_config:
-      github_team_ids:
-        - 2241179 # release-managers
   - annotations:
       testgrid-dashboards: sig-release-job-config-errors
     branches:
@@ -845,14 +847,13 @@ presubmits:
     branches:
     - release-1.15
     labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
       preset-bazel-scratch-dir: "true"
       preset-e2e-scalability-common: "true"
       preset-e2e-scalability-presubmits: "true"
+      preset-k8s-ssh: "true"
+      preset-service-account: "true"
     max_concurrency: 12
     name: pull-kubernetes-e2e-gce-100-performance
-    skip_report: false
     spec:
       containers:
       - args:
@@ -887,9 +888,10 @@ presubmits:
         - --timeout=100m
         - --use-logexporter
         image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+        name: ""
         resources:
           requests:
-            memory: "6Gi"
+            memory: 6Gi
   - always_run: true
     branches:
     - release-1.15
@@ -897,9 +899,9 @@ presubmits:
       preset-bazel-scratch-dir: "true"
       preset-dind-enabled: "true"
       preset-e2e-kubemark-common: "true"
+      preset-e2e-scalability-presubmits: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
-      preset-e2e-scalability-presubmits: "true"
     max_concurrency: 12
     name: pull-kubernetes-kubemark-e2e-gce-big
     spec:
@@ -908,8 +910,6 @@ presubmits:
         - --root=/go/src
         - --job=$(JOB_NAME)
         - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
-        # Use newer perf-tests branch with additional fixes for kubemark
-        # This mismatch is intended only for release branches older than 1.16
         - --repo=k8s.io/perf-tests=release-1.16
         - --repo=k8s.io/release
         - --service-account=/etc/service-account/service-account.json
