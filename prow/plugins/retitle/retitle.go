@@ -19,6 +19,7 @@ package retitle
 
 import (
 	"regexp"
+	"strings"
 
 	"github.com/sirupsen/logrus"
 
@@ -122,7 +123,7 @@ func handleGenericComment(gc githubClient, isTrusted func(string) (bool, error),
 		// this shouldn't happen since we checked above
 		return nil
 	}
-	newTitle := matches[1]
+	newTitle := strings.TrimSpace(matches[1])
 	if newTitle == "" {
 		return gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(gce.Body, gce.HTMLURL, user, `Titles may not be empty.`))
 	}
