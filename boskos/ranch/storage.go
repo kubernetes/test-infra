@@ -114,10 +114,11 @@ func (s *Storage) DeleteResource(name string) error {
 
 // UpdateResource updates a resource if it exists, errors otherwise
 func (s *Storage) UpdateResource(resource *crds.ResourceObject) (*crds.ResourceObject, error) {
+	resource.Namespace = s.namespace
 	resource.Status.LastUpdate = s.now()
 
 	if err := s.client.Update(s.ctx, resource); err != nil {
-		return nil, fmt.Errorf("failed to update resources %s after patching it: %v", resource.Name, err)
+		return nil, fmt.Errorf("failed to update resources %s: %v", resource.Name, err)
 	}
 
 	return resource, nil
