@@ -68,6 +68,10 @@ clicks the `Build log` button of a Jenkins job (`agent: jenkins`).
 `jenkins-operator` forwards the request to Jenkins and serves back
 the response.
 
+**NOTE:** Deck will display the `Build log` button on the main page when the agent is not `kubernetes`
+regardless the external agent log was configured on the server side. Deck has no way to know if the server
+side configuration is consistent when rendering jobs on the main page.
+
 ## Job configuration
 
 Below follows the Prow configuration for a Jenkins job:
