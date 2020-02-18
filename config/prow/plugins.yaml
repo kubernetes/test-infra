@@ -226,36 +226,35 @@ slack:
     - k8s-ci-robot # future home of tide
     - k8s-release-robot # anago
     branch_whitelist:
-        release-1.14:
-            - aleksandra-malinowska # Patch Release Team
-            - dougm # Patch Release Team
-            - feiskyer # Patch Release Team
-            - hoegaarden # Patch Release Team
-            - idealhack # Patch Release Team
-            - tpepper # Patch Release Team
         release-1.15:
-            - aleksandra-malinowska # Patch Release Team
             - dougm # Patch Release Team
             - feiskyer # Patch Release Team
             - hoegaarden # Patch Release Team
             - idealhack # Patch Release Team
+            - justaugustus # Patch Release Team
             - tpepper # Patch Release Team
         release-1.16:
-            - aleksandra-malinowska # Patch Release Team
             - dougm # Patch Release Team
             - feiskyer # Patch Release Team
             - hoegaarden # Patch Release Team
             - idealhack # Patch Release Team
+            - justaugustus # Patch Release Team
             - tpepper # Patch Release Team
         release-1.17:
-            - aleksandra-malinowska # Patch Release Team
-            - bubblemelon # Branch Manager
+            - dougm # Patch Release Team
+            - feiskyer # Patch Release Team
+            - hoegaarden # Patch Release Team
+            - idealhack # Patch Release Team
+            - justaugustus # Patch Release Team
+            - tpepper # Patch Release Team
+        release-1.18:
             - cpanato # Branch Manager
             - dougm # Patch Release Team
             - feiskyer # Patch Release Team
             - hoegaarden # Patch Release Team
             - idealhack # Patch Release Team
-            - justaugustus # Branch Manager
+            - justaugustus # Patch Release Team
+            - saschagrunert # Branch Manager
             - tpepper # Patch Release Team
         feature-serverside-apply:
             - lavalamp # feature-serverside-apply "branch manager"
