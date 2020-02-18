@@ -13,7 +13,7 @@ variants:
   '1.18':
     CONFIG: '1.18'
     GO_VERSION: 1.13.6
-    K8S_RELEASE: stable-1.18
+    K8S_RELEASE: latest-1.18
     BAZEL_VERSION: 0.23.2
   '1.17':
     CONFIG: '1.17'
