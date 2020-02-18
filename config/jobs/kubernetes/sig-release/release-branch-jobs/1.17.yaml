@@ -6,7 +6,7 @@ periodics:
     testgrid-dashboards: sig-release-1.17-blocking, sig-cli-master
     testgrid-num-columns-recent: "3"
     testgrid-num-failures-to-alert: "2"
-    testgrid-tab-name: skew-cluster-latest-kubectl-beta-gce
+    testgrid-tab-name: skew-cluster-latest-kubectl-k8s-stable1-gce
   interval: 1h
   labels:
     preset-k8s-ssh: "true"
