@@ -1,0 +1,12 @@
+---
+agent_queue_id: trigger-pipelines
+description: Premerge testing for Prow
+github:
+  default_branch: improbable2
+teams:
+- name: Everyone
+  permission: BUILD_AND_READ
+- name: eng-foundation/eng-velocity
+  permission: MANAGE_BUILD_AND_READ
+- name: infra/ev
+  permission: MANAGE_BUILD_AND_READ

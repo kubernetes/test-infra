@@ -4,6 +4,20 @@ load("@io_bazel_rules_docker//container:bundle.bzl", "container_bundle")
 load("@io_bazel_rules_docker//contrib:push-all.bzl", "docker_push")
 load("//prow:def.bzl", "prefix", "prow_push", "tags")
 
+container_bundle(
+    name = "release-hook",
+    images = tags(
+      cmds = ["hook"],
+      targets = {},
+    ),
+    stamp = True,
+)
+
+docker_push(
+    name = "release-push-hook",
+    bundle = ":release-hook",
+)
+
 prow_push(
     name = "release-push",
     bundle_name = "release",

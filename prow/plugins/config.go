@@ -86,6 +86,7 @@ type Configuration struct {
 	Triggers                   []Trigger                    `json:"triggers,omitempty"`
 	Welcome                    []Welcome                    `json:"welcome,omitempty"`
 	Override                   Override                     `json:"override"`
+	JiraLinker                 JiraLinker                   `json:"jira_linker,omitempty"`
 }
 
 // Golint holds configuration for the golint plugin
@@ -520,6 +521,11 @@ type Welcome struct {
 	// MessageTemplate is the welcome message template to post on new-contributor PRs
 	// For the info struct see prow/plugins/welcome/welcome.go's PRInfo
 	MessageTemplate string `json:"message_template,omitempty"`
+}
+
+// JiraLinker is the config for the jira-linker plugin
+type JiraLinker struct {
+	JiraBaseUrl string `json:"jira_base_url"`
 }
 
 // Dco is config for the DCO (https://developercertificate.org/) checker plugin.
