@@ -17,7 +17,10 @@ limitations under the License.
 package handlers
 
 import (
+	"bytes"
 	"fmt"
+	"io/ioutil"
+	"net/http"
 	"net/http/httptest"
 	"reflect"
 	"sort"
@@ -33,9 +36,40 @@ import (
 	"k8s.io/test-infra/boskos/ranch"
 )
 
-func makeTestBoskos(r *ranch.Ranch) *httptest.Server {
-	handler := NewBoskosHandler(r)
+func makeTestBoskos(t *testing.T, r *ranch.Ranch) *httptest.Server {
+	handler := &testMuxWrapper{t: t, ServeMux: NewBoskosHandler(r)}
 	return httptest.NewServer(handler)
+}
+
+type testMuxWrapper struct {
+	t *testing.T
+	*http.ServeMux
+	requstCount int
+}
+
+func (tmw *testMuxWrapper) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	tmw.requstCount++
+	requestBody, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		tmw.t.Fatalf("failed to read request body: %v", err)
+	}
+	r.Body = ioutil.NopCloser(bytes.NewBuffer(requestBody))
+	if err := compareWithFixture(fmt.Sprintf("%s-request-%d", tmw.t.Name(), tmw.requstCount), requestBody); err != nil {
+		tmw.t.Errorf("data differs from fixture: %v", err)
+	}
+	tmw.ServeMux.ServeHTTP(&bodyLoggingHTTPWriter{t: tmw.t, ResponseWriter: w}, r)
+}
+
+type bodyLoggingHTTPWriter struct {
+	t *testing.T
+	http.ResponseWriter
+}
+
+func (blhw *bodyLoggingHTTPWriter) Write(data []byte) (int, error) {
+	if err := compareWithFixture(blhw.t.Name()+"-response", data); err != nil {
+		blhw.t.Errorf("data differs from fixture: %v", err)
+	}
+	return blhw.ResponseWriter.Write(data)
 }
 
 func TestAcquireUpdate(t *testing.T) {
@@ -66,7 +100,7 @@ func TestAcquireUpdate(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			r := MakeTestRanch([]runtime.Object{tc.resource})
-			boskos := makeTestBoskos(r)
+			boskos := makeTestBoskos(t, r)
 			owner := "owner"
 			client, err := client.NewClient(owner, boskos.URL, "", "")
 			if err != nil {
@@ -156,7 +190,7 @@ func TestAcquireByState(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			r := MakeTestRanch(tc.resources)
-			boskos := makeTestBoskos(r)
+			boskos := makeTestBoskos(t, r)
 			client, err := client.NewClient(owner, boskos.URL, "", "")
 			if err != nil {
 				t.Fatalf("failed to create the Boskos client")
@@ -234,7 +268,7 @@ func TestClientServerUpdate(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			r := MakeTestRanch([]runtime.Object{tc.resource})
-			boskos := makeTestBoskos(r)
+			boskos := makeTestBoskos(t, r)
 			client, err := client.NewClient(owner, boskos.URL, "", "")
 			if err != nil {
 				t.Fatalf("failed to create the Boskos client")
