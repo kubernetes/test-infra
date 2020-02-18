@@ -3,13 +3,17 @@ load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 go_library(
     name = "go_default_library",
     srcs = ["main.go"],
-    importpath = "k8s.io/test-infra/kubetest2",
+    importpath = "k8s.io/test-infra/kubetest2/kubetest2-eks",
     visibility = ["//visibility:private"],
-    deps = ["//kubetest2/pkg/app/shim:go_default_library"],
+    deps = [
+        "//kubetest2/kubetest2-eks/deployer:go_default_library",
+        "//kubetest2/pkg/app:go_default_library",
+        "//kubetest2/pkg/app/testers/standard:go_default_library",
+    ],
 )
 
 go_binary(
-    name = "kubetest2",
+    name = "kubetest2-eks",
     embed = [":go_default_library"],
     visibility = ["//visibility:public"],
 )
@@ -25,15 +29,7 @@ filegroup(
     name = "all-srcs",
     srcs = [
         ":package-srcs",
-        "//kubetest2/kubetest2-eks:all-srcs",
-        "//kubetest2/kubetest2-gke:all-srcs",
-        "//kubetest2/kubetest2-kind:all-srcs",
-        "//kubetest2/pkg/app:all-srcs",
-        "//kubetest2/pkg/build:all-srcs",
-        "//kubetest2/pkg/exec:all-srcs",
-        "//kubetest2/pkg/metadata:all-srcs",
-        "//kubetest2/pkg/process:all-srcs",
-        "//kubetest2/pkg/types:all-srcs",
+        "//kubetest2/kubetest2-eks/deployer:all-srcs",
     ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
