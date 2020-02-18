@@ -5,14 +5,14 @@ dashboard_groups:
   dashboard_names:
   - sig-release-master-blocking
   - sig-release-master-informing
+  - sig-release-1.18-blocking
+  - sig-release-1.18-informing
   - sig-release-1.17-blocking
   - sig-release-1.17-informing
   - sig-release-1.16-blocking
   - sig-release-1.16-informing
   - sig-release-1.15-blocking
   - sig-release-1.15-informing
-  - sig-release-1.14-blocking
-  - sig-release-1.14-informing
   - sig-release-releng-informing
   - sig-release-image-pushes
   - sig-release-misc
@@ -27,14 +27,14 @@ dashboard_groups:
 dashboards:
 - name: sig-release-master-blocking
 - name: sig-release-master-informing
+- name: sig-release-1.18-blocking
+- name: sig-release-1.18-informing
 - name: sig-release-1.17-blocking
 - name: sig-release-1.17-informing
 - name: sig-release-1.16-blocking
 - name: sig-release-1.16-informing
 - name: sig-release-1.15-blocking
 - name: sig-release-1.15-informing
-- name: sig-release-1.14-blocking
-- name: sig-release-1.14-informing
 - name: sig-release-releng-informing
   dashboard_tab:
   - name: Conformance - OpenStack
