@@ -17,11 +17,15 @@ limitations under the License.
 package handlers
 
 import (
+	"bytes"
 	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 
@@ -37,7 +41,7 @@ import (
 // json does not serialized time with nanosecond precision
 func now() time.Time {
 	format := "2006-01-02 15:04:05.000"
-	now, _ := time.Parse(format, time.Now().Format(format))
+	now, _ := time.Parse(format, format)
 	return now
 }
 
@@ -178,43 +182,50 @@ func TestAcquire(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		c := MakeTestRanch(tc.resources)
-		handler := handleAcquire(c)
-		req, err := http.NewRequest(tc.method, "", nil)
-		if err != nil {
-			t.Fatalf("Error making request: %v", err)
-		}
-		u, err := url.Parse(tc.path)
-		if err != nil {
-			t.Fatalf("Error parsing URL: %v", err)
-		}
-		req.URL = u
-		rr := httptest.NewRecorder()
-		handler.ServeHTTP(rr, req)
-		if rr.Code != tc.code {
-			t.Errorf("%s - Wrong error code. Got %v, expect %v", tc.name, rr.Code, tc.code)
-		}
-
-		if rr.Code == http.StatusOK {
-			var data common.Resource
-			json.Unmarshal(rr.Body.Bytes(), &data)
-			if data.Name != "res" {
-				t.Errorf("%s - Got res %v, expect res", tc.name, data.Name)
-			}
-
-			if data.State != "d" {
-				t.Errorf("%s - Got state %v, expect d", tc.name, data.State)
-			}
-
-			resources, err := c.Storage.GetResources()
+		t.Run(tc.name, func(t *testing.T) {
+			c := MakeTestRanch(tc.resources)
+			handler := handleAcquire(c)
+			req, err := http.NewRequest(tc.method, "", nil)
 			if err != nil {
-				t.Error("cannot get resources")
-				continue
+				t.Fatalf("Error making request: %v", err)
 			}
-			if resources[0].Owner != "o" {
-				t.Errorf("%s - Wrong owner. Got %v, expect o", tc.name, resources[0].Owner)
+			u, err := url.Parse(tc.path)
+			if err != nil {
+				t.Fatalf("Error parsing URL: %v", err)
 			}
-		}
+			req.URL = u
+			rr := httptest.NewRecorder()
+			handler.ServeHTTP(rr, req)
+			if rr.Code != tc.code {
+				t.Errorf("%s - Wrong error code. Got %v, expect %v", tc.name, rr.Code, tc.code)
+			}
+
+			if rr.Code == http.StatusOK {
+				responseData := rr.Body.Bytes()
+				if err := compareWithFixture(t.Name(), responseData); err != nil {
+					t.Errorf("response does not match fixture: %v", err)
+				}
+				var data common.Resource
+				if err := json.Unmarshal(responseData, &data); err != nil {
+					t.Fatalf("failed to unmarshal response: %v", err)
+				}
+				if data.Name != "res" {
+					t.Errorf("%s - Got res %v, expect res", tc.name, data.Name)
+				}
+
+				if data.State != "d" {
+					t.Errorf("%s - Got state %v, expect d", tc.name, data.State)
+				}
+
+				resources, err := c.Storage.GetResources()
+				if err != nil {
+					t.Fatalf("error getting resource: %v", err)
+				}
+				if resources[0].Owner != "o" {
+					t.Errorf("%s - Wrong owner. Got %v, expect o", tc.name, resources[0].Owner)
+				}
+			}
+		})
 	}
 }
 
@@ -319,37 +330,41 @@ func TestRelease(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		c := MakeTestRanch(tc.resources)
-		handler := handleRelease(c)
-		req, err := http.NewRequest(tc.method, "", nil)
-		if err != nil {
-			t.Fatalf("Error making request: %v", err)
-		}
-		u, err := url.Parse(tc.path)
-		if err != nil {
-			t.Fatalf("Error parsing URL: %v", err)
-		}
-		req.URL = u
-		rr := httptest.NewRecorder()
-		handler.ServeHTTP(rr, req)
-		if rr.Code != tc.code {
-			t.Errorf("%s - Wrong error code. Got %v, expect %v", tc.name, rr.Code, tc.code)
-		}
-
-		if rr.Code == http.StatusOK {
-			resources, err := c.Storage.GetResources()
+		t.Run(tc.name, func(t *testing.T) {
+			c := MakeTestRanch(tc.resources)
+			handler := handleRelease(c)
+			req, err := http.NewRequest(tc.method, "", nil)
 			if err != nil {
-				t.Error("cannot get resources")
-				continue
+				t.Fatalf("Error making request: %v", err)
 			}
-			if resources[0].State != "d" {
-				t.Errorf("%s - Wrong state. Got %v, expect d", tc.name, resources[0].State)
+			u, err := url.Parse(tc.path)
+			if err != nil {
+				t.Fatalf("Error parsing URL: %v", err)
+			}
+			req.URL = u
+			rr := httptest.NewRecorder()
+			handler.ServeHTTP(rr, req)
+			if rr.Code != tc.code {
+				t.Errorf("%s - Wrong error code. Got %v, expect %v", tc.name, rr.Code, tc.code)
 			}
 
-			if resources[0].Owner != "" {
-				t.Errorf("%s - Wrong owner. Got %v, expect empty", tc.name, resources[0].Owner)
+			if rr.Code == http.StatusOK {
+				if err := compareWithFixture(t.Name(), rr.Body.Bytes()); err != nil {
+					t.Errorf("response does not match fixture: %v", err)
+				}
+				resources, err := c.Storage.GetResources()
+				if err != nil {
+					t.Fatalf("error getting resource: %v", err)
+				}
+				if resources[0].State != "d" {
+					t.Errorf("%s - Wrong state. Got %v, expect d", tc.name, resources[0].State)
+				}
+
+				if resources[0].Owner != "" {
+					t.Errorf("%s - Wrong owner. Got %v, expect empty", tc.name, resources[0].Owner)
+				}
 			}
-		}
+		})
 	}
 }
 
@@ -499,36 +514,42 @@ func TestReset(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		c := MakeTestRanch(tc.resources)
-		handler := handleReset(c)
-		req, err := http.NewRequest(tc.method, "", nil)
-		if err != nil {
-			t.Fatalf("Error making request: %v", err)
-		}
-		u, err := url.Parse(tc.path)
-		if err != nil {
-			t.Fatalf("Error parsing URL: %v", err)
-		}
-		req.URL = u
-		rr := httptest.NewRecorder()
-		handler.ServeHTTP(rr, req)
-		if rr.Code != tc.code {
-			t.Errorf("%s - Wrong error code. Got %v, expect %v", tc.name, rr.Code, tc.code)
-		}
+		t.Run(tc.name, func(t *testing.T) {
+			c := MakeTestRanch(tc.resources)
+			handler := handleReset(c)
+			req, err := http.NewRequest(tc.method, "", nil)
+			if err != nil {
+				t.Fatalf("Error making request: %v", err)
+			}
+			u, err := url.Parse(tc.path)
+			if err != nil {
+				t.Fatalf("Error parsing URL: %v", err)
+			}
+			req.URL = u
+			rr := httptest.NewRecorder()
+			handler.ServeHTTP(rr, req)
+			if rr.Code != tc.code {
+				t.Errorf("%s - Wrong error code. Got %v, expect %v", tc.name, rr.Code, tc.code)
+			}
 
-		if rr.Code == http.StatusOK {
-			rmap := make(map[string]string)
-			json.Unmarshal(rr.Body.Bytes(), &rmap)
-			if !tc.hasContent {
-				if len(rmap) != 0 {
-					t.Errorf("%s - Expect empty map. Got %v", tc.name, rmap)
+			if rr.Code == http.StatusOK {
+				responseData := rr.Body.Bytes()
+				if err := compareWithFixture(t.Name(), responseData); err != nil {
+					t.Errorf("response does not match fixture: %v", err)
 				}
-			} else {
-				if owner, ok := rmap["res"]; !ok || owner != "user" {
-					t.Errorf("%s - Expect res - user. Got %v", tc.name, rmap)
+				rmap := make(map[string]string)
+				json.Unmarshal(responseData, &rmap)
+				if !tc.hasContent {
+					if len(rmap) != 0 {
+						t.Errorf("%s - Expect empty map. Got %v", tc.name, rmap)
+					}
+				} else {
+					if owner, ok := rmap["res"]; !ok || owner != "user" {
+						t.Errorf("%s - Expect res - user. Got %v", tc.name, rmap)
+					}
 				}
 			}
-		}
+		})
 	}
 }
 
@@ -651,55 +672,40 @@ func TestUpdate(t *testing.T) {
 			code:   http.StatusOK,
 			method: http.MethodPost,
 		},
-		{
-			name: "ok",
-			resources: []runtime.Object{&crds.ResourceObject{
-				ObjectMeta: metav1.ObjectMeta{
-					Name: "res",
-				},
-				Spec: crds.ResourceSpec{
-					Type: "t",
-				},
-				Status: crds.ResourceStatus{
-					State:      "s",
-					Owner:      "merlin",
-					LastUpdate: FakeNow,
-				},
-			}},
-			path:   "?name=res&state=s&owner=merlin",
-			code:   http.StatusOK,
-			method: http.MethodPost,
-		},
 	}
 
 	for _, tc := range testcases {
-		c := MakeTestRanch(tc.resources)
-		handler := handleUpdate(c)
-		req, err := http.NewRequest(tc.method, "", nil)
-		if err != nil {
-			t.Fatalf("Error making request: %v", err)
-		}
-		u, err := url.Parse(tc.path)
-		if err != nil {
-			t.Fatalf("Error parsing URL: %v", err)
-		}
-		req.URL = u
-		rr := httptest.NewRecorder()
-		handler.ServeHTTP(rr, req)
-		if rr.Code != tc.code {
-			t.Errorf("%s - Wrong error code. Got %v, expect %v", tc.name, rr.Code, tc.code)
-		}
-
-		if rr.Code == http.StatusOK {
-			resources, err := c.Storage.GetResources()
+		t.Run(tc.name, func(t *testing.T) {
+			c := MakeTestRanch(tc.resources)
+			handler := handleUpdate(c)
+			req, err := http.NewRequest(tc.method, "", nil)
 			if err != nil {
-				t.Error("cannot get resources")
-				continue
+				t.Fatalf("Error making request: %v", err)
 			}
-			if resources[0].LastUpdate == FakeNow {
-				t.Errorf("%s - Timestamp is not updated!", tc.name)
+			u, err := url.Parse(tc.path)
+			if err != nil {
+				t.Fatalf("Error parsing URL: %v", err)
 			}
-		}
+			req.URL = u
+			rr := httptest.NewRecorder()
+			handler.ServeHTTP(rr, req)
+			if rr.Code != tc.code {
+				t.Errorf("%s - Wrong error code. Got %v, expect %v", tc.name, rr.Code, tc.code)
+			}
+
+			if rr.Code == http.StatusOK {
+				if err := compareWithFixture(t.Name(), rr.Body.Bytes()); err != nil {
+					t.Errorf("response does not match fixture: %v", err)
+				}
+				resources, err := c.Storage.GetResources()
+				if err != nil {
+					t.Fatalf("error getting resources: %v", err)
+				}
+				if resources[0].LastUpdate == FakeNow {
+					t.Errorf("%s - Timestamp is not updated!", tc.name)
+				}
+			}
+		})
 	}
 }
 
@@ -830,4 +836,17 @@ func TestDefault(t *testing.T) {
 			t.Errorf("%s - Wrong error code. Got %v, expect %v", tc.name, rr.Code, tc.code)
 		}
 	}
+}
+
+func compareWithFixture(testName string, actualData []byte) error {
+	goldenFile := fmt.Sprintf("testdata/%s.golden", strings.ToLower(strings.ReplaceAll(strings.ReplaceAll(testName, " ", "_"), "/", "-")))
+	expected, err := ioutil.ReadFile(goldenFile)
+	if err != nil {
+		return fmt.Errorf("error reading fixture %q: %v", goldenFile, err)
+	}
+	if !bytes.Equal(expected, actualData) {
+		return fmt.Errorf("fixture %s\n%s\n does not match received data\n%s\n", goldenFile, string(expected), string(actualData))
+	}
+
+	return nil
 }

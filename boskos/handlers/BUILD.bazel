@@ -19,6 +19,7 @@ go_test(
         "handlers_test.go",
         "server_client_test.go",
     ],
+    data = glob(["testdata/**"]),
     embed = [":go_default_library"],
     deps = [
         "//boskos/client:go_default_library",
