@@ -24,7 +24,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200217-8ab6e0b-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200219-0714eb5-master
         args:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
@@ -73,7 +73,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200217-8ab6e0b-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200219-0714eb5-master
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -118,7 +118,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200217-8ab6e0b-1.14
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200218-a445c54-1.14
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -164,7 +164,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200217-8ab6e0b-1.15
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200219-0714eb5-1.15
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -209,7 +209,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200217-8ab6e0b-1.16
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200219-0714eb5-1.16
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -254,7 +254,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200217-8ab6e0b-1.17
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200219-0714eb5-1.17
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -298,7 +298,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200217-8ab6e0b-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200219-0714eb5-master
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -343,7 +343,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200217-8ab6e0b-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200219-0714eb5-master
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -388,7 +388,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200217-8ab6e0b-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200219-0714eb5-master
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"

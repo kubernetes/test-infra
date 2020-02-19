@@ -9,7 +9,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200217-8ab6e0b-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200219-0714eb5-master
         command:
         - runner.sh
         - ./hack/ci/build-all.sh
@@ -24,7 +24,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200217-8ab6e0b-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200219-0714eb5-master
         command:
         - runner.sh
         - make
@@ -40,7 +40,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200217-8ab6e0b-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200219-0714eb5-experimental
         command:
         - runner.sh
         - ./hack/verify/all.sh
@@ -108,7 +108,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200217-8ab6e0b-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200219-0714eb5-master
         env:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
@@ -206,7 +206,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200217-8ab6e0b-1.16
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200219-0714eb5-1.16
         env:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
@@ -247,7 +247,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200217-8ab6e0b-1.15
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200219-0714eb5-1.15
         env:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
@@ -288,7 +288,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200217-8ab6e0b-1.14
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200218-a445c54-1.14
         env:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
