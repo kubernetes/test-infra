@@ -41,7 +41,13 @@ filegroup(
 
 go_test(
     name = "go_default_test",
-    srcs = ["http_test.go"],
+    srcs = [
+        "http_test.go",
+        "metrics_test.go",
+    ],
     embed = [":go_default_library"],
-    deps = ["@io_k8s_utils//diff:go_default_library"],
+    deps = [
+        "//prow/config:go_default_library",
+        "@io_k8s_utils//diff:go_default_library",
+    ],
 )
