@@ -65,6 +65,7 @@ var (
 	aksEngineURL           = flag.String("aksengine-download-url", "", "Download URL for AKS engine")
 	aksEngineMD5           = flag.String("aksengine-md5-sum", "", "Checksum for aks engine download")
 	aksSSHPublicKeyPath    = flag.String("aksengine-public-key", "", "Path to SSH Public Key")
+	aksSSHPrivateKeyPath   = flag.String("aksengine-private-key", "", "Path to SSH Private Key")
 	aksWinBinaries         = flag.Bool("aksengine-win-binaries", false, "Set to True if you want kubetest to build a custom zip with windows binaries for aks-engine")
 	aksCcm                 = flag.Bool("aksengine-ccm", false, "Set to True if you want kubetest to build a custom cloud controller manager for aks-engine")
 	aksCnm                 = flag.Bool("aksengine-cnm", false, "Set to True if you want kubetest to build a custom cloud node manager for aks-engine. Require --aksengine-ccm to be true")
@@ -324,6 +325,10 @@ func checkParams() error {
 		*aksSSHPublicKeyPath = os.Getenv("HOME") + "/.ssh/id_rsa.pub"
 	}
 
+	if *aksSSHPrivateKeyPath == "" {
+		*aksSSHPrivateKeyPath = os.Getenv("HOME") + "/.ssh/id_rsa"
+	}
+
 	if *aksTemplateURL == "" {
 		return fmt.Errorf("no ApiModel URL specified.")
 	}
@@ -348,10 +353,6 @@ func newAKSEngine() (*Cluster, error) {
 			return nil, fmt.Errorf("error reading SSH Key %v %v", *aksSSHPublicKeyPath, err)
 		}
 	}
-	// assume the private key is at the same location as the public key.
-	// since it is only used for log collection purposes, we issue a warning if the log collection script
-	// does not find the key. No need to abandon the whole test run is the key is not found.
-	sshPrivateKeyPath := strings.TrimSuffix(*aksSSHPublicKeyPath, filepath.Ext(*aksSSHPublicKeyPath))
 
 	c := Cluster{
 		ctx:                              context.Background(),
@@ -362,7 +363,7 @@ func newAKSEngine() (*Cluster, error) {
 		resourceGroup:                    *aksResourceGroupName,
 		outputDir:                        tempdir,
 		sshPublicKey:                     fmt.Sprintf("%s", sshKey),
-		sshPrivateKeyPath:                sshPrivateKeyPath,
+		sshPrivateKeyPath:                *aksSSHPrivateKeyPath,
 		credentials:                      &Creds{},
 		masterVMSize:                     *aksMasterVMSize,
 		agentVMSize:                      *aksAgentVMSize,
