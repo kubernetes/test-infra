@@ -174,7 +174,7 @@ For more details, please refer to [How to Test a ProwJob](/prow/build_test_updat
 ## Running a Production Job
 
 Normally prow will automatically schedule your job, however if for some reason you
-need to trigger it again you have a few options:
+need to trigger it again and are a Prow administrator you have a few options:
 
 - you can use the rerun feature in prow.k8s.io to run the job again *with the same config*
 - you can use [`config/mkpj.sh`](/config/mkpj.sh) to create a prowjob CR from your local config
