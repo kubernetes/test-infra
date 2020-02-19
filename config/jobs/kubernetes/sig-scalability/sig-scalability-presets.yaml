@@ -144,6 +144,9 @@ presets:
   # Dump full systemd journal on master and nodes.
   - name: LOG_DUMP_SYSTEMD_JOURNAL
     value: "true"
+  # Dump clusterloader prober's log files
+  - name: LOG_DUMP_EXTRA_FILES
+    value: "cl2-*"
   # Keep all logrotated files (not just 5 latest which is a default)
   - name: LOGROTATE_FILES_MAX_COUNT
     value: 1000
