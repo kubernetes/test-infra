@@ -37,6 +37,7 @@ import (
 	pointers "k8s.io/test-infra/pkg/genyaml/testdata/pointer_types"
 	primitives "k8s.io/test-infra/pkg/genyaml/testdata/primitive_types"
 	private "k8s.io/test-infra/pkg/genyaml/testdata/private_members"
+	sequence "k8s.io/test-infra/pkg/genyaml/testdata/sequence_items"
 )
 
 const (
@@ -420,6 +421,22 @@ func TestGenYAML(t *testing.T) {
 			name:      "private members",
 			structObj: private.NewPerson("gamer123", "password123"),
 			expected:  true,
+		},
+		{
+			name: "sequence items",
+			structObj: &sequence.Recipe{
+				Ingredients: []sequence.Ingredient{
+					{
+						Name:   "potatoes",
+						Amount: 1,
+					},
+					{
+						Name:   "eggs",
+						Amount: 2,
+					},
+				},
+			},
+			expected: true,
 		},
 		{
 			name: "interface types",

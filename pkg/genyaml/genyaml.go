@@ -332,6 +332,7 @@ func (cm *CommentMap) injectComment(parent *yaml3.Node, typeSpec []string, depth
 	}
 
 	typ := typeSpec[depth]
+	isArray := parent.Kind == yaml3.SequenceNode
 
 	// Decorate YAML node with comment.
 	if v, ok := cm.comments[typ][parent.Value]; ok {
@@ -360,8 +361,12 @@ func (cm *CommentMap) injectComment(parent *yaml3.Node, typeSpec []string, depth
 				}
 			}
 
-			// Recurse to inject comments on nested YAML nodes.
-			cm.injectComment(child, append(typeSpec, nxtTyp), depth+1)
+			// only recurse into the first element of an array, as documenting all further
+			// array items would be redundant
+			if !isArray || i == 0 {
+				// Recurse to inject comments on nested YAML nodes.
+				cm.injectComment(child, append(typeSpec, nxtTyp), depth+1)
+			}
 		}
 	}
 
@@ -409,6 +414,21 @@ func (cm *CommentMap) SetPath(path string) bool {
 
 // GenYaml generates a fully commented YAML snippet for a given plugin configuration.
 func (cm *CommentMap) GenYaml(config interface{}) (string, error) {
+	var buffer bytes.Buffer
+
+	encoder := yaml3.NewEncoder(&buffer)
+
+	err := cm.EncodeYaml(config, encoder)
+	if err != nil {
+		return "", fmt.Errorf("failed to encode config as YAML: %v", err)
+	}
+
+	return buffer.String(), nil
+}
+
+// EncodeYaml encodes a fully commented YAML snippet for a given plugin configuration
+// using the given encoder.
+func (cm *CommentMap) EncodeYaml(config interface{}, encoder *yaml3.Encoder) error {
 	cm.RLock()
 	defer cm.RUnlock()
 
@@ -417,23 +437,17 @@ func (cm *CommentMap) GenYaml(config interface{}) (string, error) {
 	// Convert Config object to an abstract YAML node.
 	y1, err := marshal(&config)
 	if err != nil {
-		return "", errors.New("failed to marshal config to yaml")
+		return errors.New("failed to marshal config to yaml")
 	}
 
 	node := yaml3.Node{}
 	err = yaml3.Unmarshal([]byte(y1), &node)
 	if err != nil {
-		return "", errors.New("failed to unmarshal yaml to yaml node")
+		return errors.New("failed to unmarshal yaml to yaml node")
 	}
 
 	// Inject comments
 	cm.injectComment(&node, []string{baseTypeSpec}, 0)
 
-	// Convert Yaml w/ comments to string.
-	y2, err := yaml3.Marshal(&node)
-	if err != nil {
-		return "", errors.New("failed to marshal yaml node to yaml")
-	}
-
-	return string(y2), nil
+	return encoder.Encode(&node)
 }

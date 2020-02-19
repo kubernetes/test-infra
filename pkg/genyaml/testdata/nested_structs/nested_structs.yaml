@@ -9,10 +9,7 @@ Children:
 
     # Name of child
     Name: Jimbo
-  - # Age of child
-    Age: 5
-
-    # Name of child
+  - Age: 5
     Name: Jenny
 
 
