@@ -1349,12 +1349,15 @@ type BugzillaBranchOptions struct {
 	ValidStates *[]BugzillaBugState `json:"valid_states,omitempty"`
 
 	// DependentBugStatuses determine which statuses a bug's dependent bugs may have
-	// to deem the child bug valid
+	// to deem the child bug valid.  These are merged into DependentBugStates when
+	// resolving branch options.
 	DependentBugStatuses *[]string `json:"dependent_bug_statuses,omitempty"`
 	// DependentBugStates determine states in which a bug's dependents bugs may be
-	// to deem the child bug valid
+	// to deem the child bug valid.  If set, all blockers must have a valid state.
 	DependentBugStates *[]BugzillaBugState `json:"dependent_bug_states,omitempty"`
-	// DependentBugTargetRelease determines which release a bug's dependent bugs need to target to be valid
+	// DependentBugTargetRelease determines which release a bug's dependent bugs
+	// need to target to be valid.  If set, all blockers must have a valid target
+	// releasee.
 	DependentBugTargetRelease *string `json:"dependent_bug_target_release,omitempty"`
 
 	// StatusAfterValidation is the status which the bug will be moved to after being

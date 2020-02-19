@@ -87,6 +87,16 @@ func helpProvider(config *plugins.Configuration, enabledRepos []plugins.Repo) (*
 				pretty := strings.Join(prettyStates(*opts[branch].ValidStates), ", ")
 				conditions = append(conditions, fmt.Sprintf("be in one of the following states: %s", pretty))
 			}
+			if opts[branch].DependentBugStates != nil || opts[branch].DependentBugTargetRelease != nil {
+				conditions = append(conditions, "depend on at least one other bug")
+			}
+			if opts[branch].DependentBugStates != nil {
+				pretty := strings.Join(prettyStates(*opts[branch].DependentBugStates), ", ")
+				conditions = append(conditions, fmt.Sprintf("have all dependent bugs in one of the following states: %s", pretty))
+			}
+			if opts[branch].DependentBugTargetRelease != nil {
+				conditions = append(conditions, fmt.Sprintf("have all dependent bugs target the %q release", *opts[branch].DependentBugTargetRelease))
+			}
 			switch len(conditions) {
 			case 0:
 				message += "exist"
