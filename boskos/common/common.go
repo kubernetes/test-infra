@@ -204,29 +204,6 @@ func (ut ResourceByName) Len() int           { return len(ut) }
 func (ut ResourceByName) Swap(i, j int)      { ut[i], ut[j] = ut[j], ut[i] }
 func (ut ResourceByName) Less(i, j int) bool { return ut[i].GetName() < ut[j].GetName() }
 
-// ResourceByDeleteState helps sorting resources by state, putting Tombstone first, then ToBeDeleted,
-// and sorting alphabetacally by resource name
-type ResourceByDeleteState []Resource
-
-func (ut ResourceByDeleteState) Len() int      { return len(ut) }
-func (ut ResourceByDeleteState) Swap(i, j int) { ut[i], ut[j] = ut[j], ut[i] }
-func (ut ResourceByDeleteState) Less(i, j int) bool {
-	order := map[string]int{Tombstone: 0, ToBeDeleted: 1}
-	stateIndex := func(s string) int {
-		i, ok := order[s]
-		if ok {
-			return i
-		}
-		return 2
-	}
-	indexI := stateIndex(ut[i].State)
-	indexJ := stateIndex(ut[i].State)
-	if indexI == indexJ {
-		return ut[i].GetName() < ut[j].GetName()
-	}
-	return indexI < indexJ
-}
-
 // CommaSeparatedStrings is used to parse comma separated string flag into a list of strings
 type CommaSeparatedStrings []string
 
