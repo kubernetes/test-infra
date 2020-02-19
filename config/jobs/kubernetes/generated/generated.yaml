@@ -27,7 +27,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200217-8ab6e0b-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200219-0714eb5-1.18
   annotations:
     testgrid-dashboards: canonical-ubuntu1-k8sbeta
     testgrid-tab-name: ubuntu1-k8sbeta-gkespec
@@ -59,7 +59,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200217-8ab6e0b-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200219-0714eb5-1.18
   annotations:
     testgrid-dashboards: canonical-ubuntu1-k8sbeta
     testgrid-tab-name: ubuntu1-k8sbeta-serial
@@ -283,7 +283,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200217-8ab6e0b-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200219-0714eb5-1.18
   annotations:
     testgrid-dashboards: canonical-ubuntu2-k8sbeta
     testgrid-tab-name: ubuntu2-k8sbeta-gkespec
@@ -315,7 +315,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200217-8ab6e0b-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200219-0714eb5-1.18
   annotations:
     testgrid-dashboards: canonical-ubuntu2-k8sbeta
     testgrid-tab-name: ubuntu2-k8sbeta-serial
