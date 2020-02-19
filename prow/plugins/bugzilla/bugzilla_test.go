@@ -28,6 +28,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"k8s.io/test-infra/prow/bugzilla"
+	prowconfig "k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/pluginhelp"
@@ -90,7 +91,7 @@ orgs:
 	}
 
 	pc := &plugins.Configuration{Bugzilla: config}
-	enabledRepos := []plugins.Repo{
+	enabledRepos := []prowconfig.OrgRepo{
 		{Org: "some-org", Repo: "some-repo"},
 		{Org: "my-org", Repo: "some-repo"},
 		{Org: "my-org", Repo: "my-repo"},
