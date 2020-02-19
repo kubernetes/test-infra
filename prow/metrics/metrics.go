@@ -34,7 +34,7 @@ import (
 const metricsPort = 9090
 
 // ExposeMetricsWithRegistry chooses whether to serve or push metrics for the service with the registry
-func ExposeMetricsWithRegistry(component string, pushGateway config.PushGateway, reg *prometheus.Registry) {
+func ExposeMetricsWithRegistry(component string, pushGateway config.PushGateway, reg prometheus.Gatherer) {
 	if pushGateway.Endpoint != "" {
 		pushMetrics(component, pushGateway.Endpoint, pushGateway.Interval.Duration)
 		if pushGateway.ServeMetrics {
