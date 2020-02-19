@@ -936,7 +936,7 @@ nodeK8sVersions:
   beta:
     args:
     - --repo=k8s.io/kubernetes=release-1.18
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20200217-8ab6e0b-1.18
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20200219-0714eb5-1.18
   stable1:
     args:
     - --repo=k8s.io/kubernetes=release-1.17
