@@ -29,10 +29,17 @@ func TestOptions(t *testing.T) {
 		expected *options
 		err      bool
 	}{{
-		name:     "defaults work",
+		name:     "defaults don't work (set --config to prow config.yaml file)",
 		expected: &options{},
+		err:      true,
 	}, {
-		name: "error when providing both kubedonfig and build-cluter options ",
+		name: "only config works",
+		args: []string{"--config=/etc/config.yaml"},
+		expected: &options{
+			configPath: "/etc/config.yaml",
+		},
+	}, {
+		name: "error when providing both kubeconfig and build-cluter options ",
 		args: []string{"--all-contexts=true", "--tot-url=https://tot",
 			"--kubeconfig=/root/kubeconfig", "--config=/etc/config.yaml",
 			"--build-cluster=/etc/build-cluster.yaml"},
@@ -40,7 +47,7 @@ func TestOptions(t *testing.T) {
 			allContexts:  true,
 			totURL:       "https://tot",
 			kubeconfig:   "/root/kubeconfig",
-			config:       "/etc/config.yaml",
+			configPath:   "/etc/config.yaml",
 			buildCluster: "/etc/build-cluster.yaml",
 		},
 		err: true,
@@ -52,7 +59,7 @@ func TestOptions(t *testing.T) {
 			allContexts: true,
 			totURL:      "https://tot",
 			kubeconfig:  "/root/kubeconfig",
-			config:      "/etc/config.yaml",
+			configPath:  "/etc/config.yaml",
 		},
 	}}
 	for _, tc := range cases {
