@@ -24,3 +24,6 @@ pod.yaml
 # Things running grandmatriarch locally might create
 cookies
 secret.yaml
+
+# Binaries
+logexporter/cmd/logexporter
