@@ -573,7 +573,11 @@ resources:
     - k8s-presubmit-scale-33
     - k8s-presubmit-scale-34
     - k8s-presubmit-scale-35
-    # projects 36 - 40 are under automatic configuration, to be added shortly
+    - k8s-presubmit-scale-36
+    - k8s-presubmit-scale-37
+    - k8s-presubmit-scale-38
+    - k8s-presubmit-scale-39
+    - k8s-presubmit-scale-40
     - k8s-presubmit-scale-41
     - k8s-presubmit-scale-42
     - k8s-presubmit-scale-43
