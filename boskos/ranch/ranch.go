@@ -39,10 +39,6 @@ type Ranch struct {
 	now func() time.Time
 }
 
-func updateTime() time.Time {
-	return time.Now()
-}
-
 // Public errors:
 
 // ResourceNotFound will be returned if requested resource does not exist.
@@ -244,10 +240,7 @@ func (r *Ranch) AcquireByState(state, dest, owner string, names []string) ([]*cr
 	}
 
 	if rNames.Len() != 0 {
-		var missingResources []string
-		for _, n := range rNames.List() {
-			missingResources = append(missingResources, n)
-		}
+		missingResources := rNames.List()
 		err := &ResourceNotFound{state}
 		logrus.WithError(err).Errorf("could not find required resources %s", strings.Join(missingResources, ", "))
 		return resources, err

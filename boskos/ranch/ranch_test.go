@@ -440,11 +440,9 @@ func TestRelease(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			var objs []runtime.Object
 			if tc.resource != nil {
-				tc.resource.Namespace = testNS
 				objs = append(objs, tc.resource)
 			}
 			if tc.dResource != nil {
-				tc.dResource.Namespace = testNS
 				objs = append(objs, tc.dResource)
 			}
 			if tc.expectedRes != nil {
@@ -454,6 +452,9 @@ func TestRelease(t *testing.T) {
 			releaseErr := c.Release(tc.resName, tc.dest, tc.owner)
 			if !AreErrorsEqual(releaseErr, tc.expectErr) {
 				t.Fatalf("Got error %v, expected error %v", releaseErr, tc.expectErr)
+			}
+			if tc.expectedRes != nil && tc.expectedRes.Status.UserData == nil {
+				tc.expectedRes.Status.UserData = &common.UserData{}
 			}
 			res, _ := c.Storage.GetResource(tc.resName)
 			if diff := deep.Equal(res, tc.expectedRes); diff != nil {
@@ -809,11 +810,7 @@ func TestAllMetrics(t *testing.T) {
 	}
 }
 
-func setExpiration(res common.Resource, exp time.Time) common.Resource {
-	res.ExpirationDate = &exp
-	return res
-}
-func setExpirationCRD(res *crds.ResourceObject, exp time.Time) *crds.ResourceObject {
+func setExpiration(res *crds.ResourceObject, exp time.Time) *crds.ResourceObject {
 	res.Status.ExpirationDate = &exp
 	return res
 }
@@ -1144,11 +1141,11 @@ func TestSyncResources(t *testing.T) {
 		{
 			name: "delete expired resource",
 			currentRes: []runtime.Object{
-				setExpirationCRD(
+				setExpiration(
 					newResource("dt_1", "dt", "", "", startTime),
 					startTime),
 				newResource("dt_2", "dt", "", "", startTime),
-				setExpirationCRD(
+				setExpiration(
 					newResource("dt_3", "dt", common.Tombstone, "", startTime),
 					startTime),
 				newResource("dt_4", "dt", "", "", startTime),
@@ -1170,7 +1167,7 @@ func TestSyncResources(t *testing.T) {
 				},
 			},
 			expectedRes: &crds.ResourceObjectList{Items: []crds.ResourceObject{
-				*setExpirationCRD(
+				*setExpiration(
 					newResource("dt_1", "dt", common.ToBeDeleted, "", fakeNow),
 					startTime),
 				*newResource("dt_2", "dt", common.Free, "", startTime),
@@ -1189,11 +1186,11 @@ func TestSyncResources(t *testing.T) {
 		{
 			name: "delete expired resource / do not delete busy",
 			currentRes: []runtime.Object{
-				setExpirationCRD(
+				setExpiration(
 					newResource("dt_1", "dt", common.Tombstone, "", startTime),
 					startTime),
 				newResource("dt_2", "dt", "", "", startTime),
-				setExpirationCRD(
+				setExpiration(
 					newResource("dt_3", "dt", common.Busy, "o", startTime),
 					startTime),
 				newResource("dt_4", "dt", common.Busy, "o", startTime),
@@ -1216,7 +1213,7 @@ func TestSyncResources(t *testing.T) {
 			},
 			expectedRes: &crds.ResourceObjectList{Items: []crds.ResourceObject{
 				*newResource("dt_2", "dt", common.Free, "", startTime),
-				*setExpirationCRD(
+				*setExpiration(
 					newResource("dt_3", "dt", common.Busy, "o", startTime),
 					startTime),
 				*newResource("dt_4", "dt", common.Busy, "o", startTime),
@@ -1234,11 +1231,11 @@ func TestSyncResources(t *testing.T) {
 		{
 			name: "delete expired resource, recreate up to Min",
 			currentRes: []runtime.Object{
-				setExpirationCRD(
+				setExpiration(
 					newResource("dt_1", "dt", "", "", startTime),
 					startTime),
 				newResource("dt_2", "dt", "", "", startTime),
-				setExpirationCRD(
+				setExpiration(
 					newResource("dt_3", "dt", common.Tombstone, "", startTime),
 					startTime),
 				newResource("dt_4", "dt", "", "", startTime),
@@ -1260,7 +1257,7 @@ func TestSyncResources(t *testing.T) {
 				},
 			},
 			expectedRes: &crds.ResourceObjectList{Items: []crds.ResourceObject{
-				*setExpirationCRD(
+				*setExpiration(
 					newResource("dt_1", "dt", common.ToBeDeleted, "", fakeNow),
 					startTime),
 				*newResource("new-dynamic-res-1", "dt", common.Free, "", fakeNow),
@@ -1435,16 +1432,16 @@ func TestUpdateAllDynamicResources(t *testing.T) {
 		{
 			name: "delete expired free resources",
 			currentRes: []runtime.Object{
-				setExpirationCRD(
+				setExpiration(
 					newResource("dt_1", "dt", common.Free, "", startTime),
 					fakeNow.Add(time.Hour)),
-				setExpirationCRD(
+				setExpiration(
 					newResource("dt_2", "dt", common.Free, "", startTime),
 					startTime),
-				setExpirationCRD(
+				setExpiration(
 					newResource("dt_3", "dt", common.Busy, "owner", startTime),
 					startTime),
-				setExpirationCRD(
+				setExpiration(
 					newResource("dt_4", "dt", common.ToBeDeleted, "", startTime),
 					startTime),
 				&crds.DRLCObject{
@@ -1457,19 +1454,19 @@ func TestUpdateAllDynamicResources(t *testing.T) {
 			},
 			expectedRes: &crds.ResourceObjectList{Items: []crds.ResourceObject{
 				// Unchanged because expiration is in the future
-				*setExpirationCRD(
+				*setExpiration(
 					newResource("dt_1", "dt", common.Free, "", startTime),
 					fakeNow.Add(time.Hour)),
 				// Newly deleted
-				*setExpirationCRD(
+				*setExpiration(
 					newResource("dt_2", "dt", common.ToBeDeleted, "", fakeNow),
 					startTime),
 				// Unchanged because owned
-				*setExpirationCRD(
+				*setExpiration(
 					newResource("dt_3", "dt", common.Busy, "owner", startTime),
 					startTime),
 				// Unchanged because already being deleted
-				*setExpirationCRD(
+				*setExpiration(
 					newResource("dt_4", "dt", common.ToBeDeleted, "", startTime),
 					startTime),
 			}},
