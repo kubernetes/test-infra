@@ -26,16 +26,16 @@ def repositories():
     )
     http_archive(
         name = "io_bazel_rules_docker",
-        sha256 = "413bb1ec0895a8d3249a01edf24b82fd06af3c8633c9fb833a0cb1d4b234d46d",
-        strip_prefix = "rules_docker-0.12.0",
-        urls = ["https://github.com/bazelbuild/rules_docker/archive/v0.12.0.tar.gz"],
+        sha256 = "dc97fccceacd4c6be14e800b2a00693d5e8d07f69ee187babfd04a80a9f8e250",
+        strip_prefix = "rules_docker-0.14.1",
+        urls = ["https://github.com/bazelbuild/rules_docker/releases/download/v0.14.1/rules_docker-v0.14.1.tar.gz"],
     )
 
     http_archive(
         name = "io_bazel_rules_k8s",
-        sha256 = "a34539941fd920432b7c545f720129e2f2e6b2285f1beb66de25e429f91759bf",
-        strip_prefix = "rules_k8s-0.3",
-        urls = ["https://github.com/bazelbuild/rules_k8s/releases/download/v0.3/rules_k8s-v0.3.tar.gz"],
+        sha256 = "cc75cf0d86312e1327d226e980efd3599704e01099b58b3c2fc4efe5e321fcd9",
+        strip_prefix = "rules_k8s-0.3.1",
+        urls = ["https://github.com/bazelbuild/rules_k8s/releases/download/v0.3.1/rules_k8s-v0.3.1.tar.gz"],
     )
 
     # https://github.com/bazelbuild/rules_nodejs
