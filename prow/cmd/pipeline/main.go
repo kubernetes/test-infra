@@ -47,7 +47,7 @@ import (
 type options struct {
 	allContexts  bool
 	buildCluster string
-	config       string
+	configPath   string
 	kubeconfig   string
 	totURL       string
 }
@@ -64,13 +64,16 @@ func (o *options) parse(flags *flag.FlagSet, args []string) error {
 	flags.BoolVar(&o.allContexts, "all-contexts", false, "Monitor all cluster contexts, not just default")
 	flags.StringVar(&o.totURL, "tot-url", "", "Tot URL")
 	flags.StringVar(&o.kubeconfig, "kubeconfig", "", "Path to kubeconfig. Only required if out of cluster")
-	flags.StringVar(&o.config, "config", "", "Path to prow config.yaml")
+	flags.StringVar(&o.configPath, "config", "", "Path to prow config.yaml")
 	flags.StringVar(&o.buildCluster, "build-cluster", "", "Path to file containing a YAML-marshalled kube.Cluster object. If empty, uses the local cluster.")
 	if err := flags.Parse(args); err != nil {
 		return fmt.Errorf("Parse flags: %v", err)
 	}
+	if o.configPath == "" {
+		return errors.New("--config is mandatory, set --config to prow config.yaml file")
+	}
 	if o.kubeconfig != "" && o.buildCluster != "" {
-		return errors.New("deprecated --builde-cluster may not be used with --kubeconfig")
+		return errors.New("deprecated --build-cluster may not be used with --kubeconfig")
 	}
 	if o.buildCluster != "" {
 		// TODO(fejta): change to warn and add a term date after plank migration
@@ -117,11 +120,9 @@ func main() {
 	pjutil.ServePProf()
 
 	configAgent := &config.Agent{}
-	if o.config != "" {
-		const ignoreJobConfig = ""
-		if err := configAgent.Start(o.config, ignoreJobConfig); err != nil {
-			logrus.WithError(err).Fatal("failed to load prow config")
-		}
+	const ignoreJobConfig = ""
+	if err := configAgent.Start(o.configPath, ignoreJobConfig); err != nil {
+		logrus.WithError(err).Fatal("failed to load prow config")
 	}
 
 	configs, err := kube.LoadClusterConfigs(o.kubeconfig, o.buildCluster)
