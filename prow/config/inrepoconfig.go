@@ -22,7 +22,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
-	"strings"
 
 	"github.com/sirupsen/logrus"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
@@ -64,12 +63,11 @@ func defaultProwYAMLGetter(
 		return nil, errors.New("gitClient is nil")
 	}
 
-	identifierSlashSplit := strings.Split(identifier, "/")
-	if len(identifierSlashSplit) != 2 {
-		return nil, fmt.Errorf("didn't get two but %d results when splitting repo identifier %q", len(identifierSlashSplit), identifier)
+	orgRepo := *NewOrgRepo(identifier)
+	if orgRepo.Repo == "" {
+		return nil, fmt.Errorf("didn't get two results when splitting repo identifier %q", identifier)
 	}
-	organization, repository := identifierSlashSplit[0], identifierSlashSplit[1]
-	repo, err := gc.ClientFor(organization, repository)
+	repo, err := gc.ClientFor(orgRepo.Org, orgRepo.Repo)
 	if err != nil {
 		return nil, fmt.Errorf("failed to clone repo for %q: %v", identifier, err)
 	}
@@ -89,7 +87,7 @@ func defaultProwYAMLGetter(
 		return nil, err
 	}
 
-	mergeMethod := c.Tide.MergeMethod(organization, repository)
+	mergeMethod := c.Tide.MergeMethod(orgRepo)
 	log.Debugf("Using merge strategy %q.", mergeMethod)
 	if err := repo.MergeAndCheckout(baseSHA, string(mergeMethod), headSHAs...); err != nil {
 		return nil, fmt.Errorf("failed to merge: %v", err)
