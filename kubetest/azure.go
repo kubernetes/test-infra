@@ -45,6 +45,12 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
+const (
+	winZipTemplate                = "win-zip-%s.zip"
+	k8sNodeTarballTemplate        = "kubernetes-node-linux-amd64-%s.tar.gz"
+	azureBlobContainerURLTemplate = "https://%s.blob.core.windows.net/%s"
+)
+
 var (
 	aksResourceName        = flag.String("aksengine-resource-name", "", "Azure Resource Name")
 	aksResourceGroupName   = flag.String("aksengine-resourcegroup-name", "", "Azure Resource Group Name")
@@ -60,7 +66,6 @@ var (
 	aksEngineMD5           = flag.String("aksengine-md5-sum", "", "Checksum for aks engine download")
 	aksSSHPublicKeyPath    = flag.String("aksengine-public-key", "", "Path to SSH Public Key")
 	aksWinBinaries         = flag.Bool("aksengine-win-binaries", false, "Set to True if you want kubetest to build a custom zip with windows binaries for aks-engine")
-	aksHyperKube           = flag.Bool("aksengine-hyperkube", false, "(Deprecated) Set to True if you want kubetest to build a custom hyperkube for aks-engine. Use --aksengine-deploy-custom-k8s instead.")
 	aksCcm                 = flag.Bool("aksengine-ccm", false, "Set to True if you want kubetest to build a custom cloud controller manager for aks-engine")
 	aksCnm                 = flag.Bool("aksengine-cnm", false, "Set to True if you want kubetest to build a custom cloud node manager for aks-engine. Require --aksengine-ccm to be true")
 	aksCredentialsFile     = flag.String("aksengine-creds", "", "Path to credential file for Azure")
@@ -71,6 +76,8 @@ var (
 	aksIdentitySystem      = flag.String("aksengine-identity-system", "azure_ad", "identity system (default:`azure_ad`, `adfs`)")
 	aksCustomCloudURL      = flag.String("aksengine-custom-cloud-url", "", "management portal URL to use in custom Azure cloud (i.e Azure Stack etc)")
 	aksDeployCustomK8s     = flag.Bool("aksengine-deploy-custom-k8s", false, "Set to True if you want to deploy custom-built k8s via aks-engine")
+	aksCheckParams         = flag.Bool("aksengine-check-params", true, "Set to True if you want to validate your input parameters")
+	aksDumpClusterLogs     = flag.Bool("aksengine-dump-cluster-logs", true, "Set to True if you want to dump cluster logs")
 	testCcm                = flag.Bool("test-ccm", false, "Set to True if you want kubetest to run e2e tests for ccm")
 	testAzureFileCSIDriver = flag.Bool("test-azure-file-csi-driver", false, "Set to True if you want kubetest to run e2e tests for Azure File CSI driver")
 	testAzureDiskCSIDriver = flag.Bool("test-azure-disk-csi-driver", false, "Set to True if you want kubetest to run e2e tests for Azure Disk CSI driver")
@@ -166,6 +173,7 @@ type Cluster struct {
 	aksDeploymentMethod              aksDeploymentMethod
 	useManagedIdentity               bool
 	identityName                     string
+	azureBlobContainerURL            string
 }
 
 // IsAzureStackCloud return true if the cloud is AzureStack
@@ -287,6 +295,11 @@ func randomAKSEngineLocation() string {
 }
 
 func checkParams() error {
+	if !*aksCheckParams {
+		log.Print("Skipping checkParams")
+		return nil
+	}
+
 	// Validate flags
 	if strings.EqualFold(*aksAzureEnv, AzureStackCloud) {
 		if err := validateAzureStackCloudProfile(); err != nil {
@@ -329,7 +342,11 @@ func newAKSEngine() (*Cluster, error) {
 	tempdir, _ := ioutil.TempDir(os.Getenv("HOME"), "aks")
 	sshKey, err := ioutil.ReadFile(*aksSSHPublicKeyPath)
 	if err != nil {
-		return nil, fmt.Errorf("error reading SSH Key %v %v", *aksSSHPublicKeyPath, err)
+		if os.IsNotExist(err) {
+			sshKey = []byte{}
+		} else {
+			return nil, fmt.Errorf("error reading SSH Key %v %v", *aksSSHPublicKeyPath, err)
+		}
 	}
 	// assume the private key is at the same location as the public key.
 	// since it is only used for log collection purposes, we issue a warning if the log collection script
@@ -357,21 +374,23 @@ func newAKSEngine() (*Cluster, error) {
 		azureEnvironment:                 *aksAzureEnv,
 		azureIdentitySystem:              *aksIdentitySystem,
 		azureCustomCloudURL:              *aksCustomCloudURL,
-		customHyperkubeImage:             "",
-		aksCustomWinBinariesURL:          "",
-		customCcmImage:                   "",
-		customCnmImage:                   "",
-		customKubeAPIServerImage:         "",
-		customKubeControllerManagerImage: "",
-		customKubeProxyImage:             "",
-		customKubeSchedulerImage:         "",
-		customKubeBinaryURL:              "",
+		customHyperkubeImage:             getDockerImage(hyperkubeImageName),
+		customCcmImage:                   getDockerImage(ccmImageName),
+		customCnmImage:                   getDockerImage(cnmImageName),
+		customKubeAPIServerImage:         getDockerImage(kubeAPIServerImageName),
+		customKubeControllerManagerImage: getDockerImage(kubeControllerManagerImageName),
+		customKubeProxyImage:             getDockerImage(kubeProxyImageName),
+		customKubeSchedulerImage:         getDockerImage(kubeSchedulerImageName),
 		aksEngineBinaryPath:              "aks-engine", // use the one in path by default
 		aksDeploymentMethod:              getAKSDeploymentMethod(*aksOrchestratorRelease),
 		useManagedIdentity:               false,
 		identityName:                     "",
 	}
 	c.getAzCredentials()
+	c.azureBlobContainerURL = fmt.Sprintf(azureBlobContainerURLTemplate, c.credentials.StorageAccountName, os.Getenv("AZ_STORAGE_CONTAINER_NAME"))
+	c.customKubeBinaryURL = fmt.Sprintf("%s/%s", c.azureBlobContainerURL, fmt.Sprintf(k8sNodeTarballTemplate, buildID))
+	c.aksCustomWinBinariesURL = fmt.Sprintf("%s/%s", c.azureBlobContainerURL, fmt.Sprintf(winZipTemplate, buildID))
+
 	err = c.SetCustomCloudProfileEnvironment()
 	if err != nil {
 		return nil, fmt.Errorf("failed to create custom cloud profile file: %v", err)
@@ -394,10 +413,6 @@ func newAKSEngine() (*Cluster, error) {
 }
 
 func getAKSDeploymentMethod(k8sRelease string) aksDeploymentMethod {
-	if *aksHyperKube {
-		return customHyperkube
-	}
-
 	if !*aksDeployCustomK8s {
 		return normal
 	}
@@ -509,15 +524,15 @@ func (c *Cluster) populateAPIModelTemplate() error {
 		}
 	}
 
-	if c.aksCustomWinBinariesURL != "" {
+	if *aksWinBinaries {
 		v.Properties.OrchestratorProfile.KubernetesConfig.CustomWindowsPackageURL = c.aksCustomWinBinariesURL
 	}
-	if c.customCcmImage != "" {
+	if *aksCcm {
 		useCloudControllerManager := true
 		v.Properties.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager = &useCloudControllerManager
 		v.Properties.OrchestratorProfile.KubernetesConfig.CustomCcmImage = c.customCcmImage
 	}
-	if c.customCnmImage != "" {
+	if *aksCnm {
 		cnmAddon := KubernetesAddon{
 			Name:    cnmAddonName,
 			Enabled: boolPointer(true),
@@ -795,13 +810,16 @@ func (c *Cluster) dockerLogin() error {
 	return nil
 }
 
-func dockerPush(image string) error {
-	log.Printf("Pushing docker image %s", image)
+func dockerPush(images ...string) error {
+	for _, image := range images {
+		log.Printf("Pushing docker image %s", image)
 
-	cmd := exec.Command("docker", "push", image)
-	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("failed to push %s: %v", image, err)
+		cmd := exec.Command("docker", "push", image)
+		if err := cmd.Run(); err != nil {
+			return fmt.Errorf("failed to push %s: %v", image, err)
+		}
 	}
+
 	return nil
 }
 
@@ -826,7 +844,6 @@ func (c *Cluster) buildAzureCloudComponents() error {
 		return err
 	}
 
-	c.customCcmImage = getDockerImage(ccmImageName)
 	log.Printf("Custom cloud controller manager image: %s", c.customCcmImage)
 
 	if *aksCnm {
@@ -837,7 +854,7 @@ func (c *Cluster) buildAzureCloudComponents() error {
 	return nil
 }
 
-func (c *Cluster) buildHyperKube() error {
+func (c *Cluster) buildHyperkube() error {
 	var pushCmd *exec.Cmd
 	os.Setenv("VERSION", imageTag)
 	log.Println("Building hyperkube.")
@@ -851,7 +868,6 @@ func (c *Cluster) buildHyperKube() error {
 		}
 		hyperkubeBin := util.K8s("kubernetes", "_output", "bin", "hyperkube")
 		pushCmd = exec.Command("make", "-C", util.K8s("kubernetes", "cluster", "images", "hyperkube"), "push", fmt.Sprintf("HYPERKUBE_BIN=%s", hyperkubeBin))
-
 	} else if os.IsNotExist(err) {
 		pushCmd = exec.Command("make", "-C", util.K8s("kubernetes", "cluster", "images", "hyperkube"), "push")
 	}
@@ -862,7 +878,6 @@ func (c *Cluster) buildHyperKube() error {
 		return err
 	}
 
-	c.customHyperkubeImage = getDockerImage(hyperkubeImageName)
 	log.Printf("Custom hyperkube image: %s", c.customHyperkubeImage)
 	return nil
 }
@@ -873,11 +888,7 @@ func (c *Cluster) uploadToAzureStorage(filePath string) (string, error) {
 		return "", fmt.Errorf("new shared key credential: %v", err)
 	}
 	p := azblob.NewPipeline(credential, azblob.PipelineOptions{})
-
-	var containerName string = os.Getenv("AZ_STORAGE_CONTAINER_NAME")
-
-	URL, _ := url.Parse(
-		fmt.Sprintf("https://%s.blob.core.windows.net/%s", c.credentials.StorageAccountName, containerName))
+	URL, _ := url.Parse(c.azureBlobContainerURL)
 
 	containerURL := azblob.NewContainerURL(*URL, p)
 	file, err := os.Open(filePath)
@@ -943,8 +954,7 @@ func getZipBuildScript(buildScriptURL string, retry int) (string, error) {
 }
 
 func (c *Cluster) buildWinZip() error {
-
-	zipName := fmt.Sprintf("%s%s.zip", os.Getenv("BUILD_ID"), uuid.NewV1().String()[:8])
+	zipName := fmt.Sprintf(winZipTemplate, buildID)
 	buildFolder := path.Join(os.Getenv("HOME"), "winbuild")
 	zipPath := path.Join(os.Getenv("HOME"), zipName)
 	log.Printf("Building %s", zipName)
@@ -967,24 +977,6 @@ func (c *Cluster) buildWinZip() error {
 
 func (c *Cluster) Up() error {
 	var err error
-	if *aksCcm {
-		err = c.buildAzureCloudComponents()
-		if err != nil {
-			return fmt.Errorf("error building Azure cloud components: %v", err)
-		}
-	}
-	if *aksHyperKube || c.aksDeploymentMethod == customHyperkube {
-		err = c.buildHyperKube()
-		if err != nil {
-			return fmt.Errorf("error building hyperkube %v", err)
-		}
-	}
-	if *aksWinBinaries {
-		err = c.buildWinZip()
-		if err != nil {
-			return fmt.Errorf("error building windowsZipFile %v", err)
-		}
-	}
 	if c.apiModelPath != "" {
 		templateFile, err := downloadFromURL(c.apiModelPath, path.Join(c.outputDir, "kubernetes.json"), 2)
 		if err != nil {
@@ -1020,55 +1012,66 @@ func (c *Cluster) Up() error {
 	return nil
 }
 
-func (c *Cluster) BuildK8s(b buildStrategy) error {
+func (c *Cluster) Build(b buildStrategy) error {
 	if c.aksDeploymentMethod != customK8sComponents {
-		return b.Build()
+		// Build k8s without any special environment variables
+		if err := b.Build(); err != nil {
+			return err
+		}
+	} else {
+		// Environment variables for creating custom k8s images
+		if err := os.Setenv("KUBE_DOCKER_REGISTRY", imageRegistry); err != nil {
+			return err
+		}
+		if err := os.Setenv("KUBE_DOCKER_IMAGE_TAG", imageTag); err != nil {
+			return err
+		}
+
+		if err := b.Build(); err != nil {
+			return err
+		}
+
+		if err := dockerPush(
+			c.customKubeAPIServerImage,
+			c.customKubeControllerManagerImage,
+			c.customKubeProxyImage,
+			c.customKubeSchedulerImage,
+		); err != nil {
+			return err
+		}
+
+		oldK8sNodeTarball := filepath.Join(k8sNodeTarballDir, "kubernetes-node-linux-amd64.tar.gz")
+		if _, err := os.Stat(oldK8sNodeTarball); os.IsNotExist(err) {
+			return fmt.Errorf("%s does not exist", oldK8sNodeTarball)
+		}
+
+		// Rename the tarball so that uploaded tarball won't get overwritten by other jobs
+		newK8sNodeTarball := filepath.Join(k8sNodeTarballDir, fmt.Sprintf(k8sNodeTarballTemplate, buildID))
+		log.Printf("Renaming %s to %s", oldK8sNodeTarball, newK8sNodeTarball)
+		if err := os.Rename(oldK8sNodeTarball, newK8sNodeTarball); err != nil {
+			return fmt.Errorf("error renaming %s to %s: %v", oldK8sNodeTarball, newK8sNodeTarball, err)
+		}
+
+		var err error
+		if c.customKubeBinaryURL, err = c.uploadToAzureStorage(newK8sNodeTarball); err != nil {
+			return err
+		}
 	}
 
-	var err error
-	// Environment variables for creating custom images
-	if err = os.Setenv("KUBE_DOCKER_REGISTRY", imageRegistry); err != nil {
-		return err
+	if *aksCcm {
+		if err := c.buildAzureCloudComponents(); err != nil {
+			return fmt.Errorf("error building Azure cloud components: %v", err)
+		}
 	}
-	if err = os.Setenv("KUBE_DOCKER_IMAGE_TAG", imageTag); err != nil {
-		return err
+	if *aksWinBinaries {
+		if err := c.buildWinZip(); err != nil {
+			return fmt.Errorf("error building windowsZipFile %v", err)
+		}
 	}
-
-	// --build=quick generates images of k8s components and k8s tarballs
-	if err = b.Build(); err != nil {
-		return err
-	}
-
-	c.customKubeAPIServerImage = getDockerImage(kubeAPIServerImageName)
-	if err = dockerPush(c.customKubeAPIServerImage); err != nil {
-		return err
-	}
-	c.customKubeControllerManagerImage = getDockerImage(kubeControllerManagerImageName)
-	if err = dockerPush(c.customKubeControllerManagerImage); err != nil {
-		return err
-	}
-	c.customKubeProxyImage = getDockerImage(kubeProxyImageName)
-	if err = dockerPush(c.customKubeProxyImage); err != nil {
-		return err
-	}
-	c.customKubeSchedulerImage = getDockerImage(kubeSchedulerImageName)
-	if err = dockerPush(c.customKubeSchedulerImage); err != nil {
-		return err
-	}
-
-	oldK8sNodeTarball := filepath.Join(k8sNodeTarballDir, "kubernetes-node-linux-amd64.tar.gz")
-	if _, err = os.Stat(oldK8sNodeTarball); os.IsNotExist(err) {
-		return fmt.Errorf("%s does not exist", oldK8sNodeTarball)
-	}
-
-	// Rename the tarball so that uploaded tarball won't get overwritten by other jobs
-	newK8sNodeTarball := filepath.Join(k8sNodeTarballDir, fmt.Sprintf("kubernetes-node-linux-amd64-%s.tar.gz", buildID))
-	log.Printf("Renaming %s to %s", oldK8sNodeTarball, newK8sNodeTarball)
-	if err = os.Rename(oldK8sNodeTarball, newK8sNodeTarball); err != nil {
-		return fmt.Errorf("error renaming %s to %s: %v", oldK8sNodeTarball, newK8sNodeTarball, err)
-	}
-	if c.customKubeBinaryURL, err = c.uploadToAzureStorage(newK8sNodeTarball); err != nil {
-		return err
+	if c.aksDeploymentMethod == customHyperkube {
+		if err := c.buildHyperkube(); err != nil {
+			return fmt.Errorf("error building hyperkube %v", err)
+		}
 	}
 
 	return nil
@@ -1080,6 +1083,11 @@ func (c *Cluster) Down() error {
 }
 
 func (c *Cluster) DumpClusterLogs(localPath, gcsPath string) error {
+	if !*aksDumpClusterLogs {
+		log.Print("Skipping DumpClusterLogs")
+		return nil
+	}
+
 	if err := os.Setenv("ARTIFACTS", localPath); err != nil {
 		return err
 	}
