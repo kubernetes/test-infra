@@ -1,0 +1,9 @@
+# Ingredients is a list of things required for the recipe.
+ingredients:
+  - # Amount is how much of this is needed.
+    amount: 1
+
+    # Name is the ingredient's name.
+    name: potatoes
+  - amount: 2
+    name: eggs

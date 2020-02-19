@@ -31,6 +31,7 @@ go_test(
         "//pkg/genyaml/testdata/pointer_types:go_default_library",
         "//pkg/genyaml/testdata/primitive_types:go_default_library",
         "//pkg/genyaml/testdata/private_members:go_default_library",
+        "//pkg/genyaml/testdata/sequence_items:go_default_library",
         "@in_gopkg_yaml_v3//:go_default_library",
     ],
 )
@@ -52,6 +53,7 @@ filegroup(
         "//pkg/genyaml/testdata/pointer_types:test-data",
         "//pkg/genyaml/testdata/primitive_types:test-data",
         "//pkg/genyaml/testdata/private_members:test-data",
+        "//pkg/genyaml/testdata/sequence_items:test-data",
         "//pkg/genyaml/testdata/set_path_overwrite:test-data",
         "//pkg/genyaml/testdata/single_path:test-data",
     ],
@@ -82,6 +84,7 @@ filegroup(
         "//pkg/genyaml/testdata/pointer_types:all-srcs",
         "//pkg/genyaml/testdata/primitive_types:all-srcs",
         "//pkg/genyaml/testdata/private_members:all-srcs",
+        "//pkg/genyaml/testdata/sequence_items:all-srcs",
         "//pkg/genyaml/testdata/set_path_overwrite:all-srcs",
         "//pkg/genyaml/testdata/single_path:all-srcs",
     ],
