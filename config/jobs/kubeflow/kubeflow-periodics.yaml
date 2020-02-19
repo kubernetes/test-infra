@@ -167,7 +167,7 @@ periodics:
     testgrid-dashboards: sig-big-data
     description: Periodic testing of Kubeflow/manifests on the 0-6 release branch.
 - name: kubeflow-periodic-examples
-  interval: 8h
+  interval: 1h
   labels:
     preset-service-account: "true"
   spec:
