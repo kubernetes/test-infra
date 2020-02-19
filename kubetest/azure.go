@@ -1114,7 +1114,7 @@ func (c *Cluster) DumpClusterLogs(localPath, gcsPath string) error {
 	}
 
 	logDumperWindows := func() error {
-		const winLogDumpScriptUrl string = "https://raw.githubusercontent.com/adelina-t/windows-testing/logs_collector/scripts/win-ci-logs-collector.sh"
+		const winLogDumpScriptUrl string = "https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/scripts/win-ci-logs-collector.sh"
 		winLogDumpScript, err := downloadFromURL(winLogDumpScriptUrl, path.Join(c.outputDir, "win-ci-logs-collector.sh"), 2)
 
 		masterFQDN := fmt.Sprintf("%s.%s.cloudapp.azure.com", c.dnsPrefix, c.location)
