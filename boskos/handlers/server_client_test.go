@@ -27,6 +27,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/go-test/deep"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
@@ -125,8 +126,8 @@ func TestAcquireUpdate(t *testing.T) {
 			if err != nil {
 				t.Error("unable to list resources")
 			}
-			if !reflect.DeepEqual(updatedResource.UserData.ToMap(), userData.ToMap()) {
-				t.Errorf("info should match. Expected \n%v, received \n%v", userData.ToMap(), updatedResource.UserData.ToMap())
+			if !reflect.DeepEqual(updatedResource.Status.UserData.ToMap(), userData.ToMap()) {
+				t.Errorf("info should match. Expected \n%v, received \n%v", userData.ToMap(), updatedResource.Status.UserData.ToMap())
 			}
 		})
 	}
@@ -201,8 +202,15 @@ func TestAcquireByState(t *testing.T) {
 				t.Fatalf("tc: %s - errors don't match, expected %v, received\n %v", tc.name, tc.err, err)
 			}
 			sort.Sort(common.ResourceByName(receivedRes))
-			if !reflect.DeepEqual(receivedRes, tc.expected) {
-				t.Errorf("tc: %s - resources should match. Expected \n%v, received \n%v", tc.name, tc.expected, receivedRes)
+
+			// Make sure the comparison doesn't bail on nil != empty
+			for idx := range tc.expected {
+				if tc.expected[idx].UserData == nil {
+					tc.expected[idx].UserData = &common.UserData{}
+				}
+			}
+			if diff := deep.Equal(receivedRes, tc.expected); diff != nil {
+				t.Errorf("receivedRes differ from expected, diff: %v", diff)
 			}
 		})
 	}
@@ -211,12 +219,7 @@ func TestAcquireByState(t *testing.T) {
 func TestClientServerUpdate(t *testing.T) {
 	owner := "owner"
 
-	newResourceWithUD := func(name, rtype, state, owner string, t time.Time, ud common.UserDataMap) common.Resource {
-		res := common.NewResource(name, rtype, state, owner, t)
-		res.UserData = common.UserDataFromMap(ud)
-		return res
-	}
-	newCRDResourceWithUD := func(name, rtype, state, owner string, t time.Time, ud common.UserDataMap) *crds.ResourceObject {
+	newResourceWithUD := func(name, rtype, state, owner string, t time.Time, ud common.UserDataMap) *crds.ResourceObject {
 		res := newResource(name, rtype, state, owner, t)
 		res.Status.UserData = common.UserDataFromMap(ud)
 		return res
@@ -230,7 +233,7 @@ func TestClientServerUpdate(t *testing.T) {
 	var testcases = []struct {
 		name     string
 		resource *crds.ResourceObject
-		expected common.Resource
+		expected *crds.ResourceObject
 		err      error
 		names    []string
 		ud       common.UserDataMap
@@ -238,7 +241,7 @@ func TestClientServerUpdate(t *testing.T) {
 		{
 			name:     "noUserData",
 			resource: newResource(resourceName, rType, initialState, "", time.Time{}),
-			expected: common.NewResource(resourceName, rType, finalState, owner, fakeNow),
+			expected: newResource(resourceName, rType, finalState, owner, fakeNow),
 		},
 		{
 			name:     "userData",
@@ -248,19 +251,19 @@ func TestClientServerUpdate(t *testing.T) {
 		},
 		{
 			name:     "newUserData",
-			resource: newCRDResourceWithUD(resourceName, rType, initialState, "", fakeNow, common.UserDataMap{"1": "1"}),
+			resource: newResourceWithUD(resourceName, rType, initialState, "", fakeNow, common.UserDataMap{"1": "1"}),
 			expected: newResourceWithUD(resourceName, rType, finalState, owner, fakeNow, common.UserDataMap{"1": "1", "2": "2"}),
 			ud:       common.UserDataMap{"2": "2"},
 		},
 		{
 			name:     "OverRideUserData",
-			resource: newCRDResourceWithUD(resourceName, rType, initialState, "", fakeNow, common.UserDataMap{"1": "1"}),
+			resource: newResourceWithUD(resourceName, rType, initialState, "", fakeNow, common.UserDataMap{"1": "1"}),
 			expected: newResourceWithUD(resourceName, rType, finalState, owner, fakeNow, common.UserDataMap{"1": "2"}),
 			ud:       common.UserDataMap{"1": "2"},
 		},
 		{
 			name:     "DeleteUserData",
-			resource: newCRDResourceWithUD(resourceName, rType, initialState, "", fakeNow, common.UserDataMap{"1": "1", "2": "2"}),
+			resource: newResourceWithUD(resourceName, rType, initialState, "", fakeNow, common.UserDataMap{"1": "1", "2": "2"}),
 			expected: newResourceWithUD(resourceName, rType, finalState, owner, fakeNow, common.UserDataMap{"2": "2"}),
 			ud:       common.UserDataMap{"1": ""},
 		},
@@ -283,14 +286,12 @@ func TestClientServerUpdate(t *testing.T) {
 				t.Fatalf("tc: %s - errors don't match, expected %v, received\n %v", tc.name, tc.err, err)
 			}
 			receivedRes, _ := r.Storage.GetResource(tc.resource.Name)
-			if !reflect.DeepEqual(receivedRes.UserData.ToMap(), tc.expected.UserData.ToMap()) {
-				t.Errorf("tc: %s - resources user data should match. Expected \n%v, received \n%v", tc.name, tc.expected.UserData.ToMap(), receivedRes.UserData.ToMap())
+			if !reflect.DeepEqual(receivedRes.Status.UserData.ToMap(), tc.expected.Status.UserData.ToMap()) {
+				t.Errorf("tc: %s - resources user data should match. Expected \n%v, received \n%v", tc.name, tc.expected.Status.UserData.ToMap(), receivedRes.Status.UserData.ToMap())
 			}
-			// Hack: remove UserData to be able to compare since we already compared it before.
-			receivedRes.UserData = nil
-			tc.expected.UserData = nil
-			if !reflect.DeepEqual(receivedRes, tc.expected) {
-				t.Errorf("tc: %s - resources should match. Expected \n%v, received \n%v", tc.name, tc.expected, receivedRes)
+			tc.expected.Namespace = "test"
+			if diff := deep.Equal(receivedRes, tc.expected); diff != nil {
+				t.Errorf("receivedRes differs from expected, diff: %v", diff)
 			}
 		})
 	}

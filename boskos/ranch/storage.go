@@ -131,6 +131,9 @@ func (s *Storage) GetResource(name string) (*crds.ResourceObject, error) {
 	if err := s.client.Get(s.ctx, nn, o); err != nil {
 		return nil, fmt.Errorf("failed to get resource %s: %v", name, err)
 	}
+	if o.Status.UserData == nil {
+		o.Status.UserData = &common.UserData{}
+	}
 
 	return o, nil
 }

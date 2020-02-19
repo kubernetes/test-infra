@@ -221,8 +221,8 @@ func TestAcquire(t *testing.T) {
 				if err != nil {
 					t.Fatalf("error getting resource: %v", err)
 				}
-				if resources[0].Owner != "o" {
-					t.Errorf("%s - Wrong owner. Got %v, expect o", tc.name, resources[0].Owner)
+				if resources.Items[0].Status.Owner != "o" {
+					t.Errorf("%s - Wrong owner. Got %v, expect o", tc.name, resources.Items[0].Status.Owner)
 				}
 			}
 		})
@@ -356,12 +356,12 @@ func TestRelease(t *testing.T) {
 				if err != nil {
 					t.Fatalf("error getting resource: %v", err)
 				}
-				if resources[0].State != "d" {
-					t.Errorf("%s - Wrong state. Got %v, expect d", tc.name, resources[0].State)
+				if resources.Items[0].Status.State != "d" {
+					t.Errorf("%s - Wrong state. Got %v, expect d", tc.name, resources.Items[0].Status.State)
 				}
 
-				if resources[0].Owner != "" {
-					t.Errorf("%s - Wrong owner. Got %v, expect empty", tc.name, resources[0].Owner)
+				if resources.Items[0].Status.Owner != "" {
+					t.Errorf("%s - Wrong owner. Got %v, expect empty", tc.name, resources.Items[0].Status.Owner)
 				}
 			}
 		})
@@ -701,7 +701,7 @@ func TestUpdate(t *testing.T) {
 				if err != nil {
 					t.Fatalf("error getting resources: %v", err)
 				}
-				if resources[0].LastUpdate == FakeNow {
+				if resources.Items[0].Status.LastUpdate == FakeNow {
 					t.Errorf("%s - Timestamp is not updated!", tc.name)
 				}
 			}
