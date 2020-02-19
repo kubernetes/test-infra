@@ -16,7 +16,7 @@ spec:
       containers:
       - name: influxdb
         command:
-        image: influxdb:1.2.2
+        image: influxdb:1.7.9
         env:
         - name: INFLUXDB_HTTP_AUTH_ENABLED
           value: "true"
