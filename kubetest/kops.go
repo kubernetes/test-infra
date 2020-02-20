@@ -399,6 +399,14 @@ func (k kops) Up() error {
 	}
 	if k.adminAccess != "" {
 		createArgs = append(createArgs, "--admin-access", k.adminAccess)
+	} else {
+		var b bytes.Buffer
+		if err := httpRead("https://v4.ifconfig.co", &b); err != nil {
+			return err
+		}
+		externalIP := strings.TrimSpace(b.String())
+		log.Printf("Using external IP for admin access: %v", externalIP)
+		k.adminAccess = externalIP
 	}
 
 	// Since https://github.com/kubernetes/kubernetes/pull/80655 conformance now require node ports to be open to all nodes
