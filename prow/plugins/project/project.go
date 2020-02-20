@@ -37,7 +37,7 @@ const (
 )
 
 var (
-	projectRegex              = regexp.MustCompile(`(?m)^/project\s+(.+?)(?:\s+(.+?)\s*)?$`)
+	projectRegex              = regexp.MustCompile(`(?m)^/project\s(.*?)$`)
 	notTeamConfigMsg          = "There is no maintainer team for this repo or org."
 	notATeamMemberMsg         = "You must be a member of the [%s/%s](https://github.com/orgs/%s/teams/%s/members) github team to set the project and column."
 	invalidProject            = "The provided project is not valid for this organization. Projects in Kubernetes orgs and repositories: [%s]."
@@ -111,25 +111,45 @@ func updateProjectNameToIDMap(projects []github.Project) {
 	}
 }
 
-// processRegexMatches processes the user command regex matches and returns the proposed project name,
+// processCommand processes the user command regex matches and returns the proposed project name,
 // proposed column name, whether the command is to remove issue/PR from project,
 // and the error message
-func processRegexMatches(matches []string) (string, string, bool, string) {
-	var shouldClear = false
-	proposedProject := matches[1]
+func processCommand(match string) (string, string, bool, string) {
+	proposedProject := ""
 	proposedColumnName := ""
-	if len(matches) > 1 && proposedProject != clearKeyword {
-		proposedColumnName = matches[2]
+
+	var shouldClear = false
+	content := strings.TrimSpace(match)
+
+	// Take care of clear
+	if strings.HasPrefix(content, clearKeyword) {
+		shouldClear = true
+		content = strings.TrimSpace(strings.Replace(content, clearKeyword, "", 1))
 	}
-	// If command is to clear and the project is provided
-	if proposedProject == clearKeyword {
-		if len(matches) > 2 && matches[2] != "" {
-			proposedProject = matches[2]
-			shouldClear = true
-		} else {
-			msg := invalidNumArgs
-			return "", "", false, msg
+
+	// Normalize " to ' for easier handle
+	content = strings.ReplaceAll(content, "\"", "'")
+	var parts []string
+	if strings.Contains(content, "'") {
+		parts = strings.Split(content, "'")
+	} else { // Split by space
+		parts = strings.SplitN(content, " ", 2)
+	}
+
+	var validParts []string
+	for _, part := range parts {
+		if strings.TrimSpace(part) != "" {
+			validParts = append(validParts, strings.TrimSpace(part))
 		}
+	}
+	if len(validParts) == 0 || len(validParts) > 2 {
+		msg := invalidNumArgs
+		return "", "", false, msg
+	}
+
+	proposedProject = validParts[0]
+	if len(validParts) > 1 {
+		proposedColumnName = validParts[1]
 	}
 
 	return proposedProject, proposedColumnName, shouldClear, ""
@@ -158,7 +178,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 
 	org := e.Repo.Owner.Login
 	repo := e.Repo.Name
-	proposedProject, proposedColumnName, shouldClear, msg := processRegexMatches(matches)
+	proposedProject, proposedColumnName, shouldClear, msg := processCommand(matches[1])
 	if proposedProject == "" {
 		return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg))
 	}
