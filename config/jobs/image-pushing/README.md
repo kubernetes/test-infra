@@ -137,6 +137,7 @@ postsubmits:
       branches:
         - ^master$
       spec:
+        serviceAccountName: deployer # TODO(fejta): use pusher
         containers:
           - image: gcr.io/k8s-testimages/image-builder:v20190906-d5d7ce3
             command:
@@ -149,16 +150,6 @@ postsubmits:
               - --scratch-bucket=gs://k8s-staging-cluster-api-gcb
               - --env-passthrough=PULL_BASE_REF
               - .
-            env:
-              - name: GOOGLE_APPLICATION_CREDENTIALS
-                value: /creds/service-account.json
-            volumeMounts:
-              - name: creds
-                mountPath: /creds
-        volumes:
-          - name: creds
-            secret:
-              secretName: deployer-service-account
 ```
 
 [gcr instructions]: https://github.com/kubernetes/k8s.io/blob/master/k8s.gcr.io/README.md
