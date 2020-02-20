@@ -649,6 +649,9 @@ type Branding struct {
 	BackgroundColor string `json:"background_color,omitempty"`
 	// HeaderColor is the color of the header.
 	HeaderColor string `json:"header_color,omitempty"`
+	// MaterialTheme is the color theme used for material-design-lite see https://getmdl.io/customize/
+	// default is indigo-pink
+	MaterialTheme string `json:"material_theme,omitempty"`
 }
 
 // PubSubSubscriptions maps GCP projects to a list of Topics.
