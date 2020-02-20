@@ -15,7 +15,7 @@ spec:
       labels:
         app: sinker
     spec:
-      # serviceAccountName: "sinker" # Uncomment for use with RBAC
+      serviceAccountName: sinker
       containers:
       - name: sinker
         args:
