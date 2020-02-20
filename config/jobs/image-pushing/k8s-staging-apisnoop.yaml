@@ -11,6 +11,7 @@ postsubmits:
       branches:
         - ^master$
       spec:
+        serviceAccountName: deployer # TODO(fejta): use pusher
         containers:
           - image: gcr.io/k8s-testimages/image-builder:v20200213-0032cdb
             command:
@@ -21,16 +22,6 @@ postsubmits:
               - --scratch-bucket=gs://k8s-staging-apisnoop-gcb
               - --env-passthrough=PULL_BASE_REF
               - apps/webapp/
-            env:
-              - name: GOOGLE_APPLICATION_CREDENTIALS
-                value: /creds/service-account.json
-            volumeMounts:
-              - name: creds
-                mountPath: /creds
-        volumes:
-          - name: creds
-            secret:
-              secretName: deployer-service-account
     - name: apisnoop-push-kubemacs-images
       cluster: test-infra-trusted
       annotations:
@@ -42,6 +33,7 @@ postsubmits:
       branches:
         - ^master$
       spec:
+        serviceAccountName: deployer # TODO(fejta): use pusher
         containers:
           - image: gcr.io/k8s-testimages/image-builder:v20200213-0032cdb
             command:
@@ -52,16 +44,6 @@ postsubmits:
               - --scratch-bucket=gs://k8s-staging-apisnoop-gcb
               - --env-passthrough=PULL_BASE_REF
               - apps/kubemacs/
-            env:
-              - name: GOOGLE_APPLICATION_CREDENTIALS
-                value: /creds/service-account.json
-            volumeMounts:
-              - name: creds
-                mountPath: /creds
-        volumes:
-          - name: creds
-            secret:
-              secretName: deployer-service-account
     - name: apisnoop-push-auditlogger-images
       cluster: test-infra-trusted
       annotations:
@@ -73,6 +55,7 @@ postsubmits:
       branches:
         - ^master$
       spec:
+        serviceAccountName: deployer # TODO(fejta): use pusher
         containers:
           - image: gcr.io/k8s-testimages/image-builder:v20200213-0032cdb
             command:
@@ -83,16 +66,6 @@ postsubmits:
               - --scratch-bucket=gs://k8s-staging-apisnoop-gcb
               - --env-passthrough=PULL_BASE_REF
               - apps/auditlogger/
-            env:
-              - name: GOOGLE_APPLICATION_CREDENTIALS
-                value: /creds/service-account.json
-            volumeMounts:
-              - name: creds
-                mountPath: /creds
-        volumes:
-          - name: creds
-            secret:
-              secretName: deployer-service-account
     - name: apisnoop-push-postgres-images
       cluster: test-infra-trusted
       annotations:
@@ -104,6 +77,7 @@ postsubmits:
       branches:
         - ^master$
       spec:
+        serviceAccountName: deployer # TODO(fejta): use pusher
         containers:
           - image: gcr.io/k8s-testimages/image-builder:v20200213-0032cdb
             command:
@@ -114,16 +88,6 @@ postsubmits:
               - --scratch-bucket=gs://k8s-staging-apisnoop-gcb
               - --env-passthrough=PULL_BASE_REF
               - apps/postgres/
-            env:
-              - name: GOOGLE_APPLICATION_CREDENTIALS
-                value: /creds/service-account.json
-            volumeMounts:
-              - name: creds
-                mountPath: /creds
-        volumes:
-          - name: creds
-            secret:
-              secretName: deployer-service-account
     - name: apisnoop-push-hasura-images
       cluster: test-infra-trusted
       annotations:
@@ -135,6 +99,7 @@ postsubmits:
       branches:
         - ^master$
       spec:
+        serviceAccountName: deployer # TODO(fejta): use pusher
         containers:
           - image: gcr.io/k8s-testimages/image-builder:v20200213-0032cdb
             command:
@@ -145,13 +110,3 @@ postsubmits:
               - --scratch-bucket=gs://k8s-staging-apisnoop-gcb
               - --env-passthrough=PULL_BASE_REF
               - apps/hasura/
-            env:
-              - name: GOOGLE_APPLICATION_CREDENTIALS
-                value: /creds/service-account.json
-            volumeMounts:
-              - name: creds
-                mountPath: /creds
-        volumes:
-          - name: creds
-            secret:
-              secretName: deployer-service-account
