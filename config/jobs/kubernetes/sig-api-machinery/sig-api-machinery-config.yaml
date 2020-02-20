@@ -66,7 +66,7 @@ presubmits:
         - --repo=k8s.io/kubernetes=$(PULL_REFS)
         - --repo=k8s.io/release
         - --upload=gs://kubernetes-jenkins/pr-logs
-        - --timeout=80
+        - --timeout=105
         - --scenario=kubernetes_e2e
         - --
         - --build=bazel
@@ -80,7 +80,10 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-network-proxy
         - --provider=gce
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=9
-        - --timeout=60m
+        - --timeout=80m
         image: gcr.io/k8s-testimages/kubekins-e2e:v20200220-47050c4-master
+        resources:
+          requests:
+            memory: "6Gi"
     annotations:
       testgrid-dashboards: sig-api-machinery-network-proxy
