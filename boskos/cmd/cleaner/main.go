@@ -19,6 +19,7 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
@@ -31,6 +32,7 @@ import (
 	"k8s.io/test-infra/boskos/client"
 	"k8s.io/test-infra/boskos/crds"
 	"k8s.io/test-infra/boskos/ranch"
+	"k8s.io/test-infra/prow/logrusutil"
 )
 
 const (
@@ -47,6 +49,7 @@ var (
 	passwordFile string
 	namespace    string
 	cleanerCount int
+	logLevel     string
 )
 
 func init() {
@@ -55,21 +58,28 @@ func init() {
 	flag.StringVar(&passwordFile, "password-file", "", "The path to password file used to access the Boskos server")
 	flag.IntVar(&cleanerCount, "cleaner-count", defaultCleanerCount, "Number of threads running cleanup")
 	flag.StringVar(&namespace, "namespace", corev1.NamespaceDefault, "namespace to install on")
+	flag.StringVar(&logLevel, "log-level", "info", fmt.Sprintf("Log level is one of %v.", logrus.AllLevels))
 	kubeClientOptions.AddFlags(flag.CommandLine)
 }
 
 func main() {
+	logrusutil.ComponentInit("boskos-cleaner")
+
 	flag.Parse()
 	kubeClientOptions.Validate()
 
-	logrus.SetFormatter(&logrus.JSONFormatter{})
+	level, err := logrus.ParseLevel(logLevel)
+	if err != nil {
+		logrus.WithError(err).Fatal("invalid log level specified")
+	}
+	logrus.SetLevel(level)
+
 	kubeClient, err := kubeClientOptions.Client()
 	if err != nil {
 		logrus.WithError(err).Fatal("failed to construct kube client")
 	}
 	st, _ := ranch.NewStorage(context.Background(), kubeClient, namespace, "")
 
-	logrus.SetFormatter(&logrus.JSONFormatter{})
 	client, err := client.NewClient(defaultOwner, boskosURL, username, passwordFile)
 	if err != nil {
 		logrus.WithError(err).Fatal("unable to create a Boskos client")
