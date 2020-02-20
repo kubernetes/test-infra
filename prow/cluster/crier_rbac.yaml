@@ -16,9 +16,12 @@
 kind: ServiceAccount
 apiVersion: v1
 metadata:
-  name: "crier"
+  annotations:
+    iam.gke.io/gcp-service-account: control-plane@k8s-prow.iam.gserviceaccount.com
+  name: crier
+  namespace: default
 ---
-kind: ClusterRole
+kind: ClusterRole # TODO(fejta): switch to role
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   # "namespace" omitted since ClusterRoles are not namespaced
@@ -42,16 +45,16 @@ rules:
     - "get"
     - "list"
 ---
-kind: ClusterRoleBinding
+kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
-  name: "crier"
-  namespace: "default"
+  name: crier
+  namespace: default
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: "crier"
+  name: crier
 subjects:
 - kind: ServiceAccount
-  name: "crier"
-  namespace: "default"
+  name: crier
+  namespace: default
