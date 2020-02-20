@@ -19,6 +19,7 @@ postsubmits:
       branches:
         - ^master$
       spec:
+        serviceAccountName: deployer # TODO(fejta)- use pusher
         containers:
           - image: gcr.io/k8s-testimages/image-builder:v20200213-0032cdb
             command:
@@ -32,12 +33,7 @@ postsubmits:
               - --env-passthrough=PULL_BASE_REF
               - --build-dir=.
               - test/images
-            env:
-              - name: GOOGLE_APPLICATION_CREDENTIALS
-                value: /creds/service-account.json
             volumeMounts:
-              - name: creds
-                mountPath: /creds
               - name: windows-cert
                 mountPath: /root/.docker-1809
               - name: windows-cert
@@ -45,9 +41,6 @@ postsubmits:
               - name: windows-cert
                 mountPath: /root/.docker-1909
         volumes:
-          - name: creds
-            secret:
-              secretName: deployer-service-account
           - name: windows-cert
             secret:
               secretName: windows-img-promoter-cert
