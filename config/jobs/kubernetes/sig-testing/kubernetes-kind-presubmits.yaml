@@ -240,7 +240,7 @@ presubmits:
         - wrapper.sh
         - bash
         - -c
-        - gsutil cp -P gs://bentheelder-kind-ci-builds/latest/kind-linux-amd64 "${PATH%%:*}/kind" && gsutil cat gs://bentheelder-kind-ci-builds/latest/e2e-k8s.sh | sh
+        - gsutil cp gs://bentheelder-kind-ci-builds/latest/kind-linux-amd64 "${PATH%%:*}/kind" && chmod +x $(which kind) && gsutil cat gs://bentheelder-kind-ci-builds/latest/e2e-k8s.sh | sh
         env:
         - name: FOCUS
           value: "."
@@ -290,7 +290,7 @@ presubmits:
         - wrapper.sh
         - bash
         - -c
-        - gsutil cp -P gs://bentheelder-kind-ci-builds/latest/kind-linux-amd64 "${PATH%%:*}/kind" && gsutil cat gs://bentheelder-kind-ci-builds/latest/e2e-k8s.sh | sh
+        - gsutil cp gs://bentheelder-kind-ci-builds/latest/kind-linux-amd64 "${PATH%%:*}/kind" && chmod +x $(which kind) && gsutil cat gs://bentheelder-kind-ci-builds/latest/e2e-k8s.sh | sh
         env:
         - name: FOCUS
           value: "."
@@ -339,7 +339,7 @@ presubmits:
         - wrapper.sh
         - bash
         - -c
-        - gsutil cp -P gs://bentheelder-kind-ci-builds/latest/kind-linux-amd64 "${PATH%%:*}/kind" && gsutil cat gs://bentheelder-kind-ci-builds/latest/e2e-k8s.sh | sh
+        - gsutil cp gs://bentheelder-kind-ci-builds/latest/kind-linux-amd64 "${PATH%%:*}/kind" && chmod +x $(which kind) && gsutil cat gs://bentheelder-kind-ci-builds/latest/e2e-k8s.sh | sh
         env:
         - name: FOCUS
           value: "."
@@ -394,7 +394,7 @@ presubmits:
         - wrapper.sh
         - bash
         - -c
-        - gsutil cp -P gs://bentheelder-kind-ci-builds/latest/kind-linux-amd64 "${PATH%%:*}/kind" && gsutil cat gs://bentheelder-kind-ci-builds/latest/e2e-k8s.sh | sh
+        - gsutil cp gs://bentheelder-kind-ci-builds/latest/kind-linux-amd64 "${PATH%%:*}/kind" && chmod +x $(which kind) && gsutil cat gs://bentheelder-kind-ci-builds/latest/e2e-k8s.sh | sh
         env:
         - name: FOCUS
           value: "."
