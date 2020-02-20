@@ -17,6 +17,7 @@
 set -o errexit
 set -o nounset
 set -o pipefail
+shopt -s nullglob
 
 # bump.sh is used to update references to Prow component images hosted at gcr.io/k8s-prow/*
 # Specifically it does the following:
