@@ -385,26 +385,30 @@ def main(project, days, hours, filt, rate_limit, service_account):
 
     if service_account:
         err |= activate_service_account(service_account)
+        if err:
+            print >> sys.stderr, 'Failed to activate service account %r' % (
+                service_account)
+            sys.exit(err)
 
-    if not err:
-        for res in DEMOLISH_ORDER:
-            log('Try to search for %r with condition %r, managed %r' % (
-                res.name, res.condition, res.managed))
-            try:
-                col = collect(project, age, res, filt, clear_all)
-                if col:
-                    err |= clear_resources(project, col, res, rate_limit)
-            except (subprocess.CalledProcessError, ValueError):
-                err |= 1  # keep clean the other resource
-                print >> sys.stderr, 'Fail to list resource %r from project %r' \
-                                     % (res.name, project)
+    # try to clean a leaked GKE cluster first, rather than attempting to delete
+    # its associated resources individually.
+    try:
+        err |= clean_gke_cluster(project, age, filt)
+    except ValueError:
+        err |= 1  # keep clean the other resource
+        print >> sys.stderr, 'Fail to clean up cluster from project %r' % project
 
-        # try to clean leaking gke cluster
+    for res in DEMOLISH_ORDER:
+        log('Try to search for %r with condition %r, managed %r' % (
+            res.name, res.condition, res.managed))
         try:
-            err |= clean_gke_cluster(project, age, filt)
-        except ValueError:
+            col = collect(project, age, res, filt, clear_all)
+            if col:
+                err |= clear_resources(project, col, res, rate_limit)
+        except (subprocess.CalledProcessError, ValueError):
             err |= 1  # keep clean the other resource
-            print >> sys.stderr, 'Fail to clean up cluster from project %r' % project
+            print >> sys.stderr, 'Fail to list resource %r from project %r' % (
+                res.name, project)
 
     print '[=== Finish Janitor on project %r with status %r ===]' % (project, err)
     sys.exit(err)
