@@ -614,7 +614,7 @@ postsubmits:
     cluster: test-infra-trusted
     branches:
     - master
-    run_if_changed: '^boskos/.*$'
+    run_if_changed: '^prow/cluster/boskos-resources.yaml$'
     decorate: true
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
