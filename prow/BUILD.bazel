@@ -5,6 +5,21 @@ load("@io_bazel_rules_docker//contrib:push-all.bzl", "docker_push")
 load("//prow:def.bzl", "prefix", "prow_push", "tags")
 
 container_bundle(
+    name = "release-deck",
+    images = tags(
+      cmds = ["deck"],
+      targets = {},
+    ),
+    stamp = True,
+)
+
+container_push(
+    name = "release-push-deck",
+    bundle = ":release-deck",
+    format = "OCI",
+)
+
+container_bundle(
     name = "release-hook",
     images = tags(
       cmds = ["hook"],
@@ -13,9 +28,40 @@ container_bundle(
     stamp = True,
 )
 
-docker_push(
+container_push(
     name = "release-push-hook",
     bundle = ":release-hook",
+    format = "OCI",
+)
+
+container_bundle(
+    name = "release-tide",
+    images = tags(
+      cmds = ["tide"],
+      targets = {},
+    ),
+    stamp = True,
+)
+
+container_push(
+    name = "release-push-tide",
+    bundle = ":release-tide",
+    format = "OCI",
+)
+
+prow_push(
+    name = "improbable-push",
+    bundle_name = "improbable-release",
+    images = tags(
+        cmds = [
+            "deck",
+            "hook",
+            "tide",
+        ],
+        targets = {
+            "ghproxy": "//ghproxy:image",
+        },
+    ),
 )
 
 prow_push(
