@@ -42,19 +42,21 @@ const (
 func checkSAAuth(clientset kubernetes.Interface) error {
 	client := clientset.AuthorizationV1beta1().SelfSubjectAccessReviews()
 
+	// https://kubernetes.io/docs/reference/access-authn-authz/rbac/#privilege-escalation-prevention-and-bootstrapping
 	if sar, err := client.Create(
 		&authorizationv1beta1.SelfSubjectAccessReview{
 			Spec: authorizationv1beta1.SelfSubjectAccessReviewSpec{
 				ResourceAttributes: &authorizationv1beta1.ResourceAttributes{
-					Group:    "authentication.k8s.io",
-					Verb:     "impersonate",
-					Resource: clusterRole,
+					Group:    "rbac.authorization.k8s.io",
+					Verb:     "bind",
+					Resource: "clusterroles",
+					Name:     clusterRole,
 				},
 			},
 		}); err != nil {
-		return fmt.Errorf("impersonate %s: %v", clusterRole, err)
+		return fmt.Errorf("bind %s: %v", clusterRole, err)
 	} else if !sar.Status.Allowed {
-		return fmt.Errorf("not authorized to impersonate %s", clusterRole)
+		return fmt.Errorf("not authorized to bind %s: %s", clusterRole, sar.Status.Reason)
 	}
 
 	return nil
