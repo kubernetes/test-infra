@@ -26,9 +26,17 @@ import (
 	"os"
 	"reflect"
 	"testing"
+	"time"
 
 	"k8s.io/apimachinery/pkg/util/diff"
+
+	"k8s.io/test-infra/boskos/client"
 )
+
+func init() {
+	// Don't actually sleep in tests
+	client.SleepFunc = func(_ time.Duration) {}
+}
 
 type request struct {
 	method string
@@ -62,14 +70,16 @@ func TestCommand(t *testing.T) {
 		args           []string
 		responses      map[string]response
 		expectedCalls  []request
+		expectRetrying bool // if set to true, we expect clientside retrying and have to quadruple each request
 		expectedErr    bool // this means cobra error, print usage
 		expectedCode   int  // this is the real exit code
 		expectedOutput string
 	}{
 		{
-			name:        "no flags fails",
-			args:        []string{"acquire"},
-			expectedErr: true,
+			name:           "no flags fails",
+			args:           []string{"acquire"},
+			expectedErr:    true,
+			expectRetrying: true,
 			expectedOutput: `Error: required flag(s) "state", "target-state", "type" not set
 Usage:
   boskosctl acquire [flags]
@@ -193,9 +203,10 @@ Global Flags:
 `,
 		},
 		{
-			name:        "normal release without flags fails",
-			args:        []string{"release"},
-			expectedErr: true,
+			name:           "normal release without flags fails",
+			args:           []string{"release"},
+			expectedErr:    true,
+			expectRetrying: true,
 			expectedOutput: `Error: required flag(s) "name", "target-state" not set
 Usage:
   boskosctl release [flags]
@@ -226,7 +237,8 @@ Global Flags:
 				url:    url.URL{Path: "/release", RawQuery: `dest=old&owner=test&name=identifier`},
 				body:   []byte{},
 			}},
-			expectedCode: 1,
+			expectRetrying: true,
+			expectedCode:   1,
 			expectedOutput: `failed to release resource "identifier": status 404 Not Found, statusCode 404 releasing identifier
 `,
 		},
@@ -248,9 +260,10 @@ Global Flags:
 `,
 		},
 		{
-			name:        "normal metrics without flags fails",
-			args:        []string{"metrics"},
-			expectedErr: true,
+			name:           "normal metrics without flags fails",
+			args:           []string{"metrics"},
+			expectedErr:    true,
+			expectRetrying: true,
 			expectedOutput: `Error: required flag(s) "type" not set
 Usage:
   boskosctl metrics [flags]
@@ -280,7 +293,8 @@ Global Flags:
 				url:    url.URL{Path: "/metric", RawQuery: `type=thing`},
 				body:   []byte{},
 			}},
-			expectedCode: 1,
+			expectRetrying: true,
+			expectedCode:   1,
 			expectedOutput: `failed to get metrics for resource "thing": status 404 Not Found, status code 404
 `,
 		},
@@ -312,9 +326,10 @@ reached timeout, stopping heartbeats for resource "87527b0c-eac2-4f83-9a03-791b2
 `,
 		},
 		{
-			name:        "normal heartbeat without flags fails",
-			args:        []string{"heartbeat"},
-			expectedErr: true,
+			name:           "normal heartbeat without flags fails",
+			args:           []string{"heartbeat"},
+			expectRetrying: true,
+			expectedErr:    true,
 			expectedOutput: `Error: required flag(s) "resource" not set
 Usage:
   boskosctl heartbeat [flags]
@@ -349,7 +364,8 @@ Global Flags:
 				body: []byte(`{}
 `),
 			}},
-			expectedCode: 1,
+			expectRetrying: true,
+			expectedCode:   1,
 			expectedOutput: `failed to send heartbeat for resource "87527b0c-eac2-4f83-9a03-791b2239e093": status 404 Not Found, status code 404 updating 87527b0c-eac2-4f83-9a03-791b2239e093
 `,
 		},
@@ -361,20 +377,23 @@ Global Flags:
 					code: http.StatusNotFound,
 				},
 			},
-			expectedCalls: []request{{
-				method: http.MethodPost,
-				url:    url.URL{Path: "/update", RawQuery: `owner=test&state=new&name=87527b0c-eac2-4f83-9a03-791b2239e093`},
-				header: map[string][]string{"Content-Type": {"application/json"}},
-				body: []byte(`{}
+			expectedCalls: []request{
+				{
+					method: http.MethodPost,
+					url:    url.URL{Path: "/update", RawQuery: `owner=test&state=new&name=87527b0c-eac2-4f83-9a03-791b2239e093`},
+					header: map[string][]string{"Content-Type": {"application/json"}},
+					body: []byte(`{}
 `),
-			}, {
-				method: http.MethodPost,
-				url:    url.URL{Path: "/update", RawQuery: `owner=test&state=new&name=87527b0c-eac2-4f83-9a03-791b2239e093`},
-				header: map[string][]string{"Content-Type": {"application/json"}},
-				body: []byte(`{}
+				},
+				{
+					method: http.MethodPost,
+					url:    url.URL{Path: "/update", RawQuery: `owner=test&state=new&name=87527b0c-eac2-4f83-9a03-791b2239e093`},
+					header: map[string][]string{"Content-Type": {"application/json"}},
+					body: []byte(`{}
 `),
-			}},
-			expectedCode: 1,
+				}},
+			expectRetrying: true,
+			expectedCode:   1,
 			expectedOutput: `failed to send heartbeat for resource "87527b0c-eac2-4f83-9a03-791b2239e093": status 404 Not Found, status code 404 updating 87527b0c-eac2-4f83-9a03-791b2239e093
 failed to send heartbeat for resource "87527b0c-eac2-4f83-9a03-791b2239e093": status 404 Not Found, status code 404 updating 87527b0c-eac2-4f83-9a03-791b2239e093
 `,
@@ -382,89 +401,103 @@ failed to send heartbeat for resource "87527b0c-eac2-4f83-9a03-791b2239e093": st
 	}
 
 	for _, testCase := range testCases {
-		var recordedCalls []request
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			body, err := ioutil.ReadAll(r.Body)
-			if err != nil {
-				t.Errorf("failed to read request body in test server: %v", err)
-			}
-			recordedCalls = append(recordedCalls, request{
-				method: r.Method,
-				header: r.Header,
-				url:    *r.URL,
-				body:   body,
-			})
-			for path, response := range testCase.responses {
-				if r.URL.Path == path {
-					w.WriteHeader(response.code)
-					if _, err := w.Write(response.data); err != nil {
-						t.Fatalf("failed to write response in test server: %v", err)
+		t.Run(testCase.name, func(t *testing.T) {
+
+			// We added retrying, so we have to quadruple each call when we expect an error
+			if testCase.expectRetrying {
+				var expectedCallsWithRetrying []request
+				for _, expectedCall := range testCase.expectedCalls {
+					for i := 0; i < 4; i++ {
+						expectedCallsWithRetrying = append(expectedCallsWithRetrying, expectedCall)
 					}
-					return
+				}
+				testCase.expectedCalls = expectedCallsWithRetrying
+			}
+
+			var recordedCalls []request
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				body, err := ioutil.ReadAll(r.Body)
+				if err != nil {
+					t.Errorf("failed to read request body in test server: %v", err)
+				}
+				recordedCalls = append(recordedCalls, request{
+					method: r.Method,
+					header: r.Header,
+					url:    *r.URL,
+					body:   body,
+				})
+				for path, response := range testCase.responses {
+					if r.URL.Path == path {
+						w.WriteHeader(response.code)
+						if _, err := w.Write(response.data); err != nil {
+							t.Fatalf("failed to write response in test server: %v", err)
+						}
+						return
+					}
+				}
+				w.WriteHeader(http.StatusNotFound)
+				return
+			}))
+
+			var exitCode int
+			exit = func(i int) {
+				exitCode = i
+			}
+			randId = func() string {
+				return "random"
+			}
+
+			cmd := command()
+			var buf bytes.Buffer
+			cmd.SetOut(&buf)
+			cmd.SetErr(&buf)
+			cmd.SetArgs(append(testCase.args, fmt.Sprintf("--server-url=%s", server.URL), "--owner-name=test"))
+			err := cmd.Execute()
+			if testCase.expectedErr && err == nil {
+				t.Errorf("%s: expected an error but got none", testCase.name)
+			}
+			if !testCase.expectedErr && err != nil {
+				t.Errorf("%s: expected no error but got one: %v", testCase.name, err)
+			}
+
+			if expected, actual := testCase.expectedOutput, buf.String(); expected != actual {
+				t.Errorf("%s: got incorrect output: %s", testCase.name, diff.StringDiff(expected, actual))
+			}
+
+			if expected, actual := len(testCase.expectedCalls), len(recordedCalls); expected != actual {
+				t.Errorf("%s: expected %d calls to boskos but saw %d", testCase.name, expected, actual)
+			}
+
+			if expected, actual := testCase.expectedCode, exitCode; expected != actual {
+				t.Errorf("%s: expected to exit with %d, but saw %d", testCase.name, expected, actual)
+			}
+
+			for i, request := range recordedCalls {
+				if expected, actual := testCase.expectedCalls[i].method, request.method; expected != actual {
+					t.Errorf("%s: request %d: incorrect method, expected %s, saw %s", testCase.name, i, expected, actual)
+				}
+
+				if expected, actual := testCase.expectedCalls[i].url.Path, request.url.Path; expected != actual {
+					t.Errorf("%s: request %d: incorrect path, expected %s, saw %s", testCase.name, i, expected, actual)
+				}
+
+				if expected, actual := testCase.expectedCalls[i].url.Query(), request.url.Query(); !reflect.DeepEqual(expected, actual) {
+					t.Errorf("%s: request %d: incorrect query: %s", testCase.name, i, diff.ObjectReflectDiff(expected, actual))
+				}
+
+				if expected, actual := testCase.expectedCalls[i].header.Get("Content-Type"), request.header.Get("Content-Type"); expected != actual {
+					t.Errorf("%s: request %d: incorrect content-type header, expected %s, saw %s", testCase.name, i, expected, actual)
+				}
+
+				if expected, actual := testCase.expectedCalls[i].header.Get("Authorization"), request.header.Get("Authorization"); expected != actual {
+					t.Errorf("%s: request %d: incorrect Authorization header, expected %s, saw %s", testCase.name, i, expected, actual)
+				}
+
+				if expected, actual := testCase.expectedCalls[i].body, request.body; !reflect.DeepEqual(expected, actual) {
+					t.Errorf("%s: request %d: incorrect body: %s", testCase.name, i, diff.StringDiff(string(expected), string(actual)))
 				}
 			}
-			w.WriteHeader(http.StatusNotFound)
-			return
-		}))
-
-		var exitCode int
-		exit = func(i int) {
-			exitCode = i
-		}
-		randId = func() string {
-			return "random"
-		}
-
-		cmd := command()
-		var buf bytes.Buffer
-		cmd.SetOut(&buf)
-		cmd.SetErr(&buf)
-		cmd.SetArgs(append(testCase.args, fmt.Sprintf("--server-url=%s", server.URL), "--owner-name=test"))
-		err := cmd.Execute()
-		if testCase.expectedErr && err == nil {
-			t.Errorf("%s: expected an error but got none", testCase.name)
-		}
-		if !testCase.expectedErr && err != nil {
-			t.Errorf("%s: expected no error but got one: %v", testCase.name, err)
-		}
-
-		if expected, actual := testCase.expectedOutput, buf.String(); expected != actual {
-			t.Errorf("%s: got incorrect output: %s", testCase.name, diff.StringDiff(expected, actual))
-		}
-
-		if expected, actual := len(testCase.expectedCalls), len(recordedCalls); expected != actual {
-			t.Errorf("%s: expected %d calls to boskos but saw %d", testCase.name, expected, actual)
-		}
-
-		if expected, actual := testCase.expectedCode, exitCode; expected != actual {
-			t.Errorf("%s: expected to exit with %d, but saw %d", testCase.name, expected, actual)
-		}
-
-		for i, request := range recordedCalls {
-			if expected, actual := testCase.expectedCalls[i].method, request.method; expected != actual {
-				t.Errorf("%s: request %d: incorrect method, expected %s, saw %s", testCase.name, i, expected, actual)
-			}
-
-			if expected, actual := testCase.expectedCalls[i].url.Path, request.url.Path; expected != actual {
-				t.Errorf("%s: request %d: incorrect path, expected %s, saw %s", testCase.name, i, expected, actual)
-			}
-
-			if expected, actual := testCase.expectedCalls[i].url.Query(), request.url.Query(); !reflect.DeepEqual(expected, actual) {
-				t.Errorf("%s: request %d: incorrect query: %s", testCase.name, i, diff.ObjectReflectDiff(expected, actual))
-			}
-
-			if expected, actual := testCase.expectedCalls[i].header.Get("Content-Type"), request.header.Get("Content-Type"); expected != actual {
-				t.Errorf("%s: request %d: incorrect content-type header, expected %s, saw %s", testCase.name, i, expected, actual)
-			}
-
-			if expected, actual := testCase.expectedCalls[i].header.Get("Authorization"), request.header.Get("Authorization"); expected != actual {
-				t.Errorf("%s: request %d: incorrect Authorization header, expected %s, saw %s", testCase.name, i, expected, actual)
-			}
-
-			if expected, actual := testCase.expectedCalls[i].body, request.body; !reflect.DeepEqual(expected, actual) {
-				t.Errorf("%s: request %d: incorrect body: %s", testCase.name, i, diff.StringDiff(string(expected), string(actual)))
-			}
-		}
-		server.Close()
+			server.Close()
+		})
 	}
 }

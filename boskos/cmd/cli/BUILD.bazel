@@ -43,5 +43,8 @@ go_test(
     name = "go_default_test",
     srcs = ["cli_test.go"],
     embed = [":go_default_library"],
-    deps = ["@io_k8s_apimachinery//pkg/util/diff:go_default_library"],
+    deps = [
+        "//boskos/client:go_default_library",
+        "@io_k8s_apimachinery//pkg/util/diff:go_default_library",
+    ],
 )
