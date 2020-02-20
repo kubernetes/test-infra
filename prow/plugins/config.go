@@ -584,47 +584,6 @@ type RequireMatchingLabel struct {
 	GracePeriodDuration time.Duration `json:"-"`
 }
 
-// Repo supercedes org/repo string handling
-type Repo struct {
-	Org  string
-	Repo string
-}
-
-func (repo Repo) String() string {
-	return fmt.Sprintf("%s/%s", repo.Org, repo.Repo)
-}
-
-// NewRepo creates a Repo from org/repo string
-func NewRepo(orgRepo string) *Repo {
-	parts := strings.Split(orgRepo, "/")
-	switch len(parts) {
-	case 1:
-		return &Repo{Org: parts[0]}
-	case 2:
-		return &Repo{Org: parts[0], Repo: parts[1]}
-	default:
-		return nil
-	}
-}
-
-// ReposToStrings converts a list of Repo to its String() equivalent
-func ReposToStrings(vs []Repo) []string {
-	vsm := make([]string, len(vs))
-	for i, v := range vs {
-		vsm[i] = v.String()
-	}
-	return vsm
-}
-
-// StringsToRepos converts a list of org/repo strings to its Repo equivalent
-func StringsToRepos(vs []string) []Repo {
-	vsm := make([]Repo, len(vs))
-	for i, v := range vs {
-		vsm[i] = *NewRepo(v)
-	}
-	return vsm
-}
-
 // validate checks the following properties:
 // - Org, Regexp, MissingLabel, and GracePeriod must be non-empty.
 // - Repo does not contain a '/' (should use Org+Repo).

@@ -11,6 +11,7 @@ go_library(
     srcs = ["buildifier.go"],
     importpath = "k8s.io/test-infra/prow/plugins/buildifier",
     deps = [
+        "//prow/config:go_default_library",
         "//prow/genfiles:go_default_library",
         "//prow/git/v2:go_default_library",
         "//prow/github:go_default_library",

@@ -397,7 +397,7 @@ func TestDefaultProwYAMLGetter_RejectsNonGitHubRepo(t *testing.T) {
 	if err := lg.MakeFakeRepo(identifier, ""); err != nil {
 		t.Fatalf("Making fake repo: %v", err)
 	}
-	expectedErrMsg := `didn't get two but 1 results when splitting repo identifier "my-repo"`
+	expectedErrMsg := `didn't get two results when splitting repo identifier "my-repo"`
 	if _, err := defaultProwYAMLGetter(&Config{}, gc, identifier, ""); err == nil || err.Error() != expectedErrMsg {
 		t.Errorf("Error %v does not have expected message %s", err, expectedErrMsg)
 	}

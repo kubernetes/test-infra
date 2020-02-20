@@ -11,6 +11,7 @@ go_test(
     srcs = ["golint_test.go"],
     embed = [":go_default_library"],
     deps = [
+        "//prow/config:go_default_library",
         "//prow/git/localgit:go_default_library",
         "//prow/github:go_default_library",
         "//prow/plugins:go_default_library",
@@ -23,6 +24,7 @@ go_library(
     srcs = ["golint.go"],
     importpath = "k8s.io/test-infra/prow/plugins/golint",
     deps = [
+        "//prow/config:go_default_library",
         "//prow/genfiles:go_default_library",
         "//prow/git/v2:go_default_library",
         "//prow/github:go_default_library",

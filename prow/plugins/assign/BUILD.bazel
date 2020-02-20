@@ -21,6 +21,7 @@ go_library(
     srcs = ["assign.go"],
     importpath = "k8s.io/test-infra/prow/plugins/assign",
     deps = [
+        "//prow/config:go_default_library",
         "//prow/github:go_default_library",
         "//prow/pluginhelp:go_default_library",
         "//prow/plugins:go_default_library",

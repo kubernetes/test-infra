@@ -11,6 +11,7 @@ go_test(
     srcs = ["lgtm_test.go"],
     embed = [":go_default_library"],
     deps = [
+        "//prow/config:go_default_library",
         "//prow/github:go_default_library",
         "//prow/github/fakegithub:go_default_library",
         "//prow/plugins:go_default_library",
@@ -27,6 +28,7 @@ go_library(
     srcs = ["lgtm.go"],
     importpath = "k8s.io/test-infra/prow/plugins/lgtm",
     deps = [
+        "//prow/config:go_default_library",
         "//prow/github:go_default_library",
         "//prow/labels:go_default_library",
         "//prow/pluginhelp:go_default_library",

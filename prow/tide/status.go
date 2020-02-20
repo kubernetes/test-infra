@@ -246,8 +246,7 @@ func requirementDiff(pr *PullRequest, q *config.TideQuery, cc contextChecker) (s
 // for the repo that the PR is closest to meeting (as determined by the number
 // of unmet/violated requirements).
 func (sc *statusController) expectedStatus(log *logrus.Entry, queryMap *config.QueryMap, pr *PullRequest, pool map[string]PullRequest, ccg contextCheckerGetter, blocks blockers.Blockers, baseSHA string) (string, string, error) {
-	org := string(pr.Repository.Owner.Login)
-	repo := string(pr.Repository.Name)
+	repo := config.OrgRepo{Org: string(pr.Repository.Owner.Login), Repo: string(pr.Repository.Name)}
 
 	if pr.Mergeable == githubql.MergeableStateConflicting {
 		return github.StatusError, fmt.Sprintf(statusNotInPool, " PR has merge conflicts."), nil
@@ -274,7 +273,7 @@ func (sc *statusController) expectedStatus(log *logrus.Entry, queryMap *config.Q
 		}
 		minDiffCount := -1
 		var minDiff string
-		for _, q := range queryMap.ForRepo(org, repo) {
+		for _, q := range queryMap.ForRepo(repo) {
 			diff, diffCount := requirementDiff(pr, &q, cc)
 			if minDiffCount == -1 || diffCount < minDiffCount {
 				minDiffCount = diffCount
@@ -284,7 +283,7 @@ func (sc *statusController) expectedStatus(log *logrus.Entry, queryMap *config.Q
 		return github.StatusPending, fmt.Sprintf(statusNotInPool, minDiff), nil
 	}
 
-	indexKey := indexKeyPassingJobs(org, repo, baseSHA, string(pr.HeadRefOID))
+	indexKey := indexKeyPassingJobs(repo, baseSHA, string(pr.HeadRefOID))
 	passingUpToDatePJs := &prowapi.ProwJobList{}
 	if err := sc.pjClient.List(context.Background(), passingUpToDatePJs, ctrlruntimeclient.MatchingField(indexNamePassingJobs, indexKey)); err != nil {
 		// Just log the error and return success, as the PR is in the merge pool
@@ -322,7 +321,7 @@ func targetURL(c config.Getter, pr *PullRequest, log *logrus.Entry) string {
 	var link string
 	if tideURL := c().Tide.TargetURL; tideURL != "" {
 		link = tideURL
-	} else if baseURL := c().Tide.GetPRStatusBaseURL(string(pr.Repository.Owner.Login), string(pr.Repository.Name)); baseURL != "" {
+	} else if baseURL := c().Tide.GetPRStatusBaseURL(config.OrgRepo{Org: string(pr.Repository.Owner.Login), Repo: string(pr.Repository.Name)}); baseURL != "" {
 		parseURL, err := url.Parse(baseURL)
 		if err != nil {
 			log.WithError(err).Error("Failed to parse PR status base URL")
@@ -598,8 +597,8 @@ func openPRsQuery(orgs, repos []string, orgExceptions map[string]sets.String) st
 
 const indexNamePassingJobs = "tide-passing-jobs"
 
-func indexKeyPassingJobs(org, repo, baseSHA, headSHA string) string {
-	return fmt.Sprintf("%s/%s@%s+%s", org, repo, baseSHA, headSHA)
+func indexKeyPassingJobs(repo config.OrgRepo, baseSHA, headSHA string) string {
+	return fmt.Sprintf("%s@%s+%s", repo, baseSHA, headSHA)
 }
 
 func indexFuncPassingJobs(obj runtime.Object) []string {
@@ -617,7 +616,7 @@ func indexFuncPassingJobs(obj runtime.Object) []string {
 
 	var result []string
 	for _, pull := range pj.Spec.Refs.Pulls {
-		result = append(result, indexKeyPassingJobs(pj.Spec.Refs.Org, pj.Spec.Refs.Repo, pj.Spec.Refs.BaseSHA, pull.SHA))
+		result = append(result, indexKeyPassingJobs(config.OrgRepo{Org: pj.Spec.Refs.Org, Repo: pj.Spec.Refs.Repo}, pj.Spec.Refs.BaseSHA, pull.SHA))
 	}
 	return result
 }

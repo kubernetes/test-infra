@@ -96,7 +96,7 @@ func init() {
 	plugins.RegisterPullRequestHandler(PluginName, handlePullRequestEvent, helpProvider)
 }
 
-func helpProvider(config *plugins.Configuration, enabledRepos []plugins.Repo) (*pluginhelp.PluginHelp, error) {
+func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
 	doNot := func(b bool) string {
 		if b {
 			return ""

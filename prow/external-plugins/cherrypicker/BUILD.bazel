@@ -11,6 +11,7 @@ go_library(
     visibility = ["//visibility:private"],
     deps = [
         "//pkg/flagutil:go_default_library",
+        "//prow/config:go_default_library",
         "//prow/config/secret:go_default_library",
         "//prow/flagutil:go_default_library",
         "//prow/git/v2:go_default_library",

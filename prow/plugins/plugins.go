@@ -57,7 +57,7 @@ var (
 
 // HelpProvider defines the function type that construct a pluginhelp.PluginHelp for enabled
 // plugins. It takes into account the plugins configuration and enabled repositories.
-type HelpProvider func(config *Configuration, enabledRepos []Repo) (*pluginhelp.PluginHelp, error)
+type HelpProvider func(config *Configuration, enabledRepos []config.OrgRepo) (*pluginhelp.PluginHelp, error)
 
 // HelpProviders returns the map of registered plugins with their associated HelpProvider.
 func HelpProviders() map[string]HelpProvider {

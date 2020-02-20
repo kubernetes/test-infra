@@ -841,7 +841,7 @@ func prNumbers(prs []PullRequest) []int {
 }
 
 func (c *Controller) pickBatch(sp subpool, cc map[int]contextChecker) ([]PullRequest, []config.Presubmit, error) {
-	batchLimit := c.config().Tide.BatchSizeLimit(sp.org, sp.repo)
+	batchLimit := c.config().Tide.BatchSizeLimit(config.OrgRepo{Org: sp.org, Repo: sp.repo})
 	if batchLimit < 0 {
 		sp.log.Debug("Batch merges disabled by configuration in this repo.")
 		return nil, nil, nil
@@ -967,8 +967,9 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 	log := sp.log.WithField("merge-targets", prNumbers(prs))
 	for i, pr := range prs {
 		log := log.WithFields(pr.logFields())
-		mergeMethod := c.config().Tide.MergeMethod(sp.org, sp.repo)
-		commitTemplates := c.config().Tide.MergeCommitTemplate(sp.org, sp.repo)
+		repo := config.OrgRepo{Org: sp.org, Repo: sp.repo}
+		mergeMethod := c.config().Tide.MergeMethod(repo)
+		commitTemplates := c.config().Tide.MergeCommitTemplate(repo)
 		squashLabel := c.config().Tide.SquashLabel
 		rebaseLabel := c.config().Tide.RebaseLabel
 		mergeLabel := c.config().Tide.MergeLabel

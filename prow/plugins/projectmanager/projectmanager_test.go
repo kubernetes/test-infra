@@ -21,6 +21,7 @@ import (
 	"testing"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/plugins"
@@ -755,7 +756,7 @@ func checkCards(expectedColumnCards, projectColumnCards map[int][]github.Project
 
 func TestHelpProvider(t *testing.T) {
 	var i int = 0
-	enabledRepos := []plugins.Repo{
+	enabledRepos := []config.OrgRepo{
 		{Org: "org1", Repo: "repo"},
 		{Org: "org2", Repo: "repo"},
 	}
@@ -766,7 +767,7 @@ func TestHelpProvider(t *testing.T) {
 	cases := []struct {
 		name           string
 		config         *plugins.Configuration
-		enabledRepos   []plugins.Repo
+		enabledRepos   []config.OrgRepo
 		expectedConfig string
 		expectedKey    string
 		err            bool
