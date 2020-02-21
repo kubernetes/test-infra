@@ -44,12 +44,13 @@ const (
 var (
 	kubeClientOptions crds.KubernetesClientOptions
 
-	boskosURL    string
-	username     string
-	passwordFile string
-	namespace    string
-	cleanerCount int
-	logLevel     string
+	boskosURL           string
+	username            string
+	passwordFile        string
+	namespace           string
+	cleanerCount        int
+	logLevel            string
+	useV2Implementation bool
 )
 
 func init() {
@@ -59,12 +60,12 @@ func init() {
 	flag.IntVar(&cleanerCount, "cleaner-count", defaultCleanerCount, "Number of threads running cleanup")
 	flag.StringVar(&namespace, "namespace", corev1.NamespaceDefault, "namespace to install on")
 	flag.StringVar(&logLevel, "log-level", "info", fmt.Sprintf("Log level is one of %v.", logrus.AllLevels))
+	flag.BoolVar(&useV2Implementation, "use-v2-implementation", false, "Use the new controller-based v2 implementation. It is much faster and works directly based on the crds, but was used less")
 	kubeClientOptions.AddFlags(flag.CommandLine)
 }
 
 func main() {
 	logrusutil.ComponentInit("boskos-cleaner")
-
 	flag.Parse()
 	kubeClientOptions.Validate()
 
@@ -73,6 +74,14 @@ func main() {
 		logrus.WithError(err).Fatal("invalid log level specified")
 	}
 	logrus.SetLevel(level)
+
+	if !useV2Implementation {
+		v1Main()
+		return
+	}
+}
+
+func v1Main() {
 
 	kubeClient, err := kubeClientOptions.Client()
 	if err != nil {
