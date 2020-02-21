@@ -60,14 +60,6 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     spec:
-      # run on the ubuntu node pool, which has ipv6 modules
-      tolerations:
-      - key: "dedicated"
-        operator: "Equal"
-        value: "ubuntu"
-        effect: "NoSchedule"
-      nodeSelector:
-        dedicated: "ubuntu"
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200220-47050c4-master
         env:
