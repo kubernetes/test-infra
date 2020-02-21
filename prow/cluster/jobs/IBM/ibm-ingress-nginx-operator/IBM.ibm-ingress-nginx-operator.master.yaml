@@ -1,12 +1,12 @@
 presubmits:
-  IBM/ingress-nginx-operator:
-  - name: build_ingress-nginx-operator
+  IBM/ibm-ingress-nginx-operator:
+  - name: build_ibm-ingress-nginx-operator
     branches:
     - ^master$
     decorate: true
     always_run: true
-    path_alias: github.com/IBM/ingress-nginx-operator
-    rerun_command: /test build ingress-nginx-operator
+    path_alias: github.com/IBM/ibm-ingress-nginx-operator
+    rerun_command: /test build ibm-ingress-nginx-operator
     spec:
       containers:
       - command:
@@ -17,13 +17,13 @@ presubmits:
         securityContext:
           privileged: true
     trigger: '(?m)^/test (?:.*? )?build(?: .*?)?$'
-  - name: check_ingress-nginx-operator
+  - name: check_ibm-ingress-nginx-operator
     branches:
     - ^master$
     decorate: true
     always_run: true
-    path_alias: github.com/IBM/ingress-nginx-operator
-    rerun_command: /test check ingress-nginx-operator
+    path_alias: github.com/IBM/ibm-ingress-nginx-operator
+    rerun_command: /test check ibm-ingress-nginx-operator
     spec:
       containers:
       - command:
@@ -34,13 +34,13 @@ presubmits:
         securityContext:
           privileged: true
     trigger: '(?m)^/test (?:.*? )?check(?: .*?)?$'
-  - name: test_ingress-nginx-operator
+  - name: test_ibm-ingress-nginx-operator
     branches:
     - ^master$
     decorate: true
     always_run: true
-    path_alias: github.com/IBM/ingress-nginx-operator
-    rerun_command: /test test ingress-nginx-operator
+    path_alias: github.com/IBM/ibm-ingress-nginx-operator
+    rerun_command: /test test ibm-ingress-nginx-operator
     spec:
       containers:
       - command:
@@ -53,12 +53,12 @@ presubmits:
     trigger: '(?m)^/test (?:.*? )?test(?: .*?)?$'
 
 postsubmits:
-  IBM/ingress-nginx-operator:
-  - name: check_ingress-nginx-operator_postsubmit
+  IBM/ibm-ingress-nginx-operator:
+  - name: check_ibm-ingress-nginx-operator_postsubmit
     branches:
     - ^master$
     decorate: true
-    path_alias: github.com/IBM/ingress-nginx-operator
+    path_alias: github.com/IBM/ibm-ingress-nginx-operator
     spec:
       containers:
       - command:
@@ -68,11 +68,11 @@ postsubmits:
         name: ""
         securityContext:
           privileged: true
-  - name: test_ingress-nginx-operator_postsubmit
+  - name: test_ibm-ingress-nginx-operator_postsubmit
     branches:
     - ^master$
     decorate: true
-    path_alias: github.com/IBM/ingress-nginx-operator
+    path_alias: github.com/IBM/ibm-ingress-nginx-operator
     spec:
       containers:
       - command:
@@ -82,11 +82,11 @@ postsubmits:
         name: ""
         securityContext:
           privileged: true
-  - name: coverage_ingress-nginx-operator_postsubmit
+  - name: coverage_ibm-ingress-nginx-operator_postsubmit
     branches:
     - ^master$
     decorate: true
-    path_alias: github.com/IBM/ingress-nginx-operator
+    path_alias: github.com/IBM/ibm-ingress-nginx-operator
     spec:
       containers:
       - command:
@@ -98,15 +98,15 @@ postsubmits:
         - name: CODECOV_TOKEN
           valueFrom:
             secretKeyRef:
-              name: ingress-nginx-operator-codecov-token
+              name: ibm-ingress-nginx-operator-codecov-token
               key: codecov-token
         securityContext:
           privileged: true
-  - name: build_ingress-nginx-operator_postsubmit
+  - name: build_ibm-ingress-nginx-operator_postsubmit
     branches:
     - ^master$
     decorate: true
-    path_alias: github.com/IBM/ingress-nginx-operator
+    path_alias: github.com/IBM/ibm-ingress-nginx-operator
     spec:
       containers:
       - command:
@@ -116,11 +116,11 @@ postsubmits:
         name: ""
         securityContext:
           privileged: true
-  - name: images_ingress-nginx-operator_postsubmit
+  - name: images_ibm-ingress-nginx-operator_postsubmit
     branches:
     - ^master$
     decorate: true
-    path_alias: github.com/IBM/ingress-nginx-operator
+    path_alias: github.com/IBM/ibm-ingress-nginx-operator
     labels:
       preset-service-account: "true"
     spec:

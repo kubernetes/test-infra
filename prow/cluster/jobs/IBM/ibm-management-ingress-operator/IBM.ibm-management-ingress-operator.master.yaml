@@ -1,12 +1,12 @@
 presubmits:
-  IBM/management-ingress-operator:
-  - name: build_management-ingress-operator
+  IBM/ibm-management-ingress-operator:
+  - name: build_ibm-management-ingress-operator
     branches:
     - ^master$
     decorate: true
     always_run: true
-    path_alias: github.com/IBM/management-ingress-operator
-    rerun_command: /test build management-ingress-operator
+    path_alias: github.com/IBM/ibm-management-ingress-operator
+    rerun_command: /test build ibm-management-ingress-operator
     spec:
       containers:
       - command:
@@ -17,13 +17,13 @@ presubmits:
         securityContext:
           privileged: true
     trigger: '(?m)^/test (?:.*? )?build(?: .*?)?$'
-  - name: check_management-ingress-operator
+  - name: check_ibm-management-ingress-operator
     branches:
     - ^master$
     decorate: true
     always_run: true
-    path_alias: github.com/IBM/management-ingress-operator
-    rerun_command: /test check management-ingress-operator
+    path_alias: github.com/IBM/ibm-management-ingress-operator
+    rerun_command: /test check ibm-management-ingress-operator
     spec:
       containers:
       - command:
@@ -34,13 +34,13 @@ presubmits:
         securityContext:
           privileged: true
     trigger: '(?m)^/test (?:.*? )?check(?: .*?)?$'
-  - name: test_management-ingress-operator
+  - name: test_ibm-management-ingress-operator
     branches:
     - ^master$
     decorate: true
     always_run: true
-    path_alias: github.com/IBM/management-ingress-operator
-    rerun_command: /test test management-ingress-operator
+    path_alias: github.com/IBM/ibm-management-ingress-operator
+    rerun_command: /test test ibm-management-ingress-operator
     spec:
       containers:
       - command:
@@ -53,12 +53,12 @@ presubmits:
     trigger: '(?m)^/test (?:.*? )?test(?: .*?)?$'
 
 postsubmits:
-  IBM/management-ingress-operator:
-  - name: check_management-ingress-operator_postsubmit
+  IBM/ibm-management-ingress-operator:
+  - name: check_ibm-management-ingress-operator_postsubmit
     branches:
     - ^master$
     decorate: true
-    path_alias: github.com/IBM/management-ingress-operator
+    path_alias: github.com/IBM/ibm-management-ingress-operator
     spec:
       containers:
       - command:
@@ -68,11 +68,11 @@ postsubmits:
         name: ""
         securityContext:
           privileged: true
-  - name: test_management-ingress-operator_postsubmit
+  - name: test_ibm-management-ingress-operator_postsubmit
     branches:
     - ^master$
     decorate: true
-    path_alias: github.com/IBM/management-ingress-operator
+    path_alias: github.com/IBM/ibm-management-ingress-operator
     spec:
       containers:
       - command:
@@ -82,11 +82,11 @@ postsubmits:
         name: ""
         securityContext:
           privileged: true
-  - name: coverage_management-ingress-operator_postsubmit
+  - name: coverage_ibm-management-ingress-operator_postsubmit
     branches:
     - ^master$
     decorate: true
-    path_alias: github.com/IBM/management-ingress-operator
+    path_alias: github.com/IBM/ibm-management-ingress-operator
     spec:
       containers:
       - command:
@@ -98,15 +98,15 @@ postsubmits:
         - name: CODECOV_TOKEN
           valueFrom:
             secretKeyRef:
-              name: management-ingress-operator-codecov-token
+              name: ibm-management-ingress-operator-codecov-token
               key: codecov-token
         securityContext:
           privileged: true
-  - name: build_management-ingress-operator_postsubmit
+  - name: build_ibm-management-ingress-operator_postsubmit
     branches:
     - ^master$
     decorate: true
-    path_alias: github.com/IBM/management-ingress-operator
+    path_alias: github.com/IBM/ibm-management-ingress-operator
     spec:
       containers:
       - command:
@@ -116,11 +116,11 @@ postsubmits:
         name: ""
         securityContext:
           privileged: true
-  - name: images_management-ingress-operator_postsubmit
+  - name: images_ibm-management-ingress-operator_postsubmit
     branches:
     - ^master$
     decorate: true
-    path_alias: github.com/IBM/management-ingress-operator
+    path_alias: github.com/IBM/ibm-management-ingress-operator
     labels:
       preset-service-account: "true"
     spec:
