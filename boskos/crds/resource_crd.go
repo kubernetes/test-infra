@@ -131,6 +131,9 @@ func (in *ResourceObject) FromItem(i common.Item) {
 
 // FromResource converts a common.Resource to a *ResourceObject
 func FromResource(r common.Resource) *ResourceObject {
+	if r.UserData == nil {
+		r.UserData = &common.UserData{}
+	}
 	return &ResourceObject{
 		ObjectMeta: v1.ObjectMeta{
 			Name: r.Name,
@@ -208,6 +211,7 @@ func NewResource(name, rtype, state, owner string, t time.Time) *ResourceObject 
 			State:      state,
 			Owner:      owner,
 			LastUpdate: t,
+			UserData:   &common.UserData{},
 		},
 	}
 }

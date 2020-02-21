@@ -453,9 +453,6 @@ func TestRelease(t *testing.T) {
 			if !AreErrorsEqual(releaseErr, tc.expectErr) {
 				t.Fatalf("Got error %v, expected error %v", releaseErr, tc.expectErr)
 			}
-			if tc.expectedRes != nil && tc.expectedRes.Status.UserData == nil {
-				tc.expectedRes.Status.UserData = &common.UserData{}
-			}
 			res, _ := c.Storage.GetResource(tc.resName)
 			if diff := deep.Equal(res, tc.expectedRes); diff != nil {
 				t.Errorf("result didn't match expected, diff: %v", diff)
@@ -1371,6 +1368,9 @@ func TestSyncResources(t *testing.T) {
 			sortResourcesLists(tc.expectedRes, resources)
 			for idx := range tc.expectedRes.Items {
 				tc.expectedRes.Items[idx].Namespace = testNS
+				if tc.expectedRes.Items[idx].Status.UserData == nil {
+					tc.expectedRes.Items[idx].Status.UserData = &common.UserData{}
+				}
 			}
 			if diff := deep.Equal(resources, tc.expectedRes); diff != nil {
 				t.Errorf("received resource differs from expected, diff: %v", diff)
@@ -1692,6 +1692,12 @@ func TestUpdateAllDynamicResources(t *testing.T) {
 				t.Fatalf("failed to get resources: %v", err)
 			}
 			sortResourcesLists(resources, tc.expectedRes)
+			for idx := range tc.expectedRes.Items {
+				// needed to prevent test failures due to nil != empty
+				if tc.expectedRes.Items[idx].Status.UserData == nil {
+					tc.expectedRes.Items[idx].Status.UserData = &common.UserData{}
+				}
+			}
 
 			if !reflect.DeepEqual(resources, tc.expectedRes) {
 				t.Errorf("diff:\n%v", deep.Equal(resources, tc.expectedRes))
@@ -1726,6 +1732,7 @@ func newResource(name, rtype, state, owner string, t time.Time) *crds.ResourceOb
 			State:      state,
 			Owner:      owner,
 			LastUpdate: t,
+			UserData:   &common.UserData{},
 		},
 	}
 }
