@@ -119,13 +119,21 @@ orgs:
 <li>on the "my-repo-branch" branch, valid bugs must be closed, target the "my-repo-branch" release, and be in one of the following states: MODIFIED. After being linked to a pull request, bugs will be moved to the PRE state, updated to refer to the pull request using the external bug tracker, and moved to the MODIFIED state when all linked pull requests are merged.</li>
 </ul>`,
 		},
-		Commands: []pluginhelp.Command{{
-			Usage:       "/bugzilla refresh",
-			Description: "Check Bugzilla for a valid bug referenced in the PR title",
-			Featured:    false,
-			WhoCanUse:   "Anyone",
-			Examples:    []string{"/bugzilla refresh"},
-		}},
+		Commands: []pluginhelp.Command{
+			{
+				Usage:       "/bugzilla refresh",
+				Description: "Check Bugzilla for a valid bug referenced in the PR title",
+				Featured:    false,
+				WhoCanUse:   "Anyone",
+				Examples:    []string{"/bugzilla refresh"},
+			}, {
+				Usage:       "/bugzilla assign-qa",
+				Description: "Assign PR to QA contact specified in Bugzilla",
+				Featured:    false,
+				WhoCanUse:   "Anyone",
+				Examples:    []string{"/bugzilla assign-qa"},
+			},
+		},
 	}
 
 	if actual := help; !reflect.DeepEqual(actual, expected) {
@@ -427,7 +435,7 @@ func TestDigestComment(t *testing.T) {
 			},
 			title: "cole, please review this typo fix",
 			expected: &event{
-				org: "org", repo: "repo", baseRef: "branch", number: 1, missing: true, body: "/bugzilla refresh", htmlUrl: "www.com", login: "user",
+				org: "org", repo: "repo", baseRef: "branch", number: 1, missing: true, body: "/bugzilla refresh", htmlUrl: "www.com", login: "user", assign: false,
 			},
 		},
 		{
@@ -477,7 +485,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			},
 			title: "Bug 123: oopsie doopsie",
 			expected: &event{
-				org: "org", repo: "repo", baseRef: "branch", number: 1, bugId: 123, body: "/bugzilla refresh", htmlUrl: "www.com", login: "user",
+				org: "org", repo: "repo", baseRef: "branch", number: 1, bugId: 123, body: "/bugzilla refresh", htmlUrl: "www.com", login: "user", assign: false,
 			},
 		},
 		{
@@ -501,7 +509,30 @@ Instructions for interacting with me using PR comments are available [here](http
 			title:  "Bug 123: oopsie doopsie",
 			merged: true,
 			expected: &event{
-				org: "org", repo: "repo", baseRef: "branch", number: 1, bugId: 123, merged: true, body: "/bugzilla refresh", htmlUrl: "www.com", login: "user",
+				org: "org", repo: "repo", baseRef: "branch", number: 1, bugId: 123, merged: true, body: "/bugzilla refresh", htmlUrl: "www.com", login: "user", assign: false,
+			},
+		},
+		{
+			name: "assign-qa comment event has assign bool set to true",
+			e: github.GenericCommentEvent{
+				Action: github.GenericCommentActionCreated,
+				IsPR:   true,
+				Body:   "/bugzilla assign-qa",
+				Repo: github.Repo{
+					Owner: github.User{
+						Login: "org",
+					},
+					Name: "repo",
+				},
+				Number: 1,
+				User: github.User{
+					Login: "user",
+				},
+				HTMLURL: "www.com",
+			},
+			title: "Bug 123: oopsie doopsie",
+			expected: &event{
+				org: "org", repo: "repo", baseRef: "branch", number: 1, bugId: 123, body: "/bugzilla assign-qa", htmlUrl: "www.com", login: "user", assign: true,
 			},
 		},
 	}
@@ -1296,6 +1327,70 @@ func TestValidateBug(t *testing.T) {
 			}
 			if !reflect.DeepEqual(why, testCase.why) {
 				t.Errorf("%s: didn't get correct reasons why: %v", testCase.name, diff.ObjectReflectDiff(testCase.why, why))
+			}
+		})
+	}
+}
+
+func TestProcessQuery(t *testing.T) {
+	var testCases = []struct {
+		name     string
+		query    emailToLoginQuery
+		email    string
+		expected string
+	}{
+		{
+			name: "single login returns assign",
+			query: emailToLoginQuery{
+				Search: querySearch{
+					Edges: []queryEdge{{
+						Node: queryNode{
+							User: queryUser{
+								Login: "ValidLogin",
+							},
+						},
+					}},
+				},
+			},
+			email:    "qa_tester@example.com",
+			expected: "/assign @ValidLogin",
+		}, {
+			name: "no login returns not found error",
+			query: emailToLoginQuery{
+				Search: querySearch{
+					Edges: []queryEdge{},
+				},
+			},
+			email:    "qa_tester@example.com",
+			expected: "No GitHub users were found matching the public email listed for the QA contact in Bugzilla (qa_tester@example.com), skipping assignment.",
+		}, {
+			name: "multiple logins returns multiple results error",
+			query: emailToLoginQuery{
+				Search: querySearch{
+					Edges: []queryEdge{{
+						Node: queryNode{
+							User: queryUser{
+								Login: "Login1",
+							},
+						},
+					}, {
+						Node: queryNode{
+							User: queryUser{
+								Login: "Login2",
+							},
+						},
+					}},
+				},
+			},
+			email:    "qa_tester@example.com",
+			expected: "Multiple GitHub users were found matching the public email listed for the QA contact in Bugzilla (qa_tester@example.com), skipping assignment. List of users with matching email:\n\t- Login1\n\t- Login2",
+		},
+	}
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			response := processQuery(&testCase.query, testCase.email, logrus.WithField("testCase", testCase.name))
+			if response != testCase.expected {
+				t.Errorf("%s: Expected \"%s\", got \"%s\"", testCase.name, testCase.expected, response)
 			}
 		})
 	}
