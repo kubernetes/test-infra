@@ -19,6 +19,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"net/url"
 	"os"
 	"regexp"
 
@@ -73,6 +74,13 @@ func (o *options) Validate() error {
 
 	if o.destContext == "" && o.retireContext == "" {
 		return errors.New("'--dest' is required unless using '--retire' mode.\n")
+	}
+
+	if o.descriptionURL != "" {
+		_, err := url.ParseRequestURI(o.descriptionURL)
+		if err != nil {
+			return errors.New("'--description' URL is not valid\n")
+		}
 	}
 
 	if o.descriptionURL != "" && o.copyContext != "" {
