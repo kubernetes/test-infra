@@ -22,7 +22,9 @@ pool=prow-pool
 workers=20
 disk=600
 machine=n1-standard-2
-#bot=pr-kubekins@kubernetes-jenkins-pull.iam.gserviceaccount.com
-bot=TODO(fejta):pick-a-different-service-account
+bots=(
+  deployer@k8s-prow.iam.gserviceaccount.com
+  pusher@k8s-prow.iam.gserviceaccount.com
+)
 
-"$(dirname "$0")/install.sh" "$proj" "$pool" "$workers" "$disk" "$machine" "$bot"
+"$(dirname "$0")/install.sh" "$proj" "$pool" "$workers" "$disk" "$machine" "${bots[@]}"
