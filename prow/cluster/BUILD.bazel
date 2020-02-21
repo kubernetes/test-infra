@@ -56,10 +56,10 @@ release(
     component("prowjob", "customresourcedefinition"),
     component("pushgateway", "deployment"),
     component("sinker", "service", "deployment", "rbac"),
-    component("statusreconciler", "deployment"),
+    component("statusreconciler", "deployment", "rbac"),
     component("tide", "service", "deployment", "rbac"),
     component("tls-ing", "ingress"),
-    component("tot", "service", "deployment"),
+    component("tot", "service", "deployment"),  # TODO(fejta): delete tot
     component("trusted_serviceaccounts", MULTI_KIND),
     component(
         "tune-sysctls",

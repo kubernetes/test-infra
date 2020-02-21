@@ -15,7 +15,7 @@ spec:
       labels:
         app: prow-pipeline
     spec:
-      # serviceAccountName: prow-pipeline
+      serviceAccountName: prow-pipeline
       containers:
       - name: pipeline
         image: gcr.io/k8s-prow/pipeline:v20200220-16f6e7c89

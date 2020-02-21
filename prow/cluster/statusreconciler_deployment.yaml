@@ -29,7 +29,7 @@ spec:
       labels:
         app: statusreconciler
     spec:
-      # serviceAccountName: "statusreconciler" # Uncomment for use with RBAC
+      serviceAccountName: statusreconciler
       terminationGracePeriodSeconds: 180
       containers:
       - name: statusreconciler
