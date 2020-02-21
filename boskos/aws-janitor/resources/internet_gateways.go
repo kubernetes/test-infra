@@ -52,7 +52,12 @@ func (InternetGateways) MarkAndSweep(sess *session.Session, acct string, region 
 		return err
 	}
 
-	defaultVpc := vpcResp.Vpcs[0]
+	// Use a map to tolerate both more than one default vpc
+	// (shouldn't happen) as well as no default VPC (not uncommon)
+	defaultVPC := make(map[string]bool)
+	for _, vpc := range vpcResp.Vpcs {
+		defaultVPC[aws.StringValue(vpc.VpcId)] = true
+	}
 
 	for _, ig := range resp.InternetGateways {
 		i := &internetGateway{Account: acct, Region: region, ID: *ig.InternetGatewayId}
@@ -62,7 +67,7 @@ func (InternetGateways) MarkAndSweep(sess *session.Session, acct string, region 
 			klog.Warningf("%s: deleting %T: %s", i.ARN(), ig, i.ID)
 
 			for _, att := range ig.Attachments {
-				if att.VpcId == defaultVpc.VpcId {
+				if defaultVPC[aws.StringValue(att.VpcId)] {
 					isDefault = true
 					break
 				}
