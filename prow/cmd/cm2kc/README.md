@@ -19,6 +19,23 @@ The following is a list of supported options for `cm2kc`:
 
 ## Examples
 
+#### Add a kubeconfig file in a secret: `kubeconfig` from a clustermap file in another secret: `build-cluster` for context: `my-context`.
+
+The following command will:
+1. Get a *clustermap* formatted secret: `build-cluster` in key: `cluster` for context: `my-context`.
+1. Base64 decode the secret.
+1. Convert the *clustermap* data to a *kubeconfig* format.
+1. Create a *kubeconfig* formatted secret: `kubeconfig` in key: `config` for context: `my-context` from the converted data.
+
+```shell
+kubectl --context=my-context get secrets build-cluster -o jsonpath='{.data.cluster}' |
+  base64 -d |
+  bazel run //prow/cmd/cm2kc |
+  kubectl --context=my-context create secret generic kubeconfig --from-file=config=/dev/stdin
+```
+
+Lastly, to begin using this in Prow, update the volume mount and replace `--build-cluster` with `--kubeconfig` in the [deployment](https://github.com/istio/test-infra/pull/1713) of each relevant Prow component (e.g. crier, deck, plank, and sinker).
+
 #### Create a kubeconfig file at path `/path/to/kubeconfig.yaml` from a clustermap file at path `/path/to/clustermap.yaml`.
 
 Ensure the *clustermap* file exists at the specified `--input` path:  
