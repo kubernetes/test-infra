@@ -232,6 +232,7 @@ type PullRequest struct {
 	Number             int               `json:"number"`
 	HTMLURL            string            `json:"html_url"`
 	User               User              `json:"user"`
+	Labels             []Label           `json:"labels"`
 	Base               PullRequestBranch `json:"base"`
 	Head               PullRequestBranch `json:"head"`
 	Title              string            `json:"title"`
