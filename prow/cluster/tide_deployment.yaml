@@ -31,7 +31,7 @@ spec:
       labels:
         app: tide
     spec:
-      # serviceAccountName: "tide" # Uncomment for use with RBAC
+      serviceAccountName: tide
       containers:
       - name: tide
         image: gcr.io/k8s-prow/tide:v20200220-16f6e7c89
@@ -45,8 +45,8 @@ spec:
         - --history-uri=gs://k8s-prow/tide-history.json
         - --status-path=gs://k8s-prow/tide-status-checkpoint.yaml
         ports:
-          - name: http
-            containerPort: 8888
+        - name: http
+          containerPort: 8888
         volumeMounts:
         - name: oauth
           mountPath: /etc/github
