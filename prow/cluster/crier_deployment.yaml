@@ -43,7 +43,6 @@ spec:
         - --slack-workers=1
         - --slack-token-file=/etc/slack/token
         - --gcs-workers=1
-        - --gcs-credentials-file=/etc/service-account/service-account.json
         - --kubernetes-gcs-workers=1
         - --build-cluster=/etc/cluster/cluster
         volumeMounts:
@@ -62,9 +61,6 @@ spec:
         - name: slack
           mountPath: /etc/slack
           readOnly: true
-        - name: service-account
-          mountPath: /etc/service-account
-          readOnly: true
       volumes:
       - name: config
         configMap:
@@ -78,9 +74,6 @@ spec:
       - name: slack
         secret:
           secretName: slack-token
-      - name: service-account
-        secret:
-          secretName: service-account
       - name: cluster
         secret:
           defaultMode: 420
