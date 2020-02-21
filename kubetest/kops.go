@@ -397,9 +397,7 @@ func (k kops) Up() error {
 	if k.kubeVersion != "" {
 		createArgs = append(createArgs, "--kubernetes-version", k.kubeVersion)
 	}
-	if k.adminAccess != "" {
-		createArgs = append(createArgs, "--admin-access", k.adminAccess)
-	} else {
+	if k.adminAccess == "" {
 		var b bytes.Buffer
 		if err := httpRead("https://v4.ifconfig.co", &b); err != nil {
 			return err
@@ -408,6 +406,7 @@ func (k kops) Up() error {
 		log.Printf("Using external IP for admin access: %v", externalIP)
 		k.adminAccess = externalIP
 	}
+	createArgs = append(createArgs, "--admin-access", k.adminAccess)
 
 	// Since https://github.com/kubernetes/kubernetes/pull/80655 conformance now require node ports to be open to all nodes
 	k.overrides = append(k.overrides, "cluster.spec.nodePortAccess=0.0.0.0/0")
