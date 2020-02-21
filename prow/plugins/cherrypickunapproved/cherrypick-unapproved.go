@@ -101,6 +101,10 @@ func handlePR(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent, c
 		return nil
 	}
 
+	return ensureLabels(gc, org, repo, pr, log, cp, commentBody)
+}
+
+func ensureLabels(gc githubClient, org string, repo string, pr *github.PullRequestEvent, log *logrus.Entry, cp commentPruner, commentBody string) error {
 	issueLabels, err := gc.GetIssueLabels(org, repo, pr.Number)
 	if err != nil {
 		return err
