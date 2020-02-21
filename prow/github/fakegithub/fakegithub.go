@@ -17,6 +17,7 @@ limitations under the License.
 package fakegithub
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 
@@ -359,6 +360,12 @@ func (f *FakeClient) FindIssues(query, sort string, asc bool) ([]github.Issue, e
 	for _, issue := range f.Issues {
 		issues = append(issues, *issue)
 	}
+	for _, pr := range f.PullRequests {
+		issues = append(issues, github.Issue{
+			User:   pr.User,
+			Number: pr.Number,
+		})
+	}
 	return issues, nil
 }
 
@@ -667,4 +674,43 @@ func (f *FakeClient) GetTeamBySlug(slug string, org string) (*github.Team, error
 		}
 	}
 	return &github.Team{}, nil
+}
+
+func (f *FakeClient) CreatePullRequest(org, repo, title, body, head, base string, canModify bool) (int, error) {
+	if f.PullRequests == nil {
+		f.PullRequests = map[int]*github.PullRequest{}
+	}
+	if f.Issues == nil {
+		f.Issues = map[int]*github.Issue{}
+	}
+	for i := 0; i < 999; i++ {
+		if f.PullRequests[i] != nil || f.Issues[i] != nil {
+			continue
+		}
+		f.PullRequests[i] = &github.PullRequest{
+			Number: i,
+			Base: github.PullRequestBranch{
+				Ref:  base,
+				Repo: github.Repo{Owner: github.User{Login: org}, Name: repo},
+			},
+		}
+		f.Issues[i] = &github.Issue{Number: i}
+		return i, nil
+	}
+
+	return 0, errors.New("FakeClient supports only 999 PullRequests")
+}
+
+func (f *FakeClient) UpdatePullRequest(org, repo string, number int, title, body *string, open *bool, branch *string, canModify *bool) error {
+	pr, found := f.PullRequests[number]
+	if !found {
+		return fmt.Errorf("no pr with number %d found", number)
+	}
+	if title != nil {
+		pr.Title = *title
+	}
+	if body != nil {
+		pr.Body = *body
+	}
+	return nil
 }
