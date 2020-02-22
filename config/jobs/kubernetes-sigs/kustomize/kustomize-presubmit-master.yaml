@@ -2,7 +2,7 @@ presubmits:
   kubernetes-sigs/kustomize:
   - name: kustomize-presubmit-master
     decorate: true
-    always_run: true
+    always_run: false
     path_alias: sigs.k8s.io/kustomize
     branches:
     - ^master$
