@@ -22,10 +22,6 @@ The e2e lifecycle may:
 * turn `--down` the cluster after completing testing,
 * `--timeout` after a particular duration (allowing extra time to clean up).
 
-Note that developers frequently use `kubetest` by calling `go run hack/e2e.go`
-in the `kubernetes/kubernetes` repository. This `hack/e2e.go` program is a
-wrapper around updating `kubetest` (at most once a day) before calling it.
-
 If you're making a change to kubetest, watch the canary jobs after it has merged;
 these run the latest images of `kubekins-e2e`, and thus don't have to wait
 for a version bump in the prow config.  The canary jobs are used to give early
@@ -38,7 +34,6 @@ Please clone this repo and then run `GO111MODULE=on go install ./kubetest` from 
 
 Common alternatives:
 ```
-go run hack/e2e.go  # from kubernetes/kubernetes
 go install k8s.io/test-infra/kubetest  # if you check out test-infra
 bazel run //kubetest  # use bazel to build and run
 ```
