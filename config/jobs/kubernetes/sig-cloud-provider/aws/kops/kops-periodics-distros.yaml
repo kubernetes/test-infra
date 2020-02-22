@@ -1,7 +1,7 @@
 periodics:
 
 - interval: 8h
-  name: ci-kubernetes-e2e-kops-aws-distro-imagedebian9
+  name: e2e-kops-aws-distro-imagedebian9
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -36,7 +36,7 @@ periodics:
     testgrid-tab-name: kops-aws-distro-debian-9
 
 - interval: 8h
-  name: ci-kubernetes-e2e-kops-aws-distro-imagedebian10
+  name: e2e-kops-aws-distro-imagedebian10
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -71,7 +71,7 @@ periodics:
     testgrid-tab-name: kops-aws-distro-debian-10
 
 - interval: 8h
-  name: ci-kubernetes-e2e-kops-aws-distro-imageubuntu1604
+  name: e2e-kops-aws-distro-imageubuntu1604
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -106,7 +106,7 @@ periodics:
     testgrid-tab-name: kops-aws-distro-ubuntu-16.04
 
 - interval: 8h
-  name: ci-kubernetes-e2e-kops-aws-distro-imageubuntu1804
+  name: e2e-kops-aws-distro-imageubuntu1804
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -141,7 +141,7 @@ periodics:
     testgrid-tab-name: kops-aws-distro-ubuntu-18.04
 
 - interval: 8h
-  name: ci-kubernetes-e2e-kops-aws-distro-imagecentos7
+  name: e2e-kops-aws-distro-imagecentos7
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -177,7 +177,7 @@ periodics:
     testgrid-tab-name: kops-aws-distro-centos-7
 
 - interval: 8h
-  name: ci-kubernetes-e2e-kops-aws-distro-imageamazonlinux2
+  name: e2e-kops-aws-distro-imageamazonlinux2
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -212,7 +212,7 @@ periodics:
     testgrid-tab-name: kops-aws-distro-amazonlinux-2
 
 - interval: 8h
-  name: ci-kubernetes-e2e-kops-aws-distro-imagerhel7
+  name: e2e-kops-aws-distro-imagerhel7
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -247,7 +247,7 @@ periodics:
     testgrid-tab-name: kops-aws-distro-rhel-7
 
 - interval: 8h
-  name: ci-kubernetes-e2e-kops-aws-distro-imagerhel8
+  name: e2e-kops-aws-distro-imagerhel8
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -282,7 +282,7 @@ periodics:
     testgrid-tab-name: kops-aws-distro-rhel-8
 
 - interval: 8h
-  name: ci-kubernetes-e2e-kops-aws-distro-imagecoreos
+  name: e2e-kops-aws-distro-imagecoreos
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -317,7 +317,7 @@ periodics:
     testgrid-tab-name: kops-aws-distro-coreos
 
 - interval: 8h
-  name: ci-kubernetes-e2e-kops-aws-distro-imageflatcar
+  name: e2e-kops-aws-distro-imageflatcar
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"

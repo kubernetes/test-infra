@@ -1,7 +1,7 @@
 periodics:
 
 - interval: 4h
-  name: ci-kubernetes-e2e-kops-aws-cni-amazon-vpc
+  name: e2e-kops-aws-cni-amazon-vpc
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -35,7 +35,7 @@ periodics:
     testgrid-tab-name: kops-aws-cni-amazon-vpc
 
 - interval: 4h
-  name: ci-kubernetes-e2e-kops-aws-cni-calico
+  name: e2e-kops-aws-cni-calico
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -69,7 +69,7 @@ periodics:
     testgrid-tab-name: kops-aws-cni-calico
 
 - interval: 4h
-  name: ci-kubernetes-e2e-kops-aws-cni-canal
+  name: e2e-kops-aws-cni-canal
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -103,7 +103,7 @@ periodics:
     testgrid-tab-name: kops-aws-cni-canal
 
 - interval: 1h
-  name: ci-kubernetes-e2e-kops-aws-cni-cilium
+  name: e2e-kops-aws-cni-cilium
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -137,7 +137,7 @@ periodics:
     testgrid-tab-name: kops-aws-cni-cilium
 
 - interval: 4h
-  name: ci-kubernetes-e2e-kops-aws-cni-flannel
+  name: e2e-kops-aws-cni-flannel
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -171,7 +171,7 @@ periodics:
     testgrid-tab-name: kops-aws-cni-flannel
 
 - interval: 4h
-  name: ci-kubernetes-e2e-kops-aws-cni-kopeio
+  name: e2e-kops-aws-cni-kopeio
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -205,7 +205,7 @@ periodics:
     testgrid-tab-name: kops-aws-cni-kopeio
 
 - interval: 4h
-  name: ci-kubernetes-e2e-kops-aws-cni-weave
+  name: e2e-kops-aws-cni-weave
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -239,7 +239,7 @@ periodics:
     testgrid-tab-name: kops-aws-cni-weave
 
 - interval: 4h
-  name: ci-kubernetes-e2e-kops-aws-cni-lyft
+  name: e2e-kops-aws-cni-lyft
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"

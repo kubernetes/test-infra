@@ -1,6 +1,6 @@
 periodics:
 - interval: 1h
-  name: ci-kubernetes-e2e-kops-aws-latest
+  name: e2e-kops-aws-misc-latest
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -31,7 +31,7 @@ periodics:
     testgrid-tab-name: kops-aws-latest
 
 - interval: 1h
-  name: ci-kubernetes-e2e-kops-aws-channelalpha
+  name: e2e-kops-aws-misc-channelalpha
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -63,7 +63,7 @@ periodics:
     testgrid-tab-name: kops-aws-channelalpha
 
 - interval: 1h
-  name: ci-kubernetes-e2e-kops-aws-ha-uswest2
+  name: e2e-kops-aws-misc-ha-uswest2
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -96,7 +96,7 @@ periodics:
     testgrid-tab-name: kops-aws-ha-uswest2
 
 - interval: 4h
-  name: ci-kubernetes-e2e-kops-aws-containerd
+  name: e2e-kops-aws-misc-containerd
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -129,7 +129,7 @@ periodics:
     testgrid-tab-name: kops-aws-containerd
 
 - interval: 4h
-  name: ci-kubernetes-e2e-kops-aws-coredns
+  name: e2e-kops-aws-misc-coredns
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -161,7 +161,7 @@ periodics:
     testgrid-tab-name: kops-aws-coredns
 
 - interval: 1h
-  name: ci-kubernetes-e2e-kops-aws-newrunner
+  name: e2e-kops-aws-misc-newrunner
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -192,7 +192,7 @@ periodics:
     testgrid-tab-name: kops-aws-newrunner
 
 - interval: 30m
-  name: ci-kubernetes-e2e-kops-aws-updown
+  name: e2e-kops-aws-misc-updown
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"

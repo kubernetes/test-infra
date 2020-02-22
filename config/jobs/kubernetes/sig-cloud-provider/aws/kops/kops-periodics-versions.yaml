@@ -1,7 +1,7 @@
 periodics:
 
 - interval: 2h
-  name: ci-kubernetes-e2e-kops-aws-k8s-1-19
+  name: e2e-kops-aws-k8s-1-19
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -33,7 +33,7 @@ periodics:
     testgrid-tab-name: kops-aws-k8s-1.19
 
 - interval: 2h
-  name: ci-kubernetes-e2e-kops-aws-k8s-1-18
+  name: e2e-kops-aws-k8s-1-18
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -65,7 +65,7 @@ periodics:
     testgrid-tab-name: kops-aws-k8s-1.18
 
 - interval: 2h
-  name: ci-kubernetes-e2e-kops-aws-k8s-1-17
+  name: e2e-kops-aws-k8s-1-17
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -97,7 +97,7 @@ periodics:
     testgrid-tab-name: kops-aws-k8s-1.17
 
 - interval: 2h
-  name: ci-kubernetes-e2e-kops-aws-k8s-1-16
+  name: e2e-kops-aws-k8s-1-16
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
