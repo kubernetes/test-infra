@@ -703,83 +703,14 @@ periodics:
 
 # scalability tests
 - interval: 8h
-  # ci-kubernetes-kubemark-100-azure runs kubemark tests with cloud-provider-azure of 100 nodes.
-  name: ci-kubernetes-kubemark-100-azure
-  tags:
-  - "perfDashPrefix: kubemark-100Nodes"
-  - "perfDashJobType: performance"
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-    preset-dind-enabled: "true"
-    preset-e2e-kubemark-common: "true"
-    preset-azure-cred: "true"
+  name: ci-kubernetes-kubemark-100-azure-test
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure, provider-azure-scalability, provider-azure-periodic
-    testgrid-tab-name: ci-kubernetes-kubemark-100-azure
-    testgrid-num-failures-to-alert: '3'
-    description: "Runs kubemark tests (100 nodes) with the Azure cloud provider enabled."
+    testgrid-tab-name: ci-kubernetes-kubemark-100-azure-test
+    testgrid-num-failures-to-alert: '1'
+    description: "Runs kubemark tests (100 nodes) with the Azure cloud provider enabled. (test only)"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200221-d0671ad-1.17
-      args:
-      - --job=$(JOB_NAME)
-      - --repo=k8s.io/kubernetes=release-1.17
-      - --repo=sigs.k8s.io/$(REPO_NAME)=master
-      - --root=/go/src
-      - --service-account=/etc/service-account/service-account.json
-      - --timeout=260
-      - --upload=gs://kubernetes-jenkins/logs/
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=kubemark-100
-      - --extract=ci/latest
-      - --deployment=aksengine
-      - --build=quick
-      - --provider=skeleton
-      - --ginkgo-parallel=30
-      - --aksengine-agentpoolcount=2
-      - --aksengine-admin-username=azureuser
-      - --aksengine-creds=$AZURE_CREDENTIALS
-      - --aksengine-orchestratorRelease=1.17
-      - --aksengine-mastervmsize=Standard_DS2_v2
-      - --aksengine-agentvmsize=Standard_D4s_v3
-      - --aksengine-ccm=True
-      - --aksengine-cnm=True
-      - --aksengine-deploy-custom-k8s=True
-      - --aksengine-location=westus2
-      - --aksengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE
-      - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-vmss.json
-      - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.46.0/aks-engine-v0.46.0-linux-amd64.tar.gz
-      - --kubemark
-      - --kubemark-nodes=100
-      - --test=false
-      - --test_args=--ginkgo.focus=xxxx
-      - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
-      - --test-cmd-args=cluster-loader2
-      - --test-cmd-args=--nodes=100
-      - --test-cmd-args=--prometheus-scrape-node-exporter=true
-      - --test-cmd-args=--provider=kubemark
-      - --test-cmd-args=--report-dir=/workspace/_artifacts
-      - --test-cmd-args=--testconfig=testing/density/config.yaml
-      - --test-cmd-args=--testconfig=testing/load/config.yaml
-      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_configmaps.yaml
-      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_daemonsets.yaml
-      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_jobs.yaml
-      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_secrets.yaml
-      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_statefulsets.yaml
-      - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
-      - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
-      - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
-      - --test-cmd-args=--testoverrides=./testing/load/kubemark/throughput_override.yaml
-      - --test-cmd-name=ClusterLoaderV2
-      - --timeout=240m
-      - --use-logexporter
-      # docker-in-docker needs privileged mode
-      securityContext:
+    - image: ss104301/azure-kubemark-scale-tests:latest
+    securityContext:
         privileged: true
-      env:
-      - name: REPO_OWNER
-        value: kubernetes
-      - name: REPO_NAME
-        value: cloud-provider-azure
