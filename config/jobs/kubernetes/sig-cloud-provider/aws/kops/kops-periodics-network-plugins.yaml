@@ -102,7 +102,7 @@ periodics:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-aws-cni-canal
 
-- interval: 4h
+- interval: 1h
   name: ci-kubernetes-e2e-kops-aws-cni-cilium
   labels:
     preset-service-account: "true"
