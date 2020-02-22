@@ -1,5 +1,37 @@
 periodics:
 
+- interval: 1h
+  name: e2e-kops-aws-k8s-latest
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+    preset-e2e-platform-aws: "true"
+  decorate: true
+  decoration_config:
+    timeout: 90m
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --cluster=e2e-kops-aws-k8s-latest.test-cncf-aws.k8s.io
+      - --deployment=kops
+      - --env=KUBE_SSH_USER=admin
+      - --extract=ci/latest
+      - --ginkgo-parallel
+      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
+      - --kops-publish=gs://kops-ci/bin/latest-ci-green.txt
+      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
+      - --provider=aws
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
+      - --timeout=60m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200221-d0671ad-master
+  annotations:
+    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-tab-name: kops-aws-k8s-latest
+
 - interval: 2h
   name: e2e-kops-aws-k8s-1-19
   labels:
