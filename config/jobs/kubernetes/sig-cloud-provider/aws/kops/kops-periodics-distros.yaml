@@ -1,7 +1,7 @@
 periodics:
 
 - interval: 8h
-  name: ci-kubernetes-e2e-kops-aws-imagedebian9
+  name: ci-kubernetes-e2e-kops-aws-distro-imagedebian9
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -15,7 +15,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=e2e-kops-aws-debian-9.test-cncf-aws.k8s.io
+      - --cluster=e2e-kops-aws-distro-debian-9.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
@@ -33,10 +33,10 @@ periodics:
       imagePullPolicy: Always
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-aws-debian-9
+    testgrid-tab-name: kops-aws-distro-debian-9
 
 - interval: 8h
-  name: ci-kubernetes-e2e-kops-aws-imagedebian10
+  name: ci-kubernetes-e2e-kops-aws-distro-imagedebian10
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -50,7 +50,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=e2e-kops-aws-debian-10.test-cncf-aws.k8s.io
+      - --cluster=e2e-kops-aws-distro-debian-10.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
@@ -68,10 +68,10 @@ periodics:
       imagePullPolicy: Always
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-aws-debian-10
+    testgrid-tab-name: kops-aws-distro-debian-10
 
 - interval: 8h
-  name: ci-kubernetes-e2e-kops-aws-imageubuntu1604
+  name: ci-kubernetes-e2e-kops-aws-distro-imageubuntu1604
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -85,7 +85,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=e2e-kops-aws-ubuntu-1604.test-cncf-aws.k8s.io
+      - --cluster=e2e-kops-aws-distro-ubuntu-1604.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
@@ -103,10 +103,10 @@ periodics:
       imagePullPolicy: Always
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-aws-ubuntu-16.04
+    testgrid-tab-name: kops-aws-distro-ubuntu-16.04
 
 - interval: 8h
-  name: ci-kubernetes-e2e-kops-aws-imageubuntu1804
+  name: ci-kubernetes-e2e-kops-aws-distro-imageubuntu1804
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -120,7 +120,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=e2e-kops-aws-ubuntu-1804.test-cncf-aws.k8s.io
+      - --cluster=e2e-kops-aws-distro-ubuntu-1804.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
@@ -138,10 +138,10 @@ periodics:
       imagePullPolicy: Always
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-aws-ubuntu-18.04
+    testgrid-tab-name: kops-aws-distro-ubuntu-18.04
 
 - interval: 8h
-  name: ci-kubernetes-e2e-kops-aws-imagecentos7
+  name: ci-kubernetes-e2e-kops-aws-distro-imagecentos7
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -155,7 +155,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=e2e-kops-aws-centos-7.test-cncf-aws.k8s.io
+      - --cluster=e2e-kops-aws-distro-centos-7.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=centos
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
@@ -174,10 +174,10 @@ periodics:
       imagePullPolicy: Always
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-aws-centos-7
+    testgrid-tab-name: kops-aws-distro-centos-7
 
 - interval: 8h
-  name: ci-kubernetes-e2e-kops-aws-imageamazonlinux2
+  name: ci-kubernetes-e2e-kops-aws-distro-imageamazonlinux2
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -191,7 +191,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=e2e-kops-aws-amazonlinux-2.test-cncf-aws.k8s.io
+      - --cluster=e2e-kops-aws-distro-amazonlinux-2.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
@@ -209,10 +209,10 @@ periodics:
       imagePullPolicy: Always
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-aws-amazonlinux-2
+    testgrid-tab-name: kops-aws-distro-amazonlinux-2
 
 - interval: 8h
-  name: ci-kubernetes-e2e-kops-aws-imagerhel7
+  name: ci-kubernetes-e2e-kops-aws-distro-imagerhel7
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -226,7 +226,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=e2e-kops-aws-rhel-7.test-cncf-aws.k8s.io
+      - --cluster=e2e-kops-aws-distro-rhel-7.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
@@ -244,10 +244,10 @@ periodics:
       imagePullPolicy: Always
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-aws-rhel-7
+    testgrid-tab-name: kops-aws-distro-rhel-7
 
 - interval: 8h
-  name: ci-kubernetes-e2e-kops-aws-imagerhel8
+  name: ci-kubernetes-e2e-kops-aws-distro-imagerhel8
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -261,7 +261,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=e2e-kops-aws-rhel-8.test-cncf-aws.k8s.io
+      - --cluster=e2e-kops-aws-distro-rhel-8.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
@@ -279,10 +279,10 @@ periodics:
       imagePullPolicy: Always
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-aws-rhel-8
+    testgrid-tab-name: kops-aws-distro-rhel-8
 
 - interval: 8h
-  name: ci-kubernetes-e2e-kops-aws-imagecoreos
+  name: ci-kubernetes-e2e-kops-aws-distro-imagecoreos
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -296,7 +296,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=e2e-kops-aws-coreos.test-cncf-aws.k8s.io
+      - --cluster=e2e-kops-aws-distro-coreos.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=core
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
@@ -314,10 +314,10 @@ periodics:
       imagePullPolicy: Always
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-aws-coreos
+    testgrid-tab-name: kops-aws-distro-coreos
 
 - interval: 8h
-  name: ci-kubernetes-e2e-kops-aws-imageflatcar
+  name: ci-kubernetes-e2e-kops-aws-distro-imageflatcar
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -331,7 +331,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=e2e-kops-aws-flatcar.test-cncf-aws.k8s.io
+      - --cluster=e2e-kops-aws-distro-flatcar.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=core
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
@@ -349,4 +349,4 @@ periodics:
       imagePullPolicy: Always
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-aws-flatcar
+    testgrid-tab-name: kops-aws-distro-flatcar
