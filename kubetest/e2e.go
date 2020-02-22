@@ -615,33 +615,53 @@ func kubemarkUp(dump string, o options, deploy deployer) error {
 		return err
 	}
 
-	masterIP, err := control.Output(exec.Command(
-		"gcloud", "compute", "addresses", "describe",
-		os.Getenv("MASTER_NAME")+"-ip",
-		"--project="+o.gcpProject,
-		"--region="+o.gcpZone[:len(o.gcpZone)-2],
-		"--format=value(address)"))
-	if err != nil {
-		return fmt.Errorf("failed to get masterIP: %v", err)
+	var masterIP, masterInternalIP []byte
+
+	switch o.deployment {
+	case "gce":
+		var err error
+		masterIP, err = control.Output(exec.Command(
+			"gcloud", "compute", "addresses", "describe",
+			os.Getenv("MASTER_NAME")+"-ip",
+			"--project="+o.gcpProject,
+			"--region="+o.gcpZone[:len(o.gcpZone)-2],
+			"--format=value(address)"))
+		if err != nil {
+			return fmt.Errorf("failed to get masterIP: %v", err)
+		}
+
+		masterInternalIP, err = control.Output(exec.Command(
+			"gcloud", "compute", "instances", "describe",
+			os.Getenv("MASTER_NAME"),
+			"--project="+o.gcpProject,
+			"--zone="+o.gcpZone,
+			"--format=value(networkInterfaces[0].networkIP)"))
+		if err != nil {
+			return fmt.Errorf("failed to get masterInternalIP: %v", err)
+		}
+	case "aks":
+		var err error
+		masterIP, err = control.Output(exec.Command(
+			"az", "aks", "show",
+			"-g", *aksResourceGroupName,
+			"-n", *aksResourceName,
+			"--query", "fqdn", "-o", "tsv"))
+		if err != nil {
+			return fmt.Errorf("failed to get masterIP: %v", err)
+		}
+		masterInternalIP = masterIP
 	}
+
 	if err := os.Setenv("KUBE_MASTER_IP", strings.TrimSpace(string(masterIP))); err != nil {
 		return err
 	}
+
 	// MASTER_IP variable is required by the clusterloader. It requires to have master ip provided,
 	// due to master being unregistered.
 	if err := os.Setenv("MASTER_IP", strings.TrimSpace(string(masterIP))); err != nil {
 		return err
 	}
 
-	masterInternalIP, err := control.Output(exec.Command(
-		"gcloud", "compute", "instances", "describe",
-		os.Getenv("MASTER_NAME"),
-		"--project="+o.gcpProject,
-		"--zone="+o.gcpZone,
-		"--format=value(networkInterfaces[0].networkIP)"))
-	if err != nil {
-		return fmt.Errorf("failed to get masterInternalIP: %v", err)
-	}
 	// MASTER_INTERNAL_IP variable is needed by the clusterloader2 when running on kubemark clusters.
 	if err := os.Setenv("MASTER_INTERNAL_IP", strings.TrimSpace(string(masterInternalIP))); err != nil {
 		return err
