@@ -181,41 +181,41 @@ as a sibling to `kubernetes/kubernetes`). This will cause tests to run from the
 skew directory, potentially to upgrade/downgrade kubernetes to another version.
 
 A simple example is:<br>
-`kubetest --up --check-version-skew=false --extract=v1.8.0-beta.1 
---extract=v1.7.5 --upgrade_args=--ginkgo.focus="Feature:SomeUpgrade" 
+`kubetest --up --check-version-skew=false --extract=v1.8.0-beta.1
+--extract=v1.7.5 --upgrade_args=--ginkgo.focus="Feature:SomeUpgrade"
 --gcp-project=google.com:some-project`
 
-The command runs all (and only) upgrade tests tagged with `Feature:SomeUpgrade` 
+The command runs all (and only) upgrade tests tagged with `Feature:SomeUpgrade`
 label on GCE. The command downloads `v1.7.5` and `v1.8.0-beta.1` releases,
-unzips downloaded files, and runs the tests to upgrade the cluster from `v1.7.5` 
+unzips downloaded files, and runs the tests to upgrade the cluster from `v1.7.5`
 to `v1.8.0-beta.1`. You will be able to find 2 new directories named `kubernetes`
 and `kubernetes_skew` at current directory. `kubernetes` is the directory
-corresponding to release indicated by first `--extract` flag, while `kubernetes_skew` 
+corresponding to release indicated by first `--extract` flag, while `kubernetes_skew`
 corresponds to second flag.
 
 Note that order of the 2 `--extract` flags matters: `--extract=v2 --extract=v1` means
-upgrading from v1 to v2. The command does not run other e2e tests after completing 
-the upgrade tests. If you want to run the e2e tests, specify also `--test` and 
+upgrading from v1 to v2. The command does not run other e2e tests after completing
+the upgrade tests. If you want to run the e2e tests, specify also `--test` and
 `--test_args` flags.
 
-Tips: CI upgrade tests listed at [sig-cluster-lifecycle config] show flags used in the real CI 
+Tips: CI upgrade tests listed at [sig-cluster-lifecycle config] show flags used in the real CI
 test environment, which is a good source to learn more about how the flags are used.
 
 ### Staging
 
-If you want to create a new release with your own changes, you have to upload built 
+If you want to create a new release with your own changes, you have to upload built
 manifests to gcs. The command is very similar:
-`kubetest --build --stage=gs://some/path/to/v1.8.0-beta.1  --check-version-skew=false 
---extract=gs://some/path/to/v1.8.0-beta.1  --extract=v1.7.5 
---upgrade_args=--ginkgo.focus="Feature:SomeUpgrade" 
+`kubetest --build --stage=gs://some/path/to/v1.8.0-beta.1  --check-version-skew=false
+--extract=gs://some/path/to/v1.8.0-beta.1  --extract=v1.7.5
+--upgrade_args=--ginkgo.focus="Feature:SomeUpgrade"
 --gcp-project=google.com:some-project`
 
-If you already have release of a specific version, you do not need to fetch the 
-release again. For instance, if you have `v1.7.5` release and its directory is at the 
+If you already have release of a specific version, you do not need to fetch the
+release again. For instance, if you have `v1.7.5` release and its directory is at the
 right path, the command below does the same as above:
-`kubetest --build --stage=gs://some/path/to/v1.8.0-beta.1  --check-version-skew=false 
---extract=gs://some/path/to/v1.8.0-beta.1 
---upgrade_args=--ginkgo.focus="Feature:SomeUpgrade" 
+`kubetest --build --stage=gs://some/path/to/v1.8.0-beta.1  --check-version-skew=false
+--extract=gs://some/path/to/v1.8.0-beta.1
+--upgrade_args=--ginkgo.focus="Feature:SomeUpgrade"
 --gcp-project=google.com:some-project`
 
 [bootstrap.py]: /jenkins/bootstrap.py
