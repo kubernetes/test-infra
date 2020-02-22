@@ -1,7 +1,7 @@
 periodics:
 
 - interval: 30m
-  name: ci-kubernetes-e2e-kops-gce
+  name: e2e-kops-gce-latest
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -14,7 +14,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=e2e-kops-gce.k8s.local
+      - --cluster=e2e-kops-gce-latest.k8s.local
       - --deployment=kops
       - --env=KOPS_PUBLISH_GREEN_PATH=gs://kops-ci/bin/latest-ci-gce-green.txt
       - --extract=ci/latest
@@ -31,7 +31,7 @@ periodics:
     testgrid-tab-name: kops-gce-latest
 
 - interval: 1h
-  name: ci-kubernetes-e2e-kops-gce-channelalpha
+  name: e2e-kops-gce-channelalpha
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -61,7 +61,7 @@ periodics:
     testgrid-tab-name: kops-gce-channelalpha
 
 - interval: 30m
-  name: ci-kubernetes-e2e-kops-gce-ha
+  name: e2e-kops-gce-ha
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
