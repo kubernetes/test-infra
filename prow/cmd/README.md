@@ -26,6 +26,7 @@ Hopefully you won't need any of these components...
 * [`jenkins-operator`](/prow/cmd/jenkins-operator) is the controller that manages jobs that run on Jenkins. We moved away from using this component in favor of running all jobs on Kubernetes.
 * [`tot`](/prow/cmd/tot) vends sequential build numbers. Tot is only necessary for integration with automation that expects sequential build numbers. If Tot is not used, Prow automatically generates build numbers that are monotonically increasing, but not sequential.
 * [`sub`](/prow/cmd/sub) listen to Cloud Pub/Sub notification to trigger Prow Jobs.
+* [`artifact-uploader`](/prow/cmd/artifact-uploader) watches prow jobs pods and uploads logs when pods terminate.
 
 ## Dev Tools
 * [`checkconfig`](/prow/cmd/checkconfig) loads and verifies the configuration, useful as a pre-submit.
