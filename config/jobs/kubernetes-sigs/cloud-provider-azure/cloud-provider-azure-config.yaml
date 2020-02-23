@@ -719,5 +719,7 @@ periodics:
     securityContext:
         privileged: true
     env:
+    - name: WORKSPACE
+      value: /kubemark-performance-tests-on-azure
     - name: ARTIFACTS
-      value: /kubemark-performance-tests-on-azure/reports
+      value: $(WORKSPACE)/_artifacts
