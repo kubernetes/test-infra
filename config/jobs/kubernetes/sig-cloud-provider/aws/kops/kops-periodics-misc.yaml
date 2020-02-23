@@ -53,6 +53,7 @@ periodics:
       - --extract=ci/latest
       - --ginkgo-parallel=30
       - --kops-args=--master-count=3
+      - --kops-nodes=6
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --kops-zones=us-west-2a,us-west-2b,us-west-2c
