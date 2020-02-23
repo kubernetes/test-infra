@@ -702,8 +702,9 @@ periodics:
     description: "Runs Kubernetes multiple availability zones tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) on VMSS."
 
 # scalability tests
-- interval: 8h
+- interval: 4h
   name: ci-kubernetes-kubemark-100-azure-test
+  decorate: true
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure, provider-azure-scalability, provider-azure-periodic
     testgrid-tab-name: ci-kubernetes-kubemark-100-azure-test
@@ -711,6 +712,12 @@ periodics:
     description: "Runs kubemark tests (100 nodes) with the Azure cloud provider enabled. (test only)"
   spec:
     containers:
-    - image: ss104301/azure-kubemark-scale-tests:latest
+    - image: ss104301/kubemark-performance-tests-on-azure:latest
+      command:
+      - bash
+      - automation/runner.sh
     securityContext:
         privileged: true
+    env:
+    - name: ARTIFACTS
+      value: /kubemark-performance-tests-on-azure/reports
