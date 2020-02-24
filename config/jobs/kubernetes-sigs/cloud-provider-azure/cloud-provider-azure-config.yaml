@@ -706,3 +706,54 @@ periodics:
       value: /kubemark-performance-tests-on-azure
     - name: ARTIFACTS
       value: $(WORKSPACE)/_artifacts
+
+# conformance test against kubernetes master branch with `azure` ipv6
+- interval: 6h
+  name: ci-kubernetes-azure-conformance-ipv6
+  labels:
+    preset-service-account: "true"
+    preset-bazel-scratch-dir: "true"
+    preset-bazel-remote-cache-enabled: "true"
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200222-e2a3901-master
+      args:
+      - --job=$(JOB_NAME)
+      - --repo=k8s.io/kubernetes=master
+      - --root=/go/src
+      - --service-account=/etc/service-account/service-account.json
+      - --timeout=470
+      - --upload=gs://kubernetes-jenkins/logs/
+      - --scenario=kubernetes_e2e
+      - --
+      - --gce-ssh=
+      - --test=true
+      - --up=true
+      - --down=true
+      - --deployment=aksengine
+      - --build=quick
+      - --provider=skeleton
+      - --ginkgo-parallel=1
+      - --aksengine-agentpoolcount=2
+      - --aksengine-admin-username=azureuser
+      - --aksengine-creds=$AZURE_CREDENTIALS
+      - --aksengine-orchestratorRelease=1.17
+      - --aksengine-mastervmsize=Standard_DS2_v2
+      - --aksengine-agentvmsize=Standard_D4s_v3
+      - --aksengine-deploy-custom-k8s=True
+      - --aksengine-location=westus2
+      - --aksengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE
+      - --aksengine-template-url=https://gist.githubusercontent.com/aramase/21c3bdb44509c0f70f71389903d49c67/raw/1a9957626edc2b5c7913c741b9487fde123d0570/dualstack-prow.json
+      - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.46.0/aks-engine-v0.46.0-linux-amd64.tar.gz
+      - --timeout=450m
+      - --test_args=--ginkgo.focus=\[Conformance\]
+      securityContext:
+        privileged: true
+  annotations:
+    testgrid-dashboards: conformance-all, provider-azure-cloud-provider-azure, provider-azure-periodic
+    testgrid-tab-name: ci-kubernetes-azure-conformance-ipv6
+    description: Runs conformance tests using kubetest against latest kubernetes master with an IPv6 azure cluster
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    testgrid-num-columns-recent: '3'
