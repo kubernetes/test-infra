@@ -220,6 +220,7 @@ periodics:
       - --kops-etcd-version=3.2.24
       - --kops-master-count=3
       - --kops-multiple-zones
+      - --kops-nodes=6
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
