@@ -576,6 +576,8 @@ test_groups:
 #Arm arm64 test results
 - name: arm64-conformance
   gcs_prefix: k8s-conformance-arm/logs/ci-k8s-conformance-arm64
+- name: arm64-integration
+  gcs_prefix: k8s-conformance-arm/logs/ci-k8s-integration
 - name: arm64-conformance-aws-cluster
   gcs_prefix: k8s-conformance-arm/logs/ci-k8s-conformance-arm64-aws-cluster
 - name: arm64-conformance-aws-cluster-1-13-2

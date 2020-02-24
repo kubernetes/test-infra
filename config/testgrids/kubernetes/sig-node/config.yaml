@@ -61,6 +61,9 @@ dashboards:
     - name: conformance
       test_group_name: arm64-conformance
       description: Runs conformance test by using kubetest against latest version of kubernetes on arm64
+    - name: integration-tests
+      test_group_name: arm64-integration
+      description: Integration test results for Arm64
 
   #Docker node conformance dashboard
 - name: sig-node-docker
