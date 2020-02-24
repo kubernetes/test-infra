@@ -164,7 +164,15 @@ index 1ea52dc..5bd70a9 100644
 var body = "This PR updates the magic number.\n\n```release-note\nUpdate the magic number from 42 to 49\n```"
 
 func TestCherryPickIC(t *testing.T) {
-	lg, c, err := localgit.New()
+	testCherryPickIC(localgit.New, t)
+}
+
+func TestCherryPickICV2(t *testing.T) {
+	testCherryPickIC(localgit.NewV2, t)
+}
+
+func testCherryPickIC(clients localgit.Clients, t *testing.T) {
+	lg, c, err := clients()
 	if err != nil {
 		t.Fatalf("Making localgit: %v", err)
 	}
@@ -254,7 +262,15 @@ func TestCherryPickIC(t *testing.T) {
 }
 
 func TestCherryPickPR(t *testing.T) {
-	lg, c, err := localgit.New()
+	testCherryPickPR(localgit.New, t)
+}
+
+func TestCherryPickPRV2(t *testing.T) {
+	testCherryPickPR(localgit.NewV2, t)
+}
+
+func testCherryPickPR(clients localgit.Clients, t *testing.T) {
+	lg, c, err := clients()
 	if err != nil {
 		t.Fatalf("Making localgit: %v", err)
 	}
@@ -417,7 +433,15 @@ func TestCherryPickPR(t *testing.T) {
 }
 
 func TestCherryPickPRWithLabels(t *testing.T) {
-	lg, c, err := localgit.New()
+	testCherryPickPRWithLabels(localgit.New, t)
+}
+
+func TestCherryPickPRWithLabelsV2(t *testing.T) {
+	testCherryPickPRWithLabels(localgit.NewV2, t)
+}
+
+func testCherryPickPRWithLabels(clients localgit.Clients, t *testing.T) {
+	lg, c, err := clients()
 	if err != nil {
 		t.Fatalf("Making localgit: %v", err)
 	}

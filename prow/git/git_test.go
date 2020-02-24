@@ -31,7 +31,15 @@ import (
 )
 
 func TestClone(t *testing.T) {
-	lg, c, err := localgit.New()
+	testClone(localgit.New, t)
+}
+
+func TestCloneV2(t *testing.T) {
+	testClone(localgit.NewV2, t)
+}
+
+func testClone(clients localgit.Clients, t *testing.T) {
+	lg, c, err := clients()
 	if err != nil {
 		t.Fatalf("Making local git repo: %v", err)
 	}
@@ -98,10 +106,15 @@ func TestClone(t *testing.T) {
 }
 
 func TestCheckoutPR(t *testing.T) {
-	lg, c, err := localgit.New()
-	if err != nil {
-		t.Fatalf("Making local git repo: %v", err)
-	}
+	testCheckoutPR(localgit.New, t)
+}
+
+func TestCheckoutPRV2(t *testing.T) {
+	testCheckoutPR(localgit.NewV2, t)
+}
+
+func testCheckoutPR(clients localgit.Clients, t *testing.T) {
+	lg, c, err := clients()
 	defer func() {
 		if err := lg.Clean(); err != nil {
 			t.Errorf("Error cleaning LocalGit: %v", err)
@@ -139,10 +152,15 @@ func TestCheckoutPR(t *testing.T) {
 }
 
 func TestMergeCommitsExistBetween(t *testing.T) {
-	lg, c, err := localgit.New()
-	if err != nil {
-		t.Fatalf("Making localgit: %v", err)
-	}
+	testMergeCommitsExistBetween(localgit.New, t)
+}
+
+func TestMergeCommitsExistBetweenV2(t *testing.T) {
+	testMergeCommitsExistBetween(localgit.NewV2, t)
+}
+
+func testMergeCommitsExistBetween(clients localgit.Clients, t *testing.T) {
+	lg, c, err := clients()
 	defer func() {
 		if err := lg.Clean(); err != nil {
 			t.Errorf("Cleaning up localgit: %v", err)
@@ -259,6 +277,14 @@ func TestMergeCommitsExistBetween(t *testing.T) {
 }
 
 func TestMergeAndCheckout(t *testing.T) {
+	testMergeAndCheckout(localgit.New, t)
+}
+
+func TestMergeAndCheckoutV2(t *testing.T) {
+	testMergeAndCheckout(localgit.NewV2, t)
+}
+
+func testMergeAndCheckout(clients localgit.Clients, t *testing.T) {
 	testCases := []struct {
 		name          string
 		setBaseSHA    bool
@@ -322,7 +348,7 @@ func TestMergeAndCheckout(t *testing.T) {
 			tc := tc
 			t.Parallel()
 
-			lg, c, err := localgit.New()
+			lg, c, err := clients()
 			if err != nil {
 				t.Fatalf("Making local git repo: %v", err)
 			}
@@ -394,6 +420,14 @@ func TestMergeAndCheckout(t *testing.T) {
 }
 
 func TestMerging(t *testing.T) {
+	testMerging(localgit.New, t)
+}
+
+func TestMergingV2(t *testing.T) {
+	testMerging(localgit.NewV2, t)
+}
+
+func testMerging(clients localgit.Clients, t *testing.T) {
 	testCases := []struct {
 		name     string
 		strategy string
@@ -427,7 +461,7 @@ func TestMerging(t *testing.T) {
 			tc := tc
 			t.Parallel()
 
-			lg, c, err := localgit.New()
+			lg, c, err := clients()
 			if err != nil {
 				t.Fatalf("Making local git repo: %v", err)
 			}
