@@ -67,14 +67,14 @@ tide:
     - IBM/ibm-helm-api-operator
     - IBM/ibm-helm-repo-operator
     - IBM/ibm-iam-operator
+    - IBM/ibm-ingress-nginx-operator
     - IBM/ibm-licensing-operator
+    - IBM/ibm-management-ingress-operator
     - IBM/ibm-management-repo-operator
     - IBM/ibm-metering-operator
     - IBM/ibm-mongodb-operator
     - IBM/ibm-mt-grqenforcer-operator
     - IBM/meta-operator
-    - IBM/management-ingress-operator
-    - IBM/ingress-nginx-operator
     - IBM/multicloud-operators-subscription-release
     - IBM/multicloud-operators-policy-controller
     - IBM/multicloud-operators-placementrule
