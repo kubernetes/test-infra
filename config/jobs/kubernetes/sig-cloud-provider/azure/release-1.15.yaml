@@ -200,8 +200,8 @@ presubmits:
           value: kubernetes.io/azure-file # In-tree Azure file storage class
 periodics:
 - interval: 4h
-  decorate: true
   name: kubernetes-e2e-azure-disk-1-15
+  decorate: true
   labels:
     preset-service-account: "true"
     preset-azure-cred: "true"
@@ -256,6 +256,7 @@ periodics:
     testgrid-num-columns-recent: '30'
 - interval: 4h
   name: kubernetes-e2e-azure-disk-vmss-1-15
+  decorate: true
   labels:
     preset-service-account: "true"
     preset-azure-cred: "true"
