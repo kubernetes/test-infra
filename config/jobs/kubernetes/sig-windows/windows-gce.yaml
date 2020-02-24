@@ -42,6 +42,11 @@ presets:
     value: "128"
   - name: PREPULL_TIMEOUT
     value: "10m"
+  # APIResponsiveness test depends on Prometheus server which couldn't scrape kube-proxy,
+  # unless it’s binding 0.0.0.0 as per https://github.com/helm/charts/issues/16476
+  # Reference: https://github.com/kubernetes/test-infra/blob/master/config/jobs/kubernetes/sig-scalability/sig-scalability-presets.yaml#L127
+  - name: KUBEPROXY_TEST_ARGS
+    value: "--profiling --metrics-bind-address=0.0.0.0"
 
 periodics:
 - name: ci-kubernetes-e2e-windows-gce-poc
@@ -365,6 +370,7 @@ periodics:
       - --test-cmd-args=--nodes=1
       - --test-cmd-args=--provider=gce
       - --test-cmd-args=--report-dir=/logs/artifacts
+      - --test-cmd-args=--enable-prometheus-server=true
       - --test-cmd-args=--testconfig=testing/node-throughput/config.yaml
       - --test-cmd-args=--testoverrides=./testing/node-throughput/windows_override.yaml
       - --test-cmd-name=ClusterLoaderV2
