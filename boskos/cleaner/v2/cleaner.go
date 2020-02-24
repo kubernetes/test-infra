@@ -29,6 +29,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
+	"k8s.io/test-infra/boskos/cleaner"
 	"k8s.io/test-infra/boskos/common"
 	"k8s.io/test-infra/boskos/crds"
 	"k8s.io/test-infra/boskos/mason"
@@ -37,10 +38,11 @@ import (
 const controllerName = "boskos-cleaner"
 
 // Add creates a new cleaner controller
-func Add(mgr manager.Manager) error {
+func Add(mgr manager.Manager, boskosClient cleaner.RecycleBoskosClient) error {
 	reconciler := &reconciler{
-		ctx:    context.Background(),
-		client: mgr.GetClient(),
+		ctx:          context.Background(),
+		client:       mgr.GetClient(),
+		boskosClient: boskosClient,
 	}
 
 	c, err := controller.New(controllerName, mgr, controller.Options{
@@ -59,9 +61,10 @@ func Add(mgr manager.Manager) error {
 }
 
 type reconciler struct {
-	ctx       context.Context
-	client    ctrlruntimeclient.Client
-	namespace string
+	ctx          context.Context
+	client       ctrlruntimeclient.Client
+	boskosClient cleaner.RecycleBoskosClient
+	namespace    string
 }
 
 func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, error) {
@@ -77,7 +80,7 @@ func (r *reconciler) reconcile(log *logrus.Entry, request reconcile.Request) err
 	resourceObject := &crds.ResourceObject{}
 	if err := r.client.Get(r.ctx, request); err != nil {
 		if kerrors.IsNotFound(err) {
-			return reconcile.Result{}, nil
+			return nil
 		}
 		return fmt.Errorf("failed to get object %s: %v", request.NamespacedName.String(), err)
 	}
@@ -95,12 +98,15 @@ func (r *reconciler) reconcile(log *logrus.Entry, request reconcile.Request) err
 		return nil
 	}
 
-	leasedResources, err := mason.CheckUserData(*res)
-	if err != nil {
-		log.WithError(err).Warning("Could not extract mason resources from userdata")
-	} else {
+	cleaner.RecycleOne(r.boskosClient, resourceObject.ToItem())
 
+	resourceObject.Status.State = common.Tombstone
+	if err := r.client.Update(r.ctc, resourceObject); err != nil {
+		return fmt.Errorf("failed to update object after setting status to tombstone: %v", err)
 	}
+	log.WithField("new-state", common.Tombstone).Debug("Successfully updated objects state.")
+
+	return nil
 }
 
 func (r *reconciler) isResourceDynamic(r *crds.ResourceObject) (bool, error) {
