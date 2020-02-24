@@ -70,6 +70,7 @@ periodics:
     base_ref: master
     path_alias: k8s.io/release
   spec:
+    serviceAccountName: deployer
     containers:
     - image: gcr.io/k8s-staging-release-test/k8s-cloud-builder:latest
       command:
@@ -78,16 +79,6 @@ periodics:
         - stage
         - master
         - --attended
-      env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /creds/service-account.json
-      volumeMounts:
-        - name: creds
-          mountPath: /creds
-    volumes:
-      - name: creds
-        secret:
-          secretName: deployer-service-account
   annotations:
     testgrid-dashboards: sig-release-releng-informing
     testgrid-alert-email: release-managers@kubernetes.io
