@@ -668,22 +668,14 @@ postsubmits:
     branches:
     - ^master$
     spec:
+      serviceAccountName: pusher
       containers:
       - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20200107-v2.3.1-71-gfd2fae8
         command:
         - cip
         args:
         - -manifest=prow/cip-manifest.yaml
-        - -key-files=/etc/service-account/service-account.json
         - -dry-run=false
-        - -use-service-account
-        volumeMounts:
-        - name: service-account
-          mountPath: /etc/service-account
-      volumes:
-      - name: service-account
-        secret:
-          secretName: pusher-service-account # TODO(fejta): use pusher serviceAccountName
     annotations:
       testgrid-dashboards: sig-testing-prow
       testgrid-tab-name: cip-prow
