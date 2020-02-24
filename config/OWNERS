@@ -5,7 +5,6 @@ approvers:
 - krzyzacy
 - spiffxp
 - wojtek-t
-reviewers:
 - chases2
 labels:
 - area/config
