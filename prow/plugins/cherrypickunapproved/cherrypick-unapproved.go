@@ -81,23 +81,25 @@ func handlePullRequest(pc plugins.Agent, pr github.PullRequestEvent) error {
 }
 
 func handlePR(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent, cp commentPruner, branchRe *regexp.Regexp, commentBody string) error {
-	// Only consider the events that indicate opening of the PR and
-	// when the cpApproved and cpUnapproved labels are added or removed
-	cpLabelUpdated := (pr.Action == github.PullRequestActionLabeled || pr.Action == github.PullRequestActionUnlabeled) &&
-		(pr.Label.Name == labels.CpApproved || pr.Label.Name == labels.CpUnapproved)
-	if pr.Action != github.PullRequestActionOpened && pr.Action != github.PullRequestActionReopened && !cpLabelUpdated {
-		return nil
-	}
-
 	var (
 		org    = pr.Repo.Owner.Login
 		repo   = pr.Repo.Name
 		branch = pr.PullRequest.Base.Ref
 	)
 
-	// if the branch doesn't match against the branch names allowed for cherry-picks,
-	// don't do anything
-	if !branchRe.MatchString(branch) {
+	switch pr.Action {
+	case github.PullRequestActionOpened, github.PullRequestActionReopened:
+		if !branchRe.MatchString(branch) {
+			return nil
+		}
+	case github.PullRequestActionLabeled, github.PullRequestActionUnlabeled:
+		if !branchRe.MatchString(branch) {
+			return nil
+		}
+		if !(pr.Label.Name == labels.CpApproved || pr.Label.Name == labels.CpUnapproved) {
+			return nil
+		}
+	default:
 		return nil
 	}
 
