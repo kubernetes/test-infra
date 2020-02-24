@@ -51,7 +51,7 @@ periodics:
       - --deployment=kops
       - --env=KUBE_SSH_USER=admin
       - --extract=ci/latest
-      - --ginkgo-parallel=30
+      - --ginkgo-parallel=10
       - --kops-args=--master-count=3
       - --kops-nodes=6
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
