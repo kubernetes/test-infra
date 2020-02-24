@@ -710,6 +710,10 @@ periodics:
     testgrid-tab-name: ci-kubernetes-kubemark-100-azure-test
     testgrid-num-failures-to-alert: '1'
     description: "Runs kubemark tests (100 nodes) with the Azure cloud provider enabled. (test only)"
+  labels:
+    preset-service-account: "true"
+    preset-azure-cred: "true"
+    preset-dind-enabled: "true"
   spec:
     containers:
     - image: ss104301/kubemark-performance-tests-on-azure:latest
