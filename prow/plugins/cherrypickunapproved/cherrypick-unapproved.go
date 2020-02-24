@@ -20,6 +20,7 @@ limitations under the License.
 package cherrypickunapproved
 
 import (
+	"encoding/json"
 	"fmt"
 	"regexp"
 	"strings"
@@ -92,6 +93,7 @@ func handlePR(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent, c
 		if !branchRe.MatchString(branch) {
 			return nil
 		}
+		return ensureLabels(gc, org, repo, pr, log, cp, commentBody)
 	case github.PullRequestActionLabeled, github.PullRequestActionUnlabeled:
 		if !branchRe.MatchString(branch) {
 			return nil
@@ -99,11 +101,35 @@ func handlePR(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent, c
 		if !(pr.Label.Name == labels.CpApproved || pr.Label.Name == labels.CpUnapproved) {
 			return nil
 		}
-	default:
-		return nil
+		return ensureLabels(gc, org, repo, pr, log, cp, commentBody)
+	case github.PullRequestActionEdited:
+		// if someone changes the base of their PR, we will get this event
+		// and the changes field will list that the base SHA and ref changes
+		var changes struct {
+			Base struct {
+				Ref struct {
+					From string `json:"from"`
+				} `json:"ref"`
+				Sha struct {
+					From string `json:"from"`
+				} `json:"sha"`
+			} `json:"base"`
+		}
+		if err := json.Unmarshal(pr.Changes, &changes); err != nil {
+			// we're detecting this best-effort so we can forget about
+			// the event
+			return nil
+		}
+		if branchRe.MatchString(branch) && !branchRe.MatchString(changes.Base.Ref.From) {
+			// base ref changed from a branch not allowed for cherry-picks to a branch that is allowed for cherry-picks
+			return ensureLabels(gc, org, repo, pr, log, cp, commentBody)
+		} else if !branchRe.MatchString(branch) && branchRe.MatchString(changes.Base.Ref.From) {
+			// base ref changed from a branch allowed for cherry-picks to a branch that is not allowed for cherry-picks
+			return pruneLabels(gc, org, repo, pr, log, cp, commentBody)
+		}
 	}
 
-	return ensureLabels(gc, org, repo, pr, log, cp, commentBody)
+	return nil
 }
 
 func ensureLabels(gc githubClient, org string, repo string, pr *github.PullRequestEvent, log *logrus.Entry, cp commentPruner, commentBody string) error {
@@ -143,6 +169,33 @@ func ensureLabels(gc githubClient, org string, repo string, pr *github.PullReque
 	if err := gc.CreateComment(org, repo, pr.Number, formattedComment); err != nil {
 		log.WithError(err).Errorf("Failed to comment %q", formattedComment)
 	}
+
+	return nil
+}
+
+func pruneLabels(gc githubClient, org string, repo string, pr *github.PullRequestEvent, log *logrus.Entry, cp commentPruner, commentBody string) error {
+	issueLabels, err := gc.GetIssueLabels(org, repo, pr.Number)
+	if err != nil {
+		return err
+	}
+	hasCherryPickApprovedLabel := github.HasLabel(labels.CpApproved, issueLabels)
+	hasCherryPickUnapprovedLabel := github.HasLabel(labels.CpUnapproved, issueLabels)
+
+	if hasCherryPickApprovedLabel {
+		if err := gc.RemoveLabel(org, repo, pr.Number, labels.CpApproved); err != nil {
+			log.WithError(err).Errorf("GitHub failed to remove the following label: %s", labels.CpApproved)
+		}
+	}
+
+	if hasCherryPickUnapprovedLabel {
+		if err := gc.RemoveLabel(org, repo, pr.Number, labels.CpUnapproved); err != nil {
+			log.WithError(err).Errorf("GitHub failed to remove the following label: %s", labels.CpUnapproved)
+		}
+	}
+
+	cp.PruneComments(func(comment github.IssueComment) bool {
+		return strings.Contains(comment.Body, commentBody)
+	})
 
 	return nil
 }
