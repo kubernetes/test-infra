@@ -178,6 +178,26 @@ func TestCherryPickUnapprovedLabel(t *testing.T) {
 			removed:        []string{},
 			expectComment:  true,
 		},
+		{
+			name:           "PR base branch master edited to release -> add cpUnapproved and comment",
+			branch:         "release-1.10",
+			previousBranch: "master",
+			action:         github.PullRequestActionEdited,
+			labels:         []string{},
+			added:          []string{labels.CpUnapproved},
+			removed:        []string{},
+			expectComment:  true,
+		},
+		{
+			name:           "PR base branch edited from release to master -> remove cpApproved and cpUnapproved",
+			branch:         "master",
+			previousBranch: "release-1.10",
+			action:         github.PullRequestActionEdited,
+			labels:         []string{labels.CpApproved, labels.CpUnapproved},
+			added:          []string{},
+			removed:        []string{labels.CpApproved, labels.CpUnapproved},
+			expectComment:  false,
+		},
 	}
 
 	for _, tc := range testcases {
