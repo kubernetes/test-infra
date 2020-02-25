@@ -123,7 +123,7 @@ func v2Main(client *client.Client) {
 	mgr, err := manager.New(cfg, manager.Options{
 		LeaderElection:          true,
 		LeaderElectionNamespace: namespace,
-		LeaderElectionID:        "boskos-cleaner",
+		LeaderElectionID:        "boskos-cleaner-leaderlock",
 		Namespace:               namespace,
 		MetricsBindAddress:      "0",
 	})
