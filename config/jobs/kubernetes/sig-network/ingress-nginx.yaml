@@ -102,6 +102,24 @@ presubmits:
       testgrid-dashboards: sig-network-ingress-nginx
       testgrid-tab-name: lualint
 
+  - name: pull-ingress-nginx-chart-lint
+    always_run: true
+    decorate: true
+    decoration_config:
+      timeout: 5m
+    path_alias: k8s.io/ingress-nginx
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    spec:
+      containers:
+      - image: gcr.io/kubernetes-charts-ci/test-image:v3.4.0
+        command:
+        - ct lint --charts charts/ingress-nginx --chart-dirs charts/
+    annotations:
+      testgrid-dashboards: sig-network-ingress-nginx
+      testgrid-tab-name: chart-lint
+
   - name: pull-ingress-nginx-test-lua
     always_run: true
     decorate: true
