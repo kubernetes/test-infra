@@ -17,6 +17,7 @@ limitations under the License.
 package fakegithub
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"regexp"
@@ -717,5 +718,11 @@ func (f *FakeClient) UpdatePullRequest(org, repo string, number int, title, body
 	if body != nil {
 		pr.Body = *body
 	}
+	return nil
+}
+
+// Query simply exists to allow the fake client to match the interface for packages that need it.
+// It does not modify the passed interface at all.
+func (f *FakeClient) Query(ctx context.Context, q interface{}, vars map[string]interface{}) error {
 	return nil
 }
