@@ -24,16 +24,7 @@ spec:
         - --resource-type=gke-project
         - --pool-size=20
         - --
-        - --service_account=/etc/service-account/service-account.json
         - --hours=0
-        volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
-      volumes:
-      - name: service
-        secret:
-          secretName: service-account
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -61,16 +52,7 @@ spec:
         - --resource-type=gce-project,gpu-project,ingress-project,istio-project,scalability-presubmit-project,scalability-project
         - --pool-size=20
         - --
-        - --service_account=/etc/service-account/service-account.json
         - --hours=0
-        volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
-      volumes:
-      - name: service
-        secret:
-          secretName: service-account
 ---
 apiVersion: apps/v1
 kind: Deployment
