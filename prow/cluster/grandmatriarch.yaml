@@ -58,14 +58,4 @@ spec:
       - name: bakery
         image: gcr.io/k8s-prow/grandmatriarch:v20200225-55a0aacbd
         args:
-        - /etc/robot/service-account.json
         - http-cookiefile
-        volumeMounts:
-        - mountPath: /etc/robot
-          name: robot
-          readOnly: true
-      volumes:
-      - name: robot
-        secret:
-          defaultMode: 420
-          secretName: service-account
