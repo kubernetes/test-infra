@@ -70,7 +70,7 @@ periodics:
     base_ref: master
     path_alias: k8s.io/release
   spec:
-    serviceAccountName: deployer
+    #erviceAccountName: deployer -- TODO- this is not valid for the untrusted cluster, fix
     containers:
     - image: gcr.io/k8s-staging-release-test/k8s-cloud-builder:latest
       command:
