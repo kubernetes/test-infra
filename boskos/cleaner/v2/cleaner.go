@@ -22,6 +22,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/types"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
@@ -32,17 +33,17 @@ import (
 	"k8s.io/test-infra/boskos/cleaner"
 	"k8s.io/test-infra/boskos/common"
 	"k8s.io/test-infra/boskos/crds"
-	"k8s.io/test-infra/boskos/mason"
 )
 
 const controllerName = "boskos-cleaner"
 
 // Add creates a new cleaner controller
-func Add(mgr manager.Manager, boskosClient cleaner.RecycleBoskosClient) error {
+func Add(mgr manager.Manager, boskosClient cleaner.RecycleBoskosClient, namespace string) error {
 	reconciler := &reconciler{
 		ctx:          context.Background(),
 		client:       mgr.GetClient(),
 		boskosClient: boskosClient,
+		namespace:    namespace,
 	}
 
 	c, err := controller.New(controllerName, mgr, controller.Options{
@@ -64,12 +65,13 @@ type reconciler struct {
 	ctx          context.Context
 	client       ctrlruntimeclient.Client
 	boskosClient cleaner.RecycleBoskosClient
+	recycleFunc  func(cleaner.RecycleBoskosClient, *common.Resource)
 	namespace    string
 }
 
 func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, error) {
-	err := r.reconcile(err)
-	log := logrus.WithFields("resource-name", request.Name)
+	log := logrus.WithField("resource-name", request.Name)
+	err := r.reconcile(log, request)
 	if err != nil {
 		log.WithError(err).Error("Reconciliation error")
 	}
@@ -78,7 +80,7 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 
 func (r *reconciler) reconcile(log *logrus.Entry, request reconcile.Request) error {
 	resourceObject := &crds.ResourceObject{}
-	if err := r.client.Get(r.ctx, request); err != nil {
+	if err := r.client.Get(r.ctx, request.NamespacedName, resourceObject); err != nil {
 		if kerrors.IsNotFound(err) {
 			return nil
 		}
@@ -98,10 +100,11 @@ func (r *reconciler) reconcile(log *logrus.Entry, request reconcile.Request) err
 		return nil
 	}
 
-	cleaner.RecycleOne(r.boskosClient, resourceObject.ToItem())
+	commonResourceObject := resourceObject.ToItem().(common.Resource)
+	cleaner.RecycleOne(r.boskosClient, &commonResourceObject)
 
 	resourceObject.Status.State = common.Tombstone
-	if err := r.client.Update(r.ctc, resourceObject); err != nil {
+	if err := r.client.Update(r.ctx, resourceObject); err != nil {
 		return fmt.Errorf("failed to update object after setting status to tombstone: %v", err)
 	}
 	log.WithField("new-state", common.Tombstone).Debug("Successfully updated objects state.")
@@ -109,8 +112,8 @@ func (r *reconciler) reconcile(log *logrus.Entry, request reconcile.Request) err
 	return nil
 }
 
-func (r *reconciler) isResourceDynamic(r *crds.ResourceObject) (bool, error) {
+func (r *reconciler) isResourceDynamic(resourceObject *crds.ResourceObject) (bool, error) {
 	drlcName := types.NamespacedName{Namespace: r.namespace, Name: resourceObject.Spec.Type}
 	err := r.client.Get(r.ctx, drlcName, &crds.DRLCObject{})
-	return kerrors.IsNotFound(err), err
+	return !kerrors.IsNotFound(err), ctrlruntimeclient.IgnoreNotFound(err)
 }
