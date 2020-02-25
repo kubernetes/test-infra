@@ -197,7 +197,7 @@ func TestAcquireByState(t *testing.T) {
 			}
 			receivedRes, err := client.AcquireByState(tc.state, newState, tc.names)
 			boskos.Close()
-			if !reflect.DeepEqual(err, tc.err) {
+			if fmt.Sprintf("%v", tc.err) != fmt.Sprintf("%v", err) {
 				t.Fatalf("tc: %s - errors don't match, expected %v, received\n %v", tc.name, tc.err, err)
 			}
 			sort.Sort(common.ResourceByName(receivedRes))
