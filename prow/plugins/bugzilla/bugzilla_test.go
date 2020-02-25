@@ -1353,7 +1353,7 @@ func TestProcessQuery(t *testing.T) {
 				},
 			},
 			email:    "qa_tester@example.com",
-			expected: "/assign @ValidLogin",
+			expected: "Assigning the QA contact for review:\n/assign @ValidLogin",
 		}, {
 			name: "no login returns not found error",
 			query: emailToLoginQuery{
