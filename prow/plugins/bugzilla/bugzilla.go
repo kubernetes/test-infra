@@ -421,7 +421,7 @@ To reference a bug, add 'Bug XXX:' to the title of this pull request and request
 			}
 		}
 
-		valid, why := validateBug(*bug, dependents, options, bc.Endpoint())
+		valid, validationsRun, why := validateBug(*bug, dependents, options, bc.Endpoint())
 		needsValidLabel, needsInvalidLabel = valid, !valid
 		if valid {
 			log.Debug("Valid bug found.")
@@ -444,6 +444,16 @@ To reference a bug, add 'Bug XXX:' to the title of this pull request and request
 					response += " The bug has been updated to refer to the pull request using the external bug tracker."
 				}
 			}
+
+			if len(validationsRun) == 0 {
+				response += "\n\nNo validations were run on this bug."
+			} else {
+				response += "\n\nValidations run on this bug:"
+			}
+			for _, validation := range validationsRun {
+				response += fmt.Sprint("\n\t- ", validation)
+			}
+
 			// if bug is valid and qa command was used, identify qa contact via email
 			if e.assign {
 				if bug.QAContactDetail == nil {
@@ -534,9 +544,10 @@ func prettyStates(statuses []plugins.BugzillaBugState) []string {
 }
 
 // validateBug determines if the bug matches the options and returns a description of why not
-func validateBug(bug bugzilla.Bug, dependents []bugzilla.Bug, options plugins.BugzillaBranchOptions, endpoint string) (bool, []string) {
+func validateBug(bug bugzilla.Bug, dependents []bugzilla.Bug, options plugins.BugzillaBranchOptions, endpoint string) (bool, []string, []string) {
 	valid := true
 	var errors []string
+	var validations []string
 	if options.IsOpen != nil && *options.IsOpen != bug.IsOpen {
 		valid = false
 		not := ""
@@ -546,6 +557,12 @@ func validateBug(bug bugzilla.Bug, dependents []bugzilla.Bug, options plugins.Bu
 			was = "is"
 		}
 		errors = append(errors, fmt.Sprintf("expected the bug to %sbe open, but it %s", not, was))
+	} else if options.IsOpen != nil {
+		was := "isn't"
+		if *options.IsOpen {
+			was = "is"
+		}
+		validations = append(validations, fmt.Sprintf("bug %s open", was))
 	}
 
 	if options.TargetRelease != nil {
@@ -558,6 +575,8 @@ func validateBug(bug bugzilla.Bug, dependents []bugzilla.Bug, options plugins.Bu
 			// not even clear if the list can have more than one item in the response
 			valid = false
 			errors = append(errors, fmt.Sprintf("expected the bug to target the %q release, but it targets %q instead", *options.TargetRelease, bug.TargetRelease[0]))
+		} else {
+			validations = append(validations, fmt.Sprintf("bug target release (%s) matches configured target release for branch (%s)", bug.TargetRelease[0], *options.TargetRelease))
 		}
 	}
 
@@ -570,6 +589,8 @@ func validateBug(bug bugzilla.Bug, dependents []bugzilla.Bug, options plugins.Bu
 		if !bugMatchesStates(&bug, allowed) {
 			valid = false
 			errors = append(errors, fmt.Sprintf("expected the bug to be in one of the following states: %s, but it is %s instead", strings.Join(prettyStates(allowed), ", "), bugzilla.PrettyStatus(bug.Status, bug.Resolution)))
+		} else {
+			validations = append(validations, fmt.Sprintf("bug is in the state %s, which is one of the valid states (%s)", bugzilla.PrettyStatus(bug.Status, bug.Resolution), strings.Join(prettyStates(allowed), ", ")))
 		}
 	}
 
@@ -580,6 +601,8 @@ func validateBug(bug bugzilla.Bug, dependents []bugzilla.Bug, options plugins.Bu
 				expected := strings.Join(prettyStates(*options.DependentBugStates), ", ")
 				actual := bugzilla.PrettyStatus(bug.Status, bug.Resolution)
 				errors = append(errors, fmt.Sprintf("expected dependent "+bugLink+" to be in one of the following states: %s, but it is %s instead", bug.ID, endpoint, bug.ID, expected, actual))
+			} else {
+				validations = append(validations, fmt.Sprintf("dependent bug "+bugLink+" is in the state %s, which is one of the valid states (%s)", bug.ID, endpoint, bug.ID, bugzilla.PrettyStatus(bug.Status, bug.Resolution), strings.Join(prettyStates(*options.DependentBugStates), ", ")))
 			}
 		}
 	}
@@ -595,6 +618,8 @@ func validateBug(bug bugzilla.Bug, dependents []bugzilla.Bug, options plugins.Bu
 				// not even clear if the list can have more than one item in the response
 				valid = false
 				errors = append(errors, fmt.Sprintf("expected dependent "+bugLink+" to target the %q release, but it targets %q instead", bug.ID, endpoint, bug.ID, *options.DependentBugTargetRelease, bug.TargetRelease[0]))
+			} else {
+				validations = append(validations, fmt.Sprintf("dependent "+bugLink+" targets the %q release, matching the expected (%s) release", bug.ID, endpoint, bug.ID, bug.TargetRelease[0], *options.DependentBugTargetRelease))
 			}
 		}
 	}
@@ -614,9 +639,11 @@ func validateBug(bug bugzilla.Bug, dependents []bugzilla.Bug, options plugins.Bu
 			errors = append(errors, fmt.Sprintf("expected "+bugLink+" to depend on a bug targeting the %q release, but no dependents were found", bug.ID, endpoint, bug.ID, *options.DependentBugTargetRelease))
 		default:
 		}
+	} else {
+		validations = append(validations, "bug has dependents")
 	}
 
-	return valid, errors
+	return valid, validations, errors
 }
 
 func handleMerge(e event, gc githubClient, bc bugzilla.Client, options plugins.BugzillaBranchOptions, log *logrus.Entry) error {
