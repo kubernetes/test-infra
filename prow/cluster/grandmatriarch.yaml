@@ -2,7 +2,8 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   annotations:
-    iam.gke.io/gcp-service-account: control-plane@k8s-prow.iam.gserviceaccount.com
+    # TODO(fejta): consider a better project, but this is what service-account uses now
+    iam.gke.io/gcp-service-account: pr-kubekins@kubernetes-jenkins-pull.iam.gserviceaccount.com
   name: grandmatriarch
   namespace: test-pods
 ---
