@@ -17,6 +17,8 @@ limitations under the License.
 package cherrypickunapproved
 
 import (
+	"encoding/json"
+	"fmt"
 	"reflect"
 	"regexp"
 	"testing"
@@ -62,7 +64,7 @@ func (fc *fakeClient) RemoveLabel(owner, repo string, number int, label string) 
 
 // GetIssueLabels gets the current labels on the specified PR or issue
 func (fc *fakeClient) GetIssueLabels(owner, repo string, number int) ([]github.Label, error) {
-	la := []github.Label{}
+	var la []github.Label
 	for _, l := range fc.labels {
 		la = append(la, github.Label{Name: l})
 	}
@@ -88,8 +90,8 @@ type fakePruner struct{}
 
 func (fp *fakePruner) PruneComments(shouldPrune func(github.IssueComment) bool) {}
 
-func makeFakePullRequestEvent(action github.PullRequestEventAction, branch string) github.PullRequestEvent {
-	return github.PullRequestEvent{
+func makeFakePullRequestEvent(action github.PullRequestEventAction, branch, oldBranch string) github.PullRequestEvent {
+	event := github.PullRequestEvent{
 		Action: action,
 		PullRequest: github.PullRequest{
 			Base: github.PullRequestBranch{
@@ -97,71 +99,84 @@ func makeFakePullRequestEvent(action github.PullRequestEventAction, branch strin
 			},
 		},
 	}
+
+	if oldBranch != "" {
+		event.Changes = json.RawMessage(fmt.Sprintf(`{"base": {"ref": {"from": "%s"}, "sha": {"from": "sha"}}}`, oldBranch))
+	}
+
+	return event
 }
 
 func TestCherryPickUnapprovedLabel(t *testing.T) {
 	var testcases = []struct {
-		name          string
-		branch        string
-		action        github.PullRequestEventAction
-		labels        []string
-		added         []string
-		removed       []string
-		expectComment bool
+		name           string
+		branch         string
+		previousBranch string
+		action         github.PullRequestEventAction
+		labels         []string
+		added          []string
+		removed        []string
+		expectComment  bool
 	}{
 		{
-			name:          "unsupported PR action -> no-op",
-			branch:        "release-1.10",
-			action:        github.PullRequestActionEdited,
-			labels:        []string{},
-			added:         []string{},
-			removed:       []string{},
-			expectComment: false,
+			name:           "unsupported PR action -> no-op",
+			branch:         "release-1.10",
+			previousBranch: "",
+			action:         github.PullRequestActionClosed,
+			labels:         []string{},
+			added:          []string{},
+			removed:        []string{},
+			expectComment:  false,
 		},
 		{
-			name:          "branch that does match regexp -> no-op",
-			branch:        "master",
-			action:        github.PullRequestActionOpened,
-			labels:        []string{},
-			added:         []string{},
-			removed:       []string{},
-			expectComment: false,
+			name:           "branch that does match regexp -> no-op",
+			branch:         "master",
+			previousBranch: "",
+			action:         github.PullRequestActionOpened,
+			labels:         []string{},
+			added:          []string{},
+			removed:        []string{},
+			expectComment:  false,
 		},
 		{
-			name:          "has cpUnapproved -> no-op",
-			branch:        "release-1.10",
-			action:        github.PullRequestActionOpened,
-			labels:        []string{labels.CpUnapproved},
-			added:         []string{},
-			removed:       []string{},
-			expectComment: false,
+			name:           "has cpUnapproved -> no-op",
+			branch:         "release-1.10",
+			previousBranch: "",
+			action:         github.PullRequestActionOpened,
+			labels:         []string{labels.CpUnapproved},
+			added:          []string{},
+			removed:        []string{},
+			expectComment:  false,
 		},
 		{
-			name:          "has both cpApproved and cpUnapproved -> remove cpUnapproved",
-			branch:        "release-1.10",
-			action:        github.PullRequestActionOpened,
-			labels:        []string{labels.CpApproved, labels.CpUnapproved},
-			added:         []string{},
-			removed:       []string{labels.CpUnapproved},
-			expectComment: false,
+			name:           "has both cpApproved and cpUnapproved -> remove cpUnapproved",
+			branch:         "release-1.10",
+			previousBranch: "",
+			action:         github.PullRequestActionOpened,
+			labels:         []string{labels.CpApproved, labels.CpUnapproved},
+			added:          []string{},
+			removed:        []string{labels.CpUnapproved},
+			expectComment:  false,
 		},
 		{
-			name:          "does not have any labels, PR opened against a release branch -> add cpUnapproved and comment",
-			branch:        "release-1.10",
-			action:        github.PullRequestActionOpened,
-			labels:        []string{},
-			added:         []string{labels.CpUnapproved},
-			removed:       []string{},
-			expectComment: true,
+			name:           "does not have any labels, PR opened against a release branch -> add cpUnapproved and comment",
+			branch:         "release-1.10",
+			previousBranch: "",
+			action:         github.PullRequestActionOpened,
+			labels:         []string{},
+			added:          []string{labels.CpUnapproved},
+			removed:        []string{},
+			expectComment:  true,
 		},
 		{
-			name:          "does not have any labels, PR reopened against a release branch -> add cpUnapproved and comment",
-			branch:        "release-1.10",
-			action:        github.PullRequestActionReopened,
-			labels:        []string{},
-			added:         []string{labels.CpUnapproved},
-			removed:       []string{},
-			expectComment: true,
+			name:           "does not have any labels, PR reopened against a release branch -> add cpUnapproved and comment",
+			branch:         "release-1.10",
+			previousBranch: "",
+			action:         github.PullRequestActionReopened,
+			labels:         []string{},
+			added:          []string{labels.CpUnapproved},
+			removed:        []string{},
+			expectComment:  true,
 		},
 	}
 
@@ -173,7 +188,7 @@ func TestCherryPickUnapprovedLabel(t *testing.T) {
 			commentsAdded: make(map[int][]string, 0),
 		}
 
-		event := makeFakePullRequestEvent(tc.action, tc.branch)
+		event := makeFakePullRequestEvent(tc.action, tc.branch, tc.previousBranch)
 		branchRe := regexp.MustCompile(`^release-.*$`)
 		comment := "dummy cumment"
 		err := handlePR(fc, logrus.WithField("plugin", "fake-cherrypick-unapproved"), &event, &fakePruner{}, branchRe, comment)
