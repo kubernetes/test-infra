@@ -27,12 +27,18 @@ import (
 
 	"github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	"k8s.io/test-infra/boskos/cleaner"
+	cleanerv2 "k8s.io/test-infra/boskos/cleaner/v2"
 	"k8s.io/test-infra/boskos/client"
 	"k8s.io/test-infra/boskos/crds"
 	"k8s.io/test-infra/boskos/ranch"
+	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/logrusutil"
+	prowmetrics "k8s.io/test-infra/prow/metrics"
+	"k8s.io/test-infra/prow/pjutil"
 )
 
 const (
@@ -75,13 +81,23 @@ func main() {
 	}
 	logrus.SetLevel(level)
 
-	if !useV2Implementation {
-		v1Main()
-		return
+	client, err := client.NewClient(defaultOwner, boskosURL, username, passwordFile)
+	if err != nil {
+		logrus.WithError(err).Fatal("unable to create a Boskos client")
+	}
+
+	defer interrupts.WaitForGracefulShutdown()
+	prowmetrics.ExposeMetrics("boskos", config.PushGateway{})
+	pjutil.ServePProf()
+
+	if useV2Implementation {
+		v2Main(client)
+	} else {
+		v1Main(client)
 	}
 }
 
-func v1Main() {
+func v1Main(client *client.Client) {
 
 	kubeClient, err := kubeClientOptions.Client()
 	if err != nil {
@@ -89,10 +105,6 @@ func v1Main() {
 	}
 	st, _ := ranch.NewStorage(context.Background(), kubeClient, namespace, "")
 
-	client, err := client.NewClient(defaultOwner, boskosURL, username, passwordFile)
-	if err != nil {
-		logrus.WithError(err).Fatal("unable to create a Boskos client")
-	}
 	cleaner := cleaner.NewCleaner(cleanerCount, client, defaultBoskosRetryPeriod, st)
 
 	cleaner.Start()
@@ -100,4 +112,32 @@ func v1Main() {
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
 	<-stop
+}
+
+func v2Main(client *client.Client) {
+	cfg, err := kubeClientOptions.Cfg()
+	if err != nil {
+		logrus.WithError(err).Fatal("failed to get kubeconfig.")
+	}
+
+	mgr, err := manager.New(cfg, manager.Options{
+		LeaderElection:          true,
+		LeaderElectionNamespace: namespace,
+		LeaderElectionID:        "boskos-cleaner",
+		Namespace:               namespace,
+		MetricsBindAddress:      "0",
+	})
+	if err != nil {
+		logrus.WithError(err).Fatal("failed to construct manager.")
+	}
+
+	if err := cleanerv2.Add(mgr, client, namespace); err != nil {
+		logrus.WithError(err).Fatal("failed to add controller to manager.")
+	}
+
+	if err := mgr.Start(interrupts.Context().Done()); err != nil {
+		logrus.WithError(err).Fatal("manager failed")
+	} else {
+		logrus.Info("manager ended gracefully.")
+	}
 }
