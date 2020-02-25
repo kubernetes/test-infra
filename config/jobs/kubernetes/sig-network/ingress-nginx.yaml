@@ -115,7 +115,7 @@ presubmits:
       containers:
       - image: gcr.io/kubernetes-charts-ci/test-image:v3.4.0
         command:
-        - ct lint --charts charts/ingress-nginx --chart-dirs charts/
+        - /usr/local/bin/ct lint --charts charts/ingress-nginx --chart-dirs charts/
     annotations:
       testgrid-dashboards: sig-network-ingress-nginx
       testgrid-tab-name: chart-lint
