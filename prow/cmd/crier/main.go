@@ -91,11 +91,6 @@ func (o *options) validate() error {
 		o.gerritWorkers = 1
 	}
 
-	if o.githubWorkers > 1 {
-		logrus.Warn("github reporter only supports one worker (https://github.com/kubernetes/test-infra/issues/13306)")
-		o.githubWorkers = 1
-	}
-
 	if o.gerritWorkers+o.pubsubWorkers+o.githubWorkers+o.slackWorkers+o.gcsWorkers+o.k8sGCSWorkers <= 0 {
 		return errors.New("crier need to have at least one report worker to start")
 	}

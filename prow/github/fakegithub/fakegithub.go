@@ -161,6 +161,11 @@ func (f *FakeClient) CreateComment(owner, repo string, number int, comment strin
 	return nil
 }
 
+// EditComment edits a comment. Its a stub that does nothing.
+func (f *FakeClient) EditComment(org, repo string, ID int, comment string) error {
+	return nil
+}
+
 // CreateReview adds a review to a PR
 func (f *FakeClient) CreateReview(org, repo string, number int, r github.DraftReview) error {
 	f.Reviews[number] = append(f.Reviews[number], github.Review{
