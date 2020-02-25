@@ -41,7 +41,6 @@ spec:
         - --github-endpoint=https://api.github.com
         - --config-path=/etc/config/config.yaml
         - --job-config-path=/etc/job-config
-        - --gcs-credentials-file=/etc/service-account/service-account.json
         - --history-uri=gs://k8s-prow/tide-history.json
         - --status-path=gs://k8s-prow/tide-status-checkpoint.yaml
         ports:
@@ -57,9 +56,6 @@ spec:
         - name: job-config
           mountPath: /etc/job-config
           readOnly: true
-        - name: service-account
-          mountPath: /etc/service-account
-          readOnly: true
       volumes:
       - name: oauth
         secret:
@@ -70,6 +66,3 @@ spec:
       - name: job-config
         configMap:
           name: job-config
-      - name: service-account
-        secret:
-          secretName: tide-history-service-account
