@@ -377,7 +377,7 @@ func processQuery(query *emailToLoginQuery, email string, log *logrus.Entry) str
 	case 0:
 		return fmt.Sprintf("No GitHub users were found matching the public email listed for the QA contact in Bugzilla (%s), skipping assignment.", email)
 	case 1:
-		return fmt.Sprintf("/assign @%s", query.Search.Edges[0].Node.User.Login)
+		return fmt.Sprintf("Assigning the QA contact for review:\n/assign @%s", query.Search.Edges[0].Node.User.Login)
 	default:
 		response := fmt.Sprintf("Multiple GitHub users were found matching the public email listed for the QA contact in Bugzilla (%s), skipping assignment. List of users with matching email:", email)
 		for _, edge := range query.Search.Edges {
@@ -461,7 +461,7 @@ To reference a bug, add 'Bug XXX:' to the title of this pull request and request
 						log.WithError(err).Error("Failed to run graphql github query")
 						return comment(formatError(fmt.Sprintf("querying GitHub for users with public email (%s)", email), bc.Endpoint(), e.bugId, err))
 					}
-					response += fmt.Sprint("\n", processQuery(query, email, log))
+					response += fmt.Sprint("\n\n", processQuery(query, email, log))
 				}
 			}
 		} else {
