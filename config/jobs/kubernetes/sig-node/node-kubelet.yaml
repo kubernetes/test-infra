@@ -308,3 +308,34 @@ periodics:
     testgrid-dashboards: wg-resource-management, sig-node-kubelet
     testgrid-tab-name: kubelet-serial-gce-e2e-cpu-manager
     testgrid-alert-email: balaji.warft@gmail.com, connor.p.d@gmail.com
+
+- name: ci-kubernetes-node-kubelet-serial-topology-manager
+  interval: 4h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200128-8dae294-master
+        args:
+          - --repo=k8s.io/kubernetes=master
+          - --timeout=240
+          - --root=/go/src
+          - --scenario=kubernetes_e2e
+          - --
+          - --deployment=node
+          - --gcp-project=k8s-jkns-ci-node-e2e
+          - --gcp-zone=us-west1-b
+          - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-serial-topology-manager.yaml
+          - --node-test-args=--feature-gates=DynamicKubeletConfig=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
+          - --node-tests=true
+          - --provider=gce
+          - --test_args=--nodes=1 --focus="\[Feature:TopologyManager\]"
+          - --timeout=180m
+        env:
+          - name: GOPATH
+            value: /go
+  annotations:
+    testgrid-dashboards: wg-resource-management, sig-node-kubelet
+    testgrid-tab-name: kubelet-serial-gce-e2e-topology-manager
+    testgrid-alert-email: vpickard@redhat.com, klueska@gmail.com
