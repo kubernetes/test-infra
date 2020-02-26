@@ -1464,6 +1464,9 @@ func ResolveBugzillaOptions(parent, child BugzillaBranchOptions) BugzillaBranchO
 			output.DependentBugStatuses = parent.DependentBugStatuses
 			output.DependentBugStates = mergeStatusesIntoStates(output.DependentBugStates, parent.DependentBugStatuses)
 		}
+		if parent.DependentBugTargetRelease != nil {
+			output.DependentBugTargetRelease = parent.DependentBugTargetRelease
+		}
 		if parent.StatusAfterValidation != nil {
 			output.StatusAfterValidation = parent.StatusAfterValidation
 			output.StateAfterValidation = &BugzillaBugState{Status: *output.StatusAfterValidation}
@@ -1514,6 +1517,9 @@ func ResolveBugzillaOptions(parent, child BugzillaBranchOptions) BugzillaBranchO
 			output.DependentBugStates = nil
 		}
 		output.DependentBugStates = mergeStatusesIntoStates(output.DependentBugStates, child.DependentBugStatuses)
+	}
+	if child.DependentBugTargetRelease != nil {
+		output.DependentBugTargetRelease = child.DependentBugTargetRelease
 	}
 	if child.StatusAfterValidation != nil {
 		output.StatusAfterValidation = child.StatusAfterValidation
