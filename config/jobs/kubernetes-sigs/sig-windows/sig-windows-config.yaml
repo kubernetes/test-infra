@@ -418,7 +418,7 @@ periodics:
       - "--aksengine-admin-username=azureuser"
       - "--aksengine-admin-password=AdminPassw0rd"
       - "--aksengine-creds=$AZURE_CREDENTIALS"
-      - "--aksengine-download-url=https://k8sprowstorage.blob.core.windows.net/aks-engine-dirty/aks-engine-c841ebc2.tar"
+      - "--aksengine-download-url=https://k8sprowstorage.blob.core.windows.net/aks-engine-dirty/aks-engine-c841ebc2.tar.gz"
       - "--aksengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
       - "--aksengine-winZipBuildScript=$WIN_BUILD"
       - "--aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_1909_master.json"
