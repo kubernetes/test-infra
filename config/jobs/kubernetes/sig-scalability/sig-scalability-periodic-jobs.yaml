@@ -467,15 +467,13 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    # TODO(wojtek-t): Can we use the current Go version from Kubernetes?
-    - image: golang:latest
+    - image: gcr.io/k8s-testimages/benchmarkjunit:latest
       command:
-      - go
+      - /benchmarkjunit
       args:
-      - run
-      - ./pkg/benchmarkjunit
       - --log-file=$(ARTIFACTS)/benchmark-log.txt
       - --output=$(ARTIFACTS)/junit_benchmarks.xml
+      - --pass-on-error
       - ../kubernetes/pkg/...
       - ../kubernetes/plugin/...
       - ../kubernetes/vendor/k8s.io/apimachinery/...
