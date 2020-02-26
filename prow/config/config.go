@@ -735,7 +735,7 @@ func Load(prowConfig, jobConfig string) (c *Config, err error) {
 	if err := c.validateComponentConfig(); err != nil {
 		return nil, err
 	}
-	if err := c.validateJobConfig(); err != nil {
+	if err := c.ValidateJobConfig(); err != nil {
 		return nil, err
 	}
 	return c, nil
@@ -1264,9 +1264,9 @@ func validatePeriodics(periodics []Periodic, podNamespace string) error {
 	return nil
 }
 
-// validateJobConfig validates if all the jobspecs/presets are valid
+// ValidateJobConfig validates if all the jobspecs/presets are valid
 // if you are mutating the jobs, please add it to finalizeJobConfig above
-func (c *Config) validateJobConfig() error {
+func (c *Config) ValidateJobConfig() error {
 
 	var errs []error
 
