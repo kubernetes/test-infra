@@ -97,7 +97,7 @@ presubmits:
       path_alias: sigs.k8s.io/kind
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200225-e5243e7-1.15
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-1.15
         command:
         - runner.sh
         - kubetest
@@ -170,7 +170,7 @@ presubmits:
       path_alias: sigs.k8s.io/kind
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200225-e5243e7-1.16
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-1.16
         command:
         - runner.sh
         - kubetest
