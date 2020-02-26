@@ -1,12 +1,12 @@
 presubmits:
-  IBM/meta-operator:
-  - name: build_meta-operator
+  IBM/operand-deployment-lifecycle-manager:
+  - name: build_operand-deployment-lifecycle-manager
     branches:
     - ^master$
     decorate: true
     always_run: true
-    path_alias: github.com/IBM/meta-operator
-    rerun_command: /test build meta-operator
+    path_alias: github.com/IBM/operand-deployment-lifecycle-manager
+    rerun_command: /test build operand-deployment-lifecycle-manager
     spec:
       containers:
       - command:
@@ -17,13 +17,13 @@ presubmits:
         securityContext:
           privileged: true
     trigger: '(?m)^/test (?:.*? )?build(?: .*?)?$'
-  - name: check_meta-operator
+  - name: check_operand-deployment-lifecycle-manager
     branches:
     - ^master$
     decorate: true
     always_run: true
-    path_alias: github.com/IBM/meta-operator
-    rerun_command: /test check meta-operator
+    path_alias: github.com/IBM/operand-deployment-lifecycle-manager
+    rerun_command: /test check operand-deployment-lifecycle-manager
     spec:
       containers:
       - command:
@@ -34,13 +34,13 @@ presubmits:
         securityContext:
           privileged: true
     trigger: '(?m)^/test (?:.*? )?check(?: .*?)?$'
-  - name: test_meta-operator
+  - name: test_operand-deployment-lifecycle-manager
     branches:
     - ^master$
     decorate: true
     always_run: true
-    path_alias: github.com/IBM/meta-operator
-    rerun_command: /test test meta-operator
+    path_alias: github.com/IBM/operand-deployment-lifecycle-manager
+    rerun_command: /test test operand-deployment-lifecycle-manager
     spec:
       containers:
       - command:
@@ -53,12 +53,12 @@ presubmits:
     trigger: '(?m)^/test (?:.*? )?test(?: .*?)?$'
 
 postsubmits:
-  IBM/meta-operator:
-  - name: check_meta-operator_postsubmit
+  IBM/operand-deployment-lifecycle-manager:
+  - name: check_operand-deployment-lifecycle-manager_postsubmit
     branches:
     - ^master$
     decorate: true
-    path_alias: github.com/IBM/meta-operator
+    path_alias: github.com/IBM/operand-deployment-lifecycle-manager
     spec:
       containers:
       - command:
@@ -68,11 +68,11 @@ postsubmits:
         name: ""
         securityContext:
           privileged: true
-  - name: test_meta-operator_postsubmit
+  - name: test_operand-deployment-lifecycle-manager_postsubmit
     branches:
     - ^master$
     decorate: true
-    path_alias: github.com/IBM/meta-operator
+    path_alias: github.com/IBM/operand-deployment-lifecycle-manager
     spec:
       containers:
       - command:
@@ -82,11 +82,11 @@ postsubmits:
         name: ""
         securityContext:
           privileged: true
-  - name: coverage_meta-operator_postsubmit
+  - name: coverage_operand-deployment-lifecycle-manager_postsubmit
     branches:
     - ^master$
     decorate: true
-    path_alias: github.com/IBM/meta-operator
+    path_alias: github.com/IBM/operand-deployment-lifecycle-manager
     spec:
       containers:
       - command:
@@ -98,15 +98,15 @@ postsubmits:
         - name: CODECOV_TOKEN
           valueFrom:
             secretKeyRef:
-              name: meta-operator-codecov-token
+              name: operand-deployment-lifecycle-manager-codecov-token
               key: codecov-token
         securityContext:
           privileged: true
-  - name: build_meta-operator_postsubmit
+  - name: build_operand-deployment-lifecycle-manager_postsubmit
     branches:
     - ^master$
     decorate: true
-    path_alias: github.com/IBM/meta-operator
+    path_alias: github.com/IBM/operand-deployment-lifecycle-manager
     spec:
       containers:
       - command:
@@ -116,11 +116,11 @@ postsubmits:
         name: ""
         securityContext:
           privileged: true
-  - name: images_meta-operator_postsubmit
+  - name: images_operand-deployment-lifecycle-manager_postsubmit
     branches:
     - ^master$
     decorate: true
-    path_alias: github.com/IBM/meta-operator
+    path_alias: github.com/IBM/operand-deployment-lifecycle-manager
     labels:
       preset-service-account: "true"
     spec:
