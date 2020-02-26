@@ -565,6 +565,8 @@ Instructions for interacting with me using PR comments are available [here](http
 func TestHandle(t *testing.T) {
 	yes := true
 	open := true
+	v1 := "v1"
+	v2 := "v2"
 	updated := plugins.BugzillaBugState{Status: "UPDATED"}
 	modified := plugins.BugzillaBugState{Status: "MODIFIED"}
 	verified := []plugins.BugzillaBugState{{Status: "VERIFIED"}}
@@ -626,7 +628,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			expectedLabels: []string{"bugzilla/valid-bug"},
 			expectedComment: `org/repo#1:@user: This pull request references [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123), which is valid.
 
-No validations were run on this bug.
+<details><summary>No validations were run on this bug</summary></details>
 
 <details>
 
@@ -684,7 +686,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			expectedLabels: []string{"bugzilla/valid-bug"},
 			expectedComment: `org/repo#1:@user: This pull request references [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123), which is valid. The bug has been moved to the UPDATED state.
 
-No validations were run on this bug.
+<details><summary>No validations were run on this bug</summary></details>
 
 <details>
 
@@ -705,7 +707,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			expectedLabels: []string{"bugzilla/valid-bug"},
 			expectedComment: `org/repo#1:@user: This pull request references [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123), which is valid. The bug has been moved to the CLOSED (VALIDATED) state.
 
-No validations were run on this bug.
+<details><summary>No validations were run on this bug</summary></details>
 
 <details>
 
@@ -726,7 +728,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			expectedLabels: []string{"bugzilla/valid-bug"},
 			expectedComment: `org/repo#1:@user: This pull request references [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123), which is valid.
 
-No validations were run on this bug.
+<details><summary>No validations were run on this bug</summary></details>
 
 <details>
 
@@ -747,7 +749,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			expectedLabels: []string{"bugzilla/valid-bug"},
 			expectedComment: `org/repo#1:@user: This pull request references [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123), which is valid. The bug has been updated to refer to the pull request using the external bug tracker.
 
-No validations were run on this bug.
+<details><summary>No validations were run on this bug</summary></details>
 
 <details>
 
@@ -773,7 +775,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			expectedLabels: []string{"bugzilla/valid-bug"},
 			expectedComment: `org/repo#1:@user: This pull request references [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123), which is valid.
 
-No validations were run on this bug.
+<details><summary>No validations were run on this bug</summary></details>
 
 <details>
 
@@ -808,15 +810,18 @@ Instructions for interacting with me using PR comments are available [here](http
 		},
 		{
 			name:           "valid bug with dependent bugs removes invalid label, adds valid label, comments",
-			bugs:           []bugzilla.Bug{{ID: 123, DependsOn: []int{124}}, {ID: 124, Status: "VERIFIED"}},
-			options:        plugins.BugzillaBranchOptions{DependentBugStates: &verified},
+			bugs:           []bugzilla.Bug{{IsOpen: true, ID: 123, DependsOn: []int{124}, TargetRelease: []string{v1}}, {ID: 124, Status: "VERIFIED", TargetRelease: []string{v2}}},
+			options:        plugins.BugzillaBranchOptions{IsOpen: &yes, TargetRelease: &v1, DependentBugStates: &verified, DependentBugTargetRelease: &v2},
 			labels:         []string{"bugzilla/invalid-bug"},
 			expectedLabels: []string{"bugzilla/valid-bug"},
 			expectedComment: `org/repo#1:@user: This pull request references [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123), which is valid.
 
-Validations run on this bug:
+<details><summary>5 validation(s) run on this bug</summary>
+	- bug is open, matching expected state (open)
+	- bug target release (v1) matches configured target release for branch (v1)
 	- dependent bug [Bugzilla bug 124](www.bugzilla/show_bug.cgi?id=124) is in the state VERIFIED, which is one of the valid states (VERIFIED)
-	- bug has dependents
+	- dependent [Bugzilla bug 124](www.bugzilla/show_bug.cgi?id=124) targets the "v2" release, matching the expected (v2) release
+	- bug has dependents</details>
 
 <details>
 
@@ -1163,14 +1168,14 @@ func TestValidateBug(t *testing.T) {
 			bug:         bugzilla.Bug{IsOpen: true},
 			options:     plugins.BugzillaBranchOptions{IsOpen: &open},
 			valid:       true,
-			validations: []string{"bug is open"},
+			validations: []string{"bug is open, matching expected state (open)"},
 		},
 		{
 			name:        "matching closed requirement means a valid bug",
 			bug:         bugzilla.Bug{IsOpen: false},
 			options:     plugins.BugzillaBranchOptions{IsOpen: &closed},
 			valid:       true,
-			validations: []string{"bug isn't open"},
+			validations: []string{"bug isn't open, matching expected state (not open)"},
 		},
 		{
 			name:    "not matching open requirement means an invalid bug",
@@ -1267,7 +1272,7 @@ func TestValidateBug(t *testing.T) {
 			bug:        bugzilla.Bug{IsOpen: false, TargetRelease: []string{"v1"}, Status: "MODIFIED", DependsOn: []int{1}},
 			dependents: []bugzilla.Bug{{ID: 1, Status: "MODIFIED", TargetRelease: []string{"v2"}}},
 			options:    plugins.BugzillaBranchOptions{IsOpen: &closed, TargetRelease: &one, ValidStates: &modified, DependentBugStates: &modified, DependentBugTargetRelease: &two},
-			validations: []string{"bug isn't open",
+			validations: []string{"bug isn't open, matching expected state (not open)",
 				`bug target release (v1) matches configured target release for branch (v1)`,
 				"bug is in the state MODIFIED, which is one of the valid states (MODIFIED)",
 				"dependent bug [Bugzilla bug 1](bugzilla.com/show_bug.cgi?id=1) is in the state MODIFIED, which is one of the valid states (MODIFIED)",

@@ -445,14 +445,16 @@ To reference a bug, add 'Bug XXX:' to the title of this pull request and request
 				}
 			}
 
+			response += "\n\n<details>"
 			if len(validationsRun) == 0 {
-				response += "\n\nNo validations were run on this bug."
+				response += "<summary>No validations were run on this bug</summary>"
 			} else {
-				response += "\n\nValidations run on this bug:"
+				response += fmt.Sprintf("<summary>%d validation(s) run on this bug</summary>", len(validationsRun))
 			}
 			for _, validation := range validationsRun {
 				response += fmt.Sprint("\n\t- ", validation)
 			}
+			response += "</details>"
 
 			// if bug is valid and qa command was used, identify qa contact via email
 			if e.assign {
@@ -558,11 +560,15 @@ func validateBug(bug bugzilla.Bug, dependents []bugzilla.Bug, options plugins.Bu
 		}
 		errors = append(errors, fmt.Sprintf("expected the bug to %sbe open, but it %s", not, was))
 	} else if options.IsOpen != nil {
+		expected := "open"
+		if !*options.IsOpen {
+			expected = "not open"
+		}
 		was := "isn't"
-		if *options.IsOpen {
+		if bug.IsOpen {
 			was = "is"
 		}
-		validations = append(validations, fmt.Sprintf("bug %s open", was))
+		validations = append(validations, fmt.Sprintf("bug %s open, matching expected state (%s)", was, expected))
 	}
 
 	if options.TargetRelease != nil {
