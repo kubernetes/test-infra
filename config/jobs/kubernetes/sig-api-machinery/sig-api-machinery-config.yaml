@@ -57,6 +57,8 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
       preset-pull-kubernetes-e2e: "true"
       preset-pull-kubernetes-e2e-gce: "true"
     spec:
@@ -76,7 +78,7 @@ presubmits:
         - --gcp-node-image=gci
         - --gcp-zone=us-west1-b
         - --gcp-project=k8s-network-proxy-e2e
-        - --ginkgo-parallel=25
+        - --ginkgo-parallel=30
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-network-proxy
         - --provider=gce
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=9
