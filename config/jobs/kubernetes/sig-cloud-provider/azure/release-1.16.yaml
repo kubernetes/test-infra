@@ -40,7 +40,7 @@ presubmits:
         - --aksengine-template-url=https://raw.githubusercontent.com/Azure/aks-engine/master/examples/kubernetes.json
         - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.46.3/aks-engine-v0.46.3-linux-amd64.tar.gz
         # Specific test args
-        - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]
+        - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]
         - --ginkgo-parallel=30
         - --timeout=420m
         securityContext:
