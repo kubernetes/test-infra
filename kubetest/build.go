@@ -54,7 +54,7 @@ func (b *buildStrategy) Set(value string) error {
 		*b = buildStrategy(value)
 		return nil
 	}
-	return fmt.Errorf("bad build strategy: %v (use: bazel, e2e, host-go, quick, release)", value)
+	return fmt.Errorf("bad build strategy: %v (use: bazel, e2e, host-go, quick, release, none)", value)
 }
 
 func (b *buildStrategy) Type() string {
@@ -90,6 +90,8 @@ func (b *buildStrategy) Build() error {
 		// yet. We add custom logic here to build both Windows and Linux
 		// release tars. https://github.com/kubernetes/kubernetes/issues/76470
 		// TODO: remove this after bazel supports the feature.
+	case "none":
+		return nil
 	default:
 		return fmt.Errorf("Unknown build strategy: %v", b)
 	}

@@ -710,19 +710,39 @@ periodics:
     preset-service-account: "true"
     preset-azure-cred: "true"
     preset-dind-enabled: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: cloud-provider-azure
+    base_ref: master
+    path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: ss104301/kubemark-performance-tests-on-azure:latest
-      command:
-      - bash
-      - automation/runner.sh
-    securityContext:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200222-e2a3901-1.17
+      args:
+      - --job=$(JOB_NAME)
+      - --repo=k8s.io/kubernetes=release-1.17
+      - --repo=sigs.k8s.io/$(REPO_NAME)=master
+      - --root=/go/src
+      - --service-account=/etc/service-account/service-account.json
+      - --upload=gs://kubernetes-jenkins/logs/
+      - --scenario=kubernetes_e2e
+      - --
+      - --gce-ssh=
+      - --up=true
+      - --deployment=aksengine
+      - --aksengine-creds=$AZURE_CREDENTIALS
+      - --build-with-kubemark=true
+      - --build=none
+      - --provider=skeleton
+      - --kubemark-build-script-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/kubemark/build-kubemark.sh
+      - --kubemark-cluster-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/kubemark/templates/kubemark-cluster.json
+      - --external-cluster-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/kubemark/templates/external-cluster.json
+      - --hollow-nodes-deployment-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/kubemark/templates/hollow-node.yaml
+      - --clusterloader2-bin-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/kubemark/bin/clusterloader-Linux
+      - --kubemark-size=100
+      - --kubemark-location=southcentralus
+      securityContext:
         privileged: true
-    env:
-    - name: WORKSPACE
-      value: /kubemark-performance-tests-on-azure
-    - name: ARTIFACTS
-      value: $(WORKSPACE)/_artifacts
 
 # conformance test against kubernetes master branch with `azure` ipv6
 - interval: 4h
