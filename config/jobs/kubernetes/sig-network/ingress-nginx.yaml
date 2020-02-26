@@ -44,9 +44,10 @@ presubmits:
       testgrid-tab-name: codegen
 
   - name: pull-ingress-nginx-gofmt
-    always_run: true
+    always_run: false
     decorate: true
     path_alias: k8s.io/ingress-nginx
+    run_if_changed: '\.go$'
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -63,11 +64,12 @@ presubmits:
       testgrid-tab-name: gofmt
 
   - name: pull-ingress-nginx-golint
-    always_run: true
+    always_run: false
     decorate: true
     decoration_config:
       timeout: 10m
     path_alias: k8s.io/ingress-nginx
+    run_if_changed: '\.go$'
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -84,9 +86,10 @@ presubmits:
       testgrid-tab-name: golint
 
   - name: pull-ingress-nginx-lualint
-    always_run: true
+    always_run: false
     decorate: true
     path_alias: k8s.io/ingress-nginx
+    run_if_changed: '\.lua$'
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -103,11 +106,12 @@ presubmits:
       testgrid-tab-name: lualint
 
   - name: pull-ingress-nginx-chart-lint
-    always_run: true
+    always_run: false
     decorate: true
     decoration_config:
       timeout: 5m
     path_alias: k8s.io/ingress-nginx
+    run_if_changed: "^charts/"
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -124,11 +128,12 @@ presubmits:
       testgrid-tab-name: chart-lint
 
   - name: pull-ingress-nginx-test-lua
-    always_run: true
+    always_run: false
     decorate: true
     decoration_config:
       timeout: 10m
     path_alias: k8s.io/ingress-nginx
+    run_if_changed: '\.lua$'
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -146,11 +151,12 @@ presubmits:
       testgrid-tab-name: test-lua
 
   - name: pull-ingress-nginx-test
-    always_run: true
+    always_run: false
     decorate: true
     decoration_config:
       timeout: 10m
     path_alias: k8s.io/ingress-nginx
+    run_if_changed: '\.go$'
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -181,12 +187,13 @@ presubmits:
       testgrid-tab-name: test
 
   - name: pull-ingress-nginx-e2e-1-15
-    always_run: true
+    always_run: false
     decorate: true
     decoration_config:
       timeout: 50m
     max_concurrency: 5
     path_alias: k8s.io/ingress-nginx
+    run_if_changed: '\.go$|^rootfs/'
     labels:
       preset-kind-volume-mounts: "true"
       preset-dind-enabled: "true"
@@ -216,12 +223,13 @@ presubmits:
       testgrid-tab-name: e2e-1-15
 
   - name: pull-ingress-nginx-e2e-1-16
-    always_run: true
+    always_run: false
     decorate: true
     decoration_config:
       timeout: 50m
     max_concurrency: 5
     path_alias: k8s.io/ingress-nginx
+    run_if_changed: '\.go$|^rootfs/'
     labels:
       preset-kind-volume-mounts: "true"
       preset-dind-enabled: "true"
@@ -251,12 +259,13 @@ presubmits:
       testgrid-tab-name: e2e-1-16
 
   - name: pull-ingress-nginx-e2e-1-17
-    always_run: true
+    always_run: false
     decorate: true
     decoration_config:
       timeout: 50m
     max_concurrency: 5
     path_alias: k8s.io/ingress-nginx
+    run_if_changed: '\.go$|^rootfs/'
     labels:
       preset-kind-volume-mounts: "true"
       preset-dind-enabled: "true"
