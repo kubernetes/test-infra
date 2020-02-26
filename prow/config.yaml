@@ -37,6 +37,8 @@ tide:
     IBM/ibm-management-repo-operator: squash
     IBM/ibm-metering-operator: squash
     IBM/ibm-mongodb-operator: squash
+    IBM/ibm-monitoring-exporters-operator: squash
+    IBM/ibm-monitoring-prometheus-operator-ext: squash
     IBM/ibm-mt-grqenforcer-operator: squash
     IBM/meta-operator: squash
     IBM/multicloud-operators-subscription-release: squash
@@ -73,6 +75,8 @@ tide:
     - IBM/ibm-management-repo-operator
     - IBM/ibm-metering-operator
     - IBM/ibm-mongodb-operator
+    - IBM/ibm-monitoring-exporters-operator
+    - IBM/ibm-monitoring-prometheus-operator-ext
     - IBM/ibm-mt-grqenforcer-operator
     - IBM/meta-operator
     - IBM/multicloud-operators-subscription-release
