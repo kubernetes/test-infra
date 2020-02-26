@@ -816,12 +816,13 @@ Instructions for interacting with me using PR comments are available [here](http
 			expectedLabels: []string{"bugzilla/valid-bug"},
 			expectedComment: `org/repo#1:@user: This pull request references [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123), which is valid.
 
-<details><summary>5 validation(s) run on this bug</summary>
-	- bug is open, matching expected state (open)
-	- bug target release (v1) matches configured target release for branch (v1)
-	- dependent bug [Bugzilla bug 124](www.bugzilla/show_bug.cgi?id=124) is in the state VERIFIED, which is one of the valid states (VERIFIED)
-	- dependent [Bugzilla bug 124](www.bugzilla/show_bug.cgi?id=124) targets the "v2" release, matching the expected (v2) release
-	- bug has dependents</details>
+<details><summary>5 validation(s) were run on this bug</summary>
+
+* bug is open, matching expected state (open)
+* bug target release (v1) matches configured target release for branch (v1)
+* dependent bug [Bugzilla bug 124](www.bugzilla/show_bug.cgi?id=124) is in the state VERIFIED, which is one of the valid states (VERIFIED)
+* dependent [Bugzilla bug 124](www.bugzilla/show_bug.cgi?id=124) targets the "v2" release, matching the expected (v2) release
+* bug has dependents</details>
 
 <details>
 
