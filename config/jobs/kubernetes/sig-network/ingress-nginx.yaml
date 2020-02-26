@@ -12,7 +12,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e:v02212020-07686f894
+      - image: quay.io/kubernetes-ingress-controller/e2e:v02252020-739408456
         command:
         - ./hack/verify-boilerplate.sh
         env:
@@ -33,7 +33,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e:v02212020-07686f894
+      - image: quay.io/kubernetes-ingress-controller/e2e:v02252020-739408456
         command:
         - ./hack/verify-codegen.sh
         env:
@@ -52,7 +52,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e:v02212020-07686f894
+      - image: quay.io/kubernetes-ingress-controller/e2e:v02252020-739408456
         command:
         - ./hack/verify-gofmt.sh
         env:
@@ -73,7 +73,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e:v02212020-07686f894
+      - image: quay.io/kubernetes-ingress-controller/e2e:v02252020-739408456
         command:
         - ./hack/verify-golint.sh
         env:
@@ -92,7 +92,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e:v02212020-07686f894
+      - image: quay.io/kubernetes-ingress-controller/e2e:v02252020-739408456
         command:
         - ./hack/verify-lualint.sh
         env:
@@ -113,9 +113,12 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/kubernetes-charts-ci/test-image:v3.4.0
+      - image: quay.io/kubernetes-ingress-controller/e2e:v02252020-739408456
         command:
-        - /usr/local/bin/ct lint --charts charts/ingress-nginx --chart-dirs charts/
+        - ./hack/verify-chart-lint.sh
+        env:
+        - name: DIND_TASKS
+          value: "false"
     annotations:
       testgrid-dashboards: sig-network-ingress-nginx
       testgrid-tab-name: chart-lint
@@ -131,7 +134,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e:v02212020-07686f894
+      - image: quay.io/kubernetes-ingress-controller/e2e:v02252020-739408456
         command:
         - make
         - lua-test
@@ -153,7 +156,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e:v02212020-07686f894
+      - image: quay.io/kubernetes-ingress-controller/e2e:v02252020-739408456
         command:
         - /bin/bash
         - -c
@@ -189,7 +192,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e-prow:v02212020-07686f894
+      - image: quay.io/kubernetes-ingress-controller/e2e-prow:v02252020-739408456
         command:
         - /usr/local/bin/runner.sh
         args:
@@ -224,7 +227,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e-prow:v02212020-07686f894
+      - image: quay.io/kubernetes-ingress-controller/e2e-prow:v02252020-739408456
         command:
         - /usr/local/bin/runner.sh
         args:
@@ -259,7 +262,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e-prow:v02212020-07686f894
+      - image: quay.io/kubernetes-ingress-controller/e2e-prow:v02252020-739408456
         command:
         - /usr/local/bin/runner.sh
         args:
@@ -301,7 +304,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: quay.io/kubernetes-ingress-controller/e2e-prow:v02212020-07686f894
+    - image: quay.io/kubernetes-ingress-controller/e2e-prow:v02252020-739408456
       command:
       - /usr/local/bin/runner.sh
       args:
