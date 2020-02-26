@@ -415,6 +415,9 @@ func (s *Storage) syncDynamicResourceLifeCycles(newDRLCByType, existingDRLCByTyp
 	for _, existingDRLC := range existingDRLCByType {
 		newDRLC, existsInNew := newDRLCByType[existingDRLC.Name]
 		if existsInNew {
+			// Copy the ObjectMeta so we can compare, the update doesn't fail due to unset ResourceVersion
+			// and to keep any additional metadata that was added.
+			newDRLC.ObjectMeta = *existingDRLC.ObjectMeta.DeepCopy()
 			if !reflect.DeepEqual(existingDRLC, newDRLC) {
 				dRLCToUpdate = append(dRLCToUpdate, newDRLC)
 			}
