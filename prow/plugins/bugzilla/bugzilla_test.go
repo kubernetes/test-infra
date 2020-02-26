@@ -565,6 +565,8 @@ Instructions for interacting with me using PR comments are available [here](http
 func TestHandle(t *testing.T) {
 	yes := true
 	open := true
+	v1 := "v1"
+	v2 := "v2"
 	updated := plugins.BugzillaBugState{Status: "UPDATED"}
 	modified := plugins.BugzillaBugState{Status: "MODIFIED"}
 	verified := []plugins.BugzillaBugState{{Status: "VERIFIED"}}
@@ -626,6 +628,8 @@ Instructions for interacting with me using PR comments are available [here](http
 			expectedLabels: []string{"bugzilla/valid-bug"},
 			expectedComment: `org/repo#1:@user: This pull request references [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123), which is valid.
 
+<details><summary>No validations were run on this bug</summary></details>
+
 <details>
 
 In response to [this](http.com):
@@ -682,6 +686,8 @@ Instructions for interacting with me using PR comments are available [here](http
 			expectedLabels: []string{"bugzilla/valid-bug"},
 			expectedComment: `org/repo#1:@user: This pull request references [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123), which is valid. The bug has been moved to the UPDATED state.
 
+<details><summary>No validations were run on this bug</summary></details>
+
 <details>
 
 In response to [this](http.com):
@@ -700,6 +706,8 @@ Instructions for interacting with me using PR comments are available [here](http
 			labels:         []string{"bugzilla/invalid-bug"},
 			expectedLabels: []string{"bugzilla/valid-bug"},
 			expectedComment: `org/repo#1:@user: This pull request references [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123), which is valid. The bug has been moved to the CLOSED (VALIDATED) state.
+
+<details><summary>No validations were run on this bug</summary></details>
 
 <details>
 
@@ -720,6 +728,8 @@ Instructions for interacting with me using PR comments are available [here](http
 			expectedLabels: []string{"bugzilla/valid-bug"},
 			expectedComment: `org/repo#1:@user: This pull request references [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123), which is valid.
 
+<details><summary>No validations were run on this bug</summary></details>
+
 <details>
 
 In response to [this](http.com):
@@ -738,6 +748,8 @@ Instructions for interacting with me using PR comments are available [here](http
 			labels:         []string{"bugzilla/invalid-bug"},
 			expectedLabels: []string{"bugzilla/valid-bug"},
 			expectedComment: `org/repo#1:@user: This pull request references [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123), which is valid. The bug has been updated to refer to the pull request using the external bug tracker.
+
+<details><summary>No validations were run on this bug</summary></details>
 
 <details>
 
@@ -762,6 +774,8 @@ Instructions for interacting with me using PR comments are available [here](http
 			labels:         []string{"bugzilla/invalid-bug"},
 			expectedLabels: []string{"bugzilla/valid-bug"},
 			expectedComment: `org/repo#1:@user: This pull request references [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123), which is valid.
+
+<details><summary>No validations were run on this bug</summary></details>
 
 <details>
 
@@ -796,11 +810,18 @@ Instructions for interacting with me using PR comments are available [here](http
 		},
 		{
 			name:           "valid bug with dependent bugs removes invalid label, adds valid label, comments",
-			bugs:           []bugzilla.Bug{{ID: 123, DependsOn: []int{124}}, {ID: 124, Status: "VERIFIED"}},
-			options:        plugins.BugzillaBranchOptions{DependentBugStates: &verified},
+			bugs:           []bugzilla.Bug{{IsOpen: true, ID: 123, DependsOn: []int{124}, TargetRelease: []string{v1}}, {ID: 124, Status: "VERIFIED", TargetRelease: []string{v2}}},
+			options:        plugins.BugzillaBranchOptions{IsOpen: &yes, TargetRelease: &v1, DependentBugStates: &verified, DependentBugTargetRelease: &v2},
 			labels:         []string{"bugzilla/invalid-bug"},
 			expectedLabels: []string{"bugzilla/valid-bug"},
 			expectedComment: `org/repo#1:@user: This pull request references [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123), which is valid.
+
+<details><summary>5 validation(s) run on this bug</summary>
+	- bug is open, matching expected state (open)
+	- bug target release (v1) matches configured target release for branch (v1)
+	- dependent bug [Bugzilla bug 124](www.bugzilla/show_bug.cgi?id=124) is in the state VERIFIED, which is one of the valid states (VERIFIED)
+	- dependent [Bugzilla bug 124](www.bugzilla/show_bug.cgi?id=124) targets the "v2" release, matching the expected (v2) release
+	- bug has dependents</details>
 
 <details>
 
@@ -1128,12 +1149,13 @@ func TestValidateBug(t *testing.T) {
 	modified := []plugins.BugzillaBugState{{Status: "MODIFIED"}}
 	updated := plugins.BugzillaBugState{Status: "UPDATED"}
 	var testCases = []struct {
-		name       string
-		bug        bugzilla.Bug
-		dependents []bugzilla.Bug
-		options    plugins.BugzillaBranchOptions
-		valid      bool
-		why        []string
+		name        string
+		bug         bugzilla.Bug
+		dependents  []bugzilla.Bug
+		options     plugins.BugzillaBranchOptions
+		valid       bool
+		validations []string
+		why         []string
 	}{
 		{
 			name:    "no requirements means a valid bug",
@@ -1142,16 +1164,18 @@ func TestValidateBug(t *testing.T) {
 			valid:   true,
 		},
 		{
-			name:    "matching open requirement means a valid bug",
-			bug:     bugzilla.Bug{IsOpen: true},
-			options: plugins.BugzillaBranchOptions{IsOpen: &open},
-			valid:   true,
+			name:        "matching open requirement means a valid bug",
+			bug:         bugzilla.Bug{IsOpen: true},
+			options:     plugins.BugzillaBranchOptions{IsOpen: &open},
+			valid:       true,
+			validations: []string{"bug is open, matching expected state (open)"},
 		},
 		{
-			name:    "matching closed requirement means a valid bug",
-			bug:     bugzilla.Bug{IsOpen: false},
-			options: plugins.BugzillaBranchOptions{IsOpen: &closed},
-			valid:   true,
+			name:        "matching closed requirement means a valid bug",
+			bug:         bugzilla.Bug{IsOpen: false},
+			options:     plugins.BugzillaBranchOptions{IsOpen: &closed},
+			valid:       true,
+			validations: []string{"bug isn't open, matching expected state (not open)"},
 		},
 		{
 			name:    "not matching open requirement means an invalid bug",
@@ -1168,10 +1192,11 @@ func TestValidateBug(t *testing.T) {
 			why:     []string{"expected the bug to not be open, but it is"},
 		},
 		{
-			name:    "matching target release requirement means a valid bug",
-			bug:     bugzilla.Bug{TargetRelease: []string{"v1"}},
-			options: plugins.BugzillaBranchOptions{TargetRelease: &one},
-			valid:   true,
+			name:        "matching target release requirement means a valid bug",
+			bug:         bugzilla.Bug{TargetRelease: []string{"v1"}},
+			options:     plugins.BugzillaBranchOptions{TargetRelease: &one},
+			valid:       true,
+			validations: []string{"bug target release (v1) matches configured target release for branch (v1)"},
 		},
 		{
 			name:    "not matching target release requirement means an invalid bug",
@@ -1188,16 +1213,18 @@ func TestValidateBug(t *testing.T) {
 			why:     []string{"expected the bug to target the \"v1\" release, but no target release was set"},
 		},
 		{
-			name:    "matching status requirement means a valid bug",
-			bug:     bugzilla.Bug{Status: "MODIFIED"},
-			options: plugins.BugzillaBranchOptions{ValidStates: &modified},
-			valid:   true,
+			name:        "matching status requirement means a valid bug",
+			bug:         bugzilla.Bug{Status: "MODIFIED"},
+			options:     plugins.BugzillaBranchOptions{ValidStates: &modified},
+			valid:       true,
+			validations: []string{"bug is in the state MODIFIED, which is one of the valid states (MODIFIED)"},
 		},
 		{
-			name:    "matching status requirement by being in the migrated state means a valid bug",
-			bug:     bugzilla.Bug{Status: "UPDATED"},
-			options: plugins.BugzillaBranchOptions{ValidStates: &modified, StateAfterValidation: &updated},
-			valid:   true,
+			name:        "matching status requirement by being in the migrated state means a valid bug",
+			bug:         bugzilla.Bug{Status: "UPDATED"},
+			options:     plugins.BugzillaBranchOptions{ValidStates: &modified, StateAfterValidation: &updated},
+			valid:       true,
+			validations: []string{"bug is in the state UPDATED, which is one of the valid states (MODIFIED, UPDATED)"},
 		},
 		{
 			name:    "not matching status requirement means an invalid bug",
@@ -1214,42 +1241,52 @@ func TestValidateBug(t *testing.T) {
 			why:     []string{"expected [Bugzilla bug 0](bugzilla.com/show_bug.cgi?id=0) to depend on a bug in one of the following states: VERIFIED, but no dependents were found"},
 		},
 		{
-			name:       "not matching dependent bug status requirement means an invalid bug",
-			bug:        bugzilla.Bug{DependsOn: []int{1}},
-			dependents: []bugzilla.Bug{{ID: 1, Status: "MODIFIED"}},
-			options:    plugins.BugzillaBranchOptions{DependentBugStates: &verified},
-			valid:      false,
-			why:        []string{"expected dependent [Bugzilla bug 1](bugzilla.com/show_bug.cgi?id=1) to be in one of the following states: VERIFIED, but it is MODIFIED instead"},
+			name:        "not matching dependent bug status requirement means an invalid bug",
+			bug:         bugzilla.Bug{DependsOn: []int{1}},
+			dependents:  []bugzilla.Bug{{ID: 1, Status: "MODIFIED"}},
+			options:     plugins.BugzillaBranchOptions{DependentBugStates: &verified},
+			valid:       false,
+			validations: []string{"bug has dependents"},
+			why:         []string{"expected dependent [Bugzilla bug 1](bugzilla.com/show_bug.cgi?id=1) to be in one of the following states: VERIFIED, but it is MODIFIED instead"},
 		},
 		{
-			name:       "not matching dependent bug target release requirement means an invalid bug",
-			bug:        bugzilla.Bug{DependsOn: []int{1}},
-			dependents: []bugzilla.Bug{{ID: 1, TargetRelease: []string{"v2"}}},
-			options:    plugins.BugzillaBranchOptions{DependentBugTargetRelease: &one},
-			valid:      false,
-			why:        []string{"expected dependent [Bugzilla bug 1](bugzilla.com/show_bug.cgi?id=1) to target the \"v1\" release, but it targets \"v2\" instead"},
+			name:        "not matching dependent bug target release requirement means an invalid bug",
+			bug:         bugzilla.Bug{DependsOn: []int{1}},
+			dependents:  []bugzilla.Bug{{ID: 1, TargetRelease: []string{"v2"}}},
+			options:     plugins.BugzillaBranchOptions{DependentBugTargetRelease: &one},
+			valid:       false,
+			validations: []string{"bug has dependents"},
+			why:         []string{"expected dependent [Bugzilla bug 1](bugzilla.com/show_bug.cgi?id=1) to target the \"v1\" release, but it targets \"v2\" instead"},
 		},
 		{
-			name:       "not having a dependent bug target release means an invalid bug",
-			bug:        bugzilla.Bug{DependsOn: []int{1}},
-			dependents: []bugzilla.Bug{{ID: 1, TargetRelease: []string{}}},
-			options:    plugins.BugzillaBranchOptions{DependentBugTargetRelease: &one},
-			valid:      false,
-			why:        []string{"expected dependent [Bugzilla bug 1](bugzilla.com/show_bug.cgi?id=1) to target the \"v1\" release, but no target release was set"},
+			name:        "not having a dependent bug target release means an invalid bug",
+			bug:         bugzilla.Bug{DependsOn: []int{1}},
+			dependents:  []bugzilla.Bug{{ID: 1, TargetRelease: []string{}}},
+			options:     plugins.BugzillaBranchOptions{DependentBugTargetRelease: &one},
+			valid:       false,
+			validations: []string{"bug has dependents"},
+			why:         []string{"expected dependent [Bugzilla bug 1](bugzilla.com/show_bug.cgi?id=1) to target the \"v1\" release, but no target release was set"},
 		},
 		{
 			name:       "matching all requirements means a valid bug",
 			bug:        bugzilla.Bug{IsOpen: false, TargetRelease: []string{"v1"}, Status: "MODIFIED", DependsOn: []int{1}},
 			dependents: []bugzilla.Bug{{ID: 1, Status: "MODIFIED", TargetRelease: []string{"v2"}}},
 			options:    plugins.BugzillaBranchOptions{IsOpen: &closed, TargetRelease: &one, ValidStates: &modified, DependentBugStates: &modified, DependentBugTargetRelease: &two},
-			valid:      true,
+			validations: []string{"bug isn't open, matching expected state (not open)",
+				`bug target release (v1) matches configured target release for branch (v1)`,
+				"bug is in the state MODIFIED, which is one of the valid states (MODIFIED)",
+				"dependent bug [Bugzilla bug 1](bugzilla.com/show_bug.cgi?id=1) is in the state MODIFIED, which is one of the valid states (MODIFIED)",
+				`dependent [Bugzilla bug 1](bugzilla.com/show_bug.cgi?id=1) targets the "v2" release, matching the expected (v2) release`,
+				"bug has dependents"},
+			valid: true,
 		},
 		{
-			name:       "matching no requirements means an invalid bug",
-			bug:        bugzilla.Bug{IsOpen: false, TargetRelease: []string{"v1"}, Status: "MODIFIED", DependsOn: []int{1}},
-			dependents: []bugzilla.Bug{{ID: 1, Status: "MODIFIED"}},
-			options:    plugins.BugzillaBranchOptions{IsOpen: &open, TargetRelease: &two, ValidStates: &verified, DependentBugStates: &verified},
-			valid:      false,
+			name:        "matching no requirements means an invalid bug",
+			bug:         bugzilla.Bug{IsOpen: false, TargetRelease: []string{"v1"}, Status: "MODIFIED", DependsOn: []int{1}},
+			dependents:  []bugzilla.Bug{{ID: 1, Status: "MODIFIED"}},
+			options:     plugins.BugzillaBranchOptions{IsOpen: &open, TargetRelease: &two, ValidStates: &verified, DependentBugStates: &verified},
+			valid:       false,
+			validations: []string{"bug has dependents"},
 			why: []string{
 				"expected the bug to be open, but it isn't",
 				"expected the bug to target the \"v2\" release, but it targets \"v1\" instead",
@@ -1258,10 +1295,11 @@ func TestValidateBug(t *testing.T) {
 			},
 		},
 		{
-			name:    "matching status means a valid bug when resolution is not required",
-			bug:     bugzilla.Bug{Status: "CLOSED", Resolution: "LOL_GO_AWAY"},
-			options: plugins.BugzillaBranchOptions{ValidStates: &[]plugins.BugzillaBugState{{Status: "CLOSED"}}},
-			valid:   true,
+			name:        "matching status means a valid bug when resolution is not required",
+			bug:         bugzilla.Bug{Status: "CLOSED", Resolution: "LOL_GO_AWAY"},
+			options:     plugins.BugzillaBranchOptions{ValidStates: &[]plugins.BugzillaBugState{{Status: "CLOSED"}}},
+			valid:       true,
+			validations: []string{"bug is in the state CLOSED (LOL_GO_AWAY), which is one of the valid states (CLOSED)"},
 		},
 		{
 			name:    "matching just status means an invalid bug when resolution does not match",
@@ -1273,16 +1311,18 @@ func TestValidateBug(t *testing.T) {
 			},
 		},
 		{
-			name:    "matching status and resolution means a valid bug when both are required",
-			bug:     bugzilla.Bug{Status: "CLOSED", Resolution: "ERRATA"},
-			options: plugins.BugzillaBranchOptions{ValidStates: &[]plugins.BugzillaBugState{{Status: "CLOSED", Resolution: "ERRATA"}}},
-			valid:   true,
+			name:        "matching status and resolution means a valid bug when both are required",
+			bug:         bugzilla.Bug{Status: "CLOSED", Resolution: "ERRATA"},
+			options:     plugins.BugzillaBranchOptions{ValidStates: &[]plugins.BugzillaBugState{{Status: "CLOSED", Resolution: "ERRATA"}}},
+			valid:       true,
+			validations: []string{"bug is in the state CLOSED (ERRATA), which is one of the valid states (CLOSED (ERRATA))"},
 		},
 		{
-			name:    "matching resolution means a valid bug when status is not required",
-			bug:     bugzilla.Bug{Status: "CLOSED", Resolution: "ERRATA"},
-			options: plugins.BugzillaBranchOptions{ValidStates: &[]plugins.BugzillaBugState{{Resolution: "ERRATA"}}},
-			valid:   true,
+			name:        "matching resolution means a valid bug when status is not required",
+			bug:         bugzilla.Bug{Status: "CLOSED", Resolution: "ERRATA"},
+			options:     plugins.BugzillaBranchOptions{ValidStates: &[]plugins.BugzillaBugState{{Resolution: "ERRATA"}}},
+			valid:       true,
+			validations: []string{"bug is in the state CLOSED (ERRATA), which is one of the valid states (any status with resolution ERRATA)"},
 		},
 		{
 			name:    "matching just resolution means an invalid bug when status does not match",
@@ -1294,36 +1334,42 @@ func TestValidateBug(t *testing.T) {
 			},
 		},
 		{
-			name:       "matching status on dependent bug means a valid bug when resolution is not required",
-			bug:        bugzilla.Bug{Status: "CLOSED", Resolution: "LOL_GO_AWAY"},
-			dependents: []bugzilla.Bug{{ID: 1, Status: "CLOSED", Resolution: "LOL_GO_AWAY"}},
-			options:    plugins.BugzillaBranchOptions{DependentBugStates: &[]plugins.BugzillaBugState{{Status: "CLOSED"}}},
-			valid:      true,
+			name:        "matching status on dependent bug means a valid bug when resolution is not required",
+			bug:         bugzilla.Bug{Status: "CLOSED", Resolution: "LOL_GO_AWAY"},
+			dependents:  []bugzilla.Bug{{ID: 1, Status: "CLOSED", Resolution: "LOL_GO_AWAY"}},
+			options:     plugins.BugzillaBranchOptions{DependentBugStates: &[]plugins.BugzillaBugState{{Status: "CLOSED"}}},
+			valid:       true,
+			validations: []string{"dependent bug [Bugzilla bug 1](bugzilla.com/show_bug.cgi?id=1) is in the state CLOSED (LOL_GO_AWAY), which is one of the valid states (CLOSED)", "bug has dependents"},
 		},
 		{
-			name:       "matching just status on dependent bug means an invalid bug when resolution does not match",
-			bug:        bugzilla.Bug{Status: "CLOSED", Resolution: "LOL_GO_AWAY"},
-			dependents: []bugzilla.Bug{{ID: 1, Status: "CLOSED", Resolution: "LOL_GO_AWAY"}},
-			options:    plugins.BugzillaBranchOptions{DependentBugStates: &[]plugins.BugzillaBugState{{Status: "CLOSED", Resolution: "ERRATA"}}},
-			valid:      false,
+			name:        "matching just status on dependent bug means an invalid bug when resolution does not match",
+			bug:         bugzilla.Bug{Status: "CLOSED", Resolution: "LOL_GO_AWAY"},
+			dependents:  []bugzilla.Bug{{ID: 1, Status: "CLOSED", Resolution: "LOL_GO_AWAY"}},
+			options:     plugins.BugzillaBranchOptions{DependentBugStates: &[]plugins.BugzillaBugState{{Status: "CLOSED", Resolution: "ERRATA"}}},
+			valid:       false,
+			validations: []string{"bug has dependents"},
 			why: []string{
 				"expected dependent [Bugzilla bug 1](bugzilla.com/show_bug.cgi?id=1) to be in one of the following states: CLOSED (ERRATA), but it is CLOSED (LOL_GO_AWAY) instead",
 			},
 		},
 		{
-			name:       "matching status and resolution on dependent bug means a valid bug when both are required",
-			bug:        bugzilla.Bug{Status: "CLOSED", Resolution: "ERRATA"},
-			dependents: []bugzilla.Bug{{ID: 1, Status: "CLOSED", Resolution: "ERRATA"}},
-			options:    plugins.BugzillaBranchOptions{DependentBugStates: &[]plugins.BugzillaBugState{{Status: "CLOSED", Resolution: "ERRATA"}}},
-			valid:      true,
+			name:        "matching status and resolution on dependent bug means a valid bug when both are required",
+			bug:         bugzilla.Bug{Status: "CLOSED", Resolution: "ERRATA"},
+			dependents:  []bugzilla.Bug{{ID: 1, Status: "CLOSED", Resolution: "ERRATA"}},
+			options:     plugins.BugzillaBranchOptions{DependentBugStates: &[]plugins.BugzillaBugState{{Status: "CLOSED", Resolution: "ERRATA"}}},
+			valid:       true,
+			validations: []string{"dependent bug [Bugzilla bug 1](bugzilla.com/show_bug.cgi?id=1) is in the state CLOSED (ERRATA), which is one of the valid states (CLOSED (ERRATA))", "bug has dependents"},
 		},
 	}
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			valid, why := validateBug(testCase.bug, testCase.dependents, testCase.options, "bugzilla.com")
+			valid, validations, why := validateBug(testCase.bug, testCase.dependents, testCase.options, "bugzilla.com")
 			if valid != testCase.valid {
 				t.Errorf("%s: didn't validate bug correctly, expected %t got %t", testCase.name, testCase.valid, valid)
+			}
+			if !reflect.DeepEqual(validations, testCase.validations) {
+				t.Errorf("%s: didn't get correct validations: %v", testCase.name, diff.ObjectReflectDiff(testCase.validations, validations))
 			}
 			if !reflect.DeepEqual(why, testCase.why) {
 				t.Errorf("%s: didn't get correct reasons why: %v", testCase.name, diff.ObjectReflectDiff(testCase.why, why))
