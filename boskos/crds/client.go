@@ -153,6 +153,7 @@ type Type struct {
 
 // Object extends the runtime.Object interface. CRD are just a representation of the actual boskos object
 // which should implements the common.Item interface.
+// TODO: Should be removed, see https://github.com/kubernetes/test-infra/issues/16418
 type Object interface {
 	runtime.Object
 	GetName() string

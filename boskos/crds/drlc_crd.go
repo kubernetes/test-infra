@@ -93,7 +93,7 @@ func (in *DRLCObject) DeepCopyObject() runtime.Object {
 	return nil
 }
 
-func (in *DRLCObject) toDynamicResourceLifeCycle() common.DynamicResourceLifeCycle {
+func (in *DRLCObject) ToDynamicResourceLifeCycle() common.DynamicResourceLifeCycle {
 	return common.DynamicResourceLifeCycle{
 		Type:         in.Name,
 		InitialState: in.Spec.InitialState,
@@ -115,9 +115,26 @@ func (in *DRLCObject) fromDynamicResourceLifeCycle(r common.DynamicResourceLifeC
 	in.Spec.Needs = r.Needs
 }
 
+// FromDynamicResourceLifecycle converts a common.DynamicResourceLifeCycle into a *DRLCObject
+func FromDynamicResourceLifecycle(r common.DynamicResourceLifeCycle) *DRLCObject {
+	return &DRLCObject{
+		ObjectMeta: v1.ObjectMeta{
+			Name: r.Type,
+		},
+		Spec: DRLCSpec{
+			InitialState: r.InitialState,
+			MinCount:     r.MinCount,
+			MaxCount:     r.MaxCount,
+			LifeSpan:     r.LifeSpan,
+			Config:       r.Config,
+			Needs:        r.Needs,
+		},
+	}
+}
+
 // ToItem implements the Object interface
 func (in *DRLCObject) ToItem() common.Item {
-	return in.toDynamicResourceLifeCycle()
+	return in.ToDynamicResourceLifeCycle()
 }
 
 // FromItem implements the Object interface

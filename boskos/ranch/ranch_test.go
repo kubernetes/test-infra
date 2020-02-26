@@ -25,7 +25,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/go-test/deep"
 	"github.com/sirupsen/logrus"
+	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
@@ -63,12 +65,13 @@ func fakeTime(t time.Time) time.Time {
 	return now
 }
 
+const testNS = "test"
+
 func MakeTestRanch(objects []runtime.Object) *Ranch {
-	const ns = "test"
 	for _, obj := range objects {
-		obj.(metav1.Object).SetNamespace(ns)
+		obj.(metav1.Object).SetNamespace(testNS)
 	}
-	s, _ := NewStorage(context.Background(), fakectrlruntimeclient.NewFakeClient(objects...), ns, "")
+	s, _ := NewStorage(context.Background(), fakectrlruntimeclient.NewFakeClient(objects...), testNS, "")
 	s.now = func() time.Time {
 		return fakeNow
 	}
@@ -203,18 +206,18 @@ func TestAcquire(t *testing.T) {
 		}
 
 		if err == nil {
-			if res.State != tc.dest {
-				t.Errorf("%s - Wrong final state. Got %v, expected %v", tc.name, res.State, tc.dest)
+			if res.Status.State != tc.dest {
+				t.Errorf("%s - Wrong final state. Got %v, expected %v", tc.name, res.Status.State, tc.dest)
 			}
-			if !reflect.DeepEqual(*res, resources[0]) {
-				t.Errorf("%s - Wrong resource. Got %v, expected %v", tc.name, res, resources[0])
-			} else if !res.LastUpdate.After(startTime) {
+			if !reflect.DeepEqual(*res, resources.Items[0]) {
+				t.Errorf("%s - Wrong resource. Got %v, expected %v", tc.name, res, resources.Items[0])
+			} else if !res.Status.LastUpdate.After(startTime) {
 				t.Errorf("%s - LastUpdate did not update.", tc.name)
 			}
 		} else {
-			for _, res := range resources {
-				if res.LastUpdate != startTime {
-					t.Errorf("%s - LastUpdate should not update. Got %v, expected %v", tc.name, resources[0].LastUpdate, startTime)
+			for _, res := range resources.Items {
+				if res.Status.LastUpdate != startTime {
+					t.Errorf("%s - LastUpdate should not update. Got %v, expected %v", tc.name, resources.Items[0].Status.LastUpdate, startTime)
 				}
 			}
 		}
@@ -225,41 +228,41 @@ func TestAcquirePriority(t *testing.T) {
 	now := time.Now()
 	expiredFuture := now.Add(2 * testTTL)
 	owner := "tester"
-	res := common.NewResource("res", "type", common.Free, "", now)
+	res := crds.NewResource("res", "type", common.Free, "", now)
 	r := MakeTestRanch(nil)
 	r.requestMgr.now = func() time.Time { return now }
 
 	// Setting Priority, this request will fail
-	if _, err := r.Acquire(res.Type, res.State, common.Dirty, owner, "request_id_1"); err == nil {
+	if _, err := r.Acquire(res.Spec.Type, res.Status.State, common.Dirty, owner, "request_id_1"); err == nil {
 		t.Errorf("should fail as there are not resource available")
 	}
 	if err := r.Storage.AddResource(res); err != nil {
 		t.Fatalf("failed to add resource: %v", err)
 	}
 	// Attempting to acquire this resource without priority
-	if _, err := r.Acquire(res.Type, res.State, common.Dirty, owner, ""); err == nil {
+	if _, err := r.Acquire(res.Spec.Type, res.Status.State, common.Dirty, owner, ""); err == nil {
 		t.Errorf("should fail as there is only resource, and it is prioritizes to request_id_1")
 	}
 	// Attempting to acquire this resource with priority, which will set a place in the queue
-	if _, err := r.Acquire(res.Type, res.State, common.Dirty, owner, "request_id_2"); err == nil {
+	if _, err := r.Acquire(res.Spec.Type, res.Status.State, common.Dirty, owner, "request_id_2"); err == nil {
 		t.Errorf("should fail as there is only resource, and it is prioritizes to request_id_1")
 	}
 	// Attempting with the first request
-	if _, err := r.Acquire(res.Type, res.State, common.Dirty, owner, "request_id_1"); err != nil {
+	if _, err := r.Acquire(res.Spec.Type, res.Status.State, common.Dirty, owner, "request_id_1"); err != nil {
 		t.Fatalf("should succeed since the request priority should match its rank in the queue. got %v", err)
 	}
 	r.Release(res.Name, common.Free, "tester")
 	// Attempting with the first request
-	if _, err := r.Acquire(res.Type, res.State, common.Dirty, owner, "request_id_1"); err == nil {
+	if _, err := r.Acquire(res.Spec.Type, res.Status.State, common.Dirty, owner, "request_id_1"); err == nil {
 		t.Errorf("should not succeed since this request has already been fulfilled")
 	}
 	// Attempting to acquire this resource without priority
-	if _, err := r.Acquire(res.Type, res.State, common.Dirty, owner, ""); err == nil {
+	if _, err := r.Acquire(res.Spec.Type, res.Status.State, common.Dirty, owner, ""); err == nil {
 		t.Errorf("should fail as request_id_2 has rank 1 now")
 	}
 	r.requestMgr.cleanup(expiredFuture)
 	// Attempting to acquire this resource without priority
-	if _, err := r.Acquire(res.Type, res.State, common.Dirty, owner, ""); err != nil {
+	if _, err := r.Acquire(res.Spec.Type, res.Status.State, common.Dirty, owner, ""); err != nil {
 		t.Errorf("request_id_2 expired, this should work now, got %v", err)
 	}
 }
@@ -314,7 +317,7 @@ func TestAcquireOnDemand(t *testing.T) {
 	}
 	if resources, err := c.Storage.GetResources(); err != nil {
 		t.Fatal(err)
-	} else if len(resources) != 1 {
+	} else if len(resources.Items) != 1 {
 		t.Fatal("A resource should have been created")
 	}
 	// Attempting to create another resource
@@ -323,7 +326,7 @@ func TestAcquireOnDemand(t *testing.T) {
 	}
 	if resources, err := c.Storage.GetResources(); err != nil {
 		t.Error(err)
-	} else if len(resources) != 1 {
+	} else if len(resources.Items) != 1 {
 		t.Errorf("No new resource should have been created")
 	}
 	// Creating another
@@ -332,7 +335,7 @@ func TestAcquireOnDemand(t *testing.T) {
 	}
 	if resources, err := c.Storage.GetResources(); err != nil {
 		t.Error(err)
-	} else if len(resources) != 2 {
+	} else if len(resources.Items) != 2 {
 		t.Errorf("Another resource should have been created")
 	}
 	// Attempting to create another
@@ -342,10 +345,10 @@ func TestAcquireOnDemand(t *testing.T) {
 	resources, err := c.Storage.GetResources()
 	if err != nil {
 		t.Error(err)
-	} else if len(resources) != 2 {
+	} else if len(resources.Items) != 2 {
 		t.Errorf("No other resource should have been created")
 	}
-	for _, res := range resources {
+	for _, res := range resources.Items {
 		c.Storage.DeleteResource(res.Name)
 	}
 	if _, err := c.Acquire(rType, common.Free, common.Busy, owner, ""); err == nil {
@@ -353,16 +356,16 @@ func TestAcquireOnDemand(t *testing.T) {
 	}
 	if resources, err := c.Storage.GetResources(); err != nil {
 		t.Error(err)
-	} else if len(resources) != 0 {
+	} else if len(resources.Items) != 0 {
 		t.Errorf("No new resource should have been created")
 	}
 }
 
 func TestRelease(t *testing.T) {
 	var lifespan = time.Minute
-	updatedRes := common.NewResource("res", "t", "d", "", fakeNow)
+	updatedRes := crds.NewResource("res", "t", "d", "", fakeNow)
 	expirationDate := fakeTime(fakeNow.Add(lifespan))
-	updatedRes.ExpirationDate = &expirationDate
+	updatedRes.Status.ExpirationDate = &expirationDate
 	var testcases = []struct {
 		name        string
 		resource    *crds.ResourceObject
@@ -371,15 +374,14 @@ func TestRelease(t *testing.T) {
 		owner       string
 		dest        string
 		expectErr   error
-		expectedRes common.Resource
+		expectedRes *crds.ResourceObject
 	}{
 		{
-			name:        "ranch has no resource",
-			resName:     "res",
-			owner:       "user",
-			dest:        "d",
-			expectErr:   &ResourceNotFound{"res"},
-			expectedRes: common.Resource{},
+			name:      "ranch has no resource",
+			resName:   "res",
+			owner:     "user",
+			dest:      "d",
+			expectErr: &ResourceNotFound{"res"},
 		},
 		{
 			name:        "wrong owner",
@@ -388,16 +390,15 @@ func TestRelease(t *testing.T) {
 			owner:       "user",
 			dest:        "d",
 			expectErr:   &OwnerNotMatch{"user", "merlin"},
-			expectedRes: common.NewResource("res", "t", "s", "merlin", startTime),
+			expectedRes: crds.NewResource("res", "t", "s", "merlin", startTime),
 		},
 		{
-			name:        "no match name",
-			resource:    newResource("foo", "t", "s", "merlin", startTime),
-			resName:     "res",
-			owner:       "user",
-			dest:        "d",
-			expectErr:   &ResourceNotFound{"res"},
-			expectedRes: common.Resource{},
+			name:      "no match name",
+			resource:  newResource("foo", "t", "s", "merlin", startTime),
+			resName:   "res",
+			owner:     "user",
+			dest:      "d",
+			expectErr: &ResourceNotFound{"res"},
 		},
 		{
 			name:        "ok",
@@ -406,7 +407,7 @@ func TestRelease(t *testing.T) {
 			owner:       "merlin",
 			dest:        "d",
 			expectErr:   nil,
-			expectedRes: common.NewResource("res", "t", "d", "", fakeNow),
+			expectedRes: crds.NewResource("res", "t", "d", "", fakeNow),
 		},
 		{
 			name:     "ok - has dynamic resource lf no lifespan",
@@ -418,11 +419,11 @@ func TestRelease(t *testing.T) {
 			owner:       "merlin",
 			dest:        "d",
 			expectErr:   nil,
-			expectedRes: common.NewResource("res", "t", "d", "", fakeNow),
+			expectedRes: crds.NewResource("res", "t", "d", "", fakeNow),
 		},
 		{
 			name:     "ok - has dynamic resource lf with lifespan",
-			resource: newResource("res", "t", "s", "merlin", startTime),
+			resource: crds.NewResource("res", "t", "s", "merlin", startTime),
 			dResource: &crds.DRLCObject{
 				ObjectMeta: metav1.ObjectMeta{Name: "t"},
 				Spec:       crds.DRLCSpec{LifeSpan: &lifespan},
@@ -436,23 +437,27 @@ func TestRelease(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		var objs []runtime.Object
-		if tc.resource != nil {
-			objs = append(objs, tc.resource)
-		}
-		if tc.dResource != nil {
-			objs = append(objs, tc.dResource)
-		}
-		c := MakeTestRanch(objs)
-		releaseErr := c.Release(tc.resName, tc.dest, tc.owner)
-		if !AreErrorsEqual(releaseErr, tc.expectErr) {
-			t.Errorf("%s - Got error %v, expected error %v", tc.name, releaseErr, tc.expectErr)
-			continue
-		}
-		res, _ := c.Storage.GetResource(tc.resName)
-		if !reflect.DeepEqual(res, tc.expectedRes) {
-			t.Errorf("Test %v: got %v, expected %v", tc.name, res, tc.expectedRes)
-		}
+		t.Run(tc.name, func(t *testing.T) {
+			var objs []runtime.Object
+			if tc.resource != nil {
+				objs = append(objs, tc.resource)
+			}
+			if tc.dResource != nil {
+				objs = append(objs, tc.dResource)
+			}
+			if tc.expectedRes != nil {
+				tc.expectedRes.Namespace = testNS
+			}
+			c := MakeTestRanch(objs)
+			releaseErr := c.Release(tc.resName, tc.dest, tc.owner)
+			if !AreErrorsEqual(releaseErr, tc.expectErr) {
+				t.Fatalf("Got error %v, expected error %v", releaseErr, tc.expectErr)
+			}
+			res, _ := c.Storage.GetResource(tc.resName)
+			if diff := deep.Equal(res, tc.expectedRes); diff != nil {
+				t.Errorf("result didn't match expected, diff: %v", diff)
+			}
+		})
 	}
 }
 
@@ -540,7 +545,7 @@ func TestReset(t *testing.T) {
 				t.Errorf("failed to get resources")
 				continue
 			}
-			if !resources[0].LastUpdate.After(startTime) {
+			if !resources.Items[0].Status.LastUpdate.After(startTime) {
 				t.Errorf("%s - LastUpdate did not update.", tc.name)
 			}
 		}
@@ -618,17 +623,17 @@ func TestUpdate(t *testing.T) {
 			}
 
 			if err == nil {
-				if resources[0].Owner != tc.owner {
-					t.Errorf("%s - Wrong owner after release. Got %v, expected %v", tc.name, resources[0].Owner, tc.owner)
-				} else if resources[0].State != tc.state {
-					t.Errorf("%s - Wrong state after release. Got %v, expected %v", tc.name, resources[0].State, tc.state)
-				} else if !resources[0].LastUpdate.After(startTime) {
+				if resources.Items[0].Status.Owner != tc.owner {
+					t.Errorf("%s - Wrong owner after release. Got %v, expected %v", tc.name, resources.Items[0].Status.Owner, tc.owner)
+				} else if resources.Items[0].Status.State != tc.state {
+					t.Errorf("%s - Wrong state after release. Got %v, expected %v", tc.name, resources.Items[0].Status.State, tc.state)
+				} else if !resources.Items[0].Status.LastUpdate.After(startTime) {
 					t.Errorf("%s - LastUpdate did not update.", tc.name)
 				}
 			} else {
-				for _, res := range resources {
-					if res.LastUpdate != startTime {
-						t.Errorf("%s - LastUpdate should not update. Got %v, expected %v", tc.name, resources[0].LastUpdate, startTime)
+				for _, res := range resources.Items {
+					if res.Status.LastUpdate != startTime {
+						t.Errorf("%s - LastUpdate should not update. Got %v, expected %v", tc.name, resources.Items[0].Status.LastUpdate, startTime)
 					}
 				}
 			}
@@ -802,11 +807,7 @@ func TestAllMetrics(t *testing.T) {
 	}
 }
 
-func setExpiration(res common.Resource, exp time.Time) common.Resource {
-	res.ExpirationDate = &exp
-	return res
-}
-func setExpirationCRD(res *crds.ResourceObject, exp time.Time) *crds.ResourceObject {
+func setExpiration(res *crds.ResourceObject, exp time.Time) *crds.ResourceObject {
 	res.Status.ExpirationDate = &exp
 	return res
 }
@@ -815,8 +816,8 @@ func TestSyncResources(t *testing.T) {
 	var testcases = []struct {
 		name        string
 		currentRes  []runtime.Object
-		expectedRes []common.Resource
-		expectedLCs []common.DynamicResourceLifeCycle
+		expectedRes *crds.ResourceObjectList
+		expectedLCs *crds.DRLCObjectList
 		config      *common.BoskosConfig
 	}{
 		{
@@ -839,18 +840,20 @@ func TestSyncResources(t *testing.T) {
 					},
 				},
 			},
-			expectedRes: []common.Resource{
-				common.NewResource("res-1", "t", common.Free, "", startTime),
-				common.NewResource("dt_1", "mason", common.Free, "", startTime),
-				common.NewResource("dt_2", "mason", common.Free, "", startTime),
+			expectedRes: &crds.ResourceObjectList{Items: []crds.ResourceObject{
+				*newResource("res-1", "t", common.Free, "", startTime),
+				*newResource("dt_1", "mason", common.Free, "", startTime),
+				*newResource("dt_2", "mason", common.Free, "", startTime),
 			},
-			expectedLCs: []common.DynamicResourceLifeCycle{
+			},
+			expectedLCs: &crds.DRLCObjectList{Items: []crds.DRLCObject{
 				{
-					Type:     "mason",
-					MinCount: 2,
-					MaxCount: 4,
-				},
-			},
+					ObjectMeta: metav1.ObjectMeta{Name: "mason"},
+					Spec: crds.DRLCSpec{
+						MinCount: 2,
+						MaxCount: 4,
+					}},
+			}},
 		},
 		{
 			name: "empty",
@@ -873,18 +876,20 @@ func TestSyncResources(t *testing.T) {
 					},
 				},
 			},
-			expectedRes: []common.Resource{
-				common.NewResource("res-1", "t", common.Free, "", startTime),
-				common.NewResource("res-2", "t", common.Free, "", fakeNow),
-				common.NewResource("new-dynamic-res-1", "dt", common.Free, "", fakeNow),
-			},
-			expectedLCs: []common.DynamicResourceLifeCycle{
+			expectedRes: &crds.ResourceObjectList{Items: []crds.ResourceObject{
+				*newResource("res-1", "t", common.Free, "", startTime),
+				*newResource("res-2", "t", common.Free, "", fakeNow),
+				*newResource("new-dynamic-res-1", "dt", common.Free, "", fakeNow),
+			}},
+			expectedLCs: &crds.DRLCObjectList{Items: []crds.DRLCObject{
 				{
-					Type:     "dt",
-					MinCount: 1,
-					MaxCount: 2,
+					ObjectMeta: metav1.ObjectMeta{Name: "dt"},
+					Spec: crds.DRLCSpec{
+						MinCount: 1,
+						MaxCount: 2,
+					},
 				},
-			},
+			}},
 		},
 		{
 			name: "should not change anything",
@@ -912,17 +917,19 @@ func TestSyncResources(t *testing.T) {
 					},
 				},
 			},
-			expectedRes: []common.Resource{
-				common.NewResource("res-1", "t", "", "", startTime),
-				common.NewResource("dt_1", "dt", "", "", startTime),
-			},
-			expectedLCs: []common.DynamicResourceLifeCycle{
+			expectedRes: &crds.ResourceObjectList{Items: []crds.ResourceObject{
+				*newResource("res-1", "t", "", "", startTime),
+				*newResource("dt_1", "dt", "", "", startTime),
+			}},
+			expectedLCs: &crds.DRLCObjectList{Items: []crds.DRLCObject{
 				{
-					Type:     "dt",
-					MinCount: 1,
-					MaxCount: 2,
+					ObjectMeta: metav1.ObjectMeta{Name: "dt"},
+					Spec: crds.DRLCSpec{
+						MinCount: 1,
+						MaxCount: 2,
+					},
 				},
-			},
+			}},
 		},
 		{
 			name: "delete, lifecycle should not delete dynamic res until all associated resources are gone",
@@ -938,16 +945,18 @@ func TestSyncResources(t *testing.T) {
 				},
 			},
 			config: &common.BoskosConfig{},
-			expectedRes: []common.Resource{
-				common.NewResource("dt_1", "dt", common.ToBeDeleted, "", fakeNow),
-			},
-			expectedLCs: []common.DynamicResourceLifeCycle{
+			expectedRes: &crds.ResourceObjectList{Items: []crds.ResourceObject{
+				*newResource("dt_1", "dt", common.ToBeDeleted, "", fakeNow),
+			}},
+			expectedLCs: &crds.DRLCObjectList{Items: []crds.DRLCObject{
 				{
-					Type:     "dt",
-					MinCount: 0,
-					MaxCount: 0,
+					ObjectMeta: metav1.ObjectMeta{Name: "dt"},
+					Spec: crds.DRLCSpec{
+						MinCount: 0,
+						MaxCount: 0,
+					},
 				},
-			},
+			}},
 		},
 		{
 			name: "delete, life cycle should be deleted as all resources are deleted",
@@ -976,17 +985,19 @@ func TestSyncResources(t *testing.T) {
 				},
 			},
 			config: &common.BoskosConfig{},
-			expectedRes: []common.Resource{
-				common.NewResource("res", "t", common.Busy, "o", startTime),
-				common.NewResource("dt_1", "dt", common.Busy, "o", startTime),
-			},
-			expectedLCs: []common.DynamicResourceLifeCycle{
+			expectedRes: &crds.ResourceObjectList{Items: []crds.ResourceObject{
+				*newResource("res", "t", common.Busy, "o", startTime),
+				*newResource("dt_1", "dt", common.Busy, "o", startTime),
+			}},
+			expectedLCs: &crds.DRLCObjectList{Items: []crds.DRLCObject{
 				{
-					Type:     "dt",
-					MinCount: 0,
-					MaxCount: 0,
+					ObjectMeta: metav1.ObjectMeta{Name: "dt"},
+					Spec: crds.DRLCSpec{
+						MinCount: 0,
+						MaxCount: 0,
+					},
 				},
-			},
+			}},
 		},
 		{
 			name: "append and delete",
@@ -1021,25 +1032,29 @@ func TestSyncResources(t *testing.T) {
 					},
 				},
 			},
-			expectedRes: []common.Resource{
-				common.NewResource("res-2", "t", common.Free, "", fakeNow),
-				common.NewResource("dt_1", "dt", common.ToBeDeleted, "", startTime),
-				common.NewResource("dt_2", "dt", common.Free, "", startTime),
-				common.NewResource("dt_3", "dt", common.Free, "", startTime),
-				common.NewResource("new-dynamic-res-1", "dt2", common.Free, "", fakeNow),
-			},
-			expectedLCs: []common.DynamicResourceLifeCycle{
+			expectedRes: &crds.ResourceObjectList{Items: []crds.ResourceObject{
+				*newResource("res-2", "t", common.Free, "", fakeNow),
+				*newResource("dt_1", "dt", common.ToBeDeleted, "", startTime),
+				*newResource("dt_2", "dt", common.Free, "", startTime),
+				*newResource("dt_3", "dt", common.Free, "", startTime),
+				*newResource("new-dynamic-res-1", "dt2", common.Free, "", fakeNow),
+			}},
+			expectedLCs: &crds.DRLCObjectList{Items: []crds.DRLCObject{
 				{
-					Type:     "dt",
-					MinCount: 1,
-					MaxCount: 2,
+					ObjectMeta: metav1.ObjectMeta{Name: "dt"},
+					Spec: crds.DRLCSpec{
+						MinCount: 1,
+						MaxCount: 2,
+					},
 				},
 				{
-					Type:     "dt2",
-					MinCount: 1,
-					MaxCount: 2,
+					ObjectMeta: metav1.ObjectMeta{Name: "dt2"},
+					Spec: crds.DRLCSpec{
+						MinCount: 1,
+						MaxCount: 2,
+					},
 				},
-			},
+			}},
 		},
 		{
 			name: "append and delete busy",
@@ -1074,25 +1089,29 @@ func TestSyncResources(t *testing.T) {
 					},
 				},
 			},
-			expectedRes: []common.Resource{
-				common.NewResource("res-1", "t", common.Busy, "o", startTime),
-				common.NewResource("res-2", "t", common.Free, "", fakeNow),
-				common.NewResource("dt_1", "dt", common.Free, "", startTime),
-				common.NewResource("dt_3", "dt", common.Busy, "o", startTime),
-				common.NewResource("new-dynamic-res-1", "dt2", common.Free, "", fakeNow),
-			},
-			expectedLCs: []common.DynamicResourceLifeCycle{
+			expectedRes: &crds.ResourceObjectList{Items: []crds.ResourceObject{
+				*newResource("res-1", "t", common.Busy, "o", startTime),
+				*newResource("res-2", "t", common.Free, "", fakeNow),
+				*newResource("dt_1", "dt", common.Free, "", startTime),
+				*newResource("dt_3", "dt", common.Busy, "o", startTime),
+				*newResource("new-dynamic-res-1", "dt2", common.Free, "", fakeNow),
+			}},
+			expectedLCs: &crds.DRLCObjectList{Items: []crds.DRLCObject{
 				{
-					Type:     "dt",
-					MinCount: 1,
-					MaxCount: 2,
+					ObjectMeta: metav1.ObjectMeta{Name: "dt"},
+					Spec: crds.DRLCSpec{
+						MinCount: 1,
+						MaxCount: 2,
+					},
 				},
 				{
-					Type:     "dt2",
-					MinCount: 1,
-					MaxCount: 2,
+					ObjectMeta: metav1.ObjectMeta{Name: "dt2"},
+					Spec: crds.DRLCSpec{
+						MinCount: 1,
+						MaxCount: 2,
+					},
 				},
-			},
+			}},
 		},
 		{
 			name: "append/delete mixed type",
@@ -1111,19 +1130,19 @@ func TestSyncResources(t *testing.T) {
 					},
 				},
 			},
-			expectedRes: []common.Resource{
-				common.NewResource("res-2", "t", "free", "", fakeNow),
-				common.NewResource("res-3", "t2", "free", "", fakeNow),
-			},
+			expectedRes: &crds.ResourceObjectList{Items: []crds.ResourceObject{
+				*newResource("res-2", "t", "free", "", fakeNow),
+				*newResource("res-3", "t2", "free", "", fakeNow),
+			}},
 		},
 		{
 			name: "delete expired resource",
 			currentRes: []runtime.Object{
-				setExpirationCRD(
+				setExpiration(
 					newResource("dt_1", "dt", "", "", startTime),
 					startTime),
 				newResource("dt_2", "dt", "", "", startTime),
-				setExpirationCRD(
+				setExpiration(
 					newResource("dt_3", "dt", common.Tombstone, "", startTime),
 					startTime),
 				newResource("dt_4", "dt", "", "", startTime),
@@ -1144,29 +1163,31 @@ func TestSyncResources(t *testing.T) {
 					},
 				},
 			},
-			expectedRes: []common.Resource{
-				setExpiration(
-					common.NewResource("dt_1", "dt", common.ToBeDeleted, "", fakeNow),
+			expectedRes: &crds.ResourceObjectList{Items: []crds.ResourceObject{
+				*setExpiration(
+					newResource("dt_1", "dt", common.ToBeDeleted, "", fakeNow),
 					startTime),
-				common.NewResource("dt_2", "dt", common.Free, "", startTime),
-				common.NewResource("dt_4", "dt", common.Free, "", startTime),
-			},
-			expectedLCs: []common.DynamicResourceLifeCycle{
+				*newResource("dt_2", "dt", common.Free, "", startTime),
+				*newResource("dt_4", "dt", common.Free, "", startTime),
+			}},
+			expectedLCs: &crds.DRLCObjectList{Items: []crds.DRLCObject{
 				{
-					Type:     "dt",
-					MinCount: 2,
-					MaxCount: 4,
+					ObjectMeta: metav1.ObjectMeta{Name: "dt"},
+					Spec: crds.DRLCSpec{
+						MinCount: 2,
+						MaxCount: 4,
+					},
 				},
-			},
+			}},
 		},
 		{
 			name: "delete expired resource / do not delete busy",
 			currentRes: []runtime.Object{
-				setExpirationCRD(
+				setExpiration(
 					newResource("dt_1", "dt", common.Tombstone, "", startTime),
 					startTime),
 				newResource("dt_2", "dt", "", "", startTime),
-				setExpirationCRD(
+				setExpiration(
 					newResource("dt_3", "dt", common.Busy, "o", startTime),
 					startTime),
 				newResource("dt_4", "dt", common.Busy, "o", startTime),
@@ -1187,29 +1208,31 @@ func TestSyncResources(t *testing.T) {
 					},
 				},
 			},
-			expectedRes: []common.Resource{
-				common.NewResource("dt_2", "dt", common.Free, "", startTime),
-				setExpiration(
-					common.NewResource("dt_3", "dt", common.Busy, "o", startTime),
+			expectedRes: &crds.ResourceObjectList{Items: []crds.ResourceObject{
+				*newResource("dt_2", "dt", common.Free, "", startTime),
+				*setExpiration(
+					newResource("dt_3", "dt", common.Busy, "o", startTime),
 					startTime),
-				common.NewResource("dt_4", "dt", common.Busy, "o", startTime),
-			},
-			expectedLCs: []common.DynamicResourceLifeCycle{
+				*newResource("dt_4", "dt", common.Busy, "o", startTime),
+			}},
+			expectedLCs: &crds.DRLCObjectList{Items: []crds.DRLCObject{
 				{
-					Type:     "dt",
-					MinCount: 1,
-					MaxCount: 3,
+					ObjectMeta: metav1.ObjectMeta{Name: "dt"},
+					Spec: crds.DRLCSpec{
+						MinCount: 1,
+						MaxCount: 3,
+					},
 				},
-			},
+			}},
 		},
 		{
 			name: "delete expired resource, recreate up to Min",
 			currentRes: []runtime.Object{
-				setExpirationCRD(
+				setExpiration(
 					newResource("dt_1", "dt", "", "", startTime),
 					startTime),
 				newResource("dt_2", "dt", "", "", startTime),
-				setExpirationCRD(
+				setExpiration(
 					newResource("dt_3", "dt", common.Tombstone, "", startTime),
 					startTime),
 				newResource("dt_4", "dt", "", "", startTime),
@@ -1230,21 +1253,23 @@ func TestSyncResources(t *testing.T) {
 					},
 				},
 			},
-			expectedRes: []common.Resource{
-				setExpiration(
-					common.NewResource("dt_1", "dt", common.ToBeDeleted, "", fakeNow),
+			expectedRes: &crds.ResourceObjectList{Items: []crds.ResourceObject{
+				*setExpiration(
+					newResource("dt_1", "dt", common.ToBeDeleted, "", fakeNow),
 					startTime),
-				common.NewResource("new-dynamic-res-1", "dt", common.Free, "", fakeNow),
-				common.NewResource("dt_2", "dt", common.Free, "", startTime),
-				common.NewResource("dt_4", "dt", common.Free, "", startTime),
-			},
-			expectedLCs: []common.DynamicResourceLifeCycle{
+				*newResource("new-dynamic-res-1", "dt", common.Free, "", fakeNow),
+				*newResource("dt_2", "dt", common.Free, "", startTime),
+				*newResource("dt_4", "dt", common.Free, "", startTime),
+			}},
+			expectedLCs: &crds.DRLCObjectList{Items: []crds.DRLCObject{
 				{
-					Type:     "dt",
-					MinCount: 4,
-					MaxCount: 6,
+					ObjectMeta: metav1.ObjectMeta{Name: "dt"},
+					Spec: crds.DRLCSpec{
+						MinCount: 4,
+						MaxCount: 6,
+					},
 				},
-			},
+			}},
 		},
 		{
 			name: "decrease max count with resources being deleted",
@@ -1271,19 +1296,21 @@ func TestSyncResources(t *testing.T) {
 					},
 				},
 			},
-			expectedRes: []common.Resource{
-				common.NewResource("dt_1", "dt", common.Free, "", startTime),
-				common.NewResource("dt_2", "dt", common.ToBeDeleted, "", fakeNow),
-				common.NewResource("dt_3", "dt", common.ToBeDeleted, "", fakeNow),
-				common.NewResource("dt_4", "dt", common.ToBeDeleted, "", startTime),
-			},
-			expectedLCs: []common.DynamicResourceLifeCycle{
+			expectedRes: &crds.ResourceObjectList{Items: []crds.ResourceObject{
+				*newResource("dt_1", "dt", common.Free, "", startTime),
+				*newResource("dt_2", "dt", common.ToBeDeleted, "", fakeNow),
+				*newResource("dt_3", "dt", common.ToBeDeleted, "", fakeNow),
+				*newResource("dt_4", "dt", common.ToBeDeleted, "", startTime),
+			}},
+			expectedLCs: &crds.DRLCObjectList{Items: []crds.DRLCObject{
 				{
-					Type:     "dt",
-					MinCount: 1,
-					MaxCount: 1,
+					ObjectMeta: metav1.ObjectMeta{Name: "dt"},
+					Spec: crds.DRLCSpec{
+						MinCount: 1,
+						MaxCount: 1,
+					},
 				},
-			},
+			}},
 		},
 		{
 			name: "increase min count with resources being deleted",
@@ -1309,53 +1336,60 @@ func TestSyncResources(t *testing.T) {
 					},
 				},
 			},
-			expectedRes: []common.Resource{
-				common.NewResource("dt_1", "dt", common.Free, "", startTime),
-				common.NewResource("dt_2", "dt", common.ToBeDeleted, "", startTime),
-				common.NewResource("dt_3", "dt", common.ToBeDeleted, "", startTime),
-				common.NewResource("new-dynamic-res-1", "dt", common.Free, "", fakeNow),
-			},
-			expectedLCs: []common.DynamicResourceLifeCycle{
+			expectedRes: &crds.ResourceObjectList{Items: []crds.ResourceObject{
+				*newResource("dt_1", "dt", common.Free, "", startTime),
+				*newResource("dt_2", "dt", common.ToBeDeleted, "", startTime),
+				*newResource("dt_3", "dt", common.ToBeDeleted, "", startTime),
+				*newResource("new-dynamic-res-1", "dt", common.Free, "", fakeNow),
+			}},
+			expectedLCs: &crds.DRLCObjectList{Items: []crds.DRLCObject{
 				{
-					Type:     "dt",
-					MinCount: 4,
-					MaxCount: 6,
+					ObjectMeta: metav1.ObjectMeta{Name: "dt"},
+					Spec: crds.DRLCSpec{
+						MinCount: 4,
+						MaxCount: 6,
+					},
 				},
-			},
+			}},
 		},
 	}
 
 	for _, tc := range testcases {
-		c := MakeTestRanch(tc.currentRes)
-		c.Storage.SyncResources(tc.config)
-		resources, err := c.Storage.GetResources()
-		if err != nil {
-			t.Errorf("failed to get resources")
-			continue
-		}
-		sort.Stable(common.ResourceByName(resources))
-		sort.Stable(common.ResourceByName(tc.expectedRes))
-		if !reflect.DeepEqual(resources, tc.expectedRes) {
-			t.Errorf("Test %v: \n got \t\t%v, \n expected \t%v", tc.name, resources, tc.expectedRes)
-		}
-		lfs, err := c.Storage.GetDynamicResourceLifeCycles()
-		if err != nil {
-			t.Errorf("failed to get dynamic resources life cycles: %v", err)
-			continue
-		}
-		sort.SliceStable(lfs, func(i, j int) bool {
-			{
-				return lfs[i].GetName() < lfs[j].GetName()
+		t.Run(tc.name, func(t *testing.T) {
+			c := MakeTestRanch(tc.currentRes)
+			c.Storage.SyncResources(tc.config)
+			resources, err := c.Storage.GetResources()
+			if err != nil {
+				t.Fatalf("failed to get resources: %v", err)
+			}
+			if tc.expectedRes == nil {
+				tc.expectedRes = &crds.ResourceObjectList{}
+			}
+			sortResourcesLists(tc.expectedRes, resources)
+			for idx := range tc.expectedRes.Items {
+				tc.expectedRes.Items[idx].Namespace = testNS
+				if tc.expectedRes.Items[idx].Status.UserData == nil {
+					tc.expectedRes.Items[idx].Status.UserData = &common.UserData{}
+				}
+			}
+			if diff := deep.Equal(resources, tc.expectedRes); diff != nil {
+				t.Errorf("received resource differs from expected, diff: %v", diff)
+			}
+			lfs, err := c.Storage.GetDynamicResourceLifeCycles()
+			if err != nil {
+				t.Fatalf("failed to get dynamic resources life cycles: %v", err)
+			}
+			if tc.expectedLCs == nil {
+				tc.expectedLCs = &crds.DRLCObjectList{}
+			}
+			sortDRLCList(lfs, tc.expectedLCs)
+			for idx := range tc.expectedLCs.Items {
+				tc.expectedLCs.Items[idx].Namespace = testNS
+			}
+			if !apiequality.Semantic.DeepEqual(lfs, tc.expectedLCs) {
+				t.Errorf("received drlc do not match expected, diff: %v", deep.Equal(lfs, tc.expectedLCs))
 			}
 		})
-		sort.SliceStable(tc.expectedLCs, func(i, j int) bool {
-			{
-				return tc.expectedLCs[i].GetName() < tc.expectedLCs[j].GetName()
-			}
-		})
-		if !reflect.DeepEqual(lfs, tc.expectedLCs) {
-			t.Errorf("Test %v: \n got \t\t%v, \n expected %v", tc.name, lfs, tc.expectedLCs)
-		}
 	}
 }
 
@@ -1363,8 +1397,8 @@ func TestUpdateAllDynamicResources(t *testing.T) {
 	var testcases = []struct {
 		name        string
 		currentRes  []runtime.Object
-		expectedRes []common.Resource
-		expectedLCs []common.DynamicResourceLifeCycle
+		expectedRes *crds.ResourceObjectList
+		expectedLCs *crds.DRLCObjectList
 	}{
 		{
 			name: "empty",
@@ -1382,31 +1416,32 @@ func TestUpdateAllDynamicResources(t *testing.T) {
 					},
 				},
 			},
-			expectedRes: []common.Resource{
-				common.NewResource("dt_1", "dt", common.Free, "", startTime),
-				common.NewResource("t_1", "t", common.Free, "", startTime),
-			},
-			expectedLCs: []common.DynamicResourceLifeCycle{
+			expectedRes: &crds.ResourceObjectList{Items: []crds.ResourceObject{
+				*newResource("dt_1", "dt", common.Free, "", startTime),
+				*newResource("t_1", "t", common.Free, "", startTime),
+			}},
+			expectedLCs: &crds.DRLCObjectList{Items: []crds.DRLCObject{
 				{
-					Type:     "dt",
-					MinCount: 1,
-					MaxCount: 4,
-				},
-			},
+					ObjectMeta: metav1.ObjectMeta{Name: "dt"},
+					Spec: crds.DRLCSpec{
+						MinCount: 1,
+						MaxCount: 4,
+					}},
+			}},
 		},
 		{
 			name: "delete expired free resources",
 			currentRes: []runtime.Object{
-				setExpirationCRD(
+				setExpiration(
 					newResource("dt_1", "dt", common.Free, "", startTime),
 					fakeNow.Add(time.Hour)),
-				setExpirationCRD(
+				setExpiration(
 					newResource("dt_2", "dt", common.Free, "", startTime),
 					startTime),
-				setExpirationCRD(
+				setExpiration(
 					newResource("dt_3", "dt", common.Busy, "owner", startTime),
 					startTime),
-				setExpirationCRD(
+				setExpiration(
 					newResource("dt_4", "dt", common.ToBeDeleted, "", startTime),
 					startTime),
 				&crds.DRLCObject{
@@ -1417,31 +1452,32 @@ func TestUpdateAllDynamicResources(t *testing.T) {
 					},
 				},
 			},
-			expectedRes: []common.Resource{
+			expectedRes: &crds.ResourceObjectList{Items: []crds.ResourceObject{
 				// Unchanged because expiration is in the future
-				setExpiration(
-					common.NewResource("dt_1", "dt", common.Free, "", startTime),
+				*setExpiration(
+					newResource("dt_1", "dt", common.Free, "", startTime),
 					fakeNow.Add(time.Hour)),
 				// Newly deleted
-				setExpiration(
-					common.NewResource("dt_2", "dt", common.ToBeDeleted, "", fakeNow),
+				*setExpiration(
+					newResource("dt_2", "dt", common.ToBeDeleted, "", fakeNow),
 					startTime),
 				// Unchanged because owned
-				setExpiration(
-					common.NewResource("dt_3", "dt", common.Busy, "owner", startTime),
+				*setExpiration(
+					newResource("dt_3", "dt", common.Busy, "owner", startTime),
 					startTime),
 				// Unchanged because already being deleted
-				setExpiration(
-					common.NewResource("dt_4", "dt", common.ToBeDeleted, "", startTime),
+				*setExpiration(
+					newResource("dt_4", "dt", common.ToBeDeleted, "", startTime),
 					startTime),
-			},
-			expectedLCs: []common.DynamicResourceLifeCycle{
+			}},
+			expectedLCs: &crds.DRLCObjectList{Items: []crds.DRLCObject{
 				{
-					Type:     "dt",
-					MinCount: 1,
-					MaxCount: 4,
-				},
-			},
+					ObjectMeta: metav1.ObjectMeta{Name: "dt"},
+					Spec: crds.DRLCSpec{
+						MinCount: 1,
+						MaxCount: 4,
+					}},
+			}},
 		},
 		{
 			name: "no dynamic resources, nothing to make",
@@ -1454,13 +1490,14 @@ func TestUpdateAllDynamicResources(t *testing.T) {
 					},
 				},
 			},
-			expectedLCs: []common.DynamicResourceLifeCycle{
+			expectedLCs: &crds.DRLCObjectList{Items: []crds.DRLCObject{
 				{
-					Type:     "dt",
-					MinCount: 0,
-					MaxCount: 4,
-				},
-			},
+					ObjectMeta: metav1.ObjectMeta{Name: "dt"},
+					Spec: crds.DRLCSpec{
+						MinCount: 0,
+						MaxCount: 4,
+					}},
+			}},
 		},
 		{
 			name: "no dynamic resources, make some",
@@ -1473,17 +1510,18 @@ func TestUpdateAllDynamicResources(t *testing.T) {
 					},
 				},
 			},
-			expectedRes: []common.Resource{
-				common.NewResource("new-dynamic-res-1", "dt", common.Free, "", fakeNow),
-				common.NewResource("new-dynamic-res-2", "dt", common.Free, "", fakeNow),
-			},
-			expectedLCs: []common.DynamicResourceLifeCycle{
+			expectedRes: &crds.ResourceObjectList{Items: []crds.ResourceObject{
+				*newResource("new-dynamic-res-1", "dt", common.Free, "", fakeNow),
+				*newResource("new-dynamic-res-2", "dt", common.Free, "", fakeNow),
+			}},
+			expectedLCs: &crds.DRLCObjectList{Items: []crds.DRLCObject{
 				{
-					Type:     "dt",
-					MinCount: 2,
-					MaxCount: 4,
-				},
-			},
+					ObjectMeta: metav1.ObjectMeta{Name: "dt"},
+					Spec: crds.DRLCSpec{
+						MinCount: 2,
+						MaxCount: 4,
+					}},
+			}},
 		},
 		{
 			name: "scale down",
@@ -1499,18 +1537,19 @@ func TestUpdateAllDynamicResources(t *testing.T) {
 					},
 				},
 			},
-			expectedRes: []common.Resource{
-				common.NewResource("dt_1", "dt", common.Free, "", startTime),
-				common.NewResource("dt_2", "dt", common.ToBeDeleted, "", fakeNow),
-				common.NewResource("dt_4", "dt", common.Busy, "owner", startTime),
-			},
-			expectedLCs: []common.DynamicResourceLifeCycle{
+			expectedRes: &crds.ResourceObjectList{Items: []crds.ResourceObject{
+				*newResource("dt_1", "dt", common.Free, "", startTime),
+				*newResource("dt_2", "dt", common.ToBeDeleted, "", fakeNow),
+				*newResource("dt_4", "dt", common.Busy, "owner", startTime),
+			}},
+			expectedLCs: &crds.DRLCObjectList{Items: []crds.DRLCObject{
 				{
-					Type:     "dt",
-					MinCount: 1,
-					MaxCount: 2,
-				},
-			},
+					ObjectMeta: metav1.ObjectMeta{Name: "dt"},
+					Spec: crds.DRLCSpec{
+						MinCount: 1,
+						MaxCount: 2,
+					}},
+			}},
 		},
 		{
 			name: "replace some resources",
@@ -1527,19 +1566,20 @@ func TestUpdateAllDynamicResources(t *testing.T) {
 					},
 				},
 			},
-			expectedRes: []common.Resource{
-				common.NewResource("dt_1", "dt", common.Free, "", startTime),
-				common.NewResource("dt_2", "dt", common.Busy, "owner", startTime),
-				common.NewResource("dt_3", "dt", common.ToBeDeleted, "", startTime),
-				common.NewResource("new-dynamic-res-1", "dt", common.Free, "", fakeNow),
-			},
-			expectedLCs: []common.DynamicResourceLifeCycle{
+			expectedRes: &crds.ResourceObjectList{Items: []crds.ResourceObject{
+				*newResource("dt_1", "dt", common.Free, "", startTime),
+				*newResource("dt_2", "dt", common.Busy, "owner", startTime),
+				*newResource("dt_3", "dt", common.ToBeDeleted, "", startTime),
+				*newResource("new-dynamic-res-1", "dt", common.Free, "", fakeNow),
+			}},
+			expectedLCs: &crds.DRLCObjectList{Items: []crds.DRLCObject{
 				{
-					Type:     "dt",
-					MinCount: 4,
-					MaxCount: 8,
-				},
-			},
+					ObjectMeta: metav1.ObjectMeta{Name: "dt"},
+					Spec: crds.DRLCSpec{
+						MinCount: 4,
+						MaxCount: 8,
+					}},
+			}},
 		},
 		{
 			name: "scale down, busy > maxcount",
@@ -1556,19 +1596,20 @@ func TestUpdateAllDynamicResources(t *testing.T) {
 					},
 				},
 			},
-			expectedRes: []common.Resource{
-				common.NewResource("dt_1", "dt", common.ToBeDeleted, "", fakeNow),
-				common.NewResource("dt_2", "dt", common.Busy, "owner", startTime),
-				common.NewResource("dt_3", "dt", common.Busy, "owner", startTime),
-				common.NewResource("dt_4", "dt", common.Busy, "owner", startTime),
-			},
-			expectedLCs: []common.DynamicResourceLifeCycle{
+			expectedRes: &crds.ResourceObjectList{Items: []crds.ResourceObject{
+				*newResource("dt_1", "dt", common.ToBeDeleted, "", fakeNow),
+				*newResource("dt_2", "dt", common.Busy, "owner", startTime),
+				*newResource("dt_3", "dt", common.Busy, "owner", startTime),
+				*newResource("dt_4", "dt", common.Busy, "owner", startTime),
+			}},
+			expectedLCs: &crds.DRLCObjectList{Items: []crds.DRLCObject{
 				{
-					Type:     "dt",
-					MinCount: 1,
-					MaxCount: 2,
-				},
-			},
+					ObjectMeta: metav1.ObjectMeta{Name: "dt"},
+					Spec: crds.DRLCSpec{
+						MinCount: 1,
+						MaxCount: 2,
+					}},
+			}},
 		},
 		{
 			name: "delete all free when DRLC is being removed",
@@ -1585,18 +1626,19 @@ func TestUpdateAllDynamicResources(t *testing.T) {
 					},
 				},
 			},
-			expectedRes: []common.Resource{
-				common.NewResource("dt_1", "dt", common.ToBeDeleted, "", fakeNow),
-				common.NewResource("dt_2", "dt", common.ToBeDeleted, "", fakeNow),
-				common.NewResource("dt_4", "dt", common.Busy, "owner", startTime),
-			},
-			expectedLCs: []common.DynamicResourceLifeCycle{
+			expectedRes: &crds.ResourceObjectList{Items: []crds.ResourceObject{
+				*newResource("dt_1", "dt", common.ToBeDeleted, "", fakeNow),
+				*newResource("dt_2", "dt", common.ToBeDeleted, "", fakeNow),
+				*newResource("dt_4", "dt", common.Busy, "owner", startTime),
+			}},
+			expectedLCs: &crds.DRLCObjectList{Items: []crds.DRLCObject{
 				{
-					Type:     "dt",
-					MinCount: 0,
-					MaxCount: 0,
-				},
-			},
+					ObjectMeta: metav1.ObjectMeta{Name: "dt"},
+					Spec: crds.DRLCSpec{
+						MinCount: 0,
+						MaxCount: 0,
+					}},
+			}},
 		},
 		{
 			name: "delete DRLC when no resources remain",
@@ -1627,40 +1669,50 @@ func TestUpdateAllDynamicResources(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		c := MakeTestRanch(tc.currentRes)
-		err := c.Storage.UpdateAllDynamicResources()
-		if err != nil {
-			t.Errorf("Test %v: error updating dynamic resources: %v", tc.name, err)
-			continue
-		}
-		resources, err := c.Storage.GetResources()
-		if err != nil {
-			t.Errorf("Test %v: failed to get resources: %v", tc.name, err)
-			continue
-		}
-		sort.Stable(common.ResourceByName(resources))
-		sort.Stable(common.ResourceByName(tc.expectedRes))
-		if !reflect.DeepEqual(resources, tc.expectedRes) {
-			t.Errorf("Test %v: \n got \t\t%v, \n expected \t%v", tc.name, resources, tc.expectedRes)
-		}
-		lfs, err := c.Storage.GetDynamicResourceLifeCycles()
-		if err != nil {
-			t.Errorf("Test %v: failed to get dynamic resources life cycles: %v", tc.name, err)
-			continue
-		}
-		sort.SliceStable(lfs, func(i, j int) bool {
-			{
-				return lfs[i].GetName() < lfs[j].GetName()
+		t.Run(tc.name, func(t *testing.T) {
+			c := MakeTestRanch(tc.currentRes)
+			err := c.Storage.UpdateAllDynamicResources()
+			if err != nil {
+				t.Fatalf("error updating dynamic resources: %v", err)
+			}
+			if tc.expectedRes == nil {
+				tc.expectedRes = &crds.ResourceObjectList{}
+			}
+			if tc.expectedLCs == nil {
+				tc.expectedLCs = &crds.DRLCObjectList{}
+			}
+			for idx := range tc.expectedRes.Items {
+				tc.expectedRes.Items[idx].Namespace = testNS
+			}
+			for idx := range tc.expectedLCs.Items {
+				tc.expectedLCs.Items[idx].Namespace = testNS
+			}
+			resources, err := c.Storage.GetResources()
+			if err != nil {
+				t.Fatalf("failed to get resources: %v", err)
+			}
+			sortResourcesLists(resources, tc.expectedRes)
+			for idx := range tc.expectedRes.Items {
+				// needed to prevent test failures due to nil != empty
+				if tc.expectedRes.Items[idx].Status.UserData == nil {
+					tc.expectedRes.Items[idx].Status.UserData = &common.UserData{}
+				}
+			}
+
+			if !reflect.DeepEqual(resources, tc.expectedRes) {
+				t.Errorf("diff:\n%v", deep.Equal(resources, tc.expectedRes))
+			}
+			lfs, err := c.Storage.GetDynamicResourceLifeCycles()
+			if err != nil {
+				t.Fatalf("failed to get dynamic resource life cycles: %v", err)
+			}
+
+			sortDRLCList(lfs, tc.expectedLCs)
+			if !apiequality.Semantic.DeepEqual(lfs, tc.expectedLCs) {
+				t.Errorf("Test %v: \n got \t\t%v, \n expected %v", tc.name, lfs, tc.expectedLCs)
+				t.Errorf("diff: %v", deep.Equal(lfs, tc.expectedLCs))
 			}
 		})
-		sort.SliceStable(tc.expectedLCs, func(i, j int) bool {
-			{
-				return tc.expectedLCs[i].GetName() < tc.expectedLCs[j].GetName()
-			}
-		})
-		if !reflect.DeepEqual(lfs, tc.expectedLCs) {
-			t.Errorf("Test %v: \n got \t\t%v, \n expected %v", tc.name, lfs, tc.expectedLCs)
-		}
 	}
 }
 
@@ -1682,5 +1734,27 @@ func newResource(name, rtype, state, owner string, t time.Time) *crds.ResourceOb
 			LastUpdate: t,
 			UserData:   &common.UserData{},
 		},
+	}
+}
+
+func sortResourcesLists(rls ...*crds.ResourceObjectList) {
+	for _, rl := range rls {
+		sort.Slice(rl.Items, func(i, j int) bool {
+			return rl.Items[i].Name < rl.Items[j].Name
+		})
+		if len(rl.Items) == 0 {
+			rl.Items = nil
+		}
+	}
+}
+
+func sortDRLCList(drlcs ...*crds.DRLCObjectList) {
+	for _, drlc := range drlcs {
+		sort.Slice(drlc.Items, func(i, j int) bool {
+			return drlc.Items[i].Name < drlc.Items[j].Name
+		})
+		if len(drlc.Items) == 0 {
+			drlc.Items = nil
+		}
 	}
 }

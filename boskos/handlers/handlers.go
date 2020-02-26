@@ -118,14 +118,13 @@ func handleAcquire(r *ranch.Ranch) http.HandlerFunc {
 		logrus.Infof("Request for a %v %v from %v, dest %v", state, rtype, owner, dest)
 
 		resource, err := r.Acquire(rtype, state, dest, owner, requestID)
-
 		if err != nil {
 			logrus.WithError(err).Errorf("No available resource")
 			http.Error(res, err.Error(), errorToStatus(err))
 			return
 		}
 
-		resJSON, err := json.Marshal(resource)
+		resJSON, err := json.Marshal(resource.ToResource())
 		if err != nil {
 			logrus.WithError(err).Errorf("json.Marshal failed: %v, resource will be released", resource)
 			http.Error(res, err.Error(), errorToStatus(err))
@@ -184,10 +183,15 @@ func handleAcquireByState(r *ranch.Ranch) http.HandlerFunc {
 			return
 		}
 
+		var apiResources []common.Resource
+		for _, resource := range resources {
+			apiResources = append(apiResources, resource.ToResource())
+		}
+
 		resBytes := new(bytes.Buffer)
 
-		if err := json.NewEncoder(resBytes).Encode(resources); err != nil {
-			logrus.WithError(err).Errorf("json.Marshal failed: %v, resources will be released", resources)
+		if err := json.NewEncoder(resBytes).Encode(apiResources); err != nil {
+			logrus.WithError(err).Errorf("json.Marshal failed: %v, resources will be released", apiResources)
 			http.Error(res, err.Error(), errorToStatus(err))
 			for _, resource := range resources {
 				err := r.Release(resource.Name, state, owner)
