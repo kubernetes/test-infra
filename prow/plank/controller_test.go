@@ -29,7 +29,7 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	kapierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -593,6 +593,35 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			},
 		},
 		{
+			name: "forbidden prow job",
+			pj: prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "beer",
+					Namespace: "prowjobs",
+				},
+				Spec: prowapi.ProwJobSpec{
+					Job:     "boop",
+					Type:    prowapi.PeriodicJob,
+					PodSpec: &v1.PodSpec{Containers: []v1.Container{{Name: "test-name", Env: []v1.EnvVar{}}}},
+				},
+				Status: prowapi.ProwJobStatus{
+					State: prowapi.TriggeredState,
+				},
+			},
+			pods: map[string][]v1.Pod{"default": {}},
+			podErr: &kapierrors.StatusError{ErrStatus: metav1.Status{
+				Status: metav1.StatusFailure,
+				Code:   http.StatusForbidden,
+				Reason: metav1.StatusReasonForbidden,
+			}},
+			expectedState:    prowapi.ErrorState,
+			expectedComplete: true,
+			expectedReport:   true,
+			expectPrevReportState: map[string]prowapi.ProwJobState{
+				reporter.GitHubReporterName: prowapi.ErrorState,
+			},
+		},
+		{
 			name: "conflict error starting pod",
 			pj: prowapi.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
@@ -608,13 +637,18 @@ func TestSyncTriggeredJobs(t *testing.T) {
 					State: prowapi.TriggeredState,
 				},
 			},
+			pods: map[string][]v1.Pod{"default": {}},
 			podErr: &kapierrors.StatusError{ErrStatus: metav1.Status{
 				Status: metav1.StatusFailure,
 				Code:   http.StatusConflict,
 				Reason: metav1.StatusReasonAlreadyExists,
 			}},
-			expectedState: prowapi.TriggeredState,
-			expectError:   true,
+			expectedState:    prowapi.ErrorState,
+			expectedComplete: true,
+			expectedReport:   true,
+			expectPrevReportState: map[string]prowapi.ProwJobState{
+				reporter.GitHubReporterName: prowapi.ErrorState,
+			},
 		},
 		{
 			name: "unknown error starting pod",
