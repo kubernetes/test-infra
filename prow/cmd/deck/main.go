@@ -49,8 +49,6 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/sets"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
-	"k8s.io/test-infra/prow/interrupts"
-	"k8s.io/test-infra/prow/simplifypath"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/yaml"
@@ -64,6 +62,7 @@ import (
 	"k8s.io/test-infra/prow/git/v2"
 	prowgithub "k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/githuboauth"
+	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
@@ -72,6 +71,7 @@ import (
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/plugins/trigger"
 	"k8s.io/test-infra/prow/prstatus"
+	"k8s.io/test-infra/prow/simplifypath"
 	"k8s.io/test-infra/prow/spyglass"
 
 	// Import standard spyglass viewers
@@ -117,6 +117,7 @@ type options struct {
 	spyglass              bool
 	spyglassFilesLocation string
 	gcsCredentialsFile    string
+	gcsCookieAuth         bool
 	rerunCreatesJob       bool
 	allowInsecure         bool
 	dryRun                bool
@@ -181,6 +182,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.StringVar(&o.staticFilesLocation, "static-files-location", "/static", "Path to the static files")
 	fs.StringVar(&o.templateFilesLocation, "template-files-location", "/template", "Path to the template files")
 	fs.StringVar(&o.gcsCredentialsFile, "gcs-credentials-file", "", "Path to the GCS credentials file")
+	fs.BoolVar(&o.gcsCookieAuth, "gcs-cookie-auth", false, "Use storage.cloud.google.com instead of signed URLs")
 	fs.BoolVar(&o.rerunCreatesJob, "rerun-creates-job", false, "Change the re-run option in Deck to actually create the job. **WARNING:** Only use this with non-public deck instances, otherwise strangers can DOS your Prow instance")
 	fs.BoolVar(&o.allowInsecure, "allow-insecure", false, "Allows insecure requests for CSRF and GitHub oauth.")
 	fs.BoolVar(&o.dryRun, "dry-run", false, "Whether or not to make mutating API calls to GitHub.")
@@ -673,17 +675,16 @@ func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, o options
 }
 
 func initSpyglass(cfg config.Getter, o options, mux *http.ServeMux, ja *jobs.JobAgent, gitHubClient deckGitHubClient, gitClient git.ClientFactory) {
-	var c *storage.Client
-	var err error
-	if o.gcsCredentialsFile == "" {
-		c, err = storage.NewClient(context.Background(), option.WithoutAuthentication())
-	} else {
-		c, err = storage.NewClient(context.Background(), option.WithCredentialsFile(o.gcsCredentialsFile))
+	ctx := context.TODO()
+	var options []option.ClientOption
+	if creds := o.gcsCredentialsFile; creds != "" {
+		options = append(options, option.WithCredentialsFile(creds))
 	}
+	c, err := storage.NewClient(ctx, options...)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting GCS client")
 	}
-	sg := spyglass.New(ja, cfg, c, o.gcsCredentialsFile, context.Background())
+	sg := spyglass.New(ctx, ja, cfg, c, o.gcsCredentialsFile, o.gcsCookieAuth)
 	sg.Start()
 
 	mux.Handle("/spyglass/static/", http.StripPrefix("/spyglass/static", staticHandlerFromDir(o.spyglassFilesLocation)))
