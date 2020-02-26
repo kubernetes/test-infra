@@ -28,7 +28,7 @@ import (
 // the provided hmac secret. It returns the event type, the event guid,
 // the payload of the request, whether the webhook is valid or not,
 // and finally the resultant HTTP status code
-func ValidateWebhook(w http.ResponseWriter, r *http.Request, hmacSecret []byte) (string, string, []byte, bool, int) {
+func ValidateWebhook(w http.ResponseWriter, r *http.Request, tokenGenerator func() []byte) (string, string, []byte, bool, int) {
 	defer r.Body.Close()
 
 	// Header checks: It must be a POST with an event type and a signature.
@@ -62,7 +62,7 @@ func ValidateWebhook(w http.ResponseWriter, r *http.Request, hmacSecret []byte) 
 		return "", "", nil, false, http.StatusInternalServerError
 	}
 	// Validate the payload with our HMAC secret.
-	if !ValidatePayload(payload, sig, hmacSecret) {
+	if !ValidatePayload(payload, sig, tokenGenerator) {
 		responseHTTPError(w, http.StatusForbidden, "403 Forbidden: Invalid X-Hub-Signature")
 		return "", "", nil, false, http.StatusForbidden
 	}
