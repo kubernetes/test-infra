@@ -275,6 +275,7 @@ periodics:
       - "--deployment=aksengine"
       - "--provider=skeleton"
       - "--build=quick"
+      - "--ginkgo-parallel=6"
       - "--aksengine-orchestratorRelease=1.17"
       - "--aksengine-admin-username=azureuser"
       - "--aksengine-admin-password=AdminPassw0rd"
@@ -370,6 +371,7 @@ periodics:
       - "--deployment=aksengine"
       - "--provider=skeleton"
       - "--build=quick"
+      - "--ginkgo-parallel=6"
       - "--aksengine-admin-username=azureuser"
       - "--aksengine-admin-password=AdminPassw0rd"
       - "--aksengine-creds=$AZURE_CREDENTIALS"
@@ -381,7 +383,7 @@ periodics:
       - "--aksengine-win-binaries"
       - "--aksengine-deploy-custom-k8s"
       - "--aksengine-agentpoolcount=2"
-      - "--test_args=--ginkgo.flakeAttempts=2 --num-nodes=2 --node-os-distro=windows --ginkgo.focus=\\[Conformance\\]|\\[NodeConformance\\]|\\[sig-windows\\]|\\[sig-apps\\].CronJob|\\[sig-api-machinery\\].ResourceQuota|\\[sig-scheduling\\].SchedulerPreemption|\\[sig-autoscaling\\].\\[Feature:HPA\\]  --ginkgo.skip=\\[LinuxOnly\\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application"
+      - "--test_args=--ginkgo.flakeAttempts=2 --num-nodes=2 --node-os-distro=windows --ginkgo.focus=\\[Conformance\\]|\\[NodeConformance\\]|\\[sig-windows\\]|\\[sig-apps\\].CronJob|\\[sig-api-machinery\\].ResourceQuota|\\[sig-scheduling\\].SchedulerPreemption|\\[sig-autoscaling\\].\\[Feature:HPA\\]  --ginkgo.skip=\\[LinuxOnly\\]|\\[Serial\\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application"
       - "--timeout=620m"
       securityContext:
         privileged: true
@@ -415,6 +417,7 @@ periodics:
       - "--deployment=aksengine"
       - "--provider=skeleton"
       - "--build=quick"
+      - "--ginkgo-parallel=6"
       - "--aksengine-admin-username=azureuser"
       - "--aksengine-admin-password=AdminPassw0rd"
       - "--aksengine-creds=$AZURE_CREDENTIALS"
@@ -425,7 +428,7 @@ periodics:
       - "--aksengine-win-binaries"
       - "--aksengine-deploy-custom-k8s"
       - "--aksengine-agentpoolcount=2"
-      - "--test_args=--ginkgo.flakeAttempts=2 --num-nodes=2 --node-os-distro=windows --ginkgo.focus=\\[Conformance\\]|\\[NodeConformance\\]|\\[sig-windows\\]|\\[sig-apps\\].CronJob|\\[sig-api-machinery\\].ResourceQuota|\\[sig-scheduling\\].SchedulerPreemption|\\[sig-autoscaling\\].\\[Feature:HPA\\]  --ginkgo.skip=\\[LinuxOnly\\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application"
+      - "--test_args=--ginkgo.flakeAttempts=2 --num-nodes=2 --node-os-distro=windows --ginkgo.focus=\\[Conformance\\]|\\[NodeConformance\\]|\\[sig-windows\\]|\\[sig-apps\\].CronJob|\\[sig-api-machinery\\].ResourceQuota|\\[sig-scheduling\\].SchedulerPreemption|\\[sig-autoscaling\\].\\[Feature:HPA\\]  --ginkgo.skip=\\[LinuxOnly\\]|\\[Serial\\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application"
       - "--timeout=620m"
       securityContext:
         privileged: true
