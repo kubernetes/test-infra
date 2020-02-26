@@ -11,10 +11,6 @@ go_test(
     name = "go_default_test",
     srcs = ["migratestatus_test.go"],
     embed = [":go_default_library"],
-    deps = [
-        "//prow/github:go_default_library",
-        "@com_github_pkg_errors//:go_default_library",
-    ],
 )
 
 go_binary(
