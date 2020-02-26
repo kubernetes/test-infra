@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"strings"
 	"testing"
 )
 
@@ -55,5 +56,11 @@ func TestDescriptionDoesNotContainAURL(t *testing.T) {
 	err := o.Validate()
 	if err == nil {
 		t.Errorf("Error expected, got nil")
+	}
+	if !strings.Contains(err.Error(), "'test'") {
+		t.Errorf("Error expected to contain wrong url, got %s", err.Error())
+	}
+	if !strings.Contains(err.Error(), "invalid URI") {
+		t.Errorf("Error expected to contain parse error description, got %s", err.Error())
 	}
 }

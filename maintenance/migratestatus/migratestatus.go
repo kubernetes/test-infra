@@ -79,7 +79,7 @@ func (o *options) Validate() error {
 	if o.descriptionURL != "" {
 		_, err := url.ParseRequestURI(o.descriptionURL)
 		if err != nil {
-			return errors.New("'--description' URL is not valid\n")
+			return fmt.Errorf("'--description' URL '%s' is not valid: %v", o.descriptionURL, err)
 		}
 	}
 
