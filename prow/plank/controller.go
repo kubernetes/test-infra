@@ -369,13 +369,13 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]corev1.Pod
 		// a rescheduler. Start a new pod.
 		id, pn, err := c.startPod(pj)
 		if err != nil {
-			if !kerrors.IsInvalid(err) {
+			if !isRequestError(err) {
 				return fmt.Errorf("error starting pod %s: %v", pod.Name, err)
 			}
 			pj.Status.State = prowapi.ErrorState
 			pj.SetComplete()
-			pj.Status.Description = fmt.Sprintf("Job cannot be processed: %v", err)
-			c.log.WithFields(pjutil.ProwJobFields(&pj)).WithError(err).Warning("Unprocessable pod.")
+			pj.Status.Description = fmt.Sprintf("Job cannot be started: %v", err)
+			c.log.WithFields(pjutil.ProwJobFields(&pj)).WithError(err).Warning("Request error starting pod.")
 		} else {
 			pj.Status.BuildID = id
 			pj.Status.PodName = pn
@@ -514,13 +514,13 @@ func (c *Controller) syncTriggeredJob(pj prowapi.ProwJob, pm map[string]corev1.P
 		var err error
 		id, pn, err = c.startPod(pj)
 		if err != nil {
-			if !kerrors.IsInvalid(err) {
+			if !isRequestError(err) {
 				return fmt.Errorf("error starting pod: %v", err)
 			}
 			pj.Status.State = prowapi.ErrorState
 			pj.SetComplete()
-			pj.Status.Description = fmt.Sprintf("Job cannot be processed: %v", err)
-			logrus.WithField("job", pj.Spec.Job).WithError(err).Warning("Unprocessable pod.")
+			pj.Status.Description = fmt.Sprintf("Job cannot be started: %v", err)
+			logrus.WithField("job", pj.Spec.Job).WithError(err).Warning("Request error starting pod.")
 		}
 	} else {
 		id = getPodBuildID(&pod)
@@ -584,4 +584,14 @@ func getPodBuildID(pod *corev1.Pod) string {
 	}
 	logrus.Warningf("BUILD_ID was not found in pod %q: streaming logs from deck will not work", pod.ObjectMeta.Name)
 	return ""
+}
+
+// isRequestError extracts an HTTP status code from a kerrors.APIStatus and
+// returns true if it is a 4xx error.
+func isRequestError(err error) bool {
+	code := 500 // This is what kerrors.ReasonForError() defaults to.
+	if statusErr, ok := err.(kerrors.APIStatus); ok {
+		code = int(statusErr.Status().Code)
+	}
+	return 400 <= code && code < 500
 }
