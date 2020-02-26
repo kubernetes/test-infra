@@ -65,7 +65,7 @@ func (o *KubernetesClientOptions) Client() (ctrlruntimeclient.Client, error) {
 		return fakectrlruntimeclient.NewFakeClient(), nil
 	}
 
-	cfg, err := o.cfg()
+	cfg, err := o.Cfg()
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +81,7 @@ func (o *KubernetesClientOptions) CacheBackedClient(namespace string, startCache
 		return fakectrlruntimeclient.NewFakeClient(), nil
 	}
 
-	cfg, err := o.cfg()
+	cfg, err := o.Cfg()
 	if err != nil {
 		return nil, err
 	}
@@ -128,7 +128,8 @@ func (o *KubernetesClientOptions) CacheBackedClient(namespace string, startCache
 	return mgr.GetClient(), nil
 }
 
-func (o *KubernetesClientOptions) cfg() (*rest.Config, error) {
+// Cfg returns the *rest.Config for the configured cluster
+func (o *KubernetesClientOptions) Cfg() (*rest.Config, error) {
 	var cfg *rest.Config
 	var err error
 	if o.kubeConfig == "" {

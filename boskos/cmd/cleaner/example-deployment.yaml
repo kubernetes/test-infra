@@ -14,38 +14,47 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: boskos-reader
+  name: boskos-cleaner
   namespace: boskos
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: boskos-crd-reader
-  labels:
-    rbac.authorization.k8s.io/aggregate-to-view: "true"
+  name: boskos-cleaner
 rules:
-- apiGroups:
-  - apiextensions.k8s.io
-  resources:
-  - customresourcedefinitions
-  verbs: ["create"]
 - apiGroups:
   - boskos.k8s.io
   resources: ["*"]
-  verbs: ["get", "list"]
+  verbs: ["get", "list", "watch", "update"]
+- apiGroups:
+    - ""
+  resources:
+    - configmaps
+  resourceNames:
+    - boskos-cleaner-leaderlock
+  verbs:
+    - get
+    - update
+- apiGroups:
+    - ""
+  resources:
+    - configmaps
+    - events
+  verbs:
+    - create
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: boskos-crd-reader-binding
+  name: boskos-cleaner
   namespace: boskos
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: boskos-crd-reader
+  name: boskos-cleaner
 subjects:
 - kind: ServiceAccount
-  name: boskos-reader
+  name: boskos-cleaner
   namespace: boskos
 ---
 apiVersion: apps/v1
@@ -65,11 +74,11 @@ spec:
       labels:
         app: boskos-cleaner
     spec:
-      serviceAccountName: boskos-reader
+      serviceAccountName: boskos-cleaner
       terminationGracePeriodSeconds: 300
       containers:
       - name: boskos-cleaner
-        image: gcr.io/sebvas-experiment/boskos/cleaner:v20190711-88440ad42
+        image: gcr.io/k8s-prow/boskos/cleaner:v20190711-88440ad42
         args:
         - --cleaner-count=25
         - --namespace=boskos
