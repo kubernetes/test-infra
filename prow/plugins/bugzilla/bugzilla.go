@@ -449,10 +449,10 @@ To reference a bug, add 'Bug XXX:' to the title of this pull request and request
 			if len(validationsRun) == 0 {
 				response += "<summary>No validations were run on this bug</summary>"
 			} else {
-				response += fmt.Sprintf("<summary>%d validation(s) run on this bug</summary>", len(validationsRun))
+				response += fmt.Sprintf("<summary>%d validation(s) were run on this bug</summary>\n", len(validationsRun))
 			}
 			for _, validation := range validationsRun {
-				response += fmt.Sprint("\n\t- ", validation)
+				response += fmt.Sprint("\n* ", validation)
 			}
 			response += "</details>"
 
