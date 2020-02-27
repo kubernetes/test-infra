@@ -134,13 +134,13 @@ periodics:
 - interval: 1h
   name: e2e-kops-aws-misc-newrunner
   labels:
-    preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
   decorate: true
   decoration_config:
     timeout: 140m
   spec:
+    serviceAccountName: k8s-kops-test
     containers:
     - command:
       - runner.sh
