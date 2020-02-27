@@ -5,15 +5,15 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
-  decorate: true
-  decoration_config:
-    timeout: 140m
   spec:
     containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-master
       args:
+      - --bare
+      - --timeout=120
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
       - --cluster=e2e-kops-gce-latest.k8s.local
       - --deployment=kops
       - --env=KOPS_PUBLISH_GREEN_PATH=gs://kops-ci/bin/latest-ci-gce-green.txt
@@ -24,8 +24,6 @@ periodics:
       - --kops-zones=us-central1-c
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
-      - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-master
   annotations:
     testgrid-dashboards: google-kops-gce, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-gce-latest
