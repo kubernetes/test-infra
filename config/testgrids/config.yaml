@@ -410,6 +410,7 @@ dashboards:
 - name: presubmits-cloud-provider-alibaba
 - name: presubmits-alibaba-cloud-csi-driver
 - name: sig-multicluster-kubemci
+- name: presubmits-secrets-store-csi-driver
 
 - name: presubmits-kubernetes-blocking
   dashboard_tab:
@@ -643,6 +644,7 @@ dashboard_groups:
   - presubmits-misc
   - presubmits-cloud-provider-alibaba
   - presubmits-alibaba-cloud-csi-driver
+  - presubmits-secrets-store-csi-driver
 
 - name: sig-multicluster
   dashboard_names:
