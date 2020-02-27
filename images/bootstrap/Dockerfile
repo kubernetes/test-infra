@@ -33,7 +33,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     file \
     git \
-    golang \
     jq \
     mercurial \
     openssh-client \
