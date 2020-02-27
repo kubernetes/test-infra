@@ -189,7 +189,7 @@ func main() {
 		logrus.WithError(err).Fatal("unable to create prow job client")
 	}
 
-	prowjobInformerFactory := prowjobinformer.NewSharedInformerFactory(prowjobClientset, resync)
+	prowjobInformerFactory := prowjobinformer.NewSharedInformerFactoryWithOptions(prowjobClientset, resync, prowjobinformer.WithNamespace(cfg().ProwJobNamespace))
 
 	var controllers []*crier.Controller
 
