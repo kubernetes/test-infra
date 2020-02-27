@@ -79,6 +79,7 @@ var (
 	aksDeployCustomK8s     = flag.Bool("aksengine-deploy-custom-k8s", false, "Set to True if you want to deploy custom-built k8s via aks-engine")
 	aksCheckParams         = flag.Bool("aksengine-check-params", true, "Set to True if you want to validate your input parameters")
 	aksDumpClusterLogs     = flag.Bool("aksengine-dump-cluster-logs", true, "Set to True if you want to dump cluster logs")
+	aksNodeProblemDetector = flag.Bool("aksengine-node-problem-detector", false, "Set to True if you want to enable node problem detector addon")
 	testCcm                = flag.Bool("test-ccm", false, "Set to True if you want kubetest to run e2e tests for ccm")
 	testAzureFileCSIDriver = flag.Bool("test-azure-file-csi-driver", false, "Set to True if you want kubetest to run e2e tests for Azure File CSI driver")
 	testAzureDiskCSIDriver = flag.Bool("test-azure-disk-csi-driver", false, "Set to True if you want kubetest to run e2e tests for Azure Disk CSI driver")
@@ -101,6 +102,7 @@ const (
 	ccmImageName                   = "azure-cloud-controller-manager"
 	cnmImageName                   = "azure-cloud-node-manager"
 	cnmAddonName                   = "cloud-node-manager"
+	nodeProblemDetectorAddonName   = "node-problem-detector"
 	hyperkubeImageName             = "hyperkube-amd64"
 	kubeAPIServerImageName         = "kube-apiserver-amd64"
 	kubeControllerManagerImageName = "kube-controller-manager-amd64"
@@ -544,20 +546,14 @@ func (c *Cluster) populateAPIModelTemplate() error {
 				},
 			},
 		}
-
-		found := false
-		for i := range v.Properties.OrchestratorProfile.KubernetesConfig.Addons {
-			addon := &v.Properties.OrchestratorProfile.KubernetesConfig.Addons[i]
-			if addon.Name == cnmAddonName {
-				found = true
-				addon = &cnmAddon
-				break
-			}
+		appendAddonToAPIModel(&v, cnmAddon)
+	}
+	if *aksNodeProblemDetector {
+		nodeProblemDetectorAddon := KubernetesAddon{
+			Name:    nodeProblemDetectorAddonName,
+			Enabled: boolPointer(true),
 		}
-
-		if !found {
-			v.Properties.OrchestratorProfile.KubernetesConfig.Addons = append(v.Properties.OrchestratorProfile.KubernetesConfig.Addons, cnmAddon)
-		}
+		appendAddonToAPIModel(&v, nodeProblemDetectorAddon)
 	}
 
 	// Populate PrivateAzureRegistryServer field if we are using ACR and custom-built k8s components
@@ -601,6 +597,19 @@ func (c *Cluster) populateAPIModelTemplate() error {
 		return fmt.Errorf("cannot write apimodel to file: %v", err)
 	}
 	return nil
+}
+
+func appendAddonToAPIModel(v *AKSEngineAPIModel, addon KubernetesAddon) {
+	// Update the addon if it already exists in the API model
+	for i := range v.Properties.OrchestratorProfile.KubernetesConfig.Addons {
+		a := &v.Properties.OrchestratorProfile.KubernetesConfig.Addons[i]
+		if a.Name == addon.Name {
+			a = &addon
+			return
+		}
+	}
+
+	v.Properties.OrchestratorProfile.KubernetesConfig.Addons = append(v.Properties.OrchestratorProfile.KubernetesConfig.Addons, addon)
 }
 
 func (c *Cluster) getAKSEngine(retry int) error {
@@ -855,7 +864,7 @@ func isURLExist(url string) bool {
 	return true
 }
 
-// getImageVersion returns the image version based on the date and the project's latest commit's hash
+// getImageVersion returns the image version based on the project's latest git commit
 func getImageVersion(projectPath string) string {
 	cmd := exec.Command("git", "describe", "--tags", "--always", "--dirty")
 	output, err := cmd.Output()
@@ -1051,16 +1060,19 @@ func (c *Cluster) Up() error {
 }
 
 func (c *Cluster) Build(b buildStrategy) error {
-	if c.aksDeploymentMethod != customK8sComponents {
+	if c.aksDeploymentMethod == customHyperkube && !areAllDockerImagesExist(c.customHyperkubeImage) {
 		// Build k8s without any special environment variables
 		if err := b.Build(); err != nil {
 			return err
 		}
-	} else if !areAllDockerImagesExist(c.customKubeAPIServerImage,
-		c.customKubeControllerManagerImage,
-		c.customKubeProxyImage,
-		c.customKubeSchedulerImage,
-	) || !isURLExist(c.customKubeBinaryURL) {
+		if err := c.buildHyperkube(); err != nil {
+			return fmt.Errorf("error building hyperkube %v", err)
+		}
+	} else if c.aksDeploymentMethod == customK8sComponents &&
+		(!areAllDockerImagesExist(c.customKubeAPIServerImage,
+			c.customKubeControllerManagerImage,
+			c.customKubeProxyImage,
+			c.customKubeSchedulerImage) || !isURLExist(c.customKubeBinaryURL)) {
 		// Environment variables for creating custom k8s images
 		if err := os.Setenv("KUBE_DOCKER_REGISTRY", imageRegistry); err != nil {
 			return err
@@ -1118,11 +1130,6 @@ func (c *Cluster) Build(b buildStrategy) error {
 	if *aksWinBinaries && !isURLExist(c.aksCustomWinBinariesURL) {
 		if err := c.buildWinZip(); err != nil {
 			return fmt.Errorf("error building windowsZipFile %v", err)
-		}
-	}
-	if c.aksDeploymentMethod == customHyperkube && !areAllDockerImagesExist(c.customHyperkubeImage) {
-		if err := c.buildHyperkube(); err != nil {
-			return fmt.Errorf("error building hyperkube %v", err)
 		}
 	}
 
