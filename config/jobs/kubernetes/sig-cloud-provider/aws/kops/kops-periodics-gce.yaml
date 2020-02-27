@@ -5,6 +5,9 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 140m
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-master
