@@ -16,6 +16,7 @@ spec:
         app: boskos-janitor
     spec:
       terminationGracePeriodSeconds: 300
+      serviceAccountName: boskos-janitor
       containers:
       - name: boskos-janitor
         image: gcr.io/k8s-prow/boskos/janitor:v20200226-fd34fd5f2
@@ -44,6 +45,7 @@ spec:
         app: boskos-janitor-nongke
     spec:
       terminationGracePeriodSeconds: 300
+      serviceAccountName: boskos-janitor
       containers:
       - name: boskos-janitor-nongke
         image: gcr.io/k8s-prow/boskos/janitor:v20200226-fd34fd5f2
