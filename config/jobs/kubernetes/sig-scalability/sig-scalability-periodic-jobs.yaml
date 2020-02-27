@@ -378,6 +378,39 @@ periodics:
       - name: TEST_PREFIX
         value: BenchmarkScheduling
 
+- name: ci-benchmark-scheduler-perf-master
+  tags:
+  - "perfDashPrefix: scheduler-perf-benchmark"
+  - "perfDashJobType: benchmark"
+  interval: 2h
+  annotations:
+    testgrid-dashboards: sig-scalability-benchmarks
+    testgrid-tab-name: scheduler-perf
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  decoration_config:
+    timeout: 1h55m
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200220-47050c4-master
+      command:
+      - ./hack/jenkins/benchmark-dockerized.sh
+      args:
+      - ./test/integration/scheduler_perf
+      env:
+      - name: KUBE_TIMEOUT
+        value: --timeout=1h50m
+      - name: TEST_PREFIX
+        value: BenchmarkPerfScheduling
+      # Set the benchtime to a very low value so every test is ran at most once
+      # even on very powerful machines
+      - name: BENCHTIME
+        value: 1ns
+
 - name: ci-benchmark-kube-dns-master
   interval: 2h
   tags:
