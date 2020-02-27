@@ -26,6 +26,7 @@ import (
 	"io/ioutil"
 	"log"
 	"math/rand"
+	"net"
 	"os"
 	"os/exec"
 	"os/user"
@@ -46,6 +47,8 @@ import (
 
 // kopsAWSMasterSize is the default ec2 instance type for kops on aws
 const kopsAWSMasterSize = "c5.large"
+
+const externalIPURL = "http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip"
 
 var (
 
@@ -399,8 +402,12 @@ func (k kops) Up() error {
 	}
 	if k.adminAccess == "" {
 		var b bytes.Buffer
-		if err := httpRead("https://v4.ifconfig.co", &b); err != nil {
-			return err
+		err := httpReadWithHeaders(externalIPURL, map[string]string{"Metadata-Flavor": "Google"}, &b)
+		if err != nil || net.ParseIP(strings.TrimSpace(b.String())) == nil {
+			b.Reset()
+			if err := httpRead("https://v4.ifconfig.co", &b); err != nil {
+				return err
+			}
 		}
 		externalIP := strings.TrimSpace(b.String()) + "/32"
 		log.Printf("Using external IP for admin access: %v", externalIP)
