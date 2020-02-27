@@ -34,7 +34,7 @@ spec:
       serviceAccountName: plank
       containers:
       - name: plank
-        image: gcr.io/k8s-prow/plank:v20200226-8b3bfc8b7
+        image: gcr.io/k8s-prow/plank:v20200227-045f82e5a
         args:
         - --build-cluster=/etc/cluster/cluster
         - --dry-run=false
