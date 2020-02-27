@@ -638,6 +638,11 @@ func prepareGcp(o *options) error {
 	if err := migrateGcpEnvAndOptions(o); err != nil {
 		return err
 	}
+	// Must happen before any gcloud commands
+	if err := activateServiceAccount(o.gcpServiceAccount); err != nil {
+		return err
+	}
+
 	if o.provider == "gce" {
 		if distro := os.Getenv("KUBE_OS_DISTRIBUTION"); distro != "" {
 			log.Printf("Please use --gcp-master-image=%s --gcp-node-image=%s (instead of deprecated KUBE_OS_DISTRIBUTION)",
@@ -771,11 +776,6 @@ func prepareGcp(o *options) error {
 	// Note that a lot of scripts are still depend on this env in k/k repo.
 	if err := os.Setenv("PROJECT", o.gcpProject); err != nil {
 		return fmt.Errorf("fail to set env var PROJECT %s : err %v", o.gcpProject, err)
-	}
-
-	// gcloud creds may have changed
-	if err := activateServiceAccount(o.gcpServiceAccount); err != nil {
-		return err
 	}
 
 	// Ensure ssh keys exist
