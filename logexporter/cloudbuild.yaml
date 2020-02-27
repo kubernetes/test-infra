@@ -21,7 +21,7 @@ steps:
     dir: logexporter/
 substitutions:
   _GIT_TAG: '12345'
-  _GO_VERSION: 1.12.12
+  _GO_VERSION: 1.13.5
 images:
   - gcr.io/$PROJECT_ID/logexporter:$_GIT_TAG
   - gcr.io/$PROJECT_ID/logexporter:latest
