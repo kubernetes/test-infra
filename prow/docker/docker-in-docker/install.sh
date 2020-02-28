@@ -61,7 +61,8 @@ apt-get -qqy install docker-ce="${DOCKER_VERSION}${VERSION_SUFFIX}"
 export CLOUDSDK_PYTHON_SITEPACKAGES=1
 export CLOUDSDK_CORE_DISABLE_PROMPTS=1
 export CLOUDSDK_INSTALL_DIR=/usr/lib/
-curl https://sdk.cloud.google.com | bash
+# FIXME: remove always true suffix after gcloud-sdk installation on s390x is fixed.
+curl https://sdk.cloud.google.com | bash || true
 
 export PATH="${PATH}:/usr/lib/google-cloud-sdk/bin"
 
