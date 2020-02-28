@@ -10,7 +10,8 @@ periodics:
     serviceAccountName: k8s-kops-test
     containers:
     - command:
-      - "kubetest"
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
       args:
       - --up
       - --test
@@ -19,6 +20,7 @@ periodics:
       - --deployment=kops
       - --extract=ci/latest
       - --ginkgo-parallel=30
+      - --kops-publish=gs://kops-ci/bin/latest-ci-green.txt
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --kops-zones=us-central1-c
