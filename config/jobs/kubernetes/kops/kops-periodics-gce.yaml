@@ -13,9 +13,6 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --up
-      - --test
-      - --down
       - --cluster=e2e-kops-gce-latest.k8s.local
       - --deployment=kops
       - --extract=ci/latest
