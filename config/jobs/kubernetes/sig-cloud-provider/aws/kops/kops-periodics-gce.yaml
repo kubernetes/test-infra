@@ -1,5 +1,7 @@
 periodics:
 - interval: 30m
+  labels:
+    preset-k8s-ssh: "true"
   name: e2e-kops-gce-latest
   decorate: true
   decoration_config:
