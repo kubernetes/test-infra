@@ -18,6 +18,7 @@ postsubmits:
             - make
             - build-tool-image
   - name: create-docker-in-docker-builer-amd64-image
+    cluster: default
     decorate: true
     branches:
     - ^master$
@@ -35,6 +36,7 @@ postsubmits:
             - make
             - docker-in-docker-builder-image
   - name: create-docker-in-docker-builer-ppc64le-image
+    cluster: ppc64le
     decorate: true
     branches:
     - ^master$
@@ -44,6 +46,24 @@ postsubmits:
     spec:
       containers:
         - image: quay.io/multicloudlab/multicloudlab-builder-ppc64le:v20200123-4f4560f62
+          # docker in docker
+          securityContext:
+            privileged: true
+          command:
+            - entrypoint
+            - make
+            - docker-in-docker-builder-image
+  - name: create-docker-in-docker-builer-s390x-image
+    cluster: s390x
+    decorate: true
+    branches:
+    - ^master$
+    labels:
+      preset-service-account: "true"
+    run_if_changed: 'prow/docker/docker-in-docker/*'
+    spec:
+      containers:
+        - image: quay.io/multicloudlab/multicloudlab-builder-s390x:v20200228-42746cb02
           # docker in docker
           securityContext:
             privileged: true

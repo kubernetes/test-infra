@@ -56,7 +56,7 @@ presubmits:
           privileged: true
     trigger: '(?m)^/test (?:.*? )?build(?:.*?)?$'
   - name: build-oasis-ppc64le
-    cluster: power
+    cluster: ppc64le
     always_run: true
     branches:
     - ^master$
@@ -70,6 +70,25 @@ presubmits:
         - make
         - build
         image: quay.io/multicloudlab/multicloudlab-builder-ppc64le:v20200123-4f4560f62
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?build(?:.*?)?$'
+  - name: build-oasis-s390x
+    cluster: s390x
+    always_run: true
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/multicloudlab/oasis
+    rerun_command: /test build-oasis-s390x
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build
+        image: quay.io/multicloudlab/multicloudlab-builder-s390x:v20200228-42746cb02
         name: ""
         securityContext:
           privileged: true
@@ -144,7 +163,7 @@ postsubmits:
         securityContext:
           privileged: true
   - name: build-oasis-ppc64le-postsubmit
-    cluster: power
+    cluster: ppc64le
     branches:
     - ^master$
     decorate: true
@@ -156,6 +175,22 @@ postsubmits:
         - make
         - build
         image: quay.io/multicloudlab/multicloudlab-builder-ppc64le:v20200123-4f4560f62
+        name: ""
+        securityContext:
+          privileged: true
+  - name: build-oasis-s390x-postsubmit
+    cluster: s390x
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/multicloudlab/oasis
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build
+        image: quay.io/multicloudlab/multicloudlab-builder-s390x:v20200228-42746cb02
         name: ""
         securityContext:
           privileged: true
@@ -181,7 +216,7 @@ postsubmits:
         securityContext:
           privileged: true
   - name: images-ppc64le-oasis-postsubmit
-    cluster: power
+    cluster: ppc64le
     branches:
     - ^master$
     decorate: true
@@ -198,6 +233,27 @@ postsubmits:
         - make
         - images
         image: quay.io/multicloudlab/multicloudlab-builder-ppc64le:v20200123-4f4560f62
+        name: ""
+        securityContext:
+          privileged: true
+  - name: images-s390x-oasis-postsubmit
+    cluster: s390x
+    branches:
+    - ^master$
+    decorate: true
+    decoration_config:
+      ssh_key_secrets:
+      - ssh-secret
+    labels:
+      preset-service-account: "true"
+    path_alias: github.com/multicloudlab/oasis
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - images
+        image: quay.io/multicloudlab/multicloudlab-builder-s390x:v20200228-42746cb02
         name: ""
         securityContext:
           privileged: true
