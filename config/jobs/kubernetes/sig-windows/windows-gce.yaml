@@ -325,7 +325,7 @@ periodics:
   annotations:
     fork-per-release: "true"
     fork-per-release-replacements: "--extract=ci/k8s-master -> --extract=ci/k8s-beta"
-    testgrid-dashboards: google-windows, sig-windows, sig-release-master-informing, sig-node-containerd
+    testgrid-dashboards: google-windows, sig-windows, sig-node-containerd
     testgrid-tab-name: gce-windows-2019-containerd-master
     description: Runs tests on a Kubernetes cluster with Windows containerd nodes on GCE
 
