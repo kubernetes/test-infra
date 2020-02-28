@@ -18,7 +18,6 @@ package cherrypickunapproved
 
 import (
 	"encoding/json"
-	"fmt"
 	"reflect"
 	"regexp"
 	"testing"
@@ -90,7 +89,7 @@ type fakePruner struct{}
 
 func (fp *fakePruner) PruneComments(shouldPrune func(github.IssueComment) bool) {}
 
-func makeFakePullRequestEvent(action github.PullRequestEventAction, branch, oldBranch string) github.PullRequestEvent {
+func makeFakePullRequestEvent(action github.PullRequestEventAction, branch string, changes json.RawMessage) github.PullRequestEvent {
 	event := github.PullRequestEvent{
 		Action: action,
 		PullRequest: github.PullRequest{
@@ -100,8 +99,8 @@ func makeFakePullRequestEvent(action github.PullRequestEventAction, branch, oldB
 		},
 	}
 
-	if oldBranch != "" {
-		event.Changes = json.RawMessage(fmt.Sprintf(`{"base": {"ref": {"from": "%s"}, "sha": {"from": "sha"}}}`, oldBranch))
+	if changes != nil {
+		event.Changes = changes
 	}
 
 	return event
@@ -109,94 +108,98 @@ func makeFakePullRequestEvent(action github.PullRequestEventAction, branch, oldB
 
 func TestCherryPickUnapprovedLabel(t *testing.T) {
 	var testcases = []struct {
-		name           string
-		branch         string
-		previousBranch string
-		action         github.PullRequestEventAction
-		labels         []string
-		added          []string
-		removed        []string
-		expectComment  bool
+		name          string
+		branch        string
+		changes       json.RawMessage
+		action        github.PullRequestEventAction
+		labels        []string
+		added         []string
+		removed       []string
+		expectComment bool
 	}{
 		{
-			name:           "unsupported PR action -> no-op",
-			branch:         "release-1.10",
-			previousBranch: "",
-			action:         github.PullRequestActionClosed,
-			labels:         []string{},
-			added:          []string{},
-			removed:        []string{},
-			expectComment:  false,
+			name:          "unsupported PR action -> no-op",
+			branch:        "release-1.10",
+			action:        github.PullRequestActionClosed,
+			labels:        []string{},
+			added:         []string{},
+			removed:       []string{},
+			expectComment: false,
 		},
 		{
-			name:           "branch that does match regexp -> no-op",
-			branch:         "master",
-			previousBranch: "",
-			action:         github.PullRequestActionOpened,
-			labels:         []string{},
-			added:          []string{},
-			removed:        []string{},
-			expectComment:  false,
+			name:          "branch that does match regexp -> no-op",
+			branch:        "master",
+			action:        github.PullRequestActionOpened,
+			labels:        []string{},
+			added:         []string{},
+			removed:       []string{},
+			expectComment: false,
 		},
 		{
-			name:           "has cpUnapproved -> no-op",
-			branch:         "release-1.10",
-			previousBranch: "",
-			action:         github.PullRequestActionOpened,
-			labels:         []string{labels.CpUnapproved},
-			added:          []string{},
-			removed:        []string{},
-			expectComment:  false,
+			name:          "has cpUnapproved -> no-op",
+			branch:        "release-1.10",
+			action:        github.PullRequestActionOpened,
+			labels:        []string{labels.CpUnapproved},
+			added:         []string{},
+			removed:       []string{},
+			expectComment: false,
 		},
 		{
-			name:           "has both cpApproved and cpUnapproved -> remove cpUnapproved",
-			branch:         "release-1.10",
-			previousBranch: "",
-			action:         github.PullRequestActionOpened,
-			labels:         []string{labels.CpApproved, labels.CpUnapproved},
-			added:          []string{},
-			removed:        []string{labels.CpUnapproved},
-			expectComment:  false,
+			name:          "has both cpApproved and cpUnapproved -> remove cpUnapproved",
+			branch:        "release-1.10",
+			action:        github.PullRequestActionOpened,
+			labels:        []string{labels.CpApproved, labels.CpUnapproved},
+			added:         []string{},
+			removed:       []string{labels.CpUnapproved},
+			expectComment: false,
 		},
 		{
-			name:           "does not have any labels, PR opened against a release branch -> add cpUnapproved and comment",
-			branch:         "release-1.10",
-			previousBranch: "",
-			action:         github.PullRequestActionOpened,
-			labels:         []string{},
-			added:          []string{labels.CpUnapproved},
-			removed:        []string{},
-			expectComment:  true,
+			name:          "does not have any labels, PR opened against a release branch -> add cpUnapproved and comment",
+			branch:        "release-1.10",
+			action:        github.PullRequestActionOpened,
+			labels:        []string{},
+			added:         []string{labels.CpUnapproved},
+			removed:       []string{},
+			expectComment: true,
 		},
 		{
-			name:           "does not have any labels, PR reopened against a release branch -> add cpUnapproved and comment",
-			branch:         "release-1.10",
-			previousBranch: "",
-			action:         github.PullRequestActionReopened,
-			labels:         []string{},
-			added:          []string{labels.CpUnapproved},
-			removed:        []string{},
-			expectComment:  true,
+			name:          "does not have any labels, PR reopened against a release branch -> add cpUnapproved and comment",
+			branch:        "release-1.10",
+			action:        github.PullRequestActionReopened,
+			labels:        []string{},
+			added:         []string{labels.CpUnapproved},
+			removed:       []string{},
+			expectComment: true,
 		},
 		{
-			name:           "PR base branch master edited to release -> add cpUnapproved and comment",
-			branch:         "release-1.10",
-			previousBranch: "master",
-			action:         github.PullRequestActionEdited,
-			labels:         []string{},
-			added:          []string{labels.CpUnapproved},
-			removed:        []string{},
-			expectComment:  true,
+			name:          "PR base branch master edited to release -> add cpUnapproved and comment",
+			branch:        "release-1.10",
+			action:        github.PullRequestActionEdited,
+			changes:       json.RawMessage(`{"base": {"ref": {"from": "master"}, "sha": {"from": "sha"}}}`),
+			labels:        []string{},
+			added:         []string{labels.CpUnapproved},
+			removed:       []string{},
+			expectComment: true,
 		},
 		{
-			name:           "PR base branch edited from release to master -> remove cpApproved and cpUnapproved",
-			branch:         "master",
-			previousBranch: "release-1.10",
-			action:         github.PullRequestActionEdited,
-			labels:         []string{labels.CpApproved, labels.CpUnapproved},
-			added:          []string{},
-			removed:        []string{labels.CpApproved, labels.CpUnapproved},
-			expectComment:  false,
+			name:          "PR base branch edited from release to master -> remove cpApproved and cpUnapproved",
+			branch:        "master",
+			action:        github.PullRequestActionEdited,
+			changes:       json.RawMessage(`{"base": {"ref": {"from": "release-1.10"}, "sha": {"from": "sha"}}}`),
+			labels:        []string{labels.CpApproved, labels.CpUnapproved},
+			added:         []string{},
+			removed:       []string{labels.CpApproved, labels.CpUnapproved},
+			expectComment: false,
+		},
+		{
+			name:          "PR title changed -> no-op",
+			branch:        "release-1.10",
+			action:        github.PullRequestActionEdited,
+			changes:       json.RawMessage(`{"title": {"from": "Update README.md"}}`),
+			labels:        []string{labels.CpApproved, labels.CpUnapproved},
+			added:         []string{},
+			removed:       []string{},
+			expectComment: false,
 		},
 	}
 
@@ -208,7 +211,7 @@ func TestCherryPickUnapprovedLabel(t *testing.T) {
 			commentsAdded: make(map[int][]string, 0),
 		}
 
-		event := makeFakePullRequestEvent(tc.action, tc.branch, tc.previousBranch)
+		event := makeFakePullRequestEvent(tc.action, tc.branch, tc.changes)
 		branchRe := regexp.MustCompile(`^release-.*$`)
 		comment := "dummy cumment"
 		err := handlePR(fc, logrus.WithField("plugin", "fake-cherrypick-unapproved"), &event, &fakePruner{}, branchRe, comment)

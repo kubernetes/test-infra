@@ -116,10 +116,15 @@ func handlePR(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent, c
 			} `json:"base"`
 		}
 		if err := json.Unmarshal(pr.Changes, &changes); err != nil {
-			// we're detecting this best-effort so we can forget about
-			// the event
+			// we're detecting this best-effort so we can forget about the event
 			return nil
 		}
+
+		if changes.Base.Ref.From == "" {
+			// PR base ref did not change, ignore the event
+			return nil
+		}
+
 		if branchRe.MatchString(branch) && !branchRe.MatchString(changes.Base.Ref.From) {
 			// base ref changed from a branch not allowed for cherry-picks to a branch that is allowed for cherry-picks
 			return ensureLabels(gc, org, repo, pr, log, cp, commentBody)
