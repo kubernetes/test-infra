@@ -18,7 +18,9 @@ package handlers
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -29,8 +31,11 @@ import (
 	"testing"
 	"time"
 
+	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
 
 	"k8s.io/test-infra/boskos/client"
@@ -61,7 +66,8 @@ func MakeTestRanch(resources []runtime.Object) *ranch.Ranch {
 	for _, obj := range resources {
 		obj.(metav1.Object).SetNamespace(ns)
 	}
-	s := ranch.NewTestingStorage(fakectrlruntimeclient.NewFakeClient(resources...), ns, func() time.Time { return fakeNow })
+	client := &onceConflictingClient{Client: fakectrlruntimeclient.NewFakeClient(resources...)}
+	s := ranch.NewTestingStorage(client, ns, func() time.Time { return fakeNow })
 	r, _ := ranch.NewRanch("", s, testTTL)
 	return r
 }
@@ -855,4 +861,19 @@ func compareWithFixture(testName string, actualData []byte) error {
 	}
 
 	return nil
+}
+
+// onceConflictingClient returns an IsConflict error on the first Update request it receives. It
+// is used to verify that there is retrying for conflicts in place.
+type onceConflictingClient struct {
+	didConflict bool
+	ctrlruntimeclient.Client
+}
+
+func (occ *onceConflictingClient) Update(ctx context.Context, obj runtime.Object, opts ...ctrlruntimeclient.UpdateOption) error {
+	if !occ.didConflict {
+		occ.didConflict = true
+		return kerrors.NewConflict(schema.GroupResource{}, "obj", errors.New("conflicting as requested"))
+	}
+	return occ.Client.Update(ctx, obj, opts...)
 }
