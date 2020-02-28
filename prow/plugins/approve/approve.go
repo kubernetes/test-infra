@@ -263,7 +263,7 @@ func handleReview(log *logrus.Entry, ghc githubClient, oc ownersClient, githubCo
 		ghc,
 		repo,
 		githubConfig,
-		config.ApproveFor(re.Repo.Owner.Login, re.Repo.Name),
+		opts,
 		&state{
 			org:       re.Repo.Owner.Login,
 			repo:      re.Repo.Name,
