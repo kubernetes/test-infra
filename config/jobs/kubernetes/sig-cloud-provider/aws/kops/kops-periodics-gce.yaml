@@ -21,7 +21,7 @@ periodics:
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --kops-zones=us-central1-c
       - --provider=gce
-      - --timeout=140
+      - --timeout=140m
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200227-9385733-master
   annotations:
