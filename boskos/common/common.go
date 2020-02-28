@@ -70,11 +70,6 @@ type UserDataMap map[string]string
 // LeasedResources is a list of resources name that used in order to create another resource by Mason
 type LeasedResources []string
 
-// Item interfaces for resources and configs
-type Item interface {
-	GetName() string
-}
-
 // Duration is a wrapper around time.Duration that parses times in either
 // 'integer number of nanoseconds' or 'duration string' formats and serializes
 // to 'duration string' format.
@@ -202,7 +197,7 @@ type ResourceByName []Resource
 
 func (ut ResourceByName) Len() int           { return len(ut) }
 func (ut ResourceByName) Swap(i, j int)      { ut[i], ut[j] = ut[j], ut[i] }
-func (ut ResourceByName) Less(i, j int) bool { return ut[i].GetName() < ut[j].GetName() }
+func (ut ResourceByName) Less(i, j int) bool { return ut[i].Name < ut[j].Name }
 
 // CommaSeparatedStrings is used to parse comma separated string flag into a list of strings
 type CommaSeparatedStrings []string
@@ -225,9 +220,6 @@ func (r *CommaSeparatedStrings) Set(value string) error {
 func (r *CommaSeparatedStrings) Type() string {
 	return "commaSeparatedStrings"
 }
-
-// GetName implements the Item interface used for storage
-func (res Resource) GetName() string { return res.Name }
 
 // UnmarshalJSON implements JSON Unmarshaler interface
 func (ud *UserData) UnmarshalJSON(data []byte) error {
@@ -298,13 +290,4 @@ func (ud *UserData) FromMap(m UserDataMap) {
 	for key, value := range m {
 		ud.Store(key, value)
 	}
-}
-
-// ItemToResource casts a Item back to a Resource
-func ItemToResource(i Item) (Resource, error) {
-	res, ok := i.(Resource)
-	if !ok {
-		return Resource{}, fmt.Errorf("expected item to be of type Resource, was %T", i)
-	}
-	return res, nil
 }

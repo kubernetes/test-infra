@@ -100,7 +100,7 @@ func (r *reconciler) reconcile(log *logrus.Entry, request reconcile.Request) err
 		return nil
 	}
 
-	commonResourceObject := resourceObject.ToItem().(common.Resource)
+	commonResourceObject := resourceObject.ToResource()
 	cleaner.RecycleOne(r.boskosClient, &commonResourceObject)
 
 	resourceObject.Status.State = common.Tombstone
