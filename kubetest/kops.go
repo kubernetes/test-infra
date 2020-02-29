@@ -75,6 +75,7 @@ var (
 	kopsEtcdVersion  = flag.String("kops-etcd-version", "", "(kops only) Etcd Version")
 	kopsNetworkMode  = flag.String("kops-network-mode", "", "(kops only) Networking mode to use. kubenet (default), classic, external, kopeio-vxlan (or kopeio), weave, flannel-vxlan (or flannel), flannel-udp, calico, canal, kube-router, romana, amazon-vpc-routed-eni, cilium.")
 	kopsOverrides    = flag.String("kops-overrides", "", "(kops only) List of Kops cluster configuration overrides, comma delimited.")
+	kopsFeatureFlags = flag.String("kops-feature-flags", "", "(kops only) List of Kops feature flags to enable, comma delimited.")
 
 	kopsMultipleZones = flag.Bool("kops-multiple-zones", false, "(kops only) run tests in multiple zones")
 
@@ -147,6 +148,9 @@ type kops struct {
 
 	// overrides is a list of cluster configuration overrides, comma delimited
 	overrides string
+
+	// featureFlags is a list of feature flags to enable, comma delimited
+	featureFlags string
 
 	// multipleZones denotes using more than one zone
 	multipleZones bool
@@ -354,6 +358,7 @@ func newKops(provider, gcpProject, cluster string) (*kops, error) {
 		masterSize:    *kopsMasterSize,
 		networkMode:   *kopsNetworkMode,
 		overrides:     *kopsOverrides,
+		featureFlags:  *kopsFeatureFlags,
 	}, nil
 }
 
@@ -387,6 +392,9 @@ func (k kops) Up() error {
 	}
 
 	var featureFlags []string
+	if k.featureFlags != "" {
+		featureFlags = append(featureFlags, k.featureFlags)
+	}
 	var overrides []string
 	if k.overrides != "" {
 		overrides = append(overrides, k.overrides)
