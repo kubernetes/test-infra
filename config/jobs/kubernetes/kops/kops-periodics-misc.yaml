@@ -119,17 +119,51 @@ periodics:
       - --deployment=kops
       - --extract=ci/latest
       - --ginkgo-parallel
-      - --kops-dns-provider=CoreDNS
+      - --kops-overrides=spec.kubeDNS.provider=CoreDNS
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-publish=gs://kops-ci/bin/latest-ci-green.txt
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200227-9385733-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+      imagePullPolicy: Always
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-aws-coredns
+
+- interval: 4h
+  name: e2e-kops-aws-misc-launchtemplates
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+    preset-e2e-platform-aws: "true"
+  decorate: true
+  decoration_config:
+    timeout: 140m
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --cluster=e2e-kops-aws-launchtemplates.test-cncf-aws.k8s.io
+      - --deployment=kops
+      - --extract=ci/latest
+      - --ginkgo-parallel
+      - --kops-feature-flags=EnableLaunchTemplates
+      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
+      - --kops-publish=gs://kops-ci/bin/latest-ci-green.txt
+      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
+      - --provider=aws
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
+      - --timeout=120m
+      image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+      imagePullPolicy: Always
+  annotations:
+    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-tab-name: kops-aws-launchtemplates
 
 - interval: 1h
   name: e2e-kops-aws-misc-newrunner
