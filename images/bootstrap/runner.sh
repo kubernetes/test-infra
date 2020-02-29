@@ -90,6 +90,7 @@ mkdir -p "${GOPATH}/bin"
 # Authenticate gcloud, allow failures
 if [[ -n "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]]; then
   gcloud auth activate-service-account --key-file="${GOOGLE_APPLICATION_CREDENTIALS}" || true
+  gcloud auth configure-docker
 fi
 
 # Use a reproducible build date based on the most recent git commit timestamp.
