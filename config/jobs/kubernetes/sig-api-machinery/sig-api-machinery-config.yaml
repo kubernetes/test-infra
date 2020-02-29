@@ -25,7 +25,7 @@ periodics:
     testgrid-dashboards: google-gce
     testgrid-tab-name: gci-gce-proto
 
-- interval: 24h
+- interval: 2h
   name: ci-kubernetes-e2e-gci-gce-network-proxy
   labels:
     preset-service-account: "true"
