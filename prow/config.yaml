@@ -1,10 +1,10 @@
 plank:
   default_decoration_config:
     utility_images: # using the tag we identified above
-      clonerefs: "quay.io/multicloudlab/k8s-prow-clonerefs:v20190917-395658c48"
-      initupload: "quay.io/multicloudlab/k8s-prow-initupload:v20190917-395658c48"
-      entrypoint: "quay.io/multicloudlab/k8s-prow-entrypoint:v20190917-395658c48"
-      sidecar: "quay.io/multicloudlab/k8s-prow-sidecar:v20190917-395658c48"
+      clonerefs: "quay.io/multicloudlab/k8s-prow-clonerefs:v20190917-50c69dc34"
+      initupload: "quay.io/multicloudlab/k8s-prow-initupload:v20190917-50c69dc34"
+      entrypoint: "quay.io/multicloudlab/k8s-prow-entrypoint:v20190917-50c69dc34"
+      sidecar: "quay.io/multicloudlab/k8s-prow-sidecar:v20190917-50c69dc34"
     gcs_configuration:
       bucket: prow_job_bucket # the bucket we just made
       path_strategy: explicit
