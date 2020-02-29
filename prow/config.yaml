@@ -40,6 +40,7 @@ tide:
     IBM/ibm-monitoring-exporters-operator: squash
     IBM/ibm-monitoring-prometheus-operator-ext: squash
     IBM/ibm-mt-grqenforcer-operator: squash
+    IBM/ibm-platform-api-operator: squash
     IBM/operand-deployment-lifecycle-manager: squash
     IBM/multicloud-operators-subscription-release: squash
     IBM/multicloud-operators-policy-controller: squash
@@ -78,6 +79,7 @@ tide:
     - IBM/ibm-monitoring-exporters-operator
     - IBM/ibm-monitoring-prometheus-operator-ext
     - IBM/ibm-mt-grqenforcer-operator
+    - IBM/ibm-platform-api-operator
     - IBM/operand-deployment-lifecycle-manager
     - IBM/multicloud-operators-subscription-release
     - IBM/multicloud-operators-policy-controller
