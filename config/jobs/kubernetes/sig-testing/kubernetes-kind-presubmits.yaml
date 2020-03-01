@@ -427,9 +427,9 @@ presubmits:
       testgrid-alert-stale-results-hours: '24'
       testgrid-create-test-group: 'true'
 
-  - name: pull-kubernetes-e2e-kind
-    optional: false
-    always_run: true
+  - name: pull-kubernetes-conformance-kind-ga-only
+    optional: true
+    always_run: false
     decorate: true
     skip_branches:
     - release-\d+\.\d+ # per-release settings
@@ -450,15 +450,10 @@ presubmits:
         - -c
         - curl -sSLo "${PATH%%:*}/kind" https://storage.googleapis.com/bentheelder-kind-ci-builds/latest/kind-linux-amd64 && chmod +x "${PATH%%:*}/kind" && curl -sSL https://storage.googleapis.com/bentheelder-kind-ci-builds/latest/e2e-k8s.sh | sh
         env:
-        - name: FOCUS
-          value: "."
-        # TODO(bentheelder): reduce the skip list further
-        - name: SKIP
-          value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Network.should.set.TCP.CLOSE_WAIT.timeout|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|ReplicationController.light.Should.scale.from.1.pod.to.2.pods|should.provide.basic.identity|\[NodeFeature:PodReadinessGate\]
-        - name: PARALLEL
-          value: "true"
         - name: BUILD_TYPE
           value: bazel
+        - name: GA_ONLY
+          value: "true"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -474,3 +469,4 @@ presubmits:
       testgrid-num-failures-to-alert: '10'
       testgrid-alert-stale-results-hours: '24'
       testgrid-create-test-group: 'true'
+      testgrid-dashboards: sig-testing-kind
