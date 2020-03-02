@@ -21,10 +21,10 @@ metadata:
   name: crier
   namespace: default
 ---
-kind: ClusterRole # TODO(fejta): switch to role
+kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  # "namespace" omitted since ClusterRoles are not namespaced
+  namespace: default
   name: crier
 rules:
 - apiGroups:
@@ -36,6 +36,13 @@ rules:
     - "watch"
     - "list"
     - "patch"
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  namespace: test-pods
+  name: crier
+rules:
 - apiGroups:
     - ""
   resources:
@@ -52,7 +59,21 @@ metadata:
   namespace: default
 roleRef:
   apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
+  kind: Role
+  name: crier
+subjects:
+- kind: ServiceAccount
+  name: crier
+  namespace: default
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: crier
+  namespace: test-pods
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
   name: crier
 subjects:
 - kind: ServiceAccount
