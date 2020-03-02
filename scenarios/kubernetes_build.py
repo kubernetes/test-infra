@@ -100,6 +100,10 @@ def main(args):
         print >>sys.stderr, 'build already exists, exit'
         sys.exit(0)
 
+    # Configure docker client for gcr.io authentication to allow communication
+    # with non-public registries.
+    check_no_stdout('gcloud', 'auth', 'configure-docker')
+
     env = {
         # Skip gcloud update checking; do we still need this?
         'CLOUDSDK_COMPONENT_MANAGER_DISABLE_UPDATE_CHECK': 'true',
