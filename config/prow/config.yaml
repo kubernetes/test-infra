@@ -527,6 +527,8 @@ presets:
   # injecting a new key. this allows us to avoid mass key download warnings
   - name: E2E_GOOGLE_APPLICATION_CREDENTIALS
     value: /etc/service-account/service-account.json
+  - name: GOOGLE_APPLICATION_CREDENTIALS_DEPRECATED
+    value: "Migrate to workload identity, contact sig-testing"
   volumes:
   - name: service
     secret:
@@ -540,6 +542,8 @@ presets:
   env:
   - name: GOOGLE_APPLICATION_CREDENTIALS
     value: /etc/service-account/service-account.json
+  - name: GOOGLE_APPLICATION_CREDENTIALS_DEPRECATED
+    value: "Migrate to workload identity, contact sig-testing"
   # storage e2e tests borrow this as a preconfigured key instead of creating and
   # injecting a new key. this allows us to avoid mass key download warnings
   - name: E2E_GOOGLE_APPLICATION_CREDENTIALS
@@ -557,6 +561,8 @@ presets:
   env:
   - name: GOOGLE_APPLICATION_CREDENTIALS
     value: /etc/service-account/istio-service-account.json
+  - name: GOOGLE_APPLICATION_CREDENTIALS_DEPRECATED
+    value: "Migrate to workload identity, contact sig-testing"
   # storage e2e tests borrow this as a preconfigured key instead of creating and
   # injecting a new key. this allows us to avoid mass key download warnings
   - name: E2E_GOOGLE_APPLICATION_CREDENTIALS
