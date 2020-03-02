@@ -638,7 +638,7 @@ func TestValidatePodSpec(t *testing.T) {
 			},
 		},
 		{
-			name: "reject conflicting mount paths (decorate in user)",
+			name: "accept conflicting mount path parent",
 			spec: func(s *v1.PodSpec) {
 				s.Containers[0].VolumeMounts = append(s.Containers[0].VolumeMounts, v1.VolumeMount{
 					Name:      "foo",
@@ -647,7 +647,7 @@ func TestValidatePodSpec(t *testing.T) {
 			},
 		},
 		{
-			name: "reject conflicting mount paths (user in decorate)",
+			name: "accept conflicting mount path child",
 			spec: func(s *v1.PodSpec) {
 				s.Containers[0].VolumeMounts = append(s.Containers[0].VolumeMounts, v1.VolumeMount{
 					Name:      "foo",
