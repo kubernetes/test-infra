@@ -439,7 +439,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     decoration_config:
-      timeout: 60m
+      timeout: 2h # allow plenty of time for a serial conformance run
     path_alias: k8s.io/kubernetes
     spec:
       containers:
