@@ -21,7 +21,7 @@ require (
 	github.com/Azure/azure-pipeline-go v0.1.9 // indirect
 	github.com/Azure/azure-sdk-for-go v38.0.0+incompatible
 	github.com/Azure/azure-storage-blob-go v0.0.0-20190123011202-457680cc0804
-	github.com/Azure/go-autorest/autorest v0.9.5
+	github.com/Azure/go-autorest/autorest v0.9.6
 	github.com/Azure/go-autorest/autorest/adal v0.8.2
 	github.com/GoogleCloudPlatform/testgrid v0.0.1-alpha.4
 	github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46
@@ -48,7 +48,7 @@ require (
 	github.com/go-test/deep v1.0.4
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/golang/mock v1.3.1
-	github.com/golang/protobuf v1.3.3 // indirect
+	github.com/golang/protobuf v1.3.4 // indirect
 	github.com/gomodule/redigo v1.7.0
 	github.com/google/go-cmp v0.3.1
 	github.com/google/go-github v17.0.0+incompatible
@@ -70,6 +70,7 @@ require (
 	github.com/klauspost/pgzip v1.2.1
 	github.com/lib/pq v1.0.0 // indirect
 	github.com/magiconair/properties v1.8.1 // indirect
+	github.com/mailru/easyjson v0.7.1 // indirect
 	github.com/mattn/go-sqlite3 v0.0.0-20160514122348-38ee283dabf1 // indirect
 	github.com/mattn/go-zglob v0.0.1
 	github.com/pelletier/go-toml v1.3.0
@@ -78,14 +79,14 @@ require (
 	github.com/prometheus/client_golang v1.1.0
 	github.com/prometheus/client_model v0.0.0-20190129233127-fd36f4220a90
 	github.com/prometheus/common v0.7.0
-	github.com/prometheus/procfs v0.0.8 // indirect
+	github.com/prometheus/procfs v0.0.10 // indirect
 	github.com/satori/go.uuid v1.2.0
 	github.com/shurcooL/githubv4 v0.0.0-20191102174205-af46314aec7b
 	github.com/sirupsen/logrus v1.4.2
 	github.com/spf13/cast v1.3.1 // indirect
-	github.com/spf13/cobra v0.0.5
+	github.com/spf13/cobra v0.0.6
 	github.com/spf13/pflag v1.0.5
-	github.com/spf13/viper v1.3.2
+	github.com/spf13/viper v1.4.0
 	github.com/tektoncd/pipeline v0.10.1
 	go.opencensus.io v0.22.3 // indirect
 	golang.org/x/crypto v0.0.0-20191206172530-e9b2fee46413
@@ -99,8 +100,8 @@ require (
 	gopkg.in/robfig/cron.v2 v2.0.0-20150107220207-be2e0b0deed5
 	gopkg.in/yaml.v2 v2.2.8 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20190709130402-674ba3eaed22
-	k8s.io/api v0.17.2
-	k8s.io/apimachinery v0.17.2
+	k8s.io/api v0.17.3
+	k8s.io/apimachinery v0.17.3
 	k8s.io/client-go v11.0.1-0.20190805182717-6502b5e7b1b5+incompatible
 	k8s.io/code-generator v0.17.1
 	k8s.io/klog v1.0.0
