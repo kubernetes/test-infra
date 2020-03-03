@@ -938,7 +938,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:NetworkPolicy\]|\[Feature:Networking-IPv6\]|\[Disruptive\]|\[Feature:ServiceLoadBalancer\]|\[Feature:PerformanceDNS\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200229-32608f0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-2aa51c4-master
   annotations:
     testgrid-dashboards: sig-network-netd
     testgrid-tab-name: e2e-gci-gce-netd
@@ -965,7 +965,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:Networking-IPv6\]|\[Disruptive\]|\[Feature:ServiceLoadBalancer\]|\[Feature:PerformanceDNS\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200229-32608f0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-2aa51c4-master
       env:
       - name: NETWORK_POLICY_PROVIDER
         value: calico
@@ -997,7 +997,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:NetworkPolicy\]|\[Feature:Networking-IPv6\]|\[Disruptive\]|\[Feature:ServiceLoadBalancer\]|\[Feature:PerformanceDNS\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200229-32608f0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-2aa51c4-master
   annotations:
     testgrid-dashboards: sig-network-netd
     testgrid-tab-name: e2e-ubuntu-gce-netd
@@ -1025,7 +1025,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:Networking-IPv6\]|\[Disruptive\]|\[Feature:ServiceLoadBalancer\]|\[Feature:PerformanceDNS\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200229-32608f0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-2aa51c4-master
       env:
       - name: NETWORK_POLICY_PROVIDER
         value: calico
@@ -1061,7 +1061,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:NetworkPolicy\]|\[Feature:Networking-IPv6\]|\[Disruptive\]|\[Feature:ServiceLoadBalancer\]|\[Feature:PerformanceDNS\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200229-32608f0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-2aa51c4-master
   annotations:
     testgrid-dashboards: sig-network-netd
     testgrid-tab-name: e2e-containerd-gce-netd
@@ -1094,7 +1094,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:Networking-IPv6\]|\[Disruptive\]|\[Feature:ServiceLoadBalancer\]|\[Feature:PerformanceDNS\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200229-32608f0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-2aa51c4-master
       env:
       - name: NETWORK_POLICY_PROVIDER
         value: calico
@@ -1130,7 +1130,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:Networking-IPv6\]|\[Disruptive\]|\[Feature:ServiceLoadBalancer\]|\[Feature:PerformanceDNS\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200229-32608f0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-2aa51c4-master
   annotations:
     testgrid-dashboards: sig-network-netd
     testgrid-tab-name: e2e-containerd-gce-calico
