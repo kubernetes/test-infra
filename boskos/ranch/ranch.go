@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"sort"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -36,9 +35,8 @@ import (
 
 // Ranch is the place which all of the Resource objects lives.
 type Ranch struct {
-	Storage       *Storage
-	resourcesLock sync.RWMutex
-	requestMgr    *RequestManager
+	Storage    *Storage
+	requestMgr *RequestManager
 	//
 	now func() time.Time
 }
@@ -124,9 +122,6 @@ func (r *Ranch) Acquire(rType, state, dest, owner, requestID string) (*crds.Reso
 		"owner":      owner,
 		"identifier": requestID,
 	})
-	logger.Debug("Acquiring resource lock...")
-	r.resourcesLock.Lock()
-	defer r.resourcesLock.Unlock()
 
 	var returnRes *crds.ResourceObject
 	return returnRes, retryOnConflict(retry.DefaultBackoff, func() error {
@@ -213,9 +208,6 @@ func (r *Ranch) Acquire(rType, state, dest, owner, requestID string) (*crds.Reso
 // Out: A valid list of Resource object on success, or
 //      ResourceNotFound error if target type resource does not exist in target state.
 func (r *Ranch) AcquireByState(state, dest, owner string, names []string) ([]*crds.ResourceObject, error) {
-	r.resourcesLock.Lock()
-	defer r.resourcesLock.Unlock()
-
 	if names == nil {
 		return nil, fmt.Errorf("must provide names of expected resources")
 	}
@@ -269,9 +261,6 @@ func (r *Ranch) AcquireByState(state, dest, owner string, names []string) ([]*cr
 //      OwnerNotMatch error if owner does not match current owner of the resource, or
 //      ResourceNotFound error if target named resource does not exist.
 func (r *Ranch) Release(name, dest, owner string) error {
-	r.resourcesLock.Lock()
-	defer r.resourcesLock.Unlock()
-
 	return retryOnConflict(retry.DefaultBackoff, func() error {
 		res, err := r.Storage.GetResource(name)
 		if err != nil {
@@ -314,9 +303,6 @@ func (r *Ranch) Release(name, dest, owner string) error {
 //      ResourceNotFound error if target named resource does not exist, or
 //      StateNotMatch error if state does not match current state of the resource.
 func (r *Ranch) Update(name, owner, state string, ud *common.UserData) error {
-	r.resourcesLock.Lock()
-	defer r.resourcesLock.Unlock()
-
 	return retryOnConflict(retry.DefaultBackoff, func() error {
 		res, err := r.Storage.GetResource(name)
 		if err != nil {
@@ -348,9 +334,6 @@ func (r *Ranch) Update(name, owner, state string, ud *common.UserData) error {
 //     dest - destination state of expired resources
 // Out: map of resource name - resource owner.
 func (r *Ranch) Reset(rtype, state string, expire time.Duration, dest string) (map[string]string, error) {
-	r.resourcesLock.Lock()
-	defer r.resourcesLock.Unlock()
-
 	var ret map[string]string
 	return ret, retryOnConflict(retry.DefaultBackoff, func() error {
 		ret = make(map[string]string)
@@ -387,8 +370,6 @@ func (r *Ranch) SyncConfig(configPath string) error {
 	if err := common.ValidateConfig(config); err != nil {
 		return err
 	}
-	r.resourcesLock.Lock()
-	defer r.resourcesLock.Unlock()
 	return r.Storage.SyncResources(config)
 }
 
@@ -403,10 +384,7 @@ func (r *Ranch) StartDynamicResourceUpdater(updatePeriod time.Duration) {
 		for {
 			select {
 			case <-updateTick:
-				// TODO(ixdy): do we really need to acquire this lock?
-				r.resourcesLock.Lock()
 				r.Storage.UpdateAllDynamicResources()
-				r.resourcesLock.Unlock()
 			}
 		}
 	}()
