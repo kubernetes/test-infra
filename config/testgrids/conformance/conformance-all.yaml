@@ -7,6 +7,7 @@ dashboard_groups:
     - conformance-kind
     - conformance-cloud-provider-openstack
     - conformance-cloud-provider-huaweicloud
+    - conformance-cloud-provider-baiducloud
     - conformance-alibaba-cloud-provider
     - conformance-cloud-provider-vsphere
     - conformance-vsphere
@@ -218,6 +219,12 @@ dashboards:
     - name: Huawei Cloud Provider, v1.17
       description: Runs conformance tests using kubetest against kubernetes v1.17 with cloud-provider-huaweicloud
       test_group_name: cloud-provider-huaweicloud-e2e-conformance-release-v1.17
+
+- name: conformance-cloud-provider-baiducloud
+  dashboard_tab:
+    - name: Baidu Cloud Provider, v1.13
+      description: Runs conformance tests using kubetest against kubernetes v1.13 with cloud-provider-baiducloud
+      test_group_name: cloud-provider-baiducloud-e2e-conformance-release-v1.13
 
 - name: conformance-alibaba-cloud-provider
   dashboard_tab:
@@ -519,6 +526,10 @@ test_groups:
 # cloud-provider-huaweicloud e2e conformance Test Groups
 - name: cloud-provider-huaweicloud-e2e-conformance-release-v1.17
   gcs_prefix: k8s-conform-huaweicloud/cloud-provider-huaweicloud/e2e-conformance-release-v1.17
+
+# Baidu Cloud Provider Test Groups
+- name: cloud-provider-baiducloud-e2e-conformance-release-v1.13
+  gcs_prefix: k8s-conformance-baiducloud/baiducloud-e2e-conformance-v1.13
 
 # Alibaba Cloud Provider Test Groups
 - name: cloud-provider-aibaba-cloud-e2e-conformance-release-v1.14
