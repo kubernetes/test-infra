@@ -16,14 +16,16 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository", "new_git_repository")
 
 def repositories():
-    http_archive(
-        name = "io_k8s_repo_infra",
-        strip_prefix = "repo-infra-0.0.2",
-        sha256 = "774e160ba1a2a66a736fdc39636dca799a09df015ac5e770a46ec43487ec5708",
-        urls = [
-            "https://github.com/kubernetes/repo-infra/archive/v0.0.2.tar.gz",
-        ],
-    )
+    if not native.existing_rule("io_k8s_repo_infra"):
+        http_archive(
+            name = "io_k8s_repo_infra",
+            strip_prefix = "repo-infra-0.0.2",
+            sha256 = "774e160ba1a2a66a736fdc39636dca799a09df015ac5e770a46ec43487ec5708",
+            urls = [
+                "https://github.com/kubernetes/repo-infra/archive/v0.0.2.tar.gz",
+            ],
+        )
+
     http_archive(
         name = "io_bazel_rules_docker",
         sha256 = "dc97fccceacd4c6be14e800b2a00693d5e8d07f69ee187babfd04a80a9f8e250",
