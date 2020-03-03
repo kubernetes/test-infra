@@ -90,7 +90,7 @@ presubmits:
         - --provider=gce
         - --runtime-config=batch/v2alpha1=true
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-storage-snapshot
-        - --test_args=--ginkgo.focus=\[sig-storage\].\[Feature:VolumeSnapshotDataSource\] --ginkgo.skip=\[Disruptive\]|\[Flaky\] --minStartupPods=8
+        - --test_args=--ginkgo.focus=\[Feature:VolumeSnapshotDataSource\] --ginkgo.skip=\[Disruptive\]|\[Flaky\] --minStartupPods=8
         - --timeout=80m
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
