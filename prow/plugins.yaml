@@ -21,6 +21,7 @@ plugins:
   - assign
   - blunderbuss
   - cat
+  - docs-no-retest
   - dog
   - golint
   - heart
@@ -30,10 +31,14 @@ plugins:
   - lgtm
   - lifecycle
   - milestone
+  - milestonestatus
+  - override
   - owners-label
+  - pony
   - project
   - retitle
   - shrug
+  - skip
   - size
   - stage
   - trigger
