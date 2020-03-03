@@ -89,13 +89,13 @@ require (
 	github.com/spf13/viper v1.4.0
 	github.com/tektoncd/pipeline v0.10.1
 	go.opencensus.io v0.22.3 // indirect
-	golang.org/x/crypto v0.0.0-20191206172530-e9b2fee46413
-	golang.org/x/lint v0.0.0-20191125180803-fdd1cda4f05f
-	golang.org/x/net v0.0.0-20191119073136-fc4aabc6c914
-	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
+	golang.org/x/crypto v0.0.0-20200302210943-78000ba7a073
+	golang.org/x/lint v0.0.0-20200302205851-738671d3881b
+	golang.org/x/net v0.0.0-20200301022130-244492dfa37a
+	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0
-	golang.org/x/tools v0.0.0-20200115165105-de0b1760071a
+	golang.org/x/tools v0.0.0-20200303214625-2b0b585e22fe
 	google.golang.org/api v0.10.0
 	gopkg.in/robfig/cron.v2 v2.0.0-20150107220207-be2e0b0deed5
 	gopkg.in/yaml.v2 v2.2.8 // indirect
