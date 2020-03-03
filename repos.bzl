@@ -1091,24 +1091,24 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/prometheus/client_golang",
-        sum = "h1:BQ53HtBmfOitExawJ6LokA4x8ov/z0SYYb0+HxJfRI8=",
-        version = "v1.1.0",
+        sum = "h1:Ctq0iGpCmr3jeP77kbF2UxgvRwzWWz+4Bh9/vJTyg1A=",
+        version = "v1.5.0",
     )
     go_repository(
         name = "com_github_prometheus_client_model",
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/prometheus/client_model",
-        sum = "h1:S/YWwWx/RA8rT8tKFRuGUZhuA90OyIBpPCXkcbwU8DE=",
-        version = "v0.0.0-20190129233127-fd36f4220a90",
+        sum = "h1:uq5h0d+GuxiXLJLNABMgp2qUWDPiLvgCzz2dUR+/W/M=",
+        version = "v0.2.0",
     )
     go_repository(
         name = "com_github_prometheus_common",
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/prometheus/common",
-        sum = "h1:L+1lyG48J1zAQXA3RBX/nG/B3gjlHq0zTt2tlbJLyCY=",
-        version = "v0.7.0",
+        sum = "h1:KOMtN28tlbam3/7ZKEYKHhKoJZYYj3gMH4uc62x7X7U=",
+        version = "v0.9.1",
     )
     go_repository(
         name = "com_github_prometheus_procfs",
@@ -1352,8 +1352,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "gopkg.in/check.v1",
-        sum = "h1:qIbj1fsPNlZgppZ+VLlY7N33q108Sa+fhmuc+sWQYwY=",
-        version = "v1.0.0-20180628173108-788fd7840127",
+        sum = "h1:YR8cESwS4TdDjEe65xsg0ogRM/Nc3DYOhEAlW+xobZo=",
+        version = "v1.0.0-20190902080502-41f04d3bba15",
     )
     go_repository(
         name = "in_gopkg_cheggaaa_pb_v1",
@@ -1616,8 +1616,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "golang.org/x/sys",
-        sum = "h1:gSbV7h1NRL2G1xTg/owz62CST1oJBmxy4QpMMregXVQ=",
-        version = "v0.0.0-20191210023423-ac6580df4449",
+        sum = "h1:ywK/j/KkyTHcdyYSZNXGjMwgmDSfjglYZ3vStQ/gSCU=",
+        version = "v0.0.0-20200122134326-e047566fdf82",
     )
     go_repository(
         name = "org_golang_x_text",
@@ -2982,4 +2982,12 @@ def go_repositories():
         importpath = "github.com/spaolacci/murmur3",
         sum = "h1:qLC7fQah7D6K1B0ujays3HV9gkFtllcxhzImRR7ArPQ=",
         version = "v0.0.0-20180118202830-f09979ecbc72",
+    )
+    go_repository(
+        name = "com_github_cespare_xxhash_v2",
+        build_file_generation = "on",
+        build_file_proto_mode = "disable",
+        importpath = "github.com/cespare/xxhash/v2",
+        sum = "h1:6MnRN8NT7+YBpUIWxHtefFZOKTAPgGjpQSxqLNn0+qY=",
+        version = "v2.1.1",
     )

@@ -64,7 +64,6 @@ require (
 	github.com/jinzhu/gorm v0.0.0-20170316141641-572d0a0ab1eb
 	github.com/jinzhu/inflection v0.0.0-20190603042836-f5c5f50e6090 // indirect
 	github.com/jinzhu/now v1.0.1 // indirect
-	github.com/json-iterator/go v1.1.9 // indirect
 	github.com/klauspost/compress v1.4.1 // indirect
 	github.com/klauspost/cpuid v1.2.3 // indirect
 	github.com/klauspost/pgzip v1.2.1
@@ -76,9 +75,9 @@ require (
 	github.com/pelletier/go-toml v1.3.0
 	github.com/peterbourgon/diskv v2.0.1+incompatible
 	github.com/pkg/errors v0.9.1
-	github.com/prometheus/client_golang v1.1.0
-	github.com/prometheus/client_model v0.0.0-20190129233127-fd36f4220a90
-	github.com/prometheus/common v0.7.0
+	github.com/prometheus/client_golang v1.5.0
+	github.com/prometheus/client_model v0.2.0
+	github.com/prometheus/common v0.9.1
 	github.com/prometheus/procfs v0.0.10 // indirect
 	github.com/satori/go.uuid v1.2.0
 	github.com/shurcooL/githubv4 v0.0.0-20191102174205-af46314aec7b
