@@ -173,7 +173,7 @@ blockades:
 - repos:
   - kubernetes/k8s.io
   blockregexps:
-  - 'images/legacy-backfill/images\.yaml$'
+  - 'images/DO-NOT-MODIFY-legacy-backfill/images\.yaml$'
   explanation: "Changes to the backfill manifests are forbidden, as they are effectively frozen. This PR must be explicitly approved by k8s.io repo admins."
 
 blunderbuss:
