@@ -30,14 +30,14 @@ import (
 	"time"
 
 	"cloud.google.com/go/storage"
-	"github.com/sirupsen/logrus"
-	"sigs.k8s.io/yaml"
-
 	"github.com/GoogleCloudPlatform/testgrid/config"
 	"github.com/GoogleCloudPlatform/testgrid/metadata"
 	configpb "github.com/GoogleCloudPlatform/testgrid/pb/config"
 	"github.com/GoogleCloudPlatform/testgrid/resultstore"
 	"github.com/GoogleCloudPlatform/testgrid/util/gcs"
+	"github.com/sirupsen/logrus"
+	"sigs.k8s.io/yaml"
+
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/logrusutil"
 )
@@ -64,6 +64,7 @@ func stripTags(str string) (string, []string) {
 type options struct {
 	path           gcs.Path
 	jobs           flagutil.Strings
+	buckets        flagutil.Strings
 	deadline       time.Duration
 	latest         int
 	override       bool
@@ -79,6 +80,7 @@ type options struct {
 func (o *options) parse(flags *flag.FlagSet, args []string) error {
 	flags.Var(&o.path, "build", "Download a specific gs://bucket/to/job/build-1234 url (instead of latest builds for each --job)")
 	flags.Var(&o.jobs, "job", "Configures specific jobs to update (repeatable, all jobs when --job and --build are both empty)")
+	flags.Var(&o.buckets, "bucket", "Filter to specific gs://buckets (repeatable, all buckets when --bucket is empty)")
 	flags.StringVar(&o.testgridConfig, "config", "gs://k8s-testgrid/config", "Path to local/testgrid/config.pb or gs://bucket/testgrid/config.pb")
 	flags.IntVar(&o.latest, "latest", 1, "Configures the number of latest builds to migrate")
 	flags.BoolVar(&o.override, "override", false, "Replace the existing ResultStore data for each build")
@@ -187,6 +189,8 @@ func run(opt options) error {
 		return fmt.Errorf("find groups: %v", err)
 	}
 
+	groups, err = filterBuckets(groups, opt.buckets.Strings()...)
+
 	logrus.Infof("Finding latest builds for %d groups...\n", len(groups))
 	buildsChan, buildsErrChan := findBuilds(ctx, storageClient, groups)
 	transferErrChan := transfer(ctx, storageClient, rsClient, opt, buildsChan)
@@ -207,6 +211,32 @@ func run(opt options) error {
 		}
 	}
 	return nil
+}
+
+func filterBuckets(groups []configpb.TestGroup, bucketPaths ...string) ([]configpb.TestGroup, error) {
+	if len(bucketPaths) == 0 {
+		return groups, nil
+	}
+	buckets := map[string]bool{}
+	var path gcs.Path
+	for _, p := range bucketPaths {
+		if err := path.Set(p); err != nil {
+			return nil, fmt.Errorf("bad bucket: %w", err)
+		}
+		buckets[path.Bucket()] = true
+	}
+
+	var ret []configpb.TestGroup
+	for _, g := range groups {
+		if err := path.Set("gs://" + g.GcsPrefix); err != nil {
+			return nil, fmt.Errorf("bad group prefix %s: %w", g.Name, err)
+		}
+		if !buckets[path.Bucket()] {
+			continue
+		}
+		ret = append(ret, g)
+	}
+	return ret, nil
 }
 
 func joinErrs(errs []error, sep string) string {
