@@ -20,15 +20,27 @@ plugins:
   - approve
   - assign
   - blunderbuss
+  - cat
+  - dog
   - golint
+  - heart
   - help
   - hold
+  - label
   - lgtm
   - lifecycle
+  - milestone
+  - owners-label
+  - project
+  - retitle
+  - shrug
   - size
+  - stage
   - trigger
   - verify-owners
+  - welcome
   - wip
+  - yuks
 
   rh-ibm-synergy:
   - approve
