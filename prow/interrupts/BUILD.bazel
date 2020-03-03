@@ -26,4 +26,5 @@ go_test(
     name = "go_default_test",
     srcs = ["interrupts_test.go"],
     embed = [":go_default_library"],
+    tags = ["local"],  # TODO(fejta): non-hermetic tests fails on RBE
 )

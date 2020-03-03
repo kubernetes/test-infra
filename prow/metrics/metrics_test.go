@@ -27,7 +27,7 @@ func TestExposeMetrics(t *testing.T) {
 	ExposeMetrics("my-component", config.PushGateway{})
 	resp, err := http.Get("http://127.0.0.1:9090/metrics")
 	if err != nil {
-		t.Errorf("failed getting metrics: %v", err)
+		t.Fatalf("failed getting metrics: %v", err)
 	}
 	if resp.StatusCode != http.StatusOK {
 		t.Errorf("resonse status was not 200 but %d", resp.StatusCode)
