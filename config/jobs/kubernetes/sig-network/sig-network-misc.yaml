@@ -535,3 +535,36 @@ periodics:
       - --test_args=--ginkgo.focus=\[sig-network\]\sServices --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:GCEAlphaFeature\] --minStartupPods=8
       - --timeout=300m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200401-d2349a1-master
+- interval: 12h
+  name: ci-basic-sctp-e2e
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:         
+    - args:
+      - --timeout=320
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --env=KUBE_FEATURE_GATES=SCTPSupport=true
+      - --env=ALLOW_PRIVILEGED=true
+      - --env=NET_PLUGIN=kubenet
+      - --cluster=
+      - --deployment=gke
+      - --extract=ci/latest
+      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
+      - --gcp-node-image=gci
+      - --gcp-zone=us-west1-c
+      - --gke-environment=test
+      - --provider=gke
+      - --test_args=--ginkgo.focus=\[Feature:SCTP\]
+      - --timeout=300m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200401-d2349a1-master
+  annotations:
+    testgrid-dashboards: sig-network-sctp
+    testgrid-tab-name: e2e-basic-sctp
+    testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
+    testgrid-alert-stale-results-hours: '24'
+    description: "Basic e2e tests for SCTP support"
