@@ -227,9 +227,8 @@ periodics:
     testgrid-alert-email: davanum@gmail.com
     testgrid-num-columns-recent: '3'
 
-- name: pull-kubernetes-conformance-kind-ga-only
-  optional: true
-  always_run: false
+- name: ci-kubernetes-conformance-kind-ga-only
+  interval: 12h
   decorate: true
   skip_branches:
   - release-\d+\.\d+ # per-release settings
@@ -238,9 +237,13 @@ periodics:
     preset-bazel-remote-cache-enabled: "true"
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
   decoration_config:
     timeout: 2h # allow plenty of time for a serial conformance run
-  path_alias: k8s.io/kubernetes
   spec:
     containers:
     - image: gcr.io/k8s-testimages/krte:v20200212-1f7b8ac-master
@@ -266,7 +269,8 @@ periodics:
           # during the tests more like 3-20m is used
           cpu: 2000m
   annotations:
-    testgrid-num-failures-to-alert: '10'
-    testgrid-alert-stale-results-hours: '24'
-    testgrid-create-test-group: 'true'
-    testgrid-dashboards: sig-testing-kind
+    testgrid-num-failures-to-alert: '2'
+    testgrid-alert-stale-results-hours: '48'
+    testgrid-dashboards: conformance-all, conformance-kind, sig-testing-kind
+    testgrid-tab-name: conformance-ga-only
+    testgrid-alert-email: liggitt@google.com
