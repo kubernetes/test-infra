@@ -50,13 +50,13 @@ require (
 	github.com/golang/mock v1.3.1
 	github.com/golang/protobuf v1.3.4 // indirect
 	github.com/gomodule/redigo v1.7.0
-	github.com/google/go-cmp v0.3.1
+	github.com/google/go-cmp v0.4.0
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/google/uuid v1.1.1
 	github.com/gorilla/csrf v1.6.2
 	github.com/gorilla/securecookie v1.1.1
-	github.com/gorilla/sessions v1.1.3
+	github.com/gorilla/sessions v1.2.0
 	github.com/gregjones/httpcache v0.0.0-20190212212710-3befbb6ad0cc
 	github.com/hashicorp/go-multierror v1.0.0
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
@@ -75,7 +75,7 @@ require (
 	github.com/mattn/go-zglob v0.0.1
 	github.com/pelletier/go-toml v1.3.0
 	github.com/peterbourgon/diskv v2.0.1+incompatible
-	github.com/pkg/errors v0.8.1
+	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.1.0
 	github.com/prometheus/client_model v0.0.0-20190129233127-fd36f4220a90
 	github.com/prometheus/common v0.7.0
