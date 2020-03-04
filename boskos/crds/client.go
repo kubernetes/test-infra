@@ -83,6 +83,8 @@ func (o *KubernetesClientOptions) CacheBackedClient(namespace string, startCache
 	if err != nil {
 		return nil, err
 	}
+	cfg.QPS = 100
+	cfg.Burst = 200
 
 	mgr, err := manager.New(cfg, manager.Options{
 		LeaderElection:     false,
