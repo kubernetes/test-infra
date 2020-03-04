@@ -554,7 +554,7 @@ func TestLabel(t *testing.T) {
 			action:                github.GenericCommentActionCreated,
 		},
 		{
-			name:                  "Delete adding Labels is Case Insensitive",
+			name:                  "Don't comment when deleting label addition",
 			body:                  "/kind bug",
 			repoLabels:            []string{"area/infra", "priority/critical", labels.Bug},
 			issueLabels:           []string{},
@@ -565,7 +565,7 @@ func TestLabel(t *testing.T) {
 			action:                github.GenericCommentActionDeleted,
 		},
 		{
-			name:                  "Delete remove Committee Label",
+			name:                  "Don't comment when deleting label removal",
 			body:                  "/remove-committee infinite-monkeys",
 			repoLabels:            []string{"area/infra", "sig/testing", "committee/infinite-monkeys"},
 			issueLabels:           []string{"area/infra", "sig/testing", "committee/infinite-monkeys"},
