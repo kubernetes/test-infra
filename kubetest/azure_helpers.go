@@ -135,6 +135,7 @@ type KubernetesConfig struct {
 	KubernetesImageBase              string            `json:"kubernetesImageBase,omitempty"`
 	ControllerManagerConfig          map[string]string `json:"controllerManagerConfig,omitempty"`
 	KubeletConfig                    map[string]string `json:"kubeletConfig,omitempty"`
+	SchedulerConfig                  map[string]string `json:"schedulerConfig,omitempty"`
 	KubeProxyMode                    string            `json:"kubeProxyMode,omitempty"`
 	LoadBalancerSku                  string            `json:"loadBalancerSku,omitempty"`
 	ExcludeMasterFromStandardLB      *bool             `json:"excludeMasterFromStandardLB,omitempty"`
@@ -195,6 +196,7 @@ type AzureClient struct {
 
 type FeatureFlags struct {
 	EnableIPv6DualStack bool `json:"enableIPv6DualStack,omitempty"`
+	EnableIPv6Only      bool `json:"enableIPv6Only,omitempty"`
 }
 
 // CustomCloudProfile defines configuration for custom cloud profile( for ex: Azure Stack)
