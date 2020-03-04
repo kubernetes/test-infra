@@ -124,7 +124,7 @@ func (r *Ranch) Acquire(rType, state, dest, owner, requestID string) (*crds.Reso
 	})
 
 	var returnRes *crds.ResourceObject
-	return returnRes, retryOnConflict(retry.DefaultBackoff, func() error {
+	if err := retryOnConflict(retry.DefaultBackoff, func() error {
 		logger.Debug("Determining request priority...")
 		ts := acquireRequestPriorityKey{rType: rType, state: state}
 		rank, new := r.requestMgr.GetRank(ts, requestID)
@@ -161,7 +161,6 @@ func (r *Ranch) Acquire(rType, state, dest, owner, requestID string) (*crds.Reso
 			logger.Debug("Updating resource.")
 			updatedRes, err := r.Storage.UpdateResource(&res)
 			if err != nil {
-				logger.WithError(err).Errorf("could not update resource %s", res.Name)
 				return err
 			}
 			// Deleting this request since it has been fulfilled
@@ -196,7 +195,12 @@ func (r *Ranch) Acquire(rType, state, dest, owner, requestID string) (*crds.Reso
 			return &ResourceNotFound{rType}
 		}
 		return &ResourceTypeNotFound{rType}
-	})
+	}); err != nil {
+		logrus.WithError(err).Error("Acquire failed")
+		return nil, err
+	}
+
+	return returnRes, nil
 }
 
 // AcquireByState checks out resources of a given type without an owner,
@@ -213,7 +217,7 @@ func (r *Ranch) AcquireByState(state, dest, owner string, names []string) ([]*cr
 	}
 
 	var returnRes []*crds.ResourceObject
-	return returnRes, retryOnConflict(retry.DefaultBackoff, func() error {
+	if err := retryOnConflict(retry.DefaultBackoff, func() error {
 		rNames := sets.NewString(names...)
 
 		allResources, err := r.Storage.GetResources()
@@ -234,7 +238,6 @@ func (r *Ranch) AcquireByState(state, dest, owner string, names []string) ([]*cr
 			res.Status.State = dest
 			updatedRes, err := r.Storage.UpdateResource(&res)
 			if err != nil {
-				logrus.WithError(err).Errorf("could not update resource %s", res.Name)
 				return err
 			}
 			resources = append(resources, updatedRes)
@@ -250,7 +253,13 @@ func (r *Ranch) AcquireByState(state, dest, owner string, names []string) ([]*cr
 		}
 		returnRes = resources
 		return nil
-	})
+	}); err != nil {
+		logrus.WithError(err).Error("AcquireByState failed")
+		// Not a bug, we return what we got even on error.
+		return returnRes, err
+	}
+
+	return returnRes, nil
 }
 
 // Release unsets owner for target resource and move it to a new state.
@@ -261,7 +270,7 @@ func (r *Ranch) AcquireByState(state, dest, owner string, names []string) ([]*cr
 //      OwnerNotMatch error if owner does not match current owner of the resource, or
 //      ResourceNotFound error if target named resource does not exist.
 func (r *Ranch) Release(name, dest, owner string) error {
-	return retryOnConflict(retry.DefaultBackoff, func() error {
+	if err := retryOnConflict(retry.DefaultBackoff, func() error {
 		res, err := r.Storage.GetResource(name)
 		if err != nil {
 			logrus.WithError(err).Errorf("unable to release resource %s", name)
@@ -286,11 +295,15 @@ func (r *Ranch) Release(name, dest, owner string) error {
 		}
 
 		if _, err := r.Storage.UpdateResource(res); err != nil {
-			logrus.WithError(err).Errorf("could not update resource %s", res.Name)
 			return err
 		}
 		return nil
-	})
+	}); err != nil {
+		logrus.WithError(err).Error("Release failed")
+		return err
+	}
+
+	return nil
 }
 
 // Update updates the timestamp of a target resource.
@@ -303,7 +316,7 @@ func (r *Ranch) Release(name, dest, owner string) error {
 //      ResourceNotFound error if target named resource does not exist, or
 //      StateNotMatch error if state does not match current state of the resource.
 func (r *Ranch) Update(name, owner, state string, ud *common.UserData) error {
-	return retryOnConflict(retry.DefaultBackoff, func() error {
+	if err := retryOnConflict(retry.DefaultBackoff, func() error {
 		res, err := r.Storage.GetResource(name)
 		if err != nil {
 			logrus.WithError(err).Errorf("could not find resource %s for update", name)
@@ -320,11 +333,15 @@ func (r *Ranch) Update(name, owner, state string, ud *common.UserData) error {
 		}
 		res.Status.UserData.Update(ud)
 		if _, err := r.Storage.UpdateResource(res); err != nil {
-			logrus.WithError(err).Errorf("could not update resource %s", res.Name)
 			return err
 		}
 		return nil
-	})
+	}); err != nil {
+		logrus.WithError(err).Error("Update failed")
+		return err
+	}
+
+	return nil
 }
 
 // Reset unstucks a type of stale resource to a new state.
@@ -335,11 +352,10 @@ func (r *Ranch) Update(name, owner, state string, ud *common.UserData) error {
 // Out: map of resource name - resource owner.
 func (r *Ranch) Reset(rtype, state string, expire time.Duration, dest string) (map[string]string, error) {
 	var ret map[string]string
-	return ret, retryOnConflict(retry.DefaultBackoff, func() error {
+	if err := retryOnConflict(retry.DefaultBackoff, func() error {
 		ret = make(map[string]string)
 		resources, err := r.Storage.GetResources()
 		if err != nil {
-			logrus.WithError(err).Errorf("cannot find resources")
 			return err
 		}
 
@@ -353,12 +369,16 @@ func (r *Ranch) Reset(rtype, state string, expire time.Duration, dest string) (m
 			res.Status.Owner = ""
 			res.Status.State = dest
 			if _, err := r.Storage.UpdateResource(&res); err != nil {
-				logrus.WithError(err).Errorf("could not update resource %s", res.Name)
 				return err
 			}
 		}
 		return nil
-	})
+	}); err != nil {
+		logrus.WithError(err).Error("Reset failed")
+		return nil, err
+	}
+
+	return ret, nil
 }
 
 // SyncConfig updates resource list from a file
@@ -384,7 +404,9 @@ func (r *Ranch) StartDynamicResourceUpdater(updatePeriod time.Duration) {
 		for {
 			select {
 			case <-updateTick:
-				r.Storage.UpdateAllDynamicResources()
+				if err := r.Storage.UpdateAllDynamicResources(); err != nil {
+					logrus.WithError(err).Error("UpdateAllDynamicResources failed")
+				}
 			}
 		}
 	}()

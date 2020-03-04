@@ -233,12 +233,10 @@ func (s *Storage) SyncResources(config *common.BoskosConfig) error {
 
 			resources, err := s.GetResources()
 			if err != nil {
-				logrus.WithError(err).Error("cannot list resources")
 				return err
 			}
 			existingDRLC, err := s.GetDynamicResourceLifeCycles()
 			if err != nil {
-				logrus.WithError(err).Error("cannot list dynamicResourceLifeCycles")
 				return err
 			}
 			for _, dRLC := range existingDRLC.Items {
@@ -275,10 +273,16 @@ func (s *Storage) SyncResources(config *common.BoskosConfig) error {
 		}
 		return nil
 	}); err != nil {
+		logrus.WithError(err).Error("Encountered error syncing resources from configfile.")
 		return err
 	}
 
-	return s.UpdateAllDynamicResources()
+	if err := s.UpdateAllDynamicResources(); err != nil {
+		logrus.WithError(err).Error("Encountered error updating dynamic resources.")
+		return err
+	}
+
+	return nil
 }
 
 // updateDynamicResources updates dynamic resource based on an existing dynamic resource life cycle.
@@ -358,12 +362,10 @@ func (s *Storage) UpdateAllDynamicResources() error {
 
 		resources, err := s.GetResources()
 		if err != nil {
-			logrus.WithError(err).Error("cannot find resources")
 			return err
 		}
 		existingDRLC, err := s.GetDynamicResourceLifeCycles()
 		if err != nil {
-			logrus.WithError(err).Error("cannot find DynamicResourceLifeCycles")
 			return err
 		}
 		for _, dRLC := range existingDRLC.Items {
@@ -394,7 +396,6 @@ func (s *Storage) UpdateAllDynamicResources() error {
 		}
 
 		if err := s.persistResources(resToAdd, resToDelete, true); err != nil {
-			logrus.WithError(err).Error("failed to persist resources")
 			return err
 		}
 
@@ -458,14 +459,12 @@ func (s *Storage) persistResources(resToAdd, resToDelete []crds.ResourceObject, 
 				logrus.Infof("Deleting resource %s", r.Name)
 				if err := s.DeleteResource(r.Name); err != nil {
 					errs = append(errs, err)
-					logrus.WithError(err).Errorf("unable to delete resource %s", r.Name)
 				}
 			} else if r.Status.State != common.ToBeDeleted {
 				r.Status.State = common.ToBeDeleted
 				logrus.Infof("Marking resource to be deleted %s", r.Name)
 				if _, err := s.UpdateResource(&r); err != nil {
 					errs = append(errs, err)
-					logrus.WithError(err).Errorf("unable to update resource %s", r.Name)
 				}
 			}
 		} else {
@@ -473,7 +472,6 @@ func (s *Storage) persistResources(resToAdd, resToDelete []crds.ResourceObject, 
 			logrus.Infof("Deleting resource %s", r.Name)
 			if err := s.DeleteResource(r.Name); err != nil {
 				errs = append(errs, err)
-				logrus.WithError(err).Errorf("unable to delete resource %s", r.Name)
 			}
 		}
 	}
@@ -483,7 +481,6 @@ func (s *Storage) persistResources(resToAdd, resToDelete []crds.ResourceObject, 
 		r.Status.LastUpdate = s.now()
 		if err := s.AddResource(&r); err != nil {
 			errs = append(errs, err)
-			logrus.WithError(err).Errorf("unable to delete resource %s", r.Name)
 		}
 	}
 
@@ -507,7 +504,6 @@ func (s *Storage) persistDynamicResourceLifeCycles(dRLCToUpdate, dRLCToAdd, dRLC
 			logrus.Infof("Deleting resource type life cycle %s", dRLC.Name)
 			if err := s.DeleteDynamicResourceLifeCycle(dRLC.Name); err != nil {
 				errs = append(errs, err)
-				logrus.WithError(err).Errorf("unable to delete resource type life cycle %s", dRLC.Name)
 			}
 		} else {
 			// Mark this DRLC as pending deletion by setting min and max count to zero.
@@ -521,7 +517,6 @@ func (s *Storage) persistDynamicResourceLifeCycles(dRLCToUpdate, dRLCToAdd, dRLC
 		logrus.Infof("Adding resource type life cycle %s", DRLC.Name)
 		if err := s.AddDynamicResourceLifeCycle(&DRLC); err != nil {
 			errs = append(errs, err)
-			logrus.WithError(err).Errorf("unable to add resource type life cycle %s", DRLC.Name)
 		}
 	}
 
@@ -529,7 +524,6 @@ func (s *Storage) persistDynamicResourceLifeCycles(dRLCToUpdate, dRLCToAdd, dRLC
 		logrus.Infof("Updating resource type life cycle %s", dRLC.Name)
 		if _, err := s.UpdateDynamicResourceLifeCycle(&dRLC); err != nil {
 			errs = append(errs, err)
-			logrus.WithError(err).Errorf("unable to update resource type life cycle %s", dRLC.Name)
 		}
 	}
 
