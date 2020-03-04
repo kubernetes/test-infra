@@ -296,7 +296,7 @@ periodics:
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs SIG-Windows release tests on K8s 1.17 clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
 - interval: 8h
-  name: ci-kubernetes-e2e-aks-engine-azure-1-17-windows-serial
+  name: ci-kubernetes-e2e-aks-engine-azure-1-17-windows-serial-slow
   labels:
     preset-service-account: "true"
     preset-azure-cred: "true"
@@ -331,13 +331,13 @@ periodics:
       - "--aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_staging.json"
       - "--aksengine-win-binaries"
       - "--aksengine-deploy-custom-k8s"
-      - "--test_args=--num-nodes=3 --node-os-distro=windows --ginkgo.focus=(\\[sig-windows\\]|\\[sig-scheduling\\].SchedulerPreemption|\\[sig-autoscaling\\].\\[Feature:HPA\\]).*\\[Serial\\]|\\[Serial\\].*(\\[Conformance\\]|\\[NodeConformance\\]) --ginkgo.skip=\\[LinuxOnly\\]"
+      - "--test_args=--num-nodes=3 --node-os-distro=windows --ginkgo.focus=(\\[sig-windows\\]|\\[sig-scheduling\\].SchedulerPreemption|\\[sig-autoscaling\\].\\[Feature:HPA\\]|\\[sig-apps\\].CronJob).*(\\[Serial\\]|\\[Slow\\])|(\\[Serial\\]|\\[Slow\\]).*(\\[Conformance\\]|\\[NodeConformance\\]) --ginkgo.skip=\\[LinuxOnly\\]"
       - "--timeout=450m"
       securityContext:
         privileged: true
   annotations:
     testgrid-dashboards: sig-windows, provider-azure-windows, provider-azure-periodic
-    testgrid-tab-name: aks-engine-azure-1-17-windows-serial
+    testgrid-tab-name: aks-engine-azure-1-17-windows-serial-slow
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs SIG-Windows release serial tests on K8s 1.17 clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
 - interval: 3h
