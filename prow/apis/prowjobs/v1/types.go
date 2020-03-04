@@ -294,6 +294,9 @@ type DecorationConfig struct {
 	// UtilityImages holds pull specs for utility container
 	// images used to decorate a PodSpec.
 	UtilityImages *UtilityImages `json:"utility_images,omitempty"`
+	// Resources holds resource requests and limits for utility
+	// containers used to decorate a PodSpec.
+	Resources *Resources `json:"resources,omitempty"`
 	// GCSConfiguration holds options for pushing logs and
 	// artifacts to GCS from a job.
 	GCSConfiguration *GCSConfiguration `json:"gcs_configuration,omitempty"`
@@ -316,6 +319,40 @@ type DecorationConfig struct {
 	// OauthTokenSecret is a Kubernetes secret that contains the OAuth token,
 	// which is going to be used for fetching a private repository.
 	OauthTokenSecret *OauthTokenSecret `json:"oauth_token_secret,omitempty"`
+}
+
+// Resources holds resource requests and limits for
+// containers used to decorate a PodSpec
+type Resources struct {
+	CloneRefs       *corev1.ResourceRequirements `json:"clonerefs,omitempty"`
+	InitUpload      *corev1.ResourceRequirements `json:"initupload,omitempty"`
+	PlaceEntrypoint *corev1.ResourceRequirements `json:"place_entrypoint,omitempty"`
+	Sidecar         *corev1.ResourceRequirements `json:"sidecar,omitempty"`
+}
+
+// ApplyDefault applies the defaults for the resource decorations. If a field has a zero value,
+// it replaces that with the value set in def.
+func (u *Resources) ApplyDefault(def *Resources) *Resources {
+	if u == nil {
+		return def
+	} else if def == nil {
+		return u
+	}
+
+	merged := *u
+	if merged.CloneRefs == nil {
+		merged.CloneRefs = def.CloneRefs
+	}
+	if merged.InitUpload == nil {
+		merged.InitUpload = def.InitUpload
+	}
+	if merged.PlaceEntrypoint == nil {
+		merged.PlaceEntrypoint = def.PlaceEntrypoint
+	}
+	if merged.Sidecar == nil {
+		merged.Sidecar = def.Sidecar
+	}
+	return &merged
 }
 
 // OauthTokenSecret holds the information of the oauth token's secret name and key.
@@ -343,6 +380,7 @@ func (d *DecorationConfig) ApplyDefault(def *DecorationConfig) *DecorationConfig
 		return &merged
 	}
 	merged.UtilityImages = merged.UtilityImages.ApplyDefault(def.UtilityImages)
+	merged.Resources = merged.Resources.ApplyDefault(def.Resources)
 	merged.GCSConfiguration = merged.GCSConfiguration.ApplyDefault(def.GCSConfiguration)
 
 	if merged.Timeout == nil {
