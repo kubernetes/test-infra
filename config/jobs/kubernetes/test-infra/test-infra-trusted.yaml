@@ -995,15 +995,14 @@ periodics:
   spec:
     serviceAccountName: resultstore
     containers:
-    - image: gcr.io/k8s-testimages/resultstore:v20200303-1ce7483c2
+    - image: gcr.io/k8s-testimages/resultstore:v20190311-3fc08c042
       command:
       - /app/experiment/resultstore/app.binary
       args:
-      - --upload=k8s-prow # Must be able to upload results into this project
+      - --upload=k8s-prow
       - --deadline=10m
       - --latest=5
-      - --gcs-auth # See trusted_serviceaccounts.yaml, currently resultstore@k8s-prow.iam.gserviceaccount.com
-      - --bucket=gs://kubernetes-jenkins # Must be able to write to bucket
+      - --gcs-auth
   annotations:
     testgrid-dashboards: sig-testing-prow
     testgrid-tab-name: resultstore-upload
