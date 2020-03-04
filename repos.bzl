@@ -1778,8 +1778,8 @@ def go_repositories():
         build_file_generation = "off",
         build_file_proto_mode = "disable_global",
         importpath = "github.com/GoogleCloudPlatform/testgrid",
-        sum = "h1:UuYJ7uSBV80dk66T5Ujd/jlCI5h75RN2e1/+/7/pLBA=",
-        version = "v0.0.6",
+        sum = "h1:TxlW95CqGjvJmW6trWh1XgKZP8GOIgkJEKAUBX/DQ4Q=",
+        version = "v0.0.1-alpha.4",
     )
     go_repository(
         name = "com_github_munnerz_goautoneg",
