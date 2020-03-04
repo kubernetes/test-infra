@@ -224,7 +224,7 @@ func hintFromPodInfo(buf []byte) string {
 
 	// There are a bunch of fun ways for the node to fail that we've seen before
 	for _, e := range report.Events {
-		if e.Reason == "FailedCreatePodSandbox" || e.Reason == "FailedSync" || e.Reason == "FailedKillPod" {
+		if e.Reason == "FailedCreatePodSandbox" || e.Reason == "FailedSync" {
 			return "The job may have executed on an unhealthy node. Contact your prow maintainers with a link to this page or check the detailed pod information."
 		}
 	}
