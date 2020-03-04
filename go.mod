@@ -34,17 +34,14 @@ require (
 	github.com/clarketm/json v1.13.4
 	github.com/client9/misspell v0.3.4
 	github.com/containerd/containerd v1.3.3 // indirect
-	github.com/denisenkom/go-mssqldb v0.0.0-20190111225525-2fea367d496d // indirect
 	github.com/djherbis/atime v1.0.0
 	github.com/docker/docker v1.4.2-0.20190924003213-a8608b5b67c7
-	github.com/erikstmartin/go-testdb v0.0.0-20160219214506-8d10e4a1bae5 // indirect
 	github.com/evanphx/json-patch v4.5.0+incompatible
 	github.com/fsnotify/fsnotify v1.4.7
 	github.com/fsouza/fake-gcs-server v0.0.0-20180612165233-e85be23bdaa8
 	github.com/go-logr/zapr v0.1.1 // indirect
 	github.com/go-openapi/spec v0.19.6
 	github.com/go-openapi/swag v0.19.7 // indirect
-	github.com/go-sql-driver/mysql v0.0.0-20160411075031-7ebe0a500653 // indirect
 	github.com/go-test/deep v1.0.4
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/golang/mock v1.3.1
@@ -61,14 +58,12 @@ require (
 	github.com/hashicorp/go-multierror v1.0.0
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/influxdata/influxdb v0.0.0-20161215172503-049f9b42e9a5
-	github.com/jinzhu/gorm v0.0.0-20170316141641-572d0a0ab1eb
-	github.com/jinzhu/inflection v0.0.0-20190603042836-f5c5f50e6090 // indirect
-	github.com/jinzhu/now v1.0.1 // indirect
+	github.com/jinzhu/gorm v1.9.12
+	github.com/jinzhu/now v1.1.1 // indirect
 	github.com/klauspost/compress v1.10.2 // indirect
 	github.com/klauspost/pgzip v1.2.1
-	github.com/lib/pq v1.0.0 // indirect
 	github.com/mailru/easyjson v0.7.1 // indirect
-	github.com/mattn/go-sqlite3 v0.0.0-20160514122348-38ee283dabf1 // indirect
+	github.com/mattn/go-sqlite3 v2.0.3+incompatible // indirect
 	github.com/mattn/go-zglob v0.0.1
 	github.com/pelletier/go-toml v1.6.0
 	github.com/peterbourgon/diskv v2.0.1+incompatible
