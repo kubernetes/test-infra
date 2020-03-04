@@ -46,7 +46,6 @@ go_test(
         "metrics_test.go",
     ],
     embed = [":go_default_library"],
-    tags = ["local"],  # TODO(fejta): non-hermetic tests fails on RBE
     deps = [
         "//prow/config:go_default_library",
         "@io_k8s_utils//diff:go_default_library",
