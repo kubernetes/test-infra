@@ -78,7 +78,7 @@ spec:
       terminationGracePeriodSeconds: 300
       containers:
       - name: boskos-cleaner
-        image: gcr.io/k8s-prow/boskos/cleaner:v20200303-2aa51c477
+        image: gcr.io/k8s-prow/boskos/cleaner:v20200303-28c7418a8
         args:
         - --cleaner-count=25
         - --namespace=boskos
