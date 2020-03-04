@@ -86,12 +86,12 @@ periodics:
       - --env=KUBE_SSH_USER=ec2-user
       - --extract=release/stable-1.17
       - --ginkgo-parallel
-      - --kops-args=--image=redhat.com/RHEL-8.1.0_HVM-20191029-x86_64-0-Hourly2-GP2 --container-runtime=containerd --networking=calico
+      - --kops-args=--container-runtime=containerd --networking=calico --image=136693071363/debian-10-amd64-20200210-166
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-ssh-user=ec2-user
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt
       - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:RuntimeHandler\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:RuntimeHandler\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.17
       imagePullPolicy: Always
