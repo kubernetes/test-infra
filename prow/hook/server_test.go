@@ -32,7 +32,24 @@ func TestServeHTTPErrors(t *testing.T) {
 	pa.Set(&plugins.Configuration{})
 
 	getSecret := func() []byte {
-		return []byte("abc")
+		var repoLevelSecret = `
+'*':
+  - value: abc
+    expiry: 9999-10-02T15:00:00Z
+  - value: key2
+    expiry: 2018-10-02T15:00:00Z
+foo:
+  - value: key3
+    expiry: 9999-10-02T15:00:00Z
+  - value: key4
+    expiry: 2018-10-02T15:00:00Z
+foo/bar:
+  - value: 123abc
+    expiry: 9999-10-02T15:00:00Z
+  - value: key6
+    expiry: 2018-10-02T15:00:00Z
+`
+		return []byte(repoLevelSecret)
 	}
 
 	s := &Server{
