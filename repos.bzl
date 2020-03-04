@@ -233,8 +233,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/denisenkom/go-mssqldb",
-        sum = "h1:M0bjbJ5PZPl4iKkt0FSvhfSCJI9NisDDda29jXN9i0c=",
-        version = "v0.0.0-20190111225525-2fea367d496d",
+        sum = "h1:83Wprp6ROGeiHFAP8WJdI2RoxALQYgdllERc3N5N2DM=",
+        version = "v0.0.0-20191124224453-732737034ffd",
     )
     go_repository(
         name = "com_github_dgrijalva_jwt_go",
@@ -395,8 +395,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/go-sql-driver/mysql",
-        sum = "h1:cRYCw9putX9pmpNdGkE/rWrY6gNGqZvdgGT1RPl6K18=",
-        version = "v0.0.0-20160411075031-7ebe0a500653",
+        sum = "h1:g24URVg0OFbNUTx9qqY1IRZ9D9z3iPyi5zKhQZpNwpA=",
+        version = "v1.4.1",
     )
     go_repository(
         name = "com_github_go_stack_stack",
@@ -709,24 +709,24 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/jinzhu/gorm",
-        sum = "h1:0D5F4qAGJbRqzyCIHswU2fCwB1XGTDkBwBn9qncQYYs=",
-        version = "v0.0.0-20170316141641-572d0a0ab1eb",
+        sum = "h1:Drgk1clyWT9t9ERbzHza6Mj/8FY/CqMyVzOiHviMo6Q=",
+        version = "v1.9.12",
     )
     go_repository(
         name = "com_github_jinzhu_inflection",
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/jinzhu/inflection",
-        sum = "h1:LIwA5USOJ9W/0hwiRH1MugeThGBHGqv+USXcDKWHIVY=",
-        version = "v0.0.0-20190603042836-f5c5f50e6090",
+        sum = "h1:K317FqzuhWc8YvSVlFMCCUb36O/S9MCKRDI7QkRKD/E=",
+        version = "v1.0.0",
     )
     go_repository(
         name = "com_github_jinzhu_now",
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/jinzhu/now",
-        sum = "h1:HjfetcXq097iXP0uoPCdnM4Efp5/9MsM0/M+XOTeR3M=",
-        version = "v1.0.1",
+        sum = "h1:g39TucaRWyV3dwDO++eEc6qf8TVIQ/Da48WmqjZ3i7E=",
+        version = "v1.1.1",
     )
     go_repository(
         name = "com_github_jmespath_go_jmespath",
@@ -856,8 +856,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/lib/pq",
-        sum = "h1:X5PMW56eZitiTeO7tKzZxFCSpbFZJtkMMooicw2us9A=",
-        version = "v1.0.0",
+        sum = "h1:sJZmqHoEaY7f+NPP8pgLB/WxulyR3fewgCM2qaSlBb4=",
+        version = "v1.1.1",
     )
     go_repository(
         name = "com_github_magiconair_properties",
@@ -913,8 +913,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/mattn/go-sqlite3",
-        sum = "h1:LeyN6zuPxHQrv7ZGHbo2Ymtj+BfpbG02+5iAgKds/zU=",
-        version = "v0.0.0-20160514122348-38ee283dabf1",
+        sum = "h1:gXHsfypPkaMZrKbD5209QV9jbUTJKjyR5WD3HYQSd+U=",
+        version = "v2.0.3+incompatible",
     )
     go_repository(
         name = "com_github_mattn_go_zglob",
@@ -3031,4 +3031,12 @@ def go_repositories():
         importpath = "gopkg.in/ini.v1",
         sum = "h1:j+Lt/M1oPPejkniCg1TkWE2J3Eh1oZTsHSXzMTzUXn4=",
         version = "v1.52.0",
+    )
+    go_repository(
+        name = "com_github_golang_sql_civil",
+        build_file_generation = "on",
+        build_file_proto_mode = "disable",
+        importpath = "github.com/golang-sql/civil",
+        sum = "h1:lXe2qZdvpiX5WZkZR4hgp4KJVfY3nMkvmwbVkpv1rVY=",
+        version = "v0.0.0-20190719163853-cb61b32ac6fe",
     )
