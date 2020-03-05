@@ -20,7 +20,7 @@ periodics:
           args:
             - -c
             - |
-              local result=0
+              result=0
               # Run the tests as usual
               GO111MODULE=off go install k8s.io/kubernetes/vendor/gotest.tools/gotestsum || result=$?
               time make test KUBE_TIMEOUT="--timeout=600s" || result=$?
@@ -48,11 +48,11 @@ periodics:
             - -c
             - |
               # Restore the cache
-              time gsutil cp gs://kubernetes-jenkins/cache/poc/k8s-test-cache.tar.gz cache.tar.gz
+              time curl https://storage.googleapis.com/kubernetes-jenkins/cache/poc/k8s-test-cache.tar.gz -o cache.tar.gz
               mkdir -p _output/local/go/
               time tar -xzf cache.tar.gz -C _output/local/go
               # Run tests as usual
-              local result=0
+              result=0
               GO111MODULE=off go install k8s.io/kubernetes/vendor/gotest.tools/gotestsum || result=$?
               time make test KUBE_TIMEOUT="--timeout=600s" || result=$?
               exit $result
