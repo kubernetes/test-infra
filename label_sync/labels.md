@@ -311,7 +311,6 @@ larger set of contributors to apply/remove them.
 | <a id="area/mungegithub" href="#area/mungegithub">`area/mungegithub`</a> | Issues or PRs related to code in /mungegithub| label | |
 | <a id="area/planter" href="#area/planter">`area/planter`</a> | Issues or PRs related to code in /planter| label | |
 | <a id="area/prow" href="#area/prow">`area/prow`</a> | Issues or PRs related to prow| label | |
-| <a id="area/prow/artifact-uploader" href="#area/prow/artifact-uploader">`area/prow/artifact-uploader`</a> | Issues or PRs related to prow's artifact-uploader component| label | |
 | <a id="area/prow/branchprotector" href="#area/prow/branchprotector">`area/prow/branchprotector`</a> | Issues or PRs related to prow's branchprotector component| label | |
 | <a id="area/prow/bump" href="#area/prow/bump">`area/prow/bump`</a> | Updates to the k8s prow cluster| label | |
 | <a id="area/prow/clonerefs" href="#area/prow/clonerefs">`area/prow/clonerefs`</a> | Issues or PRs related to prow's clonerefs component| label | |

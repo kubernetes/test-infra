@@ -1,4 +1,3 @@
-cmd/artifact-uploader/artifact-uploader
 cmd/branchprotector/branchprotector
 cmd/build/build
 cmd/checkconfig/checkconfig
