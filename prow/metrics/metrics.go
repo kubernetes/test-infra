@@ -33,25 +33,17 @@ import (
 
 const metricsPort = 9090
 
+type CreateServer func(http.Handler) interrupts.ListenAndServer
+
 // ExposeMetricsWithRegistry chooses whether to serve or push metrics for the service with the registry
-func ExposeMetricsWithRegistry(component string, pushGateway config.PushGateway, reg prometheus.Gatherer) {
+func ExposeMetricsWithRegistry(component string, pushGateway config.PushGateway, reg prometheus.Gatherer, createServer CreateServer) {
 	if pushGateway.Endpoint != "" {
 		pushMetrics(component, pushGateway.Endpoint, pushGateway.Interval.Duration)
-		if pushGateway.ServeMetrics {
-			serveMetrics(reg)
+		if !pushGateway.ServeMetrics {
+			return
 		}
-	} else {
-		serveMetrics(reg)
 	}
-}
 
-// ExposeMetrics chooses whether to serve or push metrics for the service
-func ExposeMetrics(component string, pushGateway config.PushGateway) {
-	ExposeMetricsWithRegistry(component, pushGateway, nil)
-}
-
-// serveMetrics serves prometheus metrics for the service
-func serveMetrics(reg prometheus.Gatherer) {
 	if reg == nil {
 		reg = prometheus.DefaultGatherer
 	}
@@ -61,8 +53,18 @@ func serveMetrics(reg prometheus.Gatherer) {
 	)
 	metricsMux := http.NewServeMux()
 	metricsMux.Handle("/metrics", handler)
-	server := &http.Server{Addr: ":" + strconv.Itoa(metricsPort), Handler: metricsMux}
+	var server interrupts.ListenAndServer
+	if createServer == nil {
+		server = &http.Server{Addr: ":" + strconv.Itoa(metricsPort), Handler: metricsMux}
+	} else {
+		server = createServer(handler)
+	}
 	interrupts.ListenAndServe(server, 5*time.Second)
+}
+
+// ExposeMetrics chooses whether to serve or push metrics for the service
+func ExposeMetrics(component string, pushGateway config.PushGateway) {
+	ExposeMetricsWithRegistry(component, pushGateway, nil, nil)
 }
 
 // pushMetrics is meant to run in a goroutine and continuously push
