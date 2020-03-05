@@ -2,18 +2,18 @@ module k8s.io/test-infra
 
 replace github.com/golang/lint => golang.org/x/lint v0.0.0-20190301231843-5614ed5bae6f
 
-// Pin all k8s.io staging repositories to kubernetes-1.15.3.
+// Pin all k8s.io staging repositories to kubernetes v0.17.3
 // When bumping Kubernetes dependencies, you should update each of these lines
-// to point to the same kubernetes-1.x.y release branch before running update-deps.sh.
+// to point to the same kubernetes v0.KubernetesMinor.KubernetesPatch version
+// before running update-deps.sh.
 replace (
 	cloud.google.com/go => cloud.google.com/go v0.44.3
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v12.2.0+incompatible
 	golang.org/x/lint => golang.org/x/lint v0.0.0-20190409202823-959b441ac422
-	k8s.io/api => k8s.io/api v0.0.0-20190918195907-bd6ac527cfd2
-	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.0.0-20190918201827-3de75813f604
-	k8s.io/apimachinery => k8s.io/apimachinery v0.0.0-20190817020851-f2f3a405f61d
-	k8s.io/client-go => k8s.io/client-go v0.0.0-20190918200256-06eb1244587a
-	k8s.io/code-generator => k8s.io/code-generator v0.0.0-20190612205613-18da4a14b22b
+	k8s.io/api => k8s.io/api v0.17.3
+	k8s.io/apimachinery => k8s.io/apimachinery v0.17.3
+	k8s.io/client-go => k8s.io/client-go v0.17.3
+	k8s.io/code-generator => k8s.io/code-generator v0.17.3
 )
 
 require (
@@ -93,17 +93,16 @@ require (
 	google.golang.org/api v0.10.0
 	gopkg.in/ini.v1 v1.52.0 // indirect
 	gopkg.in/robfig/cron.v2 v2.0.0-20150107220207-be2e0b0deed5
-	gopkg.in/yaml.v2 v2.2.8 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20190709130402-674ba3eaed22
 	k8s.io/api v0.17.3
 	k8s.io/apimachinery v0.17.3
-	k8s.io/client-go v11.0.1-0.20190805182717-6502b5e7b1b5+incompatible
-	k8s.io/code-generator v0.17.1
+	k8s.io/client-go v9.0.0+incompatible
+	k8s.io/code-generator v0.17.3
 	k8s.io/klog v1.0.0
 	k8s.io/utils v0.0.0-20191114184206-e782cd3c129f
 	knative.dev/pkg v0.0.0-20191111150521-6d806b998379
 	mvdan.cc/xurls/v2 v2.0.0
-	sigs.k8s.io/controller-runtime v0.3.0
+	sigs.k8s.io/controller-runtime v0.5.0
 	sigs.k8s.io/yaml v1.1.0
 )
 
