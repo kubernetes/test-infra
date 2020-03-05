@@ -710,32 +710,31 @@ periodics:
 # conformance test against kubernetes master branch with `azure` ipv6
 - interval: 6h
   name: ci-kubernetes-azure-conformance-ipv6
+  decorate: true
   labels:
     preset-service-account: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
+    preset-azure-cred: "true"
     preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20200305-26ebc13-master
+      command:
+      - runner.sh
+      - kubetest
       args:
-      - --job=$(JOB_NAME)
-      - --repo=k8s.io/kubernetes=master
-      - --root=/go/src
-      - --service-account=/etc/service-account/service-account.json
-      - --timeout=470
-      - --upload=gs://kubernetes-jenkins/logs/
-      - --scenario=kubernetes_e2e
-      - --
-      - --gce-ssh=
-      - --test=true
-      - --up=true
-      - --down=true
-      - --deployment=aksengine
+      - --test
+      - --up
+      - --down
       - --build=quick
+      - --dump=$(ARTIFACTS)
+      # Azure-specific test args
+      - --deployment=aksengine
       - --provider=skeleton
-      - --ginkgo-parallel=1
       - --aksengine-agentpoolcount=2
       - --aksengine-admin-username=azureuser
       - --aksengine-creds=$AZURE_CREDENTIALS
@@ -743,10 +742,12 @@ periodics:
       - --aksengine-mastervmsize=Standard_DS2_v2
       - --aksengine-agentvmsize=Standard_D4s_v3
       - --aksengine-deploy-custom-k8s=True
-      - --aksengine-location=westus2
+      - --aksengine-location=eastus2
       - --aksengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE
       - --aksengine-template-url=https://gist.githubusercontent.com/aramase/a19fcbf1f309dab99600ee9c0d700fce/raw/b1e975f8c6a1d3c9a9ae796245c58c6733029dc3/single-stack-ipv6.json
       - --aksengine-download-url=https://github.com/aramase/aks-engine/blob/test-pkg/aks-engine-test.tar.gz?raw=true
+      # Specific test args
+      - --ginkgo-parallel=1
       - --timeout=450m
       - --test_args=--ginkgo.focus=\[Conformance\]
       securityContext:
