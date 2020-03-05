@@ -66,44 +66,496 @@ dashboards:
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/oss-test-infra/compare/<start-custom-0>...<end-custom-0>
     description: ci-oss-test-infra-autobump-prow
-    name: ci-oss-test-infra-autobump-prow
+    name: autobump-prow
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/oss-test-infra/issues/
     test_group_name: ci-oss-test-infra-autobump-prow
+  - description: transfer finished results into resultstore
+    name: resultstore
+    test_group_name: ci-test-infra-resultstore-upload
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/oss-test-infra/compare/<start-custom-0>...<end-custom-0>
     description: post-oss-test-infra-deploy-prow
-    name: post-oss-test-infra-deploy-prow
+    name: prow-deploy
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/oss-test-infra/issues/
     test_group_name: post-oss-test-infra-deploy-prow
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/oss-test-infra/compare/<start-custom-0>...<end-custom-0>
     description: post-oss-test-infra-upload-testgrid-config
-    name: post-oss-test-infra-upload-testgrid-config
+    name: testgrid-upload
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/oss-test-infra/issues/
     test_group_name: post-oss-test-infra-upload-testgrid-config
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/testgrid/compare/<start-custom-0>...<end-custom-0>
-    description: post-testgrid-deploy
-    name: post-testgrid-deploy
+    description: post-testgrid-deploy-canary
+    name: testgrid-deploy-canary
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/testgrid/issues/
-    test_group_name: post-testgrid-deploy
+    test_group_name: post-testgrid-deploy-canary
+  - code_search_url_template:
+      url: https://github.com/GoogleCloudPlatform/testgrid/compare/<start-custom-0>...<end-custom-0>
+    description: post-testgrid-deploy-prod
+    name: testgrid-deploy-prod
+    open_bug_template:
+      url: https://github.com/GoogleCloudPlatform/testgrid/issues/
+    test_group_name: post-testgrid-deploy-prod
   - alert_options:
       alert_mail_to_addresses: slchase@google.com
     code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/testgrid/compare/<start-custom-0>...<end-custom-0>
     description: push-testgrid-images
-    name: push-testgrid-images
+    name: testgrid-push
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/testgrid/issues/
     test_group_name: push-testgrid-images
   name: googleoss-test-infra
+- dashboard_tab:
+  - description: Periodic testing of Kubeflow/manifests on the 0-6 release branch.
+    name: kubeflow-manifests-periodic-0-6-branch
+    test_group_name: kubeflow-manifests-periodic-0-6-branch
+  - description: Periodic testing of Kubeflow/manifests on the master branch.
+    name: kubeflow-manifests-periodic-master
+    test_group_name: kubeflow-manifests-periodic-master
+  - description: Periodic testing of Kubeflow on the 0-3 release branch.
+    name: kubeflow-periodic-0-3-branch
+    test_group_name: kubeflow-periodic-0-3-branch
+  - description: Periodic testing of Kubeflow on the 0-4 release branch.
+    name: kubeflow-periodic-0-4-branch
+    test_group_name: kubeflow-periodic-0-4-branch
+  - description: Periodic testing of Kubeflow on the 0-5 release branch.
+    name: kubeflow-periodic-0-5-branch
+    test_group_name: kubeflow-periodic-0-5-branch
+  - description: Periodic testing of Kubeflow on the 0-6 release branch.
+    name: kubeflow-periodic-0-6-branch
+    test_group_name: kubeflow-periodic-0-6-branch
+  - description: Periodic testing of Kubeflow on the 0-7 release
+    name: kubeflow-periodic-0-7
+    test_group_name: kubeflow-periodic-0-7
+  - description: Periodic testing of Kubeflow on the 1-0 release
+    name: kubeflow-periodic-1-0
+    test_group_name: kubeflow-periodic-1-0
+  - description: Periodic testing of Kubeflow examples
+    name: kubeflow-periodic-examples
+    test_group_name: kubeflow-periodic-examples
+  - description: Periodic testing of Kubeflow kfctl
+    name: kubeflow-periodic-kfctl
+    test_group_name: kubeflow-periodic-kfctl
+  - alert_options:
+      alert_mail_to_addresses: kubeflow-engineering@google.com
+    description: Periodic testing of Kubeflow on the latest master branch.
+    name: kubeflow-periodic-master
+    test_group_name: kubeflow-periodic-master
+  - code_search_url_template:
+      url: https://github.com/kubeflow/pipelines/compare/<start-custom-0>...<end-custom-0>
+    description: Periodic job to cleanup ml-pipeline-test GCP project
+    name: kubeflow-periodic-project-cleanup
+    open_bug_template:
+      url: https://github.com/kubeflow/pipelines/issues/
+    test_group_name: kubeflow-periodic-project-cleanup
+  - code_search_url_template:
+      url: https://github.com/kubeflow/arena/compare/<start-custom-0>...<end-custom-0>
+    description: Postsubmit tests for kubeflow/arena.
+    name: kubeflow-arena-postsubmit
+    open_bug_template:
+      url: https://github.com/kubeflow/arena/issues/
+    test_group_name: kubeflow-arena-postsubmit
+  - code_search_url_template:
+      url: https://github.com/kubeflow/caffe2-operator/compare/<start-custom-0>...<end-custom-0>
+    description: Postsubmit kubeflow/caffe2-operator.
+    name: kubeflow-caffe2-operator-postsubmit
+    open_bug_template:
+      url: https://github.com/kubeflow/caffe2-operator/issues/
+    test_group_name: kubeflow-caffe2-operator-postsubmit
+  - code_search_url_template:
+      url: https://github.com/kubeflow/chainer-operator/compare/<start-custom-0>...<end-custom-0>
+    description: Postsubmit tests for kubeflow/chainer-operator.
+    name: kubeflow-chainer-operator-postsubmit
+    open_bug_template:
+      url: https://github.com/kubeflow/chainer-operator/issues/
+    test_group_name: kubeflow-chainer-operator-postsubmit
+  - code_search_url_template:
+      url: https://github.com/kubeflow/examples/compare/<start-custom-0>...<end-custom-0>
+    description: Postsubmit kubeflow/examples.
+    name: kubeflow-examples-postsubmit
+    open_bug_template:
+      url: https://github.com/kubeflow/examples/issues/
+    test_group_name: kubeflow-examples-postsubmit
+  - code_search_url_template:
+      url: https://github.com/kubeflow/experimental-beagle/compare/<start-custom-0>...<end-custom-0>
+    description: Postsubmit kubeflow/experimental-beagle.
+    name: kubeflow-experimental-beagle-postsubmit
+    open_bug_template:
+      url: https://github.com/kubeflow/experimental-beagle/issues/
+    test_group_name: kubeflow-experimental-beagle-postsubmit
+  - code_search_url_template:
+      url: https://github.com/kubeflow/experimental-kvc/compare/<start-custom-0>...<end-custom-0>
+    description: Postsubmit kubeflow/experimental-kvc.
+    name: kubeflow-experimental-kvc-postsubmit
+    open_bug_template:
+      url: https://github.com/kubeflow/experimental-kvc/issues/
+    test_group_name: kubeflow-experimental-kvc-postsubmit
+  - code_search_url_template:
+      url: https://github.com/kubeflow/experimental-seldon/compare/<start-custom-0>...<end-custom-0>
+    description: Postsubmit kubeflow/experimental-seldon.
+    name: kubeflow-experimental-seldon-postsubmit
+    open_bug_template:
+      url: https://github.com/kubeflow/experimental-seldon/issues/
+    test_group_name: kubeflow-experimental-seldon-postsubmit
+  - code_search_url_template:
+      url: https://github.com/kubeflow/internal-acls/compare/<start-custom-0>...<end-custom-0>
+    description: Postsubmit tests for kubeflow/internal-acls.
+    name: kubeflow-internal-acls-postsubmit
+    open_bug_template:
+      url: https://github.com/kubeflow/internal-acls/issues/
+    test_group_name: kubeflow-internal-acls-postsubmit
+  - code_search_url_template:
+      url: https://github.com/kubeflow/katib/compare/<start-custom-0>...<end-custom-0>
+    description: Postsubmit kubeflow/katib.
+    name: kubeflow-katib-postsubmit
+    open_bug_template:
+      url: https://github.com/kubeflow/katib/issues/
+    test_group_name: kubeflow-katib-postsubmit
+  - code_search_url_template:
+      url: https://github.com/kubeflow/kfctl/compare/<start-custom-0>...<end-custom-0>
+    description: Postsubmit tests for kubeflow/kfctl.
+    name: kubeflow-kfctl-postsubmit
+    open_bug_template:
+      url: https://github.com/kubeflow/kfctl/issues/
+    test_group_name: kubeflow-kfctl-postsubmit
+  - code_search_url_template:
+      url: https://github.com/kubeflow/kubebench/compare/<start-custom-0>...<end-custom-0>
+    description: Postsubmit tests for kubeflow/kubebench.
+    name: kubeflow-kubebench-postsubmit
+    open_bug_template:
+      url: https://github.com/kubeflow/kubebench/issues/
+    test_group_name: kubeflow-kubebench-postsubmit
+  - alert_options:
+      alert_mail_to_addresses: kubeflow-engineering@google.com
+    code_search_url_template:
+      url: https://github.com/kubeflow/kubeflow/compare/<start-custom-0>...<end-custom-0>
+    description: Postsubmit tests for Kubeflow.
+    name: kubeflow-postsubmit
+    open_bug_template:
+      url: https://github.com/kubeflow/kubeflow/issues/
+    test_group_name: kubeflow-postsubmit
+  - code_search_url_template:
+      url: https://github.com/kubeflow/manifests/compare/<start-custom-0>...<end-custom-0>
+    description: Postsubmit tests for kubeflow/manifests.
+    name: kubeflow-manifests-postsubmit
+    open_bug_template:
+      url: https://github.com/kubeflow/manifests/issues/
+    test_group_name: kubeflow-manifests-postsubmit
+  - code_search_url_template:
+      url: https://github.com/kubeflow/mpi-operator/compare/<start-custom-0>...<end-custom-0>
+    description: Postsubmit tests for kubeflow/mpi-operator.
+    name: kubeflow-mpi-operator-postsubmit
+    open_bug_template:
+      url: https://github.com/kubeflow/mpi-operator/issues/
+    test_group_name: kubeflow-mpi-operator-postsubmit
+  - code_search_url_template:
+      url: https://github.com/kubeflow/mxnet-operator/compare/<start-custom-0>...<end-custom-0>
+    description: Postsubmit kubeflow/mxnet-operator.
+    name: kubeflow-mxnet-operator-postsubmit
+    open_bug_template:
+      url: https://github.com/kubeflow/mxnet-operator/issues/
+    test_group_name: kubeflow-mxnet-operator-postsubmit
+  - code_search_url_template:
+      url: https://github.com/kubeflow/pipelines/compare/<start-custom-0>...<end-custom-0>
+    description: Postsubmit tests for kubeflow/pipeline.
+    name: kubeflow-pipeline-postsubmit-mkp-component-test
+    open_bug_template:
+      url: https://github.com/kubeflow/pipelines/issues/
+    test_group_name: kubeflow-pipeline-postsubmit-mkp-component-test
+  - code_search_url_template:
+      url: https://github.com/kubeflow/pipelines/compare/<start-custom-0>...<end-custom-0>
+    description: Postsubmit tests for kubeflow/pipeline.
+    name: kubeflow-pipeline-postsubmit-mkp-e2e-test
+    open_bug_template:
+      url: https://github.com/kubeflow/pipelines/issues/
+    test_group_name: kubeflow-pipeline-postsubmit-mkp-e2e-test
+  - code_search_url_template:
+      url: https://github.com/kubeflow/pipelines/compare/<start-custom-0>...<end-custom-0>
+    description: Postsubmit tests for kubeflow/pipeline.
+    name: kubeflow-pipeline-postsubmit-mkp-sample-test
+    open_bug_template:
+      url: https://github.com/kubeflow/pipelines/issues/
+    test_group_name: kubeflow-pipeline-postsubmit-mkp-sample-test
+  - code_search_url_template:
+      url: https://github.com/kubeflow/pipelines/compare/<start-custom-0>...<end-custom-0>
+    description: Postsubmit tests for kubeflow/pipeline.
+    name: kubeflow-pipeline-postsubmit-standalone-component-test
+    open_bug_template:
+      url: https://github.com/kubeflow/pipelines/issues/
+    test_group_name: kubeflow-pipeline-postsubmit-standalone-component-test
+  - code_search_url_template:
+      url: https://github.com/kubeflow/pytorch-operator/compare/<start-custom-0>...<end-custom-0>
+    description: Postsubmit kubeflow/pytorch-operator.
+    name: kubeflow-pytorch-operator-postsubmit
+    open_bug_template:
+      url: https://github.com/kubeflow/pytorch-operator/issues/
+    test_group_name: kubeflow-pytorch-operator-postsubmit
+  - code_search_url_template:
+      url: https://github.com/kubeflow/reporting/compare/<start-custom-0>...<end-custom-0>
+    description: Postsubmit kubeflow/reporting.
+    name: kubeflow-reporting-postsubmit
+    open_bug_template:
+      url: https://github.com/kubeflow/reporting/issues/
+    test_group_name: kubeflow-reporting-postsubmit
+  - code_search_url_template:
+      url: https://github.com/kubeflow/testing/compare/<start-custom-0>...<end-custom-0>
+    description: Postsubmit kubeflow/testing.
+    name: kubeflow-testing-postsubmit
+    open_bug_template:
+      url: https://github.com/kubeflow/testing/issues/
+    test_group_name: kubeflow-testing-postsubmit
+  - code_search_url_template:
+      url: https://github.com/kubeflow/tf-operator/compare/<start-custom-0>...<end-custom-0>
+    description: Postsubmit kubeflow/tf-operator.
+    name: kubeflow-tf-operator-postsubmit
+    open_bug_template:
+      url: https://github.com/kubeflow/tf-operator/issues/
+    test_group_name: kubeflow-tf-operator-postsubmit
+  - code_search_url_template:
+      url: https://github.com/kubeflow/website/compare/<start-custom-0>...<end-custom-0>
+    description: Postsubmit kubeflow/website.
+    name: kubeflow-website-postsubmit
+    open_bug_template:
+      url: https://github.com/kubeflow/website/issues/
+    test_group_name: kubeflow-website-postsubmit
+  - code_search_url_template:
+      url: https://github.com/kubeflow/xgboost-operator/compare/<start-custom-0>...<end-custom-0>
+    description: Postsubmit tests for kubeflow/xgboost-operator.
+    name: kubeflow-xgboost-operator-postsubmit
+    open_bug_template:
+      url: https://github.com/kubeflow/xgboost-operator/issues/
+    test_group_name: kubeflow-xgboost-operator-postsubmit
+  - code_search_url_template:
+      url: https://github.com/kubeflow/arena/compare/<start-custom-0>...<end-custom-0>
+    description: Presubmit tests for kubeflow/arena.
+    name: kubeflow-arena-presubmit
+    open_bug_template:
+      url: https://github.com/kubeflow/arena/issues/
+    test_group_name: kubeflow-arena-presubmit
+  - code_search_url_template:
+      url: https://github.com/kubeflow/caffe2-operator/compare/<start-custom-0>...<end-custom-0>
+    description: Presubmits for kubeflow/caffe2-operator.
+    name: kubeflow-caffe2-operator-presubmit
+    open_bug_template:
+      url: https://github.com/kubeflow/caffe2-operator/issues/
+    test_group_name: kubeflow-caffe2-operator-presubmit
+  - code_search_url_template:
+      url: https://github.com/kubeflow/chainer-operator/compare/<start-custom-0>...<end-custom-0>
+    description: Presubmit tests for kubeflow/chainer-operator.
+    name: kubeflow-chainer-operator-presubmit
+    open_bug_template:
+      url: https://github.com/kubeflow/chainer-operator/issues/
+    test_group_name: kubeflow-chainer-operator-presubmit
+  - code_search_url_template:
+      url: https://github.com/kubeflow/examples/compare/<start-custom-0>...<end-custom-0>
+    description: Presubmits for kubeflow/examples.
+    name: kubeflow-examples-presubmit
+    open_bug_template:
+      url: https://github.com/kubeflow/examples/issues/
+    test_group_name: kubeflow-examples-presubmit
+  - code_search_url_template:
+      url: https://github.com/kubeflow/experimental-beagle/compare/<start-custom-0>...<end-custom-0>
+    description: Presubmits for kubeflow/experimental-beagle.
+    name: kubeflow-experimental-beagle-presubmit
+    open_bug_template:
+      url: https://github.com/kubeflow/experimental-beagle/issues/
+    test_group_name: kubeflow-experimental-beagle-presubmit
+  - code_search_url_template:
+      url: https://github.com/kubeflow/experimental-kvc/compare/<start-custom-0>...<end-custom-0>
+    description: Presubmits for kubeflow/experimental-kvc.
+    name: kubeflow-experimental-kvc-presubmit
+    open_bug_template:
+      url: https://github.com/kubeflow/experimental-kvc/issues/
+    test_group_name: kubeflow-experimental-kvc-presubmit
+  - code_search_url_template:
+      url: https://github.com/kubeflow/experimental-seldon/compare/<start-custom-0>...<end-custom-0>
+    description: Presubmits for kubeflow/experimental-seldon.
+    name: kubeflow-experimental-seldon-presubmit
+    open_bug_template:
+      url: https://github.com/kubeflow/experimental-seldon/issues/
+    test_group_name: kubeflow-experimental-seldon-presubmit
+  - code_search_url_template:
+      url: https://github.com/kubeflow/fairing/compare/<start-custom-0>...<end-custom-0>
+    description: Presubmit tests for kubeflow/fairing.
+    name: kubeflow-fairing-presubmit
+    open_bug_template:
+      url: https://github.com/kubeflow/fairing/issues/
+    test_group_name: kubeflow-fairing-presubmit
+  - code_search_url_template:
+      url: https://github.com/kubeflow/internal-acls/compare/<start-custom-0>...<end-custom-0>
+    description: Presubmit tests for Kubeflow/internal-acls.
+    name: kubeflow-internal-acls-presubmit
+    open_bug_template:
+      url: https://github.com/kubeflow/internal-acls/issues/
+    test_group_name: kubeflow-internal-acls-presubmit
+  - code_search_url_template:
+      url: https://github.com/kubeflow/katib/compare/<start-custom-0>...<end-custom-0>
+    description: Presubmits for kubeflow/katib.
+    name: kubeflow-katib-presubmit
+    open_bug_template:
+      url: https://github.com/kubeflow/katib/issues/
+    test_group_name: kubeflow-katib-presubmit
+  - code_search_url_template:
+      url: https://github.com/kubeflow/kfctl/compare/<start-custom-0>...<end-custom-0>
+    description: Presubmits for kubeflow/kfctl.
+    name: kubeflow-kfctl-presubmit
+    open_bug_template:
+      url: https://github.com/kubeflow/kfctl/issues/
+    test_group_name: kubeflow-kfctl-presubmit
+  - code_search_url_template:
+      url: https://github.com/kubeflow/kfserving/compare/<start-custom-0>...<end-custom-0>
+    description: Presubmits for kubeflow/kfserving.
+    name: kubeflow-kfserving-presubmit
+    open_bug_template:
+      url: https://github.com/kubeflow/kfserving/issues/
+    test_group_name: kubeflow-kfserving-presubmit
+  - code_search_url_template:
+      url: https://github.com/kubeflow/kubebench/compare/<start-custom-0>...<end-custom-0>
+    description: Presubmit tests for kubeflow/kubebench.
+    name: kubeflow-kubebench-presubmit
+    open_bug_template:
+      url: https://github.com/kubeflow/kubebench/issues/
+    test_group_name: kubeflow-kubebench-presubmit
+  - code_search_url_template:
+      url: https://github.com/kubeflow/kubeflow/compare/<start-custom-0>...<end-custom-0>
+    description: Presubmit tests for Kubeflow.
+    name: kubeflow-presubmit
+    open_bug_template:
+      url: https://github.com/kubeflow/kubeflow/issues/
+    test_group_name: kubeflow-presubmit
+  - code_search_url_template:
+      url: https://github.com/kubeflow/manifests/compare/<start-custom-0>...<end-custom-0>
+    description: Presubmits for kubeflow/manifests.
+    name: kubeflow-manifests-presubmit
+    open_bug_template:
+      url: https://github.com/kubeflow/manifests/issues/
+    test_group_name: kubeflow-manifests-presubmit
+  - code_search_url_template:
+      url: https://github.com/kubeflow/metadata/compare/<start-custom-0>...<end-custom-0>
+    description: Presubmit tests for kubeflow/metadata.
+    name: kubeflow-metadata-presubmit
+    open_bug_template:
+      url: https://github.com/kubeflow/metadata/issues/
+    test_group_name: kubeflow-metadata-presubmit
+  - code_search_url_template:
+      url: https://github.com/kubeflow/mpi-operator/compare/<start-custom-0>...<end-custom-0>
+    description: Presubmit tests for kubeflow/mpi-operator.
+    name: kubeflow-mpi-operator-presubmit
+    open_bug_template:
+      url: https://github.com/kubeflow/mpi-operator/issues/
+    test_group_name: kubeflow-mpi-operator-presubmit
+  - code_search_url_template:
+      url: https://github.com/kubeflow/mxnet-operator/compare/<start-custom-0>...<end-custom-0>
+    description: Presubmits for kubeflow/mxnet-operator.
+    name: kubeflow-mxnet-operator-presubmit
+    open_bug_template:
+      url: https://github.com/kubeflow/mxnet-operator/issues/
+    test_group_name: kubeflow-mxnet-operator-presubmit
+  - code_search_url_template:
+      url: https://github.com/kubeflow/pytorch-operator/compare/<start-custom-0>...<end-custom-0>
+    description: Presubmits for kubeflow/pytorch-operator.
+    name: kubeflow-pytorch-operator-presubmit
+    open_bug_template:
+      url: https://github.com/kubeflow/pytorch-operator/issues/
+    test_group_name: kubeflow-pytorch-operator-presubmit
+  - code_search_url_template:
+      url: https://github.com/kubeflow/reporting/compare/<start-custom-0>...<end-custom-0>
+    description: Presubmits for kubeflow/reporting.
+    name: kubeflow-reporting-presubmit
+    open_bug_template:
+      url: https://github.com/kubeflow/reporting/issues/
+    test_group_name: kubeflow-reporting-presubmit
+  - code_search_url_template:
+      url: https://github.com/kubeflow/testing/compare/<start-custom-0>...<end-custom-0>
+    description: Presubmits for kubeflow/testing.
+    name: kubeflow-testing-presubmit
+    open_bug_template:
+      url: https://github.com/kubeflow/testing/issues/
+    test_group_name: kubeflow-testing-presubmit
+  - code_search_url_template:
+      url: https://github.com/kubeflow/tf-operator/compare/<start-custom-0>...<end-custom-0>
+    description: Presubmits for kubeflow/tf-operator.
+    name: kubeflow-tf-operator-presubmit
+    open_bug_template:
+      url: https://github.com/kubeflow/tf-operator/issues/
+    test_group_name: kubeflow-tf-operator-presubmit
+  - code_search_url_template:
+      url: https://github.com/kubeflow/website/compare/<start-custom-0>...<end-custom-0>
+    description: Presubmits for kubeflow/website.
+    name: kubeflow-website-presubmit
+    open_bug_template:
+      url: https://github.com/kubeflow/website/issues/
+    test_group_name: kubeflow-website-presubmit
+  - code_search_url_template:
+      url: https://github.com/kubeflow/xgboost-operator/compare/<start-custom-0>...<end-custom-0>
+    description: Presubmit tests for kubeflow/xgboost-operator.
+    name: kubeflow-xgboost-operator-presubmit
+    open_bug_template:
+      url: https://github.com/kubeflow/xgboost-operator/issues/
+    test_group_name: kubeflow-xgboost-operator-presubmit
+  name: sig-big-data
 test_groups:
+- gcs_prefix: oss-prow/logs/ESPv2-continuous-anthos-cloud-run-e2e-cloud-run-http-bookstore
+  name: ESPv2-continuous-anthos-cloud-run-e2e-cloud-run-http-bookstore
+- gcs_prefix: oss-prow/logs/ESPv2-continuous-build
+  name: ESPv2-continuous-build
+- gcs_prefix: oss-prow/logs/ESPv2-continuous-cloud-run-e2e-cloud-function-http-bookstore
+  name: ESPv2-continuous-cloud-run-e2e-cloud-function-http-bookstore
+- gcs_prefix: oss-prow/logs/ESPv2-continuous-cloud-run-e2e-cloud-run-grpc-echo
+  name: ESPv2-continuous-cloud-run-e2e-cloud-run-grpc-echo
+- gcs_prefix: oss-prow/logs/ESPv2-continuous-cloud-run-e2e-cloud-run-http-bookstore
+  name: ESPv2-continuous-cloud-run-e2e-cloud-run-http-bookstore
+- gcs_prefix: oss-prow/logs/ESPv2-continuous-gke-e2e-tight-grpc-echo-managed
+  name: ESPv2-continuous-gke-e2e-tight-grpc-echo-managed
+- gcs_prefix: oss-prow/logs/ESPv2-continuous-gke-e2e-tight-grpc-interop-managed
+  name: ESPv2-continuous-gke-e2e-tight-grpc-interop-managed
+- gcs_prefix: oss-prow/logs/ESPv2-continuous-gke-e2e-tight-http-bookstore-managed
+  name: ESPv2-continuous-gke-e2e-tight-http-bookstore-managed
+- gcs_prefix: oss-prow/logs/ESPv2-continuous-presubmit
+  name: ESPv2-continuous-presubmit
+- gcs_prefix: oss-prow/logs/ESPv2-continuous-presubmit-asan
+  name: ESPv2-continuous-presubmit-asan
+- gcs_prefix: oss-prow/logs/ESPv2-continuous-presubmit-tsan
+  name: ESPv2-continuous-presubmit-tsan
+- gcs_prefix: oss-prow/logs/ESPv2-gke-janitor
+  name: ESPv2-gke-janitor
+- gcs_prefix: oss-prow/logs/ESPv2-serverless-janitor
+  name: ESPv2-serverless-janitor
 - gcs_prefix: oss-prow/logs/ci-oss-test-infra-autobump-prow
   name: ci-oss-test-infra-autobump-prow
+- gcs_prefix: oss-prow/logs/ci-test-infra-resultstore-upload
+  name: ci-test-infra-resultstore-upload
+- gcs_prefix: oss-prow/logs/kubeflow-manifests-periodic-0-6-branch
+  name: kubeflow-manifests-periodic-0-6-branch
+- gcs_prefix: oss-prow/logs/kubeflow-manifests-periodic-master
+  name: kubeflow-manifests-periodic-master
+- gcs_prefix: oss-prow/logs/kubeflow-periodic-0-3-branch
+  name: kubeflow-periodic-0-3-branch
+- gcs_prefix: oss-prow/logs/kubeflow-periodic-0-4-branch
+  name: kubeflow-periodic-0-4-branch
+- gcs_prefix: oss-prow/logs/kubeflow-periodic-0-5-branch
+  name: kubeflow-periodic-0-5-branch
+- gcs_prefix: oss-prow/logs/kubeflow-periodic-0-6-branch
+  name: kubeflow-periodic-0-6-branch
+- gcs_prefix: oss-prow/logs/kubeflow-periodic-0-7
+  name: kubeflow-periodic-0-7
+- gcs_prefix: oss-prow/logs/kubeflow-periodic-1-0
+  name: kubeflow-periodic-1-0
+- gcs_prefix: oss-prow/logs/kubeflow-periodic-examples
+  name: kubeflow-periodic-examples
+- gcs_prefix: oss-prow/logs/kubeflow-periodic-kfctl
+  name: kubeflow-periodic-kfctl
+- gcs_prefix: oss-prow/logs/kubeflow-periodic-master
+  name: kubeflow-periodic-master
+  num_failures_to_alert: 3
+- gcs_prefix: oss-prow/logs/kubeflow-periodic-project-cleanup
+  name: kubeflow-periodic-project-cleanup
 - gcs_prefix: oss-prow/logs/gce-build
   name: gce-build
 - gcs_prefix: oss-prow/logs/guest-agent-build
@@ -118,10 +570,63 @@ test_groups:
   name: post-oss-test-infra-deploy-prow
 - gcs_prefix: oss-prow/logs/post-oss-test-infra-upload-testgrid-config
   name: post-oss-test-infra-upload-testgrid-config
-- gcs_prefix: oss-prow/logs/post-testgrid-deploy
-  name: post-testgrid-deploy
+- gcs_prefix: oss-prow/logs/post-testgrid-deploy-canary
+  name: post-testgrid-deploy-canary
+- gcs_prefix: oss-prow/logs/post-testgrid-deploy-prod
+  name: post-testgrid-deploy-prod
 - gcs_prefix: oss-prow/logs/push-testgrid-images
   name: push-testgrid-images
+- gcs_prefix: oss-prow/logs/kubeflow-arena-postsubmit
+  name: kubeflow-arena-postsubmit
+- gcs_prefix: oss-prow/logs/kubeflow-caffe2-operator-postsubmit
+  name: kubeflow-caffe2-operator-postsubmit
+- gcs_prefix: oss-prow/logs/kubeflow-chainer-operator-postsubmit
+  name: kubeflow-chainer-operator-postsubmit
+- gcs_prefix: oss-prow/logs/kubeflow-examples-postsubmit
+  name: kubeflow-examples-postsubmit
+- gcs_prefix: oss-prow/logs/kubeflow-experimental-beagle-postsubmit
+  name: kubeflow-experimental-beagle-postsubmit
+- gcs_prefix: oss-prow/logs/kubeflow-experimental-kvc-postsubmit
+  name: kubeflow-experimental-kvc-postsubmit
+- gcs_prefix: oss-prow/logs/kubeflow-experimental-seldon-postsubmit
+  name: kubeflow-experimental-seldon-postsubmit
+- gcs_prefix: oss-prow/logs/kubeflow-internal-acls-postsubmit
+  name: kubeflow-internal-acls-postsubmit
+- gcs_prefix: oss-prow/logs/kubeflow-katib-postsubmit
+  name: kubeflow-katib-postsubmit
+- gcs_prefix: oss-prow/logs/kubeflow-kfctl-postsubmit
+  name: kubeflow-kfctl-postsubmit
+- gcs_prefix: oss-prow/logs/kubeflow-kubebench-postsubmit
+  name: kubeflow-kubebench-postsubmit
+- gcs_prefix: oss-prow/logs/kubeflow-postsubmit
+  name: kubeflow-postsubmit
+  num_failures_to_alert: 3
+- gcs_prefix: oss-prow/logs/kubeflow-manifests-postsubmit
+  name: kubeflow-manifests-postsubmit
+- gcs_prefix: oss-prow/logs/kubeflow-mpi-operator-postsubmit
+  name: kubeflow-mpi-operator-postsubmit
+- gcs_prefix: oss-prow/logs/kubeflow-mxnet-operator-postsubmit
+  name: kubeflow-mxnet-operator-postsubmit
+- gcs_prefix: oss-prow/logs/kubeflow-pipeline-postsubmit-mkp-component-test
+  name: kubeflow-pipeline-postsubmit-mkp-component-test
+- gcs_prefix: oss-prow/logs/kubeflow-pipeline-postsubmit-mkp-e2e-test
+  name: kubeflow-pipeline-postsubmit-mkp-e2e-test
+- gcs_prefix: oss-prow/logs/kubeflow-pipeline-postsubmit-mkp-sample-test
+  name: kubeflow-pipeline-postsubmit-mkp-sample-test
+- gcs_prefix: oss-prow/logs/kubeflow-pipeline-postsubmit-standalone-component-test
+  name: kubeflow-pipeline-postsubmit-standalone-component-test
+- gcs_prefix: oss-prow/logs/kubeflow-pytorch-operator-postsubmit
+  name: kubeflow-pytorch-operator-postsubmit
+- gcs_prefix: oss-prow/logs/kubeflow-reporting-postsubmit
+  name: kubeflow-reporting-postsubmit
+- gcs_prefix: oss-prow/logs/kubeflow-testing-postsubmit
+  name: kubeflow-testing-postsubmit
+- gcs_prefix: oss-prow/logs/kubeflow-tf-operator-postsubmit
+  name: kubeflow-tf-operator-postsubmit
+- gcs_prefix: oss-prow/logs/kubeflow-website-postsubmit
+  name: kubeflow-website-postsubmit
+- gcs_prefix: oss-prow/logs/kubeflow-xgboost-operator-postsubmit
+  name: kubeflow-xgboost-operator-postsubmit
 - gcs_prefix: oss-prow/pr-logs/directory/osconfig-presubmit-gobuild
   name: osconfig-presubmit-gobuild
   num_columns_recent: 20
@@ -131,3 +636,75 @@ test_groups:
 - gcs_prefix: oss-prow/pr-logs/directory/osconfig-presubmit-gotest
   name: osconfig-presubmit-gotest
   num_columns_recent: 20
+- gcs_prefix: oss-prow/pr-logs/directory/kubeflow-arena-presubmit
+  name: kubeflow-arena-presubmit
+  num_columns_recent: 30
+- gcs_prefix: oss-prow/pr-logs/directory/kubeflow-caffe2-operator-presubmit
+  name: kubeflow-caffe2-operator-presubmit
+  num_columns_recent: 30
+- gcs_prefix: oss-prow/pr-logs/directory/kubeflow-chainer-operator-presubmit
+  name: kubeflow-chainer-operator-presubmit
+  num_columns_recent: 30
+- gcs_prefix: oss-prow/pr-logs/directory/kubeflow-examples-presubmit
+  name: kubeflow-examples-presubmit
+  num_columns_recent: 30
+- gcs_prefix: oss-prow/pr-logs/directory/kubeflow-experimental-beagle-presubmit
+  name: kubeflow-experimental-beagle-presubmit
+  num_columns_recent: 30
+- gcs_prefix: oss-prow/pr-logs/directory/kubeflow-experimental-kvc-presubmit
+  name: kubeflow-experimental-kvc-presubmit
+  num_columns_recent: 30
+- gcs_prefix: oss-prow/pr-logs/directory/kubeflow-experimental-seldon-presubmit
+  name: kubeflow-experimental-seldon-presubmit
+  num_columns_recent: 30
+- gcs_prefix: oss-prow/pr-logs/directory/kubeflow-fairing-presubmit
+  name: kubeflow-fairing-presubmit
+  num_columns_recent: 30
+- gcs_prefix: oss-prow/pr-logs/directory/kubeflow-internal-acls-presubmit
+  name: kubeflow-internal-acls-presubmit
+  num_columns_recent: 30
+- gcs_prefix: oss-prow/pr-logs/directory/kubeflow-katib-presubmit
+  name: kubeflow-katib-presubmit
+  num_columns_recent: 30
+- gcs_prefix: oss-prow/pr-logs/directory/kubeflow-kfctl-presubmit
+  name: kubeflow-kfctl-presubmit
+  num_columns_recent: 30
+- gcs_prefix: oss-prow/pr-logs/directory/kubeflow-kfserving-presubmit
+  name: kubeflow-kfserving-presubmit
+  num_columns_recent: 30
+- gcs_prefix: oss-prow/pr-logs/directory/kubeflow-kubebench-presubmit
+  name: kubeflow-kubebench-presubmit
+  num_columns_recent: 30
+- gcs_prefix: oss-prow/pr-logs/directory/kubeflow-presubmit
+  name: kubeflow-presubmit
+  num_columns_recent: 30
+- gcs_prefix: oss-prow/pr-logs/directory/kubeflow-manifests-presubmit
+  name: kubeflow-manifests-presubmit
+  num_columns_recent: 30
+- gcs_prefix: oss-prow/pr-logs/directory/kubeflow-metadata-presubmit
+  name: kubeflow-metadata-presubmit
+  num_columns_recent: 30
+- gcs_prefix: oss-prow/pr-logs/directory/kubeflow-mpi-operator-presubmit
+  name: kubeflow-mpi-operator-presubmit
+  num_columns_recent: 30
+- gcs_prefix: oss-prow/pr-logs/directory/kubeflow-mxnet-operator-presubmit
+  name: kubeflow-mxnet-operator-presubmit
+  num_columns_recent: 30
+- gcs_prefix: oss-prow/pr-logs/directory/kubeflow-pytorch-operator-presubmit
+  name: kubeflow-pytorch-operator-presubmit
+  num_columns_recent: 30
+- gcs_prefix: oss-prow/pr-logs/directory/kubeflow-reporting-presubmit
+  name: kubeflow-reporting-presubmit
+  num_columns_recent: 30
+- gcs_prefix: oss-prow/pr-logs/directory/kubeflow-testing-presubmit
+  name: kubeflow-testing-presubmit
+  num_columns_recent: 30
+- gcs_prefix: oss-prow/pr-logs/directory/kubeflow-tf-operator-presubmit
+  name: kubeflow-tf-operator-presubmit
+  num_columns_recent: 30
+- gcs_prefix: oss-prow/pr-logs/directory/kubeflow-website-presubmit
+  name: kubeflow-website-presubmit
+  num_columns_recent: 30
+- gcs_prefix: oss-prow/pr-logs/directory/kubeflow-xgboost-operator-presubmit
+  name: kubeflow-xgboost-operator-presubmit
+  num_columns_recent: 30
