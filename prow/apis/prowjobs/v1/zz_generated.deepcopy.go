@@ -275,7 +275,11 @@ func (in *ProwJobSpec) DeepCopyInto(out *ProwJobSpec) {
 		*out = new(ReporterConfig)
 		(*in).DeepCopyInto(*out)
 	}
-	in.RerunAuthConfig.DeepCopyInto(&out.RerunAuthConfig)
+	if in.RerunAuthConfig != nil {
+		in, out := &in.RerunAuthConfig, &out.RerunAuthConfig
+		*out = new(RerunAuthConfig)
+		(*in).DeepCopyInto(*out)
+	}
 	return
 }
 

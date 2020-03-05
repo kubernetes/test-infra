@@ -613,10 +613,14 @@ type Deck struct {
 	Branding *Branding `json:"branding,omitempty"`
 	// GoogleAnalytics, if specified, include a Google Analytics tracking code on each page.
 	GoogleAnalytics string `json:"google_analytics,omitempty"`
-	// RerunAuthConfig specifies who is able to trigger job reruns if that feature is enabled.
-	// The permissions here apply to all jobs. GitHub teams are not yet supported
-	// for the global Deck config.
-	RerunAuthConfig prowapi.RerunAuthConfig `json:"rerun_auth_config,omitempty"`
+	// Deprecated: RerunAuthConfig specifies who is able to trigger job reruns if that feature is enabled.
+	// The permissions here apply to all jobs.
+	// This option will be removed in favor of RerunAuthConfigs in March 2020.
+	RerunAuthConfig *prowapi.RerunAuthConfig `json:"rerun_auth_config,omitempty"`
+	// RerunAuthConfigs is a map of configs that specify who is able to trigger job reruns. The field
+	// accepts a key of: `org/repo`, `org` or `*` (wildcard) to define what GitHub org (or repo) a particular
+	// config applies to and a value of: `RerunAuthConfig` struct to define the users/groups authorized to rerun jobs.
+	RerunAuthConfigs RerunAuthConfigs `json:"rerun_auth_configs,omitempty"`
 }
 
 // ExternalAgentLog ensures an external agent like Jenkins can expose
@@ -649,6 +653,27 @@ type Branding struct {
 	BackgroundColor string `json:"background_color,omitempty"`
 	// HeaderColor is the color of the header.
 	HeaderColor string `json:"header_color,omitempty"`
+}
+
+// RerunAuthConfigs represents the configs for rerun authorization in Deck.
+// Use `org/repo`, `org` or `*` as key and a `RerunAuthConfig` struct as value.
+type RerunAuthConfigs map[string]prowapi.RerunAuthConfig
+
+// GetRerunAuthConfig returns the appropriate RerunAuthConfig based on the provided Refs.
+func (rac RerunAuthConfigs) GetRerunAuthConfig(refs *prowapi.Refs) prowapi.RerunAuthConfig {
+	if refs == nil || refs.Org == "" {
+		return rac["*"]
+	}
+
+	if rerun, exists := rac[fmt.Sprintf("%s/%s", refs.Org, refs.Repo)]; exists {
+		return rerun
+	}
+
+	if rerun, exists := rac[refs.Org]; exists {
+		return rerun
+	}
+
+	return rac["*"]
 }
 
 // PubSubSubscriptions maps GCP projects to a list of Topics.
@@ -1129,7 +1154,7 @@ func (c *Config) validateComponentConfig() error {
 			return errors.New("slack_reporter and slack_reporter_configs['*'] are mutually exclusive")
 		}
 
-		c.SlackReporterConfigs = map[string]SlackReporter{"*": *c.SlackReporter}
+		c.SlackReporterConfigs = SlackReporterConfigs{"*": *c.SlackReporter}
 	}
 
 	if c.SlackReporterConfigs != nil {
@@ -1138,6 +1163,25 @@ func (c *Config) validateComponentConfig() error {
 				return fmt.Errorf("failed to validate slackreporter config: %v", err)
 			}
 			c.SlackReporterConfigs[k] = config
+		}
+	}
+
+	// TODO(@clarketm): Remove in May 2020
+	if c.Deck.RerunAuthConfig != nil {
+		logrus.Warning("rerun_auth_config will be deprecated in May 2020, and it will be replaced with rerun_auth_configs['*'].")
+
+		if c.Deck.RerunAuthConfigs != nil {
+			return errors.New("rerun_auth_config and rerun_auth_configs['*'] are mutually exclusive")
+		}
+
+		c.Deck.RerunAuthConfigs = RerunAuthConfigs{"*": *c.Deck.RerunAuthConfig}
+	}
+
+	if c.Deck.RerunAuthConfigs != nil {
+		for k, config := range c.Deck.RerunAuthConfigs {
+			if err := config.Validate(); err != nil {
+				return fmt.Errorf("rerun_auth_configs[%s]: %v", k, err)
+			}
 		}
 	}
 
@@ -1169,8 +1213,8 @@ func validateJobBase(v JobBase, jobType prowapi.ProwJobType, podNamespace string
 	if v.Spec == nil || len(v.Spec.Containers) == 0 {
 		return nil // jenkins jobs have no spec
 	}
-	if v.RerunAuthConfig != nil && v.RerunAuthConfig.AllowAnyone && (len(v.RerunAuthConfig.GitHubUsers) > 0 || len(v.RerunAuthConfig.GitHubTeamIDs) > 0 || len(v.RerunAuthConfig.GitHubTeamSlugs) > 0 || len(v.RerunAuthConfig.GitHubOrgs) > 0) {
-		return errors.New("allow anyone is set to true and permitted users or groups are specified")
+	if err := v.RerunAuthConfig.Validate(); err != nil {
+		return err
 	}
 	if err := v.UtilityConfig.Validate(); err != nil {
 		return err
@@ -1411,12 +1455,6 @@ func parseProwConfig(c *Config) error {
 		c.Deck.Spyglass.SizeLimit = 100e6
 	} else if c.Deck.Spyglass.SizeLimit <= 0 {
 		return fmt.Errorf("invalid value for deck.spyglass.size_limit, must be >=0")
-	}
-
-	// If a whitelist is specified, the user probably does not intend for anyone to be able
-	// to rerun any job.
-	if c.Deck.RerunAuthConfig.AllowAnyone && (len(c.Deck.RerunAuthConfig.GitHubUsers) > 0 || len(c.Deck.RerunAuthConfig.GitHubTeamIDs) > 0 || len(c.Deck.RerunAuthConfig.GitHubTeamSlugs) > 0 || len(c.Deck.RerunAuthConfig.GitHubOrgs) > 0) {
-		return fmt.Errorf("allow_anyone is set to true and authorized users or teams are specified.")
 	}
 
 	// Migrate the old `viewers` format to the new `lenses` format.

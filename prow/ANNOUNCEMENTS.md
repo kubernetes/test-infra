@@ -90,6 +90,9 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
  
+ - *March 16, 2020* The `rerun_auth_config` config field has been deprecated in
+   favor of the new `rerun_auth_configs` field which allows configuration on a global,
+   organization or repo level. `rerun_auth_config` will be removed in May 2020.
  - *November 21, 2019* The boskos metrics component replaced the existing prometheus
    metrics with a single, label-qualified metric. Metrics are now served at `/metrics`
    on port 9090. This actually happened August 5th, but is being documented now. 
