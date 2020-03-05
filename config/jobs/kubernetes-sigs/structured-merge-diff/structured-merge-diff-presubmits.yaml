@@ -50,6 +50,13 @@ presubmits:
         - --log-file=$(ARTIFACTS)/benchmark-log.txt
         - --output=$(ARTIFACTS)/junit_benchmarks.xml
         - ./...
+        resources:
+          requests:
+            cpu: "6000m"
+            memory: "6Gi"
+          limits:
+            cpu: "6000m"
+            memory: "6Gi"
     annotations:
       testgrid-dashboards: sig-api-machinery-structured-merge-diff
       testgrid-tab-name: pr-benchmark
