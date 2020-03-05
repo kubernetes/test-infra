@@ -57,7 +57,7 @@ periodics:
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --extract=release/latest
       - --ginkgo-parallel
-      - --kops-args=--image=136693071363/debian-10-amd64-20191117-80
+      - --kops-args=--image=136693071363/debian-10-amd64-20200210-166
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-ssh-user=admin
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
