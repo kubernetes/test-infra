@@ -21,6 +21,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"sort"
 
 	flag "github.com/spf13/pflag"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api/v1"
@@ -67,19 +68,27 @@ func createKubeConfigFromClusterMap(cm map[string]kube.Cluster) ([]byte, error) 
 		CurrentContext: kube.DefaultClusterAlias,
 	}
 
-	for name, cluster := range cm {
+	names := make([]string, 0, len(cm))
+
+	for k := range cm {
+		names = append(names, k)
+	}
+
+	sort.Strings(names)
+
+	for _, name := range names {
 		config.Clusters = append(config.Clusters, clientcmdapi.NamedCluster{
 			Name: name,
 			Cluster: clientcmdapi.Cluster{
-				Server:                   cluster.Endpoint,
-				CertificateAuthorityData: cluster.ClusterCACertificate,
+				Server:                   cm[name].Endpoint,
+				CertificateAuthorityData: cm[name].ClusterCACertificate,
 			},
 		})
 		config.AuthInfos = append(config.AuthInfos, clientcmdapi.NamedAuthInfo{
 			Name: name,
 			AuthInfo: clientcmdapi.AuthInfo{
-				ClientCertificateData: cluster.ClientCertificate,
-				ClientKeyData:         cluster.ClientKey,
+				ClientCertificateData: cm[name].ClientCertificate,
+				ClientKeyData:         cm[name].ClientKey,
 			},
 		})
 		config.Contexts = append(config.Contexts, clientcmdapi.NamedContext{
