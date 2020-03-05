@@ -696,7 +696,7 @@ postsubmits:
     spec:
       serviceAccountName: pusher
       containers:
-      - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20200107-v2.3.1-71-gfd2fae8
+      - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20200305-v2.3.1-117-gd677a55
         command:
         - cip
         args:
@@ -722,7 +722,7 @@ postsubmits:
     - ^master$
     spec:
       containers:
-      - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20200107-v2.3.1-71-gfd2fae8
+      - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20200305-v2.3.1-117-gd677a55
         command:
         - cip
         args:
@@ -1090,7 +1090,7 @@ periodics:
     description: Runs label_sync to synchronize GitHub repo labels with the label config defined in label_sync/labels.yaml.
 # ci-k8sio-cip runs daily, to make sure that the destination GCRs do not deviate
 # away from the intent of the manifest.
-- interval: 24h
+- interval: 4h
   cluster: test-infra-trusted
   max_concurrency: 1
   # This name is the "job name", passed in as "--job=NAME" for mkpj.
@@ -1115,7 +1115,7 @@ periodics:
     # interactive bash session:
     #
     #   docker run --rm -it gcr.io/cip-demo-staging/cip:<tag> "cd /cip && bash"
-    - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20200107-v2.3.1-71-gfd2fae8
+    - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20200305-v2.3.1-117-gd677a55
       command:
       - cip
       args:
