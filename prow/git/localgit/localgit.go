@@ -27,7 +27,10 @@ import (
 	"strings"
 
 	"k8s.io/test-infra/prow/git"
+	v2 "k8s.io/test-infra/prow/git/v2"
 )
+
+type Clients func() (*LocalGit, v2.ClientFactory, error)
 
 // LocalGit stores the repos in a temp dir. Create with New and delete with
 // Clean.
@@ -38,8 +41,8 @@ type LocalGit struct {
 	Git string
 }
 
-// New creates a LocalGit and a git.Client pointing at it.
-func New() (*LocalGit, *git.Client, error) {
+// New creates a LocalGit and a client factory from a git.Client pointing at it.
+func New() (*LocalGit, v2.ClientFactory, error) {
 	g, err := exec.LookPath("git")
 	if err != nil {
 		return nil, nil, err
@@ -64,7 +67,7 @@ func New() (*LocalGit, *git.Client, error) {
 	return &LocalGit{
 		Dir: t,
 		Git: g,
-	}, c, nil
+	}, v2.ClientFactoryFrom(c), nil
 }
 
 // Clean deletes the local git dir.
@@ -174,4 +177,26 @@ func (lg *LocalGit) Merge(org, repo, commitlike string) (string, error) {
 func (lg *LocalGit) Rebase(org, repo, commitlike string) (string, error) {
 	rdir := filepath.Join(lg.Dir, org, repo)
 	return runCmdOutput(lg.Git, rdir, "rebase", commitlike)
+}
+
+// NewV2 creates a LocalGit and a v2 client factory pointing at it.
+func NewV2() (*LocalGit, v2.ClientFactory, error) {
+	g, err := exec.LookPath("git")
+	if err != nil {
+		return nil, nil, err
+	}
+	t, err := ioutil.TempDir("", "localgit")
+	if err != nil {
+		return nil, nil, err
+	}
+	c, err := v2.NewLocalClientFactory(t,
+		func() (name, email string, err error) { return "robot", "robot@beep.boop", nil },
+		func(content []byte) []byte { return content })
+	if err != nil {
+		return nil, nil, err
+	}
+	return &LocalGit{
+		Dir: t,
+		Git: g,
+	}, c, nil
 }

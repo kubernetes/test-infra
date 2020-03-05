@@ -17,16 +17,17 @@ limitations under the License.
 package mason
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"testing"
 	"time"
 
-	"context"
+	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
 
 	"k8s.io/test-infra/boskos/common"
+	"k8s.io/test-infra/boskos/crds"
 	"k8s.io/test-infra/boskos/ranch"
-	"k8s.io/test-infra/boskos/storage"
 )
 
 var (
@@ -98,7 +99,7 @@ func (fc *fakeConfig) Construct(ctx context.Context, res common.Resource, typeTo
 func createFakeBoskos(tc testConfig) (*ranch.Storage, *Client, chan releasedResource) {
 	names := make(chan releasedResource, 100)
 	configNames := map[string]bool{}
-	s, _ := ranch.NewStorage(storage.NewMemoryStorage(), storage.NewMemoryStorage(), "")
+	s, _ := ranch.NewStorage(context.Background(), fakectrlruntimeclient.NewFakeClient(), "test", "")
 	r, _ := ranch.NewRanch("", s, testTTL)
 
 	for rtype, c := range tc {
@@ -113,28 +114,40 @@ func createFakeBoskos(tc testConfig) (*ranch.Storage, *Client, chan releasedReso
 				res.State = common.Dirty
 				if _, ok := configNames[rtype]; !ok {
 					configNames[rtype] = true
-					s.AddDynamicResourceLifeCycle(common.DynamicResourceLifeCycle{
+					s.AddDynamicResourceLifeCycle(crds.FromDynamicResourceLifecycle(common.DynamicResourceLifeCycle{
 						Config: common.ConfigType{
 							Type:    fakeConfigType,
 							Content: emptyContent,
 						},
 						Type:  rtype,
 						Needs: *c.resourceNeeds,
-					})
+					}))
 				}
 			}
-			s.AddResource(res)
+			s.AddResource(crds.FromResource(res))
 		}
 	}
 	return s, NewClient(&fakeBoskos{ranch: r, releasedResources: names}), names
 }
 
 func (fb *fakeBoskos) Acquire(rtype, state, dest string) (*common.Resource, error) {
-	return fb.ranch.Acquire(rtype, state, dest, owner, "")
+	crd, err := fb.ranch.Acquire(rtype, state, dest, owner, "")
+	if crd != nil {
+		return resourcePtr(crd.ToResource()), err
+	}
+	return nil, err
 }
 
 func (fb *fakeBoskos) AcquireByState(state, dest string, names []string) ([]common.Resource, error) {
-	return fb.ranch.AcquireByState(state, dest, owner, names)
+	crds, err := fb.ranch.AcquireByState(state, dest, owner, names)
+	var resources []common.Resource
+	for _, crd := range crds {
+		if crd == nil {
+			continue
+		}
+		resources = append(resources, crd.ToResource())
+	}
+	return resources, err
 }
 
 func (fb *fakeBoskos) ReleaseOne(name, dest string) error {
@@ -175,12 +188,18 @@ func TestRecycleLeasedResources(t *testing.T) {
 	}
 
 	rStorage, mClient, _ := createFakeBoskos(tc)
-	res1, _ := rStorage.GetResource("type1_0")
+	res1CRD, _ := rStorage.GetResource("type1_0")
+	res1 := res1CRD.ToResource()
 	res1.State = "type2_0"
-	rStorage.UpdateResource(res1)
-	res2, _ := rStorage.GetResource("type2_0")
-	res2.UserData.Set(LeasedResources, &[]string{"type1_0"})
-	rStorage.UpdateResource(res2)
+	rStorage.UpdateResource(crds.FromResource(res1))
+	res2CRD, _ := rStorage.GetResource("type2_0")
+	res2 := res2CRD.ToResource()
+	if err := res2.UserData.Set(LeasedResources, &[]string{"type1_0"}); err != nil {
+		t.Fatalf("setting userdata failed: %v", err)
+	}
+	if _, err := rStorage.UpdateResource(crds.FromResource(res2)); err != nil {
+		t.Fatalf("failed to update: %v", err)
+	}
 	m := NewMason(1, mClient.basic, defaultWaitPeriod, defaultWaitPeriod, rStorage)
 	m.RegisterConfigConverter(fakeConfigType, fakeConfigConverter)
 	ctx, cancel := context.WithCancel(context.Background())
@@ -193,8 +212,10 @@ func TestRecycleLeasedResources(t *testing.T) {
 		t.Errorf("Timeout")
 	}
 	m.Stop()
-	res1, _ = rStorage.GetResource("type1_0")
-	res2, _ = rStorage.GetResource("type2_0")
+	res1CRD, _ = rStorage.GetResource("type1_0")
+	res2CRD, _ = rStorage.GetResource("type2_0")
+	res1 = res1CRD.ToResource()
+	res2 = res2CRD.ToResource()
 	if res2.State != common.Cleaning {
 		t.Errorf("Resource state should be cleaning, found %s", res2.State)
 	}
@@ -231,10 +252,10 @@ func TestRecycleNoLeasedResources(t *testing.T) {
 	m.Stop()
 	res1, _ := rStorage.GetResource("type1_0")
 	res2, _ := rStorage.GetResource("type2_0")
-	if res2.State != common.Cleaning {
+	if res2.Status.State != common.Cleaning {
 		t.Errorf("Resource state should be cleaning")
 	}
-	if res1.State != common.Free {
+	if res1.Status.State != common.Free {
 		t.Errorf("Resource state should be untouched, current %s", mClient.resources["type1_0"].State)
 	}
 }
@@ -311,8 +332,8 @@ func TestCleanOne(t *testing.T) {
 				t.Errorf("unexpected error %v", err)
 				t.FailNow()
 			}
-			for _, res := range resources {
-				if res.State != common.Dirty {
+			for _, res := range resources.Items {
+				if res.Status.State != common.Dirty {
 					tt.Errorf("resource %v should be released as dirty", res)
 				}
 
@@ -343,7 +364,7 @@ func TestFulfillOne(t *testing.T) {
 	}
 	req := requirements{
 		resource:    *res,
-		needs:       conf.Needs,
+		needs:       conf.Spec.Needs,
 		fulfillment: common.TypeToResources{},
 	}
 	if err = m.fulfillOne(context.Background(), &req); err != nil {
@@ -357,10 +378,11 @@ func TestFulfillOne(t *testing.T) {
 	}
 	userRes := req.fulfillment["type1"][0]
 	leasedResource, _ := rStorage.GetResource(userRes.Name)
-	if leasedResource.State != common.Leased {
+	if leasedResource.Status.State != common.Leased {
 		t.Errorf("State should be Leased")
 	}
-	*res, _ = rStorage.GetResource(res.Name)
+	resCRD, _ := rStorage.GetResource(res.Name)
+	*res = resCRD.ToResource()
 	var leasedResources common.LeasedResources
 	if res.UserData.Extract(LeasedResources, &leasedResources); err != nil {
 		t.Errorf("unable to extract %s", LeasedResources)
@@ -425,7 +447,7 @@ loop:
 		r.UserData.Extract(LeasedResources, &leasedResources)
 		for _, name := range leasedResources {
 			r, _ := rStorage.GetResource(name)
-			l = append(l, r)
+			l = append(l, r.ToResource())
 		}
 		return
 	}
@@ -460,9 +482,9 @@ loop:
 		}
 	}
 	resources, _ := rStorage.GetResources()
-	for _, r := range resources {
-		if r.State != common.Dirty {
-			t.Errorf("state should be %s, found %s", common.Dirty, r.State)
+	for _, r := range resources.Items {
+		if r.Status.State != common.Dirty {
+			t.Errorf("state should be %s, found %s", common.Dirty, r.Status.State)
 		}
 	}
 }

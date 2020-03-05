@@ -30,18 +30,13 @@ var (
 	// ResourceType is the ResourceObject CRD type
 	ResourceType = Type{
 		Kind:       reflect.TypeOf(ResourceObject{}).Name(),
-		ListKind:   reflect.TypeOf(ResourceCollection{}).Name(),
+		ListKind:   reflect.TypeOf(ResourceObjectList{}).Name(),
 		Singular:   "resource",
 		Plural:     "resources",
 		Object:     &ResourceObject{},
-		Collection: &ResourceCollection{},
+		Collection: &ResourceObjectList{},
 	}
 )
-
-// NewTestResourceClient creates a fake CRD rest client for common.Resource
-func NewTestResourceClient() ClientInterface {
-	return newDummyClient(ResourceType)
-}
 
 // ResourceObject represents common.ResourceObject. It implements the Object interface.
 type ResourceObject struct {
@@ -51,11 +46,11 @@ type ResourceObject struct {
 	Status        ResourceStatus `json:"status,omitempty"`
 }
 
-// ResourceCollection is the Collection implementation
-type ResourceCollection struct {
+// ResourceObjectList is the Collection implementation
+type ResourceObjectList struct {
 	v1.TypeMeta `json:",inline"`
 	v1.ListMeta `json:"metadata,omitempty"`
-	Items       []*ResourceObject `json:"items"`
+	Items       []ResourceObject `json:"items"`
 }
 
 // ResourceSpec holds information that are not likely to change
@@ -70,11 +65,6 @@ type ResourceStatus struct {
 	LastUpdate     time.Time        `json:"lastUpdate,omitempty"`
 	UserData       *common.UserData `json:"userData,omitempty"`
 	ExpirationDate *time.Time       `json:"expirationDate,omitempty"`
-}
-
-// GetName returns a unique identifier for a given resource
-func (in *ResourceObject) GetName() string {
-	return in.Name
 }
 
 func (in *ResourceObject) deepCopyInto(out *ResourceObject) {
@@ -102,7 +92,9 @@ func (in *ResourceObject) DeepCopyObject() runtime.Object {
 	return nil
 }
 
-func (in *ResourceObject) toResource() common.Resource {
+// ToResource returns the common.Resource representation for
+// a ResourceObject
+func (in *ResourceObject) ToResource() common.Resource {
 	return common.Resource{
 		Name:           in.Name,
 		Type:           in.Spec.Type,
@@ -114,67 +106,71 @@ func (in *ResourceObject) toResource() common.Resource {
 	}
 }
 
-// ToItem implements Object interface
-func (in *ResourceObject) ToItem() common.Item {
-	return in.toResource()
-}
-
-func (in *ResourceObject) fromResource(r common.Resource) {
-	in.Name = r.Name
-	in.Spec.Type = r.Type
-	in.Status.Owner = r.Owner
-	in.Status.State = r.State
-	in.Status.LastUpdate = r.LastUpdate
-	in.Status.UserData = r.UserData
-	in.Status.ExpirationDate = r.ExpirationDate
-}
-
-// FromItem implements Object interface
-func (in *ResourceObject) FromItem(i common.Item) {
-	r, err := common.ItemToResource(i)
-	if err == nil {
-		in.fromResource(r)
+// FromResource converts a common.Resource to a *ResourceObject
+func FromResource(r common.Resource) *ResourceObject {
+	if r.UserData == nil {
+		r.UserData = &common.UserData{}
+	}
+	return &ResourceObject{
+		ObjectMeta: v1.ObjectMeta{
+			Name: r.Name,
+		},
+		Spec: ResourceSpec{
+			Type: r.Type,
+		},
+		Status: ResourceStatus{
+			Owner:          r.Owner,
+			State:          r.State,
+			LastUpdate:     r.LastUpdate,
+			UserData:       r.UserData,
+			ExpirationDate: r.ExpirationDate,
+		},
 	}
 }
 
-// GetItems implements Collection interface
-func (in *ResourceCollection) GetItems() []Object {
-	var items []Object
-	for _, i := range in.Items {
-		items = append(items, i)
-	}
-	return items
-}
-
-// SetItems implements Collection interface
-func (in *ResourceCollection) SetItems(objects []Object) {
-	var items []*ResourceObject
-	for _, b := range objects {
-		items = append(items, b.(*ResourceObject))
-	}
-	in.Items = items
-}
-
-func (in *ResourceCollection) deepCopyInto(out *ResourceCollection) {
+func (in *ResourceObjectList) deepCopyInto(out *ResourceObjectList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
 	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	out.Items = in.Items
 }
 
-func (in *ResourceCollection) deepCopy() *ResourceCollection {
+func (in *ResourceObjectList) deepCopy() *ResourceObjectList {
 	if in == nil {
 		return nil
 	}
-	out := new(ResourceCollection)
+	out := new(ResourceObjectList)
 	in.deepCopyInto(out)
 	return out
 }
 
 // DeepCopyObject implements Collection interface
-func (in *ResourceCollection) DeepCopyObject() runtime.Object {
+func (in *ResourceObjectList) DeepCopyObject() runtime.Object {
 	if c := in.deepCopy(); c != nil {
 		return c
 	}
 	return nil
+}
+
+// NewResource creates a new Boskos Resource.
+func NewResource(name, rtype, state, owner string, t time.Time) *ResourceObject {
+	// If no state defined, mark as Free
+	if state == "" {
+		state = common.Free
+	}
+
+	return &ResourceObject{
+		ObjectMeta: v1.ObjectMeta{
+			Name: name,
+		},
+		Spec: ResourceSpec{
+			Type: rtype,
+		},
+		Status: ResourceStatus{
+			State:      state,
+			Owner:      owner,
+			LastUpdate: t,
+			UserData:   &common.UserData{},
+		},
+	}
 }

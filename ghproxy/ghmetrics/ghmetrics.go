@@ -67,6 +67,17 @@ var cacheCounter = prometheus.NewCounterVec(
 	[]string{"mode", "path"},
 )
 
+// timeoutDuration provides the 'github_request_timeouts' histogram that keeps
+// track of the timeouts of GitHub requests by API path.
+var timeoutDuration = prometheus.NewHistogramVec(
+	prometheus.HistogramOpts{
+		Name:    "github_request_timeouts",
+		Help:    "GitHub request timeout by API path.",
+		Buckets: []float64{45, 60, 90, 120, 300},
+	},
+	[]string{"token_hash", "path", "user_agent"},
+)
+
 var muxTokenUsage, muxRequestMetrics sync.Mutex
 var lastGitHubResponse time.Time
 
@@ -75,18 +86,28 @@ func init() {
 	prometheus.MustRegister(ghTokenUsageGaugeVec)
 	prometheus.MustRegister(ghRequestDurationHistVec)
 	prometheus.MustRegister(cacheCounter)
+	prometheus.MustRegister(timeoutDuration)
 }
 
 // CollectGitHubTokenMetrics publishes the rate limits of the github api to
 // `github_token_usage` as well as `github_token_reset` on prometheus.
 func CollectGitHubTokenMetrics(tokenHash, apiVersion string, headers http.Header, reqStartTime, responseTime time.Time) {
 	remaining := headers.Get("X-RateLimit-Remaining")
+	if remaining == "" {
+		return
+	}
 	timeUntilReset := timestampStringToTime(headers.Get("X-RateLimit-Reset"))
 	durationUntilReset := timeUntilReset.Sub(reqStartTime)
 
 	remainingFloat, err := strconv.ParseFloat(remaining, 64)
 	if err != nil {
 		logrus.WithError(err).Infof("Couldn't convert number of remaining token requests into gauge value (float)")
+	}
+	if remainingFloat == 0 {
+		logrus.WithFields(logrus.Fields{
+			"header":     remaining,
+			"user-agent": headers.Get("User-Agent"),
+		}).Debug("Parsed GitHub header as indicating no remaining rate-limit.")
 	}
 
 	muxTokenUsage.Lock()
@@ -122,4 +143,10 @@ func timestampStringToTime(tstamp string) time.Time {
 // CollectCacheRequestMetrics records a cache outcome for a specific path
 func CollectCacheRequestMetrics(mode, path string) {
 	cacheCounter.With(prometheus.Labels{"mode": mode, "path": simplifier.Simplify(path)}).Inc()
+}
+
+// CollectRequestTimeoutMetrics publishes the duration of timed-out requests by
+// API path to 'github_request_timeouts' on prometheus.
+func CollectRequestTimeoutMetrics(tokenHash, path, userAgent string, reqStartTime, responseTime time.Time) {
+	timeoutDuration.With(prometheus.Labels{"token_hash": tokenHash, "path": simplifier.Simplify(path), "user_agent": userAgent}).Observe(float64(responseTime.Sub(reqStartTime).Seconds()))
 }

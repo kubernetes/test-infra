@@ -21,6 +21,7 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/pluginhelp"
@@ -59,7 +60,7 @@ func init() {
 	plugins.RegisterGenericCommentHandler(pluginName, handleGenericComment, helpProvider)
 }
 
-func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
 	// The Config field is omitted because this plugin is not configurable.
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "The help plugin provides commands that add or remove the '" + labels.Help + "' and the '" + labels.GoodFirstIssue + "' labels from issues.",

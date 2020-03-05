@@ -28,12 +28,13 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/pluginhelp"
 )
 
 // ExternalPluginHelpProvider is a func type that returns a PluginHelp struct for an external
 // plugin based on the specified enabledRepos.
-type ExternalPluginHelpProvider func(enabledRepos []string) (*pluginhelp.PluginHelp, error)
+type ExternalPluginHelpProvider func([]config.OrgRepo) (*pluginhelp.PluginHelp, error)
 
 // ServeExternalPluginHelp returns a HandlerFunc that serves plugin help information that is
 // provided by the specified ExternalPluginHelpProvider.
@@ -59,7 +60,7 @@ func ServeExternalPluginHelp(mux *http.ServeMux, log *logrus.Entry, provider Ext
 				serverError("reading request body", err)
 				return
 			}
-			var enabledRepos []string
+			var enabledRepos []config.OrgRepo
 			if err := json.Unmarshal(b, &enabledRepos); err != nil {
 				serverError("unmarshaling request body", err)
 				return

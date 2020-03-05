@@ -49,8 +49,6 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/sets"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
-	"k8s.io/test-infra/prow/interrupts"
-	"k8s.io/test-infra/prow/simplifypath"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/yaml"
@@ -61,9 +59,10 @@ import (
 	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/deck/jobs"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
-	"k8s.io/test-infra/prow/git"
+	"k8s.io/test-infra/prow/git/v2"
 	prowgithub "k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/githuboauth"
+	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
@@ -72,6 +71,7 @@ import (
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/plugins/trigger"
 	"k8s.io/test-infra/prow/prstatus"
+	"k8s.io/test-infra/prow/simplifypath"
 	"k8s.io/test-infra/prow/spyglass"
 
 	// Import standard spyglass viewers
@@ -81,6 +81,7 @@ import (
 	_ "k8s.io/test-infra/prow/spyglass/lenses/coverage"
 	_ "k8s.io/test-infra/prow/spyglass/lenses/junit"
 	_ "k8s.io/test-infra/prow/spyglass/lenses/metadata"
+	_ "k8s.io/test-infra/prow/spyglass/lenses/podinfo"
 	_ "k8s.io/test-infra/prow/spyglass/lenses/restcoverage"
 )
 
@@ -116,6 +117,7 @@ type options struct {
 	spyglass              bool
 	spyglassFilesLocation string
 	gcsCredentialsFile    string
+	gcsCookieAuth         bool
 	rerunCreatesJob       bool
 	allowInsecure         bool
 	dryRun                bool
@@ -180,6 +182,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.StringVar(&o.staticFilesLocation, "static-files-location", "/static", "Path to the static files")
 	fs.StringVar(&o.templateFilesLocation, "template-files-location", "/template", "Path to the template files")
 	fs.StringVar(&o.gcsCredentialsFile, "gcs-credentials-file", "", "Path to the GCS credentials file")
+	fs.BoolVar(&o.gcsCookieAuth, "gcs-cookie-auth", false, "Use storage.cloud.google.com instead of signed URLs")
 	fs.BoolVar(&o.rerunCreatesJob, "rerun-creates-job", false, "Change the re-run option in Deck to actually create the job. **WARNING:** Only use this with non-public deck instances, otherwise strangers can DOS your Prow instance")
 	fs.BoolVar(&o.allowInsecure, "allow-insecure", false, "Allows insecure requests for CSRF and GitHub oauth.")
 	fs.BoolVar(&o.dryRun, "dry-run", false, "Whether or not to make mutating API calls to GitHub.")
@@ -196,64 +199,16 @@ func staticHandlerFromDir(dir string) http.Handler {
 }
 
 var (
-	deckMetrics = struct {
-		httpRequestDuration *prometheus.HistogramVec
-		httpResponseSize    *prometheus.HistogramVec
-	}{
-		httpRequestDuration: prometheus.NewHistogramVec(
-			prometheus.HistogramOpts{
-				Name:    "deck_http_request_duration_seconds",
-				Help:    "http request duration in seconds",
-				Buckets: []float64{0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10, 20},
-			},
-			[]string{"path", "method", "status", "user_agent"},
-		),
-		httpResponseSize: prometheus.NewHistogramVec(
-			prometheus.HistogramOpts{
-				Name:    "deck_http_response_size_bytes",
-				Help:    "http response size in bytes",
-				Buckets: []float64{16384, 32768, 65536, 131072, 262144, 524288, 1048576, 2097152, 4194304, 8388608, 16777216, 33554432},
-			},
-			[]string{"path", "method", "status", "user_agent"},
-		),
-	}
+	httpRequestDuration = metrics.HttpRequestDuration("deck", 0.005, 20)
+	httpResponseSize    = metrics.HttpResponseSize("deck", 16384, 33554432)
+	traceHandler        = metrics.TraceHandler(simplifier, httpRequestDuration, httpResponseSize)
 )
 
 type authCfgGetter func() *prowapi.RerunAuthConfig
 
-type traceResponseWriter struct {
-	http.ResponseWriter
-	statusCode int
-	size       int
-}
-
-func (trw *traceResponseWriter) WriteHeader(code int) {
-	trw.statusCode = code
-	trw.ResponseWriter.WriteHeader(code)
-}
-
-func (trw *traceResponseWriter) Write(data []byte) (int, error) {
-	size, err := trw.ResponseWriter.Write(data)
-	trw.size += size
-	return size, err
-}
-
 func init() {
-	prometheus.MustRegister(deckMetrics.httpRequestDuration)
-	prometheus.MustRegister(deckMetrics.httpResponseSize)
-}
-
-func traceHandler(h http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		t := time.Now()
-		// Initialize the status to 200 in case WriteHeader is not called
-		trw := &traceResponseWriter{ResponseWriter: w, statusCode: http.StatusOK}
-		h.ServeHTTP(trw, r)
-		latency := time.Since(t)
-		labels := prometheus.Labels{"path": simplifier.Simplify(r.URL.Path), "method": r.Method, "status": strconv.Itoa(trw.statusCode), "user_agent": r.Header.Get("User-Agent")}
-		deckMetrics.httpRequestDuration.With(labels).Observe(latency.Seconds())
-		deckMetrics.httpResponseSize.With(labels).Observe(float64(trw.size))
-	})
+	prometheus.MustRegister(httpRequestDuration)
+	prometheus.MustRegister(httpResponseSize)
 }
 
 var simplifier = simplifypath.NewSimplifier(l("", // shadow element mimicing the root
@@ -546,6 +501,11 @@ func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, o options
 			logrus.Info("Manager stopped gracefully.")
 		}
 	}()
+	mgrSyncCtx, mgrSyncCtxCancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer mgrSyncCtxCancel()
+	if synced := mgr.GetCache().WaitForCacheSync(mgrSyncCtx.Done()); !synced {
+		logrus.Fatal("Timed out waiting for cachesync")
+	}
 
 	buildClusterClients, err := o.kubernetes.BuildClusterClients(cfg().PodNamespace, false)
 	if err != nil {
@@ -581,7 +541,7 @@ func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, o options
 	// When inrepoconfig is enabled, both the GitHubClient and the gitClient are used to resolve
 	// presubmits dynamically which we need for the PR history page.
 	var githubClient deckGitHubClient
-	var gitClient *git.Client
+	var gitClient git.ClientFactory
 	secretAgent := &secret.Agent{}
 	if o.github.TokenPath != "" {
 		if err := secretAgent.Start([]string{o.github.TokenPath}); err != nil {
@@ -591,9 +551,14 @@ func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, o options
 		if err != nil {
 			logrus.WithError(err).Fatal("Error getting GitHub client.")
 		}
-		gitClient, err = o.github.GitClient(secretAgent, o.dryRun)
+		g, err := o.github.GitClient(secretAgent, o.dryRun)
 		if err != nil {
 			logrus.WithError(err).Fatal("Error getting Git client.")
+		}
+		gitClient = git.ClientFactoryFrom(g)
+	} else {
+		if len(cfg().InRepoConfig.Enabled) > 0 {
+			logrus.Fatal("--github-token-path must be configured with a valid token when using the inrepoconfig feature")
 		}
 	}
 
@@ -709,18 +674,17 @@ func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, o options
 	return mux
 }
 
-func initSpyglass(cfg config.Getter, o options, mux *http.ServeMux, ja *jobs.JobAgent, gitHubClient deckGitHubClient, gitClient *git.Client) {
-	var c *storage.Client
-	var err error
-	if o.gcsCredentialsFile == "" {
-		c, err = storage.NewClient(context.Background(), option.WithoutAuthentication())
-	} else {
-		c, err = storage.NewClient(context.Background(), option.WithCredentialsFile(o.gcsCredentialsFile))
+func initSpyglass(cfg config.Getter, o options, mux *http.ServeMux, ja *jobs.JobAgent, gitHubClient deckGitHubClient, gitClient git.ClientFactory) {
+	ctx := context.TODO()
+	var options []option.ClientOption
+	if creds := o.gcsCredentialsFile; creds != "" {
+		options = append(options, option.WithCredentialsFile(creds))
 	}
+	c, err := storage.NewClient(ctx, options...)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting GCS client")
 	}
-	sg := spyglass.New(ja, cfg, c, o.gcsCredentialsFile, context.Background())
+	sg := spyglass.New(ctx, ja, cfg, c, o.gcsCredentialsFile, o.gcsCookieAuth)
 	sg.Start()
 
 	mux.Handle("/spyglass/static/", http.StripPrefix("/spyglass/static", staticHandlerFromDir(o.spyglassFilesLocation)))
@@ -896,7 +860,7 @@ func handleJobHistory(o options, cfg config.Getter, gcsClient *storage.Client, l
 // The url must look like this:
 //
 // /pr-history?org=<org>&repo=<repo>&pr=<pr number>
-func handlePRHistory(o options, cfg config.Getter, gcsClient *storage.Client, gitHubClient deckGitHubClient, gitClient *git.Client, log *logrus.Entry) http.HandlerFunc {
+func handlePRHistory(o options, cfg config.Getter, gcsClient *storage.Client, gitHubClient deckGitHubClient, gitClient git.ClientFactory, log *logrus.Entry) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		setHeadersNoCaching(w)
 		tmpl, err := getPRHistory(r.URL, cfg(), gcsClient, gitHubClient, gitClient)
@@ -950,7 +914,7 @@ func renderSpyglass(sg *spyglass.Spyglass, cfg config.Getter, src string, o opti
 	src = strings.TrimSuffix(src, "/")
 	realPath, err := sg.ResolveSymlink(src)
 	if err != nil {
-		return "", fmt.Errorf("error when resolving real path: %v", err)
+		return "", fmt.Errorf("error when resolving real path %s: %v", src, err)
 	}
 	src = realPath
 

@@ -7,7 +7,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20191115-95b1cd9
+      - image: gcr.io/k8s-testimages/bootstrap:v20200302-ca9526d
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -37,7 +37,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20191115-95b1cd9
+    - image: gcr.io/k8s-testimages/bootstrap:v20200302-ca9526d
       args:
       - --repo=k8s.io/kubernetes
       - --repo=k8s.io/release
@@ -56,13 +56,16 @@ periodics:
         requests:
           cpu: 4
           memory: "8Gi"
+  rerun_auth_config:
+    github_team_ids:
+      - 2241179 # release-managers
   annotations:
     fork-per-release: "true"
     fork-per-release-replacements: "--extra-publish-file=k8s-master -> --extra-publish-file=k8s-beta"
     fork-per-release-generic-suffix: "true"
     testgrid-dashboards: sig-release-master-blocking
     testgrid-tab-name: build-master
-    testgrid-alert-email: release-managers@kubernetes.io,kubernetes-release-team@googlegroups.com
+    testgrid-alert-email: release-managers@kubernetes.io, kubernetes-release-team@googlegroups.com
 
 - interval: 5m
   name: ci-kubernetes-build-fast
@@ -71,7 +74,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20191115-95b1cd9
+    - image: gcr.io/k8s-testimages/bootstrap:v20200302-ca9526d
       args:
       - --repo=k8s.io/kubernetes
       - --repo=k8s.io/release
@@ -88,6 +91,9 @@ periodics:
         requests:
           cpu: 4
           memory: "8Gi"
+  rerun_auth_config:
+    github_team_ids:
+      - 2241179 # release-managers
   annotations:
     testgrid-dashboards: sig-release-master-blocking, google-unit
     testgrid-tab-name: build-master-fast
@@ -99,20 +105,19 @@ periodics:
   decorate: true
   spec:
     containers:
-    - image: gcr.io/k8s-staging-release-test/deb-builder:latest
+    - image: gcr.io/k8s-staging-release-test/kubepkg:latest
       imagePullPolicy: Always
       command:
-      - ./debs
+      - ./kubepkg
       args:
-      # We explicitly don't build the cri-tools package as the tooling will attempt to
-      # fetch a release version of cri-tools from GitHub before it exists.
-      #
-      # ref: https://github.com/kubernetes/kubernetes/issues/84548
-      - -packages=kubelet,kubectl,kubeadm,kubernetes-cni
+      - debs
       resources:
         requests:
           cpu: 4
           memory: "8Gi"
+  rerun_auth_config:
+    github_team_ids:
+      - 2241179 # release-managers
   annotations:
     testgrid-alert-email: release-managers@kubernetes.io
     testgrid-dashboards: sig-release-master-informing
@@ -123,14 +128,19 @@ periodics:
   decorate: true
   spec:
     containers:
-    - image: gcr.io/k8s-staging-release-test/rpm-builder:latest
+    - image: gcr.io/k8s-staging-release-test/kubepkg-rpm:latest
       imagePullPolicy: Always
       command:
-      - ./build.sh
+      - ./kubepkg
+      args:
+      - rpms
       resources:
         requests:
           cpu: 4
           memory: "8Gi"
+  rerun_auth_config:
+    github_team_ids:
+      - 2241179 # release-managers
   annotations:
     testgrid-alert-email: release-managers@kubernetes.io
     testgrid-dashboards: sig-release-master-informing

@@ -26,6 +26,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/pluginhelp"
@@ -48,7 +49,7 @@ func init() {
 	plugins.RegisterGenericCommentHandler(PluginName, handleGenericComment, helpProvider)
 }
 
-func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
 	// The Config field is omitted because this plugin is not configurable.
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "The hold plugin allows anyone to add or remove the '" + labels.Hold + "' Label from a pull request in order to temporarily prevent the PR from merging without withholding approval.",

@@ -1,0 +1,58 @@
+periodics:
+  - interval: 1h
+    name: ci-kubernetes-generate-make-test-cache
+    annotations:
+      testgrid-dashboards: sig-testing-canaries
+    decorate: true
+    extra_refs:
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-28c7418-master
+          command:
+            - runner.sh
+            - bash
+          args:
+            - -c
+            - |
+              result=0
+              # Run the tests as usual
+              GO111MODULE=off go install k8s.io/kubernetes/vendor/gotest.tools/gotestsum || result=$?
+              time make test KUBE_TIMEOUT="--timeout=600s" || result=$?
+              # Send the cache off to gcs
+              time tar -czf cache.tar.gz -C _output/local/go cache/ || result=$?
+              time gsutil cp cache.tar.gz gs://kubernetes-jenkins/cache/poc/k8s-test-cache.tar.gz || result=$?
+              exit $result
+  - interval: 15m
+    name: ci-kubernetes-cached-make-test
+    annotations:
+      testgrid-dashboards: sig-testing-canaries
+    decorate: true
+    extra_refs:
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-28c7418-master
+          command:
+            - runner.sh
+            - bash
+          args:
+            - -c
+            - |
+              # Restore the cache
+              time curl https://storage.googleapis.com/kubernetes-jenkins/cache/poc/k8s-test-cache.tar.gz -o cache.tar.gz
+              mkdir -p _output/local/go/
+              time tar -xzf cache.tar.gz -C _output/local/go
+              # Run tests as usual
+              result=0
+              GO111MODULE=off go install k8s.io/kubernetes/vendor/gotest.tools/gotestsum || result=$?
+              time make test KUBE_TIMEOUT="--timeout=600s" || result=$?
+              exit $result

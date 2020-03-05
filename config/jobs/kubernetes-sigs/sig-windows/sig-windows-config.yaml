@@ -1,37 +1,11 @@
 presets:
 - labels:
-    preset-azure-acsengine: "true"
+    preset-azure-windows: "true"
   env:
-  - name: AZURE_CREDENTIALS
-    value: /etc/azure-cred/credentials
-  - name: AZURE_SSH_PUBLIC_KEY_FILE
-    value: /etc/azure-ssh/azure-ssh-pub
-  - name: CLOUD_CONFIG
-    value: random
-  - name: AZ_STORAGE_CONTAINER_NAME
-    value: mystoragecontainer
-  - name: REGISTRY
-    value: k8se2eimages.azurecr.io
   - name: WIN_BUILD
     value: https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/build/build-windows-k8s.sh
   - name: KUBE_TEST_REPO_LIST_DOWNLOAD_LOCATION
     value: https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/images/image-repo-list
-  - name: KUBE_VERBOSE
-    value: 0
-  volumes:
-  - name: azure-cred
-    secret:
-      secretName: azure-cred
-  - name: azure-ssh
-    secret:
-      secretName: azure-ssh
-  volumeMounts:
-  - name: azure-cred
-    mountPath: /etc/azure-cred
-    readOnly: true
-  - name: azure-ssh
-    mountPath: /etc/azure-ssh
-    readOnly: true
 
 presubmits:
   kubernetes/kubernetes:
@@ -44,12 +18,13 @@ presubmits:
     - master
     labels:
       preset-service-account: "true"
-      preset-azure-acsengine: "true"
+      preset-azure-cred: "true"
+      preset-azure-windows: "true"
       preset-k8s-ssh: "true"
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-28c7418-master
         args:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
@@ -62,29 +37,35 @@ presubmits:
         - "--test=true"
         - "--up=true"
         - "--down=true"
-        - "--deployment=acsengine"
+        - "--deployment=aksengine"
         - "--provider=skeleton"
-        - "--build=host-go"
+        - "--build=quick"
         - "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-aks-engine-azure-windows"
         - "--ginkgo-parallel=4"
-        - "--acsengine-admin-username=azureuser"
-        - "--acsengine-admin-password=AdminPassw0rd"
-        - "--acsengine-creds=$AZURE_CREDENTIALS"
-        - "--acsengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz"
-        - "--acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
-        - "--acsengine-winZipBuildScript=$WIN_BUILD"
-        - "--acsengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_staging.json"
-        - "--acsengine-win-binaries"
-        - "--acsengine-hyperkube"
-        - "--acsengine-agentpoolcount=2"
-        - "--test_args=--ginkgo.flakeAttempts=2 --num-nodes=2 --node-os-distro=windows --ginkgo.focus=\\[Conformance\\]|\\[NodeConformance\\]|\\[sig-windows\\]|\\[sig-apps\\].CronJob|\\[sig-api-machinery\\].ResourceQuota|\\[sig-scheduling\\].SchedulerPreemption --ginkgo.skip=\\[LinuxOnly\\]|GMSA|\\[Serial\\]|Guestbook.application.should.create.and.stop.a.working.application"
+        - "--aksengine-admin-username=azureuser"
+        - "--aksengine-admin-password=AdminPassw0rd"
+        - "--aksengine-creds=$AZURE_CREDENTIALS"
+        - "--aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz"
+        - "--aksengine-public-key=$K8S_SSH_PUBLIC_KEY_PATH"
+        - "--aksengine-private-key=$K8S_SSH_PRIVATE_KEY_PATH"
+        - "--aksengine-winZipBuildScript=$WIN_BUILD"
+        - "--aksengine-orchestratorRelease=1.18"
+        - "--aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_staging.json"
+        - "--aksengine-win-binaries"
+        - "--aksengine-deploy-custom-k8s"
+        - "--aksengine-agentpoolcount=2"
+        - "--test_args=--num-nodes=2 --node-os-distro=windows --ginkgo.focus=\\[Conformance\\]|\\[NodeConformance\\]|\\[sig-windows\\]|\\[sig-apps\\].CronJob|\\[sig-api-machinery\\].ResourceQuota|\\[sig-scheduling\\].SchedulerPreemption --ginkgo.skip=\\[LinuxOnly\\]|GMSA|\\[Serial\\]|Guestbook.application.should.create.and.stop.a.working.application"
         - "--timeout=450m"
         securityContext:
           privileged: true
+        env:
+        - name: K8S_SSH_PUBLIC_KEY_PATH
+          value: /etc/ssh-key-secret/ssh-public # from preset-k8s-ssh label
+        - name: K8S_SSH_PRIVATE_KEY_PATH
+          value: /etc/ssh-key-secret/ssh-private # from preset-k8s-ssh lable
     annotations:
-      testgrid-dashboards: sig-windows, provider-azure-on-call
+      testgrid-dashboards: sig-windows, provider-azure-windows, provider-azure-presubmit
       testgrid-tab-name: aks-engine-azure-windows-presubmit
-      testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
       description: Presubmit job for Windows tests on k8s clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
       testgrid-num-columns-recent: '30'
 periodics:
@@ -92,12 +73,13 @@ periodics:
   name: ci-kubernetes-e2e-aks-engine-azure-master-windows
   labels:
     preset-service-account: "true"
-    preset-azure-acsengine: "true"
+    preset-azure-cred: "true"
+    preset-azure-windows: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-28c7418-master
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -109,25 +91,26 @@ periodics:
       - "--test=true"
       - "--up=true"
       - "--down=true"
-      - "--deployment=acsengine"
+      - "--deployment=aksengine"
       - "--provider=skeleton"
-      - "--build=host-go"
-      - "--acsengine-admin-username=azureuser"
-      - "--acsengine-admin-password=AdminPassw0rd"
-      - "--acsengine-creds=$AZURE_CREDENTIALS"
-      - "--acsengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz"
-      - "--acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
-      - "--acsengine-winZipBuildScript=$WIN_BUILD"
-      - "--acsengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_master.json"
-      - "--acsengine-win-binaries"
-      - "--acsengine-hyperkube"
-      - "--acsengine-agentpoolcount=2"
-      - "--test_args=--ginkgo.flakeAttempts=2 --num-nodes=2 --node-os-distro=windows --ginkgo.focus=\\[Conformance\\]|\\[NodeConformance\\]|\\[sig-windows\\]|\\[sig-apps\\].CronJob|\\[sig-api-machinery\\].ResourceQuota|\\[sig-scheduling\\].SchedulerPreemption|\\[sig-autoscaling\\].\\[Feature:HPA\\]  --ginkgo.skip=\\[LinuxOnly\\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application"
+      - "--build=quick"
+      - "--aksengine-orchestratorRelease=1.18"
+      - "--aksengine-admin-username=azureuser"
+      - "--aksengine-admin-password=AdminPassw0rd"
+      - "--aksengine-creds=$AZURE_CREDENTIALS"
+      - "--aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz"
+      - "--aksengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
+      - "--aksengine-winZipBuildScript=$WIN_BUILD"
+      - "--aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_master.json"
+      - "--aksengine-win-binaries"
+      - "--aksengine-deploy-custom-k8s"
+      - "--aksengine-agentpoolcount=2"
+      - "--test_args=--num-nodes=2 --node-os-distro=windows --ginkgo.focus=\\[Conformance\\]|\\[NodeConformance\\]|\\[sig-windows\\]|\\[sig-apps\\].CronJob|\\[sig-api-machinery\\].ResourceQuota|\\[sig-scheduling\\].SchedulerPreemption|\\[sig-autoscaling\\].\\[Feature:HPA\\]  --ginkgo.skip=\\[LinuxOnly\\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application"
       - "--timeout=620m"
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-windows, provider-azure-on-call
+    testgrid-dashboards: sig-windows, provider-azure-windows, provider-azure-periodic
     testgrid-tab-name: aks-engine-azure-windows-master
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs SIG-Windows release tests on K8s clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
@@ -135,12 +118,13 @@ periodics:
   name: ci-kubernetes-e2e-aks-engine-azure-1-14-windows
   labels:
     preset-service-account: "true"
-    preset-azure-acsengine: "true"
+    preset-azure-cred: "true"
+    preset-azure-windows: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-1.14
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200218-a445c54-1.14
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -152,26 +136,27 @@ periodics:
       - "--test=true"
       - "--up=true"
       - "--down=true"
-      - "--deployment=acsengine"
+      - "--deployment=aksengine"
       - "--provider=skeleton"
-      - "--build=bazel"
-      - "--acsengine-admin-username=azureuser"
-      - "--acsengine-admin-password=AdminPassw0rd"
-      - "--acsengine-creds=$AZURE_CREDENTIALS"
-      - "--acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.31.2/aks-engine-v0.31.2-linux-amd64.tar.gz"
-      - "--acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
-      - "--acsengine-winZipBuildScript=$WIN_BUILD"
-      - "--acsengine-orchestratorRelease=1.14"
-      - "--acsengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release.json"
-      - "--acsengine-win-binaries"
-      - "--acsengine-hyperkube"
-      - "--acsengine-agentpoolcount=2"
-      - "--test_args=--ginkgo.flakeAttempts=2 --num-nodes=2 --node-os-distro=windows --ginkgo.focus=\\[Conformance\\]|\\[NodeConformance\\]|\\[sig-windows\\]|\\[sig-apps\\].CronJob|\\[sig-api-machinery\\].ResourceQuota|\\[sig-scheduling\\].SchedulerPreemption --ginkgo.skip=\\[LinuxOnly\\]|GMSA"
+      - "--build=quick"
+      - "--aksengine-admin-username=azureuser"
+      - "--aksengine-admin-password=AdminPassw0rd"
+      - "--aksengine-creds=$AZURE_CREDENTIALS"
+      # Note: Updating aks-engine version for 1.14 + Windows configs has caused issues in the past - update this config with caution!
+      - "--aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.31.2/aks-engine-v0.31.2-linux-amd64.tar.gz"
+      - "--aksengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
+      - "--aksengine-winZipBuildScript=$WIN_BUILD"
+      - "--aksengine-orchestratorRelease=1.14"
+      - "--aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release.json"
+      - "--aksengine-win-binaries"
+      - "--aksengine-deploy-custom-k8s"
+      - "--aksengine-agentpoolcount=2"
+      - "--test_args=--num-nodes=2 --node-os-distro=windows --ginkgo.focus=\\[Conformance\\]|\\[NodeConformance\\]|\\[sig-windows\\]|\\[sig-apps\\].CronJob|\\[sig-api-machinery\\].ResourceQuota|\\[sig-scheduling\\].SchedulerPreemption --ginkgo.skip=\\[LinuxOnly\\]|GMSA"
       - "--timeout=620m"
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-windows, provider-azure-on-call
+    testgrid-dashboards: sig-windows, provider-azure-windows, provider-azure-periodic
     testgrid-tab-name: aks-engine-azure-1-14-windows
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Release tests for K8s 1.14 on Clusters with Windows nodes provided by aks-engine on Azure cloud.
@@ -179,12 +164,13 @@ periodics:
   name: ci-kubernetes-e2e-aks-engine-azure-1-15-windows
   labels:
     preset-service-account: "true"
-    preset-azure-acsengine: "true"
+    preset-azure-cred: "true"
+    preset-azure-windows: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-1.15
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-28c7418-1.15
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -196,26 +182,26 @@ periodics:
       - "--test=true"
       - "--up=true"
       - "--down=true"
-      - "--deployment=acsengine"
+      - "--deployment=aksengine"
       - "--provider=skeleton"
-      - "--build=bazel"
-      - "--acsengine-admin-username=azureuser"
-      - "--acsengine-admin-password=AdminPassw0rd"
-      - "--acsengine-creds=$AZURE_CREDENTIALS"
-      - "--acsengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz"
-      - "--acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
-      - "--acsengine-winZipBuildScript=$WIN_BUILD"
-      - "--acsengine-orchestratorRelease=1.15"
-      - "--acsengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_1_15.json"
-      - "--acsengine-win-binaries"
-      - "--acsengine-hyperkube"
-      - "--acsengine-agentpoolcount=2"
-      - "--test_args=--ginkgo.flakeAttempts=2 --num-nodes=2 --node-os-distro=windows --ginkgo.focus=\\[Conformance\\]|\\[NodeConformance\\]|\\[sig-windows\\]|\\[sig-apps\\].CronJob|\\[sig-api-machinery\\].ResourceQuota|\\[sig-scheduling\\].SchedulerPreemption --ginkgo.skip=\\[LinuxOnly\\]|GMSA"
+      - "--build=quick"
+      - "--aksengine-admin-username=azureuser"
+      - "--aksengine-admin-password=AdminPassw0rd"
+      - "--aksengine-creds=$AZURE_CREDENTIALS"
+      - "--aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.46.3/aks-engine-v0.46.3-linux-amd64.tar.gz"
+      - "--aksengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
+      - "--aksengine-winZipBuildScript=$WIN_BUILD"
+      - "--aksengine-orchestratorRelease=1.15"
+      - "--aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_1_15.json"
+      - "--aksengine-win-binaries"
+      - "--aksengine-deploy-custom-k8s"
+      - "--aksengine-agentpoolcount=2"
+      - "--test_args=--num-nodes=2 --node-os-distro=windows --ginkgo.focus=\\[Conformance\\]|\\[NodeConformance\\]|\\[sig-windows\\]|\\[sig-apps\\].CronJob|\\[sig-api-machinery\\].ResourceQuota|\\[sig-scheduling\\].SchedulerPreemption --ginkgo.skip=\\[LinuxOnly\\]|GMSA"
       - "--timeout=620m"
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-windows, provider-azure-on-call
+    testgrid-dashboards: sig-windows, provider-azure-windows, provider-azure-periodic
     testgrid-tab-name: aks-engine-azure-1-15-windows
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Release tests for K8s 1.15 on Clusters with Windows nodes provided by aks-engine on Azure cloud.
@@ -223,12 +209,13 @@ periodics:
   name: ci-kubernetes-e2e-aks-engine-azure-1-16-windows
   labels:
     preset-service-account: "true"
-    preset-azure-acsengine: "true"
+    preset-azure-cred: "true"
+    preset-azure-windows: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-1.16
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-28c7418-1.16
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -240,26 +227,26 @@ periodics:
       - "--test=true"
       - "--up=true"
       - "--down=true"
-      - "--deployment=acsengine"
+      - "--deployment=aksengine"
       - "--provider=skeleton"
-      - "--build=bazel"
-      - "--acsengine-admin-username=azureuser"
-      - "--acsengine-admin-password=AdminPassw0rd"
-      - "--acsengine-creds=$AZURE_CREDENTIALS"
-      - "--acsengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz"
-      - "--acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
-      - "--acsengine-winZipBuildScript=$WIN_BUILD"
-      - "--acsengine-orchestratorRelease=1.16"
-      - "--acsengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_1_16.json"
-      - "--acsengine-win-binaries"
-      - "--acsengine-hyperkube"
-      - "--acsengine-agentpoolcount=2"
-      - "--test_args=--ginkgo.flakeAttempts=2 --num-nodes=2 --node-os-distro=windows --ginkgo.focus=\\[Conformance\\]|\\[NodeConformance\\]|\\[sig-windows\\]|\\[sig-apps\\].CronJob|\\[sig-api-machinery\\].ResourceQuota|\\[sig-scheduling\\].SchedulerPreemption|\\[sig-autoscaling\\].\\[Feature:HPA\\]  --ginkgo.skip=\\[LinuxOnly\\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application"
+      - "--build=quick"
+      - "--aksengine-admin-username=azureuser"
+      - "--aksengine-admin-password=AdminPassw0rd"
+      - "--aksengine-creds=$AZURE_CREDENTIALS"
+      - "--aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.46.3/aks-engine-v0.46.3-linux-amd64.tar.gz"
+      - "--aksengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
+      - "--aksengine-winZipBuildScript=$WIN_BUILD"
+      - "--aksengine-orchestratorRelease=1.16"
+      - "--aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_1_16.json"
+      - "--aksengine-win-binaries"
+      - "--aksengine-deploy-custom-k8s"
+      - "--aksengine-agentpoolcount=2"
+      - "--test_args=--num-nodes=2 --node-os-distro=windows --ginkgo.focus=\\[Conformance\\]|\\[NodeConformance\\]|\\[sig-windows\\]|\\[sig-apps\\].CronJob|\\[sig-api-machinery\\].ResourceQuota|\\[sig-scheduling\\].SchedulerPreemption|\\[sig-autoscaling\\].\\[Feature:HPA\\]  --ginkgo.skip=\\[LinuxOnly\\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application"
       - "--timeout=620m"
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-windows, sig-release-1.16-informing, sig-release-master-informing, provider-azure-on-call
+    testgrid-dashboards: sig-windows, sig-release-1.16-informing, provider-azure-windows, provider-azure-periodic
     testgrid-tab-name: aks-engine-azure-1-16-windows
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs SIG-Windows release tests on K8s clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
@@ -267,12 +254,13 @@ periodics:
   name: ci-kubernetes-e2e-aks-engine-azure-1-17-windows
   labels:
     preset-service-account: "true"
-    preset-azure-acsengine: "true"
+    preset-azure-cred: "true"
+    preset-azure-windows: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-1.17
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-28c7418-1.17
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -284,38 +272,85 @@ periodics:
       - "--test=true"
       - "--up=true"
       - "--down=true"
-      - "--deployment=acsengine"
+      - "--deployment=aksengine"
       - "--provider=skeleton"
-      - "--build=host-go"
-      - "--acsengine-orchestratorRelease=1.17"
-      - "--acsengine-admin-username=azureuser"
-      - "--acsengine-admin-password=AdminPassw0rd"
-      - "--acsengine-creds=$AZURE_CREDENTIALS"
-      - "--acsengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz"
-      - "--acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
-      - "--acsengine-winZipBuildScript=$WIN_BUILD"
-      - "--acsengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_staging.json"
-      - "--acsengine-win-binaries"
-      - "--acsengine-hyperkube"
-      - "--test_args=--ginkgo.flakeAttempts=2 --num-nodes=3 --node-os-distro=windows --ginkgo.focus=\\[Conformance\\]|\\[NodeConformance\\]|\\[sig-windows\\]|\\[sig-apps\\].CronJob|\\[sig-api-machinery\\].ResourceQuota|\\[sig-scheduling\\].SchedulerPreemption --ginkgo.skip=\\[LinuxOnly\\]|\\[Serial\\]|Guestbook.application.should.create.and.stop.a.working.application"
+      - "--build=quick"
+      - "--ginkgo-parallel=6"
+      - "--aksengine-orchestratorRelease=1.17"
+      - "--aksengine-admin-username=azureuser"
+      - "--aksengine-admin-password=AdminPassw0rd"
+      - "--aksengine-creds=$AZURE_CREDENTIALS"
+      - "--aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.46.3/aks-engine-v0.46.3-linux-amd64.tar.gz"
+      - "--aksengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
+      - "--aksengine-winZipBuildScript=$WIN_BUILD"
+      - "--aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_staging.json"
+      - "--aksengine-win-binaries"
+      - "--aksengine-deploy-custom-k8s"
+      - "--test_args=--num-nodes=3 --node-os-distro=windows --ginkgo.focus=\\[Conformance\\]|\\[NodeConformance\\]|\\[sig-windows\\]|\\[sig-apps\\].CronJob|\\[sig-api-machinery\\].ResourceQuota|\\[sig-scheduling\\].SchedulerPreemption --ginkgo.skip=\\[LinuxOnly\\]|\\[Serial\\]|Guestbook.application.should.create.and.stop.a.working.application"
       - "--timeout=450m"
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-windows, sig-release-1.17-informing, sig-release-master-informing, provider-azure-on-call
+    testgrid-dashboards: sig-windows, sig-release-1.17-informing, provider-azure-windows, provider-azure-periodic
     testgrid-tab-name: aks-engine-azure-1-17-windows
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs SIG-Windows release tests on K8s 1.17 clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
-- interval: 3h
-  name: ci-kubernetes-e2e-aks-engine-azure-master-staging-windows
+- interval: 8h
+  name: ci-kubernetes-e2e-aks-engine-azure-1-17-windows-serial-slow
   labels:
     preset-service-account: "true"
-    preset-azure-acsengine: "true"
+    preset-azure-cred: "true"
+    preset-azure-windows: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-28c7418-1.17
+      args:
+      - "--job=$(JOB_NAME)"
+      - "--root=/go/src"
+      - "--repo=k8s.io/kubernetes=release-1.17"
+      - "--upload=gs://kubernetes-jenkins/logs/"
+      - "--timeout=480"
+      - "--scenario=kubernetes_e2e"
+      - --
+      - "--test=true"
+      - "--up=true"
+      - "--down=true"
+      - "--deployment=aksengine"
+      - "--provider=skeleton"
+      - "--build=quick"
+      - "--ginkgo-parallel=1"
+      - "--aksengine-orchestratorRelease=1.17"
+      - "--aksengine-admin-username=azureuser"
+      - "--aksengine-admin-password=AdminPassw0rd"
+      - "--aksengine-creds=$AZURE_CREDENTIALS"
+      - "--aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.46.3/aks-engine-v0.46.3-linux-amd64.tar.gz"
+      - "--aksengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
+      - "--aksengine-winZipBuildScript=$WIN_BUILD"
+      - "--aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_staging.json"
+      - "--aksengine-win-binaries"
+      - "--aksengine-deploy-custom-k8s"
+      - "--test_args=--num-nodes=3 --node-os-distro=windows --ginkgo.focus=(\\[sig-windows\\]|\\[sig-scheduling\\].SchedulerPreemption|\\[sig-autoscaling\\].\\[Feature:HPA\\]|\\[sig-apps\\].CronJob).*(\\[Serial\\]|\\[Slow\\])|(\\[Serial\\]|\\[Slow\\]).*(\\[Conformance\\]|\\[NodeConformance\\]) --ginkgo.skip=\\[LinuxOnly\\]"
+      - "--timeout=450m"
+      securityContext:
+        privileged: true
+  annotations:
+    testgrid-dashboards: sig-windows, provider-azure-windows, provider-azure-periodic
+    testgrid-tab-name: aks-engine-azure-1-17-windows-serial-slow
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    description: Runs SIG-Windows release serial tests on K8s 1.17 clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
+- interval: 3h
+  name: ci-kubernetes-e2e-aks-engine-azure-master-staging-windows
+  labels:
+    preset-service-account: "true"
+    preset-azure-cred: "true"
+    preset-azure-windows: "true"
+    preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-28c7418-master
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -327,24 +362,123 @@ periodics:
       - "--test=true"
       - "--up=true"
       - "--down=true"
-      - "--deployment=acsengine"
+      - "--deployment=aksengine"
       - "--provider=skeleton"
-      - "--build=host-go"
+      - "--build=quick"
       - "--ginkgo-parallel=8"
-      - "--acsengine-admin-username=azureuser"
-      - "--acsengine-admin-password=AdminPassw0rd"
-      - "--acsengine-creds=$AZURE_CREDENTIALS"
-      - "--acsengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz"
-      - "--acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
-      - "--acsengine-winZipBuildScript=$WIN_BUILD"
-      - "--acsengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_staging.json"
-      - "--acsengine-win-binaries"
-      - "--acsengine-hyperkube"
-      - "--test_args=--ginkgo.flakeAttempts=2 --num-nodes=3 --node-os-distro=windows --ginkgo.focus=\\[Conformance\\]|\\[NodeConformance\\]|\\[sig-windows\\]|\\[sig-apps\\].CronJob|\\[sig-api-machinery\\].ResourceQuota|\\[sig-scheduling\\].SchedulerPreemption --ginkgo.skip=\\[LinuxOnly\\]|\\[Serial\\]|Guestbook.application.should.create.and.stop.a.working.application"
+      - "--aksengine-admin-username=azureuser"
+      - "--aksengine-admin-password=AdminPassw0rd"
+      - "--aksengine-creds=$AZURE_CREDENTIALS"
+      - "--aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz"
+      - "--aksengine-public-key=$K8S_SSH_PUBLIC_KEY_PATH"
+      - "--aksengine-private-key=$K8S_SSH_PRIVATE_KEY_PATH"
+      - "--aksengine-winZipBuildScript=$WIN_BUILD"
+      - "--aksengine-orchestratorRelease=1.18"
+      - "--aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_staging.json"
+      - "--aksengine-win-binaries"
+      - "--aksengine-deploy-custom-k8s"
+      - "--test_args=--num-nodes=3 --node-os-distro=windows --ginkgo.focus=\\[Conformance\\]|\\[NodeConformance\\]|\\[sig-windows\\]|\\[sig-apps\\].CronJob|\\[sig-api-machinery\\].ResourceQuota|\\[sig-scheduling\\].SchedulerPreemption --ginkgo.skip=\\[LinuxOnly\\]|\\[Serial\\]|Guestbook.application.should.create.and.stop.a.working.application"
       - "--timeout=450m"
       securityContext:
         privileged: true
+      env:
+      - name: K8S_SSH_PUBLIC_KEY_PATH
+        value: /etc/ssh-key-secret/ssh-public # from preset-k8s-ssh label
+      - name: K8S_SSH_PRIVATE_KEY_PATH
+        value: /etc/ssh-key-secret/ssh-private # from preset-k8s-ssh label
   annotations:
-    testgrid-dashboards: sig-windows
+    testgrid-dashboards: sig-windows, provider-azure-windows, provider-azure-periodic
     testgrid-tab-name: aks-engine-azure-windows-master-staging
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Staging job for new Windows tests on a Kubernetes cluster provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
+- interval: 10h
+  name: ci-kubernetes-e2e-aks-engine-azure-master-windows-1903
+  labels:
+    preset-service-account: "true"
+    preset-azure-cred: "true"
+    preset-azure-windows: "true"
+    preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-28c7418-master
+      args:
+      - "--job=$(JOB_NAME)"
+      - "--root=/go/src"
+      - "--repo=k8s.io/kubernetes=master"
+      - "--upload=gs://kubernetes-jenkins/logs/"
+      - "--timeout=650"
+      - "--scenario=kubernetes_e2e"
+      - --
+      - "--test=true"
+      - "--up=true"
+      - "--down=true"
+      - "--deployment=aksengine"
+      - "--provider=skeleton"
+      - "--build=quick"
+      - "--ginkgo-parallel=6"
+      - "--aksengine-admin-username=azureuser"
+      - "--aksengine-admin-password=AdminPassw0rd"
+      - "--aksengine-creds=$AZURE_CREDENTIALS"
+      - "--aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz"
+      - "--aksengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
+      - "--aksengine-winZipBuildScript=$WIN_BUILD"
+      - "--aksengine-orchestratorRelease=1.18"
+      - "--aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_1903_master.json"
+      - "--aksengine-win-binaries"
+      - "--aksengine-deploy-custom-k8s"
+      - "--aksengine-agentpoolcount=2"
+      - "--test_args=--ginkgo.flakeAttempts=2 --num-nodes=2 --node-os-distro=windows --ginkgo.focus=\\[Conformance\\]|\\[NodeConformance\\]|\\[sig-windows\\]|\\[sig-apps\\].CronJob|\\[sig-api-machinery\\].ResourceQuota|\\[sig-scheduling\\].SchedulerPreemption|\\[sig-autoscaling\\].\\[Feature:HPA\\]  --ginkgo.skip=\\[LinuxOnly\\]|\\[Serial\\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application"
+      - "--timeout=620m"
+      securityContext:
+        privileged: true
+  annotations:
+    testgrid-dashboards: sig-windows, provider-azure-windows, provider-azure-periodic
+    testgrid-tab-name: aks-engine-azure-windows-1903-master
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    description: Runs SIG-Windows release tests on K8s clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
+- interval: 10h
+  name: ci-kubernetes-e2e-aks-engine-azure-master-windows-1909
+  labels:
+    preset-service-account: "true"
+    preset-azure-windows: "true"
+    preset-azure-cred: "true"
+    preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-28c7418-master
+      args:
+      - "--job=$(JOB_NAME)"
+      - "--root=/go/src"
+      - "--repo=k8s.io/kubernetes=master"
+      - "--upload=gs://kubernetes-jenkins/logs/"
+      - "--timeout=650"
+      - "--scenario=kubernetes_e2e"
+      - --
+      - "--test=true"
+      - "--up=true"
+      - "--down=true"
+      - "--deployment=aksengine"
+      - "--provider=skeleton"
+      - "--build=quick"
+      - "--ginkgo-parallel=6"
+      - "--aksengine-admin-username=azureuser"
+      - "--aksengine-admin-password=AdminPassw0rd"
+      - "--aksengine-creds=$AZURE_CREDENTIALS"
+      - "--aksengine-download-url=https://k8sprowstorage.blob.core.windows.net/aks-engine-dirty/aks-engine-c841ebc2.tar.gz"
+      - "--aksengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
+      - "--aksengine-winZipBuildScript=$WIN_BUILD"
+      - "--aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_1909_master.json"
+      - "--aksengine-win-binaries"
+      - "--aksengine-deploy-custom-k8s"
+      - "--aksengine-agentpoolcount=2"
+      - "--test_args=--ginkgo.flakeAttempts=2 --num-nodes=2 --node-os-distro=windows --ginkgo.focus=\\[Conformance\\]|\\[NodeConformance\\]|\\[sig-windows\\]|\\[sig-apps\\].CronJob|\\[sig-api-machinery\\].ResourceQuota|\\[sig-scheduling\\].SchedulerPreemption|\\[sig-autoscaling\\].\\[Feature:HPA\\]  --ginkgo.skip=\\[LinuxOnly\\]|\\[Serial\\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application"
+      - "--timeout=620m"
+      securityContext:
+        privileged: true
+  annotations:
+    testgrid-dashboards: sig-windows, provider-azure-periodic, provider-azure-windows
+    testgrid-tab-name: aks-engine-azure-windows-1909-master
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    description: Runs SIG-Windows release tests on K8s clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"

@@ -31,6 +31,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/util/sets"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/plugins"
@@ -50,6 +51,10 @@ func (f *fakeOwnersClient) LoadRepoAliases(org, repo, base string) (repoowners.R
 
 func (f *fakeOwnersClient) LoadRepoOwners(org, repo, base string) (repoowners.RepoOwner, error) {
 	return &fakeRepoOwners{approvers: f.approvers, reviewers: f.reviewers}, nil
+}
+
+func (f *fakeOwnersClient) WithFields(fields logrus.Fields) repoowners.Interface {
+	return f
 }
 
 type fakeRepoOwners struct {
@@ -1181,10 +1186,14 @@ func TestRemoveTreeHashComment(t *testing.T) {
 }
 
 func TestHelpProvider(t *testing.T) {
+	enabledRepos := []config.OrgRepo{
+		{Org: "org1", Repo: "repo"},
+		{Org: "org2", Repo: "repo"},
+	}
 	cases := []struct {
 		name               string
 		config             *plugins.Configuration
-		enabledRepos       []string
+		enabledRepos       []config.OrgRepo
 		err                bool
 		configInfoIncludes []string
 		configInfoExcludes []string
@@ -1192,32 +1201,20 @@ func TestHelpProvider(t *testing.T) {
 		{
 			name:               "Empty config",
 			config:             &plugins.Configuration{},
-			enabledRepos:       []string{"org1", "org2/repo"},
+			enabledRepos:       enabledRepos,
 			configInfoExcludes: []string{configInfoReviewActsAsLgtm, configInfoStoreTreeHash, configInfoStickyLgtmTeam("team1")},
-		},
-		{
-			name:               "Overlapping org and org/repo",
-			config:             &plugins.Configuration{},
-			enabledRepos:       []string{"org2", "org2/repo"},
-			configInfoExcludes: []string{configInfoReviewActsAsLgtm, configInfoStoreTreeHash, configInfoStickyLgtmTeam("team1")},
-		},
-		{
-			name:         "Invalid enabledRepos",
-			config:       &plugins.Configuration{},
-			enabledRepos: []string{"org1", "org2/repo/extra"},
-			err:          true,
 		},
 		{
 			name: "StoreTreeHash enabled",
 			config: &plugins.Configuration{
 				Lgtm: []plugins.Lgtm{
 					{
-						Repos:         []string{"org2"},
+						Repos:         []string{"org2/repo"},
 						StoreTreeHash: true,
 					},
 				},
 			},
-			enabledRepos:       []string{"org1", "org2/repo"},
+			enabledRepos:       enabledRepos,
 			configInfoExcludes: []string{configInfoReviewActsAsLgtm, configInfoStickyLgtmTeam("team1")},
 			configInfoIncludes: []string{configInfoStoreTreeHash},
 		},
@@ -1226,14 +1223,14 @@ func TestHelpProvider(t *testing.T) {
 			config: &plugins.Configuration{
 				Lgtm: []plugins.Lgtm{
 					{
-						Repos:            []string{"org2"},
+						Repos:            []string{"org2/repo"},
 						ReviewActsAsLgtm: true,
 						StoreTreeHash:    true,
 						StickyLgtmTeam:   "team1",
 					},
 				},
 			},
-			enabledRepos:       []string{"org1", "org2/repo"},
+			enabledRepos:       enabledRepos,
 			configInfoIncludes: []string{configInfoReviewActsAsLgtm, configInfoStoreTreeHash, configInfoStickyLgtmTeam("team1")},
 		},
 	}

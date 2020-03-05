@@ -15,6 +15,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  namespace: default
   name: crier
   labels:
     app: crier
@@ -28,18 +29,26 @@ spec:
       labels:
         app: crier
     spec:
-      # serviceAccountName: crier
+      serviceAccountName: crier
       terminationGracePeriodSeconds: 30
       containers:
       - name: crier
-        image: gcr.io/k8s-prow/crier:v20191128-48349ea19
+        image: gcr.io/k8s-prow/crier:v20200304-c42b857fc
         args:
-        - --github-workers=1
+        - --github-workers=5
         - --config-path=/etc/config/config.yaml
         - --job-config-path=/etc/job-config
         - --github-endpoint=http://ghproxy
         - --github-endpoint=https://api.github.com
+        - --slack-workers=1
+        - --slack-token-file=/etc/slack/token
+        - --gcs-workers=1
+        - --kubernetes-gcs-workers=1
+        - --build-cluster=/etc/cluster/cluster
         volumeMounts:
+        - mountPath: /etc/cluster
+          name: cluster
+          readOnly: true
         - name: config
           mountPath: /etc/config
           readOnly: true
@@ -48,6 +57,9 @@ spec:
           readOnly: true
         - name: oauth
           mountPath: /etc/github
+          readOnly: true
+        - name: slack
+          mountPath: /etc/slack
           readOnly: true
       volumes:
       - name: config
@@ -59,3 +71,10 @@ spec:
       - name: oauth
         secret:
           secretName: oauth-token
+      - name: slack
+        secret:
+          secretName: slack-token
+      - name: cluster
+        secret:
+          defaultMode: 420
+          secretName: build-cluster

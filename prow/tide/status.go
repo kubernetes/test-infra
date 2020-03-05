@@ -38,7 +38,7 @@ import (
 
 	"k8s.io/test-infra/pkg/io"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/git"
+	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/tide/blockers"
 )
@@ -66,7 +66,7 @@ type statusController struct {
 	logger   *logrus.Entry
 	config   config.Getter
 	ghc      githubClient
-	gc       *git.Client
+	gc       git.ClientFactory
 
 	// newPoolPending is a size 1 chan that signals that the main Tide loop has
 	// updated the 'poolPRs' field with a freshly updated pool.
@@ -145,6 +145,18 @@ func requirementDiff(pr *PullRequest, q *config.TideQuery, cc contextChecker) (s
 		diff += 1000
 		if desc == "" {
 			desc = fmt.Sprintf(" Merging to branch %s is forbidden.", pr.BaseRef.Name)
+		}
+	}
+
+	qAuthor := github.NormLogin(q.Author)
+	prAuthor := github.NormLogin(string(pr.Author.Login))
+
+	// Weight incorrect author with very high diff so that we select the query
+	// for the correct author.
+	if qAuthor != "" && prAuthor != qAuthor {
+		diff += 1000
+		if desc == "" {
+			desc = fmt.Sprintf(" Must be by author %s.", qAuthor)
 		}
 	}
 
@@ -233,9 +245,18 @@ func requirementDiff(pr *PullRequest, q *config.TideQuery, cc contextChecker) (s
 // in order to generate a diff for the status description. We choose the query
 // for the repo that the PR is closest to meeting (as determined by the number
 // of unmet/violated requirements).
-func (sc *statusController) expectedStatus(log *logrus.Entry, queryMap *config.QueryMap, pr *PullRequest, pool map[string]PullRequest, cc contextChecker, blocks blockers.Blockers, baseSHA string) (string, string) {
-	org := string(pr.Repository.Owner.Login)
-	repo := string(pr.Repository.Name)
+func (sc *statusController) expectedStatus(log *logrus.Entry, queryMap *config.QueryMap, pr *PullRequest, pool map[string]PullRequest, ccg contextCheckerGetter, blocks blockers.Blockers, baseSHA string) (string, string, error) {
+	repo := config.OrgRepo{Org: string(pr.Repository.Owner.Login), Repo: string(pr.Repository.Name)}
+
+	if pr.Mergeable == githubql.MergeableStateConflicting {
+		return github.StatusError, fmt.Sprintf(statusNotInPool, " PR has merge conflicts."), nil
+	}
+
+	cc, err := ccg()
+	if err != nil {
+		return "", "", fmt.Errorf("failed to set up context register: %v", err)
+	}
+
 	if _, ok := pool[prKey(pr)]; !ok {
 		// if the branch is blocked forget checking for a diff
 		blockingIssues := blocks.GetApplicable(string(pr.Repository.Owner.Login), string(pr.Repository.Name), string(pr.BaseRef.Name))
@@ -248,26 +269,26 @@ func (sc *statusController) expectedStatus(log *logrus.Entry, queryMap *config.Q
 			if len(numbers) > 1 {
 				s = "s"
 			}
-			return github.StatusError, fmt.Sprintf(statusNotInPool, fmt.Sprintf(" Merging is blocked by issue%s %s.", s, strings.Join(numbers, ", ")))
+			return github.StatusError, fmt.Sprintf(statusNotInPool, fmt.Sprintf(" Merging is blocked by issue%s %s.", s, strings.Join(numbers, ", "))), nil
 		}
 		minDiffCount := -1
 		var minDiff string
-		for _, q := range queryMap.ForRepo(org, repo) {
+		for _, q := range queryMap.ForRepo(repo) {
 			diff, diffCount := requirementDiff(pr, &q, cc)
 			if minDiffCount == -1 || diffCount < minDiffCount {
 				minDiffCount = diffCount
 				minDiff = diff
 			}
 		}
-		return github.StatusPending, fmt.Sprintf(statusNotInPool, minDiff)
+		return github.StatusPending, fmt.Sprintf(statusNotInPool, minDiff), nil
 	}
 
-	indexKey := indexKeyPassingJobs(org, repo, baseSHA, string(pr.HeadRefOID))
+	indexKey := indexKeyPassingJobs(repo, baseSHA, string(pr.HeadRefOID))
 	passingUpToDatePJs := &prowapi.ProwJobList{}
 	if err := sc.pjClient.List(context.Background(), passingUpToDatePJs, ctrlruntimeclient.MatchingField(indexNamePassingJobs, indexKey)); err != nil {
 		// Just log the error and return success, as the PR is in the merge pool
 		log.WithError(err).Error("Failed to list ProwJobs.")
-		return github.StatusSuccess, statusInPool
+		return github.StatusSuccess, statusInPool, nil
 	}
 
 	var passingUpToDateContexts []string
@@ -275,9 +296,9 @@ func (sc *statusController) expectedStatus(log *logrus.Entry, queryMap *config.Q
 		passingUpToDateContexts = append(passingUpToDateContexts, pj.Spec.Context)
 	}
 	if diff := cc.MissingRequiredContexts(passingUpToDateContexts); len(diff) > 0 {
-		return github.StatePending, retestingStatus(diff)
+		return github.StatePending, retestingStatus(diff), nil
 	}
-	return github.StatusSuccess, statusInPool
+	return github.StatusSuccess, statusInPool, nil
 }
 
 func retestingStatus(retested []string) string {
@@ -300,7 +321,7 @@ func targetURL(c config.Getter, pr *PullRequest, log *logrus.Entry) string {
 	var link string
 	if tideURL := c().Tide.TargetURL; tideURL != "" {
 		link = tideURL
-	} else if baseURL := c().Tide.PRStatusBaseURL; baseURL != "" {
+	} else if baseURL := c().Tide.GetPRStatusBaseURL(config.OrgRepo{Org: string(pr.Repository.Owner.Login), Repo: string(pr.Repository.Name)}); baseURL != "" {
 		parseURL, err := url.Parse(baseURL)
 		if err != nil {
 			log.WithError(err).Error("Failed to parse PR status base URL")
@@ -334,18 +355,17 @@ func (sc *statusController) setStatuses(all []PullRequest, pool map[string]PullR
 		repo := string(pr.Repository.Name)
 		branch := string(pr.BaseRef.Name)
 		headSHA := string(pr.HeadRefOID)
+		// baseSHA is an empty string for any PR that doesn't have a corresponding merge pool
 		baseSHA := baseSHAs[poolKey(org, repo, branch)]
-		baseSHAGetter := func() (string, error) {
-			return baseSHA, nil
-		}
+		baseSHAGetter := newBaseSHAGetter(baseSHAs, sc.ghc, org, repo, branch)
 
-		cr, err := getContextCheckerWithRequiredContexts(sc.config(), sc.gc, org, repo, branch, baseSHAGetter, headSHA, requiredContexts[prKey(pr)])
+		cr := contextCheckerGetterFactory(sc.config(), sc.gc, org, repo, branch, baseSHAGetter, headSHA, requiredContexts[prKey(pr)])
+
+		wantState, wantDesc, err := sc.expectedStatus(log, queryMap, pr, pool, cr, blocks, baseSHA)
 		if err != nil {
-			log.WithError(err).Error("setting up context register")
+			log.WithError(err).Error("getting expected status")
 			return
 		}
-
-		wantState, wantDesc := sc.expectedStatus(log, queryMap, pr, pool, cr, blocks, baseSHA)
 		var actualState githubql.StatusState
 		var actualDesc string
 		for _, ctx := range contexts {
@@ -485,6 +505,9 @@ func (sc *statusController) waitSync() {
 			pool := sc.poolPRs
 			blocks := sc.blocks
 			baseSHAs := sc.baseSHAs
+			if baseSHAs == nil {
+				baseSHAs = map[string]string{}
+			}
 			requiredContexts := sc.requiredContexts
 			sc.Unlock()
 			sc.sync(pool, blocks, baseSHAs, requiredContexts)
@@ -552,14 +575,30 @@ func (sc *statusController) search() []PullRequest {
 	return prs
 }
 
+// newBaseSHAGetter is a refGetter that will look up the baseSHA from GitHub if necessary
+// and if it did so, store in in the baseSHA map
+func newBaseSHAGetter(baseSHAs map[string]string, ghc githubClient, org, repo, branch string) config.RefGetter {
+	return func() (string, error) {
+		if sha, exists := baseSHAs[poolKey(org, repo, branch)]; exists {
+			return sha, nil
+		}
+		baseSHA, err := ghc.GetRef(org, repo, "heads/"+branch)
+		if err != nil {
+			return "", err
+		}
+		baseSHAs[poolKey(org, repo, branch)] = baseSHA
+		return baseSHAs[poolKey(org, repo, branch)], nil
+	}
+}
+
 func openPRsQuery(orgs, repos []string, orgExceptions map[string]sets.String) string {
 	return "is:pr state:open sort:updated-asc " + orgRepoQueryString(orgs, repos, orgExceptions)
 }
 
 const indexNamePassingJobs = "tide-passing-jobs"
 
-func indexKeyPassingJobs(org, repo, baseSHA, headSHA string) string {
-	return fmt.Sprintf("%s/%s@%s+%s", org, repo, baseSHA, headSHA)
+func indexKeyPassingJobs(repo config.OrgRepo, baseSHA, headSHA string) string {
+	return fmt.Sprintf("%s@%s+%s", repo, baseSHA, headSHA)
 }
 
 func indexFuncPassingJobs(obj runtime.Object) []string {
@@ -577,16 +616,20 @@ func indexFuncPassingJobs(obj runtime.Object) []string {
 
 	var result []string
 	for _, pull := range pj.Spec.Refs.Pulls {
-		result = append(result, indexKeyPassingJobs(pj.Spec.Refs.Org, pj.Spec.Refs.Repo, pj.Spec.Refs.BaseSHA, pull.SHA))
+		result = append(result, indexKeyPassingJobs(config.OrgRepo{Org: pj.Spec.Refs.Org, Repo: pj.Spec.Refs.Repo}, pj.Spec.Refs.BaseSHA, pull.SHA))
 	}
 	return result
 }
 
-func getContextCheckerWithRequiredContexts(cfg *config.Config, gc *git.Client, org, repo, branch string, baseSHAGetter config.RefGetter, headSHA string, requiredContexts []string) (contextChecker, error) {
-	contextPolicy, err := cfg.GetTideContextPolicy(gc, org, repo, branch, baseSHAGetter, headSHA)
-	if err != nil {
-		return nil, err
+type contextCheckerGetter = func() (contextChecker, error)
+
+func contextCheckerGetterFactory(cfg *config.Config, gc git.ClientFactory, org, repo, branch string, baseSHAGetter config.RefGetter, headSHA string, requiredContexts []string) contextCheckerGetter {
+	return func() (contextChecker, error) {
+		contextPolicy, err := cfg.GetTideContextPolicy(gc, org, repo, branch, baseSHAGetter, headSHA)
+		if err != nil {
+			return nil, err
+		}
+		contextPolicy.RequiredContexts = requiredContexts
+		return contextPolicy, nil
 	}
-	contextPolicy.RequiredContexts = requiredContexts
-	return contextPolicy, nil
 }

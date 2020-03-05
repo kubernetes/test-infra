@@ -25,7 +25,7 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/errorutil"
-	"k8s.io/test-infra/prow/git"
+	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pluginhelp"
@@ -43,24 +43,15 @@ func init() {
 	plugins.RegisterPushEventHandler(PluginName, handlePush, helpProvider)
 }
 
-func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
 	configInfo := map[string]string{}
-	for _, orgRepo := range enabledRepos {
-		parts := strings.Split(orgRepo, "/")
-		var trigger plugins.Trigger
-		switch len(parts) {
-		case 1:
-			trigger = config.TriggerFor(orgRepo, "")
-		case 2:
-			trigger = config.TriggerFor(parts[0], parts[1])
-		default:
-			return nil, fmt.Errorf("invalid repo in enabledRepos: %q", orgRepo)
-		}
-		org := parts[0]
+	for _, repo := range enabledRepos {
+		trigger := config.TriggerFor(repo.Org, repo.Repo)
+		org := repo.Org
 		if trigger.TrustedOrg != "" {
 			org = trigger.TrustedOrg
 		}
-		configInfo[orgRepo] = fmt.Sprintf("The trusted GitHub organization for this repository is %q.", org)
+		configInfo[repo.String()] = fmt.Sprintf("The trusted GitHub organization for this repository is %q.", org)
 	}
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: `The trigger plugin starts tests in reaction to commands and pull request events. It is responsible for ensuring that test jobs are only run on trusted PRs. A PR is considered trusted if the author is a member of the 'trusted organization' for the repository or if such a member has left an '/ok-to-test' command on the PR.
@@ -127,7 +118,7 @@ type Client struct {
 	ProwJobClient prowJobClient
 	Config        *config.Config
 	Logger        *logrus.Entry
-	GitClient     *git.Client
+	GitClient     git.ClientFactory
 }
 
 // trustedUserClient is used to check is user member and repo collaborator
@@ -262,4 +253,25 @@ func skipRequested(c Client, pr *github.PullRequest, skippedJobs []config.Presub
 		}
 	}
 	return errorutil.NewAggregate(errors...)
+}
+
+func getPresubmits(log *logrus.Entry, gc git.ClientFactory, cfg *config.Config, orgRepo string, baseSHAGetter, headSHAGetter config.RefGetter) []config.Presubmit {
+	presubmits, err := cfg.GetPresubmits(gc, orgRepo, baseSHAGetter, headSHAGetter)
+	if err != nil {
+		// Fall back to static presubmits to avoid deadlocking when a presubmit is used to verify
+		// inrepoconfig. Tide will still respect errors here and not merge.
+		log.WithError(err).Debug("Failed to get presubmits")
+		presubmits = cfg.PresubmitsStatic[orgRepo]
+	}
+	return presubmits
+}
+
+func getPostsubmits(log *logrus.Entry, gc git.ClientFactory, cfg *config.Config, orgRepo string, baseSHAGetter config.RefGetter) []config.Postsubmit {
+	postsubmits, err := cfg.GetPostsubmits(gc, orgRepo, baseSHAGetter)
+	if err != nil {
+		// Fall back to static postsubmits, loading inrepoconfig returned an error.
+		log.WithError(err).Error("Failed to get postsubmits")
+		postsubmits = cfg.PostsubmitsStatic[orgRepo]
+	}
+	return postsubmits
 }

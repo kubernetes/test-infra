@@ -24,6 +24,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
@@ -66,22 +67,12 @@ func init() {
 	plugins.RegisterGenericCommentHandler(pluginName, handleCommentEvent, helpProvider)
 }
 
-func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
 	configInfo := map[string]string{}
-	for _, orgRepo := range enabledRepos {
-		parts := strings.Split(orgRepo, "/")
-		var opts *plugins.Dco
-		switch len(parts) {
-		case 1:
-			opts = config.DcoFor(parts[0], "")
-		case 2:
-			opts = config.DcoFor(parts[0], parts[1])
-		default:
-			return nil, fmt.Errorf("invalid repo in enabledRepos: %q", orgRepo)
-		}
-
+	for _, repo := range enabledRepos {
+		opts := config.DcoFor(repo.Org, repo.Repo)
 		if opts.SkipDCOCheckForMembers || opts.SkipDCOCheckForCollaborators {
-			configInfo[orgRepo] = fmt.Sprintf("The trusted GitHub organization for this repository is %q.", orgRepo)
+			configInfo[repo.String()] = fmt.Sprintf("The trusted GitHub organization for this repository is %q.", repo)
 		}
 	}
 

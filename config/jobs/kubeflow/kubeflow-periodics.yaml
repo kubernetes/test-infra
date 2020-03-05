@@ -1,4 +1,22 @@
 periodics:
+- name: kubeflow-periodic-1-0
+  interval: 4h
+  labels:
+    preset-service-account: "true"
+  spec:
+    containers:
+    - image: gcr.io/kubeflow-ci/test-worker:latest
+      imagePullPolicy: Always
+      env:
+      - name: REPO_OWNER
+        value: kubeflow
+      - name: REPO_NAME
+        value: kfctl
+      - name: BRANCH_NAME
+        value: v1.0-branch
+  annotations:
+    testgrid-dashboards: sig-big-data
+    description: Periodic testing of Kubeflow on the 1-0 release
 - name: kubeflow-periodic-0-7
   # Might want to increase this after the 0.7 release is done.
   # Other periodics run at 8h.
@@ -149,7 +167,7 @@ periodics:
     testgrid-dashboards: sig-big-data
     description: Periodic testing of Kubeflow/manifests on the 0-6 release branch.
 - name: kubeflow-periodic-examples
-  interval: 8h
+  interval: 1h
   labels:
     preset-service-account: "true"
   spec:
@@ -196,7 +214,7 @@ periodics:
     workdir: true
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-28c7418-master
         imagePullPolicy: Always
         command:
         - "./test/tools/project-cleaner/project_cleaner.sh"

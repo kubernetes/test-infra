@@ -169,7 +169,8 @@ func announceProwChanges(ctx context.Context, pca *prowConfig.Agent, channel cha
 	}
 }
 
-func write(ctx context.Context, client *storage.Client, path string, bytes []byte, worldReadable bool) error {
+func write(ctx context.Context, client *storage.Client, path string, bytes []byte, worldReadable bool, cacheControl string) error {
+
 	u, err := url.Parse(path)
 	if err != nil {
 		return fmt.Errorf("invalid url %s: %v", path, err)
@@ -181,7 +182,7 @@ func write(ctx context.Context, client *storage.Client, path string, bytes []byt
 	if err = p.SetURL(u); err != nil {
 		return err
 	}
-	return gcs.Upload(ctx, client, p, bytes, worldReadable)
+	return gcs.Upload(ctx, client, p, bytes, worldReadable, cacheControl)
 }
 
 // Ignores what changed for now and recomputes everything
@@ -235,7 +236,7 @@ func doOneshot(ctx context.Context, client *storage.Client, opt options, prowCon
 			b, err = tgCfgUtil.MarshalBytes(c)
 		}
 		if err == nil {
-			err = write(ctx, client, opt.output, b, opt.worldReadable)
+			err = write(ctx, client, opt.output, b, opt.worldReadable, "")
 		}
 		if err != nil {
 			return fmt.Errorf("could not write config: %v", err)
@@ -273,7 +274,11 @@ func main() {
 	var client *storage.Client
 	if strings.HasPrefix(opt.output, "gs://") {
 		var err error
-		client, err = gcs.ClientWithCreds(ctx, opt.creds)
+		var creds []string
+		if opt.creds != "" {
+			creds = append(creds, opt.creds)
+		}
+		client, err = gcs.ClientWithCreds(ctx, creds...)
 		if err != nil {
 			log.Fatalf("failed to create gcs client: %v", err)
 		}

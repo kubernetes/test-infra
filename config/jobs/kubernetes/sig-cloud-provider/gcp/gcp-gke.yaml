@@ -28,7 +28,7 @@ presubmits:
         - --extract=local
         - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
         - --gcp-node-image=gci
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-west1-c
         - --ginkgo-parallel=30
         - --gke-create-command=container clusters create --quiet --addons=HttpLoadBalancing,HorizontalPodAutoscaling
         - --gke-environment=test
@@ -36,9 +36,9 @@ presubmits:
         - --provider=gke
         - --stage=gs://kubernetes-release-dev/ci
         - --stage-suffix=pull-kubernetes-e2e-gke
-        - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
         - --timeout=65m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-28c7418-master
         resources:
           requests:
             memory: "6Gi"
@@ -61,14 +61,14 @@ periodics:
       - --extract=ci/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-west1-c
       - --ginkgo-parallel
       - --gke-create-command=container clusters create --quiet --addons=HttpLoadBalancing,HorizontalPodAutoscaling
       - --gke-environment=test
       - --provider=gke
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-28c7418-master
 
   annotations:
     testgrid-dashboards: google-gke
@@ -91,13 +91,13 @@ periodics:
       - --extract=ci/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-west1-c
       - --gke-create-command=container clusters create --quiet --enable-kubernetes-alpha
       - --gke-environment=test
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:(DynamicKubeletConfig|ExpandCSIVolumes|ExpandInUseVolumes|NodeLease)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes|csi-hostpath-v0 --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-28c7418-master
 
   annotations:
     testgrid-dashboards: google-gke
@@ -120,14 +120,14 @@ periodics:
       - --extract=ci/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-west1-c
       - --ginkgo-parallel
       - --gke-create-command=container clusters create --quiet --enable-kubernetes-alpha
       - --gke-environment=test
       - --provider=gke
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|csi-hostpath-v0 --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-28c7418-master
 
   annotations:
     testgrid-dashboards: google-gke
@@ -150,12 +150,12 @@ periodics:
       - --extract=ci/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-west1-c
       - --gke-environment=test
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Flaky\] --ginkgo.skip=\[Feature:.+\] --minStartupPods=8
       - --timeout=300m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-28c7418-master
 
   annotations:
     testgrid-dashboards: google-gke
@@ -178,14 +178,14 @@ periodics:
       - --extract=ci/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-west1-c
       - --ginkgo-parallel
       - --gke-environment=test
       - --gke-node-locations=us-central1-f,us-central1-a,us-central1-b
       - --provider=gke
       - --test_args=--gce-multizone=true --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=150m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-28c7418-master
 
   annotations:
     testgrid-dashboards: google-gke
@@ -208,12 +208,12 @@ periodics:
       - --extract=ci/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-west1-c
       - --gke-environment=test
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-28c7418-master
 
   annotations:
     testgrid-dashboards: google-gke
@@ -236,12 +236,12 @@ periodics:
       - --extract=ci/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-west1-c
       - --gke-environment=test
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=500m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-28c7418-master
 
   annotations:
     testgrid-dashboards: google-gke
@@ -264,13 +264,13 @@ periodics:
       - --extract=ci/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-west1-c
       - --ginkgo-parallel
       - --gke-environment=test
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=150m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-28c7418-master
 
   annotations:
     testgrid-dashboards: google-gke
@@ -292,13 +292,13 @@ periodics:
       - --extract=ci/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-west1-c
       - --ginkgo-parallel
       - --gke-environment=test
       - --provider=gke
       - --test_args=--ginkgo.focus=\[k8s.io\]\sNetworking.*\[Conformance\] --minStartupPods=8
       - --timeout=30m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-28c7418-master
 
   annotations:
     testgrid-dashboards: google-gke
@@ -327,7 +327,7 @@ periodics:
       - --provider=gke
       - --test_args=--gce-multizone=true --gce-multimaster=true --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=150m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-28c7418-master
 
   annotations:
     testgrid-dashboards: google-gke
@@ -354,7 +354,7 @@ periodics:
       - --provider=gke
       - --test_args=--gce-multizone=true --gce-multimaster=true --ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=500m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-28c7418-master
 
   annotations:
     testgrid-dashboards: google-gke
@@ -382,7 +382,7 @@ periodics:
       - --provider=gke
       - --test_args=--gce-multizone=true --gce-multimaster=true --ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=150m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-28c7418-master
 
   annotations:
     testgrid-dashboards: google-gke
@@ -404,13 +404,13 @@ periodics:
       - --extract=ci/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-west1-c
       - --ginkgo-parallel
       - --gke-environment=test
       - --provider=gke
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-28c7418-master
 
   annotations:
     testgrid-dashboards: google-gci
@@ -434,7 +434,7 @@ periodics:
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-project=k8s-jkns-gke-gci-soak
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-west1-c
       - --gke-environment=test
       - --provider=gke
       - --save=gs://kubernetes-e2e-soak-configs/ci-kubernetes-soak-gke-gci
@@ -442,7 +442,7 @@ periodics:
       - --test_args=--ginkgo.skip=\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --clean-start=true --minStartupPods=8
       - --timeout=800m
       - --up=false
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-28c7418-master
 
   annotations:
     testgrid-dashboards: google-soak
@@ -454,7 +454,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-28c7418-master
       args:
       - --repo=github.com/ostromart/istio=k8s-prow-test
       - --timeout=90
@@ -470,7 +470,7 @@ periodics:
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-project-type=istio-project
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-west1-c
       - --gke-command-group=alpha
       - --gke-create-command=container clusters create --quiet --num-nodes=4 --no-enable-legacy-authorization --addons=Istio --istio-config=auth=NONE
       - --gke-environment=test

@@ -3,8 +3,7 @@ presubmits:
   - name: pull-kubernetes-integration
     always_run: true
     branches:
-    # we migrated to podutils for v1.17+
-    - release-1.16
+    # we migrated to podutils for v1.16+
     - release-1.15
     - release-1.14
     labels:
@@ -12,7 +11,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20191115-95b1cd9
+      - image: gcr.io/k8s-testimages/bootstrap:v20200302-ca9526d
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -46,7 +45,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-28c7418-master
         command:
         - runner.sh
         args:
@@ -68,7 +67,29 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-1.17
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-28c7418-1.17
+        command:
+        - runner.sh
+        args:
+        - ./hack/jenkins/test-dockerized.sh
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 4
+  - name: pull-kubernetes-integration
+    always_run: true
+    decorate: true
+    branches:
+    - release-1.16 # per-release job
+    path_alias: k8s.io/kubernetes
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-28c7418-1.16
         command:
         - runner.sh
         args:
@@ -101,7 +122,7 @@ periodics:
     description: "Ends up running: make test-cmd test-integration"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-28c7418-master
       command:
       - runner.sh
       args:

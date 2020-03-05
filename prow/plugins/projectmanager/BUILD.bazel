@@ -6,6 +6,7 @@ go_library(
     importpath = "k8s.io/test-infra/prow/plugins/projectmanager",
     visibility = ["//visibility:public"],
     deps = [
+        "//prow/config:go_default_library",
         "//prow/github:go_default_library",
         "//prow/pluginhelp:go_default_library",
         "//prow/plugins:go_default_library",
@@ -18,6 +19,7 @@ go_test(
     srcs = ["projectmanager_test.go"],
     embed = [":go_default_library"],
     deps = [
+        "//prow/config:go_default_library",
         "//prow/github:go_default_library",
         "//prow/github/fakegithub:go_default_library",
         "//prow/plugins:go_default_library",

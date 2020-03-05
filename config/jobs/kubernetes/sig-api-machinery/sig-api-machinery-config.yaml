@@ -20,7 +20,72 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-28c7418-master
   annotations:
     testgrid-dashboards: google-gce
     testgrid-tab-name: gci-gce-proto
+
+- interval: 2h
+  name: ci-kubernetes-e2e-gci-gce-network-proxy
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=80
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --env=ENABLE_EGRESS_VIA_KONNECTIVITY_SERVICE=true
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-zone=us-west1-b
+      - --ginkgo-parallel=25
+      - --provider=gce
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=9
+      - --timeout=60m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-28c7418-master
+  annotations:
+    testgrid-dashboards: sig-api-machinery-network-proxy
+
+presubmits:
+  kubernetes/kubernetes:
+  - name: pull-kubernetes-e2e-gce-network-proxy
+    always_run: false
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-pull-kubernetes-e2e: "true"
+      preset-pull-kubernetes-e2e-gce: "true"
+    spec:
+      containers:
+      - args:
+        - --root=/go/src
+        - --repo=k8s.io/kubernetes=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --timeout=105
+        - --scenario=kubernetes_e2e
+        - --
+        - --build=bazel
+        - --cluster=
+        - --extract=local
+        - --env=ENABLE_EGRESS_VIA_KONNECTIVITY_SERVICE=true
+        - --gcp-node-image=gci
+        - --gcp-zone=us-west1-b
+        - --gcp-project=k8s-network-proxy-e2e
+        - --ginkgo-parallel=30
+        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-network-proxy
+        - --provider=gce
+        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=9
+        - --timeout=80m
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-28c7418-master
+        resources:
+          requests:
+            memory: "6Gi"
+    annotations:
+      testgrid-dashboards: sig-api-machinery-network-proxy

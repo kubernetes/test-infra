@@ -29,6 +29,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/git/localgit"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
@@ -266,6 +267,14 @@ func addFilesToRepo(lg *localgit.LocalGit, paths []string, ownersFile string) er
 }
 
 func TestHandle(t *testing.T) {
+	testHandle(localgit.New, t)
+}
+
+func TestHandleV2(t *testing.T) {
+	testHandle(localgit.NewV2, t)
+}
+
+func testHandle(clients localgit.Clients, t *testing.T) {
 	var tests = []struct {
 		name         string
 		filesChanged []string
@@ -368,7 +377,7 @@ func TestHandle(t *testing.T) {
 			shouldLabel:  false,
 		},
 	}
-	lg, c, err := localgit.New()
+	lg, c, err := clients()
 	if err != nil {
 		t.Fatalf("Making localgit: %v", err)
 	}
@@ -451,6 +460,14 @@ func TestHandle(t *testing.T) {
 }
 
 func TestParseOwnersFile(t *testing.T) {
+	testParseOwnersFile(localgit.New, t)
+}
+
+func TestParseOwnersFileV2(t *testing.T) {
+	testParseOwnersFile(localgit.NewV2, t)
+}
+
+func testParseOwnersFile(clients localgit.Clients, t *testing.T) {
 	tests := []struct {
 		name     string
 		document []byte
@@ -513,7 +530,7 @@ func TestParseOwnersFile(t *testing.T) {
 	for i, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			pr := i + 1
-			lg, c, err := localgit.New()
+			lg, c, err := clients()
 			if err != nil {
 				t.Fatalf("Making localgit: %v", err)
 			}
@@ -549,7 +566,7 @@ func TestParseOwnersFile(t *testing.T) {
 				Patch:    test.patch,
 			}
 
-			r, err := c.Clone("org/repo")
+			r, err := c.ClientFor("org", "repo")
 			if err != nil {
 				t.Fatalf("error cloning the repo: %v", err)
 			}
@@ -582,28 +599,21 @@ func makePatch(b []byte) string {
 }
 
 func TestHelpProvider(t *testing.T) {
+	enabledRepos := []config.OrgRepo{
+		{Org: "org1", Repo: "repo"},
+		{Org: "org2", Repo: "repo"},
+	}
 	cases := []struct {
 		name               string
 		config             *plugins.Configuration
-		enabledRepos       []string
+		enabledRepos       []config.OrgRepo
 		err                bool
 		configInfoIncludes []string
 	}{
 		{
 			name:         "Empty config",
 			config:       &plugins.Configuration{},
-			enabledRepos: []string{"org1", "org2/repo"},
-		},
-		{
-			name:         "Overlapping org and org/repo",
-			config:       &plugins.Configuration{},
-			enabledRepos: []string{"org2", "org2/repo"},
-		},
-		{
-			name:         "Invalid enabledRepos",
-			config:       &plugins.Configuration{},
-			enabledRepos: []string{"org1", "org2/repo/extra"},
-			err:          true,
+			enabledRepos: enabledRepos,
 		},
 		{
 			name: "ReviewerCount specified",
@@ -612,7 +622,7 @@ func TestHelpProvider(t *testing.T) {
 					LabelsBlackList: []string{"label1", "label2"},
 				},
 			},
-			enabledRepos:       []string{"org1", "org2/repo"},
+			enabledRepos:       enabledRepos,
 			configInfoIncludes: []string{"label1, label2"},
 		},
 	}
@@ -755,6 +765,14 @@ var ownersAliasesPatch = map[string]string{
 }
 
 func TestNonCollaborators(t *testing.T) {
+	testNonCollaborators(localgit.New, t)
+}
+
+func TestNonCollaboratorsV2(t *testing.T) {
+	testNonCollaborators(localgit.NewV2, t)
+}
+
+func testNonCollaborators(clients localgit.Clients, t *testing.T) {
 	var tests = []struct {
 		name                 string
 		filesChanged         []string
@@ -900,7 +918,7 @@ func TestNonCollaborators(t *testing.T) {
 			shouldComment: true,
 		},
 	}
-	lg, c, err := localgit.New()
+	lg, c, err := clients()
 	if err != nil {
 		t.Fatalf("Making localgit: %v", err)
 	}
@@ -1005,6 +1023,14 @@ func TestNonCollaborators(t *testing.T) {
 }
 
 func TestHandleGenericComment(t *testing.T) {
+	testHandleGenericComment(localgit.New, t)
+}
+
+func TestHandleGenericCommentV2(t *testing.T) {
+	testHandleGenericComment(localgit.NewV2, t)
+}
+
+func testHandleGenericComment(clients localgit.Clients, t *testing.T) {
 	var tests = []struct {
 		name         string
 		commentEvent github.GenericCommentEvent
@@ -1084,7 +1110,7 @@ func TestHandleGenericComment(t *testing.T) {
 		},
 	}
 
-	lg, c, err := localgit.New()
+	lg, c, err := clients()
 	if err != nil {
 		t.Fatalf("Making localgit: %v", err)
 	}

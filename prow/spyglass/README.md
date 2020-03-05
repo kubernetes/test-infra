@@ -95,7 +95,7 @@ deck:
           - panic\b
           - ^E\d{4} \d\d:\d\d:\d\d\.\d\d\d]
       required_files:
-            - build-log.txt
+      - build-log.txt
     - lens:
         name: junit
       required_files:

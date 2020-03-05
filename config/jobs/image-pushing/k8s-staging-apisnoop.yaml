@@ -1,0 +1,112 @@
+postsubmits:
+  cncf/apisnoop:
+    - name: apisnoop-push-webapp-images
+      cluster: test-infra-trusted
+      annotations:
+        testgrid-dashboards: conformance-apisnoop
+        testgrid-tab-name: apisnoop-webapp-image
+        testgrid-alert-email: apisnoop@ii.coop
+        description: Builds the webapp image for APISnoop deployments
+      decorate: true
+      branches:
+        - ^master$
+      spec:
+        serviceAccountName: deployer # TODO(fejta): use pusher
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20200213-0032cdb
+            command:
+              - /run.sh
+            args:
+              # this is the project GCB will run in, which is the same as the GCR images are pushed to.
+              - --project=k8s-staging-apisnoop
+              - --scratch-bucket=gs://k8s-staging-apisnoop-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - apps/webapp/
+    - name: apisnoop-push-kubemacs-images
+      cluster: test-infra-trusted
+      annotations:
+        testgrid-dashboards: conformance-apisnoop
+        testgrid-tab-name: apisnoop-kubemacs-image
+        testgrid-alert-email: apisnoop@ii.coop
+        description: Builds the kubemacs image for APISnoop deployments
+      decorate: true
+      branches:
+        - ^master$
+      spec:
+        serviceAccountName: deployer # TODO(fejta): use pusher
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20200213-0032cdb
+            command:
+              - /run.sh
+            args:
+              # this is the project GCB will run in, which is the same as the GCR images are pushed to.
+              - --project=k8s-staging-apisnoop
+              - --scratch-bucket=gs://k8s-staging-apisnoop-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - apps/kubemacs/
+    - name: apisnoop-push-auditlogger-images
+      cluster: test-infra-trusted
+      annotations:
+        testgrid-dashboards: conformance-apisnoop
+        testgrid-tab-name: apisnoop-auditlogger-image
+        testgrid-alert-email: apisnoop@ii.coop
+        description: Builds the auditlogger image for APISnoop deployments
+      decorate: true
+      branches:
+        - ^master$
+      spec:
+        serviceAccountName: deployer # TODO(fejta): use pusher
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20200213-0032cdb
+            command:
+              - /run.sh
+            args:
+              # this is the project GCB will run in, which is the same as the GCR images are pushed to.
+              - --project=k8s-staging-apisnoop
+              - --scratch-bucket=gs://k8s-staging-apisnoop-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - apps/auditlogger/
+    - name: apisnoop-push-postgres-images
+      cluster: test-infra-trusted
+      annotations:
+        testgrid-dashboards: conformance-apisnoop
+        testgrid-tab-name: apisnoop-postgres-image
+        testgrid-alert-email: apisnoop@ii.coop
+        description: Builds the postgres image for APISnoop deployments
+      decorate: true
+      branches:
+        - ^master$
+      spec:
+        serviceAccountName: deployer # TODO(fejta): use pusher
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20200213-0032cdb
+            command:
+              - /run.sh
+            args:
+              # this is the project GCB will run in, which is the same as the GCR images are pushed to.
+              - --project=k8s-staging-apisnoop
+              - --scratch-bucket=gs://k8s-staging-apisnoop-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - apps/postgres/
+    - name: apisnoop-push-hasura-images
+      cluster: test-infra-trusted
+      annotations:
+        testgrid-dashboards: conformance-apisnoop
+        testgrid-tab-name: apisnoop-hasura-image
+        testgrid-alert-email: apisnoop@ii.coop
+        description: Builds the hasura image for APISnoop deployments
+      decorate: true
+      branches:
+        - ^master$
+      spec:
+        serviceAccountName: deployer # TODO(fejta): use pusher
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20200213-0032cdb
+            command:
+              - /run.sh
+            args:
+              # this is the project GCB will run in, which is the same as the GCR images are pushed to.
+              - --project=k8s-staging-apisnoop
+              - --scratch-bucket=gs://k8s-staging-apisnoop-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - apps/hasura/

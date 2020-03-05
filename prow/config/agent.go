@@ -40,46 +40,54 @@ type Agent struct {
 	subscriptions []DeltaChan
 }
 
+func lastConfigModTime(prowConfig, jobConfig string) (time.Time, error) {
+	// Check if the file changed to see if it needs to be re-read.
+	// os.Stat follows symbolic links, which is how ConfigMaps work.
+	prowStat, err := os.Stat(prowConfig)
+	if err != nil {
+		logrus.WithField("prowConfig", prowConfig).WithError(err).Error("Error loading prow config.")
+		return time.Time{}, err
+	}
+	recentModTime := prowStat.ModTime()
+	// TODO(krzyzacy): allow empty jobConfig till fully migrate config to subdirs
+	if jobConfig != "" {
+		jobConfigStat, err := os.Stat(jobConfig)
+		if err != nil {
+			logrus.WithField("jobConfig", jobConfig).WithError(err).Error("Error loading job configs.")
+			return time.Time{}, err
+		}
+
+		if jobConfigStat.ModTime().After(recentModTime) {
+			recentModTime = jobConfigStat.ModTime()
+		}
+	}
+	return recentModTime, nil
+}
+
 // Start will begin polling the config file at the path. If the first load
 // fails, Start will return the error and abort. Future load failures will log
 // the failure message but continue attempting to load.
 func (ca *Agent) Start(prowConfig, jobConfig string) error {
+	lastModTime, err := lastConfigModTime(prowConfig, jobConfig)
+	if err != nil {
+		lastModTime = time.Time{}
+	}
 	c, err := Load(prowConfig, jobConfig)
 	if err != nil {
 		return err
 	}
 	ca.Set(c)
 	go func() {
-		var lastModTime time.Time
 		// Rarely, if two changes happen in the same second, mtime will
 		// be the same for the second change, and an mtime-based check would
 		// fail. Reload periodically just in case.
 		skips := 0
 		for range time.Tick(1 * time.Second) {
 			if skips < 600 {
-				// Check if the file changed to see if it needs to be re-read.
-				// os.Stat follows symbolic links, which is how ConfigMaps work.
-				prowStat, err := os.Stat(prowConfig)
+				recentModTime, err := lastConfigModTime(prowConfig, jobConfig)
 				if err != nil {
-					logrus.WithField("prowConfig", prowConfig).WithError(err).Error("Error loading prow config.")
 					continue
 				}
-
-				recentModTime := prowStat.ModTime()
-
-				// TODO(krzyzacy): allow empty jobConfig till fully migrate config to subdirs
-				if jobConfig != "" {
-					jobConfigStat, err := os.Stat(jobConfig)
-					if err != nil {
-						logrus.WithField("jobConfig", jobConfig).WithError(err).Error("Error loading job configs.")
-						continue
-					}
-
-					if jobConfigStat.ModTime().After(recentModTime) {
-						recentModTime = jobConfigStat.ModTime()
-					}
-				}
-
 				if !recentModTime.After(lastModTime) {
 					skips++
 					continue // file hasn't been modified
@@ -120,6 +128,7 @@ func (ca *Agent) Config() *Config {
 }
 
 // Set sets the config. Useful for testing.
+// Also used by statusreconciler to load last known config
 func (ca *Agent) Set(c *Config) {
 	ca.mut.Lock()
 	defer ca.mut.Unlock()

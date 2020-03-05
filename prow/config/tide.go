@@ -27,7 +27,7 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/test-infra/prow/git"
+	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 )
 
@@ -101,7 +101,12 @@ type Tide struct {
 	// PRStatusBaseURL is the base URL for the PR status page.
 	// This is used to link to a merge requirements overview
 	// in the tide status context.
+	// Will be deprecated on June 2020.
 	PRStatusBaseURL string `json:"pr_status_base_url,omitempty"`
+
+	// PRStatusBaseURLs is the base URL for the PR status page
+	// mapped by org or org/repo level.
+	PRStatusBaseURLs map[string]string `json:"pr_status_base_urls,omitempty"`
 
 	// BlockerLabel is an optional label that is used to identify merge blocking
 	// GitHub issues.
@@ -143,11 +148,11 @@ type Tide struct {
 	BatchSizeLimitMap map[string]int `json:"batch_size_limit,omitempty"`
 }
 
-func (t *Tide) BatchSizeLimit(org, repo string) int {
-	if limit, ok := t.BatchSizeLimitMap[fmt.Sprintf("%s/%s", org, repo)]; ok {
+func (t *Tide) BatchSizeLimit(repo OrgRepo) int {
+	if limit, ok := t.BatchSizeLimitMap[repo.String()]; ok {
 		return limit
 	}
-	if limit, ok := t.BatchSizeLimitMap[org]; ok {
+	if limit, ok := t.BatchSizeLimitMap[repo.Org]; ok {
 		return limit
 	}
 	return t.BatchSizeLimitMap["*"]
@@ -155,12 +160,10 @@ func (t *Tide) BatchSizeLimit(org, repo string) int {
 
 // MergeMethod returns the merge method to use for a repo. The default of merge is
 // returned when not overridden.
-func (t *Tide) MergeMethod(org, repo string) github.PullRequestMergeType {
-	name := org + "/" + repo
-
-	v, ok := t.MergeType[name]
+func (t *Tide) MergeMethod(repo OrgRepo) github.PullRequestMergeType {
+	v, ok := t.MergeType[repo.String()]
 	if !ok {
-		if ov, found := t.MergeType[org]; found {
+		if ov, found := t.MergeType[repo.Org]; found {
 			return ov
 		}
 
@@ -171,15 +174,23 @@ func (t *Tide) MergeMethod(org, repo string) github.PullRequestMergeType {
 }
 
 // MergeCommitTemplate returns a struct with Go template string(s) or nil
-func (t *Tide) MergeCommitTemplate(org, repo string) TideMergeCommitTemplate {
-	name := org + "/" + repo
-
-	v, ok := t.MergeTemplate[name]
+func (t *Tide) MergeCommitTemplate(repo OrgRepo) TideMergeCommitTemplate {
+	v, ok := t.MergeTemplate[repo.String()]
 	if !ok {
-		return t.MergeTemplate[org]
+		return t.MergeTemplate[repo.Org]
 	}
 
 	return v
+}
+
+func (t *Tide) GetPRStatusBaseURL(repo OrgRepo) string {
+	if byOrgRepo, ok := t.PRStatusBaseURLs[repo.String()]; ok {
+		return byOrgRepo
+	} else if byOrg, ok := t.PRStatusBaseURLs[repo.Org]; ok {
+		return byOrg
+	}
+
+	return t.PRStatusBaseURLs["*"]
 }
 
 // TideQuery is turned into a GitHub search query. See the docs for details:
@@ -188,6 +199,8 @@ type TideQuery struct {
 	Orgs          []string `json:"orgs,omitempty"`
 	Repos         []string `json:"repos,omitempty"`
 	ExcludedRepos []string `json:"excludedRepos,omitempty"`
+
+	Author string `json:"author,omitempty"`
 
 	ExcludedBranches []string `json:"excludedBranches,omitempty"`
 	IncludedBranches []string `json:"includedBranches,omitempty"`
@@ -212,6 +225,9 @@ func (tq *TideQuery) Query() string {
 	for _, r := range tq.ExcludedRepos {
 		toks = append(toks, fmt.Sprintf("-repo:\"%s\"", r))
 	}
+	if tq.Author != "" {
+		toks = append(toks, fmt.Sprintf("author:\"%s\"", tq.Author))
+	}
 	for _, b := range tq.ExcludedBranches {
 		toks = append(toks, fmt.Sprintf("-base:\"%s\"", b))
 	}
@@ -234,22 +250,21 @@ func (tq *TideQuery) Query() string {
 }
 
 // ForRepo indicates if the tide query applies to the specified repo.
-func (tq TideQuery) ForRepo(org, repo string) bool {
-	fullName := fmt.Sprintf("%s/%s", org, repo)
+func (tq TideQuery) ForRepo(repo OrgRepo) bool {
 	for _, queryOrg := range tq.Orgs {
-		if queryOrg != org {
+		if queryOrg != repo.Org {
 			continue
 		}
 		// Check for repos excluded from the org.
 		for _, excludedRepo := range tq.ExcludedRepos {
-			if excludedRepo == fullName {
+			if excludedRepo == repo.String() {
 				return false
 			}
 		}
 		return true
 	}
 	for _, queryRepo := range tq.Repos {
-		if queryRepo == fullName {
+		if queryRepo == repo.String() {
 			return true
 		}
 	}
@@ -316,24 +331,23 @@ func (tqs TideQueries) QueryMap() *QueryMap {
 }
 
 // ForRepo returns the tide queries that apply to a repo.
-func (qm *QueryMap) ForRepo(org, repo string) TideQueries {
+func (qm *QueryMap) ForRepo(repo OrgRepo) TideQueries {
 	res := TideQueries(nil)
-	fullName := fmt.Sprintf("%s/%s", org, repo)
 
 	qm.Lock()
 	defer qm.Unlock()
 
-	if qs, ok := qm.cache[fullName]; ok {
+	if qs, ok := qm.cache[repo.String()]; ok {
 		return append(res, qs...) // Return a copy.
 	}
 	// Cache miss. Need to determine relevant queries.
 
 	for _, query := range qm.queries {
-		if query.ForRepo(org, repo) {
+		if query.ForRepo(repo) {
 			res = append(res, query)
 		}
 	}
-	qm.cache[fullName] = res
+	qm.cache[repo.String()] = res
 	return res
 }
 
@@ -489,7 +503,7 @@ func parseTideContextPolicyOptions(org, repo, branch string, options TideContext
 // GetTideContextPolicy parses the prow config to find context merge options.
 // If none are set, it will use the prow jobs configured and use the default github combined status.
 // Otherwise if set it will use the branch protection setting, or the listed jobs.
-func (c Config) GetTideContextPolicy(gitClient *git.Client, org, repo, branch string, baseSHAGetter RefGetter, headSHA string) (*TideContextPolicy, error) {
+func (c Config) GetTideContextPolicy(gitClient git.ClientFactory, org, repo, branch string, baseSHAGetter RefGetter, headSHA string) (*TideContextPolicy, error) {
 	options := parseTideContextPolicyOptions(org, repo, branch, c.Tide.ContextOptions)
 	// Adding required and optional contexts from options
 	required := sets.NewString(options.RequiredContexts...)

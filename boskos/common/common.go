@@ -30,12 +30,12 @@ import (
 const (
 	// Busy state defines a resource being used.
 	Busy = "busy"
+	// Cleaning state defines a resource being cleaned
+	Cleaning = "cleaning"
 	// Dirty state defines a resource that needs cleaning
 	Dirty = "dirty"
 	// Free state defines a resource that is usable
 	Free = "free"
-	// Cleaning state defines a resource being cleaned
-	Cleaning = "cleaning"
 	// Leased state defines a resource being leased in order to make a new resource
 	Leased = "leased"
 	// ToBeDeleted is used for resources about to be deleted, they will be verified by a cleaner which mark them as tombstone
@@ -44,6 +44,19 @@ const (
 	Tombstone = "tombstone"
 	// Other is used to agglomerate unspecified states for metrics reporting
 	Other = "other"
+)
+
+var (
+	// KnownStates is the set of all known states, excluding "other".
+	KnownStates = []string{
+		Busy,
+		Cleaning,
+		Dirty,
+		Free,
+		Leased,
+		ToBeDeleted,
+		Tombstone,
+	}
 )
 
 // UserData is a map of Name to user defined interface, serialized into a string
@@ -56,11 +69,6 @@ type UserDataMap map[string]string
 
 // LeasedResources is a list of resources name that used in order to create another resource by Mason
 type LeasedResources []string
-
-// Item interfaces for resources and configs
-type Item interface {
-	GetName() string
-}
 
 // Duration is a wrapper around time.Duration that parses times in either
 // 'integer number of nanoseconds' or 'duration string' formats and serializes
@@ -133,9 +141,13 @@ type Metric struct {
 	// TODO: implements state transition metrics
 }
 
-// IsInUse reports if the resource is owned by anything else than Boskos.
-func (res *Resource) IsInUse() bool {
-	return res.Owner != ""
+// NewMetric returns a new Metric struct.
+func NewMetric(rtype string) Metric {
+	return Metric{
+		Type:    rtype,
+		Current: map[string]int{},
+		Owners:  map[string]int{},
+	}
 }
 
 // NewResource creates a new Boskos Resource.
@@ -150,7 +162,6 @@ func NewResource(name, rtype, state, owner string, t time.Time) Resource {
 		State:      state,
 		Owner:      owner,
 		LastUpdate: t,
-		UserData:   &UserData{},
 	}
 }
 
@@ -181,42 +192,12 @@ func (ud *UserDataNotFound) Error() string {
 	return fmt.Sprintf("user data ID %s does not exist", ud.ID)
 }
 
-// ResourceByUpdateTime helps sorting resources by update time
-type ResourceByUpdateTime []Resource
-
-func (ut ResourceByUpdateTime) Len() int           { return len(ut) }
-func (ut ResourceByUpdateTime) Swap(i, j int)      { ut[i], ut[j] = ut[j], ut[i] }
-func (ut ResourceByUpdateTime) Less(i, j int) bool { return ut[i].LastUpdate.Before(ut[j].LastUpdate) }
-
 // ResourceByName helps sorting resources by name
 type ResourceByName []Resource
 
 func (ut ResourceByName) Len() int           { return len(ut) }
 func (ut ResourceByName) Swap(i, j int)      { ut[i], ut[j] = ut[j], ut[i] }
-func (ut ResourceByName) Less(i, j int) bool { return ut[i].GetName() < ut[j].GetName() }
-
-// ResourceByDeleteState helps sorting resources by state, putting Tombstone first, then ToBeDeleted,
-// and sorting alphabetacally by resource name
-type ResourceByDeleteState []Resource
-
-func (ut ResourceByDeleteState) Len() int      { return len(ut) }
-func (ut ResourceByDeleteState) Swap(i, j int) { ut[i], ut[j] = ut[j], ut[i] }
-func (ut ResourceByDeleteState) Less(i, j int) bool {
-	order := map[string]int{Tombstone: 0, ToBeDeleted: 1}
-	stateIndex := func(s string) int {
-		i, ok := order[s]
-		if ok {
-			return i
-		}
-		return 2
-	}
-	indexI := stateIndex(ut[i].State)
-	indexJ := stateIndex(ut[i].State)
-	if indexI == indexJ {
-		return ut[i].GetName() < ut[j].GetName()
-	}
-	return indexI < indexJ
-}
+func (ut ResourceByName) Less(i, j int) bool { return ut[i].Name < ut[j].Name }
 
 // CommaSeparatedStrings is used to parse comma separated string flag into a list of strings
 type CommaSeparatedStrings []string
@@ -239,9 +220,6 @@ func (r *CommaSeparatedStrings) Set(value string) error {
 func (r *CommaSeparatedStrings) Type() string {
 	return "commaSeparatedStrings"
 }
-
-// GetName implements the Item interface used for storage
-func (res Resource) GetName() string { return res.Name }
 
 // UnmarshalJSON implements JSON Unmarshaler interface
 func (ud *UserData) UnmarshalJSON(data []byte) error {
@@ -312,13 +290,4 @@ func (ud *UserData) FromMap(m UserDataMap) {
 	for key, value := range m {
 		ud.Store(key, value)
 	}
-}
-
-// ItemToResource casts a Item back to a Resource
-func ItemToResource(i Item) (Resource, error) {
-	res, ok := i.(Resource)
-	if !ok {
-		return Resource{}, fmt.Errorf("cannot construct Resource from received object %v", i)
-	}
-	return res, nil
 }

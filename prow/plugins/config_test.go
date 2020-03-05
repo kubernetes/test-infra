@@ -123,37 +123,6 @@ func TestSetDefault_Maps(t *testing.T) {
 			},
 		},
 		{
-			name: "deprecated config",
-			config: ConfigUpdater{
-				ConfigFile: "foo.yaml",
-			},
-			expected: map[string]ConfigMapSpec{
-				"foo.yaml":                 {Name: "config", Namespaces: []string{""}, Clusters: map[string][]string{"default": {""}}},
-				"config/prow/plugins.yaml": {Name: "plugins", Namespaces: []string{""}, Clusters: map[string][]string{"default": {""}}},
-			},
-		},
-		{
-			name: "deprecated plugins",
-			config: ConfigUpdater{
-				PluginFile: "bar.yaml",
-			},
-			expected: map[string]ConfigMapSpec{
-				"bar.yaml":                {Name: "plugins", Namespaces: []string{""}, Clusters: map[string][]string{"default": {""}}},
-				"config/prow/config.yaml": {Name: "config", Namespaces: []string{""}, Clusters: map[string][]string{"default": {""}}},
-			},
-		},
-		{
-			name: "deprecated both",
-			config: ConfigUpdater{
-				ConfigFile: "foo.yaml",
-				PluginFile: "bar.yaml",
-			},
-			expected: map[string]ConfigMapSpec{
-				"foo.yaml": {Name: "config", Namespaces: []string{""}, Clusters: map[string][]string{"default": {""}}},
-				"bar.yaml": {Name: "plugins", Namespaces: []string{""}, Clusters: map[string][]string{"default": {""}}},
-			},
-		},
-		{
 			name: "both current and deprecated",
 			config: ConfigUpdater{
 				Maps: map[string]ConfigMapSpec{
@@ -161,8 +130,6 @@ func TestSetDefault_Maps(t *testing.T) {
 					"plugins.yaml":       {Name: "overwrite-plugins"},
 					"unconflicting.yaml": {Name: "ignored"},
 				},
-				ConfigFile: "config.yaml",
-				PluginFile: "plugins.yaml",
 			},
 			expected: map[string]ConfigMapSpec{
 				"config.yaml":        {Name: "overwrite-config", Namespaces: []string{""}, Clusters: map[string][]string{"default": {""}}},
@@ -449,26 +416,28 @@ func TestResolveBugzillaOptions(t *testing.T) {
 		},
 		{
 			name:   "no child means a copy of parent is the output",
-			parent: BugzillaBranchOptions{ValidateByDefault: &yes, IsOpen: &open, TargetRelease: &one, ValidStates: &[]BugzillaBugState{modifiedState}, DependentBugStates: &[]BugzillaBugState{verifiedState}, StateAfterValidation: &postState},
+			parent: BugzillaBranchOptions{ValidateByDefault: &yes, IsOpen: &open, TargetRelease: &one, ValidStates: &[]BugzillaBugState{modifiedState}, DependentBugStates: &[]BugzillaBugState{verifiedState}, DependentBugTargetRelease: &one, StateAfterValidation: &postState},
 			expected: BugzillaBranchOptions{
-				ValidateByDefault:    &yes,
-				IsOpen:               &open,
-				TargetRelease:        &one,
-				ValidStates:          &[]BugzillaBugState{modifiedState},
-				DependentBugStates:   &[]BugzillaBugState{verifiedState},
-				StateAfterValidation: &postState,
+				ValidateByDefault:         &yes,
+				IsOpen:                    &open,
+				TargetRelease:             &one,
+				ValidStates:               &[]BugzillaBugState{modifiedState},
+				DependentBugStates:        &[]BugzillaBugState{verifiedState},
+				DependentBugTargetRelease: &one,
+				StateAfterValidation:      &postState,
 			},
 		},
 		{
 			name:  "no parent means a copy of child is the output",
-			child: BugzillaBranchOptions{ValidateByDefault: &yes, IsOpen: &open, TargetRelease: &one, ValidStates: &[]BugzillaBugState{modifiedState}, DependentBugStates: &[]BugzillaBugState{verifiedState}, StateAfterValidation: &postState},
+			child: BugzillaBranchOptions{ValidateByDefault: &yes, IsOpen: &open, TargetRelease: &one, ValidStates: &[]BugzillaBugState{modifiedState}, DependentBugStates: &[]BugzillaBugState{verifiedState}, DependentBugTargetRelease: &one, StateAfterValidation: &postState},
 			expected: BugzillaBranchOptions{
-				ValidateByDefault:    &yes,
-				IsOpen:               &open,
-				TargetRelease:        &one,
-				ValidStates:          &[]BugzillaBugState{modifiedState},
-				DependentBugStates:   &[]BugzillaBugState{verifiedState},
-				StateAfterValidation: &postState,
+				ValidateByDefault:         &yes,
+				IsOpen:                    &open,
+				TargetRelease:             &one,
+				ValidStates:               &[]BugzillaBugState{modifiedState},
+				DependentBugStates:        &[]BugzillaBugState{verifiedState},
+				DependentBugTargetRelease: &one,
+				StateAfterValidation:      &postState,
 			},
 		},
 		{
@@ -514,6 +483,12 @@ func TestResolveBugzillaOptions(t *testing.T) {
 			},
 		},
 		{
+			name:     "child overrides parent on dependent bug target release",
+			parent:   BugzillaBranchOptions{IsOpen: &open, TargetRelease: &one, ValidStates: &[]BugzillaBugState{modifiedState}, StateAfterValidation: &postState, DependentBugTargetRelease: &one},
+			child:    BugzillaBranchOptions{DependentBugTargetRelease: &two},
+			expected: BugzillaBranchOptions{IsOpen: &open, TargetRelease: &one, ValidStates: &[]BugzillaBugState{modifiedState}, StateAfterValidation: &postState, DependentBugTargetRelease: &two},
+		},
+		{
 			name:   "child overrides parent on state after merge",
 			parent: BugzillaBranchOptions{IsOpen: &open, TargetRelease: &one, ValidStates: &[]BugzillaBugState{modifiedState}, StateAfterValidation: &postState, StateAfterMerge: &postState},
 			child:  BugzillaBranchOptions{StateAfterMerge: &preState},
@@ -553,16 +528,17 @@ func TestResolveBugzillaOptions(t *testing.T) {
 		},
 		{
 			name:   "child overrides parent on all fields",
-			parent: BugzillaBranchOptions{ValidateByDefault: &yes, IsOpen: &open, TargetRelease: &one, ValidStates: &[]BugzillaBugState{verifiedState}, DependentBugStates: &[]BugzillaBugState{verifiedState}, StateAfterValidation: &postState, StateAfterMerge: &postState},
-			child:  BugzillaBranchOptions{ValidateByDefault: &no, IsOpen: &closed, TargetRelease: &two, ValidStates: &[]BugzillaBugState{modifiedState}, DependentBugStates: &[]BugzillaBugState{modifiedState}, StateAfterValidation: &preState, StateAfterMerge: &preState},
+			parent: BugzillaBranchOptions{ValidateByDefault: &yes, IsOpen: &open, TargetRelease: &one, ValidStates: &[]BugzillaBugState{verifiedState}, DependentBugStates: &[]BugzillaBugState{verifiedState}, DependentBugTargetRelease: &one, StateAfterValidation: &postState, StateAfterMerge: &postState},
+			child:  BugzillaBranchOptions{ValidateByDefault: &no, IsOpen: &closed, TargetRelease: &two, ValidStates: &[]BugzillaBugState{modifiedState}, DependentBugStates: &[]BugzillaBugState{modifiedState}, DependentBugTargetRelease: &two, StateAfterValidation: &preState, StateAfterMerge: &preState},
 			expected: BugzillaBranchOptions{
-				ValidateByDefault:    &no,
-				IsOpen:               &closed,
-				TargetRelease:        &two,
-				ValidStates:          &[]BugzillaBugState{modifiedState},
-				DependentBugStates:   &[]BugzillaBugState{modifiedState},
-				StateAfterValidation: &preState,
-				StateAfterMerge:      &preState,
+				ValidateByDefault:         &no,
+				IsOpen:                    &closed,
+				TargetRelease:             &two,
+				ValidStates:               &[]BugzillaBugState{modifiedState},
+				DependentBugStates:        &[]BugzillaBugState{modifiedState},
+				DependentBugTargetRelease: &two,
+				StateAfterValidation:      &preState,
+				StateAfterMerge:           &preState,
 			},
 		},
 	}

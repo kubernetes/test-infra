@@ -5,8 +5,5 @@ employees:
 
     # Name of employee
     Name: Jim
-  - # Age of employee
-    Age: 21
-
-    # Name of employee
+  - Age: 21
     Name: Jane

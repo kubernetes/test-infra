@@ -9,9 +9,11 @@ postsubmits:
       decorate: true
       branches:
         - ^master$
+        - ^release-.*
       spec:
+        serviceAccountName: deployer # TODO(fejta): use pusher
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20191126-282e49f
+          - image: gcr.io/k8s-testimages/image-builder:v20200213-0032cdb
             command:
               - /run.sh
             args:
@@ -19,14 +21,4 @@ postsubmits:
               - --project=k8s-staging-kops
               - --scratch-bucket=gs://k8s-staging-kops-gcb
               - --env-passthrough=PULL_BASE_REF
-              - ci/postsubmit/push-to-staging/
-            env:
-              - name: GOOGLE_APPLICATION_CREDENTIALS
-                value: /creds/service-account.json
-            volumeMounts:
-              - name: creds
-                mountPath: /creds
-        volumes:
-          - name: creds
-            secret:
-              secretName: deployer-service-account
+              - .

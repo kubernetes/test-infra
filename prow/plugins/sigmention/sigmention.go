@@ -25,6 +25,7 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/pluginhelp"
@@ -58,7 +59,7 @@ func init() {
 	plugins.RegisterGenericCommentHandler(pluginName, handleGenericComment, helpProvider)
 }
 
-func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
 	return &pluginhelp.PluginHelp{
 			Description: `The sigmention plugin responds to SIG (Special Interest Group) GitHub team mentions like '@kubernetes/sig-testing-bugs'. The plugin responds in two ways:
 <ol><li> The appropriate 'sig/*' and 'kind/*' labels are applied to the issue or pull request. In this case 'sig/testing' and 'kind/bug'.</li>

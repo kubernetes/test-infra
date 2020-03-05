@@ -209,6 +209,13 @@ const (
 	PullRequestActionReadyForReview PullRequestEventAction = "ready_for_review"
 )
 
+// GenericEvent is a lightweight struct containing just Sender and Repo as all events are expected to have this information.
+// https://developer.github.com/webhooks/#payloads
+type GenericEvent struct {
+	Sender User `json:"sender"`
+	Repo   Repo `json:"repository"`
+}
+
 // PullRequestEvent is what GitHub sends us when a PR is changed.
 type PullRequestEvent struct {
 	Action      PullRequestEventAction `json:"action"`
@@ -232,6 +239,7 @@ type PullRequest struct {
 	Number             int               `json:"number"`
 	HTMLURL            string            `json:"html_url"`
 	User               User              `json:"user"`
+	Labels             []Label           `json:"labels"`
 	Base               PullRequestBranch `json:"base"`
 	Head               PullRequestBranch `json:"head"`
 	Title              string            `json:"title"`

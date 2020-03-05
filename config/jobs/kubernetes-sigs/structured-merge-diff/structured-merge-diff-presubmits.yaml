@@ -8,11 +8,12 @@ presubmits:
     path_alias: sigs.k8s.io/structured-merge-diff
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-28c7418-master
         command:
         - go
         args:
         - test
+        - -race
         - ./...
     annotations:
       testgrid-dashboards: sig-api-machinery-structured-merge-diff
@@ -26,7 +27,7 @@ presubmits:
     path_alias: sigs.k8s.io/structured-merge-diff
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-28c7418-master
         command:
         - bash
         - -c
@@ -34,4 +35,22 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-api-machinery-structured-merge-diff
       testgrid-tab-name: pr-gofmt
+      testgrid-num-columns-recent: '30'
+  - name: pull-structured-merge-diff-benchmark
+    always_run: false
+    skip_report: true
+    decorate: true
+    path_alias: sigs.k8s.io/structured-merge-diff
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/benchmarkjunit:latest
+        command:
+        - /benchmarkjunit
+        args:
+        - --log-file=$(ARTIFACTS)/benchmark-log.txt
+        - --output=$(ARTIFACTS)/junit_benchmarks.xml
+        - ./...
+    annotations:
+      testgrid-dashboards: sig-api-machinery-structured-merge-diff
+      testgrid-tab-name: pr-benchmark
       testgrid-num-columns-recent: '30'

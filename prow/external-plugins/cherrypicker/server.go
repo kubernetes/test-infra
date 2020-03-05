@@ -30,7 +30,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/git"
+	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
@@ -57,7 +58,7 @@ type githubClient interface {
 }
 
 // HelpProvider construct the pluginhelp.PluginHelp for this plugin.
-func HelpProvider(enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+func HelpProvider(_ []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: `The cherrypick plugin is used for cherrypicking PRs across branches. For every successful cherrypick invocation a new PR is opened against the target branch and assigned to the requester. If the parent PR contains a release note, it is copied to the cherrypick PR.`,
 	}
@@ -79,9 +80,9 @@ type Server struct {
 	botName        string
 	email          string
 
-	gc *git.Client
+	gc git.ClientFactory
 	// Used for unit testing
-	push func(repo, newBranch string) error
+	push func(newBranch string) error
 	ghc  githubClient
 	log  *logrus.Entry
 
@@ -99,7 +100,7 @@ type Server struct {
 
 // ServeHTTP validates an incoming webhook and puts it into the event channel.
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	eventType, eventGUID, payload, ok, _ := github.ValidateWebhook(w, r, s.tokenGenerator())
+	eventType, eventGUID, payload, ok, _ := github.ValidateWebhook(w, r, s.tokenGenerator)
 	if !ok {
 		return
 	}
@@ -358,7 +359,7 @@ func (s *Server) handle(l *logrus.Entry, requestor string, comment *github.Issue
 
 	// Clone the repo, checkout the target branch.
 	startClone := time.Now()
-	r, err := s.gc.Clone(org + "/" + repo)
+	r, err := s.gc.ClientFor(org, repo)
 	if err != nil {
 		return err
 	}
@@ -422,12 +423,12 @@ func (s *Server) handle(l *logrus.Entry, requestor string, comment *github.Issue
 		return s.createComment(org, repo, num, comment, resp)
 	}
 
-	push := r.Push
+	push := r.ForcePush
 	if s.push != nil {
 		push = s.push
 	}
 	// Push the new branch in the bot's fork.
-	if err := push(repo, newBranch); err != nil {
+	if err := push(newBranch); err != nil {
 		resp := fmt.Sprintf("failed to push cherry-picked changes in GitHub: %v", err)
 		s.log.WithFields(l.Data).Info(resp)
 		return s.createComment(org, repo, num, comment, resp)

@@ -24,6 +24,7 @@ import (
 	"path"
 	"regexp"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
@@ -47,12 +48,12 @@ func init() {
 	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest, helpProvider)
 }
 
-func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
 	// The {WhoCanUse, Usage, Examples, Config} fields are omitted because this plugin cannot be
 	// manually triggered and is not configurable.
 	return &pluginhelp.PluginHelp{
 			Description: `The docs-no-retest plugin applies the '` + labelSkipRetest + `' label to pull requests that only touch documentation type files and thus do not need to be retested against the latest master commit before merging.
-<br>Files extensions '.md', '.png', '.svg', and '.dia' are considered documentation.`,
+<br>Files extensions '.md', '.png', '.svg', and '.dia' are considered documentation.<br>This plugin is deprecated, and will be deleted after March 2020.`,
 		},
 		nil
 }

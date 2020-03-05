@@ -41,7 +41,7 @@ func K8sSigs(projectName string, parts ...string) string {
 // GetProjectDir returns $GOPATH/src/<project-namespace>/...
 func getProjectDir(namespace, projectName string, parts ...string) string {
 	gopathList := filepath.SplitList(build.Default.GOPATH)
-	found := false
+	var found bool
 	var projectDir string
 	for _, gopath := range gopathList {
 		projectDir = filepath.Join(gopath, "src", namespace, projectName)
@@ -50,7 +50,7 @@ func getProjectDir(namespace, projectName string, parts ...string) string {
 			break
 		}
 	}
-	if !found {
+	if !found && len(gopathList) > 0 {
 		// Default to the first item in GOPATH list.
 		projectDir = filepath.Join(gopathList[0], "src", "k8s.io", projectName)
 		log.Printf(

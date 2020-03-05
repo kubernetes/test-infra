@@ -31,6 +31,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
@@ -54,7 +55,7 @@ func init() {
 	plugins.RegisterGenericCommentHandler(pluginName, handleGenericComment, helpProvider)
 }
 
-func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "The cat plugin adds a cat image to an issue or PR in response to the `/meow` command.",
 		Config: map[string]string{

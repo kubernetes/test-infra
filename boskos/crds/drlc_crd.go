@@ -30,18 +30,13 @@ var (
 	// DRLCType is the DynamicResourceLifeCycle CRD type
 	DRLCType = Type{
 		Kind:       reflect.TypeOf(DRLCObject{}).Name(),
-		ListKind:   reflect.TypeOf(DRLCCollection{}).Name(),
+		ListKind:   reflect.TypeOf(DRLCObjectList{}).Name(),
 		Singular:   "dynamicresourcelifecycle",
 		Plural:     "dynamicresourcelifecycles",
 		Object:     &DRLCObject{},
-		Collection: &DRLCCollection{},
+		Collection: &DRLCObjectList{},
 	}
 )
-
-// NewTestDRLCClient creates a fake CRD rest client for common.Resource
-func NewTestDRLCClient() ClientInterface {
-	return newDummyClient(DRLCType)
-}
 
 // DRLCObject holds generalized configuration information about how the
 // resource needs to be created.
@@ -62,11 +57,11 @@ type DRLCSpec struct {
 	Needs        common.ResourceNeeds `json:"needs"`
 }
 
-// DRLCCollection implements the Collections interface
-type DRLCCollection struct {
+// DRLCObjectList implements the Collections interface
+type DRLCObjectList struct {
 	v1.TypeMeta `json:",inline"`
 	v1.ListMeta `json:"metadata,omitempty"`
-	Items       []*DRLCObject `json:"items"`
+	Items       []DRLCObject `json:"items"`
 }
 
 // GetName implements the Object interface
@@ -98,7 +93,7 @@ func (in *DRLCObject) DeepCopyObject() runtime.Object {
 	return nil
 }
 
-func (in *DRLCObject) toDynamicResourceLifeCycle() common.DynamicResourceLifeCycle {
+func (in *DRLCObject) ToDynamicResourceLifeCycle() common.DynamicResourceLifeCycle {
 	return common.DynamicResourceLifeCycle{
 		Type:         in.Name,
 		InitialState: in.Spec.InitialState,
@@ -110,65 +105,41 @@ func (in *DRLCObject) toDynamicResourceLifeCycle() common.DynamicResourceLifeCyc
 	}
 }
 
-func (in *DRLCObject) fromDynamicResourceLifeCycle(r common.DynamicResourceLifeCycle) {
-	in.ObjectMeta.Name = r.Type
-	in.Spec.InitialState = r.InitialState
-	in.Spec.MinCount = r.MinCount
-	in.Spec.MaxCount = r.MaxCount
-	in.Spec.LifeSpan = r.LifeSpan
-	in.Spec.Config = r.Config
-	in.Spec.Needs = r.Needs
-}
-
-// ToItem implements the Object interface
-func (in *DRLCObject) ToItem() common.Item {
-	return in.toDynamicResourceLifeCycle()
-}
-
-// FromItem implements the Object interface
-func (in *DRLCObject) FromItem(i common.Item) {
-	c, err := common.ItemToDynamicResourceLifeCycle(i)
-	if err == nil {
-		in.fromDynamicResourceLifeCycle(c)
+// FromDynamicResourceLifecycle converts a common.DynamicResourceLifeCycle into a *DRLCObject
+func FromDynamicResourceLifecycle(r common.DynamicResourceLifeCycle) *DRLCObject {
+	return &DRLCObject{
+		ObjectMeta: v1.ObjectMeta{
+			Name: r.Type,
+		},
+		Spec: DRLCSpec{
+			InitialState: r.InitialState,
+			MinCount:     r.MinCount,
+			MaxCount:     r.MaxCount,
+			LifeSpan:     r.LifeSpan,
+			Config:       r.Config,
+			Needs:        r.Needs,
+		},
 	}
 }
 
-// GetItems implements the Collection interface
-func (in *DRLCCollection) GetItems() []Object {
-	var items []Object
-	for _, i := range in.Items {
-		items = append(items, i)
-	}
-	return items
-}
-
-// SetItems implements the Collection interface
-func (in *DRLCCollection) SetItems(objects []Object) {
-	var items []*DRLCObject
-	for _, b := range objects {
-		items = append(items, b.(*DRLCObject))
-	}
-	in.Items = items
-}
-
-func (in *DRLCCollection) deepCopyInto(out *DRLCCollection) {
+func (in *DRLCObjectList) deepCopyInto(out *DRLCObjectList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
 	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	out.Items = in.Items
 }
 
-func (in *DRLCCollection) deepCopy() *DRLCCollection {
+func (in *DRLCObjectList) deepCopy() *DRLCObjectList {
 	if in == nil {
 		return nil
 	}
-	out := new(DRLCCollection)
+	out := new(DRLCObjectList)
 	in.deepCopyInto(out)
 	return out
 }
 
 // DeepCopyObject implements the runtime.Object interface
-func (in *DRLCCollection) DeepCopyObject() runtime.Object {
+func (in *DRLCObjectList) DeepCopyObject() runtime.Object {
 	if c := in.deepCopy(); c != nil {
 		return c
 	}

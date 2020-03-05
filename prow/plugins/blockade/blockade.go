@@ -30,6 +30,7 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/pluginhelp"
@@ -59,23 +60,19 @@ func init() {
 	plugins.RegisterPullRequestHandler(PluginName, handlePullRequest, helpProvider)
 }
 
-func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
 	// The {WhoCanUse, Usage, Examples} fields are omitted because this plugin cannot be triggered manually.
 	blockConfig := map[string]string{}
 	for _, repo := range enabledRepos {
-		parts := strings.Split(repo, "/")
-		if len(parts) > 2 {
-			return nil, fmt.Errorf("invalid repo in enabledRepos: %q", repo)
-		}
 		var buf bytes.Buffer
 		fmt.Fprint(&buf, "The following blockades apply in this repository:")
 		for _, blockade := range config.Blockades {
-			if !stringInSlice(parts[0], blockade.Repos) && !stringInSlice(repo, blockade.Repos) {
+			if !stringInSlice(repo.Org, blockade.Repos) && !stringInSlice(repo.String(), blockade.Repos) {
 				continue
 			}
 			fmt.Fprintf(&buf, "<br>Block reason: '%s'<br>&nbsp&nbsp&nbsp&nbspBlock regexps: %q<br>&nbsp&nbsp&nbsp&nbspException regexps: %q<br>", blockade.Explanation, blockade.BlockRegexps, blockade.ExceptionRegexps)
 		}
-		blockConfig[repo] = buf.String()
+		blockConfig[repo.String()] = buf.String()
 	}
 	return &pluginhelp.PluginHelp{
 			Description: "The blockade plugin blocks pull requests from merging if they touch specific files. The plugin applies the '" + labels.BlockedPaths + "' label to pull requests that touch files that match a blockade's block regular expression and none of the corresponding exception regular expressions.",

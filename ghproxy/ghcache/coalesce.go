@@ -122,7 +122,7 @@ func (r *requestCoalescer) RoundTrip(req *http.Request) (*http.Response, error) 
 		waiter.L.Unlock()
 
 		if err != nil {
-			logrus.WithField("cache-key", key).WithError(err).Error("Error from cache transport layer.")
+			logrus.WithField("cache-key", key).WithError(err).Warn("Error from cache transport layer.")
 			return nil, err
 		}
 		cacheMode = cacheResponseMode(resp.Header)

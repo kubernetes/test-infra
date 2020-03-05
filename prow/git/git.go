@@ -146,7 +146,8 @@ func (c *Client) unlockRepo(repo string) {
 // In that case, it must do a full git mirror clone. For large repos, this can
 // take a while. Once that is done, it will do a git fetch instead of a clone,
 // which will usually take at most a few seconds.
-func (c *Client) Clone(repo string) (*Repo, error) {
+func (c *Client) Clone(organization, repository string) (*Repo, error) {
+	repo := organization + "/" + repository
 	c.lockRepo(repo)
 	defer c.unlockRepo(repo)
 
@@ -187,7 +188,8 @@ func (c *Client) Clone(repo string) (*Repo, error) {
 		logger: c.logger,
 		git:    c.git,
 		base:   base,
-		repo:   repo,
+		org:    organization,
+		repo:   repository,
 		user:   user,
 		pass:   pass,
 	}, nil
@@ -203,7 +205,9 @@ type Repo struct {
 	git string
 	// base is the base path for remote git fetch calls.
 	base string
-	// repo is the full repo name: "org/repo".
+	// org is the organization name: "org" in "org/repo".
+	org string
+	// repo is the repository name: "repo" in "org/repo".
 	repo string
 	// user is used for pushing to the remote repo.
 	user string
@@ -291,16 +295,18 @@ func (r *Repo) Merge(commitlike string) (bool, error) {
 // It returns true if the merge completes. It returns an error if the abort fails.
 func (r *Repo) MergeWithStrategy(commitlike string, mergeStrategy prowgithub.PullRequestMergeType) (bool, error) {
 	r.logger.Infof("Merging %s.", commitlike)
-	mergeFlag := ""
 	switch mergeStrategy {
 	case prowgithub.MergeMerge:
-		mergeFlag = "--no-ff"
+		return r.mergeWithMergeStrategyMerge(commitlike)
 	case prowgithub.MergeSquash:
-		mergeFlag = "--squash"
+		return r.mergeWithMergeStrategySquash(commitlike)
 	default:
 		return false, fmt.Errorf("merge strategy %q is not supported", mergeStrategy)
 	}
-	co := r.gitCommand("merge", mergeFlag, "--no-stat", "-m merge", commitlike)
+}
+
+func (r *Repo) mergeWithMergeStrategyMerge(commitlike string) (bool, error) {
+	co := r.gitCommand("merge", "--no-ff", "--no-stat", "-m merge", commitlike)
 
 	b, err := co.CombinedOutput()
 	if err == nil {
@@ -313,6 +319,27 @@ func (r *Repo) MergeWithStrategy(commitlike string, mergeStrategy prowgithub.Pul
 	}
 
 	return false, nil
+}
+
+func (r *Repo) mergeWithMergeStrategySquash(commitlike string) (bool, error) {
+	co := r.gitCommand("merge", "--squash", "--no-stat", commitlike)
+
+	b, err := co.CombinedOutput()
+	if err != nil {
+		r.logger.WithError(err).Infof("Merge failed with output: %s", string(b))
+		if b, err := r.gitCommand("reset", "--hard", "HEAD").CombinedOutput(); err != nil {
+			return false, fmt.Errorf("error resetting after failed squash for commitlike %s: %v. output: %s", commitlike, err, string(b))
+		}
+		return false, nil
+	}
+
+	b, err = r.gitCommand("commit", "--no-stat", "-m", "merge").CombinedOutput()
+	if err != nil {
+		r.logger.WithError(err).Infof("Commit after squash failed with output: %s", string(b))
+		return false, err
+	}
+
+	return true, nil
 }
 
 // MergeAndCheckout merges the provided headSHAs in order onto baseSHA using the provided strategy.
@@ -365,12 +392,12 @@ func (r *Repo) Am(path string) error {
 
 // Push pushes over https to the provided owner/repo#branch using a password
 // for basic auth.
-func (r *Repo) Push(repo, branch string) error {
+func (r *Repo) Push(branch string) error {
 	if r.user == "" || r.pass == "" {
 		return errors.New("cannot push without credentials - configure your git client")
 	}
-	r.logger.Infof("Pushing to '%s/%s (branch: %s)'.", r.user, repo, branch)
-	remote := fmt.Sprintf("https://%s:%s@%s/%s/%s", r.user, r.pass, github, r.user, repo)
+	r.logger.Infof("Pushing to '%s/%s (branch: %s)'.", r.user, r.repo, branch)
+	remote := fmt.Sprintf("https://%s:%s@%s/%s/%s", r.user, r.pass, github, r.user, r.repo)
 	co := r.gitCommand("push", remote, branch)
 	out, err := co.CombinedOutput()
 	if err != nil {
@@ -382,8 +409,8 @@ func (r *Repo) Push(repo, branch string) error {
 
 // CheckoutPullRequest does exactly that.
 func (r *Repo) CheckoutPullRequest(number int) error {
-	r.logger.Infof("Fetching and checking out %s#%d.", r.repo, number)
-	if b, err := retryCmd(r.logger, r.dir, r.git, "fetch", r.base+"/"+r.repo, fmt.Sprintf("pull/%d/head:pull%d", number, number)); err != nil {
+	r.logger.Infof("Fetching and checking out %s/%s#%d.", r.org, r.repo, number)
+	if b, err := retryCmd(r.logger, r.dir, r.git, "fetch", r.base+"/"+r.org+"/"+r.repo, fmt.Sprintf("pull/%d/head:pull%d", number, number)); err != nil {
 		return fmt.Errorf("git fetch failed for PR %d: %v. output: %s", number, err, string(b))
 	}
 	co := r.gitCommand("checkout", fmt.Sprintf("pull%d", number))

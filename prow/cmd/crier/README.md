@@ -7,18 +7,22 @@ Crier reports your prowjobs on their status changes.
 For any reporter you want to use, you need to mount your prow configs and specify `--config-path` and `job-config-path`
 flag as most of other prow controllers do.
 
-### [Gerrit reporter](/prow/gerrit/reporter)
+### [Gerrit reporter](/prow/crier/reporters/gerrit)
 
 You can enable gerrit reporter in crier by specifying `--gerrit-workers=n` flag.
 
 Similar to the [gerrit adapter](/prow/cmd/gerrit), you'll need to specify `--gerrit-projects` for
 your gerrit projects, and also `--cookiefile` for the gerrit auth token (leave it unset for anonymous).
 
-Gerrit reporter will send a gerrit code review, when all [gerrit adapter](/prow/cmd/gerrit)
-scheduled prowjob finishes on a revision, aka, on `SuccessState`, `FailureState`, `AbortedState` or `ErrorState`.
+Gerrit reporter will send an aggregated summary message, when all [gerrit adapter](/prow/cmd/gerrit)
+scheduled prowjobs with the same report label finish on a revision.
 It will also attach a report url so people can find logs of the job.
 
-### [Pubsub reporter](/prow/pubsub/reporter)
+The reporter will also cast a +1/-1 vote on the `prow.k8s.io/gerrit-report-label` label of your prowjob,
+or by default it will vote on `CodeReview` label. Where `+1` means all jobs on the patshset pass and `-1`
+means one or more jobs failed on the patchset.
+
+### [Pubsub reporter](/prow/crier/reporters/pubsub)
 
 You can enable pubsub reporter in crier by specifying `--pubsub-workers=n` flag.
 
@@ -34,7 +38,7 @@ Pubsub reporter will report whenever prowjob has a state transition.
 
 You can check the reported result by [list the pubsub topic](https://cloud.google.com/sdk/gcloud/reference/pubsub/topics/list).
 
-### [GitHub reporter](/prow/github/reporter)
+### [GitHub reporter](/prow/crier/reporters/github)
 
 You can enable github reporter in crier by specifying `--github-workers=1` flag. (We only support single worker for github, due to [#13306](https://github.com/kubernetes/test-infra/issues/13306))
 
@@ -44,7 +48,7 @@ If you have a [ghproxy](/ghproxy) deployed, also remember to point `--github-end
 
 The actual report logic is in the [github report library](/prow/github/report) for your reference.
 
-### [Slack reporter](/prow/slack/reporter)
+### [Slack reporter](/prow/crier/reporters/slack)
 
 > **NOTE:** if enabling the slack reporter for the *first* time, Crier will message to the Slack channel for **all** ProwJobs matching the configured filtering criteria.
 
@@ -88,12 +92,16 @@ spec:
     spec:
       containers:
       - name: crier
-        image: gcr.io/k8s-prow/crier:v20191010-78fe9feb7
+        image: gcr.io/k8s-prow/crier:v20200205-656133e91
         args:
         - --slack-workers=1
         - --slack-token-file=/etc/slack/token
+        - --config-path=/etc/config/config.yaml
         - --dry-run=false
         volumeMounts:
+        - mountPath: /etc/config
+          name: config
+          readOnly: true
         - name: slack
           mountPath: /etc/slack
           readOnly: true
@@ -101,6 +109,9 @@ spec:
       - name: slack
         secret:
           secretName: slack-token
+      - name: config
+        configMap:
+          name: config
 ```
 
 Additionally, in order for it to work with Prow you must add the following to your `config.yaml`:

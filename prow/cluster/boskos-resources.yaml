@@ -517,6 +517,11 @@ resources:
   - k8s-jenkins-scalability-3
   - k8s-jenkins-scalability-4
   - k8s-jenkins-scalability-5
+  - k8s-periodic-scale-1
+  - k8s-periodic-scale-2
+  - k8s-periodic-scale-3
+  - k8s-periodic-scale-4
+  - k8s-periodic-scale-5
   state: dirty
   type: scalability-project
 - names:
@@ -563,5 +568,20 @@ resources:
     - k8s-presubmit-scale-28
     - k8s-presubmit-scale-29
     - k8s-presubmit-scale-30
+    - k8s-presubmit-scale-31
+    - k8s-presubmit-scale-32
+    - k8s-presubmit-scale-33
+    - k8s-presubmit-scale-34
+    - k8s-presubmit-scale-35
+    - k8s-presubmit-scale-36
+    - k8s-presubmit-scale-37
+    - k8s-presubmit-scale-38
+    - k8s-presubmit-scale-39
+    - k8s-presubmit-scale-40
+    - k8s-presubmit-scale-41
+    - k8s-presubmit-scale-42
+    - k8s-presubmit-scale-43
+    - k8s-presubmit-scale-44
+    - k8s-presubmit-scale-45
   state: dirty
   type: scalability-presubmit-project

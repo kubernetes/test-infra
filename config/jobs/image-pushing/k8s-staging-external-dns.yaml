@@ -1,0 +1,24 @@
+postsubmits:
+  # this is the github repo we'll build from; this block needs to be repeated for each repo.
+  kubernetes-sigs/external-dns:
+    - name: post-external-dns-push-images
+      cluster: test-infra-trusted
+      annotations:
+        # this is the name of some testgrid dashboard to report to.
+        testgrid-dashboards: sig-network-external-dns
+      decorate: true
+      branches:
+        - ^master$
+        - ^v[0-9].*
+      spec:
+        serviceAccountName: deployer # TODO(fejta): use pusher
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20200213-0032cdb
+            command:
+              - /run.sh
+            args:
+              # this is the project GCB will run in, which is the same as the GCR images are pushed to.
+              - --project=k8s-staging-external-dns
+              - --scratch-bucket=gs://k8s-staging-external-dns-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - .

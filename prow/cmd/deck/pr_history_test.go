@@ -19,16 +19,14 @@ package main
 import (
 	"fmt"
 	"net/url"
-	"reflect"
 	"strings"
 	"testing"
 	"time"
 
-	"k8s.io/apimachinery/pkg/util/diff"
+	"github.com/google/go-cmp/cmp"
 	"k8s.io/apimachinery/pkg/util/sets"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 )
@@ -329,13 +327,15 @@ func TestGetPRBuildData(t *testing.T) {
 	if len(builds) != len(expected) {
 		t.Errorf("expected %d builds, found %d", len(expected), len(builds))
 	}
+	cmpOption := cmp.AllowUnexported(buildData{})
 	for _, build := range builds {
 		if exp, ok := expected[build.prefix]; ok {
 			if !exp.fixedDuration {
 				build.Duration = 0
 			}
-			if !reflect.DeepEqual(build, exp.buildData) {
-				t.Errorf("build %s mismatch:\n%s", build.prefix, diff.ObjectReflectDiff(exp.buildData, build))
+
+			if diff := cmp.Diff(build, exp.buildData, cmpOption); diff != "" {
+				t.Errorf("build %s mismatch (-got, +want):\n%s", build.prefix, diff)
 			}
 		} else {
 			t.Errorf("found unexpected build %s", build.prefix)
@@ -425,7 +425,7 @@ func TestGetGCSDirsForPR(t *testing.T) {
 				123: {Number: 123},
 			},
 		}
-		toSearch, err := getGCSDirsForPR(tc.config, gitHubClient, &git.Client{}, tc.org, tc.repo, tc.pr)
+		toSearch, err := getGCSDirsForPR(tc.config, gitHubClient, nil, tc.org, tc.repo, tc.pr)
 		if (err != nil) != tc.expErr {
 			t.Errorf("%s: unexpected error %v", tc.name, err)
 		}

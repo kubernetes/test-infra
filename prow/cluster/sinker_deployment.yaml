@@ -15,7 +15,7 @@ spec:
       labels:
         app: sinker
     spec:
-      # serviceAccountName: "sinker" # Uncomment for use with RBAC
+      serviceAccountName: sinker
       containers:
       - name: sinker
         args:
@@ -23,7 +23,7 @@ spec:
         - --config-path=/etc/config/config.yaml
         - --job-config-path=/etc/job-config
         - --dry-run=false
-        image: gcr.io/k8s-prow/sinker:v20191128-48349ea19
+        image: gcr.io/k8s-prow/sinker:v20200304-c42b857fc
         volumeMounts:
         - mountPath: /etc/cluster
           name: cluster

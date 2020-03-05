@@ -77,12 +77,13 @@ approve:
   require_self_approval: false
 - repos:
   - bazelbuild
+  - kubernetes-sigs/kind
+  - kubernetes-sigs/slack-infra
   - kubernetes/community
+  - kubernetes/k8s.io
   - kubernetes/org
   - kubernetes/repo-infra
-  - kubernetes-sigs/kind
   - kubernetes/test-infra
-  - kubernetes-sigs/slack-infra
   require_self_approval: false
   ignore_review_state: false
 - repos:
@@ -151,12 +152,14 @@ blockades:
   blockregexps:
   - ^keps/NEXT_KEP_NUMBER$
   explanation: "KEP numbers are obsolete. Please remove any changes to `NEXT_KEP_NUMBER` from this PR and ensure the KEP filename is the draft date and KEP title e.g., `YYYYMMDD-pony-controller.md`"
-# TODO(justaugustus): Remove this blockade after identifying jobs where release tooling is being leveraged and
-#                     reorganizing k/release to be more restrictive about who can approve changes.
-#                     Deadline: 8/8/19
-#                     ref:
-#                       - https://github.com/kubernetes/test-infra/pull/13328
-#                       - https://github.com/kubernetes/release/issues/816
+### DO NOT REMOVE ###
+# This blockade is intended to restrict the approval of changes to existing release tooling to k/release repo admins.
+# We should only consider removing it after all tools mentioned in the regex have been removed/replaced.
+# ref:
+# - Go refactor umbrella: https://github.com/kubernetes/release/issues/918
+# - deb/rpm refactor umbrella: https://github.com/kubernetes/release/issues/1027
+# - Initial k/release blockade PR: https://github.com/kubernetes/test-infra/pull/13328
+# - Issue on mitigating CI failures caused by k/release changes: https://github.com/kubernetes/release/issues/816
 - repos:
   - kubernetes/release
   blockregexps:
@@ -223,36 +226,35 @@ slack:
     - k8s-ci-robot # future home of tide
     - k8s-release-robot # anago
     branch_whitelist:
-        release-1.14:
-            - aleksandra-malinowska # Patch Release Team
-            - dougm # Patch Release Team
-            - feiskyer # Patch Release Team
-            - hoegaarden # Patch Release Team
-            - idealhack # Patch Release Team
-            - tpepper # Patch Release Team
         release-1.15:
-            - aleksandra-malinowska # Patch Release Team
             - dougm # Patch Release Team
             - feiskyer # Patch Release Team
             - hoegaarden # Patch Release Team
             - idealhack # Patch Release Team
+            - justaugustus # Patch Release Team
             - tpepper # Patch Release Team
         release-1.16:
-            - aleksandra-malinowska # Patch Release Team
             - dougm # Patch Release Team
             - feiskyer # Patch Release Team
             - hoegaarden # Patch Release Team
             - idealhack # Patch Release Team
+            - justaugustus # Patch Release Team
             - tpepper # Patch Release Team
         release-1.17:
-            - aleksandra-malinowska # Patch Release Team
-            - bubblemelon # Branch Manager
+            - dougm # Patch Release Team
+            - feiskyer # Patch Release Team
+            - hoegaarden # Patch Release Team
+            - idealhack # Patch Release Team
+            - justaugustus # Patch Release Team
+            - tpepper # Patch Release Team
+        release-1.18:
             - cpanato # Branch Manager
             - dougm # Patch Release Team
             - feiskyer # Patch Release Team
             - hoegaarden # Patch Release Team
             - idealhack # Patch Release Team
-            - justaugustus # Branch Manager
+            - justaugustus # Patch Release Team
+            - saschagrunert # Branch Manager
             - tpepper # Patch Release Team
         feature-serverside-apply:
             - lavalamp # feature-serverside-apply "branch manager"
@@ -294,16 +296,21 @@ milestone_applier:
     master: v1.18
   kubernetes/kubernetes:
     master: v1.18
+    release-1.18: v1.18
     release-1.17: v1.17
     release-1.16: v1.16
     release-1.15: v1.15
-    release-1.14: v1.14
   kubernetes/release:
     master: v1.18
   kubernetes/sig-release:
     master: v1.18
   kubernetes/test-infra:
     master: v1.18
+  kubernetes/kops:
+    master: v1.18
+    release-1.17: v1.17
+    release-1.16: v1.16
+    release-1.15: v1.15
 
 repo_milestone:
   # Default maintainer
@@ -385,9 +392,7 @@ config_updater:
   maps:
     label_sync/labels.yaml:
       name: label-config
-      clusters:
-        test-infra-trusted:
-          - test-pods
+      namespace: test-pods
     config/prow/config.yaml:
       name: config
     config/prow/plugins.yaml:
@@ -426,16 +431,48 @@ require_matching_label:
   issues: true
   regexp: ^(sig|wg|committee)/
   missing_comment: |
-    There are no sig labels on this issue. Please add a sig label by either:
+    There are no sig labels on this issue. Please add an appropriate label by using one of the following commands:
+    - `/sig <group-name>`
+    - `/wg <group-name>`
+    - `/committee <group-name>`
 
-    1. mentioning a sig: `@kubernetes/sig-<group-name>-<group-suffix>`
-        e.g., `@kubernetes/sig-contributor-experience-<group-suffix>` to notify the contributor experience sig, OR
+    Please see the [group list](https://git.k8s.io/community/sig-list.md) for a listing of the SIGs, working groups, and committees available.
+- missing_label: needs-sig
+  org: kubernetes
+  repo: community
+  issues: true
+  regexp: ^(sig|wg|committee)/
+  missing_comment: |
+    There are no sig labels on this issue. Please add an appropriate label by using one of the following commands:
+    - `/sig <group-name>`
+    - `/wg <group-name>`
+    - `/committee <group-name>`
 
-    2. specifying the label manually: `/sig <group-name>`
-        e.g., `/sig scalability` to apply the `sig/scalability` label
+    Please see the [group list](https://git.k8s.io/community/sig-list.md) for a listing of the SIGs, working groups, and committees available.
+- missing_label: needs-sig
+  org: kubernetes
+  repo: enhancements
+  issues: true
+  regexp: ^(sig|wg|committee)/
+  missing_comment: |
+    There are no sig labels on this issue. Please add an appropriate label by using one of the following commands:
+    - `/sig <group-name>`
+    - `/wg <group-name>`
+    - `/committee <group-name>`
 
-    Note: Method 1 will trigger an email to the group. See the [group list](https://git.k8s.io/community/sig-list.md).
-    The `<group-suffix>` in method 1 has to be replaced with one of these: _**bugs, feature-requests, pr-reviews, test-failures, proposals**_.
+    Please see the [group list](https://git.k8s.io/community/sig-list.md) for a listing of the SIGs, working groups, and committees available.
+- missing_label: needs-sig
+  org: kubernetes-sigs
+  repo: contributor-playground
+  issues: true
+  regexp: ^(sig|wg|committee)/
+  missing_comment: |
+    There are no sig labels on this issue. Please add an appropriate label by using one of the following commands:
+    - `/sig <group-name>`
+    - `/wg <group-name>`
+    - `/committee <group-name>`
+
+    Please see the [group list](https://git.k8s.io/community/sig-list.md) for a listing of the SIGs, working groups, and committees available.
 - missing_label: needs-priority
   org: kubernetes
   repo: kubernetes
@@ -446,6 +483,30 @@ require_matching_label:
   repo: cloud-provider-aws
   prs: true
   regexp: ^kind/
+- missing_label: needs-kind
+  org: kubernetes
+  repo: release
+  issues: true
+  prs: true
+  regexp: ^kind/
+- missing_label: needs-priority
+  org: kubernetes
+  repo: release
+  issues: true
+  prs: true
+  regexp: ^priority/
+- missing_label: needs-kind
+  org: kubernetes
+  repo: sig-release
+  issues: true
+  prs: true
+  regexp: ^kind/
+- missing_label: needs-priority
+  org: kubernetes
+  repo: sig-release
+  issues: true
+  prs: true
+  regexp: ^priority/
 
 retitle:
   allow_closed_issues: true
@@ -548,21 +609,26 @@ plugins:
 
   kubernetes/cloud-provider-openstack:
   - override
+  - release-note
 
   kubernetes/community:
   - blockade
   - milestone
-  - require-sig
+  - require-matching-label
+
+  kubernetes/dashboard:
+  - override
 
   kubernetes/enhancements:
   - blockade
   - milestone
   - milestoneapplier
-  - require-sig
+  - require-matching-label
   - stage
 
   kubernetes/kops:
   - milestone
+  - milestoneapplier
 
   kubernetes/kubernetes:
   - blockade
@@ -583,14 +649,19 @@ plugins:
 
   kubernetes/release:
   - blockade
+  - mergecommitblocker
   - milestone
   - milestoneapplier
   - override
+  - release-note
+  - require-matching-label
 
   kubernetes/sig-release:
+  - mergecommitblocker
   - milestone
   - milestoneapplier
   - override
+  - require-matching-label
 
   kubernetes/system-validators:
   - milestone
@@ -755,7 +826,7 @@ plugins:
   - milestone
 
   kubernetes-sigs/contributor-playground:
-  - require-sig
+  - require-matching-label
 
   containerd/cri:
   - assign
@@ -804,27 +875,54 @@ plugins:
   - wip
 
   cncf/apisnoop:
+  - wip
+  - trigger
+  - assign
+  - cla
   - cat # /meow replies with cat pictures
   - dog # /bark replies with dog pictures
+  - goose
+  - heart
+  - help
+  - hold
+  - label
+  - lgtm
+  - retitle
+  - shrug
+  - size
+
+  cncf/k8s-conformance:
+  - cat # /meow replies with cat pictures
+  - dog # /bark replies with dog pictures
+  - goose
+  - wip
+  - assign
+  - hold
+  - lgtm
 
 external_plugins:
   kubernetes:
   - name: needs-rebase
     events:
+      - issue_comment
       - pull_request
   kubernetes-sigs:
   - name: needs-rebase
     events:
+      - issue_comment
       - pull_request
   kubernetes-csi:
   - name: needs-rebase
     events:
+      - issue_comment
       - pull_request
   kubernetes-client:
   - name: needs-rebase
     events:
+      - issue_comment
       - pull_request
   kubernetes-incubator:
   - name: needs-rebase
     events:
+      - issue_comment
       - pull_request

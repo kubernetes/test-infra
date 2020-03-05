@@ -24,7 +24,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/git"
+	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
@@ -50,7 +50,7 @@ func init() {
 	plugins.RegisterGenericCommentHandler(pluginName, handleGenericComment, helpProvider)
 }
 
-func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "The skip plugin allows users to clean up GitHub stale commit statuses for non-blocking jobs on a PR.",
 	}
@@ -69,7 +69,7 @@ func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error 
 	return handle(pc.GitHubClient, pc.Logger, &e, pc.Config, pc.GitClient, honorOkToTest)
 }
 
-func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, c *config.Config, gitClient *git.Client, honorOkToTest bool) error {
+func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, c *config.Config, gitClient git.ClientFactory, honorOkToTest bool) error {
 	if !e.IsPR || e.IssueState != "open" || e.Action != github.GenericCommentActionCreated {
 		return nil
 	}

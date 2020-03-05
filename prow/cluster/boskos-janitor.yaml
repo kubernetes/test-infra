@@ -6,7 +6,7 @@ metadata:
     app: boskos-janitor
   namespace: test-pods
 spec:
-  replicas: 8  # 8 distributed janitor instances for gke
+  replicas: 16  # 16 distributed janitor instances for gke
   selector:
     matchLabels:
       app: boskos-janitor
@@ -16,24 +16,16 @@ spec:
         app: boskos-janitor
     spec:
       terminationGracePeriodSeconds: 300
+      serviceAccountName: boskos-janitor
       containers:
       - name: boskos-janitor
-        image: gcr.io/k8s-prow/boskos/janitor:v20191127-123a37580
+        image: gcr.io/k8s-prow/boskos/janitor:v20200303-28c7418a8
         args:
         - --boskos-url=http://boskos.test-pods.svc.cluster.local.
         - --resource-type=gke-project
         - --pool-size=20
         - --
-        - --service_account=/etc/service-account/service-account.json
         - --hours=0
-        volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
-      volumes:
-      - name: service
-        secret:
-          secretName: service-account
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -53,24 +45,16 @@ spec:
         app: boskos-janitor-nongke
     spec:
       terminationGracePeriodSeconds: 300
+      serviceAccountName: boskos-janitor
       containers:
       - name: boskos-janitor-nongke
-        image: gcr.io/k8s-prow/boskos/janitor:v20191127-123a37580
+        image: gcr.io/k8s-prow/boskos/janitor:v20200303-28c7418a8
         args:
         - --boskos-url=http://boskos.test-pods.svc.cluster.local.
         - --resource-type=gce-project,gpu-project,ingress-project,istio-project,scalability-presubmit-project,scalability-project
         - --pool-size=20
         - --
-        - --service_account=/etc/service-account/service-account.json
         - --hours=0
-        volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
-      volumes:
-      - name: service
-        secret:
-          secretName: service-account
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -92,6 +76,15 @@ spec:
       terminationGracePeriodSeconds: 300
       containers:
       - name: boskos-janitor-aws
-        image: gcr.io/k8s-prow/boskos/aws-janitor-boskos:v20191127-123a37580
+        image: gcr.io/k8s-prow/boskos/aws-janitor-boskos:v20200303-28c7418a8
         args:
         - --boskos-url=http://boskos.test-pods.svc.cluster.local.
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  annotations:
+    # TODO(fejta): consider a better project, but this is what service-account uses now
+    iam.gke.io/gcp-service-account: pr-kubekins@kubernetes-jenkins-pull.iam.gserviceaccount.com
+  name: boskos-janitor
+  namespace: test-pods

@@ -25,6 +25,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
@@ -47,7 +48,7 @@ func init() {
 	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest, helpProvider)
 }
 
-func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
 	// The {WhoCanUse, Usage, Examples} fields are omitted because this plugin is not triggered with commands.
 	return &pluginhelp.PluginHelp{
 			Description: "The heart plugin celebrates certain GitHub actions with the reaction emojis. Emojis are added to pull requests that make additions to OWNERS or OWNERS_ALIASES files and to comments left by specified \"adorees\".",

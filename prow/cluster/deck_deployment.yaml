@@ -34,11 +34,11 @@ spec:
       labels:
         app: deck
     spec:
-      # serviceAccountName: "deck" # Uncomment for use with RBAC
+      serviceAccountName: deck
       terminationGracePeriodSeconds: 30
       containers:
       - name: deck
-        image: gcr.io/k8s-prow/deck:v20191128-48349ea19
+        image: gcr.io/k8s-prow/deck:v20200304-c42b857fc
         imagePullPolicy: Always
         ports:
           - name: http

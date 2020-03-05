@@ -39,7 +39,7 @@ const pluginName = "refresh"
 
 var refreshRe = regexp.MustCompile(`(?mi)^/refresh\s*$`)
 
-func helpProvider(enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+func helpProvider(_ []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: `The refresh plugin is used for refreshing status contexts in PRs. Useful in case GitHub breaks down.`,
 	}
@@ -61,7 +61,7 @@ type server struct {
 }
 
 func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	eventType, eventGUID, payload, ok, _ := github.ValidateWebhook(w, r, s.tokenGenerator())
+	eventType, eventGUID, payload, ok, _ := github.ValidateWebhook(w, r, s.tokenGenerator)
 	if !ok {
 		return
 	}

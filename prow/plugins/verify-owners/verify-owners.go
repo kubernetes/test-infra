@@ -28,7 +28,8 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/test-infra/prow/git"
+	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/pluginhelp"
@@ -57,7 +58,7 @@ func init() {
 	plugins.RegisterGenericCommentHandler(PluginName, handleGenericCommentEvent, helpProvider)
 }
 
-func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: fmt.Sprintf("The verify-owners plugin validates %s and %s files and ensures that they always contain collaborators of the org, if they are modified in a PR. On validation failure it automatically adds the '%s' label to the PR, and a review comment on the incriminating file(s).", ownersFileName, ownersAliasesFileName, labels.InvalidOwners),
 	}
@@ -155,7 +156,7 @@ func handleGenericCommentEvent(pc plugins.Agent, e github.GenericCommentEvent) e
 	return handleGenericComment(pc.GitHubClient, pc.GitClient, pc.OwnersClient, pc.Logger, &e, pc.PluginConfig.Owners.LabelsBlackList, pc.PluginConfig.TriggerFor(e.Repo.Owner.Login, e.Repo.Name), skipTrustedUserCheck, cp)
 }
 
-func handleGenericComment(ghc githubClient, gc *git.Client, roc repoownersClient, log *logrus.Entry, ce *github.GenericCommentEvent, labelsBlackList []string, triggerConfig plugins.Trigger, skipTrustedUserCheck bool, cp commentPruner) error {
+func handleGenericComment(ghc githubClient, gc git.ClientFactory, roc repoownersClient, log *logrus.Entry, ce *github.GenericCommentEvent, labelsBlackList []string, triggerConfig plugins.Trigger, skipTrustedUserCheck bool, cp commentPruner) error {
 	// Only consider open PRs and new comments.
 	if ce.IssueState != "open" || !ce.IsPR || ce.Action != github.GenericCommentActionCreated {
 		return nil
@@ -185,7 +186,7 @@ type messageWithLine struct {
 	message string
 }
 
-func handle(ghc githubClient, gc *git.Client, roc repoownersClient, log *logrus.Entry, pr *github.PullRequest, info info, labelsBlackList []string, triggerConfig plugins.Trigger, skipTrustedUserCheck bool, cp commentPruner) error {
+func handle(ghc githubClient, gc git.ClientFactory, roc repoownersClient, log *logrus.Entry, pr *github.PullRequest, info info, labelsBlackList []string, triggerConfig plugins.Trigger, skipTrustedUserCheck bool, cp commentPruner) error {
 	org := info.org
 	repo := info.repo
 	number := info.number
@@ -221,7 +222,7 @@ func handle(ghc githubClient, gc *git.Client, roc repoownersClient, log *logrus.
 	}
 
 	// Clone the repo, checkout the PR.
-	r, err := gc.Clone(info.repoFullName)
+	r, err := gc.ClientFor(org, repo)
 	if err != nil {
 		return err
 	}

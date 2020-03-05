@@ -32,6 +32,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/repoowners"
@@ -777,30 +778,21 @@ func TestHandlePullRequestEvent(t *testing.T) {
 }
 
 func TestHelpProvider(t *testing.T) {
+	enabledRepos := []config.OrgRepo{
+		{Org: "org1", Repo: "repo"},
+		{Org: "org2", Repo: "repo"},
+	}
 	cases := []struct {
 		name               string
 		config             *plugins.Configuration
-		enabledRepos       []string
+		enabledRepos       []config.OrgRepo
 		err                bool
 		configInfoIncludes []string
 	}{
 		{
 			name:               "Empty config",
 			config:             &plugins.Configuration{},
-			enabledRepos:       []string{"org1", "org2/repo"},
-			configInfoIncludes: []string{configString(0)},
-		},
-		{
-			name:               "Overlapping org and org/repo",
-			config:             &plugins.Configuration{},
-			enabledRepos:       []string{"org2", "org2/repo"},
-			configInfoIncludes: []string{configString(0)},
-		},
-		{
-			name:               "Invalid enabledRepos",
-			config:             &plugins.Configuration{},
-			enabledRepos:       []string{"org1", "org2/repo/extra"},
-			err:                true,
+			enabledRepos:       enabledRepos,
 			configInfoIncludes: []string{configString(0)},
 		},
 		{
@@ -810,7 +802,7 @@ func TestHelpProvider(t *testing.T) {
 					ReviewerCount: &[]int{2}[0],
 				},
 			},
-			enabledRepos:       []string{"org1", "org2/repo"},
+			enabledRepos:       enabledRepos,
 			configInfoIncludes: []string{configString(2)},
 		},
 		{
@@ -820,7 +812,7 @@ func TestHelpProvider(t *testing.T) {
 					FileWeightCount: &[]int{2}[0],
 				},
 			},
-			enabledRepos:       []string{"org1", "org2/repo"},
+			enabledRepos:       enabledRepos,
 			configInfoIncludes: []string{configString(2)},
 		},
 	}

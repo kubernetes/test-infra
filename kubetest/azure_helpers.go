@@ -23,13 +23,25 @@ import (
 	"os"
 	"time"
 
-	resources "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
+	"github.com/Azure/azure-sdk-for-go/services/authorization/mgmt/2015-07-01/authorization"
+	"github.com/Azure/azure-sdk-for-go/services/preview/msi/mgmt/2015-08-31-preview/msi"
+	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/adal"
 	"github.com/Azure/go-autorest/autorest/azure"
+	uuid "github.com/satori/go.uuid"
 )
 
-type AksEngineAPIModel struct {
+const (
+	// aadOwnerRoleID is the role id that exists in every subscription for 'Owner'
+	aadOwnerRoleID = "8e3af657-a8ff-443c-a75c-2fe8c4bcb635"
+	// aadRoleReferenceTemplate is a template for a roleDefinitionId
+	aadRoleReferenceTemplate = "/subscriptions/%s/providers/Microsoft.Authorization/roleDefinitions/%s"
+	// aadRoleResourceGroupScopeTemplate is a template for a roleDefinition scope
+	aadRoleResourceGroupScopeTemplate = "/subscriptions/%s"
+)
+
+type AKSEngineAPIModel struct {
 	Location   string            `json:"location,omitempty"`
 	Name       string            `json:"name,omitempty"`
 	Tags       map[string]string `json:"tags,omitempty"`
@@ -130,6 +142,13 @@ type KubernetesConfig struct {
 	DNSServiceIP                     string            `json:"dnsServiceIP,omitempty"`
 	OutboundRuleIdleTimeoutInMinutes int32             `json:"outboundRuleIdleTimeoutInMinutes,omitempty"`
 	ClusterSubnet                    string            `json:"clusterSubnet,omitempty"`
+	CustomKubeAPIServerImage         string            `json:"customKubeAPIServerImage,omitempty"`
+	CustomKubeControllerManagerImage string            `json:"customKubeControllerManagerImage,omitempty"`
+	CustomKubeProxyImage             string            `json:"customKubeProxyImage,omitempty"`
+	CustomKubeSchedulerImage         string            `json:"customKubeSchedulerImage,omitempty"`
+	CustomKubeBinaryURL              string            `json:"customKubeBinaryURL,omitempty"`
+	UseManagedIdentity               *bool             `json:"useManagedIdentity,omitempty"`
+	UserAssignedID                   string            `json:"userAssignedID,omitempty"`
 }
 
 type OrchestratorProfile struct {
@@ -166,10 +185,12 @@ type AgentPoolProfile struct {
 }
 
 type AzureClient struct {
-	environment       azure.Environment
-	subscriptionID    string
-	deploymentsClient resources.DeploymentsClient
-	groupsClient      resources.GroupsClient
+	environment         azure.Environment
+	subscriptionID      string
+	deploymentsClient   resources.DeploymentsClient
+	groupsClient        resources.GroupsClient
+	msiClient           msi.UserAssignedIdentitiesClient
+	authorizationClient authorization.RoleAssignmentsClient
 }
 
 type FeatureFlags struct {
@@ -275,6 +296,31 @@ func (az *AzureClient) DeleteResourceGroup(ctx context.Context, groupName string
 	return nil
 }
 
+func (az *AzureClient) AssignOwnerRoleToIdentity(ctx context.Context, resourceGroupName, identityName string) error {
+	identity, err := az.msiClient.Get(ctx, resourceGroupName, identityName)
+	if err != nil {
+		return fmt.Errorf("failed to get identity's client ID: %v", err)
+	}
+
+	identityPrincipalID := identity.PrincipalID.String()
+	// Grant the identity 'Owner' access to the subscription
+	// so it can pull images from private registry
+	roleDefinitionID := fmt.Sprintf(aadRoleReferenceTemplate, az.subscriptionID, aadOwnerRoleID)
+	scope := fmt.Sprintf(aadRoleResourceGroupScopeTemplate, az.subscriptionID)
+	roleAssignmentParameters := authorization.RoleAssignmentCreateParameters{
+		Properties: &authorization.RoleAssignmentProperties{
+			RoleDefinitionID: stringPointer(roleDefinitionID),
+			PrincipalID:      stringPointer(identityPrincipalID),
+		},
+	}
+
+	if _, err := az.authorizationClient.Create(ctx, scope, uuid.NewV1().String(), roleAssignmentParameters); err != nil {
+		return fmt.Errorf("failed to assign 'Owner' role to user assigned identity: %v", err)
+	}
+
+	return nil
+}
+
 func getOAuthConfig(env azure.Environment, subscriptionID, tenantID string) (*adal.OAuthConfig, error) {
 
 	oauthConfig, err := adal.NewOAuthConfig(env.ActiveDirectoryEndpoint, tenantID)
@@ -301,17 +347,20 @@ func getAzureClient(env azure.Environment, subscriptionID, clientID, tenantID, c
 
 func getClient(env azure.Environment, subscriptionID, tenantID string, armSpt *adal.ServicePrincipalToken) *AzureClient {
 	c := &AzureClient{
-		environment:    env,
-		subscriptionID: subscriptionID,
-
-		deploymentsClient: resources.NewDeploymentsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
-		groupsClient:      resources.NewGroupsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
+		environment:         env,
+		subscriptionID:      subscriptionID,
+		deploymentsClient:   resources.NewDeploymentsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
+		groupsClient:        resources.NewGroupsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
+		msiClient:           msi.NewUserAssignedIdentitiesClient(subscriptionID),
+		authorizationClient: authorization.NewRoleAssignmentsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
 	}
 
 	authorizer := autorest.NewBearerAuthorizer(armSpt)
 	c.deploymentsClient.Authorizer = authorizer
 	c.deploymentsClient.PollingDuration = 60 * time.Minute
 	c.groupsClient.Authorizer = authorizer
+	c.msiClient.Authorizer = authorizer
+	c.authorizationClient.Authorizer = authorizer
 
 	return c
 }
@@ -322,4 +371,11 @@ func stringPointer(s string) *string {
 
 func boolPointer(b bool) *bool {
 	return &b
+}
+
+func toBool(b *bool) bool {
+	if b == nil {
+		return false
+	}
+	return *b
 }

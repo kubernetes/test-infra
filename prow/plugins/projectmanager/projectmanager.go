@@ -23,6 +23,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
@@ -70,7 +71,7 @@ func init() {
 	plugins.RegisterIssueHandler(pluginName, handleIssueOrPullRequest, helpProvider)
 }
 
-func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
 	projectConfig := config.ProjectManager
 	if len(projectConfig.OrgRepos) == 0 {
 		pluginHelp := &pluginhelp.PluginHelp{

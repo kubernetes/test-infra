@@ -78,3 +78,19 @@ def repositories():
         repository = "k8s-testimages/gcloud-in-go",
         tag = "v20190125-cc5d6ecff3",  # TODO(fejta): update or replace
     )
+
+    container_pull(
+        name = "bazel-base",
+        digest = "sha256:0bfc1ffe6dfd4779f578ef58c5d9a9c6fb9c6fb8103223391033bcb6a40dff2b",  # 2019/11/25
+        registry = "gcr.io",
+        repository = "cloud-marketplace-containers/google/bazel",
+        tag = "1.2.0",
+    )
+
+    container_pull(
+        name = "cloud-sdk-slim",
+        digest = "sha256:6dafecdad80abf6470eae9e0b57fc083d1f3413fa15b9fab7c2ad3a102d244c4",  # 2020/01/21
+        registry = "gcr.io",
+        repository = "google.com/cloudsdktool/cloud-sdk",
+        tag = "277.0.0-slim",
+    )

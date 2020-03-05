@@ -11,7 +11,7 @@ periodics:
     preset-bazel-scratch-dir: "true"
   spec:
     containers:
-    - image: launcher.gcr.io/google/bazel:0.29.1
+    - image: launcher.gcr.io/google/bazel:2.0.0
       command:
       - hack/bazel.sh
       args:
@@ -26,7 +26,7 @@ periodics:
 
 - name: ci-test-infra-triage
   decorate: true
-  interval: 40m
+  interval: 30m
   spec:
     containers:
     - image: gcr.io/k8s-testimages/triage:latest
@@ -37,7 +37,6 @@ periodics:
       command:
       - "timeout"
       args:
-      - "-t"
       - "10800"
       - "/update_summaries.sh"
       volumeMounts:

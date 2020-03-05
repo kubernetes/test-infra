@@ -23,6 +23,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/boskos/common"
+	"k8s.io/test-infra/boskos/crds"
 	"k8s.io/test-infra/boskos/mason"
 )
 
@@ -47,7 +48,7 @@ type Cleaner struct {
 }
 
 type cleanerStorage interface {
-	GetDynamicResourceLifeCycles() ([]common.DynamicResourceLifeCycle, error)
+	GetDynamicResourceLifeCycles() (*crds.DRLCObjectList, error)
 }
 
 // NewCleaner creates and initialized a new Cleaner object
@@ -80,8 +81,8 @@ func (c *Cleaner) recycleAll(ctx context.Context) {
 				logrus.WithError(err).Warn("could not get resources")
 				continue
 			}
-			for _, r := range dRLCs {
-				if res, err := c.client.Acquire(r.Type, common.ToBeDeleted, common.Cleaning); err != nil {
+			for _, r := range dRLCs.Items {
+				if res, err := c.client.Acquire(r.Name, common.ToBeDeleted, common.Cleaning); err != nil {
 					logrus.WithError(err).Debug("boskos acquire failed!")
 				} else {
 					c.recycleOne(res)
@@ -97,6 +98,16 @@ func (c *Cleaner) recycleAll(ctx context.Context) {
 }
 
 func (c *Cleaner) recycleOne(res *common.Resource) {
+	RecycleOne(c.client, res)
+}
+
+type RecycleBoskosClient interface {
+	AcquireByState(state, dest string, names []string) ([]common.Resource, error)
+	ReleaseOne(name, dest string) error
+	UpdateOne(name, state string, userData *common.UserData) error
+}
+
+func RecycleOne(client RecycleBoskosClient, res *common.Resource) {
 	logrus.Infof("Resource %s is being recycled", res.Name)
 	leasedResources, err := mason.CheckUserData(*res)
 	if err != nil {
@@ -104,12 +115,12 @@ func (c *Cleaner) recycleOne(res *common.Resource) {
 		return
 	}
 	if leasedResources != nil {
-		resources, err := c.client.AcquireByState(res.Name, common.Cleaning, leasedResources)
+		resources, err := client.AcquireByState(res.Name, common.Cleaning, leasedResources)
 		if err != nil {
 			logrus.WithError(err).Warningf("could not acquire some leased resources for %s", res.Name)
 		}
 		for _, r := range resources {
-			if err := c.client.ReleaseOne(r.Name, common.Dirty); err != nil {
+			if err := client.ReleaseOne(r.Name, common.Dirty); err != nil {
 				logrus.WithError(err).Warningf("could not release resource %s", r.Name)
 			} else {
 				logrus.Infof("resource %s released as %s", r.Name, common.Dirty)
@@ -117,7 +128,7 @@ func (c *Cleaner) recycleOne(res *common.Resource) {
 		}
 		// Deleting Leased Resources
 		res.UserData.Delete(mason.LeasedResources)
-		if err := c.client.UpdateOne(res.Name, res.State, common.UserDataFromMap(map[string]string{mason.LeasedResources: ""})); err != nil {
+		if err := client.UpdateOne(res.Name, res.State, common.UserDataFromMap(map[string]string{mason.LeasedResources: ""})); err != nil {
 			logrus.WithError(err).Errorf("could not update resource %s with freed leased resources", res.Name)
 		}
 	}

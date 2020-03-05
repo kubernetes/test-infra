@@ -1,6 +1,13 @@
 # gazelle:repository_macro repos.bzl%go_repositories
 workspace(name = "io_k8s_test_infra")
 
+canary_repo_infra = False  # Set to true to use the local version
+
+canary_repo_infra and local_repository(
+    name = "io_k8s_repo_infra",
+    path = "../repo-infra",
+)
+
 load("//:load.bzl", "repositories")
 
 repositories()
@@ -19,6 +26,10 @@ configure(
 load("//:repos.bzl", "go_repositories")
 
 go_repositories()
+
+load("@io_k8s_repo_infra//:repos.bzl", _repo_infra_go_repos = "go_repositories")
+
+_repo_infra_go_repos()
 
 load("@io_bazel_rules_docker//repositories:repositories.bzl", _container_repositories = "repositories")
 
@@ -68,11 +79,22 @@ load("@npm_bazel_typescript//:index.bzl", "ts_setup_workspace")
 
 ts_setup_workspace()
 
-load("@io_bazel_rules_python//python:pip.bzl", "pip_import")
+load("@rules_python//python:pip.bzl", "pip_import")
 
 pip_import(
     name = "py_deps",
-    requirements = "//:requirements.txt",
+    python_interpreter = "python2.7",
+    requirements = "//:requirements2.txt",
+)
+
+load("@py_deps//:requirements.bzl", "pip_install")
+
+pip_install()
+
+pip_import(
+    name = "py3_deps",
+    python_interpreter = "python3",
+    requirements = "//:requirements3.txt",
 )
 
 load("//:py.bzl", "python_repos")

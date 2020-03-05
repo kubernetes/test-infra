@@ -49,6 +49,7 @@ It can consist of the following dictionary of fields:
 * `missingLabels`: List of labels any given PR must not posses.
 * `excludedBranches`: List of branches that get excluded when querying the `repos`.
 * `includedBranches`: List of branches that get included when querying the `repos`.
+* `author`: The author of the PR.
 * `reviewApprovedRequired`: If set, each PR in the query must have at
   least one [approved GitHub pull request
   review](https://help.github.com/articles/about-pull-request-reviews/)
@@ -66,9 +67,9 @@ The field to search token correspondence is based on the following mapping:
 * `missingLabels` -> `-label:do-not-merge`
 * `excludedBranches` -> `-branch:dev`
 * `includedBranches` -> `branch:master`
+* `author` -> `author:batman`
 * `reviewApprovedRequired` -> `review:approved`
 
-**Important**: Each query must return a different set of PRs. No two queries are allowed to contain the same PR.
 
 Every PR that needs to be rebased or is failing required statuses is filtered from the pool before processing
 
@@ -102,7 +103,7 @@ tide:
   merge_method:
     kubeflow/community: squash
 
-  target_url: https://prow.k8s.io/tide.html
+  target_url: https://prow.k8s.io/tide
 
   queries:
   - repos:

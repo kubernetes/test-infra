@@ -43,8 +43,8 @@ import (
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/git/localgit"
+	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/tide/history"
 )
@@ -512,6 +512,8 @@ func TestAccumulate(t *testing.T) {
 }
 
 type fgc struct {
+	err error
+
 	prs       []PullRequest
 	refs      map[string]string
 	merged    int
@@ -524,7 +526,7 @@ type fgc struct {
 }
 
 func (f *fgc) GetRef(o, r, ref string) (string, error) {
-	return f.refs[o+"/"+r+" "+ref], nil
+	return f.refs[o+"/"+r+" "+ref], f.err
 }
 
 func (f *fgc) Query(ctx context.Context, q interface{}, vars map[string]interface{}) error {
@@ -694,7 +696,7 @@ func TestDividePool(t *testing.T) {
 
 	mgr := newFakeManager()
 	c, err := newSyncController(
-		logrus.NewEntry(logrus.StandardLogger()), fc, mgr, configGetter, &git.Client{}, nil, nil,
+		logrus.NewEntry(logrus.StandardLogger()), fc, mgr, configGetter, nil, nil, nil,
 	)
 	if err != nil {
 		t.Fatalf("failed to construct sync controller: %v", err)
@@ -767,7 +769,15 @@ func TestDividePool(t *testing.T) {
 }
 
 func TestPickBatch(t *testing.T) {
-	lg, gc, err := localgit.New()
+	testPickBatch(localgit.New, t)
+}
+
+func TestPickBatchV2(t *testing.T) {
+	testPickBatch(localgit.NewV2, t)
+}
+
+func testPickBatch(clients localgit.Clients, t *testing.T) {
+	lg, gc, err := clients()
 	if err != nil {
 		t.Fatalf("Error making local git: %v", err)
 	}
@@ -1001,6 +1011,14 @@ func TestCheckMergeLabels(t *testing.T) {
 }
 
 func TestTakeAction(t *testing.T) {
+	testTakeAction(localgit.New, t)
+}
+
+func TestTakeActionV2(t *testing.T) {
+	testTakeAction(localgit.NewV2, t)
+}
+
+func testTakeAction(clients localgit.Clients, t *testing.T) {
 	sleep = func(time.Duration) {}
 	defer func() { sleep = time.Sleep }()
 
@@ -1332,7 +1350,7 @@ func TestTakeAction(t *testing.T) {
 				tc.presubmits[i] = []config.Presubmit{{Reporter: config.Reporter{Context: "foo"}}}
 			}
 		}
-		lg, gc, err := localgit.New()
+		lg, gc, err := clients()
 		if err != nil {
 			t.Fatalf("Error making local git: %v", err)
 		}
@@ -1702,7 +1720,7 @@ func TestSync(t *testing.T) {
 			pjClient:       fakectrlruntimeclient.NewFakeClient(),
 			logger:         logrus.WithField("controller", "status-update"),
 			ghc:            fgc,
-			gc:             &git.Client{},
+			gc:             nil,
 			config:         ca.Config,
 			newPoolPending: make(chan bool, 1),
 			shutDown:       make(chan bool),
@@ -1712,7 +1730,7 @@ func TestSync(t *testing.T) {
 		c := &Controller{
 			config:        ca.Config,
 			ghc:           fgc,
-			gc:            &git.Client{},
+			gc:            nil,
 			prowJobClient: fakectrlruntimeclient.NewFakeClient(),
 			logger:        logrus.WithField("controller", "sync"),
 			sc:            sc,
@@ -2429,6 +2447,27 @@ func TestPresubmitsByPull(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "broken inrepoconfig doesn't break the whole subpool",
+			presubmits: []config.Presubmit{{
+				AlwaysRun: true,
+				Reporter:  config.Reporter{Context: "always"},
+			}},
+			prowYAMLGetter: func(_ *config.Config, _ git.ClientFactory, _, _ string, headRefs ...string) (*config.ProwYAML, error) {
+				if len(headRefs) == 1 && headRefs[0] == "1" {
+					return nil, errors.New("you shall not get jobs")
+				}
+				return &config.ProwYAML{}, nil
+			},
+			prs: []PullRequest{
+				{Number: githubql.Int(1), HeadRefOID: githubql.String("1")},
+			},
+			expectedPresubmits: map[int][]config.Presubmit{
+				100: {
+					{AlwaysRun: true, Reporter: config.Reporter{Context: "always"}},
+				},
+			},
+		},
 	}
 
 	for _, tc := range testcases {
@@ -2460,7 +2499,7 @@ func TestPresubmitsByPull(t *testing.T) {
 		c := &Controller{
 			config: cfgAgent.Config,
 			ghc:    &fgc{},
-			gc:     &git.Client{},
+			gc:     nil,
 			changedFiles: &changedFilesAgent{
 				ghc:             &fgc{},
 				changeCache:     tc.initialChangeCache,
@@ -3272,7 +3311,7 @@ func (c *indexingClient) List(ctx context.Context, list runtime.Object, opts ...
 }
 
 func prowYAMLGetterForHeadRefs(headRefsToLookFor []string, ps []config.Presubmit) config.ProwYAMLGetter {
-	return func(_ *config.Config, _ *git.Client, _, _ string, headRefs ...string) (*config.ProwYAML, error) {
+	return func(_ *config.Config, _ git.ClientFactory, _, _ string, headRefs ...string) (*config.ProwYAML, error) {
 		if len(headRefsToLookFor) != len(headRefs) {
 			return nil, fmt.Errorf("expcted %d headrefs, got %d", len(headRefsToLookFor), len(headRefs))
 		}

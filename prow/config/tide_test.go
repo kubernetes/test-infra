@@ -23,10 +23,11 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/test-infra/prow/git"
+	utilpointer "k8s.io/utils/pointer"
+
+	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
-	utilpointer "k8s.io/utils/pointer"
 )
 
 var testQuery = TideQuery{
@@ -34,6 +35,7 @@ var testQuery = TideQuery{
 	Repos:                  []string{"k/k", "k/t-i"},
 	Labels:                 []string{labels.LGTM, labels.Approved},
 	MissingLabels:          []string{"foo"},
+	Author:                 "batman",
 	Milestone:              "milestone",
 	ReviewApprovedRequired: true,
 }
@@ -54,6 +56,7 @@ func TestTideQuery(t *testing.T) {
 	checkTok("label:\"lgtm\"")
 	checkTok("label:\"approved\"")
 	checkTok("-label:\"foo\"")
+	checkTok("author:\"batman\"")
 	checkTok("milestone:\"milestone\"")
 	checkTok("review:approved")
 }
@@ -145,8 +148,9 @@ func TestMergeMethod(t *testing.T) {
 	}
 
 	for _, test := range testcases {
-		if ti.MergeMethod(test.org, test.repo) != test.expected {
-			t.Errorf("Expected merge method %q but got %q for %s/%s", test.expected, ti.MergeMethod(test.org, test.repo), test.org, test.repo)
+		actual := ti.MergeMethod(OrgRepo{Org: test.org, Repo: test.repo})
+		if actual != test.expected {
+			t.Errorf("Expected merge method %q but got %q for %s/%s", test.expected, actual, test.org, test.repo)
 		}
 	}
 }
@@ -217,7 +221,7 @@ func TestMergeTemplate(t *testing.T) {
 	}
 
 	for _, test := range testcases {
-		actual := ti.MergeCommitTemplate(test.org, test.repo)
+		actual := ti.MergeCommitTemplate(OrgRepo{Org: test.org, Repo: test.repo})
 
 		if actual.TitleTemplate != test.expected.TitleTemplate || actual.BodyTemplate != test.expected.BodyTemplate {
 			t.Errorf("Expected title \"%v\", body \"%v\", but got title \"%v\", body \"%v\" for %v/%v", test.expected.TitleTemplate, test.expected.BodyTemplate, actual.TitleTemplate, actual.BodyTemplate, test.org, test.repo)
@@ -503,17 +507,20 @@ func TestConfigGetTideContextPolicy(t *testing.T) {
 			name: "jobs from inrepoconfig are considered",
 			config: Config{
 				JobConfig: JobConfig{
-					ProwYAMLGetter: fakeProwYAMLGetterFactory([]Presubmit{
-						{
-							AlwaysRun: true,
-							Reporter:  Reporter{Context: "ir0"},
+					ProwYAMLGetter: fakeProwYAMLGetterFactory(
+						[]Presubmit{
+							{
+								AlwaysRun: true,
+								Reporter:  Reporter{Context: "ir0"},
+							},
+							{
+								AlwaysRun: true,
+								Optional:  true,
+								Reporter:  Reporter{Context: "ir1"},
+							},
 						},
-						{
-							AlwaysRun: true,
-							Optional:  true,
-							Reporter:  Reporter{Context: "ir1"},
-						},
-					}),
+						nil,
+					),
 				},
 				ProwConfig: ProwConfig{
 					InRepoConfig: InRepoConfig{
@@ -548,17 +555,20 @@ func TestConfigGetTideContextPolicy(t *testing.T) {
 							},
 						},
 					},
-					ProwYAMLGetter: fakeProwYAMLGetterFactory([]Presubmit{
-						{
-							AlwaysRun: true,
-							Reporter:  Reporter{Context: "ir0"},
+					ProwYAMLGetter: fakeProwYAMLGetterFactory(
+						[]Presubmit{
+							{
+								AlwaysRun: true,
+								Reporter:  Reporter{Context: "ir0"},
+							},
+							{
+								AlwaysRun: true,
+								Optional:  true,
+								Reporter:  Reporter{Context: "ir1"},
+							},
 						},
-						{
-							AlwaysRun: true,
-							Optional:  true,
-							Reporter:  Reporter{Context: "ir1"},
-						},
-					}),
+						nil,
+					),
 				},
 				ProwConfig: ProwConfig{
 					InRepoConfig: InRepoConfig{
@@ -580,7 +590,7 @@ func TestConfigGetTideContextPolicy(t *testing.T) {
 			baseSHAGetter := func() (string, error) {
 				return "baseSHA", nil
 			}
-			p, err := tc.config.GetTideContextPolicy(&git.Client{}, org, repo, branch, baseSHAGetter, "some-sha")
+			p, err := tc.config.GetTideContextPolicy(nil, org, repo, branch, baseSHAGetter, "some-sha")
 			if !reflect.DeepEqual(p, &tc.expected) {
 				t.Errorf("%s - did not get expected policy: %s", tc.name, diff.ObjectReflectDiff(&tc.expected, p))
 			}
@@ -1033,10 +1043,11 @@ func TestTideContextPolicy_MissingRequiredContexts(t *testing.T) {
 	}
 }
 
-func fakeProwYAMLGetterFactory(presubmits []Presubmit) ProwYAMLGetter {
-	return func(_ *Config, _ *git.Client, _, _ string, _ ...string) (*ProwYAML, error) {
+func fakeProwYAMLGetterFactory(presubmits []Presubmit, postsubmits []Postsubmit) ProwYAMLGetter {
+	return func(_ *Config, _ git.ClientFactory, _, _ string, _ ...string) (*ProwYAML, error) {
 		return &ProwYAML{
-			Presubmits: presubmits,
+			Presubmits:  presubmits,
+			Postsubmits: postsubmits,
 		}, nil
 	}
 }

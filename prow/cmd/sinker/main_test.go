@@ -19,6 +19,7 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"reflect"
 	"testing"
 	"time"
@@ -29,7 +30,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/sets"
 	corev1fake "k8s.io/client-go/kubernetes/fake"
-	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	clienttesting "k8s.io/client-go/testing"
 	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
 
@@ -40,8 +40,9 @@ import (
 )
 
 const (
-	maxProwJobAge = 2 * 24 * time.Hour
-	maxPodAge     = 12 * time.Hour
+	maxProwJobAge    = 2 * 24 * time.Hour
+	maxPodAge        = 12 * time.Hour
+	terminatedPodTTL = 30 * time.Minute // must be less than maxPodAge
 )
 
 type fca struct {
@@ -55,8 +56,9 @@ func newFakeConfigAgent() *fca {
 				ProwJobNamespace: "ns",
 				PodNamespace:     "ns",
 				Sinker: config.Sinker{
-					MaxProwJobAge: &metav1.Duration{Duration: maxProwJobAge},
-					MaxPodAge:     &metav1.Duration{Duration: maxPodAge},
+					MaxProwJobAge:    &metav1.Duration{Duration: maxProwJobAge},
+					MaxPodAge:        &metav1.Duration{Duration: maxPodAge},
+					TerminatedPodTTL: &metav1.Duration{Duration: terminatedPodTTL},
 				},
 			},
 			JobConfig: config.JobConfig{
@@ -76,6 +78,15 @@ func (f *fca) Config() *config.Config {
 func startTime(s time.Time) *metav1.Time {
 	start := metav1.NewTime(s)
 	return &start
+}
+
+type unreachableCluster struct{}
+
+func (unreachableCluster) Delete(name string, options *metav1.DeleteOptions) error {
+	return fmt.Errorf("I can't hear you.")
+}
+func (unreachableCluster) List(opts metav1.ListOptions) (*corev1api.PodList, error) {
+	return nil, fmt.Errorf("I can't hear you.")
 }
 
 func TestClean(t *testing.T) {
@@ -320,6 +331,79 @@ func TestClean(t *testing.T) {
 				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
 			},
 		},
+		&corev1api.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "ttl-expired",
+				Namespace: "ns",
+				Labels: map[string]string{
+					kube.CreatedByProw: "true",
+				},
+			},
+			Status: corev1api.PodStatus{
+				Phase:     corev1api.PodFailed,
+				StartTime: startTime(time.Now().Add(-terminatedPodTTL * 2)),
+				ContainerStatuses: []corev1api.ContainerStatus{
+					{
+						State: corev1api.ContainerState{
+							Terminated: &corev1api.ContainerStateTerminated{
+								FinishedAt: metav1.Time{Time: time.Now().Add(-terminatedPodTTL).Add(-time.Second)},
+							},
+						},
+					},
+				},
+			},
+		},
+		&corev1api.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "ttl-not-expired",
+				Namespace: "ns",
+				Labels: map[string]string{
+					kube.CreatedByProw: "true",
+				},
+			},
+			Status: corev1api.PodStatus{
+				Phase:     corev1api.PodFailed,
+				StartTime: startTime(time.Now().Add(-terminatedPodTTL * 2)),
+				ContainerStatuses: []corev1api.ContainerStatus{
+					{
+						State: corev1api.ContainerState{
+							Terminated: &corev1api.ContainerStateTerminated{
+								FinishedAt: metav1.Time{Time: time.Now().Add(-terminatedPodTTL).Add(-time.Second)},
+							},
+						},
+					},
+					{
+						State: corev1api.ContainerState{
+							Terminated: &corev1api.ContainerStateTerminated{
+								FinishedAt: metav1.Time{Time: time.Now().Add(-time.Second)},
+							},
+						},
+					},
+				},
+			},
+		},
+		&corev1api.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "completed-prowjob-ttl-expired-while-pod-still-pending",
+				Namespace: "ns",
+				Labels: map[string]string{
+					kube.CreatedByProw: "true",
+				},
+			},
+			Status: corev1api.PodStatus{
+				Phase:     corev1api.PodPending,
+				StartTime: startTime(time.Now().Add(-terminatedPodTTL * 2)),
+				ContainerStatuses: []corev1api.ContainerStatus{
+					{
+						State: corev1api.ContainerState{
+							Waiting: &corev1api.ContainerStateWaiting{
+								Reason: "ImgPullBackoff",
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 	deletedPods := sets.NewString(
 		"job-complete-pod-failed",
@@ -333,6 +417,8 @@ func TestClean(t *testing.T) {
 		"old-succeeded",
 		"old-pending-abort",
 		"old-running",
+		"ttl-expired",
+		"completed-prowjob-ttl-expired-while-pod-still-pending",
 	)
 	setComplete := func(d time.Duration) *metav1.Time {
 		completed := metav1.NewTime(time.Now().Add(d))
@@ -495,6 +581,36 @@ func TestClean(t *testing.T) {
 				CompletionTime: setComplete(-time.Second),
 			},
 		},
+		&prowv1.ProwJob{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "ttl-expired",
+				Namespace: "ns",
+			},
+			Status: prowv1.ProwJobStatus{
+				StartTime:      metav1.NewTime(time.Now().Add(-terminatedPodTTL * 2)),
+				CompletionTime: setComplete(-terminatedPodTTL - time.Second),
+			},
+		},
+		&prowv1.ProwJob{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "ttl-not-expired",
+				Namespace: "ns",
+			},
+			Status: prowv1.ProwJobStatus{
+				StartTime:      metav1.NewTime(time.Now().Add(-terminatedPodTTL * 2)),
+				CompletionTime: setComplete(-time.Second),
+			},
+		},
+		&prowv1.ProwJob{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "completed-prowjob-ttl-expired-while-pod-still-pending",
+				Namespace: "ns",
+			},
+			Status: prowv1.ProwJobStatus{
+				StartTime:      metav1.NewTime(time.Now().Add(-terminatedPodTTL * 2)),
+				CompletionTime: setComplete(-terminatedPodTTL - time.Second),
+			},
+		},
 	}
 	deletedProwJobs := sets.NewString(
 		"job-complete",
@@ -525,7 +641,7 @@ func TestClean(t *testing.T) {
 
 	fpjc := fakectrlruntimeclient.NewFakeClient(prowJobs...)
 	fkc := []*corev1fake.Clientset{corev1fake.NewSimpleClientset(pods...), corev1fake.NewSimpleClientset(podsTrusted...)}
-	var fpc []corev1.PodInterface
+	fpc := []podInterface{unreachableCluster{}}
 	for _, fakeClient := range fkc {
 		fpc = append(fpc, fakeClient.CoreV1().Pods("ns"))
 	}

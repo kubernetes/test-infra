@@ -34,6 +34,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/apimachinery/pkg/util/sets"
+	prowconfig "k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/pluginhelp/externalplugins"
@@ -75,7 +76,7 @@ func NewHelpAgent(pa pluginAgent, ghc githubClient) *HelpAgent {
 	}
 }
 
-func (ha *HelpAgent) generateNormalPluginHelp(config *plugins.Configuration, revMap map[string][]string) (allPlugins []string, pluginHelp map[string]pluginhelp.PluginHelp) {
+func (ha *HelpAgent) generateNormalPluginHelp(config *plugins.Configuration, revMap map[string][]prowconfig.OrgRepo) (allPlugins []string, pluginHelp map[string]pluginhelp.PluginHelp) {
 	pluginHelp = map[string]pluginhelp.PluginHelp{}
 	for name, provider := range plugins.HelpProviders() {
 		allPlugins = append(allPlugins, name)
@@ -94,7 +95,7 @@ func (ha *HelpAgent) generateNormalPluginHelp(config *plugins.Configuration, rev
 	return
 }
 
-func (ha *HelpAgent) generateExternalPluginHelp(config *plugins.Configuration, revMap map[string][]string) (allPlugins []string, pluginHelp map[string]pluginhelp.PluginHelp) {
+func (ha *HelpAgent) generateExternalPluginHelp(config *plugins.Configuration, revMap map[string][]prowconfig.OrgRepo) (allPlugins []string, pluginHelp map[string]pluginhelp.PluginHelp) {
 	externals := map[string]plugins.ExternalPlugin{}
 	for _, exts := range config.ExternalPlugins {
 		for _, ext := range exts {
@@ -198,7 +199,7 @@ func allRepos(config *plugins.Configuration, orgToRepos map[string]sets.String) 
 }
 
 func externalHelpProvider(log *logrus.Entry, endpoint string) externalplugins.ExternalPluginHelpProvider {
-	return func(enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+	return func(enabledRepos []prowconfig.OrgRepo) (*pluginhelp.PluginHelp, error) {
 		u, err := url.Parse(endpoint)
 		if err != nil {
 			return nil, fmt.Errorf("error parsing url: %s err: %v", endpoint, err)
@@ -231,28 +232,28 @@ func externalHelpProvider(log *logrus.Entry, endpoint string) externalplugins.Ex
 // reversePluginMaps inverts the Configuration.Plugins and Configuration.ExternalPlugins maps and
 // expands any org strings to org/repo strings.
 // The returned values map plugin names to the set of org/repo strings they are enabled on.
-func reversePluginMaps(config *plugins.Configuration, orgToRepos map[string]sets.String) (normal, external map[string][]string) {
-	normal = map[string][]string{}
+func reversePluginMaps(config *plugins.Configuration, orgToRepos map[string]sets.String) (normal, external map[string][]prowconfig.OrgRepo) {
+	normal = map[string][]prowconfig.OrgRepo{}
 	for repo, enabledPlugins := range config.Plugins {
-		var repos []string
+		var repos []prowconfig.OrgRepo
 		if !strings.Contains(repo, "/") {
 			if flattened, ok := orgToRepos[repo]; ok {
-				repos = flattened.List()
+				repos = prowconfig.StringsToOrgRepos(flattened.List())
 			}
 		} else {
-			repos = []string{repo}
+			repos = []prowconfig.OrgRepo{*prowconfig.NewOrgRepo(repo)}
 		}
 		for _, plugin := range enabledPlugins {
 			normal[plugin] = append(normal[plugin], repos...)
 		}
 	}
-	external = map[string][]string{}
+	external = map[string][]prowconfig.OrgRepo{}
 	for repo, extPlugins := range config.ExternalPlugins {
-		var repos []string
+		var repos []prowconfig.OrgRepo
 		if flattened, ok := orgToRepos[repo]; ok {
-			repos = flattened.List()
+			repos = prowconfig.StringsToOrgRepos(flattened.List())
 		} else {
-			repos = []string{repo}
+			repos = []prowconfig.OrgRepo{*prowconfig.NewOrgRepo(repo)}
 		}
 		for _, plugin := range extPlugins {
 			external[plugin.Name] = append(external[plugin.Name], repos...)

@@ -76,7 +76,7 @@ var signalsLock = sync.Mutex{}
 // signals allows for injection of mock signals in testing
 var signals = func() <-chan os.Signal {
 	sig := make(chan os.Signal, 1)
-	signal.Notify(sig, os.Interrupt, syscall.SIGTERM, syscall.SIGABRT)
+	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
 	return sig
 }
 
@@ -145,11 +145,17 @@ func Run(work func(ctx context.Context)) {
 	go wait(cancel)
 }
 
+// ListenAndServer is typically an http.Server
+type ListenAndServer interface {
+	Shutdownable
+	ListenAndServe() error
+}
+
 // ListenAndServe runs the HTTP server and handles shutting it down
 // gracefully on interrupts. This function is not blocking. Callers
 // are expected to exit only after WaitForGracefulShutdown returns to
 // ensure all servers have had time to shut down.
-func ListenAndServe(server *http.Server, gracePeriod time.Duration) {
+func ListenAndServe(server ListenAndServer, gracePeriod time.Duration) {
 	single.wg.Add(1)
 	go func() {
 		defer single.wg.Done()
@@ -173,8 +179,13 @@ func ListenAndServeTLS(server *http.Server, certFile, keyFile string, gracePerio
 	go wait(shutdown(server, gracePeriod))
 }
 
+// Shutdownable is typically an http.Server
+type Shutdownable interface {
+	Shutdown(context.Context) error
+}
+
 // shutdown will shut down the server
-func shutdown(server *http.Server, gracePeriod time.Duration) func() {
+func shutdown(server Shutdownable, gracePeriod time.Duration) func() {
 	return func() {
 		logrus.Info("Server shutting down...")
 		ctx, cancel := context.WithTimeout(context.Background(), gracePeriod)

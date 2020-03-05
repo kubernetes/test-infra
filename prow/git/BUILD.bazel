@@ -28,6 +28,7 @@ filegroup(
     srcs = [
         ":package-srcs",
         "//prow/git/localgit:all-srcs",
+        "//prow/git/v2:all-srcs",
     ],
     tags = ["automanaged"],
 )

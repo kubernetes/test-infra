@@ -171,7 +171,6 @@ func (ta *tideAgent) filterHiddenPools(pools []tide.Pool) []tide.Pool {
 		} else {
 			ignored = append(ignored, pool.Org+"/"+pool.Repo)
 		}
-		ta.log.Debugf("Ignoring pools for %v.", ignored)
 	}
 	return filtered
 }
@@ -192,7 +191,6 @@ func (ta *tideAgent) filterHiddenHistory(hist map[string][]history.Record) map[s
 		} else {
 			ignored = append(ignored, pool)
 		}
-		ta.log.Debugf("Ignoring history for %v.", ignored)
 	}
 	return filtered
 }
@@ -221,7 +219,6 @@ func (ta *tideAgent) filterHiddenQueries(queries []config.TideQuery) []config.Ti
 		} else {
 			ignored = append(ignored, qc.Query())
 		}
-		ta.log.Debugf("Ignoring queries: %v", ignored)
 	}
 	return filtered
 }

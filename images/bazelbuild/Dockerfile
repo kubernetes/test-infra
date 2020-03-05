@@ -27,17 +27,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     file \
     git \
     openssh-client \
-    python \
     python2.7 \
     python3 \
     python-pip \
+    python3-pip \
     rpm \
     unzip \
     wget \
     zip \
     zlib1g-dev \
     && rm -rf /var/lib/apt/lists/* \
-    && python -m pip install --upgrade pip setuptools wheel
+    && pip install setuptools wheel \
+    && pip3 install setuptools wheel
 
 RUN wget -q https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.tar.gz && \
     tar xf google-cloud-sdk.tar.gz && \

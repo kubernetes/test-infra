@@ -11,6 +11,72 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: dynamicresourcelifecycles.boskos.k8s.io
+spec:
+  group: boskos.k8s.io
+  names:
+    kind: DRLCObject
+    listKind: DRLCObjectList
+    plural: dynamicresourcelifecycles
+    singular: dynamicresourcelifecycle
+  scope: Namespaced
+  version: v1
+  versions:
+  - name: v1
+    served: true
+    storage: true
+  additionalPrinterColumns:
+  - name: Type
+    type: string
+    description: The dynamic resource type.
+    JSONPath: .spec.config.type
+  - name: Min-Count
+    type: integer
+    description: The minimum count requested.
+    JSONPath: .spec.min-count
+  - name: Max-Count
+    type: integer
+    description: The maximum count requested.
+    JSONPath: .spec.max-count
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: resources.boskos.k8s.io
+spec:
+  group: boskos.k8s.io
+  names:
+    kind: ResourceObject
+    listKind: ResourceObjectList
+    plural: resources
+    singular: resource
+  scope: Namespaced
+  version: v1
+  versions:
+  - name: v1
+    served: true
+    storage: true
+  additionalPrinterColumns:
+  - name: Type
+    type: string
+    description: The resource type.
+    JSONPath: .spec.type
+  - name: State
+    type: string
+    description: The current state of the resource.
+    JSONPath: .status.state
+  - name: Owner
+    type: string
+    description: The current owner of the resource.
+    JSONPath: .status.owner
+  - name: Last-Updated
+    type: date
+    JSONPath: .status.lastUpdate
+---
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
@@ -18,7 +84,7 @@ metadata:
 rules:
 - apiGroups: ["apiextensions.k8s.io"]
   verbs: ["*"]
-  resources: ["customresourcedefinitions"]
+  resources: ["customresourcedefinitions"]  # TODO(#16281): remove once Boskos no longer attempts to create CRDs itself
 - apiGroups: ["boskos.k8s.io"]
   verbs: ["*"]
   resources: ["*"]
@@ -62,7 +128,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: boskos
-        image: gcr.io/k8s-prow/boskos/boskos:v20191127-123a37580
+        image: gcr.io/k8s-prow/boskos/boskos:v20200303-28c7418a8
         args:
         - --config=/etc/config/config
         - --namespace=test-pods
@@ -91,3 +157,19 @@ spec:
     protocol: TCP
     port: 80
     targetPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: boskos-metrics
+  namespace: test-pods
+spec:
+  selector:
+    app: boskos
+  ports:
+  - name: metrics
+    port: 9090
+    protocol: TCP
+    targetPort: 9090
+  loadBalancerIP: 104.197.27.114  # external ip boskos-metrics
+  type: LoadBalancer

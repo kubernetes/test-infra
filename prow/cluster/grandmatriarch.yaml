@@ -1,6 +1,9 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
+  annotations:
+    # TODO(fejta): consider a better project, but this is what service-account uses now
+    iam.gke.io/gcp-service-account: pr-kubekins@kubernetes-jenkins-pull.iam.gserviceaccount.com
   name: grandmatriarch
   namespace: test-pods
 ---
@@ -53,16 +56,6 @@ spec:
       serviceAccountName: grandmatriarch
       containers:
       - name: bakery
-        image: gcr.io/k8s-prow/grandmatriarch:v20191128-48349ea19
+        image: gcr.io/k8s-prow/grandmatriarch:v20200304-c42b857fc
         args:
-        - /etc/robot/service-account.json
         - http-cookiefile
-        volumeMounts:
-        - mountPath: /etc/robot
-          name: robot
-          readOnly: true
-      volumes:
-      - name: robot
-        secret:
-          defaultMode: 420
-          secretName: service-account

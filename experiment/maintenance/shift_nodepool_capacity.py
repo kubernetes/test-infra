@@ -24,10 +24,6 @@
 #
 # for nodefs on the prow builds cluster
 # USE AT YOUR OWN RISK.
-# TODO: delete this once dynamic kubelet config is available
-
-
-
 
 import sys
 import subprocess
@@ -80,7 +76,7 @@ def resize_nodepool(pool, new_size, project, zone, cluster):
     cmd = [
         'gcloud', 'container', 'clusters', 'resize', cluster,
         '--zone', zone, '--project', project, '--node-pool', pool,
-        '--size', str(new_size), '--quiet',
+        '--num-nodes', str(new_size), '--quiet',
     ]
     print(cmd)
     subprocess.call(cmd)

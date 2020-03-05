@@ -10,7 +10,10 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: launcher.gcr.io/google/bazel:0.29.1
+      - image: launcher.gcr.io/google/bazel:2.0.0
+        env:
+        - name: USE_BAZEL_VERSION
+          value: real  # Ignore .bazelversion
         command:
         - hack/bazel.sh
         args:
@@ -19,7 +22,9 @@ presubmits:
         - --nobuild_tests_only
         - //...
     annotations:
-      testgrid-create-test-group: 'true'
+      testgrid-dashboards: presubmits-test-infra
+      testgrid-tab-name: bazel
+
   - name: pull-test-infra-gubernator
     branches:
     - master
@@ -36,7 +41,9 @@ presubmits:
         - name: WORKSPACE
           value: "/workspace"
     annotations:
-      testgrid-create-test-group: 'true'
+      testgrid-dashboards: presubmits-test-infra
+      testgrid-tab-name: gubernator
+
   - name: pull-test-infra-verify-file-perms
     branches:
     - master
@@ -46,11 +53,13 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-28c7418-experimental
         command:
         - ./hack/verify-file-perms.sh
     annotations:
-      testgrid-create-test-group: 'true'
+      testgrid-dashboards: presubmits-test-infra
+      testgrid-tab-name: verify-file-perms
+
   - name: pull-test-infra-yamllint
     always_run: true
     decorate: true
@@ -64,4 +73,28 @@ presubmits:
         - config/jobs
         - prow/cluster
     annotations:
-      testgrid-create-test-group: 'true'
+      testgrid-dashboards: presubmits-test-infra
+      testgrid-tab-name: verify-yaml
+
+  - name: pull-test-infra-prow-checkconfig
+    decorate: true
+    run_if_changed: '^(config/prow/(config|plugins).yaml$|config/jobs/.*.yaml$)'
+    spec:
+      containers:
+      - image: gcr.io/k8s-prow/checkconfig:v20200304-c42b857fc
+        command:
+        - /checkconfig
+        args:
+        - --config-path=config/prow/config.yaml
+        - --job-config-path=config/jobs
+        - --plugin-config=config/prow/plugins.yaml
+        - --strict
+        - --warnings=mismatched-tide-lenient
+        - --warnings=tide-strict-branch
+        - --warnings=needs-ok-to-test
+        - --warnings=validate-owners
+        - --warnings=missing-trigger
+        - --warnings=validate-urls
+        - --warnings=unknown-fields
+    annotations:
+      testgrid-dashboards: presubmits-test-infra

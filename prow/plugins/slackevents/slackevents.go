@@ -22,6 +22,7 @@ import (
 	"strings"
 
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
@@ -52,30 +53,21 @@ func init() {
 	plugins.RegisterGenericCommentHandler(pluginName, handleComment, helpProvider)
 }
 
-func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
 	configInfo := map[string]string{
 		"": fmt.Sprintf("SIG mentions on GitHub are reiterated for the following SIG Slack channels: %s.", strings.Join(config.Slack.MentionChannels, ", ")),
 	}
 	for _, repo := range enabledRepos {
-		parts := strings.Split(repo, "/")
-		var mw *plugins.MergeWarning
-		switch len(parts) {
-		case 1:
-			mw = getMergeWarning(config.Slack.MergeWarnings, parts[0], "")
-		case 2:
-			mw = getMergeWarning(config.Slack.MergeWarnings, parts[0], parts[1])
-		default:
-			return nil, fmt.Errorf("invalid repo in enabledRepos: %q", repo)
-		}
+		mw := getMergeWarning(config.Slack.MergeWarnings, repo)
 		if mw != nil {
-			configInfo[repo] = fmt.Sprintf("In this repo merges are considered "+
+			configInfo[repo.String()] = fmt.Sprintf("In this repo merges are considered "+
 				"manual and trigger manual merge warnings if the user who merged is not "+
 				"a member of this universal whitelist: %s or merged to a branch they "+
 				"are not specifically whitelisted for: %#v.<br>Warnings are sent to the "+
 				"following Slack channels: %s.", strings.Join(mw.WhiteList, ", "),
 				mw.BranchWhiteList, strings.Join(mw.Channels, ", "))
 		} else {
-			configInfo[repo] = "There are no manual merge warnings configured for this repo."
+			configInfo[repo.String()] = "There are no manual merge warnings configured for this repo."
 		}
 	}
 	return &pluginhelp.PluginHelp{
@@ -107,7 +99,7 @@ func handlePush(pc plugins.Agent, pe github.PushEvent) error {
 
 func notifyOnSlackIfManualMerge(pc client, pe github.PushEvent) error {
 	//Fetch MergeWarning for the repo we received the merge event.
-	if mw := getMergeWarning(pc.SlackConfig.MergeWarnings, pe.Repo.Owner.Login, pe.Repo.Name); mw != nil {
+	if mw := getMergeWarning(pc.SlackConfig.MergeWarnings, config.OrgRepo{Org: pe.Repo.Owner.Login, Repo: pe.Repo.Name}); mw != nil {
 		//If the MergeWarning whitelist has the merge user then no need to send a message.
 		if wl := !isWhiteListed(mw, pe); wl {
 			var message string
@@ -140,12 +132,10 @@ func isWhiteListed(mw *plugins.MergeWarning, pe github.PushEvent) bool {
 	return whitelistedLogins.HasAny(github.NormLogin(pe.Pusher.Name), github.NormLogin(pe.Sender.Login))
 }
 
-func getMergeWarning(mergeWarnings []plugins.MergeWarning, org, repo string) *plugins.MergeWarning {
-	fullName := fmt.Sprintf("%s/%s", org, repo)
-
+func getMergeWarning(mergeWarnings []plugins.MergeWarning, repo config.OrgRepo) *plugins.MergeWarning {
 	// First search for repo config
 	for _, mw := range mergeWarnings {
-		if !sets.NewString(mw.Repos...).Has(fullName) {
+		if !sets.NewString(mw.Repos...).Has(repo.String()) {
 			continue
 		}
 		return &mw
@@ -153,7 +143,7 @@ func getMergeWarning(mergeWarnings []plugins.MergeWarning, org, repo string) *pl
 
 	// If you don't find anything, loop again looking for an org config
 	for _, mw := range mergeWarnings {
-		if !sets.NewString(mw.Repos...).Has(org) {
+		if !sets.NewString(mw.Repos...).Has(repo.Org) {
 			continue
 		}
 		return &mw

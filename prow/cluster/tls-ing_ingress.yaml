@@ -19,16 +19,9 @@ metadata:
   name: tls-ing
   annotations:
     kubernetes.io/ingress.global-static-ip-name: prow
-    kubernetes.io/tls-acme: "true"
-    certmanager.k8s.io/cluster-issuer: letsencrypt-prod
-    certmanager.k8s.io/acme-http01-edit-in-place: "true"
     kubernetes.io/ingress.class: "gce"
+    networking.gke.io/managed-certificates: prow-k8s-io, prow-kubernetes-io
 spec:
-  tls:
-  - secretName: prow-tls
-    hosts:
-    - prow.k8s.io
-    - prow.kubernetes.io
   rules:
   - host: prow.k8s.io
     http:

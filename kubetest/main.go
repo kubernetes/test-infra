@@ -53,7 +53,7 @@ var (
 	terminate = time.NewTimer(time.Duration(0)) // terminate testing at this time.
 	verbose   = false
 	timeout   = time.Duration(0)
-	boskos    = client.NewClient(os.Getenv("JOB_NAME"), "http://boskos.test-pods.svc.cluster.local.")
+	boskos, _ = client.NewClient(os.Getenv("JOB_NAME"), "http://boskos.test-pods.svc.cluster.local.", "", "")
 	control   = process.NewControl(timeout, interrupt, terminate, verbose)
 )
 
@@ -170,7 +170,7 @@ func defineFlags() *options {
 	flag.StringVar(&o.runtimeConfig, "runtime-config", "batch/v2alpha1=true", "If set, API versions can be turned on or off while bringing up the API server.")
 	flag.StringVar(&o.stage.dockerRegistry, "registry", "", "Push images to the specified docker registry (e.g. gcr.io/a-test-project)")
 	flag.StringVar(&o.save, "save", "", "Save credentials to gs:// path on --up if set (or load from there if not --up)")
-	flag.BoolVar(&o.skew, "skew", false, "If true, run tests in another version at ../kubernetes/hack/e2e.go")
+	flag.BoolVar(&o.skew, "skew", false, "If true, run tests in another version at ../kubernetes/kubernetes_skew")
 	flag.BoolVar(&o.soak, "soak", false, "If true, job runs in soak mode")
 	flag.DurationVar(&o.soakDuration, "soak-duration", 7*24*time.Hour, "Maximum age of a soak cluster before it gets recycled")
 	flag.Var(&o.stage, "stage", "Upload binaries to gs://bucket/devel/job-suffix if set")
@@ -257,10 +257,7 @@ func getDeployer(o *options) (deployer, error) {
 	case "local":
 		return newLocalCluster(), nil
 	case "aksengine":
-		return newAksEngine()
-	//TODO: Remove acs related lines after baking period
-	case "acsengine":
-		return newAksEngine()
+		return newAKSEngine()
 	default:
 		return nil, fmt.Errorf("unknown deployment strategy %q", o.deployment)
 	}
@@ -418,6 +415,10 @@ func acquireKubernetes(o *options, d deployer) error {
 		// kind deployer manages build
 		if k, ok := d.(*kind.Deployer); ok {
 			err = control.XMLWrap(&suite, "Build", k.Build)
+		} else if c, ok := d.(*Cluster); ok { // Azure deployer
+			err = control.XMLWrap(&suite, "Build", func() error {
+				return c.Build(o.build)
+			})
 		} else {
 			err = control.XMLWrap(&suite, "Build", o.build.Build)
 		}
@@ -637,6 +638,11 @@ func prepareGcp(o *options) error {
 	if err := migrateGcpEnvAndOptions(o); err != nil {
 		return err
 	}
+	// Must happen before any gcloud commands
+	if err := activateServiceAccount(o.gcpServiceAccount); err != nil {
+		return err
+	}
+
 	if o.provider == "gce" {
 		if distro := os.Getenv("KUBE_OS_DISTRIBUTION"); distro != "" {
 			log.Printf("Please use --gcp-master-image=%s --gcp-node-image=%s (instead of deprecated KUBE_OS_DISTRIBUTION)",
@@ -770,11 +776,6 @@ func prepareGcp(o *options) error {
 	// Note that a lot of scripts are still depend on this env in k/k repo.
 	if err := os.Setenv("PROJECT", o.gcpProject); err != nil {
 		return fmt.Errorf("fail to set env var PROJECT %s : err %v", o.gcpProject, err)
-	}
-
-	// gcloud creds may have changed
-	if err := activateServiceAccount(o.gcpServiceAccount); err != nil {
-		return err
 	}
 
 	// Ensure ssh keys exist

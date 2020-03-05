@@ -97,7 +97,7 @@ func main() {
 		}
 		notFound = notFound || nf
 	}
-	for _, post := range cfg.AllPostsubmits(nil) {
+	for _, post := range cfg.AllStaticPostsubmits(nil) {
 		spec := pjutil.PostsubmitToJobSpec(post)
 		nf, err := getJobFallbackNumber(o.bucket, spec)
 		if err != nil {

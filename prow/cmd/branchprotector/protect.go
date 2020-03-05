@@ -20,6 +20,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"net/url"
 	"os"
 	"regexp"
 	"sort"
@@ -400,10 +401,14 @@ func (p *protector) UpdateBranch(orgName, repo string, branchName string, branch
 		}
 	}
 
+	// github API is very sensitive if branchName contains extra characters,
+	// therefor we need to url encode the branch name.
+	branchNameForRequest := url.QueryEscape(branchName)
+
 	// The github API currently does not support listing protections for all
 	// branches of a repository. We therefore have to make individual requests
 	// for each branch.
-	currentBP, err := p.client.GetBranchProtection(orgName, repo, branchName)
+	currentBP, err := p.client.GetBranchProtection(orgName, repo, branchNameForRequest)
 	if err != nil {
 		return fmt.Errorf("get current branch protection: %v", err)
 	}

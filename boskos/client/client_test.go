@@ -47,6 +47,11 @@ func AreErrorsEqual(got error, expect error) bool {
 }
 
 func TestAcquire(t *testing.T) {
+	// Don't actually sleep in the tests
+	oldSleepFunc := SleepFunc
+	SleepFunc = func(_ time.Duration) {}
+	defer func() { SleepFunc = oldSleepFunc }()
+
 	var testcases = []struct {
 		name      string
 		serverErr bool
@@ -73,7 +78,10 @@ func TestAcquire(t *testing.T) {
 		}))
 		defer ts.Close()
 
-		c := NewClient("user", ts.URL)
+		c, err := NewClient("user", ts.URL, "", "")
+		if err != nil {
+			t.Fatalf("failed to create the Boskos client")
+		}
 		res, err := c.Acquire("t", "s", "d")
 
 		if !AreErrorsEqual(err, tc.expectErr) {
@@ -136,11 +144,13 @@ func TestRelease(t *testing.T) {
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
 		defer ts.Close()
 
-		c := NewClient("user", ts.URL)
+		c, err := NewClient("user", ts.URL, "", "")
+		if err != nil {
+			t.Fatalf("failed to create the Boskos client")
+		}
 		for _, r := range tc.resources {
 			c.storage.Add(common.Resource{Name: r})
 		}
-		var err error
 		if tc.res == "" {
 			err = c.ReleaseAll("d")
 		} else {
@@ -199,12 +209,14 @@ func TestUpdate(t *testing.T) {
 	for _, tc := range testcases {
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
 		defer ts.Close()
-		c := NewClient("user", ts.URL)
+		c, err := NewClient("user", ts.URL, "", "")
+		if err != nil {
+			t.Fatalf("failed to create the Boskos client")
+		}
 		for _, r := range tc.resources {
 			c.storage.Add(common.Resource{Name: r})
 		}
 
-		var err error
 		if tc.res == "" {
 			err = c.UpdateAll("s")
 		} else {
@@ -223,7 +235,10 @@ func TestReset(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	c := NewClient("user", ts.URL)
+	c, err := NewClient("user", ts.URL, "", "")
+	if err != nil {
+		t.Fatalf("failed to create the Boskos client")
+	}
 	rmap, err := c.Reset("t", "s", time.Minute, "d")
 	if err != nil {
 		t.Errorf("Error in reset : %v", err)
@@ -249,11 +264,104 @@ func TestMetric(t *testing.T) {
 		},
 	}
 
-	c := NewClient("user", ts.URL)
+	c, err := NewClient("user", ts.URL, "", "")
+	if err != nil {
+		t.Fatalf("failed to create the Boskos client")
+	}
 	metric, err := c.Metric("t")
 	if err != nil {
 		t.Errorf("Error in reset : %v", err)
 	} else if !reflect.DeepEqual(metric, expectMetric) {
 		t.Errorf("wrong metric, got %v, want %v", metric, expectMetric)
+	}
+}
+
+func TestRetry(t *testing.T) {
+	testCases := []struct {
+		name                 string
+		workFunc             workFunc
+		expectedSleepSeconds float64
+		expectedRetries      int
+		expectErr            string
+	}{
+		{
+			name: "no sleep on error",
+			workFunc: func(_ *[]error) (bool, error) {
+				return false, errors.New("can't recover")
+			},
+			expectErr: "can't recover",
+		},
+		{
+			name: "no retries on success",
+			workFunc: func(_ *[]error) (bool, error) {
+				return true, nil
+			},
+		},
+		{
+			name:                 "One second sleep on first retry",
+			workFunc:             workerFuncFactory(1),
+			expectedRetries:      1,
+			expectedSleepSeconds: 1,
+		},
+		{
+			name:                 "Two retries, five second sleep",
+			workFunc:             workerFuncFactory(2),
+			expectedRetries:      2,
+			expectedSleepSeconds: 5,
+		},
+		{
+			name:                 "Three retries, 13 seconds sleep",
+			workFunc:             workerFuncFactory(3),
+			expectedRetries:      3,
+			expectedSleepSeconds: 14,
+		},
+		{
+			name:                 "max retries exceeded, retriedErrs returned",
+			workFunc:             workerFuncFactory(100),
+			expectedRetries:      3,
+			expectedSleepSeconds: 14,
+			expectErr:            "[err no 1, err no 2, err no 3, err no 4]",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			var retries int
+			var sleptSeconds float64
+
+			SleepFunc = func(interval time.Duration) {
+				retries++
+				sleptSeconds += interval.Seconds()
+			}
+			defer func() { SleepFunc = time.Sleep }()
+
+			var actualError string
+			err := retry(tc.workFunc)
+			if err != nil {
+				actualError = err.Error()
+			}
+
+			if actualError != tc.expectErr {
+				t.Fatalf("got error %v, expected %q", err, tc.expectErr)
+			}
+			if retries != tc.expectedRetries {
+				t.Errorf("expected retries: %d, got retries: %d", tc.expectedRetries, retries)
+			}
+			if sleptSeconds != tc.expectedSleepSeconds {
+				t.Errorf("expected to sleep %f seconds, but slept %f", tc.expectedSleepSeconds, sleptSeconds)
+			}
+		})
+	}
+}
+
+func workerFuncFactory(numFailures int) workFunc {
+	var pastFailureCount int
+	return func(errs *[]error) (bool, error) {
+		if pastFailureCount < numFailures {
+			pastFailureCount++
+			*errs = append(*errs, fmt.Errorf("err no %d", pastFailureCount))
+			return false, nil
+		}
+		return true, nil
 	}
 }

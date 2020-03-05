@@ -24,6 +24,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/labels"
@@ -145,6 +146,14 @@ func TestReleaseNoteComment(t *testing.T) {
 			commentBody: "/release-note-none",
 
 			addedLabel: releaseNoteNone,
+		},
+		{
+			name:          "member release-note-none, PR has kind/deprecation label",
+			action:        github.IssueCommentActionCreated,
+			isMember:      true,
+			commentBody:   "/release-note-none",
+			currentLabels: []string{deprecationLabel},
+			shouldComment: true,
 		},
 	}
 	for _, tc := range testcases {
@@ -434,6 +443,20 @@ func TestReleaseNotePR(t *testing.T) {
 			IssueLabelsAdded:   []string{ReleaseNoteLabelNeeded},
 			IssueLabelsRemoved: []string{releaseNote},
 		},
+		{
+			name:               "add ReleaseNoteLabelNeeded, remove ReleaseNoteNone when kind/deprecation label is added",
+			initialLabels:      []string{deprecationLabel, releaseNoteNone},
+			body:               "```release-note\nnone\n```",
+			IssueLabelsAdded:   []string{ReleaseNoteLabelNeeded},
+			IssueLabelsRemoved: []string{releaseNoteNone},
+		},
+		{
+			name:             "release-note-none command cannot override deprecation label",
+			issueComments:    []string{"/release-note-none "},
+			initialLabels:    []string{deprecationLabel},
+			body:             "",
+			IssueLabelsAdded: []string{ReleaseNoteLabelNeeded},
+		},
 	}
 	for _, test := range tests {
 		if test.branch == "" {
@@ -468,6 +491,7 @@ func TestReleaseNotePR(t *testing.T) {
 func TestGetReleaseNote(t *testing.T) {
 	tests := []struct {
 		body                        string
+		labels                      sets.String
 		expectedReleaseNote         string
 		expectedReleaseNoteVariable string
 	}{
@@ -526,6 +550,30 @@ func TestGetReleaseNote(t *testing.T) {
 			expectedReleaseNote:         "",
 			expectedReleaseNoteVariable: ReleaseNoteLabelNeeded,
 		},
+		{
+			body:                        "",
+			labels:                      sets.NewString(releaseNoteNone),
+			expectedReleaseNote:         "",
+			expectedReleaseNoteVariable: releaseNoteNone,
+		},
+		{
+			body:                        "",
+			labels:                      sets.NewString(deprecationLabel),
+			expectedReleaseNote:         "",
+			expectedReleaseNoteVariable: ReleaseNoteLabelNeeded,
+		},
+		{
+			body:                        "",
+			labels:                      sets.NewString(releaseNoteNone, deprecationLabel),
+			expectedReleaseNote:         "",
+			expectedReleaseNoteVariable: ReleaseNoteLabelNeeded,
+		},
+		{
+			body:                        "```release-note\nNONE\n```",
+			labels:                      sets.NewString(deprecationLabel),
+			expectedReleaseNote:         "NONE",
+			expectedReleaseNoteVariable: ReleaseNoteLabelNeeded,
+		},
 	}
 
 	for testNum, test := range tests {
@@ -533,7 +581,7 @@ func TestGetReleaseNote(t *testing.T) {
 		if test.expectedReleaseNote != calculatedReleaseNote {
 			t.Errorf("Test %v: Expected %v as the release note, got %v", testNum, test.expectedReleaseNote, calculatedReleaseNote)
 		}
-		calculatedLabel := determineReleaseNoteLabel(test.body)
+		calculatedLabel := determineReleaseNoteLabel(test.body, test.labels)
 		if test.expectedReleaseNoteVariable != calculatedLabel {
 			t.Errorf("Test %v: Expected %v as the release note label, got %v", testNum, test.expectedReleaseNoteVariable, calculatedLabel)
 		}

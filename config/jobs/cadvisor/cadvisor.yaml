@@ -25,7 +25,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-28c7418-master
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/kubernetes"
@@ -42,7 +42,7 @@ presubmits:
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml --test-suite=cadvisor
         - --node-tests=true
         - --provider=gce
-        - --test_args=--nodes=1--flakeAttempts=2
+        - --test_args=--nodes=1
         - --timeout=10m
 
     annotations:
@@ -57,7 +57,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20191115-95b1cd9
+    - image: gcr.io/k8s-testimages/bootstrap:v20200302-ca9526d
       args:
       - --repo=github.com/google/cadvisor
       - --root=/go/src
@@ -81,7 +81,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-28c7418-master
       args:
       - --job=$(JOB_NAME)
       - --root=/go/src
@@ -98,7 +98,7 @@ periodics:
       - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml --test-suite=cadvisor
       - --node-tests=true
       - --provider=gce
-      - --test_args=--nodes=1--flakeAttempts=2
+      - --test_args=--nodes=1
       - --timeout=10m
       env:
       - name: GOPATH

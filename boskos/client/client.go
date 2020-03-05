@@ -33,12 +33,14 @@ import (
 	"syscall"
 	"time"
 
-	multierror "github.com/hashicorp/go-multierror"
-
 	"github.com/google/uuid"
+	"github.com/hashicorp/go-multierror"
 	"github.com/sirupsen/logrus"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
+
 	"k8s.io/test-infra/boskos/common"
 	"k8s.io/test-infra/boskos/storage"
+	"k8s.io/test-infra/prow/config/secret"
 )
 
 var (
@@ -60,9 +62,11 @@ type Client struct {
 	// http is the http.Client used to interact with the boskos REST API
 	http http.Client
 
-	owner string
-	url   string
-	lock  sync.Mutex
+	owner       string
+	url         string
+	username    string
+	getPassword func() []byte
+	lock        sync.Mutex
 
 	storage storage.PersistenceLayer
 }
@@ -71,12 +75,37 @@ type Client struct {
 //
 // Clients created with this function default to retrying failed connection
 // attempts three times with a ten second pause between each attempt.
-func NewClient(owner string, url string) *Client {
+func NewClient(owner string, urlString, username, passwordFile string) (*Client, error) {
+
+	if (username == "") != (passwordFile == "") {
+		return nil, fmt.Errorf("username and passwordFile must be specified together")
+	}
+
+	var getPassword func() []byte
+	if passwordFile != "" {
+		u, err := url.Parse(urlString)
+		if err != nil {
+			return nil, err
+		}
+		if u.Scheme != "https" {
+			// returning error here would make the tests hard
+			// we print out a warning message here instead
+			fmt.Printf("[WARNING] should NOT use password without enabling TLS: '%s'\n", urlString)
+		}
+
+		sa := &secret.Agent{}
+		if err := sa.Start([]string{passwordFile}); err != nil {
+			logrus.WithError(err).Fatal("Failed to start secrets agent")
+		}
+		getPassword = sa.GetTokenGenerator(passwordFile)
+	}
 
 	client := &Client{
-		url:     url,
-		owner:   owner,
-		storage: storage.NewMemoryStorage(),
+		url:         urlString,
+		username:    username,
+		getPassword: getPassword,
+		owner:       owner,
+		storage:     storage.NewMemoryStorage(),
 	}
 
 	// Configure the dialer to attempt three additional times to establish
@@ -104,7 +133,7 @@ func NewClient(owner string, url string) *Client {
 		ExpectContinueTimeout: 1 * time.Second,
 	}
 
-	return client
+	return client, nil
 }
 
 // public method
@@ -220,8 +249,8 @@ func (c *Client) ReleaseAll(dest string) error {
 	}
 	var allErrors error
 	for _, r := range resources {
-		c.storage.Delete(r.GetName())
-		err := c.Release(r.GetName(), dest)
+		c.storage.Delete(r.Name)
+		err := c.Release(r.Name, dest)
 		if err != nil {
 			allErrors = multierror.Append(allErrors, err)
 		}
@@ -258,7 +287,7 @@ func (c *Client) UpdateAll(state string) error {
 	}
 	var allErrors error
 	for _, r := range resources {
-		if err := c.Update(r.GetName(), state, nil); err != nil {
+		if err := c.Update(r.Name, state, nil); err != nil {
 			allErrors = multierror.Append(allErrors, err)
 			continue
 		}
@@ -283,12 +312,7 @@ func (c *Client) SyncAll() error {
 		return nil
 	}
 	var allErrors error
-	for _, i := range resources {
-		r, err := common.ItemToResource(i)
-		if err != nil {
-			allErrors = multierror.Append(allErrors, err)
-			continue
-		}
+	for _, r := range resources {
 		if err := c.Update(r.Name, r.State, nil); err != nil {
 			allErrors = multierror.Append(allErrors, err)
 			continue
@@ -309,7 +333,7 @@ func (c *Client) UpdateOne(name, state string, userData *common.UserData) error 
 	if err != nil {
 		return fmt.Errorf("no resource name %v", name)
 	}
-	if err := c.Update(r.GetName(), state, userData); err != nil {
+	if err := c.Update(r.Name, state, userData); err != nil {
 		return err
 	}
 	return c.updateLocalResource(r, state, userData)
@@ -335,18 +359,14 @@ func (c *Client) HasResource() bool {
 
 // private methods
 
-func (c *Client) updateLocalResource(i common.Item, state string, data *common.UserData) error {
-	res, err := common.ItemToResource(i)
-	if err != nil {
-		return err
-	}
+func (c *Client) updateLocalResource(res common.Resource, state string, data *common.UserData) error {
 	res.State = state
 	if res.UserData == nil {
 		res.UserData = data
 	} else {
 		res.UserData.Update(data)
 	}
-	_, err = c.storage.Update(res)
+	_, err := c.storage.Update(res)
 	return err
 }
 
@@ -359,34 +379,45 @@ func (c *Client) acquire(rtype, state, dest, requestID string) (*common.Resource
 	if requestID != "" {
 		values.Set("request_id", requestID)
 	}
-	resp, err := c.httpPost("/acquire", values, "", nil)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
 
-	switch resp.StatusCode {
-	case http.StatusOK:
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
+	res := common.Resource{}
 
-		res := common.Resource{}
-		err = json.Unmarshal(body, &res)
+	work := func(retriedErrs *[]error) (bool, error) {
+		resp, err := c.httpPost("/acquire", values, "", nil)
 		if err != nil {
-			return nil, err
+			// Swallow the error so we can retry
+			*retriedErrs = append(*retriedErrs, err)
+			return false, nil
 		}
-		if res.Name == "" {
-			return nil, fmt.Errorf("unable to parse resource")
+		defer resp.Body.Close()
+
+		switch resp.StatusCode {
+		case http.StatusOK:
+			body, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				return false, err
+			}
+
+			err = json.Unmarshal(body, &res)
+			if err != nil {
+				return false, err
+			}
+			if res.Name == "" {
+				return false, fmt.Errorf("unable to parse resource")
+			}
+			return true, nil
+		case http.StatusUnauthorized:
+			return false, ErrAlreadyInUse
+		case http.StatusNotFound:
+			return false, ErrNotFound
+		default:
+			*retriedErrs = append(*retriedErrs, fmt.Errorf("status %s, status code %v", resp.Status, resp.StatusCode))
+			// Swallow it so we can retry
+			return false, nil
 		}
-		return &res, nil
-	case http.StatusUnauthorized:
-		return nil, ErrAlreadyInUse
-	case http.StatusNotFound:
-		return nil, ErrNotFound
 	}
-	return nil, fmt.Errorf("status %s, status code %v", resp.Status, resp.StatusCode)
+
+	return &res, retry(work)
 }
 
 func (c *Client) acquireByState(state, dest string, names []string) ([]common.Resource, error) {
@@ -395,25 +426,33 @@ func (c *Client) acquireByState(state, dest string, names []string) ([]common.Re
 	values.Set("dest", dest)
 	values.Set("names", strings.Join(names, ","))
 	values.Set("owner", c.owner)
-	resp, err := c.httpPost("/acquirebystate", values, "", nil)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
+	var resources []common.Resource
 
-	switch resp.StatusCode {
-	case http.StatusOK:
-		var resources []common.Resource
-		if err := json.NewDecoder(resp.Body).Decode(&resources); err != nil {
-			return nil, err
+	work := func(retriedErrs *[]error) (bool, error) {
+		resp, err := c.httpPost("/acquirebystate", values, "", nil)
+		if err != nil {
+			*retriedErrs = append(*retriedErrs, err)
+			return false, nil
 		}
-		return resources, nil
-	case http.StatusUnauthorized:
-		return nil, ErrAlreadyInUse
-	case http.StatusNotFound:
-		return nil, ErrNotFound
+		defer resp.Body.Close()
+
+		switch resp.StatusCode {
+		case http.StatusOK:
+			if err := json.NewDecoder(resp.Body).Decode(&resources); err != nil {
+				return false, err
+			}
+			return true, nil
+		case http.StatusUnauthorized:
+			return false, ErrAlreadyInUse
+		case http.StatusNotFound:
+			return false, ErrNotFound
+		default:
+			*retriedErrs = append(*retriedErrs, fmt.Errorf("status %s, status code %v", resp.Status, resp.StatusCode))
+			return false, nil
+		}
 	}
-	return nil, fmt.Errorf("status %s, status code %v", resp.Status, resp.StatusCode)
+
+	return resources, retry(work)
 }
 
 // Release a lease for a resource and set its state to the destination state
@@ -422,43 +461,62 @@ func (c *Client) Release(name, dest string) error {
 	values.Set("name", name)
 	values.Set("dest", dest)
 	values.Set("owner", c.owner)
-	resp, err := c.httpPost("/release", values, "", nil)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("status %s, statusCode %v releasing %s", resp.Status, resp.StatusCode, name)
+	work := func(retriedErrs *[]error) (bool, error) {
+		resp, err := c.httpPost("/release", values, "", nil)
+		if err != nil {
+			*retriedErrs = append(*retriedErrs, err)
+			return false, nil
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			*retriedErrs = append(*retriedErrs, fmt.Errorf("status %s, statusCode %v releasing %s", resp.Status, resp.StatusCode, name))
+			return false, nil
+		}
+		return true, nil
 	}
-	return nil
+
+	return retry(work)
 }
 
 // Update a resource on the server, setting the state and user data
 func (c *Client) Update(name, state string, userData *common.UserData) error {
-	var body io.Reader
+	var bodyData *bytes.Buffer
 	if userData != nil {
-		b := new(bytes.Buffer)
-		err := json.NewEncoder(b).Encode(userData)
+		bodyData = new(bytes.Buffer)
+		err := json.NewEncoder(bodyData).Encode(userData)
 		if err != nil {
 			return err
 		}
-		body = b
 	}
 	values := url.Values{}
 	values.Set("name", name)
 	values.Set("owner", c.owner)
 	values.Set("state", state)
-	resp, err := c.httpPost("/update", values, "application/json", body)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("status %s, status code %v updating %s", resp.Status, resp.StatusCode, name)
+	work := func(retriedErrs *[]error) (bool, error) {
+		// As the body is an io.Reader and hence its content
+		// can only be read once, we have to copy it for every request we make
+		var body io.Reader
+		if bodyData != nil {
+			body = bytes.NewReader(bodyData.Bytes())
+		}
+		resp, err := c.httpPost("/update", values, "application/json", body)
+		if err != nil {
+			*retriedErrs = append(*retriedErrs, err)
+			return false, nil
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			*retriedErrs = append(*retriedErrs, fmt.Errorf("status %s, status code %v updating %s", resp.Status, resp.StatusCode, name))
+			return false, nil
+		}
+		return true, nil
 	}
-	return nil
+
+	return retry(work)
 }
 
 func (c *Client) reset(rtype, state string, expire time.Duration, dest string) (map[string]string, error) {
@@ -468,46 +526,59 @@ func (c *Client) reset(rtype, state string, expire time.Duration, dest string) (
 	values.Set("state", state)
 	values.Set("expire", expire.String())
 	values.Set("dest", dest)
-	resp, err := c.httpPost("/reset", values, "", nil)
-	if err != nil {
-		return rmap, err
-	}
-	defer resp.Body.Close()
 
-	if resp.StatusCode == http.StatusOK {
-		body, err := ioutil.ReadAll(resp.Body)
+	work := func(retriedErrs *[]error) (bool, error) {
+		resp, err := c.httpPost("/reset", values, "", nil)
 		if err != nil {
-			return rmap, err
+			*retriedErrs = append(*retriedErrs, err)
+			return false, nil
 		}
+		defer resp.Body.Close()
 
-		err = json.Unmarshal(body, &rmap)
-		return rmap, err
+		if resp.StatusCode == http.StatusOK {
+			body, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				return false, err
+			}
+
+			err = json.Unmarshal(body, &rmap)
+			return true, err
+		}
+		*retriedErrs = append(*retriedErrs, fmt.Errorf("status %s, status code %v", resp.Status, resp.StatusCode))
+		return false, nil
+
 	}
 
-	return rmap, fmt.Errorf("status %s, status code %v", resp.Status, resp.StatusCode)
+	return rmap, retry(work)
 }
 
 func (c *Client) metric(rtype string) (common.Metric, error) {
 	var metric common.Metric
 	values := url.Values{}
 	values.Set("type", rtype)
-	resp, err := c.httpGet("/metric", values)
-	if err != nil {
-		return metric, err
-	}
-	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		return metric, fmt.Errorf("status %s, status code %v", resp.Status, resp.StatusCode)
+	work := func(retriedErrs *[]error) (bool, error) {
+		resp, err := c.httpGet("/metric", values)
+		if err != nil {
+			*retriedErrs = append(*retriedErrs, err)
+			return false, nil
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			*retriedErrs = append(*retriedErrs, fmt.Errorf("status %s, status code %v", resp.Status, resp.StatusCode))
+			return false, nil
+		}
+
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return false, err
+		}
+
+		return true, json.Unmarshal(body, &metric)
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return metric, err
-	}
-
-	err = json.Unmarshal(body, &metric)
-	return metric, err
+	return metric, retry(work)
 }
 
 func (c *Client) httpGet(action string, values url.Values) (*http.Response, error) {
@@ -517,6 +588,9 @@ func (c *Client) httpGet(action string, values url.Values) (*http.Response, erro
 	req, err := http.NewRequest(http.MethodGet, u.String(), nil)
 	if err != nil {
 		return nil, err
+	}
+	if c.username != "" && c.getPassword != nil {
+		req.SetBasicAuth(c.username, string(c.getPassword()))
 	}
 	return c.http.Do(req)
 }
@@ -528,6 +602,9 @@ func (c *Client) httpPost(action string, values url.Values, contentType string, 
 	req, err := http.NewRequest(http.MethodPost, u.String(), body)
 	if err != nil {
 		return nil, err
+	}
+	if c.username != "" && c.getPassword != nil {
+		req.SetBasicAuth(c.username, string(c.getPassword()))
 	}
 	if contentType != "" {
 		req.Header.Set("Content-Type", contentType)
@@ -605,4 +682,35 @@ func isDialErrorRetriable(err error) bool {
 		return true
 	}
 	return false
+}
+
+// workFunc describes retrieable work. It should
+// * Return an error for non-recoverable errors
+// * Write retriable errors into `retriedErrs` and return with false, nil
+// * Return with true, nil on success
+type workFunc func(retriedErrs *[]error) (bool, error)
+
+// SleepFunc is called when requests are retried. This may be replaced in tests.
+var SleepFunc = time.Sleep
+
+func retry(work workFunc) error {
+	var retriedErrs []error
+
+	maxAttempts := 4
+	for i := 1; i <= maxAttempts; i++ {
+		success, err := work(&retriedErrs)
+		if err != nil {
+			return err
+		}
+		if success {
+			return nil
+		}
+		if i == maxAttempts {
+			break
+		}
+
+		SleepFunc(time.Duration(i*i) * time.Second)
+	}
+
+	return utilerrors.NewAggregate(retriedErrs)
 }

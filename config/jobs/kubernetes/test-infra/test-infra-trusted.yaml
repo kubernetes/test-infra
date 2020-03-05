@@ -7,7 +7,9 @@ postsubmits:
     spec:
       containers:
       - image: launcher.gcr.io/google/bazel:0.29.1
-        imagePullPolicy: Always
+        env:
+        - name: USE_BAZEL_VERSION
+          value: real  # Ignore .bazelversion
         command:
         - bazel
         args:
@@ -40,8 +42,9 @@ postsubmits:
     branches:
     - master
     spec:
+      serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200211-v0.4-10-g26b1b47
         command:
         - images/builder/ci-runner.sh
         args:
@@ -50,15 +53,8 @@ postsubmits:
         - --build-dir=.
         - images/alpine-bash/
         env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /creds/service-account.json
-        volumeMounts:
-        - name: creds
-          mountPath: /creds
-      volumes:
-      - name: creds
-        secret:
-          secretName: deployer-service-account
+        - name: USE_BAZEL_VERSION
+          value: real  # Ignore .bazelversion
   - name: post-test-infra-push-boskosctl-base
     cluster: test-infra-trusted
     run_if_changed: '^images/boskosctl-base/'
@@ -69,8 +65,9 @@ postsubmits:
     branches:
     - master
     spec:
+      serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200211-v0.4-10-g26b1b47
         command:
         - images/builder/ci-runner.sh
         args:
@@ -79,15 +76,8 @@ postsubmits:
         - --build-dir=.
         - images/boskosctl-base/
         env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /creds/service-account.json
-        volumeMounts:
-        - name: creds
-          mountPath: /creds
-      volumes:
-      - name: creds
-        secret:
-          secretName: deployer-service-account
+        - name: USE_BAZEL_VERSION
+          value: real  # Ignore .bazelversion
   - name: post-test-infra-deploy-prow
     cluster: test-infra-trusted
     run_if_changed: 'prow/cluster/'
@@ -95,22 +85,16 @@ postsubmits:
     branches:
     - master
     spec:
+      serviceAccountName: deployer
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200211-v0.4-10-g26b1b47
         command:
         - prow/deploy.sh
         args:
         - --confirm
         env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /creds/service-account.json
-        volumeMounts:
-        - name: creds
-          mountPath: /creds
-      volumes:
-      - name: creds
-        secret:
-          secretName: deployer-service-account
+        - name: USE_BAZEL_VERSION
+          value: real  # Ignore .bazelversion
     annotations:
       testgrid-dashboards: sig-testing-prow
       testgrid-tab-name: deploy-prow
@@ -123,20 +107,14 @@ postsubmits:
     run_if_changed: '^(prow|ghproxy|label_sync|robots/commenter|robots/pr-creator|robots/issue-creator|testgrid/cmd/transfigure)/'
     decorate: true
     spec:
+      serviceAccountName: pusher
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20190916-ec59af8-0.29.1 # whatever image you use here must have bash 4.4+
+      - image: gcr.io/k8s-testimages/bazelbuild:v20200212-b304d89-2.0.0 # whatever image you use here must have bash 4.4+
         command:
         - prow/push.sh
         env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /creds/service-account.json
-        volumeMounts:
-        - name: creds
-          mountPath: /creds
-      volumes:
-      - name: creds
-        secret:
-          secretName: pusher-service-account
+        - name: USE_BAZEL_VERSION
+          value: real  # Ignore .bazelversion
     annotations:
       testgrid-dashboards: sig-testing-prow
       testgrid-tab-name: push-prow
@@ -156,8 +134,9 @@ postsubmits:
     branches:
     - master
     spec:
+      serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200211-v0.4-10-g26b1b47
         command:
         - images/builder/ci-runner.sh
         args:
@@ -166,18 +145,11 @@ postsubmits:
         - --build-dir=.
         - velodrome/
         env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /creds/service-account.json
-        volumeMounts:
-        - name: creds
-          mountPath: /creds
-      volumes:
-      - name: creds
-        secret:
-          secretName: deployer-service-account
+        - name: USE_BAZEL_VERSION
+          value: real  # Ignore .bazelversion
   - name: post-test-infra-push-boskos
     cluster: test-infra-trusted
-    run_if_changed: '^(boskos\/|maintenance\/aws-janitor)'
+    run_if_changed: '^boskos/'
     annotations:
       testgrid-dashboards: "sig-testing-images"
       testgrid-tab-name: "boskos"
@@ -188,20 +160,14 @@ postsubmits:
     branches:
     - master
     spec:
+      serviceAccountName: pusher
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20190916-ec59af8-0.29.1 # whatever image you use here must have bash 4.4+
+      - image: gcr.io/k8s-testimages/bazelbuild:v20200212-b304d89-2.0.0 # whatever image you use here must have bash 4.4+
         command:
         - boskos/push.sh
         env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /creds/service-account.json
-        volumeMounts:
-        - name: creds
-          mountPath: /creds
-      volumes:
-      - name: creds
-        secret:
-          secretName: pusher-service-account
+        - name: USE_BAZEL_VERSION
+          value: real  # Ignore .bazelversion
   - name: post-test-infra-push-kettle
     cluster: test-infra-trusted
     annotations:
@@ -215,8 +181,9 @@ postsubmits:
     branches:
     - master
     spec:
+      serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200211-v0.4-10-g26b1b47
         command:
         - images/builder/ci-runner.sh
         args:
@@ -225,15 +192,8 @@ postsubmits:
         - --build-dir=.
         - kettle/
         env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /creds/service-account.json
-        volumeMounts:
-        - name: creds
-          mountPath: /creds
-      volumes:
-      - name: creds
-        secret:
-          secretName: deployer-service-account
+        - name: USE_BAZEL_VERSION
+          value: real  # Ignore .bazelversion
   - name: post-test-infra-push-planter
     cluster: test-infra-trusted
     annotations:
@@ -247,8 +207,9 @@ postsubmits:
     branches:
     - master
     spec:
+      serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200211-v0.4-10-g26b1b47
         command:
         - images/builder/ci-runner.sh
         args:
@@ -257,15 +218,8 @@ postsubmits:
         - --build-dir=.
         - planter/
         env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /creds/service-account.json
-        volumeMounts:
-        - name: creds
-          mountPath: /creds
-      volumes:
-      - name: creds
-        secret:
-          secretName: deployer-service-account
+        - name: USE_BAZEL_VERSION
+          value: real  # Ignore .bazelversion
   - name: post-test-infra-push-triage
     cluster: test-infra-trusted
     run_if_changed: '^triage/'
@@ -279,8 +233,9 @@ postsubmits:
     branches:
     - master
     spec:
+      serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200211-v0.4-10-g26b1b47
         command:
         - images/builder/ci-runner.sh
         args:
@@ -289,15 +244,8 @@ postsubmits:
         - --build-dir=.
         - triage/
         env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /creds/service-account.json
-        volumeMounts:
-        - name: creds
-          mountPath: /creds
-      volumes:
-      - name: creds
-        secret:
-          secretName: deployer-service-account
+        - name: USE_BAZEL_VERSION
+          value: real  # Ignore .bazelversion
   - name: post-test-infra-push-bazelbuild
     cluster: test-infra-trusted
     run_if_changed: '^images/bazelbuild/'
@@ -311,8 +259,9 @@ postsubmits:
     branches:
     - master
     spec:
+      serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200211-v0.4-10-g26b1b47
         command:
         - images/builder/ci-runner.sh
         args:
@@ -321,15 +270,8 @@ postsubmits:
         - --build-dir=.
         - images/bazelbuild/
         env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /creds/service-account.json
-        volumeMounts:
-        - name: creds
-          mountPath: /creds
-      volumes:
-      - name: creds
-        secret:
-          secretName: deployer-service-account
+        - name: USE_BAZEL_VERSION
+          value: real  # Ignore .bazelversion
   - name: post-test-infra-push-bazel-krte
     cluster: test-infra-trusted
     run_if_changed: '^images/bazel-krte/'
@@ -343,8 +285,9 @@ postsubmits:
     branches:
     - master
     spec:
+      serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200211-v0.4-10-g26b1b47
         command:
         - images/builder/ci-runner.sh
         args:
@@ -353,15 +296,8 @@ postsubmits:
         - --build-dir=.
         - images/bazel-krte/
         env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /creds/service-account.json
-        volumeMounts:
-        - name: creds
-          mountPath: /creds
-      volumes:
-      - name: creds
-        secret:
-          secretName: deployer-service-account
+        - name: USE_BAZEL_VERSION
+          value: real  # Ignore .bazelversion
   - name: post-test-infra-push-bigquery
     cluster: test-infra-trusted
     run_if_changed: '^images/bigquery/'
@@ -375,8 +311,9 @@ postsubmits:
     branches:
     - master
     spec:
+      serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200211-v0.4-10-g26b1b47
         command:
         - images/builder/ci-runner.sh
         args:
@@ -385,15 +322,8 @@ postsubmits:
         - --build-dir=.
         - images/bigquery/
         env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /creds/service-account.json
-        volumeMounts:
-        - name: creds
-          mountPath: /creds
-      volumes:
-      - name: creds
-        secret:
-          secretName: deployer-service-account
+        - name: USE_BAZEL_VERSION
+          value: real  # Ignore .bazelversion
   - name: post-test-infra-push-bootstrap
     cluster: test-infra-trusted
     run_if_changed: '^(images/bootstrap|scenarios)/'
@@ -407,8 +337,9 @@ postsubmits:
     branches:
     - master
     spec:
+      serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200211-v0.4-10-g26b1b47
         command:
         - images/builder/ci-runner.sh
         args:
@@ -417,15 +348,8 @@ postsubmits:
         - --build-dir=.
         - images/bootstrap/
         env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /creds/service-account.json
-        volumeMounts:
-        - name: creds
-          mountPath: /creds
-      volumes:
-      - name: creds
-        secret:
-          secretName: deployer-service-account
+        - name: USE_BAZEL_VERSION
+          value: real  # Ignore .bazelversion
   - name: post-test-infra-push-cluster-api
     cluster: test-infra-trusted
     run_if_changed: '^images/cluster-api/'
@@ -439,8 +363,9 @@ postsubmits:
     branches:
     - master
     spec:
+      serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200211-v0.4-10-g26b1b47
         command:
         - images/builder/ci-runner.sh
         args:
@@ -449,15 +374,8 @@ postsubmits:
         - --build-dir=.
         - images/cluster-api/
         env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /creds/service-account.json
-        volumeMounts:
-        - name: creds
-          mountPath: /creds
-      volumes:
-      - name: creds
-        secret:
-          secretName: deployer-service-account
+        - name: USE_BAZEL_VERSION
+          value: real  # Ignore .bazelversion
   - name: post-test-infra-push-gcb-docker-gcloud
     cluster: test-infra-trusted
     run_if_changed: '^images/gcb-docker-gcloud/'
@@ -471,8 +389,9 @@ postsubmits:
     branches:
     - master
     spec:
+      serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200211-v0.4-10-g26b1b47
         command:
         - images/builder/ci-runner.sh
         args:
@@ -481,15 +400,8 @@ postsubmits:
         - --build-dir=.
         - images/gcb-docker-gcloud/
         env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /creds/service-account.json
-        volumeMounts:
-        - name: creds
-          mountPath: /creds
-      volumes:
-      - name: creds
-        secret:
-          secretName: deployer-service-account
+        - name: USE_BAZEL_VERSION
+          value: real  # Ignore .bazelversion
   - name: post-test-infra-push-gcloud
     cluster: test-infra-trusted
     run_if_changed: '^images/gcloud/'
@@ -503,8 +415,9 @@ postsubmits:
     branches:
     - master
     spec:
+      serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200211-v0.4-10-g26b1b47
         command:
         - images/builder/ci-runner.sh
         args:
@@ -513,15 +426,8 @@ postsubmits:
         - --build-dir=.
         - images/gcloud/
         env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /creds/service-account.json
-        volumeMounts:
-        - name: creds
-          mountPath: /creds
-      volumes:
-      - name: creds
-        secret:
-          secretName: deployer-service-account
+        - name: USE_BAZEL_VERSION
+          value: real  # Ignore .bazelversion
   - name: post-test-infra-push-kubekins-e2e
     cluster: test-infra-trusted
     run_if_changed: '^(images/kubekins-e2e|kubetest|boskos)/'
@@ -535,8 +441,9 @@ postsubmits:
     branches:
     - master
     spec:
+      serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200211-v0.4-10-g26b1b47
         command:
         - images/builder/ci-runner.sh
         args:
@@ -545,15 +452,8 @@ postsubmits:
         - --build-dir=.
         - images/kubekins-e2e/
         env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /creds/service-account.json
-        volumeMounts:
-        - name: creds
-          mountPath: /creds
-      volumes:
-      - name: creds
-        secret:
-          secretName: deployer-service-account
+        - name: USE_BAZEL_VERSION
+          value: real  # Ignore .bazelversion
   - name: post-test-infra-push-krte
     cluster: test-infra-trusted
     run_if_changed: '^images/krte/'
@@ -567,8 +467,9 @@ postsubmits:
     branches:
     - master
     spec:
+      serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200211-v0.4-10-g26b1b47
         command:
         - images/builder/ci-runner.sh
         args:
@@ -577,15 +478,8 @@ postsubmits:
         - --build-dir=.
         - images/krte/
         env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /creds/service-account.json
-        volumeMounts:
-        - name: creds
-          mountPath: /creds
-      volumes:
-      - name: creds
-        secret:
-          secretName: deployer-service-account
+        - name: USE_BAZEL_VERSION
+          value: real  # Ignore .bazelversion
   - name: post-test-infra-push-kubekins-test
     cluster: test-infra-trusted
     run_if_changed: '^images/kubekins-test/'
@@ -599,8 +493,9 @@ postsubmits:
     branches:
     - master
     spec:
+      serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200211-v0.4-10-g26b1b47
         command:
         - images/builder/ci-runner.sh
         args:
@@ -609,15 +504,8 @@ postsubmits:
         - --build-dir=.
         - images/kubekins-test/
         env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /creds/service-account.json
-        volumeMounts:
-        - name: creds
-          mountPath: /creds
-      volumes:
-      - name: creds
-        secret:
-          secretName: deployer-service-account
+        - name: USE_BAZEL_VERSION
+          value: real  # Ignore .bazelversion
   - name: post-test-infra-push-kubemci
     cluster: test-infra-trusted
     run_if_changed: '^images/kubemci/'
@@ -631,8 +519,9 @@ postsubmits:
     branches:
     - master
     spec:
+      serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200211-v0.4-10-g26b1b47
         command:
         - images/builder/ci-runner.sh
         args:
@@ -641,15 +530,8 @@ postsubmits:
         - --build-dir=.
         - images/kubemci/
         env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /creds/service-account.json
-        volumeMounts:
-        - name: creds
-          mountPath: /creds
-      volumes:
-      - name: creds
-        secret:
-          secretName: deployer-service-account
+        - name: USE_BAZEL_VERSION
+          value: real  # Ignore .bazelversion
   - name: post-test-infra-push-test-gubernator
     cluster: test-infra-trusted
     run_if_changed: '^images/pull-test-infra-gubernator/'
@@ -663,8 +545,9 @@ postsubmits:
     branches:
     - master
     spec:
+      serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200211-v0.4-10-g26b1b47
         command:
         - images/builder/ci-runner.sh
         args:
@@ -673,15 +556,8 @@ postsubmits:
         - --build-dir=.
         - images/pull-test-infra-gubernator/
         env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /creds/service-account.json
-        volumeMounts:
-        - name: creds
-          mountPath: /creds
-      volumes:
-      - name: creds
-        secret:
-          secretName: deployer-service-account
+        - name: USE_BAZEL_VERSION
+          value: real  # Ignore .bazelversion
   - name: post-test-infra-push-image-builder
     cluster: test-infra-trusted
     run_if_changed: '^images/builder/'
@@ -695,8 +571,9 @@ postsubmits:
     branches:
     - master
     spec:
+      serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200211-v0.4-10-g26b1b47
         command:
         - images/builder/ci-runner.sh
         args:
@@ -705,15 +582,60 @@ postsubmits:
         - --build-dir=.
         - images/builder/
         env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /creds/service-account.json
-        volumeMounts:
-        - name: creds
-          mountPath: /creds
-      volumes:
-      - name: creds
-        secret:
-          secretName: deployer-service-account
+        - name: USE_BAZEL_VERSION
+          value: real  # Ignore .bazelversion
+  - name: post-test-infra-push-image-benchmarkjunit
+    cluster: test-infra-trusted
+    run_if_changed: '^pkg/benchmarkjunit/'
+    annotations:
+      testgrid-dashboards: "sig-testing-images"
+      testgrid-tab-name: "benchmarkjunit"
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+      testgrid-num-failures-to-alert: '3'
+      description: builds and pushes the benchmarkjunit image
+    decorate: true
+    branches:
+    - master
+    spec:
+      serviceAccountName: deployer # TODO(fejta): should be pusher
+      containers:
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200211-v0.4-10-g26b1b47
+        command:
+        - images/builder/ci-runner.sh
+        args:
+        - --scratch-bucket=gs://k8s-testimages-scratch
+        - --project=k8s-testimages
+        - --build-dir=.
+        - pkg/benchmarkjunit/
+        env:
+        - name: USE_BAZEL_VERSION
+          value: real  # Ignore .bazelversion
+  - name: post-test-infra-push-gencred
+    cluster: test-infra-trusted
+    run_if_changed: '^gencred/'
+    annotations:
+      testgrid-dashboards: "sig-testing-images"
+      testgrid-tab-name: "gencred"
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+      testgrid-num-failures-to-alert: '3'
+      description: builds and pushes the gencred image
+    decorate: true
+    branches:
+    - ^master$
+    spec:
+      serviceAccountName: deployer # TODO(fejta): should be pusher
+      containers:
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200211-v0.4-10-g26b1b47
+        command:
+        - images/builder/ci-runner.sh
+        args:
+        - --scratch-bucket=gs://k8s-testimages-scratch
+        - --project=k8s-testimages
+        - --build-dir=.
+        - gencred/
+        env:
+        - name: USE_BAZEL_VERSION
+          value: real  # Ignore .bazelversion
   - name: post-test-infra-upload-testgrid-config
     cluster: test-infra-trusted
     branches:
@@ -723,21 +645,17 @@ postsubmits:
     run_if_changed: '^config/(jobs|testgrids)/.*$'
     decorate: true
     spec:
+      serviceAccountName: testgrid-config-updater
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20190916-ec59af8-0.29.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20200212-b304d89-2.0.0
+        env:
+        - name: USE_BAZEL_VERSION
+          value: real  # Ignore .bazelversion
         command:
         - ./testgrid/config-upload.sh
-        volumeMounts:
-        - name: testgrid-service-account
-          mountPath: /etc/service-account
-          readOnly: true
         resources:
           requests:
             memory: "1Gi"
-      volumes:
-      - name: testgrid-service-account
-        secret:
-          secretName: testgrid-config-updater-service-account
     annotations:
       testgrid-dashboards: sig-testing-maintenance
       testgrid-tab-name: testgrid-config-upload
@@ -748,24 +666,17 @@ postsubmits:
     cluster: test-infra-trusted
     branches:
     - master
-    run_if_changed: '^boskos/.*$'
+    run_if_changed: '^prow/cluster/boskos-resources.yaml$'
     decorate: true
     spec:
+      serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20190916-ec59af8-0.29.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20200212-b304d89-2.0.0
         command:
         - ./boskos/update_prow_config.sh
         env:
-        - name: PROW_SERVICE_ACCOUNT
-          value: /creds/service-account.json
-        volumeMounts:
-        - name: creds
-          mountPath: /creds
-          readOnly: true
-      volumes:
-      - name: creds
-        secret:
-          secretName: deployer-service-account
+        - name: USE_BAZEL_VERSION
+          value: real  # Ignore .bazelversion
     annotations:
       testgrid-dashboards: sig-testing-maintenance
       testgrid-tab-name: boskos-config-upload
@@ -783,21 +694,14 @@ postsubmits:
     branches:
     - ^master$
     spec:
+      serviceAccountName: pusher
       containers:
-      - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20191026-v2.3.1-36-g0e656d8
+      - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20200305-v2.3.1-117-gd677a55
         command:
         - cip
         args:
         - -manifest=prow/cip-manifest.yaml
-        - -key-files=/etc/service-account/service-account.json
         - -dry-run=false
-        volumeMounts:
-        - name: service-account
-          mountPath: /etc/service-account
-      volumes:
-      - name: service-account
-        secret:
-          secretName: pusher-service-account
     annotations:
       testgrid-dashboards: sig-testing-prow
       testgrid-tab-name: cip-prow
@@ -818,13 +722,14 @@ postsubmits:
     - ^master$
     spec:
       containers:
-      - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20191026-v2.3.1-36-g0e656d8
+      - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20200305-v2.3.1-117-gd677a55
         command:
         - cip
         args:
-        - -thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io/manifests
+        - -thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
         - -key-files=/etc/k8s-artifacts-prod-service-account/service-account.json
         - -dry-run=false
+        - -use-service-account
         volumeMounts:
         - name: k8s-artifacts-prod-service-account-creds
           mountPath: /etc/k8s-artifacts-prod-service-account
@@ -876,24 +781,15 @@ postsubmits:
     branches:
     - ^master$
     spec:
+      serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/image-builder:v20191126-282e49f
+      - image: gcr.io/k8s-testimages/image-builder:v20200213-0032cdb
         command:
         - /run.sh
         args:
         - --scratch-bucket=gs://kubernetes-tools-scratch
         - --project=kubernetes-tools
         - .
-        env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /creds/service-account.json
-        volumeMounts:
-        - name: creds
-          mountPath: /creds
-      volumes:
-      - name: creds
-        secret:
-          secretName: deployer-service-account
 
 
 periodics:
@@ -914,7 +810,9 @@ periodics:
   spec:
     containers:
     - image: launcher.gcr.io/google/bazel:0.29.1
-      imagePullPolicy: Always
+      env:
+      - name: USE_BAZEL_VERSION
+        value: real  # Ignore .bazelversion
       command:
       - bazel
       args:
@@ -943,7 +841,10 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20190916-ec59af8-0.29.1
+    - image: gcr.io/k8s-testimages/bazelbuild:v20200212-b304d89-2.0.0
+      env:
+      - name: USE_BAZEL_VERSION
+        value: real  # Ignore .bazelversion
       command:
       - hack/autodeps.sh
       args:
@@ -980,7 +881,10 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20190916-ec59af8-0.29.1
+    - image: gcr.io/k8s-testimages/bazelbuild:v20200212-b304d89-2.0.0
+      env:
+      - name: USE_BAZEL_VERSION
+        value: real  # Ignore .bazelversion
       command:
       - hack/autodeps.sh
       args:
@@ -1017,7 +921,10 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20190916-ec59af8-0.29.1
+    - image: gcr.io/k8s-testimages/bazelbuild:v20200212-b304d89-2.0.0
+      env:
+      - name: USE_BAZEL_VERSION
+        value: real  # Ignore .bazelversion
       command:
       - bazel
       - run
@@ -1056,7 +963,10 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: launcher.gcr.io/google/bazel:0.29.1
+    - image: launcher.gcr.io/google/bazel:2.0.0
+      env:
+      - name: USE_BAZEL_VERSION
+        value: real  # Ignore .bazelversion
       command:
       - bazel
       args:
@@ -1083,24 +993,16 @@ periodics:
   cluster: test-infra-trusted
   decorate: true
   spec:
+    serviceAccountName: resultstore
     containers:
     - image: gcr.io/k8s-testimages/resultstore:v20190311-3fc08c042
       command:
       - /app/experiment/resultstore/app.binary
       args:
-      - --service-account=/etc/creds/service-account.json
       - --upload=k8s-prow
       - --deadline=10m
       - --latest=5
       - --gcs-auth
-      volumeMounts:
-      - name: creds
-        mountPath: /etc/creds
-        readOnly: true
-    volumes:
-    - name: creds
-      secret:
-        secretName: resultstore-service-account
   annotations:
     testgrid-dashboards: sig-testing-prow
     testgrid-tab-name: resultstore-upload
@@ -1120,7 +1022,7 @@ periodics:
   spec:
     containers:
     - name: branchprotector
-      image: gcr.io/k8s-prow/branchprotector:v20191128-48349ea19
+      image: gcr.io/k8s-prow/branchprotector:v20200304-c42b857fc
       command:
       - /app/prow/cmd/branchprotector/app.binary
       args:
@@ -1154,7 +1056,7 @@ periodics:
   spec:
     containers:
     - name: label-sync
-      image: gcr.io/k8s-prow/label_sync:v20191128-48349ea19
+      image: gcr.io/k8s-prow/label_sync:v20200304-c42b857fc
       command:
       - /app/label_sync/app.binary
       args:
@@ -1188,7 +1090,7 @@ periodics:
     description: Runs label_sync to synchronize GitHub repo labels with the label config defined in label_sync/labels.yaml.
 # ci-k8sio-cip runs daily, to make sure that the destination GCRs do not deviate
 # away from the intent of the manifest.
-- interval: 24h
+- interval: 4h
   cluster: test-infra-trusted
   max_concurrency: 1
   # This name is the "job name", passed in as "--job=NAME" for mkpj.
@@ -1213,13 +1115,14 @@ periodics:
     # interactive bash session:
     #
     #   docker run --rm -it gcr.io/cip-demo-staging/cip:<tag> "cd /cip && bash"
-    - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20191026-v2.3.1-36-g0e656d8
+    - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20200305-v2.3.1-117-gd677a55
       command:
       - cip
       args:
-      - -thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io/manifests
+      - -thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
       - -key-files=/etc/k8s-artifacts-prod-service-account/service-account.json
       - -dry-run=false
+      - -use-service-account
       volumeMounts:
       - name: k8s-artifacts-prod-service-account-creds
         mountPath: /etc/k8s-artifacts-prod-service-account
@@ -1230,7 +1133,7 @@ periodics:
         secretName: k8s-artifacts-prod-service-account
   annotations:
     testgrid-dashboards: sig-release-misc
-  # TODO: Move this job to a K8s cluster owned by kubernetes-wg-k8s-infra@googlegroups.com.
+# TODO: Move this job to a K8s cluster owned by kubernetes-wg-k8s-infra@googlegroups.com.
 - interval: 1h
   cluster: test-infra-trusted
   max_concurrency: 1
@@ -1242,7 +1145,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-1.17
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-28c7418-1.17
       command:
       - infra/gcp/backup_tools/backup.sh
       env:
@@ -1251,8 +1154,6 @@ periodics:
       # needs it to be defined).
       - name: GOPATH
         value: /go
-      - name: GCRANE_REF
-        value: f8574ec722f4dd4e2703689ea2ffe10c2021adc9 # Known-good commit from 2019-11-15
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/k8s-artifacts-prod-bak-service-account/service-account.json
       volumeMounts:

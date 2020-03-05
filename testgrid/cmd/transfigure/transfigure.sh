@@ -1,4 +1,18 @@
 #!/bin/bash
+# Copyright 2019 The Kubernetes Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 
 # A script that uses configurator to create a YAML file, and then pushes that
 # YAML file to k8s/test-infra's config/testgrids directory
@@ -15,7 +29,7 @@ main() {
   branch="transfigure-branch"
 
   if [[ $# -lt 5 ]]; then
-    echo "Usage: $(basename "$0") [github_token] [prow_config] [prow_job_config] [testgrid_yaml] [repo_subdir] (remote_fork_repo) (git_user) (git_email)" >&2
+    echo "Usage: $(basename "$0") [github_token or 'test'] [prow_config] [prow_job_config] [testgrid_yaml] [repo_subdir] (remote_fork_repo) (git_user) (git_email)" >&2
     echo "All [] arguments are required paths" >&2
     exit 1
   fi
@@ -28,7 +42,6 @@ main() {
   if [[ -d test-infra ]]; then
     echo "Directory 'test-infra' found; using as kubernetes/test-infra repository"
   else
-    #TODO(chases2): Clone only the test-infra/config/testgrids subdirectory used
     git clone https://github.com/kubernetes/test-infra.git
     trap "cleanup-repository" EXIT
     echo "Created temporary repository"
@@ -40,7 +53,6 @@ main() {
   echo "Checking out ${branch}"
   cd "${k8s_repo}"
   git checkout -B "${branch}"
-  ensure-git-config
 
   if [[ ! -d "${testgrid_dir}/${testgrid_subdir}" ]]; then
     echo "Subdirectory ${testgrid_subdir} doesn't exist; creating it" >&2
@@ -56,13 +68,24 @@ main() {
     --oneshot \
     --output "${testgrid_dir}/${testgrid_subdir}/gen-config.yaml"
 
-  git add --all
 
   if ! git diff --quiet ; then
     echo "Transfigure did not change anything. Aborting no-op bump"
     exit 0
   fi
 
+  git add --all
+
+  echo "Running kubernetes/test-infra tests..."
+  bazel test //config/tests/...
+  echo "Tests successful!"
+
+  if [[ ${dry_run} = "true" ]]; then
+    echo "Dry-Run; skipping PR"
+    return 0
+  fi
+
+  ensure-git-config
   title="Update TestGrid for ${testgrid_subdir}"
   git commit -m "${title}"
   echo "Pushing commit to ${user}/${remote_fork_repo}:${branch}..."
@@ -82,7 +105,13 @@ main() {
 }
 
 parse-args() {
-  token=$(readlink -m "$1")
+  if [[ "$1" == "test" || "$1" == "Test" ]]; then
+    dry_run=true
+    token=""
+  else
+    dry_run=false
+    token=$(readlink -m "$1")
+  fi
   prow_config=$(readlink -m "$2")
   job_config=$(readlink -m "$3")
   testgrid_config=$(readlink -m "$4")
@@ -91,7 +120,7 @@ parse-args() {
   user=${7:-""}
   email=${8:-""}
 
-  if [[ ! -f ${token} ]]; then
+  if [[ ! $dry_run && ! -f ${token} ]]; then
     echo "ERROR: [github_token] ${token} must be a file path." >&2
     exit 1
   elif [[ ! -f "${prow_config}" ]]; then
@@ -117,7 +146,7 @@ user-from-token() {
     user=$(curl -H "Authorization: token $(cat "${token}")" "https://api.github.com/user" 2>/dev/null | sed -n "s/\s\+\"login\": \"\(.*\)\",/\1/p")
     echo "Using user from GitHub: ${user}"
   else
-    echo "Using email from Argument: ${user}"
+    echo "Using user from Argument: ${user}"
   fi
 }
 
@@ -137,6 +166,7 @@ cleanup-repository() {
 }
 
 ensure-git-config() {
+  echo "Checking Git Config"
   git config user.name ${user}
   git config user.email ${email}
 

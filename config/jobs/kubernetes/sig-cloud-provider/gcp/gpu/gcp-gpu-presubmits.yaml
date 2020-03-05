@@ -27,7 +27,7 @@ presubmits:
       preset-pull-gce-device-plugin-gpu: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-28c7418-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -68,7 +68,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-28c7418-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -86,7 +86,7 @@ presubmits:
         - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
         - --gcp-node-image=gci
         - --gcp-project=k8s-gke-gpu-pr
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-west1-c
         - --ginkgo-parallel=30
         - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-k80,count=2
         - --gke-environment=test

@@ -191,7 +191,7 @@ func (o Options) doUpload(spec *downwardapi.JobSpec, passed, aborted bool, metad
 	}
 
 	// TODO(fejta): move to initupload and Started.Repos, RepoVersion
-	finished.Revision = downwardapi.GetRevisionFromSpec(spec)
+	finished.DeprecatedRevision = downwardapi.GetRevisionFromSpec(spec)
 
 	finishedData, err := json.Marshal(&finished)
 	if err != nil {

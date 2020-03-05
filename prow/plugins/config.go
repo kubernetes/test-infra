@@ -434,18 +434,6 @@ type ConfigUpdater struct {
 	// map[string]ConfigMapSpec{ "/my/path.yaml": {Name: "foo", Namespace: "otherNamespace" }}
 	// will result in replacing the foo configmap whenever path.yaml changes
 	Maps map[string]ConfigMapSpec `json:"maps,omitempty"`
-	// The location of the prow configuration file inside the repository
-	// where the config-updater plugin is enabled. This needs to be relative
-	// to the root of the repository, eg. "config/prow/config.yaml" will match
-	// github.com/kubernetes/test-infra/config/prow/config.yaml assuming the config-updater
-	// plugin is enabled for kubernetes/test-infra. Defaults to "config/prow/config.yaml".
-	ConfigFile string `json:"config_file,omitempty"`
-	// The location of the prow plugin configuration file inside the repository
-	// where the config-updater plugin is enabled. This needs to be relative
-	// to the root of the repository, eg. "config/prow/plugins.yaml" will match
-	// github.com/kubernetes/test-infra/config/prow/plugins.yaml assuming the config-updater
-	// plugin is enabled for kubernetes/test-infra. Defaults to "config/prow/plugins.yaml".
-	PluginFile string `json:"plugin_file,omitempty"`
 	// If GZIP is true then files will be gzipped before insertion into
 	// their corresponding configmap
 	GZIP bool `json:"gzip"`
@@ -838,23 +826,11 @@ func (c *Configuration) EnabledReposForExternalPlugin(plugin string) (orgs, repo
 // SetDefaults sets default options for config updating
 func (c *ConfigUpdater) SetDefaults() {
 	if len(c.Maps) == 0 {
-		cf := c.ConfigFile
-		if cf == "" {
-			cf = "config/prow/config.yaml"
-		} else {
-			logrus.Warnf(`config_file is deprecated, please switch to "maps": {"%s": "config"} before July 2018`, cf)
-		}
-		pf := c.PluginFile
-		if pf == "" {
-			pf = "config/prow/plugins.yaml"
-		} else {
-			logrus.Warnf(`plugin_file is deprecated, please switch to "maps": {"%s": "plugins"} before July 2018`, pf)
-		}
 		c.Maps = map[string]ConfigMapSpec{
-			cf: {
+			"config/prow/config.yaml": {
 				Name: "config",
 			},
-			pf: {
+			"config/prow/plugins.yaml": {
 				Name: "plugins",
 			},
 		}
@@ -1332,12 +1308,15 @@ type BugzillaBranchOptions struct {
 	ValidStates *[]BugzillaBugState `json:"valid_states,omitempty"`
 
 	// DependentBugStatuses determine which statuses a bug's dependent bugs may have
-	// to deem the child bug valid
+	// to deem the child bug valid.  These are merged into DependentBugStates when
+	// resolving branch options.
 	DependentBugStatuses *[]string `json:"dependent_bug_statuses,omitempty"`
 	// DependentBugStates determine states in which a bug's dependents bugs may be
-	// to deem the child bug valid
+	// to deem the child bug valid.  If set, all blockers must have a valid state.
 	DependentBugStates *[]BugzillaBugState `json:"dependent_bug_states,omitempty"`
-	// DependentBugTargetRelease determines which release a bug's dependent bugs need to target to be valid
+	// DependentBugTargetRelease determines which release a bug's dependent bugs
+	// need to target to be valid.  If set, all blockers must have a valid target
+	// releasee.
 	DependentBugTargetRelease *string `json:"dependent_bug_target_release,omitempty"`
 
 	// StatusAfterValidation is the status which the bug will be moved to after being
@@ -1485,6 +1464,9 @@ func ResolveBugzillaOptions(parent, child BugzillaBranchOptions) BugzillaBranchO
 			output.DependentBugStatuses = parent.DependentBugStatuses
 			output.DependentBugStates = mergeStatusesIntoStates(output.DependentBugStates, parent.DependentBugStatuses)
 		}
+		if parent.DependentBugTargetRelease != nil {
+			output.DependentBugTargetRelease = parent.DependentBugTargetRelease
+		}
 		if parent.StatusAfterValidation != nil {
 			output.StatusAfterValidation = parent.StatusAfterValidation
 			output.StateAfterValidation = &BugzillaBugState{Status: *output.StatusAfterValidation}
@@ -1535,6 +1517,9 @@ func ResolveBugzillaOptions(parent, child BugzillaBranchOptions) BugzillaBranchO
 			output.DependentBugStates = nil
 		}
 		output.DependentBugStates = mergeStatusesIntoStates(output.DependentBugStates, child.DependentBugStatuses)
+	}
+	if child.DependentBugTargetRelease != nil {
+		output.DependentBugTargetRelease = child.DependentBugTargetRelease
 	}
 	if child.StatusAfterValidation != nil {
 		output.StatusAfterValidation = child.StatusAfterValidation

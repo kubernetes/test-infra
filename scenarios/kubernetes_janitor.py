@@ -63,7 +63,7 @@ def clean_project(project, hours=24, dryrun=False, ratelimit=None, filt=None):
         return
     CHECKED.add(project)
 
-    cmd = ['python', test_infra('boskos/janitor/gcp_janitor.py'), '--project=%s' % project]
+    cmd = ['python', test_infra('boskos/cmd/janitor/gcp_janitor.py'), '--project=%s' % project]
     cmd.append('--hour=%d' % hours)
     if dryrun:
         cmd.append('--dryrun')
@@ -72,7 +72,7 @@ def clean_project(project, hours=24, dryrun=False, ratelimit=None, filt=None):
     if VERBOSE:
         cmd.append('--verbose')
     if filt:
-        cmd.append('--filter="%s"' % filt)
+        cmd.append('--filter=%s' % filt)
 
     try:
         check(*cmd)
@@ -104,6 +104,7 @@ PR_PROJECTS = {
     'k8s-jkns-pr-node-e2e': 3,
     'k8s-jkns-pr-gce-gpus': 3,
     'k8s-gke-gpu-pr': 3,
+    'k8s-c8d-pr-node-e2e': 3,
 }
 
 SCALE_PROJECT = {

@@ -810,7 +810,7 @@ func configureOrgMeta(client orgMetadataClient, orgName string, want org.Metadat
 	change = updateString(&cur.Location, want.Location) || change
 	if want.DefaultRepositoryPermission != nil {
 		w := string(*want.DefaultRepositoryPermission)
-		change = updateString(&cur.DefaultRepositoryPermission, &w)
+		change = updateString(&cur.DefaultRepositoryPermission, &w) || change
 	}
 	change = updateBool(&cur.HasOrganizationProjects, want.HasOrganizationProjects) || change
 	change = updateBool(&cur.HasRepositoryProjects, want.HasRepositoryProjects) || change
@@ -1049,14 +1049,19 @@ func configureRepos(opt options, client repoClient, orgName string, orgConfig or
 
 	var allErrors []error
 	for wantName, wantRepo := range orgConfig.Repos {
-		repoLogger := logrus.WithField("repoExists", wantName)
+		repoLogger := logrus.WithField("repo", wantName)
 		repoExists, err := repoExists(byName, wantName, wantRepo.Previously)
 		if err != nil {
 			allErrors = append(allErrors, err)
 			continue
 		}
 		if repoExists == nil {
-			repoLogger.Info("repoExists does not exist, creating")
+			if wantRepo.Archived != nil && *wantRepo.Archived {
+				repoLogger.Errorf("repo does not exist but is configured as archived: not creating")
+				allErrors = append(allErrors, fmt.Errorf("nonexistent repo configured as archived: %s", wantName))
+				continue
+			}
+			repoLogger.Info("repo does not exist, creating")
 			created, err := client.CreateRepo(orgName, false, newRepoCreateRequest(wantName, wantRepo))
 			if err != nil {
 				allErrors = append(allErrors, err)
@@ -1066,16 +1071,16 @@ func configureRepos(opt options, client repoClient, orgName string, orgConfig or
 		}
 
 		if repoExists != nil {
-			repoLogger.Info("repoExists exists, considering an update")
+			repoLogger.Info("repo exists, considering an update")
 			delta := newRepoUpdateRequest(*repoExists, wantName, wantRepo)
 			if deltaErrors := sanitizeRepoDelta(opt, &delta); len(deltaErrors) > 0 {
 				for _, err := range deltaErrors {
-					repoLogger.WithError(err).Error("requested repoExists change is not allowed, removing from delta")
+					repoLogger.WithError(err).Error("requested repo change is not allowed, removing from delta")
 				}
 				allErrors = append(allErrors, deltaErrors...)
 			}
 			if delta.Defined() {
-				repoLogger.Info("repoExists exists and differs from desired state, updating")
+				repoLogger.Info("repo exists and differs from desired state, updating")
 				if _, err := client.UpdateRepo(orgName, repoExists.Name, delta); err != nil {
 					allErrors = append(allErrors, err)
 				}

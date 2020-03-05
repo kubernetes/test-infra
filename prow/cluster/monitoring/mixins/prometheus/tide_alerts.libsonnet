@@ -9,8 +9,9 @@
             expr: |||
               sum(increase(tidesyncheartbeat{controller="sync"}[15m])) < 1
             |||,
+            'for': '5m',
             labels: {
-              severity: 'warning',
+              severity: 'critical',
             },
             annotations: {
               message: 'The Tide "sync" controller has not synced in 15 minutes. See the <https://monitoring.prow.k8s.io/d/d69a91f76d8110d3e72885ee5ce8038e/tide-dashboard?orgId=1&from=now-24h&to=now&fullscreen&panelId=7|processing time graph>.',
@@ -21,8 +22,9 @@
             expr: |||
               sum(increase(tidesyncheartbeat{controller="status-update"}[30m])) < 1
             |||,
+            'for': '5m',
             labels: {
-              severity: 'warning',
+              severity: 'critical',
             },
             annotations: {
               message: 'The Tide "status-update" controller has not synced in 30 minutes. See the <https://monitoring.prow.k8s.io/d/d69a91f76d8110d3e72885ee5ce8038e/tide-dashboard?orgId=1&from=now-24h&to=now&fullscreen&panelId=7|processing time graph>.',

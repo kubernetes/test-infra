@@ -6,7 +6,7 @@ presubmits:
     path_alias: k8s.io/publishing-bot
     spec:
       containers:
-      - image: golang:1.11
+      - image: golang:1.13
         command:
         - make
     annotations:
@@ -27,7 +27,7 @@ presubmits:
       path_alias: k8s.io/publishing-bot
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-28c7418-master
         command:
         - go
         args:

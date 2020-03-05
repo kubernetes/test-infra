@@ -55,5 +55,6 @@ go_test(
         "@io_k8s_apimachinery//pkg/api/equality:go_default_library",
         "@io_k8s_apimachinery//pkg/apis/meta/v1:go_default_library",
         "@io_k8s_apimachinery//pkg/util/diff:go_default_library",
+        "@io_k8s_utils//pointer:go_default_library",
     ],
 )

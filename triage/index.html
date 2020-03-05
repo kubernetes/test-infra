@@ -40,11 +40,22 @@ Sort by
 <label><input name="sort" type="radio" value="message">error message</label>
 <br>
 <label style="display:none"><input type="checkbox" id="show-normalize">Display normalized errors</label><br>
-Filter (these are regexes):
 <table>
-<label><tr><td>Failure text<td><input type="text" id="filter-text"></label><br>
-<label><tr><td>Job<td><input type="text" id="filter-job"></label><br>
-<label><tr><td>Test<td><input type="text" id="filter-test"></label><br>
+<tr>
+<td>
+Include Filter (these are regexes):
+<table>
+<label><tr><td>Failure text<td><input type="text" id="filter-include-text"></label><br>
+<label><tr><td>Job<td><input type="text" id="filter-include-job"></label><br>
+<label><tr><td>Test<td><input type="text" id="filter-include-test"></label><br>
+</table>
+<td>
+Exclude Filter (these are regexes):
+<table>
+<label><tr><td>Failure text<td><input type="text" id="filter-exclude-text"></label><br>
+<label><tr><td>Job<td><input type="text" id="filter-exclude-job"></label><br>
+<label><tr><td>Test<td><input type="text" id="filter-exclude-test"></label><br>
+</table>
 </table>
 </span>
 </form>

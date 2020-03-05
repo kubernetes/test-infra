@@ -3,32 +3,17 @@ periodics:
   name: maintenance-ci-aws-janitor
   labels:
     preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+  decorate: true
   spec:
     containers:
-    - args:
-      - --bare
-      - --timeout=60
-      - --service-account=/etc/service-account/service-account.json
-      - --upload=gs://kubernetes-jenkins/logs
-      - --scenario=execute
-      - --
-      - /aws-janitor
-      - --
+    - command:
+      - /app/boskos/aws-janitor/app.binary
+      args:
       - --ttl=2h30m
       - --path=s3://k8s-kops-prow/objs.json
-      env:
-      - name: AWS_SHARED_CREDENTIALS_FILE
-        value: /workspace/.aws/credentials
-      image: gcr.io/k8s-prow/boskos/aws-janitor:v20191202-3ab85226c
-      volumeMounts:
-      - mountPath: /workspace/.aws
-        name: aws-cred
-        readOnly: true
-    volumes:
-    - name: aws-cred
-      secret:
-        defaultMode: 256
-        secretName: aws-cred-new
+      image: gcr.io/k8s-prow/boskos/aws-janitor:v20200303-28c7418a8
   annotations:
     testgrid-dashboards: sig-testing-maintenance
     testgrid-tab-name: ci-aws-janitor
@@ -54,8 +39,8 @@ periodics:
       - experiment/ci-janitor/main.go
       - --config-path=config/prow/config.yaml
       - --job-config-path=config/jobs
-      - --janitor-path=boskos/janitor/gcp_janitor.py
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-master
+      - --janitor-path=boskos/cmd/janitor/gcp_janitor.py
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-28c7418-master
       resources:
         requests:
           cpu: 5
@@ -80,7 +65,7 @@ periodics:
       - --
       - --mode=pr
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-experimental
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-28c7418-experimental
       resources:
         requests:
           cpu: 5
@@ -106,7 +91,7 @@ periodics:
       - --mode=scale
       - --ratelimit=5
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-experimental
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-28c7418-experimental
       resources:
         requests:
           cpu: 5

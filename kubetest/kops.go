@@ -26,6 +26,7 @@ import (
 	"io/ioutil"
 	"log"
 	"math/rand"
+	"net"
 	"os"
 	"os/exec"
 	"os/user"
@@ -37,7 +38,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/spf13/pflag"
 	"golang.org/x/crypto/ssh"
 
 	"k8s.io/test-infra/kubetest/e2e"
@@ -45,7 +45,9 @@ import (
 )
 
 // kopsAWSMasterSize is the default ec2 instance type for kops on aws
-const kopsAWSMasterSize = "c4.large"
+const kopsAWSMasterSize = "c5.large"
+
+const externalIPURL = "http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip"
 
 var (
 
@@ -69,9 +71,11 @@ var (
 	kopsPublish      = flag.String("kops-publish", "", "(kops only) Publish kops version to the specified gs:// path on success")
 	kopsMasterSize   = flag.String("kops-master-size", kopsAWSMasterSize, "(kops only) master instance type")
 	kopsMasterCount  = flag.Int("kops-master-count", 1, "(kops only) Number of masters to run")
+	kopsDNSProvider  = flag.String("kops-dns-provider", "", "(kops only) DNS Provider. CoreDNS or KubeDNS")
 	kopsEtcdVersion  = flag.String("kops-etcd-version", "", "(kops only) Etcd Version")
 	kopsNetworkMode  = flag.String("kops-network-mode", "", "(kops only) Networking mode to use. kubenet (default), classic, external, kopeio-vxlan (or kopeio), weave, flannel-vxlan (or flannel), flannel-udp, calico, canal, kube-router, romana, amazon-vpc-routed-eni, cilium.")
-	kopsOverrides    = pflag.StringSlice("kops-overrides", []string{}, "(kops only) Kops cluster configuration overrides, comma delimited. This flag can be used multiple times.")
+	kopsOverrides    = flag.String("kops-overrides", "", "(kops only) List of Kops cluster configuration overrides, comma delimited.")
+	kopsFeatureFlags = flag.String("kops-feature-flags", "", "(kops only) List of Kops feature flags to enable, comma delimited.")
 
 	kopsMultipleZones = flag.Bool("kops-multiple-zones", false, "(kops only) run tests in multiple zones")
 
@@ -130,6 +134,9 @@ type kops struct {
 	// masterCount denotes how many masters to start
 	masterCount int
 
+	// dnsProvider is the DNS Provider the cluster will use (CoreDNS or KubeDNS)
+	dnsProvider string
+
 	// etcdVersion is the etcd version to run
 	etcdVersion string
 
@@ -139,8 +146,11 @@ type kops struct {
 	// networkMode is the networking mode to use for the cluster (e.g kubenet)
 	networkMode string
 
-	// overrides is a list of cluster configuration overrides
-	overrides []string
+	// overrides is a list of cluster configuration overrides, comma delimited
+	overrides string
+
+	// featureFlags is a list of feature flags to enable, comma delimited
+	featureFlags string
 
 	// multipleZones denotes using more than one zone
 	multipleZones bool
@@ -343,10 +353,12 @@ func newKops(provider, gcpProject, cluster string) (*kops, error) {
 		kopsVersion:   *kopsBaseURL,
 		kopsPublish:   *kopsPublish,
 		masterCount:   *kopsMasterCount,
+		dnsProvider:   *kopsDNSProvider,
 		etcdVersion:   *kopsEtcdVersion,
 		masterSize:    *kopsMasterSize,
 		networkMode:   *kopsNetworkMode,
 		overrides:     *kopsOverrides,
+		featureFlags:  *kopsFeatureFlags,
 	}, nil
 }
 
@@ -380,8 +392,15 @@ func (k kops) Up() error {
 	}
 
 	var featureFlags []string
+	if k.featureFlags != "" {
+		featureFlags = append(featureFlags, k.featureFlags)
+	}
+	var overrides []string
+	if k.overrides != "" {
+		overrides = append(overrides, k.overrides)
+	}
 
-	// We are defaulting the master size to c4.large on AWS because m3.larges are getting less previlent.
+	// We are defaulting the master size to c5.large on AWS because it's cheapest non-throttled instance type.
 	// When we are using GCE, then we need to handle the flag differently.
 	// If we are not using gce then add the masters size flag, or if we are using gce, and the
 	// master size is not set to the aws default, then add the master size flag.
@@ -392,12 +411,23 @@ func (k kops) Up() error {
 	if k.kubeVersion != "" {
 		createArgs = append(createArgs, "--kubernetes-version", k.kubeVersion)
 	}
-	if k.adminAccess != "" {
-		createArgs = append(createArgs, "--admin-access", k.adminAccess)
+	if k.adminAccess == "" {
+		var b bytes.Buffer
+		err := httpReadWithHeaders(externalIPURL, map[string]string{"Metadata-Flavor": "Google"}, &b)
+		if err != nil || net.ParseIP(strings.TrimSpace(b.String())) == nil {
+			b.Reset()
+			if err := httpRead("https://v4.ifconfig.co", &b); err != nil {
+				return err
+			}
+		}
+		externalIP := strings.TrimSpace(b.String()) + "/32"
+		log.Printf("Using external IP for admin access: %v", externalIP)
+		k.adminAccess = externalIP
 	}
+	createArgs = append(createArgs, "--admin-access", k.adminAccess)
 
 	// Since https://github.com/kubernetes/kubernetes/pull/80655 conformance now require node ports to be open to all nodes
-	k.overrides = append(k.overrides, "cluster.spec.nodePortAccess=0.0.0.0/0")
+	overrides = append(overrides, "cluster.spec.nodePortAccess=0.0.0.0/0")
 
 	if k.image != "" {
 		createArgs = append(createArgs, "--image", k.image)
@@ -418,21 +448,24 @@ func (k kops) Up() error {
 	if k.args != "" {
 		createArgs = append(createArgs, strings.Split(k.args, " ")...)
 	}
-	if k.etcdVersion != "" {
-		k.overrides = append(k.overrides, "cluster.spec.etcdClusters[*].version="+k.etcdVersion)
+	if k.dnsProvider != "" {
+		overrides = append(overrides, "spec.kubeDNS.provider="+k.dnsProvider)
 	}
-	if len(k.overrides) != 0 {
+	if k.etcdVersion != "" {
+		overrides = append(overrides, "cluster.spec.etcdClusters[*].version="+k.etcdVersion)
+	}
+	if len(overrides) != 0 {
 		featureFlags = append(featureFlags, "SpecOverrideFlag")
-		createArgs = append(createArgs, "--override", strings.Join(k.overrides, ","))
+		createArgs = append(createArgs, "--override", strings.Join(overrides, ","))
 	}
 	if len(featureFlags) != 0 {
 		os.Setenv("KOPS_FEATURE_FLAGS", strings.Join(featureFlags, ","))
 	}
 	if err := control.FinishRunning(exec.Command(k.path, createArgs...)); err != nil {
-		return fmt.Errorf("kops configuration failed: %v", err)
+		return fmt.Errorf("kops create cluster failed: %v", err)
 	}
 	if err := control.FinishRunning(exec.Command(k.path, "update", "cluster", k.cluster, "--yes")); err != nil {
-		return fmt.Errorf("kops bringup failed: %v", err)
+		return fmt.Errorf("kops update cluster failed: %v", err)
 	}
 
 	// We require repeated successes, so we know that the cluster is stable
@@ -441,10 +474,17 @@ func (k kops) Up() error {
 	// propagate across multiple servers / caches
 	requiredConsecutiveSuccesses := 10
 
-	// TODO(zmerlynn): More cluster validation. This should perhaps be
-	// added to kops and not here, but this is a fine place to loop
-	// for now.
-	return waitForReadyNodes(k.nodes+1, *kopsUpTimeout, requiredConsecutiveSuccesses)
+	// Wait for nodes to become ready
+	if err := waitForReadyNodes(k.nodes+1, *kopsUpTimeout, requiredConsecutiveSuccesses); err != nil {
+		return fmt.Errorf("kops nodes not ready: %v", err)
+	}
+
+	// TODO: Once this gets support for N checks in a row, it can replace the above node readiness check
+	if err := control.FinishRunning(exec.Command(k.path, "validate", "cluster", k.cluster, "--wait", "5m")); err != nil {
+		return fmt.Errorf("kops validate cluster failed: %v", err)
+	}
+
+	return nil
 }
 
 func (k kops) IsUp() error {
@@ -489,6 +529,8 @@ func (k kops) DumpClusterLogs(localPath, gcsPath string) error {
 	go func() {
 		finished <- k.dumpAllNodes(ctx, logDumper)
 	}()
+
+	logDumper.dumpPods(ctx, "kube-system", []string{"k8s-app=kops-controller"})
 
 	for {
 		select {

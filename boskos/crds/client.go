@@ -17,38 +17,32 @@ limitations under the License.
 package crds
 
 import (
+	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"os"
+	"time"
 
-	"k8s.io/test-infra/boskos/common"
-
-	apiextensionsv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
-	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/apis/meta/v1"
+	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
-)
+	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
+	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
 
-const (
-	group   = "boskos.k8s.io"
-	version = "v1"
+	"k8s.io/test-infra/prow/interrupts"
 )
 
 // KubernetesClientOptions are flag options used to create a kube client.
 type KubernetesClientOptions struct {
 	inMemory   bool
 	kubeConfig string
-	namespace  string
 }
 
 // AddFlags adds kube client flags to existing FlagSet.
 func (o *KubernetesClientOptions) AddFlags(fs *flag.FlagSet) {
-	fs.StringVar(&o.namespace, "namespace", v1.NamespaceDefault, "namespace to install on")
 	fs.StringVar(&o.kubeConfig, "kubeconfig", "", "absolute path to the kubeConfig file")
 	fs.BoolVar(&o.inMemory, "in_memory", false, "Use in memory client instead of CRD")
 }
@@ -64,285 +58,96 @@ func (o *KubernetesClientOptions) Validate() error {
 }
 
 // Client returns a ClientInterface based on the flags provided.
-func (o *KubernetesClientOptions) Client(t Type) (ClientInterface, error) {
+func (o *KubernetesClientOptions) Client() (ctrlruntimeclient.Client, error) {
 	if o.inMemory {
-		return newDummyClient(t), nil
+		return fakectrlruntimeclient.NewFakeClient(), nil
 	}
-	return o.newCRDClient(t)
+
+	cfg, err := o.Cfg()
+	if err != nil {
+		return nil, err
+	}
+
+	return ctrlruntimeclient.New(cfg, ctrlruntimeclient.Options{})
 }
 
-// newClientFromFlags creates a CRD rest client from provided flags.
-func (o *KubernetesClientOptions) newCRDClient(t Type) (*Client, error) {
-	config, scheme, err := createRESTConfig(o.kubeConfig, t)
-	if err != nil {
-		return nil, err
+// CacheBackedClient returns a client whose Reader is cache backed. Namespace can be empty
+// in which case the client will use all namespaces.
+// It blocks until the cache was synced for all types passed in startCacheFor.
+func (o *KubernetesClientOptions) CacheBackedClient(namespace string, startCacheFor ...runtime.Object) (ctrlruntimeclient.Client, error) {
+	if o.inMemory {
+		return fakectrlruntimeclient.NewFakeClient(), nil
 	}
 
-	if err = registerResource(config, t); err != nil {
-		return nil, err
-	}
-	// creates the client
-	var restClient *rest.RESTClient
-	restClient, err = rest.RESTClientFor(config)
+	cfg, err := o.Cfg()
 	if err != nil {
 		return nil, err
 	}
-	rc := Client{cl: restClient, ns: o.namespace, t: t,
-		codec: runtime.NewParameterCodec(scheme)}
-	return &rc, nil
+	cfg.QPS = 100
+	cfg.Burst = 200
+
+	mgr, err := manager.New(cfg, manager.Options{
+		LeaderElection:     false,
+		Namespace:          namespace,
+		MetricsBindAddress: "0",
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to construct manager: %v", err)
+	}
+
+	// Allocate an informer so our cache actually waits for these types to
+	// be synced. Must be done before we start the mgr, else this may block
+	// indefinitely if there is an issue.
+	for _, t := range startCacheFor {
+		if _, err := mgr.GetCache().GetInformer(t); err != nil {
+			return nil, fmt.Errorf("failed to get informer for type %T: %v", t, err)
+		}
+	}
+
+	interrupts.Run(func(ctx context.Context) {
+		// Exiting like this is not nice, but the interrupts package
+		// doesn't allow us to stop the app. Furthermore, the behaviour
+		// of the reading client is undefined after the manager stops,
+		// so we should bail ASAP.
+		if err := mgr.Start(ctx.Done()); err != nil {
+			logrus.WithError(err).Fatal("Mgr failed.")
+		}
+		logrus.Info("Mgr finished gracefully.")
+		os.Exit(0)
+	})
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	startSyncTime := time.Now()
+	if synced := mgr.GetCache().WaitForCacheSync(ctx.Done()); !synced {
+		return nil, errors.New("timeout waiting for cache sync")
+	}
+	logrus.WithField("sync-duration", time.Since(startSyncTime).String()).Info("Cache synced")
+
+	return mgr.GetClient(), nil
+}
+
+// Cfg returns the *rest.Config for the configured cluster
+func (o *KubernetesClientOptions) Cfg() (*rest.Config, error) {
+	var cfg *rest.Config
+	var err error
+	if o.kubeConfig == "" {
+		cfg, err = rest.InClusterConfig()
+	} else {
+		cfg, err = clientcmd.BuildConfigFromFlags("", o.kubeConfig)
+	}
+	if err != nil {
+		return nil, fmt.Errorf("failed to construct rest config: %v", err)
+	}
+
+	return cfg, nil
 }
 
 // Type defines a Custom Resource Definition (CRD) Type.
 type Type struct {
 	Kind, ListKind   string
 	Singular, Plural string
-	Object           Object
-	Collection       Collection
-}
-
-// Object extends the runtime.Object interface. CRD are just a representation of the actual boskos object
-// which should implements the common.Item interface.
-type Object interface {
-	runtime.Object
-	GetName() string
-	FromItem(item common.Item)
-	ToItem() common.Item
-}
-
-// Collection is a list of Object interface.
-type Collection interface {
-	runtime.Object
-	SetItems([]Object)
-	GetItems() []Object
-}
-
-// createRESTConfig for cluster API server, pass empty config file for in-cluster
-func createRESTConfig(kubeconfig string, t Type) (config *rest.Config, types *runtime.Scheme, err error) {
-	if kubeconfig == "" {
-		config, err = rest.InClusterConfig()
-	} else {
-		config, err = clientcmd.BuildConfigFromFlags("", kubeconfig)
-	}
-
-	if err != nil {
-		return
-	}
-
-	version := schema.GroupVersion{
-		Group:   group,
-		Version: version,
-	}
-
-	config.GroupVersion = &version
-	config.APIPath = "/apis"
-	config.ContentType = runtime.ContentTypeJSON
-
-	types = runtime.NewScheme()
-	schemeBuilder := runtime.NewSchemeBuilder(
-		func(scheme *runtime.Scheme) error {
-			scheme.AddKnownTypes(version, t.Object, t.Collection)
-			v1.AddToGroupVersion(scheme, version)
-			return nil
-		})
-	err = schemeBuilder.AddToScheme(types)
-	config.NegotiatedSerializer = serializer.DirectCodecFactory{CodecFactory: serializer.NewCodecFactory(types)}
-
-	return
-}
-
-// registerResource sends a request to create CRDs and waits for them to initialize
-func registerResource(config *rest.Config, t Type) error {
-	c, err := apiextensionsclient.NewForConfig(config)
-	if err != nil {
-		return err
-	}
-
-	crd := &apiextensionsv1beta1.CustomResourceDefinition{
-		ObjectMeta: v1.ObjectMeta{
-			Name: fmt.Sprintf("%s.%s", t.Plural, group),
-		},
-		Spec: apiextensionsv1beta1.CustomResourceDefinitionSpec{
-			Group:   group,
-			Version: version,
-			Scope:   apiextensionsv1beta1.NamespaceScoped,
-			Names: apiextensionsv1beta1.CustomResourceDefinitionNames{
-				Singular: t.Singular,
-				Plural:   t.Plural,
-				Kind:     t.Kind,
-				ListKind: t.ListKind,
-			},
-		},
-	}
-	if _, err := c.ApiextensionsV1beta1().CustomResourceDefinitions().Create(crd); err != nil && !apierrors.IsAlreadyExists(err) {
-		return err
-	}
-	return nil
-}
-
-// newDummyClient creates a in memory client representation for testing, such that we do not need to use a kubernetes API Server.
-func newDummyClient(t Type) *dummyClient {
-	c := &dummyClient{
-		t:       t,
-		objects: make(map[string]Object),
-	}
-	return c
-}
-
-// ClientInterface is used for testing.
-type ClientInterface interface {
-	// NewObject instantiates a new object of the type supported by the client
-	NewObject() Object
-	// NewCollection instantiates a new collection of the type supported by the client
-	NewCollection() Collection
-	// Create a new object
-	Create(obj Object) (Object, error)
-	// Update an existing object, fails if object does not exist
-	Update(obj Object) (Object, error)
-	// Delete an existing object, fails if objects does not exist
-	Delete(name string, options *v1.DeleteOptions) error
-	// Get an existing object
-	Get(name string) (Object, error)
-	// LIst existing objects
-	List(opts v1.ListOptions) (Collection, error)
-}
-
-// dummyClient is used for testing purposes
-type dummyClient struct {
-	objects map[string]Object
-	t       Type
-}
-
-// NewObject implements ClientInterface
-func (c *dummyClient) NewObject() Object {
-	return c.t.Object.DeepCopyObject().(Object)
-}
-
-// NewCollection implements ClientInterface
-func (c *dummyClient) NewCollection() Collection {
-	return c.t.Collection.DeepCopyObject().(Collection)
-}
-
-// Create implements ClientInterface
-func (c *dummyClient) Create(obj Object) (Object, error) {
-	c.objects[obj.GetName()] = obj
-	return obj, nil
-}
-
-// Update implements ClientInterface
-func (c *dummyClient) Update(obj Object) (Object, error) {
-	_, ok := c.objects[obj.GetName()]
-	if !ok {
-		return nil, fmt.Errorf("cannot find object %s", obj.GetName())
-	}
-	c.objects[obj.GetName()] = obj
-	return obj, nil
-}
-
-// Delete implements ClientInterface
-func (c *dummyClient) Delete(name string, options *v1.DeleteOptions) error {
-	_, ok := c.objects[name]
-	if ok {
-		delete(c.objects, name)
-		return nil
-	}
-	return fmt.Errorf("%s does not exist", name)
-}
-
-// Get implements ClientInterface
-func (c *dummyClient) Get(name string) (Object, error) {
-	obj, ok := c.objects[name]
-	if ok {
-		return obj, nil
-	}
-	return nil, fmt.Errorf("could not find %s", name)
-}
-
-// List implements ClientInterface
-func (c *dummyClient) List(opts v1.ListOptions) (Collection, error) {
-	var items []Object
-	for _, i := range c.objects {
-		items = append(items, i)
-	}
-	r := c.NewCollection()
-	r.SetItems(items)
-	return r, nil
-}
-
-// Client implements a true CRD rest client
-type Client struct {
-	cl    *rest.RESTClient
-	ns    string
-	t     Type
-	codec runtime.ParameterCodec
-}
-
-// NewObject implements ClientInterface
-func (c *Client) NewObject() Object {
-	return c.t.Object.DeepCopyObject().(Object)
-}
-
-// NewCollection implements ClientInterface
-func (c *Client) NewCollection() Collection {
-	return c.t.Collection.DeepCopyObject().(Collection)
-}
-
-// Create implements ClientInterface
-func (c *Client) Create(obj Object) (Object, error) {
-	result := c.NewObject()
-	err := c.cl.Post().
-		Namespace(c.ns).
-		Resource(c.t.Plural).
-		Name(obj.GetName()).
-		Body(obj).
-		Do().
-		Into(result)
-	return result, err
-}
-
-// Update implements ClientInterface
-func (c *Client) Update(obj Object) (Object, error) {
-	result := c.NewObject()
-	err := c.cl.Put().
-		Namespace(c.ns).
-		Resource(c.t.Plural).
-		Body(obj).
-		Name(obj.GetName()).
-		Do().
-		Into(result)
-	return result, err
-}
-
-// Delete implements ClientInterface
-func (c *Client) Delete(name string, options *v1.DeleteOptions) error {
-	return c.cl.Delete().
-		Namespace(c.ns).
-		Resource(c.t.Plural).
-		Name(name).
-		Body(options).
-		Do().
-		Error()
-}
-
-// Get implements ClientInterface
-func (c *Client) Get(name string) (Object, error) {
-	result := c.NewObject()
-	err := c.cl.Get().
-		Namespace(c.ns).
-		Resource(c.t.Plural).
-		Name(name).
-		Do().
-		Into(result)
-	return result, err
-}
-
-// List implements ClientInterface
-func (c *Client) List(opts v1.ListOptions) (Collection, error) {
-	result := c.NewCollection()
-	err := c.cl.Get().
-		Namespace(c.ns).
-		Resource(c.t.Plural).
-		VersionedParams(&opts, c.codec).
-		Do().
-		Into(result)
-	return result, err
+	Object           runtime.Object
+	Collection       runtime.Object
 }

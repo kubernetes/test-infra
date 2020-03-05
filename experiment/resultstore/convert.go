@@ -37,7 +37,7 @@ func convertSuiteMeta(suiteMeta gcs.SuitesMeta) resultstore.Suite {
 		Files: []resultstore.File{
 			{
 				ContentType: "text/xml",
-				ID:          resultstore.UUID(),
+				ID:          path.Base(suiteMeta.Path),
 				URL:         suiteMeta.Path, // ensure the junit.xml file appears in artifacts list
 			},
 		},
@@ -46,6 +46,18 @@ func convertSuiteMeta(suiteMeta gcs.SuitesMeta) resultstore.Suite {
 		child := resultstore.Suite{
 			Name:     suite.Name,
 			Duration: dur(suite.Time),
+		}
+
+		for _, test := range suite.Results {
+			if test.Properties != nil {
+				for _, p := range test.Properties.PropertyList {
+					resultProperty := resultstore.Property{
+						Key:   fmt.Sprintf("%s:%s", test.Name, p.Name),
+						Value: p.Value,
+					}
+					child.Properties = append(child.Properties, resultProperty)
+				}
+			}
 		}
 		switch {
 		case suite.Failures > 0 && suite.Tests >= suite.Failures:
@@ -66,8 +78,8 @@ func convertSuiteMeta(suiteMeta gcs.SuitesMeta) resultstore.Suite {
 				class += " " + strings.Join(tags, " ")
 			}
 			c := resultstore.Case{
-				Name:     name,
-				Class:    class,
+				Name:     strings.TrimSpace(name),
+				Class:    strings.TrimSpace(class),
 				Duration: dur(result.Time),
 				Result:   resultstore.Completed,
 			}
@@ -114,6 +126,8 @@ func convert(project, details string, url gcs.Path, result downloadResult) (resu
 	artifactsPath := basePath + "artifacts/"
 	buildLog := basePath + "build-log.txt"
 	bucket := url.Bucket()
+	jobName := prowJobName(url)
+
 	inv := resultstore.Invocation{
 		Project: project,
 		Details: details,
@@ -124,7 +138,20 @@ func convert(project, details string, url gcs.Path, result downloadResult) (resu
 				URL:         buildLog, // ensure build-log.txt appears as the invocation log
 			},
 		},
+		Properties: []resultstore.Property{
+			{
+				Key:   "Job",
+				Value: jobName,
+			},
+			{
+				Key:   "Pull",
+				Value: started.Pull, // may be empty if pull value is not specified
+			},
+		},
 	}
+
+	startedProperties := startedReposToProperties(started.Repos)
+	inv.Properties = append(inv.Properties, startedProperties...)
 
 	// Files need a unique identifier, trim the common prefix and provide this.
 	uniqPath := func(s string) string { return strings.TrimPrefix(s, basePath) }
@@ -227,7 +254,78 @@ func convert(project, details string, url gcs.Path, result downloadResult) (resu
 		Duration:    inv.Duration,
 		Status:      inv.Status,
 		Description: inv.Description,
+		Properties:  []resultstore.Property{},
+	}
+
+	for _, suites := range test.Suite.Suites {
+		for _, s := range suites.Suites {
+			target.Properties = append(target.Properties, s.Properties...)
+		}
 	}
 
 	return inv, target, test
+}
+
+func startedReposToProperties(gitRepos map[string]string) []resultstore.Property {
+	var properties []resultstore.Property
+
+	knownOrg := make(map[string]bool)
+	knownBranch := make(map[string]bool)
+	for repo, branch := range gitRepos {
+		orgRepo := strings.SplitN(repo, "/", 2)
+		org := orgRepo[0]
+		repoName := ""
+		if len(orgRepo) == 2 {
+			repoName = orgRepo[1]
+		} else {
+			repoName = org
+		}
+
+		if _, ok := knownOrg[org]; !ok {
+			knownOrg[org] = true
+			orgName := resultstore.Property{
+				Key:   "Org",
+				Value: org,
+			}
+			properties = append(properties, orgName)
+		}
+
+		if _, ok := knownBranch[branch]; !ok {
+			knownBranch[branch] = true
+			branchName := resultstore.Property{
+				Key:   "Branch",
+				Value: branch,
+			}
+			properties = append(properties, branchName)
+		}
+
+		repos := []resultstore.Property{
+			{
+				Key:   "Repo",
+				Value: repoName,
+			},
+			{
+				Key:   "Repo",
+				Value: repo,
+			},
+			{
+				Key:   "Repo",
+				Value: fmt.Sprintf("%s:%s", repo, branch),
+			},
+		}
+		properties = append(properties, repos...)
+	}
+	return properties
+}
+
+// prowJobName returns the prow job name parsed from the GCS bucket.
+// If parsing fails, it returns an empty string.
+// TODO: use prowjob.json when PR 15785 is done.
+func prowJobName(url gcs.Path) string {
+	paths := strings.Split(strings.TrimSuffix(url.Object(), "/"), "/")
+	// Expect the returned split to contain ["logs", <job name>, <uid>]
+	if len(paths) < 3 {
+		return ""
+	}
+	return paths[len(paths)-2]
 }

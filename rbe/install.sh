@@ -17,8 +17,8 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-if [[ $# -lt 1 ]]; then
-    echo "Usage: $(basename "$0") <gcp-project-id> [pool-name]" >&2
+if [[ $# -lt 6 ]]; then
+    echo "Usage: $(basename "$0") <gcp-project-id> <pool-name> <workers:200> <diskgb:600> <machine:n1-standard-2> <bot ...>" >&2
     exit 1
 fi
 
@@ -28,16 +28,16 @@ fi
 # More info: https://cloud.google.com/remote-build-execution/docs/overview
 
 proj=$1
-pool=${2:-}
-workers=${3:-200}
-disk=${4:-600}
-machine=${5:-n1-standard-2}
-bot=${6:-pr-kubekins@kubernetes-jenkins-pull.iam.gserviceaccount.com}
+pool=$2
+workers=$3
+disk=$4
+machine=$5
+shift 5
 
 users=()
 groups=()
 bots=(
-  "$bot"
+  "$@"
 )
 
 log() {

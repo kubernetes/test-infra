@@ -31,7 +31,15 @@ import (
 )
 
 func TestClone(t *testing.T) {
-	lg, c, err := localgit.New()
+	testClone(localgit.New, t)
+}
+
+func TestCloneV2(t *testing.T) {
+	testClone(localgit.NewV2, t)
+}
+
+func testClone(clients localgit.Clients, t *testing.T) {
+	lg, c, err := clients()
 	if err != nil {
 		t.Fatalf("Making local git repo: %v", err)
 	}
@@ -51,7 +59,7 @@ func TestClone(t *testing.T) {
 	}
 
 	// Fresh clone, will be a cache miss.
-	r1, err := c.Clone("foo/bar")
+	r1, err := c.ClientFor("foo", "bar")
 	if err != nil {
 		t.Fatalf("Cloning the first time: %v", err)
 	}
@@ -62,7 +70,7 @@ func TestClone(t *testing.T) {
 	}()
 
 	// Clone from the same org.
-	r2, err := c.Clone("foo/baz")
+	r2, err := c.ClientFor("foo", "baz")
 	if err != nil {
 		t.Fatalf("Cloning another repo in the same org: %v", err)
 	}
@@ -76,7 +84,7 @@ func TestClone(t *testing.T) {
 	if err := lg.AddCommit("foo", "bar", map[string][]byte{"second": {}}); err != nil {
 		t.Fatalf("Adding second commit: %v", err)
 	}
-	r3, err := c.Clone("foo/bar")
+	r3, err := c.ClientFor("foo", "bar")
 	if err != nil {
 		t.Fatalf("Cloning a second time: %v", err)
 	}
@@ -98,10 +106,15 @@ func TestClone(t *testing.T) {
 }
 
 func TestCheckoutPR(t *testing.T) {
-	lg, c, err := localgit.New()
-	if err != nil {
-		t.Fatalf("Making local git repo: %v", err)
-	}
+	testCheckoutPR(localgit.New, t)
+}
+
+func TestCheckoutPRV2(t *testing.T) {
+	testCheckoutPR(localgit.NewV2, t)
+}
+
+func testCheckoutPR(clients localgit.Clients, t *testing.T) {
+	lg, c, err := clients()
 	defer func() {
 		if err := lg.Clean(); err != nil {
 			t.Errorf("Error cleaning LocalGit: %v", err)
@@ -113,7 +126,7 @@ func TestCheckoutPR(t *testing.T) {
 	if err := lg.MakeFakeRepo("foo", "bar"); err != nil {
 		t.Fatalf("Making fake repo: %v", err)
 	}
-	r, err := c.Clone("foo/bar")
+	r, err := c.ClientFor("foo", "bar")
 	if err != nil {
 		t.Fatalf("Cloning: %v", err)
 	}
@@ -139,10 +152,15 @@ func TestCheckoutPR(t *testing.T) {
 }
 
 func TestMergeCommitsExistBetween(t *testing.T) {
-	lg, c, err := localgit.New()
-	if err != nil {
-		t.Fatalf("Making localgit: %v", err)
-	}
+	testMergeCommitsExistBetween(localgit.New, t)
+}
+
+func TestMergeCommitsExistBetweenV2(t *testing.T) {
+	testMergeCommitsExistBetween(localgit.NewV2, t)
+}
+
+func testMergeCommitsExistBetween(clients localgit.Clients, t *testing.T) {
+	lg, c, err := clients()
 	defer func() {
 		if err := lg.Clean(); err != nil {
 			t.Errorf("Cleaning up localgit: %v", err)
@@ -154,7 +172,7 @@ func TestMergeCommitsExistBetween(t *testing.T) {
 	if err := lg.MakeFakeRepo("foo", "bar"); err != nil {
 		t.Fatalf("Making fake repo: %v", err)
 	}
-	r, err := c.Clone("foo/bar")
+	r, err := c.ClientFor("foo", "bar")
 	if err != nil {
 		t.Fatalf("Cloning: %v", err)
 	}
@@ -259,6 +277,14 @@ func TestMergeCommitsExistBetween(t *testing.T) {
 }
 
 func TestMergeAndCheckout(t *testing.T) {
+	testMergeAndCheckout(localgit.New, t)
+}
+
+func TestMergeAndCheckoutV2(t *testing.T) {
+	testMergeAndCheckout(localgit.NewV2, t)
+}
+
+func testMergeAndCheckout(clients localgit.Clients, t *testing.T) {
 	testCases := []struct {
 		name          string
 		setBaseSHA    bool
@@ -284,7 +310,7 @@ func TestMergeAndCheckout(t *testing.T) {
 			err:           "merge strategy \"rebase\" is not supported",
 		},
 		{
-			name:       "No pullRequestHead, error",
+			name:       "No pullRequestHead, no error",
 			setBaseSHA: true,
 		},
 		{
@@ -322,7 +348,7 @@ func TestMergeAndCheckout(t *testing.T) {
 			tc := tc
 			t.Parallel()
 
-			lg, c, err := localgit.New()
+			lg, c, err := clients()
 			if err != nil {
 				t.Fatalf("Making local git repo: %v", err)
 			}
@@ -367,7 +393,7 @@ func TestMergeAndCheckout(t *testing.T) {
 				}
 			}
 
-			clonedRepo, err := c.Clone(org + "/" + repo)
+			clonedRepo, err := c.ClientFor(org, repo)
 			if err != nil {
 				t.Fatalf("Cloning failed: %v", err)
 			}
@@ -381,7 +407,7 @@ func TestMergeAndCheckout(t *testing.T) {
 				t.Fatalf("failed to disable gpg signing for test repo: %v", err)
 			}
 
-			err = clonedRepo.MergeAndCheckout(baseSHA, tc.mergeStrategy, commitsToMerge...)
+			err = clonedRepo.MergeAndCheckout(baseSHA, string(tc.mergeStrategy), commitsToMerge...)
 			if err == nil && tc.err == "" {
 				return
 			}
@@ -391,4 +417,102 @@ func TestMergeAndCheckout(t *testing.T) {
 		})
 	}
 
+}
+
+func TestMerging(t *testing.T) {
+	testMerging(localgit.New, t)
+}
+
+func TestMergingV2(t *testing.T) {
+	testMerging(localgit.NewV2, t)
+}
+
+func testMerging(clients localgit.Clients, t *testing.T) {
+	testCases := []struct {
+		name     string
+		strategy string
+		// branch -> filename -> content
+		branches   map[string]map[string][]byte
+		mergeOrder []string
+	}{
+		{
+			name:     "Multiple branches, squash strategy",
+			strategy: "squash",
+			branches: map[string]map[string][]byte{
+				"pr-1": {"file-1": []byte("some-content")},
+				"pr-2": {"file-2": []byte("some-content")},
+			},
+			mergeOrder: []string{"pr-1", "pr-2"},
+		},
+		{
+			name:     "Multiple branches, mergeMerge strategy",
+			strategy: "merge",
+			branches: map[string]map[string][]byte{
+				"pr-1": {"file-1": []byte("some-content")},
+				"pr-2": {"file-2": []byte("some-content")},
+			},
+			mergeOrder: []string{"pr-1", "pr-2"},
+		},
+	}
+
+	const org, repo = "org", "repo"
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			tc := tc
+			t.Parallel()
+
+			lg, c, err := clients()
+			if err != nil {
+				t.Fatalf("Making local git repo: %v", err)
+			}
+			logrus.SetLevel(logrus.DebugLevel)
+			defer func() {
+				if err := lg.Clean(); err != nil {
+					t.Errorf("Error cleaning LocalGit: %v", err)
+				}
+				if err := c.Clean(); err != nil {
+					t.Errorf("Error cleaning Client: %v", err)
+				}
+			}()
+			if err := lg.MakeFakeRepo(org, repo); err != nil {
+				t.Fatalf("Making fake repo: %v", err)
+			}
+			baseSHA, err := lg.RevParse(org, repo, "HEAD")
+			if err != nil {
+				t.Fatalf("rev-parse HEAD: %v", err)
+			}
+
+			for branchName, branchContent := range tc.branches {
+				if err := lg.CheckoutNewBranch(org, repo, branchName); err != nil {
+					t.Fatalf("checkout new branch: %v", err)
+				}
+				if err := lg.AddCommit(org, repo, branchContent); err != nil {
+					t.Fatalf("addCommit: %v", err)
+				}
+			}
+
+			if err := lg.Checkout(org, repo, baseSHA); err != nil {
+			}
+
+			r, err := c.ClientFor(org, repo)
+			if err != nil {
+				t.Fatalf("clone: %v", err)
+			}
+			if err := r.Config("user.name", "prow"); err != nil {
+				t.Fatalf("config user.name: %v", err)
+			}
+			if err := r.Config("user.email", "prow@localhost"); err != nil {
+				t.Fatalf("config user.email: %v", err)
+			}
+			if err := r.Checkout(baseSHA); err != nil {
+				t.Fatalf("checkout baseSHA: %v", err)
+			}
+
+			for _, branch := range tc.mergeOrder {
+				if _, err := r.MergeWithStrategy("origin/"+branch, tc.strategy); err != nil {
+					t.Fatalf("mergeWithStrategy %s: %v", branch, err)
+				}
+			}
+		})
+	}
 }

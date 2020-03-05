@@ -32,7 +32,9 @@ type updateClient interface {
 
 type ensureClient interface {
 	updateClient
+	AddLabel(org, repo string, number int, label string) error
 	CreatePullRequest(org, repo, title, body, head, base string, canModify bool) (int, error)
+	GetIssue(org, repo string, number int) (*github.Issue, error)
 }
 
 func UpdatePR(org, repo, title, body, matchTitle string, gc updateClient) (*int, error) {
@@ -46,7 +48,7 @@ func UpdatePR(org, repo, title, body, matchTitle string, gc updateClient) (*int,
 		return nil, fmt.Errorf("bot name: %v", err)
 	}
 
-	issues, err := gc.FindIssues("is:open is:pr archived:false in:title author:"+me+" "+matchTitle, "updated", false)
+	issues, err := gc.FindIssues("is:open is:pr archived:false in:title repo:"+org+"/"+repo+" author:"+me+" author:"+me+" "+matchTitle, "updated", false)
 	if err != nil {
 		return nil, fmt.Errorf("find issues: %v", err)
 	} else if len(issues) == 0 {
@@ -66,6 +68,10 @@ func UpdatePR(org, repo, title, body, matchTitle string, gc updateClient) (*int,
 }
 
 func EnsurePR(org, repo, title, body, source, branch, matchTitle string, gc ensureClient) (*int, error) {
+	return EnsurePRWithLabels(org, repo, title, body, source, branch, matchTitle, gc, nil)
+}
+
+func EnsurePRWithLabels(org, repo, title, body, source, branch, matchTitle string, gc ensureClient, labels []string) (*int, error) {
 	n, err := UpdatePR(org, repo, title, body, matchTitle, gc)
 	if err != nil {
 		return nil, fmt.Errorf("update error: %v", err)
@@ -77,6 +83,26 @@ func EnsurePR(org, repo, title, body, source, branch, matchTitle string, gc ensu
 			return nil, fmt.Errorf("create error: %v", err)
 		}
 		n = &pr
+	}
+
+	if len(labels) == 0 {
+		return n, nil
+	}
+
+	issue, err := gc.GetIssue(org, repo, *n)
+	if err != nil {
+		return n, fmt.Errorf("failed to get PR: %v", err)
+	}
+
+	for _, label := range labels {
+		if issue.HasLabel(label) {
+			continue
+		}
+
+		if err := gc.AddLabel(org, repo, *n, label); err != nil {
+			return n, fmt.Errorf("failed to add label %q: %v", label, err)
+		}
+		logrus.WithField("label", label).Info("Added label")
 	}
 	return n, nil
 }

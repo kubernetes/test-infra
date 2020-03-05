@@ -10,17 +10,42 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20191026-v2.3.1-36-g0e656d8
+      - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20200305-v2.3.1-117-gd677a55
         command:
         - cip
         args:
         # Pod Utilities already sets pwd to
         # /home/prow/go/src/github.com/{{.Org}}/{{.Repo}}, so just '.' should
         # suffice, but it's nice to be explicit.
-        - -thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io/manifests
-        # Without account keys (-key-files), we should not be trying to activate
-        # any service accounts.
-        - -no-service-account
+        - -thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
+  # Check that changes to backup scripts are valid.
+  - name: pull-k8sio-backup
+    decorate: true
+    run_if_changed: '^infra/gcp/backup_tools/'
+    max_concurrency: 1
+    branches:
+    - ^master$
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-28c7418-1.17
+        command:
+        - infra/gcp/backup_tools/backup_test.sh
+        env:
+        # Even though GOPATH is set to /go in the kubekins-e2e image, we set it
+        # here anyway in case the underlying image changes (the backup_test.sh
+        # script needs it to be defined).
+        - name: GOPATH
+          value: /go
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /creds/service-account.json
+        volumeMounts:
+        - name: creds
+          mountPath: /creds
+          readOnly: true
+      volumes:
+      - name: creds
+        secret:
+          secretName: k8s-gcr-backup-test-prod-bak-service-account
   kubernetes-sigs/k8s-container-image-promoter:
   # Run promoter e2e tests.
   - name: pull-cip-e2e
@@ -35,9 +60,9 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-28c7418-master
         command:
-        - "./test-e2e/e2e-entrypoint-from-container.sh"
+        - "./test-e2e/cip/e2e-entrypoint-from-container.sh"
         env:
         - name: CIP_E2E_KEY_FILE
           value: "/etc/k8s-cip-test-prod-service-account/service-account.json"
@@ -51,6 +76,34 @@ presubmits:
           secretName: k8s-cip-test-prod-service-account
     annotations:
       testgrid-dashboards: sig-release-misc
+  - name: pull-cip-auditor-e2e
+    decorate: true
+    path_alias: "sigs.k8s.io/k8s-container-image-promoter"
+    skip_report: false
+    always_run: true
+    # Because we run e2e tests, we cannot run more than 1 instance at a time
+    # (the e2e test resources are not isolated across test runs).
+    max_concurrency: 1
+    branches:
+    - ^master$
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-28c7418-master
+        command:
+        - "./test-e2e/cip-auditor/entrypoint-from-container.sh"
+        env:
+        - name: CIP_E2E_KEY_FILE
+          value: "/etc/k8s-gcr-audit-test-prod-service-account/service-account.json"
+        volumeMounts:
+        - name: k8s-gcr-audit-test-prod-service-account-creds
+          mountPath: /etc/k8s-gcr-audit-test-prod-service-account
+          readOnly: true
+      volumes:
+      - name: k8s-gcr-audit-test-prod-service-account-creds
+        secret:
+          secretName: k8s-gcr-audit-test-prod-service-account
+    annotations:
+      testgrid-dashboards: sig-release-misc
   # Build all binaries and also run unit tests.
   - name: pull-cip-unit-tests
     decorate: true
@@ -61,7 +114,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-28c7418-master
         command:
         - "make"
         args:

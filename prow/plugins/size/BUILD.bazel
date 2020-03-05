@@ -13,6 +13,7 @@ go_test(
     srcs = ["size_test.go"],
     embed = [":go_default_library"],
     deps = [
+        "//prow/config:go_default_library",
         "//prow/github:go_default_library",
         "//prow/plugins:go_default_library",
         "@com_github_sirupsen_logrus//:go_default_library",
@@ -24,6 +25,7 @@ go_library(
     srcs = ["size.go"],
     importpath = "k8s.io/test-infra/prow/plugins/size",
     deps = [
+        "//prow/config:go_default_library",
         "//prow/genfiles:go_default_library",
         "//prow/gitattributes:go_default_library",
         "//prow/github:go_default_library",

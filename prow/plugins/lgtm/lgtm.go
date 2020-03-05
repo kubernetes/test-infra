@@ -25,6 +25,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/pluginhelp"
@@ -65,19 +66,10 @@ func init() {
 	plugins.RegisterReviewEventHandler(PluginName, handlePullRequestReviewEvent, helpProvider)
 }
 
-func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
 	configInfo := map[string]string{}
-	for _, orgRepo := range enabledRepos {
-		parts := strings.Split(orgRepo, "/")
-		var opts *plugins.Lgtm
-		switch len(parts) {
-		case 1:
-			opts = config.LgtmFor(orgRepo, "")
-		case 2:
-			opts = config.LgtmFor(parts[0], parts[1])
-		default:
-			return nil, fmt.Errorf("invalid repo in enabledRepos: %q", orgRepo)
-		}
+	for _, repo := range enabledRepos {
+		opts := config.LgtmFor(repo.Org, repo.Repo)
 		var isConfigured bool
 		var configInfoStrings []string
 		configInfoStrings = append(configInfoStrings, "The plugin has the following configuration:<ul>")
@@ -95,7 +87,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 		}
 		configInfoStrings = append(configInfoStrings, fmt.Sprintf("</ul>"))
 		if isConfigured {
-			configInfo[orgRepo] = strings.Join(configInfoStrings, "\n")
+			configInfo[repo.String()] = strings.Join(configInfoStrings, "\n")
 		}
 	}
 	pluginHelp := &pluginhelp.PluginHelp{

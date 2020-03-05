@@ -431,6 +431,7 @@ def get_shared_gcs_path(gcs_shared, use_shared_build):
 def inject_bazelrc(lines):
     if not lines:
         return
+    lines = [l + '\n' for l in lines]
     with open('/etc/bazel.bazelrc', 'a') as fp:
         fp.writelines(lines)
     path = os.path.join(os.getenv('HOME'), '.bazelrc')

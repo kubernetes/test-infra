@@ -14,7 +14,7 @@ go_library(
         "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/config:go_default_library",
         "//prow/errorutil:go_default_library",
-        "//prow/git:go_default_library",
+        "//prow/git/v2:go_default_library",
         "//prow/github:go_default_library",
         "//prow/pjutil:go_default_library",
         "//prow/tide/blockers:go_default_library",
@@ -59,8 +59,8 @@ go_test(
     deps = [
         "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/config:go_default_library",
-        "//prow/git:go_default_library",
         "//prow/git/localgit:go_default_library",
+        "//prow/git/v2:go_default_library",
         "//prow/github:go_default_library",
         "//prow/tide/blockers:go_default_library",
         "//prow/tide/history:go_default_library",
