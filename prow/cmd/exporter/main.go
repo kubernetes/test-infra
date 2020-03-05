@@ -99,7 +99,7 @@ func main() {
 	registry := mustRegister("exporter", pjLister)
 
 	// Expose prometheus metrics
-	metrics.ExposeMetricsWithRegistry("exporter", cfg().PushGateway, registry)
+	metrics.ExposeMetricsWithRegistry("exporter", cfg().PushGateway, registry, nil)
 
 	logrus.Info("exporter is running ...")
 	health.ServeReady()
