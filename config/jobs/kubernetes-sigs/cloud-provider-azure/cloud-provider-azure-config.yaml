@@ -737,13 +737,13 @@ periodics:
       - --provider=skeleton
       - --aksengine-agentpoolcount=2
       - --aksengine-admin-username=azureuser
-      - --aksengine-creds=$AZURE_CREDENTIALS
+      - --aksengine-creds=$(AZURE_CREDENTIALS)
       - --aksengine-orchestratorRelease=1.18
       - --aksengine-mastervmsize=Standard_DS2_v2
       - --aksengine-agentvmsize=Standard_D4s_v3
-      - --aksengine-deploy-custom-k8s=True
+      - --aksengine-deploy-custom-k8s
       - --aksengine-location=eastus2
-      - --aksengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE
+      - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
       - --aksengine-template-url=https://gist.githubusercontent.com/aramase/a19fcbf1f309dab99600ee9c0d700fce/raw/b1e975f8c6a1d3c9a9ae796245c58c6733029dc3/single-stack-ipv6.json
       - --aksengine-download-url=https://github.com/aramase/aks-engine/blob/test-pkg/aks-engine-test.tar.gz?raw=true
       # Specific test args
