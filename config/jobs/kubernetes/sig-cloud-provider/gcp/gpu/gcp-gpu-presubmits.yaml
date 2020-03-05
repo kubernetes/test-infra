@@ -27,7 +27,7 @@ presubmits:
       preset-pull-gce-device-plugin-gpu: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-28c7418-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200305-26ebc13-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -68,7 +68,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-28c7418-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200305-26ebc13-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"

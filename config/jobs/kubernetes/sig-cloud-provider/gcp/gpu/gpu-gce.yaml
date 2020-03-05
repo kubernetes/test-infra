@@ -41,4 +41,4 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200303-28c7418-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200305-26ebc13-master
