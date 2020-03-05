@@ -662,7 +662,7 @@ func (c *client) requestRetry(method, path, accept string, body interface{}) (*h
 						// sleep. If it's going to take too long, then break.
 						sleepTime := c.time.Until(time.Unix(int64(t), 0)) + time.Second
 						if sleepTime < c.maxSleepTime {
-							c.logger.WithField("backoff", sleepTime.String()).Debug("Retrying after token budget reset")
+							c.logger.WithField("backoff", sleepTime.String()).WithField("path", path).Debug("Retrying after token budget reset")
 							c.time.Sleep(sleepTime)
 						} else {
 							err = fmt.Errorf("sleep time for token reset exceeds max sleep time (%v > %v)", sleepTime, c.maxSleepTime)
@@ -683,7 +683,7 @@ func (c *client) requestRetry(method, path, accept string, body interface{}) (*h
 						// sleep. If it's going to take too long, then break.
 						sleepTime := time.Duration(t+1) * time.Second
 						if sleepTime < c.maxSleepTime {
-							c.logger.WithField("backoff", sleepTime.String()).Debug("Retrying after abuse ratelimit reset")
+							c.logger.WithField("backoff", sleepTime.String()).WithField("path", path).Debug("Retrying after abuse ratelimit reset")
 							c.time.Sleep(sleepTime)
 						} else {
 							err = fmt.Errorf("sleep time for abuse rate limit exceeds max sleep time (%v > %v)", sleepTime, c.maxSleepTime)
