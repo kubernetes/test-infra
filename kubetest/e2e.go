@@ -587,10 +587,15 @@ func nodeTest(nodeArgs []string, testArgs, nodeTestArgs, project, zone string) e
 func kubemarkUp(dump string, o options, deploy deployer) error {
 	// Stop previously running kubemark cluster (if any).
 	if err := control.XMLWrap(&suite, "Kubemark TearDown Previous", func() error {
-		return control.FinishRunning(exec.Command("./test/kubemark/stop-kubemark.sh"))
+		if err := control.FinishRunning(exec.Command("./test/kubemark/stop-kubemark.sh")); err != nil {
+			return fmt.Errorf("failed to stop kubemark cluster, err: %v", err)
+		}
+		return nil
 	}); err != nil {
 		return err
 	}
+
+	fmt.Println("finished tearing down kubemark")
 
 	if err := control.XMLWrap(&suite, "IsUp", deploy.IsUp); err != nil {
 		return err

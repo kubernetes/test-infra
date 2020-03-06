@@ -18,10 +18,12 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
+	"path"
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/services/authorization/mgmt/2015-07-01/authorization"
@@ -408,6 +410,40 @@ func downloadFromURL(url string, destination string, retry int) (string, error) 
 	}
 	f.Chmod(0644)
 	return destination, nil
+}
+
+func populateAzureCloudConfig(isVMSS bool, credentials Creds, azureEnvironment, resourceGroup, location, outputDir string) error {
+	// CLOUD_CONFIG is required when running Azure-specific e2e tests
+	// See https://github.com/kubernetes/kubernetes/blob/master/hack/ginkgo-e2e.sh#L113-L118
+	cc := map[string]string{
+		"cloud":           azureEnvironment,
+		"tenantId":        credentials.TenantID,
+		"subscriptionId":  credentials.SubscriptionID,
+		"aadClientId":     credentials.ClientID,
+		"aadClientSecret": credentials.ClientSecret,
+		"resourceGroup":   resourceGroup,
+		"location":        location,
+	}
+	if isVMSS {
+		cc["vmType"] = vmTypeVMSS
+	} else {
+		cc["vmType"] = vmTypeStandard
+	}
+
+	cloudConfig, err := json.MarshalIndent(cc, "", "    ")
+	if err != nil {
+		return fmt.Errorf("error creating Azure cloud config: %v", err)
+	}
+
+	cloudConfigPath := path.Join(outputDir, "azure.json")
+	if err := ioutil.WriteFile(cloudConfigPath, cloudConfig, 0644); err != nil {
+		return fmt.Errorf("cannot write Azure cloud config to file: %v", err)
+	}
+	if err := os.Setenv("CLOUD_CONFIG", cloudConfigPath); err != nil {
+		return fmt.Errorf("error setting CLOUD_CONFIG=%s: %v", cloudConfigPath, err)
+	}
+
+	return nil
 }
 
 func stringPointer(s string) *string {

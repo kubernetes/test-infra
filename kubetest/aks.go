@@ -26,7 +26,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"net/http"
+	mathrand "math/rand"
 	"os"
 	"os/exec"
 	"path"
@@ -35,19 +35,21 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2019-10-01/containerservice"
 	"github.com/Azure/go-autorest/autorest/azure"
-	uuid "github.com/satori/go.uuid"
 	"golang.org/x/crypto/ssh"
 )
 
+const charset = "abcdefghijklmnopqrstuvwxyz" + "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+
 type aksDeployer struct {
-	azureCreds    *Creds
-	azureClient   *AzureClient
-	templateUrl   string
-	outputDir     string
-	resourceGroup string
-	resourceName  string
-	location      string
-	k8sVersion    string
+	azureCreds       *Creds
+	azureClient      *AzureClient
+	azureEnvironment string
+	templateUrl      string
+	outputDir        string
+	resourceGroup    string
+	resourceName     string
+	location         string
+	k8sVersion       string
 }
 
 func newAksDeployer() (*aksDeployer, error) {
@@ -59,6 +61,7 @@ func newAksDeployer() (*aksDeployer, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to get azure credentials: %v", err)
 	}
+
 	env, err := azure.EnvironmentFromName(*aksAzureEnv)
 	if err != nil {
 		return nil, fmt.Errorf("failed to determine azure environment: %v", err)
@@ -74,21 +77,32 @@ func newAksDeployer() (*aksDeployer, error) {
 		return nil, fmt.Errorf("error trying to get Azure Client: %v", err)
 	}
 
-	tempdir, err := ioutil.TempDir(os.Getenv("HOME"), "aks")
+	outputDir, err := ioutil.TempDir(os.Getenv("HOME"), "tmp")
 	if err != nil {
 		return nil, fmt.Errorf("error creating tempdir: %v", err)
 	}
 
-	return &aksDeployer{
-		azureCreds:    creds,
-		azureClient:   client,
-		templateUrl:   *aksTemplateURL,
-		outputDir:     tempdir,
-		resourceGroup: *aksResourceGroupName,
-		resourceName:  *aksResourceName,
-		location:      *aksLocation,
-		k8sVersion:    *aksOrchestratorRelease,
-	}, nil
+	a := &aksDeployer{
+		azureCreds:       creds,
+		azureClient:      client,
+		azureEnvironment: *aksAzureEnv,
+		templateUrl:      *aksTemplateURL,
+		outputDir:        outputDir,
+		resourceGroup:    *aksResourceGroupName,
+		resourceName:     *aksResourceName,
+		location:         *aksLocation,
+		k8sVersion:       *aksOrchestratorRelease,
+	}
+
+	if err := a.dockerLogin(); err != nil {
+		return nil, err
+	}
+
+	if err := a.prepareKubemarkEnv(); err != nil {
+		return nil, err
+	}
+
+	return a, nil
 }
 
 func validateAksFlags() error {
@@ -96,7 +110,8 @@ func validateAksFlags() error {
 		return fmt.Errorf("no credentials file path specified")
 	}
 	if *aksResourceName == "" {
-		*aksResourceName = "kubetest-" + uuid.NewV1().String()
+		// Must be short or managed node resource group name will exceed 80 char
+		*aksResourceName = "kubetest-" + randString(8)
 	}
 	if *aksResourceGroupName == "" {
 		*aksResourceGroupName = *aksResourceName
@@ -104,6 +119,42 @@ func validateAksFlags() error {
 	if *aksDNSPrefix == "" {
 		*aksDNSPrefix = *aksResourceName
 	}
+	return nil
+}
+
+func (a *aksDeployer) prepareKubemarkEnv() error {
+	if err := os.Setenv("KUBEMARK_RESOURCE_GROUP", *aksResourceGroupName); err != nil {
+		return err
+	}
+
+	if err := os.Setenv("CLOUD_PROVIDER", "aks"); err != nil {
+		return err
+	}
+
+	if err := os.Setenv("KUBEMARK_RESOURCE_NAME", *aksResourceName); err != nil {
+		return err
+	}
+
+	if err := os.Setenv("USE_EXISTING", "true"); err != nil {
+		return err
+	}
+
+	if err := installAzureCLI(); err != nil {
+		return err
+	}
+
+	if err := os.Setenv("AZURE_CLIENT_ID", a.azureCreds.ClientID); err != nil {
+		return err
+	}
+
+	if err := os.Setenv("AZURE_CLIENT_SECRET", a.azureCreds.ClientSecret); err != nil {
+		return err
+	}
+
+	if err := os.Setenv("AZURE_TENANT_ID", a.azureCreds.TenantID); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -136,6 +187,12 @@ func (a *aksDeployer) Up() error {
 	model.Location = &a.location
 	model.ManagedClusterProperties.KubernetesVersion = &a.k8sVersion
 
+	log.Printf("Creating Azure resource group: %v for cluster deployment.", a.resourceGroup)
+	_, err = a.azureClient.EnsureResourceGroup(context.Background(), a.resourceGroup, a.location, nil)
+	if err != nil {
+		return fmt.Errorf("could not ensure resource group: %v", err)
+	}
+
 	future, err := a.azureClient.managedClustersClient.CreateOrUpdate(context.Background(), a.resourceGroup, a.resourceName, model)
 	if err != nil {
 		return fmt.Errorf("failed to start cluster creation: %v", err)
@@ -158,7 +215,40 @@ func (a *aksDeployer) Up() error {
 		return fmt.Errorf("failed to write kubeconfig out")
 	}
 
-	os.Setenv("KUBECONFIG", kubeconfigPath)
+	managedCluster, err := future.Result(a.azureClient.managedClustersClient)
+	if err != nil {
+		return fmt.Errorf("failed to extract resulting managed cluster: %v", err)
+	}
+	masterIP := *managedCluster.ManagedClusterProperties.Fqdn
+	if err != nil {
+		return fmt.Errorf("failed to get masterIP: %v", err)
+	}
+	masterInternalIP := masterIP
+
+	if err := os.Setenv("KUBE_MASTER_IP", strings.TrimSpace(string(masterIP))); err != nil {
+		return err
+	}
+
+	// MASTER_IP variable is required by the clusterloader. It requires to have master ip provided,
+	// due to master being unregistered.
+	if err := os.Setenv("MASTER_IP", strings.TrimSpace(string(masterIP))); err != nil {
+		return err
+	}
+
+	// MASTER_INTERNAL_IP variable is needed by the clusterloader2 when running on kubemark clusters.
+	if err := os.Setenv("MASTER_INTERNAL_IP", strings.TrimSpace(string(masterInternalIP))); err != nil {
+		return err
+	}
+
+	if err := os.Setenv("KUBECONFIG", kubeconfigPath); err != nil {
+		return err
+	}
+
+	log.Printf("Populating Azure cloud config")
+	isVMSS := (*managedCluster.ManagedClusterProperties.AgentPoolProfiles)[0].Type == "" || (*managedCluster.ManagedClusterProperties.AgentPoolProfiles)[0].Type == availabilityProfileVMSS
+	if err := populateAzureCloudConfig(isVMSS, *a.azureCreds, a.azureEnvironment, a.resourceGroup, a.location, a.outputDir); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -205,60 +295,25 @@ func (a *aksDeployer) DumpClusterLogs(localPath, gcsPath string) error {
 // The kubeconfig must be available during kubemark tests, so we have to set it both in TestSetup and in Up.
 // The masterIP and masterInternalIP must be available for all tests.
 func (a *aksDeployer) TestSetup() error {
-	credentialList, err := a.azureClient.managedClustersClient.ListClusterAdminCredentials(context.Background(), a.resourceGroup, a.resourceName)
-	if err != nil {
-		return fmt.Errorf("failed to list kubeconfigs: %v", err)
-	}
-	if credentialList.Kubeconfigs == nil || len(*credentialList.Kubeconfigs) < 1 {
-		return fmt.Errorf("no kubeconfigs available for the aks cluster")
-	}
 
-	kubeconfigPath := path.Join(a.outputDir, "kubeconfig")
-	if err := ioutil.WriteFile(kubeconfigPath, *(*credentialList.Kubeconfigs)[0].Value, 0644); err != nil {
-		return fmt.Errorf("failed to write kubeconfig out")
-	}
-
-	masterIP, err := control.Output(exec.Command(
-		"az", "aks", "show",
-		"-g", *aksResourceGroupName,
-		"-n", *aksResourceName,
-		"--query", "fqdn", "-o", "tsv"))
-	if err != nil {
-		return fmt.Errorf("failed to get masterIP: %v", err)
-	}
-	masterInternalIP := masterIP
-
-	if err := os.Setenv("KUBE_MASTER_IP", strings.TrimSpace(string(masterIP))); err != nil {
+	if err := os.Setenv("KUBEMARK_RESOURCE_GROUP", *aksResourceGroupName); err != nil {
 		return err
 	}
 
-	// MASTER_IP variable is required by the clusterloader. It requires to have master ip provided,
-	// due to master being unregistered.
-	if err := os.Setenv("MASTER_IP", strings.TrimSpace(string(masterIP))); err != nil {
+	if err := os.Setenv("KUBEMARK_RESOURCE_NAME", *aksResourceName); err != nil {
 		return err
 	}
 
-	// MASTER_INTERNAL_IP variable is needed by the clusterloader2 when running on kubemark clusters.
-	if err := os.Setenv("MASTER_INTERNAL_IP", strings.TrimSpace(string(masterInternalIP))); err != nil {
+	if err := os.Setenv("CLOUD_PROVIDER", "aks"); err != nil {
 		return err
 	}
-
-	os.Setenv("KUBECONFIG", kubeconfigPath)
 
 	return nil
 }
 
 func (a *aksDeployer) Down() error {
-	log.Printf("Deleting AKS cluster %v in resource group %v", a.resourceName, a.resourceGroup)
-	future, err := a.azureClient.managedClustersClient.Delete(context.Background(), a.resourceGroup, a.resourceName)
-	if err != nil {
-		res := future.Response()
-		if res != nil && res.StatusCode == http.StatusNotFound {
-			return nil
-		}
-		return fmt.Errorf("failed to start cluster deletion: %v", err)
-	}
-	return future.WaitForCompletionRef(context.Background(), a.azureClient.managedClustersClient.Client)
+	log.Printf("Deleting resource group: %v.", a.resourceGroup)
+	return a.azureClient.DeleteResourceGroup(context.Background(), a.resourceGroup)
 }
 
 func (a *aksDeployer) GetClusterCreated(_ string) (time.Time, error) { return time.Now(), nil }
@@ -300,4 +355,67 @@ func newSSHKeypair(bits int) (private, public []byte, err error) {
 	pubBytes := ssh.MarshalAuthorizedKey(publicKey)
 
 	return privBytes, pubBytes, nil
+}
+
+func installAzureCLI() error {
+	if err := control.FinishRunning(exec.Command("curl", "-sL", "https://packages.microsoft.com/keys/microsoft.asc", "-o", "msft.asc.gpg")); err != nil {
+		return err
+	}
+
+	if err := control.FinishRunning(exec.Command("gpg", "--no-tty", "-o", "/etc/apt/trusted.gpg.d/microsoft.asc.gpg", "--dearmor", "msft.asc.gpg")); err != nil {
+		return err
+	}
+
+	if err := control.FinishRunning(exec.Command("bash", "-c", "echo \"deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli $(lsb_release -cs) main\" | tee /etc/apt/sources.list.d/azure-cli.list")); err != nil {
+		return err
+	}
+
+	if err := control.FinishRunning(exec.Command("apt-get", "update")); err != nil {
+		return err
+	}
+
+	if err := control.FinishRunning(exec.Command("apt-get", "install", "-y", "azure-cli")); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (a *aksDeployer) dockerLogin() error {
+	cmd := &exec.Cmd{}
+	username := ""
+	pwd := ""
+	server := ""
+
+	if !strings.Contains(imageRegistry, "azurecr.io") {
+		// if REGISTRY is not ACR, then use docker cred
+		log.Println("Attempting Docker login with docker cred.")
+		username = os.Getenv("DOCKER_USERNAME")
+		passwordFile := os.Getenv("DOCKER_PASSWORD_FILE")
+		password, err := ioutil.ReadFile(passwordFile)
+		if err != nil {
+			return fmt.Errorf("error reading docker password file %v: %v", passwordFile, err)
+		}
+		pwd = strings.TrimSuffix(string(password), "\n")
+	} else {
+		// if REGISTRY is ACR, then use azure credential
+		log.Println("Attempting Docker login with azure cred.")
+		username = a.azureCreds.ClientID
+		pwd = a.azureCreds.ClientSecret
+		server = imageRegistry
+	}
+	cmd = exec.Command("docker", "login", fmt.Sprintf("--username=%s", username), fmt.Sprintf("--password=%s", pwd), server)
+	if out, err := cmd.CombinedOutput(); err != nil {
+		return fmt.Errorf("failed Docker login with output %s\n error: %v", out, err)
+	}
+	log.Println("Docker login success.")
+	return nil
+}
+
+func randString(length int) string {
+	b := make([]byte, length)
+	for i := range b {
+		b[i] = charset[mathrand.Intn(len(charset))]
+	}
+	return string(b)
 }

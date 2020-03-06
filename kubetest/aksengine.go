@@ -330,7 +330,6 @@ func newAKSEngine() (*aksEngineDeployer, error) {
 		return nil, fmt.Errorf("error creating Azure K8S cluster: %v", err)
 	}
 
-	tempdir, _ := ioutil.TempDir(os.Getenv("HOME"), "aks")
 	sshKey, err := ioutil.ReadFile(*aksSSHPublicKeyPath)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -340,6 +339,11 @@ func newAKSEngine() (*aksEngineDeployer, error) {
 		}
 	}
 
+	outputDir, err := ioutil.TempDir(os.Getenv("HOME"), "tmp")
+	if err != nil {
+		return nil, fmt.Errorf("error creating tempdir: %v", err)
+	}
+
 	c := aksEngineDeployer{
 		ctx:                              context.Background(),
 		apiModelPath:                     *aksTemplateURL,
@@ -347,7 +351,7 @@ func newAKSEngine() (*aksEngineDeployer, error) {
 		dnsPrefix:                        *aksDNSPrefix,
 		location:                         *aksLocation,
 		resourceGroup:                    *aksResourceGroupName,
-		outputDir:                        tempdir,
+		outputDir:                        outputDir,
 		sshPublicKey:                     fmt.Sprintf("%s", sshKey),
 		sshPrivateKeyPath:                *aksSSHPrivateKeyPath,
 		credentials:                      &Creds{},
@@ -573,7 +577,7 @@ func (c *aksEngineDeployer) populateAPIModelTemplate() error {
 	if len(v.Properties.AgentPoolProfiles) > 0 {
 		// Default to VirtualMachineScaleSets if AvailabilityProfile is empty
 		isVMSS := v.Properties.AgentPoolProfiles[0].AvailabilityProfile == "" || v.Properties.AgentPoolProfiles[0].AvailabilityProfile == availabilityProfileVMSS
-		if err := c.populateAzureCloudConfig(isVMSS); err != nil {
+		if err := populateAzureCloudConfig(isVMSS, *c.credentials, c.azureEnvironment, c.resourceGroup, c.location, c.outputDir); err != nil {
 			return err
 		}
 	}
@@ -737,40 +741,6 @@ func (c *aksEngineDeployer) createCluster() error {
 			return err
 		}
 	}
-	return nil
-}
-
-func (c *aksEngineDeployer) populateAzureCloudConfig(isVMSS bool) error {
-	// CLOUD_CONFIG is required when running Azure-specific e2e tests
-	// See https://github.com/kubernetes/kubernetes/blob/master/hack/ginkgo-e2e.sh#L113-L118
-	cc := map[string]string{
-		"cloud":           c.azureEnvironment,
-		"tenantId":        c.credentials.TenantID,
-		"subscriptionId":  c.credentials.SubscriptionID,
-		"aadClientId":     c.credentials.ClientID,
-		"aadClientSecret": c.credentials.ClientSecret,
-		"resourceGroup":   c.resourceGroup,
-		"location":        c.location,
-	}
-	if isVMSS {
-		cc["vmType"] = vmTypeVMSS
-	} else {
-		cc["vmType"] = vmTypeStandard
-	}
-
-	cloudConfig, err := json.MarshalIndent(cc, "", "    ")
-	if err != nil {
-		return fmt.Errorf("error creating Azure cloud config: %v", err)
-	}
-
-	cloudConfigPath := path.Join(c.outputDir, "azure.json")
-	if err := ioutil.WriteFile(cloudConfigPath, cloudConfig, 0644); err != nil {
-		return fmt.Errorf("cannot write Azure cloud config to file: %v", err)
-	}
-	if err := os.Setenv("CLOUD_CONFIG", cloudConfigPath); err != nil {
-		return fmt.Errorf("error setting CLOUD_CONFIG=%s: %v", cloudConfigPath, err)
-	}
-
 	return nil
 }
 
