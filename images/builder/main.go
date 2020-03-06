@@ -25,6 +25,7 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -51,8 +52,13 @@ func getVersion() (string, error) {
 	if err != nil {
 		return "", err
 	}
+	validTagRegexp, err := regexp.Compile("[^-_.a-zA-Z0-9]+")
+	if err != nil {
+		return "", err
+	}
+	sanitizedOutput := validTagRegexp.ReplaceAllString(string(output), "")
 	t := time.Now().Format("20060102")
-	return fmt.Sprintf("v%s-%s", t, strings.TrimSpace(string(output))), nil
+	return fmt.Sprintf("v%s-%s", t, sanitizedOutput), nil
 }
 
 func (o *options) validateConfigDir() error {
