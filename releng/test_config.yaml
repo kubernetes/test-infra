@@ -552,8 +552,7 @@ jobs:
     - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
     interval: 1h
     sigOwners: [sig-cloud-provider-gcp]
-    releaseInforming: true
-    testgridNumFailuresToAlert: 6
+    releaseBlocking: true
   ci-kubernetes-e2e-gce-cos-k8sbeta-serial:
     interval: 1h
     sigOwners: [sig-cloud-provider-gcp]
