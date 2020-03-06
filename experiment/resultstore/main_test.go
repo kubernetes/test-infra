@@ -18,6 +18,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"reflect"
 	"testing"
 
@@ -162,38 +163,6 @@ func TestFilterBuckets(t *testing.T) {
 		err      bool
 	}{
 		{
-			name: "no paths works",
-			groups: []configpb.TestGroup{
-				{
-					Name: "foo",
-				},
-				{
-					Name: "bar",
-				},
-			},
-			expected: []configpb.TestGroup{
-				{
-					Name: "foo",
-				},
-				{
-					Name: "bar",
-				},
-			},
-		},
-		{
-			name: "bad paths error",
-			groups: []configpb.TestGroup{
-				{
-					Name: "foo",
-				},
-				{
-					Name: "bar",
-				},
-			},
-			paths: []string{"!!!://!!!"},
-			err:   true,
-		},
-		{
 			name: "bad groups error",
 			groups: []configpb.TestGroup{
 				{
@@ -231,7 +200,12 @@ func TestFilterBuckets(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			actual, err := filterBuckets(tc.groups, tc.paths...)
+
+			checkBuckets, err := bucketListChecker(tc.paths...)
+			if err != nil {
+				t.Fatalf("create checker: %v", err)
+			}
+			actual, err := filterBuckets(context.Background(), checkBuckets, tc.groups...)
 			switch {
 			case err != nil:
 				if !tc.err {

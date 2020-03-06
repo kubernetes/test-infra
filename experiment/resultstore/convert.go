@@ -118,7 +118,7 @@ func convertSuiteMeta(suiteMeta gcs.SuitesMeta) resultstore.Suite {
 }
 
 // Convert converts build metadata stored in gcp into the corresponding ResultStore Invocation, Target and Test.
-func convert(project, details string, url gcs.Path, result downloadResult) (resultstore.Invocation, resultstore.Target, resultstore.Test) {
+func convert(project, details string, url gcs.Path, result downloadResult, maxFiles int) (resultstore.Invocation, resultstore.Target, resultstore.Test) {
 	started := result.started
 	finished := result.finished
 	artifacts := result.artifactURLs
@@ -175,13 +175,18 @@ func convert(project, details string, url gcs.Path, result downloadResult) (resu
 		artifacts[i] = "gs://" + bucket + "/" + a
 	}
 
+	var total int
 	for _, a := range artifacts { // add started.json, etc to the invocation artifact list.
+		if total >= maxFiles {
+			continue
+		}
 		if strings.HasPrefix(a, artifactsPath) {
 			continue // things under artifacts/ are owned by the test
 		}
 		if a == buildLog {
 			continue // Handle this in InvocationLog
 		}
+		total++
 		inv.Files = append(inv.Files, resultstore.File{
 			ID:          uniqPath(a),
 			ContentType: "text/plain",
@@ -237,6 +242,9 @@ func convert(project, details string, url gcs.Path, result downloadResult) (resu
 	}
 
 	for _, a := range artifacts {
+		if total >= maxFiles {
+			continue
+		}
 		if !strings.HasPrefix(a, artifactsPath) {
 			continue // Non-artifacts (started.json, etc) are owned by the invocation
 		}
@@ -254,10 +262,20 @@ func convert(project, details string, url gcs.Path, result downloadResult) (resu
 		if found {
 			continue
 		}
+		total++
 		test.Suite.Files = append(test.Suite.Files, resultstore.File{
 			ID:          uniqPath(a),
 			ContentType: "text/plain",
 			URL:         a,
+		})
+	}
+
+	if total >= maxFiles {
+		// TODO(fejta): expose this to edge case to user in a better way
+		inv.Files = append(inv.Files, resultstore.File{
+			ID:          fmt.Sprintf("exceeded %d files", maxFiles),
+			ContentType: "text/plain",
+			URL:         basePath,
 		})
 	}
 
