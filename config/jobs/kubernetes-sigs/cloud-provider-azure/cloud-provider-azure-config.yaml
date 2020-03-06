@@ -25,6 +25,8 @@ presubmits:
   - name: pull-cloud-provider-azure-e2e
     always_run: true
     decorate: true
+    decoration_config:
+      timeout: 5h
     path_alias: sigs.k8s.io/cloud-provider-azure
     branches:
     - master
@@ -70,7 +72,6 @@ presubmits:
         # Specific test args
         - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]
         - --ginkgo-parallel=30
-        - --timeout=420m
         securityContext:
           privileged: true
     annotations:
@@ -82,6 +83,8 @@ presubmits:
   - name: pull-cloud-provider-azure-e2e-ccm
     always_run: true
     decorate: true
+    decoration_config:
+      timeout: 5h
     path_alias: sigs.k8s.io/cloud-provider-azure
     branches:
     - master
@@ -127,7 +130,6 @@ presubmits:
         # Specific test args
         - --test-ccm
         - --ginkgo-parallel=30
-        - --timeout=420m
         securityContext:
           privileged: true
     annotations:
@@ -161,6 +163,8 @@ periodics:
   # cloud-provider-azure-master runs Azure specific tests periodically.
   name: cloud-provider-azure-master
   decorate: true
+  decoration_config:
+    timeout: 5h
   labels:
     preset-service-account: "true"
     preset-azure-cred: "true"
@@ -206,7 +210,6 @@ periodics:
       # Specific test args
       - --test-ccm
       - --ginkgo-parallel=30
-      - --timeout=420m
       securityContext:
         privileged: true
   annotations:
@@ -218,6 +221,8 @@ periodics:
   # cloud-provider-azure-autoscaling runs node autoscaling tests periodically.
   name: cloud-provider-azure-autoscaling
   decorate: true
+  decoration_config:
+    timeout: 5h
   labels:
     preset-service-account: "true"
     preset-azure-cred: "true"
@@ -263,7 +268,6 @@ periodics:
       # Specific test args
       - --test-ccm
       - --ginkgo-parallel=1
-      - --timeout=420m
       securityContext:
         privileged: true
       env:
@@ -278,6 +282,8 @@ periodics:
   # cloud-provider-azure-conformance runs Kubernetes conformance tests periodically.
   name: cloud-provider-azure-conformance
   decorate: true
+  decoration_config:
+    timeout: 5h
   labels:
     preset-service-account: "true"
     preset-azure-cred: "true"
@@ -323,7 +329,6 @@ periodics:
       # Specific test args
       - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]
       - --ginkgo-parallel=30
-      - --timeout=420m
       securityContext:
         privileged: true
   annotations:
@@ -335,6 +340,8 @@ periodics:
   # cloud-provider-azure-slow runs Kubernetes slow tests periodically.
   name: cloud-provider-azure-slow
   decorate: true
+  decoration_config:
+    timeout: 5h
   labels:
     preset-service-account: "true"
     preset-azure-cred: "true"
@@ -380,7 +387,6 @@ periodics:
       # Specific test args
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
       - --ginkgo-parallel=4
-      - --timeout=420m
       securityContext:
         privileged: true
   annotations:
@@ -392,6 +398,8 @@ periodics:
   # cloud-provider-azure-serial runs Kubernetes serial tests periodically.
   name: cloud-provider-azure-serial
   decorate: true
+  decoration_config:
+    timeout: 5h
   labels:
     preset-service-account: "true"
     preset-azure-cred: "true"
@@ -439,7 +447,6 @@ periodics:
       # Check https://github.com/kubernetes-sigs/cloud-provider-azure/issues/224 for the status of each skipped test
       - --test_args=--num-nodes=2 --ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\]|regular\sresource\susage\stracking\sresource\stracking\sfor|validates\sMaxPods\slimit\snumber\sof\spods\sthat\sare\sallowed\sto\srun --minStartupPods=8
       - --ginkgo-parallel=1
-      - --timeout=600m
       securityContext:
         privileged: true
       env:
@@ -458,6 +465,8 @@ periodics:
   # cloud-provider-azure-master-vmss runs Azure specific tests periodically on VMSS.
   name: cloud-provider-azure-master-vmss
   decorate: true
+  decoration_config:
+    timeout: 5h
   labels:
     preset-service-account: "true"
     preset-azure-cred: "true"
@@ -503,7 +512,6 @@ periodics:
       # Specific test args
       - --test-ccm
       - --ginkgo-parallel=30
-      - --timeout=420m
       securityContext:
         privileged: true
   annotations:
@@ -515,6 +523,8 @@ periodics:
   # cloud-provider-azure-conformance-vmss runs Kubernetes conformance tests periodically on VMSS.
   name: cloud-provider-azure-conformance-vmss
   decorate: true
+  decoration_config:
+    timeout: 5h
   labels:
     preset-service-account: "true"
     preset-azure-cred: "true"
@@ -560,7 +570,6 @@ periodics:
       # Specific test args
       - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]
       - --ginkgo-parallel=30
-      - --timeout=420m
       securityContext:
         privileged: true
   annotations:
@@ -572,6 +581,8 @@ periodics:
   # cloud-provider-azure-slow-vmss runs Kubernetes slow tests periodically on VMSS.
   name: cloud-provider-azure-slow-vmss
   decorate: true
+  decoration_config:
+    timeout: 5h
   labels:
     preset-service-account: "true"
     preset-azure-cred: "true"
@@ -617,7 +628,6 @@ periodics:
       # Specific test args
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
       - --ginkgo-parallel=4
-      - --timeout=420m
       securityContext:
         privileged: true
   annotations:
@@ -629,6 +639,8 @@ periodics:
   # cloud-provider-azure-multiple-zones runs Kubernetes multiple availability zones tests periodically.
   name: cloud-provider-azure-multiple-zones
   decorate: true
+  decoration_config:
+    timeout: 5h
   labels:
     preset-service-account: "true"
     preset-azure-cred: "true"
@@ -675,7 +687,6 @@ periodics:
       # Check https://github.com/kubernetes-sigs/cloud-provider-azure/issues/224 for the status of each skipped test
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|Delete.Grace.Period|runs.ReplicaSets.to.verify.preemption.running.path|client.go.should.negotiate|should.contain.custom.columns.for.each.resource|Network.should.set.TCP.CLOSE_WAIT.timeout|PodSecurityPolicy
       - --ginkgo-parallel=15
-      - --timeout=420m
       securityContext:
         privileged: true
   annotations:
@@ -688,6 +699,8 @@ periodics:
 - interval: 4h
   name: ci-kubernetes-kubemark-100-azure-test
   decorate: true
+  decoration_config:
+    timeout: 5h
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure, provider-azure-scalability, provider-azure-periodic
     testgrid-tab-name: ci-kubernetes-kubemark-100-azure-test
@@ -715,6 +728,8 @@ periodics:
 - interval: 4h
   name: ci-kubernetes-azure-conformance-ipv6
   decorate: true
+  decoration_config:
+    timeout: 5h
   labels:
     preset-service-account: "true"
     preset-azure-cred: "true"
@@ -753,7 +768,6 @@ periodics:
       - --aksengine-download-url=https://github.com/aramase/aks-engine/blob/test-pkg/aks-engine-test.tar.gz?raw=true
       # Specific test args
       - --ginkgo-parallel=30
-      - --timeout=450m
       - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]
       securityContext:
         privileged: true
