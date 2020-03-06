@@ -7,12 +7,15 @@ presubmits:
     always_run: true
     path_alias: github.com/IBM/ibm-elastic-stack-operator
     rerun_command: /test build ibm-elastic-stack-operator
+    labels:
+      preset-service-account: "true"
     spec:
       containers:
       - command:
+        - entrypoint
         - make
         - build
-        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
+        image: quay.io/multicloudlab/multicloudlab-builder:v20191217-d33a10d
         name: ""
         securityContext:
           privileged: true
@@ -107,12 +110,15 @@ postsubmits:
     - ^master$
     decorate: true
     path_alias: github.com/IBM/ibm-elastic-stack-operator
+    labels:
+      preset-service-account: "true"
     spec:
       containers:
       - command:
+        - entrypoint
         - make
         - build
-        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
+        image: quay.io/multicloudlab/multicloudlab-builder:v20191217-d33a10d
         name: ""
         securityContext:
           privileged: true
