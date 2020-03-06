@@ -399,6 +399,10 @@ periodics:
     preset-k8s-ssh: "true"
   extra_refs:
   - org: kubernetes
+    repo: kubernetes
+    base_ref: release-1.17
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
     repo: cloud-provider-azure
     base_ref: master
     path_alias: sigs.k8s.io/cloud-provider-azure
@@ -727,6 +731,7 @@ periodics:
       - runner.sh
       - kubetest
       args:
+      # Generic e2e test args
       - --test
       - --up
       - --down
