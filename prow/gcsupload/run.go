@@ -61,7 +61,7 @@ func (o Options) Run(spec *downwardapi.JobSpec, extra map[string]gcs.UploadFunc)
 			return fmt.Errorf("could not connect to GCS: %v", err)
 		}
 
-		if err := gcs.Upload(gcsClient.Bucket(o.Bucket), uploadTargets); err != nil {
+		if err := gcs.Upload(gcsClient.Bucket(o.Bucket), uploadTargets, o.MaxConcurrency); err != nil {
 			return fmt.Errorf("failed to upload to GCS: %v", err)
 		}
 		logrus.Info("Finished upload to GCS")
