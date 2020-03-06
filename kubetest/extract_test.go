@@ -148,6 +148,11 @@ func TestExtractStrategies(t *testing.T) {
 			"v1.2.3+abcde",
 		},
 		{
+			"ci/gke-latest-1.13.10-gke",
+			"https://storage.googleapis.com/gke-release-staging/kubernetes/release",
+			"v1.2.3+abcde",
+		},
+		{
 			"ci/gke-channel-rapid",
 			"https://storage.googleapis.com/gke-release-staging/kubernetes/release",
 			"v1.2.3+abcde",
