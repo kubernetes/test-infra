@@ -258,6 +258,8 @@ func getDeployer(o *options) (deployer, error) {
 		return newLocalCluster(), nil
 	case "aksengine":
 		return newAKSEngine()
+	case "aks":
+		return newAksDeployer()
 	default:
 		return nil, fmt.Errorf("unknown deployment strategy %q", o.deployment)
 	}
@@ -415,7 +417,7 @@ func acquireKubernetes(o *options, d deployer) error {
 		// kind deployer manages build
 		if k, ok := d.(*kind.Deployer); ok {
 			err = control.XMLWrap(&suite, "Build", k.Build)
-		} else if c, ok := d.(*Cluster); ok { // Azure deployer
+		} else if c, ok := d.(*aksEngineDeployer); ok { // Azure deployer
 			err = control.XMLWrap(&suite, "Build", func() error {
 				return c.Build(o.build)
 			})
@@ -874,6 +876,18 @@ func activateServiceAccount(path string) error {
 	return control.FinishRunning(exec.Command("gcloud", "auth", "activate-service-account", "--key-file="+path))
 }
 
+func prepareAKS(o *options) error {
+	if err := os.Setenv("KUBEMARK_RESOURCE_GROUP", *aksResourceGroupName); err != nil {
+		return err
+	}
+
+	if err := os.Setenv("KUBEMARK_RESOURCE_NAME", *aksResourceName); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // Make all artifacts world readable.
 // The root user winds up owning the files when the container exists.
 // Ensure that other users can read these files at that time.
@@ -912,12 +926,16 @@ func prepare(o *options) error {
 	}
 	// For kubernetes-anywhere as the deployer, call prepareGcp()
 	// independent of the specified provider.
-	if o.deployment == "kubernetes-anywhere" {
+	switch o.deployment {
+	case "kubernetes-anywhere":
 		if err := prepareGcp(o); err != nil {
 			return err
 		}
+	case "aks":
+		if err := prepareAKS(o); err != nil {
+			return err
+		}
 	}
-
 	if o.kubemark {
 		if err := util.MigrateOptions([]util.MigratedOption{
 			{
