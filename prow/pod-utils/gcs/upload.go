@@ -26,6 +26,7 @@ import (
 
 	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
+	"google.golang.org/api/googleapi"
 
 	"k8s.io/test-infra/prow/errorutil"
 )
@@ -98,6 +99,9 @@ func FileUploadWithAttributes(file string, attrs *storage.ObjectAttrs) UploadFun
 		if err != nil {
 			return err
 		}
+		if fi, err := reader.Stat(); err == nil {
+			writer.SetSize(fi.Size())
+		}
 
 		uploadErr := DataUploadWithAttributes(reader, attrs)(writer)
 		if uploadErr != nil {
@@ -146,10 +150,17 @@ func DataUploadWithAttributes(src io.Reader, attrs *storage.ObjectAttrs) UploadF
 type dataWriter interface {
 	io.WriteCloser
 	ApplyAttributes(*storage.ObjectAttrs)
+	SetSize(size int64)
 }
 
 type gcsObjectWriter struct {
 	*storage.Writer
+}
+
+func (w gcsObjectWriter) SetSize(size int64) {
+	if size < googleapi.DefaultUploadChunkSize {
+		w.Writer.ChunkSize = int(size)
+	}
 }
 
 func (w gcsObjectWriter) ApplyAttributes(attrs *storage.ObjectAttrs) {
@@ -164,6 +175,8 @@ type localFileWriter struct {
 	filePath string
 	file     *os.File
 }
+
+func (*localFileWriter) SetSize(size int64) {}
 
 func (w *localFileWriter) Write(b []byte) (int, error) {
 	if w.file == nil {
