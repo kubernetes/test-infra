@@ -240,7 +240,7 @@ periodics:
           - --timeout=120m
           - --use-logexporter
 
-- interval: 6h
+- interval: 1h
   name: ci-kubernetes-e2e-scalability-experimental-load-containerd
   tags:
     - "perfDashPrefix: gce-100Nodes-master-experimental-containerd"
@@ -300,7 +300,7 @@ periodics:
           - --use-logexporter
 
 # This is a fork of ci-kubernetes-e2e-gci-gce-scalability job (as of 2020-02-18) with enabled containerd.
-- interval: 6h
+- interval: 1h
   name: ci-kubernetes-e2e-gci-gce-scalability-containerd
   tags:
     - "perfDashPrefix: gce-100Nodes-master-containerd"
