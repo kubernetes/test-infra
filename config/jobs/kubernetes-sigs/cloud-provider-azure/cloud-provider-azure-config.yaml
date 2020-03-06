@@ -708,7 +708,7 @@ periodics:
       value: $(WORKSPACE)/_artifacts
 
 # conformance test against kubernetes master branch with `azure` ipv6
-- interval: 6h
+- interval: 4h
   name: ci-kubernetes-azure-conformance-ipv6
   decorate: true
   labels:
@@ -747,9 +747,9 @@ periodics:
       - --aksengine-template-url=https://gist.githubusercontent.com/aramase/a19fcbf1f309dab99600ee9c0d700fce/raw/b1e975f8c6a1d3c9a9ae796245c58c6733029dc3/single-stack-ipv6.json
       - --aksengine-download-url=https://github.com/aramase/aks-engine/blob/test-pkg/aks-engine-test.tar.gz?raw=true
       # Specific test args
-      - --ginkgo-parallel=1
+      - --ginkgo-parallel=30
       - --timeout=450m
-      - --test_args=--ginkgo.focus=\[Conformance\]
+      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]
       securityContext:
         privileged: true
   annotations:
