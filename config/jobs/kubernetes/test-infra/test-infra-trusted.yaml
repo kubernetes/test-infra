@@ -101,10 +101,29 @@ postsubmits:
       testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
       testgrid-num-failures-to-alert: '1'
       description: deploys the configured version of prow by running prow/deploy.sh
+  - name: post-test-infra-push-resultstore
+    cluster: test-infra-trusted
+    run_if_changed: '^(WORKSPACE|load.bzl|repos.bzl|prow/prow.bzl|experiment/resultstore/)'
+    decorate: true
+    spec:
+      serviceAccountName: pusher
+      containers:
+      - image: gcr.io/k8s-testimages/bazelbuild:v20200212-b304d89-2.1.0
+        command:
+        - experiment/resultstore/push.sh
+        env:
+        - name: USE_BAZEL_VERSION
+          value: real  # Ignore .bazelversion
+    annotations:
+      testgrid-dashboards: sig-testing-prow
+      testgrid-tab-name: push-resultstore
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+      testgrid-num-failures-to-alert: '3'
+      description: builds and pushes resultstore exporter on effecting changes
   - name: post-test-infra-push-prow
     cluster: test-infra-trusted
     # Runs on more than just the Prow dir to include some additional images that we publish to gcr.io/k8s-prow.
-    run_if_changed: '^(prow|ghproxy|label_sync|robots/commenter|robots/pr-creator|robots/issue-creator|testgrid/cmd/transfigure)/'
+    run_if_changed: '^(WORKSPACE|load.bzl|repos.bzl|prow|ghproxy|label_sync|robots/commenter|robots/pr-creator|robots/issue-creator|testgrid/cmd/transfigure)/'
     decorate: true
     spec:
       serviceAccountName: pusher
