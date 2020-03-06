@@ -83,14 +83,14 @@ periodics:
       args:
       - --cluster=e2e-kops-aws-containerd.test-cncf-aws.k8s.io
       - --deployment=kops
-      - --env=KUBE_SSH_USER=ec2-user
+      - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --extract=release/latest
       - --ginkgo-parallel
       - --kops-args=--container-runtime=containerd --networking=calico --image=136693071363/debian-10-amd64-20200210-166
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-ssh-user=ec2-user
+      - --kops-ssh-user=admin
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:RuntimeHandler\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
