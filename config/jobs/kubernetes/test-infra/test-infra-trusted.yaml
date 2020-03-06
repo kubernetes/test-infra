@@ -999,10 +999,11 @@ periodics:
       command:
       - /app/experiment/resultstore/app.binary
       args:
-      - --upload=k8s-prow
+      - --upload=k8s-prow # Must be able to upload results into this project
       - --deadline=10m
       - --latest=5
-      - --gcs-auth
+      - --gcs-auth # See trusted_serviceaccounts.yaml, currently resultstore@k8s-prow.iam.gserviceaccount.com
+      - --bucket=gs://kubernetes-jenkins # Must be able to write to bucket
   annotations:
     testgrid-dashboards: sig-testing-prow
     testgrid-tab-name: resultstore-upload
