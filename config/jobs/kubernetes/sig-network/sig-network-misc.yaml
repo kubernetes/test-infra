@@ -536,7 +536,7 @@ periodics:
       - --timeout=300m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200401-d2349a1-master
 - interval: 12h
-  name: ci-basic-sctp-e2e
+  name: ci-kubernetes-e2e-gce-sctp
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -551,14 +551,10 @@ periodics:
       - --env=KUBE_FEATURE_GATES=SCTPSupport=true
       - --env=ALLOW_PRIVILEGED=true
       - --env=NET_PLUGIN=kubenet
-      - --cluster=
-      - --deployment=gke
-      - --extract=ci/latest
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
+      - --gcp-master-image=gci
       - --gcp-node-image=gci
-      - --gcp-zone=us-west1-c
-      - --gke-environment=test
-      - --provider=gke
+      - --gcp-zone=us-west1-b
+      - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:SCTP\]
       - --timeout=300m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200401-d2349a1-master
