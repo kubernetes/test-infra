@@ -21,6 +21,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"runtime"
 	"strings"
 
 	"github.com/GoogleCloudPlatform/testgrid/util/gcs"
@@ -114,6 +115,10 @@ func (o *Options) Complete(args []string) {
 		o.GCSConfiguration.MediaTypes[extension] = mediaType
 	}
 	o.mediaTypes = flagutil.NewStrings()
+
+	if o.GCSConfiguration.MaxConcurrency == 0 {
+		o.GCSConfiguration.MaxConcurrency = int64(4 * runtime.NumCPU())
+	}
 }
 
 // AddFlags adds flags to the FlagSet that populate

@@ -87,7 +87,7 @@ func TestUploadToGcs(t *testing.T) {
 			targets[fmt.Sprintf("fail-%d", i)] = fail
 		}
 
-		err := Upload(&storage.BucketHandle{}, targets)
+		err := Upload(&storage.BucketHandle{}, targets, int64(len(targets)))
 		if err != nil && !testCase.expectedErr {
 			t.Errorf("%s: expected no error but got %v", testCase.name, err)
 		}
