@@ -995,7 +995,7 @@ periodics:
   spec:
     serviceAccountName: resultstore
     containers:
-    - image: gcr.io/k8s-testimages/resultstore:v20200303-1ce7483c2
+    - image: gcr.io/k8s-testimages/resultstore:v20200306-294648b79
       command:
       - /app/experiment/resultstore/app.binary
       args:
