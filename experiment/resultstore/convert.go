@@ -19,6 +19,7 @@ package main
 import (
 	"fmt"
 	"path"
+	"strconv"
 	"strings"
 	"time"
 
@@ -154,7 +155,21 @@ func convert(project, details string, url gcs.Path, result downloadResult) (resu
 	inv.Properties = append(inv.Properties, startedProperties...)
 
 	// Files need a unique identifier, trim the common prefix and provide this.
-	uniqPath := func(s string) string { return strings.TrimPrefix(s, basePath) }
+	seen := map[string]bool{}
+	uniqPath := func(s string) string {
+
+		want := strings.TrimPrefix(s, basePath)
+		var idx int
+		attempt := want
+		for {
+			if !seen[attempt] {
+				seen[attempt] = true
+				return attempt
+			}
+			idx++
+			attempt = want + " - " + strconv.Itoa(idx)
+		}
+	}
 
 	for i, a := range artifacts {
 		artifacts[i] = "gs://" + bucket + "/" + a
@@ -215,8 +230,12 @@ func convert(project, details string, url gcs.Path, result downloadResult) (resu
 	for _, suiteMeta := range result.suiteMetas {
 		child := convertSuiteMeta(suiteMeta)
 		test.Suite.Suites = append(test.Suite.Suites, child)
-		test.Suite.Files = append(test.Suite.Files, child.Files...)
+		for _, f := range child.Files {
+			f.ID = uniqPath(f.URL)
+			test.Suite.Files = append(test.Suite.Files, f)
+		}
 	}
+
 	for _, a := range artifacts {
 		if !strings.HasPrefix(a, artifactsPath) {
 			continue // Non-artifacts (started.json, etc) are owned by the invocation

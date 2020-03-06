@@ -170,6 +170,233 @@ func TestConvertProjectMetadataToResultStoreArtifacts(t *testing.T) {
 			},
 		},
 		{
+			name:    "Convert multiple junit files",
+			project: "projectX",
+			details: "detailY",
+			url:     "gs://bucket/logs/jobA/1234567890123456789",
+			result: downloadResult{
+				started: gcs.Started{
+					Started: metadata.Started{
+						Timestamp: 1234567890,
+						Repos: map[string]string{
+							"org/repoA": "branchB",
+						},
+						DeprecatedRepoVersion: "aadb2b88d190a38b59f512b4d8c508a88cf839e1",
+					},
+					Pending: false,
+				},
+				finished: gcs.Finished{
+					Finished: metadata.Finished{
+						Result:             "SUCCESS",
+						DeprecatedRevision: "master",
+					},
+					Running: false,
+				},
+				artifactURLs: []string{
+					"logs/jobA/1234567890123456789/artifacts/bar/junit_runner.xml",
+					"logs/jobA/1234567890123456789/artifacts/foo/junit_runner.xml",
+					"logs/jobA/1234567890123456789/build-log.txt",
+				},
+				suiteMetas: []gcs.SuitesMeta{
+					{
+						Suites: junit.Suites{
+							XMLName: xml.Name{},
+							Suites: []junit.Suite{
+								{
+									XMLName:  xml.Name{Space: "testsuite", Local: ""},
+									Time:     10.5,
+									Failures: 0,
+									Tests:    2,
+									Results: []junit.Result{
+										{
+											Name:      "Result1",
+											Time:      3.2,
+											ClassName: "test1",
+											Properties: &junit.Properties{
+												PropertyList: []junit.Property{
+													{Name: "p1", Value: "v1"},
+												},
+											},
+										},
+										{
+											Name:      "Result2",
+											Time:      7.3,
+											ClassName: "test2",
+											Properties: &junit.Properties{
+												PropertyList: []junit.Property{
+													{Name: "p2", Value: "v2"},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+						Metadata: map[string]string{
+							"Context": "runner",
+						},
+						Path: "gs://bucket/logs/jobA/1234567890123456789/artifacts/bar/junit_runner.xml",
+					},
+					{
+						Suites: junit.Suites{
+							XMLName: xml.Name{},
+							Suites: []junit.Suite{
+								{
+									XMLName:  xml.Name{Space: "testsuite", Local: ""},
+									Time:     10.5,
+									Failures: 0,
+									Tests:    2,
+									Results: []junit.Result{
+										{
+											Name:      "bar1",
+											Time:      3.2,
+											ClassName: "test1",
+										},
+										{
+											Name:      "bar2",
+											Time:      7.3,
+											ClassName: "test2",
+										},
+									},
+								},
+							},
+						},
+						Metadata: map[string]string{
+							"Context": "runner",
+						},
+						Path: "gs://bucket/logs/jobA/1234567890123456789/artifacts/foo/junit_runner.xml",
+					},
+				},
+			},
+			expectedInvocation: resultstore.Invocation{
+				Project: "projectX",
+				Details: "detailY",
+				Files: []resultstore.File{
+					{
+						ID:          resultstore.InvocationLog,
+						ContentType: "text/plain",
+						URL:         "gs://bucket/logs/jobA/1234567890123456789/build-log.txt",
+					},
+				},
+				Properties: []resultstore.Property{
+					{Key: "Job", Value: "jobA"},
+					{Key: "Pull", Value: ""},
+					{Key: "Org", Value: "org"},
+					{Key: "Branch", Value: "branchB"},
+					{Key: "Repo", Value: "repoA"},
+					{Key: "Repo", Value: "org/repoA"},
+					{Key: "Repo", Value: "org/repoA:branchB"},
+				},
+				Start:       time.Unix(1234567890, 0),
+				Status:      resultstore.Running,
+				Description: "In progress...",
+			},
+			expectedTarget: resultstore.Target{
+				Status:      resultstore.Running,
+				Description: "In progress...",
+				Start:       time.Unix(1234567890, 0),
+				Properties: []resultstore.Property{
+					{Key: "Result1:p1", Value: "v1"},
+					{Key: "Result2:p2", Value: "v2"},
+				},
+			},
+			expectedTest: resultstore.Test{
+				Suite: resultstore.Suite{
+					Name:  "test",
+					Start: time.Unix(1234567890, 0),
+					Files: []resultstore.File{
+						{
+							ID:          resultstore.TargetLog,
+							ContentType: "text/plain",
+							URL:         "gs://bucket/logs/jobA/1234567890123456789/build-log.txt",
+						},
+						{
+							ID:          "artifacts/bar/junit_runner.xml",
+							ContentType: "text/xml",
+							URL:         "gs://bucket/logs/jobA/1234567890123456789/artifacts/bar/junit_runner.xml",
+						},
+						{
+							ID:          "artifacts/foo/junit_runner.xml",
+							ContentType: "text/xml",
+							URL:         "gs://bucket/logs/jobA/1234567890123456789/artifacts/foo/junit_runner.xml",
+						},
+					},
+					Suites: []resultstore.Suite{
+						{
+							Name:     "junit_runner.xml",
+							Duration: dur(10.5),
+							Files: []resultstore.File{
+								{
+									ID:          "junit_runner.xml",
+									ContentType: "text/xml",
+									URL:         "gs://bucket/logs/jobA/1234567890123456789/artifacts/bar/junit_runner.xml",
+								},
+							},
+							Suites: []resultstore.Suite{
+								{
+									Cases: []resultstore.Case{
+										{
+											Name:     "Result1",
+											Class:    "test1",
+											Result:   resultstore.Completed,
+											Duration: dur(3.2),
+										},
+										{
+											Name:     "Result2",
+											Class:    "test2",
+											Result:   resultstore.Completed,
+											Duration: dur(7.3),
+										},
+									},
+									Duration: dur(10.5),
+									Properties: []resultstore.Property{
+										{Key: "Result1:p1", Value: "v1"},
+										{Key: "Result2:p2", Value: "v2"},
+									},
+								},
+							},
+						},
+						{
+							Name:     "junit_runner.xml",
+							Duration: dur(10.5),
+							Files: []resultstore.File{
+								{
+									ID:          "junit_runner.xml",
+									ContentType: "text/xml",
+									URL:         "gs://bucket/logs/jobA/1234567890123456789/artifacts/foo/junit_runner.xml",
+								},
+							},
+							Suites: []resultstore.Suite{
+								{
+									Cases: []resultstore.Case{
+										{
+											Name:     "bar1",
+											Class:    "test1",
+											Result:   resultstore.Completed,
+											Duration: dur(3.2),
+										},
+										{
+											Name:     "bar2",
+											Class:    "test2",
+											Result:   resultstore.Completed,
+											Duration: dur(7.3),
+										},
+									},
+									Duration:   dur(10.5),
+									Properties: nil,
+								},
+							},
+						},
+					},
+				},
+				Action: resultstore.Action{
+					Start:       time.Unix(1234567890, 0),
+					Status:      resultstore.Running,
+					Description: "In progress...",
+				},
+			},
+		},
+		{
 			name:    "Convert full project metadata",
 			project: "projectX",
 			details: "detailY",
@@ -281,7 +508,7 @@ func TestConvertProjectMetadataToResultStoreArtifacts(t *testing.T) {
 							URL:         "gs://bucket/logs/jobA/1234567890123456789/build-log.txt",
 						},
 						{
-							ID:          "junit_runner.xml",
+							ID:          "artifacts/junit_runner.xml",
 							ContentType: "text/xml",
 							URL:         "gs://bucket/logs/jobA/1234567890123456789/artifacts/junit_runner.xml",
 						},
