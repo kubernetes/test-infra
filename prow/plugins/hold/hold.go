@@ -81,6 +81,9 @@ func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error 
 // a /hold directive, we want to add a label if one does not already exist.
 // If they add /hold cancel, we want to remove the label if it exists.
 func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, f hasLabelFunc) error {
+	if !e.IsPR {
+		return nil
+	}
 	if e.Action != github.GenericCommentActionCreated {
 		return nil
 	}
