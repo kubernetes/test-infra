@@ -31,6 +31,9 @@ func makeRequest(policy branchprotection.Policy) github.BranchProtectionRequest 
 		RequiredPullRequestReviews: makeReviews(policy.RequiredPullRequestReviews),
 		RequiredStatusChecks:       makeChecks(policy.RequiredStatusChecks),
 		Restrictions:               makeRestrictions(policy.Restrictions),
+		RequiredLinearHistory:      makeBool(policy.RequiredLinearHistory),
+		AllowForcePushes:           makeBool(policy.AllowForcePushes),
+		AllowDeletions:             makeBool(policy.AllowDeletions),
 	}
 
 }

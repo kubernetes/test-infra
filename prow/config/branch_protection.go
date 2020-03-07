@@ -38,13 +38,20 @@ type Policy struct {
 	Restrictions *Restrictions `json:"restrictions,omitempty"`
 	// RequiredPullRequestReviews specifies github approval/review criteria.
 	RequiredPullRequestReviews *ReviewPolicy `json:"required_pull_request_reviews,omitempty"`
+	// RequiredLinearHistory enforces a linear commit Git history, which prevents anyone from pushing merge commits to a branch.
+	RequiredLinearHistory *bool `json:"required_linear_history,omitempty"`
+	// AllowForcePushes permits force pushes to the protected branch by anyone with write access to the repository.
+	AllowForcePushes *bool `json:"allow_force_pushes,omitempty"`
+	// AllowDeletions allows deletion of the protected branch by anyone with write access to the repository.
+	AllowDeletions *bool `json:"allow_deletions,omitempty"`
 	// Exclude specifies a set of regular expressions which identify branches
 	// that should be excluded from the protection policy
 	Exclude []string `json:"exclude,omitempty"`
 }
 
 func (p Policy) defined() bool {
-	return p.Protect != nil || p.RequiredStatusChecks != nil || p.Admins != nil || p.Restrictions != nil || p.RequiredPullRequestReviews != nil
+	return p.Protect != nil || p.RequiredStatusChecks != nil || p.Admins != nil || p.Restrictions != nil || p.RequiredPullRequestReviews != nil ||
+		p.RequiredLinearHistory != nil || p.AllowForcePushes != nil || p.AllowDeletions != nil
 }
 
 // ContextPolicy configures required github contexts.
@@ -154,6 +161,9 @@ func (p Policy) Apply(child Policy) Policy {
 		Protect:                    selectBool(p.Protect, child.Protect),
 		RequiredStatusChecks:       mergeContextPolicy(p.RequiredStatusChecks, child.RequiredStatusChecks),
 		Admins:                     selectBool(p.Admins, child.Admins),
+		RequiredLinearHistory:      selectBool(p.RequiredLinearHistory, child.RequiredLinearHistory),
+		AllowForcePushes:           selectBool(p.AllowForcePushes, child.AllowForcePushes),
+		AllowDeletions:             selectBool(p.AllowDeletions, child.AllowDeletions),
 		Restrictions:               mergeRestrictions(p.Restrictions, child.Restrictions),
 		RequiredPullRequestReviews: mergeReviewPolicy(p.RequiredPullRequestReviews, child.RequiredPullRequestReviews),
 		Exclude:                    unionStrings(p.Exclude, child.Exclude),
