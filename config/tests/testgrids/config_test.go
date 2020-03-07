@@ -471,13 +471,13 @@ func TestReleaseBlockingJobsMustHaveTestgridDescriptions(t *testing.T) {
 					t.Logf("NOTICE: %v: - Must have a description that starts with OWNER: ", intro)
 				}
 				if dashboardtab.AlertOptions == nil {
-					t.Logf("NOTICE: %v: - Must have alert_options", intro)
+					t.Logf("NOTICE: %v: - Must have alert_options (ensure informing dashboard is listed first in testgrid-dashboards)", intro)
 				} else if dashboardtab.AlertOptions.AlertMailToAddresses == "" {
 					t.Logf("NOTICE: %v: - Must have alert_options.alert_mail_to_addresses", intro)
 				}
 			} else {
 				if dashboardtab.AlertOptions == nil {
-					t.Errorf("%v: - Must have alert_options", intro)
+					t.Errorf("%v: - Must have alert_options (ensure blocking dashboard is listed first in testgrid-dashboards)", intro)
 				} else if dashboardtab.AlertOptions.AlertMailToAddresses == "" {
 					t.Errorf("%v: - Must have alert_options.alert_mail_to_addresses", intro)
 				}
