@@ -311,6 +311,9 @@ milestone_applier:
     release-1.17: v1.17
     release-1.16: v1.16
     release-1.15: v1.15
+  kubernetes-sigs/cluster-api-provider-azure:
+    master: v0.4
+    release-0.3: v0.3
 
 repo_milestone:
   # Default maintainer
@@ -809,6 +812,7 @@ plugins:
 
   kubernetes-sigs/cluster-api-provider-azure:
   - milestone
+  - milestoneapplier
   - milestonestatus
   - release-note
   - require-matching-label
