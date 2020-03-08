@@ -775,5 +775,5 @@ periodics:
     testgrid-dashboards: provider-azure-cloud-provider-azure, provider-azure-periodic
     testgrid-tab-name: ci-kubernetes-azure-conformance-ipv6
     description: Runs conformance tests using kubetest against latest kubernetes master with an IPv6 azure cluster
-    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, antonio.ojea.garcia@gmail.com
     testgrid-num-columns-recent: '3'
