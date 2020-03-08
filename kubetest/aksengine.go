@@ -88,6 +88,16 @@ var (
 	cloudProviderAzureVersion = getImageVersion(util.K8sSigs("cloud-provider-azure"))
 	imageRegistry             = os.Getenv("REGISTRY")
 	k8sNodeTarballDir         = util.K8s("kubernetes", "_output", "release-tars") // contains custom-built kubelet and kubectl
+
+	// kubemark scale tests
+	buildWithKubemark          = flag.Bool("build-with-kubemark", false, "Enable building clusters with kubemark")
+	kubemarkBuildScriptURL     = flag.String("kubemark-build-script-url", "", "URL to the building script of kubemark and kubemark-external cluster")
+	kubemarkClusterTemplateURL = flag.String("kubemark-cluster-template-url", "", "URL to the aks-engine template of kubemark cluster")
+	externalClusterTemplateURL = flag.String("external-cluster-template-url", "", "URL to the aks-engine template of kubemark external cluster")
+	hollowNodesDeploymentURL   = flag.String("hollow-nodes-deployment-url", "", "URL to the deployment configuration file of hollow nodes")
+	clusterLoader2BinURL       = flag.String("clusterloader2-bin-url", "", "URL to the binary of clusterloader2")
+	kubemarkLocation           = flag.String("kubemark-location", "southcentralus", "The location where the kubemark and external clusters run")
+	kubemarkSize               = flag.String("kubemark-size", "100", "The number of hollow nodes in kubemark cluster")
 )
 
 const (
@@ -315,9 +325,10 @@ func checkParams() error {
 		*aksSSHPrivateKeyPath = os.Getenv("HOME") + "/.ssh/id_rsa"
 	}
 
-	if *aksTemplateURL == "" {
-		return fmt.Errorf("no ApiModel URL specified.")
+	if !*buildWithKubemark && *aksTemplateURL == "" {
+		return fmt.Errorf("no ApiModel URL specified, *buildWithKubemark=%v\n", *buildWithKubemark)
 	}
+
 	if *aksCnm && !*aksCcm {
 		return fmt.Errorf("--aksengine-cnm cannot be true without --aksengine-ccm also being true")
 	}
@@ -988,6 +999,27 @@ func (c *aksEngineDeployer) buildWinZip() error {
 }
 
 func (c *aksEngineDeployer) Up() error {
+	if *buildWithKubemark {
+		cmd := exec.Command("curl", "-o", "build-kubemark.sh", *kubemarkBuildScriptURL)
+		if err := cmd.Run(); err != nil {
+			return fmt.Errorf("failed to get build-kubemark.sh from %v: %v", *kubemarkBuildScriptURL, err)
+		}
+
+		cmd = exec.Command("bash", "build-kubemark.sh",
+			"--kubemark-cluster-template-url", *kubemarkClusterTemplateURL,
+			"--external-cluster-template-url", *externalClusterTemplateURL,
+			"--hollow-nodes-deployment-url", *hollowNodesDeploymentURL,
+			"--clusterloader2-bin-url", *clusterLoader2BinURL,
+			"--kubemark-size", *kubemarkSize,
+			"--location", *kubemarkLocation)
+		if err := cmd.Run(); err != nil {
+			return fmt.Errorf("failed to build up kubemark environment: %v", err)
+		}
+
+		log.Println("kubemark test finished")
+		return nil
+	}
+
 	var err error
 	if c.apiModelPath != "" {
 		templateFile, err := downloadFromURL(c.apiModelPath, path.Join(c.outputDir, "kubernetes.json"), 2)
