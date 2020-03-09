@@ -1,7 +1,7 @@
 periodics:
 # TODO(justaugustus): Decrease interval to 1hr once we cut build over to k8s-infra.
 #                     ref: https://github.com/kubernetes/release/issues/911
-- interval: 4h
+- interval: 10000h
   name: ci-kubernetes-prototype-build
   cluster: test-infra-trusted
   decorate: true
@@ -36,7 +36,7 @@ periodics:
 
 # TODO(justaugustus): Decrease interval to 5m once we cut build over to k8s-infra.
 #                     ref: https://github.com/kubernetes/release/issues/911
-- interval: 12h
+- interval: 10000h
   name: ci-kubernetes-prototype-build-fast
   cluster: test-infra-trusted
   decorate: true
