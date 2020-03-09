@@ -12,8 +12,9 @@ presubmits:
   - name: pull-kubernetes-e2e-aks-engine-azure-windows
     always_run: false
     optional: true
-    trigger: (?m)^/test( | .* )pull-kubernetes-e2e-aks-engine-azure-windows,?($|\s.*)
-    rerun_command: /test pull-kubernetes-e2e-aks-engine-azure-windows
+    decorate: true
+    decoration_config:
+      timeout: 5h
     branches:
     - master
     labels:
@@ -25,37 +26,34 @@ presubmits:
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200306-3e08456-master
+        command:
+        - runner.sh
+        - kubetest
         args:
-        - "--job=$(JOB_NAME)"
-        - "--root=/go/src"
-        - "--repo=k8s.io/kubernetes=$(PULL_REFS)"
-        - "--repo=k8s.io/release"
-        - "--upload=gs://kubernetes-jenkins/pr-logs/"
-        - "--timeout=480"
-        - "--scenario=kubernetes_e2e"
-        - --
-        - "--test=true"
-        - "--up=true"
-        - "--down=true"
-        - "--deployment=aksengine"
-        - "--provider=skeleton"
-        - "--build=quick"
-        - "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-aks-engine-azure-windows"
-        - "--ginkgo-parallel=4"
-        - "--aksengine-admin-username=azureuser"
-        - "--aksengine-admin-password=AdminPassw0rd"
-        - "--aksengine-creds=$AZURE_CREDENTIALS"
-        - "--aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz"
-        - "--aksengine-public-key=$K8S_SSH_PUBLIC_KEY_PATH"
-        - "--aksengine-private-key=$K8S_SSH_PRIVATE_KEY_PATH"
-        - "--aksengine-winZipBuildScript=$WIN_BUILD"
-        - "--aksengine-orchestratorRelease=1.18"
-        - "--aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_staging.json"
-        - "--aksengine-win-binaries"
-        - "--aksengine-deploy-custom-k8s"
-        - "--aksengine-agentpoolcount=2"
-        - "--test_args=--num-nodes=2 --node-os-distro=windows --ginkgo.focus=\\[Conformance\\]|\\[NodeConformance\\]|\\[sig-windows\\]|\\[sig-apps\\].CronJob|\\[sig-api-machinery\\].ResourceQuota|\\[sig-scheduling\\].SchedulerPreemption --ginkgo.skip=\\[LinuxOnly\\]|GMSA|\\[Serial\\]|Guestbook.application.should.create.and.stop.a.working.application"
-        - "--timeout=450m"
+        # Generic e2e test args
+        - --test
+        - --up
+        - --down
+        - --build=quick
+        - --dump=$(ARTIFACTS)
+        # Azure-specific test args
+        - --deployment=aksengine
+        - --provider=skeleton
+        - --aksengine-admin-username=azureuser
+        - --aksengine-admin-password=AdminPassw0rd
+        - --aksengine-creds=$(AZURE_CREDENTIALS)
+        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
+        - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
+        - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
+        - --aksengine-winZipBuildScript=$(WIN_BUILD)
+        - --aksengine-orchestratorRelease=1.18
+        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_staging.json
+        - --aksengine-win-binaries
+        - --aksengine-deploy-custom-k8s
+        - --aksengine-agentpoolcount=2
+        # Specific test args
+        - --test_args=--num-nodes=2 --node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[sig-apps\].CronJob|\[sig-api-machinery\].ResourceQuota|\[sig-scheduling\].SchedulerPreemption --ginkgo.skip=\[LinuxOnly\]|GMSA|\[Serial\]|Guestbook.application.should.create.and.stop.a.working.application
+        - --ginkgo-parallel=4
         securityContext:
           privileged: true
         env:
