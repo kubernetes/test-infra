@@ -290,11 +290,19 @@ func TestClientServerUpdate(t *testing.T) {
 				t.Errorf("tc: %s - resources user data should match. Expected \n%v, received \n%v", tc.name, tc.expected.Status.UserData.ToMap(), receivedRes.Status.UserData.ToMap())
 			}
 			tc.expected.Namespace = "test"
-			if diff := deep.Equal(receivedRes, tc.expected); diff != nil {
+			if diff := diffResourceObjects(receivedRes, tc.expected); diff != nil {
 				t.Errorf("receivedRes differs from expected, diff: %v", diff)
 			}
 		})
 	}
+}
+
+func diffResourceObjects(a, b *crds.ResourceObject) []string {
+	a.TypeMeta = metav1.TypeMeta{}
+	b.TypeMeta = metav1.TypeMeta{}
+	a.ResourceVersion = "0"
+	b.ResourceVersion = "0"
+	return deep.Equal(a, b)
 }
 
 func newResource(name, rtype, state, owner string, t time.Time) *crds.ResourceObject {
