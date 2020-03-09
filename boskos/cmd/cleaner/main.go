@@ -103,7 +103,7 @@ func v1Main(client *client.Client) {
 	if err != nil {
 		logrus.WithError(err).Fatal("failed to construct kube client")
 	}
-	st, _ := ranch.NewStorage(context.Background(), kubeClient, namespace, "")
+	st := ranch.NewStorage(context.Background(), kubeClient, namespace)
 
 	cleaner := cleaner.NewCleaner(cleanerCount, client, defaultBoskosRetryPeriod, st)
 

@@ -26,6 +26,7 @@ import (
 	"time"
 
 	"errors"
+
 	"github.com/go-test/deep"
 	"github.com/sirupsen/logrus"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
@@ -76,7 +77,7 @@ func makeTestRanch(objects []runtime.Object) *Ranch {
 		obj.(metav1.Object).SetNamespace(testNS)
 	}
 	client := &onceConflictingClient{Client: fakectrlruntimeclient.NewFakeClient(objects...)}
-	s, _ := NewStorage(context.Background(), client, testNS, "")
+	s := NewStorage(context.Background(), client, testNS)
 	s.now = func() time.Time {
 		return fakeNow
 	}

@@ -50,7 +50,6 @@ var (
 	configPath                  = flag.String("config", "config.yaml", "Path to init resource file")
 	dynamicResourceUpdatePeriod = flag.Duration("dynamic-resource-update-period", defaultDynamicResourceUpdatePeriod,
 		"Period at which to update dynamic resources. Set to 0 to disable.")
-	storagePath       = flag.String("storage", "", "Path to persistent volume to load the state")
 	requestTTL        = flag.Duration("request-ttl", defaultRequestTTL, "request TTL before losing priority in the queue")
 	kubeClientOptions crds.KubernetesClientOptions
 	logLevel          = flag.String("log-level", "info", fmt.Sprintf("Log level is one of %v.", logrus.AllLevels))
@@ -96,10 +95,7 @@ func main() {
 		logrus.WithError(err).Fatal("unable to get client")
 	}
 
-	storage, err := ranch.NewStorage(interrupts.Context(), client, *namespace, *storagePath)
-	if err != nil {
-		logrus.WithError(err).Fatal("failed to create storage")
-	}
+	storage := ranch.NewStorage(interrupts.Context(), client, *namespace)
 
 	r, err := ranch.NewRanch(*configPath, storage, *requestTTL)
 	if err != nil {

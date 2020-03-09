@@ -18,10 +18,7 @@ package ranch
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"os"
 	"reflect"
 	"sort"
 	"sync"
@@ -62,38 +59,14 @@ func NewTestingStorage(client ctrlruntimeclient.Client, namespace string, update
 }
 
 // NewStorage instantiates a new Storage with a PersistenceLayer implementation
-// If storage string is not empty, it will read resource data from the file
-func NewStorage(ctx context.Context, client ctrlruntimeclient.Client, namespace, storage string) (*Storage, error) {
-	s := &Storage{
+func NewStorage(ctx context.Context, client ctrlruntimeclient.Client, namespace string) *Storage {
+	return &Storage{
+		ctx:          ctx,
 		client:       client,
 		namespace:    namespace,
 		now:          func() time.Time { return time.Now() },
 		generateName: common.GenerateDynamicResourceName,
 	}
-
-	if storage != "" {
-		var data struct {
-			Resources []common.Resource
-		}
-		buf, err := ioutil.ReadFile(storage)
-		if err == nil {
-			logrus.Infof("Current state: %s.", string(buf))
-			err = json.Unmarshal(buf, &data)
-			if err != nil {
-				return nil, err
-			}
-		} else if !os.IsNotExist(err) {
-			return nil, err
-		}
-
-		for _, res := range data.Resources {
-			if err := s.AddResource(crds.FromResource(res)); err != nil {
-				logrus.WithError(err).Errorf("Failed Adding Resource: %s - %s.", res.Name, res.State)
-			}
-			logrus.Infof("Successfully Added Resource: %s - %s.", res.Name, res.State)
-		}
-	}
-	return s, nil
 }
 
 // AddResource adds a new resource
