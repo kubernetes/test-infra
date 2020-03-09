@@ -18,9 +18,8 @@ replace (
 
 require (
 	cloud.google.com/go v0.47.0
-	github.com/Azure/azure-pipeline-go v0.1.9 // indirect
 	github.com/Azure/azure-sdk-for-go v38.0.0+incompatible
-	github.com/Azure/azure-storage-blob-go v0.0.0-20190123011202-457680cc0804
+	github.com/Azure/azure-storage-blob-go v0.8.0
 	github.com/Azure/go-autorest/autorest v0.9.6
 	github.com/Azure/go-autorest/autorest/adal v0.8.2
 	github.com/GoogleCloudPlatform/testgrid v0.0.7
@@ -62,8 +61,6 @@ require (
 	github.com/jinzhu/now v1.1.1 // indirect
 	github.com/klauspost/compress v1.10.2 // indirect
 	github.com/klauspost/pgzip v1.2.1
-	github.com/mailru/easyjson v0.7.1 // indirect
-	github.com/mattn/go-sqlite3 v2.0.3+incompatible // indirect
 	github.com/mattn/go-zglob v0.0.1
 	github.com/pelletier/go-toml v1.6.0
 	github.com/peterbourgon/diskv v2.0.1+incompatible
@@ -82,6 +79,7 @@ require (
 	github.com/spf13/viper v1.6.2
 	github.com/tektoncd/pipeline v0.10.1
 	go.opencensus.io v0.22.3 // indirect
+	gocloud.dev v0.19.0
 	golang.org/x/crypto v0.0.0-20200302210943-78000ba7a073
 	golang.org/x/lint v0.0.0-20200302205851-738671d3881b
 	golang.org/x/net v0.0.0-20200301022130-244492dfa37a
