@@ -410,6 +410,15 @@ periodics:
       # even on very powerful machines
       - name: BENCHTIME
         value: 1ns
+      # We need to constraint compute resources so all the tests
+      # finish approximately at the same time. More compute power
+      # can increase scheduling throughput and make consequent results
+      # incomparable.
+      resources:
+        requests:
+          cpu: 4
+        limits:
+          cpu: 4
 
 - name: ci-benchmark-kube-dns-master
   interval: 2h
