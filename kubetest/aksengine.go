@@ -643,16 +643,16 @@ func (c *aksEngineDeployer) getAKSEngine(retry int) error {
 		}
 	}
 
-	cwd, err := os.Getwd()
-	if err != nil {
-		return fmt.Errorf("unable to get current directory: %v .", err)
-	}
-	log.Printf("Extracting tar file %v into directory %v .", f.Name(), cwd)
+	// adding aks-engine binary to the kubernetes dir modifies the tree
+	// and dirties the tree. This makes it difficult to diff the CI signal
+	// so moving the binary to /tmp folder
+	wd := os.TempDir()
+	log.Printf("Extracting tar file %v into directory %v .", f.Name(), wd)
 
-	if err = control.FinishRunning(exec.Command("tar", "-xzf", f.Name(), "--strip", "1")); err != nil {
+	if err = control.FinishRunning(exec.Command("tar", "-xzf", f.Name(), "--strip", "1", "-C", wd)); err != nil {
 		return err
 	}
-	c.aksEngineBinaryPath = path.Join(cwd, "aks-engine")
+	c.aksEngineBinaryPath = path.Join(wd, "aks-engine")
 	return nil
 
 }
