@@ -69,7 +69,7 @@ main() {
     --output "${testgrid_dir}/${testgrid_subdir}/gen-config.yaml"
 
 
-  if ! git diff --quiet ; then
+  if [[ $(git diff --exit-code) -eq 0 ]]; then
     echo "Transfigure did not change anything. Aborting no-op bump"
     exit 0
   fi
