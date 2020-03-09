@@ -480,27 +480,8 @@ func newResourceFromNewDynamicResourceLifeCycle(name string, dlrc *crds.DRLCObje
 	return crds.NewResource(name, dlrc.Name, dlrc.Spec.InitialState, "", now)
 }
 
-// retryOnConflict is a copy of https://godoc.org/k8s.io/client-go/util/retry#RetryOnConflict
-// that only differs in the isConflict check, we use a variant that supports wrapped errors.
-// TODO: Simplify this by using retry.OnError once we have a sufficiently new client-go dependency
 func retryOnConflict(backoff wait.Backoff, fn func() error) error {
-	var lastConflictErr error
-	err := wait.ExponentialBackoff(backoff, func() (bool, error) {
-		err := fn()
-		switch {
-		case err == nil:
-			return true, nil
-		case isConflict(err):
-			lastConflictErr = err
-			return false, nil
-		default:
-			return false, err
-		}
-	})
-	if err == wait.ErrWaitTimeout {
-		err = lastConflictErr
-	}
-	return err
+	return retry.OnError(backoff, isConflict, fn)
 }
 
 func isConflict(err error) bool {
