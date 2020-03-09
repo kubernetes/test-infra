@@ -239,7 +239,7 @@ func (c *Controller) processNextItem() bool {
 	// then we want to retry this particular queue key a certain
 	// number of times (5 here) before we forget the queue key
 	// and throw an error
-	pj, err := c.informer.Lister().ProwJobs(namespace).Get(name)
+	readOnlyPJ, err := c.informer.Lister().ProwJobs(namespace).Get(name)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			logrus.WithField("prowjob", keyRaw).Info("object no longer exist")
@@ -249,6 +249,7 @@ func (c *Controller) processNextItem() bool {
 
 		return c.retry(key, err)
 	}
+	pj := readOnlyPJ.DeepCopy()
 
 	// not belong to the current reporter
 	if !pj.Spec.Report || !c.reporter.ShouldReport(pj) {
