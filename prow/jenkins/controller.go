@@ -69,6 +69,8 @@ type Controller struct {
 	cfg           config.Getter
 	node          *snowflake.Node
 	totURL        string
+	// if skip report job results to github
+	skipReport bool
 	// selector that will be applied on prowjobs.
 	selector string
 
@@ -84,7 +86,7 @@ type Controller struct {
 }
 
 // NewController creates a new Controller from the provided clients.
-func NewController(prowJobClient prowv1.ProwJobInterface, jc *Client, ghc github.Client, logger *logrus.Entry, cfg config.Getter, totURL, selector string) (*Controller, error) {
+func NewController(prowJobClient prowv1.ProwJobInterface, jc *Client, ghc github.Client, logger *logrus.Entry, cfg config.Getter, totURL, selector string, skipReport bool) (*Controller, error) {
 	n, err := snowflake.NewNode(1)
 	if err != nil {
 		return nil, err
@@ -101,6 +103,7 @@ func NewController(prowJobClient prowv1.ProwJobInterface, jc *Client, ghc github
 		selector:      selector,
 		node:          n,
 		totURL:        totURL,
+		skipReport:    skipReport,
 		pendingJobs:   make(map[string]int),
 		clock:         clock.RealClock{},
 	}, nil
@@ -217,12 +220,14 @@ func (c *Controller) Sync() error {
 	}
 
 	var reportErrs []error
-	reportTemplate := c.config().ReportTemplate
-	reportTypes := c.cfg().GitHubReporter.JobTypesToReport
-	for report := range reportCh {
-		if err := reportlib.Report(c.ghc, reportTemplate, report, reportTypes); err != nil {
-			reportErrs = append(reportErrs, err)
-			c.log.WithFields(pjutil.ProwJobFields(&report)).WithError(err).Warn("Failed to report ProwJob status")
+	if !c.skipReport {
+		reportTemplate := c.config().ReportTemplate
+		reportTypes := c.cfg().GitHubReporter.JobTypesToReport
+		for report := range reportCh {
+			if err := reportlib.Report(c.ghc, reportTemplate, report, reportTypes); err != nil {
+				reportErrs = append(reportErrs, err)
+				c.log.WithFields(pjutil.ProwJobFields(&report)).WithError(err).Warn("Failed to report ProwJob status")
+			}
 		}
 	}
 
