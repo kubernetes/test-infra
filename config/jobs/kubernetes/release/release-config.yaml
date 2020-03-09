@@ -49,7 +49,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-release-test/releng-ci-bazel:latest
+      - image: gcr.io/k8s-staging-releng/releng-ci-bazel:latest
         command:
         - ../test-infra/hack/bazel.sh
         args:

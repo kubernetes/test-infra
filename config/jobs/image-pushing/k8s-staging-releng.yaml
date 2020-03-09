@@ -1,7 +1,7 @@
 periodics:
 # TODO(justaugustus): Decrease interval to 1hr once we cut build over to k8s-infra.
 #                     ref: https://github.com/kubernetes/release/issues/911
-- interval: 4h
+- interval: 10000h
   name: ci-kubernetes-prototype-build
   cluster: test-infra-trusted
   decorate: true
@@ -17,8 +17,8 @@ periodics:
       command:
         - /run.sh
       args:
-        - --project=k8s-staging-release-test
-        - --scratch-bucket=gs://k8s-staging-release-test-gcb
+        - --project=k8s-staging-releng
+        - --scratch-bucket=gs://k8s-staging-releng-gcb
         - --variant=build-ci
         - --no-source
         - gcb/build
@@ -36,7 +36,7 @@ periodics:
 
 # TODO(justaugustus): Decrease interval to 5m once we cut build over to k8s-infra.
 #                     ref: https://github.com/kubernetes/release/issues/911
-- interval: 12h
+- interval: 10000h
   name: ci-kubernetes-prototype-build-fast
   cluster: test-infra-trusted
   decorate: true
@@ -52,8 +52,8 @@ periodics:
       command:
         - /run.sh
       args:
-        - --project=k8s-staging-release-test
-        - --scratch-bucket=gs://k8s-staging-release-test-gcb
+        - --project=k8s-staging-releng
+        - --scratch-bucket=gs://k8s-staging-releng-gcb
         - --variant=build-ci-fast
         - --no-source
         - gcb/build
@@ -87,8 +87,8 @@ postsubmits:
             command:
               - /run.sh
             args:
-              - --project=k8s-staging-release-test
-              - --scratch-bucket=gs://k8s-staging-release-test-gcb
+              - --project=k8s-staging-releng
+              - --scratch-bucket=gs://k8s-staging-releng-gcb
               - --env-passthrough=PULL_BASE_REF
               - images/k8s-cloud-builder
             env:
@@ -113,8 +113,8 @@ postsubmits:
             command:
               - /run.sh
             args:
-              - --project=k8s-staging-release-test
-              - --scratch-bucket=gs://k8s-staging-release-test-gcb
+              - --project=k8s-staging-releng
+              - --scratch-bucket=gs://k8s-staging-releng-gcb
               - --env-passthrough=PULL_BASE_REF
               - images/releng-ci-bazel
             env:
@@ -138,8 +138,8 @@ postsubmits:
             command:
               - /run.sh
             args:
-              - --project=k8s-staging-release-test
-              - --scratch-bucket=gs://k8s-staging-release-test-gcb
+              - --project=k8s-staging-releng
+              - --scratch-bucket=gs://k8s-staging-releng-gcb
               - --env-passthrough=PULL_BASE_REF
               - --gcb-config=./cloudbuild-kubepkg.yaml
               - .
