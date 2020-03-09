@@ -15,6 +15,7 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 5h
+    path_alias: k8s.io/kubernetes
     branches:
     - master
     labels:
