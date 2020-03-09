@@ -313,7 +313,7 @@ presubmits:
         - -c
         - cd ./frontend && npm run test:ci:prow
   - name: kubeflow-pipeline-backend-test
-    always_run: false
+    always_run: true
     decorate: true
     labels:
       preset-service-account: "true"
