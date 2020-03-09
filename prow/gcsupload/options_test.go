@@ -33,7 +33,8 @@ func TestOptions_Validate(t *testing.T) {
 			input: Options{
 				DryRun: true,
 				GCSConfiguration: &prowapi.GCSConfiguration{
-					PathStrategy: prowapi.PathStrategyExplicit,
+					PathStrategy:   prowapi.PathStrategyExplicit,
+					MaxConcurrency: 1,
 				},
 			},
 			expectedErr: false,
@@ -44,11 +45,24 @@ func TestOptions_Validate(t *testing.T) {
 				DryRun:             false,
 				GcsCredentialsFile: "secrets",
 				GCSConfiguration: &prowapi.GCSConfiguration{
+					Bucket:         "seal",
+					PathStrategy:   prowapi.PathStrategyExplicit,
+					MaxConcurrency: 1,
+				},
+			},
+			expectedErr: false,
+		},
+		{
+			name: "missing max concurrency",
+			input: Options{
+				DryRun:             false,
+				GcsCredentialsFile: "secrets",
+				GCSConfiguration: &prowapi.GCSConfiguration{
 					Bucket:       "seal",
 					PathStrategy: prowapi.PathStrategyExplicit,
 				},
 			},
-			expectedErr: false,
+			expectedErr: true,
 		},
 		{
 			name: "push to GCS, missing bucket",
@@ -56,7 +70,8 @@ func TestOptions_Validate(t *testing.T) {
 				DryRun:             false,
 				GcsCredentialsFile: "secrets",
 				GCSConfiguration: &prowapi.GCSConfiguration{
-					PathStrategy: prowapi.PathStrategyExplicit,
+					PathStrategy:   prowapi.PathStrategyExplicit,
+					MaxConcurrency: 1,
 				},
 			},
 			expectedErr: true,
@@ -66,8 +81,9 @@ func TestOptions_Validate(t *testing.T) {
 			input: Options{
 				DryRun: false,
 				GCSConfiguration: &prowapi.GCSConfiguration{
-					Bucket:       "seal",
-					PathStrategy: prowapi.PathStrategyExplicit,
+					Bucket:         "seal",
+					PathStrategy:   prowapi.PathStrategyExplicit,
+					MaxConcurrency: 1,
 				},
 			},
 			expectedErr: true,
@@ -157,9 +173,10 @@ func TestValidatePathOptions(t *testing.T) {
 		o := Options{
 			DryRun: true,
 			GCSConfiguration: &prowapi.GCSConfiguration{
-				PathStrategy: testCase.strategy,
-				DefaultOrg:   testCase.org,
-				DefaultRepo:  testCase.repo,
+				PathStrategy:   testCase.strategy,
+				DefaultOrg:     testCase.org,
+				DefaultRepo:    testCase.repo,
+				MaxConcurrency: 1,
 			},
 		}
 		err := o.Validate()

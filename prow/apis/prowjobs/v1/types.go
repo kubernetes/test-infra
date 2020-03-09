@@ -586,6 +586,9 @@ func (g *GCSConfiguration) Validate() error {
 	if g.PathStrategy != PathStrategyExplicit && (g.DefaultOrg == "" || g.DefaultRepo == "") {
 		return fmt.Errorf("default org and repo must be provided for GCS strategy %q", g.PathStrategy)
 	}
+	if g.MaxConcurrency < 1 {
+		return fmt.Errorf("max_concurrency must be > 0, was %d", g.MaxConcurrency)
+	}
 	return nil
 }
 

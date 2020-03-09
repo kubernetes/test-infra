@@ -64,8 +64,13 @@ func upload(dtw destToWriter, uploadTargets map[string]UploadFunc, maxConcurrenc
 	sem := semaphore.NewWeighted(maxConcurrency)
 	for dest, upload := range uploadTargets {
 		log := logrus.WithField("dest", dest)
-		if err := sem.Acquire(context.Background(), 1); err != nil {
+		// sem.Acquire returns the error from the context, with is always nil
+		// for context.Background(), so we must not use it.
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+		if err := sem.Acquire(ctx, 1); err != nil {
 			log.WithError(err).Error("Could not begin upload.")
+			group.Done()
 			continue
 		}
 		log.Info("Queued for upload")

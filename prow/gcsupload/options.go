@@ -116,7 +116,7 @@ func (o *Options) Complete(args []string) {
 	}
 	o.mediaTypes = flagutil.NewStrings()
 
-	if o.GCSConfiguration.MaxConcurrency == 0 {
+	if o.GCSConfiguration.MaxConcurrency < 1 {
 		o.GCSConfiguration.MaxConcurrency = int64(4 * runtime.NumCPU())
 	}
 }
