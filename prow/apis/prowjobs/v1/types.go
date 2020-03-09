@@ -519,9 +519,6 @@ type GCSConfiguration struct {
 	// builtin's and the local system's defaults.  This maps extensions
 	// to media types, for example: MediaTypes["log"] = "text/plain"
 	MediaTypes map[string]string `json:"mediaTypes,omitempty"`
-	// MaxConcurrency limits the concurrency used when pushing
-	// data to GCS. Defaults to 4 concurrent uploads per available CPU.
-	MaxConcurrency int64 `json:"max_concurrency,omitempty"`
 
 	// LocalOutputDir specifies a directory where files should be copied INSTEAD of uploading to GCS.
 	// This option is useful for testing jobs that use the pod-utilities without actually uploading.

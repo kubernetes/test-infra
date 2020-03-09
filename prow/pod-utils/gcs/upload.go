@@ -26,7 +26,6 @@ import (
 
 	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
-	"golang.org/x/sync/semaphore"
 	"google.golang.org/api/googleapi"
 
 	"k8s.io/test-infra/prow/errorutil"
@@ -39,11 +38,11 @@ type destToWriter func(dest string) dataWriter
 // Upload uploads all of the data in the
 // uploadTargets map to GCS in parallel. The map is
 // keyed on GCS path under the bucket
-func Upload(bucket *storage.BucketHandle, uploadTargets map[string]UploadFunc, maxConcurrency int64) error {
+func Upload(bucket *storage.BucketHandle, uploadTargets map[string]UploadFunc) error {
 	dtw := func(dest string) dataWriter {
 		return gcsObjectWriter{bucket.Object(dest).NewWriter(context.Background())}
 	}
-	return upload(dtw, uploadTargets, maxConcurrency)
+	return upload(dtw, uploadTargets)
 }
 
 // LocalExport copies all of the data in the uploadTargets map to local files in parallel. The map
@@ -54,24 +53,18 @@ func LocalExport(exportDir string, uploadTargets map[string]UploadFunc) error {
 			filePath: path.Join(exportDir, dest),
 		}
 	}
-	return upload(dtw, uploadTargets, int64(len(uploadTargets))) // there is no use in limiting concurrency of local writes
+	return upload(dtw, uploadTargets)
 }
 
-func upload(dtw destToWriter, uploadTargets map[string]UploadFunc, maxConcurrency int64) error {
+func upload(dtw destToWriter, uploadTargets map[string]UploadFunc) error {
 	errCh := make(chan error, len(uploadTargets))
 	group := &sync.WaitGroup{}
 	group.Add(len(uploadTargets))
-	sem := semaphore.NewWeighted(maxConcurrency)
 	for dest, upload := range uploadTargets {
 		log := logrus.WithField("dest", dest)
-		if err := sem.Acquire(context.Background(), 1); err != nil {
-			log.WithError(err).Error("Could not begin upload.")
-			continue
-		}
 		log.Info("Queued for upload")
 		go func(f UploadFunc, writer dataWriter, log *logrus.Entry) {
 			defer group.Done()
-			defer sem.Release(1)
 			if err := f(writer); err != nil {
 				errCh <- err
 			} else {
