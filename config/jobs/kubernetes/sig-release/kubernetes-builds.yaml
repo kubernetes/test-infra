@@ -105,7 +105,7 @@ periodics:
   decorate: true
   spec:
     containers:
-    - image: gcr.io/k8s-staging-release-test/kubepkg:latest
+    - image: gcr.io/k8s-staging-releng/kubepkg:latest
       imagePullPolicy: Always
       command:
       - ./kubepkg
@@ -128,7 +128,7 @@ periodics:
   decorate: true
   spec:
     containers:
-    - image: gcr.io/k8s-staging-release-test/kubepkg-rpm:latest
+    - image: gcr.io/k8s-staging-releng/kubepkg-rpm:latest
       imagePullPolicy: Always
       command:
       - ./kubepkg
