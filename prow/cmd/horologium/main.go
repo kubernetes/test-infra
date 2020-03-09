@@ -163,6 +163,13 @@ func sync(prowJobClient prowJobClient, cfg *config.Config, cr cronClient, now ti
 				if _, err := prowJobClient.Create(&prowJob); err != nil {
 					errs = append(errs, err)
 				}
+			} else {
+				logger.WithFields(logrus.Fields{
+					"previous-found": previousFound,
+					"should-trigger": shouldTrigger,
+					"name":           p.Name,
+					"job":            p.JobBase.Name,
+				}).Info("skipping cron periodic")
 			}
 		}
 	}
