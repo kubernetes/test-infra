@@ -90,6 +90,7 @@ periodics:
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
+      - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/stable
       - --ginkgo-parallel
       - --kops-args=--container-runtime=containerd --networking=calico --image=136693071363/debian-10-amd64-20200210-166
