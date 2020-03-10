@@ -183,13 +183,36 @@ dashboards:
       alert_mail_to_addresses: james+alerts@munnelly.eu
     code_search_url_template:
       url: https://github.com/cert-manager/website/compare/<start-custom-0>...<end-custom-0>
-    description: Runs the end-to-end test suite against a Kubernetes v1.17 cluster
+    description: Updates the algolia search index for the cert-manager website
     name: cert-manager-website-update-index
     open_bug_template:
       url: https://github.com/cert-manager/website/issues/
     test_group_name: cert-manager-website-update-index
   name: jetstack-cert-manager-website
 - dashboard_tab:
+  - alert_options:
+      alert_mail_to_addresses: james+alerts@munnelly.eu
+    description: Closes PRs and issues that are marked 'rotten' and have been inactive
+      for 30d
+    name: periodic-testing-close
+    test_group_name: periodic-testing-close
+  - alert_options:
+      alert_mail_to_addresses: james+alerts@munnelly.eu
+    description: Periodically comments /retest against approved and lgtm'd PRs that
+      are failing
+    name: periodic-testing-retester
+    test_group_name: periodic-testing-retester
+  - alert_options:
+      alert_mail_to_addresses: james+alerts@munnelly.eu
+    description: Marks PRs and issues that are marked 'stale' and have been inactive
+      for 30d as 'rotten'
+    name: periodic-testing-rotten
+    test_group_name: periodic-testing-rotten
+  - alert_options:
+      alert_mail_to_addresses: james+alerts@munnelly.eu
+    description: Marks PRs and issues that have been inactive for 30d as 'stale'
+    name: periodic-testing-stale
+    test_group_name: periodic-testing-stale
   - alert_options:
       alert_mail_to_addresses: james+alerts@munnelly.eu
     code_search_url_template:
@@ -286,6 +309,14 @@ test_groups:
   name: ci-cert-manager-e2e-v1-17
 - gcs_prefix: jetstack-logs/logs/ci-cert-manager-release-next
   name: ci-cert-manager-release-next
+- gcs_prefix: jetstack-logs/logs/periodic-testing-close
+  name: periodic-testing-close
+- gcs_prefix: jetstack-logs/logs/periodic-testing-retester
+  name: periodic-testing-retester
+- gcs_prefix: jetstack-logs/logs/periodic-testing-rotten
+  name: periodic-testing-rotten
+- gcs_prefix: jetstack-logs/logs/periodic-testing-stale
+  name: periodic-testing-stale
 - gcs_prefix: jetstack-logs/logs/post-testing-push-bazelbuild
   name: post-testing-push-bazelbuild
 - gcs_prefix: jetstack-logs/logs/post-testing-push-golang-dind
