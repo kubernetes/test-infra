@@ -372,9 +372,9 @@ func (d *DecorationConfig) ApplyDefault(def *DecorationConfig) *DecorationConfig
 	}
 	var merged DecorationConfig
 	if d != nil {
-		merged = *d
+		merged = *d.DeepCopy()
 	} else {
-		merged = *def
+		merged = *def.DeepCopy()
 	}
 	if d == nil || def == nil {
 		return &merged
@@ -474,7 +474,7 @@ func (u *UtilityImages) ApplyDefault(def *UtilityImages) *UtilityImages {
 		return u
 	}
 
-	merged := *u
+	merged := *u.DeepCopy()
 	if merged.CloneRefs == "" {
 		merged.CloneRefs = def.CloneRefs
 	}
@@ -533,9 +533,9 @@ func (g *GCSConfiguration) ApplyDefault(def *GCSConfiguration) *GCSConfiguration
 	}
 	var merged GCSConfiguration
 	if g != nil {
-		merged = *g
+		merged = *g.DeepCopy()
 	} else {
-		merged = *def
+		merged = *def.DeepCopy()
 	}
 	if g == nil || def == nil {
 		return &merged

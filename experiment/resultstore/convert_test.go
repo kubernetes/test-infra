@@ -18,6 +18,7 @@ package main
 
 import (
 	"encoding/xml"
+	"sort"
 	"testing"
 	"time"
 
@@ -94,16 +95,16 @@ func TestStartedReposToProperties(t *testing.T) {
 				"org2/repo2": "branch1",
 			},
 			expected: []resultstore.Property{
-				{Key: "Org", Value: "org1"},
+				{Key: "Branch", Value: "branch1"},
 				{Key: "Branch", Value: "master"},
-				{Key: "Repo", Value: "repo1"},
+				{Key: "Org", Value: "org1"},
+				{Key: "Org", Value: "org2"},
 				{Key: "Repo", Value: "org1/repo1"},
 				{Key: "Repo", Value: "org1/repo1:master"},
-				{Key: "Org", Value: "org2"},
-				{Key: "Branch", Value: "branch1"},
-				{Key: "Repo", Value: "repo2"},
 				{Key: "Repo", Value: "org2/repo2"},
 				{Key: "Repo", Value: "org2/repo2:branch1"},
+				{Key: "Repo", Value: "repo1"},
+				{Key: "Repo", Value: "repo2"},
 			},
 		},
 	}
@@ -111,6 +112,9 @@ func TestStartedReposToProperties(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			properties := startedReposToProperties(tc.repos)
+			sort.Slice(properties, func(i, j int) bool {
+				return properties[i].Key+properties[i].Value < properties[j].Key+properties[j].Value
+			})
 			if !equality.Semantic.DeepEqual(properties, tc.expected) {
 				t.Errorf(diff.ObjectReflectDiff(properties, tc.expected))
 			}
