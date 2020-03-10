@@ -746,7 +746,17 @@ postsubmits:
         - cip
         args:
         - -thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
+        - -key-files=/etc/k8s-artifacts-prod-service-account/service-account.json
         - -dry-run=false
+        - -use-service-account
+        volumeMounts:
+        - name: k8s-artifacts-prod-service-account-creds
+          mountPath: /etc/k8s-artifacts-prod-service-account
+          readOnly: true
+      volumes:
+      - name: k8s-artifacts-prod-service-account-creds
+        secret:
+          secretName: k8s-artifacts-prod-service-account
     annotations:
       testgrid-dashboards: sig-release-misc
   kubernetes/community:
@@ -1130,7 +1140,17 @@ periodics:
       - cip
       args:
       - -thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
+      - -key-files=/etc/k8s-artifacts-prod-service-account/service-account.json
       - -dry-run=false
+      - -use-service-account
+      volumeMounts:
+      - name: k8s-artifacts-prod-service-account-creds
+        mountPath: /etc/k8s-artifacts-prod-service-account
+        readOnly: true
+    volumes:
+    - name: k8s-artifacts-prod-service-account-creds
+      secret:
+        secretName: k8s-artifacts-prod-service-account
   annotations:
     testgrid-dashboards: sig-release-misc
 # TODO: Move this job to a K8s cluster owned by kubernetes-wg-k8s-infra@googlegroups.com.
@@ -1163,7 +1183,7 @@ periodics:
     volumes:
     - name: k8s-artifacts-prod-bak-service-account-creds
       secret:
-        secretName: k8s-artifacts-prod-bak-service-account # TODO(fejta): https://github.com/kubernetes/k8s.io/issues/597
+        secretName: k8s-artifacts-prod-bak-service-account
   annotations:
     testgrid-dashboards: sig-release-misc
     # TODO: enable alerting once the job has stabilized
