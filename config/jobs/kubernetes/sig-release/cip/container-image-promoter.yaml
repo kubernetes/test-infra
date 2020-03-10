@@ -45,7 +45,7 @@ presubmits:
       volumes:
       - name: creds
         secret:
-          secretName: k8s-gcr-backup-test-prod-bak-service-account # TODO(fejta): https://github.com/kubernetes/k8s.io/issues/597
+          secretName: k8s-gcr-backup-test-prod-bak-service-account
   kubernetes-sigs/k8s-container-image-promoter:
   # Run promoter e2e tests.
   - name: pull-cip-e2e
@@ -73,7 +73,7 @@ presubmits:
       volumes:
       - name: k8s-cip-test-prod-service-account-creds
         secret:
-          secretName: k8s-cip-test-prod-service-account # TODO(fejta): https://github.com/kubernetes-sigs/k8s-container-image-promoter/issues/180
+          secretName: k8s-cip-test-prod-service-account
     annotations:
       testgrid-dashboards: sig-release-misc
   - name: pull-cip-auditor-e2e
@@ -101,7 +101,7 @@ presubmits:
       volumes:
       - name: k8s-gcr-audit-test-prod-service-account-creds
         secret:
-          secretName: k8s-gcr-audit-test-prod-service-account # TODO(fejta): https://github.com/kubernetes-sigs/k8s-container-image-promoter/issues/180
+          secretName: k8s-gcr-audit-test-prod-service-account
     annotations:
       testgrid-dashboards: sig-release-misc
   # Build all binaries and also run unit tests.
