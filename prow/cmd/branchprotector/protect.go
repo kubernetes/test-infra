@@ -38,11 +38,18 @@ import (
 	"k8s.io/test-infra/prow/logrusutil"
 )
 
+const (
+	defaultTokens = 300
+	defaultBurst  = 100
+)
+
 type options struct {
 	config             string
 	jobConfig          string
 	confirm            bool
 	verifyRestrictions bool
+	tokens             int
+	tokenBurst         int
 	github             flagutil.GitHubOptions
 }
 
@@ -65,6 +72,8 @@ func gatherOptions() options {
 	fs.StringVar(&o.jobConfig, "job-config-path", "", "Path to prow job configs.")
 	fs.BoolVar(&o.confirm, "confirm", false, "Mutate github if set")
 	fs.BoolVar(&o.verifyRestrictions, "verify-restrictions", false, "Verify the restrictions section of the request for authorized collaborators/teams")
+	fs.IntVar(&o.tokens, "tokens", defaultTokens, "Throttle hourly token consumption (0 to disable)")
+	fs.IntVar(&o.tokenBurst, "token-burst", defaultBurst, "Allow consuming a subset of hourly tokens in a short burst")
 	o.github.AddFlags(fs)
 	fs.Parse(os.Args[1:])
 	return o
@@ -113,7 +122,7 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting GitHub client.")
 	}
-	githubClient.Throttle(300, 100) // 300 hourly tokens, bursts of 100
+	githubClient.Throttle(o.tokens, o.tokenBurst)
 
 	p := protector{
 		client:             githubClient,

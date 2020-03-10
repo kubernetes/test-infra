@@ -61,6 +61,15 @@ func TestOptions_Validate(t *testing.T) {
 			},
 			expectedErr: false,
 		},
+		{
+			name: "override default tokens allowed",
+			opt: options{
+				config:     "dummy",
+				tokens:     5000,
+				tokenBurst: 200,
+			},
+			expectedErr: false,
+		},
 	}
 
 	for _, testCase := range testCases {
