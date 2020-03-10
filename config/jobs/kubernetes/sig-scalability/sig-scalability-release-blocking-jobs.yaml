@@ -72,6 +72,7 @@ periodics:
       - --env=KUBE_DNS_MEMORY_LIMIT=300Mi
       - --extract=ci/latest
       - --gcp-nodes=5000
+      - --gcp-node-size=e2-standard-2
       - --gcp-project=kubernetes-scale
       - --gcp-zone=us-east1-b
       - --provider=gce
@@ -142,6 +143,7 @@ periodics:
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-nodes=100
+      - --gcp-node-size=e2-standard-2
       - --gcp-project-type=scalability-project
       - --gcp-zone=us-east1-b
       - --provider=gce
