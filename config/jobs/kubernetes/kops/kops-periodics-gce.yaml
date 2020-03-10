@@ -23,7 +23,7 @@ periodics:
       - --kops-zones=us-central1-c
       - --provider=gce
       - --timeout=140m
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Firewall|Dashboard|Services.*functioning.*NodePort
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200306-3e08456-master
   annotations:
     testgrid-dashboards: google-kops-gce, sig-cluster-lifecycle-kops
