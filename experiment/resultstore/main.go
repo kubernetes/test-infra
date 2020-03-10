@@ -82,7 +82,7 @@ func (o *options) parse(flags *flag.FlagSet, args []string) error {
 	flags.Var(&o.path, "build", "Download a specific gs://bucket/to/job/build-1234 url (instead of latest builds for each --job)")
 	flags.Var(&o.jobs, "job", "Configures specific jobs to update (repeatable, all jobs when --job and --build are both empty)")
 	flags.Var(&o.buckets, "bucket", "Filter to specific gs://buckets (repeatable, all buckets when --bucket is empty)")
-	flags.StringVar(&o.testgridConfig, "config", "gs://k8s-testgrid/config", "Path to local/testgrid/config.pb or gs://bucket/testgrid/config.pb")
+	flags.StringVar(&o.testgridConfig, "config", "", "Path to /some/testgrid/config.pb (optional gs:// prefix)")
 	flags.IntVar(&o.latest, "latest", 1, "Configures the number of latest builds to migrate")
 	flags.BoolVar(&o.override, "override", false, "Replace the existing ResultStore data for each build")
 	flags.StringVar(&o.account, "service-account", "", "Authenticate with the service account at specified path")
