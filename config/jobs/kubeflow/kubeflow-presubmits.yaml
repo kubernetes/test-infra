@@ -363,9 +363,7 @@ presubmits:
         - --timeout
         - "3600"
   - name: kubeflow-pipeline-upgrade-test
-    always_run: true
     decorate: true
-    skip_report: true
     labels:
       preset-service-account: "true"
     spec:
