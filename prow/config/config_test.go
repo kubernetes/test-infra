@@ -3849,3 +3849,34 @@ func TestInRepoConfigAllowsCluster(t *testing.T) {
 		})
 	}
 }
+
+func TestGetDefaultDecorationConfigsThreadSafety(t *testing.T) {
+	const repo = "repo"
+	p := Plank{DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
+		"*": {
+			GCSConfiguration: &prowapi.GCSConfiguration{
+				MediaTypes: map[string]string{"text": "text"},
+			},
+		},
+		repo: {
+			GCSConfiguration: &prowapi.GCSConfiguration{
+				MediaTypes: map[string]string{"text": "text"},
+			},
+		},
+	}}
+
+	s1 := make(chan struct{})
+	s2 := make(chan struct{})
+
+	go func() {
+		_ = p.GetDefaultDecorationConfigs(repo)
+		close(s1)
+	}()
+	go func() {
+		_ = p.GetDefaultDecorationConfigs(repo)
+		close(s2)
+	}()
+
+	<-s1
+	<-s2
+}
