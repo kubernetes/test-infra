@@ -68,6 +68,8 @@ type statusController struct {
 	ghc      githubClient
 	gc       git.ClientFactory
 
+	mergeChecker *mergeChecker
+
 	// newPoolPending is a size 1 chan that signals that the main Tide loop has
 	// updated the 'poolPRs' field with a freshly updated pool.
 	newPoolPending chan bool
@@ -248,8 +250,10 @@ func requirementDiff(pr *PullRequest, q *config.TideQuery, cc contextChecker) (s
 func (sc *statusController) expectedStatus(log *logrus.Entry, queryMap *config.QueryMap, pr *PullRequest, pool map[string]PullRequest, ccg contextCheckerGetter, blocks blockers.Blockers, baseSHA string) (string, string, error) {
 	repo := config.OrgRepo{Org: string(pr.Repository.Owner.Login), Repo: string(pr.Repository.Name)}
 
-	if pr.Mergeable == githubql.MergeableStateConflicting {
-		return github.StatusError, fmt.Sprintf(statusNotInPool, " PR has merge conflicts."), nil
+	if reason, err := sc.mergeChecker.isAllowed(pr); err != nil {
+		return "", "", fmt.Errorf("error checking if merge is allowed: %v", err)
+	} else if reason != "" {
+		return github.StatusError, fmt.Sprintf(statusNotInPool, " "+reason), nil
 	}
 
 	cc, err := ccg()
@@ -317,11 +321,11 @@ func retestingStatus(retested []string) string {
 // targetURL determines the URL used for more details in the status
 // context on GitHub. If no PR dashboard is configured, we will use
 // the administrative Prow overview.
-func targetURL(c config.Getter, pr *PullRequest, log *logrus.Entry) string {
+func targetURL(c *config.Config, pr *PullRequest, log *logrus.Entry) string {
 	var link string
-	if tideURL := c().Tide.TargetURL; tideURL != "" {
+	if tideURL := c.Tide.TargetURL; tideURL != "" {
 		link = tideURL
-	} else if baseURL := c().Tide.GetPRStatusBaseURL(config.OrgRepo{Org: string(pr.Repository.Owner.Login), Repo: string(pr.Repository.Name)}); baseURL != "" {
+	} else if baseURL := c.Tide.GetPRStatusBaseURL(config.OrgRepo{Org: string(pr.Repository.Owner.Login), Repo: string(pr.Repository.Name)}); baseURL != "" {
 		parseURL, err := url.Parse(baseURL)
 		if err != nil {
 			log.WithError(err).Error("Failed to parse PR status base URL")
@@ -337,9 +341,10 @@ func targetURL(c config.Getter, pr *PullRequest, log *logrus.Entry) string {
 }
 
 func (sc *statusController) setStatuses(all []PullRequest, pool map[string]PullRequest, blocks blockers.Blockers, baseSHAs map[string]string, requiredContexts map[string][]string) {
+	c := sc.config()
 	// queryMap caches which queries match a repo.
 	// Make a new one each sync loop as queries will change.
-	queryMap := sc.config().Tide.Queries.QueryMap()
+	queryMap := c.Tide.Queries.QueryMap()
 	processed := sets.NewString()
 
 	process := func(pr *PullRequest) {
@@ -359,7 +364,7 @@ func (sc *statusController) setStatuses(all []PullRequest, pool map[string]PullR
 		baseSHA := baseSHAs[poolKey(org, repo, branch)]
 		baseSHAGetter := newBaseSHAGetter(baseSHAs, sc.ghc, org, repo, branch)
 
-		cr := contextCheckerGetterFactory(sc.config(), sc.gc, org, repo, branch, baseSHAGetter, headSHA, requiredContexts[prKey(pr)])
+		cr := contextCheckerGetterFactory(c, sc.gc, org, repo, branch, baseSHAGetter, headSHA, requiredContexts[prKey(pr)])
 
 		wantState, wantDesc, err := sc.expectedStatus(log, queryMap, pr, pool, cr, blocks, baseSHA)
 		if err != nil {
@@ -388,7 +393,7 @@ func (sc *statusController) setStatuses(all []PullRequest, pool map[string]PullR
 					Context:     statusContext,
 					State:       wantState,
 					Description: wantDesc,
-					TargetURL:   targetURL(sc.config, pr, log),
+					TargetURL:   targetURL(c, pr, log),
 				}); err != nil {
 				log.WithError(err).Errorf(
 					"Failed to set status context from %q to %q.",
