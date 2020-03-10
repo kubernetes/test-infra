@@ -66,7 +66,7 @@ presubmits:
       timeout: 40m
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20200212-1f7b8ac-master
+      - image: gcr.io/k8s-testimages/krte:v20200309-80efa63-master
         command:
         - wrapper.sh
         - bash
@@ -165,7 +165,7 @@ presubmits:
       timeout: 40m
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20200212-1f7b8ac-master
+      - image: gcr.io/k8s-testimages/krte:v20200309-80efa63-master
         command:
         - wrapper.sh
         - bash
