@@ -1,0 +1,8 @@
+FROM s390x/alpine:3.6.5
+
+ADD sidecar /
+
+RUN apk add --no-cache git openssh ca-certificates && \
+  update-ca-certificates
+
+ENTRYPOINT ["/sidecar"]
