@@ -295,18 +295,6 @@ func TestAssignAndReview(t *testing.T) {
 			requested: []string{"cjwagner"},
 		},
 		{
-			name:      "clap clap works too",
-			body:      "/👏👏 @cjwagner ",
-			commenter: "rando",
-			requested: []string{"cjwagner"},
-		},
-		{
-			name:      "clap clap with skin tone works too",
-			body:      "/👏🏽👏🏽 @cjwagner ",
-			commenter: "rando",
-			requested: []string{"cjwagner"},
-		},
-		{
 			name:        "multi commands",
 			body:        "/cc @cjwagner\n/uncc @spxtr",
 			commenter:   "rando",
