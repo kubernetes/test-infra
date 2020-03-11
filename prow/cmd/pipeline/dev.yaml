@@ -54,7 +54,6 @@ rules:
   - prow.k8s.io
   resources:
   - prowjobs
-  - prowjobs/status
   verbs:
   - get
   - list
