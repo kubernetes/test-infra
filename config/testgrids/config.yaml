@@ -379,28 +379,31 @@ dashboards:
     test_group_name: ci-kubernetes-node-kubelet-serial
     base_options: include-filter-by-regex=GPU|DevicePlugin
 
-- name: sig-auth
+- name: sig-auth-gce
   dashboard_tab:
   - name: gce
     test_group_name: ci-kubernetes-e2e-gci-gce
     base_options: include-filter-by-regex=sig-auth
     description: apps gce e2e tests for master branch
-  - name: gke
-    test_group_name: ci-kubernetes-e2e-gci-gke
-    base_options: include-filter-by-regex=sig-auth
-    description: apps gke e2e tests for master branch
   - name: gce-slow
     test_group_name: ci-kubernetes-e2e-gci-gce-slow
     base_options: include-filter-by-regex=sig-auth
     description: apps gce slow e2e tests for master branch
-  - name: gke-slow
-    test_group_name: ci-kubernetes-e2e-gci-gke-slow
-    base_options: include-filter-by-regex=sig-auth
-    description: apps gke slow e2e tests for master branch
   - name: gce-serial
     test_group_name: ci-kubernetes-e2e-gci-gce-serial
     base_options: include-filter-by-regex=sig-auth
     description: apps gce serial e2e tests for master branch
+
+- name: sig-auth-gke
+  dashboard_tab:
+  - name: gke
+    test_group_name: ci-kubernetes-e2e-gci-gke
+    base_options: include-filter-by-regex=sig-auth
+    description: apps gke e2e tests for master branch
+  - name: gke-slow
+    test_group_name: ci-kubernetes-e2e-gci-gke-slow
+    base_options: include-filter-by-regex=sig-auth
+    description: apps gke slow e2e tests for master branch
   - name: gke-serial
     test_group_name: ci-kubernetes-e2e-gci-gke-serial
     base_options: include-filter-by-regex=sig-auth
@@ -410,7 +413,7 @@ dashboards:
 - name: presubmits-cloud-provider-alibaba
 - name: presubmits-alibaba-cloud-csi-driver
 - name: sig-multicluster-kubemci
-- name: presubmits-secrets-store-csi-driver
+- name: sig-auth-secrets-store-csi-driver
 
 - name: presubmits-kubernetes-blocking
   dashboard_tab:
@@ -644,7 +647,6 @@ dashboard_groups:
   - presubmits-misc
   - presubmits-cloud-provider-alibaba
   - presubmits-alibaba-cloud-csi-driver
-  - presubmits-secrets-store-csi-driver
 
 - name: sig-multicluster
   dashboard_names:
@@ -659,3 +661,9 @@ dashboard_groups:
   - vmware-conformance
   - vmware-conformance-cloud-provider
   - vmware-cluster-api-provider-vsphere
+
+- name: sig-auth
+  dashboard_names:
+  - sig-auth-gce
+  - sig-auth-gke
+  - sig-auth-secrets-store-csi-driver
