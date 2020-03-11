@@ -1,0 +1,8 @@
+FROM ppc64le/alpine:3.6.5
+
+ADD clonerefs /
+
+RUN apk add --no-cache git openssh ca-certificates && \
+  update-ca-certificates
+
+ENTRYPOINT ["/clonerefs"]
