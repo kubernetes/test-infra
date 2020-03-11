@@ -141,6 +141,11 @@ func (c *Client) unlockRepo(repo string) {
 	c.repoLocks[repo].Unlock()
 }
 
+// Directory returns the directory used for caching all cloned repositories.
+func (c *Client) Directory() string {
+	return c.dir
+}
+
 // Clone clones a repository. Pass the full repository name, such as
 // "kubernetes/test-infra" as the repo.
 // This function may take a long time if it is the first time cloning the repo.

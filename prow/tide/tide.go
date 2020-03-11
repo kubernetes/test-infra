@@ -71,7 +71,6 @@ type contextChecker interface {
 type changedFilesProvider interface {
 	batchChanges([]PullRequest) config.ChangedFilesProvider
 	prChanges(*PullRequest) config.ChangedFilesProvider
-	prune()
 }
 
 // Controller knows how to sync PRs and PJs.
@@ -88,6 +87,7 @@ type Controller struct {
 	m     sync.Mutex
 	pools []Pool
 
+	repoCache
 	changedFiles changedFilesProvider
 
 	mergeChecker *mergeChecker
@@ -296,6 +296,11 @@ func newSyncController(
 	); err != nil {
 		return nil, fmt.Errorf("failed to add index for non failed batches: %w", err)
 	}
+	repoCache := &repoCacher{
+		cf:        gc,
+		repoCache: make(map[repoCacheKey]gitRepo),
+	}
+
 	return &Controller{
 		ctx:           ctx,
 		logger:        logger.WithField("controller", "sync"),
@@ -304,9 +309,9 @@ func newSyncController(
 		config:        cfg,
 		gc:            gc,
 		sc:            sc,
+		repoCache:     repoCache,
 		changedFiles: &changedFilesAgent{
-			gc:        gc,
-			repoCache: make(map[repoCacheKey]gitRepo),
+			cache: repoCache,
 		},
 		mergeChecker: mergeChecker,
 		History:      hist,
@@ -362,7 +367,7 @@ func (c *Controller) Sync() error {
 		tideMetrics.syncDuration.Set(duration.Seconds())
 		tideMetrics.syncHeartbeat.WithLabelValues("sync").Inc()
 	}()
-	defer c.changedFiles.prune()
+	defer c.repoCache.prune()
 	c.config().BranchProtectionWarnings(c.logger, c.config().PresubmitsStatic)
 
 	c.logger.Debug("Building tide pool.")
@@ -969,7 +974,7 @@ func (c *Controller) pickBatch(sp subpool, cc map[int]contextChecker) ([]PullReq
 	}
 	sp.log.Debugf("of %d possible PRs, %d are passing tests", len(sp.prs), len(candidates))
 
-	r, err := c.gc.ClientFor(sp.org, sp.repo)
+	r, err := c.repoCache.getRepoCopy(sp.org, sp.repo)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -1291,20 +1296,105 @@ func (c *Controller) takeAction(sp subpool, batchPending, successes, pendings, m
 
 type gitRepo interface {
 	DiffThreeDot(string, string) ([]string, error)
-}
-
-// changedFilesAgent uses git to get the names of files changed
-// by PRs. Each cloned repo is cached for one iteration of the sync loop.
-type changedFilesAgent struct {
-	gc git.ClientFactory
-	// repoCache caches cloned repos during this sync.
-	// This cache is destroyed when prune is called at the end of each sync.
-	repoCache map[repoCacheKey]gitRepo
-	sync.RWMutex
+	Config(string, string) error
+	Checkout(string) error
+	Merge(string) (bool, error)
+	Clean() error
 }
 
 type repoCacheKey struct {
 	org, repo string
+}
+
+type repoCache interface {
+	getRepo(string, string) (gitRepo, error)
+	// getRepoCopy provides a copy of the repo, which can be used by clients that
+	// may perform destrcutive operations on the repo, e.g. Clean.
+	getRepoCopy(string, string) (gitRepo, error)
+	// prune deletes the repo cache, forcing the fetch of any updates from
+	// remote repositories.
+	prune()
+}
+
+// repoCacher serves a cache of cloned git repos. This is needed to:
+// 1. Avoid calling ClientFor which does a git fetch for updating the repo. With
+//    repoCacher, this update is done only once per sync iteration for each repo.
+// 2. Provide a "throw-away" copy of a cloned repo, which is needed by tide as
+//    it has to delete a repo if it cannot be restored following a failed merge
+//    test.
+type repoCacher struct {
+	cf git.ClientFactory
+
+	// repoCache caches cloned repos during this sync.
+	// This cache is destroyed when prune is called at the end of each sync.
+	repoCache map[repoCacheKey]gitRepo
+	sync.RWMutex
+	copyGitClient git.ClientFactory
+}
+
+func (c *repoCacher) getCopyClient() (git.ClientFactory, error) {
+	if c.copyGitClient == nil {
+		c.Lock()
+		defer c.Unlock()
+		cc, err := git.NewLocalClientFactory(
+			c.cf.Directory(),
+			func() (name, email string, err error) { return "", "", nil },
+			func(content []byte) []byte { return content },
+		)
+		if err != nil {
+			return nil, err
+		}
+		c.copyGitClient = cc
+	}
+	return c.copyGitClient, nil
+}
+
+func (c *repoCacher) getRepoCopy(org, repo string) (gitRepo, error) {
+	_, err := c.getRepo(org, repo)
+	if err != nil {
+		return nil, err
+	}
+	cc, err := c.getCopyClient()
+	if err != nil {
+		return nil, err
+	}
+	return cc.ClientFor(org, repo)
+}
+
+func (c *repoCacher) getRepo(org, repo string) (gitRepo, error) {
+	cacheKey := repoCacheKey{
+		org:  org,
+		repo: repo,
+	}
+	c.RLock()
+	gitRepo, ok := c.repoCache[cacheKey]
+	c.RUnlock()
+	if !ok {
+		r, err := c.cf.ClientFor(org, repo)
+		if err != nil {
+			return nil, fmt.Errorf("error cloning repo %s/%s %v", org, repo, err)
+		}
+		gitRepo = r
+
+		c.Lock()
+		c.repoCache[cacheKey] = gitRepo
+		c.Unlock()
+	}
+	return gitRepo, nil
+}
+
+// prune removes any cached repositories to ensure they will be fetched
+// in the next Sync loop.
+func (c *repoCacher) prune() {
+	c.Lock()
+	defer c.Unlock()
+	c.repoCache = make(map[repoCacheKey]gitRepo)
+}
+
+// changedFilesAgent uses git to get the names of files changed
+// by PRs.
+type changedFilesAgent struct {
+	cache repoCache
 }
 
 // prChanges gets the files changed by the PR, using git client.
@@ -1312,24 +1402,9 @@ func (c *changedFilesAgent) prChanges(pr *PullRequest) config.ChangedFilesProvid
 	return func() ([]string, error) {
 		org := string(pr.Repository.Owner.Login)
 		repo := string(pr.Repository.Name)
-		cacheKey := repoCacheKey{
-			org:  org,
-			repo: repo,
-		}
-
-		c.RLock()
-		gitRepo, ok := c.repoCache[cacheKey]
-		c.RUnlock()
-		if !ok {
-			r, err := c.gc.ClientFor(org, repo)
-			if err != nil {
-				return nil, fmt.Errorf("error cloning repo %s/%s %v", org, repo, err)
-			}
-			gitRepo = r
-
-			c.Lock()
-			c.repoCache[cacheKey] = gitRepo
-			c.Unlock()
+		gitRepo, err := c.cache.getRepo(org, repo)
+		if err != nil {
+			return nil, err
 		}
 
 		changedFiles, err := gitRepo.DiffThreeDot(string(pr.BaseRef.Name), string(pr.HeadRefOID))
@@ -1355,14 +1430,6 @@ func (c *changedFilesAgent) batchChanges(prs []PullRequest) config.ChangedFilesP
 
 		return result.List(), nil
 	}
-}
-
-// prune removes any cached repositories to ensure they will be cloned
-// in the next Sync loop.
-func (c *changedFilesAgent) prune() {
-	c.Lock()
-	defer c.Unlock()
-	c.repoCache = make(map[repoCacheKey]gitRepo)
 }
 
 func refGetterFactory(ref string) config.RefGetter {

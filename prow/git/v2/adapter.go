@@ -54,6 +54,10 @@ func (a *clientFactoryAdapter) ClientFor(org, repo string) (RepoClient, error) {
 	return &repoClientAdapter{Repo: r}, err
 }
 
+func (a *clientFactoryAdapter) Directory() string {
+	return a.Client.Directory()
+}
+
 type repoClientAdapter struct {
 	*git.Repo
 }

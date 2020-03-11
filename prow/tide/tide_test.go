@@ -945,9 +945,13 @@ func testPickBatch(clients localgit.Clients, t *testing.T) {
 		},
 	})
 	c := &Controller{
-		logger:       logrus.WithField("component", "tide"),
-		gc:           gc,
-		config:       ca.Config,
+		logger: logrus.WithField("component", "tide"),
+		gc:     gc,
+		config: ca.Config,
+		repoCache: &repoCacher{
+			cf:        gc,
+			repoCache: make(map[repoCacheKey]gitRepo),
+		},
 		changedFiles: &fakeChangedFilesProvider{},
 	}
 	prs, presubmits, err := c.pickBatch(sp, map[int]contextChecker{
@@ -1685,6 +1689,10 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 				t.Fatalf("failed to construct sync controller: %v", err)
 			}
 			c.changedFiles = &fakeChangedFilesProvider{}
+			c.repoCache = &repoCacher{
+				cf:        gc,
+				repoCache: make(map[repoCacheKey]gitRepo),
+			}
 			var batchPending []PullRequest
 			if tc.batchPending {
 				batchPending = []PullRequest{{}}
@@ -2017,8 +2025,11 @@ func TestSync(t *testing.T) {
 			logger:        logrus.WithField("controller", "sync"),
 			sc:            sc,
 			mergeChecker:  mergeChecker,
-			changedFiles:  &fakeChangedFilesProvider{},
-			History:       hist,
+			repoCache: &repoCacher{
+				repoCache: make(map[repoCacheKey]gitRepo),
+			},
+			changedFiles: &fakeChangedFilesProvider{},
+			History:      hist,
 		}
 
 		if err := c.Sync(); err != nil {
@@ -3333,17 +3344,34 @@ type fakeGitRepo struct {
 func (f fakeGitRepo) DiffThreeDot(base, ref string) ([]string, error) {
 	return f.diff[ref], nil
 }
+func (f fakeGitRepo) Clean() error                    { return nil }
+func (f fakeGitRepo) Config(key, value string) error  { return nil }
+func (f fakeGitRepo) Checkout(head string) error      { return nil }
+func (f fakeGitRepo) Merge(head string) (bool, error) { return false, nil }
+
+type fakeRepoCache struct {
+	repos map[string]gitRepo
+}
+
+func (f fakeRepoCache) getRepo(org, repo string) (gitRepo, error) {
+	return f.repos[org+"/"+repo], nil
+}
+
+func (f fakeRepoCache) getRepoCopy(org, repo string) (gitRepo, error) {
+	return f.getRepo(org, repo)
+}
+
+func (f fakeRepoCache) prune() { return }
 
 func TestChangedFilesAgentBatchChanges(t *testing.T) {
 	changesProvider := &changedFilesAgent{
-		repoCache: map[repoCacheKey]gitRepo{
-			{
-				org:  "org",
-				repo: "repo",
-			}: fakeGitRepo{
-				diff: map[string][]string{
-					"sha":    {"foo"},
-					"sha256": {"foo", "bar"},
+		cache: fakeRepoCache{
+			repos: map[string]gitRepo{
+				"org/repo": fakeGitRepo{
+					diff: map[string][]string{
+						"sha":    {"foo"},
+						"sha256": {"foo", "bar"},
+					},
 				},
 			},
 		},

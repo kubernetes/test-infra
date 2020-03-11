@@ -35,6 +35,9 @@ type ClientFactory interface {
 	// ClientFor creates a client that operates on a new clone of the repo.
 	ClientFor(org, repo string) (RepoClient, error)
 
+	// Directory returns the central repo directory
+	Directory() string
+
 	// Clean removes the caches used to generate clients
 	Clean() error
 }
@@ -281,6 +284,11 @@ func (c *clientFactory) ClientFor(org, repo string) (RepoClient, error) {
 	}
 
 	return repoClient, nil
+}
+
+// Directory returns the cache directory
+func (c *clientFactory) Directory() string {
+	return c.cacheDir
 }
 
 // Clean removes the caches used to generate clients
