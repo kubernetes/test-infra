@@ -504,6 +504,88 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200311-1e25827-1.17
       name: ""
       resources: {}
+- annotations:
+    fork-per-release-periodic-interval: 6h 24h
+    description: Uses kubetest to run e2e tests (+Conformance, -Serial) against a
+      latest kubernetes release-1.17 cluster created with sigs.k8s.io/kind
+    testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,kubernetes-release-team@googlegroups.com
+    testgrid-dashboards: sig-release-1.17-blocking, sig-testing-kind
+    testgrid-num-columns-recent: "6"
+    testgrid-tab-name: kind-1.17-parallel
+  interval: 2h
+  labels:
+    preset-bazel-remote-cache-enabled: "true"
+    preset-bazel-scratch-dir: "true"
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-service-account: "true"
+  name: ci-kubernetes-kind-e2e-parallel-latest-1-17
+  spec:
+    containers:
+    - args:
+      - --job=$(JOB_NAME)
+      - --root=/go/src
+      - --repo=k8s.io/kubernetes=release-1.17
+      - --repo=sigs.k8s.io/kind=master
+      - --service-account=/etc/service-account/service-account.json
+      - --upload=gs://kubernetes-jenkins/logs
+      - --scenario=execute
+      - --
+      - ./../../sigs.k8s.io/kind/hack/ci/e2e.sh
+      env:
+      - name: PARALLEL
+        value: "true"
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200311-1e25827-1.17
+      name: ""
+      resources:
+        requests:
+          cpu: "2"
+          memory: 9000Mi
+      securityContext:
+        privileged: true
+- annotations:
+    fork-per-release-periodic-interval: 6h 24h
+    description: Uses kubetest to run e2e tests (+Conformance, -Serial) against a
+      latest kubernetes release-1.17 IPv6 cluster created with sigs.k8s.io/kind
+    testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,kubernetes-release-team@googlegroups.com
+    testgrid-dashboards: sig-release-1.17-blocking, sig-testing-kind
+    testgrid-num-columns-recent: "6"
+    testgrid-tab-name: kind-ipv6-1.17-parallel
+  interval: 2h
+  labels:
+    preset-bazel-remote-cache-enabled: "true"
+    preset-bazel-scratch-dir: "true"
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-service-account: "true"
+  name: ci-kubernetes-kind-ipv6-e2e-parallel-latest-1-17
+  spec:
+    containers:
+    - args:
+      - --job=$(JOB_NAME)
+      - --root=/go/src
+      - --repo=k8s.io/kubernetes=release-1.17
+      - --repo=sigs.k8s.io/kind=master
+      - --service-account=/etc/service-account/service-account.json
+      - --upload=gs://kubernetes-jenkins/logs
+      - --scenario=execute
+      - --
+      - ./../../sigs.k8s.io/kind/hack/ci/e2e.sh
+      env:
+      - name: DOCKER_IN_DOCKER_IPV6_ENABLED
+        value: "true"
+      - name: IP_FAMILY
+        value: ipv6
+      - name: PARALLEL
+        value: "true"
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200311-1e25827-1.17
+      name: ""
+      resources:
+        requests:
+          cpu: "2"
+          memory: 9000Mi
+      securityContext:
+        privileged: true
 postsubmits:
   kubernetes/kubernetes:
   - annotations:
@@ -1151,3 +1233,65 @@ presubmits:
             cpu: "4"
         securityContext:
           privileged: true
+  - always_run: false
+    branches:
+    - release-1.17
+    decorate: true
+    decoration_config:
+      timeout: 40m0s
+    extra_refs:
+    - base_ref: master
+      org: kubernetes
+      path_alias: k8s.io/kubeadm
+      repo: kubeadm
+    - base_ref: master
+      org: kubernetes-sigs
+      path_alias: sigs.k8s.io/kind
+      repo: kind
+    labels:
+      preset-bazel-remote-cache-enabled: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-dind-enabled: "true"
+    name: pull-kubernetes-e2e-kind
+    path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - args:
+        - --provider=skeleton
+        - --deployment=kind
+        - --kind-binary-version=stable
+        - --kind-config-path=./../../k8s.io/kubeadm/tests/e2e/kind/ha-cp/ha-cp.yaml
+        - --build=bazel
+        - --up
+        - --test
+        - --check-version-skew=false
+        - --down
+        - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Serial\] --num-nodes=3
+        - --ginkgo-parallel
+        - --timeout=30m
+        command:
+        - runner.sh
+        - kubetest
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200311-1e25827-1.17
+        name: ""
+        resources:
+          requests:
+            cpu: "2"
+            memory: 9000Mi
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /lib/modules
+          name: modules
+          readOnly: true
+        - mountPath: /sys/fs/cgroup
+          name: cgroup
+      volumes:
+      - hostPath:
+          path: /lib/modules
+          type: Directory
+        name: modules
+      - hostPath:
+          path: /sys/fs/cgroup
+          type: Directory
+        name: cgroup
