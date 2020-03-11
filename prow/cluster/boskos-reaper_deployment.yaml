@@ -18,7 +18,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: boskos-reaper
-        image: gcr.io/k8s-prow/boskos/reaper:v20200305-062b3366c
+        image: gcr.io/k8s-prow/boskos/reaper:v20200309-d2550f7ce
         args:
         - --boskos-url=http://boskos.test-pods.svc.cluster.local.
         - --resource-type=gce-project,gke-project,gpu-project,ingress-project,istio-project,scalability-presubmit-project,scalability-project,aws-account

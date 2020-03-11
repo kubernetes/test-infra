@@ -22,7 +22,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/krte:v20200212-1f7b8ac-master
+    - image: gcr.io/k8s-testimages/krte:v20200309-80efa63-master
       command:
       - wrapper.sh
       - bash
@@ -72,7 +72,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/krte:v20200212-1f7b8ac-master
+    - image: gcr.io/k8s-testimages/krte:v20200309-80efa63-master
       command:
       - wrapper.sh
       - bash
@@ -121,7 +121,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200306-3e08456-1.17
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200311-1e25827-1.17
       env:
       # skip serial tests and run with --ginkgo-parallel
       - name: "PARALLEL"
@@ -162,7 +162,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200306-3e08456-1.17
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200311-1e25827-1.17
       env:
       # enable IPV6 in bootstrap image
       - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
@@ -209,7 +209,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200306-3e08456-1.16
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200311-1e25827-1.16
       env:
       # skip serial tests and run with --ginkgo-parallel
       - name: "PARALLEL"
@@ -250,7 +250,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200306-3e08456-1.16
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200311-1e25827-1.16
       env:
       # enable IPV6 in bootstrap image
       - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
@@ -297,7 +297,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200306-3e08456-1.15
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200311-1e25827-1.15
       env:
       # skip serial tests and run with --ginkgo-parallel
       - name: "PARALLEL"
