@@ -73,6 +73,9 @@ dashboards:
     - name: conformance-stable
       test_group_name: arm64-conformance-stable
       description: Runs conformance test by using kubetest against latest stable version of kubernetes on arm64
+    - name: e2e
+      test_group_name: arm64-e2e
+      description: Runs e2e test by using kubetest against latest version of kubernetes on arm64
     - name: integration-tests
       test_group_name: arm64-integration
       description: Integration test results for Arm64
