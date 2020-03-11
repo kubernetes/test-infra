@@ -21,7 +21,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200306-3e08456-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200311-1e25827-master
       command:
       - "runner.sh"
       - "./kubeadm/hack/ci-e2e.sh"
