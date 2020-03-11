@@ -116,3 +116,27 @@ postsubmits:
               - --scratch-bucket=gs://k8s-staging-capi-kubeadm-gcb
               - --env-passthrough=PULL_BASE_REF
               - .
+  kubernetes-sigs/cluster-api-provider-openstack:
+    - name: post-cluster-api-provider-openstack-push-images
+      cluster: test-infra-trusted
+      annotations:
+        # this is the name of some testgrid dashboard to report to.
+        testgrid-dashboards: sig-cluster-lifecycle-image-pushes
+      decorate: true
+      branches:
+        - ^master$
+        - ^release-0.2$
+        # this is a regex for semver, from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
+        - ^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
+      spec:
+        serviceAccountName: deployer # TODO(fejta): use pusher
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20200213-0032cdb
+            command:
+              - /run.sh
+            args:
+              # this is the project GCB will run in, which is the same as the GCR images are pushed to.
+              - --project=k8s-staging-capi-openstack
+              - --scratch-bucket=gs://k8s-staging-capi-openstack-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - .
