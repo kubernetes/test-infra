@@ -571,9 +571,11 @@ periodics:
       - --timeout=180m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200311-1e25827-master
   annotations:
-    testgrid-dashboards: sig-release-master-informing, google-gce
+    testgrid-dashboards: sig-release-master-blocking, google-gce
     testgrid-tab-name: gce-cos-master-reboot
     description: Uses kubetest to run a subset of e2e tests (+Feature:Reboot) against a cluster created with cluster/kube-up.sh
+    testgrid-alert-email: gke-node-experience-team+alerts@google.com
+    testgrid-num-failures-to-alert: '6'
 
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gce-serial
