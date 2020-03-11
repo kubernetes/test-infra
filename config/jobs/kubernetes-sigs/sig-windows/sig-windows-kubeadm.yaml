@@ -21,9 +21,10 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200306-3e08456-master
-        command:
-          - "./kubeadm/hack/ci-e2e.sh"
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200306-3e08456-master
+      command:
+      - "runner.sh"
+      - "./kubeadm/hack/ci-e2e.sh"
   annotations:
     testgrid-dashboards: sig-windows
     testgrid-tab-name: kubeadm-windows-gcp-k8s-stable
