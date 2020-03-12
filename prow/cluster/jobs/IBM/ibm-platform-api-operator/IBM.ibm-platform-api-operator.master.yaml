@@ -3,6 +3,8 @@ presubmits:
   - name: build_ibm-platform-api-operator
     branches:
     - ^master$
+    labels:
+      preset-service-account: "true"
     decorate: true
     always_run: true
     path_alias: github.com/IBM/ibm-platform-api-operator
@@ -10,9 +12,10 @@ presubmits:
     spec:
       containers:
       - command:
+        - entrypoint
         - make
         - build
-        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
+        image: quay.io/multicloudlab/multicloudlab-builder:v20191217-d33a10d
         name: ""
         securityContext:
           privileged: true
@@ -105,14 +108,17 @@ postsubmits:
   - name: build_ibm-platform-api-operator_postsubmit
     branches:
     - ^master$
+    labels:
+      preset-service-account: "true"
     decorate: true
     path_alias: github.com/IBM/ibm-platform-api-operator
     spec:
       containers:
       - command:
+        - entrypoint
         - make
         - build
-        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
+        image: quay.io/multicloudlab/multicloudlab-builder:v20191217-d33a10d
         name: ""
         securityContext:
           privileged: true
