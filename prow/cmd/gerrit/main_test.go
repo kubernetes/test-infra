@@ -40,7 +40,7 @@ func (o fakeOpener) Reader(ctx context.Context, path string) (io.ReadCloser, err
 	return nil, storage.ErrObjectNotExist
 }
 
-func (o fakeOpener) Writer(ctx context.Context, path string) (io.WriteCloser, error) {
+func (o fakeOpener) Writer(ctx context.Context, path string, _ ...io.WriterOptions) (io.WriteCloser, error) {
 	return nil, errors.New("do not call Writer")
 }
 

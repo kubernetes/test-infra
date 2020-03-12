@@ -23,6 +23,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"path"
 	"strings"
 	"sync"
 
@@ -50,7 +51,7 @@ type (
 // Opener has methods to read and write paths
 type Opener interface {
 	Reader(ctx context.Context, path string) (ReadCloser, error)
-	Writer(ctx context.Context, path string) (WriteCloser, error)
+	Writer(ctx context.Context, path string, opts ...WriterOptions) (WriteCloser, error)
 }
 
 type opener struct {
@@ -164,9 +165,7 @@ func (o *opener) Reader(ctx context.Context, path string) (io.ReadCloser, error)
 		if err != nil {
 			return nil, fmt.Errorf("bad gcs path: %v", err)
 		}
-		if g != nil {
-			return g.NewReader(ctx)
-		}
+		return g.NewReader(ctx)
 	}
 	if strings.HasPrefix(path, "/") {
 		return os.Open(path)
@@ -184,25 +183,36 @@ func (o *opener) Reader(ctx context.Context, path string) (io.ReadCloser, error)
 }
 
 // Writer returns a writer that overwrites the path.
-func (o *opener) Writer(ctx context.Context, path string) (io.WriteCloser, error) {
-	if strings.HasPrefix(path, "gs://") {
-		g, err := o.openGCS(path)
+func (o *opener) Writer(ctx context.Context, p string, opts ...WriterOptions) (io.WriteCloser, error) {
+	if strings.HasPrefix(p, "gs://") {
+		g, err := o.openGCS(p)
 		if err != nil {
 			return nil, fmt.Errorf("bad gcs path: %v", err)
 		}
-		if g != nil {
-			return g.NewWriter(ctx), nil
+		writer := g.NewWriter(ctx)
+		for _, opt := range opts {
+			opt.Apply(writer, nil)
 		}
+		return writer, nil
 	}
-	if strings.HasPrefix(path, "/") {
-		return os.Create(path)
+	if strings.HasPrefix(p, "/") {
+		// create parent dir if doesn't exist
+		dir := path.Dir(p)
+		if err := os.MkdirAll(dir, 0755); err != nil {
+			return nil, fmt.Errorf("create directory %q: %w", dir, err)
+		}
+		return os.OpenFile(p, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
 	}
 
-	bucket, relativePath, err := o.getBucket(ctx, path)
+	bucket, relativePath, err := o.getBucket(ctx, p)
 	if err != nil {
 		return nil, err
 	}
-	writer, err := bucket.NewWriter(ctx, relativePath, nil)
+	var wOpts blob.WriterOptions
+	for _, opt := range opts {
+		opt.Apply(nil, &wOpts)
+	}
+	writer, err := bucket.NewWriter(ctx, relativePath, &wOpts)
 	if err != nil {
 		return nil, err
 	}

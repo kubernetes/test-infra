@@ -35,10 +35,15 @@ filegroup(
 
 go_test(
     name = "go_default_test",
-    srcs = ["run_test.go"],
+    srcs = [
+        "options_test.go",
+        "run_test.go",
+    ],
     embed = [":go_default_library"],
     deps = [
+        "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/entrypoint:go_default_library",
+        "//prow/gcsupload:go_default_library",
         "//prow/pod-utils/wrapper:go_default_library",
         "@io_k8s_apimachinery//pkg/api/equality:go_default_library",
         "@io_k8s_apimachinery//pkg/util/diff:go_default_library",

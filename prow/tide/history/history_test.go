@@ -29,6 +29,7 @@ import (
 	"cloud.google.com/go/storage"
 	"k8s.io/apimachinery/pkg/util/diff"
 
+	pkgio "k8s.io/test-infra/pkg/io"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
 
@@ -147,7 +148,7 @@ func (t *testOpener) Reader(ctx context.Context, path string) (io.ReadCloser, er
 	return t, nil
 }
 
-func (t *testOpener) Writer(ctx context.Context, path string) (io.WriteCloser, error) {
+func (t *testOpener) Writer(ctx context.Context, path string, _ ...pkgio.WriterOptions) (io.WriteCloser, error) {
 	if path != fakePath {
 		return nil, fmt.Errorf("path %q != expected %q", path, fakePath)
 	}
