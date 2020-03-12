@@ -164,7 +164,7 @@ func NewClient(instances map[string][]string) (*Client, error) {
 func auth(c *Client, cookiefilePath string) {
 	logrus.Info("Starting auth loop...")
 	var previousToken string
-	wait := 10 * time.Minute
+	wait := time.Minute
 	for {
 		raw, err := ioutil.ReadFile(cookiefilePath)
 		if err != nil {
