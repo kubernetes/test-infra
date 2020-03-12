@@ -2672,7 +2672,41 @@ func TestSlackReporterValidation(t *testing.T) {
 		})
 	}
 }
+func TestManagedHmacEntityValidation(t *testing.T) {
+	testCases := []struct {
+		name       string
+		prowConfig Config
+		shouldFail bool
+	}{
+		{
+			name:       "Missing managed HmacEntities",
+			prowConfig: Config{ProwConfig: ProwConfig{ManagedWebhooks: nil}},
+			shouldFail: false,
+		},
+		{
+			name: "Config with all valid dates",
+			prowConfig: Config{ProwConfig: ProwConfig{ManagedWebhooks: map[string]ManagedWebhookInfo{"foo/bar": {TokenCreatedAfter: time.Now()},
+				"foo/baz": {TokenCreatedAfter: time.Now()}}}},
+			shouldFail: false,
+		},
+		{
+			name: "Config with one invalid dates",
+			prowConfig: Config{ProwConfig: ProwConfig{ManagedWebhooks: map[string]ManagedWebhookInfo{"foo/bar": {TokenCreatedAfter: time.Now()},
+				"foo/baz": {TokenCreatedAfter: time.Now().Add(time.Hour)}}}},
+			shouldFail: true,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
 
+			err := tc.prowConfig.validateComponentConfig()
+			if tc.shouldFail != (err != nil) {
+				t.Errorf("%s: Unexpected outcome. Error expected %v, Error found %s", tc.name, tc.shouldFail, err)
+			}
+
+		})
+	}
+}
 func TestValidateTriggering(t *testing.T) {
 	testCases := []struct {
 		name        string
