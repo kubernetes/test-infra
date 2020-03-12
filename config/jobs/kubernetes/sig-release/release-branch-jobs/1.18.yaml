@@ -461,7 +461,7 @@ periodics:
       name: ""
       resources:
         requests:
-          cpu: "4"
+          cpu: "6"
       securityContext:
         privileged: true
 - annotations:

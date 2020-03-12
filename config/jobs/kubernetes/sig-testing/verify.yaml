@@ -215,4 +215,4 @@ periodics:
         privileged: true
       resources:
         requests:
-          cpu: 4
+          cpu: 6
