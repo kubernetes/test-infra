@@ -192,7 +192,7 @@ than in this central README, but here we are for now.
 ### image-validation jobs
 
 These test different master/node image versions against multiple k8s branches. If you
-want to change these, update [`experiment/test_config.yaml`](/experiment/test_config.yaml)
+want to change these, update [`releng/test_config.yaml`](/releng/test_config.yaml)
 and then run
 
 ```shell
@@ -203,12 +203,12 @@ and then run
 ### release-branch jobs
 
 When a release branch of kubernetes is first cut, the current set of master jobs
-must be forked to use the new release branch. Use [`experiment/config-forker`] to
+must be forked to use the new release branch. Use [`releng/config-forker`] to
 accomplish this, eg:
 
-```
+```shell
 # from test-infra root
-bazel run //experiment/config-forker -- \
+bazel run //releng/config-forker -- \
   --job-config $(pwd)/config/jobs \
   --version 1.15 \
   --output $(pwd)/config/jobs/kubernetes/sig-release/release-branch-jobs/1.15.yaml
@@ -219,7 +219,7 @@ bazel run //experiment/config-forker -- \
 [testgrid annotations]: /testgrid/config.md#prow-job-configuration
 [testgrid.k8s.io]: https://testgrid.k8s.io
 
-[`experiment/config-forker`]: /experiment/config-forker
+[`releng/config-forker`]: /releng/config-forker
 [`images/`]: /images
 
 [periodic-kubernetes-e2e-packages-pushed]: https://github.com/kubernetes/test-infra/blob/688d365adf7f71e33a4249c7b90d7e84c105dfc5/config/jobs/kubernetes/sig-cluster-lifecycle/packages.yaml#L3-L16
