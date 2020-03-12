@@ -670,7 +670,9 @@ func (c *Cluster) getAKSEngine(retry int) error {
 }
 
 func (c *Cluster) generateARMTemplates() error {
-	if err := control.FinishRunning(exec.Command(c.aksEngineBinaryPath, "generate", c.apiModelPath, "--output-directory", c.outputDir)); err != nil {
+	cmd := exec.Command(c.aksEngineBinaryPath, "generate", c.apiModelPath, "--output-directory", c.outputDir)
+	cmd.Dir = os.TempDir()
+	if err := control.FinishRunning(cmd); err != nil {
 		return fmt.Errorf("failed to generate ARM templates: %v.", err)
 	}
 	return nil
