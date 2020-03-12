@@ -195,8 +195,9 @@ periodics:
       - --test-cmd-args=--testconfig=testing/density/config.yaml
       - --test-cmd-args=--testconfig=testing/load/config.yaml
       - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
-      - --test-cmd-args=--testoverrides=./testing/chaosmonkey/override.yaml
-      - --test-cmd-args=--testoverrides=./testing/chaosmonkey/ignore_node_killer_container_restarts_100.yaml
+      # TODO(oxddr): re-enable this once we understand impact on https://github.com/kubernetes/kubernetes/issues/89051
+      # - --test-cmd-args=--testoverrides=./testing/chaosmonkey/override.yaml
+      # - --test-cmd-args=--testoverrides=./testing/chaosmonkey/ignore_node_killer_container_restarts_100.yaml
       - --test-cmd-args=--testoverrides=./testing/load/gce/throughput_override.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=120m
