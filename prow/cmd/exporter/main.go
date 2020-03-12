@@ -68,7 +68,7 @@ func mustRegister(component string, lister lister) *prometheus.Registry {
 }
 
 func main() {
-	logrusutil.ComponentInit("exporter")
+	logrusutil.ComponentInit()
 	o := gatherOptions(flag.NewFlagSet(os.Args[0], flag.ExitOnError), os.Args[1:]...)
 	if err := o.Validate(); err != nil {
 		logrus.WithError(err).Fatal("Invalid options")

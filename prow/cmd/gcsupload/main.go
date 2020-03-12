@@ -29,7 +29,7 @@ import (
 )
 
 func main() {
-	logrusutil.ComponentInit("gcsupload")
+	logrusutil.ComponentInit()
 
 	o := gcsupload.NewOptions()
 	if err := options.Load(o); err != nil {

@@ -680,7 +680,7 @@ func newClient(tokenPath string, tokens, tokenBurst int, dryRun bool, graphqlEnd
 // It took about 10 minutes to process all my 8 repos with all wanted "kubernetes" labels (70+)
 // Next run takes about 22 seconds to check if all labels are correct on all repos
 func main() {
-	logrusutil.ComponentInit("label_sync")
+	logrusutil.ComponentInit()
 
 	flag.Parse()
 	if *debug {

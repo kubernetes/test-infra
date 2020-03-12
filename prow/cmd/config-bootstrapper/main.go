@@ -146,7 +146,7 @@ func run(sourcePaths []string, defaultNamespace string, configUpdater plugins.Co
 }
 
 func main() {
-	logrusutil.ComponentInit("config-bootstrapper")
+	logrusutil.ComponentInit()
 
 	o := gatherOptions()
 	if err := o.Validate(); err != nil {
