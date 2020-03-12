@@ -24,8 +24,6 @@ presubmits:
         args:
         - ./hack/jenkins/verify-dockerized.sh
         env:
-        - name: KUBE_FORCE_VERIFY_CHECKS
-          value: "n"
         - name: EXCLUDE_TYPECHECK
           value: "y"
         - name: EXCLUDE_GODEP
@@ -58,8 +56,6 @@ presubmits:
         args:
         - ./hack/jenkins/verify-dockerized.sh
         env:
-        - name: KUBE_FORCE_VERIFY_CHECKS
-          value: "n"
         - name: EXCLUDE_TYPECHECK
           value: "y"
         - name: EXCLUDE_GODEP
@@ -92,8 +88,6 @@ presubmits:
         args:
         - ./hack/jenkins/verify-dockerized.sh
         env:
-        - name: KUBE_FORCE_VERIFY_CHECKS
-          value: "n"
         - name: EXCLUDE_TYPECHECK
           value: "y"
         - name: EXCLUDE_GODEP
@@ -137,8 +131,6 @@ periodics:
       args:
       - ./hack/jenkins/verify-dockerized.sh
       env:
-      - name: KUBE_FORCE_VERIFY_CHECKS
-        value: "y"
       - name: EXCLUDE_READONLY_PACKAGE
         value: "y"
       - name: KUBE_VERIFY_GIT_BRANCH
