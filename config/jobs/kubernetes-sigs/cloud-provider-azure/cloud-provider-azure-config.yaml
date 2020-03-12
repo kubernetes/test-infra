@@ -695,35 +695,6 @@ periodics:
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: "Runs Kubernetes multiple availability zones tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) on VMSS."
 
-# scalability tests
-- interval: 4h
-  name: ci-kubernetes-kubemark-100-azure-test
-  decorate: true
-  decoration_config:
-    timeout: 5h
-  annotations:
-    testgrid-dashboards: provider-azure-cloud-provider-azure, provider-azure-scalability, provider-azure-periodic
-    testgrid-tab-name: ci-kubernetes-kubemark-100-azure-test
-    testgrid-num-failures-to-alert: '1'
-    description: "Runs kubemark tests (100 nodes) with the Azure cloud provider enabled. (test only)"
-  labels:
-    preset-service-account: "true"
-    preset-azure-cred: "true"
-    preset-dind-enabled: "true"
-  spec:
-    containers:
-    - image: ss104301/kubemark-performance-tests-on-azure:latest
-      command:
-      - bash
-      - automation/runner.sh
-    securityContext:
-        privileged: true
-    env:
-    - name: WORKSPACE
-      value: /kubemark-performance-tests-on-azure
-    - name: ARTIFACTS
-      value: $(WORKSPACE)/_artifacts
-
 # conformance test against kubernetes master branch with `azure` ipv6
 - interval: 4h
   name: ci-kubernetes-azure-conformance-ipv6
@@ -777,3 +748,52 @@ periodics:
     description: Runs conformance tests using kubetest against latest kubernetes master with an IPv6 azure cluster
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     testgrid-num-columns-recent: '3'
+
+# scalability tests
+- interval: 4h
+  name: ci-kubernetes-kubemark-100-azure-test
+  decorate: true
+  decoration_config:
+    timeout: 5h
+  annotations:
+    testgrid-dashboards: provider-azure-cloud-provider-azure, provider-azure-scalability, provider-azure-periodic
+    testgrid-tab-name: ci-kubernetes-kubemark-100-azure-test
+    testgrid-num-failures-to-alert: '1'
+    description: "Runs kubemark tests (100 nodes) with the Azure cloud provider enabled. (test only)"
+  labels:
+    preset-service-account: "true"
+    preset-azure-cred: "true"
+    preset-dind-enabled: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: cloud-provider-azure
+    base_ref: master
+    path_alias: sigs.k8s.io/cloud-provider-azure
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200311-1e25827-master
+      args:
+      - --job=$(JOB_NAME)
+      - --repo=k8s.io/kubernetes=release-1.17
+      - --repo=sigs.k8s.io/$(REPO_NAME)=master
+      - --root=/go/src
+      - --service-account=/etc/service-account/service-account.json
+      - --upload=gs://kubernetes-jenkins/logs/
+      - --scenario=kubernetes_e2e
+      - --
+      - --gce-ssh=
+      - --up=true
+      - --deployment=aksengine
+      - --aksengine-creds=$AZURE_CREDENTIALS
+      - --build-with-kubemark=true
+      - --build=none
+      - --provider=skeleton
+      - --kubemark-build-script-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/kubemark/build-kubemark.sh
+      - --kubemark-cluster-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/kubemark/templates/kubemark-cluster.json
+      - --external-cluster-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/kubemark/templates/external-cluster.json
+      - --hollow-nodes-deployment-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/kubemark/templates/hollow-node.yaml
+      - --clusterloader2-bin-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/kubemark/bin/clusterloader-Linux
+      - --kubemark-size=100
+      - --kubemark-location=eastus2
+      securityContext:
+        privileged: true
