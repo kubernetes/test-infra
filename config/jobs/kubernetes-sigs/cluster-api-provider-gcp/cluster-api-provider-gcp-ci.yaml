@@ -13,7 +13,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200311-1e25827-experimental
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200311-7540faa-experimental
       command:
       - "runner.sh"
       - "./scripts/ci-build.sh"
@@ -34,7 +34,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200311-1e25827-experimental
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200311-7540faa-experimental
       args:
       - "runner.sh"
       - "./scripts/ci-test.sh"
@@ -69,7 +69,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200311-1e25827-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200311-7540faa-experimental
         env:
           - name: "CAPI_BRANCH"
             value: "master"
@@ -121,7 +121,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200311-1e25827-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200311-7540faa-experimental
         env:
           - name: "CAPI_BRANCH"
             value: "stable"
@@ -175,7 +175,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200311-1e25827-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200311-7540faa-experimental
         env:
           - name: "CAPI_BRANCH"
             value: "stable"
