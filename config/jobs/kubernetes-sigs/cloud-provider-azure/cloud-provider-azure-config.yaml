@@ -776,8 +776,8 @@ periodics:
       - runner.sh
       - kubetest
       args:
-      - --gce-ssh=
-      - --up=true
+      - --up
+      - --dump=$(ARTIFACTS)
       - --deployment=aksengine
       - --aksengine-creds=$AZURE_CREDENTIALS
       - --build-with-kubemark=true
