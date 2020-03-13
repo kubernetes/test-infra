@@ -331,6 +331,7 @@ larger set of contributors to apply/remove them.
 | <a id="area/prow/peribolos" href="#area/prow/peribolos">`area/prow/peribolos`</a> | Issues or PRs related to prow's peribolos component| label | |
 | <a id="area/prow/phony" href="#area/prow/phony">`area/prow/phony`</a> | Issues or PRs related to prow's phony component| label | |
 | <a id="area/prow/plank" href="#area/prow/plank">`area/prow/plank`</a> | Issues or PRs related to prow's plank component| label | |
+| <a id="area/prow/plugins" href="#area/prow/plugins">`area/prow/plugins`</a> | Issues or PRs related to prow's plugins for the hook component| label | |
 | <a id="area/prow/pod-utilities" href="#area/prow/pod-utilities">`area/prow/pod-utilities`</a> | Issues or PRs related to prow's pod-utilities component| label | |
 | <a id="area/prow/pubsub" href="#area/prow/pubsub">`area/prow/pubsub`</a> | Issues or PRs related to prow's pubsub reporter component| label | |
 | <a id="area/prow/sidecar" href="#area/prow/sidecar">`area/prow/sidecar`</a> | Issues or PRs related to prow's sidecar component| label | |
