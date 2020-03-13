@@ -96,10 +96,10 @@ func PathForRefs(baseDir string, refs prowapi.Refs) string {
 	} else {
 		// try to parse the host from the repoLink URL
 		u, err := url.Parse(refs.RepoLink)
-		if err != nil {
-			clonePath = fmt.Sprintf("github.com/%s/%s", refs.Org, refs.Repo)
-		} else {
+		if err == nil && u.Host != "" {
 			clonePath = fmt.Sprintf("%s/%s/%s", u.Host, refs.Org, refs.Repo)
+		} else {
+			clonePath = fmt.Sprintf("github.com/%s/%s", refs.Org, refs.Repo)
 		}
 	}
 	return path.Join(baseDir, "src", clonePath)
@@ -117,11 +117,10 @@ func gitCtxForRefs(refs prowapi.Refs, baseDir string, env []string, oauthToken s
 	// try to parse the host from the repoLink URL
 	var repositoryURI string
 	u, err := url.Parse(refs.RepoLink)
-	if err != nil {
-		repositoryURI = fmt.Sprintf("https://github.com/%s/%s.git", refs.Org, refs.Repo)
-
-	} else {
+	if err == nil && u.Host != "" {
 		repositoryURI = fmt.Sprintf("https://%s/%s/%s.git", u.Host, refs.Org, refs.Repo)
+	} else {
+		repositoryURI = fmt.Sprintf("https://github.com/%s/%s.git", refs.Org, refs.Repo)
 	}
 	g := gitCtx{
 		cloneDir:      PathForRefs(baseDir, refs),
