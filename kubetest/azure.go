@@ -880,6 +880,7 @@ func isURLExist(url string) bool {
 // getImageVersion returns the image version based on the project's latest git commit
 func getImageVersion(projectPath string) string {
 	cmd := exec.Command("git", "describe", "--tags", "--always", "--dirty")
+	cmd.Dir = projectPath
 	output, err := cmd.Output()
 	if err != nil {
 		return ""
