@@ -44,6 +44,7 @@ import (
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation"
+	"k8s.io/test-infra/prow/errorutil"
 	"sigs.k8s.io/yaml"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -153,6 +154,10 @@ type ProwConfig struct {
 	// DefaultJobTimeout this is default deadline for prow jobs. This value is used when
 	// no timeout is configured at the job level. This value is set to 24 hours.
 	DefaultJobTimeout *metav1.Duration `json:"default_job_timeout,omitempty"`
+
+	// ManagedWebhooks contains information about all github repositories and organizations which are using
+	// non-global Hmac token.
+	ManagedWebhooks ManagedWebhooks `json:"managed_webhooks,omitempty"`
 }
 
 type InRepoConfig struct {
@@ -666,6 +671,14 @@ type GitHubOptions struct {
 	LinkURL *url.URL `json:"-"`
 }
 
+// ManagedWebhookInfo contains metadata about the repo/org which is onboarded.
+type ManagedWebhookInfo struct {
+	TokenCreatedAfter time.Time `json:"tokenCreatedAfter"`
+}
+
+// ManagedWebhooks contains information about all the repos/orgs which are onboraded with private tokens.
+type ManagedWebhooks map[string]ManagedWebhookInfo
+
 // SlackReporter represents the config for the Slack reporter. The channel can be overridden
 // on the job via the .reporter_config.slack.channel property
 type SlackReporter struct {
@@ -1118,6 +1131,19 @@ func (c *Config) validateComponentConfig() error {
 	for k, v := range c.Plank.JobURLPrefixConfig {
 		if _, err := url.Parse(v); err != nil {
 			return fmt.Errorf(`Invalid value for Planks job_url_prefix_config["%s"]: %v`, k, err)
+		}
+	}
+
+	var validationErrs []error
+
+	if c.ManagedWebhooks != nil {
+		for repoName, repoValue := range c.ManagedWebhooks {
+			if repoValue.TokenCreatedAfter.After(time.Now()) {
+				validationErrs = append(validationErrs, fmt.Errorf("tokenCreatedAfter %s can be no later than current time for repo/org %s", repoValue.TokenCreatedAfter, repoName))
+			}
+		}
+		if len(validationErrs) > 0 {
+			return errorutil.NewAggregate(validationErrs...)
 		}
 	}
 
