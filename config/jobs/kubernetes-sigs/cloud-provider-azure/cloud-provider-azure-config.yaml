@@ -750,7 +750,7 @@ periodics:
     testgrid-num-columns-recent: '3'
 
 # scalability tests
-- interval: 4h
+- interval: 2h
   name: ci-kubernetes-kubemark-100-azure-test
   decorate: true
   decoration_config:
@@ -773,7 +773,6 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20200311-1e25827-master
       args:
-      - --
       - --gce-ssh=
       - --up=true
       - --deployment=aksengine
