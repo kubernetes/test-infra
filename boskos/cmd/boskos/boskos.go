@@ -68,7 +68,7 @@ func init() {
 }
 
 func main() {
-	logrusutil.ComponentInit("boskos")
+	logrusutil.ComponentInit()
 	kubeClientOptions.AddFlags(flag.CommandLine)
 	flag.Parse()
 	level, err := logrus.ParseLevel(*logLevel)

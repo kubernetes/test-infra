@@ -1,5 +1,5 @@
 /*
-Copyright 2018 The Kubernetes Authors.
+Copyright 2020 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,28 +14,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+// version holds variables that identify a Prow binary's name and version
+package version
 
-import (
-	"os"
-
-	"github.com/sirupsen/logrus"
-	"k8s.io/test-infra/prow/entrypoint"
-	"k8s.io/test-infra/prow/logrusutil"
-	"k8s.io/test-infra/prow/pod-utils/options"
+var (
+	// Name is the colloquial identifier for the compiled component
+	Name = "unset"
+	// Version is a concatenation of the commit SHA and date for the build
+	Version = "0"
 )
 
-func main() {
-	logrusutil.ComponentInit()
-
-	o := entrypoint.NewOptions()
-	if err := options.Load(o); err != nil {
-		logrus.Fatalf("Could not resolve options: %v", err)
-	}
-
-	if err := o.Validate(); err != nil {
-		logrus.Fatalf("Invalid options: %v", err)
-	}
-
-	os.Exit(o.Run())
+func UserAgent() string {
+	return Name + "/" + Version
 }

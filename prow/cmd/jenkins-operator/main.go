@@ -124,7 +124,7 @@ func gatherOptions() options {
 }
 
 func main() {
-	logrusutil.ComponentInit("jenkins-operator")
+	logrusutil.ComponentInit()
 
 	o := gatherOptions()
 	if err := o.Validate(); err != nil {

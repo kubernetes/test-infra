@@ -22,9 +22,12 @@ container_image(
     ],
 )
 
+NAME = "deck"
+
 prow_image(
     name = "image",
     base = ":spyglass-lenses",
+    component = NAME,
     visibility = ["//visibility:public"],
 )
 
@@ -40,7 +43,7 @@ container_image(
 )
 
 go_binary(
-    name = "deck",
+    name = NAME,
     data = [
         ":templates",
         "//prow/cmd/deck/static",

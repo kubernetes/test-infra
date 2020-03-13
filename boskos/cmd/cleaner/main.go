@@ -71,7 +71,7 @@ func init() {
 }
 
 func main() {
-	logrusutil.ComponentInit("boskos-cleaner")
+	logrusutil.ComponentInit()
 	flag.Parse()
 	kubeClientOptions.Validate()
 
