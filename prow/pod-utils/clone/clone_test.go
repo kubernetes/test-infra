@@ -43,8 +43,9 @@ func TestPathForRefs(t *testing.T) {
 		{
 			name: "default generated",
 			refs: prowapi.Refs{
-				Org:  "org",
-				Repo: "repo",
+				Org:      "org",
+				Repo:     "repo",
+				RepoLink: "https://github.com/org/repo",
 			},
 			expected: "base/src/github.com/org/repo",
 		},
