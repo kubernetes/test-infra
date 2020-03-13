@@ -773,7 +773,6 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20200311-1e25827-master
       args:
-      - --upload=gs://kubernetes-jenkins/logs/
       - --scenario=kubernetes_e2e
       - --
       - --gce-ssh=
