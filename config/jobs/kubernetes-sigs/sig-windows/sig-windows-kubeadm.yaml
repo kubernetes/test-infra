@@ -1,11 +1,11 @@
 periodics:
 - name: kubeadm-windows-gcp-k8s-stable
-  interval: 1h
+  interval: 2h
   labels:
     preset-service-account: "true"
   decorate: true
   decoration_config:
-    timeout: 1h
+    timeout: 2h
   extra_refs:
   - org: kubernetes-sigs
     repo: sig-windows-tools
