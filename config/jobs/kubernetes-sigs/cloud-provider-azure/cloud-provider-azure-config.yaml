@@ -772,6 +772,9 @@ periodics:
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20200311-1e25827-master
+      command:
+      - runner.sh
+      - kubetest
       args:
       - --gce-ssh=
       - --up=true
