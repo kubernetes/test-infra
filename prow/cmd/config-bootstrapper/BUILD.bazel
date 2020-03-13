@@ -35,14 +35,17 @@ filegroup(
     tags = ["automanaged"],
 )
 
+NAME = "config-bootstrapper"
+
 go_binary(
-    name = "config-bootstrapper",
+    name = NAME,
     embed = [":go_default_library"],
 )
 
 prow_image(
     name = "image",
     base = "@git-base//image",
+    component = NAME,
     directory = "/",
     files = [":config-bootstrapper"],
     visibility = ["//visibility:public"],

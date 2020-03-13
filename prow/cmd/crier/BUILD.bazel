@@ -31,8 +31,10 @@ go_library(
     ],
 )
 
+NAME = "crier"
+
 go_binary(
-    name = "crier",
+    name = NAME,
     embed = [":go_default_library"],
     visibility = ["//visibility:public"],
 )
@@ -40,6 +42,7 @@ go_binary(
 prow_image(
     name = "image",
     base = "@git-base//image",
+    component = NAME,
     visibility = ["//visibility:public"],
 )
 

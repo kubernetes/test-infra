@@ -24,14 +24,17 @@ go_library(
     ],
 )
 
+NAME = "cherrypicker"
+
 prow_image(
     name = "image",
     base = "@git-base//image",
+    component = NAME,
     visibility = ["//visibility:public"],
 )
 
 go_binary(
-    name = "cherrypicker",
+    name = NAME,
     embed = [":go_default_library"],
     visibility = ["//visibility:public"],
 )

@@ -23,13 +23,16 @@ go_library(
     ],
 )
 
+NAME = "cleaner"
+
 prow_image(
     name = "image",
+    component = NAME,
     visibility = ["//visibility:public"],
 )
 
 go_binary(
-    name = "cleaner",
+    name = NAME,
     embed = [":go_default_library"],
     visibility = ["//visibility:public"],
 )

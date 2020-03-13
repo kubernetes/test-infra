@@ -22,8 +22,10 @@ go_library(
     ],
 )
 
+NAME = "peribolos"
+
 go_binary(
-    name = "peribolos",
+    name = NAME,
     embed = [":go_default_library"],
     pure = "on",
     visibility = ["//visibility:public"],
@@ -124,6 +126,7 @@ k8s_objects(
 prow_image(
     name = "image",
     base = "@alpine-base//image",
+    component = NAME,
     directory = "/",
     files = [":peribolos"],
     visibility = ["//visibility:public"],
