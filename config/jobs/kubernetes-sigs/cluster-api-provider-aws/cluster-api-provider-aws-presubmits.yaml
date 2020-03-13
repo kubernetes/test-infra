@@ -74,6 +74,9 @@ presubmits:
     always_run: false
     optional: true
     decorate: true
+    decorate_config:
+      tiemout: 3h
+    max_concurrency: 1
     extra_refs:
     - org: kubernetes-sigs
       repo: image-builder
@@ -85,10 +88,11 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200331-ccdcc25-experimental
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200331-ccdcc25-master
           command:
             - "runner.sh"
             - "./scripts/ci-conformance.sh"
+            - "--use-ci-artifacts"
           env:
             - name: BOSKOS_HOST
               value: "boskos.test-pods.svc.cluster.local"
@@ -106,7 +110,7 @@ presubmits:
               cpu: 2000m
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
-      testgrid-tab-name: pr-conformance
+      testgrid-tab-name: pr-conformance-k8s-master
       testgrid-num-columns-recent: '20'
   - name: pull-cluster-api-provider-aws-e2e
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
@@ -115,7 +119,7 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 5h
-    max_concurrency: 2
+    max_concurrency: 1
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -150,7 +154,7 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 4h
-    max_concurrency: 2
+    max_concurrency: 1
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
