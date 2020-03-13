@@ -55,7 +55,7 @@ rules:
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
-  name: crier
+  name: crier-namespaced
   namespace: default
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -69,7 +69,7 @@ subjects:
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
-  name: crier
+  name: crier-namespaced
   namespace: test-pods
 roleRef:
   apiGroup: rbac.authorization.k8s.io
