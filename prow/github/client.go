@@ -231,12 +231,15 @@ type Client interface {
 	SetMax404Retries(int)
 
 	WithFields(fields logrus.Fields) Client
+	ForPlugin(plugin string) Client
 }
 
 // client interacts with the github api.
 type client struct {
 	// If logger is non-nil, log all method calls with it.
 	logger *logrus.Entry
+	// plugin is used to add more identification to the user-agent header
+	plugin string
 	*delegate
 }
 
@@ -249,18 +252,34 @@ type delegate struct {
 	maxSleepTime  time.Duration
 	initialDelay  time.Duration
 
-	userAgent string
-	gqlc      gqlClient
-	client    httpClient
-	bases     []string
-	dry       bool
-	fake      bool
-	throttle  throttler
-	getToken  func() []byte
-	censor    func([]byte) []byte
+	gqlc     gqlClient
+	client   httpClient
+	bases    []string
+	dry      bool
+	fake     bool
+	throttle throttler
+	getToken func() []byte
+	censor   func([]byte) []byte
 
 	mut      sync.Mutex // protects botName and email
 	userData *User
+}
+
+// ForPlugin clones the client, keeping the underlying delegate the same but adding
+// a plugin identifier and log field
+func (c *client) ForPlugin(plugin string) Client {
+	return &client{
+		plugin:   plugin,
+		logger:   c.logger.WithField("plugin", plugin),
+		delegate: c.delegate,
+	}
+}
+
+func (c *client) userAgent() string {
+	if c.plugin != "" {
+		return version.UserAgentWithIdentifier(c.plugin)
+	}
+	return version.UserAgent()
 }
 
 // WithFields clones the client, keeping the underlying delegate the same but adding
@@ -437,8 +456,7 @@ func NewClientWithFields(fields logrus.Fields, getToken func() []byte, censor fu
 	return &client{
 		logger: logrus.WithFields(fields).WithField("client", "github"),
 		delegate: &delegate{
-			time:      &standardTime{},
-			userAgent: version.UserAgent(),
+			time: &standardTime{},
 			gqlc: githubql.NewEnterpriseClient(
 				graphqlEndpoint,
 				&http.Client{
@@ -475,8 +493,7 @@ func NewDryRunClientWithFields(fields logrus.Fields, getToken func() []byte, cen
 	return &client{
 		logger: logrus.WithFields(fields).WithField("client", "github"),
 		delegate: &delegate{
-			time:      &standardTime{},
-			userAgent: version.UserAgent(),
+			time: &standardTime{},
 			gqlc: githubql.NewEnterpriseClient(
 				graphqlEndpoint,
 				&http.Client{
@@ -756,8 +773,8 @@ func (c *client) doRequest(method, path, accept string, body interface{}) (*http
 	} else {
 		req.Header.Add("Accept", accept)
 	}
-	if c.userAgent != "" {
-		req.Header.Add("User-Agent", c.userAgent)
+	if userAgent := c.userAgent(); userAgent != "" {
+		req.Header.Add("User-Agent", userAgent)
 	}
 	// Disable keep-alive so that we don't get flakes when GitHub closes the
 	// connection prematurely.

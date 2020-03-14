@@ -24,6 +24,13 @@ var (
 	Version = "0"
 )
 
+// UserAgent exposes the component's name and version for user-agent header
 func UserAgent() string {
 	return Name + "/" + Version
+}
+
+// UserAgentFor exposes the component's name and version for user-agent header
+// while embedding the additional identifier
+func UserAgentWithIdentifier(identifier string) string {
+	return Name + "." + identifier + "/" + Version
 }
