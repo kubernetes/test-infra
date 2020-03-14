@@ -1,0 +1,36 @@
+presubmits:
+  kubernetes/kops:
+  - name: pull-kops-e2e-kops-gce-latest
+    branches:
+    - master
+    always_run: true
+    decorate: true
+    decoration_config:
+      timeout: 140m
+    skip_report: false
+    optional: true     # Start seeing test results on PRs, but it's ok to merge w/out green
+    path_alias: k8s.io/kops
+    labels:
+      preset-k8s-ssh: "true"
+    spec:
+      serviceAccountName: k8s-kops-test
+      containers:
+      - command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --cluster=e2e-kops-gce-latest.k8s.local
+        - --deployment=kops
+        - --extract=ci/latest
+        - --ginkgo-parallel=30
+        - --kops-publish=gs://kops-ci/bin/latest-ci-green.txt
+        - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
+        - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
+        - --kops-zones=us-central1-c
+        - --provider=gce
+        - --timeout=120m
+        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Firewall|Dashboard|Services.*functioning.*NodePort
+        image: gcr.io/k8s-testimages/kubekins-e2e:latest
+    annotations:
+      testgrid-dashboards: google-kops-gce, sig-cluster-lifecycle-kops
+      testgrid-tab-name: kops-gce-latest
