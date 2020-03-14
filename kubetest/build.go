@@ -50,7 +50,7 @@ func (b *buildStrategy) Set(value string) error {
 		}
 	}
 	switch value {
-	case "bazel", "e2e", "host-go", "quick", "release", "gce-windows-bazel":
+	case "bazel", "e2e", "host-go", "quick", "release", "gce-windows-bazel", "none":
 		*b = buildStrategy(value)
 		return nil
 	}
