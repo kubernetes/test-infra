@@ -36,20 +36,59 @@ presubmits:
         securityContext:
           privileged: true
     trigger: '(?m)^/test (?:.*? )?test(?:.*?)?$'
-  - name: build-go-repo-template
+  - name: build-go-repo-template-amd64
     cluster: default
     always_run: true
     branches:
     - ^master$
     decorate: true
     path_alias: github.com/IBM/go-repo-template
-    rerun_command: /test build-go-repo-template
+    rerun_command: /test build-go-repo-template-amd64
     spec:
       containers:
       - command:
+        - entrypoint
         - make
         - build
-        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
+        image: quay.io/multicloudlab/multicloudlab-builder-amd64:v20200123-4f4560f62
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?build(?:.*?)?$'
+  - name: build-go-repo-template-ppc64le
+    cluster: ppc64le
+    always_run: true
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/go-repo-template
+    rerun_command: /test build-go-repo-template-ppc64le
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build
+        image: quay.io/multicloudlab/multicloudlab-builder-ppc64le:v20200123-4f4560f62
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?build(?:.*?)?$'
+  - name: build-go-repo-template-s390x
+    cluster: s390x
+    always_run: true
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/go-repo-template
+    rerun_command: /test build-go-repo-template-s390x
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build
+        image: quay.io/multicloudlab/multicloudlab-builder-s390x:v20200228-42746cb02
         name: ""
         securityContext:
           privileged: true
@@ -107,7 +146,7 @@ postsubmits:
               key: codecov-token
         securityContext:
           privileged: true
-  - name: build-go-repo-template-postsubmit
+  - name: build-go-repo-template-amd64-postsubmit
     cluster: default
     branches:
     - ^master$
@@ -116,13 +155,46 @@ postsubmits:
     spec:
       containers:
       - command:
+        - entrypoint
         - make
         - build
-        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
+        image: quay.io/multicloudlab/multicloudlab-builder-amd64:v20200123-4f4560f62
         name: ""
         securityContext:
           privileged: true
-  - name: images-go-repo-template-postsubmit
+  - name: build-go-repo-template-ppc64le-postsubmit
+    cluster: ppc64le
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/go-repo-template
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build
+        image: quay.io/multicloudlab/multicloudlab-builder-ppc64le:v20200123-4f4560f62
+        name: ""
+        securityContext:
+          privileged: true
+  - name: build-go-repo-template-s390x-postsubmit
+    cluster: s390x
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/go-repo-template
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build
+        image: quay.io/multicloudlab/multicloudlab-builder-s390x:v20200228-42746cb02
+        name: ""
+        securityContext:
+          privileged: true
+  - name: images-go-repo-template-amd64-postsubmit
     cluster: default
     branches:
     - ^master$
@@ -139,7 +211,49 @@ postsubmits:
         - entrypoint
         - make
         - images
-        image: quay.io/multicloudlab/multicloudlab-builder:v20191217-d33a10d
+        image: quay.io/multicloudlab/multicloudlab-builder-amd64:v20200123-4f4560f62
+        name: ""
+        securityContext:
+          privileged: true
+  - name: images-go-repo-template-ppc64le-postsubmit
+    cluster: ppc64le
+    branches:
+    - ^master$
+    decorate: true
+    decoration_config:
+      ssh_key_secrets:
+      - ssh-secret
+    labels:
+      preset-service-account: "true"
+    path_alias: github.com/IBM/go-repo-template
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - images
+        image: quay.io/multicloudlab/multicloudlab-builder-ppc64le:v20200123-4f4560f62
+        name: ""
+        securityContext:
+          privileged: true
+  - name: images-go-repo-template-s390x-postsubmit
+    cluster: s390x
+    branches:
+    - ^master$
+    decorate: true
+    decoration_config:
+      ssh_key_secrets:
+      - ssh-secret
+    labels:
+      preset-service-account: "true"
+    path_alias: github.com/IBM/go-repo-template
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - images
+        image: quay.io/multicloudlab/multicloudlab-builder-s390x:v20200228-42746cb02
         name: ""
         securityContext:
           privileged: true
