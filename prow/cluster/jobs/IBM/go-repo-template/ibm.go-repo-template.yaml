@@ -208,9 +208,6 @@ postsubmits:
     branches:
     - ^master$
     decorate: true
-    decoration_config:
-      ssh_key_secrets:
-      - ssh-secret
     labels:
       preset-service-account: "true"
     path_alias: github.com/IBM/go-repo-template
@@ -229,9 +226,6 @@ postsubmits:
     branches:
     - ^master$
     decorate: true
-    decoration_config:
-      ssh_key_secrets:
-      - ssh-secret
     labels:
       preset-service-account: "true"
     path_alias: github.com/IBM/go-repo-template
@@ -250,9 +244,6 @@ postsubmits:
     branches:
     - ^master$
     decorate: true
-    decoration_config:
-      ssh_key_secrets:
-      - ssh-secret
     labels:
       preset-service-account: "true"
     path_alias: github.com/IBM/go-repo-template
@@ -271,9 +262,6 @@ postsubmits:
     branches:
     - ^master$
     decorate: true
-    decoration_config:
-      ssh_key_secrets:
-      - ssh-secret
     labels:
       preset-service-account: "true"
     path_alias: github.com/IBM/go-repo-template
