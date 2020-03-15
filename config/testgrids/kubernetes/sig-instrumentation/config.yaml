@@ -1,5 +1,5 @@
 dashboards:
-- name: sig-instrumentation
+- name: sig-instrumentation-tests
   dashboard_tab:
     - name: gci-gce
       test_group_name: ci-kubernetes-e2e-gci-gce
@@ -65,3 +65,4 @@ dashboards:
       test_group_name: ci-kubernetes-e2e-gke-sd-logging-ubuntu-stable1
       base_options: include-filter-by-regex=sig-instrumentation
       description: sig-instrumentation gke stackdriver logging e2e tests for 1.13 branch with Ubuntu
+- name: sig-instrumentation-image-pushes
