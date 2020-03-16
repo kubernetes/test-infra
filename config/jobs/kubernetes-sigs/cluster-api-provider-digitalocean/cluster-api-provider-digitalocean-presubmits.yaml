@@ -1,37 +1,40 @@
 presubmits:
   kubernetes-sigs/cluster-api-provider-digitalocean:
-  - name: pull-cluster-api-provider-digitalocean-build
-    always_run: true
-    decorate: true
-    path_alias: sigs.k8s.io/cluster-api-provider-digitalocean
-    spec:
-      containers:
-      - image: golang:1.11
-        command:
-        - make
-        args:
-        - compile
-    annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
-      testgrid-tab-name: build
   - name: pull-cluster-api-provider-digitalocean-test
     always_run: true
+    optional: false
     decorate: true
-    path_alias: sigs.k8s.io/cluster-api-provider-digitalocean
+    path_alias: "sigs.k8s.io/cluster-api-provider-digitalocean"
     spec:
       containers:
-      - image: golang:1.11
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200314-a0cadb9-master
         command:
         - make
         args:
-        - test-unit
+        - test
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
-      testgrid-tab-name: test
+      testgrid-tab-name: pr-test
+  - name: pull-cluster-api-provider-digitalocean-build
+    always_run: true
+    optional: false
+    decorate: true
+    path_alias: "sigs.k8s.io/cluster-api-provider-digitalocean"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200314-a0cadb9-master
+        command:
+        - make
+        args:
+        - manager
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
+      testgrid-tab-name: pr-build
   - name: pull-cluster-api-provider-digitalocean-verify
     always_run: true
+    optional: false
     decorate: true
-    path_alias: sigs.k8s.io/cluster-api-provider-digitalocean
+    path_alias: "sigs.k8s.io/cluster-api-provider-digitalocean"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200314-a0cadb9-master
@@ -41,18 +44,19 @@ presubmits:
         - verify
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
-      testgrid-tab-name: verify
+      testgrid-tab-name: pr-verify
   - name: pull-cluster-api-provider-digitalocean-lint
     always_run: true
+    optional: false
     decorate: true
-    path_alias: sigs.k8s.io/cluster-api-provider-digitalocean
+    path_alias: "sigs.k8s.io/cluster-api-provider-digitalocean"
     spec:
       containers:
-      - image: quay.io/kubermatic/gometalinter:latest
+      - image: golangci/golangci-lint:v1.21.0
         command:
         - make
         args:
         - lint
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
-      testgrid-tab-name: lint
+      testgrid-tab-name: pr-lint
