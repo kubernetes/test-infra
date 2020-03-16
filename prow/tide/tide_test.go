@@ -24,6 +24,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"reflect"
+	"strings"
 	"testing"
 	"text/template"
 	"time"
@@ -525,6 +526,20 @@ type fgc struct {
 	combinedStatus map[string]string
 }
 
+func (f *fgc) GetRepo(o, r string) (github.FullRepo, error) {
+	repo := github.FullRepo{}
+	if strings.Contains(r, "squash") {
+		repo.AllowSquashMerge = true
+	}
+	if strings.Contains(r, "rebase") {
+		repo.AllowRebaseMerge = true
+	}
+	if !strings.Contains(r, "nomerge") {
+		repo.AllowMergeCommit = true
+	}
+	return repo, nil
+}
+
 func (f *fgc) GetRef(o, r, ref string) (string, error) {
 	return f.refs[o+"/"+r+" "+ref], f.err
 }
@@ -694,9 +709,11 @@ func TestDividePool(t *testing.T) {
 		}
 	}
 
+	log := logrus.NewEntry(logrus.StandardLogger())
+	mmc := newMergeChecker(configGetter, fc)
 	mgr := newFakeManager()
 	c, err := newSyncController(
-		logrus.NewEntry(logrus.StandardLogger()), fc, mgr, configGetter, nil, nil, nil,
+		log, fc, mgr, configGetter, nil, nil, nil, mmc,
 	)
 	if err != nil {
 		t.Fatalf("failed to construct sync controller: %v", err)
@@ -938,73 +955,159 @@ func testPickBatch(clients localgit.Clients, t *testing.T) {
 	}
 }
 
-func TestCheckMergeLabels(t *testing.T) {
+func TestMergeMethodCheckerAndPRMergeMethod(t *testing.T) {
 	squashLabel := "tide/squash"
 	mergeLabel := "tide/merge"
 	rebaseLabel := "tide/rebase"
 
-	testcases := []struct {
-		name string
+	tideConfig := config.Tide{
+		SquashLabel: squashLabel,
+		MergeLabel:  mergeLabel,
+		RebaseLabel: rebaseLabel,
 
-		pr        PullRequest
-		method    github.PullRequestMergeType
-		expected  github.PullRequestMergeType
-		expectErr bool
+		MergeType: map[string]github.PullRequestMergeType{
+			"o/configured-rebase":              github.MergeRebase, // GH client allows merge, rebase
+			"o/configured-squash-allow-rebase": github.MergeSquash, // GH client allows merge, squash, rebase
+			"o/configure-re-base":              github.MergeRebase, // GH client allows merge
+		},
+	}
+	cfg := func() *config.Config { return &config.Config{ProwConfig: config.ProwConfig{Tide: tideConfig}} }
+	mmc := newMergeChecker(cfg, &fgc{})
+
+	testcases := []struct {
+		name              string
+		repo              string
+		labels            []string
+		conflict          bool
+		expectedMethod    github.PullRequestMergeType
+		expectErr         bool
+		expectConflictErr bool
 	}{
 		{
-			name:      "default method without PR label override",
-			pr:        PullRequest{},
-			method:    github.MergeMerge,
-			expected:  github.MergeMerge,
-			expectErr: false,
+			name:           "default method without PR label override",
+			repo:           "foo",
+			expectedMethod: github.MergeMerge,
 		},
 		{
-			name: "irrelevant PR labels ignored",
-			pr: PullRequest{
-				Labels: struct {
-					Nodes []struct{ Name githubql.String }
-				}{Nodes: []struct{ Name githubql.String }{{Name: githubql.String("sig/testing")}}},
-			},
-			method:    github.MergeMerge,
-			expected:  github.MergeMerge,
-			expectErr: false,
+			name:           "irrelevant PR labels ignored",
+			repo:           "foo",
+			labels:         []string{"unrelated"},
+			expectedMethod: github.MergeMerge,
 		},
 		{
-			name: "default method overridden by a PR label",
-			pr: PullRequest{
-				Labels: struct {
-					Nodes []struct{ Name githubql.String }
-				}{Nodes: []struct{ Name githubql.String }{{Name: githubql.String(squashLabel)}}},
-			},
-			method:    github.MergeMerge,
-			expected:  github.MergeSquash,
-			expectErr: false,
+			name:           "default method overridden by a PR label",
+			repo:           "allow-squash-nomerge",
+			labels:         []string{"tide/squash"},
+			expectedMethod: github.MergeSquash,
 		},
 		{
-			name: "multiple merge method PR labels should not merge",
-			pr: PullRequest{
-				Labels: struct {
-					Nodes []struct{ Name githubql.String }
-				}{Nodes: []struct{ Name githubql.String }{
-					{Name: githubql.String(squashLabel)},
-					{Name: githubql.String(rebaseLabel)}},
-				},
-			},
-			method:    github.MergeMerge,
-			expected:  github.MergeSquash,
+			name:           "use method configured for repo in tide config",
+			repo:           "configured-squash-allow-rebase",
+			labels:         []string{"unrelated"},
+			expectedMethod: github.MergeSquash,
+		},
+		{
+			name:           "tide config method overridden by a PR label",
+			repo:           "configured-squash-allow-rebase",
+			labels:         []string{"unrelated", "tide/rebase"},
+			expectedMethod: github.MergeRebase,
+		},
+		{
+			name:      "multiple merge method PR labels should not merge",
+			repo:      "foo",
+			labels:    []string{"tide/squash", "tide/rebase"},
 			expectErr: true,
+		},
+		{
+			name:              "merge conflict",
+			repo:              "foo",
+			labels:            []string{"unrelated"},
+			conflict:          true,
+			expectedMethod:    github.MergeMerge,
+			expectErr:         false,
+			expectConflictErr: true,
+		},
+		{
+			name:              "squash label conflicts with merge only GH settings",
+			repo:              "foo",
+			labels:            []string{"tide/squash"},
+			expectedMethod:    github.MergeSquash,
+			expectErr:         false,
+			expectConflictErr: true,
+		},
+		{
+			name:              "rebase method tide config conflicts with merge only GH settings",
+			repo:              "configure-re-base",
+			labels:            []string{"unrelated"},
+			expectedMethod:    github.MergeRebase,
+			expectErr:         false,
+			expectConflictErr: true,
+		},
+		{
+			name:              "default method conflicts with squash only GH settings",
+			repo:              "squash-nomerge",
+			labels:            []string{"unrelated"},
+			expectedMethod:    github.MergeMerge,
+			expectErr:         false,
+			expectConflictErr: true,
 		},
 	}
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			actual, err := checkMergeLabels(tc.pr, squashLabel, rebaseLabel, mergeLabel, tc.method)
-			if err != nil && !tc.expectErr {
-				t.Errorf("unexpected error: %v", err)
-			} else if err == nil && tc.expectErr {
-				t.Errorf("missing expected error from checkMargeLabels")
-			} else if err == nil && tc.expected != actual {
-				t.Errorf("wanted: %q, got: %q", tc.expected, actual)
+			pr := &PullRequest{
+				Repository: struct {
+					Name          githubql.String
+					NameWithOwner githubql.String
+					Owner         struct {
+						Login githubql.String
+					}
+				}{
+					Name: githubql.String(tc.repo),
+					Owner: struct {
+						Login githubql.String
+					}{
+						Login: githubql.String("o"),
+					},
+				},
+				Labels: struct {
+					Nodes []struct{ Name githubql.String }
+				}{
+					Nodes: []struct{ Name githubql.String }{},
+				},
+			}
+			for _, label := range tc.labels {
+				labelNode := struct{ Name githubql.String }{Name: githubql.String(label)}
+				pr.Labels.Nodes = append(pr.Labels.Nodes, labelNode)
+			}
+			if tc.conflict {
+				pr.Mergeable = githubql.MergeableStateConflicting
+			}
+
+			actual, err := prMergeMethod(tideConfig, pr)
+			if err != nil {
+				if !tc.expectErr {
+					t.Errorf("unexpected error: %v", err)
+				}
+				return
+			} else if tc.expectErr {
+				t.Errorf("missing expected error")
+				return
+			}
+			if tc.expectedMethod != actual {
+				t.Errorf("wanted: %q, got: %q", tc.expectedMethod, actual)
+			}
+			reason, err := mmc.isAllowed(pr)
+			if err != nil {
+				t.Errorf("unexpected processing error: %v", err)
+			} else if reason != "" {
+				if !tc.expectConflictErr {
+					t.Errorf("unexpected merge method conflict error: %v", err)
+				}
+				return
+			} else if tc.expectConflictErr {
+				t.Errorf("missing expected merge method conflict error")
+				return
 			}
 		})
 	}
@@ -1479,6 +1582,7 @@ func TestServeHTTP(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create history client: %v", err)
 	}
+	cfg := func() *config.Config { return &config.Config{} }
 	c := &Controller{
 		pools: []Pool{
 			{
@@ -1486,7 +1590,8 @@ func TestServeHTTP(t *testing.T) {
 				Action:     Merge,
 			},
 		},
-		History: hist,
+		mergeChecker: newMergeChecker(cfg, &fgc{}),
+		History:      hist,
 	}
 	s := httptest.NewServer(c)
 	defer s.Close()
@@ -1716,6 +1821,7 @@ func TestSync(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Failed to create history client: %v", err)
 		}
+		mergeChecker := newMergeChecker(ca.Config, fgc)
 		sc := &statusController{
 			pjClient:       fakectrlruntimeclient.NewFakeClient(),
 			logger:         logrus.WithField("controller", "status-update"),
@@ -1724,6 +1830,7 @@ func TestSync(t *testing.T) {
 			config:         ca.Config,
 			newPoolPending: make(chan bool, 1),
 			shutDown:       make(chan bool),
+			mergeChecker:   mergeChecker,
 		}
 		go sc.run()
 		defer sc.shutdown()
@@ -1738,7 +1845,8 @@ func TestSync(t *testing.T) {
 				ghc:             fgc,
 				nextChangeCache: make(map[changeCacheKey][]string),
 			},
-			History: hist,
+			mergeChecker: mergeChecker,
+			History:      hist,
 		}
 
 		if err := c.Sync(); err != nil {
@@ -2082,7 +2190,9 @@ func TestFilterSubpool(t *testing.T) {
 				sp.prs = append(sp.prs, pr)
 			}
 
-			filtered := filterSubpool(nil, sp)
+			configGetter := func() *config.Config { return &config.Config{} }
+			mmc := newMergeChecker(configGetter, &fgc{})
+			filtered := filterSubpool(nil, mmc.isAllowed, sp)
 			if len(tc.expectedPRs) == 0 {
 				if filtered != nil {
 					t.Fatalf("Expected subpool to be pruned, but got: %v", filtered)
@@ -2505,7 +2615,8 @@ func TestPresubmitsByPull(t *testing.T) {
 				changeCache:     tc.initialChangeCache,
 				nextChangeCache: make(map[changeCacheKey][]string),
 			},
-			logger: logrus.WithField("test", tc.name),
+			mergeChecker: newMergeChecker(cfgAgent.Config, &fgc{}),
+			logger:       logrus.WithField("test", tc.name),
 		}
 		presubmits, err := c.presubmitsByPull(sp)
 		if err != nil {
