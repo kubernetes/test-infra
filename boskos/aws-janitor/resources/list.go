@@ -37,6 +37,7 @@ var RegionalTypeList = []Type{
 	LoadBalancers{},
 	AutoScalingGroups{},
 	LaunchConfigurations{},
+	LaunchTemplates{},
 	Instances{},
 	// Addresses
 	NetworkInterfaces{},
