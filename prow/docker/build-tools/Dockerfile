@@ -13,7 +13,7 @@ ENV HADOLINT_VERSION=v1.17.2
 ENV HELM_VERSION=v2.10.0
 ENV K8S_CODE_GENERATOR_VERSION=1.13.10
 ENV KUBECTL_VERSION=1.15.0
-ENV KUBEBUILDER_VERSION=1.0.8
+ENV KUBEBUILDER_VERSION=2.2.0
 ENV PROTOC_GEN_GRPC_GATEWAY_VERSION=v1.8.1
 ENV PROTOC_GEN_SWAGGER_VERSION=v1.8.1
 ENV PROTOC_GEN_VALIDATE_VERSION=d6164de4910977d3c3c8dbd9299b5064ea9e7c2b
@@ -45,9 +45,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     xz-utils
 
 # Install protoc
-ADD https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOC_VERSION}/protoc-${PROTOC_VERSION}-linux-x86_64.zip /tmp/
-RUN unzip /tmp/protoc-${PROTOC_VERSION}-linux-x86_64.zip
-RUN mv /tmp/bin/protoc ${OUTDIR}/usr/bin
+RUN set -eux; \
+    PROTOC_ARCH=$(uname -m | sed 's/ppc64le/ppcle_64/g'); \
+    wget -O /tmp/protoc.zip https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOC_VERSION}/protoc-${PROTOC_VERSION}-linux-${PROTOC_ARCH}.zip; \
+    unzip /tmp/protoc.zip; \
+    mv /tmp/bin/protoc ${OUTDIR}/usr/bin
 
 # Build and install a bunch of Go tools
 RUN GO111MODULE=on go get github.com/golang/protobuf/protoc-gen-go@${GOLANG_PROTOBUF_VERSION}
@@ -72,39 +74,56 @@ RUN GO111MODULE=on go get k8s.io/code-generator/cmd/deepcopy-gen@kubernetes-${K8
 RUN GO111MODULE=on go get k8s.io/code-generator/cmd/go-to-protobuf@kubernetes-${K8S_CODE_GENERATOR_VERSION}
 
 # Compress the Go tools and put them in their final location
-ADD https://github.com/upx/upx/releases/download/v${UPX_VERSION}/upx-${UPX_VERSION}-amd64_linux.tar.xz /tmp
-RUN tar -xJf upx-${UPX_VERSION}-amd64_linux.tar.xz -C /tmp
-RUN mv /tmp/upx-${UPX_VERSION}-amd64_linux/upx /usr/bin
+RUN set -eux; \
+    UPX_ARCH=$(uname -m | sed 's/x86_64/amd64/g' | sed 's/ppc64le/powerpc64le/g'); \
+    wget -O upx.tar.xz https://github.com/upx/upx/releases/download/v${UPX_VERSION}/upx-${UPX_VERSION}-${UPX_ARCH}_linux.tar.xz; \
+    tar -xJf upx.tar.xz -C /tmp;\
+    mv /tmp/upx-${UPX_VERSION}-${UPX_ARCH}_linux/upx /usr/bin;\
+    rm -f upx.tar.xz
 RUN upx --lzma /tmp/go/bin/*
 RUN mv /tmp/go/bin/* ${OUTDIR}/usr/bin
 
-# ShellCheck linter
-ADD https://storage.googleapis.com/shellcheck/shellcheck-${SHELLCHECK_VERSION}.linux.x86_64.tar.xz /tmp
-RUN tar -xJf /tmp/shellcheck-${SHELLCHECK_VERSION}.linux.x86_64.tar.xz -C /tmp
-RUN mv /tmp/shellcheck-${SHELLCHECK_VERSION}/shellcheck ${OUTDIR}/usr/bin
-
-# Hadolint linter
-ADD https://github.com/hadolint/hadolint/releases/download/${HADOLINT_VERSION}/hadolint-Linux-x86_64 ${OUTDIR}/usr/bin/hadolint
-RUN chmod 555 ${OUTDIR}/usr/bin/hadolint
+# Limit linters installation only for x86_64 platform
+RUN set -eux; \
+    ARCH=$(go env GOARCH);\
+    if [ $ARCH == "amd64" ]; then \
+       # ShellCheck linter
+       wget -O shellcheck.tar.xz https://storage.googleapis.com/shellcheck/shellcheck-${SHELLCHECK_VERSION}.linux.x86_64.tar.xz; \
+       tar -xJf shellcheck.tar.xz -C /tmp;\
+       mv /tmp/shellcheck-${SHELLCHECK_VERSION}/shellcheck ${OUTDIR}/usr/bin;\
+       rm -f shellcheck.tar.xz; \
+       # Hadolint linter
+       wget -O ${OUTDIR}/usr/bin/hadolint https://github.com/hadolint/hadolint/releases/download/${HADOLINT_VERSION}/hadolint-Linux-x86_64; \
+       chmod 555 ${OUTDIR}/usr/bin/hadolint; \
+    fi;
 
 # Helm
-ADD https://storage.googleapis.com/kubernetes-helm/helm-${HELM_VERSION}-linux-amd64.tar.gz /tmp
-RUN tar -xf /tmp/helm-${HELM_VERSION}-linux-amd64.tar.gz -C /tmp
-RUN mv /tmp/linux-amd64/helm ${OUTDIR}/usr/bin
+RUN set -eux; \
+    HELM_ARCH=$(go env GOARCH);\
+    wget -O helm.tar.gz https://storage.googleapis.com/kubernetes-helm/helm-${HELM_VERSION}-linux-${HELM_ARCH}.tar.gz;\
+    tar -xf helm.tar.gz -C /tmp;\
+    mv /tmp/linux-${HELM_ARCH}/helm ${OUTDIR}/usr/bin
 
 # Kubectl
-ADD https://storage.googleapis.com/kubernetes-release/release/v${KUBECTL_VERSION}/bin/linux/amd64/kubectl ${OUTDIR}/usr/bin/kubectl
-RUN chmod 555 ${OUTDIR}/usr/bin/kubectl
+RUN set -eux; \
+    KUBECTL_ARCH=$(go env GOARCH);\
+    wget -O ${OUTDIR}/usr/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v${KUBECTL_VERSION}/bin/linux/${KUBECTL_ARCH}/kubectl; \
+    chmod 555 ${OUTDIR}/usr/bin/kubectl
+
 
 # kubebuilder
-ADD https://github.com/kubernetes-sigs/kubebuilder/releases/download/v${KUBEBUILDER_VERSION}/kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64.tar.gz /tmp
-RUN mkdir -p /usr/local/kubebuilder
-RUN tar -xf kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64.tar.gz --strip-components=1 -C /usr/local/kubebuilder
+RUN set -eux; \
+    KUBEBUILDER_ARCH=$(go env GOARCH);\
+    wget -O kubebuilder.tar.gz https://github.com/kubernetes-sigs/kubebuilder/releases/download/v${KUBEBUILDER_VERSION}/kubebuilder_${KUBEBUILDER_VERSION}_linux_${KUBEBUILDER_ARCH}.tar.gz; \
+    mkdir -p /usr/local/kubebuilder; \
+    tar -xf kubebuilder.tar.gz --strip-components=1 -C /usr/local/kubebuilder
 
 # Docker
 RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg >/tmp/dkey
 RUN apt-key add /tmp/dkey
-RUN add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu xenial stable"
+RUN set -eux; \
+    DOCKER_ARCH=$(dpkg --print-architecture); \
+    add-apt-repository "deb [arch=${DOCKER_ARCH}] https://download.docker.com/linux/ubuntu xenial stable"
 RUN apt-get update && apt-get -qqy install --no-install-recommends docker-ce="${DOCKER_VERSION}~ubuntu"
 RUN mv /usr/bin/docker ${OUTDIR}/usr/bin
 
@@ -142,8 +161,13 @@ ENV SVGSTORE_CLI_VERSION=v1.3.1
 ENV TSLINT_VERSION=v5.18.0
 ENV TYPESCRIPT_VERSION=v3.5.3
 
-ADD https://nodejs.org/download/release/v${NODEJS_VERSION}/node-v${NODEJS_VERSION}-linux-x64.tar.gz /tmp
-RUN tar -xzf /tmp/node-v${NODEJS_VERSION}-linux-x64.tar.gz --strip-components=1 -C /usr/local
+RUN apt-get update && apt-get -qqy install wget
+
+RUN set -eux; \
+    NODEJS_ARCH=$(uname -m | sed 's/x86_64/x64/g'); \
+    wget -O nodejs.tar.gz https://nodejs.org/download/release/v${NODEJS_VERSION}/node-v${NODEJS_VERSION}-linux-${NODEJS_ARCH}.tar.gz; \
+    tar -xzf nodejs.tar.gz --strip-components=1 -C /usr/local; \
+    rm -f nodejs.tar.gz
 
 ADD https://nodejs.org/download/release/v${NODEJS_VERSION}/node-v${NODEJS_VERSION}-headers.tar.gz /tmp
 RUN tar -xzf /tmp/node-v${NODEJS_VERSION}-headers.tar.gz --strip-components=1 -C /usr/local
