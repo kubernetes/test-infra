@@ -27,6 +27,29 @@ set -o xtrace
 # We should switch back to a release tag at the next release.
 STABLE_KIND_VERSION=v0.6.0
 
+# if PLATFORM_ARCH do not set, use current architecture
+detect_platform_arch() {
+    if [ -z "${PLATFORM_ARCH-}" ]; then
+      local machine
+      machine="$(uname -m)"
+      case "${machine}" in
+        x86_64*|i?86_64*|amd64*)
+          PLATFORM_ARCH="amd64"
+          ;;
+        aarch64*|arm64*)
+          PLATFORM_ARCH="arm64"
+          ;;
+        arm*)
+          PLATFORM_ARCH="arm"
+          ;;
+        *)
+          echo "Unknown, unsupported architecture (${machine})." >&2
+          echo "Supported architectures x86_64, arm, arm64." >&2
+          exit 3
+          ;;
+      esac
+    fi
+}
 # our exit handler (trap)
 cleanup() {
     # always attempt to dump logs
@@ -48,7 +71,7 @@ cleanup() {
 install_kind() {
     # install `kind` to tempdir
     TMP_DIR=$(mktemp -d)
-    curl -sLo "${TMP_DIR}/kind" https://github.com/kubernetes-sigs/kind/releases/download/${STABLE_KIND_VERSION}/kind-linux-amd64
+    curl -sLo "${TMP_DIR}/kind" https://github.com/kubernetes-sigs/kind/releases/download/${STABLE_KIND_VERSION}/kind-linux-${PLATFORM_ARCH}
     chmod +x "${TMP_DIR}/kind"
     PATH="${TMP_DIR}:${PATH}"
     export PATH
@@ -136,11 +159,11 @@ run_tests() {
   pushd ${PWD}/cluster/images/conformance
 
   # build and load the conformance image into the kind nodes
-  make build ARCH=amd64
-  kind load docker-image k8s.gcr.io/conformance-amd64:${VERSION}
+  make build ARCH=${PLATFORM_ARCH}
+  kind load docker-image k8s.gcr.io/conformance-${PLATFORM_ARCH}:${VERSION}
 
   # patch the image in manifest
-  sed -i "s|conformance-amd64:.*|conformance-amd64:${VERSION}|g" conformance-e2e.yaml
+  sed -i "s|conformance-amd64:.*|conformance-${PLATFORM_ARCH}:${VERSION}|g" conformance-e2e.yaml
   ./conformance-e2e.sh
 
   popd
@@ -158,6 +181,7 @@ main() {
     export ARTIFACTS
     # now build an run the cluster and tests
     trap cleanup EXIT
+    detect_platform_arch
     install_kind
     build
     create_cluster
