@@ -15,7 +15,7 @@ spec:
         spec:
           containers:
           - name: branchprotector
-            image: gcr.io/k8s-prow/branchprotector:v20200314-12f848798
+            image: gcr.io/k8s-prow/branchprotector:v20200316-b496b5fa9
             args:
             - --config-path=/etc/config/config.yaml
             - --job-config-path=/etc/job-config
