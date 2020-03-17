@@ -78,12 +78,16 @@ func (o *GitHubOptions) addFlags(wantDefaultGitHubTokenPath bool, fs *flag.FlagS
 
 // Validate validates GitHub options.
 func (o *GitHubOptions) Validate(dryRun bool) error {
-	for _, uri := range o.endpoint.Strings() {
+	endpoints := o.endpoint.Strings()
+	for _, uri := range endpoints {
 		if uri == "" {
 			uri = github.DefaultAPIEndpoint
 		} else if _, err := url.ParseRequestURI(uri); err != nil {
 			return fmt.Errorf("invalid -github-endpoint URI: %q", uri)
 		}
+	}
+	if len(endpoints) == 1 && endpoints[0] == github.DefaultAPIEndpoint {
+		logrus.Error("It doesn't look like you are using ghproxy to cache API calls to GitHub! This has become a required component of Prow and other components will soon be allowed to add features that may rapidly consume API ratelimit without caching. Starting May 1, 2020 use Prow components without ghproxy at your own risk! https://github.com/kubernetes/test-infra/tree/master/ghproxy#ghproxy")
 	}
 
 	if o.graphqlEndpoint == "" {
