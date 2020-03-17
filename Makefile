@@ -93,7 +93,7 @@ build-tool-image: config-docker
 	cd prow/docker/build-tool && ./build-and-push.sh
 
 build-tool-multiarch-image: config-docker
-	@common/scripts/multiarch_image.sh $(IMAGE_REPO) $(BUILD_TOOL_IMAGE_NAME) $(VERSION)
+	@MAX_PULLING_RETRY=20 RETRY_INTERVAL=120 common/scripts/multiarch_image.sh $(IMAGE_REPO) $(BUILD_TOOL_IMAGE_NAME) $(VERSION)
 
 ############################################################
 # clean section

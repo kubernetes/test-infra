@@ -1,4 +1,4 @@
-FROM ppc64le/ubuntu:xenial
+FROM ppc64le/ubuntu:bionic
 
 # Installing
 COPY install.sh /tmp/tools/
