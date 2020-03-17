@@ -48,7 +48,7 @@ rm -rf "${GO_ARCHIVE}"
 
 # install docker
 DOCKER_ARCH=$(dpkg --print-architecture)
-DOCKER_VERSION=18.06.3
+DOCKER_VERSION=18.06.1
 VERSION_SUFFIX="~ce~3-0~ubuntu"
 
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
