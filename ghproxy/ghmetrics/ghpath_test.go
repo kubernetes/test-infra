@@ -329,3 +329,33 @@ func Test_GetSimplifiedPathNotifications(t *testing.T) {
 		})
 	}
 }
+
+func TestUserAgentWithoutVersion(t *testing.T) {
+	tests := []struct {
+		name, in, out string
+	}{
+		{
+			name: "normal user agent gets split",
+			in:   "hook.config-updater/v20200314-12f848798",
+			out:  "hook.config-updater",
+		},
+		{
+			name: "user agent without version does not split",
+			in:   "some-custom-thing",
+			out:  "some-custom-thing",
+		},
+		{
+			name: "malformed user agent returns something sensible",
+			in:   "some/custom/thing",
+			out:  "some",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if actual, expected := userAgentWithoutVersion(test.in), test.out; actual != expected {
+				t.Errorf("%s: expected %s, got %s", test.name, expected, actual)
+			}
+		})
+	}
+}
