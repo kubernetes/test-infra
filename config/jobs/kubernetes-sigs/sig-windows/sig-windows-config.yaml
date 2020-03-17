@@ -98,7 +98,8 @@ periodics:
       - "--aksengine-admin-password=AdminPassw0rd"
       - "--aksengine-creds=$AZURE_CREDENTIALS"
       - "--aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz"
-      - "--aksengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
+      - "--aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)"
+      - "--aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)"
       - "--aksengine-winZipBuildScript=$WIN_BUILD"
       - "--aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_master.json"
       - "--aksengine-win-binaries"
@@ -108,6 +109,11 @@ periodics:
       - "--timeout=620m"
       securityContext:
         privileged: true
+      env:
+      - name: K8S_SSH_PUBLIC_KEY_PATH
+        value: /etc/ssh-key-secret/ssh-public # from preset-k8s-ssh label
+      - name: K8S_SSH_PRIVATE_KEY_PATH
+        value: /etc/ssh-key-secret/ssh-private # from preset-k8s-ssh label
   annotations:
     testgrid-dashboards: sig-windows, provider-azure-windows, provider-azure-periodic
     testgrid-tab-name: aks-engine-azure-windows-master
@@ -144,7 +150,8 @@ periodics:
       - "--aksengine-creds=$AZURE_CREDENTIALS"
       # Note: Updating aks-engine version for 1.14 + Windows configs has caused issues in the past - update this config with caution!
       - "--aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.31.2/aks-engine-v0.31.2-linux-amd64.tar.gz"
-      - "--aksengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
+      - "--aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)"
+      - "--aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)"
       - "--aksengine-winZipBuildScript=$WIN_BUILD"
       - "--aksengine-orchestratorRelease=1.14"
       - "--aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release.json"
@@ -155,6 +162,11 @@ periodics:
       - "--timeout=620m"
       securityContext:
         privileged: true
+      env:
+      - name: K8S_SSH_PUBLIC_KEY_PATH
+        value: /etc/ssh-key-secret/ssh-public # from preset-k8s-ssh label
+      - name: K8S_SSH_PRIVATE_KEY_PATH
+        value: /etc/ssh-key-secret/ssh-private # from preset-k8s-ssh label
   annotations:
     testgrid-dashboards: sig-windows, provider-azure-windows, provider-azure-periodic
     testgrid-tab-name: aks-engine-azure-1-14-windows
@@ -191,7 +203,8 @@ periodics:
       - "--aksengine-creds=$AZURE_CREDENTIALS"
       # Note: Updating aks-engine version for 1.14 + Windows configs has caused issues in the past - update this config with caution!
       - "--aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.31.2/aks-engine-v0.31.2-linux-amd64.tar.gz"
-      - "--aksengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
+      - "--aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)"
+      - "--aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)"
       - "--aksengine-winZipBuildScript=$WIN_BUILD"
       - "--aksengine-orchestratorRelease=1.14"
       - "--aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release.json"
@@ -202,6 +215,11 @@ periodics:
       - "--timeout=620m"
       securityContext:
         privileged: true
+      env:
+      - name: K8S_SSH_PUBLIC_KEY_PATH
+        value: /etc/ssh-key-secret/ssh-public # from preset-k8s-ssh label
+      - name: K8S_SSH_PRIVATE_KEY_PATH
+        value: /etc/ssh-key-secret/ssh-private # from preset-k8s-ssh label
   annotations:
     testgrid-dashboards: sig-windows, provider-azure-windows, provider-azure-periodic
     testgrid-tab-name: aks-engine-azure-1-14-windows-serial-slow
@@ -237,7 +255,8 @@ periodics:
       - "--aksengine-admin-password=AdminPassw0rd"
       - "--aksengine-creds=$AZURE_CREDENTIALS"
       - "--aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.46.3/aks-engine-v0.46.3-linux-amd64.tar.gz"
-      - "--aksengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
+      - "--aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)"
+      - "--aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)"
       - "--aksengine-winZipBuildScript=$WIN_BUILD"
       - "--aksengine-orchestratorRelease=1.15"
       - "--aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_1_15.json"
@@ -248,6 +267,11 @@ periodics:
       - "--timeout=620m"
       securityContext:
         privileged: true
+      env:
+      - name: K8S_SSH_PUBLIC_KEY_PATH
+        value: /etc/ssh-key-secret/ssh-public # from preset-k8s-ssh label
+      - name: K8S_SSH_PRIVATE_KEY_PATH
+        value: /etc/ssh-key-secret/ssh-private # from preset-k8s-ssh label
   annotations:
     testgrid-dashboards: sig-windows, provider-azure-windows, provider-azure-periodic
     testgrid-tab-name: aks-engine-azure-1-15-windows
@@ -283,7 +307,8 @@ periodics:
       - "--aksengine-admin-password=AdminPassw0rd"
       - "--aksengine-creds=$AZURE_CREDENTIALS"
       - "--aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.46.3/aks-engine-v0.46.3-linux-amd64.tar.gz"
-      - "--aksengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
+      - "--aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)"
+      - "--aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)"
       - "--aksengine-winZipBuildScript=$WIN_BUILD"
       - "--aksengine-orchestratorRelease=1.15"
       - "--aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_1_15.json"
@@ -294,6 +319,11 @@ periodics:
       - "--timeout=620m"
       securityContext:
         privileged: true
+      env:
+      - name: K8S_SSH_PUBLIC_KEY_PATH
+        value: /etc/ssh-key-secret/ssh-public # from preset-k8s-ssh label
+      - name: K8S_SSH_PRIVATE_KEY_PATH
+        value: /etc/ssh-key-secret/ssh-private # from preset-k8s-ssh label
   annotations:
     testgrid-dashboards: sig-windows, provider-azure-windows, provider-azure-periodic
     testgrid-tab-name: aks-engine-azure-1-15-windows-serial-slow
@@ -329,7 +359,8 @@ periodics:
       - "--aksengine-admin-password=AdminPassw0rd"
       - "--aksengine-creds=$AZURE_CREDENTIALS"
       - "--aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.46.3/aks-engine-v0.46.3-linux-amd64.tar.gz"
-      - "--aksengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
+      - "--aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)"
+      - "--aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)"
       - "--aksengine-winZipBuildScript=$WIN_BUILD"
       - "--aksengine-orchestratorRelease=1.16"
       - "--aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_1_16.json"
@@ -340,6 +371,11 @@ periodics:
       - "--timeout=620m"
       securityContext:
         privileged: true
+      env:
+      - name: K8S_SSH_PUBLIC_KEY_PATH
+        value: /etc/ssh-key-secret/ssh-public # from preset-k8s-ssh label
+      - name: K8S_SSH_PRIVATE_KEY_PATH
+        value: /etc/ssh-key-secret/ssh-private # from preset-k8s-ssh label
   annotations:
     testgrid-dashboards: sig-windows, sig-release-1.16-informing, provider-azure-windows, provider-azure-periodic
     testgrid-tab-name: aks-engine-azure-1-16-windows
@@ -374,7 +410,8 @@ periodics:
       - "--aksengine-admin-password=AdminPassw0rd"
       - "--aksengine-creds=$AZURE_CREDENTIALS"
       - "--aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.46.3/aks-engine-v0.46.3-linux-amd64.tar.gz"
-      - "--aksengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
+      - "--aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)"
+      - "--aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)"
       - "--aksengine-winZipBuildScript=$WIN_BUILD"
       - "--aksengine-orchestratorRelease=1.16"
       - "--aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_1_16.json"
@@ -385,6 +422,11 @@ periodics:
       - "--timeout=620m"
       securityContext:
         privileged: true
+      env:
+      - name: K8S_SSH_PUBLIC_KEY_PATH
+        value: /etc/ssh-key-secret/ssh-public # from preset-k8s-ssh label
+      - name: K8S_SSH_PRIVATE_KEY_PATH
+        value: /etc/ssh-key-secret/ssh-private # from preset-k8s-ssh label
   annotations:
     testgrid-dashboards: sig-windows, sig-release-1.16-informing, provider-azure-windows, provider-azure-periodic
     testgrid-tab-name: aks-engine-azure-1-16-windows-serial-slow
@@ -421,7 +463,8 @@ periodics:
       - "--aksengine-admin-password=AdminPassw0rd"
       - "--aksengine-creds=$AZURE_CREDENTIALS"
       - "--aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.46.3/aks-engine-v0.46.3-linux-amd64.tar.gz"
-      - "--aksengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
+      - "--aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)"
+      - "--aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)"
       - "--aksengine-winZipBuildScript=$WIN_BUILD"
       - "--aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_staging.json"
       - "--aksengine-win-binaries"
@@ -430,6 +473,11 @@ periodics:
       - "--timeout=450m"
       securityContext:
         privileged: true
+      env:
+      - name: K8S_SSH_PUBLIC_KEY_PATH
+        value: /etc/ssh-key-secret/ssh-public # from preset-k8s-ssh label
+      - name: K8S_SSH_PRIVATE_KEY_PATH
+        value: /etc/ssh-key-secret/ssh-private # from preset-k8s-ssh label
   annotations:
     testgrid-dashboards: sig-windows, sig-release-1.17-informing, provider-azure-windows, provider-azure-periodic
     testgrid-tab-name: aks-engine-azure-1-17-windows
@@ -466,7 +514,8 @@ periodics:
       - "--aksengine-admin-password=AdminPassw0rd"
       - "--aksengine-creds=$AZURE_CREDENTIALS"
       - "--aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.46.3/aks-engine-v0.46.3-linux-amd64.tar.gz"
-      - "--aksengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
+      - "--aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)"
+      - "--aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)"
       - "--aksengine-winZipBuildScript=$WIN_BUILD"
       - "--aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_staging.json"
       - "--aksengine-win-binaries"
@@ -475,6 +524,11 @@ periodics:
       - "--timeout=450m"
       securityContext:
         privileged: true
+      env:
+      - name: K8S_SSH_PUBLIC_KEY_PATH
+        value: /etc/ssh-key-secret/ssh-public # from preset-k8s-ssh label
+      - name: K8S_SSH_PRIVATE_KEY_PATH
+        value: /etc/ssh-key-secret/ssh-private # from preset-k8s-ssh label
   annotations:
     testgrid-dashboards: sig-windows, provider-azure-windows, provider-azure-periodic
     testgrid-tab-name: aks-engine-azure-1-17-windows-serial-slow
@@ -511,7 +565,8 @@ periodics:
       - "--aksengine-admin-password=AdminPassw0rd"
       - "--aksengine-creds=$AZURE_CREDENTIALS"
       - "--aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz"
-      - "--aksengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
+      - "--aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)"
+      - "--aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)"
       - "--aksengine-winZipBuildScript=$WIN_BUILD"
       - "--aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_1_18.json"
       - "--aksengine-win-binaries"
@@ -520,6 +575,11 @@ periodics:
       - "--timeout=450m"
       securityContext:
         privileged: true
+      env:
+      - name: K8S_SSH_PUBLIC_KEY_PATH
+        value: /etc/ssh-key-secret/ssh-public # from preset-k8s-ssh label
+      - name: K8S_SSH_PRIVATE_KEY_PATH
+        value: /etc/ssh-key-secret/ssh-private # from preset-k8s-ssh label
   annotations:
     testgrid-dashboards: sig-windows, sig-release-1.18-informing, provider-azure-windows, provider-azure-periodic
     testgrid-tab-name: aks-engine-azure-1-18-windows
@@ -556,7 +616,8 @@ periodics:
       - "--aksengine-admin-password=AdminPassw0rd"
       - "--aksengine-creds=$AZURE_CREDENTIALS"
       - "--aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz"
-      - "--aksengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
+      - "--aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)"
+      - "--aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)"
       - "--aksengine-winZipBuildScript=$WIN_BUILD"
       - "--aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_1_18.json"
       - "--aksengine-win-binaries"
@@ -565,6 +626,11 @@ periodics:
       - "--timeout=450m"
       securityContext:
         privileged: true
+      env:
+      - name: K8S_SSH_PUBLIC_KEY_PATH
+        value: /etc/ssh-key-secret/ssh-public # from preset-k8s-ssh label
+      - name: K8S_SSH_PRIVATE_KEY_PATH
+        value: /etc/ssh-key-secret/ssh-private # from preset-k8s-ssh label
   annotations:
     testgrid-dashboards: sig-windows, provider-azure-windows, provider-azure-periodic
     testgrid-tab-name: aks-engine-azure-1-18-windows-serial-slow
@@ -651,7 +717,8 @@ periodics:
       - "--aksengine-admin-password=AdminPassw0rd"
       - "--aksengine-creds=$AZURE_CREDENTIALS"
       - "--aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz"
-      - "--aksengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
+      - "--aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)"
+      - "--aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)"
       - "--aksengine-winZipBuildScript=$WIN_BUILD"
       - "--aksengine-orchestratorRelease=1.18"
       - "--aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_1903_master.json"
@@ -662,6 +729,11 @@ periodics:
       - "--timeout=620m"
       securityContext:
         privileged: true
+      env:
+      - name: K8S_SSH_PUBLIC_KEY_PATH
+        value: /etc/ssh-key-secret/ssh-public # from preset-k8s-ssh label
+      - name: K8S_SSH_PRIVATE_KEY_PATH
+        value: /etc/ssh-key-secret/ssh-private # from preset-k8s-ssh label
   annotations:
     testgrid-dashboards: sig-windows, provider-azure-windows, provider-azure-periodic
     testgrid-tab-name: aks-engine-azure-windows-1903-master
@@ -697,7 +769,8 @@ periodics:
       - "--aksengine-admin-password=AdminPassw0rd"
       - "--aksengine-creds=$AZURE_CREDENTIALS"
       - "--aksengine-download-url=https://k8sprowstorage.blob.core.windows.net/aks-engine-dirty/aks-engine-c841ebc2.tar.gz"
-      - "--aksengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
+      - "--aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)"
+      - "--aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)"
       - "--aksengine-winZipBuildScript=$WIN_BUILD"
       - "--aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_1909_master.json"
       - "--aksengine-win-binaries"
