@@ -1155,7 +1155,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-release-misc
 # TODO: Move this job to a K8s cluster owned by kubernetes-wg-k8s-infra@googlegroups.com.
-- interval: 1h
+- interval: 12h
   cluster: test-infra-trusted
   max_concurrency: 1
   name: ci-k8sio-backup
