@@ -783,8 +783,6 @@ periodics:
       - --build-with-kubemark=true
       - --build=none
       - --provider=skeleton
-      - --aksengine-orchestratorRelease=1.18
-      - --aksengine-deploy-custom-k8s
       - --kubemark-build-script-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/kubemark/build-kubemark.sh
       - --kubemark-cluster-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/kubemark/templates/kubemark-cluster.json
       - --external-cluster-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/kubemark/templates/external-cluster.json
