@@ -234,7 +234,6 @@ ENV RUBYOPT="-KU -E utf-8:utf-8"
 COPY --from=base_os_context / /
 COPY --from=binary_tools_context /out/ /
 COPY --from=binary_tools_context /usr/local/go /usr/local/go
-COPY --from=binary_tools_context /usr/lib/google-cloud-sdk /usr/lib/google-cloud-sdk
 COPY --from=ruby_tools_context /usr/local/bin /usr/local/bin
 COPY --from=ruby_tools_context /usr/local/lib /usr/local/lib
 COPY --from=nodejs_tools_context /usr/local /usr/local
