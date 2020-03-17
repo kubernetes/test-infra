@@ -18,17 +18,22 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
+	"path"
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/services/authorization/mgmt/2015-07-01/authorization"
+	"github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2019-10-01/containerservice"
 	"github.com/Azure/azure-sdk-for-go/services/preview/msi/mgmt/2015-08-31-preview/msi"
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/adal"
 	"github.com/Azure/go-autorest/autorest/azure"
+	"github.com/pelletier/go-toml"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -186,12 +191,13 @@ type AgentPoolProfile struct {
 }
 
 type AzureClient struct {
-	environment         azure.Environment
-	subscriptionID      string
-	deploymentsClient   resources.DeploymentsClient
-	groupsClient        resources.GroupsClient
-	msiClient           msi.UserAssignedIdentitiesClient
-	authorizationClient authorization.RoleAssignmentsClient
+	environment           azure.Environment
+	subscriptionID        string
+	deploymentsClient     resources.DeploymentsClient
+	groupsClient          resources.GroupsClient
+	msiClient             msi.UserAssignedIdentitiesClient
+	authorizationClient   authorization.RoleAssignmentsClient
+	managedClustersClient containerservice.ManagedClustersClient
 }
 
 type FeatureFlags struct {
@@ -333,6 +339,20 @@ func getOAuthConfig(env azure.Environment, subscriptionID, tenantID string) (*ad
 	return oauthConfig, nil
 }
 
+func getAzCredentials() (*Creds, error) {
+	content, err := ioutil.ReadFile(*aksCredentialsFile)
+	log.Printf("Reading credentials file %v", *aksCredentialsFile)
+	if err != nil {
+		return nil, fmt.Errorf("error reading credentials file %v %v", *aksCredentialsFile, err)
+	}
+	config := Config{}
+	err = toml.Unmarshal(content, &config)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing credentials file %v %v", *aksCredentialsFile, err)
+	}
+	return &config.Creds, nil
+}
+
 func getAzureClient(env azure.Environment, subscriptionID, clientID, tenantID, clientSecret string) (*AzureClient, error) {
 	oauthConfig, err := getOAuthConfig(env, subscriptionID, tenantID)
 	if err != nil {
@@ -349,12 +369,13 @@ func getAzureClient(env azure.Environment, subscriptionID, clientID, tenantID, c
 
 func getClient(env azure.Environment, subscriptionID, tenantID string, armSpt *adal.ServicePrincipalToken) *AzureClient {
 	c := &AzureClient{
-		environment:         env,
-		subscriptionID:      subscriptionID,
-		deploymentsClient:   resources.NewDeploymentsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
-		groupsClient:        resources.NewGroupsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
-		msiClient:           msi.NewUserAssignedIdentitiesClient(subscriptionID),
-		authorizationClient: authorization.NewRoleAssignmentsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
+		environment:           env,
+		subscriptionID:        subscriptionID,
+		deploymentsClient:     resources.NewDeploymentsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
+		groupsClient:          resources.NewGroupsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
+		msiClient:             msi.NewUserAssignedIdentitiesClient(subscriptionID),
+		authorizationClient:   authorization.NewRoleAssignmentsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
+		managedClustersClient: containerservice.NewManagedClustersClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
 	}
 
 	authorizer := autorest.NewBearerAuthorizer(armSpt)
@@ -363,8 +384,66 @@ func getClient(env azure.Environment, subscriptionID, tenantID string, armSpt *a
 	c.groupsClient.Authorizer = authorizer
 	c.msiClient.Authorizer = authorizer
 	c.authorizationClient.Authorizer = authorizer
+	c.managedClustersClient.Authorizer = authorizer
 
 	return c
+}
+
+func downloadFromURL(url string, destination string, retry int) (string, error) {
+	f, err := os.Create(destination)
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+
+	for i := 0; i < retry; i++ {
+		log.Printf("downloading %v from %v", destination, url)
+		if err := httpRead(url, f); err == nil {
+			break
+		}
+		err = fmt.Errorf("url=%s failed get %v: %v", url, destination, err)
+		if i == retry-1 {
+			return "", err
+		}
+		log.Println(err)
+		sleep(time.Duration(i) * time.Second)
+	}
+	f.Chmod(0644)
+	return destination, nil
+}
+
+func populateAzureCloudConfig(isVMSS bool, credentials Creds, azureEnvironment, resourceGroup, location, outputDir string) error {
+	// CLOUD_CONFIG is required when running Azure-specific e2e tests
+	// See https://github.com/kubernetes/kubernetes/blob/master/hack/ginkgo-e2e.sh#L113-L118
+	cc := map[string]string{
+		"cloud":           azureEnvironment,
+		"tenantId":        credentials.TenantID,
+		"subscriptionId":  credentials.SubscriptionID,
+		"aadClientId":     credentials.ClientID,
+		"aadClientSecret": credentials.ClientSecret,
+		"resourceGroup":   resourceGroup,
+		"location":        location,
+	}
+	if isVMSS {
+		cc["vmType"] = vmTypeVMSS
+	} else {
+		cc["vmType"] = vmTypeStandard
+	}
+
+	cloudConfig, err := json.MarshalIndent(cc, "", "    ")
+	if err != nil {
+		return fmt.Errorf("error creating Azure cloud config: %v", err)
+	}
+
+	cloudConfigPath := path.Join(outputDir, "azure.json")
+	if err := ioutil.WriteFile(cloudConfigPath, cloudConfig, 0644); err != nil {
+		return fmt.Errorf("cannot write Azure cloud config to file: %v", err)
+	}
+	if err := os.Setenv("CLOUD_CONFIG", cloudConfigPath); err != nil {
+		return fmt.Errorf("error setting CLOUD_CONFIG=%s: %v", cloudConfigPath, err)
+	}
+
+	return nil
 }
 
 func stringPointer(s string) *string {

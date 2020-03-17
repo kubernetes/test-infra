@@ -3,8 +3,9 @@ load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
 go_library(
     name = "go_default_library",
     srcs = [
+        "aks.go",
+        "aksengine.go",
         "anywhere.go",
-        "azure.go",
         "azure_helpers.go",
         "bash.go",
         "build.go",
@@ -35,6 +36,7 @@ go_library(
         "@com_github_aws_aws_sdk_go//aws/session:go_default_library",
         "@com_github_aws_aws_sdk_go//service/ec2:go_default_library",
         "@com_github_azure_azure_sdk_for_go//services/authorization/mgmt/2015-07-01/authorization:go_default_library",
+        "@com_github_azure_azure_sdk_for_go//services/containerservice/mgmt/2019-10-01/containerservice:go_default_library",
         "@com_github_azure_azure_sdk_for_go//services/preview/msi/mgmt/2015-08-31-preview/msi:go_default_library",
         "@com_github_azure_azure_sdk_for_go//services/resources/mgmt/2018-05-01/resources:go_default_library",
         "@com_github_azure_azure_storage_blob_go//azblob:go_default_library",
