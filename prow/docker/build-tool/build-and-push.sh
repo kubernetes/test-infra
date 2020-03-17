@@ -14,14 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-DOCKER_REGISTRY="quay.io"
-DOCKER_USERNAME="multicloudlab"
+ARCH=$(uname -m | sed 's/x86_64/amd64/g')
 
-# support other container tools, e.g. podman
-CONTAINER_CLI=${CONTAINER_CLI:-docker}
-HUB="${DOCKER_REGISTRY}/${DOCKER_USERNAME}"
-IMAGE="build-tools"
-VERSION=$(date +v%Y%m%d)-$(git describe --tags --always --dirty)
+IMAGE_REPO=${IMAGE_REPO:-"quay.io/multicloudlab"}
+BUILD_TOOL_IMAGE_NAME=${BUILD_TOOL_IMAGE_NAME:-"build-tool"}
+VERSION=${VERSION:-"$(date +v%Y%m%d)-$(git describe --tags --always --dirty)"}
 
-${CONTAINER_CLI} build -t "${HUB}/${IMAGE}:${VERSION}" .
-${CONTAINER_CLI} push "${HUB}/${IMAGE}:${VERSION}"
+CONTAINER_CLI=${CONTAINER_CLI:-"docker"}
+
+${CONTAINER_CLI} build -t "${IMAGE_REPO}/${BUILD_TOOL_IMAGE_NAME}-${ARCH}:${VERSION}" -f Dockerfile.${ARCH} .
+${CONTAINER_CLI} push "${IMAGE_REPO}/${BUILD_TOOL_IMAGE_NAME}-${ARCH}:${VERSION}"

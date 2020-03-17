@@ -12,6 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Image URL to use all building/pushing image targets;
+# Use your own docker registry and image name for dev/test by overridding the
+# IMAGE_REPO, *_IMAGE_NAME environment variable.
+IMAGE_REPO ?= quay.io/multicloudlab
+CHECK_TOOL_IMAGE_NAME ?= check-tool
+BUILD_TOOL_IMAGE_NAME ?= build-tool
+
 GIT_HOST = github.com/IBM
 PWD := $(shell pwd)
 BASE_DIR := $(shell basename $(PWD))
@@ -24,8 +31,7 @@ export GOBIN ?= $(GOBIN_DEFAULT)
 TESTARGS_DEFAULT := "-v"
 export TESTARGS ?= $(TESTARGS_DEFAULT)
 DEST := $(GOPATH)/src/$(GIT_HOST)/$(BASE_DIR)
-VERSION ?= $(shell git describe --exact-match 2> /dev/null || \
-                 git describe --match=$(git rev-parse --short=8 HEAD) --always --dirty --abbrev=8)
+VERSION ?= $(shell date +v%Y%m%d)-$(shell git describe --match=$(git rev-parse --short=8 HEAD) --tags --always --dirty)
 
 # Image URL to use all building/pushing image targets
 # IMG ?= xxx
@@ -76,13 +82,18 @@ build:
 # images section
 ############################################################
 
-images: build-tool-image docker-in-docker-builder-image
+image: check-tool-image build-tool-image build-tool-multiarch-image
+
+check-tool-image: config-docker
+	@IMAGE_REPO=$(IMAGE_REPO) CHECK_TOOL_IMAGE_NAME=$(CHECK_TOOL_IMAGE_NAME) VERSION=$(CHECK_TOOL_IMAGE_NAME) \
+	cd prow/docker/check-tool && ./build-and-push.sh
 
 build-tool-image: config-docker
-	@cd prow/docker/build-tools && ./build-and-push.sh
+	@IMAGE_REPO=$(IMAGE_REPO) BUILD_TOOL_IMAGE_NAME=$(BUILD_TOOL_IMAGE_NAME) VERSION=$(CHECK_TOOL_IMAGE_NAME) \
+	cd prow/docker/build-tool && ./build-and-push.sh
 
-docker-in-docker-builder-image: config-docker
-	@cd prow/docker/docker-in-docker && ./build-and-push.sh
+build-tool-multiarch-image: config-docker
+	@common/scripts/multiarch_image.sh $(IMAGE_REPO) $(BUILD_TOOL_IMAGE_NAME) $(VERSION)
 
 ############################################################
 # clean section
