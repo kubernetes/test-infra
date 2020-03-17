@@ -247,6 +247,9 @@ dashboards:
     - name: Periodic Arm64 conformance test
       test_group_name: arm64-conformance
       description: Runs conformance test by using kubetest against latest version of kubernetes on arm64
+    - name: Periodic Arm64 conformance test with containerd
+      test_group_name: arm64-conformance-containerd
+      description: Runs conformance test with containerd by using kubetest against latest version of kubernetes on arm64
     - name: Periodic Arm64 conformance test on AWS
       test_group_name: arm64-conformance-aws-cluster
       description: Runs conformance tests by using kubetest against latest version of kubernetes on AWS"
@@ -600,6 +603,8 @@ test_groups:
   gcs_prefix: k8s-conformance-arm/logs/ci-k8s-conformance-arm64
 - name: arm64-kind-master
   gcs_prefix: k8s-conformance-arm/logs/ci-k8s-kind-arm64
+- name: arm64-conformance-containerd
+  gcs_prefix: k8s-conformance-arm/logs/ci-k8s-conformance-arm64-containerd
 - name: arm64-integration
   gcs_prefix: k8s-conformance-arm/logs/ci-k8s-integration
 - name: arm64-conformance-aws-cluster
