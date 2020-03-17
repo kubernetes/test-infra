@@ -1,4 +1,4 @@
-FROM s390x/ubuntu:xenial
+FROM s390x/ubuntu:bionic
 
 # Installing
 COPY install.sh /tmp/tools/

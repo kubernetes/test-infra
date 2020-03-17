@@ -99,8 +99,7 @@ ADD https://nodejs.org/download/release/v${NODEJS_VERSION}/node-v${NODEJS_VERSIO
 RUN tar -xzf /tmp/node-v${NODEJS_VERSION}-headers.tar.gz --strip-components=1 -C /usr/local
 
 RUN npm init -y
-RUN npm install --production --global \
-    markdown-spellcheck@"${MARKDOWN_SPELLCHECK_VERSION}" \
+RUN npm install --production --global markdown-spellcheck@"${MARKDOWN_SPELLCHECK_VERSION}"
 
 # Clean up stuff we don't need in the final image
 RUN rm -rf /usr/local/sbin

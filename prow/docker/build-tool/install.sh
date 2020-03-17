@@ -33,7 +33,7 @@ apt-get -qqy --no-install-recommends install \
   jq
 
 # install golang
-GO_VERSION='1.13'
+GO_VERSION='1.13.8'
 GOARCH=$(uname -m | sed 's/x86_64/amd64/g')
 GO_BASE_URL="https://storage.googleapis.com/golang"
 GO_ARCHIVE="go${GO_VERSION}.linux-${GOARCH}.tar.gz"
@@ -48,7 +48,7 @@ rm -rf "${GO_ARCHIVE}"
 
 # install docker
 DOCKER_ARCH=$(dpkg --print-architecture)
-DOCKER_VERSION=18.06.1
+DOCKER_VERSION=18.06.3
 VERSION_SUFFIX="~ce~3-0~ubuntu"
 
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
