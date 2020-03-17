@@ -290,8 +290,7 @@ periodics:
             "--build=//... -//vendor/..." \
             --release=//build/release-tars \
             --gcs=gs://kubernetes-release-dev/ci \
-            --version-suffix=-bazel \
-            --publish-version=gs://kubernetes-release-dev/ci/latest-bazel-1.15.txt
+            --version-suffix=-bazel
       command:
       - bash
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200314-a0cadb9-1.15
@@ -510,7 +509,6 @@ postsubmits:
         - --release=//build/release-tars
         - --gcs=gs://kubernetes-release-dev/ci
         - --version-suffix=-bazel
-        - --publish-version=gs://kubernetes-release-dev/ci/latest-bazel-1.15.txt
         image: gcr.io/k8s-testimages/kubekins-e2e:v20200314-a0cadb9-1.15
         name: ""
         resources:
