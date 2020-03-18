@@ -32,19 +32,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     gnupg2 \
     software-properties-common \
-    unzip \
-    xz-utils
+    unzip
 
 # Build and install Go tools
 RUN go get -ldflags="-s -w" golang.org/x/tools/cmd/goimports@${GOIMPORTS_VERSION}
 RUN go get -ldflags="-s -w" github.com/golangci/golangci-lint/cmd/golangci-lint@${GOLANGCI_LINT_VERSION}
 
-# Build and install operator-sdk
-RUN git clone --branch ${OPERATOR_SDK_VERSION} https://github.com/operator-framework/operator-sdk.git \
-    ${GOPATH}/src/github.com/operator-framework/operator-sdk && \
-    cd ${GOPATH}/src/github.com/operator-framework/operator-sdk && \
-    make install && \
-    cd /tmp
+# Install operator-sdk
+ADD https://github.com/operator-framework/operator-sdk/releases/download/${OPERATOR_SDK_VERSION}/operator-sdk-${OPERATOR_SDK_VERSION}-${ARCH}-linux-gnu ${OUTDIR}/usr/bin/operator-sdk
+RUN chmod 555 ${OUTDIR}/usr/bin/operator-sdk
 
 # Helm
 ADD https://storage.googleapis.com/kubernetes-helm/helm-${HELM_VERSION}-linux-${ARCH}.tar.gz /tmp

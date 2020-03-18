@@ -32,8 +32,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     gnupg2 \
     software-properties-common \
-    unzip \
-    xz-utils
+    unzip
 
 # Build and install Go tools
 RUN go get -ldflags="-s -w" golang.org/x/tools/cmd/goimports@${GOIMPORTS_VERSION}
