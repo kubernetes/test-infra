@@ -10,8 +10,6 @@ ENV GOLANGCI_LINT_VERSION=v1.23.1
 ENV HADOLINT_VERSION=v1.17.2
 ENV HELM_VERSION=v2.16.1
 ENV KUBECTL_VERSION=v1.15.0
-ENV KUBEBUILDER_VERSION=2.2.0
-ENV OPERATOR_SDK_VERSION=v0.12.0
 ENV SHELLCHECK_VERSION=v0.7.0
 
 ENV GO111MODULE=on
@@ -23,9 +21,7 @@ ENV GOPATH=/tmp/go
 ENV OUTDIR=/out
 RUN mkdir -p ${OUTDIR}/usr/bin
 RUN mkdir -p ${OUTDIR}/usr/local
-RUN mkdir -p ${OUTDIR}/usr/lib
 
-# Update distro and install dependencies
 # hadolint ignore=DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \
     apt-transport-https \
@@ -54,26 +50,13 @@ RUN mv /tmp/linux-amd64/helm ${OUTDIR}/usr/bin
 ADD https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl ${OUTDIR}/usr/bin/kubectl
 RUN chmod 555 ${OUTDIR}/usr/bin/kubectl
 
-# kubebuilder
-ADD https://github.com/kubernetes-sigs/kubebuilder/releases/download/v${KUBEBUILDER_VERSION}/kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64.tar.gz /tmp
-RUN mkdir -p ${OUTDIR}/usr/local/kubebuilder
-RUN tar -xf /tmp/kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64.tar.gz --strip-components=1 -C ${OUTDIR}/usr/local/kubebuilder
-
-# operator-sdk
-ADD https://github.com/operator-framework/operator-sdk/releases/download/${OPERATOR_SDK_VERSION}/operator-sdk-${OPERATOR_SDK_VERSION}-x86_64-linux-gnu ${OUTDIR}/usr/bin/operator-sdk
-RUN chmod 555 ${OUTDIR}/usr/bin/operator-sdk
-
 # ShellCheck linter
 ADD https://storage.googleapis.com/shellcheck/shellcheck-${SHELLCHECK_VERSION}.linux.x86_64.tar.xz /tmp
 RUN tar -xJf /tmp/shellcheck-${SHELLCHECK_VERSION}.linux.x86_64.tar.xz -C /tmp
 RUN mv /tmp/shellcheck-${SHELLCHECK_VERSION}/shellcheck ${OUTDIR}/usr/bin
 
-# gcloud SDK
-ENV CLOUDSDK_PYTHON_SITEPACKAGES=1
-ENV CLOUDSDK_CORE_DISABLE_PROMPTS=1
-ENV CLOUDSDK_INSTALL_DIR=${OUTDIR}/usr/lib
-RUN curl https://sdk.cloud.google.com > /tmp/install_gcloud_sdk
-RUN chmod +x /tmp/install_gcloud_sdk && bash /tmp/install_gcloud_sdk
+# Move go tools to OUTDIR
+RUN mv /tmp/go/bin/* ${OUTDIR}/usr/bin
 
 # Cleanup stuff we don't need in the final image
 RUN rm -fr /usr/local/go/doc
@@ -91,6 +74,10 @@ FROM ubuntu:bionic as nodejs_tools_context
 # Pinned versions of stuff we pull in
 ENV MARKDOWN_SPELLCHECK_VERSION=v1.3.1
 ENV NODEJS_VERSION=12.8.0
+ENV SASS_LINT_VERSION=v1.13.1
+ENV SASS_VERSION=v1.23.7
+ENV TSLINT_VERSION=v5.20.0
+ENV TYPESCRIPT_VERSION=v3.7.2
 
 ADD https://nodejs.org/download/release/v${NODEJS_VERSION}/node-v${NODEJS_VERSION}-linux-x64.tar.gz /tmp
 RUN tar -xzf /tmp/node-v${NODEJS_VERSION}-linux-x64.tar.gz --strip-components=1 -C /usr/local
@@ -98,8 +85,12 @@ RUN tar -xzf /tmp/node-v${NODEJS_VERSION}-linux-x64.tar.gz --strip-components=1 
 ADD https://nodejs.org/download/release/v${NODEJS_VERSION}/node-v${NODEJS_VERSION}-headers.tar.gz /tmp
 RUN tar -xzf /tmp/node-v${NODEJS_VERSION}-headers.tar.gz --strip-components=1 -C /usr/local
 
-RUN npm init -y
-RUN npm install --production --global markdown-spellcheck@"${MARKDOWN_SPELLCHECK_VERSION}"
+RUN npm install --production --global \
+    sass@"${SASS_VERSION}" \
+    sass-lint@"${SASS_LINT_VERSION}" \
+    typescript@"${TYPESCRIPT_VERSION}" \
+    tslint@"${TSLINT_VERSION}" \
+    markdown-spellcheck@"${MARKDOWN_SPELLCHECK_VERSION}"
 
 # Clean up stuff we don't need in the final image
 RUN rm -rf /usr/local/sbin
@@ -173,42 +164,51 @@ RUN pip3 install yamllint==${YAMLLINT_VERSION}
 
 FROM ubuntu:bionic as base_os_context
 
-# required for binary tools: ca-certificates, gcc, libc-dev, git, iptables, libltdl7
-# required for general build: make, wget, curl
-# required for ruby: libcurl4-openssl-dev
-# required for python: python3, pkg-config
 # hadolint ignore=DL3008
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get -y --no-install-recommends install \
+    apt-transport-https \
+    build-essential \
     ca-certificates \
+    gnupg-agent \
+    lsb-release \
+    software-properties-common \
     curl \
-    gcc \
-    git \
-    iptables \
-    libltdl7 \
-    libc-dev \
-    libcurl4-openssl-dev \
-    make \
-    pkg-config \
-    python3 \
     ssh \
-    wget
+    wget \
+    jq \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
 
-# Clean up stuff we don't need in the final image
+# gcloud SDK
+ENV CLOUDSDK_PYTHON_SITEPACKAGES=1
+ENV CLOUDSDK_CORE_DISABLE_PROMPTS=1
+ENV CLOUDSDK_INSTALL_DIR=/usr/lib
+RUN curl https://sdk.cloud.google.com > /tmp/install_gcloud_sdk
+# FIXME: remove always true suffix after gcloud-sdk installation on ppc64le&s390x is fixed.
+RUN chmod +x /tmp/install_gcloud_sdk && bash /tmp/install_gcloud_sdk || true
+
+# Docker including docker-ce, docker-ce-cli, and containerd.io
+ADD https://download.docker.com/linux/ubuntu/gpg /tmp/docker-key
+RUN apt-key add /tmp/docker-key
+RUN add-apt-repository "deb [arch=$(dpkg --print-architecture)] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+RUN apt-get update && apt-get -y install --no-install-recommends \
+    docker-ce="${DOCKER_VERSION}" \
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/*
+
+# Clean up unused stuff for the final image
 RUN rm -rf /var/lib/apt/lists/*
-RUN rm -fr /usr/share/perl
-RUN rm -fr /usr/share/perl5
-RUN rm -fr /usr/share/python
 RUN rm -fr /usr/share/bash-completion
 RUN rm -fr /usr/share/bug
 RUN rm -fr /usr/share/doc
-RUN rm -fr /usr/share/dh-python
 RUN rm -fr /usr/share/locale
 RUN rm -fr /usr/share/man
 RUN rm -fr /tmp/*
 
-#############
+
+##############
 # Final image
-#############
+##############
 
 # Prepare final output image
 FROM scratch as build_tools
@@ -222,10 +222,13 @@ ENV GO111MODULE=on
 ENV GOPROXY=https://proxy.golang.org
 ENV GOSUMDB=https://sum.golang.org
 ENV GOROOT=/usr/local/go
-ENV GOPATH=/home/go
-ENV GOBIN=/home/gobin
-ENV GOCACHE=/home/gocache
-ENV PATH=/usr/lib/google-cloud-sdk/bin:/usr/local/kubebuilder/bin:/usr/local/go/bin:/home/go/bin:/home/gobin:$PATH
+ENV GOPATH=${HOME}/go
+ENV GOBIN=${HOME}/gobin
+ENV GOCACHE=${HOME}/gocache
+ENV PATH=/usr/lib/google-cloud-sdk/bin:/usr/local/kubebuilder/bin:/usr/local/go/bin:${HOME}/go/bin:${HOME}/gobin:$PATH
+
+# Docker support
+ENV DOCKER_CONFIG=${HOME}/.docker
 
 # Ruby suppport
 ENV RUBYOPT="-KU -E utf-8:utf-8"
@@ -241,16 +244,20 @@ COPY --from=nodejs_tools_context /node_modules /node_modules
 COPY --from=python_context /usr/local/bin /usr/local/bin
 COPY --from=python_context /usr/local/lib /usr/local/lib
 
-RUN mkdir -p /home/go && \
-    mkdir -p /home/gobin && \
-    mkdir -p /home/gocache && \
-    mkdir -p /home/.kube && \
-    mkdir -p /home/.helm
+RUN mkdir -p ${HOME}/go && \
+    mkdir -p ${HOME}/gobin && \
+    mkdir -p ${HOME}/gocache && \
+    mkdir -p ${DOCKER_CONFIG} && \
+    mkdir -p ${HOME}/.config/gcloud && \
+    mkdir -p ${HOME}/.kube && \
+    mkdir -p ${HOME}/.helm
 
-RUN chmod 777 /home/go && \
-    chmod 777 /home/gobin && \
-    chmod 777 /home/gocache && \
-    chmod 777 /home/.kube && \
-    chmod 777 /home/.helm && \
+RUN chmod 777 ${HOME}/go && \
+    chmod 777 ${HOME}/gobin && \
+    chmod 777 ${HOME}/gocache && \
+    chmod 777 ${DOCKER_CONFIG} && \
+    chmod 777 ${HOME}/.config/gcloud && \
+    chmod 777 ${HOME}/.kube && \
+    chmod 777 ${HOME}/.helm
 
-WORKDIR /home
+WORKDIR ${HOME}
