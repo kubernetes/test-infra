@@ -421,11 +421,10 @@ func (k kops) Up() error {
 			count++
 			b.Reset()
 			err = httpRead("https://v4.ifconfig.co", &b)
-			log.Printf("external IP cannot be retrieved: %v\n", err)
 		}
 
 		if err != nil || net.ParseIP(strings.TrimSpace(b.String())) == nil {
-			return fmt.Errorf("external IP cannot be retrieved: %v", err)
+			return fmt.Errorf("external IP cannot be retrieved: %v - %s", err, b.String())
 		}
 
 		externalIP := strings.TrimSpace(b.String()) + "/32"
