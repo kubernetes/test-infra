@@ -9,9 +9,7 @@ presubmits:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200314-a0cadb9-master
         command:
-        - make
-        args:
-        - test
+        - "./scripts/ci-test.sh"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
       testgrid-tab-name: pr-test
@@ -24,9 +22,7 @@ presubmits:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200314-a0cadb9-master
         command:
-        - make
-        args:
-        - manager
+        - "./scripts/ci-build.sh"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
       testgrid-tab-name: pr-build
