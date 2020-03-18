@@ -766,6 +766,10 @@ periodics:
     preset-dind-enabled: "true"
   extra_refs:
   - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes-sigs
     repo: cloud-provider-azure
     base_ref: master
     path_alias: sigs.k8s.io/cloud-provider-azure
