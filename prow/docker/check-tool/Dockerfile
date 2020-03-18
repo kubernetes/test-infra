@@ -174,6 +174,7 @@ RUN apt-get update && apt-get -y --no-install-recommends install \
     software-properties-common \
     curl \
     ssh \
+    python3.7 \
     wget \
     jq \
   && apt-get clean \
@@ -186,15 +187,6 @@ ENV CLOUDSDK_INSTALL_DIR=/usr/lib
 RUN curl https://sdk.cloud.google.com > /tmp/install_gcloud_sdk
 # FIXME: remove always true suffix after gcloud-sdk installation on ppc64le&s390x is fixed.
 RUN chmod +x /tmp/install_gcloud_sdk && bash /tmp/install_gcloud_sdk || true
-
-# Docker including docker-ce, docker-ce-cli, and containerd.io
-ADD https://download.docker.com/linux/ubuntu/gpg /tmp/docker-key
-RUN apt-key add /tmp/docker-key
-RUN add-apt-repository "deb [arch=$(dpkg --print-architecture)] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-RUN apt-get update && apt-get -y install --no-install-recommends \
-    docker-ce="${DOCKER_VERSION}" \
- && apt-get clean \
- && rm -rf /var/lib/apt/lists/*
 
 # Clean up unused stuff for the final image
 RUN rm -rf /var/lib/apt/lists/*
@@ -240,7 +232,6 @@ COPY --from=binary_tools_context /usr/local/go /usr/local/go
 COPY --from=ruby_tools_context /usr/local/bin /usr/local/bin
 COPY --from=ruby_tools_context /usr/local/lib /usr/local/lib
 COPY --from=nodejs_tools_context /usr/local /usr/local
-COPY --from=nodejs_tools_context /node_modules /node_modules
 COPY --from=python_context /usr/local/bin /usr/local/bin
 COPY --from=python_context /usr/local/lib /usr/local/lib
 
