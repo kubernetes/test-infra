@@ -69,22 +69,25 @@ periodics:
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
-      - name: VELODROME_INFLUXDB_CONFIG
-        value: /etc/velodrome-influxdb/config.json
+    # TODO(https://github.com/kubernetes/test-infra/issues/16836): re-enable if velodrome.k8s.io becomes available
+    # - name: VELODROME_INFLUXDB_CONFIG
+    #   value: /etc/velodrome-influxdb/config.json
       volumeMounts:
       - name: service
         mountPath: /etc/service-account
         readOnly: true
-      - name: influxdb
-        mountPath: /etc/velodrome-influxdb
-        readOnly: true
+    # TODO(https://github.com/kubernetes/test-infra/issues/16836): re-enable if velodrome.k8s.io becomes available
+    # - name: influxdb
+    #   mountPath: /etc/velodrome-influxdb
+    #   readOnly: true
     volumes:
     - name: service
       secret:
         secretName: triage-service-account
-    - name: influxdb
-      secret:
-        secretName: velodrome-influxdb
+  # TODO(https://github.com/kubernetes/test-infra/issues/16836): re-enable if velodrome.k8s.io becomes available
+  # - name: influxdb
+  #   secret:
+  #     secretName: velodrome-influxdb
   annotations:
     testgrid-dashboards: sig-testing-misc
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
