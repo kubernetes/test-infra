@@ -13,9 +13,10 @@ dashboard_groups:
   - sig-release-1.16-informing
   - sig-release-1.15-blocking
   - sig-release-1.15-informing
+  - sig-release-releng-blocking
   - sig-release-releng-informing
+  - sig-release-releng-presubmits
   - sig-release-image-pushes
-  - sig-release-misc
   - sig-release-publishing-bot
   - sig-release-release-notes-presubmits
   - sig-release-prototype-master-blocking
@@ -27,6 +28,10 @@ dashboard_groups:
 dashboards:
 - name: sig-release-master-blocking
 - name: sig-release-master-informing
+  dashboard_tab:
+  - name: Conformance - OpenStack
+    test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance
+    description: "OWNER: sig-openstack; Runs conformance tests using kubetest against latest kubernetes master with cloud-provider-openstack"
 - name: sig-release-1.18-blocking
 - name: sig-release-1.18-informing
 - name: sig-release-1.17-blocking
@@ -35,13 +40,10 @@ dashboards:
 - name: sig-release-1.16-informing
 - name: sig-release-1.15-blocking
 - name: sig-release-1.15-informing
+- name: sig-release-releng-blocking
 - name: sig-release-releng-informing
-  dashboard_tab:
-  - name: Conformance - OpenStack
-    test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance
-    description: "OWNER: sig-openstack; Runs conformance tests using kubetest against latest kubernetes master with cloud-provider-openstack"
+- name: sig-release-releng-presubmits
 - name: sig-release-image-pushes
-- name: sig-release-misc
 - name: sig-release-publishing-bot
 - name: sig-release-release-notes-presubmits
   dashboard_tab:

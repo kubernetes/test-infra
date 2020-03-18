@@ -463,7 +463,7 @@ periodics:
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-release-misc
+    testgrid-dashboards: sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-build
     testgrid-alert-email: kubernetes-release-team@googlegroups.com
 postsubmits:

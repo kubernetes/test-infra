@@ -120,7 +120,7 @@ periodics:
       - 2241179 # release-managers
   annotations:
     testgrid-alert-email: release-managers@kubernetes.io
-    testgrid-dashboards: sig-release-master-informing
+    testgrid-dashboards: sig-release-releng-informing
     testgrid-tab-name: build-packages-debs
 
 - interval: 4h
@@ -143,5 +143,5 @@ periodics:
       - 2241179 # release-managers
   annotations:
     testgrid-alert-email: release-managers@kubernetes.io
-    testgrid-dashboards: sig-release-master-informing
+    testgrid-dashboards: sig-release-releng-informing
     testgrid-tab-name: build-packages-rpms

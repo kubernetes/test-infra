@@ -75,7 +75,7 @@ presubmits:
         secret:
           secretName: k8s-cip-test-prod-service-account
     annotations:
-      testgrid-dashboards: sig-release-misc
+      testgrid-dashboards: sig-release-releng-presubmits
   - name: pull-cip-auditor-e2e
     decorate: true
     path_alias: "sigs.k8s.io/k8s-container-image-promoter"
@@ -103,7 +103,7 @@ presubmits:
         secret:
           secretName: k8s-gcr-audit-test-prod-service-account
     annotations:
-      testgrid-dashboards: sig-release-misc
+      testgrid-dashboards: sig-release-releng-presubmits
   # Build all binaries and also run unit tests.
   - name: pull-cip-unit-tests
     decorate: true
@@ -120,7 +120,7 @@ presubmits:
         args:
         - "test-ci"
     annotations:
-      testgrid-dashboards: sig-release-misc
+      testgrid-dashboards: sig-release-releng-presubmits
   # Run linter.
   - name: pull-cip-lint
     decorate: true
@@ -137,4 +137,4 @@ presubmits:
         args:
         - "lint-ci"
     annotations:
-      testgrid-dashboards: sig-release-misc
+      testgrid-dashboards: sig-release-releng-presubmits
