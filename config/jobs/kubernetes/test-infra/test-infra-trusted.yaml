@@ -758,7 +758,7 @@ postsubmits:
         secret:
           secretName: k8s-artifacts-prod-service-account
     annotations:
-      testgrid-dashboards: sig-release-misc
+      testgrid-dashboards: sig-release-releng-blocking
   kubernetes/community:
   - name: post-community-tempelis-apply
     cluster: test-infra-trusted
@@ -1153,7 +1153,7 @@ periodics:
       secret:
         secretName: k8s-artifacts-prod-service-account
   annotations:
-    testgrid-dashboards: sig-release-misc
+    testgrid-dashboards: sig-release-releng-blocking
 # TODO: Move this job to a K8s cluster owned by kubernetes-wg-k8s-infra@googlegroups.com.
 - interval: 12h
   cluster: test-infra-trusted
@@ -1186,7 +1186,7 @@ periodics:
       secret:
         secretName: k8s-artifacts-prod-bak-service-account
   annotations:
-    testgrid-dashboards: sig-release-misc
+    testgrid-dashboards: sig-release-releng-blocking
     # TODO: enable alerting once the job has stabilized
     # testgrid-alert-email: k8s-infra-alerts@kubernetes.io
     # testgrid-num-failures-to-alert: '1'

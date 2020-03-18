@@ -5,7 +5,7 @@ postsubmits:
       cluster: test-infra-trusted
       annotations:
         # this is the name of some testgrid dashboard to report to.
-        testgrid-dashboards: sig-release-misc
+        testgrid-dashboards: sig-release-releng-blocking
       decorate: true
       branches:
         - ^master$

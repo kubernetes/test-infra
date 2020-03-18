@@ -74,7 +74,7 @@ postsubmits:
     - name: post-release-push-image-k8s-cloud-builder
       cluster: test-infra-trusted
       annotations:
-        testgrid-dashboards: sig-release-image-pushes, sig-release-master-informing
+        testgrid-dashboards: sig-release-releng-informing, sig-release-image-pushes
         testgrid-alert-email: release-managers@kubernetes.io
       decorate: true
       run_if_changed: '^images\/'
@@ -100,7 +100,7 @@ postsubmits:
     - name: post-release-push-image-releng-ci-bazel
       cluster: test-infra-trusted
       annotations:
-        testgrid-dashboards: sig-release-image-pushes, sig-release-master-informing
+        testgrid-dashboards: sig-release-releng-informing, sig-release-image-pushes
         testgrid-alert-email: release-managers@kubernetes.io
       decorate: true
       run_if_changed: '^images\/'
@@ -126,7 +126,7 @@ postsubmits:
     - name: post-release-push-image-kubepkg
       cluster: test-infra-trusted
       annotations:
-        testgrid-dashboards: sig-release-image-pushes, sig-release-master-informing
+        testgrid-dashboards: sig-release-releng-informing, sig-release-image-pushes
         testgrid-alert-email: release-managers@kubernetes.io
       decorate: true
       branches:
