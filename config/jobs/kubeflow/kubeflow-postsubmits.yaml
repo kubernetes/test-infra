@@ -266,7 +266,7 @@ postsubmits:
       mountPath: /var/lib/docker
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200314-a0cadb9-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200318-68cca07-master
         command:
         - ./test/postsubmit-tests-with-pipeline-deployment.sh
         args:
@@ -310,7 +310,7 @@ postsubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200314-a0cadb9-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200318-68cca07-master
         command:
         - ./test/postsubmit-tests-with-pipeline-deployment.sh
         args:
@@ -333,7 +333,7 @@ postsubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200314-a0cadb9-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200318-68cca07-master
         command:
         - ./test/postsubmit-tests-with-pipeline-deployment.sh
         args:
