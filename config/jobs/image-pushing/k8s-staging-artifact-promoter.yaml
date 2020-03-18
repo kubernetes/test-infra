@@ -1,11 +1,11 @@
 postsubmits:
-  # this is the github repo we'll build from; this block needs to be repeated for each repo.
   kubernetes-sigs/k8s-container-image-promoter:
     - name: cip-postsubmit-push-to-staging
       cluster: test-infra-trusted
       annotations:
-        # this is the name of some testgrid dashboard to report to.
         testgrid-dashboards: sig-release-releng-blocking
+        testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers@kubernetes.io
+        testgrid-num-failures-to-alert: '1'
       decorate: true
       branches:
         - ^master$
@@ -16,7 +16,6 @@ postsubmits:
             command:
               - /run.sh
             args:
-              # this is the project GCB will run in, which is the same as the GCR images are pushed to.
               - --project=k8s-staging-artifact-promoter
               - --scratch-bucket=gs://k8s-staging-artifact-promoter-gcb
               - --env-passthrough=PULL_BASE_REF
