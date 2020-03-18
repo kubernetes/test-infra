@@ -18,6 +18,7 @@ replace (
 
 require (
 	cloud.google.com/go v0.47.0
+	github.com/Azure/azure-pipeline-go v0.2.2 // indirect
 	github.com/Azure/azure-sdk-for-go v38.0.0+incompatible
 	github.com/Azure/azure-storage-blob-go v0.8.0
 	github.com/Azure/go-autorest/autorest v0.9.6
@@ -36,15 +37,15 @@ require (
 	github.com/djherbis/atime v1.0.0
 	github.com/docker/docker v1.4.2-0.20190924003213-a8608b5b67c7
 	github.com/evanphx/json-patch v4.5.0+incompatible
-	github.com/fsnotify/fsnotify v1.4.7
+	github.com/fsnotify/fsnotify v1.4.9
 	github.com/fsouza/fake-gcs-server v0.0.0-20180612165233-e85be23bdaa8
 	github.com/go-logr/zapr v0.1.1 // indirect
-	github.com/go-openapi/spec v0.19.6
-	github.com/go-openapi/swag v0.19.7 // indirect
+	github.com/go-openapi/spec v0.19.7
+	github.com/go-openapi/swag v0.19.8 // indirect
 	github.com/go-test/deep v1.0.4
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/golang/mock v1.3.1
-	github.com/golang/protobuf v1.3.4 // indirect
+	github.com/golang/protobuf v1.3.5 // indirect
 	github.com/gomodule/redigo v1.7.0
 	github.com/google/go-cmp v0.4.0
 	github.com/google/go-github v17.0.0+incompatible
@@ -59,13 +60,15 @@ require (
 	github.com/influxdata/influxdb v0.0.0-20161215172503-049f9b42e9a5
 	github.com/jinzhu/gorm v1.9.12
 	github.com/jinzhu/now v1.1.1 // indirect
-	github.com/klauspost/compress v1.10.2 // indirect
-	github.com/klauspost/pgzip v1.2.1
+	github.com/klauspost/compress v1.10.3 // indirect
+	github.com/klauspost/pgzip v1.2.2
+	github.com/mailru/easyjson v0.7.1 // indirect
+	github.com/mattn/go-sqlite3 v2.0.3+incompatible // indirect
 	github.com/mattn/go-zglob v0.0.1
 	github.com/pelletier/go-toml v1.6.0
 	github.com/peterbourgon/diskv v2.0.1+incompatible
 	github.com/pkg/errors v0.9.1
-	github.com/prometheus/client_golang v1.5.0
+	github.com/prometheus/client_golang v1.5.1
 	github.com/prometheus/client_model v0.2.0
 	github.com/prometheus/common v0.9.1
 	github.com/prometheus/procfs v0.0.10 // indirect
@@ -92,15 +95,15 @@ require (
 	gopkg.in/ini.v1 v1.52.0 // indirect
 	gopkg.in/robfig/cron.v2 v2.0.0-20150107220207-be2e0b0deed5
 	gopkg.in/yaml.v3 v3.0.0-20190709130402-674ba3eaed22
-	k8s.io/api v0.17.3
-	k8s.io/apimachinery v0.17.3
+	k8s.io/api v0.17.4
+	k8s.io/apimachinery v0.17.4
 	k8s.io/client-go v9.0.0+incompatible
 	k8s.io/code-generator v0.17.3
 	k8s.io/klog v1.0.0
 	k8s.io/utils v0.0.0-20191114184206-e782cd3c129f
 	knative.dev/pkg v0.0.0-20191111150521-6d806b998379
 	mvdan.cc/xurls/v2 v2.0.0
-	sigs.k8s.io/controller-runtime v0.5.0
+	sigs.k8s.io/controller-runtime v0.5.1
 	sigs.k8s.io/yaml v1.1.0
 )
 
