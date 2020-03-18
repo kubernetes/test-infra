@@ -414,12 +414,20 @@ func (k kops) Up() error {
 	if k.adminAccess == "" {
 		var b bytes.Buffer
 		err := httpReadWithHeaders(externalIPURL, map[string]string{"Metadata-Flavor": "Google"}, &b)
-		if err != nil || net.ParseIP(strings.TrimSpace(b.String())) == nil {
+
+		count := 0
+		for count < 5 && err != nil && net.ParseIP(strings.TrimSpace(b.String())) == nil {
+			time.Sleep(2 * time.Second)
+			count++
 			b.Reset()
-			if err := httpRead("https://v4.ifconfig.co", &b); err != nil {
-				return err
-			}
+			err = httpRead("https://v4.ifconfig.co", &b)
+			log.Printf("external IP cannot be retrieved: %v\n", err)
 		}
+
+		if err != nil || net.ParseIP(strings.TrimSpace(b.String())) == nil {
+			return fmt.Errorf("external IP cannot be retrieved: %v", err)
+		}
+
 		externalIP := strings.TrimSpace(b.String()) + "/32"
 		log.Printf("Using external IP for admin access: %v", externalIP)
 		k.adminAccess = externalIP
