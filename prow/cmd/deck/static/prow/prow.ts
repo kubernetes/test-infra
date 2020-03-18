@@ -619,7 +619,7 @@ function redraw(fz: FuzzySearch): void {
             if (buildIndex !== -1) {
                 const gcsUrl = `${window.location.origin}/view/gcs/${url.substring(buildIndex + '/build/'.length)}`;
                 r.appendChild(createSpyglassCell(gcsUrl));
-            } else if (url.includes('/view/')) {
+            } else if (url.includes('/view/') || url.includes('/logs/')) {
                 r.appendChild(createSpyglassCell(url));
             } else {
                 r.appendChild(cell.text(''));
