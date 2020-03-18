@@ -1050,7 +1050,8 @@ func (c *Cluster) Up() error {
 			"--clusterloader2-bin-url", *clusterLoader2BinURL,
 			"--kubemark-size", *kubemarkSize,
 			"--location", *kubemarkLocation)
-		if err := cmd.Run(); err != nil {
+
+		if err := control.FinishRunning(cmd); err != nil {
 			return fmt.Errorf("failed to build up kubemark environment: %v", err)
 		}
 
