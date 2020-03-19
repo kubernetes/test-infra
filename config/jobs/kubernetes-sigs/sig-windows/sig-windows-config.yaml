@@ -150,8 +150,7 @@ periodics:
       - "--aksengine-creds=$AZURE_CREDENTIALS"
       # Note: Updating aks-engine version for 1.14 + Windows configs has caused issues in the past - update this config with caution!
       - "--aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.31.2/aks-engine-v0.31.2-linux-amd64.tar.gz"
-      - "--aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)"
-      - "--aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)"
+      - "--aksengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
       - "--aksengine-winZipBuildScript=$WIN_BUILD"
       - "--aksengine-orchestratorRelease=1.14"
       - "--aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release.json"
@@ -162,11 +161,6 @@ periodics:
       - "--timeout=620m"
       securityContext:
         privileged: true
-      env:
-      - name: K8S_SSH_PUBLIC_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-public # from preset-k8s-ssh label
-      - name: K8S_SSH_PRIVATE_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-private # from preset-k8s-ssh label
   annotations:
     testgrid-dashboards: sig-windows, provider-azure-windows, provider-azure-periodic
     testgrid-tab-name: aks-engine-azure-1-14-windows
@@ -622,7 +616,7 @@ periodics:
       - "--aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_1_18.json"
       - "--aksengine-win-binaries"
       - "--aksengine-deploy-custom-k8s"
-      - "--test_args=--num-nodes=2 --node-os-distro=windows --ginkgo.focus=(\\[sig-windows\\]|\\[sig-scheduling\\].SchedulerPreemption|\\[sig-autoscaling\\].\\[Feature:HPA\\]|\\[sig-apps\\].CronJob).*(\\[Serial\\]|\\[Slow\\])|(\\[Serial\\]|\\[Slow\\]).*(\\[Conformance\\]|\\[NodeConformance\\]) --ginkgo.skip=\\[LinuxOnly\\]"
+      - "--test_args=--num-nodes=3 --node-os-distro=windows --ginkgo.focus=(\\[sig-windows\\]|\\[sig-scheduling\\].SchedulerPreemption|\\[sig-autoscaling\\].\\[Feature:HPA\\]|\\[sig-apps\\].CronJob).*(\\[Serial\\]|\\[Slow\\])|(\\[Serial\\]|\\[Slow\\]).*(\\[Conformance\\]|\\[NodeConformance\\]) --ginkgo.skip=\\[LinuxOnly\\]"
       - "--timeout=450m"
       securityContext:
         privileged: true
