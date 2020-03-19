@@ -615,7 +615,7 @@ type Deck struct {
 	GoogleAnalytics string `json:"google_analytics,omitempty"`
 	// Deprecated: RerunAuthConfig specifies who is able to trigger job reruns if that feature is enabled.
 	// The permissions here apply to all jobs.
-	// This option will be removed in favor of RerunAuthConfigs in March 2020.
+	// This option will be removed in favor of RerunAuthConfigs in July 2020.
 	RerunAuthConfig *prowapi.RerunAuthConfig `json:"rerun_auth_config,omitempty"`
 	// RerunAuthConfigs is a map of configs that specify who is able to trigger job reruns. The field
 	// accepts a key of: `org/repo`, `org` or `*` (wildcard) to define what GitHub org (or repo) a particular
@@ -1166,9 +1166,9 @@ func (c *Config) validateComponentConfig() error {
 		}
 	}
 
-	// TODO(@clarketm): Remove in May 2020
+	// TODO(@clarketm): Remove in July 2020
 	if c.Deck.RerunAuthConfig != nil {
-		logrus.Warning("rerun_auth_config will be deprecated in May 2020, and it will be replaced with rerun_auth_configs['*'].")
+		logrus.Warning("rerun_auth_config will be deprecated in July 2020, and it will be replaced with rerun_auth_configs['*'].")
 
 		if c.Deck.RerunAuthConfigs != nil {
 			return errors.New("rerun_auth_config and rerun_auth_configs['*'] are mutually exclusive")
