@@ -435,8 +435,10 @@ func TestRerun(t *testing.T) {
 			goa := githuboauth.NewAgent(mockConfig, &logrus.Entry{})
 			ghc := mockGitHubConfigGetter{githubLogin: tc.login}
 			rc := &fakegithub.FakeClient{OrgMembers: map[string][]string{"org": {"org-member"}}}
+			fca := &config.Agent{}
+			fca.Set(&config.Config{})
 			pca := plugins.NewFakeConfigAgent()
-			handler := handleRerun(fakeProwJobClient.ProwV1().ProwJobs("prowjobs"), tc.rerunCreatesJob, authCfgGetter, goa, ghc, rc, &pca, logrus.WithField("handler", "/rerun"))
+			handler := handleRerun(fakeProwJobClient.ProwV1().ProwJobs("prowjobs"), tc.rerunCreatesJob, fca.Config, authCfgGetter, goa, ghc, rc, &pca, logrus.WithField("handler", "/rerun"))
 			handler.ServeHTTP(rr, req)
 			if rr.Code != tc.httpCode {
 				t.Fatalf("Bad error code: %d", rr.Code)

@@ -654,7 +654,7 @@ func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, authCfgGe
 		mux.Handle("/github-login/redirect", goa.HandleRedirect(oauthClient, &o.github, secure))
 	}
 
-	mux.Handle("/rerun", gziphandler.GzipHandler(handleRerun(prowJobClient, o.rerunCreatesJob, authCfgGetter, goa, &o.github, githubClient, pluginAgent, logrus.WithField("handler", "/rerun"))))
+	mux.Handle("/rerun", gziphandler.GzipHandler(handleRerun(prowJobClient, o.rerunCreatesJob, cfg, authCfgGetter, goa, &o.github, githubClient, pluginAgent, logrus.WithField("handler", "/rerun"))))
 
 	// optionally inject http->https redirect handler when behind loadbalancer
 	if o.redirectHTTPTo != "" {
@@ -1377,7 +1377,7 @@ func canTriggerJob(user string, pj prowapi.ProwJob, cfg *prowapi.RerunAuthConfig
 // handleRerun triggers a rerun of the given job if that features is enabled, it receives a
 // POST request, and the user has the necessary permissions. Otherwise, it writes the config
 // for a new job but does not trigger it.
-func handleRerun(prowJobClient prowv1.ProwJobInterface, createProwJob bool, cfg authCfgGetter, goa *githuboauth.Agent, ghc githuboauth.GitHubClientGetter, cli prowgithub.RerunClient, pluginAgent *plugins.ConfigAgent, log *logrus.Entry) http.HandlerFunc {
+func handleRerun(prowJobClient prowv1.ProwJobInterface, createProwJob bool, cfg config.Getter, authCfg authCfgGetter, goa *githuboauth.Agent, ghc githuboauth.GitHubClientGetter, cli prowgithub.RerunClient, pluginAgent *plugins.ConfigAgent, log *logrus.Entry) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		name := r.URL.Query().Get("prowjob")
 		l := log.WithField("prowjob", name)
@@ -1394,6 +1394,9 @@ func handleRerun(prowJobClient prowv1.ProwJobInterface, createProwJob bool, cfg 
 			}
 			return
 		}
+		// Update RerunAuthConfig to what is defined in the JobConfig
+		pj.Spec.RerunAuthConfig = pjutil.ClonePJ(pj, cfg).Spec.RerunAuthConfig
+
 		newPJ := pjutil.NewProwJob(pj.Spec, pj.ObjectMeta.Labels, pj.ObjectMeta.Annotations)
 		l = l.WithField("job", newPJ.Spec.Job)
 		switch r.Method {
@@ -1404,7 +1407,7 @@ func handleRerun(prowJobClient prowv1.ProwJobInterface, createProwJob bool, cfg 
 				http.Error(w, "Direct rerun feature is not enabled. Enable with the '--rerun-creates-job' flag.", http.StatusMethodNotAllowed)
 				return
 			}
-			authConfig := cfg(pj.Spec.Refs)
+			authConfig := authCfg(pj.Spec.Refs)
 			var allowed bool
 			if pj.Spec.RerunAuthConfig.IsAllowAnyone() || authConfig.IsAllowAnyone() {
 				// Skip getting the users login via GH oauth if anyone is allowed to rerun

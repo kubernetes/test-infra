@@ -239,6 +239,44 @@ func GetLatestProwJobs(pjs []prowapi.ProwJob, jobType prowapi.ProwJobType) map[s
 	return latestJobs
 }
 
+// ClonePJ clones a ProwJob using the definition from the JobConfig.
+func ClonePJ(pj *prowapi.ProwJob, cfg config.Getter) prowapi.ProwJob {
+	var repos []string
+
+	if pj.Spec.Refs != nil {
+		repos = []string{pj.Spec.Refs.Org + "/" + pj.Spec.Refs.Repo}
+	}
+
+	// Attempt to lookup ProwJob from JobConfig by type, repo and name.
+	switch pj.Spec.Type {
+	case prowapi.PresubmitJob:
+		for _, pre := range cfg().AllStaticPresubmits(repos) {
+			if pre.Name == pj.Spec.Job {
+				logrus.WithField("job", pre).Debug("Cloning presubmit job from JobConfig.")
+				return NewProwJob(PresubmitSpec(pre, *pj.Spec.Refs), pre.Labels, pre.Annotations)
+			}
+		}
+	case prowapi.PostsubmitJob:
+		for _, post := range cfg().AllStaticPostsubmits(repos) {
+			if post.Name == pj.Spec.Job {
+				logrus.WithField("job", post).Debug("Cloning postsubmit job from JobConfig.")
+				return NewProwJob(PostsubmitSpec(post, *pj.Spec.Refs), post.Labels, post.Annotations)
+			}
+		}
+	case prowapi.PeriodicJob:
+		for _, per := range cfg().AllPeriodics() {
+			if per.Name == pj.Spec.Job {
+				logrus.WithField("job", per).Debug("Cloning periodic job from JobConfig.")
+				return NewProwJob(PeriodicSpec(per), per.Labels, per.Annotations)
+			}
+		}
+	}
+
+	// Fallback to cloning the original ProwJob object
+	logrus.WithField("job", pj).Debugf("Cloning %v job from ProwJob object.", pj.Spec.Type)
+	return NewProwJob(pj.Spec, pj.ObjectMeta.Labels, pj.ObjectMeta.Annotations)
+}
+
 // ProwJobFields extracts logrus fields from a prowjob useful for logging.
 func ProwJobFields(pj *prowapi.ProwJob) logrus.Fields {
 	fields := make(logrus.Fields)
