@@ -120,8 +120,6 @@ def main(args):
         push_build_args.append('--bucket=%s' % args.release)
     if args.registry:
         push_build_args.append('--docker-registry=%s' % args.registry)
-    if args.hyperkube:
-        env['KUBE_BUILD_HYPERKUBE'] = 'y'
     if args.extra_publish_file:
         push_build_args.append('--extra-publish-file=%s' % args.extra_publish_file)
     if args.allow_dup:
@@ -159,8 +157,6 @@ if __name__ == '__main__':
         help='The release kind to push to GCS. Supported values are kubernetes or federation')
     PARSER.add_argument(
         '--registry', help='Push images to the specified docker registry')
-    PARSER.add_argument(
-        '--hyperkube', action='store_true', help='Build hyperkube image')
     PARSER.add_argument(
         '--extra-publish-file', help='Additional version file uploads to')
     PARSER.add_argument(
