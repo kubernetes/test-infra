@@ -294,17 +294,20 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-e2e-containerd: "true"
+    preset-e2e-containerd-image-load: "true"
   spec:
     containers:
     - args:
+      - --repo=github.com/containerd/cri=master
       - --timeout=170
-      - --bare
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
       - --env=KUBE_PROXY_MODE=ipvs
+      - --env=KUBE_MASTER_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/master.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env
+      - --env=KUBE_NODE_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/node.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env
       - --extract=ci/latest
-      - --gcp-master-image=gci
       - --gcp-node-image=ubuntu
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=30
