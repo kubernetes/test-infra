@@ -857,7 +857,7 @@ func handleJobHistory(o options, cfg config.Getter, gcsClient *storage.Client, l
 		tmpl, err := getJobHistory(r.URL, cfg(), gcsClient)
 		if err != nil {
 			msg := fmt.Sprintf("failed to get job history: %v", err)
-			log.WithField("url", r.URL.String()).Error(msg)
+			log.WithField("url", r.URL.String()).Warn(msg)
 			http.Error(w, msg, http.StatusInternalServerError)
 			return
 		}
