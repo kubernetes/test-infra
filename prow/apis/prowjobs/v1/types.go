@@ -27,6 +27,7 @@ import (
 	pipelinev1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	prowgithub "k8s.io/test-infra/prow/github"
 )
 
@@ -156,7 +157,7 @@ type ProwJobSpec struct {
 	ReporterConfig *ReporterConfig `json:"reporter_config,omitempty"`
 
 	// RerunAuthConfig holds information about which users can rerun the job
-	RerunAuthConfig RerunAuthConfig `json:"rerun_auth_config,omitempty"`
+	RerunAuthConfig *RerunAuthConfig `json:"rerun_auth_config,omitempty"`
 
 	// Hidden specifies if the Job is considered hidden.
 	// Hidden jobs are only shown by deck instances that have the
@@ -192,6 +193,9 @@ type RerunAuthConfig struct {
 // IsSpecifiedUser returns true if AllowAnyone is set to true or if the given user is
 // specified as a permitted GitHubUser
 func (rac *RerunAuthConfig) IsAuthorized(user string, cli prowgithub.RerunClient) (bool, error) {
+	if rac == nil {
+		return false, nil
+	}
 	if rac.AllowAnyone {
 		return true, nil
 	}
@@ -236,6 +240,31 @@ func (rac *RerunAuthConfig) IsAuthorized(user string, cli prowgithub.RerunClient
 		}
 	}
 	return false, nil
+}
+
+// Validate validates the RerunAuthConfig fields.
+func (rac *RerunAuthConfig) Validate() error {
+	if rac == nil {
+		return nil
+	}
+
+	hasWhiteList := len(rac.GitHubUsers) > 0 || len(rac.GitHubTeamIDs) > 0 || len(rac.GitHubTeamSlugs) > 0 || len(rac.GitHubOrgs) > 0
+
+	// If a whitelist is specified, the user probably does not intend for anyone to be able to rerun any job.
+	if rac.AllowAnyone && hasWhiteList {
+		return errors.New("allow anyone is set to true and permitted users or groups are specified")
+	}
+
+	return nil
+}
+
+// IsAllowAnyone checks if anyone can rerun the job.
+func (rac *RerunAuthConfig) IsAllowAnyone() bool {
+	if rac == nil {
+		return false
+	}
+
+	return rac.AllowAnyone
 }
 
 type ReporterConfig struct {

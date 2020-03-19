@@ -1,6 +1,6 @@
 import moment from "moment";
 import {ProwJob, ProwJobList, ProwJobState, ProwJobType, Pull} from "../api/prow";
-import {cell, getCookieByName, icon} from "../common/common";
+import {cell, icon} from "../common/common";
 import {getParameterByName, relativeURL} from "../common/urls";
 import {FuzzySearch} from './fuzzy-search';
 import {JobHistogram, JobSample} from './histogram';
@@ -9,7 +9,6 @@ declare const allBuilds: ProwJobList;
 declare const spyglass: boolean;
 declare const rerunCreatesJob: boolean;
 declare const csrfToken: string;
-declare const allowAnyone: boolean;
 
 function genShortRefKey(baseRef: string, pulls: Pull[] = []) {
     return [baseRef, ...pulls.map((p) => p.number)].filter((n) => n).join(",");
@@ -691,7 +690,6 @@ function createRerunCell(modal: HTMLElement, rerunElement: HTMLElement, prowjob:
 
     // we actually want to know whether the "access-token-session" cookie exists, but we can't always
     // access it from the frontend. "github_login" should be set whenever "access-token-session" is
-    const login = getCookieByName("github_login");
     i.onclick = () => {
         modal.style.display = "block";
         rerunElement.innerHTML = `kubectl create -f "<a href="${url}">${url}</a>"`;
@@ -703,29 +701,25 @@ function createRerunCell(modal: HTMLElement, rerunElement: HTMLElement, prowjob:
         if (rerunCreatesJob) {
             const runButton = document.createElement('a');
             runButton.innerHTML = "<button class='mdl-button mdl-js-button'>Rerun</button>";
-            if (login === "" && !allowAnyone) {
-                runButton.href = `/github-login?dest=${relativeURL({rerun: "gh_redirect"})}`;
-            } else {
-                runButton.onclick = async () => {
-                    gtag("event", "rerun", {
-                        event_category: "engagement",
-                        transport_type: "beacon",
-                    });
-                    const result = await fetch(url, {
-                        headers: {
-                            "Content-type": "application/x-www-form-urlencoded; charset=UTF-8",
-                            "X-CSRF-Token": csrfToken,
-                        },
-                        method: 'post',
-                    });
-                    const data = await result.text();
-                    if (result.status === 401) {
-                        window.location.href = window.location.origin + `/github-login?dest=${relativeURL({rerun: "gh_redirect"})}`;
-                    } else {
-                        rerunElement.innerHTML = data;
-                    }
-                };
-            }
+            runButton.onclick = async () => {
+                gtag("event", "rerun", {
+                    event_category: "engagement",
+                    transport_type: "beacon",
+                });
+                const result = await fetch(url, {
+                    headers: {
+                        "Content-type": "application/x-www-form-urlencoded; charset=UTF-8",
+                        "X-CSRF-Token": csrfToken,
+                    },
+                    method: 'post',
+                });
+                const data = await result.text();
+                if (result.status === 401) {
+                    window.location.href = window.location.origin + `/github-login?dest=${relativeURL({rerun: "gh_redirect"})}`;
+                } else {
+                    rerunElement.innerHTML = data;
+                }
+            };
             rerunElement.appendChild(runButton);
         }
     };
