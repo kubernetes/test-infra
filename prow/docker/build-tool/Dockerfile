@@ -107,6 +107,10 @@ RUN apt-get update && apt-get -y install --no-install-recommends \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
 
+# Docker in Docker settings
+VOLUME /var/lib/docker
+EXPOSE 2375
+
 # Clean up unused stuff for the final image
 RUN rm -rf /var/lib/apt/lists/*
 RUN rm -fr /usr/share/bash-completion
