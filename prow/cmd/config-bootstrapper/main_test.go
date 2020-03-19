@@ -202,24 +202,42 @@ func testRun(clients localgit.Clients, t *testing.T) {
 				},
 			},
 		},
+		{
+			name:             "undefined cluster errors",
+			sourcePaths:      []string{filepath.Join(lg.Dir, "openshift/release")},
+			defaultNamespace: defaultNamespace,
+			configUpdater: plugins.ConfigUpdater{
+				Maps: map[string]plugins.ConfigMapSpec{
+					"config/foo.yaml": {
+						Name: "multikey-config",
+						Clusters: map[string][]string{
+							"undef": {defaultNamespace},
+						},
+					},
+				},
+			},
+			expected: 1,
+		},
 	}
 
 	for _, tc := range testcases {
-		fkc := fake.NewSimpleClientset(tc.existConfigMaps...)
-		tc.configUpdater.SetDefaults()
-		actual := run(tc.sourcePaths, tc.defaultNamespace, tc.configUpdater, fkc, nil)
-		if tc.expected != actual {
-			t.Errorf("%s: incorrect errors '%d': expecting '%d'", tc.name, actual, tc.expected)
-		}
-
-		for _, expected := range tc.expectedConfigMaps {
-			actual, err := fkc.CoreV1().ConfigMaps(expected.Namespace).Get(expected.Name, metav1.GetOptions{})
-			if err != nil && errors.IsNotFound(err) {
-				t.Errorf("%s: Should have updated or created configmap for '%s'", tc.name, expected)
-			} else if !equality.Semantic.DeepEqual(expected, actual) {
-				t.Errorf("%s: incorrect ConfigMap state after update: %v", tc.name, cmp.Diff(expected, actual))
+		t.Run(tc.name, func(t *testing.T) {
+			fkc := fake.NewSimpleClientset(tc.existConfigMaps...)
+			tc.configUpdater.SetDefaults()
+			actual := run(tc.sourcePaths, tc.defaultNamespace, tc.configUpdater, fkc, nil)
+			if tc.expected != actual {
+				t.Errorf("%s: incorrect errors '%d': expecting '%d'", tc.name, actual, tc.expected)
 			}
-		}
-	}
 
+			for _, expected := range tc.expectedConfigMaps {
+				actual, err := fkc.CoreV1().ConfigMaps(expected.Namespace).Get(expected.Name, metav1.GetOptions{})
+				if err != nil && errors.IsNotFound(err) {
+					t.Errorf("%s: Should have updated or created configmap for '%s'", tc.name, expected)
+				} else if !equality.Semantic.DeepEqual(expected, actual) {
+					t.Errorf("%s: incorrect ConfigMap state after update: %v", tc.name, cmp.Diff(expected, actual))
+				}
+			}
+		})
+
+	}
 }
