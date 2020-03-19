@@ -66,7 +66,7 @@ RUN rm -fr /usr/local/go/bin/gofmt
 # Base OS
 #############
 
-FROM ppc64le/ubuntu:bionic as base_os_context
+FROM ppc64le/ubuntu:xenial as base_os_context
 
 ENV DOCKER_VERSION=18.06.3~ce~3-0~ubuntu
 

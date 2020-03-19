@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+set -eux
+
 IMAGE_REPO=${IMAGE_REPO:-"quay.io/multicloudlab"}
 CHECK_TOOL_IMAGE_NAME=${CHECK_TOOL_IMAGE_NAME:-"check-tool"}
 VERSION=${VERSION:-"$(date +v%Y%m%d)-$(git describe --tags --always --dirty)"}

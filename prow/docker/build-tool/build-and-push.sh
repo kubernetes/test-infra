@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+set -eux
+
 ARCH=$(uname -m | sed 's/x86_64/amd64/g')
 
 IMAGE_REPO=${IMAGE_REPO:-"quay.io/multicloudlab"}
