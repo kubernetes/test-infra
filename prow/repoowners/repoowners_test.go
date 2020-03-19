@@ -255,9 +255,9 @@ labels:
 	}
 	return &Client{
 			logger: logrus.WithField("client", "repoowners"),
+			ghc:    ghc,
 			delegate: &delegate{
 				git:   git,
-				ghc:   ghc,
 				cache: cache,
 
 				mdYAMLEnabled: func(org, repo string) bool {

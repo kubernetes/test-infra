@@ -57,6 +57,10 @@ func (f *fakeOwnersClient) WithFields(fields logrus.Fields) repoowners.Interface
 	return f
 }
 
+func (f *fakeOwnersClient) WithGitHubClient(client github.Client) repoowners.Interface {
+	return f
+}
+
 type fakeRepoOwners struct {
 	approvers    map[string]sets.String
 	reviewers    map[string]sets.String
