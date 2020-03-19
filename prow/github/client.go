@@ -2966,6 +2966,23 @@ func (c *client) Merge(org, repo string, pr int, details MergeDetails) error {
 //
 // See https://developer.github.com/v3/repos/collaborators/
 func (c *client) IsCollaborator(org, repo, user string) (bool, error) {
+	// This call does not support etags and is therefore not cacheable today
+	// by ghproxy. If we can detect that we're using ghproxy, however, we can
+	// make a more expensive but cache-able call instead. Detecting that we
+	// are pointed at a ghproxy instance is not high fidelity, but a best-effort
+	// approach here is guaranteed to make a positive impact and no negative one.
+	if strings.Contains(c.bases[0], "ghproxy") {
+		users, err := c.ListCollaborators(org, repo)
+		if err != nil {
+			return false, err
+		}
+		for _, u := range users {
+			if NormLogin(u.Login) == NormLogin(user) {
+				return true, nil
+			}
+		}
+		return false, nil
+	}
 	durationLogger := c.log("IsCollaborator", org, user)
 	defer durationLogger()
 
