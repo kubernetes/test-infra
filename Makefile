@@ -85,11 +85,11 @@ build:
 image: check-tool-image build-tool-image build-tool-multiarch-image
 
 check-tool-image: config-docker
-	@IMAGE_REPO=$(IMAGE_REPO) CHECK_TOOL_IMAGE_NAME=$(CHECK_TOOL_IMAGE_NAME) VERSION=$(CHECK_TOOL_IMAGE_NAME) \
+	@IMAGE_REPO=$(IMAGE_REPO) CHECK_TOOL_IMAGE_NAME=$(CHECK_TOOL_IMAGE_NAME) VERSION=$(VERSION) \
 	cd prow/docker/check-tool && ./build-and-push.sh
 
 build-tool-image: config-docker
-	@IMAGE_REPO=$(IMAGE_REPO) BUILD_TOOL_IMAGE_NAME=$(BUILD_TOOL_IMAGE_NAME) VERSION=$(CHECK_TOOL_IMAGE_NAME) \
+	@IMAGE_REPO=$(IMAGE_REPO) BUILD_TOOL_IMAGE_NAME=$(BUILD_TOOL_IMAGE_NAME) VERSION=$(VERSION) \
 	cd prow/docker/build-tool && ./build-and-push.sh
 
 build-tool-multiarch-image: config-docker
