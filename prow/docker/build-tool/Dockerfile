@@ -81,7 +81,10 @@ RUN apt-get update && apt-get -y --no-install-recommends install \
     lsb-release \
     software-properties-common \
     curl \
+    git \
     ssh \
+    make \
+    python3.7 \
     wget \
     jq \
   && apt-get clean \
