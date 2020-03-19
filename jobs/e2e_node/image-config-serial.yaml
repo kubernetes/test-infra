@@ -5,11 +5,6 @@ images:
   ubuntu:
     image: ubuntu-gke-1804-d1703-0-v20181113 # docker 17.03
     project: ubuntu-os-gke-cloud
-  # see https://github.com/kubernetes/test-infra/issues/14465
-  # coreos-alpha:
-  #   image: coreos-alpha-2016-0-0-v20190108 # docker 18.06.1
-  #   project: coreos-cloud
-  #   metadata: "user-data<test/e2e_node/jenkins/coreos-init.json"
   cos-stable2:
     image_regex: cos-stable-60-9592-84-0 # docker 1.13.1
     project: cos-cloud
