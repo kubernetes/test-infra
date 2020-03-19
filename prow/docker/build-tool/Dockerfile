@@ -2,9 +2,9 @@
 # Binary tools
 #############
 
-FROM s390x/golang:1.13.8 as binary_tools_context
+FROM golang:1.13.8 as binary_tools_context
 
-ARG ARCH=s390x
+ARG ARCH=amd64
 
 # Pinned versions of stuff
 ENV GOIMPORTS_VERSION=379209517ffe
@@ -31,8 +31,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     curl \
     gnupg2 \
-    software-properties-common \
-    unzip
+    software-properties-common
 
 # Build and install Go tools
 RUN go get -ldflags="-s -w" golang.org/x/tools/cmd/goimports@${GOIMPORTS_VERSION}
@@ -69,7 +68,7 @@ RUN rm -fr /usr/local/go/bin/gofmt
 # Base OS
 #############
 
-FROM s390x/ubuntu:bionic as base_os_context
+FROM ubuntu:bionic as base_os_context
 
 ENV DOCKER_VERSION=18.06.3~ce~3-0~ubuntu
 

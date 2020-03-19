@@ -24,5 +24,5 @@ VERSION=${VERSION:-"$(date +v%Y%m%d)-$(git describe --tags --always --dirty)"}
 
 CONTAINER_CLI=${CONTAINER_CLI:-"docker"}
 
-${CONTAINER_CLI} build -t "${IMAGE_REPO}/${BUILD_TOOL_IMAGE_NAME}-${ARCH}:${VERSION}" -f Dockerfile.${ARCH} .
+${CONTAINER_CLI} build --build-arg ARCH=${ARCH} -t "${IMAGE_REPO}/${BUILD_TOOL_IMAGE_NAME}-${ARCH}:${VERSION}" -f Dockerfile .
 ${CONTAINER_CLI} push "${IMAGE_REPO}/${BUILD_TOOL_IMAGE_NAME}-${ARCH}:${VERSION}"
