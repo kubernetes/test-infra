@@ -195,6 +195,23 @@ func (c *Controller) setPreviousReportState(pj prowapi.ProwJob) error {
 	return err
 }
 
+func (c *Controller) Start(stopChan <-chan struct{}) error {
+	ticker := time.NewTicker(30 * time.Second)
+	for {
+		select {
+		case <-stopChan:
+			c.log.Info("Stop signal received, quitting.")
+			return nil
+		case <-ticker.C:
+			start := time.Now()
+			if err := c.Sync(); err != nil {
+				logrus.WithError(err).Error("Error syncing.")
+			}
+			logrus.WithField("duration", fmt.Sprintf("%v", time.Since(start))).Info("Synced")
+		}
+	}
+}
+
 // Sync does one sync iteration.
 func (c *Controller) Sync() error {
 	var syncErrs []error
