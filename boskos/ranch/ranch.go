@@ -196,7 +196,14 @@ func (r *Ranch) Acquire(rType, state, dest, owner, requestID string) (*crds.Reso
 		}
 		return &ResourceTypeNotFound{rType}
 	}); err != nil {
-		logrus.WithError(err).Error("Acquire failed")
+		switch err.(type) {
+		case *ResourceNotFound:
+			// This error occurs when there are no more resources to lease out.
+			// Such a condition is a normal and expected part of operation, so
+			// it does not warrant an error log.
+		default:
+			logrus.WithError(err).Error("Acquire failed")
+		}
 		return nil, err
 	}
 
