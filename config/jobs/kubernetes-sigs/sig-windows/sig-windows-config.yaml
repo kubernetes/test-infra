@@ -110,7 +110,7 @@ presubmits:
         - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
         - --aksengine-winZipBuildScript=$(WIN_BUILD)
         - --aksengine-orchestratorRelease=1.18
-        - --aksengine-template-url=https://raw.githubusercontent.com/chewong/windows-testing/windows-storage-api-model/job-templates/kubernetes_storage.json # TODO(chewong): Change chewong to kubernetes-sigs
+        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_storage.json
         - --aksengine-win-binaries
         - --aksengine-deploy-custom-k8s
         - --aksengine-agentpoolcount=2
@@ -176,7 +176,7 @@ presubmits:
         - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
         - --aksengine-winZipBuildScript=$(WIN_BUILD)
         - --aksengine-orchestratorRelease=1.18
-        - --aksengine-template-url=https://raw.githubusercontent.com/chewong/windows-testing/windows-storage-api-model/job-templates/kubernetes_storage.json # TODO(chewong): Change chewong to kubernetes-sigs
+        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_storage.json
         - --aksengine-win-binaries
         - --aksengine-deploy-custom-k8s
         - --aksengine-agentpoolcount=2
