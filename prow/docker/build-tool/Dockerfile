@@ -107,10 +107,6 @@ RUN apt-get update && apt-get -y install --no-install-recommends \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
 
-# Docker in Docker settings
-VOLUME /var/lib/docker
-EXPOSE 2375
-
 # Clean up unused stuff for the final image
 RUN rm -rf /var/lib/apt/lists/*
 RUN rm -fr /usr/share/bash-completion
@@ -169,6 +165,10 @@ RUN chmod 777 ${HOME}/go && \
     chmod 777 ${HOME}/.config/gcloud && \
     chmod 777 ${HOME}/.kube && \
     chmod 777 ${HOME}/.helm
+
+# Docker in Docker settings
+VOLUME /var/lib/docker
+EXPOSE 2375
 
 WORKDIR ${HOME}
 
