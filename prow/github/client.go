@@ -28,7 +28,6 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
-	"runtime/debug"
 	"strconv"
 	"strings"
 	"sync"
@@ -655,9 +654,6 @@ func (c *client) requestRaw(r *request) (int, []byte, error) {
 // ratelimit exceeded, and retries 404s a couple times.
 // This function closes the response body iff it also returns an error.
 func (c *client) requestRetry(method, path, accept string, body interface{}) (*http.Response, error) {
-	if strings.Contains(path, "repositories") {
-		c.logger.WithField("stack", string(debug.Stack())).Debug("GitHub client making a /repositories call!")
-	}
 	var hostIndex int
 	var resp *http.Response
 	var err error
