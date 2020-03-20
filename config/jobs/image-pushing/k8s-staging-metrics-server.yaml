@@ -21,6 +21,5 @@ postsubmits:
               # this is the project GCB will run in, which is the same as the GCR images are pushed to.
               - --project=k8s-staging-metrics-server
               - --scratch-bucket=gs://k8s-staging-metrics-server-gcb
-              - --env-passthrough=PULL_BASE_REF
-              - --env-passthrough=PULL_BASE_SHA
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
               - .
