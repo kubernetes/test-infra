@@ -97,6 +97,7 @@ type Interface interface {
 	LoadRepoOwners(org, repo, base string) (RepoOwner, error)
 
 	WithFields(fields logrus.Fields) Interface
+	WithGitHubClient(client github.Client) Interface
 }
 
 // Client is an implementation of the Interface.
@@ -105,12 +106,12 @@ var _ Interface = &Client{}
 // Client is the repoowners client
 type Client struct {
 	logger *logrus.Entry
+	ghc    githubClient
 	*delegate
 }
 
 type delegate struct {
 	git git.ClientFactory
-	ghc githubClient
 
 	mdYAMLEnabled      func(org, repo string) bool
 	skipCollaborators  func(org, repo string) bool
@@ -129,6 +130,16 @@ func (c *Client) WithFields(fields logrus.Fields) Interface {
 	}
 }
 
+// WithGitHubClient clones the client, keeping the underlying delegate the same but adding
+// a new GitHub Client. This is useful when making use a context-local client
+func (c *Client) WithGitHubClient(client github.Client) Interface {
+	return &Client{
+		logger:   c.logger,
+		ghc:      client,
+		delegate: c.delegate,
+	}
+}
+
 // NewClient is the constructor for Client
 func NewClient(
 	gc git.ClientFactory,
@@ -139,9 +150,9 @@ func NewClient(
 ) *Client {
 	return &Client{
 		logger: logrus.WithField("client", "repoowners"),
+		ghc:    ghc,
 		delegate: &delegate{
 			git:   gc,
-			ghc:   ghc,
 			cache: make(map[string]cacheEntry),
 
 			mdYAMLEnabled:      mdYAMLEnabled,

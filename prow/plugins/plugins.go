@@ -167,14 +167,15 @@ type Agent struct {
 func NewAgent(configAgent *config.Agent, pluginConfigAgent *ConfigAgent, clientAgent *ClientAgent, metrics *Metrics, logger *logrus.Entry, plugin string) Agent {
 	prowConfig := configAgent.Config()
 	pluginConfig := pluginConfigAgent.Config()
+	gitHubClient := clientAgent.GitHubClient.WithFields(logger.Data).ForPlugin(plugin)
 	return Agent{
-		GitHubClient:              clientAgent.GitHubClient.WithFields(logger.Data).ForPlugin(plugin),
+		GitHubClient:              gitHubClient,
 		KubernetesClient:          clientAgent.KubernetesClient,
 		BuildClusterCoreV1Clients: clientAgent.BuildClusterCoreV1Clients,
 		ProwJobClient:             clientAgent.ProwJobClient,
 		GitClient:                 clientAgent.GitClient,
 		SlackClient:               clientAgent.SlackClient,
-		OwnersClient:              clientAgent.OwnersClient.WithFields(logger.Data),
+		OwnersClient:              clientAgent.OwnersClient.WithFields(logger.Data).WithGitHubClient(gitHubClient),
 		BugzillaClient:            clientAgent.BugzillaClient,
 		Metrics:                   metrics,
 		Config:                    prowConfig,
