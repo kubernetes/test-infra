@@ -241,7 +241,6 @@ func (c *Client) LoadRepoOwners(org, repo, base string) (RepoOwner, error) {
 	log := c.logger.WithFields(logrus.Fields{"org": org, "repo": repo, "base": base})
 	cloneRef := fmt.Sprintf("%s/%s", org, repo)
 	fullName := fmt.Sprintf("%s:%s", cloneRef, base)
-	mdYaml := c.mdYAMLEnabled(org, repo)
 
 	start := time.Now()
 	sha, err := c.ghc.GetRef(org, repo, fmt.Sprintf("heads/%s", base))
@@ -250,6 +249,38 @@ func (c *Client) LoadRepoOwners(org, repo, base string) (RepoOwner, error) {
 	}
 	log.WithField("duration", time.Since(start).String()).Debugf("Completed ghc.GetRef(%s, %s, %s)", org, repo, fmt.Sprintf("heads/%s", base))
 
+	entry, err := c.cacheEntryFor(org, repo, base, cloneRef, fullName, sha, log)
+	if err != nil {
+		return nil, err
+	}
+
+	start = time.Now()
+	if c.skipCollaborators(org, repo) {
+		log.WithField("duration", time.Since(start).String()).Debugf("Completed c.skipCollaborators(%s, %s)", org, repo)
+		log.Debugf("Skipping collaborator checks for %s/%s", org, repo)
+		return entry.owners, nil
+	}
+	log.WithField("duration", time.Since(start).String()).Debugf("Completed c.skipCollaborators(%s, %s)", org, repo)
+
+	var owners *RepoOwners
+	// Filter collaborators. We must filter the RepoOwners struct even if it came from the cache
+	// because the list of collaborators could have changed without the git SHA changing.
+	start = time.Now()
+	collaborators, err := c.ghc.ListCollaborators(org, repo)
+	log.WithField("duration", time.Since(start).String()).Debugf("Completed ghc.ListCollaborators(%s, %s)", org, repo)
+	if err != nil {
+		log.WithError(err).Errorf("Failed to list collaborators while loading RepoOwners. Skipping collaborator filtering.")
+		owners = entry.owners
+	} else {
+		start = time.Now()
+		owners = entry.owners.filterCollaborators(collaborators)
+		log.WithField("duration", time.Since(start).String()).Debugf("Completed owners.filterCollaborators(collaborators)")
+	}
+	return owners, nil
+}
+
+func (c *Client) cacheEntryFor(org, repo, base, cloneRef, fullName, sha string, log *logrus.Entry) (cacheEntry, error) {
+	mdYaml := c.mdYAMLEnabled(org, repo)
 	lockStart := time.Now()
 	c.lock.Lock()
 	defer c.lock.Unlock()
@@ -258,10 +289,10 @@ func (c *Client) LoadRepoOwners(org, repo, base string) (RepoOwner, error) {
 	}()
 	entry, ok := c.cache[fullName]
 	if !ok || entry.sha != sha || entry.owners == nil || !entry.matchesMDYAML(mdYaml) {
-		start = time.Now()
+		start := time.Now()
 		gitRepo, err := c.git.ClientFor(org, repo)
 		if err != nil {
-			return nil, fmt.Errorf("failed to clone %s: %v", cloneRef, err)
+			return cacheEntry{}, fmt.Errorf("failed to clone %s: %v", cloneRef, err)
 		}
 		log.WithField("duration", time.Since(start).String()).Debugf("Completed git.ClientFor(%s, %s)", org, repo)
 		defer gitRepo.Clean()
@@ -273,7 +304,7 @@ func (c *Client) LoadRepoOwners(org, repo, base string) (RepoOwner, error) {
 			start = time.Now()
 			changes, err := gitRepo.Diff(sha, entry.sha)
 			if err != nil {
-				return nil, fmt.Errorf("failed to diff %s with %s", sha, entry.sha)
+				return cacheEntry{}, fmt.Errorf("failed to diff %s with %s", sha, entry.sha)
 			}
 			log.WithField("duration", time.Since(start).String()).Debugf("Completed git.Diff(%s, %s)", sha, entry.sha)
 			start = time.Now()
@@ -293,7 +324,7 @@ func (c *Client) LoadRepoOwners(org, repo, base string) (RepoOwner, error) {
 		} else {
 			start = time.Now()
 			if err := gitRepo.Checkout(base); err != nil {
-				return nil, err
+				return cacheEntry{}, err
 			}
 			log.WithField("duration", time.Since(start).String()).Debugf("Completed gitRepo.Checkout(%s)", base)
 
@@ -320,37 +351,14 @@ func (c *Client) LoadRepoOwners(org, repo, base string) (RepoOwner, error) {
 			start = time.Now()
 			entry.owners, err = loadOwnersFrom(gitRepo.Directory(), mdYaml, entry.aliases, dirBlacklist, log)
 			if err != nil {
-				return nil, fmt.Errorf("failed to load RepoOwners for %s: %v", fullName, err)
+				return cacheEntry{}, fmt.Errorf("failed to load RepoOwners for %s: %v", fullName, err)
 			}
 			log.WithField("duration", time.Since(start).String()).Debugf("Completed loadOwnersFrom(%s, %t, entry.aliases, dirBlacklist, log)", gitRepo.Directory(), mdYaml)
 			entry.sha = sha
 			c.cache[fullName] = entry
 		}
 	}
-
-	start = time.Now()
-	if c.skipCollaborators(org, repo) {
-		log.WithField("duration", time.Since(start).String()).Debugf("Completed c.skipCollaborators(%s, %s)", org, repo)
-		log.Debugf("Skipping collaborator checks for %s/%s", org, repo)
-		return entry.owners, nil
-	}
-	log.WithField("duration", time.Since(start).String()).Debugf("Completed c.skipCollaborators(%s, %s)", org, repo)
-
-	var owners *RepoOwners
-	// Filter collaborators. We must filter the RepoOwners struct even if it came from the cache
-	// because the list of collaborators could have changed without the git SHA changing.
-	start = time.Now()
-	collaborators, err := c.ghc.ListCollaborators(org, repo)
-	log.WithField("duration", time.Since(start).String()).Debugf("Completed ghc.ListCollaborators(%s, %s)", org, repo)
-	if err != nil {
-		log.WithError(err).Errorf("Failed to list collaborators while loading RepoOwners. Skipping collaborator filtering.")
-		owners = entry.owners
-	} else {
-		start = time.Now()
-		owners = entry.owners.filterCollaborators(collaborators)
-		log.WithField("duration", time.Since(start).String()).Debugf("Completed owners.filterCollaborators(collaborators)")
-	}
-	return owners, nil
+	return entry, nil
 }
 
 // ExpandAlias returns members of an alias
