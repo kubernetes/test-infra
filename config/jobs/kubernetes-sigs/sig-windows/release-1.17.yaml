@@ -57,7 +57,7 @@ presubmits:
         - name: K8S_SSH_PUBLIC_KEY_PATH
           value: /etc/ssh-key-secret/ssh-public # from preset-k8s-ssh label
         - name: K8S_SSH_PRIVATE_KEY_PATH
-          value: /etc/ssh-key-secret/ssh-private # from preset-k8s-ssh lable
+          value: /etc/ssh-key-secret/ssh-private # from preset-k8s-ssh label
         - name: AZURE_STORAGE_DRIVER
           value: kubernetes.io/azure-disk # In-tree Azure disk storage class
         - name: TEST_WINDOWS
@@ -119,7 +119,7 @@ presubmits:
         - name: K8S_SSH_PUBLIC_KEY_PATH
           value: /etc/ssh-key-secret/ssh-public # from preset-k8s-ssh label
         - name: K8S_SSH_PRIVATE_KEY_PATH
-          value: /etc/ssh-key-secret/ssh-private # from preset-k8s-ssh lable
+          value: /etc/ssh-key-secret/ssh-private # from preset-k8s-ssh label
         - name: AZURE_STORAGE_DRIVER
           value: kubernetes.io/azure-file # In-tree Azure file storage class
         - name: TEST_WINDOWS
