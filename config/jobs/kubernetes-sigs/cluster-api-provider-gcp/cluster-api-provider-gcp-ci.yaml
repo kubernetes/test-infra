@@ -75,6 +75,8 @@ periodics:
             value: "master"
           - name: "CABPK_BRANCH"
             value: "master"
+          - name: "BOSKOS_HOST"
+            value: "boskos.test-pods.svc.cluster.local"
         command:
           - "runner.sh"
           - "./scripts/ci-e2e.sh"
@@ -127,6 +129,8 @@ periodics:
             value: "stable"
           - name: "CABPK_BRANCH"
             value: "stable"
+          - name: "BOSKOS_HOST"
+            value: "boskos.test-pods.svc.cluster.local"
         command:
           - "runner.sh"
           - "./scripts/ci-e2e.sh"
@@ -181,6 +185,8 @@ periodics:
             value: "stable"
           - name: "CABPK_BRANCH"
             value: "stable"
+          - name: "BOSKOS_HOST"
+            value: "boskos.test-pods.svc.cluster.local"
         command:
           - "runner.sh"
           - "./scripts/ci-e2e.sh"
