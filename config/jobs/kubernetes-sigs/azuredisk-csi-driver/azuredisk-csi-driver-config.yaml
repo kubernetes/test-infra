@@ -130,8 +130,8 @@ presubmits:
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/single-az.json
         - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.46.0/aks-engine-v0.46.0-linux-amd64.tar.gz
-        - --test-azure-disk-csi-driver
         # Specific test args
+        - --test-azure-disk-csi-driver
         - --ginkgo-parallel=1
         - --timeout=420m
         securityContext:
@@ -182,8 +182,8 @@ presubmits:
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/multi-az.json
         - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.46.0/aks-engine-v0.46.0-linux-amd64.tar.gz
-        - --test-azure-disk-csi-driver
         # Specific test args
+        - --test-azure-disk-csi-driver
         - --ginkgo-parallel=1
         - --timeout=420m
         securityContext:
@@ -233,9 +233,9 @@ presubmits:
         - --aksengine-location=eastus2
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/migration.json
-        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-csi-migration.tar.gz # TODO(chewong): use official aks-engine tarball that supports Kubernetes 1.18 from github
-        - --test-azure-disk-csi-driver
+        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz # TODO(chewong): use official aks-engine tarball that supports Kubernetes 1.18 from github
         # Specific test args
+        - --test-azure-disk-csi-driver
         - --ginkgo-parallel=1
         - --timeout=420m
         securityContext:
@@ -290,9 +290,9 @@ presubmits:
         - --aksengine-location=westus2
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/in-tree.json
-        - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.46.0/aks-engine-v0.46.0-linux-amd64.tar.gz
-        - --test-azure-disk-csi-driver
+        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
         # Specific test args
+        - --test-azure-disk-csi-driver
         - --ginkgo-parallel=1
         - --timeout=420m
         securityContext:
@@ -345,9 +345,9 @@ presubmits:
         - --aksengine-location=westus2
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/in-tree-vmss.json
-        - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.46.0/aks-engine-v0.46.0-linux-amd64.tar.gz
-        - --test-azure-disk-csi-driver
+        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
         # Specific test args
+        - --test-azure-disk-csi-driver
         - --ginkgo-parallel=1
         - --timeout=420m
         securityContext:
@@ -409,6 +409,7 @@ presubmits:
         - --test
         - --up
         - --down
+        - --build=quick
         - --dump=$(ARTIFACTS)
         # Azure-specific test args
         - --provider=skeleton
@@ -419,10 +420,10 @@ presubmits:
         - --aksengine-deploy-custom-k8s
         - --aksengine-location=westus2
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
-        - --aksengine-template-url=https://raw.githubusercontent.com/chewong/azuredisk-csi-driver/windows-e2e/test/e2e/manifest/windows.json
-        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-windows-csi-proxy.tar.gz
-        - --test-azure-disk-csi-driver
+        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_storage.json
+        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
         # Specific test args
+        - --test-azure-disk-csi-driver
         - --ginkgo-parallel=1
         - --timeout=420m
         securityContext:
