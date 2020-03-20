@@ -24,7 +24,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/labels"
-	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	"k8s.io/test-infra/pkg/flagutil"
 	"k8s.io/test-infra/prow/config"
@@ -118,9 +118,13 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting infrastructure cluster config.")
 	}
-	infrastructureClusterClient, err := ctrlruntimeclient.New(infrastructureClusterConfig, ctrlruntimeclient.Options{})
+	opts := manager.Options{
+		MetricsBindAddress: "0",
+		Namespace:          cfg().ProwJobNamespace,
+	}
+	mgr, err := manager.New(infrastructureClusterConfig, opts)
 	if err != nil {
-		logrus.WithError(err).Fatal("Error getting infrastructure cluster client.")
+		logrus.WithError(err).Fatal("Error creating manager")
 	}
 
 	buildClusterClients, err := o.kubernetes.BuildClusterUncachedRuntimeClients(o.dryRun)
@@ -128,7 +132,7 @@ func main() {
 		logrus.WithError(err).Fatal("Error creating build cluster clients.")
 	}
 
-	c, err := plank.NewController(infrastructureClusterClient, buildClusterClients, githubClient, nil, cfg, o.totURL, o.selector, o.skipReport)
+	c, err := plank.NewController(mgr.GetClient(), buildClusterClients, githubClient, nil, cfg, o.totURL, o.selector, o.skipReport)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating plank controller.")
 	}
@@ -143,11 +147,10 @@ func main() {
 	}, 30*time.Second)
 
 	// run the controller
-	interrupts.TickLiteral(func() {
-		start := time.Now()
-		if err := c.Sync(); err != nil {
-			logrus.WithError(err).Error("Error syncing.")
-		}
-		logrus.WithField("duration", fmt.Sprintf("%v", time.Since(start))).Info("Synced")
-	}, 30*time.Second)
+	if err := mgr.Add(c); err != nil {
+		logrus.WithError(err).Fatal("failed to add controller to manager")
+	}
+	if err := mgr.Start(interrupts.Context().Done()); err != nil {
+		logrus.WithError(err).Fatal("failed to start manager")
+	}
 }
