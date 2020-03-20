@@ -57,8 +57,7 @@ func (LaunchTemplates) MarkAndSweep(sess *session.Session, acct string, region s
 
 	for _, lt := range toDelete {
 		deleteReq := &ec2.DeleteLaunchTemplateInput{
-			LaunchTemplateId:   aws.String(lt.ID),
-			LaunchTemplateName: aws.String(lt.Name),
+			LaunchTemplateId: aws.String(lt.ID),
 		}
 
 		if _, err := svc.DeleteLaunchTemplate(deleteReq); err != nil {
