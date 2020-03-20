@@ -1,12 +1,12 @@
 presubmits:
-  IBM/ibm-helm-api-operator:
-  - name: check_ibm-helm-api-operator
+  IBM/ibm-catalog-ui-operator:
+  - name: check_ibm-catalog-ui-operator
     branches:
     - ^master$
     decorate: true
     always_run: true
-    path_alias: github.com/IBM/ibm-helm-api-operator
-    rerun_command: /test check ibm-helm-api-operator
+    path_alias: github.com/IBM/ibm-catalog-ui-operator
+    rerun_command: /test check ibm-catalog-ui-operator
     spec:
       containers:
       - command:
@@ -17,13 +17,13 @@ presubmits:
         securityContext:
           privileged: true
     trigger: '(?m)^/test (?:.*? )?check(?: .*?)?$'
-  - name: test_ibm-helm-api-operator
+  - name: test_ibm-catalog-ui-operator
     branches:
     - ^master$
     decorate: true
     always_run: true
-    path_alias: github.com/IBM/ibm-helm-api-operator
-    rerun_command: /test test ibm-helm-api-operator
+    path_alias: github.com/IBM/ibm-catalog-ui-operator
+    rerun_command: /test test ibm-catalog-ui-operator
     spec:
       containers:
       - command:
@@ -34,15 +34,15 @@ presubmits:
         securityContext:
           privileged: true
     trigger: '(?m)^/test (?:.*? )?test(?: .*?)?$'
-  - name: build_ibm-helm-api-operator
+  - name: build_ibm-catalog-ui-operator
     branches:
     - ^master$
     decorate: true
     always_run: true
     labels:
       preset-service-account: "true"
-    path_alias: github.com/IBM/ibm-helm-api-operator
-    rerun_command: /test build ibm-helm-api-operator
+    path_alias: github.com/IBM/ibm-catalog-ui-operator
+    rerun_command: /test build ibm-catalog-ui-operator
     spec:
       containers:
       - command:
@@ -55,12 +55,12 @@ presubmits:
           privileged: true
     trigger: '(?m)^/test (?:.*? )?build(?: .*?)?$'
 postsubmits:
-  IBM/ibm-helm-api-operator:
-  - name: check_ibm-helm-api-operator_postsubmit
+  IBM/ibm-catalog-ui-operator:
+  - name: check_ibm-catalog-ui-operator_postsubmit
     branches:
     - ^master$
     decorate: true
-    path_alias: github.com/IBM/ibm-helm-api-operator
+    path_alias: github.com/IBM/ibm-catalog-ui-operator
     spec:
       containers:
       - command:
@@ -70,11 +70,11 @@ postsubmits:
         name: ""
         securityContext:
           privileged: true
-  - name: build_ibm-helm-api-operator_postsubmit
+  - name: build_ibm-catalog-ui-operator_postsubmit
     branches:
     - ^master$
     decorate: true
-    path_alias: github.com/IBM/ibm-helm-api-operator
+    path_alias: github.com/IBM/ibm-catalog-ui-operator
     spec:
       containers:
       - command:
@@ -84,11 +84,11 @@ postsubmits:
         name: ""
         securityContext:
           privileged: true
-  - name: images_ibm-helm-api-operator_postsubmit
+  - name: images_ibm-catalog-ui-operator_postsubmit
     branches:
     - ^master$
     decorate: true
-    path_alias: github.com/IBM/ibm-helm-api-operator
+    path_alias: github.com/IBM/ibm-catalog-ui-operator
     labels:
       preset-service-account: "true"
     spec:

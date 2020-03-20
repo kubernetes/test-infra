@@ -1,5 +1,39 @@
 presubmits:
   IBM/ibm-helm-repo-operator:
+  - name: check_ibm-helm-repo-operator
+    branches:
+    - ^master$
+    decorate: true
+    always_run: true
+    path_alias: github.com/IBM/ibm-helm-repo-operator
+    rerun_command: /test check ibm-helm-repo-operator
+    spec:
+      containers:
+      - command:
+        - make
+        - check
+        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?check(?: .*?)?$'
+  - name: test_ibm-helm-repo-operator
+    branches:
+    - ^master$
+    decorate: true
+    always_run: true
+    path_alias: github.com/IBM/ibm-helm-repo-operator
+    rerun_command: /test test ibm-helm-repo-operator
+    spec:
+      containers:
+      - command:
+        - make
+        - test
+        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?test(?: .*?)?$'
   - name: build_ibm-helm-repo-operator
     branches:
     - ^master$
@@ -20,23 +54,6 @@ presubmits:
         securityContext:
           privileged: true
     trigger: '(?m)^/test (?:.*? )?build(?: .*?)?$'
-  - name: check_ibm-helm-repo-operator
-    branches:
-    - ^master$
-    decorate: true
-    always_run: true
-    path_alias: github.com/IBM/ibm-helm-repo-operator
-    rerun_command: /test check ibm-helm-repo-operator
-    spec:
-      containers:
-      - command:
-        - make
-        - check
-        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
-        name: ""
-        securityContext:
-          privileged: true
-    trigger: '(?m)^/test (?:.*? )?check(?: .*?)?$'
 postsubmits:
   IBM/ibm-helm-repo-operator:
   - name: check_ibm-helm-repo-operator_postsubmit

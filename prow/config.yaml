@@ -23,7 +23,7 @@ tide:
     IBM/go-repo-template: squash
     IBM/test-infra: squash
     IBM/ibm-auditlogging-operator: squash
-    IBM/ibm-catalog-operator: squash
+    IBM/ibm-catalog-ui-operator: squash
     IBM/ibm-cert-manager-operator: squash
     IBM/ibm-cloudctl-operator: squash
     IBM/ibm-commonui-operator: squash
@@ -63,7 +63,7 @@ tide:
     - IBM/go-repo-template
     - IBM/test-infra
     - IBM/ibm-auditlogging-operator
-    - IBM/ibm-catalog-operator
+    - IBM/ibm-catalog-ui-operator
     - IBM/ibm-cert-manager-operator
     - IBM/ibm-cloudctl-operator
     - IBM/ibm-commonui-operator
