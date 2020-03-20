@@ -22,4 +22,5 @@ postsubmits:
               - --project=k8s-staging-metrics-server
               - --scratch-bucket=gs://k8s-staging-metrics-server-gcb
               - --env-passthrough=PULL_BASE_REF
+              - --env-passthrough=PULL_BASE_SHA
               - .
