@@ -774,6 +774,11 @@ periodics:
       - "--timeout=620m"
       securityContext:
         privileged: true
+      env:
+      - name: K8S_SSH_PUBLIC_KEY_PATH
+        value: /etc/ssh-key-secret/ssh-public # from preset-k8s-ssh label
+      - name: K8S_SSH_PRIVATE_KEY_PATH
+        value: /etc/ssh-key-secret/ssh-private # from preset-k8s-ssh label
   annotations:
     testgrid-dashboards: sig-windows, provider-azure-periodic, provider-azure-windows
     testgrid-tab-name: aks-engine-azure-windows-1909-master
