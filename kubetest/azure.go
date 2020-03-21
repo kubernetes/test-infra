@@ -1041,6 +1041,11 @@ func (c *Cluster) buildWinZip() error {
 
 func (c *Cluster) Up() error {
 	if *buildWithKubemark {
+		if err := c.setCred(); err != nil {
+			log.Printf("error during setting up azure credentials: %v", err)
+			return err
+		}
+
 		cmd := exec.Command("curl", "-o", "build-kubemark.sh", *kubemarkBuildScriptURL)
 		if err := cmd.Run(); err != nil {
 			return fmt.Errorf("failed to get build-kubemark.sh from %v: %v", *kubemarkBuildScriptURL, err)
@@ -1244,22 +1249,31 @@ func (c *Cluster) GetClusterCreated(clusterName string) (time.Time, error) {
 	return time.Time{}, errors.New("not implemented")
 }
 
+func (c *Cluster) setCred() error {
+	if err := os.Setenv("K8S_AZURE_TENANTID", c.credentials.TenantID); err != nil {
+		return err
+	}
+	if err := os.Setenv("K8S_AZURE_SUBSID", c.credentials.SubscriptionID); err != nil {
+		return err
+	}
+	if err := os.Setenv("K8S_AZURE_SPID", c.credentials.ClientID); err != nil {
+		return err
+	}
+	if err := os.Setenv("K8S_AZURE_SPSEC", c.credentials.ClientSecret); err != nil {
+		return err
+	}
+	if err := os.Setenv("K8S_AZURE_LOCATION", c.location); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (c *Cluster) TestSetup() error {
 	// set env vars required by the ccm e2e tests
 	if *testCcm {
-		if err := os.Setenv("K8S_AZURE_TENANTID", c.credentials.TenantID); err != nil {
-			return err
-		}
-		if err := os.Setenv("K8S_AZURE_SUBSID", c.credentials.SubscriptionID); err != nil {
-			return err
-		}
-		if err := os.Setenv("K8S_AZURE_SPID", c.credentials.ClientID); err != nil {
-			return err
-		}
-		if err := os.Setenv("K8S_AZURE_SPSEC", c.credentials.ClientSecret); err != nil {
-			return err
-		}
-		if err := os.Setenv("K8S_AZURE_LOCATION", c.location); err != nil {
+		if err := c.setCred(); err != nil {
+			log.Printf("error during setting up azure credentials: %v", err)
 			return err
 		}
 	} else if *testAzureFileCSIDriver || *testAzureDiskCSIDriver || *testBlobfuseCSIDriver {
