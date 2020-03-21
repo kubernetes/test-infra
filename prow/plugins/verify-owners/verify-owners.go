@@ -231,16 +231,18 @@ func handle(ghc githubClient, gc git.ClientFactory, roc repoownersClient, log *l
 			log.WithError(err).Error("Error cleaning up repo.")
 		}
 	}()
-	if err := r.CheckoutPullRequest(number); err != nil {
+	if err := r.Config("user.name", "prow"); err != nil {
 		return err
 	}
-	// If we have a specific SHA, use it.
-	if pr.Head.SHA != "" {
-		if err := r.Checkout(pr.Head.SHA); err != nil {
-			return err
-		}
+	if err := r.Config("user.email", "prow@localhost"); err != nil {
+		return err
 	}
-
+	if err := r.Config("commit.gpgsign", "false"); err != nil {
+		log.WithError(err).Errorf("Cannot set gpgsign=false in gitconfig: %v", err)
+	}
+	if err := r.MergeAndCheckout(pr.Base.Ref, string(github.MergeMerge), pr.Head.SHA); err != nil {
+		return err
+	}
 	// If OWNERS_ALIASES file exists, get all aliases.
 	// If the file was modified, check for non trusted users in the newly added owners.
 	nonTrustedUsers, repoAliases, err := nonTrustedUsersInOwnersAliases(ghc, log, triggerConfig, org, repo, r.Directory(), modifiedOwnerAliasesFile.Patch, ownerAliasesModified, skipTrustedUserCheck)
