@@ -197,7 +197,7 @@ periodics:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-aws-newrunner
 
-- interval: 30m
+- interval: 60m
   name: e2e-kops-aws-misc-updown
   labels:
     preset-service-account: "true"
@@ -205,7 +205,7 @@ periodics:
     preset-aws-credential: "true"
   decorate: true
   decoration_config:
-    timeout: 25m
+    timeout: 45m
   spec:
     containers:
     - command:
@@ -221,7 +221,7 @@ periodics:
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt
       - --provider=aws
       - --test_args=--ginkgo.focus=\[k8s.io\]\sNetworking.*\[Conformance\]
-      - --timeout=30m
+      - --timeout=45m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200320-57aed89-master
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
