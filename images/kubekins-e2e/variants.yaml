@@ -5,6 +5,11 @@ variants:
     K8S_RELEASE: stable
     BAZEL_VERSION: 0.28.1
     UPGRADE_DOCKER: 'true'
+  bazel-experimental:
+    CONFIG: bazel-experimental
+    GO_VERSION: 1.13.8
+    K8S_RELEASE: stable
+    BAZEL_VERSION: 0.29.1
   master:
     CONFIG: master
     GO_VERSION: 1.13.8
