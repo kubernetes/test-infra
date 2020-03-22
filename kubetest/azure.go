@@ -959,13 +959,18 @@ func (c *Cluster) uploadToAzureStorage(filePath string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed to open file %v . Error %v", filePath, err)
 	}
+	defer file.Close()
+
 	blobURL := containerURL.NewBlockBlobURL(filepath.Base(file.Name()))
-	_, err1 := azblob.UploadFileToBlockBlob(context.Background(), file, blobURL, azblob.UploadToBlockBlobOptions{})
-	file.Close()
-	if err1 != nil {
-		return "", err1
-	}
 	blobURLString := blobURL.URL()
+	if _, err = azblob.UploadFileToBlockBlob(context.Background(), file, blobURL, azblob.UploadToBlockBlobOptions{}); err != nil {
+		// 'BlobHasBeenModified' conflict happens when two concurrent jobs are trying to upload files with the same name
+		// Simply ignore the error and return the blob URL since at least one job will successfully upload the file to Azure storage
+		if strings.Contains(err.Error(), "BlobHasBeenModified") {
+			return blobURLString.String(), nil
+		}
+		return "", err
+	}
 	log.Printf("Uploaded %s to %s", filePath, blobURLString.String())
 	return blobURLString.String(), nil
 }
