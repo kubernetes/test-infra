@@ -1,0 +1,18 @@
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args: [ 'build', '-t', 'gcr.io/$PROJECT_ID/launcher.gcr.io/google/bazel:$_NEW_VERSION-from-$_OLD_VERSION',
+            '--build-arg', 'NEW_VERSION=$_NEW_VERSION',
+            '--build-arg', 'OLD_VERSION=$_OLD_VERSION',
+            '--build-arg', 'IMAGE_ARG=gcr.io/$PROJECT_ID/launcher.gcr.io/google/bazel:$_NEW_VERSION-from-$_OLD_VERSION',
+            '.' ]
+  - name: gcr.io/cloud-builders/docker
+    args: [ 'tag', 'gcr.io/$PROJECT_ID/launcher.gcr.io/google/bazel:$_NEW_VERSION-from-$_OLD_VERSION', 'gcr.io/$PROJECT_ID/launcher.gcr.io/google/bazel:latest-$_NEW_VERSION-from-$_OLD_VERSION']
+substitutions:
+  _GIT_TAG: '12345'
+  _NEW_VERSION: something
+  _OLD_VERSION: something
+options:
+  substitution_option: ALLOW_LOOSE
+images:
+  - 'gcr.io/$PROJECT_ID/launcher.gcr.io/google/bazel:$_NEW_VERSION-from-$_OLD_VERSION'
+  - 'gcr.io/$PROJECT_ID/launcher.gcr.io/google/bazel:latest-$_NEW_VERSION-from-$_OLD_VERSION'
