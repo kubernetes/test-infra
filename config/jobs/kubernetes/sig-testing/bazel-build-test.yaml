@@ -21,11 +21,16 @@ presubmits:
       containers:
       - image: launcher.gcr.io/google/bazel:0.25.2
         command:
-        - bash
+        - ../test-infra/hack/bazel.sh
         args:
-        - -c
-        - |
-          ../test-infra/hack/bazel.sh build --config=remote --remote_instance_name=projects/k8s-prow-builds/instances/default_instance -- //... -//vendor/... -//build/... //build/release-tars
+        - build
+        - --config=remote
+        - --remote_instance_name=projects/k8s-prow-builds/instances/default_instance
+        - --
+        - //...
+        - -//vendor/...
+        - -//build/...
+        - //build/release-tars
   - name: pull-kubernetes-bazel-test
     decorate: true
     always_run: true
