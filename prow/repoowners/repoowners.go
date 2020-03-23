@@ -77,6 +77,51 @@ type githubClient interface {
 	GetRef(org, repo, ref string) (string, error)
 }
 
+func newCache() *cache {
+	return &cache{
+		lockMapLock: &sync.Mutex{},
+		lockMap:     map[string]*sync.Mutex{},
+		dataLock:    &sync.Mutex{},
+		data:        map[string]cacheEntry{},
+	}
+}
+
+type cache struct {
+	// These are used to lock access to individual keys to avoid wasted tokens
+	// on concurrent requests. This has no effect when using ghproxy, as ghproxy
+	// serializes identical requests anyways. This should be removed once ghproxy
+	// is made mandatory.
+	lockMapLock *sync.Mutex
+	lockMap     map[string]*sync.Mutex
+
+	dataLock *sync.Mutex
+	data     map[string]cacheEntry
+}
+
+// getEntry returns the data for the key, a boolean indicating if data existed and a lock.
+// The lock is already locked, it must be unlocked by the caller.
+func (c *cache) getEntry(key string) (cacheEntry, bool, *sync.Mutex) {
+	c.lockMapLock.Lock()
+	entryLock, ok := c.lockMap[key]
+	if !ok {
+		c.lockMap[key] = &sync.Mutex{}
+		entryLock = c.lockMap[key]
+	}
+	c.lockMapLock.Unlock()
+
+	entryLock.Lock()
+	c.dataLock.Lock()
+	defer c.dataLock.Unlock()
+	entry, ok := c.data[key]
+	return entry, ok, entryLock
+}
+
+func (c *cache) setEntry(key string, data cacheEntry) {
+	c.dataLock.Lock()
+	c.data[key] = data
+	c.dataLock.Unlock()
+}
+
 type cacheEntry struct {
 	sha     string
 	aliases RepoAliases
@@ -117,8 +162,7 @@ type delegate struct {
 	skipCollaborators  func(org, repo string) bool
 	ownersDirBlacklist func() prowConf.OwnersDirBlacklist
 
-	lock  sync.Mutex
-	cache map[string]cacheEntry
+	cache *cache
 }
 
 // WithFields clones the client, keeping the underlying delegate the same but adding
@@ -153,7 +197,7 @@ func NewClient(
 		ghc:    ghc,
 		delegate: &delegate{
 			git:   gc,
-			cache: make(map[string]cacheEntry),
+			cache: newCache(),
 
 			mdYAMLEnabled:      mdYAMLEnabled,
 			skipCollaborators:  skipCollaborators,
@@ -213,9 +257,8 @@ func (c *Client) LoadRepoAliases(org, repo, base string) (RepoAliases, error) {
 		return nil, fmt.Errorf("failed to get current SHA for %s: %v", fullName, err)
 	}
 
-	c.lock.Lock()
-	defer c.lock.Unlock()
-	entry, ok := c.cache[fullName]
+	entry, ok, entryLock := c.cache.getEntry(fullName)
+	defer entryLock.Unlock()
 	if !ok || entry.sha != sha {
 		// entry is non-existent or stale.
 		gitRepo, err := c.git.ClientFor(org, repo)
@@ -229,7 +272,7 @@ func (c *Client) LoadRepoAliases(org, repo, base string) (RepoAliases, error) {
 
 		entry.aliases = loadAliasesFrom(gitRepo.Directory(), log)
 		entry.sha = sha
-		c.cache[fullName] = entry
+		c.cache.setEntry(fullName, entry)
 	}
 
 	return entry.aliases, nil
@@ -282,12 +325,11 @@ func (c *Client) LoadRepoOwners(org, repo, base string) (RepoOwner, error) {
 func (c *Client) cacheEntryFor(org, repo, base, cloneRef, fullName, sha string, log *logrus.Entry) (cacheEntry, error) {
 	mdYaml := c.mdYAMLEnabled(org, repo)
 	lockStart := time.Now()
-	c.lock.Lock()
-	defer c.lock.Unlock()
 	defer func() {
 		log.WithField("duration", time.Since(lockStart).String()).Debug("Locked section of loadRepoOwners completed")
 	}()
-	entry, ok := c.cache[fullName]
+	entry, ok, entryLock := c.cache.getEntry(fullName)
+	defer entryLock.Unlock()
 	if !ok || entry.sha != sha || entry.owners == nil || !entry.matchesMDYAML(mdYaml) {
 		start := time.Now()
 		gitRepo, err := c.git.ClientFor(org, repo)
@@ -355,7 +397,7 @@ func (c *Client) cacheEntryFor(org, repo, base, cloneRef, fullName, sha string, 
 			}
 			log.WithField("duration", time.Since(start).String()).Debugf("Completed loadOwnersFrom(%s, %t, entry.aliases, dirBlacklist, log)", gitRepo.Directory(), mdYaml)
 			entry.sha = sha
-			c.cache[fullName] = entry
+			c.cache.setEntry(fullName, entry)
 		}
 	}
 	return entry, nil
