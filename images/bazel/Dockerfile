@@ -22,8 +22,6 @@ FROM launcher.gcr.io/google/bazel:${NEW_VERSION}
 ARG IMAGE_ARG
 ENV IMAGE=${IMAGE_ARG}
 
-#RUN cd $(dirname $(realpath $(which bazel))) \
-#    && curl -LO https://releases.bazel.build/${OLD_VERSION}/release/bazel-${OLD_VERSION}-linux-x86_64 \
-#    && chmod +x bazel-${OLD_VERSION}-linux-x86_64
+ARG OLD_VERSION
 COPY --from=old \
   /usr/local/lib/bazel/bin/bazel-real /usr/local/lib/bazel/bin/bazel-${OLD_VERSION}
