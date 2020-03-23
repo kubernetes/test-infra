@@ -125,7 +125,7 @@ presubmits:
         - name: TEST_WINDOWS
           value: "true"
 periodics:
-- interval: 4h
+- interval: 24h
   name: ci-kubernetes-e2e-azure-disk-windows-1-18
   decorate: true
   decoration_config:
@@ -191,7 +191,7 @@ periodics:
     testgrid-tab-name: aks-engine-azure-1-18-windows-azure-disk
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Run Azure Disk e2e test with Azure Disk in-tree volume plugin in a Windows cluster.
-- interval: 4h
+- interval: 24h
   name: ci-kubernetes-e2e-azure-file-windows-1-18
   decorate: true
   decoration_config:
@@ -257,7 +257,7 @@ periodics:
     testgrid-tab-name: aks-engine-azure-1-18-windows-azure-file
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Run Azure File e2e test with Azure File in-tree volume plugin in a Windows cluster.
-- interval: 8h
+- interval: 24h
   name: ci-kubernetes-e2e-aks-engine-azure-1-18-windows
   decorate: true
   decoration_config:
@@ -315,7 +315,7 @@ periodics:
     testgrid-tab-name: aks-engine-azure-1-18-windows
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs SIG-Windows release tests on K8s 1.18 clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
-- interval: 8h
+- interval: 24h
   name: ci-kubernetes-e2e-aks-engine-azure-1-18-windows-serial-slow
   decorate: true
   decoration_config:

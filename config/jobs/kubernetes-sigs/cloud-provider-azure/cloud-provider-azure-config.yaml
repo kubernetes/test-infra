@@ -159,7 +159,7 @@ presubmits:
       description: "Run unit tests for cloud-provider-azure."
       testgrid-num-columns-recent: '30'
 periodics:
-- interval: 8h
+- interval: 24h
   # cloud-provider-azure-master runs Azure specific tests periodically.
   name: cloud-provider-azure-master
   decorate: true
@@ -217,7 +217,7 @@ periodics:
     testgrid-tab-name: cloud-provider-azure-master
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: "Runs Azure specific tests periodically with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure)."
-- interval: 8h
+- interval: 24h
   # cloud-provider-azure-autoscaling runs node autoscaling tests periodically.
   name: cloud-provider-azure-autoscaling
   decorate: true
@@ -278,7 +278,7 @@ periodics:
     testgrid-tab-name: cloud-provider-azure-autoscaling
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: "Runs node autoscaling tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure)."
-- interval: 8h
+- interval: 24h
   # cloud-provider-azure-conformance runs Kubernetes conformance tests periodically.
   name: cloud-provider-azure-conformance
   decorate: true
@@ -336,7 +336,7 @@ periodics:
     testgrid-tab-name: cloud-provider-azure-conformance
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: "Runs Kubernetes conformance tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure)."
-- interval: 8h
+- interval: 24h
   # cloud-provider-azure-slow runs Kubernetes slow tests periodically.
   name: cloud-provider-azure-slow
   decorate: true
@@ -394,7 +394,7 @@ periodics:
     testgrid-tab-name: cloud-provider-azure-slow
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: "Runs Kubernetes slow tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure)."
-- interval: 12h
+- interval: 24h
   # cloud-provider-azure-serial runs Kubernetes serial tests periodically.
   name: cloud-provider-azure-serial
   decorate: true
@@ -461,7 +461,7 @@ periodics:
     testgrid-tab-name: cloud-provider-azure-serial
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: "Runs Kubernetes serial tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure)."
-- interval: 8h
+- interval: 24h
   # cloud-provider-azure-master-vmss runs Azure specific tests periodically on VMSS.
   name: cloud-provider-azure-master-vmss
   decorate: true
@@ -519,7 +519,7 @@ periodics:
     testgrid-tab-name: cloud-provider-azure-master-vmss
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: "Runs Azure specific tests periodically with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) on VMSS."
-- interval: 8h
+- interval: 24h
   # cloud-provider-azure-conformance-vmss runs Kubernetes conformance tests periodically on VMSS.
   name: cloud-provider-azure-conformance-vmss
   decorate: true
@@ -577,7 +577,7 @@ periodics:
     testgrid-tab-name: cloud-provider-azure-conformance-vmss
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: "Runs Kubernetes conformance tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) on VMSS."
-- interval: 8h
+- interval: 24h
   # cloud-provider-azure-slow-vmss runs Kubernetes slow tests periodically on VMSS.
   name: cloud-provider-azure-slow-vmss
   decorate: true
@@ -635,7 +635,7 @@ periodics:
     testgrid-tab-name: cloud-provider-azure-slow-vmss
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: "Runs Kubernetes slow tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) on VMSS."
-- interval: 8h
+- interval: 24h
   # cloud-provider-azure-multiple-zones runs Kubernetes multiple availability zones tests periodically.
   name: cloud-provider-azure-multiple-zones
   decorate: true
@@ -696,7 +696,7 @@ periodics:
     description: "Runs Kubernetes multiple availability zones tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) on VMSS."
 
 # conformance test against kubernetes master branch with `azure` ipv6
-- interval: 4h
+- interval: 24h
   name: ci-kubernetes-azure-conformance-ipv6
   decorate: true
   decoration_config:
@@ -750,7 +750,7 @@ periodics:
     testgrid-num-columns-recent: '3'
 
 # scalability tests
-- interval: 2h
+- interval: 24h
   name: ci-kubernetes-kubemark-100-azure-test
   decorate: true
   decoration_config:
