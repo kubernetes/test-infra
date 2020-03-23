@@ -35,7 +35,7 @@ substitutions:
   _CONFIG: master
   _GO_VERSION: 1.13.5
   _K8S_RELEASE: stable
-  _BAZEL_VERSION: 0.23.2
+  _BAZEL_VERSION: 0.25.2
   _UPGRADE_DOCKER: 'false'
   _CFSSL_VERSION: R1.2
 options:
