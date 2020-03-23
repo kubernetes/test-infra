@@ -1,0 +1,4 @@
+variants:
+  2.2.0-from-0.25.2:
+    NEW_VERSION: 2.2.0
+    OLD_VERSION: 0.25.2
