@@ -1104,6 +1104,7 @@ presubmits:
         securityContext:
           privileged: true
   - always_run: true
+    optional: true
     branches:
     - release-1.17
     decorate: true
@@ -1127,6 +1128,7 @@ presubmits:
         name: ""
         resources: {}
   - always_run: true
+    optional: true
     branches:
     - release-1.17
     decorate: true

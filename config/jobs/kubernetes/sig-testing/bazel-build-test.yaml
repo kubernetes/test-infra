@@ -3,6 +3,7 @@ presubmits:
   - name: pull-kubernetes-bazel-build
     decorate: true
     always_run: true
+    optional: true
     skip_branches:
     - release-\d+.\d+ # per-release job
     annotations:
@@ -29,6 +30,7 @@ presubmits:
   - name: pull-kubernetes-bazel-test
     decorate: true
     always_run: true
+    optional: true
     skip_branches:
     - release-\d+.\d+ # per-release job
     annotations:
