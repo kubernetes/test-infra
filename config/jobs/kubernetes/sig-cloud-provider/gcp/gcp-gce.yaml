@@ -107,6 +107,49 @@ presubmits:
           requests:
             memory: "6Gi"
 
+  - name: pull-kubernetes-e2e-gce-bazel-experimental
+    always_run: true
+    branches:
+    - ^bazel-upgrade$ # canary presubmit; only run on bazel-upgrade branch
+    annotations:
+      testgrid-create-test-group: "true"
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, release-managers@kubernetes.io
+      testgrid-dashboards: sig-release-master-informing, sig-testing-canaries
+      testgrid-tab-name: e2e-gce-bazel-experimental
+      testgrid-num-failures-to-alert: "10"
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-pull-kubernetes-e2e: "true"
+      preset-pull-kubernetes-e2e-gce: "true"
+    spec:
+      containers:
+      - args:
+        - --root=/go/src
+        - --repo=k8s.io/kubernetes=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --timeout=105
+        - --scenario=kubernetes_e2e
+        - --
+        - --build=bazel
+        - --cluster=
+        - --extract=local
+        - --gcp-node-image=gci
+        - --gcp-zone=us-west1-b
+        - --ginkgo-parallel=30
+        - --provider=gce
+        # Panic if anything mutates a shared informer cache
+        - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
+        - --runtime-config=batch/v2alpha1=true
+        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-bazel-experimental
+        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+        - --timeout=80m # thinking about making this longer? don't! 80m is a hard cap, and should get down to no more than 60m.
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200320-57aed89-bazel-experimental
+        resources:
+          requests:
+            memory: "6Gi"
+
   - name: pull-kubernetes-e2e-gce-ubuntu
     always_run: false
     skip_report: false

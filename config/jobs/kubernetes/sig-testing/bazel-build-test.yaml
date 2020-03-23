@@ -26,6 +26,33 @@ presubmits:
         - -c
         - |
           ../test-infra/hack/bazel.sh build --config=remote --remote_instance_name=projects/k8s-prow-builds/instances/default_instance -- //... -//vendor/... -//build/... //build/release-tars
+  - name: pull-kubernetes-bazel-build-experimental
+    decorate: true
+    always_run: true
+    branches:
+    - ^bazel-upgrade$ # canary presubmit; only run on bazel-upgrade branch
+    annotations:
+      testgrid-create-test-group: "true"
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, release-managers@kubernetes.io
+      testgrid-dashboards: sig-release-master-informing, sig-testing-canaries
+      testgrid-num-failures-to-alert: "10"
+    labels:
+      preset-service-account: "true"
+      preset-bazel-scratch-dir: "true"
+    extra_refs:
+    - base_ref: master
+      org: kubernetes
+      repo: test-infra
+    spec:
+      containers:
+      # should match the bazel version in the kubekins-e2e 'bazel-experimental' variant
+      - image: launcher.gcr.io/google/bazel:0.29.1
+        command:
+        - bash
+        args:
+        - -c
+        - |
+          ../test-infra/hack/bazel.sh build --config=remote --remote_instance_name=projects/k8s-prow-builds/instances/default_instance -- //... -//vendor/... -//build/... //build/release-tars
   - name: pull-kubernetes-bazel-test
     decorate: true
     always_run: true
@@ -46,6 +73,38 @@ presubmits:
     spec:
       containers:
       - image: launcher.gcr.io/google/bazel:0.25.2
+        command:
+        - ../test-infra/hack/bazel.sh
+        args:
+        - test
+        - --config=unit
+        - --config=remote
+        - --remote_instance_name=projects/k8s-prow-builds/instances/default_instance
+        - //...
+        - --
+        - -//build/...
+        - -//vendor/...
+  - name: pull-kubernetes-bazel-test-experimental
+    decorate: true
+    always_run: true
+    branches:
+    - ^bazel-upgrade$ # canary presubmit; only run on bazel-upgrade branch
+    annotations:
+      testgrid-create-test-group: "true"
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, release-managers@kubernetes.io
+      testgrid-dashboards: sig-release-master-informing, sig-testing-canaries
+      testgrid-num-failures-to-alert: "10"
+    labels:
+      preset-service-account: "true"
+      preset-bazel-scratch-dir: "true"
+    extra_refs:
+    - base_ref: master
+      org: kubernetes
+      repo: test-infra
+    spec:
+      containers:
+      # should match the bazel version in the kubekins-e2e 'bazel-experimental' variant
+      - image: launcher.gcr.io/google/bazel:0.29.1
         command:
         - ../test-infra/hack/bazel.sh
         args:
