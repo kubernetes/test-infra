@@ -1,4 +1,5 @@
 plank:
+  job_url_template: 'http://prow.purple-chesterfield.com/log?job={{.Spec.Job}}&id={{.Status.BuildID}}'
   default_decoration_config:
     utility_images: # using the tag we identified above
       clonerefs: "quay.io/multicloudlab/k8s-prow-clonerefs:v20200311-50c69dc34"
