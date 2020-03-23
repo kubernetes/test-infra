@@ -38,7 +38,7 @@ substitutions:
   _GIT_TAG: '12345'
   _GO_VERSION: 1.13.5
   _K8S_RELEASE: stable
-  _OLD_BAZEL_VERSION: 0.23.2
+  _OLD_BAZEL_VERSION: 0.25.2
   _UPGRADE_DOCKER: 'false'
 options:
   substitution_option: ALLOW_LOOSE
