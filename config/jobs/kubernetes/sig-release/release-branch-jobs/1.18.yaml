@@ -804,7 +804,7 @@ presubmits:
       preset-pull-kubernetes-e2e: "true"
       preset-pull-kubernetes-e2e-gce: "true"
       preset-service-account: "true"
-    name: pull-kubernetes-e2e-gce-canary
+    name: pull-kubernetes-e2e-gce-canary-no-bazel
     skip_report: true
     spec:
       containers:
@@ -825,7 +825,7 @@ presubmits:
         - --provider=gce
         - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
         - --runtime-config=batch/v2alpha1=true
-        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-canary
+        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-canary-no-bazel
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
           --minStartupPods=8
         - --timeout=80m

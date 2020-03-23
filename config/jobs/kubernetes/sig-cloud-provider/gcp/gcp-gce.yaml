@@ -60,15 +60,17 @@ presubmits:
           requests:
             memory: "6Gi"
 
-  - name: pull-kubernetes-e2e-gce-canary
-    always_run: false
-    skip_report: true
+  - name: pull-kubernetes-e2e-gce-canary-no-bazel
+    always_run: true
+    optional: true
     skip_branches:
     - release-\d+\.\d+ # per-release image
     annotations:
       fork-per-release: "true"
       testgrid-alert-stale-results-hours: "24"
       testgrid-create-test-group: "true"
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, release-managers@kubernetes.io
+      testgrid-dashboards: sig-release-master-informing, sig-testing-canaries
       testgrid-num-failures-to-alert: "10"
     labels:
       preset-dind-enabled: "true"
@@ -96,7 +98,7 @@ presubmits:
         # Panic if anything mutates a shared informer cache
         - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
         - --runtime-config=batch/v2alpha1=true
-        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-canary
+        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-canary-no-bazel
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
         - --timeout=80m # thinking about making this longer? don't! 80m is a hard cap, and should get down to no more than 60m.
         image: gcr.io/k8s-testimages/kubekins-e2e:v20200320-57aed89-master
