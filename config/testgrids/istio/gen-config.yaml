@@ -3551,6 +3551,13 @@ dashboards:
     test_group_name: gencheck_test-infra
   - code_search_url_template:
       url: https://github.com/istio/test-infra/compare/<start-custom-0>...<end-custom-0>
+    description: integ-test-authentikos_test-infra
+    name: integ-test-authentikos_test-infra
+    open_bug_template:
+      url: https://github.com/istio/test-infra/issues/
+    test_group_name: integ-test-authentikos_test-infra
+  - code_search_url_template:
+      url: https://github.com/istio/test-infra/compare/<start-custom-0>...<end-custom-0>
     description: lint_test-infra
     name: lint_test-infra
     open_bug_template:
@@ -3563,6 +3570,13 @@ dashboards:
     open_bug_template:
       url: https://github.com/istio/test-infra/issues/
     test_group_name: test_test-infra
+  - code_search_url_template:
+      url: https://github.com/istio/test-infra/compare/<start-custom-0>...<end-custom-0>
+    description: unit-test-authentikos_test-infra
+    name: unit-test-authentikos_test-infra
+    open_bug_template:
+      url: https://github.com/istio/test-infra/issues/
+    test_group_name: unit-test-authentikos_test-infra
   name: istio_test-infra
 - dashboard_tab:
   - alert_options:
@@ -5013,11 +5027,17 @@ test_groups:
 - gcs_prefix: istio-prow/pr-logs/directory/gencheck_test-infra
   name: gencheck_test-infra
   num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/integ-test-authentikos_test-infra
+  name: integ-test-authentikos_test-infra
+  num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/lint_test-infra
   name: lint_test-infra
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/test_test-infra
   name: test_test-infra
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/unit-test-authentikos_test-infra
+  name: unit-test-authentikos_test-infra
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/build_tools
   name: build_tools
