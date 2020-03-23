@@ -499,6 +499,7 @@ function redraw(fz: FuzzySearch): void {
             spec: {
                 type = "",
                 job = "",
+                context = "",
                 refs: {org = "", repo = "", repo_link = "", base_sha = "", base_link = "", pulls = [], base_ref = ""} = {},
             },
             status: {startTime, completionTime = "", state = "", pod_name, build_id = "", url = ""},
@@ -569,18 +570,14 @@ function redraw(fz: FuzzySearch): void {
         displayedJob++;
         const r = document.createElement("tr");
         r.appendChild(cell.state(state));
-        if (pod_name) {
-            const logIcon = icon.create("description", "Build log");
-            logIcon.href = `log?job=${job}&id=${build_id}`;
-            const c = document.createElement("td");
-            c.classList.add("icon-cell");
-            c.appendChild(logIcon);
-            r.appendChild(c);
-        } else {
-            r.appendChild(cell.text(""));
-        }
-        r.appendChild(createRerunCell(modal, rerunCommand, prowJobName));
-        r.appendChild(createViewJobCell(prowJobName));
+        const logIcon = icon.create("description", "Build log");
+        logIcon.href = url;
+        const c = document.createElement("td");
+        c.classList.add("icon-cell");
+        c.appendChild(logIcon);
+        r.appendChild(c);
+        //r.appendChild(createRerunCell(modal, rerunCommand, prowJobName));
+        //r.appendChild(createViewJobCell(prowJobName));
         const key = groupKey(build);
         if (key !== lastKey) {
             // This is a different PR or commit than the previous row.
@@ -614,23 +611,12 @@ function redraw(fz: FuzzySearch): void {
             r.appendChild(cell.text(""));
             r.appendChild(cell.text(""));
         }
-        if (spyglass) {
-            const buildIndex = url.indexOf('/build/');
-            if (buildIndex !== -1) {
-                const gcsUrl = `${window.location.origin}/view/gcs/${url.substring(buildIndex + '/build/'.length)}`;
-                r.appendChild(createSpyglassCell(gcsUrl));
-            } else if (url.includes('/view/') || url.includes('/logs/')) {
-                r.appendChild(createSpyglassCell(url));
-            } else {
-                r.appendChild(cell.text(''));
-            }
+        if (context === "build") {
+            r.appendChild(createSpyglassCell(url + '/wf'));
+            r.appendChild(cell.link(job, url + '/wf'));
         } else {
             r.appendChild(cell.text(''));
-        }
-        if (url === "") {
             r.appendChild(cell.text(job));
-        } else {
-            r.appendChild(cell.link(job, url));
         }
 
         r.appendChild(cell.time(i.toString(), moment.unix(started)));
