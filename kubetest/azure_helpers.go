@@ -183,7 +183,6 @@ type AgentPoolProfile struct {
 	Extensions             []map[string]string `json:"extensions,omitempty"`
 	OSDiskSizeGB           int                 `json:"osDiskSizeGB,omitempty" validate:"min=0,max=1023"`
 	EnableVMSSNodePublicIP bool                `json:"enableVMSSNodePublicIP,omitempty"`
-	ScalesetPriority       string              `json:"scalesetPriority,omitempty"`
 }
 
 type AzureClient struct {

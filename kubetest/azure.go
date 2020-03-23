@@ -599,9 +599,6 @@ func (c *Cluster) populateAPIModelTemplate() error {
 		if err := c.populateAzureCloudConfig(isVMSS); err != nil {
 			return err
 		}
-		if isVMSS {
-			v.Properties.AgentPoolProfiles[0].ScalesetPriority = "Spot"
-		}
 	}
 
 	apiModel, _ := json.MarshalIndent(v, "", "    ")
