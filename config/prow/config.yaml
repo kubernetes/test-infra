@@ -487,6 +487,8 @@ tide:
     kubernetes-sigs/krew: squash
     kubernetes-sigs/kubespray: squash
     kubernetes-sigs/service-catalog: squash
+    kubernetes-sigs/go-open-service-broker-client: squash
+    kubernetes-sigs/minibroker: squash
     kubernetes/cloud-provider-openstack: squash
     kubernetes/dashboard: squash
     kubernetes/kube-deploy: squash
