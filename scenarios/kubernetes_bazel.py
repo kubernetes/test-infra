@@ -116,7 +116,13 @@ def echo_result(res):
 
 def get_version():
     """Return kubernetes version"""
-    with open('bazel-genfiles/version') as fp:
+    # The check for version in bazel-genfiles can be removed once everyone is
+    # off of versions before 0.25.0.
+    # https://github.com/bazelbuild/bazel/issues/8651
+    if os.path.isfile('bazel-genfiles/version'):
+        with open('bazel-genfiles/version') as fp:
+            return fp.read().strip()
+    with open('bazel-bin/version') as fp:
         return fp.read().strip()
 
 def get_changed(base, pull):
