@@ -1,0 +1,277 @@
+presubmits:
+  IBM/deployer-operator:
+  - name: check-deployer-operator
+    cluster: default
+    always_run: true
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/deployer-operator
+    rerun_command: /test check-deployer-operator
+    spec:
+      containers:
+      - command:
+        - make
+        - check
+        image: quay.io/multicloudlab/check-tool:v20200319-b5bfe54
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?check(?:.*?)?$'
+  - name: test-deployer-operator-amd64
+    cluster: default
+    always_run: true
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/deployer-operator
+    rerun_command: /test test-deployer-operator-amd64
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - test
+        image: quay.io/multicloudlab/build-tool:v20200320-5e25536
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?test(?:.*?)?$'
+  - name: test-deployer-operator-ppc64le
+    cluster: ppc64le
+    always_run: true
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/deployer-operator
+    rerun_command: /test test-deployer-operator-ppc64le
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - test
+        image: quay.io/multicloudlab/build-tool:v20200320-5e25536
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?test(?:.*?)?$'
+  - name: test-deployer-operator-s390x
+    cluster: s390x
+    always_run: true
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/deployer-operator
+    rerun_command: /test test-deployer-operator-s390x
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - test
+        image: quay.io/multicloudlab/build-tool:v20200320-5e25536
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?test(?:.*?)?$'
+  - name: build-deployer-operator-amd64
+    cluster: default
+    always_run: true
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/deployer-operator
+    rerun_command: /test build-deployer-operator-amd64
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build
+        image: quay.io/multicloudlab/build-tool:v20200320-5e25536
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?build(?:.*?)?$'
+  - name: build-deployer-operator-ppc64le
+    cluster: ppc64le
+    always_run: true
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/deployer-operator
+    rerun_command: /test build-deployer-operator-ppc64le
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build
+        image: quay.io/multicloudlab/build-tool:v20200320-5e25536
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?build(?:.*?)?$'
+  - name: build-deployer-operator-s390x
+    cluster: s390x
+    always_run: true
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/deployer-operator
+    rerun_command: /test build-deployer-operator-s390x
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build
+        image: quay.io/multicloudlab/build-tool:v20200320-5e25536
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?build(?:.*?)?$'
+postsubmits:
+  IBM/deployer-operator:
+  - name: coverage-deployer-operator-postsubmit
+    cluster: default
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/deployer-operator
+    spec:
+      containers:
+      - command:
+        - make
+        - coverage
+        image: quay.io/multicloudlab/check-tool:v20200319-b5bfe54
+        name: ""
+        env:
+        - name: CODECOV_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: ibm-deployer-operator-codecov-token
+              key: codecov-token
+        securityContext:
+          privileged: true
+  - name: build-deployer-operator-amd64-postsubmit
+    cluster: default
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/deployer-operator
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build
+        image: quay.io/multicloudlab/build-tool:v20200320-5e25536
+        name: ""
+        securityContext:
+          privileged: true
+  - name: build-deployer-operator-ppc64le-postsubmit
+    cluster: ppc64le
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/deployer-operator
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build
+        image: quay.io/multicloudlab/build-tool:v20200320-5e25536
+        name: ""
+        securityContext:
+          privileged: true
+  - name: build-deployer-operator-s390x-postsubmit
+    cluster: s390x
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/deployer-operator
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build
+        image: quay.io/multicloudlab/build-tool:v20200320-5e25536
+        name: ""
+        securityContext:
+          privileged: true
+  - name: image-deployer-operator-amd64-postsubmit
+    cluster: default
+    branches:
+    - ^master$
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    path_alias: github.com/IBM/deployer-operator
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build-push-image
+        image: quay.io/multicloudlab/build-tool:v20200320-5e25536
+        name: ""
+        securityContext:
+          privileged: true
+  - name: image-deployer-operator-ppc64le-postsubmit
+    cluster: ppc64le
+    branches:
+    - ^master$
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    path_alias: github.com/IBM/deployer-operator
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build-push-image
+        image: quay.io/multicloudlab/build-tool:v20200320-5e25536
+        name: ""
+        securityContext:
+          privileged: true
+  - name: image-deployer-operator-s390x-postsubmit
+    cluster: s390x
+    branches:
+    - ^master$
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    path_alias: github.com/IBM/deployer-operator
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build-push-image
+        image: quay.io/multicloudlab/build-tool:v20200320-5e25536
+        name: ""
+        securityContext:
+          privileged: true
+  - name: multiarch-image-deployer-operator-postsubmit
+    cluster: default
+    branches:
+    - ^master$
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    path_alias: github.com/IBM/deployer-operator
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - multiarch-image
+        image: quay.io/multicloudlab/build-tool:v20200320-5e25536
+        name: ""
+        securityContext:
+          privileged: true
