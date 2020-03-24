@@ -9,7 +9,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: launcher.gcr.io/google/bazel:2.1.0
+      - image: launcher.gcr.io/google/bazel:2.2.0
         command:
         - ./presubmit.sh
     annotations:
