@@ -858,121 +858,123 @@ func TestHandleGenericComment(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
-		if tc.Branch == "" {
-			tc.Branch = "master"
-		}
-		g := &fakegithub.FakeClient{
-			CreatedStatuses: map[string][]github.Status{},
-			IssueComments:   map[int][]github.IssueComment{},
-			OrgMembers:      map[string][]string{"org": {"trusted-member"}},
-			PullRequests: map[int]*github.PullRequest{
-				0: {
-					User:   github.User{Login: tc.PRAuthor},
-					Number: 0,
-					Head: github.PullRequestBranch{
-						SHA: "cafe",
-					},
-					Base: github.PullRequestBranch{
-						Ref: tc.Branch,
-						Repo: github.Repo{
-							Owner: github.User{Login: "org"},
-							Name:  "repo",
-						},
-					},
-				},
-			},
-			IssueLabelsExisting: tc.IssueLabels,
-			PullRequestChanges:  map[int][]github.PullRequestChange{0: {{Filename: "CHANGED"}}},
-			CombinedStatuses: map[string]*github.CombinedStatus{
-				"cafe": {
-					Statuses: []github.Status{
-						{State: github.StatusPending, Context: "pull-job"},
-						{State: github.StatusFailure, Context: "pull-jib"},
-						{State: github.StatusSuccess, Context: "pull-jub"},
-					},
-				},
-			},
-			Collaborators: []string{"k8s-ci-robot"},
-		}
-		fakeConfig := &config.Config{ProwConfig: config.ProwConfig{ProwJobNamespace: "prowjobs"}}
-		fakeProwJobClient := fake.NewSimpleClientset()
-		c := Client{
-			GitHubClient:  g,
-			ProwJobClient: fakeProwJobClient.ProwV1().ProwJobs(fakeConfig.ProwJobNamespace),
-			Config:        fakeConfig,
-			Logger:        logrus.WithField("plugin", PluginName),
-			GitClient:     nil,
-		}
-		presubmits := tc.Presubmits
-		if presubmits == nil {
-			presubmits = map[string][]config.Presubmit{
-				"org/repo": {
-					{
-						JobBase: config.JobBase{
-							Name: "job",
-						},
-						AlwaysRun: true,
-						Reporter: config.Reporter{
-							Context: "pull-job",
-						},
-						Trigger:      `(?m)^/test (?:.*? )?job(?: .*?)?$`,
-						RerunCommand: `/test job`,
-						Brancher:     config.Brancher{Branches: []string{"master"}},
-					},
-					{
-						JobBase: config.JobBase{
-							Name: "jib",
-						},
-						AlwaysRun: false,
-						Reporter: config.Reporter{
-							Context: "pull-jib",
-						},
-						Trigger:      `(?m)^/test (?:.*? )?jib(?: .*?)?$`,
-						RerunCommand: `/test jib`,
-					},
-				},
+		t.Run(tc.name, func(t *testing.T) {
+			if tc.Branch == "" {
+				tc.Branch = "master"
 			}
-		}
-		if err := c.Config.SetPresubmits(presubmits); err != nil {
-			t.Fatalf("%s: failed to set presubmits: %v", tc.name, err)
-		}
+			g := &fakegithub.FakeClient{
+				CreatedStatuses: map[string][]github.Status{},
+				IssueComments:   map[int][]github.IssueComment{},
+				OrgMembers:      map[string][]string{"org": {"trusted-member"}},
+				PullRequests: map[int]*github.PullRequest{
+					0: {
+						User:   github.User{Login: tc.PRAuthor},
+						Number: 0,
+						Head: github.PullRequestBranch{
+							SHA: "cafe",
+						},
+						Base: github.PullRequestBranch{
+							Ref: tc.Branch,
+							Repo: github.Repo{
+								Owner: github.User{Login: "org"},
+								Name:  "repo",
+							},
+						},
+					},
+				},
+				IssueLabelsExisting: tc.IssueLabels,
+				PullRequestChanges:  map[int][]github.PullRequestChange{0: {{Filename: "CHANGED"}}},
+				CombinedStatuses: map[string]*github.CombinedStatus{
+					"cafe": {
+						Statuses: []github.Status{
+							{State: github.StatusPending, Context: "pull-job"},
+							{State: github.StatusFailure, Context: "pull-jib"},
+							{State: github.StatusSuccess, Context: "pull-jub"},
+						},
+					},
+				},
+				Collaborators: []string{"k8s-ci-robot"},
+			}
+			fakeConfig := &config.Config{ProwConfig: config.ProwConfig{ProwJobNamespace: "prowjobs"}}
+			fakeProwJobClient := fake.NewSimpleClientset()
+			c := Client{
+				GitHubClient:  g,
+				ProwJobClient: fakeProwJobClient.ProwV1().ProwJobs(fakeConfig.ProwJobNamespace),
+				Config:        fakeConfig,
+				Logger:        logrus.WithField("plugin", PluginName),
+				GitClient:     nil,
+			}
+			presubmits := tc.Presubmits
+			if presubmits == nil {
+				presubmits = map[string][]config.Presubmit{
+					"org/repo": {
+						{
+							JobBase: config.JobBase{
+								Name: "job",
+							},
+							AlwaysRun: true,
+							Reporter: config.Reporter{
+								Context: "pull-job",
+							},
+							Trigger:      `(?m)^/test (?:.*? )?job(?: .*?)?$`,
+							RerunCommand: `/test job`,
+							Brancher:     config.Brancher{Branches: []string{"master"}},
+						},
+						{
+							JobBase: config.JobBase{
+								Name: "jib",
+							},
+							AlwaysRun: false,
+							Reporter: config.Reporter{
+								Context: "pull-jib",
+							},
+							Trigger:      `(?m)^/test (?:.*? )?jib(?: .*?)?$`,
+							RerunCommand: `/test jib`,
+						},
+					},
+				}
+			}
+			if err := c.Config.SetPresubmits(presubmits); err != nil {
+				t.Fatalf("%s: failed to set presubmits: %v", tc.name, err)
+			}
 
-		event := github.GenericCommentEvent{
-			Action: github.GenericCommentActionCreated,
-			Repo: github.Repo{
-				Owner:    github.User{Login: "org"},
-				Name:     "repo",
-				FullName: "org/repo",
-			},
-			Body:        tc.Body,
-			User:        github.User{Login: tc.Author},
-			IssueAuthor: github.User{Login: tc.PRAuthor},
-			IssueState:  tc.State,
-			IsPR:        tc.IsPR,
-		}
+			event := github.GenericCommentEvent{
+				Action: github.GenericCommentActionCreated,
+				Repo: github.Repo{
+					Owner:    github.User{Login: "org"},
+					Name:     "repo",
+					FullName: "org/repo",
+				},
+				Body:        tc.Body,
+				User:        github.User{Login: tc.Author},
+				IssueAuthor: github.User{Login: tc.PRAuthor},
+				IssueState:  tc.State,
+				IsPR:        tc.IsPR,
+			}
 
-		trigger := plugins.Trigger{
-			IgnoreOkToTest:       tc.IgnoreOkToTest,
-			ElideSkippedContexts: tc.ElideSkippedContexts,
-		}
-		trigger.SetDefaults()
+			trigger := plugins.Trigger{
+				IgnoreOkToTest:       tc.IgnoreOkToTest,
+				ElideSkippedContexts: tc.ElideSkippedContexts,
+			}
+			trigger.SetDefaults()
 
-		log.Printf("running case %s", tc.name)
-		// In some cases handleGenericComment can be called twice for the same event.
-		// For instance on Issue/PR creation and modification.
-		// Let's call it twice to ensure idempotency.
-		if err := handleGenericComment(c, trigger, event); err != nil {
-			t.Fatalf("%s: didn't expect error: %s", tc.name, err)
-		}
-		validate(tc.name, fakeProwJobClient.Fake.Actions(), g, tc, t)
-		if err := handleGenericComment(c, trigger, event); err != nil {
-			t.Fatalf("%s: didn't expect error: %s", tc.name, err)
-		}
-		validate(tc.name, fakeProwJobClient.Fake.Actions(), g, tc, t)
+			log.Printf("running case %s", tc.name)
+			// In some cases handleGenericComment can be called twice for the same event.
+			// For instance on Issue/PR creation and modification.
+			// Let's call it twice to ensure idempotency.
+			if err := handleGenericComment(c, trigger, event); err != nil {
+				t.Fatalf("%s: didn't expect error: %s", tc.name, err)
+			}
+			validate(t, fakeProwJobClient.Fake.Actions(), g, tc)
+			if err := handleGenericComment(c, trigger, event); err != nil {
+				t.Fatalf("%s: didn't expect error: %s", tc.name, err)
+			}
+			validate(t, fakeProwJobClient.Fake.Actions(), g, tc)
+		})
 	}
 }
 
-func validate(name string, actions []clienttesting.Action, g *fakegithub.FakeClient, tc testcase, t *testing.T) {
+func validate(t *testing.T, actions []clienttesting.Action, g *fakegithub.FakeClient, tc testcase) {
 	startedContexts := sets.NewString()
 	for _, action := range actions {
 		switch action := action.(type) {
@@ -988,26 +990,26 @@ func validate(name string, actions []clienttesting.Action, g *fakegithub.FakeCli
 		t.Errorf("Not built but should have: %+v", tc)
 	}
 	if tc.StartsExactly != "" && (startedContexts.Len() != 1 || !startedContexts.Has(tc.StartsExactly)) {
-		t.Errorf("Didn't build expected context %v, instead built %v", tc.StartsExactly, startedContexts)
+		t.Errorf("didn't build expected context %v, instead built %v", tc.StartsExactly, startedContexts)
 	}
 	if tc.ShouldReport && len(g.CreatedStatuses) == 0 {
-		t.Errorf("%s: Expected report to github", name)
+		t.Error("expected report to github")
 	} else if !tc.ShouldReport && len(g.CreatedStatuses) > 0 {
-		t.Errorf("%s: Expected no reports to github, but got %d: %v", name, len(g.CreatedStatuses), g.CreatedStatuses)
+		t.Errorf("expected no reports to github, but got %d: %v", len(g.CreatedStatuses), g.CreatedStatuses)
 	}
 	if !reflect.DeepEqual(g.IssueLabelsAdded, tc.AddedLabels) {
-		t.Errorf("%s: expected %q to be added, got %q", name, tc.AddedLabels, g.IssueLabelsAdded)
+		t.Errorf("expected %q to be added, got %q", tc.AddedLabels, g.IssueLabelsAdded)
 	}
 	if !reflect.DeepEqual(g.IssueLabelsRemoved, tc.RemovedLabels) {
-		t.Errorf("%s: expected %q to be removed, got %q", name, tc.RemovedLabels, g.IssueLabelsRemoved)
+		t.Errorf("expected %q to be removed, got %q", tc.RemovedLabels, g.IssueLabelsRemoved)
 	}
 	if tc.AddedComment != "" {
 		if len(g.IssueComments[0]) == 0 {
-			t.Errorf("%s: expected the comments to contain %s, got no comments", name, tc.AddedComment)
+			t.Errorf("expected the comments to contain %s, got no comments", tc.AddedComment)
 		}
 		for _, c := range g.IssueComments[0] {
 			if !strings.Contains(c.Body, tc.AddedComment) {
-				t.Errorf("%s: expected the comment to contain %s, got %s", name, tc.AddedComment, c.Body)
+				t.Errorf("expected the comment to contain %s, got %s", tc.AddedComment, c.Body)
 			}
 		}
 	}
