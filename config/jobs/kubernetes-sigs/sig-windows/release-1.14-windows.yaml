@@ -8,7 +8,6 @@ periodics:
     preset-service-account: "true"
     preset-azure-cred: "true"
     preset-azure-windows: "true"
-    preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
   extra_refs:
   - org: kubernetes
@@ -62,7 +61,6 @@ periodics:
     preset-service-account: "true"
     preset-azure-cred: "true"
     preset-azure-windows: "true"
-    preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
   extra_refs:
   - org: kubernetes
@@ -90,7 +88,7 @@ periodics:
       - --aksengine-creds=$(AZURE_CREDENTIALS)
       # Note: Updating aks-engine version for 1.14 + Windows configs has caused issues in the past - update this config with caution!
       - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.31.2/aks-engine-v0.31.2-linux-amd64.tar.gz
-      - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
+      - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
       - --aksengine-winZipBuildScript=$(WIN_BUILD)
       - --aksengine-orchestratorRelease=1.14
       - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_1_14.json
@@ -102,11 +100,6 @@ periodics:
       - --ginkgo-parallel=1
       securityContext:
         privileged: true
-      env:
-      - name: K8S_SSH_PUBLIC_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-public # from preset-k8s-ssh label
-      - name: K8S_SSH_PRIVATE_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-private # from preset-k8s-ssh label
   annotations:
     testgrid-dashboards: sig-windows, provider-azure-windows, provider-azure-periodic
     testgrid-tab-name: aks-engine-azure-1-14-windows-serial-slow

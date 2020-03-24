@@ -6,6 +6,10 @@ presets:
     value: https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/build/build-windows-k8s.sh
   - name: KUBE_TEST_REPO_LIST_DOWNLOAD_LOCATION
     value: https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/images/image-repo-list
+  - name: K8S_SSH_PUBLIC_KEY_PATH
+    value: /etc/ssh-key-secret/ssh-public # from preset-k8s-ssh label
+  - name: K8S_SSH_PRIVATE_KEY_PATH
+    value: /etc/ssh-key-secret/ssh-private # from preset-k8s-ssh label
 
 presubmits:
   kubernetes/kubernetes:
@@ -57,11 +61,6 @@ presubmits:
         - --ginkgo-parallel=4
         securityContext:
           privileged: true
-        env:
-        - name: K8S_SSH_PUBLIC_KEY_PATH
-          value: /etc/ssh-key-secret/ssh-public # from preset-k8s-ssh label
-        - name: K8S_SSH_PRIVATE_KEY_PATH
-          value: /etc/ssh-key-secret/ssh-private # from preset-k8s-ssh label
     annotations:
       testgrid-dashboards: sig-windows, provider-azure-windows, provider-azure-upstream, provider-azure-presubmit
       testgrid-tab-name: pr-aks-engine-azure-windows
@@ -121,10 +120,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: K8S_SSH_PUBLIC_KEY_PATH
-          value: /etc/ssh-key-secret/ssh-public # from preset-k8s-ssh label
-        - name: K8S_SSH_PRIVATE_KEY_PATH
-          value: /etc/ssh-key-secret/ssh-private # from preset-k8s-ssh label
         - name: AZURE_STORAGE_DRIVER
           value: kubernetes.io/azure-disk # In-tree Azure disk storage class
         - name: TEST_WINDOWS
@@ -187,10 +182,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: K8S_SSH_PUBLIC_KEY_PATH
-          value: /etc/ssh-key-secret/ssh-public # from preset-k8s-ssh label
-        - name: K8S_SSH_PRIVATE_KEY_PATH
-          value: /etc/ssh-key-secret/ssh-private # from preset-k8s-ssh label
         - name: AZURE_STORAGE_DRIVER
           value: kubernetes.io/azure-file # In-tree Azure file storage class
         - name: TEST_WINDOWS
@@ -204,7 +195,7 @@ periodics:
   name: ci-kubernetes-e2e-aks-engine-azure-master-windows
   decorate: true
   decoration_config:
-    timeout: 6h
+    timeout: 7h
   labels:
     preset-service-account: "true"
     preset-azure-cred: "true"
@@ -249,11 +240,6 @@ periodics:
       - --ginkgo-parallel=1
       securityContext:
         privileged: true
-      env:
-      - name: K8S_SSH_PUBLIC_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-public # from preset-k8s-ssh label
-      - name: K8S_SSH_PRIVATE_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-private # from preset-k8s-ssh label
   annotations:
     testgrid-dashboards: sig-windows, provider-azure-windows, provider-azure-periodic
     testgrid-tab-name: aks-engine-azure-windows-master
@@ -295,8 +281,8 @@ periodics:
       - --aksengine-admin-password=AdminPassw0rd
       - --aksengine-creds=$(AZURE_CREDENTIALS)
       - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
-      - --aksengine-public-key=$K8S_SSH_PUBLIC_KEY_PATH
-      - --aksengine-private-key=$K8S_SSH_PRIVATE_KEY_PATH
+      - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
+      - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
       - --aksengine-winZipBuildScript=$(WIN_BUILD)
       - --aksengine-orchestratorRelease=1.18
       - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_staging.json
@@ -307,11 +293,6 @@ periodics:
       - --ginkgo-parallel=8
       securityContext:
         privileged: true
-      env:
-      - name: K8S_SSH_PUBLIC_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-public # from preset-k8s-ssh label
-      - name: K8S_SSH_PRIVATE_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-private # from preset-k8s-ssh label
   annotations:
     testgrid-dashboards: sig-windows, provider-azure-windows, provider-azure-periodic
     testgrid-tab-name: aks-engine-azure-windows-master-staging
@@ -366,11 +347,6 @@ periodics:
       - --ginkgo-parallel=6
       securityContext:
         privileged: true
-      env:
-      - name: K8S_SSH_PUBLIC_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-public # from preset-k8s-ssh label
-      - name: K8S_SSH_PRIVATE_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-private # from preset-k8s-ssh label
   annotations:
     testgrid-dashboards: sig-windows, provider-azure-windows, provider-azure-periodic
     testgrid-tab-name: aks-engine-azure-windows-1903-master
@@ -415,6 +391,7 @@ periodics:
       - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
       - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
       - --aksengine-winZipBuildScript=$(WIN_BUILD)
+      - --aksengine-orchestratorRelease=1.18
       - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_1909_master.json
       - --aksengine-win-binaries
       - --aksengine-deploy-custom-k8s
@@ -424,11 +401,6 @@ periodics:
       - --ginkgo-parallel=6
       securityContext:
         privileged: true
-      env:
-      - name: K8S_SSH_PUBLIC_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-public # from preset-k8s-ssh label
-      - name: K8S_SSH_PRIVATE_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-private # from preset-k8s-ssh label
   annotations:
     testgrid-dashboards: sig-windows, provider-azure-periodic, provider-azure-windows
     testgrid-tab-name: aks-engine-azure-windows-1909-master

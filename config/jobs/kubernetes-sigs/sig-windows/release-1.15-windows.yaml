@@ -53,10 +53,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: K8S_SSH_PUBLIC_KEY_PATH
-          value: /etc/ssh-key-secret/ssh-public # from preset-k8s-ssh label
-        - name: K8S_SSH_PRIVATE_KEY_PATH
-          value: /etc/ssh-key-secret/ssh-private # from preset-k8s-ssh label
         - name: AZURE_STORAGE_DRIVER
           value: kubernetes.io/azure-disk # In-tree Azure disk storage class
         - name: TEST_WINDOWS
@@ -114,10 +110,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: K8S_SSH_PUBLIC_KEY_PATH
-          value: /etc/ssh-key-secret/ssh-public # from preset-k8s-ssh label
-        - name: K8S_SSH_PRIVATE_KEY_PATH
-          value: /etc/ssh-key-secret/ssh-private # from preset-k8s-ssh label
         - name: AZURE_STORAGE_DRIVER
           value: kubernetes.io/azure-file # In-tree Azure file storage class
         - name: TEST_WINDOWS
@@ -172,11 +164,6 @@ periodics:
       - --ginkgo-parallel=4
       securityContext:
         privileged: true
-      env:
-      - name: K8S_SSH_PUBLIC_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-public # from preset-k8s-ssh label
-      - name: K8S_SSH_PRIVATE_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-private # from preset-k8s-ssh label
   annotations:
     testgrid-dashboards: sig-windows, provider-azure-windows, provider-azure-periodic
     testgrid-tab-name: aks-engine-azure-1-15-windows
@@ -231,11 +218,6 @@ periodics:
       - --ginkgo-parallel=1
       securityContext:
         privileged: true
-      env:
-      - name: K8S_SSH_PUBLIC_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-public # from preset-k8s-ssh label
-      - name: K8S_SSH_PRIVATE_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-private # from preset-k8s-ssh label
   annotations:
     testgrid-dashboards: sig-windows, provider-azure-windows, provider-azure-periodic
     testgrid-tab-name: aks-engine-azure-1-15-windows-serial-slow
