@@ -199,7 +199,7 @@ presubmits:
         - name: AZURE_STORAGE_DRIVER
           value: kubernetes.io/azure-file # In-tree Azure file storage class
 periodics:
-- interval: 12h
+- interval: 24h
   name: kubernetes-e2e-azure-disk-1-15
   decorate: true
   labels:
@@ -254,7 +254,7 @@ periodics:
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Run Azure Disk e2e test with Azure Disk in-tree volume plugin.
     testgrid-num-columns-recent: '30'
-- interval: 12h
+- interval: 24h
   name: kubernetes-e2e-azure-disk-vmss-1-15
   decorate: true
   labels:
@@ -309,7 +309,7 @@ periodics:
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Run Azure Disk e2e test on a VMSS-based cluster with Azure Disk in-tree volume plugin.
     testgrid-num-columns-recent: '30'
-- interval: 12h
+- interval: 24h
   name: kubernetes-e2e-azure-file-1-15
   decorate: true
   labels:

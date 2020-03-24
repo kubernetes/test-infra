@@ -200,7 +200,7 @@ presubmits:
       testgrid-tab-name: pr-k8s-azure-file-e2e-master-windows
       description: Run Azure File e2e test with Azure File in-tree volume plugin in a Windows cluster.
 periodics:
-- interval: 6h
+- interval: 24h
   name: ci-kubernetes-e2e-aks-engine-azure-master-windows
   decorate: true
   decoration_config:
@@ -259,7 +259,7 @@ periodics:
     testgrid-tab-name: aks-engine-azure-windows-master
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs SIG-Windows release tests on K8s clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
-- interval: 3h
+- interval: 24h
   name: ci-kubernetes-e2e-aks-engine-azure-master-staging-windows
   decorate: true
   decoration_config:
@@ -317,7 +317,7 @@ periodics:
     testgrid-tab-name: aks-engine-azure-windows-master-staging
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Staging job for new Windows tests on a Kubernetes cluster provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
-- interval: 10h
+- interval: 24h
   name: ci-kubernetes-e2e-aks-engine-azure-master-windows-1903
   decorate: true
   decoration_config:
@@ -376,7 +376,7 @@ periodics:
     testgrid-tab-name: aks-engine-azure-windows-1903-master
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs SIG-Windows release tests on K8s clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
-- interval: 10h
+- interval: 24h
   name: ci-kubernetes-e2e-aks-engine-azure-master-windows-1909
   decorate: true
   decoration_config:

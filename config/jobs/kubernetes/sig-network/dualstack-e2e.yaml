@@ -1,5 +1,5 @@
 periodics:
-- interval: 6h
+- interval: 24h
   name: ci-dualstack-azure-e2e-1-16
   decorate: true
   decoration_config:
@@ -50,7 +50,7 @@ periodics:
     testgrid-tab-name: dualstack-azure-e2e-1-16
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: "Dual-stack e2e tests on a 1.16 Kubernetes cluster provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
-- interval: 6h
+- interval: 24h
   name: ci-dualstack-azure-e2e-1-17
   decorate: true
   decoration_config:
@@ -101,7 +101,7 @@ periodics:
     testgrid-tab-name: dualstack-azure-e2e-1-17
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: "Dual-stack e2e tests on a 1.17 Kubernetes cluster provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
-- interval: 6h
+- interval: 24h
   name: ci-dualstack-azure-e2e-1-18
   decorate: true
   decoration_config:
@@ -152,7 +152,7 @@ periodics:
     testgrid-tab-name: dualstack-azure-e2e-1-18
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: "Dual-stack e2e tests on a 1.18 Kubernetes cluster provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
-- interval: 6h
+- interval: 24h
   name: ci-dualstack-azure-e2e-master
   decorate: true
   decoration_config:

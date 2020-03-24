@@ -125,7 +125,7 @@ presubmits:
         - name: TEST_WINDOWS
           value: "true"
 periodics:
-- interval: 4h
+- interval: 8h
   name: ci-kubernetes-e2e-azure-disk-windows-1-18
   decorate: true
   decoration_config:
@@ -191,7 +191,7 @@ periodics:
     testgrid-tab-name: aks-engine-azure-1-18-windows-azure-disk
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Run Azure Disk e2e test with Azure Disk in-tree volume plugin in a Windows cluster.
-- interval: 4h
+- interval: 8h
   name: ci-kubernetes-e2e-azure-file-windows-1-18
   decorate: true
   decoration_config:
