@@ -34,7 +34,7 @@ spec:
       serviceAccountName: plank
       containers:
       - name: plank
-        image: gcr.io/k8s-prow/plank:v20200323-ecb75feef
+        image: gcr.io/k8s-prow/plank:v20200323-95bf9d3a7
         args:
         - --kubeconfig=/etc/kubeconfig/config
         - --dry-run=false
