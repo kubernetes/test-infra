@@ -15,7 +15,9 @@ periodics:
       args:
       - --cluster=e2e-kops-gce-latest.k8s.local
       - --deployment=kops
-      - --extract=ci/latest
+      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest-1.18.txt
+      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
+      - --extract=release/latest-1.18
       - --ginkgo-parallel=30
       - --kops-publish=gs://kops-ci/bin/latest-ci-green.txt
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
