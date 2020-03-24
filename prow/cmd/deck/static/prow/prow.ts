@@ -570,12 +570,17 @@ function redraw(fz: FuzzySearch): void {
         displayedJob++;
         const r = document.createElement("tr");
         r.appendChild(cell.state(state));
-        const logIcon = icon.create("description", "Build log");
-        logIcon.href = url;
-        const c = document.createElement("td");
-        c.classList.add("icon-cell");
-        c.appendChild(logIcon);
-        r.appendChild(c);
+        if (url) {
+            const logIcon = icon.create("description", "Build log");
+            logIcon.href = url;
+            const c = document.createElement("td");
+            c.classList.add("icon-cell");
+            c.appendChild(logIcon);
+            r.appendChild(c);
+        } else {
+            r.appendChild(cell.text(""));
+        }
+
         //r.appendChild(createRerunCell(modal, rerunCommand, prowJobName));
         //r.appendChild(createViewJobCell(prowJobName));
         const key = groupKey(build);
@@ -611,7 +616,7 @@ function redraw(fz: FuzzySearch): void {
             r.appendChild(cell.text(""));
             r.appendChild(cell.text(""));
         }
-        if (context === "build") {
+        if (url && context === "build") {
             r.appendChild(createSpyglassCell(url + '/wf'));
             r.appendChild(cell.link(job, url + '/wf'));
         } else {
@@ -962,7 +967,7 @@ function drawJobHistogram(total: number, jobHistogram: JobHistogram, start: numb
 }
 
 function createSpyglassCell(url: string): HTMLTableDataCellElement {
-    const i = icon.create('visibility', 'View in Spyglass');
+    const i = icon.create('visibility', 'Build workflow');
     i.href = url;
     const c = document.createElement('td');
     c.classList.add('icon-cell');
