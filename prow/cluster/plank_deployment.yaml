@@ -36,7 +36,7 @@ spec:
       - name: plank
         image: gcr.io/k8s-prow/plank:v20200323-ecb75feef
         args:
-        - --build-cluster=/etc/cluster/cluster
+        - --kubeconfig=/etc/kubeconfig/config
         - --dry-run=false
         - --github-endpoint=http://ghproxy
         - --github-endpoint=https://api.github.com
@@ -44,8 +44,8 @@ spec:
         - --job-config-path=/etc/job-config
         - --skip-report=true
         volumeMounts:
-        - mountPath: /etc/cluster
-          name: cluster
+        - mountPath: /etc/kubeconfig
+          name: kubeconfig
           readOnly: true
         - name: oauth
           mountPath: /etc/github
@@ -57,10 +57,10 @@ spec:
           mountPath: /etc/job-config
           readOnly: true
       volumes:
-      - name: cluster
+      - name: kubeconfig
         secret:
           defaultMode: 420
-          secretName: build-cluster
+          secretName: kubeconfig
       - name: oauth
         secret:
           secretName: oauth-token
