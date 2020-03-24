@@ -15,7 +15,7 @@ presubmits:
       repo: test-infra
     spec:
       containers:
-      - image: launcher.gcr.io/google/bazel:0.25.2:2.2.0-from-0.23.2
+      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:2.2.0-from-0.23.2
         command:
         - bash
         args:
@@ -37,7 +37,7 @@ presubmits:
       repo: test-infra
     spec:
       containers:
-      - image: launcher.gcr.io/google/bazel:0.25.2:2.2.0-from-0.23.2
+      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:2.2.0-from-0.23.2
         command:
         - ../test-infra/hack/bazel.sh
         args:
