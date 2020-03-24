@@ -380,7 +380,7 @@ presubmits:
         - --timeout
         - "3600"
         - --is_integration_test
-        - true
+        - "true"
   - name: kubeflow-pipeline-upgrade-test
     always_run: true
     decorate: true

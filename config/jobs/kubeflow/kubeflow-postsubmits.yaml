@@ -298,7 +298,7 @@ postsubmits:
         - --timeout
         - "3600"
         - --is_integration_test
-        - true
+        - "true"
     annotations:
       testgrid-dashboards: sig-big-data
       description: Postsubmit integration tests for kubeflow/pipeline.
