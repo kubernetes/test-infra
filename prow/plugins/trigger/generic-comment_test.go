@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"log"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/sirupsen/logrus"
@@ -62,6 +63,7 @@ type testcase struct {
 	IssueLabels          []string
 	IgnoreOkToTest       bool
 	ElideSkippedContexts *bool
+	AddedComment         string
 }
 
 func TestHandleGenericComment(t *testing.T) {
@@ -89,7 +91,7 @@ func TestHandleGenericComment(t *testing.T) {
 		{
 			name: "Comment by a bot.",
 
-			Author:      "k8s-bot",
+			Author:      "k8s-ci-robot",
 			Body:        "/ok-to-test",
 			State:       "open",
 			IsPR:        true,
@@ -813,6 +815,47 @@ func TestHandleGenericComment(t *testing.T) {
 			ShouldBuild: false,
 			IssueLabels: issueLabels(labels.LGTM, labels.Approved),
 		},
+		{
+			name:         `help command "/test ?" lists available presubmits`,
+			Author:       "trusted-member",
+			Body:         "/test ?",
+			State:        "open",
+			IsPR:         true,
+			AddedComment: "@trusted-member: The following commands are available to trigger jobs:\n* `/test job`\n* `/test jib`\n\nUse `/test all` to run all jobs.",
+		},
+		{
+			name:   `help command "/test ?" uses RerunCommand field of presubmits`,
+			Author: "trusted-member",
+			Body:   "/test ?",
+			State:  "open",
+			IsPR:   true,
+			Presubmits: map[string][]config.Presubmit{
+				"org/repo": {
+					{
+						JobBase: config.JobBase{
+							Name: "jub",
+						},
+						Reporter: config.Reporter{
+							Context: "pull-jub",
+						},
+						Trigger:      `/rerun_command`,
+						RerunCommand: `/rerun_command`,
+					},
+					{
+						JobBase: config.JobBase{
+							Name: "jib",
+						},
+						Reporter: config.Reporter{
+							Context: "pull-jib",
+						},
+						Trigger:      `/command_foo`,
+						RerunCommand: `/command_foo`,
+					},
+				},
+			},
+
+			AddedComment: "@trusted-member: The following commands are available to trigger jobs:\n* `/rerun_command`\n* `/command_foo`\n\nUse `/test all` to run all jobs.",
+		},
 	}
 	for _, tc := range testcases {
 		if tc.Branch == "" {
@@ -849,6 +892,7 @@ func TestHandleGenericComment(t *testing.T) {
 					},
 				},
 			},
+			Collaborators: []string{"k8s-ci-robot"},
 		}
 		fakeConfig := &config.Config{ProwConfig: config.ProwConfig{ProwJobNamespace: "prowjobs"}}
 		fakeProwJobClient := fake.NewSimpleClientset()
@@ -956,6 +1000,16 @@ func validate(name string, actions []clienttesting.Action, g *fakegithub.FakeCli
 	}
 	if !reflect.DeepEqual(g.IssueLabelsRemoved, tc.RemovedLabels) {
 		t.Errorf("%s: expected %q to be removed, got %q", name, tc.RemovedLabels, g.IssueLabelsRemoved)
+	}
+	if tc.AddedComment != "" {
+		if len(g.IssueComments[0]) == 0 {
+			t.Errorf("%s: expected the comments to contain %s, got no comments", name, tc.AddedComment)
+		}
+		for _, c := range g.IssueComments[0] {
+			if !strings.Contains(c.Body, tc.AddedComment) {
+				t.Errorf("%s: expected the comment to contain %s, got %s", name, tc.AddedComment, c.Body)
+			}
+		}
 	}
 }
 

@@ -68,8 +68,8 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 		Examples:    []string{"/ok-to-test"},
 	})
 	pluginHelp.AddCommand(pluginhelp.Command{
-		Usage:       "/test (<job name>|all)",
-		Description: "Manually starts a/all test job(s).",
+		Usage:       "/test [<job name>|all]",
+		Description: "Manually starts a/all test job(s). Lists all possible job(s) when no jobs/an invalid job are specified.",
 		Featured:    true,
 		WhoCanUse:   "Anyone can trigger this command on a trusted PR.",
 		Examples:    []string{"/test all", "/test pull-bazel-test"},
@@ -80,6 +80,13 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 		Featured:    true,
 		WhoCanUse:   "Anyone can trigger this command on a trusted PR.",
 		Examples:    []string{"/retest"},
+	})
+	pluginHelp.AddCommand(pluginhelp.Command{
+		Usage:       "/test ?",
+		Description: "List available test job(s) for a trusted PR.",
+		Featured:    true,
+		WhoCanUse:   "Anyone can trigger this command on a trusted PR.",
+		Examples:    []string{"/test ?"},
 	})
 	return pluginHelp, nil
 }

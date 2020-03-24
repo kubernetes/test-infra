@@ -18,6 +18,8 @@ package trigger
 
 import (
 	"fmt"
+	"regexp"
+	"strings"
 
 	"github.com/sirupsen/logrus"
 
@@ -28,6 +30,8 @@ import (
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/plugins"
 )
+
+var testHelpRe = regexp.MustCompile(`(?m)^/test\s*\?\s*$`)
 
 func handleGenericComment(c Client, trigger plugins.Trigger, gc github.GenericCommentEvent) error {
 	org := gc.Repo.Owner.Login
@@ -53,8 +57,12 @@ func handleGenericComment(c Client, trigger plugins.Trigger, gc github.GenericCo
 
 	refGetter := config.NewRefGetterForGitHubPullRequest(c.GitHubClient, org, repo, number)
 	presubmits := getPresubmits(c.Logger, c.GitClient, c.Config, org+"/"+repo, refGetter.BaseSHA, refGetter.HeadSHA)
+
 	// Skip comments not germane to this plugin
-	if !pjutil.RetestRe.MatchString(gc.Body) && !pjutil.OkToTestRe.MatchString(gc.Body) && !pjutil.TestAllRe.MatchString(gc.Body) {
+	if !pjutil.RetestRe.MatchString(gc.Body) &&
+		!pjutil.OkToTestRe.MatchString(gc.Body) &&
+		!pjutil.TestAllRe.MatchString(gc.Body) &&
+		!testHelpRe.MatchString(gc.Body) {
 		matched := false
 		for _, presubmit := range presubmits {
 			matched = matched || presubmit.TriggerMatches(gc.Body)
@@ -87,6 +95,31 @@ func handleGenericComment(c Client, trigger plugins.Trigger, gc github.GenericCo
 		}
 	}
 
+	pr, err := refGetter.PullRequest()
+	if err != nil {
+		return err
+	}
+
+	// Process "help" comments
+	if testHelpRe.MatchString(gc.Body) {
+		branch := pr.Base.Ref
+		available, err := availablePresubmits(c.GitHubClient, gc.Body, org, repo, branch, pr.Number, presubmits, c.Logger)
+		if err != nil {
+			return err
+		}
+		var resp string
+		if len(available) > 0 {
+			var listBuilder strings.Builder
+			for _, name := range available {
+				listBuilder.WriteString(fmt.Sprintf("\n* `%s`", name))
+			}
+			resp = fmt.Sprintf("The following commands are available to trigger jobs:%s\n\nUse `/test all` to run all jobs.", listBuilder.String())
+		} else {
+			resp = fmt.Sprintf("No presubmit jobs available for %s/%s@%s", org, repo, branch)
+		}
+		return c.GitHubClient.CreateComment(org, repo, number, plugins.FormatResponseRaw(gc.Body, gc.HTMLURL, gc.User.Login, resp))
+	}
+
 	// At this point we can trust the PR, so we eventually update labels.
 	// Ensure we have labels before test, because TrustedPullRequest() won't be called
 	// when commentAuthor is trusted.
@@ -108,10 +141,6 @@ func handleGenericComment(c Client, trigger plugins.Trigger, gc github.GenericCo
 		}
 	}
 
-	pr, err := refGetter.PullRequest()
-	if err != nil {
-		return err
-	}
 	baseSHA, err := refGetter.BaseSHA()
 	if err != nil {
 		return err
@@ -168,6 +197,22 @@ func FilterPresubmits(honorOkToTest bool, gitHubClient GitHubClient, body string
 	number, branch := pr.Number, pr.Base.Ref
 	changes := config.NewGitHubDeferredChangedFilesProvider(gitHubClient, org, repo, number)
 	return pjutil.FilterPresubmits(filter, changes, branch, presubmits, logger)
+}
+
+func availablePresubmits(githubClient GitHubClient, body, org, repo, branch string, number int, presubmits []config.Presubmit, logger *logrus.Entry) ([]string, error) {
+	changes := config.NewGitHubDeferredChangedFilesProvider(githubClient, org, repo, number)
+	all := func(p config.Presubmit) (bool, bool, bool) {
+		return true, true, true
+	}
+	toTest, _, err := pjutil.FilterPresubmits(all, changes, branch, presubmits, logger)
+	if err != nil {
+		return nil, err
+	}
+	var available []string
+	for _, pre := range toTest {
+		available = append(available, pre.RerunCommand)
+	}
+	return available, nil
 }
 
 func getContexts(combinedStatus *github.CombinedStatus) (sets.String, sets.String) {
