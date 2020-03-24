@@ -302,29 +302,6 @@ postsubmits:
     annotations:
       testgrid-dashboards: sig-big-data
       description: Postsubmit integration tests for kubeflow/pipeline.
-  - name: kubeflow-pipeline-postsubmit-mkp-component-test
-    branches:
-    - ^master$
-    decorate: true
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/ml-pipeline/test-worker:latest
-        command:
-        - ./test/postsubmit-tests-with-pipeline-deployment.sh
-        args:
-        - --kfp_deployment
-        - mkp
-        - --workflow_file
-        - component_test.yaml
-        - --test_result_folder
-        - sample_test
-        - --timeout
-        - "7200"
-    annotations:
-      testgrid-dashboards: sig-big-data
-      description: Postsubmit tests for kubeflow/pipeline.
   - name: kubeflow-pipeline-postsubmit-mkp-e2e-test
     branches:
     - ^master$
