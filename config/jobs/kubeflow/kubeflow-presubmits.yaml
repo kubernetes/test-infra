@@ -362,6 +362,25 @@ presubmits:
         - sample_test
         - --timeout
         - "3600"
+  - name: kubeflow-pipeline-integration-test
+    always_run: false
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200314-a0cadb9-master
+        command:
+        - ./test/presubmit-tests-with-pipeline-deployment.sh
+        args:
+        - --workflow_file
+        - sample_test.yaml
+        - --test_result_folder
+        - sample_test
+        - --timeout
+        - "3600"
+        - --is_integration_test
+        - "true"
   - name: kubeflow-pipeline-upgrade-test
     always_run: true
     decorate: true
