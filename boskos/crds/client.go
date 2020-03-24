@@ -32,7 +32,6 @@ import (
 	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
-	"k8s.io/test-infra/boskos/common"
 	"k8s.io/test-infra/prow/interrupts"
 )
 
@@ -40,7 +39,6 @@ import (
 type KubernetesClientOptions struct {
 	inMemory   bool
 	kubeConfig string
-	namespace  string
 }
 
 // AddFlags adds kube client flags to existing FlagSet.
@@ -85,6 +83,8 @@ func (o *KubernetesClientOptions) CacheBackedClient(namespace string, startCache
 	if err != nil {
 		return nil, err
 	}
+	cfg.QPS = 100
+	cfg.Burst = 200
 
 	mgr, err := manager.New(cfg, manager.Options{
 		LeaderElection:     false,
@@ -148,23 +148,6 @@ func (o *KubernetesClientOptions) Cfg() (*rest.Config, error) {
 type Type struct {
 	Kind, ListKind   string
 	Singular, Plural string
-	Object           Object
-	Collection       Collection
-}
-
-// Object extends the runtime.Object interface. CRD are just a representation of the actual boskos object
-// which should implements the common.Item interface.
-// TODO: Should be removed, see https://github.com/kubernetes/test-infra/issues/16418
-type Object interface {
-	runtime.Object
-	GetName() string
-	FromItem(item common.Item)
-	ToItem() common.Item
-}
-
-// Collection is a list of Object interface.
-type Collection interface {
-	runtime.Object
-	SetItems([]Object)
-	GetItems() []Object
+	Object           runtime.Object
+	Collection       runtime.Object
 }

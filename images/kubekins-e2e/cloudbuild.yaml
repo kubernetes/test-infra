@@ -16,12 +16,13 @@ steps:
     args:
     - build
     - --tag=gcr.io/$PROJECT_ID/kubekins-e2e:$_GIT_TAG-$_CONFIG
-    - --build-arg=GO_VERSION=$_GO_VERSION
-    - --build-arg=K8S_RELEASE=$_K8S_RELEASE
     - --build-arg=BAZEL_VERSION_ARG=$_BAZEL_VERSION
     - --build-arg=CFSSL_VERSION=$_CFSSL_VERSION
-    - --build-arg=UPGRADE_DOCKER_ARG=$_UPGRADE_DOCKER
+    - --build-arg=GO_VERSION=$_GO_VERSION
     - --build-arg=IMAGE_ARG=gcr.io/$PROJECT_ID/kubekins-e2e:$_GIT_TAG-$_CONFIG
+    - --build-arg=K8S_RELEASE=$_K8S_RELEASE
+    - --build-arg=OLD_BAZEL_VERSION=$_OLD_BAZEL_VERSION
+    - --build-arg=UPGRADE_DOCKER_ARG=$_UPGRADE_DOCKER
     - .
     dir: images/kubekins-e2e
   - name: gcr.io/cloud-builders/docker
@@ -31,13 +32,14 @@ steps:
     - gcr.io/$PROJECT_ID/kubekins-e2e:latest-$_CONFIG
     dir: images/kubekins-e2e
 substitutions:
-  _GIT_TAG: '12345'
+  _BAZEL_VERSION: 2.2.0
+  _CFSSL_VERSION: R1.2
   _CONFIG: master
+  _GIT_TAG: '12345'
   _GO_VERSION: 1.13.5
   _K8S_RELEASE: stable
-  _BAZEL_VERSION: 0.23.2
+  _OLD_BAZEL_VERSION: 0.23.2
   _UPGRADE_DOCKER: 'false'
-  _CFSSL_VERSION: R1.2
 options:
   substitution_option: ALLOW_LOOSE
 images:

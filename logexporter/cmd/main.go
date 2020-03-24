@@ -30,8 +30,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/golang/glog"
 	"github.com/spf13/pflag"
+	"k8s.io/klog"
 )
 
 // Initialize the log exporter's configuration related flags.
@@ -70,7 +70,7 @@ var (
 
 // Check if the config provided through the flags take valid values.
 func checkConfigValidity() error {
-	glog.Info("Verifying if a valid config has been provided through the flags")
+	klog.Info("Verifying if a valid config has been provided through the flags")
 	if *nodeName == "" {
 		return fmt.Errorf("Flag --node-name has its value unspecified")
 	}
@@ -128,18 +128,18 @@ func createSystemdLogfiles(outputDir string) {
 	services := append(systemdServices, nodeSystemdServices...)
 	for _, service := range services {
 		if err := createSystemdLogfile(service, "cat", outputDir); err != nil {
-			glog.Warningf("Failed to record journalctl logs: %v", err)
+			klog.Warningf("Failed to record journalctl logs: %v", err)
 		}
 	}
 	// Service logs specific to VM setup.
 	for _, service := range systemdSetupServices {
 		if err := createSystemdLogfile(service, "short-precise", outputDir); err != nil {
-			glog.Warningf("Failed to record journalctl logs: %v", err)
+			klog.Warningf("Failed to record journalctl logs: %v", err)
 		}
 	}
 	if *dumpSystemdJournal {
 		if err := createFullSystemdLogfile(outputDir); err != nil {
-			glog.Warningf("Failed to record journalctl logs: %v", err)
+			klog.Warningf("Failed to record journalctl logs: %v", err)
 		}
 	}
 }
@@ -148,7 +148,7 @@ func createSystemdLogfiles(outputDir string) {
 // to a temporary directory. Also create logfiles for systemd services if journalctl is present.
 // We do not expect this function to see an error.
 func prepareLogfiles(logDir string) {
-	glog.Info("Preparing logfiles relevant to this node")
+	klog.Info("Preparing logfiles relevant to this node")
 	logfiles := nodeLogs[:]
 	logfiles = append(logfiles, *extraLogFiles...)
 
@@ -158,7 +158,7 @@ func prepareLogfiles(logDir string) {
 	case "aws":
 		logfiles = append(logfiles, awsLogs...)
 	default:
-		glog.Errorf("Unknown cloud provider '%v' provided, skipping any provider specific logs", *cloudProvider)
+		klog.Errorf("Unknown cloud provider '%v' provided, skipping any provider specific logs", *cloudProvider)
 	}
 
 	// Grab kubemark logs too, if asked for.
@@ -168,10 +168,10 @@ func prepareLogfiles(logDir string) {
 
 	// Select system/service specific logs.
 	if _, err := os.Stat("/workspace/etc/systemd/journald.conf"); err == nil {
-		glog.Info("Journalctl found on host. Collecting systemd logs")
+		klog.Info("Journalctl found on host. Collecting systemd logs")
 		createSystemdLogfiles(logDir)
 	} else {
-		glog.Infof("Journalctl not found on host (%v). Collecting supervisord logs instead", err)
+		klog.Infof("Journalctl not found on host (%v). Collecting supervisord logs instead", err)
 		logfiles = append(logfiles, kernelLog)
 		logfiles = append(logfiles, initdLogs...)
 		logfiles = append(logfiles, supervisordLogs...)
@@ -182,7 +182,7 @@ func prepareLogfiles(logDir string) {
 		logfileFullPath := filepath.Join(localLogPath, logfile+".log*") // Append .log* to copy rotated logs too.
 		cmd := exec.Command("/bin/sh", "-c", fmt.Sprintf("cp %v %v", logfileFullPath, logDir))
 		if err := cmd.Run(); err != nil {
-			glog.Warningf("Failed to copy any logfiles with pattern '%v': %v", logfileFullPath, err)
+			klog.Warningf("Failed to copy any logfiles with pattern '%v': %v", logfileFullPath, err)
 		}
 	}
 }
@@ -193,16 +193,16 @@ func uploadLogfilesToGCS(logDir string) error {
 	if err != nil {
 		return fmt.Errorf("Could not list any logfiles: %v", err)
 	}
-	glog.Infof("List of logfiles available: %v", string(output))
+	klog.Infof("List of logfiles available: %v", string(output))
 
 	gcsLogPath := *gcsPath + "/" + *nodeName
-	glog.Infof("Uploading logfiles to GCS at path '%v'", gcsLogPath)
+	klog.Infof("Uploading logfiles to GCS at path '%v'", gcsLogPath)
 	for uploadAttempt := 0; uploadAttempt < 3; uploadAttempt++ {
 		// Upload the files with compression (-z) and parallelism (-m) for speeding
 		// up, and set their ACL to make them publicly readable.
 		if err = runCommand("gsutil", "-m", "-q", "cp", "-a", "public-read", "-c",
 			"-z", "log,txt,xml", logDir+"/*", gcsLogPath); err != nil {
-			glog.Errorf("Attempt %v to upload to GCS failed: %v", uploadAttempt, err)
+			klog.Errorf("Attempt %v to upload to GCS failed: %v", uploadAttempt, err)
 			continue
 		}
 		return writeSuccessMarkerFile()
@@ -229,34 +229,34 @@ func writeSuccessMarkerFile() error {
 }
 
 func runCommand(name string, arg ...string) error {
-	glog.Infof("Running: %s %s", name, strings.Join(arg, " "))
+	klog.Infof("Running: %s %s", name, strings.Join(arg, " "))
 	cmd := exec.Command(name, arg...)
 	var stderr, stdout bytes.Buffer
 	cmd.Stderr, cmd.Stdout = &stderr, &stdout
 	err := cmd.Run()
-	glog.Infof("Stdout:\n%s\n", stdout.String())
-	glog.Infof("Stderr:\n%s\n", stderr.String())
+	klog.Infof("Stdout:\n%s\n", stdout.String())
+	klog.Infof("Stderr:\n%s\n", stderr.String())
 	return err
 }
 
 func main() {
 	pflag.Parse()
 	if err := checkConfigValidity(); err != nil {
-		glog.Fatalf("Bad config provided: %v", err)
+		klog.Fatalf("Bad config provided: %v", err)
 	}
 
 	localTmpLogPath, err := ioutil.TempDir("/tmp", "k8s-systemd-logs")
 	if err != nil {
-		glog.Fatalf("Could not create temporary dir locally for copying logs: %v", err)
+		klog.Fatalf("Could not create temporary dir locally for copying logs: %v", err)
 	}
 	defer os.RemoveAll(localTmpLogPath)
 
 	prepareLogfiles(localTmpLogPath)
 	if err := uploadLogfilesToGCS(localTmpLogPath); err != nil {
-		glog.Fatalf("Could not upload logs to GCS: %v", err)
+		klog.Fatalf("Could not upload logs to GCS: %v", err)
 	}
-	glog.Info("Logs successfully uploaded")
+	klog.Info("Logs successfully uploaded")
 
-	glog.Infof("Entering sleep for a duration of %v seconds", *sleepDuration)
+	klog.Infof("Entering sleep for a duration of %v seconds", *sleepDuration)
 	time.Sleep(*sleepDuration)
 }

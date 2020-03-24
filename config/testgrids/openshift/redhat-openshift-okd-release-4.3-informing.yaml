@@ -6,11 +6,19 @@ dashboards:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
     file_bug_template:
       options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/openshift/origin/issues/new
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: release-openshift-okd-installer-e2e-aws-4.3
     open_bug_template:
       url: https://github.com/openshift/origin/issues/

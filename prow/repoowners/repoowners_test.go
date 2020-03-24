@@ -23,6 +23,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"regexp"
+	"sync"
 	"testing"
 
 	"github.com/sirupsen/logrus"
@@ -185,7 +186,7 @@ func getTestClient(
 			return nil, nil, err
 		}
 	}
-	cache := make(map[string]cacheEntry)
+	cache := newCache()
 	if cacheOptions != nil {
 		var entry cacheEntry
 		entry.sha, err = localGit.RevParse("org", "repo", "HEAD")
@@ -244,7 +245,7 @@ labels:
 				return nil, nil, fmt.Errorf("cannot add commit: %v", err)
 			}
 		}
-		cache["org"+"/"+"repo:master"] = entry
+		cache.data["org"+"/"+"repo:master"] = entry
 		// mark this entry is cache
 		entry.owners.baseDir = "cache"
 	}
@@ -255,9 +256,9 @@ labels:
 	}
 	return &Client{
 			logger: logrus.WithField("client", "repoowners"),
+			ghc:    ghc,
 			delegate: &delegate{
 				git:   git,
-				ghc:   ghc,
 				cache: cache,
 
 				mdYAMLEnabled: func(org, repo string) bool {
@@ -1384,4 +1385,17 @@ func TestTopLevelApprovers(t *testing.T) {
 	if !foundApprovers.Equal(sets.NewString(expectedApprovers...)) {
 		t.Errorf("Expected Owners: %v\tFound Owners: %v ", expectedApprovers, foundApprovers)
 	}
+}
+
+func TestCacheDoesntRace(t *testing.T) {
+	key := "key"
+	cache := newCache()
+
+	wg := &sync.WaitGroup{}
+	wg.Add(2)
+
+	go func() { cache.setEntry(key, cacheEntry{}); wg.Done() }()
+	go func() { cache.getEntry(key); wg.Done() }()
+
+	wg.Wait()
 }

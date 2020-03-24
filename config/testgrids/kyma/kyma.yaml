@@ -222,6 +222,13 @@ dashboards:
       url: https://github.com/kyma-incubator/hydroform/compare/<start-custom-0>...<end-custom-0>
     open_bug_template:
       url: https://github.com/kyma-incubator/hydroform/issues/
+  - name: Compass integration postsubmit
+    description: Tracks Compass postsubmit jobs
+    test_group_name: post-master-compass-integration
+    code_search_url_template:
+      url: https://github.com/kyma-incubator/compass/compare/<start-custom-0>...<end-custom-0>
+    open_bug_template:
+      url: https://github.com/kyma-incubator/compass/issues/
 
   # Kyma release dashboard
 - name: kyma-release
@@ -446,6 +453,13 @@ dashboards:
       url: https://github.com/kyma-incubator/hydroform/compare/<start-custom-0>...<end-custom-0>
     open_bug_template:
       url: https://github.com/kyma-incubator/hydroform/issues/
+  - name: Compass integration postsubmit
+    description: Tracks Compass postsubmit jobs
+    test_group_name: post-master-compass-integration
+    code_search_url_template:
+      url: https://github.com/kyma-incubator/compass/compare/<start-custom-0>...<end-custom-0>
+    open_bug_template:
+      url: https://github.com/kyma-incubator/compass/issues/
 
 
 test_groups:
@@ -531,3 +545,7 @@ test_groups:
 - name: hydroform-postsubmit
   gcs_prefix: kyma-prow-logs/logs/post-master-hydroform
   num_failures_to_alert: 3
+- name: post-master-compass-integration
+  gcs_prefix: kyma-prow-logs/logs/post-master-compass-integration
+  num_failures_to_alert: 3
+  days_of_results: 60

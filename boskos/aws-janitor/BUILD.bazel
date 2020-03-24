@@ -19,8 +19,10 @@ go_library(
     ],
 )
 
+NAME = "aws-janitor"
+
 go_binary(
-    name = "aws-janitor",
+    name = NAME,
     embed = [":go_default_library"],
     visibility = ["//visibility:public"],
 )
@@ -28,6 +30,7 @@ go_binary(
 prow_image(
     name = "image",
     base = "@gcloud-go//image",
+    component = NAME,
     visibility = ["//visibility:public"],
 )
 

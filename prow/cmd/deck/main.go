@@ -49,8 +49,6 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/sets"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
-	"k8s.io/test-infra/prow/interrupts"
-	"k8s.io/test-infra/prow/simplifypath"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/yaml"
@@ -64,6 +62,7 @@ import (
 	"k8s.io/test-infra/prow/git/v2"
 	prowgithub "k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/githuboauth"
+	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
@@ -72,6 +71,7 @@ import (
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/plugins/trigger"
 	"k8s.io/test-infra/prow/prstatus"
+	"k8s.io/test-infra/prow/simplifypath"
 	"k8s.io/test-infra/prow/spyglass"
 
 	// Import standard spyglass viewers
@@ -117,6 +117,8 @@ type options struct {
 	spyglass              bool
 	spyglassFilesLocation string
 	gcsCredentialsFile    string
+	gcsNoAuth             bool
+	gcsCookieAuth         bool
 	rerunCreatesJob       bool
 	allowInsecure         bool
 	dryRun                bool
@@ -158,6 +160,10 @@ func (o *options) Validate() error {
 	if o.hiddenOnly && o.showHidden {
 		return errors.New("'--hidden-only' and '--show-hidden' are mutually exclusive, the first one shows only hidden job, the second one shows both hidden and non-hidden jobs")
 	}
+
+	if o.gcsCredentialsFile != "" && o.gcsNoAuth {
+		return errors.New("--gcs-credentials-file must not be set when --gcs-no-auth is set")
+	}
 	return nil
 }
 
@@ -181,6 +187,8 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.StringVar(&o.staticFilesLocation, "static-files-location", "/static", "Path to the static files")
 	fs.StringVar(&o.templateFilesLocation, "template-files-location", "/template", "Path to the template files")
 	fs.StringVar(&o.gcsCredentialsFile, "gcs-credentials-file", "", "Path to the GCS credentials file")
+	fs.BoolVar(&o.gcsNoAuth, "gcs-no-auth", false, "Whether to use anonymous auth for GCP. Requires when running outside of GCP and not setting gcs-credentials-file")
+	fs.BoolVar(&o.gcsCookieAuth, "gcs-cookie-auth", false, "Use storage.cloud.google.com instead of signed URLs")
 	fs.BoolVar(&o.rerunCreatesJob, "rerun-creates-job", false, "Change the re-run option in Deck to actually create the job. **WARNING:** Only use this with non-public deck instances, otherwise strangers can DOS your Prow instance")
 	fs.BoolVar(&o.allowInsecure, "allow-insecure", false, "Allows insecure requests for CSRF and GitHub oauth.")
 	fs.BoolVar(&o.dryRun, "dry-run", false, "Whether or not to make mutating API calls to GitHub.")
@@ -202,7 +210,7 @@ var (
 	traceHandler        = metrics.TraceHandler(simplifier, httpRequestDuration, httpResponseSize)
 )
 
-type authCfgGetter func() *prowapi.RerunAuthConfig
+type authCfgGetter func(*prowapi.Refs) *prowapi.RerunAuthConfig
 
 func init() {
 	prometheus.MustRegister(httpRequestDuration)
@@ -257,7 +265,7 @@ func v(fragment string, children ...simplifypath.Node) simplifypath.Node {
 }
 
 func main() {
-	logrusutil.ComponentInit("deck")
+	logrusutil.ComponentInit()
 
 	o := gatherOptions(flag.NewFlagSet(os.Args[0], flag.ExitOnError), os.Args[1:]...)
 	if err := o.Validate(); err != nil {
@@ -316,6 +324,11 @@ func main() {
 		fallbackHandler = http.NotFound
 	}
 
+	authCfgGetter := func(refs *prowapi.Refs) *prowapi.RerunAuthConfig {
+		rac := cfg().Deck.RerunAuthConfigs.GetRerunAuthConfig(refs)
+		return &rac
+	}
+
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/" {
 			fallbackHandler(w, r)
@@ -324,18 +337,16 @@ func main() {
 		indexHandler := handleSimpleTemplate(o, cfg, "index.html", struct {
 			SpyglassEnabled bool
 			ReRunCreatesJob bool
-			AllowAnyone     bool
 		}{
 			SpyglassEnabled: o.spyglass,
-			ReRunCreatesJob: o.rerunCreatesJob,
-			AllowAnyone:     cfg().Deck.RerunAuthConfig.AllowAnyone})
+			ReRunCreatesJob: o.rerunCreatesJob})
 		indexHandler(w, r)
 	})
 
 	if runLocal {
 		mux = localOnlyMain(cfg, o, mux)
 	} else {
-		mux = prodOnlyMain(cfg, pluginAgent, o, mux)
+		mux = prodOnlyMain(cfg, pluginAgent, authCfgGetter, o, mux)
 	}
 
 	// signal to the world that we're ready
@@ -372,7 +383,8 @@ func main() {
 
 	// if we allow direct reruns, we must protect against CSRF in all post requests using the cookie secret as a token
 	// for more information about CSRF, see https://github.com/kubernetes/test-infra/blob/master/prow/cmd/deck/csrf.md
-	if o.rerunCreatesJob && csrfToken == nil && !cfg().Deck.RerunAuthConfig.AllowAnyone {
+	empty := prowapi.Refs{}
+	if o.rerunCreatesJob && csrfToken == nil && !authCfgGetter(&empty).IsAllowAnyone() {
 		logrus.Fatal("Rerun creates job cannot be enabled without CSRF protection, which requires --cookie-secret to be exactly 32 bytes")
 		return
 	}
@@ -475,7 +487,7 @@ func (w *pjListingClientWrapper) List(
 }
 
 // prodOnlyMain contains logic only used when running deployed, not locally
-func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, o options, mux *http.ServeMux) *http.ServeMux {
+func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, authCfgGetter authCfgGetter, o options, mux *http.ServeMux) *http.ServeMux {
 	prowJobClient, err := o.kubernetes.ProwJobClient(cfg().ProwJobNamespace, false)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting ProwJob client for infrastructure cluster.")
@@ -524,8 +536,6 @@ func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, o options
 		showHidden: o.showHidden,
 	}, podLogClients, cfg)
 	ja.Start()
-
-	cfgGetter := func() *prowapi.RerunAuthConfig { return &cfg().Deck.RerunAuthConfig }
 
 	// setup prod only handlers
 	mux.Handle("/data.js", gziphandler.GzipHandler(handleData(ja, logrus.WithField("handler", "/data.js"))))
@@ -644,7 +654,7 @@ func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, o options
 		mux.Handle("/github-login/redirect", goa.HandleRedirect(oauthClient, &o.github, secure))
 	}
 
-	mux.Handle("/rerun", gziphandler.GzipHandler(handleRerun(prowJobClient, o.rerunCreatesJob, cfgGetter, goa, &o.github, githubClient, pluginAgent, logrus.WithField("handler", "/rerun"))))
+	mux.Handle("/rerun", gziphandler.GzipHandler(handleRerun(prowJobClient, o.rerunCreatesJob, authCfgGetter, goa, &o.github, githubClient, pluginAgent, logrus.WithField("handler", "/rerun"))))
 
 	// optionally inject http->https redirect handler when behind loadbalancer
 	if o.redirectHTTPTo != "" {
@@ -673,17 +683,19 @@ func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, o options
 }
 
 func initSpyglass(cfg config.Getter, o options, mux *http.ServeMux, ja *jobs.JobAgent, gitHubClient deckGitHubClient, gitClient git.ClientFactory) {
-	var c *storage.Client
-	var err error
-	if o.gcsCredentialsFile == "" {
-		c, err = storage.NewClient(context.Background(), option.WithoutAuthentication())
-	} else {
-		c, err = storage.NewClient(context.Background(), option.WithCredentialsFile(o.gcsCredentialsFile))
+	ctx := context.TODO()
+	var options []option.ClientOption
+	if creds := o.gcsCredentialsFile; creds != "" {
+		options = append(options, option.WithCredentialsFile(creds))
 	}
+	if o.gcsNoAuth {
+		options = append(options, option.WithoutAuthentication())
+	}
+	c, err := storage.NewClient(ctx, options...)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting GCS client")
 	}
-	sg := spyglass.New(ja, cfg, c, o.gcsCredentialsFile, context.Background())
+	sg := spyglass.New(ctx, ja, cfg, c, o.gcsCredentialsFile, o.gcsCookieAuth)
 	sg.Start()
 
 	mux.Handle("/spyglass/static/", http.StripPrefix("/spyglass/static", staticHandlerFromDir(o.spyglassFilesLocation)))
@@ -847,7 +859,7 @@ func handleJobHistory(o options, cfg config.Getter, gcsClient *storage.Client, l
 		tmpl, err := getJobHistory(r.URL, cfg(), gcsClient)
 		if err != nil {
 			msg := fmt.Sprintf("failed to get job history: %v", err)
-			log.WithField("url", r.URL.String()).Error(msg)
+			log.WithField("url", r.URL.String()).Warn(msg)
 			http.Error(w, msg, http.StatusInternalServerError)
 			return
 		}
@@ -1325,21 +1337,21 @@ func handleProwJob(prowJobClient prowv1.ProwJobInterface, log *logrus.Entry) htt
 
 // canTriggerJob determines whether the given user can trigger any job.
 func canTriggerJob(user string, pj prowapi.ProwJob, cfg *prowapi.RerunAuthConfig, cli prowgithub.RerunClient, pluginAgent *plugins.ConfigAgent, log *logrus.Entry) (bool, error) {
-	auth, err := cfg.IsAuthorized(user, cli)
-	if auth {
+
+	// Then check config-level rerun auth config.
+	if auth, err := cfg.IsAuthorized(user, cli); err != nil {
+		return false, err
+	} else if auth {
+		return true, err
+	}
+
+	// Check job-level rerun auth config.
+	if auth, err := pj.Spec.RerunAuthConfig.IsAuthorized(user, cli); err != nil {
+		return false, err
+	} else if auth {
 		return true, nil
 	}
-	if err != nil {
-		return false, err
-	}
-	jobPermissions := pj.Spec.RerunAuthConfig
-	auth, err = jobPermissions.IsAuthorized(user, cli)
-	if auth {
-		return true, nil
-	}
-	if err != nil {
-		return false, err
-	}
+
 	if cli == nil {
 		log.Warning("No GitHub token was provided, so we cannot retrieve GitHub teams")
 		return false, nil
@@ -1392,9 +1404,9 @@ func handleRerun(prowJobClient prowv1.ProwJobInterface, createProwJob bool, cfg 
 				http.Error(w, "Direct rerun feature is not enabled. Enable with the '--rerun-creates-job' flag.", http.StatusMethodNotAllowed)
 				return
 			}
-			authConfig := cfg()
+			authConfig := cfg(pj.Spec.Refs)
 			var allowed bool
-			if authConfig.AllowAnyone || pj.Spec.RerunAuthConfig.AllowAnyone {
+			if pj.Spec.RerunAuthConfig.IsAllowAnyone() || authConfig.IsAllowAnyone() {
 				// Skip getting the users login via GH oauth if anyone is allowed to rerun
 				// jobs so that GH oauth doesn't need to be set up for private Prows.
 				allowed = true

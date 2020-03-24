@@ -105,16 +105,6 @@ func (in *DRLCObject) ToDynamicResourceLifeCycle() common.DynamicResourceLifeCyc
 	}
 }
 
-func (in *DRLCObject) fromDynamicResourceLifeCycle(r common.DynamicResourceLifeCycle) {
-	in.ObjectMeta.Name = r.Type
-	in.Spec.InitialState = r.InitialState
-	in.Spec.MinCount = r.MinCount
-	in.Spec.MaxCount = r.MaxCount
-	in.Spec.LifeSpan = r.LifeSpan
-	in.Spec.Config = r.Config
-	in.Spec.Needs = r.Needs
-}
-
 // FromDynamicResourceLifecycle converts a common.DynamicResourceLifeCycle into a *DRLCObject
 func FromDynamicResourceLifecycle(r common.DynamicResourceLifeCycle) *DRLCObject {
 	return &DRLCObject{
@@ -130,37 +120,6 @@ func FromDynamicResourceLifecycle(r common.DynamicResourceLifeCycle) *DRLCObject
 			Needs:        r.Needs,
 		},
 	}
-}
-
-// ToItem implements the Object interface
-func (in *DRLCObject) ToItem() common.Item {
-	return in.ToDynamicResourceLifeCycle()
-}
-
-// FromItem implements the Object interface
-func (in *DRLCObject) FromItem(i common.Item) {
-	c, err := common.ItemToDynamicResourceLifeCycle(i)
-	if err == nil {
-		in.fromDynamicResourceLifeCycle(c)
-	}
-}
-
-// GetItems implements the Collection interface
-func (in *DRLCObjectList) GetItems() []Object {
-	var items []Object
-	for idx := range in.Items {
-		items = append(items, &in.Items[idx])
-	}
-	return items
-}
-
-// SetItems implements the Collection interface
-func (in *DRLCObjectList) SetItems(objects []Object) {
-	var items []DRLCObject
-	for _, b := range objects {
-		items = append(items, *(b.(*DRLCObject)))
-	}
-	in.Items = items
 }
 
 func (in *DRLCObjectList) deepCopyInto(out *DRLCObjectList) {

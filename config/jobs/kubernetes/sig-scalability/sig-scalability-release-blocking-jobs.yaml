@@ -34,7 +34,7 @@ periodics:
       - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[DisabledForLargeClusters\] --minStartupPods=8 --node-schedulable-timeout=90m
       - --timeout=240m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200322-3d5100e-master
       resources:
         requests:
           cpu: 6
@@ -99,7 +99,7 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=1050m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200322-3d5100e-master
       resources:
         requests:
           cpu: 6
@@ -127,7 +127,7 @@ periodics:
     testgrid-num-failures-to-alert: '2'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200322-3d5100e-master
       args:
       - --timeout=140
       - --repo=k8s.io/kubernetes=master
@@ -157,7 +157,9 @@ periodics:
       - --test-cmd-args=--testconfig=testing/density/config.yaml
       - --test-cmd-args=--testconfig=testing/load/config.yaml
       - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
-      - --test-cmd-args=--testoverrides=./testing/chaosmonkey/override.yaml
+      # TODO(oxddr): re-enable this once we understand its impact on tests, https://github.com/kubernetes/kubernetes/issues/89051
+      # - --test-cmd-args=--testoverrides=./testing/chaosmonkey/override.yaml
+      # - --test-cmd-args=--testoverrides=./testing/chaosmonkey/ignore_node_killer_container_restarts_100.yaml
       - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_configmaps.yaml
       - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_daemonsets.yaml
       - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_jobs.yaml

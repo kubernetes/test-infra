@@ -638,7 +638,7 @@ func TestValidatePodSpec(t *testing.T) {
 			},
 		},
 		{
-			name: "reject conflicting mount paths (decorate in user)",
+			name: "accept conflicting mount path parent",
 			spec: func(s *v1.PodSpec) {
 				s.Containers[0].VolumeMounts = append(s.Containers[0].VolumeMounts, v1.VolumeMount{
 					Name:      "foo",
@@ -647,7 +647,7 @@ func TestValidatePodSpec(t *testing.T) {
 			},
 		},
 		{
-			name: "reject conflicting mount paths (user in decorate)",
+			name: "accept conflicting mount path child",
 			spec: func(s *v1.PodSpec) {
 				s.Containers[0].VolumeMounts = append(s.Containers[0].VolumeMounts, v1.VolumeMount{
 					Name:      "foo",
@@ -2203,6 +2203,72 @@ deck:
 	}
 }
 
+func TestRerunAuthConfigsGetRerunAuthConfig(t *testing.T) {
+	var testCases = []struct {
+		name     string
+		configs  RerunAuthConfigs
+		refs     *prowapi.Refs
+		expected prowapi.RerunAuthConfig
+	}{
+		{
+			name:     "default to an empty config",
+			configs:  RerunAuthConfigs{},
+			refs:     &prowapi.Refs{Org: "my-default-org", Repo: "my-default-repo"},
+			expected: prowapi.RerunAuthConfig{},
+		},
+		{
+			name:     "unknown org or org/repo return wildcard",
+			configs:  RerunAuthConfigs{"*": prowapi.RerunAuthConfig{GitHubUsers: []string{"clarketm"}}},
+			refs:     &prowapi.Refs{Org: "my-default-org", Repo: "my-default-repo"},
+			expected: prowapi.RerunAuthConfig{GitHubUsers: []string{"clarketm"}},
+		},
+		{
+			name:     "no refs return wildcard",
+			configs:  RerunAuthConfigs{"*": prowapi.RerunAuthConfig{GitHubUsers: []string{"leonardo"}}},
+			refs:     nil,
+			expected: prowapi.RerunAuthConfig{GitHubUsers: []string{"leonardo"}},
+		},
+		{
+			name: "use org if defined",
+			configs: RerunAuthConfigs{
+				"*":                prowapi.RerunAuthConfig{GitHubUsers: []string{"clarketm"}},
+				"istio":            prowapi.RerunAuthConfig{GitHubUsers: []string{"scoobydoo"}},
+				"istio/test-infra": prowapi.RerunAuthConfig{GitHubUsers: []string{"billybob"}},
+			},
+			refs:     &prowapi.Refs{Org: "istio", Repo: "istio"},
+			expected: prowapi.RerunAuthConfig{GitHubUsers: []string{"scoobydoo"}},
+		},
+		{
+			name: "use org/repo if defined",
+			configs: RerunAuthConfigs{
+				"*":           prowapi.RerunAuthConfig{GitHubUsers: []string{"clarketm"}},
+				"istio/istio": prowapi.RerunAuthConfig{GitHubUsers: []string{"skywalker"}},
+			},
+			refs:     &prowapi.Refs{Org: "istio", Repo: "istio"},
+			expected: prowapi.RerunAuthConfig{GitHubUsers: []string{"skywalker"}},
+		},
+		{
+			name: "org/repo takes precedence over org",
+			configs: RerunAuthConfigs{
+				"*":           prowapi.RerunAuthConfig{GitHubUsers: []string{"clarketm"}},
+				"istio":       prowapi.RerunAuthConfig{GitHubUsers: []string{"scrappydoo"}},
+				"istio/istio": prowapi.RerunAuthConfig{GitHubUsers: []string{"airbender"}},
+			},
+			refs:     &prowapi.Refs{Org: "istio", Repo: "istio"},
+			expected: prowapi.RerunAuthConfig{GitHubUsers: []string{"airbender"}},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+
+			if actual := tc.configs.GetRerunAuthConfig(tc.refs); !reflect.DeepEqual(actual, tc.expected) {
+				t.Errorf("Expected %v, got %v", tc.expected, actual)
+			}
+		})
+	}
+}
+
 func TestMergeCommitTemplateLoading(t *testing.T) {
 	var testCases = []struct {
 		name        string
@@ -2478,6 +2544,50 @@ func TestValidateComponentConfig(t *testing.T) {
 				}}}},
 			errExpected: true,
 		},
+		{
+			name: "Both RerunAuthConfig and RerunAuthConfigs are invalid, err",
+			config: &Config{ProwConfig: ProwConfig{Deck: Deck{
+				RerunAuthConfig:  &prowapi.RerunAuthConfig{AllowAnyone: true},
+				RerunAuthConfigs: RerunAuthConfigs{"*": prowapi.RerunAuthConfig{AllowAnyone: true}},
+			}}},
+			errExpected: true,
+		},
+		{
+			name: "RerunAuthConfig and not RerunAuthConfigs is valid, no err",
+			config: &Config{ProwConfig: ProwConfig{Deck: Deck{
+				RerunAuthConfig: &prowapi.RerunAuthConfig{AllowAnyone: false, GitHubUsers: []string{"grantsmith"}},
+			}}},
+			errExpected: false,
+		},
+		{
+			name: "RerunAuthConfig only and validation fails, err",
+			config: &Config{ProwConfig: ProwConfig{Deck: Deck{
+				RerunAuthConfig: &prowapi.RerunAuthConfig{AllowAnyone: true, GitHubUsers: []string{"grantsmith"}},
+			}}},
+			errExpected: true,
+		},
+		{
+			name: "RerunAuthConfigs and not RerunAuthConfig is valid, no err",
+			config: &Config{ProwConfig: ProwConfig{Deck: Deck{
+				RerunAuthConfigs: RerunAuthConfigs{
+					"*":                     prowapi.RerunAuthConfig{AllowAnyone: true},
+					"kubernetes":            prowapi.RerunAuthConfig{GitHubUsers: []string{"easterbunny"}},
+					"kubernetes/kubernetes": prowapi.RerunAuthConfig{GitHubOrgs: []string{"kubernetes", "kubernetes-sigs"}},
+				},
+			}}},
+			errExpected: false,
+		},
+		{
+			name: "RerunAuthConfigs only and validation fails, err",
+			config: &Config{ProwConfig: ProwConfig{Deck: Deck{
+				RerunAuthConfigs: RerunAuthConfigs{
+					"*":                     prowapi.RerunAuthConfig{AllowAnyone: true},
+					"kubernetes":            prowapi.RerunAuthConfig{GitHubUsers: []string{"easterbunny"}},
+					"kubernetes/kubernetes": prowapi.RerunAuthConfig{AllowAnyone: true, GitHubOrgs: []string{"kubernetes", "kubernetes-sigs"}},
+				},
+			}}},
+			errExpected: true,
+		},
 	}
 
 	for _, tc := range testCases {
@@ -2672,7 +2782,41 @@ func TestSlackReporterValidation(t *testing.T) {
 		})
 	}
 }
+func TestManagedHmacEntityValidation(t *testing.T) {
+	testCases := []struct {
+		name       string
+		prowConfig Config
+		shouldFail bool
+	}{
+		{
+			name:       "Missing managed HmacEntities",
+			prowConfig: Config{ProwConfig: ProwConfig{ManagedWebhooks: nil}},
+			shouldFail: false,
+		},
+		{
+			name: "Config with all valid dates",
+			prowConfig: Config{ProwConfig: ProwConfig{ManagedWebhooks: map[string]ManagedWebhookInfo{"foo/bar": {TokenCreatedAfter: time.Now()},
+				"foo/baz": {TokenCreatedAfter: time.Now()}}}},
+			shouldFail: false,
+		},
+		{
+			name: "Config with one invalid dates",
+			prowConfig: Config{ProwConfig: ProwConfig{ManagedWebhooks: map[string]ManagedWebhookInfo{"foo/bar": {TokenCreatedAfter: time.Now()},
+				"foo/baz": {TokenCreatedAfter: time.Now().Add(time.Hour)}}}},
+			shouldFail: true,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
 
+			err := tc.prowConfig.validateComponentConfig()
+			if tc.shouldFail != (err != nil) {
+				t.Errorf("%s: Unexpected outcome. Error expected %v, Error found %s", tc.name, tc.shouldFail, err)
+			}
+
+		})
+	}
+}
 func TestValidateTriggering(t *testing.T) {
 	testCases := []struct {
 		name        string
@@ -3848,4 +3992,35 @@ func TestInRepoConfigAllowsCluster(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestGetDefaultDecorationConfigsThreadSafety(t *testing.T) {
+	const repo = "repo"
+	p := Plank{DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
+		"*": {
+			GCSConfiguration: &prowapi.GCSConfiguration{
+				MediaTypes: map[string]string{"text": "text"},
+			},
+		},
+		repo: {
+			GCSConfiguration: &prowapi.GCSConfiguration{
+				MediaTypes: map[string]string{"text": "text"},
+			},
+		},
+	}}
+
+	s1 := make(chan struct{})
+	s2 := make(chan struct{})
+
+	go func() {
+		_ = p.GetDefaultDecorationConfigs(repo)
+		close(s1)
+	}()
+	go func() {
+		_ = p.GetDefaultDecorationConfigs(repo)
+		close(s2)
+	}()
+
+	<-s1
+	<-s2
 }

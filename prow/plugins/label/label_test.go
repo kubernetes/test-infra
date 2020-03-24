@@ -59,6 +59,7 @@ func TestLabel(t *testing.T) {
 		repoLabels            []string
 		issueLabels           []string
 		expectedCommentText   string
+		action                github.GenericCommentEventAction
 	}
 	testcases := []testCase{
 		{
@@ -69,6 +70,7 @@ func TestLabel(t *testing.T) {
 			repoLabels:            []string{},
 			issueLabels:           []string{},
 			commenter:             orgMember,
+			action:                github.GenericCommentActionCreated,
 		},
 		{
 			name:                  "Empty Area",
@@ -78,6 +80,7 @@ func TestLabel(t *testing.T) {
 			repoLabels:            []string{"area/infra"},
 			issueLabels:           []string{"area/infra"},
 			commenter:             orgMember,
+			action:                github.GenericCommentActionCreated,
 		},
 		{
 			name:                  "Add Single Area Label",
@@ -87,6 +90,7 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     formatLabels("area/infra"),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
+			action:                github.GenericCommentActionCreated,
 		},
 		{
 			name:                  "Add Single Area Label when already present on Issue",
@@ -96,6 +100,7 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
+			action:                github.GenericCommentActionCreated,
 		},
 		{
 			name:                  "Add Single Priority Label",
@@ -105,6 +110,7 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     formatLabels("priority/critical"),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
+			action:                github.GenericCommentActionCreated,
 		},
 		{
 			name:                  "Add Single Kind Label",
@@ -114,6 +120,7 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     formatLabels(labels.Bug),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
+			action:                github.GenericCommentActionCreated,
 		},
 		{
 			name:                  "Add Single Triage Label",
@@ -123,6 +130,7 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     formatLabels("triage/needs-information"),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
+			action:                github.GenericCommentActionCreated,
 		},
 		{
 			name:                  "Adding Labels is Case Insensitive",
@@ -132,6 +140,7 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     formatLabels(labels.Bug),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
+			action:                github.GenericCommentActionCreated,
 		},
 		{
 			name:                  "Adding Labels is Case Insensitive",
@@ -141,6 +150,7 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     formatLabels(labels.Bug),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
+			action:                github.GenericCommentActionCreated,
 		},
 		{
 			name:                  "Can't Add Non Existent Label",
@@ -152,6 +162,7 @@ func TestLabel(t *testing.T) {
 			commenter:             orgMember,
 			expectedBotComment:    true,
 			expectedCommentText:   "The label(s) `priority/critical` cannot be applied, because the repository doesn't have them",
+			action:                github.GenericCommentActionCreated,
 		},
 		{
 			name:                  "Non Org Member Can't Add",
@@ -161,6 +172,7 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     formatLabels("area/infra"),
 			expectedRemovedLabels: []string{},
 			commenter:             nonOrgMember,
+			action:                github.GenericCommentActionCreated,
 		},
 		{
 			name:                  "Command must start at the beginning of the line",
@@ -170,6 +182,7 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     formatLabels(),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
+			action:                github.GenericCommentActionCreated,
 		},
 		{
 			name:                  "Can't Add Labels Non Existing Labels",
@@ -181,6 +194,7 @@ func TestLabel(t *testing.T) {
 			commenter:             orgMember,
 			expectedBotComment:    true,
 			expectedCommentText:   "The label(s) `area/lgtm` cannot be applied, because the repository doesn't have them",
+			action:                github.GenericCommentActionCreated,
 		},
 		{
 			name:                  "Add Multiple Area Labels",
@@ -190,6 +204,7 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     formatLabels("area/api", "area/infra"),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
+			action:                github.GenericCommentActionCreated,
 		},
 		{
 			name:                  "Add Multiple Area Labels one already present on Issue",
@@ -199,6 +214,7 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     formatLabels("area/infra"),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
+			action:                github.GenericCommentActionCreated,
 		},
 		{
 			name:                  "Add Multiple Priority Labels",
@@ -208,6 +224,7 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     formatLabels("priority/critical", "priority/important"),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
+			action:                github.GenericCommentActionCreated,
 		},
 		{
 			name:                  "Label Prefix Must Match Command (Area-Priority Mismatch)",
@@ -219,6 +236,7 @@ func TestLabel(t *testing.T) {
 			commenter:             orgMember,
 			expectedBotComment:    true,
 			expectedCommentText:   "The label(s) `area/urgent` cannot be applied, because the repository doesn't have them",
+			action:                github.GenericCommentActionCreated,
 		},
 		{
 			name:                  "Label Prefix Must Match Command (Priority-Area Mismatch)",
@@ -230,6 +248,7 @@ func TestLabel(t *testing.T) {
 			commenter:             orgMember,
 			expectedBotComment:    true,
 			expectedCommentText:   "The label(s) `priority/infra` cannot be applied, because the repository doesn't have them",
+			action:                github.GenericCommentActionCreated,
 		},
 		{
 			name:                  "Add Multiple Area Labels (Some Valid)",
@@ -241,6 +260,7 @@ func TestLabel(t *testing.T) {
 			commenter:             orgMember,
 			expectedBotComment:    true,
 			expectedCommentText:   "The label(s) `area/lgtm` cannot be applied, because the repository doesn't have them",
+			action:                github.GenericCommentActionCreated,
 		},
 		{
 			name:                  "Add Multiple Committee Labels (Some Valid)",
@@ -252,6 +272,7 @@ func TestLabel(t *testing.T) {
 			commenter:             orgMember,
 			expectedBotComment:    true,
 			expectedCommentText:   "The label(s) `committee/calamity` cannot be applied, because the repository doesn't have them",
+			action:                github.GenericCommentActionCreated,
 		},
 		{
 			name:                  "Add Multiple Types of Labels Different Lines",
@@ -261,6 +282,7 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     formatLabels("priority/urgent", "area/infra"),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
+			action:                github.GenericCommentActionCreated,
 		},
 		{
 			name:                  "Remove Area Label when no such Label on Repo",
@@ -271,6 +293,7 @@ func TestLabel(t *testing.T) {
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
 			expectedBotComment:    true,
+			action:                github.GenericCommentActionCreated,
 		},
 		{
 			name:                  "Remove Area Label when no such Label on Issue",
@@ -281,6 +304,7 @@ func TestLabel(t *testing.T) {
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
 			expectedBotComment:    true,
+			action:                github.GenericCommentActionCreated,
 		},
 		{
 			name:                  "Remove Area Label",
@@ -290,6 +314,7 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: formatLabels("area/infra"),
 			commenter:             orgMember,
+			action:                github.GenericCommentActionCreated,
 		},
 		{
 			name:                  "Remove Committee Label",
@@ -299,6 +324,7 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: formatLabels("committee/infinite-monkeys"),
 			commenter:             orgMember,
+			action:                github.GenericCommentActionCreated,
 		},
 		{
 			name:                  "Remove Kind Label",
@@ -308,6 +334,7 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: formatLabels("kind/api-server"),
 			commenter:             orgMember,
+			action:                github.GenericCommentActionCreated,
 		},
 		{
 			name:                  "Remove Priority Label",
@@ -317,6 +344,7 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: formatLabels("priority/high"),
 			commenter:             orgMember,
+			action:                github.GenericCommentActionCreated,
 		},
 		{
 			name:                  "Remove SIG Label",
@@ -326,6 +354,7 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: formatLabels("sig/testing"),
 			commenter:             orgMember,
+			action:                github.GenericCommentActionCreated,
 		},
 		{
 			name:                  "Remove WG Policy",
@@ -335,6 +364,7 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: formatLabels("wg/policy"),
 			commenter:             orgMember,
+			action:                github.GenericCommentActionCreated,
 		},
 		{
 			name:                  "Remove Triage Label",
@@ -344,6 +374,7 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: formatLabels("triage/needs-information"),
 			commenter:             orgMember,
+			action:                github.GenericCommentActionCreated,
 		},
 		{
 			name:                  "Remove Multiple Labels",
@@ -354,6 +385,7 @@ func TestLabel(t *testing.T) {
 			expectedRemovedLabels: formatLabels("priority/low", "priority/high", "kind/api-server", "area/infra"),
 			commenter:             orgMember,
 			expectedBotComment:    true,
+			action:                github.GenericCommentActionCreated,
 		},
 		{
 			name:                  "Add and Remove Label at the same time",
@@ -363,6 +395,7 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     formatLabels("area/test"),
 			expectedRemovedLabels: formatLabels("area/infra"),
 			commenter:             orgMember,
+			action:                github.GenericCommentActionCreated,
 		},
 		{
 			name:                  "Add and Remove the same Label",
@@ -372,6 +405,7 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: formatLabels("area/infra"),
 			commenter:             orgMember,
+			action:                github.GenericCommentActionCreated,
 		},
 		{
 			name:                  "Multiple Add and Delete Labels",
@@ -381,6 +415,7 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     formatLabels("area/go", "kind/cli", "priority/h"),
 			expectedRemovedLabels: formatLabels("area/ruby", "kind/srv", "priority/l", "priority/m"),
 			commenter:             orgMember,
+			action:                github.GenericCommentActionCreated,
 		},
 		{
 			name:                  "Do nothing with empty /label command",
@@ -391,6 +426,7 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
+			action:                github.GenericCommentActionCreated,
 		},
 		{
 			name:                  "Do nothing with empty /remove-label command",
@@ -401,6 +437,7 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
+			action:                github.GenericCommentActionCreated,
 		},
 		{
 			name:                  "Add custom label",
@@ -411,6 +448,7 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     formatLabels("orchestrator/foo"),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
+			action:                github.GenericCommentActionCreated,
 		},
 		{
 			name:                  "Add custom label with trailing space",
@@ -421,6 +459,7 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     formatLabels("orchestrator/foo"),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
+			action:                github.GenericCommentActionCreated,
 		},
 		{
 			name:                  "Add custom label with trailing LF newline",
@@ -431,6 +470,7 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     formatLabels("orchestrator/foo"),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
+			action:                github.GenericCommentActionCreated,
 		},
 		{
 			name:                  "Add custom label with trailing CRLF newline",
@@ -441,6 +481,7 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     formatLabels("orchestrator/foo"),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
+			action:                github.GenericCommentActionCreated,
 		},
 		{
 			name:                  "Cannot add missing custom label",
@@ -453,6 +494,7 @@ func TestLabel(t *testing.T) {
 			commenter:             orgMember,
 			expectedBotComment:    true,
 			expectedCommentText:   "The label(s) `/label orchestrator/foo` cannot be applied. These labels are supported: `orchestrator/jar, orchestrator/bar`",
+			action:                github.GenericCommentActionCreated,
 		},
 		{
 			name:                  "Remove custom label",
@@ -463,6 +505,7 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: formatLabels("orchestrator/foo"),
 			commenter:             orgMember,
+			action:                github.GenericCommentActionCreated,
 		},
 		{
 			name:                  "Remove custom label with trailing space",
@@ -473,6 +516,7 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: formatLabels("orchestrator/foo"),
 			commenter:             orgMember,
+			action:                github.GenericCommentActionCreated,
 		},
 		{
 			name:                  "Remove custom label with trailing LF newline",
@@ -483,6 +527,7 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: formatLabels("orchestrator/foo"),
 			commenter:             orgMember,
+			action:                github.GenericCommentActionCreated,
 		},
 		{
 			name:                  "Remove custom label with trailing CRLF newline",
@@ -493,6 +538,7 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: formatLabels("orchestrator/foo"),
 			commenter:             orgMember,
+			action:                github.GenericCommentActionCreated,
 		},
 		{
 			name:                  "Cannot remove missing custom label",
@@ -505,6 +551,29 @@ func TestLabel(t *testing.T) {
 			commenter:             orgMember,
 			expectedBotComment:    true,
 			expectedCommentText:   "The label(s) `/remove-label orchestrator/jar` cannot be applied. These labels are supported: `orchestrator/foo, orchestrator/bar`",
+			action:                github.GenericCommentActionCreated,
+		},
+		{
+			name:                  "Don't comment when deleting label addition",
+			body:                  "/kind bug",
+			repoLabels:            []string{"area/infra", "priority/critical", labels.Bug},
+			issueLabels:           []string{},
+			expectedNewLabels:     []string{},
+			expectedRemovedLabels: []string{},
+			commenter:             orgMember,
+			expectedBotComment:    false,
+			action:                github.GenericCommentActionDeleted,
+		},
+		{
+			name:                  "Don't comment when deleting label removal",
+			body:                  "/remove-committee infinite-monkeys",
+			repoLabels:            []string{"area/infra", "sig/testing", "committee/infinite-monkeys"},
+			issueLabels:           []string{"area/infra", "sig/testing", "committee/infinite-monkeys"},
+			expectedNewLabels:     []string{},
+			expectedRemovedLabels: []string{},
+			commenter:             orgMember,
+			expectedBotComment:    false,
+			action:                github.GenericCommentActionDeleted,
 		},
 	}
 
@@ -524,7 +593,7 @@ func TestLabel(t *testing.T) {
 			fakeClient.AddLabel("org", "repo", 1, label)
 		}
 		e := &github.GenericCommentEvent{
-			Action: github.GenericCommentActionCreated,
+			Action: tc.action,
 			Body:   tc.body,
 			Number: 1,
 			Repo:   github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},

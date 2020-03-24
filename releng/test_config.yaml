@@ -552,8 +552,7 @@ jobs:
     - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
     interval: 1h
     sigOwners: [sig-cloud-provider-gcp]
-    releaseInforming: true
-    testgridNumFailuresToAlert: 6
+    releaseBlocking: true
   ci-kubernetes-e2e-gce-cos-k8sbeta-serial:
     interval: 1h
     sigOwners: [sig-cloud-provider-gcp]
@@ -932,23 +931,23 @@ nodeK8sVersions:
   dev:
     args:
     - --repo=k8s.io/kubernetes=master
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-master
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20200322-3d5100e-master
   beta:
     args:
     - --repo=k8s.io/kubernetes=release-1.18
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-1.18
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20200322-3d5100e-1.18
   stable1:
     args:
     - --repo=k8s.io/kubernetes=release-1.17
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-1.17
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20200322-3d5100e-1.17
   stable2:
     args:
     - --repo=k8s.io/kubernetes=release-1.16
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-1.16
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20200322-3d5100e-1.16
   stable3:
     args:
     - --repo=k8s.io/kubernetes=release-1.15
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-1.15
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20200322-3d5100e-1.15
 
 nodeTestSuites:
   default:

@@ -55,7 +55,7 @@ func createFakeBoskos(objects ...runtime.Object) (*ranch.Storage, boskosClient, 
 		obj.(metav1.Object).SetNamespace(testNS)
 	}
 	names := make(chan releasedResource, 100)
-	s, _ := ranch.NewStorage(context.Background(), fakectrlruntimeclient.NewFakeClient(objects...), testNS, "")
+	s := ranch.NewStorage(context.Background(), fakectrlruntimeclient.NewFakeClient(objects...), testNS)
 	r, _ := ranch.NewRanch("", s, testTTL)
 
 	return s, &fakeBoskos{ranch: r}, names

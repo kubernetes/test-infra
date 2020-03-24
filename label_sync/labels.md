@@ -311,7 +311,6 @@ larger set of contributors to apply/remove them.
 | <a id="area/mungegithub" href="#area/mungegithub">`area/mungegithub`</a> | Issues or PRs related to code in /mungegithub| label | |
 | <a id="area/planter" href="#area/planter">`area/planter`</a> | Issues or PRs related to code in /planter| label | |
 | <a id="area/prow" href="#area/prow">`area/prow`</a> | Issues or PRs related to prow| label | |
-| <a id="area/prow/artifact-uploader" href="#area/prow/artifact-uploader">`area/prow/artifact-uploader`</a> | Issues or PRs related to prow's artifact-uploader component| label | |
 | <a id="area/prow/branchprotector" href="#area/prow/branchprotector">`area/prow/branchprotector`</a> | Issues or PRs related to prow's branchprotector component| label | |
 | <a id="area/prow/bump" href="#area/prow/bump">`area/prow/bump`</a> | Updates to the k8s prow cluster| label | |
 | <a id="area/prow/clonerefs" href="#area/prow/clonerefs">`area/prow/clonerefs`</a> | Issues or PRs related to prow's clonerefs component| label | |
@@ -332,6 +331,7 @@ larger set of contributors to apply/remove them.
 | <a id="area/prow/peribolos" href="#area/prow/peribolos">`area/prow/peribolos`</a> | Issues or PRs related to prow's peribolos component| label | |
 | <a id="area/prow/phony" href="#area/prow/phony">`area/prow/phony`</a> | Issues or PRs related to prow's phony component| label | |
 | <a id="area/prow/plank" href="#area/prow/plank">`area/prow/plank`</a> | Issues or PRs related to prow's plank component| label | |
+| <a id="area/prow/plugins" href="#area/prow/plugins">`area/prow/plugins`</a> | Issues or PRs related to prow's plugins for the hook component| label | |
 | <a id="area/prow/pod-utilities" href="#area/prow/pod-utilities">`area/prow/pod-utilities`</a> | Issues or PRs related to prow's pod-utilities component| label | |
 | <a id="area/prow/pubsub" href="#area/prow/pubsub">`area/prow/pubsub`</a> | Issues or PRs related to prow's pubsub reporter component| label | |
 | <a id="area/prow/sidecar" href="#area/prow/sidecar">`area/prow/sidecar`</a> | Issues or PRs related to prow's sidecar component| label | |

@@ -38,7 +38,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/spf13/pflag"
 	"golang.org/x/crypto/ssh"
 
 	"k8s.io/test-infra/kubetest/e2e"
@@ -75,7 +74,8 @@ var (
 	kopsDNSProvider  = flag.String("kops-dns-provider", "", "(kops only) DNS Provider. CoreDNS or KubeDNS")
 	kopsEtcdVersion  = flag.String("kops-etcd-version", "", "(kops only) Etcd Version")
 	kopsNetworkMode  = flag.String("kops-network-mode", "", "(kops only) Networking mode to use. kubenet (default), classic, external, kopeio-vxlan (or kopeio), weave, flannel-vxlan (or flannel), flannel-udp, calico, canal, kube-router, romana, amazon-vpc-routed-eni, cilium.")
-	kopsOverrides    = pflag.StringSlice("kops-overrides", []string{}, "(kops only) Kops cluster configuration overrides, comma delimited. This flag can be used multiple times.")
+	kopsOverrides    = flag.String("kops-overrides", "", "(kops only) List of Kops cluster configuration overrides, comma delimited.")
+	kopsFeatureFlags = flag.String("kops-feature-flags", "", "(kops only) List of Kops feature flags to enable, comma delimited.")
 
 	kopsMultipleZones = flag.Bool("kops-multiple-zones", false, "(kops only) run tests in multiple zones")
 
@@ -146,8 +146,11 @@ type kops struct {
 	// networkMode is the networking mode to use for the cluster (e.g kubenet)
 	networkMode string
 
-	// overrides is a list of cluster configuration overrides
-	overrides []string
+	// overrides is a list of cluster configuration overrides, comma delimited
+	overrides string
+
+	// featureFlags is a list of feature flags to enable, comma delimited
+	featureFlags string
 
 	// multipleZones denotes using more than one zone
 	multipleZones bool
@@ -355,6 +358,7 @@ func newKops(provider, gcpProject, cluster string) (*kops, error) {
 		masterSize:    *kopsMasterSize,
 		networkMode:   *kopsNetworkMode,
 		overrides:     *kopsOverrides,
+		featureFlags:  *kopsFeatureFlags,
 	}, nil
 }
 
@@ -388,6 +392,13 @@ func (k kops) Up() error {
 	}
 
 	var featureFlags []string
+	if k.featureFlags != "" {
+		featureFlags = append(featureFlags, k.featureFlags)
+	}
+	var overrides []string
+	if k.overrides != "" {
+		overrides = append(overrides, k.overrides)
+	}
 
 	// We are defaulting the master size to c5.large on AWS because it's cheapest non-throttled instance type.
 	// When we are using GCE, then we need to handle the flag differently.
@@ -416,7 +427,7 @@ func (k kops) Up() error {
 	createArgs = append(createArgs, "--admin-access", k.adminAccess)
 
 	// Since https://github.com/kubernetes/kubernetes/pull/80655 conformance now require node ports to be open to all nodes
-	k.overrides = append(k.overrides, "cluster.spec.nodePortAccess=0.0.0.0/0")
+	overrides = append(overrides, "cluster.spec.nodePortAccess=0.0.0.0/0")
 
 	if k.image != "" {
 		createArgs = append(createArgs, "--image", k.image)
@@ -438,14 +449,14 @@ func (k kops) Up() error {
 		createArgs = append(createArgs, strings.Split(k.args, " ")...)
 	}
 	if k.dnsProvider != "" {
-		k.overrides = append(k.overrides, "spec.kubeDNS.provider="+k.dnsProvider)
+		overrides = append(overrides, "spec.kubeDNS.provider="+k.dnsProvider)
 	}
 	if k.etcdVersion != "" {
-		k.overrides = append(k.overrides, "cluster.spec.etcdClusters[*].version="+k.etcdVersion)
+		overrides = append(overrides, "cluster.spec.etcdClusters[*].version="+k.etcdVersion)
 	}
-	if len(k.overrides) != 0 {
+	if len(overrides) != 0 {
 		featureFlags = append(featureFlags, "SpecOverrideFlag")
-		createArgs = append(createArgs, "--override", strings.Join(k.overrides, ","))
+		createArgs = append(createArgs, "--override", strings.Join(overrides, ","))
 	}
 	if len(featureFlags) != 0 {
 		os.Setenv("KOPS_FEATURE_FLAGS", strings.Join(featureFlags, ","))

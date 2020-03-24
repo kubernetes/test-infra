@@ -52,16 +52,19 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
+NAME = "checkconfig"
+
 prow_image(
     name = "image",
     base = "@git-base//image",
+    component = NAME,
     directory = "/",
     files = [":checkconfig"],
     visibility = ["//visibility:public"],
 )
 
 go_binary(
-    name = "checkconfig",
+    name = NAME,
     embed = [":go_default_library"],
     pure = "on",
     visibility = ["//visibility:public"],

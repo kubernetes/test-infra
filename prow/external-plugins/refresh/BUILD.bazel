@@ -26,14 +26,17 @@ go_library(
     ],
 )
 
+NAME = "refresh"
+
 prow_image(
     name = "image",
     base = "@alpine-base//image",
+    component = NAME,
     visibility = ["//visibility:public"],
 )
 
 go_binary(
-    name = "refresh",
+    name = NAME,
     embed = [":go_default_library"],
     visibility = ["//visibility:public"],
 )

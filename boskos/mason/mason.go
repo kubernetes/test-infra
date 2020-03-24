@@ -142,7 +142,7 @@ func (m *Mason) RegisterConfigConverter(name string, fn ConfigConverter) error {
 func (m *Mason) convertConfig(configEntry *common.DynamicResourceLifeCycle) (Masonable, error) {
 	fn, ok := m.configConverters[configEntry.Config.Type]
 	if !ok {
-		return nil, fmt.Errorf("config type %s is not supported", configEntry.GetName())
+		return nil, fmt.Errorf("config type %s is not supported", configEntry.Type)
 	}
 	return fn(configEntry.Config.Content)
 }

@@ -255,3 +255,132 @@ func TestRefsToString(t *testing.T) {
 		}
 	}
 }
+
+func TestRerunAuthConfigValidate(t *testing.T) {
+	var testCases = []struct {
+		name        string
+		config      *RerunAuthConfig
+		errExpected bool
+	}{
+		{
+			name:        "disallow all",
+			config:      &RerunAuthConfig{AllowAnyone: false},
+			errExpected: false,
+		},
+		{
+			name:        "no restrictions",
+			config:      &RerunAuthConfig{},
+			errExpected: false,
+		},
+		{
+			name:        "allow any",
+			config:      &RerunAuthConfig{AllowAnyone: true},
+			errExpected: false,
+		},
+		{
+			name:        "restrict orgs",
+			config:      &RerunAuthConfig{GitHubOrgs: []string{"istio"}},
+			errExpected: false,
+		},
+		{
+			name:        "restrict orgs and users",
+			config:      &RerunAuthConfig{GitHubOrgs: []string{"istio", "kubernetes"}, GitHubUsers: []string{"clarketm", "scoobydoo"}},
+			errExpected: false,
+		},
+		{
+			name:        "allow any and has restriction",
+			config:      &RerunAuthConfig{AllowAnyone: true, GitHubOrgs: []string{"istio"}},
+			errExpected: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+
+			if err := tc.config.Validate(); (err != nil) != tc.errExpected {
+				t.Errorf("Expected error %v, got %v", tc.errExpected, err)
+			}
+		})
+	}
+}
+
+func TestRerunAuthConfigIsAuthorized(t *testing.T) {
+	var testCases = []struct {
+		name       string
+		user       string
+		config     *RerunAuthConfig
+		authorized bool
+	}{
+		{
+			name:       "authorized - AllowAnyone is true",
+			user:       "gumby",
+			config:     &RerunAuthConfig{AllowAnyone: true},
+			authorized: true,
+		},
+		{
+			name:       "authorized - user in GitHubUsers",
+			user:       "gumby",
+			config:     &RerunAuthConfig{GitHubUsers: []string{"gumby"}},
+			authorized: true,
+		},
+		{
+			name:       "unauthorized - RerunAuthConfig is nil",
+			user:       "gumby",
+			config:     nil,
+			authorized: false,
+		},
+		{
+			name:       "unauthorized - cli is nil",
+			user:       "gumby",
+			config:     &RerunAuthConfig{},
+			authorized: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+
+			if actual, _ := tc.config.IsAuthorized(tc.user, nil); actual != tc.authorized {
+				t.Errorf("Expected %v, got %v", tc.authorized, actual)
+			}
+		})
+	}
+}
+
+func TestRerunAuthConfigIsAllowAnyone(t *testing.T) {
+	var testCases = []struct {
+		name     string
+		config   *RerunAuthConfig
+		expected bool
+	}{
+		{
+			name:     "AllowAnyone is true",
+			config:   &RerunAuthConfig{AllowAnyone: true},
+			expected: true,
+		},
+		{
+			name:     "AllowAnyone is false",
+			config:   &RerunAuthConfig{AllowAnyone: false},
+			expected: false,
+		},
+		{
+			name:     "AllowAnyone is unset",
+			config:   &RerunAuthConfig{},
+			expected: false,
+		},
+		{
+			name:     "RerunAuthConfig is nil",
+			config:   nil,
+			expected: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+
+			if actual := tc.config.IsAllowAnyone(); actual != tc.expected {
+				t.Errorf("Expected %v, got %v", tc.expected, actual)
+			}
+		})
+	}
+}

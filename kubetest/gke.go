@@ -309,7 +309,9 @@ func (g *gkeDeployer) Up() error {
 
 	def := g.shape[defaultPool]
 	args := make([]string, len(g.createCommand))
-	copy(args, g.createCommand)
+	for i := range args {
+		args[i] = os.ExpandEnv(g.createCommand[i])
+	}
 	args = append(args,
 		"--project="+g.project,
 		g.location,

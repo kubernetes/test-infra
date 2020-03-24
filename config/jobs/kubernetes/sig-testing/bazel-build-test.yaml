@@ -19,7 +19,7 @@ presubmits:
       repo: test-infra
     spec:
       containers:
-      - image: launcher.gcr.io/google/bazel:0.25.2
+      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:2.2.0-from-0.23.2
         command:
         - bash
         args:
@@ -45,7 +45,7 @@ presubmits:
       repo: test-infra
     spec:
       containers:
-      - image: launcher.gcr.io/google/bazel:0.25.2
+      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:2.2.0-from-0.23.2
         command:
         - ../test-infra/hack/bazel.sh
         args:
@@ -64,7 +64,6 @@ postsubmits:
     - master
     annotations:
       fork-per-release: "true"
-      fork-per-release-replacements: "latest-bazel.txt -> latest-bazel-{{.Version}}.txt"
       testgrid-dashboards: google-unit
       description: "Builds kubernetes using bazel"
     labels:
@@ -73,7 +72,7 @@ postsubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200322-3d5100e-master
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -86,7 +85,6 @@ postsubmits:
         - "--release=//build/release-tars"
         - "--gcs=gs://kubernetes-release-dev/ci"
         - "--version-suffix=-bazel"
-        - "--publish-version=gs://kubernetes-release-dev/ci/latest-bazel.txt"
         resources:
           requests:
             memory: "6Gi"
@@ -106,7 +104,7 @@ postsubmits:
       repo: test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200322-3d5100e-master
         command:
         - bash
         args:
@@ -119,8 +117,7 @@ postsubmits:
               "--build=//... -//vendor/..." \
               --release=//build/release-tars \
               --gcs=gs://kubernetes-release-dev/ci-rbe \
-              --version-suffix=-bazel-rbe \
-              --publish-version=gs://kubernetes-release-dev/ci/latest-bazel-rbe.txt
+              --version-suffix=-bazel-rbe
 
     annotations:
       testgrid-dashboards: sig-release-master-informing
@@ -142,7 +139,7 @@ postsubmits:
     - release-\d+.\d+ # per-release job
     spec:
       containers:
-      - image: launcher.gcr.io/google/bazel:0.25.2
+      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:2.2.0-from-0.23.2
         command:
         - ../test-infra/hack/bazel.sh
         args:
@@ -174,7 +171,7 @@ postsubmits:
     - release-\d+.\d+ # per-release job
     spec:
       containers:
-      - image: launcher.gcr.io/google/bazel:0.25.2
+      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:2.2.0-from-0.23.2
         command:
         - ../test-infra/hack/bazel.sh
         args:
@@ -213,7 +210,7 @@ periodics:
     repo: test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200322-3d5100e-master
       command:
       - bash
       args:
@@ -226,8 +223,7 @@ periodics:
             "--build=//... -//vendor/..." \
             --release=//build/release-tars \
             --gcs=gs://kubernetes-release-dev/ci-periodic \
-            --version-suffix=-bazel \
-            --publish-version=gs://kubernetes-release-dev/ci/latest-bazel-periodic.txt
+            --version-suffix=-bazel
   rerun_auth_config:
     github_team_ids:
       - 2241179 # release-managers
@@ -252,7 +248,7 @@ periodics:
     repo: test-infra
   spec:
     containers:
-    - image: launcher.gcr.io/google/bazel
+    - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:2.2.0-from-0.23.2
       imagePullPolicy: Always
       command:
       - bash
@@ -266,8 +262,7 @@ periodics:
             "--build=//... -//vendor/..." \
             --release=//build/release-tars \
             --gcs=gs://kubernetes-release-dev/ci-canary \
-            --version-suffix=-bazel \
-            --publish-version=gs://kubernetes-release-dev/ci/latest-bazel-canary.txt
+            --version-suffix=-bazel
   rerun_auth_config:
     github_team_ids:
       - 2241179 # release-managers
@@ -295,7 +290,7 @@ periodics:
     repo: test-infra
   spec:
     containers:
-    - image: launcher.gcr.io/google/bazel:0.25.2
+    - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:2.2.0-from-0.23.2
       command:
       - ../test-infra/hack/bazel.sh
       args:
@@ -327,7 +322,7 @@ periodics:
     repo: test-infra
   spec:
     containers:
-    - image: launcher.gcr.io/google/bazel
+    - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:2.2.0-from-0.23.2
       command:
       - ../test-infra/hack/bazel.sh
       args:

@@ -26,74 +26,74 @@ import (
 
 // PersistenceLayer defines a simple interface to persists Boskos Information
 type PersistenceLayer interface {
-	Add(i common.Item) error
+	Add(r common.Resource) error
 	Delete(name string) error
-	Update(i common.Item) (common.Item, error)
-	Get(name string) (common.Item, error)
-	List() ([]common.Item, error)
+	Update(r common.Resource) (common.Resource, error)
+	Get(name string) (common.Resource, error)
+	List() ([]common.Resource, error)
 }
 
 type inMemoryStore struct {
-	items map[string]common.Item
-	lock  sync.RWMutex
+	resources map[string]common.Resource
+	lock      sync.RWMutex
 }
 
 // NewMemoryStorage creates an in memory persistence layer
 func NewMemoryStorage() PersistenceLayer {
 	return &inMemoryStore{
-		items: map[string]common.Item{},
+		resources: map[string]common.Resource{},
 	}
 }
 
-func (im *inMemoryStore) Add(i common.Item) error {
+func (im *inMemoryStore) Add(r common.Resource) error {
 	im.lock.Lock()
 	defer im.lock.Unlock()
-	_, ok := im.items[i.GetName()]
+	_, ok := im.resources[r.Name]
 	if ok {
-		return fmt.Errorf("item %s already exists", i.GetName())
+		return fmt.Errorf("resource %s already exists", r.Name)
 	}
-	im.items[i.GetName()] = i
+	im.resources[r.Name] = r
 	return nil
 }
 
 func (im *inMemoryStore) Delete(name string) error {
 	im.lock.Lock()
 	defer im.lock.Unlock()
-	_, ok := im.items[name]
+	_, ok := im.resources[name]
 	if !ok {
 		return fmt.Errorf("cannot find item %s", name)
 	}
-	delete(im.items, name)
+	delete(im.resources, name)
 	return nil
 }
 
-func (im *inMemoryStore) Update(i common.Item) (common.Item, error) {
+func (im *inMemoryStore) Update(r common.Resource) (common.Resource, error) {
 	im.lock.Lock()
 	defer im.lock.Unlock()
-	_, ok := im.items[i.GetName()]
+	_, ok := im.resources[r.Name]
 	if !ok {
-		return nil, fmt.Errorf("cannot find item %s", i.GetName())
+		return common.Resource{}, fmt.Errorf("cannot find item %s", r.Name)
 	}
-	im.items[i.GetName()] = i
-	return i, nil
+	im.resources[r.Name] = r
+	return r, nil
 }
 
-func (im *inMemoryStore) Get(name string) (common.Item, error) {
+func (im *inMemoryStore) Get(name string) (common.Resource, error) {
 	im.lock.RLock()
 	defer im.lock.RUnlock()
-	i, ok := im.items[name]
+	r, ok := im.resources[name]
 	if !ok {
-		return nil, fmt.Errorf("cannot find item %s", name)
+		return common.Resource{}, fmt.Errorf("cannot find item %s", name)
 	}
-	return i, nil
+	return r, nil
 }
 
-func (im *inMemoryStore) List() ([]common.Item, error) {
+func (im *inMemoryStore) List() ([]common.Resource, error) {
 	im.lock.RLock()
 	defer im.lock.RUnlock()
-	var items []common.Item
-	for _, i := range im.items {
-		items = append(items, i)
+	var resources []common.Resource
+	for _, r := range im.resources {
+		resources = append(resources, r)
 	}
-	return items, nil
+	return resources, nil
 }

@@ -37,8 +37,10 @@ import (
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
+
 	"k8s.io/test-infra/ghproxy/ghcache"
 	"k8s.io/test-infra/prow/errorutil"
+	"k8s.io/test-infra/prow/version"
 )
 
 type timeClient interface {
@@ -229,12 +231,15 @@ type Client interface {
 	SetMax404Retries(int)
 
 	WithFields(fields logrus.Fields) Client
+	ForPlugin(plugin string) Client
 }
 
 // client interacts with the github api.
 type client struct {
 	// If logger is non-nil, log all method calls with it.
 	logger *logrus.Entry
+	// plugin is used to add more identification to the user-agent header
+	plugin string
 	*delegate
 }
 
@@ -258,6 +263,23 @@ type delegate struct {
 
 	mut      sync.Mutex // protects botName and email
 	userData *User
+}
+
+// ForPlugin clones the client, keeping the underlying delegate the same but adding
+// a plugin identifier and log field
+func (c *client) ForPlugin(plugin string) Client {
+	return &client{
+		plugin:   plugin,
+		logger:   c.logger.WithField("plugin", plugin),
+		delegate: c.delegate,
+	}
+}
+
+func (c *client) userAgent() string {
+	if c.plugin != "" {
+		return version.UserAgentWithIdentifier(c.plugin)
+	}
+	return version.UserAgent()
 }
 
 // WithFields clones the client, keeping the underlying delegate the same but adding
@@ -662,7 +684,7 @@ func (c *client) requestRetry(method, path, accept string, body interface{}) (*h
 						// sleep. If it's going to take too long, then break.
 						sleepTime := c.time.Until(time.Unix(int64(t), 0)) + time.Second
 						if sleepTime < c.maxSleepTime {
-							c.logger.WithField("backoff", sleepTime.String()).Debug("Retrying after token budget reset")
+							c.logger.WithField("backoff", sleepTime.String()).WithField("path", path).Debug("Retrying after token budget reset")
 							c.time.Sleep(sleepTime)
 						} else {
 							err = fmt.Errorf("sleep time for token reset exceeds max sleep time (%v > %v)", sleepTime, c.maxSleepTime)
@@ -683,7 +705,7 @@ func (c *client) requestRetry(method, path, accept string, body interface{}) (*h
 						// sleep. If it's going to take too long, then break.
 						sleepTime := time.Duration(t+1) * time.Second
 						if sleepTime < c.maxSleepTime {
-							c.logger.WithField("backoff", sleepTime.String()).Debug("Retrying after abuse ratelimit reset")
+							c.logger.WithField("backoff", sleepTime.String()).WithField("path", path).Debug("Retrying after abuse ratelimit reset")
 							c.time.Sleep(sleepTime)
 						} else {
 							err = fmt.Errorf("sleep time for abuse rate limit exceeds max sleep time (%v > %v)", sleepTime, c.maxSleepTime)
@@ -750,6 +772,9 @@ func (c *client) doRequest(method, path, accept string, body interface{}) (*http
 		req.Header.Add("Accept", "application/vnd.github.v3+json")
 	} else {
 		req.Header.Add("Accept", accept)
+	}
+	if userAgent := c.userAgent(); userAgent != "" {
+		req.Header.Add("User-Agent", userAgent)
 	}
 	// Disable keep-alive so that we don't get flakes when GitHub closes the
 	// connection prematurely.
@@ -2941,6 +2966,23 @@ func (c *client) Merge(org, repo string, pr int, details MergeDetails) error {
 //
 // See https://developer.github.com/v3/repos/collaborators/
 func (c *client) IsCollaborator(org, repo, user string) (bool, error) {
+	// This call does not support etags and is therefore not cacheable today
+	// by ghproxy. If we can detect that we're using ghproxy, however, we can
+	// make a more expensive but cache-able call instead. Detecting that we
+	// are pointed at a ghproxy instance is not high fidelity, but a best-effort
+	// approach here is guaranteed to make a positive impact and no negative one.
+	if strings.Contains(c.bases[0], "ghproxy") {
+		users, err := c.ListCollaborators(org, repo)
+		if err != nil {
+			return false, err
+		}
+		for _, u := range users {
+			if NormLogin(u.Login) == NormLogin(user) {
+				return true, nil
+			}
+		}
+		return false, nil
+	}
 	durationLogger := c.log("IsCollaborator", org, user)
 	defer durationLogger()
 

@@ -106,29 +106,6 @@ func (in *ResourceObject) ToResource() common.Resource {
 	}
 }
 
-// ToItem implements Object interface
-func (in *ResourceObject) ToItem() common.Item {
-	return in.ToResource()
-}
-
-func (in *ResourceObject) fromResource(r common.Resource) {
-	in.Name = r.Name
-	in.Spec.Type = r.Type
-	in.Status.Owner = r.Owner
-	in.Status.State = r.State
-	in.Status.LastUpdate = r.LastUpdate
-	in.Status.UserData = r.UserData
-	in.Status.ExpirationDate = r.ExpirationDate
-}
-
-// FromItem implements Object interface
-func (in *ResourceObject) FromItem(i common.Item) {
-	r, err := common.ItemToResource(i)
-	if err == nil {
-		in.fromResource(r)
-	}
-}
-
 // FromResource converts a common.Resource to a *ResourceObject
 func FromResource(r common.Resource) *ResourceObject {
 	if r.UserData == nil {
@@ -149,24 +126,6 @@ func FromResource(r common.Resource) *ResourceObject {
 			ExpirationDate: r.ExpirationDate,
 		},
 	}
-}
-
-// GetItems implements Collection interface
-func (in *ResourceObjectList) GetItems() []Object {
-	var items []Object
-	for idx := range in.Items {
-		items = append(items, &in.Items[idx])
-	}
-	return items
-}
-
-// SetItems implements Collection interface
-func (in *ResourceObjectList) SetItems(objects []Object) {
-	var items []ResourceObject
-	for _, b := range objects {
-		items = append(items, *(b.(*ResourceObject)))
-	}
-	in.Items = items
 }
 
 func (in *ResourceObjectList) deepCopyInto(out *ResourceObjectList) {

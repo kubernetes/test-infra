@@ -164,6 +164,10 @@ func handleGenericCommentEvent(pc plugins.Agent, ce github.GenericCommentEvent) 
 }
 
 func handleGenericComment(log *logrus.Entry, ghc githubClient, oc ownersClient, githubConfig config.GitHubOptions, config *plugins.Configuration, ce *github.GenericCommentEvent) error {
+	funcStart := time.Now()
+	defer func() {
+		log.WithField("duration", time.Since(funcStart).String()).Debug("Completed handleGenericComment")
+	}()
 	if ce.Action != github.GenericCommentActionCreated || !ce.IsPR || ce.IssueState == "closed" {
 		log.Debug("Event is not a creation of a comment on an open PR, skipping.")
 		return nil
@@ -225,6 +229,10 @@ func handleReviewEvent(pc plugins.Agent, re github.ReviewEvent) error {
 }
 
 func handleReview(log *logrus.Entry, ghc githubClient, oc ownersClient, githubConfig config.GitHubOptions, config *plugins.Configuration, re *github.ReviewEvent) error {
+	funcStart := time.Now()
+	defer func() {
+		log.WithField("duration", time.Since(funcStart).String()).Debug("Completed handleReview")
+	}()
 	if re.Action != github.ReviewActionSubmitted && re.Action != github.ReviewActionDismissed {
 		log.Debug("Event is not a creation or dismissal of a review on an open PR, skipping.")
 		return nil
@@ -263,7 +271,7 @@ func handleReview(log *logrus.Entry, ghc githubClient, oc ownersClient, githubCo
 		ghc,
 		repo,
 		githubConfig,
-		config.ApproveFor(re.Repo.Owner.Login, re.Repo.Name),
+		opts,
 		&state{
 			org:       re.Repo.Owner.Login,
 			repo:      re.Repo.Name,
@@ -290,6 +298,10 @@ func handlePullRequestEvent(pc plugins.Agent, pre github.PullRequestEvent) error
 }
 
 func handlePullRequest(log *logrus.Entry, ghc githubClient, oc ownersClient, githubConfig config.GitHubOptions, config *plugins.Configuration, pre *github.PullRequestEvent) error {
+	funcStart := time.Now()
+	defer func() {
+		log.WithField("duration", time.Since(funcStart).String()).Debug("Completed handlePullRequest")
+	}()
 	if pre.Action != github.PullRequestActionOpened &&
 		pre.Action != github.PullRequestActionReopened &&
 		pre.Action != github.PullRequestActionSynchronize &&
@@ -366,10 +378,15 @@ func findAssociatedIssue(body, org string) (int, error) {
 // - Iff a cancel command is found, that reviewer will be removed from the approverSet
 // 	and the munger will remove the approved label if it has been applied
 func handle(log *logrus.Entry, ghc githubClient, repo approvers.Repo, githubConfig config.GitHubOptions, opts *plugins.Approve, pr *state) error {
+	funcStart := time.Now()
+	defer func() {
+		log.WithField("duration", time.Since(funcStart).String()).Debug("Completed handle")
+	}()
 	fetchErr := func(context string, err error) error {
 		return fmt.Errorf("failed to get %s for %s/%s#%d: %v", context, pr.org, pr.repo, pr.number, err)
 	}
 
+	start := time.Now()
 	changes, err := ghc.GetPullRequestChanges(pr.org, pr.repo, pr.number)
 	if err != nil {
 		return fetchErr("PR file changes", err)
@@ -405,7 +422,9 @@ func handle(log *logrus.Entry, ghc githubClient, repo approvers.Repo, githubConf
 	if err != nil {
 		return fetchErr("reviews", err)
 	}
+	log.WithField("duration", time.Since(start).String()).Debug("Completed github functions in handle")
 
+	start = time.Now()
 	approversHandler := approvers.NewApprovers(
 		approvers.NewOwners(
 			log,
@@ -428,7 +447,9 @@ func handle(log *logrus.Entry, ghc githubClient, repo approvers.Repo, githubConf
 		// Treat the author as an assignee, and suggest them if possible
 		approversHandler.AddAssignees(pr.author)
 	}
+	log.WithField("duration", time.Since(start).String()).Debug("Completed configuring approversHandler in handle")
 
+	start = time.Now()
 	commentsFromIssueComments := commentsFromIssueComments(issueComments)
 	comments := append(commentsFromReviewComments(reviewComments), commentsFromIssueComments...)
 	comments = append(comments, commentsFromReviews(reviews)...)
@@ -437,14 +458,18 @@ func handle(log *logrus.Entry, ghc githubClient, repo approvers.Repo, githubConf
 	})
 	approveComments := filterComments(comments, approvalMatcher(botName, opts.LgtmActsAsApprove, opts.ConsiderReviewState()))
 	addApprovers(&approversHandler, approveComments, pr.author, opts.ConsiderReviewState())
+	log.WithField("duration", time.Since(start).String()).Debug("Completed filering approval comments in handle")
 
 	for _, user := range pr.assignees {
 		approversHandler.AddAssignees(user.Login)
 	}
 
+	start = time.Now()
 	notifications := filterComments(commentsFromIssueComments, notificationMatcher(botName))
 	latestNotification := getLast(notifications)
 	newMessage := updateNotification(githubConfig.LinkURL, pr.org, pr.repo, pr.branch, latestNotification, approversHandler)
+	log.WithField("duration", time.Since(start).String()).Debug("Completed getting notifications in handle")
+	start = time.Now()
 	if newMessage != nil {
 		for _, notif := range notifications {
 			if err := ghc.DeleteComment(pr.org, pr.repo, notif.ID); err != nil {
@@ -455,7 +480,9 @@ func handle(log *logrus.Entry, ghc githubClient, repo approvers.Repo, githubConf
 			log.WithError(err).Errorf("Failed to create comment on %s/%s#%d: %q.", pr.org, pr.repo, pr.number, *newMessage)
 		}
 	}
+	log.WithField("duration", time.Since(start).String()).Debug("Completed adding/deleting approval comments in handle")
 
+	start = time.Now()
 	if !approversHandler.IsApproved() {
 		if hasApprovedLabel {
 			if err := ghc.RemoveLabel(pr.org, pr.repo, pr.number, labels.Approved); err != nil {
@@ -467,6 +494,7 @@ func handle(log *logrus.Entry, ghc githubClient, repo approvers.Repo, githubConf
 			log.WithError(err).Errorf("Failed to add %q label to %s/%s#%d.", labels.Approved, pr.org, pr.repo, pr.number)
 		}
 	}
+	log.WithField("duration", time.Since(start).String()).Debug("Completed adding/deleting approval labels in handle")
 	return nil
 }
 

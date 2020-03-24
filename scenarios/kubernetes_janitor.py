@@ -104,6 +104,7 @@ PR_PROJECTS = {
     'k8s-jkns-pr-node-e2e': 3,
     'k8s-jkns-pr-gce-gpus': 3,
     'k8s-gke-gpu-pr': 3,
+    'k8s-c8d-pr-node-e2e': 3,
 }
 
 SCALE_PROJECT = {

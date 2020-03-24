@@ -121,6 +121,10 @@ func getLabelsFromGenericMatches(matches [][]string, additionalLabels []string, 
 }
 
 func handle(gc githubClient, log *logrus.Entry, additionalLabels []string, e *github.GenericCommentEvent) error {
+	if github.GenericCommentActionDeleted == e.Action {
+		return nil
+	}
+
 	labelMatches := labelRegex.FindAllStringSubmatch(e.Body, -1)
 	removeLabelMatches := removeLabelRegex.FindAllStringSubmatch(e.Body, -1)
 	customLabelMatches := customLabelRegex.FindAllStringSubmatch(e.Body, -1)

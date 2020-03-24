@@ -1,35 +1,46 @@
 periodics:
-- interval: 20m
+- interval: 1h
   name: ci-kubernetes-kind-e2e-parallel
   annotations:
     testgrid-dashboards: sig-release-master-blocking, sig-testing-kind
     testgrid-tab-name: kind-master-parallel
-    description: Uses kubetest to run e2e tests (+Conformance, -Serial) against a latest kubernetes master cluster created with sigs.k8s.io/kind
+    description: Uses kubetest to run e2e tests against a latest kubernetes master cluster created with sigs.k8s.io/kind
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,kubernetes-release-team@googlegroups.com
     testgrid-num-columns-recent: '6'
+    fork-per-release: "true"
+    fork-per-release-periodic-interval: 1h 2h 6h 24h
   labels:
-    preset-service-account: "true"
     preset-bazel-scratch-dir: "true"
     preset-bazel-remote-cache-enabled: "true"
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
+  decorate: true
+  decoration_config:
+    timeout: 60m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-master
+    - image: gcr.io/k8s-testimages/krte:v20200309-80efa63-master
+      command:
+      - wrapper.sh
+      - bash
+      - -c
+      # TODO(https://github.com/kubernetes-sigs/kind/issues/1392) use community-owned bucket instead
+      - curl -sSLo "${PATH%%:*}/kind" https://storage.googleapis.com/bentheelder-kind-ci-builds/latest/kind-linux-amd64 && chmod +x "${PATH%%:*}/kind" && curl -sSL https://storage.googleapis.com/bentheelder-kind-ci-builds/latest/e2e-k8s.sh | sh
       env:
-      # skip serial tests and run with --ginkgo-parallel
-      - name: "PARALLEL"
+      - name: FOCUS
+        value: "."
+      # TODO(bentheelder): reduce the skip list further
+      - name: SKIP
+        value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Network.should.set.TCP.CLOSE_WAIT.timeout|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|ReplicationController.light.Should.scale.from.1.pod.to.2.pods|should.provide.basic.identity|\[NodeFeature:PodReadinessGate\]
+      - name: PARALLEL
         value: "true"
-      args:
-      - "--job=$(JOB_NAME)"
-      - "--root=/go/src"
-      - "--repo=k8s.io/kubernetes=master"
-      - "--repo=sigs.k8s.io/kind=master"
-      - "--service-account=/etc/service-account/service-account.json"
-      - "--upload=gs://kubernetes-jenkins/logs"
-      - "--scenario=execute"
-      - "--"
-      - "./../../sigs.k8s.io/kind/hack/ci/e2e.sh"
+      - name: BUILD_TYPE
+        value: bazel
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -40,260 +51,54 @@ periodics:
           memory: "9000Mi"
           # during the tests more like 3-20m is used
           cpu: 2000m
-- interval: 20m
+- interval: 1h
   name: ci-kubernetes-kind-ipv6-e2e-parallel
   annotations:
     testgrid-dashboards: sig-release-master-blocking, sig-testing-kind
     testgrid-tab-name: kind-ipv6-master-parallel
-    description: Uses kubetest to run e2e tests (+Conformance, -Serial) against a latest kubernetes master IPv6 cluster created with sigs.k8s.io/kind
+    description: Uses kubetest to run e2e tests against a latest kubernetes master IPv6 cluster created with sigs.k8s.io/kind
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,kubernetes-release-team@googlegroups.com
     testgrid-num-columns-recent: '6'
+    fork-per-release: "true"
+    fork-per-release-periodic-interval: 1h 2h 6h 24h
   labels:
-    preset-service-account: "true"
     preset-bazel-scratch-dir: "true"
     preset-bazel-remote-cache-enabled: "true"
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
+  decorate: true
+  decoration_config:
+    timeout: 60m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-master
+    - image: gcr.io/k8s-testimages/krte:v20200309-80efa63-master
+      command:
+      - wrapper.sh
+      - bash
+      - -c
+      # TODO(https://github.com/kubernetes-sigs/kind/issues/1392) use community-owned bucket instead
+      - curl -sSLo "${PATH%%:*}/kind" https://storage.googleapis.com/bentheelder-kind-ci-builds/latest/kind-linux-amd64 && chmod +x "${PATH%%:*}/kind" && curl -sSL https://storage.googleapis.com/bentheelder-kind-ci-builds/latest/e2e-k8s.sh | sh
       env:
       # enable IPV6 in bootstrap image
-      - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
+      - name: DOCKER_IN_DOCKER_IPV6_ENABLED
         value: "true"
       # tell kind CI script to use ipv6
-      - name: "IP_FAMILY"
+      - name: IP_FAMILY
         value: "ipv6"
-      # skip serial tests and run with --ginkgo-parallel
-      - name: "PARALLEL"
+      - name: FOCUS
+        value: "."
+      # TODO(bentheelder): reduce the skip list further
+      - name: SKIP
+        value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Network.should.set.TCP.CLOSE_WAIT.timeout|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|ReplicationController.light.Should.scale.from.1.pod.to.2.pods|should.provide.basic.identity|\[NodeFeature:PodReadinessGate\]
+      - name: PARALLEL
         value: "true"
-      args:
-      - "--job=$(JOB_NAME)"
-      - "--root=/go/src"
-      - "--repo=k8s.io/kubernetes=master"
-      - "--repo=sigs.k8s.io/kind=master"
-      - "--service-account=/etc/service-account/service-account.json"
-      - "--upload=gs://kubernetes-jenkins/logs"
-      - "--scenario=execute"
-      - "--"
-      - "./../../sigs.k8s.io/kind/hack/ci/e2e.sh"
-      # we need privileged mode in order to do docker in docker
-      securityContext:
-        privileged: true
-      resources:
-        requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "9000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
-- interval: 1h
-  name: ci-kubernetes-kind-e2e-parallel-latest-1-17
-  annotations:
-    testgrid-dashboards: sig-release-1.17-blocking, sig-testing-kind
-    testgrid-tab-name: kind-1.17-parallel
-    description: Uses kubetest to run e2e tests (+Conformance, -Serial) against a latest kubernetes release-1.17 cluster created with sigs.k8s.io/kind
-    testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,kubernetes-release-team@googlegroups.com
-    testgrid-num-columns-recent: '6'
-  labels:
-    preset-service-account: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-1.17
-      env:
-      # skip serial tests and run with --ginkgo-parallel
-      - name: "PARALLEL"
-        value: "true"
-      args:
-      - "--job=$(JOB_NAME)"
-      - "--root=/go/src"
-      - "--repo=k8s.io/kubernetes=release-1.17"
-      - "--repo=sigs.k8s.io/kind=master"
-      - "--service-account=/etc/service-account/service-account.json"
-      - "--upload=gs://kubernetes-jenkins/logs"
-      - "--scenario=execute"
-      - "--"
-      - "./../../sigs.k8s.io/kind/hack/ci/e2e.sh"
-      # we need privileged mode in order to do docker in docker
-      securityContext:
-        privileged: true
-      resources:
-        requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "9000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
-- interval: 1h
-  name: ci-kubernetes-kind-ipv6-e2e-parallel-latest-1-17
-  annotations:
-    testgrid-dashboards: sig-release-1.17-blocking, sig-testing-kind
-    testgrid-tab-name: kind-ipv6-1.17-parallel
-    description: Uses kubetest to run e2e tests (+Conformance, -Serial) against a latest kubernetes release-1.17 IPv6 cluster created with sigs.k8s.io/kind
-    testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,kubernetes-release-team@googlegroups.com
-    testgrid-num-columns-recent: '6'
-  labels:
-    preset-service-account: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-1.17
-      env:
-      # enable IPV6 in bootstrap image
-      - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
-        value: "true"
-      # tell kind CI script to use ipv6
-      - name: "IP_FAMILY"
-        value: "ipv6"
-      # skip serial tests and run with --ginkgo-parallel
-      - name: "PARALLEL"
-        value: "true"
-      args:
-      - "--job=$(JOB_NAME)"
-      - "--root=/go/src"
-      - "--repo=k8s.io/kubernetes=release-1.17"
-      - "--repo=sigs.k8s.io/kind=master"
-      - "--service-account=/etc/service-account/service-account.json"
-      - "--upload=gs://kubernetes-jenkins/logs"
-      - "--scenario=execute"
-      - "--"
-      - "./../../sigs.k8s.io/kind/hack/ci/e2e.sh"
-      # we need privileged mode in order to do docker in docker
-      securityContext:
-        privileged: true
-      resources:
-        requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "9000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
-- interval: 1h
-  name: ci-kubernetes-kind-e2e-parallel-latest-1-16
-  annotations:
-    testgrid-dashboards: sig-release-1.16-blocking, sig-testing-kind
-    testgrid-tab-name: kind-1.16-parallel
-    description: Uses kubetest to run e2e tests (+Conformance, -Serial) against a latest kubernetes release-1.16 cluster created with sigs.k8s.io/kind
-    testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,kubernetes-release-team@googlegroups.com
-    testgrid-num-columns-recent: '6'
-  labels:
-    preset-service-account: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-1.16
-      env:
-      # skip serial tests and run with --ginkgo-parallel
-      - name: "PARALLEL"
-        value: "true"
-      args:
-      - "--job=$(JOB_NAME)"
-      - "--root=/go/src"
-      - "--repo=k8s.io/kubernetes=release-1.16"
-      - "--repo=sigs.k8s.io/kind=master"
-      - "--service-account=/etc/service-account/service-account.json"
-      - "--upload=gs://kubernetes-jenkins/logs"
-      - "--scenario=execute"
-      - "--"
-      - "./../../sigs.k8s.io/kind/hack/ci/e2e.sh"
-      # we need privileged mode in order to do docker in docker
-      securityContext:
-        privileged: true
-      resources:
-        requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "9000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
-- interval: 1h
-  name: ci-kubernetes-kind-ipv6-e2e-parallel-latest-1-16
-  annotations:
-    testgrid-dashboards: sig-release-1.16-blocking, sig-testing-kind
-    testgrid-tab-name: kind-ipv6-1.16-parallel
-    description: Uses kubetest to run e2e tests (+Conformance, -Serial) against a latest kubernetes release-1.16 IPv6 cluster created with sigs.k8s.io/kind
-    testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,kubernetes-release-team@googlegroups.com
-    testgrid-num-columns-recent: '6'
-  labels:
-    preset-service-account: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-1.16
-      env:
-      # enable IPV6 in bootstrap image
-      - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
-        value: "true"
-      # tell kind CI script to use ipv6
-      - name: "IP_FAMILY"
-        value: "ipv6"
-      # skip serial tests and run with --ginkgo-parallel
-      - name: "PARALLEL"
-        value: "true"
-      args:
-      - "--job=$(JOB_NAME)"
-      - "--root=/go/src"
-      - "--repo=k8s.io/kubernetes=release-1.16"
-      - "--repo=sigs.k8s.io/kind=master"
-      - "--service-account=/etc/service-account/service-account.json"
-      - "--upload=gs://kubernetes-jenkins/logs"
-      - "--scenario=execute"
-      - "--"
-      - "./../../sigs.k8s.io/kind/hack/ci/e2e.sh"
-      # we need privileged mode in order to do docker in docker
-      securityContext:
-        privileged: true
-      resources:
-        requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "9000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
-- interval: 1h
-  name: ci-kubernetes-kind-e2e-parallel-latest-1-15
-  annotations:
-    testgrid-dashboards: sig-release-1.15-blocking, sig-testing-kind
-    testgrid-tab-name: kind-1.15-parallel
-    description: Uses kubetest to run e2e tests (+Conformance, -Serial) against a latest kubernetes release-1.15 cluster created with sigs.k8s.io/kind
-    testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,release-managers@kubernetes.io
-    testgrid-num-columns-recent: '6'
-  labels:
-    preset-service-account: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-1.15
-      env:
-      # skip serial tests and run with --ginkgo-parallel
-      - name: "PARALLEL"
-        value: "true"
-      args:
-      - "--job=$(JOB_NAME)"
-      - "--root=/go/src"
-      - "--repo=k8s.io/kubernetes=release-1.15"
-      - "--repo=sigs.k8s.io/kind=master"
-      - "--service-account=/etc/service-account/service-account.json"
-      - "--upload=gs://kubernetes-jenkins/logs"
-      - "--scenario=execute"
-      - "--"
-      - "./../../sigs.k8s.io/kind/hack/ci/e2e.sh"
+      - name: BUILD_TYPE
+        value: bazel
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true

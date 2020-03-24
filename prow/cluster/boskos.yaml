@@ -82,9 +82,6 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: boskos
 rules:
-- apiGroups: ["apiextensions.k8s.io"]
-  verbs: ["*"]
-  resources: ["customresourcedefinitions"]  # TODO(#16281): remove once Boskos no longer attempts to create CRDs itself
 - apiGroups: ["boskos.k8s.io"]
   verbs: ["*"]
   resources: ["*"]
@@ -98,7 +95,7 @@ metadata:
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: crd-creator
+  name: boskos
 subjects:
 - kind: ServiceAccount
   name: boskos
@@ -128,7 +125,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: boskos
-        image: gcr.io/k8s-prow/boskos/boskos:v20200226-84852b36a
+        image: gcr.io/k8s-prow/boskos/boskos:v20200320-1ebe1f384
         args:
         - --config=/etc/config/config
         - --namespace=test-pods

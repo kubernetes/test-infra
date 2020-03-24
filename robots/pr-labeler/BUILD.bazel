@@ -12,7 +12,12 @@ prow_push(
     },
 )
 
-prow_image(name = "image")
+NAME = "pr-labeler"
+
+prow_image(
+    name = "image",
+    component = NAME,
+)
 
 go_library(
     name = "go_default_library",
@@ -41,6 +46,6 @@ filegroup(
 
 # Delete after gazelle stops forcing its creation
 go_binary(
-    name = "pr-labeler",
+    name = NAME,
     embed = [":go_default_library"],
 )

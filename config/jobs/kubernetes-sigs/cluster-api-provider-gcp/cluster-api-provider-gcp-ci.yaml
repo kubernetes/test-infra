@@ -13,7 +13,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-experimental
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200322-3d5100e-experimental
       command:
       - "runner.sh"
       - "./scripts/ci-build.sh"
@@ -34,7 +34,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-experimental
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200322-3d5100e-experimental
       args:
       - "runner.sh"
       - "./scripts/ci-test.sh"
@@ -69,12 +69,14 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200322-3d5100e-experimental
         env:
           - name: "CAPI_BRANCH"
             value: "master"
           - name: "CABPK_BRANCH"
             value: "master"
+          - name: "BOSKOS_HOST"
+            value: "boskos.test-pods.svc.cluster.local"
         command:
           - "runner.sh"
           - "./scripts/ci-e2e.sh"
@@ -121,12 +123,14 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200322-3d5100e-experimental
         env:
           - name: "CAPI_BRANCH"
             value: "stable"
           - name: "CABPK_BRANCH"
             value: "stable"
+          - name: "BOSKOS_HOST"
+            value: "boskos.test-pods.svc.cluster.local"
         command:
           - "runner.sh"
           - "./scripts/ci-e2e.sh"
@@ -175,12 +179,14 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200322-3d5100e-experimental
         env:
           - name: "CAPI_BRANCH"
             value: "stable"
           - name: "CABPK_BRANCH"
             value: "stable"
+          - name: "BOSKOS_HOST"
+            value: "boskos.test-pods.svc.cluster.local"
         command:
           - "runner.sh"
           - "./scripts/ci-e2e.sh"

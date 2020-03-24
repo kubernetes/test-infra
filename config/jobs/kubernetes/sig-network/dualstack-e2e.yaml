@@ -1,43 +1,48 @@
 periodics:
-- interval: 6h
+- interval: 24h
   name: ci-dualstack-azure-e2e-1-16
+  decorate: true
+  decoration_config:
+    timeout: 5h
   labels:
     preset-service-account: "true"
     preset-azure-cred: "true"
     preset-dind-enabled: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: release-1.16
+    path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-1.16
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200322-3d5100e-1.16
+      command:
+      - runner.sh
+      - kubetest
       args:
-      - --job=$(JOB_NAME)
-      - --repo=k8s.io/kubernetes=release-1.16
-      - --root=/go/src
-      - --service-account=/etc/service-account/service-account.json
-      - --timeout=470
-      - --upload=gs://kubernetes-jenkins/logs/
-      - --scenario=kubernetes_e2e
-      - --
-      - --gce-ssh=
-      - --test=true
-      - --up=true
-      - --down=true
-      - --deployment=aksengine
+      # Generic e2e test args
+      - --test
+      - --up
+      - --down
       - --build=quick
+      - --dump=$(ARTIFACTS)
+      # Azure-specific test args
       - --provider=skeleton
-      - --ginkgo-parallel=1
+      - --deployment=aksengine
       - --aksengine-agentpoolcount=2
       - --aksengine-admin-username=azureuser
-      - --aksengine-creds=$AZURE_CREDENTIALS
+      - --aksengine-creds=$(AZURE_CREDENTIALS)
       - --aksengine-orchestratorRelease=1.16
       - --aksengine-mastervmsize=Standard_DS2_v2
       - --aksengine-agentvmsize=Standard_D4s_v3
-      - --aksengine-deploy-custom-k8s=True
+      - --aksengine-deploy-custom-k8s
       - --aksengine-location=westus2
-      - --aksengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE
+      - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
       - --aksengine-template-url=https://raw.githubusercontent.com/Azure/aks-engine/master/examples/dualstack/kubernetes.json
       - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.46.0/aks-engine-v0.46.0-linux-amd64.tar.gz
-      - --timeout=450m
+      # Specific test args
       - --test_args=--ginkgo.focus=\[Feature:IPv6DualStackAlphaFeature\]
+      - --ginkgo-parallel=1
       securityContext:
         privileged: true
   annotations:
@@ -45,45 +50,50 @@ periodics:
     testgrid-tab-name: dualstack-azure-e2e-1-16
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: "Dual-stack e2e tests on a 1.16 Kubernetes cluster provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
-- interval: 6h
+- interval: 24h
   name: ci-dualstack-azure-e2e-1-17
+  decorate: true
+  decoration_config:
+    timeout: 5h
   labels:
     preset-service-account: "true"
     preset-azure-cred: "true"
     preset-dind-enabled: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: release-1.17
+    path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-1.17
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200322-3d5100e-1.17
+      command:
+      - runner.sh
+      - kubetest
       args:
-      - --job=$(JOB_NAME)
-      - --repo=k8s.io/kubernetes=release-1.17
-      - --root=/go/src
-      - --service-account=/etc/service-account/service-account.json
-      - --timeout=470
-      - --upload=gs://kubernetes-jenkins/logs/
-      - --scenario=kubernetes_e2e
-      - --
-      - --gce-ssh=
-      - --test=true
-      - --up=true
-      - --down=true
-      - --deployment=aksengine
+      # Generic e2e test args
+      - --test
+      - --up
+      - --down
       - --build=quick
+      - --dump=$(ARTIFACTS)
+      # Azure-specific test args
       - --provider=skeleton
-      - --ginkgo-parallel=1
+      - --deployment=aksengine
       - --aksengine-agentpoolcount=2
       - --aksengine-admin-username=azureuser
-      - --aksengine-creds=$AZURE_CREDENTIALS
+      - --aksengine-creds=$(AZURE_CREDENTIALS)
       - --aksengine-orchestratorRelease=1.17
       - --aksengine-mastervmsize=Standard_DS2_v2
       - --aksengine-agentvmsize=Standard_D4s_v3
-      - --aksengine-deploy-custom-k8s=True
+      - --aksengine-deploy-custom-k8s
       - --aksengine-location=westus2
-      - --aksengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE
+      - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
       - --aksengine-template-url=https://gist.githubusercontent.com/aramase/21c3bdb44509c0f70f71389903d49c67/raw/1a9957626edc2b5c7913c741b9487fde123d0570/dualstack-prow.json
       - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.46.0/aks-engine-v0.46.0-linux-amd64.tar.gz
-      - --timeout=450m
+      # Specific test args
       - --test_args=--ginkgo.focus=\[Feature:IPv6DualStackAlphaFeature\]
+      - --ginkgo-parallel=1
       securityContext:
         privileged: true
   annotations:
@@ -91,45 +101,101 @@ periodics:
     testgrid-tab-name: dualstack-azure-e2e-1-17
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: "Dual-stack e2e tests on a 1.17 Kubernetes cluster provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
-- interval: 6h
-  name: ci-dualstack-azure-e2e-master
+- interval: 24h
+  name: ci-dualstack-azure-e2e-1-18
+  decorate: true
+  decoration_config:
+    timeout: 5h
   labels:
     preset-service-account: "true"
     preset-azure-cred: "true"
     preset-dind-enabled: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: release-1.18
+    path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200322-3d5100e-1.18
+      command:
+      - runner.sh
+      - kubetest
       args:
-      - --job=$(JOB_NAME)
-      - --repo=k8s.io/kubernetes=master
-      - --root=/go/src
-      - --service-account=/etc/service-account/service-account.json
-      - --timeout=470
-      - --upload=gs://kubernetes-jenkins/logs/
-      - --scenario=kubernetes_e2e
-      - --
-      - --gce-ssh=
-      - --test=true
-      - --up=true
-      - --down=true
-      - --deployment=aksengine
+      # Generic e2e test args
+      - --test
+      - --up
+      - --down
       - --build=quick
+      - --dump=$(ARTIFACTS)
+      # Azure-specific test args
       - --provider=skeleton
-      - --ginkgo-parallel=1
+      - --deployment=aksengine
       - --aksengine-agentpoolcount=2
       - --aksengine-admin-username=azureuser
-      - --aksengine-creds=$AZURE_CREDENTIALS
+      - --aksengine-creds=$(AZURE_CREDENTIALS)
       - --aksengine-orchestratorRelease=1.17
       - --aksengine-mastervmsize=Standard_DS2_v2
       - --aksengine-agentvmsize=Standard_D4s_v3
-      - --aksengine-deploy-custom-k8s=True
+      - --aksengine-deploy-custom-k8s
       - --aksengine-location=westus2
-      - --aksengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE
+      - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
       - --aksengine-template-url=https://gist.githubusercontent.com/aramase/21c3bdb44509c0f70f71389903d49c67/raw/1a9957626edc2b5c7913c741b9487fde123d0570/dualstack-prow.json
-      - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.46.0/aks-engine-v0.46.0-linux-amd64.tar.gz
-      - --timeout=450m
+      - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
+      # Specific test args
       - --test_args=--ginkgo.focus=\[Feature:IPv6DualStackAlphaFeature\]
+      - --ginkgo-parallel=1
+      securityContext:
+        privileged: true
+  annotations:
+    testgrid-dashboards: sig-network-dualstack-azure-e2e, provider-azure-dualstack, provider-azure-periodic
+    testgrid-tab-name: dualstack-azure-e2e-1-18
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    description: "Dual-stack e2e tests on a 1.18 Kubernetes cluster provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
+- interval: 24h
+  name: ci-dualstack-azure-e2e-master
+  decorate: true
+  decoration_config:
+    timeout: 5h
+  labels:
+    preset-service-account: "true"
+    preset-azure-cred: "true"
+    preset-dind-enabled: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200322-3d5100e-master
+      command:
+      - runner.sh
+      - kubetest
+      args:
+      # Generic e2e test args
+      - --test
+      - --up
+      - --down
+      - --build=quick
+      - --dump=$(ARTIFACTS)
+      # Azure-specific test args
+      - --provider=skeleton
+      - --deployment=aksengine
+      - --aksengine-agentpoolcount=2
+      - --aksengine-admin-username=azureuser
+      - --aksengine-creds=$(AZURE_CREDENTIALS)
+      - --aksengine-orchestratorRelease=1.17
+      - --aksengine-mastervmsize=Standard_DS2_v2
+      - --aksengine-agentvmsize=Standard_D4s_v3
+      - --aksengine-deploy-custom-k8s
+      - --aksengine-location=westus2
+      - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
+      - --aksengine-template-url=https://gist.githubusercontent.com/aramase/21c3bdb44509c0f70f71389903d49c67/raw/1a9957626edc2b5c7913c741b9487fde123d0570/dualstack-prow.json
+      - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
+      # Specific test args
+      - --test_args=--ginkgo.focus=\[Feature:IPv6DualStackAlphaFeature\]
+      - --ginkgo-parallel=1
       securityContext:
         privileged: true
   annotations:

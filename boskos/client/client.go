@@ -249,8 +249,8 @@ func (c *Client) ReleaseAll(dest string) error {
 	}
 	var allErrors error
 	for _, r := range resources {
-		c.storage.Delete(r.GetName())
-		err := c.Release(r.GetName(), dest)
+		c.storage.Delete(r.Name)
+		err := c.Release(r.Name, dest)
 		if err != nil {
 			allErrors = multierror.Append(allErrors, err)
 		}
@@ -287,7 +287,7 @@ func (c *Client) UpdateAll(state string) error {
 	}
 	var allErrors error
 	for _, r := range resources {
-		if err := c.Update(r.GetName(), state, nil); err != nil {
+		if err := c.Update(r.Name, state, nil); err != nil {
 			allErrors = multierror.Append(allErrors, err)
 			continue
 		}
@@ -312,12 +312,7 @@ func (c *Client) SyncAll() error {
 		return nil
 	}
 	var allErrors error
-	for _, i := range resources {
-		r, err := common.ItemToResource(i)
-		if err != nil {
-			allErrors = multierror.Append(allErrors, err)
-			continue
-		}
+	for _, r := range resources {
 		if err := c.Update(r.Name, r.State, nil); err != nil {
 			allErrors = multierror.Append(allErrors, err)
 			continue
@@ -338,7 +333,7 @@ func (c *Client) UpdateOne(name, state string, userData *common.UserData) error 
 	if err != nil {
 		return fmt.Errorf("no resource name %v", name)
 	}
-	if err := c.Update(r.GetName(), state, userData); err != nil {
+	if err := c.Update(r.Name, state, userData); err != nil {
 		return err
 	}
 	return c.updateLocalResource(r, state, userData)
@@ -364,18 +359,14 @@ func (c *Client) HasResource() bool {
 
 // private methods
 
-func (c *Client) updateLocalResource(i common.Item, state string, data *common.UserData) error {
-	res, err := common.ItemToResource(i)
-	if err != nil {
-		return err
-	}
+func (c *Client) updateLocalResource(res common.Resource, state string, data *common.UserData) error {
 	res.State = state
 	if res.UserData == nil {
 		res.UserData = data
 	} else {
 		res.UserData.Update(data)
 	}
-	_, err = c.storage.Update(res)
+	_, err := c.storage.Update(res)
 	return err
 }
 

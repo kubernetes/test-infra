@@ -1,59 +1,54 @@
 presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-bazel-build-canary
+    decorate: true
     always_run: false
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
-        imagePullPolicy: Always
-        args:
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--scenario=kubernetes_bazel"
-        - "--timeout=60"
-        - "--" # end bootstrap args, scenario args below
-        - "--build=//... -//vendor/..."
-        - "--release=//build/release-tars"
-        resources:
-          requests:
-            memory: "6Gi"
-
     annotations:
       testgrid-dashboards: sig-testing-canaries
       testgrid-tab-name: pull-bazel-build
+    extra_refs:
+    - base_ref: master
+      org: kubernetes
+      repo: test-infra
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:2.2.0-from-0.23.2
+        command:
+        - bash
+        args:
+        - -c
+        - |
+          ../test-infra/hack/bazel.sh build --config=remote --remote_instance_name=projects/k8s-prow-builds/instances/default_instance -- //... -//vendor/... -//build/... //build/release-tars
   - name: pull-kubernetes-bazel-test-canary
+    decorate: true
     always_run: false
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
-        imagePullPolicy: Always
-        args:
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--scenario=kubernetes_execute_bazel"
-        - "--timeout=60"
-        - "--" # end bootstrap args, scenario args below
-        - "make"
-        - "bazel-test"
-        resources:
-          requests:
-            memory: "6Gi"
-
     annotations:
       testgrid-dashboards: sig-testing-canaries
       testgrid-tab-name: pull-bazel-test
+    extra_refs:
+    - base_ref: master
+      org: kubernetes
+      repo: test-infra
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:2.2.0-from-0.23.2
+        command:
+        - ../test-infra/hack/bazel.sh
+        args:
+        - test
+        - --config=unit
+        - --config=remote
+        - --remote_instance_name=projects/k8s-prow-builds/instances/default_instance
+        - //...
+        - --
+        - -//build/...
+        - -//vendor/...
   - name: pull-kubernetes-bazel-test-integration-canary
     always_run: false
     labels:

@@ -14,7 +14,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-1.17
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200322-3d5100e-1.17
         command:
         - runner.sh
         - kubetest
@@ -64,7 +64,7 @@ presubmits:
       path_alias: sigs.k8s.io/azuredisk-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-1.17
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200322-3d5100e-1.17
         command:
         - runner.sh
         - kubetest
@@ -114,7 +114,7 @@ presubmits:
       path_alias: sigs.k8s.io/azuredisk-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-1.17
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200322-3d5100e-1.17
         command:
         - runner.sh
         - kubetest
@@ -164,7 +164,7 @@ presubmits:
       path_alias: sigs.k8s.io/azurefile-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-1.17
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200322-3d5100e-1.17
         command:
         - runner.sh
         - kubetest
@@ -199,7 +199,7 @@ presubmits:
         - name: AZURE_STORAGE_DRIVER
           value: kubernetes.io/azure-file # In-tree Azure file storage class
 periodics:
-- interval: 4h
+- interval: 24h
   name: kubernetes-e2e-azure-disk-1-17
   decorate: true
   labels:
@@ -217,7 +217,7 @@ periodics:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-1.17
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200322-3d5100e-1.17
       command:
       - runner.sh
       - kubetest
@@ -254,7 +254,7 @@ periodics:
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Run Azure Disk e2e test with Azure Disk in-tree volume plugin.
     testgrid-num-columns-recent: '30'
-- interval: 4h
+- interval: 24h
   name: kubernetes-e2e-azure-disk-vmss-1-17
   decorate: true
   labels:
@@ -272,7 +272,7 @@ periodics:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-1.17
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200322-3d5100e-1.17
       command:
       - runner.sh
       - kubetest
@@ -309,7 +309,7 @@ periodics:
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Run Azure Disk e2e test on a VMSS-based cluster with Azure Disk in-tree volume plugin.
     testgrid-num-columns-recent: '30'
-- interval: 4h
+- interval: 24h
   name: kubernetes-e2e-azure-file-1-17
   decorate: true
   labels:
@@ -327,7 +327,7 @@ periodics:
     path_alias: sigs.k8s.io/azurefile-csi-driver
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-1.17
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200322-3d5100e-1.17
       command:
       - runner.sh
       - kubetest

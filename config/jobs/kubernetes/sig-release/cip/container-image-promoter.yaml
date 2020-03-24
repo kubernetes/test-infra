@@ -10,7 +10,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20200107-v2.3.1-71-gfd2fae8
+      - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20200305-v2.3.1-117-gd677a55
         command:
         - cip
         args:
@@ -27,7 +27,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-1.17
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200322-3d5100e-1.17
         command:
         - infra/gcp/backup_tools/backup_test.sh
         env:
@@ -60,7 +60,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200322-3d5100e-master
         command:
         - "./test-e2e/cip/e2e-entrypoint-from-container.sh"
         env:
@@ -75,7 +75,7 @@ presubmits:
         secret:
           secretName: k8s-cip-test-prod-service-account
     annotations:
-      testgrid-dashboards: sig-release-misc
+      testgrid-dashboards: sig-release-releng-presubmits
   - name: pull-cip-auditor-e2e
     decorate: true
     path_alias: "sigs.k8s.io/k8s-container-image-promoter"
@@ -88,7 +88,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200322-3d5100e-master
         command:
         - "./test-e2e/cip-auditor/entrypoint-from-container.sh"
         env:
@@ -103,7 +103,7 @@ presubmits:
         secret:
           secretName: k8s-gcr-audit-test-prod-service-account
     annotations:
-      testgrid-dashboards: sig-release-misc
+      testgrid-dashboards: sig-release-releng-presubmits
   # Build all binaries and also run unit tests.
   - name: pull-cip-unit-tests
     decorate: true
@@ -114,13 +114,13 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200322-3d5100e-master
         command:
         - "make"
         args:
         - "test-ci"
     annotations:
-      testgrid-dashboards: sig-release-misc
+      testgrid-dashboards: sig-release-releng-presubmits
   # Run linter.
   - name: pull-cip-lint
     decorate: true
@@ -137,4 +137,4 @@ presubmits:
         args:
         - "lint-ci"
     annotations:
-      testgrid-dashboards: sig-release-misc
+      testgrid-dashboards: sig-release-releng-presubmits

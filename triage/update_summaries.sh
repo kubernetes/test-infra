@@ -21,9 +21,10 @@ start=$(date +%s)
 
 if [[ -e ${GOOGLE_APPLICATION_CREDENTIALS-} ]]; then
   gcloud auth activate-service-account --key-file="${GOOGLE_APPLICATION_CREDENTIALS}"
-  gcloud config set project k8s-gubernator
-  bq show <<< $'\n'
 fi
+
+gcloud config set project k8s-gubernator
+bq show <<< $'\n'
 
 date
 

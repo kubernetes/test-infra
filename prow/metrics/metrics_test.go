@@ -17,17 +17,45 @@ limitations under the License.
 package metrics
 
 import (
+	"context"
 	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/interrupts"
 )
 
+type fakeListenAndServer struct {
+	ctx    context.Context
+	server *httptest.Server
+}
+
+func (fls *fakeListenAndServer) ListenAndServe() error {
+	defer fls.server.Close()
+	// Already listening and serving
+	<-fls.ctx.Done()
+	return http.ErrServerClosed
+}
+
+func (fls *fakeListenAndServer) Shutdown(ctx context.Context) error {
+	return fls.server.Config.Shutdown(ctx)
+}
+
+func (fls *fakeListenAndServer) CreateServer(handler http.Handler) interrupts.ListenAndServer {
+	fls.server = httptest.NewServer(handler)
+	return fls
+}
+
 func TestExposeMetrics(t *testing.T) {
-	ExposeMetrics("my-component", config.PushGateway{})
-	resp, err := http.Get("http://127.0.0.1:9090/metrics")
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	fls := fakeListenAndServer{ctx: ctx}
+
+	ExposeMetricsWithRegistry("my-component", config.PushGateway{}, nil, fls.CreateServer)
+	resp, err := http.Get(fls.server.URL + "/metrics")
 	if err != nil {
-		t.Errorf("failed getting metrics: %v", err)
+		t.Fatalf("failed getting metrics: %v", err)
 	}
 	if resp.StatusCode != http.StatusOK {
 		t.Errorf("resonse status was not 200 but %d", resp.StatusCode)

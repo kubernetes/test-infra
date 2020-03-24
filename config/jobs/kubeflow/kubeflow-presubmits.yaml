@@ -313,7 +313,7 @@ presubmits:
         - -c
         - cd ./frontend && npm run test:ci:prow
   - name: kubeflow-pipeline-backend-test
-    always_run: false
+    always_run: true
     decorate: true
     labels:
       preset-service-account: "true"
@@ -337,7 +337,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200322-3d5100e-master
         command:
         - ./test/presubmit-tests-with-pipeline-deployment.sh
         args:
@@ -352,7 +352,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200322-3d5100e-master
         command:
         - ./test/presubmit-tests-with-pipeline-deployment.sh
         args:
@@ -362,15 +362,33 @@ presubmits:
         - sample_test
         - --timeout
         - "3600"
-  - name: kubeflow-pipeline-upgrade-test
-    always_run: true
+  - name: kubeflow-pipeline-integration-test
+    always_run: false
     decorate: true
-    skip_report: true
     labels:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200314-a0cadb9-master
+        command:
+        - ./test/presubmit-tests-with-pipeline-deployment.sh
+        args:
+        - --workflow_file
+        - sample_test.yaml
+        - --test_result_folder
+        - sample_test
+        - --timeout
+        - "3600"
+        - --is_integration_test
+        - "true"
+  - name: kubeflow-pipeline-upgrade-test
+    always_run: true
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200322-3d5100e-master
         command:
         - ./test/upgrade-tests.sh
         args:
@@ -397,7 +415,7 @@ presubmits:
 #       preset-service-account: "true"
 #     spec:
 #       containers:
-#       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-master
+#       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200322-3d5100e-master
 #         command:
 #         - ./test/presubmit-tests-gce-minikube.sh
 #         args:

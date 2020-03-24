@@ -1,0 +1,32 @@
+periodics:
+- name: kubeadm-windows-gcp-k8s-stable
+  interval: 180m
+  labels:
+    preset-service-account: "true"
+  decorate: true
+  decoration_config:
+    timeout: 180m
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: sig-windows-tools
+    base_ref: master
+    path_alias: "sigs.k8s.io/sig-windows-tools"
+  - org: kubernetes-sigs
+    repo: windows-testing
+    base_ref: master
+    path_alias: "sigs.k8s.io/windows-testing"
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200322-3d5100e-master
+      command:
+      - "runner.sh"
+      - "./kubeadm/hack/ci-e2e.sh"
+  annotations:
+    testgrid-dashboards: sig-windows
+    testgrid-tab-name: kubeadm-windows-gcp-k8s-stable
+    description: Periodic job that runs conformance tests on a Linux/Windows cluster created with kubeadm (stable k8s version)"
+    testgrid-num-columns-recent: '30'

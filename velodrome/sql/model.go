@@ -80,12 +80,12 @@ type Assignee struct {
 
 // Comment is either a pull-request comment or an issue comment.
 type Comment struct {
-	Repository       string `gorm:"primary_key;index:repo_created"`
+	Repository       string `gorm:"primary_key;index:repo_comment_created"`
 	ID               string `gorm:"primary_key"`
 	IssueID          string
 	Body             string `gorm:"type:text"`
 	User             string
-	CommentCreatedAt time.Time `gorm:"index:repo_created"`
+	CommentCreatedAt time.Time `gorm:"index:repo_comment_created"`
 	CommentUpdatedAt time.Time
 	PullRequest      bool
 }

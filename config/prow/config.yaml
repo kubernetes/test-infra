@@ -10,10 +10,10 @@ plank:
       timeout: 2h
       grace_period: 15s
       utility_images:
-        clonerefs: "gcr.io/k8s-prow/clonerefs:v20200226-8b3bfc8b7"
-        initupload: "gcr.io/k8s-prow/initupload:v20200226-8b3bfc8b7"
-        entrypoint: "gcr.io/k8s-prow/entrypoint:v20200226-8b3bfc8b7"
-        sidecar: "gcr.io/k8s-prow/sidecar:v20200226-8b3bfc8b7"
+        clonerefs: "gcr.io/k8s-prow/clonerefs:v20200323-ecb75feef"
+        initupload: "gcr.io/k8s-prow/initupload:v20200323-ecb75feef"
+        entrypoint: "gcr.io/k8s-prow/entrypoint:v20200323-ecb75feef"
+        sidecar: "gcr.io/k8s-prow/sidecar:v20200323-ecb75feef"
       gcs_configuration:
         bucket: "kubernetes-jenkins"
         path_strategy: "legacy"
@@ -487,6 +487,8 @@ tide:
     kubernetes-sigs/krew: squash
     kubernetes-sigs/kubespray: squash
     kubernetes-sigs/service-catalog: squash
+    kubernetes-sigs/go-open-service-broker-client: squash
+    kubernetes-sigs/minibroker: squash
     kubernetes/cloud-provider-openstack: squash
     kubernetes/dashboard: squash
     kubernetes/kube-deploy: squash
@@ -527,6 +529,8 @@ presets:
   # injecting a new key. this allows us to avoid mass key download warnings
   - name: E2E_GOOGLE_APPLICATION_CREDENTIALS
     value: /etc/service-account/service-account.json
+  - name: GOOGLE_APPLICATION_CREDENTIALS_DEPRECATED
+    value: "Migrate to workload identity, contact sig-testing"
   volumes:
   - name: service
     secret:
@@ -540,6 +544,8 @@ presets:
   env:
   - name: GOOGLE_APPLICATION_CREDENTIALS
     value: /etc/service-account/service-account.json
+  - name: GOOGLE_APPLICATION_CREDENTIALS_DEPRECATED
+    value: "Migrate to workload identity, contact sig-testing"
   # storage e2e tests borrow this as a preconfigured key instead of creating and
   # injecting a new key. this allows us to avoid mass key download warnings
   - name: E2E_GOOGLE_APPLICATION_CREDENTIALS
@@ -557,6 +563,8 @@ presets:
   env:
   - name: GOOGLE_APPLICATION_CREDENTIALS
     value: /etc/service-account/istio-service-account.json
+  - name: GOOGLE_APPLICATION_CREDENTIALS_DEPRECATED
+    value: "Migrate to workload identity, contact sig-testing"
   # storage e2e tests borrow this as a preconfigured key instead of creating and
   # injecting a new key. this allows us to avoid mass key download warnings
   - name: E2E_GOOGLE_APPLICATION_CREDENTIALS

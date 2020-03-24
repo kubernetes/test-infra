@@ -20,53 +20,53 @@ import (
 	"testing"
 )
 
+var globalSecret = `
+'*':
+  - value: abc
+    expiry: 9999-10-02T15:00:00Z
+  - value: key2
+    expiry: 2018-10-02T15:00:00Z
+`
+
+var defaultTokenGenerator = func() []byte {
+	return []byte(globalSecret)
+}
+
 // echo -n 'BODY' | openssl dgst -sha1 -hmac KEY
 func TestValidatePayload(t *testing.T) {
 	var testcases = []struct {
-		payload string
-		sig     string
-		key     string
-		valid   bool
+		payload        string
+		sig            string
+		tokenGenerator func() []byte
+		valid          bool
 	}{
 		{
 			"{}",
 			"sha1=db5c76f4264d0ad96cf21baec394964b4b8ce580",
-			"abc",
+			defaultTokenGenerator,
 			true,
 		},
 		{
 			"{}",
 			"db5c76f4264d0ad96cf21baec394964b4b8ce580",
-			"abc",
+			defaultTokenGenerator,
 			false,
 		},
 		{
 			"{}",
 			"",
-			"abc",
+			defaultTokenGenerator,
 			false,
-		},
-		{
-			"",
-			"sha1=cc47e3c0aa0c2984454476d061108c0b110177ae",
-			"abc",
-			true,
-		},
-		{
-			"",
-			"sha1=fbdb1d1b18aa6c08324b7d64b71fb76370690e1d",
-			"",
-			true,
 		},
 		{
 			"{}",
 			"",
-			"abc",
+			defaultTokenGenerator,
 			false,
 		},
 	}
 	for _, tc := range testcases {
-		if ValidatePayload([]byte(tc.payload), tc.sig, []byte(tc.key)) != tc.valid {
+		if ValidatePayload([]byte(tc.payload), tc.sig, tc.tokenGenerator) != tc.valid {
 			t.Errorf("Wrong validation for %+v", tc)
 		}
 	}

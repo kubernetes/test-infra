@@ -10,7 +10,6 @@ prow_push(
     images = tags(
         cmds = [
             "admission",
-            "artifact-uploader",
             "autobump",
             "branchprotector",
             "checkconfig",
@@ -65,7 +64,6 @@ filegroup(
     srcs = [
         ":package-srcs",
         "//prow/apis/prowjobs:all-srcs",
-        "//prow/artifact-uploader:all-srcs",
         "//prow/bugzilla:all-srcs",
         "//prow/client/clientset/versioned:all-srcs",
         "//prow/client/informers/externalversions:all-srcs",
@@ -73,7 +71,6 @@ filegroup(
         "//prow/clonerefs:all-srcs",
         "//prow/cluster:all-srcs",
         "//prow/cmd/admission:all-srcs",
-        "//prow/cmd/artifact-uploader:all-srcs",
         "//prow/cmd/autobump:all-srcs",
         "//prow/cmd/branchprotector:all-srcs",
         "//prow/cmd/checkconfig:all-srcs",
@@ -134,6 +131,9 @@ filegroup(
         "//prow/logrusutil:all-srcs",
         "//prow/metrics:all-srcs",
         "//prow/phony:all-srcs",
+        "//prow/pipeline/clientset/versioned:all-srcs",
+        "//prow/pipeline/informers/externalversions:all-srcs",
+        "//prow/pipeline/listers/pipeline/v1alpha1:all-srcs",
         "//prow/pjutil:all-srcs",
         "//prow/plank:all-srcs",
         "//prow/pluginhelp:all-srcs",
@@ -154,6 +154,7 @@ filegroup(
         "//prow/statusreconciler:all-srcs",
         "//prow/test:all-srcs",
         "//prow/tide:all-srcs",
+        "//prow/version:all-srcs",
     ],
     tags = ["automanaged"],
 )

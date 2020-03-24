@@ -184,9 +184,12 @@ The command runs all (and only) upgrade tests tagged with `Feature:SomeUpgrade`
 label on GCE. The command downloads `v1.7.5` and `v1.8.0-beta.1` releases,
 unzips downloaded files, and runs the tests to upgrade the cluster from `v1.7.5`
 to `v1.8.0-beta.1`. You will be able to find 2 new directories named `kubernetes`
-and `kubernetes_skew` at current directory. `kubernetes` is the directory
-corresponding to release indicated by first `--extract` flag, while `kubernetes_skew`
+and `kubernetes_skew` at current directory. `kubernetes_skew` is the directory
+corresponding to release indicated by first `--extract` flag, while `kubernetes`
 corresponds to second flag.
+The first `--extract` downloads and extracts the specified release into the `kubernetes`
+directory. The second `--extract` renames the `kubernetes` directory as `kubernetes_skew`
+and then downloads the second release into a new `kubernetes` directory.
 
 Note that order of the 2 `--extract` flags matters: `--extract=v2 --extract=v1` means
 upgrading from v1 to v2. The command does not run other e2e tests after completing

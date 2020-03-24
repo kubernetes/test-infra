@@ -132,6 +132,7 @@ func run(sourcePaths []string, defaultNamespace string, configUpdater plugins.Co
 		logger := logrus.WithFields(logrus.Fields{"configmap": map[string]string{"name": cm.Name, "namespace": cm.Namespace, "cluster": cm.Cluster}})
 		configMapClient, err := updateconfig.GetConfigMapClient(client.CoreV1(), cm.Namespace, buildClusterCoreV1Clients, cm.Cluster)
 		if err != nil {
+			errors++
 			logrus.WithError(err).Errorf("Failed to find configMap client")
 			continue
 		}
@@ -146,7 +147,7 @@ func run(sourcePaths []string, defaultNamespace string, configUpdater plugins.Co
 }
 
 func main() {
-	logrusutil.ComponentInit("config-bootstrapper")
+	logrusutil.ComponentInit()
 
 	o := gatherOptions()
 	if err := o.Validate(); err != nil {

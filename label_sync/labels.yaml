@@ -1022,11 +1022,6 @@ repos:
         target: both
         addedBy: label
       - color: 0052cc
-        description: Issues or PRs related to prow's artifact-uploader component
-        name: area/prow/artifact-uploader
-        target: both
-        addedBy: label
-      - color: 0052cc
         description: Issues or PRs related to prow's branchprotector component
         name: area/prow/branchprotector
         target: both
@@ -1124,6 +1119,11 @@ repos:
       - color: 0052cc
         description: Issues or PRs related to prow's plank component
         name: area/prow/plank
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to prow's plugins for the hook component
+        name: area/prow/plugins
         target: both
         addedBy: label
       - color: 0052cc

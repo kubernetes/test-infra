@@ -1,7 +1,12 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
 load("//prow:def.bzl", "prow_image", "prow_push")
 
-prow_image(name = "image")
+NAME = "resultstore"
+
+prow_image(
+    name = "image",
+    component = NAME,
+)
 
 prow_push(
     name = "push",
@@ -37,7 +42,7 @@ go_library(
 )
 
 go_binary(
-    name = "resultstore",
+    name = NAME,
     embed = [":go_default_library"],
     visibility = ["//visibility:public"],
 )
@@ -67,6 +72,7 @@ go_test(
         "@com_github_google_go_cmp//cmp:go_default_library",
         "@com_github_googlecloudplatform_testgrid//metadata:go_default_library",
         "@com_github_googlecloudplatform_testgrid//metadata/junit:go_default_library",
+        "@com_github_googlecloudplatform_testgrid//pb/config:go_default_library",
         "@com_github_googlecloudplatform_testgrid//resultstore:go_default_library",
         "@com_github_googlecloudplatform_testgrid//util/gcs:go_default_library",
         "@io_k8s_apimachinery//pkg/api/equality:go_default_library",

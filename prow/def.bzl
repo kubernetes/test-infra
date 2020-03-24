@@ -25,6 +25,7 @@ load(
 
 ## prow_image is a macro for creating :app and :image targets
 def prow_image(
+        component,
         name,  # use "image"
         base = None,
         stamp = True,  # stamp by default, but allow overrides
@@ -37,6 +38,7 @@ def prow_image(
         goarch = "amd64",
         goos = "linux",
         pure = "on",
+        x_defs = {"k8s.io/test-infra/prow/version.Name": component},
     )
 
     container_image(

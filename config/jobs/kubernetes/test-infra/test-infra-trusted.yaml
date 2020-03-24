@@ -101,10 +101,29 @@ postsubmits:
       testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
       testgrid-num-failures-to-alert: '1'
       description: deploys the configured version of prow by running prow/deploy.sh
+  - name: post-test-infra-push-resultstore
+    cluster: test-infra-trusted
+    run_if_changed: '^(WORKSPACE|load.bzl|repos.bzl|prow/prow.bzl|experiment/resultstore/)'
+    decorate: true
+    spec:
+      serviceAccountName: pusher
+      containers:
+      - image: gcr.io/k8s-testimages/bazelbuild:v20200212-b304d89-2.1.0
+        command:
+        - experiment/resultstore/push.sh
+        env:
+        - name: USE_BAZEL_VERSION
+          value: real  # Ignore .bazelversion
+    annotations:
+      testgrid-dashboards: sig-testing-prow
+      testgrid-tab-name: push-resultstore
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+      testgrid-num-failures-to-alert: '3'
+      description: builds and pushes resultstore exporter on effecting changes
   - name: post-test-infra-push-prow
     cluster: test-infra-trusted
     # Runs on more than just the Prow dir to include some additional images that we publish to gcr.io/k8s-prow.
-    run_if_changed: '^(prow|ghproxy|label_sync|robots/commenter|robots/pr-creator|robots/issue-creator|testgrid/cmd/transfigure)/'
+    run_if_changed: '^(WORKSPACE|load.bzl|repos.bzl|prow|ghproxy|label_sync|robots/commenter|robots/pr-creator|robots/issue-creator|testgrid/cmd/transfigure)/'
     decorate: true
     spec:
       serviceAccountName: pusher
@@ -243,6 +262,31 @@ postsubmits:
         - --project=k8s-testimages
         - --build-dir=.
         - triage/
+        env:
+        - name: USE_BAZEL_VERSION
+          value: real  # Ignore .bazelversion
+  - name: post-test-infra-push-bazel
+    cluster: test-infra-trusted
+    run_if_changed: '^images/bazel/'
+    annotations:
+      testgrid-dashboards: "sig-testing-images"
+      testgrid-tab-name: "bazel"
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+      testgrid-num-failures-to-alert: '1'
+      description: builds and pushes launcher.gcr.io/google/bazel, adding support for a second version
+    decorate: true
+    branches:
+    - master
+    spec:
+      serviceAccountName: deployer # TODO(fejta): should be pusher
+      containers:
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200211-v0.4-10-g26b1b47
+        command:
+        - images/builder/ci-runner.sh
+        args:
+        - --scratch-bucket=gs://k8s-testimages-scratch
+        - --project=k8s-testimages
+        - images/bazel/
         env:
         - name: USE_BAZEL_VERSION
           value: real  # Ignore .bazelversion
@@ -610,6 +654,32 @@ postsubmits:
         env:
         - name: USE_BAZEL_VERSION
           value: real  # Ignore .bazelversion
+  - name: post-test-infra-push-gencred
+    cluster: test-infra-trusted
+    run_if_changed: '^gencred/'
+    annotations:
+      testgrid-dashboards: "sig-testing-images"
+      testgrid-tab-name: "gencred"
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+      testgrid-num-failures-to-alert: '3'
+      description: builds and pushes the gencred image
+    decorate: true
+    branches:
+    - ^master$
+    spec:
+      serviceAccountName: deployer # TODO(fejta): should be pusher
+      containers:
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200211-v0.4-10-g26b1b47
+        command:
+        - images/builder/ci-runner.sh
+        args:
+        - --scratch-bucket=gs://k8s-testimages-scratch
+        - --project=k8s-testimages
+        - --build-dir=.
+        - gencred/
+        env:
+        - name: USE_BAZEL_VERSION
+          value: real  # Ignore .bazelversion
   - name: post-test-infra-upload-testgrid-config
     cluster: test-infra-trusted
     branches:
@@ -670,7 +740,7 @@ postsubmits:
     spec:
       serviceAccountName: pusher
       containers:
-      - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20200107-v2.3.1-71-gfd2fae8
+      - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20200305-v2.3.1-117-gd677a55
         command:
         - cip
         args:
@@ -696,7 +766,7 @@ postsubmits:
     - ^master$
     spec:
       containers:
-      - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20200107-v2.3.1-71-gfd2fae8
+      - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20200305-v2.3.1-117-gd677a55
         command:
         - cip
         args:
@@ -713,7 +783,9 @@ postsubmits:
         secret:
           secretName: k8s-artifacts-prod-service-account
     annotations:
-      testgrid-dashboards: sig-release-misc
+      testgrid-dashboards: sig-release-releng-blocking
+      testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers@kubernetes.io
+      testgrid-num-failures-to-alert: '1'
   kubernetes/community:
   - name: post-community-tempelis-apply
     cluster: test-infra-trusted
@@ -969,14 +1041,16 @@ periodics:
   spec:
     serviceAccountName: resultstore
     containers:
-    - image: gcr.io/k8s-testimages/resultstore:v20190311-3fc08c042
+    - image: gcr.io/k8s-testimages/resultstore:v20200316-54260945b
       command:
       - /app/experiment/resultstore/app.binary
       args:
-      - --upload=k8s-prow
-      - --deadline=10m
+      - --upload=k8s-prow # Must be able to upload results into this project
+      - --timeout=10m
       - --latest=5
-      - --gcs-auth
+      - --gcs-auth # See trusted_serviceaccounts.yaml, currently resultstore@k8s-prow.iam.gserviceaccount.com
+      - --bucket=gs://kubernetes-jenkins # Must be able to write to bucket
+      - --config=gs://k8s-testgrid/config
   annotations:
     testgrid-dashboards: sig-testing-prow
     testgrid-tab-name: resultstore-upload
@@ -996,7 +1070,7 @@ periodics:
   spec:
     containers:
     - name: branchprotector
-      image: gcr.io/k8s-prow/branchprotector:v20200226-8b3bfc8b7
+      image: gcr.io/k8s-prow/branchprotector:v20200323-ecb75feef
       command:
       - /app/prow/cmd/branchprotector/app.binary
       args:
@@ -1030,7 +1104,7 @@ periodics:
   spec:
     containers:
     - name: label-sync
-      image: gcr.io/k8s-prow/label_sync:v20200226-8b3bfc8b7
+      image: gcr.io/k8s-prow/label_sync:v20200323-ecb75feef
       command:
       - /app/label_sync/app.binary
       args:
@@ -1064,7 +1138,7 @@ periodics:
     description: Runs label_sync to synchronize GitHub repo labels with the label config defined in label_sync/labels.yaml.
 # ci-k8sio-cip runs daily, to make sure that the destination GCRs do not deviate
 # away from the intent of the manifest.
-- interval: 24h
+- interval: 4h
   cluster: test-infra-trusted
   max_concurrency: 1
   # This name is the "job name", passed in as "--job=NAME" for mkpj.
@@ -1089,57 +1163,14 @@ periodics:
     # interactive bash session:
     #
     #   docker run --rm -it gcr.io/cip-demo-staging/cip:<tag> "cd /cip && bash"
-    - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20200107-v2.3.1-71-gfd2fae8
+    - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20200305-v2.3.1-117-gd677a55
       command:
       - cip
       args:
       - -thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
-      - -key-files=/etc/k8s-artifacts-prod-service-account/service-account.json
       - -dry-run=false
-      - -use-service-account
-      volumeMounts:
-      - name: k8s-artifacts-prod-service-account-creds
-        mountPath: /etc/k8s-artifacts-prod-service-account
-        readOnly: true
-    volumes:
-    - name: k8s-artifacts-prod-service-account-creds
-      secret:
-        secretName: k8s-artifacts-prod-service-account
+      - -use-service-account # @listx: deprecated; remove after verifying Workload Identity makes this obsolete
   annotations:
-    testgrid-dashboards: sig-release-misc
-# TODO: Move this job to a K8s cluster owned by kubernetes-wg-k8s-infra@googlegroups.com.
-- interval: 1h
-  cluster: test-infra-trusted
-  max_concurrency: 1
-  name: ci-k8sio-backup
-  decorate: true
-  extra_refs:
-  - org: kubernetes
-    repo: k8s.io
-    base_ref: master
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-1.17
-      command:
-      - infra/gcp/backup_tools/backup.sh
-      env:
-      # Even though GOPATH is set to /go in the kubekins-e2e image, we set it
-      # here anyway in case the underlying image changes (the backup.sh script
-      # needs it to be defined).
-      - name: GOPATH
-        value: /go
-      - name: GOOGLE_APPLICATION_CREDENTIALS
-        value: /etc/k8s-artifacts-prod-bak-service-account/service-account.json
-      volumeMounts:
-      - name: k8s-artifacts-prod-bak-service-account-creds
-        mountPath: /etc/k8s-artifacts-prod-bak-service-account
-        readOnly: true
-    volumes:
-    - name: k8s-artifacts-prod-bak-service-account-creds
-      secret:
-        secretName: k8s-artifacts-prod-bak-service-account
-  annotations:
-    testgrid-dashboards: sig-release-misc
-    # TODO: enable alerting once the job has stabilized
-    # testgrid-alert-email: k8s-infra-alerts@kubernetes.io
-    # testgrid-num-failures-to-alert: '1'
+    testgrid-dashboards: sig-release-releng-blocking
+    testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers@kubernetes.io
+    testgrid-num-failures-to-alert: '1'

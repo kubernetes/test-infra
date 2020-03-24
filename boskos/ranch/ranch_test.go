@@ -25,11 +25,16 @@ import (
 	"testing"
 	"time"
 
+	"errors"
+
 	"github.com/go-test/deep"
 	"github.com/sirupsen/logrus"
-	apiequality "k8s.io/apimachinery/pkg/api/equality"
+	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
+	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
 
 	"k8s.io/test-infra/boskos/common"
@@ -67,11 +72,12 @@ func fakeTime(t time.Time) time.Time {
 
 const testNS = "test"
 
-func MakeTestRanch(objects []runtime.Object) *Ranch {
+func makeTestRanch(objects []runtime.Object) *Ranch {
 	for _, obj := range objects {
 		obj.(metav1.Object).SetNamespace(testNS)
 	}
-	s, _ := NewStorage(context.Background(), fakectrlruntimeclient.NewFakeClient(objects...), testNS, "")
+	client := &onceConflictingClient{Client: fakectrlruntimeclient.NewFakeClient(objects...)}
+	s := NewStorage(context.Background(), client, testNS)
 	s.now = func() time.Time {
 		return fakeNow
 	}
@@ -192,7 +198,7 @@ func TestAcquire(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		c := MakeTestRanch(tc.resources)
+		c := makeTestRanch(tc.resources)
 		res, err := c.Acquire(tc.rtype, tc.state, tc.dest, tc.owner, "")
 		if !AreErrorsEqual(err, tc.expectErr) {
 			t.Errorf("%s - Got error %v, expected error %v", tc.name, err, tc.expectErr)
@@ -229,7 +235,7 @@ func TestAcquirePriority(t *testing.T) {
 	expiredFuture := now.Add(2 * testTTL)
 	owner := "tester"
 	res := crds.NewResource("res", "type", common.Free, "", now)
-	r := MakeTestRanch(nil)
+	r := makeTestRanch(nil)
 	r.requestMgr.now = func() time.Time { return now }
 
 	// Setting Priority, this request will fail
@@ -275,7 +281,7 @@ func TestAcquireRoundRobin(t *testing.T) {
 
 	results := map[string]int{}
 
-	c := MakeTestRanch(resources)
+	c := makeTestRanch(resources)
 	for i := 0; i < 4; i++ {
 		res, err := c.Acquire("t", "s", "d", "foo", "")
 		if err != nil {
@@ -309,7 +315,7 @@ func TestAcquireOnDemand(t *testing.T) {
 		},
 	}
 	// Not adding any resources to start with
-	c := MakeTestRanch(dRLCs)
+	c := makeTestRanch(dRLCs)
 	c.now = func() time.Time { return now }
 	// First acquire should trigger a creation
 	if _, err := c.Acquire(rType, common.Free, common.Busy, owner, requestID1); err == nil {
@@ -448,17 +454,29 @@ func TestRelease(t *testing.T) {
 			if tc.expectedRes != nil {
 				tc.expectedRes.Namespace = testNS
 			}
-			c := MakeTestRanch(objs)
+			c := makeTestRanch(objs)
 			releaseErr := c.Release(tc.resName, tc.dest, tc.owner)
 			if !AreErrorsEqual(releaseErr, tc.expectErr) {
 				t.Fatalf("Got error %v, expected error %v", releaseErr, tc.expectErr)
 			}
 			res, _ := c.Storage.GetResource(tc.resName)
-			if diff := deep.Equal(res, tc.expectedRes); diff != nil {
+			if diff := diffResourceObjects(res, tc.expectedRes); diff != nil {
 				t.Errorf("result didn't match expected, diff: %v", diff)
 			}
 		})
 	}
+}
+
+func diffResourceObjects(a, b *crds.ResourceObject) []string {
+	if a != nil {
+		a.TypeMeta = metav1.TypeMeta{}
+		a.ResourceVersion = "0"
+	}
+	if b != nil {
+		b.TypeMeta = metav1.TypeMeta{}
+		b.ResourceVersion = "0"
+	}
+	return deep.Equal(a, b)
 }
 
 func TestReset(t *testing.T) {
@@ -526,7 +544,7 @@ func TestReset(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		c := MakeTestRanch(tc.resources)
+		c := makeTestRanch(tc.resources)
 		rmap, err := c.Reset(tc.rtype, tc.state, tc.expire, tc.dest)
 		if err != nil {
 			t.Errorf("failed to reset %v", err)
@@ -611,7 +629,7 @@ func TestUpdate(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			c := MakeTestRanch(tc.resources)
+			c := makeTestRanch(tc.resources)
 			err := c.Update(tc.resName, tc.owner, tc.state, nil)
 			if !AreErrorsEqual(err, tc.expectErr) {
 				t.Fatalf("Got error %v, expected error %v", err, tc.expectErr)
@@ -704,7 +722,7 @@ func TestMetric(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		c := MakeTestRanch(tc.resources)
+		c := makeTestRanch(tc.resources)
 		metric, err := c.Metric(tc.metricType)
 		if !AreErrorsEqual(err, tc.expectErr) {
 			t.Errorf("%s - Got error %v, expected error %v", tc.name, err, tc.expectErr)
@@ -795,7 +813,7 @@ func TestAllMetrics(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		c := MakeTestRanch(tc.resources)
+		c := makeTestRanch(tc.resources)
 		metrics, err := c.AllMetrics()
 		if err != nil {
 			t.Errorf("%s - Got error %v", tc.name, err)
@@ -1356,8 +1374,10 @@ func TestSyncResources(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			c := MakeTestRanch(tc.currentRes)
-			c.Storage.SyncResources(tc.config)
+			c := makeTestRanch(tc.currentRes)
+			if err := c.Storage.SyncResources(tc.config); err != nil {
+				t.Fatalf("syncResources failed: %v, type: %T", err, err)
+			}
 			resources, err := c.Storage.GetResources()
 			if err != nil {
 				t.Fatalf("failed to get resources: %v", err)
@@ -1372,7 +1392,7 @@ func TestSyncResources(t *testing.T) {
 					tc.expectedRes.Items[idx].Status.UserData = &common.UserData{}
 				}
 			}
-			if diff := deep.Equal(resources, tc.expectedRes); diff != nil {
+			if diff := compareResourceObjectsLists(resources, tc.expectedRes); diff != nil {
 				t.Errorf("received resource differs from expected, diff: %v", diff)
 			}
 			lfs, err := c.Storage.GetDynamicResourceLifeCycles()
@@ -1382,11 +1402,10 @@ func TestSyncResources(t *testing.T) {
 			if tc.expectedLCs == nil {
 				tc.expectedLCs = &crds.DRLCObjectList{}
 			}
-			sortDRLCList(lfs, tc.expectedLCs)
 			for idx := range tc.expectedLCs.Items {
 				tc.expectedLCs.Items[idx].Namespace = testNS
 			}
-			if !apiequality.Semantic.DeepEqual(lfs, tc.expectedLCs) {
+			if diff := compareDRLCLists(lfs, tc.expectedLCs); diff != nil {
 				t.Errorf("received drlc do not match expected, diff: %v", deep.Equal(lfs, tc.expectedLCs))
 			}
 		})
@@ -1670,7 +1689,7 @@ func TestUpdateAllDynamicResources(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			c := MakeTestRanch(tc.currentRes)
+			c := makeTestRanch(tc.currentRes)
 			err := c.Storage.UpdateAllDynamicResources()
 			if err != nil {
 				t.Fatalf("error updating dynamic resources: %v", err)
@@ -1691,7 +1710,6 @@ func TestUpdateAllDynamicResources(t *testing.T) {
 			if err != nil {
 				t.Fatalf("failed to get resources: %v", err)
 			}
-			sortResourcesLists(resources, tc.expectedRes)
 			for idx := range tc.expectedRes.Items {
 				// needed to prevent test failures due to nil != empty
 				if tc.expectedRes.Items[idx].Status.UserData == nil {
@@ -1699,7 +1717,7 @@ func TestUpdateAllDynamicResources(t *testing.T) {
 				}
 			}
 
-			if !reflect.DeepEqual(resources, tc.expectedRes) {
+			if diff := compareResourceObjectsLists(resources, tc.expectedRes); diff != nil {
 				t.Errorf("diff:\n%v", deep.Equal(resources, tc.expectedRes))
 			}
 			lfs, err := c.Storage.GetDynamicResourceLifeCycles()
@@ -1707,13 +1725,45 @@ func TestUpdateAllDynamicResources(t *testing.T) {
 				t.Fatalf("failed to get dynamic resource life cycles: %v", err)
 			}
 
-			sortDRLCList(lfs, tc.expectedLCs)
-			if !apiequality.Semantic.DeepEqual(lfs, tc.expectedLCs) {
-				t.Errorf("Test %v: \n got \t\t%v, \n expected %v", tc.name, lfs, tc.expectedLCs)
+			if diff := compareDRLCLists(lfs, tc.expectedLCs); diff != nil {
 				t.Errorf("diff: %v", deep.Equal(lfs, tc.expectedLCs))
 			}
 		})
 	}
+}
+
+func compareResourceObjectsLists(a, b *crds.ResourceObjectList) []string {
+	sortResourcesLists(a, b)
+	a.TypeMeta = metav1.TypeMeta{}
+	a.ResourceVersion = ""
+	b.ResourceVersion = ""
+	b.TypeMeta = metav1.TypeMeta{}
+	for idx := range a.Items {
+		a.Items[idx].TypeMeta = metav1.TypeMeta{}
+		a.Items[idx].ResourceVersion = ""
+	}
+	for idx := range b.Items {
+		b.Items[idx].TypeMeta = metav1.TypeMeta{}
+		b.Items[idx].ResourceVersion = ""
+	}
+	return deep.Equal(a, b)
+}
+
+func compareDRLCLists(a, b *crds.DRLCObjectList) []string {
+	sortDRLCList(a, b)
+	a.TypeMeta = metav1.TypeMeta{}
+	a.ResourceVersion = ""
+	b.ResourceVersion = ""
+	b.TypeMeta = metav1.TypeMeta{}
+	for idx := range a.Items {
+		a.Items[idx].TypeMeta = metav1.TypeMeta{}
+		a.Items[idx].ResourceVersion = ""
+	}
+	for idx := range b.Items {
+		b.Items[idx].TypeMeta = metav1.TypeMeta{}
+		b.Items[idx].ResourceVersion = ""
+	}
+	return deep.Equal(a, b)
 }
 
 func newResource(name, rtype, state, owner string, t time.Time) *crds.ResourceObject {
@@ -1756,5 +1806,75 @@ func sortDRLCList(drlcs ...*crds.DRLCObjectList) {
 		if len(drlc.Items) == 0 {
 			drlc.Items = nil
 		}
+	}
+}
+
+// onceConflictingClient returns an IsConflict error on the first Update request it receives. It
+// is used to verify that there is retrying for conflicts in place.
+type onceConflictingClient struct {
+	didConflict bool
+	ctrlruntimeclient.Client
+}
+
+func (occ *onceConflictingClient) Update(ctx context.Context, obj runtime.Object, opts ...ctrlruntimeclient.UpdateOption) error {
+	if !occ.didConflict {
+		occ.didConflict = true
+		return kerrors.NewConflict(schema.GroupResource{}, "obj", errors.New("conflicting as requested"))
+	}
+	return occ.Client.Update(ctx, obj, opts...)
+}
+
+func TestIsConflict(t *testing.T) {
+	gr := schema.GroupResource{}
+	testCases := []struct {
+		name        string
+		err         error
+		shouldMatch bool
+	}{
+		{
+			name:        "direct match",
+			err:         kerrors.NewConflict(gr, "test", errors.New("invalid")),
+			shouldMatch: true,
+		},
+		{
+			name: "no match",
+			err:  errors.New("something else"),
+		},
+		{
+			name:        "nested match",
+			err:         fmt.Errorf("we found an error: %w", fmt.Errorf("here: %w", kerrors.NewConflict(gr, "test", errors.New("invalid")))),
+			shouldMatch: true,
+		},
+		{
+			name: "nested, no match",
+			err:  fmt.Errorf("We also found this: %w", fmt.Errorf("there: %w", errors.New("nope"))),
+		},
+		{
+			name:        "aggregate, match",
+			err:         utilerrors.NewAggregate([]error{errors.New("some err"), kerrors.NewConflict(gr, "test", errors.New("invalid"))}),
+			shouldMatch: true,
+		},
+		{
+			name: "aggregate, no match",
+			err:  utilerrors.NewAggregate([]error{errors.New("some err"), errors.New("other err")}),
+		},
+		{
+			name:        "wrapped aggregate, match",
+			err:         fmt.Errorf("err: %w", fmt.Errorf("didn't work: %w", utilerrors.NewAggregate([]error{errors.New("some err"), kerrors.NewConflict(gr, "test", errors.New("invalid"))}))),
+			shouldMatch: true,
+		},
+		{
+			name: "wrapped aggregate, no match",
+			err:  fmt.Errorf("err: %w", fmt.Errorf("didn't work: %w", utilerrors.NewAggregate([]error{errors.New("some err"), errors.New("nope")}))),
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			if result := isConflict(tc.err); result != tc.shouldMatch {
+				t.Errorf("expected match: %t, got match: %t", tc.shouldMatch, result)
+			}
+		})
 	}
 }

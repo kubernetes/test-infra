@@ -117,6 +117,9 @@ label:
     - platform/gcp
     - platform/minikube
     - platform/other
+    - tide/merge-method-merge
+    - tide/merge-method-rebase
+    - tide/merge-method-squash
 
 lgtm:
 - repos:
@@ -293,24 +296,28 @@ slack:
 
 milestone_applier:
   kubernetes/enhancements:
-    master: v1.18
+    master: v1.19
   kubernetes/kubernetes:
-    master: v1.18
+    master: v1.19
     release-1.18: v1.18
     release-1.17: v1.17
     release-1.16: v1.16
     release-1.15: v1.15
   kubernetes/release:
-    master: v1.18
+    master: v1.19
   kubernetes/sig-release:
-    master: v1.18
+    master: v1.19
   kubernetes/test-infra:
-    master: v1.18
+    master: v1.19
   kubernetes/kops:
     master: v1.18
     release-1.17: v1.17
     release-1.16: v1.16
     release-1.15: v1.15
+  kubernetes-sigs/cluster-api-provider-azure:
+    master: v0.5
+    release-0.4: v0.4
+    release-0.3: v0.3
 
 repo_milestone:
   # Default maintainer
@@ -809,6 +816,7 @@ plugins:
 
   kubernetes-sigs/cluster-api-provider-azure:
   - milestone
+  - milestoneapplier
   - milestonestatus
   - release-note
   - require-matching-label

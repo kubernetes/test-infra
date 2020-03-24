@@ -55,7 +55,8 @@ func init() {
 }
 
 func main() {
-	logrusutil.ComponentInit("boskos-metrics")
+	logrusutil.ComponentInit()
+
 	flag.Parse()
 	boskos, err := client.NewClient("Metrics", boskosURL, username, passwordFile)
 	if err != nil {

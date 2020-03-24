@@ -20,7 +20,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:Elasticsearch\] --minStartupPods=8
       - --timeout=90m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200322-3d5100e-master
 
   annotations:
     testgrid-dashboards: google-gce
@@ -46,7 +46,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:StackdriverLogging\] --minStartupPods=8
       - --timeout=1320m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200322-3d5100e-master
 
   annotations:
     testgrid-dashboards: google-gce
@@ -73,7 +73,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:StackdriverLogging\] --minStartupPods=8
       - --timeout=1320m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200322-3d5100e-master
 
   annotations:
     testgrid-dashboards: google-gke-stackdriver
@@ -100,7 +100,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:StackdriverLogging\] --minStartupPods=8
       - --timeout=1320m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200322-3d5100e-master
 
   annotations:
     testgrid-dashboards: google-gke-stackdriver
@@ -127,7 +127,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:StackdriverLogging\] --minStartupPods=8
       - --timeout=1320m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200322-3d5100e-master
 
   annotations:
     testgrid-dashboards: google-gke-stackdriver
@@ -154,7 +154,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:StackdriverLogging\] --minStartupPods=8
       - --timeout=1320m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200322-3d5100e-master
 
   annotations:
     testgrid-dashboards: google-gke-stackdriver
@@ -181,7 +181,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:StackdriverLogging\] --minStartupPods=8
       - --timeout=1320m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200322-3d5100e-master
 
   annotations:
     testgrid-dashboards: google-gke-stackdriver
@@ -208,7 +208,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:StackdriverLogging\] --minStartupPods=8
       - --timeout=1320m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200322-3d5100e-master
 
   annotations:
     testgrid-dashboards: google-gke-stackdriver
@@ -236,7 +236,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:StackdriverMonitoring\]|\[Feature:StackdriverCustomMetrics\]|\[Feature:StackdriverMetadataAgent\]|\[Feature:StackdriverExternalMetrics\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200322-3d5100e-master
   annotations:
     testgrid-dashboards: google-gke-stackdriver
     testgrid-tab-name: gke-stackdriver

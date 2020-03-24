@@ -17,6 +17,7 @@ limitations under the License.
 package cherrypickunapproved
 
 import (
+	"encoding/json"
 	"reflect"
 	"regexp"
 	"testing"
@@ -62,7 +63,7 @@ func (fc *fakeClient) RemoveLabel(owner, repo string, number int, label string) 
 
 // GetIssueLabels gets the current labels on the specified PR or issue
 func (fc *fakeClient) GetIssueLabels(owner, repo string, number int) ([]github.Label, error) {
-	la := []github.Label{}
+	var la []github.Label
 	for _, l := range fc.labels {
 		la = append(la, github.Label{Name: l})
 	}
@@ -88,8 +89,8 @@ type fakePruner struct{}
 
 func (fp *fakePruner) PruneComments(shouldPrune func(github.IssueComment) bool) {}
 
-func makeFakePullRequestEvent(action github.PullRequestEventAction, branch string) github.PullRequestEvent {
-	return github.PullRequestEvent{
+func makeFakePullRequestEvent(action github.PullRequestEventAction, branch string, changes json.RawMessage) github.PullRequestEvent {
+	event := github.PullRequestEvent{
 		Action: action,
 		PullRequest: github.PullRequest{
 			Base: github.PullRequestBranch{
@@ -97,12 +98,19 @@ func makeFakePullRequestEvent(action github.PullRequestEventAction, branch strin
 			},
 		},
 	}
+
+	if changes != nil {
+		event.Changes = changes
+	}
+
+	return event
 }
 
 func TestCherryPickUnapprovedLabel(t *testing.T) {
 	var testcases = []struct {
 		name          string
 		branch        string
+		changes       json.RawMessage
 		action        github.PullRequestEventAction
 		labels        []string
 		added         []string
@@ -112,7 +120,7 @@ func TestCherryPickUnapprovedLabel(t *testing.T) {
 		{
 			name:          "unsupported PR action -> no-op",
 			branch:        "release-1.10",
-			action:        github.PullRequestActionEdited,
+			action:        github.PullRequestActionClosed,
 			labels:        []string{},
 			added:         []string{},
 			removed:       []string{},
@@ -163,6 +171,36 @@ func TestCherryPickUnapprovedLabel(t *testing.T) {
 			removed:       []string{},
 			expectComment: true,
 		},
+		{
+			name:          "PR base branch master edited to release -> add cpUnapproved and comment",
+			branch:        "release-1.10",
+			action:        github.PullRequestActionEdited,
+			changes:       json.RawMessage(`{"base": {"ref": {"from": "master"}, "sha": {"from": "sha"}}}`),
+			labels:        []string{},
+			added:         []string{labels.CpUnapproved},
+			removed:       []string{},
+			expectComment: true,
+		},
+		{
+			name:          "PR base branch edited from release to master -> remove cpApproved and cpUnapproved",
+			branch:        "master",
+			action:        github.PullRequestActionEdited,
+			changes:       json.RawMessage(`{"base": {"ref": {"from": "release-1.10"}, "sha": {"from": "sha"}}}`),
+			labels:        []string{labels.CpApproved, labels.CpUnapproved},
+			added:         []string{},
+			removed:       []string{labels.CpApproved, labels.CpUnapproved},
+			expectComment: false,
+		},
+		{
+			name:          "PR title changed -> no-op",
+			branch:        "release-1.10",
+			action:        github.PullRequestActionEdited,
+			changes:       json.RawMessage(`{"title": {"from": "Update README.md"}}`),
+			labels:        []string{labels.CpApproved, labels.CpUnapproved},
+			added:         []string{},
+			removed:       []string{},
+			expectComment: false,
+		},
 	}
 
 	for _, tc := range testcases {
@@ -173,7 +211,7 @@ func TestCherryPickUnapprovedLabel(t *testing.T) {
 			commentsAdded: make(map[int][]string, 0),
 		}
 
-		event := makeFakePullRequestEvent(tc.action, tc.branch)
+		event := makeFakePullRequestEvent(tc.action, tc.branch, tc.changes)
 		branchRe := regexp.MustCompile(`^release-.*$`)
 		comment := "dummy cumment"
 		err := handlePR(fc, logrus.WithField("plugin", "fake-cherrypick-unapproved"), &event, &fakePruner{}, branchRe, comment)

@@ -9,7 +9,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200322-3d5100e-master
         command:
         - runner.sh
         - ./hack/ci/build-all.sh
@@ -24,7 +24,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200322-3d5100e-master
         command:
         - runner.sh
         - make
@@ -40,7 +40,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200322-3d5100e-experimental
         command:
         - runner.sh
         - ./hack/verify/all.sh
@@ -66,7 +66,7 @@ presubmits:
       timeout: 40m
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20200212-1f7b8ac-master
+      - image: gcr.io/k8s-testimages/krte:v20200309-80efa63-master
         command:
         - wrapper.sh
         - bash
@@ -108,7 +108,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200322-3d5100e-master
         env:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
@@ -165,7 +165,7 @@ presubmits:
       timeout: 40m
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20200212-1f7b8ac-master
+      - image: gcr.io/k8s-testimages/krte:v20200309-80efa63-master
         command:
         - wrapper.sh
         - bash
@@ -194,6 +194,47 @@ presubmits:
             memory: "9000Mi"
             # during the tests more like 3-20m is used
             cpu: 2000m
+  # conformance test against kubernetes release-1.17 branch with `kind`, skipping
+  # serial tests so it runs in ~20m
+  - name: pull-kind-conformance-parallel-1-17
+    labels:
+      preset-service-account: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    always_run: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200322-3d5100e-1.17
+        env:
+        # skip serial tests and run with --ginkgo-parallel
+        - name: "PARALLEL"
+          value: "true"
+        args:
+        - "--job=$(JOB_NAME)"
+        - "--root=/go/src"
+        - "--repo=sigs.k8s.io/kind=$(PULL_REFS)"
+        - "--repo=k8s.io/kubernetes=release-1.17"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--scenario=execute"
+        - "--"
+        # the script must run from kubernetes, but we're checking out kind
+        - "bash"
+        - "--"
+        - "-c"
+        - "cd ./../../k8s.io/kubernetes && ./../../sigs.k8s.io/kind/hack/ci/e2e.sh"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            # these are both a bit below peak usage during build
+            # this is mostly for building kubernetes
+            memory: "9000Mi"
+            # during the tests more like 3-20m is used
+            cpu: 2000m
   # conformance test against kubernetes release-1.16 branch with `kind`, skipping
   # serial tests so it runs in ~20m
   - name: pull-kind-conformance-parallel-1-16
@@ -206,7 +247,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-1.16
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200322-3d5100e-1.16
         env:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
@@ -247,7 +288,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200226-84852b3-1.15
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200322-3d5100e-1.15
         env:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
