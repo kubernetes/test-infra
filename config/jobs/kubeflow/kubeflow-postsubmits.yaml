@@ -310,7 +310,7 @@ postsubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/cloud-builders/docker:latest
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200322-3d5100e-master
         command:
         - ./test/postsubmit-tests-with-pipeline-deployment.sh
         args:
