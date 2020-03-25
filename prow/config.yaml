@@ -21,6 +21,9 @@ tide:
     multicloudlab/test-infra: squash
     multicloudlab/tools: squash
     rh-ibm-synergy/multicloud-operators-foundation: squash
+    IBM/deployer-operator: squash
+    IBM/hybridapplication-operator: squash
+    IBM/hybriddeployable-operator: squash
     IBM/go-repo-template: squash
     IBM/test-infra: squash
     IBM/ibm-auditlogging-operator: squash
@@ -61,6 +64,9 @@ tide:
     - multicloudlab/test-infra
     - multicloudlab/tools
     - rh-ibm-synergy/multicloud-operators-foundation
+    - IBM/deployer-operator
+    - IBM/hybridapplication-operator
+    - IBM/hybriddeployable-operator
     - IBM/go-repo-template
     - IBM/test-infra
     - IBM/ibm-auditlogging-operator
