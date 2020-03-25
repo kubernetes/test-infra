@@ -1,4 +1,34 @@
 presubmits:
+  kubernetes/kubernetes:
+  - name: pull-kubernetes-e2e-gci-gce-ipvs
+    always_run: false
+    optional: true
+    skip_report: true
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    annotations:
+      testgrid-create-test-group: 'true'
+    spec:
+      containers:
+      - args:
+        - --timeout=170
+        - --bare
+        - --scenario=kubernetes_e2e
+        - --
+        - --env=KUBE_PROXY_MODE=ipvs
+        - --extract=ci/latest
+        - --gcp-master-image=gci
+        - --gcp-node-image=ubuntu
+        - --gcp-zone=us-west1-b
+        - --ginkgo-parallel=30
+        - --provider=gce
+        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gci-gce-ipvs
+        - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+        - --timeout=150m
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-0897dba-master
   kubernetes/dns:
   - name: pull-kubernetes-dns-test
     branches:
