@@ -419,10 +419,14 @@ type Controller struct {
 
 	// ReportTemplateString compiles into ReportTemplate at load time.
 	ReportTemplateString string `json:"report_template,omitempty"`
-	// ReportTemplate is compiled at load time from ReportTemplateString. It
-	// will be passed a prowapi.ProwJob and can provide an optional blurb below
-	// the test failures comment.
-	ReportTemplate *template.Template `json:"-"`
+
+	// ReportTemplateStrings is a mapping of template comments.
+	// Use `org/repo`, `org` or `*` as a key.
+	ReportTemplateStrings map[string]string `json:"report_templates,omitempty"`
+
+	// ReportTemplates is a mapping of templates that is compliled at load
+	// time from ReportTemplateStrings.
+	ReportTemplates map[string]*template.Template `json:"-"`
 
 	// MaxConcurrency is the maximum number of tests running concurrently that
 	// will be allowed by the controller. 0 implies no limit.
@@ -439,6 +443,26 @@ type Controller struct {
 	// This option will be removed and set to always true in March 2020.
 	// TODO(fejta): delete this Mar 2020
 	AllowCancellations *bool `json:"allow_cancellations,omitempty"`
+}
+
+// ReportTemplateForRepo returns the template that belong to a specific repository.
+// If the repository doesn't exist in the report_templates configuration it will
+// inherit the values from its organization, otherwise the default values will be used.
+func (c *Controller) ReportTemplateForRepo(refs *prowapi.Refs) *template.Template {
+	def := c.ReportTemplates["*"]
+
+	if refs == nil {
+		return def
+	}
+
+	orgRepo := fmt.Sprintf("%s/%s", refs.Org, refs.Repo)
+	if tmplByRepo, ok := c.ReportTemplates[orgRepo]; ok {
+		return tmplByRepo
+	}
+	if tmplByOrg, ok := c.ReportTemplates[refs.Org]; ok {
+		return tmplByOrg
+	}
+	return def
 }
 
 // Plank is config for the plank controller.
@@ -1902,11 +1926,9 @@ func ValidateController(c *Controller) error {
 	}
 	c.JobURLTemplate = urlTmpl
 
-	reportTmpl, err := template.New("Report").Parse(c.ReportTemplateString)
-	if err != nil {
-		return fmt.Errorf("parsing template: %v", err)
+	if err := defaultAndValidateReportTemplate(c); err != nil {
+		return err
 	}
-	c.ReportTemplate = reportTmpl
 	if c.MaxConcurrency < 0 {
 		return fmt.Errorf("controller has invalid max_concurrency (%d), it needs to be a non-negative number", c.MaxConcurrency)
 	}
@@ -1916,6 +1938,33 @@ func ValidateController(c *Controller) error {
 	if c.MaxGoroutines <= 0 {
 		return fmt.Errorf("controller has invalid max_goroutines (%d), it needs to be a positive number", c.MaxGoroutines)
 	}
+	return nil
+}
+
+func defaultAndValidateReportTemplate(c *Controller) error {
+	if c.ReportTemplateString == "" && c.ReportTemplateStrings == nil {
+		return nil
+	}
+
+	if c.ReportTemplateString != "" {
+		if len(c.ReportTemplateStrings) > 0 {
+			return errors.New("both report_template and report_templates are specified")
+		}
+
+		logrus.Warning("report_template is deprecated and it will be removed on September 2020. It will be replaced with report_templates['*']")
+		c.ReportTemplateStrings = make(map[string]string)
+		c.ReportTemplateStrings["*"] = c.ReportTemplateString
+	}
+
+	c.ReportTemplates = make(map[string]*template.Template)
+	for orgRepo, value := range c.ReportTemplateStrings {
+		reportTmpl, err := template.New("Report").Parse(value)
+		if err != nil {
+			return fmt.Errorf("error while parsing template for %s: %v", orgRepo, err)
+		}
+		c.ReportTemplates[orgRepo] = reportTmpl
+	}
+
 	return nil
 }
 

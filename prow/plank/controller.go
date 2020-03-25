@@ -294,9 +294,9 @@ func (c *Controller) Sync() error {
 
 	var reportErrs []error
 	if !c.skipReport {
-		reportTemplate := c.config().Plank.ReportTemplate
 		reportTypes := c.config().GitHubReporter.JobTypesToReport
 		for report := range reportCh {
+			reportTemplate := c.config().Plank.ReportTemplateForRepo(report.Spec.Refs)
 			if err := reportlib.Report(c.ghc, reportTemplate, report, reportTypes); err != nil {
 				reportErrs = append(reportErrs, err)
 				c.log.WithFields(pjutil.ProwJobFields(&report)).WithError(err).Warn("Failed to report ProwJob status")
