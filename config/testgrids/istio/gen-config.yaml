@@ -3730,6 +3730,15 @@ dashboards:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
     code_search_url_template:
       url: https://github.com/istio/tools/compare/<start-custom-0>...<end-custom-0>
+    description: deploy-perf-dashboard_tools_postsubmit
+    name: deploy-perf-dashboard_tools_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/tools/issues/
+    test_group_name: deploy-perf-dashboard_tools_postsubmit
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/tools/compare/<start-custom-0>...<end-custom-0>
     description: gencheck_tools_postsubmit
     name: gencheck_tools_postsubmit
     open_bug_template:
@@ -4408,6 +4417,9 @@ test_groups:
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/containers_tools_release-1.5_postsubmit
   name: containers_tools_release-1.5_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/deploy-perf-dashboard_tools_postsubmit
+  name: deploy-perf-dashboard_tools_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/gencheck_tools_postsubmit
   name: gencheck_tools_postsubmit
