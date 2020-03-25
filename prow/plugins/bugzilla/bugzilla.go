@@ -215,7 +215,7 @@ func digestPR(log *logrus.Entry, pre github.PullRequestEvent, validateByDefault 
 	)
 
 	// Make sure the PR title is referencing a bug
-	e := &event{org: org, repo: repo, baseRef: baseRef, number: number, merged: pre.PullRequest.Merged, body: title, htmlUrl: pre.PullRequest.HTMLURL, login: pre.PullRequest.User.Login}
+	e := &event{org: org, repo: repo, baseRef: baseRef, number: number, merged: pre.PullRequest.Merged, state: pre.PullRequest.State, body: title, htmlUrl: pre.PullRequest.HTMLURL, login: pre.PullRequest.User.Login}
 	mat := titleMatch.FindStringSubmatch(title)
 	if mat == nil {
 		// in the case that the title used to reference a bug and no longer does we
@@ -307,7 +307,7 @@ func digestComment(gc githubClient, log *logrus.Entry, gce github.GenericComment
 		return nil, err
 	}
 
-	e := &event{org: org, repo: repo, baseRef: pr.Base.Ref, number: number, merged: pr.Merged, body: gce.Body, htmlUrl: gce.HTMLURL, login: gce.User.Login, assign: assign}
+	e := &event{org: org, repo: repo, baseRef: pr.Base.Ref, number: number, merged: pr.Merged, state: pr.State, body: gce.Body, htmlUrl: gce.HTMLURL, login: gce.User.Login, assign: assign}
 	mat := titleMatch.FindStringSubmatch(pr.Title)
 	if mat == nil {
 		e.missing = true
@@ -328,6 +328,7 @@ type event struct {
 	org, repo, baseRef   string
 	number, bugId        int
 	missing, merged      bool
+	state                string
 	body, htmlUrl, login string
 	assign               bool
 }
@@ -690,10 +691,14 @@ func handleMerge(e event, gc githubClient, bc bugzilla.Client, options plugins.B
 		return comment(formatError("searching for external tracker bugs", bc.Endpoint(), e.bugId, err))
 	}
 	shouldMigrate := true
+	var mergedPRs []bugzilla.ExternalBug
+	unmergedPrStates := map[bugzilla.ExternalBug]string{}
 	for _, item := range prs {
 		var merged bool
+		var state string
 		if e.org == item.Org && e.repo == item.Repo && e.number == item.Num {
 			merged = e.merged
+			state = e.state
 		} else {
 			pr, err := gc.GetPullRequest(item.Org, item.Repo, item.Num)
 			if err != nil {
@@ -701,22 +706,59 @@ func handleMerge(e event, gc githubClient, bc bugzilla.Client, options plugins.B
 				return comment(formatError(fmt.Sprintf("checking the state of a related pull request at https://github.com/%s/%s/pull/%d", item.Org, item.Repo, item.Num), bc.Endpoint(), e.bugId, err))
 			}
 			merged = pr.Merged
+			state = pr.State
+		}
+		if merged {
+			mergedPRs = append(mergedPRs, item)
+		} else {
+			unmergedPrStates[item] = state
 		}
 		// only update Bugzilla bug status if all PRs have merged
 		shouldMigrate = shouldMigrate && merged
 		if !shouldMigrate {
+			// we could give more complete feedback to the user by checking all PRs
+			// but we save tokens by exiting when we find an unmerged one, so we
+			// prefer to do that
 			break
 		}
 	}
 
-	if update := options.StateAfterMerge.AsBugUpdate(nil); shouldMigrate && update != nil {
+	link := func(bug bugzilla.ExternalBug) string {
+		return fmt.Sprintf("[%s/%s#%d](https://github.com/%s/%s/pull/%d)", bug.Org, bug.Repo, bug.Num, bug.Org, bug.Repo, bug.Num)
+	}
+
+	mergedMessage := func(statement string) string {
+		var links []string
+		for _, bug := range mergedPRs {
+			links = append(links, link(bug))
+		}
+		return fmt.Sprintf(`%s pull requests linked via external trackers have merged: %s.`, statement, strings.Join(links, ", "))
+	}
+
+	var statements []string
+	for bug, state := range unmergedPrStates {
+		statements = append(statements, fmt.Sprintf("\n * %s is %s", link(bug), state))
+	}
+	unmergedMessage := fmt.Sprintf(`The following pull requests linked via external trackers have not merged:%s`, strings.Join(statements, "\n"))
+
+	outcomeMessage := func(action string) string {
+		return fmt.Sprintf(bugLink+" has %sbeen moved to the %s state.", e.bugId, bc.Endpoint(), e.bugId, action, options.StateAfterMerge)
+	}
+
+	update := options.StateAfterMerge.AsBugUpdate(nil)
+	if update == nil {
+		// should never happen
+		return nil
+	}
+
+	if shouldMigrate {
 		if err := bc.UpdateBug(e.bugId, *update); err != nil {
 			log.WithError(err).Warn("Unexpected error updating Bugzilla bug.")
 			return comment(formatError(fmt.Sprintf("updating to the %s state", options.StateAfterMerge), bc.Endpoint(), e.bugId, err))
 		}
-		return comment(fmt.Sprintf("All pull requests linked via external trackers have merged. "+bugLink+" has been moved to the %s state.", e.bugId, bc.Endpoint(), e.bugId, options.StateAfterMerge))
+		return comment(fmt.Sprintf("%s %s", mergedMessage("All"), outcomeMessage("")))
 	}
-	return nil
+	return comment(fmt.Sprintf("%s %s\n%s", mergedMessage("Some"), unmergedMessage, outcomeMessage("")))
 }
 
 func getBug(bc bugzilla.Client, bugId int, log *logrus.Entry, comment func(string) error) (*bugzilla.Bug, error) {
