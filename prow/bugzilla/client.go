@@ -24,8 +24,14 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
+)
+
+const (
+	methodField = "method"
 )
 
 type Client interface {
@@ -62,7 +68,7 @@ func (c *client) Endpoint() string {
 // GetBug retrieves a Bug from the server
 // https://bugzilla.readthedocs.io/en/latest/api/core/v1/bug.html#get-bug
 func (c *client) GetBug(id int) (*Bug, error) {
-	logger := c.logger.WithFields(logrus.Fields{"method": "GetBug", "id": id})
+	logger := c.logger.WithFields(logrus.Fields{methodField: "GetBug", "id": id})
 	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/rest/bug/%d", c.endpoint, id), nil)
 	if err != nil {
 		return nil, err
@@ -87,7 +93,7 @@ func (c *client) GetBug(id int) (*Bug, error) {
 // and returns any that reference a Pull Request in GitHub
 // https://bugzilla.readthedocs.io/en/latest/api/core/v1/bug.html#get-bug
 func (c *client) GetExternalBugPRsOnBug(id int) ([]ExternalBug, error) {
-	logger := c.logger.WithFields(logrus.Fields{"method": "GetExternalBugPRsOnBug", "id": id})
+	logger := c.logger.WithFields(logrus.Fields{methodField: "GetExternalBugPRsOnBug", "id": id})
 	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/rest/bug/%d", c.endpoint, id), nil)
 	if err != nil {
 		return nil, err
@@ -137,7 +143,7 @@ func (c *client) GetExternalBugPRsOnBug(id int) ([]ExternalBug, error) {
 // UpdateBug updates the fields of a bug on the server
 // https://bugzilla.readthedocs.io/en/latest/api/core/v1/bug.html#update-bug
 func (c *client) UpdateBug(id int, update BugUpdate) error {
-	logger := c.logger.WithFields(logrus.Fields{"method": "UpdateBug", "id": id, "update": update})
+	logger := c.logger.WithFields(logrus.Fields{methodField: "UpdateBug", "id": id, "update": update})
 	body, err := json.Marshal(update)
 	if err != nil {
 		return fmt.Errorf("failed to marshal update payload: %v", err)
@@ -162,7 +168,10 @@ func (c *client) request(req *http.Request, logger *logrus.Entry) ([]byte, error
 		values.Add("api_key", string(apiKey))
 		req.URL.RawQuery = values.Encode()
 	}
+	start := time.Now()
 	resp, err := c.client.Do(req)
+	stop := time.Now()
+	requestDurations.With(prometheus.Labels{methodField: logger.Data[methodField].(string), "status": strconv.Itoa(resp.StatusCode)}).Observe(float64(stop.Sub(start).Seconds()))
 	if resp != nil {
 		logger.WithField("response", resp.StatusCode).Debug("Got response from Bugzilla.")
 	}
@@ -212,7 +221,7 @@ func IsNotFound(err error) bool {
 // This will be done via JSONRPC:
 // https://bugzilla.redhat.com/docs/en/html/integrating/api/Bugzilla/Extension/ExternalBugs/WebService.html#add-external-bug
 func (c *client) AddPullRequestAsExternalBug(id int, org, repo string, num int) (bool, error) {
-	logger := c.logger.WithFields(logrus.Fields{"method": "AddExternalBug", "id": id, "org": org, "repo": repo, "num": num})
+	logger := c.logger.WithFields(logrus.Fields{methodField: "AddExternalBug", "id": id, "org": org, "repo": repo, "num": num})
 	pullIdentifier := IdentifierForPull(org, repo, num)
 	rpcPayload := struct {
 		// Version is the version of JSONRPC to use. All Bugzilla servers
