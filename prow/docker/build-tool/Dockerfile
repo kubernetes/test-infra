@@ -7,10 +7,13 @@ FROM golang:1.13.8 as binary_tools_context
 ARG ARCH=amd64
 
 # Pinned versions of stuff
+ENV ETCD_VERSION=v3.3.11
 ENV GOIMPORTS_VERSION=379209517ffe
 ENV GOLANGCI_LINT_VERSION=v1.23.1
 ENV HELM_VERSION=v2.16.1
+ENV KUBEBUILDER_VERSION=v2.3.0
 ENV KUBECTL_VERSION=v1.16.0
+ENV KUBE_APISERVER_VERSION=v1.16.0
 ENV OPERATOR_SDK_VERSION=v0.12.0
 
 ENV GO111MODULE=on
@@ -22,6 +25,7 @@ ENV GOPATH=/tmp/go
 ENV OUTDIR=/out
 RUN mkdir -p ${OUTDIR}/usr/bin
 RUN mkdir -p ${OUTDIR}/usr/local
+RUN mkdir -p ${OUTDIR}/usr/local/kubebuilder
 RUN mkdir -p ${OUTDIR}/usr/lib
 
 # hadolint ignore=DL3008
@@ -42,6 +46,27 @@ RUN git clone --branch ${OPERATOR_SDK_VERSION} https://github.com/operator-frame
     ${GOPATH}/src/github.com/operator-framework/operator-sdk && \
     cd ${GOPATH}/src/github.com/operator-framework/operator-sdk && \
     make install && \
+    cd /tmp
+
+# Build and install kubebuilder
+RUN git clone --branch ${KUBEBUILDER_VERSION} https://github.com/kubernetes-sigs/kubebuilder.git \
+    ${GOPATH}/src/sigs.k8s.io/kubebuilder && \
+    cd ${GOPATH}/src/sigs.k8s.io/kubebuilder && \
+    go build -o ${OUTDIR}/usr/local/kubebuilder/kubebuilder ./cmd && \
+    cd /tmp
+
+# Build and install kube-apiserver
+RUN git clone --branch ${KUBE_APISERVER_VERSION} https://github.com/kubernetes/kubernetes.git \
+    ${GOPATH}/src/k8s.io/kubernetes && \
+    cd ${GOPATH}/src/k8s.io/kubernetes && \
+    go build -o ${OUTDIR}/usr/local/kubebuilder/kube-apiserver ./cmd/kube-apiserver && \
+    cd /tmp
+
+RUN git clone --branch ${ETCD_VERSION} https://github.com/etcd-io/etcd.git \
+    ${GOPATH}/src/go.etcd.io/etcd && \
+    cd ${GOPATH}/src/go.etcd.io/etcd && \
+    ./build && \
+    cp ./bin/etcd ${OUTDIR}/usr/local/kubebuilder/etcd && \
     cd /tmp
 
 # Helm
@@ -140,7 +165,7 @@ ENV GOROOT=/usr/local/go
 ENV GOPATH=${HOME}/go
 ENV GOBIN=${HOME}/gobin
 ENV GOCACHE=${HOME}/gocache
-ENV PATH=/usr/lib/google-cloud-sdk/bin:/usr/local/go/bin:${HOME}/go/bin:${HOME}/gobin:$PATH
+ENV PATH=/usr/lib/google-cloud-sdk/bin:/usr/local/go/bin:/usr/local/kubebuilder:${HOME}/go/bin:${HOME}/gobin:$PATH
 
 # Docker support
 ENV DOCKER_CONFIG=${HOME}/.docker
