@@ -33,7 +33,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: crier
-        image: gcr.io/k8s-prow/crier:v20200323-ecb75feef
+        image: gcr.io/k8s-prow/crier:v20200323-95bf9d3a7
         args:
         - --github-workers=5
         - --config-path=/etc/config/config.yaml
@@ -44,10 +44,10 @@ spec:
         - --slack-token-file=/etc/slack/token
         - --gcs-workers=1
         - --kubernetes-gcs-workers=1
-        - --build-cluster=/etc/cluster/cluster
+        - --kubeconfig=/etc/kubeconfig/config
         volumeMounts:
-        - mountPath: /etc/cluster
-          name: cluster
+        - mountPath: /etc/kubeconfig
+          name: kubeconfig
           readOnly: true
         - name: config
           mountPath: /etc/config
@@ -74,7 +74,7 @@ spec:
       - name: slack
         secret:
           secretName: slack-token
-      - name: cluster
+      - name: kubeconfig
         secret:
           defaultMode: 420
-          secretName: build-cluster
+          secretName: kubeconfig

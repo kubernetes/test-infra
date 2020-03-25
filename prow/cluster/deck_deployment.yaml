@@ -38,13 +38,13 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: deck
-        image: gcr.io/k8s-prow/deck:v20200323-ecb75feef
+        image: gcr.io/k8s-prow/deck:v20200323-95bf9d3a7
         imagePullPolicy: Always
         ports:
           - name: http
             containerPort: 8080
         args:
-        - --build-cluster=/etc/cluster/cluster
+        - --kubeconfig=/etc/kubeconfig/config
         - --tide-url=http://tide/
         - --hook-url=http://hook:8888/plugin-help
         - --redirect-http-to=prow.k8s.io
@@ -66,8 +66,8 @@ spec:
         - name: cookie-secret
           mountPath: /etc/cookie
           readOnly: true
-        - mountPath: /etc/cluster
-          name: cluster
+        - mountPath: /etc/kubeconfig
+          name: kubeconfig
           readOnly: true
         - name: config
           mountPath: /etc/config
@@ -104,10 +104,10 @@ spec:
       - name: cookie-secret
         secret:
           secretName: cookie
-      - name: cluster
+      - name: kubeconfig
         secret:
           defaultMode: 420
-          secretName: build-cluster
+          secretName: kubeconfig
       - name: config
         configMap:
           name: config
