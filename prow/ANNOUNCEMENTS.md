@@ -1,9 +1,13 @@
 # Announcements
 
 New features added to each component:
+ - *March 25, 2020* Added a `report_templates` option to the Plank config that allows
+    to specify different report templates for each organization or a specific repository.
+    The `report_template` option is deprecated and it will be removed on *September 2020*
+    which is going to be replaced with the `*` value in `report_templates`.
  - *January 03, 2020* Added a `pr_status_base_urls` option to the Tide config
    that allows to specify different tide's URL for each organization or a specific repository.
-   The `pr_status_base_url` will be deprecated on *June 2020* and it will be replaces with the
+   The `pr_status_base_url` will be deprecated on *June 2020* and it will be replaced with the
    `*` value in `pr_status_base_urls`.
  - *November 05, 2019* The `config-updater` plugin supports update configs on build clusters
     by using [`clusters`](https://github.com/kubernetes/test-infra/tree/master/prow/plugins/updateconfig#usage).
