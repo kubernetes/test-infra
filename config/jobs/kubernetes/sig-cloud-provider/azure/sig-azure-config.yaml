@@ -28,7 +28,7 @@ presubmits:
         # Azure-specific test args
         - --provider=skeleton
         - --deployment=aksengine
-        - --aksengine-agentpoolcount=3
+        - --aksengine-agentpoolcount=2
         - --aksengine-admin-username=azureuser
         - --aksengine-creds=$(AZURE_CREDENTIALS)
         - --aksengine-orchestratorRelease=1.18
