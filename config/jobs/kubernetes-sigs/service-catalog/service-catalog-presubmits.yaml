@@ -27,7 +27,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-45d42fa-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-0897dba-master
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh
@@ -46,7 +46,7 @@ presubmits:
     optional: true
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-45d42fa-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-0897dba-master
           command:
             # generic runner script, handles DIND, bazelrc for caching, etc.
             - runner.sh
@@ -72,7 +72,7 @@ presubmits:
       - master
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-45d42fa-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-0897dba-master
           command:
             # generic runner script, handles DIND, bazelrc for caching, etc.
             - runner.sh
@@ -87,7 +87,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-45d42fa-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-0897dba-master
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh
@@ -103,7 +103,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-45d42fa-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-0897dba-master
           command:
             # generic runner script, handles DIND, bazelrc for caching, etc.
             - runner.sh
@@ -119,7 +119,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-45d42fa-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-0897dba-master
           command:
             # generic runner script, handles DIND, bazelrc for caching, etc.
             - runner.sh
@@ -135,7 +135,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-45d42fa-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-0897dba-master
           command:
             # generic runner script, handles DIND, bazelrc for caching, etc.
             - runner.sh
@@ -151,7 +151,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-45d42fa-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-0897dba-master
           command:
             # generic runner script, handles DIND, bazelrc for caching, etc.
             - runner.sh
@@ -167,7 +167,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-45d42fa-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-0897dba-master
           command:
             # generic runner script, handles DIND, bazelrc for caching, etc.
             - runner.sh
