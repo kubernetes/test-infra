@@ -160,7 +160,7 @@ periodics:
       - --aksengine-deploy-custom-k8s
       - --aksengine-agentpoolcount=2
       # Specific test args
-      - --test_args=--num-nodes=2 --node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[sig-apps\].CronJob|\[sig-api-machinery\].ResourceQuota|\[sig-scheduling\].SchedulerPreemption|\[sig-autoscaling\].\[Feature:HPA\]  --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Slow\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application
+      - --test_args=--node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[sig-apps\].CronJob|\[sig-api-machinery\].ResourceQuota|\[sig-scheduling\].SchedulerPreemption|\[sig-autoscaling\].\[Feature:HPA\]  --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Slow\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application
       - --ginkgo-parallel=4
       securityContext:
         privileged: true
@@ -214,7 +214,7 @@ periodics:
       - --aksengine-deploy-custom-k8s
       - --aksengine-agentpoolcount=2
       # Specific test args
-      - --test_args=--num-nodes=2 --node-os-distro=windows --ginkgo.focus=(\[sig-windows\]|\[sig-scheduling\].SchedulerPreemption|\[sig-autoscaling\].\[Feature:HPA\]|\[sig-apps\].CronJob).*(\[Serial\]|\[Slow\])|(\[Serial\]|\[Slow\]).*(\[Conformance\]|\[NodeConformance\]) --ginkgo.skip=\[LinuxOnly\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application
+      - --test_args=--node-os-distro=windows --ginkgo.focus=(\[sig-windows\]|\[sig-scheduling\].SchedulerPreemption|\[sig-autoscaling\].\[Feature:HPA\]|\[sig-apps\].CronJob).*(\[Serial\]|\[Slow\])|(\[Serial\]|\[Slow\]).*(\[Conformance\]|\[NodeConformance\]) --ginkgo.skip=\[LinuxOnly\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application
       - --ginkgo-parallel=1
       securityContext:
         privileged: true
