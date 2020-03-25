@@ -79,6 +79,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   kubeflow/testing:
   - name: kubeflow-testing-presubmit
+    cluster: kubeflow
     always_run: true         # Run for every PR, or only when requested.
     labels:
       preset-service-account: "true"
