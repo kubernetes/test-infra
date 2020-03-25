@@ -1153,8 +1153,8 @@ periodics:
     base_ref: master
   spec:
     # The k8s-artifacts-prod name was chosen in
-    # https://github.com/kubernetes/k8s.io/pull/655.
-    serviceAccountName: k8s-artifacts-prod
+    # https://github.com/kubernetes/k8s.io/pull/695.
+    serviceAccountName: k8s-infra-gcr-promoter
     containers:
     # TODO: Move the official cip image to a more serious location.
     #
