@@ -463,7 +463,7 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    testgrid-dashboards: google-windows, sig-windows, sig-release-1.18-informing
+    testgrid-dashboards: google-windows, sig-windows
     testgrid-tab-name: gce-windows-2019-1.18
   decorate: true
   extra_refs:
