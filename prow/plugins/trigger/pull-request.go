@@ -18,12 +18,20 @@ package trigger
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/url"
+	"strconv"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	klabels "k8s.io/apimachinery/pkg/labels"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
+
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/errorutil"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/plugins"
@@ -141,8 +149,60 @@ func handlePR(c Client, trigger plugins.Trigger, pr github.PullRequestEvent) err
 			}
 			return buildAll(c, &pr.PullRequest, pr.GUID, *trigger.ElideSkippedContexts, baseSHA, presubmits)
 		}
+	case github.PullRequestActionClosed:
+		if err := abortAllJobs(c, &pr.PullRequest); err != nil {
+			c.Logger.WithError(err).Error("Failed to abort jobs for closed pull request")
+			return err
+		}
 	}
 	return nil
+}
+
+func abortAllJobs(c Client, pr *github.PullRequest) error {
+	selector, err := labelSelectorForPR(pr)
+	if err != nil {
+		return fmt.Errorf("failed to construct label selector: %w", err)
+	}
+
+	jobs, err := c.ProwJobClient.List(metav1.ListOptions{LabelSelector: selector.String()})
+	if err != nil {
+		return fmt.Errorf("failed to list prowjobs for pr: %w", err)
+	}
+
+	var errs []error
+	for _, job := range jobs.Items {
+		// Do not abort jobs that already completed
+		if job.Complete() {
+			continue
+		}
+		job.Status.State = prowapi.AbortedState
+		// We use Update and not Patch here, because we are not the authority of the .Status.State field
+		// and must not overwrite changes made to it in the interim by the responsible agent.
+		// The accepted trade-off for now is that this leads to failure if unrelated fields where changed
+		// by another different actor.
+		if _, err := c.ProwJobClient.Update(&job); err != nil {
+			errs = append(errs, fmt.Errorf("failed to abort job %s: %w", job.Name, err))
+		}
+	}
+
+	return utilerrors.NewAggregate(errs)
+}
+
+func labelSelectorForPR(pr *github.PullRequest) (klabels.Selector, error) {
+	set := klabels.Set{
+		kube.OrgLabel:         pr.Base.Repo.Owner.Login,
+		kube.RepoLabel:        pr.Base.Repo.Name,
+		kube.PullLabel:        strconv.Itoa(pr.Number),
+		kube.ProwJobTypeLabel: string(prowapi.PresubmitJob),
+	}
+	selector := klabels.SelectorFromSet(set)
+	// Needed because of this gem:
+	// https://github.com/kubernetes/apimachinery/blob/f8e71527369e696bf041722b248ffcb32bae9edf/pkg/labels/selector.go#L883
+	if selector.Empty() {
+		return nil, errors.New("got back empty selector")
+	}
+
+	return selector, nil
 }
 
 type login string
