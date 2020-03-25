@@ -100,19 +100,18 @@ func TestReportTemplate(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		var b bytes.Buffer
-		if err := c.Plank.ReportTemplate.Execute(&b, &prowapi.ProwJob{
-			Spec: prowapi.ProwJobSpec{
-				Refs: &prowapi.Refs{
-					Org:  tc.org,
-					Repo: tc.repo,
-					Pulls: []prowapi.Pull{
-						{
-							Number: tc.number,
-						},
-					},
+		refs := &prowapi.Refs{
+			Org:  tc.org,
+			Repo: tc.repo,
+			Pulls: []prowapi.Pull{
+				{
+					Number: tc.number,
 				},
 			},
-		}); err != nil {
+		}
+
+		reportTemplate := c.Plank.ReportTemplateForRepo(refs)
+		if err := reportTemplate.Execute(&b, &prowapi.ProwJob{Spec: prowapi.ProwJobSpec{Refs: refs}}); err != nil {
 			t.Errorf("Error executing template: %v", err)
 			continue
 		}
