@@ -1,5 +1,6 @@
 periodics:
 - name: kubeflow-periodic-1-0
+  cluster: kubeflow
   interval: 4h
   labels:
     preset-service-account: "true"
@@ -18,6 +19,7 @@ periodics:
     testgrid-dashboards: sig-big-data
     description: Periodic testing of Kubeflow on the 1-0 release
 - name: kubeflow-periodic-0-7
+  cluster: kubeflow
   # Might want to increase this after the 0.7 release is done.
   # Other periodics run at 8h.
   interval: 4h
@@ -38,6 +40,7 @@ periodics:
     testgrid-dashboards: sig-big-data
     description: Periodic testing of Kubeflow on the 0-7 release
 - name: kubeflow-periodic-0-6-branch
+  cluster: kubeflow
   interval: 8h
   labels:
     preset-service-account: "true"
@@ -56,6 +59,7 @@ periodics:
     testgrid-dashboards: sig-big-data
     description: Periodic testing of Kubeflow on the 0-6 release branch.
 - name: kubeflow-periodic-0-5-branch
+  cluster: kubeflow
   interval: 8h
   labels:
     preset-service-account: "true"
@@ -74,6 +78,7 @@ periodics:
     testgrid-dashboards: sig-big-data
     description: Periodic testing of Kubeflow on the 0-5 release branch.
 - name: kubeflow-periodic-0-4-branch
+  cluster: kubeflow
   interval: 8h
   labels:
     preset-service-account: "true"
@@ -92,6 +97,7 @@ periodics:
     testgrid-dashboards: sig-big-data
     description: Periodic testing of Kubeflow on the 0-4 release branch.
 - name: kubeflow-periodic-0-3-branch
+  cluster: kubeflow
   interval: 8h
   labels:
     preset-service-account: "true"
@@ -110,6 +116,7 @@ periodics:
     testgrid-dashboards: sig-big-data
     description: Periodic testing of Kubeflow on the 0-3 release branch.
 - name: kubeflow-periodic-master
+  cluster: kubeflow
   interval: 4h
   labels:
     preset-service-account: "true"
@@ -131,6 +138,7 @@ periodics:
     testgrid-alert-email: kubeflow-engineering@google.com
     testgrid-num-failures-to-alert: "3"
 - name: kubeflow-manifests-periodic-master
+  cluster: kubeflow
   interval: 8h
   labels:
     preset-service-account: "true"
@@ -149,6 +157,7 @@ periodics:
     testgrid-dashboards: sig-big-data
     description: Periodic testing of Kubeflow/manifests on the master branch.
 - name: kubeflow-manifests-periodic-0-6-branch
+  cluster: kubeflow
   interval: 8h
   labels:
     preset-service-account: "true"
@@ -167,6 +176,7 @@ periodics:
     testgrid-dashboards: sig-big-data
     description: Periodic testing of Kubeflow/manifests on the 0-6 release branch.
 - name: kubeflow-periodic-examples
+  cluster: kubeflow
   interval: 1h
   labels:
     preset-service-account: "true"
@@ -185,6 +195,7 @@ periodics:
     testgrid-dashboards: sig-big-data
     description: Periodic testing of Kubeflow examples
 - name: kubeflow-periodic-kfctl
+  cluster: kubeflow
   interval: 8h
   labels:
     preset-service-account: "true"
@@ -203,6 +214,7 @@ periodics:
     testgrid-dashboards: sig-big-data
     description: Periodic testing of Kubeflow kfctl
 - name: kubeflow-periodic-project-cleanup
+  cluster: kubeflow
   interval: 1h
   decorate: true
   labels:
