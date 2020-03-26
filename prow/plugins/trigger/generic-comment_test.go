@@ -69,6 +69,7 @@ type testcase struct {
 func TestHandleGenericComment(t *testing.T) {
 	truth := true
 	var lies bool
+	helpComment := "The following commands are available to trigger jobs:\n* `/test job`\n* `/test jib`\n\nUse `/test all` to run all jobs."
 	var testcases = []testcase{
 		{
 			name: "Not a PR.",
@@ -821,7 +822,7 @@ func TestHandleGenericComment(t *testing.T) {
 			Body:         "/test ?",
 			State:        "open",
 			IsPR:         true,
-			AddedComment: "@trusted-member: The following commands are available to trigger jobs:\n* `/test job`\n* `/test jib`\n\nUse `/test all` to run all jobs.",
+			AddedComment: helpComment,
 		},
 		{
 			name:   `help command "/test ?" uses RerunCommand field of presubmits`,
@@ -853,8 +854,31 @@ func TestHandleGenericComment(t *testing.T) {
 					},
 				},
 			},
-
 			AddedComment: "@trusted-member: The following commands are available to trigger jobs:\n* `/rerun_command`\n* `/command_foo`\n\nUse `/test all` to run all jobs.",
+		},
+		{
+			name:         "/test with no target results in a help message",
+			Author:       "trusted-member",
+			Body:         "/test",
+			State:        "open",
+			IsPR:         true,
+			AddedComment: testWithoutTargetNote + helpComment,
+		},
+		{
+			name:         "/retest with trailing words results in a help message",
+			Author:       "trusted-member",
+			Body:         "/retest FOO",
+			State:        "open",
+			IsPR:         true,
+			AddedComment: retestWithTargetNote + helpComment,
+		},
+		{
+			name:         "/test with unknown target results in a help message",
+			Author:       "trusted-member",
+			Body:         "/test FOO",
+			State:        "open",
+			IsPR:         true,
+			AddedComment: targetNotFoundNote + helpComment,
 		},
 	}
 	for _, tc := range testcases {
