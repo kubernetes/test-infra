@@ -15,9 +15,9 @@ presubmits:
       preset-k8s-ssh: "true"
       preset-dind-enabled: "true"
     extra_refs:
-    - org: chewong # TODO(chewong): Change to kubernetes-sigs
+    - org: kubernetes-sigs
       repo: azuredisk-csi-driver
-      base_ref: windows-e2e # TODO(chewong): Change to master
+      base_ref: master
       path_alias: sigs.k8s.io/azuredisk-csi-driver
     spec:
       containers:
@@ -73,9 +73,9 @@ presubmits:
       preset-k8s-ssh: "true"
       preset-dind-enabled: "true"
     extra_refs:
-    - org: chewong # TODO(chewong): Change to kubernetes-sigs
+    - org: kubernetes-sigs
       repo: azurefile-csi-driver
-      base_ref: windows-e2e # TODO(chewong): Change to master
+      base_ref: master
       path_alias: sigs.k8s.io/azurefile-csi-driver
     spec:
       containers:
@@ -133,9 +133,9 @@ periodics:
     repo: kubernetes
     base_ref: release-1.18
     path_alias: k8s.io/kubernetes
-  - org: chewong # TODO(chewong): Change to kubernetes-sigs
+  - org: kubernetes-sigs
     repo: azuredisk-csi-driver
-    base_ref: windows-e2e # TODO(chewong): Change to master
+    base_ref: master
     path_alias: sigs.k8s.io/azuredisk-csi-driver
   spec:
     containers:
@@ -195,9 +195,9 @@ periodics:
     repo: kubernetes
     base_ref: release-1.18
     path_alias: k8s.io/kubernetes
-  - org: chewong # TODO(chewong): Change to kubernetes-sigs
+  - org: kubernetes-sigs
     repo: azurefile-csi-driver
-    base_ref: windows-e2e # TODO(chewong): Change to master
+    base_ref: master
     path_alias: sigs.k8s.io/azurefile-csi-driver
   spec:
     containers:
