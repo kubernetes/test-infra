@@ -26,7 +26,7 @@ variants:
     OLD_BAZEL_VERSION: 0.23.2
   '1.16':
     CONFIG: '1.16'
-    GO_VERSION: 1.13.8
+    GO_VERSION: 1.13.9
     K8S_RELEASE: stable-1.16
     BAZEL_VERSION: 2.2.0
     OLD_BAZEL_VERSION: 0.23.2
