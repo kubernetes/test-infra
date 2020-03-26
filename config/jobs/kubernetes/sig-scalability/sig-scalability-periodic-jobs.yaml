@@ -320,7 +320,6 @@ periodics:
       - --test-cmd-args=cluster-loader2
       - --test-cmd-args=--nodes=600
       - --test-cmd-args=--provider=kubemark
-      - --env=CL2_ENABLE_PVS=false # TODO(https://github.com/kubernetes/perf-tests/issues/803): Fix me
       - --test-cmd-args=--report-dir=/workspace/_artifacts
       # TODO(https://github.com/kubernetes/perf-tests/issues/1007): load test should be used to test high-density.
       - --test-cmd-args=--testconfig=testing/density/high-density-config.yaml
@@ -350,7 +349,6 @@ periodics:
       - --root=/go/src
       - --timeout=10
       - --scenario=execute
-      - --env=CL2_ENABLE_PVS=false # TODO(https://github.com/kubernetes/perf-tests/issues/803): Fix me
       - --
       - ./benchmark/runner.sh
 
