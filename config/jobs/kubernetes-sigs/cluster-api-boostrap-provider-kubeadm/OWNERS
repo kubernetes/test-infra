@@ -1,4 +1,9 @@
 # See the OWNERS docs at https://go.k8s.io/owners
+reviewers:
+- chuckha
+- detiber
+- justinsb
+- vincepri
 approvers:
 - chuckha
 - detiber

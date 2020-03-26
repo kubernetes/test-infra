@@ -1,5 +1,10 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
+reviewers:
+- k82cn
+- animeshsingh
+- hex108
+- hzxuzhonghu
 approvers:
 - k82cn
 - animeshsingh

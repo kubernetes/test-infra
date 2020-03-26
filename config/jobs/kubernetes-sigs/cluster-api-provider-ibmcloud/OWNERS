@@ -1,5 +1,10 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
+reviwers:
+- gyliu513
+- jichenjc
+- morvencao
+- xunpan
 approvers:
 - gyliu513
 - jichenjc

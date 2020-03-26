@@ -1,5 +1,11 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
+reviewers:
+- liujingfang1
+- monopole
+- mortent
+- pwittrock
+- seans3
 approvers:
 - liujingfang1
 - monopole

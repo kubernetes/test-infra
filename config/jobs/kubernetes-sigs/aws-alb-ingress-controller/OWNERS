@@ -1,5 +1,9 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
+reviewers:
+- bigkraig
+- M00nF1sh
+- gyuho
 approvers:
 - bigkraig
 - M00nF1sh

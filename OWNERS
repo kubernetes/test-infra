@@ -1,5 +1,10 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
+reviewers:
+- fejta # lead
+- spiffxp # lead
+- stevekuznetsov # lead
+- test-infra-oncall # oncall
 approvers:
 - fejta # lead
 - spiffxp # lead

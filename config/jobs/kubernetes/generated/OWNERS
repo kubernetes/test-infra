@@ -1,5 +1,10 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
+reviewers:
+- justaugustus
+- Katharine
+- krzyzacy
+- yguo0905
 approvers:
 - justaugustus
 - Katharine

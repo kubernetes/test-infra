@@ -1,5 +1,11 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
+reviewers:
+- abhi-g
+- jlewi
+- kunmingg
+- lluunn
+- richardsliu
 approvers:
 - abhi-g
 - jlewi

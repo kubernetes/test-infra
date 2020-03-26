@@ -1,6 +1,13 @@
 # See the OWNERS file documentation:
 #  https://github.com/kubernetes/community/blob/master/contributors/devel/owners.md
 
+reviewers:
+- timothysc
+- fabriziopandini
+- neolit123
+- rosti
+- ereslibre
+- yastij
 approvers:
 - timothysc
 - fabriziopandini

@@ -1,5 +1,9 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
+reviewers:
+- davidz627
+- msau42
+- saad-ali
 approvers:
 - davidz627
 - msau42

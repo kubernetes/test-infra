@@ -1,5 +1,12 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
+reviewers:
+- calebamiles
+- cblecker
+- fejta
+- grodrigues3
+- idvoretskyi
+- spiffxp
 approvers:
 - calebamiles
 - cblecker

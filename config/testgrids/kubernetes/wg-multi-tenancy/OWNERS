@@ -1,5 +1,9 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
+reviewers:
+- rjbez17
+- srampal
+- tashimi
 approvers:
 - rjbez17
 - srampal

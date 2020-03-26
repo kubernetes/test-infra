@@ -1,5 +1,11 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
+reviewers:
+- michelle192837
+- spiffxp
+- wojtek-t
+- shyamjvs
+- chases2
 approvers:
 - michelle192837
 - spiffxp
