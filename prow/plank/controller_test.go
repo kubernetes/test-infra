@@ -33,6 +33,8 @@ import (
 	kapierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/clock"
 	"k8s.io/apimachinery/pkg/util/sets"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -1815,11 +1817,15 @@ func (c *patchTrackingFakeClient) Patch(ctx context.Context, obj runtime.Object,
 }
 
 type deleteTrackingFakeClient struct {
+	deleteError error
 	ctrlruntimeclient.Client
 	deleted sets.String
 }
 
 func (c *deleteTrackingFakeClient) Delete(ctx context.Context, obj runtime.Object, opts ...ctrlruntimeclient.DeleteOption) error {
+	if c.deleteError != nil {
+		return c.deleteError
+	}
 	if c.deleted == nil {
 		c.deleted = sets.String{}
 	}
@@ -1841,4 +1847,94 @@ func (c *createErroringClient) Create(ctx context.Context, obj runtime.Object, o
 		return c.err
 	}
 	return c.Client.Create(ctx, obj, opts...)
+}
+
+func TestSyncAbortedJob(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		name           string
+		pod            *v1.Pod
+		deleteError    error
+		expectSyncFail bool
+		expectDelete   bool
+		expectComplete bool
+	}{
+		{
+			name:           "Pod is deleted",
+			pod:            &v1.Pod{ObjectMeta: metav1.ObjectMeta{Name: "my-pj"}},
+			expectDelete:   true,
+			expectComplete: true,
+		},
+		{
+			name:           "No pod there",
+			expectDelete:   false,
+			expectComplete: true,
+		},
+		{
+			name:           "NotFound on delete is tolerated",
+			pod:            &v1.Pod{ObjectMeta: metav1.ObjectMeta{Name: "my-pj"}},
+			deleteError:    kapierrors.NewNotFound(schema.GroupResource{}, "my-pj"),
+			expectDelete:   false,
+			expectComplete: true,
+		},
+		{
+			name:           "Failed delete does not set job to completed",
+			pod:            &v1.Pod{ObjectMeta: metav1.ObjectMeta{Name: "my-pj"}},
+			deleteError:    errors.New("erroring as requested"),
+			expectSyncFail: true,
+			expectDelete:   false,
+			expectComplete: false,
+		},
+	}
+
+	const cluster = "cluster"
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+
+			pj := &prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "my-pj",
+				},
+				Spec: prowapi.ProwJobSpec{
+					Cluster: cluster,
+				},
+				Status: prowapi.ProwJobStatus{
+					State: prowapi.AbortedState,
+				},
+			}
+
+			var pods []runtime.Object
+			var podMap map[string]v1.Pod
+			if tc.pod != nil {
+				pods = append(pods, tc.pod)
+				podMap = map[string]v1.Pod{pj.Name: *tc.pod}
+			}
+			podClient := &deleteTrackingFakeClient{
+				deleteError: tc.deleteError,
+				Client:      fakectrlruntimeclient.NewFakeClient(pods...),
+			}
+
+			c := &Controller{
+				log:           logrus.NewEntry(logrus.New()),
+				prowJobClient: fakectrlruntimeclient.NewFakeClient(pj),
+				buildClients:  map[string]ctrlruntimeclient.Client{cluster: podClient},
+			}
+
+			if err := c.syncAbortedJob(*pj, podMap, nil); (err != nil) != tc.expectSyncFail {
+				t.Fatalf("sync failed: %v, expected it to fail: %t", err, tc.expectSyncFail)
+			}
+
+			if err := c.prowJobClient.Get(context.Background(), types.NamespacedName{Name: pj.Name}, pj); err != nil {
+				t.Fatalf("failed to get job from client: %v", err)
+			}
+			if pj.Complete() != tc.expectComplete {
+				t.Errorf("expected complete: %t, got complete: %t", tc.expectComplete, pj.Complete())
+			}
+
+			if tc.expectDelete != podClient.deleted.Has(pj.Name) {
+				t.Errorf("expected delete: %t, got delete: %t", tc.expectDelete, podClient.deleted.Has(pj.Name))
+			}
+		})
+	}
 }
