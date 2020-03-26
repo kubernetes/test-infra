@@ -4024,3 +4024,66 @@ func TestGetDefaultDecorationConfigsThreadSafety(t *testing.T) {
 	<-s1
 	<-s2
 }
+
+func TestDefaultAndValidateReportTemplate(t *testing.T) {
+	testCases := []struct {
+		id          string
+		controller  *Controller
+		expected    *Controller
+		expectedErr bool
+	}{
+
+		{
+			id:         "no report_template or report_templates specified, no changes expected",
+			controller: &Controller{},
+			expected:   &Controller{},
+		},
+
+		{
+			id:         "only report_template specified, expected report_template[*]=report_template",
+			controller: &Controller{ReportTemplateString: "test template"},
+			expected: &Controller{
+				ReportTemplateString:  "test template",
+				ReportTemplateStrings: map[string]string{"*": "test template"},
+				ReportTemplates: map[string]*template.Template{
+					"*": func() *template.Template {
+						reportTmpl, _ := template.New("Report").Parse("test template")
+						return reportTmpl
+					}(),
+				},
+			},
+		},
+
+		{
+			id:         "only report_templates specified, expected direct conversion",
+			controller: &Controller{ReportTemplateStrings: map[string]string{"*": "test template"}},
+			expected: &Controller{
+				ReportTemplateStrings: map[string]string{"*": "test template"},
+				ReportTemplates: map[string]*template.Template{
+					"*": func() *template.Template {
+						reportTmpl, _ := template.New("Report").Parse("test template")
+						return reportTmpl
+					}(),
+				},
+			},
+		},
+
+		{
+			id:          "no '*' in report_templates specified, expected error",
+			controller:  &Controller{ReportTemplateStrings: map[string]string{"org": "test template"}},
+			expectedErr: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.id, func(t *testing.T) {
+			if err := defaultAndValidateReportTemplate(tc.controller); err != nil && !tc.expectedErr {
+				t.Fatalf("error not expected: %v", err)
+			}
+
+			if !reflect.DeepEqual(tc.controller, tc.expected) && !tc.expectedErr {
+				t.Fatalf("\nGot: %#v\nExpected: %#v", tc.controller, tc.expected)
+			}
+		})
+	}
+}

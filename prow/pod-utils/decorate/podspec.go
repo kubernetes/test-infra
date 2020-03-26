@@ -188,6 +188,20 @@ func ProwJobToPodLocal(pj prowapi.ProwJob, buildID string, outputDir string) (*c
 		}
 	}
 
+	// If no termination policy is specified, use log fallback so the pod status
+	// contains a snippet of the failure, which is helpful when pods are cleaned up
+	// or evicted in failure modes. Callers can override by setting explicit policy.
+	for i, container := range spec.InitContainers {
+		if len(container.TerminationMessagePolicy) == 0 {
+			spec.InitContainers[i].TerminationMessagePolicy = coreapi.TerminationMessageFallbackToLogsOnError
+		}
+	}
+	for i, container := range spec.Containers {
+		if len(container.TerminationMessagePolicy) == 0 {
+			spec.Containers[i].TerminationMessagePolicy = coreapi.TerminationMessageFallbackToLogsOnError
+		}
+	}
+
 	podLabels, annotations := LabelsAndAnnotationsForJob(pj)
 	return &coreapi.Pod{
 		ObjectMeta: metav1.ObjectMeta{
@@ -637,7 +651,6 @@ func decorate(spec *coreapi.PodSpec, pj *prowapi.ProwJob, rawEnv map[string]stri
 		*initUpload,
 		PlaceEntrypoint(pj.Spec.DecorationConfig, toolsMount),
 	)
-
 	spec.Containers[0].Env = append(spec.Containers[0].Env, KubeEnv(rawEnv)...)
 
 	const ( // these values may change when/if we support multiple containers
@@ -656,6 +669,7 @@ func decorate(spec *coreapi.PodSpec, pj *prowapi.ProwJob, rawEnv map[string]stri
 	}
 
 	spec.Containers = append(spec.Containers, *sidecar)
+
 	spec.Volumes = append(spec.Volumes, logVolume, toolsVolume)
 	if gcsVol != nil {
 		spec.Volumes = append(spec.Volumes, *gcsVol)

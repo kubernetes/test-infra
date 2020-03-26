@@ -21,7 +21,7 @@ presubmits:
       path_alias: sigs.k8s.io/azuredisk-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-45d42fa-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-0897dba-1.18
         command:
         - runner.sh
         - kubetest
@@ -54,10 +54,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: K8S_SSH_PUBLIC_KEY_PATH
-          value: /etc/ssh-key-secret/ssh-public # from preset-k8s-ssh label
-        - name: K8S_SSH_PRIVATE_KEY_PATH
-          value: /etc/ssh-key-secret/ssh-private # from preset-k8s-ssh label
         - name: AZURE_STORAGE_DRIVER
           value: kubernetes.io/azure-disk # In-tree Azure disk storage class
         - name: TEST_WINDOWS
@@ -83,7 +79,7 @@ presubmits:
       path_alias: sigs.k8s.io/azurefile-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-45d42fa-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-0897dba-1.18
         command:
         - runner.sh
         - kubetest
@@ -116,10 +112,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: K8S_SSH_PUBLIC_KEY_PATH
-          value: /etc/ssh-key-secret/ssh-public # from preset-k8s-ssh label
-        - name: K8S_SSH_PRIVATE_KEY_PATH
-          value: /etc/ssh-key-secret/ssh-private # from preset-k8s-ssh label
         - name: AZURE_STORAGE_DRIVER
           value: kubernetes.io/azure-file # In-tree Azure file storage class
         - name: TEST_WINDOWS
@@ -147,7 +139,7 @@ periodics:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-45d42fa-1.18
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-0897dba-1.18
       command:
       - runner.sh
       - kubetest
@@ -178,10 +170,6 @@ periodics:
       securityContext:
         privileged: true
       env:
-      - name: K8S_SSH_PUBLIC_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-public # from preset-k8s-ssh label
-      - name: K8S_SSH_PRIVATE_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-private # from preset-k8s-ssh label
       - name: AZURE_STORAGE_DRIVER
         value: kubernetes.io/azure-disk # In-tree Azure disk storage class
       - name: TEST_WINDOWS
@@ -213,7 +201,7 @@ periodics:
     path_alias: sigs.k8s.io/azurefile-csi-driver
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-45d42fa-1.18
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-0897dba-1.18
       command:
       - runner.sh
       - kubetest
@@ -244,10 +232,6 @@ periodics:
       securityContext:
         privileged: true
       env:
-      - name: K8S_SSH_PUBLIC_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-public # from preset-k8s-ssh label
-      - name: K8S_SSH_PRIVATE_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-private # from preset-k8s-ssh label
       - name: AZURE_STORAGE_DRIVER
         value: kubernetes.io/azure-file # In-tree Azure file storage class
       - name: TEST_WINDOWS
@@ -275,7 +259,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-45d42fa-1.18
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-0897dba-1.18
       command:
       - runner.sh
       - kubetest
@@ -301,15 +285,10 @@ periodics:
       - --aksengine-win-binaries
       - --aksengine-deploy-custom-k8s
       # Specific test args
-      - --test_args=--num-nodes=3 --node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[sig-apps\].CronJob|\[sig-api-machinery\].ResourceQuota|\[sig-scheduling\].SchedulerPreemption --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Slow\]|Guestbook.application.should.create.and.stop.a.working.application
+      - --test_args=--node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[sig-apps\].CronJob|\[sig-api-machinery\].ResourceQuota|\[sig-scheduling\].SchedulerPreemption --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Slow\]|Guestbook.application.should.create.and.stop.a.working.application
       - --ginkgo-parallel=4
       securityContext:
         privileged: true
-      env:
-      - name: K8S_SSH_PUBLIC_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-public # from preset-k8s-ssh label
-      - name: K8S_SSH_PRIVATE_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-private # from preset-k8s-ssh label
   annotations:
     testgrid-dashboards: sig-windows, sig-release-1.18-informing, provider-azure-windows, provider-azure-periodic
     testgrid-tab-name: aks-engine-azure-1-18-windows
@@ -333,7 +312,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-45d42fa-1.18
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-0897dba-1.18
       command:
       - runner.sh
       - kubetest
@@ -359,15 +338,10 @@ periodics:
       - --aksengine-win-binaries
       - --aksengine-deploy-custom-k8s
       # Specific test args
-      - --test_args=--num-nodes=3 --node-os-distro=windows --ginkgo.focus=(\[sig-windows\]|\[sig-scheduling\].SchedulerPreemption|\[sig-autoscaling\].\[Feature:HPA\]|\[sig-apps\].CronJob).*(\[Serial\]|\[Slow\])|(\[Serial\]|\[Slow\]).*(\[Conformance\]|\[NodeConformance\]) --ginkgo.skip=\[LinuxOnly\]
+      - --test_args=--node-os-distro=windows --ginkgo.focus=(\[sig-windows\]|\[sig-scheduling\].SchedulerPreemption|\[sig-autoscaling\].\[Feature:HPA\]|\[sig-apps\].CronJob).*(\[Serial\]|\[Slow\])|(\[Serial\]|\[Slow\]).*(\[Conformance\]|\[NodeConformance\]) --ginkgo.skip=\[LinuxOnly\]
       - --ginkgo-parallel=1
       securityContext:
         privileged: true
-      env:
-      - name: K8S_SSH_PUBLIC_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-public # from preset-k8s-ssh label
-      - name: K8S_SSH_PRIVATE_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-private # from preset-k8s-ssh label
   annotations:
     testgrid-dashboards: sig-windows, provider-azure-windows, provider-azure-periodic
     testgrid-tab-name: aks-engine-azure-1-18-windows-serial-slow

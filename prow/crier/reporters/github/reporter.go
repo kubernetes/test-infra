@@ -26,7 +26,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/apis/prowjobs/v1"
+	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/github/report"
@@ -147,7 +147,7 @@ func (c *Client) Report(pj *v1.ProwJob) ([]*v1.ProwJob, error) {
 	}
 
 	// TODO(krzyzacy): ditch ReportTemplate, and we can drop reference to config.Getter
-	return []*v1.ProwJob{pj}, report.Report(c.gc, c.config().Plank.ReportTemplate, *pj, c.config().GitHubReporter.JobTypesToReport)
+	return []*v1.ProwJob{pj}, report.Report(c.gc, c.config().Plank.ReportTemplateForRepo(pj.Spec.Refs), *pj, c.config().GitHubReporter.JobTypesToReport)
 }
 
 func lockKeyForPJ(pj *v1.ProwJob) (*simplePull, error) {

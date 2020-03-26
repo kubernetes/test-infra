@@ -166,6 +166,7 @@ func TestDigestPR(t *testing.T) {
 					},
 					Number: 1,
 					Title:  "Bug 123: fixed it!",
+					State:  "open",
 				},
 			},
 		},
@@ -185,6 +186,7 @@ func TestDigestPR(t *testing.T) {
 					},
 					Number: 1,
 					Title:  "fixing a typo",
+					State:  "open",
 				},
 			},
 		},
@@ -204,6 +206,7 @@ func TestDigestPR(t *testing.T) {
 					},
 					Number:  1,
 					Title:   "fixing a typo",
+					State:   "open",
 					HTMLURL: "http.com",
 					User: github.User{
 						Login: "user",
@@ -212,7 +215,7 @@ func TestDigestPR(t *testing.T) {
 			},
 			validateByDefault: &yes,
 			expected: &event{
-				org: "org", repo: "repo", baseRef: "branch", number: 1, missing: true, bugId: 0, body: "fixing a typo", htmlUrl: "http.com", login: "user",
+				org: "org", repo: "repo", baseRef: "branch", number: 1, state: "open", missing: true, bugId: 0, body: "fixing a typo", htmlUrl: "http.com", login: "user",
 			},
 		},
 		{
@@ -231,6 +234,7 @@ func TestDigestPR(t *testing.T) {
 					},
 					Number:  1,
 					Title:   "Bug 123: fixed it!",
+					State:   "open",
 					HTMLURL: "http.com",
 					User: github.User{
 						Login: "user",
@@ -238,7 +242,7 @@ func TestDigestPR(t *testing.T) {
 				},
 			},
 			expected: &event{
-				org: "org", repo: "repo", baseRef: "branch", number: 1, bugId: 123, body: "Bug 123: fixed it!", htmlUrl: "http.com", login: "user",
+				org: "org", repo: "repo", baseRef: "branch", number: 1, state: "open", bugId: 123, body: "Bug 123: fixed it!", htmlUrl: "http.com", login: "user",
 			},
 		},
 		{
@@ -845,7 +849,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			}},
 			prs:     []github.PullRequest{{Number: base.number, Merged: true}},
 			options: plugins.BugzillaBranchOptions{StateAfterMerge: &plugins.BugzillaBugState{Status: "CLOSED", Resolution: "MERGED"}}, // no requirements --> always valid
-			expectedComment: `org/repo#1:@user: All pull requests linked via external trackers have merged. [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123) has been moved to the CLOSED (MERGED) state.
+			expectedComment: `org/repo#1:@user: All pull requests linked via external trackers have merged: [org/repo#1](https://github.com/org/repo/pull/1). [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123) has been moved to the CLOSED (MERGED) state.
 
 <details>
 
@@ -869,7 +873,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			}},
 			prs:     []github.PullRequest{{Number: base.number, Merged: true}},
 			options: plugins.BugzillaBranchOptions{StateAfterMerge: &modified}, // no requirements --> always valid
-			expectedComment: `org/repo#1:@user: All pull requests linked via external trackers have merged. [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123) has been moved to the MODIFIED state.
+			expectedComment: `org/repo#1:@user: All pull requests linked via external trackers have merged: [org/repo#1](https://github.com/org/repo/pull/1). [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123) has been moved to the MODIFIED state.
 
 <details>
 
@@ -897,7 +901,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			}},
 			prs:     []github.PullRequest{{Number: base.number, Merged: true}, {Number: 22, Merged: true}},
 			options: plugins.BugzillaBranchOptions{StateAfterMerge: &modified}, // no requirements --> always valid
-			expectedComment: `org/repo#1:@user: All pull requests linked via external trackers have merged. [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123) has been moved to the MODIFIED state.
+			expectedComment: `org/repo#1:@user: All pull requests linked via external trackers have merged: [org/repo#1](https://github.com/org/repo/pull/1), [org/repo#22](https://github.com/org/repo/pull/22). [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123) has been moved to the MODIFIED state.
 
 <details>
 
@@ -923,9 +927,22 @@ Instructions for interacting with me using PR comments are available [here](http
 				ExternalBugID: fmt.Sprintf("%s/%s/pull/22", base.org, base.repo),
 				Org:           base.org, Repo: base.repo, Num: 22,
 			}},
-			prs:         []github.PullRequest{{Number: base.number, Merged: true}, {Number: 22, Merged: false}},
+			prs:         []github.PullRequest{{Number: base.number, Merged: true}, {Number: 22, Merged: false, State: "open"}},
 			options:     plugins.BugzillaBranchOptions{StateAfterMerge: &modified}, // no requirements --> always valid
 			expectedBug: &bugzilla.Bug{ID: 123},
+			expectedComment: `org/repo#1:@user: Some pull requests linked via external trackers have merged: [org/repo#1](https://github.com/org/repo/pull/1). The following pull requests linked via external trackers have not merged:
+ * [org/repo#22](https://github.com/org/repo/pull/22) is open
+[Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123) has been moved to the MODIFIED state.
+
+<details>
+
+In response to [this](http.com):
+
+>Bug 123: fixed it!
+
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.
+</details>`,
 		},
 		{
 			name:   "valid bug on merged PR with one external link but no status after merge configured does nothing",

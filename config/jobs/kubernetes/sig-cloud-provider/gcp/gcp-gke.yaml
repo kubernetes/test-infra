@@ -38,7 +38,7 @@ presubmits:
         - --stage-suffix=pull-kubernetes-e2e-gke
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
         - --timeout=65m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-45d42fa-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-0897dba-master
         resources:
           requests:
             memory: "6Gi"
@@ -68,7 +68,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-45d42fa-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-0897dba-master
 
   annotations:
     testgrid-dashboards: google-gke
@@ -97,7 +97,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:(DynamicKubeletConfig|ExpandCSIVolumes|ExpandInUseVolumes|NodeLease)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes|csi-hostpath-v0 --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-45d42fa-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-0897dba-master
 
   annotations:
     testgrid-dashboards: google-gke
@@ -127,7 +127,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|csi-hostpath-v0 --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-45d42fa-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-0897dba-master
 
   annotations:
     testgrid-dashboards: google-gke
@@ -155,7 +155,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Flaky\] --ginkgo.skip=\[Feature:.+\] --minStartupPods=8
       - --timeout=300m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-45d42fa-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-0897dba-master
 
   annotations:
     testgrid-dashboards: google-gke
@@ -185,7 +185,7 @@ periodics:
       - --provider=gke
       - --test_args=--gce-multizone=true --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=150m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-45d42fa-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-0897dba-master
 
   annotations:
     testgrid-dashboards: google-gke
@@ -213,7 +213,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-45d42fa-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-0897dba-master
 
   annotations:
     testgrid-dashboards: google-gke
@@ -241,7 +241,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=500m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-45d42fa-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-0897dba-master
 
   annotations:
     testgrid-dashboards: google-gke
@@ -270,7 +270,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=150m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-45d42fa-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-0897dba-master
 
   annotations:
     testgrid-dashboards: google-gke
@@ -298,7 +298,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[k8s.io\]\sNetworking.*\[Conformance\] --minStartupPods=8
       - --timeout=30m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-45d42fa-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-0897dba-master
 
   annotations:
     testgrid-dashboards: google-gke
@@ -327,7 +327,7 @@ periodics:
       - --provider=gke
       - --test_args=--gce-multizone=true --gce-multimaster=true --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=150m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-45d42fa-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-0897dba-master
 
   annotations:
     testgrid-dashboards: google-gke
@@ -354,7 +354,7 @@ periodics:
       - --provider=gke
       - --test_args=--gce-multizone=true --gce-multimaster=true --ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=500m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-45d42fa-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-0897dba-master
 
   annotations:
     testgrid-dashboards: google-gke
@@ -382,7 +382,7 @@ periodics:
       - --provider=gke
       - --test_args=--gce-multizone=true --gce-multimaster=true --ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=150m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-45d42fa-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-0897dba-master
 
   annotations:
     testgrid-dashboards: google-gke
@@ -410,7 +410,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-45d42fa-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-0897dba-master
 
   annotations:
     testgrid-dashboards: google-gci
@@ -442,7 +442,7 @@ periodics:
       - --test_args=--ginkgo.skip=\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --clean-start=true --minStartupPods=8
       - --timeout=800m
       - --up=false
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-45d42fa-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-0897dba-master
 
   annotations:
     testgrid-dashboards: google-soak
@@ -454,7 +454,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-45d42fa-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-0897dba-master
       args:
       - --repo=github.com/ostromart/istio=k8s-prow-test
       - --timeout=90

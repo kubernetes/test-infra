@@ -100,6 +100,7 @@ postsubmits:
       description: Postsubmit kubeflow/website.
   kubeflow/testing:
   - name: kubeflow-testing-postsubmit
+    cluster: kubeflow
     labels:
       preset-service-account: "true"
     spec:
@@ -266,7 +267,7 @@ postsubmits:
       mountPath: /var/lib/docker
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-45d42fa-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-0897dba-master
         command:
         - ./test/postsubmit-tests-with-pipeline-deployment.sh
         args:
@@ -287,7 +288,7 @@ postsubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-45d42fa-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-0897dba-master
         command:
         - ./test/presubmit-tests-with-pipeline-deployment.sh
         args:
@@ -310,7 +311,7 @@ postsubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-45d42fa-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-0897dba-master
         command:
         - ./test/postsubmit-tests-with-pipeline-deployment.sh
         args:
