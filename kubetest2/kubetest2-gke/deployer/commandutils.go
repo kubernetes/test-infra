@@ -29,6 +29,22 @@ func (d *deployer) prepareGcpIfNeeded() error {
 	// TODO(RonWeber): This is an almost direct copy/paste from kubetest's prepareGcp()
 	// It badly needs refactored.
 
+	var endpoint string
+	switch env := d.environment; {
+	case env == "test":
+		endpoint = "https://test-container.sandbox.googleapis.com/"
+	case env == "staging":
+		endpoint = "https://staging-container.sandbox.googleapis.com/"
+	case env == "staging2":
+		endpoint = "https://staging2-container.sandbox.googleapis.com/"
+	case env == "prod":
+		endpoint = "https://container.googleapis.com/"
+	case urlRe.MatchString(env):
+		endpoint = env
+	default:
+		return fmt.Errorf("--environment must be one of {test,staging,staging2,prod} or match %v, found %q", urlRe, env)
+	}
+
 	//TODO(RonWeber): boskos
 	if err := os.Setenv("CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS", "1"); err != nil {
 		return fmt.Errorf("could not set CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1: %v", err)

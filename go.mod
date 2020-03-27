@@ -25,8 +25,8 @@ require (
 	github.com/GoogleCloudPlatform/testgrid v0.0.7
 	github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46
 	github.com/andygrunwald/go-gerrit v0.0.0-20190120104749-174420ebee6c
-	github.com/aws/aws-k8s-tester v0.0.0-20190114231546-b411acf57dfe
-	github.com/aws/aws-sdk-go v1.27.4
+	github.com/aws/aws-k8s-tester v0.9.3
+	github.com/aws/aws-sdk-go v1.29.32
 	github.com/bazelbuild/buildtools v0.0.0-20190917191645-69366ca98f89
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/bwmarrin/snowflake v0.0.0
@@ -34,8 +34,9 @@ require (
 	github.com/client9/misspell v0.3.4
 	github.com/containerd/containerd v1.3.3 // indirect
 	github.com/djherbis/atime v1.0.0
-	github.com/docker/docker v1.4.2-0.20190924003213-a8608b5b67c7
+	github.com/docker/docker v1.4.2-0.20200203170920-46ec8731fbce
 	github.com/evanphx/json-patch v4.5.0+incompatible
+	github.com/frankban/quicktest v1.8.1 // indirect
 	github.com/fsnotify/fsnotify v1.4.7
 	github.com/fsouza/fake-gcs-server v0.0.0-20180612165233-e85be23bdaa8
 	github.com/go-logr/zapr v0.1.1 // indirect

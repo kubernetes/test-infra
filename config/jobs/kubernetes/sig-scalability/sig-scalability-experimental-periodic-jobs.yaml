@@ -13,7 +13,7 @@ periodics:
 #    testgrid-tab-name: max-persistent-vol-per-pod
 #  spec:
 #    containers:
-#      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-0897dba-master
+#      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200326-e946722-master
 #        args:
 #          - --repo=k8s.io/kubernetes=master
 #          - --repo=k8s.io/perf-tests=master
@@ -55,7 +55,7 @@ periodics:
 #    testgrid-tab-name: max-persistent-vol-per-node
 #  spec:
 #    containers:
-#      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-0897dba-master
+#      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200326-e946722-master
 #        args:
 #          - --repo=k8s.io/kubernetes=master
 #          - --repo=k8s.io/perf-tests=master
@@ -96,7 +96,7 @@ periodics:
     testgrid-tab-name: storage
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-0897dba-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200326-e946722-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -135,7 +135,7 @@ periodics:
     testgrid-tab-name: calico
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-0897dba-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200326-e946722-master
       env:
       - name: NETWORK_POLICY_PROVIDER
         value: "calico"
@@ -169,7 +169,6 @@ periodics:
       - --test-cmd-args=--report-dir=/workspace/_artifacts
       - --test-cmd-args=--testconfig=testing/density/config.yaml
       - --test-cmd-args=--testconfig=testing/load/config.yaml
-      - --test-cmd-args=--testoverrides=./testing/chaosmonkey/override.yaml
       - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_configmaps.yaml
       - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_daemonsets.yaml
       - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_jobs.yaml
@@ -197,7 +196,7 @@ periodics:
     testgrid-tab-name: experimental-load
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-0897dba-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200326-e946722-master
         args:
           - --timeout=140
           - --repo=k8s.io/kubernetes=master
@@ -225,7 +224,6 @@ periodics:
           - --test-cmd-args=--provider=gce
           - --test-cmd-args=--report-dir=/workspace/_artifacts
           - --test-cmd-args=--testconfig=testing/load/experimental-config.yaml
-          - --test-cmd-args=--testoverrides=./testing/chaosmonkey/override.yaml
           - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_configmaps.yaml
           - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_daemonsets.yaml
           - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_jobs.yaml
@@ -255,7 +253,7 @@ periodics:
     testgrid-tab-name: experimental-load-containerd
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-0897dba-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200326-e946722-master
         args:
           - --timeout=140
           - --repo=k8s.io/kubernetes=master
@@ -284,7 +282,6 @@ periodics:
           - --test-cmd-args=--provider=gce
           - --test-cmd-args=--report-dir=/workspace/_artifacts
           - --test-cmd-args=--testconfig=testing/load/experimental-config.yaml
-          - --test-cmd-args=--testoverrides=./testing/chaosmonkey/override.yaml
           - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_configmaps.yaml
           - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_daemonsets.yaml
           - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_jobs.yaml
@@ -315,7 +312,7 @@ periodics:
     testgrid-tab-name: gce-cos-master-scalability-100-containerd
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-0897dba-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200326-e946722-master
         args:
           - --timeout=140
           - --repo=k8s.io/kubernetes=master
@@ -347,7 +344,6 @@ periodics:
           - --test-cmd-args=--testconfig=testing/density/config.yaml
           - --test-cmd-args=--testconfig=testing/load/config.yaml
           - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
-          - --test-cmd-args=--testoverrides=./testing/chaosmonkey/override.yaml
           - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_configmaps.yaml
           - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_daemonsets.yaml
           - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_jobs.yaml

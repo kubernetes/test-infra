@@ -44,7 +44,6 @@ const (
 	defaultPool   = "default"
 	e2eAllow      = "tcp:22,tcp:80,tcp:8080,tcp:30000-32767,udp:30000-32767"
 	defaultCreate = "container clusters create --quiet"
-	endpoint      = "https://staging-container.sandbox.googleapis.com/"
 	image         = "cos"
 )
 
@@ -84,6 +83,7 @@ type deployer struct {
 	region            string
 	cluster           string
 	network           string
+	environment       string
 	createCommandFlag string
 	gcpServiceAccount string
 
@@ -135,7 +135,7 @@ func (d *deployer) location() (string, error) {
 	if d.zone != "" {
 		return "--zone=" + d.zone, nil
 	}
-	return "--region" + d.region, nil
+	return "--region=" + d.region, nil
 }
 
 func (d *deployer) createCommand() []string {
@@ -152,6 +152,7 @@ func bindFlags(d *deployer) *pflag.FlagSet {
 	flags.StringVar(&d.createCommandFlag, "create-command", defaultCreate, "gcloud subcommand used to create a cluster. Modify if you need to pass arbitrary arguments to create.")
 	flags.StringVar(&d.gcpServiceAccount, "gcp-service-account", "", "Service account to activate before using gcloud")
 	flags.StringVar(&d.network, "network", "default", "Cluster network. Defaults to the default network.")
+	flags.StringVar(&d.environment, "environment", "staging", "Container API endpoint to use, one of 'test', 'staging', 'prod', or a custom https:// URL")
 	flags.StringVar(&d.project, "project", "", "Project to deploy to.")
 	flags.StringVar(&d.region, "region", "", "For use with gcloud commands")
 	flags.StringVar(&d.zone, "zone", "", "For use with gcloud commands")

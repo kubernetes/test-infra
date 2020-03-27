@@ -1,6 +1,7 @@
 presubmits:
   kubeflow/examples:
   - name: kubeflow-examples-presubmit
+    cluster: kubeflow
     always_run: true         # Run for every PR, or only when requested.
     labels:
       preset-service-account: "true"
@@ -14,6 +15,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   kubeflow/internal-acls:
   - name: kubeflow-internal-acls-presubmit
+    cluster: kubeflow
     always_run: true         # Run for every PR, or only when requested.
     labels:
       preset-service-account: "true"
@@ -27,6 +29,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   kubeflow/kubeflow:
   - name: kubeflow-presubmit
+    cluster: kubeflow
     always_run: true         # Run for every PR, or only when requested.
     labels:
       preset-service-account: "true"
@@ -40,6 +43,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   kubeflow/pytorch-operator:
   - name: kubeflow-pytorch-operator-presubmit
+    cluster: kubeflow
     always_run: true         # Run for every PR, or only when requested.
     labels:
       preset-service-account: "true"
@@ -53,6 +57,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   kubeflow/reporting:
   - name: kubeflow-reporting-presubmit
+    cluster: kubeflow
     always_run: true         # Run for every PR, or only when requested.
     labels:
       preset-service-account: "true"
@@ -66,6 +71,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   kubeflow/website:
   - name: kubeflow-website-presubmit
+    cluster: kubeflow
     always_run: true         # Run for every PR, or only when requested.
     labels:
       preset-service-account: "true"
@@ -93,6 +99,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   kubeflow/tf-operator:
   - name: kubeflow-tf-operator-presubmit
+    cluster: kubeflow
     always_run: true         # Run for every PR, or only when requested.
     labels:
       preset-service-account: "true"
@@ -106,6 +113,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   kubeflow/katib:
   - name: kubeflow-katib-presubmit
+    cluster: kubeflow
     always_run: true         # Run for every PR, or only when requested.
     labels:
       preset-service-account: "true"
@@ -119,6 +127,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   kubeflow/experimental-kvc:
   - name: kubeflow-experimental-kvc-presubmit
+    cluster: kubeflow
     always_run: true         # Run for every PR, or only when requested.
     labels:
       preset-service-account: "true"
@@ -132,6 +141,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   kubeflow/experimental-seldon:
   - name: kubeflow-experimental-seldon-presubmit
+    cluster: kubeflow
     always_run: true         # Run for every PR, or only when requested.
     labels:
       preset-service-account: "true"
@@ -145,6 +155,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   kubeflow/experimental-beagle:
   - name: kubeflow-experimental-beagle-presubmit
+    cluster: kubeflow
     always_run: true         # Run for every PR, or only when requested.
     labels:
       preset-service-account: "true"
@@ -158,6 +169,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   kubeflow/caffe2-operator:
   - name: kubeflow-caffe2-operator-presubmit
+    cluster: kubeflow
     always_run: true         # Run for every PR, or only when requested.
     labels:
       preset-service-account: "true"
@@ -171,6 +183,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   kubeflow/kubebench:
   - name: kubeflow-kubebench-presubmit
+    cluster: kubeflow
     always_run: true         # Run for every PR, or only when requested.
     labels:
       preset-service-account: "true"
@@ -184,6 +197,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   kubeflow/mpi-operator:
   - name: kubeflow-mpi-operator-presubmit
+    cluster: kubeflow
     always_run: true         # Run for every PR, or only when requested.
     labels:
       preset-service-account: "true"
@@ -197,6 +211,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   kubeflow/chainer-operator:
   - name: kubeflow-chainer-operator-presubmit
+    cluster: kubeflow
     always_run: true         # Run for every PR, or only when requested.
     labels:
       preset-service-account: "true"
@@ -210,6 +225,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   kubeflow/mxnet-operator:
   - name: kubeflow-mxnet-operator-presubmit
+    cluster: kubeflow
     always_run: true         # Run for every PR, or only when requested.
     labels:
       preset-service-account: "true"
@@ -223,6 +239,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   kubeflow/arena:
   - name: kubeflow-arena-presubmit
+    cluster: kubeflow
     always_run: true         # Run for every PR, or only when requested.
     labels:
       preset-service-account: "true"
@@ -236,6 +253,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   kubeflow/fairing:
   - name: kubeflow-fairing-presubmit
+    cluster: kubeflow
     always_run: true
     labels:
       preset-service-account: "true"
@@ -249,6 +267,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   kubeflow/metadata:
   - name: kubeflow-metadata-presubmit
+    cluster: kubeflow
     always_run: true
     labels:
       preset-service-account: "true"
@@ -262,6 +281,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   kubeflow/kfserving:
   - name: kubeflow-kfserving-presubmit
+    cluster: kubeflow
     always_run: true
     labels:
       preset-service-account: "true"
@@ -275,6 +295,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   kubeflow/manifests:
   - name: kubeflow-manifests-presubmit
+    cluster: kubeflow
     always_run: true         # Run for every PR, or only when requested.
     labels:
       preset-service-account: "true"
@@ -288,6 +309,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   kubeflow/kfctl:
   - name: kubeflow-kfctl-presubmit
+    cluster: kubeflow
     always_run: true
     labels:
       preset-service-account: "true"
@@ -301,6 +323,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   kubeflow/pipelines:
   - name: kubeflow-pipeline-frontend-test
+    cluster: kubeflow
     always_run: true
     decorate: true
     labels:
@@ -314,6 +337,7 @@ presubmits:
         - -c
         - cd ./frontend && npm run test:ci:prow
   - name: kubeflow-pipeline-backend-test
+    cluster: kubeflow
     always_run: true
     decorate: true
     labels:
@@ -332,13 +356,14 @@ presubmits:
           - "--define=grpc_no_ares=true"
           - "//backend/..."
   - name: kubeflow-pipeline-e2e-test
+    cluster: kubeflow
     always_run: true
     decorate: true
     labels:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-0897dba-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200326-e946722-master
         command:
         - ./test/presubmit-tests-with-pipeline-deployment.sh
         args:
@@ -347,13 +372,14 @@ presubmits:
         - --test_result_folder
         - e2e_test
   - name: kubeflow-pipeline-sample-test
+    cluster: kubeflow
     always_run: true
     decorate: true
     labels:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-0897dba-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200326-e946722-master
         command:
         - ./test/presubmit-tests-with-pipeline-deployment.sh
         args:
@@ -364,13 +390,14 @@ presubmits:
         - --timeout
         - "3600"
   - name: kubeflow-pipeline-integration-test
+    cluster: kubeflow
     always_run: false
     decorate: true
     labels:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-0897dba-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200326-e946722-master
         command:
         - ./test/presubmit-tests-with-pipeline-deployment.sh
         args:
@@ -383,13 +410,14 @@ presubmits:
         - --is_integration_test
         - "true"
   - name: kubeflow-pipeline-upgrade-test
+    cluster: kubeflow
     always_run: true
     decorate: true
     labels:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-0897dba-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200326-e946722-master
         command:
         - ./test/upgrade-tests.sh
         args:
@@ -397,6 +425,7 @@ presubmits:
         - upgrade_test
   kubeflow/xgboost-operator:
   - name: kubeflow-xgboost-operator-presubmit
+    cluster: kubeflow
     always_run: true         # Run for every PR, or only when requested.
     labels:
       preset-service-account: "true"
@@ -409,6 +438,7 @@ presubmits:
       description: Presubmit tests for kubeflow/xgboost-operator.
       testgrid-num-columns-recent: '30'
 #   - name: kubeflow-pipeline-e2e-test-gce-minikube
+#     cluster: kubeflow
 #     always_run: true
 #     decorate: true
 #     skip_report: true
@@ -416,7 +446,7 @@ presubmits:
 #       preset-service-account: "true"
 #     spec:
 #       containers:
-#       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200324-0897dba-master
+#       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200326-e946722-master
 #         command:
 #         - ./test/presubmit-tests-gce-minikube.sh
 #         args:
