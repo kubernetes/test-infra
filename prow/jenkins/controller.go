@@ -288,21 +288,21 @@ func (c *Controller) terminateDupes(pjs []prowapi.ProwJob, jbs map[string]Build)
 			dupes[n] = i
 		}
 		toCancel := pjs[cancelIndex]
-		// Allow aborting presubmit jobs for commits that have been superseded by
+
+		// Abort presubmit jobs for commits that have been superseded by
 		// newer commits in GitHub pull requests.
-		if ac := c.config().AllowCancellations; ac == nil || *ac {
-			build, buildExists := jbs[toCancel.ObjectMeta.Name]
-			// Avoid cancelling enqueued builds.
-			if buildExists && build.IsEnqueued() {
-				continue
-			}
-			// Otherwise, abort it.
-			if buildExists {
-				if err := c.jc.Abort(getJobName(&toCancel.Spec), &build); err != nil {
-					c.log.WithError(err).WithFields(pjutil.ProwJobFields(&toCancel)).Warn("Cannot cancel Jenkins build")
-				}
+		build, buildExists := jbs[toCancel.ObjectMeta.Name]
+		// Avoid cancelling enqueued builds.
+		if buildExists && build.IsEnqueued() {
+			continue
+		}
+		// Otherwise, abort it.
+		if buildExists {
+			if err := c.jc.Abort(getJobName(&toCancel.Spec), &build); err != nil {
+				c.log.WithError(err).WithFields(pjutil.ProwJobFields(&toCancel)).Warn("Cannot cancel Jenkins build")
 			}
 		}
+
 		srcPJ := toCancel.DeepCopy()
 		toCancel.SetComplete()
 		prevState := toCancel.Status.State

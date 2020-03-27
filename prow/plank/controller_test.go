@@ -142,9 +142,8 @@ func TestTerminateDupes(t *testing.T) {
 	var testcases = []struct {
 		name string
 
-		allowCancellations bool
-		pjs                []prowapi.ProwJob
-		pm                 map[string]v1.Pod
+		pjs []prowapi.ProwJob
+		pm  map[string]v1.Pod
 
 		terminatedPJs  sets.String
 		terminatedPods sets.String
@@ -249,7 +248,6 @@ func TestTerminateDupes(t *testing.T) {
 		{
 			name: "should also terminate pods",
 
-			allowCancellations: true,
 			pjs: []prowapi.ProwJob{
 				{
 					ObjectMeta: metav1.ObjectMeta{Name: "newest", Namespace: "prowjobs"},
@@ -307,11 +305,6 @@ func TestTerminateDupes(t *testing.T) {
 				ProwConfig: config.ProwConfig{
 					ProwJobNamespace: "prowjobs",
 					PodNamespace:     "pods",
-					Plank: config.Plank{
-						Controller: config.Controller{
-							AllowCancellations: &tc.allowCancellations,
-						},
-					},
 				},
 			},
 		}
