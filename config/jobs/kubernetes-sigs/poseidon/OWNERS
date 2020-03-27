@@ -1,12 +1,8 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 reviwers:
-- ICGog
-- ms705
-- shivramsrivastava
 - m1093782566
+- sig-scheduling-leads
 approvers:
-- ICGog
-- ms705
-- shivramsrivastava
 - m1093782566
+- sig-scheduling-leads

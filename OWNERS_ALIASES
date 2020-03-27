@@ -205,3 +205,13 @@ aliases:
     - frapposelli
 ## END CUSTOM CONTENT
 
+  # copied from sigs.k8s.io/cluster-api-provider-vsphere/OWNERS_ALIASES
+  cluster-api-admins:
+    - detiber
+    - justinsb
+    - davidewatson
+    - vincepri
+  cluster-api-vsphere-maintainers:
+    - frapposelli
+    - yastij
+    - randomvariable
