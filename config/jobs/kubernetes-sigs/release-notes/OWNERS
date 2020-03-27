@@ -1,5 +1,10 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
+reviewers:
+  - jeefy
+  - marpaia
+  - onyiny-ang
+  - sig-release-leads
 approvers:
   - jeefy
   - marpaia

@@ -1,5 +1,11 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
+reviewers:
+- cblecker
+- krzyzacy
+- spiffxp
+- wojtek-t
+- chases2
 approvers:
 - cblecker
 - krzyzacy

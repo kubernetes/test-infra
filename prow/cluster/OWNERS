@@ -2,6 +2,13 @@
 
 labels:
 - area/prow/bump
+reviewers:
+- amwat
+- cjwagner
+- fejta
+- ixdy
+- katharine
+- krzyzacy
 approvers:
 - amwat
 - cjwagner

@@ -1,5 +1,10 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
+reviewers:
+- krzyzacy
+- shyamjvs
+- wojtek-t # For European timezone emergencies.
+- feiskyer
 approvers:
 - krzyzacy
 - shyamjvs

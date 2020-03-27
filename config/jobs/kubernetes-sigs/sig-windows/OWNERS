@@ -1,9 +1,18 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
+reviewers:
+- adelina-t
+- andyzhangx
+- claudiubelu
+- benmoss
+- chewong
+- feiskyer
+- marosset
+- PatrickLang
 approvers:
 - adelina-t
 - andyzhangx
-- bclau
+- claudiubelu
 - benmoss
 - chewong
 - feiskyer

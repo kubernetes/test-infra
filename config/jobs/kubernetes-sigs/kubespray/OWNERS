@@ -1,5 +1,13 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
+reviewers:
+- ant31
+- mattymo
+- atoms
+- chadswen
+- mirwan
+- riverzhang
+- woopstar
 approvers:
 - ant31
 - mattymo
@@ -7,5 +15,4 @@ approvers:
 - chadswen
 - mirwan
 - riverzhang
-- verwilst
 - woopstar

@@ -1,7 +1,12 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
+reviwers:
+- gyliu513
+- jichenjc
+# - morvencao # TODO: kubernetes-sigs member, must join kubernetes org
+# - xunpan # TODO: kubernetes-sigs member, must join kubernetes org
 approvers:
 - gyliu513
 - jichenjc
-- morvencao
-- xunpan
+# - morvencao # TODO: kubernetes-sigs member, must join kubernetes org
+# - xunpan # TODO: kubernetes-sigs member, must join kubernetes org
