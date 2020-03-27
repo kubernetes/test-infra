@@ -17,11 +17,69 @@ limitations under the License.
 package lenses
 
 import (
+	"bytes"
+	"context"
 	"encoding/json"
+	"io/ioutil"
 	"testing"
 
 	"github.com/sirupsen/logrus"
 )
+
+type FakeArtifact struct {
+	path      string
+	content   []byte
+	sizeLimit int64
+}
+
+func (fa *FakeArtifact) JobPath() string {
+	return fa.path
+}
+
+func (fa *FakeArtifact) Size() (int64, error) {
+	return int64(len(fa.content)), nil
+}
+
+func (fa *FakeArtifact) CanonicalLink() string {
+	return "linknotfound.io/404"
+}
+
+func (fa *FakeArtifact) ReadAt(b []byte, off int64) (int, error) {
+	r := bytes.NewReader(fa.content)
+	return r.ReadAt(b, off)
+}
+
+func (fa *FakeArtifact) ReadAll() ([]byte, error) {
+	size, err := fa.Size()
+	if err != nil {
+		return nil, err
+	}
+	if size > fa.sizeLimit {
+		return nil, ErrFileTooLarge
+	}
+	r := bytes.NewReader(fa.content)
+	return ioutil.ReadAll(r)
+}
+
+func (fa *FakeArtifact) ReadTail(n int64) ([]byte, error) {
+	size, err := fa.Size()
+	if err != nil {
+		return nil, err
+	}
+	buf := make([]byte, n)
+	_, err = fa.ReadAt(buf, size-n)
+	return buf, err
+}
+
+func (fa *FakeArtifact) UseContext(ctx context.Context) error {
+	return nil
+}
+
+func (fa *FakeArtifact) ReadAtMost(n int64) ([]byte, error) {
+	buf := make([]byte, n)
+	_, err := fa.ReadAt(buf, 0)
+	return buf, err
+}
 
 type dumpLens struct{}
 
@@ -60,9 +118,9 @@ func TestView(t *testing.T) {
 		t.Fatal("Failed to register viewer for testing View")
 	}
 	fakeLog := &FakeArtifact{
-		Path:      "log.txt",
-		Content:   []byte("Oh wow\nlogs\nthis is\ncrazy"),
-		SizeLimit: 500e6,
+		path:      "log.txt",
+		content:   []byte("Oh wow\nlogs\nthis is\ncrazy"),
+		sizeLimit: 500e6,
 	}
 	testCases := []struct {
 		name      string
@@ -157,9 +215,9 @@ func TestLastNLines_GCS(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			artifact := &FakeArtifact{
-				Path:      tc.path,
-				Content:   tc.contents,
-				SizeLimit: 500e6,
+				path:      tc.path,
+				content:   tc.contents,
+				sizeLimit: 500e6,
 			}
 			actual, err := LastNLinesChunked(artifact, tc.n, fakeGCSServerChunkSize)
 			if err != nil {

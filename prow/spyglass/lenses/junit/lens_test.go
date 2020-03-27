@@ -18,6 +18,9 @@ limitations under the License.
 package junit
 
 import (
+	"bytes"
+	"context"
+	"io/ioutil"
 	"testing"
 
 	"github.com/GoogleCloudPlatform/testgrid/metadata/junit"
@@ -26,8 +29,60 @@ import (
 )
 
 const (
-	fakeResourceDir = "resources-for-tests"
+	fakeResourceDir   = "resources-for-tests"
+	fakeCanonicalLink = "linknotfound.io/404"
 )
+
+// FakeArtifact implements lenses.Artifact.
+// This is pretty much copy/pasted from prow/spyglass/lenses/lenses_test.go, if
+// another package needs to reuse, should think about refactor this into it's
+// own package
+type FakeArtifact struct {
+	path      string
+	content   []byte
+	sizeLimit int64
+}
+
+func (fa *FakeArtifact) JobPath() string {
+	return fa.path
+}
+
+func (fa *FakeArtifact) Size() (int64, error) {
+	return int64(len(fa.content)), nil
+}
+
+func (fa *FakeArtifact) CanonicalLink() string {
+	return fakeCanonicalLink
+}
+
+func (fa *FakeArtifact) ReadAt(b []byte, off int64) (int, error) {
+	r := bytes.NewReader(fa.content)
+	return r.ReadAt(b, off)
+}
+
+func (fa *FakeArtifact) ReadAll() ([]byte, error) {
+	size, err := fa.Size()
+	if err != nil {
+		return nil, err
+	}
+	if size > fa.sizeLimit {
+		return nil, lenses.ErrFileTooLarge
+	}
+	r := bytes.NewReader(fa.content)
+	return ioutil.ReadAll(r)
+}
+
+func (fa *FakeArtifact) ReadTail(n int64) ([]byte, error) {
+	return nil, nil
+}
+
+func (fa *FakeArtifact) UseContext(ctx context.Context) error {
+	return nil
+}
+
+func (fa *FakeArtifact) ReadAtMost(n int64) ([]byte, error) {
+	return nil, nil
+}
 
 func TestGetJvd(t *testing.T) {
 	emptyFailureMsg := ""
@@ -492,10 +547,10 @@ func TestGetJvd(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			artifacts := make([]lenses.Artifact, 0)
 			for _, rr := range tt.rawResults {
-				artifacts = append(artifacts, &lenses.FakeArtifact{
-					Path:      "log.txt",
-					Content:   rr,
-					SizeLimit: 500e6,
+				artifacts = append(artifacts, &FakeArtifact{
+					path:      "log.txt",
+					content:   rr,
+					sizeLimit: 500e6,
 				})
 			}
 			l := Lens{}
