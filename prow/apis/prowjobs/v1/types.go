@@ -53,7 +53,7 @@ type ProwJobState string
 const (
 	// TriggeredState means the job has been created but not yet scheduled.
 	TriggeredState ProwJobState = "triggered"
-	// PendingState means the job is scheduled but not yet running.
+	// PendingState means the job is currently running and we are waiting for it to finish.
 	PendingState ProwJobState = "pending"
 	// SuccessState means the job completed without error (exit 0)
 	SuccessState ProwJobState = "success"

@@ -198,7 +198,7 @@ func (c *Controller) Sync() error {
 		syncErrs = append(syncErrs, err)
 	}
 
-	pendingCh, triggeredCh := pjutil.PartitionActive(jenkinsJobs)
+	pendingCh, triggeredCh, abortedCh := pjutil.PartitionActive(jenkinsJobs)
 	errCh := make(chan error, len(jenkinsJobs))
 	reportCh := make(chan prowapi.ProwJob, len(jenkinsJobs))
 
@@ -212,6 +212,8 @@ func (c *Controller) Sync() error {
 	syncProwJobs(c.log, c.syncPendingJob, maxSyncRoutines, pendingCh, reportCh, errCh, jbs)
 	c.log.Debugf("Handling %d triggered prowjobs", len(triggeredCh))
 	syncProwJobs(c.log, c.syncTriggeredJob, maxSyncRoutines, triggeredCh, reportCh, errCh, jbs)
+	c.log.Debugf("Handling %d aborted prowjobs", len(abortedCh))
+	syncProwJobs(c.log, c.syncAbortedJob, maxSyncRoutines, abortedCh, reportCh, errCh, jbs)
 
 	close(errCh)
 	close(reportCh)
@@ -406,6 +408,23 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, reports chan<- prowapi.P
 			WithField("to", pj.Status.State).Info("Transitioning states.")
 	}
 	_, err := pjutil.PatchProwjob(c.prowJobClient, c.log, *prevPJ, pj)
+	return err
+}
+
+func (c *Controller) syncAbortedJob(pj prowapi.ProwJob, _ chan<- prowapi.ProwJob, jbs map[string]Build) error {
+	if pj.Status.State != prowapi.AbortedState || pj.Complete() {
+		return nil
+	}
+
+	if build, exists := jbs[pj.Name]; exists {
+		if err := c.jc.Abort(getJobName(&pj.Spec), &build); err != nil {
+			return fmt.Errorf("failed to abort Jenkins build: %v", err)
+		}
+	}
+
+	originalPJ := pj.DeepCopy()
+	pj.SetComplete()
+	_, err := pjutil.PatchProwjob(c.prowJobClient, c.log, *originalPJ, pj)
 	return err
 }
 

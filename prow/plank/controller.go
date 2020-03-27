@@ -270,7 +270,7 @@ func (c *Controller) Sync() error {
 	c.pjs = k8sJobs
 	c.pjLock.Unlock()
 
-	pendingCh, triggeredCh := pjutil.PartitionActive(k8sJobs)
+	pendingCh, triggeredCh, abortedCh := pjutil.PartitionActive(k8sJobs)
 	errCh := make(chan error, len(k8sJobs))
 	reportCh := make(chan prowapi.ProwJob, len(k8sJobs))
 
@@ -284,6 +284,8 @@ func (c *Controller) Sync() error {
 	syncProwJobs(c.log, c.syncPendingJob, maxSyncRoutines, pendingCh, reportCh, errCh, pm)
 	c.log.Debugf("Handling %d triggered prowjobs", len(triggeredCh))
 	syncProwJobs(c.log, c.syncTriggeredJob, maxSyncRoutines, triggeredCh, reportCh, errCh, pm)
+	c.log.Debugf("Handling %d aborted prowjobs", len(abortedCh))
+	syncProwJobs(c.log, c.syncAbortedJob, maxSyncRoutines, abortedCh, reportCh, errCh, pm)
 
 	close(errCh)
 	close(reportCh)
@@ -509,6 +511,26 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]corev1.Pod
 	}
 
 	return c.prowJobClient.Patch(c.ctx, pj.DeepCopy(), ctrlruntimeclient.MergeFrom(&prevPJ))
+}
+
+func (c *Controller) syncAbortedJob(pj prowapi.ProwJob, pm map[string]corev1.Pod, _ chan<- prowapi.ProwJob) error {
+	if pj.Status.State != prowapi.AbortedState || pj.Complete() {
+		return nil
+	}
+
+	if pod, podExists := pm[pj.Name]; podExists {
+		client, ok := c.buildClients[pj.ClusterAlias()]
+		if !ok {
+			return fmt.Errorf("unknown cluster alias %q", pj.ClusterAlias())
+		}
+		if err := client.Delete(c.ctx, pod.DeepCopy()); err != nil && !kerrors.IsNotFound(err) {
+			return fmt.Errorf("failed to delete pod %q in cluster %q: %w", pod.Name, pj.ClusterAlias(), err)
+		}
+	}
+
+	originalPJ := pj.DeepCopy()
+	pj.SetComplete()
+	return c.prowJobClient.Patch(c.ctx, &pj, ctrlruntimeclient.MergeFrom(originalPJ))
 }
 
 func (c *Controller) syncTriggeredJob(pj prowapi.ProwJob, pm map[string]corev1.Pod, reports chan<- prowapi.ProwJob) error {
