@@ -330,16 +330,14 @@ func (c *Controller) SyncMetrics() {
 func (c *Controller) terminateDupes(pjs []prowapi.ProwJob, pm map[string]corev1.Pod) error {
 	log := c.log.WithField("aborter", "pod")
 	return pjutil.TerminateOlderJobs(c.prowJobClient, log, pjs, func(toCancel prowapi.ProwJob) error {
-		// Allow aborting presubmit jobs for commits that have been superseded by
+		// Abort presubmit jobs for commits that have been superseded by
 		// newer commits in GitHub pull requests.
-		if ac := c.config().Plank.AllowCancellations; ac == nil || *ac {
-			if pod, exists := pm[toCancel.ObjectMeta.Name]; exists {
-				c.log.WithField("name", pod.ObjectMeta.Name).Debug("Delete Pod.")
-				if client, ok := c.buildClients[toCancel.ClusterAlias()]; !ok {
-					return fmt.Errorf("unknown cluster alias %q", toCancel.ClusterAlias())
-				} else if err := client.Delete(c.ctx, &pod); err != nil {
-					return fmt.Errorf("deleting pod: %v", err)
-				}
+		if pod, exists := pm[toCancel.ObjectMeta.Name]; exists {
+			c.log.WithField("name", pod.ObjectMeta.Name).Debug("Delete Pod.")
+			if client, ok := c.buildClients[toCancel.ClusterAlias()]; !ok {
+				return fmt.Errorf("unknown cluster alias %q", toCancel.ClusterAlias())
+			} else if err := client.Delete(c.ctx, &pod); err != nil {
+				return fmt.Errorf("deleting pod: %v", err)
 			}
 		}
 		return nil
