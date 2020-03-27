@@ -94,6 +94,8 @@ type WindowsProfile struct {
 	WindowsSku            string `json:"WindowsSku"`
 	WindowsDockerVersion  string `json:"windowsDockerVersion"`
 	SSHEnabled            bool   `json:"sshEnabled,omitempty"`
+	EnableCSIProxy        bool   `json:"enableCSIProxy,omitempty"`
+	CSIProxyURL           string `json:"csiProxyURL,omitempty"`
 }
 
 // KubernetesContainerSpec defines configuration for a container spec

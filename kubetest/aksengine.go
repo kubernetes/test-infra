@@ -416,7 +416,28 @@ func newAKSEngine() (*aksEngineDeployer, error) {
 		return nil, err
 	}
 
+	if err := c.installAzureCLI(); err != nil {
+		return nil, err
+	}
+
 	return &c, nil
+}
+
+func (c *Cluster) installAzureCLI() error {
+	if err := control.FinishRunning(exec.Command("pip", "install", "azure-cli")); err != nil {
+		return err
+	}
+
+	cmd := exec.Command("az", "login", "--service-principal",
+		fmt.Sprintf("-u=%s", c.credentials.ClientID),
+		fmt.Sprintf("-p=%s", c.credentials.ClientSecret),
+		fmt.Sprintf("-t=%s", c.credentials.TenantID))
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("failed az login with error: %v", err)
+	}
+
+	log.Println("az login success.")
+	return nil
 }
 
 func getAKSDeploymentMethod(k8sRelease string) aksDeploymentMethod {
