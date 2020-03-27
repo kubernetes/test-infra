@@ -18,9 +18,9 @@ periodics:
       - --cluster=e2e-kops-aws-distro-debian-9.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=admin
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
+      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --extract=release/latest
+      - --extract=release/stable
       - --ginkgo-parallel
       - --kops-args=--image=379101102735/debian-stretch-hvm-x86_64-gp2-2019-11-13-63558
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
@@ -53,9 +53,9 @@ periodics:
       - --cluster=e2e-kops-aws-distro-debian-10.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=admin
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
+      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --extract=release/latest
+      - --extract=release/stable
       - --ginkgo-parallel
       - --kops-args=--image=136693071363/debian-10-amd64-20200210-166
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
@@ -88,9 +88,9 @@ periodics:
       - --cluster=e2e-kops-aws-distro-ubuntu-1604.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=ubuntu
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
+      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --extract=release/latest
+      - --extract=release/stable
       - --ginkgo-parallel
       - --kops-args=--image=099720109477/ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-20191114
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
@@ -123,9 +123,9 @@ periodics:
       - --cluster=e2e-kops-aws-distro-ubuntu-1804.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=ubuntu
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
+      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --extract=release/latest
+      - --extract=release/stable
       - --ginkgo-parallel
       - --kops-args=--image=099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20200112
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
@@ -158,9 +158,9 @@ periodics:
       - --cluster=e2e-kops-aws-distro-centos-7.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=centos
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
+      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --extract=release/latest
+      - --extract=release/stable
       - --ginkgo-parallel
       - --kops-args=--image=ami-02eac2c0129f6376b
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
@@ -194,9 +194,9 @@ periodics:
       - --cluster=e2e-kops-aws-distro-amazonlinux-2.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=ec2-user
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
+      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --extract=release/latest
+      - --extract=release/stable
       - --ginkgo-parallel
       - --kops-args=--image=137112412989/amzn2-ami-hvm-2.0.20191217.0-x86_64-gp2 --container-runtime=containerd --networking=amazon-vpc-routed-eni --node-size=t3.large
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
@@ -229,9 +229,9 @@ periodics:
       - --cluster=e2e-kops-aws-distro-rhel-7.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=ec2-user
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
+      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --extract=release/latest
+      - --extract=release/stable
       - --ginkgo-parallel
       - --kops-args=--image=309956199498/RHEL-7.7_HVM-20191119-x86_64-2-Hourly2-GP2
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
@@ -264,9 +264,9 @@ periodics:
       - --cluster=e2e-kops-aws-distro-rhel-8.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=ec2-user
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
+      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --extract=release/latest
+      - --extract=release/stable
       - --ginkgo-parallel
       - --kops-args=--image=309956199498/RHEL-8.1.0_HVM-20191029-x86_64-0-Hourly2-GP2
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
@@ -299,9 +299,9 @@ periodics:
       - --cluster=e2e-kops-aws-distro-coreos.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=core
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
+      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --extract=release/latest
+      - --extract=release/stable
       - --ginkgo-parallel
       - --kops-args=--image=595879546273/CoreOS-stable-2303.3.0-hvm
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
@@ -334,9 +334,9 @@ periodics:
       - --cluster=e2e-kops-aws-distro-flatcar.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=core
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
+      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --extract=release/latest
+      - --extract=release/stable
       - --ginkgo-parallel
       - --kops-args=--image=075585003325/Flatcar-stable-2303.3.1-hvm
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64

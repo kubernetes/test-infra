@@ -18,9 +18,9 @@ periodics:
       - --cluster=e2e-kops-aws-channelalpha.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=admin
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest-1.18.txt
+      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --extract=release/latest-1.18
+      - --extract=release/stable
       - --ginkgo-parallel
       - --kops-args=--channel=alpha
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
@@ -52,9 +52,9 @@ periodics:
       - --cluster=e2e-kops-aws-ha-uswest2.k8s.local
       - --deployment=kops
       - --env=KUBE_SSH_USER=admin
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest-1.18.txt
+      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --extract=release/latest-1.18
+      - --extract=release/stable
       - --ginkgo-parallel=10
       - --kops-args=--master-count=3
       - --kops-nodes=6
@@ -88,9 +88,9 @@ periodics:
       - --cluster=e2e-kops-aws-containerd.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=admin
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest-1.18.txt
+      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --extract=release/latest-1.18
+      - --extract=release/stable
       - --ginkgo-parallel
       - --kops-args=--container-runtime=containerd --networking=calico --image=136693071363/debian-10-amd64-20200210-166
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
@@ -122,9 +122,9 @@ periodics:
       args:
       - --cluster=e2e-kops-aws-coredns.test-cncf-aws.k8s.io
       - --deployment=kops
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest-1.18.txt
+      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --extract=release/latest-1.18
+      - --extract=release/stable
       - --ginkgo-parallel
       - --kops-overrides=spec.kubeDNS.provider=CoreDNS
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
@@ -157,9 +157,9 @@ periodics:
       args:
       - --cluster=e2e-kops-aws-launchtemplates.test-cncf-aws.k8s.io
       - --deployment=kops
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest-1.18.txt
+      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --extract=release/latest-1.18
+      - --extract=release/stable
       - --ginkgo-parallel
       - --kops-feature-flags=EnableLaunchTemplates
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
@@ -192,9 +192,9 @@ periodics:
       - --cluster=e2e-kops-aws-newrunner.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=admin
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest-1.18.txt
+      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --extract=release/latest-1.18
+      - --extract=release/stable
       - --ginkgo-parallel
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
@@ -225,9 +225,9 @@ periodics:
       - --cluster=e2e-kops-aws-updown.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=admin
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest-1.18.txt
+      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --extract=release/latest-1.18
+      - --extract=release/stable
       - --ginkgo-parallel
       - --kops-publish=gs://kops-ci/bin/latest-ci-updown-green.txt
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt
