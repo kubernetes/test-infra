@@ -211,6 +211,7 @@ presubmits:
         - --test-cmd-args=cluster-loader2
         - --test-cmd-args=--nodes=500
         - --test-cmd-args=--provider=kubemark
+        - --env=CL2_ENABLE_PVS=false # TODO(https://github.com/kubernetes/perf-tests/issues/803): Fix me
         - --test-cmd-args=--report-dir=/workspace/_artifacts
         - --test-cmd-args=--testconfig=testing/density/config.yaml
         - --test-cmd-args=--testconfig=testing/load/config.yaml
@@ -221,8 +222,6 @@ presubmits:
         - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_configmaps.yaml
         - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_daemonsets.yaml
         - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_jobs.yaml
-        # TODO(https://github.com/kubernetes/perf-tests/issues/803): Re-enable
-        # - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_pvs.yaml
         - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_secrets.yaml
         - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_statefulsets.yaml
         - --test-cmd-args=--testoverrides=./testing/load/kubemark/500_nodes/override.yaml
@@ -406,6 +405,7 @@ presubmits:
             - --test-cmd-args=--nodes=100
             - --test-cmd-args=--prometheus-scrape-node-exporter
             - --test-cmd-args=--provider=kubemark
+            - --env=CL2_ENABLE_PVS=false # TODO(https://github.com/kubernetes/perf-tests/issues/803): Fix me
             - --test-cmd-args=--report-dir=/workspace/_artifacts
             - --test-cmd-args=--testconfig=testing/density/config.yaml
             - --test-cmd-args=--testconfig=testing/load/config.yaml
@@ -414,8 +414,6 @@ presubmits:
             - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_configmaps.yaml
             - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_daemonsets.yaml
             - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_jobs.yaml
-            # TODO(https://github.com/kubernetes/perf-tests/issues/803): Re-enable
-            #- --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_pvs.yaml
             - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_secrets.yaml
             - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_statefulsets.yaml
             - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
