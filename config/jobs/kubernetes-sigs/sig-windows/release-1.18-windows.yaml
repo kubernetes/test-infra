@@ -117,131 +117,7 @@ presubmits:
         - name: TEST_WINDOWS
           value: "true"
 periodics:
-- interval: 8h
-  name: ci-kubernetes-e2e-azure-disk-windows-1-18
-  decorate: true
-  decoration_config:
-    timeout: 2h
-  labels:
-    preset-service-account: "true"
-    preset-azure-cred: "true"
-    preset-azure-windows: "true"
-    preset-k8s-ssh: "true"
-    preset-dind-enabled: "true"
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: release-1.18
-    path_alias: k8s.io/kubernetes
-  - org: kubernetes-sigs
-    repo: azuredisk-csi-driver
-    base_ref: master
-    path_alias: sigs.k8s.io/azuredisk-csi-driver
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200327-9ba073a-1.18
-      command:
-      - runner.sh
-      - kubetest
-      args:
-      # Generic e2e test args
-      - --test
-      - --up
-      - --down
-      - --build=quick
-      - --dump=$(ARTIFACTS)
-      # Azure-specific test args
-      - --deployment=aksengine
-      - --provider=skeleton
-      - --aksengine-admin-username=azureuser
-      - --aksengine-admin-password=AdminPassw0rd
-      - --aksengine-creds=$(AZURE_CREDENTIALS)
-      - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.48.0/aks-engine-v0.48.0-linux-amd64.tar.gz
-      - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
-      - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
-      - --aksengine-winZipBuildScript=$(WIN_BUILD)
-      - --aksengine-orchestratorRelease=1.18
-      - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_storage.json
-      - --aksengine-win-binaries
-      - --aksengine-deploy-custom-k8s
-      - --aksengine-agentpoolcount=2
-      # Specific test args
-      - --test-azure-disk-csi-driver
-      securityContext:
-        privileged: true
-      env:
-      - name: AZURE_STORAGE_DRIVER
-        value: kubernetes.io/azure-disk # In-tree Azure disk storage class
-      - name: TEST_WINDOWS
-        value: "true"
-  annotations:
-    testgrid-dashboards: sig-windows, sig-release-1.18-informing, provider-azure-periodic, provider-azure-windows
-    testgrid-tab-name: aks-engine-azure-1-18-windows-azure-disk
-    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
-    description: Run Azure Disk e2e test with Azure Disk in-tree volume plugin in a Windows cluster.
-- interval: 8h
-  name: ci-kubernetes-e2e-azure-file-windows-1-18
-  decorate: true
-  decoration_config:
-    timeout: 2h
-  labels:
-    preset-service-account: "true"
-    preset-azure-cred: "true"
-    preset-azure-windows: "true"
-    preset-k8s-ssh: "true"
-    preset-dind-enabled: "true"
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: release-1.18
-    path_alias: k8s.io/kubernetes
-  - org: kubernetes-sigs
-    repo: azurefile-csi-driver
-    base_ref: master
-    path_alias: sigs.k8s.io/azurefile-csi-driver
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200327-9ba073a-1.18
-      command:
-      - runner.sh
-      - kubetest
-      args:
-      # Generic e2e test args
-      - --test
-      - --up
-      - --down
-      - --build=quick
-      - --dump=$(ARTIFACTS)
-      # Azure-specific test args
-      - --deployment=aksengine
-      - --provider=skeleton
-      - --aksengine-admin-username=azureuser
-      - --aksengine-admin-password=AdminPassw0rd
-      - --aksengine-creds=$(AZURE_CREDENTIALS)
-      - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.48.0/aks-engine-v0.48.0-linux-amd64.tar.gz
-      - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
-      - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
-      - --aksengine-winZipBuildScript=$(WIN_BUILD)
-      - --aksengine-orchestratorRelease=1.18
-      - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_storage.json
-      - --aksengine-win-binaries
-      - --aksengine-deploy-custom-k8s
-      - --aksengine-agentpoolcount=2
-      # Specific test args
-      - --test-azure-file-csi-driver
-      securityContext:
-        privileged: true
-      env:
-      - name: AZURE_STORAGE_DRIVER
-        value: kubernetes.io/azure-file # In-tree Azure file storage class
-      - name: TEST_WINDOWS
-        value: "true"
-  annotations:
-    testgrid-dashboards: sig-windows, sig-release-1.18-informing, provider-azure-periodic, provider-azure-windows
-    testgrid-tab-name: aks-engine-azure-1-18-windows-azure-file
-    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
-    description: Run Azure File e2e test with Azure File in-tree volume plugin in a Windows cluster.
-- interval: 8h
+- interval: 24h
   name: ci-kubernetes-e2e-aks-engine-azure-1-18-windows
   decorate: true
   decoration_config:
@@ -294,7 +170,7 @@ periodics:
     testgrid-tab-name: aks-engine-azure-1-18-windows
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs SIG-Windows release tests on K8s 1.18 clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
-- interval: 8h
+- interval: 24h
   name: ci-kubernetes-e2e-aks-engine-azure-1-18-windows-serial-slow
   decorate: true
   decoration_config:

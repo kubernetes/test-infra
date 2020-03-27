@@ -115,7 +115,7 @@ presubmits:
         - name: TEST_WINDOWS
           value: "true"
 periodics:
-- interval: 24h
+- interval: 60h
   name: ci-kubernetes-e2e-aks-engine-azure-1-17-windows
   decorate: true
   decoration_config:
@@ -168,7 +168,7 @@ periodics:
     testgrid-tab-name: aks-engine-azure-1-17-windows
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs SIG-Windows release tests on K8s 1.17 clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
-- interval: 24h
+- interval: 60h
   name: ci-kubernetes-e2e-aks-engine-azure-1-17-windows-serial-slow
   decorate: true
   decoration_config:
