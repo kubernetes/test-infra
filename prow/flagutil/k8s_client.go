@@ -30,29 +30,29 @@ import (
 
 // KubernetesClientOptions holds options for interacting with Kubernetes.
 type KubernetesClientOptions struct {
-	masterURL  string
-	kubeConfig string
+	MasterURL  string
+	KubeConfig string
 }
 
 // AddFlags injects Kubernetes options into the given FlagSet.
 func (o *KubernetesClientOptions) AddFlags(fs *flag.FlagSet) {
-	fs.StringVar(&o.masterURL, "masterurl", "", "URL to k8s master")
-	fs.StringVar(&o.kubeConfig, "kubeconfig", "", "Cluster config for the cluster you want to connect to")
+	fs.StringVar(&o.MasterURL, "masterurl", "", "URL to k8s master")
+	fs.StringVar(&o.KubeConfig, "kubeconfig", "", "Cluster config for the cluster you want to connect to")
 }
 
 // Validate validates Kubernetes options.
 func (o *KubernetesClientOptions) Validate(dryRun bool) error {
-	if dryRun && o.masterURL == "" {
+	if dryRun && o.MasterURL == "" {
 		return errors.New("a dry-run was requested but required flag -masterurl was unset")
 	}
 
-	if o.masterURL != "" {
-		if _, err := url.ParseRequestURI(o.masterURL); err != nil {
-			return fmt.Errorf("invalid -masterurl URI: %q", o.masterURL)
+	if o.MasterURL != "" {
+		if _, err := url.ParseRequestURI(o.MasterURL); err != nil {
+			return fmt.Errorf("invalid -masterurl URI: %q", o.MasterURL)
 		}
 	}
-	if o.kubeConfig != "" {
-		if _, err := os.Stat(o.kubeConfig); err != nil {
+	if o.KubeConfig != "" {
+		if _, err := os.Stat(o.KubeConfig); err != nil {
 			return err
 		}
 	}
@@ -62,10 +62,10 @@ func (o *KubernetesClientOptions) Validate(dryRun bool) error {
 
 // KubeClient returns a Kubernetes client.
 func (o *KubernetesClientOptions) KubeClient() (kubernetes.Interface, error) {
-	return kube.GetKubernetesClient(o.masterURL, o.kubeConfig)
+	return kube.GetKubernetesClient(o.MasterURL, o.KubeConfig)
 }
 
 // ProwJobClient returns a Kubernetes client.
 func (o *KubernetesClientOptions) ProwJobClient() (versioned.Interface, error) {
-	return kube.GetProwJobClient(o.masterURL, o.kubeConfig)
+	return kube.GetProwJobClient(o.MasterURL, o.KubeConfig)
 }

@@ -28,14 +28,15 @@ import (
 	"time"
 )
 
-// hmacSecret contains a hmac token and its expiration time.
-type hmacSecret struct {
+// HmacSecret contains a hmac token and its expiration time.
+type HmacSecret struct {
 	Value  string    `json:"value"`
 	Expiry time.Time `json:"expiry"`
+	CreatedOn time.Time `json:"created_on"`
 }
 
-// hmacsForRepo contains all hmac tokens configured for a repo, org or globally.
-type hmacsForRepo []hmacSecret
+// HmacsForRepo contains all hmac tokens configured for a repo, org or globally.
+type HmacsForRepo []HmacSecret
 
 // ValidatePayload ensures that the request payload signature matches the key.
 func ValidatePayload(payload []byte, sig string, tokenGenerator func() []byte) bool {
@@ -87,7 +88,7 @@ func PayloadSignature(payload []byte, key []byte) string {
 // we will try to match with org level.
 func extractHmacs(repo string, tokenGenerator func() []byte) ([][]byte, error) {
 	t := tokenGenerator()
-	repoToTokenMap := map[string]hmacsForRepo{}
+	repoToTokenMap := map[string]HmacsForRepo{}
 
 	if err := yaml.Unmarshal(t, &repoToTokenMap); err != nil {
 		// To keep backward compatibility, we are going to assume that in case of error,
@@ -113,7 +114,7 @@ func extractHmacs(repo string, tokenGenerator func() []byte) ([][]byte, error) {
 }
 
 // extractValidTokens return valid tokens for any given level of tree. Validity is determined based on time till they are valid.
-func extractValidTokens(allTokens hmacsForRepo) [][]byte {
+func extractValidTokens(allTokens HmacsForRepo) [][]byte {
 	var validTokens [][]byte
 	for _, token := range allTokens {
 		if token.Expiry.After(time.Now()) {

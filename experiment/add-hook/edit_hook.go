@@ -39,6 +39,8 @@ type options struct {
 	hmacPath string
 	confirm  bool
 	events   flagutil.Strings
+	hmacValue string
+	shouldDelete bool
 }
 
 func (o options) githubClient() (github.Client, error) {
@@ -57,10 +59,15 @@ func getOptions(fs *flag.FlagSet, args []string) (*options, error) {
 	fs.Var(&o.repo, "repo", "Add hooks for this org or org/repo")
 	fs.StringVar(&o.hookURL, "hook-url", "", "URL to send hooks")
 	fs.StringVar(&o.hmacPath, "hmac-path", "", "Path to hmac secret")
+	fs.StringVar(&o.hmacValue, "hmac-value", "", "hmac secret value")
 	fs.BoolVar(&o.confirm, "confirm", false, "Apply changes to github")
+	fs.BoolVar(&o.shouldDelete, "delete-webhook", false, "Webhook should be deleted")
 	fs.Parse(args)
-	if o.hmacPath == "" {
-		return nil, errors.New("--hmac-path must be set")
+	if o.hmacPath == "" && o.hmacValue == ""{
+		return nil, errors.New("Both '--hmac-path' and '--hmac-value' can not be set at the same time")
+	}
+	if o.hmacValue != "" && o.hmacPath != ""{
+		return nil, errors.New("Either '--hmac-path' or '--hmac-value' must be specified (only one of them)")
 	}
 	if o.hookURL == "" {
 		return nil, errors.New("--hook-url must be set")
@@ -95,6 +102,7 @@ type changer struct {
 	lister  func(org string) ([]github.Hook, error)
 	editor  func(org string, id int, req github.HookRequest) error
 	creator func(org string, req github.HookRequest) (int, error)
+	deletor func(org string, id int, req github.HookRequest) error
 }
 
 func orgChanger(client github.Client) changer {
@@ -102,6 +110,7 @@ func orgChanger(client github.Client) changer {
 		lister:  client.ListOrgHooks,
 		editor:  client.EditOrgHook,
 		creator: client.CreateOrgHook,
+		deletor: client.DeleteOrgHook,
 	}
 }
 
@@ -116,23 +125,35 @@ func repoChanger(client github.Client, repo string) changer {
 		creator: func(org string, req github.HookRequest) (int, error) {
 			return client.CreateRepoHook(org, repo, req)
 		},
+		deletor: func(org string, id int, req github.HookRequest) error {
+			return client.DeleteRepoHook(org,repo, id, req)
+		},
 	}
 }
 
 func main() {
-	o, err := getOptions(flag.NewFlagSet(os.Args[0], flag.ExitOnError), os.Args[1:])
+	set := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+
+	err := HandleWebhookConfigChange(set, os.Args[1:])
 	if err != nil {
-		logrus.Fatalf("Bad flags: %v", err)
+		logrus.Fatal( err)
+	}
+}
+
+func HandleWebhookConfigChange(set *flag.FlagSet, args []string) error {
+	o, err := getOptions(set, args)
+	if err != nil {
+		return fmt.Errorf("Bad flags: %v", err)
+	}
+
+	hmac, err := getHmac(o)
+	if err != nil {
+		return fmt.Errorf("Could not load hmac secret: %v", err)
 	}
 
 	client, err := o.githubClient()
 	if err != nil {
-		logrus.Fatalf("Could not create github client: %v", err)
-	}
-
-	hmac, err := o.hmac()
-	if err != nil {
-		logrus.Fatalf("Could not load hmac secret: %v", err)
+		return fmt.Errorf("Could not create github client: %v", err)
 	}
 
 	yes := true
@@ -157,21 +178,38 @@ func main() {
 		}
 
 		org := parts[0]
-		if err := reconcileHook(ch, org, req); err != nil {
-			logrus.Fatalf("Could not apply hook to %s: %v", orgRepo, err)
+		if err := reconcileHook(ch, org, req, o); err != nil {
+			return fmt.Errorf("Could not apply hook to %s: %v", orgRepo, err)
 		}
 	}
+	return nil
 }
 
-func reconcileHook(ch changer, org string, req github.HookRequest) error {
+func getHmac(o *options) (string, error) {
+	if o.hmacValue!=""{
+		return o.hmacValue, nil
+	}
+	hmac, err := o.hmac()
+	return hmac, err
+}
+
+func reconcileHook(ch changer, org string, req github.HookRequest, o *options) error {
 	hooks, err := ch.lister(org)
 	if err != nil {
 		return fmt.Errorf("list: %v", err)
 	}
 	id := findHook(hooks, req.Config.URL)
 	if id == nil {
+		if o.shouldDelete{
+			// Its already been deleted. No op.
+			return nil
+		}
 		_, err := ch.creator(org, req)
 		return err
 	}
+	if o.shouldDelete{
+		return ch.deletor(org, *id, req)
+	}
 	return ch.editor(org, *id, req)
 }
+

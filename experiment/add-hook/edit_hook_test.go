@@ -267,7 +267,7 @@ func TestReconcileHook(t *testing.T) {
 			},
 		}
 
-		err := reconcileHook(ch, tc.org, req)
+		err := reconcileHook(ch, tc.org, req, nil)
 		switch {
 		case err != nil:
 			if !tc.err {
