@@ -96,7 +96,6 @@ aliases:
     - spiffxp
     - stevekuznetsov
   sig-ui-leads:
-    - danielromlein
     - floreks
     - jeefy
     - maciaszczykm
@@ -123,7 +122,6 @@ aliases:
     - cantbewong
     - cindyxing
     - dejanb
-    - ptone
   wg-k8s-infra-leads:
     - bartsmykla
     - dims
