@@ -43,6 +43,35 @@
     {{end}}
     </tbody>
   {{end}}
+  {{if gt $numF 0}}
+    <tr id="flaky-theader" class="header section-expander">
+      <td class="mdl-data-table__cell--non-numeric expander flaky" colspan="1"><h6>{{len .Flaky}}/{{.NumTests}} Tests Flaky.</h6></td>
+      <td class="mdl-data-table__cell--non-numeric expander"><i id="flaky-expander" class="icon-button material-icons arrow-icon noselect">expand_less</i></td>
+    </tr>
+    <tbody id="flaky-tbody">
+    {{range $ix, $test := .Flaky}}
+    <tr>
+      <td colspan="2" style="padding: 0;">
+        <table class="flaky-layout">
+          <tr class="flaky-name">
+            <td class="mdl-data-table__cell--non-numeric test-name">{{$test.Junit.Name}}&nbsp;<i class="icon-button material-icons arrow-icon">expand_more</i></td>
+            <td class="mdl-data-table__cell--non-numeric" style="text-align: right;">{{$test.Junit.Duration}}</td>
+          </tr>
+          <tr class="hidden flaky-text">
+            <td colspan="2" class="mdl-data-table__cell--non-numeric">
+              <div>{{$test.Junit.Failure}}</div>
+              {{if $test.Junit.Output}}
+              <a href="#" class="open-stdout">open stdout<i class="material-icons" style="font-size: 1em; vertical-align: middle; padding-left: 3px;">open_in_new</i></a>
+              <pre style="display: none;">{{$test.Junit.Output}}</pre>
+              {{end}}
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+    {{end}}
+    </tbody>
+  {{end}}
   {{if gt $numP 0}}
     <tr id="passed-theader" class="header section-expander">
       <td class="mdl-data-table__cell--non-numeric expander passed" colspan="1"><h6>{{len .Passed}}/{{.NumTests}} Tests Passed!</h6></td>

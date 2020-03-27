@@ -20,6 +20,8 @@ package junit
 import (
 	"testing"
 
+	"github.com/GoogleCloudPlatform/testgrid/metadata/junit"
+	"github.com/google/go-cmp/cmp"
 	"k8s.io/test-infra/prow/spyglass/lenses"
 )
 
@@ -28,32 +30,479 @@ const (
 )
 
 func TestGetJvd(t *testing.T) {
-	fakeLog := &lenses.FakeArtifact{
-		Path: "log.txt",
-		Content: []byte(`
-		<testsuites>
-			<testsuite>
-				<testcase classname="v1beta1" name="TestUpdateConfigurationMetadata">
-					<failure message="Failed" type=""> It failed </failure>
-				</testcase>
-			</testsuite>
-			<testsuite>
-				<testcase classname="v1beta1" name="TestUpdateConfigurationMetadata"></testcase>
-			</testsuite>
-		</testsuites>
-		`),
-		SizeLimit: 500e6,
+	emptyFailureMsg := ""
+	failureMsgs := []string{
+		" failure message 0 ",
+		" failure message 1 ",
 	}
-	// expJvd := JVD{
-	// 	NumTests: 1,
-	// 	Passed: nil,
-	// 	Failed: nil,
-	// 	Skipped: nil,
-	// 	Flaky:[]junit.TestResult{
+	combinedFailureMsg := (` failure message 0 
 
-	// 	}
-	// }
-	l := Lens{}
-	out := l.getJvd([]lenses.Artifact{fakeLog})
-	t.Fatal(out)
+---Separation line for tests that failed reruns---
+
+ failure message 1 `)
+
+	tests := []struct {
+		name       string
+		rawResults [][]byte
+		exp        JVD
+	}{
+		{
+			"Failed",
+			[][]byte{
+				[]byte(`
+				<testsuites>
+					<testsuite>
+						<testcase classname="fake_class_0" name="fake_test_0">
+							<failure message="Failed" type=""> failure message 0 </failure>
+						</testcase>
+					</testsuite>
+				</testsuites>
+				`),
+			},
+			JVD{
+				NumTests: 1,
+				Passed:   nil,
+				Failed: []TestResult{
+					TestResult{
+						Junit: JunitResult{
+							junit.Result{
+								Name:      "fake_test_0",
+								ClassName: "fake_class_0",
+								Failure:   &failureMsgs[0],
+							},
+						},
+						Link: "linknotfound.io/404",
+					},
+				},
+				Skipped: nil,
+				Flaky:   nil,
+			},
+		}, {
+			"Passed",
+			[][]byte{
+				[]byte(`
+				<testsuites>
+					<testsuite>
+						<testcase classname="fake_class_0" name="fake_test_0"></testcase>
+					</testsuite>
+				</testsuites>
+				`),
+			},
+			JVD{
+				NumTests: 1,
+				Passed: []TestResult{
+					TestResult{
+						Junit: JunitResult{
+							junit.Result{
+								Name:      "fake_test_0",
+								ClassName: "fake_class_0",
+								Failure:   nil,
+							},
+						},
+						Link: "linknotfound.io/404",
+					},
+				},
+				Failed:  nil,
+				Skipped: nil,
+				Flaky:   nil,
+			},
+		}, {
+			"Skipped",
+			[][]byte{
+				[]byte(`
+				<testsuites>
+					<testsuite>
+						<testcase classname="fake_class_0" name="fake_test_0">
+							<skipped/>
+						</testcase>
+					</testsuite>
+				</testsuites>
+				`),
+			},
+			JVD{
+				NumTests: 1,
+				Passed:   nil,
+				Failed:   nil,
+				Skipped: []TestResult{
+					TestResult{
+						Junit: JunitResult{
+							junit.Result{
+								Name:      "fake_test_0",
+								ClassName: "fake_class_0",
+								Failure:   nil,
+								Skipped:   &emptyFailureMsg,
+							},
+						},
+						Link: "linknotfound.io/404",
+					},
+				},
+				Flaky: nil,
+			},
+		}, {
+			"Multiple tests in same file",
+			[][]byte{
+				[]byte(`
+				<testsuites>
+					<testsuite>
+						<testcase classname="fake_class_0" name="fake_test_0">
+							<failure message="Failed" type=""> failure message 0 </failure>
+						</testcase>
+						<testcase classname="fake_class_1" name="fake_test_0"></testcase>
+					</testsuite>
+				</testsuites>
+				`),
+			},
+			JVD{
+				NumTests: 2,
+				Passed: []TestResult{
+					TestResult{
+						Junit: JunitResult{
+							junit.Result{
+								Name:      "fake_test_0",
+								ClassName: "fake_class_1",
+								Failure:   nil,
+							},
+						},
+						Link: "linknotfound.io/404",
+					},
+				},
+				Failed: []TestResult{
+					TestResult{
+						Junit: JunitResult{
+							junit.Result{
+								Name:      "fake_test_0",
+								ClassName: "fake_class_0",
+								Failure:   &failureMsgs[0],
+							},
+						},
+						Link: "linknotfound.io/404",
+					},
+				},
+				Skipped: nil,
+				Flaky:   nil,
+			},
+		}, {
+			"Multiple tests in different files",
+			[][]byte{
+				[]byte(`
+				<testsuites>
+					<testsuite>
+						<testcase classname="fake_class_0" name="fake_test_0">
+							<failure message="Failed" type=""> failure message 0 </failure>
+						</testcase>
+					</testsuite>
+				</testsuites>
+				`),
+				[]byte(`
+				<testsuites>
+					<testsuite>
+						<testcase classname="fake_class_1" name="fake_test_0"></testcase>
+					</testsuite>
+				</testsuites>
+				`),
+			},
+			JVD{
+				NumTests: 2,
+				Passed: []TestResult{
+					TestResult{
+						Junit: JunitResult{
+							junit.Result{
+								Name:      "fake_test_0",
+								ClassName: "fake_class_1",
+								Failure:   nil,
+							},
+						},
+						Link: "linknotfound.io/404",
+					},
+				},
+				Failed: []TestResult{
+					TestResult{
+						Junit: JunitResult{
+							junit.Result{
+								Name:      "fake_test_0",
+								ClassName: "fake_class_0",
+								Failure:   &failureMsgs[0],
+							},
+						},
+						Link: "linknotfound.io/404",
+					},
+				},
+				Skipped: nil,
+				Flaky:   nil,
+			},
+		}, {
+			"Fail multiple times in same file",
+			[][]byte{
+				[]byte(`
+				<testsuites>
+					<testsuite>
+						<testcase classname="fake_class_0" name="fake_test_0">
+							<failure message="Failed" type=""> failure message 0 </failure>
+						</testcase>
+					</testsuite>
+					<testsuite>
+						<testcase classname="fake_class_0" name="fake_test_0">
+							<failure message="Failed" type=""> failure message 1 </failure>
+						</testcase>
+					</testsuite>
+				</testsuites>
+				`),
+			},
+			JVD{
+				NumTests: 1,
+				Passed:   nil,
+				Failed: []TestResult{
+					TestResult{
+						Junit: JunitResult{
+							junit.Result{
+								Name:      "fake_test_0",
+								ClassName: "fake_class_0",
+								Failure:   &combinedFailureMsg,
+							},
+						},
+						Link: "linknotfound.io/404",
+					},
+				},
+				Skipped: nil,
+				Flaky:   nil,
+			},
+		}, {
+			"Passed multiple times in same file",
+			[][]byte{
+				[]byte(`
+				<testsuites>
+					<testsuite>
+						<testcase classname="fake_class_0" name="fake_test_0"></testcase>
+					</testsuite>
+					<testsuite>
+						<testcase classname="fake_class_0" name="fake_test_0"></testcase>
+					</testsuite>
+				</testsuites>
+				`),
+			},
+			JVD{
+				NumTests: 1,
+				Passed: []TestResult{
+					TestResult{
+						Junit: JunitResult{
+							junit.Result{
+								Name:      "fake_test_0",
+								ClassName: "fake_class_0",
+								Failure:   nil,
+							},
+						},
+						Link: "linknotfound.io/404",
+					},
+				},
+				Failed:  nil,
+				Skipped: nil,
+				Flaky:   nil,
+			},
+		}, {
+			// This is the case where `go test --count=N`, where N>1
+			"Passed multiple times in same suite",
+			[][]byte{
+				[]byte(`
+				<testsuites>
+					<testsuite>
+						<testcase classname="fake_class_0" name="fake_test_0"></testcase>
+						<testcase classname="fake_class_0" name="fake_test_0"></testcase>
+					</testsuite>
+				</testsuites>
+				`),
+			},
+			JVD{
+				NumTests: 1,
+				Passed: []TestResult{
+					TestResult{
+						Junit: JunitResult{
+							junit.Result{
+								Name:      "fake_test_0",
+								ClassName: "fake_class_0",
+								Failure:   nil,
+							},
+						},
+						Link: "linknotfound.io/404",
+					},
+				},
+				Failed:  nil,
+				Skipped: nil,
+				Flaky:   nil,
+			},
+		}, {
+			"Failed then pass in same file (flaky)",
+			[][]byte{
+				[]byte(`
+				<testsuites>
+					<testsuite>
+						<testcase classname="fake_class_0" name="fake_test_0">
+							<failure message="Failed" type=""> failure message 0 </failure>
+						</testcase>
+					</testsuite>
+					<testsuite>
+						<testcase classname="fake_class_0" name="fake_test_0"></testcase>
+					</testsuite>
+				</testsuites>
+				`),
+			},
+			JVD{
+				NumTests: 1,
+				Passed:   nil,
+				Failed:   nil,
+				Skipped:  nil,
+				Flaky: []TestResult{
+					TestResult{
+						Junit: JunitResult{
+							junit.Result{
+								Name:      "fake_test_0",
+								ClassName: "fake_class_0",
+								Failure:   &failureMsgs[0],
+							},
+						},
+						Link: "linknotfound.io/404",
+					},
+				},
+			},
+		}, {
+			"Pass then fail in same file (flaky)",
+			[][]byte{
+				[]byte(`
+				<testsuites>
+					<testsuite>
+						<testcase classname="fake_class_0" name="fake_test_0"></testcase>
+					</testsuite>
+					<testsuite>
+						<testcase classname="fake_class_0" name="fake_test_0">
+							<failure message="Failed" type=""> failure message 0 </failure>
+						</testcase>
+					</testsuite>
+				</testsuites>
+				`),
+			},
+			JVD{
+				NumTests: 1,
+				Passed:   nil,
+				Failed:   nil,
+				Skipped:  nil,
+				Flaky: []TestResult{
+					TestResult{
+						Junit: JunitResult{
+							junit.Result{
+								Name:      "fake_test_0",
+								ClassName: "fake_class_0",
+								Failure:   &failureMsgs[0],
+							},
+						},
+						Link: "linknotfound.io/404",
+					},
+				},
+			},
+		}, {
+			"Fail multiple times then pass in same file (flaky)",
+			[][]byte{
+				[]byte(`
+				<testsuites>
+					<testsuite>
+						<testcase classname="fake_class_0" name="fake_test_0">
+							<failure message="Failed" type=""> failure message 0 </failure>
+						</testcase>
+					</testsuite>
+					<testsuite>
+						<testcase classname="fake_class_0" name="fake_test_0">
+							<failure message="Failed" type=""> failure message 1 </failure>
+						</testcase>
+					</testsuite>
+					<testsuite>
+						<testcase classname="fake_class_0" name="fake_test_0"></testcase>
+					</testsuite>
+				</testsuites>
+				`),
+			},
+			JVD{
+				NumTests: 1,
+				Passed:   nil,
+				Failed:   nil,
+				Skipped:  nil,
+				Flaky: []TestResult{
+					TestResult{
+						Junit: JunitResult{
+							junit.Result{
+								Name:      "fake_test_0",
+								ClassName: "fake_class_0",
+								Failure:   &combinedFailureMsg,
+							},
+						},
+						Link: "linknotfound.io/404",
+					},
+				},
+			},
+		}, {
+			"Same test in different file",
+			[][]byte{
+				[]byte(`
+				<testsuites>
+					<testsuite>
+						<testcase classname="fake_class_0" name="fake_test_0">
+							<failure message="Failed" type=""> failure message 0 </failure>
+						</testcase>
+					</testsuite>
+				</testsuites>
+				`),
+				[]byte(`
+				<testsuites>
+					<testsuite>
+						<testcase classname="fake_class_0" name="fake_test_0"></testcase>
+					</testsuite>
+				</testsuites>
+				`),
+			},
+			JVD{
+				NumTests: 2,
+				Passed: []TestResult{
+					TestResult{
+						Junit: JunitResult{
+							junit.Result{
+								Name:      "fake_test_0",
+								ClassName: "fake_class_0",
+								Failure:   nil,
+							},
+						},
+						Link: "linknotfound.io/404",
+					},
+				},
+				Failed: []TestResult{
+					TestResult{
+						Junit: JunitResult{
+							junit.Result{
+								Name:      "fake_test_0",
+								ClassName: "fake_class_0",
+								Failure:   &failureMsgs[0],
+							},
+						},
+						Link: "linknotfound.io/404",
+					},
+				},
+				Skipped: nil,
+				Flaky:   nil,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			artifacts := make([]lenses.Artifact, 0)
+			for _, rr := range tt.rawResults {
+				artifacts = append(artifacts, &lenses.FakeArtifact{
+					Path:      "log.txt",
+					Content:   rr,
+					SizeLimit: 500e6,
+				})
+			}
+			l := Lens{}
+			got := l.getJvd(artifacts)
+			if diff := cmp.Diff(tt.exp, got); diff != "" {
+				t.Fatalf("JVD mismatch, want(-), got(+): \n%s", diff)
+			}
+		})
+	}
 }

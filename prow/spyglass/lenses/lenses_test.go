@@ -60,9 +60,9 @@ func TestView(t *testing.T) {
 		t.Fatal("Failed to register viewer for testing View")
 	}
 	fakeLog := &FakeArtifact{
-		path:      "log.txt",
-		content:   []byte("Oh wow\nlogs\nthis is\ncrazy"),
-		sizeLimit: 500e6,
+		Path:      "log.txt",
+		Content:   []byte("Oh wow\nlogs\nthis is\ncrazy"),
+		SizeLimit: 500e6,
 	}
 	testCases := []struct {
 		name      string
@@ -157,9 +157,9 @@ func TestLastNLines_GCS(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			artifact := &FakeArtifact{
-				path:      tc.path,
-				content:   tc.contents,
-				sizeLimit: 500e6,
+				Path:      tc.path,
+				Content:   tc.contents,
+				SizeLimit: 500e6,
 			}
 			actual, err := LastNLinesChunked(artifact, tc.n, fakeGCSServerChunkSize)
 			if err != nil {

@@ -203,6 +203,8 @@ func (lens Lens) getJvd(artifacts []lenses.Artifact) JVD {
 						failed = true
 					}
 					cumFailure = append(cumFailure, *test.Failure)
+					// Use the last failed result for flaky test, or same test
+					// failed multiple times
 					combinedTest = test
 				} else {
 					if failed {
@@ -212,6 +214,7 @@ func (lens Lens) getJvd(artifacts []lenses.Artifact) JVD {
 					}
 					if !flaky {
 						passed = true
+						// Don't use a succeeded test result for flaky test
 						combinedTest = test
 					}
 				}
@@ -244,10 +247,9 @@ func (lens Lens) getJvd(artifacts []lenses.Artifact) JVD {
 					Link:  result.link,
 				})
 			}
-
 		}
 	}
 
-	jvd.NumTests = len(jvd.Passed) + len(jvd.Failed) + len(jvd.Skipped)
+	jvd.NumTests = len(jvd.Passed) + len(jvd.Failed) + len(jvd.Flaky) + len(jvd.Skipped)
 	return jvd
 }
