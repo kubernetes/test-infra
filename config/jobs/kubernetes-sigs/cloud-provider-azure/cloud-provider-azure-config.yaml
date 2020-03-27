@@ -791,7 +791,7 @@ periodics:
       - --kubemark-cluster-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/kubemark/templates/kubemark-cluster.json
       - --external-cluster-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/kubemark/templates/external-cluster.json
       - --hollow-nodes-deployment-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/kubemark/templates/hollow-node.yaml
-      - --clusterloader2-bin-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/kubemark/bin/clusterloader-Linux
+      - --clusterloader2-bin-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/kubemark/clusterloader2/clusterloader-Linux
       - --kubemark-size=100
       - --kubemark-location=eastus2
       securityContext:
