@@ -38,6 +38,8 @@ var (
 		"repo",
 		// the base_ref of the prowjob's repo
 		"base_ref",
+		// the cluster the job runs on
+		"cluster",
 	}
 	prowJobs = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "prowjobs",
