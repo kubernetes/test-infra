@@ -86,6 +86,16 @@ k8s_configmap(
 )
 
 k8s_configmap(
+    name = "grafana-dashboard-slo",
+    cluster = "{STABLE_PROW_CLUSTER}",
+    data = {
+        "slo.json": "//config/prow/cluster/monitoring/mixins/grafana_dashboards:slo",
+    },
+    namespace = "prow-monitoring",
+    visibility = ["//visibility:public"],
+)
+
+k8s_configmap(
     name = "grafana-dashboard-tide",
     cluster = "{STABLE_PROW_CLUSTER}",
     data = {
