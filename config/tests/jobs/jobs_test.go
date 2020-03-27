@@ -677,7 +677,7 @@ func TestValidPresets(t *testing.T) {
 	}
 
 	for _, presubmit := range c.AllStaticPresubmits(nil) {
-		if presubmit.Spec != nil && !presubmit.Decorate {
+		if presubmit.Spec != nil && !cfg.ShouldDecorate(&c.JobConfig, presubmit.JobBase.UtilityConfig) {
 			if err := checkKubekinsPresets(presubmit.Name, presubmit.Spec, presubmit.Labels, validLabels); err != nil {
 				t.Errorf("Error in presubmit %q: %v", presubmit.Name, err)
 			}
@@ -685,7 +685,7 @@ func TestValidPresets(t *testing.T) {
 	}
 
 	for _, postsubmit := range c.AllStaticPostsubmits(nil) {
-		if postsubmit.Spec != nil && !postsubmit.Decorate {
+		if postsubmit.Spec != nil && !cfg.ShouldDecorate(&c.JobConfig, postsubmit.JobBase.UtilityConfig) {
 			if err := checkKubekinsPresets(postsubmit.Name, postsubmit.Spec, postsubmit.Labels, validLabels); err != nil {
 				t.Errorf("Error in postsubmit %q: %v", postsubmit.Name, err)
 			}
@@ -693,7 +693,7 @@ func TestValidPresets(t *testing.T) {
 	}
 
 	for _, periodic := range c.AllPeriodics() {
-		if periodic.Spec != nil && !periodic.Decorate {
+		if periodic.Spec != nil && !cfg.ShouldDecorate(&c.JobConfig, periodic.JobBase.UtilityConfig) {
 			if err := checkKubekinsPresets(periodic.Name, periodic.Spec, periodic.Labels, validLabels); err != nil {
 				t.Errorf("Error in periodic %q: %v", periodic.Name, err)
 			}
@@ -904,7 +904,7 @@ func checkScenarioArgs(jobName, imageName string, args []string) error {
 // TestValidScenarioArgs makes sure all scenario args in job configs are valid
 func TestValidScenarioArgs(t *testing.T) {
 	for _, job := range c.AllStaticPresubmits(nil) {
-		if job.Spec != nil && !job.Decorate {
+		if job.Spec != nil && !cfg.ShouldDecorate(&c.JobConfig, job.JobBase.UtilityConfig) {
 			if err := checkScenarioArgs(job.Name, job.Spec.Containers[0].Image, job.Spec.Containers[0].Args); err != nil {
 				t.Errorf("Invalid Scenario Args : %s", err)
 			}
@@ -912,7 +912,7 @@ func TestValidScenarioArgs(t *testing.T) {
 	}
 
 	for _, job := range c.AllStaticPostsubmits(nil) {
-		if job.Spec != nil && !job.Decorate {
+		if job.Spec != nil && !cfg.ShouldDecorate(&c.JobConfig, job.JobBase.UtilityConfig) {
 			if err := checkScenarioArgs(job.Name, job.Spec.Containers[0].Image, job.Spec.Containers[0].Args); err != nil {
 				t.Errorf("Invalid Scenario Args : %s", err)
 			}
@@ -920,7 +920,7 @@ func TestValidScenarioArgs(t *testing.T) {
 	}
 
 	for _, job := range c.AllPeriodics() {
-		if job.Spec != nil && !job.Decorate {
+		if job.Spec != nil && !cfg.ShouldDecorate(&c.JobConfig, job.JobBase.UtilityConfig) {
 			if err := checkScenarioArgs(job.Name, job.Spec.Containers[0].Image, job.Spec.Containers[0].Args); err != nil {
 				t.Errorf("Invalid Scenario Args : %s", err)
 			}

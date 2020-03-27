@@ -93,6 +93,9 @@ type JobConfig struct {
 	// ProwYAMLGetter is the function to get a ProwYAML. Tests should
 	// provide their own implementation.
 	ProwYAMLGetter ProwYAMLGetter `json:"-"`
+
+	// DecorateAllJobs determines whether all jobs are decorated by default
+	DecorateAllJobs bool `json:"decorate_all_jobs,omitempty"`
 }
 
 // ProwConfig is config for all prow controllers
@@ -1063,22 +1066,29 @@ func mergeJobConfigs(a, b JobConfig) (JobConfig, error) {
 	return c, nil
 }
 
+func ShouldDecorate(c *JobConfig, util UtilityConfig) bool {
+	if util.Decorate != nil {
+		return *util.Decorate
+	}
+	return c.DecorateAllJobs
+}
+
 func setPresubmitDecorationDefaults(c *Config, ps *Presubmit, repo string) {
-	if ps.Decorate {
+	if ShouldDecorate(&c.JobConfig, ps.JobBase.UtilityConfig) {
 		def := c.Plank.GetDefaultDecorationConfigs(repo)
 		ps.DecorationConfig = ps.DecorationConfig.ApplyDefault(def)
 	}
 }
 
 func setPostsubmitDecorationDefaults(c *Config, ps *Postsubmit, repo string) {
-	if ps.Decorate {
+	if ShouldDecorate(&c.JobConfig, ps.JobBase.UtilityConfig) {
 		def := c.Plank.GetDefaultDecorationConfigs(repo)
 		ps.DecorationConfig = ps.DecorationConfig.ApplyDefault(def)
 	}
 }
 
 func setPeriodicDecorationDefaults(c *Config, ps *Periodic) {
-	if ps.Decorate {
+	if ShouldDecorate(&c.JobConfig, ps.JobBase.UtilityConfig) {
 		var orgRepo string
 		if len(ps.UtilityConfig.ExtraRefs) > 0 {
 			orgRepo = fmt.Sprintf("%s/%s", ps.UtilityConfig.ExtraRefs[0].Org, ps.UtilityConfig.ExtraRefs[0].Repo)
@@ -1693,7 +1703,7 @@ func parseProwConfig(c *Config) error {
 func (c *JobConfig) decorationRequested() bool {
 	for _, vs := range c.PresubmitsStatic {
 		for i := range vs {
-			if vs[i].Decorate {
+			if ShouldDecorate(c, vs[i].JobBase.UtilityConfig) {
 				return true
 			}
 		}
@@ -1701,14 +1711,14 @@ func (c *JobConfig) decorationRequested() bool {
 
 	for _, js := range c.PostsubmitsStatic {
 		for i := range js {
-			if js[i].Decorate {
+			if ShouldDecorate(c, js[i].JobBase.UtilityConfig) {
 				return true
 			}
 		}
 	}
 
 	for i := range c.Periodics {
-		if c.Periodics[i].Decorate {
+		if ShouldDecorate(c, c.Periodics[i].JobBase.UtilityConfig) {
 			return true
 		}
 	}
