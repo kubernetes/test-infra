@@ -24,6 +24,7 @@ import (
 	"html/template"
 	"path/filepath"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -44,6 +45,14 @@ func init() {
 
 // Lens is the implementation of a JUnit-rendering Spyglass lens.
 type Lens struct{}
+
+type JVD struct {
+	NumTests int
+	Passed   []TestResult
+	Failed   []TestResult
+	Skipped  []TestResult
+	Flaky    []TestResult
+}
 
 // Config returns the lens's configuration.
 func (lens Lens) Config() lenses.LensConfig {
@@ -88,8 +97,26 @@ type TestResult struct {
 
 // Body renders the <body> for JUnit tests
 func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data string, config json.RawMessage) string {
+	jvd := lens.getJvd(artifacts)
+
+	junitTemplate, err := template.ParseFiles(filepath.Join(resourceDir, "template.html"))
+	if err != nil {
+		logrus.WithError(err).Error("Error executing template.")
+		return fmt.Sprintf("Failed to load template file: %v", err)
+	}
+
+	var buf bytes.Buffer
+	if err := junitTemplate.ExecuteTemplate(&buf, "body", jvd); err != nil {
+		logrus.WithError(err).Error("Error executing template.")
+	}
+
+	return buf.String()
+}
+
+func (lens Lens) getJvd(artifacts []lenses.Artifact) JVD {
 	type testResults struct {
-		junit []junit.Result
+		// Group results based on their full path name
+		junit [][]junit.Result
 		link  string
 		path  string
 		err   error
@@ -97,6 +124,7 @@ func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data stri
 	resultChan := make(chan testResults)
 	for _, artifact := range artifacts {
 		go func(artifact lenses.Artifact) {
+			groups := make(map[string][]junit.Result)
 			result := testResults{
 				link: artifact.CanonicalLink(),
 				path: artifact.JobPath(),
@@ -120,12 +148,26 @@ func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data stri
 				for _, subSuite := range suite.Suites {
 					record(subSuite)
 				}
+
 				for _, test := range suite.Results {
-					result.junit = append(result.junit, test)
+					test := test
+					// There are cases where multiple entries of exactly the same
+					// testcase in a single junit result file, this could result
+					// from reruns of test cases by `go test --count=N` where N>1.
+					// Deduplicate them here in this case, and classify a test as being
+					// flaky if it both succeeded and failed
+					testFullName := fmt.Sprintf("%s...%s...%s", suite.Name, test.ClassName, test.Name)
+					if _, ok := groups[testFullName]; !ok {
+						groups[testFullName] = make([]junit.Result, 0)
+					}
+					groups[testFullName] = append(groups[testFullName], test)
 				}
 			}
 			for _, suite := range suites.Suites {
 				record(suite)
+			}
+			for _, results := range groups {
+				result.junit = append(result.junit, results)
 			}
 			resultChan <- result
 		}(artifact)
@@ -136,48 +178,76 @@ func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data stri
 	}
 	sort.Slice(results, func(i, j int) bool { return results[i].path < results[j].path })
 
-	jvd := struct {
-		NumTests int
-		Passed   []TestResult
-		Failed   []TestResult
-		Skipped  []TestResult
-	}{}
+	jvd := JVD{}
+
 	for _, result := range results {
 		if result.err != nil {
 			continue
 		}
-		for _, test := range result.junit {
-			if test.Failure != nil {
-				jvd.Failed = append(jvd.Failed, TestResult{
-					Junit: JunitResult{test},
+		for _, tests := range result.junit {
+			var skipped, passed, failed, flaky bool
+			var combinedTest junit.Result
+			var cumFailure []string
+			for _, test := range tests {
+				// skipped test has no reason to rerun, so no deduplication
+				if test.Skipped != nil {
+					skipped = true
+					combinedTest = test
+				} else if test.Failure != nil {
+					if passed {
+						passed = false
+						failed = false
+						flaky = true
+					}
+					if !flaky {
+						failed = true
+					}
+					cumFailure = append(cumFailure, *test.Failure)
+					combinedTest = test
+				} else {
+					if failed {
+						passed = false
+						failed = false
+						flaky = true
+					}
+					if !flaky {
+						passed = true
+						combinedTest = test
+					}
+				}
+			}
+
+			if len(cumFailure) > 0 {
+				failure := strings.Join(cumFailure,
+					"\n\n---Separation line for tests that failed reruns---\n\n")
+				combinedTest.Failure = &failure
+			}
+
+			if skipped {
+				jvd.Skipped = append(jvd.Skipped, TestResult{
+					Junit: JunitResult{combinedTest},
 					Link:  result.link,
 				})
-			} else if test.Skipped != nil {
-				jvd.Skipped = append(jvd.Skipped, TestResult{
-					Junit: JunitResult{test},
+			} else if failed {
+				jvd.Failed = append(jvd.Failed, TestResult{
+					Junit: JunitResult{combinedTest},
+					Link:  result.link,
+				})
+			} else if flaky {
+				jvd.Flaky = append(jvd.Flaky, TestResult{
+					Junit: JunitResult{combinedTest},
 					Link:  result.link,
 				})
 			} else {
 				jvd.Passed = append(jvd.Passed, TestResult{
-					Junit: JunitResult{test},
+					Junit: JunitResult{combinedTest},
 					Link:  result.link,
 				})
 			}
+
 		}
 	}
 
 	jvd.NumTests = len(jvd.Passed) + len(jvd.Failed) + len(jvd.Skipped)
-
-	junitTemplate, err := template.ParseFiles(filepath.Join(resourceDir, "template.html"))
-	if err != nil {
-		logrus.WithError(err).Error("Error executing template.")
-		return fmt.Sprintf("Failed to load template file: %v", err)
-	}
-
-	var buf bytes.Buffer
-	if err := junitTemplate.ExecuteTemplate(&buf, "body", jvd); err != nil {
-		logrus.WithError(err).Error("Error executing template.")
-	}
-
-	return buf.String()
+	return jvd
 }
