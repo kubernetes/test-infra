@@ -506,6 +506,10 @@ tide:
           dashboard:
             skip-unknown-contexts: true
             from-branch-protection: true
+      kubernetes-sigs:
+        repos:
+          cluster-api-provider-openstack:
+            skip-unknown-contexts: true
   batch_size_limit:
     "kubernetes/kubernetes": 15
 
