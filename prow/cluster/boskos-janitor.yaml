@@ -19,7 +19,7 @@ spec:
       serviceAccountName: boskos-janitor
       containers:
       - name: boskos-janitor
-        image: gcr.io/k8s-prow/boskos/janitor:v20200325-b07cdff09
+        image: gcr.io/k8s-prow/boskos/janitor:v20200327-4e1ed20bb
         args:
         - --boskos-url=http://boskos.test-pods.svc.cluster.local.
         - --resource-type=gke-project
@@ -48,7 +48,7 @@ spec:
       serviceAccountName: boskos-janitor
       containers:
       - name: boskos-janitor-nongke
-        image: gcr.io/k8s-prow/boskos/janitor:v20200325-b07cdff09
+        image: gcr.io/k8s-prow/boskos/janitor:v20200327-4e1ed20bb
         args:
         - --boskos-url=http://boskos.test-pods.svc.cluster.local.
         - --resource-type=gce-project,gpu-project,ingress-project,istio-project,scalability-presubmit-project,scalability-project
