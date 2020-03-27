@@ -118,7 +118,7 @@ func TestGetJvd(t *testing.T) {
 				NumTests: 1,
 				Passed:   nil,
 				Failed: []TestResult{
-					TestResult{
+					{
 						Junit: JunitResult{
 							junit.Result{
 								Name:      "fake_test_0",
@@ -146,7 +146,7 @@ func TestGetJvd(t *testing.T) {
 			JVD{
 				NumTests: 1,
 				Passed: []TestResult{
-					TestResult{
+					{
 						Junit: JunitResult{
 							junit.Result{
 								Name:      "fake_test_0",
@@ -179,7 +179,7 @@ func TestGetJvd(t *testing.T) {
 				Passed:   nil,
 				Failed:   nil,
 				Skipped: []TestResult{
-					TestResult{
+					{
 						Junit: JunitResult{
 							junit.Result{
 								Name:      "fake_test_0",
@@ -210,7 +210,7 @@ func TestGetJvd(t *testing.T) {
 			JVD{
 				NumTests: 2,
 				Passed: []TestResult{
-					TestResult{
+					{
 						Junit: JunitResult{
 							junit.Result{
 								Name:      "fake_test_0",
@@ -222,7 +222,7 @@ func TestGetJvd(t *testing.T) {
 					},
 				},
 				Failed: []TestResult{
-					TestResult{
+					{
 						Junit: JunitResult{
 							junit.Result{
 								Name:      "fake_test_0",
@@ -259,7 +259,7 @@ func TestGetJvd(t *testing.T) {
 			JVD{
 				NumTests: 2,
 				Passed: []TestResult{
-					TestResult{
+					{
 						Junit: JunitResult{
 							junit.Result{
 								Name:      "fake_test_0",
@@ -271,7 +271,7 @@ func TestGetJvd(t *testing.T) {
 					},
 				},
 				Failed: []TestResult{
-					TestResult{
+					{
 						Junit: JunitResult{
 							junit.Result{
 								Name:      "fake_test_0",
@@ -307,7 +307,7 @@ func TestGetJvd(t *testing.T) {
 				NumTests: 1,
 				Passed:   nil,
 				Failed: []TestResult{
-					TestResult{
+					{
 						Junit: JunitResult{
 							junit.Result{
 								Name:      "fake_test_0",
@@ -338,7 +338,7 @@ func TestGetJvd(t *testing.T) {
 			JVD{
 				NumTests: 1,
 				Passed: []TestResult{
-					TestResult{
+					{
 						Junit: JunitResult{
 							junit.Result{
 								Name:      "fake_test_0",
@@ -369,7 +369,7 @@ func TestGetJvd(t *testing.T) {
 			JVD{
 				NumTests: 1,
 				Passed: []TestResult{
-					TestResult{
+					{
 						Junit: JunitResult{
 							junit.Result{
 								Name:      "fake_test_0",
@@ -406,7 +406,7 @@ func TestGetJvd(t *testing.T) {
 				Failed:   nil,
 				Skipped:  nil,
 				Flaky: []TestResult{
-					TestResult{
+					{
 						Junit: JunitResult{
 							junit.Result{
 								Name:      "fake_test_0",
@@ -440,7 +440,7 @@ func TestGetJvd(t *testing.T) {
 				Failed:   nil,
 				Skipped:  nil,
 				Flaky: []TestResult{
-					TestResult{
+					{
 						Junit: JunitResult{
 							junit.Result{
 								Name:      "fake_test_0",
@@ -479,7 +479,7 @@ func TestGetJvd(t *testing.T) {
 				Failed:   nil,
 				Skipped:  nil,
 				Flaky: []TestResult{
-					TestResult{
+					{
 						Junit: JunitResult{
 							junit.Result{
 								Name:      "fake_test_0",
@@ -514,7 +514,7 @@ func TestGetJvd(t *testing.T) {
 			JVD{
 				NumTests: 2,
 				Passed: []TestResult{
-					TestResult{
+					{
 						Junit: JunitResult{
 							junit.Result{
 								Name:      "fake_test_0",
@@ -526,7 +526,7 @@ func TestGetJvd(t *testing.T) {
 					},
 				},
 				Failed: []TestResult{
-					TestResult{
+					{
 						Junit: JunitResult{
 							junit.Result{
 								Name:      "fake_test_0",
