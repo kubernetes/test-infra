@@ -49,6 +49,7 @@ const (
 	winZipTemplate                = "win-zip-%s.zip"
 	k8sNodeTarballTemplate        = "kubernetes-node-linux-amd64-%s.tar.gz"
 	azureBlobContainerURLTemplate = "https://%s.blob.core.windows.net/%s"
+	azureKubemarkTestPrefix       = "[for azure kubemark test]"
 )
 
 var (
@@ -91,14 +92,14 @@ var (
 	k8sNodeTarballDir         = util.K8s("kubernetes", "_output", "release-tars") // contains custom-built kubelet and kubectl
 
 	// kubemark scale tests
-	buildWithKubemark          = flag.Bool("build-with-kubemark", false, "Enable building clusters with kubemark")
-	kubemarkBuildScriptURL     = flag.String("kubemark-build-script-url", "", "URL to the building script of kubemark and kubemark-external cluster")
-	kubemarkClusterTemplateURL = flag.String("kubemark-cluster-template-url", "", "URL to the aks-engine template of kubemark cluster")
-	externalClusterTemplateURL = flag.String("external-cluster-template-url", "", "URL to the aks-engine template of kubemark external cluster")
-	hollowNodesDeploymentURL   = flag.String("hollow-nodes-deployment-url", "", "URL to the deployment configuration file of hollow nodes")
-	clusterLoader2BinURL       = flag.String("clusterloader2-bin-url", "", "URL to the binary of clusterloader2")
-	kubemarkLocation           = flag.String("kubemark-location", "southcentralus", "The location where the kubemark and external clusters run")
-	kubemarkSize               = flag.String("kubemark-size", "100", "The number of hollow nodes in kubemark cluster")
+	buildWithKubemark          = flag.Bool("build-with-kubemark", false, fmt.Sprintf("%s Enable building clusters with kubemark", azureKubemarkTestPrefix))
+	kubemarkBuildScriptURL     = flag.String("kubemark-build-script-url", "", fmt.Sprintf("%s URL to the building script of kubemark and kubemark-external cluster", azureKubemarkTestPrefix))
+	kubemarkClusterTemplateURL = flag.String("kubemark-cluster-template-url", "", fmt.Sprintf("%s URL to the aks-engine template of kubemark cluster", azureKubemarkTestPrefix))
+	externalClusterTemplateURL = flag.String("external-cluster-template-url", "", fmt.Sprintf("%s URL to the aks-engine template of kubemark external cluster", azureKubemarkTestPrefix))
+	hollowNodesDeploymentURL   = flag.String("hollow-nodes-deployment-url", "", fmt.Sprintf("%s URL to the deployment configuration file of hollow nodes", azureKubemarkTestPrefix))
+	clusterLoader2BinURL       = flag.String("clusterloader2-bin-url", "", fmt.Sprintf("%s URL to the binary of clusterloader2", azureKubemarkTestPrefix))
+	kubemarkLocation           = flag.String("kubemark-location", "southcentralus", fmt.Sprintf("%s The location where the kubemark and external clusters run", azureKubemarkTestPrefix))
+	kubemarkSize               = flag.String("kubemark-size", "100", fmt.Sprintf("%s The number of hollow nodes in kubemark cluster", azureKubemarkTestPrefix))
 )
 
 const (
