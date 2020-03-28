@@ -64,9 +64,7 @@ dashboard_groups:
   - istio_common-files_postsubmit
   - istio_community_postsubmit
   - istio_gogo-genproto_postsubmit
-  - istio_installer_postsubmit
   - istio_istio.io_postsubmit
-  - istio_operator_postsubmit
   - istio_pkg_postsubmit
   - istio_proxy_postsubmit
   - istio_test-infra_postsubmit
@@ -82,9 +80,7 @@ dashboard_groups:
   - istio_envoy
   - istio_gogo-genproto
   - istio_infrastructure
-  - istio_installer
   - istio_istio.io
-  - istio_operator
   - istio_pkg
   - istio_proxy
   - istio_test-infra
@@ -578,106 +574,6 @@ dashboards:
   name: istio_infrastructure
 - dashboard_tab:
   - code_search_url_template:
-      url: https://github.com/istio/installer/compare/<start-custom-0>...<end-custom-0>
-    description: base_installer
-    name: base_installer
-    open_bug_template:
-      url: https://github.com/istio/installer/issues/
-    test_group_name: base_installer
-  - code_search_url_template:
-      url: https://github.com/istio/installer/compare/<start-custom-0>...<end-custom-0>
-    description: build_installer
-    name: build_installer
-    open_bug_template:
-      url: https://github.com/istio/installer/issues/
-    test_group_name: build_installer
-  - code_search_url_template:
-      url: https://github.com/istio/installer/compare/<start-custom-0>...<end-custom-0>
-    description: demo_installer
-    name: demo_installer
-    open_bug_template:
-      url: https://github.com/istio/installer/issues/
-    test_group_name: demo_installer
-  - code_search_url_template:
-      url: https://github.com/istio/installer/compare/<start-custom-0>...<end-custom-0>
-    description: gencheck_installer
-    name: gencheck_installer
-    open_bug_template:
-      url: https://github.com/istio/installer/issues/
-    test_group_name: gencheck_installer
-  - code_search_url_template:
-      url: https://github.com/istio/installer/compare/<start-custom-0>...<end-custom-0>
-    description: lint_installer
-    name: lint_installer
-    open_bug_template:
-      url: https://github.com/istio/installer/issues/
-    test_group_name: lint_installer
-  - code_search_url_template:
-      url: https://github.com/istio/installer/compare/<start-custom-0>...<end-custom-0>
-    description: noauth_installer
-    name: noauth_installer
-    open_bug_template:
-      url: https://github.com/istio/installer/issues/
-    test_group_name: noauth_installer
-  name: istio_installer
-- dashboard_tab:
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio/installer/compare/<start-custom-0>...<end-custom-0>
-    description: base_installer_postsubmit
-    name: base_installer_postsubmit
-    open_bug_template:
-      url: https://github.com/istio/installer/issues/
-    test_group_name: base_installer_postsubmit
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio/installer/compare/<start-custom-0>...<end-custom-0>
-    description: build_installer_postsubmit
-    name: build_installer_postsubmit
-    open_bug_template:
-      url: https://github.com/istio/installer/issues/
-    test_group_name: build_installer_postsubmit
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio/installer/compare/<start-custom-0>...<end-custom-0>
-    description: demo_installer_postsubmit
-    name: demo_installer_postsubmit
-    open_bug_template:
-      url: https://github.com/istio/installer/issues/
-    test_group_name: demo_installer_postsubmit
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio/installer/compare/<start-custom-0>...<end-custom-0>
-    description: gencheck_installer_postsubmit
-    name: gencheck_installer_postsubmit
-    open_bug_template:
-      url: https://github.com/istio/installer/issues/
-    test_group_name: gencheck_installer_postsubmit
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio/installer/compare/<start-custom-0>...<end-custom-0>
-    description: lint_installer_postsubmit
-    name: lint_installer_postsubmit
-    open_bug_template:
-      url: https://github.com/istio/installer/issues/
-    test_group_name: lint_installer_postsubmit
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio/installer/compare/<start-custom-0>...<end-custom-0>
-    description: noauth_installer_postsubmit
-    name: noauth_installer_postsubmit
-    open_bug_template:
-      url: https://github.com/istio/installer/issues/
-    test_group_name: noauth_installer_postsubmit
-  name: istio_installer_postsubmit
-- dashboard_tab:
-  - code_search_url_template:
       url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
     description: cache-experiment_istio
     name: cache-experiment_istio
@@ -953,115 +849,6 @@ dashboards:
       url: https://github.com/istio/istio/issues/
     test_group_name: unit-tests_istio_postsubmit
   name: istio_istio_postsubmit
-- dashboard_tab:
-  - code_search_url_template:
-      url: https://github.com/istio/operator/compare/<start-custom-0>...<end-custom-0>
-    description: e2e_operator
-    name: e2e_operator
-    open_bug_template:
-      url: https://github.com/istio/operator/issues/
-    test_group_name: e2e_operator
-  - code_search_url_template:
-      url: https://github.com/istio/operator/compare/<start-custom-0>...<end-custom-0>
-    description: gencheck_operator
-    name: gencheck_operator
-    open_bug_template:
-      url: https://github.com/istio/operator/issues/
-    test_group_name: gencheck_operator
-  - code_search_url_template:
-      url: https://github.com/istio/operator/compare/<start-custom-0>...<end-custom-0>
-    description: lint_operator
-    name: lint_operator
-    open_bug_template:
-      url: https://github.com/istio/operator/issues/
-    test_group_name: lint_operator
-  - code_search_url_template:
-      url: https://github.com/istio/operator/compare/<start-custom-0>...<end-custom-0>
-    description: mandiff_operator
-    name: mandiff_operator
-    open_bug_template:
-      url: https://github.com/istio/operator/issues/
-    test_group_name: mandiff_operator
-  - code_search_url_template:
-      url: https://github.com/istio/operator/compare/<start-custom-0>...<end-custom-0>
-    description: mesh_operator
-    name: mesh_operator
-    open_bug_template:
-      url: https://github.com/istio/operator/issues/
-    test_group_name: mesh_operator
-  - code_search_url_template:
-      url: https://github.com/istio/operator/compare/<start-custom-0>...<end-custom-0>
-    description: test_operator
-    name: test_operator
-    open_bug_template:
-      url: https://github.com/istio/operator/issues/
-    test_group_name: test_operator
-  name: istio_operator
-- dashboard_tab:
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio/operator/compare/<start-custom-0>...<end-custom-0>
-    description: e2e_operator_postsubmit
-    name: e2e_operator_postsubmit
-    open_bug_template:
-      url: https://github.com/istio/operator/issues/
-    test_group_name: e2e_operator_postsubmit
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio/operator/compare/<start-custom-0>...<end-custom-0>
-    description: gencheck_operator_postsubmit
-    name: gencheck_operator_postsubmit
-    open_bug_template:
-      url: https://github.com/istio/operator/issues/
-    test_group_name: gencheck_operator_postsubmit
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio/operator/compare/<start-custom-0>...<end-custom-0>
-    description: lint_operator_postsubmit
-    name: lint_operator_postsubmit
-    open_bug_template:
-      url: https://github.com/istio/operator/issues/
-    test_group_name: lint_operator_postsubmit
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio/operator/compare/<start-custom-0>...<end-custom-0>
-    description: mandiff_operator_postsubmit
-    name: mandiff_operator_postsubmit
-    open_bug_template:
-      url: https://github.com/istio/operator/issues/
-    test_group_name: mandiff_operator_postsubmit
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio/operator/compare/<start-custom-0>...<end-custom-0>
-    description: mesh_operator_postsubmit
-    name: mesh_operator_postsubmit
-    open_bug_template:
-      url: https://github.com/istio/operator/issues/
-    test_group_name: mesh_operator_postsubmit
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio/operator/compare/<start-custom-0>...<end-custom-0>
-    description: release_operator_postsubmit
-    name: release_operator_postsubmit
-    open_bug_template:
-      url: https://github.com/istio/operator/issues/
-    test_group_name: release_operator_postsubmit
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio/operator/compare/<start-custom-0>...<end-custom-0>
-    description: test_operator_postsubmit
-    name: test_operator_postsubmit
-    open_bug_template:
-      url: https://github.com/istio/operator/issues/
-    test_group_name: test_operator_postsubmit
-  name: istio_operator_postsubmit
 - dashboard_tab:
   - code_search_url_template:
       url: https://github.com/istio/pkg/compare/<start-custom-0>...<end-custom-0>
@@ -3963,35 +3750,17 @@ test_groups:
 - gcs_prefix: istio-prow/logs/lint_gogo-genproto_release-1.5_postsubmit
   name: lint_gogo-genproto_release-1.5_postsubmit
   num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/base_installer_postsubmit
-  name: base_installer_postsubmit
-  num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/base_installer_release-1.4_postsubmit
   name: base_installer_release-1.4_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/build_installer_postsubmit
-  name: build_installer_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/build_installer_release-1.4_postsubmit
   name: build_installer_release-1.4_postsubmit
   num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/demo_installer_postsubmit
-  name: demo_installer_postsubmit
-  num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/demo_installer_release-1.4_postsubmit
   name: demo_installer_release-1.4_postsubmit
   num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/gencheck_installer_postsubmit
-  name: gencheck_installer_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/lint_installer_postsubmit
-  name: lint_installer_postsubmit
-  num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/lintmodern_installer_release-1.4_postsubmit
   name: lintmodern_installer_release-1.4_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/noauth_installer_postsubmit
-  name: noauth_installer_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/noauth_installer_release-1.4_postsubmit
   name: noauth_installer_release-1.4_postsubmit
@@ -4239,38 +4008,17 @@ test_groups:
 - gcs_prefix: istio-prow/logs/lint_istio.io_release-1.5_postsubmit
   name: lint_istio.io_release-1.5_postsubmit
   num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/e2e_operator_postsubmit
-  name: e2e_operator_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/gencheck_operator_postsubmit
-  name: gencheck_operator_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/lint_operator_postsubmit
-  name: lint_operator_postsubmit
-  num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/lint_operator_release-1.4_postsubmit
   name: lint_operator_release-1.4_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/mandiff_operator_postsubmit
-  name: mandiff_operator_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/mandiff_operator_release-1.4_postsubmit
   name: mandiff_operator_release-1.4_postsubmit
   num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/mesh_operator_postsubmit
-  name: mesh_operator_postsubmit
-  num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/mesh_operator_release-1.4_postsubmit
   name: mesh_operator_release-1.4_postsubmit
   num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/release_operator_postsubmit
-  name: release_operator_postsubmit
-  num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/release_operator_release-1.4_postsubmit
   name: release_operator_release-1.4_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/test_operator_postsubmit
-  name: test_operator_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/test_operator_release-1.4_postsubmit
   name: test_operator_release-1.4_postsubmit
@@ -4621,35 +4369,17 @@ test_groups:
 - gcs_prefix: istio-prow/pr-logs/directory/lint_gogo-genproto_release-1.5
   name: lint_gogo-genproto_release-1.5
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/base_installer
-  name: base_installer
-  num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/base_installer_release-1.4
   name: base_installer_release-1.4
-  num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/build_installer
-  name: build_installer
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/build_installer_release-1.4
   name: build_installer_release-1.4
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/demo_installer
-  name: demo_installer
-  num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/demo_installer_release-1.4
   name: demo_installer_release-1.4
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/gencheck_installer
-  name: gencheck_installer
-  num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/lint_installer
-  name: lint_installer
-  num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/lintmodern_installer_release-1.4
   name: lintmodern_installer_release-1.4
-  num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/noauth_installer
-  name: noauth_installer
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/noauth_installer_release-1.4
   name: noauth_installer_release-1.4
@@ -4855,32 +4585,14 @@ test_groups:
 - gcs_prefix: istio-prow/pr-logs/directory/lint_istio.io_release-1.5
   name: lint_istio.io_release-1.5
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/e2e_operator
-  name: e2e_operator
-  num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/gencheck_operator
-  name: gencheck_operator
-  num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/lint_operator
-  name: lint_operator
-  num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/lint_operator_release-1.4
   name: lint_operator_release-1.4
-  num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/mandiff_operator
-  name: mandiff_operator
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/mandiff_operator_release-1.4
   name: mandiff_operator_release-1.4
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/mesh_operator
-  name: mesh_operator
-  num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/mesh_operator_release-1.4
   name: mesh_operator_release-1.4
-  num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/test_operator
-  name: test_operator
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/test_operator_release-1.4
   name: test_operator_release-1.4
