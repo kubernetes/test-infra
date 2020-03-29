@@ -127,7 +127,7 @@ func run(deploy deployer, o options) error {
 		}
 		// If node testing is enabled, check that the api is reachable before
 		// proceeding with further steps. This is accomplished by listing the nodes.
-		if !o.nodeTests {
+		if !o.nodeTests && !strings.EqualFold(string(o.build), "none") {
 			errs = util.AppendError(errs, control.XMLWrap(&suite, "Check APIReachability", func() error { return getKubectlVersion(deploy) }))
 			if dump != "" {
 				errs = util.AppendError(errs, control.XMLWrap(&suite, "list nodes", func() error {
