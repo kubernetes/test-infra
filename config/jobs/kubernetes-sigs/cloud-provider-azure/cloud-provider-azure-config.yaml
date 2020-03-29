@@ -759,7 +759,7 @@ periodics:
     testgrid-dashboards: provider-azure-cloud-provider-azure, provider-azure-scalability, provider-azure-periodic
     testgrid-tab-name: ci-kubernetes-kubemark-100-azure-test
     testgrid-num-failures-to-alert: '1'
-    description: "Runs kubemark tests (100 nodes) with the Azure cloud provider enabled. (test only)"
+    description: "Runs kubemark tests (100 nodes) with the Azure cloud provider enabled."
   labels:
     preset-service-account: "true"
     preset-azure-cred: "true"
@@ -781,7 +781,6 @@ periodics:
       - kubetest
       args:
       - --up
-      - --dump=$(ARTIFACTS)
       - --deployment=aksengine
       - --aksengine-creds=$(AZURE_CREDENTIALS)
       - --build-with-kubemark=true
