@@ -57,6 +57,7 @@ larger set of contributors to apply/remove them.
 | <a id="area/licensing" href="#area/licensing">`area/licensing`</a> | Issues or PRs related to Kubernetes licensing| label | |
 | <a id="area/provider/aws" href="#area/provider/aws">`area/provider/aws`</a> | Issues or PRs related to aws provider <br><br> This was previously `area/platform/aws`, `area/platform/eks`, `sig/aws`, `aws`, | label | |
 | <a id="area/provider/azure" href="#area/provider/azure">`area/provider/azure`</a> | Issues or PRs related to azure provider <br><br> This was previously `area/platform/aks`, `area/platform/azure`, `sig/azure`, `azure`, | label | |
+| <a id="area/provider/digitalocean" href="#area/provider/digitalocean">`area/provider/digitalocean`</a> | Issues or PRs related to digitalocean provider| label | |
 | <a id="area/provider/gcp" href="#area/provider/gcp">`area/provider/gcp`</a> | Issues or PRs related to gcp provider <br><br> This was previously `area/platform/gcp`, `area/platform/gke`, `sig/gcp`, `gcp`, | label | |
 | <a id="area/provider/ibmcloud" href="#area/provider/ibmcloud">`area/provider/ibmcloud`</a> | Issues or PRs related to ibmcloud provider <br><br> This was previously `sig/ibmcloud`, `ibmcloud`, | label | |
 | <a id="area/provider/openstack" href="#area/provider/openstack">`area/provider/openstack`</a> | Issues or PRs related to openstack provider <br><br> This was previously `sig/openstack`, `openstack`, | label | |

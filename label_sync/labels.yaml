@@ -45,6 +45,11 @@ default:
         - name: sig/azure
         - name: azure
     - color: 0052cc
+      description: Issues or PRs related to digitalocean provider
+      name: area/provider/digitalocean
+      target: both
+      addedBy: label
+    - color: 0052cc
       description: Issues or PRs related to gcp provider
       name: area/provider/gcp
       target: both
