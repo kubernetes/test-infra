@@ -151,6 +151,7 @@ func TestEnvironmentForSpec(t *testing.T) {
 			spec: JobSpec{
 				Type:      prowapi.PeriodicJob,
 				Job:       "job-name",
+				Cluster:   "default",
 				BuildID:   "0",
 				ProwJobID: "prowjob",
 				agent:     prowapi.KubernetesAgent,
@@ -162,7 +163,8 @@ func TestEnvironmentForSpec(t *testing.T) {
 				"PROW_JOB_ID":  "prowjob",
 				"BUILD_NUMBER": "0",
 				"JOB_TYPE":     "periodic",
-				"JOB_SPEC":     `{"type":"periodic","job":"job-name","buildid":"0","prowjobid":"prowjob"}`,
+				"JOB_CLUSTER":  "default",
+				"JOB_SPEC":     `{"type":"periodic","job":"job-name","buildid":"0","prowjobid":"prowjob","cluster":"default"}`,
 			},
 		},
 		{

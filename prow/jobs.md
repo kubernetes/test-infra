@@ -232,6 +232,7 @@ Variable | Periodic | Postsubmit | Batch | Presubmit | Description | Example
 `ARTIFACTS` | ✓ | ✓ | ✓ | ✓ | Directory in which to place files to be uploaded when the job completes | `/logs/artifacts`
 `JOB_NAME` | ✓ | ✓ | ✓ | ✓ | Name of the job. | `pull-test-infra-bazel`
 `JOB_TYPE` | ✓ | ✓ | ✓ | ✓ | Type of job. | `presubmit`
+`JOB_CLUSTER` | ✓ | ✓ | ✓ | ✓ | Cluster of kubernetes-job. | `default`
 `JOB_SPEC` | ✓ | ✓ | ✓ | ✓ | JSON-encoded job specification. | see below
 `BUILD_ID` | ✓ | ✓ | ✓ | ✓ | Unique build number for each run. | `12345`
 `PROW_JOB_ID` | ✓ | ✓ | ✓ | ✓ | Unique identifier for the owning Prow Job. | `1ce07fa2-0831-11e8-b07e-0a58ac101036`

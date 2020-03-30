@@ -44,6 +44,10 @@ type JobSpec struct {
 	// migrate everyone away from using the $BUILD_NUMBER
 	// environment variable
 	agent prowapi.ProwJobAgent
+
+	// Cluster is which Kubernetes cluster is used
+	// to run the job
+	Cluster string `json:"cluster,omitempty"`
 }
 
 // NewJobSpec converts a prowapi.ProwJobSpec invocation into a JobSpec
@@ -56,6 +60,7 @@ func NewJobSpec(spec prowapi.ProwJobSpec, buildID, prowJobID string) JobSpec {
 		Refs:      spec.Refs,
 		ExtraRefs: spec.ExtraRefs,
 		agent:     spec.Agent,
+		Cluster:   spec.Cluster,
 	}
 }
 
@@ -82,9 +87,10 @@ const (
 	// JobSpecEnv is the name that contains JobSpec marshaled into a string.
 	JobSpecEnv = "JOB_SPEC"
 
-	jobNameEnv   = "JOB_NAME"
-	jobTypeEnv   = "JOB_TYPE"
-	prowJobIDEnv = "PROW_JOB_ID"
+	jobNameEnv    = "JOB_NAME"
+	jobTypeEnv    = "JOB_TYPE"
+	prowJobIDEnv  = "PROW_JOB_ID"
+	jobClusterEnv = "JOB_CLUSTER"
 
 	buildIDEnv     = "BUILD_ID"
 	prowBuildIDEnv = "BUILD_NUMBER" // Deprecated, will be removed in the future.
@@ -114,6 +120,7 @@ func EnvForSpec(spec JobSpec) (map[string]string, error) {
 	// and in both $buildId and $BUILD_NUMBER for Jenkins
 	if spec.agent == prowapi.KubernetesAgent {
 		env[prowBuildIDEnv] = spec.BuildID
+		env[jobClusterEnv] = spec.Cluster
 	}
 
 	raw, err := json.Marshal(spec)
@@ -143,7 +150,7 @@ func EnvForSpec(spec JobSpec) (map[string]string, error) {
 
 // EnvForType returns the slice of environment variables to export for jobType
 func EnvForType(jobType prowapi.ProwJobType) []string {
-	baseEnv := []string{ci, jobNameEnv, JobSpecEnv, jobTypeEnv, prowJobIDEnv, buildIDEnv, prowBuildIDEnv}
+	baseEnv := []string{ci, jobNameEnv, JobSpecEnv, jobTypeEnv, jobClusterEnv, prowJobIDEnv, buildIDEnv, prowBuildIDEnv}
 	refsEnv := []string{repoOwnerEnv, repoNameEnv, pullBaseRefEnv, pullBaseShaEnv, pullRefsEnv}
 	pullEnv := []string{pullNumberEnv, pullPullShaEnv}
 
