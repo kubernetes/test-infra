@@ -121,10 +121,15 @@ func (lens Lens) getJvd(artifacts []lenses.Artifact) JVD {
 		path  string
 		err   error
 	}
+	type testIdentifier struct {
+		suite string
+		class string
+		name  string
+	}
 	resultChan := make(chan testResults)
 	for _, artifact := range artifacts {
 		go func(artifact lenses.Artifact) {
-			groups := make(map[string][]junit.Result)
+			groups := make(map[testIdentifier][]junit.Result)
 			result := testResults{
 				link: artifact.CanonicalLink(),
 				path: artifact.JobPath(),
@@ -150,17 +155,13 @@ func (lens Lens) getJvd(artifacts []lenses.Artifact) JVD {
 				}
 
 				for _, test := range suite.Results {
-					test := test
 					// There are cases where multiple entries of exactly the same
 					// testcase in a single junit result file, this could result
 					// from reruns of test cases by `go test --count=N` where N>1.
 					// Deduplicate them here in this case, and classify a test as being
 					// flaky if it both succeeded and failed
-					testFullName := fmt.Sprintf("%s...%s...%s", suite.Name, test.ClassName, test.Name)
-					if _, ok := groups[testFullName]; !ok {
-						groups[testFullName] = make([]junit.Result, 0)
-					}
-					groups[testFullName] = append(groups[testFullName], test)
+					k := testIdentifier{suite.Name, test.ClassName, test.Name}
+					groups[k] = append(groups[k], test)
 				}
 			}
 			for _, suite := range suites.Suites {
@@ -178,16 +179,21 @@ func (lens Lens) getJvd(artifacts []lenses.Artifact) JVD {
 	}
 	sort.Slice(results, func(i, j int) bool { return results[i].path < results[j].path })
 
-	jvd := JVD{}
+	var jvd JVD
 
 	for _, result := range results {
 		if result.err != nil {
 			continue
 		}
 		for _, tests := range result.junit {
-			var skipped, passed, failed, flaky bool
-			var combinedTest junit.Result
-			var cumFailure []string
+			var (
+				skipped      bool
+				passed       bool
+				failed       bool
+				flaky        bool
+				combinedTest junit.Result
+				cumFailure   []string
+			)
 			for _, test := range tests {
 				// skipped test has no reason to rerun, so no deduplication
 				if test.Skipped != nil {
@@ -206,17 +212,14 @@ func (lens Lens) getJvd(artifacts []lenses.Artifact) JVD {
 					// Use the last failed result for flaky test, or same test
 					// failed multiple times
 					combinedTest = test
-				} else {
-					if failed {
-						passed = false
-						failed = false
-						flaky = true
-					}
-					if !flaky {
-						passed = true
-						// Don't use a succeeded test result for flaky test
-						combinedTest = test
-					}
+				} else if failed { // Test succeeded but marked failed previously
+					passed = false
+					failed = false
+					flaky = true
+				} else if !flaky { // Test succeeded and not marked as flaky
+					passed = true
+					// Don't use a succeeded test result for flaky test
+					combinedTest = test
 				}
 			}
 
