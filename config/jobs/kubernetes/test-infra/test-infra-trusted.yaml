@@ -765,23 +765,15 @@ postsubmits:
     branches:
     - ^master$
     spec:
+      serviceAccountName: k8s-infra-gcr-promoter
       containers:
       - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20200328-v2.3.1-172-gfeb5dc0
         command:
         - cip
         args:
         - -thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
-        - -key-files=/etc/k8s-artifacts-prod-service-account/service-account.json
         - -dry-run=false
         - -use-service-account
-        volumeMounts:
-        - name: k8s-artifacts-prod-service-account-creds
-          mountPath: /etc/k8s-artifacts-prod-service-account
-          readOnly: true
-      volumes:
-      - name: k8s-artifacts-prod-service-account-creds
-        secret:
-          secretName: k8s-artifacts-prod-service-account
     annotations:
       testgrid-dashboards: sig-release-releng-blocking, wg-k8s-infra-k8sio
       testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers@kubernetes.io
