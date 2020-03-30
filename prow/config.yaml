@@ -32,6 +32,7 @@ tide:
     IBM/ibm-cloudctl-operator: squash
     IBM/ibm-commonui-operator: squash
     IBM/ibm-elastic-stack-operator: squash
+    IBM/ibm-grafana-operator: squash
     IBM/ibm-healthcheck-operator: squash
     IBM/ibm-helm-api-operator: squash
     IBM/ibm-helm-repo-operator: squash
@@ -75,6 +76,7 @@ tide:
     - IBM/ibm-cloudctl-operator
     - IBM/ibm-commonui-operator
     - IBM/ibm-elastic-stack-operator
+    - IBM/ibm-grafana-operator
     - IBM/ibm-healthcheck-operator
     - IBM/ibm-helm-api-operator
     - IBM/ibm-helm-repo-operator
