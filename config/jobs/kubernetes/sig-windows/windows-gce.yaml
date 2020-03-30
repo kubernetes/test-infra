@@ -47,6 +47,8 @@ presets:
   # Reference: https://github.com/kubernetes/test-infra/blob/master/config/jobs/kubernetes/sig-scalability/sig-scalability-presets.yaml#L127
   - name: KUBEPROXY_TEST_ARGS
     value: "--profiling --metrics-bind-address=0.0.0.0"
+  - name: WINDOWS_NODE_OS_DISTRIBUTION
+    value: "win2019"
 
 periodics:
 - name: ci-kubernetes-e2e-windows-gce-poc
@@ -418,6 +420,64 @@ periodics:
       - --test-cmd-args=--enable-prometheus-server=true
       - --test-cmd-args=--testconfig=testing/node-throughput/config.yaml
       - --test-cmd-args=--testoverrides=./testing/node-throughput/windows_override.yaml
+      - --test-cmd-name=ClusterLoaderV2
+      - --timeout=300m
+
+- name: ci-kubernetes-e2e-windows-node-throughput-iis
+  interval: 6h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-common-gce-windows: "true"
+    preset-load-gce-windows: "true"
+  annotations:
+    testgrid-dashboards: google-windows
+    testgrid-tab-name: gce-windows-node-throughput-iis
+  decorate: true
+  decoration_config:
+    timeout: 4h
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: windows-testing
+    base_ref: master
+    path_alias: k8s.io/windows-testing
+  - org: kubernetes
+    repo: perf-tests
+    base_ref: master
+    path_alias: k8s.io/perf-tests
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200326-e946722-master
+      env:
+      - name: PREPULL_YAML
+        value: "loadtest-prepull-iis.yaml"
+      - name: CL2_CONTAINER_IMAGE
+        value: "mcr.microsoft.com/windows/servercore/iis"
+      - name: CL2_WMI_EXPORTER_URL
+        value: "https://github.com/YangLu1031/wmi_exporter/releases/download/v0.10.3-alpha/wmi_exporter.exe"
+      - name: CL2_WMI_EXPORTER_ENABLED_COLLECTORS
+        value: "process,cs"
+      - name: CL2_POD_COUNT
+        value: "20"
+      args:
+      - --check-leaked-resources
+      - --cluster=
+      - --extract=ci/k8s-master
+      - --gcp-zone=us-west1-b
+      - --provider=gce
+      - --gcp-nodes=1
+      - --test=false
+      - --test-cmd=$GOPATH/src/k8s.io/windows-testing/gce/load-test.sh
+      - --test-cmd-args=cluster-loader2
+      - --test-cmd-args=--nodes=1
+      - --test-cmd-args=--provider=gce
+      - --test-cmd-args=--report-dir=/logs/artifacts
+      - --test-cmd-args=--enable-prometheus-server=true
+      - --test-cmd-args=--testconfig=testing/windows-tests/config.yaml
+      - --test-cmd-args=--testoverrides=./testing/windows-tests/windows_override.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=300m
 
