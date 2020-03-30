@@ -125,15 +125,13 @@ presubmits:
         - --deployment=aksengine
         - --aksengine-admin-username=azureuser
         - --aksengine-creds=$(AZURE_CREDENTIALS)
-        - --aksengine-orchestratorRelease=1.17
+        - --aksengine-orchestratorRelease=1.18
         - --aksengine-location=eastus2
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/single-az.json
-        - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.46.0/aks-engine-v0.46.0-linux-amd64.tar.gz
+        - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.48.0/aks-engine-v0.48.0-linux-amd64.tar.gz
         # Specific test args
         - --test-azure-disk-csi-driver
-        - --ginkgo-parallel=1
-        - --timeout=420m
         securityContext:
           privileged: true
         env:
@@ -177,15 +175,13 @@ presubmits:
         - --deployment=aksengine
         - --aksengine-admin-username=azureuser
         - --aksengine-creds=$(AZURE_CREDENTIALS)
-        - --aksengine-orchestratorRelease=1.17
+        - --aksengine-orchestratorRelease=1.18
         - --aksengine-location=eastus2
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/multi-az.json
-        - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.46.0/aks-engine-v0.46.0-linux-amd64.tar.gz
+        - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.48.0/aks-engine-v0.48.0-linux-amd64.tar.gz
         # Specific test args
         - --test-azure-disk-csi-driver
-        - --ginkgo-parallel=1
-        - --timeout=420m
         securityContext:
           privileged: true
         env:
@@ -233,11 +229,9 @@ presubmits:
         - --aksengine-location=eastus2
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/migration.json
-        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz # TODO(chewong): use official aks-engine tarball that supports Kubernetes 1.18 from github
+        - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.48.0/aks-engine-v0.48.0-linux-amd64.tar.gz
         # Specific test args
         - --test-azure-disk-csi-driver
-        - --ginkgo-parallel=1
-        - --timeout=420m
         securityContext:
           privileged: true
         env:
@@ -249,6 +243,58 @@ presubmits:
       testgrid-dashboards: provider-azure-azuredisk-csi-driver, provider-azure-presubmit
       testgrid-tab-name: pr-azuredisk-csi-driver-e2e-migration
       description: "Run E2E tests on a cluster for Azure Disk CSI driver with CSI migration feature enabled."
+      testgrid-num-columns-recent: '30'
+  - name: pull-azuredisk-csi-driver-e2e-windows
+    decorate: true
+    always_run: true
+    path_alias: sigs.k8s.io/azuredisk-csi-driver
+    optional: true
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+      preset-azure-cred: "true"
+      preset-dind-enabled: "true"
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+      workdir: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200329-0d2a077-master
+        command:
+        - runner.sh
+        - kubetest
+        args:
+        # Generic e2e test args
+        - --test
+        - --up
+        - --down
+        - --build=quick
+        - --dump=$(ARTIFACTS)
+        # Azure-specific test args
+        - --provider=skeleton
+        - --deployment=aksengine
+        - --aksengine-admin-username=azureuser
+        - --aksengine-creds=$(AZURE_CREDENTIALS)
+        - --aksengine-orchestratorRelease=1.18
+        - --aksengine-location=westus2
+        - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
+        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_storage.json
+        - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.48.0/aks-engine-v0.48.0-linux-amd64.tar.gz
+        # Specific test args
+        - --test-azure-disk-csi-driver
+        securityContext:
+          privileged: true
+        env:
+          - name: TEST_WINDOWS
+            value: "true"
+    annotations:
+      testgrid-dashboards: provider-azure-azuredisk-csi-driver, provider-azure-presubmit
+      testgrid-tab-name: pr-azuredisk-csi-driver-e2e-windows
+      description: "Run E2E tests on a Windows cluster for Azure Disk CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-in-tree-azure-disk-e2e
     decorate: true
@@ -293,8 +339,6 @@ presubmits:
         - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
         # Specific test args
         - --test-azure-disk-csi-driver
-        - --ginkgo-parallel=1
-        - --timeout=420m
         securityContext:
           privileged: true
         env:
@@ -348,8 +392,6 @@ presubmits:
         - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
         # Specific test args
         - --test-azure-disk-csi-driver
-        - --ginkgo-parallel=1
-        - --timeout=420m
         securityContext:
           privileged: true
         env:
@@ -424,8 +466,6 @@ presubmits:
         - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
         # Specific test args
         - --test-azure-disk-csi-driver
-        - --ginkgo-parallel=1
-        - --timeout=420m
         securityContext:
           privileged: true
         env:
