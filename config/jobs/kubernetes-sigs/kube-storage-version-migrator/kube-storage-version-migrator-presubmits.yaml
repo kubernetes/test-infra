@@ -46,8 +46,6 @@ presubmits:
   - name: pull-kube-storage-version-migrator-fully-automated-e2e
     decorate: true
     always_run: true
-    # TODO: remove this when the test is stable
-    optional: true
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
