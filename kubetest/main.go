@@ -102,6 +102,7 @@ type options struct {
 	nodeArgs                string
 	nodeTestArgs            string
 	nodeTests               bool
+	outputDir               string
 	provider                string
 	publish                 string
 	runtimeConfig           string
@@ -256,6 +257,8 @@ func getDeployer(o *options) (deployer, error) {
 		return newLocalCluster(), nil
 	case "aksengine":
 		return newAKSEngine()
+	case "aks":
+		return newAksDeployer()
 	default:
 		return nil, fmt.Errorf("unknown deployment strategy %q", o.deployment)
 	}
@@ -413,7 +416,7 @@ func acquireKubernetes(o *options, d deployer) error {
 		// kind deployer manages build
 		if k, ok := d.(*kind.Deployer); ok {
 			err = control.XMLWrap(&suite, "Build", k.Build)
-		} else if c, ok := d.(*Cluster); ok { // Azure deployer
+		} else if c, ok := d.(*aksEngineDeployer); ok { // Azure deployer
 			err = control.XMLWrap(&suite, "Build", func() error {
 				return c.Build(o.build)
 			})
