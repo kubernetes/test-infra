@@ -21,7 +21,7 @@ presubmits:
       path_alias: sigs.k8s.io/azuredisk-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200329-0d2a077-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200331-ccdcc25-1.18
         command:
         - runner.sh
         - kubetest
@@ -79,7 +79,7 @@ presubmits:
       path_alias: sigs.k8s.io/azurefile-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200329-0d2a077-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200331-ccdcc25-1.18
         command:
         - runner.sh
         - kubetest
@@ -135,7 +135,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200329-0d2a077-1.18
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200331-ccdcc25-1.18
       command:
       - runner.sh
       - kubetest
@@ -188,7 +188,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200329-0d2a077-1.18
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200331-ccdcc25-1.18
       command:
       - runner.sh
       - kubetest
