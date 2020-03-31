@@ -24,7 +24,6 @@ import (
 	"html/template"
 	"path/filepath"
 	"sort"
-	"strings"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -34,14 +33,19 @@ import (
 )
 
 const (
-	name     = "junit"
-	title    = "JUnit"
-	priority = 5
+	name                     = "junit"
+	title                    = "JUnit"
+	priority                 = 5
+	passedStatus  testStatus = "Passed"
+	failedStatus  testStatus = "Failed"
+	skippedStatus testStatus = "Skipped"
 )
 
 func init() {
 	lenses.RegisterLens(Lens{})
 }
+
+type testStatus string
 
 // Lens is the implementation of a JUnit-rendering Spyglass lens.
 type Lens struct{}
@@ -89,9 +93,19 @@ func (jr JunitResult) Duration() time.Duration {
 	return time.Duration(jr.Time * float64(time.Second)).Round(time.Second)
 }
 
+func (jr JunitResult) Status() testStatus {
+	res := passedStatus
+	if jr.Skipped != nil {
+		res = skippedStatus
+	} else if jr.Failure != nil {
+		res = failedStatus
+	}
+	return res
+}
+
 // TestResult holds data about a test extracted from junit output
 type TestResult struct {
-	Junit JunitResult
+	Junit []JunitResult
 	Link  string
 }
 
@@ -116,7 +130,7 @@ func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data stri
 func (lens Lens) getJvd(artifacts []lenses.Artifact) JVD {
 	type testResults struct {
 		// Group results based on their full path name
-		junit [][]junit.Result
+		junit [][]JunitResult
 		link  string
 		path  string
 		err   error
@@ -129,7 +143,7 @@ func (lens Lens) getJvd(artifacts []lenses.Artifact) JVD {
 	resultChan := make(chan testResults)
 	for _, artifact := range artifacts {
 		go func(artifact lenses.Artifact) {
-			groups := make(map[testIdentifier][]junit.Result)
+			groups := make(map[testIdentifier][]JunitResult)
 			result := testResults{
 				link: artifact.CanonicalLink(),
 				path: artifact.JobPath(),
@@ -161,7 +175,7 @@ func (lens Lens) getJvd(artifacts []lenses.Artifact) JVD {
 					// Deduplicate them here in this case, and classify a test as being
 					// flaky if it both succeeded and failed
 					k := testIdentifier{suite.Name, test.ClassName, test.Name}
-					groups[k] = append(groups[k], test)
+					groups[k] = append(groups[k], JunitResult{Result: test})
 				}
 			}
 			for _, suite := range suites.Suites {
@@ -187,19 +201,16 @@ func (lens Lens) getJvd(artifacts []lenses.Artifact) JVD {
 		}
 		for _, tests := range result.junit {
 			var (
-				skipped      bool
-				passed       bool
-				failed       bool
-				flaky        bool
-				combinedTest junit.Result
-				cumFailure   []string
+				skipped bool
+				passed  bool
+				failed  bool
+				flaky   bool
 			)
 			for _, test := range tests {
 				// skipped test has no reason to rerun, so no deduplication
-				if test.Skipped != nil {
+				if test.Status() == skippedStatus {
 					skipped = true
-					combinedTest = test
-				} else if test.Failure != nil {
+				} else if test.Status() == failedStatus {
 					if passed {
 						passed = false
 						failed = false
@@ -208,45 +219,33 @@ func (lens Lens) getJvd(artifacts []lenses.Artifact) JVD {
 					if !flaky {
 						failed = true
 					}
-					cumFailure = append(cumFailure, *test.Failure)
-					// Use the last failed result for flaky test, or same test
-					// failed multiple times
-					combinedTest = test
 				} else if failed { // Test succeeded but marked failed previously
 					passed = false
 					failed = false
 					flaky = true
 				} else if !flaky { // Test succeeded and not marked as flaky
 					passed = true
-					// Don't use a succeeded test result for flaky test
-					combinedTest = test
 				}
-			}
-
-			if len(cumFailure) > 0 {
-				failure := strings.Join(cumFailure,
-					"\n\n---Separation line for tests that failed reruns---\n\n")
-				combinedTest.Failure = &failure
 			}
 
 			if skipped {
 				jvd.Skipped = append(jvd.Skipped, TestResult{
-					Junit: JunitResult{combinedTest},
+					Junit: tests,
 					Link:  result.link,
 				})
 			} else if failed {
 				jvd.Failed = append(jvd.Failed, TestResult{
-					Junit: JunitResult{combinedTest},
+					Junit: tests,
 					Link:  result.link,
 				})
 			} else if flaky {
 				jvd.Flaky = append(jvd.Flaky, TestResult{
-					Junit: JunitResult{combinedTest},
+					Junit: tests,
 					Link:  result.link,
 				})
 			} else {
 				jvd.Passed = append(jvd.Passed, TestResult{
-					Junit: JunitResult{combinedTest},
+					Junit: tests,
 					Link:  result.link,
 				})
 			}

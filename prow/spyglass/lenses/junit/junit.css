@@ -25,7 +25,11 @@
   text-align: right;
 }
 
-td.failed, td.flaky {
+td.failed {
+  color: #ff0000;
+}
+
+td.flaky {
   color: #800080;
 }
 
