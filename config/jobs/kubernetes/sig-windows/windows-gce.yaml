@@ -452,8 +452,6 @@ periodics:
       - /workspace/scenarios/kubernetes_e2e.py
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200326-e946722-master
       env:
-      - name: PREPULL_YAML
-        value: "loadtest-prepull-iis.yaml"
       - name: CL2_CONTAINER_IMAGE
         value: "mcr.microsoft.com/windows/servercore/iis"
       - name: CL2_WMI_EXPORTER_URL
