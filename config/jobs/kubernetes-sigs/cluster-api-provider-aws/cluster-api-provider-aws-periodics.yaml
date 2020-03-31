@@ -1,5 +1,5 @@
 periodics:
-- name: periodic-cluster-api-provider-aws-e2e-master
+- name: periodic-cluster-api-provider-aws-e2e-v1alpha3
   decorate: true
   decoration_config:
     timeout: 5h
@@ -34,10 +34,10 @@ periodics:
           memory: "4Gi"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
-    testgrid-tab-name: periodic-e2e-master
+    testgrid-tab-name: periodic-e2e-v1alpha3
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
     testgrid-num-failures-to-alert: "2"
-- name: periodic-cluster-api-provider-aws-e2e-release-0-4
+- name: periodic-cluster-api-provider-aws-e2e-v1alpha2
   decorate: true
   decoration_config:
     timeout: 5h
@@ -72,10 +72,10 @@ periodics:
             memory: "4Gi"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
-    testgrid-tab-name: periodic-e2e-release-0-4
+    testgrid-tab-name: periodic-e2e-v1alpha2
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
     testgrid-num-failures-to-alert: "2"
-- name: periodic-cluster-api-provider-aws-e2e-conformance-master
+- name: periodic-cluster-api-provider-aws-e2e-conformance-v1alpha3
   decorate: true
   decoration_config:
     timeout: 3h
@@ -110,10 +110,10 @@ periodics:
             memory: "4Gi"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
-    testgrid-tab-name: periodic-e2e-conformance-master
+    testgrid-tab-name: periodic-e2e-conformance-v1alpha3
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
     testgrid-num-failures-to-alert: "2"
-- name: periodic-cluster-api-provider-aws-e2e-conformance-release-0-4
+- name: periodic-cluster-api-provider-aws-e2e-conformance-v1alpha2
   decorate: true
   decoration_config:
     timeout: 3h
@@ -148,118 +148,10 @@ periodics:
             memory: "4Gi"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
-    testgrid-tab-name: periodic-e2e-conformance-release-0-4
+    testgrid-tab-name: periodic-e2e-conformance-v1alpha2
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
     testgrid-num-failures-to-alert: "2"
-- name: ci-cluster-api-provider-aws-make-conformance-master
-  interval: 3h
-  max_concurrency: 1
-  labels:
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
-  decorate: true
-  extra_refs:
-  - org: kubernetes-sigs
-    repo: cluster-api-provider-aws
-    base_ref: master
-    path_alias: "sigs.k8s.io/cluster-api-provider-aws"
-  - org: kubernetes-sigs
-    repo: image-builder
-    base_ref: master
-    path_alias: "sigs.k8s.io/image-builder"
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-  spec:
-    containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200331-ccdcc25-experimental
-        env:
-          - name: CAPI_BRANCH
-            value: "master"
-          - name: BOSKOS_HOST
-            value: "boskos.test-pods.svc.cluster.local"
-          - name: AWS_REGION
-            value: "us-west-2"
-        command:
-          - "runner.sh"
-          - "./scripts/ci-conformance.sh"
-        # we need privileged mode in order to do docker in docker
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            # these are both a bit below peak usage during build
-            # this is mostly for building kubernetes
-            memory: "9000Mi"
-            # during the tests more like 3-20m is used
-            cpu: 2000m
-  annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
-    testgrid-tab-name: capa-conformance-master
-    testgrid-num-columns-recent: '20'
-    testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
-- name: ci-cluster-api-provider-aws-make-conformance-stable
-  interval: 3h
-  max_concurrency: 1
-  labels:
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
-  decorate: true
-  extra_refs:
-  - org: kubernetes-sigs
-    repo: cluster-api-provider-aws
-    base_ref: release-0.4
-    path_alias: "sigs.k8s.io/cluster-api-provider-aws"
-  - org: kubernetes-sigs
-    repo: image-builder
-    base_ref: master
-    path_alias: "sigs.k8s.io/image-builder"
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-  spec:
-    containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200331-ccdcc25-experimental
-        env:
-          - name: CI_VERSION
-            value: "v1.16.3"
-          - name: CAPI_BRANCH
-            value: "stable"
-          - name: BOSKOS_HOST
-            value: "boskos.test-pods.svc.cluster.local"
-          - name: AWS_REGION
-            value: "us-west-2"
-        command:
-          - "runner.sh"
-          - "./scripts/ci-conformance.sh"
-        # we need privileged mode in order to do docker in docker
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            # these are both a bit below peak usage during build
-            # this is mostly for building kubernetes
-            memory: "9000Mi"
-            # during the tests more like 3-20m is used
-            cpu: 2000m
-  annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
-    testgrid-tab-name: capa-conformance-stable
-    testgrid-num-columns-recent: '20'
-    testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
-- name: ci-cluster-api-provider-aws-make-conformance-stable-k8s-ci-artifacts
+- name: ci-cluster-api-provider-aws-make-conformance-v1alpha2-k8s-ci-artifacts
   max_concurrency: 1
   labels:
     preset-dind-enabled: "true"
@@ -288,7 +180,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200331-ccdcc25-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200331-ccdcc25-master
         env:
           - name: CAPI_BRANCH
             value: "stable"
@@ -312,76 +204,60 @@ periodics:
             cpu: 2000m
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws, sig-release-master-informing
-    testgrid-tab-name: capa-conformance-stable-k8s-master
+    testgrid-tab-name: capa-conformance-v1alpha2-k8s-master
     testgrid-num-columns-recent: '20'
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
-postsubmits:
-  kubernetes-sigs/cluster-api-provider-aws:
-  - name: ci-cluster-api-provider-aws-e2e
-    path_alias: "sigs.k8s.io/cluster-api-provider-aws"
-    decorate: true
-    decoration_config:
-      timeout: 5h
-    max_concurrency: 1
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-      preset-service-account: "true"
-      preset-aws-ssh: "true"
-      preset-aws-credential: "true"
-    spec:
-      containers:
+- name: ci-cluster-api-provider-aws-make-conformance-v1alpha3-k8s-ci-artifacts
+  max_concurrency: 1
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-bazel-scratch-dir: "true"
+    preset-bazel-remote-cache-enabled: "true"
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+  decorate: true
+  decoration_config:
+    timeout: 3h
+  interval: 4h
+  extra_refs:
+    - org: kubernetes-sigs
+      repo: cluster-api-provider-aws
+      base_ref: master
+      path_alias: "sigs.k8s.io/cluster-api-provider-aws"
+    - org: kubernetes-sigs
+      repo: image-builder
+      base_ref: master
+      path_alias: "sigs.k8s.io/image-builder"
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+  spec:
+    containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200331-ccdcc25-master
-        command:
-        - "runner.sh"
-        - "./scripts/ci-e2e.sh"
         env:
-        - name: BOSKOS_HOST
-          value: "boskos.test-pods.svc.cluster.local"
-        - name: AWS_REGION
-          value: "us-west-2"
+          - name: BOSKOS_HOST
+            value: "boskos.test-pods.svc.cluster.local"
+          - name: AWS_REGION
+            value: "us-west-2"
+        command:
+          - "runner.sh"
+          - "./scripts/ci-conformance.sh"
+          - "--use-ci-artifacts"
+        # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
         resources:
           requests:
-            cpu: 1
-            memory: "4Gi"
-    annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
-      testgrid-tab-name: ci-e2e
-      testgrid-num-columns-recent: '20'
-      testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
-  - name: ci-cluster-api-provider-aws-e2e-conformance
-    path_alias: "sigs.k8s.io/cluster-api-provider-aws"
-    decorate: true
-    decoration_config:
-      timeout: 3h
-    max_concurrency: 1
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-      preset-service-account: "true"
-      preset-aws-ssh: "true"
-      preset-aws-credential: "true"
-    spec:
-      containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200331-ccdcc25-master
-          command:
-            - "runner.sh"
-            - "./scripts/ci-e2e-conformance.sh"
-          env:
-            - name: BOSKOS_HOST
-              value: "boskos.test-pods.svc.cluster.local"
-            - name: AWS_REGION
-              value: "us-west-2"
-          securityContext:
-            privileged: true
-          resources:
-            requests:
-              cpu: 1
-              memory: "4Gi"
-    annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
-      testgrid-tab-name: ci-e2e-conformance
-      testgrid-num-columns-recent: '20'
-      testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
+            # these are both a bit below peak usage during build
+            # this is mostly for building kubernetes
+            memory: "9000Mi"
+            # during the tests more like 3-20m is used
+            cpu: 2000m
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
+    testgrid-tab-name: capa-conformance-v1alpha3-k8s-master
+    testgrid-num-columns-recent: '20'
+    testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
