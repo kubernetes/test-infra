@@ -38,9 +38,10 @@ import (
 )
 
 var (
-	titleMatch          = regexp.MustCompile(`(?i)^.*?Bug ([0-9]+):`)
-	refreshCommandMatch = regexp.MustCompile(`(?mi)^/bugzilla refresh\s*$`)
-	qaCommandMatch      = regexp.MustCompile(`(?mi)^/bugzilla assign-qa\s*$`)
+	titleMatch           = regexp.MustCompile(`(?i)^.*?Bug ([0-9]+):`)
+	refreshCommandMatch  = regexp.MustCompile(`(?mi)^/bugzilla refresh\s*$`)
+	qaAssignCommandMatch = regexp.MustCompile(`(?mi)^/bugzilla assign-qa\s*$`)
+	qaReviewCommandMatch = regexp.MustCompile(`(?mi)^/bugzilla cc-qa\s*$`)
 )
 
 const (
@@ -155,10 +156,17 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 	})
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/bugzilla assign-qa",
-		Description: "Assign PR to QA contact specified in Bugzilla",
+		Description: "(DEPRECATED) Assign PR to QA contact specified in Bugzilla",
 		Featured:    false,
 		WhoCanUse:   "Anyone",
 		Examples:    []string{"/bugzilla assign-qa"},
+	})
+	pluginHelp.AddCommand(pluginhelp.Command{
+		Usage:       "/bugzilla cc-qa",
+		Description: "Request PR review from QA contact specified in Bugzilla",
+		Featured:    false,
+		WhoCanUse:   "Anyone",
+		Examples:    []string{"/bugzilla cc-qa"},
 	})
 	return pluginHelp, nil
 }
@@ -280,12 +288,14 @@ func digestComment(gc githubClient, log *logrus.Entry, gce github.GenericComment
 		return nil, nil
 	}
 	// Make sure they are requesting a valid command
-	var assign bool
+	var assign, cc bool
 	switch {
 	case refreshCommandMatch.MatchString(gce.Body):
-		assign = false
-	case qaCommandMatch.MatchString(gce.Body):
+		// continue without updating bool values
+	case qaAssignCommandMatch.MatchString(gce.Body):
 		assign = true
+	case qaReviewCommandMatch.MatchString(gce.Body):
+		cc = true
 	default:
 		return nil, nil
 	}
@@ -307,7 +317,7 @@ func digestComment(gc githubClient, log *logrus.Entry, gce github.GenericComment
 		return nil, err
 	}
 
-	e := &event{org: org, repo: repo, baseRef: pr.Base.Ref, number: number, merged: pr.Merged, state: pr.State, body: gce.Body, htmlUrl: gce.HTMLURL, login: gce.User.Login, assign: assign}
+	e := &event{org: org, repo: repo, baseRef: pr.Base.Ref, number: number, merged: pr.Merged, state: pr.State, body: gce.Body, htmlUrl: gce.HTMLURL, login: gce.User.Login, assign: assign, cc: cc}
 	mat := titleMatch.FindStringSubmatch(pr.Title)
 	if mat == nil {
 		e.missing = true
@@ -330,7 +340,7 @@ type event struct {
 	missing, merged      bool
 	state                string
 	body, htmlUrl, login string
-	assign               bool
+	assign, cc           bool
 }
 
 func (e *event) comment(gc githubClient) func(body string) error {
@@ -376,11 +386,11 @@ type emailToLoginQuery struct {
 func processQuery(query *emailToLoginQuery, email string, log *logrus.Entry) string {
 	switch len(query.Search.Edges) {
 	case 0:
-		return fmt.Sprintf("No GitHub users were found matching the public email listed for the QA contact in Bugzilla (%s), skipping assignment.", email)
+		return fmt.Sprintf("No GitHub users were found matching the public email listed for the QA contact in Bugzilla (%s), skipping review request.", email)
 	case 1:
-		return fmt.Sprintf("Assigning the QA contact for review:\n/cc @%s", query.Search.Edges[0].Node.User.Login)
+		return fmt.Sprintf("Requesting review from QA contact:\n/cc @%s", query.Search.Edges[0].Node.User.Login)
 	default:
-		response := fmt.Sprintf("Multiple GitHub users were found matching the public email listed for the QA contact in Bugzilla (%s), skipping assignment. List of users with matching email:", email)
+		response := fmt.Sprintf("Multiple GitHub users were found matching the public email listed for the QA contact in Bugzilla (%s), skipping review request. List of users with matching email:", email)
 		for _, edge := range query.Search.Edges {
 			response += fmt.Sprintf("\n\t- %s", edge.Node.User.Login)
 		}
@@ -458,7 +468,7 @@ To reference a bug, add 'Bug XXX:' to the title of this pull request and request
 			response += "</details>"
 
 			// if bug is valid and qa command was used, identify qa contact via email
-			if e.assign {
+			if e.assign || e.cc {
 				if bug.QAContactDetail == nil {
 					response += fmt.Sprintf(bugLink+" does not have a QA contact, skipping assignment", e.bugId, bc.Endpoint(), e.bugId)
 				} else if bug.QAContactDetail.Email == "" {
@@ -475,6 +485,9 @@ To reference a bug, add 'Bug XXX:' to the title of this pull request and request
 						return comment(formatError(fmt.Sprintf("querying GitHub for users with public email (%s)", email), bc.Endpoint(), e.bugId, err))
 					}
 					response += fmt.Sprint("\n\n", processQuery(query, email, log))
+					if e.assign {
+						response += ("\n\n**DEPRECATION NOTICE**: The command `assign-qa` has been deprecated. Please use the `cc-qa` command instead.")
+					}
 				}
 			}
 		} else {

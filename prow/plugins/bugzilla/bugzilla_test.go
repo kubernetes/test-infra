@@ -128,10 +128,16 @@ orgs:
 				Examples:    []string{"/bugzilla refresh"},
 			}, {
 				Usage:       "/bugzilla assign-qa",
-				Description: "Assign PR to QA contact specified in Bugzilla",
+				Description: "(DEPRECATED) Assign PR to QA contact specified in Bugzilla",
 				Featured:    false,
 				WhoCanUse:   "Anyone",
 				Examples:    []string{"/bugzilla assign-qa"},
+			}, {
+				Usage:       "/bugzilla cc-qa",
+				Description: "Request PR review from QA contact specified in Bugzilla",
+				Featured:    false,
+				WhoCanUse:   "Anyone",
+				Examples:    []string{"/bugzilla cc-qa"},
 			},
 		},
 	}
@@ -439,7 +445,7 @@ func TestDigestComment(t *testing.T) {
 			},
 			title: "cole, please review this typo fix",
 			expected: &event{
-				org: "org", repo: "repo", baseRef: "branch", number: 1, missing: true, body: "/bugzilla refresh", htmlUrl: "www.com", login: "user", assign: false,
+				org: "org", repo: "repo", baseRef: "branch", number: 1, missing: true, body: "/bugzilla refresh", htmlUrl: "www.com", login: "user", assign: false, cc: false,
 			},
 		},
 		{
@@ -489,7 +495,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			},
 			title: "Bug 123: oopsie doopsie",
 			expected: &event{
-				org: "org", repo: "repo", baseRef: "branch", number: 1, bugId: 123, body: "/bugzilla refresh", htmlUrl: "www.com", login: "user", assign: false,
+				org: "org", repo: "repo", baseRef: "branch", number: 1, bugId: 123, body: "/bugzilla refresh", htmlUrl: "www.com", login: "user", assign: false, cc: false,
 			},
 		},
 		{
@@ -513,7 +519,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			title:  "Bug 123: oopsie doopsie",
 			merged: true,
 			expected: &event{
-				org: "org", repo: "repo", baseRef: "branch", number: 1, bugId: 123, merged: true, body: "/bugzilla refresh", htmlUrl: "www.com", login: "user", assign: false,
+				org: "org", repo: "repo", baseRef: "branch", number: 1, bugId: 123, merged: true, body: "/bugzilla refresh", htmlUrl: "www.com", login: "user", assign: false, cc: false,
 			},
 		},
 		{
@@ -536,7 +542,30 @@ Instructions for interacting with me using PR comments are available [here](http
 			},
 			title: "Bug 123: oopsie doopsie",
 			expected: &event{
-				org: "org", repo: "repo", baseRef: "branch", number: 1, bugId: 123, body: "/bugzilla assign-qa", htmlUrl: "www.com", login: "user", assign: true,
+				org: "org", repo: "repo", baseRef: "branch", number: 1, bugId: 123, body: "/bugzilla assign-qa", htmlUrl: "www.com", login: "user", assign: true, cc: false,
+			},
+		},
+		{
+			name: "cc-qa comment event has cc bool set to true",
+			e: github.GenericCommentEvent{
+				Action: github.GenericCommentActionCreated,
+				IsPR:   true,
+				Body:   "/bugzilla cc-qa",
+				Repo: github.Repo{
+					Owner: github.User{
+						Login: "org",
+					},
+					Name: "repo",
+				},
+				Number: 1,
+				User: github.User{
+					Login: "user",
+				},
+				HTMLURL: "www.com",
+			},
+			title: "Bug 123: oopsie doopsie",
+			expected: &event{
+				org: "org", repo: "repo", baseRef: "branch", number: 1, bugId: 123, body: "/bugzilla cc-qa", htmlUrl: "www.com", login: "user", assign: false, cc: true,
 			},
 		},
 	}
@@ -1404,7 +1433,7 @@ func TestProcessQuery(t *testing.T) {
 		expected string
 	}{
 		{
-			name: "single login returns assign",
+			name: "single login returns cc",
 			query: emailToLoginQuery{
 				Search: querySearch{
 					Edges: []queryEdge{{
@@ -1417,7 +1446,7 @@ func TestProcessQuery(t *testing.T) {
 				},
 			},
 			email:    "qa_tester@example.com",
-			expected: "Assigning the QA contact for review:\n/cc @ValidLogin",
+			expected: "Requesting review from QA contact:\n/cc @ValidLogin",
 		}, {
 			name: "no login returns not found error",
 			query: emailToLoginQuery{
@@ -1426,7 +1455,7 @@ func TestProcessQuery(t *testing.T) {
 				},
 			},
 			email:    "qa_tester@example.com",
-			expected: "No GitHub users were found matching the public email listed for the QA contact in Bugzilla (qa_tester@example.com), skipping assignment.",
+			expected: "No GitHub users were found matching the public email listed for the QA contact in Bugzilla (qa_tester@example.com), skipping review request.",
 		}, {
 			name: "multiple logins returns multiple results error",
 			query: emailToLoginQuery{
@@ -1447,7 +1476,7 @@ func TestProcessQuery(t *testing.T) {
 				},
 			},
 			email:    "qa_tester@example.com",
-			expected: "Multiple GitHub users were found matching the public email listed for the QA contact in Bugzilla (qa_tester@example.com), skipping assignment. List of users with matching email:\n\t- Login1\n\t- Login2",
+			expected: "Multiple GitHub users were found matching the public email listed for the QA contact in Bugzilla (qa_tester@example.com), skipping review request. List of users with matching email:\n\t- Login1\n\t- Login2",
 		},
 	}
 	for _, testCase := range testCases {
