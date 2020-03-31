@@ -43,6 +43,7 @@ var cherryPickRe = regexp.MustCompile(`(?m)^(?:/cherrypick|/cherry-pick)\s+(.+)$
 var releaseNoteRe = regexp.MustCompile(`(?s)(?:Release note\*\*:\s*(?:<!--[^<>]*-->\s*)?` + "```(?:release-note)?|```release-note)(.+?)```")
 
 type githubClient interface {
+	AddLabel(org, repo string, number int, label string) error
 	AssignIssue(org, repo string, number int, logins []string) error
 	CreateComment(org, repo string, number int, comment string) error
 	CreateFork(org, repo string) error
@@ -86,6 +87,8 @@ type Server struct {
 	ghc  githubClient
 	log  *logrus.Entry
 
+	// Labels to apply to the cherrypicked PR.
+	labels []string
 	// Use prow to assign users to cherrypicked PRs.
 	prowAssignments bool
 	// Allow anybody to do cherrypicks.
@@ -455,6 +458,11 @@ func (s *Server) handle(l *logrus.Entry, requestor string, comment *github.Issue
 	s.log.WithFields(l.Data).Info(resp)
 	if err := s.createComment(org, repo, num, comment, resp); err != nil {
 		return err
+	}
+	for _, label := range s.labels {
+		if err := s.ghc.AddLabel(org, repo, createdNum, label); err != nil {
+			return err
+		}
 	}
 	if !s.prowAssignments {
 		if err := s.ghc.AssignIssue(org, repo, createdNum, []string{requestor}); err != nil {
