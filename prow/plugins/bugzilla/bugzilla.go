@@ -378,7 +378,7 @@ func processQuery(query *emailToLoginQuery, email string, log *logrus.Entry) str
 	case 0:
 		return fmt.Sprintf("No GitHub users were found matching the public email listed for the QA contact in Bugzilla (%s), skipping assignment.", email)
 	case 1:
-		return fmt.Sprintf("Assigning the QA contact for review:\n/assign @%s", query.Search.Edges[0].Node.User.Login)
+		return fmt.Sprintf("Assigning the QA contact for review:\n/cc @%s", query.Search.Edges[0].Node.User.Login)
 	default:
 		response := fmt.Sprintf("Multiple GitHub users were found matching the public email listed for the QA contact in Bugzilla (%s), skipping assignment. List of users with matching email:", email)
 		for _, edge := range query.Search.Edges {
