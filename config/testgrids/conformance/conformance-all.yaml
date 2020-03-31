@@ -633,6 +633,8 @@ test_groups:
 - name: pull-perf-tests-clusterloader2-kubemark
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-perf-tests-clusterloader2-kubemark
   days_of_results: 30
+
+# google-gce-compute-image-tools
 - name: ci-daisy-e2e
   gcs_prefix: compute-image-tools-test/logs/ci-daisy-e2e
 - name: ci-daisy-e2e-daily
@@ -653,6 +655,9 @@ test_groups:
   gcs_prefix: compute-image-tools-test/logs/osconfig-staging
 - name: osconfig-stable
   gcs_prefix: compute-image-tools-test/logs/osconfig-stable
+- name: osconfig-head-images
+  gcs_prefix: compute-image-tools-test/logs/osconfig-head-images
+
 # RHEL node e2e tests on AWS (contact: aos-pod@redhat.com)
 - name: ci-kubernetes-conformance-node-e2e-containerized-rhel
   gcs_prefix: kubernetes-github-redhat/logs/ci-kubernetes-conformance-node-e2e-containerized-rhel
