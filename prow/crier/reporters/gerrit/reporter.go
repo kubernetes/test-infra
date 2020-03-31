@@ -217,16 +217,15 @@ func (c *Client) Report(pj *v1.ProwJob) ([]*v1.ProwJob, error) {
 	if err := c.gc.SetReview(gerritInstance, gerritID, gerritRevision, message, reviewLabels); err != nil {
 		logger.WithError(err).Errorf("fail to set review with label %q on change ID %s", reportLabel, gerritID)
 
-		if reportLabel != "" {
-			// Retry without voting on a label
-			message := fmt.Sprintf("[NOTICE]: Prow Bot cannot access %s label!\n%s", reportLabel, message)
-			if err := c.gc.SetReview(gerritInstance, gerritID, gerritRevision, message, nil); err != nil {
-				logger.WithError(err).Errorf("fail to set plain review on change ID %s", gerritID)
-				return nil, err
-			}
+		if reportLabel == "" {
+			return nil, err
 		}
-
-		return nil, err
+		// Retry without voting on a label
+		message := fmt.Sprintf("[NOTICE]: Prow Bot cannot access %s label!\n%s", reportLabel, message)
+		if err := c.gc.SetReview(gerritInstance, gerritID, gerritRevision, message, nil); err != nil {
+			logger.WithError(err).Errorf("fail to set plain review on change ID %s", gerritID)
+			return nil, err
+		}
 	}
 
 	logger.Infof("Review Complete, reported jobs: %v", toReportJobs)
