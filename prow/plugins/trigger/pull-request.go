@@ -23,6 +23,7 @@ import (
 	"net/url"
 	"strconv"
 
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	klabels "k8s.io/apimachinery/pkg/labels"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
@@ -180,7 +181,7 @@ func abortAllJobs(c Client, pr *github.PullRequest) error {
 		// and must not overwrite changes made to it in the interim by the responsible agent.
 		// The accepted trade-off for now is that this leads to failure if unrelated fields where changed
 		// by another different actor.
-		if _, err := c.ProwJobClient.Update(&job); err != nil {
+		if _, err := c.ProwJobClient.Update(&job); err != nil && !apierrors.IsConflict(err) {
 			errs = append(errs, fmt.Errorf("failed to abort job %s: %w", job.Name, err))
 		}
 	}
