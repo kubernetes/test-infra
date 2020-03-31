@@ -6,6 +6,7 @@ presubmits:
       testgrid-tab-name: yamllint
     always_run: false
     skip_report: true
+    decorate: true
     spec:
       containers:
       - image: quay.io/kubermatic/yamllint:0.1
