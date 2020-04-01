@@ -404,6 +404,11 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200331-ccdcc25-master
+      env:
+      - name: CL2_WMI_EXPORTER_URL
+        value: "https://github.com/YangLu1031/wmi_exporter/releases/download/v0.10.3-alpha/wmi_exporter.exe"
+      - name: CL2_WMI_EXPORTER_ENABLED_COLLECTORS
+        value: "process,cs"
       args:
       - --check-leaked-resources
       - --cluster=
