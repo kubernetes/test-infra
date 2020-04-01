@@ -17,7 +17,7 @@ postsubmits:
       spec:
         serviceAccountName: deployer # TODO(fejta): use pusher
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200114-6d2c483
+          - image: gcr.io/k8s-testimages/image-builder:v20200213-0032cdb
             command:
               - /run.sh
             args:
