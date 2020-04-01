@@ -26,7 +26,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 
 	"k8s.io/test-infra/pkg/flagutil"
-	"k8s.io/test-infra/pkg/io"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
@@ -52,21 +51,10 @@ type options struct {
 	dryRun                  bool
 	kubernetes              prowflagutil.KubernetesOptions
 	github                  prowflagutil.GitHubOptions
+	storage                 prowflagutil.StorageClientOptions
 
 	tokenBurst    int
 	tokensPerHour int
-
-	// gcsCredentialsFile string is used for reading/writing to GCS block storage.
-	// If you want to write to local paths, this parameter is optional.
-	// If set, this file is used to read/write to gs:// paths
-	// If not, credential auto-discovery is used
-	gcsCredentialsFile string
-	// 	s3CredentialsFile string is used for reading/writing to s3 block storage.
-	// If you want to write to local paths, this parameter is optional.
-	// If set, this file is used to read/write to s3:// paths
-	// If not, go cloud credential auto-discovery is used
-	// For more details see the pkg/io/providers pkg.
-	s3CredentialsFile string
 	// statusURI where Status-reconciler stores last known state, i.e. configuration.
 	// Can be /local/path, gs://path/to/object or s3://path/to/object.
 	// GCS writes will use the bucket's default acl for new objects. Ensure both that
@@ -75,15 +63,12 @@ type options struct {
 	statusURI string
 }
 
-func gatherOptions() options {
+func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	o := options{}
-	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 
 	fs.StringVar(&o.configPath, "config-path", "/etc/config/config.yaml", "Path to config.yaml.")
 	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
 	fs.StringVar(&o.pluginConfig, "plugin-config", "/etc/plugins/plugins.yaml", "Path to plugin config file.")
-	fs.StringVar(&o.gcsCredentialsFile, "gcs-credentials-file", "", "File where GCS credentials are stored")
-	fs.StringVar(&o.s3CredentialsFile, "s3-credentials-file", "", "File where s3 credentials are stored. For the exact format see https://github.com/kubernetes/test-infra/blob/master/pkg/io/providers/providers.go")
 	fs.StringVar(&o.statusURI, "status-path", "", "The /local/path, gs://path/to/object or s3://path/to/object to store status controller state. GCS writes will use the default object ACL for the bucket.")
 
 	fs.BoolVar(&o.continueOnError, "continue-on-error", false, "Indicates that the migration should continue if context migration fails for an individual PR.")
@@ -91,16 +76,15 @@ func gatherOptions() options {
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Whether or not to make mutating API calls to GitHub.")
 	fs.IntVar(&o.tokensPerHour, "tokens", defaultTokens, "Throttle hourly token consumption (0 to disable)")
 	fs.IntVar(&o.tokenBurst, "token-burst", defaultBurst, "Allow consuming a subset of hourly tokens in a short burst")
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github} {
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.storage} {
 		group.AddFlags(fs)
 	}
-
-	fs.Parse(os.Args[1:])
+	fs.Parse(args)
 	return o
 }
 
 func (o *options) Validate() error {
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github} {
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.storage} {
 		if err := group.Validate(o.dryRun); err != nil {
 			return err
 		}
@@ -112,7 +96,7 @@ func (o *options) Validate() error {
 func main() {
 	logrusutil.ComponentInit()
 
-	o := gatherOptions()
+	o := gatherOptions(flag.NewFlagSet(os.Args[0], flag.ExitOnError), os.Args[1:]...)
 	if err := o.Validate(); err != nil {
 		logrus.WithError(err).Fatal("Invalid options")
 	}
@@ -153,16 +137,9 @@ func main() {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
-	opener, err := io.NewOpener(ctx, o.gcsCredentialsFile, o.s3CredentialsFile)
+	opener, err := o.storage.StorageClient(ctx)
 	if err != nil {
-		entry := logrus.WithError(err)
-		if p := o.gcsCredentialsFile; p != "" {
-			entry = entry.WithField("gcs-credentials-file", p)
-		}
-		if p := o.s3CredentialsFile; p != "" {
-			entry = entry.WithField("s3-credentials-file", p)
-		}
-		entry.Fatal("Cannot create opener")
+		logrus.WithError(err).Fatal("Cannot create opener")
 	}
 
 	c := statusreconciler.NewController(o.continueOnError, sets.NewString(o.addedPresubmitBlacklist.Strings()...), opener, o.configPath, o.jobConfigPath, o.statusURI, prowJobClient, githubClient, pluginAgent)

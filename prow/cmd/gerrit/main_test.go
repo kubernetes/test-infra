@@ -78,6 +78,24 @@ func TestFlags(t *testing.T) {
 			del:      sets.NewString("--dry-run"),
 			expected: func(o *options) {},
 		},
+		{
+			name: "gcs credentials are set",
+			args: map[string]string{
+				"--gcs-credentials-file": "/creds",
+			},
+			expected: func(o *options) {
+				o.storage.GCSCredentialsFile = "/creds"
+			},
+		},
+		{
+			name: "s3 credentials are set",
+			args: map[string]string{
+				"--s3-credentials-file": "/creds",
+			},
+			expected: func(o *options) {
+				o.storage.S3CredentialsFile = "/creds"
+			},
+		},
 	}
 
 	for _, tc := range cases {

@@ -9,6 +9,7 @@ go_library(
     importpath = "k8s.io/test-infra/prow/cmd/gerrit",
     visibility = ["//visibility:private"],
     deps = [
+        "//pkg/flagutil:go_default_library",
         "//pkg/io:go_default_library",
         "//prow/config:go_default_library",
         "//prow/flagutil:go_default_library",
