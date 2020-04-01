@@ -354,6 +354,7 @@ var noPresubmitsInTestgridPrefixes = []string{
 	"kubernetes-sigs/gcp-filestore-csi-driver",
 	"kubernetes-sigs/kind",
 	"kubernetes-sigs/kubebuilder-declarative-pattern",
+	"kubernetes-sigs/scheduler-plugins",
 	"kubernetes-sigs/service-catalog",
 	"kubernetes-sigs/sig-storage-local-static-provisioner",
 	"kubernetes-sigs/slack-infra",
