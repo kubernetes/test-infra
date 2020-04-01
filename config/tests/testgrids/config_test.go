@@ -364,7 +364,6 @@ var noPresubmitsInTestgridPrefixes = []string{
 	"kubernetes/dns",
 	"kubernetes/enhancements",
 	"kubernetes/ingress-gce",
-	"kubernetes/k8s.io",
 	"kubernetes/kubeadm",
 	"kubernetes/minikube",
 	// This is the one entry that should be here

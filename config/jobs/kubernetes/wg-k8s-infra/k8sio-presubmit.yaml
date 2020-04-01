@@ -1,6 +1,9 @@
 presubmits:
   kubernetes/k8s.io:
   - name: pull-k8sio-groups-test
+    annotations:
+      testgrid-create-test-group: 'true'
+      testgrid-dashboards: wg-k8s-infra-k8sio
     decorate: true
     path_alias: k8s.io/k8s.io
     run_if_changed: "^groups/"
