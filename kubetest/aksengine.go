@@ -416,7 +416,36 @@ func newAKSEngine() (*aksEngineDeployer, error) {
 		return nil, err
 	}
 
+	if err := c.azLogin(); err != nil {
+		return nil, err
+	}
+
 	return &c, nil
+}
+
+func (c *aksEngineDeployer) azLogin() error {
+	// Check if azure-cli has been installed
+	if err := control.FinishRunning(exec.Command("az")); err != nil {
+		if err := control.FinishRunning(exec.Command("pip", "install", "azure-cli==2.2")); err != nil {
+			return err
+		}
+	}
+
+	cmd := exec.Command("az", "login", "--service-principal",
+		fmt.Sprintf("-u=%s", c.credentials.ClientID),
+		fmt.Sprintf("-p=%s", c.credentials.ClientSecret),
+		fmt.Sprintf("-t=%s", c.credentials.TenantID))
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("failed az login with error: %v", err)
+	}
+
+	cmd = exec.Command("az", "account", "set", "-s", c.credentials.SubscriptionID)
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("failed to az account set: %v", err)
+	}
+
+	log.Println("az login success.")
+	return nil
 }
 
 func getAKSDeploymentMethod(k8sRelease string) aksDeploymentMethod {
