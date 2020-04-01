@@ -562,6 +562,9 @@ dashboards:
   - name: pull-perf-tests-clusterloader2
     test_group_name: pull-perf-tests-clusterloader2
     base_options: width=10
+  - name: pull-perf-tests-clusterloader2-nodekiller-experimental
+    test_group_name: pull-perf-tests-clusterloader2-nodekiller-experimental
+    base_options: width=10
   - name: pull-perf-tests-clusterloader2-kubemark
     test_group_name: pull-perf-tests-clusterloader2-kubemark
     base_options: width=10
