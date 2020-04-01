@@ -783,7 +783,7 @@ postsubmits:
         secret:
           secretName: k8s-artifacts-prod-service-account
     annotations:
-      testgrid-dashboards: sig-release-releng-blocking
+      testgrid-dashboards: sig-release-releng-blocking, wg-k8s-infra-k8sio
       testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers@kubernetes.io
       testgrid-num-failures-to-alert: '1'
   kubernetes/community:
@@ -1174,6 +1174,6 @@ periodics:
       - -dry-run=false
       - -use-service-account # @listx: deprecated; remove after verifying Workload Identity makes this obsolete
   annotations:
-    testgrid-dashboards: sig-release-releng-blocking
+    testgrid-dashboards: sig-release-releng-blocking, wg-k8s-infra-k8sio
     testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers@kubernetes.io
     testgrid-num-failures-to-alert: '1'

@@ -2,6 +2,9 @@ presubmits:
   # Check that changes to promoter manifests are valid.
   kubernetes/k8s.io:
   - name: pull-k8sio-cip
+    annotations:
+      testgrid-create-test-group: 'true'
+      testgrid-dashboards: wg-k8s-infra-k8sio
     decorate: true
     skip_report: false
     run_if_changed: 'k8s.gcr.io/((images/.*/images\.yaml)|(manifests/.*/promoter-manifest\.yaml))'
@@ -20,6 +23,9 @@ presubmits:
         - -thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
   # Check that changes to backup scripts are valid.
   - name: pull-k8sio-backup
+    annotations:
+      testgrid-create-test-group: 'true'
+      testgrid-dashboards: wg-k8s-infra-k8sio
     decorate: true
     run_if_changed: '^infra/gcp/backup_tools/'
     max_concurrency: 1
