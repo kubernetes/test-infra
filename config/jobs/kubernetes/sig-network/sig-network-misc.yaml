@@ -536,12 +536,12 @@ periodics:
       - --timeout=300m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200401-d2349a1-master
 - interval: 12h
-  name: ci-kubernetes-e2e-gce-sctp
+  name: ci-kubernetes-e2e-gci-gce-basic-sctp
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   spec:
-    containers:         
+    containers:
     - args:
       - --timeout=320
       - --bare
@@ -551,6 +551,7 @@ periodics:
       - --env=KUBE_FEATURE_GATES=SCTPSupport=true
       - --env=ALLOW_PRIVILEGED=true
       - --env=NET_PLUGIN=kubenet
+      - --extract=ci/latest
       - --gcp-master-image=gci
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
@@ -558,9 +559,3 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:SCTP\]
       - --timeout=300m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200401-d2349a1-master
-  annotations:
-    testgrid-dashboards: sig-network-sctp
-    testgrid-tab-name: e2e-basic-sctp
-    testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
-    testgrid-alert-stale-results-hours: '24'
-    description: "Basic e2e tests for SCTP support"
