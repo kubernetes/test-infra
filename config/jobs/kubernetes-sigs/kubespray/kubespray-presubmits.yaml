@@ -4,12 +4,12 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-kubespray
       testgrid-tab-name: yamllint
-    always_run: false
-    skip_report: true
+    always_run: true
+    skip_report: false
     decorate: true
     spec:
       containers:
-      - image: quay.io/kubermatic/yamllint:0.1
+      - image: quay.io/kubespray/kubespray:v2.12.5
         args:
         - yamllint
         - "--strict"
