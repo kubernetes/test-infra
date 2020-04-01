@@ -39,7 +39,6 @@ import (
 	"k8s.io/test-infra/boskos/client"
 	"k8s.io/test-infra/kubetest/conformance"
 	"k8s.io/test-infra/kubetest/kind"
-	"k8s.io/test-infra/kubetest/kubeadmdind"
 	"k8s.io/test-infra/kubetest/process"
 	"k8s.io/test-infra/kubetest/util"
 )
@@ -245,8 +244,6 @@ func getDeployer(o *options) (deployer, error) {
 		return kind.NewDeployer(control, string(o.build))
 	case "kops":
 		return newKops(o.provider, o.gcpProject, o.cluster)
-	case "kubeadm-dind":
-		return kubeadmdind.NewDeployer(control)
 	case "kubernetes-anywhere":
 		return newKubernetesAnywhere(o.gcpProject, o.gcpZone)
 	case "node":
