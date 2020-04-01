@@ -1,3 +1,9 @@
+dashboard_groups:
+- name: sig-instrumentation
+  dashboard_names:
+  - sig-instrumentation-tests
+  - sig-instrumentation-image-pushes
+
 dashboards:
 - name: sig-instrumentation-tests
   dashboard_tab:
