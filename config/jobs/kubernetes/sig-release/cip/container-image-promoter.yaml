@@ -32,6 +32,7 @@ presubmits:
     branches:
     - ^master$
     spec:
+      serviceAccountName: k8s-infra-gcr-promoter-test
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200401-d2349a1-1.17
         command:
@@ -42,16 +43,6 @@ presubmits:
         # script needs it to be defined).
         - name: GOPATH
           value: /go
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /creds/service-account.json
-        volumeMounts:
-        - name: creds
-          mountPath: /creds
-          readOnly: true
-      volumes:
-      - name: creds
-        secret:
-          secretName: k8s-gcr-backup-test-prod-bak-service-account
   kubernetes-sigs/k8s-container-image-promoter:
   # Run promoter e2e tests.
   - name: pull-cip-e2e
