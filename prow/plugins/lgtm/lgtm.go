@@ -44,9 +44,11 @@ var (
 	configInfoReviewActsAsLgtm = `Reviews of "approve" or "request changes" act as adding or removing LGTM.`
 	configInfoStoreTreeHash    = `Squashing commits does not remove LGTM.`
 	// LGTMLabel is the name of the lgtm label applied by the lgtm plugin
-	LGTMLabel           = labels.LGTM
-	lgtmRe              = regexp.MustCompile(`(?mi)^/lgtm(?: no-issue)?\s*$`)
-	lgtmCancelRe        = regexp.MustCompile(`(?mi)^/lgtm cancel\s*$`)
+	LGTMLabel = labels.LGTM
+	// LGTMRe is the regex that matches lgtm comments
+	LGTMRe = regexp.MustCompile(`(?mi)^/lgtm(?: no-issue)?\s*$`)
+	// LGTMCancelRe is the regex that matches lgtm cancel comments
+	LGTMCancelRe        = regexp.MustCompile(`(?mi)^/lgtm cancel\s*$`)
 	removeLGTMLabelNoti = "New changes are detected. LGTM label has been removed."
 )
 
@@ -179,9 +181,9 @@ func handleGenericComment(gc githubClient, config *plugins.Configuration, owners
 	// If we create an "/lgtm" comment, add lgtm if necessary.
 	// If we create a "/lgtm cancel" comment, remove lgtm if necessary.
 	wantLGTM := false
-	if lgtmRe.MatchString(rc.body) {
+	if LGTMRe.MatchString(rc.body) {
 		wantLGTM = true
-	} else if lgtmCancelRe.MatchString(rc.body) {
+	} else if LGTMCancelRe.MatchString(rc.body) {
 		wantLGTM = false
 	} else {
 		return nil
@@ -209,7 +211,7 @@ func handlePullRequestReview(gc githubClient, config *plugins.Configuration, own
 
 	// If the review event body contains an '/lgtm' or '/lgtm cancel' comment,
 	// skip handling the review event
-	if lgtmRe.MatchString(rc.body) || lgtmCancelRe.MatchString(rc.body) {
+	if LGTMRe.MatchString(rc.body) || LGTMCancelRe.MatchString(rc.body) {
 		return nil
 	}
 
