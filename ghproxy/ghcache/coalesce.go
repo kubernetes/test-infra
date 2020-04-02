@@ -135,13 +135,12 @@ func (r *requestCoalescer) RoundTrip(req *http.Request) (*http.Response, error) 
 		// We want to log the body of the response to see if the tokens we're using are getting us
 		// changed data from the API. We need to leave the response as if we did not touch it, though,
 		// so downstream handlers can consume it as if we were not reading anything.
-		bodyBytes, err := ioutil.ReadAll(resp.Body)
+		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			logrus.WithError(err).Warn("Could not read collaborator request body!")
 			return resp, err
 		}
-		body := string(bodyBytes)
-		resp.Body = ioutil.NopCloser(bytes.NewReader(bodyBytes))
+		resp.Body = ioutil.NopCloser(bytes.NewReader(body))
 
 		logrus.WithFields(logrus.Fields{
 			"url":                   req.URL.String(),
