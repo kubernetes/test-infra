@@ -506,13 +506,6 @@ default:
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
-      description: Categorizes an issue or PR as relevant to sig-onprem.
-      name: sig/onprem
-      target: both
-      prowPlugin: label
-      addedBy: anyone
-      deleteAfter: 2019-12-17T00:00:00+00:00
-    - color: d2b48c
       description: Categorizes an issue or PR as relevant to sig-pm.
       name: sig/pm
       target: both
