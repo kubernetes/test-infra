@@ -304,6 +304,12 @@ default:
       target: both
       prowPlugin: label
       addedBy: anyone
+    - color: e11d21
+      description: Categorizes issue or PR as related to a regression from a prior release.
+      name: kind/regression
+      target: both
+      prowPlugin: label
+      addedBy: anyone
     - color: 15dd18
       description: Indicates that a PR is ready to be merged.
       name: lgtm
