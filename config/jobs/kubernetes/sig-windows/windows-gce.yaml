@@ -423,8 +423,8 @@ periodics:
       - --test-cmd-args=--provider=gce
       - --test-cmd-args=--report-dir=/logs/artifacts
       - --test-cmd-args=--enable-prometheus-server=true
-      - --test-cmd-args=--testconfig=testing/node-throughput/config.yaml
-      - --test-cmd-args=--testoverrides=./testing/node-throughput/windows_override.yaml
+      - --test-cmd-args=--testconfig=testing/windows-tests/config.yaml
+      - --test-cmd-args=--testoverrides=./testing/windows-tests/windows_override.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=300m
 
