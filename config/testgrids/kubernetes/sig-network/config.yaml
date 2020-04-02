@@ -112,6 +112,12 @@ dashboards:
       test_group_name: ci-kubernetes-e2e-gce-lb-finalizer
       base_options: include-filter-by-regex=\[sig-network\]
       description: load balancer tests with finalizer protection for master branch
+    - name: gci-gce-basic-sctp
+      test_group_name: ci-kubernetes-e2e-gci-gce-basic-sctp
+      base_options: include-filter-by-regex=\[sig-network\]
+      description: network gci-gce SCTP support basic e2e tests for master branch
+      alert_options:
+        alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
 
 - name: sig-network-gke
   dashboard_tab:

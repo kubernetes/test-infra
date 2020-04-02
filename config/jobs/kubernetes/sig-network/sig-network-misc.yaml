@@ -535,3 +535,27 @@ periodics:
       - --test_args=--ginkgo.focus=\[sig-network\]\sServices --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:GCEAlphaFeature\] --minStartupPods=8
       - --timeout=300m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200401-d2349a1-master
+- interval: 12h
+  name: ci-kubernetes-e2e-gci-gce-basic-sctp
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=320
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --env=KUBE_FEATURE_GATES=SCTPSupport=true
+      - --env=ALLOW_PRIVILEGED=true
+      - --env=NET_PLUGIN=kubenet
+      - --extract=ci/latest
+      - --gcp-master-image=gci
+      - --gcp-node-image=gci
+      - --gcp-zone=us-west1-b
+      - --provider=gce
+      - --test_args=--ginkgo.focus=\[Feature:SCTP\]
+      - --timeout=300m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200401-d2349a1-master
