@@ -19,8 +19,10 @@ package ghcache
 import (
 	"bufio"
 	"bytes"
+	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
+	"strings"
 	"sync"
 
 	"github.com/sirupsen/logrus"
@@ -128,6 +130,27 @@ func (r *requestCoalescer) RoundTrip(req *http.Request) (*http.Response, error) 
 		cacheMode = cacheResponseMode(resp.Header)
 		return resp, nil
 	}()
+
+	if cacheMode != ModeCoalesced && cacheMode != ModeRevalidated && strings.Contains(req.URL.Path, "collaborator") && resp != nil {
+		// We want to log the body of the response to see if the tokens we're using are getting us
+		// changed data from the API. We need to leave the response as if we did not touch it, though,
+		// so downstream handlers can consume it as if we were not reading anything.
+		bodyBytes, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			logrus.WithError(err).Warn("Could not read collaborator request body!")
+			return resp, err
+		}
+		body := string(bodyBytes)
+		resp.Body = ioutil.NopCloser(bytes.NewReader(bodyBytes))
+
+		logrus.WithFields(logrus.Fields{
+			"url":                   req.URL.String(),
+			"body":                  body,
+			"user-agent":            req.Header.Get("User-Agent"),
+			"if-none-match":         req.Header.Get("if-none-match"),
+			"x-conditional-request": resp.Header.Get("X-Conditional-Request"),
+		}).Debug("Consumed a token in a collaborator call!")
+	}
 
 	ghmetrics.CollectCacheRequestMetrics(string(cacheMode), req.URL.Path, req.Header.Get("User-Agent"))
 	if resp != nil {
