@@ -48,6 +48,7 @@ prow_push(
             "pr-creator": "//robots/pr-creator:image",
             "issue-creator": "//robots/issue-creator:image",
             "transfigure": "//testgrid/cmd/transfigure:image",
+            "gcsweb": "//gcsweb/cmd/gcsweb:image",
         },
     ),
 )
