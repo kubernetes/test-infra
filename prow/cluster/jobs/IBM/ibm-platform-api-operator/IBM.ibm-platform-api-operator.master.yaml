@@ -85,26 +85,6 @@ postsubmits:
         name: ""
         securityContext:
           privileged: true
-  - name: coverage_ibm-platform-api-operator_postsubmit
-    branches:
-    - ^master$
-    decorate: true
-    path_alias: github.com/IBM/ibm-platform-api-operator
-    spec:
-      containers:
-      - command:
-        - make
-        - coverage
-        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
-        name: ""
-        env:
-        - name: CODECOV_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: ibm-platform-api-operator-codecov-token
-              key: codecov-token
-        securityContext:
-          privileged: true
   - name: build_ibm-platform-api-operator_postsubmit
     branches:
     - ^master$

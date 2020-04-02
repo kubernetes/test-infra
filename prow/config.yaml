@@ -29,7 +29,6 @@ tide:
     IBM/ibm-auditlogging-operator: squash
     IBM/ibm-catalog-ui-operator: squash
     IBM/ibm-cert-manager-operator: squash
-    IBM/ibm-cloudctl-operator: squash
     IBM/ibm-commonui-operator: squash
     IBM/ibm-elastic-stack-operator: squash
     IBM/ibm-grafana-operator: squash
@@ -73,7 +72,6 @@ tide:
     - IBM/ibm-auditlogging-operator
     - IBM/ibm-catalog-ui-operator
     - IBM/ibm-cert-manager-operator
-    - IBM/ibm-cloudctl-operator
     - IBM/ibm-commonui-operator
     - IBM/ibm-elastic-stack-operator
     - IBM/ibm-grafana-operator
