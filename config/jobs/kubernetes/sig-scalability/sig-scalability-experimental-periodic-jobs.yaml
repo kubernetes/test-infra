@@ -336,7 +336,7 @@ periodics:
 
   # Experimental job confirming that node killer works. Fork of ci-kubernetes-e2e-gci-gce-scalability.
   # To be removed after Chaos Monkey flags are enabled in ci-kubernetes-e2e-gci-gce-scalability
-- interval: 30m
+- interval: 6h
   name: ci-kubernetes-e2e-gci-gce-scalability-node-killer
   labels:
     preset-service-account: "true"
@@ -374,9 +374,7 @@ periodics:
           - --test-cmd-args=--prometheus-scrape-node-exporter
           - --test-cmd-args=--provider=gce
           - --test-cmd-args=--report-dir=/workspace/_artifacts
-          - --test-cmd-args=--testconfig=testing/density/config.yaml
           - --test-cmd-args=--testconfig=testing/load/config.yaml
-          - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
           - --test-cmd-args=--testoverrides=./testing/chaosmonkey/override.yaml
           - --test-cmd-args=--testoverrides=./testing/chaosmonkey/ignore_node_killer_container_restarts_100.yaml
           - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml

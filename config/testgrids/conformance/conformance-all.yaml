@@ -630,6 +630,9 @@ test_groups:
 - name: pull-perf-tests-clusterloader2
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-perf-tests-clusterloader2
   days_of_results: 30
+- name: pull-perf-tests-clusterloader2-nodekiller-experimental
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-perf-tests-clusterloader2-nodekiller-experimental
+  days_of_results: 30
 - name: pull-perf-tests-clusterloader2-kubemark
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-perf-tests-clusterloader2-kubemark
   days_of_results: 30
