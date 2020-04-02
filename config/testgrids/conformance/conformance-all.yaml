@@ -605,10 +605,16 @@ test_groups:
   gcs_prefix: k8s-conformance-arm/logs/ci-k8s-kind-arm64
 - name: arm64-conformance-containerd
   gcs_prefix: k8s-conformance-arm/logs/ci-k8s-conformance-arm64-containerd
+- name: arm64-conformance-flannel-network
+  gcs_prefix: k8s-conformance-arm/logs/ci-k8s-conformance-arm64-flannel
+- name: arm64-conformance-calico-network
+  gcs_prefix: k8s-conformance-arm/logs/ci-k8s-conformance-arm64-calico
 - name: arm64-integration
   gcs_prefix: k8s-conformance-arm/logs/ci-k8s-integration
 - name: arm64-conformance-stable
   gcs_prefix: k8s-conformance-arm/logs/ci-k8s-conformance-stable
+- name: arm64-nodeconformance
+  gcs_prefix: k8s-conformance-arm/logs/ci-k8s-nodeconformance-arm64
 - name: arm64-conformance-aws-cluster
   gcs_prefix: k8s-conformance-arm/logs/ci-k8s-conformance-arm64-aws-cluster
 - name: arm64-conformance-aws-cluster-1-13-2
