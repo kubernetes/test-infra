@@ -947,7 +947,7 @@ presubmits:
         - --root=/go/src
         - --job=$(JOB_NAME)
         - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
-        - --repo=k8s.io/perf-tests=release-1.16
+        - --repo=k8s.io/perf-tests=release-1.15
         - --repo=k8s.io/release
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-jenkins/pr-logs
