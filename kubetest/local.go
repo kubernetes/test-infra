@@ -215,7 +215,6 @@ func (n localCluster) TestSetup() error {
 func (n localCluster) Down() error {
 	processes := []string{
 		"cloud-controller-manager",
-		"hyperkube", // remove hyperkube when it is removed from local-up-cluster.sh
 		"kube-controller-manager",
 		"kube-proxy",
 		"kube-scheduler",
