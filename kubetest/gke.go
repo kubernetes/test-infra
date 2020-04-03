@@ -176,10 +176,8 @@ func newGKE(provider, project, zone, region, network, image, imageFamily, imageP
 	switch subnetMode := *gkeSubnetMode; subnetMode {
 	case "auto", "custom":
 		g.subnetMode = subnetMode
-	case "legacy":
-		return nil, fmt.Errorf("--gke-subnet-mode=legacy is illegal since legacy subnet creation mode is deprecated in gcloud, please use 'auto' or 'custom'")
 	default:
-		return nil, fmt.Errorf("--gke-subnet-mode must be set either to 'auto' or 'custom'")
+		return nil, fmt.Errorf("--gke-subnet-mode must be set either to 'auto' or 'custom', got: %s", subnetMode)
 	}
 
 	g.commandGroup = strings.Fields(*gkeCommandGroup)
