@@ -144,7 +144,6 @@ periodics:
       - --
       - --allow-dup
       - --extra-publish-file=k8s-stable3
-      - --hyperkube
       - --registry=gcr.io/kubernetes-ci-images
       image: gcr.io/k8s-testimages/bootstrap:v20200327-ecf543a
       name: ""
