@@ -52,6 +52,7 @@ var (
 	gkeCommandGroup                = flag.String("gke-command-group", "", "(gke only) Use a different gcloud track (e.g. 'alpha') for all 'gcloud container' commands. Note: This is added to --gke-create-command on create. You should only use --gke-command-group if you need to change the gcloud track for *every* gcloud container command.")
 	gkeCreateCommand               = flag.String("gke-create-command", defaultCreate, "(gke only) gcloud subcommand used to create a cluster. Modify if you need to pass arbitrary arguments to create.")
 	gkeCustomSubnet                = flag.String("gke-custom-subnet", "", "(gke only) if specified, we create a custom subnet with the specified options and use it for the gke cluster. The format should be '<subnet-name> --region=<subnet-gcp-region> --range=<subnet-cidr> <any other optional params>'.")
+	gkeSubnetMode                  = flag.String("gke-subnet-mode", "auto", "(gke only) subnet creation mode of the GKE cluster network.")
 	gkeReleaseChannel              = flag.String("gke-release-channel", "", "(gke only) if specified, bring up GKE clusters from that release channel.")
 	gkeSingleZoneNodeInstanceGroup = flag.Bool("gke-single-zone-node-instance-group", true, "(gke only) Add instance groups from a single zone to the NODE_INSTANCE_GROUP env variable.")
 	gkeNodePorts                   = flag.String("gke-node-ports", "", "(gke only) List of ports on nodes to open, allowing e.g. master to connect to pods on private nodes. The format should be 'protocol[:port[-port]],[...]' as in gcloud compute firewall-rules create --allow.")
@@ -86,6 +87,7 @@ type gkeDeployer struct {
 	shape                       map[string]gkeNodePool
 	network                     string
 	subnetwork                  string
+	subnetMode                  string
 	subnetworkRegion            string
 	createNat                   bool
 	natMinPortsPerVm            int
@@ -169,6 +171,15 @@ func newGKE(provider, project, zone, region, network, image, imageFamily, imageP
 	}
 	if _, ok := g.shape[defaultPool]; !ok {
 		return nil, fmt.Errorf("--gke-shape must include a node pool named 'default', found %q", *gkeShape)
+	}
+
+	switch subnetMode := *gkeSubnetMode; subnetMode {
+	case "auto", "custom":
+		g.subnetMode = subnetMode
+	case "legacy":
+		return nil, fmt.Errorf("--gke-subnet-mode=legacy is illegal since legacy subnet creation mode is deprecated in gcloud, please use 'auto' or 'custom'")
+	default:
+		return nil, fmt.Errorf("--gke-subnet-mode must be set either to 'auto' or 'custom'")
 	}
 
 	g.commandGroup = strings.Fields(*gkeCommandGroup)
@@ -290,7 +301,7 @@ func (g *gkeDeployer) Up() error {
 		log.Printf("Couldn't describe network '%s', assuming it doesn't exist and creating it", g.network)
 		if err := control.FinishRunning(exec.Command("gcloud", "compute", "networks", "create", g.network,
 			"--project="+g.project,
-			"--subnet-mode=auto")); err != nil {
+			"--subnet-mode="+g.subnetMode)); err != nil {
 			return err
 		}
 	}
