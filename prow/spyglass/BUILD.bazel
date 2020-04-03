@@ -39,6 +39,7 @@ filegroup(
     name = "all-srcs",
     srcs = [
         ":package-srcs",
+        "//prow/spyglass/api:all-srcs",
         "//prow/spyglass/lenses:all-srcs",
     ],
     tags = ["automanaged"],
