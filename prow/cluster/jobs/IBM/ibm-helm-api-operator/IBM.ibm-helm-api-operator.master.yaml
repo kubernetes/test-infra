@@ -74,13 +74,16 @@ postsubmits:
     branches:
     - ^master$
     decorate: true
+    labels:
+      preset-service-account: "true"
     path_alias: github.com/IBM/ibm-helm-api-operator
     spec:
       containers:
       - command:
+        - entrypoint
         - make
         - build
-        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
+        image: quay.io/multicloudlab/multicloudlab-builder:v20191217-d33a10d
         name: ""
         securityContext:
           privileged: true
