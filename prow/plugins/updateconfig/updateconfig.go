@@ -31,6 +31,7 @@ import (
 	coreapi "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 
 	"k8s.io/test-infra/prow/config"
@@ -328,6 +329,7 @@ func handle(gc githubClient, gitClient git.ClientFactory, kc corev1.ConfigMapsGe
 		return err
 	}
 
+	var errs []error
 	for cm, data := range toUpdate {
 		logger := log.WithFields(logrus.Fields{"configmap": map[string]string{"name": cm.Name, "namespace": cm.Namespace, "cluster": cm.Cluster}})
 		configMapClient, err := GetConfigMapClient(kc, cm.Namespace, buildClusterCoreV1Clients, cm.Cluster)
@@ -336,7 +338,8 @@ func handle(gc githubClient, gitClient git.ClientFactory, kc corev1.ConfigMapsGe
 			continue
 		}
 		if err := Update(&OSFileGetter{Root: gitRepo.Directory()}, configMapClient, cm.Name, cm.Namespace, data, bootstrapMode, metrics, logger); err != nil {
-			return err
+			errs = append(errs, err)
+			continue
 		}
 		updated = append(updated, message(cm.Name, cm.Cluster, cm.Namespace, data, indent))
 	}
@@ -355,9 +358,9 @@ func handle(gc githubClient, gitClient git.ClientFactory, kc corev1.ConfigMapsGe
 	}
 
 	if err := gc.CreateComment(org, repo, pr.Number, plugins.FormatResponseRaw(pr.Body, pr.HTMLURL, pr.User.Login, msg)); err != nil {
-		return fmt.Errorf("comment err: %v", err)
+		errs = append(errs, fmt.Errorf("comment err: %v", err))
 	}
-	return nil
+	return utilerrors.NewAggregate(errs)
 }
 
 // GetConfigMapClient returns a configMap interface according to the given cluster and namespace
