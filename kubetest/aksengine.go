@@ -52,38 +52,39 @@ const (
 )
 
 var (
-	aksResourceName        = flag.String("aksengine-resource-name", "", "Azure Resource Name")
-	aksResourceGroupName   = flag.String("aksengine-resourcegroup-name", "", "Azure Resource Group Name")
-	aksLocation            = flag.String("aksengine-location", "", "Azure AKS location")
-	aksMasterVMSize        = flag.String("aksengine-mastervmsize", "", "Azure Master VM size")
-	aksAgentVMSize         = flag.String("aksengine-agentvmsize", "", "Azure Agent VM size")
-	aksAdminUsername       = flag.String("aksengine-admin-username", "", "Admin username")
-	aksAdminPassword       = flag.String("aksengine-admin-password", "", "Admin password")
-	aksAgentPoolCount      = flag.Int("aksengine-agentpoolcount", 0, "Azure Agent Pool Count")
-	aksTemplateURL         = flag.String("aksengine-template-url", "", "Azure Template URL.")
-	aksDNSPrefix           = flag.String("aksengine-dnsprefix", "", "Azure K8s Master DNS Prefix")
-	aksEngineURL           = flag.String("aksengine-download-url", "", "Download URL for AKS engine")
-	aksEngineMD5           = flag.String("aksengine-md5-sum", "", "Checksum for aks engine download")
-	aksSSHPublicKeyPath    = flag.String("aksengine-public-key", "", "Path to SSH Public Key")
-	aksSSHPrivateKeyPath   = flag.String("aksengine-private-key", "", "Path to SSH Private Key")
-	aksWinBinaries         = flag.Bool("aksengine-win-binaries", false, "Set to True if you want kubetest to build a custom zip with windows binaries for aks-engine")
-	aksCcm                 = flag.Bool("aksengine-ccm", false, "Set to True if you want kubetest to build a custom cloud controller manager for aks-engine")
-	aksCnm                 = flag.Bool("aksengine-cnm", false, "Set to True if you want kubetest to build a custom cloud node manager for aks-engine. Require --aksengine-ccm to be true")
-	aksCredentialsFile     = flag.String("aksengine-creds", "", "Path to credential file for Azure")
-	aksOrchestratorRelease = flag.String("aksengine-orchestratorRelease", "", "Orchestrator Profile for aks-engine")
-	aksWinZipBuildScript   = flag.String("aksengine-winZipBuildScript", "https://raw.githubusercontent.com/Azure/aks-engine/master/scripts/build-windows-k8s.sh", "Build script to create custom zip containing win binaries for aks-engine")
-	aksNetworkPlugin       = flag.String("aksengine-networkPlugin", "azure", "Network pluging to use with aks-engine")
-	aksAzureEnv            = flag.String("aksengine-azure-env", "AzurePublicCloud", "The target Azure cloud")
-	aksIdentitySystem      = flag.String("aksengine-identity-system", "azure_ad", "identity system (default:`azure_ad`, `adfs`)")
-	aksCustomCloudURL      = flag.String("aksengine-custom-cloud-url", "", "management portal URL to use in custom Azure cloud (i.e Azure Stack etc)")
-	aksDeployCustomK8s     = flag.Bool("aksengine-deploy-custom-k8s", false, "Set to True if you want to deploy custom-built k8s via aks-engine")
-	aksCheckParams         = flag.Bool("aksengine-check-params", true, "Set to True if you want to validate your input parameters")
-	aksDumpClusterLogs     = flag.Bool("aksengine-dump-cluster-logs", true, "Set to True if you want to dump cluster logs")
-	aksNodeProblemDetector = flag.Bool("aksengine-node-problem-detector", false, "Set to True if you want to enable node problem detector addon")
-	testCcm                = flag.Bool("test-ccm", false, "Set to True if you want kubetest to run e2e tests for ccm")
-	testAzureFileCSIDriver = flag.Bool("test-azure-file-csi-driver", false, "Set to True if you want kubetest to run e2e tests for Azure File CSI driver")
-	testAzureDiskCSIDriver = flag.Bool("test-azure-disk-csi-driver", false, "Set to True if you want kubetest to run e2e tests for Azure Disk CSI driver")
-	testBlobfuseCSIDriver  = flag.Bool("test-blobfuse-csi-driver", false, "Set to True if you want kubetest to run e2e tests for Blobfuse CSI driver")
+	aksResourceName          = flag.String("aksengine-resource-name", "", "Azure Resource Name")
+	aksResourceGroupName     = flag.String("aksengine-resourcegroup-name", "", "Azure Resource Group Name")
+	aksLocation              = flag.String("aksengine-location", "", "Azure AKS location")
+	aksMasterVMSize          = flag.String("aksengine-mastervmsize", "", "Azure Master VM size")
+	aksAgentVMSize           = flag.String("aksengine-agentvmsize", "", "Azure Agent VM size")
+	aksAdminUsername         = flag.String("aksengine-admin-username", "", "Admin username")
+	aksAdminPassword         = flag.String("aksengine-admin-password", "", "Admin password")
+	aksAgentPoolCount        = flag.Int("aksengine-agentpoolcount", 0, "Azure Agent Pool Count")
+	aksTemplateURL           = flag.String("aksengine-template-url", "", "Azure Template URL.")
+	aksDNSPrefix             = flag.String("aksengine-dnsprefix", "", "Azure K8s Master DNS Prefix")
+	aksEngineURL             = flag.String("aksengine-download-url", "", "Download URL for AKS engine")
+	aksEngineMD5             = flag.String("aksengine-md5-sum", "", "Checksum for aks engine download")
+	aksSSHPublicKeyPath      = flag.String("aksengine-public-key", "", "Path to SSH Public Key")
+	aksSSHPrivateKeyPath     = flag.String("aksengine-private-key", "", "Path to SSH Private Key")
+	aksWinBinaries           = flag.Bool("aksengine-win-binaries", false, "Set to True if you want kubetest to build a custom zip with windows binaries for aks-engine")
+	aksCcm                   = flag.Bool("aksengine-ccm", false, "Set to True if you want kubetest to build a custom cloud controller manager for aks-engine")
+	aksCnm                   = flag.Bool("aksengine-cnm", false, "Set to True if you want kubetest to build a custom cloud node manager for aks-engine. Require --aksengine-ccm to be true")
+	aksCredentialsFile       = flag.String("aksengine-creds", "", "Path to credential file for Azure")
+	aksOrchestratorRelease   = flag.String("aksengine-orchestratorRelease", "", "Orchestrator Profile for aks-engine")
+	aksWinZipBuildScript     = flag.String("aksengine-winZipBuildScript", "https://raw.githubusercontent.com/Azure/aks-engine/master/scripts/build-windows-k8s.sh", "Build script to create custom zip containing win binaries for aks-engine")
+	aksNetworkPlugin         = flag.String("aksengine-networkPlugin", "azure", "Network pluging to use with aks-engine")
+	aksAzureEnv              = flag.String("aksengine-azure-env", "AzurePublicCloud", "The target Azure cloud")
+	aksIdentitySystem        = flag.String("aksengine-identity-system", "azure_ad", "identity system (default:`azure_ad`, `adfs`)")
+	aksCustomCloudURL        = flag.String("aksengine-custom-cloud-url", "", "management portal URL to use in custom Azure cloud (i.e Azure Stack etc)")
+	aksDeployCustomK8s       = flag.Bool("aksengine-deploy-custom-k8s", false, "Set to True if you want to deploy custom-built k8s via aks-engine")
+	aksCheckParams           = flag.Bool("aksengine-check-params", true, "Set to True if you want to validate your input parameters")
+	aksDumpClusterLogs       = flag.Bool("aksengine-dump-cluster-logs", true, "Set to True if you want to dump cluster logs")
+	aksNodeProblemDetector   = flag.Bool("aksengine-node-problem-detector", false, "Set to True if you want to enable node problem detector addon")
+	testCcm                  = flag.Bool("test-ccm", false, "Set to True if you want kubetest to run e2e tests for ccm")
+	testAzureFileCSIDriver   = flag.Bool("test-azure-file-csi-driver", false, "Set to True if you want kubetest to run e2e tests for Azure File CSI driver")
+	testAzureDiskCSIDriver   = flag.Bool("test-azure-disk-csi-driver", false, "Set to True if you want kubetest to run e2e tests for Azure Disk CSI driver")
+	testBlobfuseCSIDriver    = flag.Bool("test-blobfuse-csi-driver", false, "Set to True if you want kubetest to run e2e tests for Blobfuse CSI driver")
+	testSecretStoreCSIDriver = flag.Bool("test-secrets-store-csi-driver", false, "Set to True if you want kubetest to run e2e tests for Secrets Store CSI driver")
 	// Commonly used variables
 	k8sVersion                = getImageVersion(util.K8s("kubernetes"))
 	cloudProviderAzureVersion = getImageVersion(util.K8sSigs("cloud-provider-azure"))
@@ -1121,7 +1122,7 @@ func (c *aksEngineDeployer) Build(b buildStrategy) error {
 		if c.customKubeBinaryURL, err = c.uploadToAzureStorage(newK8sNodeTarball); err != nil {
 			return err
 		}
-	} else if !*testCcm && !*testAzureDiskCSIDriver && !*testAzureFileCSIDriver && !*testBlobfuseCSIDriver && !strings.EqualFold(string(b), "none") {
+	} else if !*testCcm && !*testAzureDiskCSIDriver && !*testAzureFileCSIDriver && !*testBlobfuseCSIDriver && !*testSecretStoreCSIDriver && !strings.EqualFold(string(b), "none") {
 		// Only build the required components to run upstream e2e tests
 		for _, component := range []string{"WHAT='test/e2e/e2e.test'", "WHAT=cmd/kubectl", "ginkgo"} {
 			cmd := exec.Command("make", component)
@@ -1303,6 +1304,8 @@ func (c *aksEngineDeployer) BuildTester(o *e2e.BuildTesterOptions) (e2e.Tester, 
 		csiDriverName = "azurefile-csi-driver"
 	} else if *testBlobfuseCSIDriver {
 		csiDriverName = "blobfuse-csi-driver"
+	} else if *testSecretStoreCSIDriver {
+		csiDriverName = "secrets-store-csi-driver"
 	}
 	if csiDriverName != "" {
 		return &GinkgoCSIDriverTester{
