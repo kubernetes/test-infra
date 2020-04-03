@@ -609,6 +609,8 @@ test_groups:
   gcs_prefix: k8s-conformance-arm/logs/ci-k8s-conformance-arm64-flannel
 - name: arm64-conformance-calico-network
   gcs_prefix: k8s-conformance-arm/logs/ci-k8s-conformance-arm64-calico
+- name: arm64-e2e
+  gcs_prefix: k8s-conformance-arm/logs/ci-k8s-e2e-arm64
 - name: arm64-integration
   gcs_prefix: k8s-conformance-arm/logs/ci-k8s-integration
 - name: arm64-conformance-stable
