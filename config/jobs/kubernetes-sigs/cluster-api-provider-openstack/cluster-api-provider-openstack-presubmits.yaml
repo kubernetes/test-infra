@@ -1,6 +1,6 @@
 presubmits:
   kubernetes-sigs/cluster-api-provider-openstack:
-  - name: pull-cluster-api-provider-openstack-make
+  - name: pull-cluster-api-provider-openstack-build
     always_run: true
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-openstack
@@ -10,10 +10,7 @@ presubmits:
     spec:
       containers:
       - command:
-        - runner.sh
-        args:
-        - make
-        - images
+        - "./scripts/ci-build.sh"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -23,7 +20,7 @@ presubmits:
             memory: "6Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-openstack
-      testgrid-tab-name: pr-make
+      testgrid-tab-name: pr-build
   - name: pull-cluster-api-provider-openstack-test
     always_run: true
     decorate: true
@@ -34,29 +31,7 @@ presubmits:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200402-36cead4-master
         command:
-        - runner.sh
-        args:
-        - make
-        - test
+        - "./scripts/ci-test.sh"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-openstack
       testgrid-tab-name: pr-test
-  - name: pull-cluster-api-provider-openstack-check
-    always_run: true
-    decorate: true
-    branches:
-    - master
-    path_alias: sigs.k8s.io/cluster-api-provider-openstack
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200402-36cead4-master
-        command:
-        - runner.sh
-        args:
-        - make
-        - check
-    annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-openstack
-      testgrid-tab-name: pr-check
