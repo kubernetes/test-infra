@@ -362,12 +362,12 @@ func TestCloneRefs(t *testing.T) {
 					OauthTokenFile: "/secrets/oauth/oauth-token",
 				}),
 				VolumeMounts: []coreapi.VolumeMount{logMount, codeMount,
-					{Name: "oauth-secret-oauth-secret", ReadOnly: true, MountPath: "/secrets/oauth"}, tmpMount,
+					{Name: "oauth-secret", ReadOnly: true, MountPath: "/secrets/oauth"}, tmpMount,
 				},
 			},
 			volumes: []coreapi.Volume{
 				{
-					Name: "oauth-secret-oauth-secret",
+					Name: "oauth-secret",
 					VolumeSource: coreapi.VolumeSource{
 						Secret: &coreapi.SecretVolumeSource{
 							SecretName: "oauth-secret",

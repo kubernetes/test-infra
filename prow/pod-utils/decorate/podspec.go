@@ -257,9 +257,8 @@ func tmpVolume(name string) (coreapi.Volume, coreapi.VolumeMount) {
 }
 
 func oauthVolume(secret, key string) (coreapi.Volume, coreapi.VolumeMount) {
-	name := strings.Join([]string{"oauth-secret", secret}, "-")
 	return coreapi.Volume{
-			Name: name,
+			Name: secret,
 			VolumeSource: coreapi.VolumeSource{
 				Secret: &coreapi.SecretVolumeSource{
 					SecretName: secret,
@@ -270,7 +269,7 @@ func oauthVolume(secret, key string) (coreapi.Volume, coreapi.VolumeMount) {
 				},
 			},
 		}, coreapi.VolumeMount{
-			Name:      name,
+			Name:      secret,
 			MountPath: "/secrets/oauth",
 			ReadOnly:  true,
 		}
