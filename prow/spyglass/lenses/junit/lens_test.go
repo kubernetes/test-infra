@@ -25,6 +25,8 @@ import (
 
 	"github.com/GoogleCloudPlatform/testgrid/metadata/junit"
 	"github.com/google/go-cmp/cmp"
+
+	"k8s.io/test-infra/prow/spyglass/api"
 	"k8s.io/test-infra/prow/spyglass/lenses"
 )
 
@@ -619,7 +621,7 @@ func TestGetJvd(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			artifacts := make([]lenses.Artifact, 0)
+			artifacts := make([]api.Artifact, 0)
 			for _, rr := range tt.rawResults {
 				artifacts = append(artifacts, &FakeArtifact{
 					path:      "log.txt",

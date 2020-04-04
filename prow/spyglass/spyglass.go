@@ -36,13 +36,14 @@ import (
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/deck/jobs"
 	"k8s.io/test-infra/prow/pod-utils/gcs"
+	"k8s.io/test-infra/prow/spyglass/api"
 	"k8s.io/test-infra/prow/spyglass/lenses"
 )
 
 // Key types specify the way Spyglass will fetch artifact handles
 const (
-	gcsKeyType  = "gcs"
-	prowKeyType = "prowjob"
+	gcsKeyType  = api.GCSKeyType
+	prowKeyType = api.ProwKeyType
 )
 
 // Spyglass records which sets of artifacts need views for a Prow job. The metaphor
