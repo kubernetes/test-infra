@@ -10,6 +10,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//prow/pipeline/clientset/versioned/typed/pipeline/v1alpha1:go_default_library",
+        "//prow/pipeline/clientset/versioned/typed/pipeline/v1beta1:go_default_library",
         "@io_k8s_client_go//discovery:go_default_library",
         "@io_k8s_client_go//rest:go_default_library",
         "@io_k8s_client_go//util/flowcontrol:go_default_library",
@@ -30,6 +31,7 @@ filegroup(
         "//prow/pipeline/clientset/versioned/fake:all-srcs",
         "//prow/pipeline/clientset/versioned/scheme:all-srcs",
         "//prow/pipeline/clientset/versioned/typed/pipeline/v1alpha1:all-srcs",
+        "//prow/pipeline/clientset/versioned/typed/pipeline/v1beta1:all-srcs",
     ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],

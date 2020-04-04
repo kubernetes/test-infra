@@ -8,6 +8,7 @@ go_library(
     deps = [
         "//prow/pipeline/informers/externalversions/internalinterfaces:go_default_library",
         "//prow/pipeline/informers/externalversions/pipeline/v1alpha1:go_default_library",
+        "//prow/pipeline/informers/externalversions/pipeline/v1beta1:go_default_library",
     ],
 )
 
@@ -23,6 +24,7 @@ filegroup(
     srcs = [
         ":package-srcs",
         "//prow/pipeline/informers/externalversions/pipeline/v1alpha1:all-srcs",
+        "//prow/pipeline/informers/externalversions/pipeline/v1beta1:all-srcs",
     ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],

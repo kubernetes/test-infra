@@ -3,20 +3,24 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = [
-        "factory.go",
-        "generic.go",
+        "clustertask.go",
+        "doc.go",
+        "interface.go",
+        "pipeline.go",
+        "pipelinerun.go",
+        "task.go",
+        "taskrun.go",
     ],
-    importpath = "k8s.io/test-infra/prow/pipeline/informers/externalversions",
+    importpath = "k8s.io/test-infra/prow/pipeline/informers/externalversions/pipeline/v1beta1",
     visibility = ["//visibility:public"],
     deps = [
         "//prow/pipeline/clientset/versioned:go_default_library",
         "//prow/pipeline/informers/externalversions/internalinterfaces:go_default_library",
-        "//prow/pipeline/informers/externalversions/pipeline:go_default_library",
-        "@com_github_tektoncd_pipeline//pkg/apis/pipeline/v1alpha1:go_default_library",
+        "//prow/pipeline/listers/pipeline/v1beta1:go_default_library",
         "@com_github_tektoncd_pipeline//pkg/apis/pipeline/v1beta1:go_default_library",
         "@io_k8s_apimachinery//pkg/apis/meta/v1:go_default_library",
         "@io_k8s_apimachinery//pkg/runtime:go_default_library",
-        "@io_k8s_apimachinery//pkg/runtime/schema:go_default_library",
+        "@io_k8s_apimachinery//pkg/watch:go_default_library",
         "@io_k8s_client_go//tools/cache:go_default_library",
     ],
 )
@@ -30,11 +34,7 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [
-        ":package-srcs",
-        "//prow/pipeline/informers/externalversions/internalinterfaces:all-srcs",
-        "//prow/pipeline/informers/externalversions/pipeline:all-srcs",
-    ],
+    srcs = [":package-srcs"],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
 )
