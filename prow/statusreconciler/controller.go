@@ -28,9 +28,9 @@ import (
 	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 	"k8s.io/test-infra/prow/pjutil"
 
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/test-infra/maintenance/migratestatus/migrator"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/errorutil"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/plugins/trigger"
@@ -184,25 +184,25 @@ func (c *Controller) reconcile(delta config.Delta) error {
 	if err := c.triggerNewPresubmits(addedBlockingPresubmits(delta.Before.PresubmitsStatic, delta.After.PresubmitsStatic)); err != nil {
 		errors = append(errors, err)
 		if !c.continueOnError {
-			return errorutil.NewAggregate(errors...)
+			return utilerrors.NewAggregate(errors)
 		}
 	}
 
 	if err := c.retireRemovedContexts(removedBlockingPresubmits(delta.Before.PresubmitsStatic, delta.After.PresubmitsStatic)); err != nil {
 		errors = append(errors, err)
 		if !c.continueOnError {
-			return errorutil.NewAggregate(errors...)
+			return utilerrors.NewAggregate(errors)
 		}
 	}
 
 	if err := c.updateMigratedContexts(migratedBlockingPresubmits(delta.Before.PresubmitsStatic, delta.After.PresubmitsStatic)); err != nil {
 		errors = append(errors, err)
 		if !c.continueOnError {
-			return errorutil.NewAggregate(errors...)
+			return utilerrors.NewAggregate(errors)
 		}
 	}
 
-	return errorutil.NewAggregate(errors...)
+	return utilerrors.NewAggregate(errors)
 }
 
 func (c *Controller) triggerNewPresubmits(addedPresubmits map[string][]config.Presubmit) error {
@@ -220,7 +220,7 @@ func (c *Controller) triggerNewPresubmits(addedPresubmits map[string][]config.Pr
 		if err != nil {
 			triggerErrors = append(triggerErrors, fmt.Errorf("failed to list pull requests for %s: %v", orgrepo, err))
 			if !c.continueOnError {
-				return errorutil.NewAggregate(triggerErrors...)
+				return utilerrors.NewAggregate(triggerErrors)
 			}
 			continue
 		}
@@ -248,13 +248,13 @@ func (c *Controller) triggerNewPresubmits(addedPresubmits map[string][]config.Pr
 			if err := c.triggerAndSkipIfTrusted(org, repo, pr, toTrigger, toSkip); err != nil {
 				triggerErrors = append(triggerErrors, fmt.Errorf("failed to trigger jobs for %s#%d: %v", orgrepo, pr.Number, err))
 				if !c.continueOnError {
-					return errorutil.NewAggregate(triggerErrors...)
+					return utilerrors.NewAggregate(triggerErrors)
 				}
 				continue
 			}
 		}
 	}
-	return errorutil.NewAggregate(triggerErrors...)
+	return utilerrors.NewAggregate(triggerErrors)
 }
 
 func (c *Controller) triggerAndSkipIfTrusted(org, repo string, pr github.PullRequest, toTrigger, toSkip []config.Presubmit) error {
@@ -303,7 +303,7 @@ func (c *Controller) retireRemovedContexts(retiredPresubmits map[string][]config
 			}
 		}
 	}
-	return errorutil.NewAggregate(retireErrors...)
+	return utilerrors.NewAggregate(retireErrors)
 }
 
 func (c *Controller) updateMigratedContexts(migrations map[string][]presubmitMigration) error {
@@ -327,7 +327,7 @@ func (c *Controller) updateMigratedContexts(migrations map[string][]presubmitMig
 			}
 		}
 	}
-	return errorutil.NewAggregate(migrateErrors...)
+	return utilerrors.NewAggregate(migrateErrors)
 }
 
 // addedBlockingPresubmits determines new blocking presubmits based on a

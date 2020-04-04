@@ -38,8 +38,8 @@ import (
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/test-infra/ghproxy/ghcache"
-	"k8s.io/test-infra/prow/errorutil"
 	"k8s.io/test-infra/prow/version"
 )
 
@@ -2266,7 +2266,7 @@ func prepareReviewersBody(logins []string, org string) (map[string][]string, err
 			errors = append(errors, fmt.Errorf("team %s is not part of %s org", login, org))
 		}
 	}
-	return body, errorutil.NewAggregate(errors...)
+	return body, utilerrors.NewAggregate(errors)
 }
 
 func (c *client) tryRequestReview(org, repo string, number int, logins []string) (int, error) {

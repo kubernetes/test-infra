@@ -31,9 +31,9 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"sigs.k8s.io/yaml"
 
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/errorutil"
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/plugins"
@@ -1219,7 +1219,7 @@ func TestValidateJobExtraRefs(t *testing.T) {
 					},
 				},
 			}
-			if err := validateJobExtraRefs(config); !reflect.DeepEqual(err, errorutil.NewAggregate(tc.expected)) {
+			if err := validateJobExtraRefs(config); !reflect.DeepEqual(err, utilerrors.NewAggregate([]error{tc.expected})) {
 				t.Errorf("%s: did not get expected validation error:\n%v", tc.name,
 					cmp.Diff(tc.expected, err))
 			}

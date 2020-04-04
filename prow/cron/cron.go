@@ -24,8 +24,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 	cron "gopkg.in/robfig/cron.v2" // using v2 api, doc at https://godoc.org/gopkg.in/robfig/cron.v2
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/test-infra/prow/errorutil"
 
 	"k8s.io/test-infra/prow/config"
 )
@@ -113,7 +113,7 @@ func (c *Cron) SyncConfig(cfg *config.Config) error {
 		}
 	}
 
-	return errorutil.NewAggregate(removalErrors...)
+	return utilerrors.NewAggregate(removalErrors)
 }
 
 // HasJob returns if a job has been scheduled in cronAgent or not

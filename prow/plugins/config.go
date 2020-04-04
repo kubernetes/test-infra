@@ -30,8 +30,8 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/sets"
 
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/test-infra/prow/bugzilla"
-	"k8s.io/test-infra/prow/errorutil"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/labels"
 )
@@ -906,7 +906,7 @@ func validatePluginsDupes(plugins map[string][]string) error {
 			}
 		}
 	}
-	return errorutil.NewAggregate(errors...)
+	return utilerrors.NewAggregate(errors)
 }
 
 // ValidatePluginsUnknown will return an error if there are any unrecognized
@@ -920,7 +920,7 @@ func (c *Configuration) ValidatePluginsUnknown() error {
 			}
 		}
 	}
-	return errorutil.NewAggregate(errors...)
+	return utilerrors.NewAggregate(errors)
 }
 
 func validateSizes(size Size) error {

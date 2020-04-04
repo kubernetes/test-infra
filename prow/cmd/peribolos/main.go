@@ -28,9 +28,9 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"sigs.k8s.io/yaml"
 
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/test-infra/prow/config/org"
 	"k8s.io/test-infra/prow/config/secret"
-	"k8s.io/test-infra/prow/errorutil"
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/logrusutil"
@@ -1088,7 +1088,7 @@ func configureRepos(opt options, client repoClient, orgName string, orgConfig or
 		}
 	}
 
-	return errorutil.NewAggregate(allErrors...)
+	return utilerrors.NewAggregate(allErrors)
 }
 
 func configureTeamAndMembers(opt options, client github.Client, githubTeams map[string]github.Team, name, orgName string, team org.Team, parent *int) error {
@@ -1231,7 +1231,7 @@ func configureTeamRepos(client teamRepoClient, githubTeams map[string]github.Tea
 		}
 	}
 
-	return errorutil.NewAggregate(updateErrors...)
+	return utilerrors.NewAggregate(updateErrors)
 }
 
 // teamMembersClient can list/remove/update people to a team.

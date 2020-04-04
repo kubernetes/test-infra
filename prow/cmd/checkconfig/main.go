@@ -31,10 +31,10 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation"
 	"sigs.k8s.io/yaml"
 
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
-	"k8s.io/test-infra/prow/errorutil"
 	needsrebase "k8s.io/test-infra/prow/external-plugins/needs-rebase/plugin"
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
@@ -72,9 +72,9 @@ type options struct {
 	github flagutil.GitHubOptions
 }
 
-func reportWarning(strict bool, errs errorutil.Aggregate) {
-	for _, item := range errs.Strings() {
-		logrus.Warn(item)
+func reportWarning(strict bool, errs utilerrors.Aggregate) {
+	for _, item := range errs.Errors() {
+		logrus.Warn(item.Error())
 	}
 	if strict {
 		logrus.Fatal("Strict is set and there were warnings")
@@ -318,7 +318,7 @@ func main() {
 		}
 	}
 	if len(errs) > 0 {
-		reportWarning(o.strict, errorutil.NewAggregate(errs...))
+		reportWarning(o.strict, utilerrors.NewAggregate(errs))
 		return
 	}
 
@@ -419,7 +419,7 @@ func validateURLs(c config.ProwConfig) error {
 		validationErrs = append(validationErrs, fmt.Errorf("status_error_link is not a valid url: %s", c.StatusErrorLink))
 	}
 
-	return errorutil.NewAggregate(validationErrs...)
+	return utilerrors.NewAggregate(validationErrs)
 }
 
 func validateUnknownFields(cfg interface{}, cfgBytes []byte, filePath string) error {
@@ -446,7 +446,7 @@ func validateJobRequirements(c config.JobConfig) error {
 		validationErrs = append(validationErrs, validatePeriodicJob(job))
 	}
 
-	return errorutil.NewAggregate(validationErrs...)
+	return utilerrors.NewAggregate(validationErrs)
 }
 
 func validatePresubmitJob(repo string, job config.Presubmit) error {
@@ -455,7 +455,7 @@ func validatePresubmitJob(repo string, job config.Presubmit) error {
 	if job.Agent == string(v1.KubernetesAgent) && len(job.Name) > validation.LabelValueMaxLength {
 		validationErrs = append(validationErrs, fmt.Errorf("name of Presubmit job %q (for repo %q) too long (should be at most 63 characters)", job.Name, repo))
 	}
-	return errorutil.NewAggregate(validationErrs...)
+	return utilerrors.NewAggregate(validationErrs)
 }
 
 func validatePostsubmitJob(repo string, job config.Postsubmit) error {
@@ -464,7 +464,7 @@ func validatePostsubmitJob(repo string, job config.Postsubmit) error {
 	if job.Agent == string(v1.KubernetesAgent) && len(job.Name) > validation.LabelValueMaxLength {
 		validationErrs = append(validationErrs, fmt.Errorf("name of Postsubmit job %q (for repo %q) too long (should be at most 63 characters)", job.Name, repo))
 	}
-	return errorutil.NewAggregate(validationErrs...)
+	return utilerrors.NewAggregate(validationErrs)
 }
 
 func validateJobExtraRefs(cfg config.JobConfig) error {
@@ -476,7 +476,7 @@ func validateJobExtraRefs(cfg config.JobConfig) error {
 			}
 		}
 	}
-	return errorutil.NewAggregate(validationErrs...)
+	return utilerrors.NewAggregate(validationErrs)
 }
 
 func validatePeriodicJob(job config.Periodic) error {
@@ -485,7 +485,7 @@ func validatePeriodicJob(job config.Periodic) error {
 	if job.Agent == string(v1.KubernetesAgent) && len(job.Name) > validation.LabelValueMaxLength {
 		validationErrs = append(validationErrs, fmt.Errorf("name of Periodic job %q too long (should be at most 63 characters)", job.Name))
 	}
-	return errorutil.NewAggregate(validationErrs...)
+	return utilerrors.NewAggregate(validationErrs)
 }
 
 func validateTideRequirements(cfg *config.Config, pcfg *plugins.Configuration, includeForbidden bool) error {
@@ -569,7 +569,7 @@ func validateTideRequirements(cfg *config.Config, pcfg *plugins.Configuration, i
 		validationErrs = append(validationErrs, err)
 	}
 
-	return errorutil.NewAggregate(validationErrs...)
+	return utilerrors.NewAggregate(validationErrs)
 }
 
 func newOrgRepoConfig(orgExceptions map[string]sets.String, repos sets.String) *orgRepoConfig {
@@ -758,7 +758,7 @@ func ensureValidConfiguration(plugin, label, verb string, tideSubSet, tideSuperS
 		configErrors = append(configErrors, fmt.Errorf("the following orgs or repos enable the %s plugin but do not %s the %s label for merging: %v", plugin, verb, label, notRequired))
 	}
 
-	return errorutil.NewAggregate(configErrors...)
+	return utilerrors.NewAggregate(configErrors)
 }
 
 func validateDecoratedJobs(cfg *config.Config) error {
@@ -807,7 +807,7 @@ func validateNeedsOkToTestLabel(cfg *config.Config) error {
 			}
 		}
 	}
-	return errorutil.NewAggregate(queryErrors...)
+	return utilerrors.NewAggregate(queryErrors)
 }
 
 func pluginsWithOwnersFile() string {

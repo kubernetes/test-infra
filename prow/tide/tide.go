@@ -37,10 +37,10 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/test-infra/pkg/io"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/errorutil"
 	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pjutil"
@@ -1111,7 +1111,7 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 			batch = fmt.Sprintf("%s, partial merge %v", batch, merged)
 		}
 	}
-	return fmt.Errorf("failed merging %v%s: %v", failed, batch, errorutil.NewAggregate(errs...))
+	return fmt.Errorf("failed merging %v%s: %v", failed, batch, utilerrors.NewAggregate(errs))
 }
 
 // tryMerge attempts 1 merge and returns a bool indicating if we should try

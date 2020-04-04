@@ -30,7 +30,6 @@ import (
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/errorutil"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/labels"
@@ -293,7 +292,7 @@ I understand the commands that are listed [here](https://go.k8s.io/bot-commands?
 	}
 
 	if len(errors) > 0 {
-		return errorutil.NewAggregate(errors...)
+		return utilerrors.NewAggregate(errors)
 	}
 	return nil
 }

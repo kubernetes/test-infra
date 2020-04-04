@@ -28,7 +28,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"google.golang.org/api/googleapi"
 
-	"k8s.io/test-infra/prow/errorutil"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 )
 
 // UploadFunc knows how to upload into an object
@@ -112,7 +112,7 @@ func FileUploadWithAttributes(file string, attrs *storage.ObjectAttrs) UploadFun
 			closeErr = fmt.Errorf("reader close error: %v", closeErr)
 		}
 
-		return errorutil.NewAggregate(uploadErr, closeErr)
+		return utilerrors.NewAggregate([]error{uploadErr, closeErr})
 	}
 }
 
@@ -143,7 +143,7 @@ func DataUploadWithAttributes(src io.Reader, attrs *storage.ObjectAttrs) UploadF
 		if closeErr != nil {
 			closeErr = fmt.Errorf("writer close error: %v", closeErr)
 		}
-		return errorutil.NewAggregate(copyErr, closeErr)
+		return utilerrors.NewAggregate([]error{copyErr, closeErr})
 	}
 }
 

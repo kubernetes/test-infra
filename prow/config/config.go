@@ -44,7 +44,6 @@ import (
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation"
-	"k8s.io/test-infra/prow/errorutil"
 	"sigs.k8s.io/yaml"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -1185,7 +1184,7 @@ func (c *Config) validateComponentConfig() error {
 			}
 		}
 		if len(validationErrs) > 0 {
-			return errorutil.NewAggregate(validationErrs...)
+			return utilerrors.NewAggregate(validationErrs)
 		}
 	}
 

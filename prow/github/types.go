@@ -22,7 +22,7 @@ import (
 	"strings"
 	"time"
 
-	"k8s.io/test-infra/prow/errorutil"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 )
 
 const (
@@ -104,7 +104,7 @@ func unmarshalClientError(b []byte) error {
 		return alternativeClientError
 	}
 	errors = append(errors, err)
-	return errorutil.NewAggregate(errors...)
+	return utilerrors.NewAggregate(errors)
 }
 
 // ClientError represents https://developer.github.com/v3/#client-errors

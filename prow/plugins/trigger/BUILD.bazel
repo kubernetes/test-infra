@@ -50,7 +50,6 @@ go_library(
     deps = [
         "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/config:go_default_library",
-        "//prow/errorutil:go_default_library",
         "//prow/git/v2:go_default_library",
         "//prow/github:go_default_library",
         "//prow/kube:go_default_library",
