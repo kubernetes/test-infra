@@ -34,7 +34,8 @@ presubmits:
         - --ginkgo-parallel=30
         - --provider=gce
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gci-gce-ipvs
-        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+        # Skip "Services.should.have.session.affinity.timeout.work" #89358
+        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|Services.should.have.session.affinity.timeout.work --minStartupPods=8
         - --timeout=80m # thinking about making this longer? don't! 80m is a hard cap, and should get down to no more than 60m.
         image: gcr.io/k8s-testimages/kubekins-e2e:v20200402-36cead4-master
         resources:
@@ -351,7 +352,8 @@ periodics:
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=30
       - --provider=gce
-      - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      # Skip "Services.should.have.session.affinity.timeout.work" #89358
+      - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|Services.should.have.session.affinity.timeout.work --minStartupPods=8
       - --timeout=150m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200402-36cead4-master
   annotations:
