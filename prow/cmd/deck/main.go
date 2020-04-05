@@ -28,6 +28,7 @@ import (
 	"html/template"
 	"io/ioutil"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"os"
 	"path"
@@ -73,6 +74,7 @@ import (
 	"k8s.io/test-infra/prow/prstatus"
 	"k8s.io/test-infra/prow/simplifypath"
 	"k8s.io/test-infra/prow/spyglass"
+	spyglassapi "k8s.io/test-infra/prow/spyglass/api"
 
 	// Import standard spyglass viewers
 
@@ -946,12 +948,12 @@ func renderSpyglass(sg *spyglass.Spyglass, cfg config.Getter, src string, o opti
 	var lensIndexes []int
 lensesLoop:
 	for i, lfc := range cfg().Deck.Spyglass.Lenses {
-		matches := map[string]struct{}{}
+		matches := sets.String{}
 		for _, re := range lfc.RequiredFiles {
 			found := false
 			for _, a := range artifactNames {
 				if regexCache[re].MatchString(a) {
-					matches[a] = struct{}{}
+					matches.Insert(a)
 					found = true
 				}
 			}
@@ -963,17 +965,12 @@ lensesLoop:
 		for _, re := range lfc.OptionalFiles {
 			for _, a := range artifactNames {
 				if regexCache[re].MatchString(a) {
-					matches[a] = struct{}{}
+					matches.Insert(a)
 				}
 			}
 		}
 
-		matchSlice := make([]string, 0, len(matches))
-		for k := range matches {
-			matchSlice = append(matchSlice, k)
-		}
-
-		lensCache[i] = matchSlice
+		lensCache[i] = matches.List()
 		lensIndexes = append(lensIndexes, i)
 	}
 
@@ -1067,7 +1064,7 @@ lensesLoop:
 
 	var viewBuf bytes.Buffer
 	type lensesTemplate struct {
-		Lenses        map[int]lenses.Lens
+		Lenses        map[int]spyglass.LensConfig
 		LensIndexes   []int
 		Source        string
 		LensArtifacts map[int][]string
@@ -1135,67 +1132,125 @@ func handleArtifactView(o options, sg *spyglass.Spyglass, cfg config.Getter) htt
 		lensName := pathSegments[0]
 		resource := pathSegments[1]
 
-		lens, err := lenses.GetLens(lensName)
+		lens, remoteLens, err := lenses.GetLens(cfg, lensName)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("No such template: %s (%v)", lensName, err), http.StatusNotFound)
 			return
 		}
 
-		lensConfig := lens.Config()
-		lensResourcesDir := lenses.ResourceDirForLens(o.spyglassFilesLocation, lensConfig.Name)
-
 		reqString := r.URL.Query().Get("req")
 		var request spyglass.LensRequest
-		err = json.Unmarshal([]byte(reqString), &request)
-		if err != nil {
+		if err := json.Unmarshal([]byte(reqString), &request); err != nil {
 			http.Error(w, fmt.Sprintf("Failed to parse request: %v", err), http.StatusBadRequest)
 			return
 		}
 
-		artifacts, err := sg.FetchArtifacts(request.Source, "", cfg().Deck.Spyglass.SizeLimit, request.Artifacts)
-		if err != nil {
-			http.Error(w, fmt.Sprintf("Failed to retrieve expected artifacts: %v", err), http.StatusInternalServerError)
+		if lens != nil {
+			handleLocalLens(o, sg, lens, w, r, cfg, resource, request)
 			return
 		}
 
-		switch resource {
-		case "iframe":
-			t, err := template.ParseFiles(path.Join(o.templateFilesLocation, "spyglass-lens.html"))
-			if err != nil {
-				http.Error(w, fmt.Sprintf("Failed to load template: %v", err), http.StatusInternalServerError)
-				return
-			}
-
-			w.Header().Set("Content-Type", "text/html; encoding=utf-8")
-			t.Execute(w, struct {
-				Title   string
-				BaseURL string
-				Head    template.HTML
-				Body    template.HTML
-			}{
-				lensConfig.Title,
-				"/spyglass/static/" + lensName + "/",
-				template.HTML(lens.Header(artifacts, lensResourcesDir, cfg().Deck.Spyglass.Lenses[request.Index].Lens.Config)),
-				template.HTML(lens.Body(artifacts, lensResourcesDir, "", cfg().Deck.Spyglass.Lenses[request.Index].Lens.Config)),
-			})
-		case "rerender":
-			data, err := ioutil.ReadAll(r.Body)
-			if err != nil {
-				http.Error(w, fmt.Sprintf("Failed to read body: %v", err), http.StatusInternalServerError)
-				return
-			}
-			w.Header().Set("Content-Type", "text/html; encoding=utf-8")
-			w.Write([]byte(lens.Body(artifacts, lensResourcesDir, string(data), cfg().Deck.Spyglass.Lenses[request.Index].Lens.Config)))
-		case "callback":
-			data, err := ioutil.ReadAll(r.Body)
-			if err != nil {
-				http.Error(w, fmt.Sprintf("Failed to read body: %v", err), http.StatusInternalServerError)
-				return
-			}
-			w.Write([]byte(lens.Callback(artifacts, lensResourcesDir, string(data), cfg().Deck.Spyglass.Lenses[request.Index].Lens.Config)))
-		default:
-			http.NotFound(w, r)
+		if remoteLens != nil {
+			handleRemoteLens(*remoteLens, w, r, resource, request)
+			return
 		}
+	}
+}
+
+func handleRemoteLens(lens config.LensFileConfig, w http.ResponseWriter, r *http.Request, resource string, request spyglass.LensRequest) {
+	var requestType spyglassapi.RequestAction
+	switch resource {
+	case "iframe":
+		requestType = spyglassapi.RequestActionInitial
+	case "rerender":
+		requestType = spyglassapi.RequestActionRerender
+	case "callback":
+		requestType = spyglassapi.RequestActionCallBack
+	default:
+		http.NotFound(w, r)
+		return
+	}
+
+	var data string
+	if requestType != spyglassapi.RequestActionInitial {
+		dataBytes, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Failed to read body: %v", err), http.StatusInternalServerError)
+			return
+		}
+		data = string(dataBytes)
+	}
+
+	lensRequest := spyglassapi.LensRequest{
+		Action:         requestType,
+		Data:           data,
+		Config:         lens.Lens.Config,
+		ResourceRoot:   "/spyglass/static/" + lens.Lens.Name + "/",
+		Artifacts:      request.Artifacts,
+		ArtifactSource: request.Source,
+		LensIndex:      request.Index,
+	}
+	serializedRequest, err := json.Marshal(lensRequest)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("failed to marshal request to lens backend: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	(&httputil.ReverseProxy{
+		Director: func(r *http.Request) {
+			r.URL = lens.RemoteConfig.ParsedEndpoint
+			r.Body = ioutil.NopCloser(bytes.NewBuffer(serializedRequest))
+		},
+	}).ServeHTTP(w, r)
+}
+
+func handleLocalLens(o options, sg *spyglass.Spyglass, lens lenses.Lens, w http.ResponseWriter, r *http.Request, cfg config.Getter, resource string, request spyglass.LensRequest) {
+	lensConfig := lens.Config()
+	lensResourcesDir := lenses.ResourceDirForLens(o.spyglassFilesLocation, lensConfig.Name)
+
+	artifacts, err := sg.FetchArtifacts(request.Source, "", cfg().Deck.Spyglass.SizeLimit, request.Artifacts)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to retrieve expected artifacts: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	switch resource {
+	case "iframe":
+		t, err := template.ParseFiles(path.Join(o.templateFilesLocation, "spyglass-lens.html"))
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Failed to load template: %v", err), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "text/html; encoding=utf-8")
+		t.Execute(w, struct {
+			Title   string
+			BaseURL string
+			Head    template.HTML
+			Body    template.HTML
+		}{
+			lensConfig.Title,
+			"/spyglass/static/" + lens.Config().Name + "/",
+			template.HTML(lens.Header(artifacts, lensResourcesDir, cfg().Deck.Spyglass.Lenses[request.Index].Lens.Config)),
+			template.HTML(lens.Body(artifacts, lensResourcesDir, "", cfg().Deck.Spyglass.Lenses[request.Index].Lens.Config)),
+		})
+	case "rerender":
+		data, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Failed to read body: %v", err), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "text/html; encoding=utf-8")
+		w.Write([]byte(lens.Body(artifacts, lensResourcesDir, string(data), cfg().Deck.Spyglass.Lenses[request.Index].Lens.Config)))
+	case "callback":
+		data, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Failed to read body: %v", err), http.StatusInternalServerError)
+			return
+		}
+		w.Write([]byte(lens.Callback(artifacts, lensResourcesDir, string(data), cfg().Deck.Spyglass.Lenses[request.Index].Lens.Config)))
+	default:
+		http.NotFound(w, r)
 	}
 }
 

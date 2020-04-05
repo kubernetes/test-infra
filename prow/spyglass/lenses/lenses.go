@@ -27,6 +27,7 @@ import (
 	"io"
 	"path/filepath"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/spyglass/api"
 )
 
@@ -56,6 +57,10 @@ type LensConfig struct {
 	Priority uint
 	// HideTitle will hide the lens title after loading if set to true.
 	HideTitle bool
+}
+
+func (lc LensConfig) Config() LensConfig {
+	return lc
 }
 
 // Lens defines the interface that lenses are required to implement in order to be used by Spyglass.
@@ -96,13 +101,18 @@ func RegisterLens(lens Lens) error {
 	return nil
 }
 
-// GetLens returns a Lens by name, if it exists; otherwise it returns an error.
-func GetLens(name string) (Lens, error) {
+// GetLens returns a Lens or a remoteLens  by name, if it exists; otherwise it returns an error.
+func GetLens(cfg config.Getter, name string) (Lens, *config.LensFileConfig, error) {
+	for _, lens := range cfg().Deck.Spyglass.Lenses {
+		if lens.RemoteConfig != nil && lens.Lens.Name == name {
+			return nil, &lens, nil
+		}
+	}
 	lens, ok := lensReg[name]
 	if !ok {
-		return nil, ErrInvalidLensName
+		return nil, nil, ErrInvalidLensName
 	}
-	return lens, nil
+	return lens, nil, nil
 }
 
 // UnregisterLens unregisters lenses

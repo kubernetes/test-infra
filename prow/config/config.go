@@ -584,6 +584,24 @@ type LensFileConfig struct {
 	OptionalFiles []string `json:"optional_files,omitempty"`
 	// Lens is the lens to use, alongside any lens-specific configuration.
 	Lens LensConfig `json:"lens"`
+	// RemoteConfig specifies how to access remote lenses
+	RemoteConfig *LensRemoteConfig `json:"remote_config,omitempty"`
+}
+
+// LensRemoteConfig is the configuration for a remote lens.
+type LensRemoteConfig struct {
+	// The endpoint for the lense
+	Endpoint string `json:"endpoint"`
+	// The parsed endpoint
+	ParsedEndpoint *url.URL `json:"-"`
+	// The endpoint for static resources
+	StaticRoot string `json:"static_root"`
+	// The human-readable title for the lens
+	Title string `json:"title"`
+	// Priority for lens ordering, lowest priority first
+	Priority uint `json:"priority"`
+	// HideTitle defines if we will keep showing the title after lens loads
+	HideTitle bool `json:"hide_title"`
 }
 
 // Spyglass holds config for Spyglass
@@ -1489,6 +1507,17 @@ func parseProwConfig(c *Config) error {
 		c.Deck.Spyglass.SizeLimit = 100e6
 	} else if c.Deck.Spyglass.SizeLimit <= 0 {
 		return fmt.Errorf("invalid value for deck.spyglass.size_limit, must be >=0")
+	}
+
+	for idx, lens := range c.Deck.Spyglass.Lenses {
+		if lens.RemoteConfig == nil {
+			continue
+		}
+		parsedEndpoint, err := url.Parse(lens.RemoteConfig.Endpoint)
+		if err != nil {
+			return fmt.Errorf("failed to parse url %q for remote lens %q: %w", lens.RemoteConfig.Endpoint, lens.Lens.Name, err)
+		}
+		c.Deck.Spyglass.Lenses[idx].RemoteConfig.ParsedEndpoint = parsedEndpoint
 	}
 
 	// Migrate the old `viewers` format to the new `lenses` format.

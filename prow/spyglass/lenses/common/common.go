@@ -134,6 +134,7 @@ func newLensHandler(lens api.Lens, opts lensHandlerOpts) http.HandlerFunc {
 
 		default:
 			w.WriteHeader(http.StatusBadRequest)
+			// This is a bit weird as we proxy this and the request we are complaining about was issued by Deck, not by the original client that sees this error
 			w.Write([]byte(fmt.Sprintf("Invalid action %q", request.Action)))
 		}
 	}

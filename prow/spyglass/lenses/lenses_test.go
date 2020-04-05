@@ -25,6 +25,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/spyglass/api"
 )
 
@@ -158,7 +159,7 @@ crazy`,
 		},
 	}
 	for _, tc := range testCases {
-		lens, err := GetLens(tc.lensName)
+		lens, _, err := GetLens(func() *config.Config { return &config.Config{} }, tc.lensName)
 		if tc.err != err {
 			t.Errorf("%s expected error %v but got error %v", tc.name, tc.err, err)
 			continue
