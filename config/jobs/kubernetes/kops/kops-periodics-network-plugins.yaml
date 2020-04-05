@@ -22,7 +22,7 @@ periodics:
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --extract=release/stable
       - --ginkgo-parallel
-      - --kops-args=--networking=amazon-vpc-routed-eni --node-size=t3.large --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20200112
+      - --kops-args=--networking=amazon-vpc-routed-eni --node-size=t3.large --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20200323
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-ssh-user=ubuntu
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
@@ -56,7 +56,7 @@ periodics:
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --extract=release/stable
       - --ginkgo-parallel
-      - --kops-args=--networking=calico --image=136693071363/debian-10-amd64-20200210-166
+      - --kops-args=--networking=calico --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20200323
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-ssh-user=admin
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
@@ -90,7 +90,7 @@ periodics:
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --extract=release/stable
       - --ginkgo-parallel
-      - --kops-args=--networking=canal --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20200112
+      - --kops-args=--networking=canal --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20200323
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-ssh-user=ubuntu
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
@@ -124,7 +124,7 @@ periodics:
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --extract=release/stable
       - --ginkgo-parallel
-      - --kops-args=--networking=cilium --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20200112
+      - --kops-args=--networking=cilium --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20200323
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-ssh-user=ubuntu
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
@@ -158,7 +158,7 @@ periodics:
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --extract=release/stable
       - --ginkgo-parallel
-      - --kops-args=--networking=flannel --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20200112
+      - --kops-args=--networking=flannel --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20200323
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-ssh-user=ubuntu
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
@@ -192,7 +192,7 @@ periodics:
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --extract=release/stable
       - --ginkgo-parallel
-      - --kops-args=--networking=kopeio --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20200112
+      - --kops-args=--networking=kopeio --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20200323
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-ssh-user=ubuntu
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
@@ -226,7 +226,7 @@ periodics:
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --extract=release/stable
       - --ginkgo-parallel
-      - --kops-args=--networking=kube-router --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20200112
+      - --kops-args=--networking=kube-router --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20200323
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-ssh-user=ubuntu
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
@@ -260,7 +260,7 @@ periodics:
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --extract=release/stable
       - --ginkgo-parallel
-      - --kops-args=--networking=weave --image=136693071363/debian-10-amd64-20200210-166
+      - --kops-args=--networking=weave --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20200323
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-ssh-user=admin
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
@@ -294,7 +294,7 @@ periodics:
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --extract=release/stable
       - --ginkgo-parallel
-      - --kops-args=--networking=lyftvpc --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20200112
+      - --kops-args=--networking=lyftvpc --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20200323
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-ssh-user=ubuntu
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
