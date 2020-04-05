@@ -1,4 +1,6 @@
 variants:
+  2.2.0:
+    BAZEL_VERSION: 2.2.0
   2.1.0:
     BAZEL_VERSION: 2.1.0
   2.0.0:
