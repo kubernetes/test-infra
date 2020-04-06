@@ -17,7 +17,7 @@ periodics:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200402-36cead4-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200404-7b4af8e-master
       command:
         - "runner.sh"
         - "./scripts/ci-e2e.sh"
@@ -55,7 +55,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200402-36cead4-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200404-7b4af8e-master
         command:
           - "runner.sh"
           - "./scripts/ci-e2e.sh"
@@ -93,7 +93,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200402-36cead4-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200404-7b4af8e-master
         command:
           - "runner.sh"
           - "./scripts/ci-e2e-conformance.sh"
@@ -131,7 +131,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200402-36cead4-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200404-7b4af8e-master
         command:
           - "runner.sh"
           - "./scripts/ci-e2e-conformance.sh"
@@ -180,7 +180,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200402-36cead4-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200404-7b4af8e-master
         env:
           - name: CAPI_BRANCH
             value: "stable"
@@ -236,7 +236,7 @@ periodics:
       path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200402-36cead4-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200404-7b4af8e-master
         env:
           - name: BOSKOS_HOST
             value: "boskos.test-pods.svc.cluster.local"

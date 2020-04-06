@@ -108,7 +108,7 @@ postsubmits:
     spec:
       serviceAccountName: pusher
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20200323-99a3403-2.1.0
+      - image: gcr.io/k8s-testimages/bazelbuild:v20200405-02a6dff-2.1.0
         command:
         - experiment/resultstore/push.sh
         env:
@@ -128,7 +128,7 @@ postsubmits:
     spec:
       serviceAccountName: pusher
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20200323-99a3403-2.0.0 # whatever image you use here must have bash 4.4+
+      - image: gcr.io/k8s-testimages/bazelbuild:v20200405-02a6dff-2.0.0 # whatever image you use here must have bash 4.4+
         command:
         - prow/push.sh
         env:
@@ -181,7 +181,7 @@ postsubmits:
     spec:
       serviceAccountName: pusher
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20200323-99a3403-2.0.0 # whatever image you use here must have bash 4.4+
+      - image: gcr.io/k8s-testimages/bazelbuild:v20200405-02a6dff-2.0.0 # whatever image you use here must have bash 4.4+
         command:
         - boskos/push.sh
         env:
@@ -691,7 +691,7 @@ postsubmits:
     spec:
       serviceAccountName: testgrid-config-updater
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20200323-99a3403-2.0.0
+      - image: gcr.io/k8s-testimages/bazelbuild:v20200405-02a6dff-2.0.0
         env:
         - name: USE_BAZEL_VERSION
           value: real  # Ignore .bazelversion
@@ -715,7 +715,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20200323-99a3403-2.0.0
+      - image: gcr.io/k8s-testimages/bazelbuild:v20200405-02a6dff-2.0.0
         command:
         - ./boskos/update_prow_config.sh
         env:
@@ -879,7 +879,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20200323-99a3403-2.0.0
+    - image: gcr.io/k8s-testimages/bazelbuild:v20200405-02a6dff-2.0.0
       env:
       - name: USE_BAZEL_VERSION
         value: real  # Ignore .bazelversion
@@ -919,7 +919,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20200323-99a3403-2.0.0
+    - image: gcr.io/k8s-testimages/bazelbuild:v20200405-02a6dff-2.0.0
       env:
       - name: USE_BAZEL_VERSION
         value: real  # Ignore .bazelversion
@@ -959,7 +959,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20200323-99a3403-2.0.0
+    - image: gcr.io/k8s-testimages/bazelbuild:v20200405-02a6dff-2.0.0
       env:
       - name: USE_BAZEL_VERSION
         value: real  # Ignore .bazelversion
@@ -1062,7 +1062,7 @@ periodics:
   spec:
     containers:
     - name: branchprotector
-      image: gcr.io/k8s-prow/branchprotector:v20200402-e8494846e
+      image: gcr.io/k8s-prow/branchprotector:v20200406-5c0e225cf
       command:
       - /app/prow/cmd/branchprotector/app.binary
       args:
@@ -1096,7 +1096,7 @@ periodics:
   spec:
     containers:
     - name: label-sync
-      image: gcr.io/k8s-prow/label_sync:v20200402-e8494846e
+      image: gcr.io/k8s-prow/label_sync:v20200406-5c0e225cf
       command:
       - /app/label_sync/app.binary
       args:

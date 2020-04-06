@@ -33,7 +33,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: crier
-        image: gcr.io/k8s-prow/crier:v20200402-e8494846e
+        image: gcr.io/k8s-prow/crier:v20200406-5c0e225cf
         args:
         - --github-workers=5
         - --config-path=/etc/config/config.yaml
