@@ -25,8 +25,8 @@ require (
 	github.com/GoogleCloudPlatform/testgrid v0.0.7
 	github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46
 	github.com/andygrunwald/go-gerrit v0.0.0-20190120104749-174420ebee6c
-	github.com/aws/aws-k8s-tester v0.9.3
-	github.com/aws/aws-sdk-go v1.29.32
+	github.com/aws/aws-k8s-tester v1.0.0
+	github.com/aws/aws-sdk-go v1.30.5
 	github.com/bazelbuild/buildtools v0.0.0-20190917191645-69366ca98f89
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/bwmarrin/snowflake v0.0.0
@@ -102,7 +102,7 @@ require (
 	knative.dev/pkg v0.0.0-20191111150521-6d806b998379
 	mvdan.cc/xurls/v2 v2.0.0
 	sigs.k8s.io/controller-runtime v0.5.0
-	sigs.k8s.io/yaml v1.1.0
+	sigs.k8s.io/yaml v1.2.0
 )
 
 go 1.13

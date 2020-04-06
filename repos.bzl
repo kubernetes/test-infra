@@ -69,16 +69,16 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/aws/aws-k8s-tester",
-        sum = "h1:yH/ierinKBdeGGw83XWsskxlbgFtWaITnaZTp9Hc7hw=",
-        version = "v0.9.3",
+        sum = "h1:Zr5NWiRK5fhmRIlhrsTwrY8yB488FyN6iulci2D7VaI=",
+        version = "v1.0.0",
     )
     go_repository(
         name = "com_github_aws_aws_sdk_go",
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/aws/aws-sdk-go",
-        sum = "h1:o4I8Qc+h9ht8NXvTHeXZH3EmtSUZ/PC0bg9Wawr+aTA=",
-        version = "v1.29.32",
+        sum = "h1:i+sSesaMrSxiUt3NJddOApe2mXK+VNBgfcmRTvNFrXM=",
+        version = "v1.30.5",
     )
     go_repository(
         name = "com_github_azure_azure_pipeline_go",
@@ -717,8 +717,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/jmespath/go-jmespath",
-        sum = "h1:pmfjZENx5imkbgOkpRUYLnmbU7UEFbjtDA2hxJ1ichM=",
-        version = "v0.0.0-20180206201540-c2b33e8439af",
+        sum = "h1:OS12ieG61fsCg5+qLJ+SsW9NicxNkg3b25OyT2yCeUc=",
+        version = "v0.3.0",
     )
 
     go_repository(
@@ -1217,8 +1217,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/stretchr/testify",
-        sum = "h1:2E4SXV/wtOkTonXsotYi4li6zVWxYlZuYNCXe9XRJyk=",
-        version = "v1.4.0",
+        sum = "h1:nOGnQDM7FYENwehXlg/kFVnos3rEvtKTjRvOWSzb6H4=",
+        version = "v1.5.1",
     )
     go_repository(
         name = "com_github_tektoncd_pipeline",
@@ -1464,8 +1464,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "sigs.k8s.io/yaml",
-        sum = "h1:4A07+ZFc2wgJwo8YNlQpr1rVlgUDlxXHhPJciaPY5gs=",
-        version = "v1.1.0",
+        sum = "h1:kr/MCeFWJWTwyaHoR9c8EjH9OumOmoF9YGiZd7lFm/Q=",
+        version = "v1.2.0",
     )
     go_repository(
         name = "io_k8s_utils",
@@ -2129,8 +2129,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/go-ini/ini",
-        sum = "h1:hDJFfs/9f75875scvqLkhNB5Jz5/DybKEOZ5MLF+ng4=",
-        version = "v1.46.0",
+        sum = "h1:0wVcG9udk2C3TGgmdIGKK9ScOZHZB5nbG+gwji9fhhc=",
+        version = "v1.55.0",
     )
     go_repository(
         name = "com_github_google_go_replayers_grpcreplay",
