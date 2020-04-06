@@ -727,10 +727,9 @@ func initLocalLensHandler(cfg config.Getter, o options, sg *spyglass.Spyglass) e
 		}
 		localLenses = append(localLenses, common.LensWithConfiguration{
 			Config: common.LensOpt{
-				TemplateFilesLocation: o.templateFilesLocation,
-				LensResourcesDir:      lenses.ResourceDirForLens(o.spyglassFilesLocation, lfc.Lens.Name),
-				LensName:              lfc.Lens.Name,
-				LensTitle:             lfc.RemoteConfig.Title,
+				LensResourcesDir: lenses.ResourceDirForLens(o.spyglassFilesLocation, lfc.Lens.Name),
+				LensName:         lfc.Lens.Name,
+				LensTitle:        lfc.RemoteConfig.Title,
 			},
 			Lens: lens,
 		})

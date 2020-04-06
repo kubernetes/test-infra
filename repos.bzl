@@ -3813,4 +3813,12 @@ def go_repositories():
         importpath = "github.com/valyala/bytebufferpool",
         sum = "h1:GqA5TC/0021Y/b9FG4Oi9Mr3q7XYx6KllzawFIhcdPw=",
         version = "v1.0.0",
+				)
+    go_repository(
+        name = "com_github_go_bindata_go_bindata_v3",
+        build_file_generation = "on",
+        build_file_proto_mode = "disable",
+        importpath = "github.com/go-bindata/go-bindata/v3",
+        sum = "h1:F0nVttLC3ws0ojc7p60veTurcOm//D4QBODNM7EGrCI=",
+        version = "v3.1.3",
     )

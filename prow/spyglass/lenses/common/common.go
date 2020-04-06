@@ -22,7 +22,6 @@ import (
 	"html/template"
 	"io/ioutil"
 	"net/http"
-	"path"
 	"strings"
 	"time"
 
@@ -33,6 +32,8 @@ import (
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/spyglass/api"
 )
+
+var lensTemplate = template.Must(template.New("sg").Parse(string(MustAsset("static/spyglass-lens.html"))))
 
 type LensWithConfiguration struct {
 	Config LensOpt
@@ -76,10 +77,9 @@ func NewLensServer(
 }
 
 type LensOpt struct {
-	TemplateFilesLocation string
-	LensResourcesDir      string
-	LensName              string
-	LensTitle             string
+	LensResourcesDir string
+	LensName         string
+	LensTitle        string
 }
 
 type lensHandlerOpts struct {
@@ -112,14 +112,8 @@ func newLensHandler(lens api.Lens, opts lensHandlerOpts) http.HandlerFunc {
 
 		switch request.Action {
 		case api.RequestActionInitial:
-			t, err := template.ParseFiles(path.Join(opts.TemplateFilesLocation, "spyglass-lens.html"))
-			if err != nil {
-				http.Error(w, fmt.Sprintf("Failed to load template: %v", err), http.StatusInternalServerError)
-				return
-			}
-
 			w.Header().Set("Content-Type", "text/html; encoding=utf-8")
-			t.Execute(w, struct {
+			lensTemplate.Execute(w, struct {
 				Title   string
 				BaseURL string
 				Head    template.HTML
