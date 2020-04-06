@@ -46,6 +46,8 @@ type config struct {
 	HighlightRegexes []string `json:"highlight_regexes"`
 }
 
+var _ api.Lens = Lens{}
+
 // Lens implements the build lens.
 type Lens struct{}
 

@@ -67,12 +67,12 @@ func lastConfigModTime(prowConfig, jobConfig string) (time.Time, error) {
 // Start will begin polling the config file at the path. If the first load
 // fails, Start will return the error and abort. Future load failures will log
 // the failure message but continue attempting to load.
-func (ca *Agent) Start(prowConfig, jobConfig string) error {
+func (ca *Agent) Start(prowConfig, jobConfig string, additionals ...func(*Config) error) error {
 	lastModTime, err := lastConfigModTime(prowConfig, jobConfig)
 	if err != nil {
 		lastModTime = time.Time{}
 	}
-	c, err := Load(prowConfig, jobConfig)
+	c, err := Load(prowConfig, jobConfig, additionals...)
 	if err != nil {
 		return err
 	}
@@ -94,7 +94,7 @@ func (ca *Agent) Start(prowConfig, jobConfig string) error {
 				}
 				lastModTime = recentModTime
 			}
-			if c, err := Load(prowConfig, jobConfig); err != nil {
+			if c, err := Load(prowConfig, jobConfig, additionals...); err != nil {
 				logrus.WithField("prowConfig", prowConfig).
 					WithField("jobConfig", jobConfig).
 					WithError(err).Error("Error loading config.")

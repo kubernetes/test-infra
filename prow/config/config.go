@@ -599,9 +599,9 @@ type LensRemoteConfig struct {
 	// The human-readable title for the lens
 	Title string `json:"title"`
 	// Priority for lens ordering, lowest priority first
-	Priority uint `json:"priority"`
+	Priority *uint `json:"priority"`
 	// HideTitle defines if we will keep showing the title after lens loads
-	HideTitle bool `json:"hide_title"`
+	HideTitle *bool `json:"hide_title"`
 }
 
 // Spyglass holds config for Spyglass
@@ -790,7 +790,7 @@ func (cfg *SlackReporter) DefaultAndValidate() error {
 }
 
 // Load loads and parses the config at path.
-func Load(prowConfig, jobConfig string) (c *Config, err error) {
+func Load(prowConfig, jobConfig string, additionals ...func(*Config) error) (c *Config, err error) {
 	// we never want config loading to take down the prow components
 	defer func() {
 		if r := recover(); r != nil {
@@ -809,6 +809,12 @@ func Load(prowConfig, jobConfig string) (c *Config, err error) {
 	}
 	if err := c.ValidateJobConfig(); err != nil {
 		return nil, err
+	}
+
+	for _, additional := range additionals {
+		if err := additional(c); err != nil {
+			return nil, err
+		}
 	}
 	return c, nil
 }
@@ -1507,17 +1513,6 @@ func parseProwConfig(c *Config) error {
 		c.Deck.Spyglass.SizeLimit = 100e6
 	} else if c.Deck.Spyglass.SizeLimit <= 0 {
 		return fmt.Errorf("invalid value for deck.spyglass.size_limit, must be >=0")
-	}
-
-	for idx, lens := range c.Deck.Spyglass.Lenses {
-		if lens.RemoteConfig == nil {
-			continue
-		}
-		parsedEndpoint, err := url.Parse(lens.RemoteConfig.Endpoint)
-		if err != nil {
-			return fmt.Errorf("failed to parse url %q for remote lens %q: %w", lens.RemoteConfig.Endpoint, lens.Lens.Name, err)
-		}
-		c.Deck.Spyglass.Lenses[idx].RemoteConfig.ParsedEndpoint = parsedEndpoint
 	}
 
 	// Migrate the old `viewers` format to the new `lenses` format.

@@ -58,14 +58,12 @@ func checkOverlapBrancher(b1, b2 Brancher) bool {
 func TestMain(m *testing.M) {
 	flag.Parse()
 	if *configPath == "" {
-		fmt.Println("--config must set")
-		os.Exit(1)
+		panic("--config must set")
 	}
 
 	conf, err := Load(*configPath, *jobConfigPath)
 	if err != nil {
-		fmt.Printf("Could not load config: %v", err)
-		os.Exit(1)
+		panic(fmt.Sprintf("Could not load config: %v", err))
 	}
 	c = conf
 

@@ -75,6 +75,7 @@ import (
 	"k8s.io/test-infra/prow/simplifypath"
 	"k8s.io/test-infra/prow/spyglass"
 	spyglassapi "k8s.io/test-infra/prow/spyglass/api"
+	"k8s.io/test-infra/prow/spyglass/lenses/common"
 
 	// Import standard spyglass viewers
 
@@ -102,7 +103,6 @@ const (
 type options struct {
 	configPath            string
 	jobConfigPath         string
-	buildCluster          string
 	kubernetes            prowflagutil.KubernetesOptions
 	github                prowflagutil.GitHubOptions
 	tideURL               string
@@ -279,7 +279,7 @@ func main() {
 
 	// setup config agent, pod log clients etc.
 	configAgent := &config.Agent{}
-	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
+	if err := configAgent.Start(o.configPath, o.jobConfigPath, spglassConfigDefaulting); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 	cfg := configAgent.Config
@@ -709,6 +709,40 @@ func initSpyglass(cfg config.Getter, o options, mux *http.ServeMux, ja *jobs.Job
 	mux.Handle("/view/", gziphandler.GzipHandler(handleRequestJobViews(sg, cfg, o, logrus.WithField("handler", "/view"))))
 	mux.Handle("/job-history/", gziphandler.GzipHandler(handleJobHistory(o, cfg, c, logrus.WithField("handler", "/job-history"))))
 	mux.Handle("/pr-history/", gziphandler.GzipHandler(handlePRHistory(o, cfg, c, gitHubClient, gitClient, logrus.WithField("handler", "/pr-history"))))
+	if err := initLocalLensHandler(cfg, o, sg); err != nil {
+		logrus.WithError(err).Fatal("Failed to initialize local lens handler")
+	}
+}
+
+func initLocalLensHandler(cfg config.Getter, o options, sg *spyglass.Spyglass) error {
+	var localLenses []common.LensWithConfiguration
+	for _, lfc := range cfg().Deck.Spyglass.Lenses {
+		if !strings.HasPrefix(strings.TrimLeft(lfc.RemoteConfig.Endpoint, "http://"), spyglassLocalLensListenerAddr) {
+			continue
+		}
+
+		lens, err := lenses.GetLens(lfc.Lens.Name)
+		if err != nil {
+			return fmt.Errorf("couldn't find local lens %q: %w", lfc.Lens.Name, err)
+		}
+		localLenses = append(localLenses, common.LensWithConfiguration{
+			Config: common.LensOpt{
+				TemplateFilesLocation: o.templateFilesLocation,
+				LensResourcesDir:      lenses.ResourceDirForLens(o.spyglassFilesLocation, lfc.Lens.Name),
+				LensName:              lfc.Lens.Name,
+				LensTitle:             lfc.RemoteConfig.Title,
+			},
+			Lens: lens,
+		})
+	}
+
+	lensServer, err := common.NewLensServer(spyglassLocalLensListenerAddr, sg.JobAgent, sg.GCSArtifactFetcher, sg.PodLogArtifactFetcher, cfg, localLenses)
+	if err != nil {
+		return fmt.Errorf("constructing local lens server: %w", err)
+	}
+
+	interrupts.ListenAndServe(lensServer, 5*time.Second)
+	return nil
 }
 
 func loadToken(file string) ([]byte, error) {
@@ -1132,9 +1166,15 @@ func handleArtifactView(o options, sg *spyglass.Spyglass, cfg config.Getter) htt
 		lensName := pathSegments[0]
 		resource := pathSegments[1]
 
-		lens, remoteLens, err := lenses.GetLens(cfg, lensName)
-		if err != nil {
-			http.Error(w, fmt.Sprintf("No such template: %s (%v)", lensName, err), http.StatusNotFound)
+		var lens *config.LensFileConfig
+		for _, configLens := range cfg().Deck.Spyglass.Lenses {
+			if configLens.Lens.Name == lensName {
+				lens = &configLens
+				break
+			}
+		}
+		if lens == nil {
+			http.Error(w, fmt.Sprintf("No such template: %s", lensName), http.StatusNotFound)
 			return
 		}
 
@@ -1145,15 +1185,7 @@ func handleArtifactView(o options, sg *spyglass.Spyglass, cfg config.Getter) htt
 			return
 		}
 
-		if lens != nil {
-			handleLocalLens(o, sg, lens, w, r, cfg, resource, request)
-			return
-		}
-
-		if remoteLens != nil {
-			handleRemoteLens(*remoteLens, w, r, resource, request)
-			return
-		}
+		handleRemoteLens(*lens, w, r, resource, request)
 	}
 }
 
@@ -1199,59 +1231,10 @@ func handleRemoteLens(lens config.LensFileConfig, w http.ResponseWriter, r *http
 	(&httputil.ReverseProxy{
 		Director: func(r *http.Request) {
 			r.URL = lens.RemoteConfig.ParsedEndpoint
+			r.ContentLength = int64(len(serializedRequest))
 			r.Body = ioutil.NopCloser(bytes.NewBuffer(serializedRequest))
 		},
 	}).ServeHTTP(w, r)
-}
-
-func handleLocalLens(o options, sg *spyglass.Spyglass, lens lenses.Lens, w http.ResponseWriter, r *http.Request, cfg config.Getter, resource string, request spyglass.LensRequest) {
-	lensConfig := lens.Config()
-	lensResourcesDir := lenses.ResourceDirForLens(o.spyglassFilesLocation, lensConfig.Name)
-
-	artifacts, err := sg.FetchArtifacts(request.Source, "", cfg().Deck.Spyglass.SizeLimit, request.Artifacts)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to retrieve expected artifacts: %v", err), http.StatusInternalServerError)
-		return
-	}
-
-	switch resource {
-	case "iframe":
-		t, err := template.ParseFiles(path.Join(o.templateFilesLocation, "spyglass-lens.html"))
-		if err != nil {
-			http.Error(w, fmt.Sprintf("Failed to load template: %v", err), http.StatusInternalServerError)
-			return
-		}
-
-		w.Header().Set("Content-Type", "text/html; encoding=utf-8")
-		t.Execute(w, struct {
-			Title   string
-			BaseURL string
-			Head    template.HTML
-			Body    template.HTML
-		}{
-			lensConfig.Title,
-			"/spyglass/static/" + lens.Config().Name + "/",
-			template.HTML(lens.Header(artifacts, lensResourcesDir, cfg().Deck.Spyglass.Lenses[request.Index].Lens.Config)),
-			template.HTML(lens.Body(artifacts, lensResourcesDir, "", cfg().Deck.Spyglass.Lenses[request.Index].Lens.Config)),
-		})
-	case "rerender":
-		data, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			http.Error(w, fmt.Sprintf("Failed to read body: %v", err), http.StatusInternalServerError)
-			return
-		}
-		w.Header().Set("Content-Type", "text/html; encoding=utf-8")
-		w.Write([]byte(lens.Body(artifacts, lensResourcesDir, string(data), cfg().Deck.Spyglass.Lenses[request.Index].Lens.Config)))
-	case "callback":
-		data, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			http.Error(w, fmt.Sprintf("Failed to read body: %v", err), http.StatusInternalServerError)
-			return
-		}
-		w.Write([]byte(lens.Callback(artifacts, lensResourcesDir, string(data), cfg().Deck.Spyglass.Lenses[request.Index].Lens.Config)))
-	default:
-		http.NotFound(w, r)
-	}
 }
 
 func handleTidePools(cfg config.Getter, ta *tideAgent, log *logrus.Entry) http.HandlerFunc {
@@ -1576,4 +1559,58 @@ type deckGitHubClient interface {
 	prowgithub.RerunClient
 	GetPullRequest(org, repo string, number int) (*prowgithub.PullRequest, error)
 	GetRef(org, repo, ref string) (string, error)
+}
+
+func spglassConfigDefaulting(c *config.Config) error {
+
+	for idx := range c.Deck.Spyglass.Lenses {
+		if err := defaultLensRemoteConfig(&c.Deck.Spyglass.Lenses[idx]); err != nil {
+			return err
+		}
+		parsedEndpoint, err := url.Parse(c.Deck.Spyglass.Lenses[idx].RemoteConfig.Endpoint)
+		if err != nil {
+			return fmt.Errorf("failed to parse url %q for remote lens %q: %w", c.Deck.Spyglass.Lenses[idx].RemoteConfig.Endpoint, c.Deck.Spyglass.Lenses[idx].Lens.Name, err)
+		}
+		c.Deck.Spyglass.Lenses[idx].RemoteConfig.ParsedEndpoint = parsedEndpoint
+	}
+
+	return nil
+}
+
+const spyglassLocalLensListenerAddr = "127.0.0.1:1234"
+
+func defaultLensRemoteConfig(lfc *config.LensFileConfig) error {
+	if lfc.RemoteConfig != nil && lfc.RemoteConfig.Endpoint != "" {
+		return nil
+	}
+
+	lens, err := lenses.GetLens(lfc.Lens.Name)
+	if err != nil {
+		return fmt.Errorf("lens %q has no remote_config and could not get default: %w", lfc.Lens.Name, err)
+	}
+
+	if lfc.RemoteConfig == nil {
+		lfc.RemoteConfig = &config.LensRemoteConfig{}
+	}
+
+	if lfc.RemoteConfig.Endpoint == "" {
+		// Must not have a slash in between, DyanmicPathForLens already returns a slash-prefixed path
+		lfc.RemoteConfig.Endpoint = fmt.Sprintf("http://%s%s", spyglassLocalLensListenerAddr, common.DyanmicPathForLens(lfc.Lens.Name))
+	}
+
+	if lfc.RemoteConfig.Title == "" {
+		lfc.RemoteConfig.Title = lens.Config().Title
+	}
+
+	if lfc.RemoteConfig.Priority == nil {
+		p := lens.Config().Priority
+		lfc.RemoteConfig.Priority = &p
+	}
+
+	if lfc.RemoteConfig.HideTitle == nil {
+		hideTitle := lens.Config().HideTitle
+		lfc.RemoteConfig.HideTitle = &hideTitle
+	}
+
+	return nil
 }

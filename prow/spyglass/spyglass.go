@@ -109,21 +109,11 @@ func (sg *Spyglass) Lenses(lensConfigIndexes []int) (orderedIndexes []int, lensM
 	var ls []ld
 	for _, lensIndex := range lensConfigIndexes {
 		lfc := sg.config().Deck.Spyglass.Lenses[lensIndex]
-		lens, remoteLens, err := lenses.GetLens(sg.config, lfc.Lens.Name)
+		lens, err := lenses.GetLens(lfc.Lens.Name)
 		if err != nil {
 			logrus.WithField("lensName", lens).WithError(err).Error("Could not find artifact lens")
-		} else if lens != nil {
+		} else {
 			ls = append(ls, ld{lens, lensIndex})
-		} else if remoteLens != nil {
-			ls = append(ls, ld{
-				lenses.LensConfig{
-					Name:      remoteLens.Lens.Name,
-					Title:     remoteLens.RemoteConfig.Title,
-					Priority:  remoteLens.RemoteConfig.Priority,
-					HideTitle: remoteLens.RemoteConfig.HideTitle,
-				},
-				lensIndex,
-			})
 		}
 	}
 	// Make sure lenses are rendered in order by ascending priority

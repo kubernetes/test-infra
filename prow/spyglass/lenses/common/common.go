@@ -26,7 +26,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/NYTimes/gziphandler"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
 
@@ -35,7 +34,10 @@ import (
 	"k8s.io/test-infra/prow/spyglass/api"
 )
 
-const PrefixDynamicHandlers = "/dyanmic"
+type LensWithConfiguration struct {
+	Config LensOpt
+	Lens   api.Lens
+}
 
 func NewLensServer(
 	listenAddress string,
@@ -43,28 +45,32 @@ func NewLensServer(
 	gcsArtifactFetcher ArtifactFetcher,
 	podLogArtifactFetcher ArtifactFetcher,
 	cfg config.Getter,
-	lenses map[LensOpt]api.Lens,
+	lenses []LensWithConfiguration,
 ) (*http.Server, error) {
 
 	mux := http.NewServeMux()
 
 	seenLens := sets.String{}
-	for lensOpt, lens := range lenses {
-		if seenLens.Has(lensOpt.LensName) {
-			return nil, fmt.Errorf("duplicate lens named %q", lensOpt.LensName)
+	for _, lens := range lenses {
+		if seenLens.Has(lens.Config.LensName) {
+			return nil, fmt.Errorf("duplicate lens named %q", lens.Config.LensName)
 		}
-		seenLens.Insert(lensOpt.LensName)
+		seenLens.Insert(lens.Config.LensName)
 
-		logrus.WithField("Lens", lensOpt.LensName).Info("Adding handler for lens")
+		logrus.WithField("Lens", lens.Config.LensName).Info("Adding handler for lens")
 		opt := lensHandlerOpts{
 			PJFetcher:             pjFetcher,
 			GCSArtifactFetcher:    gcsArtifactFetcher,
 			PodLogArtifactFetcher: podLogArtifactFetcher,
 			ConfigGetter:          cfg,
-			LensOpt:               lensOpt,
+			LensOpt:               lens.Config,
 		}
-		mux.Handle(PrefixDynamicHandlers+"/"+lensOpt.LensName, gziphandler.GzipHandler(newLensHandler(lens, opt)))
+		mux.Handle(DyanmicPathForLens(lens.Config.LensName), newLensHandler(lens.Lens, opt))
 	}
+	mux.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		logrus.WithField("path", r.URL.Path).Error("LensServer got request on unhandled path")
+		http.NotFound(w, r)
+	}))
 
 	return &http.Server{Addr: listenAddress, Handler: mux}, nil
 }
@@ -269,4 +275,10 @@ func keyToJob(src string) (jobName string, buildID string, err error) {
 	jobName = parsed[len(parsed)-2]
 	buildID = parsed[len(parsed)-1]
 	return jobName, buildID, nil
+}
+
+const prefixSpyglassDynamicHandlers = "dynamic"
+
+func DyanmicPathForLens(lensName string) string {
+	return fmt.Sprintf("/%s/%s", prefixSpyglassDynamicHandlers, lensName)
 }
