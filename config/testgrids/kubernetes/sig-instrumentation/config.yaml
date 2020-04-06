@@ -3,6 +3,7 @@ dashboard_groups:
   dashboard_names:
   - sig-instrumentation-tests
   - sig-instrumentation-image-pushes
+  - sig-instrumentation-metrics-server
 
 dashboards:
 - name: sig-instrumentation-tests
@@ -72,3 +73,4 @@ dashboards:
       base_options: include-filter-by-regex=sig-instrumentation
       description: sig-instrumentation gke stackdriver logging e2e tests for 1.13 branch with Ubuntu
 - name: sig-instrumentation-image-pushes
+- name: sig-instrumentation-metrics-server
