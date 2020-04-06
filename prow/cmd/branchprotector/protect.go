@@ -29,10 +29,10 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
-	"k8s.io/test-infra/prow/errorutil"
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/logrusutil"
@@ -257,7 +257,7 @@ func (p *protector) UpdateOrg(orgName string, org config.Org) error {
 		}
 	}
 
-	return errorutil.NewAggregate(errs...)
+	return utilerrors.NewAggregate(errs)
 }
 
 // UpdateRepo updates all branches in the repo with the specified defaults
@@ -325,7 +325,7 @@ func (p *protector) UpdateRepo(orgName string, repoName string, repo config.Repo
 		}
 	}
 
-	return errorutil.NewAggregate(errs...)
+	return utilerrors.NewAggregate(errs)
 }
 
 // authorizedCollaborators returns the list of Logins for users that are

@@ -109,7 +109,6 @@ filegroup(
         "//prow/cron:all-srcs",
         "//prow/deck/jobs:all-srcs",
         "//prow/entrypoint:all-srcs",
-        "//prow/errorutil:all-srcs",
         "//prow/external-plugins/cherrypicker:all-srcs",
         "//prow/external-plugins/needs-rebase:all-srcs",
         "//prow/external-plugins/refresh:all-srcs",
