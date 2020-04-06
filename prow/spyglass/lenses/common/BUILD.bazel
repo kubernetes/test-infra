@@ -2,7 +2,10 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = ["common.go"],
+    srcs = [
+        "bindata.go",
+        "common.go",
+    ],
     importpath = "k8s.io/test-infra/prow/spyglass/lenses/common",
     visibility = ["//visibility:public"],
     deps = [
