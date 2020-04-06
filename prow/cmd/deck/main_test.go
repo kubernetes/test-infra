@@ -42,8 +42,6 @@ import (
 	"k8s.io/test-infra/prow/githuboauth"
 	"k8s.io/test-infra/prow/plugins"
 
-	"github.com/google/go-github/github"
-
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -266,16 +264,12 @@ func TestProwJob(t *testing.T) {
 	}
 }
 
-type mockGitHubConfigGetter struct {
-	githubLogin string
+type fakeAuthenticatedUserIdentifier struct {
+	login string
 }
 
-func (getter mockGitHubConfigGetter) GetGitHubClient(accessToken string, dryRun bool) githuboauth.GitHubClientWrapper {
-	return getter
-}
-
-func (getter mockGitHubConfigGetter) GetUser(login string) (*github.User, error) {
-	return &github.User{Login: &getter.githubLogin}, nil
+func (a *fakeAuthenticatedUserIdentifier) LoginForRequester(requester, token string) (string, error) {
+	return a.login, nil
 }
 
 // TestRerun just checks that the result can be unmarshaled properly, has an
@@ -433,7 +427,7 @@ func TestRerun(t *testing.T) {
 				CookieStore: mockCookieStore,
 			}
 			goa := githuboauth.NewAgent(mockConfig, &logrus.Entry{})
-			ghc := mockGitHubConfigGetter{githubLogin: tc.login}
+			ghc := &fakeAuthenticatedUserIdentifier{login: tc.login}
 			rc := &fakegithub.FakeClient{OrgMembers: map[string][]string{"org": {"org-member"}}}
 			pca := plugins.NewFakeConfigAgent()
 			handler := handleRerun(fakeProwJobClient.ProwV1().ProwJobs("prowjobs"), tc.rerunCreatesJob, authCfgGetter, goa, ghc, rc, &pca, logrus.WithField("handler", "/rerun"))
