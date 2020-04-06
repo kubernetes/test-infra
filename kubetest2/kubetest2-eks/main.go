@@ -35,18 +35,15 @@ func main() {
 // eks uses env vars, so just return empty flag set
 func newEKS(opts types.Options) (types.Deployer, *pflag.FlagSet) {
 	cfg := eksconfig.NewDefault() // use auto-generated config
-	cfg.Sync()
 
 	err := cfg.UpdateFromEnvs()
 	if err != nil {
 		panic(err)
 	}
-	cfg.Sync()
 
 	if err = cfg.ValidateAndSetDefaults(); err != nil {
 		panic(err)
 	}
-	cfg.Sync()
 
 	dp, err := eks.New(cfg)
 	if err != nil {
