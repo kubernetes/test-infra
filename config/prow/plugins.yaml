@@ -151,6 +151,11 @@ blockades:
   - ^keps/
   explanation: "KEPs have been relocated to [kubernetes/enhancements](https://git.k8s.io/enhancements/)! Please submit any updates there."
 - repos:
+  - kubernetes/community
+  blockregexps:
+  - ^contributors/design-proposals/
+  explanation: "The Design Proposal process has been deprecated in favor of [Kubernetes Enhancement Proposals (KEP)](https://git.k8s.io/enhancements/). These documents are here for historical purposes only."
+- repos:
   - kubernetes/enhancements
   blockregexps:
   - ^keps/NEXT_KEP_NUMBER$
