@@ -78,7 +78,7 @@ require (
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.6.2
-	github.com/tektoncd/pipeline v0.10.1
+	github.com/tektoncd/pipeline v0.11.0
 	go.opencensus.io v0.22.3 // indirect
 	gocloud.dev v0.19.0
 	golang.org/x/crypto v0.0.0-20200302210943-78000ba7a073
@@ -89,7 +89,7 @@ require (
 	golang.org/x/sys v0.0.0-20200302150141-5c8b2ff67527 // indirect
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0
 	golang.org/x/tools v0.0.0-20200303214625-2b0b585e22fe
-	google.golang.org/api v0.10.0
+	google.golang.org/api v0.15.0
 	gopkg.in/ini.v1 v1.52.0 // indirect
 	gopkg.in/robfig/cron.v2 v2.0.0-20150107220207-be2e0b0deed5
 	gopkg.in/yaml.v3 v3.0.0-20190709130402-674ba3eaed22
@@ -99,7 +99,7 @@ require (
 	k8s.io/code-generator v0.17.3
 	k8s.io/klog v1.0.0
 	k8s.io/utils v0.0.0-20191114184206-e782cd3c129f
-	knative.dev/pkg v0.0.0-20191111150521-6d806b998379
+	knative.dev/pkg v0.0.0-20200207155214-fef852970f43
 	mvdan.cc/xurls/v2 v2.0.0
 	sigs.k8s.io/controller-runtime v0.5.0
 	sigs.k8s.io/yaml v1.1.0
