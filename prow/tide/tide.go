@@ -26,6 +26,7 @@ import (
 	"fmt"
 	"net/http"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -280,6 +281,13 @@ func newSyncController(
 		cacheIndexFunc,
 	); err != nil {
 		return nil, fmt.Errorf("failed to add baseSHA index to cache: %v", err)
+	}
+	if err := mgr.GetFieldIndexer().IndexField(
+		&prowapi.ProwJob{},
+		nonFailedBatchByNameBaseAndPullsIndexName,
+		nonFailedBatchByNameBaseAndPullsIndexFunc,
+	); err != nil {
+		return nil, fmt.Errorf("failed to add index for non failed batches: %w", err)
 	}
 	return &Controller{
 		ctx:           context.Background(),
@@ -1207,6 +1215,9 @@ func (c *Controller) trigger(sp subpool, presubmits []config.Presubmit, prs []Pu
 		if len(prs) == 1 {
 			spec = pjutil.PresubmitSpec(ps, refs)
 		} else {
+			if c.nonFailedBatchForJobAndRefsExists(ps.Name, &refs) {
+				continue
+			}
 			spec = pjutil.BatchSpec(ps, refs)
 		}
 		pj := pjutil.NewProwJob(spec, ps.Labels, ps.Annotations)
@@ -1220,6 +1231,20 @@ func (c *Controller) trigger(sp subpool, presubmits []config.Presubmit, prs []Pu
 		log.WithField("duration", time.Since(start).String()).Debug("Created ProwJob on the cluster.")
 	}
 	return nil
+}
+
+func (c *Controller) nonFailedBatchForJobAndRefsExists(jobName string, refs *prowapi.Refs) bool {
+	pjs := &prowapi.ProwJobList{}
+	if err := c.prowJobClient.List(c.ctx,
+		pjs,
+		ctrlruntimeclient.MatchingField(nonFailedBatchByNameBaseAndPullsIndexName, nonFailedBatchByNameBaseAndPullsIndexKey(jobName, refs)),
+		ctrlruntimeclient.InNamespace(c.config().ProwJobNamespace),
+	); err != nil {
+		c.logger.WithError(err).Error("Failed to list non-failed batches")
+		return false
+	}
+
+	return len(pjs.Items) > 0
 }
 
 func (c *Controller) takeAction(sp subpool, batchPending, successes, pendings, missings, batchMerges []PullRequest, missingSerialTests map[int][]config.Presubmit) (Action, []PullRequest, error) {
@@ -1765,4 +1790,33 @@ func cacheIndexFunc(obj runtime.Object) []string {
 		return nil
 	}
 	return []string{cacheIndexKey(pj.Spec.Refs.Org, pj.Spec.Refs.Repo, pj.Spec.Refs.BaseRef, pj.Spec.Refs.BaseSHA)}
+}
+
+const nonFailedBatchByNameBaseAndPullsIndexName = "tide-non-failed-jobs-by-name-base-and-pulls"
+
+func nonFailedBatchByNameBaseAndPullsIndexKey(jobName string, refs *prowapi.Refs) string {
+	// sort the pulls to make sure this is deterministic
+	sort.Slice(refs.Pulls, func(i, j int) bool {
+		return refs.Pulls[i].Number < refs.Pulls[j].Number
+	})
+
+	keys := []string{jobName, refs.Org, refs.Repo, refs.BaseRef, refs.BaseSHA}
+	for _, pull := range refs.Pulls {
+		keys = append(keys, strconv.Itoa(pull.Number), pull.SHA)
+	}
+
+	return strings.Join(keys, "|")
+}
+
+func nonFailedBatchByNameBaseAndPullsIndexFunc(obj runtime.Object) []string {
+	pj := obj.(*prowapi.ProwJob)
+	if pj.Spec.Type != prowapi.BatchJob || pj.Spec.Refs == nil {
+		return nil
+	}
+
+	if pj.Complete() && pj.Status.State != prowapi.SuccessState {
+		return nil
+	}
+
+	return []string{nonFailedBatchByNameBaseAndPullsIndexKey(pj.Spec.Job, pj.Spec.Refs)}
 }
