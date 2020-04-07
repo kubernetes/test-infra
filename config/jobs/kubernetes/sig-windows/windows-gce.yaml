@@ -405,8 +405,10 @@ periodics:
       - /workspace/scenarios/kubernetes_e2e.py
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200404-7b4af8e-master
       env:
+      - name: CL2_CONTAINER_IMAGE
+        value: "gcr.io/gke-release/pause-win:1.2.1"
       - name: CL2_WMI_EXPORTER_URL
-        value: "https://github.com/YangLu1031/wmi_exporter/releases/download/v0.10.3-alpha/wmi_exporter.exe"
+        value: "https://github.com/martinlindhe/wmi_exporter/releases/download/v0.11.0/wmi_exporter-0.11.0-amd64.exe"
       - name: CL2_WMI_EXPORTER_ENABLED_COLLECTORS
         value: "process,cs"
       args:
@@ -460,11 +462,11 @@ periodics:
       - name: CL2_CONTAINER_IMAGE
         value: "mcr.microsoft.com/windows/servercore/iis"
       - name: CL2_WMI_EXPORTER_URL
-        value: "https://github.com/YangLu1031/wmi_exporter/releases/download/v0.10.3-alpha/wmi_exporter.exe"
+        value: "https://github.com/martinlindhe/wmi_exporter/releases/download/v0.11.0/wmi_exporter-0.11.0-amd64.exe"
       - name: CL2_WMI_EXPORTER_ENABLED_COLLECTORS
         value: "process,cs"
       - name: CL2_POD_COUNT
-        value: "20"
+        value: "40"
       args:
       - --check-leaked-resources
       - --cluster=
