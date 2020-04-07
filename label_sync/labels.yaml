@@ -619,6 +619,7 @@ default:
       target: both
       prowPlugin: label
       addedBy: anyone
+      deleteAfter: 2020-04-08T00:00:00+00:00
     - color: d2b48c
       description: Categorizes an issue or PR as relevant to wg-security-audit.
       name: wg/security-audit
