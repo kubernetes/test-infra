@@ -37,6 +37,28 @@ presubmits:
         securityContext:
           privileged: true
     trigger: '(?m)^/test (?:.*? )?test(?:.*?)?$'
+  - name: coverage-go-repo-template
+    cluster: default
+    always_run: true
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/go-repo-template
+    spec:
+      containers:
+      - command:
+        - make
+        - coverage
+        image: quay.io/multicloudlab/check-tool:v20200319-b5bfe54
+        name: ""
+        env:
+        - name: CODECOV_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: ibm-go-repo-template-codecov-token
+              key: codecov-token
+        securityContext:
+          privileged: true
   - name: test-go-repo-template-ppc64le
     cluster: ppc64le
     always_run: true
