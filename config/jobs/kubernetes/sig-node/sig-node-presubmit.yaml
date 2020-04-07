@@ -83,6 +83,7 @@ presubmits:
     - master
     always_run: true
     optional: true
+    skip_report: true
     max_concurrency: 12
     labels:
       preset-service-account: "true"
