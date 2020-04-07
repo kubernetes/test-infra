@@ -813,7 +813,37 @@ repos:
   kubernetes/k8s.io:
     labels:
       - color: 0052cc
-        description: Indicates an issue related to DNS records.
+        description: Issues or PRs related to defining who has access to what (e.g. IAM, RBAC, google groups)
+        name: area/access
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to the hosting of release artifacts for subprojects
+        name: area/artifacts
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to billing
+        name: area/billing
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: Issue or PRs related to project infra that runs on a cluster
+        name: area/cluster-infra
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to managing k8s clusters to run k8s-infra
+        name: area/cluster-mgmt
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to DNS records
         name: area/dns
         target: both
         prowPlugin: label
@@ -825,14 +855,14 @@ repos:
         prowPlugin: label
         addedBy: anyone
       - color: 0052cc
-        description: Issues or PRs related to monitoring of the Kubernetes project infrastructure
-        name: area/infra/monitoring
+        description: Issues or PRs related to Cert Manager
+        name: area/infra/cert-manager
         target: both
         prowPlugin: label
         addedBy: anyone
       - color: 0052cc
-        description: Issues or PR related to reliability of the Kubernetes project infrastructure
-        name: area/infra/reliability
+        description: Issues or PRs related to monitoring of the Kubernetes project infrastructure
+        name: area/infra/monitoring
         target: both
         prowPlugin: label
         addedBy: anyone
@@ -843,8 +873,8 @@ repos:
         prowPlugin: label
         addedBy: anyone
       - color: 0052cc
-        description: Issues or PRs related to Cert Manager
-        name: area/infra/cert-manager
+        description: Issues or PR related to reliability of the Kubernetes project infrastructure
+        name: area/infra/reliability
         target: both
         prowPlugin: label
         addedBy: anyone

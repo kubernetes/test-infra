@@ -239,7 +239,12 @@ larger set of contributors to apply/remove them.
 
 | Name | Description | Added By | Prow Plugin |
 | ---- | ----------- | -------- | --- |
-| <a id="area/dns" href="#area/dns">`area/dns`</a> | Indicates an issue related to DNS records.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="area/access" href="#area/access">`area/access`</a> | Issues or PRs related to defining who has access to what (e.g. IAM, RBAC, google groups)| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="area/artifacts" href="#area/artifacts">`area/artifacts`</a> | Issues or PRs related to the hosting of release artifacts for subprojects| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="area/billing" href="#area/billing">`area/billing`</a> | Issues or PRs related to billing| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="area/cluster-infra" href="#area/cluster-infra">`area/cluster-infra`</a> | Issue or PRs related to project infra that runs on a cluster| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="area/cluster-mgmt" href="#area/cluster-mgmt">`area/cluster-mgmt`</a> | Issues or PRs related to managing k8s clusters to run k8s-infra| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="area/dns" href="#area/dns">`area/dns`</a> | Issues or PRs related to DNS records| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="area/infra/auditing" href="#area/infra/auditing">`area/infra/auditing`</a> | Issues or PRs related to auditing for the Kubernetes project infrastructure| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="area/infra/cert-manager" href="#area/infra/cert-manager">`area/infra/cert-manager`</a> | Issues or PRs related to Cert Manager| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="area/infra/monitoring" href="#area/infra/monitoring">`area/infra/monitoring`</a> | Issues or PRs related to monitoring of the Kubernetes project infrastructure| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
