@@ -795,7 +795,8 @@ func (g *gkeDeployer) Down() error {
 		return fmt.Errorf("error deleting network: %v", errNetwork)
 	}
 	if numLeakedFWRules > 0 {
-		return fmt.Errorf("leaked firewall rules")
+		// Leaked firewall rules are cleaned up already, print a warning instead of failing hard
+		log.Println("Warning: leaked firewall rules")
 	}
 	return nil
 }
