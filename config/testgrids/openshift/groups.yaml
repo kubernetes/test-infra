@@ -6,11 +6,13 @@ dashboard_groups:
   - redhat-openshift-ocp-release-4.2-blocking
   - redhat-openshift-ocp-release-4.2-informing
   - redhat-openshift-ocp-release-4.3-blocking
+  - redhat-openshift-ocp-release-4.3-broken
   - redhat-openshift-ocp-release-4.3-informing
   - redhat-openshift-ocp-release-4.4-blocking
   - redhat-openshift-ocp-release-4.4-broken
   - redhat-openshift-ocp-release-4.4-informing
   - redhat-openshift-ocp-release-4.5-blocking
+  - redhat-openshift-ocp-release-4.5-broken
   - redhat-openshift-ocp-release-4.5-informing
   - redhat-openshift-ocp-release-4.6-blocking
   - redhat-openshift-ocp-release-4.6-informing
@@ -18,9 +20,9 @@ dashboard_groups:
   - redhat-openshift-okd-release-4.4-informing
   - redhat-openshift-okd-release-4.5-informing
   - redhat-openshift-okd-release-4.6-informing
-  - redhat-osde2e-int-gcp
   - redhat-osde2e-int-aws
-  - redhat-osde2e-stage-gcp
-  - redhat-osde2e-stage-aws
+  - redhat-osde2e-int-gcp
   - redhat-osde2e-prod-aws
+  - redhat-osde2e-stage-aws
+  - redhat-osde2e-stage-gcp
   name: redhat
