@@ -4,3 +4,6 @@ reviewers:
 - dims
 approvers:
 - dims
+labels:
+- sig/cloud-provider
+- area/provider/openstack

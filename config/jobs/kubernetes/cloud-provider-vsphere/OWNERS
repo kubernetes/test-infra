@@ -24,3 +24,6 @@ approvers:
 - figo
 - akutz
 - yastij
+labels:
+- sig/cloud-provider
+- area/provider/vmware

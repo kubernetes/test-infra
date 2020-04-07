@@ -10,3 +10,5 @@ approvers:
 - madhusudancs
 - perotinus
 - pmorie
+labels:
+- sig/multicluster

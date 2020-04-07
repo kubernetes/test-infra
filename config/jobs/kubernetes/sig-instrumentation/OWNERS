@@ -6,3 +6,5 @@ reviewers:
 approvers:
 - piosz
 - brancz
+labels:
+- sig/instrumentation

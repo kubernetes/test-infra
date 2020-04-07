@@ -6,3 +6,5 @@ reviewers:
 approvers:
 - sttts
 - nikhita
+labels:
+- sig/apimachinery

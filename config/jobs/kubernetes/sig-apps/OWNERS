@@ -8,3 +8,5 @@ approvers:
 - mattfarina
 - prydonius
 - kow3ns
+labels:
+- sig/apps

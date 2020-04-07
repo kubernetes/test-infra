@@ -14,3 +14,5 @@ approvers:
 - jingax10
 - mrhohn
 - rramkumar1
+labels:
+- sig/network

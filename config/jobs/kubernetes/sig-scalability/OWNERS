@@ -11,3 +11,6 @@ approvers:
 - mm4tt
 - shyamjvs
 - wojtek-t
+
+labels:
+- sig/scalability

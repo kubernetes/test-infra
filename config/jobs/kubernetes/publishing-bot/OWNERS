@@ -10,3 +10,6 @@ approvers:
 - mfojtik
 - nikhita
 - sttts
+labels:
+- sig/release
+- area/release-eng
