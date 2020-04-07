@@ -155,6 +155,7 @@ func Test_GetSimplifiedPathRepos(t *testing.T) {
 
 		{name: "repo commits", args: args{path: "/repos/testOwner/testRepo/commits"}, want: "/repos/:owner/:repo/commits"},
 		{name: "repo commits by sha", args: args{path: "/repos/testOwner/testRepo/commits/testCommitSha"}, want: "/repos/:owner/:repo/commits/:sha"},
+		{name: "repo commit status by sha", args: args{path: "/repos/testOwner/testRepo/commits/testCommitSha/status"}, want: "/repos/:owner/:repo/commits/:sha/status"},
 
 		// /compare/base...head
 		{name: "repo compare", args: args{path: "/repos/testOwner/testRepo/compare/testBase...testHead"}, want: "/repos/:owner/:repo/compare/:sha"},
