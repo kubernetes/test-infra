@@ -29,10 +29,6 @@ import (
 )
 
 const (
-	// LGTM means all presubmits passed, but need someone else to approve before merge.
-	LGTM = "+1"
-	// LBTM means some presubmits failed, perfer not merge.
-	LBTM = "-1"
 	// CodeReview is the default gerrit code review label
 	CodeReview = "Code-Review"
 
