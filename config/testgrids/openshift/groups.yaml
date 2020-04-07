@@ -18,7 +18,9 @@ dashboard_groups:
   - redhat-openshift-okd-release-4.4-informing
   - redhat-openshift-okd-release-4.5-informing
   - redhat-openshift-okd-release-4.6-informing
-  - redhat-osd-int
-  - redhat-osd-prod
-  - redhat-osd-stage
+  - redhat-osde2e-int-gcp
+  - redhat-osde2e-int-aws
+  - redhat-osde2e-stage-gcp
+  - redhat-osde2e-stage-aws
+  - redhat-osde2e-prod-aws
   name: redhat
