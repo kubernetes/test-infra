@@ -8,3 +8,5 @@ approvers:
 - AdoHe
 - pwittrock
 - soltysh
+labels:
+- sig/cli

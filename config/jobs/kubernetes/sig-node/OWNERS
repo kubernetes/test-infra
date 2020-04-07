@@ -8,3 +8,5 @@ approvers:
 - yujuhong
 - Random-Liu
 - dchen1107
+labels:
+- sig/node

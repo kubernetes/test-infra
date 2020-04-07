@@ -6,3 +6,5 @@ reviewers:
 approvers:
 - lavalamp
 - deads2k
+labels:
+- sig/api-machinery

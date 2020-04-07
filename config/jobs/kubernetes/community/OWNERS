@@ -16,3 +16,5 @@ approvers:
 - idvoretskyi
 - jdumars
 - parispittman
+labels:
+- sig/contributor-experience

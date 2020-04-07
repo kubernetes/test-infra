@@ -6,3 +6,5 @@ reviewers:
 approvers:
 - saad-ali
 - msau42
+labels:
+- sig/storage

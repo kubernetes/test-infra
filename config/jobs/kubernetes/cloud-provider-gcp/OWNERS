@@ -6,3 +6,6 @@ reviewers:
 approvers:
 - awly
 - mikedanese
+labels:
+- sig/cloud-provider
+- area/provider/aws

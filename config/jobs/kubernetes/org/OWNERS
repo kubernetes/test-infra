@@ -14,3 +14,5 @@ approvers:
 - grodrigues3
 - idvoretskyi
 - spiffxp
+labels:
+- sig/contributor-experience

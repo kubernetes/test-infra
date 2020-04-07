@@ -8,3 +8,5 @@ approvers:
 - aoxn
 - cheyang
 - xlgao-zju
+labels:
+- sig/cloud-provider
