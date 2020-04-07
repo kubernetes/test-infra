@@ -101,7 +101,7 @@ func resolve(parent Node, path []string) (string, bool) {
 		return "", false
 	}
 	representation := parent.Represent()
-	if len(path) == 1 || len(parent.children) == 0 {
+	if len(path) == 1 {
 		return representation, true
 	}
 	for _, child := range parent.children {
