@@ -232,14 +232,15 @@ type Client interface {
 
 	WithFields(fields logrus.Fields) Client
 	ForPlugin(plugin string) Client
+	ForSubcomponent(subcomponent string) Client
 }
 
 // client interacts with the github api.
 type client struct {
 	// If logger is non-nil, log all method calls with it.
 	logger *logrus.Entry
-	// plugin is used to add more identification to the user-agent header
-	plugin string
+	// identifier is used to add more identification to the user-agent header
+	identifier string
 	*delegate
 }
 
@@ -268,16 +269,26 @@ type delegate struct {
 // ForPlugin clones the client, keeping the underlying delegate the same but adding
 // a plugin identifier and log field
 func (c *client) ForPlugin(plugin string) Client {
+	return c.forKeyValue("plugin", plugin)
+}
+
+// ForSubcomponent clones the client, keeping the underlying delegate the same but adding
+// an identifier and log field
+func (c *client) ForSubcomponent(subcomponent string) Client {
+	return c.forKeyValue("subcomponent", subcomponent)
+}
+
+func (c *client) forKeyValue(key, value string) Client {
 	return &client{
-		plugin:   plugin,
-		logger:   c.logger.WithField("plugin", plugin),
-		delegate: c.delegate,
+		identifier: value,
+		logger:     c.logger.WithField(key, value),
+		delegate:   c.delegate,
 	}
 }
 
 func (c *client) userAgent() string {
-	if c.plugin != "" {
-		return version.UserAgentWithIdentifier(c.plugin)
+	if c.identifier != "" {
+		return version.UserAgentWithIdentifier(c.identifier)
 	}
 	return version.UserAgent()
 }
