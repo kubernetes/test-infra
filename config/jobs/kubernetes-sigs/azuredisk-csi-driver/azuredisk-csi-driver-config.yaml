@@ -248,7 +248,6 @@ presubmits:
     decorate: true
     always_run: true
     path_alias: sigs.k8s.io/azuredisk-csi-driver
-    optional: true
     branches:
     - master
     labels:
