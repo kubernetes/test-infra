@@ -18,6 +18,8 @@ package trigger
 
 import (
 	"fmt"
+	"regexp"
+	"strings"
 
 	"github.com/sirupsen/logrus"
 
@@ -28,6 +30,24 @@ import (
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/plugins"
 )
+
+var (
+	testHelpRe          = regexp.MustCompile(`(?m)^/test\s*\?\s*$`)
+	emptyTestRe         = regexp.MustCompile(`(?m)^/test\s*$`)
+	retestWithTargetRe  = regexp.MustCompile(`(?m)^/retest\s+\S+$`)
+	testWithAnyTargetRe = regexp.MustCompile(`(?m)^/test\s+\S+$`)
+
+	testWithoutTargetNote = "The `/test` command needs one or more targets.\n"
+	retestWithTargetNote  = "The `/retest` command does not accept any targets.\n"
+	targetNotFoundNote    = "The specified target(s) for `/test` were not found.\n"
+)
+
+func mayNeedHelpComment(body string) bool {
+	return emptyTestRe.MatchString(body) ||
+		retestWithTargetRe.MatchString(body) ||
+		testWithAnyTargetRe.MatchString(body) ||
+		testHelpRe.MatchString(body)
+}
 
 func handleGenericComment(c Client, trigger plugins.Trigger, gc github.GenericCommentEvent) error {
 	org := gc.Repo.Owner.Login
@@ -53,8 +73,12 @@ func handleGenericComment(c Client, trigger plugins.Trigger, gc github.GenericCo
 
 	refGetter := config.NewRefGetterForGitHubPullRequest(c.GitHubClient, org, repo, number)
 	presubmits := getPresubmits(c.Logger, c.GitClient, c.Config, org+"/"+repo, refGetter.BaseSHA, refGetter.HeadSHA)
+
 	// Skip comments not germane to this plugin
-	if !pjutil.RetestRe.MatchString(gc.Body) && !pjutil.OkToTestRe.MatchString(gc.Body) && !pjutil.TestAllRe.MatchString(gc.Body) {
+	if !pjutil.RetestRe.MatchString(gc.Body) &&
+		!pjutil.OkToTestRe.MatchString(gc.Body) &&
+		!pjutil.TestAllRe.MatchString(gc.Body) &&
+		!mayNeedHelpComment(gc.Body) {
 		matched := false
 		for _, presubmit := range presubmits {
 			matched = matched || presubmit.TriggerMatches(gc.Body)
@@ -121,6 +145,9 @@ func handleGenericComment(c Client, trigger plugins.Trigger, gc github.GenericCo
 	if err != nil {
 		return err
 	}
+	if needsHelp, note := shouldRespondWithHelp(gc.Body, len(toTest)+len(toSkip)); needsHelp {
+		return addHelpComment(c.GitHubClient, gc.Body, org, repo, pr.Base.Ref, pr.Number, presubmits, gc.HTMLURL, commentAuthor, note, c.Logger)
+	}
 	return RunAndSkipJobs(c, pr, baseSHA, toTest, toSkip, gc.GUID, *trigger.ElideSkippedContexts)
 }
 
@@ -170,6 +197,22 @@ func FilterPresubmits(honorOkToTest bool, gitHubClient GitHubClient, body string
 	return pjutil.FilterPresubmits(filter, changes, branch, presubmits, logger)
 }
 
+func availablePresubmits(githubClient GitHubClient, body, org, repo, branch string, number int, presubmits []config.Presubmit, logger *logrus.Entry) ([]string, error) {
+	changes := config.NewGitHubDeferredChangedFilesProvider(githubClient, org, repo, number)
+	all := func(p config.Presubmit) (bool, bool, bool) {
+		return true, true, true
+	}
+	toTest, _, err := pjutil.FilterPresubmits(all, changes, branch, presubmits, logger)
+	if err != nil {
+		return nil, err
+	}
+	var available []string
+	for _, pre := range toTest {
+		available = append(available, pre.RerunCommand)
+	}
+	return available, nil
+}
+
 func getContexts(combinedStatus *github.CombinedStatus) (sets.String, sets.String) {
 	allContexts := sets.String{}
 	failedContexts := sets.String{}
@@ -182,4 +225,38 @@ func getContexts(combinedStatus *github.CombinedStatus) (sets.String, sets.Strin
 		}
 	}
 	return failedContexts, allContexts
+}
+
+func addHelpComment(githubClient githubClient, body, org, repo, branch string, number int, presubmits []config.Presubmit, HTMLURL, user, note string, logger *logrus.Entry) error {
+	available, err := availablePresubmits(githubClient, body, org, repo, branch, number, presubmits, logger)
+	if err != nil {
+		return err
+	}
+	var resp string
+	if len(available) > 0 {
+		var listBuilder strings.Builder
+		for _, name := range available {
+			listBuilder.WriteString(fmt.Sprintf("\n* `%s`", name))
+		}
+		resp = fmt.Sprintf("%sThe following commands are available to trigger jobs:%s\n\nUse `/test all` to run all jobs.",
+			note, listBuilder.String())
+	} else {
+		resp = fmt.Sprintf("No presubmit jobs available for %s/%s@%s", org, repo, branch)
+	}
+	return githubClient.CreateComment(org, repo, number, plugins.FormatResponseRaw(body, HTMLURL, user, resp))
+}
+
+func shouldRespondWithHelp(body string, toRunOrSkip int) (bool, string) {
+	switch {
+	case testHelpRe.MatchString(body):
+		return true, ""
+	case emptyTestRe.MatchString(body):
+		return true, testWithoutTargetNote
+	case retestWithTargetRe.MatchString(body):
+		return true, retestWithTargetNote
+	case toRunOrSkip == 0 && testWithAnyTargetRe.MatchString(body):
+		return true, targetNotFoundNote
+	default:
+		return false, ""
+	}
 }
