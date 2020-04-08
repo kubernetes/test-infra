@@ -409,6 +409,17 @@ presubmits:
         - "3600"
         - --is_integration_test
         - "true"
+  - name: kubeflow-pipeline-mkp-test
+    cluster: kubeflow
+    always_run: false
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200404-7b4af8e-master
+        command:
+        - ./test/presubmit-tests-mkp.sh
   - name: kubeflow-pipeline-upgrade-test
     cluster: kubeflow
     always_run: true
