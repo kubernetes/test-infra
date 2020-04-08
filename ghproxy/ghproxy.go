@@ -112,7 +112,7 @@ func (o *options) validate() error {
 func flagOptions() *options {
 	o := &options{}
 	flag.StringVar(&o.dir, "cache-dir", "", "Directory to cache to if using a disk cache.")
-	flag.IntVar(&o.sizeGB, "cache-sizeGB", 0, "Cache size in GB if using a disk cache.")
+	flag.IntVar(&o.sizeGB, "cache-sizeGB", 0, "Cache size in GB per unique token if using a disk cache.")
 	flag.StringVar(&o.redisAddress, "redis-address", "", "Redis address if using a redis cache e.g. localhost:6379.")
 	flag.IntVar(&o.port, "port", 8888, "Port to listen on.")
 	flag.StringVar(&o.upstream, "upstream", "https://api.github.com", "Scheme, host, and base path of reverse proxy upstream.")
