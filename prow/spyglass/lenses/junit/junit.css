@@ -46,7 +46,7 @@ td.skipped {
   border-collapse: collapse;
 }
 
-.failed-layout, .flaky-layout td {
+.failed-layout td, .flaky-layout td {
   border: 0;
   padding: 0;
 }
@@ -60,7 +60,7 @@ td {
 }
 
 /* We are engaged in a never-ending war of cascade escalation against MDL */
-#failed-tbody, #flaky-tbody > tr:hover {
+#failed-tbody > tr:hover, #flaky-tbody > tr:hover {
   background-color: unset !important;
 }
 
@@ -72,7 +72,7 @@ table.flaky-layout tbody tr.flaky-text:hover {
   background-color: unset !important;
 }
 
-.failure-text, .flaky-text div {
+.failure-text div, .flaky-text div {
   padding-left: 20px;
   padding-right: 20px;
   white-space: pre-wrap;
@@ -80,7 +80,7 @@ table.flaky-layout tbody tr.flaky-text:hover {
   padding-bottom: 10px;
 }
 
-.failure-text, .flaky-text td {
+.failure-text td, .flaky-text td {
   padding-bottom: 15px;
 }
 
