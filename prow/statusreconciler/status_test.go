@@ -38,7 +38,7 @@ func (t *testOpener) Reader(ctx context.Context, path string) (io.ReadCloser, er
 	return os.Open(path)
 }
 
-func (t *testOpener) Writer(ctx context.Context, path string) (io.WriteCloser, error) {
+func (t *testOpener) Writer(ctx context.Context, path string, _ ...io.WriterOptions) (io.WriteCloser, error) {
 	return os.Create(path)
 }
 

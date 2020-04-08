@@ -17,6 +17,7 @@ go_test(
     srcs = ["history_test.go"],
     embed = [":go_default_library"],
     deps = [
+        "//pkg/io:go_default_library",
         "//prow/apis/prowjobs/v1:go_default_library",
         "@com_google_cloud_go//storage:go_default_library",
         "@io_k8s_apimachinery//pkg/util/diff:go_default_library",

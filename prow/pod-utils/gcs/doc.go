@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 // Package gcs handles uploading files and raw data
-// to GCS and determines where in the GCS
+// to blob storage and determines where in the GCS
 // bucket data should go given a specific
 // job specification
 package gcs

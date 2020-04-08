@@ -21,8 +21,6 @@ import (
 	"fmt"
 	"sync"
 	"testing"
-
-	"cloud.google.com/go/storage"
 )
 
 func TestUploadToGcs(t *testing.T) {
@@ -87,7 +85,7 @@ func TestUploadToGcs(t *testing.T) {
 			targets[fmt.Sprintf("fail-%d", i)] = fail
 		}
 
-		err := Upload(&storage.BucketHandle{}, targets)
+		err := Upload("", "", "", targets)
 		if err != nil && !testCase.expectedErr {
 			t.Errorf("%s: expected no error but got %v", testCase.name, err)
 		}

@@ -332,6 +332,9 @@ type DecorationConfig struct {
 	// GCSCredentialsSecret is the name of the Kubernetes secret
 	// that holds GCS push credentials.
 	GCSCredentialsSecret string `json:"gcs_credentials_secret,omitempty"`
+	// S3CredentialsSecret is the name of the Kubernetes secret
+	// that holds blob storage push credentials.
+	S3CredentialsSecret string `json:"s3_credentials_secret,omitempty"`
 	// SSHKeySecrets are the names of Kubernetes secrets that contain
 	// SSK keys which should be used during the cloning process.
 	SSHKeySecrets []string `json:"ssh_key_secrets,omitempty"`
@@ -462,8 +465,8 @@ func (d *DecorationConfig) Validate() error {
 	if d.GCSConfiguration == nil {
 		return errors.New("GCS upload configuration is not specified")
 	}
-	if d.GCSCredentialsSecret == "" {
-		return errors.New("GCS upload credential secret is not specified")
+	if d.GCSCredentialsSecret == "" && d.S3CredentialsSecret == "" {
+		return errors.New("neither GCS nor S3 credential secret are specified")
 	}
 	if err := d.GCSConfiguration.Validate(); err != nil {
 		return fmt.Errorf("GCS configuration is invalid: %v", err)
@@ -530,7 +533,10 @@ const (
 // GCSConfiguration holds options for pushing logs and
 // artifacts to GCS from a job.
 type GCSConfiguration struct {
-	// Bucket is the GCS bucket to upload to
+	// Bucket is the bucket to upload to, it can be:
+	// * a GCS bucket: with gs:// prefix
+	// * a S3 bucket: with s3:// prefix
+	// * a GCS bucket: without a prefix (deprecated, it's discouraged to use Bucket without prefix please add the gs:// prefix)
 	Bucket string `json:"bucket,omitempty"`
 	// PathPrefix is an optional path that follows the
 	// bucket name and comes before any structure
@@ -549,7 +555,7 @@ type GCSConfiguration struct {
 	// to media types, for example: MediaTypes["log"] = "text/plain"
 	MediaTypes map[string]string `json:"mediaTypes,omitempty"`
 
-	// LocalOutputDir specifies a directory where files should be copied INSTEAD of uploading to GCS.
+	// LocalOutputDir specifies a directory where files should be copied INSTEAD of uploading to blob storage.
 	// This option is useful for testing jobs that use the pod-utilities without actually uploading.
 	LocalOutputDir string `json:"local_output_dir,omitempty"`
 }

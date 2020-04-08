@@ -2,7 +2,10 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = ["opener.go"],
+    srcs = [
+        "opener.go",
+        "option.go",
+    ],
     importpath = "k8s.io/test-infra/pkg/io",
     visibility = ["//visibility:public"],
     deps = [
@@ -12,6 +15,7 @@ go_library(
         "@com_google_cloud_go//storage:go_default_library",
         "@dev_gocloud//blob:go_default_library",
         "@dev_gocloud//gcerrors:go_default_library",
+        "@org_golang_google_api//googleapi:go_default_library",
         "@org_golang_google_api//option:go_default_library",
     ],
 )

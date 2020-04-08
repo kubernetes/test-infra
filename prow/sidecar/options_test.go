@@ -1,5 +1,5 @@
 /*
-Copyright 2018 The Kubernetes Authors.
+Copyright 2020 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package initupload
+package sidecar
 
 import (
 	"reflect"
@@ -22,61 +22,8 @@ import (
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/gcsupload"
+	"k8s.io/test-infra/prow/pod-utils/wrapper"
 )
-
-func TestOptions_Validate(t *testing.T) {
-	var testCases = []struct {
-		name        string
-		input       Options
-		expectedErr bool
-	}{
-		{
-			name: "minimal set ok",
-			input: Options{
-				Log: "testing",
-				Options: &gcsupload.Options{
-					DryRun: true,
-					GCSConfiguration: &prowapi.GCSConfiguration{
-						PathStrategy: prowapi.PathStrategyExplicit,
-					},
-				},
-			},
-			expectedErr: false,
-		},
-		{
-			name: "missing clone log",
-			input: Options{
-				Options: &gcsupload.Options{
-					DryRun: true,
-					GCSConfiguration: &prowapi.GCSConfiguration{
-						PathStrategy: prowapi.PathStrategyExplicit,
-					},
-				},
-			},
-			expectedErr: false,
-		},
-		{
-			name: "missing path strategy",
-			input: Options{
-				Options: &gcsupload.Options{
-					DryRun:           true,
-					GCSConfiguration: &prowapi.GCSConfiguration{},
-				},
-			},
-			expectedErr: true,
-		},
-	}
-
-	for _, testCase := range testCases {
-		err := testCase.input.Validate()
-		if testCase.expectedErr && err == nil {
-			t.Errorf("%s: expected an error but got none", testCase.name)
-		}
-		if !testCase.expectedErr && err != nil {
-			t.Errorf("%s: expected no error but got one: %v", testCase.name, err)
-		}
-	}
-}
 
 func TestOptions_LoadConfig(t *testing.T) {
 	type args struct {
@@ -93,24 +40,48 @@ func TestOptions_LoadConfig(t *testing.T) {
 			args: args{
 				config: `
 {
-  "bucket": "prow-artifacts",
-  "path_strategy": "explicit",
-  "gcs_credentials_file": "/secrets/gcs/service-account.json",
-  "dry_run": false,
-  "log": "/logs/clone.json"
+  "gcs_options": {
+	"items": [
+      "/logs/artifacts"
+    ],
+    "bucket": "prow-artifacts",
+    "path_strategy": "explicit",
+    "gcs_credentials_file": "/secrets/gcs/service-account.json",
+    "dry_run": false
+  },
+  "entries": [
+    {
+      "args": [
+        "sh",
+        "-c",
+        "echo test"
+      ],
+      "process_log": "/logs/process-log.txt",
+      "marker_file": "/logs/marker-file.txt",
+      "metadata_file": "/logs/artifacts/metadata.json"
+    }
+  ]
 }
 				`,
 			},
 			wantOptions: &Options{
-				Options: &gcsupload.Options{
+				GcsOptions: &gcsupload.Options{
 					GCSConfiguration: &prowapi.GCSConfiguration{
 						Bucket:       "prow-artifacts",
 						PathStrategy: "explicit",
 					},
 					GcsCredentialsFile: "/secrets/gcs/service-account.json",
 					DryRun:             false,
+					Items:              []string{"/logs/artifacts"},
 				},
-				Log: "/logs/clone.json",
+				Entries: []wrapper.Options{
+					{
+						Args:         []string{"sh", "-c", "echo test"},
+						ProcessLog:   "/logs/process-log.txt",
+						MarkerFile:   "/logs/marker-file.txt",
+						MetadataFile: "/logs/artifacts/metadata.json",
+					},
+				},
 			},
 			wantErr: false,
 		},
@@ -119,23 +90,48 @@ func TestOptions_LoadConfig(t *testing.T) {
 			args: args{
 				config: `
 {
-  "bucket": "s3://prow-artifacts",
-  "path_strategy": "explicit",
-  "s3_credentials_file": "/secrets/s3-storage/service-account.json",
-  "dry_run": false,
-  "log": "/logs/clone.json"
+  "gcs_options": {
+	"items": [
+      "/logs/artifacts"
+    ],
+    "bucket": "s3://prow-artifacts",
+    "path_strategy": "explicit",
+    "s3_credentials_file": "/secrets/s3-storage/service-account.json",
+    "dry_run": false
+  },
+  "entries": [
+    {
+      "args": [
+        "sh",
+        "-c",
+        "echo test"
+      ],
+      "process_log": "/logs/process-log.txt",
+      "marker_file": "/logs/marker-file.txt",
+      "metadata_file": "/logs/artifacts/metadata.json"
+    }
+  ]
 }
 `,
 			},
 			wantOptions: &Options{
-				Options: &gcsupload.Options{
+				GcsOptions: &gcsupload.Options{
 					GCSConfiguration: &prowapi.GCSConfiguration{
 						Bucket:       "s3://prow-artifacts",
 						PathStrategy: "explicit",
 					},
 					S3CredentialsFile: "/secrets/s3-storage/service-account.json",
+					DryRun:            false,
+					Items:             []string{"/logs/artifacts"},
 				},
-				Log: "/logs/clone.json",
+				Entries: []wrapper.Options{
+					{
+						Args:         []string{"sh", "-c", "echo test"},
+						ProcessLog:   "/logs/process-log.txt",
+						MarkerFile:   "/logs/marker-file.txt",
+						MetadataFile: "/logs/artifacts/metadata.json",
+					},
+				},
 			},
 			wantErr: false,
 		},
