@@ -1,13 +1,38 @@
 package(default_visibility = ["//visibility:public"])
 
-load(
-    "@io_bazel_rules_go//go:def.bzl",
-    "go_binary",
-    "go_library",
+load("@io_bazel_rules_docker//container:image.bzl", "container_image")
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+load("//prow:def.bzl", "prow_image")
+
+NAME = "gcsweb"
+
+container_image(
+    name = "icons-base",
+    base = "@alpine-base//image",
+    directory = "/icons",
+    files = [
+        "//gcsweb:icons",
+    ],
+)
+
+container_image(
+    name = "assets-base",
+    base = "icons-base",
+    directory = "/styles",
+    files = [
+        "//gcsweb:styles",
+    ],
+)
+
+prow_image(
+    name = "image",
+    base = ":assets-base",
+    component = NAME,
+    visibility = ["//visibility:public"],
 )
 
 go_binary(
-    name = "gcsweb",
+    name = NAME,
     embed = [":go_default_library"],
     pure = "on",
 )
