@@ -22,12 +22,9 @@ import (
 	"io"
 	"net/url"
 	"os"
-	"strings"
 	"sync"
 
-	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
-	"google.golang.org/api/option"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	utilpointer "k8s.io/utils/pointer"
 
@@ -44,24 +41,10 @@ type destToWriter func(dest string) dataWriter
 func Upload(bucket, gcsCredentialsFile, s3CredentialsFile string, uploadTargets map[string]UploadFunc) error {
 	parsedBucket, err := url.Parse(bucket)
 	if err != nil {
-		return fmt.Errorf("cannot parse bucket name %s: %v", bucket, err)
+		return fmt.Errorf("cannot parse bucket name %s: %w", bucket, err)
 	}
-	if parsedBucket.Scheme == "" || parsedBucket.Scheme == "gs" {
-		if parsedBucket.Scheme == "gs" {
-			bucket = strings.Trim(bucket, "gs://")
-		}
-		var options []option.ClientOption
-		if gcsCredentialsFile != "" {
-			options = append(options, option.WithCredentialsFile(gcsCredentialsFile))
-		}
-		gcsClient, err := storage.NewClient(context.Background(), options...)
-		if err != nil {
-			return fmt.Errorf("create client: %w", err)
-		}
-		dtw := func(dest string) dataWriter {
-			return gcsObjectWriter{gcsClient.Bucket(bucket).Object(dest).NewWriter(context.Background())}
-		}
-		return upload(dtw, uploadTargets)
+	if parsedBucket.Scheme == "" {
+		parsedBucket.Scheme = "gs"
 	}
 
 	ctx := context.Background()
@@ -70,7 +53,7 @@ func Upload(bucket, gcsCredentialsFile, s3CredentialsFile string, uploadTargets 
 		return fmt.Errorf("new opener: %w", err)
 	}
 	dtw := func(dest string) dataWriter {
-		return &openerObjectWriter{Opener: opener, Context: ctx, Bucket: bucket, Dest: dest}
+		return &openerObjectWriter{Opener: opener, Context: ctx, Bucket: parsedBucket.String(), Dest: dest}
 	}
 	return upload(dtw, uploadTargets)
 }
@@ -185,14 +168,6 @@ type dataWriter interface {
 	ApplyWriterOptions(opts pkgio.WriterOptions)
 }
 
-type gcsObjectWriter struct {
-	*storage.Writer
-}
-
-func (w gcsObjectWriter) ApplyWriterOptions(opts pkgio.WriterOptions) {
-	opts.Apply(w.Writer, nil)
-}
-
 type openerObjectWriter struct {
 	pkgio.Opener
 	Context     context.Context
@@ -223,5 +198,4 @@ func (w *openerObjectWriter) Close() error {
 
 func (w *openerObjectWriter) ApplyWriterOptions(opts pkgio.WriterOptions) {
 	w.opts = append(w.opts, opts)
-	return
 }
