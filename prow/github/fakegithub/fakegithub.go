@@ -618,6 +618,19 @@ func (f *FakeClient) GetRepos(org string, isUser bool) ([]github.Repo, error) {
 	}, nil
 }
 
+func (f FakeClient) GetRepo(owner, name string) (github.FullRepo, error) {
+	return github.FullRepo{
+		Repo: github.Repo{
+			Owner:         github.User{Login: owner},
+			Name:          name,
+			HasIssues:     true,
+			HasWiki:       true,
+			DefaultBranch: "master",
+			Description:   fmt.Sprintf("Test Repo: %s", name),
+		},
+	}, nil
+}
+
 // MoveProjectCard moves a specific project card to a specified column in the same project
 func (f *FakeClient) MoveProjectCard(projectCardID int, newColumnID int) error {
 	// Remove project card from old column
