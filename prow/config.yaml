@@ -30,6 +30,7 @@ tide:
     IBM/ibm-catalog-ui-operator: squash
     IBM/ibm-cert-manager-operator: squash
     IBM/ibm-commonui-operator: squash
+    IBM/ibm-common-service-operator: squash
     IBM/ibm-elastic-stack-operator: squash
     IBM/ibm-grafana-operator: squash
     IBM/ibm-healthcheck-operator: squash
@@ -73,6 +74,7 @@ tide:
     - IBM/ibm-catalog-ui-operator
     - IBM/ibm-cert-manager-operator
     - IBM/ibm-commonui-operator
+    - IBM/ibm-common-service-operator
     - IBM/ibm-elastic-stack-operator
     - IBM/ibm-grafana-operator
     - IBM/ibm-healthcheck-operator
