@@ -24,8 +24,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/test-infra/pkg/io"
 	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
+	"k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/pjutil"
 
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"

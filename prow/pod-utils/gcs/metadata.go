@@ -22,7 +22,7 @@ import (
 
 	"github.com/GoogleCloudPlatform/testgrid/metadata"
 
-	"k8s.io/test-infra/pkg/io"
+	"k8s.io/test-infra/prow/io"
 	utilpointer "k8s.io/utils/pointer"
 )
 

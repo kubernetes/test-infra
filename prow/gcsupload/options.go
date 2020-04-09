@@ -55,7 +55,7 @@ type Options struct {
 	// It's optional, if you want to write to local paths or S3 credentials auto-discovery is used.
 	// If set, this file is used to read/write to s3:// paths
 	// If not, go cloud credential auto-discovery is used
-	// For more details see the pkg/io/providers pkg.
+	// For more details see the prow/io/providers pkg.
 	S3CredentialsFile string `json:"s3_credentials_file,omitempty"`
 
 	DryRun bool `json:"dry_run"`

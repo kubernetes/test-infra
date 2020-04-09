@@ -35,7 +35,7 @@ import (
 
 	"github.com/GoogleCloudPlatform/testgrid/util/gcs" // TODO(fejta): move this logic here
 
-	"k8s.io/test-infra/pkg/io/providers"
+	"k8s.io/test-infra/prow/io/providers"
 )
 
 type storageClient interface {
@@ -65,7 +65,7 @@ type opener struct {
 // credentialsFile may also be empty
 // For local paths it has to be empty
 // In all other cases gocloud auto-discovery is used to detect credentials, if credentialsFile is empty.
-// For more details about the possible content of the credentialsFile see pkg/io/providers.GetBucket
+// For more details about the possible content of the credentialsFile see prow/io/providers.GetBucket
 func NewOpener(ctx context.Context, gcsCredentialsFile, s3CredentialsFile string) (Opener, error) {
 	var options []option.ClientOption
 	if gcsCredentialsFile != "" {

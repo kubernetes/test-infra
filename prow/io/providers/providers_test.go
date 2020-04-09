@@ -19,7 +19,7 @@ package providers_test
 import (
 	"testing"
 
-	"k8s.io/test-infra/pkg/io/providers"
+	"k8s.io/test-infra/prow/io/providers"
 )
 
 func TestParseStoragePath(t *testing.T) {
