@@ -43,8 +43,8 @@ type Finished = metadata.Finished
 //
 // and the simplified filename would be build-log.txt (excluding the
 // content encoding extension).
-func WriterOptionsFromFileName(filename string) (string, *io.WriterOptions) {
-	attrs := &io.WriterOptions{}
+func WriterOptionsFromFileName(filename string) (string, io.WriterOptions) {
+	attrs := io.WriterOptions{}
 	segments := strings.Split(filename, ".")
 	index := len(segments) - 1
 	segment := segments[index]
