@@ -19,6 +19,7 @@ package github
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -34,6 +35,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
@@ -776,8 +778,8 @@ func (c *client) doRequest(method, path, accept string, body interface{}) (*http
 	if err != nil {
 		return nil, err
 	}
-	if token := c.getToken(); len(token) > 0 {
-		req.Header.Set("Authorization", "Token "+string(token))
+	if header := c.authHeader(); len(header) > 0 {
+		req.Header.Set("Authorization", header)
 	}
 	if accept == acceptNone {
 		req.Header.Add("Accept", "application/vnd.github.v3+json")
@@ -793,6 +795,24 @@ func (c *client) doRequest(method, path, accept string, body interface{}) (*http
 	// for POST.
 	req.Close = true
 	return c.client.Do(req)
+}
+
+func (c *client) authHeader() string {
+	return fmt.Sprintf("Token %s", c.getToken())
+}
+
+// userInfo provides the 'github_user_info' vector that is indexed
+// by the user's information.
+var userInfo = prometheus.NewGaugeVec(
+	prometheus.GaugeOpts{
+		Name: "github_user_info",
+		Help: "Metadata about a user, tied to their token hash.",
+	},
+	[]string{"token_hash", "login", "email"},
+)
+
+func init() {
+	prometheus.MustRegister(userInfo)
 }
 
 // Not thread-safe - callers need to hold c.mut.
@@ -811,6 +831,10 @@ func (c *client) getUserData() error {
 	// email needs to be publicly accessible via the profile
 	// of the current account. Read below for more info
 	// https://developer.github.com/v3/users/#get-a-single-user
+
+	// record information for the user
+	authHeaderHash := fmt.Sprintf("%x", sha256.Sum256([]byte(c.authHeader()))) // use %x to make this a utf-8 string for use as a label
+	userInfo.With(prometheus.Labels{"token_hash": authHeaderHash, "login": c.userData.Login, "email": c.userData.Email}).Set(1)
 	return nil
 }
 
