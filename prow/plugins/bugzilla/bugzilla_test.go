@@ -844,7 +844,7 @@ Instructions for interacting with me using PR comments are available [here](http
 		{
 			name:           "valid bug with dependent bugs removes invalid label, adds valid label, comments",
 			bugs:           []bugzilla.Bug{{IsOpen: true, ID: 123, DependsOn: []int{124}, TargetRelease: []string{v1}}, {ID: 124, Status: "VERIFIED", TargetRelease: []string{v2}}},
-			options:        plugins.BugzillaBranchOptions{IsOpen: &yes, TargetRelease: &v1, DependentBugStates: &verified, DependentBugTargetRelease: &v2},
+			options:        plugins.BugzillaBranchOptions{IsOpen: &yes, TargetRelease: &v1, DependentBugStates: &verified, DependentBugTargetReleases: &[]string{v2}},
 			labels:         []string{"bugzilla/invalid-bug"},
 			expectedLabels: []string{"bugzilla/valid-bug"},
 			expectedComment: `org/repo#1:@user: This pull request references [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123), which is valid.
@@ -854,7 +854,7 @@ Instructions for interacting with me using PR comments are available [here](http
 * bug is open, matching expected state (open)
 * bug target release (v1) matches configured target release for branch (v1)
 * dependent bug [Bugzilla bug 124](www.bugzilla/show_bug.cgi?id=124) is in the state VERIFIED, which is one of the valid states (VERIFIED)
-* dependent [Bugzilla bug 124](www.bugzilla/show_bug.cgi?id=124) targets the "v2" release, matching the expected (v2) release
+* dependent [Bugzilla bug 124](www.bugzilla/show_bug.cgi?id=124) targets the "v2" release, which is one of the valid target releases: v2
 * bug has dependents</details>
 
 <details>
@@ -1300,30 +1300,30 @@ func TestValidateBug(t *testing.T) {
 			name:        "not matching dependent bug target release requirement means an invalid bug",
 			bug:         bugzilla.Bug{DependsOn: []int{1}},
 			dependents:  []bugzilla.Bug{{ID: 1, TargetRelease: []string{"v2"}}},
-			options:     plugins.BugzillaBranchOptions{DependentBugTargetRelease: &one},
+			options:     plugins.BugzillaBranchOptions{DependentBugTargetReleases: &[]string{one}},
 			valid:       false,
 			validations: []string{"bug has dependents"},
-			why:         []string{"expected dependent [Bugzilla bug 1](bugzilla.com/show_bug.cgi?id=1) to target the \"v1\" release, but it targets \"v2\" instead"},
+			why:         []string{"expected dependent [Bugzilla bug 1](bugzilla.com/show_bug.cgi?id=1) to target a release in v1, but it targets \"v2\" instead"},
 		},
 		{
 			name:        "not having a dependent bug target release means an invalid bug",
 			bug:         bugzilla.Bug{DependsOn: []int{1}},
 			dependents:  []bugzilla.Bug{{ID: 1, TargetRelease: []string{}}},
-			options:     plugins.BugzillaBranchOptions{DependentBugTargetRelease: &one},
+			options:     plugins.BugzillaBranchOptions{DependentBugTargetReleases: &[]string{one}},
 			valid:       false,
 			validations: []string{"bug has dependents"},
-			why:         []string{"expected dependent [Bugzilla bug 1](bugzilla.com/show_bug.cgi?id=1) to target the \"v1\" release, but no target release was set"},
+			why:         []string{"expected dependent [Bugzilla bug 1](bugzilla.com/show_bug.cgi?id=1) to target a release in v1, but no target release was set"},
 		},
 		{
 			name:       "matching all requirements means a valid bug",
 			bug:        bugzilla.Bug{IsOpen: false, TargetRelease: []string{"v1"}, Status: "MODIFIED", DependsOn: []int{1}},
 			dependents: []bugzilla.Bug{{ID: 1, Status: "MODIFIED", TargetRelease: []string{"v2"}}},
-			options:    plugins.BugzillaBranchOptions{IsOpen: &closed, TargetRelease: &one, ValidStates: &modified, DependentBugStates: &modified, DependentBugTargetRelease: &two},
+			options:    plugins.BugzillaBranchOptions{IsOpen: &closed, TargetRelease: &one, ValidStates: &modified, DependentBugStates: &modified, DependentBugTargetReleases: &[]string{two}},
 			validations: []string{"bug isn't open, matching expected state (not open)",
 				`bug target release (v1) matches configured target release for branch (v1)`,
 				"bug is in the state MODIFIED, which is one of the valid states (MODIFIED)",
 				"dependent bug [Bugzilla bug 1](bugzilla.com/show_bug.cgi?id=1) is in the state MODIFIED, which is one of the valid states (MODIFIED)",
-				`dependent [Bugzilla bug 1](bugzilla.com/show_bug.cgi?id=1) targets the "v2" release, matching the expected (v2) release`,
+				`dependent [Bugzilla bug 1](bugzilla.com/show_bug.cgi?id=1) targets the "v2" release, which is one of the valid target releases: v2`,
 				"bug has dependents"},
 			valid: true,
 		},

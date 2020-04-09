@@ -276,8 +276,9 @@ type Approve struct {
 }
 
 var (
-	warnImplicitSelfApprove time.Time
-	warnReviewActsAsApprove time.Time
+	warnImplicitSelfApprove       time.Time
+	warnReviewActsAsApprove       time.Time
+	warnDependentBugTargetRelease time.Time
 )
 
 func (a Approve) HasSelfApproval() bool {
@@ -1314,10 +1315,18 @@ type BugzillaBranchOptions struct {
 	// DependentBugStates determine states in which a bug's dependents bugs may be
 	// to deem the child bug valid.  If set, all blockers must have a valid state.
 	DependentBugStates *[]BugzillaBugState `json:"dependent_bug_states,omitempty"`
-	// DependentBugTargetRelease determines which release a bug's dependent bugs
-	// need to target to be valid.  If set, all blockers must have a valid target
-	// releasee.
-	DependentBugTargetRelease *string `json:"dependent_bug_target_release,omitempty"`
+	// DependentBugTargetReleases determines the set of valid target
+	// releases for dependent bugs.  If set, all blockers must have a
+	// valid target release.
+	DependentBugTargetReleases *[]string `json:"dependent_bug_target_releases,omitempty"`
+	// DeprecatedDependentBugTargetRelease determines which release a
+	// bug's dependent bugs need to target to be valid.  If set, all
+	// blockers must have a valid target releasee.
+	//
+	// Deprecated: Use DependentBugTargetReleases instead.  If set,
+	// DependentBugTargetRelease will be appended to
+	// DeprecatedDependentBugTargetReleases.
+	DeprecatedDependentBugTargetRelease *string `json:"dependent_bug_target_release,omitempty"`
 
 	// StatusAfterValidation is the status which the bug will be moved to after being
 	// deemed valid and linked to a PR. Will implicitly be considered a part of `statuses`
@@ -1464,8 +1473,17 @@ func ResolveBugzillaOptions(parent, child BugzillaBranchOptions) BugzillaBranchO
 			output.DependentBugStatuses = parent.DependentBugStatuses
 			output.DependentBugStates = mergeStatusesIntoStates(output.DependentBugStates, parent.DependentBugStatuses)
 		}
-		if parent.DependentBugTargetRelease != nil {
-			output.DependentBugTargetRelease = parent.DependentBugTargetRelease
+		if parent.DependentBugTargetReleases != nil {
+			output.DependentBugTargetReleases = parent.DependentBugTargetReleases
+		}
+		if parent.DeprecatedDependentBugTargetRelease != nil {
+			warnDeprecated(&warnDependentBugTargetRelease, 5*time.Minute, "Please update plugins.yaml to use dependent_bug_target_releases instead of the deprecated dependent_bug_target_release")
+			if parent.DependentBugTargetReleases == nil {
+				output.DependentBugTargetReleases = &[]string{*parent.DeprecatedDependentBugTargetRelease}
+			} else if !sets.NewString(*parent.DependentBugTargetReleases...).Has(*parent.DeprecatedDependentBugTargetRelease) {
+				dependentBugTargetReleases := append(*output.DependentBugTargetReleases, *parent.DeprecatedDependentBugTargetRelease)
+				output.DependentBugTargetReleases = &dependentBugTargetReleases
+			}
 		}
 		if parent.StatusAfterValidation != nil {
 			output.StatusAfterValidation = parent.StatusAfterValidation
@@ -1518,8 +1536,17 @@ func ResolveBugzillaOptions(parent, child BugzillaBranchOptions) BugzillaBranchO
 		}
 		output.DependentBugStates = mergeStatusesIntoStates(output.DependentBugStates, child.DependentBugStatuses)
 	}
-	if child.DependentBugTargetRelease != nil {
-		output.DependentBugTargetRelease = child.DependentBugTargetRelease
+	if child.DependentBugTargetReleases != nil {
+		output.DependentBugTargetReleases = child.DependentBugTargetReleases
+	}
+	if child.DeprecatedDependentBugTargetRelease != nil {
+		warnDeprecated(&warnDependentBugTargetRelease, 5*time.Minute, "Please update plugins.yaml to use dependent_bug_target_releases instead of the deprecated dependent_bug_target_release")
+		if child.DependentBugTargetReleases == nil {
+			output.DependentBugTargetReleases = &[]string{*child.DeprecatedDependentBugTargetRelease}
+		} else if !sets.NewString(*child.DependentBugTargetReleases...).Has(*child.DeprecatedDependentBugTargetRelease) {
+			dependentBugTargetReleases := append(*output.DependentBugTargetReleases, *child.DeprecatedDependentBugTargetRelease)
+			output.DependentBugTargetReleases = &dependentBugTargetReleases
+		}
 	}
 	if child.StatusAfterValidation != nil {
 		output.StatusAfterValidation = child.StatusAfterValidation

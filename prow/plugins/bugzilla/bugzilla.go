@@ -28,6 +28,7 @@ import (
 
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/util/sets"
 
 	"k8s.io/test-infra/prow/bugzilla"
 	"k8s.io/test-infra/prow/config"
@@ -92,15 +93,15 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 				pretty := strings.Join(prettyStates(*opts[branch].ValidStates), ", ")
 				conditions = append(conditions, fmt.Sprintf("be in one of the following states: %s", pretty))
 			}
-			if opts[branch].DependentBugStates != nil || opts[branch].DependentBugTargetRelease != nil {
+			if opts[branch].DependentBugStates != nil || opts[branch].DependentBugTargetReleases != nil {
 				conditions = append(conditions, "depend on at least one other bug")
 			}
 			if opts[branch].DependentBugStates != nil {
 				pretty := strings.Join(prettyStates(*opts[branch].DependentBugStates), ", ")
 				conditions = append(conditions, fmt.Sprintf("have all dependent bugs in one of the following states: %s", pretty))
 			}
-			if opts[branch].DependentBugTargetRelease != nil {
-				conditions = append(conditions, fmt.Sprintf("have all dependent bugs target the %q release", *opts[branch].DependentBugTargetRelease))
+			if opts[branch].DependentBugTargetReleases != nil {
+				conditions = append(conditions, fmt.Sprintf("have all dependent bugs in one of the following target releases: %s", strings.Join(*opts[branch].DependentBugTargetReleases, ", ")))
 			}
 			switch len(conditions) {
 			case 0:
@@ -422,7 +423,7 @@ To reference a bug, add 'Bug XXX:' to the title of this pull request and request
 		}
 
 		var dependents []bugzilla.Bug
-		if options.DependentBugStates != nil || options.DependentBugTargetRelease != nil {
+		if options.DependentBugStates != nil || options.DependentBugTargetReleases != nil {
 			for _, id := range bug.DependsOn {
 				dependent, err := bc.GetBug(id)
 				if err != nil {
@@ -627,36 +628,38 @@ func validateBug(bug bugzilla.Bug, dependents []bugzilla.Bug, options plugins.Bu
 		}
 	}
 
-	if options.DependentBugTargetRelease != nil {
+	if options.DependentBugTargetReleases != nil {
 		for _, bug := range dependents {
 			if len(bug.TargetRelease) == 0 {
 				valid = false
-				errors = append(errors, fmt.Sprintf("expected dependent "+bugLink+" to target the %q release, but no target release was set", bug.ID, endpoint, bug.ID, *options.DependentBugTargetRelease))
-			} else if *options.DependentBugTargetRelease != bug.TargetRelease[0] {
+				errors = append(errors, fmt.Sprintf("expected dependent "+bugLink+" to target a release in %s, but no target release was set", bug.ID, endpoint, bug.ID, strings.Join(*options.DependentBugTargetReleases, ", ")))
+			} else {
 				// the BugZilla web UI shows one option for target release, but returns the
 				// field as a list in the REST API. We only care for the first item and it's
 				// not even clear if the list can have more than one item in the response
-				valid = false
-				errors = append(errors, fmt.Sprintf("expected dependent "+bugLink+" to target the %q release, but it targets %q instead", bug.ID, endpoint, bug.ID, *options.DependentBugTargetRelease, bug.TargetRelease[0]))
-			} else {
-				validations = append(validations, fmt.Sprintf("dependent "+bugLink+" targets the %q release, matching the expected (%s) release", bug.ID, endpoint, bug.ID, bug.TargetRelease[0], *options.DependentBugTargetRelease))
+				if sets.NewString(*options.DependentBugTargetReleases...).Has(bug.TargetRelease[0]) {
+					validations = append(validations, fmt.Sprintf("dependent "+bugLink+" targets the %q release, which is one of the valid target releases: %s", bug.ID, endpoint, bug.ID, bug.TargetRelease[0], strings.Join(*options.DependentBugTargetReleases, ", ")))
+				} else {
+					valid = false
+					errors = append(errors, fmt.Sprintf("expected dependent "+bugLink+" to target a release in %s, but it targets %q instead", bug.ID, endpoint, bug.ID, strings.Join(*options.DependentBugTargetReleases, ", "), bug.TargetRelease[0]))
+				}
 			}
 		}
 	}
 
 	if len(dependents) == 0 {
 		switch {
-		case options.DependentBugStates != nil && options.DependentBugTargetRelease != nil:
+		case options.DependentBugStates != nil && options.DependentBugTargetReleases != nil:
 			valid = false
 			expected := strings.Join(prettyStates(*options.DependentBugStates), ", ")
-			errors = append(errors, fmt.Sprintf("expected "+bugLink+" to depend on a bug targeting the %q release and in one of the following states: %s, but no dependents were found", bug.ID, endpoint, bug.ID, *options.DependentBugTargetRelease, expected))
+			errors = append(errors, fmt.Sprintf("expected "+bugLink+" to depend on a bug targeting a release in %s and in one of the following states: %s, but no dependents were found", bug.ID, endpoint, bug.ID, strings.Join(*options.DependentBugTargetReleases, ", "), expected))
 		case options.DependentBugStates != nil:
 			valid = false
 			expected := strings.Join(prettyStates(*options.DependentBugStates), ", ")
 			errors = append(errors, fmt.Sprintf("expected "+bugLink+" to depend on a bug in one of the following states: %s, but no dependents were found", bug.ID, endpoint, bug.ID, expected))
-		case options.DependentBugTargetRelease != nil:
+		case options.DependentBugTargetReleases != nil:
 			valid = false
-			errors = append(errors, fmt.Sprintf("expected "+bugLink+" to depend on a bug targeting the %q release, but no dependents were found", bug.ID, endpoint, bug.ID, *options.DependentBugTargetRelease))
+			errors = append(errors, fmt.Sprintf("expected "+bugLink+" to depend on a bug targeting a release in %s, but no dependents were found", bug.ID, endpoint, bug.ID, strings.Join(*options.DependentBugTargetReleases, ", ")))
 		default:
 		}
 	} else {
