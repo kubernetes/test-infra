@@ -171,7 +171,11 @@ func (c *client) request(req *http.Request, logger *logrus.Entry) ([]byte, error
 	start := time.Now()
 	resp, err := c.client.Do(req)
 	stop := time.Now()
-	requestDurations.With(prometheus.Labels{methodField: logger.Data[methodField].(string), "status": strconv.Itoa(resp.StatusCode)}).Observe(float64(stop.Sub(start).Seconds()))
+	promLabels := prometheus.Labels(map[string]string{methodField: logger.Data[methodField].(string), "status": ""})
+	if resp != nil {
+		promLabels["status"] = strconv.Itoa(resp.StatusCode)
+	}
+	requestDurations.With(promLabels).Observe(float64(stop.Sub(start).Seconds()))
 	if resp != nil {
 		logger.WithField("response", resp.StatusCode).Debug("Got response from Bugzilla.")
 	}
