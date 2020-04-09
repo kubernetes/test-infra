@@ -29,8 +29,8 @@ import (
 	"cloud.google.com/go/storage"
 	"k8s.io/apimachinery/pkg/util/diff"
 
-	pkgio "k8s.io/test-infra/pkg/io"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	pkgio "k8s.io/test-infra/prow/io"
 )
 
 func TestHistory(t *testing.T) {

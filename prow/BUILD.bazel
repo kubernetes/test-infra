@@ -125,6 +125,7 @@ filegroup(
         "//prow/hook:all-srcs",
         "//prow/initupload:all-srcs",
         "//prow/interrupts:all-srcs",
+        "//prow/io:all-srcs",
         "//prow/jenkins:all-srcs",
         "//prow/kube:all-srcs",
         "//prow/labels:all-srcs",

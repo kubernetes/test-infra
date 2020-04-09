@@ -30,8 +30,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/pkg/io"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/io"
 )
 
 // Mock out time for unit testing.

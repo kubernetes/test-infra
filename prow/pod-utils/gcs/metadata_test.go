@@ -23,7 +23,7 @@ import (
 
 	utilpointer "k8s.io/utils/pointer"
 
-	"k8s.io/test-infra/pkg/io"
+	"k8s.io/test-infra/prow/io"
 )
 
 func TestWriterOptionsFromFileName(t *testing.T) {

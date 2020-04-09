@@ -27,8 +27,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/test-infra/pkg/io"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/io"
 	"sigs.k8s.io/yaml"
 )
 

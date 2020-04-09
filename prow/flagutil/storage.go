@@ -21,7 +21,7 @@ import (
 	"flag"
 	"fmt"
 
-	"k8s.io/test-infra/pkg/io"
+	"k8s.io/test-infra/prow/io"
 )
 
 type StorageClientOptions struct {
@@ -34,14 +34,14 @@ type StorageClientOptions struct {
 	// It's optional, if you want to write to local paths or S3 credentials auto-discovery is used.
 	// If set, this file is used to read/write to s3:// paths
 	// If not, go cloud credential auto-discovery is used
-	// For more details see the pkg/io/providers pkg.
+	// For more details see the prow/io/providers pkg.
 	S3CredentialsFile string
 }
 
 // AddFlags injects status client options into the given FlagSet.
 func (o *StorageClientOptions) AddFlags(fs *flag.FlagSet) {
 	fs.StringVar(&o.GCSCredentialsFile, "gcs-credentials-file", "", "File where GCS credentials are stored")
-	fs.StringVar(&o.S3CredentialsFile, "s3-credentials-file", "", "File where s3 credentials are stored. For the exact format see https://github.com/kubernetes/test-infra/blob/master/pkg/io/providers/providers.go")
+	fs.StringVar(&o.S3CredentialsFile, "s3-credentials-file", "", "File where s3 credentials are stored. For the exact format see https://github.com/kubernetes/test-infra/blob/master/prow/io/providers/providers.go")
 }
 
 func (o *StorageClientOptions) HasGCSCredentials() bool {
