@@ -61,6 +61,10 @@ func NewBoskosHandler(r *ranch.Ranch) *http.ServeMux {
 	return mux
 }
 
+type badRequestError string
+
+func (bre badRequestError) Error() string { return string(bre) }
+
 // errorToStatus translates error into http code
 func errorToStatus(err error) int {
 	switch err.(type) {
@@ -74,6 +78,8 @@ func errorToStatus(err error) int {
 		return http.StatusNotFound
 	case *ranch.StateNotMatch:
 		return http.StatusConflict
+	case badRequestError:
+		return http.StatusBadRequest
 	}
 }
 
@@ -109,9 +115,8 @@ func handleAcquire(r *ranch.Ranch) http.HandlerFunc {
 		owner := req.URL.Query().Get("owner")
 		requestID := req.URL.Query().Get("request_id")
 		if rtype == "" || state == "" || dest == "" || owner == "" {
-			msg := fmt.Sprintf("Type: %v, state: %v, dest: %v, owner: %v, all of them must be set in the request.", rtype, state, dest, owner)
-			logrus.Warning(msg)
-			http.Error(res, msg, http.StatusBadRequest)
+			bre := badRequestError(fmt.Sprintf("Type: %v, state: %v, dest: %v, owner: %v, all of them must be set in the request.", rtype, state, dest, owner))
+			returnAndLogError(res, bre, "Bad request")
 			return
 		}
 
@@ -119,8 +124,7 @@ func handleAcquire(r *ranch.Ranch) http.HandlerFunc {
 
 		resource, err := r.Acquire(rtype, state, dest, owner, requestID)
 		if err != nil {
-			logrus.WithError(err).Errorf("No available resource")
-			http.Error(res, err.Error(), errorToStatus(err))
+			returnAndLogError(res, err, "Acquire failed")
 			return
 		}
 
@@ -178,8 +182,7 @@ func handleAcquireByState(r *ranch.Ranch) http.HandlerFunc {
 		resources, err := r.AcquireByState(state, dest, owner, rNames)
 
 		if err != nil {
-			logrus.WithError(err).Errorf("No available resources")
-			http.Error(res, err.Error(), errorToStatus(err))
+			returnAndLogError(res, err, "AcquireByState")
 			return
 		}
 
@@ -234,8 +237,7 @@ func handleRelease(r *ranch.Ranch) http.HandlerFunc {
 		}
 
 		if err := r.Release(name, dest, owner); err != nil {
-			logrus.WithError(err).Errorf("Done failed: %v - %v (from %v)", name, dest, owner)
-			http.Error(res, err.Error(), errorToStatus(err))
+			returnAndLogError(res, err, fmt.Sprintf("Done failed: %v - %v (from %v)", name, dest, owner))
 			return
 		}
 
@@ -277,15 +279,14 @@ func handleReset(r *ranch.Ranch) http.HandlerFunc {
 
 		expire, err := time.ParseDuration(expireStr)
 		if err != nil {
-			logrus.WithError(err).Errorf("Invalid expiration: %v", expireStr)
+			logrus.WithError(err).Debugf("Invalid expiration: %v", expireStr)
 			http.Error(res, err.Error(), http.StatusBadRequest)
 			return
 		}
 
 		rmap, err := r.Reset(rtype, state, expire, dest)
 		if err != nil {
-			logrus.WithError(err).Errorf("could not reset states")
-			http.Error(res, err.Error(), http.StatusBadRequest)
+			returnAndLogError(res, err, "could not reset states")
 			return
 		}
 		resJSON, err := json.Marshal(rmap)
@@ -343,8 +344,7 @@ func handleUpdate(r *ranch.Ranch) http.HandlerFunc {
 		}
 
 		if err := r.Update(name, owner, state, &userData); err != nil {
-			logrus.WithError(err).Errorf("Update failed: %v - %v (%v)", name, state, owner)
-			http.Error(res, err.Error(), errorToStatus(err))
+			returnAndLogError(res, err, fmt.Sprintf("Update failed: %v - %v (%v)", name, state, owner))
 			return
 		}
 
@@ -389,4 +389,16 @@ func handleMetric(r *ranch.Ranch) http.HandlerFunc {
 		res.Header().Set("Content-Type", "application/json")
 		res.Write(js)
 	}
+}
+
+func returnAndLogError(res http.ResponseWriter, err error, logMsg string) {
+	logMsg = fmt.Sprintf("%s: %v", logMsg, err)
+	log := logrus.WithError(err)
+	httpStatus := errorToStatus(err)
+	if httpStatus > 499 {
+		log.Error(logMsg)
+	} else {
+		log.Debug(logMsg)
+	}
+	http.Error(res, logMsg, httpStatus)
 }

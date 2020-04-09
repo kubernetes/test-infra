@@ -21,6 +21,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -43,6 +44,8 @@ import (
 	"k8s.io/test-infra/boskos/crds"
 	"k8s.io/test-infra/boskos/ranch"
 )
+
+var update = flag.Bool("update", false, "If the fixtures should be updated")
 
 func init() {
 	// Don't actually sleep in tests
@@ -852,12 +855,15 @@ func TestDefault(t *testing.T) {
 
 func compareWithFixture(testName string, actualData []byte) error {
 	goldenFile := fmt.Sprintf("testdata/%s.golden", strings.ToLower(strings.ReplaceAll(strings.ReplaceAll(testName, " ", "_"), "/", "-")))
+	if *update {
+		ioutil.WriteFile(goldenFile, actualData, 0644)
+	}
 	expected, err := ioutil.ReadFile(goldenFile)
 	if err != nil {
 		return fmt.Errorf("error reading fixture %q: %v", goldenFile, err)
 	}
 	if !bytes.Equal(expected, actualData) {
-		return fmt.Errorf("fixture %s\n%s\n does not match received data\n%s\n", goldenFile, string(expected), string(actualData))
+		return fmt.Errorf("fixture %s\n%s\n does not match received data\n%s\n. If this is expeted, please re-run the test with `-update` to update the fixture", goldenFile, string(expected), string(actualData))
 	}
 
 	return nil
