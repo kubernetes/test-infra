@@ -165,6 +165,7 @@ type Agent struct {
 
 // NewAgent bootstraps a new config.Agent struct from the passed dependencies.
 func NewAgent(configAgent *config.Agent, pluginConfigAgent *ConfigAgent, clientAgent *ClientAgent, metrics *Metrics, logger *logrus.Entry, plugin string) Agent {
+	logger = logger.WithField("plugin", plugin)
 	prowConfig := configAgent.Config()
 	pluginConfig := pluginConfigAgent.Config()
 	gitHubClient := clientAgent.GitHubClient.WithFields(logger.Data).ForPlugin(plugin)
