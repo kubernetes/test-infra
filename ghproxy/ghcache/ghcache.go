@@ -162,9 +162,7 @@ func (u upstreamTransport) RoundTrip(req *http.Request) (*http.Response, error) 
 		"user-agent": req.Header.Get("User-Agent"),
 		"source-ip":  req.RemoteAddr,
 	}).Debug("Hashing auth header.")
-	hasher := sha256.New()
-	hasher.Write([]byte(authHeader))
-	authHeaderHash := fmt.Sprintf("%x", hasher.Sum(nil)) // use %x to make this a utf-8 string for use as a label
+	authHeaderHash := fmt.Sprintf("%x", sha256.Sum256([]byte(authHeader))) // use %x to make this a utf-8 string for use as a label
 
 	reqStartTime := time.Now()
 	// Don't modify request, just pass to delegate.

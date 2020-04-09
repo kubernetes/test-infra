@@ -778,8 +778,8 @@ func (c *client) doRequest(method, path, accept string, body interface{}) (*http
 	if err != nil {
 		return nil, err
 	}
-	if token := c.getToken(); len(token) > 0 {
-		req.Header.Set("Authorization", "Token "+string(token))
+	if header := c.authHeader(); len(header) > 0 {
+		req.Header.Set("Authorization", header)
 	}
 	if accept == acceptNone {
 		req.Header.Add("Accept", "application/vnd.github.v3+json")
@@ -795,6 +795,10 @@ func (c *client) doRequest(method, path, accept string, body interface{}) (*http
 	// for POST.
 	req.Close = true
 	return c.client.Do(req)
+}
+
+func (c *client) authHeader() string {
+	return fmt.Sprintf("Token %s", c.getToken())
 }
 
 // userInfo provides the 'github_user_info' vector that is indexed
@@ -829,11 +833,7 @@ func (c *client) getUserData() error {
 	// https://developer.github.com/v3/users/#get-a-single-user
 
 	// record information for the user
-	authHeader := bytes.NewBufferString("Token ")
-	authHeader.Write(c.getToken())
-	hasher := sha256.New()
-	hasher.Write(authHeader.Bytes())
-	authHeaderHash := fmt.Sprintf("%x", hasher.Sum(nil)) // use %x to make this a utf-8 string for use as a label
+	authHeaderHash := fmt.Sprintf("%x", sha256.Sum256([]byte(c.authHeader()))) // use %x to make this a utf-8 string for use as a label
 	userInfo.With(prometheus.Labels{"token_hash": authHeaderHash, "login": c.userData.Login, "email": c.userData.Email}).Set(1)
 	return nil
 }
