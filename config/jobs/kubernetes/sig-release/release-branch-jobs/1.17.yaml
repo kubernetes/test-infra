@@ -1238,7 +1238,7 @@ presubmits:
       org: kubernetes
       path_alias: k8s.io/kubeadm
       repo: kubeadm
-    - base_ref: master
+    - base_ref: 7b28ee53357ee77f111d2e7b1b602876dc6d0d4c
       org: kubernetes-sigs
       path_alias: sigs.k8s.io/kind
       repo: kind
@@ -1249,8 +1249,6 @@ presubmits:
     spec:
       containers:
       - args:
-        - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
-        - --repo=sigs.k8s.io/kind=7b28ee53357ee77f111d2e7b1b602876dc6d0d4c
         - --provider=skeleton
         - --deployment=kind
         - --kind-binary-version=build
