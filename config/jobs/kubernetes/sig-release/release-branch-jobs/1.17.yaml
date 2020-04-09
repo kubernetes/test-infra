@@ -1238,12 +1238,10 @@ presubmits:
       org: kubernetes
       path_alias: k8s.io/kubeadm
       repo: kubeadm
-    - base_ref: 7b28ee53357ee77f111d2e7b1b602876dc6d0d4c
-      org: kubernetes-sigs
-      path_alias: sigs.k8s.io/kind
-      repo: kind
     labels:
       preset-dind-enabled: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-bazel-scratch-dir: "true"
     name: pull-kubernetes-e2e-kind
     path_alias: k8s.io/kubernetes
     spec:
@@ -1251,9 +1249,9 @@ presubmits:
       - args:
         - --provider=skeleton
         - --deployment=kind
-        - --kind-binary-version=build
+        - --kind-binary-version=stable
         - --kind-config-path=./../../k8s.io/kubeadm/tests/e2e/kind/ha-cp/ha-cp.yaml
-        - --build=quick
+        - --build=bazel
         - --up
         - --test
         - --check-version-skew=false
