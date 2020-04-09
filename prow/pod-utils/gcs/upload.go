@@ -120,13 +120,13 @@ func upload(dtw destToWriter, uploadTargets map[string]UploadFunc) error {
 // FileUpload returns an UploadFunc which copies all
 // data from the file on disk to the GCS object
 func FileUpload(file string) UploadFunc {
-	return FileUploadWithOptions(file, nil)
+	return FileUploadWithOptions(file, pkgio.WriterOptions{})
 }
 
 // FileUploadWithOptions returns an UploadFunc which copies all data
 // from the file on disk into GCS object and also sets the provided
 // attributes on the object.
-func FileUploadWithOptions(file string, opts *pkgio.WriterOptions) UploadFunc {
+func FileUploadWithOptions(file string, opts pkgio.WriterOptions) UploadFunc {
 	return func(writer dataWriter) error {
 		reader, err := os.Open(file)
 		if err != nil {
@@ -152,20 +152,20 @@ func FileUploadWithOptions(file string, opts *pkgio.WriterOptions) UploadFunc {
 // DataUpload returns an UploadFunc which copies all
 // data from src reader into GCS.
 func DataUpload(src io.Reader) UploadFunc {
-	return DataUploadWithOptions(src, nil)
+	return DataUploadWithOptions(src, pkgio.WriterOptions{})
 }
 
 // DataUploadWithMetadata returns an UploadFunc which copies all
 // data from src reader into GCS and also sets the provided metadata
 // fields onto the object.
 func DataUploadWithMetadata(src io.Reader, metadata map[string]string) UploadFunc {
-	return DataUploadWithOptions(src, &pkgio.WriterOptions{Metadata: metadata})
+	return DataUploadWithOptions(src, pkgio.WriterOptions{Metadata: metadata})
 }
 
 // DataUploadWithOptions returns an UploadFunc which copies all data
 // from src reader into GCS and also sets the provided attributes on
 // the object.
-func DataUploadWithOptions(src io.Reader, attrs *pkgio.WriterOptions) UploadFunc {
+func DataUploadWithOptions(src io.Reader, attrs pkgio.WriterOptions) UploadFunc {
 	return func(writer dataWriter) error {
 		writer.ApplyWriterOptions(attrs)
 		_, copyErr := io.Copy(writer, src)
@@ -182,17 +182,14 @@ func DataUploadWithOptions(src io.Reader, attrs *pkgio.WriterOptions) UploadFunc
 
 type dataWriter interface {
 	io.WriteCloser
-	ApplyWriterOptions(opts *pkgio.WriterOptions)
+	ApplyWriterOptions(opts pkgio.WriterOptions)
 }
 
 type gcsObjectWriter struct {
 	*storage.Writer
 }
 
-func (w gcsObjectWriter) ApplyWriterOptions(opts *pkgio.WriterOptions) {
-	if opts == nil {
-		return
-	}
+func (w gcsObjectWriter) ApplyWriterOptions(opts pkgio.WriterOptions) {
 	opts.Apply(w.Writer, nil)
 }
 
@@ -224,10 +221,7 @@ func (w *openerObjectWriter) Close() error {
 	return nil
 }
 
-func (w *openerObjectWriter) ApplyWriterOptions(opts *pkgio.WriterOptions) {
-	if opts == nil {
-		return
-	}
-	w.opts = append(w.opts, *opts)
+func (w *openerObjectWriter) ApplyWriterOptions(opts pkgio.WriterOptions) {
+	w.opts = append(w.opts, opts)
 	return
 }
