@@ -29,6 +29,7 @@ import (
 	utilpointer "k8s.io/utils/pointer"
 
 	pkgio "k8s.io/test-infra/prow/io"
+	"k8s.io/test-infra/prow/io/providers"
 )
 
 // UploadFunc knows how to upload into an object
@@ -44,7 +45,7 @@ func Upload(bucket, gcsCredentialsFile, s3CredentialsFile string, uploadTargets 
 		return fmt.Errorf("cannot parse bucket name %s: %w", bucket, err)
 	}
 	if parsedBucket.Scheme == "" {
-		parsedBucket.Scheme = "gs"
+		parsedBucket.Scheme = providers.GS
 	}
 
 	ctx := context.Background()

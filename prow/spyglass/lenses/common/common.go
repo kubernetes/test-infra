@@ -17,6 +17,7 @@ limitations under the License.
 package common
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"html/template"
@@ -30,6 +31,7 @@ import (
 
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/io/providers"
 	"k8s.io/test-infra/prow/spyglass/api"
 )
 
@@ -104,7 +106,7 @@ func newLensHandler(lens api.Lens, opts lensHandlerOpts) http.HandlerFunc {
 			return
 		}
 
-		artifacts, err := FetchArtifacts(opts.PJFetcher, opts.ConfigGetter, opts.GCSArtifactFetcher, opts.PodLogArtifactFetcher, request.ArtifactSource, "", opts.ConfigGetter().Deck.Spyglass.SizeLimit, request.Artifacts)
+		artifacts, err := FetchArtifacts(r.Context(), opts.PJFetcher, opts.ConfigGetter, opts.GCSArtifactFetcher, opts.PodLogArtifactFetcher, request.ArtifactSource, "", opts.ConfigGetter().Deck.Spyglass.SizeLimit, request.Artifacts)
 		if err != nil {
 			writeHTTPError(w, fmt.Errorf("Failed to retrieve expected artifacts: %w", err), http.StatusInternalServerError)
 			return
@@ -153,12 +155,13 @@ func writeHTTPError(w http.ResponseWriter, err error, statusCode int) {
 
 // ArtifactFetcher knows how to fetch artifacts
 type ArtifactFetcher interface {
-	Artifact(key string, artifactName string, sizeLimit int64) (api.Artifact, error)
+	Artifact(ctx context.Context, key string, artifactName string, sizeLimit int64) (api.Artifact, error)
 }
 
 // FetchArtifacts fetches artifacts.
 // TODO: Unexport once we only have remote lenses
 func FetchArtifacts(
+	ctx context.Context,
 	pjFetcher ProwJobFetcher,
 	cfg config.Getter,
 	gcsArtifactFetcher ArtifactFetcher,
@@ -180,19 +183,22 @@ func FetchArtifacts(
 	}
 	gcsKey := ""
 	switch keyType {
-	case api.GCSKeyType:
-		gcsKey = strings.TrimSuffix(key, "/")
 	case api.ProwKeyType:
-		if gcsKey, err = ProwToGCS(pjFetcher, cfg, key); err != nil {
+		storageProvider, key, err := ProwToGCS(pjFetcher, cfg, key)
+		if err != nil {
 			logrus.Warningln(err)
 		}
+		gcsKey = fmt.Sprintf("%s://%s", storageProvider, strings.TrimSuffix(key, "/"))
 	default:
-		return nil, fmt.Errorf("invalid src: %v", src)
+		if keyType == api.GCSKeyType {
+			keyType = providers.GS
+		}
+		gcsKey = fmt.Sprintf("%s://%s", keyType, strings.TrimSuffix(key, "/"))
 	}
 
 	podLogNeeded := false
 	for _, name := range artifactNames {
-		art, err := gcsArtifactFetcher.Artifact(gcsKey, name, sizeLimit)
+		art, err := gcsArtifactFetcher.Artifact(ctx, gcsKey, name, sizeLimit)
 		if err == nil {
 			// Actually try making a request, because calling GCSArtifactFetcher.artifact does no I/O.
 			// (these files are being explicitly requested and so will presumably soon be accessed, so
@@ -209,7 +215,7 @@ func FetchArtifacts(
 	}
 
 	if podLogNeeded {
-		art, err := podLogArtifactFetcher.Artifact(jobName, buildID, sizeLimit)
+		art, err := podLogArtifactFetcher.Artifact(ctx, jobName, buildID, sizeLimit)
 		if err != nil {
 			logrus.Errorf("Failed to fetch pod log: %v", err)
 		} else {
@@ -228,24 +234,42 @@ type ProwJobFetcher interface {
 
 // prowToGCS returns the GCS key corresponding to the given prow key
 // TODO: Unexport once we only have remote lenses
-func ProwToGCS(fetcher ProwJobFetcher, config config.Getter, prowKey string) (string, error) {
+func ProwToGCS(fetcher ProwJobFetcher, config config.Getter, prowKey string) (string, string, error) {
 	jobName, buildID, err := keyToJob(prowKey)
 	if err != nil {
-		return "", fmt.Errorf("could not get GCS src: %v", err)
+		return "", "", fmt.Errorf("could not get GCS src: %v", err)
 	}
 
 	job, err := fetcher.GetProwJob(jobName, buildID)
 	if err != nil {
-		return "", fmt.Errorf("Failed to get prow job from src %q: %v", prowKey, err)
+		return "", "", fmt.Errorf("failed to get prow job from src %q: %v", prowKey, err)
 	}
 
 	url := job.Status.URL
 	prefix := config().Plank.GetJobURLPrefix(job.Spec.Refs)
 	if !strings.HasPrefix(url, prefix) {
-		return "", fmt.Errorf("unexpected job URL %q when finding GCS path: expected something starting with %q", url, prefix)
+		return "", "", fmt.Errorf("unexpected job URL %q when finding GCS path: expected something starting with %q", url, prefix)
 	}
-	return url[len(prefix):], nil
 
+	// try to parse storageProvider from DecorationConfig.GCSConfiguration.Bucket
+	// if it doesn't work fallback to URL parsing
+	if job.Spec.DecorationConfig != nil && job.Spec.DecorationConfig.GCSConfiguration != nil {
+		prowPath, err := prowv1.ParsePath(job.Spec.DecorationConfig.GCSConfiguration.Bucket)
+		if err == nil {
+			return prowPath.StorageProvider(), url[len(prefix):], nil
+		}
+		logrus.Warnf("Could not parse storageProvider from DecorationConfig.GCSConfiguration.Bucket = %s: %v", job.Spec.DecorationConfig.GCSConfiguration.Bucket, err)
+	}
+
+	// now try to parse the storageProvider from the last jobURLPrefix segment, e.g.:
+	// https://prow.k8s.io/view/gcs/ => gcs
+	urlPrefixSegments := strings.Split(strings.TrimSuffix(prefix, "/"), "/")
+	storageProvider := urlPrefixSegments[len(urlPrefixSegments)-1]
+	if storageProvider == api.GCSKeyType {
+		storageProvider = providers.GS
+	}
+
+	return storageProvider, url[len(prefix):], nil
 }
 
 func splitSrc(src string) (keyType, key string, err error) {

@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/url"
@@ -27,13 +28,14 @@ import (
 	"strings"
 	"time"
 
-	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
+
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/gcsupload"
 	"k8s.io/test-infra/prow/git/v2"
+	"k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 )
 
@@ -93,8 +95,8 @@ func githubCommitLink(org, repo, commitHash string) string {
 	return fmt.Sprintf("https://github.com/%s/%s/commit/%s", org, repo, commitHash)
 }
 
-func jobHistLink(bucketName, jobName string) string {
-	return fmt.Sprintf("/job-history/%s/pr-logs/directory/%s", bucketName, jobName)
+func jobHistLink(storageProvider, bucketName, jobName string) string {
+	return fmt.Sprintf("/job-history/%s/%s/pr-logs/directory/%s", storageProvider, bucketName, jobName)
 }
 
 // gets the pull commit hash from metadata
@@ -108,12 +110,12 @@ func getPullCommitHash(pull string) (string, error) {
 }
 
 // listJobBuilds concurrently lists builds for the given job prefixes that have been run on a PR
-func listJobBuilds(bucket storageBucket, jobPrefixes []string) []jobBuilds {
+func listJobBuilds(ctx context.Context, bucket storageBucket, jobPrefixes []string) []jobBuilds {
 	jobch := make(chan jobBuilds)
 	defer close(jobch)
 	for i, jobPrefix := range jobPrefixes {
 		go func(i int, jobPrefix string) {
-			buildPrefixes, err := bucket.listSubDirs(jobPrefix)
+			buildPrefixes, err := bucket.listSubDirs(ctx, jobPrefix)
 			if err != nil {
 				logrus.WithError(err).Warningf("Error getting builds for job %s", jobPrefix)
 			}
@@ -132,19 +134,19 @@ func listJobBuilds(bucket storageBucket, jobPrefixes []string) []jobBuilds {
 }
 
 // getPRBuildData concurrently fetches metadata on each build of each job run on a PR
-func getPRBuildData(bucket storageBucket, jobs []jobBuilds) []buildData {
+func getPRBuildData(ctx context.Context, bucket storageBucket, jobs []jobBuilds) []buildData {
 	buildch := make(chan buildData)
 	defer close(buildch)
 	expected := 0
 	for _, job := range jobs {
 		for j, buildPrefix := range job.buildPrefixes {
 			go func(j int, jobName, buildPrefix string) {
-				build, err := getBuildData(bucket, buildPrefix)
+				build, err := getBuildData(ctx, bucket, buildPrefix)
 				if err != nil {
 					logrus.WithError(err).Warningf("build %s information incomplete", buildPrefix)
 				}
 				split := strings.Split(strings.TrimSuffix(buildPrefix, "/"), "/")
-				build.SpyglassLink = path.Join(spyglassPrefix, bucket.getName(), buildPrefix)
+				build.SpyglassLink = path.Join(spyglassPrefix, bucket.getStorageProvider(), bucket.getName(), buildPrefix)
 				build.ID = split[len(split)-1]
 				build.jobName = jobName
 				build.prefix = buildPrefix
@@ -240,21 +242,27 @@ func getGCSDirsForPR(c *config.Config, gitHubClient deckGitHubClient, gitClient 
 			},
 		}, "")
 		gcsPath, _ = path.Split(path.Clean(gcsPath))
-		if _, ok := toSearch[gcsConfig.Bucket]; !ok {
-			toSearch[gcsConfig.Bucket] = sets.String{}
+		bucketName := gcsConfig.Bucket
+		// bucket is the bucket field of the GCSConfiguration, which means it could be missing the
+		// storageProvider prefix (but it's deprecated to use a bucket name without <storage-type>:// prefix)
+		if !strings.Contains(bucketName, "://") {
+			bucketName = "gs://" + bucketName
 		}
-		toSearch[gcsConfig.Bucket].Insert(gcsPath)
+		if _, ok := toSearch[bucketName]; !ok {
+			toSearch[bucketName] = sets.String{}
+		}
+		toSearch[bucketName].Insert(gcsPath)
 	}
 	return toSearch, nil
 }
 
-func getPRHistory(url *url.URL, config *config.Config, gcsClient *storage.Client, gitHubClient deckGitHubClient, gitClient git.ClientFactory) (prHistoryTemplate, error) {
+func getPRHistory(ctx context.Context, prHistoryURL *url.URL, config *config.Config, opener io.Opener, gitHubClient deckGitHubClient, gitClient git.ClientFactory) (prHistoryTemplate, error) {
 	start := time.Now()
 	template := prHistoryTemplate{}
 
-	org, repo, pr, err := parsePullURL(url)
+	org, repo, pr, err := parsePullURL(prHistoryURL)
 	if err != nil {
-		return template, fmt.Errorf("failed to parse URL %s: %v", url.String(), err)
+		return template, fmt.Errorf("failed to parse URL %s: %v", prHistoryURL.String(), err)
 	}
 	template.Name = fmt.Sprintf("%s/%s #%d", org, repo, pr)
 	template.Link = githubPRLink(org, repo, pr) // TODO(ibzib) support Gerrit :/
@@ -268,10 +276,16 @@ func getPRHistory(url *url.URL, config *config.Config, gcsClient *storage.Client
 	// job name -> commit hash -> list of builds
 	jobCommitBuilds := make(map[string]map[string][]buildData)
 
-	for bucketName, gcsPaths := range toSearch {
-		bucket := gcsBucket{bucketName, gcsClient.Bucket(bucketName)}
+	for bucket, gcsPaths := range toSearch {
+		parsedBucket, err := url.Parse(bucket)
+		if err != nil {
+			return template, fmt.Errorf("parse bucket %s: %w", bucket, err)
+		}
+		bucketName := parsedBucket.Host
+		storageProvider := parsedBucket.Scheme
+		bucket := gcsBucket{bucketName, storageProvider, opener}
 		for gcsPath := range gcsPaths {
-			jobPrefixes, err := bucket.listSubDirs(gcsPath)
+			jobPrefixes, err := bucket.listSubDirs(ctx, gcsPath)
 			if err != nil {
 				return template, fmt.Errorf("failed to get job names: %v", err)
 			}
@@ -280,13 +294,13 @@ func getPRHistory(url *url.URL, config *config.Config, gcsClient *storage.Client
 				jobName := path.Base(jobPrefix)
 				jobData := prJobData{
 					Name: jobName,
-					Link: jobHistLink(bucketName, jobName),
+					Link: jobHistLink(storageProvider, bucketName, jobName),
 				}
 				template.Jobs = append(template.Jobs, jobData)
 				jobCommitBuilds[jobName] = make(map[string][]buildData)
 			}
-			jobs := listJobBuilds(bucket, jobPrefixes)
-			builds = append(builds, getPRBuildData(bucket, jobs)...)
+			jobs := listJobBuilds(ctx, bucket, jobPrefixes)
+			builds = append(builds, getPRBuildData(ctx, bucket, jobs)...)
 		}
 	}
 
@@ -315,7 +329,7 @@ func getPRHistory(url *url.URL, config *config.Config, gcsClient *storage.Client
 	}
 
 	elapsed := time.Now().Sub(start)
-	logrus.WithField("duration", elapsed.String()).Infof("loaded %s", url.Path)
+	logrus.WithField("duration", elapsed.String()).Infof("loaded %s", prHistoryURL.Path)
 
 	return template, nil
 }

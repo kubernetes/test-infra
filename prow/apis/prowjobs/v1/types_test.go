@@ -387,3 +387,76 @@ func TestRerunAuthConfigIsAllowAnyone(t *testing.T) {
 		})
 	}
 }
+
+func TestParsePath(t *testing.T) {
+	type args struct {
+		bucket string
+	}
+	tests := []struct {
+		name                string
+		args                args
+		wantStorageProvider string
+		wantBucket          string
+		wantFullPath        string
+		wantErr             string
+	}{
+		{
+			name: "valid gcs bucket",
+			args: args{
+				bucket: "prow-artifacts",
+			},
+			wantStorageProvider: "gs",
+			wantBucket:          "prow-artifacts",
+			wantFullPath:        "prow-artifacts",
+		},
+		{
+			name: "valid gcs bucket with storage provider prefix",
+			args: args{
+				bucket: "gs://prow-artifacts",
+			},
+			wantStorageProvider: "gs",
+			wantBucket:          "prow-artifacts",
+			wantFullPath:        "prow-artifacts",
+		},
+		{
+			name: "valid gcs bucket with multiple separator with storage provider prefix",
+			args: args{
+				bucket: "gs://my-floppy-backup/a://doom2.wad.006",
+			},
+			wantStorageProvider: "gs",
+			wantBucket:          "my-floppy-backup",
+			wantFullPath:        "my-floppy-backup/a://doom2.wad.006",
+		},
+		{
+			name: "valid s3 bucket with storage provider prefix",
+			args: args{
+				bucket: "s3://prow-artifacts",
+			},
+			wantStorageProvider: "s3",
+			wantBucket:          "prow-artifacts",
+			wantFullPath:        "prow-artifacts",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			prowPath, err := ParsePath(tt.args.bucket)
+			var gotErr string
+			if err != nil {
+				gotErr = err.Error()
+			}
+			if gotErr != tt.wantErr {
+				t.Errorf("ParsePath() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if prowPath.StorageProvider() != tt.wantStorageProvider {
+				t.Errorf("ParsePath() gotStorageProvider = %v, wantStorageProvider %v", prowPath.StorageProvider(), tt.wantStorageProvider)
+			}
+			if prowPath.Bucket() != tt.wantBucket {
+				t.Errorf("ParsePath() gotBucket = %v, wantBucket %v", prowPath.Bucket(), tt.wantBucket)
+			}
+			if prowPath.FullPath() != tt.wantFullPath {
+				t.Errorf("ParsePath() gotFullPath = %v, wantFullPath %v", prowPath.FullPath(), tt.wantBucket)
+			}
+		})
+	}
+}

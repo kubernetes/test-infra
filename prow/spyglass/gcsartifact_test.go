@@ -24,7 +24,7 @@ import (
 	"io"
 	"testing"
 
-	"cloud.google.com/go/storage"
+	pkgio "k8s.io/test-infra/prow/io"
 )
 
 type ByteReadCloser struct {
@@ -52,14 +52,14 @@ func (rc *ByteReadCloser) Read(p []byte) (int, error) {
 }
 
 type fakeArtifactHandle struct {
-	oAttrs         *storage.ObjectAttrs
+	oAttrs         pkgio.Attributes
 	contents       []byte
 	incompleteRead bool
 }
 
-func (h *fakeArtifactHandle) Attrs(ctx context.Context) (*storage.ObjectAttrs, error) {
+func (h *fakeArtifactHandle) Attrs(ctx context.Context) (pkgio.Attributes, error) {
 	if bytes.Equal(h.contents, []byte("no attrs")) {
-		return nil, fmt.Errorf("error getting attrs")
+		return pkgio.Attributes{}, fmt.Errorf("error getting attrs")
 	}
 	return h.oAttrs, nil
 }
@@ -155,9 +155,7 @@ func TestReadTail(t *testing.T) {
 	for _, tc := range testCases {
 		artifact := NewGCSArtifact(context.Background(), &fakeArtifactHandle{
 			contents: tc.contents,
-			oAttrs: &storage.ObjectAttrs{
-				Bucket:          "foo-bucket",
-				Name:            "build-log.txt",
+			oAttrs: pkgio.Attributes{
 				Size:            int64(len(tc.contents)),
 				ContentEncoding: tc.encoding,
 			},
@@ -234,9 +232,7 @@ func TestReadAtMost(t *testing.T) {
 	for _, tc := range testCases {
 		artifact := NewGCSArtifact(context.Background(), &fakeArtifactHandle{
 			contents: tc.contents,
-			oAttrs: &storage.ObjectAttrs{
-				Bucket:          "foo-bucket",
-				Name:            "build-log.txt",
+			oAttrs: pkgio.Attributes{
 				Size:            int64(len(tc.contents)),
 				ContentEncoding: tc.encoding,
 			},
@@ -330,9 +326,7 @@ func TestReadAt(t *testing.T) {
 	for _, tc := range testCases {
 		artifact := NewGCSArtifact(context.Background(), &fakeArtifactHandle{
 			contents: tc.contents,
-			oAttrs: &storage.ObjectAttrs{
-				Bucket:          "foo-bucket",
-				Name:            "build-log.txt",
+			oAttrs: pkgio.Attributes{
 				Size:            int64(len(tc.contents)),
 				ContentEncoding: tc.encoding,
 			},
@@ -394,10 +388,8 @@ func TestReadAll(t *testing.T) {
 	for _, tc := range testCases {
 		artifact := NewGCSArtifact(context.Background(), &fakeArtifactHandle{
 			contents: tc.contents,
-			oAttrs: &storage.ObjectAttrs{
-				Bucket: "foo-bucket",
-				Name:   "build-log.txt",
-				Size:   int64(len(tc.contents)),
+			oAttrs: pkgio.Attributes{
+				Size: int64(len(tc.contents)),
 			},
 		}, "", "build-log.txt", tc.sizeLimit)
 
@@ -416,53 +408,52 @@ func TestReadAll(t *testing.T) {
 
 func TestSize_GCS(t *testing.T) {
 	fakeGCSClient := fakeGCSServer.Client()
-	fakeGCSBucket := fakeGCSClient.Bucket("test-bucket")
+	fakeOpener := pkgio.NewGCSOpener(fakeGCSClient)
 	startedContent := []byte("hi jason, im started")
 	testCases := []struct {
 		name      string
 		handle    artifactHandle
 		expected  int64
-		expectErr bool
+		expectErr string
 	}{
 		{
 			name: "Test size simple",
 			handle: &fakeArtifactHandle{
 				contents: startedContent,
-				oAttrs: &storage.ObjectAttrs{
-					Bucket: "foo-bucket",
-					Name:   "started.json",
-					Size:   int64(len(startedContent)),
+				oAttrs: pkgio.Attributes{
+					Size: int64(len(startedContent)),
 				},
 			},
-			expected:  int64(len(startedContent)),
-			expectErr: false,
+			expected: int64(len(startedContent)),
 		},
 		{
 			name: "Test size from attrs error",
 			handle: &fakeArtifactHandle{
 				contents: []byte("no attrs"),
-				oAttrs: &storage.ObjectAttrs{
-					Bucket: "foo-bucket",
-					Name:   "started.json",
-					Size:   8,
+				oAttrs: pkgio.Attributes{
+					Size: 8,
 				},
 			},
-			expectErr: true,
+			expectErr: "error getting gcs attributes for artifact: error getting attrs",
 		},
 		{
-			name:      "Size of nonexistentArtifact",
-			handle:    &gcsArtifactHandle{fakeGCSBucket.Object("logs/example-ci-run/404/started.json")},
-			expectErr: true,
+			name: "Size of nonexistentArtifact",
+			handle: &gcsArtifactHandle{
+				Opener: fakeOpener,
+				Name:   "gs://test-bucket/logs/example-ci-run/404/started.json",
+			},
+			expectErr: "error getting gcs attributes for artifact: storage: object doesn't exist",
 		},
 	}
 	for _, tc := range testCases {
 		artifact := NewGCSArtifact(context.Background(), tc.handle, "", "started.json", 500e6)
 		actual, err := artifact.Size()
-		if err != nil && !tc.expectErr {
-			t.Fatalf("%s failed getting size for artifact %s, err: %v", tc.name, artifact.JobPath(), err)
+		var actualErr string
+		if err != nil {
+			actualErr = err.Error()
 		}
-		if err == nil && tc.expectErr {
-			t.Errorf("%s did not produce error when error was expected.", tc.name)
+		if actualErr != tc.expectErr {
+			t.Fatalf("%s failed getting size for artifact %s, error = %v, expectErr %v", tc.name, artifact.JobPath(), actualErr, tc.expectErr)
 		}
 		if tc.expected != actual {
 			t.Errorf("Test %s failed.\nExpected:\n%d\nActual:\n%d", tc.name, tc.expected, actual)

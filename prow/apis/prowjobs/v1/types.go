@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"mime"
+	"net/url"
 	"strings"
 	"time"
 
@@ -611,6 +612,9 @@ func (g *GCSConfiguration) ApplyDefault(def *GCSConfiguration) *GCSConfiguration
 
 // Validate ensures all the values set in the GCSConfiguration are valid.
 func (g *GCSConfiguration) Validate() error {
+	if _, err := ParsePath(g.Bucket); err != nil {
+		return err
+	}
 	for _, mediaType := range g.MediaTypes {
 		if _, _, err := mime.ParseMediaType(mediaType); err != nil {
 			return fmt.Errorf("invalid extension media type %q: %v", mediaType, err)
@@ -623,6 +627,36 @@ func (g *GCSConfiguration) Validate() error {
 		return fmt.Errorf("default org and repo must be provided for GCS strategy %q", g.PathStrategy)
 	}
 	return nil
+}
+
+type ProwPath url.URL
+
+func (pp ProwPath) StorageProvider() string {
+	return pp.Scheme
+}
+
+func (pp ProwPath) Bucket() string {
+	return pp.Host
+}
+
+func (pp ProwPath) FullPath() string {
+	return pp.Host + pp.Path
+}
+
+// ParsePath tries to extract the ProwPath from, e.g.:
+// * <bucket-name> (storageProvider gs)
+// * <storage-provider>://<bucket-name>
+func ParsePath(bucket string) (*ProwPath, error) {
+	// default to GCS if no storage-provider is specified
+	if !strings.Contains(bucket, "://") {
+		bucket = "gs://" + bucket
+	}
+	parsedBucket, err := url.Parse(bucket)
+	if err != nil {
+		return nil, fmt.Errorf("path %q has invalid format, expected either <bucket-name>[/<path>] or <storage-provider>://<bucket-name>[/<path>]", bucket)
+	}
+	pp := ProwPath(*parsedBucket)
+	return &pp, nil
 }
 
 // ProwJobStatus provides runtime metadata, such as when it finished, whether it is running, etc.

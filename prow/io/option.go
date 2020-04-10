@@ -74,3 +74,10 @@ func (wo WriterOptions) Apply(writer *storage.Writer, o *blob.WriterOptions) {
 		o.Metadata = wo.Metadata
 	}
 }
+
+// SignedURLOptions are options for the opener SignedURL method
+type SignedURLOptions struct {
+	// UseGSCookieAuth defines if we should use cookie auth for GCS, see:
+	// https://cloud.google.com/storage/docs/access-control/cookie-based-authentication
+	UseGSCookieAuth bool
+}
