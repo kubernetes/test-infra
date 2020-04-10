@@ -3408,7 +3408,7 @@ periodics:
       - --extract=ci/latest-1.18
       - --gcp-project-type=ingress-project
       - --timeout=150m
-      - --test_args=--ginkgo.focus=\[Feature:Ingress\] --ginkgo.skip=\[Unreleased\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Feature:Ingress\] --minStartupPods=8
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200407-c818676-master
   annotations:
@@ -3527,7 +3527,7 @@ periodics:
       - --extract=ci/latest-1.18
       - --gcp-project-type=ingress-project
       - --timeout=150m
-      - --test_args=--ginkgo.focus=\[Feature:Ingress\] --ginkgo.skip=\[Unreleased\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Feature:Ingress\] --minStartupPods=8
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200407-c818676-master
   annotations:
@@ -3738,7 +3738,7 @@ periodics:
       - --extract=ci/latest-1.17
       - --gcp-project-type=ingress-project
       - --timeout=150m
-      - --test_args=--ginkgo.focus=\[Feature:Ingress\] --ginkgo.skip=\[Unreleased\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Feature:Ingress\] --minStartupPods=8
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200407-c818676-master
   annotations:
@@ -3857,7 +3857,7 @@ periodics:
       - --extract=ci/latest-1.17
       - --gcp-project-type=ingress-project
       - --timeout=150m
-      - --test_args=--ginkgo.focus=\[Feature:Ingress\] --ginkgo.skip=\[Unreleased\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Feature:Ingress\] --minStartupPods=8
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200407-c818676-master
   annotations:
@@ -4067,7 +4067,7 @@ periodics:
       - --extract=ci/latest-1.16
       - --gcp-project-type=ingress-project
       - --timeout=150m
-      - --test_args=--ginkgo.focus=\[Feature:Ingress\] --ginkgo.skip=\[Unreleased\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Feature:Ingress\] --minStartupPods=8
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200407-c818676-master
   annotations:
@@ -4185,7 +4185,7 @@ periodics:
       - --extract=ci/latest-1.16
       - --gcp-project-type=ingress-project
       - --timeout=150m
-      - --test_args=--ginkgo.focus=\[Feature:Ingress\] --ginkgo.skip=\[Unreleased\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Feature:Ingress\] --minStartupPods=8
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200407-c818676-master
   annotations:
@@ -4368,7 +4368,7 @@ periodics:
       - --extract=ci/latest-1.15
       - --gcp-project-type=ingress-project
       - --timeout=150m
-      - --test_args=--ginkgo.focus=\[Feature:Ingress\] --ginkgo.skip=\[Unreleased\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Feature:Ingress\] --minStartupPods=8
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200407-c818676-master
   annotations:
@@ -4513,7 +4513,7 @@ periodics:
       - --extract=ci/latest-1.15
       - --gcp-project-type=ingress-project
       - --timeout=150m
-      - --test_args=--ginkgo.focus=\[Feature:Ingress\] --ginkgo.skip=\[Unreleased\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Feature:Ingress\] --minStartupPods=8
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200407-c818676-master
   annotations:
