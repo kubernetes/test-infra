@@ -29,8 +29,14 @@ import (
 )
 
 var (
-	lifecycleLabels = []string{labels.LifecycleActive, labels.LifecycleFrozen, labels.LifecycleStale, labels.LifecycleRotten}
-	lifecycleRe     = regexp.MustCompile(`(?mi)^/(remove-)?lifecycle (active|frozen|stale|rotten)\s*$`)
+	lifecycleLabels = []string{
+		labels.LifecycleActive,
+		labels.LifecycleFrozen,
+		labels.LifecycleNeedsInfo,
+		labels.LifecycleStale,
+		labels.LifecycleRotten,
+	}
+	lifecycleRe = regexp.MustCompile(`(?mi)^/(remove-)?lifecycle (active|frozen|needs-info|stale|rotten)\s*$`)
 )
 
 func init() {
@@ -39,7 +45,7 @@ func init() {
 
 func help(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
 	pluginHelp := &pluginhelp.PluginHelp{
-		Description: "Close, reopen, flag and/or unflag an issue or PR as frozen/stale/rotten",
+		Description: "Close, reopen, flag and/or unflag an issue or PR as frozen/needs-info/stale/rotten",
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/close",
@@ -56,8 +62,8 @@ func help(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhelp.Plugin
 		Examples:    []string{"/reopen"},
 	})
 	pluginHelp.AddCommand(pluginhelp.Command{
-		Usage:       "/[remove-]lifecycle <frozen|stale|rotten>",
-		Description: "Flags an issue or PR as frozen/stale/rotten",
+		Usage:       "/[remove-]lifecycle <frozen|needs-info|stale|rotten>",
+		Description: "Flags an issue or PR as frozen/needs-info/stale/rotten",
 		Featured:    false,
 		WhoCanUse:   "Anyone can trigger this command.",
 		Examples:    []string{"/lifecycle frozen", "/remove-lifecycle stale"},

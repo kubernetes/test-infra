@@ -107,13 +107,6 @@ default:
       addedBy: humans
       deleteAfter: 2020-04-20T00:00:00Z
     - color: d455d0
-      description: Indicates an issue needs more information in order to work on it.
-      name: triage/needs-information
-      previously:
-        - name: close/needs-information
-      target: both
-      addedBy: humans
-    - color: d455d0
       description: Indicates an issue can not be reproduced as described.
       name: triage/not-reproducible
       previously:
@@ -335,6 +328,15 @@ default:
       target: both
       prowPlugin: lifecycle
       addedBy: anyone
+    - color: d455d0
+      description: Indicates an issue needs more information in order to work on it.
+      name: lifecycle/needs-info
+      previously:
+        - name: close/needs-information
+        - name: triage/needs-information
+      target: issues
+      prowPlugin: lifecycle
+      addedBy: humans
     - color: "604460"
       description: Denotes an issue or PR that has aged beyond stale and will be auto-closed.
       name: lifecycle/rotten
