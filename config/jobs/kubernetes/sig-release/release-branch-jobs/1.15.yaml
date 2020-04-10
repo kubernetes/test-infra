@@ -1042,6 +1042,30 @@ presubmits:
     branches:
     - release-1.15
     decorate: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-service-account: "true"
+    name: pull-kubernetes-dependencies
+    path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - args:
+        - make
+        - verify
+        command:
+        - runner.sh
+        env:
+        - name: WHAT
+          value: vendor vendor-licenses
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200407-c818676-1.15
+        name: main
+        resources: {}
+        securityContext:
+          privileged: true
+  - always_run: true
+    branches:
+    - release-1.15
+    decorate: true
     name: pull-kubernetes-typecheck
     path_alias: k8s.io/kubernetes
     spec:
