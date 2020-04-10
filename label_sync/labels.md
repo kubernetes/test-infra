@@ -112,7 +112,6 @@ larger set of contributors to apply/remove them.
 | <a id="triage/duplicate" href="#triage/duplicate">`triage/duplicate`</a> | Indicates an issue is a duplicate of other open issue. <br><br> This was previously `close/duplicate`, `duplicate`, | humans | |
 | <a id="triage/needs-information" href="#triage/needs-information">`triage/needs-information`</a> | Indicates an issue needs more information in order to work on it. <br><br> This was previously `close/needs-information`, | humans | |
 | <a id="triage/not-reproducible" href="#triage/not-reproducible">`triage/not-reproducible`</a> | Indicates an issue can not be reproduced as described. <br><br> This was previously `close/not-reproducible`, | humans | |
-| <a id="triage/support" href="#triage/support">`triage/support`</a> | Indicates an issue that is a support question. <br><br> This was previously `close/support`, `kind/support`, `question`, | humans | |
 | <a id="triage/unresolved" href="#triage/unresolved">`triage/unresolved`</a> | Indicates an issue that can not or will not be resolved. <br><br> This was previously `close/unresolved`, `invalid`, `wontfix`, | humans | |
 | <a id="ug/big-data" href="#ug/big-data">`ug/big-data`</a> | Categorizes an issue or PR as relevant to ug-big-data. <br><br> This was previously `sig/big-data`, | anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="ug/vmware" href="#ug/vmware">`ug/vmware`</a> | Categorizes an issue or PR as relevant to ug-vmware.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
@@ -134,6 +133,7 @@ larger set of contributors to apply/remove them.
 | ---- | ----------- | -------- | --- |
 | <a id="good first issue" href="#good first issue">`good first issue`</a> | Denotes an issue ready for a new contributor, according to the "help wanted" guidelines. <br><br> This was previously `for-new-contributors`, | anyone |  [help](https://git.k8s.io/test-infra/prow/plugins/help) |
 | <a id="help wanted" href="#help wanted">`help wanted`</a> | Denotes an issue that needs help from a contributor. Must meet "help wanted" guidelines. <br><br> This was previously `help-wanted`, | anyone |  [help](https://git.k8s.io/test-infra/prow/plugins/help) |
+| <a id="kind/support" href="#kind/support">`kind/support`</a> | Indicates an issue that is a support question. <br><br> This was previously `close/support`, `question`, `triage/support`, | humans | |
 | <a id="tide/merge-blocker" href="#tide/merge-blocker">`tide/merge-blocker`</a> | Denotes an issue that blocks the tide merge queue for a branch while it is open. <br><br> This was previously `merge-blocker`, | humans | |
 
 ## Labels that apply to all repos, only for PRs
