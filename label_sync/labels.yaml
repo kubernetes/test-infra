@@ -100,11 +100,12 @@ default:
     - color: d455d0
       description: Indicates an issue is a duplicate of other open issue.
       name: triage/duplicate
-      target: both
+      target: issues
       previously:
         - name: close/duplicate
         - name: duplicate
       addedBy: humans
+      deleteAfter: 2020-04-20T00:00:00Z
     - color: d455d0
       description: Indicates an issue needs more information in order to work on it.
       name: triage/needs-information
@@ -117,8 +118,9 @@ default:
       name: triage/not-reproducible
       previously:
         - name: close/not-reproducible
-      target: both
+      target: issues
       addedBy: humans
+      deleteAfter: 2020-04-20T00:00:00Z
     - color: d455d0
       description: Indicates an issue that can not or will not be resolved.
       name: triage/unresolved
@@ -126,8 +128,9 @@ default:
         - name: close/unresolved
         - name: invalid
         - name: wontfix
-      target: both
+      target: issues
       addedBy: humans
+      deleteAfter: 2020-04-20T00:00:00Z
     - color: c0ff4a
       description: Denotes an issue or PR intended to be handled by the code of conduct committee. # (as of yet non-existent)
       name: committee/code-of-conduct
