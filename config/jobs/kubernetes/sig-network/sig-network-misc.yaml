@@ -513,28 +513,6 @@ periodics:
     testgrid-tab-name: gci-gke-network-policy
     testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
     testgrid-alert-stale-results-hours: '24'
-- interval: 120m
-  name: ci-kubernetes-e2e-gce-lb-finalizer
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=320
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
-      - --check-leaked-resources
-      - --env=KUBE_FEATURE_GATES=ServiceLoadBalancerFinalizer=true
-      - --extract=ci/latest
-      - --gcp-master-image=gci
-      - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
-      - --provider=gce
-      - --test_args=--ginkgo.focus=\[sig-network\]\sServices --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:GCEAlphaFeature\] --minStartupPods=8
-      - --timeout=300m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200407-c818676-master
 - interval: 12h
   name: ci-kubernetes-e2e-gci-gce-basic-sctp
   labels:
