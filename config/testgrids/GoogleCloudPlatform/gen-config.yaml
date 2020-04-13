@@ -14,13 +14,6 @@ dashboards:
       url: https://github.com/GoogleCloudPlatform/compute-image-packages/issues/
     test_group_name: disk-expand-build
   - code_search_url_template:
-      url: https://github.com/GoogleCloudPlatform/compute-image-packages/compare/<start-custom-0>...<end-custom-0>
-    description: gce-build
-    name: gce-build
-    open_bug_template:
-      url: https://github.com/GoogleCloudPlatform/compute-image-packages/issues/
-    test_group_name: gce-build
-  - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/guest-agent/compare/<start-custom-0>...<end-custom-0>
     description: guest-agent-build
     name: guest-agent-build
@@ -338,8 +331,6 @@ test_groups:
   name: ci-oss-test-infra-autobump-prow
 - gcs_prefix: oss-prow/logs/disk-expand-build
   name: disk-expand-build
-- gcs_prefix: oss-prow/logs/gce-build
-  name: gce-build
 - gcs_prefix: oss-prow/logs/guest-agent-build
   name: guest-agent-build
 - gcs_prefix: oss-prow/logs/guest-config-build
