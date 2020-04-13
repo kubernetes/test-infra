@@ -4,6 +4,10 @@ presubmits:
     max_concurrency: 5
     always_run: true
     decorate: true
+    annotations:
+      testgrid-dashboards: provider-gcp-presubmits
+      description: Build and unit test for kubernetes/cloud-provider-gcp.
+      testgrid-num-columns-recent: '30'
     spec:
       containers:
       - image: gcr.io/cloud-builders/bazel

@@ -360,7 +360,6 @@ var noPresubmitsInTestgridPrefixes = []string{
 	"kubernetes-sigs/slack-infra",
 	"kubernetes-sigs/testing_frameworks",
 	"kubernetes/client-go",
-	"kubernetes/cloud-provider-gcp",
 	"kubernetes/cloud-provider-openstack",
 	"kubernetes/dns",
 	"kubernetes/enhancements",
