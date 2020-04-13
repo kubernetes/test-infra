@@ -1,4 +1,4 @@
-# Images README
+# Images
 
 ## Testing Images
 
@@ -12,4 +12,3 @@ Images are tested in production.
     * Some of these images might be presubmits; you could monitor them at http://prow.k8s.io
 
 1. You are done. If more breaks happen later, the oncall will take care of it.
-
