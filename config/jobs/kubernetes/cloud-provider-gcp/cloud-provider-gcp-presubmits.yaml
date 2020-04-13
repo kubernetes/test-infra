@@ -4,6 +4,7 @@ presubmits:
     max_concurrency: 5
     always_run: true
     decorate: true
+    path_alias: k8s.io/cloud-provider-gcp
     annotations:
       testgrid-dashboards: provider-gcp-presubmits
       description: Build and unit test for kubernetes/cloud-provider-gcp.
