@@ -10,7 +10,7 @@ There is no automated testing pipeline for images:
 
 1. Merge a PR changing something in the image directory.
 
-1. Grep the [prowjob configs](/config/jobs) to find out which jobs are using gcr.io/k8s-testimages/<image-name>:latest and monitor [TestGrid](http://testgrid.k8s.io) for new failures corresponding to your change.
+1. Grep the [prowjob configs](/config/jobs) to find out which jobs are using `gcr.io/k8s-testimages/<image-name>:latest` and monitor [TestGrid](http://testgrid.k8s.io) for new failures corresponding to your change.
 
     * On failure, send a new PR to rollback your last one or a fix if you know immediately.
     * Some of these images might be presubmits; you could monitor them at http://prow.k8s.io
