@@ -206,10 +206,29 @@ func (u upstreamTransport) RoundTrip(req *http.Request) (*http.Response, error) 
 	return resp, nil
 }
 
+const LogMessageWithDiskPartitionFields = "Not using a partitioned cache because legacyDisablePartitioningByAuthHeader is true"
+
 // NewDiskCache creates a GitHub cache RoundTripper that is backed by a disk
 // cache.
 // It supports a partitioned cache.
-func NewDiskCache(delegate http.RoundTripper, cacheDir string, cacheSizeGB, maxConcurrency int) http.RoundTripper {
+func NewDiskCache(delegate http.RoundTripper, cacheDir string, cacheSizeGB, maxConcurrency int, legacyDisablePartitioningByAuthHeader bool) http.RoundTripper {
+	if legacyDisablePartitioningByAuthHeader {
+		diskCache := diskcache.NewWithDiskv(
+			diskv.New(diskv.Options{
+				BasePath:     path.Join(cacheDir, "data"),
+				TempDir:      path.Join(cacheDir, "temp"),
+				CacheSizeMax: uint64(cacheSizeGB) * uint64(1000000000), // convert G to B
+			}))
+		return NewFromCache(delegate,
+			func(partitionKey string) httpcache.Cache {
+				logrus.WithField("cache-base-path", path.Join(cacheDir, "data", partitionKey)).
+					WithField("cache-temp-path", path.Join(cacheDir, "temp", partitionKey)).
+					Warning(LogMessageWithDiskPartitionFields)
+				return diskCache
+			},
+			maxConcurrency,
+		)
+	}
 	return NewFromCache(delegate,
 		func(partitionKey string) httpcache.Cache {
 			return diskcache.NewWithDiskv(
