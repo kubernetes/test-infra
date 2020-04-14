@@ -143,22 +143,6 @@ dashboards:
       description: network gci-gke alpha features e2e tests for master branch
       alert_options:
         alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
-    - name: gke-cos-1.11-ingress
-      test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-ingress
-      alert_options:
-        alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
-    - name: gke-cos-1.12-ingress
-      test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-ingress
-      alert_options:
-        alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
-    - name: gke-cos-1.13-ingress
-      test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-ingress
-      alert_options:
-        alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
-    - name: gke-cos-1.14-ingress
-      test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-ingress
-      alert_options:
-        alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
 
 - name: sig-network-ingress-gce-e2e
 - name: sig-network-ingress-nginx

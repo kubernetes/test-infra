@@ -339,23 +339,6 @@ jobs:
     sigOwners: [sig-cloud-provider-gcp]
     releaseInforming: true
     testgridNumFailuresToAlert: 6
-  ci-kubernetes-e2e-gke-cos-k8sbeta-ingress:
-    interval: 1h
-    sigOwners: [sig-cloud-provider-gcp]
-  ci-kubernetes-e2e-gke-cos-k8sbeta-reboot:
-    interval: 1h
-    sigOwners: [sig-cloud-provider-gcp]
-  ci-kubernetes-e2e-gke-cos-k8sbeta-default:
-    interval: 1h
-    args:
-    - --gke-create-command=container clusters create --quiet --addons=HttpLoadBalancing,HorizontalPodAutoscaling
-    sigOwners: [sig-cloud-provider-gcp]
-  ci-kubernetes-e2e-gke-cos-k8sbeta-serial:
-    interval: 1h
-    sigOwners: [sig-cloud-provider-gcp]
-  ci-kubernetes-e2e-gke-cos-k8sbeta-slow:
-    interval: 1h
-    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gce-cos-k8sbeta-alphafeatures:
     interval: 1h
     args:
@@ -395,21 +378,6 @@ jobs:
     sigOwners: [sig-cloud-provider-gcp]
     releaseInforming: true
     testgridNumFailuresToAlert: 6
-  ci-kubernetes-e2e-gke-cos-k8sstable1-ingress:
-    interval: 2h
-    sigOwners: [sig-cloud-provider-gcp]
-  ci-kubernetes-e2e-gke-cos-k8sstable1-reboot:
-    interval: 2h
-    sigOwners: [sig-cloud-provider-gcp]
-  ci-kubernetes-e2e-gke-cos-k8sstable1-default:
-    interval: 2h
-    sigOwners: [sig-cloud-provider-gcp]
-  ci-kubernetes-e2e-gke-cos-k8sstable1-serial:
-    interval: 2h
-    sigOwners: [sig-cloud-provider-gcp]
-  ci-kubernetes-e2e-gke-cos-k8sstable1-slow:
-    interval: 2h
-    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gce-cos-k8sstable1-alphafeatures:
     interval: 2h
     args:
@@ -448,21 +416,6 @@ jobs:
     sigOwners: [sig-cloud-provider-gcp]
     releaseInforming: true
     testgridNumFailuresToAlert: 6
-  ci-kubernetes-e2e-gke-cos-k8sstable2-ingress:
-    interval: 6h
-    sigOwners: [sig-cloud-provider-gcp]
-  ci-kubernetes-e2e-gke-cos-k8sstable2-reboot:
-    interval: 6h
-    sigOwners: [sig-cloud-provider-gcp]
-  ci-kubernetes-e2e-gke-cos-k8sstable2-default:
-    interval: 6h
-    sigOwners: [sig-cloud-provider-gcp]
-  ci-kubernetes-e2e-gke-cos-k8sstable2-serial:
-    interval: 6h
-    sigOwners: [sig-cloud-provider-gcp]
-  ci-kubernetes-e2e-gke-cos-k8sstable2-slow:
-    interval: 6h
-    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gce-cos-k8sstable2-alphafeatures:
     interval: 6h
     args:
@@ -501,21 +454,6 @@ jobs:
     sigOwners: [sig-cloud-provider-gcp]
     releaseInforming: true
     testgridNumFailuresToAlert: 6
-  ci-kubernetes-e2e-gke-cos-k8sstable3-ingress:
-    interval: 6h # runs more frequently because it's also used in cos image validation.
-    sigOwners: [sig-cloud-provider-gcp]
-  ci-kubernetes-e2e-gke-cos-k8sstable3-reboot:
-    interval: 6h # runs more frequently because it's also used in cos image validation.
-    sigOwners: [sig-cloud-provider-gcp]
-  ci-kubernetes-e2e-gke-cos-k8sstable3-default:
-    interval: 6h # runs more frequently because it's also used in cos image validation.
-    sigOwners: [sig-cloud-provider-gcp]
-  ci-kubernetes-e2e-gke-cos-k8sstable3-serial:
-    interval: 6h # runs more frequently because it's also used in cos image validation.
-    sigOwners: [sig-cloud-provider-gcp]
-  ci-kubernetes-e2e-gke-cos-k8sstable3-slow:
-    interval: 6h # runs more frequently because it's also used in cos image validation.
-    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gce-cos-k8sstable3-alphafeatures:
     interval: 24h
     args:
