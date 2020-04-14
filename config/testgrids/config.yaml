@@ -514,9 +514,6 @@ dashboards:
   - name: pull-kubernetes-e2e-gke-device-plugin-gpu
     test_group_name: pull-kubernetes-e2e-gke-device-plugin-gpu
     base_options: width=10
-  - name: pull-kubernetes-e2e-gke
-    test_group_name: pull-kubernetes-e2e-gke
-    base_options: width=10
   - name: pull-kubernetes-node-e2e-alpha
     test_group_name: pull-kubernetes-node-e2e-alpha
     base_options: width=10
