@@ -129,7 +129,7 @@ func (r *requestCoalescer) RoundTrip(req *http.Request) (*http.Response, error) 
 		return resp, nil
 	}()
 
-	ghmetrics.CollectCacheRequestMetrics(string(cacheMode), req.URL.Path, req.Header.Get("User-Agent"))
+	ghmetrics.CollectCacheRequestMetrics(string(cacheMode), req.URL.Path, req.Header.Get("User-Agent"), authHeaderHash(req))
 	if resp != nil {
 		resp.Header.Set(CacheModeHeader, string(cacheMode))
 	}
