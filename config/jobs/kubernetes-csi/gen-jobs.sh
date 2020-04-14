@@ -21,11 +21,11 @@
 base="$(dirname $0)"
 
 # The latest stable Kubernetes version for testing alpha repos
-latest_stable_k8s_version="1.17.0"
-latest_stable_k8s_minor_version="1.17"
+latest_stable_k8s_version="1.18.0"
+latest_stable_k8s_minor_version="1.18"
 
 # We need this image because it has Docker in Docker and go.
-dind_image="gcr.io/k8s-testimages/kubekins-e2e:v20191221-fe232fc-master"
+dind_image="gcr.io/k8s-testimages/kubekins-e2e:v20200409-4d4b2ec-master"
 
 # All kubernetes-csi repos which are part of the hostpath driver example.
 # For these repos we generate the full test matrix. For each entry here
@@ -486,8 +486,8 @@ periodics:
 EOF
 
 for tests in non-alpha alpha; do
-    for deployment in 1.15 1.16 1.17; do
-        for kubernetes in 1.15 1.16 1.17 master; do
+    for deployment in 1.16 1.17 1.18; do
+        for kubernetes in 1.16 1.17 1.18 master; do
             if [ "$tests" = "alpha" ]; then
                 # No version skew testing of alpha features, deployment has to match Kubernetes.
                 if ! echo "$kubernetes" | grep -q "^$deployment"; then
@@ -550,7 +550,7 @@ done
 # The canary builds use the latest sidecars from master and run them on
 # specific Kubernetes versions, using the default deployment for that Kubernetes
 # release.
-for kubernetes in 1.15.3 1.16.2 1.17.0 master; do
+for kubernetes in 1.16.2 1.17.0 1.18.0 master; do
     actual="${kubernetes/master/latest}"
 
     for tests in non-alpha alpha; do
