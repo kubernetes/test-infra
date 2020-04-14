@@ -87,10 +87,6 @@ func (o *Options) Validate() error {
 		if o.Bucket == "" {
 			return errors.New("GCS upload was requested no GCS bucket was provided")
 		}
-
-		if o.GcsCredentialsFile == "" && o.S3CredentialsFile == "" {
-			return errors.New("blob storage upload was requested but neither GCS nor S3 credentials file was provided")
-		}
 	}
 
 	return o.GCSConfiguration.Validate()

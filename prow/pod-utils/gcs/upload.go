@@ -22,6 +22,7 @@ import (
 	"io"
 	"net/url"
 	"os"
+	"strings"
 	"sync"
 
 	"github.com/sirupsen/logrus"
@@ -52,8 +53,12 @@ func Upload(bucket, gcsCredentialsFile, s3CredentialsFile string, uploadTargets 
 	if err != nil {
 		return fmt.Errorf("new opener: %w", err)
 	}
+	qmarkIdx := strings.Index(bucket, "?")
+	if qmarkIdx >= 0 {
+		bucket = bucket[:qmarkIdx]
+	}
 	dtw := func(dest string) dataWriter {
-		return &openerObjectWriter{Opener: opener, Context: ctx, Bucket: parsedBucket.String(), Dest: dest}
+		return &openerObjectWriter{Opener: opener, Context: ctx, Bucket: bucket, QueryStr: parsedBucket.RawQuery, Dest: dest}
 	}
 	return upload(dtw, uploadTargets)
 }
@@ -172,6 +177,7 @@ type openerObjectWriter struct {
 	pkgio.Opener
 	Context     context.Context
 	Bucket      string
+	QueryStr    string
 	Dest        string
 	opts        []pkgio.WriterOptions
 	writeCloser pkgio.WriteCloser
@@ -179,7 +185,11 @@ type openerObjectWriter struct {
 
 func (w *openerObjectWriter) Write(p []byte) (n int, err error) {
 	if w.writeCloser == nil {
-		w.writeCloser, err = w.Opener.Writer(w.Context, fmt.Sprintf("%s/%s", w.Bucket, w.Dest), w.opts...)
+		path := fmt.Sprintf("%s/%s", w.Bucket, w.Dest)
+		if w.QueryStr != "" {
+			path += "?" + w.QueryStr
+		}
+		w.writeCloser, err = w.Opener.Writer(w.Context, path, w.opts...)
 		if err != nil {
 			return 0, err
 		}

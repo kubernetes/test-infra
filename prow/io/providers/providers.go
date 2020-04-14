@@ -67,8 +67,12 @@ func GetBucket(ctx context.Context, s3Credentials []byte, path string) (*blob.Bu
 	if storageProvider == providerS3 && len(s3Credentials) > 0 {
 		return getS3Bucket(ctx, s3Credentials, bucket)
 	}
-
-	bkt, err := blob.OpenBucket(ctx, fmt.Sprintf("%s://%s", storageProvider, bucket))
+	urlstr := fmt.Sprintf("%s://%s", storageProvider, bucket)
+	qmarkIdx := strings.Index(path, "?")
+	if qmarkIdx >= 0 {
+		urlstr += path[qmarkIdx:]
+	}
+	bkt, err := blob.OpenBucket(ctx, urlstr)
 	if err != nil {
 		return nil, fmt.Errorf("error opening file bucket: %v", err)
 	}
