@@ -466,7 +466,7 @@ periodics:
       - name: CL2_WMI_EXPORTER_ENABLED_COLLECTORS
         value: "process,cs"
       - name: CL2_POD_COUNT
-        value: "40"
+        value: "80"
       args:
       - --check-leaked-resources
       - --cluster=
