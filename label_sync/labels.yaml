@@ -568,6 +568,12 @@ default:
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
+      description: Categorizes an issue or PR as relevant to wg-api-expression.
+      name: wg/api-expression
+      target: both
+      prowPlugin: label
+      addedBy: anyone
+    - color: d2b48c
       description: Categorizes an issue or PR as relevant to wg-apply.
       name: wg/apply
       target: both
