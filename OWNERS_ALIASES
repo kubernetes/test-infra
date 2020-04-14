@@ -203,6 +203,21 @@ aliases:
     - frapposelli
 ## END CUSTOM CONTENT
 
+  # copied from git.k8s.io/kubernetes/OWNERS_ALIASES
+  release-engineering-approvers:
+    - calebamiles # subproject owner
+    - justaugustus # subproject owner / Patch Release Team
+    - tpepper # subproject owner / Patch Release Team
+  release-engineering-reviewers:
+    - calebamiles # subproject owner
+    - cpanato # Branch Manager
+    - feiskyer # Patch Release Team
+    - hasheddan # Branch Manager
+    - hoegaarden # Patch Release Team
+    - justaugustus # subproject owner / Patch Release Team
+    - saschagrunert # Branch Manager
+    - tpepper # subproject owner / Patch Release Team
+
   # copied from sigs.k8s.io/cluster-api-provider-vsphere/OWNERS_ALIASES
   cluster-api-admins:
     - detiber
