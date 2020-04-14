@@ -6,7 +6,6 @@ approvers:
 - tpepper
 
 reviewers:
-- aleksandra-malinowska # Patch Release Team
 - cpanato # Branch Manager
 - dougm # Patch Release Team
 - feiskyer # Patch Release Team
