@@ -94,6 +94,7 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
+ - *April 14, 2020* GitHub reporting via plank is deprecated, set --github-workers=1 on crier before July 2020.
  - *March 27, 2020*  The deprecated `allow_cancellations` option has been removed from
    Plank and the Jenkins operator.
  - *March 19, 2020* The `rerun_auth_config` config field has been deprecated in
