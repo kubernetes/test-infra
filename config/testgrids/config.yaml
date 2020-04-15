@@ -212,6 +212,13 @@ dashboards:
         value: 'windows-image-tests issue: <test-name>'
       - key: body
         value: <test-url>
+
+- name: google-kops-gce
+- name: google-gci
+- name: google-gke
+- name: google-gce-upgrade
+- name: google-osconfig
+  dashboard_tab:
   - name: osconfig-unstable
     test_group_name: osconfig-unstable
     file_bug_template:
@@ -248,11 +255,6 @@ dashboards:
         value: 'osconfig-head-images issue: <test-name>'
       - key: body
         value: <test-url>
-
-- name: google-kops-gce
-- name: google-gci
-- name: google-gke
-- name: google-gce-upgrade
 - name: google-soak
 - name: google-unit
 - name: google-windows
@@ -541,6 +543,7 @@ dashboard_groups:
   - google-gke
   - google-gce-upgrade
   - google-kops-gce
+  - google-osconfig
   - google-rules_k8s
   - google-soak
   - google-unit
