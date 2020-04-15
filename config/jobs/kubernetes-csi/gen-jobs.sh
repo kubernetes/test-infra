@@ -24,6 +24,9 @@ base="$(dirname $0)"
 latest_stable_k8s_version="1.18.0"
 latest_stable_k8s_minor_version="1.18"
 
+# Tag of the hostpath driver we should use for sidecar pull jobs
+hostpath_driver_version="v1.4.0-rc3"
+
 # We need this image because it has Docker in Docker and go.
 dind_image="gcr.io/k8s-testimages/kubekins-e2e:v20200409-4d4b2ec-master"
 
@@ -266,8 +269,8 @@ presubmits:
 EOF
 
     for tests in non-alpha alpha; do
-        for deployment in 1.15 1.16 1.17; do # must have a deploy/kubernetes-<version> dir in csi-driver-host-path
-            for kubernetes in 1.15.3 1.16.2 1.17.0; do # these versions must have pre-built kind images (see https://hub.docker.com/r/kindest/node/tags)
+        for deployment in 1.16 1.17 1.18; do # must have a deploy/kubernetes-<version> dir in csi-driver-host-path
+            for kubernetes in 1.16.2 1.17.0 1.18.0; do # these versions must have pre-built kind images (see https://hub.docker.com/r/kindest/node/tags)
                 # We could generate these pre-submit jobs for all combinations, but to save resources in the Prow
                 # cluster we only do it for those cases where the deployment matches the Kubernetes version.
                 # Once we have more than two supported Kubernetes releases we should limit this to the most
@@ -309,6 +312,8 @@ EOF
           value: "$kubernetes"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "$deployment"
+        - name: CSI_PROW_DRIVER_VERSION
+          value: "$hostpath_driver_version"
         - name: CSI_PROW_TESTS
           value: "$(expand_tests "$tests")"
         # docker-in-docker needs privileged mode
@@ -350,6 +355,8 @@ EOF
         env:
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "latest"
+        - name: CSI_PROW_DRIVER_VERSION
+          value: "$hostpath_driver_version"
         - name: CSI_PROW_TESTS
           value: "$(expand_tests "$tests")"
         # docker-in-docker needs privileged mode
@@ -421,6 +428,8 @@ EOF
         args:
         - ./.prow.sh
         env:
+        - name: CSI_PROW_DRIVER_VERSION
+          value: "$hostpath_driver_version"
         - name: CSI_PROW_TESTS
           value: "$(expand_tests "$tests")"
         # docker-in-docker needs privileged mode
