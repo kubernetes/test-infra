@@ -252,7 +252,6 @@ dashboards:
 - name: google-kops-gce
 - name: google-gci
 - name: google-gke
-- name: google-gke-upgrade
 - name: google-gce-upgrade
 - name: google-soak
 - name: google-unit
@@ -580,7 +579,6 @@ dashboard_groups:
   - google-gcp-guest
   - google-gci
   - google-gke
-  - google-gke-upgrade
   - google-gce-upgrade
   - google-kops-gce
   - google-rules_k8s
