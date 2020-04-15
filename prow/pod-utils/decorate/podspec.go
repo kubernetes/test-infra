@@ -18,6 +18,7 @@ package decorate
 
 import (
 	"fmt"
+	"net/url"
 	"path"
 	"path/filepath"
 	"sort"
@@ -52,6 +53,7 @@ const (
 	gopathEnv               = "GOPATH"
 	toolsMountName          = "tools"
 	toolsMountPath          = "/tools"
+	gcsArtifactsDirEnv      = "GCS_ARTIFACTS_DIR"
 	gcsCredentialsMountName = "gcs-credentials"
 	gcsCredentialsMountPath = "/secrets/gcs"
 	s3CredentialsMountName  = "s3-credentials"
@@ -593,6 +595,22 @@ func decorate(spec *coreapi.PodSpec, pj *prowapi.ProwJob, rawEnv map[string]stri
 	// TODO(fejta): we should pass around volume names rather than forcing particular mount paths.
 
 	rawEnv[artifactsEnv] = artifactsPath
+
+	if gcsConfig := pj.Spec.DecorationConfig.GCSConfiguration; gcsConfig != nil {
+		jobSpec := downwardapi.NewJobSpec(pj.Spec, rawEnv[downwardapi.BuildIDEnv], pj.Name)
+		_, gcsPath, _ := gcsupload.PathsForJob(gcsConfig, &jobSpec, "")
+
+		u, err := url.Parse(gcsConfig.Bucket)
+		if err != nil {
+			return fmt.Errorf("could not parse the GCS bucket name %s: %v", gcsConfig.Bucket, err)
+		}
+		if u.Scheme == "" {
+			u.Scheme = "gs"
+		}
+		u.Path = path.Join(u.Path, gcsPath, "artifacts")
+		rawEnv[gcsArtifactsDirEnv] = u.String()
+	}
+
 	rawEnv[gopathEnv] = codeMountPath // TODO(fejta): remove this once we can assume go modules
 	logMount := coreapi.VolumeMount{
 		Name:      logMountName,

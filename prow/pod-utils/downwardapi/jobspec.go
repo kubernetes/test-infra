@@ -86,7 +86,7 @@ const (
 	jobTypeEnv   = "JOB_TYPE"
 	prowJobIDEnv = "PROW_JOB_ID"
 
-	buildIDEnv     = "BUILD_ID"
+	BuildIDEnv     = "BUILD_ID"
 	prowBuildIDEnv = "BUILD_NUMBER" // Deprecated, will be removed in the future.
 
 	repoOwnerEnv   = "REPO_OWNER"
@@ -104,7 +104,7 @@ func EnvForSpec(spec JobSpec) (map[string]string, error) {
 	env := map[string]string{
 		ci:           "true",
 		jobNameEnv:   spec.Job,
-		buildIDEnv:   spec.BuildID,
+		BuildIDEnv:   spec.BuildID,
 		prowJobIDEnv: spec.ProwJobID,
 		jobTypeEnv:   string(spec.Type),
 	}
@@ -143,7 +143,7 @@ func EnvForSpec(spec JobSpec) (map[string]string, error) {
 
 // EnvForType returns the slice of environment variables to export for jobType
 func EnvForType(jobType prowapi.ProwJobType) []string {
-	baseEnv := []string{ci, jobNameEnv, JobSpecEnv, jobTypeEnv, prowJobIDEnv, buildIDEnv, prowBuildIDEnv}
+	baseEnv := []string{ci, jobNameEnv, JobSpecEnv, jobTypeEnv, prowJobIDEnv, BuildIDEnv, prowBuildIDEnv}
 	refsEnv := []string{repoOwnerEnv, repoNameEnv, pullBaseRefEnv, pullBaseShaEnv, pullRefsEnv}
 	pullEnv := []string{pullNumberEnv, pullPullShaEnv}
 
