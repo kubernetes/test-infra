@@ -85,7 +85,6 @@ dashboard_groups:
   - istio_proxy
   - istio_test-infra
   - istio_tools
-  - istio-gke
   name: istio
 dashboards:
 - dashboard_tab:
@@ -3550,7 +3549,6 @@ dashboards:
       url: https://github.com/istio/tools/issues/
     test_group_name: test_tools_postsubmit
   name: istio_tools_postsubmit
-- name: istio-gke
 test_groups:
 - gcs_prefix: istio-prow/logs/daily-performance-benchmark
   name: daily-performance-benchmark

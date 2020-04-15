@@ -369,21 +369,6 @@ dashboards:
     base_options: include-filter-by-regex=sig-auth
     description: apps gce serial e2e tests for master branch
 
-- name: sig-auth-gke
-  dashboard_tab:
-  - name: gke
-    test_group_name: ci-kubernetes-e2e-gci-gke
-    base_options: include-filter-by-regex=sig-auth
-    description: apps gke e2e tests for master branch
-  - name: gke-slow
-    test_group_name: ci-kubernetes-e2e-gci-gke-slow
-    base_options: include-filter-by-regex=sig-auth
-    description: apps gke slow e2e tests for master branch
-  - name: gke-serial
-    test_group_name: ci-kubernetes-e2e-gci-gke-serial
-    base_options: include-filter-by-regex=sig-auth
-    description: apps gke serial e2e tests for master branch
-
 - name: sig-big-data
 - name: presubmits-cloud-provider-alibaba
 - name: presubmits-alibaba-cloud-csi-driver
@@ -636,5 +621,4 @@ dashboard_groups:
 - name: sig-auth
   dashboard_names:
   - sig-auth-gce
-  - sig-auth-gke
   - sig-auth-secrets-store-csi-driver

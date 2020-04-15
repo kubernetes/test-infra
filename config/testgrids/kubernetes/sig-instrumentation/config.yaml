@@ -11,18 +11,10 @@ dashboards:
       test_group_name: ci-kubernetes-e2e-gci-gce
       base_options: include-filter-by-regex=sig-instrumentation
       description: instrumentation gce e2e tests for master branch
-    - name: gci-gke
-      test_group_name: ci-kubernetes-e2e-gci-gke
-      base_options: include-filter-by-regex=sig-instrumentation
-      description: instrumentation gke e2e tests for master branch
     - name: gci-gce-serial
       test_group_name: ci-kubernetes-e2e-gci-gce-serial
       base_options: include-filter-by-regex=sig-instrumentation
       description: instrumentation gce serial e2e tests for master branch
-    - name: gci-gke-serial
-      test_group_name: ci-kubernetes-e2e-gci-gke-serial
-      base_options: include-filter-by-regex=sig-instrumentation
-      description: sig-instrumentation gke serial e2e tests for master branch
     - name: gci-gce-es-logging
       test_group_name: ci-kubernetes-e2e-gci-gce-es-logging
       base_options: include-filter-by-regex=sig-instrumentation
