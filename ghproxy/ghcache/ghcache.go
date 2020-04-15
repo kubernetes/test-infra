@@ -154,24 +154,12 @@ func (c *throttlingTransport) RoundTrip(req *http.Request) (*http.Response, erro
 // This instructs the cache to store the response, but always consider it stale.
 type upstreamTransport struct {
 	delegate http.RoundTripper
+	hasher   ghmetrics.Hasher
 }
 
 func (u upstreamTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	etag := req.Header.Get("if-none-match")
-
-	// get authorization header to convert to sha256
-	authHeader := req.Header.Get("Authorization")
-	if authHeader == "" {
-		logrus.Warn("Couldn't retrieve 'Authorization' header, adding to unknown bucket")
-		authHeader = "unknown"
-	}
-	logrus.WithFields(logrus.Fields{
-		"words":      len(strings.Split(authHeader, " ")),
-		"length":     len(authHeader),
-		"user-agent": req.Header.Get("User-Agent"),
-		"source-ip":  req.RemoteAddr,
-	}).Debug("Hashing auth header.")
-	authHeaderHash := fmt.Sprintf("%x", sha256.Sum256([]byte(authHeader))) // use %x to make this a utf-8 string for use as a label
+	authHeaderHash := u.hasher.Hash(req)
 
 	reqStartTime := time.Now()
 	// Don't modify request, just pass to delegate.
@@ -204,6 +192,16 @@ func (u upstreamTransport) RoundTrip(req *http.Request) (*http.Response, error) 
 	ghmetrics.CollectGitHubRequestMetrics(authHeaderHash, req.URL.Path, strconv.Itoa(resp.StatusCode), req.Header.Get("User-Agent"), roundTripTime.Seconds())
 
 	return resp, nil
+}
+
+func authHeaderHash(req *http.Request) string {
+	// get authorization header to convert to sha256
+	authHeader := req.Header.Get("Authorization")
+	if authHeader == "" {
+		logrus.Warn("Couldn't retrieve 'Authorization' header, adding to unknown bucket")
+		authHeader = "unknown"
+	}
+	return fmt.Sprintf("%x", sha256.Sum256([]byte(authHeader))) // use %x to make this a utf-8 string for use as a label
 }
 
 const LogMessageWithDiskPartitionFields = "Not using a partitioned cache because legacyDisablePartitioningByAuthHeader is true"
@@ -257,12 +255,14 @@ type CachePartitionCreator func(partitionKey string) httpcache.Cache
 // NewFromCache creates a GitHub cache RoundTripper that is backed by the
 // specified httpcache.Cache implementation.
 func NewFromCache(delegate http.RoundTripper, cache CachePartitionCreator, maxConcurrency int) http.RoundTripper {
+	hasher := ghmetrics.NewCachingHasher()
 	return newPartitioningRoundTripper(func(partitionKey string) http.RoundTripper {
 		cacheTransport := httpcache.NewTransport(cache(partitionKey))
-		cacheTransport.Transport = newThrottlingTransport(maxConcurrency, upstreamTransport{delegate: delegate})
+		cacheTransport.Transport = newThrottlingTransport(maxConcurrency, upstreamTransport{delegate: delegate, hasher: hasher})
 		return &requestCoalescer{
 			keys:     make(map[string]*responseWaiter),
 			delegate: cacheTransport,
+			hasher:   hasher,
 		}
 	})
 }

@@ -65,7 +65,7 @@ var cacheCounter = prometheus.NewCounterVec(
 		Name: "ghcache_responses",
 		Help: "How many cache responses of each cache response mode there are.",
 	},
-	[]string{"mode", "path", "user_agent"},
+	[]string{"mode", "path", "user_agent", "token_hash"},
 )
 
 // timeoutDuration provides the 'github_request_timeouts' histogram that keeps
@@ -150,8 +150,8 @@ func userAgentWithoutVersion(userAgent string) string {
 }
 
 // CollectCacheRequestMetrics records a cache outcome for a specific path
-func CollectCacheRequestMetrics(mode, path, userAgent string) {
-	cacheCounter.With(prometheus.Labels{"mode": mode, "path": simplifier.Simplify(path), "user_agent": userAgentWithoutVersion(userAgent)}).Inc()
+func CollectCacheRequestMetrics(mode, path, userAgent, tokenHash string) {
+	cacheCounter.With(prometheus.Labels{"mode": mode, "path": simplifier.Simplify(path), "user_agent": userAgentWithoutVersion(userAgent), "token_hash": tokenHash}).Inc()
 }
 
 // CollectRequestTimeoutMetrics publishes the duration of timed-out requests by
