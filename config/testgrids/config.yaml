@@ -274,46 +274,6 @@ dashboards:
     base_options: exclude-filter-by-regex=^BeforeSuite$
     alert_options:
       alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
-  - name: gke-device-plugin-gpu
-    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu
-    base_options: exclude-filter-by-regex=^BeforeSuite$
-    alert_options:
-      alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
-  - name: gke-device-plugin-gpu-beta
-    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-beta
-    base_options: exclude-filter-by-regex=^BeforeSuite$
-    alert_options:
-      alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
-  - name: gke-device-plugin-gpu-stable1
-    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable1
-    base_options: exclude-filter-by-regex=^BeforeSuite$
-    alert_options:
-      alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
-  - name: gke-device-plugin-gpu-p100
-    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100
-    base_options: exclude-filter-by-regex=^BeforeSuite$
-    alert_options:
-      alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
-  - name: gke-device-plugin-gpu-p100-beta
-    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-beta
-    base_options: exclude-filter-by-regex=^BeforeSuite$
-    alert_options:
-      alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
-  - name: gke-device-plugin-gpu-p100-stable1
-    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-stable1
-    base_options: exclude-filter-by-regex=^BeforeSuite$
-    alert_options:
-      alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
-  - name: gke-device-plugin-gpu-monitoring
-    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-monitoring
-    base_options: exclude-filter-by-regex=^BeforeSuite$
-    alert_options:
-      alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
-  - name: gke-device-plugin-gpu-ubuntu
-    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-ubuntu
-    base_options: exclude-filter-by-regex=^BeforeSuite$
-    alert_options:
-      alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
   - name: gce-stable1-beta-gpu-master-upgrade
     test_group_name: ci-kubernetes-e2e-gce-gpu-stable1-beta-master-upgrade
     base_options: exclude-filter-by-regex=^BeforeSuite$
