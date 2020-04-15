@@ -654,11 +654,11 @@ Instructions for interacting with me using PR comments are available [here](http
 </details>`,
 		},
 		{
-			name:           "valid bug removes invalid label, adds valid label and comments",
-			bugs:           []bugzilla.Bug{{ID: 123}},
+			name:           "valid bug removes invalid label, adds valid/severity labels and comments",
+			bugs:           []bugzilla.Bug{{ID: 123, Severity: "urgent"}},
 			options:        plugins.BugzillaBranchOptions{}, // no requirements --> always valid
 			labels:         []string{"bugzilla/invalid-bug"},
-			expectedLabels: []string{"bugzilla/valid-bug"},
+			expectedLabels: []string{"bugzilla/valid-bug", "bugzilla/urgent"},
 			expectedComment: `org/repo#1:@user: This pull request references [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123), which is valid.
 
 <details><summary>No validations were run on this bug</summary></details>
@@ -675,10 +675,10 @@ Instructions for interacting with me using PR comments are available [here](http
 		},
 		{
 			name:           "invalid bug adds invalid label, removes valid label and comments",
-			bugs:           []bugzilla.Bug{{ID: 123}},
+			bugs:           []bugzilla.Bug{{ID: 123, Severity: "high"}},
 			options:        plugins.BugzillaBranchOptions{IsOpen: &open},
-			labels:         []string{"bugzilla/valid-bug"},
-			expectedLabels: []string{"bugzilla/invalid-bug"},
+			labels:         []string{"bugzilla/valid-bug", "bugzilla/urgent"},
+			expectedLabels: []string{"bugzilla/invalid-bug", "bugzilla/high"},
 			expectedComment: `org/repo#1:@user: This pull request references [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123), which is invalid:
  - expected the bug to be open, but it isn't
 
@@ -713,10 +713,10 @@ Instructions for interacting with me using PR comments are available [here](http
 		},
 		{
 			name:           "valid bug with status update removes invalid label, adds valid label, comments and updates status",
-			bugs:           []bugzilla.Bug{{ID: 123}},
+			bugs:           []bugzilla.Bug{{ID: 123, Severity: "medium"}},
 			options:        plugins.BugzillaBranchOptions{StateAfterValidation: &updated}, // no requirements --> always valid
 			labels:         []string{"bugzilla/invalid-bug"},
-			expectedLabels: []string{"bugzilla/valid-bug"},
+			expectedLabels: []string{"bugzilla/valid-bug", "bugzilla/medium"},
 			expectedComment: `org/repo#1:@user: This pull request references [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123), which is valid. The bug has been moved to the UPDATED state.
 
 <details><summary>No validations were run on this bug</summary></details>
@@ -730,14 +730,14 @@ In response to [this](http.com):
 
 Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.
 </details>`,
-			expectedBug: &bugzilla.Bug{ID: 123, Status: "UPDATED"},
+			expectedBug: &bugzilla.Bug{ID: 123, Status: "UPDATED", Severity: "medium"},
 		},
 		{
 			name:           "valid bug with status update removes invalid label, adds valid label, comments and updates status with resolution",
-			bugs:           []bugzilla.Bug{{ID: 123, Status: "MODIFIED"}},
+			bugs:           []bugzilla.Bug{{ID: 123, Status: "MODIFIED", Severity: "low"}},
 			options:        plugins.BugzillaBranchOptions{StateAfterValidation: &plugins.BugzillaBugState{Status: "CLOSED", Resolution: "VALIDATED"}}, // no requirements --> always valid
 			labels:         []string{"bugzilla/invalid-bug"},
-			expectedLabels: []string{"bugzilla/valid-bug"},
+			expectedLabels: []string{"bugzilla/valid-bug", "bugzilla/low"},
 			expectedComment: `org/repo#1:@user: This pull request references [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123), which is valid. The bug has been moved to the CLOSED (VALIDATED) state.
 
 <details><summary>No validations were run on this bug</summary></details>
@@ -751,14 +751,14 @@ In response to [this](http.com):
 
 Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.
 </details>`,
-			expectedBug: &bugzilla.Bug{ID: 123, Status: "CLOSED", Resolution: "VALIDATED"},
+			expectedBug: &bugzilla.Bug{ID: 123, Status: "CLOSED", Resolution: "VALIDATED", Severity: "low"},
 		},
 		{
 			name:           "valid bug with status update removes invalid label, adds valid label, comments and does not update status when it is already correct",
-			bugs:           []bugzilla.Bug{{ID: 123, Status: "UPDATED"}},
+			bugs:           []bugzilla.Bug{{ID: 123, Status: "UPDATED", Severity: "unspecified"}},
 			options:        plugins.BugzillaBranchOptions{StateAfterValidation: &updated}, // no requirements --> always valid
 			labels:         []string{"bugzilla/invalid-bug"},
-			expectedLabels: []string{"bugzilla/valid-bug"},
+			expectedLabels: []string{"bugzilla/valid-bug", "bugzilla/unspecified"},
 			expectedComment: `org/repo#1:@user: This pull request references [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123), which is valid.
 
 <details><summary>No validations were run on this bug</summary></details>
@@ -772,7 +772,7 @@ In response to [this](http.com):
 
 Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.
 </details>`,
-			expectedBug: &bugzilla.Bug{ID: 123, Status: "UPDATED"},
+			expectedBug: &bugzilla.Bug{ID: 123, Status: "UPDATED", Severity: "unspecified"},
 		},
 		{
 			name:           "valid bug with external link removes invalid label, adds valid label, comments, makes an external bug link",
@@ -1030,7 +1030,7 @@ Instructions for interacting with me using PR comments are available [here](http
 		{
 			name:   "valid bug on merged PR with merged external links but unknown status does not migrate to new state and comments",
 			merged: true,
-			bugs:   []bugzilla.Bug{{ID: 123, Status: "CLOSED"}},
+			bugs:   []bugzilla.Bug{{ID: 123, Status: "CLOSED", Severity: "urgent"}},
 			externalBugs: []bugzilla.ExternalBug{{
 				BugzillaBugID: base.bugId,
 				ExternalBugID: fmt.Sprintf("%s/%s/pull/%d", base.org, base.repo, base.number),
@@ -1049,7 +1049,7 @@ In response to [this](http.com):
 
 Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.
 </details>`,
-			expectedBug: &bugzilla.Bug{ID: 123, Status: "CLOSED"},
+			expectedBug: &bugzilla.Bug{ID: 123, Status: "CLOSED", Severity: "urgent"},
 		},
 	}
 

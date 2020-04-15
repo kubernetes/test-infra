@@ -46,8 +46,13 @@ var (
 )
 
 const (
-	PluginName = "bugzilla"
-	bugLink    = `[Bugzilla bug %d](%s/show_bug.cgi?id=%d)`
+	PluginName          = "bugzilla"
+	bugLink             = `[Bugzilla bug %d](%s/show_bug.cgi?id=%d)`
+	urgentSeverity      = "urgent"
+	highSeverity        = "high"
+	medSeverity         = "medium"
+	lowSeverity         = "low"
+	unspecifiedSeverity = "unspecified"
 )
 
 func init() {
@@ -407,7 +412,7 @@ func handle(e event, gc githubClient, bc bugzilla.Client, options plugins.Bugzil
 	}
 
 	var needsValidLabel, needsInvalidLabel bool
-	var response string
+	var response, severityLabel string
 	if e.missing {
 		log.WithField("bugMissing", true)
 		log.Debug("No bug referenced.")
@@ -421,6 +426,7 @@ To reference a bug, add 'Bug XXX:' to the title of this pull request and request
 		if err != nil || bug == nil {
 			return err
 		}
+		severityLabel = getSeverityLabel(bug.Severity)
 
 		var dependents []bugzilla.Bug
 		if options.DependentBugStates != nil || options.DependentBugTargetReleases != nil {
@@ -511,12 +517,31 @@ Comment <code>/bugzilla refresh</code> to re-evaluate validity if changes to the
 		log.WithError(err).Warn("Could not list labels on PR")
 	}
 	var hasValidLabel, hasInvalidLabel bool
+	var severityLabelToRemove string
 	for _, l := range currentLabels {
 		if l.Name == labels.ValidBug {
 			hasValidLabel = true
 		}
 		if l.Name == labels.InvalidBug {
 			hasInvalidLabel = true
+		}
+		if l.Name == labels.BugzillaSeverityHigh ||
+			l.Name == labels.BugzillaSeverityUrgent ||
+			l.Name == labels.BugzillaSeverityMed ||
+			l.Name == labels.BugzillaSeverityLow ||
+			l.Name == labels.BugzillaSeverityUnspecified {
+			severityLabelToRemove = l.Name
+		}
+	}
+
+	if severityLabelToRemove != "" && severityLabel != severityLabelToRemove {
+		if err := gc.RemoveLabel(e.org, e.repo, e.number, severityLabelToRemove); err != nil {
+			log.WithError(err).Error("Failed to remove severity bug label.")
+		}
+	}
+	if severityLabel != "" && severityLabel != severityLabelToRemove {
+		if err := gc.AddLabel(e.org, e.repo, e.number, severityLabel); err != nil {
+			log.WithError(err).Error("Failed to add severity bug label.")
 		}
 	}
 
@@ -541,6 +566,23 @@ Comment <code>/bugzilla refresh</code> to re-evaluate validity if changes to the
 	}
 
 	return comment(response)
+}
+
+func getSeverityLabel(severity string) string {
+	switch severity {
+	case urgentSeverity:
+		return labels.BugzillaSeverityUrgent
+	case highSeverity:
+		return labels.BugzillaSeverityHigh
+	case medSeverity:
+		return labels.BugzillaSeverityMed
+	case lowSeverity:
+		return labels.BugzillaSeverityLow
+	case unspecifiedSeverity:
+		return labels.BugzillaSeverityUnspecified
+	}
+	//If we don't understand the severity, don't set it but don't error.
+	return ""
 }
 
 func bugMatchesStates(bug *bugzilla.Bug, states []plugins.BugzillaBugState) bool {
