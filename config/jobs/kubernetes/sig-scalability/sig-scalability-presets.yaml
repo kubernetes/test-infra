@@ -180,6 +180,16 @@ presets:
   - name: CL2_SCHEDULER_THROUGHPUT_THRESHOLD
     value: 90
 
+  ###### Scalability Envs
+  ### Common env variables for containerd scalability-related suites.
+- labels:
+    preset-e2e-scalability-containerd: "true"
+  env:
+  - name: KUBE_CONTAINER_RUNTIME
+    value: "containerd"
+  - name: LOG_DUMP_SAVE_SERVICES
+    value: "containerd"
+
 ###### Scalability Envs
 ### Common env variables for node scalability-related suites.
 - labels:

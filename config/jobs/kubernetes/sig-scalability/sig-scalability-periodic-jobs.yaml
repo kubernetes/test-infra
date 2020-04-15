@@ -47,6 +47,7 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-e2e-scalability-node: "true"
+    preset-e2e-scalability-containerd: "true"
   annotations:
     testgrid-dashboards: sig-scalability-node
     testgrid-tab-name: node-containerd-throughput
@@ -62,8 +63,6 @@ periodics:
       - --
       - --check-leaked-resources
       - --cluster=
-      - --env=KUBE_CONTAINER_RUNTIME=containerd
-      - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-nodes=1
