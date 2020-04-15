@@ -245,6 +245,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
+    skip_report: true
     spec:
       containers:
       - name: pull-cri-containerd-windows-cri
