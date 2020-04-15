@@ -236,6 +236,7 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-e2e-scalability-common: "true"
+    preset-e2e-scalability-containerd: "true"
   annotations:
     testgrid-dashboards: sig-scalability-experiments
     testgrid-tab-name: experimental-load-containerd
@@ -250,10 +251,9 @@ periodics:
           - --scenario=kubernetes_e2e
           - --
           - --check-leaked-resources
+          - --cluster=e2e-big-load-containerd
           # TODO(oxddr): remove once debugging is finished
           - --env=KUBEPROXY_TEST_LOG_LEVEL=--v=4
-          - --cluster=e2e-big-load-containerd
-          - --env=KUBE_CONTAINER_RUNTIME=containerd
           - --extract=ci/latest
           - --gcp-node-image=gci
           - --gcp-nodes=100
@@ -289,6 +289,7 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-e2e-scalability-common: "true"
+    preset-e2e-scalability-containerd: "true"
   annotations:
     testgrid-dashboards: sig-scalability-experiments
     testgrid-tab-name: gce-cos-master-scalability-100-containerd
@@ -306,8 +307,6 @@ periodics:
           - --cluster=e2e-big-containerd
           # TODO(oxddr): remove once debugging is finished
           - --env=KUBEPROXY_TEST_LOG_LEVEL=--v=4
-          - --env=KUBE_CONTAINER_RUNTIME=containerd
-          - --env=LOG_DUMP_SAVE_SERVICES=containerd
           - --extract=ci/latest
           - --gcp-node-image=gci
           - --gcp-nodes=100
