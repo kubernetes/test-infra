@@ -154,11 +154,12 @@ func (c *throttlingTransport) RoundTrip(req *http.Request) (*http.Response, erro
 // This instructs the cache to store the response, but always consider it stale.
 type upstreamTransport struct {
 	delegate http.RoundTripper
+	hasher   ghmetrics.Hasher
 }
 
 func (u upstreamTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	etag := req.Header.Get("if-none-match")
-	authHeaderHash := authHeaderHash(req)
+	authHeaderHash := u.hasher.Hash(req)
 
 	reqStartTime := time.Now()
 	// Don't modify request, just pass to delegate.
@@ -254,12 +255,14 @@ type CachePartitionCreator func(partitionKey string) httpcache.Cache
 // NewFromCache creates a GitHub cache RoundTripper that is backed by the
 // specified httpcache.Cache implementation.
 func NewFromCache(delegate http.RoundTripper, cache CachePartitionCreator, maxConcurrency int) http.RoundTripper {
+	hasher := ghmetrics.NewCachingHasher()
 	return newPartitioningRoundTripper(func(partitionKey string) http.RoundTripper {
 		cacheTransport := httpcache.NewTransport(cache(partitionKey))
-		cacheTransport.Transport = newThrottlingTransport(maxConcurrency, upstreamTransport{delegate: delegate})
+		cacheTransport.Transport = newThrottlingTransport(maxConcurrency, upstreamTransport{delegate: delegate, hasher: hasher})
 		return &requestCoalescer{
 			keys:     make(map[string]*responseWaiter),
 			delegate: cacheTransport,
+			hasher:   hasher,
 		}
 	})
 }
