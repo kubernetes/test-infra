@@ -517,6 +517,7 @@ default:
       target: both
       prowPlugin: label
       addedBy: anyone
+      deleteAfter: 2020-04-20T00:00:00Z
     - color: d2b48c
       description: Categorizes an issue or PR as relevant to sig-release.
       name: sig/release
@@ -625,7 +626,7 @@ default:
       target: both
       prowPlugin: label
       addedBy: anyone
-      deleteAfter: 2020-04-08T00:00:00+00:00
+      deleteAfter: 2020-04-08T00:00:00Z
     - color: d2b48c
       description: Categorizes an issue or PR as relevant to wg-security-audit.
       name: wg/security-audit
@@ -767,6 +768,11 @@ repos:
         target: both
         addedBy: label
       - color: 0052cc
+        description: Issues or PRs related to the Enhancements subproject
+        name: area/enhancements
+        target: both
+        addedBy: label
+      - color: 0052cc
         description: Issues or PRs related to GitHub Management subproject
         name: area/github-management
         target: both
@@ -801,6 +807,11 @@ repos:
       - color: 0052cc
         description: Issues or PRs related to kubernetes code organization
         name: area/code-organization
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to the Enhancements subproject
+        name: area/enhancements
         target: both
         addedBy: label
       - color: 0052cc
@@ -969,6 +980,11 @@ repos:
   kubernetes/sig-release:
     labels:
       - color: 0052cc
+        description: Issues or PRs related to the Enhancements subproject
+        name: area/enhancements
+        target: both
+        addedBy: label
+      - color: 0052cc
         description: Issues or PRs related to the Release Engineering subproject
         name: area/release-eng
         previously:
@@ -1010,6 +1026,11 @@ repos:
       - color: 0052cc
         description: Issues or PRs related to refactoring the kubernetes e2e test framework
         name: area/e2e-test-framework
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to the Enhancements subproject
+        name: area/enhancements
         target: both
         addedBy: label
       - color: 0052cc
