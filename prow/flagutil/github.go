@@ -64,7 +64,7 @@ func (o *GitHubOptions) addFlags(wantDefaultGitHubTokenPath bool, fs *flag.FlagS
 	o.endpoint = NewStrings(github.DefaultAPIEndpoint)
 	fs.Var(&o.endpoint, "github-endpoint", "GitHub's API endpoint (may differ for enterprise).")
 	fs.StringVar(&o.graphqlEndpoint, "github-graphql-endpoint", github.DefaultGraphQLEndpoint, "GitHub GraphQL API endpoint (may differ for enterprise).")
-	defaultGitHubTokenPath := ""
+	var defaultGitHubTokenPath string
 	if wantDefaultGitHubTokenPath {
 		defaultGitHubTokenPath = "/etc/github/oauth"
 	}

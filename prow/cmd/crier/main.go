@@ -28,7 +28,6 @@ import (
 	"google.golang.org/api/option"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowjobinformer "k8s.io/test-infra/prow/client/informers/externalversions"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
@@ -256,7 +255,7 @@ func main() {
 			logrus.WithError(err).Fatal("Error getting GitHub client.")
 		}
 
-		githubReporter := githubreporter.NewReporter(githubClient, cfg, v1.ProwJobAgent(o.reportAgent))
+		githubReporter := githubreporter.NewReporter(githubClient, cfg, prowapi.ProwJobAgent(o.reportAgent))
 		controllers = append(
 			controllers,
 			crier.NewController(

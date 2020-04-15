@@ -39,8 +39,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	reporter "k8s.io/test-infra/prow/crier/reporters/github"
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pjutil"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
@@ -111,27 +109,6 @@ func (f *fca) Config() *config.Config {
 	defer f.Unlock()
 	return f.c
 }
-
-type fghc struct {
-	sync.Mutex
-	changes []github.PullRequestChange
-	err     error
-}
-
-func (f *fghc) GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error) {
-	f.Lock()
-	defer f.Unlock()
-	return f.changes, f.err
-}
-
-func (f *fghc) BotName() (string, error)                                  { return "bot", nil }
-func (f *fghc) CreateStatus(org, repo, ref string, s github.Status) error { return nil }
-func (f *fghc) ListIssueComments(org, repo string, number int) ([]github.IssueComment, error) {
-	return nil, nil
-}
-func (f *fghc) CreateComment(org, repo string, number int, comment string) error { return nil }
-func (f *fghc) DeleteComment(org, repo string, ID int) error                     { return nil }
-func (f *fghc) EditComment(org, repo string, ID int, comment string) error       { return nil }
 
 func TestTerminateDupes(t *testing.T) {
 	now := time.Now()
@@ -356,17 +333,15 @@ func TestSyncTriggeredJobs(t *testing.T) {
 		pods           map[string][]v1.Pod
 		podErr         error
 
-		expectedState         prowapi.ProwJobState
-		expectedPodHasName    bool
-		expectedNumPods       map[string]int
-		expectedComplete      bool
-		expectedCreatedPJs    int
-		expectedReport        bool
-		expectPrevReportState map[string]prowapi.ProwJobState
-		expectedURL           string
-		expectedBuildID       string
-		expectError           bool
-		expectedPendingTime   *metav1.Time
+		expectedState       prowapi.ProwJobState
+		expectedPodHasName  bool
+		expectedNumPods     map[string]int
+		expectedComplete    bool
+		expectedCreatedPJs  int
+		expectedURL         string
+		expectedBuildID     string
+		expectError         bool
+		expectedPendingTime *metav1.Time
 	}{
 		{
 			name: "start new pod",
@@ -389,11 +364,7 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			expectedPendingTime: &pendingTime,
 			expectedPodHasName:  true,
 			expectedNumPods:     map[string]int{"default": 1},
-			expectedReport:      true,
-			expectPrevReportState: map[string]prowapi.ProwJobState{
-				reporter.GitHubReporterName: prowapi.PendingState,
-			},
-			expectedURL: "blabla/pending",
+			expectedURL:         "blabla/pending",
 		},
 		{
 			name: "pod with a max concurrency of 1",
@@ -503,12 +474,8 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			expectedState:       prowapi.PendingState,
 			expectedNumPods:     map[string]int{"default": 1, "trusted": 1},
 			expectedPodHasName:  true,
-			expectedReport:      true,
 			expectedPendingTime: &pendingTime,
-			expectPrevReportState: map[string]prowapi.ProwJobState{
-				reporter.GitHubReporterName: prowapi.PendingState,
-			},
-			expectedURL: "some/pending",
+			expectedURL:         "some/pending",
 		},
 		{
 			name: "do not exceed global maxconcurrency",
@@ -546,15 +513,11 @@ func TestSyncTriggeredJobs(t *testing.T) {
 					State: prowapi.TriggeredState,
 				},
 			},
-			pods:            map[string][]v1.Pod{"default": {}},
-			maxConcurrency:  21,
-			pendingJobs:     map[string]int{"motherearth": 10, "allagash": 8, "krusovice": 2},
-			expectedState:   prowapi.PendingState,
-			expectedNumPods: map[string]int{"default": 1},
-			expectedReport:  true,
-			expectPrevReportState: map[string]prowapi.ProwJobState{
-				reporter.GitHubReporterName: prowapi.PendingState,
-			},
+			pods:                map[string][]v1.Pod{"default": {}},
+			maxConcurrency:      21,
+			pendingJobs:         map[string]int{"motherearth": 10, "allagash": 8, "krusovice": 2},
+			expectedState:       prowapi.PendingState,
+			expectedNumPods:     map[string]int{"default": 1},
 			expectedURL:         "beer/pending",
 			expectedPendingTime: &pendingTime,
 		},
@@ -582,10 +545,6 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			}},
 			expectedState:    prowapi.ErrorState,
 			expectedComplete: true,
-			expectedReport:   true,
-			expectPrevReportState: map[string]prowapi.ProwJobState{
-				reporter.GitHubReporterName: prowapi.ErrorState,
-			},
 		},
 		{
 			name: "forbidden prow job",
@@ -611,10 +570,6 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			}},
 			expectedState:    prowapi.ErrorState,
 			expectedComplete: true,
-			expectedReport:   true,
-			expectPrevReportState: map[string]prowapi.ProwJobState{
-				reporter.GitHubReporterName: prowapi.ErrorState,
-			},
 		},
 		{
 			name: "conflict error starting pod",
@@ -640,10 +595,6 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			}},
 			expectedState:    prowapi.ErrorState,
 			expectedComplete: true,
-			expectedReport:   true,
-			expectPrevReportState: map[string]prowapi.ProwJobState{
-				reporter.GitHubReporterName: prowapi.ErrorState,
-			},
 		},
 		{
 			name: "unknown error starting pod",
@@ -708,13 +659,9 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			},
 			expectedState:       prowapi.PendingState,
 			expectedNumPods:     map[string]int{"default": 1},
-			expectedReport:      true,
 			expectedPendingTime: &pendingTime,
-			expectPrevReportState: map[string]prowapi.ProwJobState{
-				reporter.GitHubReporterName: prowapi.PendingState,
-			},
-			expectedURL:     "foo/pending",
-			expectedBuildID: "0987654321",
+			expectedURL:         "foo/pending",
+			expectedBuildID:     "0987654321",
 		},
 	}
 	for _, tc := range testcases {
@@ -753,23 +700,13 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			c.pendingJobs = tc.pendingJobs
 		}
 
-		reports := make(chan prowapi.ProwJob, 100)
-		if err := c.syncTriggeredJob(tc.pj, pm, reports); (err != nil) != tc.expectError {
+		if err := c.syncTriggeredJob(tc.pj, pm); (err != nil) != tc.expectError {
 			if tc.expectError {
 				t.Errorf("for case %q expected an error, but got none", tc.name)
 			} else {
 				t.Errorf("for case %q got an unexpected error: %v", tc.name, err)
 			}
 			continue
-		}
-		close(reports)
-
-		numReports := len(reports)
-		// for asserting recorded report states
-		for report := range reports {
-			if err := c.setPreviousReportState(report); err != nil {
-				t.Errorf("for case %q got error in setPreviousReportState : %v", tc.name, err)
-			}
 		}
 
 		actualProwJobs := &prowapi.ProwJobList{}
@@ -800,24 +737,6 @@ func TestSyncTriggeredJobs(t *testing.T) {
 		}
 		if actual.Complete() != tc.expectedComplete {
 			t.Errorf("for case %q got wrong completion", tc.name)
-		}
-		if tc.expectedReport && numReports != 1 {
-			t.Errorf("for case %q wanted one report but got %d", tc.name, numReports)
-		}
-		if !tc.expectedReport && numReports != 0 {
-			t.Errorf("for case %q did not want any reports but got %d", tc.name, numReports)
-		}
-		if !reflect.DeepEqual(tc.expectPrevReportState, actual.Status.PrevReportStates) {
-			t.Errorf("for case %q want prev report state %v, got %v", tc.name, tc.expectPrevReportState, actual.Status.PrevReportStates)
-		}
-
-		if tc.expectedReport {
-			if got, want := actual.Status.URL, tc.expectedURL; got != want {
-				t.Errorf("for case %q, report.Status.URL: got %q, want %q", tc.name, got, want)
-			}
-			if got, want := actual.Status.BuildID, tc.expectedBuildID; want != "" && got != want {
-				t.Errorf("for case %q, report.Status.ProwJobID: got %q, want %q", tc.name, got, want)
-			}
 		}
 	}
 }
@@ -1301,12 +1220,10 @@ func TestSyncPendingJob(t *testing.T) {
 			clock:         clock.RealClock{},
 		}
 
-		reports := make(chan prowapi.ProwJob, 100)
-		if err := c.syncPendingJob(tc.pj, pm, reports); err != nil {
+		if err := c.syncPendingJob(tc.pj, pm); err != nil {
 			t.Errorf("for case %q got an error: %v", tc.name, err)
 			continue
 		}
-		close(reports)
 
 		actualProwJobs := &prowapi.ProwJobList{}
 		if err := fakeProwJobClient.List(context.Background(), actualProwJobs); err != nil {
@@ -1328,19 +1245,6 @@ func TestSyncPendingJob(t *testing.T) {
 		}
 		if actual.Complete() != tc.expectedComplete {
 			t.Errorf("for case %q got wrong completion", tc.name)
-		}
-		if tc.expectedReport && len(reports) != 1 {
-			t.Errorf("for case %q wanted one report but got %d", tc.name, len(reports))
-		}
-		if !tc.expectedReport && len(reports) != 0 {
-			t.Errorf("for case %q did not wany any reports but got %d", tc.name, len(reports))
-		}
-		if tc.expectedReport {
-			r := <-reports
-
-			if got, want := r.Status.URL, tc.expectedURL; got != want {
-				t.Errorf("for case %q, report.Status.URL: got %q, want %q", tc.name, got, want)
-			}
 		}
 	}
 }
@@ -1384,7 +1288,6 @@ func TestOrderedJobs(t *testing.T) {
 		log := logrus.NewEntry(logrus.StandardLogger())
 		c := Controller{
 			prowJobClient: fakeProwJobClient,
-			ghc:           &fghc{},
 			buildClients:  buildClients,
 			log:           log,
 			config:        newFakeConfigAgent(t, 0).Config,
@@ -1427,7 +1330,6 @@ func TestPeriodic(t *testing.T) {
 	log := logrus.NewEntry(logrus.StandardLogger())
 	c := Controller{
 		prowJobClient: fakeProwJobClient,
-		ghc:           &fghc{},
 		buildClients:  buildClients,
 		log:           log,
 		config:        newFakeConfigAgent(t, 0).Config,
@@ -1643,11 +1545,10 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 			clock:         clock.RealClock{},
 		}
 
-		reports := make(chan prowapi.ProwJob, len(test.pjs))
 		errors := make(chan error, len(test.pjs))
 		pm := make(map[string]v1.Pod)
 
-		syncProwJobs(c.log, c.syncTriggeredJob, 20, jobs, reports, errors, pm)
+		syncProwJobs(c.log, c.syncTriggeredJob, 20, jobs, errors, pm)
 		podsAfterSync := &v1.PodList{}
 		if err := buildClients[prowapi.DefaultClusterAlias].List(context.Background(), podsAfterSync); err != nil {
 			t.Fatalf("could not list pods from the client: %v", err)
@@ -1914,7 +1815,7 @@ func TestSyncAbortedJob(t *testing.T) {
 				buildClients:  map[string]ctrlruntimeclient.Client{cluster: podClient},
 			}
 
-			if err := c.syncAbortedJob(*pj, podMap, nil); (err != nil) != tc.expectSyncFail {
+			if err := c.syncAbortedJob(*pj, podMap); (err != nil) != tc.expectSyncFail {
 				t.Fatalf("sync failed: %v, expected it to fail: %t", err, tc.expectSyncFail)
 			}
 
