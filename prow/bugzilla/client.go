@@ -158,6 +158,103 @@ func (c *client) UpdateBug(id int, update BugUpdate) error {
 	return err
 }
 
+func (c *client) CreateBug(bug *BugCreate) (int, error) {
+	logger := c.logger.WithFields(logrus.Fields{methodField: "CreateBug", "bug": bug})
+	body, err := json.Marshal(bug)
+	if err != nil {
+		return 0, fmt.Errorf("failed to marshal create payload: %v", err)
+	}
+	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/rest/bug/", c.endpoint), bytes.NewBuffer(body))
+	if err != nil {
+		return 0, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := c.request(req, logger)
+	if err != nil {
+		return 0, err
+	}
+	var idStruct struct {
+		ID int `json:"id,omitempty"`
+	}
+	err = json.Unmarshal(resp, &idStruct)
+	if err != nil {
+		return 0, fmt.Errorf("failed to unmarshal server response: %v", err)
+	}
+	return idStruct.ID, nil
+}
+
+func cloneBugStruct(bug *Bug, comments []Comment) *BugCreate {
+	newBug := &BugCreate{
+		Alias:           bug.Alias,
+		AssignedTo:      bug.AssignedTo,
+		CC:              bug.CC,
+		Component:       bug.Component,
+		Flags:           bug.Flags,
+		Groups:          bug.Groups,
+		Keywords:        bug.Keywords,
+		OperatingSystem: bug.OperatingSystem,
+		Platform:        bug.Platform,
+		Priority:        bug.Priority,
+		Product:         bug.Product,
+		QAContact:       bug.QAContact,
+		Resolution:      bug.Resolution,
+		Severity:        bug.Severity,
+		Status:          bug.Status,
+		Summary:         bug.Summary,
+		TargetMilestone: bug.TargetMilestone,
+		Version:         bug.Version,
+	}
+	if len(comments) > 0 && comments[0].Count == 0 {
+		desc := comments[0]
+		newBug.Description = fmt.Sprintf("This is a clone of Bug #%d. This is the description of that bug:\n%s", bug.ID, desc.Text)
+		newBug.CommentIsPrivate = desc.IsPrivate
+		newBug.CommentTags = desc.Tags
+		newBug.IsMarkdown = desc.IsMarkdown
+	} else {
+		// This cases _shouldn't_ happen. But just in case...
+		newBug.Description = fmt.Sprintf("This is a clone of Bug #%d.", bug.ID)
+		// We don't know whether this bug should be private. Default to private in case this bug contains private information.
+		newBug.CommentIsPrivate = true
+	}
+	return newBug
+}
+
+func (c *client) CloneBug(bugID int) (int, error) {
+	bug, err := c.GetBug(bugID)
+	if err != nil {
+		return 0, fmt.Errorf("failed to get bug %d for cloning: %v", bugID, err)
+	}
+	comments, err := c.GetComments(bugID)
+	if err != nil {
+		return 0, fmt.Errorf("failed to get parent bug's comments: %v", err)
+	}
+	return c.CreateBug(cloneBugStruct(bug, comments))
+}
+
+func (c *client) GetComments(bugID int) ([]Comment, error) {
+	logger := c.logger.WithFields(logrus.Fields{methodField: "GetComments", "id": bugID})
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/rest/bug/%d/comment", c.endpoint, bugID), nil)
+	if err != nil {
+		return nil, err
+	}
+	raw, err := c.request(req, logger)
+	if err != nil {
+		return nil, err
+	}
+	var parsedResponse struct {
+		Bugs map[int]struct {
+			Comments []Comment `json:"comments,omitempty"`
+		} `json:"bugs,omitempty"`
+	}
+	if err := json.Unmarshal(raw, &parsedResponse); err != nil {
+		return nil, fmt.Errorf("could not unmarshal response body: %v", err)
+	}
+	if len(parsedResponse.Bugs) != 1 {
+		return nil, fmt.Errorf("did not get one bug, but %d: %v", len(parsedResponse.Bugs), parsedResponse)
+	}
+	return parsedResponse.Bugs[bugID].Comments, nil
+}
+
 func (c *client) request(req *http.Request, logger *logrus.Entry) ([]byte, error) {
 	if apiKey := c.getAPIKey(); len(apiKey) > 0 {
 		// some BugZilla servers are too old and can't handle the header.
