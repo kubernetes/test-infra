@@ -1098,6 +1098,28 @@ presubmits:
     branches:
     - release-1.17
     decorate: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-service-account: "true"
+    name: pull-kubernetes-integration
+    path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - args:
+        - ./hack/jenkins/test-dockerized.sh
+        command:
+        - runner.sh
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200415-b949900-1.17
+        name: ""
+        resources:
+          requests:
+            cpu: "4"
+        securityContext:
+          privileged: true
+  - always_run: true
+    branches:
+    - release-1.17
+    decorate: true
     name: pull-kubernetes-typecheck
     path_alias: k8s.io/kubernetes
     spec:

@@ -981,6 +981,32 @@ presubmits:
           privileged: true
   - always_run: true
     branches:
+    # we migrated to podutils for v1.16+
+    - release-1.15
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    name: pull-kubernetes-integration
+    spec:
+      containers:
+      - args:
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=60"
+        - --scenario=kubernetes_verify
+        - --
+        - "--branch=${PULL_BASE_REF}"
+        - --prow
+        image: gcr.io/k8s-testimages/bootstrap:v20200403-ebc6206
+        resources:
+          requests:
+            cpu: 4
+        securityContext:
+          privileged: true
+  - always_run: true
+    branches:
     - release-1.15
     decorate: true
     name: pull-kubernetes-typecheck
