@@ -241,8 +241,8 @@ pull_optional() {
 
     if [ "$tests" == "alpha" ]; then
         echo "true"
-    elif [ "$kubernetes" == "1.18.0" ]; then
-        # Testing 1.18 may require updates to release-tools.
+    elif [ "$kubernetes" == "1.19.0" ]; then
+        # Testing 1.19 may require updates to release-tools.
         # Once that is done, and tests are passing,
         # this can be set to the next k8s version
         echo "true"
