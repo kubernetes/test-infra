@@ -2,6 +2,8 @@ presubmits:
   kubernetes-sigs/metrics-server:
   - name: pull-metrics-server-verify
     decorate: true
+    skip_branches:
+      - release-0.3
     path_alias: sigs.k8s.io/metrics-server
     always_run: true
     spec:
@@ -16,6 +18,8 @@ presubmits:
       testgrid-tab-name: pr-verify
   - name: pull-metrics-server-test-unit
     decorate: true
+    skip_branches:
+      - release-0.3
     path_alias: sigs.k8s.io/metrics-server
     always_run: true
     labels:
