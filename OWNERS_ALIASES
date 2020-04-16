@@ -218,6 +218,18 @@ aliases:
     - saschagrunert # Branch Manager
     - tpepper # subproject owner / Patch Release Team
 
+  # copied from git.k8s.io/enhancements/OWNERS_ALIASES
+  enhancements-approvers:
+    - jeremyrickard # subproject owner
+    - johnbelamaric # subproject owner
+    - justaugustus # subproject owner
+    - mrbobbytables # subproject owner
+  enhancements-reviewers:
+    - jeremyrickard # subproject owner
+    - johnbelamaric # subproject owner
+    - justaugustus # subproject owner
+    - mrbobbytables # subproject owner
+
   # copied from sigs.k8s.io/cluster-api-provider-vsphere/OWNERS_ALIASES
   cluster-api-admins:
     - detiber

@@ -1,14 +1,9 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 reviewers:
-  - calebamiles # SIG PM Chair
-  - idvoretskyi # SIG PM Chair
-  - jdumars # SIG PM Chair
-  - justaugustus # SIG PM Chair
+  - enhancements-reviewers
 approvers:
-  - calebamiles # SIG PM Chair
-  - idvoretskyi # SIG PM Chair
-  - jdumars # SIG PM Chair
-  - justaugustus # SIG PM Chair
+  - enhancements-approvers
 labels:
-  - sig/pm
+  - sig/architecture
+  - area/enhancements
