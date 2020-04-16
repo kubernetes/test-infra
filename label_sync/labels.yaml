@@ -578,12 +578,8 @@ default:
       target: both
       prowPlugin: label
       addedBy: anyone
-    - color: d2b48c
-      description: Categorizes an issue or PR as relevant to wg-apply.
-      name: wg/apply
-      target: both
-      prowPlugin: label
-      addedBy: anyone
+      previously:
+        - name: wg/apply
     - color: d2b48c
       description: Categorizes an issue or PR as relevant to wg-iot-edge.
       name: wg/iot-edge
