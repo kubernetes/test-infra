@@ -81,7 +81,6 @@ filegroup(
         "//prow/plugins/cherrypickunapproved:all-srcs",
         "//prow/plugins/cla:all-srcs",
         "//prow/plugins/dco:all-srcs",
-        "//prow/plugins/docs-no-retest:all-srcs",
         "//prow/plugins/dog:all-srcs",
         "//prow/plugins/golint:all-srcs",
         "//prow/plugins/goose:all-srcs",
