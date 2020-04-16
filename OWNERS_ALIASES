@@ -240,3 +240,37 @@ aliases:
     - frapposelli
     - yastij
     - randomvariable
+  # end sigs.k8s.io/cluster-api-provider-vsphere/OWNERS_ALIASES
+
+  # mostly copied from sigs.k8s.io/controller-runtime/OWNERS_ALIASES
+  controller-runtime-admins:
+  - directxman12
+  - mengqiy
+
+  controller-runtime-maintainers:
+  - vincepri
+
+  controller-runtime-approvers:
+  - gerred
+
+  controller-runtime-reviewers:
+  - alvaroaleman
+  - alenkacz
+  - vincepri
+  - alexeldeib
+
+  controller-runtime-emeritus-maintainers:
+  - pwittrock
+
+  # mostly copied from sigs.k8s.io/kubebuilder/OWNERS_ALIASES
+  kubebuilder-admins:
+  - mengqiy
+  - directxman12
+
+  kubebuilder-reviewers:
+  - alexeldeib
+
+  kubebuilder-emeritus-approvers: 
+  - pwittrock
+
+  # end sigs.k8s.io/kubebuilder/OWNERS_ALIASES
