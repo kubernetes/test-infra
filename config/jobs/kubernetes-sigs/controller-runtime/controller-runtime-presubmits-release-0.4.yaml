@@ -18,3 +18,18 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-api-machinery-kubebuilder
       testgrid-tab-name: controller-runtime-release-0.4
+  - name: pull-controller-runtime-apidiff-release-0-4
+    decorate: true
+    always_run: true
+    optional: true
+    path_alias: sigs.k8s.io/controller-runtime
+    branches:
+    - ^release-0.4$
+    spec:
+      containers:
+      - image: golang:1.13
+        command:
+        - ./hack/apidiff.sh
+    annotations:
+      testgrid-dashboards: sig-api-machinery-kubebuilder
+      testgrid-tab-name: controller-runtime-release-0.4-apidiff
