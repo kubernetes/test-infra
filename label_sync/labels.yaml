@@ -512,13 +512,6 @@ default:
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
-      description: Categorizes an issue or PR as relevant to sig-pm.
-      name: sig/pm
-      target: both
-      prowPlugin: label
-      addedBy: anyone
-      deleteAfter: 2020-04-20T00:00:00Z
-    - color: d2b48c
       description: Categorizes an issue or PR as relevant to sig-release.
       name: sig/release
       target: both
