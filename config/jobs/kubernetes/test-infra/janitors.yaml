@@ -50,6 +50,39 @@ periodics:
     testgrid-tab-name: ci-janitor
     description: Deletes old GCP resources from periodic jobs
 
+- interval: 3h
+  name: maintenance-node-ci-janitor
+  labels:
+    preset-service-account: "true"
+  decorate: true
+  extra_refs:
+    - org: kubernetes
+      repo: test-infra
+      base_ref: master
+      path_alias: k8s.io/test-infra
+  spec:
+    containers:
+      - command:
+          - runner.sh
+        args:
+          - go
+          - run
+          - experiment/ci-janitor/main.go
+          - --config-path=config/prow/config.yaml
+          - --job-config-path=config/jobs/kubernetes/sig-node
+          - --janitor-path=boskos/cmd/janitor/gcp_janitor.py
+          - --default-ttl=3
+          - --verbose
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200414-0c2810c-master
+        resources:
+          requests:
+            cpu: 5
+            memory: "8Gi"
+  annotations:
+    testgrid-dashboards: sig-testing-maintenance
+    testgrid-tab-name: ci-node-janitor
+    description: Deletes old GCP resources from sig-node CI jobs
+
 - interval: 1h
   name: maintenance-pull-janitor
   labels:

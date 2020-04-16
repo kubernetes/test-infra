@@ -33,10 +33,11 @@ type options struct {
 	configPath    string
 	jobConfigPath string
 	janitorPath   string
+	verbose 	  bool
+	defaultTTL    int
 }
 
 var (
-	defaultTTL = 24
 	soakTTL    = 24 * 10
 	blocked    = []string{
 		"kubernetes-scale",  // Let it's up/down job handle the resources
@@ -79,6 +80,8 @@ func gatherOptions() options {
 	flag.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
 	flag.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
 	flag.StringVar(&o.janitorPath, "janitor-path", "", "Path to gcp_janitor.py.")
+	flag.IntVar(&o.defaultTTL, "default-ttl", 24, "default ttl (in hours)")
+	flag.BoolVar(&o.verbose, "verbose", false, "verbosity of the janitor")
 	flag.Parse()
 	return o
 }
@@ -92,9 +95,8 @@ func containers(jb config.JobBase) []v1.Container {
 	return containers
 }
 
-func findProject(jb config.JobBase) (string, int) {
+func findProject(ttl int, jb config.JobBase) (string, int) {
 	project := ""
-	ttl := defaultTTL
 	for _, container := range containers(jb) {
 		for _, arg := range container.Args {
 			if strings.HasPrefix(arg, "--gcp-project=") {
@@ -110,7 +112,7 @@ func findProject(jb config.JobBase) (string, int) {
 	return project, ttl
 }
 
-func clean(proj, janitorPath string, ttl int) error {
+func clean(proj, janitorPath string, ttl int, verbose bool) error {
 	for _, bad := range blocked {
 		if bad == proj {
 			logrus.Infof("Will skip project %s", proj)
@@ -120,7 +122,14 @@ func clean(proj, janitorPath string, ttl int) error {
 
 	logrus.Infof("Will clean up %s with ttl %d h", proj, ttl)
 
-	cmd := exec.Command(janitorPath, fmt.Sprintf("--project=%s", proj), fmt.Sprintf("--hour=%d", ttl))
+	args := []string {
+		fmt.Sprintf("--project=%s", proj),
+		fmt.Sprintf("--hour=%d", ttl),
+	}
+	if verbose {
+		args = append(args, "--verbose")
+	}
+	cmd := exec.Command(janitorPath, args...)
 	b, err := cmd.CombinedOutput()
 	if err != nil {
 		logrus.WithError(err).Errorf("failed to clean up project %s, error info: %s", proj, string(b))
@@ -157,8 +166,8 @@ func main() {
 	}
 
 	for _, j := range jobs {
-		if project, ttl := findProject(j); project != "" {
-			if err := clean(project, o.janitorPath, ttl); err != nil {
+		if project, ttl := findProject(o.defaultTTL, j); project != "" {
+			if err := clean(project, o.janitorPath, ttl, o.verbose); err != nil {
 				logrus.WithError(err).Errorf("failed to clean %q", project)
 				failed = append(failed, project)
 			}
