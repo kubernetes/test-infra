@@ -21,7 +21,7 @@ presubmits:
         - wrapper.sh
         - bash
         - -c
-        - curl -sSLo "${PATH%%:*}/kind" https://storage.googleapis.com/bentheelder-kind-ci-builds/latest/kind-linux-amd64 && chmod +x "${PATH%%:*}/kind" && curl -sSL https://storage.googleapis.com/bentheelder-kind-ci-builds/latest/e2e-k8s.sh | sh
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
         env:
         - name: FOCUS
           value: "."
@@ -121,7 +121,7 @@ presubmits:
         - wrapper.sh
         - bash
         - -c
-        - curl -sSLo "${PATH%%:*}/kind" https://storage.googleapis.com/bentheelder-kind-ci-builds/latest/kind-linux-amd64 && chmod +x "${PATH%%:*}/kind" && curl -sSL https://storage.googleapis.com/bentheelder-kind-ci-builds/latest/e2e-k8s.sh | sh
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
         env:
         - name: FOCUS
           value: "."
@@ -176,7 +176,7 @@ presubmits:
         - wrapper.sh
         - bash
         - -c
-        - curl -sSLo "${PATH%%:*}/kind" https://storage.googleapis.com/bentheelder-kind-ci-builds/latest/kind-linux-amd64 && chmod +x "${PATH%%:*}/kind" && curl -sSL https://storage.googleapis.com/bentheelder-kind-ci-builds/latest/e2e-k8s.sh | sh
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
         env:
         - name: FOCUS
           value: "."
@@ -230,7 +230,7 @@ presubmits:
         - wrapper.sh
         - bash
         - -c
-        - curl -sSLo "${PATH%%:*}/kind" https://storage.googleapis.com/bentheelder-kind-ci-builds/latest/kind-linux-amd64 && chmod +x "${PATH%%:*}/kind" && curl -sSL https://storage.googleapis.com/bentheelder-kind-ci-builds/latest/e2e-k8s.sh | sh
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
         env:
         - name: BUILD_TYPE
           value: bazel
@@ -274,7 +274,7 @@ presubmits:
         - wrapper.sh
         - bash
         - -c
-        - curl -sSLo "${PATH%%:*}/kind" https://storage.googleapis.com/bentheelder-kind-ci-builds/latest/kind-linux-amd64 && chmod +x "${PATH%%:*}/kind" && curl -sSL https://storage.googleapis.com/bentheelder-kind-ci-builds/latest/e2e-k8s.sh | sh
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
         env:
         - name: BUILD_TYPE
           value: bazel
