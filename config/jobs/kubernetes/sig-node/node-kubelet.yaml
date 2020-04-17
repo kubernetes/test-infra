@@ -21,6 +21,7 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --deployment=node
+      - --gcp-project=k8s-jkns-gke-gci-soak
       - --gcp-zone=us-west1-b
       - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
       - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
