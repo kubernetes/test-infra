@@ -1,5 +1,0 @@
-variants:
-  planter:
-    # note: sync this with planter.sh!
-    # this should be bazel version - planter sub version
-    BAZEL_VERSION: 0.25.2
