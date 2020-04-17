@@ -15,7 +15,7 @@ postsubmits:
               - /run.sh
             args:
               - --project=k8s-staging-kind
-              - --scratch-bucket=gs://k8s-infra-staging-kind-gcb
+              - --scratch-bucket=gs://k8s-staging-kind-gcb
               - --env-passthrough=PULL_BASE_REF
               - --build-dir=.
               - hack/ci/push-latest-cli/
