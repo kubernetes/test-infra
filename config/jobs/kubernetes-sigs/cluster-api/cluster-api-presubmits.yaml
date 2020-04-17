@@ -176,7 +176,7 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: "9000m"
+            cpu: "6000m"
             memory: "6Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
