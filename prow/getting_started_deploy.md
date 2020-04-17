@@ -127,7 +127,7 @@ you give to GitHub for validating webhooks. Generate it using any reasonable
 randomness-generator, eg `openssl rand -hex 20`.
 
 ```sh
-# openssl rand -hex 20 > /path/to/hook/secret
+# echo -e "'*':\n  - value: `openssl rand -hex 20`\n    expiry: 9999-10-02T15:00:00Z" > /path/to/hook/secret
 kubectl create secret generic hmac-token --from-file=hmac=/path/to/hook/secret
 ```
 
