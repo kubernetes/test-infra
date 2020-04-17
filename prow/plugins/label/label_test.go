@@ -586,6 +586,41 @@ func TestLabel(t *testing.T) {
 			expectedBotComment:    false,
 			action:                github.GenericCommentActionEdited,
 		},
+		{
+			name: "Strip markdown comments",
+			body: `
+<!--
+/kind bug
+/kind cleanup
+-->
+/area infra
+`,
+			repoLabels:            []string{"area/infra"},
+			issueLabels:           []string{},
+			expectedNewLabels:     formatLabels("area/infra"),
+			expectedRemovedLabels: []string{},
+			commenter:             orgMember,
+			action:                github.GenericCommentActionCreated,
+		},
+		{
+			name: "Strip markdown comments non greedy",
+			body: `
+<!--
+/kind bug
+-->
+/kind cleanup
+<!--
+/area infra
+-->
+/kind regression
+`,
+			repoLabels:            []string{"kind/cleanup", "kind/regression"},
+			issueLabels:           []string{},
+			expectedNewLabels:     formatLabels("kind/cleanup", "kind/regression"),
+			expectedRemovedLabels: []string{},
+			commenter:             orgMember,
+			action:                github.GenericCommentActionCreated,
+		},
 	}
 
 	for _, tc := range testcases {
@@ -642,7 +677,7 @@ func TestLabel(t *testing.T) {
 			if len(fakeClient.IssueComments) < 1 {
 				t.Errorf("expected actual: %v", fakeClient.IssueComments)
 			}
-			if len(fakeClient.IssueComments[1]) != 1 || strings.Index(fakeClient.IssueComments[1][0].Body, tc.expectedCommentText) == -1 {
+			if len(fakeClient.IssueComments[1]) != 1 || !strings.Contains(fakeClient.IssueComments[1][0].Body, tc.expectedCommentText) {
 				t.Errorf("expected: `%v`, actual: `%v`", tc.expectedCommentText, fakeClient.IssueComments[1][0].Body)
 			}
 		}
