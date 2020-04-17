@@ -1,9 +1,0 @@
-variants:
-  '1.14':
-    VERSION: 1.14
-  '1.13':
-    VERSION: 1.13
-  '1.12':
-    VERSION: 1.12
-  '1.11':
-    VERSION: 1.11

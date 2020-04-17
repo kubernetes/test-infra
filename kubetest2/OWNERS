@@ -2,14 +2,13 @@
 
 reviewers:
 - BenTheElder
-- krzyzacy
-approvers:
-- BenTheElder
-- krzyzacy
-
-reviewers:
 - amwat
 - cofyc
+approvers:
+- BenTheElder
+- amwat
+- krzyzacy
+
 
 labels:
 # TODO(bentheelder): should we add a kubetest2 label?
