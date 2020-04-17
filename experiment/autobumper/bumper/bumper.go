@@ -148,9 +148,8 @@ func MakeGitCommit(remote, remoteBranch, name, email string, images map[string]s
 	return GitCommitAndPush(remote, remoteBranch, name, email, makeCommitSummary(images), stdout, stderr)
 }
 
-// GitCommitAndPush runs a sequence of git commands to
-// commit and push the changes the "remote" on "remoteBranch"
-// "name", "email", and "message" are used for git-commit command
+// GitCommitAndPush runs a sequence of git commands to commit.
+// The "name", "email", and "message" are used for git-commit command
 func GitCommitAndPush(remote, remoteBranch, name, email, message string, stdout, stderr io.Writer) error {
 	logrus.Info("Making git commit...")
 
@@ -164,6 +163,14 @@ func GitCommitAndPush(remote, remoteBranch, name, email, message string, stdout,
 	if err := Call(stdout, stderr, "git", commitArgs...); err != nil {
 		return fmt.Errorf("failed to git commit: %v", err)
 	}
+	if err := GitPush(remote, remoteBranch, stdout, stderr); err != nil {
+		return fmt.Errorf("%v", err)
+	}
+	return nil
+}
+
+// GitPush push the changes to the given remote and branch.
+func GitPush(remote, remoteBranch string, stdout, stderr io.Writer) error {
 	logrus.Info("Pushing to remote...")
 	if err := Call(stdout, stderr, "git", "push", "-f", remote, fmt.Sprintf("HEAD:%s", remoteBranch)); err != nil {
 		return fmt.Errorf("failed to git push: %v", err)
