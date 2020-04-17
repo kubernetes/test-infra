@@ -1,8 +1,0 @@
-# See the OWNERS docs at https://go.k8s.io/owners
-
-reviewers:
-- Random-Liu
-- yujuhong
-approvers:
-- Random-Liu
-- yujuhong
