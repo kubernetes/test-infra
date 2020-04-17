@@ -51,7 +51,7 @@ spec:
         image: gcr.io/k8s-prow/boskos/janitor:v20200416-c78ffe8ea
         args:
         - --boskos-url=http://boskos.test-pods.svc.cluster.local.
-        - --resource-type=gce-project,gpu-project,ingress-project,istio-project,scalability-presubmit-project,scalability-project
+        - --resource-type=gce-project,gpu-project,ingress-project,istio-project,scalability-presubmit-project,scalability-project,node-e2e-project
         - --pool-size=20
         - --
         - --hours=0

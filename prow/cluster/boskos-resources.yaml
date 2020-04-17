@@ -554,3 +554,15 @@ resources:
     - k8s-presubmit-scale-45
   state: dirty
   type: scalability-presubmit-project
+- names:
+  - k8s-jkns-gke-ubuntu-1-6
+  - k8s-jkns-gke-ubuntu-1-6-alpha
+  - k8s-jkns-gke-ubuntu-1-6-as
+  - k8s-jkns-gke-ubuntu-1-6-flaky
+  - k8s-jkns-gke-ubuntu-1-6-ingres
+  - k8s-jkns-gke-ubuntu-1-6-reboot
+  - k8s-jkns-gke-ubuntu-1-6-serial
+  - k8s-jkns-gke-ubuntu-1-6-slow
+  - k8s-jkns-gke-ubuntu-1-6-updown
+  state: dirty
+  type: node-e2e-project
