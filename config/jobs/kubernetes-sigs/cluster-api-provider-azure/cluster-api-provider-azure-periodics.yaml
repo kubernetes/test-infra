@@ -2,7 +2,7 @@ periodics:
 - name: periodic-cluster-api-provider-azure-conformance-v1alpha3
   decorate: true
   decoration_config:
-    timeout: 3h
+    timeout: 4h
   interval: 12h
   labels:
     preset-dind-enabled: "true"
