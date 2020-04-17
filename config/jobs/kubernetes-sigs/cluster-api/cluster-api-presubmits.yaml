@@ -154,3 +154,30 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
       testgrid-tab-name: pr-e2e
+  - name: pull-cluster-api-e2e
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    decorate: true
+    skip_branches:
+      - gh-pages
+      - release-0.2
+    path_alias: sigs.k8s.io/cluster-api
+    optional: true
+    always_run: false
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200415-b949900-master
+        args:
+          - runner.sh
+          - "./scripts/ci-e2e.sh"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: "9000m"
+            memory: "6Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
+      testgrid-tab-name: pr-e2e-new
