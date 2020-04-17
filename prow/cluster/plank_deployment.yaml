@@ -36,12 +36,10 @@ spec:
       - name: plank
         image: gcr.io/k8s-prow/plank:v20200416-dd6c31b18
         args:
-        - --kubeconfig=/etc/kubeconfig/config
-        - --dry-run=false
-        - --github-endpoint=http://ghproxy
-        - --github-endpoint=https://api.github.com
         - --config-path=/etc/config/config.yaml
+        - --dry-run=false
         - --job-config-path=/etc/job-config
+        - --kubeconfig=/etc/kubeconfig/config
         - --skip-report=true
         volumeMounts:
         - mountPath: /etc/kubeconfig
