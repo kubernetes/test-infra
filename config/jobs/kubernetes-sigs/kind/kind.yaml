@@ -1,26 +1,4 @@
 periodics:
-# build a couple times a day so our status stays green :-)
-# this is extremely cheap to run currently
-- interval: 6h
-  name: ci-kind-build
-  decorate: true
-  extra_refs:
-  - org: kubernetes-sigs
-    repo: kind
-    base_ref: master
-    path_alias: sigs.k8s.io/kind
-  labels:
-      preset-dind-enabled: "true"
-      preset-service-account: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200415-b949900-master
-      command:
-      - runner.sh
-      - ./hack/ci/push-latest-cli.sh
-      # we need privileged mode in order to do docker in docker
-      securityContext:
-        privileged: true
 - name: ci-kind-unit
   interval: 6h
   decorate: true
