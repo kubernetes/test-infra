@@ -1,6 +1,5 @@
 presubmits:
   kubernetes/kubernetes:
-  # TODO(krzyzacy): Consider combine kubekins-e2e and kubekins-test
   - name: pull-kubernetes-verify
     always_run: true
     decorate: true
