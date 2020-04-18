@@ -32,10 +32,10 @@ import (
 )
 
 var (
-	testHelpRe          = regexp.MustCompile(`(?m)^/test\s*\?\s*$`)
+	testHelpRe          = regexp.MustCompile(`(?m)^/test[ \t]*\?\s*$`)
 	emptyTestRe         = regexp.MustCompile(`(?m)^/test\s*$`)
-	retestWithTargetRe  = regexp.MustCompile(`(?m)^/retest\s+\S+$`)
-	testWithAnyTargetRe = regexp.MustCompile(`(?m)^/test\s+\S+$`)
+	retestWithTargetRe  = regexp.MustCompile(`(?m)^/retest[ \t]+\S+`)
+	testWithAnyTargetRe = regexp.MustCompile(`(?m)^/test[ \t]+\S+`)
 
 	testWithoutTargetNote = "The `/test` command needs one or more targets.\n"
 	retestWithTargetNote  = "The `/retest` command does not accept any targets.\n"
