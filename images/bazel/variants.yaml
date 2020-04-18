@@ -1,10 +1,9 @@
 variants:
-  2.2.0-from-0.25.2:
+  kubernetes:
+    CONFIG: kubernetes-master # Used by the kubernetes repo master branch
     NEW_VERSION: 2.2.0
     OLD_VERSION: 0.25.2
-  2.2.0-from-0.23.2:
-    NEW_VERSION: 2.2.0
-    OLD_VERSION: 0.23.2
   test-infra:
-    NEW_VERSION: 2.2.0
-    OLD_VERSION: 2.0.0
+    CONFIG: test-infra # Used by test-infra repo
+    NEW_VERSION: 3.0.0
+    OLD_VERSION: 2.2.0
