@@ -643,6 +643,7 @@ rules:
       - get
       - create
       - list
+      - watch
       - update
       - patch
 ---
