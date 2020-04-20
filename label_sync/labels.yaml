@@ -799,6 +799,11 @@ repos:
         target: both
         addedBy: label
       - color: 0052cc
+        description: Issues or PRs related to the upstream marketing team
+        name: area/contributor-comms
+        target: both
+        addedBy: humans
+      - color: 0052cc
         description: Issues or PRs related to the Enhancements subproject
         name: area/enhancements
         target: both
@@ -1238,6 +1243,11 @@ repos:
         target: both
         prowPlugin: label
         addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to the upstream marketing team
+        name: area/contributor-comms
+        target: both
+        addedBy: humans
       - color: e9b3f9
         description: Issues or PRs related to German language
         name: language/de
