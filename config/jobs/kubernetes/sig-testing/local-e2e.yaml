@@ -7,14 +7,14 @@ presubmits:
     skip_report: false
     max_concurrency: 8
     optional: true
-    run_if_changed: '(hyperkube|local-up-cluster)'
+    run_if_changed: 'local-up-cluster'
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -54,7 +54,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
       args:
       - "--timeout=140"
       - "--bare"

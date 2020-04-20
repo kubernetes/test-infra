@@ -50,7 +50,6 @@ spec:
       sha: pullsha
     repo: test-repo
   report: true
-  rerun_auth_config: {}
   rerun_command: /test kubernetes-explicit-decoration
   type: presubmit
 status:

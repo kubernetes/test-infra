@@ -111,43 +111,51 @@ func TestConfig(t *testing.T) {
 			testgroupMap[testgroup.Name] = 1
 		}
 
-		if !testgroup.IsExternal {
-			t.Errorf("Testgroup %v: IsExternal should always be true!", testgroup.Name)
-		}
+		t.Run("Testgroup "+testgroup.Name, func(t *testing.T) {
+			if !testgroup.IsExternal {
+				t.Error("IsExternal must be true")
+			}
 
-		if !testgroup.UseKubernetesClient {
-			t.Errorf("Testgroup %v: UseKubernetesClient should always be true!", testgroup.Name)
-		}
+			if !testgroup.UseKubernetesClient {
+				t.Error("UseKubernetesClient must be true")
+			}
 
-		for _, prowGcsPrefix := range prowGcsPrefixes {
-			if strings.Contains(testgroup.GcsPrefix, prowGcsPrefix) {
-				// The expectation is that testgroup.Name is the name of a Prow job and the GCSPrefix
-				// follows the convention kubernetes-jenkins/logs/.../jobName
-				// The final part of the prefix should be the job name.
-				expected := filepath.Join(filepath.Dir(testgroup.GcsPrefix), testgroup.Name)
-				if expected != testgroup.GcsPrefix {
-					t.Errorf("Kubernetes Testgroup %v GcsPrefix; Got %v; Want %v", testgroup.Name, testgroup.GcsPrefix, expected)
+			for hIdx, header := range testgroup.ColumnHeader {
+				if header.ConfigurationValue == "" {
+					t.Errorf("Column Header %d is empty", hIdx)
 				}
-				break // out of prowGcsPrefix for loop
-			}
-		}
-
-		if testgroup.TestNameConfig != nil {
-			if testgroup.TestNameConfig.NameFormat == "" {
-				t.Errorf("Testgroup %v: NameFormat must not be empty!", testgroup.Name)
 			}
 
-			if len(testgroup.TestNameConfig.NameElements) != strings.Count(testgroup.TestNameConfig.NameFormat, "%") {
-				t.Errorf("Testgroup %v: TestNameConfig must have number NameElement equal to format count in NameFormat!", testgroup.Name)
+			for _, prowGcsPrefix := range prowGcsPrefixes {
+				if strings.Contains(testgroup.GcsPrefix, prowGcsPrefix) {
+					// The expectation is that testgroup.Name is the name of a Prow job and the GCSPrefix
+					// follows the convention kubernetes-jenkins/logs/.../jobName
+					// The final part of the prefix should be the job name.
+					expected := filepath.Join(filepath.Dir(testgroup.GcsPrefix), testgroup.Name)
+					if expected != testgroup.GcsPrefix {
+						t.Errorf("GcsPrefix: Got %s; Want %s", testgroup.GcsPrefix, expected)
+					}
+					break // out of prowGcsPrefix for loop
+				}
 			}
-		}
 
-		// All PR testgroup has num_columns_recent equals 20
-		if strings.HasPrefix(testgroup.GcsPrefix, "kubernetes-jenkins/pr-logs/directory/") {
-			if testgroup.NumColumnsRecent < 20 {
-				t.Errorf("Testgroup %v: num_columns_recent: must be greater than 20 for presubmit jobs!", testgroup.Name)
+			if testgroup.TestNameConfig != nil {
+				if testgroup.TestNameConfig.NameFormat == "" {
+					t.Error("Empty NameFormat")
+				}
+
+				if got, want := len(testgroup.TestNameConfig.NameElements), strings.Count(testgroup.TestNameConfig.NameFormat, "%"); got != want {
+					t.Errorf("TestNameConfig has %d elements, format %s wants %d", got, testgroup.TestNameConfig.NameFormat, want)
+				}
 			}
-		}
+
+			// All PR testgroup has num_columns_recent equals 20
+			if strings.HasPrefix(testgroup.GcsPrefix, "kubernetes-jenkins/pr-logs/directory/") {
+				if testgroup.NumColumnsRecent < 20 {
+					t.Errorf("presubmit num_columns_recent want >=20, got %d", testgroup.NumColumnsRecent)
+				}
+			}
+		})
 	}
 
 	// dashboard name set
@@ -346,17 +354,16 @@ var noPresubmitsInTestgridPrefixes = []string{
 	"kubernetes-sigs/gcp-filestore-csi-driver",
 	"kubernetes-sigs/kind",
 	"kubernetes-sigs/kubebuilder-declarative-pattern",
+	"kubernetes-sigs/scheduler-plugins",
 	"kubernetes-sigs/service-catalog",
 	"kubernetes-sigs/sig-storage-local-static-provisioner",
 	"kubernetes-sigs/slack-infra",
 	"kubernetes-sigs/testing_frameworks",
 	"kubernetes/client-go",
-	"kubernetes/cloud-provider-gcp",
 	"kubernetes/cloud-provider-openstack",
 	"kubernetes/dns",
 	"kubernetes/enhancements",
 	"kubernetes/ingress-gce",
-	"kubernetes/k8s.io",
 	"kubernetes/kubeadm",
 	"kubernetes/minikube",
 	// This is the one entry that should be here
@@ -463,13 +470,13 @@ func TestReleaseBlockingJobsMustHaveTestgridDescriptions(t *testing.T) {
 					t.Logf("NOTICE: %v: - Must have a description that starts with OWNER: ", intro)
 				}
 				if dashboardtab.AlertOptions == nil {
-					t.Logf("NOTICE: %v: - Must have alert_options", intro)
+					t.Logf("NOTICE: %v: - Must have alert_options (ensure informing dashboard is listed first in testgrid-dashboards)", intro)
 				} else if dashboardtab.AlertOptions.AlertMailToAddresses == "" {
 					t.Logf("NOTICE: %v: - Must have alert_options.alert_mail_to_addresses", intro)
 				}
 			} else {
 				if dashboardtab.AlertOptions == nil {
-					t.Errorf("%v: - Must have alert_options", intro)
+					t.Errorf("%v: - Must have alert_options (ensure blocking dashboard is listed first in testgrid-dashboards)", intro)
 				} else if dashboardtab.AlertOptions.AlertMailToAddresses == "" {
 					t.Errorf("%v: - Must have alert_options.alert_mail_to_addresses", intro)
 				}

@@ -1,5 +1,17 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
+reviwers:
+- abrarshivani
+- baludontu
+- divyenpatel
+- imkin
+- kerneltime
+- luomiao
+- frapposelli
+- dougm
+- figo
+- akutz
+- yastij
 approvers:
 - abrarshivani
 - baludontu
@@ -12,3 +24,6 @@ approvers:
 - figo
 - akutz
 - yastij
+labels:
+- sig/cloud-provider
+- area/provider/vmware

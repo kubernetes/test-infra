@@ -27,15 +27,11 @@ import (
 	"github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
-	ktypes "k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/clock"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	reporter "k8s.io/test-infra/prow/crier/reporters/github"
-	"k8s.io/test-infra/prow/github"
-	reportlib "k8s.io/test-infra/prow/github/report"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pod-utils/decorate"
@@ -47,27 +43,14 @@ const (
 	Evicted = "Evicted"
 )
 
-// GitHubClient contains the methods used by plank on k8s.io/test-infra/prow/github.Client
-// Plank's unit tests implement a fake of this.
-type GitHubClient interface {
-	BotName() (string, error)
-	CreateStatus(org, repo, ref string, s github.Status) error
-	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error)
-	CreateComment(org, repo string, number int, comment string) error
-	DeleteComment(org, repo string, ID int) error
-	EditComment(org, repo string, ID int, comment string) error
-	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
-}
-
-// TODO: Dry this out
-type syncFn func(pj prowapi.ProwJob, pm map[string]corev1.Pod, reports chan<- prowapi.ProwJob) error
+// TODO: DRY this out
+type syncFn func(pj prowapi.ProwJob, pm map[string]corev1.Pod) error
 
 // Controller manages ProwJobs.
 type Controller struct {
 	ctx           context.Context
 	prowJobClient ctrlruntimeclient.Client
 	buildClients  map[string]ctrlruntimeclient.Client
-	ghc           GitHubClient
 	log           *logrus.Entry
 	config        config.Getter
 	totURL        string
@@ -87,27 +70,22 @@ type Controller struct {
 	// shared across the controller and a goroutine that gathers metrics.
 	pjs []prowapi.ProwJob
 
-	// if skip report job results to github
-	skipReport bool
-
 	clock clock.Clock
 }
 
 // NewController creates a new Controller from the provided clients.
-func NewController(pjClient ctrlruntimeclient.Client, buildClients map[string]ctrlruntimeclient.Client, ghc GitHubClient, logger *logrus.Entry, cfg config.Getter, totURL, selector string, skipReport bool) (*Controller, error) {
+func NewController(pjClient ctrlruntimeclient.Client, buildClients map[string]ctrlruntimeclient.Client, logger *logrus.Entry, cfg config.Getter, totURL, selector string) (*Controller, error) {
 	if logger == nil {
 		logger = logrus.NewEntry(logrus.StandardLogger())
 	}
 	return &Controller{
 		prowJobClient: pjClient,
 		buildClients:  buildClients,
-		ghc:           ghc,
 		log:           logger,
 		config:        cfg,
 		pendingJobs:   make(map[string]int),
 		totURL:        totURL,
 		selector:      selector,
-		skipReport:    skipReport,
 		clock:         clock.RealClock{},
 	}, nil
 }
@@ -174,25 +152,21 @@ func (c *Controller) incrementNumPendingJobs(job string) {
 	c.pendingJobs[job]++
 }
 
-// setPreviousReportState sets the github key for PrevReportStates
-// to current state. This is a work-around for plank -> crier
-// migration to become seamless.
-func (c *Controller) setPreviousReportState(pj prowapi.ProwJob) error {
-	// fetch latest before replace
-	latestPJ := &prowapi.ProwJob{}
-	err := c.prowJobClient.Get(c.ctx, ktypes.NamespacedName{Namespace: c.config().ProwJobNamespace, Name: pj.Name}, latestPJ)
-	c.log.WithFields(pjutil.ProwJobFields(latestPJ)).Debug("Get ProwJob.")
-	if err != nil {
-		return err
+func (c *Controller) Start(stopChan <-chan struct{}) error {
+	ticker := time.NewTicker(30 * time.Second)
+	for {
+		select {
+		case <-stopChan:
+			c.log.Info("Stop signal received, quitting.")
+			return nil
+		case <-ticker.C:
+			start := time.Now()
+			if err := c.Sync(); err != nil {
+				logrus.WithError(err).Error("Error syncing.")
+			}
+			logrus.WithField("duration", fmt.Sprintf("%v", time.Since(start))).Info("Synced")
+		}
 	}
-
-	if latestPJ.Status.PrevReportStates == nil {
-		latestPJ.Status.PrevReportStates = map[string]prowapi.ProwJobState{}
-	}
-	latestPJ.Status.PrevReportStates[reporter.GitHubReporterName] = latestPJ.Status.State
-	err = c.prowJobClient.Update(c.ctx, latestPJ)
-	c.log.WithFields(pjutil.ProwJobFields(latestPJ)).Debug("Update ProwJob.")
-	return err
 }
 
 // Sync does one sync iteration.
@@ -253,9 +227,8 @@ func (c *Controller) Sync() error {
 	c.pjs = k8sJobs
 	c.pjLock.Unlock()
 
-	pendingCh, triggeredCh := pjutil.PartitionActive(k8sJobs)
+	pendingCh, triggeredCh, abortedCh := pjutil.PartitionActive(k8sJobs)
 	errCh := make(chan error, len(k8sJobs))
-	reportCh := make(chan prowapi.ProwJob, len(k8sJobs))
 
 	// Reinstantiate on every resync of the controller instead of trying
 	// to keep this in sync with the state of the world.
@@ -264,38 +237,22 @@ func (c *Controller) Sync() error {
 	// number of new jobs we can trigger when syncing the non-pendings.
 	maxSyncRoutines := c.config().Plank.MaxGoroutines
 	c.log.Debugf("Handling %d pending prowjobs", len(pendingCh))
-	syncProwJobs(c.log, c.syncPendingJob, maxSyncRoutines, pendingCh, reportCh, errCh, pm)
+	syncProwJobs(c.log, c.syncPendingJob, maxSyncRoutines, pendingCh, errCh, pm)
 	c.log.Debugf("Handling %d triggered prowjobs", len(triggeredCh))
-	syncProwJobs(c.log, c.syncTriggeredJob, maxSyncRoutines, triggeredCh, reportCh, errCh, pm)
+	syncProwJobs(c.log, c.syncTriggeredJob, maxSyncRoutines, triggeredCh, errCh, pm)
+	c.log.Debugf("Handling %d aborted prowjobs", len(abortedCh))
+	syncProwJobs(c.log, c.syncAbortedJob, maxSyncRoutines, abortedCh, errCh, pm)
 
 	close(errCh)
-	close(reportCh)
 
 	for err := range errCh {
 		syncErrs = append(syncErrs, err)
 	}
 
-	var reportErrs []error
-	if !c.skipReport {
-		reportTemplate := c.config().Plank.ReportTemplate
-		reportTypes := c.config().GitHubReporter.JobTypesToReport
-		for report := range reportCh {
-			if err := reportlib.Report(c.ghc, reportTemplate, report, reportTypes); err != nil {
-				reportErrs = append(reportErrs, err)
-				c.log.WithFields(pjutil.ProwJobFields(&report)).WithError(err).Warn("Failed to report ProwJob status")
-			}
-
-			// plank is not retrying on errors, so we just set the current state as reported
-			if err := c.setPreviousReportState(report); err != nil {
-				c.log.WithFields(pjutil.ProwJobFields(&report)).WithError(err).Error("Failed to patch PrevReportStates")
-			}
-		}
-	}
-
-	if len(syncErrs) == 0 && len(reportErrs) == 0 {
+	if len(syncErrs) == 0 {
 		return nil
 	}
-	return fmt.Errorf("errors syncing: %v, errors reporting: %v", syncErrs, reportErrs)
+	return fmt.Errorf("errors syncing: %v", syncErrs)
 }
 
 // SyncMetrics records metrics for the cached prowjobs.
@@ -311,16 +268,13 @@ func (c *Controller) SyncMetrics() {
 func (c *Controller) terminateDupes(pjs []prowapi.ProwJob, pm map[string]corev1.Pod) error {
 	log := c.log.WithField("aborter", "pod")
 	return pjutil.TerminateOlderJobs(c.prowJobClient, log, pjs, func(toCancel prowapi.ProwJob) error {
-		// Allow aborting presubmit jobs for commits that have been superseded by
-		// newer commits in GitHub pull requests.
-		if ac := c.config().Plank.AllowCancellations; ac == nil || *ac {
-			if pod, exists := pm[toCancel.ObjectMeta.Name]; exists {
-				c.log.WithField("name", pod.ObjectMeta.Name).Debug("Delete Pod.")
-				if client, ok := c.buildClients[toCancel.ClusterAlias()]; !ok {
-					return fmt.Errorf("unknown cluster alias %q", toCancel.ClusterAlias())
-				} else if err := client.Delete(c.ctx, &pod); err != nil {
-					return fmt.Errorf("deleting pod: %v", err)
-				}
+		// Abort presubmit jobs for commits that have been superseded by newer commits
+		if pod, exists := pm[toCancel.ObjectMeta.Name]; exists {
+			c.log.WithField("name", pod.ObjectMeta.Name).Debug("Delete Pod.")
+			if client, ok := c.buildClients[toCancel.ClusterAlias()]; !ok {
+				return fmt.Errorf("unknown cluster alias %q", toCancel.ClusterAlias())
+			} else if err := client.Delete(c.ctx, &pod); err != nil {
+				return fmt.Errorf("deleting pod: %v", err)
 			}
 		}
 		return nil
@@ -333,7 +287,6 @@ func syncProwJobs(
 	syncFn syncFn,
 	maxSyncRoutines int,
 	jobs <-chan prowapi.ProwJob,
-	reports chan<- prowapi.ProwJob,
 	syncErrors chan<- error,
 	pm map[string]corev1.Pod,
 ) {
@@ -348,7 +301,7 @@ func syncProwJobs(
 		go func() {
 			defer wg.Done()
 			for pj := range jobs {
-				if err := syncFn(pj, pm, reports); err != nil {
+				if err := syncFn(pj, pm); err != nil {
 					syncErrors <- err
 				}
 			}
@@ -357,7 +310,7 @@ func syncProwJobs(
 	wg.Wait()
 }
 
-func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]corev1.Pod, reports chan<- prowapi.ProwJob) error {
+func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]corev1.Pod) error {
 	// Record last known state so we can log state transitions.
 	prevState := pj.Status.State
 	prevPJ := *pj.DeepCopy()
@@ -369,13 +322,13 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]corev1.Pod
 		// a rescheduler. Start a new pod.
 		id, pn, err := c.startPod(pj)
 		if err != nil {
-			if !kerrors.IsInvalid(err) {
+			if !isRequestError(err) {
 				return fmt.Errorf("error starting pod %s: %v", pod.Name, err)
 			}
 			pj.Status.State = prowapi.ErrorState
 			pj.SetComplete()
-			pj.Status.Description = fmt.Sprintf("Job cannot be processed: %v", err)
-			c.log.WithFields(pjutil.ProwJobFields(&pj)).WithError(err).Warning("Unprocessable pod.")
+			pj.Status.Description = fmt.Sprintf("Job cannot be started: %v", err)
+			c.log.WithFields(pjutil.ProwJobFields(&pj)).WithError(err).Warning("Request error starting pod.")
 		} else {
 			pj.Status.BuildID = id
 			pj.Status.PodName = pn
@@ -398,7 +351,7 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]corev1.Pod
 			return client.Delete(c.ctx, &pod)
 
 		case corev1.PodSucceeded:
-			// Pod succeeded. Update ProwJob, talk to GitHub, and start next jobs.
+			// Pod succeeded. Update ProwJob, and start next jobs.
 			pj.SetComplete()
 			pj.Status.State = prowapi.SuccessState
 			pj.Status.Description = "Job succeeded."
@@ -423,7 +376,7 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]corev1.Pod
 				c.log.WithField("name", pj.ObjectMeta.Name).Debug("Delete Pod.")
 				return client.Delete(c.ctx, &pod)
 			}
-			// Pod failed. Update ProwJob, talk to GitHub.
+			// Pod failed. Update ProwJob.
 			pj.SetComplete()
 			pj.Status.State = prowapi.FailureState
 			pj.Status.Description = "Job failed."
@@ -434,7 +387,7 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]corev1.Pod
 			if pod.Status.StartTime.IsZero() {
 				if time.Since(pod.CreationTimestamp.Time) >= maxPodUnscheduled {
 					// Pod is stuck in unscheduled state longer than maxPodUncheduled
-					// abort the job, and talk to GitHub
+					// abort the job
 					pj.SetComplete()
 					pj.Status.State = prowapi.ErrorState
 					pj.Status.Description = "Pod scheduling timeout."
@@ -443,7 +396,7 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]corev1.Pod
 				}
 			} else if time.Since(pod.Status.StartTime.Time) >= maxPodPending {
 				// Pod is stuck in pending state longer than maxPodPending
-				// abort the job, and talk to GitHub
+				// abort the job
 				pj.SetComplete()
 				pj.Status.State = prowapi.ErrorState
 				pj.Status.Description = "Pod pending timeout."
@@ -462,7 +415,7 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]corev1.Pod
 			}
 
 			// Pod is stuck in running state longer than maxPodRunning
-			// abort the job, and talk to GitHub
+			// abort the job
 			pj.SetComplete()
 			pj.Status.State = prowapi.AbortedState
 			pj.Status.Description = "Pod running timeout."
@@ -483,8 +436,6 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]corev1.Pod
 
 	pj.Status.URL = pjutil.JobURL(c.config().Plank, pj, c.log)
 
-	reports <- pj
-
 	if prevState != pj.Status.State {
 		c.log.WithFields(pjutil.ProwJobFields(&pj)).
 			WithField("from", prevState).
@@ -494,7 +445,27 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]corev1.Pod
 	return c.prowJobClient.Patch(c.ctx, pj.DeepCopy(), ctrlruntimeclient.MergeFrom(&prevPJ))
 }
 
-func (c *Controller) syncTriggeredJob(pj prowapi.ProwJob, pm map[string]corev1.Pod, reports chan<- prowapi.ProwJob) error {
+func (c *Controller) syncAbortedJob(pj prowapi.ProwJob, pm map[string]corev1.Pod) error {
+	if pj.Status.State != prowapi.AbortedState || pj.Complete() {
+		return nil
+	}
+
+	if pod, podExists := pm[pj.Name]; podExists {
+		client, ok := c.buildClients[pj.ClusterAlias()]
+		if !ok {
+			return fmt.Errorf("unknown cluster alias %q", pj.ClusterAlias())
+		}
+		if err := client.Delete(c.ctx, pod.DeepCopy()); err != nil && !kerrors.IsNotFound(err) {
+			return fmt.Errorf("failed to delete pod %q in cluster %q: %w", pod.Name, pj.ClusterAlias(), err)
+		}
+	}
+
+	originalPJ := pj.DeepCopy()
+	pj.SetComplete()
+	return c.prowJobClient.Patch(c.ctx, &pj, ctrlruntimeclient.MergeFrom(originalPJ))
+}
+
+func (c *Controller) syncTriggeredJob(pj prowapi.ProwJob, pm map[string]corev1.Pod) error {
 	// Record last known state so we can log state transitions.
 	prevState := pj.Status.State
 	prevPJ := pj
@@ -514,13 +485,13 @@ func (c *Controller) syncTriggeredJob(pj prowapi.ProwJob, pm map[string]corev1.P
 		var err error
 		id, pn, err = c.startPod(pj)
 		if err != nil {
-			if !kerrors.IsInvalid(err) {
+			if !isRequestError(err) {
 				return fmt.Errorf("error starting pod: %v", err)
 			}
 			pj.Status.State = prowapi.ErrorState
 			pj.SetComplete()
-			pj.Status.Description = fmt.Sprintf("Job cannot be processed: %v", err)
-			logrus.WithField("job", pj.Spec.Job).WithError(err).Warning("Unprocessable pod.")
+			pj.Status.Description = fmt.Sprintf("Job cannot be started: %v", err)
+			logrus.WithField("job", pj.Spec.Job).WithError(err).Warning("Request error starting pod.")
 		}
 	} else {
 		id = getPodBuildID(&pod)
@@ -537,7 +508,6 @@ func (c *Controller) syncTriggeredJob(pj prowapi.ProwJob, pm map[string]corev1.P
 		pj.Status.Description = "Job triggered."
 		pj.Status.URL = pjutil.JobURL(c.config().Plank, pj, c.log)
 	}
-	reports <- pj
 	if prevState != pj.Status.State {
 		c.log.WithFields(pjutil.ProwJobFields(&pj)).
 			WithField("from", prevState).
@@ -584,4 +554,14 @@ func getPodBuildID(pod *corev1.Pod) string {
 	}
 	logrus.Warningf("BUILD_ID was not found in pod %q: streaming logs from deck will not work", pod.ObjectMeta.Name)
 	return ""
+}
+
+// isRequestError extracts an HTTP status code from a kerrors.APIStatus and
+// returns true if it is a 4xx error.
+func isRequestError(err error) bool {
+	code := 500 // This is what kerrors.ReasonForError() defaults to.
+	if statusErr, ok := err.(kerrors.APIStatus); ok {
+		code = int(statusErr.Status().Code)
+	}
+	return 400 <= code && code < 500
 }

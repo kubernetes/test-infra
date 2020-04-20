@@ -8,8 +8,11 @@ load(
 )
 load("//prow:def.bzl", "prow_image")
 
+NAME = "mkpj"
+
 prow_image(
     name = "image",
+    component = NAME,
     directory = "/",
     files = [":mkpj"],
     visibility = ["//visibility:public"],
@@ -56,6 +59,6 @@ go_test(
 )
 
 go_binary(
-    name = "mkpj",
+    name = NAME,
     embed = [":go_default_library"],
 )

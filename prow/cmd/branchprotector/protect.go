@@ -29,13 +29,18 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
-	"k8s.io/test-infra/prow/errorutil"
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/logrusutil"
+)
+
+const (
+	defaultTokens = 300
+	defaultBurst  = 100
 )
 
 type options struct {
@@ -43,6 +48,8 @@ type options struct {
 	jobConfig          string
 	confirm            bool
 	verifyRestrictions bool
+	tokens             int
+	tokenBurst         int
 	github             flagutil.GitHubOptions
 }
 
@@ -65,6 +72,8 @@ func gatherOptions() options {
 	fs.StringVar(&o.jobConfig, "job-config-path", "", "Path to prow job configs.")
 	fs.BoolVar(&o.confirm, "confirm", false, "Mutate github if set")
 	fs.BoolVar(&o.verifyRestrictions, "verify-restrictions", false, "Verify the restrictions section of the request for authorized collaborators/teams")
+	fs.IntVar(&o.tokens, "tokens", defaultTokens, "Throttle hourly token consumption (0 to disable)")
+	fs.IntVar(&o.tokenBurst, "token-burst", defaultBurst, "Allow consuming a subset of hourly tokens in a short burst")
 	o.github.AddFlags(fs)
 	fs.Parse(os.Args[1:])
 	return o
@@ -91,7 +100,7 @@ func (e *Errors) add(err error) {
 }
 
 func main() {
-	logrusutil.ComponentInit("branchprotector")
+	logrusutil.ComponentInit()
 
 	o := gatherOptions()
 	if err := o.Validate(); err != nil {
@@ -113,7 +122,7 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting GitHub client.")
 	}
-	githubClient.Throttle(300, 100) // 300 hourly tokens, bursts of 100
+	githubClient.Throttle(o.tokens, o.tokenBurst)
 
 	p := protector{
 		client:             githubClient,
@@ -248,7 +257,7 @@ func (p *protector) UpdateOrg(orgName string, org config.Org) error {
 		}
 	}
 
-	return errorutil.NewAggregate(errs...)
+	return utilerrors.NewAggregate(errs)
 }
 
 // UpdateRepo updates all branches in the repo with the specified defaults
@@ -316,7 +325,7 @@ func (p *protector) UpdateRepo(orgName string, repoName string, repo config.Repo
 		}
 	}
 
-	return errorutil.NewAggregate(errs...)
+	return utilerrors.NewAggregate(errs)
 }
 
 // authorizedCollaborators returns the list of Logins for users that are

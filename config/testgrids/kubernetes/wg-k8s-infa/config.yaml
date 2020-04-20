@@ -1,0 +1,9 @@
+# Dashboard Group
+
+dashboard_groups:
+- name: wg-k8s-infra
+  dashboard_names:
+  - wg-k8s-infra-k8sio
+
+dashboards:
+- name: wg-k8s-infra-k8sio

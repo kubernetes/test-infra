@@ -37,8 +37,19 @@ type fghc struct {
 	prs        []github.PullRequest
 	prComments []github.IssueComment
 	prLabels   []github.Label
-	createdNum int
+	labels     []github.Label
 	orgMembers []github.TeamMember
+}
+
+func (f *fghc) AddLabel(org, repo string, number int, label string) error {
+	f.Lock()
+	defer f.Unlock()
+	for i := range f.prs {
+		if number == f.prs[i].Number {
+			f.prs[i].Labels = append(f.prs[i].Labels, github.Label{Name: label})
+		}
+	}
+	return nil
 }
 
 func (f *fghc) AssignIssue(org, repo string, number int, logins []string) error {
@@ -84,22 +95,28 @@ func (f *fghc) GetRepo(owner, name string) (github.FullRepo, error) {
 	return github.FullRepo{}, nil
 }
 
-var expectedFmt = `title=%q body=%q head=%s base=%s`
+var expectedFmt = `title=%q body=%q head=%s base=%s labels=%v`
 
 func prToString(pr github.PullRequest) string {
-	return fmt.Sprintf(expectedFmt, pr.Title, pr.Body, pr.Head.Ref, pr.Base.Ref)
+	var labels []string
+	for _, label := range pr.Labels {
+		labels = append(labels, label.Name)
+	}
+	return fmt.Sprintf(expectedFmt, pr.Title, pr.Body, pr.Head.Ref, pr.Base.Ref, labels)
 }
 
 func (f *fghc) CreatePullRequest(org, repo, title, body, head, base string, canModify bool) (int, error) {
 	f.Lock()
 	defer f.Unlock()
+	num := len(f.prs) + 1
 	f.prs = append(f.prs, github.PullRequest{
-		Title: title,
-		Body:  body,
-		Head:  github.PullRequestBranch{Ref: head},
-		Base:  github.PullRequestBranch{Ref: base},
+		Title:  title,
+		Body:   body,
+		Number: num,
+		Head:   github.PullRequestBranch{Ref: head},
+		Base:   github.PullRequestBranch{Ref: base},
 	})
-	return f.createdNum, nil
+	return num, nil
 }
 
 func (f *fghc) ListIssueComments(org, repo string, number int) ([]github.IssueComment, error) {
@@ -164,7 +181,15 @@ index 1ea52dc..5bd70a9 100644
 var body = "This PR updates the magic number.\n\n```release-note\nUpdate the magic number from 42 to 49\n```"
 
 func TestCherryPickIC(t *testing.T) {
-	lg, c, err := localgit.New()
+	testCherryPickIC(localgit.New, t)
+}
+
+func TestCherryPickICV2(t *testing.T) {
+	testCherryPickIC(localgit.NewV2, t)
+}
+
+func testCherryPickIC(clients localgit.Clients, t *testing.T) {
+	lg, c, err := clients()
 	if err != nil {
 		t.Fatalf("Making localgit: %v", err)
 	}
@@ -195,9 +220,8 @@ func TestCherryPickIC(t *testing.T) {
 			Title:  "This is a fix for X",
 			Body:   body,
 		},
-		isMember:   true,
-		createdNum: 3,
-		patch:      patch,
+		isMember: true,
+		patch:    patch,
 	}
 	ic := github.IssueCommentEvent{
 		Action: github.IssueCommentActionCreated,
@@ -226,7 +250,8 @@ func TestCherryPickIC(t *testing.T) {
 	expectedBody := "This is an automated cherry-pick of #2\n\n/assign wiseguy\n\n```release-note\nUpdate the magic number from 42 to 49\n```"
 	expectedBase := "stage"
 	expectedHead := fmt.Sprintf(botName+":"+cherryPickBranchFmt, 2, expectedBase)
-	expected := fmt.Sprintf(expectedFmt, expectedTitle, expectedBody, expectedHead, expectedBase)
+	expectedLabels := []string{}
+	expected := fmt.Sprintf(expectedFmt, expectedTitle, expectedBody, expectedHead, expectedBase, expectedLabels)
 
 	getSecret := func() []byte {
 		return []byte("sha=abcdefg")
@@ -254,7 +279,15 @@ func TestCherryPickIC(t *testing.T) {
 }
 
 func TestCherryPickPR(t *testing.T) {
-	lg, c, err := localgit.New()
+	testCherryPickPR(localgit.New, t)
+}
+
+func TestCherryPickPRV2(t *testing.T) {
+	testCherryPickPR(localgit.NewV2, t)
+}
+
+func testCherryPickPR(clients localgit.Clients, t *testing.T) {
+	lg, c, err := clients()
 	if err != nil {
 		t.Fatalf("Making localgit: %v", err)
 	}
@@ -341,9 +374,8 @@ func TestCherryPickPR(t *testing.T) {
 				},
 			},
 		},
-		isMember:   true,
-		createdNum: 3,
-		patch:      patch,
+		isMember: true,
+		patch:    patch,
 	}
 	pr := github.PullRequestEvent{
 		Action: github.PullRequestActionClosed,
@@ -390,7 +422,8 @@ func TestCherryPickPR(t *testing.T) {
 		expectedTitle := fmt.Sprintf("[%s] This is a fix for Y", branch)
 		expectedBody := "This is an automated cherry-pick of #2"
 		expectedHead := fmt.Sprintf(botName+":"+cherryPickBranchFmt, 2, branch)
-		return fmt.Sprintf(expectedFmt, expectedTitle, expectedBody, expectedHead, branch)
+		expectedLabels := s.labels
+		return fmt.Sprintf(expectedFmt, expectedTitle, expectedBody, expectedHead, branch, expectedLabels)
 	}
 
 	if len(ghc.prs) != 2 {
@@ -417,7 +450,15 @@ func TestCherryPickPR(t *testing.T) {
 }
 
 func TestCherryPickPRWithLabels(t *testing.T) {
-	lg, c, err := localgit.New()
+	testCherryPickPRWithLabels(localgit.New, t)
+}
+
+func TestCherryPickPRWithLabelsV2(t *testing.T) {
+	testCherryPickPRWithLabels(localgit.NewV2, t)
+}
+
+func testCherryPickPRWithLabels(clients localgit.Clients, t *testing.T) {
+	lg, c, err := clients()
 	if err != nil {
 		t.Fatalf("Making localgit: %v", err)
 	}
@@ -506,9 +547,8 @@ func TestCherryPickPRWithLabels(t *testing.T) {
 					Name: "cherrypick/release-1.7",
 				},
 			},
-			isMember:   true,
-			createdNum: 3,
-			patch:      patch,
+			isMember: true,
+			patch:    patch,
 		}
 
 		s := &Server{
@@ -520,6 +560,7 @@ func TestCherryPickPRWithLabels(t *testing.T) {
 			log:            logrus.StandardLogger().WithField("client", "cherrypicker"),
 			repos:          []github.Repo{{Fork: true, FullName: "ci-robot/bar"}},
 
+			labels:          []string{"cla: yes"},
 			prowAssignments: false,
 		}
 
@@ -531,7 +572,8 @@ func TestCherryPickPRWithLabels(t *testing.T) {
 			expectedTitle := fmt.Sprintf("[%s] This is a fix for Y", branch)
 			expectedBody := "This is an automated cherry-pick of #2"
 			expectedHead := fmt.Sprintf(botName+":"+cherryPickBranchFmt, 2, branch)
-			return fmt.Sprintf(expectedFmt, expectedTitle, expectedBody, expectedHead, branch)
+			expectedLabels := s.labels
+			return fmt.Sprintf(expectedFmt, expectedTitle, expectedBody, expectedHead, branch, expectedLabels)
 		}
 
 		if len(ghc.prs) != 2 {

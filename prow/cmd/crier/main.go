@@ -28,7 +28,6 @@ import (
 	"google.golang.org/api/option"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowjobinformer "k8s.io/test-infra/prow/client/informers/externalversions"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
@@ -89,11 +88,6 @@ func (o *options) validate() error {
 	if o.gerritWorkers > 1 {
 		logrus.Warn("gerrit reporter only supports one worker")
 		o.gerritWorkers = 1
-	}
-
-	if o.githubWorkers > 1 {
-		logrus.Warn("github reporter only supports one worker (https://github.com/kubernetes/test-infra/issues/13306)")
-		o.githubWorkers = 1
 	}
 
 	if o.gerritWorkers+o.pubsubWorkers+o.githubWorkers+o.slackWorkers+o.gcsWorkers+o.k8sGCSWorkers <= 0 {
@@ -175,7 +169,7 @@ func parseOptions() options {
 }
 
 func main() {
-	logrusutil.ComponentInit("crier")
+	logrusutil.ComponentInit()
 
 	o := parseOptions()
 
@@ -194,7 +188,7 @@ func main() {
 		logrus.WithError(err).Fatal("unable to create prow job client")
 	}
 
-	prowjobInformerFactory := prowjobinformer.NewSharedInformerFactory(prowjobClientset, resync)
+	prowjobInformerFactory := prowjobinformer.NewSharedInformerFactoryWithOptions(prowjobClientset, resync, prowjobinformer.WithNamespace(cfg().ProwJobNamespace))
 
 	var controllers []*crier.Controller
 
@@ -261,7 +255,7 @@ func main() {
 			logrus.WithError(err).Fatal("Error getting GitHub client.")
 		}
 
-		githubReporter := githubreporter.NewReporter(githubClient, cfg, v1.ProwJobAgent(o.reportAgent))
+		githubReporter := githubreporter.NewReporter(githubClient, cfg, prowapi.ProwJobAgent(o.reportAgent))
 		controllers = append(
 			controllers,
 			crier.NewController(

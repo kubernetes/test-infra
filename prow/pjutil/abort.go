@@ -127,6 +127,9 @@ func TerminateOlderJobs(pjc patchClient, log *logrus.Entry, pjs []prowapi.ProwJo
 		if err := pjc.Patch(context.Background(), &toCancel, ctrlruntimeclient.MergeFrom(prevPJ)); err != nil {
 			return err
 		}
+
+		// Update the cancelled jobs entry in pjs.
+		pjs[cancelIndex] = toCancel
 	}
 
 	return nil

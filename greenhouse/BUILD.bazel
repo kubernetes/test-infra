@@ -21,8 +21,10 @@ go_library(
     ],
 )
 
+NAME = "greenhouse"
+
 go_binary(
-    name = "greenhouse",
+    name = NAME,
     embed = [":go_default_library"],
     pure = "on",
     visibility = ["//visibility:public"],
@@ -49,6 +51,7 @@ filegroup(
 prow_image(
     name = "image",
     base = "@alpine-base//image",
+    component = NAME,
     visibility = ["//visibility:public"],
 )
 

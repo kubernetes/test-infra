@@ -20,14 +20,15 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net/url"
 	"os"
-	"path"
 	"sync"
 
-	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
+	utilpointer "k8s.io/utils/pointer"
 
-	"k8s.io/test-infra/prow/errorutil"
+	pkgio "k8s.io/test-infra/prow/io"
 )
 
 // UploadFunc knows how to upload into an object
@@ -35,11 +36,24 @@ type UploadFunc func(writer dataWriter) error
 type destToWriter func(dest string) dataWriter
 
 // Upload uploads all of the data in the
-// uploadTargets map to GCS in parallel. The map is
-// keyed on GCS path under the bucket
-func Upload(bucket *storage.BucketHandle, uploadTargets map[string]UploadFunc) error {
+// uploadTargets map to blob storage in parallel. The map is
+// keyed on blob storage path under the bucket
+func Upload(bucket, gcsCredentialsFile, s3CredentialsFile string, uploadTargets map[string]UploadFunc) error {
+	parsedBucket, err := url.Parse(bucket)
+	if err != nil {
+		return fmt.Errorf("cannot parse bucket name %s: %w", bucket, err)
+	}
+	if parsedBucket.Scheme == "" {
+		parsedBucket.Scheme = "gs"
+	}
+
+	ctx := context.Background()
+	opener, err := pkgio.NewOpener(ctx, gcsCredentialsFile, s3CredentialsFile)
+	if err != nil {
+		return fmt.Errorf("new opener: %w", err)
+	}
 	dtw := func(dest string) dataWriter {
-		return gcsObjectWriter{bucket.Object(dest).NewWriter(context.Background())}
+		return &openerObjectWriter{Opener: opener, Context: ctx, Bucket: parsedBucket.String(), Dest: dest}
 	}
 	return upload(dtw, uploadTargets)
 }
@@ -47,10 +61,13 @@ func Upload(bucket *storage.BucketHandle, uploadTargets map[string]UploadFunc) e
 // LocalExport copies all of the data in the uploadTargets map to local files in parallel. The map
 // is keyed on file path under the exportDir.
 func LocalExport(exportDir string, uploadTargets map[string]UploadFunc) error {
+	ctx := context.Background()
+	opener, err := pkgio.NewOpener(ctx, "", "")
+	if err != nil {
+		return fmt.Errorf("new opener: %w", err)
+	}
 	dtw := func(dest string) dataWriter {
-		return &localFileWriter{
-			filePath: path.Join(exportDir, dest),
-		}
+		return &openerObjectWriter{Opener: opener, Context: ctx, Bucket: exportDir, Dest: dest}
 	}
 	return upload(dtw, uploadTargets)
 }
@@ -86,20 +103,23 @@ func upload(dtw destToWriter, uploadTargets map[string]UploadFunc) error {
 // FileUpload returns an UploadFunc which copies all
 // data from the file on disk to the GCS object
 func FileUpload(file string) UploadFunc {
-	return FileUploadWithAttributes(file, nil)
+	return FileUploadWithOptions(file, pkgio.WriterOptions{})
 }
 
-// FileUploadWithAttributes returns an UploadFunc which copies all data
+// FileUploadWithOptions returns an UploadFunc which copies all data
 // from the file on disk into GCS object and also sets the provided
 // attributes on the object.
-func FileUploadWithAttributes(file string, attrs *storage.ObjectAttrs) UploadFunc {
+func FileUploadWithOptions(file string, opts pkgio.WriterOptions) UploadFunc {
 	return func(writer dataWriter) error {
 		reader, err := os.Open(file)
 		if err != nil {
 			return err
 		}
+		if fi, err := reader.Stat(); err == nil {
+			opts.BufferSize = utilpointer.Int64Ptr(fi.Size())
+		}
 
-		uploadErr := DataUploadWithAttributes(reader, attrs)(writer)
+		uploadErr := DataUploadWithOptions(reader, opts)(writer)
 		if uploadErr != nil {
 			uploadErr = fmt.Errorf("upload error: %v", uploadErr)
 		}
@@ -108,29 +128,29 @@ func FileUploadWithAttributes(file string, attrs *storage.ObjectAttrs) UploadFun
 			closeErr = fmt.Errorf("reader close error: %v", closeErr)
 		}
 
-		return errorutil.NewAggregate(uploadErr, closeErr)
+		return utilerrors.NewAggregate([]error{uploadErr, closeErr})
 	}
 }
 
 // DataUpload returns an UploadFunc which copies all
 // data from src reader into GCS.
 func DataUpload(src io.Reader) UploadFunc {
-	return DataUploadWithAttributes(src, nil)
+	return DataUploadWithOptions(src, pkgio.WriterOptions{})
 }
 
 // DataUploadWithMetadata returns an UploadFunc which copies all
 // data from src reader into GCS and also sets the provided metadata
 // fields onto the object.
 func DataUploadWithMetadata(src io.Reader, metadata map[string]string) UploadFunc {
-	return DataUploadWithAttributes(src, &storage.ObjectAttrs{Metadata: metadata})
+	return DataUploadWithOptions(src, pkgio.WriterOptions{Metadata: metadata})
 }
 
-// DataUploadWithAttributes returns an UploadFunc which copies all data
+// DataUploadWithOptions returns an UploadFunc which copies all data
 // from src reader into GCS and also sets the provided attributes on
 // the object.
-func DataUploadWithAttributes(src io.Reader, attrs *storage.ObjectAttrs) UploadFunc {
+func DataUploadWithOptions(src io.Reader, attrs pkgio.WriterOptions) UploadFunc {
 	return func(writer dataWriter) error {
-		writer.ApplyAttributes(attrs)
+		writer.ApplyWriterOptions(attrs)
 		_, copyErr := io.Copy(writer, src)
 		if copyErr != nil {
 			copyErr = fmt.Errorf("copy error: %v", copyErr)
@@ -139,54 +159,43 @@ func DataUploadWithAttributes(src io.Reader, attrs *storage.ObjectAttrs) UploadF
 		if closeErr != nil {
 			closeErr = fmt.Errorf("writer close error: %v", closeErr)
 		}
-		return errorutil.NewAggregate(copyErr, closeErr)
+		return utilerrors.NewAggregate([]error{copyErr, closeErr})
 	}
 }
 
 type dataWriter interface {
 	io.WriteCloser
-	ApplyAttributes(*storage.ObjectAttrs)
+	ApplyWriterOptions(opts pkgio.WriterOptions)
 }
 
-type gcsObjectWriter struct {
-	*storage.Writer
+type openerObjectWriter struct {
+	pkgio.Opener
+	Context     context.Context
+	Bucket      string
+	Dest        string
+	opts        []pkgio.WriterOptions
+	writeCloser pkgio.WriteCloser
 }
 
-func (w gcsObjectWriter) ApplyAttributes(attrs *storage.ObjectAttrs) {
-	if attrs == nil {
-		return
-	}
-	attrs.Name = w.Writer.ObjectAttrs.Name
-	w.Writer.ObjectAttrs = *attrs
-}
-
-type localFileWriter struct {
-	filePath string
-	file     *os.File
-}
-
-func (w *localFileWriter) Write(b []byte) (int, error) {
-	if w.file == nil {
-		dir := path.Dir(w.filePath)
-		if err := os.MkdirAll(dir, 0755); err != nil {
-			return 0, fmt.Errorf("error creating directory %q: %v", dir, err)
-		}
-		var err error
-		w.file, err = os.OpenFile(w.filePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0755)
+func (w *openerObjectWriter) Write(p []byte) (n int, err error) {
+	if w.writeCloser == nil {
+		w.writeCloser, err = w.Opener.Writer(w.Context, fmt.Sprintf("%s/%s", w.Bucket, w.Dest), w.opts...)
 		if err != nil {
-			return 0, fmt.Errorf("error opening %q for writing: %v", w.filePath, err)
+			return 0, err
 		}
 	}
-	n, err := w.file.Write(b)
-	if err != nil {
-		return n, fmt.Errorf("error writing to %q: %v", w.filePath, err)
+	return w.writeCloser.Write(p)
+}
+
+func (w *openerObjectWriter) Close() error {
+	if w.writeCloser != nil {
+		err := w.writeCloser.Close()
+		w.writeCloser = nil
+		return err
 	}
-	return n, nil
+	return nil
 }
 
-func (w *localFileWriter) Close() error {
-	return w.file.Close()
+func (w *openerObjectWriter) ApplyWriterOptions(opts pkgio.WriterOptions) {
+	w.opts = append(w.opts, opts)
 }
-
-// Ignore attributes when copying files locally.
-func (w *localFileWriter) ApplyAttributes(_ *storage.ObjectAttrs) {}

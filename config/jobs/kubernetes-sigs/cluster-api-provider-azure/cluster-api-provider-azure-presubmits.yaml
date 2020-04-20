@@ -7,7 +7,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-experimental
         command:
         - "./scripts/ci-test.sh"
     annotations:
@@ -21,7 +21,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-experimental
         command:
         - "./scripts/ci-build.sh"
     annotations:
@@ -37,7 +37,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-experimental
         command:
         - "runner.sh"
         - "./scripts/ci-integration.sh"
@@ -75,7 +75,7 @@ presubmits:
       preset-azure-cred: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-experimental
         command:
         - "runner.sh"
         - "./scripts/ci-e2e.sh"
@@ -93,7 +93,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-experimental
         command:
         - "runner.sh"
         - "make"
@@ -111,7 +111,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-experimental
         imagePullPolicy: Always
         command:
         - "./hack/verify-bazel.sh"
@@ -128,7 +128,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-experimental
         imagePullPolicy: Always
         command:
         - "./scripts/ci-bazel-test.sh"
@@ -145,7 +145,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-experimental
         imagePullPolicy: Always
         command:
         - "./scripts/ci-bazel-build.sh"
@@ -162,7 +162,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-experimental
         imagePullPolicy: Always
         command:
         - "./hack/verify_boilerplate.py"
@@ -170,3 +170,34 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: verify-boilerplate
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+  - name: pull-cluster-api-provider-azure-conformance-v1alpha3
+    always_run: false
+    optional: true
+    decorate: true
+    decoration_config:
+      timeout: 4h
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-cred: "true"
+    path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+          command:
+            - "runner.sh"
+            - "./scripts/ci-conformance.sh"
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: 1
+              memory: "4Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
+      testgrid-tab-name: pull-conformance-v1alpha3

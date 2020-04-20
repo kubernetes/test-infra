@@ -6,49 +6,19 @@ dashboards:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
     file_bug_template:
       options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/openshift/origin/issues/new
-    name: release-openshift-ocp-installer-e2e-aws-4.1
-    open_bug_template:
-      url: https://github.com/openshift/origin/issues/
-    open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: release-openshift-ocp-installer-e2e-aws-4.1
-  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
-    code_search_path: https://github.com/openshift/origin/search
-    code_search_url_template:
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
-    file_bug_template:
-      options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/openshift/origin/issues/new
-    name: release-openshift-ocp-installer-e2e-aws-serial-4.1
-    open_bug_template:
-      url: https://github.com/openshift/origin/issues/
-    open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: release-openshift-ocp-installer-e2e-aws-serial-4.1
-  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
-    code_search_path: https://github.com/openshift/origin/search
-    code_search_url_template:
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
-    file_bug_template:
-      options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/openshift/origin/issues/new
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: release-openshift-origin-installer-e2e-aws-upgrade-4.1-stable-to-4.1-nightly
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -63,11 +33,19 @@ dashboards:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
     file_bug_template:
       options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/openshift/origin/issues/new
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.1
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -78,12 +56,6 @@ dashboards:
     test_group_name: release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.1
   name: redhat-openshift-ocp-release-4.1-informing
 test_groups:
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-aws-4.1
-  name: release-openshift-ocp-installer-e2e-aws-4.1
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-aws-serial-4.1
-  name: release-openshift-ocp-installer-e2e-aws-serial-4.1
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-4.1-stable-to-4.1-nightly
   name: release-openshift-origin-installer-e2e-aws-upgrade-4.1-stable-to-4.1-nightly

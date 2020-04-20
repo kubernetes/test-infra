@@ -27,8 +27,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/test-infra/pkg/io"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/io"
 	"sigs.k8s.io/yaml"
 )
 
@@ -38,7 +38,7 @@ func (t *testOpener) Reader(ctx context.Context, path string) (io.ReadCloser, er
 	return os.Open(path)
 }
 
-func (t *testOpener) Writer(ctx context.Context, path string) (io.WriteCloser, error) {
+func (t *testOpener) Writer(ctx context.Context, path string, _ ...io.WriterOptions) (io.WriteCloser, error) {
 	return os.Create(path)
 }
 

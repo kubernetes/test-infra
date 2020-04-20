@@ -22,6 +22,7 @@ import (
 	"strings"
 
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
@@ -52,7 +53,7 @@ func init() {
 	plugins.RegisterGenericCommentHandler(pluginName, handleComment, helpProvider)
 }
 
-func helpProvider(config *plugins.Configuration, enabledRepos []plugins.Repo) (*pluginhelp.PluginHelp, error) {
+func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
 	configInfo := map[string]string{
 		"": fmt.Sprintf("SIG mentions on GitHub are reiterated for the following SIG Slack channels: %s.", strings.Join(config.Slack.MentionChannels, ", ")),
 	}
@@ -98,7 +99,7 @@ func handlePush(pc plugins.Agent, pe github.PushEvent) error {
 
 func notifyOnSlackIfManualMerge(pc client, pe github.PushEvent) error {
 	//Fetch MergeWarning for the repo we received the merge event.
-	if mw := getMergeWarning(pc.SlackConfig.MergeWarnings, plugins.Repo{Org: pe.Repo.Owner.Login, Repo: pe.Repo.Name}); mw != nil {
+	if mw := getMergeWarning(pc.SlackConfig.MergeWarnings, config.OrgRepo{Org: pe.Repo.Owner.Login, Repo: pe.Repo.Name}); mw != nil {
 		//If the MergeWarning whitelist has the merge user then no need to send a message.
 		if wl := !isWhiteListed(mw, pe); wl {
 			var message string
@@ -131,7 +132,7 @@ func isWhiteListed(mw *plugins.MergeWarning, pe github.PushEvent) bool {
 	return whitelistedLogins.HasAny(github.NormLogin(pe.Pusher.Name), github.NormLogin(pe.Sender.Login))
 }
 
-func getMergeWarning(mergeWarnings []plugins.MergeWarning, repo plugins.Repo) *plugins.MergeWarning {
+func getMergeWarning(mergeWarnings []plugins.MergeWarning, repo config.OrgRepo) *plugins.MergeWarning {
 	// First search for repo config
 	for _, mw := range mergeWarnings {
 		if !sets.NewString(mw.Repos...).Has(repo.String()) {

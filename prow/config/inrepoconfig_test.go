@@ -26,6 +26,14 @@ import (
 )
 
 func TestDefaultProwYAMLGetter(t *testing.T) {
+	testDefaultProwYAMLGetter(localgit.New, t)
+}
+
+func TestDefaultProwYAMLGetterV2(t *testing.T) {
+	testDefaultProwYAMLGetter(localgit.NewV2, t)
+}
+
+func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 	org, repo := "org", "repo"
 	testCases := []struct {
 		name              string
@@ -309,7 +317,7 @@ func TestDefaultProwYAMLGetter(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			lg, gc, err := localgit.New()
+			lg, gc, err := clients()
 			if err != nil {
 				t.Fatalf("Making local git repo: %v", err)
 			}
@@ -380,7 +388,15 @@ func TestDefaultProwYAMLGetter(t *testing.T) {
 }
 
 func TestDefaultProwYAMLGetter_RejectsNonGitHubRepo(t *testing.T) {
-	lg, gc, err := localgit.New()
+	testDefaultProwYAMLGetter_RejectsNonGitHubRepo(localgit.New, t)
+}
+
+func TestDefaultProwYAMLGetter_RejectsNonGitHubRepoV2(t *testing.T) {
+	testDefaultProwYAMLGetter_RejectsNonGitHubRepo(localgit.NewV2, t)
+}
+
+func testDefaultProwYAMLGetter_RejectsNonGitHubRepo(clients localgit.Clients, t *testing.T) {
+	lg, gc, err := clients()
 	if err != nil {
 		t.Fatalf("Making local git repo: %v", err)
 	}
@@ -397,7 +413,7 @@ func TestDefaultProwYAMLGetter_RejectsNonGitHubRepo(t *testing.T) {
 	if err := lg.MakeFakeRepo(identifier, ""); err != nil {
 		t.Fatalf("Making fake repo: %v", err)
 	}
-	expectedErrMsg := `didn't get two but 1 results when splitting repo identifier "my-repo"`
+	expectedErrMsg := `didn't get two results when splitting repo identifier "my-repo"`
 	if _, err := defaultProwYAMLGetter(&Config{}, gc, identifier, ""); err == nil || err.Error() != expectedErrMsg {
 		t.Errorf("Error %v does not have expected message %s", err, expectedErrMsg)
 	}

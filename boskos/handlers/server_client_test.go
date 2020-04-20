@@ -17,13 +17,17 @@ limitations under the License.
 package handlers
 
 import (
+	"bytes"
 	"fmt"
+	"io/ioutil"
+	"net/http"
 	"net/http/httptest"
 	"reflect"
 	"sort"
 	"testing"
 	"time"
 
+	"github.com/go-test/deep"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
@@ -33,9 +37,40 @@ import (
 	"k8s.io/test-infra/boskos/ranch"
 )
 
-func makeTestBoskos(r *ranch.Ranch) *httptest.Server {
-	handler := NewBoskosHandler(r)
+func makeTestBoskos(t *testing.T, r *ranch.Ranch) *httptest.Server {
+	handler := &testMuxWrapper{t: t, ServeMux: NewBoskosHandler(r)}
 	return httptest.NewServer(handler)
+}
+
+type testMuxWrapper struct {
+	t *testing.T
+	*http.ServeMux
+	requstCount int
+}
+
+func (tmw *testMuxWrapper) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	tmw.requstCount++
+	requestBody, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		tmw.t.Fatalf("failed to read request body: %v", err)
+	}
+	r.Body = ioutil.NopCloser(bytes.NewBuffer(requestBody))
+	if err := compareWithFixture(fmt.Sprintf("%s-request-%d", tmw.t.Name(), tmw.requstCount), requestBody); err != nil {
+		tmw.t.Errorf("data differs from fixture: %v", err)
+	}
+	tmw.ServeMux.ServeHTTP(&bodyLoggingHTTPWriter{t: tmw.t, ResponseWriter: w}, r)
+}
+
+type bodyLoggingHTTPWriter struct {
+	t *testing.T
+	http.ResponseWriter
+}
+
+func (blhw *bodyLoggingHTTPWriter) Write(data []byte) (int, error) {
+	if err := compareWithFixture(blhw.t.Name()+"-response", data); err != nil {
+		blhw.t.Errorf("data differs from fixture: %v", err)
+	}
+	return blhw.ResponseWriter.Write(data)
 }
 
 func TestAcquireUpdate(t *testing.T) {
@@ -66,7 +101,7 @@ func TestAcquireUpdate(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			r := MakeTestRanch([]runtime.Object{tc.resource})
-			boskos := makeTestBoskos(r)
+			boskos := makeTestBoskos(t, r)
 			owner := "owner"
 			client, err := client.NewClient(owner, boskos.URL, "", "")
 			if err != nil {
@@ -91,8 +126,8 @@ func TestAcquireUpdate(t *testing.T) {
 			if err != nil {
 				t.Error("unable to list resources")
 			}
-			if !reflect.DeepEqual(updatedResource.UserData.ToMap(), userData.ToMap()) {
-				t.Errorf("info should match. Expected \n%v, received \n%v", userData.ToMap(), updatedResource.UserData.ToMap())
+			if !reflect.DeepEqual(updatedResource.Status.UserData.ToMap(), userData.ToMap()) {
+				t.Errorf("info should match. Expected \n%v, received \n%v", userData.ToMap(), updatedResource.Status.UserData.ToMap())
 			}
 		})
 	}
@@ -156,19 +191,26 @@ func TestAcquireByState(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			r := MakeTestRanch(tc.resources)
-			boskos := makeTestBoskos(r)
+			boskos := makeTestBoskos(t, r)
 			client, err := client.NewClient(owner, boskos.URL, "", "")
 			if err != nil {
 				t.Fatalf("failed to create the Boskos client")
 			}
 			receivedRes, err := client.AcquireByState(tc.state, newState, tc.names)
 			boskos.Close()
-			if !reflect.DeepEqual(err, tc.err) {
+			if fmt.Sprintf("%v", tc.err) != fmt.Sprintf("%v", err) {
 				t.Fatalf("tc: %s - errors don't match, expected %v, received\n %v", tc.name, tc.err, err)
 			}
 			sort.Sort(common.ResourceByName(receivedRes))
-			if !reflect.DeepEqual(receivedRes, tc.expected) {
-				t.Errorf("tc: %s - resources should match. Expected \n%v, received \n%v", tc.name, tc.expected, receivedRes)
+
+			// Make sure the comparison doesn't bail on nil != empty
+			for idx := range tc.expected {
+				if tc.expected[idx].UserData == nil {
+					tc.expected[idx].UserData = &common.UserData{}
+				}
+			}
+			if diff := deep.Equal(receivedRes, tc.expected); diff != nil {
+				t.Errorf("receivedRes differ from expected, diff: %v", diff)
 			}
 		})
 	}
@@ -177,12 +219,7 @@ func TestAcquireByState(t *testing.T) {
 func TestClientServerUpdate(t *testing.T) {
 	owner := "owner"
 
-	newResourceWithUD := func(name, rtype, state, owner string, t time.Time, ud common.UserDataMap) common.Resource {
-		res := common.NewResource(name, rtype, state, owner, t)
-		res.UserData = common.UserDataFromMap(ud)
-		return res
-	}
-	newCRDResourceWithUD := func(name, rtype, state, owner string, t time.Time, ud common.UserDataMap) *crds.ResourceObject {
+	newResourceWithUD := func(name, rtype, state, owner string, t time.Time, ud common.UserDataMap) *crds.ResourceObject {
 		res := newResource(name, rtype, state, owner, t)
 		res.Status.UserData = common.UserDataFromMap(ud)
 		return res
@@ -196,7 +233,7 @@ func TestClientServerUpdate(t *testing.T) {
 	var testcases = []struct {
 		name     string
 		resource *crds.ResourceObject
-		expected common.Resource
+		expected *crds.ResourceObject
 		err      error
 		names    []string
 		ud       common.UserDataMap
@@ -204,7 +241,7 @@ func TestClientServerUpdate(t *testing.T) {
 		{
 			name:     "noUserData",
 			resource: newResource(resourceName, rType, initialState, "", time.Time{}),
-			expected: common.NewResource(resourceName, rType, finalState, owner, fakeNow),
+			expected: newResource(resourceName, rType, finalState, owner, fakeNow),
 		},
 		{
 			name:     "userData",
@@ -214,19 +251,19 @@ func TestClientServerUpdate(t *testing.T) {
 		},
 		{
 			name:     "newUserData",
-			resource: newCRDResourceWithUD(resourceName, rType, initialState, "", fakeNow, common.UserDataMap{"1": "1"}),
+			resource: newResourceWithUD(resourceName, rType, initialState, "", fakeNow, common.UserDataMap{"1": "1"}),
 			expected: newResourceWithUD(resourceName, rType, finalState, owner, fakeNow, common.UserDataMap{"1": "1", "2": "2"}),
 			ud:       common.UserDataMap{"2": "2"},
 		},
 		{
 			name:     "OverRideUserData",
-			resource: newCRDResourceWithUD(resourceName, rType, initialState, "", fakeNow, common.UserDataMap{"1": "1"}),
+			resource: newResourceWithUD(resourceName, rType, initialState, "", fakeNow, common.UserDataMap{"1": "1"}),
 			expected: newResourceWithUD(resourceName, rType, finalState, owner, fakeNow, common.UserDataMap{"1": "2"}),
 			ud:       common.UserDataMap{"1": "2"},
 		},
 		{
 			name:     "DeleteUserData",
-			resource: newCRDResourceWithUD(resourceName, rType, initialState, "", fakeNow, common.UserDataMap{"1": "1", "2": "2"}),
+			resource: newResourceWithUD(resourceName, rType, initialState, "", fakeNow, common.UserDataMap{"1": "1", "2": "2"}),
 			expected: newResourceWithUD(resourceName, rType, finalState, owner, fakeNow, common.UserDataMap{"2": "2"}),
 			ud:       common.UserDataMap{"1": ""},
 		},
@@ -234,7 +271,7 @@ func TestClientServerUpdate(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			r := MakeTestRanch([]runtime.Object{tc.resource})
-			boskos := makeTestBoskos(r)
+			boskos := makeTestBoskos(t, r)
 			client, err := client.NewClient(owner, boskos.URL, "", "")
 			if err != nil {
 				t.Fatalf("failed to create the Boskos client")
@@ -249,17 +286,23 @@ func TestClientServerUpdate(t *testing.T) {
 				t.Fatalf("tc: %s - errors don't match, expected %v, received\n %v", tc.name, tc.err, err)
 			}
 			receivedRes, _ := r.Storage.GetResource(tc.resource.Name)
-			if !reflect.DeepEqual(receivedRes.UserData.ToMap(), tc.expected.UserData.ToMap()) {
-				t.Errorf("tc: %s - resources user data should match. Expected \n%v, received \n%v", tc.name, tc.expected.UserData.ToMap(), receivedRes.UserData.ToMap())
+			if !reflect.DeepEqual(receivedRes.Status.UserData.ToMap(), tc.expected.Status.UserData.ToMap()) {
+				t.Errorf("tc: %s - resources user data should match. Expected \n%v, received \n%v", tc.name, tc.expected.Status.UserData.ToMap(), receivedRes.Status.UserData.ToMap())
 			}
-			// Hack: remove UserData to be able to compare since we already compared it before.
-			receivedRes.UserData = nil
-			tc.expected.UserData = nil
-			if !reflect.DeepEqual(receivedRes, tc.expected) {
-				t.Errorf("tc: %s - resources should match. Expected \n%v, received \n%v", tc.name, tc.expected, receivedRes)
+			tc.expected.Namespace = "test"
+			if diff := diffResourceObjects(receivedRes, tc.expected); diff != nil {
+				t.Errorf("receivedRes differs from expected, diff: %v", diff)
 			}
 		})
 	}
+}
+
+func diffResourceObjects(a, b *crds.ResourceObject) []string {
+	a.TypeMeta = metav1.TypeMeta{}
+	b.TypeMeta = metav1.TypeMeta{}
+	a.ResourceVersion = "0"
+	b.ResourceVersion = "0"
+	return deep.Equal(a, b)
 }
 
 func newResource(name, rtype, state, owner string, t time.Time) *crds.ResourceObject {

@@ -30,7 +30,7 @@ import (
 )
 
 func main() {
-	logrusutil.ComponentInit("initupload")
+	logrusutil.ComponentInit()
 
 	o := initupload.NewOptions()
 	if err := options.Load(o); err != nil {

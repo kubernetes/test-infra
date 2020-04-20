@@ -2,6 +2,8 @@ dashboard_groups:
 - name: provider-gcp
   dashboard_names:
     - provider-gcp-compute-persistent-disk-csi-driver
+    - provider-gcp-presubmits
 
 dashboards:
 - name: provider-gcp-compute-persistent-disk-csi-driver
+- name: provider-gcp-presubmits

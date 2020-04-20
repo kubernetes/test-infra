@@ -37,16 +37,19 @@ import (
 	"github.com/gorilla/sessions"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
+
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/githuboauth"
 	"k8s.io/test-infra/prow/plugins"
-
-	"github.com/google/go-github/github"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/sets"
+	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
+	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
+	"sigs.k8s.io/yaml"
+
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
@@ -57,9 +60,6 @@ import (
 	_ "k8s.io/test-infra/prow/spyglass/lenses/metadata"
 	"k8s.io/test-infra/prow/tide"
 	"k8s.io/test-infra/prow/tide/history"
-	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
-	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
-	"sigs.k8s.io/yaml"
 )
 
 func TestOptions_Validate(t *testing.T) {
@@ -264,16 +264,12 @@ func TestProwJob(t *testing.T) {
 	}
 }
 
-type mockGitHubConfigGetter struct {
-	githubLogin string
+type fakeAuthenticatedUserIdentifier struct {
+	login string
 }
 
-func (getter mockGitHubConfigGetter) GetGitHubClient(accessToken string, dryRun bool) githuboauth.GitHubClientWrapper {
-	return getter
-}
-
-func (getter mockGitHubConfigGetter) GetUser(login string) (*github.User, error) {
-	return &github.User{Login: &getter.githubLogin}, nil
+func (a *fakeAuthenticatedUserIdentifier) LoginForRequester(requester, token string) (string, error) {
+	return a.login, nil
 }
 
 // TestRerun just checks that the result can be unmarshaled properly, has an
@@ -391,7 +387,7 @@ func TestRerun(t *testing.T) {
 							},
 						},
 					},
-					RerunAuthConfig: prowapi.RerunAuthConfig{
+					RerunAuthConfig: &prowapi.RerunAuthConfig{
 						AllowAnyone:   false,
 						GitHubUsers:   []string{"authorized", "alsoauthorized"},
 						GitHubTeamIDs: []int{42},
@@ -401,7 +397,7 @@ func TestRerun(t *testing.T) {
 					State: prowapi.PendingState,
 				},
 			})
-			configGetter := func() *prowapi.RerunAuthConfig {
+			authCfgGetter := func(refs *prowapi.Refs) *prowapi.RerunAuthConfig {
 				return &prowapi.RerunAuthConfig{
 					AllowAnyone: tc.allowAnyone,
 					GitHubUsers: tc.authorized,
@@ -431,10 +427,10 @@ func TestRerun(t *testing.T) {
 				CookieStore: mockCookieStore,
 			}
 			goa := githuboauth.NewAgent(mockConfig, &logrus.Entry{})
-			ghc := mockGitHubConfigGetter{githubLogin: tc.login}
+			ghc := &fakeAuthenticatedUserIdentifier{login: tc.login}
 			rc := &fakegithub.FakeClient{OrgMembers: map[string][]string{"org": {"org-member"}}}
 			pca := plugins.NewFakeConfigAgent()
-			handler := handleRerun(fakeProwJobClient.ProwV1().ProwJobs("prowjobs"), tc.rerunCreatesJob, configGetter, goa, ghc, rc, &pca, logrus.WithField("handler", "/rerun"))
+			handler := handleRerun(fakeProwJobClient.ProwV1().ProwJobs("prowjobs"), tc.rerunCreatesJob, authCfgGetter, goa, ghc, rc, &pca, logrus.WithField("handler", "/rerun"))
 			handler.ServeHTTP(rr, req)
 			if rr.Code != tc.httpCode {
 				t.Fatalf("Bad error code: %d", rr.Code)

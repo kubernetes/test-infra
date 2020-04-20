@@ -10,9 +10,6 @@ dashboards:
     - name: soak-gce-gci
       test_group_name: ci-kubernetes-soak-gce-gci
       base_options: include-filter-by-regex=Kubectl%7Ckubectl
-    - name: soak-gke-gci
-      test_group_name: ci-kubernetes-soak-gke-gci
-      base_options: include-filter-by-regex=Kubectl%7Ckubectl
     - name: integration-cmd
       test_group_name: ci-kubernetes-integration-master
       base_options: include-filter-by-regex=kubectl%7COverall

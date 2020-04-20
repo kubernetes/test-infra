@@ -36,6 +36,7 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	pipelinev1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
 	"gopkg.in/robfig/cron.v2"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -45,7 +46,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation"
 	"sigs.k8s.io/yaml"
 
-	pipelinev1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
@@ -153,6 +153,10 @@ type ProwConfig struct {
 	// DefaultJobTimeout this is default deadline for prow jobs. This value is used when
 	// no timeout is configured at the job level. This value is set to 24 hours.
 	DefaultJobTimeout *metav1.Duration `json:"default_job_timeout,omitempty"`
+
+	// ManagedWebhooks contains information about all github repositories and organizations which are using
+	// non-global Hmac token.
+	ManagedWebhooks ManagedWebhooks `json:"managed_webhooks,omitempty"`
 }
 
 type InRepoConfig struct {
@@ -414,10 +418,14 @@ type Controller struct {
 
 	// ReportTemplateString compiles into ReportTemplate at load time.
 	ReportTemplateString string `json:"report_template,omitempty"`
-	// ReportTemplate is compiled at load time from ReportTemplateString. It
-	// will be passed a prowapi.ProwJob and can provide an optional blurb below
-	// the test failures comment.
-	ReportTemplate *template.Template `json:"-"`
+
+	// ReportTemplateStrings is a mapping of template comments.
+	// Use `org/repo`, `org` or `*` as a key.
+	ReportTemplateStrings map[string]string `json:"report_templates,omitempty"`
+
+	// ReportTemplates is a mapping of templates that is compliled at load
+	// time from ReportTemplateStrings.
+	ReportTemplates map[string]*template.Template `json:"-"`
 
 	// MaxConcurrency is the maximum number of tests running concurrently that
 	// will be allowed by the controller. 0 implies no limit.
@@ -427,13 +435,26 @@ type Controller struct {
 	// controller to handle tests. Defaults to 20. Needs to be a positive
 	// number.
 	MaxGoroutines int `json:"max_goroutines,omitempty"`
+}
 
-	// Deprecated: AllowCancellations enables aborting presubmit jobs for
-	// commits that have been superseded by newer commits in GitHub pull
-	// requests.
-	// This option will be removed and set to always true in March 2020.
-	// TODO(fejta): delete this Mar 2020
-	AllowCancellations *bool `json:"allow_cancellations,omitempty"`
+// ReportTemplateForRepo returns the template that belong to a specific repository.
+// If the repository doesn't exist in the report_templates configuration it will
+// inherit the values from its organization, otherwise the default values will be used.
+func (c *Controller) ReportTemplateForRepo(refs *prowapi.Refs) *template.Template {
+	def := c.ReportTemplates["*"]
+
+	if refs == nil {
+		return def
+	}
+
+	orgRepo := fmt.Sprintf("%s/%s", refs.Org, refs.Repo)
+	if tmplByRepo, ok := c.ReportTemplates[orgRepo]; ok {
+		return tmplByRepo
+	}
+	if tmplByOrg, ok := c.ReportTemplates[refs.Org]; ok {
+		return tmplByOrg
+	}
+	return def
 }
 
 // Plank is config for the plank controller.
@@ -613,10 +634,14 @@ type Deck struct {
 	Branding *Branding `json:"branding,omitempty"`
 	// GoogleAnalytics, if specified, include a Google Analytics tracking code on each page.
 	GoogleAnalytics string `json:"google_analytics,omitempty"`
-	// RerunAuthConfig specifies who is able to trigger job reruns if that feature is enabled.
-	// The permissions here apply to all jobs. GitHub teams are not yet supported
-	// for the global Deck config.
-	RerunAuthConfig prowapi.RerunAuthConfig `json:"rerun_auth_config,omitempty"`
+	// Deprecated: RerunAuthConfig specifies who is able to trigger job reruns if that feature is enabled.
+	// The permissions here apply to all jobs.
+	// This option will be removed in favor of RerunAuthConfigs in July 2020.
+	RerunAuthConfig *prowapi.RerunAuthConfig `json:"rerun_auth_config,omitempty"`
+	// RerunAuthConfigs is a map of configs that specify who is able to trigger job reruns. The field
+	// accepts a key of: `org/repo`, `org` or `*` (wildcard) to define what GitHub org (or repo) a particular
+	// config applies to and a value of: `RerunAuthConfig` struct to define the users/groups authorized to rerun jobs.
+	RerunAuthConfigs RerunAuthConfigs `json:"rerun_auth_configs,omitempty"`
 }
 
 // ExternalAgentLog ensures an external agent like Jenkins can expose
@@ -651,6 +676,27 @@ type Branding struct {
 	HeaderColor string `json:"header_color,omitempty"`
 }
 
+// RerunAuthConfigs represents the configs for rerun authorization in Deck.
+// Use `org/repo`, `org` or `*` as key and a `RerunAuthConfig` struct as value.
+type RerunAuthConfigs map[string]prowapi.RerunAuthConfig
+
+// GetRerunAuthConfig returns the appropriate RerunAuthConfig based on the provided Refs.
+func (rac RerunAuthConfigs) GetRerunAuthConfig(refs *prowapi.Refs) prowapi.RerunAuthConfig {
+	if refs == nil || refs.Org == "" {
+		return rac["*"]
+	}
+
+	if rerun, exists := rac[fmt.Sprintf("%s/%s", refs.Org, refs.Repo)]; exists {
+		return rerun
+	}
+
+	if rerun, exists := rac[refs.Org]; exists {
+		return rerun
+	}
+
+	return rac["*"]
+}
+
 // PubSubSubscriptions maps GCP projects to a list of Topics.
 type PubsubSubscriptions map[string][]string
 
@@ -665,6 +711,14 @@ type GitHubOptions struct {
 	// in all places internally.
 	LinkURL *url.URL `json:"-"`
 }
+
+// ManagedWebhookInfo contains metadata about the repo/org which is onboarded.
+type ManagedWebhookInfo struct {
+	TokenCreatedAfter time.Time `json:"tokenCreatedAfter"`
+}
+
+// ManagedWebhooks contains information about all the repos/orgs which are onboraded with private tokens.
+type ManagedWebhooks map[string]ManagedWebhookInfo
 
 // SlackReporter represents the config for the Slack reporter. The channel can be overridden
 // on the job via the .reporter_config.slack.channel property
@@ -735,7 +789,7 @@ func Load(prowConfig, jobConfig string) (c *Config, err error) {
 	if err := c.validateComponentConfig(); err != nil {
 		return nil, err
 	}
-	if err := c.validateJobConfig(); err != nil {
+	if err := c.ValidateJobConfig(); err != nil {
 		return nil, err
 	}
 	return c, nil
@@ -1121,6 +1175,19 @@ func (c *Config) validateComponentConfig() error {
 		}
 	}
 
+	var validationErrs []error
+
+	if c.ManagedWebhooks != nil {
+		for repoName, repoValue := range c.ManagedWebhooks {
+			if repoValue.TokenCreatedAfter.After(time.Now()) {
+				validationErrs = append(validationErrs, fmt.Errorf("tokenCreatedAfter %s can be no later than current time for repo/org %s", repoValue.TokenCreatedAfter, repoName))
+			}
+		}
+		if len(validationErrs) > 0 {
+			return utilerrors.NewAggregate(validationErrs)
+		}
+	}
+
 	// TODO(@clarketm): Remove in May 2020
 	if c.SlackReporter != nil {
 		logrus.Warning("slack_reporter will be deprecated on May 2020, and it will be replaced with slack_reporter_configs['*'].")
@@ -1129,7 +1196,7 @@ func (c *Config) validateComponentConfig() error {
 			return errors.New("slack_reporter and slack_reporter_configs['*'] are mutually exclusive")
 		}
 
-		c.SlackReporterConfigs = map[string]SlackReporter{"*": *c.SlackReporter}
+		c.SlackReporterConfigs = SlackReporterConfigs{"*": *c.SlackReporter}
 	}
 
 	if c.SlackReporterConfigs != nil {
@@ -1138,6 +1205,25 @@ func (c *Config) validateComponentConfig() error {
 				return fmt.Errorf("failed to validate slackreporter config: %v", err)
 			}
 			c.SlackReporterConfigs[k] = config
+		}
+	}
+
+	// TODO(@clarketm): Remove in July 2020
+	if c.Deck.RerunAuthConfig != nil {
+		logrus.Warning("rerun_auth_config will be deprecated in July 2020, and it will be replaced with rerun_auth_configs['*'].")
+
+		if c.Deck.RerunAuthConfigs != nil {
+			return errors.New("rerun_auth_config and rerun_auth_configs['*'] are mutually exclusive")
+		}
+
+		c.Deck.RerunAuthConfigs = RerunAuthConfigs{"*": *c.Deck.RerunAuthConfig}
+	}
+
+	if c.Deck.RerunAuthConfigs != nil {
+		for k, config := range c.Deck.RerunAuthConfigs {
+			if err := config.Validate(); err != nil {
+				return fmt.Errorf("rerun_auth_configs[%s]: %v", k, err)
+			}
 		}
 	}
 
@@ -1169,8 +1255,8 @@ func validateJobBase(v JobBase, jobType prowapi.ProwJobType, podNamespace string
 	if v.Spec == nil || len(v.Spec.Containers) == 0 {
 		return nil // jenkins jobs have no spec
 	}
-	if v.RerunAuthConfig != nil && v.RerunAuthConfig.AllowAnyone && (len(v.RerunAuthConfig.GitHubUsers) > 0 || len(v.RerunAuthConfig.GitHubTeamIDs) > 0 || len(v.RerunAuthConfig.GitHubTeamSlugs) > 0 || len(v.RerunAuthConfig.GitHubOrgs) > 0) {
-		return errors.New("allow anyone is set to true and permitted users or groups are specified")
+	if err := v.RerunAuthConfig.Validate(); err != nil {
+		return err
 	}
 	if err := v.UtilityConfig.Validate(); err != nil {
 		return err
@@ -1264,9 +1350,9 @@ func validatePeriodics(periodics []Periodic, podNamespace string) error {
 	return nil
 }
 
-// validateJobConfig validates if all the jobspecs/presets are valid
+// ValidateJobConfig validates if all the jobspecs/presets are valid
 // if you are mutating the jobs, please add it to finalizeJobConfig above
-func (c *Config) validateJobConfig() error {
+func (c *Config) ValidateJobConfig() error {
 
 	var errs []error
 
@@ -1342,10 +1428,6 @@ func parseProwConfig(c *Config) error {
 		c.Plank.PodUnscheduledTimeout = &metav1.Duration{Duration: 24 * time.Hour}
 	}
 
-	if c.Plank.AllowCancellations != nil {
-		logrus.Warning("The plank.allow_cancellations setting is deprecated. It will be removed and set to always true in March 2020")
-	}
-
 	if c.Gerrit.TickInterval == nil {
 		c.Gerrit.TickInterval = &metav1.Duration{Duration: time.Minute}
 	}
@@ -1382,10 +1464,6 @@ func parseProwConfig(c *Config) error {
 		if len(c.JenkinsOperators) == 1 && c.JenkinsOperators[0].LabelSelectorString != "" {
 			return errors.New("label_selector is invalid when used for a single jenkins-operator")
 		}
-
-		if c.JenkinsOperators[i].AllowCancellations != nil {
-			logrus.Warning("The `jenkins_operators.allow_cancellations` setting is deprecated. It will be removed and set to always true in March 2020")
-		}
 	}
 
 	for i, agentToTmpl := range c.Deck.ExternalAgentLogs {
@@ -1411,12 +1489,6 @@ func parseProwConfig(c *Config) error {
 		c.Deck.Spyglass.SizeLimit = 100e6
 	} else if c.Deck.Spyglass.SizeLimit <= 0 {
 		return fmt.Errorf("invalid value for deck.spyglass.size_limit, must be >=0")
-	}
-
-	// If a whitelist is specified, the user probably does not intend for anyone to be able
-	// to rerun any job.
-	if c.Deck.RerunAuthConfig.AllowAnyone && (len(c.Deck.RerunAuthConfig.GitHubUsers) > 0 || len(c.Deck.RerunAuthConfig.GitHubTeamIDs) > 0 || len(c.Deck.RerunAuthConfig.GitHubTeamSlugs) > 0 || len(c.Deck.RerunAuthConfig.GitHubOrgs) > 0) {
-		return fmt.Errorf("allow_anyone is set to true and authorized users or teams are specified.")
 	}
 
 	// Migrate the old `viewers` format to the new `lenses` format.
@@ -1805,7 +1877,7 @@ func validatePodSpec(jobType prowapi.ProwJobType, spec *v1.PodSpec) error {
 			}
 		}
 		for _, prowMountPath := range decorate.VolumeMountPaths() {
-			if strings.HasPrefix(mount.MountPath, prowMountPath) || strings.HasPrefix(prowMountPath, mount.MountPath) {
+			if mount.MountPath == prowMountPath {
 				errs = append(errs, fmt.Errorf("mount %s at %s conflicts with decoration mount at %s", mount.Name, mount.MountPath, prowMountPath))
 			}
 		}
@@ -1838,11 +1910,9 @@ func ValidateController(c *Controller) error {
 	}
 	c.JobURLTemplate = urlTmpl
 
-	reportTmpl, err := template.New("Report").Parse(c.ReportTemplateString)
-	if err != nil {
-		return fmt.Errorf("parsing template: %v", err)
+	if err := defaultAndValidateReportTemplate(c); err != nil {
+		return err
 	}
-	c.ReportTemplate = reportTmpl
 	if c.MaxConcurrency < 0 {
 		return fmt.Errorf("controller has invalid max_concurrency (%d), it needs to be a non-negative number", c.MaxConcurrency)
 	}
@@ -1852,6 +1922,33 @@ func ValidateController(c *Controller) error {
 	if c.MaxGoroutines <= 0 {
 		return fmt.Errorf("controller has invalid max_goroutines (%d), it needs to be a positive number", c.MaxGoroutines)
 	}
+	return nil
+}
+
+func defaultAndValidateReportTemplate(c *Controller) error {
+	if c.ReportTemplateString == "" && c.ReportTemplateStrings == nil {
+		return nil
+	}
+
+	if c.ReportTemplateString != "" {
+		if len(c.ReportTemplateStrings) > 0 {
+			return errors.New("both report_template and report_templates are specified")
+		}
+
+		logrus.Warning("report_template is deprecated and it will be removed on September 2020. It will be replaced with report_templates['*']")
+		c.ReportTemplateStrings = make(map[string]string)
+		c.ReportTemplateStrings["*"] = c.ReportTemplateString
+	}
+
+	c.ReportTemplates = make(map[string]*template.Template)
+	for orgRepo, value := range c.ReportTemplateStrings {
+		reportTmpl, err := template.New("Report").Parse(value)
+		if err != nil {
+			return fmt.Errorf("error while parsing template for %s: %v", orgRepo, err)
+		}
+		c.ReportTemplates[orgRepo] = reportTmpl
+	}
+
 	return nil
 }
 
@@ -1986,4 +2083,45 @@ func SetPostsubmitRegexes(ps []Postsubmit) error {
 		ps[i].RegexpChangeMatcher = c
 	}
 	return nil
+}
+
+// OrgRepo supercedes org/repo string handling
+type OrgRepo struct {
+	Org  string
+	Repo string
+}
+
+func (repo OrgRepo) String() string {
+	return fmt.Sprintf("%s/%s", repo.Org, repo.Repo)
+}
+
+// NewOrgRepo creates a OrgRepo from org/repo string
+func NewOrgRepo(orgRepo string) *OrgRepo {
+	parts := strings.Split(orgRepo, "/")
+	switch len(parts) {
+	case 1:
+		return &OrgRepo{Org: parts[0]}
+	case 2:
+		return &OrgRepo{Org: parts[0], Repo: parts[1]}
+	default:
+		return nil
+	}
+}
+
+// OrgReposToStrings converts a list of OrgRepo to its String() equivalent
+func OrgReposToStrings(vs []OrgRepo) []string {
+	vsm := make([]string, len(vs))
+	for i, v := range vs {
+		vsm[i] = v.String()
+	}
+	return vsm
+}
+
+// StringsToOrgRepos converts a list of org/repo strings to its OrgRepo equivalent
+func StringsToOrgRepos(vs []string) []OrgRepo {
+	vsm := make([]OrgRepo, len(vs))
+	for i, v := range vs {
+		vsm[i] = *NewOrgRepo(v)
+	}
+	return vsm
 }

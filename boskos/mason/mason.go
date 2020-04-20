@@ -24,6 +24,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/boskos/common"
+	"k8s.io/test-infra/boskos/crds"
 )
 
 const (
@@ -41,10 +42,10 @@ type ConfigConverter func(string) (Masonable, error)
 
 type storageAccess interface {
 	// GetDynamicResourceLifeCycle gets an existing dynamic resource life cycle, errors otherwise
-	GetDynamicResourceLifeCycle(name string) (common.DynamicResourceLifeCycle, error)
+	GetDynamicResourceLifeCycle(name string) (*crds.DRLCObject, error)
 
 	// GetDynamicResourceLifeCycles list all dynamic resource life cycle
-	GetDynamicResourceLifeCycles() ([]common.DynamicResourceLifeCycle, error)
+	GetDynamicResourceLifeCycles() (*crds.DRLCObjectList, error)
 }
 
 type boskosClient interface {
@@ -141,7 +142,7 @@ func (m *Mason) RegisterConfigConverter(name string, fn ConfigConverter) error {
 func (m *Mason) convertConfig(configEntry *common.DynamicResourceLifeCycle) (Masonable, error) {
 	fn, ok := m.configConverters[configEntry.Config.Type]
 	if !ok {
-		return nil, fmt.Errorf("config type %s is not supported", configEntry.GetName())
+		return nil, fmt.Errorf("config type %s is not supported", configEntry.Type)
 	}
 	return fn(configEntry.Config.Content)
 }
@@ -188,9 +189,9 @@ func (m *Mason) cleanOne(ctx context.Context, res *common.Resource, leasedResour
 		logrus.WithError(err).Errorf("failed to get config for resource %s", res.Type)
 		return err
 	}
-	config, err := m.convertConfig(&configEntry)
+	config, err := m.convertConfig(drlcPtr(configEntry.ToDynamicResourceLifeCycle()))
 	if err != nil {
-		logrus.WithError(err).Errorf("failed to convert config type %s - \n%s", configEntry.Config.Type, configEntry.Config.Content)
+		logrus.WithError(err).Errorf("failed to convert config type %s - \n%s", configEntry.Spec.Config.Type, configEntry.Spec.Config.Content)
 		return err
 	}
 
@@ -283,8 +284,8 @@ func (m *Mason) recycleAll(ctx context.Context) {
 				continue
 			}
 			var configTypes []string
-			for _, c := range configs {
-				_, isRegistered := m.configConverters[c.Config.Type]
+			for _, c := range configs.Items {
+				_, isRegistered := m.configConverters[c.Spec.Config.Type]
 				if isRegistered {
 					configTypes = append(configTypes, c.GetName())
 				}
@@ -339,7 +340,7 @@ func (m *Mason) recycleOne(res *common.Resource) (*requirements, error) {
 
 	return &requirements{
 		fulfillment: common.TypeToResources{},
-		needs:       configEntry.Needs,
+		needs:       configEntry.Spec.Needs,
 		resource:    *res,
 	}, nil
 }
@@ -476,4 +477,12 @@ func (m *Mason) Stop() {
 	close(m.fulfilled)
 	m.client.ReleaseAll(common.Dirty)
 	logrus.Info("Mason stopped")
+}
+
+func resourcePtr(r common.Resource) *common.Resource {
+	return &r
+}
+
+func drlcPtr(drlc common.DynamicResourceLifeCycle) *common.DynamicResourceLifeCycle {
+	return &drlc
 }

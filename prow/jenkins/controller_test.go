@@ -104,10 +104,12 @@ func (f *fca) Config() *config.Config {
 
 type fjc struct {
 	sync.Mutex
-	built  bool
-	pjs    []prowapi.ProwJob
-	err    error
-	builds map[string]Build
+	built       bool
+	pjs         []prowapi.ProwJob
+	err         error
+	builds      map[string]Build
+	didAbort    bool
+	abortErrors bool
 }
 
 func (f *fjc) Build(pj *prowapi.ProwJob, buildID string) error {
@@ -133,6 +135,10 @@ func (f *fjc) ListBuilds(jobs []BuildQueryParams) (map[string]Build, error) {
 func (f *fjc) Abort(job string, build *Build) error {
 	f.Lock()
 	defer f.Unlock()
+	if f.abortErrors {
+		return errors.New("erroring on abort as requested")
+	}
+	f.didAbort = true
 	return nil
 }
 
@@ -1048,5 +1054,77 @@ func TestOperatorConfig(t *testing.T) {
 		if !reflect.DeepEqual(got, test.expected) {
 			t.Errorf("expected controller:\n%#v\ngot controller:\n%#v\n", test.expected, got)
 		}
+	}
+}
+
+func TestSyncAbortedJob(t *testing.T) {
+	testCases := []struct {
+		name           string
+		hasBuild       bool
+		abortErrors    bool
+		expectAbort    bool
+		expectComplete bool
+	}{
+		{
+			name:           "Build is aborted",
+			hasBuild:       true,
+			expectAbort:    true,
+			expectComplete: true,
+		},
+		{
+			name:           "No build, no abort",
+			hasBuild:       false,
+			expectAbort:    false,
+			expectComplete: true,
+		},
+		{
+			name:           "Abort errors, job is not marked completed",
+			hasBuild:       true,
+			abortErrors:    true,
+			expectComplete: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+
+			pj := &prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "my-pj",
+				},
+				Status: prowapi.ProwJobStatus{
+					State: prowapi.AbortedState,
+				},
+			}
+
+			var buildMap map[string]Build
+			if tc.hasBuild {
+				buildMap = map[string]Build{pj.Name: {}}
+			}
+			pjClient := fake.NewSimpleClientset(pj)
+			jobClient := &fjc{abortErrors: tc.abortErrors}
+			c := &Controller{
+				log:           logrus.NewEntry(logrus.New()),
+				prowJobClient: pjClient.ProwV1().ProwJobs(""),
+				jc:            jobClient,
+			}
+
+			if err := c.syncAbortedJob(*pj, nil, buildMap); (err != nil) != tc.abortErrors {
+				t.Fatalf("syncAbortedJob failed: %v", err)
+			}
+
+			pj, err := pjClient.ProwV1().ProwJobs("").Get(pj.Name, metav1.GetOptions{})
+			if err != nil {
+				t.Fatalf("failed to get prowjob: %v", err)
+			}
+
+			if pj.Complete() != tc.expectComplete {
+				t.Errorf("expected completed job: %t, got completed job: %t", tc.expectComplete, pj.Complete())
+			}
+
+			if jobClient.didAbort != tc.expectAbort {
+				t.Errorf("expected abort: %t, did abort: %t", tc.expectAbort, jobClient.didAbort)
+			}
+		})
 	}
 }

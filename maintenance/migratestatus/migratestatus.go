@@ -19,6 +19,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"net/url"
 	"os"
 	"regexp"
 
@@ -75,6 +76,13 @@ func (o *options) Validate() error {
 		return errors.New("'--dest' is required unless using '--retire' mode.\n")
 	}
 
+	if o.descriptionURL != "" {
+		_, err := url.ParseRequestURI(o.descriptionURL)
+		if err != nil {
+			return fmt.Errorf("'--description' URL '%s' is not valid: %v", o.descriptionURL, err)
+		}
+	}
+
 	if o.descriptionURL != "" && o.copyContext != "" {
 		return errors.New("'--description' URL is not applicable to '--copy' mode")
 	}
@@ -107,7 +115,7 @@ func (o *options) Validate() error {
 }
 
 func main() {
-	logrusutil.ComponentInit("migratestatus")
+	logrusutil.ComponentInit()
 
 	o := gatherOptions()
 	if err := o.Validate(); err != nil {

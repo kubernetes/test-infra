@@ -22,6 +22,7 @@ go_library(
     srcs = ["yuks.go"],
     importpath = "k8s.io/test-infra/prow/plugins/yuks",
     deps = [
+        "//prow/config:go_default_library",
         "//prow/github:go_default_library",
         "//prow/pluginhelp:go_default_library",
         "//prow/plugins:go_default_library",

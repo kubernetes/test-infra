@@ -1,6 +1,5 @@
 presubmits:
   kubernetes/kubernetes:
-  # TODO(krzyzacy): Consider combine kubekins-e2e and kubekins-test
   - name: pull-kubernetes-verify
     always_run: true
     decorate: true
@@ -17,15 +16,13 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
         imagePullPolicy: Always
         command:
         - runner.sh
         args:
         - ./hack/jenkins/verify-dockerized.sh
         env:
-        - name: KUBE_FORCE_VERIFY_CHECKS
-          value: "n"
         - name: EXCLUDE_TYPECHECK
           value: "y"
         - name: EXCLUDE_GODEP
@@ -34,139 +31,6 @@ presubmits:
           value: master
         - name: REPO_DIR
           value: /workspace/k8s.io/kubernetes
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            cpu: 4
-  - name: pull-kubernetes-verify
-    always_run: true
-    decorate: true
-    branches:
-    - release-1.16
-    path_alias: k8s.io/kubernetes
-    labels:
-      preset-service-account: "true"
-      preset-dind-enabled: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-1.16
-        imagePullPolicy: Always
-        command:
-        - runner.sh
-        args:
-        - ./hack/jenkins/verify-dockerized.sh
-        env:
-        - name: KUBE_FORCE_VERIFY_CHECKS
-          value: "n"
-        - name: EXCLUDE_TYPECHECK
-          value: "y"
-        - name: EXCLUDE_GODEP
-          value: "y"
-        - name: KUBE_VERIFY_GIT_BRANCH
-          value: release-1.16
-        - name: REPO_DIR
-          value: /workspace/k8s.io/kubernetes
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            cpu: 4
-  - name: pull-kubernetes-verify
-    always_run: true
-    decorate: true
-    branches:
-    - release-1.15
-    path_alias: k8s.io/kubernetes
-    labels:
-      preset-service-account: "true"
-      preset-dind-enabled: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-1.15
-        imagePullPolicy: Always
-        command:
-        - runner.sh
-        args:
-        - ./hack/jenkins/verify-dockerized.sh
-        env:
-        - name: KUBE_FORCE_VERIFY_CHECKS
-          value: "n"
-        - name: EXCLUDE_TYPECHECK
-          value: "y"
-        - name: EXCLUDE_GODEP
-          value: "y"
-        - name: KUBE_VERIFY_GIT_BRANCH
-          value: release-1.15
-        - name: REPO_DIR
-          value: /workspace/k8s.io/kubernetes
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            cpu: 4
-  - name: pull-kubernetes-verify
-    always_run: true
-    decorate: true
-    branches:
-    - release-1.14
-    path_alias: k8s.io/kubernetes
-    labels:
-      preset-service-account: "true"
-      preset-dind-enabled: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-1.14
-        imagePullPolicy: Always
-        command:
-        - runner.sh
-        args:
-        - ./hack/jenkins/verify-dockerized.sh
-        env:
-        - name: KUBE_FORCE_VERIFY_CHECKS
-          value: "n"
-        - name: EXCLUDE_TYPECHECK
-          value: "y"
-        - name: EXCLUDE_GODEP
-          value: "y"
-        - name: KUBE_VERIFY_GIT_BRANCH
-          value: release-1.14
-        - name: REPO_DIR
-          value: /workspace/k8s.io/kubernetes
-          # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            cpu: 4
-  - name: pull-kubernetes-verify
-    always_run: true
-    labels:
-      preset-service-account: "true"
-      preset-dind-enabled: "true"
-    # the podutils version above does newer branches
-    branches:
-    - release-1.13
-    - release-1.12
-    - release-1.11
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20200212-baf02ac
-        args:
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--timeout=90"
-        - --scenario=kubernetes_verify
-        - --
-        - "--branch=${PULL_BASE_REF}"
-        - --exclude-typecheck
-        - --exclude-godep
-        - --script=./hack/jenkins/verify-dockerized.sh
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -195,15 +59,13 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
       imagePullPolicy: Always
       command:
       - runner.sh
       args:
       - ./hack/jenkins/verify-dockerized.sh
       env:
-      - name: KUBE_FORCE_VERIFY_CHECKS
-        value: "y"
       - name: EXCLUDE_READONLY_PACKAGE
         value: "y"
       - name: KUBE_VERIFY_GIT_BRANCH
@@ -215,4 +77,4 @@ periodics:
         privileged: true
       resources:
         requests:
-          cpu: 4
+          cpu: 6

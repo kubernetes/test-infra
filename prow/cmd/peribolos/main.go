@@ -28,9 +28,9 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"sigs.k8s.io/yaml"
 
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/test-infra/prow/config/org"
 	"k8s.io/test-infra/prow/config/secret"
-	"k8s.io/test-infra/prow/errorutil"
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/logrusutil"
@@ -147,7 +147,7 @@ func (o *options) parseArgs(flags *flag.FlagSet, args []string) error {
 }
 
 func main() {
-	logrusutil.ComponentInit("peribolos")
+	logrusutil.ComponentInit()
 
 	o := parseOptions()
 
@@ -363,7 +363,7 @@ func dumpOrgConfig(client dumpClient, orgName string, ignoreSecretTeams bool) (*
 			return nil, fmt.Errorf("failed to get repo: %v", err)
 		}
 		logrus.WithField("repo", full.FullName).Debug("Recording repo.")
-		out.Repos[full.Name] = pruneRepoDefaults(org.Repo{
+		out.Repos[full.Name] = org.PruneRepoDefaults(org.Repo{
 			Description:      &full.Description,
 			HomePage:         &full.Homepage,
 			Private:          &full.Private,
@@ -379,39 +379,6 @@ func dumpOrgConfig(client dumpClient, orgName string, ignoreSecretTeams bool) (*
 	}
 
 	return &out, nil
-}
-
-// pruneRepoDefaults finds values in org.Repo config that matches the default
-// values replaces them with nil pointer. This reduces the size of an org dump
-// by omitting the fields that would be set to the same value when not set at all.
-// See https://developer.github.com/v3/repos/#edit
-func pruneRepoDefaults(repo org.Repo) org.Repo {
-	pruneString := func(p **string, def string) {
-		if *p != nil && **p == def {
-			*p = nil
-		}
-	}
-	pruneBool := func(p **bool, def bool) {
-		if *p != nil && **p == def {
-			*p = nil
-		}
-	}
-
-	pruneString(&repo.Description, "")
-	pruneString(&repo.HomePage, "")
-
-	pruneBool(&repo.Private, false)
-	pruneBool(&repo.HasIssues, true)
-	// Projects' defaults depend on org setting, do not prune
-	pruneBool(&repo.HasWiki, true)
-	pruneBool(&repo.AllowRebaseMerge, true)
-	pruneBool(&repo.AllowSquashMerge, true)
-	pruneBool(&repo.AllowMergeCommit, true)
-
-	pruneBool(&repo.Archived, false)
-	pruneString(&repo.DefaultBranch, "master")
-
-	return repo
 }
 
 type orgClient interface {
@@ -1088,7 +1055,7 @@ func configureRepos(opt options, client repoClient, orgName string, orgConfig or
 		}
 	}
 
-	return errorutil.NewAggregate(allErrors...)
+	return utilerrors.NewAggregate(allErrors)
 }
 
 func configureTeamAndMembers(opt options, client github.Client, githubTeams map[string]github.Team, name, orgName string, team org.Team, parent *int) error {
@@ -1231,7 +1198,7 @@ func configureTeamRepos(client teamRepoClient, githubTeams map[string]github.Tea
 		}
 	}
 
-	return errorutil.NewAggregate(updateErrors...)
+	return utilerrors.NewAggregate(updateErrors)
 }
 
 // teamMembersClient can list/remove/update people to a team.

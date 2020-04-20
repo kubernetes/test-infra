@@ -67,11 +67,6 @@ type ResourceStatus struct {
 	ExpirationDate *time.Time       `json:"expirationDate,omitempty"`
 }
 
-// GetName returns a unique identifier for a given resource
-func (in *ResourceObject) GetName() string {
-	return in.Name
-}
-
 func (in *ResourceObject) deepCopyInto(out *ResourceObject) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
@@ -97,7 +92,9 @@ func (in *ResourceObject) DeepCopyObject() runtime.Object {
 	return nil
 }
 
-func (in *ResourceObject) toResource() common.Resource {
+// ToResource returns the common.Resource representation for
+// a ResourceObject
+func (in *ResourceObject) ToResource() common.Resource {
 	return common.Resource{
 		Name:           in.Name,
 		Type:           in.Spec.Type,
@@ -109,45 +106,26 @@ func (in *ResourceObject) toResource() common.Resource {
 	}
 }
 
-// ToItem implements Object interface
-func (in *ResourceObject) ToItem() common.Item {
-	return in.toResource()
-}
-
-func (in *ResourceObject) fromResource(r common.Resource) {
-	in.Name = r.Name
-	in.Spec.Type = r.Type
-	in.Status.Owner = r.Owner
-	in.Status.State = r.State
-	in.Status.LastUpdate = r.LastUpdate
-	in.Status.UserData = r.UserData
-	in.Status.ExpirationDate = r.ExpirationDate
-}
-
-// FromItem implements Object interface
-func (in *ResourceObject) FromItem(i common.Item) {
-	r, err := common.ItemToResource(i)
-	if err == nil {
-		in.fromResource(r)
+// FromResource converts a common.Resource to a *ResourceObject
+func FromResource(r common.Resource) *ResourceObject {
+	if r.UserData == nil {
+		r.UserData = &common.UserData{}
 	}
-}
-
-// GetItems implements Collection interface
-func (in *ResourceObjectList) GetItems() []Object {
-	var items []Object
-	for idx := range in.Items {
-		items = append(items, &in.Items[idx])
+	return &ResourceObject{
+		ObjectMeta: v1.ObjectMeta{
+			Name: r.Name,
+		},
+		Spec: ResourceSpec{
+			Type: r.Type,
+		},
+		Status: ResourceStatus{
+			Owner:          r.Owner,
+			State:          r.State,
+			LastUpdate:     r.LastUpdate,
+			UserData:       r.UserData,
+			ExpirationDate: r.ExpirationDate,
+		},
 	}
-	return items
-}
-
-// SetItems implements Collection interface
-func (in *ResourceObjectList) SetItems(objects []Object) {
-	var items []ResourceObject
-	for _, b := range objects {
-		items = append(items, *(b.(*ResourceObject)))
-	}
-	in.Items = items
 }
 
 func (in *ResourceObjectList) deepCopyInto(out *ResourceObjectList) {
@@ -172,4 +150,27 @@ func (in *ResourceObjectList) DeepCopyObject() runtime.Object {
 		return c
 	}
 	return nil
+}
+
+// NewResource creates a new Boskos Resource.
+func NewResource(name, rtype, state, owner string, t time.Time) *ResourceObject {
+	// If no state defined, mark as Free
+	if state == "" {
+		state = common.Free
+	}
+
+	return &ResourceObject{
+		ObjectMeta: v1.ObjectMeta{
+			Name: name,
+		},
+		Spec: ResourceSpec{
+			Type: rtype,
+		},
+		Status: ResourceStatus{
+			State:      state,
+			Owner:      owner,
+			LastUpdate: t,
+			UserData:   &common.UserData{},
+		},
+	}
 }

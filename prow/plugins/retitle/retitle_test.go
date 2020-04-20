@@ -142,6 +142,17 @@ Instructions for interacting with me using PR comments are available [here](http
 			},
 			expectedTitle: "foobar",
 		},
+		{
+			name:   "carriage return is stripped",
+			state:  "open",
+			action: github.GenericCommentActionCreated,
+			body:   "/retitle foobar\r",
+			isPr:   false,
+			trusted: func(user string) (bool, error) {
+				return true, nil
+			},
+			expectedTitle: "foobar",
+		},
 	}
 
 	for _, testCase := range testCases {

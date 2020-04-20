@@ -1,7 +1,12 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
+reviewers:
+- k82cn
+# - animeshsingh # TODO: kubernetes-sigs member, must join kubernetes org
+- hex108
+- hzxuzhonghu
 approvers:
 - k82cn
-- animeshsingh
+# - animeshsingh # TODO: kubernetes-sigs member, must join kubernetes org
 - hex108
 - hzxuzhonghu

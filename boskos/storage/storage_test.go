@@ -51,27 +51,18 @@ func TestAddDelete(t *testing.T) {
 				t.Errorf("unable to add %s, %v", res.Name, err)
 			}
 		}
-		items, err := s.List()
+		returnedResources, err := s.List()
 		if err != nil {
 			t.Errorf("unable to list resources, %v", err)
 		}
-		var rResources []common.Resource
-		for _, i := range items {
-			var r common.Resource
-			r, err = common.ItemToResource(i)
-			if err != nil {
-				t.Errorf("unable to convert resource, %v", err)
-			}
-			rResources = append(rResources, r)
+		sort.Stable(common.ResourceByName(returnedResources))
+		if !reflect.DeepEqual(resources, returnedResources) {
+			t.Errorf("received resources (%v) do not match resources (%v)", resources, returnedResources)
 		}
-		sort.Stable(common.ResourceByName(rResources))
-		if !reflect.DeepEqual(resources, rResources) {
-			t.Errorf("received resources (%v) do not match resources (%v)", resources, rResources)
-		}
-		for _, i := range items {
-			err = s.Delete(i.GetName())
+		for _, r := range returnedResources {
+			err = s.Delete(r.Name)
 			if err != nil {
-				t.Errorf("unable to delete resource %s.%v", i.GetName(), err)
+				t.Errorf("unable to delete resource %s.%v", r.Name, err)
 			}
 		}
 		eResources, err := s.List()
@@ -98,13 +89,9 @@ func TestUpdateGet(t *testing.T) {
 		if _, err := s.Update(uRes); err != nil {
 			t.Errorf("unable to update resource %v", err)
 		}
-		i, err := s.Get(oRes.Name)
+		res, err := s.Get(oRes.Name)
 		if err != nil {
 			t.Errorf("unable to get resource, %v", err)
-		}
-		res, err := common.ItemToResource(i)
-		if err != nil {
-			t.Errorf("unable to convert resource, %v", err)
 		}
 		if !reflect.DeepEqual(uRes, res) {
 			t.Errorf("expected (%v) and received (%v) do not match", uRes, res)

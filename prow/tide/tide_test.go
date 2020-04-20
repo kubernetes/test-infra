@@ -24,6 +24,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"reflect"
+	"strings"
 	"testing"
 	"text/template"
 	"time"
@@ -525,6 +526,20 @@ type fgc struct {
 	combinedStatus map[string]string
 }
 
+func (f *fgc) GetRepo(o, r string) (github.FullRepo, error) {
+	repo := github.FullRepo{}
+	if strings.Contains(r, "squash") {
+		repo.AllowSquashMerge = true
+	}
+	if strings.Contains(r, "rebase") {
+		repo.AllowRebaseMerge = true
+	}
+	if !strings.Contains(r, "nomerge") {
+		repo.AllowMergeCommit = true
+	}
+	return repo, nil
+}
+
 func (f *fgc) GetRef(o, r, ref string) (string, error) {
 	return f.refs[o+"/"+r+" "+ref], f.err
 }
@@ -694,9 +709,11 @@ func TestDividePool(t *testing.T) {
 		}
 	}
 
+	log := logrus.NewEntry(logrus.StandardLogger())
+	mmc := newMergeChecker(configGetter, fc)
 	mgr := newFakeManager()
 	c, err := newSyncController(
-		logrus.NewEntry(logrus.StandardLogger()), fc, mgr, configGetter, nil, nil, nil,
+		log, fc, mgr, configGetter, nil, nil, nil, mmc,
 	)
 	if err != nil {
 		t.Fatalf("failed to construct sync controller: %v", err)
@@ -769,7 +786,15 @@ func TestDividePool(t *testing.T) {
 }
 
 func TestPickBatch(t *testing.T) {
-	lg, gc, err := localgit.New()
+	testPickBatch(localgit.New, t)
+}
+
+func TestPickBatchV2(t *testing.T) {
+	testPickBatch(localgit.NewV2, t)
+}
+
+func testPickBatch(clients localgit.Clients, t *testing.T) {
+	lg, gc, err := clients()
 	if err != nil {
 		t.Fatalf("Error making local git: %v", err)
 	}
@@ -930,79 +955,173 @@ func TestPickBatch(t *testing.T) {
 	}
 }
 
-func TestCheckMergeLabels(t *testing.T) {
+func TestMergeMethodCheckerAndPRMergeMethod(t *testing.T) {
 	squashLabel := "tide/squash"
 	mergeLabel := "tide/merge"
 	rebaseLabel := "tide/rebase"
 
-	testcases := []struct {
-		name string
+	tideConfig := config.Tide{
+		SquashLabel: squashLabel,
+		MergeLabel:  mergeLabel,
+		RebaseLabel: rebaseLabel,
 
-		pr        PullRequest
-		method    github.PullRequestMergeType
-		expected  github.PullRequestMergeType
-		expectErr bool
+		MergeType: map[string]github.PullRequestMergeType{
+			"o/configured-rebase":              github.MergeRebase, // GH client allows merge, rebase
+			"o/configured-squash-allow-rebase": github.MergeSquash, // GH client allows merge, squash, rebase
+			"o/configure-re-base":              github.MergeRebase, // GH client allows merge
+		},
+	}
+	cfg := func() *config.Config { return &config.Config{ProwConfig: config.ProwConfig{Tide: tideConfig}} }
+	mmc := newMergeChecker(cfg, &fgc{})
+
+	testcases := []struct {
+		name              string
+		repo              string
+		labels            []string
+		conflict          bool
+		expectedMethod    github.PullRequestMergeType
+		expectErr         bool
+		expectConflictErr bool
 	}{
 		{
-			name:      "default method without PR label override",
-			pr:        PullRequest{},
-			method:    github.MergeMerge,
-			expected:  github.MergeMerge,
-			expectErr: false,
+			name:           "default method without PR label override",
+			repo:           "foo",
+			expectedMethod: github.MergeMerge,
 		},
 		{
-			name: "irrelevant PR labels ignored",
-			pr: PullRequest{
-				Labels: struct {
-					Nodes []struct{ Name githubql.String }
-				}{Nodes: []struct{ Name githubql.String }{{Name: githubql.String("sig/testing")}}},
-			},
-			method:    github.MergeMerge,
-			expected:  github.MergeMerge,
-			expectErr: false,
+			name:           "irrelevant PR labels ignored",
+			repo:           "foo",
+			labels:         []string{"unrelated"},
+			expectedMethod: github.MergeMerge,
 		},
 		{
-			name: "default method overridden by a PR label",
-			pr: PullRequest{
-				Labels: struct {
-					Nodes []struct{ Name githubql.String }
-				}{Nodes: []struct{ Name githubql.String }{{Name: githubql.String(squashLabel)}}},
-			},
-			method:    github.MergeMerge,
-			expected:  github.MergeSquash,
-			expectErr: false,
+			name:           "default method overridden by a PR label",
+			repo:           "allow-squash-nomerge",
+			labels:         []string{"tide/squash"},
+			expectedMethod: github.MergeSquash,
 		},
 		{
-			name: "multiple merge method PR labels should not merge",
-			pr: PullRequest{
-				Labels: struct {
-					Nodes []struct{ Name githubql.String }
-				}{Nodes: []struct{ Name githubql.String }{
-					{Name: githubql.String(squashLabel)},
-					{Name: githubql.String(rebaseLabel)}},
-				},
-			},
-			method:    github.MergeMerge,
-			expected:  github.MergeSquash,
+			name:           "use method configured for repo in tide config",
+			repo:           "configured-squash-allow-rebase",
+			labels:         []string{"unrelated"},
+			expectedMethod: github.MergeSquash,
+		},
+		{
+			name:           "tide config method overridden by a PR label",
+			repo:           "configured-squash-allow-rebase",
+			labels:         []string{"unrelated", "tide/rebase"},
+			expectedMethod: github.MergeRebase,
+		},
+		{
+			name:      "multiple merge method PR labels should not merge",
+			repo:      "foo",
+			labels:    []string{"tide/squash", "tide/rebase"},
 			expectErr: true,
+		},
+		{
+			name:              "merge conflict",
+			repo:              "foo",
+			labels:            []string{"unrelated"},
+			conflict:          true,
+			expectedMethod:    github.MergeMerge,
+			expectErr:         false,
+			expectConflictErr: true,
+		},
+		{
+			name:              "squash label conflicts with merge only GH settings",
+			repo:              "foo",
+			labels:            []string{"tide/squash"},
+			expectedMethod:    github.MergeSquash,
+			expectErr:         false,
+			expectConflictErr: true,
+		},
+		{
+			name:              "rebase method tide config conflicts with merge only GH settings",
+			repo:              "configure-re-base",
+			labels:            []string{"unrelated"},
+			expectedMethod:    github.MergeRebase,
+			expectErr:         false,
+			expectConflictErr: true,
+		},
+		{
+			name:              "default method conflicts with squash only GH settings",
+			repo:              "squash-nomerge",
+			labels:            []string{"unrelated"},
+			expectedMethod:    github.MergeMerge,
+			expectErr:         false,
+			expectConflictErr: true,
 		},
 	}
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			actual, err := checkMergeLabels(tc.pr, squashLabel, rebaseLabel, mergeLabel, tc.method)
-			if err != nil && !tc.expectErr {
-				t.Errorf("unexpected error: %v", err)
-			} else if err == nil && tc.expectErr {
-				t.Errorf("missing expected error from checkMargeLabels")
-			} else if err == nil && tc.expected != actual {
-				t.Errorf("wanted: %q, got: %q", tc.expected, actual)
+			pr := &PullRequest{
+				Repository: struct {
+					Name          githubql.String
+					NameWithOwner githubql.String
+					Owner         struct {
+						Login githubql.String
+					}
+				}{
+					Name: githubql.String(tc.repo),
+					Owner: struct {
+						Login githubql.String
+					}{
+						Login: githubql.String("o"),
+					},
+				},
+				Labels: struct {
+					Nodes []struct{ Name githubql.String }
+				}{
+					Nodes: []struct{ Name githubql.String }{},
+				},
+			}
+			for _, label := range tc.labels {
+				labelNode := struct{ Name githubql.String }{Name: githubql.String(label)}
+				pr.Labels.Nodes = append(pr.Labels.Nodes, labelNode)
+			}
+			if tc.conflict {
+				pr.Mergeable = githubql.MergeableStateConflicting
+			}
+
+			actual, err := prMergeMethod(tideConfig, pr)
+			if err != nil {
+				if !tc.expectErr {
+					t.Errorf("unexpected error: %v", err)
+				}
+				return
+			} else if tc.expectErr {
+				t.Errorf("missing expected error")
+				return
+			}
+			if tc.expectedMethod != actual {
+				t.Errorf("wanted: %q, got: %q", tc.expectedMethod, actual)
+			}
+			reason, err := mmc.isAllowed(pr)
+			if err != nil {
+				t.Errorf("unexpected processing error: %v", err)
+			} else if reason != "" {
+				if !tc.expectConflictErr {
+					t.Errorf("unexpected merge method conflict error: %v", err)
+				}
+				return
+			} else if tc.expectConflictErr {
+				t.Errorf("missing expected merge method conflict error")
+				return
 			}
 		})
 	}
 }
 
 func TestTakeAction(t *testing.T) {
+	testTakeAction(localgit.New, t)
+}
+
+func TestTakeActionV2(t *testing.T) {
+	testTakeAction(localgit.NewV2, t)
+}
+
+func testTakeAction(clients localgit.Clients, t *testing.T) {
 	sleep = func(time.Duration) {}
 	defer func() { sleep = time.Sleep }()
 
@@ -1010,13 +1129,14 @@ func TestTakeAction(t *testing.T) {
 	testcases := []struct {
 		name string
 
-		batchPending bool
-		successes    []int
-		pendings     []int
-		nones        []int
-		batchMerges  []int
-		presubmits   map[int][]config.Presubmit
-		mergeErrs    map[int]error
+		batchPending    bool
+		successes       []int
+		pendings        []int
+		nones           []int
+		batchMerges     []int
+		presubmits      map[int][]config.Presubmit
+		preExistingJobs []runtime.Object
+		mergeErrs       map[int]error
 
 		merged           int
 		triggered        int
@@ -1111,8 +1231,8 @@ func TestTakeAction(t *testing.T) {
 				},
 			},
 			merged:           0,
-			triggered:        1,
-			triggeredBatches: 1,
+			triggered:        2,
+			triggeredBatches: 2,
 			action:           TriggerBatch,
 		},
 		{
@@ -1228,8 +1348,127 @@ func TestTakeAction(t *testing.T) {
 				},
 			},
 			merged:           0,
+			triggered:        2,
+			triggeredBatches: 2,
+			action:           TriggerBatch,
+		},
+		{
+			name: "no pending serial or batch, should trigger batch and omit pre-existing running job",
+
+			batchPending: false,
+			successes:    []int{},
+			pendings:     []int{},
+			nones:        []int{1, 2, 3},
+			batchMerges:  []int{},
+			presubmits: map[int][]config.Presubmit{
+				100: {
+					{Reporter: config.Reporter{Context: "foo"}},
+					{Reporter: config.Reporter{Context: "if-changed"}},
+				},
+			},
+			preExistingJobs: []runtime.Object{&prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{Name: "my-job", Namespace: "pj-ns"},
+				Spec: prowapi.ProwJobSpec{
+					Job:  "bar",
+					Type: prowapi.BatchJob,
+					Refs: &prowapi.Refs{
+						Org:     "o",
+						Repo:    "r",
+						BaseRef: "master",
+						BaseSHA: "master",
+						Pulls: []prowapi.Pull{
+							{Number: 1, SHA: "origin/pr-1"},
+							{Number: 3, SHA: "origin/pr-3"},
+							{Number: 2, SHA: "origin/pr-2"},
+						},
+					},
+				},
+			}},
+			merged:           0,
 			triggered:        1,
 			triggeredBatches: 1,
+			action:           TriggerBatch,
+		},
+		{
+			name: "no pending serial or batch, should trigger batch and omit pre-existing success job",
+
+			batchPending: false,
+			successes:    []int{},
+			pendings:     []int{},
+			nones:        []int{1, 2, 3},
+			batchMerges:  []int{},
+			presubmits: map[int][]config.Presubmit{
+				100: {
+					{Reporter: config.Reporter{Context: "foo"}},
+					{Reporter: config.Reporter{Context: "if-changed"}},
+				},
+			},
+			preExistingJobs: []runtime.Object{&prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{Name: "my-job", Namespace: "pj-ns"},
+				Spec: prowapi.ProwJobSpec{
+					Job:  "bar",
+					Type: prowapi.BatchJob,
+					Refs: &prowapi.Refs{
+						Org:     "o",
+						Repo:    "r",
+						BaseRef: "master",
+						BaseSHA: "master",
+						Pulls: []prowapi.Pull{
+							{Number: 1, SHA: "origin/pr-1"},
+							{Number: 3, SHA: "origin/pr-3"},
+							{Number: 2, SHA: "origin/pr-2"},
+						},
+					},
+				},
+				Status: prowapi.ProwJobStatus{
+					State:          prowapi.SuccessState,
+					CompletionTime: &metav1.Time{Time: time.Unix(10, 0)},
+				},
+			}},
+			merged:           0,
+			triggered:        1,
+			triggeredBatches: 1,
+			action:           TriggerBatch,
+		},
+		{
+			name: "no pending serial or batch, should trigger batch and ignore pre-existing failure job",
+
+			batchPending: false,
+			successes:    []int{},
+			pendings:     []int{},
+			nones:        []int{1, 2, 3},
+			batchMerges:  []int{},
+			presubmits: map[int][]config.Presubmit{
+				100: {
+					{Reporter: config.Reporter{Context: "foo"}},
+					{Reporter: config.Reporter{Context: "if-changed"}},
+				},
+			},
+			preExistingJobs: []runtime.Object{&prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{Name: "my-job", Namespace: "pj-ns"},
+				Spec: prowapi.ProwJobSpec{
+					Job:  "bar",
+					Type: prowapi.BatchJob,
+					Refs: &prowapi.Refs{
+						Org:     "o",
+						Repo:    "r",
+						BaseRef: "master",
+						BaseSHA: "master",
+						Pulls: []prowapi.Pull{
+							{Number: 1, SHA: "origin/pr-1"},
+							{Number: 3, SHA: "origin/pr-3"},
+							{Number: 2, SHA: "origin/pr-2"},
+						},
+					},
+				},
+				Status: prowapi.ProwJobStatus{
+					State:          prowapi.FailureState,
+					CompletionTime: &metav1.Time{Time: time.Unix(10, 0)},
+				},
+			}},
+			merged:           0,
+			triggered:        2,
+			triggeredBatches: 2,
 			action:           TriggerBatch,
 		},
 		{
@@ -1303,152 +1542,180 @@ func TestTakeAction(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		ca := &config.Agent{}
-		pjNamespace := "pj-ns"
-		cfg := &config.Config{ProwConfig: config.ProwConfig{ProwJobNamespace: pjNamespace}}
-		if err := cfg.SetPresubmits(
-			map[string][]config.Presubmit{
-				"o/r": {
-					{
-						Reporter:     config.Reporter{Context: "foo"},
-						Trigger:      "/test all",
-						RerunCommand: "/test all",
-						AlwaysRun:    true,
-					},
-					{
-						Reporter:     config.Reporter{Context: "if-changed"},
-						Trigger:      "/test if-changed",
-						RerunCommand: "/test if-changed",
-						RegexpChangeMatcher: config.RegexpChangeMatcher{
-							RunIfChanged: "CHANGED",
+		t.Run(tc.name, func(t *testing.T) {
+			ca := &config.Agent{}
+			pjNamespace := "pj-ns"
+			cfg := &config.Config{ProwConfig: config.ProwConfig{ProwJobNamespace: pjNamespace}}
+			if err := cfg.SetPresubmits(
+				map[string][]config.Presubmit{
+					"o/r": {
+						{
+							Reporter:     config.Reporter{Context: "foo"},
+							Trigger:      "/test all",
+							RerunCommand: "/test all",
+							AlwaysRun:    true,
+						},
+						{
+							JobBase: config.JobBase{
+								Name: "bar",
+							},
+							Reporter:     config.Reporter{Context: "bar"},
+							Trigger:      "/test bar",
+							RerunCommand: "/test bar",
+							AlwaysRun:    true,
+						},
+						{
+							Reporter:     config.Reporter{Context: "if-changed"},
+							Trigger:      "/test if-changed",
+							RerunCommand: "/test if-changed",
+							RegexpChangeMatcher: config.RegexpChangeMatcher{
+								RunIfChanged: "CHANGED",
+							},
 						},
 					},
 				},
-			},
-		); err != nil {
-			t.Fatalf("failed to set presubmits: %v", err)
-		}
-		ca.Set(cfg)
-		if len(tc.presubmits) > 0 {
-			for i := 0; i <= 8; i++ {
-				tc.presubmits[i] = []config.Presubmit{{Reporter: config.Reporter{Context: "foo"}}}
+			); err != nil {
+				t.Fatalf("failed to set presubmits: %v", err)
 			}
-		}
-		lg, gc, err := localgit.New()
-		if err != nil {
-			t.Fatalf("Error making local git: %v", err)
-		}
-		defer gc.Clean()
-		defer lg.Clean()
-		if err := lg.MakeFakeRepo("o", "r"); err != nil {
-			t.Fatalf("Error making fake repo: %v", err)
-		}
-		if err := lg.AddCommit("o", "r", map[string][]byte{"foo": []byte("foo")}); err != nil {
-			t.Fatalf("Adding initial commit: %v", err)
-		}
+			ca.Set(cfg)
+			if len(tc.presubmits) > 0 {
+				for i := 0; i <= 8; i++ {
+					tc.presubmits[i] = []config.Presubmit{{Reporter: config.Reporter{Context: "foo"}}}
+				}
+			}
+			lg, gc, err := clients()
+			if err != nil {
+				t.Fatalf("Error making local git: %v", err)
+			}
+			defer gc.Clean()
+			defer lg.Clean()
+			if err := lg.MakeFakeRepo("o", "r"); err != nil {
+				t.Fatalf("Error making fake repo: %v", err)
+			}
+			if err := lg.AddCommit("o", "r", map[string][]byte{"foo": []byte("foo")}); err != nil {
+				t.Fatalf("Adding initial commit: %v", err)
+			}
 
-		sp := subpool{
-			log:        logrus.WithField("component", "tide"),
-			presubmits: tc.presubmits,
-			cc: map[int]contextChecker{
-				0:   &config.TideContextPolicy{},
-				1:   &config.TideContextPolicy{},
-				2:   &config.TideContextPolicy{},
-				3:   &config.TideContextPolicy{},
-				4:   &config.TideContextPolicy{},
-				5:   &config.TideContextPolicy{},
-				6:   &config.TideContextPolicy{},
-				7:   &config.TideContextPolicy{},
-				8:   &config.TideContextPolicy{},
-				100: &config.TideContextPolicy{},
-			},
-			org:    "o",
-			repo:   "r",
-			branch: "master",
-			sha:    "master",
-		}
-		genPulls := func(nums []int) []PullRequest {
-			var prs []PullRequest
-			for _, i := range nums {
-				if err := lg.CheckoutNewBranch("o", "r", fmt.Sprintf("pr-%d", i)); err != nil {
-					t.Fatalf("Error checking out new branch: %v", err)
-				}
-				if err := lg.AddCommit("o", "r", map[string][]byte{fmt.Sprintf("%d", i): []byte("WOW")}); err != nil {
-					t.Fatalf("Error adding commit: %v", err)
-				}
-				if err := lg.Checkout("o", "r", "master"); err != nil {
-					t.Fatalf("Error checking out master: %v", err)
-				}
-				oid := githubql.String(fmt.Sprintf("origin/pr-%d", i))
-				var pr PullRequest
-				pr.Number = githubql.Int(i)
-				pr.HeadRefOID = oid
-				pr.Commits.Nodes = []struct {
-					Commit Commit
-				}{{Commit: Commit{OID: oid}}}
-				sp.prs = append(sp.prs, pr)
-				prs = append(prs, pr)
+			sp := subpool{
+				log:        logrus.WithField("component", "tide"),
+				presubmits: tc.presubmits,
+				cc: map[int]contextChecker{
+					0:   &config.TideContextPolicy{},
+					1:   &config.TideContextPolicy{},
+					2:   &config.TideContextPolicy{},
+					3:   &config.TideContextPolicy{},
+					4:   &config.TideContextPolicy{},
+					5:   &config.TideContextPolicy{},
+					6:   &config.TideContextPolicy{},
+					7:   &config.TideContextPolicy{},
+					8:   &config.TideContextPolicy{},
+					100: &config.TideContextPolicy{},
+				},
+				org:    "o",
+				repo:   "r",
+				branch: "master",
+				sha:    "master",
 			}
-			return prs
-		}
-		fgc := fgc{mergeErrs: tc.mergeErrs}
-		client := fakectrlruntimeclient.NewFakeClient()
-		c := &Controller{
-			logger:        logrus.WithField("controller", "tide"),
-			gc:            gc,
-			config:        ca.Config,
-			ghc:           &fgc,
-			prowJobClient: client,
-			changedFiles: &changedFilesAgent{
+			genPulls := func(nums []int) []PullRequest {
+				var prs []PullRequest
+				for _, i := range nums {
+					if err := lg.CheckoutNewBranch("o", "r", fmt.Sprintf("pr-%d", i)); err != nil {
+						t.Fatalf("Error checking out new branch: %v", err)
+					}
+					if err := lg.AddCommit("o", "r", map[string][]byte{fmt.Sprintf("%d", i): []byte("WOW")}); err != nil {
+						t.Fatalf("Error adding commit: %v", err)
+					}
+					if err := lg.Checkout("o", "r", "master"); err != nil {
+						t.Fatalf("Error checking out master: %v", err)
+					}
+					oid := githubql.String(fmt.Sprintf("origin/pr-%d", i))
+					var pr PullRequest
+					pr.Number = githubql.Int(i)
+					pr.HeadRefOID = oid
+					pr.Commits.Nodes = []struct {
+						Commit Commit
+					}{{Commit: Commit{OID: oid}}}
+					sp.prs = append(sp.prs, pr)
+					prs = append(prs, pr)
+				}
+				return prs
+			}
+			fgc := fgc{mergeErrs: tc.mergeErrs}
+			c, err := newSyncController(
+				logrus.WithField("controller", "tide"),
+				&fgc,
+				newFakeManager(tc.preExistingJobs...),
+				ca.Config,
+				gc,
+				nil,
+				nil,
+				nil,
+			)
+			if err != nil {
+				t.Fatalf("failed to construct sync controller: %v", err)
+			}
+			c.changedFiles = &changedFilesAgent{
 				ghc:             &fgc,
 				nextChangeCache: make(map[changeCacheKey][]string),
-			},
-		}
-		var batchPending []PullRequest
-		if tc.batchPending {
-			batchPending = []PullRequest{{}}
-		}
-		t.Logf("Test case: %s", tc.name)
-		if act, _, err := c.takeAction(sp, batchPending, genPulls(tc.successes), genPulls(tc.pendings), genPulls(tc.nones), genPulls(tc.batchMerges), sp.presubmits); err != nil && !tc.expectErr {
-			t.Errorf("Unexpected error in takeAction: %v", err)
-			continue
-		} else if err == nil && tc.expectErr {
-			t.Error("Missing expected error from takeAction.")
-		} else if act != tc.action {
-			t.Errorf("Wrong action. Got %v, wanted %v.", act, tc.action)
-		}
-
-		prowJobs := &prowapi.ProwJobList{}
-		if err := client.List(context.Background(), prowJobs); err != nil {
-			t.Fatalf("failed to list ProwJobs: %v", err)
-		}
-		numCreated := len(prowJobs.Items)
-
-		var batchJobs []*prowapi.ProwJob
-		for _, pj := range prowJobs.Items {
-			if pj.Namespace != pjNamespace {
-				t.Errorf("prowjob %q didn't have expected namespace %q but %q", pj.Name, pjNamespace, pj.Namespace)
 			}
-			if pj.Spec.Type == prowapi.BatchJob {
-				batchJobs = append(batchJobs, &pj)
+			var batchPending []PullRequest
+			if tc.batchPending {
+				batchPending = []PullRequest{{}}
 			}
-		}
+			if act, _, err := c.takeAction(sp, batchPending, genPulls(tc.successes), genPulls(tc.pendings), genPulls(tc.nones), genPulls(tc.batchMerges), sp.presubmits); err != nil && !tc.expectErr {
+				t.Fatalf("Unexpected error in takeAction: %v", err)
+			} else if err == nil && tc.expectErr {
+				t.Error("Missing expected error from takeAction.")
+			} else if act != tc.action {
+				t.Errorf("Wrong action. Got %v, wanted %v.", act, tc.action)
+			}
 
-		if tc.triggered != numCreated {
-			t.Errorf("Wrong number of jobs triggered. Got %d, expected %d.", numCreated, tc.triggered)
-		}
-		if tc.merged != fgc.merged {
-			t.Errorf("Wrong number of merges. Got %d, expected %d.", fgc.merged, tc.merged)
-		}
-		// Ensure that the correct number of batch jobs were triggered
-		if tc.triggeredBatches != len(batchJobs) {
-			t.Errorf("Wrong number of batches triggered. Got %d, expected %d.", len(batchJobs), tc.triggeredBatches)
-		}
-		for _, job := range batchJobs {
-			if len(job.Spec.Refs.Pulls) <= 1 {
-				t.Error("Found a batch job that doesn't contain multiple pull refs!")
+			prowJobs := &prowapi.ProwJobList{}
+			if err := c.prowJobClient.List(context.Background(), prowJobs); err != nil {
+				t.Fatalf("failed to list ProwJobs: %v", err)
 			}
-		}
+			var filteredProwJobs []prowapi.ProwJob
+			// Filter out the ones we passed in
+			for _, job := range prowJobs.Items {
+				var preExists bool
+				for _, preExistingJob := range tc.preExistingJobs {
+					if reflect.DeepEqual(*preExistingJob.(*prowapi.ProwJob), job) {
+						preExists = true
+					}
+				}
+				if !preExists {
+					filteredProwJobs = append(filteredProwJobs, job)
+				}
+
+			}
+			numCreated := len(filteredProwJobs)
+
+			var batchJobs []*prowapi.ProwJob
+			for _, pj := range filteredProwJobs {
+				if pj.Namespace != pjNamespace {
+					t.Errorf("prowjob %q didn't have expected namespace %q but %q", pj.Name, pjNamespace, pj.Namespace)
+				}
+				if pj.Spec.Type == prowapi.BatchJob {
+					batchJobs = append(batchJobs, &pj)
+				}
+			}
+
+			if tc.triggered != numCreated {
+				t.Errorf("Wrong number of jobs triggered. Got %d, expected %d.", numCreated, tc.triggered)
+			}
+			if tc.merged != fgc.merged {
+				t.Errorf("Wrong number of merges. Got %d, expected %d.", fgc.merged, tc.merged)
+			}
+			// Ensure that the correct number of batch jobs were triggered
+			if tc.triggeredBatches != len(batchJobs) {
+				t.Errorf("Wrong number of batches triggered. Got %d, expected %d.", len(batchJobs), tc.triggeredBatches)
+			}
+			for _, job := range batchJobs {
+				if len(job.Spec.Refs.Pulls) <= 1 {
+					t.Error("Found a batch job that doesn't contain multiple pull refs!")
+				}
+			}
+		})
 	}
 }
 
@@ -1463,6 +1730,7 @@ func TestServeHTTP(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create history client: %v", err)
 	}
+	cfg := func() *config.Config { return &config.Config{} }
 	c := &Controller{
 		pools: []Pool{
 			{
@@ -1470,7 +1738,8 @@ func TestServeHTTP(t *testing.T) {
 				Action:     Merge,
 			},
 		},
-		History: hist,
+		mergeChecker: newMergeChecker(cfg, &fgc{}),
+		History:      hist,
 	}
 	s := httptest.NewServer(c)
 	defer s.Close()
@@ -1700,6 +1969,7 @@ func TestSync(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Failed to create history client: %v", err)
 		}
+		mergeChecker := newMergeChecker(ca.Config, fgc)
 		sc := &statusController{
 			pjClient:       fakectrlruntimeclient.NewFakeClient(),
 			logger:         logrus.WithField("controller", "status-update"),
@@ -1708,6 +1978,7 @@ func TestSync(t *testing.T) {
 			config:         ca.Config,
 			newPoolPending: make(chan bool, 1),
 			shutDown:       make(chan bool),
+			mergeChecker:   mergeChecker,
 		}
 		go sc.run()
 		defer sc.shutdown()
@@ -1722,7 +1993,8 @@ func TestSync(t *testing.T) {
 				ghc:             fgc,
 				nextChangeCache: make(map[changeCacheKey][]string),
 			},
-			History: hist,
+			mergeChecker: mergeChecker,
+			History:      hist,
 		}
 
 		if err := c.Sync(); err != nil {
@@ -2066,7 +2338,9 @@ func TestFilterSubpool(t *testing.T) {
 				sp.prs = append(sp.prs, pr)
 			}
 
-			filtered := filterSubpool(nil, sp)
+			configGetter := func() *config.Config { return &config.Config{} }
+			mmc := newMergeChecker(configGetter, &fgc{})
+			filtered := filterSubpool(nil, mmc.isAllowed, sp)
 			if len(tc.expectedPRs) == 0 {
 				if filtered != nil {
 					t.Fatalf("Expected subpool to be pruned, but got: %v", filtered)
@@ -2489,7 +2763,8 @@ func TestPresubmitsByPull(t *testing.T) {
 				changeCache:     tc.initialChangeCache,
 				nextChangeCache: make(map[changeCacheKey][]string),
 			},
-			logger: logrus.WithField("test", tc.name),
+			mergeChecker: newMergeChecker(cfgAgent.Config, &fgc{}),
+			logger:       logrus.WithField("test", tc.name),
 		}
 		presubmits, err := c.presubmitsByPull(sp)
 		if err != nil {
@@ -3260,6 +3535,10 @@ func (c *indexingClient) List(ctx context.Context, list runtime.Object, opts ...
 		opt.ApplyToList(listOpts)
 	}
 
+	if listOpts.FieldSelector == nil {
+		return nil
+	}
+
 	if n := len(listOpts.FieldSelector.Requirements()); n == 0 {
 		return nil
 	} else if n > 1 {
@@ -3284,6 +3563,7 @@ func (c *indexingClient) List(ctx context.Context, list runtime.Object, opts ...
 	result := prowapi.ProwJobList{}
 	for _, pj := range pjList.Items {
 		for _, indexVal := range indexFunc(&pj) {
+			logrus.Infof("indexVal: %q, requirementVal: %q, match: %t", indexVal, listOpts.FieldSelector.Requirements()[0].Value, indexVal == listOpts.FieldSelector.Requirements()[0].Value)
 			if indexVal == listOpts.FieldSelector.Requirements()[0].Value {
 				result.Items = append(result.Items, pj)
 			}
@@ -3306,5 +3586,99 @@ func prowYAMLGetterForHeadRefs(headRefsToLookFor []string, ps []config.Presubmit
 		return &config.ProwYAML{
 			Presubmits: presubmits,
 		}, nil
+	}
+}
+
+func TestNonFailedBatchByBaseAndPullsIndexFunc(t *testing.T) {
+	successFullBatchJob := func(mods ...func(*prowapi.ProwJob)) *prowapi.ProwJob {
+		pj := &prowapi.ProwJob{
+			Spec: prowapi.ProwJobSpec{
+				Type: prowapi.BatchJob,
+				Job:  "my-job",
+				Refs: &prowapi.Refs{
+					Org:     "org",
+					Repo:    "repo",
+					BaseRef: "master",
+					BaseSHA: "base-sha",
+					Pulls: []prowapi.Pull{
+						{
+							Number: 1,
+							SHA:    "1",
+						},
+						{
+							Number: 2,
+							SHA:    "2",
+						},
+					},
+				},
+			},
+			Status: prowapi.ProwJobStatus{
+				State:          prowapi.SuccessState,
+				CompletionTime: &metav1.Time{},
+			},
+		}
+
+		for _, mod := range mods {
+			mod(pj)
+		}
+
+		return pj
+	}
+	const defaultIndexKey = "my-job|org|repo|master|base-sha|1|1|2|2"
+
+	testCases := []struct {
+		name     string
+		pj       *prowapi.ProwJob
+		expected []string
+	}{
+		{
+			name:     "Basic success",
+			pj:       successFullBatchJob(),
+			expected: []string{defaultIndexKey},
+		},
+		{
+			name: "Pulls reordered, same index",
+			pj: successFullBatchJob(func(pj *prowapi.ProwJob) {
+				pj.Spec.Refs.Pulls = []prowapi.Pull{
+					pj.Spec.Refs.Pulls[1],
+					pj.Spec.Refs.Pulls[0],
+				}
+			}),
+			expected: []string{defaultIndexKey},
+		},
+		{
+			name: "Not completed, state is ignored",
+			pj: successFullBatchJob(func(pj *prowapi.ProwJob) {
+				pj.Status.CompletionTime = nil
+				pj.Status.State = prowapi.TriggeredState
+			}),
+			expected: []string{defaultIndexKey},
+		},
+		{
+			name: "Different name, different index",
+			pj: successFullBatchJob(func(pj *prowapi.ProwJob) {
+				pj.Spec.Job = "my-other-job"
+			}),
+			expected: []string{"my-other-job|org|repo|master|base-sha|1|1|2|2"},
+		},
+		{
+			name: "Not a batch, ignored",
+			pj: successFullBatchJob(func(pj *prowapi.ProwJob) {
+				pj.Spec.Type = prowapi.PresubmitJob
+			}),
+		},
+		{
+			name: "No refs, ignored",
+			pj: successFullBatchJob(func(pj *prowapi.ProwJob) {
+				pj.Spec.Refs = nil
+			}),
+		},
+	}
+
+	for _, tc := range testCases {
+		result := nonFailedBatchByNameBaseAndPullsIndexFunc(tc.pj)
+		if diff := deep.Equal(result, tc.expected); diff != nil {
+			t.Errorf("Result differs from expected, diff: %v", diff)
+		}
 	}
 }

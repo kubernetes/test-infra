@@ -1,5 +1,12 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
-approvers:
-- piosz
+reviewers:
 - brancz
+- serathius
+- dashpole
+approvers:
+- brancz
+- serathius
+- dashpole
+labels:
+- sig/instrumentation

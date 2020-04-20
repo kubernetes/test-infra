@@ -93,7 +93,7 @@ func (in *DRLCObject) DeepCopyObject() runtime.Object {
 	return nil
 }
 
-func (in *DRLCObject) toDynamicResourceLifeCycle() common.DynamicResourceLifeCycle {
+func (in *DRLCObject) ToDynamicResourceLifeCycle() common.DynamicResourceLifeCycle {
 	return common.DynamicResourceLifeCycle{
 		Type:         in.Name,
 		InitialState: in.Spec.InitialState,
@@ -105,45 +105,21 @@ func (in *DRLCObject) toDynamicResourceLifeCycle() common.DynamicResourceLifeCyc
 	}
 }
 
-func (in *DRLCObject) fromDynamicResourceLifeCycle(r common.DynamicResourceLifeCycle) {
-	in.ObjectMeta.Name = r.Type
-	in.Spec.InitialState = r.InitialState
-	in.Spec.MinCount = r.MinCount
-	in.Spec.MaxCount = r.MaxCount
-	in.Spec.LifeSpan = r.LifeSpan
-	in.Spec.Config = r.Config
-	in.Spec.Needs = r.Needs
-}
-
-// ToItem implements the Object interface
-func (in *DRLCObject) ToItem() common.Item {
-	return in.toDynamicResourceLifeCycle()
-}
-
-// FromItem implements the Object interface
-func (in *DRLCObject) FromItem(i common.Item) {
-	c, err := common.ItemToDynamicResourceLifeCycle(i)
-	if err == nil {
-		in.fromDynamicResourceLifeCycle(c)
+// FromDynamicResourceLifecycle converts a common.DynamicResourceLifeCycle into a *DRLCObject
+func FromDynamicResourceLifecycle(r common.DynamicResourceLifeCycle) *DRLCObject {
+	return &DRLCObject{
+		ObjectMeta: v1.ObjectMeta{
+			Name: r.Type,
+		},
+		Spec: DRLCSpec{
+			InitialState: r.InitialState,
+			MinCount:     r.MinCount,
+			MaxCount:     r.MaxCount,
+			LifeSpan:     r.LifeSpan,
+			Config:       r.Config,
+			Needs:        r.Needs,
+		},
 	}
-}
-
-// GetItems implements the Collection interface
-func (in *DRLCObjectList) GetItems() []Object {
-	var items []Object
-	for idx := range in.Items {
-		items = append(items, &in.Items[idx])
-	}
-	return items
-}
-
-// SetItems implements the Collection interface
-func (in *DRLCObjectList) SetItems(objects []Object) {
-	var items []DRLCObject
-	for _, b := range objects {
-		items = append(items, *(b.(*DRLCObject)))
-	}
-	in.Items = items
 }
 
 func (in *DRLCObjectList) deepCopyInto(out *DRLCObjectList) {

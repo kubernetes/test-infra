@@ -83,7 +83,15 @@ func (f *fakeGHClient) ListIssueComments(org, repo string, number int) ([]github
 }
 
 func TestHandle(t *testing.T) {
-	lg, c, err := localgit.New()
+	testHandle(localgit.New, t)
+}
+
+func TestHandleV2(t *testing.T) {
+	testHandle(localgit.NewV2, t)
+}
+
+func testHandle(clients localgit.Clients, t *testing.T) {
+	lg, c, err := clients()
 	if err != nil {
 		t.Fatalf("Making localgit: %v", err)
 	}

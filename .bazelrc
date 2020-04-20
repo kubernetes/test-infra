@@ -40,6 +40,9 @@ build:remote --define=EXECUTOR=remote
 build:remote --remote_executor=grpcs://remotebuildexecution.googleapis.com
 build:remote --remote_timeout=3600
 
+# Improve cache hit rate
+build:remote --incompatible_strict_action_env=true
+
 # Minimize what is downloaded
 build:inmemory --experimental_inmemory_jdeps_files
 build:inmemory --experimental_inmemory_dotd_files
@@ -62,9 +65,13 @@ run:remote --experimental_remote_download_outputs=all --noexperimental_inmemory_
 
 # --config=ci-instance adds the instance name
 build:ci-instance --remote_instance_name=projects/k8s-prow-builds/instances/default_instance
+build:trusted-instance --remote_instance_name=projects/k8s-prow/instances/default_instance
 
 # Config we want to use in ci
 build:ci --config=remote --config=ci-instance
+
+# Config we want trusted jobs to use
+build:trusted --config=remote --config=trusted-instance
 
 # https://github.com/bazelbuild/rules_go/pull/2110#issuecomment-508713878
 build --stamp=true

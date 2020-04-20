@@ -1,9 +1,0 @@
-# See the OWNERS docs at https://go.k8s.io/owners
-
-approvers:
-  - calebamiles # SIG PM Chair
-  - idvoretskyi # SIG PM Chair
-  - jdumars # SIG PM Chair
-  - justaugustus # SIG PM Chair
-labels:
-  - sig/pm

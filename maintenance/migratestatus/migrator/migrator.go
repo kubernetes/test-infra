@@ -20,7 +20,7 @@ import (
 	"fmt"
 
 	"github.com/golang/glog"
-	"k8s.io/test-infra/prow/errorutil"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 
 	"k8s.io/test-infra/prow/github"
 )
@@ -265,5 +265,5 @@ func (m *Migrator) Migrate() error {
 			return err
 		}
 	}
-	return errorutil.NewAggregate(errors...)
+	return utilerrors.NewAggregate(errors)
 }

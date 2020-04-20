@@ -57,7 +57,7 @@ var (
 
 // HelpProvider defines the function type that construct a pluginhelp.PluginHelp for enabled
 // plugins. It takes into account the plugins configuration and enabled repositories.
-type HelpProvider func(config *Configuration, enabledRepos []Repo) (*pluginhelp.PluginHelp, error)
+type HelpProvider func(config *Configuration, enabledRepos []config.OrgRepo) (*pluginhelp.PluginHelp, error)
 
 // HelpProviders returns the map of registered plugins with their associated HelpProvider.
 func HelpProviders() map[string]HelpProvider {
@@ -164,17 +164,19 @@ type Agent struct {
 }
 
 // NewAgent bootstraps a new config.Agent struct from the passed dependencies.
-func NewAgent(configAgent *config.Agent, pluginConfigAgent *ConfigAgent, clientAgent *ClientAgent, metrics *Metrics, logger *logrus.Entry) Agent {
+func NewAgent(configAgent *config.Agent, pluginConfigAgent *ConfigAgent, clientAgent *ClientAgent, metrics *Metrics, logger *logrus.Entry, plugin string) Agent {
+	logger = logger.WithField("plugin", plugin)
 	prowConfig := configAgent.Config()
 	pluginConfig := pluginConfigAgent.Config()
+	gitHubClient := clientAgent.GitHubClient.WithFields(logger.Data).ForPlugin(plugin)
 	return Agent{
-		GitHubClient:              clientAgent.GitHubClient.WithFields(logger.Data),
+		GitHubClient:              gitHubClient,
 		KubernetesClient:          clientAgent.KubernetesClient,
 		BuildClusterCoreV1Clients: clientAgent.BuildClusterCoreV1Clients,
 		ProwJobClient:             clientAgent.ProwJobClient,
 		GitClient:                 clientAgent.GitClient,
 		SlackClient:               clientAgent.SlackClient,
-		OwnersClient:              clientAgent.OwnersClient.WithFields(logger.Data),
+		OwnersClient:              clientAgent.OwnersClient.WithFields(logger.Data).WithGitHubClient(gitHubClient),
 		BugzillaClient:            clientAgent.BugzillaClient,
 		Metrics:                   metrics,
 		Config:                    prowConfig,

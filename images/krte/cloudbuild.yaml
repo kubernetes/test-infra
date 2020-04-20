@@ -6,6 +6,7 @@ steps:
     - --build-arg=GO_VERSION=$_GO_VERSION
     - --build-arg=K8S_RELEASE=$_K8S_RELEASE
     - --build-arg=BAZEL_VERSION_ARG=$_BAZEL_VERSION
+    - --build-arg=OLD_BAZEL_VERSION=$_OLD_BAZEL_VERSION
     - --build-arg=CFSSL_VERSION=$_CFSSL_VERSION
     - --build-arg=UPGRADE_DOCKER_ARG=$_UPGRADE_DOCKER
     - --build-arg=IMAGE_ARG=gcr.io/$PROJECT_ID/krte:$_GIT_TAG-$_CONFIG
@@ -22,7 +23,8 @@ substitutions:
   _CONFIG: master
   _GO_VERSION: 1.13.5
   _K8S_RELEASE: stable
-  _BAZEL_VERSION: 0.23.2
+  _BAZEL_VERSION: 2.2.0
+  _OLD_BAZEL_VERSION: 0.23.2
   _UPGRADE_DOCKER: 'false'
   _CFSSL_VERSION: R1.2
 options:

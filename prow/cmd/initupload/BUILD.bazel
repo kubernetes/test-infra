@@ -14,8 +14,10 @@ go_library(
     ],
 )
 
+NAME = "initupload"
+
 go_binary(
-    name = "initupload",
+    name = NAME,
     embed = [":go_default_library"],
     pure = "on",
     visibility = ["//visibility:public"],
@@ -24,6 +26,7 @@ go_binary(
 prow_image(
     name = "image",
     base = "@alpine-base//image",
+    component = NAME,
     symlinks = {"/initupload": "/app/prow/cmd/initupload/app.binary"},
     visibility = ["//visibility:public"],
 )

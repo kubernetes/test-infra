@@ -29,10 +29,6 @@ import (
 )
 
 const (
-	// LGTM means all presubmits passed, but need someone else to approve before merge.
-	LGTM = "+1"
-	// LBTM means some presubmits failed, perfer not merge.
-	LBTM = "-1"
 	// CodeReview is the default gerrit code review label
 	CodeReview = "Code-Review"
 
@@ -164,7 +160,7 @@ func NewClient(instances map[string][]string) (*Client, error) {
 func auth(c *Client, cookiefilePath string) {
 	logrus.Info("Starting auth loop...")
 	var previousToken string
-	wait := 10 * time.Minute
+	wait := time.Minute
 	for {
 		raw, err := ioutil.ReadFile(cookiefilePath)
 		if err != nil {

@@ -17,8 +17,18 @@ spec:
       - name: pipeline
         image: gcr.io/k8s-testimages/pipeline:latest  # Note: not gcr.io/k8s-prow for dev
         imagePullPolicy: Always  # Good practice for dev/debugging, bad for prod
+        args:
+        - --config=/etc/config/config.yaml
+        volumeMounts:
+        - mountPath: /etc/config
+          name: config
+          readOnly: true
+      volumes:
+      - name: config
+        configMap:
+          # This should be the name of the config map for your prow instance
+          name: config
 ---
-
 kind: ServiceAccount
 apiVersion: v1
 metadata:
@@ -44,7 +54,6 @@ rules:
   - prow.k8s.io
   resources:
   - prowjobs
-  - prowjobs/status
   verbs:
   - get
   - list

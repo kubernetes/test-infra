@@ -13,14 +13,17 @@ go_library(
     ],
 )
 
+NAME = "boskosctl"
+
 prow_image(
     name = "image",
     base = "@boskosctl-base//image",
+    component = NAME,
     visibility = ["//visibility:public"],
 )
 
 go_binary(
-    name = "boskosctl",
+    name = NAME,
     embed = [":go_default_library"],
     visibility = ["//visibility:public"],
 )
@@ -43,5 +46,8 @@ go_test(
     name = "go_default_test",
     srcs = ["cli_test.go"],
     embed = [":go_default_library"],
-    deps = ["@io_k8s_apimachinery//pkg/util/diff:go_default_library"],
+    deps = [
+        "//boskos/client:go_default_library",
+        "@io_k8s_apimachinery//pkg/util/diff:go_default_library",
+    ],
 )

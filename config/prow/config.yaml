@@ -1,6 +1,7 @@
 plank:
   job_url_template: '{{if .Spec.Refs}}{{if eq .Spec.Refs.Org "kubernetes-security"}}https://console.cloud.google.com/storage/browser/kubernetes-security-prow/{{else}}https://prow.k8s.io/view/gcs/kubernetes-jenkins/{{end}}{{else}}https://prow.k8s.io/view/gcs/kubernetes-jenkins/{{end}}{{if eq .Spec.Type "presubmit"}}pr-logs/pull{{else if eq .Spec.Type "batch"}}pr-logs/pull{{else}}logs{{end}}{{if .Spec.Refs}}{{if ne .Spec.Refs.Org ""}}{{if ne .Spec.Refs.Org "kubernetes"}}/{{if and (eq .Spec.Refs.Org "kubernetes-sigs") (ne .Spec.Refs.Repo "poseidon")}}sigs.k8s.io{{else}}{{.Spec.Refs.Org}}{{end}}_{{.Spec.Refs.Repo}}{{else if ne .Spec.Refs.Repo "kubernetes"}}/{{.Spec.Refs.Repo}}{{end}}{{end}}{{end}}{{if eq .Spec.Type "presubmit"}}/{{with index .Spec.Refs.Pulls 0}}{{.Number}}{{end}}{{else if eq .Spec.Type "batch"}}/batch{{end}}/{{.Spec.Job}}/{{.Status.BuildID}}/'
-  report_template: '[Full PR test history](https://prow.k8s.io/pr-history?org={{.Spec.Refs.Org}}&repo={{.Spec.Refs.Repo}}&pr={{with index .Spec.Refs.Pulls 0}}{{.Number}}{{end}}). [Your PR dashboard](https://gubernator.k8s.io/pr/{{with index .Spec.Refs.Pulls 0}}{{.Author}}{{end}}). Please help us cut down on flakes by [linking to](https://git.k8s.io/community/contributors/devel/sig-testing/flaky-tests.md#filing-issues-for-flaky-tests) an [open issue](https://github.com/{{.Spec.Refs.Org}}/{{.Spec.Refs.Repo}}/issues?q=is:issue+is:open) when you hit one in your PR.'
+  report_templates:
+    '*': '[Full PR test history](https://prow.k8s.io/pr-history?org={{.Spec.Refs.Org}}&repo={{.Spec.Refs.Repo}}&pr={{with index .Spec.Refs.Pulls 0}}{{.Number}}{{end}}). [Your PR dashboard](https://prow.k8s.io/pr?query=is%3Apr%20state%3Aopen%20author%3{{with index .Spec.Refs.Pulls 0}}{{.Author}}{{end}}). Please help us cut down on flakes by [linking to](https://git.k8s.io/community/contributors/devel/sig-testing/flaky-tests.md#filing-issues-for-flaky-tests) an [open issue](https://github.com/{{.Spec.Refs.Org}}/{{.Spec.Refs.Repo}}/issues?q=is:issue+is:open) when you hit one in your PR.'
   job_url_prefix_config:
     '*': https://prow.k8s.io/view/gcs/
   pod_pending_timeout: 15m
@@ -10,10 +11,10 @@ plank:
       timeout: 2h
       grace_period: 15s
       utility_images:
-        clonerefs: "gcr.io/k8s-prow/clonerefs:v20200214-db7f45788"
-        initupload: "gcr.io/k8s-prow/initupload:v20200214-db7f45788"
-        entrypoint: "gcr.io/k8s-prow/entrypoint:v20200214-db7f45788"
-        sidecar: "gcr.io/k8s-prow/sidecar:v20200214-db7f45788"
+        clonerefs: "gcr.io/k8s-prow/clonerefs:v20200417-3971a63f2"
+        initupload: "gcr.io/k8s-prow/initupload:v20200417-3971a63f2"
+        entrypoint: "gcr.io/k8s-prow/entrypoint:v20200417-3971a63f2"
+        sidecar: "gcr.io/k8s-prow/sidecar:v20200417-3971a63f2"
       gcs_configuration:
         bucket: "kubernetes-jenkins"
         path_strategy: "legacy"
@@ -62,8 +63,9 @@ deck:
   hidden_repos:
   - kubernetes-security
   google_analytics: UA-82843984-5
-  rerun_auth_config:
-    github_team_ids:
+  rerun_auth_configs:
+    '*':
+      github_team_ids:
       - 2009231 # test-infra-admins
 
 prowjob_namespace: default
@@ -256,6 +258,20 @@ branch-protection:
           branches:
             master:
               protect: true
+            dev-1.18:
+              protect: true
+            release-1.4:
+              protect: true
+            release-1.5:
+              protect: true
+            release-1.6:
+              protect: true
+            release-1.7:
+              protect: true
+            release-1.8:
+              protect: true
+            release-1.9:
+              protect: true
             release-1.10:
               protect: true
             release-1.11:
@@ -267,6 +283,10 @@ branch-protection:
             release-1.14:
               protect: true
             release-1.15:
+              protect: true
+            release-1.16:
+              protect: true
+            release-1.17:
               protect: true
     kubernetes-client:
       protect: true
@@ -421,6 +441,7 @@ tide:
     missingLabels:
     - do-not-merge
     - do-not-merge/blocked-paths
+    - do-not-merge/contains-merge-commits
     - do-not-merge/hold
     - do-not-merge/invalid-commit-message
     - do-not-merge/invalid-owners-file
@@ -437,6 +458,7 @@ tide:
     - do-not-merge
     - do-not-merge/blocked-paths
     - do-not-merge/cherry-pick-not-approved
+    - do-not-merge/contains-merge-commits
     - do-not-merge/hold
     - do-not-merge/invalid-commit-message
     - do-not-merge/invalid-owners-file
@@ -464,15 +486,15 @@ tide:
     kubernetes-client/gen: squash
     kubernetes-sigs/cluster-api-provider-digitalocean: squash
     kubernetes-sigs/cluster-api-provider-ibmcloud: squash
-    kubernetes-sigs/cluster-api-provider-openstack: squash
     kubernetes-sigs/krew-index: squash
     kubernetes-sigs/krew: squash
     kubernetes-sigs/kubespray: squash
     kubernetes-sigs/service-catalog: squash
+    kubernetes-sigs/go-open-service-broker-client: squash
+    kubernetes-sigs/minibroker: squash
     kubernetes/cloud-provider-openstack: squash
     kubernetes/dashboard: squash
     kubernetes/kube-deploy: squash
-    kubernetes/website: squash
   pr_status_base_urls:
     '*': https://prow.k8s.io/pr
   blocker_label: tide/merge-blocker
@@ -486,6 +508,10 @@ tide:
           dashboard:
             skip-unknown-contexts: true
             from-branch-protection: true
+      kubernetes-sigs:
+        repos:
+          cluster-api-provider-openstack:
+            skip-unknown-contexts: true
   batch_size_limit:
     "kubernetes/kubernetes": 15
 
@@ -509,6 +535,8 @@ presets:
   # injecting a new key. this allows us to avoid mass key download warnings
   - name: E2E_GOOGLE_APPLICATION_CREDENTIALS
     value: /etc/service-account/service-account.json
+  - name: GOOGLE_APPLICATION_CREDENTIALS_DEPRECATED
+    value: "Migrate to workload identity, contact sig-testing"
   volumes:
   - name: service
     secret:
@@ -522,6 +550,8 @@ presets:
   env:
   - name: GOOGLE_APPLICATION_CREDENTIALS
     value: /etc/service-account/service-account.json
+  - name: GOOGLE_APPLICATION_CREDENTIALS_DEPRECATED
+    value: "Migrate to workload identity, contact sig-testing"
   # storage e2e tests borrow this as a preconfigured key instead of creating and
   # injecting a new key. this allows us to avoid mass key download warnings
   - name: E2E_GOOGLE_APPLICATION_CREDENTIALS
@@ -539,6 +569,8 @@ presets:
   env:
   - name: GOOGLE_APPLICATION_CREDENTIALS
     value: /etc/service-account/istio-service-account.json
+  - name: GOOGLE_APPLICATION_CREDENTIALS_DEPRECATED
+    value: "Migrate to workload identity, contact sig-testing"
   # storage e2e tests borrow this as a preconfigured key instead of creating and
   # injecting a new key. this allows us to avoid mass key download warnings
   - name: E2E_GOOGLE_APPLICATION_CREDENTIALS

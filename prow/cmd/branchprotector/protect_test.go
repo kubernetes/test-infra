@@ -61,6 +61,15 @@ func TestOptions_Validate(t *testing.T) {
 			},
 			expectedErr: false,
 		},
+		{
+			name: "override default tokens allowed",
+			opt: options{
+				config:     "dummy",
+				tokens:     5000,
+				tokenBurst: 200,
+			},
+			expectedErr: false,
+		},
 	}
 
 	for _, testCase := range testCases {
@@ -1026,6 +1035,126 @@ branch-protection:
 					Branch: "test_#123",
 					Request: &github.BranchProtectionRequest{
 						EnforceAdmins: &no,
+					},
+				},
+			},
+		},
+		{
+			name:     "require linear history",
+			branches: []string{"cfgdef/repo1=master", "cfgdef/repo1=branch", "cfgdef/repo2=master"},
+			config: `
+branch-protection:
+  protect: true
+  required_linear_history: true
+  orgs:
+    cfgdef:
+`,
+			expected: []requirements{
+				{
+					Org:    "cfgdef",
+					Repo:   "repo1",
+					Branch: "master",
+					Request: &github.BranchProtectionRequest{
+						EnforceAdmins:         &no,
+						RequiredLinearHistory: true,
+					},
+				},
+				{
+					Org:    "cfgdef",
+					Repo:   "repo1",
+					Branch: "branch",
+					Request: &github.BranchProtectionRequest{
+						EnforceAdmins:         &no,
+						RequiredLinearHistory: true,
+					},
+				},
+				{
+					Org:    "cfgdef",
+					Repo:   "repo2",
+					Branch: "master",
+					Request: &github.BranchProtectionRequest{
+						EnforceAdmins:         &no,
+						RequiredLinearHistory: true,
+					},
+				},
+			},
+		},
+		{
+			name:     "allow force pushes",
+			branches: []string{"cfgdef/repo1=master", "cfgdef/repo1=branch", "cfgdef/repo2=master"},
+			config: `
+branch-protection:
+  protect: true
+  allow_force_pushes: true
+  orgs:
+    cfgdef:
+`,
+			expected: []requirements{
+				{
+					Org:    "cfgdef",
+					Repo:   "repo1",
+					Branch: "master",
+					Request: &github.BranchProtectionRequest{
+						EnforceAdmins:    &no,
+						AllowForcePushes: true,
+					},
+				},
+				{
+					Org:    "cfgdef",
+					Repo:   "repo1",
+					Branch: "branch",
+					Request: &github.BranchProtectionRequest{
+						EnforceAdmins:    &no,
+						AllowForcePushes: true,
+					},
+				},
+				{
+					Org:    "cfgdef",
+					Repo:   "repo2",
+					Branch: "master",
+					Request: &github.BranchProtectionRequest{
+						EnforceAdmins:    &no,
+						AllowForcePushes: true,
+					},
+				},
+			},
+		},
+		{
+			name:     "allow deletions",
+			branches: []string{"cfgdef/repo1=master", "cfgdef/repo1=branch", "cfgdef/repo2=master"},
+			config: `
+branch-protection:
+  protect: true
+  allow_deletions: true
+  orgs:
+    cfgdef:
+`,
+			expected: []requirements{
+				{
+					Org:    "cfgdef",
+					Repo:   "repo1",
+					Branch: "master",
+					Request: &github.BranchProtectionRequest{
+						EnforceAdmins:  &no,
+						AllowDeletions: true,
+					},
+				},
+				{
+					Org:    "cfgdef",
+					Repo:   "repo1",
+					Branch: "branch",
+					Request: &github.BranchProtectionRequest{
+						EnforceAdmins:  &no,
+						AllowDeletions: true,
+					},
+				},
+				{
+					Org:    "cfgdef",
+					Repo:   "repo2",
+					Branch: "master",
+					Request: &github.BranchProtectionRequest{
+						EnforceAdmins:  &no,
+						AllowDeletions: true,
 					},
 				},
 			},

@@ -2,13 +2,15 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   namespace: default
-  name: "deck"
+  annotations:
+    iam.gke.io/gcp-service-account: control-plane@k8s-prow.iam.gserviceaccount.com
+  name: deck
 ---
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
   namespace: default
-  name: "deck"
+  name: deck
 rules:
   - apiGroups:
       - "prow.k8s.io"
@@ -25,7 +27,7 @@ kind: Role
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
   namespace: test-pods
-  name: "deck"
+  name: deck
 rules:
   - apiGroups:
       - ""
@@ -38,25 +40,25 @@ kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
   namespace: default
-  name: "deck"
+  name: deck
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: "deck"
+  name: deck
 subjects:
 - kind: ServiceAccount
-  name: "deck"
+  name: deck
 ---
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
   namespace: test-pods
-  name: "deck"
+  name: deck
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: "deck"
+  name: deck
 subjects:
 - kind: ServiceAccount
-  name: "deck"
+  name: deck
   namespace: default

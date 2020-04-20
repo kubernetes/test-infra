@@ -20,9 +20,10 @@ import (
 	"mime"
 	"strings"
 
-	"cloud.google.com/go/storage"
-
 	"github.com/GoogleCloudPlatform/testgrid/metadata"
+
+	"k8s.io/test-infra/prow/io"
+	utilpointer "k8s.io/utils/pointer"
 )
 
 // TODO(fejta): migrate usage off type alias.
@@ -33,8 +34,8 @@ type Started = metadata.Started
 // Finished holds finished.json data
 type Finished = metadata.Finished
 
-// AttributesFromFileName guesses file attributes from the filename
-// and returns the attributes and a simplifed filename.  For example,
+// WriterOptionsFromFileName guesses file attributes from the filename
+// and returns the writerOptions and a simplified filename.  For example,
 // build-log.txt.gz would be:
 //
 //   Content-Type: text/plain; charset=utf-8
@@ -42,8 +43,8 @@ type Finished = metadata.Finished
 //
 // and the simplified filename would be build-log.txt (excluding the
 // content encoding extension).
-func AttributesFromFileName(filename string) (string, *storage.ObjectAttrs) {
-	attrs := &storage.ObjectAttrs{}
+func WriterOptionsFromFileName(filename string) (string, io.WriterOptions) {
+	attrs := io.WriterOptions{}
 	segments := strings.Split(filename, ".")
 	index := len(segments) - 1
 	segment := segments[index]
@@ -51,10 +52,10 @@ func AttributesFromFileName(filename string) (string, *storage.ObjectAttrs) {
 	// https://www.iana.org/assignments/http-parameters/http-parameters.xhtml#content-coding
 	switch segment {
 	case "gz", "gzip":
-		attrs.ContentEncoding = "gzip"
+		attrs.ContentEncoding = utilpointer.StringPtr("gzip")
 	}
 
-	if attrs.ContentEncoding != "" {
+	if attrs.ContentEncoding != nil {
 		if index == 0 {
 			segment = ""
 		} else {
@@ -67,13 +68,13 @@ func AttributesFromFileName(filename string) (string, *storage.ObjectAttrs) {
 	if segment != "" {
 		mediaType := mime.TypeByExtension("." + segment)
 		if mediaType != "" {
-			attrs.ContentType = mediaType
+			attrs.ContentType = utilpointer.StringPtr(mediaType)
 		}
 	}
 
-	if attrs.ContentType == "" && attrs.ContentEncoding == "gzip" {
-		attrs.ContentType = "application/gzip"
-		attrs.ContentEncoding = ""
+	if attrs.ContentType == nil && attrs.ContentEncoding != nil && *attrs.ContentEncoding == "gzip" {
+		attrs.ContentType = utilpointer.StringPtr("application/gzip")
+		attrs.ContentEncoding = nil
 	}
 
 	return filename, attrs

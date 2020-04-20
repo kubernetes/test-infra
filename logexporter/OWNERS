@@ -1,5 +1,10 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
+reviewers:
+- mborsz
+- shyamjvs
+- wojtek-t
+- sig-scalability-leads
 approvers:
 - mborsz
 - shyamjvs

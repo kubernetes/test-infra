@@ -1,3 +1,8 @@
+reviewers:
+  - cblecker
+  - cjwagner
+  - hongkailiu
+  - stevekuznetsov
 approvers:
   - cblecker
   - cjwagner

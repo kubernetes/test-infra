@@ -165,6 +165,18 @@ def collect(project, age, resource, filt, clear_all):
         '--format=json(name,creationTimestamp.date(tz=UTC),zone,region,isManaged)',
         '--filter=%s' % filt,
         '--project=%s' % project])
+    if resource.condition == 'zone' and resource.name != 'sole-tenancy' and resource.name != 'network-endpoint-groups':
+        cmd.append('--zones=asia-east1-a,asia-east1-b,asia-east1-c,asia-east2-a,asia-east2-b,asia-east2-c,' +
+            'asia-northeast1-a,asia-northeast1-b,asia-northeast1-c,asia-northeast2-a,asia-northeast2-b,asia-northeast2-c,' +
+            'asia-northeast3-a,asia-northeast3-b,asia-northeast3-c,asia-south1-a,asia-south1-b,asia-south1-c,' +
+            'asia-southeast1-a,asia-southeast1-b,asia-southeast1-c,australia-southeast1-a,australia-southeast1-b,' +
+            'australia-southeast1-c,europe-north1-a,europe-north1-b,europe-north1-c,europe-west1-b,europe-west1-c,' +
+            'europe-west1-d,europe-west2-a,europe-west2-b,europe-west2-c,europe-west3-a,europe-west3-b,europe-west3-c,' +
+            'europe-west4-a,europe-west4-b,europe-west4-c,europe-west6-a,europe-west6-b,europe-west6-c,' +
+            'northamerica-northeast1-a,northamerica-northeast1-b,northamerica-northeast1-c,southamerica-east1-a,' +
+            'southamerica-east1-b,southamerica-east1-c,us-central1-a,us-central1-b,us-central1-c,us-central1-f,' +
+            'us-east1-b,us-east1-c,us-east1-d,us-east4-a,us-east4-b,us-east4-c,us-west1-a,us-west1-b,us-west1-c,' +
+            'us-west2-a,us-west2-b,us-west2-c,us-west3-a,us-west3-b,us-west3-c')
     log('%r' % cmd)
 
     # TODO(krzyzacy): work around for alpha API list calls
@@ -385,26 +397,30 @@ def main(project, days, hours, filt, rate_limit, service_account):
 
     if service_account:
         err |= activate_service_account(service_account)
+        if err:
+            print >> sys.stderr, 'Failed to activate service account %r' % (
+                service_account)
+            sys.exit(err)
 
-    if not err:
-        for res in DEMOLISH_ORDER:
-            log('Try to search for %r with condition %r, managed %r' % (
-                res.name, res.condition, res.managed))
-            try:
-                col = collect(project, age, res, filt, clear_all)
-                if col:
-                    err |= clear_resources(project, col, res, rate_limit)
-            except (subprocess.CalledProcessError, ValueError):
-                err |= 1  # keep clean the other resource
-                print >> sys.stderr, 'Fail to list resource %r from project %r' \
-                                     % (res.name, project)
+    # try to clean a leaked GKE cluster first, rather than attempting to delete
+    # its associated resources individually.
+    try:
+        err |= clean_gke_cluster(project, age, filt)
+    except ValueError:
+        err |= 1  # keep clean the other resource
+        print >> sys.stderr, 'Fail to clean up cluster from project %r' % project
 
-        # try to clean leaking gke cluster
+    for res in DEMOLISH_ORDER:
+        log('Try to search for %r with condition %r, managed %r' % (
+            res.name, res.condition, res.managed))
         try:
-            err |= clean_gke_cluster(project, age, filt)
-        except ValueError:
+            col = collect(project, age, res, filt, clear_all)
+            if col:
+                err |= clear_resources(project, col, res, rate_limit)
+        except (subprocess.CalledProcessError, ValueError):
             err |= 1  # keep clean the other resource
-            print >> sys.stderr, 'Fail to clean up cluster from project %r' % project
+            print >> sys.stderr, 'Fail to list resource %r from project %r' % (
+                res.name, project)
 
     print '[=== Finish Janitor on project %r with status %r ===]' % (project, err)
     sys.exit(err)

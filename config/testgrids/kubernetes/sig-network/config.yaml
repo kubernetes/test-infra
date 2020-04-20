@@ -2,15 +2,16 @@ dashboard_groups:
 - name: sig-network
   dashboard_names:
     - sig-network-dualstack-azure-e2e
+    - sig-network-dns
     - sig-network-external-dns
     - sig-network-gce
-    - sig-network-gke
     - sig-network-ingress-gce-e2e
     - sig-network-ingress-nginx
     - sig-network-netd
     - sig-network-service-apis
 
 dashboards:
+- name: sig-network-dns
 - name: sig-network-dualstack-azure-e2e
 - name: sig-network-external-dns
 - name: sig-network-gce
@@ -42,6 +43,12 @@ dashboards:
       description: network gci-gce e2e tests in ipvs proxier mode
       alert_options:
         alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com, lionwei1992+alerts@gmail.com
+    - name: pull-gci-gce-ipvs
+      test_group_name: pull-kubernetes-e2e-gci-gce-ipvs
+      base_options: include-filter-by-regex=\[sig-network\]
+      description: presubmit network gci-gce e2e tests in ipvs proxier mode
+      alert_options:
+        alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
     - name: gci-gce-coredns
       test_group_name: ci-kubernetes-e2e-gci-gce-coredns
       base_options: include-filter-by-regex=\[sig-network\]
@@ -102,51 +109,10 @@ dashboards:
       description: network gci-gce alpha features e2e tests for master branch
       alert_options:
         alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
-    - name: gce-lb-finalizer
-      test_group_name: ci-kubernetes-e2e-gce-lb-finalizer
+    - name: gci-gce-basic-sctp
+      test_group_name: ci-kubernetes-e2e-gci-gce-basic-sctp
       base_options: include-filter-by-regex=\[sig-network\]
-      description: load balancer tests with finalizer protection for master branch
-
-- name: sig-network-gke
-  dashboard_tab:
-    - name: gci-gke
-      test_group_name: ci-kubernetes-e2e-gci-gke
-      base_options: include-filter-by-regex=\[sig-network\]
-      description: network gci-gke e2e tests for master branch
-      alert_options:
-        alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
-    - name: gci-gke-slow
-      test_group_name: ci-kubernetes-e2e-gci-gke-slow
-      base_options: include-filter-by-regex=\[sig-network\]
-      description: network gci-gke slow e2e tests for master branch
-      alert_options:
-        alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
-    - name: gci-gke-serial
-      test_group_name: ci-kubernetes-e2e-gci-gke-serial
-      base_options: include-filter-by-regex=\[sig-network\]
-      description: network gci-gke serial e2e tests for master branch
-      alert_options:
-        alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
-    - name: gci-gke-alpha-features
-      test_group_name: ci-kubernetes-e2e-gci-gke-alpha-features
-      base_options: include-filter-by-regex=\[sig-network\]
-      description: network gci-gke alpha features e2e tests for master branch
-      alert_options:
-        alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
-    - name: gke-cos-1.11-ingress
-      test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-ingress
-      alert_options:
-        alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
-    - name: gke-cos-1.12-ingress
-      test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-ingress
-      alert_options:
-        alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
-    - name: gke-cos-1.13-ingress
-      test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-ingress
-      alert_options:
-        alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
-    - name: gke-cos-1.14-ingress
-      test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-ingress
+      description: network gci-gce SCTP support basic e2e tests for master branch
       alert_options:
         alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
 

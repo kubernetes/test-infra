@@ -22,7 +22,6 @@ $ go run k8s.io/test-infra/gencred <options>
 ```
 
 The following is a list of supported options for the `gencred` CLI. All options are *optional*. 
-> If a `--context` is not specified, then the *current kubeconfig context* is used.
 
 ```console
   -c, --certificate      Authorize with a client certificate and key.
@@ -37,7 +36,7 @@ Create a kubeconfig entry with context name `mycluster` using `serviceaccount` a
 > `serviceaccount` authorization is the *default* if neither `-s, --serviceaccount` nor `-c, --certificate` is specified.
  
 ```console
-$ gencred --name mycluster --output ./config.yaml --serviceaccount
+$ gencred --context my-current-context --name mycluster --output ./config.yaml --serviceaccount
 ```
 
 The kubeconfig contents will be `output` to  `./config.yaml`:
@@ -66,7 +65,7 @@ users:
 Create a kubeconfig entry with **default** context name `build` using `certificate` authorization and output to the **default** `stdout`.
 
 ```console
-$ gencred --certificate
+$ gencred --context my-current-context --certificate
 ```
 
 The kubeconfig contents will be `output` to `stdout`:
@@ -93,24 +92,18 @@ users:
     client-key-data: fake-key-data
 ```
 
-Specify an alternative kube `context` to generate credentials for.
-
-```console
-$ gencred --context gke_project_us-west1-a_prow
-```
-
 Specify the `--overwrite` flag to *replace* the `output` file if it exists.
 
 ```console
-$ gencred --output ./existing.yaml --overwrite
+$ gencred --context my-current-context --output ./existing.yaml --overwrite
 ```
 
 Omit the `--overwrite` flag to *merge* the `output` file if it exists.
 > Entries from the *existing* file take precedence on conflicts.
 
 ```console
-$ gencred --name oldcluster --output ./existing.yaml
-$ gencred --name newcluster --output ./existing.yaml
+$ gencred --context my-current-context --name oldcluster --output ./existing.yaml
+$ gencred --context my-current-context --name newcluster --output ./existing.yaml
 ```
 
 The kubeconfig contents will be `output` to  `./existing.yaml`:
@@ -144,6 +137,15 @@ users:
   user:
     client-certificate-data: fake-cert-data
     client-key-data: fake-key-data
+```
+
+#### Merging into a kubeconfig in a Kubernetes secret.
+If you store kubeconfig files in kubernetes secrets to allow pods to access other kubernetes clusters (like many of Prow's components require) consider using [`merge_kubeconfig_secret.py`](/gencred/merge_kubeconfig_secret.py) to merge the kubeconfig produced by `gencred` into the secret.
+
+```shell
+# Generate a kubeconfig.yaml as described and shown above, then run something like:
+./merge_kubeconfig_secret.py --src-key=config-old --dest-key=config-new kubeconfig.yaml
+# Update references (e.g. `--kubeconfig` flags) to point to config-new instead of config-old.
 ```
 
 ### Library

@@ -30,8 +30,8 @@ import (
 
 	"cloud.google.com/go/storage"
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/test-infra/pkg/io"
 	"k8s.io/test-infra/prow/gerrit/client"
+	"k8s.io/test-infra/prow/io"
 )
 
 type fakeOpener struct{}
@@ -40,7 +40,7 @@ func (o fakeOpener) Reader(ctx context.Context, path string) (io.ReadCloser, err
 	return nil, storage.ErrObjectNotExist
 }
 
-func (o fakeOpener) Writer(ctx context.Context, path string) (io.WriteCloser, error) {
+func (o fakeOpener) Writer(ctx context.Context, path string, _ ...io.WriterOptions) (io.WriteCloser, error) {
 	return nil, errors.New("do not call Writer")
 }
 
@@ -77,6 +77,24 @@ func TestFlags(t *testing.T) {
 			name:     "dry run defaults to false",
 			del:      sets.NewString("--dry-run"),
 			expected: func(o *options) {},
+		},
+		{
+			name: "gcs credentials are set",
+			args: map[string]string{
+				"--gcs-credentials-file": "/creds",
+			},
+			expected: func(o *options) {
+				o.storage.GCSCredentialsFile = "/creds"
+			},
+		},
+		{
+			name: "s3 credentials are set",
+			args: map[string]string{
+				"--s3-credentials-file": "/creds",
+			},
+			expected: func(o *options) {
+				o.storage.S3CredentialsFile = "/creds"
+			},
 		},
 	}
 
@@ -135,7 +153,7 @@ func TestSyncTime(t *testing.T) {
 	path := filepath.Join(dir, "value.txt")
 	var noCreds string
 	ctx := context.Background()
-	open, err := io.NewOpener(ctx, noCreds)
+	open, err := io.NewOpener(ctx, noCreds, noCreds)
 	if err != nil {
 		t.Fatalf("Failed to create opener: %v", err)
 	}
@@ -213,7 +231,7 @@ func TestNewProjectAddition(t *testing.T) {
 
 	var noCreds string
 	ctx := context.Background()
-	open, err := io.NewOpener(ctx, noCreds)
+	open, err := io.NewOpener(ctx, noCreds, noCreds)
 	if err != nil {
 		t.Fatalf("Failed to create opener: %v", err)
 	}

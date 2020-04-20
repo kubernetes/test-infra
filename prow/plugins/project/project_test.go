@@ -382,6 +382,13 @@ func TestParseCommand(t *testing.T) {
 		},
 		{
 			hasMatches:      true,
+			command:         "/project clear 0.0.0 Backlog",
+			proposedProject: "0.0.0",
+			proposedColumn:  "Backlog",
+			shouldClear:     true,
+		},
+		{
+			hasMatches:      true,
 			command:         "/project clear",
 			proposedProject: "",
 			proposedColumn:  "",
@@ -393,6 +400,55 @@ func TestParseCommand(t *testing.T) {
 			proposedProject: "0.0.0",
 			proposedColumn:  "",
 			shouldClear:     false,
+		},
+		{
+			hasMatches:      true,
+			command:         "/project '0.0.0'",
+			proposedProject: "0.0.0",
+			proposedColumn:  "",
+			shouldClear:     false,
+		},
+		{
+			hasMatches:      true,
+			command:         "/project \"0.0.0\"",
+			proposedProject: "0.0.0",
+			proposedColumn:  "",
+			shouldClear:     false,
+		},
+		{
+			hasMatches:      true,
+			command:         "/project '0.0.0' To do",
+			proposedProject: "0.0.0",
+			proposedColumn:  "To do",
+			shouldClear:     false,
+		},
+		{
+			hasMatches:      true,
+			command:         "/project '0.0.0' \"To do\"",
+			proposedProject: "0.0.0",
+			proposedColumn:  "To do",
+			shouldClear:     false,
+		},
+		{
+			hasMatches:      true,
+			command:         "/project 'something 0.0.0' \"To do\"",
+			proposedProject: "something 0.0.0",
+			proposedColumn:  "To do",
+			shouldClear:     false,
+		},
+		{
+			hasMatches:      true,
+			command:         "/project clear '0.0.0' \"To do\"",
+			proposedProject: "0.0.0",
+			proposedColumn:  "To do",
+			shouldClear:     true,
+		},
+		{
+			hasMatches:      true,
+			command:         "/project clear 'something 0.0.0' \"To do\"",
+			proposedProject: "something 0.0.0",
+			proposedColumn:  "To do",
+			shouldClear:     true,
 		},
 		{
 			hasMatches:      false,
@@ -415,7 +471,7 @@ func TestParseCommand(t *testing.T) {
 			}
 			continue
 		}
-		proposedProject, proposedColumn, shouldClear, _ := processRegexMatches(matches)
+		proposedProject, proposedColumn, shouldClear, _ := processCommand(matches[1])
 		if proposedProject != test.proposedProject ||
 			proposedColumn != test.proposedColumn ||
 			shouldClear != test.shouldClear {

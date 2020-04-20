@@ -75,8 +75,12 @@ func UpdatePR(gc github.Client, org, repo string, images map[string]string, extr
 // UpdatePullRequest updates with github client "gc" the PR of github repo org/repo
 // with "title" and "body" of PR matching "matchTitle" from "source" to "branch"
 func UpdatePullRequest(gc github.Client, org, repo, title, body, matchTitle, source, branch string) error {
+	return UpdatePullRequestWithLabels(gc, org, repo, title, body, matchTitle, source, branch, nil)
+}
+
+func UpdatePullRequestWithLabels(gc github.Client, org, repo, title, body, matchTitle, source, branch string, labels []string) error {
 	logrus.Info("Creating or updating PR...")
-	n, err := updater.EnsurePR(org, repo, title, body, source, branch, matchTitle, gc)
+	n, err := updater.EnsurePRWithLabels(org, repo, title, body, source, branch, matchTitle, gc, labels)
 	if err != nil {
 		return fmt.Errorf("failed to ensure PR exists: %v", err)
 	}

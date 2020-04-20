@@ -1,5 +1,12 @@
+reviewers:
+  - wangzhen127
+  - Random-Liu
+  - andyxning
+  - dchen1107
 approvers:
   - wangzhen127
   - Random-Liu
   - andyxning
   - dchen1107
+labels:
+- sig/node

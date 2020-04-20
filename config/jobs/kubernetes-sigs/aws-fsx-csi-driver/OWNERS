@@ -1,5 +1,10 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
+reviewers:
+- leakingtapan
+- gyuho
+- bertinatto
+- wongma7
 approvers:
 - leakingtapan
 - gyuho

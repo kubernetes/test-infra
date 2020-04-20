@@ -17,7 +17,7 @@ function addSectionExpanders(): void {
 }
 
 function addTestExpanders(): void {
-  const rows = document.querySelectorAll<HTMLTableRowElement>('.failure-name');
+  const rows = document.querySelectorAll<HTMLTableRowElement>('.failure-name,.flaky-name');
   for (const row of Array.from(rows)) {
     row.onclick = () => {
       const sibling = row.nextElementSibling!;

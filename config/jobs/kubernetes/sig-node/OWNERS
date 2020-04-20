@@ -1,6 +1,12 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
+reviewers:
+- yujuhong
+- Random-Liu
+- dchen1107
 approvers:
 - yujuhong
 - Random-Liu
 - dchen1107
+labels:
+- sig/node

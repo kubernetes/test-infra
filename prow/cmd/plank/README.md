@@ -14,7 +14,6 @@ Only GCS is supported as the job log storage at the moment.
 # config.yaml
 
 plank:
-  allow_cancellations: true # whether to delete ProwJobs' pod (true) or not (false) when new instances are triggered for the same PR
   # used to link to job results for decorated jobs (with pod utilities)
   job_url_prefix_config:
     '*': https://<domain>/view/gcs

@@ -59,6 +59,12 @@ presets:
   # Dump full systemd journal on master and nodes.
   - name: LOG_DUMP_SYSTEMD_JOURNAL
     value: "true"
+  # Timeout for the log dumping over SSH. Relevant only if fallback to SSH log dumping takes place
+  # e.g. when logexporter daemonset fails for some reason.
+  # We deliberately cap it at 1h to avoid spending too much time (e.g. over 5h for 5k node cluster)
+  # on dumping logs that in most cases we won't need anyway.
+  - name: LOG_DUMP_SSH_TIMEOUT_SECONDS
+    value: 3600
   # Use private clusters for scalability tests - https://github.com/kubernetes/kubernetes/issues/76374
   - name: KUBE_GCE_PRIVATE_CLUSTER
     value: "true"
@@ -144,6 +150,15 @@ presets:
   # Dump full systemd journal on master and nodes.
   - name: LOG_DUMP_SYSTEMD_JOURNAL
     value: "true"
+  # Dump clusterloader prober's log files
+  - name: LOG_DUMP_EXTRA_FILES
+    value: "cl2-*"
+  # Timeout for the log dumping over SSH. Relevant only if fallback to SSH log dumping takes place
+  # e.g. when logexporter daemonset fails for some reason.
+  # We deliberately cap it at 1h to avoid spending too much time (e.g. over 5h for 5k node cluster)
+  # on dumping logs that in most cases we won't need anyway.
+  - name: LOG_DUMP_SSH_TIMEOUT_SECONDS
+    value: 3600
   # Keep all logrotated files (not just 5 latest which is a default)
   - name: LOGROTATE_FILES_MAX_COUNT
     value: 1000
@@ -164,6 +179,18 @@ presets:
   # https://github.com/kubernetes/kubernetes/pull/85030 while not making the tests flaky.
   - name: CL2_SCHEDULER_THROUGHPUT_THRESHOLD
     value: 90
+
+  ###### Scalability Envs
+  ### Common env variables for containerd scalability-related suites.
+- labels:
+    preset-e2e-scalability-containerd: "true"
+  env:
+  - name: CL2_PROBE_MEASUREMENTS_CHECK_PROBES_READY_TIMEOUT
+    value: "10m"
+  - name: KUBE_CONTAINER_RUNTIME
+    value: "containerd"
+  - name: LOG_DUMP_SAVE_SERVICES
+    value: "containerd"
 
 ###### Scalability Envs
 ### Common env variables for node scalability-related suites.

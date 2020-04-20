@@ -10,7 +10,7 @@ periodics:
     containers:
     - args:
       - --timeout=140
-      - --repo=k8s.io/kubernetes=release-1.17
+      - --repo=k8s.io/kubernetes=release-1.18
       - --root=/go/src
       - --scenario=kubernetes_e2e
       - --
@@ -27,7 +27,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-1.18
   annotations:
     testgrid-dashboards: canonical-ubuntu1-k8sbeta
     testgrid-tab-name: ubuntu1-k8sbeta-gkespec
@@ -42,7 +42,7 @@ periodics:
     containers:
     - args:
       - --timeout=320
-      - --repo=k8s.io/kubernetes=release-1.17
+      - --repo=k8s.io/kubernetes=release-1.18
       - --root=/go/src
       - --scenario=kubernetes_e2e
       - --
@@ -59,7 +59,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-1.18
   annotations:
     testgrid-dashboards: canonical-ubuntu1-k8sbeta
     testgrid-tab-name: ubuntu1-k8sbeta-serial
@@ -74,7 +74,7 @@ periodics:
     containers:
     - args:
       - --timeout=140
-      - --repo=k8s.io/kubernetes=release-1.16
+      - --repo=k8s.io/kubernetes=release-1.17
       - --root=/go/src
       - --scenario=kubernetes_e2e
       - --
@@ -91,7 +91,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-1.16
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-1.17
   annotations:
     testgrid-dashboards: canonical-ubuntu1-k8sstable1
     testgrid-tab-name: ubuntu1-k8sstable1-gkespec
@@ -106,7 +106,7 @@ periodics:
     containers:
     - args:
       - --timeout=320
-      - --repo=k8s.io/kubernetes=release-1.16
+      - --repo=k8s.io/kubernetes=release-1.17
       - --root=/go/src
       - --scenario=kubernetes_e2e
       - --
@@ -123,7 +123,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-1.16
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-1.17
   annotations:
     testgrid-dashboards: canonical-ubuntu1-k8sstable1
     testgrid-tab-name: ubuntu1-k8sstable1-serial
@@ -138,7 +138,7 @@ periodics:
     containers:
     - args:
       - --timeout=140
-      - --repo=k8s.io/kubernetes=release-1.15
+      - --repo=k8s.io/kubernetes=release-1.16
       - --root=/go/src
       - --scenario=kubernetes_e2e
       - --
@@ -155,7 +155,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-1.15
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-1.16
   annotations:
     testgrid-dashboards: canonical-ubuntu1-k8sstable2
     testgrid-tab-name: ubuntu1-k8sstable2-gkespec
@@ -170,7 +170,7 @@ periodics:
     containers:
     - args:
       - --timeout=320
-      - --repo=k8s.io/kubernetes=release-1.15
+      - --repo=k8s.io/kubernetes=release-1.16
       - --root=/go/src
       - --scenario=kubernetes_e2e
       - --
@@ -187,7 +187,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-1.15
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-1.16
   annotations:
     testgrid-dashboards: canonical-ubuntu1-k8sstable2
     testgrid-tab-name: ubuntu1-k8sstable2-serial
@@ -202,7 +202,7 @@ periodics:
     containers:
     - args:
       - --timeout=140
-      - --repo=k8s.io/kubernetes=release-1.14
+      - --repo=k8s.io/kubernetes=release-1.15
       - --root=/go/src
       - --scenario=kubernetes_e2e
       - --
@@ -219,7 +219,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-1.14
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-1.15
   annotations:
     testgrid-dashboards: canonical-ubuntu1-k8sstable3
     testgrid-tab-name: ubuntu1-k8sstable3-gkespec
@@ -234,7 +234,7 @@ periodics:
     containers:
     - args:
       - --timeout=320
-      - --repo=k8s.io/kubernetes=release-1.14
+      - --repo=k8s.io/kubernetes=release-1.15
       - --root=/go/src
       - --scenario=kubernetes_e2e
       - --
@@ -251,7 +251,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-1.14
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-1.15
   annotations:
     testgrid-dashboards: canonical-ubuntu1-k8sstable3
     testgrid-tab-name: ubuntu1-k8sstable3-serial
@@ -266,7 +266,7 @@ periodics:
     containers:
     - args:
       - --timeout=140
-      - --repo=k8s.io/kubernetes=release-1.17
+      - --repo=k8s.io/kubernetes=release-1.18
       - --root=/go/src
       - --scenario=kubernetes_e2e
       - --
@@ -283,7 +283,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-1.18
   annotations:
     testgrid-dashboards: canonical-ubuntu2-k8sbeta
     testgrid-tab-name: ubuntu2-k8sbeta-gkespec
@@ -298,6 +298,70 @@ periodics:
     containers:
     - args:
       - --timeout=320
+      - --repo=k8s.io/kubernetes=release-1.18
+      - --root=/go/src
+      - --scenario=kubernetes_e2e
+      - --
+      - --deployment=node
+      - --node-tests=true
+      - --provider=gce
+      - --gcp-zone=us-west1-b
+      - --image-family=pipeline-2
+      - --image-project=ubuntu-os-gke-cloud-devel
+      - --timeout=300m
+      - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeAlphaFeature:.+\]"
+      - --gcp-project=ubuntu-image-validation
+      - --node-test-args=--feature-gates=DynamicKubeletConfig=true
+      env:
+      - name: GOPATH
+        value: /go
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-1.18
+  annotations:
+    testgrid-dashboards: canonical-ubuntu2-k8sbeta
+    testgrid-tab-name: ubuntu2-k8sbeta-serial
+- tags:
+  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
+  interval: 2h
+  labels:
+    preset-service-account: 'true'
+    preset-k8s-ssh: 'true'
+  name: ci-kubernetes-e2enode-ubuntu2-k8sstable1-gkespec
+  spec:
+    containers:
+    - args:
+      - --timeout=140
+      - --repo=k8s.io/kubernetes=release-1.17
+      - --root=/go/src
+      - --scenario=kubernetes_e2e
+      - --
+      - --deployment=node
+      - --node-tests=true
+      - --provider=gce
+      - --gcp-zone=us-west1-b
+      - --image-family=pipeline-2
+      - --image-project=ubuntu-os-gke-cloud-devel
+      - --timeout=120m
+      - --test_args=--nodes=8 --skip="\[Flaky\]|\[Serial\]|\[NodeAlphaFeature:.+\]"
+      - --node-args=--system-spec-name=gke
+      - --gcp-project=ubuntu-image-validation
+      env:
+      - name: GOPATH
+        value: /go
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-1.17
+  annotations:
+    testgrid-dashboards: canonical-ubuntu2-k8sstable1
+    testgrid-tab-name: ubuntu2-k8sstable1-gkespec
+- tags:
+  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
+  interval: 2h
+  labels:
+    preset-service-account: 'true'
+    preset-k8s-ssh: 'true'
+  name: ci-kubernetes-e2enode-ubuntu2-k8sstable1-serial
+  spec:
+    containers:
+    - args:
+      - --timeout=320
       - --repo=k8s.io/kubernetes=release-1.17
       - --root=/go/src
       - --scenario=kubernetes_e2e
@@ -315,71 +379,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-1.17
-  annotations:
-    testgrid-dashboards: canonical-ubuntu2-k8sbeta
-    testgrid-tab-name: ubuntu2-k8sbeta-serial
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2enode-ubuntu2-k8sstable1-gkespec
-  spec:
-    containers:
-    - args:
-      - --timeout=140
-      - --repo=k8s.io/kubernetes=release-1.16
-      - --root=/go/src
-      - --scenario=kubernetes_e2e
-      - --
-      - --deployment=node
-      - --node-tests=true
-      - --provider=gce
-      - --gcp-zone=us-west1-b
-      - --image-family=pipeline-2
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --timeout=120m
-      - --test_args=--nodes=8 --skip="\[Flaky\]|\[Serial\]|\[NodeAlphaFeature:.+\]"
-      - --node-args=--system-spec-name=gke
-      - --gcp-project=ubuntu-image-validation
-      env:
-      - name: GOPATH
-        value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-1.16
-  annotations:
-    testgrid-dashboards: canonical-ubuntu2-k8sstable1
-    testgrid-tab-name: ubuntu2-k8sstable1-gkespec
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2enode-ubuntu2-k8sstable1-serial
-  spec:
-    containers:
-    - args:
-      - --timeout=320
-      - --repo=k8s.io/kubernetes=release-1.16
-      - --root=/go/src
-      - --scenario=kubernetes_e2e
-      - --
-      - --deployment=node
-      - --node-tests=true
-      - --provider=gce
-      - --gcp-zone=us-west1-b
-      - --image-family=pipeline-2
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --timeout=300m
-      - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeAlphaFeature:.+\]"
-      - --gcp-project=ubuntu-image-validation
-      - --node-test-args=--feature-gates=DynamicKubeletConfig=true
-      env:
-      - name: GOPATH
-        value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-1.16
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-1.17
   annotations:
     testgrid-dashboards: canonical-ubuntu2-k8sstable1
     testgrid-tab-name: ubuntu2-k8sstable1-serial
@@ -394,7 +394,7 @@ periodics:
     containers:
     - args:
       - --timeout=140
-      - --repo=k8s.io/kubernetes=release-1.15
+      - --repo=k8s.io/kubernetes=release-1.16
       - --root=/go/src
       - --scenario=kubernetes_e2e
       - --
@@ -411,7 +411,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-1.15
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-1.16
   annotations:
     testgrid-dashboards: canonical-ubuntu2-k8sstable2
     testgrid-tab-name: ubuntu2-k8sstable2-gkespec
@@ -426,6 +426,70 @@ periodics:
     containers:
     - args:
       - --timeout=320
+      - --repo=k8s.io/kubernetes=release-1.16
+      - --root=/go/src
+      - --scenario=kubernetes_e2e
+      - --
+      - --deployment=node
+      - --node-tests=true
+      - --provider=gce
+      - --gcp-zone=us-west1-b
+      - --image-family=pipeline-2
+      - --image-project=ubuntu-os-gke-cloud-devel
+      - --timeout=300m
+      - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeAlphaFeature:.+\]"
+      - --gcp-project=ubuntu-image-validation
+      - --node-test-args=--feature-gates=DynamicKubeletConfig=true
+      env:
+      - name: GOPATH
+        value: /go
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-1.16
+  annotations:
+    testgrid-dashboards: canonical-ubuntu2-k8sstable2
+    testgrid-tab-name: ubuntu2-k8sstable2-serial
+- tags:
+  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
+  interval: 2h
+  labels:
+    preset-service-account: 'true'
+    preset-k8s-ssh: 'true'
+  name: ci-kubernetes-e2enode-ubuntu2-k8sstable3-gkespec
+  spec:
+    containers:
+    - args:
+      - --timeout=140
+      - --repo=k8s.io/kubernetes=release-1.15
+      - --root=/go/src
+      - --scenario=kubernetes_e2e
+      - --
+      - --deployment=node
+      - --node-tests=true
+      - --provider=gce
+      - --gcp-zone=us-west1-b
+      - --image-family=pipeline-2
+      - --image-project=ubuntu-os-gke-cloud-devel
+      - --timeout=120m
+      - --test_args=--nodes=8 --skip="\[Flaky\]|\[Serial\]|\[NodeAlphaFeature:.+\]"
+      - --node-args=--system-spec-name=gke
+      - --gcp-project=ubuntu-image-validation
+      env:
+      - name: GOPATH
+        value: /go
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-1.15
+  annotations:
+    testgrid-dashboards: canonical-ubuntu2-k8sstable3
+    testgrid-tab-name: ubuntu2-k8sstable3-gkespec
+- tags:
+  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
+  interval: 2h
+  labels:
+    preset-service-account: 'true'
+    preset-k8s-ssh: 'true'
+  name: ci-kubernetes-e2enode-ubuntu2-k8sstable3-serial
+  spec:
+    containers:
+    - args:
+      - --timeout=320
       - --repo=k8s.io/kubernetes=release-1.15
       - --root=/go/src
       - --scenario=kubernetes_e2e
@@ -443,71 +507,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-1.15
-  annotations:
-    testgrid-dashboards: canonical-ubuntu2-k8sstable2
-    testgrid-tab-name: ubuntu2-k8sstable2-serial
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2enode-ubuntu2-k8sstable3-gkespec
-  spec:
-    containers:
-    - args:
-      - --timeout=140
-      - --repo=k8s.io/kubernetes=release-1.14
-      - --root=/go/src
-      - --scenario=kubernetes_e2e
-      - --
-      - --deployment=node
-      - --node-tests=true
-      - --provider=gce
-      - --gcp-zone=us-west1-b
-      - --image-family=pipeline-2
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --timeout=120m
-      - --test_args=--nodes=8 --skip="\[Flaky\]|\[Serial\]|\[NodeAlphaFeature:.+\]"
-      - --node-args=--system-spec-name=gke
-      - --gcp-project=ubuntu-image-validation
-      env:
-      - name: GOPATH
-        value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-1.14
-  annotations:
-    testgrid-dashboards: canonical-ubuntu2-k8sstable3
-    testgrid-tab-name: ubuntu2-k8sstable3-gkespec
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2enode-ubuntu2-k8sstable3-serial
-  spec:
-    containers:
-    - args:
-      - --timeout=320
-      - --repo=k8s.io/kubernetes=release-1.14
-      - --root=/go/src
-      - --scenario=kubernetes_e2e
-      - --
-      - --deployment=node
-      - --node-tests=true
-      - --provider=gce
-      - --gcp-zone=us-west1-b
-      - --image-family=pipeline-2
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --timeout=300m
-      - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeAlphaFeature:.+\]"
-      - --gcp-project=ubuntu-image-validation
-      - --node-test-args=--feature-gates=DynamicKubeletConfig=true
-      env:
-      - name: GOPATH
-        value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-1.14
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-1.15
   annotations:
     testgrid-dashboards: canonical-ubuntu2-k8sstable3
     testgrid-tab-name: ubuntu2-k8sstable3-serial
@@ -531,14 +531,14 @@ periodics:
       - --image-family=pipeline-1
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
-      - --extract=ci/latest-1.17
+      - --extract=ci/latest-1.18
       - --timeout=120m
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
   annotations:
     testgrid-tab-name: gce-ubuntu1-k8sbeta-default
     testgrid-dashboards: sig-release-generated, canonical-ubuntu1-k8sbeta
@@ -562,14 +562,14 @@ periodics:
       - --image-family=pipeline-1
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
-      - --extract=ci/latest-1.17
+      - --extract=ci/latest-1.18
       - --timeout=150m
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
   annotations:
     testgrid-tab-name: gce-ubuntu1-k8sbeta-slow
     testgrid-dashboards: sig-release-generated, canonical-ubuntu1-k8sbeta
@@ -593,14 +593,14 @@ periodics:
       - --image-family=pipeline-1
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
-      - --extract=ci/latest-1.17
+      - --extract=ci/latest-1.18
       - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
   annotations:
     testgrid-tab-name: gce-ubuntu1-k8sbeta-serial
     testgrid-dashboards: sig-release-generated, canonical-ubuntu1-k8sbeta
@@ -624,14 +624,14 @@ periodics:
       - --image-family=pipeline-1
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
-      - --extract=ci/latest-1.16
+      - --extract=ci/latest-1.17
       - --timeout=120m
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
   annotations:
     testgrid-tab-name: gce-ubuntu1-k8sstable1-default
     testgrid-dashboards: sig-release-generated, canonical-ubuntu1-k8sstable1
@@ -655,14 +655,14 @@ periodics:
       - --image-family=pipeline-1
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
-      - --extract=ci/latest-1.16
+      - --extract=ci/latest-1.17
       - --timeout=150m
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
   annotations:
     testgrid-tab-name: gce-ubuntu1-k8sstable1-slow
     testgrid-dashboards: sig-release-generated, canonical-ubuntu1-k8sstable1
@@ -686,14 +686,14 @@ periodics:
       - --image-family=pipeline-1
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
-      - --extract=ci/latest-1.16
+      - --extract=ci/latest-1.17
       - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
   annotations:
     testgrid-tab-name: gce-ubuntu1-k8sstable1-serial
     testgrid-dashboards: sig-release-generated, canonical-ubuntu1-k8sstable1
@@ -717,14 +717,14 @@ periodics:
       - --image-family=pipeline-1
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
-      - --extract=ci/latest-1.15
+      - --extract=ci/latest-1.16
       - --timeout=120m
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
   annotations:
     testgrid-tab-name: gce-ubuntu1-k8sstable2-default
     testgrid-dashboards: sig-release-generated, canonical-ubuntu1-k8sstable2
@@ -748,14 +748,14 @@ periodics:
       - --image-family=pipeline-1
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
-      - --extract=ci/latest-1.15
+      - --extract=ci/latest-1.16
       - --timeout=150m
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
   annotations:
     testgrid-tab-name: gce-ubuntu1-k8sstable2-slow
     testgrid-dashboards: sig-release-generated, canonical-ubuntu1-k8sstable2
@@ -779,14 +779,14 @@ periodics:
       - --image-family=pipeline-1
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
-      - --extract=ci/latest-1.15
+      - --extract=ci/latest-1.16
       - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
   annotations:
     testgrid-tab-name: gce-ubuntu1-k8sstable2-serial
     testgrid-dashboards: sig-release-generated, canonical-ubuntu1-k8sstable2
@@ -810,14 +810,14 @@ periodics:
       - --image-family=pipeline-1
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
-      - --extract=ci/latest-1.14
+      - --extract=ci/latest-1.15
       - --timeout=120m
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
   annotations:
     testgrid-tab-name: gce-ubuntu1-k8sstable3-default
     testgrid-dashboards: sig-release-generated, canonical-ubuntu1-k8sstable3
@@ -841,14 +841,14 @@ periodics:
       - --image-family=pipeline-1
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
-      - --extract=ci/latest-1.14
+      - --extract=ci/latest-1.15
       - --timeout=150m
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
   annotations:
     testgrid-tab-name: gce-ubuntu1-k8sstable3-slow
     testgrid-dashboards: sig-release-generated, canonical-ubuntu1-k8sstable3
@@ -872,14 +872,14 @@ periodics:
       - --image-family=pipeline-1
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
-      - --extract=ci/latest-1.14
+      - --extract=ci/latest-1.15
       - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
   annotations:
     testgrid-tab-name: gce-ubuntu1-k8sstable3-serial
     testgrid-dashboards: sig-release-generated, canonical-ubuntu1-k8sstable3
@@ -903,14 +903,14 @@ periodics:
       - --image-family=pipeline-2
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
-      - --extract=ci/latest-1.17
+      - --extract=ci/latest-1.18
       - --timeout=120m
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
   annotations:
     testgrid-tab-name: gce-ubuntu2-k8sbeta-default
     testgrid-dashboards: sig-release-generated, canonical-ubuntu2-k8sbeta
@@ -934,14 +934,14 @@ periodics:
       - --image-family=pipeline-2
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
-      - --extract=ci/latest-1.17
+      - --extract=ci/latest-1.18
       - --timeout=150m
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
   annotations:
     testgrid-tab-name: gce-ubuntu2-k8sbeta-slow
     testgrid-dashboards: sig-release-generated, canonical-ubuntu2-k8sbeta
@@ -965,14 +965,14 @@ periodics:
       - --image-family=pipeline-2
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
-      - --extract=ci/latest-1.17
+      - --extract=ci/latest-1.18
       - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
   annotations:
     testgrid-tab-name: gce-ubuntu2-k8sbeta-serial
     testgrid-dashboards: sig-release-generated, canonical-ubuntu2-k8sbeta
@@ -996,14 +996,14 @@ periodics:
       - --image-family=pipeline-2
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
-      - --extract=ci/latest-1.16
+      - --extract=ci/latest-1.17
       - --timeout=120m
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
   annotations:
     testgrid-tab-name: gce-ubuntu2-k8sstable1-default
     testgrid-dashboards: sig-release-generated, canonical-ubuntu2-k8sstable1
@@ -1027,14 +1027,14 @@ periodics:
       - --image-family=pipeline-2
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
-      - --extract=ci/latest-1.16
+      - --extract=ci/latest-1.17
       - --timeout=150m
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
   annotations:
     testgrid-tab-name: gce-ubuntu2-k8sstable1-slow
     testgrid-dashboards: sig-release-generated, canonical-ubuntu2-k8sstable1
@@ -1058,14 +1058,14 @@ periodics:
       - --image-family=pipeline-2
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
-      - --extract=ci/latest-1.16
+      - --extract=ci/latest-1.17
       - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
   annotations:
     testgrid-tab-name: gce-ubuntu2-k8sstable1-serial
     testgrid-dashboards: sig-release-generated, canonical-ubuntu2-k8sstable1
@@ -1089,14 +1089,14 @@ periodics:
       - --image-family=pipeline-2
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
-      - --extract=ci/latest-1.15
+      - --extract=ci/latest-1.16
       - --timeout=120m
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
   annotations:
     testgrid-tab-name: gce-ubuntu2-k8sstable2-default
     testgrid-dashboards: sig-release-generated, canonical-ubuntu2-k8sstable2
@@ -1120,14 +1120,14 @@ periodics:
       - --image-family=pipeline-2
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
-      - --extract=ci/latest-1.15
+      - --extract=ci/latest-1.16
       - --timeout=150m
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
   annotations:
     testgrid-tab-name: gce-ubuntu2-k8sstable2-slow
     testgrid-dashboards: sig-release-generated, canonical-ubuntu2-k8sstable2
@@ -1151,14 +1151,14 @@ periodics:
       - --image-family=pipeline-2
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
-      - --extract=ci/latest-1.15
+      - --extract=ci/latest-1.16
       - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
   annotations:
     testgrid-tab-name: gce-ubuntu2-k8sstable2-serial
     testgrid-dashboards: sig-release-generated, canonical-ubuntu2-k8sstable2
@@ -1182,14 +1182,14 @@ periodics:
       - --image-family=pipeline-2
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
-      - --extract=ci/latest-1.14
+      - --extract=ci/latest-1.15
       - --timeout=120m
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
   annotations:
     testgrid-tab-name: gce-ubuntu2-k8sstable3-default
     testgrid-dashboards: sig-release-generated, canonical-ubuntu2-k8sstable3
@@ -1213,14 +1213,14 @@ periodics:
       - --image-family=pipeline-2
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
-      - --extract=ci/latest-1.14
+      - --extract=ci/latest-1.15
       - --timeout=150m
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
   annotations:
     testgrid-tab-name: gce-ubuntu2-k8sstable3-slow
     testgrid-dashboards: sig-release-generated, canonical-ubuntu2-k8sstable3
@@ -1244,2120 +1244,16 @@ periodics:
       - --image-family=pipeline-2
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
-      - --extract=ci/latest-1.14
+      - --extract=ci/latest-1.15
       - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
   annotations:
     testgrid-tab-name: gce-ubuntu2-k8sstable3-serial
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu2-k8sstable3
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-alphafeatures
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=200
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-a8b5157df7
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-1
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.17
-      - --timeout=180m
-      - --test_args=--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly|DynamicKubeletConfig)\] --minStartupPods=8
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu1-k8sbeta-alphafeatures
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu1-k8sbeta
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-default
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=140
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-1e5ed73fb6
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-1
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.17
-      - --timeout=120m
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-      - --ginkgo-parallel=30
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu1-k8sbeta-default
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu1-k8sbeta
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-flaky
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=320
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-b3edfca419
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-1
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.17
-      - --timeout=300m
-      - --test_args=--ginkgo.focus=\[Flaky\] --ginkgo.skip=\[Feature:.+\] --minStartupPods=8
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu1-k8sbeta-flaky
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu1-k8sbeta
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-reboot
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=200
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-ef82f432d8
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-1
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.17
-      - --timeout=180m
-      - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu1-k8sbeta-reboot
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu1-k8sbeta
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-serial
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=680
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-cb9e7587b0
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-1
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.17
-      - --timeout=660m
-      - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-      - --ginkgo-parallel=1
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu1-k8sbeta-serial
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu1-k8sbeta
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-slow
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=170
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-007f724e53
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-1
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.17
-      - --timeout=150m
-      - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-      - --ginkgo-parallel=30
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu1-k8sbeta-slow
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu1-k8sbeta
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-updown
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=50
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-0bb2a59e08
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-1
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.17
-      - --timeout=30m
-      - --test_args=--ginkgo.focus=\[k8s.io\]\sNetworking.*\[Conformance\] --minStartupPods=8
-      - --ginkgo-parallel
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu1-k8sbeta-updown
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu1-k8sbeta
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  cron: 0 1-23/2 * * *
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-gpu
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=200
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-2077bf8ebd
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-1
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.17
-      - --gcp-project-type=gpu-project
-      - --timeout=180m
-      - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
-      - --env=NVIDIA_DRIVER_INSTALLER_DAEMONSET=https://raw.githubusercontent.com/GoogleCloudPlatform/container-engine-accelerators/master/nvidia-driver-installer/ubuntu/daemonset-preloaded.yaml
-      - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-k80,count=2
-      - --gcp-zone=us-west1-b
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu1-k8sbeta-gpu
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu1-k8sbeta
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 4h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-alphafeatures
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=200
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-88c20b786d
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-1
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.16
-      - --timeout=180m
-      - --test_args=--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly|DynamicKubeletConfig)\] --minStartupPods=8
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu1-k8sstable1-alphafeatures
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu1-k8sstable1
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 4h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-default
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=140
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-612e5ae656
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-1
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.16
-      - --timeout=120m
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-      - --ginkgo-parallel=30
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu1-k8sstable1-default
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu1-k8sstable1
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 4h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-flaky
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=320
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-84b85b01b9
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-1
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.16
-      - --timeout=300m
-      - --test_args=--ginkgo.focus=\[Flaky\] --ginkgo.skip=\[Feature:.+\] --minStartupPods=8
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu1-k8sstable1-flaky
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu1-k8sstable1
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 4h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-reboot
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=200
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-9d6e99a3bb
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-1
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.16
-      - --timeout=180m
-      - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu1-k8sstable1-reboot
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu1-k8sstable1
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 4h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-serial
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=680
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-b8beff6a04
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-1
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.16
-      - --timeout=660m
-      - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-      - --ginkgo-parallel=1
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu1-k8sstable1-serial
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu1-k8sstable1
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 4h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-slow
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=170
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-b14edae5fe
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-1
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.16
-      - --timeout=150m
-      - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-      - --ginkgo-parallel=30
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu1-k8sstable1-slow
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu1-k8sstable1
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 4h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-updown
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=50
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-75f14a269c
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-1
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.16
-      - --timeout=30m
-      - --test_args=--ginkgo.focus=\[k8s.io\]\sNetworking.*\[Conformance\] --minStartupPods=8
-      - --ginkgo-parallel
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu1-k8sstable1-updown
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu1-k8sstable1
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  cron: 0 2-23/4 * * *
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-gpu
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=200
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-06ede4ca42
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-1
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.16
-      - --gcp-project-type=gpu-project
-      - --timeout=180m
-      - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
-      - --env=NVIDIA_DRIVER_INSTALLER_DAEMONSET=https://raw.githubusercontent.com/GoogleCloudPlatform/container-engine-accelerators/master/nvidia-driver-installer/ubuntu/daemonset-preloaded.yaml
-      - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-k80,count=2
-      - --gcp-zone=us-west1-b
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu1-k8sstable1-gpu
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu1-k8sstable1
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 6h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-alphafeatures
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=200
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-b4fbf68701
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-1
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.15
-      - --timeout=180m
-      - --test_args=--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly|DynamicKubeletConfig)\] --minStartupPods=8
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu1-k8sstable2-alphafeatures
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu1-k8sstable2
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 6h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-default
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=140
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-c4b09549a4
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-1
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.15
-      - --timeout=120m
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-      - --ginkgo-parallel=30
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu1-k8sstable2-default
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu1-k8sstable2
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 6h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-flaky
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=320
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-243a039179
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-1
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.15
-      - --timeout=300m
-      - --test_args=--ginkgo.focus=\[Flaky\] --ginkgo.skip=\[Feature:.+\] --minStartupPods=8
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu1-k8sstable2-flaky
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu1-k8sstable2
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 6h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-reboot
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=200
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-2430af97aa
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-1
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.15
-      - --timeout=180m
-      - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu1-k8sstable2-reboot
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu1-k8sstable2
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 6h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-serial
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=680
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-7671b0fd74
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-1
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.15
-      - --timeout=660m
-      - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-      - --ginkgo-parallel=1
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu1-k8sstable2-serial
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu1-k8sstable2
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 6h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-slow
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=170
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-0b667b8521
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-1
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.15
-      - --timeout=150m
-      - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-      - --ginkgo-parallel=30
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu1-k8sstable2-slow
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu1-k8sstable2
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 6h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-updown
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=50
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-62f5050a4d
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-1
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.15
-      - --timeout=30m
-      - --test_args=--ginkgo.focus=\[k8s.io\]\sNetworking.*\[Conformance\] --minStartupPods=8
-      - --ginkgo-parallel
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu1-k8sstable2-updown
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu1-k8sstable2
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  cron: 30 5-23/6 * * *
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-gpu
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=200
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-992e4c08ff
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-1
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.15
-      - --gcp-project-type=gpu-project
-      - --timeout=180m
-      - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
-      - --env=NVIDIA_DRIVER_INSTALLER_DAEMONSET=https://raw.githubusercontent.com/GoogleCloudPlatform/container-engine-accelerators/master/nvidia-driver-installer/ubuntu/daemonset-preloaded.yaml
-      - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-k80,count=2
-      - --gcp-zone=us-west1-b
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu1-k8sstable2-gpu
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu1-k8sstable2
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 6h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-alphafeatures
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=200
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-6e25ff2f6a
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-1
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.14
-      - --timeout=180m
-      - --test_args=--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly|DynamicKubeletConfig)\] --minStartupPods=8
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu1-k8sstable3-alphafeatures
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu1-k8sstable3
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 6h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-default
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=140
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-90a3bf5e82
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-1
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.14
-      - --timeout=120m
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-      - --ginkgo-parallel=30
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu1-k8sstable3-default
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu1-k8sstable3
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 6h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-flaky
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=320
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-5bc2e85fd7
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-1
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.14
-      - --timeout=300m
-      - --test_args=--ginkgo.focus=\[Flaky\] --ginkgo.skip=\[Feature:.+\] --minStartupPods=8
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu1-k8sstable3-flaky
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu1-k8sstable3
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 6h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-reboot
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=200
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-252b67e583
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-1
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.14
-      - --timeout=180m
-      - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu1-k8sstable3-reboot
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu1-k8sstable3
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 6h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-serial
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=680
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-cb966978b8
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-1
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.14
-      - --timeout=660m
-      - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-      - --ginkgo-parallel=1
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu1-k8sstable3-serial
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu1-k8sstable3
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 6h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-slow
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=170
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-1be8857228
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-1
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.14
-      - --timeout=150m
-      - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-      - --ginkgo-parallel=30
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu1-k8sstable3-slow
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu1-k8sstable3
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 6h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-updown
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=50
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-04b6b9e7ce
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-1
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.14
-      - --timeout=30m
-      - --test_args=--ginkgo.focus=\[k8s.io\]\sNetworking.*\[Conformance\] --minStartupPods=8
-      - --ginkgo-parallel
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu1-k8sstable3-updown
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu1-k8sstable3
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  cron: 30 0-23/6 * * *
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-gpu
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=200
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-95d5af121a
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-1
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.14
-      - --gcp-project-type=gpu-project
-      - --timeout=180m
-      - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
-      - --env=NVIDIA_DRIVER_INSTALLER_DAEMONSET=https://raw.githubusercontent.com/GoogleCloudPlatform/container-engine-accelerators/master/nvidia-driver-installer/ubuntu/daemonset-preloaded.yaml
-      - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-k80,count=2
-      - --gcp-zone=us-west1-b
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu1-k8sstable3-gpu
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu1-k8sstable3
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-alphafeatures
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=200
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-1b5bdd4bf8
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-2
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.17
-      - --timeout=180m
-      - --test_args=--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly|DynamicKubeletConfig)\] --minStartupPods=8
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu2-k8sbeta-alphafeatures
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu2-k8sbeta
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-default
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=140
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-4ebcbe77bb
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-2
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.17
-      - --timeout=120m
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-      - --ginkgo-parallel=30
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu2-k8sbeta-default
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu2-k8sbeta
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-flaky
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=320
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-fbc2e3da69
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-2
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.17
-      - --timeout=300m
-      - --test_args=--ginkgo.focus=\[Flaky\] --ginkgo.skip=\[Feature:.+\] --minStartupPods=8
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu2-k8sbeta-flaky
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu2-k8sbeta
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-reboot
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=200
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-edc16c08bb
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-2
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.17
-      - --timeout=180m
-      - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu2-k8sbeta-reboot
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu2-k8sbeta
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-serial
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=680
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-944c3d1a73
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-2
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.17
-      - --timeout=660m
-      - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-      - --ginkgo-parallel=1
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu2-k8sbeta-serial
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu2-k8sbeta
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-slow
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=170
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-d282e271f3
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-2
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.17
-      - --timeout=150m
-      - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-      - --ginkgo-parallel=30
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu2-k8sbeta-slow
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu2-k8sbeta
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-updown
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=50
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-b827cee964
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-2
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.17
-      - --timeout=30m
-      - --test_args=--ginkgo.focus=\[k8s.io\]\sNetworking.*\[Conformance\] --minStartupPods=8
-      - --ginkgo-parallel
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu2-k8sbeta-updown
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu2-k8sbeta
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  cron: 30 1-23/2 * * *
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-gpu
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=200
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-f6cc3be82f
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-2
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.17
-      - --gcp-project-type=gpu-project
-      - --timeout=180m
-      - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
-      - --env=NVIDIA_DRIVER_INSTALLER_DAEMONSET=https://raw.githubusercontent.com/GoogleCloudPlatform/container-engine-accelerators/master/nvidia-driver-installer/ubuntu/daemonset-preloaded.yaml
-      - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-k80,count=2
-      - --gcp-zone=us-west1-b
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu2-k8sbeta-gpu
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu2-k8sbeta
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 4h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-alphafeatures
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=200
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-9f571eac2b
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-2
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.16
-      - --timeout=180m
-      - --test_args=--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly|DynamicKubeletConfig)\] --minStartupPods=8
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu2-k8sstable1-alphafeatures
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu2-k8sstable1
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 4h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-default
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=140
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-8de59d074a
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-2
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.16
-      - --timeout=120m
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-      - --ginkgo-parallel=30
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu2-k8sstable1-default
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu2-k8sstable1
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 4h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-flaky
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=320
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-570ce12160
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-2
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.16
-      - --timeout=300m
-      - --test_args=--ginkgo.focus=\[Flaky\] --ginkgo.skip=\[Feature:.+\] --minStartupPods=8
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu2-k8sstable1-flaky
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu2-k8sstable1
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 4h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-reboot
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=200
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-8761d71efc
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-2
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.16
-      - --timeout=180m
-      - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu2-k8sstable1-reboot
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu2-k8sstable1
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 4h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-serial
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=680
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-bd4d093510
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-2
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.16
-      - --timeout=660m
-      - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-      - --ginkgo-parallel=1
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu2-k8sstable1-serial
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu2-k8sstable1
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 4h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-slow
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=170
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-a717ba9eee
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-2
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.16
-      - --timeout=150m
-      - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-      - --ginkgo-parallel=30
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu2-k8sstable1-slow
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu2-k8sstable1
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 4h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-updown
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=50
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-eeb4bfd8c3
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-2
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.16
-      - --timeout=30m
-      - --test_args=--ginkgo.focus=\[k8s.io\]\sNetworking.*\[Conformance\] --minStartupPods=8
-      - --ginkgo-parallel
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu2-k8sstable1-updown
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu2-k8sstable1
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  cron: 30 2-23/4 * * *
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-gpu
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=200
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-512d629d0a
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-2
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.16
-      - --gcp-project-type=gpu-project
-      - --timeout=180m
-      - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
-      - --env=NVIDIA_DRIVER_INSTALLER_DAEMONSET=https://raw.githubusercontent.com/GoogleCloudPlatform/container-engine-accelerators/master/nvidia-driver-installer/ubuntu/daemonset-preloaded.yaml
-      - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-k80,count=2
-      - --gcp-zone=us-west1-b
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu2-k8sstable1-gpu
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu2-k8sstable1
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 6h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-alphafeatures
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=200
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-3bb12e8ace
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-2
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.15
-      - --timeout=180m
-      - --test_args=--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly|DynamicKubeletConfig)\] --minStartupPods=8
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu2-k8sstable2-alphafeatures
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu2-k8sstable2
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 6h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-default
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=140
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-84ad4b1a52
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-2
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.15
-      - --timeout=120m
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-      - --ginkgo-parallel=30
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu2-k8sstable2-default
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu2-k8sstable2
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 6h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-flaky
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=320
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-8833c69286
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-2
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.15
-      - --timeout=300m
-      - --test_args=--ginkgo.focus=\[Flaky\] --ginkgo.skip=\[Feature:.+\] --minStartupPods=8
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu2-k8sstable2-flaky
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu2-k8sstable2
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 6h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-reboot
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=200
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-d761cb54b9
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-2
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.15
-      - --timeout=180m
-      - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu2-k8sstable2-reboot
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu2-k8sstable2
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 6h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-serial
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=680
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-002b9d4651
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-2
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.15
-      - --timeout=660m
-      - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-      - --ginkgo-parallel=1
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu2-k8sstable2-serial
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu2-k8sstable2
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 6h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-slow
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=170
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-799d9a0958
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-2
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.15
-      - --timeout=150m
-      - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-      - --ginkgo-parallel=30
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu2-k8sstable2-slow
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu2-k8sstable2
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 6h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-updown
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=50
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-745fda5dae
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-2
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.15
-      - --timeout=30m
-      - --test_args=--ginkgo.focus=\[k8s.io\]\sNetworking.*\[Conformance\] --minStartupPods=8
-      - --ginkgo-parallel
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu2-k8sstable2-updown
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu2-k8sstable2
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  cron: 30 2-23/6 * * *
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-gpu
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=200
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-6049ef264c
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-2
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.15
-      - --gcp-project-type=gpu-project
-      - --timeout=180m
-      - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
-      - --env=NVIDIA_DRIVER_INSTALLER_DAEMONSET=https://raw.githubusercontent.com/GoogleCloudPlatform/container-engine-accelerators/master/nvidia-driver-installer/ubuntu/daemonset-preloaded.yaml
-      - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-k80,count=2
-      - --gcp-zone=us-west1-b
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu2-k8sstable2-gpu
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu2-k8sstable2
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 6h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-alphafeatures
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=200
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-55826a84af
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-2
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.14
-      - --timeout=180m
-      - --test_args=--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly|DynamicKubeletConfig)\] --minStartupPods=8
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu2-k8sstable3-alphafeatures
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu2-k8sstable3
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 6h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-default
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=140
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-4b7cb0ac86
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-2
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.14
-      - --timeout=120m
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-      - --ginkgo-parallel=30
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu2-k8sstable3-default
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu2-k8sstable3
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 6h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-flaky
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=320
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-13a7e3f876
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-2
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.14
-      - --timeout=300m
-      - --test_args=--ginkgo.focus=\[Flaky\] --ginkgo.skip=\[Feature:.+\] --minStartupPods=8
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu2-k8sstable3-flaky
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu2-k8sstable3
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 6h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-reboot
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=200
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-0101dc0a7b
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-2
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.14
-      - --timeout=180m
-      - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu2-k8sstable3-reboot
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu2-k8sstable3
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 6h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-serial
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=680
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-9120335ea7
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-2
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.14
-      - --timeout=660m
-      - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-      - --ginkgo-parallel=1
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu2-k8sstable3-serial
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu2-k8sstable3
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 6h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-slow
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=170
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-b03a3548ed
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-2
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.14
-      - --timeout=150m
-      - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-      - --ginkgo-parallel=30
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu2-k8sstable3-slow
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu2-k8sstable3
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 6h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-updown
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=50
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-185cdef551
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-2
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.14
-      - --timeout=30m
-      - --test_args=--ginkgo.focus=\[k8s.io\]\sNetworking.*\[Conformance\] --minStartupPods=8
-      - --ginkgo-parallel
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu2-k8sstable3-updown
-    testgrid-dashboards: sig-release-generated, canonical-ubuntu2-k8sstable3
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  cron: 0 1-23/6 * * *
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-gpu
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=200
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-5561de90af
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --image-family=pipeline-2
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --gcp-node-image=custom
-      - --extract=ci/latest-1.14
-      - --gcp-project-type=gpu-project
-      - --timeout=180m
-      - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
-      - --env=NVIDIA_DRIVER_INSTALLER_DAEMONSET=https://raw.githubusercontent.com/GoogleCloudPlatform/container-engine-accelerators/master/nvidia-driver-installer/ubuntu/daemonset-preloaded.yaml
-      - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-k80,count=2
-      - --gcp-zone=us-west1-b
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-ubuntu2-k8sstable3-gpu
     testgrid-dashboards: sig-release-generated, canonical-ubuntu2-k8sstable3
 - tags:
   - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
@@ -3378,14 +1274,14 @@ periodics:
       - --provider=gce
       - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
-      - --extract=ci/latest-1.17
+      - --extract=ci/latest-1.18
       - --timeout=180m
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
   annotations:
     testgrid-tab-name: gce-cos-k8sbeta-reboot
-    testgrid-dashboards: sig-release-1.17-blocking
+    testgrid-dashboards: sig-release-1.18-blocking
 - tags:
   - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
   interval: 1h
@@ -3405,15 +1301,15 @@ periodics:
       - --provider=gce
       - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
-      - --extract=ci/latest-1.17
+      - --extract=ci/latest-1.18
       - --gcp-project-type=ingress-project
       - --timeout=150m
-      - --test_args=--ginkgo.focus=\[Feature:Ingress\] --ginkgo.skip=\[Unreleased\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Feature:Ingress\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
   annotations:
     testgrid-tab-name: gce-cos-k8sbeta-ingress
-    testgrid-dashboards: sig-release-1.17-blocking
+    testgrid-dashboards: sig-release-1.18-blocking
 - tags:
   - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
   interval: 1h
@@ -3433,18 +1329,17 @@ periodics:
       - --provider=gce
       - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
-      - --extract=ci/latest-1.17
+      - --extract=ci/latest-1.18
       - --timeout=120m
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       - --env=ENABLE_POD_SECURITY_POLICY=true
       - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
   annotations:
     testgrid-tab-name: gce-cos-k8sbeta-default
-    testgrid-dashboards: sig-release-1.17-informing
-    testgrid-num-failures-to-alert: '6'
+    testgrid-dashboards: sig-release-1.18-blocking
 - tags:
   - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
   interval: 1h
@@ -3464,15 +1359,15 @@ periodics:
       - --provider=gce
       - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
-      - --extract=ci/latest-1.17
+      - --extract=ci/latest-1.18
       - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
   annotations:
     testgrid-tab-name: gce-cos-k8sbeta-serial
-    testgrid-dashboards: sig-release-1.17-informing
+    testgrid-dashboards: sig-release-1.18-informing
     testgrid-num-failures-to-alert: '6'
 - tags:
   - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
@@ -3493,171 +1388,16 @@ periodics:
       - --provider=gce
       - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
-      - --extract=ci/latest-1.17
+      - --extract=ci/latest-1.18
       - --timeout=150m
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
   annotations:
     testgrid-tab-name: gce-cos-k8sbeta-slow
-    testgrid-dashboards: sig-release-1.17-informing
+    testgrid-dashboards: sig-release-1.18-informing
     testgrid-num-failures-to-alert: '6'
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 1h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-cos-k8sbeta-ingress
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=170
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-e51b3f8292
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --gcp-node-image=gci
-      - --extract=ci/latest-1.17
-      - --gcp-project-type=ingress-project
-      - --timeout=150m
-      - --test_args=--ginkgo.focus=\[Feature:Ingress\] --ginkgo.skip=\[Unreleased\] --minStartupPods=8
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-cos-k8sbeta-ingress
-    testgrid-dashboards: sig-release-generated
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 1h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-cos-k8sbeta-reboot
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=200
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-3a53f1df91
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --gcp-node-image=gci
-      - --extract=ci/latest-1.17
-      - --timeout=180m
-      - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-cos-k8sbeta-reboot
-    testgrid-dashboards: sig-release-generated
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 1h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-cos-k8sbeta-default
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=140
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-ff924dde89
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --gcp-node-image=gci
-      - --extract=ci/latest-1.17
-      - --timeout=120m
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-      - --ginkgo-parallel=30
-      - --gke-create-command=container clusters create --quiet --addons=HttpLoadBalancing,HorizontalPodAutoscaling
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-cos-k8sbeta-default
-    testgrid-dashboards: sig-release-generated
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 1h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-cos-k8sbeta-serial
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=680
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-927e1a3e59
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --gcp-node-image=gci
-      - --extract=ci/latest-1.17
-      - --timeout=660m
-      - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-      - --ginkgo-parallel=1
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-cos-k8sbeta-serial
-    testgrid-dashboards: sig-release-generated
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 1h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-cos-k8sbeta-slow
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=170
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-b726bad088
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --gcp-node-image=gci
-      - --extract=ci/latest-1.17
-      - --timeout=150m
-      - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-      - --ginkgo-parallel=30
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-cos-k8sbeta-slow
-    testgrid-dashboards: sig-release-generated
 - tags:
   - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
   interval: 1h
@@ -3677,7 +1417,7 @@ periodics:
       - --provider=gce
       - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
-      - --extract=ci/latest-1.17
+      - --extract=ci/latest-1.18
       - --timeout=180m
       - --env=KUBE_PROXY_DAEMONSET=true
       - --env=ENABLE_POD_PRIORITY=true
@@ -3686,10 +1426,10 @@ periodics:
       - --runtime-config=api/all=true
       - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandCSIVolumes|ExpandInUseVolumes)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
   annotations:
     testgrid-tab-name: gce-cos-k8sbeta-alphafeatures
-    testgrid-dashboards: sig-release-1.17-blocking
+    testgrid-dashboards: sig-release-1.18-blocking
 - tags:
   - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
   interval: 2h
@@ -3709,14 +1449,14 @@ periodics:
       - --provider=gce
       - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
-      - --extract=ci/latest-1.16
+      - --extract=ci/latest-1.17
       - --timeout=180m
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
   annotations:
     testgrid-tab-name: gce-cos-k8sstable1-reboot
-    testgrid-dashboards: sig-release-1.16-blocking
+    testgrid-dashboards: sig-release-1.17-blocking
 - tags:
   - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
   interval: 2h
@@ -3736,15 +1476,15 @@ periodics:
       - --provider=gce
       - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
-      - --extract=ci/latest-1.16
+      - --extract=ci/latest-1.17
       - --gcp-project-type=ingress-project
       - --timeout=150m
-      - --test_args=--ginkgo.focus=\[Feature:Ingress\] --ginkgo.skip=\[Unreleased\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Feature:Ingress\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
   annotations:
     testgrid-tab-name: gce-cos-k8sstable1-ingress
-    testgrid-dashboards: sig-release-1.16-blocking
+    testgrid-dashboards: sig-release-1.17-blocking
 - tags:
   - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
   interval: 2h
@@ -3764,16 +1504,16 @@ periodics:
       - --provider=gce
       - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
-      - --extract=ci/latest-1.16
+      - --extract=ci/latest-1.17
       - --timeout=120m
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       - --env=ENABLE_POD_SECURITY_POLICY=true
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
   annotations:
     testgrid-tab-name: gce-cos-k8sstable1-default
-    testgrid-dashboards: sig-release-1.16-informing
+    testgrid-dashboards: sig-release-1.17-informing
     testgrid-num-failures-to-alert: '6'
 - tags:
   - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
@@ -3794,15 +1534,15 @@ periodics:
       - --provider=gce
       - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
-      - --extract=ci/latest-1.16
+      - --extract=ci/latest-1.17
       - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
   annotations:
     testgrid-tab-name: gce-cos-k8sstable1-serial
-    testgrid-dashboards: sig-release-1.16-informing
+    testgrid-dashboards: sig-release-1.17-informing
     testgrid-num-failures-to-alert: '6'
 - tags:
   - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
@@ -3823,170 +1563,16 @@ periodics:
       - --provider=gce
       - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
-      - --extract=ci/latest-1.16
+      - --extract=ci/latest-1.17
       - --timeout=150m
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
   annotations:
     testgrid-tab-name: gce-cos-k8sstable1-slow
-    testgrid-dashboards: sig-release-1.16-informing
+    testgrid-dashboards: sig-release-1.17-informing
     testgrid-num-failures-to-alert: '6'
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-cos-k8sstable1-ingress
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=170
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-0b2cabe451
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --gcp-node-image=gci
-      - --extract=ci/latest-1.16
-      - --gcp-project-type=ingress-project
-      - --timeout=150m
-      - --test_args=--ginkgo.focus=\[Feature:Ingress\] --ginkgo.skip=\[Unreleased\] --minStartupPods=8
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-cos-k8sstable1-ingress
-    testgrid-dashboards: sig-release-generated
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-cos-k8sstable1-reboot
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=200
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-d315190c41
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --gcp-node-image=gci
-      - --extract=ci/latest-1.16
-      - --timeout=180m
-      - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-cos-k8sstable1-reboot
-    testgrid-dashboards: sig-release-generated
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-cos-k8sstable1-default
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=140
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-bd789a678f
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --gcp-node-image=gci
-      - --extract=ci/latest-1.16
-      - --timeout=120m
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-      - --ginkgo-parallel=30
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-cos-k8sstable1-default
-    testgrid-dashboards: sig-release-generated
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-cos-k8sstable1-serial
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=680
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-b9c2cf519b
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --gcp-node-image=gci
-      - --extract=ci/latest-1.16
-      - --timeout=660m
-      - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-      - --ginkgo-parallel=1
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-cos-k8sstable1-serial
-    testgrid-dashboards: sig-release-generated
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-cos-k8sstable1-slow
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=170
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-ca55c39d7d
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --gcp-node-image=gci
-      - --extract=ci/latest-1.16
-      - --timeout=150m
-      - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-      - --ginkgo-parallel=30
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-cos-k8sstable1-slow
-    testgrid-dashboards: sig-release-generated
 - tags:
   - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
   interval: 2h
@@ -4006,7 +1592,7 @@ periodics:
       - --provider=gce
       - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
-      - --extract=ci/latest-1.16
+      - --extract=ci/latest-1.17
       - --timeout=180m
       - --env=KUBE_PROXY_DAEMONSET=true
       - --env=ENABLE_POD_PRIORITY=true
@@ -4015,10 +1601,10 @@ periodics:
       - --runtime-config=api/all=true
       - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandCSIVolumes|ExpandInUseVolumes)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
   annotations:
     testgrid-tab-name: gce-cos-k8sstable1-alphafeatures
-    testgrid-dashboards: sig-release-1.16-blocking
+    testgrid-dashboards: sig-release-1.17-blocking
 - tags:
   - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -4038,14 +1624,14 @@ periodics:
       - --provider=gce
       - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
-      - --extract=ci/latest-1.15
+      - --extract=ci/latest-1.16
       - --timeout=180m
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
   annotations:
     testgrid-tab-name: gce-cos-k8sstable2-reboot
-    testgrid-dashboards: sig-release-1.15-blocking
+    testgrid-dashboards: sig-release-1.16-blocking
 - tags:
   - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -4065,15 +1651,15 @@ periodics:
       - --provider=gce
       - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
-      - --extract=ci/latest-1.15
+      - --extract=ci/latest-1.16
       - --gcp-project-type=ingress-project
       - --timeout=150m
-      - --test_args=--ginkgo.focus=\[Feature:Ingress\] --ginkgo.skip=\[Unreleased\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Feature:Ingress\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
   annotations:
     testgrid-tab-name: gce-cos-k8sstable2-ingress
-    testgrid-dashboards: sig-release-1.15-blocking
+    testgrid-dashboards: sig-release-1.16-blocking
 - tags:
   - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -4093,15 +1679,15 @@ periodics:
       - --provider=gce
       - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
-      - --extract=ci/latest-1.15
+      - --extract=ci/latest-1.16
       - --timeout=120m
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
   annotations:
     testgrid-tab-name: gce-cos-k8sstable2-default
-    testgrid-dashboards: sig-release-1.15-informing
+    testgrid-dashboards: sig-release-1.16-informing
     testgrid-num-failures-to-alert: '6'
 - tags:
   - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
@@ -4122,15 +1708,15 @@ periodics:
       - --provider=gce
       - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
-      - --extract=ci/latest-1.15
+      - --extract=ci/latest-1.16
       - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
   annotations:
     testgrid-tab-name: gce-cos-k8sstable2-serial
-    testgrid-dashboards: sig-release-1.15-informing
+    testgrid-dashboards: sig-release-1.16-informing
     testgrid-num-failures-to-alert: '6'
 - tags:
   - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
@@ -4151,170 +1737,16 @@ periodics:
       - --provider=gce
       - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
-      - --extract=ci/latest-1.15
+      - --extract=ci/latest-1.16
       - --timeout=150m
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
   annotations:
     testgrid-tab-name: gce-cos-k8sstable2-slow
-    testgrid-dashboards: sig-release-1.15-informing
+    testgrid-dashboards: sig-release-1.16-informing
     testgrid-num-failures-to-alert: '6'
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 6h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-cos-k8sstable2-ingress
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=170
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-ec1442b6f5
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --gcp-node-image=gci
-      - --extract=ci/latest-1.15
-      - --gcp-project-type=ingress-project
-      - --timeout=150m
-      - --test_args=--ginkgo.focus=\[Feature:Ingress\] --ginkgo.skip=\[Unreleased\] --minStartupPods=8
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-cos-k8sstable2-ingress
-    testgrid-dashboards: sig-release-generated
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 6h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-cos-k8sstable2-reboot
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=200
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-0520e5a3ae
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --gcp-node-image=gci
-      - --extract=ci/latest-1.15
-      - --timeout=180m
-      - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-cos-k8sstable2-reboot
-    testgrid-dashboards: sig-release-generated
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 6h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-cos-k8sstable2-default
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=140
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-b3501ae857
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --gcp-node-image=gci
-      - --extract=ci/latest-1.15
-      - --timeout=120m
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-      - --ginkgo-parallel=30
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-cos-k8sstable2-default
-    testgrid-dashboards: sig-release-generated
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 6h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-cos-k8sstable2-serial
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=680
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-2842d22e0b
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --gcp-node-image=gci
-      - --extract=ci/latest-1.15
-      - --timeout=660m
-      - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-      - --ginkgo-parallel=1
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-cos-k8sstable2-serial
-    testgrid-dashboards: sig-release-generated
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 6h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-cos-k8sstable2-slow
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=170
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-ccde0b80e9
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --gcp-node-image=gci
-      - --extract=ci/latest-1.15
-      - --timeout=150m
-      - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-      - --ginkgo-parallel=30
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-cos-k8sstable2-slow
-    testgrid-dashboards: sig-release-generated
 - tags:
   - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -4334,7 +1766,7 @@ periodics:
       - --provider=gce
       - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
-      - --extract=ci/latest-1.15
+      - --extract=ci/latest-1.16
       - --timeout=180m
       - --env=KUBE_PROXY_DAEMONSET=true
       - --env=ENABLE_POD_PRIORITY=true
@@ -4343,10 +1775,10 @@ periodics:
       - --runtime-config=api/all=true
       - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandCSIVolumes|ExpandInUseVolumes)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
   annotations:
     testgrid-tab-name: gce-cos-k8sstable2-alphafeatures
-    testgrid-dashboards: sig-release-1.15-blocking
+    testgrid-dashboards: sig-release-1.16-blocking
 - tags:
   - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
   interval: 24h
@@ -4366,15 +1798,15 @@ periodics:
       - --provider=gce
       - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
-      - --extract=ci/latest-1.14
+      - --extract=ci/latest-1.15
       - --gcp-project-type=ingress-project
       - --timeout=150m
-      - --test_args=--ginkgo.focus=\[Feature:Ingress\] --ginkgo.skip=\[Unreleased\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Feature:Ingress\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
   annotations:
     testgrid-tab-name: gce-cos-k8sstable3-ingress
-    testgrid-dashboards: sig-release-1.14-blocking
+    testgrid-dashboards: sig-release-1.15-blocking
 - tags:
   - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
   interval: 24h
@@ -4394,14 +1826,14 @@ periodics:
       - --provider=gce
       - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
-      - --extract=ci/latest-1.14
+      - --extract=ci/latest-1.15
       - --timeout=180m
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
   annotations:
     testgrid-tab-name: gce-cos-k8sstable3-reboot
-    testgrid-dashboards: sig-release-1.14-blocking
+    testgrid-dashboards: sig-release-1.15-blocking
 - tags:
   - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
   interval: 24h
@@ -4421,15 +1853,15 @@ periodics:
       - --provider=gce
       - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
-      - --extract=ci/latest-1.14
+      - --extract=ci/latest-1.15
       - --timeout=120m
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
   annotations:
     testgrid-tab-name: gce-cos-k8sstable3-default
-    testgrid-dashboards: sig-release-1.14-informing
+    testgrid-dashboards: sig-release-1.15-informing
     testgrid-num-failures-to-alert: '6'
 - tags:
   - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
@@ -4450,15 +1882,15 @@ periodics:
       - --provider=gce
       - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
-      - --extract=ci/latest-1.14
+      - --extract=ci/latest-1.15
       - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
   annotations:
     testgrid-tab-name: gce-cos-k8sstable3-serial
-    testgrid-dashboards: sig-release-1.14-informing
+    testgrid-dashboards: sig-release-1.15-informing
     testgrid-num-failures-to-alert: '6'
 - tags:
   - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
@@ -4479,170 +1911,16 @@ periodics:
       - --provider=gce
       - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
-      - --extract=ci/latest-1.14
+      - --extract=ci/latest-1.15
       - --timeout=150m
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
   annotations:
     testgrid-tab-name: gce-cos-k8sstable3-slow
-    testgrid-dashboards: sig-release-1.14-informing
+    testgrid-dashboards: sig-release-1.15-informing
     testgrid-num-failures-to-alert: '6'
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 6h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-cos-k8sstable3-ingress
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=170
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-d5eacf5ed2
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --gcp-node-image=gci
-      - --extract=ci/latest-1.14
-      - --gcp-project-type=ingress-project
-      - --timeout=150m
-      - --test_args=--ginkgo.focus=\[Feature:Ingress\] --ginkgo.skip=\[Unreleased\] --minStartupPods=8
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-cos-k8sstable3-ingress
-    testgrid-dashboards: sig-release-generated
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 6h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-cos-k8sstable3-reboot
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=200
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-f16decbb6d
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --gcp-node-image=gci
-      - --extract=ci/latest-1.14
-      - --timeout=180m
-      - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-cos-k8sstable3-reboot
-    testgrid-dashboards: sig-release-generated
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 6h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-cos-k8sstable3-default
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=140
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-36117b6022
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --gcp-node-image=gci
-      - --extract=ci/latest-1.14
-      - --timeout=120m
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-      - --ginkgo-parallel=30
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-cos-k8sstable3-default
-    testgrid-dashboards: sig-release-generated
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 6h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-cos-k8sstable3-serial
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=680
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-c0e43133f1
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --gcp-node-image=gci
-      - --extract=ci/latest-1.14
-      - --timeout=660m
-      - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-      - --ginkgo-parallel=1
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-cos-k8sstable3-serial
-    testgrid-dashboards: sig-release-generated
-- tags:
-  - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
-  interval: 6h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2e-gke-cos-k8sstable3-slow
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=170
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=test-548f1823d6
-      - --check-leaked-resources
-      - --provider=gke
-      - --deployment=gke
-      - --gcp-zone=us-west1-c
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gke-environment=test
-      - --gcp-node-image=gci
-      - --extract=ci/latest-1.14
-      - --timeout=150m
-      - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-      - --ginkgo-parallel=30
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-  annotations:
-    testgrid-tab-name: gke-cos-k8sstable3-slow
-    testgrid-dashboards: sig-release-generated
 - tags:
   - generated   # AUTO-GENERATED by releng/generate_tests.py - DO NOT EDIT!
   interval: 24h
@@ -4662,7 +1940,7 @@ periodics:
       - --provider=gce
       - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
-      - --extract=ci/latest-1.14
+      - --extract=ci/latest-1.15
       - --timeout=180m
       - --test_args=--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly|DynamicKubeletConfig)\] --minStartupPods=8
       - --env=KUBE_PROXY_DAEMONSET=true
@@ -4671,7 +1949,7 @@ periodics:
       - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
       - --runtime-config=api/all=true
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
   annotations:
     testgrid-tab-name: gce-cos-k8sstable3-alphafeatures
-    testgrid-dashboards: sig-release-1.14-blocking
+    testgrid-dashboards: sig-release-1.15-blocking

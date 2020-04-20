@@ -3,9 +3,4 @@
 labels:
 - area/prow/bump
 approvers:
-- amwat
-- cjwagner
-- fejta
-- ixdy
-- katharine
-- krzyzacy
+- test-infra-oncall
