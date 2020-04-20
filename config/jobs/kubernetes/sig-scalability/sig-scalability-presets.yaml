@@ -185,6 +185,8 @@ presets:
 - labels:
     preset-e2e-scalability-containerd: "true"
   env:
+  - name: CL2_PROBE_MEASUREMENTS_CHECK_PROBES_READY_TIMEOUT
+    value: "10m"
   - name: KUBE_CONTAINER_RUNTIME
     value: "containerd"
   - name: LOG_DUMP_SAVE_SERVICES
