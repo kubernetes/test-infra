@@ -138,7 +138,10 @@ func (g *gitCtx) gitCommand(args ...string) cloneCommand {
 // configure a local git directory, as well as fetch and check out the provided
 // base ref.
 func (g *gitCtx) commandsForBaseRef(refs prowapi.Refs, gitUserName, gitUserEmail, cookiePath string) []cloneCommand {
-	commands := []cloneCommand{{dir: "/", env: g.env, command: "mkdir", args: []string{"-p", g.cloneDir}}}
+	commands := []cloneCommand{
+		{dir: "/", env: g.env, command: "rm", args: []string{"-f", "-R", g.cloneDir}},
+		{dir: "/", env: g.env, command: "mkdir", args: []string{"-p", g.cloneDir}},
+	}
 
 	commands = append(commands, g.gitCommand("init"))
 	if gitUserName != "" {

@@ -81,7 +81,24 @@ func (o Options) Run() error {
 		go func() {
 			defer wg.Done()
 			for ref := range input {
-				output <- cloneFunc(ref, o.SrcRoot, o.GitUserName, o.GitUserEmail, o.CookiePath, env, oauthToken)
+				// Attempt to clone the repo
+				// If the cluster is autoscaling, it seems Prow can hit DNS too hard on new nodes
+				// So we retry if have a failure we can guess is due to DNS
+				// Exponential backoff is targeted for a little over 5 minutes on the last try
+				for i := 1; i < 4; i++ {
+					record := cloneFunc(ref, o.SrcRoot, o.GitUserName, o.GitUserEmail, o.CookiePath, env, oauthToken)
+					if record.Failed {
+						failed := record.Commands[len(record.Commands)-1]
+						if strings.Contains(failed.Error, "Could not resolve host") {
+							seconds := time.Seconds * 25 * i * i
+							logrus.Infof("DNS failure detected; retrying clone in %d seconds", seconds)
+							time.Sleep(seconds)
+							continue
+						}
+					}
+					output <- record
+					break
+				}
 			}
 		}()
 	}
