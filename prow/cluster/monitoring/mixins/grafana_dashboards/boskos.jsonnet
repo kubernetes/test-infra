@@ -40,6 +40,7 @@ dashboard.new(
         {type: "gpu-project", friendly: "GPU project"},
         {type: "ingress-project", friendly: "Ingress project"},
         {type: "istio-project", friendly: "Istio project"},
+        {type: "node-e2e-project", friendly: "Node e2e project"},
         {type: "scalability-project", friendly: "Scalability project"},
         {type: "scalability-presubmit-project", friendly: "Scalability presubmit project"}
       ]

@@ -6,7 +6,7 @@ metadata:
     app: boskos-janitor
   namespace: test-pods
 spec:
-  replicas: 16  # 16 distributed janitor instances for gke
+  replicas: 4  # 4 distributed janitor instances for gke
   selector:
     matchLabels:
       app: boskos-janitor
@@ -51,7 +51,7 @@ spec:
         image: gcr.io/k8s-prow/boskos/janitor:v20200416-c78ffe8ea
         args:
         - --boskos-url=http://boskos.test-pods.svc.cluster.local.
-        - --resource-type=gce-project,gpu-project,ingress-project,istio-project,scalability-presubmit-project,scalability-project
+        - --resource-type=gce-project,gpu-project,ingress-project,istio-project,scalability-presubmit-project,scalability-project,node-e2e-project
         - --pool-size=20
         - --
         - --hours=0
