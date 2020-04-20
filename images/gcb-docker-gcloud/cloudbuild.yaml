@@ -1,10 +1,14 @@
 steps:
   - name: gcr.io/cloud-builders/docker
-    args: ['build', '-t', 'gcr.io/$PROJECT_ID/gcb-docker-gcloud:$_GIT_TAG',
-           '--build-arg', 'IMAGE_ARG=gcr.io/$PROJECT_ID/gcb-docker-gcloud:$_GIT_TAG',
-           '.']
+    args:
+      - build
+      - --tag=gcr.io/$PROJECT_ID/gcb-docker-gcloud:$_GIT_TAG
+      - --build-arg=IMAGE_ARG=gcr.io/$PROJECT_ID/gcb-docker-gcloud:$_GIT_TAG
+      - --build-arg=GO_VERSION=$_GO_VERSION
+      - .
     dir: images/gcb-docker-gcloud/
 substitutions:
   _GIT_TAG: '12345'
+  _GO_VERSION: 1.13.5
 images:
   - 'gcr.io/$PROJECT_ID/gcb-docker-gcloud:$_GIT_TAG'
