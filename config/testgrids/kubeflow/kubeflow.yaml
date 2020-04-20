@@ -20,12 +20,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubeflow_tf-operator/kubeflow-tf-operator-postsubmit
 - name: kubeflow-katib-postsubmit
   gcs_prefix: kubernetes-jenkins/logs/kubeflow_katib/kubeflow-katib-postsubmit
-- name: kubeflow-experimental-kvc-postsubmit
-  gcs_prefix: kubernetes-jenkins/logs/kubeflow_experimental-kvc/kubeflow-experimental-kvc-postsubmit
 - name: kubeflow-experimental-seldon-postsubmit
   gcs_prefix: kubernetes-jenkins/logs/kubeflow_experimental-seldon/kubeflow-experimental-seldon-postsubmit
-- name: kubeflow-experimental-beagle-postsubmit
-  gcs_prefix: kubernetes-jenkins/logs/kubeflow_experimental-beagle/kubeflow-experimental-beagle-postsubmit
 - name: kubeflow-caffe2-operator-postsubmit
   gcs_prefix: kubernetes-jenkins/logs/kubeflow_caffe2-operator/kubeflow-caffe2-operator-postsubmit
 - name: kubeflow-website-postsubmit

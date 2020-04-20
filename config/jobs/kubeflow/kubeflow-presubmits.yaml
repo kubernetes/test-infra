@@ -125,20 +125,6 @@ presubmits:
       testgrid-dashboards: sig-big-data
       description: Presubmits for kubeflow/katib.
       testgrid-num-columns-recent: '30'
-  kubeflow/experimental-kvc:
-  - name: kubeflow-experimental-kvc-presubmit
-    cluster: kubeflow
-    always_run: true         # Run for every PR, or only when requested.
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/kubeflow-ci/test-worker:latest
-        imagePullPolicy: Always
-    annotations:
-      testgrid-dashboards: sig-big-data
-      description: Presubmits for kubeflow/experimental-kvc.
-      testgrid-num-columns-recent: '30'
   kubeflow/experimental-seldon:
   - name: kubeflow-experimental-seldon-presubmit
     cluster: kubeflow
@@ -152,20 +138,6 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-big-data
       description: Presubmits for kubeflow/experimental-seldon.
-      testgrid-num-columns-recent: '30'
-  kubeflow/experimental-beagle:
-  - name: kubeflow-experimental-beagle-presubmit
-    cluster: kubeflow
-    always_run: true         # Run for every PR, or only when requested.
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/kubeflow-ci/test-worker:latest
-        imagePullPolicy: Always
-    annotations:
-      testgrid-dashboards: sig-big-data
-      description: Presubmits for kubeflow/experimental-beagle.
       testgrid-num-columns-recent: '30'
   kubeflow/caffe2-operator:
   - name: kubeflow-caffe2-operator-presubmit

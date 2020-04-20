@@ -145,19 +145,6 @@ postsubmits:
     annotations:
       testgrid-dashboards: sig-big-data
       description: Postsubmit kubeflow/katib.
-  kubeflow/experimental-kvc:
-  - name: kubeflow-experimental-kvc-postsubmit
-    cluster: kubeflow
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/kubeflow-ci/test-worker:latest
-        imagePullPolicy: Always
-
-    annotations:
-      testgrid-dashboards: sig-big-data
-      description: Postsubmit kubeflow/experimental-kvc.
   kubeflow/experimental-seldon:
   - name: kubeflow-experimental-seldon-postsubmit
     cluster: kubeflow
@@ -171,19 +158,6 @@ postsubmits:
     annotations:
       testgrid-dashboards: sig-big-data
       description: Postsubmit kubeflow/experimental-seldon.
-  kubeflow/experimental-beagle:
-  - name: kubeflow-experimental-beagle-postsubmit
-    cluster: kubeflow
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/kubeflow-ci/test-worker:latest
-        imagePullPolicy: Always
-
-    annotations:
-      testgrid-dashboards: sig-big-data
-      description: Postsubmit kubeflow/experimental-beagle.
   kubeflow/caffe2-operator:
   - name: kubeflow-caffe2-operator-postsubmit
     cluster: kubeflow
