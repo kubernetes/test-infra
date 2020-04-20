@@ -83,6 +83,19 @@ presubmits:
       testgrid-dashboards: sig-big-data
       description: Presubmits for kubeflow/website.
       testgrid-num-columns-recent: '30'
+  - name: kubeflow-website-link-check
+    cluster: kubeflow
+    always_run: true         # Run for every PR, or only when requested.
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: ktbartholomew/link-checker:latest
+        imagePullPolicy: Always
+    annotations:
+      testgrid-dashboards: sig-big-data
+      description: Presubmits for kubeflow/website to check for broken links.
+      testgrid-num-columns-recent: '30'
   kubeflow/testing:
   - name: kubeflow-testing-presubmit
     cluster: kubeflow
