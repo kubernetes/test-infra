@@ -14,6 +14,7 @@ go_library(
         "instance.go",
         "internet_gateways.go",
         "launch_configs.go",
+        "launch_templates.go",
         "list.go",
         "nat_gateway.go",
         "network_interface.go",

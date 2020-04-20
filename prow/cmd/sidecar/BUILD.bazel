@@ -14,8 +14,10 @@ go_library(
     ],
 )
 
+NAME = "sidecar"
+
 go_binary(
-    name = "sidecar",
+    name = NAME,
     embed = [":go_default_library"],
     pure = "on",
     visibility = ["//visibility:public"],
@@ -24,6 +26,7 @@ go_binary(
 prow_image(
     name = "image",
     base = "@git-base//image",
+    component = NAME,
     symlinks = {"/sidecar": "/app/prow/cmd/sidecar/app.binary"},
     visibility = ["//visibility:public"],
 )

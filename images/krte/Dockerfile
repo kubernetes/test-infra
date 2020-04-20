@@ -16,6 +16,8 @@
 # NOTE: we attempt to avoid unnecessary tools and image layers while
 # supporting kubernetes builds, kind installation, etc.
 
+ARG OLD_BAZEL_VERSION
+FROM launcher.gcr.io/google/bazel:${OLD_BAZEL_VERSION} as old-bazel
 FROM debian:buster
 
 # arg that specifies the image name (for debugging)
@@ -95,6 +97,10 @@ RUN echo "Installing Packages ..." \
     && echo "Ensuring Legacy Iptables ..." \
     && update-alternatives --set iptables /usr/sbin/iptables-legacy \
     && update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
+
+ARG OLD_BAZEL_VERSION
+COPY --from=old-bazel \
+    /usr/local/lib/bazel/bin/bazel-real /usr/local/lib/bazel/bin/bazel-${OLD_BAZEL_VERSION}
 
 # entrypoint is our wrapper script, in Prow you will need to explicitly re-specify this
 ENTRYPOINT ["wrapper.sh"]

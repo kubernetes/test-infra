@@ -15,6 +15,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  namespace: default
   name: crier
   labels:
     app: crier
@@ -28,13 +29,13 @@ spec:
       labels:
         app: crier
     spec:
-      # serviceAccountName: crier
+      serviceAccountName: crier
       terminationGracePeriodSeconds: 30
       containers:
       - name: crier
-        image: gcr.io/k8s-prow/crier:v20200214-db7f45788
+        image: gcr.io/k8s-prow/crier:v20200417-3971a63f2
         args:
-        - --github-workers=1
+        - --github-workers=5
         - --config-path=/etc/config/config.yaml
         - --job-config-path=/etc/job-config
         - --github-endpoint=http://ghproxy
@@ -42,12 +43,11 @@ spec:
         - --slack-workers=1
         - --slack-token-file=/etc/slack/token
         - --gcs-workers=1
-        - --gcs-credentials-file=/etc/service-account/service-account.json
         - --kubernetes-gcs-workers=1
-        - --build-cluster=/etc/cluster/cluster
+        - --kubeconfig=/etc/kubeconfig/config
         volumeMounts:
-        - mountPath: /etc/cluster
-          name: cluster
+        - mountPath: /etc/kubeconfig
+          name: kubeconfig
           readOnly: true
         - name: config
           mountPath: /etc/config
@@ -60,9 +60,6 @@ spec:
           readOnly: true
         - name: slack
           mountPath: /etc/slack
-          readOnly: true
-        - name: service-account
-          mountPath: /etc/service-account
           readOnly: true
       volumes:
       - name: config
@@ -77,10 +74,7 @@ spec:
       - name: slack
         secret:
           secretName: slack-token
-      - name: service-account
-        secret:
-          secretName: service-account
-      - name: cluster
+      - name: kubeconfig
         secret:
           defaultMode: 420
-          secretName: build-cluster
+          secretName: kubeconfig

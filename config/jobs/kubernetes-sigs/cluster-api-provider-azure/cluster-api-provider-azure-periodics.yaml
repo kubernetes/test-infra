@@ -1,0 +1,34 @@
+periodics:
+- name: periodic-cluster-api-provider-azure-conformance-v1alpha3
+  decorate: true
+  decoration_config:
+    timeout: 4h
+  interval: 12h
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-azure-cred: "true"
+  extra_refs:
+    - org: kubernetes-sigs
+      repo: cluster-api-provider-azure
+      base_ref: master
+      path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+        command:
+          - "runner.sh"
+          - "./scripts/ci-conformance.sh"
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 1
+            memory: "4Gi"
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
+    testgrid-tab-name: periodic-conformance-v1alpha3

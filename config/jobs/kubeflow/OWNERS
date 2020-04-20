@@ -1,8 +1,8 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
-approvers:
-- abhi-g
+reviewers:
 - jlewi
-- kunmingg
-- lluunn
-- richardsliu
+- clarketm
+approvers:
+- jlewi
+- clarketm

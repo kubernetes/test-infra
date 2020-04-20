@@ -30,14 +30,14 @@ import (
 	"time"
 
 	"cloud.google.com/go/storage"
-	"github.com/sirupsen/logrus"
-	"sigs.k8s.io/yaml"
-
 	"github.com/GoogleCloudPlatform/testgrid/config"
 	"github.com/GoogleCloudPlatform/testgrid/metadata"
 	configpb "github.com/GoogleCloudPlatform/testgrid/pb/config"
 	"github.com/GoogleCloudPlatform/testgrid/resultstore"
 	"github.com/GoogleCloudPlatform/testgrid/util/gcs"
+	"github.com/sirupsen/logrus"
+	"sigs.k8s.io/yaml"
+
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/logrusutil"
 )
@@ -62,24 +62,27 @@ func stripTags(str string) (string, []string) {
 }
 
 type options struct {
-	path           gcs.Path
+	account        string
+	buckets        flagutil.Strings
+	gcsAuth        bool
 	jobs           flagutil.Strings
-	deadline       time.Duration
 	latest         int
 	override       bool
-	account        string
-	gcsAuth        bool
+	path           gcs.Path
 	pending        bool
-	repeat         time.Duration
 	project        string
+	repeat         time.Duration
 	secret         string
 	testgridConfig string
+	timeout        time.Duration
+	maxFiles       int
 }
 
 func (o *options) parse(flags *flag.FlagSet, args []string) error {
 	flags.Var(&o.path, "build", "Download a specific gs://bucket/to/job/build-1234 url (instead of latest builds for each --job)")
 	flags.Var(&o.jobs, "job", "Configures specific jobs to update (repeatable, all jobs when --job and --build are both empty)")
-	flags.StringVar(&o.testgridConfig, "config", "gs://k8s-testgrid/config", "Path to local/testgrid/config.pb or gs://bucket/testgrid/config.pb")
+	flags.Var(&o.buckets, "bucket", "Filter to specific gs://buckets (repeatable, all buckets when --bucket is empty)")
+	flags.StringVar(&o.testgridConfig, "config", "", "Path to /some/testgrid/config.pb (optional gs:// prefix)")
 	flags.IntVar(&o.latest, "latest", 1, "Configures the number of latest builds to migrate")
 	flags.BoolVar(&o.override, "override", false, "Replace the existing ResultStore data for each build")
 	flags.StringVar(&o.account, "service-account", "", "Authenticate with the service account at specified path")
@@ -87,8 +90,9 @@ func (o *options) parse(flags *flag.FlagSet, args []string) error {
 	flags.BoolVar(&o.pending, "pending", false, "Include pending results when set (otherwise ignore them)")
 	flags.StringVar(&o.project, "upload", "", "Upload results to specified gcp project instead of stdout")
 	flags.StringVar(&o.secret, "secret", "", "Use the specified secret guid instead of randomly generating one.")
-	flags.DurationVar(&o.deadline, "deadline", 0, "Timeout after the specified deadling duration (use 0 for no deadline)")
+	flags.DurationVar(&o.timeout, "timeout", 0, "Timeout after the specified deadling duration (use 0 for no timeout)")
 	flags.DurationVar(&o.repeat, "repeat", 0, "Repeatedly transfer after sleeping for this duration (exit after one run when 0)")
+	flags.IntVar(&o.maxFiles, "max-files", 10000, "Ceiling for number of artifact files (0 for unlimited, server may reject)")
 	flags.Parse(args)
 	return nil
 }
@@ -102,7 +106,7 @@ func parseOptions() options {
 }
 
 func main() {
-	logrusutil.ComponentInit("storeship")
+	logrusutil.ComponentInit()
 
 	opt := parseOptions()
 	for {
@@ -144,11 +148,25 @@ func trailingSlash(s string) string {
 	return s + "/"
 }
 
+func bucketListChecker(buckets ...string) (bucketChecker, error) {
+	bucketNames := map[string]bool{}
+	for _, b := range buckets {
+		var path gcs.Path
+		if err := path.Set(b); err != nil {
+			return nil, fmt.Errorf("%q: %w", b, err)
+		}
+		bucketNames[path.Bucket()] = true
+	}
+	return func(_ context.Context, name string) bool {
+		return bucketNames[name]
+	}, nil
+}
+
 func run(opt options) error {
 	var ctx context.Context
 	var cancel context.CancelFunc
-	if opt.deadline > 0 {
-		ctx, cancel = context.WithTimeout(context.Background(), opt.deadline)
+	if opt.timeout > 0 {
+		ctx, cancel = context.WithTimeout(context.Background(), opt.timeout)
 	} else {
 		ctx, cancel = context.WithCancel(context.Background())
 	}
@@ -179,7 +197,7 @@ func run(opt options) error {
 
 	// Should we just transfer a specific build?
 	if opt.path.Bucket() != "" { // All valid --build=gs://whatever values have a non-empty bucket.
-		return transferBuild(ctx, storageClient, rsClient, opt.project, opt.path, opt.override, true)
+		return transferBuild(ctx, storageClient, rsClient, opt.project, opt.path, opt.override, true, opt.maxFiles)
 	}
 
 	groups, err := findGroups(cfg, opt.jobs.Strings()...)
@@ -187,8 +205,30 @@ func run(opt options) error {
 		return fmt.Errorf("find groups: %v", err)
 	}
 
+	var checkBucket bucketChecker
+	if len(opt.buckets.Strings()) > 0 {
+		var err error
+		if checkBucket, err = bucketListChecker(opt.buckets.String()); err != nil {
+			return fmt.Errorf("parse bucket list: %w", err)
+		}
+	} else {
+		checkWritable := func(ctx context.Context, name string) bool {
+			const want = "storage.objects.create"
+			have, err := storageClient.Bucket(name).IAM().TestPermissions(ctx, []string{want})
+			if err != nil || len(have) != 1 || have[0] != want {
+				logrus.WithError(err).WithFields(logrus.Fields{"bucket": name, "want": want, "have": have}).Error("No write access")
+				return false
+			}
+			return true
+		}
+		checkBucket = checkWritable
+	}
+
+	groups, err = filterBuckets(ctx, checkBucket, groups...)
+
 	logrus.Infof("Finding latest builds for %d groups...\n", len(groups))
-	buildsChan, buildsErrChan := findBuilds(ctx, storageClient, groups)
+	prefilteredBuckets := len(opt.buckets.Strings()) > 0
+	buildsChan, buildsErrChan := findBuilds(ctx, storageClient, groups, prefilteredBuckets)
 	transferErrChan := transfer(ctx, storageClient, rsClient, opt, buildsChan)
 	select {
 	case <-ctx.Done():
@@ -207,6 +247,41 @@ func run(opt options) error {
 		}
 	}
 	return nil
+}
+
+type bucketChecker func(context.Context, string) bool
+
+func filterBuckets(parent context.Context, checkBucket bucketChecker, groups ...configpb.TestGroup) ([]configpb.TestGroup, error) {
+	buckets := map[string]bool{}
+	valid := func(path gcs.Path) bool {
+		name := path.Bucket()
+		if good, ok := buckets[name]; ok {
+			return good
+		}
+
+		ctx, cancel := context.WithTimeout(parent, 10*time.Second)
+		defer cancel()
+		result := checkBucket(ctx, name)
+		buckets[name] = result
+		return result
+	}
+
+	var ret []configpb.TestGroup
+	var path gcs.Path
+	for _, g := range groups {
+		if err := path.Set("gs://" + g.GcsPrefix); err != nil {
+			return nil, fmt.Errorf("bad group prefix %s: %w", g.Name, err)
+		}
+		if !valid(path) {
+			logrus.WithFields(logrus.Fields{
+				"testgroup":  g.Name,
+				"gcs_prefix": "gs://" + g.GcsPrefix,
+			}).Info("Skip unwritable group")
+			continue
+		}
+		ret = append(ret, g)
+	}
+	return ret, nil
 }
 
 func joinErrs(errs []error, sep string) string {
@@ -228,7 +303,7 @@ func transfer(ctx context.Context, storageClient *storage.Client, rsClient *resu
 			wg.Add(1)
 			go func(info buildsInfo) {
 				defer wg.Done()
-				if err := transferLatest(ctx, storageClient, rsClient, opt.project, info.builds, opt.latest, opt.override, opt.pending); err != nil {
+				if err := transferLatest(ctx, storageClient, rsClient, opt.project, info.builds, opt.latest, opt.override, opt.pending, opt.maxFiles); err != nil {
 					logrus.WithError(err).Error("Transfer failed")
 					select {
 					case <-ctx.Done():
@@ -258,37 +333,6 @@ func transfer(ctx context.Context, storageClient *storage.Client, rsClient *resu
 	return retChan
 }
 
-type bucketChecker struct {
-	buckets map[string]bool
-	client  *storage.Client
-	lock    sync.RWMutex
-}
-
-func (bc *bucketChecker) writable(ctx context.Context, path gcs.Path) bool {
-	name := path.Bucket()
-	bc.lock.RLock()
-	writable, present := bc.buckets[name]
-	bc.lock.RUnlock()
-	if present {
-		return writable
-	}
-	bc.lock.Lock()
-	defer bc.lock.Unlock()
-	writable, present = bc.buckets[name]
-	if present {
-		return writable
-	}
-	const want = "storage.objects.create"
-	have, err := bc.client.Bucket(name).IAM().TestPermissions(ctx, []string{want})
-	if err != nil || len(have) != 1 || have[0] != want {
-		bc.buckets[name] = false
-		logrus.WithError(err).WithFields(logrus.Fields{"bucket": name, "want": want, "have": have}).Error("No write access")
-	} else {
-		bc.buckets[name] = true
-	}
-	return bc.buckets[name]
-}
-
 func findGroups(cfg *configpb.Configuration, jobs ...string) ([]configpb.TestGroup, error) {
 	var groups []configpb.TestGroup
 	for _, job := range jobs {
@@ -312,7 +356,7 @@ type buildsInfo struct {
 	builds []gcs.Build
 }
 
-func findGroupBuilds(ctx context.Context, storageClient *storage.Client, bc *bucketChecker, group configpb.TestGroup, buildsChan chan<- buildsInfo, errChan chan<- error) {
+func findGroupBuilds(ctx context.Context, storageClient *storage.Client, group configpb.TestGroup, buildsChan chan<- buildsInfo, errChan chan<- error) {
 	log := logrus.WithFields(logrus.Fields{
 		"testgroup":  group.Name,
 		"gcs_prefix": "gs://" + group.GcsPrefix,
@@ -326,10 +370,6 @@ func findGroupBuilds(ctx context.Context, storageClient *storage.Client, bc *buc
 		case <-ctx.Done():
 		case errChan <- err:
 		}
-		return
-	}
-	if !bc.writable(ctx, *tgPath) {
-		log.Debug("Skip unwritable group")
 		return
 	}
 
@@ -354,13 +394,9 @@ func findGroupBuilds(ctx context.Context, storageClient *storage.Client, bc *buc
 	}
 }
 
-func findBuilds(ctx context.Context, storageClient *storage.Client, groups []configpb.TestGroup) (<-chan buildsInfo, <-chan error) {
+func findBuilds(ctx context.Context, storageClient *storage.Client, groups []configpb.TestGroup, prefilteredBuckets bool) (<-chan buildsInfo, <-chan error) {
 	buildsChan := make(chan buildsInfo)
 	errChan := make(chan error)
-	bc := bucketChecker{
-		buckets: map[string]bool{},
-		client:  storageClient,
-	}
 	go func() {
 		innerErrChan := make(chan error)
 		defer close(buildsChan)
@@ -373,7 +409,7 @@ func findBuilds(ctx context.Context, storageClient *storage.Client, groups []con
 			wg.Add(1)
 			go func(testGroup configpb.TestGroup) {
 				defer wg.Done()
-				findGroupBuilds(ctx, storageClient, &bc, testGroup, buildsChan, innerErrChan)
+				findGroupBuilds(ctx, storageClient, testGroup, buildsChan, innerErrChan)
 			}(testGroup)
 		}
 		go func() {
@@ -398,7 +434,7 @@ func findBuilds(ctx context.Context, storageClient *storage.Client, groups []con
 	return buildsChan, errChan
 }
 
-func transferLatest(ctx context.Context, storageClient *storage.Client, rsClient *resultstore.Client, project string, builds gcs.Builds, max int, override bool, includePending bool) error {
+func transferLatest(ctx context.Context, storageClient *storage.Client, rsClient *resultstore.Client, project string, builds gcs.Builds, max int, override bool, includePending bool, maxFiles int) error {
 
 	for i, build := range builds {
 		if i >= max {
@@ -408,14 +444,14 @@ func transferLatest(ctx context.Context, storageClient *storage.Client, rsClient
 		if err != nil {
 			return fmt.Errorf("bad %s path: %v", build, err)
 		}
-		if err := transferBuild(ctx, storageClient, rsClient, project, *path, override, includePending); err != nil {
+		if err := transferBuild(ctx, storageClient, rsClient, project, *path, override, includePending, maxFiles); err != nil {
 			return fmt.Errorf("%s: %v", build, err)
 		}
 	}
 	return nil
 }
 
-func transferBuild(ctx context.Context, storageClient *storage.Client, rsClient *resultstore.Client, project string, path gcs.Path, override bool, includePending bool) error {
+func transferBuild(ctx context.Context, storageClient *storage.Client, rsClient *resultstore.Client, project string, path gcs.Path, override bool, includePending bool, maxFiles int) error {
 	build := gcs.Build{
 		Bucket:     storageClient.Bucket(path.Bucket()),
 		Prefix:     trailingSlash(path.Object()),
@@ -448,7 +484,7 @@ func transferBuild(ctx context.Context, storageClient *storage.Client, rsClient 
 
 	desc := "Results of " + path.String()
 	log.Debug("Converting...")
-	inv, target, test := convert(project, desc, path, *result)
+	inv, target, test := convert(project, desc, path, *result, maxFiles)
 
 	if project == "" {
 		print(inv.To(), test.To())

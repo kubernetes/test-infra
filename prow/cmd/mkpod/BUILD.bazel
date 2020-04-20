@@ -1,8 +1,11 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
 load("//prow:def.bzl", "prow_image")
 
+NAME = "mkpod"
+
 prow_image(
     name = "image",
+    component = NAME,
     directory = "/",
     files = [":mkpod"],
     visibility = ["//visibility:public"],
@@ -24,7 +27,7 @@ go_library(
 )
 
 go_binary(
-    name = "mkpod",
+    name = NAME,
     embed = [":go_default_library"],
     visibility = ["//visibility:public"],
 )

@@ -1013,9 +1013,10 @@ function createPRCardBody(pr: PullRequest, builds: UnifiedContext[], queries: Pr
     cardBody.appendChild(createMergeLabelStatus(nodes, queries));
     cardBody.appendChild(createMergeConflictStatus(mergeable));
     cardBody.appendChild(createGenericConflictStatus(pr, branchConflict, `Merging into branch ${pr.BaseRef.Name} is currently forbidden`));
-    cardBody.appendChild(createGenericConflictStatus(pr, authorConflict, `Only merges with author ${queries[0].author} are currently allowed`));
-    cardBody.appendChild(createGenericConflictStatus(pr, milestoneConflict, `Only merges into milestone ${queries[0].milestone} are currently allowed`));
-
+    if (queries.length) {
+        cardBody.appendChild(createGenericConflictStatus(pr, authorConflict, `Only merges with author ${queries[0].author} are currently allowed`));
+        cardBody.appendChild(createGenericConflictStatus(pr, milestoneConflict, `Only merges into milestone ${queries[0].milestone} are currently allowed`));
+    }
     return cardBody;
 }
 

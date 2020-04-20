@@ -67,6 +67,10 @@ func (o *options) parseFlags() {
 func (o *options) validateFlags() error {
 	var err error
 
+	if len(o.context) == 0 {
+		return &util.ExitError{Message: "--context option is required.", Code: 1}
+	}
+
 	if len(o.name) == 0 {
 		return &util.ExitError{Message: "-n, --name option is required.", Code: 1}
 	}

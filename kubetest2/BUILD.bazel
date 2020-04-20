@@ -25,6 +25,7 @@ filegroup(
     name = "all-srcs",
     srcs = [
         ":package-srcs",
+        "//kubetest2/kubetest2-eks:all-srcs",
         "//kubetest2/kubetest2-gke:all-srcs",
         "//kubetest2/kubetest2-kind:all-srcs",
         "//kubetest2/pkg/app:all-srcs",

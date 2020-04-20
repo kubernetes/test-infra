@@ -57,6 +57,7 @@ type options struct {
 	keyFile                string
 	caCertFile             string
 	csrfProtect            bool
+	skipReport             bool
 
 	dryRun     bool
 	kubernetes prowflagutil.KubernetesOptions
@@ -113,6 +114,7 @@ func gatherOptions() options {
 	fs.StringVar(&o.caCertFile, "ca-cert-file", "", "Path to a PEM-encoded CA certificate file.")
 	fs.BoolVar(&o.csrfProtect, "csrf-protect", false, "Request a CSRF protection token from Jenkins that will be used in all subsequent requests to Jenkins.")
 
+	fs.BoolVar(&o.skipReport, "skip-report", false, "Whether or not to ignore report with githubClient")
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Whether or not to make mutating API calls to GitHub/Kubernetes/Jenkins.")
 	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github} {
 		group.AddFlags(fs)
@@ -122,7 +124,7 @@ func gatherOptions() options {
 }
 
 func main() {
-	logrusutil.ComponentInit("jenkins-operator")
+	logrusutil.ComponentInit()
 
 	o := gatherOptions()
 	if err := o.Validate(); err != nil {
@@ -198,7 +200,7 @@ func main() {
 		logrus.WithError(err).Fatal("Error getting GitHub client.")
 	}
 
-	c, err := jenkins.NewController(prowJobClient, jc, githubClient, nil, cfg, o.totURL, o.selector)
+	c, err := jenkins.NewController(prowJobClient, jc, githubClient, nil, cfg, o.totURL, o.selector, o.skipReport)
 	if err != nil {
 		logrus.WithError(err).Fatal("Failed to instantiate Jenkins controller.")
 	}

@@ -31,21 +31,19 @@ spec:
       labels:
         app: plank
     spec:
-      # serviceAccountName: "plank" # Uncomment for use with RBAC
+      serviceAccountName: plank
       containers:
       - name: plank
-        image: gcr.io/k8s-prow/plank:v20200214-db7f45788
+        image: gcr.io/k8s-prow/plank:v20200417-3971a63f2
         args:
-        - --build-cluster=/etc/cluster/cluster
-        - --dry-run=false
-        - --github-endpoint=http://ghproxy
-        - --github-endpoint=https://api.github.com
         - --config-path=/etc/config/config.yaml
+        - --dry-run=false
         - --job-config-path=/etc/job-config
+        - --kubeconfig=/etc/kubeconfig/config
         - --skip-report=true
         volumeMounts:
-        - mountPath: /etc/cluster
-          name: cluster
+        - mountPath: /etc/kubeconfig
+          name: kubeconfig
           readOnly: true
         - name: oauth
           mountPath: /etc/github
@@ -57,10 +55,10 @@ spec:
           mountPath: /etc/job-config
           readOnly: true
       volumes:
-      - name: cluster
+      - name: kubeconfig
         secret:
           defaultMode: 420
-          secretName: build-cluster
+          secretName: kubeconfig
       - name: oauth
         secret:
           secretName: oauth-token

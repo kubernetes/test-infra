@@ -12,9 +12,12 @@ package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])
 
+NAME = "label_sync"
+
 prow_image(
     name = "image",
     base = "@alpine-base//image",
+    component = NAME,
     visibility = ["//visibility:public"],
 )
 
@@ -28,7 +31,7 @@ prow_push(
 )
 
 go_binary(
-    name = "label_sync",
+    name = NAME,
     embed = [":go_default_library"],
 )
 

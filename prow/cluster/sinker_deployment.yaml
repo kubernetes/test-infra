@@ -15,18 +15,18 @@ spec:
       labels:
         app: sinker
     spec:
-      # serviceAccountName: "sinker" # Uncomment for use with RBAC
+      serviceAccountName: sinker
       containers:
       - name: sinker
         args:
-        - --build-cluster=/etc/cluster/cluster
+        - --kubeconfig=/etc/kubeconfig/config
         - --config-path=/etc/config/config.yaml
         - --job-config-path=/etc/job-config
         - --dry-run=false
-        image: gcr.io/k8s-prow/sinker:v20200214-db7f45788
+        image: gcr.io/k8s-prow/sinker:v20200417-3971a63f2
         volumeMounts:
-        - mountPath: /etc/cluster
-          name: cluster
+        - mountPath: /etc/kubeconfig
+          name: kubeconfig
           readOnly: true
         - name: config
           mountPath: /etc/config
@@ -35,10 +35,10 @@ spec:
           mountPath: /etc/job-config
           readOnly: true
       volumes:
-      - name: cluster
+      - name: kubeconfig
         secret:
           defaultMode: 420
-          secretName: build-cluster
+          secretName: kubeconfig
       - name: config
         configMap:
           name: config

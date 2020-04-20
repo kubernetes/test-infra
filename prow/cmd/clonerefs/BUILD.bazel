@@ -14,8 +14,10 @@ go_library(
     ],
 )
 
+NAME = "clonerefs"
+
 go_binary(
-    name = "clonerefs",
+    name = NAME,
     embed = [":go_default_library"],
     pure = "on",
     visibility = ["//visibility:public"],
@@ -24,6 +26,7 @@ go_binary(
 prow_image(
     name = "image",
     base = "@git-base//image",
+    component = NAME,
     files = [
         "github_known_hosts",
         "ssh_config",

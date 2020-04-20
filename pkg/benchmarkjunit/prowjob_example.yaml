@@ -9,16 +9,11 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: golang:latest
+    - image: gcr.io/k8s-testimages/benchmarkjunit:latest
       command:
-      - go
+      - /benchmarkjunit
       args:
-      - run
-      - ./pkg/benchmarkjunit
       - --log-file=$(ARTIFACTS)/benchmark-log.txt
       - --output=$(ARTIFACTS)/junit_benchmarks.xml
       - --pass-on-error
       - ./experiment/dummybenchmarks/...
-      env:
-      - name: GO111MODULE
-        value: "on"

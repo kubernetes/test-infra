@@ -19,6 +19,7 @@ package github
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -34,11 +35,14 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
+
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/test-infra/ghproxy/ghcache"
-	"k8s.io/test-infra/prow/errorutil"
+	"k8s.io/test-infra/prow/version"
 )
 
 type timeClient interface {
@@ -229,12 +233,16 @@ type Client interface {
 	SetMax404Retries(int)
 
 	WithFields(fields logrus.Fields) Client
+	ForPlugin(plugin string) Client
+	ForSubcomponent(subcomponent string) Client
 }
 
 // client interacts with the github api.
 type client struct {
 	// If logger is non-nil, log all method calls with it.
 	logger *logrus.Entry
+	// identifier is used to add more identification to the user-agent header
+	identifier string
 	*delegate
 }
 
@@ -258,6 +266,33 @@ type delegate struct {
 
 	mut      sync.Mutex // protects botName and email
 	userData *User
+}
+
+// ForPlugin clones the client, keeping the underlying delegate the same but adding
+// a plugin identifier and log field
+func (c *client) ForPlugin(plugin string) Client {
+	return c.forKeyValue("plugin", plugin)
+}
+
+// ForSubcomponent clones the client, keeping the underlying delegate the same but adding
+// an identifier and log field
+func (c *client) ForSubcomponent(subcomponent string) Client {
+	return c.forKeyValue("subcomponent", subcomponent)
+}
+
+func (c *client) forKeyValue(key, value string) Client {
+	return &client{
+		identifier: value,
+		logger:     c.logger.WithField(key, value),
+		delegate:   c.delegate,
+	}
+}
+
+func (c *client) userAgent() string {
+	if c.identifier != "" {
+		return version.UserAgentWithIdentifier(c.identifier)
+	}
+	return version.UserAgent()
 }
 
 // WithFields clones the client, keeping the underlying delegate the same but adding
@@ -662,7 +697,7 @@ func (c *client) requestRetry(method, path, accept string, body interface{}) (*h
 						// sleep. If it's going to take too long, then break.
 						sleepTime := c.time.Until(time.Unix(int64(t), 0)) + time.Second
 						if sleepTime < c.maxSleepTime {
-							c.logger.WithField("backoff", sleepTime.String()).Debug("Retrying after token budget reset")
+							c.logger.WithField("backoff", sleepTime.String()).WithField("path", path).Debug("Retrying after token budget reset")
 							c.time.Sleep(sleepTime)
 						} else {
 							err = fmt.Errorf("sleep time for token reset exceeds max sleep time (%v > %v)", sleepTime, c.maxSleepTime)
@@ -683,7 +718,7 @@ func (c *client) requestRetry(method, path, accept string, body interface{}) (*h
 						// sleep. If it's going to take too long, then break.
 						sleepTime := time.Duration(t+1) * time.Second
 						if sleepTime < c.maxSleepTime {
-							c.logger.WithField("backoff", sleepTime.String()).Debug("Retrying after abuse ratelimit reset")
+							c.logger.WithField("backoff", sleepTime.String()).WithField("path", path).Debug("Retrying after abuse ratelimit reset")
 							c.time.Sleep(sleepTime)
 						} else {
 							err = fmt.Errorf("sleep time for abuse rate limit exceeds max sleep time (%v > %v)", sleepTime, c.maxSleepTime)
@@ -743,13 +778,16 @@ func (c *client) doRequest(method, path, accept string, body interface{}) (*http
 	if err != nil {
 		return nil, err
 	}
-	if token := c.getToken(); len(token) > 0 {
-		req.Header.Set("Authorization", "Token "+string(token))
+	if header := c.authHeader(); len(header) > 0 {
+		req.Header.Set("Authorization", header)
 	}
 	if accept == acceptNone {
 		req.Header.Add("Accept", "application/vnd.github.v3+json")
 	} else {
 		req.Header.Add("Accept", accept)
+	}
+	if userAgent := c.userAgent(); userAgent != "" {
+		req.Header.Add("User-Agent", userAgent)
 	}
 	// Disable keep-alive so that we don't get flakes when GitHub closes the
 	// connection prematurely.
@@ -757,6 +795,24 @@ func (c *client) doRequest(method, path, accept string, body interface{}) (*http
 	// for POST.
 	req.Close = true
 	return c.client.Do(req)
+}
+
+func (c *client) authHeader() string {
+	return fmt.Sprintf("Bearer %s", c.getToken())
+}
+
+// userInfo provides the 'github_user_info' vector that is indexed
+// by the user's information.
+var userInfo = prometheus.NewGaugeVec(
+	prometheus.GaugeOpts{
+		Name: "github_user_info",
+		Help: "Metadata about a user, tied to their token hash.",
+	},
+	[]string{"token_hash", "login", "email"},
+)
+
+func init() {
+	prometheus.MustRegister(userInfo)
 }
 
 // Not thread-safe - callers need to hold c.mut.
@@ -775,6 +831,10 @@ func (c *client) getUserData() error {
 	// email needs to be publicly accessible via the profile
 	// of the current account. Read below for more info
 	// https://developer.github.com/v3/users/#get-a-single-user
+
+	// record information for the user
+	authHeaderHash := fmt.Sprintf("%x", sha256.Sum256([]byte(c.authHeader()))) // use %x to make this a utf-8 string for use as a label
+	userInfo.With(prometheus.Labels{"token_hash": authHeaderHash, "login": c.userData.Login, "email": c.userData.Email}).Set(1)
 	return nil
 }
 
@@ -2241,7 +2301,7 @@ func prepareReviewersBody(logins []string, org string) (map[string][]string, err
 			errors = append(errors, fmt.Errorf("team %s is not part of %s org", login, org))
 		}
 	}
-	return body, errorutil.NewAggregate(errors...)
+	return body, utilerrors.NewAggregate(errors)
 }
 
 func (c *client) tryRequestReview(org, repo string, number int, logins []string) (int, error) {
@@ -2941,6 +3001,23 @@ func (c *client) Merge(org, repo string, pr int, details MergeDetails) error {
 //
 // See https://developer.github.com/v3/repos/collaborators/
 func (c *client) IsCollaborator(org, repo, user string) (bool, error) {
+	// This call does not support etags and is therefore not cacheable today
+	// by ghproxy. If we can detect that we're using ghproxy, however, we can
+	// make a more expensive but cache-able call instead. Detecting that we
+	// are pointed at a ghproxy instance is not high fidelity, but a best-effort
+	// approach here is guaranteed to make a positive impact and no negative one.
+	if strings.Contains(c.bases[0], "ghproxy") {
+		users, err := c.ListCollaborators(org, repo)
+		if err != nil {
+			return false, err
+		}
+		for _, u := range users {
+			if NormLogin(u.Login) == NormLogin(user) {
+				return true, nil
+			}
+		}
+		return false, nil
+	}
 	durationLogger := c.log("IsCollaborator", org, user)
 	defer durationLogger()
 

@@ -18,14 +18,19 @@ package trigger
 
 import (
 	"encoding/json"
+	"strconv"
 	"testing"
 
 	"github.com/sirupsen/logrus"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	clienttesting "k8s.io/client-go/testing"
+
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
+	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/plugins"
 )
@@ -373,5 +378,101 @@ func TestHandlePullRequest(t *testing.T) {
 		} else if !tc.ShouldComment && len(g.IssueCommentsAdded) > 0 {
 			t.Errorf("Expected no comments to github, but got %d", len(g.CreatedStatuses))
 		}
+	}
+}
+
+func TestAbortAllJobs(t *testing.T) {
+	t.Parallel()
+	const org, repo, number = "org", "repo", 1
+	pj := func(modifier ...func(*prowapi.ProwJob)) *prowapi.ProwJob {
+		job := &prowapi.ProwJob{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "my-pj",
+				Labels: map[string]string{
+					kube.OrgLabel:         org,
+					kube.RepoLabel:        repo,
+					kube.PullLabel:        strconv.Itoa(number),
+					kube.ProwJobTypeLabel: string(prowapi.PresubmitJob),
+				},
+			},
+		}
+
+		for _, m := range modifier {
+			m(job)
+		}
+
+		return job
+	}
+	testCases := []struct {
+		name                   string
+		pj                     *prowapi.ProwJob
+		expectedAbortedProwJob bool
+	}{
+		{
+			name:                   "Job gets aborted",
+			pj:                     pj(),
+			expectedAbortedProwJob: true,
+		},
+		{
+			name:                   "Wrong org, ignored",
+			pj:                     pj(func(pj *prowapi.ProwJob) { pj.Labels[kube.OrgLabel] = "wrong" }),
+			expectedAbortedProwJob: false,
+		},
+		{
+			name:                   "Wrong repo, ignored",
+			pj:                     pj(func(pj *prowapi.ProwJob) { pj.Labels[kube.RepoLabel] = "wrong" }),
+			expectedAbortedProwJob: false,
+		},
+		{
+			name:                   "Wrong pr, ignored",
+			pj:                     pj(func(pj *prowapi.ProwJob) { pj.Labels[kube.PullLabel] = "99" }),
+			expectedAbortedProwJob: false,
+		},
+		{
+			name:                   "Wrong type, ignored",
+			pj:                     pj(func(pj *prowapi.ProwJob) { pj.Labels[kube.ProwJobTypeLabel] = "wrong" }),
+			expectedAbortedProwJob: false,
+		},
+		{
+			name: "Job completed, ignored",
+			pj: pj(func(pj *prowapi.ProwJob) {
+				pj.Status.CompletionTime = &[]metav1.Time{metav1.Now()}[0]
+			}),
+			expectedAbortedProwJob: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			pjClient := fake.NewSimpleClientset(tc.pj)
+			client := Client{
+				ProwJobClient: pjClient.ProwV1().ProwJobs(""),
+				Logger:        logrus.NewEntry(logrus.New()),
+			}
+			pr := &github.PullRequest{
+				Base: github.PullRequestBranch{
+					Repo: github.Repo{
+						Owner: github.User{
+							Login: org,
+						},
+						Name: repo,
+					},
+				},
+				Number: number,
+			}
+
+			if err := abortAllJobs(client, pr); err != nil {
+				t.Fatalf("error caling abortAllJobs: %v", err)
+			}
+
+			pj, err := pjClient.ProwV1().ProwJobs("").Get(pj().Name, metav1.GetOptions{})
+			if err != nil {
+				t.Fatalf("failed to get prowjob: %v", err)
+			}
+
+			if isAborted := pj.Status.State == prowapi.AbortedState; isAborted != tc.expectedAbortedProwJob {
+				t.Errorf("IsAborted: %t, but expected aborted: %t", isAborted, tc.expectedAbortedProwJob)
+			}
+		})
 	}
 }

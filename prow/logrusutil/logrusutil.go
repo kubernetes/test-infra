@@ -22,8 +22,9 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
-
 	"k8s.io/apimachinery/pkg/util/sets"
+
+	"k8s.io/test-infra/prow/version"
 )
 
 // DefaultFieldsFormatter wraps another logrus.Formatter, injecting
@@ -49,11 +50,11 @@ func Init(formatter *DefaultFieldsFormatter) {
 }
 
 // ComponentInit is a syntax sugar for easier Init
-func ComponentInit(component string) {
+func ComponentInit() {
 	Init(
 		&DefaultFieldsFormatter{
 			PrintLineNumber: true,
-			DefaultFields:   logrus.Fields{"component": component},
+			DefaultFields:   logrus.Fields{"component": version.Name},
 		},
 	)
 }

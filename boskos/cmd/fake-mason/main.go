@@ -74,7 +74,7 @@ func main() {
 		logrus.WithError(err).Fatal("failed to create kubeClient")
 	}
 
-	st, _ := ranch.NewStorage(context.Background(), kubeClient, *namespace, "")
+	st := ranch.NewStorage(context.Background(), kubeClient, *namespace)
 
 	flag.Parse()
 	logrus.SetFormatter(&logrus.JSONFormatter{})

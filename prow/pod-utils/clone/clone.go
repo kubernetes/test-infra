@@ -50,7 +50,11 @@ func Run(refs prowapi.Refs, dir, gitUserName, gitUserEmail, cookiePath string, e
 	runCommands := func(commands []cloneCommand) error {
 		for _, command := range commands {
 			formattedCommand, output, err := command.run()
-			logrus.WithFields(logrus.Fields{"command": formattedCommand, "output": output, "error": err}).Info("Ran command")
+			log := logrus.WithFields(logrus.Fields{"command": formattedCommand, "output": output})
+			if err != nil {
+				log = log.WithField("error", err)
+			}
+			log.Info("Ran command")
 			message := ""
 			if err != nil {
 				message = err.Error()

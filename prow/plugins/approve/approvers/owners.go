@@ -484,10 +484,11 @@ func (ap Approvers) GetCCs() []string {
 }
 
 // AreFilesApproved returns a bool indicating whether or not OWNERS files associated with
-// the PR are approved.  If this returns true, the PR may still not be fully approved depending
-// on the associated issue requirement
+// the PR are approved.  A PR with no OWNERS files is not considered approved. If this
+// returns true, the PR may still not be fully approved depending on the associated issue
+// requirement
 func (ap Approvers) AreFilesApproved() bool {
-	return ap.UnapprovedFiles().Len() == 0
+	return len(ap.owners.filenames) != 0 && ap.UnapprovedFiles().Len() == 0
 }
 
 // RequirementsMet returns a bool indicating whether the PR has met all approval requirements:

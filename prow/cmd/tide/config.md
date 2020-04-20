@@ -70,7 +70,6 @@ The field to search token correspondence is based on the following mapping:
 * `author` -> `author:batman`
 * `reviewApprovedRequired` -> `review:approved`
 
-**Important**: Each query must return a different set of PRs. No two queries are allowed to contain the same PR.
 
 Every PR that needs to be rebased or is failing required statuses is filtered from the pool before processing
 

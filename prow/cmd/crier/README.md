@@ -61,16 +61,16 @@ The **OAuth Access Token** can be obtained as follows:
 1. Click **Create New App**.
 1. Provide an **App Name** (e.g. Prow Slack Reporter) and **Development Slack Workspace** (e.g. Kubernetes).
 1. Click **Permissions**.
-1. Add the `chat:write:bot` scope using the **Scopes** dropdown and **Save Changes**.
+1. Add the `chat:write.public` scope using the **Scopes / Bot Token Scopes** dropdown and **Save Changes**.
 1. Click **Install App to Workspace**
 1. Click **Allow** to authorize the Oauth scopes.
 1. Copy the **OAuth Access Token**.
 
-Once the *access token* is obtained, you can create a `secret` in the cluster using that value: 
+Once the *access token* is obtained, you can create a `secret` in the cluster using that value:
 
 ```shell
 kubectl create secret generic slack-token --from-literal=token=< access token >
-``` 
+```
 
 Furthermore, to make this token available to **Crier**, mount the *slack-token* `secret` using a `volume` and set the `--slack-token-file` flag in the deployment spec.
 
@@ -116,7 +116,7 @@ spec:
 
 Additionally, in order for it to work with Prow you must add the following to your `config.yaml`:
 
-> **NOTE:** `slack_reporter_configs` is a map of `org`, `org/repo`, or `*` (i.e. catch-all wildcard) to a set of slack reporter configs. 
+> **NOTE:** `slack_reporter_configs` is a map of `org`, `org/repo`, or `*` (i.e. catch-all wildcard) to a set of slack reporter configs.
 
 ```yaml
 slack_reporter_configs:
@@ -124,7 +124,7 @@ slack_reporter_configs:
   # Wildcard (i.e. catch-all) slack config
   "*":
     # default: None
-    job_types_to_report: 
+    job_types_to_report:
       - presubmit
       - postsubmit
     # default: None

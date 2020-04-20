@@ -29,11 +29,11 @@ spec:
       labels:
         app: statusreconciler
     spec:
-      # serviceAccountName: "statusreconciler" # Uncomment for use with RBAC
+      serviceAccountName: statusreconciler
       terminationGracePeriodSeconds: 180
       containers:
       - name: statusreconciler
-        image: gcr.io/k8s-prow/status-reconciler:v20200214-db7f45788
+        image: gcr.io/k8s-prow/status-reconciler:v20200417-3971a63f2
         imagePullPolicy: Always
         args:
         - --dry-run=false
@@ -41,6 +41,8 @@ spec:
         - --plugin-config=/etc/plugins/plugins.yaml
         - --config-path=/etc/config/config.yaml
         - --github-token-path=/etc/github/oauth
+        - --github-endpoint=http://ghproxy
+        - --github-endpoint=https://api.github.com
         - --job-config-path=/etc/job-config
         - --blacklist=kubernetes/kubernetes
         volumeMounts:

@@ -1,14 +1,17 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 load("//prow:def.bzl", "prow_image", "prow_push")
 
+NAME = "issue-creator"
+
 go_binary(
-    name = "issue-creator",
+    name = NAME,
     embed = [":go_default_library"],
     visibility = ["//visibility:public"],
 )
 
 prow_image(
     name = "image",
+    component = NAME,
     visibility = ["//visibility:public"],
 )
 

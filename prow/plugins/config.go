@@ -30,8 +30,8 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/sets"
 
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/test-infra/prow/bugzilla"
-	"k8s.io/test-infra/prow/errorutil"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/labels"
 )
@@ -277,8 +277,9 @@ type Approve struct {
 }
 
 var (
-	warnImplicitSelfApprove time.Time
-	warnReviewActsAsApprove time.Time
+	warnImplicitSelfApprove       time.Time
+	warnReviewActsAsApprove       time.Time
+	warnDependentBugTargetRelease time.Time
 )
 
 func (a Approve) HasSelfApproval() bool {
@@ -588,47 +589,6 @@ type RequireMatchingLabel struct {
 	// Defaults to '5s'.
 	GracePeriod         string        `json:"grace_period,omitempty"`
 	GracePeriodDuration time.Duration `json:"-"`
-}
-
-// Repo supercedes org/repo string handling
-type Repo struct {
-	Org  string
-	Repo string
-}
-
-func (repo Repo) String() string {
-	return fmt.Sprintf("%s/%s", repo.Org, repo.Repo)
-}
-
-// NewRepo creates a Repo from org/repo string
-func NewRepo(orgRepo string) *Repo {
-	parts := strings.Split(orgRepo, "/")
-	switch len(parts) {
-	case 1:
-		return &Repo{Org: parts[0]}
-	case 2:
-		return &Repo{Org: parts[0], Repo: parts[1]}
-	default:
-		return nil
-	}
-}
-
-// ReposToStrings converts a list of Repo to its String() equivalent
-func ReposToStrings(vs []Repo) []string {
-	vsm := make([]string, len(vs))
-	for i, v := range vs {
-		vsm[i] = v.String()
-	}
-	return vsm
-}
-
-// StringsToRepos converts a list of org/repo strings to its Repo equivalent
-func StringsToRepos(vs []string) []Repo {
-	vsm := make([]Repo, len(vs))
-	for i, v := range vs {
-		vsm[i] = *NewRepo(v)
-	}
-	return vsm
 }
 
 // validate checks the following properties:
@@ -953,7 +913,7 @@ func validatePluginsDupes(plugins map[string][]string) error {
 			}
 		}
 	}
-	return errorutil.NewAggregate(errors...)
+	return utilerrors.NewAggregate(errors)
 }
 
 // ValidatePluginsUnknown will return an error if there are any unrecognized
@@ -967,7 +927,7 @@ func (c *Configuration) ValidatePluginsUnknown() error {
 			}
 		}
 	}
-	return errorutil.NewAggregate(errors...)
+	return utilerrors.NewAggregate(errors)
 }
 
 func validateSizes(size Size) error {
@@ -1355,13 +1315,24 @@ type BugzillaBranchOptions struct {
 	ValidStates *[]BugzillaBugState `json:"valid_states,omitempty"`
 
 	// DependentBugStatuses determine which statuses a bug's dependent bugs may have
-	// to deem the child bug valid
+	// to deem the child bug valid.  These are merged into DependentBugStates when
+	// resolving branch options.
 	DependentBugStatuses *[]string `json:"dependent_bug_statuses,omitempty"`
 	// DependentBugStates determine states in which a bug's dependents bugs may be
-	// to deem the child bug valid
+	// to deem the child bug valid.  If set, all blockers must have a valid state.
 	DependentBugStates *[]BugzillaBugState `json:"dependent_bug_states,omitempty"`
-	// DependentBugTargetRelease determines which release a bug's dependent bugs need to target to be valid
-	DependentBugTargetRelease *string `json:"dependent_bug_target_release,omitempty"`
+	// DependentBugTargetReleases determines the set of valid target
+	// releases for dependent bugs.  If set, all blockers must have a
+	// valid target release.
+	DependentBugTargetReleases *[]string `json:"dependent_bug_target_releases,omitempty"`
+	// DeprecatedDependentBugTargetRelease determines which release a
+	// bug's dependent bugs need to target to be valid.  If set, all
+	// blockers must have a valid target releasee.
+	//
+	// Deprecated: Use DependentBugTargetReleases instead.  If set,
+	// DependentBugTargetRelease will be appended to
+	// DeprecatedDependentBugTargetReleases.
+	DeprecatedDependentBugTargetRelease *string `json:"dependent_bug_target_release,omitempty"`
 
 	// StatusAfterValidation is the status which the bug will be moved to after being
 	// deemed valid and linked to a PR. Will implicitly be considered a part of `statuses`
@@ -1508,6 +1479,18 @@ func ResolveBugzillaOptions(parent, child BugzillaBranchOptions) BugzillaBranchO
 			output.DependentBugStatuses = parent.DependentBugStatuses
 			output.DependentBugStates = mergeStatusesIntoStates(output.DependentBugStates, parent.DependentBugStatuses)
 		}
+		if parent.DependentBugTargetReleases != nil {
+			output.DependentBugTargetReleases = parent.DependentBugTargetReleases
+		}
+		if parent.DeprecatedDependentBugTargetRelease != nil {
+			warnDeprecated(&warnDependentBugTargetRelease, 5*time.Minute, "Please update plugins.yaml to use dependent_bug_target_releases instead of the deprecated dependent_bug_target_release")
+			if parent.DependentBugTargetReleases == nil {
+				output.DependentBugTargetReleases = &[]string{*parent.DeprecatedDependentBugTargetRelease}
+			} else if !sets.NewString(*parent.DependentBugTargetReleases...).Has(*parent.DeprecatedDependentBugTargetRelease) {
+				dependentBugTargetReleases := append(*output.DependentBugTargetReleases, *parent.DeprecatedDependentBugTargetRelease)
+				output.DependentBugTargetReleases = &dependentBugTargetReleases
+			}
+		}
 		if parent.StatusAfterValidation != nil {
 			output.StatusAfterValidation = parent.StatusAfterValidation
 			output.StateAfterValidation = &BugzillaBugState{Status: *output.StatusAfterValidation}
@@ -1558,6 +1541,18 @@ func ResolveBugzillaOptions(parent, child BugzillaBranchOptions) BugzillaBranchO
 			output.DependentBugStates = nil
 		}
 		output.DependentBugStates = mergeStatusesIntoStates(output.DependentBugStates, child.DependentBugStatuses)
+	}
+	if child.DependentBugTargetReleases != nil {
+		output.DependentBugTargetReleases = child.DependentBugTargetReleases
+	}
+	if child.DeprecatedDependentBugTargetRelease != nil {
+		warnDeprecated(&warnDependentBugTargetRelease, 5*time.Minute, "Please update plugins.yaml to use dependent_bug_target_releases instead of the deprecated dependent_bug_target_release")
+		if child.DependentBugTargetReleases == nil {
+			output.DependentBugTargetReleases = &[]string{*child.DeprecatedDependentBugTargetRelease}
+		} else if !sets.NewString(*child.DependentBugTargetReleases...).Has(*child.DeprecatedDependentBugTargetRelease) {
+			dependentBugTargetReleases := append(*output.DependentBugTargetReleases, *child.DeprecatedDependentBugTargetRelease)
+			output.DependentBugTargetReleases = &dependentBugTargetReleases
+		}
 	}
 	if child.StatusAfterValidation != nil {
 		output.StatusAfterValidation = child.StatusAfterValidation

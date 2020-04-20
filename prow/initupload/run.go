@@ -102,7 +102,7 @@ func (o Options) Run() error {
 	uploadTargets["started.json"] = gcs.DataUpload(bytes.NewReader(startedData))
 
 	if err := o.Options.Run(spec, uploadTargets); err != nil {
-		return fmt.Errorf("failed to upload to GCS: %v", err)
+		return fmt.Errorf("failed to upload to blob storage: %v", err)
 	}
 
 	if failed {
@@ -112,7 +112,7 @@ func (o Options) Run() error {
 	return nil
 }
 
-// processCloneLog checks if clone operation successed or failed for a ref
+// processCloneLog checks if clone operation succeeded or failed for a ref
 // and upload clone logs as build log upon failures.
 // returns: bool - clone status
 //          []Record - containing final SHA on successful clones

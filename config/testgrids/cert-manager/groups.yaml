@@ -1,5 +1,0 @@
-dashboard_groups:
-- dashboard_names:
-  - jetstack-cert-manager-master
-  - jetstack-cert-manager-release
-  name: jetstack

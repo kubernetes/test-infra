@@ -117,6 +117,9 @@ label:
     - platform/gcp
     - platform/minikube
     - platform/other
+    - tide/merge-method-merge
+    - tide/merge-method-rebase
+    - tide/merge-method-squash
 
 lgtm:
 - repos:
@@ -148,6 +151,11 @@ blockades:
   - ^keps/
   explanation: "KEPs have been relocated to [kubernetes/enhancements](https://git.k8s.io/enhancements/)! Please submit any updates there."
 - repos:
+  - kubernetes/community
+  blockregexps:
+  - ^contributors/design-proposals/
+  explanation: "The Design Proposal process has been deprecated in favor of [Kubernetes Enhancement Proposals (KEP)](https://git.k8s.io/enhancements/). These documents are here for historical purposes only."
+- repos:
   - kubernetes/enhancements
   blockregexps:
   - ^keps/NEXT_KEP_NUMBER$
@@ -163,7 +171,7 @@ blockades:
 - repos:
   - kubernetes/release
   blockregexps:
-  - ^anago|branchff|build\/|changelog-update|compile-release-tools|debian\/|find_green_build|gcb\/|gcbmgr|lib\/|prin|push-build.sh|release-notify|relnotes|rpm\/
+  - ^(anago|compile-release-tools|find_green_build|gcb\/|lib\/|prin|push-build.sh|release-notify|relnotes)
   explanation: "Changes to certain release tools can affect our ability to test, build, and release Kubernetes. This PR must be explicitly approved by SIG Release repo admins."
 
 blunderbuss:
@@ -226,36 +234,35 @@ slack:
     - k8s-ci-robot # future home of tide
     - k8s-release-robot # anago
     branch_whitelist:
-        release-1.14:
-            - aleksandra-malinowska # Patch Release Team
-            - dougm # Patch Release Team
-            - feiskyer # Patch Release Team
-            - hoegaarden # Patch Release Team
-            - idealhack # Patch Release Team
-            - tpepper # Patch Release Team
         release-1.15:
-            - aleksandra-malinowska # Patch Release Team
             - dougm # Patch Release Team
             - feiskyer # Patch Release Team
             - hoegaarden # Patch Release Team
             - idealhack # Patch Release Team
+            - justaugustus # Patch Release Team
             - tpepper # Patch Release Team
         release-1.16:
-            - aleksandra-malinowska # Patch Release Team
             - dougm # Patch Release Team
             - feiskyer # Patch Release Team
             - hoegaarden # Patch Release Team
             - idealhack # Patch Release Team
+            - justaugustus # Patch Release Team
             - tpepper # Patch Release Team
         release-1.17:
-            - aleksandra-malinowska # Patch Release Team
-            - bubblemelon # Branch Manager
+            - dougm # Patch Release Team
+            - feiskyer # Patch Release Team
+            - hoegaarden # Patch Release Team
+            - idealhack # Patch Release Team
+            - justaugustus # Patch Release Team
+            - tpepper # Patch Release Team
+        release-1.18:
             - cpanato # Branch Manager
             - dougm # Patch Release Team
             - feiskyer # Patch Release Team
             - hoegaarden # Patch Release Team
             - idealhack # Patch Release Team
-            - justaugustus # Branch Manager
+            - justaugustus # Patch Release Team
+            - saschagrunert # Branch Manager
             - tpepper # Patch Release Team
         feature-serverside-apply:
             - lavalamp # feature-serverside-apply "branch manager"
@@ -294,24 +301,28 @@ slack:
 
 milestone_applier:
   kubernetes/enhancements:
-    master: v1.18
+    master: v1.19
   kubernetes/kubernetes:
-    master: v1.18
+    master: v1.19
+    release-1.18: v1.18
     release-1.17: v1.17
     release-1.16: v1.16
     release-1.15: v1.15
-    release-1.14: v1.14
   kubernetes/release:
-    master: v1.18
+    master: v1.19
   kubernetes/sig-release:
-    master: v1.18
+    master: v1.19
   kubernetes/test-infra:
-    master: v1.18
+    master: v1.19
   kubernetes/kops:
     master: v1.18
     release-1.17: v1.17
     release-1.16: v1.16
     release-1.15: v1.15
+  kubernetes-sigs/cluster-api-provider-azure:
+    master: v0.5
+    release-0.4: v0.4
+    release-0.3: v0.3
 
 repo_milestone:
   # Default maintainer
@@ -810,6 +821,7 @@ plugins:
 
   kubernetes-sigs/cluster-api-provider-azure:
   - milestone
+  - milestoneapplier
   - milestonestatus
   - release-note
   - require-matching-label

@@ -127,7 +127,7 @@ func run(deploy deployer, o options) error {
 		}
 		// If node testing is enabled, check that the api is reachable before
 		// proceeding with further steps. This is accomplished by listing the nodes.
-		if !o.nodeTests {
+		if !o.nodeTests && !strings.EqualFold(string(o.build), "none") {
 			errs = util.AppendError(errs, control.XMLWrap(&suite, "Check APIReachability", func() error { return getKubectlVersion(deploy) }))
 			if dump != "" {
 				errs = util.AppendError(errs, control.XMLWrap(&suite, "list nodes", func() error {
@@ -587,10 +587,15 @@ func nodeTest(nodeArgs []string, testArgs, nodeTestArgs, project, zone string) e
 func kubemarkUp(dump string, o options, deploy deployer) error {
 	// Stop previously running kubemark cluster (if any).
 	if err := control.XMLWrap(&suite, "Kubemark TearDown Previous", func() error {
-		return control.FinishRunning(exec.Command("./test/kubemark/stop-kubemark.sh"))
+		if err := control.FinishRunning(exec.Command("./test/kubemark/stop-kubemark.sh")); err != nil {
+			return fmt.Errorf("failed to stop kubemark cluster, err: %v", err)
+		}
+		return nil
 	}); err != nil {
 		return err
 	}
+
+	log.Printf("finished tearing down kubemark")
 
 	if err := control.XMLWrap(&suite, "IsUp", deploy.IsUp); err != nil {
 		return err
@@ -615,33 +620,52 @@ func kubemarkUp(dump string, o options, deploy deployer) error {
 		return err
 	}
 
-	masterIP, err := control.Output(exec.Command(
-		"gcloud", "compute", "addresses", "describe",
-		os.Getenv("MASTER_NAME")+"-ip",
-		"--project="+o.gcpProject,
-		"--region="+o.gcpZone[:len(o.gcpZone)-2],
-		"--format=value(address)"))
-	if err != nil {
-		return fmt.Errorf("failed to get masterIP: %v", err)
+	var masterIP, masterInternalIP []byte
+
+	if o.deployment == "bash" && o.provider == "gce" {
+		var err error
+		masterIP, err = control.Output(exec.Command(
+			"gcloud", "compute", "addresses", "describe",
+			os.Getenv("MASTER_NAME")+"-ip",
+			"--project="+o.gcpProject,
+			"--region="+o.gcpZone[:len(o.gcpZone)-2],
+			"--format=value(address)"))
+		if err != nil {
+			return fmt.Errorf("failed to get masterIP: %v", err)
+		}
+
+		masterInternalIP, err = control.Output(exec.Command(
+			"gcloud", "compute", "instances", "describe",
+			os.Getenv("MASTER_NAME"),
+			"--project="+o.gcpProject,
+			"--zone="+o.gcpZone,
+			"--format=value(networkInterfaces[0].networkIP)"))
+		if err != nil {
+			return fmt.Errorf("failed to get masterInternalIP: %v", err)
+		}
+	} else if o.deployment == "aks" {
+		var err error
+		masterIP, err = control.Output(exec.Command(
+			"az", "aks", "show",
+			"-g", *aksResourceGroupName,
+			"-n", *aksResourceName,
+			"--query", "fqdn", "-o", "tsv"))
+		if err != nil {
+			return fmt.Errorf("failed to get masterIP: %v", err)
+		}
+		masterInternalIP = masterIP
 	}
+
 	if err := os.Setenv("KUBE_MASTER_IP", strings.TrimSpace(string(masterIP))); err != nil {
 		return err
 	}
+
 	// MASTER_IP variable is required by the clusterloader. It requires to have master ip provided,
 	// due to master being unregistered.
 	if err := os.Setenv("MASTER_IP", strings.TrimSpace(string(masterIP))); err != nil {
 		return err
 	}
 
-	masterInternalIP, err := control.Output(exec.Command(
-		"gcloud", "compute", "instances", "describe",
-		os.Getenv("MASTER_NAME"),
-		"--project="+o.gcpProject,
-		"--zone="+o.gcpZone,
-		"--format=value(networkInterfaces[0].networkIP)"))
-	if err != nil {
-		return fmt.Errorf("failed to get masterInternalIP: %v", err)
-	}
 	// MASTER_INTERNAL_IP variable is needed by the clusterloader2 when running on kubemark clusters.
 	if err := os.Setenv("MASTER_INTERNAL_IP", strings.TrimSpace(string(masterInternalIP))); err != nil {
 		return err

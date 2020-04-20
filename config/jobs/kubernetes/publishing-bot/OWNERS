@@ -1,7 +1,15 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
+reviewers:
+- caesarxuchao
+- mfojtik
+- nikhita
+- sttts
 approvers:
 - caesarxuchao
 - mfojtik
 - nikhita
 - sttts
+labels:
+- sig/release
+- area/release-eng

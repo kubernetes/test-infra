@@ -17,7 +17,6 @@ go_library(
         "//prow/plugins/cherrypickunapproved:go_default_library",
         "//prow/plugins/cla:go_default_library",
         "//prow/plugins/dco:go_default_library",
-        "//prow/plugins/docs-no-retest:go_default_library",
         "//prow/plugins/dog:go_default_library",
         "//prow/plugins/golint:go_default_library",
         "//prow/plugins/goose:go_default_library",

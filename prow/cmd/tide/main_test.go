@@ -65,6 +65,28 @@ func Test_gatherOptions(t *testing.T) {
 			},
 		},
 		{
+			name: "gcs-credentials-file sets the credentials on the storage client",
+			args: map[string]string{
+				"-gcs-credentials-file": "/creds",
+			},
+			expected: func(o *options) {
+				o.storage = flagutil.StorageClientOptions{
+					GCSCredentialsFile: "/creds",
+				}
+			},
+		},
+		{
+			name: "s3-credentials-file sets the credentials on the storage client",
+			args: map[string]string{
+				"-s3-credentials-file": "/creds",
+			},
+			expected: func(o *options) {
+				o.storage = flagutil.StorageClientOptions{
+					S3CredentialsFile: "/creds",
+				}
+			},
+		},
+		{
 			name: "--dry-run=true requires --deck-url",
 			args: map[string]string{
 				"--dry-run":  "true",

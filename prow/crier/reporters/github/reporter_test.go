@@ -17,12 +17,15 @@ limitations under the License.
 package github
 
 import (
+	"sync"
 	"testing"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/gerrit/client"
+	"k8s.io/test-infra/prow/github/fakegithub"
 )
 
 func TestShouldReport(t *testing.T) {
@@ -101,4 +104,69 @@ func TestShouldReport(t *testing.T) {
 			}
 		})
 	}
+}
+
+// TestPresumitReportingLocks verifies locking happens
+// for Presubmit reporting. Must be run with -race, relies
+// on k8s.io/test-infra/prow/github/fakegithub not being
+// threadsafe.
+func TestPresumitReportingLocks(t *testing.T) {
+	reporter := NewReporter(
+		&fakegithub.FakeClient{},
+		func() *config.Config {
+			return &config.Config{
+				ProwConfig: config.ProwConfig{
+					GitHubReporter: config.GitHubReporter{
+						JobTypesToReport: []v1.ProwJobType{v1.PresubmitJob},
+					},
+				},
+			}
+		},
+		v1.ProwJobAgent(""),
+	)
+
+	pj := &v1.ProwJob{
+		Spec: v1.ProwJobSpec{
+			Refs: &v1.Refs{
+				Org:   "org",
+				Repo:  "repo",
+				Pulls: []v1.Pull{{Number: 1}},
+			},
+			Type:   v1.PresubmitJob,
+			Report: true,
+		},
+		Status: v1.ProwJobStatus{
+			State:          v1.ErrorState,
+			CompletionTime: &metav1.Time{},
+		},
+	}
+
+	wg := &sync.WaitGroup{}
+	wg.Add(2)
+	go func() {
+		if _, err := reporter.Report(pj); err != nil {
+			t.Errorf("error reporting: %v", err)
+		}
+		wg.Done()
+	}()
+	go func() {
+		if _, err := reporter.Report(pj); err != nil {
+			t.Errorf("error reporting: %v", err)
+		}
+		wg.Done()
+	}()
+
+	wg.Wait()
+}
+
+func TestShardedLockCleanup(t *testing.T) {
+	t.Parallel()
+	sl := &shardedLock{mapLock: &sync.Mutex{}, locks: map[simplePull]*sync.Mutex{}}
+	key := simplePull{"org", "repo", 1}
+	sl.locks[key] = &sync.Mutex{}
+	sl.cleanup()
+	if _, exists := sl.locks[key]; exists {
+		t.Error("lock didn't get cleaned up")
+	}
+
 }

@@ -33,14 +33,13 @@ import (
 	"k8s.io/test-infra/prow/github/report"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pluginhelp"
-	"k8s.io/test-infra/prow/plugins"
 )
 
 const pluginName = "refresh"
 
 var refreshRe = regexp.MustCompile(`(?mi)^/refresh\s*$`)
 
-func helpProvider(_ []plugins.Repo) (*pluginhelp.PluginHelp, error) {
+func helpProvider(_ []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: `The refresh plugin is used for refreshing status contexts in PRs. Useful in case GitHub breaks down.`,
 	}
@@ -62,7 +61,7 @@ type server struct {
 }
 
 func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	eventType, eventGUID, payload, ok, _ := github.ValidateWebhook(w, r, s.tokenGenerator())
+	eventType, eventGUID, payload, ok, _ := github.ValidateWebhook(w, r, s.tokenGenerator)
 	if !ok {
 		return
 	}
@@ -168,7 +167,7 @@ func (s *server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent
 	}
 
 	jenkinsConfig := s.configAgent.Config().JenkinsOperators
-	kubeReport := s.configAgent.Config().Plank.ReportTemplate
+	kubeReport := s.configAgent.Config().Plank.ReportTemplateForRepo(&prowapi.Refs{Org: org, Repo: repo})
 	reportTypes := s.configAgent.Config().GitHubReporter.JobTypesToReport
 	for _, pj := range pjutil.GetLatestProwJobs(presubmits, prowapi.PresubmitJob) {
 		var reportTemplate *template.Template
@@ -193,7 +192,7 @@ func (s *server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent
 func (s *server) reportForProwJob(pj prowapi.ProwJob, configs []config.JenkinsOperator) *template.Template {
 	for _, cfg := range configs {
 		if cfg.LabelSelector.Matches(labels.Set(pj.Labels)) {
-			return cfg.ReportTemplate
+			return cfg.ReportTemplateForRepo(pj.Spec.Refs)
 		}
 	}
 	return nil

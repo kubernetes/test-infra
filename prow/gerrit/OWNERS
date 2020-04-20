@@ -1,7 +1,10 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
+reviewers:
+- fejta
+- Katharine
 approvers:
-- amwat
-- krzyzacy
+- fejta
+- Katharine
 labels:
 - area/prow/gerrit

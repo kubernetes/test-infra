@@ -18,6 +18,7 @@ dashboard_groups:
     - sig-cluster-lifecycle-etcdadm
     - sig-cluster-lifecycle-image-pushes
     - sig-cluster-lifecycle-system-validators
+    - sig-cluster-lifecycle-kubespray
 
 dashboards:
 - name: sig-cluster-lifecycle-all
@@ -40,12 +41,16 @@ dashboards:
 - name: sig-cluster-lifecycle-cluster-api-provider-ibmcloud
 - name: sig-cluster-lifecycle-cluster-api-provider-vsphere
 - name: sig-cluster-lifecycle-cluster-api-provider-openstack
+  dashboard_tab:
+    - name: capo-conformance-stable-k8s-master
+      test_group_name: ci-cluster-api-provider-openstack-make-conformance-stable-k8s-ci-artifacts
 - name: sig-cluster-lifecycle-cluster-api-bootstrap-provider-kubeadm
 - name: sig-cluster-lifecycle-cluster-api-provider-docker
 - name: sig-cluster-lifecycle-kops
 - name: sig-cluster-lifecycle-etcdadm
 - name: sig-cluster-lifecycle-image-pushes
 - name: sig-cluster-lifecycle-system-validators
+- name: sig-cluster-lifecycle-kubespray
 
 test_groups:
 # @luxas' multiarch e2e results
@@ -57,3 +62,5 @@ test_groups:
   gcs_prefix: kubernetes-multiarch-e2e-results/logs/kubeadm-luxas-scaleway-arm64
 - name: periodic-multi-platform-kubeadm-packet-arm64
   gcs_prefix: kubernetes-multiarch-e2e-results/logs/kubeadm-luxas-packet-arm64
+- name: ci-cluster-api-provider-openstack-make-conformance-stable-k8s-ci-artifacts
+  gcs_prefix: k8s-conform-capi-openstack/periodic-logs/ci-cluster-api-provider-openstack-stable-acceptance-test-master

@@ -158,10 +158,6 @@ func specFromJobBase(jb config.JobBase) prowapi.ProwJobSpec {
 	if jb.Namespace != nil {
 		namespace = *jb.Namespace
 	}
-	var rerunAuthConfig prowapi.RerunAuthConfig
-	if jb.RerunAuthConfig != nil {
-		rerunAuthConfig = *jb.RerunAuthConfig
-	}
 	return prowapi.ProwJobSpec{
 		Job:             jb.Name,
 		Agent:           prowapi.ProwJobAgent(jb.Agent),
@@ -177,7 +173,7 @@ func specFromJobBase(jb config.JobBase) prowapi.ProwJobSpec {
 		PipelineRunSpec: jb.PipelineRunSpec,
 
 		ReporterConfig:  jb.ReporterConfig,
-		RerunAuthConfig: rerunAuthConfig,
+		RerunAuthConfig: jb.RerunAuthConfig,
 		Hidden:          jb.Hidden,
 	}
 }
@@ -199,19 +195,22 @@ func CompletePrimaryRefs(refs prowapi.Refs, jb config.JobBase) *prowapi.Refs {
 // by different goroutines. Complete prowjobs are filtered out. Controller
 // loops need to handle pending jobs first so they can conform to maximum
 // concurrency requirements that different jobs may have.
-func PartitionActive(pjs []prowapi.ProwJob) (pending, triggered chan prowapi.ProwJob) {
+func PartitionActive(pjs []prowapi.ProwJob) (pending, triggered, aborted chan prowapi.ProwJob) {
 	// Size channels correctly.
-	pendingCount, triggeredCount := 0, 0
+	pendingCount, triggeredCount, abortedCount := 0, 0, 0
 	for _, pj := range pjs {
 		switch pj.Status.State {
 		case prowapi.PendingState:
 			pendingCount++
 		case prowapi.TriggeredState:
 			triggeredCount++
+		case prowapi.AbortedState:
+			abortedCount++
 		}
 	}
 	pending = make(chan prowapi.ProwJob, pendingCount)
 	triggered = make(chan prowapi.ProwJob, triggeredCount)
+	aborted = make(chan prowapi.ProwJob, abortedCount)
 
 	// Partition the jobs into the two separate channels.
 	for _, pj := range pjs {
@@ -220,11 +219,16 @@ func PartitionActive(pjs []prowapi.ProwJob) (pending, triggered chan prowapi.Pro
 			pending <- pj
 		case prowapi.TriggeredState:
 			triggered <- pj
+		case prowapi.AbortedState:
+			if !pj.Complete() {
+				aborted <- pj
+			}
 		}
 	}
 	close(pending)
 	close(triggered)
-	return pending, triggered
+	close(aborted)
+	return pending, triggered, aborted
 }
 
 // GetLatestProwJobs filters through the provided prowjobs and returns

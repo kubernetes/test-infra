@@ -36,7 +36,7 @@ func NewOptions() *Options {
 }
 
 // Options exposes the configuration necessary
-// for defining where in GCS an upload will land.
+// for defining where in storage an upload will land.
 type Options struct {
 	// Items are files or directories to upload.
 	Items []string `json:"items,omitempty"`
@@ -46,10 +46,19 @@ type Options struct {
 
 	*prowapi.GCSConfiguration
 
-	// GcsCredentialsFile is the path to the JSON
-	// credentials for pushing to GCS.
+	// GcsCredentialsFile is used for reading/writing to GCS block storage.
+	// It's optional, if you want to write to local paths or GCS credentials auto-discovery is used.
+	// If set, this file is used to read/write to gs:// paths
+	// If not, credential auto-discovery is used
 	GcsCredentialsFile string `json:"gcs_credentials_file,omitempty"`
-	DryRun             bool   `json:"dry_run"`
+	// S3CredentialsFile is used for reading/writing to s3 block storage.
+	// It's optional, if you want to write to local paths or S3 credentials auto-discovery is used.
+	// If set, this file is used to read/write to s3:// paths
+	// If not, go cloud credential auto-discovery is used
+	// For more details see the prow/io/providers pkg.
+	S3CredentialsFile string `json:"s3_credentials_file,omitempty"`
+
+	DryRun bool `json:"dry_run"`
 
 	// mediaTypes holds additional extension media types to add to Go's
 	// builtin's and the local system's defaults.  Values are
@@ -79,8 +88,8 @@ func (o *Options) Validate() error {
 			return errors.New("GCS upload was requested no GCS bucket was provided")
 		}
 
-		if o.GcsCredentialsFile == "" {
-			return errors.New("GCS upload was requested but no GCS credentials file was provided")
+		if o.GcsCredentialsFile == "" && o.S3CredentialsFile == "" {
+			return errors.New("blob storage upload was requested but neither GCS nor S3 credentials file was provided")
 		}
 	}
 
@@ -127,6 +136,7 @@ func (o *Options) AddFlags(fs *flag.FlagSet) {
 
 	fs.Var(&o.gcsPath, "gcs-path", "GCS path to upload into")
 	fs.StringVar(&o.GcsCredentialsFile, "gcs-credentials-file", "", "file where Google Cloud authentication credentials are stored")
+	fs.StringVar(&o.S3CredentialsFile, "s3-credentials-file", "", "file where the S3 credentials are stored")
 	fs.BoolVar(&o.DryRun, "dry-run", true, "do not interact with GCS")
 
 	fs.Var(&o.mediaTypes, "media-type", "Optional comma-delimited set of extension media types.  Each entry is colon-delimited {extension}:{media-type}, for example, log:text/plain.")

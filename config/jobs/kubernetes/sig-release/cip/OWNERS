@@ -1,5 +1,10 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
+reviwers:
+- dims
+- hh
+- listx
+- tpepper
 approvers:
 - dims
 - hh

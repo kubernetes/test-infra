@@ -14,8 +14,10 @@ go_library(
     ],
 )
 
+NAME = "pr-creator"
+
 go_binary(
-    name = "pr-creator",
+    name = NAME,
     embed = [":go_default_library"],
     visibility = ["//visibility:public"],
 )
@@ -23,6 +25,7 @@ go_binary(
 prow_image(
     name = "image",
     base = "@git-base//image",
+    component = NAME,
     visibility = ["//visibility:public"],
 )
 

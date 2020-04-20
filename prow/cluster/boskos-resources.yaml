@@ -182,37 +182,6 @@ resources:
   - k8s-jkns-gci-gke-slow-1-3
   - k8s-jkns-gci-gke-slow-1-4
   - k8s-jkns-gci-gke-slow-1-6
-  - k8s-jkns-gke-1-3
-  - k8s-jkns-gke-1-4
-  - k8s-jkns-gke-1-6
-  - k8s-jkns-gke-alpha-1-6
-  - k8s-jkns-gke-ingress-1-4
-  - k8s-jkns-gke-reboot-1-3
-  - k8s-jkns-gke-reboot-1-6
-  - k8s-jkns-gke-serial-1-3
-  - k8s-jkns-gke-serial-1-4
-  - k8s-jkns-gke-serial-1-6
-  - k8s-jkns-gke-slow-1-3
-  - k8s-jkns-gke-slow-1-6
-  - k8s-jkns-gke-soak
-  - k8s-jkns-gke-ubuntu
-  - k8s-jkns-gke-ubuntu-1-6
-  - k8s-jkns-gke-ubuntu-1-6-alpha
-  - k8s-jkns-gke-ubuntu-1-6-as
-  - k8s-jkns-gke-ubuntu-1-6-flaky
-  - k8s-jkns-gke-ubuntu-1-6-ingres
-  - k8s-jkns-gke-ubuntu-1-6-reboot
-  - k8s-jkns-gke-ubuntu-1-6-serial
-  - k8s-jkns-gke-ubuntu-1-6-slow
-  - k8s-jkns-gke-ubuntu-1-6-updown
-  - k8s-jkns-gke-ubuntu-alpha
-  - k8s-jkns-gke-ubuntu-as
-  - k8s-jkns-gke-ubuntu-flaky
-  - k8s-jkns-gke-ubuntu-ingress
-  - k8s-jkns-gke-ubuntu-reboot
-  - k8s-jkns-gke-ubuntu-serial
-  - k8s-jkns-gke-ubuntu-slow
-  - k8s-jkns-gke-ubuntu-updown
   - k8s-test-139569f31c
   - k8s-test-3e74ad8150
   - k8s-test-4b6146a96f
@@ -573,7 +542,11 @@ resources:
     - k8s-presubmit-scale-33
     - k8s-presubmit-scale-34
     - k8s-presubmit-scale-35
-    # projects 36 - 40 are under automatic configuration, to be added shortly
+    - k8s-presubmit-scale-36
+    - k8s-presubmit-scale-37
+    - k8s-presubmit-scale-38
+    - k8s-presubmit-scale-39
+    - k8s-presubmit-scale-40
     - k8s-presubmit-scale-41
     - k8s-presubmit-scale-42
     - k8s-presubmit-scale-43

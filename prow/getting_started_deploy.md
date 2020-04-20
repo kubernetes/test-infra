@@ -23,7 +23,7 @@ personal repos.
    following scopes (more details [here][8])
     - Must have the `public_repo` and `repo:status` scopes
     - Add the `repo` scope if you plan on handing private repos
-    - Add the `admin_org:hook` scope if you plan on handling a github org
+    - Add the `admin:org_hook` scope if you plan on handling a github org
 1. Set this token aside for later (we'll assume you wrote it to a file on your
    workstation at `/path/to/oauth/secret`)
 

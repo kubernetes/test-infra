@@ -24,6 +24,7 @@ go_library(
     srcs = ["retitle.go"],
     importpath = "k8s.io/test-infra/prow/plugins/retitle",
     deps = [
+        "//prow/config:go_default_library",
         "//prow/github:go_default_library",
         "//prow/pluginhelp:go_default_library",
         "//prow/plugins:go_default_library",

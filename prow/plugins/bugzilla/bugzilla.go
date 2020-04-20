@@ -18,6 +18,7 @@ limitations under the License.
 package bugzilla
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"regexp"
@@ -25,9 +26,12 @@ import (
 	"strconv"
 	"strings"
 
+	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/util/sets"
 
 	"k8s.io/test-infra/prow/bugzilla"
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/pluginhelp"
@@ -35,13 +39,20 @@ import (
 )
 
 var (
-	titleMatch   = regexp.MustCompile(`(?i)^.*?Bug ([0-9]+):`)
-	commandMatch = regexp.MustCompile(`(?mi)^/bugzilla refresh\s*$`)
+	titleMatch           = regexp.MustCompile(`(?i)^.*?Bug ([0-9]+):`)
+	refreshCommandMatch  = regexp.MustCompile(`(?mi)^/bugzilla refresh\s*$`)
+	qaAssignCommandMatch = regexp.MustCompile(`(?mi)^/bugzilla assign-qa\s*$`)
+	qaReviewCommandMatch = regexp.MustCompile(`(?mi)^/bugzilla cc-qa\s*$`)
 )
 
 const (
-	PluginName = "bugzilla"
-	bugLink    = `[Bugzilla bug %d](%s/show_bug.cgi?id=%d)`
+	PluginName          = "bugzilla"
+	bugLink             = `[Bugzilla bug %d](%s/show_bug.cgi?id=%d)`
+	urgentSeverity      = "urgent"
+	highSeverity        = "high"
+	medSeverity         = "medium"
+	lowSeverity         = "low"
+	unspecifiedSeverity = "unspecified"
 )
 
 func init() {
@@ -49,7 +60,7 @@ func init() {
 	plugins.RegisterPullRequestHandler(PluginName, handlePullRequest, helpProvider)
 }
 
-func helpProvider(config *plugins.Configuration, enabledRepos []plugins.Repo) (*pluginhelp.PluginHelp, error) {
+func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
 	configInfo := make(map[string]string)
 	for _, repo := range enabledRepos {
 		opts := config.Bugzilla.OptionsForRepo(repo.Org, repo.Repo)
@@ -86,6 +97,16 @@ func helpProvider(config *plugins.Configuration, enabledRepos []plugins.Repo) (*
 			if opts[branch].ValidStates != nil && len(*opts[branch].ValidStates) > 0 {
 				pretty := strings.Join(prettyStates(*opts[branch].ValidStates), ", ")
 				conditions = append(conditions, fmt.Sprintf("be in one of the following states: %s", pretty))
+			}
+			if opts[branch].DependentBugStates != nil || opts[branch].DependentBugTargetReleases != nil {
+				conditions = append(conditions, "depend on at least one other bug")
+			}
+			if opts[branch].DependentBugStates != nil {
+				pretty := strings.Join(prettyStates(*opts[branch].DependentBugStates), ", ")
+				conditions = append(conditions, fmt.Sprintf("have all dependent bugs in one of the following states: %s", pretty))
+			}
+			if opts[branch].DependentBugTargetReleases != nil {
+				conditions = append(conditions, fmt.Sprintf("have all dependent bugs in one of the following target releases: %s", strings.Join(*opts[branch].DependentBugTargetReleases, ", ")))
 			}
 			switch len(conditions) {
 			case 0:
@@ -139,6 +160,20 @@ func helpProvider(config *plugins.Configuration, enabledRepos []plugins.Repo) (*
 		WhoCanUse:   "Anyone",
 		Examples:    []string{"/bugzilla refresh"},
 	})
+	pluginHelp.AddCommand(pluginhelp.Command{
+		Usage:       "/bugzilla assign-qa",
+		Description: "(DEPRECATED) Assign PR to QA contact specified in Bugzilla",
+		Featured:    false,
+		WhoCanUse:   "Anyone",
+		Examples:    []string{"/bugzilla assign-qa"},
+	})
+	pluginHelp.AddCommand(pluginhelp.Command{
+		Usage:       "/bugzilla cc-qa",
+		Description: "Request PR review from QA contact specified in Bugzilla",
+		Featured:    false,
+		WhoCanUse:   "Anyone",
+		Examples:    []string{"/bugzilla cc-qa"},
+	})
 	return pluginHelp, nil
 }
 
@@ -148,6 +183,7 @@ type githubClient interface {
 	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
 	AddLabel(owner, repo string, number int, label string) error
 	RemoveLabel(owner, repo string, number int, label string) error
+	Query(ctx context.Context, q interface{}, vars map[string]interface{}) error
 }
 
 func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
@@ -193,7 +229,7 @@ func digestPR(log *logrus.Entry, pre github.PullRequestEvent, validateByDefault 
 	)
 
 	// Make sure the PR title is referencing a bug
-	e := &event{org: org, repo: repo, baseRef: baseRef, number: number, merged: pre.PullRequest.Merged, body: title, htmlUrl: pre.PullRequest.HTMLURL, login: pre.PullRequest.User.Login}
+	e := &event{org: org, repo: repo, baseRef: baseRef, number: number, merged: pre.PullRequest.Merged, state: pre.PullRequest.State, body: title, htmlUrl: pre.PullRequest.HTMLURL, login: pre.PullRequest.User.Login}
 	mat := titleMatch.FindStringSubmatch(title)
 	if mat == nil {
 		// in the case that the title used to reference a bug and no longer does we
@@ -257,8 +293,16 @@ func digestComment(gc githubClient, log *logrus.Entry, gce github.GenericComment
 	if gce.Action != github.GenericCommentActionCreated {
 		return nil, nil
 	}
-	// Make sure they are requesting a bug refresh
-	if !commandMatch.MatchString(gce.Body) {
+	// Make sure they are requesting a valid command
+	var assign, cc bool
+	switch {
+	case refreshCommandMatch.MatchString(gce.Body):
+		// continue without updating bool values
+	case qaAssignCommandMatch.MatchString(gce.Body):
+		assign = true
+	case qaReviewCommandMatch.MatchString(gce.Body):
+		cc = true
+	default:
 		return nil, nil
 	}
 	var (
@@ -269,7 +313,7 @@ func digestComment(gc githubClient, log *logrus.Entry, gce github.GenericComment
 
 	// We don't support linking issues to Bugs
 	if !gce.IsPR {
-		log.Debug("Bug refresh requested on an issue, ignoring")
+		log.Debug("Bugzilla command requested on an issue, ignoring")
 		return nil, gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(gce.Body, gce.HTMLURL, gce.User.Login, `Bugzilla bug referencing is only supported for Pull Requests, not issues.`))
 	}
 
@@ -279,7 +323,7 @@ func digestComment(gc githubClient, log *logrus.Entry, gce github.GenericComment
 		return nil, err
 	}
 
-	e := &event{org: org, repo: repo, baseRef: pr.Base.Ref, number: number, merged: pr.Merged, body: gce.Body, htmlUrl: gce.HTMLURL, login: gce.User.Login}
+	e := &event{org: org, repo: repo, baseRef: pr.Base.Ref, number: number, merged: pr.Merged, state: pr.State, body: gce.Body, htmlUrl: gce.HTMLURL, login: gce.User.Login, assign: assign, cc: cc}
 	mat := titleMatch.FindStringSubmatch(pr.Title)
 	if mat == nil {
 		e.missing = true
@@ -300,12 +344,63 @@ type event struct {
 	org, repo, baseRef   string
 	number, bugId        int
 	missing, merged      bool
+	state                string
 	body, htmlUrl, login string
+	assign, cc           bool
 }
 
 func (e *event) comment(gc githubClient) func(body string) error {
 	return func(body string) error {
 		return gc.CreateComment(e.org, e.repo, e.number, plugins.FormatResponseRaw(e.body, e.htmlUrl, e.login, body))
+	}
+}
+
+type queryUser struct {
+	Login githubql.String
+}
+
+type queryNode struct {
+	User queryUser `graphql:"... on User"`
+}
+
+type queryEdge struct {
+	Node queryNode
+}
+
+type querySearch struct {
+	Edges []queryEdge
+}
+
+/* emailToLoginQuery is a graphql query struct that should result in this graphql query:
+   {
+     search(type: USER, query: "email", first: 5) {
+       edges {
+         node {
+           ... on User {
+             login
+           }
+         }
+       }
+     }
+   }
+*/
+type emailToLoginQuery struct {
+	Search querySearch `graphql:"search(type:USER query:$email first:5)"`
+}
+
+// processQueryResult generates a response based on a populated emailToLoginQuery
+func processQuery(query *emailToLoginQuery, email string, log *logrus.Entry) string {
+	switch len(query.Search.Edges) {
+	case 0:
+		return fmt.Sprintf("No GitHub users were found matching the public email listed for the QA contact in Bugzilla (%s), skipping review request.", email)
+	case 1:
+		return fmt.Sprintf("Requesting review from QA contact:\n/cc @%s", query.Search.Edges[0].Node.User.Login)
+	default:
+		response := fmt.Sprintf("Multiple GitHub users were found matching the public email listed for the QA contact in Bugzilla (%s), skipping review request. List of users with matching email:", email)
+		for _, edge := range query.Search.Edges {
+			response += fmt.Sprintf("\n\t- %s", edge.Node.User.Login)
+		}
+		return response
 	}
 }
 
@@ -317,7 +412,7 @@ func handle(e event, gc githubClient, bc bugzilla.Client, options plugins.Bugzil
 	}
 
 	var needsValidLabel, needsInvalidLabel bool
-	var response string
+	var response, severityLabel string
 	if e.missing {
 		log.WithField("bugMissing", true)
 		log.Debug("No bug referenced.")
@@ -331,9 +426,10 @@ To reference a bug, add 'Bug XXX:' to the title of this pull request and request
 		if err != nil || bug == nil {
 			return err
 		}
+		severityLabel = getSeverityLabel(bug.Severity)
 
 		var dependents []bugzilla.Bug
-		if options.DependentBugStates != nil || options.DependentBugTargetRelease != nil {
+		if options.DependentBugStates != nil || options.DependentBugTargetReleases != nil {
 			for _, id := range bug.DependsOn {
 				dependent, err := bc.GetBug(id)
 				if err != nil {
@@ -343,7 +439,7 @@ To reference a bug, add 'Bug XXX:' to the title of this pull request and request
 			}
 		}
 
-		valid, why := validateBug(*bug, dependents, options, bc.Endpoint())
+		valid, validationsRun, why := validateBug(*bug, dependents, options, bc.Endpoint())
 		needsValidLabel, needsInvalidLabel = valid, !valid
 		if valid {
 			log.Debug("Valid bug found.")
@@ -366,6 +462,41 @@ To reference a bug, add 'Bug XXX:' to the title of this pull request and request
 					response += " The bug has been updated to refer to the pull request using the external bug tracker."
 				}
 			}
+
+			response += "\n\n<details>"
+			if len(validationsRun) == 0 {
+				response += "<summary>No validations were run on this bug</summary>"
+			} else {
+				response += fmt.Sprintf("<summary>%d validation(s) were run on this bug</summary>\n", len(validationsRun))
+			}
+			for _, validation := range validationsRun {
+				response += fmt.Sprint("\n* ", validation)
+			}
+			response += "</details>"
+
+			// if bug is valid and qa command was used, identify qa contact via email
+			if e.assign || e.cc {
+				if bug.QAContactDetail == nil {
+					response += fmt.Sprintf(bugLink+" does not have a QA contact, skipping assignment", e.bugId, bc.Endpoint(), e.bugId)
+				} else if bug.QAContactDetail.Email == "" {
+					response += fmt.Sprintf("QA contact for "+bugLink+" does not have a listed email, skipping assignment", e.bugId, bc.Endpoint(), e.bugId)
+				} else {
+					query := &emailToLoginQuery{}
+					email := bug.QAContactDetail.Email
+					queryVars := map[string]interface{}{
+						"email": githubql.String(email),
+					}
+					err := gc.Query(context.Background(), query, queryVars)
+					if err != nil {
+						log.WithError(err).Error("Failed to run graphql github query")
+						return comment(formatError(fmt.Sprintf("querying GitHub for users with public email (%s)", email), bc.Endpoint(), e.bugId, err))
+					}
+					response += fmt.Sprint("\n\n", processQuery(query, email, log))
+					if e.assign {
+						response += ("\n\n**DEPRECATION NOTICE**: The command `assign-qa` has been deprecated. Please use the `cc-qa` command instead.")
+					}
+				}
+			}
 		} else {
 			log.Debug("Invalid bug found.")
 			var formattedReasons string
@@ -386,12 +517,31 @@ Comment <code>/bugzilla refresh</code> to re-evaluate validity if changes to the
 		log.WithError(err).Warn("Could not list labels on PR")
 	}
 	var hasValidLabel, hasInvalidLabel bool
+	var severityLabelToRemove string
 	for _, l := range currentLabels {
 		if l.Name == labels.ValidBug {
 			hasValidLabel = true
 		}
 		if l.Name == labels.InvalidBug {
 			hasInvalidLabel = true
+		}
+		if l.Name == labels.BugzillaSeverityHigh ||
+			l.Name == labels.BugzillaSeverityUrgent ||
+			l.Name == labels.BugzillaSeverityMed ||
+			l.Name == labels.BugzillaSeverityLow ||
+			l.Name == labels.BugzillaSeverityUnspecified {
+			severityLabelToRemove = l.Name
+		}
+	}
+
+	if severityLabelToRemove != "" && severityLabel != severityLabelToRemove {
+		if err := gc.RemoveLabel(e.org, e.repo, e.number, severityLabelToRemove); err != nil {
+			log.WithError(err).Error("Failed to remove severity bug label.")
+		}
+	}
+	if severityLabel != "" && severityLabel != severityLabelToRemove {
+		if err := gc.AddLabel(e.org, e.repo, e.number, severityLabel); err != nil {
+			log.WithError(err).Error("Failed to add severity bug label.")
 		}
 	}
 
@@ -418,6 +568,23 @@ Comment <code>/bugzilla refresh</code> to re-evaluate validity if changes to the
 	return comment(response)
 }
 
+func getSeverityLabel(severity string) string {
+	switch severity {
+	case urgentSeverity:
+		return labels.BugzillaSeverityUrgent
+	case highSeverity:
+		return labels.BugzillaSeverityHigh
+	case medSeverity:
+		return labels.BugzillaSeverityMed
+	case lowSeverity:
+		return labels.BugzillaSeverityLow
+	case unspecifiedSeverity:
+		return labels.BugzillaSeverityUnspecified
+	}
+	//If we don't understand the severity, don't set it but don't error.
+	return ""
+}
+
 func bugMatchesStates(bug *bugzilla.Bug, states []plugins.BugzillaBugState) bool {
 	for _, state := range states {
 		if (&state).Matches(bug) {
@@ -436,9 +603,10 @@ func prettyStates(statuses []plugins.BugzillaBugState) []string {
 }
 
 // validateBug determines if the bug matches the options and returns a description of why not
-func validateBug(bug bugzilla.Bug, dependents []bugzilla.Bug, options plugins.BugzillaBranchOptions, endpoint string) (bool, []string) {
+func validateBug(bug bugzilla.Bug, dependents []bugzilla.Bug, options plugins.BugzillaBranchOptions, endpoint string) (bool, []string, []string) {
 	valid := true
 	var errors []string
+	var validations []string
 	if options.IsOpen != nil && *options.IsOpen != bug.IsOpen {
 		valid = false
 		not := ""
@@ -448,6 +616,16 @@ func validateBug(bug bugzilla.Bug, dependents []bugzilla.Bug, options plugins.Bu
 			was = "is"
 		}
 		errors = append(errors, fmt.Sprintf("expected the bug to %sbe open, but it %s", not, was))
+	} else if options.IsOpen != nil {
+		expected := "open"
+		if !*options.IsOpen {
+			expected = "not open"
+		}
+		was := "isn't"
+		if bug.IsOpen {
+			was = "is"
+		}
+		validations = append(validations, fmt.Sprintf("bug %s open, matching expected state (%s)", was, expected))
 	}
 
 	if options.TargetRelease != nil {
@@ -460,6 +638,8 @@ func validateBug(bug bugzilla.Bug, dependents []bugzilla.Bug, options plugins.Bu
 			// not even clear if the list can have more than one item in the response
 			valid = false
 			errors = append(errors, fmt.Sprintf("expected the bug to target the %q release, but it targets %q instead", *options.TargetRelease, bug.TargetRelease[0]))
+		} else {
+			validations = append(validations, fmt.Sprintf("bug target release (%s) matches configured target release for branch (%s)", bug.TargetRelease[0], *options.TargetRelease))
 		}
 	}
 
@@ -472,6 +652,8 @@ func validateBug(bug bugzilla.Bug, dependents []bugzilla.Bug, options plugins.Bu
 		if !bugMatchesStates(&bug, allowed) {
 			valid = false
 			errors = append(errors, fmt.Sprintf("expected the bug to be in one of the following states: %s, but it is %s instead", strings.Join(prettyStates(allowed), ", "), bugzilla.PrettyStatus(bug.Status, bug.Resolution)))
+		} else {
+			validations = append(validations, fmt.Sprintf("bug is in the state %s, which is one of the valid states (%s)", bugzilla.PrettyStatus(bug.Status, bug.Resolution), strings.Join(prettyStates(allowed), ", ")))
 		}
 	}
 
@@ -482,43 +664,51 @@ func validateBug(bug bugzilla.Bug, dependents []bugzilla.Bug, options plugins.Bu
 				expected := strings.Join(prettyStates(*options.DependentBugStates), ", ")
 				actual := bugzilla.PrettyStatus(bug.Status, bug.Resolution)
 				errors = append(errors, fmt.Sprintf("expected dependent "+bugLink+" to be in one of the following states: %s, but it is %s instead", bug.ID, endpoint, bug.ID, expected, actual))
+			} else {
+				validations = append(validations, fmt.Sprintf("dependent bug "+bugLink+" is in the state %s, which is one of the valid states (%s)", bug.ID, endpoint, bug.ID, bugzilla.PrettyStatus(bug.Status, bug.Resolution), strings.Join(prettyStates(*options.DependentBugStates), ", ")))
 			}
 		}
 	}
 
-	if options.DependentBugTargetRelease != nil {
+	if options.DependentBugTargetReleases != nil {
 		for _, bug := range dependents {
 			if len(bug.TargetRelease) == 0 {
 				valid = false
-				errors = append(errors, fmt.Sprintf("expected dependent "+bugLink+" to target the %q release, but no target release was set", bug.ID, endpoint, bug.ID, *options.DependentBugTargetRelease))
-			} else if *options.DependentBugTargetRelease != bug.TargetRelease[0] {
+				errors = append(errors, fmt.Sprintf("expected dependent "+bugLink+" to target a release in %s, but no target release was set", bug.ID, endpoint, bug.ID, strings.Join(*options.DependentBugTargetReleases, ", ")))
+			} else {
 				// the BugZilla web UI shows one option for target release, but returns the
 				// field as a list in the REST API. We only care for the first item and it's
 				// not even clear if the list can have more than one item in the response
-				valid = false
-				errors = append(errors, fmt.Sprintf("expected dependent "+bugLink+" to target the %q release, but it targets %q instead", bug.ID, endpoint, bug.ID, *options.DependentBugTargetRelease, bug.TargetRelease[0]))
+				if sets.NewString(*options.DependentBugTargetReleases...).Has(bug.TargetRelease[0]) {
+					validations = append(validations, fmt.Sprintf("dependent "+bugLink+" targets the %q release, which is one of the valid target releases: %s", bug.ID, endpoint, bug.ID, bug.TargetRelease[0], strings.Join(*options.DependentBugTargetReleases, ", ")))
+				} else {
+					valid = false
+					errors = append(errors, fmt.Sprintf("expected dependent "+bugLink+" to target a release in %s, but it targets %q instead", bug.ID, endpoint, bug.ID, strings.Join(*options.DependentBugTargetReleases, ", "), bug.TargetRelease[0]))
+				}
 			}
 		}
 	}
 
 	if len(dependents) == 0 {
 		switch {
-		case options.DependentBugStates != nil && options.DependentBugTargetRelease != nil:
+		case options.DependentBugStates != nil && options.DependentBugTargetReleases != nil:
 			valid = false
 			expected := strings.Join(prettyStates(*options.DependentBugStates), ", ")
-			errors = append(errors, fmt.Sprintf("expected "+bugLink+" to depend on a bug targeting the %q release and in one of the following states: %s, but no dependents were found", bug.ID, endpoint, bug.ID, *options.DependentBugTargetRelease, expected))
+			errors = append(errors, fmt.Sprintf("expected "+bugLink+" to depend on a bug targeting a release in %s and in one of the following states: %s, but no dependents were found", bug.ID, endpoint, bug.ID, strings.Join(*options.DependentBugTargetReleases, ", "), expected))
 		case options.DependentBugStates != nil:
 			valid = false
 			expected := strings.Join(prettyStates(*options.DependentBugStates), ", ")
 			errors = append(errors, fmt.Sprintf("expected "+bugLink+" to depend on a bug in one of the following states: %s, but no dependents were found", bug.ID, endpoint, bug.ID, expected))
-		case options.DependentBugTargetRelease != nil:
+		case options.DependentBugTargetReleases != nil:
 			valid = false
-			errors = append(errors, fmt.Sprintf("expected "+bugLink+" to depend on a bug targeting the %q release, but no dependents were found", bug.ID, endpoint, bug.ID, *options.DependentBugTargetRelease))
+			errors = append(errors, fmt.Sprintf("expected "+bugLink+" to depend on a bug targeting a release in %s, but no dependents were found", bug.ID, endpoint, bug.ID, strings.Join(*options.DependentBugTargetReleases, ", ")))
 		default:
 		}
+	} else {
+		validations = append(validations, "bug has dependents")
 	}
 
-	return valid, errors
+	return valid, validations, errors
 }
 
 func handleMerge(e event, gc githubClient, bc bugzilla.Client, options plugins.BugzillaBranchOptions, log *logrus.Entry) error {
@@ -559,10 +749,14 @@ func handleMerge(e event, gc githubClient, bc bugzilla.Client, options plugins.B
 		return comment(formatError("searching for external tracker bugs", bc.Endpoint(), e.bugId, err))
 	}
 	shouldMigrate := true
+	var mergedPRs []bugzilla.ExternalBug
+	unmergedPrStates := map[bugzilla.ExternalBug]string{}
 	for _, item := range prs {
 		var merged bool
+		var state string
 		if e.org == item.Org && e.repo == item.Repo && e.number == item.Num {
 			merged = e.merged
+			state = e.state
 		} else {
 			pr, err := gc.GetPullRequest(item.Org, item.Repo, item.Num)
 			if err != nil {
@@ -570,22 +764,59 @@ func handleMerge(e event, gc githubClient, bc bugzilla.Client, options plugins.B
 				return comment(formatError(fmt.Sprintf("checking the state of a related pull request at https://github.com/%s/%s/pull/%d", item.Org, item.Repo, item.Num), bc.Endpoint(), e.bugId, err))
 			}
 			merged = pr.Merged
+			state = pr.State
+		}
+		if merged {
+			mergedPRs = append(mergedPRs, item)
+		} else {
+			unmergedPrStates[item] = state
 		}
 		// only update Bugzilla bug status if all PRs have merged
 		shouldMigrate = shouldMigrate && merged
 		if !shouldMigrate {
+			// we could give more complete feedback to the user by checking all PRs
+			// but we save tokens by exiting when we find an unmerged one, so we
+			// prefer to do that
 			break
 		}
 	}
 
-	if update := options.StateAfterMerge.AsBugUpdate(nil); shouldMigrate && update != nil {
+	link := func(bug bugzilla.ExternalBug) string {
+		return fmt.Sprintf("[%s/%s#%d](https://github.com/%s/%s/pull/%d)", bug.Org, bug.Repo, bug.Num, bug.Org, bug.Repo, bug.Num)
+	}
+
+	mergedMessage := func(statement string) string {
+		var links []string
+		for _, bug := range mergedPRs {
+			links = append(links, link(bug))
+		}
+		return fmt.Sprintf(`%s pull requests linked via external trackers have merged: %s.`, statement, strings.Join(links, ", "))
+	}
+
+	var statements []string
+	for bug, state := range unmergedPrStates {
+		statements = append(statements, fmt.Sprintf("\n * %s is %s", link(bug), state))
+	}
+	unmergedMessage := fmt.Sprintf(`The following pull requests linked via external trackers have not merged:%s`, strings.Join(statements, "\n"))
+
+	outcomeMessage := func(action string) string {
+		return fmt.Sprintf(bugLink+" has %sbeen moved to the %s state.", e.bugId, bc.Endpoint(), e.bugId, action, options.StateAfterMerge)
+	}
+
+	update := options.StateAfterMerge.AsBugUpdate(nil)
+	if update == nil {
+		// should never happen
+		return nil
+	}
+
+	if shouldMigrate {
 		if err := bc.UpdateBug(e.bugId, *update); err != nil {
 			log.WithError(err).Warn("Unexpected error updating Bugzilla bug.")
 			return comment(formatError(fmt.Sprintf("updating to the %s state", options.StateAfterMerge), bc.Endpoint(), e.bugId, err))
 		}
-		return comment(fmt.Sprintf("All pull requests linked via external trackers have merged. "+bugLink+" has been moved to the %s state.", e.bugId, bc.Endpoint(), e.bugId, options.StateAfterMerge))
+		return comment(fmt.Sprintf("%s %s", mergedMessage("All"), outcomeMessage("")))
 	}
-	return nil
+	return comment(fmt.Sprintf("%s %s\n%s", mergedMessage("Some"), unmergedMessage, outcomeMessage("")))
 }
 
 func getBug(bc bugzilla.Client, bugId int, log *logrus.Entry, comment func(string) error) (*bugzilla.Bug, error) {

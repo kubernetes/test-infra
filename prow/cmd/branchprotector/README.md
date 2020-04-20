@@ -70,6 +70,9 @@ branch-protection:
       # this is the foo org policy
       protect: true  # enable protection
       enforce_admins: true  # rules apply to admins
+      required_linear_history: true  # enforces a linear commit Git history
+      allow_force_pushes: true  # permits force pushes to the protected branch
+      allow_deletions: true  # allows deletion of the protected branch
       required_pull_request_reviews:
         dismiss_stale_reviews: false # automatically dismiss old reviews
         dismissal_restrictions: # allow review dismissals

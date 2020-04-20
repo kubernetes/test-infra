@@ -35,6 +35,8 @@ type requestCoalescer struct {
 	keys map[string]*responseWaiter
 
 	delegate http.RoundTripper
+
+	hasher ghmetrics.Hasher
 }
 
 type responseWaiter struct {
@@ -129,7 +131,7 @@ func (r *requestCoalescer) RoundTrip(req *http.Request) (*http.Response, error) 
 		return resp, nil
 	}()
 
-	ghmetrics.CollectCacheRequestMetrics(string(cacheMode), req.URL.Path)
+	ghmetrics.CollectCacheRequestMetrics(string(cacheMode), req.URL.Path, req.Header.Get("User-Agent"), r.hasher.Hash(req))
 	if resp != nil {
 		resp.Header.Set(CacheModeHeader, string(cacheMode))
 	}

@@ -1,7 +1,16 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
+reviewers:
+- mborsz
+- mm4tt
+- shyamjvs
+- wojtek-t
+
 approvers:
 - mborsz
 - mm4tt
 - shyamjvs
 - wojtek-t
+
+labels:
+- sig/scalability

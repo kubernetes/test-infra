@@ -7,7 +7,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
         command:
         - "./scripts/ci-test.sh"
     annotations:
@@ -20,7 +20,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
         command:
         - "./scripts/ci-build.sh"
     annotations:
@@ -36,7 +36,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -61,11 +61,9 @@ presubmits:
     always_run: true
     optional: true
     decorate: true
+    decoration_config:
+      timeout: 3h
     extra_refs:
-    - org: kubernetes-sigs
-      repo: cluster-api
-      base_ref: master
-      path_alias: "sigs.k8s.io/cluster-api"
     - org: kubernetes-sigs
       repo: image-builder
       base_ref: master
@@ -76,10 +74,14 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-experimental
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+          env:
+            - name: "BOSKOS_HOST"
+              value: "boskos.test-pods.svc.cluster.local"
           command:
             - "runner.sh"
             - "./scripts/ci-e2e.sh"
+            - "--use-ci-artifacts"
           # we need privileged mode in order to do docker in docker
           securityContext:
             privileged: true

@@ -180,11 +180,17 @@ func TestApply(test *testing.T) {
 				Protect: &t,
 			},
 			child: Policy{
-				Admins: &f,
+				Admins:                &f,
+				RequiredLinearHistory: &t,
+				AllowForcePushes:      &t,
+				AllowDeletions:        &t,
 			},
 			expected: Policy{
-				Protect: &t,
-				Admins:  &f,
+				Protect:               &t,
+				Admins:                &f,
+				RequiredLinearHistory: &t,
+				AllowForcePushes:      &t,
+				AllowDeletions:        &t,
 			},
 		},
 		{

@@ -1,38 +1,21 @@
-dashboards:
+dashboard_groups:
 - name: sig-instrumentation
+  dashboard_names:
+  - sig-instrumentation-tests
+  - sig-instrumentation-image-pushes
+  - sig-instrumentation-metrics-server
+
+dashboards:
+- name: sig-instrumentation-tests
   dashboard_tab:
     - name: gci-gce
       test_group_name: ci-kubernetes-e2e-gci-gce
       base_options: include-filter-by-regex=sig-instrumentation
       description: instrumentation gce e2e tests for master branch
-    - name: gci-gke
-      test_group_name: ci-kubernetes-e2e-gci-gke
-      base_options: include-filter-by-regex=sig-instrumentation
-      description: instrumentation gke e2e tests for master branch
-    - name: gce-cos-1.12-default
-      test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable2-default
-      base_options: include-filter-by-regex=sig-instrumentation
-      description: instrumentation gce e2e tests for 1.12 branch
-    - name: gke-cos-1.12-default
-      test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-default
-      base_options: include-filter-by-regex=sig-instrumentation
-      description: instrumentation gke e2e tests for 1.12 branch
-    - name: gce-cos-1.11-default
-      test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable3-default
-      base_options: include-filter-by-regex=sig-instrumentation
-      description: instrumentation gce e2e tests for 1.11 branch
-    - name: gke-cos-1.11-default
-      test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-default
-      base_options: include-filter-by-regex=sig-instrumentation
-      description: instrumentation gke e2e tests for 1.11 branch
     - name: gci-gce-serial
       test_group_name: ci-kubernetes-e2e-gci-gce-serial
       base_options: include-filter-by-regex=sig-instrumentation
       description: instrumentation gce serial e2e tests for master branch
-    - name: gci-gke-serial
-      test_group_name: ci-kubernetes-e2e-gci-gke-serial
-      base_options: include-filter-by-regex=sig-instrumentation
-      description: sig-instrumentation gke serial e2e tests for master branch
     - name: gci-gce-es-logging
       test_group_name: ci-kubernetes-e2e-gci-gce-es-logging
       base_options: include-filter-by-regex=sig-instrumentation
@@ -41,27 +24,5 @@ dashboards:
       test_group_name: ci-kubernetes-e2e-gci-gce-sd-logging
       base_options: include-filter-by-regex=sig-instrumentation
       description: sig-instrumentation gce stackdriver logging e2e tests for master branch
-    - name: gke-sd-logging-gci-latest
-      test_group_name: ci-kubernetes-e2e-gke-sd-logging-gci-latest
-      base_options: include-filter-by-regex=sig-instrumentation
-      description: sig-instrumentation gke stackdriver logging e2e tests for master branch with COS
-    - name: gke-sd-logging-ubuntu-latest
-      test_group_name: ci-kubernetes-e2e-gke-sd-logging-ubuntu-latest
-      base_options: include-filter-by-regex=sig-instrumentation
-      description: sig-instrumentation gke stackdriver logging e2e tests for master branch with Ubuntu
-    - name: gke-sd-logging-gci-1.14
-      test_group_name: ci-kubernetes-e2e-gke-sd-logging-gci-beta
-      base_options: include-filter-by-regex=sig-instrumentation
-      description: sig-instrumentation gke stackdriver logging e2e tests for 1.14 branch with COS
-    - name: gke-sd-logging-ubuntu-1.14
-      test_group_name: ci-kubernetes-e2e-gke-sd-logging-ubuntu-beta
-      base_options: include-filter-by-regex=sig-instrumentation
-      description: sig-instrumentation gke stackdriver logging e2e tests for 1.14 branch with Ubuntu
-    - name: gke-sd-logging-gci-1.13
-      test_group_name: ci-kubernetes-e2e-gke-sd-logging-gci-stable1
-      base_options: include-filter-by-regex=sig-instrumentation
-      description: sig-instrumentation gke stackdriver logging e2e tests for 1.13 branch with COS
-    - name: gke-sd-logging-ubuntu-1.13
-      test_group_name: ci-kubernetes-e2e-gke-sd-logging-ubuntu-stable1
-      base_options: include-filter-by-regex=sig-instrumentation
-      description: sig-instrumentation gke stackdriver logging e2e tests for 1.13 branch with Ubuntu
+- name: sig-instrumentation-image-pushes
+- name: sig-instrumentation-metrics-server

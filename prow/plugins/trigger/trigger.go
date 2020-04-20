@@ -21,10 +21,11 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/errorutil"
 	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pjutil"
@@ -43,7 +44,7 @@ func init() {
 	plugins.RegisterPushEventHandler(PluginName, handlePush, helpProvider)
 }
 
-func helpProvider(config *plugins.Configuration, enabledRepos []plugins.Repo) (*pluginhelp.PluginHelp, error) {
+func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
 	configInfo := map[string]string{}
 	for _, repo := range enabledRepos {
 		trigger := config.TriggerFor(repo.Org, repo.Repo)
@@ -67,8 +68,8 @@ func helpProvider(config *plugins.Configuration, enabledRepos []plugins.Repo) (*
 		Examples:    []string{"/ok-to-test"},
 	})
 	pluginHelp.AddCommand(pluginhelp.Command{
-		Usage:       "/test (<job name>|all)",
-		Description: "Manually starts a/all test job(s).",
+		Usage:       "/test [<job name>|all]",
+		Description: "Manually starts a/all test job(s). Lists all possible job(s) when no jobs/an invalid job are specified.",
 		Featured:    true,
 		WhoCanUse:   "Anyone can trigger this command on a trusted PR.",
 		Examples:    []string{"/test all", "/test pull-bazel-test"},
@@ -79,6 +80,13 @@ func helpProvider(config *plugins.Configuration, enabledRepos []plugins.Repo) (*
 		Featured:    true,
 		WhoCanUse:   "Anyone can trigger this command on a trusted PR.",
 		Examples:    []string{"/retest"},
+	})
+	pluginHelp.AddCommand(pluginhelp.Command{
+		Usage:       "/test ?",
+		Description: "List available test job(s) for a trusted PR.",
+		Featured:    true,
+		WhoCanUse:   "Anyone can trigger this command on a trusted PR.",
+		Examples:    []string{"/test ?"},
 	})
 	return pluginHelp, nil
 }
@@ -108,6 +116,8 @@ type trustedPullRequestClient interface {
 
 type prowJobClient interface {
 	Create(*prowapi.ProwJob) (*prowapi.ProwJob, error)
+	List(opts metav1.ListOptions) (*prowapi.ProwJobList, error)
+	Update(*prowapi.ProwJob) (*prowapi.ProwJob, error)
 }
 
 // Client holds the necessary structures to work with prow via logging, github, kubernetes and its configuration.
@@ -205,7 +215,7 @@ func RunAndSkipJobs(c Client, pr *github.PullRequest, baseSHA string, requestedJ
 		skipErr = skipRequested(c, pr, skippedJobs)
 	}
 
-	return errorutil.NewAggregate(runErr, skipErr)
+	return utilerrors.NewAggregate([]error{runErr, skipErr})
 }
 
 // validateContextOverlap ensures that there will be no overlap in contexts between a set of jobs running and a set to skip
@@ -237,7 +247,7 @@ func runRequested(c Client, pr *github.PullRequest, baseSHA string, requestedJob
 			errors = append(errors, err)
 		}
 	}
-	return errorutil.NewAggregate(errors...)
+	return utilerrors.NewAggregate(errors)
 }
 
 // skipRequested posts skipped statuses for the config.Presubmits that are requested
@@ -252,7 +262,7 @@ func skipRequested(c Client, pr *github.PullRequest, skippedJobs []config.Presub
 			errors = append(errors, err)
 		}
 	}
-	return errorutil.NewAggregate(errors...)
+	return utilerrors.NewAggregate(errors)
 }
 
 func getPresubmits(log *logrus.Entry, gc git.ClientFactory, cfg *config.Config, orgRepo string, baseSHAGetter, headSHAGetter config.RefGetter) []config.Presubmit {

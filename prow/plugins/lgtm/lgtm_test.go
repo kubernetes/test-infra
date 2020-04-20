@@ -31,6 +31,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/util/sets"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/plugins"
@@ -53,6 +54,10 @@ func (f *fakeOwnersClient) LoadRepoOwners(org, repo, base string) (repoowners.Re
 }
 
 func (f *fakeOwnersClient) WithFields(fields logrus.Fields) repoowners.Interface {
+	return f
+}
+
+func (f *fakeOwnersClient) WithGitHubClient(client github.Client) repoowners.Interface {
 	return f
 }
 
@@ -1185,14 +1190,14 @@ func TestRemoveTreeHashComment(t *testing.T) {
 }
 
 func TestHelpProvider(t *testing.T) {
-	enabledRepos := []plugins.Repo{
+	enabledRepos := []config.OrgRepo{
 		{Org: "org1", Repo: "repo"},
 		{Org: "org2", Repo: "repo"},
 	}
 	cases := []struct {
 		name               string
 		config             *plugins.Configuration
-		enabledRepos       []plugins.Repo
+		enabledRepos       []config.OrgRepo
 		err                bool
 		configInfoIncludes []string
 		configInfoExcludes []string

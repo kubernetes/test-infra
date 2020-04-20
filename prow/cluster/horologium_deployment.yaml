@@ -31,11 +31,11 @@ spec:
       labels:
         app: horologium
     spec:
-      # serviceAccountName: "horologium" # Uncomment for use with RBAC
+      serviceAccountName: horologium
       terminationGracePeriodSeconds: 30
       containers:
       - name: horologium
-        image: gcr.io/k8s-prow/horologium:v20200214-db7f45788
+        image: gcr.io/k8s-prow/horologium:v20200417-3971a63f2
         args:
         - --config-path=/etc/config/config.yaml
         - --job-config-path=/etc/job-config

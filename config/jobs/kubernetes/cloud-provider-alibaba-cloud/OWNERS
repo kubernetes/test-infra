@@ -1,6 +1,12 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
+reviewers:
+- aoxn
+- cheyang
+- xlgao-zju
 approvers:
 - aoxn
 - cheyang
 - xlgao-zju
+labels:
+- sig/cloud-provider

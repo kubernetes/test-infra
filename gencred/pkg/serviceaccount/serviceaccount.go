@@ -20,6 +20,7 @@ import (
 	"errors"
 	"fmt"
 
+	authorizationv1beta1 "k8s.io/api/authorization/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -29,42 +30,71 @@ import (
 )
 
 const (
-	// clusterRoleBindingName is the name for the cluster administrator ClusterRoleBinding.
+	// clusterRole is the ClusterRole role reference for created ClusterRoleBinding.
+	clusterRole = "cluster-admin"
+	// clusterRoleBindingName is the name for the created ClusterRoleBinding.
 	clusterRoleBindingName = "serviceaccount-cluster-admin-crb"
-	// serviceAccountName is the name for the cluster administrator ServiceAccount.
+	// serviceAccountName is the name for the created ServiceAccount.
 	serviceAccountName = "serviceaccount-cluster-admin"
 )
+
+// checkSAAuth checks authorization for required cluster service account (SA) resources.
+func checkSAAuth(clientset kubernetes.Interface) error {
+	client := clientset.AuthorizationV1beta1().SelfSubjectAccessReviews()
+
+	// https://kubernetes.io/docs/reference/access-authn-authz/rbac/#privilege-escalation-prevention-and-bootstrapping
+	if sar, err := client.Create(
+		&authorizationv1beta1.SelfSubjectAccessReview{
+			Spec: authorizationv1beta1.SelfSubjectAccessReviewSpec{
+				ResourceAttributes: &authorizationv1beta1.ResourceAttributes{
+					Group:    "rbac.authorization.k8s.io",
+					Verb:     "bind",
+					Resource: "clusterroles",
+					Name:     clusterRole,
+				},
+			},
+		}); err != nil {
+		return fmt.Errorf("bind %s: %v", clusterRole, err)
+	} else if !sar.Status.Allowed {
+		return fmt.Errorf("not authorized to bind %s: %s", clusterRole, sar.Status.Reason)
+	}
+
+	return nil
+}
 
 // getOrCreateSA gets existing or creates new service account (SA).
 func getOrCreateSA(clientset kubernetes.Interface) ([]byte, []byte, error) {
 	client := clientset.CoreV1().ServiceAccounts(corev1.NamespaceDefault)
 
-	// Get ServiceAccount if exists.
-	if saObj, err := client.Get(serviceAccountName, metav1.GetOptions{}); err == nil {
-		return getSASecrets(clientset, saObj)
+	// Check SelfSubjectAccessReviews are allowed.
+	if err := checkSAAuth(clientset); err != nil {
+		return nil, nil, err
 	}
 
-	// Generate a Kubernetes ServiceAccount object.
-	saObj := &corev1.ServiceAccount{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: serviceAccountName,
-		},
-	}
+	// Create ServiceAccount if not exists.
+	if _, err := client.Get(serviceAccountName, metav1.GetOptions{}); err != nil {
+		// Generate a Kubernetes ServiceAccount object.
+		saObj := &corev1.ServiceAccount{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: serviceAccountName,
+			},
+		}
 
-	// Create ServiceAccount.
-	_, err := client.Create(saObj)
-	if err != nil {
-		return nil, nil, fmt.Errorf("create SA: %v", err)
+		// Create ServiceAccount.
+		_, err := client.Create(saObj)
+		if err != nil {
+			return nil, nil, fmt.Errorf("create SA: %v", err)
+		}
 	}
 
 	// Get/Create ClusterRoleBinding.
-	err = getOrCreateCRB(clientset)
+	err := getOrCreateCRB(clientset)
 	if err != nil {
 		return nil, nil, fmt.Errorf("get or create CRB: %v", err)
 	}
 
 	// Get ServiceAccount.
-	saObj, err = client.Get(serviceAccountName, metav1.GetOptions{})
+	saObj, err := client.Get(serviceAccountName, metav1.GetOptions{})
 	if err != nil {
 		return nil, nil, fmt.Errorf("get SA: %v", err)
 	}
@@ -85,7 +115,7 @@ func getOrCreateCRB(clientset kubernetes.Interface) error {
 	crbObj := &rbacv1.ClusterRoleBinding{
 		ObjectMeta: metav1.ObjectMeta{Name: clusterRoleBindingName},
 		Subjects:   []rbacv1.Subject{{Kind: "ServiceAccount", Name: serviceAccountName, Namespace: corev1.NamespaceDefault}},
-		RoleRef:    rbacv1.RoleRef{Kind: "ClusterRole", Name: "cluster-admin"},
+		RoleRef:    rbacv1.RoleRef{Kind: "ClusterRole", Name: clusterRole},
 	}
 
 	// Create ClusterRoleBinding.
