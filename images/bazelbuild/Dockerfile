@@ -13,6 +13,8 @@
 # limitations under the License.
 
 # Includes git, gcloud, and bazel.
+ARG OLD_BAZEL_VERSION
+FROM launcher.gcr.io/google/bazel:${OLD_BAZEL_VERSION} as old
 FROM ubuntu:18.04
 
 # add env we can debug with the image name:tag
@@ -56,6 +58,11 @@ RUN INSTALLER="bazel-${BAZEL_VERSION}-installer-linux-x86_64.sh"; \
     DOWNLOAD_URL="https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/${INSTALLER}"; \
     wget -q "${DOWNLOAD_URL}" && \
     chmod +x "${INSTALLER}" && "./${INSTALLER}" && rm "${INSTALLER}"
+
+ARG OLD_BAZEL_VERSION
+COPY --from=old \
+    /usr/local/lib/bazel/bin/bazel-real /usr/local/lib/bazel/bin/bazel-${OLD_BAZEL_VERSION}
+
 
 WORKDIR /workspace
 COPY runner /usr/local/bin/
