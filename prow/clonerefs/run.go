@@ -92,7 +92,7 @@ func (o Options) Run() error {
 					if record.Failed {
 						failed := record.Commands[len(record.Commands)-1]
 						if strings.Contains(failed.Error, "Could not resolve host") && i != numIterations {
-							delay := time.Second * 25 * i * i
+							delay := time.Second * time.Duration(25*i*i)
 							logrus.Infof("DNS failure detected; retrying clone in %d seconds", delay)
 							time.Sleep(delay)
 							continue
