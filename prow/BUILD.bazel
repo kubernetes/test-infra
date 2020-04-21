@@ -13,10 +13,9 @@ container_bundle(
     stamp = True,
 )
 
-container_push(
+docker_push(
     name = "release-push-deck",
     bundle = ":release-deck",
-    format = "OCI",
 )
 
 container_bundle(
@@ -28,10 +27,9 @@ container_bundle(
     stamp = True,
 )
 
-container_push(
+docker_push(
     name = "release-push-hook",
     bundle = ":release-hook",
-    format = "OCI",
 )
 
 container_bundle(
@@ -43,10 +41,9 @@ container_bundle(
     stamp = True,
 )
 
-container_push(
+docker_push(
     name = "release-push-tide",
     bundle = ":release-tide",
-    format = "OCI",
 )
 
 prow_push(
