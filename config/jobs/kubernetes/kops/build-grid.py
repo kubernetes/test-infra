@@ -39,6 +39,7 @@ template = """
       - --extract=release/stable
       - --ginkgo-parallel
       - --kops-args={{kops_args}}
+      - --kops-image={{kops_image}}
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-ssh-user={{kops_ssh_user}}
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
@@ -57,45 +58,43 @@ def build_test(cloud='aws', distro=None, networking=None):
 
     if distro == 'amazonlinux2':
         kops_ssh_user = 'ec2-user'
-        image = '137112412989/amzn2-ami-hvm-2.0.20200304.0-x86_64-gp2'
+        kops_image = '137112412989/amzn2-ami-hvm-2.0.20200304.0-x86_64-gp2'
     elif distro == 'centos7':
         kops_ssh_user = 'centos'
-        image = "\'679593333241/CentOS Linux 7 x86_64 HVM EBS ENA 1901_01-b7ee8a69-ee97-4a49-9e68-afaee216db2e-ami-05713873c6794f575.4\'" # pylint: disable=line-too-long
+        kops_image = "679593333241/CentOS Linux 7 x86_64 HVM EBS ENA 1901_01-b7ee8a69-ee97-4a49-9e68-afaee216db2e-ami-05713873c6794f575.4" # pylint: disable=line-too-long
     elif distro == 'coreos':
         kops_ssh_user = 'core'
-        image = '595879546273/CoreOS-stable-2303.3.0-hvm'
+        kops_image = '595879546273/CoreOS-stable-2303.3.0-hvm'
     elif distro == 'debian9':
         kops_ssh_user = 'admin'
-        image = '379101102735/debian-stretch-hvm-x86_64-gp2-2019-11-13-63558'
+        kops_image = '379101102735/debian-stretch-hvm-x86_64-gp2-2019-11-13-63558'
     elif distro == 'debian10':
         kops_ssh_user = 'admin'
-        image = '136693071363/debian-10-amd64-20200210-166'
+        kops_image = '136693071363/debian-10-amd64-20200210-166'
     elif distro == 'flatcar':
         kops_ssh_user = 'core'
-        image = '075585003325/Flatcar-stable-2303.3.1-hvm'
+        kops_image = '075585003325/Flatcar-stable-2303.3.1-hvm'
     elif distro == 'ubuntu1604':
         kops_ssh_user = 'ubuntu'
-        image = '099720109477/ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-20191114'
+        kops_image = '099720109477/ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-20191114'
     elif distro == 'ubuntu1804':
         kops_ssh_user = 'ubuntu'
-        image = '099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20200323'
+        kops_image = '099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20200323'
     elif distro == 'ubuntu2004':
         kops_ssh_user = 'ubuntu'
-        image = '099720109477/ubuntu/images-testing/hvm-ssd/ubuntu-focal-daily-amd64-server-20200414.1' # pylint: disable=line-too-long
+        kops_image = '099720109477/ubuntu/images-testing/hvm-ssd/ubuntu-focal-daily-amd64-server-20200414.1' # pylint: disable=line-too-long
     elif distro == 'rhel7':
         kops_ssh_user = 'ec2-user'
-        image = '309956199498/RHEL-7.7_HVM-20191119-x86_64-2-Hourly2-GP2'
+        kops_image = '309956199498/RHEL-7.7_HVM-20191119-x86_64-2-Hourly2-GP2'
     elif distro == 'rhel8':
         kops_ssh_user = 'ec2-user'
-        image = '309956199498/RHEL-8.1.0_HVM-20191029-x86_64-0-Hourly2-GP2'
+        kops_image = '309956199498/RHEL-8.1.0_HVM-20191029-x86_64-0-Hourly2-GP2'
     else:
         raise Exception('unknown distro ' + distro)
 
     kops_args = ""
     if networking:
         kops_args = kops_args + " --networking=" + networking
-    if image:
-        kops_args = kops_args + " --image=" + image
 
     kops_args = kops_args.strip()
 
@@ -116,7 +115,7 @@ def build_test(cloud='aws', distro=None, networking=None):
     y = y.replace('{{suffix}}', suffix)
     y = y.replace('{{kops_ssh_user}}', kops_ssh_user)
     y = y.replace('{{networking}}', networking)
-    y = y.replace('{{image}}', image)
+    y = y.replace('{{kops_image}}', kops_image)
     y = y.replace('{{kops_args}}', kops_args)
     y = y.replace('{{test_args}}', test_args)
     out = y

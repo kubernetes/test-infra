@@ -25,7 +25,8 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/stable
       - --ginkgo-parallel
-      - --kops-args=--networking=flannel --image=137112412989/amzn2-ami-hvm-2.0.20200304.0-x86_64-gp2
+      - --kops-args=--networking=flannel
+      - --kops-image=137112412989/amzn2-ami-hvm-2.0.20200304.0-x86_64-gp2
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-ssh-user=ec2-user
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
@@ -61,7 +62,8 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/stable
       - --ginkgo-parallel
-      - --kops-args=--networking=flannel --image='679593333241/CentOS Linux 7 x86_64 HVM EBS ENA 1901_01-b7ee8a69-ee97-4a49-9e68-afaee216db2e-ami-05713873c6794f575.4'
+      - --kops-args=--networking=flannel
+      - --kops-image=679593333241/CentOS Linux 7 x86_64 HVM EBS ENA 1901_01-b7ee8a69-ee97-4a49-9e68-afaee216db2e-ami-05713873c6794f575.4
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-ssh-user=centos
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
@@ -97,7 +99,8 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/stable
       - --ginkgo-parallel
-      - --kops-args=--networking=flannel --image=595879546273/CoreOS-stable-2303.3.0-hvm
+      - --kops-args=--networking=flannel
+      - --kops-image=595879546273/CoreOS-stable-2303.3.0-hvm
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-ssh-user=core
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
@@ -133,7 +136,8 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/stable
       - --ginkgo-parallel
-      - --kops-args=--networking=flannel --image=379101102735/debian-stretch-hvm-x86_64-gp2-2019-11-13-63558
+      - --kops-args=--networking=flannel
+      - --kops-image=379101102735/debian-stretch-hvm-x86_64-gp2-2019-11-13-63558
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-ssh-user=admin
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
@@ -169,7 +173,8 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/stable
       - --ginkgo-parallel
-      - --kops-args=--networking=flannel --image=136693071363/debian-10-amd64-20200210-166
+      - --kops-args=--networking=flannel
+      - --kops-image=136693071363/debian-10-amd64-20200210-166
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-ssh-user=admin
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
@@ -205,7 +210,8 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/stable
       - --ginkgo-parallel
-      - --kops-args=--networking=flannel --image=075585003325/Flatcar-stable-2303.3.1-hvm
+      - --kops-args=--networking=flannel
+      - --kops-image=075585003325/Flatcar-stable-2303.3.1-hvm
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-ssh-user=core
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
@@ -241,7 +247,8 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/stable
       - --ginkgo-parallel
-      - --kops-args=--networking=flannel --image=309956199498/RHEL-7.7_HVM-20191119-x86_64-2-Hourly2-GP2
+      - --kops-args=--networking=flannel
+      - --kops-image=309956199498/RHEL-7.7_HVM-20191119-x86_64-2-Hourly2-GP2
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-ssh-user=ec2-user
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
@@ -277,7 +284,8 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/stable
       - --ginkgo-parallel
-      - --kops-args=--networking=flannel --image=309956199498/RHEL-8.1.0_HVM-20191029-x86_64-0-Hourly2-GP2
+      - --kops-args=--networking=flannel
+      - --kops-image=309956199498/RHEL-8.1.0_HVM-20191029-x86_64-0-Hourly2-GP2
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-ssh-user=ec2-user
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
@@ -313,7 +321,8 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/stable
       - --ginkgo-parallel
-      - --kops-args=--networking=flannel --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-20191114
+      - --kops-args=--networking=flannel
+      - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-20191114
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-ssh-user=ubuntu
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
@@ -349,7 +358,8 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/stable
       - --ginkgo-parallel
-      - --kops-args=--networking=flannel --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20200323
+      - --kops-args=--networking=flannel
+      - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20200323
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-ssh-user=ubuntu
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
@@ -385,7 +395,8 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/stable
       - --ginkgo-parallel
-      - --kops-args=--networking=flannel --image=099720109477/ubuntu/images-testing/hvm-ssd/ubuntu-focal-daily-amd64-server-20200414.1
+      - --kops-args=--networking=flannel
+      - --kops-image=099720109477/ubuntu/images-testing/hvm-ssd/ubuntu-focal-daily-amd64-server-20200414.1
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-ssh-user=ubuntu
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
