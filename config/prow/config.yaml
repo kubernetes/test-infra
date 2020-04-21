@@ -67,6 +67,7 @@ deck:
     '*':
       github_team_ids:
       - 2009231 # test-infra-admins
+      - 2460384 # milestone-maintainers
 
 prowjob_namespace: default
 pod_namespace: test-pods
