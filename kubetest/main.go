@@ -130,7 +130,7 @@ func defineFlags() *options {
 	flag.BoolVar(&o.checkLeaks, "check-leaked-resources", false, "Ensure project ends with the same resources")
 	flag.StringVar(&o.cluster, "cluster", "", "Cluster name. Must be set for --deployment=gke (TODO: other deployments).")
 	flag.StringVar(&o.clusterIPRange, "cluster-ip-range", "", "Specifies CLUSTER_IP_RANGE value during --up and --test (only relevant for --deployment=bash). Auto-calculated if empty.")
-	flag.StringVar(&o.deployment, "deployment", "bash", "Choices: none/bash/conformance/gke/kind/kops/kubernetes-anywhere/node/local")
+	flag.StringVar(&o.deployment, "deployment", "bash", "Choices: none/bash/conformance/gke/kind/kops/node/local")
 	flag.BoolVar(&o.down, "down", false, "If true, tear down the cluster before exiting.")
 	flag.StringVar(&o.dump, "dump", "", "If set, dump bring-up and cluster logs to this location on test or cluster-up failure")
 	flag.StringVar(&o.dumpPreTestLogs, "dump-pre-test-logs", "", "If set, dump cluster logs to this location before running tests")
@@ -244,8 +244,6 @@ func getDeployer(o *options) (deployer, error) {
 		return kind.NewDeployer(control, string(o.build))
 	case "kops":
 		return newKops(o.provider, o.gcpProject, o.cluster)
-	case "kubernetes-anywhere":
-		return newKubernetesAnywhere(o.gcpProject, o.gcpZone)
 	case "node":
 		return nodeDeploy{}, nil
 	case "none":
@@ -905,13 +903,6 @@ func prepare(o *options) error {
 		}
 	case "aws":
 		if err := prepareAws(o); err != nil {
-			return err
-		}
-	}
-	// For kubernetes-anywhere as the deployer, call prepareGcp()
-	// independent of the specified provider.
-	if o.deployment == "kubernetes-anywhere" {
-		if err := prepareGcp(o); err != nil {
 			return err
 		}
 	}
