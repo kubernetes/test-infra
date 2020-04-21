@@ -85,15 +85,16 @@ func (o Options) Run() error {
 				// Attempt to clone the repo
 				// If the cluster is autoscaling, it seems Prow can hit DNS too hard on new nodes
 				// So we retry if have a failure we can guess is due to DNS
-				// Exponential backoff is targeted for a little over 5 minutes on the last try
-				for i := 1; i < 4; i++ {
+				// Exponential backoff is targeted for a little over 5 minutes (cumulative) on the last try
+				numIterations := 4
+				for i := 1; i <= numIterations; i++ {
 					record := cloneFunc(ref, o.SrcRoot, o.GitUserName, o.GitUserEmail, o.CookiePath, env, oauthToken)
 					if record.Failed {
 						failed := record.Commands[len(record.Commands)-1]
-						if strings.Contains(failed.Error, "Could not resolve host") {
-							seconds := time.Second * 25 * i * i
-							logrus.Infof("DNS failure detected; retrying clone in %d seconds", seconds)
-							time.Sleep(seconds)
+						if strings.Contains(failed.Error, "Could not resolve host") && i != numIterations {
+							delay := time.Second * 25 * i * i
+							logrus.Infof("DNS failure detected; retrying clone in %d seconds", delay)
+							time.Sleep(delay)
 							continue
 						}
 					}
