@@ -90,7 +90,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: ktbartholomew/link-checker:latest
+      - image: docker.io/praqma/linkchecker:v9.3.1-154-g22449abb-10
         imagePullPolicy: Always
     annotations:
       testgrid-dashboards: sig-big-data
