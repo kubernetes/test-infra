@@ -60,7 +60,7 @@ def build_test(cloud='aws', distro=None, networking=None):
         image = '137112412989/amzn2-ami-hvm-2.0.20200304.0-x86_64-gp2'
     elif distro == 'centos7':
         kops_ssh_user = 'centos'
-        image = 'ami-02eac2c0129f6376b'
+        image = "\'679593333241/CentOS Linux 7 x86_64 HVM EBS ENA 1901_01-b7ee8a69-ee97-4a49-9e68-afaee216db2e-ami-05713873c6794f575.4\'" # pylint: disable=line-too-long
     elif distro == 'coreos':
         kops_ssh_user = 'core'
         image = '595879546273/CoreOS-stable-2303.3.0-hvm'
