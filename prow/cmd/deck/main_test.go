@@ -56,6 +56,7 @@ import (
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/pluginhelp"
 	_ "k8s.io/test-infra/prow/spyglass/lenses/buildlog"
+	"k8s.io/test-infra/prow/spyglass/lenses/common"
 	_ "k8s.io/test-infra/prow/spyglass/lenses/junit"
 	_ "k8s.io/test-infra/prow/spyglass/lenses/metadata"
 	"k8s.io/test-infra/prow/tide"
@@ -1127,4 +1128,133 @@ func (p *possiblyErroringFakeCtrlRuntimeClient) List(
 		return errors.New("could not list ProwJobs")
 	}
 	return p.Client.List(ctx, pjl, opts...)
+}
+
+func cfgWithLensNamed(lensName string) *config.Config {
+	return &config.Config{
+		ProwConfig: config.ProwConfig{
+			Deck: config.Deck{
+				Spyglass: config.Spyglass{
+					Lenses: []config.LensFileConfig{{
+						Lens: config.LensConfig{
+							Name: lensName,
+						},
+					}},
+				},
+			},
+		},
+	}
+}
+
+func verifyCfgHasRemoteForLens(lensName string) func(*config.Config, error) error {
+	return func(c *config.Config, err error) error {
+		if err != nil {
+			return fmt.Errorf("got unexpected error: %w", err)
+		}
+
+		var found bool
+		for _, lens := range c.Deck.Spyglass.Lenses {
+			if lens.Lens.Name != lensName {
+				continue
+			}
+			found = true
+
+			if lens.RemoteConfig == nil {
+				return errors.New("remoteConfig for lens was nil")
+			}
+
+			if lens.RemoteConfig.Endpoint == "" {
+				return errors.New("endpoint was unset")
+			}
+
+			if lens.RemoteConfig.ParsedEndpoint == nil {
+				return errors.New("parsedEndpoint was nil")
+			}
+			if expected := common.DyanmicPathForLens(lensName); lens.RemoteConfig.ParsedEndpoint.Path != expected {
+				return fmt.Errorf("expected parsedEndpoint.Path to be %q, was %q", expected, lens.RemoteConfig.ParsedEndpoint.Path)
+			}
+			if lens.RemoteConfig.ParsedEndpoint.Scheme != "http" {
+				return fmt.Errorf("expected parsedEndpoint.scheme to be 'http', was %q", lens.RemoteConfig.ParsedEndpoint.Scheme)
+			}
+			if lens.RemoteConfig.ParsedEndpoint.Host != spyglassLocalLensListenerAddr {
+				return fmt.Errorf("expected parsedEndpoint.Host to be %q, was %q", spyglassLocalLensListenerAddr, lens.RemoteConfig.ParsedEndpoint.Host)
+			}
+			if lens.RemoteConfig.Title == "" {
+				return errors.New("expected title to be set")
+			}
+			if lens.RemoteConfig.Priority == nil {
+				return errors.New("expected priority to be set")
+			}
+			if lens.RemoteConfig.HideTitle == nil {
+				return errors.New("expected HideTitle to be set")
+			}
+		}
+
+		if !found {
+			return fmt.Errorf("no config found for lens %q", lensName)
+		}
+
+		return nil
+	}
+
+}
+
+func TestSpyglassConfigDefaulting(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		name   string
+		in     *config.Config
+		verify func(*config.Config, error) error
+	}{
+		{
+			name:   "buildlog lens gets defaulted",
+			in:     cfgWithLensNamed("buildlog"),
+			verify: verifyCfgHasRemoteForLens("buildlog"),
+		},
+		{
+			name:   "coverage lens gets defaulted",
+			in:     cfgWithLensNamed("coverage"),
+			verify: verifyCfgHasRemoteForLens("coverage"),
+		},
+		{
+			name:   "junit lens gets defaulted",
+			in:     cfgWithLensNamed("junit"),
+			verify: verifyCfgHasRemoteForLens("junit"),
+		},
+		{
+			name:   "metadata lens gets defaulted",
+			in:     cfgWithLensNamed("metadata"),
+			verify: verifyCfgHasRemoteForLens("metadata"),
+		},
+		{
+			name:   "podinfo lens gets defaulted",
+			in:     cfgWithLensNamed("podinfo"),
+			verify: verifyCfgHasRemoteForLens("podinfo"),
+		},
+		{
+			name:   "restcoverage lens gets defaulted",
+			in:     cfgWithLensNamed("restcoverage"),
+			verify: verifyCfgHasRemoteForLens("restcoverage"),
+		},
+		{
+			name: "undef lens defaulting fails",
+			in:   cfgWithLensNamed("undef"),
+			verify: func(_ *config.Config, err error) error {
+				expectedErrMsg := `lens "undef" has no remote_config and could not get default: invalid lens name`
+				if err == nil || err.Error() != expectedErrMsg {
+					return fmt.Errorf("expected err to be %q, was %v", expectedErrMsg, err)
+				}
+				return nil
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			if err := tc.verify(tc.in, spglassConfigDefaulting(tc.in)); err != nil {
+				t.Error(err)
+			}
+		})
+	}
 }

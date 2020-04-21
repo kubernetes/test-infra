@@ -161,7 +161,7 @@ func TestFetchArtifacts_GCS(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		artifact, err := testAf.artifact(tc.source, tc.artifactName, maxSize)
+		artifact, err := testAf.Artifact(tc.source, tc.artifactName, maxSize)
 		if err != nil {
 			t.Errorf("Failed to get artifacts: %v", err)
 		}

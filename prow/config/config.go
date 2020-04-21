@@ -584,6 +584,24 @@ type LensFileConfig struct {
 	OptionalFiles []string `json:"optional_files,omitempty"`
 	// Lens is the lens to use, alongside any lens-specific configuration.
 	Lens LensConfig `json:"lens"`
+	// RemoteConfig specifies how to access remote lenses
+	RemoteConfig *LensRemoteConfig `json:"remote_config,omitempty"`
+}
+
+// LensRemoteConfig is the configuration for a remote lens.
+type LensRemoteConfig struct {
+	// The endpoint for the lense
+	Endpoint string `json:"endpoint"`
+	// The parsed endpoint
+	ParsedEndpoint *url.URL `json:"-"`
+	// The endpoint for static resources
+	StaticRoot string `json:"static_root"`
+	// The human-readable title for the lens
+	Title string `json:"title"`
+	// Priority for lens ordering, lowest priority first
+	Priority *uint `json:"priority"`
+	// HideTitle defines if we will keep showing the title after lens loads
+	HideTitle *bool `json:"hide_title"`
 }
 
 // Spyglass holds config for Spyglass
@@ -772,7 +790,7 @@ func (cfg *SlackReporter) DefaultAndValidate() error {
 }
 
 // Load loads and parses the config at path.
-func Load(prowConfig, jobConfig string) (c *Config, err error) {
+func Load(prowConfig, jobConfig string, additionals ...func(*Config) error) (c *Config, err error) {
 	// we never want config loading to take down the prow components
 	defer func() {
 		if r := recover(); r != nil {
@@ -791,6 +809,12 @@ func Load(prowConfig, jobConfig string) (c *Config, err error) {
 	}
 	if err := c.ValidateJobConfig(); err != nil {
 		return nil, err
+	}
+
+	for _, additional := range additionals {
+		if err := additional(c); err != nil {
+			return nil, err
+		}
 	}
 	return c, nil
 }

@@ -29,16 +29,17 @@ import (
 	"k8s.io/test-infra/prow/gcsupload"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 
+	tgconf "github.com/GoogleCloudPlatform/testgrid/pb/config"
 	"github.com/fsouza/fake-gcs-server/fakestorage"
 	"github.com/sirupsen/logrus"
 	coreapi "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	tgconf "github.com/GoogleCloudPlatform/testgrid/pb/config"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/deck/jobs"
 	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/spyglass/api"
 	"k8s.io/test-infra/prow/spyglass/lenses"
 )
 
@@ -105,14 +106,14 @@ test/e2e/e2e.go:137 BeforeSuite on Node 1 failed test/e2e/e2e.go:137
 			BucketName: "test-bucket",
 			Name:       "logs/example-ci-run/403/started.json",
 			Content: []byte(`{
-						  "node": "gke-prow-default-pool-3c8994a8-qfhg", 
-						  "repo-version": "v1.12.0-alpha.0.985+e6f64d0a79243c", 
-						  "timestamp": 1528742858, 
+						  "node": "gke-prow-default-pool-3c8994a8-qfhg",
+						  "repo-version": "v1.12.0-alpha.0.985+e6f64d0a79243c",
+						  "timestamp": 1528742858,
 						  "repos": {
-						    "k8s.io/kubernetes": "master", 
+						    "k8s.io/kubernetes": "master",
 						    "k8s.io/release": "master"
-						  }, 
-						  "version": "v1.12.0-alpha.0.985+e6f64d0a79243c", 
+						  },
+						  "version": "v1.12.0-alpha.0.985+e6f64d0a79243c",
 						  "metadata": {
 						    "pod": "cbc53d8e-6da7-11e8-a4ff-0a580a6c0269"
 						  }
@@ -122,19 +123,19 @@ test/e2e/e2e.go:137 BeforeSuite on Node 1 failed test/e2e/e2e.go:137
 			BucketName: "test-bucket",
 			Name:       "logs/example-ci-run/403/finished.json",
 			Content: []byte(`{
-						  "timestamp": 1528742943, 
-						  "version": "v1.12.0-alpha.0.985+e6f64d0a79243c", 
-						  "result": "SUCCESS", 
-						  "passed": true, 
-						  "job-version": "v1.12.0-alpha.0.985+e6f64d0a79243c", 
+						  "timestamp": 1528742943,
+						  "version": "v1.12.0-alpha.0.985+e6f64d0a79243c",
+						  "result": "SUCCESS",
+						  "passed": true,
+						  "job-version": "v1.12.0-alpha.0.985+e6f64d0a79243c",
 						  "metadata": {
-						    "repo": "k8s.io/kubernetes", 
+						    "repo": "k8s.io/kubernetes",
 						    "repos": {
-						      "k8s.io/kubernetes": "master", 
+						      "k8s.io/kubernetes": "master",
 						      "k8s.io/release": "master"
-						    }, 
-						    "infra-commit": "260081852", 
-						    "pod": "cbc53d8e-6da7-11e8-a4ff-0a580a6c0269", 
+						    },
+						    "infra-commit": "260081852",
+						    "pod": "cbc53d8e-6da7-11e8-a4ff-0a580a6c0269",
 						    "repo-commit": "e6f64d0a79243c834babda494151fc5d66582240"
 						  },
 						},`),
@@ -184,11 +185,11 @@ func (dumpLens) Config() lenses.LensConfig {
 	}
 }
 
-func (dumpLens) Header(artifacts []lenses.Artifact, resourceDir string, config json.RawMessage) string {
+func (dumpLens) Header(artifacts []api.Artifact, resourceDir string, config json.RawMessage) string {
 	return ""
 }
 
-func (dumpLens) Body(artifacts []lenses.Artifact, resourceDir string, data string, config json.RawMessage) string {
+func (dumpLens) Body(artifacts []api.Artifact, resourceDir string, data string, config json.RawMessage) string {
 	var view []byte
 	for _, a := range artifacts {
 		data, err := a.ReadAll()
@@ -201,7 +202,7 @@ func (dumpLens) Body(artifacts []lenses.Artifact, resourceDir string, data strin
 	return string(view)
 }
 
-func (dumpLens) Callback(artifacts []lenses.Artifact, resourceDir string, data string, config json.RawMessage) string {
+func (dumpLens) Callback(artifacts []api.Artifact, resourceDir string, data string, config json.RawMessage) string {
 	return ""
 }
 

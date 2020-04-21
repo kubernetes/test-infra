@@ -26,9 +26,10 @@ import (
 	"sort"
 	"time"
 
+	"github.com/GoogleCloudPlatform/testgrid/metadata/junit"
 	"github.com/sirupsen/logrus"
 
-	"github.com/GoogleCloudPlatform/testgrid/metadata/junit"
+	"k8s.io/test-infra/prow/spyglass/api"
 	"k8s.io/test-infra/prow/spyglass/lenses"
 )
 
@@ -68,7 +69,7 @@ func (lens Lens) Config() lenses.LensConfig {
 }
 
 // Header renders the content of <head> from template.html.
-func (lens Lens) Header(artifacts []lenses.Artifact, resourceDir string, config json.RawMessage) string {
+func (lens Lens) Header(artifacts []api.Artifact, resourceDir string, config json.RawMessage) string {
 	t, err := template.ParseFiles(filepath.Join(resourceDir, "template.html"))
 	if err != nil {
 		return fmt.Sprintf("<!-- FAILED LOADING HEADER: %v -->", err)
@@ -81,7 +82,7 @@ func (lens Lens) Header(artifacts []lenses.Artifact, resourceDir string, config 
 }
 
 // Callback does nothing.
-func (lens Lens) Callback(artifacts []lenses.Artifact, resourceDir string, data string, config json.RawMessage) string {
+func (lens Lens) Callback(artifacts []api.Artifact, resourceDir string, data string, config json.RawMessage) string {
 	return ""
 }
 
@@ -110,7 +111,7 @@ type TestResult struct {
 }
 
 // Body renders the <body> for JUnit tests
-func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data string, config json.RawMessage) string {
+func (lens Lens) Body(artifacts []api.Artifact, resourceDir string, data string, config json.RawMessage) string {
 	jvd := lens.getJvd(artifacts)
 
 	junitTemplate, err := template.ParseFiles(filepath.Join(resourceDir, "template.html"))
@@ -127,7 +128,7 @@ func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data stri
 	return buf.String()
 }
 
-func (lens Lens) getJvd(artifacts []lenses.Artifact) JVD {
+func (lens Lens) getJvd(artifacts []api.Artifact) JVD {
 	type testResults struct {
 		// Group results based on their full path name
 		junit [][]JunitResult
@@ -142,7 +143,7 @@ func (lens Lens) getJvd(artifacts []lenses.Artifact) JVD {
 	}
 	resultChan := make(chan testResults)
 	for _, artifact := range artifacts {
-		go func(artifact lenses.Artifact) {
+		go func(artifact api.Artifact) {
 			groups := make(map[testIdentifier][]JunitResult)
 			result := testResults{
 				link: artifact.CanonicalLink(),
