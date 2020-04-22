@@ -111,7 +111,7 @@ type Bug struct {
 
 // BugCreate holds the info needed to create a new bug
 type BugCreate struct {
-	// Alias is the unique aliases of this bug. An empty array will be returned if this bug has no aliases.
+	// Alias is an optional list of unique aliases of this bug.
 	Alias []string `json:"alias,omitempty"`
 	// AssignedTo is the login name of the user to whom the bug is assigned.
 	AssignedTo string `json:"assigned_to,omitempty"`
@@ -125,7 +125,7 @@ type BugCreate struct {
 	Component []string `json:"component,omitempty"`
 	// Description is the initial description for this bug
 	Description string `json:"description,omitempty"`
-	// Flags is an array of objects containing the information about flags currently set for the bug. Each flag objects contains the following items
+	// Flags is an array of objects containing the information about flags currently set for the bug.
 	Flags []Flag `json:"flags,omitempty"`
 	// Groups is the names of all the groups that this bug is in.
 	Groups []string `json:"groups,omitempty"`
