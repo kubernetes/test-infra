@@ -16,7 +16,7 @@ jsonnet_to_json(
     visibility = ["//visibility:public"],
     deps = [
         ":prom_lib",
-        "//prow/cluster/monitoring/mixins/lib",
+        "//config/prow/cluster/monitoring/mixins/lib",
     ],
 )
 

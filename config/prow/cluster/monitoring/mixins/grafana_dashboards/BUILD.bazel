@@ -10,8 +10,8 @@ jsonnet_to_json(
     ],
     visibility = ["//visibility:public"],
     deps = [
-        "//prow/cluster/monitoring/mixins/lib",
-        "//prow/cluster/monitoring/mixins/vendor/grafonnet",
+        "//config/prow/cluster/monitoring/mixins/lib",
+        "//config/prow/cluster/monitoring/mixins/vendor/grafonnet",
     ],
 )
 
@@ -25,8 +25,8 @@ jsonnet_to_json(
     ],
     visibility = ["//visibility:public"],
     deps = [
-        "//prow/cluster/monitoring/mixins/lib",
-        "//prow/cluster/monitoring/mixins/vendor/grafonnet",
+        "//config/prow/cluster/monitoring/mixins/lib",
+        "//config/prow/cluster/monitoring/mixins/vendor/grafonnet",
     ],
 )
 
@@ -40,8 +40,8 @@ jsonnet_to_json(
     ],
     visibility = ["//visibility:public"],
     deps = [
-        "//prow/cluster/monitoring/mixins/lib",
-        "//prow/cluster/monitoring/mixins/vendor/grafonnet",
+        "//config/prow/cluster/monitoring/mixins/lib",
+        "//config/prow/cluster/monitoring/mixins/vendor/grafonnet",
     ],
 )
 
@@ -55,8 +55,8 @@ jsonnet_to_json(
     ],
     visibility = ["//visibility:public"],
     deps = [
-        "//prow/cluster/monitoring/mixins/lib",
-        "//prow/cluster/monitoring/mixins/vendor/grafonnet",
+        "//config/prow/cluster/monitoring/mixins/lib",
+        "//config/prow/cluster/monitoring/mixins/vendor/grafonnet",
     ],
 )
 
@@ -70,8 +70,8 @@ jsonnet_to_json(
     ],
     visibility = ["//visibility:public"],
     deps = [
-        "//prow/cluster/monitoring/mixins/lib",
-        "//prow/cluster/monitoring/mixins/vendor/grafonnet",
+        "//config/prow/cluster/monitoring/mixins/lib",
+        "//config/prow/cluster/monitoring/mixins/vendor/grafonnet",
     ],
 )
 
@@ -85,8 +85,8 @@ jsonnet_to_json(
     ],
     visibility = ["//visibility:public"],
     deps = [
-        "//prow/cluster/monitoring/mixins/lib",
-        "//prow/cluster/monitoring/mixins/vendor/grafonnet",
+        "//config/prow/cluster/monitoring/mixins/lib",
+        "//config/prow/cluster/monitoring/mixins/vendor/grafonnet",
     ],
 )
 
@@ -100,8 +100,8 @@ jsonnet_to_json(
     ],
     visibility = ["//visibility:public"],
     deps = [
-        "//prow/cluster/monitoring/mixins/lib",
-        "//prow/cluster/monitoring/mixins/vendor/grafonnet",
+        "//config/prow/cluster/monitoring/mixins/lib",
+        "//config/prow/cluster/monitoring/mixins/vendor/grafonnet",
     ],
 )
 
@@ -115,8 +115,8 @@ jsonnet_to_json(
     ],
     visibility = ["//visibility:public"],
     deps = [
-        "//prow/cluster/monitoring/mixins/lib",
-        "//prow/cluster/monitoring/mixins/vendor/grafonnet",
+        "//config/prow/cluster/monitoring/mixins/lib",
+        "//config/prow/cluster/monitoring/mixins/vendor/grafonnet",
     ],
 )
 
@@ -130,8 +130,8 @@ jsonnet_to_json(
     ],
     visibility = ["//visibility:public"],
     deps = [
-        "//prow/cluster/monitoring/mixins/lib",
-        "//prow/cluster/monitoring/mixins/vendor/grafonnet",
+        "//config/prow/cluster/monitoring/mixins/lib",
+        "//config/prow/cluster/monitoring/mixins/vendor/grafonnet",
     ],
 )
 

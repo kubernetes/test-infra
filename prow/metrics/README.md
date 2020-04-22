@@ -26,7 +26,7 @@ provide a single scrape endpoint, Prow's prometheus metrics are pushed to a
 Prometheus pushgateway that is scraped instead of the metric source. A proxy is
 used to limit cluster external requests to GET requests since Prometheus doesn't
 provide any form of authentication. The pushgateway and proxy deployment are
-defined in [`pushgateway_deployment.yaml`](/prow/cluster/pushgateway_deployment.yaml).
+defined in [`pushgateway_deployment.yaml`](/config/prow/cluster/pushgateway_deployment.yaml).
 
 ## Kubernetes Prow Metrics
 

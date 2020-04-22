@@ -227,7 +227,7 @@ fb09e7d8-3abb-11e9-816a-0a580a6c0f7f	success
 
 ```
 
-You want to add a crier deployment, similar to ours [prow/cluster/crier_deployment.yaml](https://github.com/kubernetes/test-infra/blob/de3775a7480fe0a724baacf24a87cbf058cd9fd5/prow/cluster/crier_deployment.yaml),
+You want to add a crier deployment, similar to ours [config/prow/cluster/crier_deployment.yaml](https://github.com/kubernetes/test-infra/blob/de3775a7480fe0a724baacf24a87cbf058cd9fd5/prow/cluster/crier_deployment.yaml),
 flags need to be specified:
 - point `config-path` and `--job-config-path` to your prow config and job configs accordingly.
 - Set `--github-worker` to be number of parallel github reporting threads you need

@@ -5,7 +5,7 @@ k8s_object(
     name = "prow_prometheusrule",
     cluster = "{STABLE_PROW_CLUSTER}",
     kind = None,
-    template = "//prow/cluster/monitoring/mixins/prometheus:prow_prometheusrule",
+    template = "//config/prow/cluster/monitoring/mixins/prometheus:prow_prometheusrule",
     visibility = ["//visibility:public"],
 )
 

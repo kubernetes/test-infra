@@ -6,7 +6,7 @@ load("//prow:def.bzl", "BUILD_CLUSTER", "MULTI_KIND", "component", "release")
 load("//def:configmap.bzl", "k8s_configmap")
 
 # Usage:
-#   bazel run //prow/cluster:foo.apply
+#   bazel run //config/prow/cluster:foo.apply
 
 release(
     "production",
@@ -100,7 +100,7 @@ filegroup(
     name = "all-srcs",
     srcs = [
         ":package-srcs",
-        "//prow/cluster/monitoring:all-srcs",
+        "//config/prow/cluster/monitoring:all-srcs",
     ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
