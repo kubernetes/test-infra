@@ -33,12 +33,13 @@ import (
 type options struct {
 	github flagutil.GitHubOptions
 
-	branch  string
-	confirm bool
-	local   bool
-	org     string
-	repo    string
-	source  string
+	branch    string
+	allowMods bool
+	confirm   bool
+	local     bool
+	org       string
+	repo      string
+	source    string
 
 	title      string
 	matchTitle string
@@ -73,6 +74,7 @@ func optionsFromFlags() options {
 	fs.StringVar(&o.branch, "branch", "", "Repo branch to merge into")
 	fs.StringVar(&o.source, "source", "", "The user:branch to merge from")
 
+	fs.BoolVar(&o.allowMods, "allow-mods", updater.PreventMods, "Indicates whether maintainers can modify the pull request")
 	fs.BoolVar(&o.confirm, "confirm", false, "Set to mutate github instead of a dry run")
 	fs.BoolVar(&o.local, "local", false, "Allow source to be local-branch instead of remote-user:branch")
 	fs.StringVar(&o.title, "title", "", "Title of PR")
@@ -98,7 +100,7 @@ func main() {
 		logrus.WithError(err).Fatal("Failed to create github client")
 	}
 
-	n, err := updater.EnsurePR(o.org, o.repo, o.title, o.body, o.source, o.branch, o.matchTitle, gc)
+	n, err := updater.EnsurePR(o.org, o.repo, o.title, o.body, o.source, o.branch, o.matchTitle, o.allowMods, gc)
 	if err != nil {
 		logrus.WithError(err).Fatal("Failed to ensure PR exists.")
 	}

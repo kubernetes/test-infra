@@ -68,19 +68,19 @@ func (w HideSecretsWriter) Write(content []byte) (int, error) {
 // with "matchTitle" from "source" to "branch"
 // "images" contains the tag replacements that have been made which is returned from "UpdateReferences([]string{"."}, extraFiles)"
 // "images" and "extraLineInPRBody" are used to generate commit summary and body of the PR
-func UpdatePR(gc github.Client, org, repo string, images map[string]string, extraLineInPRBody string, matchTitle, source, branch string) error {
-	return UpdatePullRequest(gc, org, repo, makeCommitSummary(images), generatePRBody(images, extraLineInPRBody), matchTitle, source, branch)
+func UpdatePR(gc github.Client, org, repo string, images map[string]string, extraLineInPRBody string, matchTitle, source, branch string, allowMods bool) error {
+	return UpdatePullRequest(gc, org, repo, makeCommitSummary(images), generatePRBody(images, extraLineInPRBody), matchTitle, source, branch, allowMods)
 }
 
 // UpdatePullRequest updates with github client "gc" the PR of github repo org/repo
 // with "title" and "body" of PR matching "matchTitle" from "source" to "branch"
-func UpdatePullRequest(gc github.Client, org, repo, title, body, matchTitle, source, branch string) error {
-	return UpdatePullRequestWithLabels(gc, org, repo, title, body, matchTitle, source, branch, nil)
+func UpdatePullRequest(gc github.Client, org, repo, title, body, matchTitle, source, branch string, allowMods bool) error {
+	return UpdatePullRequestWithLabels(gc, org, repo, title, body, matchTitle, source, branch, allowMods, nil)
 }
 
-func UpdatePullRequestWithLabels(gc github.Client, org, repo, title, body, matchTitle, source, branch string, labels []string) error {
+func UpdatePullRequestWithLabels(gc github.Client, org, repo, title, body, matchTitle, source, branch string, allowMods bool, labels []string) error {
 	logrus.Info("Creating or updating PR...")
-	n, err := updater.EnsurePRWithLabels(org, repo, title, body, source, branch, matchTitle, gc, labels)
+	n, err := updater.EnsurePRWithLabels(org, repo, title, body, source, branch, matchTitle, allowMods, gc, labels)
 	if err != nil {
 		return fmt.Errorf("failed to ensure PR exists: %v", err)
 	}
