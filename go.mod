@@ -27,6 +27,7 @@ require (
 	github.com/andygrunwald/go-gerrit v0.0.0-20190120104749-174420ebee6c
 	github.com/aws/aws-k8s-tester v1.0.0
 	github.com/aws/aws-sdk-go v1.30.5
+	github.com/bazelbuild/bazel-gazelle v0.20.0 // indirect
 	github.com/bazelbuild/buildtools v0.0.0-20190917191645-69366ca98f89
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/bwmarrin/snowflake v0.0.0
@@ -46,7 +47,7 @@ require (
 	github.com/go-test/deep v1.0.4
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/golang/mock v1.3.1
-	github.com/golang/protobuf v1.3.4 // indirect
+	github.com/golang/protobuf v1.3.4
 	github.com/gomodule/redigo v1.7.0
 	github.com/google/go-cmp v0.4.0
 	github.com/google/go-github v17.0.0+incompatible
