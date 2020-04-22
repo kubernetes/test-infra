@@ -19,6 +19,7 @@ package bugzilla
 import (
 	"crypto/tls"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -149,6 +150,10 @@ func TestUpdateBug(t *testing.T) {
 				if actual, expected := string(raw), `{"status":"UPDATED"}`; actual != expected {
 					t.Errorf("got incorrect udpate: expected %v, got %v", expected, actual)
 				}
+			} else if id == 2 {
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusOK)
+				fmt.Fprintln(w, `{"documentation":"https://bugzilla.redhat.com/docs/en/html/api/index.html","error":true,"code":32000,"message":"Subcomponet is mandatory for the component 'Cloud Compute' in the product 'OpenShift Container Platform'."}`)
 			} else {
 				http.Error(w, "404 Not Found", http.StatusNotFound)
 			}
@@ -168,6 +173,11 @@ func TestUpdateBug(t *testing.T) {
 		t.Error("expected an error, but got none")
 	} else if !IsNotFound(err) {
 		t.Errorf("expected a not found error, got %v", err)
+	}
+
+	// this is a 200 with an error payload
+	if err := client.UpdateBug(2, BugUpdate{Status: "UPDATE"}); err == nil {
+		t.Error("expected an error, but got none")
 	}
 }
 
