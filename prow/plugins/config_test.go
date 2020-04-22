@@ -1000,7 +1000,7 @@ func TestBugzillaBugState_AsBugUpdate(t *testing.T) {
 				}
 			}
 
-			if actual != nil && tc.expected != nil && *tc.expected != *actual {
+			if !reflect.DeepEqual(tc.expected, actual) {
 				t.Errorf("%s: BugUpdate differs from expected:\n%s", tc.name, diff.ObjectReflectDiff(*actual, *tc.expected))
 			}
 		})
