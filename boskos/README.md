@@ -276,7 +276,7 @@ curl 'http://127.0.0.1:8080/acquire?type=project&state=free&dest=busy&owner=user
 1. `make service`
 
 1. `kubectl create configmap -n test-pods resources --from-file=config=cfg.yaml`
-  See [`boskos-resources.yaml`](../prow/cluster/boskos-resources.yaml) for an example of how the config file should look
+  See [`boskos-resources.yaml`](../config/prow/cluster/boskos-resources.yaml) for an example of how the config file should look
 
 1. `kubectl describe svc -n test-pods boskos` to make sure boskos is running
 

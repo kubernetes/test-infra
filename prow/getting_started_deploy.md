@@ -102,7 +102,7 @@ in-cluster. If you see an error of the following form, this is likely the case.
 
 ```console
 Error from server (Forbidden): error when creating
-"prow/cluster/starter.yaml": roles.rbac.authorization.k8s.io "<account>" is
+"config/prow/cluster/starter.yaml": roles.rbac.authorization.k8s.io "<account>" is
 forbidden: attempt to grant extra privileges:
 [PolicyRule{Resources:["pods/log"], APIGroups:[""], Verbs:["get"]}
 PolicyRule{Resources:["prowjobs"], APIGroups:["prow.k8s.io"], Verbs:["get"]}
@@ -143,7 +143,7 @@ kubectl create secret generic oauth-token --from-file=oauth=/path/to/oauth/secre
 Run the following command to deploy a basic set of prow components.
 
 ```sh
-kubectl apply -f prow/cluster/starter.yaml
+kubectl apply -f config/prow/cluster/starter.yaml
 ```
 
 After a moment, the cluster components will be running.

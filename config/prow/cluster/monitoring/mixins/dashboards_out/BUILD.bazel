@@ -3,13 +3,13 @@ load("@io_bazel_rules_k8s//k8s:objects.bzl", "k8s_objects")
 load("//def:configmap.bzl", "k8s_configmap")
 
 # Usage:
-#   bazel run //prow/cluster/monitoring/mixins/dashboards_out:grafana-configmaps.apply
+#   bazel run //config/prow/cluster/monitoring/mixins/dashboards_out:grafana-configmaps.apply
 
 k8s_configmap(
     name = "grafana-dashboard-boskos",
     cluster = "{STABLE_PROW_CLUSTER}",
     data = {
-        "boskos.json": "//prow/cluster/monitoring/mixins/grafana_dashboards:boskos",
+        "boskos.json": "//config/prow/cluster/monitoring/mixins/grafana_dashboards:boskos",
     },
     namespace = "prow-monitoring",
     visibility = ["//visibility:public"],
@@ -19,7 +19,7 @@ k8s_configmap(
     name = "grafana-dashboard-boskos-http",
     cluster = "{STABLE_PROW_CLUSTER}",
     data = {
-        "boskos-http.json": "//prow/cluster/monitoring/mixins/grafana_dashboards:boskos-http",
+        "boskos-http.json": "//config/prow/cluster/monitoring/mixins/grafana_dashboards:boskos-http",
     },
     namespace = "prow-monitoring",
     visibility = ["//visibility:public"],
@@ -29,7 +29,7 @@ k8s_configmap(
     name = "grafana-dashboard-deck",
     cluster = "{STABLE_PROW_CLUSTER}",
     data = {
-        "deck.json": "//prow/cluster/monitoring/mixins/grafana_dashboards:deck",
+        "deck.json": "//config/prow/cluster/monitoring/mixins/grafana_dashboards:deck",
     },
     namespace = "prow-monitoring",
     visibility = ["//visibility:public"],
@@ -39,7 +39,7 @@ k8s_configmap(
     name = "grafana-dashboard-ghproxy",
     cluster = "{STABLE_PROW_CLUSTER}",
     data = {
-        "ghproxy.json": "//prow/cluster/monitoring/mixins/grafana_dashboards:ghproxy",
+        "ghproxy.json": "//config/prow/cluster/monitoring/mixins/grafana_dashboards:ghproxy",
     },
     namespace = "prow-monitoring",
     visibility = ["//visibility:public"],
@@ -49,7 +49,7 @@ k8s_configmap(
     name = "grafana-dashboard-hook",
     cluster = "{STABLE_PROW_CLUSTER}",
     data = {
-        "hook.json": "//prow/cluster/monitoring/mixins/grafana_dashboards:hook",
+        "hook.json": "//config/prow/cluster/monitoring/mixins/grafana_dashboards:hook",
     },
     namespace = "prow-monitoring",
     visibility = ["//visibility:public"],
@@ -59,7 +59,7 @@ k8s_configmap(
     name = "grafana-dashboard-plank",
     cluster = "{STABLE_PROW_CLUSTER}",
     data = {
-        "plank.json": "//prow/cluster/monitoring/mixins/grafana_dashboards:plank",
+        "plank.json": "//config/prow/cluster/monitoring/mixins/grafana_dashboards:plank",
     },
     namespace = "prow-monitoring",
     visibility = ["//visibility:public"],
@@ -69,7 +69,7 @@ k8s_configmap(
     name = "grafana-dashboard-prow",
     cluster = "{STABLE_PROW_CLUSTER}",
     data = {
-        "prow.json": "//prow/cluster/monitoring/mixins/grafana_dashboards:prow",
+        "prow.json": "//config/prow/cluster/monitoring/mixins/grafana_dashboards:prow",
     },
     namespace = "prow-monitoring",
     visibility = ["//visibility:public"],
@@ -79,7 +79,7 @@ k8s_configmap(
     name = "grafana-dashboard-sinker",
     cluster = "{STABLE_PROW_CLUSTER}",
     data = {
-        "sinker.json": "//prow/cluster/monitoring/mixins/grafana_dashboards:sinker",
+        "sinker.json": "//config/prow/cluster/monitoring/mixins/grafana_dashboards:sinker",
     },
     namespace = "prow-monitoring",
     visibility = ["//visibility:public"],
@@ -89,7 +89,7 @@ k8s_configmap(
     name = "grafana-dashboard-tide",
     cluster = "{STABLE_PROW_CLUSTER}",
     data = {
-        "tide.json": "//prow/cluster/monitoring/mixins/grafana_dashboards:tide",
+        "tide.json": "//config/prow/cluster/monitoring/mixins/grafana_dashboards:tide",
     },
     namespace = "prow-monitoring",
     visibility = ["//visibility:public"],
