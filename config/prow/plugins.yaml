@@ -84,6 +84,7 @@ approve:
   - kubernetes/org
   - kubernetes/repo-infra
   - kubernetes/test-infra
+  - kubernetes/cloud-provider-gcp
   require_self_approval: false
   ignore_review_state: false
 - repos:
