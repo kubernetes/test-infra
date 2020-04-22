@@ -347,6 +347,7 @@ larger set of contributors to apply/remove them.
 | <a id="area/prow/sinker" href="#area/prow/sinker">`area/prow/sinker`</a> | Issues or PRs related to prow's sinker component| label | |
 | <a id="area/prow/splice" href="#area/prow/splice">`area/prow/splice`</a> | Issues or PRs related to prow's splice component| label | |
 | <a id="area/prow/spyglass" href="#area/prow/spyglass">`area/prow/spyglass`</a> | Issues or PRs related to prow's spyglass UI| label | |
+| <a id="area/prow/status-reconciler" href="#area/prow/status-reconciler">`area/prow/status-reconciler`</a> | Issues or PRs related to reconciling status when jobs change| label | |
 | <a id="area/prow/tide" href="#area/prow/tide">`area/prow/tide`</a> | Issues or PRs related to prow's tide component| label | |
 | <a id="area/prow/tot" href="#area/prow/tot">`area/prow/tot`</a> | Issues or PRs related to prow's tot component| label | |
 | <a id="area/release-eng" href="#area/release-eng">`area/release-eng`</a> | Issues or PRs related to the Release Engineering subproject <br><br> This was previously `area/release-infra`, | label | |
