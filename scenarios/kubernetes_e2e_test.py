@@ -284,25 +284,6 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
         self.assertNotIn('--up', lastcall)
         self.assertIn('--down', lastcall)
 
-
-    def test_kubeadm_ci(self):
-        """Make sure kubeadm ci mode is fine overall."""
-        args = kubernetes_e2e.parse_args(['--kubeadm=ci'])
-        self.assertEqual(args.kubeadm, 'ci')
-        with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
-            with Stub(kubernetes_e2e, 'check_output', self.fake_output_work_status):
-                kubernetes_e2e.main(args)
-
-        self.assertNotIn('E2E_OPT', self.envs)
-        version = 'gs://kubernetes-release-dev/ci/v1.7.0-alpha.0.1320+599539dc0b9997-bazel/bin/linux/amd64/'  # pylint: disable=line-too-long
-        self.assertIn('--kubernetes-anywhere-kubeadm-version=%s' % version, self.callstack[-1])
-        called = False
-        for call in self.callstack:
-            self.assertFalse(call.startswith('docker'))
-            if call == 'hack/print-workspace-status.sh':
-                called = True
-        self.assertTrue(called)
-
     def test_local_env(self):
         """
             Ensure that host variables (such as GOPATH) are included,
@@ -325,55 +306,6 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
         self.assertIn(('GOOS', 'linux'), self.envs.viewitems())
         self.assertNotIn(('USER', 'jenkins'), self.envs.viewitems())
         self.assertNotIn(('FOO', 'BAZ'), self.envs.viewitems())
-
-    def test_kubeadm_periodic(self):
-        """Make sure kubeadm periodic mode is fine overall."""
-        args = kubernetes_e2e.parse_args(['--kubeadm=periodic'])
-        self.assertEqual(args.kubeadm, 'periodic')
-        with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
-            with Stub(kubernetes_e2e, 'check_output', self.fake_output_work_status):
-                kubernetes_e2e.main(args)
-
-        self.assertNotIn('E2E_OPT', self.envs)
-        version = 'gs://kubernetes-release-dev/ci/v1.7.0-alpha.0.1320+599539dc0b9997-bazel/bin/linux/amd64/'  # pylint: disable=line-too-long
-        self.assertIn('--kubernetes-anywhere-kubeadm-version=%s' % version, self.callstack[-1])
-        called = False
-        for call in self.callstack:
-            self.assertFalse(call.startswith('docker'))
-            if call == 'hack/print-workspace-status.sh':
-                called = True
-        self.assertTrue(called)
-
-    def test_kubeadm_pull(self):
-        """Make sure kubeadm pull mode is fine overall."""
-        args = kubernetes_e2e.parse_args([
-            '--kubeadm=pull',
-            '--use-shared-build=bazel'
-        ])
-        self.assertEqual(args.kubeadm, 'pull')
-        self.assertEqual(args.use_shared_build, 'bazel')
-
-        gcs_bucket = "gs://kubernetes-release-dev/bazel/v1.8.0-beta.1.132+599539dc0b9997"
-
-        def fake_gcs_path(path):
-            bazel_default = os.path.join(
-                'gs://kubernetes-jenkins/shared-results', 'bazel-build-location.txt')
-            self.assertEqual(path, bazel_default)
-            return gcs_bucket
-        with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
-            with Stub(kubernetes_e2e, 'read_gcs_path', fake_gcs_path):
-                kubernetes_e2e.main(args)
-
-        self.assertNotIn('E2E_OPT', self.envs)
-        version = '%s/bin/linux/amd64/' % gcs_bucket
-        self.assertIn('--kubernetes-anywhere-kubeadm-version=%s' % version, self.callstack[-1])
-
-    def test_kubeadm_invalid(self):
-        """Make sure kubeadm invalid mode exits unsuccessfully."""
-        with self.assertRaises(SystemExit) as sysexit:
-            kubernetes_e2e.parse_args(['--mode=local', '--kubeadm=deploy'])
-
-        self.assertEqual(sysexit.exception.code, 2)
 
     def test_parse_args_order_agnostic(self):
         args = kubernetes_e2e.parse_args([
