@@ -153,6 +153,7 @@ func runSingleJob(o options, jobName, uploaded, version string, subs map[string]
 			return fmt.Errorf("couldn't create %s: %v", p, err)
 		}
 
+		defer f.Sync()
 		defer f.Close()
 
 		cmd.Stdout = f
