@@ -40,8 +40,9 @@ RUN echo http://dl-cdn.alpinelinux.org/alpine/latest-stable/community >> /etc/ap
     gcloud info > /workspace/gcloud-info.txt
 
 # Install docker Buildx for fast docker builds
-RUN mkdir -p  ~/.docker/cli-plugins \
-    && curl -fsSL "https://github.com/docker/buildx/releases/download/v0.3.1/buildx-v0.3.1.linux-amd64" --output ~/.docker/cli-plugins/docker-buildx \
-    && chmod a+x ~/.docker/cli-plugins/docker-buildx
+ENV HOME=/root
+RUN mkdir -p  $HOME/.docker/cli-plugins \
+    && curl -fsSL "https://github.com/docker/buildx/releases/download/v0.3.1/buildx-v0.3.1.linux-amd64" --output $HOME/.docker/cli-plugins/docker-buildx \
+    && chmod a+x $HOME/.docker/cli-plugins/docker-buildx
 
 ENTRYPOINT ["/bin/bash"]
