@@ -68,7 +68,7 @@ presubmits:
         - -c
         - config/jobs/.yamllint.conf
         - config/jobs
-        - prow/cluster
+        - config/prow/cluster
     annotations:
       testgrid-dashboards: presubmits-test-infra
       testgrid-tab-name: verify-yaml
