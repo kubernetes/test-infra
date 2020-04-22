@@ -28,10 +28,11 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"k8s.io/apimachinery/pkg/util/diff"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
+	utilpointer "k8s.io/utils/pointer"
 	"sigs.k8s.io/yaml"
 
-	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/flagutil"
@@ -1303,5 +1304,78 @@ func TestValidateInRepoConfig(t *testing.T) {
 		if errString != tc.expectedErr {
 			t.Errorf("expected error %q does not match actual error %q", tc.expectedErr, errString)
 		}
+	}
+}
+
+func TestValidateTideContextPolicy(t *testing.T) {
+	cfg := func(m ...func(*config.Config)) *config.Config {
+		cfg := &config.Config{}
+		cfg.PresubmitsStatic = map[string][]config.Presubmit{}
+		for _, mod := range m {
+			mod(cfg)
+		}
+		return cfg
+	}
+
+	testCases := []struct {
+		name          string
+		cfg           *config.Config
+		expectedError string
+	}{
+		{
+			name: "overlapping branch config, error",
+			cfg: cfg(func(c *config.Config) {
+				c.PresubmitsStatic["a/b"] = []config.Presubmit{
+					{Reporter: config.Reporter{Context: "a"}, Brancher: config.Brancher{Branches: []string{"a"}}},
+					{AlwaysRun: true, Reporter: config.Reporter{Context: "a"}},
+				}
+			}),
+			expectedError: "context policy for a branch in a/b is invalid: contexts a are defined as required and required if present",
+		},
+		{
+			name: "overlapping branch config with empty branch configs, error",
+			cfg: cfg(func(c *config.Config) {
+				c.PresubmitsStatic["a/b"] = []config.Presubmit{
+					{Reporter: config.Reporter{Context: "a"}},
+					{AlwaysRun: true, Reporter: config.Reporter{Context: "a"}},
+				}
+			}),
+			expectedError: "context policy for master branch in a/b is invalid: contexts a are defined as required and required if present",
+		},
+		{
+			name: "overlapping branch config, inrepoconfig enabled, error",
+			cfg: cfg(func(c *config.Config) {
+				c.InRepoConfig.Enabled = map[string]*bool{"*": utilpointer.BoolPtr(true)}
+				c.PresubmitsStatic["a/b"] = []config.Presubmit{
+					{Reporter: config.Reporter{Context: "a"}, Brancher: config.Brancher{Branches: []string{"a"}}},
+					{AlwaysRun: true, Reporter: config.Reporter{Context: "a"}},
+				}
+			}),
+			expectedError: "context policy for a branch in a/b is invalid: contexts a are defined as required and required if present",
+		},
+		{
+			name: "no overlapping branch config, no error",
+			cfg: cfg(func(c *config.Config) {
+				c.PresubmitsStatic["a/b"] = []config.Presubmit{
+					{Reporter: config.Reporter{Context: "a"}, Brancher: config.Brancher{Branches: []string{"a"}}},
+					{AlwaysRun: true, Reporter: config.Reporter{Context: "a"}, Brancher: config.Brancher{Branches: []string{"b"}}},
+				}
+			}),
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Needed so regexes get compiled
+			tc.cfg.SetPresubmits(tc.cfg.PresubmitsStatic)
+
+			errMsg := ""
+			if err := validateTideContextPolicy(tc.cfg); err != nil {
+				errMsg = err.Error()
+			}
+			if errMsg != tc.expectedError {
+				t.Errorf("expected error %q, got error %q", tc.expectedError, errMsg)
+			}
+		})
 	}
 }
