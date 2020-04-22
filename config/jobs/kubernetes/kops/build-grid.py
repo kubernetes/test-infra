@@ -57,6 +57,10 @@ template = """
 # This should be used for temporary tests we are evaluating,
 # and ideally linked to a bug, and removed once the bug is fixed
 hotlist = [
+    # flannel networking issues: https://github.com/kubernetes/kops/pull/8381#issuecomment-616689498
+    'kops-grid-aws-flannel-centos7',
+    'kops-grid-aws-flannel-rhel7',
+    'kops-grid-aws-flannel-rhel8',
 ]
 
 def simple_hash(s):

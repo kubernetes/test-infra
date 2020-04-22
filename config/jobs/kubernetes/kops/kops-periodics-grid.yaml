@@ -40,7 +40,7 @@ periodics:
 
 # {"cloud": "aws", "networking": "flannel", "distro": "centos7"}
 - name: e2e-kops-grid-aws-flannel-centos7
-  cron: '14 2 * * *'
+  cron: '14 * * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -225,7 +225,7 @@ periodics:
 
 # {"cloud": "aws", "networking": "flannel", "distro": "rhel7"}
 - name: e2e-kops-grid-aws-flannel-rhel7
-  cron: '12 14 * * *'
+  cron: '12 * * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -262,7 +262,7 @@ periodics:
 
 # {"cloud": "aws", "networking": "flannel", "distro": "rhel8"}
 - name: e2e-kops-grid-aws-flannel-rhel8
-  cron: '1 23 * * *'
+  cron: '1 * * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
