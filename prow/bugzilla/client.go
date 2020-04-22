@@ -191,12 +191,22 @@ func (c *client) request(req *http.Request, logger *logrus.Entry) ([]byte, error
 			logger.WithError(err).Warn("could not close response body")
 		}
 	}()
-	if resp.StatusCode != http.StatusOK {
-		return nil, &requestError{statusCode: resp.StatusCode, message: fmt.Sprintf("response code %d not %d", resp.StatusCode, http.StatusOK)}
-	}
 	raw, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("could not read response body: %v", err)
+	}
+	var error struct {
+		Error   bool   `json:"error"`
+		Code    int    `json:"code"`
+		Message string `json:"message"`
+	}
+	if err := json.Unmarshal(raw, &error); err != nil && len(raw) > 0 {
+		logger.WithError(err).Debug("could not read response body as error")
+	}
+	if error.Error {
+		return nil, &requestError{statusCode: resp.StatusCode, message: fmt.Sprintf("code %d: %s", error.Code, error.Message)}
+	} else if resp.StatusCode != http.StatusOK {
+		return nil, &requestError{statusCode: resp.StatusCode, message: fmt.Sprintf("response code %d not %d", resp.StatusCode, http.StatusOK)}
 	}
 	return raw, nil
 }
