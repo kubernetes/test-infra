@@ -57,6 +57,7 @@ prow_push(
         ],
         targets = {
             "ghproxy": "//ghproxy:image",
+            "needs-rebase": "//prow/external-plugins/needs-rebase:image",
         },
     ),
 )
