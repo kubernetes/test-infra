@@ -30,6 +30,7 @@ import (
 	"k8s.io/test-infra/experiment/autobumper/bumper"
 	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/robots/pr-creator/updater"
 )
 
 const (
@@ -174,7 +175,7 @@ func main() {
 		logrus.WithError(err).Fatal("Failed to push changes.")
 	}
 
-	if err := bumper.UpdatePR(gc, githubOrg, githubRepo, images, getAssignment(), "Update prow to", o.githubLogin+":"+remoteBranch, "master", true); err != nil {
+	if err := bumper.UpdatePR(gc, githubOrg, githubRepo, images, getAssignment(), "Update prow to", o.githubLogin+":"+remoteBranch, "master", updater.PreventMods); err != nil {
 		logrus.WithError(err).Fatal("PR creation failed.")
 	}
 }

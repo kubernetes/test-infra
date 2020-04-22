@@ -74,7 +74,7 @@ func optionsFromFlags() options {
 	fs.StringVar(&o.branch, "branch", "", "Repo branch to merge into")
 	fs.StringVar(&o.source, "source", "", "The user:branch to merge from")
 
-	fs.BoolVar(&o.allowMods, "allow-mods", true, "Indicates whether maintainers can modify the pull request")
+	fs.BoolVar(&o.allowMods, "allow-mods", updater.PreventMods, "Indicates whether maintainers can modify the pull request")
 	fs.BoolVar(&o.confirm, "confirm", false, "Set to mutate github instead of a dry run")
 	fs.BoolVar(&o.local, "local", false, "Allow source to be local-branch instead of remote-user:branch")
 	fs.StringVar(&o.title, "title", "", "Title of PR")

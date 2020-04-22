@@ -24,6 +24,12 @@ import (
 	"k8s.io/test-infra/prow/github"
 )
 
+// Indicates whether maintainers can modify a pull request in fork.
+const (
+	AllowMods   = true
+	PreventMods = false
+)
+
 type updateClient interface {
 	UpdatePullRequest(org, repo string, number int, title, body *string, open *bool, branch *string, canModify *bool) error
 	BotName() (string, error)
