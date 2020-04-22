@@ -114,15 +114,10 @@ type ExternalPlugin struct {
 type Blunderbuss struct {
 	// ReviewerCount is the minimum number of reviewers to request
 	// reviews from. Defaults to requesting reviews from 2 reviewers
-	// if FileWeightCount is not set.
 	ReviewerCount *int `json:"request_count,omitempty"`
 	// MaxReviewerCount is the maximum number of reviewers to request
 	// reviews from. Defaults to 0 meaning no limit.
 	MaxReviewerCount int `json:"max_request_count,omitempty"`
-	// FileWeightCount is the maximum number of reviewers to request
-	// reviews from. Selects reviewers based on file weighting.
-	// This and request_count are mutually exclusive options.
-	FileWeightCount *int `json:"file_weight_count,omitempty"`
 	// ExcludeApprovers controls whether approvers are considered to be
 	// reviewers. By default, approvers are considered as reviewers if
 	// insufficient reviewers are available. If ExcludeApprovers is true,
@@ -862,7 +857,7 @@ func (c *Configuration) setDefaults() {
 			c.ExternalPlugins[repo][i].Endpoint = fmt.Sprintf("http://%s", p.Name)
 		}
 	}
-	if c.Blunderbuss.ReviewerCount == nil && c.Blunderbuss.FileWeightCount == nil {
+	if c.Blunderbuss.ReviewerCount == nil {
 		c.Blunderbuss.ReviewerCount = new(int)
 		*c.Blunderbuss.ReviewerCount = defaultBlunderbussReviewerCount
 	}
@@ -975,20 +970,9 @@ func validateExternalPlugins(pluginMap map[string][]ExternalPlugin) error {
 	return nil
 }
 
-var warnBlunderbussFileWeightCount time.Time
-
 func validateBlunderbuss(b *Blunderbuss) error {
-	if b.ReviewerCount != nil && b.FileWeightCount != nil {
-		return errors.New("cannot use both request_count and file_weight_count in blunderbuss")
-	}
 	if b.ReviewerCount != nil && *b.ReviewerCount < 1 {
 		return fmt.Errorf("invalid request_count: %v (needs to be positive)", *b.ReviewerCount)
-	}
-	if b.FileWeightCount != nil && *b.FileWeightCount < 1 {
-		return fmt.Errorf("invalid file_weight_count: %v (needs to be positive)", *b.FileWeightCount)
-	}
-	if b.FileWeightCount != nil {
-		warnDeprecated(&warnBlunderbussFileWeightCount, 5*time.Minute, "file_weight_count is being deprecated in favour of max_request_count. Please ensure your configuration is updated before the end of May 2019.")
 	}
 	return nil
 }
