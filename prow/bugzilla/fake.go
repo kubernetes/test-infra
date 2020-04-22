@@ -170,12 +170,8 @@ func (c *Fake) GetComments(id int) ([]Comment, error) {
 	return nil, &requestError{statusCode: http.StatusNotFound, message: "bug comments not registered in the fake"}
 }
 
-func (c *Fake) CloneBug(bugID int) (int, error) {
-	bug, err := c.GetBug(bugID)
-	if err != nil {
-		return 0, fmt.Errorf("failed to get bug %d for cloning: %v", bugID, err)
-	}
-	comments, err := c.GetComments(bugID)
+func (c *Fake) CloneBug(bug *Bug) (int, error) {
+	comments, err := c.GetComments(bug.ID)
 	if err != nil {
 		return 0, fmt.Errorf("failed to get parent bug's comments: %v", err)
 	}
