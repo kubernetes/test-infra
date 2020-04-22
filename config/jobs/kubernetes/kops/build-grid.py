@@ -13,10 +13,11 @@
 # limitations under the License.
 
 import json
+import zlib
 
 template = """
-- interval: 8h
-  name: e2e-kops-grid{{suffix}}
+- name: e2e-kops-grid{{suffix}}
+  cron: '{{cron}}'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -46,12 +47,35 @@ template = """
       - --provider=aws
       - --test_args={{test_args}}
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200420-e830a3a-master
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
     testgrid-tab-name: {{tab}}
 """
 
+# We support rapid focus on a few tests of high concern
+# This should be used for temporary tests we are evaluating,
+# and ideally linked to a bug, and removed once the bug is fixed
+hotlist = [
+    # flannel networking issues: https://github.com/kubernetes/kops/pull/8381#issuecomment-616689498
+    'kops-grid-aws-flannel-centos7',
+    'kops-grid-aws-flannel-rhel7',
+    'kops-grid-aws-flannel-rhel8',
+]
+
+def simple_hash(s):
+    return zlib.crc32(s.encode())
+
+def build_cron(key, on_hotlist):
+    minute = simple_hash("minutes:" + key) % 60
+    hour = simple_hash("hours:" + key) % 24
+
+    # hotlist tests run hourly
+    if on_hotlist:
+        return "%d * * * *" % (minute)
+
+    # we normally run once per day
+    return "%d %d * * *" % (minute, hour)
 
 def build_test(cloud='aws', distro=None, networking=None):
     # pylint: disable=too-many-statements,too-many-branches
@@ -98,7 +122,7 @@ def build_test(cloud='aws', distro=None, networking=None):
 
     kops_args = kops_args.strip()
 
-    test_args = r"""--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort""" # pylint: disable=line-too-long
+    test_args = r'--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort' # pylint: disable=line-too-long
 
     suffix = ""
     if cloud:
@@ -110,6 +134,8 @@ def build_test(cloud='aws', distro=None, networking=None):
 
     tab = 'kops-grid' + suffix
 
+    cron = build_cron(tab, on_hotlist=(tab in hotlist))
+
     y = template
     y = y.replace('{{tab}}', tab)
     y = y.replace('{{suffix}}', suffix)
@@ -118,6 +144,7 @@ def build_test(cloud='aws', distro=None, networking=None):
     y = y.replace('{{kops_image}}', kops_image)
     y = y.replace('{{kops_args}}', kops_args)
     y = y.replace('{{test_args}}', test_args)
+    y = y.replace('{{cron}}', cron)
     out = y
 
     spec = {

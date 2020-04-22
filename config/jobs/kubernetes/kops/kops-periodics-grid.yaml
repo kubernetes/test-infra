@@ -2,8 +2,8 @@
 periodics:
 
 # {"cloud": "aws", "networking": "flannel", "distro": "amazonlinux2"}
-- interval: 8h
-  name: e2e-kops-grid-aws-flannel-amazonlinux2
+- name: e2e-kops-grid-aws-flannel-amazonlinux2
+  cron: '52 19 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -39,8 +39,8 @@ periodics:
     testgrid-tab-name: kops-grid-aws-flannel-amazonlinux2
 
 # {"cloud": "aws", "networking": "flannel", "distro": "centos7"}
-- interval: 8h
-  name: e2e-kops-grid-aws-flannel-centos7
+- name: e2e-kops-grid-aws-flannel-centos7
+  cron: '14 * * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -76,8 +76,8 @@ periodics:
     testgrid-tab-name: kops-grid-aws-flannel-centos7
 
 # {"cloud": "aws", "networking": "flannel", "distro": "coreos"}
-- interval: 8h
-  name: e2e-kops-grid-aws-flannel-coreos
+- name: e2e-kops-grid-aws-flannel-coreos
+  cron: '35 5 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -113,8 +113,8 @@ periodics:
     testgrid-tab-name: kops-grid-aws-flannel-coreos
 
 # {"cloud": "aws", "networking": "flannel", "distro": "debian9"}
-- interval: 8h
-  name: e2e-kops-grid-aws-flannel-debian9
+- name: e2e-kops-grid-aws-flannel-debian9
+  cron: '42 22 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -150,8 +150,8 @@ periodics:
     testgrid-tab-name: kops-grid-aws-flannel-debian9
 
 # {"cloud": "aws", "networking": "flannel", "distro": "debian10"}
-- interval: 8h
-  name: e2e-kops-grid-aws-flannel-debian10
+- name: e2e-kops-grid-aws-flannel-debian10
+  cron: '19 14 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -187,8 +187,8 @@ periodics:
     testgrid-tab-name: kops-grid-aws-flannel-debian10
 
 # {"cloud": "aws", "networking": "flannel", "distro": "flatcar"}
-- interval: 8h
-  name: e2e-kops-grid-aws-flannel-flatcar
+- name: e2e-kops-grid-aws-flannel-flatcar
+  cron: '52 20 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -224,8 +224,8 @@ periodics:
     testgrid-tab-name: kops-grid-aws-flannel-flatcar
 
 # {"cloud": "aws", "networking": "flannel", "distro": "rhel7"}
-- interval: 8h
-  name: e2e-kops-grid-aws-flannel-rhel7
+- name: e2e-kops-grid-aws-flannel-rhel7
+  cron: '12 * * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -261,8 +261,8 @@ periodics:
     testgrid-tab-name: kops-grid-aws-flannel-rhel7
 
 # {"cloud": "aws", "networking": "flannel", "distro": "rhel8"}
-- interval: 8h
-  name: e2e-kops-grid-aws-flannel-rhel8
+- name: e2e-kops-grid-aws-flannel-rhel8
+  cron: '1 * * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -298,8 +298,8 @@ periodics:
     testgrid-tab-name: kops-grid-aws-flannel-rhel8
 
 # {"cloud": "aws", "networking": "flannel", "distro": "ubuntu1604"}
-- interval: 8h
-  name: e2e-kops-grid-aws-flannel-ubuntu1604
+- name: e2e-kops-grid-aws-flannel-ubuntu1604
+  cron: '21 14 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -335,8 +335,8 @@ periodics:
     testgrid-tab-name: kops-grid-aws-flannel-ubuntu1604
 
 # {"cloud": "aws", "networking": "flannel", "distro": "ubuntu1804"}
-- interval: 8h
-  name: e2e-kops-grid-aws-flannel-ubuntu1804
+- name: e2e-kops-grid-aws-flannel-ubuntu1804
+  cron: '47 20 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -372,8 +372,8 @@ periodics:
     testgrid-tab-name: kops-grid-aws-flannel-ubuntu1804
 
 # {"cloud": "aws", "networking": "flannel", "distro": "ubuntu2004"}
-- interval: 8h
-  name: e2e-kops-grid-aws-flannel-ubuntu2004
+- name: e2e-kops-grid-aws-flannel-ubuntu2004
+  cron: '21 2 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
