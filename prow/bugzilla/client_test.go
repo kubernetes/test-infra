@@ -27,7 +27,9 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/diff"
 )
@@ -107,6 +109,241 @@ func TestGetBug(t *testing.T) {
 	}
 	if otherBug != nil {
 		t.Errorf("expected no bug, got: %v", otherBug)
+	}
+}
+
+func TestCreateBug(t *testing.T) {
+	testServer := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("X-BUGZILLA-API-KEY") != "api-key" {
+			t.Error("did not get api-key passed in X-BUGZILLA-API-KEY header")
+			http.Error(w, "403 Forbidden", http.StatusForbidden)
+			return
+		}
+		if r.URL.Query().Get("api_key") != "api-key" {
+			t.Error("did not get api-key passed in api_key query parameter")
+			http.Error(w, "403 Forbidden", http.StatusForbidden)
+			return
+		}
+		if r.Method != http.MethodPost {
+			t.Errorf("incorrect method to create a bug: %s", r.Method)
+			http.Error(w, "400 Bad Request", http.StatusBadRequest)
+			return
+		}
+		if !strings.HasPrefix(r.URL.Path, "/rest/bug/") {
+			t.Errorf("incorrect path to create a bug: %s", r.URL.Path)
+			http.Error(w, "400 Bad Request", http.StatusBadRequest)
+			return
+		}
+		raw, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			t.Errorf("failed to read request body: %v", err)
+			http.Error(w, "500 Server Error", http.StatusInternalServerError)
+			return
+		}
+		payload := &BugCreate{}
+		if err := json.Unmarshal(raw, &payload); err != nil {
+			t.Errorf("malformed JSONRPC payload: %s", string(raw))
+			http.Error(w, "400 Bad Request", http.StatusBadRequest)
+			return
+		}
+		if _, err := w.Write([]byte(`{"id" : 12345}`)); err != nil {
+			t.Fatalf("failed to send JSONRPC response: %v", err)
+		}
+	}))
+	defer testServer.Close()
+	client := clientForUrl(testServer.URL)
+
+	// this should create a new bug
+	if id, err := client.CreateBug(&BugCreate{Description: "This is a test bug"}); err != nil {
+		t.Errorf("expected no error, but got one: %v", err)
+	} else if id != 12345 {
+		t.Errorf("expected id of 12345, got %d", id)
+	}
+}
+
+func TestGetComments(t *testing.T) {
+	commentsJSON := []byte(`{
+		"bugs": {
+		  "12345": {
+			"comments": [
+			  {
+				"time": "2020-04-21T13:50:04Z",
+				"text": "test bug to fix problem in removing from cc list.",
+				"bug_id": 12345,
+				"count": 0,
+				"attachment_id": null,
+				"is_private": false,
+				"is_markdown" : true,
+				"tags": [],
+				"creator": "user@bugzilla.org",
+				"creation_time": "2020-04-21T13:50:04Z",
+				"id": 75
+			  },
+			  {
+				"time": "2020-04-21T13:52:02Z",
+				"text": "Bug appears to be fixed",
+				"bug_id": 12345,
+				"count": 1,
+				"attachment_id": null,
+				"is_private": false,
+				"is_markdown" : true,
+				"tags": [],
+				"creator": "user2@bugzilla.org",
+				"creation_time": "2020-04-21T13:52:02Z",
+				"id": 76
+			  }
+			]
+		  }
+		},
+		"comments": {}
+	  }`)
+	commentsStruct := []Comment{{
+		ID:           75,
+		BugID:        12345,
+		AttachmentID: nil,
+		Count:        0,
+		Text:         "test bug to fix problem in removing from cc list.",
+		Creator:      "user@bugzilla.org",
+		Time:         time.Date(2020, time.April, 21, 13, 50, 04, 0, time.UTC),
+		CreationTime: time.Date(2020, time.April, 21, 13, 50, 04, 0, time.UTC),
+		IsPrivate:    false,
+		IsMarkdown:   true,
+		Tags:         []string{},
+	}, {
+		ID:           76,
+		BugID:        12345,
+		AttachmentID: nil,
+		Count:        1,
+		Text:         "Bug appears to be fixed",
+		Creator:      "user2@bugzilla.org",
+		Time:         time.Date(2020, time.April, 21, 13, 52, 02, 0, time.UTC),
+		CreationTime: time.Date(2020, time.April, 21, 13, 52, 02, 0, time.UTC),
+		IsPrivate:    false,
+		IsMarkdown:   true,
+		Tags:         []string{},
+	}}
+	testServer := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("X-BUGZILLA-API-KEY") != "api-key" {
+			t.Error("did not get api-key passed in X-BUGZILLA-API-KEY header")
+			http.Error(w, "403 Forbidden", http.StatusForbidden)
+			return
+		}
+		if r.URL.Query().Get("api_key") != "api-key" {
+			t.Error("did not get api-key passed in api_key query parameter")
+			http.Error(w, "403 Forbidden", http.StatusForbidden)
+			return
+		}
+		if r.Method != http.MethodGet {
+			t.Errorf("incorrect method to get bug comments: %s", r.Method)
+			http.Error(w, "400 Bad Request", http.StatusBadRequest)
+			return
+		}
+		if !strings.HasPrefix(r.URL.Path, "/rest/bug/") {
+			t.Errorf("incorrect path to get bug comments: %s", r.URL.Path)
+			http.Error(w, "400 Bad Request", http.StatusBadRequest)
+			return
+		}
+		if !strings.HasSuffix(r.URL.Path, "/comment") {
+			t.Errorf("incorrect path to get bug comments: %s", r.URL.Path)
+			http.Error(w, "400 Bad Request", http.StatusBadRequest)
+			return
+		}
+		if id, err := strconv.Atoi(strings.TrimSuffix(strings.TrimPrefix(r.URL.Path, "/rest/bug/"), "/comment")); err != nil {
+			t.Errorf("malformed bug id: %s", r.URL.Path)
+			http.Error(w, "400 Bad Request", http.StatusBadRequest)
+		} else {
+			if id == 12345 {
+				w.Write(commentsJSON)
+			} else {
+				http.Error(w, "404 Not Found", http.StatusNotFound)
+			}
+		}
+	}))
+	defer testServer.Close()
+	client := clientForUrl(testServer.URL)
+
+	comments, err := client.GetComments(12345)
+	if err != nil {
+		t.Errorf("expected no error, but got one: %v", err)
+	}
+	if !reflect.DeepEqual(comments, commentsStruct) {
+		t.Errorf("got incorrect comments: %v", diff.ObjectReflectDiff(comments, commentsStruct))
+	}
+
+	// this should 404
+	otherBug, err := client.GetComments(1)
+	if err == nil {
+		t.Error("expected an error, but got none")
+	} else if !IsNotFound(err) {
+		t.Errorf("expected a not found error, got %v", err)
+	}
+	if otherBug != nil {
+		t.Errorf("expected no bug, got: %v", otherBug)
+	}
+}
+
+func TestCloneBugStruct(t *testing.T) {
+	testCases := []struct {
+		name     string
+		bug      Bug
+		comments []Comment
+		expected BugCreate
+	}{{
+		name: "Clone bug",
+		bug: Bug{
+			Alias:           []string{"this_is_an_alias"},
+			AssignedTo:      "user@example.com",
+			CC:              []string{"user2@example.com", "user3@example.com"},
+			Component:       []string{"TestComponent"},
+			Flags:           []Flag{{ID: 1, Name: "Test Flag"}},
+			Groups:          []string{"group1"},
+			Keywords:        []string{"segfault"},
+			OperatingSystem: "Fedora",
+			Platform:        "x86_64",
+			Priority:        "unspecified",
+			Product:         "testing product",
+			QAContact:       "user3@example.com",
+			Resolution:      "FIXED",
+			Severity:        "Urgent",
+			Status:          "VERIFIED",
+			Summary:         "Segfault when opening program",
+			TargetMilestone: "milestone1",
+			Version:         []string{"31"},
+		},
+		comments: []Comment{{
+			Text:       "There is a segfault that occurs when opening applications.",
+			IsPrivate:  true,
+			IsMarkdown: true,
+			Tags:       []string{"description"},
+		}},
+		expected: BugCreate{
+			Alias:            []string{"this_is_an_alias"},
+			AssignedTo:       "user@example.com",
+			CC:               []string{"user2@example.com", "user3@example.com"},
+			Component:        []string{"TestComponent"},
+			Flags:            []Flag{{ID: 1, Name: "Test Flag"}},
+			Groups:           []string{"group1"},
+			Keywords:         []string{"segfault"},
+			OperatingSystem:  "Fedora",
+			Platform:         "x86_64",
+			Priority:         "unspecified",
+			Product:          "testing product",
+			QAContact:        "user3@example.com",
+			Severity:         "Urgent",
+			Summary:          "Segfault when opening program",
+			TargetMilestone:  "milestone1",
+			Version:          []string{"31"},
+			Description:      "This is a clone of Bug #0. This is the description of that bug:\nThere is a segfault that occurs when opening applications.",
+			CommentIsPrivate: true,
+			IsMarkdown:       true,
+			CommentTags:      []string{"description"},
+		},
+	}}
+	for _, testCase := range testCases {
+		newBug := cloneBugStruct(&testCase.bug, testCase.comments)
+		if !reflect.DeepEqual(*newBug, testCase.expected) {
+			t.Errorf("%s: Difference in expected BugCreate and actual: %s", testCase.name, cmp.Diff(testCase.expected, *newBug))
+		}
 	}
 }
 

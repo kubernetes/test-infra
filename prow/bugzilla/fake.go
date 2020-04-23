@@ -18,6 +18,7 @@ package bugzilla
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -25,10 +26,12 @@ import (
 
 // Fake is a fake Bugzilla client with injectable fields
 type Fake struct {
-	EndpointString string
-	Bugs           map[int]Bug
-	BugErrors      sets.Int
-	ExternalBugs   map[int][]ExternalBug
+	EndpointString  string
+	Bugs            map[int]Bug
+	BugComments     map[int][]Comment
+	BugErrors       sets.Int
+	BugCreateErrors sets.String
+	ExternalBugs    map[int][]ExternalBug
 }
 
 // Endpoint returns the endpoint for this fake
@@ -97,6 +100,82 @@ func (c *Fake) AddPullRequestAsExternalBug(id int, org, repo string, num int) (b
 		return true, nil
 	}
 	return false, &requestError{statusCode: http.StatusNotFound, message: "bug not registered in the fake"}
+}
+
+// CreateBug creates a new bug and associated description comment given a BugCreate or and error
+// if description is in BugCreateErrors set
+func (c *Fake) CreateBug(bug *BugCreate) (int, error) {
+	if c.BugCreateErrors.Has(bug.Description) {
+		return 0, errors.New("injected error creating new bug")
+	}
+	// add new bug one ID newer than highest existing BugID
+	newID := 0
+	for k := range c.Bugs {
+		if k >= newID {
+			newID = k + 1
+		}
+	}
+	newBug := Bug{
+		Alias:           bug.Alias,
+		AssignedTo:      bug.AssignedTo,
+		CC:              bug.CC,
+		Component:       bug.Component,
+		Flags:           bug.Flags,
+		Groups:          bug.Groups,
+		Keywords:        bug.Keywords,
+		OperatingSystem: bug.OperatingSystem,
+		Platform:        bug.Platform,
+		Priority:        bug.Priority,
+		Product:         bug.Product,
+		QAContact:       bug.QAContact,
+		Resolution:      bug.Resolution,
+		Severity:        bug.Severity,
+		Status:          bug.Status,
+		Summary:         bug.Summary,
+		TargetMilestone: bug.TargetMilestone,
+		Version:         bug.Version,
+	}
+	c.Bugs[newID] = newBug
+	// add new comment one ID newer than highest existing CommentID
+	newCommentID := 0
+	for _, comments := range c.BugComments {
+		for _, comment := range comments {
+			if comment.ID >= newCommentID {
+				newCommentID = comment.ID + 1
+			}
+		}
+	}
+	newComments := []Comment{{
+		ID:         newCommentID,
+		BugID:      newID,
+		Count:      0,
+		Text:       bug.Description,
+		IsMarkdown: bug.IsMarkdown,
+		IsPrivate:  bug.CommentIsPrivate,
+		Tags:       bug.CommentTags,
+	}}
+	c.BugComments[newID] = newComments
+	return newID, nil
+}
+
+// GetBug retrieves the bug comments, if registered, or an error, if set,
+// or responds with an error that matches IsNotFound
+func (c *Fake) GetComments(id int) ([]Comment, error) {
+	if c.BugErrors.Has(id) {
+		return nil, errors.New("injected error getting bug comments")
+	}
+	if comments, exists := c.BugComments[id]; exists {
+		return comments, nil
+	}
+	return nil, &requestError{statusCode: http.StatusNotFound, message: "bug comments not registered in the fake"}
+}
+
+func (c *Fake) CloneBug(bug *Bug) (int, error) {
+	comments, err := c.GetComments(bug.ID)
+	if err != nil {
+		return 0, fmt.Errorf("failed to get parent bug's comments: %v", err)
+	}
+	return c.CreateBug(cloneBugStruct(bug, comments))
 }
 
 // the Fake is a Client
