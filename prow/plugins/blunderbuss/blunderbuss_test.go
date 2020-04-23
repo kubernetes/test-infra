@@ -322,7 +322,7 @@ func TestHandleWithExcludeApproversOnlyReviewers(t *testing.T) {
 
 		if err := handle(
 			fghc, froc, logrus.WithField("plugin", PluginName),
-			&tc.reviewerCount, nil, tc.maxReviewerCount, true, false, &repo, &pr,
+			&tc.reviewerCount, tc.maxReviewerCount, true, false, &repo, &pr,
 		); err != nil {
 			t.Errorf("[%s] unexpected error from handle: %v", tc.name, err)
 			continue
@@ -364,7 +364,7 @@ func TestHandleWithoutExcludeApproversNoReviewers(t *testing.T) {
 
 		if err := handle(
 			fghc, froc, logrus.WithField("plugin", PluginName),
-			&tc.reviewerCount, nil, tc.maxReviewerCount, false, false, &repo, &pr,
+			&tc.reviewerCount, tc.maxReviewerCount, false, false, &repo, &pr,
 		); err != nil {
 			t.Errorf("[%s] unexpected error from handle: %v", tc.name, err)
 			continue
@@ -484,7 +484,7 @@ func TestHandleWithoutExcludeApproversMixed(t *testing.T) {
 		fghc := newFakeGitHubClient(&pr, tc.filesChanged)
 		if err := handle(
 			fghc, froc, logrus.WithField("plugin", PluginName),
-			&tc.reviewerCount, nil, tc.maxReviewerCount, false, false, &repo, &pr,
+			&tc.reviewerCount, tc.maxReviewerCount, false, false, &repo, &pr,
 		); err != nil {
 			t.Errorf("[%s] unexpected error from handle: %v", tc.name, err)
 			continue
@@ -502,103 +502,6 @@ func TestHandleWithoutExcludeApproversMixed(t *testing.T) {
 			}
 			t.Errorf("[%s] expected the requested reviewers to be %q, but got %q.", tc.name, tc.expectedRequested, fghc.requested)
 		}
-	}
-}
-
-func TestHandleOld(t *testing.T) {
-	froc := &fakeRepoownersClient{
-		foc: &fakeOwnersClient{
-			reviewers: map[string]sets.String{
-				"c.go": sets.NewString("charles"),
-				"d.go": sets.NewString("dan"),
-				"e.go": sets.NewString("erick", "evan"),
-				"f.go": sets.NewString("author", "non-author"),
-			},
-			leafReviewers: map[string]sets.String{
-				"a.go": sets.NewString("alice"),
-				"b.go": sets.NewString("bob"),
-				"c.go": sets.NewString("cole", "carl", "chad"),
-				"e.go": sets.NewString("erick"),
-				"f.go": sets.NewString("author"),
-			},
-		},
-	}
-
-	var testcases = []struct {
-		name              string
-		filesChanged      []string
-		reviewerCount     int
-		expectedRequested []string
-	}{
-		{
-			name:              "one file, 3 leaf reviewers, request 3",
-			filesChanged:      []string{"c.go"},
-			reviewerCount:     3,
-			expectedRequested: []string{"cole", "carl", "chad"},
-		},
-		{
-			name:              "one file, 3 leaf reviewers, 1 parent reviewer, request 4",
-			filesChanged:      []string{"c.go"},
-			reviewerCount:     4,
-			expectedRequested: []string{"cole", "carl", "chad", "charles"},
-		},
-		{
-			name:              "two files, 2 leaf reviewers, request 2",
-			filesChanged:      []string{"a.go", "b.go"},
-			reviewerCount:     2,
-			expectedRequested: []string{"alice", "bob"},
-		},
-		{
-			name:              "one files, 1 leaf reviewers, request 1",
-			filesChanged:      []string{"a.go"},
-			reviewerCount:     1,
-			expectedRequested: []string{"alice"},
-		},
-		{
-			name:              "one file, 0 leaf reviewers, 1 parent reviewer, request 1",
-			filesChanged:      []string{"d.go"},
-			reviewerCount:     1,
-			expectedRequested: []string{"dan"},
-		},
-		{
-			name:              "one file, 0 leaf reviewers, 1 parent reviewer, request 2",
-			filesChanged:      []string{"d.go"},
-			reviewerCount:     2,
-			expectedRequested: []string{"dan"},
-		},
-		{
-			name:              "one file, 1 leaf reviewers, 2 parent reviewers (1 dup), request 2",
-			filesChanged:      []string{"e.go"},
-			reviewerCount:     2,
-			expectedRequested: []string{"erick", "evan"},
-		},
-		{
-			name:              "exclude author",
-			filesChanged:      []string{"f.go"},
-			reviewerCount:     1,
-			expectedRequested: []string{"non-author"},
-		},
-	}
-	for _, tc := range testcases {
-		t.Run(tc.name, func(t *testing.T) {
-			pr := github.PullRequest{Number: 5, User: github.User{Login: "author"}}
-			repo := github.Repo{Owner: github.User{Login: "org"}, Name: "repo"}
-			fghc := newFakeGitHubClient(&pr, tc.filesChanged)
-
-			err := handle(
-				fghc, froc, logrus.WithField("plugin", PluginName),
-				nil, &tc.reviewerCount, 0, false, false, &repo, &pr,
-			)
-			if err != nil {
-				t.Fatalf("unexpected error from handle: %v", err)
-			}
-
-			sort.Strings(fghc.requested)
-			sort.Strings(tc.expectedRequested)
-			if !reflect.DeepEqual(fghc.requested, tc.expectedRequested) {
-				t.Fatalf("expected the requested reviewers to be %q, but got %q.", tc.expectedRequested, fghc.requested)
-			}
-		})
 	}
 }
 
@@ -649,7 +552,6 @@ func TestHandlePullRequest(t *testing.T) {
 			fghc := newFakeGitHubClient(&pr, tc.filesChanged)
 			config := plugins.Blunderbuss{
 				ReviewerCount:    &tc.reviewerCount,
-				FileWeightCount:  nil,
 				MaxReviewerCount: 0,
 				ExcludeApprovers: false,
 			}
@@ -740,7 +642,6 @@ func TestHandleGenericComment(t *testing.T) {
 			repo := github.Repo{Owner: github.User{Login: "org"}, Name: "repo"}
 			config := plugins.Blunderbuss{
 				ReviewerCount:    &tc.reviewerCount,
-				FileWeightCount:  nil,
 				MaxReviewerCount: 0,
 				ExcludeApprovers: false,
 			}
@@ -800,16 +701,6 @@ func TestHelpProvider(t *testing.T) {
 			config: &plugins.Configuration{
 				Blunderbuss: plugins.Blunderbuss{
 					ReviewerCount: &[]int{2}[0],
-				},
-			},
-			enabledRepos:       enabledRepos,
-			configInfoIncludes: []string{configString(2)},
-		},
-		{
-			name: "FileWeightCount specified",
-			config: &plugins.Configuration{
-				Blunderbuss: plugins.Blunderbuss{
-					FileWeightCount: &[]int{2}[0],
 				},
 			},
 			enabledRepos:       enabledRepos,
@@ -886,7 +777,7 @@ func TestPopActiveReviewer(t *testing.T) {
 		fghc := newFakeGitHubClient(&pr, tc.filesChanged)
 		if err := handle(
 			fghc, froc, logrus.WithField("plugin", PluginName),
-			&tc.reviewerCount, nil, tc.maxReviewerCount, false, true, &repo, &pr,
+			&tc.reviewerCount, tc.maxReviewerCount, false, true, &repo, &pr,
 		); err != nil {
 			t.Errorf("[%s] unexpected error from handle: %v", tc.name, err)
 			continue
