@@ -448,6 +448,12 @@ export KUBE_NODE_OS_DISTRIBUTION='%[3]s'
 		dumpCmd = fmt.Sprintf("./cluster/log-dump/log-dump.sh '%s' '%s'", localPath, gcsPath)
 	}
 
+	// Try to setup cluster access if it's possible. If credentials are already set, this will be no-op. Access to
+	// GKE cluster is required for log-exporter.
+	if err := g.getKubeConfig(); err != nil {
+		log.Printf("error while setting up kubeconfig: %v", err)
+	}
+
 	// Make sure the firewall rule is created. It's needed so the log-dump.sh can ssh into nodes.
 	// If cluster-up operation failed for some reasons (e.g. some nodes didn't register) the
 	// firewall rule isn't automatically created as the TestSetup is not being executed. If firewall
