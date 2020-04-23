@@ -134,13 +134,13 @@ def build_test(cloud='aws', distro=None, networking=None):
         kops_image = '075585003325/Flatcar-stable-2303.3.1-hvm'
     elif distro == 'ubuntu1604':
         kops_ssh_user = 'ubuntu'
-        kops_image = '099720109477/ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-20191114'
+        kops_image = '099720109477/ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-20200407'
     elif distro == 'ubuntu1804':
         kops_ssh_user = 'ubuntu'
-        kops_image = '099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20200323'
+        kops_image = '099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20200408'
     elif distro == 'ubuntu2004':
         kops_ssh_user = 'ubuntu'
-        kops_image = '099720109477/ubuntu/images-testing/hvm-ssd/ubuntu-focal-daily-amd64-server-20200414.1' # pylint: disable=line-too-long
+        kops_image = '099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200423'
     elif distro == 'rhel7':
         kops_ssh_user = 'ec2-user'
         kops_image = '309956199498/RHEL-7.7_HVM-20191119-x86_64-2-Hourly2-GP2'
