@@ -1346,7 +1346,7 @@ test_groups:
   name: release-openshift-ocp-installer-e2e-gcp-fips-4.4
 - gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-gcp-fips-serial-4.4
   name: release-openshift-ocp-installer-e2e-gcp-fips-serial-4.4
-- days_of_results: 60
+- days_of_results: 50
   gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-gcp-rt-4.4
   name: release-openshift-ocp-installer-e2e-gcp-rt-4.4
 - days_of_results: 60
@@ -1364,7 +1364,7 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-openstack-serial-4.4
   name: release-openshift-ocp-installer-e2e-openstack-serial-4.4
-- days_of_results: 60
+- days_of_results: 25
   gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-ovirt-4.4
   name: release-openshift-ocp-installer-e2e-ovirt-4.4
 - days_of_results: 60
