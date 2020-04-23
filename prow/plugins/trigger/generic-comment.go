@@ -141,14 +141,14 @@ func handleGenericComment(c Client, trigger plugins.Trigger, gc github.GenericCo
 		return err
 	}
 
-	toTest, toSkip, err := FilterPresubmits(HonorOkToTest(trigger), c.GitHubClient, gc.Body, pr, presubmits, c.Logger)
+	toTest, err := FilterPresubmits(HonorOkToTest(trigger), c.GitHubClient, gc.Body, pr, presubmits, c.Logger)
 	if err != nil {
 		return err
 	}
-	if needsHelp, note := shouldRespondWithHelp(gc.Body, len(toTest)+len(toSkip)); needsHelp {
+	if needsHelp, note := shouldRespondWithHelp(gc.Body, len(toTest)); needsHelp {
 		return addHelpComment(c.GitHubClient, gc.Body, org, repo, pr.Base.Ref, pr.Number, presubmits, gc.HTMLURL, commentAuthor, note, c.Logger)
 	}
-	return RunAndSkipJobs(c, pr, baseSHA, toTest, toSkip, gc.GUID, *trigger.ElideSkippedContexts)
+	return RunRequested(c, pr, baseSHA, toTest, gc.GUID)
 }
 
 func HonorOkToTest(trigger plugins.Trigger) bool {
@@ -175,7 +175,7 @@ type GitHubClient interface {
 // If a comment that we get matches more than one of the above patterns, we
 // consider the set of matching presubmits the union of the results from the
 // matching cases.
-func FilterPresubmits(honorOkToTest bool, gitHubClient GitHubClient, body string, pr *github.PullRequest, presubmits []config.Presubmit, logger *logrus.Entry) ([]config.Presubmit, []config.Presubmit, error) {
+func FilterPresubmits(honorOkToTest bool, gitHubClient GitHubClient, body string, pr *github.PullRequest, presubmits []config.Presubmit, logger *logrus.Entry) ([]config.Presubmit, error) {
 	org, repo, sha := pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, pr.Head.SHA
 
 	contextGetter := func() (sets.String, sets.String, error) {
@@ -189,7 +189,7 @@ func FilterPresubmits(honorOkToTest bool, gitHubClient GitHubClient, body string
 
 	filter, err := pjutil.PresubmitFilter(honorOkToTest, contextGetter, body, logger)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	number, branch := pr.Number, pr.Base.Ref
@@ -202,7 +202,7 @@ func availablePresubmits(githubClient GitHubClient, body, org, repo, branch stri
 	all := func(p config.Presubmit) (bool, bool, bool) {
 		return true, true, true
 	}
-	toTest, _, err := pjutil.FilterPresubmits(all, changes, branch, presubmits, logger)
+	toTest, err := pjutil.FilterPresubmits(all, changes, branch, presubmits, logger)
 	if err != nil {
 		return nil, err
 	}
