@@ -226,6 +226,20 @@ branch-protection:
             users: []
             teams:
             - stage-bots
+        minikube:
+          enforce_admins: true
+          restrictions: # only allow admins to force-push
+            users: []
+            teams:
+            - stage-bots
+          required_status_checks:
+            contexts:
+            - functional_test_docker_ubuntu
+            - functional_baremetal_ubuntu18_04
+            - multinode_pause_tests_docker_ubuntu
+            - unit_test
+          required_pull_request_reviews:
+            required_approving_review_count: 1
         node-api:
           restrictions:
             users: []
