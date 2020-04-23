@@ -262,15 +262,6 @@ func TestFlags(t *testing.T) {
 			},
 		},
 		{
-			name: "empty config-path defaults to old value",
-			args: map[string]string{
-				"--config-path": "",
-			},
-			expected: func(o *options) {
-				o.configPath = config.DefaultConfigPath
-			},
-		},
-		{
 			name: "expicitly set --dry-run=false",
 			args: map[string]string{
 				"--dry-run": "false",

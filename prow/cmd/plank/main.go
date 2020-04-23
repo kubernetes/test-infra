@@ -66,7 +66,6 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	}
 
 	fs.Parse(args)
-	o.configPath = config.ConfigPath(o.configPath)
 	return o
 }
 
