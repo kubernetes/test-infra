@@ -1,5 +1,7 @@
 # Announcements
 
+## New features
+
 New features added to each component:
  - *March 25, 2020* Added a `report_templates` option to the Plank config that allows
     to specify different report templates for each organization or a specific repository.
@@ -87,6 +89,8 @@ New features added to each component:
    triggers. See https://godoc.org/gopkg.in/robfig/cron.v2 for doc to the
    cron library we are using.
 
+## Breaking changes
+
 Breaking changes to external APIs (labels, GitHub interactions, configuration
 or deployment) will be documented in this section. Prow is in a pre-release
 state and no claims of backwards compatibility are made for any external API.
@@ -94,6 +98,7 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
+ - *April 24, 2020* Horologium now defaults to `--dry-run=true`
  - *April 23, 2020* Explicitly setting `--config-path` is now required.
  - *April 23, 2020* Update the `autobump` image to at least `v20200422-8c8546d74` before June 2020.
  - *April 23, 2020* Deleted deprecated `default_decoration_config`.
