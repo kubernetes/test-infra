@@ -408,7 +408,6 @@ presubmits:
       preset-bazel-scratch-dir: "true"
       preset-dind-enabled: "true"
       preset-e2e-kubemark-common: "true"
-      preset-e2e-scalability-containerd: "true"
       preset-e2e-scalability-presubmits: "true"
     run_if_changed: ^clusterloader2/.*$
     spec:
