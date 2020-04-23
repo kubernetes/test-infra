@@ -25,10 +25,10 @@ latest_stable_k8s_version="1.18.0"
 latest_stable_k8s_minor_version="1.18"
 
 # Tag of the hostpath driver we should use for sidecar pull jobs
-hostpath_driver_version="v1.4.0-rc3"
+hostpath_driver_version="v1.4.0-rc4"
 
 # We need this image because it has Docker in Docker and go.
-dind_image="gcr.io/k8s-testimages/kubekins-e2e:v20200409-4d4b2ec-master"
+dind_image="gcr.io/k8s-testimages/kubekins-e2e:v20200421-ebf44f0-master"
 
 # All kubernetes-csi repos which are part of the hostpath driver example.
 # For these repos we generate the full test matrix. For each entry here
