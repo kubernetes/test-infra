@@ -301,23 +301,163 @@ periodics:
       - "./..."`,
 		},
 		{
+			name: "with bad default",
+			rawConfig: `
+plank:
+  default_decoration_configs:
+    '*':
+      timeout: 2h
+      grace_period: 15s
+      utility_images:
+      # clonerefs: "clonerefs:default"
+        initupload: "initupload:default"
+        entrypoint: "entrypoint:default"
+        sidecar: "sidecar:default"
+      gcs_configuration:
+        bucket: "default-bucket"
+        path_strategy: "legacy"
+        default_org: "kubernetes"
+        default_repo: "kubernetes"
+      gcs_credentials_secret: "default-service-account"
+
+periodics:
+- name: kubernetes-defaulted-decoration
+  interval: 1h
+  decorate: true
+  spec:
+    containers:
+    - image: golang:latest
+      args:
+      - "test"
+      - "./..."`,
+			expectError: true,
+		},
+		{
+			name: "with bad repo config",
+			rawConfig: `
+plank:
+  default_decoration_configs:
+    '*': # good
+      timeout: 2h
+      grace_period: 15s
+      utility_images:
+        clonerefs: "clonerefs:default"
+        initupload: "initupload:default"
+        entrypoint: "entrypoint:default"
+        sidecar: "sidecar:default"
+      gcs_configuration:
+        bucket: "default-bucket"
+        path_strategy: "legacy"
+        default_org: "kubernetes"
+        default_repo: "kubernetes"
+      gcs_credentials_secret: "default-service-account"
+    'org/bad': # bad
+      timeout: 2h
+      grace_period: 15s
+      utility_images:
+      # clonerefs: "clonerefs:default"
+        initupload: "initupload:default"
+        entrypoint: "entrypoint:default"
+        sidecar: "sidecar:default"
+      gcs_configuration:
+        bucket: "default-bucket"
+        path_strategy: "legacy"
+        default_org: "kubernetes"
+        default_repo: "kubernetes"
+      gcs_credentials_secret: "default-service-account"
+periodics:
+- name: kubernetes-defaulted-decoration
+  interval: 1h
+  decorate: true
+  spec:
+    containers:
+    - image: golang:latest
+      args:
+      - "test"
+      - "./..."`,
+			expectError: true,
+		},
+		{
+			name: "with default and repo, use default",
+			rawConfig: `
+plank:
+  default_decoration_configs:
+    '*':
+      timeout: 2h
+      grace_period: 15s
+      utility_images:
+        clonerefs: "clonerefs:default"
+        initupload: "initupload:default"
+        entrypoint: "entrypoint:default"
+        sidecar: "sidecar:default"
+      gcs_configuration:
+        bucket: "default-bucket"
+        path_strategy: "legacy"
+        default_org: "kubernetes"
+        default_repo: "kubernetes"
+      gcs_credentials_secret: "default-service-account"
+    'random/repo':
+      timeout: 2h
+      grace_period: 15s
+      utility_images:
+        clonerefs: "clonerefs:random"
+        initupload: "initupload:random"
+        entrypoint: "entrypoint:random"
+        sidecar: "sidecar:org"
+      gcs_configuration:
+        bucket: "ignore"
+        path_strategy: "legacy"
+        default_org: "random"
+        default_repo: "repo"
+      gcs_credentials_secret: "random-service-account"
+
+periodics:
+- name: kubernetes-defaulted-decoration
+  interval: 1h
+  decorate: true
+  spec:
+    containers:
+    - image: golang:latest
+      args:
+      - "test"
+      - "./..."`,
+			expected: &prowapi.DecorationConfig{
+				Timeout:     &prowapi.Duration{Duration: 2 * time.Hour},
+				GracePeriod: &prowapi.Duration{Duration: 15 * time.Second},
+				UtilityImages: &prowapi.UtilityImages{
+					CloneRefs:  "clonerefs:default",
+					InitUpload: "initupload:default",
+					Entrypoint: "entrypoint:default",
+					Sidecar:    "sidecar:default",
+				},
+				GCSConfiguration: &prowapi.GCSConfiguration{
+					Bucket:       "default-bucket",
+					PathStrategy: prowapi.PathStrategyLegacy,
+					DefaultOrg:   "kubernetes",
+					DefaultRepo:  "kubernetes",
+				},
+				GCSCredentialsSecret: "default-service-account",
+			},
+		},
+		{
 			name: "with default, no explicit decorate",
 			rawConfig: `
 plank:
-  default_decoration_config:
-    timeout: 2h
-    grace_period: 15s
-    utility_images:
-      clonerefs: "clonerefs:default"
-      initupload: "initupload:default"
-      entrypoint: "entrypoint:default"
-      sidecar: "sidecar:default"
-    gcs_configuration:
-      bucket: "default-bucket"
-      path_strategy: "legacy"
-      default_org: "kubernetes"
-      default_repo: "kubernetes"
-    gcs_credentials_secret: "default-service-account"
+  default_decoration_configs:
+    '*':
+      timeout: 2h
+      grace_period: 15s
+      utility_images:
+        clonerefs: "clonerefs:default"
+        initupload: "initupload:default"
+        entrypoint: "entrypoint:default"
+        sidecar: "sidecar:default"
+      gcs_configuration:
+        bucket: "default-bucket"
+        path_strategy: "legacy"
+        default_org: "kubernetes"
+        default_repo: "kubernetes"
+      gcs_credentials_secret: "default-service-account"
 
 periodics:
 - name: kubernetes-defaulted-decoration
@@ -351,20 +491,21 @@ periodics:
 			name: "with default, has explicit decorate",
 			rawConfig: `
 plank:
-  default_decoration_config:
-    timeout: 2h
-    grace_period: 15s
-    utility_images:
-      clonerefs: "clonerefs:default"
-      initupload: "initupload:default"
-      entrypoint: "entrypoint:default"
-      sidecar: "sidecar:default"
-    gcs_configuration:
-      bucket: "default-bucket"
-      path_strategy: "legacy"
-      default_org: "kubernetes"
-      default_repo: "kubernetes"
-    gcs_credentials_secret: "default-service-account"
+  default_decoration_configs:
+    '*':
+      timeout: 2h
+      grace_period: 15s
+      utility_images:
+        clonerefs: "clonerefs:default"
+        initupload: "initupload:default"
+        entrypoint: "entrypoint:default"
+        sidecar: "sidecar:default"
+      gcs_configuration:
+        bucket: "default-bucket"
+        path_strategy: "legacy"
+        default_org: "kubernetes"
+        default_repo: "kubernetes"
+      gcs_credentials_secret: "default-service-account"
 
 periodics:
 - name: kubernetes-defaulted-decoration
@@ -438,7 +579,6 @@ periodics:
 			}
 		}
 	}
-
 }
 
 func TestValidateAgent(t *testing.T) {
@@ -3514,48 +3654,6 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 		expected      *prowapi.DecorationConfig
 	}{
 		{
-			id: "extraRefs[0] not defined, no DefaultDecorationConfigs exists, changes from DefaultDecorationConfig expected",
-			config: &Config{
-				ProwConfig: ProwConfig{
-					Plank: Plank{
-						DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
-							"*": {
-								UtilityImages: &prowapi.UtilityImages{
-									CloneRefs:  "clonerefs:test-by-*",
-									InitUpload: "initupload:test-by-*",
-									Entrypoint: "entrypoint:test-by-*",
-									Sidecar:    "sidecar:test-by-*",
-								},
-								GCSConfiguration: &prowapi.GCSConfiguration{
-									Bucket:       "test-bucket-by-*",
-									PathStrategy: "single-by-*",
-									DefaultOrg:   "org-by-*",
-									DefaultRepo:  "repo-by-*",
-								},
-								GCSCredentialsSecret: "credentials-gcs-by-*",
-							},
-						},
-					},
-				},
-			},
-			utilityConfig: UtilityConfig{Decorate: true},
-			expected: &prowapi.DecorationConfig{
-				UtilityImages: &prowapi.UtilityImages{
-					CloneRefs:  "clonerefs:test-by-*",
-					InitUpload: "initupload:test-by-*",
-					Entrypoint: "entrypoint:test-by-*",
-					Sidecar:    "sidecar:test-by-*",
-				},
-				GCSConfiguration: &prowapi.GCSConfiguration{
-					Bucket:       "test-bucket-by-*",
-					PathStrategy: "single-by-*",
-					DefaultOrg:   "org-by-*",
-					DefaultRepo:  "repo-by-*",
-				},
-				GCSCredentialsSecret: "credentials-gcs-by-*",
-			},
-		},
-		{
 			id: "extraRefs[0] not defined, changes from defaultDecorationConfigs[*] expected",
 			config: &Config{
 				ProwConfig: ProwConfig{
@@ -3633,21 +3731,6 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 								},
 								GCSCredentialsSecret: "credentials-gcs-by-org",
 							},
-						},
-						DefaultDecorationConfig: &prowapi.DecorationConfig{
-							UtilityImages: &prowapi.UtilityImages{
-								CloneRefs:  "clonerefs:test",
-								InitUpload: "initupload:test",
-								Entrypoint: "entrypoint:test",
-								Sidecar:    "sidecar:test",
-							},
-							GCSConfiguration: &prowapi.GCSConfiguration{
-								Bucket:       "test-bucket",
-								PathStrategy: "single",
-								DefaultOrg:   "org",
-								DefaultRepo:  "repo",
-							},
-							GCSCredentialsSecret: "credentials-gcs",
 						},
 					},
 				},

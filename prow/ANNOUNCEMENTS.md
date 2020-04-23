@@ -94,6 +94,7 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
+ - *April 23, 2020* Deleted deprecated `default_decoration_config`.
  - *April 22, 2020* Deleted the `file_weight_count` blunderbuss option.
  - *April 16, 2020* The `docs-no-retest` prow plugin has been deleted.
    The plugin was deprecated in January 2020.

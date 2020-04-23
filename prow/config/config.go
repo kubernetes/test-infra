@@ -469,14 +469,9 @@ type Plank struct {
 	// PodUnscheduledTimeout is after how long the controller will abort a prowjob
 	// stuck in an unscheduled state. Defaults to one day.
 	PodUnscheduledTimeout *metav1.Duration `json:"pod_unscheduled_timeout,omitempty"`
-	// DefaultDecorationConfig are defaults for shared fields for ProwJobs
-	// that request to have their PodSpecs decorated.
-	// This will be deprecated on April 2020, and it will be replaces with DefaultDecorationConfigs['*'] instead.
-	DefaultDecorationConfig *prowapi.DecorationConfig `json:"default_decoration_config,omitempty"`
-
 	// DefaultDecorationConfigs holds the default decoration config for specific values.
 	// This config will be used on each Presubmit and Postsubmit's corresponding org/repo, and on Periodics
-	// if extraRefs[0] exists. The missing fields will be merged with the DefaultDecorationConfig.
+	// if extraRefs[0] exists.
 	// Use `org/repo`, `org` or `*` as a key.
 	DefaultDecorationConfigs map[string]*prowapi.DecorationConfig `json:"default_decoration_configs,omitempty"`
 
@@ -1142,27 +1137,14 @@ func defaultPeriodics(periodics []Periodic, c *Config) error {
 func (c *Config) finalizeJobConfig() error {
 	if c.decorationRequested() {
 
-		if c.Plank.DefaultDecorationConfig != nil {
-			if len(c.Plank.DefaultDecorationConfigs) > 0 {
-				return errors.New("both default_decoration_config and default_decoration_configs are specified")
-			}
-
-			logrus.Warning("default_decoration_config will be deprecated on April 2020, and it will be replaced with default_decoration_configs['*'].")
-			c.Plank.DefaultDecorationConfigs = make(map[string]*prowapi.DecorationConfig)
-			c.Plank.DefaultDecorationConfigs["*"] = c.Plank.DefaultDecorationConfig
-		}
-
-		if len(c.Plank.DefaultDecorationConfigs) == 0 {
-			return errors.New("both default_decoration_config and default_decoration_configs['*'] are missing")
-
-		}
-
 		if _, ok := c.Plank.DefaultDecorationConfigs["*"]; !ok {
 			return errors.New("default_decoration_configs['*'] is missing")
 		}
 
-		if err := c.Plank.DefaultDecorationConfigs["*"].Validate(); err != nil {
-			return fmt.Errorf("decoration config validation error: %v", err)
+		for key, valCfg := range c.Plank.DefaultDecorationConfigs {
+			if err := valCfg.Validate(); err != nil {
+				return fmt.Errorf("default_decoration_configs[%q]: validation error: %v", key, err)
+			}
 		}
 
 		for i := range c.Periodics {
