@@ -384,8 +384,8 @@ func TestUpdateBug(t *testing.T) {
 				if err != nil {
 					t.Errorf("failed to read update body: %v", err)
 				}
-				if actual, expected := string(raw), `{"status":"UPDATED"}`; actual != expected {
-					t.Errorf("got incorrect udpate: expected %v, got %v", expected, actual)
+				if actual, expected := string(raw), `{"depends_on":{"add":[1705242]},"status":"UPDATED"}`; actual != expected {
+					t.Errorf("got incorrect update: expected %v, got %v", expected, actual)
 				}
 			} else if id == 2 {
 				w.Header().Set("Content-Type", "application/json")
@@ -399,13 +399,20 @@ func TestUpdateBug(t *testing.T) {
 	defer testServer.Close()
 	client := clientForUrl(testServer.URL)
 
+	update := BugUpdate{
+		DependsOn: &IDUpdate{
+			Add: []int{1705242},
+		},
+		Status: "UPDATED",
+	}
+
 	// this should run an update
-	if err := client.UpdateBug(1705243, BugUpdate{Status: "UPDATED"}); err != nil {
+	if err := client.UpdateBug(1705243, update); err != nil {
 		t.Errorf("expected no error, but got one: %v", err)
 	}
 
 	// this should 404
-	err := client.UpdateBug(1, BugUpdate{Status: "UPDATE"})
+	err := client.UpdateBug(1, update)
 	if err == nil {
 		t.Error("expected an error, but got none")
 	} else if !IsNotFound(err) {
@@ -413,7 +420,7 @@ func TestUpdateBug(t *testing.T) {
 	}
 
 	// this is a 200 with an error payload
-	if err := client.UpdateBug(2, BugUpdate{Status: "UPDATE"}); err == nil {
+	if err := client.UpdateBug(2, update); err == nil {
 		t.Error("expected an error, but got none")
 	}
 }

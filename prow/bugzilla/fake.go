@@ -73,6 +73,20 @@ func (c *Fake) UpdateBug(id int, update BugUpdate) error {
 	if bug, exists := c.Bugs[id]; exists {
 		bug.Status = update.Status
 		bug.Resolution = update.Resolution
+		if update.DependsOn != nil {
+			if len(update.DependsOn.Set) > 0 {
+				bug.DependsOn = update.DependsOn.Set
+			} else {
+				dependSet := sets.NewInt(bug.DependsOn...)
+				for _, id := range update.DependsOn.Add {
+					dependSet.Insert(id)
+				}
+				for _, id := range update.DependsOn.Remove {
+					dependSet.Delete(id)
+				}
+				bug.DependsOn = dependSet.List()
+			}
+		}
 		c.Bugs[id] = bug
 		return nil
 	}
@@ -175,7 +189,17 @@ func (c *Fake) CloneBug(bug *Bug) (int, error) {
 	if err != nil {
 		return 0, fmt.Errorf("failed to get parent bug's comments: %v", err)
 	}
-	return c.CreateBug(cloneBugStruct(bug, comments))
+	id, err := c.CreateBug(cloneBugStruct(bug, comments))
+	if err != nil {
+		return id, err
+	}
+	depends := BugUpdate{
+		DependsOn: &IDUpdate{
+			Add: []int{id},
+		},
+	}
+	err = c.UpdateBug(id, depends)
+	return id, err
 }
 
 // the Fake is a Client

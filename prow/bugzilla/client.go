@@ -225,7 +225,17 @@ func (c *client) CloneBug(bug *Bug) (int, error) {
 	if err != nil {
 		return 0, fmt.Errorf("failed to get parent bug's comments: %v", err)
 	}
-	return c.CreateBug(cloneBugStruct(bug, comments))
+	id, err := c.CreateBug(cloneBugStruct(bug, comments))
+	if err != nil {
+		return id, err
+	}
+	depends := BugUpdate{
+		DependsOn: &IDUpdate{
+			Add: []int{id},
+		},
+	}
+	err = c.UpdateBug(id, depends)
+	return id, err
 }
 
 func (c *client) GetComments(bugID int) ([]Comment, error) {
