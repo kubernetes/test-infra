@@ -21,7 +21,7 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --deployment=node
-      - --gcp-project=k8s-jkns-gke-gci-soak
+      - --gcp-project-type=node-e2e-project
       - --gcp-zone=us-west1-b
       - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
       - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
@@ -48,7 +48,7 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --deployment=node
-      - --gcp-project=k8s-jkns-ci-node-e2e
+      - --gcp-project-type=node-e2e-project
       - --gcp-zone=us-west1-b
       - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
       - --node-test-args=--feature-gates=AllAlpha=true,CSIMigration=false,RotateKubeletServerCertificate=false --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
@@ -78,7 +78,7 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --deployment=node
-      - --gcp-project=k8s-jkns-ci-node-e2e
+      - --gcp-project-type=node-e2e-project
       - --gcp-zone=us-west1-b
       - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/benchmark-config.yaml
       - --node-test-args=--feature-gates=DynamicKubeletConfig=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
@@ -109,7 +109,7 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --deployment=node
-      - --gcp-project=k8s-jkns-ci-node-e2e
+      - --gcp-project-type=node-e2e-project
       - --gcp-zone=us-west1-b
       - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/benchmark-config.yaml --test-suite=conformance
       - --node-test-args=--feature-gates=DynamicKubeletConfig=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
@@ -146,7 +146,7 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --deployment=node
-      - --gcp-project=k8s-jkns-ci-node-e2e
+      - --gcp-project-type=node-e2e-project
       - --gcp-zone=us-west1-b
       - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
       - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
@@ -173,7 +173,7 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --deployment=node
-      - --gcp-project=k8s-jkns-ci-node-e2e
+      - --gcp-project-type=node-e2e-project
       - --gcp-zone=us-west1-b
       - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
       - --node-test-args= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
@@ -203,7 +203,7 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --deployment=node
-      - --gcp-project=k8s-jkns-ci-node-e2e
+      - --gcp-project-type=node-e2e-project
       - --gcp-zone=us-west1-b
       - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
       - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
@@ -233,7 +233,7 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --deployment=node
-      - --gcp-project=k8s-jkns-ci-node-e2e
+      - --gcp-project-type=node-e2e-project
       - --gcp-zone=us-west1-b
       - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-serial.yaml
       - --node-test-args=--feature-gates=DynamicKubeletConfig=true,LocalStorageCapacityIsolation=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
@@ -263,7 +263,7 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --deployment=node
-      - --gcp-project=k8s-jkns-ci-node-e2e
+      - --gcp-project-type=node-e2e-project
       - --gcp-zone=us-west1-b
       - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-serial.yaml
       - --node-test-args=--feature-gates=StartupProbe=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
@@ -293,7 +293,7 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --deployment=node
-      - --gcp-project=k8s-jkns-gke-gci-soak
+      - --gcp-project-type=node-e2e-project
       - --gcp-zone=us-west1-b
       - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-serial-cpu-manager.yaml
       - --node-test-args=--feature-gates=DynamicKubeletConfig=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
@@ -324,7 +324,7 @@ periodics:
           - --scenario=kubernetes_e2e
           - --
           - --deployment=node
-          - --gcp-project=k8s-jkns-gke-gci-soak
+          - --gcp-project-type=node-e2e-project
           - --gcp-zone=us-west1-b
           - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-serial-cpu-manager.yaml
           - --node-test-args=--feature-gates=DynamicKubeletConfig=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
