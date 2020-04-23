@@ -555,6 +555,7 @@ resources:
   state: dirty
   type: scalability-presubmit-project
 - names:
+  - k8s-jkns-gke-ubuntu
   - k8s-jkns-gke-ubuntu-1-6
   - k8s-jkns-gke-ubuntu-1-6-alpha
   - k8s-jkns-gke-ubuntu-1-6-as
@@ -564,5 +565,13 @@ resources:
   - k8s-jkns-gke-ubuntu-1-6-serial
   - k8s-jkns-gke-ubuntu-1-6-slow
   - k8s-jkns-gke-ubuntu-1-6-updown
+  - k8s-jkns-gke-ubuntu-alpha
+  - k8s-jkns-gke-ubuntu-as
+  - k8s-jkns-gke-ubuntu-flaky
+  - k8s-jkns-gke-ubuntu-ingress
+  - k8s-jkns-gke-ubuntu-reboot
+  - k8s-jkns-gke-ubuntu-serial
+  - k8s-jkns-gke-ubuntu-slow
+  - k8s-jkns-gke-ubuntu-updown
   state: dirty
   type: node-e2e-project
