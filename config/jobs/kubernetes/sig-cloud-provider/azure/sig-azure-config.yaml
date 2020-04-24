@@ -269,15 +269,15 @@ periodics:
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs conformance & node conformance tests latest kubernetes master with aks-engine
     testgrid-num-columns-recent: '30'
-- interval: 24h
+- interval: 3h
   name: ci-kubernetes-e2e-capz-conformance-master
   decorate: true
   decoration_config:
     timeout: 3h
   labels:
-    preset-service-account: "true"
-    preset-azure-cred: "true"
     preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-azure-cred: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -302,6 +302,10 @@ periodics:
         value: "true"
       securityContext:
         privileged: true
+      resources:
+        requests:
+          cpu: 1
+          memory: "4Gi"
   annotations:
     testgrid-dashboards: provider-azure-upstream, provider-azure-periodic
     testgrid-tab-name: k8s-e2e-conformance-master-capz
