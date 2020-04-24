@@ -17,7 +17,8 @@ presubmits:
           # generic runner script, handles DIND, bazelrc for caching, etc.
           - runner.sh
         args:
-          - make controller
+          - make
+          - controller
         # docker-in-docker needs privileged mode.
         securityContext:
           privileged: true
@@ -38,7 +39,8 @@ presubmits:
           # generic runner script, handles DIND, bazelrc for caching, etc.
           - runner.sh
         args:
-          - make verify
+          - make
+          - verify
         # docker-in-docker needs privileged mode.
         securityContext:
           privileged: true
