@@ -80,8 +80,8 @@ func testRun(clients localgit.Clients, t *testing.T) {
 	}
 
 	if err := lg.AddCommit("openshift", "other", map[string][]byte{
-		"config/FOO.yaml": []byte(`#FOO.yaml`),
-		"config/BAR.yaml": []byte(`#BAR.yaml`),
+		"config/other-foo.yaml": []byte(`#other-foo.yaml`),
+		"config/other-bar.yaml": []byte(`#other-bar.yaml`),
 	}); err != nil {
 		t.Fatalf("Add commit: %v", err)
 	}
@@ -151,13 +151,13 @@ func testRun(clients localgit.Clients, t *testing.T) {
 					"config/bar.yaml": {
 						Name: "multikey-config",
 					},
-					"config/FOO.yaml": {
+					"config/other-foo.yaml": {
 						Name: "other",
 						Clusters: map[string][]string{
 							"default": {defaultNamespace},
 						},
 					},
-					"config/BAR.yaml": {
+					"config/other-bar.yaml": {
 						Name: "bar",
 					},
 				},
@@ -188,7 +188,7 @@ func testRun(clients localgit.Clients, t *testing.T) {
 						Namespace: defaultNamespace,
 					},
 					Data: map[string]string{
-						"FOO.yaml": "#FOO.yaml",
+						"other-foo.yaml": "#other-foo.yaml",
 					},
 				},
 				{
@@ -197,7 +197,7 @@ func testRun(clients localgit.Clients, t *testing.T) {
 						Namespace: defaultNamespace,
 					},
 					Data: map[string]string{
-						"BAR.yaml": "#BAR.yaml",
+						"other-bar.yaml": "#other-bar.yaml",
 					},
 				},
 			},
