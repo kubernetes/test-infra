@@ -37,9 +37,9 @@ periodics:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-grid
 
-# {"cloud": "aws", "distro": "amazonlinux2", "networking": null}
-- name: e2e-kops-grid-amazonlinux2
-  cron: '37 1 * * *'
+# {"cloud": "aws", "distro": "amzn2", "networking": null}
+- name: e2e-kops-grid-amzn2
+  cron: '22 13 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -53,7 +53,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=e2e-kops-amazonlinux2.test-cncf-aws.k8s.io
+      - --cluster=e2e-kops-amzn2.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
@@ -72,7 +72,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-amazonlinux2
+    testgrid-tab-name: kops-grid-amzn2
 
 # {"cloud": "aws", "distro": "centos7", "networking": null}
 - name: e2e-kops-grid-centos7
@@ -443,9 +443,9 @@ periodics:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-grid-calico
 
-# {"cloud": "aws", "distro": "amazonlinux2", "networking": "calico"}
-- name: e2e-kops-grid-calico-amazonlinux2
-  cron: '15 19 * * *'
+# {"cloud": "aws", "distro": "amzn2", "networking": "calico"}
+- name: e2e-kops-grid-calico-amzn2
+  cron: '10 18 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -459,7 +459,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=e2e-kops-calico-amazonlinux2.test-cncf-aws.k8s.io
+      - --cluster=e2e-kops-calico-amzn2.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
@@ -478,7 +478,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-calico-amazonlinux2
+    testgrid-tab-name: kops-grid-calico-amzn2
 
 # {"cloud": "aws", "distro": "centos7", "networking": "calico"}
 - name: e2e-kops-grid-calico-centos7
@@ -849,9 +849,9 @@ periodics:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-grid-cilium
 
-# {"cloud": "aws", "distro": "amazonlinux2", "networking": "cilium"}
-- name: e2e-kops-grid-cilium-amazonlinux2
-  cron: '31 15 * * *'
+# {"cloud": "aws", "distro": "amzn2", "networking": "cilium"}
+- name: e2e-kops-grid-cilium-amzn2
+  cron: '30 18 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -865,7 +865,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=e2e-kops-cilium-amazonlinux2.test-cncf-aws.k8s.io
+      - --cluster=e2e-kops-cilium-amzn2.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
@@ -884,7 +884,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-cilium-amazonlinux2
+    testgrid-tab-name: kops-grid-cilium-amzn2
 
 # {"cloud": "aws", "distro": "centos7", "networking": "cilium"}
 - name: e2e-kops-grid-cilium-centos7
@@ -1255,9 +1255,9 @@ periodics:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-grid-flannel
 
-# {"cloud": "aws", "distro": "amazonlinux2", "networking": "flannel"}
-- name: e2e-kops-grid-flannel-amazonlinux2
-  cron: '7 14 * * *'
+# {"cloud": "aws", "distro": "amzn2", "networking": "flannel"}
+- name: e2e-kops-grid-flannel-amzn2
+  cron: '42 18 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -1271,7 +1271,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=e2e-kops-flannel-amazonlinux2.test-cncf-aws.k8s.io
+      - --cluster=e2e-kops-flannel-amzn2.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
@@ -1290,7 +1290,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-flannel-amazonlinux2
+    testgrid-tab-name: kops-grid-flannel-amzn2
 
 # {"cloud": "aws", "distro": "centos7", "networking": "flannel"}
 - name: e2e-kops-grid-flannel-centos7
@@ -1625,9 +1625,9 @@ periodics:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-grid-flannel-ubuntu2004
 
-# {"cloud": "aws", "distro": null, "networking": "kopeio-vxlan"}
-- name: e2e-kops-grid-kopeio-vxlan
-  cron: '45 5 * * *'
+# {"cloud": "aws", "distro": null, "networking": "kopeio"}
+- name: e2e-kops-grid-kopeio
+  cron: '36 3 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -1641,7 +1641,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=e2e-kops-kopeio-vxlan.test-cncf-aws.k8s.io
+      - --cluster=e2e-kops-kopeio.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
@@ -1649,7 +1649,7 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/stable
       - --ginkgo-parallel
-      - --kops-args=--networking=kopeio-vxlan
+      - --kops-args=--networking=kopeio
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-ssh-user=admin
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
@@ -1659,11 +1659,11 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-kopeio-vxlan
+    testgrid-tab-name: kops-grid-kopeio
 
-# {"cloud": "aws", "distro": "amazonlinux2", "networking": "kopeio-vxlan"}
-- name: e2e-kops-grid-kopeio-vxlan-amazonlinux2
-  cron: '43 5 * * *'
+# {"cloud": "aws", "distro": "amzn2", "networking": "kopeio"}
+- name: e2e-kops-grid-kopeio-amzn2
+  cron: '8 8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -1677,7 +1677,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=e2e-kops-kopeio-vxlan-amazonlinux2.test-cncf-aws.k8s.io
+      - --cluster=e2e-kops-kopeio-amzn2.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
@@ -1685,7 +1685,7 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/stable
       - --ginkgo-parallel
-      - --kops-args=--networking=kopeio-vxlan
+      - --kops-args=--networking=kopeio
       - --kops-image=137112412989/amzn2-ami-hvm-2.0.20200304.0-x86_64-gp2
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-ssh-user=ec2-user
@@ -1696,11 +1696,11 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-kopeio-vxlan-amazonlinux2
+    testgrid-tab-name: kops-grid-kopeio-amzn2
 
-# {"cloud": "aws", "distro": "centos7", "networking": "kopeio-vxlan"}
-- name: e2e-kops-grid-kopeio-vxlan-centos7
-  cron: '3 6 * * *'
+# {"cloud": "aws", "distro": "centos7", "networking": "kopeio"}
+- name: e2e-kops-grid-kopeio-centos7
+  cron: '25 8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -1714,7 +1714,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=e2e-kops-kopeio-vxlan-centos7.test-cncf-aws.k8s.io
+      - --cluster=e2e-kops-kopeio-centos7.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=centos
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
@@ -1722,7 +1722,7 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/stable
       - --ginkgo-parallel
-      - --kops-args=--networking=kopeio-vxlan
+      - --kops-args=--networking=kopeio
       - --kops-image=679593333241/CentOS Linux 7 x86_64 HVM EBS ENA 1901_01-b7ee8a69-ee97-4a49-9e68-afaee216db2e-ami-05713873c6794f575.4
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-ssh-user=centos
@@ -1733,11 +1733,11 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-kopeio-vxlan-centos7
+    testgrid-tab-name: kops-grid-kopeio-centos7
 
-# {"cloud": "aws", "distro": "debian9", "networking": "kopeio-vxlan"}
-- name: e2e-kops-grid-kopeio-vxlan-debian9
-  cron: '39 18 * * *'
+# {"cloud": "aws", "distro": "debian9", "networking": "kopeio"}
+- name: e2e-kops-grid-kopeio-debian9
+  cron: '29 12 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -1751,7 +1751,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=e2e-kops-kopeio-vxlan-debian9.test-cncf-aws.k8s.io
+      - --cluster=e2e-kops-kopeio-debian9.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
@@ -1759,7 +1759,7 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/stable
       - --ginkgo-parallel
-      - --kops-args=--networking=kopeio-vxlan
+      - --kops-args=--networking=kopeio
       - --kops-image=379101102735/debian-stretch-hvm-x86_64-gp2-2019-11-13-63558
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-ssh-user=admin
@@ -1770,11 +1770,11 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-kopeio-vxlan-debian9
+    testgrid-tab-name: kops-grid-kopeio-debian9
 
-# {"cloud": "aws", "distro": "debian10", "networking": "kopeio-vxlan"}
-- name: e2e-kops-grid-kopeio-vxlan-debian10
-  cron: '0 11 * * *'
+# {"cloud": "aws", "distro": "debian10", "networking": "kopeio"}
+- name: e2e-kops-grid-kopeio-debian10
+  cron: '30 8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -1788,7 +1788,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=e2e-kops-kopeio-vxlan-debian10.test-cncf-aws.k8s.io
+      - --cluster=e2e-kops-kopeio-debian10.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
@@ -1796,7 +1796,7 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/stable
       - --ginkgo-parallel
-      - --kops-args=--networking=kopeio-vxlan
+      - --kops-args=--networking=kopeio
       - --kops-image=136693071363/debian-10-amd64-20200210-166
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-ssh-user=admin
@@ -1807,11 +1807,11 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-kopeio-vxlan-debian10
+    testgrid-tab-name: kops-grid-kopeio-debian10
 
-# {"cloud": "aws", "distro": "flatcar", "networking": "kopeio-vxlan"}
-- name: e2e-kops-grid-kopeio-vxlan-flatcar
-  cron: '53 0 * * *'
+# {"cloud": "aws", "distro": "flatcar", "networking": "kopeio"}
+- name: e2e-kops-grid-kopeio-flatcar
+  cron: '11 14 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -1825,7 +1825,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=e2e-kops-kopeio-vxlan-flatcar.test-cncf-aws.k8s.io
+      - --cluster=e2e-kops-kopeio-flatcar.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=core
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
@@ -1833,7 +1833,7 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/stable
       - --ginkgo-parallel
-      - --kops-args=--networking=kopeio-vxlan
+      - --kops-args=--networking=kopeio
       - --kops-image=075585003325/Flatcar-stable-2303.3.1-hvm
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-ssh-user=core
@@ -1844,11 +1844,11 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-kopeio-vxlan-flatcar
+    testgrid-tab-name: kops-grid-kopeio-flatcar
 
-# {"cloud": "aws", "distro": "rhel7", "networking": "kopeio-vxlan"}
-- name: e2e-kops-grid-kopeio-vxlan-rhel7
-  cron: '31 9 * * *'
+# {"cloud": "aws", "distro": "rhel7", "networking": "kopeio"}
+- name: e2e-kops-grid-kopeio-rhel7
+  cron: '56 0 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -1862,7 +1862,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=e2e-kops-kopeio-vxlan-rhel7.test-cncf-aws.k8s.io
+      - --cluster=e2e-kops-kopeio-rhel7.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
@@ -1870,7 +1870,7 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/stable
       - --ginkgo-parallel
-      - --kops-args=--networking=kopeio-vxlan
+      - --kops-args=--networking=kopeio
       - --kops-image=309956199498/RHEL-7.7_HVM-20191119-x86_64-2-Hourly2-GP2
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-ssh-user=ec2-user
@@ -1881,11 +1881,11 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-kopeio-vxlan-rhel7
+    testgrid-tab-name: kops-grid-kopeio-rhel7
 
-# {"cloud": "aws", "distro": "rhel8", "networking": "kopeio-vxlan"}
-- name: e2e-kops-grid-kopeio-vxlan-rhel8
-  cron: '2 8 * * *'
+# {"cloud": "aws", "distro": "rhel8", "networking": "kopeio"}
+- name: e2e-kops-grid-kopeio-rhel8
+  cron: '33 1 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -1899,7 +1899,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=e2e-kops-kopeio-vxlan-rhel8.test-cncf-aws.k8s.io
+      - --cluster=e2e-kops-kopeio-rhel8.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
@@ -1907,7 +1907,7 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/stable
       - --ginkgo-parallel
-      - --kops-args=--networking=kopeio-vxlan
+      - --kops-args=--networking=kopeio
       - --kops-image=309956199498/RHEL-8.1.0_HVM-20191029-x86_64-0-Hourly2-GP2
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-ssh-user=ec2-user
@@ -1918,11 +1918,11 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-kopeio-vxlan-rhel8
+    testgrid-tab-name: kops-grid-kopeio-rhel8
 
-# {"cloud": "aws", "distro": "ubuntu1604", "networking": "kopeio-vxlan"}
-- name: e2e-kops-grid-kopeio-vxlan-ubuntu1604
-  cron: '50 6 * * *'
+# {"cloud": "aws", "distro": "ubuntu1604", "networking": "kopeio"}
+- name: e2e-kops-grid-kopeio-ubuntu1604
+  cron: '30 16 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -1936,7 +1936,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=e2e-kops-kopeio-vxlan-ubuntu1604.test-cncf-aws.k8s.io
+      - --cluster=e2e-kops-kopeio-ubuntu1604.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
@@ -1944,7 +1944,7 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/stable
       - --ginkgo-parallel
-      - --kops-args=--networking=kopeio-vxlan
+      - --kops-args=--networking=kopeio
       - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-20200407
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-ssh-user=ubuntu
@@ -1955,11 +1955,11 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-kopeio-vxlan-ubuntu1604
+    testgrid-tab-name: kops-grid-kopeio-ubuntu1604
 
-# {"cloud": "aws", "distro": "ubuntu1804", "networking": "kopeio-vxlan"}
-- name: e2e-kops-grid-kopeio-vxlan-ubuntu1804
-  cron: '52 20 * * *'
+# {"cloud": "aws", "distro": "ubuntu1804", "networking": "kopeio"}
+- name: e2e-kops-grid-kopeio-ubuntu1804
+  cron: '52 2 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -1973,7 +1973,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=e2e-kops-kopeio-vxlan-ubuntu1804.test-cncf-aws.k8s.io
+      - --cluster=e2e-kops-kopeio-ubuntu1804.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
@@ -1981,7 +1981,7 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/stable
       - --ginkgo-parallel
-      - --kops-args=--networking=kopeio-vxlan
+      - --kops-args=--networking=kopeio
       - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20200408
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-ssh-user=ubuntu
@@ -1992,11 +1992,11 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-kopeio-vxlan-ubuntu1804
+    testgrid-tab-name: kops-grid-kopeio-ubuntu1804
 
-# {"cloud": "aws", "distro": "ubuntu2004", "networking": "kopeio-vxlan"}
-- name: e2e-kops-grid-kopeio-vxlan-ubuntu2004
-  cron: '46 10 * * *'
+# {"cloud": "aws", "distro": "ubuntu2004", "networking": "kopeio"}
+- name: e2e-kops-grid-kopeio-ubuntu2004
+  cron: '50 4 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -2010,7 +2010,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=e2e-kops-kopeio-vxlan-ubuntu2004.test-cncf-aws.k8s.io
+      - --cluster=e2e-kops-kopeio-ubuntu2004.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
@@ -2018,7 +2018,7 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/stable
       - --ginkgo-parallel
-      - --kops-args=--networking=kopeio-vxlan
+      - --kops-args=--networking=kopeio
       - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200423
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-ssh-user=ubuntu
@@ -2029,6 +2029,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-kopeio-vxlan-ubuntu2004
+    testgrid-tab-name: kops-grid-kopeio-ubuntu2004
 
 # 55 jobs, total of 385 runs per week
