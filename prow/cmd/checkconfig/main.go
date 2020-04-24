@@ -176,7 +176,8 @@ func (o *options) gatherOptions(flag *flag.FlagSet, args []string) error {
 	flag.Var(&o.excludeWarnings, "exclude-warning", "Warnings to exclude. Use repeatedly to provide a list of warnings to exclude")
 	flag.BoolVar(&o.expensive, "expensive-checks", false, "If set, additional expensive warnings will be enabled")
 	flag.BoolVar(&o.strict, "strict", false, "If set, consider all warnings as errors.")
-	o.github.AddFlagsWithoutDefaultGitHubTokenPath(flag)
+	o.github.AddFlags(flag)
+	o.github.AllowAnonymous = true
 	if err := flag.Parse(args); err != nil {
 		return fmt.Errorf("parse flags: %v", err)
 	}

@@ -19,6 +19,7 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"net/http"
 	"os"
 	"strconv"
@@ -71,12 +72,11 @@ type options struct {
 }
 
 func (o *options) Validate() error {
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.storage} {
+	for idx, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.storage} {
 		if err := group.Validate(o.dryRun); err != nil {
-			return err
+			return fmt.Errorf("%d: %w", idx, err)
 		}
 	}
-
 	return nil
 }
 

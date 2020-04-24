@@ -105,6 +105,7 @@ func Test_gatherOptions(t *testing.T) {
 			}
 			expectedfs := flag.NewFlagSet("fake-flags", flag.PanicOnError)
 			expected.github.AddFlags(expectedfs)
+			expected.github.TokenPath = flagutil.DefaultGitHubTokenPath
 			if tc.expected != nil {
 				tc.expected(expected)
 			}

@@ -196,7 +196,8 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.BoolVar(&o.dryRun, "dry-run", false, "Whether or not to make mutating API calls to GitHub.")
 	fs.StringVar(&o.pluginConfig, "plugin-config", "", "Path to plugin config file, probably /etc/plugins/plugins.yaml")
 	o.kubernetes.AddFlags(fs)
-	o.github.AddFlagsWithoutDefaultGitHubTokenPath(fs)
+	o.github.AddFlags(fs)
+	o.github.AllowAnonymous = true
 	fs.Parse(args)
 	o.configPath = config.ConfigPath(o.configPath)
 	return o
@@ -652,8 +653,11 @@ func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, authCfgGe
 
 		secure := !o.allowInsecure
 
+		clientCreator := func(accessToken string) prstatus.GitHubClient {
+			return o.github.GitHubClientWithAccessToken(accessToken)
+		}
 		mux.Handle("/pr-data.js", handleNotCached(
-			prStatusAgent.HandlePrStatus(prStatusAgent)))
+			prStatusAgent.HandlePrStatus(prStatusAgent, clientCreator)))
 		// Handles login request.
 		mux.Handle("/github-login", goa.HandleLogin(oauthClient, secure))
 		// Handles redirect from GitHub OAuth server.
