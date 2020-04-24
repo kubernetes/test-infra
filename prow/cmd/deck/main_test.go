@@ -926,15 +926,6 @@ func Test_gatherOptions(t *testing.T) {
 			},
 		},
 		{
-			name: "empty config-path defaults to old value",
-			args: map[string]string{
-				"--config-path": "",
-			},
-			expected: func(o *options) {
-				o.configPath = config.DefaultConfigPath
-			},
-		},
-		{
 			name: "explicitly set both --hidden-only and --show-hidden to true",
 			args: map[string]string{
 				"--hidden-only": "true",

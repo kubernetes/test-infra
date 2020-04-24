@@ -55,7 +55,6 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	o.kubernetes.AddFlags(fs)
 
 	fs.Parse(args)
-	o.configPath = config.ConfigPath(o.configPath)
 	return o
 }
 
