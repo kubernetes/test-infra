@@ -185,7 +185,7 @@ def build_test(cloud='aws', distro=None, networking=None):
         'networking': networking,
         'distro': distro,
     }
-    jsonspec = json.dumps(spec)
+    jsonspec = json.dumps(spec, sort_keys=True)
 
     print("")
     print("# " + jsonspec)
