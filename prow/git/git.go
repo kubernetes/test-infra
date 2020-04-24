@@ -92,12 +92,13 @@ func NewClientWithHost(host string) (*Client, error) {
 		return nil, err
 	}
 	return &Client{
-		logger:    logrus.WithField("client", "git"),
-		dir:       t,
-		git:       g,
-		base:      fmt.Sprintf("https://%s", host),
-		host:      host,
-		repoLocks: make(map[string]*sync.Mutex),
+		logger:         logrus.WithField("client", "git"),
+		tokenGenerator: func() []byte { return nil },
+		dir:            t,
+		git:            g,
+		base:           fmt.Sprintf("https://%s", host),
+		host:           host,
+		repoLocks:      make(map[string]*sync.Mutex),
 	}, nil
 }
 
