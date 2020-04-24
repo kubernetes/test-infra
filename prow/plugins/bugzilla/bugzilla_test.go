@@ -658,7 +658,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			bugs:           []bugzilla.Bug{{ID: 123, Severity: "urgent"}},
 			options:        plugins.BugzillaBranchOptions{}, // no requirements --> always valid
 			labels:         []string{"bugzilla/invalid-bug"},
-			expectedLabels: []string{"bugzilla/valid-bug", "bugzilla/urgent"},
+			expectedLabels: []string{"bugzilla/valid-bug", "bugzilla/severity-urgent"},
 			expectedComment: `org/repo#1:@user: This pull request references [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123), which is valid.
 
 <details><summary>No validations were run on this bug</summary></details>
@@ -677,8 +677,8 @@ Instructions for interacting with me using PR comments are available [here](http
 			name:           "invalid bug adds invalid label, removes valid label and comments",
 			bugs:           []bugzilla.Bug{{ID: 123, Severity: "high"}},
 			options:        plugins.BugzillaBranchOptions{IsOpen: &open},
-			labels:         []string{"bugzilla/valid-bug", "bugzilla/urgent"},
-			expectedLabels: []string{"bugzilla/invalid-bug", "bugzilla/high"},
+			labels:         []string{"bugzilla/valid-bug", "bugzilla/severity-urgent"},
+			expectedLabels: []string{"bugzilla/invalid-bug", "bugzilla/severity-high"},
 			expectedComment: `org/repo#1:@user: This pull request references [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123), which is invalid:
  - expected the bug to be open, but it isn't
 
@@ -716,7 +716,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			bugs:           []bugzilla.Bug{{ID: 123, Severity: "medium"}},
 			options:        plugins.BugzillaBranchOptions{StateAfterValidation: &updated}, // no requirements --> always valid
 			labels:         []string{"bugzilla/invalid-bug"},
-			expectedLabels: []string{"bugzilla/valid-bug", "bugzilla/medium"},
+			expectedLabels: []string{"bugzilla/valid-bug", "bugzilla/severity-medium"},
 			expectedComment: `org/repo#1:@user: This pull request references [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123), which is valid. The bug has been moved to the UPDATED state.
 
 <details><summary>No validations were run on this bug</summary></details>
@@ -737,7 +737,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			bugs:           []bugzilla.Bug{{ID: 123, Status: "MODIFIED", Severity: "low"}},
 			options:        plugins.BugzillaBranchOptions{StateAfterValidation: &plugins.BugzillaBugState{Status: "CLOSED", Resolution: "VALIDATED"}}, // no requirements --> always valid
 			labels:         []string{"bugzilla/invalid-bug"},
-			expectedLabels: []string{"bugzilla/valid-bug", "bugzilla/low"},
+			expectedLabels: []string{"bugzilla/valid-bug", "bugzilla/severity-low"},
 			expectedComment: `org/repo#1:@user: This pull request references [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123), which is valid. The bug has been moved to the CLOSED (VALIDATED) state.
 
 <details><summary>No validations were run on this bug</summary></details>
@@ -758,7 +758,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			bugs:           []bugzilla.Bug{{ID: 123, Status: "UPDATED", Severity: "unspecified"}},
 			options:        plugins.BugzillaBranchOptions{StateAfterValidation: &updated}, // no requirements --> always valid
 			labels:         []string{"bugzilla/invalid-bug"},
-			expectedLabels: []string{"bugzilla/valid-bug", "bugzilla/unspecified"},
+			expectedLabels: []string{"bugzilla/valid-bug", "bugzilla/severity-unspecified"},
 			expectedComment: `org/repo#1:@user: This pull request references [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123), which is valid.
 
 <details><summary>No validations were run on this bug</summary></details>
