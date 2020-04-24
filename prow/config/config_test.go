@@ -333,11 +333,11 @@ periodics:
 			expectError: true,
 		},
 		{
-			name: "with bad repo config",
+			name: "repo should inherit from default config",
 			rawConfig: `
 plank:
   default_decoration_configs:
-    '*': # good
+    '*':
       timeout: 2h
       grace_period: 15s
       utility_images:
@@ -351,14 +351,10 @@ plank:
         default_org: "kubernetes"
         default_repo: "kubernetes"
       gcs_credentials_secret: "default-service-account"
-    'org/bad': # bad
+    'org/inherit':
       timeout: 2h
       grace_period: 15s
-      utility_images:
-      # clonerefs: "clonerefs:default"
-        initupload: "initupload:default"
-        entrypoint: "entrypoint:default"
-        sidecar: "sidecar:default"
+      utility_images: {}
       gcs_configuration:
         bucket: "default-bucket"
         path_strategy: "legacy"
@@ -375,7 +371,6 @@ periodics:
       args:
       - "test"
       - "./..."`,
-			expectError: true,
 		},
 		{
 			name: "with default and repo, use default",

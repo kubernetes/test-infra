@@ -1137,12 +1137,13 @@ func defaultPeriodics(periodics []Periodic, c *Config) error {
 func (c *Config) finalizeJobConfig() error {
 	if c.decorationRequested() {
 
-		if _, ok := c.Plank.DefaultDecorationConfigs["*"]; !ok {
+		def, ok := c.Plank.DefaultDecorationConfigs["*"]
+		if !ok {
 			return errors.New("default_decoration_configs['*'] is missing")
 		}
 
 		for key, valCfg := range c.Plank.DefaultDecorationConfigs {
-			if err := valCfg.Validate(); err != nil {
+			if err := valCfg.ApplyDefault(def).Validate(); err != nil {
 				return fmt.Errorf("default_decoration_configs[%q]: validation error: %v", key, err)
 			}
 		}
