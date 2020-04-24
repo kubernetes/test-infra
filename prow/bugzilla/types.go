@@ -224,8 +224,8 @@ type BugUpdate struct {
 	// Status is the current status of the bug.
 	Status     string `json:"status,omitempty"`
 	Resolution string `json:"resolution,omitempty"`
-	// Version are the versions the bug was reported against.
-	Version []string `json:"version,omitempty"`
+	// Version is the version the bug was reported against.
+	Version string `json:"version,omitempty"`
 }
 
 // IDUpdate is the struct used in Update calls to update fields that are arrays of IDs (ex. DependsOn)

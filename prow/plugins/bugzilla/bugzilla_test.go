@@ -22,6 +22,7 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -279,6 +280,35 @@ func TestDigestPR(t *testing.T) {
 			},
 		},
 		{
+			name: "cherrypicked PR gets cherrypick event",
+			pre: github.PullRequestEvent{
+				Action: github.PullRequestActionOpened,
+				PullRequest: github.PullRequest{
+					Base: github.PullRequestBranch{
+						Repo: github.Repo{
+							Owner: github.User{
+								Login: "org",
+							},
+							Name: "repo",
+						},
+						Ref: "branch",
+					},
+					Number:  3,
+					Title:   "[release-4.4] Bug 123: fixed it!",
+					HTMLURL: "http.com",
+					User: github.User{
+						Login: "user",
+					},
+					Body: `This is an automated cherry-pick of #2
+
+/assign user`,
+				},
+			},
+			expected: &event{
+				org: "org", repo: "repo", baseRef: "branch", number: 3, body: "[release-4.4] Bug 123: fixed it!", htmlUrl: "http.com", login: "user", cherrypick: true, cherrypickFromPRNum: 2, cherrypickTo: "release-4.4",
+			},
+		},
+		{
 			name: "title change referencing same bug gets no event",
 			pre: github.PullRequestEvent{
 				Action: github.PullRequestActionOpened,
@@ -393,7 +423,7 @@ func TestDigestPR(t *testing.T) {
 			}
 
 			if actual, expected := event, testCase.expected; !reflect.DeepEqual(actual, expected) {
-				t.Errorf("%s: did not get correct event: %v", testCase.name, diff.ObjectReflectDiff(actual, expected))
+				t.Errorf("%s: did not get correct event: %v", testCase.name, cmp.Diff(actual, expected))
 			}
 		})
 	}
