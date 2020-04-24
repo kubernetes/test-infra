@@ -19,7 +19,7 @@ periodics:
       path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200422-8c8546d-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200423-9bf074a-master
         command:
           - "runner.sh"
           - "./scripts/ci-conformance.sh"
