@@ -530,6 +530,7 @@ type fgc struct {
 	expectedSHA    string
 	combinedStatus map[string]string
 	checkRuns      *github.CheckRunList
+	issueComments  map[string][]github.IssueComment
 }
 
 func (f *fgc) GetRepo(o, r string) (github.FullRepo, error) {
@@ -621,6 +622,31 @@ func (f *fgc) GetPullRequestChanges(org, repo string, number int) ([]github.Pull
 			},
 		},
 		nil
+}
+
+func (f *fgc) BotUserChecker() (func(string) bool, error) {
+	return func(candidate string) bool {
+		return candidate == "BotName"
+	}, nil
+}
+
+func (f *fgc) ListIssueComments(org, repo string, number int) ([]github.IssueComment, error) {
+	comments, _ := f.issueComments[fmt.Sprintf("%s/%s#%d", org, repo, number)]
+	return comments, nil
+}
+
+func (f *fgc) CreateComment(org, repo string, number int, body string) error {
+	if len(f.issueComments) == 0 {
+		f.issueComments = make(map[string][]github.IssueComment)
+	}
+	key := fmt.Sprintf("%s/%s#%d", org, repo, number)
+	f.issueComments[key] = append(f.issueComments[key], github.IssueComment{
+		User: github.User{
+			Login: "BotName",
+		},
+		Body: body,
+	})
+	return nil
 }
 
 // TestDividePool ensures that subpools returned by dividePool satisfy a few
@@ -728,8 +754,12 @@ func TestDividePool(t *testing.T) {
 	log := logrus.NewEntry(logrus.StandardLogger())
 	mmc := newMergeChecker(configGetter, fc)
 	mgr := newFakeManager()
+	mfc, err := newFailureCommenter(fc)
+	if err != nil {
+		t.Fatalf("Failed to initialize merge failure commenter: %v", err)
+	}
 	c, err := newSyncController(
-		context.Background(), log, fc, mgr, configGetter, nil, nil, nil, mmc,
+		context.Background(), log, fc, mgr, configGetter, nil, nil, nil, mmc, mfc,
 	)
 	if err != nil {
 		t.Fatalf("failed to construct sync controller: %v", err)
@@ -1143,21 +1173,22 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 
 	// PRs 0-9 exist. All are mergable, and all are passing tests.
 	testcases := []struct {
-		name string
-
-		batchPending    bool
-		successes       []int
-		pendings        []int
-		nones           []int
-		batchMerges     []int
-		presubmits      map[int][]config.Presubmit
-		preExistingJobs []runtime.Object
-		mergeErrs       map[int]error
-
+		name             string
+		batchPending     bool
+		successes        []int
+		pendings         []int
+		nones            []int
+		batchMerges      []int
+		presubmits       map[int][]config.Presubmit
+		preExistingJobs  []runtime.Object
+		mergeErrs        map[int]error
+		existingComments map[string][]github.IssueComment
 		merged           int
 		triggered        int
 		triggeredBatches int
 		action           Action
+		expectErr        bool
+		expectedComments map[string][]github.IssueComment
 	}{
 		{
 			name: "no prs to test, should do nothing",
@@ -1549,6 +1580,60 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 			triggered:   0,
 			action:      MergeBatch,
 		},
+		{
+			name: "on merge failure, a comment is left on the PR",
+
+			batchMerges: []int{1, 2, 101},
+			mergeErrs:   map[int]error{101: errors.New("test error")},
+			merged:      2,
+			triggered:   0,
+			action:      MergeBatch,
+			expectErr:   true,
+			expectedComments: map[string][]github.IssueComment{
+				"o/r#101": {
+					{
+						User: github.User{Login: "BotName"},
+						Body: fmt.Sprintf("%s The following are the error details:\n<code>\n%s\n</code>\n", mergeFailureComment(true), "test error"),
+					},
+				},
+			},
+		},
+		{
+			name: "do not comment on PR which already has a merge failure comment",
+
+			batchMerges: []int{1, 2, 101},
+			mergeErrs:   map[int]error{101: errors.New("test error")},
+			existingComments: map[string][]github.IssueComment{
+				"o/r#101": {
+					{
+						User: github.User{Login: "BotName"},
+						Body: mergeFailureComment(true),
+					},
+				},
+			},
+			merged:    2,
+			triggered: 0,
+			action:    MergeBatch,
+			expectErr: true,
+			expectedComments: map[string][]github.IssueComment{
+				"o/r#101": {
+					{
+						User: github.User{Login: "BotName"},
+						Body: mergeFailureComment(true),
+					},
+				},
+			},
+		},
+		{
+			name: "do not comment on PR if tide context is required by the repo",
+
+			batchMerges: []int{1, 2, 3},
+			mergeErrs:   map[int]error{2: errors.New("test error")},
+			merged:      2,
+			triggered:   0,
+			action:      MergeBatch,
+			expectErr:   true,
+		},
 	}
 
 	for _, tc := range testcases {
@@ -1620,6 +1705,9 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 					7:   &config.TideContextPolicy{},
 					8:   &config.TideContextPolicy{},
 					100: &config.TideContextPolicy{},
+					101: &config.TideContextPolicy{
+						OptionalContexts: []string{statusContext},
+					},
 				},
 				org:    "o",
 				repo:   "r",
@@ -1645,12 +1733,21 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 					pr.Commits.Nodes = []struct {
 						Commit Commit
 					}{{Commit: Commit{OID: oid}}}
+					pr.Repository.Name = "r"
+					pr.Repository.Owner.Login = "o"
 					sp.prs = append(sp.prs, pr)
 					prs = append(prs, pr)
 				}
 				return prs
 			}
-			fgc := fgc{mergeErrs: tc.mergeErrs}
+			fgc := fgc{
+				mergeErrs:     tc.mergeErrs,
+				issueComments: tc.existingComments,
+			}
+			mfc, err := newFailureCommenter(&fgc)
+			if err != nil {
+				t.Fatalf("Failed to initialize merge failure commenter: %v", err)
+			}
 			c, err := newSyncController(
 				context.Background(),
 				logrus.WithField("controller", "tide"),
@@ -1661,6 +1758,7 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 				nil,
 				nil,
 				nil,
+				mfc,
 			)
 			if err != nil {
 				t.Fatalf("failed to construct sync controller: %v", err)
@@ -1721,6 +1819,12 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 				if len(job.Spec.Refs.Pulls) <= 1 {
 					t.Error("Found a batch job that doesn't contain multiple pull refs!")
 				}
+			}
+			if len(tc.expectedComments) != len(fgc.issueComments) {
+				t.Errorf("Expected %d comments, found %d", len(tc.expectedComments), len(fgc.issueComments))
+			}
+			if len(tc.expectedComments) > 0 && !reflect.DeepEqual(fgc.issueComments, tc.expectedComments) {
+				t.Errorf("Expected comments %#v does not match actual comments %#v.", tc.expectedComments, fgc.issueComments)
 			}
 		})
 	}
@@ -2018,6 +2122,10 @@ func TestSync(t *testing.T) {
 		}
 		go sc.run()
 		defer sc.shutdown()
+		mfc, err := newFailureCommenter(fgc)
+		if err != nil {
+			t.Fatalf("Failed to initialize merge failure commenter: %v", err)
+		}
 		c := &Controller{
 			config:        ca.Config,
 			ghc:           fgc,
@@ -2029,8 +2137,9 @@ func TestSync(t *testing.T) {
 				ghc:             fgc,
 				nextChangeCache: make(map[changeCacheKey][]string),
 			},
-			mergeChecker: mergeChecker,
-			History:      hist,
+			mergeChecker:     mergeChecker,
+			History:          hist,
+			failureCommenter: mfc,
 		}
 
 		if err := c.Sync(); err != nil {
@@ -3940,6 +4049,77 @@ func TestCheckRunNodesToContexts(t *testing.T) {
 	}
 }
 
+func TestHasMergeFailureComment(t *testing.T) {
+	testCases := []struct {
+		name       string
+		comments   []github.IssueComment
+		hasComment bool
+	}{
+		{
+			name: "comment author is verified against bot name",
+			comments: []github.IssueComment{
+				{
+					Body: mergeFailureComment(true),
+					User: github.User{Login: "foo"},
+				},
+			},
+		},
+		{
+			name: "comment body is verified",
+			comments: []github.IssueComment{
+				{
+					Body: "comment",
+					User: github.User{Login: "BotName"},
+				},
+			},
+		},
+		{
+			name: "previous failure comment is found",
+			comments: []github.IssueComment{
+				{
+					Body: mergeFailureComment(true),
+					User: github.User{Login: "BotName"},
+				},
+			},
+			hasComment: true,
+		},
+		{
+			name: "previous failure comment without retry is found",
+			comments: []github.IssueComment{
+				{
+					Body: mergeFailureComment(false),
+					User: github.User{Login: "BotName"},
+				},
+			},
+			hasComment: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			fgc := &fgc{
+				issueComments: map[string][]github.IssueComment{
+					"org/repo#1": tc.comments,
+				},
+			}
+
+			mfc, err := newFailureCommenter(fgc)
+			if err != nil {
+				t.Fatal("Failed to initialize merge failure commenter")
+			}
+			pr := getPR("org", "repo", 1)
+			got, err := mfc.HasMergeFailureComment(&pr)
+
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if got != tc.hasComment {
+				t.Fatalf("expected %t got %t", tc.hasComment, got)
+			}
+		})
+	}
+}
+
 func TestDeduplicateContestsDoesntLoseData(t *testing.T) {
 	for i := 0; i < 100; i++ {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
@@ -4021,5 +4201,30 @@ func TestPickSmallestPassingNumber(t *testing.T) {
 				t.Errorf("got %d, expected %d", int(got.Number), tc.expected)
 			}
 		})
+	}
+}
+
+func TestCreateMergeFailureComment(t *testing.T) {
+	pr := getPR("org", "repo", 1)
+	fgc := &fgc{}
+	mfc, err := newFailureCommenter(fgc)
+	if err != nil {
+		t.Fatalf("Failed to initialize merge failure commenter: %v", err)
+	}
+	if err := mfc.CreateMergeFailureComment(&pr, fmt.Errorf("foo"), true); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	comments, ok := fgc.issueComments[fmt.Sprintf("org/repo#1")]
+	if !ok {
+		t.Fatalf("no comments found for %s/%s#%d", "org", "repo", 1)
+	}
+	if len(comments) != 1 {
+		t.Fatalf("expected 1 comment, found %d: %v", len(comments), comments)
+	}
+	if !strings.Contains(comments[0].Body, mergeFailureComment(true)) {
+		t.Fatalf("expected comment to contain %q, found %q as comment body", mergeFailureComment(true), comments[0].Body)
+	}
+	if !strings.Contains(comments[0].Body, "foo") {
+		t.Fatalf("expected error %q to be reported in the comment body, found %q as comment body", "foo", comments[0].Body)
 	}
 }
