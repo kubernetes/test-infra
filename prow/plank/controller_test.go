@@ -372,7 +372,6 @@ func TestSyncTriggeredJobs(t *testing.T) {
 		ExpectedPodHasName  bool
 		ExpectedNumPods     map[string]int
 		ExpectedComplete    bool
-		ExpectedCreatedPJs  int
 		ExpectedURL         string
 		ExpectedBuildID     string
 		ExpectError         bool
@@ -407,8 +406,9 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			Name: "pod with a max concurrency of 1",
 			PJ: prowapi.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      "blabla",
-					Namespace: "prowjobs",
+					Name:              "blabla",
+					Namespace:         "prowjobs",
+					CreationTimestamp: metav1.Now(),
 				},
 				Spec: prowapi.ProwJobSpec{
 					Job:            "same",
@@ -443,8 +443,9 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			Name: "trusted pod with a max concurrency of 1",
 			PJ: prowapi.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      "blabla",
-					Namespace: "prowjobs",
+					Name:              "blabla",
+					Namespace:         "prowjobs",
+					CreationTimestamp: metav1.Now(),
 				},
 				Spec: prowapi.ProwJobSpec{
 					Job:            "same",
@@ -723,6 +724,7 @@ func TestSyncTriggeredJobs(t *testing.T) {
 					pm[pods[i].ObjectMeta.Name] = pods[i]
 				}
 			}
+			tc.PJ.Spec.Agent = prowapi.KubernetesAgent
 			fakeProwJobClient := fakectrlruntimeclient.NewFakeClient(&tc.PJ)
 			buildClients := map[string]ctrlruntimeclient.Client{}
 			for alias, pods := range tc.Pods {
@@ -767,17 +769,29 @@ func TestSyncTriggeredJobs(t *testing.T) {
 					return
 				}
 			} else {
+				for jobName, numJobsToCreate := range tc.PendingJobs {
+					for i := 0; i < numJobsToCreate; i++ {
+						if err := fakeProwJobClient.Create(context.Background(), &prowapi.ProwJob{
+							ObjectMeta: metav1.ObjectMeta{
+								Name:      fmt.Sprintf("%s-%d", jobName, i),
+								Namespace: "prowjobs",
+							},
+							Spec: prowapi.ProwJobSpec{
+								Agent: prowapi.KubernetesAgent,
+								Job:   jobName,
+							},
+						}); err != nil {
+							t.Fatalf("failed to create prowJob: %v", err)
+						}
+					}
+				}
 				r := &reconciler{
 					pjClient:     fakeProwJobClient,
 					buildClients: buildClients,
 					log:          logrus.NewEntry(logrus.StandardLogger()),
 					config:       newFakeConfigAgent(t, tc.MaxConcurrency).Config,
 					totURL:       totServ.URL,
-					pendingJobs:  make(map[string]int),
 					clock:        fakeClock,
-				}
-				if tc.PendingJobs != nil {
-					r.pendingJobs = tc.PendingJobs
 				}
 				if _, err := r.syncTriggeredJob(tc.PJ.DeepCopy()); (err != nil) != tc.ExpectError {
 					if tc.ExpectError {
@@ -792,9 +806,6 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			actualProwJobs := &prowapi.ProwJobList{}
 			if err := fakeProwJobClient.List(context.Background(), actualProwJobs); err != nil {
 				t.Errorf("for case %q could not list prowJobs from the client: %v", tc.Name, err)
-			}
-			if len(actualProwJobs.Items) != tc.ExpectedCreatedPJs+1 {
-				t.Errorf("for case %q got %d created prowjobs", tc.Name, len(actualProwJobs.Items)-1)
 			}
 			actual := actualProwJobs.Items[0]
 			if actual.Status.State != tc.ExpectedState {
@@ -1319,7 +1330,6 @@ func TestSyncPendingJob(t *testing.T) {
 					log:          logrus.NewEntry(logrus.StandardLogger()),
 					config:       newFakeConfigAgent(t, 0).Config,
 					totURL:       totServ.URL,
-					pendingJobs:  make(map[string]int),
 					clock:        clock.RealClock{},
 				}
 				if err := r.syncPendingJob(&tc.PJ); err != nil {
@@ -1463,8 +1473,6 @@ func TestPeriodic(t *testing.T) {
 					log:          log,
 					config:       newFakeConfigAgent(t, 0).Config,
 					totURL:       totServ.URL,
-					pendingJobs:  make(map[string]int),
-					lock:         sync.RWMutex{},
 					clock:        clock.RealClock{},
 				}
 				syncF = func() error {
@@ -1567,7 +1575,8 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 				},
 				{
 					ObjectMeta: metav1.ObjectMeta{
-						Name: "second",
+						Name:              "second",
+						CreationTimestamp: metav1.Now(),
 					},
 					Spec: prowapi.ProwJobSpec{
 						Job:            "test-bazel-build",
@@ -1626,7 +1635,8 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 			PJs: []prowapi.ProwJob{
 				{
 					ObjectMeta: metav1.ObjectMeta{
-						Name: "first",
+						Name:              "first",
+						CreationTimestamp: metav1.Now(),
 					},
 					Spec: prowapi.ProwJobSpec{
 						Job:            "test-bazel-build",
@@ -1641,7 +1651,8 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 				},
 				{
 					ObjectMeta: metav1.ObjectMeta{
-						Name: "second",
+						Name:              "second",
+						CreationTimestamp: metav1.Now(),
 					},
 					Spec: prowapi.ProwJobSpec{
 						Job:            "test-bazel-build",
@@ -1659,7 +1670,7 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 			ExpectedPods: 0,
 		},
 	}
-	//	// Duplicate all tests for PlankV2
+	// Duplicate all tests for PlankV2
 	for _, tc := range tests {
 		if tc.IsV2 {
 			continue
@@ -1681,6 +1692,7 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 			var prowJobs []runtime.Object
 			for i := range test.PJs {
 				test.PJs[i].Namespace = "prowjobs"
+				test.PJs[i].Spec.Agent = prowapi.KubernetesAgent
 				prowJobs = append(prowJobs, &test.PJs[i])
 			}
 			fakeProwJobClient := fakectrlruntimeclient.NewFakeClient(prowJobs...)
@@ -1702,12 +1714,30 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 
 				syncProwJobs(c.log, c.syncTriggeredJob, 20, jobs, errors, pm)
 			} else {
+				for jobName, numJobsToCreate := range test.PendingJobs {
+					for i := 0; i < numJobsToCreate; i++ {
+						if err := fakeProwJobClient.Create(context.Background(), &prowapi.ProwJob{
+							ObjectMeta: metav1.ObjectMeta{
+								Name:      fmt.Sprintf("%s-%d", jobName, i),
+								Namespace: "prowjobs",
+							},
+							Spec: prowapi.ProwJobSpec{
+								Agent: prowapi.KubernetesAgent,
+								Job:   jobName,
+							},
+						}); err != nil {
+							t.Fatalf("failed to create prowJob: %v", err)
+						}
+					}
+				}
 				r := &reconciler{
-					pjClient:     fakeProwJobClient,
+					pjClient: &indexingClient{
+						Client:     fakeProwJobClient,
+						indexFuncs: map[string]ctrlruntimeclient.IndexerFunc{prowJobIndexName: prowJobIndexer("prowjobs")},
+					},
 					buildClients: buildClients,
 					log:          logrus.NewEntry(logrus.StandardLogger()),
 					config:       newFakeConfigAgent(t, 0).Config,
-					pendingJobs:  test.PendingJobs,
 					clock:        clock.RealClock{},
 				}
 				for _, job := range test.PJs {
@@ -1751,6 +1781,7 @@ func TestMaxConcurency(t *testing.T) {
 		{
 			Name: "Num pending exceeds max concurrency",
 			ProwJob: prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{CreationTimestamp: metav1.Now()},
 				Spec: prowapi.ProwJobSpec{
 					MaxConcurrency: 10,
 					Job:            "my-pj"}},
@@ -1769,7 +1800,8 @@ func TestMaxConcurency(t *testing.T) {
 			},
 			ExistingProwJobs: []prowapi.ProwJob{
 				{
-					Spec: prowapi.ProwJobSpec{Job: "my-pj"},
+					ObjectMeta: metav1.ObjectMeta{Namespace: "prowjobs"},
+					Spec:       prowapi.ProwJobSpec{Agent: prowapi.KubernetesAgent, Job: "my-pj"},
 					Status: prowapi.ProwJobStatus{
 						State: prowapi.TriggeredState,
 					}},
@@ -1830,7 +1862,7 @@ func TestMaxConcurency(t *testing.T) {
 				{
 					Spec: prowapi.ProwJobSpec{Job: "my-pj"},
 					Status: prowapi.ProwJobStatus{
-						State: prowapi.PendingState,
+						CompletionTime: &[]metav1.Time{{}}[0],
 					}},
 			},
 			PendingJobs:    map[string]int{"my-pj": 1},
@@ -1875,12 +1907,28 @@ func TestMaxConcurency(t *testing.T) {
 				}
 				result = c.canExecuteConcurrently(&tc.ProwJob)
 			} else {
+				for jobName, numJobsToCreate := range tc.PendingJobs {
+					for i := 0; i < numJobsToCreate; i++ {
+						prowJobs = append(prowJobs, &prowapi.ProwJob{
+							ObjectMeta: metav1.ObjectMeta{
+								Name:      fmt.Sprintf("%s-%d", jobName, i),
+								Namespace: "prowjobs",
+							},
+							Spec: prowapi.ProwJobSpec{
+								Agent: prowapi.KubernetesAgent,
+								Job:   jobName,
+							},
+						})
+					}
+				}
 				r := &reconciler{
-					pjClient:     fakectrlruntimeclient.NewFakeClient(prowJobs...),
+					pjClient: &indexingClient{
+						Client:     fakectrlruntimeclient.NewFakeClient(prowJobs...),
+						indexFuncs: map[string]ctrlruntimeclient.IndexerFunc{prowJobIndexName: prowJobIndexer("prowjobs")},
+					},
 					buildClients: buildClients,
 					log:          logrus.NewEntry(logrus.StandardLogger()),
 					config:       newFakeConfigAgent(t, 0).Config,
-					pendingJobs:  tc.PendingJobs,
 					clock:        clock.RealClock{},
 				}
 				var err error
@@ -2039,4 +2087,58 @@ func TestSyncAbortedJob(t *testing.T) {
 			}
 		})
 	}
+}
+
+type indexingClient struct {
+	ctrlruntimeclient.Client
+	indexFuncs map[string]ctrlruntimeclient.IndexerFunc
+}
+
+func (c *indexingClient) List(ctx context.Context, list runtime.Object, opts ...ctrlruntimeclient.ListOption) error {
+	if err := c.Client.List(ctx, list, opts...); err != nil {
+		return err
+	}
+
+	listOpts := &ctrlruntimeclient.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	if listOpts.FieldSelector == nil {
+		return nil
+	}
+
+	if n := len(listOpts.FieldSelector.Requirements()); n == 0 {
+		return nil
+	} else if n > 1 {
+		return fmt.Errorf("the indexing client supports at most one field selector requirement, got %d", n)
+	}
+
+	indexKey := listOpts.FieldSelector.Requirements()[0].Field
+	if indexKey == "" {
+		return nil
+	}
+
+	indexFunc, ok := c.indexFuncs[indexKey]
+	if !ok {
+		return fmt.Errorf("no index with key %q found", indexKey)
+	}
+
+	pjList, ok := list.(*prowapi.ProwJobList)
+	if !ok {
+		return errors.New("indexes are only supported for ProwJobLists")
+	}
+
+	result := prowapi.ProwJobList{}
+	for _, pj := range pjList.Items {
+		for _, indexVal := range indexFunc(&pj) {
+			logrus.Infof("indexVal: %q, requirementVal: %q, match: %t, name: %s", indexVal, listOpts.FieldSelector.Requirements()[0].Value, indexVal == listOpts.FieldSelector.Requirements()[0].Value, pj.Name)
+			if indexVal == listOpts.FieldSelector.Requirements()[0].Value {
+				result.Items = append(result.Items, pj)
+			}
+		}
+	}
+
+	*pjList = result
+	return nil
 }

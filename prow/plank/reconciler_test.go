@@ -244,6 +244,7 @@ func singnalOrTimout(signal <-chan struct{}) error {
 func TestProwJobIndexer(t *testing.T) {
 	t.Parallel()
 	const pjNS = "prowjobs"
+	const pjName = "my-pj"
 	pj := func(modify ...func(*prowv1.ProwJob)) *prowv1.ProwJob {
 		pj := &prowv1.ProwJob{
 			ObjectMeta: metav1.ObjectMeta{
@@ -251,6 +252,7 @@ func TestProwJobIndexer(t *testing.T) {
 				Name:      "some-job",
 			},
 			Spec: prowv1.ProwJobSpec{
+				Job:   pjName,
 				Agent: prowv1.KubernetesAgent,
 			},
 		}
@@ -265,8 +267,8 @@ func TestProwJobIndexer(t *testing.T) {
 		expected []string
 	}{
 		{
-			name:     "Matches both keys",
-			expected: []string{prowJobIndexKeyAll, prowJobIndexKeyNotCompleted},
+			name:     "Matches all keys",
+			expected: []string{prowJobIndexKeyAll, prowJobIndexKeyNotCompleted, prowJobIndexKeyNotCompletedByName(pjName)},
 		},
 		{
 			name:   "Wrong namespace, no key",
@@ -280,6 +282,11 @@ func TestProwJobIndexer(t *testing.T) {
 			name:     "Completed, matches only the `all` key",
 			modify:   func(pj *prowv1.ProwJob) { pj.SetComplete() },
 			expected: []string{prowJobIndexKeyAll},
+		},
+		{
+			name:     "Changing name changes notCompletedByName index",
+			modify:   func(pj *prowv1.ProwJob) { pj.Spec.Job = "some-name" },
+			expected: []string{prowJobIndexKeyAll, prowJobIndexKeyNotCompleted, prowJobIndexKeyNotCompletedByName("some-name")},
 		},
 	}
 

@@ -20,7 +20,6 @@ import (
 	"context"
 	_ "encoding/json"
 	"fmt"
-	"sync"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -120,12 +119,7 @@ type reconciler struct {
 	log                *logrus.Entry
 	config             config.Getter
 	totURL             string
-	lock               sync.RWMutex
 	clock              clock.Clock
-
-	// pendingJobs is a short-lived cache that helps in limiting
-	// the maximum concurrency of jobs.
-	pendingJobs map[string]int
 }
 
 func (r *reconciler) syncMetrics(stop <-chan struct{}) error {
@@ -218,7 +212,6 @@ func (r *reconciler) syncPendingJob(pj *prowv1.ProwJob) error {
 	}
 
 	if !podExists {
-		r.incrementNumPendingJobs(pj.Spec.Job)
 		// Pod is missing. This can happen in case the previous pod was deleted manually or by
 		// a rescheduler. Start a new pod.
 		id, pn, err := r.startPod(pj)
@@ -239,7 +232,6 @@ func (r *reconciler) syncPendingJob(pj *prowv1.ProwJob) error {
 
 		switch pod.Status.Phase {
 		case corev1.PodUnknown:
-			r.incrementNumPendingJobs(pj.Spec.Job)
 			// Pod is in Unknown state. This can happen if there is a problem with
 			// the node. Delete the old pod, we'll start a new one next loop.
 			r.log.WithFields(pjutil.ProwJobFields(pj)).Info("Pod is in unknown state, deleting & restarting pod")
@@ -269,7 +261,6 @@ func (r *reconciler) syncPendingJob(pj *prowv1.ProwJob) error {
 				}
 				// ErrorOnEviction is disabled. Delete the pod now and recreate it in
 				// the next resync.
-				r.incrementNumPendingJobs(pj.Spec.Job)
 				client, ok := r.buildClients[pj.ClusterAlias()]
 				if !ok {
 					return fmt.Errorf("evicted pod %s: unknown cluster alias %q", pod.Name, pj.ClusterAlias())
@@ -305,13 +296,11 @@ func (r *reconciler) syncPendingJob(pj *prowv1.ProwJob) error {
 				break
 			}
 			// Pod is running. Do nothing.
-			r.incrementNumPendingJobs(pj.Spec.Job)
 			return nil
 		case corev1.PodRunning:
 			maxPodRunning := r.config().Plank.PodRunningTimeout.Duration
 			if pod.Status.StartTime.IsZero() || time.Since(pod.Status.StartTime.Time) < maxPodRunning {
 				// Pod is still running. Do nothing.
-				r.incrementNumPendingJobs(pj.Spec.Job)
 				return nil
 			}
 
@@ -330,7 +319,6 @@ func (r *reconciler) syncPendingJob(pj *prowv1.ProwJob) error {
 			r.log.WithFields(pjutil.ProwJobFields(pj)).Info("Deleted stale running pod.")
 		default:
 			// other states, ignore
-			r.incrementNumPendingJobs(pj.Spec.Job)
 			return nil
 		}
 	}
@@ -370,7 +358,7 @@ func (r *reconciler) syncTriggeredJob(pj *prowv1.ProwJob) (*reconcile.Result, er
 			return nil, fmt.Errorf("canExecuteConcurrently: %v", err)
 		}
 		if !canExecuteConcurrently {
-			return &reconcile.Result{RequeueAfter: 30 * time.Second}, nil
+			return &reconcile.Result{RequeueAfter: 10 * time.Second}, nil
 		}
 		// We haven't started the pod yet. Do so.
 		id, pn, err = r.startPod(pj)
@@ -431,14 +419,6 @@ func (r *reconciler) pod(pj *prowv1.ProwJob) (*corev1.Pod, bool, error) {
 	return pod, true, nil
 }
 
-// incrementNumPendingJobs increments the amount of
-// pending ProwJobs for the given job identifier
-func (r *reconciler) incrementNumPendingJobs(job string) {
-	r.lock.Lock()
-	defer r.lock.Unlock()
-	r.pendingJobs[job]++
-}
-
 func (r *reconciler) startPod(pj *prowv1.ProwJob) (string, string, error) {
 	buildID, err := r.getBuildID(pj.Spec.Job)
 	if err != nil {
@@ -468,59 +448,55 @@ func (r *reconciler) getBuildID(name string) (string, error) {
 	return pjutil.GetBuildID(name, r.totURL)
 }
 
+// canExecuteConcurrently determines if the cocurrency settings allow our job
+// to be started. We start jobs with a limited concurrency in order, oldest
+// first. This allows us to get away without any global locking by just looking
+// at the jobs in the cluster.
 func (r *reconciler) canExecuteConcurrently(pj *prowv1.ProwJob) (bool, error) {
-	r.lock.Lock()
-	defer r.lock.Unlock()
 
 	if max := r.config().Plank.MaxConcurrency; max > 0 {
-		var running int
-		for _, num := range r.pendingJobs {
-			running += num
+		pjs := &prowv1.ProwJobList{}
+		if err := r.pjClient.List(r.ctx, pjs, optNotCompletedProwJobs()); err != nil {
+			return false, fmt.Errorf("failed to list prowjobs: %w", err)
 		}
+		// The list contains our own ProwJob
+		running := len(pjs.Items) - 1
 		if running >= max {
-			r.log.WithFields(pjutil.ProwJobFields(pj)).Debugf("Not starting another job, already %d running.", running)
+			r.log.WithFields(pjutil.ProwJobFields(pj)).Infof("Not starting another job, already %d running.", running)
 			return false, nil
 		}
 	}
 
 	if pj.Spec.MaxConcurrency == 0 {
-		r.pendingJobs[pj.Spec.Job]++
 		return true, nil
 	}
 
-	numPending := r.pendingJobs[pj.Spec.Job]
-	if numPending >= pj.Spec.MaxConcurrency {
-		r.log.WithFields(pjutil.ProwJobFields(pj)).Debugf("Not starting another instance of %s, already %d running.", pj.Spec.Job, numPending)
-		return false, nil
+	pjs := &prowv1.ProwJobList{}
+	if err := r.pjClient.List(r.ctx, pjs, optNotCompletedProwJobsNamed(pj.Spec.Job)); err != nil {
+		return false, fmt.Errorf("failed listing prowjobs: %w:", err)
 	}
+	r.log.Infof("got %d not completed with same name", len(pjs.Items))
 
 	var olderMatchingPJs int
-
-	pjs := &prowv1.ProwJobList{}
-	if err := r.pjClient.List(r.ctx, pjs, optNotCompletedProwJobs()); err != nil {
-		return false, fmt.Errorf("list prowjobs: %w", err)
-	}
-
 	for _, foundPJ := range pjs.Items {
-		if foundPJ.Status.State != prowv1.TriggeredState {
+		// Ignore self here. Second half of the condition is needed for tests.
+		if foundPJ.UID == pj.UID && pj.UID != types.UID("") {
 			continue
 		}
-		if foundPJ.Spec.Job != pj.Spec.Job {
-			continue
-		}
+
 		if foundPJ.CreationTimestamp.Before(&pj.CreationTimestamp) {
 			olderMatchingPJs++
 		}
+
 	}
 
-	if numPending+olderMatchingPJs >= pj.Spec.MaxConcurrency {
+	if olderMatchingPJs >= pj.Spec.MaxConcurrency {
 		r.log.WithFields(pjutil.ProwJobFields(pj)).
-			Debugf("Not starting another instance of %s, already %d running and %d older instances waiting, together they equal or exceed the total limit of %d",
-				pj.Spec.Job, numPending, olderMatchingPJs, pj.Spec.MaxConcurrency)
+			Debugf("Not starting another instance of %s, already %d older instances waiting and %d is the limit",
+				pj.Spec.Job, olderMatchingPJs, pj.Spec.MaxConcurrency)
 		return false, nil
 	}
 
-	r.pendingJobs[pj.Spec.Job]++
 	return true, nil
 }
 
@@ -593,6 +569,10 @@ const (
 	prowJobIndexKeyNotCompleted = "not-completed"
 )
 
+func prowJobIndexKeyNotCompletedByName(jobName string) string {
+	return fmt.Sprintf("not-completed-%s", jobName)
+}
+
 func prowJobIndexer(prowJobNamespace string) ctrlruntimeclient.IndexerFunc {
 	return func(o runtime.Object) []string {
 		pj := o.(*prowv1.ProwJob)
@@ -601,7 +581,11 @@ func prowJobIndexer(prowJobNamespace string) ctrlruntimeclient.IndexerFunc {
 		}
 
 		if !pj.Complete() {
-			return []string{prowJobIndexKeyAll, prowJobIndexKeyNotCompleted}
+			return []string{
+				prowJobIndexKeyAll,
+				prowJobIndexKeyNotCompleted,
+				prowJobIndexKeyNotCompletedByName(pj.Spec.Job),
+			}
 		}
 
 		return []string{prowJobIndexKeyAll}
@@ -614,4 +598,8 @@ func optAllProwJobs() ctrlruntimeclient.ListOption {
 
 func optNotCompletedProwJobs() ctrlruntimeclient.ListOption {
 	return ctrlruntimeclient.MatchingField(prowJobIndexName, prowJobIndexKeyNotCompleted)
+}
+
+func optNotCompletedProwJobsNamed(name string) ctrlruntimeclient.ListOption {
+	return ctrlruntimeclient.MatchingField(prowJobIndexName, prowJobIndexKeyNotCompletedByName(name))
 }
