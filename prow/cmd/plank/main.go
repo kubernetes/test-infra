@@ -47,6 +47,7 @@ type options struct {
 	skipReport    bool
 
 	dryRun     bool
+	useV2      bool
 	kubernetes prowflagutil.KubernetesOptions
 	github     prowflagutil.GitHubOptions // TODO(fejta): remove
 }
@@ -59,6 +60,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
 	fs.StringVar(&o.selector, "label-selector", labels.Everything().String(), "Label selector to be applied in prowjobs. See https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors for constructing a label selector.")
 	fs.BoolVar(&o.skipReport, "skip-report", false, "Validate that crier is reporting to github, not plank")
+	fs.BoolVar(&o.useV2, "use-v2", false, "Experimental: Wether to use the V2 implementation of plank")
 
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Whether or not to make mutating API calls to GitHub.")
 	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github} {
@@ -126,14 +128,14 @@ func main() {
 		logrus.WithError(err).Fatal("Error creating manager")
 	}
 
-	buildClusterClients, err := o.kubernetes.BuildClusterUncachedRuntimeClients(o.dryRun)
-	if err != nil {
-		logrus.WithError(err).Fatal("Error creating build cluster clients.")
+	var creator func(options, manager.Manager, config.Getter) error
+	if o.useV2 {
+		creator = v2Main
+	} else {
+		creator = v1Main
 	}
-
-	c, err := plank.NewController(mgr.GetClient(), buildClusterClients, nil, cfg, o.totURL, o.selector)
-	if err != nil {
-		logrus.WithError(err).Fatal("Error creating plank controller.")
+	if err := creator(o, mgr, cfg); err != nil {
+		logrus.WithError(err).Fatal("Error creating plank")
 	}
 
 	// Expose prometheus metrics
@@ -142,17 +144,48 @@ func main() {
 	if reporter != nil {
 		interrupts.Run(reporter)
 	}
+	if err := mgr.Start(interrupts.Context().Done()); err != nil {
+		logrus.WithError(err).Fatal("failed to start manager")
+	}
+}
+
+func v1Main(o options, mgr manager.Manager, cfg config.Getter) error {
+
+	buildClusterClients, err := o.kubernetes.BuildClusterUncachedRuntimeClients(o.dryRun)
+	if err != nil {
+		return fmt.Errorf("failed to consturct build cluster clients: %w", err)
+	}
+	c, err := plank.NewController(mgr.GetClient(), buildClusterClients, nil, cfg, o.totURL, o.selector)
+	if err != nil {
+		return fmt.Errorf("failed to create plank controller: %w", err)
+	}
+
 	interrupts.TickLiteral(func() {
 		start := time.Now()
 		c.SyncMetrics()
 		logrus.WithField("metrics-duration", fmt.Sprintf("%v", time.Since(start))).Debug("Metrics synced")
 	}, 30*time.Second)
-
 	// run the controller
 	if err := mgr.Add(c); err != nil {
-		logrus.WithError(err).Fatal("failed to add controller to manager")
+		return fmt.Errorf("failed to add controller to manager: %w", err)
 	}
-	if err := mgr.Start(interrupts.Context().Done()); err != nil {
-		logrus.WithError(err).Fatal("failed to start manager")
+
+	return nil
+}
+
+func v2Main(o options, mgr manager.Manager, cfg config.Getter) error {
+	buildManagers, err := o.kubernetes.BuildClusterManagers(false,
+		func(o *manager.Options) {
+			o.Namespace = cfg().PodNamespace
+		},
+	)
+	if err != nil {
+		return fmt.Errorf("failed to construct build cluster managers: %w", err)
 	}
+
+	if err := plank.Add(mgr, buildManagers, cfg, o.totURL, o.selector); err != nil {
+		return fmt.Errorf("failed to add plank to mgr: %w", err)
+	}
+
+	return nil
 }

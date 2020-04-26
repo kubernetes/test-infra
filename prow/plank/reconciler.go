@@ -18,6 +18,7 @@ package plank
 
 import (
 	"context"
+	_ "encoding/json"
 	"fmt"
 	"sync"
 	"time"
@@ -26,36 +27,108 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/clock"
+	"sigs.k8s.io/controller-runtime"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
+	"sigs.k8s.io/controller-runtime/pkg/event"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pod-utils/decorate"
 )
 
+const controllerName = "plank"
+
+func Add(
+	mgr controllerruntime.Manager,
+	buildMgrs map[string]controllerruntime.Manager,
+	cfg config.Getter,
+	totURL string,
+	additionalSelector string,
+) error {
+	return add(mgr, buildMgrs, cfg, totURL, additionalSelector, nil, nil, 10)
+}
+
+func add(
+	mgr controllerruntime.Manager,
+	buildMgrs map[string]controllerruntime.Manager,
+	cfg config.Getter,
+	totURL string,
+	additionalSelector string,
+	overwriteReconcile func(reconcile.Request) (reconcile.Result, error),
+	predicateCallack func(bool),
+	numWorkers int,
+) error {
+	predicate, err := predicates(additionalSelector, predicateCallack)
+	if err != nil {
+		return fmt.Errorf("failed to construct predicate: %w", err)
+	}
+
+	blder := controllerruntime.NewControllerManagedBy(mgr).
+		Named(controllerName).
+		For(&prowv1.ProwJob{}).
+		WithEventFilter(predicate).
+		WithOptions(controller.Options{MaxConcurrentReconciles: numWorkers})
+
+	r := &reconciler{
+		pjClient:           mgr.GetClient(),
+		buildClients:       map[string]ctrlruntimeclient.Client{},
+		overwriteReconcile: overwriteReconcile,
+		log:                logrus.NewEntry(logrus.StandardLogger()),
+		config:             cfg,
+		totURL:             totURL,
+		clock:              clock.RealClock{},
+	}
+	for buildCluster, buildClusterMgr := range buildMgrs {
+		blder = blder.Watches(
+			source.NewKindWithCache(&corev1.Pod{}, buildClusterMgr.GetCache()),
+			podEventRequestMapper(cfg().ProwJobNamespace))
+		r.buildClients[buildCluster] = buildClusterMgr.GetClient()
+	}
+
+	if err := blder.Complete(r); err != nil {
+		return fmt.Errorf("failed to build controller: %w", err)
+	}
+
+	return nil
+}
+
 type reconciler struct {
-	ctx          context.Context
-	pjClient     ctrlruntimeclient.Client
-	buildClients map[string]ctrlruntimeclient.Client
-	log          *logrus.Entry
-	config       config.Getter
-	totURL       string
-	lock         sync.RWMutex
-	clock        clock.Clock
+	ctx                context.Context
+	pjClient           ctrlruntimeclient.Client
+	buildClients       map[string]ctrlruntimeclient.Client
+	overwriteReconcile func(reconcile.Request) (reconcile.Result, error)
+	log                *logrus.Entry
+	config             config.Getter
+	totURL             string
+	lock               sync.RWMutex
+	clock              clock.Clock
 
 	// pendingJobs is a short-lived cache that helps in limiting
 	// the maximum concurrency of jobs.
 	pendingJobs map[string]int
 }
 
-// TODO: Predicate for createdByProw: true && c.selector, if defined && pj.Spec.Agent == kubernetes
 // TODO: Metrics
 
 func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, error) {
+	if r.overwriteReconcile != nil {
+		return r.overwriteReconcile(request)
+	}
+	return r.defaultReconcile(request)
+}
+
+func (r *reconciler) defaultReconcile(request reconcile.Request) (reconcile.Result, error) {
 	pj := &prowv1.ProwJob{}
 	if err := r.pjClient.Get(r.ctx, request.NamespacedName, pj); err != nil {
 		if !kerrors.IsNotFound(err) {
@@ -430,4 +503,61 @@ func (r *reconciler) canExecuteConcurrently(pj *prowv1.ProwJob) (bool, error) {
 
 	r.pendingJobs[pj.Spec.Job]++
 	return true, nil
+}
+
+func predicatesFromFilter(filter func(m metav1.Object, r runtime.Object) bool) predicate.Predicate {
+	return predicate.Funcs{
+		CreateFunc: func(e event.CreateEvent) bool {
+			return filter(e.Meta, e.Object)
+		},
+		DeleteFunc: func(e event.DeleteEvent) bool {
+			return filter(e.Meta, e.Object)
+		},
+		UpdateFunc: func(e event.UpdateEvent) bool {
+			return filter(e.MetaNew, e.ObjectNew)
+		},
+		GenericFunc: func(e event.GenericEvent) bool {
+			return filter(e.Meta, e.Object)
+		},
+	}
+
+}
+
+func predicates(additionalSelector string, callback func(bool)) (predicate.Predicate, error) {
+	rawSelector := fmt.Sprintf("%s=true", kube.CreatedByProw)
+	if additionalSelector != "" {
+		rawSelector = fmt.Sprintf("%s,%s", rawSelector, additionalSelector)
+	}
+	selector, err := labels.Parse(rawSelector)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse label selector %s: %w", rawSelector, err)
+	}
+
+	return predicatesFromFilter(func(m metav1.Object, r runtime.Object) bool {
+		result := func() bool {
+			// Predicates only apply to prowjobs, not to pods
+			pj, ok := r.(*prowv1.ProwJob)
+			if ok {
+				return pj.Spec.Agent == prowv1.KubernetesAgent
+			}
+
+			return selector.Matches(labels.Set(m.GetLabels()))
+		}()
+		if callback != nil {
+			callback(result)
+		}
+		return result
+	}), nil
+}
+
+func podEventRequestMapper(prowJobNamespace string) handler.EventHandler {
+	return &handler.EnqueueRequestsFromMapFunc{
+		ToRequests: handler.ToRequestsFunc(func(mo handler.MapObject) []controllerruntime.Request {
+			return []controllerruntime.Request{{NamespacedName: ctrlruntimeclient.ObjectKey{
+				Namespace: prowJobNamespace,
+				Name:      mo.Meta.GetName(),
+			}},
+			}
+		}),
+	}
 }
