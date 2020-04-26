@@ -175,7 +175,7 @@ presubmits:
         - --aksengine-orchestratorRelease=1.17
         - --aksengine-location=eastus2
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
-        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/blobfuse-csi-driver/master/test/e2e/manifest/linux-vmss.json
+        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/blobfuse-csi-driver/master/test/manifest/linux-vmss.json
         - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.46.0/aks-engine-v0.46.0-linux-amd64.tar.gz
         # Specific test args
         - --test-blobfuse-csi-driver
