@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/go-test/deep"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -237,5 +238,60 @@ func singnalOrTimout(signal <-chan struct{}) error {
 		return nil
 	case <-time.After(15 * time.Second):
 		return errors.New("timed out")
+	}
+}
+
+func TestProwJobIndexer(t *testing.T) {
+	t.Parallel()
+	const pjNS = "prowjobs"
+	pj := func(modify ...func(*prowv1.ProwJob)) *prowv1.ProwJob {
+		pj := &prowv1.ProwJob{
+			ObjectMeta: metav1.ObjectMeta{
+				Namespace: pjNS,
+				Name:      "some-job",
+			},
+			Spec: prowv1.ProwJobSpec{
+				Agent: prowv1.KubernetesAgent,
+			},
+		}
+		for _, m := range modify {
+			m(pj)
+		}
+		return pj
+	}
+	testCases := []struct {
+		name     string
+		modify   func(*prowv1.ProwJob)
+		expected []string
+	}{
+		{
+			name:     "Matches both keys",
+			expected: []string{prowJobIndexKeyAll, prowJobIndexKeyNotCompleted},
+		},
+		{
+			name:   "Wrong namespace, no key",
+			modify: func(pj *prowv1.ProwJob) { pj.Namespace = "wrong" },
+		},
+		{
+			name:   "Wrong agent, no key",
+			modify: func(pj *prowv1.ProwJob) { pj.Spec.Agent = prowv1.TektonAgent },
+		},
+		{
+			name:     "Completed, matches only the `all` key",
+			modify:   func(pj *prowv1.ProwJob) { pj.SetComplete() },
+			expected: []string{prowJobIndexKeyAll},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			if tc.modify == nil {
+				tc.modify = func(_ *prowv1.ProwJob) {}
+			}
+			result := prowJobIndexer(pjNS)(pj(tc.modify))
+			if diff := deep.Equal(result, tc.expected); diff != nil {
+				t.Errorf("result differs from expected: %v", diff)
+			}
+		})
 	}
 }

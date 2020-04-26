@@ -36,6 +36,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
@@ -74,6 +75,10 @@ func add(
 		return fmt.Errorf("failed to construct predicate: %w", err)
 	}
 
+	if err := mgr.GetFieldIndexer().IndexField(&prowv1.ProwJob{}, prowJobIndexName, prowJobIndexer(cfg().ProwJobNamespace)); err != nil {
+		return fmt.Errorf("failed to add indexer: %w", err)
+	}
+
 	blder := controllerruntime.NewControllerManagedBy(mgr).
 		Named(controllerName).
 		For(&prowv1.ProwJob{}).
@@ -100,6 +105,10 @@ func add(
 		return fmt.Errorf("failed to build controller: %w", err)
 	}
 
+	if err := mgr.Add(manager.RunnableFunc(r.syncMetrics)); err != nil {
+		return fmt.Errorf("failed to add metrics runnable to manager: %w", err)
+	}
+
 	return nil
 }
 
@@ -119,7 +128,21 @@ type reconciler struct {
 	pendingJobs map[string]int
 }
 
-// TODO: Metrics
+func (r *reconciler) syncMetrics(stop <-chan struct{}) error {
+	for {
+		select {
+		case <-stop:
+			return nil
+		case <-time.NewTicker(30 * time.Second).C:
+			pjs := &prowv1.ProwJobList{}
+			if err := r.pjClient.List(r.ctx, pjs, optAllProwJobs()); err != nil {
+				r.log.WithError(err).Error("failed to list prowjobs for metrics")
+				continue
+			}
+			kube.GatherProwJobMetrics(pjs.Items)
+		}
+	}
+}
 
 func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, error) {
 	if r.overwriteReconcile != nil {
@@ -163,10 +186,8 @@ func (r *reconciler) reconcile(pj *prowv1.ProwJob) (*reconcile.Result, error) {
 }
 
 func (r *reconciler) teminateDupes(pj *prowv1.ProwJob) error {
-	// TODO: This is incredibly inefficient, we list all prowjobs on each sync.
-	// This must be replaced with an index over jobName + !completed
 	pjs := &prowv1.ProwJobList{}
-	if err := r.pjClient.List(r.ctx, pjs, ctrlruntimeclient.InNamespace(r.config().ProwJobNamespace)); err != nil {
+	if err := r.pjClient.List(r.ctx, pjs, optNotCompletedProwJobs()); err != nil {
 		return fmt.Errorf("failed to list prowjobs: %v", err)
 	}
 
@@ -475,11 +496,9 @@ func (r *reconciler) canExecuteConcurrently(pj *prowv1.ProwJob) (bool, error) {
 
 	var olderMatchingPJs int
 
-	// TODO: This is incredible inefficient, as we we list all prowJobs everytime we do a sync.
-	// It must be replaced with an index over .Spec.Job + .Status.State
 	pjs := &prowv1.ProwJobList{}
-	if err := r.pjClient.List(r.ctx, pjs, ctrlruntimeclient.InNamespace(r.config().ProwJobNamespace)); err != nil {
-		return false, fmt.Errorf("list prowjobs: %v", err)
+	if err := r.pjClient.List(r.ctx, pjs, optNotCompletedProwJobs()); err != nil {
+		return false, fmt.Errorf("list prowjobs: %w", err)
 	}
 
 	for _, foundPJ := range pjs.Items {
@@ -560,4 +579,39 @@ func podEventRequestMapper(prowJobNamespace string) handler.EventHandler {
 			}
 		}),
 	}
+}
+
+const (
+	// prowJobIndexName is the name of an index that
+	// holds all ProwJobs that are in the correct namespace
+	// and use the Kubernetes agent
+	prowJobIndexName = "plank-prow-jobs"
+	// prowJobIndexKeyAll is the indexKey for all ProwJobs
+	prowJobIndexKeyAll = "all"
+	// prowJobIndexKeyCompleted is the indexKey for not
+	// completed ProwJobs
+	prowJobIndexKeyNotCompleted = "not-completed"
+)
+
+func prowJobIndexer(prowJobNamespace string) ctrlruntimeclient.IndexerFunc {
+	return func(o runtime.Object) []string {
+		pj := o.(*prowv1.ProwJob)
+		if pj.Namespace != prowJobNamespace || pj.Spec.Agent != prowv1.KubernetesAgent {
+			return nil
+		}
+
+		if !pj.Complete() {
+			return []string{prowJobIndexKeyAll, prowJobIndexKeyNotCompleted}
+		}
+
+		return []string{prowJobIndexKeyAll}
+	}
+}
+
+func optAllProwJobs() ctrlruntimeclient.ListOption {
+	return ctrlruntimeclient.MatchingField(prowJobIndexName, prowJobIndexKeyAll)
+}
+
+func optNotCompletedProwJobs() ctrlruntimeclient.ListOption {
+	return ctrlruntimeclient.MatchingField(prowJobIndexName, prowJobIndexKeyNotCompleted)
 }
