@@ -144,8 +144,8 @@ periodics:
       args:
       - -c
       - |
-        local result=0
-        GO111MODULE=off go install k8s.io/kubernetes/vendor/gotest.tools/gotestsum || result=$?
+        result=0
+        ( cd hack/tools && GO111MODULE=on go install gotest.tools/gotestsum ) || result=$?
         make test KUBE_COVER=y KUBE_COVER_REPORT_DIR="${ARTIFACTS}" KUBE_TIMEOUT="--timeout=300s" || result=$?
         grep -v -E 'zz_generated|generated\.pb\.go' "${ARTIFACTS}/combined-coverage.out" > "${ARTIFACTS}/filtered.cov" || result=$?
         exit $result
