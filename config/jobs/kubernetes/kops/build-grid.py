@@ -120,9 +120,6 @@ def build_test(cloud='aws', distro=None, networking=None):
     elif distro == 'centos7':
         kops_ssh_user = 'centos'
         kops_image = "679593333241/CentOS Linux 7 x86_64 HVM EBS ENA 1901_01-b7ee8a69-ee97-4a49-9e68-afaee216db2e-ami-05713873c6794f575.4" # pylint: disable=line-too-long
-    elif distro == 'coreos':
-        kops_ssh_user = 'core'
-        kops_image = '595879546273/CoreOS-stable-2303.3.0-hvm'
     elif distro == 'debian9':
         kops_ssh_user = 'admin'
         kops_image = '379101102735/debian-stretch-hvm-x86_64-gp2-2019-11-13-63558'
@@ -206,7 +203,6 @@ distro_options = [
     None,
     'amazonlinux2',
     'centos7',
-    'coreos',
     'debian9',
     'debian10',
     'flatcar',
