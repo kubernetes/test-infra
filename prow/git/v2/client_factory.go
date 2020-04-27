@@ -61,7 +61,7 @@ func NewClientFactory(host string, useSSH bool, username LoginGetter, token Toke
 			username: username,
 		}
 	} else {
-		remotes = &simpleAuthResolverFactory{
+		remotes = &httpResolverFactory{
 			host:     host,
 			username: username,
 			token:    token,
