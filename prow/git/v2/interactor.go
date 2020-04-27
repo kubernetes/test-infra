@@ -81,7 +81,7 @@ type cloner interface {
 }
 
 type interactor struct {
-	executor Executor
+	executor executor
 	remote   RemoteResolver
 	dir      string
 	logger   *logrus.Entry
