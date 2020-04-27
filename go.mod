@@ -27,7 +27,6 @@ require (
 	github.com/andygrunwald/go-gerrit v0.0.0-20190120104749-174420ebee6c
 	github.com/aws/aws-k8s-tester v1.0.0
 	github.com/aws/aws-sdk-go v1.30.5
-	github.com/bazelbuild/bazel-gazelle v0.20.0
 	github.com/bazelbuild/buildtools v0.0.0-20190917191645-69366ca98f89
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/bwmarrin/snowflake v0.0.0
@@ -47,7 +46,7 @@ require (
 	github.com/go-test/deep v1.0.4
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/golang/mock v1.3.1
-	github.com/golang/protobuf v1.3.4
+	github.com/golang/protobuf v1.3.4 // indirect
 	github.com/gomodule/redigo v1.7.0
 	github.com/google/go-cmp v0.4.0
 	github.com/google/go-github v17.0.0+incompatible
@@ -83,7 +82,6 @@ require (
 	github.com/tektoncd/pipeline v0.11.0
 	go.opencensus.io v0.22.3 // indirect
 	gocloud.dev v0.19.0
-	golang.org/x/arch v0.0.0-20200312215426-ff8b605520f4 // indirect
 	golang.org/x/crypto v0.0.0-20200302210943-78000ba7a073
 	golang.org/x/lint v0.0.0-20200302205851-738671d3881b
 	golang.org/x/net v0.0.0-20200301022130-244492dfa37a
@@ -93,8 +91,6 @@ require (
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0
 	golang.org/x/tools v0.0.0-20200303214625-2b0b585e22fe
 	google.golang.org/api v0.15.0
-	google.golang.org/genproto v0.0.0-20190911173649-1774047e7e51
-	google.golang.org/grpc v1.27.0
 	gopkg.in/ini.v1 v1.52.0 // indirect
 	gopkg.in/robfig/cron.v2 v2.0.0-20150107220207-be2e0b0deed5
 	gopkg.in/yaml.v3 v3.0.0-20190709130402-674ba3eaed22
