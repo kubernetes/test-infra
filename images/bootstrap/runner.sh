@@ -33,6 +33,10 @@ cleanup_dind() {
     fi
 }
 
+early_exit_handler() {
+    cleanup_dind
+}
+
 # optionally enable ipv6 docker
 export DOCKER_IN_DOCKER_IPV6_ENABLED=${DOCKER_IN_DOCKER_IPV6_ENABLED:-false}
 if [[ "${DOCKER_IN_DOCKER_IPV6_ENABLED}" == "true" ]]; then
@@ -78,6 +82,8 @@ if [[ "${DOCKER_IN_DOCKER_ENABLED}" == "true" ]]; then
     printf '=%.0s' {1..80}; echo
     echo "Done setting up docker in docker."
 fi
+
+trap early_exit_handler INT TERM
 
 # disable error exit so we can run post-command cleanup
 set +o errexit
