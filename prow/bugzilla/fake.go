@@ -73,6 +73,9 @@ func (c *Fake) UpdateBug(id int, update BugUpdate) error {
 	if bug, exists := c.Bugs[id]; exists {
 		bug.Status = update.Status
 		bug.Resolution = update.Resolution
+		if update.Version != "" {
+			bug.Version = []string{update.Version}
+		}
 		if update.DependsOn != nil {
 			if len(update.DependsOn.Set) > 0 {
 				bug.DependsOn = update.DependsOn.Set
@@ -136,6 +139,7 @@ func (c *Fake) CreateBug(bug *BugCreate) (int, error) {
 		Component:       bug.Component,
 		Flags:           bug.Flags,
 		Groups:          bug.Groups,
+		ID:              newID,
 		Keywords:        bug.Keywords,
 		OperatingSystem: bug.OperatingSystem,
 		Platform:        bug.Platform,
@@ -195,7 +199,7 @@ func (c *Fake) CloneBug(bug *Bug) (int, error) {
 	}
 	depends := BugUpdate{
 		DependsOn: &IDUpdate{
-			Add: []int{id},
+			Add: []int{bug.ID},
 		},
 	}
 	err = c.UpdateBug(id, depends)

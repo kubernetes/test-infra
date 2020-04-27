@@ -639,13 +639,19 @@ func TestHandle(t *testing.T) {
 		org: "org", repo: "repo", baseRef: "branch", number: 1, bugId: 123, body: "Bug 123: fixed it!", htmlUrl: "http.com", login: "user",
 	}
 	var testCases = []struct {
-		name                 string
-		labels               []string
-		missing              bool
-		merged               bool
+		name                string
+		labels              []string
+		missing             bool
+		merged              bool
+		cherryPick          bool
+		cherryPickFromPRNum int
+		cherryPickTo        string
+		// the "e.body" for PRs is the PR title; this field can be used to replace the "body" for PR handles for cases where the body != description
+		replaceBody          string
 		externalBugs         []bugzilla.ExternalBug
 		prs                  []github.PullRequest
 		bugs                 []bugzilla.Bug
+		bugComments          map[int][]bugzilla.Comment
 		bugErrors            []int
 		options              plugins.BugzillaBranchOptions
 		expectedLabels       []string
@@ -1083,6 +1089,30 @@ Instructions for interacting with me using PR comments are available [here](http
 </details>`,
 			expectedBug: &bugzilla.Bug{ID: 123, Status: "CLOSED", Severity: "urgent"},
 		},
+		{
+			name:                "Cherrypick PR results in cloned bug creation",
+			bugs:                []bugzilla.Bug{{Product: "Test", Component: []string{"TestComponent"}, Version: []string{"v2"}, ID: 123, Status: "CLOSED", Severity: "urgent"}},
+			bugComments:         map[int][]bugzilla.Comment{123: {{BugID: 123, Count: 0, Text: "This is a bug"}}},
+			prs:                 []github.PullRequest{{Number: base.number, Body: base.body, Title: base.body}, {Number: 2, Body: "This is an automated cherry-pick of #1.\n\n/assign user", Title: "[v1] " + base.body}},
+			replaceBody:         "[v1] " + base.body,
+			cherryPick:          true,
+			cherryPickFromPRNum: 1,
+			cherryPickTo:        "v1",
+			options:             plugins.BugzillaBranchOptions{TargetRelease: &v1},
+			expectedComment: `org/repo#1:@user: [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123) has been cloned as [Bugzilla bug 124](www.bugzilla/show_bug.cgi?id=124). Retitling PR to link against new bug.
+/retitle [v1] Bug 124: fixed it!
+
+<details>
+
+In response to [this](http.com):
+
+>[v1] Bug 123: fixed it!
+
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.
+</details>`,
+			expectedBug: &bugzilla.Bug{Product: "Test", Component: []string{"TestComponent"}, Version: []string{"v1"}, ID: 124, DependsOn: []int{123}, Severity: "urgent"},
+		},
 	}
 
 	for _, testCase := range testCases {
@@ -1102,6 +1132,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			bc := bugzilla.Fake{
 				EndpointString: "www.bugzilla",
 				Bugs:           map[int]bugzilla.Bug{},
+				BugComments:    testCase.bugComments,
 				BugErrors:      sets.NewInt(),
 				ExternalBugs:   map[int][]bugzilla.ExternalBug{},
 			}
@@ -1114,6 +1145,12 @@ Instructions for interacting with me using PR comments are available [here](http
 			}
 			e.missing = testCase.missing
 			e.merged = testCase.merged
+			e.cherrypick = testCase.cherryPick
+			e.cherrypickFromPRNum = testCase.cherryPickFromPRNum
+			e.cherrypickTo = testCase.cherryPickTo
+			if testCase.replaceBody != "" {
+				e.body = testCase.replaceBody
+			}
 			err := handle(e, &gc, &bc, testCase.options, logrus.WithField("testCase", testCase.name))
 			if err != nil {
 				t.Errorf("%s: expected no error but got one: %v", testCase.name, err)

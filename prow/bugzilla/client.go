@@ -231,7 +231,7 @@ func (c *client) CloneBug(bug *Bug) (int, error) {
 	}
 	depends := BugUpdate{
 		DependsOn: &IDUpdate{
-			Add: []int{id},
+			Add: []int{bug.ID},
 		},
 	}
 	err = c.UpdateBug(id, depends)
