@@ -31,8 +31,6 @@ cleanup_dind() {
         docker ps -aq | xargs -r docker rm -f || true
         service docker stop || true
     fi
-    # cleanup binfmt_misc
-    echo "Cleaning up binfmt_misc ..."
 }
 
 # optionally enable ipv6 docker

@@ -46,18 +46,18 @@ cleanup(){
   fi
 }
 
-exit_handler() {
-  >&2 echo "wrapper.sh] [EXIT_HANDLER] Interrupted, entering handler ..."
+early_exit_handler() {
+  >&2 echo "wrapper.sh] [EARLY EXIT] Interrupted, entering handler ..."
   trap_code=$?
   if [ -z ${EXIT_VALUE+x} ]; then
     >&2 echo "Original exit code was ${EXIT_VALUE}, not preserving due to interrupt signal"
   fi
   cleanup
-  >&2 echo "wrapper.sh] [EXIT_HANDLER] Completed handler ..."
+  >&2 echo "wrapper.sh] [EARLY EXIT] Completed handler ..."
   exit 1
 }
 
-trap exit_handler TERM INT
+trap early_exit_handler TERM INT
 
 # Check if the job has opted-in to bazel remote caching and if so generate 
 # .bazelrc entries pointing to the remote cache
