@@ -294,7 +294,7 @@ periodics:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-aws-k8s-1.11
 
-- interval: 2h
+- interval: 8h
   name: e2e-kops-aws-k8s-1-10
   labels:
     preset-service-account: "true"
@@ -317,7 +317,6 @@ periodics:
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --extract=release/stable-1.10
       - --ginkgo-parallel
-      - --kops-args=--image=kope.io/k8s-1.10-debian-stretch-amd64-hvm-ebs-2018-08-17
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
