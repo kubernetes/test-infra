@@ -17,7 +17,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200423-9bf074a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200424-a0ea3b9-master
         args:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
@@ -63,7 +63,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200423-9bf074a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200424-a0ea3b9-master
         env:
         # enable IPV6 in bootstrap image
         - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
@@ -112,7 +112,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200423-9bf074a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200424-a0ea3b9-master
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -154,7 +154,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200423-9bf074a-1.15
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200424-a0ea3b9-1.15
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
