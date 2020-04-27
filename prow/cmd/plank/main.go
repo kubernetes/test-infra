@@ -70,6 +70,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 }
 
 func (o *options) Validate() error {
+	o.github.AllowAnonymous = true
 	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github} {
 		if err := group.Validate(o.dryRun); err != nil {
 			return err

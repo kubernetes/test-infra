@@ -945,7 +945,8 @@ func Test_gatherOptions(t *testing.T) {
 	for _, tc := range cases {
 		fs := flag.NewFlagSet("fake-flags", flag.PanicOnError)
 		ghoptions := flagutil.GitHubOptions{}
-		ghoptions.AddFlagsWithoutDefaultGitHubTokenPath(fs)
+		ghoptions.AddFlags(fs)
+		ghoptions.AllowAnonymous = true
 		t.Run(tc.name, func(t *testing.T) {
 			expected := &options{
 				configPath:            "yo",

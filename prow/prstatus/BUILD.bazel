@@ -35,7 +35,6 @@ go_test(
     srcs = ["prstatus_test.go"],
     embed = [":go_default_library"],
     deps = [
-        "//prow/flagutil:go_default_library",
         "//prow/github:go_default_library",
         "//prow/githuboauth:go_default_library",
         "@com_github_gorilla_sessions//:go_default_library",
