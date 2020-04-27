@@ -44,8 +44,6 @@ var (
 	qaAssignCommandMatch = regexp.MustCompile(`(?mi)^/bugzilla assign-qa\s*$`)
 	qaReviewCommandMatch = regexp.MustCompile(`(?mi)^/bugzilla cc-qa\s*$`)
 	cherrypickPRMatch    = regexp.MustCompile(`This is an automated cherry-pick of #([0-9]+)`)
-	// all cherrypicks begin with the branch they are picking too in brackets (ex: [release-4.4])
-	cherrypickTitleMatch = regexp.MustCompile(`\[[^\]]+\]`)
 )
 
 const (
@@ -243,30 +241,17 @@ func digestPR(log *logrus.Entry, pre github.PullRequestEvent, validateByDefault 
 			return nil, err
 		}
 		e.cherrypickFromPRNum = cherrypickOf
-		cherrypickTo := cherrypickTitleMatch.FindStringSubmatch(pre.PullRequest.Title)
-		if cherrypickTo == nil {
-			log.Print("HELLO")
-			log.Debug("Failed to parse cherrypick to branch = is the regex correct?")
-			return nil, err
-		}
-		// need to remove the `[` and `]` from the beginning and end respectively
-		e.cherrypickTo = strings.TrimSuffix(strings.TrimPrefix(cherrypickTo[0], "["), "]")
+		e.cherrypickTo = pre.PullRequest.Base.Ref
 		return e, nil
 	}
 	// Make sure the PR title is referencing a bug
-	mat := titleMatch.FindStringSubmatch(title)
-	if mat == nil {
-		// in the case that the title used to reference a bug and no longer does we
-		// want to handle this to remove labels
-		e.missing = true
-	} else {
-		id, err := strconv.Atoi(mat[1])
-		if err != nil {
-			// should be impossible based on the regex
-			log.WithError(err).Debug("Failed to parse bug ID as int - is the regex correct?")
-			return nil, err
-		}
-		e.bugId = id
+	var err error
+	e.bugId, e.missing, err = bugIDFromTitle(title)
+	// in the case that the title used to reference a bug and no longer does we
+	// want to handle this to remove labels
+	if err != nil {
+		log.WithError(err).Debug("Failed to get bug ID from title")
+		return nil, err
 	}
 
 	// when exiting early from errors trying to find out if the PR previously referenced a bug,
@@ -287,15 +272,13 @@ func digestPR(log *logrus.Entry, pre github.PullRequestEvent, validateByDefault 
 		// we're detecting this best-effort so we can handle it anyway
 		return intermediate, nil
 	}
-	prevMat := titleMatch.FindStringSubmatch(changes.Title.From)
-	if prevMat == nil {
+	prevId, missing, err := bugIDFromTitle(changes.Title.From)
+	if missing {
 		// title did not previously reference a bug
 		return intermediate, nil
-	}
-	prevId, err := strconv.Atoi(prevMat[1])
-	if err != nil {
+	} else if err != nil {
 		// should be impossible based on the regex, ignore err as this is best-effort
-		log.WithError(err).Debug("Failed to parse bug ID as int - is the regex correct?")
+		log.WithError(err).Debug("Failed get previous bug ID")
 		return intermediate, nil
 	}
 
@@ -348,18 +331,12 @@ func digestComment(gc githubClient, log *logrus.Entry, gce github.GenericComment
 	}
 
 	e := &event{org: org, repo: repo, baseRef: pr.Base.Ref, number: number, merged: pr.Merged, state: pr.State, body: gce.Body, htmlUrl: gce.HTMLURL, login: gce.User.Login, assign: assign, cc: cc}
-	mat := titleMatch.FindStringSubmatch(pr.Title)
-	if mat == nil {
-		e.missing = true
-		return e, nil
-	}
-	id, err := strconv.Atoi(mat[1])
+	e.bugId, e.missing, err = bugIDFromTitle(pr.Title)
 	if err != nil {
 		// should be impossible based on the regex
-		log.WithError(err).Debug("Failed to parse bug ID as int - is the regex correct?")
+		log.WithError(err).Debug("Failed to get bug ID from PR title")
 		return nil, err
 	}
-	e.bugId = id
 
 	return e, nil
 }
@@ -859,42 +836,54 @@ func handleCherrypick(e event, gc githubClient, bc bugzilla.Client, options plug
 		return comment(formatError(fmt.Sprintf("checking the state of a cherrypicked pull request at https://github.com/%s/%s/pull/%d", e.org, e.repo, e.cherrypickFromPRNum), bc.Endpoint(), e.bugId, err))
 	}
 	// Attempt to identify bug from PR title
-	mat := titleMatch.FindStringSubmatch(pr.Title)
-	if mat == nil {
-		log.WithError(err).Debugf("Parent PR %d doesn't have associated bug; not creating cherrypicked bug", pr.Number)
-		return comment(formatError(fmt.Sprintf("Parent PR %d does not have an associated bug; skipping cherrypick bug creation", pr.Number), bc.Endpoint(), e.bugId, err))
-	}
-	bugID, err := strconv.Atoi(mat[1])
-	if err != nil {
+	bugID, bugMissing, err := bugIDFromTitle(pr.Title)
+	if bugMissing {
+		log.Debugf("Parent PR %d doesn't have associated bug; not creating cherrypicked bug", pr.Number)
+		// if there is no bugzilla bug, we should simply ignore this PR
+		return nil
+	} else if err != nil {
 		// should be impossible based on the regex
-		log.WithError(err).Debug("Failed to parse bug ID as int - is the regex correct?")
-		return comment(formatError(fmt.Sprintf("Failed to parse bug ID (%s) as int", mat[1]), bc.Endpoint(), e.bugId, err))
+		log.WithError(err).Debugf("Failed to get bug ID from PR title \"%s\"", pr.Title)
+		return comment(formatError(fmt.Sprintf("Failed to get bug ID from PR title \"%s\"", pr.Title), bc.Endpoint(), 0, err))
 	}
+	oldLink := fmt.Sprintf(bugLink, bugID, bc.Endpoint(), bugID)
 	bug, err := getBug(bc, bugID, log, comment)
 	if err != nil {
 		log.WithError(err).Debugf("Failed to get bug %d", bugID)
-		return comment(formatError(fmt.Sprintf("Failed to get bug %d", bugID), bc.Endpoint(), e.bugId, err))
+		return comment(formatError(fmt.Sprintf("Failed to get %s", oldLink), bc.Endpoint(), e.bugId, err))
 	}
 	cloneID, err := bc.CloneBug(bug)
 	if err != nil {
 		log.WithError(err).Debugf("Failed to clone bug %d", bugID)
-		return comment(formatError(fmt.Sprintf("Failed to clone bug %d for cherrypick", bugID), bc.Endpoint(), e.bugId, err))
+		return comment(formatError(fmt.Sprintf("Failed to clone %s for cherrypick", oldLink), bc.Endpoint(), e.bugId, err))
 	}
+	cloneLink := fmt.Sprintf(bugLink, cloneID, bc.Endpoint(), cloneID)
+	// Update the version of the bug to the target release
 	update := bugzilla.BugUpdate{
-		DependsOn: &bugzilla.IDUpdate{
-			Add: []int{bugID},
-		},
 		Version: *options.TargetRelease,
 	}
 	err = bc.UpdateBug(cloneID, update)
 	if err != nil {
 		log.WithError(err).Debugf("Unable to update version and dependencies for bug %d", cloneID)
-		return comment(formatError(fmt.Sprintf("Failed to update version and dependencies for bugzilla bug %d", cloneID), bc.Endpoint(), e.bugId, err))
+		return comment(formatError(fmt.Sprintf("Failed to update version and dependencies for bugzilla %s", cloneLink), bc.Endpoint(), e.bugId, err))
 	}
 	// Replace old bugID in title with new cloneID
 	newTitle := strings.Replace(e.body, fmt.Sprintf("Bug %d", bugID), fmt.Sprintf("Bug %d", cloneID), 1)
-	response := fmt.Sprintf("Bug %d has been cloned as Bug %d. Retitling PR to link against new bug.\n/retitle %s", bugID, cloneID, newTitle)
+	response := fmt.Sprintf("%s has been cloned as %s. Retitling PR to link against new bug.\n/retitle %s", oldLink, cloneLink, newTitle)
 	return comment(response)
+}
+
+func bugIDFromTitle(title string) (int, bool, error) {
+	mat := titleMatch.FindStringSubmatch(title)
+	if mat == nil {
+		return 0, true, nil
+	}
+	bugID, err := strconv.Atoi(mat[1])
+	if err != nil {
+		// should be impossible based on the regex
+		return 0, false, fmt.Errorf("Failed to parse bug ID (%s) as int", mat[1])
+	}
+	return bugID, false, nil
 }
 
 func getBug(bc bugzilla.Client, bugId int, log *logrus.Entry, comment func(string) error) (*bugzilla.Bug, error) {

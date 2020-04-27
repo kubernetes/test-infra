@@ -36,6 +36,8 @@ import (
 	"k8s.io/test-infra/prow/plugins"
 )
 
+var allowEvent = cmp.AllowUnexported(event{})
+
 func TestHelpProvider(t *testing.T) {
 	rawConfig := `default:
   "*":
@@ -144,7 +146,7 @@ orgs:
 	}
 
 	if actual := help; !reflect.DeepEqual(actual, expected) {
-		t.Errorf("resolved incorrect plugin help: %v", diff.ObjectReflectDiff(actual, expected))
+		t.Errorf("resolved incorrect plugin help: %v", cmp.Diff(actual, expected, allowEvent))
 	}
 }
 
@@ -291,7 +293,7 @@ func TestDigestPR(t *testing.T) {
 							},
 							Name: "repo",
 						},
-						Ref: "branch",
+						Ref: "release-4.4",
 					},
 					Number:  3,
 					Title:   "[release-4.4] Bug 123: fixed it!",
@@ -305,7 +307,7 @@ func TestDigestPR(t *testing.T) {
 				},
 			},
 			expected: &event{
-				org: "org", repo: "repo", baseRef: "branch", number: 3, body: "[release-4.4] Bug 123: fixed it!", htmlUrl: "http.com", login: "user", cherrypick: true, cherrypickFromPRNum: 2, cherrypickTo: "release-4.4",
+				org: "org", repo: "repo", baseRef: "release-4.4", number: 3, body: "[release-4.4] Bug 123: fixed it!", htmlUrl: "http.com", login: "user", cherrypick: true, cherrypickFromPRNum: 2, cherrypickTo: "release-4.4",
 			},
 		},
 		{
@@ -423,7 +425,7 @@ func TestDigestPR(t *testing.T) {
 			}
 
 			if actual, expected := event, testCase.expected; !reflect.DeepEqual(actual, expected) {
-				t.Errorf("%s: did not get correct event: %v", testCase.name, cmp.Diff(actual, expected))
+				t.Errorf("%s: did not get correct event: %v", testCase.name, cmp.Diff(actual, expected, allowEvent))
 			}
 		})
 	}
@@ -617,7 +619,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			}
 
 			if actual, expected := event, testCase.expected; !reflect.DeepEqual(actual, expected) {
-				t.Errorf("%s: did not get correct event: %v", testCase.name, diff.ObjectReflectDiff(actual, expected))
+				t.Errorf("%s: did not get correct event: %v", testCase.name, cmp.Diff(actual, expected, allowEvent))
 			}
 
 			checkComments(client, testCase.name, testCase.expectedComment, t)
@@ -1137,12 +1139,12 @@ Instructions for interacting with me using PR comments are available [here](http
 
 			if testCase.expectedBug != nil {
 				if actual, expected := bc.Bugs[testCase.expectedBug.ID], *testCase.expectedBug; !reflect.DeepEqual(actual, expected) {
-					t.Errorf("%s: got incorrect bug after update: %s", testCase.name, diff.ObjectReflectDiff(actual, expected))
+					t.Errorf("%s: got incorrect bug after update: %s", testCase.name, cmp.Diff(actual, expected, allowEvent))
 				}
 			}
 			if len(testCase.expectedExternalBugs) > 0 {
 				if actual, expected := bc.ExternalBugs[testCase.expectedBug.ID], testCase.expectedExternalBugs; !reflect.DeepEqual(actual, expected) {
-					t.Errorf("%s: got incorrect external bugs after update: %s", testCase.name, diff.ObjectReflectDiff(actual, expected))
+					t.Errorf("%s: got incorrect external bugs after update: %s", testCase.name, cmp.Diff(actual, expected, allowEvent))
 				}
 			}
 		})
@@ -1446,10 +1448,10 @@ func TestValidateBug(t *testing.T) {
 				t.Errorf("%s: didn't validate bug correctly, expected %t got %t", testCase.name, testCase.valid, valid)
 			}
 			if !reflect.DeepEqual(validations, testCase.validations) {
-				t.Errorf("%s: didn't get correct validations: %v", testCase.name, diff.ObjectReflectDiff(testCase.validations, validations))
+				t.Errorf("%s: didn't get correct validations: %v", testCase.name, cmp.Diff(testCase.validations, validations, allowEvent))
 			}
 			if !reflect.DeepEqual(why, testCase.why) {
-				t.Errorf("%s: didn't get correct reasons why: %v", testCase.name, diff.ObjectReflectDiff(testCase.why, why))
+				t.Errorf("%s: didn't get correct reasons why: %v", testCase.name, cmp.Diff(testCase.why, why, allowEvent))
 			}
 		})
 	}
