@@ -26,7 +26,7 @@ fi
 
 # runs custom docker data root cleanup binary and debugs remaining resources
 cleanup_dind() {
-    if [[ "{DOCKER_IN_DOCKER_ENABLED:-false}" == "true" ]]; then
+    if [[ "${DOCKER_IN_DOCKER_ENABLED:-false}" == "true" ]]; then
         echo "Cleaning up after docker"
         docker ps -aq | xargs -r docker rm -f || true
         service docker stop || true
