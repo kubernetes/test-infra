@@ -182,7 +182,7 @@ periodics:
             # during the tests more like 3-20m is used
             cpu: 2000m
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp, sig-release-master-informing
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
     testgrid-tab-name: capg-conformance-v1alpha2-k8s-master
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
     testgrid-num-failures-to-alert: "2"
@@ -231,7 +231,7 @@ periodics:
             # during the tests more like 3-20m is used
             cpu: 2000m
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp, sig-release-master-informing
     testgrid-tab-name: capg-conformance-v1alpha3-k8s-master
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
     testgrid-num-failures-to-alert: "2"
