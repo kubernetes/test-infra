@@ -19,7 +19,6 @@ package slack
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"text/template"
 
 	"github.com/sirupsen/logrus"
@@ -115,16 +114,11 @@ func (sr *slackReporter) ShouldReport(pj *v1.ProwJob) bool {
 	return stateShouldReport && typeShouldReport
 }
 
-func New(cfg func(refs *prowapi.Refs) config.SlackReporter, dryRun bool, tokenFile string) (*slackReporter, error) {
-	token, err := ioutil.ReadFile(tokenFile)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read -token-file: %v", err)
-	}
-
+func New(cfg func(refs *prowapi.Refs) config.SlackReporter, dryRun bool, token func() []byte) *slackReporter {
 	return &slackReporter{
-		client: slackclient.NewClient(func() []byte { return token }),
+		client: slackclient.NewClient(token),
 		config: cfg,
 		logger: logrus.WithField("component", reporterName),
 		dryRun: dryRun,
-	}, nil
+	}
 }
