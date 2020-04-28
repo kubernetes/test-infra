@@ -1,8 +1,9 @@
 triggers:
 - repos:
+  - IBM
+  - hybridapp-io
   - multicloudlab
   - rh-ibm-synergy
-  - IBM
   trusted_org: IBM
   elide_skipped_contexts: true
 
@@ -16,6 +17,61 @@ config_updater:
       name: job-config
 
 plugins:
+  IBM/test-infra:
+  - config-updater
+
+  IBM:
+  - approve
+  - assign
+  - blunderbuss
+  - cat
+  - dog
+  - golint
+  - heart
+  - help
+  - hold
+  - label
+  - lgtm
+  - lifecycle
+  - milestone
+  - owners-label
+  - project
+  - retitle
+  - shrug
+  - size
+  - stage
+  - trigger
+  - verify-owners
+  - welcome
+  - wip
+  - yuks
+
+  hybridapp-io:
+  - approve
+  - assign
+  - blunderbuss
+  - cat
+  - dog
+  - golint
+  - heart
+  - help
+  - hold
+  - label
+  - lgtm
+  - lifecycle
+  - milestone
+  - owners-label
+  - project
+  - retitle
+  - shrug
+  - size
+  - stage
+  - trigger
+  - verify-owners
+  - welcome
+  - wip
+  - yuks
+
   multicloudlab:
   - approve
   - assign
@@ -61,36 +117,23 @@ plugins:
   - verify-owners
   - wip
 
-  IBM:
-  - approve
-  - assign
-  - blunderbuss
-  - cat
-  - dog
-  - golint
-  - heart
-  - help
-  - hold
-  - label
-  - lgtm
-  - lifecycle
-  - milestone
-  - owners-label
-  - project
-  - retitle
-  - shrug
-  - size
-  - stage
-  - trigger
-  - verify-owners
-  - welcome
-  - wip
-  - yuks
-
-  IBM/test-infra:
-  - config-updater
-
 external_plugins:
+  IBM:
+  - name: needs-rebase
+    events:
+    - pull_request
+  - name: cherrypicker
+    events:
+      - issue_comment
+      - pull_request
+  hybridapp-io:
+  - name: needs-rebase
+    events:
+    - pull_request
+  - name: cherrypicker
+    events:
+      - issue_comment
+      - pull_request
   multicloudlab:
   - name: needs-rebase
     events:
@@ -100,14 +143,6 @@ external_plugins:
       - issue_comment
       - pull_request
   rh-ibm-synergy:
-  - name: needs-rebase
-    events:
-    - pull_request
-  - name: cherrypicker
-    events:
-      - issue_comment
-      - pull_request
-  IBM:
   - name: needs-rebase
     events:
     - pull_request

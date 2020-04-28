@@ -56,6 +56,9 @@ tide:
     IBM/multicloud-operators-subscription: squash
     IBM/multicloud-multi-tenancy: squash
     IBM/multicloud-application-monitoring-dashboard: squash
+    hybridapp-io/ham-application-assembler: squash
+    hybridapp-io/ham-resource-discoverer: squash
+    hybridapp-io/ham-deployable-operator: squash
 
   target_url: http://prow.purple-chesterfield.com/tide
   queries:
@@ -100,6 +103,9 @@ tide:
     - IBM/multicloud-operators-subscription
     - IBM/multicloud-multi-tenancy
     - IBM/multicloud-application-monitoring-dashboard
+    - hybridapp-io/ham-application-assembler
+    - hybridapp-io/ham-resource-discoverer
+    - hybridapp-io/ham-deployable-operator
     labels:
     - lgtm
     - approved
