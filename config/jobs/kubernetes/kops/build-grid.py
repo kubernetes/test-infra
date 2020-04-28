@@ -47,7 +47,7 @@ template = """
       - --provider=aws
       - --test_args={{test_args}}
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200427-84e5e2b-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-cdaab98-master
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
     testgrid-tab-name: {{tab}}
