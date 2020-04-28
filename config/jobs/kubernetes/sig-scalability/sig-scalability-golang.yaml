@@ -1,0 +1,25 @@
+periodics:
+- name: ci-build-and-push-k8s-at-golang-tip
+  interval: 8h
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+  annotations:
+    testgrid-dashboards: sig-scalability-golang
+    testgrid-tab-name: build-and-push-k8s-at-golang-tip
+  spec:
+    containers:
+      - image: gcr.io/k8s-testimages/bootstrap:v20200302-ca9526d
+        args:
+        - --root=/go/src
+        - --repo=k8s.io/perf-tests=master
+        - --timeout=60
+        - --scenario=execute
+        - --
+        - make
+        - --
+        - --directory=/go/src/k8s.io/perf-tests/golang
+        - K8S_COMMIT=28ec82ddbdfc09619ce00a2aae498cb3c9d3ebc8 # head of release-1.18 branch as of 2020-04-28
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
