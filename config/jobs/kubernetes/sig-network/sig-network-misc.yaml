@@ -2,6 +2,7 @@ presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-e2e-gci-gce-ipvs
     always_run: false
+    run_if_changed: '^pkg/.*/ipvs/'
     optional: true
     skip_report: false
     branches:
