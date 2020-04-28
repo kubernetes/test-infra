@@ -516,3 +516,46 @@ func testMerging(clients localgit.Clients, t *testing.T) {
 		})
 	}
 }
+
+func TestShowRef(t *testing.T) {
+	testShowRef(localgit.New, t)
+}
+
+func TestShowRefV2(t *testing.T) {
+	testShowRef(localgit.NewV2, t)
+}
+
+func testShowRef(clients localgit.Clients, t *testing.T) {
+	const org, repo = "org", "repo"
+	lg, c, err := clients()
+	if err != nil {
+		t.Fatalf("failed to get clients: %v", err)
+	}
+	defer func() {
+		if err := lg.Clean(); err != nil {
+			t.Errorf("Error cleaning LocalGit: %v", err)
+		}
+		if err := c.Clean(); err != nil {
+			t.Errorf("Error cleaning Client: %v", err)
+		}
+	}()
+	if err := lg.MakeFakeRepo(org, repo); err != nil {
+		t.Fatalf("Making fake repo: %v", err)
+	}
+	reference, err := lg.RevParse(org, repo, "HEAD")
+	if err != nil {
+		t.Fatalf("lg.RevParse: %v", err)
+	}
+
+	client, err := c.ClientFor(org, repo)
+	if err != nil {
+		t.Fatalf("clientFor: %v", err)
+	}
+	res, err := client.ShowRef("HEAD")
+	if err != nil {
+		t.Fatalf("ShowRef: %v", err)
+	}
+	if res != reference {
+		t.Errorf("expeted result to be %s, was %s", reference, res)
+	}
+}

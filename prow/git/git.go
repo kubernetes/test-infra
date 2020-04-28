@@ -475,3 +475,13 @@ func (r *Repo) MergeCommitsExistBetween(target, head string) (bool, error) {
 	}
 	return len(b) != 0, nil
 }
+
+// ShowRef returns the commit for a commitlike. Unlike rev-parse it does not require a checkout.
+func (i *Repo) ShowRef(commitlike string) (string, error) {
+	i.logger.Infof("Getting the commit sha for commitlike %s", commitlike)
+	out, err := i.gitCommand("show-ref", "-s", commitlike).CombinedOutput()
+	if err != nil {
+		return "", fmt.Errorf("failed to get commit sha for commitlike %s: %v", commitlike, err)
+	}
+	return strings.TrimSpace(string(out)), nil
+}
