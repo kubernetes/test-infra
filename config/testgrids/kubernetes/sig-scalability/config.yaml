@@ -7,6 +7,7 @@ dashboard_groups:
     - sig-scalability-perf-tests
     - sig-scalability-benchmarks
     - sig-scalability-experiments
+    - sig-scalability-golang
 
 dashboards:
 - name: sig-scalability-gce
@@ -15,3 +16,4 @@ dashboards:
 - name: sig-scalability-perf-tests
 - name: sig-scalability-benchmarks
 - name: sig-scalability-experiments
+- name: sig-scalability-golang
