@@ -627,7 +627,6 @@ func newfakeProwJobTriggerer() fakeProwJobTriggerer {
 	return fakeProwJobTriggerer{
 		errors:  map[prKey]sets.String{},
 		created: map[prKey]sets.String{},
-		skipped: map[prKey]sets.String{},
 	}
 }
 
@@ -639,10 +638,9 @@ type prKey struct {
 type fakeProwJobTriggerer struct {
 	errors  map[prKey]sets.String
 	created map[prKey]sets.String
-	skipped map[prKey]sets.String
 }
 
-func (c *fakeProwJobTriggerer) runAndSkip(pr *github.PullRequest, requestedJobs, skippedJobs []config.Presubmit) error {
+func (c *fakeProwJobTriggerer) runAndSkip(pr *github.PullRequest, requestedJobs []config.Presubmit) error {
 	actions := []struct {
 		jobs    []config.Presubmit
 		records map[prKey]sets.String
@@ -650,10 +648,6 @@ func (c *fakeProwJobTriggerer) runAndSkip(pr *github.PullRequest, requestedJobs,
 		{
 			jobs:    requestedJobs,
 			records: c.created,
-		},
-		{
-			jobs:    skippedJobs,
-			records: c.skipped,
 		},
 	}
 	for _, action := range actions {
@@ -890,7 +884,7 @@ func TestControllerReconcile(t *testing.T) {
 					trustedChecker:          &ftc,
 				}
 				checker := func(t *testing.T) {
-					checkTriggerer(t, fpjt, map[prKey]sets.String{}, map[prKey]sets.String{})
+					checkTriggerer(t, fpjt, map[prKey]sets.String{})
 					checkMigrator(t, fsm, map[orgRepo]sets.String{orgRepoKey: sets.NewString("required-job")}, map[orgRepo]migrationSet{orgRepoKey: {migrate: nil}})
 				}
 				return controller, checker
@@ -915,7 +909,7 @@ func TestControllerReconcile(t *testing.T) {
 					trustedChecker:          &ftc,
 				}
 				checker := func(t *testing.T) {
-					checkTriggerer(t, fpjt, map[prKey]sets.String{}, map[prKey]sets.String{})
+					checkTriggerer(t, fpjt, map[prKey]sets.String{})
 					checkMigrator(t, fsm, map[orgRepo]sets.String{orgRepoKey: sets.NewString("required-job")}, map[orgRepo]migrationSet{orgRepoKey: {migrate: nil}})
 				}
 				return controller, checker
@@ -941,7 +935,7 @@ func TestControllerReconcile(t *testing.T) {
 				}
 				checker := func(t *testing.T) {
 					expectedProwJob := map[prKey]sets.String{prOrgRepoKey: sets.NewString("new-required-job")}
-					checkTriggerer(t, fpjt, expectedProwJob, map[prKey]sets.String{prOrgRepoKey: sets.NewString()})
+					checkTriggerer(t, fpjt, expectedProwJob)
 					checkMigrator(t, fsm, map[orgRepo]sets.String{orgRepoKey: sets.NewString("required-job")}, map[orgRepo]migrationSet{orgRepoKey: {migrate: nil}})
 				}
 				return controller, checker
@@ -966,7 +960,7 @@ func TestControllerReconcile(t *testing.T) {
 					trustedChecker:          &ftc,
 				}
 				checker := func(t *testing.T) {
-					checkTriggerer(t, fpjt, map[prKey]sets.String{}, map[prKey]sets.String{})
+					checkTriggerer(t, fpjt, map[prKey]sets.String{})
 					checkMigrator(t, fsm, map[orgRepo]sets.String{orgRepoKey: sets.NewString("required-job")}, map[orgRepo]migrationSet{orgRepoKey: {migrate: nil}})
 				}
 				return controller, checker
@@ -991,7 +985,7 @@ func TestControllerReconcile(t *testing.T) {
 					trustedChecker:          &ftc,
 				}
 				checker := func(t *testing.T) {
-					checkTriggerer(t, fpjt, map[prKey]sets.String{}, map[prKey]sets.String{})
+					checkTriggerer(t, fpjt, map[prKey]sets.String{})
 					checkMigrator(t, fsm, map[orgRepo]sets.String{orgRepoKey: sets.NewString("required-job")}, map[orgRepo]migrationSet{orgRepoKey: {migrate: nil}})
 				}
 				return controller, checker
@@ -1016,7 +1010,7 @@ func TestControllerReconcile(t *testing.T) {
 					trustedChecker:          &ftc,
 				}
 				checker := func(t *testing.T) {
-					checkTriggerer(t, fpjt, map[prKey]sets.String{thirdPrOrgRepoKey: sets.NewString()}, map[prKey]sets.String{thirdPrOrgRepoKey: sets.NewString("new-required-job")})
+					checkTriggerer(t, fpjt, map[prKey]sets.String{thirdPrOrgRepoKey: sets.NewString()})
 					checkMigrator(t, fsm, map[orgRepo]sets.String{orgRepoKey: sets.NewString("required-job")}, map[orgRepo]migrationSet{orgRepoKey: {migrate: nil}})
 				}
 				return controller, checker
@@ -1041,7 +1035,7 @@ func TestControllerReconcile(t *testing.T) {
 					trustedChecker:          &ftc,
 				}
 				checker := func(t *testing.T) {
-					checkTriggerer(t, fpjt, map[prKey]sets.String{}, map[prKey]sets.String{})
+					checkTriggerer(t, fpjt, map[prKey]sets.String{})
 					checkMigrator(t, fsm, map[orgRepo]sets.String{orgRepoKey: sets.NewString("required-job")}, map[orgRepo]migrationSet{orgRepoKey: {migrate: nil}})
 				}
 				return controller, checker
@@ -1068,7 +1062,7 @@ func TestControllerReconcile(t *testing.T) {
 					trustedChecker:          &ftc,
 				}
 				checker := func(t *testing.T) {
-					checkTriggerer(t, fpjt, map[prKey]sets.String{}, map[prKey]sets.String{})
+					checkTriggerer(t, fpjt, map[prKey]sets.String{})
 					checkMigrator(t, fsm, map[orgRepo]sets.String{orgRepoKey: sets.NewString("required-job")}, map[orgRepo]migrationSet{orgRepoKey: {migrate: nil}})
 				}
 				return controller, checker
@@ -1096,7 +1090,7 @@ func TestControllerReconcile(t *testing.T) {
 				}
 				checker := func(t *testing.T) {
 					expectedProwJob := map[prKey]sets.String{prOrgRepoKey: sets.NewString("new-required-job")}
-					checkTriggerer(t, fpjt, expectedProwJob, map[prKey]sets.String{prOrgRepoKey: sets.NewString()})
+					checkTriggerer(t, fpjt, expectedProwJob)
 					checkMigrator(t, fsm, map[orgRepo]sets.String{orgRepoKey: sets.NewString()}, map[orgRepo]migrationSet{orgRepoKey: {migrate: nil}})
 				}
 				return controller, checker
@@ -1124,7 +1118,7 @@ func TestControllerReconcile(t *testing.T) {
 				}
 				checker := func(t *testing.T) {
 					expectedProwJob := map[prKey]sets.String{prOrgRepoKey: sets.NewString("new-required-job")}
-					checkTriggerer(t, fpjt, expectedProwJob, map[prKey]sets.String{prOrgRepoKey: sets.NewString()})
+					checkTriggerer(t, fpjt, expectedProwJob)
 					checkMigrator(t, fsm, map[orgRepo]sets.String{orgRepoKey: sets.NewString("required-job")}, map[orgRepo]migrationSet{orgRepoKey: {}})
 				}
 				return controller, checker
@@ -1148,12 +1142,9 @@ func TestControllerReconcile(t *testing.T) {
 	}
 }
 
-func checkTriggerer(t *testing.T, triggerer fakeProwJobTriggerer, expectedCreatedJobs, expectedSkippedJobs map[prKey]sets.String) {
+func checkTriggerer(t *testing.T, triggerer fakeProwJobTriggerer, expectedCreatedJobs map[prKey]sets.String) {
 	if actual, expected := triggerer.created, expectedCreatedJobs; !reflect.DeepEqual(actual, expected) {
 		t.Errorf("did not create expected ProwJob: %s", diff.ObjectReflectDiff(actual, expected))
-	}
-	if actual, expected := triggerer.skipped, expectedSkippedJobs; !reflect.DeepEqual(actual, expected) {
-		t.Errorf("did not skip expected ProwJob: %s", diff.ObjectReflectDiff(actual, expected))
 	}
 }
 

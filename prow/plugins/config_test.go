@@ -206,9 +206,6 @@ func TestTriggerFor(t *testing.T) {
 			if tc.expectedTrusted != actual.TrustedOrg {
 				t.Errorf("expected TrustedOrg to be %q, but got %q", tc.expectedTrusted, actual.TrustedOrg)
 			}
-			if actual.ElideSkippedContexts == nil {
-				t.Errorf("elide_skipped_contexts was not properly defaulted")
-			}
 		})
 	}
 }
