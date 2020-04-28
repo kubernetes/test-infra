@@ -78,7 +78,6 @@ if [[ "${DOCKER_IN_DOCKER_ENABLED}" == "true" ]]; then
             break
         fi
     done
-    cleanup_dind
     printf '=%.0s' {1..80}; echo
     echo "Done setting up docker in docker."
 fi
