@@ -12,6 +12,12 @@ dashboards:
   # Gardener ALL Dashboard
 - name: gardener-all
   dashboard_tab:
+    # GCE
+    - name: Gardener, v1.18 GCE
+      description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Google Cloud Engine (GCE)
+      test_group_name: ci-gardener-e2e-gce-v1.18
+      alert_options:
+        alert_mail_to_addresses: gardener-oq@listserv.sap.com
     - name: Gardener, v1.17 GCE
       description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Google Cloud Engine (GCE)
       test_group_name: ci-gardener-e2e-gce-v1.17
@@ -50,6 +56,13 @@ dashboards:
     - name: Gardener, v1.10 GCE
       description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Google Cloud Engine (GCE)
       test_group_name: ci-gardener-e2e-gce-v1.10
+      alert_options:
+        alert_mail_to_addresses: gardener-oq@listserv.sap.com
+
+    # AWS
+    - name: Gardener, v1.18 AWS
+      description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Amazon Web Services (AWS)
+      test_group_name: ci-gardener-e2e-aws-v1.18
       alert_options:
         alert_mail_to_addresses: gardener-oq@listserv.sap.com
     - name: Gardener, v1.17 AWS
@@ -92,6 +105,13 @@ dashboards:
       test_group_name: ci-gardener-e2e-aws-v1.10
       alert_options:
         alert_mail_to_addresses: gardener-oq@listserv.sap.com
+
+    #Alicloud
+    - name: Gardener, v1.18 Alicloud
+      description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Alibaba Cloud (Alicloud)
+      test_group_name: ci-gardener-e2e-alicloud-v1.18
+      alert_options:
+        alert_mail_to_addresses: gardener-oq@listserv.sap.com
     - name: Gardener, v1.17 Alicloud
       description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Alibaba Cloud (Alicloud)
       test_group_name: ci-gardener-e2e-alicloud-v1.17
@@ -115,6 +135,13 @@ dashboards:
     - name: Gardener, v1.13 Alicloud
       description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Alibaba Cloud (Alicloud)
       test_group_name: ci-gardener-e2e-alicloud-v1.13
+      alert_options:
+        alert_mail_to_addresses: gardener-oq@listserv.sap.com
+
+    # Azure
+    - name: Gardener, v1.18 Azure
+      description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Microsoft Azure
+      test_group_name: ci-gardener-e2e-azure-v1.18
       alert_options:
         alert_mail_to_addresses: gardener-oq@listserv.sap.com
     - name: Gardener, v1.17 Azure
@@ -155,6 +182,13 @@ dashboards:
     - name: Gardener, v1.10 Azure
       description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Microsoft Azure
       test_group_name: ci-gardener-e2e-azure-v1.10
+      alert_options:
+        alert_mail_to_addresses: gardener-oq@listserv.sap.com
+
+    # Openstack
+    - name: Gardener, v1.18 OpenStack
+      description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on OpenStack
+      test_group_name: ci-gardener-e2e-openstack-v1.18
       alert_options:
         alert_mail_to_addresses: gardener-oq@listserv.sap.com
     - name: Gardener, v1.17 OpenStack
@@ -201,6 +235,11 @@ dashboards:
   # Gardener AWS Dashboard
 - name: gardener-aws
   dashboard_tab:
+    - name: Gardener, v1.18 AWS
+      description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Amazon Web Services (AWS)
+      test_group_name: ci-gardener-e2e-aws-v1.18
+      alert_options:
+        alert_mail_to_addresses: gardener-oq@listserv.sap.com
     - name: Gardener, v1.17 AWS
       description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Amazon Web Services (AWS)
       test_group_name: ci-gardener-e2e-aws-v1.17
@@ -245,6 +284,11 @@ dashboards:
   # Gardener GCE Dashboard
 - name: gardener-gce
   dashboard_tab:
+    - name: Gardener, v1.18 GCE
+      description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Google Cloud Engine (GCE)
+      test_group_name: ci-gardener-e2e-gce-v1.18
+      alert_options:
+        alert_mail_to_addresses: gardener-oq@listserv.sap.com
     - name: Gardener, v1.17 GCE
       description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Google Cloud Engine (GCE)
       test_group_name: ci-gardener-e2e-gce-v1.17
@@ -289,6 +333,11 @@ dashboards:
   # Gardener Alicloud Dashboard
 - name: gardener-alicloud
   dashboard_tab:
+    - name: Gardener, v1.18 Alicloud
+      description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Alibaba Cloud (Alicloud)
+      test_group_name: ci-gardener-e2e-alicloud-v1.18
+      alert_options:
+        alert_mail_to_addresses: gardener-oq@listserv.sap.com
     - name: Gardener, v1.17 Alicloud
       description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Alibaba Cloud (Alicloud)
       test_group_name: ci-gardener-e2e-alicloud-v1.17
@@ -318,6 +367,11 @@ dashboards:
   # Gardener Azure Dashboard
 - name: gardener-azure
   dashboard_tab:
+    - name: Gardener, v1.18 Azure
+      description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Microsoft Azure
+      test_group_name: ci-gardener-e2e-azure-v1.18
+      alert_options:
+        alert_mail_to_addresses: gardener-oq@listserv.sap.com
     - name: Gardener, v1.17 Azure
       description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Microsoft Azure
       test_group_name: ci-gardener-e2e-azure-v1.17
@@ -362,6 +416,11 @@ dashboards:
   # Gardener OpenStack Dashboard
 - name: gardener-openstack
   dashboard_tab:
+    - name: Gardener, v1.18 OpenStack
+      description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on OpenStack
+      test_group_name: ci-gardener-e2e-openstack-v1.18
+      alert_options:
+        alert_mail_to_addresses: gardener-oq@listserv.sap.com
     - name: Gardener, v1.17 OpenStack
       description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on OpenStack
       test_group_name: ci-gardener-e2e-openstack-v1.17
@@ -405,6 +464,26 @@ dashboards:
 
 test_groups:
 # Gardener Conformance Test Groups
+- name: ci-gardener-e2e-conformance-aws-v1.18
+  gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-aws-v1.18
+  alert_stale_results_hours: 168
+  num_failures_to_alert: 1
+- name: ci-gardener-e2e-conformance-gce-v1.18
+  gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-gce-v1.18
+  alert_stale_results_hours: 168
+  num_failures_to_alert: 1
+- name: ci-gardener-e2e-conformance-openstack-v1.18
+  gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-openstack-v1.18
+  alert_stale_results_hours: 168
+  num_failures_to_alert: 1
+- name: ci-gardener-e2e-conformance-azure-v1.18
+  gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-azure-v1.18
+  alert_stale_results_hours: 168
+  num_failures_to_alert: 1
+- name: ci-gardener-e2e-conformance-alicloud-v1.18
+  gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-alicloud-v1.18
+  alert_stale_results_hours: 168
+  num_failures_to_alert: 1
 - name: ci-gardener-e2e-conformance-aws-v1.17
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-aws-v1.17
   alert_stale_results_hours: 168
@@ -555,6 +634,26 @@ test_groups:
   num_failures_to_alert: 1
 
 # Gardener General Test Groups
+- name: ci-gardener-e2e-aws-v1.18
+  gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-aws-v1.18
+  alert_stale_results_hours: 168
+  num_failures_to_alert: 1
+- name: ci-gardener-e2e-gce-v1.18
+  gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-gce-v1.18
+  alert_stale_results_hours: 168
+  num_failures_to_alert: 1
+- name: ci-gardener-e2e-openstack-v1.18
+  gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-openstack-v1.18
+  alert_stale_results_hours: 168
+  num_failures_to_alert: 1
+- name: ci-gardener-e2e-azure-v1.18
+  gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-azure-v1.18
+  alert_stale_results_hours: 168
+  num_failures_to_alert: 1
+- name: ci-gardener-e2e-alicloud-v1.18
+  gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-alicloud-v1.18
+  alert_stale_results_hours: 168
+  num_failures_to_alert: 1
 - name: ci-gardener-e2e-aws-v1.17
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-aws-v1.17
   alert_stale_results_hours: 168
