@@ -19,7 +19,7 @@ periodics:
         - make
         - --
         - --directory=/go/src/k8s.io/perf-tests/golang
-        - K8S_COMMIT=28ec82ddbdfc09619ce00a2aae498cb3c9d3ebc8 # head of release-1.18 branch as of 2020-04-28
+        - K8S_COMMIT=e97c570a4ba5ba1e2285d3278396937feaa15385 # head of release-1.18 branch as of 2020-04-28
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
