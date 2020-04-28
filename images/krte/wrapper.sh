@@ -38,7 +38,7 @@ printf '%0.s=' {1..80} >&2; echo >&2
 >&2 echo "wrapper.sh] [SETUP] Performing pre-test setup ..."
 
 cleanup(){
-  if [[ "${DOCKER_IN_DOCKER_IPV6_ENABLED}" == "true" ]]; then
+  if [[ "${DOCKER_IN_DOCKER_ENABLED:-false}" == "true" ]]; then
     >&2 echo "wrapper.sh] [CLEANUP] Cleaning up after docker in docker ..."
     docker ps -aq | xargs -r docker rm -f || true
     service docker stop || true
