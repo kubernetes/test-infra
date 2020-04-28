@@ -37,44 +37,6 @@ presubmits:
         securityContext:
           privileged: true
     trigger: '(?m)^/test (?:.*? )?test(?:.*?)?$'
-  - name: test-ham-resource-discoverer-ppc64le
-    cluster: ppc64le
-    always_run: true
-    branches:
-    - ^master$
-    decorate: true
-    path_alias: github.com/hybridapp-io/ham-resource-discoverer
-    rerun_command: /test test-ham-resource-discoverer-ppc64le
-    spec:
-      containers:
-      - command:
-        - entrypoint
-        - make
-        - test
-        image: quay.io/multicloudlab/build-tool:v20200320-5e25536
-        name: ""
-        securityContext:
-          privileged: true
-    trigger: '(?m)^/test (?:.*? )?test(?:.*?)?$'
-  - name: test-ham-resource-discoverer-s390x
-    cluster: s390x
-    always_run: true
-    branches:
-    - ^master$
-    decorate: true
-    path_alias: github.com/hybridapp-io/ham-resource-discoverer
-    rerun_command: /test test-ham-resource-discoverer-s390x
-    spec:
-      containers:
-      - command:
-        - entrypoint
-        - make
-        - test
-        image: quay.io/multicloudlab/build-tool:v20200320-5e25536
-        name: ""
-        securityContext:
-          privileged: true
-    trigger: '(?m)^/test (?:.*? )?test(?:.*?)?$'
   - name: build-ham-resource-discoverer-amd64
     cluster: default
     always_run: true
