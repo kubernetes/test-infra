@@ -9,7 +9,7 @@ periodics:
     testgrid-tab-name: build-and-push-k8s-at-golang-tip
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20200427-8945e63
+      - image: gcr.io/k8s-testimages/bootstrap:v20200428-cdaab98
         args:
         - --root=/go/src
         - --repo=k8s.io/perf-tests=master
