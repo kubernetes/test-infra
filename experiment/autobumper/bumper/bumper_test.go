@@ -55,59 +55,60 @@ func TestCallWithWriter(t *testing.T) {
 	writeToFile(t, file1, "abc")
 	writeToFile(t, file2, "xyz")
 
-	sa := &secret.Agent{}
+	var sa secret.Agent
 	if err := sa.Start([]string{file1, file2}); err != nil {
 		t.Errorf("failed to start secrets agent; %v", err)
 	}
 
-	fakeWriter1 := fakeWriter{}
-	fakeWriter2 := fakeWriter{}
+	var fakeOut fakeWriter
+	var fakeErr fakeWriter
 
-	stdout := HideSecretsWriter{Delegate: &fakeWriter1, Censor: sa}
-	stderr := HideSecretsWriter{Delegate: &fakeWriter2, Censor: sa}
+	stdout := HideSecretsWriter{Delegate: &fakeOut, Censor: &sa}
+	stderr := HideSecretsWriter{Delegate: &fakeErr, Censor: &sa}
 
 	testCases := []struct {
 		description string
 		command     string
 		args        []string
-		expected    []string
+		expectedOut string
+		expectedErr string
 	}{
 		{
 			description: "no secret in stdout are working well",
 			command:     "echo",
 			args:        []string{"-n", "aaa: 123"},
-			expected:    []string{"aaa: 123", ""},
+			expectedOut: "aaa: 123",
 		},
 		{
 			description: "secret in stdout are censored",
 			command:     "echo",
 			args:        []string{"-n", "abc: 123"},
-			expected:    []string{"CENSORED: 123", ""},
+			expectedOut: "CENSORED: 123",
 		},
 		{
 			description: "secret in stderr are censored",
 			command:     "ls",
 			args:        []string{"/tmp/file-not-exist/abc/xyz/file-not-exist"},
-			expected:    []string{"", "ls: cannot access '/tmp/file-not-exist/CENSORED/CENSORED/file-not-exist': No such file or directory\n"},
+			expectedErr: "/tmp/file-not-exist/CENSORED/CENSORED/file-not-exist",
 		},
 		{
 			description: "no secret in stderr are working well",
 			command:     "ls",
 			args:        []string{"/tmp/file-not-exist/aaa/file-not-exist"},
-			expected:    []string{"", "ls: cannot access '/tmp/file-not-exist/aaa/file-not-exist': No such file or directory\n"},
+			expectedErr: "/tmp/file-not-exist/aaa/file-not-exist",
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
-			fakeWriter1.results = []byte{}
-			fakeWriter2.results = []byte{}
+			fakeOut.results = []byte{}
+			fakeErr.results = []byte{}
 			_ = Call(stdout, stderr, tc.command, tc.args...)
-			if strings.Compare(tc.expected[0], string(fakeWriter1.results)) != 0 {
-				t.Errorf("Expected stdout '%s', got '%s'", tc.expected[0], string(fakeWriter1.results))
+			if full, want := string(fakeOut.results), tc.expectedOut; !strings.Contains(full, want) {
+				t.Errorf("stdout does not contain %q, got %q", full, want)
 			}
-			if strings.Compare(tc.expected[1], string(fakeWriter2.results)) != 0 {
-				t.Errorf("Expected stderr '%s', got '%s'", tc.expected[1], string(fakeWriter2.results))
+			if full, want := string(fakeErr.results), tc.expectedErr; !strings.Contains(full, want) {
+				t.Errorf("stderr does not contain %q, got %q", full, want)
 			}
 		})
 	}
