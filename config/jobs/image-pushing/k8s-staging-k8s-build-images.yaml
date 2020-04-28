@@ -1,0 +1,27 @@
+postsubmits:
+  kubernetes/release:
+    - name: post-release-push-k8s-build-images
+      cluster: test-infra-trusted
+      annotations:
+        testgrid-dashboards: sig-release-releng-informing, sig-release-master-informing, sig-release-image-pushes
+        testgrid-alert-email: release-managers@kubernetes.io
+      decorate: true
+      run_if_changed: '^build\/(debian-base|debian-iptables|pause)\/'
+      branches:
+        - ^master$
+      spec:
+        serviceAccountName: deployer # TODO(fejta): use pusher
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20200422-c760048
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-build-image
+              - --scratch-bucket=gs://k8s-staging-build-image-gcb
+              - build
+            env:
+              - name: LOG_TO_STDOUT
+                value: "y"
+      rerun_auth_config:
+        github_team_ids:
+          - 2241179 # release-managers
