@@ -183,6 +183,11 @@ func main() {
 	}
 	cfg := configAgent.Config
 
+	secretAgent := &secret.Agent{}
+	if err := secretAgent.Start([]string{}); err != nil {
+		logrus.WithError(err).Fatal("unable to start secret agent")
+	}
+
 	prowjobClientset, err := o.client.ProwJobClientset(cfg().ProwJobNamespace, o.dryrun)
 	if err != nil {
 		logrus.WithError(err).Fatal("unable to create prow job client")
@@ -199,10 +204,10 @@ func main() {
 		slackConfig := func(refs *prowapi.Refs) config.SlackReporter {
 			return cfg().SlackReporterConfigs.GetSlackReporter(refs)
 		}
-		slackReporter, err := slackreporter.New(slackConfig, o.dryrun, o.slackTokenFile)
-		if err != nil {
-			logrus.WithError(err).Fatal("failed to create slackreporter")
+		if err := secretAgent.Add(o.slackTokenFile); err != nil {
+			logrus.WithError(err).Fatal("could not read slack token")
 		}
+		slackReporter := slackreporter.New(slackConfig, o.dryrun, secretAgent.GetTokenGenerator(o.slackTokenFile))
 		controllers = append(
 			controllers,
 			crier.NewController(
@@ -243,10 +248,9 @@ func main() {
 	}
 
 	if o.githubWorkers > 0 {
-		secretAgent := &secret.Agent{}
 		if o.github.TokenPath != "" {
-			if err := secretAgent.Start([]string{o.github.TokenPath}); err != nil {
-				logrus.WithError(err).Fatal("Error starting secrets agent")
+			if err := secretAgent.Add(o.github.TokenPath); err != nil {
+				logrus.WithError(err).Fatal("Error reading GitHub credentials")
 			}
 		}
 
