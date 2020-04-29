@@ -195,7 +195,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-1.14
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200218-a445c54-1.14
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -246,7 +246,7 @@ periodics:
     timeout: 2h # allow plenty of time for a serial conformance run
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/krte:v20200427-8945e63-master
+    - image: gcr.io/k8s-testimages/krte:v20200428-2225715-master
       command:
       - wrapper.sh
       - bash
