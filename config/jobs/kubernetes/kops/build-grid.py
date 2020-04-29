@@ -66,7 +66,8 @@ run_daily = [
 ]
 
 def simple_hash(s):
-    return zlib.crc32(s.encode())
+    # & 0xffffffff avoids python2/python3 compatibility
+    return zlib.crc32(s.encode()) & 0xffffffff
 
 runs_per_week = 0
 job_count = 0
@@ -114,7 +115,7 @@ def build_test(cloud='aws', distro=None, networking=None):
     if distro is None:
         kops_ssh_user = 'admin'
         kops_image = None
-    elif distro == 'amazonlinux2':
+    elif distro == 'amzn2':
         kops_ssh_user = 'ec2-user'
         kops_image = '137112412989/amzn2-ami-hvm-2.0.20200304.0-x86_64-gp2'
     elif distro == 'centos7':
@@ -156,12 +157,16 @@ def build_test(cloud='aws', distro=None, networking=None):
     test_args = r'--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints' # pylint: disable=line-too-long
 
     suffix = ""
-    if cloud:
+    if cloud and cloud != "aws":
         suffix += "-" + cloud
     if networking:
         suffix += "-" + networking
     if distro:
         suffix += "-" + distro
+
+    # We current have an issue with long cluster names; let's warn if we encounter them
+    if len(suffix) > 24:
+        raise Exception("suffix name %s is probably too long" % (suffix))
 
     tab = 'kops-grid' + suffix
 
@@ -185,7 +190,7 @@ def build_test(cloud='aws', distro=None, networking=None):
         'networking': networking,
         'distro': distro,
     }
-    jsonspec = json.dumps(spec)
+    jsonspec = json.dumps(spec, sort_keys=True)
 
     print("")
     print("# " + jsonspec)
@@ -196,12 +201,12 @@ networking_options = [
     'calico',
     'cilium',
     'flannel',
-    'kopeio-vxlan',
+    'kopeio',
 ]
 
 distro_options = [
     None,
-    'amazonlinux2',
+    'amzn2',
     'centos7',
     'debian9',
     'debian10',

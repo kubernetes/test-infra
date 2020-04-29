@@ -189,7 +189,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|AdmissionWebhook|Aggregator|CustomResource
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-1.14
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200218-a445c54-1.14
       imagePullPolicy: Always
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops

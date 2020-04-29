@@ -219,11 +219,23 @@ type Flag struct {
 // BugUpdate contains fields to update on a Bug. See API documentation at:
 // https://bugzilla.readthedocs.io/en/latest/api/core/v1/bug.html#update-bug
 type BugUpdate struct {
+	// DependOn specifies the bugs that this bug depends on
+	DependsOn *IDUpdate `json:"depends_on,omitempty"`
 	// Status is the current status of the bug.
 	Status     string `json:"status,omitempty"`
 	Resolution string `json:"resolution,omitempty"`
-	// Version are the versions the bug was reported against.
-	Version []string `json:"version,omitempty"`
+	// Version is the version the bug was reported against.
+	Version string `json:"version,omitempty"`
+}
+
+// IDUpdate is the struct used in Update calls to update fields that are arrays of IDs (ex. DependsOn)
+type IDUpdate struct {
+	// Add contains Bug IDs to add to this field.
+	Add []int `json:"add,omitempty"`
+	// Remove specifies Bug IDs to remove from this field. If the bug IDs are not already in the field, they will be ignored.
+	Remove []int `json:"remove,omitempty"`
+	// Set is An exact set of bug IDs to set this field to, overriding the current value. If Set is specified, then Add and Remove will be ignored.
+	Set []int `json:"set,omitempty"`
 }
 
 // ExternalBug contains details about an external bug linked to a Bugzilla bug.

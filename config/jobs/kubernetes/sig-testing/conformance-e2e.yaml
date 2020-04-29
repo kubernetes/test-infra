@@ -205,7 +205,7 @@ periodics:
     timeout: 2h # allow plenty of time for a serial conformance run
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/krte:v20200427-8945e63-master
+    - image: gcr.io/k8s-testimages/krte:v20200428-2225715-master
       command:
       - wrapper.sh
       - bash

@@ -75,7 +75,7 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=430m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200424-a0ea3b9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
       # docker-in-docker needs privilged mode
       securityContext:
         privileged: true
