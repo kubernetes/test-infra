@@ -66,7 +66,8 @@ run_daily = [
 ]
 
 def simple_hash(s):
-    return zlib.crc32(s.encode())
+    # & 0xffffffff avoids python2/python3 compatibility
+    return zlib.crc32(s.encode()) & 0xffffffff
 
 runs_per_week = 0
 job_count = 0
