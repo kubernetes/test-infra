@@ -2,8 +2,8 @@
 periodics:
 
 # {"cloud": "aws", "distro": null, "networking": null}
-- name: e2e-kops-grid-aws
-  cron: '18 5 * * *'
+- name: e2e-kops-grid
+  cron: '23 15 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -17,7 +17,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=e2e-kops-aws.test-cncf-aws.k8s.io
+      - --cluster=e2e-kops.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
@@ -35,11 +35,11 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-aws
+    testgrid-tab-name: kops-grid
 
 # {"cloud": "aws", "distro": "amazonlinux2", "networking": null}
-- name: e2e-kops-grid-aws-amazonlinux2
-  cron: '54 20 * * *'
+- name: e2e-kops-grid-amazonlinux2
+  cron: '37 1 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -53,7 +53,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=e2e-kops-aws-amazonlinux2.test-cncf-aws.k8s.io
+      - --cluster=e2e-kops-amazonlinux2.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
@@ -72,11 +72,11 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-aws-amazonlinux2
+    testgrid-tab-name: kops-grid-amazonlinux2
 
 # {"cloud": "aws", "distro": "centos7", "networking": null}
-- name: e2e-kops-grid-aws-centos7
-  cron: '26 5 * * *'
+- name: e2e-kops-grid-centos7
+  cron: '30 19 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -90,7 +90,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=e2e-kops-aws-centos7.test-cncf-aws.k8s.io
+      - --cluster=e2e-kops-centos7.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=centos
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
@@ -109,11 +109,11 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-aws-centos7
+    testgrid-tab-name: kops-grid-centos7
 
 # {"cloud": "aws", "distro": "debian9", "networking": null}
-- name: e2e-kops-grid-aws-debian9
-  cron: '2 1 * * *'
+- name: e2e-kops-grid-debian9
+  cron: '6 23 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -127,7 +127,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=e2e-kops-aws-debian9.test-cncf-aws.k8s.io
+      - --cluster=e2e-kops-debian9.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
@@ -146,11 +146,11 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-aws-debian9
+    testgrid-tab-name: kops-grid-debian9
 
 # {"cloud": "aws", "distro": "debian10", "networking": null}
-- name: e2e-kops-grid-aws-debian10
-  cron: '59 15 * * *'
+- name: e2e-kops-grid-debian10
+  cron: '58 12 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -164,7 +164,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=e2e-kops-aws-debian10.test-cncf-aws.k8s.io
+      - --cluster=e2e-kops-debian10.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
@@ -183,11 +183,11 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-aws-debian10
+    testgrid-tab-name: kops-grid-debian10
 
 # {"cloud": "aws", "distro": "flatcar", "networking": null}
-- name: e2e-kops-grid-aws-flatcar
-  cron: '56 3 * * *'
+- name: e2e-kops-grid-flatcar
+  cron: '24 5 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -201,7 +201,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=e2e-kops-aws-flatcar.test-cncf-aws.k8s.io
+      - --cluster=e2e-kops-flatcar.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=core
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
@@ -220,11 +220,11 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-aws-flatcar
+    testgrid-tab-name: kops-grid-flatcar
 
 # {"cloud": "aws", "distro": "rhel7", "networking": null}
-- name: e2e-kops-grid-aws-rhel7
-  cron: '23 16 * * *'
+- name: e2e-kops-grid-rhel7
+  cron: '14 21 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -238,7 +238,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=e2e-kops-aws-rhel7.test-cncf-aws.k8s.io
+      - --cluster=e2e-kops-rhel7.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
@@ -257,11 +257,11 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-aws-rhel7
+    testgrid-tab-name: kops-grid-rhel7
 
 # {"cloud": "aws", "distro": "rhel8", "networking": null}
-- name: e2e-kops-grid-aws-rhel8
-  cron: '34 1 * * *'
+- name: e2e-kops-grid-rhel8
+  cron: '11 4 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -275,7 +275,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=e2e-kops-aws-rhel8.test-cncf-aws.k8s.io
+      - --cluster=e2e-kops-rhel8.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
@@ -294,231 +294,10 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-aws-rhel8
+    testgrid-tab-name: kops-grid-rhel8
 
 # {"cloud": "aws", "distro": "ubuntu1604", "networking": null}
-- name: e2e-kops-grid-aws-ubuntu1604
-  cron: '36 21 * * *'
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
-  decorate: true
-  decoration_config:
-    timeout: 90m
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --cluster=e2e-kops-aws-ubuntu1604.test-cncf-aws.k8s.io
-      - --deployment=kops
-      - --env=KUBE_SSH_USER=ubuntu
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
-      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --env=KOPS_RUN_TOO_NEW_VERSION=1
-      - --extract=release/stable
-      - --ginkgo-parallel
-      - --kops-args=
-      - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-20200407
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-ssh-user=ubuntu
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
-      - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
-  annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-aws-ubuntu1604
-
-# {"cloud": "aws", "distro": "ubuntu1804", "networking": null}
-- name: e2e-kops-grid-aws-ubuntu1804
-  cron: '26 15 * * *'
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
-  decorate: true
-  decoration_config:
-    timeout: 90m
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --cluster=e2e-kops-aws-ubuntu1804.test-cncf-aws.k8s.io
-      - --deployment=kops
-      - --env=KUBE_SSH_USER=ubuntu
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
-      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --env=KOPS_RUN_TOO_NEW_VERSION=1
-      - --extract=release/stable
-      - --ginkgo-parallel
-      - --kops-args=
-      - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20200408
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-ssh-user=ubuntu
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
-      - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
-  annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-aws-ubuntu1804
-
-# {"cloud": "aws", "distro": "ubuntu2004", "networking": null}
-- name: e2e-kops-grid-aws-ubuntu2004
-  cron: '0 17 * * *'
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
-  decorate: true
-  decoration_config:
-    timeout: 90m
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --cluster=e2e-kops-aws-ubuntu2004.test-cncf-aws.k8s.io
-      - --deployment=kops
-      - --env=KUBE_SSH_USER=ubuntu
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
-      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --env=KOPS_RUN_TOO_NEW_VERSION=1
-      - --extract=release/stable
-      - --ginkgo-parallel
-      - --kops-args=
-      - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200423
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-ssh-user=ubuntu
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
-      - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
-  annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-aws-ubuntu2004
-
-# {"cloud": "aws", "distro": null, "networking": "calico"}
-- name: e2e-kops-grid-aws-calico
-  cron: '28 2 * * *'
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
-  decorate: true
-  decoration_config:
-    timeout: 90m
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --cluster=e2e-kops-aws-calico.test-cncf-aws.k8s.io
-      - --deployment=kops
-      - --env=KUBE_SSH_USER=admin
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
-      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --env=KOPS_RUN_TOO_NEW_VERSION=1
-      - --extract=release/stable
-      - --ginkgo-parallel
-      - --kops-args=--networking=calico
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-ssh-user=admin
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
-      - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
-  annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-aws-calico
-
-# {"cloud": "aws", "distro": "amazonlinux2", "networking": "calico"}
-- name: e2e-kops-grid-aws-calico-amazonlinux2
-  cron: '45 5 * * *'
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
-  decorate: true
-  decoration_config:
-    timeout: 90m
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --cluster=e2e-kops-aws-calico-amazonlinux2.test-cncf-aws.k8s.io
-      - --deployment=kops
-      - --env=KUBE_SSH_USER=ec2-user
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
-      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --env=KOPS_RUN_TOO_NEW_VERSION=1
-      - --extract=release/stable
-      - --ginkgo-parallel
-      - --kops-args=--networking=calico
-      - --kops-image=137112412989/amzn2-ami-hvm-2.0.20200304.0-x86_64-gp2
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-ssh-user=ec2-user
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
-      - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
-  annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-aws-calico-amazonlinux2
-
-# {"cloud": "aws", "distro": "centos7", "networking": "calico"}
-- name: e2e-kops-grid-aws-calico-centos7
-  cron: '39 17 * * *'
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
-  decorate: true
-  decoration_config:
-    timeout: 90m
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --cluster=e2e-kops-aws-calico-centos7.test-cncf-aws.k8s.io
-      - --deployment=kops
-      - --env=KUBE_SSH_USER=centos
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
-      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --env=KOPS_RUN_TOO_NEW_VERSION=1
-      - --extract=release/stable
-      - --ginkgo-parallel
-      - --kops-args=--networking=calico
-      - --kops-image=679593333241/CentOS Linux 7 x86_64 HVM EBS ENA 1901_01-b7ee8a69-ee97-4a49-9e68-afaee216db2e-ami-05713873c6794f575.4
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-ssh-user=centos
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
-      - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
-  annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-aws-calico-centos7
-
-# {"cloud": "aws", "distro": "debian9", "networking": "calico"}
-- name: e2e-kops-grid-aws-calico-debian9
+- name: e2e-kops-grid-ubuntu1604
   cron: '27 21 * * *'
   labels:
     preset-service-account: "true"
@@ -533,192 +312,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=e2e-kops-aws-calico-debian9.test-cncf-aws.k8s.io
-      - --deployment=kops
-      - --env=KUBE_SSH_USER=admin
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
-      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --env=KOPS_RUN_TOO_NEW_VERSION=1
-      - --extract=release/stable
-      - --ginkgo-parallel
-      - --kops-args=--networking=calico
-      - --kops-image=379101102735/debian-stretch-hvm-x86_64-gp2-2019-11-13-63558
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-ssh-user=admin
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
-      - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
-  annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-aws-calico-debian9
-
-# {"cloud": "aws", "distro": "debian10", "networking": "calico"}
-- name: e2e-kops-grid-aws-calico-debian10
-  cron: '35 3 * * *'
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
-  decorate: true
-  decoration_config:
-    timeout: 90m
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --cluster=e2e-kops-aws-calico-debian10.test-cncf-aws.k8s.io
-      - --deployment=kops
-      - --env=KUBE_SSH_USER=admin
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
-      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --env=KOPS_RUN_TOO_NEW_VERSION=1
-      - --extract=release/stable
-      - --ginkgo-parallel
-      - --kops-args=--networking=calico
-      - --kops-image=136693071363/debian-10-amd64-20200210-166
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-ssh-user=admin
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
-      - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
-  annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-aws-calico-debian10
-
-# {"cloud": "aws", "distro": "flatcar", "networking": "calico"}
-- name: e2e-kops-grid-aws-calico-flatcar
-  cron: '13 23 * * *'
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
-  decorate: true
-  decoration_config:
-    timeout: 90m
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --cluster=e2e-kops-aws-calico-flatcar.test-cncf-aws.k8s.io
-      - --deployment=kops
-      - --env=KUBE_SSH_USER=core
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
-      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --env=KOPS_RUN_TOO_NEW_VERSION=1
-      - --extract=release/stable
-      - --ginkgo-parallel
-      - --kops-args=--networking=calico
-      - --kops-image=075585003325/Flatcar-stable-2303.3.1-hvm
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-ssh-user=core
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
-      - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
-  annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-aws-calico-flatcar
-
-# {"cloud": "aws", "distro": "rhel7", "networking": "calico"}
-- name: e2e-kops-grid-aws-calico-rhel7
-  cron: '21 7 * * *'
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
-  decorate: true
-  decoration_config:
-    timeout: 90m
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --cluster=e2e-kops-aws-calico-rhel7.test-cncf-aws.k8s.io
-      - --deployment=kops
-      - --env=KUBE_SSH_USER=ec2-user
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
-      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --env=KOPS_RUN_TOO_NEW_VERSION=1
-      - --extract=release/stable
-      - --ginkgo-parallel
-      - --kops-args=--networking=calico
-      - --kops-image=309956199498/RHEL-7.7_HVM-20191119-x86_64-2-Hourly2-GP2
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-ssh-user=ec2-user
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
-      - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
-  annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-aws-calico-rhel7
-
-# {"cloud": "aws", "distro": "rhel8", "networking": "calico"}
-- name: e2e-kops-grid-aws-calico-rhel8
-  cron: '20 14 * * *'
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
-  decorate: true
-  decoration_config:
-    timeout: 90m
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --cluster=e2e-kops-aws-calico-rhel8.test-cncf-aws.k8s.io
-      - --deployment=kops
-      - --env=KUBE_SSH_USER=ec2-user
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
-      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --env=KOPS_RUN_TOO_NEW_VERSION=1
-      - --extract=release/stable
-      - --ginkgo-parallel
-      - --kops-args=--networking=calico
-      - --kops-image=309956199498/RHEL-8.1.0_HVM-20191029-x86_64-0-Hourly2-GP2
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-ssh-user=ec2-user
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
-      - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
-  annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-aws-calico-rhel8
-
-# {"cloud": "aws", "distro": "ubuntu1604", "networking": "calico"}
-- name: e2e-kops-grid-aws-calico-ubuntu1604
-  cron: '28 15 * * *'
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
-  decorate: true
-  decoration_config:
-    timeout: 90m
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --cluster=e2e-kops-aws-calico-ubuntu1604.test-cncf-aws.k8s.io
+      - --cluster=e2e-kops-ubuntu1604.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
@@ -726,7 +320,7 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/stable
       - --ginkgo-parallel
-      - --kops-args=--networking=calico
+      - --kops-args=
       - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-20200407
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-ssh-user=ubuntu
@@ -737,11 +331,11 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-aws-calico-ubuntu1604
+    testgrid-tab-name: kops-grid-ubuntu1604
 
-# {"cloud": "aws", "distro": "ubuntu1804", "networking": "calico"}
-- name: e2e-kops-grid-aws-calico-ubuntu1804
-  cron: '6 5 * * *'
+# {"cloud": "aws", "distro": "ubuntu1804", "networking": null}
+- name: e2e-kops-grid-ubuntu1804
+  cron: '53 7 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -755,7 +349,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=e2e-kops-aws-calico-ubuntu1804.test-cncf-aws.k8s.io
+      - --cluster=e2e-kops-ubuntu1804.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
@@ -763,7 +357,7 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/stable
       - --ginkgo-parallel
-      - --kops-args=--networking=calico
+      - --kops-args=
       - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20200408
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-ssh-user=ubuntu
@@ -774,11 +368,11 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-aws-calico-ubuntu1804
+    testgrid-tab-name: kops-grid-ubuntu1804
 
-# {"cloud": "aws", "distro": "ubuntu2004", "networking": "calico"}
-- name: e2e-kops-grid-aws-calico-ubuntu2004
-  cron: '28 11 * * *'
+# {"cloud": "aws", "distro": "ubuntu2004", "networking": null}
+- name: e2e-kops-grid-ubuntu2004
+  cron: '55 9 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -792,7 +386,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=e2e-kops-aws-calico-ubuntu2004.test-cncf-aws.k8s.io
+      - --cluster=e2e-kops-ubuntu2004.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
@@ -800,7 +394,7 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/stable
       - --ginkgo-parallel
-      - --kops-args=--networking=calico
+      - --kops-args=
       - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200423
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-ssh-user=ubuntu
@@ -811,711 +405,10 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-aws-calico-ubuntu2004
+    testgrid-tab-name: kops-grid-ubuntu2004
 
-# {"cloud": "aws", "distro": null, "networking": "cilium"}
-- name: e2e-kops-grid-aws-cilium
-  cron: '50 0 * * *'
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
-  decorate: true
-  decoration_config:
-    timeout: 90m
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --cluster=e2e-kops-aws-cilium.test-cncf-aws.k8s.io
-      - --deployment=kops
-      - --env=KUBE_SSH_USER=admin
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
-      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --env=KOPS_RUN_TOO_NEW_VERSION=1
-      - --extract=release/stable
-      - --ginkgo-parallel
-      - --kops-args=--networking=cilium
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-ssh-user=admin
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
-      - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
-  annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-aws-cilium
-
-# {"cloud": "aws", "distro": "amazonlinux2", "networking": "cilium"}
-- name: e2e-kops-grid-aws-cilium-amazonlinux2
-  cron: '5 9 * * *'
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
-  decorate: true
-  decoration_config:
-    timeout: 90m
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --cluster=e2e-kops-aws-cilium-amazonlinux2.test-cncf-aws.k8s.io
-      - --deployment=kops
-      - --env=KUBE_SSH_USER=ec2-user
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
-      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --env=KOPS_RUN_TOO_NEW_VERSION=1
-      - --extract=release/stable
-      - --ginkgo-parallel
-      - --kops-args=--networking=cilium
-      - --kops-image=137112412989/amzn2-ami-hvm-2.0.20200304.0-x86_64-gp2
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-ssh-user=ec2-user
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
-      - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
-  annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-aws-cilium-amazonlinux2
-
-# {"cloud": "aws", "distro": "centos7", "networking": "cilium"}
-- name: e2e-kops-grid-aws-cilium-centos7
-  cron: '3 5 * * *'
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
-  decorate: true
-  decoration_config:
-    timeout: 90m
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --cluster=e2e-kops-aws-cilium-centos7.test-cncf-aws.k8s.io
-      - --deployment=kops
-      - --env=KUBE_SSH_USER=centos
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
-      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --env=KOPS_RUN_TOO_NEW_VERSION=1
-      - --extract=release/stable
-      - --ginkgo-parallel
-      - --kops-args=--networking=cilium
-      - --kops-image=679593333241/CentOS Linux 7 x86_64 HVM EBS ENA 1901_01-b7ee8a69-ee97-4a49-9e68-afaee216db2e-ami-05713873c6794f575.4
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-ssh-user=centos
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
-      - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
-  annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-aws-cilium-centos7
-
-# {"cloud": "aws", "distro": "debian9", "networking": "cilium"}
-- name: e2e-kops-grid-aws-cilium-debian9
-  cron: '7 17 * * *'
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
-  decorate: true
-  decoration_config:
-    timeout: 90m
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --cluster=e2e-kops-aws-cilium-debian9.test-cncf-aws.k8s.io
-      - --deployment=kops
-      - --env=KUBE_SSH_USER=admin
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
-      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --env=KOPS_RUN_TOO_NEW_VERSION=1
-      - --extract=release/stable
-      - --ginkgo-parallel
-      - --kops-args=--networking=cilium
-      - --kops-image=379101102735/debian-stretch-hvm-x86_64-gp2-2019-11-13-63558
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-ssh-user=admin
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
-      - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
-  annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-aws-cilium-debian9
-
-# {"cloud": "aws", "distro": "debian10", "networking": "cilium"}
-- name: e2e-kops-grid-aws-cilium-debian10
-  cron: '32 0 * * *'
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
-  decorate: true
-  decoration_config:
-    timeout: 90m
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --cluster=e2e-kops-aws-cilium-debian10.test-cncf-aws.k8s.io
-      - --deployment=kops
-      - --env=KUBE_SSH_USER=admin
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
-      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --env=KOPS_RUN_TOO_NEW_VERSION=1
-      - --extract=release/stable
-      - --ginkgo-parallel
-      - --kops-args=--networking=cilium
-      - --kops-image=136693071363/debian-10-amd64-20200210-166
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-ssh-user=admin
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
-      - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
-  annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-aws-cilium-debian10
-
-# {"cloud": "aws", "distro": "flatcar", "networking": "cilium"}
-- name: e2e-kops-grid-aws-cilium-flatcar
-  cron: '49 3 * * *'
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
-  decorate: true
-  decoration_config:
-    timeout: 90m
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --cluster=e2e-kops-aws-cilium-flatcar.test-cncf-aws.k8s.io
-      - --deployment=kops
-      - --env=KUBE_SSH_USER=core
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
-      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --env=KOPS_RUN_TOO_NEW_VERSION=1
-      - --extract=release/stable
-      - --ginkgo-parallel
-      - --kops-args=--networking=cilium
-      - --kops-image=075585003325/Flatcar-stable-2303.3.1-hvm
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-ssh-user=core
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
-      - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
-  annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-aws-cilium-flatcar
-
-# {"cloud": "aws", "distro": "rhel7", "networking": "cilium"}
-- name: e2e-kops-grid-aws-cilium-rhel7
-  cron: '45 23 * * *'
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
-  decorate: true
-  decoration_config:
-    timeout: 90m
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --cluster=e2e-kops-aws-cilium-rhel7.test-cncf-aws.k8s.io
-      - --deployment=kops
-      - --env=KUBE_SSH_USER=ec2-user
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
-      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --env=KOPS_RUN_TOO_NEW_VERSION=1
-      - --extract=release/stable
-      - --ginkgo-parallel
-      - --kops-args=--networking=cilium
-      - --kops-image=309956199498/RHEL-7.7_HVM-20191119-x86_64-2-Hourly2-GP2
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-ssh-user=ec2-user
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
-      - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
-  annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-aws-cilium-rhel7
-
-# {"cloud": "aws", "distro": "rhel8", "networking": "cilium"}
-- name: e2e-kops-grid-aws-cilium-rhel8
-  cron: '0 6 * * *'
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
-  decorate: true
-  decoration_config:
-    timeout: 90m
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --cluster=e2e-kops-aws-cilium-rhel8.test-cncf-aws.k8s.io
-      - --deployment=kops
-      - --env=KUBE_SSH_USER=ec2-user
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
-      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --env=KOPS_RUN_TOO_NEW_VERSION=1
-      - --extract=release/stable
-      - --ginkgo-parallel
-      - --kops-args=--networking=cilium
-      - --kops-image=309956199498/RHEL-8.1.0_HVM-20191029-x86_64-0-Hourly2-GP2
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-ssh-user=ec2-user
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
-      - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
-  annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-aws-cilium-rhel8
-
-# {"cloud": "aws", "distro": "ubuntu1604", "networking": "cilium"}
-- name: e2e-kops-grid-aws-cilium-ubuntu1604
-  cron: '3 8 * * *'
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
-  decorate: true
-  decoration_config:
-    timeout: 90m
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --cluster=e2e-kops-aws-cilium-ubuntu1604.test-cncf-aws.k8s.io
-      - --deployment=kops
-      - --env=KUBE_SSH_USER=ubuntu
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
-      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --env=KOPS_RUN_TOO_NEW_VERSION=1
-      - --extract=release/stable
-      - --ginkgo-parallel
-      - --kops-args=--networking=cilium
-      - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-20200407
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-ssh-user=ubuntu
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
-      - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
-  annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-aws-cilium-ubuntu1604
-
-# {"cloud": "aws", "distro": "ubuntu1804", "networking": "cilium"}
-- name: e2e-kops-grid-aws-cilium-ubuntu1804
-  cron: '49 18 * * *'
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
-  decorate: true
-  decoration_config:
-    timeout: 90m
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --cluster=e2e-kops-aws-cilium-ubuntu1804.test-cncf-aws.k8s.io
-      - --deployment=kops
-      - --env=KUBE_SSH_USER=ubuntu
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
-      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --env=KOPS_RUN_TOO_NEW_VERSION=1
-      - --extract=release/stable
-      - --ginkgo-parallel
-      - --kops-args=--networking=cilium
-      - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20200408
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-ssh-user=ubuntu
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
-      - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
-  annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-aws-cilium-ubuntu1804
-
-# {"cloud": "aws", "distro": "ubuntu2004", "networking": "cilium"}
-- name: e2e-kops-grid-aws-cilium-ubuntu2004
-  cron: '27 20 * * *'
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
-  decorate: true
-  decoration_config:
-    timeout: 90m
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --cluster=e2e-kops-aws-cilium-ubuntu2004.test-cncf-aws.k8s.io
-      - --deployment=kops
-      - --env=KUBE_SSH_USER=ubuntu
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
-      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --env=KOPS_RUN_TOO_NEW_VERSION=1
-      - --extract=release/stable
-      - --ginkgo-parallel
-      - --kops-args=--networking=cilium
-      - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200423
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-ssh-user=ubuntu
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
-      - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
-  annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-aws-cilium-ubuntu2004
-
-# {"cloud": "aws", "distro": null, "networking": "flannel"}
-- name: e2e-kops-grid-aws-flannel
-  cron: '3 12 * * *'
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
-  decorate: true
-  decoration_config:
-    timeout: 90m
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --cluster=e2e-kops-aws-flannel.test-cncf-aws.k8s.io
-      - --deployment=kops
-      - --env=KUBE_SSH_USER=admin
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
-      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --env=KOPS_RUN_TOO_NEW_VERSION=1
-      - --extract=release/stable
-      - --ginkgo-parallel
-      - --kops-args=--networking=flannel
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-ssh-user=admin
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
-      - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
-  annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-aws-flannel
-
-# {"cloud": "aws", "distro": "amazonlinux2", "networking": "flannel"}
-- name: e2e-kops-grid-aws-flannel-amazonlinux2
-  cron: '52 19 * * *'
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
-  decorate: true
-  decoration_config:
-    timeout: 90m
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --cluster=e2e-kops-aws-flannel-amazonlinux2.test-cncf-aws.k8s.io
-      - --deployment=kops
-      - --env=KUBE_SSH_USER=ec2-user
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
-      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --env=KOPS_RUN_TOO_NEW_VERSION=1
-      - --extract=release/stable
-      - --ginkgo-parallel
-      - --kops-args=--networking=flannel
-      - --kops-image=137112412989/amzn2-ami-hvm-2.0.20200304.0-x86_64-gp2
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-ssh-user=ec2-user
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
-      - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
-  annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-aws-flannel-amazonlinux2
-
-# {"cloud": "aws", "distro": "centos7", "networking": "flannel"}
-- name: e2e-kops-grid-aws-flannel-centos7
-  cron: '14 * * * *'
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
-  decorate: true
-  decoration_config:
-    timeout: 90m
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --cluster=e2e-kops-aws-flannel-centos7.test-cncf-aws.k8s.io
-      - --deployment=kops
-      - --env=KUBE_SSH_USER=centos
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
-      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --env=KOPS_RUN_TOO_NEW_VERSION=1
-      - --extract=release/stable
-      - --ginkgo-parallel
-      - --kops-args=--networking=flannel
-      - --kops-image=679593333241/CentOS Linux 7 x86_64 HVM EBS ENA 1901_01-b7ee8a69-ee97-4a49-9e68-afaee216db2e-ami-05713873c6794f575.4
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-ssh-user=centos
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
-      - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
-  annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-aws-flannel-centos7
-
-# {"cloud": "aws", "distro": "debian9", "networking": "flannel"}
-- name: e2e-kops-grid-aws-flannel-debian9
-  cron: '42 22 * * *'
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
-  decorate: true
-  decoration_config:
-    timeout: 90m
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --cluster=e2e-kops-aws-flannel-debian9.test-cncf-aws.k8s.io
-      - --deployment=kops
-      - --env=KUBE_SSH_USER=admin
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
-      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --env=KOPS_RUN_TOO_NEW_VERSION=1
-      - --extract=release/stable
-      - --ginkgo-parallel
-      - --kops-args=--networking=flannel
-      - --kops-image=379101102735/debian-stretch-hvm-x86_64-gp2-2019-11-13-63558
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-ssh-user=admin
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
-      - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
-  annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-aws-flannel-debian9
-
-# {"cloud": "aws", "distro": "debian10", "networking": "flannel"}
-- name: e2e-kops-grid-aws-flannel-debian10
-  cron: '19 14 * * *'
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
-  decorate: true
-  decoration_config:
-    timeout: 90m
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --cluster=e2e-kops-aws-flannel-debian10.test-cncf-aws.k8s.io
-      - --deployment=kops
-      - --env=KUBE_SSH_USER=admin
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
-      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --env=KOPS_RUN_TOO_NEW_VERSION=1
-      - --extract=release/stable
-      - --ginkgo-parallel
-      - --kops-args=--networking=flannel
-      - --kops-image=136693071363/debian-10-amd64-20200210-166
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-ssh-user=admin
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
-      - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
-  annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-aws-flannel-debian10
-
-# {"cloud": "aws", "distro": "flatcar", "networking": "flannel"}
-- name: e2e-kops-grid-aws-flannel-flatcar
-  cron: '52 20 * * *'
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
-  decorate: true
-  decoration_config:
-    timeout: 90m
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --cluster=e2e-kops-aws-flannel-flatcar.test-cncf-aws.k8s.io
-      - --deployment=kops
-      - --env=KUBE_SSH_USER=core
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
-      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --env=KOPS_RUN_TOO_NEW_VERSION=1
-      - --extract=release/stable
-      - --ginkgo-parallel
-      - --kops-args=--networking=flannel
-      - --kops-image=075585003325/Flatcar-stable-2303.3.1-hvm
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-ssh-user=core
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
-      - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
-  annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-aws-flannel-flatcar
-
-# {"cloud": "aws", "distro": "rhel7", "networking": "flannel"}
-- name: e2e-kops-grid-aws-flannel-rhel7
-  cron: '12 * * * *'
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
-  decorate: true
-  decoration_config:
-    timeout: 90m
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --cluster=e2e-kops-aws-flannel-rhel7.test-cncf-aws.k8s.io
-      - --deployment=kops
-      - --env=KUBE_SSH_USER=ec2-user
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
-      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --env=KOPS_RUN_TOO_NEW_VERSION=1
-      - --extract=release/stable
-      - --ginkgo-parallel
-      - --kops-args=--networking=flannel
-      - --kops-image=309956199498/RHEL-7.7_HVM-20191119-x86_64-2-Hourly2-GP2
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-ssh-user=ec2-user
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
-      - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
-  annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-aws-flannel-rhel7
-
-# {"cloud": "aws", "distro": "rhel8", "networking": "flannel"}
-- name: e2e-kops-grid-aws-flannel-rhel8
-  cron: '1 23 * * *'
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
-  decorate: true
-  decoration_config:
-    timeout: 90m
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --cluster=e2e-kops-aws-flannel-rhel8.test-cncf-aws.k8s.io
-      - --deployment=kops
-      - --env=KUBE_SSH_USER=ec2-user
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
-      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --env=KOPS_RUN_TOO_NEW_VERSION=1
-      - --extract=release/stable
-      - --ginkgo-parallel
-      - --kops-args=--networking=flannel
-      - --kops-image=309956199498/RHEL-8.1.0_HVM-20191029-x86_64-0-Hourly2-GP2
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-ssh-user=ec2-user
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
-      - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
-  annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-aws-flannel-rhel8
-
-# {"cloud": "aws", "distro": "ubuntu1604", "networking": "flannel"}
-- name: e2e-kops-grid-aws-flannel-ubuntu1604
+# {"cloud": "aws", "distro": null, "networking": "calico"}
+- name: e2e-kops-grid-calico
   cron: '21 14 * * *'
   labels:
     preset-service-account: "true"
@@ -1530,7 +423,1114 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=e2e-kops-aws-flannel-ubuntu1604.test-cncf-aws.k8s.io
+      - --cluster=e2e-kops-calico.test-cncf-aws.k8s.io
+      - --deployment=kops
+      - --env=KUBE_SSH_USER=admin
+      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
+      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
+      - --env=KOPS_RUN_TOO_NEW_VERSION=1
+      - --extract=release/stable
+      - --ginkgo-parallel
+      - --kops-args=--networking=calico
+      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
+      - --kops-ssh-user=admin
+      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
+      - --provider=aws
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
+      - --timeout=60m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+  annotations:
+    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-tab-name: kops-grid-calico
+
+# {"cloud": "aws", "distro": "amazonlinux2", "networking": "calico"}
+- name: e2e-kops-grid-calico-amazonlinux2
+  cron: '15 19 * * *'
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+  decorate: true
+  decoration_config:
+    timeout: 90m
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --cluster=e2e-kops-calico-amazonlinux2.test-cncf-aws.k8s.io
+      - --deployment=kops
+      - --env=KUBE_SSH_USER=ec2-user
+      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
+      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
+      - --env=KOPS_RUN_TOO_NEW_VERSION=1
+      - --extract=release/stable
+      - --ginkgo-parallel
+      - --kops-args=--networking=calico
+      - --kops-image=137112412989/amzn2-ami-hvm-2.0.20200304.0-x86_64-gp2
+      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
+      - --kops-ssh-user=ec2-user
+      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
+      - --provider=aws
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
+      - --timeout=60m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+  annotations:
+    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-tab-name: kops-grid-calico-amazonlinux2
+
+# {"cloud": "aws", "distro": "centos7", "networking": "calico"}
+- name: e2e-kops-grid-calico-centos7
+  cron: '16 5 * * *'
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+  decorate: true
+  decoration_config:
+    timeout: 90m
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --cluster=e2e-kops-calico-centos7.test-cncf-aws.k8s.io
+      - --deployment=kops
+      - --env=KUBE_SSH_USER=centos
+      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
+      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
+      - --env=KOPS_RUN_TOO_NEW_VERSION=1
+      - --extract=release/stable
+      - --ginkgo-parallel
+      - --kops-args=--networking=calico
+      - --kops-image=679593333241/CentOS Linux 7 x86_64 HVM EBS ENA 1901_01-b7ee8a69-ee97-4a49-9e68-afaee216db2e-ami-05713873c6794f575.4
+      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
+      - --kops-ssh-user=centos
+      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
+      - --provider=aws
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
+      - --timeout=60m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+  annotations:
+    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-tab-name: kops-grid-calico-centos7
+
+# {"cloud": "aws", "distro": "debian9", "networking": "calico"}
+- name: e2e-kops-grid-calico-debian9
+  cron: '28 9 * * *'
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+  decorate: true
+  decoration_config:
+    timeout: 90m
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --cluster=e2e-kops-calico-debian9.test-cncf-aws.k8s.io
+      - --deployment=kops
+      - --env=KUBE_SSH_USER=admin
+      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
+      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
+      - --env=KOPS_RUN_TOO_NEW_VERSION=1
+      - --extract=release/stable
+      - --ginkgo-parallel
+      - --kops-args=--networking=calico
+      - --kops-image=379101102735/debian-stretch-hvm-x86_64-gp2-2019-11-13-63558
+      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
+      - --kops-ssh-user=admin
+      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
+      - --provider=aws
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
+      - --timeout=60m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+  annotations:
+    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-tab-name: kops-grid-calico-debian9
+
+# {"cloud": "aws", "distro": "debian10", "networking": "calico"}
+- name: e2e-kops-grid-calico-debian10
+  cron: '13 3 * * *'
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+  decorate: true
+  decoration_config:
+    timeout: 90m
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --cluster=e2e-kops-calico-debian10.test-cncf-aws.k8s.io
+      - --deployment=kops
+      - --env=KUBE_SSH_USER=admin
+      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
+      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
+      - --env=KOPS_RUN_TOO_NEW_VERSION=1
+      - --extract=release/stable
+      - --ginkgo-parallel
+      - --kops-args=--networking=calico
+      - --kops-image=136693071363/debian-10-amd64-20200210-166
+      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
+      - --kops-ssh-user=admin
+      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
+      - --provider=aws
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
+      - --timeout=60m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+  annotations:
+    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-tab-name: kops-grid-calico-debian10
+
+# {"cloud": "aws", "distro": "flatcar", "networking": "calico"}
+- name: e2e-kops-grid-calico-flatcar
+  cron: '50 19 * * *'
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+  decorate: true
+  decoration_config:
+    timeout: 90m
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --cluster=e2e-kops-calico-flatcar.test-cncf-aws.k8s.io
+      - --deployment=kops
+      - --env=KUBE_SSH_USER=core
+      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
+      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
+      - --env=KOPS_RUN_TOO_NEW_VERSION=1
+      - --extract=release/stable
+      - --ginkgo-parallel
+      - --kops-args=--networking=calico
+      - --kops-image=075585003325/Flatcar-stable-2303.3.1-hvm
+      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
+      - --kops-ssh-user=core
+      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
+      - --provider=aws
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
+      - --timeout=60m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+  annotations:
+    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-tab-name: kops-grid-calico-flatcar
+
+# {"cloud": "aws", "distro": "rhel7", "networking": "calico"}
+- name: e2e-kops-grid-calico-rhel7
+  cron: '26 18 * * *'
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+  decorate: true
+  decoration_config:
+    timeout: 90m
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --cluster=e2e-kops-calico-rhel7.test-cncf-aws.k8s.io
+      - --deployment=kops
+      - --env=KUBE_SSH_USER=ec2-user
+      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
+      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
+      - --env=KOPS_RUN_TOO_NEW_VERSION=1
+      - --extract=release/stable
+      - --ginkgo-parallel
+      - --kops-args=--networking=calico
+      - --kops-image=309956199498/RHEL-7.7_HVM-20191119-x86_64-2-Hourly2-GP2
+      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
+      - --kops-ssh-user=ec2-user
+      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
+      - --provider=aws
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
+      - --timeout=60m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+  annotations:
+    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-tab-name: kops-grid-calico-rhel7
+
+# {"cloud": "aws", "distro": "rhel8", "networking": "calico"}
+- name: e2e-kops-grid-calico-rhel8
+  cron: '51 19 * * *'
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+  decorate: true
+  decoration_config:
+    timeout: 90m
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --cluster=e2e-kops-calico-rhel8.test-cncf-aws.k8s.io
+      - --deployment=kops
+      - --env=KUBE_SSH_USER=ec2-user
+      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
+      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
+      - --env=KOPS_RUN_TOO_NEW_VERSION=1
+      - --extract=release/stable
+      - --ginkgo-parallel
+      - --kops-args=--networking=calico
+      - --kops-image=309956199498/RHEL-8.1.0_HVM-20191029-x86_64-0-Hourly2-GP2
+      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
+      - --kops-ssh-user=ec2-user
+      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
+      - --provider=aws
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
+      - --timeout=60m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+  annotations:
+    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-tab-name: kops-grid-calico-rhel8
+
+# {"cloud": "aws", "distro": "ubuntu1604", "networking": "calico"}
+- name: e2e-kops-grid-calico-ubuntu1604
+  cron: '7 21 * * *'
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+  decorate: true
+  decoration_config:
+    timeout: 90m
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --cluster=e2e-kops-calico-ubuntu1604.test-cncf-aws.k8s.io
+      - --deployment=kops
+      - --env=KUBE_SSH_USER=ubuntu
+      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
+      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
+      - --env=KOPS_RUN_TOO_NEW_VERSION=1
+      - --extract=release/stable
+      - --ginkgo-parallel
+      - --kops-args=--networking=calico
+      - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-20200407
+      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
+      - --kops-ssh-user=ubuntu
+      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
+      - --provider=aws
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
+      - --timeout=60m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+  annotations:
+    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-tab-name: kops-grid-calico-ubuntu1604
+
+# {"cloud": "aws", "distro": "ubuntu1804", "networking": "calico"}
+- name: e2e-kops-grid-calico-ubuntu1804
+  cron: '33 15 * * *'
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+  decorate: true
+  decoration_config:
+    timeout: 90m
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --cluster=e2e-kops-calico-ubuntu1804.test-cncf-aws.k8s.io
+      - --deployment=kops
+      - --env=KUBE_SSH_USER=ubuntu
+      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
+      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
+      - --env=KOPS_RUN_TOO_NEW_VERSION=1
+      - --extract=release/stable
+      - --ginkgo-parallel
+      - --kops-args=--networking=calico
+      - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20200408
+      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
+      - --kops-ssh-user=ubuntu
+      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
+      - --provider=aws
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
+      - --timeout=60m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+  annotations:
+    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-tab-name: kops-grid-calico-ubuntu1804
+
+# {"cloud": "aws", "distro": "ubuntu2004", "networking": "calico"}
+- name: e2e-kops-grid-calico-ubuntu2004
+  cron: '43 1 * * *'
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+  decorate: true
+  decoration_config:
+    timeout: 90m
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --cluster=e2e-kops-calico-ubuntu2004.test-cncf-aws.k8s.io
+      - --deployment=kops
+      - --env=KUBE_SSH_USER=ubuntu
+      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
+      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
+      - --env=KOPS_RUN_TOO_NEW_VERSION=1
+      - --extract=release/stable
+      - --ginkgo-parallel
+      - --kops-args=--networking=calico
+      - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200423
+      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
+      - --kops-ssh-user=ubuntu
+      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
+      - --provider=aws
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
+      - --timeout=60m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+  annotations:
+    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-tab-name: kops-grid-calico-ubuntu2004
+
+# {"cloud": "aws", "distro": null, "networking": "cilium"}
+- name: e2e-kops-grid-cilium
+  cron: '15 4 * * *'
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+  decorate: true
+  decoration_config:
+    timeout: 90m
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --cluster=e2e-kops-cilium.test-cncf-aws.k8s.io
+      - --deployment=kops
+      - --env=KUBE_SSH_USER=admin
+      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
+      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
+      - --env=KOPS_RUN_TOO_NEW_VERSION=1
+      - --extract=release/stable
+      - --ginkgo-parallel
+      - --kops-args=--networking=cilium
+      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
+      - --kops-ssh-user=admin
+      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
+      - --provider=aws
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
+      - --timeout=60m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+  annotations:
+    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-tab-name: kops-grid-cilium
+
+# {"cloud": "aws", "distro": "amazonlinux2", "networking": "cilium"}
+- name: e2e-kops-grid-cilium-amazonlinux2
+  cron: '31 15 * * *'
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+  decorate: true
+  decoration_config:
+    timeout: 90m
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --cluster=e2e-kops-cilium-amazonlinux2.test-cncf-aws.k8s.io
+      - --deployment=kops
+      - --env=KUBE_SSH_USER=ec2-user
+      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
+      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
+      - --env=KOPS_RUN_TOO_NEW_VERSION=1
+      - --extract=release/stable
+      - --ginkgo-parallel
+      - --kops-args=--networking=cilium
+      - --kops-image=137112412989/amzn2-ami-hvm-2.0.20200304.0-x86_64-gp2
+      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
+      - --kops-ssh-user=ec2-user
+      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
+      - --provider=aws
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
+      - --timeout=60m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+  annotations:
+    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-tab-name: kops-grid-cilium-amazonlinux2
+
+# {"cloud": "aws", "distro": "centos7", "networking": "cilium"}
+- name: e2e-kops-grid-cilium-centos7
+  cron: '52 9 * * *'
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+  decorate: true
+  decoration_config:
+    timeout: 90m
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --cluster=e2e-kops-cilium-centos7.test-cncf-aws.k8s.io
+      - --deployment=kops
+      - --env=KUBE_SSH_USER=centos
+      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
+      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
+      - --env=KOPS_RUN_TOO_NEW_VERSION=1
+      - --extract=release/stable
+      - --ginkgo-parallel
+      - --kops-args=--networking=cilium
+      - --kops-image=679593333241/CentOS Linux 7 x86_64 HVM EBS ENA 1901_01-b7ee8a69-ee97-4a49-9e68-afaee216db2e-ami-05713873c6794f575.4
+      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
+      - --kops-ssh-user=centos
+      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
+      - --provider=aws
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
+      - --timeout=60m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+  annotations:
+    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-tab-name: kops-grid-cilium-centos7
+
+# {"cloud": "aws", "distro": "debian9", "networking": "cilium"}
+- name: e2e-kops-grid-cilium-debian9
+  cron: '8 21 * * *'
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+  decorate: true
+  decoration_config:
+    timeout: 90m
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --cluster=e2e-kops-cilium-debian9.test-cncf-aws.k8s.io
+      - --deployment=kops
+      - --env=KUBE_SSH_USER=admin
+      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
+      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
+      - --env=KOPS_RUN_TOO_NEW_VERSION=1
+      - --extract=release/stable
+      - --ginkgo-parallel
+      - --kops-args=--networking=cilium
+      - --kops-image=379101102735/debian-stretch-hvm-x86_64-gp2-2019-11-13-63558
+      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
+      - --kops-ssh-user=admin
+      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
+      - --provider=aws
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
+      - --timeout=60m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+  annotations:
+    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-tab-name: kops-grid-cilium-debian9
+
+# {"cloud": "aws", "distro": "debian10", "networking": "cilium"}
+- name: e2e-kops-grid-cilium-debian10
+  cron: '38 8 * * *'
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+  decorate: true
+  decoration_config:
+    timeout: 90m
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --cluster=e2e-kops-cilium-debian10.test-cncf-aws.k8s.io
+      - --deployment=kops
+      - --env=KUBE_SSH_USER=admin
+      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
+      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
+      - --env=KOPS_RUN_TOO_NEW_VERSION=1
+      - --extract=release/stable
+      - --ginkgo-parallel
+      - --kops-args=--networking=cilium
+      - --kops-image=136693071363/debian-10-amd64-20200210-166
+      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
+      - --kops-ssh-user=admin
+      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
+      - --provider=aws
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
+      - --timeout=60m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+  annotations:
+    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-tab-name: kops-grid-cilium-debian10
+
+# {"cloud": "aws", "distro": "flatcar", "networking": "cilium"}
+- name: e2e-kops-grid-cilium-flatcar
+  cron: '10 15 * * *'
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+  decorate: true
+  decoration_config:
+    timeout: 90m
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --cluster=e2e-kops-cilium-flatcar.test-cncf-aws.k8s.io
+      - --deployment=kops
+      - --env=KUBE_SSH_USER=core
+      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
+      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
+      - --env=KOPS_RUN_TOO_NEW_VERSION=1
+      - --extract=release/stable
+      - --ginkgo-parallel
+      - --kops-args=--networking=cilium
+      - --kops-image=075585003325/Flatcar-stable-2303.3.1-hvm
+      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
+      - --kops-ssh-user=core
+      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
+      - --provider=aws
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
+      - --timeout=60m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+  annotations:
+    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-tab-name: kops-grid-cilium-flatcar
+
+# {"cloud": "aws", "distro": "rhel7", "networking": "cilium"}
+- name: e2e-kops-grid-cilium-rhel7
+  cron: '14 10 * * *'
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+  decorate: true
+  decoration_config:
+    timeout: 90m
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --cluster=e2e-kops-cilium-rhel7.test-cncf-aws.k8s.io
+      - --deployment=kops
+      - --env=KUBE_SSH_USER=ec2-user
+      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
+      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
+      - --env=KOPS_RUN_TOO_NEW_VERSION=1
+      - --extract=release/stable
+      - --ginkgo-parallel
+      - --kops-args=--networking=cilium
+      - --kops-image=309956199498/RHEL-7.7_HVM-20191119-x86_64-2-Hourly2-GP2
+      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
+      - --kops-ssh-user=ec2-user
+      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
+      - --provider=aws
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
+      - --timeout=60m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+  annotations:
+    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-tab-name: kops-grid-cilium-rhel7
+
+# {"cloud": "aws", "distro": "rhel8", "networking": "cilium"}
+- name: e2e-kops-grid-cilium-rhel8
+  cron: '31 19 * * *'
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+  decorate: true
+  decoration_config:
+    timeout: 90m
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --cluster=e2e-kops-cilium-rhel8.test-cncf-aws.k8s.io
+      - --deployment=kops
+      - --env=KUBE_SSH_USER=ec2-user
+      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
+      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
+      - --env=KOPS_RUN_TOO_NEW_VERSION=1
+      - --extract=release/stable
+      - --ginkgo-parallel
+      - --kops-args=--networking=cilium
+      - --kops-image=309956199498/RHEL-8.1.0_HVM-20191029-x86_64-0-Hourly2-GP2
+      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
+      - --kops-ssh-user=ec2-user
+      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
+      - --provider=aws
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
+      - --timeout=60m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+  annotations:
+    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-tab-name: kops-grid-cilium-rhel8
+
+# {"cloud": "aws", "distro": "ubuntu1604", "networking": "cilium"}
+- name: e2e-kops-grid-cilium-ubuntu1604
+  cron: '36 10 * * *'
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+  decorate: true
+  decoration_config:
+    timeout: 90m
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --cluster=e2e-kops-cilium-ubuntu1604.test-cncf-aws.k8s.io
+      - --deployment=kops
+      - --env=KUBE_SSH_USER=ubuntu
+      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
+      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
+      - --env=KOPS_RUN_TOO_NEW_VERSION=1
+      - --extract=release/stable
+      - --ginkgo-parallel
+      - --kops-args=--networking=cilium
+      - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-20200407
+      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
+      - --kops-ssh-user=ubuntu
+      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
+      - --provider=aws
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
+      - --timeout=60m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+  annotations:
+    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-tab-name: kops-grid-cilium-ubuntu1604
+
+# {"cloud": "aws", "distro": "ubuntu1804", "networking": "cilium"}
+- name: e2e-kops-grid-cilium-ubuntu1804
+  cron: '54 16 * * *'
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+  decorate: true
+  decoration_config:
+    timeout: 90m
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --cluster=e2e-kops-cilium-ubuntu1804.test-cncf-aws.k8s.io
+      - --deployment=kops
+      - --env=KUBE_SSH_USER=ubuntu
+      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
+      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
+      - --env=KOPS_RUN_TOO_NEW_VERSION=1
+      - --extract=release/stable
+      - --ginkgo-parallel
+      - --kops-args=--networking=cilium
+      - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20200408
+      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
+      - --kops-ssh-user=ubuntu
+      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
+      - --provider=aws
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
+      - --timeout=60m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+  annotations:
+    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-tab-name: kops-grid-cilium-ubuntu1804
+
+# {"cloud": "aws", "distro": "ubuntu2004", "networking": "cilium"}
+- name: e2e-kops-grid-cilium-ubuntu2004
+  cron: '36 22 * * *'
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+  decorate: true
+  decoration_config:
+    timeout: 90m
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --cluster=e2e-kops-cilium-ubuntu2004.test-cncf-aws.k8s.io
+      - --deployment=kops
+      - --env=KUBE_SSH_USER=ubuntu
+      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
+      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
+      - --env=KOPS_RUN_TOO_NEW_VERSION=1
+      - --extract=release/stable
+      - --ginkgo-parallel
+      - --kops-args=--networking=cilium
+      - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200423
+      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
+      - --kops-ssh-user=ubuntu
+      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
+      - --provider=aws
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
+      - --timeout=60m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+  annotations:
+    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-tab-name: kops-grid-cilium-ubuntu2004
+
+# {"cloud": "aws", "distro": null, "networking": "flannel"}
+- name: e2e-kops-grid-flannel
+  cron: '23 2 * * *'
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+  decorate: true
+  decoration_config:
+    timeout: 90m
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --cluster=e2e-kops-flannel.test-cncf-aws.k8s.io
+      - --deployment=kops
+      - --env=KUBE_SSH_USER=admin
+      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
+      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
+      - --env=KOPS_RUN_TOO_NEW_VERSION=1
+      - --extract=release/stable
+      - --ginkgo-parallel
+      - --kops-args=--networking=flannel
+      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
+      - --kops-ssh-user=admin
+      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
+      - --provider=aws
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
+      - --timeout=60m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+  annotations:
+    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-tab-name: kops-grid-flannel
+
+# {"cloud": "aws", "distro": "amazonlinux2", "networking": "flannel"}
+- name: e2e-kops-grid-flannel-amazonlinux2
+  cron: '7 14 * * *'
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+  decorate: true
+  decoration_config:
+    timeout: 90m
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --cluster=e2e-kops-flannel-amazonlinux2.test-cncf-aws.k8s.io
+      - --deployment=kops
+      - --env=KUBE_SSH_USER=ec2-user
+      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
+      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
+      - --env=KOPS_RUN_TOO_NEW_VERSION=1
+      - --extract=release/stable
+      - --ginkgo-parallel
+      - --kops-args=--networking=flannel
+      - --kops-image=137112412989/amzn2-ami-hvm-2.0.20200304.0-x86_64-gp2
+      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
+      - --kops-ssh-user=ec2-user
+      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
+      - --provider=aws
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
+      - --timeout=60m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+  annotations:
+    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-tab-name: kops-grid-flannel-amazonlinux2
+
+# {"cloud": "aws", "distro": "centos7", "networking": "flannel"}
+- name: e2e-kops-grid-flannel-centos7
+  cron: '32 18 * * *'
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+  decorate: true
+  decoration_config:
+    timeout: 90m
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --cluster=e2e-kops-flannel-centos7.test-cncf-aws.k8s.io
+      - --deployment=kops
+      - --env=KUBE_SSH_USER=centos
+      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
+      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
+      - --env=KOPS_RUN_TOO_NEW_VERSION=1
+      - --extract=release/stable
+      - --ginkgo-parallel
+      - --kops-args=--networking=flannel
+      - --kops-image=679593333241/CentOS Linux 7 x86_64 HVM EBS ENA 1901_01-b7ee8a69-ee97-4a49-9e68-afaee216db2e-ami-05713873c6794f575.4
+      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
+      - --kops-ssh-user=centos
+      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
+      - --provider=aws
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
+      - --timeout=60m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+  annotations:
+    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-tab-name: kops-grid-flannel-centos7
+
+# {"cloud": "aws", "distro": "debian9", "networking": "flannel"}
+- name: e2e-kops-grid-flannel-debian9
+  cron: '8 6 * * *'
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+  decorate: true
+  decoration_config:
+    timeout: 90m
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --cluster=e2e-kops-flannel-debian9.test-cncf-aws.k8s.io
+      - --deployment=kops
+      - --env=KUBE_SSH_USER=admin
+      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
+      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
+      - --env=KOPS_RUN_TOO_NEW_VERSION=1
+      - --extract=release/stable
+      - --ginkgo-parallel
+      - --kops-args=--networking=flannel
+      - --kops-image=379101102735/debian-stretch-hvm-x86_64-gp2-2019-11-13-63558
+      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
+      - --kops-ssh-user=admin
+      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
+      - --provider=aws
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
+      - --timeout=60m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+  annotations:
+    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-tab-name: kops-grid-flannel-debian9
+
+# {"cloud": "aws", "distro": "debian10", "networking": "flannel"}
+- name: e2e-kops-grid-flannel-debian10
+  cron: '42 20 * * *'
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+  decorate: true
+  decoration_config:
+    timeout: 90m
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --cluster=e2e-kops-flannel-debian10.test-cncf-aws.k8s.io
+      - --deployment=kops
+      - --env=KUBE_SSH_USER=admin
+      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
+      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
+      - --env=KOPS_RUN_TOO_NEW_VERSION=1
+      - --extract=release/stable
+      - --ginkgo-parallel
+      - --kops-args=--networking=flannel
+      - --kops-image=136693071363/debian-10-amd64-20200210-166
+      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
+      - --kops-ssh-user=admin
+      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
+      - --provider=aws
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
+      - --timeout=60m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+  annotations:
+    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-tab-name: kops-grid-flannel-debian10
+
+# {"cloud": "aws", "distro": "flatcar", "networking": "flannel"}
+- name: e2e-kops-grid-flannel-flatcar
+  cron: '54 4 * * *'
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+  decorate: true
+  decoration_config:
+    timeout: 90m
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --cluster=e2e-kops-flannel-flatcar.test-cncf-aws.k8s.io
+      - --deployment=kops
+      - --env=KUBE_SSH_USER=core
+      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
+      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
+      - --env=KOPS_RUN_TOO_NEW_VERSION=1
+      - --extract=release/stable
+      - --ginkgo-parallel
+      - --kops-args=--networking=flannel
+      - --kops-image=075585003325/Flatcar-stable-2303.3.1-hvm
+      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
+      - --kops-ssh-user=core
+      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
+      - --provider=aws
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
+      - --timeout=60m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+  annotations:
+    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-tab-name: kops-grid-flannel-flatcar
+
+# {"cloud": "aws", "distro": "rhel7", "networking": "flannel"}
+- name: e2e-kops-grid-flannel-rhel7
+  cron: '14 18 * * *'
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+  decorate: true
+  decoration_config:
+    timeout: 90m
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --cluster=e2e-kops-flannel-rhel7.test-cncf-aws.k8s.io
+      - --deployment=kops
+      - --env=KUBE_SSH_USER=ec2-user
+      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
+      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
+      - --env=KOPS_RUN_TOO_NEW_VERSION=1
+      - --extract=release/stable
+      - --ginkgo-parallel
+      - --kops-args=--networking=flannel
+      - --kops-image=309956199498/RHEL-7.7_HVM-20191119-x86_64-2-Hourly2-GP2
+      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
+      - --kops-ssh-user=ec2-user
+      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
+      - --provider=aws
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
+      - --timeout=60m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+  annotations:
+    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-tab-name: kops-grid-flannel-rhel7
+
+# {"cloud": "aws", "distro": "rhel8", "networking": "flannel"}
+- name: e2e-kops-grid-flannel-rhel8
+  cron: '31 3 * * *'
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+  decorate: true
+  decoration_config:
+    timeout: 90m
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --cluster=e2e-kops-flannel-rhel8.test-cncf-aws.k8s.io
+      - --deployment=kops
+      - --env=KUBE_SSH_USER=ec2-user
+      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
+      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
+      - --env=KOPS_RUN_TOO_NEW_VERSION=1
+      - --extract=release/stable
+      - --ginkgo-parallel
+      - --kops-args=--networking=flannel
+      - --kops-image=309956199498/RHEL-8.1.0_HVM-20191029-x86_64-0-Hourly2-GP2
+      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
+      - --kops-ssh-user=ec2-user
+      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
+      - --provider=aws
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
+      - --timeout=60m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+  annotations:
+    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-tab-name: kops-grid-flannel-rhel8
+
+# {"cloud": "aws", "distro": "ubuntu1604", "networking": "flannel"}
+- name: e2e-kops-grid-flannel-ubuntu1604
+  cron: '19 9 * * *'
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+  decorate: true
+  decoration_config:
+    timeout: 90m
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --cluster=e2e-kops-flannel-ubuntu1604.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
@@ -1549,11 +1549,11 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-aws-flannel-ubuntu1604
+    testgrid-tab-name: kops-grid-flannel-ubuntu1604
 
 # {"cloud": "aws", "distro": "ubuntu1804", "networking": "flannel"}
-- name: e2e-kops-grid-aws-flannel-ubuntu1804
-  cron: '47 20 * * *'
+- name: e2e-kops-grid-flannel-ubuntu1804
+  cron: '5 11 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -1567,7 +1567,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=e2e-kops-aws-flannel-ubuntu1804.test-cncf-aws.k8s.io
+      - --cluster=e2e-kops-flannel-ubuntu1804.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
@@ -1586,11 +1586,11 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-aws-flannel-ubuntu1804
+    testgrid-tab-name: kops-grid-flannel-ubuntu1804
 
 # {"cloud": "aws", "distro": "ubuntu2004", "networking": "flannel"}
-- name: e2e-kops-grid-aws-flannel-ubuntu2004
-  cron: '21 2 * * *'
+- name: e2e-kops-grid-flannel-ubuntu2004
+  cron: '23 5 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -1604,7 +1604,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=e2e-kops-aws-flannel-ubuntu2004.test-cncf-aws.k8s.io
+      - --cluster=e2e-kops-flannel-ubuntu2004.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
@@ -1623,11 +1623,11 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-aws-flannel-ubuntu2004
+    testgrid-tab-name: kops-grid-flannel-ubuntu2004
 
 # {"cloud": "aws", "distro": null, "networking": "kopeio-vxlan"}
-- name: e2e-kops-grid-aws-kopeio-vxlan
-  cron: '10 8 * * *'
+- name: e2e-kops-grid-kopeio-vxlan
+  cron: '45 5 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -1641,7 +1641,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=e2e-kops-aws-kopeio-vxlan.test-cncf-aws.k8s.io
+      - --cluster=e2e-kops-kopeio-vxlan.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
@@ -1659,11 +1659,11 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-aws-kopeio-vxlan
+    testgrid-tab-name: kops-grid-kopeio-vxlan
 
 # {"cloud": "aws", "distro": "amazonlinux2", "networking": "kopeio-vxlan"}
-- name: e2e-kops-grid-aws-kopeio-vxlan-amazonlinux2
-  cron: '33 10 * * *'
+- name: e2e-kops-grid-kopeio-vxlan-amazonlinux2
+  cron: '43 5 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -1677,7 +1677,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=e2e-kops-aws-kopeio-vxlan-amazonlinux2.test-cncf-aws.k8s.io
+      - --cluster=e2e-kops-kopeio-vxlan-amazonlinux2.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
@@ -1696,11 +1696,11 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-aws-kopeio-vxlan-amazonlinux2
+    testgrid-tab-name: kops-grid-kopeio-vxlan-amazonlinux2
 
 # {"cloud": "aws", "distro": "centos7", "networking": "kopeio-vxlan"}
-- name: e2e-kops-grid-aws-kopeio-vxlan-centos7
-  cron: '44 19 * * *'
+- name: e2e-kops-grid-kopeio-vxlan-centos7
+  cron: '3 6 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -1714,7 +1714,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=e2e-kops-aws-kopeio-vxlan-centos7.test-cncf-aws.k8s.io
+      - --cluster=e2e-kops-kopeio-vxlan-centos7.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=centos
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
@@ -1733,11 +1733,11 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-aws-kopeio-vxlan-centos7
+    testgrid-tab-name: kops-grid-kopeio-vxlan-centos7
 
 # {"cloud": "aws", "distro": "debian9", "networking": "kopeio-vxlan"}
-- name: e2e-kops-grid-aws-kopeio-vxlan-debian9
-  cron: '16 15 * * *'
+- name: e2e-kops-grid-kopeio-vxlan-debian9
+  cron: '39 18 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -1751,7 +1751,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=e2e-kops-aws-kopeio-vxlan-debian9.test-cncf-aws.k8s.io
+      - --cluster=e2e-kops-kopeio-vxlan-debian9.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
@@ -1770,11 +1770,11 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-aws-kopeio-vxlan-debian9
+    testgrid-tab-name: kops-grid-kopeio-vxlan-debian9
 
 # {"cloud": "aws", "distro": "debian10", "networking": "kopeio-vxlan"}
-- name: e2e-kops-grid-aws-kopeio-vxlan-debian10
-  cron: '15 9 * * *'
+- name: e2e-kops-grid-kopeio-vxlan-debian10
+  cron: '0 11 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -1788,7 +1788,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=e2e-kops-aws-kopeio-vxlan-debian10.test-cncf-aws.k8s.io
+      - --cluster=e2e-kops-kopeio-vxlan-debian10.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
@@ -1807,11 +1807,11 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-aws-kopeio-vxlan-debian10
+    testgrid-tab-name: kops-grid-kopeio-vxlan-debian10
 
 # {"cloud": "aws", "distro": "flatcar", "networking": "kopeio-vxlan"}
-- name: e2e-kops-grid-aws-kopeio-vxlan-flatcar
-  cron: '54 13 * * *'
+- name: e2e-kops-grid-kopeio-vxlan-flatcar
+  cron: '53 0 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -1825,7 +1825,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=e2e-kops-aws-kopeio-vxlan-flatcar.test-cncf-aws.k8s.io
+      - --cluster=e2e-kops-kopeio-vxlan-flatcar.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=core
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
@@ -1844,11 +1844,11 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-aws-kopeio-vxlan-flatcar
+    testgrid-tab-name: kops-grid-kopeio-vxlan-flatcar
 
 # {"cloud": "aws", "distro": "rhel7", "networking": "kopeio-vxlan"}
-- name: e2e-kops-grid-aws-kopeio-vxlan-rhel7
-  cron: '53 22 * * *'
+- name: e2e-kops-grid-kopeio-vxlan-rhel7
+  cron: '31 9 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -1862,7 +1862,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=e2e-kops-aws-kopeio-vxlan-rhel7.test-cncf-aws.k8s.io
+      - --cluster=e2e-kops-kopeio-vxlan-rhel7.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
@@ -1881,11 +1881,11 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-aws-kopeio-vxlan-rhel7
+    testgrid-tab-name: kops-grid-kopeio-vxlan-rhel7
 
 # {"cloud": "aws", "distro": "rhel8", "networking": "kopeio-vxlan"}
-- name: e2e-kops-grid-aws-kopeio-vxlan-rhel8
-  cron: '12 23 * * *'
+- name: e2e-kops-grid-kopeio-vxlan-rhel8
+  cron: '2 8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -1899,7 +1899,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=e2e-kops-aws-kopeio-vxlan-rhel8.test-cncf-aws.k8s.io
+      - --cluster=e2e-kops-kopeio-vxlan-rhel8.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
@@ -1918,11 +1918,11 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-aws-kopeio-vxlan-rhel8
+    testgrid-tab-name: kops-grid-kopeio-vxlan-rhel8
 
 # {"cloud": "aws", "distro": "ubuntu1604", "networking": "kopeio-vxlan"}
-- name: e2e-kops-grid-aws-kopeio-vxlan-ubuntu1604
-  cron: '22 6 * * *'
+- name: e2e-kops-grid-kopeio-vxlan-ubuntu1604
+  cron: '50 6 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -1936,7 +1936,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=e2e-kops-aws-kopeio-vxlan-ubuntu1604.test-cncf-aws.k8s.io
+      - --cluster=e2e-kops-kopeio-vxlan-ubuntu1604.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
@@ -1955,11 +1955,11 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-aws-kopeio-vxlan-ubuntu1604
+    testgrid-tab-name: kops-grid-kopeio-vxlan-ubuntu1604
 
 # {"cloud": "aws", "distro": "ubuntu1804", "networking": "kopeio-vxlan"}
-- name: e2e-kops-grid-aws-kopeio-vxlan-ubuntu1804
-  cron: '4 4 * * *'
+- name: e2e-kops-grid-kopeio-vxlan-ubuntu1804
+  cron: '52 20 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -1973,7 +1973,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=e2e-kops-aws-kopeio-vxlan-ubuntu1804.test-cncf-aws.k8s.io
+      - --cluster=e2e-kops-kopeio-vxlan-ubuntu1804.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
@@ -1992,11 +1992,11 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-aws-kopeio-vxlan-ubuntu1804
+    testgrid-tab-name: kops-grid-kopeio-vxlan-ubuntu1804
 
 # {"cloud": "aws", "distro": "ubuntu2004", "networking": "kopeio-vxlan"}
-- name: e2e-kops-grid-aws-kopeio-vxlan-ubuntu2004
-  cron: '50 10 * * *'
+- name: e2e-kops-grid-kopeio-vxlan-ubuntu2004
+  cron: '46 10 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -2010,7 +2010,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=e2e-kops-aws-kopeio-vxlan-ubuntu2004.test-cncf-aws.k8s.io
+      - --cluster=e2e-kops-kopeio-vxlan-ubuntu2004.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
@@ -2029,6 +2029,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-grid-aws-kopeio-vxlan-ubuntu2004
+    testgrid-tab-name: kops-grid-kopeio-vxlan-ubuntu2004
 
-# 55 jobs, total of 707 runs per week
+# 55 jobs, total of 385 runs per week
