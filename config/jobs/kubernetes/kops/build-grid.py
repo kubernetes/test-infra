@@ -156,7 +156,7 @@ def build_test(cloud='aws', distro=None, networking=None):
     test_args = r'--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints' # pylint: disable=line-too-long
 
     suffix = ""
-    if cloud:
+    if cloud and cloud != "aws":
         suffix += "-" + cloud
     if networking:
         suffix += "-" + networking
