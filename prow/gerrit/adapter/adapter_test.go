@@ -53,13 +53,16 @@ func (f *fca) Config() *config.Config {
 	return f.c
 }
 
-type fgc struct{}
+type fgc struct {
+	reviews int
+}
 
 func (f *fgc) QueryChanges(lastUpdate client.LastSyncState, rateLimit int) map[string][]client.ChangeInfo {
 	return nil
 }
 
 func (f *fgc) SetReview(instance, id, revision, message string, labels map[string]string) error {
+	f.reviews++
 	return nil
 }
 
@@ -194,11 +197,12 @@ func TestCreateRefs(t *testing.T) {
 
 func TestProcessChange(t *testing.T) {
 	var testcases = []struct {
-		name        string
-		change      client.ChangeInfo
-		numPJ       int
-		pjRef       string
-		shouldError bool
+		name             string
+		change           client.ChangeInfo
+		numPJ            int
+		pjRef            string
+		shouldError      bool
+		shouldSkipReport bool
 	}{
 		{
 			name: "no revisions errors out",
@@ -598,6 +602,42 @@ func TestProcessChange(t *testing.T) {
 			},
 			numPJ: 2,
 		},
+		{
+			name: "no comments when no jobs have Report set",
+			change: client.ChangeInfo{
+				CurrentRevision: "1",
+				Project:         "test-infra",
+				Status:          "NEW",
+				Revisions: map[string]client.RevisionInfo{
+					"1": {
+						Ref:     "refs/changes/00/1/1",
+						Created: stampNow,
+					},
+				},
+			},
+			numPJ:            2,
+			pjRef:            "refs/changes/00/1/1",
+			shouldSkipReport: true,
+		},
+		{
+			name: "comment left when at-least 1 job has Report set",
+			change: client.ChangeInfo{
+				CurrentRevision: "1",
+				Project:         "test-infra",
+				Status:          "NEW",
+				Revisions: map[string]client.RevisionInfo{
+					"1": {
+						Files: map[string]client.FileInfo{
+							"a.foo": {},
+						},
+						Ref:     "refs/changes/00/1/1",
+						Created: stampNow,
+					},
+				},
+			},
+			numPJ: 3,
+			pjRef: "refs/changes/00/1/1",
+		},
 	}
 
 	for _, tc := range testcases {
@@ -608,7 +648,8 @@ func TestProcessChange(t *testing.T) {
 				},
 				AlwaysRun: true,
 				Reporter: config.Reporter{
-					Context: "always-runs-all-branches",
+					Context:    "always-runs-all-branches",
+					SkipReport: true,
 				},
 			},
 			{
@@ -619,7 +660,8 @@ func TestProcessChange(t *testing.T) {
 					RunIfChanged: "\\.go",
 				},
 				Reporter: config.Reporter{
-					Context: "run-if-changed-all-branches",
+					Context:    "run-if-changed-all-branches",
+					SkipReport: true,
 				},
 			},
 			{
@@ -631,7 +673,8 @@ func TestProcessChange(t *testing.T) {
 				},
 				AlwaysRun: true,
 				Reporter: config.Reporter{
-					Context: "runs-on-pony-branch",
+					Context:    "runs-on-pony-branch",
+					SkipReport: true,
 				},
 			},
 			{
@@ -643,7 +686,8 @@ func TestProcessChange(t *testing.T) {
 				},
 				AlwaysRun: true,
 				Reporter: config.Reporter{
-					Context: "runs-on-all-but-baz-branch",
+					Context:    "runs-on-all-but-baz-branch",
+					SkipReport: true,
 				},
 			},
 			{
@@ -653,7 +697,8 @@ func TestProcessChange(t *testing.T) {
 				Trigger:      `.*/test\s*troll.*`,
 				RerunCommand: "/test troll",
 				Reporter: config.Reporter{
-					Context: "trigger-regex-all-branches",
+					Context:    "trigger-regex-all-branches",
+					SkipReport: true,
 				},
 			},
 			{
@@ -661,7 +706,8 @@ func TestProcessChange(t *testing.T) {
 					Name: "foo-job",
 				},
 				Reporter: config.Reporter{
-					Context: "foo-job",
+					Context:    "foo-job",
+					SkipReport: true,
 				},
 			},
 			{
@@ -669,7 +715,19 @@ func TestProcessChange(t *testing.T) {
 					Name: "bar-job",
 				},
 				Reporter: config.Reporter{
-					Context: "bar-job",
+					Context:    "bar-job",
+					SkipReport: true,
+				},
+			},
+			{
+				JobBase: config.JobBase{
+					Name: "reported-job-runs-on-foo-file-change",
+				},
+				RegexpChangeMatcher: config.RegexpChangeMatcher{
+					RunIfChanged: "\\.foo",
+				},
+				Reporter: config.Reporter{
+					Context: "foo-job-reported",
 				},
 			},
 		}
@@ -677,6 +735,7 @@ func TestProcessChange(t *testing.T) {
 			t.Fatalf("could not set regexes: %v", err)
 		}
 
+		testInstance := "https://gerrit"
 		fca := &fca{
 			c: &config.Config{
 				JobConfig: config.JobConfig{
@@ -704,7 +763,6 @@ func TestProcessChange(t *testing.T) {
 			},
 		}
 
-		testInstance := "https://gerrit"
 		fakeProwJobClient := prowfake.NewSimpleClientset()
 		fakeLastSync := client.LastSyncState{testInstance: map[string]time.Time{}}
 
@@ -712,10 +770,11 @@ func TestProcessChange(t *testing.T) {
 			fakeLastSync[testInstance][tc.change.Project] = timeNow.Add(-time.Minute)
 		}
 
+		var gc fgc
 		c := &Controller{
 			config:        fca.Config,
 			prowJobClient: fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
-			gc:            &fgc{},
+			gc:            &gc,
 			tracker:       &fakeSync{val: fakeLastSync},
 		}
 
@@ -755,6 +814,11 @@ func TestProcessChange(t *testing.T) {
 			}
 			if prowjobs[0].Spec.Refs.BaseSHA != "abc" {
 				t.Errorf("tc %s - BaseSHA should be abc, got %s", tc.name, prowjobs[0].Spec.Refs.BaseSHA)
+			}
+		}
+		if tc.shouldSkipReport {
+			if gc.reviews > 0 {
+				t.Errorf("tc %s - expected no comments, got: %d", tc.name, gc.reviews)
 			}
 		}
 	}
