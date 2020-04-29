@@ -1125,7 +1125,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			cherryPickFromPRNum: 1,
 			cherryPickTo:        "v1",
 			options:             plugins.BugzillaBranchOptions{TargetRelease: &v1},
-			expectedComment: `org/repo#1:@user: An error was encountered Failed to create a cherry-pick bug in Bugzilla: failed to checked the state of cherrypicked pull request at https://github.com/org/repo/pull/1 for bug 123 on the Bugzilla server at www.bugzilla:
+			expectedComment: `org/repo#1:@user: An error was encountered creating a cherry-pick bug in Bugzilla: failed to check the state of cherrypicked pull request at https://github.com/org/repo/pull/1 for bug 123 on the Bugzilla server at www.bugzilla:
 > pull request number 1 does not exist
 Please contact an administrator to resolve this issue, then request a bug refresh with <code>/bugzilla refresh</code>.
 
@@ -1174,7 +1174,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			cherryPickFromPRNum: 1,
 			cherryPickTo:        "v1",
 			options:             plugins.BugzillaBranchOptions{TargetRelease: &v1},
-			expectedComment: `org/repo#1:@user: An error was encountered Failed to create a cherry-pick bug in Bugzilla: encountered error cloning [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123) for cherrypick for bug 123 on the Bugzilla server at www.bugzilla:
+			expectedComment: `org/repo#1:@user: An error was encountered creating a cherry-pick bug in Bugzilla: encountered error cloning [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123) for cherrypick for bug 123 on the Bugzilla server at www.bugzilla:
 > injected error creating new bug
 Please contact an administrator to resolve this issue, then request a bug refresh with <code>/bugzilla refresh</code>.
 
@@ -1200,7 +1200,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			cherryPickFromPRNum: 1,
 			cherryPickTo:        "v1",
 			options:             plugins.BugzillaBranchOptions{TargetRelease: &v1},
-			expectedComment: `org/repo#1:@user: An error was encountered Failed to create a cherry-pick bug in Bugzilla: encountered error cloning [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123) for cherrypick for bug 123 on the Bugzilla server at www.bugzilla:
+			expectedComment: `org/repo#1:@user: An error was encountered creating a cherry-pick bug in Bugzilla: encountered error cloning [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123) for cherrypick for bug 123 on the Bugzilla server at www.bugzilla:
 > injected error updating bug
 Please contact an administrator to resolve this issue, then request a bug refresh with <code>/bugzilla refresh</code>.
 
