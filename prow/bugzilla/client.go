@@ -161,13 +161,15 @@ func (c *client) UpdateBug(id int, update BugUpdate) error {
 	return err
 }
 
+// CreateBug creates a new bug on the server.
+// https://bugzilla.readthedocs.io/en/latest/api/core/v1/bug.html#create-bug
 func (c *client) CreateBug(bug *BugCreate) (int, error) {
 	logger := c.logger.WithFields(logrus.Fields{methodField: "CreateBug", "bug": bug})
 	body, err := json.Marshal(bug)
 	if err != nil {
 		return 0, fmt.Errorf("failed to marshal create payload: %v", err)
 	}
-	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/rest/bug/", c.endpoint), bytes.NewBuffer(body))
+	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/rest/bug", c.endpoint), bytes.NewBuffer(body))
 	if err != nil {
 		return 0, err
 	}
@@ -220,7 +222,9 @@ func cloneBugStruct(bug *Bug, comments []Comment) *BugCreate {
 	return newBug
 }
 
-func (c *client) CloneBug(bug *Bug) (int, error) {
+// clone handles the bz client calls for the bug cloning process and allows us to share the implementation
+// between the real and fake client to prevent bugs from accidental discrepencies between the two.
+func clone(c Client, bug *Bug) (int, error) {
 	comments, err := c.GetComments(bug.ID)
 	if err != nil {
 		return 0, fmt.Errorf("failed to get parent bug's comments: %v", err)
@@ -238,6 +242,13 @@ func (c *client) CloneBug(bug *Bug) (int, error) {
 	return id, err
 }
 
+// CloneBug clones a bug by creating a new bug with the same fields, copying the description, and updating the bug to depend on the original bug
+func (c *client) CloneBug(bug *Bug) (int, error) {
+	return clone(c, bug)
+}
+
+// GetComments gets a list of comments for a specific bug ID.
+// https://bugzilla.readthedocs.io/en/latest/api/core/v1/comment.html#get-comments
 func (c *client) GetComments(bugID int) ([]Comment, error) {
 	logger := c.logger.WithFields(logrus.Fields{methodField: "GetComments", "id": bugID})
 	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/rest/bug/%d/comment", c.endpoint, bugID), nil)

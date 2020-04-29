@@ -211,6 +211,19 @@ func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
 	return nil
 }
 
+func getCherryPickMatch(pre github.PullRequestEvent) (bool, int, string, error) {
+	cherrypickMatch := cherrypickPRMatch.FindStringSubmatch(pre.PullRequest.Body)
+	if cherrypickMatch != nil {
+		cherrypickOf, err := strconv.Atoi(cherrypickMatch[1])
+		if err != nil {
+			// should be impossible based on the regex
+			return false, 0, "", fmt.Errorf("Failed to parse cherrypick bugID as int - is the regex correct? Err: %v", err)
+		}
+		return true, cherrypickOf, pre.PullRequest.Base.Ref, nil
+	}
+	return false, 0, "", nil
+}
+
 // digestPR determines if any action is necessary and creates the objects for handle() if it is
 func digestPR(log *logrus.Entry, pre github.PullRequestEvent, validateByDefault *bool) (*event, error) {
 	// These are the only actions indicating the PR title may have changed or that the PR merged
@@ -230,22 +243,18 @@ func digestPR(log *logrus.Entry, pre github.PullRequestEvent, validateByDefault 
 	)
 
 	e := &event{org: org, repo: repo, baseRef: baseRef, number: number, merged: pre.PullRequest.Merged, state: pre.PullRequest.State, body: title, htmlUrl: pre.PullRequest.HTMLURL, login: pre.PullRequest.User.Login}
-	// Check if bug is a cherrypick
-	cherrypickMatch := cherrypickPRMatch.FindStringSubmatch(pre.PullRequest.Body)
-	if cherrypickMatch != nil {
+	// Check if PR is a cherrypick
+	cherrypick, cherrypickFromPRNum, cherrypickTo, err := getCherryPickMatch(pre)
+	if err != nil {
+		log.WithError(err).Debug("Failed to identify if PR is a cherrypick")
+		return nil, err
+	} else if cherrypick {
 		e.cherrypick = true
-		cherrypickOf, err := strconv.Atoi(cherrypickMatch[1])
-		if err != nil {
-			// should be impossible based on the regex
-			log.WithError(err).Debug("Failed to parse cherrypick bugID as int - is the regex correct?")
-			return nil, err
-		}
-		e.cherrypickFromPRNum = cherrypickOf
-		e.cherrypickTo = pre.PullRequest.Base.Ref
+		e.cherrypickFromPRNum = cherrypickFromPRNum
+		e.cherrypickTo = cherrypickTo
 		return e, nil
 	}
 	// Make sure the PR title is referencing a bug
-	var err error
 	e.bugId, e.missing, err = bugIDFromTitle(title)
 	// in the case that the title used to reference a bug and no longer does we
 	// want to handle this to remove labels
@@ -833,7 +842,7 @@ func handleCherrypick(e event, gc githubClient, bc bugzilla.Client, options plug
 	pr, err := gc.GetPullRequest(e.org, e.repo, e.cherrypickFromPRNum)
 	if err != nil {
 		log.WithError(err).Warn("Unexpected error getting title of pull request being cherrypicked from.")
-		return comment(formatError(fmt.Sprintf("checking the state of a cherrypicked pull request at https://github.com/%s/%s/pull/%d", e.org, e.repo, e.cherrypickFromPRNum), bc.Endpoint(), e.bugId, err))
+		return comment(formatError(fmt.Sprintf("Failed to create a cherry-pick bug in Bugzilla: failed to checked the state of cherrypicked pull request at https://github.com/%s/%s/pull/%d", e.org, e.repo, e.cherrypickFromPRNum), bc.Endpoint(), e.bugId, err))
 	}
 	// Attempt to identify bug from PR title
 	bugID, bugMissing, err := bugIDFromTitle(pr.Title)
@@ -844,18 +853,21 @@ func handleCherrypick(e event, gc githubClient, bc bugzilla.Client, options plug
 	} else if err != nil {
 		// should be impossible based on the regex
 		log.WithError(err).Debugf("Failed to get bug ID from PR title \"%s\"", pr.Title)
-		return comment(formatError(fmt.Sprintf("Failed to get bug ID from PR title \"%s\"", pr.Title), bc.Endpoint(), 0, err))
+		return comment(formatError(fmt.Sprintf("Failed to create a cherry-pick bug in Bugzilla: could not get bug ID from PR title \"%s\"", pr.Title), bc.Endpoint(), 0, err))
 	}
 	oldLink := fmt.Sprintf(bugLink, bugID, bc.Endpoint(), bugID)
-	bug, err := getBug(bc, bugID, log, comment)
-	if err != nil {
-		log.WithError(err).Debugf("Failed to get bug %d", bugID)
-		return comment(formatError(fmt.Sprintf("Failed to get %s", oldLink), bc.Endpoint(), e.bugId, err))
+	// Since getBug generates a comment itself, we have to add a prefix explaining that this was a cherrypick attempt to the comment
+	commentWithPrefix := func(body string) error {
+		return comment(fmt.Sprintf("Failed to create a cherry-pick bug in Bugzilla: %s", body))
+	}
+	bug, err := getBug(bc, bugID, log, commentWithPrefix)
+	if err != nil || bug == nil {
+		return err
 	}
 	cloneID, err := bc.CloneBug(bug)
 	if err != nil {
 		log.WithError(err).Debugf("Failed to clone bug %d", bugID)
-		return comment(formatError(fmt.Sprintf("Failed to clone %s for cherrypick", oldLink), bc.Endpoint(), e.bugId, err))
+		return comment(formatError(fmt.Sprintf("Failed to create a cherry-pick bug in Bugzilla: encountered error cloning %s for cherrypick", oldLink), bc.Endpoint(), e.bugId, err))
 	}
 	cloneLink := fmt.Sprintf(bugLink, cloneID, bc.Endpoint(), cloneID)
 	// Update the version of the bug to the target release
@@ -865,7 +877,7 @@ func handleCherrypick(e event, gc githubClient, bc bugzilla.Client, options plug
 	err = bc.UpdateBug(cloneID, update)
 	if err != nil {
 		log.WithError(err).Debugf("Unable to update version and dependencies for bug %d", cloneID)
-		return comment(formatError(fmt.Sprintf("Failed to update version and dependencies for bugzilla %s", cloneLink), bc.Endpoint(), e.bugId, err))
+		return comment(formatError(fmt.Sprintf("Failed to update cherry-pick bug in Bugzilla: Created cherrypick %s, but encountered error updating version for bugzilla %s", cloneLink, cloneLink), bc.Endpoint(), e.bugId, err))
 	}
 	// Replace old bugID in title with new cloneID
 	newTitle := strings.Replace(e.body, fmt.Sprintf("Bug %d", bugID), fmt.Sprintf("Bug %d", cloneID), 1)

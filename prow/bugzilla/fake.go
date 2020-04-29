@@ -18,7 +18,6 @@ package bugzilla
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -80,14 +79,7 @@ func (c *Fake) UpdateBug(id int, update BugUpdate) error {
 			if len(update.DependsOn.Set) > 0 {
 				bug.DependsOn = update.DependsOn.Set
 			} else {
-				dependSet := sets.NewInt(bug.DependsOn...)
-				for _, id := range update.DependsOn.Add {
-					dependSet.Insert(id)
-				}
-				for _, id := range update.DependsOn.Remove {
-					dependSet.Delete(id)
-				}
-				bug.DependsOn = dependSet.List()
+				bug.DependsOn = sets.NewInt(bug.DependsOn...).Insert(update.DependsOn.Add...).Delete(update.DependsOn.Remove...).List()
 			}
 		}
 		c.Bugs[id] = bug
@@ -176,7 +168,7 @@ func (c *Fake) CreateBug(bug *BugCreate) (int, error) {
 	return newID, nil
 }
 
-// GetBug retrieves the bug comments, if registered, or an error, if set,
+// GetComments retrieves the bug comments, if registered, or an error, if set,
 // or responds with an error that matches IsNotFound
 func (c *Fake) GetComments(id int) ([]Comment, error) {
 	if c.BugErrors.Has(id) {
@@ -188,22 +180,9 @@ func (c *Fake) GetComments(id int) ([]Comment, error) {
 	return nil, &requestError{statusCode: http.StatusNotFound, message: "bug comments not registered in the fake"}
 }
 
+// CloneBug clones a bug by creating a new bug with the same fields, copying the description, and updating the bug to depend on the original bug
 func (c *Fake) CloneBug(bug *Bug) (int, error) {
-	comments, err := c.GetComments(bug.ID)
-	if err != nil {
-		return 0, fmt.Errorf("failed to get parent bug's comments: %v", err)
-	}
-	id, err := c.CreateBug(cloneBugStruct(bug, comments))
-	if err != nil {
-		return id, err
-	}
-	depends := BugUpdate{
-		DependsOn: &IDUpdate{
-			Add: []int{bug.ID},
-		},
-	}
-	err = c.UpdateBug(id, depends)
-	return id, err
+	return clone(c, bug)
 }
 
 // the Fake is a Client

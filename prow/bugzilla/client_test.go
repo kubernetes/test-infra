@@ -129,7 +129,7 @@ func TestCreateBug(t *testing.T) {
 			http.Error(w, "400 Bad Request", http.StatusBadRequest)
 			return
 		}
-		if !strings.HasPrefix(r.URL.Path, "/rest/bug/") {
+		if !strings.HasPrefix(r.URL.Path, "/rest/bug") {
 			t.Errorf("incorrect path to create a bug: %s", r.URL.Path)
 			http.Error(w, "400 Bad Request", http.StatusBadRequest)
 			return
