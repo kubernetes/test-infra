@@ -250,7 +250,7 @@ func (c *clientFactory) ClientFor(org, repo string) (RepoClient, error) {
 	c.masterLock.Unlock()
 	c.repoLocks[cacheDir].Lock()
 	defer c.repoLocks[cacheDir].Unlock()
-	if _, err := os.Stat(cacheDir); os.IsNotExist(err) {
+	if _, err := os.Stat(path.Join(cacheDir, "HEAD")); os.IsNotExist(err) {
 		// we have not yet cloned this repo, we need to do a full clone
 		if err := os.MkdirAll(cacheDir, os.ModePerm); err != nil && !os.IsExist(err) {
 			return nil, err
