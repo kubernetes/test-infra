@@ -85,7 +85,8 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: kubeflow-website-link-check
     cluster: kubeflow
-    always_run: true         # Run for every PR, or only when requested.
+    always_run: false         # Run for every PR, or only when requested.
+    skip_report: true
     labels:
       preset-service-account: "true"
     spec:
