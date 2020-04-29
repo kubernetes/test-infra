@@ -1127,7 +1127,7 @@ periodics:
   spec:
     serviceAccountName: k8s-infra-gcr-promoter-bak
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-cdaab98-1.17
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-1.17
       command:
       - infra/gcp/backup_tools/backup.sh
       env:
