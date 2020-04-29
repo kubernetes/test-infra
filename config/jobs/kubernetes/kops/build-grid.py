@@ -115,7 +115,7 @@ def build_test(cloud='aws', distro=None, networking=None):
     if distro is None:
         kops_ssh_user = 'admin'
         kops_image = None
-    elif distro == 'amazonlinux2':
+    elif distro == 'amzn2':
         kops_ssh_user = 'ec2-user'
         kops_image = '137112412989/amzn2-ami-hvm-2.0.20200304.0-x86_64-gp2'
     elif distro == 'centos7':
@@ -164,6 +164,10 @@ def build_test(cloud='aws', distro=None, networking=None):
     if distro:
         suffix += "-" + distro
 
+    # We current have an issue with long cluster names; let's warn if we encounter them
+    if len(suffix) > 24:
+        raise Exception("suffix name %s is probably too long" % (suffix))
+
     tab = 'kops-grid' + suffix
 
     cron = build_cron(tab)
@@ -197,12 +201,12 @@ networking_options = [
     'calico',
     'cilium',
     'flannel',
-    'kopeio-vxlan',
+    'kopeio',
 ]
 
 distro_options = [
     None,
-    'amazonlinux2',
+    'amzn2',
     'centos7',
     'debian9',
     'debian10',
