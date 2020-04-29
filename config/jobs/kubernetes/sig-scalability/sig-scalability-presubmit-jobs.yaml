@@ -11,6 +11,7 @@ presubmits:
       preset-k8s-ssh: "true"
       preset-bazel-scratch-dir: "true"
       preset-e2e-scalability-common: "true"
+      preset-e2e-scalability-containerd: "true"
       preset-e2e-scalability-presubmits: "true"
     annotations:
       fork-per-release: "true"
