@@ -223,7 +223,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-1.12
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190812-5a136da-1.12
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -265,7 +265,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-1.13
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-3656cc1-1.13
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -307,7 +307,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-1.14
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200218-a445c54-1.14
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
