@@ -23,3 +23,63 @@ periodics:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
+
+- interval: 8h
+  name: ci-golang-tip-k8s-1-18
+  cluster: scalability
+  tags:
+  - "perfDashPrefix: golang-tip-k8s-1-18"
+  - "perfDashJobType: performance"
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
+    preset-e2e-kubemark-common: "true"
+    preset-e2e-kubemark-gce-scale: "true"
+  annotations:
+    testgrid-dashboards: sig-scalability-golang
+    testgrid-tab-name: golang-tip-k8s-1-18
+  spec:
+    containers:
+    - args:
+      - --timeout=460
+      # head of perf-test's master as of 2020-04-28
+      - --repo=k8s.io/perf-tests=master:2a5b685c253ca0b88589d61b5d2c57ff548347e8
+      - --root=/go/src
+      - --scenario=kubernetes_e2e
+      - --
+      - --cluster=gce-golang
+      - --env=CL2_ENABLE_PVS=false
+      - --env=CL2_LOAD_TEST_THROUGHPUT=40
+      - --extract=gs://k8s-scale-golang-build/ci/latest-1.18.txt
+      - --gcp-node-size=n1-standard-8
+      - --gcp-nodes=50
+      - --gcp-project=k8s-presubmit-scale
+      - --gcp-zone=us-east1-b
+      - --provider=gce
+      - --kubemark
+      - --kubemark-nodes=2500
+      - --test=false
+      - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+      - --test-cmd-args=cluster-loader2
+      - --test-cmd-args=--experimental-gcp-snapshot-prometheus-disk=true
+      - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=${JOB_NAME}-${BUILD_ID}
+      - --test-cmd-args=--nodes=2500
+      - --test-cmd-args=--provider=kubemark
+      - --test-cmd-args=--report-dir=/workspace/_artifacts
+      - --test-cmd-args=--testconfig=testing/load/config.yaml
+      - --test-cmd-args=--testoverrides=./testing/density/5000_nodes/override.yaml
+      - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
+      - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
+      - --test-cmd-args=--testoverrides=./testing/experiments/ignore_known_kubemark_container_restarts.yaml
+      - --test-cmd-name=ClusterLoaderV2
+      - --timeout=430m
+      - --use-logexporter
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200424-a0ea3b9-master
+      # docker-in-docker needs privilged mode
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 6
+          memory: "16Gi"
