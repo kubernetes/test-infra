@@ -72,14 +72,6 @@ fi
 export DOCKER_IN_DOCKER_IPV6_ENABLED=${DOCKER_IN_DOCKER_IPV6_ENABLED:-false}
 if [[ "${DOCKER_IN_DOCKER_IPV6_ENABLED}" == "true" ]]; then
   >&2 echo "wrapper.sh] [SETUP] Enabling IPv6 in Docker config ..."
-  # configure the daemon with ipv6
-  mkdir -p /etc/docker/
-  cat <<EOF >/etc/docker/daemon.json
-{
-  "ipv6": true,
-  "fixed-cidr-v6": "fc00:db8:1::/64"
-}
-EOF
   # enable ipv6
   sysctl net.ipv6.conf.all.disable_ipv6=0
   sysctl net.ipv6.conf.all.forwarding=1
