@@ -843,6 +843,11 @@ repos:
         target: issues
         prowPlugin: stage
         addedBy: anyone
+      - color: eb6420
+        description: Denotes an out-of-tree enhancement issue, which does not need to be tracked by the Release Team
+        name: tracked/out-of-tree
+        target: issues
+        addedBy: humans
       - color: e04338
         description: Denotes an enhancement issue is NOT actively being tracked by the Release Team
         name: tracked/no
