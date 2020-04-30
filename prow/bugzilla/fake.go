@@ -18,6 +18,7 @@ package bugzilla
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -72,16 +73,6 @@ func (c *Fake) UpdateBug(id int, update BugUpdate) error {
 	if bug, exists := c.Bugs[id]; exists {
 		bug.Status = update.Status
 		bug.Resolution = update.Resolution
-		if update.Version != "" {
-			bug.Version = []string{update.Version}
-		}
-		if update.DependsOn != nil {
-			if len(update.DependsOn.Set) > 0 {
-				bug.DependsOn = update.DependsOn.Set
-			} else {
-				bug.DependsOn = sets.NewInt(bug.DependsOn...).Insert(update.DependsOn.Add...).Delete(update.DependsOn.Remove...).List()
-			}
-		}
 		c.Bugs[id] = bug
 		return nil
 	}
@@ -131,7 +122,6 @@ func (c *Fake) CreateBug(bug *BugCreate) (int, error) {
 		Component:       bug.Component,
 		Flags:           bug.Flags,
 		Groups:          bug.Groups,
-		ID:              newID,
 		Keywords:        bug.Keywords,
 		OperatingSystem: bug.OperatingSystem,
 		Platform:        bug.Platform,
@@ -168,7 +158,7 @@ func (c *Fake) CreateBug(bug *BugCreate) (int, error) {
 	return newID, nil
 }
 
-// GetComments retrieves the bug comments, if registered, or an error, if set,
+// GetBug retrieves the bug comments, if registered, or an error, if set,
 // or responds with an error that matches IsNotFound
 func (c *Fake) GetComments(id int) ([]Comment, error) {
 	if c.BugErrors.Has(id) {
@@ -180,9 +170,12 @@ func (c *Fake) GetComments(id int) ([]Comment, error) {
 	return nil, &requestError{statusCode: http.StatusNotFound, message: "bug comments not registered in the fake"}
 }
 
-// CloneBug clones a bug by creating a new bug with the same fields, copying the description, and updating the bug to depend on the original bug
 func (c *Fake) CloneBug(bug *Bug) (int, error) {
-	return clone(c, bug)
+	comments, err := c.GetComments(bug.ID)
+	if err != nil {
+		return 0, fmt.Errorf("failed to get parent bug's comments: %v", err)
+	}
+	return c.CreateBug(cloneBugStruct(bug, comments))
 }
 
 // the Fake is a Client
