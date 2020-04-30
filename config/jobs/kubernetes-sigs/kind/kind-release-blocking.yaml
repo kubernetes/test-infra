@@ -24,7 +24,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/krte:v20200428-2225715-master
+    - image: gcr.io/k8s-testimages/krte:v20200430-04773e2-master
       command:
       - wrapper.sh
       - bash
@@ -75,7 +75,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/krte:v20200428-2225715-master
+    - image: gcr.io/k8s-testimages/krte:v20200430-04773e2-master
       command:
       - wrapper.sh
       - bash

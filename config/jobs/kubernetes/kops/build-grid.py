@@ -154,11 +154,11 @@ def build_test(cloud='aws', distro=None, networking=None, k8s_version=None):
     if k8s_version is None:
         extract = "release/stable"
         k8s_deploy_url = "https://storage.googleapis.com/kubernetes-release/release/stable.txt"
-        e2e_image = "gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master"
+        e2e_image = "gcr.io/k8s-testimages/kubekins-e2e:v20200430-1af2254-master"
     else:
         extract = expand("release/stable-{k8s_version}")
         k8s_deploy_url = expand("https://storage.googleapis.com/kubernetes-release/release/stable-{k8s_version}.txt") # pylint: disable=line-too-long
-        e2e_image = expand("gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-{k8s_version}")
+        e2e_image = expand("gcr.io/k8s-testimages/kubekins-e2e:v20171002-6e8d729f-{k8s_version}")
 
     kops_args = ""
     if networking:
