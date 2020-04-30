@@ -370,6 +370,9 @@ dashboards:
   - name: pull-kubernetes-typecheck
     test_group_name: pull-kubernetes-typecheck
     base_options: width=10
+  - name: pull-kubernetes-files-remake
+    test_group_name: pull-kubernetes-files-remake
+    base_options: width=10
   - name: pull-kubernetes-dependencies
     test_group_name: pull-kubernetes-dependencies
     base_options: width=10
