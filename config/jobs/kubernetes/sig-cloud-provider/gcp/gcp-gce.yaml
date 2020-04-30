@@ -137,10 +137,10 @@ presubmits:
         - --build=bazel
         - --cluster=
         - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
-        - --env=KUBE_GCE_MASTER_IMAGE=ubuntu-1804-bionic-v20200108
+        - --env=KUBE_GCE_MASTER_IMAGE=ubuntu-2004-focal-v20200423
         - --env=KUBE_GCE_MASTER_PROJECT=ubuntu-os-cloud
         - --env=KUBE_NODE_OS_DISTRIBUTION=ubuntu
-        - --env=KUBE_GCE_NODE_IMAGE=ubuntu-1804-bionic-v20200108
+        - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2004-focal-v20200423
         - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
         - --extract=local
         - --gcp-master-image=ubuntu
@@ -194,10 +194,10 @@ presubmits:
             - --env=ENABLE_POD_SECURITY_POLICY=true
             - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
             - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
-            - --env=KUBE_GCE_MASTER_IMAGE=ubuntu-1804-bionic-v20200108
+            - --env=KUBE_GCE_MASTER_IMAGE=ubuntu-2004-focal-v20200423
             - --env=KUBE_GCE_MASTER_PROJECT=ubuntu-os-cloud
             - --env=KUBE_NODE_OS_DISTRIBUTION=ubuntu
-            - --env=KUBE_GCE_NODE_IMAGE=ubuntu-1804-bionic-v20200108
+            - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2004-focal-v20200423
             - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
             - --extract=local
             - --gcp-master-image=ubuntu
@@ -347,10 +347,10 @@ periodics:
           - --env=ENABLE_POD_SECURITY_POLICY=true
           - --extract=ci/latest
           - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
-          - --env=KUBE_GCE_MASTER_IMAGE=ubuntu-1804-bionic-v20200108
+          - --env=KUBE_GCE_MASTER_IMAGE=ubuntu-2004-focal-v20200423
           - --env=KUBE_GCE_MASTER_PROJECT=ubuntu-os-cloud
           - --env=KUBE_NODE_OS_DISTRIBUTION=ubuntu
-          - --env=KUBE_GCE_NODE_IMAGE=ubuntu-1804-bionic-v20200108
+          - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2004-focal-v20200423
           - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
           - --gcp-master-image=ubuntu
           - --gcp-node-image=ubuntu
@@ -389,10 +389,10 @@ periodics:
           - --env=ENABLE_POD_SECURITY_POLICY=true
           - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
           - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
-          - --env=KUBE_GCE_MASTER_IMAGE=ubuntu-1804-bionic-v20200108
+          - --env=KUBE_GCE_MASTER_IMAGE=ubuntu-2004-focal-v20200423
           - --env=KUBE_GCE_MASTER_PROJECT=ubuntu-os-cloud
           - --env=KUBE_NODE_OS_DISTRIBUTION=ubuntu
-          - --env=KUBE_GCE_NODE_IMAGE=ubuntu-1804-bionic-v20200108
+          - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2004-focal-v20200423
           - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
           - --gcp-master-image=ubuntu
           - --gcp-node-image=ubuntu
