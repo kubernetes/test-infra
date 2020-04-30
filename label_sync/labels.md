@@ -14,6 +14,7 @@
 - [Labels that apply to kubernetes-sigs/service-apis, only for issues](#labels-that-apply-to-kubernetes-sigsservice-apis-only-for-issues)
 - [Labels that apply to kubernetes/community, for both issues and PRs](#labels-that-apply-to-kubernetescommunity-for-both-issues-and-prs)
 - [Labels that apply to kubernetes/enhancements, for both issues and PRs](#labels-that-apply-to-kubernetesenhancements-for-both-issues-and-prs)
+- [Labels that apply to kubernetes/enhancements, only for issues](#labels-that-apply-to-kubernetesenhancements-only-for-issues)
 - [Labels that apply to kubernetes/k8s.io, for both issues and PRs](#labels-that-apply-to-kubernetesk8s.io-for-both-issues-and-prs)
 - [Labels that apply to kubernetes/kubernetes, for both issues and PRs](#labels-that-apply-to-kuberneteskubernetes-for-both-issues-and-prs)
 - [Labels that apply to kubernetes/kubernetes, only for issues](#labels-that-apply-to-kuberneteskubernetes-only-for-issues)
@@ -231,11 +232,22 @@ larger set of contributors to apply/remove them.
 
 | Name | Description | Added By | Prow Plugin |
 | ---- | ----------- | -------- | --- |
-| <a id="area/code-organization" href="#area/code-organization">`area/code-organization`</a> | Issues or PRs related to kubernetes code organization| label | |
-| <a id="area/contributor-comms" href="#area/contributor-comms">`area/contributor-comms`</a> | Issues or PRs related to the upstream marketing team| humans | |
-| <a id="area/enhancements" href="#area/enhancements">`area/enhancements`</a> | Issues or PRs related to the Enhancements subproject| label | |
-| <a id="area/release-eng" href="#area/release-eng">`area/release-eng`</a> | Issues or PRs related to the Release Engineering subproject <br><br> This was previously `area/release-infra`, | label | |
+| <a id="area/code-organization" href="#area/code-organization">`area/code-organization`</a> | Issues or PRs related to kubernetes code organization| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="area/contributor-comms" href="#area/contributor-comms">`area/contributor-comms`</a> | Issues or PRs related to the upstream marketing team| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="area/enhancements" href="#area/enhancements">`area/enhancements`</a> | Issues or PRs related to the Enhancements subproject| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="area/release-eng" href="#area/release-eng">`area/release-eng`</a> | Issues or PRs related to the Release Engineering subproject <br><br> This was previously `area/release-infra`, | anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="kind/kep" href="#kind/kep">`kind/kep`</a> | Categorizes KEP tracking issues and PRs modifying the KEP directory| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+
+## Labels that apply to kubernetes/enhancements, only for issues
+
+| Name | Description | Added By | Prow Plugin |
+| ---- | ----------- | -------- | --- |
+| <a id="stage/alpha" href="#stage/alpha">`stage/alpha`</a> | Denotes an issue tracking an enhancement targeted for Alpha status| anyone |  [stage](https://git.k8s.io/test-infra/prow/plugins/stage) |
+| <a id="stage/beta" href="#stage/beta">`stage/beta`</a> | Denotes an issue tracking an enhancement targeted for Beta status| anyone |  [stage](https://git.k8s.io/test-infra/prow/plugins/stage) |
+| <a id="stage/stable" href="#stage/stable">`stage/stable`</a> | Denotes an issue tracking an enhancement targeted for Stable/GA status| anyone |  [stage](https://git.k8s.io/test-infra/prow/plugins/stage) |
+| <a id="tracked/no" href="#tracked/no">`tracked/no`</a> | Denotes an enhancement issue is NOT actively being tracked by the Release Team| humans | |
+| <a id="tracked/out-of-tree" href="#tracked/out-of-tree">`tracked/out-of-tree`</a> | Denotes an out-of-tree enhancement issue, which does not need to be tracked by the Release Team| humans | |
+| <a id="tracked/yes" href="#tracked/yes">`tracked/yes`</a> | Denotes an enhancement issue is actively being tracked by the Release Team| humans | |
 
 ## Labels that apply to kubernetes/k8s.io, for both issues and PRs
 

@@ -797,30 +797,67 @@ repos:
         description: Issues or PRs related to kubernetes code organization
         name: area/code-organization
         target: both
-        addedBy: label
+        prowPlugin: label
+        addedBy: anyone
       - color: 0052cc
         description: Issues or PRs related to the upstream marketing team
         name: area/contributor-comms
         target: both
-        addedBy: humans
+        prowPlugin: label
+        addedBy: anyone
       - color: 0052cc
         description: Issues or PRs related to the Enhancements subproject
         name: area/enhancements
         target: both
-        addedBy: label
+        prowPlugin: label
+        addedBy: anyone
       - color: 0052cc
         description: Issues or PRs related to the Release Engineering subproject
         name: area/release-eng
         previously:
           - name: area/release-infra
         target: both
-        addedBy: label
+        prowPlugin: label
+        addedBy: anyone
       - color: cc99ff
         description: Categorizes KEP tracking issues and PRs modifying the KEP directory
         name: kind/kep
         target: both
         prowPlugin: label
         addedBy: anyone
+      - color: d93f0b
+        description: Denotes an issue tracking an enhancement targeted for Alpha status
+        name: stage/alpha
+        target: issues
+        prowPlugin: stage
+        addedBy: anyone
+      - color: fbca04
+        description: Denotes an issue tracking an enhancement targeted for Beta status
+        name: stage/beta
+        target: issues
+        prowPlugin: stage
+        addedBy: anyone
+      - color: 0e8a16
+        description: Denotes an issue tracking an enhancement targeted for Stable/GA status
+        name: stage/stable
+        target: issues
+        prowPlugin: stage
+        addedBy: anyone
+      - color: eb6420
+        description: Denotes an out-of-tree enhancement issue, which does not need to be tracked by the Release Team
+        name: tracked/out-of-tree
+        target: issues
+        addedBy: humans
+      - color: e04338
+        description: Denotes an enhancement issue is NOT actively being tracked by the Release Team
+        name: tracked/no
+        target: issues
+        addedBy: humans
+      - color: 108737
+        description: Denotes an enhancement issue is actively being tracked by the Release Team
+        name: tracked/yes
+        target: issues
+        addedBy: humans
   kubernetes/k8s.io:
     labels:
       - color: 0052cc
