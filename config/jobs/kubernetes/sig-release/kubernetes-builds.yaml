@@ -13,7 +13,6 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--timeout=90"
         - --scenario=execute
         - --
         - --env=KUBE_RELEASE_RUN_TESTS=n
