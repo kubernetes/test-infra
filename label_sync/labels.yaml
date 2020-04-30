@@ -825,6 +825,34 @@ repos:
         target: both
         prowPlugin: label
         addedBy: anyone
+      - color: d93f0b
+        description: Denotes an issue tracking an enhancement targeted for Alpha status
+        name: stage/alpha
+        target: issues
+        prowPlugin: stage
+        addedBy: anyone
+      - color: fbca04
+        description: Denotes an issue tracking an enhancement targeted for Beta status
+        name: stage/beta
+        target: issues
+        prowPlugin: stage
+        addedBy: anyone
+      - color: 0e8a16
+        description: Denotes an issue tracking an enhancement targeted for Stable/GA status
+        name: stage/stable
+        target: issues
+        prowPlugin: stage
+        addedBy: anyone
+      - color: e04338
+        description: Denotes an enhancement issue is NOT actively being tracked by the Release Team
+        name: tracked/no
+        target: issues
+        addedBy: humans
+      - color: 108737
+        description: Denotes an enhancement issue is actively being tracked by the Release Team
+        name: tracked/yes
+        target: issues
+        addedBy: humans
   kubernetes/k8s.io:
     labels:
       - color: 0052cc
