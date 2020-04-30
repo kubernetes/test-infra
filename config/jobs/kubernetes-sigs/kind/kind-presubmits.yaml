@@ -106,6 +106,15 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     always_run: true
+    decorate: true
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    path_alias: sigs.k8s.io/kind
+    decoration_config:
+      timeout: 40m
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200512-5bf6c1a-master
@@ -119,20 +128,13 @@ presubmits:
         # tell kind CI script to use ipv6
         - name: "IP_FAMILY"
           value: "ipv6"
-        args:
-        - "--job=$(JOB_NAME)"
-        - "--root=/go/src"
-        - "--repo=sigs.k8s.io/kind=$(PULL_REFS)"
-        - "--repo=k8s.io/kubernetes=master"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--scenario=execute"
-        - "--"
-        # the script must run from kubernetes, but we're checking out kind
-        - "bash"
-        - "--"
-        - "-c"
-        - "cd ./../../k8s.io/kubernetes && ./../../sigs.k8s.io/kind/hack/ci/e2e.sh"
+        - name: BUILD_TYPE
+          value: bazel
+        command:
+        - wrapper.sh
+        - bash
+        - -c
+        - cd ./../../k8s.io/kubernetes && ./../../sigs.k8s.io/kind/hack/ci/e2e.sh
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -252,6 +254,15 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     always_run: true
+    decorate: true
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: release-1.17
+      path_alias: k8s.io/kubernetes
+    path_alias: sigs.k8s.io/kind
+    decoration_config:
+      timeout: 40m
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200512-5bf6c1a-1.17
@@ -259,20 +270,13 @@ presubmits:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
           value: "true"
-        args:
-        - "--job=$(JOB_NAME)"
-        - "--root=/go/src"
-        - "--repo=sigs.k8s.io/kind=$(PULL_REFS)"
-        - "--repo=k8s.io/kubernetes=release-1.17"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--scenario=execute"
-        - "--"
-        # the script must run from kubernetes, but we're checking out kind
-        - "bash"
-        - "--"
-        - "-c"
-        - "cd ./../../k8s.io/kubernetes && ./../../sigs.k8s.io/kind/hack/ci/e2e.sh"
+        - name: BUILD_TYPE
+          value: bazel
+        command:
+        - wrapper.sh
+        - bash
+        - -c
+        - cd ./../../k8s.io/kubernetes && ./../../sigs.k8s.io/kind/hack/ci/e2e.sh
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -293,6 +297,15 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     always_run: true
+    decorate: true
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: release-1.16
+      path_alias: k8s.io/kubernetes
+    path_alias: sigs.k8s.io/kind
+    decoration_config:
+      timeout: 40m
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200512-5bf6c1a-1.16
@@ -300,20 +313,13 @@ presubmits:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
           value: "true"
-        args:
-        - "--job=$(JOB_NAME)"
-        - "--root=/go/src"
-        - "--repo=sigs.k8s.io/kind=$(PULL_REFS)"
-        - "--repo=k8s.io/kubernetes=release-1.16"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--scenario=execute"
-        - "--"
-        # the script must run from kubernetes, but we're checking out kind
-        - "bash"
-        - "--"
-        - "-c"
-        - "cd ./../../k8s.io/kubernetes && ./../../sigs.k8s.io/kind/hack/ci/e2e.sh"
+        - name: BUILD_TYPE
+          value: bazel
+        command:
+        - wrapper.sh
+        - bash
+        - -c
+        - cd ./../../k8s.io/kubernetes && ./../../sigs.k8s.io/kind/hack/ci/e2e.sh
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -334,6 +340,15 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     always_run: true
+    decorate: true
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: release-1.15
+      path_alias: k8s.io/kubernetes
+    path_alias: sigs.k8s.io/kind
+    decoration_config:
+      timeout: 40m
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200512-5bf6c1a-1.15
@@ -341,20 +356,13 @@ presubmits:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
           value: "true"
-        args:
-        - "--job=$(JOB_NAME)"
-        - "--root=/go/src"
-        - "--repo=sigs.k8s.io/kind=$(PULL_REFS)"
-        - "--repo=k8s.io/kubernetes=release-1.15"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--scenario=execute"
-        - "--"
-        # the script must run from kubernetes, but we're checking out kind
-        - "bash"
-        - "--"
-        - "-c"
-        - "cd ./../../k8s.io/kubernetes && ./../../sigs.k8s.io/kind/hack/ci/e2e.sh"
+        - name: BUILD_TYPE
+          value: bazel
+        command:
+        - wrapper.sh
+        - bash
+        - -c
+        - cd ./../../k8s.io/kubernetes && ./../../sigs.k8s.io/kind/hack/ci/e2e.sh
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
