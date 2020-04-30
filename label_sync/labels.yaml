@@ -797,24 +797,28 @@ repos:
         description: Issues or PRs related to kubernetes code organization
         name: area/code-organization
         target: both
-        addedBy: label
+        prowPlugin: label
+        addedBy: anyone
       - color: 0052cc
         description: Issues or PRs related to the upstream marketing team
         name: area/contributor-comms
         target: both
-        addedBy: humans
+        prowPlugin: label
+        addedBy: anyone
       - color: 0052cc
         description: Issues or PRs related to the Enhancements subproject
         name: area/enhancements
         target: both
-        addedBy: label
+        prowPlugin: label
+        addedBy: anyone
       - color: 0052cc
         description: Issues or PRs related to the Release Engineering subproject
         name: area/release-eng
         previously:
           - name: area/release-infra
         target: both
-        addedBy: label
+        prowPlugin: label
+        addedBy: anyone
       - color: cc99ff
         description: Categorizes KEP tracking issues and PRs modifying the KEP directory
         name: kind/kep
