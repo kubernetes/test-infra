@@ -126,6 +126,7 @@ type KubernetesAddon struct {
 }
 
 type KubernetesConfig struct {
+	ContainerRuntime                 string            `json:"containerRuntime,omitempty"`
 	CustomWindowsPackageURL          string            `json:"customWindowsPackageURL,omitempty"`
 	CustomHyperkubeImage             string            `json:"customHyperkubeImage,omitempty"`
 	CustomCcmImage                   string            `json:"customCcmImage,omitempty"` // Image for cloud-controller-manager
@@ -157,6 +158,8 @@ type KubernetesConfig struct {
 	CustomKubeBinaryURL              string            `json:"customKubeBinaryURL,omitempty"`
 	UseManagedIdentity               *bool             `json:"useManagedIdentity,omitempty"`
 	UserAssignedID                   string            `json:"userAssignedID,omitempty"`
+	WindowsContainerdURL             string            `json:"windowsContainerdURL,omitempty"`
+	WindowsSdnPluginURL              string            `json:"windowsSdnPluginURL,omitempty"`
 }
 
 type OrchestratorProfile struct {
