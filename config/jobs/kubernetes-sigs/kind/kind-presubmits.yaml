@@ -9,7 +9,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200430-1af2254-master
         command:
         - runner.sh
         - ./hack/ci/build-all.sh
@@ -24,7 +24,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200430-1af2254-master
         command:
         - runner.sh
         - make
@@ -40,7 +40,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200430-1af2254-experimental
         command:
         - runner.sh
         - ./hack/verify/all.sh
@@ -66,7 +66,7 @@ presubmits:
       timeout: 40m
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20200428-2225715-master
+      - image: gcr.io/k8s-testimages/krte:v20200430-04773e2-master
         command:
         - wrapper.sh
         - bash
@@ -108,7 +108,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200430-1af2254-master
         env:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
@@ -165,7 +165,7 @@ presubmits:
       timeout: 40m
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20200428-2225715-master
+      - image: gcr.io/k8s-testimages/krte:v20200430-04773e2-master
         command:
         - wrapper.sh
         - bash
@@ -213,7 +213,7 @@ presubmits:
       timeout: 40m
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20200428-2225715-1.18
+      - image: gcr.io/k8s-testimages/krte:v20200430-04773e2-1.18
         command:
         - wrapper.sh
         - bash
@@ -254,7 +254,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-1.17
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200430-1af2254-1.17
         env:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
@@ -295,7 +295,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-1.16
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200430-1af2254-1.16
         env:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
@@ -336,7 +336,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-1.15
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200430-1af2254-1.15
         env:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
