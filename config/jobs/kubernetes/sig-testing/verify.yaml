@@ -14,6 +14,8 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
+    decoration_config:
+      timeout: 3h
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
@@ -36,7 +38,7 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: 4
+            cpu: 6
 periodics:
 - interval: 1h
   name: ci-kubernetes-verify-master
