@@ -312,32 +312,6 @@ func TestDigestPR(t *testing.T) {
 			},
 		},
 		{
-			name: "edited cherrypicked PR gets no cherrypick event",
-			pre: github.PullRequestEvent{
-				Action: github.PullRequestActionEdited,
-				PullRequest: github.PullRequest{
-					Base: github.PullRequestBranch{
-						Repo: github.Repo{
-							Owner: github.User{
-								Login: "org",
-							},
-							Name: "repo",
-						},
-						Ref: "release-4.4",
-					},
-					Number:  3,
-					Title:   "[release-4.4] Bug 123: fixed it!",
-					HTMLURL: "http.com",
-					User: github.User{
-						Login: "user",
-					},
-					Body: `This is an automated cherry-pick of #2
-
-/assign user`,
-				},
-			},
-		},
-		{
 			name: "title change referencing same bug gets no event",
 			pre: github.PullRequestEvent{
 				Action: github.PullRequestActionOpened,
