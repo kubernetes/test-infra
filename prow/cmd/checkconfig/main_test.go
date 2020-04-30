@@ -1363,6 +1363,15 @@ func TestValidateTideContextPolicy(t *testing.T) {
 				}
 			}),
 		},
+		{
+			name: "repo key is not in org/repo format, no error",
+			cfg: cfg(func(c *config.Config) {
+				c.PresubmitsStatic["https://kunit-review.googlesource.com/linux"] = []config.Presubmit{
+					{Reporter: config.Reporter{Context: "a"}, Brancher: config.Brancher{Branches: []string{"a"}}},
+					{AlwaysRun: true, Reporter: config.Reporter{Context: "a"}, Brancher: config.Brancher{Branches: []string{"b"}}},
+				}
+			}),
+		},
 	}
 
 	for _, tc := range testCases {

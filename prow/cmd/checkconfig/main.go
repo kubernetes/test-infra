@@ -963,7 +963,7 @@ func validateTideContextPolicy(cfg *config.Config) error {
 	for orgRepo, branches := range allKnownOrgRepoBranches {
 		split := strings.Split(orgRepo, "/")
 		if n := len(split); n != 2 {
-			errs = append(errs, fmt.Errorf("expected to get two results when splitting string %s by '/', got %d", orgRepo, n))
+			// May happen for gerrit
 			continue
 		}
 		org, repo := split[0], split[1]
