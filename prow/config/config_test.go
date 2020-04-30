@@ -28,15 +28,18 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	pipelinev1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/diff"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
 	utilpointer "k8s.io/utils/pointer"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config/secret"
+	gerrit "k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/kube"
@@ -1269,6 +1272,82 @@ func TestValidateRefs(t *testing.T) {
 			}
 			if err := ValidateRefs("org/repo", job); !reflect.DeepEqual(err, tc.expected) {
 				t.Errorf("expected %#v\n!=\nactual %#v", tc.expected, err)
+			}
+		})
+	}
+}
+
+func TestValidateReportingWithGerritLabel(t *testing.T) {
+	cases := []struct {
+		name     string
+		labels   map[string]string
+		reporter Reporter
+		expected error
+	}{
+		{
+			name: "no errors if job is set to report",
+			reporter: Reporter{
+				Context: "context",
+			},
+			labels: map[string]string{
+				gerrit.GerritReportLabel: "label",
+			},
+		},
+		{
+			name:     "no errors if Gerrit report label is not defined",
+			reporter: Reporter{SkipReport: true},
+			labels: map[string]string{
+				"label": "value",
+			},
+		},
+		{
+			name:     "no errors if job is set to skip report and Gerrit report label is empty",
+			reporter: Reporter{SkipReport: true},
+			labels: map[string]string{
+				gerrit.GerritReportLabel: "",
+			},
+		},
+		{
+			name:     "error if job is set to skip report and Gerrit report label is set to non-empty",
+			reporter: Reporter{SkipReport: true},
+			labels: map[string]string{
+				gerrit.GerritReportLabel: "label",
+			},
+			expected: fmt.Errorf("Gerrit report label %s set to non-empty string but job is configured to skip reporting.", gerrit.GerritReportLabel),
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			base := JobBase{
+				Name:   "test-job",
+				Labels: tc.labels,
+			}
+			presubmits := []Presubmit{
+				{
+					JobBase:  base,
+					Reporter: tc.reporter,
+				},
+			}
+			var expected error
+			if tc.expected != nil {
+				expected = fmt.Errorf("invalid presubmit job %s: %v", "test-job", tc.expected)
+			}
+			if err := validatePresubmits(presubmits, "default-namespace"); !reflect.DeepEqual(err, utilerrors.NewAggregate([]error{expected})) {
+				t.Errorf("did not get expected validation result:\n%v", cmp.Diff(expected, err))
+			}
+
+			postsubmits := []Postsubmit{
+				{
+					JobBase:  base,
+					Reporter: tc.reporter,
+				},
+			}
+			if tc.expected != nil {
+				expected = fmt.Errorf("invalid postsubmit job %s: %v", "test-job", tc.expected)
+			}
+			if err := validatePostsubmits(postsubmits, "default-namespace"); !reflect.DeepEqual(err, utilerrors.NewAggregate([]error{expected})) {
+				t.Errorf("did not get expected validation result:\n%v", cmp.Diff(expected, err))
 			}
 		})
 	}

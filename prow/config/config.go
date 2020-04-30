@@ -47,6 +47,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	gerrit "k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
@@ -1274,7 +1275,6 @@ func validateJobBase(v JobBase, jobType prowapi.ProwJobType, podNamespace string
 // validatePresubmits validates the presubmits for one repo
 func validatePresubmits(presubmits []Presubmit, podNamespace string) error {
 	validPresubmits := map[string][]Presubmit{}
-
 	var errs []error
 	for _, ps := range presubmits {
 		// Checking that no duplicate job in prow config exists on the same branch.
@@ -1297,7 +1297,7 @@ func validatePresubmits(presubmits []Presubmit, podNamespace string) error {
 		if err := validateTriggering(ps); err != nil {
 			errs = append(errs, err)
 		}
-		if err := validateReporting(ps.Reporter); err != nil {
+		if err := validateReporting(ps.JobBase, ps.Reporter); err != nil {
 			errs = append(errs, fmt.Errorf("invalid presubmit job %s: %v", ps.Name, err))
 		}
 		validPresubmits[ps.Name] = append(validPresubmits[ps.Name], ps)
@@ -1353,7 +1353,7 @@ func validatePostsubmits(postsubmits []Postsubmit, podNamespace string) error {
 		if err := validateJobBase(ps.JobBase, prowapi.PostsubmitJob, podNamespace); err != nil {
 			errs = append(errs, fmt.Errorf("invalid postsubmit job %s: %v", ps.Name, err))
 		}
-		if err := validateReporting(ps.Reporter); err != nil {
+		if err := validateReporting(ps.JobBase, ps.Reporter); err != nil {
 			errs = append(errs, fmt.Errorf("invalid postsubmit job %s: %v", ps.Name, err))
 		}
 		validPostsubmits[ps.Name] = append(validPostsubmits[ps.Name], ps)
@@ -1915,9 +1915,17 @@ func validateTriggering(job Presubmit) error {
 	return nil
 }
 
-func validateReporting(r Reporter) error {
+func validateReporting(j JobBase, r Reporter) error {
 	if !r.SkipReport && r.Context == "" {
 		return errors.New("job is set to report but has no context configured")
+	}
+	if !r.SkipReport {
+		return nil
+	}
+	for label, value := range j.Labels {
+		if label == gerrit.GerritReportLabel && value != "" {
+			return fmt.Errorf("Gerrit report label %s set to non-empty string but job is configured to skip reporting.", label)
+		}
 	}
 	return nil
 }
