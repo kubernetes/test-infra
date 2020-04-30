@@ -45,7 +45,6 @@ approve:
   - kubernetes/contrib
   - kubernetes/dashboard
   - kubernetes/dns
-  - kubernetes/enhancements
   - kubernetes/examples
   - kubernetes/federation
   - kubernetes/gengo
@@ -69,6 +68,7 @@ approve:
   require_self_approval: false
   lgtm_acts_as_approve: true
 - repos:
+  - kubernetes/enhancements
   - kubernetes/kops
   - kubernetes/kubernetes
   - kubernetes-client
