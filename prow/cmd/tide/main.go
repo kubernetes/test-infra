@@ -158,7 +158,7 @@ func main() {
 	}
 	// Do not activate leader election here, as we do not use the `mgr` to control the lifecylcle of our cotrollers,
 	// this would just be a no-op.
-	mgr, err := manager.New(kubeCfg, manager.Options{Namespace: cfg().ProwJobNamespace, MetricsBindAddress: "0"})
+	mgr, err := manager.New(kubeCfg, manager.Options{Namespace: cfg().ProwJobNamespace, MetricsBindAddress: "0", LeaderElection: true, LeaderElectionNamespace: configAgent.Config().ProwJobNamespace, LeaderElectionID: "prow-tide-leaderlock"})
 	if err != nil {
 		logrus.WithError(err).Fatal("Error constructing mgr.")
 	}
