@@ -57,6 +57,7 @@ tide:
     IBM/multicloud-operators-subscription: squash
     IBM/multicloud-multi-tenancy: squash
     IBM/multicloud-application-monitoring-dashboard: squash
+    hybridapp-io/application: squash
     hybridapp-io/ham-application-assembler: squash
     hybridapp-io/ham-docs: squash
     hybridapp-io/ham-resource-discoverer: squash
@@ -107,6 +108,7 @@ tide:
     - IBM/multicloud-operators-subscription
     - IBM/multicloud-multi-tenancy
     - IBM/multicloud-application-monitoring-dashboard
+    - hybridapp-io/application
     - hybridapp-io/ham-application-assembler
     - hybridapp-io/ham-docs
     - hybridapp-io/ham-resource-discoverer
