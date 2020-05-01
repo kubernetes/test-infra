@@ -4182,6 +4182,13 @@ func TestValidatePresubmits(t *testing.T) {
 			expectedError: `[jobs b and a report to the same GitHub context "repeated", jobs a and b report to the same GitHub context "repeated"]`,
 		},
 		{
+			name: "Duplicate context on different branch doesn't cause error",
+			presubmits: []Presubmit{
+				{JobBase: JobBase{Name: "a"}, Reporter: Reporter{Context: "repeated"}, Brancher: Brancher{Branches: []string{"master"}}},
+				{JobBase: JobBase{Name: "b"}, Reporter: Reporter{Context: "repeated"}, Brancher: Brancher{Branches: []string{"next"}}},
+			},
+		},
+		{
 			name: "Duplicate jobname causes error",
 			presubmits: []Presubmit{
 				{JobBase: JobBase{Name: "a"}, Reporter: Reporter{Context: "foo"}},
@@ -4239,6 +4246,13 @@ func TestValidatePostsubmits(t *testing.T) {
 				{JobBase: JobBase{Name: "b"}, Reporter: Reporter{Context: "repeated"}},
 			},
 			expectedError: `[jobs b and a report to the same GitHub context "repeated", jobs a and b report to the same GitHub context "repeated"]`,
+		},
+		{
+			name: "Duplicate context on different branch doesn't cause error",
+			postsubmits: []Postsubmit{
+				{JobBase: JobBase{Name: "a"}, Reporter: Reporter{Context: "repeated"}, Brancher: Brancher{Branches: []string{"master"}}},
+				{JobBase: JobBase{Name: "b"}, Reporter: Reporter{Context: "repeated"}, Brancher: Brancher{Branches: []string{"next"}}},
+			},
 		},
 		{
 			name: "Duplicate jobname causes error",
