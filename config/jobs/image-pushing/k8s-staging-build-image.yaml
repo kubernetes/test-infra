@@ -1,12 +1,12 @@
 postsubmits:
   kubernetes/kubernetes:
-    - name: post-kubernetes-push-build-images
+    - name: post-kubernetes-push-image-debian-base
       cluster: test-infra-trusted
       annotations:
         testgrid-dashboards: sig-release-releng-informing, sig-release-master-informing, sig-release-image-pushes
         testgrid-alert-email: release-managers@kubernetes.io
       decorate: true
-      run_if_changed: '^build\/(debian-base|debian-iptables|pause)\/'
+      run_if_changed: '^build\/debian-base\/'
       branches:
         - ^master$
       spec:
@@ -18,7 +18,60 @@ postsubmits:
             args:
               - --project=k8s-staging-build-image
               - --scratch-bucket=gs://k8s-staging-build-image-gcb
-              - build
+              - --gcb-config=build/debian-base/cloudbuild.yaml
+              - .
+            env:
+              - name: LOG_TO_STDOUT
+                value: "y"
+      rerun_auth_config:
+        github_team_ids:
+          - 2241179 # release-managers
+    - name: post-kubernetes-push-image-debian-iptables
+      cluster: test-infra-trusted
+      annotations:
+        testgrid-dashboards: sig-release-releng-informing, sig-release-master-informing, sig-release-image-pushes
+        testgrid-alert-email: release-managers@kubernetes.io
+      decorate: true
+      run_if_changed: '^build\/debian-iptables\/'
+      branches:
+        - ^master$
+      spec:
+        serviceAccountName: deployer # TODO(fejta): use pusher
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20200422-c760048
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-build-image
+              - --scratch-bucket=gs://k8s-staging-build-image-gcb
+              - --gcb-config=build/debian-iptables/cloudbuild.yaml
+              - .
+            env:
+              - name: LOG_TO_STDOUT
+                value: "y"
+      rerun_auth_config:
+        github_team_ids:
+          - 2241179 # release-managers
+    - name: post-kubernetes-push-image-pause
+      cluster: test-infra-trusted
+      annotations:
+        testgrid-dashboards: sig-release-releng-informing, sig-release-master-informing, sig-release-image-pushes
+        testgrid-alert-email: release-managers@kubernetes.io
+      decorate: true
+      run_if_changed: '^build\/pause\/'
+      branches:
+        - ^master$
+      spec:
+        serviceAccountName: deployer # TODO(fejta): use pusher
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20200422-c760048
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-build-image
+              - --scratch-bucket=gs://k8s-staging-build-image-gcb
+              - --gcb-config=build/pause/cloudbuild.yaml
+              - .
             env:
               - name: LOG_TO_STDOUT
                 value: "y"
