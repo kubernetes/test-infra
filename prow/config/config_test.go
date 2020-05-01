@@ -4184,8 +4184,8 @@ func TestValidatePresubmits(t *testing.T) {
 		{
 			name: "Duplicate jobname causes error",
 			presubmits: []Presubmit{
-				{JobBase: JobBase{Name: "a"}},
-				{JobBase: JobBase{Name: "a"}},
+				{JobBase: JobBase{Name: "a"}, Reporter: Reporter{Context: "foo"}},
+				{JobBase: JobBase{Name: "a"}, Reporter: Reporter{Context: "bar"}},
 			},
 			expectedError: "duplicated presubmit job: a",
 		},
@@ -4198,13 +4198,18 @@ func TestValidatePresubmits(t *testing.T) {
 		},
 		{
 			name:          "Invalid JobBase causes error",
-			presubmits:    []Presubmit{{}},
+			presubmits:    []Presubmit{{Reporter: Reporter{Context: "foo"}}},
 			expectedError: `invalid presubmit job : name: must match regex "^[A-Za-z0-9-._]+$"`,
 		},
 		{
 			name:          "Invalid triggering config causes error",
-			presubmits:    []Presubmit{{Trigger: "some-trogger", JobBase: JobBase{Name: "my-job"}}},
+			presubmits:    []Presubmit{{Trigger: "some-trigger", JobBase: JobBase{Name: "my-job"}, Reporter: Reporter{Context: "foo"}}},
 			expectedError: `Either both of job.Trigger and job.RerunCommand must be set, wasnt the case for job "my-job"`,
+		},
+		{
+			name:          "Invalid reporting config causes error",
+			presubmits:    []Presubmit{{JobBase: JobBase{Name: "my-job"}}},
+			expectedError: "invalid presubmit job my-job: job is set to report but has no context configured",
 		},
 	}
 
@@ -4238,15 +4243,20 @@ func TestValidatePostsubmits(t *testing.T) {
 		{
 			name: "Duplicate jobname causes error",
 			postsubmits: []Postsubmit{
-				{JobBase: JobBase{Name: "a"}},
-				{JobBase: JobBase{Name: "a"}},
+				{JobBase: JobBase{Name: "a"}, Reporter: Reporter{Context: "foo"}},
+				{JobBase: JobBase{Name: "a"}, Reporter: Reporter{Context: "bar"}},
 			},
 			expectedError: "duplicated postsubmit job: a",
 		},
 		{
 			name:          "Invalid JobBase causes error",
-			postsubmits:   []Postsubmit{{}},
+			postsubmits:   []Postsubmit{{Reporter: Reporter{Context: "foo"}}},
 			expectedError: `invalid postsubmit job : name: must match regex "^[A-Za-z0-9-._]+$"`,
+		},
+		{
+			name:          "Invalid reporting config causes error",
+			postsubmits:   []Postsubmit{{JobBase: JobBase{Name: "my-job"}}},
+			expectedError: "invalid postsubmit job my-job: job is set to report but has no context configured",
 		},
 	}
 

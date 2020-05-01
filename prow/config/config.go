@@ -1297,6 +1297,9 @@ func validatePresubmits(presubmits []Presubmit, podNamespace string) error {
 		if err := validateTriggering(ps); err != nil {
 			errs = append(errs, err)
 		}
+		if err := validateReporting(ps.Reporter); err != nil {
+			errs = append(errs, fmt.Errorf("invalid presubmit job %s: %v", ps.Name, err))
+		}
 		validPresubmits[ps.Name] = append(validPresubmits[ps.Name], ps)
 	}
 
@@ -1348,6 +1351,9 @@ func validatePostsubmits(postsubmits []Postsubmit, podNamespace string) error {
 		}
 
 		if err := validateJobBase(ps.JobBase, prowapi.PostsubmitJob, podNamespace); err != nil {
+			errs = append(errs, fmt.Errorf("invalid postsubmit job %s: %v", ps.Name, err))
+		}
+		if err := validateReporting(ps.Reporter); err != nil {
 			errs = append(errs, fmt.Errorf("invalid postsubmit job %s: %v", ps.Name, err))
 		}
 		validPostsubmits[ps.Name] = append(validPostsubmits[ps.Name], ps)
@@ -1902,14 +1908,17 @@ func validateTriggering(job Presubmit) error {
 		return fmt.Errorf("job %s is set to always run but also declares run_if_changed targets, which are mutually exclusive", job.Name)
 	}
 
-	if !job.SkipReport && job.Context == "" {
-		return fmt.Errorf("job %s is set to report but has no context configured", job.Name)
-	}
-
 	if (job.Trigger != "" && job.RerunCommand == "") || (job.Trigger == "" && job.RerunCommand != "") {
 		return fmt.Errorf("Either both of job.Trigger and job.RerunCommand must be set, wasnt the case for job %q", job.Name)
 	}
 
+	return nil
+}
+
+func validateReporting(r Reporter) error {
+	if !r.SkipReport && r.Context == "" {
+		return errors.New("job is set to report but has no context configured")
+	}
 	return nil
 }
 
