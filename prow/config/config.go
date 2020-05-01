@@ -1283,11 +1283,22 @@ func validatePresubmits(presubmits []Presubmit, podNamespace string) error {
 				errs = append(errs, fmt.Errorf("duplicated presubmit job: %s", ps.Name))
 			}
 		}
+		for _, otherPS := range presubmits {
+			if otherPS.Name == ps.Name || !otherPS.Brancher.Intersects(ps.Brancher) {
+				continue
+			}
+			if otherPS.Context == ps.Context {
+				errs = append(errs, fmt.Errorf("jobs %s and %s report to the same GitHub context %q", otherPS.Name, ps.Name, otherPS.Context))
+			}
+		}
 		if err := validateJobBase(ps.JobBase, prowapi.PresubmitJob, podNamespace); err != nil {
 			errs = append(errs, fmt.Errorf("invalid presubmit job %s: %v", ps.Name, err))
 		}
 		if err := validateTriggering(ps); err != nil {
 			errs = append(errs, err)
+		}
+		if err := validateReporting(ps.Reporter); err != nil {
+			errs = append(errs, fmt.Errorf("invalid presubmit job %s: %v", ps.Name, err))
 		}
 		validPresubmits[ps.Name] = append(validPresubmits[ps.Name], ps)
 	}
@@ -1322,20 +1333,33 @@ func ValidateRefs(repo string, jobBase JobBase) error {
 func validatePostsubmits(postsubmits []Postsubmit, podNamespace string) error {
 	validPostsubmits := map[string][]Postsubmit{}
 
+	var errs []error
 	for _, ps := range postsubmits {
 		// Checking that no duplicate job in prow config exists on the same repo / branch.
 		for _, existingJob := range validPostsubmits[ps.Name] {
 			if existingJob.Brancher.Intersects(ps.Brancher) {
-				return fmt.Errorf("duplicated postsubmit job: %s", ps.Name)
+				errs = append(errs, fmt.Errorf("duplicated postsubmit job: %s", ps.Name))
 			}
 		}
+		for _, otherPS := range postsubmits {
+			if otherPS.Name == ps.Name || !otherPS.Brancher.Intersects(ps.Brancher) {
+				continue
+			}
+			if otherPS.Context == ps.Context {
+				errs = append(errs, fmt.Errorf("jobs %s and %s report to the same GitHub context %q", otherPS.Name, ps.Name, otherPS.Context))
+			}
+		}
+
 		if err := validateJobBase(ps.JobBase, prowapi.PostsubmitJob, podNamespace); err != nil {
-			return fmt.Errorf("invalid postsubmit job %s: %v", ps.Name, err)
+			errs = append(errs, fmt.Errorf("invalid postsubmit job %s: %v", ps.Name, err))
+		}
+		if err := validateReporting(ps.Reporter); err != nil {
+			errs = append(errs, fmt.Errorf("invalid postsubmit job %s: %v", ps.Name, err))
 		}
 		validPostsubmits[ps.Name] = append(validPostsubmits[ps.Name], ps)
 	}
 
-	return nil
+	return utilerrors.NewAggregate(errs)
 }
 
 // validatePeriodics validates a set of periodics
@@ -1884,14 +1908,17 @@ func validateTriggering(job Presubmit) error {
 		return fmt.Errorf("job %s is set to always run but also declares run_if_changed targets, which are mutually exclusive", job.Name)
 	}
 
-	if !job.SkipReport && job.Context == "" {
-		return fmt.Errorf("job %s is set to report but has no context configured", job.Name)
-	}
-
 	if (job.Trigger != "" && job.RerunCommand == "") || (job.Trigger == "" && job.RerunCommand != "") {
 		return fmt.Errorf("Either both of job.Trigger and job.RerunCommand must be set, wasnt the case for job %q", job.Name)
 	}
 
+	return nil
+}
+
+func validateReporting(r Reporter) error {
+	if !r.SkipReport && r.Context == "" {
+		return errors.New("job is set to report but has no context configured")
+	}
 	return nil
 }
 

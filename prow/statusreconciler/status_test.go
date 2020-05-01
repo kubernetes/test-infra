@@ -269,7 +269,7 @@ func getPresubmits(names []string) []config.Presubmit {
 				Spec: spec,
 			},
 			AlwaysRun: true,
-			Reporter:  config.Reporter{Context: "boo"},
+			Reporter:  config.Reporter{Context: name},
 		}
 		presubmits = append(presubmits, ps)
 	}
