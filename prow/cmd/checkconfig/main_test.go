@@ -1389,3 +1389,25 @@ func TestValidateTideContextPolicy(t *testing.T) {
 		})
 	}
 }
+
+func TestValidate(t *testing.T) {
+	testCases := []struct {
+		name string
+		opts options
+	}{
+		{
+			name: "combined config",
+			opts: options{
+				configPath: "testdata/combined.yaml",
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			if err := validate(tc.opts); err != nil {
+				t.Fatalf("validation failed: %v", err)
+			}
+		})
+	}
+}

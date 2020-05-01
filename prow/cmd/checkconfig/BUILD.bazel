@@ -73,6 +73,7 @@ go_binary(
 go_test(
     name = "go_default_test",
     srcs = ["main_test.go"],
+    data = glob(["testdata/**"]),
     embed = [":go_default_library"],
     deps = [
         "//prow/apis/prowjobs/v1:go_default_library",
