@@ -4181,6 +4181,31 @@ func TestValidatePresubmits(t *testing.T) {
 			},
 			expectedError: `[jobs b and a report to the same GitHub context "repeated", jobs a and b report to the same GitHub context "repeated"]`,
 		},
+		{
+			name: "Duplicate jobname causes error",
+			presubmits: []Presubmit{
+				{JobBase: JobBase{Name: "a"}},
+				{JobBase: JobBase{Name: "a"}},
+			},
+			expectedError: "duplicated presubmit job: a",
+		},
+		{
+			name: "Duplicate jobname on different branches doesn't cause error",
+			presubmits: []Presubmit{
+				{JobBase: JobBase{Name: "a"}, Reporter: Reporter{Context: "foo"}, Brancher: Brancher{Branches: []string{"master"}}},
+				{JobBase: JobBase{Name: "a"}, Reporter: Reporter{Context: "foo"}, Brancher: Brancher{Branches: []string{"next"}}},
+			},
+		},
+		{
+			name:          "Invalid JobBase causes error",
+			presubmits:    []Presubmit{{}},
+			expectedError: `invalid presubmit job : name: must match regex "^[A-Za-z0-9-._]+$"`,
+		},
+		{
+			name:          "Invalid triggering config causes error",
+			presubmits:    []Presubmit{{Trigger: "some-trogger", JobBase: JobBase{Name: "my-job"}}},
+			expectedError: `Either both of job.Trigger and job.RerunCommand must be set, wasnt the case for job "my-job"`,
+		},
 	}
 
 	for _, tc := range testCases {
@@ -4209,6 +4234,19 @@ func TestValidatePostsubmits(t *testing.T) {
 				{JobBase: JobBase{Name: "b"}, Reporter: Reporter{Context: "repeated"}},
 			},
 			expectedError: `[jobs b and a report to the same GitHub context "repeated", jobs a and b report to the same GitHub context "repeated"]`,
+		},
+		{
+			name: "Duplicate jobname causes error",
+			postsubmits: []Postsubmit{
+				{JobBase: JobBase{Name: "a"}},
+				{JobBase: JobBase{Name: "a"}},
+			},
+			expectedError: "duplicated postsubmit job: a",
+		},
+		{
+			name:          "Invalid JobBase causes error",
+			postsubmits:   []Postsubmit{{}},
+			expectedError: `invalid postsubmit job : name: must match regex "^[A-Za-z0-9-._]+$"`,
 		},
 	}
 
