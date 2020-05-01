@@ -5,8 +5,6 @@ presubmits:
     run_if_changed: '^pkg/.*/ipvs/'
     optional: true
     skip_report: false
-    branches:
-    - master
     annotations:
       testgrid-create-test-group: "true"
     labels:
