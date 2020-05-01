@@ -218,52 +218,48 @@ func TestIsMember(t *testing.T) {
 }
 
 func TestIsMergeable(t *testing.T) {
-	testCases := []struct {
-		name           string
+	type testCase struct {
 		mergeableState MergeableState
 		expectedResult bool
 		isErrExpected  bool
-	}{
-		{
-			name:           "should be true when MergeableState is clean",
-			mergeableState: MergeableStateClean,
-			expectedResult: true,
-			isErrExpected:  false,
-		},
-		{
-			name:           "should be true when MergeableState is unstable",
-			mergeableState: MergeableStateUnstable,
-			expectedResult: true,
-			isErrExpected:  false,
-		},
-		{
-			name:           "should be false when MergeableState is behind",
-			mergeableState: MergeableStateBehind,
-			expectedResult: false,
-			isErrExpected:  true,
-		},
-		{
-			name:           "should be false when MergeableState is blocked",
-			mergeableState: MergeableStateBlocked,
-			expectedResult: false,
-			isErrExpected:  true,
-		},
-		{
-			name:           "should be false when MergeableState is draft",
-			mergeableState: MergeableStateDraft,
-			expectedResult: false,
-			isErrExpected:  true,
-		},
-		{
-			name:           "should be false when MergeableState is unknown",
-			mergeableState: MergeableStateUnknown,
-			expectedResult: false,
-			isErrExpected:  true,
-		},
 	}
+
+	testCases := make(map[string]testCase)
+	testCases["should be true when MergeableState is clean"] = testCase{
+		mergeableState: MergeableStateClean,
+		expectedResult: true,
+		isErrExpected:  false,
+	}
+	testCases["should be true when MergeableState is unstable"] = testCase{
+		mergeableState: MergeableStateUnstable,
+		expectedResult: true,
+		isErrExpected:  false,
+	}
+	testCases["should be false when MergeableState is behind"] = testCase{
+		mergeableState: MergeableStateBehind,
+		expectedResult: false,
+		isErrExpected:  true,
+	}
+	testCases["should be false when MergeableState is blocked"] = testCase{
+		mergeableState: MergeableStateBlocked,
+		expectedResult: false,
+		isErrExpected:  true,
+	}
+	testCases["should be false when MergeableState is draft"] = testCase{
+		mergeableState: MergeableStateDraft,
+		expectedResult: false,
+		isErrExpected:  true,
+	}
+	testCases["should be false when MergeableState is unknown"] = testCase{
+		mergeableState: MergeableStateUnknown,
+		expectedResult: false,
+		isErrExpected:  true,
+	}
+
 	mergable := true
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
+	for name := range testCases {
+		tc := testCases[name]
+		t.Run(name, func(t *testing.T) {
 			ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				if r.Method != http.MethodGet {
 					t.Errorf("Bad method: %s", r.Method)
