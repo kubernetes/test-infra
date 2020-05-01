@@ -217,6 +217,91 @@ func TestIsMember(t *testing.T) {
 	}
 }
 
+func TestIsMergeable(t *testing.T) {
+	testCases := []struct {
+		name           string
+		mergeableState MergeableState
+		expectedResult bool
+		isErrExpected  bool
+	}{
+		{
+			name:           "should be true when MergeableState is clean",
+			mergeableState: MergeableStateClean,
+			expectedResult: true,
+			isErrExpected:  false,
+		},
+		{
+			name:           "should be true when MergeableState is unstable",
+			mergeableState: MergeableStateUnstable,
+			expectedResult: true,
+			isErrExpected:  false,
+		},
+		{
+			name:           "should be false when MergeableState is behind",
+			mergeableState: MergeableStateBehind,
+			expectedResult: false,
+			isErrExpected:  true,
+		},
+		{
+			name:           "should be false when MergeableState is blocked",
+			mergeableState: MergeableStateBlocked,
+			expectedResult: false,
+			isErrExpected:  true,
+		},
+		{
+			name:           "should be false when MergeableState is draft",
+			mergeableState: MergeableStateDraft,
+			expectedResult: false,
+			isErrExpected:  true,
+		},
+		{
+			name:           "should be false when MergeableState is unknown",
+			mergeableState: MergeableStateUnknown,
+			expectedResult: false,
+			isErrExpected:  true,
+		},
+	}
+	mergable := true
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if r.Method != http.MethodGet {
+					t.Errorf("Bad method: %s", r.Method)
+				}
+				pr := PullRequest{
+					Head: PullRequestBranch{
+						SHA: "deadbeef",
+					},
+					Merged:         false,
+					Mergable:       &mergable,
+					MergeableState: tc.mergeableState,
+				}
+				b, err := json.Marshal(&pr)
+				if err != nil {
+					t.Fatalf("Didn't expect error: %q", err)
+				}
+				fmt.Fprint(w, string(b))
+			}))
+			defer ts.Close()
+
+			c := getClient(ts.URL)
+			mergeableResult, err := c.IsMergeable("k8s", "kuber", 1, "deadbeef")
+			if tc.isErrExpected == true && err == nil {
+				t.Error("Didn't get expected error")
+			}
+
+			if !tc.isErrExpected && err != nil {
+				t.Errorf("Didn't expect error %v", err)
+			}
+
+			if tc.expectedResult != mergeableResult {
+				t.Errorf("Expected %v, got %v", tc.expectedResult, mergeableResult)
+			}
+
+		})
+	}
+}
+
 func TestCreateComment(t *testing.T) {
 	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
