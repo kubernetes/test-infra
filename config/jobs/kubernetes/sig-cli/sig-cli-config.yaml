@@ -18,7 +18,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[sig-cli\].*\[Serial\]|\[sig-cli\].*\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=500m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200430-1af2254-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200430-cb59ea5-master
 
   annotations:
     testgrid-dashboards: sig-cli-master
@@ -47,7 +47,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[sig-cli\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200430-1af2254-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200430-cb59ea5-master
 
   annotations:
     testgrid-dashboards: sig-cli-master
@@ -75,7 +75,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.focus=\[sig-cli\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200430-1af2254-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200430-cb59ea5-master
 
   # kubectl skew tests
   annotations:
@@ -105,7 +105,7 @@ periodics:
       - --skew
       - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200430-1af2254-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200430-cb59ea5-master
 
   annotations:
     testgrid-dashboards: sig-release-job-config-errors
@@ -132,7 +132,7 @@ periodics:
       - --skew
       - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200430-1af2254-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200430-cb59ea5-master
 
   annotations:
     testgrid-dashboards: sig-release-job-config-errors
@@ -160,7 +160,7 @@ periodics:
       - --skew
       - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200430-1af2254-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200430-cb59ea5-master
 
   annotations:
     testgrid-dashboards: sig-release-master-blocking, sig-cli-master
@@ -194,7 +194,7 @@ periodics:
       - --skew
       - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200430-1af2254-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200430-cb59ea5-master
 
   annotations:
     testgrid-dashboards: sig-cli-master
@@ -222,7 +222,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200430-1af2254-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200430-cb59ea5-master
 
   annotations:
     testgrid-dashboards: sig-cli-master
@@ -249,7 +249,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=Kubectl.*\[Serial\]  --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200430-1af2254-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200430-cb59ea5-master
 
   annotations:
     testgrid-dashboards: sig-cli-master
@@ -277,7 +277,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200430-1af2254-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200430-cb59ea5-master
 
   annotations:
     testgrid-dashboards: sig-release-job-config-errors
@@ -303,7 +303,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200430-1af2254-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200430-cb59ea5-master
 
   annotations:
     testgrid-dashboards: sig-release-job-config-errors
@@ -331,7 +331,7 @@ periodics:
       - --skew
       - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200430-1af2254-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200430-cb59ea5-master
 
   annotations:
     testgrid-dashboards: sig-release-job-config-errors
@@ -358,7 +358,7 @@ periodics:
       - --skew
       - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200430-1af2254-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200430-cb59ea5-master
 
   annotations:
     testgrid-dashboards: sig-release-job-config-errors
@@ -385,7 +385,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200430-1af2254-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200430-cb59ea5-master
 
   annotations:
     testgrid-dashboards: sig-release-job-config-errors
@@ -411,7 +411,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200430-1af2254-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200430-cb59ea5-master
 
   annotations:
     testgrid-dashboards: sig-release-job-config-errors
