@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# This generates environment variables and is used by Bazel for that purpose
+
 set -o errexit
 set -o nounset
 set -o pipefail
