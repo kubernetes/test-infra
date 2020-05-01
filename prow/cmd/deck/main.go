@@ -323,8 +323,93 @@ func main() {
 	if runLocal {
 		localDataHandler := staticHandlerFromDir(o.pregeneratedData)
 		fallbackHandler = localDataHandler.ServeHTTP
+
+		if o.spyglass {
+			initSpyglass(cfg, o, mux, nil, nil, nil)
+		}
 	} else {
 		fallbackHandler = http.NotFound
+
+		restCfg, err := o.kubernetes.InfrastructureClusterConfig(false)
+		if err != nil {
+			logrus.WithError(err).Fatal("Error getting infrastructure cluster config.")
+		}
+		mgr, err := manager.New(restCfg, manager.Options{
+			Namespace:          cfg().ProwJobNamespace,
+			MetricsBindAddress: "0",
+			LeaderElection:     false},
+		)
+		if err != nil {
+			logrus.WithError(err).Fatal("Error getting manager.")
+		}
+		go func() {
+			if err := mgr.Start(make(chan struct{})); err != nil {
+				logrus.WithError(err).Fatal("Error starting manager.")
+			} else {
+				logrus.Info("Manager stopped gracefully.")
+			}
+		}()
+		mgrSyncCtx, mgrSyncCtxCancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer mgrSyncCtxCancel()
+		if synced := mgr.GetCache().WaitForCacheSync(mgrSyncCtx.Done()); !synced {
+			logrus.Fatal("Timed out waiting for cachesync")
+		}
+
+		buildClusterClients, err := o.kubernetes.BuildClusterClients(cfg().PodNamespace, false)
+		if err != nil {
+			logrus.WithError(err).Fatal("Error getting Kubernetes client.")
+		}
+
+		podLogClients := make(map[string]jobs.PodLogClient)
+		for clusterContext, client := range buildClusterClients {
+			podLogClients[clusterContext] = &podLogClient{client: client}
+		}
+
+		ja := jobs.NewJobAgent(&filteringProwJobLister{
+			client: &pjListingClientWrapper{mgr.GetClient()},
+			hiddenRepos: func() sets.String {
+				return sets.NewString(cfg().Deck.HiddenRepos...)
+			},
+			hiddenOnly: o.hiddenOnly,
+			showHidden: o.showHidden,
+		}, podLogClients, cfg)
+		ja.Start()
+
+		// setup prod only handlers. These handlers can work with runlocal as long
+		// as ja is properly mocked, more specifically pjListingClient inside ja
+		mux.Handle("/data.js", gziphandler.GzipHandler(handleData(ja, logrus.WithField("handler", "/data.js"))))
+		mux.Handle("/prowjobs.js", gziphandler.GzipHandler(handleProwJobs(ja, logrus.WithField("handler", "/prowjobs.js"))))
+		mux.Handle("/badge.svg", gziphandler.GzipHandler(handleBadge(ja)))
+		mux.Handle("/log", gziphandler.GzipHandler(handleLog(ja, logrus.WithField("handler", "/log"))))
+
+		// We use the GH client to resolve GH teams when determining who is permitted to rerun a job.
+		// When inrepoconfig is enabled, both the GitHubClient and the gitClient are used to resolve
+		// presubmits dynamically which we need for the PR history page.
+		var githubClient deckGitHubClient
+		var gitClient git.ClientFactory
+		secretAgent := &secret.Agent{}
+		if o.github.TokenPath != "" {
+			if err := secretAgent.Start([]string{o.github.TokenPath}); err != nil {
+				logrus.WithError(err).Fatal("Error starting secrets agent.")
+			}
+			githubClient, err = o.github.GitHubClient(secretAgent, o.dryRun)
+			if err != nil {
+				logrus.WithError(err).Fatal("Error getting GitHub client.")
+			}
+			g, err := o.github.GitClient(secretAgent, o.dryRun)
+			if err != nil {
+				logrus.WithError(err).Fatal("Error getting Git client.")
+			}
+			gitClient = git.ClientFactoryFrom(g)
+		} else {
+			if len(cfg().InRepoConfig.Enabled) > 0 {
+				logrus.Fatal("--github-token-path must be configured with a valid token when using the inrepoconfig feature")
+			}
+		}
+
+		if o.spyglass {
+			initSpyglass(cfg, o, mux, ja, githubClient, gitClient)
+		}
 	}
 
 	authCfgGetter := func(refs *prowapi.Refs) *prowapi.RerunAuthConfig {
@@ -407,10 +492,6 @@ func main() {
 func localOnlyMain(cfg config.Getter, o options, mux *http.ServeMux) *http.ServeMux {
 	mux.Handle("/github-login", gziphandler.GzipHandler(handleSimpleTemplate(o, cfg, "github-login.html", nil)))
 
-	if o.spyglass {
-		initSpyglass(cfg, o, mux, nil, nil, nil)
-	}
-
 	return mux
 }
 
@@ -461,6 +542,7 @@ func (c *filteringProwJobLister) ListProwJobs(selector string) ([]prowapi.ProwJo
 			filtered = append(filtered, item)
 		}
 	}
+
 	return filtered, nil
 }
 
@@ -495,93 +577,16 @@ func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, authCfgGe
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting ProwJob client for infrastructure cluster.")
 	}
-	restCfg, err := o.kubernetes.InfrastructureClusterConfig(false)
-	if err != nil {
-		logrus.WithError(err).Fatal("Error getting infrastructure cluster config.")
-	}
-	mgr, err := manager.New(restCfg, manager.Options{
-		Namespace:          cfg().ProwJobNamespace,
-		MetricsBindAddress: "0",
-		LeaderElection:     false},
-	)
-	if err != nil {
-		logrus.WithError(err).Fatal("Error getting manager.")
-	}
-	go func() {
-		if err := mgr.Start(make(chan struct{})); err != nil {
-			logrus.WithError(err).Fatal("Error starting manager.")
-		} else {
-			logrus.Info("Manager stopped gracefully.")
-		}
-	}()
-	mgrSyncCtx, mgrSyncCtxCancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer mgrSyncCtxCancel()
-	if synced := mgr.GetCache().WaitForCacheSync(mgrSyncCtx.Done()); !synced {
-		logrus.Fatal("Timed out waiting for cachesync")
-	}
 
-	buildClusterClients, err := o.kubernetes.BuildClusterClients(cfg().PodNamespace, false)
-	if err != nil {
-		logrus.WithError(err).Fatal("Error getting Kubernetes client.")
-	}
-
-	podLogClients := map[string]jobs.PodLogClient{}
-	for clusterContext, client := range buildClusterClients {
-		podLogClients[clusterContext] = &podLogClient{client: client}
-	}
-
-	ja := jobs.NewJobAgent(&filteringProwJobLister{
-		client: &pjListingClientWrapper{mgr.GetClient()},
-		hiddenRepos: func() sets.String {
-			return sets.NewString(cfg().Deck.HiddenRepos...)
-		},
-		hiddenOnly: o.hiddenOnly,
-		showHidden: o.showHidden,
-	}, podLogClients, cfg)
-	ja.Start()
-
-	// setup prod only handlers
-	mux.Handle("/data.js", gziphandler.GzipHandler(handleData(ja, logrus.WithField("handler", "/data.js"))))
-	mux.Handle("/prowjobs.js", gziphandler.GzipHandler(handleProwJobs(ja, logrus.WithField("handler", "/prowjobs.js"))))
-	mux.Handle("/badge.svg", gziphandler.GzipHandler(handleBadge(ja)))
-	mux.Handle("/log", gziphandler.GzipHandler(handleLog(ja, logrus.WithField("handler", "/log"))))
-
+	// prowjob still needs prowJobClient for retrieving log
 	mux.Handle("/prowjob", gziphandler.GzipHandler(handleProwJob(prowJobClient, logrus.WithField("handler", "/prowjob"))))
-
-	// We use the GH client to resolve GH teams when determining who is permitted to rerun a job.
-	// When inrepoconfig is enabled, both the GitHubClient and the gitClient are used to resolve
-	// presubmits dynamically which we need for the PR history page.
-	var githubClient deckGitHubClient
-	var gitClient git.ClientFactory
-	secretAgent := &secret.Agent{}
-	if o.github.TokenPath != "" {
-		if err := secretAgent.Start([]string{o.github.TokenPath}); err != nil {
-			logrus.WithError(err).Fatal("Error starting secrets agent.")
-		}
-		githubClient, err = o.github.GitHubClient(secretAgent, o.dryRun)
-		if err != nil {
-			logrus.WithError(err).Fatal("Error getting GitHub client.")
-		}
-		g, err := o.github.GitClient(secretAgent, o.dryRun)
-		if err != nil {
-			logrus.WithError(err).Fatal("Error getting Git client.")
-		}
-		gitClient = git.ClientFactoryFrom(g)
-	} else {
-		if len(cfg().InRepoConfig.Enabled) > 0 {
-			logrus.Fatal("--github-token-path must be configured with a valid token when using the inrepoconfig feature")
-		}
-	}
-
-	if o.spyglass {
-		initSpyglass(cfg, o, mux, ja, githubClient, gitClient)
-	}
 
 	if o.hookURL != "" {
 		mux.Handle("/plugin-help.js",
 			gziphandler.GzipHandler(handlePluginHelp(newHelpAgent(o.hookURL), logrus.WithField("handler", "/plugin-help.js"))))
 	}
 
+	// tide could potentially be mocked by static data
 	if o.tideURL != "" {
 		ta := &tideAgent{
 			log:  logrus.WithField("agent", "tide"),
