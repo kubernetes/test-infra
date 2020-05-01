@@ -233,6 +233,28 @@ type PullRequestEvent struct {
 	GUID string
 }
 
+type MergeableState string
+
+const (
+	// MergeableStateBehind means the head ref is out of date.
+	// Only possible when a repo has "require branches to be up to date before merging" enabled.
+	MergeableStateBehind MergeableState = "behind"
+	// MergeableStateBlocked means the PR is not mergeable.
+	MergeableStateBlocked = "blocked"
+	// MergeableStateClean means the PR is mergeable, and all statuses are passing.
+	MergeableStateClean = "clean"
+	// MergeableStateDirty means the merge commit cannot be cleanly created.
+	MergeableStateDirty = "dirty"
+	// MergeableStateDraft means the PR is in Draft mode, and cannot be merged.
+	MergeableStateDraft = "draft"
+	// MergeableStateHasHooks means the PR is mergeable, but subject to pre-receive hooks (GitHub Enterprise only)
+	MergeableStateHasHooks = "has_hooks"
+	// MergeableStateUnknown means the state cannot currently be determined.
+	MergeableStateUnknown = "unknown"
+	// MergeableStateUnstable means the PR is mergeable, but has non-passing statuses.
+	MergeableStateUnstable = "unstable"
+)
+
 // PullRequest contains information about a PullRequest.
 type PullRequest struct {
 	ID                 int               `json:"id"`
@@ -262,6 +284,10 @@ type PullRequest struct {
 	// background job was started to compute it. When the job is complete, the response
 	// will include a non-null value for the mergeable attribute.
 	Mergable *bool `json:"mergeable,omitempty"`
+	// ref https://developer.github.com/v4/enum/mergestatestatus/
+	// This is present, but not documented for REST API responses.
+	// It is documented in the equivalent GraphQL API.
+	MergeableState MergeableState `json:"mergeable_state,omitempty"`
 	// If the PR doesn't have any milestone, `milestone` is null and is unmarshaled to nil.
 	Milestone *Milestone `json:"milestone,omitempty"`
 }
