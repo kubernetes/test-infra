@@ -340,7 +340,7 @@ func TestCloneBugStruct(t *testing.T) {
 		},
 	}}
 	for _, testCase := range testCases {
-		newBug := cloneBugStruct(&testCase.bug, testCase.comments)
+		newBug := cloneBugStruct(&testCase.bug, nil, testCase.comments)
 		if !reflect.DeepEqual(*newBug, testCase.expected) {
 			t.Errorf("%s: Difference in expected BugCreate and actual: %s", testCase.name, cmp.Diff(testCase.expected, *newBug))
 		}

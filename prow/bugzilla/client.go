@@ -39,6 +39,8 @@ type Client interface {
 	GetBug(id int) (*Bug, error)
 	GetComments(id int) ([]Comment, error)
 	GetExternalBugPRsOnBug(id int) ([]ExternalBug, error)
+	GetSubComponentsOnBug(id int) (map[string][]string, error)
+	GetClones(bug *Bug) ([]*Bug, error)
 	CreateBug(bug *BugCreate) (int, error)
 	CloneBug(bug *Bug) (int, error)
 	UpdateBug(id int, update BugUpdate) error
@@ -90,6 +92,54 @@ func (c *client) GetBug(id int) (*Bug, error) {
 		return nil, fmt.Errorf("did not get one bug, but %d: %v", len(parsedResponse.Bugs), parsedResponse)
 	}
 	return parsedResponse.Bugs[0], nil
+}
+
+func getClones(c Client, bug *Bug) ([]*Bug, error) {
+	clones := []*Bug{}
+	for _, dependentID := range bug.Blocks {
+		dependent, err := c.GetBug(dependentID)
+		if err != nil {
+			return nil, fmt.Errorf("Failed to get dependent bug #%d: %v", dependentID, err)
+		}
+		if dependent.Summary == bug.Summary {
+			clones = append(clones, dependent)
+		}
+	}
+	return clones, nil
+}
+
+// GetClones gets the list of bugs that the provided bug blocks that also have a matching summary.
+func (c *client) GetClones(bug *Bug) ([]*Bug, error) {
+	return getClones(c, bug)
+}
+
+// GetSubComponentsOnBug retrieves a the list of SubComponents of the bug.
+// SubComponents are a Red Hat bugzilla specific extra field.
+func (c *client) GetSubComponentsOnBug(id int) (map[string][]string, error) {
+	logger := c.logger.WithFields(logrus.Fields{methodField: "GetSubComponentsOnBug", "id": id})
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/rest/bug/%d", c.endpoint, id), nil)
+	if err != nil {
+		return nil, err
+	}
+	values := req.URL.Query()
+	values.Add("include_fields", "sub_components")
+	req.URL.RawQuery = values.Encode()
+	raw, err := c.request(req, logger)
+	if err != nil {
+		return nil, err
+	}
+	var parsedResponse struct {
+		Bugs []struct {
+			SubComponents map[string][]string `json:"sub_components"`
+		} `json:"bugs"`
+	}
+	if err := json.Unmarshal(raw, &parsedResponse); err != nil {
+		return nil, fmt.Errorf("could not unmarshal response body: %v", err)
+	}
+	if len(parsedResponse.Bugs) != 1 {
+		return nil, fmt.Errorf("did not get one bug, but %d: %v", len(parsedResponse.Bugs), parsedResponse)
+	}
+	return parsedResponse.Bugs[0].SubComponents, nil
 }
 
 // GetExternalBugPRsOnBug retrieves external bugs on a Bug from the server
@@ -188,7 +238,7 @@ func (c *client) CreateBug(bug *BugCreate) (int, error) {
 	return idStruct.ID, nil
 }
 
-func cloneBugStruct(bug *Bug, comments []Comment) *BugCreate {
+func cloneBugStruct(bug *Bug, subcomponents map[string][]string, comments []Comment) *BugCreate {
 	newBug := &BugCreate{
 		Alias:           bug.Alias,
 		AssignedTo:      bug.AssignedTo,
@@ -206,6 +256,9 @@ func cloneBugStruct(bug *Bug, comments []Comment) *BugCreate {
 		Summary:         bug.Summary,
 		TargetMilestone: bug.TargetMilestone,
 		Version:         bug.Version,
+	}
+	if len(subcomponents) > 0 {
+		newBug.SubComponents = subcomponents
 	}
 	if len(comments) > 0 && comments[0].Count == 0 {
 		desc := comments[0]
@@ -225,11 +278,15 @@ func cloneBugStruct(bug *Bug, comments []Comment) *BugCreate {
 // clone handles the bz client calls for the bug cloning process and allows us to share the implementation
 // between the real and fake client to prevent bugs from accidental discrepencies between the two.
 func clone(c Client, bug *Bug) (int, error) {
+	subcomponents, err := c.GetSubComponentsOnBug(bug.ID)
+	if err != nil {
+		return 0, fmt.Errorf("failed to check if bug has subcomponents: %v", err)
+	}
 	comments, err := c.GetComments(bug.ID)
 	if err != nil {
 		return 0, fmt.Errorf("failed to get parent bug's comments: %v", err)
 	}
-	id, err := c.CreateBug(cloneBugStruct(bug, comments))
+	id, err := c.CreateBug(cloneBugStruct(bug, subcomponents, comments))
 	if err != nil {
 		return id, err
 	}

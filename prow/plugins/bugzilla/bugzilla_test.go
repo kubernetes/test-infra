@@ -674,18 +674,20 @@ func TestHandle(t *testing.T) {
 		cherryPickFromPRNum int
 		cherryPickTo        string
 		// the "e.body" for PRs is the PR title; this field can be used to replace the "body" for PR handles for cases where the body != description
-		body                 string
-		externalBugs         []bugzilla.ExternalBug
-		prs                  []github.PullRequest
-		bugs                 []bugzilla.Bug
-		bugComments          map[int][]bugzilla.Comment
-		bugErrors            []int
-		bugCreateErrors      []string
-		options              plugins.BugzillaBranchOptions
-		expectedLabels       []string
-		expectedComment      string
-		expectedBug          *bugzilla.Bug
-		expectedExternalBugs []bugzilla.ExternalBug
+		body                  string
+		externalBugs          []bugzilla.ExternalBug
+		prs                   []github.PullRequest
+		bugs                  []bugzilla.Bug
+		bugComments           map[int][]bugzilla.Comment
+		bugErrors             []int
+		bugCreateErrors       []string
+		subComponents         map[int]map[string][]string
+		options               plugins.BugzillaBranchOptions
+		expectedLabels        []string
+		expectedComment       string
+		expectedBug           *bugzilla.Bug
+		expectedExternalBugs  []bugzilla.ExternalBug
+		expectedSubComponents map[int]map[string][]string
 	}{
 		{
 			name: "no bug found leaves a comment",
@@ -1151,8 +1153,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			cherryPickFromPRNum: 1,
 			cherryPickTo:        "v1",
 			options:             plugins.BugzillaBranchOptions{TargetRelease: &v1},
-			expectedComment: `org/repo#1:@user: An error was encountered creating a cherry-pick bug in Bugzilla: failed to check the state of cherrypicked pull request at https://github.com/org/repo/pull/1 for bug 123 on the Bugzilla server at www.bugzilla:
-> pull request number 1 does not exist
+			expectedComment: `org/repo#1:@user: Error creating a cherry-pick bug in Bugzilla: failed to check the state of cherrypicked pull request at https://github.com/org/repo/pull/1: pull request number 1 does not exist.
 Please contact an administrator to resolve this issue, then request a bug refresh with <code>/bugzilla refresh</code>.
 
 <details>
@@ -1239,6 +1240,97 @@ In response to [this](http.com):
 
 Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.
 </details>`,
+		}, {
+			name: "If bug clone with correct target version already exists, do not create new clone",
+			bugs: []bugzilla.Bug{
+				{Summary: "This is a test bug", Product: "Test", Component: []string{"TestComponent"}, Version: []string{"v2"}, ID: 123, Status: "CLOSED", Severity: "urgent", Blocks: []int{124}},
+				{Summary: "This is a test bug", Product: "Test", Component: []string{"TestComponent"}, Version: []string{"v1"}, ID: 124, Status: "NEW", Severity: "urgent", DependsOn: []int{123}},
+			},
+			bugComments:         map[int][]bugzilla.Comment{123: {{BugID: 123, Count: 0, Text: "This is a bug"}}},
+			prs:                 []github.PullRequest{{Number: base.number, Body: base.body, Title: base.body}, {Number: 2, Body: "This is an automated cherry-pick of #1.\n\n/assign user", Title: "[v1] " + base.body}},
+			body:                "[v1] " + base.body,
+			cherryPick:          true,
+			cherryPickFromPRNum: 1,
+			cherryPickTo:        "v1",
+			options:             plugins.BugzillaBranchOptions{TargetRelease: &v1},
+			expectedComment: `org/repo#1:@user: Not creating new clone for [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123) as [Bugzilla bug 124](www.bugzilla/show_bug.cgi?id=124) has been detected as a clone for the correct target version of this cherrypick. Running refresh:
+/bugzilla refresh
+
+<details>
+
+In response to [this](http.com):
+
+>[v1] Bug 123: fixed it!
+
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.
+</details>`,
+		}, {
+			name: "Clone for different version does not block creation of new clone",
+			bugs: []bugzilla.Bug{
+				{Summary: "This is a test bug", Product: "Test", Component: []string{"TestComponent"}, Version: []string{"v2"}, ID: 123, Status: "CLOSED", Severity: "urgent", Blocks: []int{124}},
+				{Summary: "This is a test bug", Product: "Test", Component: []string{"TestComponent"}, Version: []string{"v3"}, ID: 124, Status: "NEW", Severity: "urgent", DependsOn: []int{123}},
+			},
+			bugComments:         map[int][]bugzilla.Comment{123: {{BugID: 123, Count: 0, Text: "This is a bug"}}},
+			prs:                 []github.PullRequest{{Number: base.number, Body: base.body, Title: base.body}, {Number: 2, Body: "This is an automated cherry-pick of #1.\n\n/assign user", Title: "[v1] " + base.body}},
+			body:                "[v1] " + base.body,
+			cherryPick:          true,
+			cherryPickFromPRNum: 1,
+			cherryPickTo:        "v1",
+			options:             plugins.BugzillaBranchOptions{TargetRelease: &v1},
+			expectedComment: `org/repo#1:@user: [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123) has been cloned as [Bugzilla bug 125](www.bugzilla/show_bug.cgi?id=125). Retitling PR to link against new bug.
+/retitle [v1] Bug 125: fixed it!
+
+<details>
+
+In response to [this](http.com):
+
+>[v1] Bug 123: fixed it!
+
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.
+</details>`,
+		}, {
+			name:        "Bug with SubComponents creates bug with correct subcomponents",
+			bugs:        []bugzilla.Bug{{Product: "Test", Component: []string{"TestComponent"}, Version: []string{"v2"}, ID: 123, Status: "CLOSED", Severity: "urgent"}},
+			bugComments: map[int][]bugzilla.Comment{123: {{BugID: 123, Count: 0, Text: "This is a bug"}}},
+			subComponents: map[int]map[string][]string{
+				123: {
+					"TestComponent": {
+						"TestSubComponent",
+					},
+				},
+			},
+			prs:                 []github.PullRequest{{Number: base.number, Body: base.body, Title: base.body}, {Number: 2, Body: "This is an automated cherry-pick of #1.\n\n/assign user", Title: "[v1] " + base.body}},
+			body:                "[v1] " + base.body,
+			cherryPick:          true,
+			cherryPickFromPRNum: 1,
+			cherryPickTo:        "v1",
+			options:             plugins.BugzillaBranchOptions{TargetRelease: &v1},
+			expectedSubComponents: map[int]map[string][]string{
+				123: {
+					"TestComponent": {
+						"TestSubComponent",
+					},
+				},
+				124: {
+					"TestComponent": {
+						"TestSubComponent",
+					},
+				},
+			},
+			expectedComment: `org/repo#1:@user: [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123) has been cloned as [Bugzilla bug 124](www.bugzilla/show_bug.cgi?id=124). Retitling PR to link against new bug.
+/retitle [v1] Bug 124: fixed it!
+
+<details>
+
+In response to [this](http.com):
+
+>[v1] Bug 123: fixed it!
+
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.
+</details>`,
 		},
 	}
 
@@ -1259,6 +1351,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			bc := bugzilla.Fake{
 				EndpointString:  "www.bugzilla",
 				Bugs:            map[int]bugzilla.Bug{},
+				SubComponents:   map[int]map[string][]string{},
 				BugComments:     testCase.bugComments,
 				BugErrors:       sets.NewInt(),
 				BugCreateErrors: sets.NewString(),
@@ -1271,6 +1364,9 @@ Instructions for interacting with me using PR comments are available [here](http
 			bc.BugCreateErrors.Insert(testCase.bugCreateErrors...)
 			for _, externalBug := range testCase.externalBugs {
 				bc.ExternalBugs[externalBug.BugzillaBugID] = append(bc.ExternalBugs[externalBug.BugzillaBugID], externalBug)
+			}
+			for id, subComponent := range testCase.subComponents {
+				bc.SubComponents[id] = subComponent
 			}
 			e.missing = testCase.missing
 			e.merged = testCase.merged
@@ -1312,6 +1408,9 @@ Instructions for interacting with me using PR comments are available [here](http
 				if actual, expected := bc.ExternalBugs[testCase.expectedBug.ID], testCase.expectedExternalBugs; !reflect.DeepEqual(actual, expected) {
 					t.Errorf("%s: got incorrect external bugs after update: %s", testCase.name, cmp.Diff(actual, expected, allowEvent))
 				}
+			}
+			if testCase.expectedSubComponents != nil && !reflect.DeepEqual(bc.SubComponents, testCase.expectedSubComponents) {
+				t.Errorf("%s: got incorrect subcomponents after update: %s", testCase.name, cmp.Diff(actual, expected))
 			}
 		})
 	}

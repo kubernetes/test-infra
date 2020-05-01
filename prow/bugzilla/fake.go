@@ -31,6 +31,7 @@ type Fake struct {
 	BugErrors       sets.Int
 	BugCreateErrors sets.String
 	ExternalBugs    map[int][]ExternalBug
+	SubComponents   map[int]map[string][]string
 }
 
 // Endpoint returns the endpoint for this fake
@@ -80,6 +81,11 @@ func (c *Fake) UpdateBug(id int, update BugUpdate) error {
 				bug.DependsOn = update.DependsOn.Set
 			} else {
 				bug.DependsOn = sets.NewInt(bug.DependsOn...).Insert(update.DependsOn.Add...).Delete(update.DependsOn.Remove...).List()
+			}
+			for _, blockerID := range bug.DependsOn {
+				blockerBug := c.Bugs[blockerID]
+				blockerBug.Blocks = append(blockerBug.Blocks, id)
+				c.Bugs[blockerID] = blockerBug
 			}
 		}
 		c.Bugs[id] = bug
@@ -165,6 +171,9 @@ func (c *Fake) CreateBug(bug *BugCreate) (int, error) {
 		Tags:       bug.CommentTags,
 	}}
 	c.BugComments[newID] = newComments
+	if bug.SubComponents != nil {
+		c.SubComponents[newID] = bug.SubComponents
+	}
 	return newID, nil
 }
 
@@ -183,6 +192,20 @@ func (c *Fake) GetComments(id int) ([]Comment, error) {
 // CloneBug clones a bug by creating a new bug with the same fields, copying the description, and updating the bug to depend on the original bug
 func (c *Fake) CloneBug(bug *Bug) (int, error) {
 	return clone(c, bug)
+}
+
+func (c *Fake) GetSubComponentsOnBug(id int) (map[string][]string, error) {
+	if c.BugErrors.Has(id) {
+		return nil, errors.New("injected error getting bug subcomponents")
+	}
+	return c.SubComponents[id], nil
+}
+
+func (c *Fake) GetClones(bug *Bug) ([]*Bug, error) {
+	if c.BugErrors.Has(bug.ID) {
+		return nil, errors.New("injected error getting subcomponents")
+	}
+	return getClones(c, bug)
 }
 
 // the Fake is a Client

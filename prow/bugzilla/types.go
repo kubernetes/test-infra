@@ -149,6 +149,9 @@ type BugCreate struct {
 	Severity string `json:"severity,omitempty"`
 	// Status is the current status of the bug.
 	Status string `json:"status,omitempty"`
+	// SubComponents are the subcomponents of the component for the bug. The key is the Component name, while the value is an array of length 1 containing the subcomponent name.
+	// This is a Red Hat bugzilla specific extra field.
+	SubComponents map[string][]string `json:"sub_components,omitempty"`
 	// Summary is the summary of this bug.
 	Summary string `json:"summary,omitempty"`
 	// TargetMilestone is the milestone that this bug is supposed to be fixed by, or for closed bugs, the milestone that it was fixed for.
