@@ -4165,3 +4165,61 @@ func TestDefaultAndValidateReportTemplate(t *testing.T) {
 		})
 	}
 }
+
+func TestValidatePresubmits(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name          string
+		presubmits    []Presubmit
+		expectedError string
+	}{
+		{
+			name: "Duplicate context causes error",
+			presubmits: []Presubmit{
+				{JobBase: JobBase{Name: "a"}, Reporter: Reporter{Context: "repeated"}},
+				{JobBase: JobBase{Name: "b"}, Reporter: Reporter{Context: "repeated"}},
+			},
+			expectedError: `[jobs b and a report to the same GitHub context "repeated", jobs a and b report to the same GitHub context "repeated"]`,
+		},
+	}
+
+	for _, tc := range testCases {
+		var errMsg string
+		err := validatePresubmits(tc.presubmits, "")
+		if err != nil {
+			errMsg = err.Error()
+		}
+		if errMsg != tc.expectedError {
+			t.Errorf("expected error '%s', got error '%s'", tc.expectedError, errMsg)
+		}
+	}
+}
+
+func TestValidatePostsubmits(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name          string
+		postsubmits   []Postsubmit
+		expectedError string
+	}{
+		{
+			name: "Duplicate context causes error",
+			postsubmits: []Postsubmit{
+				{JobBase: JobBase{Name: "a"}, Reporter: Reporter{Context: "repeated"}},
+				{JobBase: JobBase{Name: "b"}, Reporter: Reporter{Context: "repeated"}},
+			},
+			expectedError: `[jobs b and a report to the same GitHub context "repeated", jobs a and b report to the same GitHub context "repeated"]`,
+		},
+	}
+
+	for _, tc := range testCases {
+		var errMsg string
+		err := validatePostsubmits(tc.postsubmits, "")
+		if err != nil {
+			errMsg = err.Error()
+		}
+		if errMsg != tc.expectedError {
+			t.Errorf("expected error '%s', got error '%s'", tc.expectedError, errMsg)
+		}
+	}
+}

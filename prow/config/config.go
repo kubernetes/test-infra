@@ -1283,6 +1283,14 @@ func validatePresubmits(presubmits []Presubmit, podNamespace string) error {
 				errs = append(errs, fmt.Errorf("duplicated presubmit job: %s", ps.Name))
 			}
 		}
+		for _, otherPS := range presubmits {
+			if otherPS.Name == ps.Name || !otherPS.Brancher.Intersects(ps.Brancher) {
+				continue
+			}
+			if otherPS.Context == ps.Context {
+				errs = append(errs, fmt.Errorf("jobs %s and %s report to the same GitHub context %q", otherPS.Name, ps.Name, otherPS.Context))
+			}
+		}
 		if err := validateJobBase(ps.JobBase, prowapi.PresubmitJob, podNamespace); err != nil {
 			errs = append(errs, fmt.Errorf("invalid presubmit job %s: %v", ps.Name, err))
 		}
@@ -1322,20 +1330,30 @@ func ValidateRefs(repo string, jobBase JobBase) error {
 func validatePostsubmits(postsubmits []Postsubmit, podNamespace string) error {
 	validPostsubmits := map[string][]Postsubmit{}
 
+	var errs []error
 	for _, ps := range postsubmits {
 		// Checking that no duplicate job in prow config exists on the same repo / branch.
 		for _, existingJob := range validPostsubmits[ps.Name] {
 			if existingJob.Brancher.Intersects(ps.Brancher) {
-				return fmt.Errorf("duplicated postsubmit job: %s", ps.Name)
+				errs = append(errs, fmt.Errorf("duplicated postsubmit job: %s", ps.Name))
 			}
 		}
+		for _, otherPS := range postsubmits {
+			if otherPS.Name == ps.Name || !otherPS.Brancher.Intersects(ps.Brancher) {
+				continue
+			}
+			if otherPS.Context == ps.Context {
+				errs = append(errs, fmt.Errorf("jobs %s and %s report to the same GitHub context %q", otherPS.Name, ps.Name, otherPS.Context))
+			}
+		}
+
 		if err := validateJobBase(ps.JobBase, prowapi.PostsubmitJob, podNamespace); err != nil {
-			return fmt.Errorf("invalid postsubmit job %s: %v", ps.Name, err)
+			errs = append(errs, fmt.Errorf("invalid postsubmit job %s: %v", ps.Name, err))
 		}
 		validPostsubmits[ps.Name] = append(validPostsubmits[ps.Name], ps)
 	}
 
-	return nil
+	return utilerrors.NewAggregate(errs)
 }
 
 // validatePeriodics validates a set of periodics
