@@ -31,6 +31,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/config"
+	cherrypicker "k8s.io/test-infra/prow/external-plugins/cherrypicker/lib"
 	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
@@ -451,12 +452,11 @@ func (s *Server) handle(l *logrus.Entry, requestor string, comment *github.Issue
 	}
 
 	// Open a PR in GitHub.
-	cherryPickBody := fmt.Sprintf("This is an automated cherry-pick of #%d", num)
+	var cherryPickBody string
 	if s.prowAssignments {
-		cherryPickBody = fmt.Sprintf("%s\n\n/assign %s", cherryPickBody, requestor)
-	}
-	if releaseNote := releaseNoteFromParentPR(body); len(releaseNote) != 0 {
-		cherryPickBody = fmt.Sprintf("%s\n\n%s", cherryPickBody, releaseNote)
+		cherryPickBody = cherrypicker.CreateCherrypickBody(num, requestor, releaseNoteFromParentPR(body))
+	} else {
+		cherryPickBody = cherrypicker.CreateCherrypickBody(num, "", releaseNoteFromParentPR(body))
 	}
 	head := fmt.Sprintf("%s:%s", s.botName, newBranch)
 	createdNum, err := s.ghc.CreatePullRequest(org, repo, title, cherryPickBody, head, targetBranch, true)
