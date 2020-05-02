@@ -139,6 +139,7 @@ periodics:
     testgrid-tab-name: gce-1.14-1.13-gci-kubectl-skew-serial
 - interval: 1h
   name: ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -153,6 +154,7 @@ periodics:
       - --check-version-skew=false
       - --extract=ci/k8s-stable1
       - --extract=ci/latest
+      - --gcp-project-type=k8s-infra-gce-project
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=25

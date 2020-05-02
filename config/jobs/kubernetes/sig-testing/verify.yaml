@@ -42,6 +42,7 @@ presubmits:
             cpu: 4
 periodics:
 - interval: 1h
+  cluster: k8s-infra-prow-build
   name: ci-kubernetes-verify-master
   labels:
     preset-service-account: "true"
