@@ -47,7 +47,12 @@ import (
 // kopsAWSMasterSize is the default ec2 instance type for kops on aws
 const kopsAWSMasterSize = "c5.large"
 
-const externalIPURL = "http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip"
+const externalIPMetadataURL = "http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip"
+
+var externalIPServiceURLs = []string{
+	"https://ip.jsb.workers.dev",
+	"https://v4.ifconfig.co",
+}
 
 var (
 
@@ -412,24 +417,13 @@ func (k kops) Up() error {
 		createArgs = append(createArgs, "--kubernetes-version", k.kubeVersion)
 	}
 	if k.adminAccess == "" {
-		var b bytes.Buffer
-		err := httpReadWithHeaders(externalIPURL, map[string]string{"Metadata-Flavor": "Google"}, &b)
-
-		count := 0
-		for count < 5 && err != nil && net.ParseIP(strings.TrimSpace(b.String())) == nil {
-			time.Sleep(2 * time.Second)
-			count++
-			b.Reset()
-			err = httpRead("https://v4.ifconfig.co", &b)
+		externalIPRange, err := getExternalIPRange()
+		if err != nil {
+			return fmt.Errorf("external IP cannot be retrieved: %v", err)
 		}
 
-		if err != nil || net.ParseIP(strings.TrimSpace(b.String())) == nil {
-			return fmt.Errorf("external IP cannot be retrieved: %v - %s", err, b.String())
-		}
-
-		externalIP := strings.TrimSpace(b.String()) + "/32"
-		log.Printf("Using external IP for admin access: %v", externalIP)
-		k.adminAccess = externalIP
+		log.Printf("Using external IP for admin access: %v", externalIPRange)
+		k.adminAccess = externalIPRange
 	}
 	createArgs = append(createArgs, "--admin-access", k.adminAccess)
 
@@ -492,6 +486,42 @@ func (k kops) Up() error {
 	}
 
 	return nil
+}
+
+// getExternalIPRange returns the external IP range where the test job
+// is running, e.g. 8.8.8.8/32, useful for restricting access to the
+// apiserver and any other exposed endpoints.
+func getExternalIPRange() (string, error) {
+	var b bytes.Buffer
+
+	err := httpReadWithHeaders(externalIPMetadataURL, map[string]string{"Metadata-Flavor": "Google"}, &b)
+	if err != nil {
+		// This often fails due to workload identity
+		log.Printf("failed to get external ip from metadata service: %v", err)
+	} else if ip := net.ParseIP(strings.TrimSpace(b.String())); ip != nil {
+		return ip.String() + "/32", nil
+	} else {
+		log.Printf("metadata service returned invalid ip %q", b.String())
+	}
+
+	for attempt := 0; attempt < 5; attempt++ {
+		for _, u := range externalIPServiceURLs {
+			b.Reset()
+			err = httpRead(u, &b)
+			if err != nil {
+				// The external service may well be down
+				log.Printf("failed to get external ip from %s: %v", u, err)
+			} else if ip := net.ParseIP(strings.TrimSpace(b.String())); ip != nil {
+				return ip.String() + "/32", nil
+			} else {
+				log.Printf("service %s returned invalid ip %q", u, b.String())
+			}
+		}
+
+		time.Sleep(2 * time.Second)
+	}
+
+	return "", fmt.Errorf("external IP cannot be retrieved")
 }
 
 func (k kops) IsUp() error {
