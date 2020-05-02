@@ -1,0 +1,8 @@
+dashboard_groups:
+- name: kubernetes-sigs
+  dashboard_names:
+    - nfs-ganesha-server-and-external-provisioner-unit
+    - nfs-ganesha-server-and-external-provisioner-unit-presubmit
+
+dashboards:
+- name: nfs-ganesha-server-and-external-provisioner-unit

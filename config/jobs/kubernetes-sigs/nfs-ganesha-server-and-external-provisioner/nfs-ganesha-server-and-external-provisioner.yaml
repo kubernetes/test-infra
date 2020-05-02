@@ -1,0 +1,20 @@
+presubmits:
+    kubernetes-sigs/nfs-ganesha-server-and-external-provisioner:
+    - name: pull-nfs-ganesha-server-and-external-provisioner-unit
+      annotations:
+        testgrid-dashboards: nfs-ganesha-server-and-external-provisioner-unit, nfs-ganesha-server-and-external-provisioner-unit-presubmit
+        testgrid-tab-name: pr-nfs-ganesha-server-and-external-provisioner-unit
+        description: "Run code verification tests for nfs ganesha server and external provisioner."
+        testgrid-num-columns-recent: '30'
+      branches:
+      - master
+      decorate: true
+      always_run: true
+      spec:
+        containers:
+        - image: golang:1.13
+          command:
+          - /bin/bash
+          args:
+          - -c
+          - "export PATH=$GOPATH/bin:$PATH && make test"
