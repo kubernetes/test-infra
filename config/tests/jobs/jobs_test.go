@@ -311,19 +311,20 @@ func TestTrustedJobs(t *testing.T) {
 	// TODO(fejta): allow each config/jobs/kubernetes/foo/foo-trusted.yaml
 	// that uses a foo-trusted cluster
 	const trusted = "test-infra-trusted"
+	const wgK8sTrusted = "k8s-infra-prow-build-trusted"
 	trustedPath := path.Join(*jobConfigPath, "kubernetes", "test-infra", "test-infra-trusted.yaml")
 	imagePushingDir := path.Join(*jobConfigPath, "image-pushing") + "/"
 
 	// Presubmits may not use trusted clusters.
 	for _, pre := range c.AllStaticPresubmits(nil) {
-		if pre.Cluster == trusted {
+		if pre.Cluster == trusted || pre.Cluster == wgK8sTrusted {
 			t.Errorf("%s: presubmits cannot use trusted clusters", pre.Name)
 		}
 	}
 
 	// Trusted postsubmits must be defined in trustedPath
 	for _, post := range c.AllStaticPostsubmits(nil) {
-		if post.Cluster != trusted {
+		if post.Cluster != trusted && post.Cluster != wgK8sTrusted {
 			continue
 		}
 		if strings.HasPrefix(post.SourcePath, imagePushingDir) {
@@ -338,7 +339,7 @@ func TestTrustedJobs(t *testing.T) {
 
 	// Trusted periodics must be defined in trustedPath
 	for _, per := range c.AllPeriodics() {
-		if per.Cluster != trusted {
+		if per.Cluster != trusted && per.Cluster != wgK8sTrusted {
 			continue
 		}
 		if strings.HasPrefix(per.SourcePath, imagePushingDir) {
