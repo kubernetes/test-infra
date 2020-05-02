@@ -3,7 +3,7 @@ periodics:
 #                     ref: https://github.com/kubernetes/release/issues/911
 - interval: 10000h
   name: ci-kubernetes-prototype-build
-  cluster: test-infra-trusted
+  cluster: k8s-infra-prow-build-trusted
   decorate: true
   extra_refs:
   - org: kubernetes
@@ -11,7 +11,7 @@ periodics:
     base_ref: master
     path_alias: "k8s.io/release"
   spec:
-    serviceAccountName: deployer # TODO(fejta): use pusher
+    serviceAccountName: gcb-builder
     containers:
     - image: gcr.io/k8s-testimages/image-builder:v20200422-c760048
       command:
@@ -38,7 +38,7 @@ periodics:
 #                     ref: https://github.com/kubernetes/release/issues/911
 - interval: 10000h
   name: ci-kubernetes-prototype-build-fast
-  cluster: test-infra-trusted
+  cluster: k8s-infra-prow-build-trusted
   decorate: true
   extra_refs:
   - org: kubernetes
@@ -46,7 +46,7 @@ periodics:
     base_ref: master
     path_alias: "k8s.io/release"
   spec:
-    serviceAccountName: deployer # TODO(fejta): use pusher
+    serviceAccountName: gcb-builder
     containers:
     - image: gcr.io/k8s-testimages/image-builder:v20200422-c760048
       command:
@@ -72,7 +72,7 @@ periodics:
 postsubmits:
   kubernetes/release:
     - name: post-release-push-image-k8s-cloud-builder
-      cluster: test-infra-trusted
+      cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-release-releng-informing, sig-release-image-pushes
         testgrid-alert-email: release-managers@kubernetes.io
@@ -81,7 +81,7 @@ postsubmits:
       branches:
         - ^master$
       spec:
-        serviceAccountName: deployer # TODO(fejta): use pusher
+        serviceAccountName: gcb-builder
         containers:
           - image: gcr.io/k8s-testimages/image-builder:v20200422-c760048
             command:
@@ -98,7 +98,7 @@ postsubmits:
         github_team_ids:
           - 2241179 # release-managers
     - name: post-release-push-image-releng-ci-bazel
-      cluster: test-infra-trusted
+      cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-release-releng-informing, sig-release-image-pushes
         testgrid-alert-email: release-managers@kubernetes.io
@@ -107,7 +107,7 @@ postsubmits:
       branches:
         - ^master$
       spec:
-        serviceAccountName: deployer # TODO(fejta): use pusher
+        serviceAccountName: gcb-builder
         containers:
           - image: gcr.io/k8s-testimages/image-builder:v20200422-c760048
             command:
@@ -124,7 +124,7 @@ postsubmits:
         github_team_ids:
           - 2241179 # release-managers
     - name: post-release-push-image-kubepkg
-      cluster: test-infra-trusted
+      cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-release-releng-informing, sig-release-image-pushes
         testgrid-alert-email: release-managers@kubernetes.io
@@ -132,7 +132,7 @@ postsubmits:
       branches:
         - ^master$
       spec:
-        serviceAccountName: deployer # TODO(fejta): use pusher
+        serviceAccountName: gcb-builder
         containers:
           - image: gcr.io/k8s-testimages/image-builder:v20200422-c760048
             command:
