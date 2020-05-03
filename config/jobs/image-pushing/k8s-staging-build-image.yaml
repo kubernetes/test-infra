@@ -18,8 +18,8 @@ postsubmits:
             args:
               - --project=k8s-staging-build-image
               - --scratch-bucket=gs://k8s-staging-build-image-gcb
-              - --gcb-config=build/debian-base/cloudbuild.yaml
-              - .
+              - --build-dir=.
+              - build/debian-base
             env:
               - name: LOG_TO_STDOUT
                 value: "y"
@@ -44,8 +44,8 @@ postsubmits:
             args:
               - --project=k8s-staging-build-image
               - --scratch-bucket=gs://k8s-staging-build-image-gcb
-              - --gcb-config=build/debian-iptables/cloudbuild.yaml
-              - .
+              - --build-dir=.
+              - build/debian-iptables
             env:
               - name: LOG_TO_STDOUT
                 value: "y"

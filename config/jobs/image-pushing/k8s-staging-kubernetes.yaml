@@ -10,7 +10,7 @@ postsubmits:
       branches:
         - ^master$
       spec:
-        serviceAccountName: deployer # TODO(fejta): use pusher
+        serviceAccountName: gcb-builder
         containers:
           - image: gcr.io/k8s-testimages/image-builder:v20200422-c760048
             command:
@@ -18,8 +18,8 @@ postsubmits:
             args:
               - --project=k8s-staging-kubernetes
               - --scratch-bucket=gs://k8s-staging-kubernetes-gcb
-              - --gcb-config=build/pause/cloudbuild.yaml
-              - .
+              - --build-dir=.
+              - build/pause
             env:
               - name: LOG_TO_STDOUT
                 value: "y"
