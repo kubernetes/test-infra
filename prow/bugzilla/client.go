@@ -28,6 +28,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 )
 
 const (
@@ -95,17 +96,18 @@ func (c *client) GetBug(id int) (*Bug, error) {
 }
 
 func getClones(c Client, bug *Bug) ([]*Bug, error) {
+	var errs []error
 	clones := []*Bug{}
 	for _, dependentID := range bug.Blocks {
 		dependent, err := c.GetBug(dependentID)
 		if err != nil {
-			return nil, fmt.Errorf("Failed to get dependent bug #%d: %v", dependentID, err)
+			errs = append(errs, fmt.Errorf("Failed to get dependent bug #%d: %v", dependentID, err))
 		}
 		if dependent.Summary == bug.Summary {
 			clones = append(clones, dependent)
 		}
 	}
-	return clones, nil
+	return clones, utilerrors.NewAggregate(errs)
 }
 
 // GetClones gets the list of bugs that the provided bug blocks that also have a matching summary.
@@ -136,6 +138,11 @@ func (c *client) GetSubComponentsOnBug(id int) (map[string][]string, error) {
 	if err := json.Unmarshal(raw, &parsedResponse); err != nil {
 		return nil, fmt.Errorf("could not unmarshal response body: %v", err)
 	}
+	// if there is no subcomponent, return an empty struct
+	if parsedResponse.Bugs == nil || len(parsedResponse.Bugs) == 0 {
+		return map[string][]string{}, nil
+	}
+	// make sure there is only 1 bug
 	if len(parsedResponse.Bugs) != 1 {
 		return nil, fmt.Errorf("did not get one bug, but %d: %v", len(parsedResponse.Bugs), parsedResponse)
 	}
