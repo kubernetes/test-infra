@@ -139,7 +139,7 @@ periodics:
         requests:
           cpu: 6
           memory: "16Gi"
-- cron: '0 0 3 5 *' # Run at 00:00 UTC on May 3rd (Sunday)
+- cron: '0 0 6 5 *' # Run at 00:00 UTC on May 6th (Wednesday)
   name: ci-golang-tip-k8s-1-18-full
   cluster: scalability
   tags:
