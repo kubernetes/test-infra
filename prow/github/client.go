@@ -3169,7 +3169,13 @@ func (c *client) IsMergeable(org, repo string, number int, SHA string) (bool, er
 			return false, errors.New("pull request was merged while checking mergeability")
 		}
 		if pr.Mergable != nil {
-			return *pr.Mergable, nil
+			// In certain cases, the mergeable field is lying.
+			switch pr.MergeableState {
+			case MergeableStateBehind, MergeableStateBlocked, MergeableStateDraft, MergeableStateUnknown:
+				return false, fmt.Errorf("pull request is in unmergeable state %v", pr.MergeableState)
+			default:
+				return *pr.Mergable, nil
+			}
 		}
 		if try+1 < maxTries {
 			c.time.Sleep(backoff)
