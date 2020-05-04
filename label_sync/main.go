@@ -39,7 +39,6 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"k8s.io/test-infra/prow/config/secret"
-	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/logrusutil"
 )
@@ -119,8 +118,8 @@ const (
 var (
 	debug           = flag.Bool("debug", false, "Turn on debug to be more verbose")
 	confirm         = flag.Bool("confirm", false, "Make mutating API calls to GitHub.")
-	endpoint        = flagutil.NewStrings(github.DefaultAPIEndpoint)
-	graphqlEndpoint = flag.String("graphql-endpoint", github.DefaultGraphQLEndpoint, "GitHub's GraphQL API endpoint")
+	endpoint        = flag.String("endpoint", github.DefaultAPIEndpoint, "GitHub's API endpoint (may differ for enterprise).")
+	graphqlEndpoint = flag.String("graphql-endpoint", github.DefaultGraphQLEndpoint, "GitHub GraphQL API endpoint (may differ for enterprise).")
 	labelsPath      = flag.String("config", "", "Path to labels.yaml")
 	onlyRepos       = flag.String("only", "", "Only look at the following comma separated org/repos")
 	orgs            = flag.String("orgs", "", "Comma separated list of orgs to sync")
@@ -134,10 +133,6 @@ var (
 	tokens          = flag.Int("tokens", defaultTokens, "Throttle hourly token consumption (0 to disable)")
 	tokenBurst      = flag.Int("token-burst", defaultBurst, "Allow consuming a subset of hourly tokens in a short burst")
 )
-
-func init() {
-	flag.Var(&endpoint, "endpoint", "GitHub's API endpoint")
-}
 
 func pathExists(path string) bool {
 	_, err := os.Stat(path)
@@ -710,7 +705,7 @@ func main() {
 			logrus.WithError(err).Fatalf("failed to write css file using css-template %s to css-output %s", *cssTemplate, *cssOutput)
 		}
 	case *action == "sync":
-		githubClient, err := newClient(*token, *tokens, *tokenBurst, !*confirm, *graphqlEndpoint, endpoint.Strings()...)
+		githubClient, err := newClient(*token, *tokens, *tokenBurst, !*confirm, *graphqlEndpoint, *endpoint)
 		if err != nil {
 			logrus.WithError(err).Fatal("failed to create client")
 		}
