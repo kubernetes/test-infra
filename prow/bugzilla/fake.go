@@ -76,6 +76,9 @@ func (c *Fake) UpdateBug(id int, update BugUpdate) error {
 		if update.Version != "" {
 			bug.Version = []string{update.Version}
 		}
+		if update.TargetRelease != nil {
+			bug.TargetRelease = update.TargetRelease
+		}
 		if update.DependsOn != nil {
 			if len(update.DependsOn.Set) > 0 {
 				bug.DependsOn = update.DependsOn.Set

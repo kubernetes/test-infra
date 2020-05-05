@@ -222,11 +222,13 @@ type Flag struct {
 // BugUpdate contains fields to update on a Bug. See API documentation at:
 // https://bugzilla.readthedocs.io/en/latest/api/core/v1/bug.html#update-bug
 type BugUpdate struct {
-	// DependOn specifies the bugs that this bug depends on
-	DependsOn *IDUpdate `json:"depends_on,omitempty"`
+	// DependsOn specifies the bugs that this bug depends on
+	DependsOn  *IDUpdate `json:"depends_on,omitempty"`
+	Resolution string    `json:"resolution,omitempty"`
 	// Status is the current status of the bug.
-	Status     string `json:"status,omitempty"`
-	Resolution string `json:"resolution,omitempty"`
+	Status string `json:"status,omitempty"`
+	// TargetRelease is the release version this bugfix is targeting
+	TargetRelease []string `json:"target_release,omitempty"`
 	// Version is the version the bug was reported against.
 	Version string `json:"version,omitempty"`
 }
