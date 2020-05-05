@@ -849,16 +849,15 @@ func handleCherrypick(e event, gc githubClient, bc bugzilla.Client, options plug
 	}
 	// Attempt to identify bug from PR title
 	bugID, bugMissing, err := bugIDFromTitle(pr.Title)
-	if bugMissing {
-		log.Debugf("Parent PR %d doesn't have associated bug; not creating cherrypicked bug", pr.Number)
-		// if there is no bugzilla bug, we should simply ignore this PR
-		return nil
-	} else if err != nil {
+	if err != nil {
 		// should be impossible based on the regex
 		log.WithError(err).Debugf("Failed to get bug ID from PR title \"%s\"", pr.Title)
 		return comment(fmt.Sprintf("Error creating a cherry-pick bug in Bugzilla: could not get bug ID from PR title \"%s\": %v", pr.Title, err))
+	} else if bugMissing {
+		log.Debugf("Parent PR %d doesn't have associated bug; not creating cherrypicked bug", pr.Number)
+		// if there is no bugzilla bug, we should simply ignore this PR
+		return nil
 	}
-	oldLink := fmt.Sprintf(bugLink, bugID, bc.Endpoint(), bugID)
 	// Since getBug generates a comment itself, we have to add a prefix explaining that this was a cherrypick attempt to the comment
 	commentWithPrefix := func(body string) error {
 		return comment(fmt.Sprintf("Failed to create a cherry-pick bug in Bugzilla: %s", body))
@@ -869,9 +868,13 @@ func handleCherrypick(e event, gc githubClient, bc bugzilla.Client, options plug
 	}
 	clones, err := bc.GetClones(bug)
 	if err != nil {
-		return comment(formatError(fmt.Sprintf("creating a cherry-pick bug in Bugzilla: could not get list of clones for %s", oldLink), bc.Endpoint(), bug.ID, err))
+		return comment(formatError(fmt.Sprintf("creating a cherry-pick bug in Bugzilla: could not get list of clones"), bc.Endpoint(), bug.ID, err))
 	}
+	oldLink := fmt.Sprintf(bugLink, bugID, bc.Endpoint(), bugID)
 	targetRelease := *options.TargetRelease
+	if options.TargetRelease == nil {
+		return comment(fmt.Sprintf("Could not make automatic cherrypick of %s for this PR as the target_release is not set for this branch in the bugzilla plugin config. Running refresh:\n/bugzilla refresh", oldLink))
+	}
 	for _, clone := range clones {
 		if len(clone.TargetRelease) == 1 && clone.TargetRelease[0] == targetRelease {
 			return comment(fmt.Sprintf("Not creating new clone for %s as %s has been detected as a clone for the correct target release of this cherrypick. Running refresh:\n/bugzilla refresh", oldLink, fmt.Sprintf(bugLink, clone.ID, bc.Endpoint(), clone.ID)))
@@ -880,7 +883,7 @@ func handleCherrypick(e event, gc githubClient, bc bugzilla.Client, options plug
 	cloneID, err := bc.CloneBug(bug)
 	if err != nil {
 		log.WithError(err).Debugf("Failed to clone bug %d", bugID)
-		return comment(formatError(fmt.Sprintf("creating a cherry-pick bug in Bugzilla: encountered error cloning %s for cherrypick", oldLink), bc.Endpoint(), e.bugId, err))
+		return comment(formatError(fmt.Sprintf("cloning bug for cherrypick"), bc.Endpoint(), bug.ID, err))
 	}
 	cloneLink := fmt.Sprintf(bugLink, cloneID, bc.Endpoint(), cloneID)
 	// Update the version of the bug to the target release
@@ -890,7 +893,7 @@ func handleCherrypick(e event, gc githubClient, bc bugzilla.Client, options plug
 	err = bc.UpdateBug(cloneID, update)
 	if err != nil {
 		log.WithError(err).Debugf("Unable to update target release and dependencies for bug %d", cloneID)
-		return comment(formatError(fmt.Sprintf("updating cherry-pick bug in Bugzilla: Created cherrypick %s, but encountered error updating target release for bugzilla %s", cloneLink, cloneLink), bc.Endpoint(), e.bugId, err))
+		return comment(formatError(fmt.Sprintf("updating cherry-pick bug in Bugzilla: Created cherrypick %s, but encountered error updating target release", cloneLink), bc.Endpoint(), cloneID, err))
 	}
 	// Replace old bugID in title with new cloneID
 	newTitle := strings.Replace(e.body, fmt.Sprintf("Bug %d", bugID), fmt.Sprintf("Bug %d", cloneID), 1)
