@@ -3172,7 +3172,8 @@ func (c *client) IsMergeable(org, repo string, number int, SHA string) (bool, er
 			// In certain cases, the mergeable field is lying.
 			switch pr.MergeableState {
 			case MergeableStateBehind, MergeableStateBlocked, MergeableStateDraft, MergeableStateUnknown:
-				return false, fmt.Errorf("pull request is in unmergeable state %v", pr.MergeableState)
+				c.log("IsMergeable: %v/%v:%v is in unmergeable state %q", org, repo, number, pr.MergeableState)
+				return false, nil
 			default:
 				return *pr.Mergable, nil
 			}
