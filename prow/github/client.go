@@ -3155,6 +3155,7 @@ func (c *client) ListIssueEvents(org, repo string, num int) ([]ListedIssueEvent,
 // Mergeability is calculated by a background job on GitHub and is not immediately available when
 // new commits are added so the PR must be polled until the background job completes.
 func (c *client) IsMergeable(org, repo string, number int, SHA string) (bool, error) {
+	c.log("IsMergeable", org, repo, number)
 	backoff := time.Second * 3
 	maxTries := 3
 	for try := 0; try < maxTries; try++ {
@@ -3172,7 +3173,11 @@ func (c *client) IsMergeable(org, repo string, number int, SHA string) (bool, er
 			// In certain cases, the mergeable field is lying.
 			switch pr.MergeableState {
 			case MergeableStateBehind, MergeableStateBlocked, MergeableStateDraft, MergeableStateUnknown:
-				c.log("IsMergeable: %v/%v:%v is in unmergeable state %q", org, repo, number, pr.MergeableState)
+				c.logger.WithFields(logrus.Fields{
+					"repo":				fmt.Sprintf("%v/%v", org, repo),
+					"pr":      			number,
+					"mergeablestate": 	pr.MergeableState,
+				}).Infof("PR is in unmergeable state.")
 				return false, nil
 			default:
 				return *pr.Mergable, nil
