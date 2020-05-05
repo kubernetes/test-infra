@@ -238,22 +238,22 @@ func TestIsMergeable(t *testing.T) {
 	testCases["should be false when MergeableState is behind"] = testCase{
 		mergeableState: MergeableStateBehind,
 		expectedResult: false,
-		isErrExpected:  true,
+		isErrExpected:  false,
 	}
 	testCases["should be false when MergeableState is blocked"] = testCase{
 		mergeableState: MergeableStateBlocked,
 		expectedResult: false,
-		isErrExpected:  true,
+		isErrExpected:  false,
 	}
 	testCases["should be false when MergeableState is draft"] = testCase{
 		mergeableState: MergeableStateDraft,
 		expectedResult: false,
-		isErrExpected:  true,
+		isErrExpected:  false,
 	}
 	testCases["should be false when MergeableState is unknown"] = testCase{
 		mergeableState: MergeableStateUnknown,
 		expectedResult: false,
-		isErrExpected:  true,
+		isErrExpected:  false,
 	}
 
 	mergable := true
