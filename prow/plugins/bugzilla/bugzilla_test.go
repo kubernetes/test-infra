@@ -1121,7 +1121,7 @@ Instructions for interacting with me using PR comments are available [here](http
 		},
 		{
 			name:                "Cherrypick PR results in cloned bug creation",
-			bugs:                []bugzilla.Bug{{Product: "Test", Component: []string{"TestComponent"}, Version: []string{"v2"}, ID: 123, Status: "CLOSED", Severity: "urgent"}},
+			bugs:                []bugzilla.Bug{{Product: "Test", Component: []string{"TestComponent"}, TargetRelease: []string{"v2"}, ID: 123, Status: "CLOSED", Severity: "urgent"}},
 			bugComments:         map[int][]bugzilla.Comment{123: {{BugID: 123, Count: 0, Text: "This is a bug"}}},
 			prs:                 []github.PullRequest{{Number: base.number, Body: base.body, Title: base.body}, {Number: 2, Body: "This is an automated cherry-pick of #1.\n\n/assign user", Title: "[v1] " + base.body}},
 			body:                "[v1] " + base.body,
@@ -1141,11 +1141,11 @@ In response to [this](http.com):
 
 Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.
 </details>`,
-			expectedBug: &bugzilla.Bug{Product: "Test", Component: []string{"TestComponent"}, Version: []string{"v1"}, ID: 124, DependsOn: []int{123}, Severity: "urgent"},
+			expectedBug: &bugzilla.Bug{Product: "Test", Component: []string{"TestComponent"}, TargetRelease: []string{"v1"}, ID: 124, DependsOn: []int{123}, Severity: "urgent"},
 		},
 		{
 			name:                "parent PR of cherrypick not existing results in error",
-			bugs:                []bugzilla.Bug{{Product: "Test", Component: []string{"TestComponent"}, Version: []string{"v2"}, ID: 123, Status: "CLOSED", Severity: "urgent"}},
+			bugs:                []bugzilla.Bug{{Product: "Test", Component: []string{"TestComponent"}, TargetRelease: []string{"v2"}, ID: 123, Status: "CLOSED", Severity: "urgent"}},
 			bugComments:         map[int][]bugzilla.Comment{123: {{BugID: 123, Count: 0, Text: "This is a bug"}}},
 			prs:                 []github.PullRequest{{Number: 2, Body: "This is an automated cherry-pick of #1.\n\n/assign user", Title: "[v1] " + base.body}},
 			body:                "[v1] " + base.body,
@@ -1168,7 +1168,7 @@ Instructions for interacting with me using PR comments are available [here](http
 		},
 		{
 			name:                "failure to obtain parent bug for cherrypick results in error",
-			bugs:                []bugzilla.Bug{{Product: "Test", Component: []string{"TestComponent"}, Version: []string{"v2"}, ID: 123, Status: "CLOSED", Severity: "urgent"}},
+			bugs:                []bugzilla.Bug{{Product: "Test", Component: []string{"TestComponent"}, TargetRelease: []string{"v2"}, ID: 123, Status: "CLOSED", Severity: "urgent"}},
 			bugComments:         map[int][]bugzilla.Comment{123: {{BugID: 123, Count: 0, Text: "This is a bug"}}},
 			bugErrors:           []int{123},
 			prs:                 []github.PullRequest{{Number: base.number, Body: base.body, Title: base.body}, {Number: 2, Body: "This is an automated cherry-pick of #1.\n\n/assign user", Title: "[v1] " + base.body}},
@@ -1192,7 +1192,7 @@ Instructions for interacting with me using PR comments are available [here](http
 </details>`,
 		}, {
 			name:                "failure to clone bug for cherrypick results in error",
-			bugs:                []bugzilla.Bug{{Product: "Test", Component: []string{"TestComponent"}, Version: []string{"v2"}, ID: 123, Status: "CLOSED", Severity: "urgent"}},
+			bugs:                []bugzilla.Bug{{Product: "Test", Component: []string{"TestComponent"}, TargetRelease: []string{"v2"}, ID: 123, Status: "CLOSED", Severity: "urgent"}},
 			bugComments:         map[int][]bugzilla.Comment{123: {{BugID: 123, Count: 0, Text: "This is a bug"}}},
 			bugCreateErrors:     []string{"This is a clone of Bug #123. This is the description of that bug:\nThis is a bug"},
 			prs:                 []github.PullRequest{{Number: base.number, Body: base.body, Title: base.body}, {Number: 2, Body: "This is an automated cherry-pick of #1.\n\n/assign user", Title: "[v1] " + base.body}},
@@ -1216,9 +1216,9 @@ Instructions for interacting with me using PR comments are available [here](http
 </details>`,
 		}, {
 			// Since the clone does an update operation as part of the clone, this error still occurs in the call to `CloneBug`.
-			// We cannot easily test the error handling of the version update call, as that happens after the DependsOn update done during cloning
+			// We cannot easily test the error handling of the target release update call, as that happens after the DependsOn update done during cloning
 			name:                "failure to update bug for results in error",
-			bugs:                []bugzilla.Bug{{Product: "Test", Component: []string{"TestComponent"}, Version: []string{"v2"}, ID: 123, Status: "CLOSED", Severity: "urgent"}},
+			bugs:                []bugzilla.Bug{{Product: "Test", Component: []string{"TestComponent"}, TargetRelease: []string{"v2"}, ID: 123, Status: "CLOSED", Severity: "urgent"}},
 			bugComments:         map[int][]bugzilla.Comment{123: {{BugID: 123, Count: 0, Text: "This is a bug"}}},
 			bugErrors:           []int{124},
 			prs:                 []github.PullRequest{{Number: base.number, Body: base.body, Title: base.body}, {Number: 2, Body: "This is an automated cherry-pick of #1.\n\n/assign user", Title: "[v1] " + base.body}},
@@ -1243,8 +1243,8 @@ Instructions for interacting with me using PR comments are available [here](http
 		}, {
 			name: "If bug clone with correct target version already exists, do not create new clone",
 			bugs: []bugzilla.Bug{
-				{Summary: "This is a test bug", Product: "Test", Component: []string{"TestComponent"}, Version: []string{"v2"}, ID: 123, Status: "CLOSED", Severity: "urgent", Blocks: []int{124}},
-				{Summary: "This is a test bug", Product: "Test", Component: []string{"TestComponent"}, Version: []string{"v1"}, ID: 124, Status: "NEW", Severity: "urgent", DependsOn: []int{123}},
+				{Summary: "This is a test bug", Product: "Test", Component: []string{"TestComponent"}, TargetRelease: []string{"v2"}, ID: 123, Status: "CLOSED", Severity: "urgent", Blocks: []int{124}},
+				{Summary: "This is a test bug", Product: "Test", Component: []string{"TestComponent"}, TargetRelease: []string{"v1"}, ID: 124, Status: "NEW", Severity: "urgent", DependsOn: []int{123}},
 			},
 			bugComments:         map[int][]bugzilla.Comment{123: {{BugID: 123, Count: 0, Text: "This is a bug"}}},
 			prs:                 []github.PullRequest{{Number: base.number, Body: base.body, Title: base.body}, {Number: 2, Body: "This is an automated cherry-pick of #1.\n\n/assign user", Title: "[v1] " + base.body}},
@@ -1253,7 +1253,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			cherryPickFromPRNum: 1,
 			cherryPickTo:        "v1",
 			options:             plugins.BugzillaBranchOptions{TargetRelease: &v1},
-			expectedComment: `org/repo#1:@user: Not creating new clone for [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123) as [Bugzilla bug 124](www.bugzilla/show_bug.cgi?id=124) has been detected as a clone for the correct target version of this cherrypick. Running refresh:
+			expectedComment: `org/repo#1:@user: Not creating new clone for [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123) as [Bugzilla bug 124](www.bugzilla/show_bug.cgi?id=124) has been detected as a clone for the correct target release of this cherrypick. Running refresh:
 /bugzilla refresh
 
 <details>
@@ -1266,10 +1266,10 @@ In response to [this](http.com):
 Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.
 </details>`,
 		}, {
-			name: "Clone for different version does not block creation of new clone",
+			name: "Clone for different release does not block creation of new clone",
 			bugs: []bugzilla.Bug{
-				{Summary: "This is a test bug", Product: "Test", Component: []string{"TestComponent"}, Version: []string{"v2"}, ID: 123, Status: "CLOSED", Severity: "urgent", Blocks: []int{124}},
-				{Summary: "This is a test bug", Product: "Test", Component: []string{"TestComponent"}, Version: []string{"v3"}, ID: 124, Status: "NEW", Severity: "urgent", DependsOn: []int{123}},
+				{Summary: "This is a test bug", Product: "Test", Component: []string{"TestComponent"}, TargetRelease: []string{"v2"}, ID: 123, Status: "CLOSED", Severity: "urgent", Blocks: []int{124}},
+				{Summary: "This is a test bug", Product: "Test", Component: []string{"TestComponent"}, TargetRelease: []string{"v3"}, ID: 124, Status: "NEW", Severity: "urgent", DependsOn: []int{123}},
 			},
 			bugComments:         map[int][]bugzilla.Comment{123: {{BugID: 123, Count: 0, Text: "This is a bug"}}},
 			prs:                 []github.PullRequest{{Number: base.number, Body: base.body, Title: base.body}, {Number: 2, Body: "This is an automated cherry-pick of #1.\n\n/assign user", Title: "[v1] " + base.body}},
@@ -1292,7 +1292,7 @@ Instructions for interacting with me using PR comments are available [here](http
 </details>`,
 		}, {
 			name:        "Bug with SubComponents creates bug with correct subcomponents",
-			bugs:        []bugzilla.Bug{{Product: "Test", Component: []string{"TestComponent"}, Version: []string{"v2"}, ID: 123, Status: "CLOSED", Severity: "urgent"}},
+			bugs:        []bugzilla.Bug{{Product: "Test", Component: []string{"TestComponent"}, ID: 123, Status: "CLOSED", Severity: "urgent"}},
 			bugComments: map[int][]bugzilla.Comment{123: {{BugID: 123, Count: 0, Text: "This is a bug"}}},
 			subComponents: map[int]map[string][]string{
 				123: {

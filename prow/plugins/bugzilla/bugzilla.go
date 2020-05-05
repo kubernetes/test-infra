@@ -871,10 +871,10 @@ func handleCherrypick(e event, gc githubClient, bc bugzilla.Client, options plug
 	if err != nil {
 		return comment(formatError(fmt.Sprintf("creating a cherry-pick bug in Bugzilla: could not get list of clones for %s", oldLink), bc.Endpoint(), bug.ID, err))
 	}
-	targetVersion := *options.TargetRelease
+	targetRelease := *options.TargetRelease
 	for _, clone := range clones {
-		if len(clone.Version) == 1 && clone.Version[0] == *options.TargetRelease {
-			return comment(fmt.Sprintf("Not creating new clone for %s as %s has been detected as a clone for the correct target version of this cherrypick. Running refresh:\n/bugzilla refresh", oldLink, fmt.Sprintf(bugLink, clone.ID, bc.Endpoint(), clone.ID)))
+		if len(clone.TargetRelease) == 1 && clone.TargetRelease[0] == targetRelease {
+			return comment(fmt.Sprintf("Not creating new clone for %s as %s has been detected as a clone for the correct target release of this cherrypick. Running refresh:\n/bugzilla refresh", oldLink, fmt.Sprintf(bugLink, clone.ID, bc.Endpoint(), clone.ID)))
 		}
 	}
 	cloneID, err := bc.CloneBug(bug)
@@ -885,12 +885,12 @@ func handleCherrypick(e event, gc githubClient, bc bugzilla.Client, options plug
 	cloneLink := fmt.Sprintf(bugLink, cloneID, bc.Endpoint(), cloneID)
 	// Update the version of the bug to the target release
 	update := bugzilla.BugUpdate{
-		Version: targetVersion,
+		TargetRelease: []string{targetRelease},
 	}
 	err = bc.UpdateBug(cloneID, update)
 	if err != nil {
-		log.WithError(err).Debugf("Unable to update version and dependencies for bug %d", cloneID)
-		return comment(formatError(fmt.Sprintf("updating cherry-pick bug in Bugzilla: Created cherrypick %s, but encountered error updating version for bugzilla %s", cloneLink, cloneLink), bc.Endpoint(), e.bugId, err))
+		log.WithError(err).Debugf("Unable to update target release and dependencies for bug %d", cloneID)
+		return comment(formatError(fmt.Sprintf("updating cherry-pick bug in Bugzilla: Created cherrypick %s, but encountered error updating target release for bugzilla %s", cloneLink, cloneLink), bc.Endpoint(), e.bugId, err))
 	}
 	// Replace old bugID in title with new cloneID
 	newTitle := strings.Replace(e.body, fmt.Sprintf("Bug %d", bugID), fmt.Sprintf("Bug %d", cloneID), 1)
