@@ -576,11 +576,23 @@ type LensFileConfig struct {
 	// RequiredFiles is a list of regexes of file paths that must all be present for a lens to appear.
 	// The list entries are ANDed together, i.e. all of them are required. You can achieve an OR
 	// by using a pipe in a regex.
+	// All matching files must be in the same directory, i.e. must be in a directory:
+	// filepath.Dir(regexp.MustCompile(regexp).LiteralPrefix())
+	// For instance,
+	// - artifacts/junit.*.xml is allowed (artifacts/ is a common directory)
+	// - started.json|finished.json is allowed ('' is a common directory)
+	// - arti(f)?acts/junit.xml is prohibited (matching files can potentially be in different directories).
 	RequiredFiles []string `json:"required_files"`
 	// OptionalFiles is a list of regexes of file paths that will be provided to the lens if they are
 	// present, but will not preclude the lens being rendered by their absence.
 	// The list entries are ORed together, so if only one of them is present it will be provided to
 	// the lens even if the others are not.
+	// All matching files must be in the same directory, i.e. must be in a directory:
+	// filepath.Dir(regexp.MustCompile(regexp).LiteralPrefix())
+	// For instance,
+	// - artifacts/junit.*.xml is allowed (artifacts/ is a common directory)
+	// - started.json|finished.json is allowed ('' is a common directory)
+	// - arti(f)?acts/junit.xml is prohibited (matching files can potentially be in different directories).
 	OptionalFiles []string `json:"optional_files,omitempty"`
 	// Lens is the lens to use, alongside any lens-specific configuration.
 	Lens LensConfig `json:"lens"`
