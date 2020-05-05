@@ -51,8 +51,8 @@ periodics:
       - --cluster=gce-golang
       - --env=CL2_ENABLE_PVS=false
       - --env=CL2_LOAD_TEST_THROUGHPUT=50
-      - --env=KUBEMARK_CONTROLLER_MANAGER_TEST_ARGS="--profiling --kube-api-qps=200 --kube-api-burst=200"
-      - --env=KUBEMARK_SCHEDULER_TEST_ARGS="--profiling --kube-api-qps=200 --kube-api-burst=200"
+      - --env=KUBEMARK_CONTROLLER_MANAGER_TEST_ARGS=--profiling --kube-api-qps=200 --kube-api-burst=200
+      - --env=KUBEMARK_SCHEDULER_TEST_ARGS=--profiling --kube-api-qps=200 --kube-api-burst=200
       - --extract=gs://k8s-scale-golang-build/ci/latest-1.18.txt
       - --gcp-node-size=n1-standard-8
       - --gcp-nodes=50
