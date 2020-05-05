@@ -13,7 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# This generates environment variables and is used by Bazel for that purpose
+# This takes in environment variables and outputs data used by Bazel
+# to set key-value pairs
 
 set -o errexit
 set -o nounset
