@@ -39,7 +39,7 @@ dashboard.new(
         {type: "gke-project", friendly: "GKE project"},
         {type: "gpu-project", friendly: "GPU project"},
         {type: "ingress-project", friendly: "Ingress project"},
-        {type: "istio-project", friendly: "Istio project"},
+        {type: "k8s-infra-gce-project", friendly: "K8s Infra GCE project"},
         {type: "node-e2e-project", friendly: "Node e2e project"},
         {type: "scalability-project", friendly: "Scalability project"},
         {type: "scalability-presubmit-project", friendly: "Scalability presubmit project"}
