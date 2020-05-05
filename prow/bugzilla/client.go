@@ -102,6 +102,7 @@ func getClones(c Client, bug *Bug) ([]*Bug, error) {
 		dependent, err := c.GetBug(dependentID)
 		if err != nil {
 			errs = append(errs, fmt.Errorf("Failed to get dependent bug #%d: %v", dependentID, err))
+			continue
 		}
 		if dependent.Summary == bug.Summary {
 			clones = append(clones, dependent)
