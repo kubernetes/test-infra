@@ -489,3 +489,17 @@ presubmits:
             requests:
               cpu: 1
               memory: "2Gi"
+
+  - name: pull-perf-tests-verify-all
+    decorate: true
+    always_run: true
+    annotations:
+      testgrid-dashboards: presubmits-kubernetes-scalability
+      testgrid-tab-name: pull-perf-tests-verify-all
+    spec:
+      containers:
+      - image: golang:1:13
+        command:
+        - make
+        args:
+        - verify-all
