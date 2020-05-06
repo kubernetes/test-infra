@@ -151,6 +151,8 @@ dashboards:
   dashboard_tab:
   - name: ci-daisy-e2e
     test_group_name: ci-daisy-e2e
+    alert_options:
+      alert_mail_to_addresses: gcedaisy+alerts@google.com    
     file_bug_template:
       url: https://github.com/GoogleCloudPlatform/compute-image-tools/issues/new
       options:
@@ -160,6 +162,8 @@ dashboards:
         value: <test-url>
   - name: ci-daisy-e2e-daily
     test_group_name: ci-daisy-e2e-daily
+    alert_options:
+      alert_mail_to_addresses: gcedaisy+alerts@google.com       
     file_bug_template:
       url: https://github.com/GoogleCloudPlatform/compute-image-tools/issues/new
       options:
@@ -169,6 +173,8 @@ dashboards:
         value: <test-url>
   - name: ci-daisy-e2e-weekly
     test_group_name: ci-daisy-e2e-weekly
+    alert_options:
+      alert_mail_to_addresses: gcedaisy+alerts@google.com   
     file_bug_template:
       url: https://github.com/GoogleCloudPlatform/compute-image-tools/issues/new
       options:
@@ -178,6 +184,8 @@ dashboards:
         value: <test-url>
   - name: ci-images-import-export-cli-e2e-tests
     test_group_name: ci-images-import-export-cli-e2e-tests
+    alert_options:
+      alert_mail_to_addresses: gcedaisy+alerts@google.com   
     file_bug_template:
       url: https://github.com/GoogleCloudPlatform/compute-image-tools/issues/new
       options:
@@ -187,6 +195,8 @@ dashboards:
         value: <test-url>
   - name: ci-ovf-import-e2e-tests-daily
     test_group_name: ci-ovf-import-e2e-tests-daily
+    alert_options:
+      alert_mail_to_addresses: gcedaisy+alerts@google.com
     file_bug_template:
       url: https://github.com/GoogleCloudPlatform/compute-image-tools/issues/new
       options:
