@@ -1255,7 +1255,7 @@ func TestHandleGitHubLink(t *testing.T) {
 	ghoptions := flagutil.GitHubOptions{Host: "github.mycompany.com"}
 	org, repo := "org", "repo"
 	handler := HandleGitHubLink(ghoptions.Host, true)
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("/github-login?dest=%s/%s", org, repo), nil)
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("/github-link?dest=%s/%s", org, repo), nil)
 	if err != nil {
 		t.Fatalf("Error making request: %v", err)
 	}
