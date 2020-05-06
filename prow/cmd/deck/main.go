@@ -274,6 +274,7 @@ func main() {
 	if err := o.Validate(); err != nil {
 		logrus.WithError(err).Fatal("Invalid options")
 	}
+
 	defer interrupts.WaitForGracefulShutdown()
 	pjutil.ServePProf()
 
