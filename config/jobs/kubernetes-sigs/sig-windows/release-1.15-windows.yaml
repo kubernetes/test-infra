@@ -61,7 +61,7 @@ presubmits:
     decorate: true
     always_run: false
     optional: true
-    run_if_changed: 'azure.*\.go'
+    run_if_changed: 'azureabcd.*\.go' # disable it since azure-file-windows e2e test on 1.15 requires go 1.13
     path_alias: k8s.io/kubernetes
     branches:
     - release-1.15
