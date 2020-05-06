@@ -1250,3 +1250,25 @@ func TestSpyglassConfigDefaulting(t *testing.T) {
 		})
 	}
 }
+
+func TestHandleGitHubLink(t *testing.T) {
+	ghoptions := flagutil.GitHubOptions{Host: "github.mycompany.com"}
+	org, repo := "org", "repo"
+	handler := HandleGitHubLink(ghoptions.Host, true)
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("/github-login?dest=%s/%s", org, repo), nil)
+	if err != nil {
+		t.Fatalf("Error making request: %v", err)
+	}
+	rr := httptest.NewRecorder()
+	handler.ServeHTTP(rr, req)
+	if rr.Code != http.StatusFound {
+		t.Fatalf("Bad error code: %d", rr.Code)
+	}
+	resp := rr.Result()
+	defer resp.Body.Close()
+	actual := resp.Header.Get("Location")
+	expected := fmt.Sprintf("https://%s/%s/%s", ghoptions.Host, org, repo)
+	if expected != actual {
+		t.Fatalf("%v", actual)
+	}
+}

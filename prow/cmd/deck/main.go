@@ -274,7 +274,6 @@ func main() {
 	if err := o.Validate(); err != nil {
 		logrus.WithError(err).Fatal("Invalid options")
 	}
-
 	defer interrupts.WaitForGracefulShutdown()
 	pjutil.ServePProf()
 
@@ -603,14 +602,7 @@ func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, authCfgGe
 	secure := !o.allowInsecure
 
 	// Handles link to github
-	mux.HandleFunc("/github-link", func(w http.ResponseWriter, r *http.Request) {
-		scheme := "http"
-		if secure {
-			scheme = "https"
-		}
-		redirectURL := scheme + "://" + o.github.Host + "/" + r.URL.Query().Get("dest")
-		http.Redirect(w, r, redirectURL, http.StatusFound)
-	})
+	mux.HandleFunc("/github-link", HandleGitHubLink(o.github.Host, secure))
 
 	// Enable Git OAuth feature if oauthURL is provided.
 	var goa *githuboauth.Agent
@@ -1560,6 +1552,17 @@ func handleFavicon(staticFilesLocation string, cfg config.Getter) http.HandlerFu
 		} else {
 			http.ServeFile(w, r, staticFilesLocation+"/favicon.ico")
 		}
+	}
+}
+
+func HandleGitHubLink(githubHost string, secure bool) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		scheme := "http"
+		if secure {
+			scheme = "https"
+		}
+		redirectURL := scheme + "://" + githubHost + "/" + r.URL.Query().Get("dest")
+		http.Redirect(w, r, redirectURL, http.StatusFound)
 	}
 }
 
