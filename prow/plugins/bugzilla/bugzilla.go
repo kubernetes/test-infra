@@ -249,13 +249,12 @@ func digestPR(log *logrus.Entry, pre github.PullRequestEvent, validateByDefault 
 		log.WithError(err).Debug("Failed to identify if PR is a cherrypick")
 		return nil, err
 	} else if cherrypick {
-		if pre.Action != github.PullRequestActionOpened {
-			return nil, nil
+		if pre.Action == github.PullRequestActionOpened {
+			e.cherrypick = true
+			e.cherrypickFromPRNum = cherrypickFromPRNum
+			e.cherrypickTo = cherrypickTo
+			return e, nil
 		}
-		e.cherrypick = true
-		e.cherrypickFromPRNum = cherrypickFromPRNum
-		e.cherrypickTo = cherrypickTo
-		return e, nil
 	}
 	// Make sure the PR title is referencing a bug
 	e.bugId, e.missing, err = bugIDFromTitle(title)
