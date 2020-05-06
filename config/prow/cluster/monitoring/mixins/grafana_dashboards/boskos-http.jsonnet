@@ -20,13 +20,13 @@ local histogramQuantileDuration(phi, selector='') = prometheus.target(
         legendFormat=std.format('phi=%s', phi),
     );
 
-local boskosTemplate(name, labelInQuery) = template.new(
+local boskosTemplate(name, labelInQuery, includeAll) = template.new(
         name,
         'prometheus',
         std.format('label_values(boskos_http_request_duration_seconds_bucket, %s)', labelInQuery),
         label=name,
         allValues='.*',
-        includeAll=true,
+        includeAll=includeAll,
         refresh='time',
     );
 
@@ -35,8 +35,9 @@ dashboard.new(
         time_from='now-1h',
         schemaVersion=18,
       )
-.addTemplate(boskosTemplate('path', 'path'))
-.addTemplate(boskosTemplate('status', 'status'))
+.addTemplate(boskosTemplate('instance', 'instance', false))
+.addTemplate(boskosTemplate('path', 'path', true))
+.addTemplate(boskosTemplate('status', 'status', true))
 .addPanel(
     (graphPanel.new(
         'Latency distribution for path ${path} and status ${status}',
