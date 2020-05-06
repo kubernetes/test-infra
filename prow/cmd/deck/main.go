@@ -227,6 +227,7 @@ var simplifier = simplifypath.NewSimplifier(l("", // shadow element mimicing the
 	l("favicon.ico"),
 	l("github-login",
 		l("redirect")),
+	l("github-link"),
 	l("job-history",
 		v("job")),
 	l("log"),
@@ -599,6 +600,11 @@ func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, authCfgGe
 		mux.Handle("/tide-history.js", gziphandler.GzipHandler(handleTideHistory(ta, logrus.WithField("handler", "/tide-history.js"))))
 	}
 
+	secure := !o.allowInsecure
+
+	// Handles link to github
+	mux.HandleFunc("/github-link", HandleGitHubLink(o.github.Host, secure))
+
 	// Enable Git OAuth feature if oauthURL is provided.
 	var goa *githuboauth.Agent
 	if o.oauthURL != "" {
@@ -649,8 +655,6 @@ func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, authCfgGe
 			&githubOAuthConfig,
 			&o.github,
 			logrus.WithField("client", "pr-status"))
-
-		secure := !o.allowInsecure
 
 		clientCreator := func(accessToken string) prstatus.GitHubClient {
 			return o.github.GitHubClientWithAccessToken(accessToken)
@@ -1549,6 +1553,17 @@ func handleFavicon(staticFilesLocation string, cfg config.Getter) http.HandlerFu
 		} else {
 			http.ServeFile(w, r, staticFilesLocation+"/favicon.ico")
 		}
+	}
+}
+
+func HandleGitHubLink(githubHost string, secure bool) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		scheme := "http"
+		if secure {
+			scheme = "https"
+		}
+		redirectURL := scheme + "://" + githubHost + "/" + r.URL.Query().Get("dest")
+		http.Redirect(w, r, redirectURL, http.StatusFound)
 	}
 }
 
