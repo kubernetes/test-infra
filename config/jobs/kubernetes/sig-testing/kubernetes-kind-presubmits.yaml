@@ -254,7 +254,7 @@ presubmits:
       testgrid-dashboards: sig-testing-kind
 
   - name: pull-kubernetes-conformance-kind-ga-only-parallel
-    optional: true
+    optional: false
     always_run: true
     decorate: true
     skip_branches:
