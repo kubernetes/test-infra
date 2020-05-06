@@ -312,7 +312,7 @@ func TestDigestPR(t *testing.T) {
 			},
 		},
 		{
-			name: "edited cherrypicked PR gets no cherrypick event",
+			name: "edited cherrypicked PR gets normal event",
 			pre: github.PullRequestEvent{
 				Action: github.PullRequestActionEdited,
 				PullRequest: github.PullRequest{
@@ -335,6 +335,9 @@ func TestDigestPR(t *testing.T) {
 
 /assign user`,
 				},
+			},
+			expected: &event{
+				org: "org", repo: "repo", baseRef: "release-4.4", number: 3, bugId: 123, body: "[release-4.4] Bug 123: fixed it!", htmlUrl: "http.com", login: "user",
 			},
 		},
 		{
