@@ -3215,9 +3215,9 @@ func (c *client) IsMergeable(org, repo string, number int, SHA string) (bool, er
 			switch pr.MergeableState {
 			case MergeableStateBehind, MergeableStateBlocked, MergeableStateDraft, MergeableStateUnknown:
 				c.logger.WithFields(logrus.Fields{
-					"repo":				fmt.Sprintf("%v/%v", org, repo),
-					"pr":      			number,
-					"mergeablestate": 	pr.MergeableState,
+					"repo":           fmt.Sprintf("%v/%v", org, repo),
+					"pr":             number,
+					"mergeablestate": pr.MergeableState,
 				}).Infof("PR is in unmergeable state.")
 				return false, nil
 			default:
