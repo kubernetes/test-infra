@@ -28,6 +28,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"golang.org/x/lint"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/genfiles"
 	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
@@ -48,7 +49,7 @@ func init() {
 	plugins.RegisterGenericCommentHandler(pluginName, handleGenericComment, helpProvider)
 }
 
-func helpProvider(config *plugins.Configuration, _ []plugins.Repo) (*pluginhelp.PluginHelp, error) {
+func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "The golint plugin runs golint on changes made to *.go files in a PR. It then creates a new review on the pull request and leaves golint warnings at the appropriate lines of code.",
 		Config: map[string]string{

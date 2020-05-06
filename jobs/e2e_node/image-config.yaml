@@ -3,18 +3,13 @@
 # `gcloud compute --project <to-project> images create <image-name> --source-disk=<image-name>`
 images:
   ubuntu:
-    image: ubuntu-gke-1804-d1703-0-v20181113 # docker 17.03
+    image: ubuntu-gke-1804-1-16-v20200330 # docker 17.03
     project: ubuntu-os-gke-cloud
-  # see https://github.com/kubernetes/test-infra/issues/14465
-  # coreos-beta:
-  #   image: coreos-beta-1911-2-0-v20181024 # docker 18.06.1-ce
-  #   project: coreos-cloud
-  #   metadata: "user-data<test/e2e_node/jenkins/coreos-init.json"
   cos-stable1:
-    image_regex: cos-stable-63-10032-71-0 # docker 17.03.2
+    image_regex: cos-stable-77-12371-227-0 # docker v19.03.1, deprecated after 2020-12-17
     project: cos-cloud
     metadata: "user-data<test/e2e_node/jenkins/cos-init-live-restore.yaml,gci-update-strategy=update_disabled"
   cos-stable2:
-    image_regex: cos-stable-60-9592-84-0 # docker 1.13.1
+    image_regex: cos-stable-73-11647-510-0 # docker v18.09.7, deprecated after 2020-06-19
     project: cos-cloud
     metadata: "user-data<test/e2e_node/jenkins/cos-init-live-restore.yaml,gci-update-strategy=update_disabled"

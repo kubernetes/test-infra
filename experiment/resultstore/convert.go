@@ -19,6 +19,7 @@ package main
 import (
 	"fmt"
 	"path"
+	"strconv"
 	"strings"
 	"time"
 
@@ -117,7 +118,7 @@ func convertSuiteMeta(suiteMeta gcs.SuitesMeta) resultstore.Suite {
 }
 
 // Convert converts build metadata stored in gcp into the corresponding ResultStore Invocation, Target and Test.
-func convert(project, details string, url gcs.Path, result downloadResult) (resultstore.Invocation, resultstore.Target, resultstore.Test) {
+func convert(project, details string, url gcs.Path, result downloadResult, maxFiles int) (resultstore.Invocation, resultstore.Target, resultstore.Test) {
 	started := result.started
 	finished := result.finished
 	artifacts := result.artifactURLs
@@ -154,19 +155,38 @@ func convert(project, details string, url gcs.Path, result downloadResult) (resu
 	inv.Properties = append(inv.Properties, startedProperties...)
 
 	// Files need a unique identifier, trim the common prefix and provide this.
-	uniqPath := func(s string) string { return strings.TrimPrefix(s, basePath) }
+	seen := map[string]bool{}
+	uniqPath := func(s string) string {
+
+		want := strings.TrimPrefix(s, basePath)
+		var idx int
+		attempt := want
+		for {
+			if !seen[attempt] {
+				seen[attempt] = true
+				return attempt
+			}
+			idx++
+			attempt = want + " - " + strconv.Itoa(idx)
+		}
+	}
 
 	for i, a := range artifacts {
 		artifacts[i] = "gs://" + bucket + "/" + a
 	}
 
+	var total int
 	for _, a := range artifacts { // add started.json, etc to the invocation artifact list.
+		if total >= maxFiles {
+			continue
+		}
 		if strings.HasPrefix(a, artifactsPath) {
 			continue // things under artifacts/ are owned by the test
 		}
 		if a == buildLog {
 			continue // Handle this in InvocationLog
 		}
+		total++
 		inv.Files = append(inv.Files, resultstore.File{
 			ID:          uniqPath(a),
 			ContentType: "text/plain",
@@ -215,9 +235,16 @@ func convert(project, details string, url gcs.Path, result downloadResult) (resu
 	for _, suiteMeta := range result.suiteMetas {
 		child := convertSuiteMeta(suiteMeta)
 		test.Suite.Suites = append(test.Suite.Suites, child)
-		test.Suite.Files = append(test.Suite.Files, child.Files...)
+		for _, f := range child.Files {
+			f.ID = uniqPath(f.URL)
+			test.Suite.Files = append(test.Suite.Files, f)
+		}
 	}
+
 	for _, a := range artifacts {
+		if total >= maxFiles {
+			continue
+		}
 		if !strings.HasPrefix(a, artifactsPath) {
 			continue // Non-artifacts (started.json, etc) are owned by the invocation
 		}
@@ -235,10 +262,20 @@ func convert(project, details string, url gcs.Path, result downloadResult) (resu
 		if found {
 			continue
 		}
+		total++
 		test.Suite.Files = append(test.Suite.Files, resultstore.File{
 			ID:          uniqPath(a),
 			ContentType: "text/plain",
 			URL:         a,
+		})
+	}
+
+	if total >= maxFiles {
+		// TODO(fejta): expose this to edge case to user in a better way
+		inv.Files = append(inv.Files, resultstore.File{
+			ID:          fmt.Sprintf("exceeded %d files", maxFiles),
+			ContentType: "text/plain",
+			URL:         basePath,
 		})
 	}
 

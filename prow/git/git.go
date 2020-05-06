@@ -92,12 +92,13 @@ func NewClientWithHost(host string) (*Client, error) {
 		return nil, err
 	}
 	return &Client{
-		logger:    logrus.WithField("client", "git"),
-		dir:       t,
-		git:       g,
-		base:      fmt.Sprintf("https://%s", host),
-		host:      host,
-		repoLocks: make(map[string]*sync.Mutex),
+		logger:         logrus.WithField("client", "git"),
+		tokenGenerator: func() []byte { return nil },
+		dir:            t,
+		git:            g,
+		base:           fmt.Sprintf("https://%s", host),
+		host:           host,
+		repoLocks:      make(map[string]*sync.Mutex),
 	}, nil
 }
 
@@ -473,4 +474,14 @@ func (r *Repo) MergeCommitsExistBetween(target, head string) (bool, error) {
 		return false, fmt.Errorf("error verifying if merge commits exist between %s and %s: %v. output: %s", target, head, err, string(b))
 	}
 	return len(b) != 0, nil
+}
+
+// ShowRef returns the commit for a commitlike. Unlike rev-parse it does not require a checkout.
+func (i *Repo) ShowRef(commitlike string) (string, error) {
+	i.logger.Infof("Getting the commit sha for commitlike %s", commitlike)
+	out, err := i.gitCommand("show-ref", "-s", commitlike).CombinedOutput()
+	if err != nil {
+		return "", fmt.Errorf("failed to get commit sha for commitlike %s: %v", commitlike, err)
+	}
+	return strings.TrimSpace(string(out)), nil
 }

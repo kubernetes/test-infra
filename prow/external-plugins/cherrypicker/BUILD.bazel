@@ -11,7 +11,9 @@ go_library(
     visibility = ["//visibility:private"],
     deps = [
         "//pkg/flagutil:go_default_library",
+        "//prow/config:go_default_library",
         "//prow/config/secret:go_default_library",
+        "//prow/external-plugins/cherrypicker/lib:go_default_library",
         "//prow/flagutil:go_default_library",
         "//prow/git/v2:go_default_library",
         "//prow/github:go_default_library",
@@ -23,14 +25,17 @@ go_library(
     ],
 )
 
+NAME = "cherrypicker"
+
 prow_image(
     name = "image",
     base = "@git-base//image",
+    component = NAME,
     visibility = ["//visibility:public"],
 )
 
 go_binary(
-    name = "cherrypicker",
+    name = NAME,
     embed = [":go_default_library"],
     visibility = ["//visibility:public"],
 )
@@ -44,7 +49,10 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [":package-srcs"],
+    srcs = [
+        ":package-srcs",
+        "//prow/external-plugins/cherrypicker/lib:all-srcs",
+    ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
 )

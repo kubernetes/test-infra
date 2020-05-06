@@ -23,7 +23,7 @@ periodics:
     timeout: 6h
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
       command:
       - runner.sh
       - bash
@@ -52,8 +52,6 @@ periodics:
       env:
       - name: KUBE_BUILD_WITH_COVERAGE
         value: "true"
-      - name: KUBE_BUILD_HYPERKUBE
-        value: "n"
       - name: KUBE_BUILD_CONFORMANCE
         value: "n"
       securityContext:
@@ -86,7 +84,7 @@ periodics:
     timeout: 3h
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
       command:
       - runner.sh
       - bash
@@ -120,8 +118,6 @@ periodics:
       env:
       - name: KUBE_BUILD_WITH_COVERAGE
         value: "true"
-      - name: KUBE_BUILD_HYPERKUBE
-        value: "n"
       - name: KUBE_BUILD_CONFORMANCE
         value: "n"
       securityContext:
@@ -141,18 +137,17 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
       command:
       - runner.sh
       - bash
       args:
       - -c
       - |
-        local result=0
-        GO111MODULE=off go install k8s.io/kubernetes/vendor/gotest.tools/gotestsum || result=$?
+        result=0
+        ( cd hack/tools && GO111MODULE=on go install gotest.tools/gotestsum ) || result=$?
         make test KUBE_COVER=y KUBE_COVER_REPORT_DIR="${ARTIFACTS}" KUBE_TIMEOUT="--timeout=300s" || result=$?
         grep -v -E 'zz_generated|generated\.pb\.go' "${ARTIFACTS}/combined-coverage.out" > "${ARTIFACTS}/filtered.cov" || result=$?
-        go tool cover -html="${ARTIFACTS}/filtered.cov" -o "${ARTIFACTS}/filtered.html" || result=$?
         exit $result
       securityContext:
         privileged: true

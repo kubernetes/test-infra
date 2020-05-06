@@ -61,6 +61,27 @@ dashboards:
     - name: conformance
       test_group_name: arm64-conformance
       description: Runs conformance test by using kubetest against latest version of kubernetes on arm64
+    - name: conformance-flannel
+      test_group_name: arm64-conformance-flannel-network
+      description: Runs conformance test by using kubetest against latest version of kubernetes on arm64 with flannel network
+    - name: conformance-calico
+      test_group_name: arm64-conformance-calico-network
+      description: Runs conformance test by using kubetest against latest version of kubernetes on arm64 with calico network
+    - name: kind, master (dev, ARM64)
+      description: Runs conformance tests using kubetest against latest kubernetes master with a kubernetes-in-docker cluster on ARM64 platform
+      test_group_name: arm64-kind-master
+    - name: conformance-stable
+      test_group_name: arm64-conformance-stable
+      description: Runs conformance test by using kubetest against latest stable version of kubernetes on arm64
+    - name: e2e
+      test_group_name: arm64-e2e
+      description: Runs e2e test by using kubetest against latest version of kubernetes on arm64
+    - name: integration-tests
+      test_group_name: arm64-integration
+      description: Integration test results for Arm64
+    - name: nodeconformance
+      test_group_name: arm64-nodeconformance
+      description: Runs NodeConformance test by using kubetest against latest version of kubernetes on arm64
 
   #Docker node conformance dashboard
 - name: sig-node-docker

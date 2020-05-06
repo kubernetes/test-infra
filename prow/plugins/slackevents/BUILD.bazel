@@ -11,6 +11,7 @@ go_test(
     srcs = ["slackevents_test.go"],
     embed = [":go_default_library"],
     deps = [
+        "//prow/config:go_default_library",
         "//prow/github:go_default_library",
         "//prow/github/fakegithub:go_default_library",
         "//prow/plugins:go_default_library",
@@ -23,6 +24,7 @@ go_library(
     srcs = ["slackevents.go"],
     importpath = "k8s.io/test-infra/prow/plugins/slackevents",
     deps = [
+        "//prow/config:go_default_library",
         "//prow/github:go_default_library",
         "//prow/pluginhelp:go_default_library",
         "//prow/plugins:go_default_library",

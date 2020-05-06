@@ -6,30 +6,127 @@ dashboards:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
     file_bug_template:
       options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/openshift/origin/issues/new
-    name: canary-release-openshift-origin-installer-e2e-aws-4.4-cnv
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: promote-release-openshift-machine-os-content-e2e-aws-4.4
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: canary-release-openshift-origin-installer-e2e-aws-4.4-cnv
+    test_group_name: promote-release-openshift-machine-os-content-e2e-aws-4.4
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
     file_bug_template:
       options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/openshift/origin/issues/new
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: promote-release-openshift-machine-os-content-e2e-aws-4.4-ppc64le
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: promote-release-openshift-machine-os-content-e2e-aws-4.4-ppc64le
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: promote-release-openshift-machine-os-content-e2e-aws-4.4-s390x
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: promote-release-openshift-machine-os-content-e2e-aws-4.4-s390x
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: release-openshift-ocp-e2e-aws-scaleup-rhel7-4.4
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: release-openshift-ocp-e2e-aws-scaleup-rhel7-4.4
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: release-openshift-ocp-installer-console-aws-4.4
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -44,30 +141,19 @@ dashboards:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
     file_bug_template:
       options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/openshift/origin/issues/new
-    name: release-openshift-ocp-installer-e2e-aws-4.4
-    open_bug_template:
-      url: https://github.com/openshift/origin/issues/
-    open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: release-openshift-ocp-installer-e2e-aws-4.4
-  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
-    code_search_path: https://github.com/openshift/origin/search
-    code_search_url_template:
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
-    file_bug_template:
-      options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/openshift/origin/issues/new
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: release-openshift-ocp-installer-e2e-aws-fips-4.4
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -82,11 +168,19 @@ dashboards:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
     file_bug_template:
       options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/openshift/origin/issues/new
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: release-openshift-ocp-installer-e2e-aws-fips-serial-4.4
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -101,11 +195,19 @@ dashboards:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
     file_bug_template:
       options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/openshift/origin/issues/new
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: release-openshift-ocp-installer-e2e-aws-mirrors-4.4
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -120,11 +222,19 @@ dashboards:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
     file_bug_template:
       options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/openshift/origin/issues/new
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: release-openshift-ocp-installer-e2e-aws-ovn-4.4
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -139,11 +249,19 @@ dashboards:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
     file_bug_template:
       options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/openshift/origin/issues/new
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: release-openshift-ocp-installer-e2e-aws-proxy-4.4
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -158,30 +276,19 @@ dashboards:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
     file_bug_template:
       options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/openshift/origin/issues/new
-    name: release-openshift-ocp-installer-e2e-aws-serial-4.4
-    open_bug_template:
-      url: https://github.com/openshift/origin/issues/
-    open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: release-openshift-ocp-installer-e2e-aws-serial-4.4
-  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
-    code_search_path: https://github.com/openshift/origin/search
-    code_search_url_template:
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
-    file_bug_template:
-      options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/openshift/origin/issues/new
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: release-openshift-ocp-installer-e2e-aws-upi-4.4
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -196,11 +303,19 @@ dashboards:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
     file_bug_template:
       options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/openshift/origin/issues/new
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: release-openshift-ocp-installer-e2e-azure-4.4
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -215,11 +330,19 @@ dashboards:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
     file_bug_template:
       options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/openshift/origin/issues/new
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: release-openshift-ocp-installer-e2e-azure-fips-4.4
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -234,11 +357,19 @@ dashboards:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
     file_bug_template:
       options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/openshift/origin/issues/new
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: release-openshift-ocp-installer-e2e-azure-fips-serial-4.4
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -253,30 +384,19 @@ dashboards:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
     file_bug_template:
       options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/openshift/origin/issues/new
-    name: release-openshift-ocp-installer-e2e-azure-ovn-4.4
-    open_bug_template:
-      url: https://github.com/openshift/origin/issues/
-    open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: release-openshift-ocp-installer-e2e-azure-ovn-4.4
-  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
-    code_search_path: https://github.com/openshift/origin/search
-    code_search_url_template:
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
-    file_bug_template:
-      options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/openshift/origin/issues/new
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: release-openshift-ocp-installer-e2e-azure-serial-4.4
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -291,11 +411,19 @@ dashboards:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
     file_bug_template:
       options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/openshift/origin/issues/new
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: release-openshift-ocp-installer-e2e-gcp-4.4
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -310,11 +438,19 @@ dashboards:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
     file_bug_template:
       options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/openshift/origin/issues/new
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: release-openshift-ocp-installer-e2e-gcp-fips-4.4
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -329,11 +465,19 @@ dashboards:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
     file_bug_template:
       options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/openshift/origin/issues/new
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: release-openshift-ocp-installer-e2e-gcp-fips-serial-4.4
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -348,30 +492,46 @@ dashboards:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
     file_bug_template:
       options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/openshift/origin/issues/new
-    name: release-openshift-ocp-installer-e2e-gcp-ovn-4.4
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: release-openshift-ocp-installer-e2e-gcp-rt-4.4
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: release-openshift-ocp-installer-e2e-gcp-ovn-4.4
+    test_group_name: release-openshift-ocp-installer-e2e-gcp-rt-4.4
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
     file_bug_template:
       options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/openshift/origin/issues/new
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: release-openshift-ocp-installer-e2e-gcp-serial-4.4
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -386,11 +546,19 @@ dashboards:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
     file_bug_template:
       options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/openshift/origin/issues/new
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: release-openshift-ocp-installer-e2e-metal-4.4
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -405,11 +573,19 @@ dashboards:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
     file_bug_template:
       options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/openshift/origin/issues/new
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: release-openshift-ocp-installer-e2e-metal-serial-4.4
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -424,11 +600,19 @@ dashboards:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
     file_bug_template:
       options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/openshift/origin/issues/new
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: release-openshift-ocp-installer-e2e-openstack-4.4
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -443,11 +627,19 @@ dashboards:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
     file_bug_template:
       options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/openshift/origin/issues/new
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: release-openshift-ocp-installer-e2e-openstack-serial-4.4
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -462,11 +654,19 @@ dashboards:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
     file_bug_template:
       options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/openshift/origin/issues/new
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: release-openshift-ocp-installer-e2e-ovirt-4.4
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -481,11 +681,19 @@ dashboards:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
     file_bug_template:
       options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/openshift/origin/issues/new
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: release-openshift-ocp-installer-e2e-vsphere-upi-4.4
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -500,11 +708,19 @@ dashboards:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
     file_bug_template:
       options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/openshift/origin/issues/new
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: release-openshift-ocp-installer-e2e-vsphere-upi-serial-4.4
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -519,30 +735,46 @@ dashboards:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
     file_bug_template:
       options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/openshift/origin/issues/new
-    name: release-openshift-origin-installer-e2e-aws-4.4
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: release-openshift-origin-installer-e2e-aws-4.4-cnv
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: release-openshift-origin-installer-e2e-aws-4.4
+    test_group_name: release-openshift-origin-installer-e2e-aws-4.4-cnv
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
     file_bug_template:
       options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/openshift/origin/issues/new
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: release-openshift-origin-installer-e2e-aws-compact-4.4
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -557,11 +789,19 @@ dashboards:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
     file_bug_template:
       options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/openshift/origin/issues/new
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: release-openshift-origin-installer-e2e-aws-disruptive-4.4
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -576,11 +816,19 @@ dashboards:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
     file_bug_template:
       options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/openshift/origin/issues/new
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: release-openshift-origin-installer-e2e-aws-ovn-network-stress-4.4
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -595,11 +843,19 @@ dashboards:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
     file_bug_template:
       options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/openshift/origin/issues/new
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: release-openshift-origin-installer-e2e-aws-sdn-multitenant-4.4
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -614,11 +870,19 @@ dashboards:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
     file_bug_template:
       options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/openshift/origin/issues/new
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: release-openshift-origin-installer-e2e-aws-sdn-network-stress-4.4
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -633,11 +897,19 @@ dashboards:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
     file_bug_template:
       options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/openshift/origin/issues/new
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: release-openshift-origin-installer-e2e-aws-serial-4.4
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -652,11 +924,19 @@ dashboards:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
     file_bug_template:
       options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/openshift/origin/issues/new
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: release-openshift-origin-installer-e2e-aws-shared-vpc-4.4
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -671,49 +951,100 @@ dashboards:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
     file_bug_template:
       options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/openshift/origin/issues/new
-    name: release-openshift-origin-installer-e2e-aws-upgrade-4.3-nightly-to-4.4-nightly
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: release-openshift-origin-installer-e2e-aws-upgrade-4.1-to-4.2-to-4.3-to-4.4-nightly
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: release-openshift-origin-installer-e2e-aws-upgrade-4.3-nightly-to-4.4-nightly
+    test_group_name: release-openshift-origin-installer-e2e-aws-upgrade-4.1-to-4.2-to-4.3-to-4.4-nightly
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
     file_bug_template:
       options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/openshift/origin/issues/new
-    name: release-openshift-origin-installer-e2e-aws-upgrade-4.3-stable-to-4.4-ci
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: release-openshift-origin-installer-e2e-aws-upgrade-4.4-nightly-to-4.4-nightly
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: release-openshift-origin-installer-e2e-aws-upgrade-4.3-stable-to-4.4-ci
+    test_group_name: release-openshift-origin-installer-e2e-aws-upgrade-4.4-nightly-to-4.4-nightly
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
     file_bug_template:
       options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/openshift/origin/issues/new
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: release-openshift-origin-installer-e2e-aws-upgrade-4.4-stable-to-4.4-ci
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: release-openshift-origin-installer-e2e-aws-upgrade-4.4-stable-to-4.4-ci
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: release-openshift-origin-installer-e2e-aws-upgrade-fips-4.4
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -728,30 +1059,19 @@ dashboards:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
     file_bug_template:
       options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/openshift/origin/issues/new
-    name: release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.3-to-4.4
-    open_bug_template:
-      url: https://github.com/openshift/origin/issues/
-    open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.3-to-4.4
-  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
-    code_search_path: https://github.com/openshift/origin/search
-    code_search_url_template:
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
-    file_bug_template:
-      options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/openshift/origin/issues/new
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.4
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -766,11 +1086,46 @@ dashboards:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
     file_bug_template:
       options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/openshift/origin/issues/new
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.4-to-4.4
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.4-to-4.4
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: release-openshift-origin-installer-e2e-azure-compact-4.4
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -785,11 +1140,19 @@ dashboards:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
     file_bug_template:
       options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/openshift/origin/issues/new
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: release-openshift-origin-installer-e2e-azure-shared-vpc-4.4
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -804,11 +1167,19 @@ dashboards:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
     file_bug_template:
       options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/openshift/origin/issues/new
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: release-openshift-origin-installer-e2e-azure-upgrade-4.4
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -823,11 +1194,19 @@ dashboards:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
     file_bug_template:
       options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/openshift/origin/issues/new
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: release-openshift-origin-installer-e2e-gcp-compact-4.4
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -842,11 +1221,19 @@ dashboards:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
     file_bug_template:
       options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/openshift/origin/issues/new
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: release-openshift-origin-installer-e2e-gcp-shared-vpc-4.4
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -861,11 +1248,19 @@ dashboards:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
     file_bug_template:
       options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/openshift/origin/issues/new
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: release-openshift-origin-installer-e2e-gcp-upgrade-4.4
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -880,11 +1275,19 @@ dashboards:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
     file_bug_template:
       options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/openshift/origin/issues/new
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: release-openshift-origin-installer-old-rhcos-e2e-aws-4.4
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -895,15 +1298,20 @@ dashboards:
     test_group_name: release-openshift-origin-installer-old-rhcos-e2e-aws-4.4
   name: redhat-openshift-ocp-release-4.4-informing
 test_groups:
+- gcs_prefix: origin-ci-test/logs/promote-release-openshift-machine-os-content-e2e-aws-4.4
+  name: promote-release-openshift-machine-os-content-e2e-aws-4.4
+- days_of_results: 33
+  gcs_prefix: origin-ci-test/logs/promote-release-openshift-machine-os-content-e2e-aws-4.4-ppc64le
+  name: promote-release-openshift-machine-os-content-e2e-aws-4.4-ppc64le
+- days_of_results: 33
+  gcs_prefix: origin-ci-test/logs/promote-release-openshift-machine-os-content-e2e-aws-4.4-s390x
+  name: promote-release-openshift-machine-os-content-e2e-aws-4.4-s390x
 - days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/canary-release-openshift-origin-installer-e2e-aws-4.4-cnv
-  name: canary-release-openshift-origin-installer-e2e-aws-4.4-cnv
+  gcs_prefix: origin-ci-test/logs/release-openshift-ocp-e2e-aws-scaleup-rhel7-4.4
+  name: release-openshift-ocp-e2e-aws-scaleup-rhel7-4.4
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-console-aws-4.4
   name: release-openshift-ocp-installer-console-aws-4.4
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-aws-4.4
-  name: release-openshift-ocp-installer-e2e-aws-4.4
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-aws-fips-4.4
   name: release-openshift-ocp-installer-e2e-aws-fips-4.4
@@ -919,9 +1327,6 @@ test_groups:
   gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-aws-proxy-4.4
   name: release-openshift-ocp-installer-e2e-aws-proxy-4.4
 - days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-aws-serial-4.4
-  name: release-openshift-ocp-installer-e2e-aws-serial-4.4
-- days_of_results: 60
   gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-aws-upi-4.4
   name: release-openshift-ocp-installer-e2e-aws-upi-4.4
 - days_of_results: 60
@@ -932,9 +1337,6 @@ test_groups:
 - gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-azure-fips-serial-4.4
   name: release-openshift-ocp-installer-e2e-azure-fips-serial-4.4
 - days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-azure-ovn-4.4
-  name: release-openshift-ocp-installer-e2e-azure-ovn-4.4
-- days_of_results: 60
   gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-azure-serial-4.4
   name: release-openshift-ocp-installer-e2e-azure-serial-4.4
 - days_of_results: 60
@@ -944,9 +1346,9 @@ test_groups:
   name: release-openshift-ocp-installer-e2e-gcp-fips-4.4
 - gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-gcp-fips-serial-4.4
   name: release-openshift-ocp-installer-e2e-gcp-fips-serial-4.4
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-gcp-ovn-4.4
-  name: release-openshift-ocp-installer-e2e-gcp-ovn-4.4
+- days_of_results: 50
+  gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-gcp-rt-4.4
+  name: release-openshift-ocp-installer-e2e-gcp-rt-4.4
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-gcp-serial-4.4
   name: release-openshift-ocp-installer-e2e-gcp-serial-4.4
@@ -962,7 +1364,7 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-openstack-serial-4.4
   name: release-openshift-ocp-installer-e2e-openstack-serial-4.4
-- days_of_results: 60
+- days_of_results: 25
   gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-ovirt-4.4
   name: release-openshift-ocp-installer-e2e-ovirt-4.4
 - days_of_results: 60
@@ -972,8 +1374,8 @@ test_groups:
   gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-vsphere-upi-serial-4.4
   name: release-openshift-ocp-installer-e2e-vsphere-upi-serial-4.4
 - days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-4.4
-  name: release-openshift-origin-installer-e2e-aws-4.4
+  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-4.4-cnv
+  name: release-openshift-origin-installer-e2e-aws-4.4-cnv
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-compact-4.4
   name: release-openshift-origin-installer-e2e-aws-compact-4.4
@@ -996,27 +1398,30 @@ test_groups:
   gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-shared-vpc-4.4
   name: release-openshift-origin-installer-e2e-aws-shared-vpc-4.4
 - days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-4.3-nightly-to-4.4-nightly
-  name: release-openshift-origin-installer-e2e-aws-upgrade-4.3-nightly-to-4.4-nightly
+  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-4.1-to-4.2-to-4.3-to-4.4-nightly
+  name: release-openshift-origin-installer-e2e-aws-upgrade-4.1-to-4.2-to-4.3-to-4.4-nightly
 - days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-4.3-stable-to-4.4-ci
-  name: release-openshift-origin-installer-e2e-aws-upgrade-4.3-stable-to-4.4-ci
+  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-4.4-nightly-to-4.4-nightly
+  name: release-openshift-origin-installer-e2e-aws-upgrade-4.4-nightly-to-4.4-nightly
+- days_of_results: 25
+  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-4.4-stable-to-4.4-ci
+  name: release-openshift-origin-installer-e2e-aws-upgrade-4.4-stable-to-4.4-ci
 - days_of_results: 50
   gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-fips-4.4
   name: release-openshift-origin-installer-e2e-aws-upgrade-fips-4.4
 - days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.3-to-4.4
-  name: release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.3-to-4.4
-- days_of_results: 60
   gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.4
   name: release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.4
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.4-to-4.4
+  name: release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.4-to-4.4
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-azure-compact-4.4
   name: release-openshift-origin-installer-e2e-azure-compact-4.4
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-azure-shared-vpc-4.4
   name: release-openshift-origin-installer-e2e-azure-shared-vpc-4.4
-- days_of_results: 60
+- days_of_results: 25
   gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-azure-upgrade-4.4
   name: release-openshift-origin-installer-e2e-azure-upgrade-4.4
 - days_of_results: 60
@@ -1025,7 +1430,7 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-gcp-shared-vpc-4.4
   name: release-openshift-origin-installer-e2e-gcp-shared-vpc-4.4
-- days_of_results: 60
+- days_of_results: 25
   gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-gcp-upgrade-4.4
   name: release-openshift-origin-installer-e2e-gcp-upgrade-4.4
 - days_of_results: 60

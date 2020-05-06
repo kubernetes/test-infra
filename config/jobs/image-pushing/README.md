@@ -125,7 +125,7 @@ postsubmits:
   kubernetes-sigs/some-repo-name:
     # The name should be changed to match the repo name above
     - name: post-some-repo-name-push-images
-      cluster: test-infra-trusted
+      cluster: k8s-infra-prow-build-trusted
       annotations:
         # This is the name of some testgrid dashboard to report to.
         # If this is the first one for your sig, you may need to create one
@@ -137,6 +137,7 @@ postsubmits:
       branches:
         - ^master$
       spec:
+        serviceAccountName: gcb-builder
         containers:
           - image: gcr.io/k8s-testimages/image-builder:v20190906-d5d7ce3
             command:
@@ -149,16 +150,6 @@ postsubmits:
               - --scratch-bucket=gs://k8s-staging-cluster-api-gcb
               - --env-passthrough=PULL_BASE_REF
               - .
-            env:
-              - name: GOOGLE_APPLICATION_CREDENTIALS
-                value: /creds/service-account.json
-            volumeMounts:
-              - name: creds
-                mountPath: /creds
-        volumes:
-          - name: creds
-            secret:
-              secretName: deployer-service-account
 ```
 
 [gcr instructions]: https://github.com/kubernetes/k8s.io/blob/master/k8s.gcr.io/README.md

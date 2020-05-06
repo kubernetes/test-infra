@@ -22,6 +22,7 @@ import (
 
 	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
+	utilpointer "k8s.io/utils/pointer"
 )
 
 // GitOptions holds options for interacting with git.
@@ -36,7 +37,7 @@ type GitOptions struct {
 
 // AddFlags injects Git options into the given FlagSet.
 func (o *GitOptions) AddFlags(fs *flag.FlagSet) {
-	fs.StringVar(&o.host, "git-host", "github.com", "Host to contact for git operations.")
+	fs.StringVar(&o.host, "git-host", "github.com", "host to contact for git operations.")
 	fs.StringVar(&o.user, "git-user", "", "User for git commits, optional. Can be derived from GitHub credentials.")
 	fs.StringVar(&o.email, "git-email", "", "Email for git commits, optional. Can be derived from GitHub credentials.")
 	fs.StringVar(&o.tokenPath, "git-token-path", "", "Path to the file containing the git token for HTTPS operations, optional. Can be derived from GitHub credentials.")
@@ -86,5 +87,13 @@ func (o *GitOptions) GitClient(userClient github.UserClient, token func() []byte
 		}
 		return user.Login, nil
 	}
-	return git.NewClientFactory(o.host, o.useSSH, username, token, gitUser, censor)
+	opts := git.ClientFactoryOpts{
+		Host:     o.host,
+		UseSSH:   utilpointer.BoolPtr(o.useSSH),
+		Username: username,
+		Token:    token,
+		GitUser:  gitUser,
+		Censor:   censor,
+	}
+	return git.NewClientFactory(opts.Apply)
 }

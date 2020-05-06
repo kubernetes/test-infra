@@ -1,5 +1,17 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
+reviewers:
+- chuckha
+- davidewatson
+- detiber
+- d-nishi
+- enxebre
+- ingvagabund
+- kris-nova
+- luxas
+- randomvariable
+- timothysc
+- vincepri
 approvers:
 - chuckha
 - davidewatson

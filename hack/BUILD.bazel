@@ -63,6 +63,7 @@ sh_test(
         "$(location @io_k8s_code_generator//cmd/deepcopy-gen)",
         "$(location @io_k8s_code_generator//cmd/informer-gen)",
         "$(location @io_k8s_code_generator//cmd/lister-gen)",
+        "$(location @com_github_go_bindata_go_bindata_v3//go-bindata)",
     ],
     data = [
         ":boilerplate/boilerplate.generated.go.txt",  # TODO(fejta): use repo-infra version
@@ -70,6 +71,7 @@ sh_test(
         "//:go.mod",
         "//:go.sum",
         "@//:all-srcs",
+        "@com_github_go_bindata_go_bindata_v3//go-bindata",
         "@go_sdk//:files",
         "@io_k8s_code_generator//cmd/client-gen",
         "@io_k8s_code_generator//cmd/deepcopy-gen",
@@ -87,11 +89,13 @@ sh_binary(
         "$(location @io_k8s_code_generator//cmd/deepcopy-gen)",
         "$(location @io_k8s_code_generator//cmd/informer-gen)",
         "$(location @io_k8s_code_generator//cmd/lister-gen)",
+        "$(location @com_github_go_bindata_go_bindata_v3//go-bindata)",
     ],
     data = [
         ":boilerplate/boilerplate.generated.go.txt",  # TODO(fejta): use repo-infra version
         "//:go.mod",
         "//:go.sum",
+        "@com_github_go_bindata_go_bindata_v3//go-bindata",
         "@go_sdk//:files",
         "@io_k8s_code_generator//cmd/client-gen",
         "@io_k8s_code_generator//cmd/deepcopy-gen",

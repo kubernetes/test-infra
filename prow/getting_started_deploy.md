@@ -23,7 +23,7 @@ personal repos.
    following scopes (more details [here][8])
     - Must have the `public_repo` and `repo:status` scopes
     - Add the `repo` scope if you plan on handing private repos
-    - Add the `admin_org:hook` scope if you plan on handling a github org
+    - Add the `admin:org_hook` scope if you plan on handling a github org
 1. Set this token aside for later (we'll assume you wrote it to a file on your
    workstation at `/path/to/oauth/secret`)
 
@@ -102,7 +102,7 @@ in-cluster. If you see an error of the following form, this is likely the case.
 
 ```console
 Error from server (Forbidden): error when creating
-"prow/cluster/starter.yaml": roles.rbac.authorization.k8s.io "<account>" is
+"config/prow/cluster/starter.yaml": roles.rbac.authorization.k8s.io "<account>" is
 forbidden: attempt to grant extra privileges:
 [PolicyRule{Resources:["pods/log"], APIGroups:[""], Verbs:["get"]}
 PolicyRule{Resources:["prowjobs"], APIGroups:["prow.k8s.io"], Verbs:["get"]}
@@ -143,7 +143,7 @@ kubectl create secret generic oauth-token --from-file=oauth=/path/to/oauth/secre
 Run the following command to deploy a basic set of prow components.
 
 ```sh
-kubectl apply -f prow/cluster/starter.yaml
+kubectl apply -f config/prow/cluster/starter.yaml
 ```
 
 After a moment, the cluster components will be running.
@@ -297,7 +297,7 @@ In order to configure the bucket, follow the following steps:
 1. [grant access](https://cloud.google.com/storage/docs/access-control/using-iam-permissions) to admin the bucket for the service account
 1. [serialize](https://cloud.google.com/iam/docs/creating-managing-service-account-keys) a key for the service account
 1. upload the key to a `Secret` under the `service-account.json` key
-1. edit the `plank` configuration for `default_decoration_config.gcs_credentials_secret` to point to the `Secret` above
+1. edit the `plank` configuration for `default_decoration_configs['*'].gcs_credentials_secret` to point to the `Secret` above
 
 After [downloading](https://cloud.google.com/sdk/gcloud/) the `gcloud` tool and authenticating,
 the following script will execute the above steps for you:
@@ -314,28 +314,29 @@ kubectl -n test-pods create secret generic gcs-credentials --from-file=service-a
 
 ### Configure the version of plank's utility images
 
-Before we can update plank's `default_decoration_config` we'll need to retrieve the version of plank using the following:
+Before we can update plank's `default_decoration_configs['*']` we'll need to retrieve the version of plank using the following:
 
 ```sh
 $ kubectl get pod -lapp=plank -o jsonpath='{.items[0].spec.containers[0].image}' | cut -d: -f2
 v20191108-08fbf64ac
 ```
-Then, we can use that tag to retrieve the corresponding utility images in `default_decoration_config` in `config.yaml`:
+Then, we can use that tag to retrieve the corresponding utility images in `default_decoration_configs['*']` in `config.yaml`:
 
 For more information on how the pod utility images for prow are versioned see [autobump](/prow/cmd/autobump/README.md)
 
 ```yaml
 plank:
-  default_decoration_config:
-    utility_images: # using the tag we identified above
-      clonerefs: "gcr.io/k8s-prow/clonerefs:v20191108-08fbf64ac"
-      initupload: "gcr.io/k8s-prow/initupload:v20191108-08fbf64ac"
-      entrypoint: "gcr.io/k8s-prow/entrypoint:v20191108-08fbf64ac"
-      sidecar: "gcr.io/k8s-prow/sidecar:v20191108-08fbf64ac"
-    gcs_configuration:
-      bucket: prow-artifacts # the bucket we just made
-      path_strategy: explicit
-    gcs_credentials_secret: gcs-credentials # the secret we just made
+  default_decoration_configs:
+    '*':
+      utility_images: # using the tag we identified above
+        clonerefs: "gcr.io/k8s-prow/clonerefs:v20191108-08fbf64ac"
+        initupload: "gcr.io/k8s-prow/initupload:v20191108-08fbf64ac"
+        entrypoint: "gcr.io/k8s-prow/entrypoint:v20191108-08fbf64ac"
+        sidecar: "gcr.io/k8s-prow/sidecar:v20191108-08fbf64ac"
+      gcs_configuration:
+        bucket: prow-artifacts # the bucket we just made
+        path_strategy: explicit
+      gcs_credentials_secret: gcs-credentials # the secret we just made
 ```
 
 ### Add more jobs by modifying `config.yaml`

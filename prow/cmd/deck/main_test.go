@@ -37,29 +37,30 @@ import (
 	"github.com/gorilla/sessions"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
+
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/githuboauth"
 	"k8s.io/test-infra/prow/plugins"
-
-	"github.com/google/go-github/github"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/sets"
+	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
+	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
+	"sigs.k8s.io/yaml"
+
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/pluginhelp"
 	_ "k8s.io/test-infra/prow/spyglass/lenses/buildlog"
+	"k8s.io/test-infra/prow/spyglass/lenses/common"
 	_ "k8s.io/test-infra/prow/spyglass/lenses/junit"
 	_ "k8s.io/test-infra/prow/spyglass/lenses/metadata"
 	"k8s.io/test-infra/prow/tide"
 	"k8s.io/test-infra/prow/tide/history"
-	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
-	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
-	"sigs.k8s.io/yaml"
 )
 
 func TestOptions_Validate(t *testing.T) {
@@ -264,16 +265,12 @@ func TestProwJob(t *testing.T) {
 	}
 }
 
-type mockGitHubConfigGetter struct {
-	githubLogin string
+type fakeAuthenticatedUserIdentifier struct {
+	login string
 }
 
-func (getter mockGitHubConfigGetter) GetGitHubClient(accessToken string, dryRun bool) githuboauth.GitHubClientWrapper {
-	return getter
-}
-
-func (getter mockGitHubConfigGetter) GetUser(login string) (*github.User, error) {
-	return &github.User{Login: &getter.githubLogin}, nil
+func (a *fakeAuthenticatedUserIdentifier) LoginForRequester(requester, token string) (string, error) {
+	return a.login, nil
 }
 
 // TestRerun just checks that the result can be unmarshaled properly, has an
@@ -391,7 +388,7 @@ func TestRerun(t *testing.T) {
 							},
 						},
 					},
-					RerunAuthConfig: prowapi.RerunAuthConfig{
+					RerunAuthConfig: &prowapi.RerunAuthConfig{
 						AllowAnyone:   false,
 						GitHubUsers:   []string{"authorized", "alsoauthorized"},
 						GitHubTeamIDs: []int{42},
@@ -401,7 +398,7 @@ func TestRerun(t *testing.T) {
 					State: prowapi.PendingState,
 				},
 			})
-			configGetter := func() *prowapi.RerunAuthConfig {
+			authCfgGetter := func(refs *prowapi.Refs) *prowapi.RerunAuthConfig {
 				return &prowapi.RerunAuthConfig{
 					AllowAnyone: tc.allowAnyone,
 					GitHubUsers: tc.authorized,
@@ -431,10 +428,10 @@ func TestRerun(t *testing.T) {
 				CookieStore: mockCookieStore,
 			}
 			goa := githuboauth.NewAgent(mockConfig, &logrus.Entry{})
-			ghc := mockGitHubConfigGetter{githubLogin: tc.login}
+			ghc := &fakeAuthenticatedUserIdentifier{login: tc.login}
 			rc := &fakegithub.FakeClient{OrgMembers: map[string][]string{"org": {"org-member"}}}
 			pca := plugins.NewFakeConfigAgent()
-			handler := handleRerun(fakeProwJobClient.ProwV1().ProwJobs("prowjobs"), tc.rerunCreatesJob, configGetter, goa, ghc, rc, &pca, logrus.WithField("handler", "/rerun"))
+			handler := handleRerun(fakeProwJobClient.ProwV1().ProwJobs("prowjobs"), tc.rerunCreatesJob, authCfgGetter, goa, ghc, rc, &pca, logrus.WithField("handler", "/rerun"))
 			handler.ServeHTTP(rr, req)
 			if rr.Code != tc.httpCode {
 				t.Fatalf("Bad error code: %d", rr.Code)
@@ -929,15 +926,6 @@ func Test_gatherOptions(t *testing.T) {
 			},
 		},
 		{
-			name: "empty config-path defaults to old value",
-			args: map[string]string{
-				"--config-path": "",
-			},
-			expected: func(o *options) {
-				o.configPath = config.DefaultConfigPath
-			},
-		},
-		{
 			name: "explicitly set both --hidden-only and --show-hidden to true",
 			args: map[string]string{
 				"--hidden-only": "true",
@@ -957,7 +945,8 @@ func Test_gatherOptions(t *testing.T) {
 	for _, tc := range cases {
 		fs := flag.NewFlagSet("fake-flags", flag.PanicOnError)
 		ghoptions := flagutil.GitHubOptions{}
-		ghoptions.AddFlagsWithoutDefaultGitHubTokenPath(fs)
+		ghoptions.AddFlags(fs)
+		ghoptions.AllowAnonymous = true
 		t.Run(tc.name, func(t *testing.T) {
 			expected := &options{
 				configPath:            "yo",
@@ -1131,4 +1120,133 @@ func (p *possiblyErroringFakeCtrlRuntimeClient) List(
 		return errors.New("could not list ProwJobs")
 	}
 	return p.Client.List(ctx, pjl, opts...)
+}
+
+func cfgWithLensNamed(lensName string) *config.Config {
+	return &config.Config{
+		ProwConfig: config.ProwConfig{
+			Deck: config.Deck{
+				Spyglass: config.Spyglass{
+					Lenses: []config.LensFileConfig{{
+						Lens: config.LensConfig{
+							Name: lensName,
+						},
+					}},
+				},
+			},
+		},
+	}
+}
+
+func verifyCfgHasRemoteForLens(lensName string) func(*config.Config, error) error {
+	return func(c *config.Config, err error) error {
+		if err != nil {
+			return fmt.Errorf("got unexpected error: %w", err)
+		}
+
+		var found bool
+		for _, lens := range c.Deck.Spyglass.Lenses {
+			if lens.Lens.Name != lensName {
+				continue
+			}
+			found = true
+
+			if lens.RemoteConfig == nil {
+				return errors.New("remoteConfig for lens was nil")
+			}
+
+			if lens.RemoteConfig.Endpoint == "" {
+				return errors.New("endpoint was unset")
+			}
+
+			if lens.RemoteConfig.ParsedEndpoint == nil {
+				return errors.New("parsedEndpoint was nil")
+			}
+			if expected := common.DyanmicPathForLens(lensName); lens.RemoteConfig.ParsedEndpoint.Path != expected {
+				return fmt.Errorf("expected parsedEndpoint.Path to be %q, was %q", expected, lens.RemoteConfig.ParsedEndpoint.Path)
+			}
+			if lens.RemoteConfig.ParsedEndpoint.Scheme != "http" {
+				return fmt.Errorf("expected parsedEndpoint.scheme to be 'http', was %q", lens.RemoteConfig.ParsedEndpoint.Scheme)
+			}
+			if lens.RemoteConfig.ParsedEndpoint.Host != spyglassLocalLensListenerAddr {
+				return fmt.Errorf("expected parsedEndpoint.Host to be %q, was %q", spyglassLocalLensListenerAddr, lens.RemoteConfig.ParsedEndpoint.Host)
+			}
+			if lens.RemoteConfig.Title == "" {
+				return errors.New("expected title to be set")
+			}
+			if lens.RemoteConfig.Priority == nil {
+				return errors.New("expected priority to be set")
+			}
+			if lens.RemoteConfig.HideTitle == nil {
+				return errors.New("expected HideTitle to be set")
+			}
+		}
+
+		if !found {
+			return fmt.Errorf("no config found for lens %q", lensName)
+		}
+
+		return nil
+	}
+
+}
+
+func TestSpyglassConfigDefaulting(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		name   string
+		in     *config.Config
+		verify func(*config.Config, error) error
+	}{
+		{
+			name:   "buildlog lens gets defaulted",
+			in:     cfgWithLensNamed("buildlog"),
+			verify: verifyCfgHasRemoteForLens("buildlog"),
+		},
+		{
+			name:   "coverage lens gets defaulted",
+			in:     cfgWithLensNamed("coverage"),
+			verify: verifyCfgHasRemoteForLens("coverage"),
+		},
+		{
+			name:   "junit lens gets defaulted",
+			in:     cfgWithLensNamed("junit"),
+			verify: verifyCfgHasRemoteForLens("junit"),
+		},
+		{
+			name:   "metadata lens gets defaulted",
+			in:     cfgWithLensNamed("metadata"),
+			verify: verifyCfgHasRemoteForLens("metadata"),
+		},
+		{
+			name:   "podinfo lens gets defaulted",
+			in:     cfgWithLensNamed("podinfo"),
+			verify: verifyCfgHasRemoteForLens("podinfo"),
+		},
+		{
+			name:   "restcoverage lens gets defaulted",
+			in:     cfgWithLensNamed("restcoverage"),
+			verify: verifyCfgHasRemoteForLens("restcoverage"),
+		},
+		{
+			name: "undef lens defaulting fails",
+			in:   cfgWithLensNamed("undef"),
+			verify: func(_ *config.Config, err error) error {
+				expectedErrMsg := `lens "undef" has no remote_config and could not get default: invalid lens name`
+				if err == nil || err.Error() != expectedErrMsg {
+					return fmt.Errorf("expected err to be %q, was %v", expectedErrMsg, err)
+				}
+				return nil
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			if err := tc.verify(tc.in, spglassConfigDefaulting(tc.in)); err != nil {
+				t.Error(err)
+			}
+		})
+	}
 }

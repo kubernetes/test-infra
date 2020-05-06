@@ -40,7 +40,7 @@ to the last checked in deployment version.
 If prow is at least somewhat healthy, filing and merging PR from this will 
 result in the rolled back version being deployed.
 
-If not, you may need to manually run `bazel run //prow/cluster:production.apply`.
+If not, you may need to manually run `bazel run //config/prow/cluster:production.apply`.
 
 
 ## Known Issues

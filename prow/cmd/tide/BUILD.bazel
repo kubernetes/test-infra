@@ -1,9 +1,12 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
 load("//prow:def.bzl", "prow_image")
 
+NAME = "tide"
+
 prow_image(
     name = "image",
     base = "@git-base//image",
+    component = NAME,
     visibility = ["//visibility:public"],
 )
 
@@ -14,7 +17,6 @@ go_library(
     visibility = ["//visibility:private"],
     deps = [
         "//pkg/flagutil:go_default_library",
-        "//pkg/io:go_default_library",
         "//prow/config:go_default_library",
         "//prow/config/secret:go_default_library",
         "//prow/flagutil:go_default_library",
@@ -30,7 +32,7 @@ go_library(
 )
 
 go_binary(
-    name = "tide",
+    name = NAME,
     embed = [":go_default_library"],
     pure = "on",
     visibility = ["//visibility:public"],
@@ -55,7 +57,6 @@ go_test(
     srcs = ["main_test.go"],
     embed = [":go_default_library"],
     deps = [
-        "//prow/config:go_default_library",
         "//prow/flagutil:go_default_library",
         "@io_k8s_apimachinery//pkg/util/sets:go_default_library",
     ],

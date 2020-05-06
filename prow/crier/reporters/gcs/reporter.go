@@ -27,8 +27,8 @@ import (
 	"cloud.google.com/go/storage"
 	"github.com/GoogleCloudPlatform/testgrid/metadata"
 	"github.com/sirupsen/logrus"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/test-infra/prow/crier/reporters/gcs/internal/util"
-	"k8s.io/test-infra/prow/errorutil"
 
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
@@ -55,7 +55,7 @@ func (gr *gcsReporter) Report(pj *prowv1.ProwJob) ([]*prowv1.ProwJob, error) {
 	stateErr := gr.reportJobState(ctx, pj)
 	prowjobErr := gr.reportProwjob(ctx, pj)
 
-	return []*prowv1.ProwJob{pj}, errorutil.NewAggregate(stateErr, prowjobErr)
+	return []*prowv1.ProwJob{pj}, utilerrors.NewAggregate([]error{stateErr, prowjobErr})
 }
 
 func (gr *gcsReporter) reportJobState(ctx context.Context, pj *prowv1.ProwJob) error {
@@ -64,7 +64,7 @@ func (gr *gcsReporter) reportJobState(ctx context.Context, pj *prowv1.ProwJob) e
 	if pj.Complete() {
 		finishedErr = gr.reportFinishedJob(ctx, pj)
 	}
-	return errorutil.NewAggregate(startedErr, finishedErr)
+	return utilerrors.NewAggregate([]error{startedErr, finishedErr})
 }
 
 // reportStartedJob uploads a started.json for the job. This will almost certainly

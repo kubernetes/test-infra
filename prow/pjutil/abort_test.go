@@ -19,6 +19,7 @@ package pjutil
 import (
 	"context"
 	"errors"
+	"reflect"
 	"testing"
 	"time"
 
@@ -434,11 +435,13 @@ func TestTerminateOlderJobs(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			var prowJobs []runtime.Object
+			var clientPJs []runtime.Object
+			var origPJs []prowjobv1.ProwJob
 			for i := range tc.pjs {
-				prowJobs = append(prowJobs, &tc.pjs[i])
+				clientPJs = append(clientPJs, &tc.pjs[i])
+				origPJs = append(origPJs, tc.pjs[i])
 			}
-			fakeProwJobClient := &patchTrackingFakeClient{Client: fakectrlruntimeclient.NewFakeClient(prowJobs...)}
+			fakeProwJobClient := &patchTrackingFakeClient{Client: fakectrlruntimeclient.NewFakeClient(clientPJs...)}
 			log := logrus.NewEntry(logrus.StandardLogger())
 			cleanedupPJs := sets.NewString()
 			err := TerminateOlderJobs(fakeProwJobClient, log, tc.pjs, func(pj prowjobv1.ProwJob) error {
@@ -462,6 +465,17 @@ func TestTerminateOlderJobs(t *testing.T) {
 			}
 			if extra := replacedJobs.Difference(tc.terminateddPJs); extra.Len() > 0 {
 				t.Errorf("%s: found unexpectedly replaced job: %v", tc.name, extra.List())
+			}
+
+			// Validate that terminated PJs are marked terminated in the passed slice.
+			// Only consider jobs that we expected to be replaced and that were replaced.
+			replacedAsExpected := replacedJobs.Intersection(tc.terminateddPJs)
+			for i := range origPJs {
+				if replacedAsExpected.Has(origPJs[i].Name) {
+					if reflect.DeepEqual(origPJs[i], tc.pjs[i]) {
+						t.Errorf("%s: job %q was terminated, but not updated in the slice", tc.name, origPJs[i].Name)
+					}
+				}
 			}
 		})
 	}

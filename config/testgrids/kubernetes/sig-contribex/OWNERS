@@ -1,5 +1,13 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
+reviewers:
+- calebamiles
+- castrojo
+- cblecker
+- grodrigues3
+- idvoretskyi
+- jdumars
+- parispittman
 approvers:
 - calebamiles
 - castrojo

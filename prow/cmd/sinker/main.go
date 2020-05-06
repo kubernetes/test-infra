@@ -72,7 +72,6 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 
 	o.kubernetes.AddFlags(fs)
 	fs.Parse(args)
-	o.configPath = config.ConfigPath(o.configPath)
 	return o
 }
 
@@ -89,7 +88,7 @@ func (o *options) Validate() error {
 }
 
 func main() {
-	logrusutil.ComponentInit("sinker")
+	logrusutil.ComponentInit()
 
 	o := gatherOptions(flag.NewFlagSet(os.Args[0], flag.ExitOnError), os.Args[1:]...)
 	if err := o.Validate(); err != nil {
@@ -418,14 +417,7 @@ func (c *controller) clean() {
 				continue
 			}
 
-			// Delete old finished or orphan pods. Don't quit if we fail to delete one.
-			if err := client.Delete(pod.ObjectMeta.Name, &metav1.DeleteOptions{}); err == nil {
-				log.WithFields(logrus.Fields{"pod": pod.ObjectMeta.Name, "reason": reason}).Info("Deleted old completed pod.")
-				metrics.podsRemoved[reason]++
-			} else {
-				log.WithField("pod", pod.ObjectMeta.Name).WithError(err).Error("Error deleting pod.")
-				metrics.podRemovalErrors[string(k8serrors.ReasonForError(err))]++
-			}
+			c.deletePod(log, pod.Name, reason, client, &metrics)
 		}
 	}
 
@@ -446,4 +438,16 @@ func (c *controller) clean() {
 		sinkerMetrics.prowJobsCleaningErrors.WithLabelValues(k).Set(float64(v))
 	}
 	c.logger.Info("Sinker reconciliation complete.")
+}
+
+func (c *controller) deletePod(log *logrus.Entry, name, reason string, client podInterface, m *sinkerReconciliationMetrics) {
+	// Delete old finished or orphan pods. Don't quit if we fail to delete one.
+	if err := client.Delete(name, &metav1.DeleteOptions{}); err == nil {
+		log.WithFields(logrus.Fields{"pod": name, "reason": reason}).Info("Deleted old completed pod.")
+		m.podsRemoved[reason]++
+	} else if !k8serrors.IsNotFound(err) {
+		log.WithField("pod", name).WithError(err).Error("Error deleting pod.")
+		m.podRemovalErrors[string(k8serrors.ReasonForError(err))]++
+	}
+
 }

@@ -1764,14 +1764,14 @@ func TestHandlePullRequest(t *testing.T) {
 }
 
 func TestHelpProvider(t *testing.T) {
-	enabledRepos := []plugins.Repo{
+	enabledRepos := []config.OrgRepo{
 		{Org: "org1", Repo: "repo"},
 		{Org: "org2", Repo: "repo"},
 	}
 	cases := []struct {
 		name         string
 		config       *plugins.Configuration
-		enabledRepos []plugins.Repo
+		enabledRepos []config.OrgRepo
 		err          bool
 	}{
 		{

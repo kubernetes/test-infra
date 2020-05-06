@@ -3,14 +3,17 @@ package(default_visibility = ["//visibility:public"])
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
 load("//prow:def.bzl", "prow_image", "prow_push")
 
+NAME = "commenter"
+
 go_binary(
-    name = "commenter",
+    name = NAME,
     embed = [":go_default_library"],
 )
 
 prow_image(
     name = "image",
     base = "@alpine-base//image",
+    component = NAME,
     visibility = ["//visibility:public"],
 )
 

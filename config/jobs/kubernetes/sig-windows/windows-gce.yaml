@@ -42,66 +42,15 @@ presets:
     value: "128"
   - name: PREPULL_TIMEOUT
     value: "10m"
+  # APIResponsiveness test depends on Prometheus server which couldn't scrape kube-proxy,
+  # unless it’s binding 0.0.0.0 as per https://github.com/helm/charts/issues/16476
+  # Reference: https://github.com/kubernetes/test-infra/blob/master/config/jobs/kubernetes/sig-scalability/sig-scalability-presets.yaml#L127
+  - name: KUBEPROXY_TEST_ARGS
+    value: "--profiling --metrics-bind-address=0.0.0.0"
+  - name: WINDOWS_NODE_OS_DISTRIBUTION
+    value: "win2019"
 
 periodics:
-- name: ci-kubernetes-e2e-windows-gce-poc
-  decorate: true
-  extra_refs:
-  - org: pjh
-    repo: kubernetes
-    base_ref: windows-gce-poc
-    path_alias: k8s.io/kubernetes
-  - org: kubernetes-sigs
-    repo: windows-testing
-    base_ref: master
-    path_alias: k8s.io/windows-testing
-  - org: kubernetes
-    repo: release
-    base_ref: master
-    path_alias: k8s.io/release
-  interval: 2h
-  labels:
-    preset-k8s-ssh: "true"
-    preset-common-gce-windows: "true"
-    preset-e2e-gce-windows: "true"
-    preset-service-account: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --check-leaked-resources
-      - --cluster=
-      - --build=bazel
-      - --stage=gs://kubernetes-release-dev/ci/ci-kubernetes-e2e-windows-gce-poc
-      - --extract=local
-      - --gcp-zone=us-west1-b
-      - --ginkgo-parallel=8
-      - --provider=gce
-      - --gcp-nodes=2
-      - --test=false
-      - --test-cmd=$GOPATH/src/k8s.io/windows-testing/gce/run-e2e.sh
-      - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
-      - --test-cmd-args=--node-os-distro=windows
-      - --timeout=120m
-      env:
-      - name: WINDOWS_NODE_OS_DISTRIBUTION
-        value: "win1909"
-      - name: PREPULL_YAML
-        value: "prepull-head.yaml"
-      - name: OVERRIDE_NODE_BINARY_TAR_URL
-        value: "https://storage.googleapis.com/kubernetes-release/release/v1.17.2/kubernetes-node-windows-amd64.tar.gz"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
-      resources:
-        requests:
-          memory: "8Gi"
-  annotations:
-    testgrid-dashboards: google-windows
-    testgrid-tab-name: windows-prototype
-
 - name: ci-kubernetes-e2e-windows-gce-2019
   decorate: true
   extra_refs:
@@ -138,7 +87,7 @@ periodics:
         value: "win2019"
       - name: PREPULL_YAML
         value: "prepull-head.yaml"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
   annotations:
     fork-per-release: "true"
     fork-per-release-replacements: "--extract=ci/k8s-master -> --extract=ci/k8s-beta"
@@ -182,7 +131,7 @@ periodics:
         value: "win1909"
       - name: PREPULL_YAML
         value: "prepull-head.yaml"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
   annotations:
     fork-per-release: "true"
     fork-per-release-replacements: "--extract=ci/k8s-master -> --extract=ci/k8s-beta"
@@ -228,7 +177,7 @@ periodics:
         value: "prepull-head.yaml"
       - name: KUBE_FEATURE_GATES
         value: "WindowsGMSA=true"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
   annotations:
     testgrid-dashboards: google-windows, sig-windows
     testgrid-tab-name: gce-windows-2019-master-alpha-features
@@ -272,7 +221,7 @@ periodics:
         value: "win2019"
       - name: PREPULL_YAML
         value: "prepull-head.yaml"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
   annotations:
     testgrid-dashboards: google-windows
     testgrid-tab-name: gce-windows-2019-serial
@@ -316,13 +265,58 @@ periodics:
         value: "win2019"
       - name: PREPULL_YAML
         value: "prepull-head.yaml"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
   annotations:
-    fork-per-release: "true"
-    fork-per-release-replacements: "--extract=ci/k8s-master -> --extract=ci/k8s-beta"
-    testgrid-dashboards: google-windows, sig-windows, sig-release-master-informing, sig-node-containerd
+    testgrid-dashboards: google-windows, sig-windows, sig-node-containerd
     testgrid-tab-name: gce-windows-2019-containerd-master
     description: Runs tests on a Kubernetes cluster with Windows containerd nodes on GCE
+
+- name: ci-kubernetes-e2e-windows-containerd-gce-1-18
+  decorate: true
+  decoration_config:
+    timeout: 4h0m0s
+  extra_refs:
+  - base_ref: master
+    org: kubernetes-sigs
+    path_alias: k8s.io/windows-testing
+    repo: windows-testing
+  interval: 4h
+  labels:
+    preset-common-gce-windows: "true"
+    preset-e2e-gce-windows: "true"
+    preset-e2e-gce-windows-containerd: "true"
+    preset-k8s-ssh: "true"
+    preset-service-account: "true"
+  spec:
+    containers:
+    - args:
+      - --check-leaked-resources
+      - --cluster=
+      - --extract=ci/k8s-beta
+      - --gcp-zone=us-west1-b
+      - --ginkgo-parallel=8
+      - --provider=gce
+      - --gcp-nodes=2
+      - --test=false
+      - --test-cmd=$GOPATH/src/k8s.io/windows-testing/gce/run-e2e.sh
+      - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]
+        --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
+      - --test-cmd-args=--node-os-distro=windows
+      - --timeout=230m
+      command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      env:
+      - name: WINDOWS_NODE_OS_DISTRIBUTION
+        value: win2019
+      - name: PREPULL_YAML
+        value: prepull-head.yaml
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-1.18
+      name: ""
+      resources: {}
+  annotations:
+    testgrid-dashboards: google-windows, sig-windows, sig-node-containerd
+    testgrid-tab-name: gce-windows-2019-containerd-1.18
 
 - name: ci-kubernetes-e2e-windows-node-throughput
   interval: 6h
@@ -351,7 +345,14 @@ periodics:
     - command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
+      env:
+      - name: CL2_CONTAINER_IMAGE
+        value: "gcr.io/gke-release/pause-win:1.2.1"
+      - name: CL2_WMI_EXPORTER_URL
+        value: "https://github.com/martinlindhe/wmi_exporter/releases/download/v0.11.0/wmi_exporter-0.11.0-amd64.exe"
+      - name: CL2_WMI_EXPORTER_ENABLED_COLLECTORS
+        value: "process,cs"
       args:
       - --check-leaked-resources
       - --cluster=
@@ -365,8 +366,65 @@ periodics:
       - --test-cmd-args=--nodes=1
       - --test-cmd-args=--provider=gce
       - --test-cmd-args=--report-dir=/logs/artifacts
-      - --test-cmd-args=--testconfig=testing/node-throughput/config.yaml
-      - --test-cmd-args=--testoverrides=./testing/node-throughput/windows_override.yaml
+      - --test-cmd-args=--enable-prometheus-server=true
+      - --test-cmd-args=--testconfig=testing/windows-tests/config.yaml
+      - --test-cmd-args=--testoverrides=./testing/windows-tests/windows_override.yaml
+      - --test-cmd-name=ClusterLoaderV2
+      - --timeout=300m
+
+- name: ci-kubernetes-e2e-windows-node-throughput-iis
+  interval: 6h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-common-gce-windows: "true"
+    preset-load-gce-windows: "true"
+  annotations:
+    testgrid-dashboards: google-windows
+    testgrid-tab-name: gce-windows-node-throughput-iis
+  decorate: true
+  decoration_config:
+    timeout: 4h
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: windows-testing
+    base_ref: master
+    path_alias: k8s.io/windows-testing
+  - org: kubernetes
+    repo: perf-tests
+    base_ref: master
+    path_alias: k8s.io/perf-tests
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
+      env:
+      - name: CL2_CONTAINER_IMAGE
+        value: "mcr.microsoft.com/windows/servercore/iis"
+      - name: CL2_WMI_EXPORTER_URL
+        value: "https://github.com/martinlindhe/wmi_exporter/releases/download/v0.11.0/wmi_exporter-0.11.0-amd64.exe"
+      - name: CL2_WMI_EXPORTER_ENABLED_COLLECTORS
+        value: "process,cs"
+      - name: CL2_POD_COUNT
+        value: "80"
+      args:
+      - --check-leaked-resources
+      - --cluster=
+      - --extract=ci/k8s-master
+      - --gcp-zone=us-west1-b
+      - --provider=gce
+      - --gcp-nodes=1
+      - --test=false
+      - --test-cmd=$GOPATH/src/k8s.io/windows-testing/gce/load-test.sh
+      - --test-cmd-args=cluster-loader2
+      - --test-cmd-args=--nodes=1
+      - --test-cmd-args=--provider=gce
+      - --test-cmd-args=--report-dir=/logs/artifacts
+      - --test-cmd-args=--enable-prometheus-server=true
+      - --test-cmd-args=--testconfig=testing/windows-tests/config.yaml
+      - --test-cmd-args=--testoverrides=./testing/windows-tests/windows_override.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=300m
 
@@ -423,7 +481,7 @@ presubmits:
           value: "win2019"
         - name: PREPULL_YAML
           value: "prepull-head.yaml"
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true

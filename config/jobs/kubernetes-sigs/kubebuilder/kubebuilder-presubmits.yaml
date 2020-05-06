@@ -7,6 +7,7 @@ presubmits:
     path_alias: sigs.k8s.io/kubebuilder
     branches:
     - ^master$
+    - ^feature/plugins-.+$
     spec:
       containers:
       - image: golang:1.13
@@ -25,9 +26,10 @@ presubmits:
     path_alias: sigs.k8s.io/kubebuilder
     branches:
     - ^master$
+    - ^feature/plugins-.+$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
         command:
         # see https://github.com/kubernetes/test-infra/blob/bb41c9ee91b50fffa843e2a6fbc0fe361999f682/config/prow/config.yaml#L590-L613
         - runner.sh
@@ -54,9 +56,10 @@ presubmits:
     path_alias: sigs.k8s.io/kubebuilder
     branches:
     - ^master$
+    - ^feature/plugins-.+$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
         command:
         # see https://github.com/kubernetes/test-infra/blob/bb41c9ee91b50fffa843e2a6fbc0fe361999f682/config/prow/config.yaml#L590-L613
         - runner.sh
@@ -83,9 +86,10 @@ presubmits:
     path_alias: sigs.k8s.io/kubebuilder
     branches:
     - ^master$
+    - ^feature/plugins-.+$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
         command:
         # see https://github.com/kubernetes/test-infra/blob/bb41c9ee91b50fffa843e2a6fbc0fe361999f682/config/prow/config.yaml#L590-L613
         - runner.sh
@@ -112,9 +116,10 @@ presubmits:
     path_alias: sigs.k8s.io/kubebuilder
     branches:
     - ^master$
+    - ^feature/plugins-.+$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
         command:
         # see https://github.com/kubernetes/test-infra/blob/bb41c9ee91b50fffa843e2a6fbc0fe361999f682/config/prow/config.yaml#L590-L613
         - runner.sh

@@ -23,4 +23,4 @@ if ! command -v bazel &>/dev/null; then
 fi
 
 set -o xtrace
-bazel test --test_output=streamed //hack:verify-deps
+bazel test --test_output=streamed @io_k8s_repo_infra//hack:verify-deps

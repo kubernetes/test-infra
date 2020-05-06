@@ -1,0 +1,24 @@
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args: 
+    - build
+    - --tag=gcr.io/$PROJECT_ID/launcher.gcr.io/google/bazel:$_GIT_TAG-$_CONFIG
+    - --build-arg=NEW_VERSION=$_NEW_VERSION
+    - --build-arg=OLD_VERSION=$_OLD_VERSION
+    - --build-arg=IMAGE_ARG=gcr.io/$PROJECT_ID/launcher.gcr.io/google/bazel:$_GIT_TAG-$_CONFIG
+    - .
+
+  - name: gcr.io/cloud-builders/docker
+    args:
+    - tag
+    - gcr.io/$PROJECT_ID/launcher.gcr.io/google/bazel:$_GIT_TAG-$_CONFIG
+    - gcr.io/$PROJECT_ID/launcher.gcr.io/google/bazel:latest-$_CONFIG
+
+substitutions:
+  _GIT_TAG: '12345'
+  _CONFIG: foo
+  _NEW_VERSION: something
+  _OLD_VERSION: something
+images:
+- gcr.io/$PROJECT_ID/launcher.gcr.io/google/bazel:$_GIT_TAG-$_CONFIG
+- gcr.io/$PROJECT_ID/launcher.gcr.io/google/bazel:latest-$_CONFIG

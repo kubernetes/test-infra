@@ -206,9 +206,6 @@ func TestTriggerFor(t *testing.T) {
 			if tc.expectedTrusted != actual.TrustedOrg {
 				t.Errorf("expected TrustedOrg to be %q, but got %q", tc.expectedTrusted, actual.TrustedOrg)
 			}
-			if actual.ElideSkippedContexts == nil {
-				t.Errorf("elide_skipped_contexts was not properly defaulted")
-			}
 		})
 	}
 }
@@ -416,26 +413,28 @@ func TestResolveBugzillaOptions(t *testing.T) {
 		},
 		{
 			name:   "no child means a copy of parent is the output",
-			parent: BugzillaBranchOptions{ValidateByDefault: &yes, IsOpen: &open, TargetRelease: &one, ValidStates: &[]BugzillaBugState{modifiedState}, DependentBugStates: &[]BugzillaBugState{verifiedState}, StateAfterValidation: &postState},
+			parent: BugzillaBranchOptions{ValidateByDefault: &yes, IsOpen: &open, TargetRelease: &one, ValidStates: &[]BugzillaBugState{modifiedState}, DependentBugStates: &[]BugzillaBugState{verifiedState}, DependentBugTargetReleases: &[]string{one}, StateAfterValidation: &postState},
 			expected: BugzillaBranchOptions{
-				ValidateByDefault:    &yes,
-				IsOpen:               &open,
-				TargetRelease:        &one,
-				ValidStates:          &[]BugzillaBugState{modifiedState},
-				DependentBugStates:   &[]BugzillaBugState{verifiedState},
-				StateAfterValidation: &postState,
+				ValidateByDefault:          &yes,
+				IsOpen:                     &open,
+				TargetRelease:              &one,
+				ValidStates:                &[]BugzillaBugState{modifiedState},
+				DependentBugStates:         &[]BugzillaBugState{verifiedState},
+				DependentBugTargetReleases: &[]string{one},
+				StateAfterValidation:       &postState,
 			},
 		},
 		{
 			name:  "no parent means a copy of child is the output",
-			child: BugzillaBranchOptions{ValidateByDefault: &yes, IsOpen: &open, TargetRelease: &one, ValidStates: &[]BugzillaBugState{modifiedState}, DependentBugStates: &[]BugzillaBugState{verifiedState}, StateAfterValidation: &postState},
+			child: BugzillaBranchOptions{ValidateByDefault: &yes, IsOpen: &open, TargetRelease: &one, ValidStates: &[]BugzillaBugState{modifiedState}, DependentBugStates: &[]BugzillaBugState{verifiedState}, DependentBugTargetReleases: &[]string{one}, StateAfterValidation: &postState},
 			expected: BugzillaBranchOptions{
-				ValidateByDefault:    &yes,
-				IsOpen:               &open,
-				TargetRelease:        &one,
-				ValidStates:          &[]BugzillaBugState{modifiedState},
-				DependentBugStates:   &[]BugzillaBugState{verifiedState},
-				StateAfterValidation: &postState,
+				ValidateByDefault:          &yes,
+				IsOpen:                     &open,
+				TargetRelease:              &one,
+				ValidStates:                &[]BugzillaBugState{modifiedState},
+				DependentBugStates:         &[]BugzillaBugState{verifiedState},
+				DependentBugTargetReleases: &[]string{one},
+				StateAfterValidation:       &postState,
 			},
 		},
 		{
@@ -481,6 +480,12 @@ func TestResolveBugzillaOptions(t *testing.T) {
 			},
 		},
 		{
+			name:     "child overrides parent on dependent bug target releases",
+			parent:   BugzillaBranchOptions{IsOpen: &open, TargetRelease: &one, ValidStates: &[]BugzillaBugState{modifiedState}, StateAfterValidation: &postState, DependentBugTargetReleases: &[]string{one}},
+			child:    BugzillaBranchOptions{DependentBugTargetReleases: &[]string{two}},
+			expected: BugzillaBranchOptions{IsOpen: &open, TargetRelease: &one, ValidStates: &[]BugzillaBugState{modifiedState}, StateAfterValidation: &postState, DependentBugTargetReleases: &[]string{two}},
+		},
+		{
 			name:   "child overrides parent on state after merge",
 			parent: BugzillaBranchOptions{IsOpen: &open, TargetRelease: &one, ValidStates: &[]BugzillaBugState{modifiedState}, StateAfterValidation: &postState, StateAfterMerge: &postState},
 			child:  BugzillaBranchOptions{StateAfterMerge: &preState},
@@ -519,17 +524,30 @@ func TestResolveBugzillaOptions(t *testing.T) {
 			expected: BugzillaBranchOptions{ValidStates: &[]BugzillaBugState{postState}, DependentBugStates: &[]BugzillaBugState{postState}, StateAfterMerge: &postState, StateAfterValidation: &postState},
 		},
 		{
+			name:     "parent dependent target release is merged on child",
+			parent:   BugzillaBranchOptions{DeprecatedDependentBugTargetRelease: &one},
+			child:    BugzillaBranchOptions{},
+			expected: BugzillaBranchOptions{DependentBugTargetReleases: &[]string{one}},
+		},
+		{
+			name:     "parent dependent target release is merged into target releases",
+			parent:   BugzillaBranchOptions{DependentBugTargetReleases: &[]string{one}, DeprecatedDependentBugTargetRelease: &two},
+			child:    BugzillaBranchOptions{},
+			expected: BugzillaBranchOptions{DependentBugTargetReleases: &[]string{one, two}},
+		},
+		{
 			name:   "child overrides parent on all fields",
-			parent: BugzillaBranchOptions{ValidateByDefault: &yes, IsOpen: &open, TargetRelease: &one, ValidStates: &[]BugzillaBugState{verifiedState}, DependentBugStates: &[]BugzillaBugState{verifiedState}, StateAfterValidation: &postState, StateAfterMerge: &postState},
-			child:  BugzillaBranchOptions{ValidateByDefault: &no, IsOpen: &closed, TargetRelease: &two, ValidStates: &[]BugzillaBugState{modifiedState}, DependentBugStates: &[]BugzillaBugState{modifiedState}, StateAfterValidation: &preState, StateAfterMerge: &preState},
+			parent: BugzillaBranchOptions{ValidateByDefault: &yes, IsOpen: &open, TargetRelease: &one, ValidStates: &[]BugzillaBugState{verifiedState}, DependentBugStates: &[]BugzillaBugState{verifiedState}, DependentBugTargetReleases: &[]string{one}, StateAfterValidation: &postState, StateAfterMerge: &postState},
+			child:  BugzillaBranchOptions{ValidateByDefault: &no, IsOpen: &closed, TargetRelease: &two, ValidStates: &[]BugzillaBugState{modifiedState}, DependentBugStates: &[]BugzillaBugState{modifiedState}, DependentBugTargetReleases: &[]string{two}, StateAfterValidation: &preState, StateAfterMerge: &preState},
 			expected: BugzillaBranchOptions{
-				ValidateByDefault:    &no,
-				IsOpen:               &closed,
-				TargetRelease:        &two,
-				ValidStates:          &[]BugzillaBugState{modifiedState},
-				DependentBugStates:   &[]BugzillaBugState{modifiedState},
-				StateAfterValidation: &preState,
-				StateAfterMerge:      &preState,
+				ValidateByDefault:          &no,
+				IsOpen:                     &closed,
+				TargetRelease:              &two,
+				ValidStates:                &[]BugzillaBugState{modifiedState},
+				DependentBugStates:         &[]BugzillaBugState{modifiedState},
+				DependentBugTargetReleases: &[]string{two},
+				StateAfterValidation:       &preState,
+				StateAfterMerge:            &preState,
 			},
 		},
 	}
@@ -979,7 +997,7 @@ func TestBugzillaBugState_AsBugUpdate(t *testing.T) {
 				}
 			}
 
-			if actual != nil && tc.expected != nil && *tc.expected != *actual {
+			if !reflect.DeepEqual(tc.expected, actual) {
 				t.Errorf("%s: BugUpdate differs from expected:\n%s", tc.name, diff.ObjectReflectDiff(*actual, *tc.expected))
 			}
 		})

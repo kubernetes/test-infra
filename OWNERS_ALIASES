@@ -8,7 +8,269 @@ aliases:
   - Katharine
   - michelle192837
 
+  # copied from git.k8s.io/community/OWNERS_ALIASES
+  sig-api-machinery-leads:
+    - deads2k
+    - fedebongio
+    - lavalamp
+  sig-apps-leads:
+    - janetkuo
+    - kow3ns
+    - mattfarina
+    - prydonius
+  sig-architecture-leads:
+    - derekwaynecarr
+    - dims
+    - johnbelamaric
+  sig-auth-leads:
+    - deads2k
+    - enj
+    - liggitt
+    - mikedanese
+    - tallclair
+  sig-autoscaling-leads:
+    - mwielgus
+  sig-cli-leads:
+    - pwittrock
+    - seans3
+    - soltysh
+  sig-cloud-provider-leads:
+    - andrewsykim
+    - cheftako
+  sig-cluster-lifecycle-leads:
+    - fabriziopandini
+    - justinsb
+    - neolit123
+    - timothysc
+  sig-contributor-experience-leads:
+    - castrojo
+    - cblecker
+    - mrbobbytables
+    - nikhita
+  sig-docs-leads:
+    - jimangel
+    - kbarnard10
+    - kbhawkey
+    - sftim
+    - zacharysarah
+  sig-instrumentation-leads:
+    - brancz
+    - ehashman
+    - logicalhan
+  sig-multicluster-leads:
+    - pmorie
+    - quinton-hoole
+  sig-network-leads:
+    - caseydavenport
+    - dcbw
+    - thockin
+  sig-node-leads:
+    - dchen1107
+    - derekwaynecarr
+  sig-pm-leads:
+    - calebamiles
+    - jdumars
+    - justaugustus
+    - lachie83
+  sig-release-leads:
+    - calebamiles
+    - justaugustus
+    - tpepper
   sig-scalability-leads:
-  - mm4tt
-  - shyamjvs
-  - wojtek-t
+    - mm4tt
+    - shyamjvs
+    - wojtek-t
+  sig-scheduling-leads:
+    - Huang-Wei
+    - ahg-g
+  sig-service-catalog-leads:
+    - jberkhahn
+    - mszostok
+  sig-storage-leads:
+    - jsafrane
+    - msau42
+    - saad-ali
+    - xing-yang
+  sig-testing-leads:
+    - fejta
+    - spiffxp
+    - stevekuznetsov
+  sig-ui-leads:
+    - floreks
+    - jeefy
+    - maciaszczykm
+  sig-usability-leads:
+    - Rajakavitha1
+    - hpandeycodeit
+    - tashimi
+    - vllry
+  sig-windows-leads:
+    - benmoss
+    - ddebroy
+    - marosset
+    - michmike
+  wg-apply-leads:
+    - lavalamp
+  wg-component-standard-leads:
+    - mtaufen
+    - stealthybox
+    - sttts
+  wg-data-protection-leads:
+    - xing-yang
+    - yuxiangqian
+  wg-iot-edge-leads:
+    - cantbewong
+    - cindyxing
+    - dejanb
+  wg-k8s-infra-leads:
+    - bartsmykla
+    - dims
+    - spiffxp
+  wg-lts-leads:
+    - imkin
+    - quinton-hoole
+    - tpepper
+    - youngnick
+  wg-machine-learning-leads:
+    - k82cn
+    - kow3ns
+    - vishh
+  wg-multitenancy-leads:
+    - srampal
+    - tashimi
+  wg-policy-leads:
+    - ericavonb
+    - hannibalhuang
+  wg-resource-management-leads:
+    - derekwaynecarr
+    - vishh
+  wg-security-audit-leads:
+    - aasmall
+    - cji
+    - jaybeale
+    - joelsmith
+  ug-big-data-leads:
+    - erikerlandson
+    - foxish
+    - liyinan926
+  ug-vmware-users-leads:
+    - brysonshepherd
+    - cantbewong
+    - mylesagray
+    - phenixblue
+  committee-code-of-conduct:
+    - AevaOnline
+    - Bradamant3
+    - carolynvs
+    - jdumars
+    - tashimi
+  committee-product-security:
+    - cjcullen
+    - joelsmith
+    - jonpulsifer
+    - liggitt
+    - lukehinds
+    - philips
+    - tallclair
+  committee-steering:
+    - cblecker
+    - derekwaynecarr
+    - dims
+    - nikhita
+    - parispittman
+    - spiffxp
+    - timothysc
+## BEGIN CUSTOM CONTENT
+  provider-aws:
+    - d-nishi
+    - justinsb
+    - kris-nova
+  provider-azure:
+    - craiglpeters
+    - justaugustus
+    - feiskyer
+    - khenidak
+  provider-gcp:
+    - abgworrall
+  provider-ibmcloud:
+    - spzala
+  provider-openstack:
+    - chrigl
+    - lingxiankong
+    - ramineni
+  provider-vmware:
+    - cantbewong
+    - frapposelli
+## END CUSTOM CONTENT
+
+  # copied from git.k8s.io/kubernetes/OWNERS_ALIASES
+  release-engineering-approvers:
+    - calebamiles # subproject owner
+    - justaugustus # subproject owner / Patch Release Team
+    - tpepper # subproject owner / Patch Release Team
+  release-engineering-reviewers:
+    - calebamiles # subproject owner
+    - cpanato # Branch Manager
+    - feiskyer # Patch Release Team
+    - hasheddan # Branch Manager
+    - hoegaarden # Patch Release Team
+    - justaugustus # subproject owner / Patch Release Team
+    - saschagrunert # Branch Manager
+    - tpepper # subproject owner / Patch Release Team
+
+  # copied from git.k8s.io/enhancements/OWNERS_ALIASES
+  enhancements-approvers:
+    - jeremyrickard # subproject owner
+    - johnbelamaric # subproject owner
+    - justaugustus # subproject owner
+    - mrbobbytables # subproject owner
+  enhancements-reviewers:
+    - jeremyrickard # subproject owner
+    - johnbelamaric # subproject owner
+    - justaugustus # subproject owner
+    - mrbobbytables # subproject owner
+
+  # copied from sigs.k8s.io/cluster-api-provider-vsphere/OWNERS_ALIASES
+  cluster-api-admins:
+    - detiber
+    - justinsb
+    - davidewatson
+    - vincepri
+  cluster-api-vsphere-maintainers:
+    - frapposelli
+    - yastij
+    - randomvariable
+  # end sigs.k8s.io/cluster-api-provider-vsphere/OWNERS_ALIASES
+
+  # mostly copied from sigs.k8s.io/controller-runtime/OWNERS_ALIASES
+  controller-runtime-admins:
+  - directxman12
+  - mengqiy
+
+  controller-runtime-maintainers:
+  - vincepri
+
+  controller-runtime-approvers:
+  - gerred
+
+  controller-runtime-reviewers:
+  - alvaroaleman
+  - alenkacz
+  - vincepri
+  - alexeldeib
+
+  controller-runtime-emeritus-maintainers:
+  - pwittrock
+
+  # mostly copied from sigs.k8s.io/kubebuilder/OWNERS_ALIASES
+  kubebuilder-admins:
+  - mengqiy
+  - directxman12
+
+  kubebuilder-reviewers:
+  - alexeldeib
+
+  kubebuilder-emeritus-approvers: 
+  - pwittrock
+
+  # end sigs.k8s.io/kubebuilder/OWNERS_ALIASES

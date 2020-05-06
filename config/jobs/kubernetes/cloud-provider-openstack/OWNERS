@@ -1,4 +1,9 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
+reviewers:
+- dims
 approvers:
 - dims
+labels:
+- sig/cloud-provider
+- area/provider/openstack

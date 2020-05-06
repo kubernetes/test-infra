@@ -34,7 +34,7 @@ import (
 	"google.golang.org/api/iterator"
 
 	"github.com/GoogleCloudPlatform/testgrid/util/gcs"
-	"k8s.io/test-infra/prow/spyglass/lenses"
+	"k8s.io/test-infra/prow/spyglass/api"
 )
 
 const (
@@ -49,8 +49,9 @@ var (
 
 // GCSArtifactFetcher contains information used for fetching artifacts from GCS
 type GCSArtifactFetcher struct {
-	client       *storage.Client
-	gcsCredsFile string
+	client        *storage.Client
+	gcsCredsFile  string
+	useCookieAuth bool
 }
 
 // gcsJobSource is a location in GCS where Prow job-specific artifacts are stored. This implementation assumes
@@ -66,10 +67,11 @@ type gcsJobSource struct {
 }
 
 // NewGCSArtifactFetcher creates a new ArtifactFetcher with a real GCS Client
-func NewGCSArtifactFetcher(c *storage.Client, gcsCredsFile string) *GCSArtifactFetcher {
+func NewGCSArtifactFetcher(c *storage.Client, gcsCredsFile string, useCookieAuth bool) *GCSArtifactFetcher {
 	return &GCSArtifactFetcher{
-		client:       c,
-		gcsCredsFile: gcsCredsFile,
+		client:        c,
+		gcsCredsFile:  gcsCredsFile,
+		useCookieAuth: useCookieAuth,
 	}
 }
 
@@ -145,17 +147,34 @@ func (af *GCSArtifactFetcher) artifacts(key string) ([]string, error) {
 	return artifacts, nil
 }
 
+const (
+	anonHost   = "storage.googleapis.com"
+	cookieHost = "storage.cloud.google.com"
+)
+
 func (af *GCSArtifactFetcher) signURL(bucket, obj string) (string, error) {
-	// If we're anonymous we can just return a plain URL.
-	if af.gcsCredsFile == "" {
+	// We specifically want to use cookie auth, see:
+	// https://cloud.google.com/storage/docs/access-control/cookie-based-authentication
+	if af.useCookieAuth {
 		artifactLink := &url.URL{
 			Scheme: httpsScheme,
-			Host:   "storage.googleapis.com",
+			Host:   cookieHost,
 			Path:   path.Join(bucket, obj),
 		}
 		return artifactLink.String(), nil
 	}
 
+	// If we're anonymous we can just return a plain URL.
+	if af.gcsCredsFile == "" {
+		artifactLink := &url.URL{
+			Scheme: httpsScheme,
+			Host:   anonHost,
+			Path:   path.Join(bucket, obj),
+		}
+		return artifactLink.String(), nil
+	}
+
+	// TODO(fejta): do not require the json file https://github.com/kubernetes/test-infra/issues/16489
 	// As far as I can tell, there is no sane way to get these values other than just
 	// reading them out of the JSON file ourselves.
 	f, err := os.Open(af.gcsCredsFile)
@@ -197,7 +216,7 @@ func (h *gcsArtifactHandle) NewRangeReader(ctx context.Context, offset, length i
 // Artifact constructs a GCS artifact from the given GCS bucket and key. Uses the golang GCS library
 // to get read handles. If the artifactName is not a valid key in the bucket a handle will still be
 // constructed and returned, but all read operations will fail (dictated by behavior of golang GCS lib).
-func (af *GCSArtifactFetcher) artifact(key string, artifactName string, sizeLimit int64) (lenses.Artifact, error) {
+func (af *GCSArtifactFetcher) Artifact(key string, artifactName string, sizeLimit int64) (api.Artifact, error) {
 	src, err := newGCSJobSource(key)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to get GCS job source from %s: %v", key, err)

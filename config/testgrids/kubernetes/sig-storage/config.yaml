@@ -2,6 +2,7 @@ dashboard_groups:
 - name: sig-storage
   dashboard_names:
     - sig-storage-kubernetes
+    - sig-storage-lib-external-provisioner
     - sig-storage-local-static-provisioner
     - sig-storage-csi-ci
     - sig-storage-csi-csi-driver-host-path
@@ -105,3 +106,4 @@ dashboards:
 - name: sig-storage-csi-livenessprobe
 - name: sig-storage-csi-node-driver-registrar
 - name: sig-storage-csi-other
+- name: sig-storage-lib-external-provisioner

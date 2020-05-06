@@ -148,8 +148,9 @@ func TestMergeMethod(t *testing.T) {
 	}
 
 	for _, test := range testcases {
-		if ti.MergeMethod(test.org, test.repo) != test.expected {
-			t.Errorf("Expected merge method %q but got %q for %s/%s", test.expected, ti.MergeMethod(test.org, test.repo), test.org, test.repo)
+		actual := ti.MergeMethod(OrgRepo{Org: test.org, Repo: test.repo})
+		if actual != test.expected {
+			t.Errorf("Expected merge method %q but got %q for %s/%s", test.expected, actual, test.org, test.repo)
 		}
 	}
 }
@@ -220,7 +221,7 @@ func TestMergeTemplate(t *testing.T) {
 	}
 
 	for _, test := range testcases {
-		actual := ti.MergeCommitTemplate(test.org, test.repo)
+		actual := ti.MergeCommitTemplate(OrgRepo{Org: test.org, Repo: test.repo})
 
 		if actual.TitleTemplate != test.expected.TitleTemplate || actual.BodyTemplate != test.expected.BodyTemplate {
 			t.Errorf("Expected title \"%v\", body \"%v\", but got title \"%v\", body \"%v\" for %v/%v", test.expected.TitleTemplate, test.expected.BodyTemplate, actual.TitleTemplate, actual.BodyTemplate, test.org, test.repo)

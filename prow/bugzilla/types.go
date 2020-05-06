@@ -16,6 +16,8 @@ limitations under the License.
 
 package bugzilla
 
+import "time"
+
 // Bug is a record of a bug. See API documentation at:
 // https://bugzilla.readthedocs.io/en/latest/api/core/v1/bug.html#get-bug
 type Bug struct {
@@ -107,6 +109,84 @@ type Bug struct {
 	Whiteboard string `json:"whiteboard,omitempty"`
 }
 
+// BugCreate holds the info needed to create a new bug
+type BugCreate struct {
+	// Alias is an optional list of unique aliases of this bug.
+	Alias []string `json:"alias,omitempty"`
+	// AssignedTo is the login name of the user to whom the bug is assigned.
+	AssignedTo string `json:"assigned_to,omitempty"`
+	// CC is the login names of users on the CC list of this bug.
+	CC []string `json:"cc,omitempty"`
+	// CommentIsPrivate sets the description to private. Otherwise it is assumed to be public.
+	CommentIsPrivate bool `json:"comment_is_private,omitempty"`
+	// CommentTags is an array of strings to add as comment tags for the description
+	CommentTags []string `json:"comment_tags,omitempty"`
+	// Component is an array of names of the current components of this bug.
+	Component []string `json:"component,omitempty"`
+	// Description is the initial description for this bug
+	Description string `json:"description,omitempty"`
+	// Flags is an array of objects containing the information about flags currently set for the bug.
+	Flags []Flag `json:"flags,omitempty"`
+	// Groups is the names of all the groups that this bug is in.
+	Groups []string `json:"groups,omitempty"`
+	// IsMarkdown should be set if the description has Markdown structures; otherwise it is normal text.
+	IsMarkdown bool `json:"is_markdown,omitempty"`
+	// Keywords is each keyword that is on this bug.
+	Keywords []string `json:"keywords,omitempty"`
+	// OperatingSystem is the name of the operating system that the bug was filed against.
+	OperatingSystem string `json:"op_sys,omitempty"`
+	// Platform is the name of the platform (hardware) that the bug was filed against.
+	Platform string `json:"platform,omitempty"`
+	// Priority is the priority of the bug.
+	Priority string `json:"priority,omitempty"`
+	// Product is the name of the product this bug is in.
+	Product string `json:"product,omitempty"`
+	// QAContact is the login name of the current QA Contact on the bug.
+	QAContact string `json:"qa_contact,omitempty"`
+	// Resolution is the current resolution of the bug, or an empty string if the bug is open.
+	Resolution string `json:"resolution,omitempty"`
+	// Severity is the current severity of the bug.
+	Severity string `json:"severity,omitempty"`
+	// Status is the current status of the bug.
+	Status string `json:"status,omitempty"`
+	// SubComponents are the subcomponents of the component for the bug. The key is the Component name, while the value is an array of length 1 containing the subcomponent name.
+	// This is a Red Hat bugzilla specific extra field.
+	SubComponents map[string][]string `json:"sub_components,omitempty"`
+	// Summary is the summary of this bug.
+	Summary string `json:"summary,omitempty"`
+	// TargetMilestone is the milestone that this bug is supposed to be fixed by, or for closed bugs, the milestone that it was fixed for.
+	TargetMilestone string `json:"target_milestone,omitempty"`
+	// Version are the versions the bug was reported against.
+	Version []string `json:"version,omitempty"`
+}
+
+// Comment holds information about a comment
+type Comment struct {
+	// ID is the globally unique ID for the comment.
+	ID int `json:"id,omitempty"`
+	// BugID is the ID of the bug that this comment is on.
+	BugID int `json:"bug_id,omitempty"`
+	// AttachmentID is the ID of the attachment if this comment was made on an attachment.
+	AttachmentID *int `json:"attachment_id,omitempty"`
+	// Count is the number of the comment local to the bug. The Description is 0, comments start with 1.
+	Count int `json:"count,omitempty"`
+	// Text is the actual text of the comment.
+	Text string `json:"text,omitempty"`
+	// Creator is the login name of the comment's author.
+	Creator string `json:"creator,omitempty"`
+	// Time is the time (in Bugzilla's timezone) that the comment was added.
+	Time time.Time `json:"time,omitempty"`
+	// CreationTime is exactly same as the time key. Use this field instead of time for consistency with other methods including Get Bug and Get Attachment.
+	// For compatibility, time is still usable. However, please note that time may be deprecated and removed in a future release.
+	CreationTime time.Time `json:"creation_time,omitempty"`
+	// IsPrivate is true if this comment is private (only visible to a certain group called the "insidergroup"), false otherwise.
+	IsPrivate bool `json:"is_private,omitempty"`
+	// IsMarkdown is true if this comment needs Markdown processing; false otherwise.
+	IsMarkdown bool `json:"is_markdown,omitempty"`
+	// Tags is an array of comment tags currently set for the comment.
+	Tags []string `json:"tags,omitempty"`
+}
+
 // User holds information about a user
 type User struct {
 	// The user ID for this user.
@@ -142,9 +222,25 @@ type Flag struct {
 // BugUpdate contains fields to update on a Bug. See API documentation at:
 // https://bugzilla.readthedocs.io/en/latest/api/core/v1/bug.html#update-bug
 type BugUpdate struct {
+	// DependsOn specifies the bugs that this bug depends on
+	DependsOn  *IDUpdate `json:"depends_on,omitempty"`
+	Resolution string    `json:"resolution,omitempty"`
 	// Status is the current status of the bug.
-	Status     string `json:"status,omitempty"`
-	Resolution string `json:"resolution,omitempty"`
+	Status string `json:"status,omitempty"`
+	// TargetRelease is the release version this bugfix is targeting
+	TargetRelease []string `json:"target_release,omitempty"`
+	// Version is the version the bug was reported against.
+	Version string `json:"version,omitempty"`
+}
+
+// IDUpdate is the struct used in Update calls to update fields that are arrays of IDs (ex. DependsOn)
+type IDUpdate struct {
+	// Add contains Bug IDs to add to this field.
+	Add []int `json:"add,omitempty"`
+	// Remove specifies Bug IDs to remove from this field. If the bug IDs are not already in the field, they will be ignored.
+	Remove []int `json:"remove,omitempty"`
+	// Set is An exact set of bug IDs to set this field to, overriding the current value. If Set is specified, then Add and Remove will be ignored.
+	Set []int `json:"set,omitempty"`
 }
 
 // ExternalBug contains details about an external bug linked to a Bugzilla bug.

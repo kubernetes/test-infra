@@ -1,6 +1,20 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
+reviewers:
+- Random-Liu
+- yguo0905
+- yujuhong
+- tallclair
+- derekwaynecarr
+- ConnorDoyle
+- klueska
+- dchen1107
 approvers:
 - Random-Liu
 - yguo0905
 - yujuhong
+- tallclair
+- derekwaynecarr
+- ConnorDoyle
+- klueska
+- dchen1107

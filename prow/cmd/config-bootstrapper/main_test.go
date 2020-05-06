@@ -39,7 +39,15 @@ var (
 )
 
 func TestRun(t *testing.T) {
-	lg, c, err := localgit.New()
+	testRun(localgit.New, t)
+}
+
+func TestRunV2(t *testing.T) {
+	testRun(localgit.NewV2, t)
+}
+
+func testRun(clients localgit.Clients, t *testing.T) {
+	lg, c, err := clients()
 	if err != nil {
 		t.Fatalf("Making local git repo: %v", err)
 	}
@@ -72,8 +80,8 @@ func TestRun(t *testing.T) {
 	}
 
 	if err := lg.AddCommit("openshift", "other", map[string][]byte{
-		"config/FOO.yaml": []byte(`#FOO.yaml`),
-		"config/BAR.yaml": []byte(`#BAR.yaml`),
+		"config/other-foo.yaml": []byte(`#other-foo.yaml`),
+		"config/other-bar.yaml": []byte(`#other-bar.yaml`),
 	}); err != nil {
 		t.Fatalf("Add commit: %v", err)
 	}
@@ -143,13 +151,13 @@ func TestRun(t *testing.T) {
 					"config/bar.yaml": {
 						Name: "multikey-config",
 					},
-					"config/FOO.yaml": {
+					"config/other-foo.yaml": {
 						Name: "other",
 						Clusters: map[string][]string{
 							"default": {defaultNamespace},
 						},
 					},
-					"config/BAR.yaml": {
+					"config/other-bar.yaml": {
 						Name: "bar",
 					},
 				},
@@ -180,7 +188,7 @@ func TestRun(t *testing.T) {
 						Namespace: defaultNamespace,
 					},
 					Data: map[string]string{
-						"FOO.yaml": "#FOO.yaml",
+						"other-foo.yaml": "#other-foo.yaml",
 					},
 				},
 				{
@@ -189,29 +197,47 @@ func TestRun(t *testing.T) {
 						Namespace: defaultNamespace,
 					},
 					Data: map[string]string{
-						"BAR.yaml": "#BAR.yaml",
+						"other-bar.yaml": "#other-bar.yaml",
 					},
 				},
 			},
 		},
+		{
+			name:             "undefined cluster errors",
+			sourcePaths:      []string{filepath.Join(lg.Dir, "openshift/release")},
+			defaultNamespace: defaultNamespace,
+			configUpdater: plugins.ConfigUpdater{
+				Maps: map[string]plugins.ConfigMapSpec{
+					"config/foo.yaml": {
+						Name: "multikey-config",
+						Clusters: map[string][]string{
+							"undef": {defaultNamespace},
+						},
+					},
+				},
+			},
+			expected: 1,
+		},
 	}
 
 	for _, tc := range testcases {
-		fkc := fake.NewSimpleClientset(tc.existConfigMaps...)
-		tc.configUpdater.SetDefaults()
-		actual := run(tc.sourcePaths, tc.defaultNamespace, tc.configUpdater, fkc, nil)
-		if tc.expected != actual {
-			t.Errorf("%s: incorrect errors '%d': expecting '%d'", tc.name, actual, tc.expected)
-		}
-
-		for _, expected := range tc.expectedConfigMaps {
-			actual, err := fkc.CoreV1().ConfigMaps(expected.Namespace).Get(expected.Name, metav1.GetOptions{})
-			if err != nil && errors.IsNotFound(err) {
-				t.Errorf("%s: Should have updated or created configmap for '%s'", tc.name, expected)
-			} else if !equality.Semantic.DeepEqual(expected, actual) {
-				t.Errorf("%s: incorrect ConfigMap state after update: %v", tc.name, cmp.Diff(expected, actual))
+		t.Run(tc.name, func(t *testing.T) {
+			fkc := fake.NewSimpleClientset(tc.existConfigMaps...)
+			tc.configUpdater.SetDefaults()
+			actual := run(tc.sourcePaths, tc.defaultNamespace, tc.configUpdater, fkc, nil)
+			if tc.expected != actual {
+				t.Errorf("%s: incorrect errors '%d': expecting '%d'", tc.name, actual, tc.expected)
 			}
-		}
-	}
 
+			for _, expected := range tc.expectedConfigMaps {
+				actual, err := fkc.CoreV1().ConfigMaps(expected.Namespace).Get(expected.Name, metav1.GetOptions{})
+				if err != nil && errors.IsNotFound(err) {
+					t.Errorf("%s: Should have updated or created configmap for '%s'", tc.name, expected)
+				} else if !equality.Semantic.DeepEqual(expected, actual) {
+					t.Errorf("%s: incorrect ConfigMap state after update: %v", tc.name, cmp.Diff(expected, actual))
+				}
+			}
+		})
+
+	}
 }

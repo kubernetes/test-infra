@@ -15,3 +15,5 @@ approvers:
 reviewers:
   - joshbranham
   - robinpercy
+labels:
+- sig/cluster-lifecycle

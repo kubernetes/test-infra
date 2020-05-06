@@ -1,5 +1,10 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
+reviewers:
+- saad-ali
+- msau42
 approvers:
 - saad-ali
 - msau42
+labels:
+- sig/storage

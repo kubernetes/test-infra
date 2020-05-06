@@ -21,11 +21,14 @@
 base="$(dirname $0)"
 
 # The latest stable Kubernetes version for testing alpha repos
-latest_stable_k8s_version="1.17.0"
-latest_stable_k8s_minor_version="1.17"
+latest_stable_k8s_version="1.18.0"
+latest_stable_k8s_minor_version="1.18"
+
+# Tag of the hostpath driver we should use for sidecar pull jobs
+hostpath_driver_version="v1.4.0-rc4"
 
 # We need this image because it has Docker in Docker and go.
-dind_image="gcr.io/k8s-testimages/kubekins-e2e:v20191221-fe232fc-master"
+dind_image="gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master"
 
 # All kubernetes-csi repos which are part of the hostpath driver example.
 # For these repos we generate the full test matrix. For each entry here
@@ -53,18 +56,19 @@ single_kubernetes_repos="
 
 # kubernetes-csi repos which only need unit testing.
 unit_testing_repos="
+external-health-monitor
 csi-test
 csi-release-tools
 csi-lib-utils
 csi-driver-flex
+csi-driver-iscsi
+csi-driver-nfs
 csi-proxy
 "
 
 # No Prow support in them yet.
 # csi-driver-fibre-channel
 # csi-driver-image-populator
-# csi-driver-iscsi
-# csi-driver-nfs
 # csi-lib-fc
 # csi-lib-iscsi
 
@@ -237,8 +241,8 @@ pull_optional() {
 
     if [ "$tests" == "alpha" ]; then
         echo "true"
-    elif [ "$kubernetes" == "1.18.0" ]; then
-        # Testing 1.18 may require updates to release-tools.
+    elif [ "$kubernetes" == "1.19.0" ]; then
+        # Testing 1.19 may require updates to release-tools.
         # Once that is done, and tests are passing,
         # this can be set to the next k8s version
         echo "true"
@@ -265,8 +269,8 @@ presubmits:
 EOF
 
     for tests in non-alpha alpha; do
-        for deployment in 1.15 1.16 1.17; do # must have a deploy/kubernetes-<version> dir in csi-driver-host-path
-            for kubernetes in 1.15.3 1.16.2 1.17.0; do # these versions must have pre-built kind images (see https://hub.docker.com/r/kindest/node/tags)
+        for deployment in 1.16 1.17 1.18; do # must have a deploy/kubernetes-<version> dir in csi-driver-host-path
+            for kubernetes in 1.16.2 1.17.0 1.18.0; do # these versions must have pre-built kind images (see https://hub.docker.com/r/kindest/node/tags)
                 # We could generate these pre-submit jobs for all combinations, but to save resources in the Prow
                 # cluster we only do it for those cases where the deployment matches the Kubernetes version.
                 # Once we have more than two supported Kubernetes releases we should limit this to the most
@@ -308,6 +312,8 @@ EOF
           value: "$kubernetes"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "$deployment"
+        - name: CSI_PROW_DRIVER_VERSION
+          value: "$hostpath_driver_version"
         - name: CSI_PROW_TESTS
           value: "$(expand_tests "$tests")"
         # docker-in-docker needs privileged mode
@@ -349,6 +355,8 @@ EOF
         env:
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "latest"
+        - name: CSI_PROW_DRIVER_VERSION
+          value: "$hostpath_driver_version"
         - name: CSI_PROW_TESTS
           value: "$(expand_tests "$tests")"
         # docker-in-docker needs privileged mode
@@ -420,6 +428,8 @@ EOF
         args:
         - ./.prow.sh
         env:
+        - name: CSI_PROW_DRIVER_VERSION
+          value: "$hostpath_driver_version"
         - name: CSI_PROW_TESTS
           value: "$(expand_tests "$tests")"
         # docker-in-docker needs privileged mode
@@ -485,8 +495,8 @@ periodics:
 EOF
 
 for tests in non-alpha alpha; do
-    for deployment in 1.15 1.16 1.17; do
-        for kubernetes in 1.15 1.16 1.17 master; do
+    for deployment in 1.16 1.17 1.18; do
+        for kubernetes in 1.16 1.17 1.18 master; do
             if [ "$tests" = "alpha" ]; then
                 # No version skew testing of alpha features, deployment has to match Kubernetes.
                 if ! echo "$kubernetes" | grep -q "^$deployment"; then
@@ -549,7 +559,7 @@ done
 # The canary builds use the latest sidecars from master and run them on
 # specific Kubernetes versions, using the default deployment for that Kubernetes
 # release.
-for kubernetes in 1.15.3 1.16.2 1.17.0 master; do
+for kubernetes in 1.16.2 1.17.0 1.18.0 master; do
     actual="${kubernetes/master/latest}"
 
     for tests in non-alpha alpha; do

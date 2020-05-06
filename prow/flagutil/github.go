@@ -18,71 +18,60 @@ package flagutil
 
 import (
 	"bytes"
+	"errors"
 	"flag"
 	"fmt"
 	"net/url"
 	"strings"
 
 	"github.com/sirupsen/logrus"
-	"golang.org/x/oauth2"
-
-	"k8s.io/test-infra/pkg/ghclient"
 	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
-	"k8s.io/test-infra/prow/githuboauth"
 )
 
 // GitHubOptions holds options for interacting with GitHub.
+//
+// Set AllowAnonymous to be true if you want to allow anonymous github access.
 type GitHubOptions struct {
-	host                string
-	endpoint            Strings
-	graphqlEndpoint     string
-	TokenPath           string
-	deprecatedTokenFile string
+	Host            string
+	endpoint        Strings
+	graphqlEndpoint string
+	TokenPath       string
+	AllowAnonymous  bool
 }
 
-// NewGitHubOptions creates a GitHubOptions with default values.
-func NewGitHubOptions() *GitHubOptions {
-	return &GitHubOptions{
-		host:            github.DefaultHost,
-		endpoint:        NewStrings(github.DefaultAPIEndpoint),
-		graphqlEndpoint: github.DefaultAPIEndpoint,
-	}
-}
+const DefaultGitHubTokenPath = "/etc/github/oauth" // Exported for testing purposes
 
 // AddFlags injects GitHub options into the given FlagSet.
 func (o *GitHubOptions) AddFlags(fs *flag.FlagSet) {
-	o.addFlags(true, fs)
-}
-
-// AddFlagsWithoutDefaultGitHubTokenPath injects GitHub options into the given
-// Flagset without setting a default for for the githubTokenPath, allowing to
-// use an anonymous GitHub client
-func (o *GitHubOptions) AddFlagsWithoutDefaultGitHubTokenPath(fs *flag.FlagSet) {
-	o.addFlags(false, fs)
-}
-
-func (o *GitHubOptions) addFlags(wantDefaultGitHubTokenPath bool, fs *flag.FlagSet) {
-	fs.StringVar(&o.host, "github-host", github.DefaultHost, "GitHub's default host (may differ for enterprise)")
+	fs.StringVar(&o.Host, "github-host", github.DefaultHost, "GitHub's default host (may differ for enterprise)")
 	o.endpoint = NewStrings(github.DefaultAPIEndpoint)
 	fs.Var(&o.endpoint, "github-endpoint", "GitHub's API endpoint (may differ for enterprise).")
 	fs.StringVar(&o.graphqlEndpoint, "github-graphql-endpoint", github.DefaultGraphQLEndpoint, "GitHub GraphQL API endpoint (may differ for enterprise).")
-	defaultGitHubTokenPath := ""
-	if wantDefaultGitHubTokenPath {
-		defaultGitHubTokenPath = "/etc/github/oauth"
-	}
-	fs.StringVar(&o.TokenPath, "github-token-path", defaultGitHubTokenPath, "Path to the file containing the GitHub OAuth secret.")
-	fs.StringVar(&o.deprecatedTokenFile, "github-token-file", "", "DEPRECATED: use -github-token-path instead.  -github-token-file may be removed anytime after 2019-01-01.")
+	fs.StringVar(&o.TokenPath, "github-token-path", "", "Path to the file containing the GitHub OAuth secret.")
 }
 
 // Validate validates GitHub options.
 func (o *GitHubOptions) Validate(dryRun bool) error {
-	for _, uri := range o.endpoint.Strings() {
+	endpoints := o.endpoint.Strings()
+	for _, uri := range endpoints {
 		if uri == "" {
 			uri = github.DefaultAPIEndpoint
 		} else if _, err := url.ParseRequestURI(uri); err != nil {
 			return fmt.Errorf("invalid -github-endpoint URI: %q", uri)
+		}
+	}
+	if len(endpoints) == 1 && endpoints[0] == github.DefaultAPIEndpoint {
+		logrus.Warn("It doesn't look like you are using ghproxy to cache API calls to GitHub! This has become a required component of Prow and other components will soon be allowed to add features that may rapidly consume API ratelimit without caching. Starting May 1, 2020 use Prow components without ghproxy at your own risk! https://github.com/kubernetes/test-infra/tree/master/ghproxy#ghproxy")
+	}
+
+	if o.TokenPath == "" && !o.AllowAnonymous {
+		// TODO(fejta): just return error after May 2020
+		logrus.Warnf("missing required flag: please set to --github-token-path=%s before June 2020", DefaultGitHubTokenPath)
+		o.TokenPath = DefaultGitHubTokenPath
+		if o.TokenPath == "" {
+			return errors.New("missing required flag: --github-token-path")
 		}
 	}
 
@@ -90,11 +79,6 @@ func (o *GitHubOptions) Validate(dryRun bool) error {
 		o.graphqlEndpoint = github.DefaultGraphQLEndpoint
 	} else if _, err := url.Parse(o.graphqlEndpoint); err != nil {
 		return fmt.Errorf("invalid -github-graphql-endpoint URI: %q", o.graphqlEndpoint)
-	}
-
-	if o.deprecatedTokenFile != "" {
-		o.TokenPath = o.deprecatedTokenFile
-		logrus.Error("-github-token-file is deprecated and may be removed anytime after 2019-01-01.  Use -github-token-path instead.")
 	}
 
 	return nil
@@ -144,7 +128,7 @@ func (o *GitHubOptions) GitHubClientWithAccessToken(token string) github.Client 
 
 // GitClient returns a Git client.
 func (o *GitHubOptions) GitClient(secretAgent *secret.Agent, dryRun bool) (client *git.Client, err error) {
-	client, err = git.NewClientWithHost(o.host)
+	client, err = git.NewClientWithHost(o.Host)
 	if err != nil {
 		return nil, err
 	}
@@ -170,18 +154,4 @@ func (o *GitHubOptions) GitClient(secretAgent *secret.Agent, dryRun bool) (clien
 	client.SetCredentials(botName, secretAgent.GetTokenGenerator(o.TokenPath))
 
 	return client, nil
-}
-
-// GitHubOAuthClient returns an oauth client.
-func (o *GitHubOptions) GitHubOAuthClient(oauthConfig *oauth2.Config) githuboauth.OAuthClient {
-	oauthConfig.Endpoint = oauth2.Endpoint{
-		AuthURL:  fmt.Sprintf("https://%s/login/oauth/authorize", o.host),
-		TokenURL: fmt.Sprintf("https://%s/login/oauth/access_token", o.host),
-	}
-	return githuboauth.NewClient(oauthConfig)
-}
-
-// GetGitHubClient returns a github client wrapper.
-func (o *GitHubOptions) GetGitHubClient(accessToken string, dryRun bool) githuboauth.GitHubClientWrapper {
-	return ghclient.NewClientWithEndpoint(o.endpoint.Strings()[0], accessToken, dryRun)
 }

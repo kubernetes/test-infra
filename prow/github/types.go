@@ -22,7 +22,7 @@ import (
 	"strings"
 	"time"
 
-	"k8s.io/test-infra/prow/errorutil"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 )
 
 const (
@@ -104,7 +104,7 @@ func unmarshalClientError(b []byte) error {
 		return alternativeClientError
 	}
 	errors = append(errors, err)
-	return errorutil.NewAggregate(errors...)
+	return utilerrors.NewAggregate(errors)
 }
 
 // ClientError represents https://developer.github.com/v3/#client-errors
@@ -209,6 +209,13 @@ const (
 	PullRequestActionReadyForReview PullRequestEventAction = "ready_for_review"
 )
 
+// GenericEvent is a lightweight struct containing just Sender and Repo as all events are expected to have this information.
+// https://developer.github.com/webhooks/#payloads
+type GenericEvent struct {
+	Sender User `json:"sender"`
+	Repo   Repo `json:"repository"`
+}
+
 // PullRequestEvent is what GitHub sends us when a PR is changed.
 type PullRequestEvent struct {
 	Action      PullRequestEventAction `json:"action"`
@@ -232,6 +239,7 @@ type PullRequest struct {
 	Number             int               `json:"number"`
 	HTMLURL            string            `json:"html_url"`
 	User               User              `json:"user"`
+	Labels             []Label           `json:"labels"`
 	Base               PullRequestBranch `json:"base"`
 	Head               PullRequestBranch `json:"head"`
 	Title              string            `json:"title"`
@@ -527,6 +535,9 @@ type BranchProtectionRequest struct {
 	EnforceAdmins              *bool                              `json:"enforce_admins"`
 	RequiredPullRequestReviews *RequiredPullRequestReviewsRequest `json:"required_pull_request_reviews"`
 	Restrictions               *RestrictionsRequest               `json:"restrictions"`
+	RequiredLinearHistory      bool                               `json:"required_linear_history"`
+	AllowForcePushes           bool                               `json:"allow_force_pushes"`
+	AllowDeletions             bool                               `json:"allow_deletions"`
 }
 
 func (r BranchProtectionRequest) String() string {

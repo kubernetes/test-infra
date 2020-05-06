@@ -150,7 +150,7 @@
           {{if $status.State.Terminated}}
             Terminated ({{$status.State.Terminated.Reason}}{{if $status.State.Terminated.Message}} - {{$status.State.Terminated.Message}}{{end}}) at {{$status.State.Terminated.FinishedAt}} with exit code <code>{{$status.State.Terminated.ExitCode}}</code>
           {{else if $status.State.Running}}
-            Running since {{$status.State.Terminated.StartedAt}}
+            Running since {{$status.State.Running.StartedAt}}
           {{else if $status.State.Waiting}}
             Waiting ({{$status.State.Waiting.Reason}}{{if $status.State.Waiting.Message}} - {{$status.State.Waiting.Message}}{{end}})
           {{else}}
@@ -206,7 +206,7 @@
                 {{- if .ValueFrom.ConfigMapKeyRef -}}
                   (value of configmap key <code>{{.ValueFrom.ConfigMapKeyRef.Name}}.{{.ValueFrom.ConfigMapKeyRef.Key}}</code>{{if .ValueFrom.ConfigMapKeyRef.Optional}}, if it exists{{end}})
                 {{- else if .ValueFrom.SecretKeyRef -}}
-                  (value of secret key <code>{{.ValueFrom.SecretKeyRef.Name}}.{{.ValueFrom.SecreyKeyRef.Key}}</code>{{if .ValueFrom.SecreyKeyRef.Optional}}, if it exists{{end}})
+                  (value of secret key <code>{{.ValueFrom.SecretKeyRef.Name}}.{{.ValueFrom.SecretKeyRef.Key}}</code>{{if .ValueFrom.SecretKeyRef.Optional}}, if it exists{{end}})
                 {{- else if .ValueFrom.FieldRef -}}
                   (value of <code>{{.ValueFrom.FieldRef.APIVersion}}</code> field path <code>{{.ValueFrom.FieldRef.FieldPath}}</code>)
                 {{- else if .ValueFrom.ResourceRef -}}

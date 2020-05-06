@@ -5,7 +5,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
         command:
         - make
         - test
@@ -22,7 +22,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -46,15 +46,13 @@ presubmits:
   - name: pull-kube-storage-version-migrator-fully-automated-e2e
     decorate: true
     always_run: true
-    # TODO: remove this when the test is stable
-    optional: true
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py

@@ -1,6 +1,12 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
+reviwers:
+- AdoHe
+- pwittrock
+- soltysh
 approvers:
 - AdoHe
 - pwittrock
 - soltysh
+labels:
+- sig/cli

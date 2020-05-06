@@ -1,8 +1,15 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
+reviwers:
+  - sig-cluster-lifecycle-leads
+  - provider-vmware
+  - cluster-api-admins
+  - cluster-api-vsphere-maintainers
+  - figo
+  - akutz
 approvers:
   - sig-cluster-lifecycle-leads
-  - sig-vmware-leads
+  - provider-vmware
   - cluster-api-admins
   - cluster-api-vsphere-maintainers
   - figo

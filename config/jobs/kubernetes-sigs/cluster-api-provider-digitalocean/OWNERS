@@ -1,7 +1,12 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
+reviwers:
+- cpanato
+- MorrisLaw
+- prksu
+- xmudrii
 approvers:
-- andrewsykim
-- alvaroaleman
-- nikhita
+- cpanato
+- MorrisLaw
+- prksu
 - xmudrii

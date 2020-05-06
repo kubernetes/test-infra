@@ -21,7 +21,7 @@ import (
 )
 
 var deploytMethodMap = map[aksDeploymentMethod]string{
-	normal:              "normal",
+	noop:                "noop",
 	customHyperkube:     "custom hyperkube",
 	customK8sComponents: "custom k8s components",
 }
@@ -37,13 +37,13 @@ func TestGetDeploymentMethod(t *testing.T) {
 			desc:                         "k8s 1.16 without custom k8s",
 			k8sRelease:                   "1.16",
 			customK8s:                    false,
-			expectedAKSDeploytmentMethod: normal,
+			expectedAKSDeploytmentMethod: noop,
 		},
 		{
 			desc:                         "k8s 1.17 without custom k8s",
 			k8sRelease:                   "1.17",
 			customK8s:                    false,
-			expectedAKSDeploytmentMethod: normal,
+			expectedAKSDeploytmentMethod: noop,
 		},
 		{
 			desc:                         "k8s 1.16 with custom k8s",
@@ -61,13 +61,13 @@ func TestGetDeploymentMethod(t *testing.T) {
 			desc:                         "using k8s release instead of k8s version",
 			k8sRelease:                   "1.17.0",
 			customK8s:                    true,
-			expectedAKSDeploytmentMethod: normal,
+			expectedAKSDeploytmentMethod: noop,
 		},
 		{
 			desc:                         "using an invalid k8s version",
 			k8sRelease:                   "invalid",
 			customK8s:                    true,
-			expectedAKSDeploytmentMethod: normal,
+			expectedAKSDeploytmentMethod: noop,
 		},
 	}
 

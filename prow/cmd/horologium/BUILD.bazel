@@ -3,14 +3,17 @@ package(default_visibility = ["//visibility:public"])
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
 load("//prow:def.bzl", "prow_image")
 
+NAME = "horologium"
+
 prow_image(
     name = "image",
     base = "@alpine-base//image",
+    component = NAME,
     visibility = ["//visibility:public"],
 )
 
 go_binary(
-    name = "horologium",
+    name = NAME,
     embed = [":go_default_library"],
     pure = "on",
 )
@@ -55,7 +58,6 @@ go_test(
         "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/client/clientset/versioned/fake:go_default_library",
         "//prow/config:go_default_library",
-        "//prow/flagutil:go_default_library",
         "@io_k8s_apimachinery//pkg/apis/meta/v1:go_default_library",
         "@io_k8s_apimachinery//pkg/runtime:go_default_library",
         "@io_k8s_apimachinery//pkg/util/sets:go_default_library",

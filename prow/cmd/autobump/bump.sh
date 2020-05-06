@@ -17,6 +17,8 @@
 set -o errexit
 set -o nounset
 set -o pipefail
+shopt -s dotglob
+shopt -s nullglob
 
 # bump.sh is used to update references to Prow component images hosted at gcr.io/k8s-prow/*
 # Specifically it does the following:
@@ -135,7 +137,7 @@ list-options() {
 
 upstream-version() {
  local branch="https://raw.githubusercontent.com/kubernetes/test-infra/master"
- local file="prow/cluster/deck_deployment.yaml"
+ local file="config/prow/cluster/deck_deployment.yaml"
 
  curl "$branch/$file" | grep image: | grep -o -E 'v[-0-9a-f]+'
 }

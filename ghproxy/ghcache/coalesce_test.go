@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"k8s.io/test-infra/ghproxy/ghmetrics"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -74,6 +75,7 @@ func TestRoundTrip(t *testing.T) {
 	coalesce := &requestCoalescer{
 		keys:     make(map[string]*responseWaiter),
 		delegate: delegate,
+		hasher:   ghmetrics.NewCachingHasher(),
 	}
 	wg := sync.WaitGroup{}
 	wg.Add(100)
@@ -119,6 +121,7 @@ func TestCacheModeHeader(t *testing.T) {
 	coalesce := &requestCoalescer{
 		keys:     make(map[string]*responseWaiter),
 		delegate: delegate,
+		hasher:   ghmetrics.NewCachingHasher(),
 	}
 
 	checkMode := func(resp *http.Response, expected CacheResponseMode) {

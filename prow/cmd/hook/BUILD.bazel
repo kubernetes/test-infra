@@ -3,14 +3,17 @@ package(default_visibility = ["//visibility:public"])
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
 load("//prow:def.bzl", "prow_image")
 
+NAME = "hook"
+
 prow_image(
     name = "image",
     base = "@git-base//image",
+    component = NAME,
     visibility = ["//visibility:public"],
 )
 
 go_binary(
-    name = "hook",
+    name = NAME,
     data = [
         "//config/prow:configs",
     ],
@@ -26,7 +29,6 @@ go_test(
     ],
     embed = [":go_default_library"],
     deps = [
-        "//prow/config:go_default_library",
         "//prow/flagutil:go_default_library",
         "//prow/plugins:go_default_library",
         "@io_k8s_apimachinery//pkg/util/sets:go_default_library",

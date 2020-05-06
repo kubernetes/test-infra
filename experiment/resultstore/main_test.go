@@ -18,8 +18,11 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"reflect"
 	"testing"
+
+	configpb "github.com/GoogleCloudPlatform/testgrid/pb/config"
 
 	"github.com/GoogleCloudPlatform/testgrid/metadata"
 	"github.com/GoogleCloudPlatform/testgrid/util/gcs"
@@ -146,6 +149,72 @@ func TestInsertLink(t *testing.T) {
 				t.Errorf("changed %t != expected %t", changed, tc.changed)
 			case !reflect.DeepEqual(tc.expected, tc.input):
 				t.Errorf("metadata %#v != expected %#v", tc.input, tc.expected)
+			}
+		})
+	}
+}
+
+func TestFilterBuckets(t *testing.T) {
+	cases := []struct {
+		name     string
+		groups   []configpb.TestGroup
+		paths    []string
+		expected []configpb.TestGroup
+		err      bool
+	}{
+		{
+			name: "bad groups error",
+			groups: []configpb.TestGroup{
+				{
+					Name:      "foo",
+					GcsPrefix: "oh\n/yeah",
+				},
+				{
+					Name: "bar",
+				},
+			},
+			paths: []string{"gs://ignored"},
+			err:   true,
+		},
+		{
+			name: "filter buckets",
+			groups: []configpb.TestGroup{
+				{
+					Name:      "yes",
+					GcsPrefix: "included/bucket",
+				},
+				{
+					Name:      "no",
+					GcsPrefix: "excluded/bucket",
+				},
+			},
+			paths: []string{"gs://included"},
+			expected: []configpb.TestGroup{
+				{
+					Name:      "yes",
+					GcsPrefix: "included/bucket",
+				},
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+
+			checkBuckets, err := bucketListChecker(tc.paths...)
+			if err != nil {
+				t.Fatalf("create checker: %v", err)
+			}
+			actual, err := filterBuckets(context.Background(), checkBuckets, tc.groups...)
+			switch {
+			case err != nil:
+				if !tc.err {
+					t.Errorf("unexpected error: %v", err)
+				}
+			case tc.err:
+				t.Error("failed to received expected error")
+			case !reflect.DeepEqual(tc.expected, actual):
+				t.Errorf("filterBuckets() got %v, want %v", actual, tc.expected)
 			}
 		})
 	}

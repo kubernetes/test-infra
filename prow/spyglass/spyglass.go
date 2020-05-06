@@ -36,13 +36,14 @@ import (
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/deck/jobs"
 	"k8s.io/test-infra/prow/pod-utils/gcs"
+	"k8s.io/test-infra/prow/spyglass/api"
 	"k8s.io/test-infra/prow/spyglass/lenses"
 )
 
 // Key types specify the way Spyglass will fetch artifact handles
 const (
-	gcsKeyType  = "gcs"
-	prowKeyType = "prowjob"
+	gcsKeyType  = api.GCSKeyType
+	prowKeyType = api.ProwKeyType
 )
 
 // Spyglass records which sets of artifacts need views for a Prow job. The metaphor
@@ -77,12 +78,12 @@ type ExtraLink struct {
 }
 
 // New constructs a Spyglass object from a JobAgent, a config.Agent, and a storage Client.
-func New(ja *jobs.JobAgent, cfg config.Getter, c *storage.Client, gcsCredsFile string, ctx context.Context) *Spyglass {
+func New(ctx context.Context, ja *jobs.JobAgent, cfg config.Getter, c *storage.Client, gcsCredsFile string, useCookieAuth bool) *Spyglass {
 	return &Spyglass{
 		JobAgent:              ja,
 		config:                cfg,
 		PodLogArtifactFetcher: NewPodLogArtifactFetcher(ja),
-		GCSArtifactFetcher:    NewGCSArtifactFetcher(c, gcsCredsFile),
+		GCSArtifactFetcher:    NewGCSArtifactFetcher(c, gcsCredsFile, useCookieAuth),
 		testgrid: &TestGrid{
 			conf:   cfg,
 			client: c,
@@ -95,10 +96,14 @@ func (sg *Spyglass) Start() {
 	sg.testgrid.Start()
 }
 
+type LensConfig interface {
+	Config() lenses.LensConfig
+}
+
 // Lenses gets all views of all artifact files matching each regexp with a registered lens
-func (sg *Spyglass) Lenses(lensConfigIndexes []int) (orderedIndexes []int, lensMap map[int]lenses.Lens) {
+func (sg *Spyglass) Lenses(lensConfigIndexes []int) (orderedIndexes []int, lensMap map[int]LensConfig) {
 	type ld struct {
-		lens  lenses.Lens
+		lens  LensConfig
 		index int
 	}
 	var ls []ld
@@ -125,7 +130,7 @@ func (sg *Spyglass) Lenses(lensConfigIndexes []int) (orderedIndexes []int, lensM
 		return pi < pj
 	})
 
-	lensMap = map[int]lenses.Lens{}
+	lensMap = map[int]LensConfig{}
 	for _, l := range ls {
 		orderedIndexes = append(orderedIndexes, l.index)
 		lensMap[l.index] = l.lens

@@ -17,6 +17,8 @@ limitations under the License.
 package fakegithub
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"regexp"
 
@@ -157,6 +159,11 @@ func (f *FakeClient) CreateComment(owner, repo string, number int, comment strin
 		User: github.User{Login: botName},
 	})
 	f.IssueCommentID++
+	return nil
+}
+
+// EditComment edits a comment. Its a stub that does nothing.
+func (f *FakeClient) EditComment(org, repo string, ID int, comment string) error {
 	return nil
 }
 
@@ -358,6 +365,12 @@ func (f *FakeClient) FindIssues(query, sort string, asc bool) ([]github.Issue, e
 	var issues []github.Issue
 	for _, issue := range f.Issues {
 		issues = append(issues, *issue)
+	}
+	for _, pr := range f.PullRequests {
+		issues = append(issues, github.Issue{
+			User:   pr.User,
+			Number: pr.Number,
+		})
 	}
 	return issues, nil
 }
@@ -605,6 +618,19 @@ func (f *FakeClient) GetRepos(org string, isUser bool) ([]github.Repo, error) {
 	}, nil
 }
 
+func (f FakeClient) GetRepo(owner, name string) (github.FullRepo, error) {
+	return github.FullRepo{
+		Repo: github.Repo{
+			Owner:         github.User{Login: owner},
+			Name:          name,
+			HasIssues:     true,
+			HasWiki:       true,
+			DefaultBranch: "master",
+			Description:   fmt.Sprintf("Test Repo: %s", name),
+		},
+	}, nil
+}
+
 // MoveProjectCard moves a specific project card to a specified column in the same project
 func (f *FakeClient) MoveProjectCard(projectCardID int, newColumnID int) error {
 	// Remove project card from old column
@@ -667,4 +693,49 @@ func (f *FakeClient) GetTeamBySlug(slug string, org string) (*github.Team, error
 		}
 	}
 	return &github.Team{}, nil
+}
+
+func (f *FakeClient) CreatePullRequest(org, repo, title, body, head, base string, canModify bool) (int, error) {
+	if f.PullRequests == nil {
+		f.PullRequests = map[int]*github.PullRequest{}
+	}
+	if f.Issues == nil {
+		f.Issues = map[int]*github.Issue{}
+	}
+	for i := 0; i < 999; i++ {
+		if f.PullRequests[i] != nil || f.Issues[i] != nil {
+			continue
+		}
+		f.PullRequests[i] = &github.PullRequest{
+			Number: i,
+			Base: github.PullRequestBranch{
+				Ref:  base,
+				Repo: github.Repo{Owner: github.User{Login: org}, Name: repo},
+			},
+		}
+		f.Issues[i] = &github.Issue{Number: i}
+		return i, nil
+	}
+
+	return 0, errors.New("FakeClient supports only 999 PullRequests")
+}
+
+func (f *FakeClient) UpdatePullRequest(org, repo string, number int, title, body *string, open *bool, branch *string, canModify *bool) error {
+	pr, found := f.PullRequests[number]
+	if !found {
+		return fmt.Errorf("no pr with number %d found", number)
+	}
+	if title != nil {
+		pr.Title = *title
+	}
+	if body != nil {
+		pr.Body = *body
+	}
+	return nil
+}
+
+// Query simply exists to allow the fake client to match the interface for packages that need it.
+// It does not modify the passed interface at all.
+func (f *FakeClient) Query(ctx context.Context, q interface{}, vars map[string]interface{}) error {
+	return nil
 }

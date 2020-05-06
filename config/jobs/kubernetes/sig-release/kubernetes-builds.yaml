@@ -7,13 +7,12 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20200212-baf02ac
+      - image: gcr.io/k8s-testimages/bootstrap:v20200430-be2a8a9
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--timeout=90"
         - --scenario=execute
         - --
         - --env=KUBE_RELEASE_RUN_TESTS=n
@@ -37,7 +36,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20200212-baf02ac
+    - image: gcr.io/k8s-testimages/bootstrap:v20200430-be2a8a9
       args:
       - --repo=k8s.io/kubernetes
       - --repo=k8s.io/release
@@ -47,7 +46,6 @@ periodics:
       - --
       - --allow-dup
       - --extra-publish-file=k8s-master
-      - --hyperkube
       - --registry=gcr.io/kubernetes-ci-images
       # docker-in-docker needs privileged mode
       securityContext:
@@ -74,7 +72,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20200212-baf02ac
+    - image: gcr.io/k8s-testimages/bootstrap:v20200430-be2a8a9
       args:
       - --repo=k8s.io/kubernetes
       - --repo=k8s.io/release
@@ -105,7 +103,7 @@ periodics:
   decorate: true
   spec:
     containers:
-    - image: gcr.io/k8s-staging-release-test/kubepkg:latest
+    - image: gcr.io/k8s-staging-releng/kubepkg:latest
       imagePullPolicy: Always
       command:
       - ./kubepkg
@@ -120,7 +118,7 @@ periodics:
       - 2241179 # release-managers
   annotations:
     testgrid-alert-email: release-managers@kubernetes.io
-    testgrid-dashboards: sig-release-master-informing
+    testgrid-dashboards: sig-release-releng-informing
     testgrid-tab-name: build-packages-debs
 
 - interval: 4h
@@ -128,7 +126,7 @@ periodics:
   decorate: true
   spec:
     containers:
-    - image: gcr.io/k8s-staging-release-test/kubepkg-rpm:latest
+    - image: gcr.io/k8s-staging-releng/kubepkg-rpm:latest
       imagePullPolicy: Always
       command:
       - ./kubepkg
@@ -143,5 +141,5 @@ periodics:
       - 2241179 # release-managers
   annotations:
     testgrid-alert-email: release-managers@kubernetes.io
-    testgrid-dashboards: sig-release-master-informing
+    testgrid-dashboards: sig-release-releng-informing
     testgrid-tab-name: build-packages-rpms

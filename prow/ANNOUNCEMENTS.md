@@ -1,9 +1,15 @@
 # Announcements
 
+## New features
+
 New features added to each component:
+ - *March 25, 2020* Added a `report_templates` option to the Plank config that allows
+    to specify different report templates for each organization or a specific repository.
+    The `report_template` option is deprecated and it will be removed on *September 2020*
+    which is going to be replaced with the `*` value in `report_templates`.
  - *January 03, 2020* Added a `pr_status_base_urls` option to the Tide config
    that allows to specify different tide's URL for each organization or a specific repository.
-   The `pr_status_base_url` will be deprecated on *June 2020* and it will be replaces with the
+   The `pr_status_base_url` will be deprecated on *June 2020* and it will be replaced with the
    `*` value in `pr_status_base_urls`.
  - *November 05, 2019* The `config-updater` plugin supports update configs on build clusters
     by using [`clusters`](https://github.com/kubernetes/test-infra/tree/master/prow/plugins/updateconfig#usage).
@@ -83,19 +89,34 @@ New features added to each component:
    triggers. See https://godoc.org/gopkg.in/robfig/cron.v2 for doc to the
    cron library we are using.
 
+## Breaking changes
+
 Breaking changes to external APIs (labels, GitHub interactions, configuration
 or deployment) will be documented in this section. Prow is in a pre-release
 state and no claims of backwards compatibility are made for any external API.
 Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
- 
+
+ - *April 24, 2020* Horologium now defaults to `--dry-run=true`
+ - *April 23, 2020* Explicitly setting `--config-path` is now required.
+ - *April 23, 2020* Update the `autobump` image to at least `v20200422-8c8546d74` before June 2020.
+ - *April 23, 2020* Deleted deprecated `default_decoration_config`.
+ - *April 22, 2020* Deleted the `file_weight_count` blunderbuss option.
+ - *April 16, 2020* The `docs-no-retest` prow plugin has been deleted.
+   The plugin was deprecated in January 2020.
+ - *April 14, 2020* GitHub reporting via plank is deprecated, set --github-workers=1 on crier before July 2020.
+ - *March 27, 2020*  The deprecated `allow_cancellations` option has been removed from
+   Plank and the Jenkins operator.
+ - *March 19, 2020* The `rerun_auth_config` config field has been deprecated in
+   favor of the new `rerun_auth_configs` field which allows configuration on a global,
+   organization or repo level. `rerun_auth_config` will be removed in July 2020.
  - *November 21, 2019* The boskos metrics component replaced the existing prometheus
    metrics with a single, label-qualified metric. Metrics are now served at `/metrics`
-   on port 9090. This actually happened August 5th, but is being documented now. 
+   on port 9090. This actually happened August 5th, but is being documented now.
    Details: https://github.com/kubernetes/test-infra/pull/13767
  - *November 18, 2019*  The `mkbuild-cluster` command-line utility and `build-cluster`
-   format is deprecated and will be removed in May 2020. Use `gencred` and the `kubeconfig` 
+   format is deprecated and will be removed in May 2020. Use `gencred` and the `kubeconfig`
    format as an alternative.
  - *November 14, 2019* The `slack_reporter` config field has been deprecated in
    favor of the new `slack_reporter_configs` field which allows configuration on a global,

@@ -14,10 +14,6 @@ dashboards:
       test_group_name: ci-kubernetes-e2e-gci-gce
       base_options: include-filter-by-regex=sig-api-machinery
       description: apimachinery gce e2e tests for master branch
-    - name: gke
-      test_group_name: ci-kubernetes-e2e-gci-gke
-      base_options: include-filter-by-regex=sig-api-machinery
-      description: apimachinery gke e2e tests for master branch
     - name: gce-flaky
       test_group_name: ci-kubernetes-e2e-gci-gce-flaky
       base_options: include-filter-by-regex=sig-api-machinery
@@ -30,26 +26,14 @@ dashboards:
       test_group_name: ci-kubernetes-e2e-gci-gce-containerd
       base_options: include-filter-by-regex=sig-node
       description: node gce e2e tests for master branch using containerd
-    - name: gke-flaky
-      test_group_name: ci-kubernetes-e2e-gci-gke-flaky
-      base_options: include-filter-by-regex=sig-api-machinery
-      description: apimachinery gke flaky e2e tests for master branch
     - name: gce-slow
       test_group_name: ci-kubernetes-e2e-gci-gce-slow
       base_options: include-filter-by-regex=sig-api-machinery
       description: apimachinery gce slow e2e tests for master branch
-    - name: gke-slow
-      test_group_name: ci-kubernetes-e2e-gci-gke-slow
-      base_options: include-filter-by-regex=sig-api-machinery
-      description: apimachinery gke slow e2e tests for master branch
     - name: gce-serial
       test_group_name: ci-kubernetes-e2e-gci-gce-serial
       base_options: include-filter-by-regex=sig-api-machinery
       description: apimachinery gce serial e2e tests for master branch
-    - name: gke-serial
-      test_group_name: ci-kubernetes-e2e-gci-gke-serial
-      base_options: include-filter-by-regex=sig-api-machinery
-      description: apimachinery gke serial e2e tests for master branch
 - name: sig-api-machinery-kube-storage-version-migrator
 - name: sig-api-machinery-structured-merge-diff
 - name: sig-api-machinery-kubebuilder

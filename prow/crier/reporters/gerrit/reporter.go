@@ -38,6 +38,15 @@ const (
 
 	defaultProwHeader = "Prow Status:"
 	jobReportFormat   = "%s %s %s - %s\n"
+
+	// lgtm means all presubmits passed, but need someone else to approve before merge (looks good to me).
+	lgtm = "+1"
+	// lbtm means some presubmits failed, perfer not merge (looks bad to me).
+	lbtm = "-1"
+	// lztm is the minimum score for a postsubmit.
+	lztm = "0"
+	// codeReview is the default gerrit code review label
+	codeReview = client.CodeReview
 )
 
 var (
@@ -194,9 +203,11 @@ func (c *Client) Report(pj *v1.ProwJob) ([]*v1.ProwJob, error) {
 	gerritID := pj.ObjectMeta.Annotations[clientGerritID]
 	gerritInstance := pj.ObjectMeta.Annotations[clientGerritInstance]
 	gerritRevision := pj.ObjectMeta.Labels[clientGerritRevision]
-	reportLabel := client.CodeReview
+	var reportLabel string
 	if val, ok := pj.ObjectMeta.Labels[client.GerritReportLabel]; ok {
 		reportLabel = val
+	} else {
+		reportLabel = codeReview
 	}
 
 	if report.total <= 0 {
@@ -206,9 +217,16 @@ func (c *Client) Report(pj *v1.ProwJob) ([]*v1.ProwJob, error) {
 	}
 	var reviewLabels map[string]string
 	if reportLabel != "" {
-		vote := client.LBTM
-		if report.success == report.total {
-			vote = client.LGTM
+		var vote string
+		// Can only vote below zero before merge
+		// TODO(fejta): cannot vote below previous vote after merge
+		switch {
+		case report.success == report.total:
+			vote = lgtm
+		case pj.Spec.Type == v1.PresubmitJob:
+			vote = lbtm
+		default:
+			vote = lztm
 		}
 		reviewLabels = map[string]string{reportLabel: vote}
 	}
@@ -217,16 +235,15 @@ func (c *Client) Report(pj *v1.ProwJob) ([]*v1.ProwJob, error) {
 	if err := c.gc.SetReview(gerritInstance, gerritID, gerritRevision, message, reviewLabels); err != nil {
 		logger.WithError(err).Errorf("fail to set review with label %q on change ID %s", reportLabel, gerritID)
 
-		if reportLabel != "" {
-			// Retry without voting on a label
-			message := fmt.Sprintf("[NOTICE]: Prow Bot cannot access %s label!\n%s", reportLabel, message)
-			if err := c.gc.SetReview(gerritInstance, gerritID, gerritRevision, message, nil); err != nil {
-				logger.WithError(err).Errorf("fail to set plain review on change ID %s", gerritID)
-				return nil, err
-			}
+		if reportLabel == "" {
+			return nil, err
 		}
-
-		return nil, err
+		// Retry without voting on a label
+		message := fmt.Sprintf("[NOTICE]: Prow Bot cannot access %s label!\n%s", reportLabel, message)
+		if err := c.gc.SetReview(gerritInstance, gerritID, gerritRevision, message, nil); err != nil {
+			logger.WithError(err).Errorf("fail to set plain review on change ID %s", gerritID)
+			return nil, err
+		}
 	}
 
 	logger.Infof("Review Complete, reported jobs: %v", toReportJobs)

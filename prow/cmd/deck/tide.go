@@ -26,8 +26,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/errorutil"
 	"k8s.io/test-infra/prow/tide"
 	"k8s.io/test-infra/prow/tide/history"
 )
@@ -114,9 +114,9 @@ func fetchTideData(log *logrus.Entry, path string, data interface{}) error {
 
 	// Either combine previous errors with the returned error, or if we succeeded
 	// log once about any errors we saw before succeeding.
-	prevErr := errorutil.NewAggregate(prevErrs...)
+	prevErr := utilerrors.NewAggregate(prevErrs)
 	if err != nil {
-		return errorutil.NewAggregate(err, prevErr)
+		return utilerrors.NewAggregate([]error{err, prevErr})
 	}
 	if prevErr != nil {
 		log.WithError(prevErr).Infof(

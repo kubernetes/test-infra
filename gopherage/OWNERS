@@ -1,8 +1,13 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
+reviewers:
+- Katharine
+- spiffxp
+- BenTheElder
 approvers:
 - Katharine
 - spiffxp
+- BenTheElder
 
 labels:
 - area/gopherage

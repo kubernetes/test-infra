@@ -22,7 +22,6 @@ import (
 	"testing"
 
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/flagutil"
 )
 
@@ -47,21 +46,34 @@ func Test_gatherOptions(t *testing.T) {
 			},
 		},
 		{
-			name: "empty config-path defaults to old value",
-			args: map[string]string{
-				"--config-path": "",
-			},
-			expected: func(o *options) {
-				o.configPath = config.DefaultConfigPath
-			},
-		},
-		{
 			name: "expicitly set --dry-run=false",
 			args: map[string]string{
 				"--dry-run": "false",
 			},
 			expected: func(o *options) {
 				o.dryRun = false
+			},
+		},
+		{
+			name: "gcs-credentials-file sets the credentials on the storage client",
+			args: map[string]string{
+				"-gcs-credentials-file": "/creds",
+			},
+			expected: func(o *options) {
+				o.storage = flagutil.StorageClientOptions{
+					GCSCredentialsFile: "/creds",
+				}
+			},
+		},
+		{
+			name: "s3-credentials-file sets the credentials on the storage client",
+			args: map[string]string{
+				"-s3-credentials-file": "/creds",
+			},
+			expected: func(o *options) {
+				o.storage = flagutil.StorageClientOptions{
+					S3CredentialsFile: "/creds",
+				}
 			},
 		},
 		{
@@ -84,11 +96,11 @@ func Test_gatherOptions(t *testing.T) {
 				syncThrottle:      800,
 				statusThrottle:    400,
 				maxRecordsPerPool: 1000,
-				github:            flagutil.GitHubOptions{},
 				kubernetes:        flagutil.KubernetesOptions{DeckURI: "http://whatever"},
 			}
 			expectedfs := flag.NewFlagSet("fake-flags", flag.PanicOnError)
 			expected.github.AddFlags(expectedfs)
+			expected.github.TokenPath = flagutil.DefaultGitHubTokenPath
 			if tc.expected != nil {
 				tc.expected(expected)
 			}

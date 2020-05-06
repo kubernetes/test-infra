@@ -30,6 +30,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/diff"
+	"k8s.io/apimachinery/pkg/util/sets"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
@@ -260,8 +261,9 @@ func TestPartitionActive(t *testing.T) {
 	tests := []struct {
 		pjs []prowapi.ProwJob
 
-		pending   map[string]struct{}
-		triggered map[string]struct{}
+		pending   sets.String
+		triggered sets.String
+		aborted   sets.String
 	}{
 		{
 			pjs: []prowapi.ProwJob{
@@ -305,27 +307,46 @@ func TestPartitionActive(t *testing.T) {
 						State: prowapi.PendingState,
 					},
 				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "aborted",
+					},
+					Status: prowapi.ProwJobStatus{
+						State: prowapi.AbortedState,
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "aborted-and-completed",
+					},
+					Status: prowapi.ProwJobStatus{
+						State:          prowapi.AbortedState,
+						CompletionTime: &[]metav1.Time{metav1.Now()}[0],
+					},
+				},
 			},
-			pending: map[string]struct{}{
-				"bar": {}, "bak": {},
-			},
-			triggered: map[string]struct{}{
-				"foo": {},
-			},
+			pending:   sets.NewString("bar", "bak"),
+			triggered: sets.NewString("foo"),
+			aborted:   sets.NewString("aborted"),
 		},
 	}
 
 	for i, test := range tests {
 		t.Logf("test run #%d", i)
-		pendingCh, triggeredCh := PartitionActive(test.pjs)
+		pendingCh, triggeredCh, abortedCh := PartitionActive(test.pjs)
 		for job := range pendingCh {
-			if _, ok := test.pending[job.ObjectMeta.Name]; !ok {
+			if !test.pending.Has(job.Name) {
 				t.Errorf("didn't find pending job %#v", job)
 			}
 		}
 		for job := range triggeredCh {
-			if _, ok := test.triggered[job.ObjectMeta.Name]; !ok {
+			if !test.triggered.Has(job.Name) {
 				t.Errorf("didn't find triggered job %#v", job)
+			}
+		}
+		for job := range abortedCh {
+			if !test.aborted.Has(job.Name) {
+				t.Errorf("didn't find aborted job %#v", job)
 			}
 		}
 	}

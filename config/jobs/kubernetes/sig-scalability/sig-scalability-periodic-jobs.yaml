@@ -13,7 +13,7 @@ periodics:
     testgrid-tab-name: node-throughput
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -47,12 +47,13 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-e2e-scalability-node: "true"
+    preset-e2e-scalability-containerd: "true"
   annotations:
     testgrid-dashboards: sig-scalability-node
     testgrid-tab-name: node-containerd-throughput
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -62,8 +63,6 @@ periodics:
       - --
       - --check-leaked-resources
       - --cluster=
-      - --env=KUBE_CONTAINER_RUNTIME=containerd
-      - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-nodes=1
@@ -99,7 +98,7 @@ periodics:
     testgrid-num-failures-to-alert: '1'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -125,15 +124,11 @@ periodics:
       - --test-cmd-args=--nodes=100
       - --test-cmd-args=--prometheus-scrape-node-exporter=true
       - --test-cmd-args=--provider=kubemark
+      - --env=CL2_ENABLE_PVS=false # TODO(https://github.com/kubernetes/perf-tests/issues/803): Fix me
       - --test-cmd-args=--report-dir=/workspace/_artifacts
       - --test-cmd-args=--testconfig=testing/density/config.yaml
       - --test-cmd-args=--testconfig=testing/load/config.yaml
       - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
-      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_configmaps.yaml
-      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_daemonsets.yaml
-      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_jobs.yaml
-      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_secrets.yaml
-      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_statefulsets.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
@@ -165,7 +160,7 @@ periodics:
     testgrid-num-failures-to-alert: '1'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -190,17 +185,13 @@ periodics:
       - --test-cmd-args=cluster-loader2
       - --test-cmd-args=--nodes=500
       - --test-cmd-args=--provider=kubemark
+      - --env=CL2_ENABLE_PVS=false # TODO(https://github.com/kubernetes/perf-tests/issues/803): Fix me
       - --test-cmd-args=--report-dir=/workspace/_artifacts
       - --test-cmd-args=--testconfig=testing/density/config.yaml
       - --test-cmd-args=--testconfig=testing/load/config.yaml
       - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
-      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_configmaps.yaml
-      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_daemonsets.yaml
-      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_jobs.yaml
-      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_secrets.yaml
-      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_statefulsets.yaml
       - --test-cmd-args=--testoverrides=./testing/load/kubemark/500_nodes/override.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=80m
@@ -227,7 +218,7 @@ periodics:
     testgrid-num-columns-recent: '3'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -253,6 +244,7 @@ periodics:
       - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=${JOB_NAME}-${BUILD_ID}
       - --test-cmd-args=--nodes=5000
       - --test-cmd-args=--provider=kubemark
+      - --env=CL2_ENABLE_PVS=false # TODO(https://github.com/kubernetes/perf-tests/issues/803): Fix me
       - --test-cmd-args=--report-dir=/workspace/_artifacts
       - --test-cmd-args=--testconfig=testing/density/config.yaml
       - --test-cmd-args=--testconfig=testing/load/config.yaml
@@ -260,11 +252,6 @@ periodics:
       - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/ignore_known_kubemark_container_restarts.yaml
-      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_configmaps.yaml
-      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_daemonsets.yaml
-      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_jobs.yaml
-      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_secrets.yaml
-      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_statefulsets.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=1080m
       - --use-logexporter
@@ -292,7 +279,7 @@ periodics:
     testgrid-num-failures-to-alert: '1'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -340,7 +327,7 @@ periodics:
     testgrid-tab-name: kubemark-100-benchmark
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
       args:
       - --repo=k8s.io/perf-tests=master
       - --root=/go/src
@@ -367,7 +354,7 @@ periodics:
     timeout: 1h55m
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
       command:
       - ./hack/jenkins/benchmark-dockerized.sh
       args:
@@ -377,6 +364,48 @@ periodics:
         value: --timeout=1h50m
       - name: TEST_PREFIX
         value: BenchmarkScheduling
+
+- name: ci-benchmark-scheduler-perf-master
+  tags:
+  - "perfDashPrefix: scheduler-perf-benchmark"
+  - "perfDashJobType: benchmark"
+  interval: 2h
+  annotations:
+    testgrid-dashboards: sig-scalability-benchmarks
+    testgrid-tab-name: scheduler-perf
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  decoration_config:
+    timeout: 1h55m
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
+      command:
+      - ./hack/jenkins/benchmark-dockerized.sh
+      args:
+      - ./test/integration/scheduler_perf
+      env:
+      - name: KUBE_TIMEOUT
+        value: --timeout=1h50m
+      - name: TEST_PREFIX
+        value: BenchmarkPerfScheduling
+      # Set the benchtime to a very low value so every test is ran at most once
+      # even on very powerful machines
+      - name: BENCHTIME
+        value: 1ns
+      # We need to constraint compute resources so all the tests
+      # finish approximately at the same time. More compute power
+      # can increase scheduling throughput and make consequent results
+      # incomparable.
+      resources:
+        requests:
+          cpu: 4
+        limits:
+          cpu: 4
 
 - name: ci-benchmark-kube-dns-master
   interval: 2h
@@ -391,7 +420,7 @@ periodics:
     testgrid-tab-name: kube-dns
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -426,7 +455,7 @@ periodics:
     testgrid-tab-name: node-local-dns
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200213-4225c59-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -467,15 +496,13 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    # TODO(wojtek-t): Can we use the current Go version from Kubernetes?
-    - image: golang:latest
+    - image: gcr.io/k8s-testimages/benchmarkjunit:latest
       command:
-      - go
+      - /benchmarkjunit
       args:
-      - run
-      - ./pkg/benchmarkjunit
       - --log-file=$(ARTIFACTS)/benchmark-log.txt
       - --output=$(ARTIFACTS)/junit_benchmarks.xml
+      - --pass-on-error
       - ../kubernetes/pkg/...
       - ../kubernetes/plugin/...
       - ../kubernetes/vendor/k8s.io/apimachinery/...

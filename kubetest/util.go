@@ -37,6 +37,32 @@ func init() {
 	httpTransport.RegisterProtocol("file", http.NewFileTransport(http.Dir("/")))
 }
 
+// Essentially curl url | writer including request headers
+func httpReadWithHeaders(url string, headers map[string]string, writer io.Writer) error {
+	log.Printf("curl %s", url)
+	c := &http.Client{Transport: httpTransport}
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return err
+	}
+	for k, v := range headers {
+		req.Header.Add(k, v)
+	}
+	r, err := c.Do(req)
+	if err != nil {
+		return err
+	}
+	defer r.Body.Close()
+	if r.StatusCode >= 400 {
+		return fmt.Errorf("%v returned %d", url, r.StatusCode)
+	}
+	_, err = io.Copy(writer, r.Body)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // Essentially curl url | writer
 func httpRead(url string, writer io.Writer) error {
 	log.Printf("curl %s", url)

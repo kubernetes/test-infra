@@ -17,13 +17,16 @@ go_library(
     ],
 )
 
+NAME = "fake-mason"
+
 prow_image(
     name = "image",
+    component = NAME,
     visibility = ["//visibility:public"],
 )
 
 go_binary(
-    name = "fake-mason",
+    name = NAME,
     embed = [":go_default_library"],
     visibility = ["//visibility:public"],
 )

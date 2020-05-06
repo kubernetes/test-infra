@@ -1545,3 +1545,56 @@ func TestInteractor_MergeCommitsExistBetween(t *testing.T) {
 		})
 	}
 }
+
+func TestInteractor_ShowRef(t *testing.T) {
+	const target = "some-branch"
+	var testCases = []struct {
+		name          string
+		responses     map[string]execResponse
+		expectedCalls [][]string
+		expectedErr   bool
+	}{
+		{
+			name: "happy case",
+			responses: map[string]execResponse{
+				"show-ref -s some-branch": {out: []byte("32d3f5a6826109c625527f18a59f2e7144a330b6\n")},
+			},
+			expectedCalls: [][]string{
+				{"show-ref", "-s", target},
+			},
+			expectedErr: false,
+		},
+		{
+			name: "unhappy case",
+			responses: map[string]execResponse{
+				"git show-ref -s some-undef-branch": {err: errors.New("some-err")},
+			},
+			expectedCalls: [][]string{
+				{"show-ref", "-s", target},
+			},
+			expectedErr: true,
+		},
+	}
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			e := fakeExecutor{
+				records:   [][]string{},
+				responses: testCase.responses,
+			}
+			i := interactor{
+				executor: &e,
+				logger:   logrus.WithField("test", testCase.name),
+			}
+			_, actualErr := i.ShowRef(target)
+			if testCase.expectedErr && actualErr == nil {
+				t.Errorf("%s: expected an error but got none", testCase.name)
+			}
+			if !testCase.expectedErr && actualErr != nil {
+				t.Errorf("%s: expected no error but got one: %v", testCase.name, actualErr)
+			}
+			if actual, expected := e.records, testCase.expectedCalls; !reflect.DeepEqual(actual, expected) {
+				t.Errorf("%s: got incorrect git calls: %v", testCase.name, diff.ObjectReflectDiff(actual, expected))
+			}
+		})
+	}
+}

@@ -30,25 +30,28 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/pkg/io"
+	"k8s.io/test-infra/pkg/flagutil"
 	"k8s.io/test-infra/prow/config"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/gerrit/adapter"
 	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/interrupts"
+	"k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/pjutil"
 )
 
 type options struct {
-	gcsCredentialsFile string
-	cookiefilePath     string
-	configPath         string
-	jobConfigPath      string
-	projects           client.ProjectsFlag
-	lastSyncFallback   string
-	dryRun             bool
-	kubernetes         prowflagutil.KubernetesOptions
+	cookiefilePath string
+	configPath     string
+	jobConfigPath  string
+	projects       client.ProjectsFlag
+	// lastSyncFallback is the path to sync the latest timestamp
+	// Can be /local/path, gs://path/to/object or s3://path/to/object.
+	lastSyncFallback string
+	dryRun           bool
+	kubernetes       prowflagutil.KubernetesOptions
+	storage          prowflagutil.StorageClientOptions
 }
 
 func (o *options) Validate() error {
@@ -68,8 +71,11 @@ func (o *options) Validate() error {
 		return errors.New("--last-sync-fallback must be set")
 	}
 
-	if strings.HasPrefix(o.lastSyncFallback, "gs://") && o.gcsCredentialsFile == "" {
+	if strings.HasPrefix(o.lastSyncFallback, "gs://") && !o.storage.HasGCSCredentials() {
 		logrus.WithField("last-sync-fallback", o.lastSyncFallback).Warn("--gcs-credentials-file unset, will try and access with a default service account")
+	}
+	if strings.HasPrefix(o.lastSyncFallback, "s3://") && !o.storage.HasS3Credentials() {
+		logrus.WithField("last-sync-fallback", o.lastSyncFallback).Warn("--s3-credentials-file unset, will try and access with auto-discovered credentials")
 	}
 	return nil
 }
@@ -81,19 +87,26 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs")
 	fs.StringVar(&o.cookiefilePath, "cookiefile", "", "Path to git http.cookiefile, leave empty for anonymous")
 	fs.Var(&o.projects, "gerrit-projects", "Set of gerrit repos to monitor on a host example: --gerrit-host=https://android.googlesource.com=platform/build,toolchain/llvm, repeat fs for each host")
-	fs.StringVar(&o.lastSyncFallback, "last-sync-fallback", "", "Local or gs:// path to sync the latest timestamp")
-	fs.StringVar(&o.gcsCredentialsFile, "gcs-credentials-file", "", "Path to GCS credentials. Required for a --last-sync-fallback=gs://path")
+	fs.StringVar(&o.lastSyncFallback, "last-sync-fallback", "", "The /local/path, gs://path/to/object or s3://path/to/object to sync the latest timestamp")
 	fs.BoolVar(&o.dryRun, "dry-run", false, "Run in dry-run mode, performing no modifying actions.")
-	o.kubernetes.AddFlags(fs)
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.storage} {
+		group.AddFlags(fs)
+	}
 	fs.Parse(args)
 	return o
+}
+
+// opener has methods to read and write paths
+type opener interface {
+	Reader(ctx context.Context, path string) (io.ReadCloser, error)
+	Writer(ctx context.Context, path string, opts ...io.WriterOptions) (io.WriteCloser, error)
 }
 
 type syncTime struct {
 	val    client.LastSyncState
 	lock   sync.RWMutex
 	path   string
-	opener io.Opener
+	opener opener
 	ctx    context.Context
 }
 
@@ -214,7 +227,7 @@ func (st *syncTime) Update(newState client.LastSyncState) error {
 }
 
 func main() {
-	logrusutil.ComponentInit("gerrit")
+	logrusutil.ComponentInit()
 
 	defer interrupts.WaitForGracefulShutdown()
 
@@ -237,7 +250,7 @@ func main() {
 	}
 
 	ctx := context.Background() // TODO(fejta): use something better
-	op, err := io.NewOpener(ctx, o.gcsCredentialsFile)
+	op, err := o.storage.StorageClient(ctx)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating opener")
 	}

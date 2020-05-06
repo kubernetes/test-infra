@@ -30,6 +30,7 @@ import (
 	"k8s.io/test-infra/experiment/autobumper/bumper"
 	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/robots/pr-creator/updater"
 )
 
 const (
@@ -39,8 +40,9 @@ const (
 )
 
 var extraFiles = map[string]bool{
-	"releng/generate_tests.py":       true,
-	"images/kubekins-e2e/Dockerfile": true,
+	"config/jobs/kubernetes/kops/build-grid.py": true,
+	"releng/generate_tests.py":                  true,
+	"images/kubekins-e2e/Dockerfile":            true,
 }
 
 func cdToRootDir() error {
@@ -174,7 +176,7 @@ func main() {
 		logrus.WithError(err).Fatal("Failed to push changes.")
 	}
 
-	if err := bumper.UpdatePR(gc, githubOrg, githubRepo, images, getAssignment(), "Update prow to", o.githubLogin+":"+remoteBranch, "master"); err != nil {
+	if err := bumper.UpdatePR(gc, githubOrg, githubRepo, images, getAssignment(), "Update prow to", o.githubLogin+":"+remoteBranch, "master", updater.PreventMods); err != nil {
 		logrus.WithError(err).Fatal("PR creation failed.")
 	}
 }

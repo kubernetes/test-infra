@@ -42,7 +42,7 @@ type options struct {
 	jobConfigPath string
 
 	kubernetes flagutil.KubernetesOptions
-	dryRun     flagutil.Bool
+	dryRun     bool
 }
 
 func gatherOptions(fs *flag.FlagSet, args ...string) options {
@@ -50,17 +50,15 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
 	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
 
-	// TODO(fejta): switch dryRun to be a bool, defaulting to true after March 15, 2019.
-	fs.Var(&o.dryRun, "dry-run", "Whether or not to make mutating API calls to Kubernetes.")
+	fs.BoolVar(&o.dryRun, "dry-run", true, "Whether or not to make mutating API calls to Kubernetes.")
 	o.kubernetes.AddFlags(fs)
 
 	fs.Parse(args)
-	o.configPath = config.ConfigPath(o.configPath)
 	return o
 }
 
 func (o *options) Validate() error {
-	if err := o.kubernetes.Validate(o.dryRun.Value); err != nil {
+	if err := o.kubernetes.Validate(o.dryRun); err != nil {
 		return err
 	}
 
@@ -72,7 +70,7 @@ func (o *options) Validate() error {
 }
 
 func main() {
-	logrusutil.ComponentInit("horologium")
+	logrusutil.ComponentInit()
 
 	o := gatherOptions(flag.NewFlagSet(os.Args[0], flag.ExitOnError), os.Args[1:]...)
 	if err := o.Validate(); err != nil {
@@ -83,17 +81,12 @@ func main() {
 
 	pjutil.ServePProf()
 
-	if !o.dryRun.Explicit {
-		logrus.Warning("Horologium requires --dry-run=false to function correctly in production.")
-		logrus.Warning("--dry-run will soon default to true. Set --dry-run=false by March 15.")
-	}
-
 	configAgent := config.Agent{}
 	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 
-	prowJobClient, err := o.kubernetes.ProwJobClient(configAgent.Config().ProwJobNamespace, o.dryRun.Value)
+	prowJobClient, err := o.kubernetes.ProwJobClient(configAgent.Config().ProwJobNamespace, o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting Kubernetes client.")
 	}
@@ -163,6 +156,13 @@ func sync(prowJobClient prowJobClient, cfg *config.Config, cr cronClient, now ti
 				if _, err := prowJobClient.Create(&prowJob); err != nil {
 					errs = append(errs, err)
 				}
+			} else {
+				logger.WithFields(logrus.Fields{
+					"previous-found": previousFound,
+					"should-trigger": shouldTrigger,
+					"name":           p.Name,
+					"job":            p.JobBase.Name,
+				}).Info("skipping cron periodic")
 			}
 		}
 	}

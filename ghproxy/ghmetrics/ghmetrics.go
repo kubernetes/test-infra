@@ -19,6 +19,7 @@ package ghmetrics
 import (
 	"net/http"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -64,7 +65,7 @@ var cacheCounter = prometheus.NewCounterVec(
 		Name: "ghcache_responses",
 		Help: "How many cache responses of each cache response mode there are.",
 	},
-	[]string{"mode", "path"},
+	[]string{"mode", "path", "user_agent", "token_hash"},
 )
 
 // timeoutDuration provides the 'github_request_timeouts' histogram that keeps
@@ -127,7 +128,7 @@ func CollectGitHubTokenMetrics(tokenHash, apiVersion string, headers http.Header
 // CollectGitHubRequestMetrics publishes the number of requests by API path to
 // `github_requests` on prometheus.
 func CollectGitHubRequestMetrics(tokenHash, path, statusCode, userAgent string, roundTripTime float64) {
-	ghRequestDurationHistVec.With(prometheus.Labels{"token_hash": tokenHash, "path": simplifier.Simplify(path), "status": statusCode, "user_agent": userAgent}).Observe(roundTripTime)
+	ghRequestDurationHistVec.With(prometheus.Labels{"token_hash": tokenHash, "path": simplifier.Simplify(path), "status": statusCode, "user_agent": userAgentWithoutVersion(userAgent)}).Observe(roundTripTime)
 }
 
 // timestampStringToTime takes a unix timestamp and returns a `time.Time`
@@ -140,13 +141,21 @@ func timestampStringToTime(tstamp string) time.Time {
 	return time.Unix(timestamp, 0)
 }
 
+// userAgentWithouVersion formats a user agent without the version to reduce label cardinality
+func userAgentWithoutVersion(userAgent string) string {
+	if !strings.Contains(userAgent, "/") {
+		return userAgent
+	}
+	return strings.SplitN(userAgent, "/", 2)[0]
+}
+
 // CollectCacheRequestMetrics records a cache outcome for a specific path
-func CollectCacheRequestMetrics(mode, path string) {
-	cacheCounter.With(prometheus.Labels{"mode": mode, "path": simplifier.Simplify(path)}).Inc()
+func CollectCacheRequestMetrics(mode, path, userAgent, tokenHash string) {
+	cacheCounter.With(prometheus.Labels{"mode": mode, "path": simplifier.Simplify(path), "user_agent": userAgentWithoutVersion(userAgent), "token_hash": tokenHash}).Inc()
 }
 
 // CollectRequestTimeoutMetrics publishes the duration of timed-out requests by
 // API path to 'github_request_timeouts' on prometheus.
 func CollectRequestTimeoutMetrics(tokenHash, path, userAgent string, reqStartTime, responseTime time.Time) {
-	timeoutDuration.With(prometheus.Labels{"token_hash": tokenHash, "path": simplifier.Simplify(path), "user_agent": userAgent}).Observe(float64(responseTime.Sub(reqStartTime).Seconds()))
+	timeoutDuration.With(prometheus.Labels{"token_hash": tokenHash, "path": simplifier.Simplify(path), "user_agent": userAgentWithoutVersion(userAgent)}).Observe(float64(responseTime.Sub(reqStartTime).Seconds()))
 }

@@ -22,9 +22,12 @@ container_image(
     ],
 )
 
+NAME = "deck"
+
 prow_image(
     name = "image",
     base = ":spyglass-lenses",
+    component = NAME,
     visibility = ["//visibility:public"],
 )
 
@@ -40,7 +43,7 @@ container_image(
 )
 
 go_binary(
-    name = "deck",
+    name = NAME,
     data = [
         ":templates",
         "//prow/cmd/deck/static",
@@ -72,12 +75,12 @@ go_test(
         "//prow/pluginhelp:go_default_library",
         "//prow/plugins:go_default_library",
         "//prow/spyglass/lenses/buildlog:go_default_library",
+        "//prow/spyglass/lenses/common:go_default_library",
         "//prow/spyglass/lenses/junit:go_default_library",
         "//prow/spyglass/lenses/metadata:go_default_library",
         "//prow/tide:go_default_library",
         "//prow/tide/history:go_default_library",
         "@com_github_google_go_cmp//cmp:go_default_library",
-        "@com_github_google_go_github//github:go_default_library",
         "@com_github_gorilla_sessions//:go_default_library",
         "@com_github_sirupsen_logrus//:go_default_library",
         "@io_k8s_apimachinery//pkg/api/equality:go_default_library",
@@ -111,7 +114,6 @@ go_library(
         "//prow/config:go_default_library",
         "//prow/config/secret:go_default_library",
         "//prow/deck/jobs:go_default_library",
-        "//prow/errorutil:go_default_library",
         "//prow/flagutil:go_default_library",
         "//prow/gcsupload:go_default_library",
         "//prow/git/v2:go_default_library",
@@ -130,8 +132,10 @@ go_library(
         "//prow/prstatus:go_default_library",
         "//prow/simplifypath:go_default_library",
         "//prow/spyglass:go_default_library",
+        "//prow/spyglass/api:go_default_library",
         "//prow/spyglass/lenses:go_default_library",
         "//prow/spyglass/lenses/buildlog:go_default_library",
+        "//prow/spyglass/lenses/common:go_default_library",
         "//prow/spyglass/lenses/coverage:go_default_library",
         "//prow/spyglass/lenses/junit:go_default_library",
         "//prow/spyglass/lenses/metadata:go_default_library",
@@ -149,6 +153,7 @@ go_library(
         "@io_k8s_apimachinery//pkg/api/errors:go_default_library",
         "@io_k8s_apimachinery//pkg/apis/meta/v1:go_default_library",
         "@io_k8s_apimachinery//pkg/labels:go_default_library",
+        "@io_k8s_apimachinery//pkg/util/errors:go_default_library",
         "@io_k8s_apimachinery//pkg/util/sets:go_default_library",
         "@io_k8s_client_go//kubernetes/typed/core/v1:go_default_library",
         "@io_k8s_sigs_controller_runtime//pkg/client:go_default_library",

@@ -5,6 +5,7 @@ go_library(
     srcs = [
         "coalesce.go",
         "ghcache.go",
+        "partitioner.go",
     ],
     importpath = "k8s.io/test-infra/ghproxy/ghcache",
     visibility = ["//visibility:public"],
@@ -37,7 +38,13 @@ filegroup(
 
 go_test(
     name = "go_default_test",
-    srcs = ["coalesce_test.go"],
+    srcs = [
+        "coalesce_test.go",
+        "partitioner_test.go",
+    ],
     embed = [":go_default_library"],
-    deps = ["@io_k8s_apimachinery//pkg/util/diff:go_default_library"],
+    deps = [
+        "//ghproxy/ghmetrics:go_default_library",
+        "@io_k8s_apimachinery//pkg/util/diff:go_default_library",
+    ],
 )

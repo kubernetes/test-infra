@@ -1,8 +1,18 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
+reviewers:
+- flaper87
+- Lion-Wei
+- chaosaffe
+- m1093782566
+- dims
+- sbueringer
+- jichenjc
 approvers:
 - flaper87
 - Lion-Wei
 - chaosaffe
 - m1093782566
 - dims
+- sbueringer
+- jichenjc

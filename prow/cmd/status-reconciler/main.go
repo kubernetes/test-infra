@@ -26,7 +26,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 
 	"k8s.io/test-infra/pkg/flagutil"
-	"k8s.io/test-infra/pkg/io"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
@@ -52,44 +51,40 @@ type options struct {
 	dryRun                  bool
 	kubernetes              prowflagutil.KubernetesOptions
 	github                  prowflagutil.GitHubOptions
+	storage                 prowflagutil.StorageClientOptions
 
 	tokenBurst    int
 	tokensPerHour int
-
-	// The following are used for reading/writing to GCS.
-	gcsCredentialsFile string
 	// statusURI where Status-reconciler stores last known state, i.e. configuration.
-	// Can be a /local/path or gs://path/to/object.
+	// Can be /local/path, gs://path/to/object or s3://path/to/object.
 	// GCS writes will use the bucket's default acl for new objects. Ensure both that
 	// a) the gcs credentials can write to this bucket
 	// b) the default acls do not expose any private info
 	statusURI string
 }
 
-func gatherOptions() options {
+func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	o := options{}
-	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 
 	fs.StringVar(&o.configPath, "config-path", "/etc/config/config.yaml", "Path to config.yaml.")
 	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
 	fs.StringVar(&o.pluginConfig, "plugin-config", "/etc/plugins/plugins.yaml", "Path to plugin config file.")
-	fs.StringVar(&o.statusURI, "status-path", "", "The /local/path or gs://path/to/object to store status controller state. GCS writes will use the default object ACL for the bucket.")
+	fs.StringVar(&o.statusURI, "status-path", "", "The /local/path, gs://path/to/object or s3://path/to/object to store status controller state. GCS writes will use the default object ACL for the bucket.")
 
 	fs.BoolVar(&o.continueOnError, "continue-on-error", false, "Indicates that the migration should continue if context migration fails for an individual PR.")
 	fs.Var(&o.addedPresubmitBlacklist, "blacklist", "Org or org/repo to ignore new added presubmits for, set more than once to add more.")
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Whether or not to make mutating API calls to GitHub.")
 	fs.IntVar(&o.tokensPerHour, "tokens", defaultTokens, "Throttle hourly token consumption (0 to disable)")
 	fs.IntVar(&o.tokenBurst, "token-burst", defaultBurst, "Allow consuming a subset of hourly tokens in a short burst")
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github} {
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.storage} {
 		group.AddFlags(fs)
 	}
-
-	fs.Parse(os.Args[1:])
+	fs.Parse(args)
 	return o
 }
 
 func (o *options) Validate() error {
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github} {
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.storage} {
 		if err := group.Validate(o.dryRun); err != nil {
 			return err
 		}
@@ -99,9 +94,9 @@ func (o *options) Validate() error {
 }
 
 func main() {
-	logrusutil.ComponentInit("status-reconciler")
+	logrusutil.ComponentInit()
 
-	o := gatherOptions()
+	o := gatherOptions(flag.NewFlagSet(os.Args[0], flag.ExitOnError), os.Args[1:]...)
 	if err := o.Validate(); err != nil {
 		logrus.WithError(err).Fatal("Invalid options")
 	}
@@ -142,13 +137,9 @@ func main() {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
-	opener, err := io.NewOpener(ctx, o.gcsCredentialsFile)
+	opener, err := o.storage.StorageClient(ctx)
 	if err != nil {
-		entry := logrus.WithError(err)
-		if p := o.gcsCredentialsFile; p != "" {
-			entry = entry.WithField("gcs-credentials-file", p)
-		}
-		entry.Fatal("Cannot create opener")
+		logrus.WithError(err).Fatal("Cannot create opener")
 	}
 
 	c := statusreconciler.NewController(o.continueOnError, sets.NewString(o.addedPresubmitBlacklist.Strings()...), opener, o.configPath, o.jobConfigPath, o.statusURI, prowJobClient, githubClient, pluginAgent)

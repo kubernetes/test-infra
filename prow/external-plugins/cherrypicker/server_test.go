@@ -18,6 +18,7 @@ package main
 
 import (
 	"fmt"
+	"reflect"
 	"sync"
 	"testing"
 
@@ -26,6 +27,8 @@ import (
 	"k8s.io/test-infra/prow/git/localgit"
 	"k8s.io/test-infra/prow/github"
 )
+
+var commentFormat = "%s/%s#%d %s"
 
 type fghc struct {
 	sync.Mutex
@@ -37,8 +40,20 @@ type fghc struct {
 	prs        []github.PullRequest
 	prComments []github.IssueComment
 	prLabels   []github.Label
-	createdNum int
+	labels     []github.Label
 	orgMembers []github.TeamMember
+	issues     []github.Issue
+}
+
+func (f *fghc) AddLabel(org, repo string, number int, label string) error {
+	f.Lock()
+	defer f.Unlock()
+	for i := range f.prs {
+		if number == f.prs[i].Number {
+			f.prs[i].Labels = append(f.prs[i].Labels, github.Label{Name: label})
+		}
+	}
+	return nil
 }
 
 func (f *fghc) AssignIssue(org, repo string, number int, logins []string) error {
@@ -68,7 +83,7 @@ func (f *fghc) GetPullRequests(org, repo string) ([]github.PullRequest, error) {
 func (f *fghc) CreateComment(org, repo string, number int, comment string) error {
 	f.Lock()
 	defer f.Unlock()
-	f.comments = append(f.comments, fmt.Sprintf("%s/%s#%d %s", org, repo, number, comment))
+	f.comments = append(f.comments, fmt.Sprintf(commentFormat, org, repo, number, comment))
 	return nil
 }
 
@@ -84,22 +99,56 @@ func (f *fghc) GetRepo(owner, name string) (github.FullRepo, error) {
 	return github.FullRepo{}, nil
 }
 
-var expectedFmt = `title=%q body=%q head=%s base=%s`
+var expectedFmt = `title=%q body=%q head=%s base=%s labels=%v`
 
 func prToString(pr github.PullRequest) string {
-	return fmt.Sprintf(expectedFmt, pr.Title, pr.Body, pr.Head.Ref, pr.Base.Ref)
+	var labels []string
+	for _, label := range pr.Labels {
+		labels = append(labels, label.Name)
+	}
+	return fmt.Sprintf(expectedFmt, pr.Title, pr.Body, pr.Head.Ref, pr.Base.Ref, labels)
+}
+
+func (f *fghc) CreateIssue(org, repo, title, body string, milestone int, labels, assignees []string) (int, error) {
+	f.Lock()
+	defer f.Unlock()
+
+	var ghLabels []github.Label
+	var ghAssignees []github.User
+
+	num := len(f.issues) + 1
+
+	for _, label := range labels {
+		ghLabels = append(ghLabels, github.Label{Name: label})
+	}
+
+	for _, assignee := range assignees {
+		ghAssignees = append(ghAssignees, github.User{Login: assignee})
+	}
+
+	f.issues = append(f.issues, github.Issue{
+		Title:     title,
+		Body:      body,
+		Number:    num,
+		Labels:    ghLabels,
+		Assignees: ghAssignees,
+	})
+
+	return num, nil
 }
 
 func (f *fghc) CreatePullRequest(org, repo, title, body, head, base string, canModify bool) (int, error) {
 	f.Lock()
 	defer f.Unlock()
+	num := len(f.prs) + 1
 	f.prs = append(f.prs, github.PullRequest{
-		Title: title,
-		Body:  body,
-		Head:  github.PullRequestBranch{Ref: head},
-		Base:  github.PullRequestBranch{Ref: base},
+		Title:  title,
+		Body:   body,
+		Number: num,
+		Head:   github.PullRequestBranch{Ref: head},
+		Base:   github.PullRequestBranch{Ref: base},
 	})
-	return f.createdNum, nil
+	return num, nil
 }
 
 func (f *fghc) ListIssueComments(org, repo string, number int) ([]github.IssueComment, error) {
@@ -164,7 +213,15 @@ index 1ea52dc..5bd70a9 100644
 var body = "This PR updates the magic number.\n\n```release-note\nUpdate the magic number from 42 to 49\n```"
 
 func TestCherryPickIC(t *testing.T) {
-	lg, c, err := localgit.New()
+	testCherryPickIC(localgit.New, t)
+}
+
+func TestCherryPickICV2(t *testing.T) {
+	testCherryPickIC(localgit.NewV2, t)
+}
+
+func testCherryPickIC(clients localgit.Clients, t *testing.T) {
+	lg, c, err := clients()
 	if err != nil {
 		t.Fatalf("Making localgit: %v", err)
 	}
@@ -195,9 +252,8 @@ func TestCherryPickIC(t *testing.T) {
 			Title:  "This is a fix for X",
 			Body:   body,
 		},
-		isMember:   true,
-		createdNum: 3,
-		patch:      patch,
+		isMember: true,
+		patch:    patch,
 	}
 	ic := github.IssueCommentEvent{
 		Action: github.IssueCommentActionCreated,
@@ -226,7 +282,8 @@ func TestCherryPickIC(t *testing.T) {
 	expectedBody := "This is an automated cherry-pick of #2\n\n/assign wiseguy\n\n```release-note\nUpdate the magic number from 42 to 49\n```"
 	expectedBase := "stage"
 	expectedHead := fmt.Sprintf(botName+":"+cherryPickBranchFmt, 2, expectedBase)
-	expected := fmt.Sprintf(expectedFmt, expectedTitle, expectedBody, expectedHead, expectedBase)
+	expectedLabels := []string{}
+	expected := fmt.Sprintf(expectedFmt, expectedTitle, expectedBody, expectedHead, expectedBase, expectedLabels)
 
 	getSecret := func() []byte {
 		return []byte("sha=abcdefg")
@@ -254,7 +311,15 @@ func TestCherryPickIC(t *testing.T) {
 }
 
 func TestCherryPickPR(t *testing.T) {
-	lg, c, err := localgit.New()
+	testCherryPickPR(localgit.New, t)
+}
+
+func TestCherryPickPRV2(t *testing.T) {
+	testCherryPickPR(localgit.NewV2, t)
+}
+
+func testCherryPickPR(clients localgit.Clients, t *testing.T) {
+	lg, c, err := clients()
 	if err != nil {
 		t.Fatalf("Making localgit: %v", err)
 	}
@@ -341,9 +406,8 @@ func TestCherryPickPR(t *testing.T) {
 				},
 			},
 		},
-		isMember:   true,
-		createdNum: 3,
-		patch:      patch,
+		isMember: true,
+		patch:    patch,
 	}
 	pr := github.PullRequestEvent{
 		Action: github.PullRequestActionClosed,
@@ -390,7 +454,8 @@ func TestCherryPickPR(t *testing.T) {
 		expectedTitle := fmt.Sprintf("[%s] This is a fix for Y", branch)
 		expectedBody := "This is an automated cherry-pick of #2"
 		expectedHead := fmt.Sprintf(botName+":"+cherryPickBranchFmt, 2, branch)
-		return fmt.Sprintf(expectedFmt, expectedTitle, expectedBody, expectedHead, branch)
+		expectedLabels := s.labels
+		return fmt.Sprintf(expectedFmt, expectedTitle, expectedBody, expectedHead, branch, expectedLabels)
 	}
 
 	if len(ghc.prs) != 2 {
@@ -417,7 +482,15 @@ func TestCherryPickPR(t *testing.T) {
 }
 
 func TestCherryPickPRWithLabels(t *testing.T) {
-	lg, c, err := localgit.New()
+	testCherryPickPRWithLabels(localgit.New, t)
+}
+
+func TestCherryPickPRWithLabelsV2(t *testing.T) {
+	testCherryPickPRWithLabels(localgit.NewV2, t)
+}
+
+func testCherryPickPRWithLabels(clients localgit.Clients, t *testing.T) {
+	lg, c, err := clients()
 	if err != nil {
 		t.Fatalf("Making localgit: %v", err)
 	}
@@ -506,9 +579,8 @@ func TestCherryPickPRWithLabels(t *testing.T) {
 					Name: "cherrypick/release-1.7",
 				},
 			},
-			isMember:   true,
-			createdNum: 3,
-			patch:      patch,
+			isMember: true,
+			patch:    patch,
 		}
 
 		s := &Server{
@@ -520,6 +592,7 @@ func TestCherryPickPRWithLabels(t *testing.T) {
 			log:            logrus.StandardLogger().WithField("client", "cherrypicker"),
 			repos:          []github.Repo{{Fork: true, FullName: "ci-robot/bar"}},
 
+			labels:          []string{"cla: yes"},
 			prowAssignments: false,
 		}
 
@@ -531,7 +604,8 @@ func TestCherryPickPRWithLabels(t *testing.T) {
 			expectedTitle := fmt.Sprintf("[%s] This is a fix for Y", branch)
 			expectedBody := "This is an automated cherry-pick of #2"
 			expectedHead := fmt.Sprintf(botName+":"+cherryPickBranchFmt, 2, branch)
-			return fmt.Sprintf(expectedFmt, expectedTitle, expectedBody, expectedHead, branch)
+			expectedLabels := s.labels
+			return fmt.Sprintf(expectedFmt, expectedTitle, expectedBody, expectedHead, branch, expectedLabels)
 		}
 
 		if len(ghc.prs) != 2 {
@@ -555,5 +629,98 @@ func TestCherryPickPRWithLabels(t *testing.T) {
 		if len(seenBranches) != 2 {
 			t.Fatalf("Expected to see PRs for %d branches, got %d (%v)", 2, len(seenBranches), seenBranches)
 		}
+	}
+}
+
+func TestCherryPickCreateIssue(t *testing.T) {
+	testCases := []struct {
+		org       string
+		repo      string
+		title     string
+		body      string
+		prNum     int
+		labels    []string
+		assignees []string
+	}{
+		{
+			org:       "istio",
+			repo:      "istio",
+			title:     "brand new feature",
+			body:      "automated cherry-pick",
+			prNum:     2190,
+			labels:    nil,
+			assignees: []string{"clarketm"},
+		},
+		{
+			org:       "kubernetes",
+			repo:      "kubernetes",
+			title:     "alpha feature",
+			body:      "automated cherry-pick",
+			prNum:     3444,
+			labels:    []string{"new", "1.18"},
+			assignees: nil,
+		},
+	}
+
+	errMsg := func(field string) string {
+		return fmt.Sprintf("GH issue %q does not match: \nexpected: \"%%v\" \nactual: \"%%v\"", field)
+	}
+
+	for _, tc := range testCases {
+
+		ghc := &fghc{}
+
+		s := &Server{
+			ghc: ghc,
+		}
+
+		if err := s.createIssue(tc.org, tc.repo, tc.title, tc.body, tc.prNum, nil, tc.labels, tc.assignees); err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if len(ghc.issues) < 1 {
+			t.Fatalf("Expected 1 GH issue to be created but got: %d", len(ghc.issues))
+		}
+
+		ghIssue := ghc.issues[len(ghc.issues)-1]
+
+		if tc.title != ghIssue.Title {
+			t.Fatalf(errMsg("title"), tc.title, ghIssue.Title)
+		}
+
+		if tc.body != ghIssue.Body {
+			t.Fatalf(errMsg("body"), tc.title, ghIssue.Title)
+		}
+
+		if len(ghc.issues) != ghIssue.Number {
+			t.Fatalf(errMsg("number"), len(ghc.issues), ghIssue.Number)
+		}
+
+		var actualAssignees []string
+		for _, assignee := range ghIssue.Assignees {
+			actualAssignees = append(actualAssignees, assignee.Login)
+		}
+
+		if !reflect.DeepEqual(tc.assignees, actualAssignees) {
+			t.Fatalf(errMsg("assignees"), tc.assignees, actualAssignees)
+		}
+
+		var actualLabels []string
+		for _, label := range ghIssue.Labels {
+			actualLabels = append(actualLabels, label.Name)
+		}
+
+		if !reflect.DeepEqual(tc.labels, actualLabels) {
+			t.Fatalf(errMsg("labels"), tc.labels, actualLabels)
+		}
+
+		cpFormat := fmt.Sprintf(commentFormat, tc.org, tc.repo, tc.prNum, "In response to a cherrypick label: %s")
+		expectedComment := fmt.Sprintf(cpFormat, fmt.Sprintf("new issue created for failed cherrypick: #%d", ghIssue.Number))
+		actualComment := ghc.comments[len(ghc.comments)-1]
+
+		if expectedComment != actualComment {
+			t.Fatalf(errMsg("comment"), expectedComment, actualComment)
+		}
+
 	}
 }

@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"os"
@@ -24,11 +25,10 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/labels"
-	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	"k8s.io/test-infra/pkg/flagutil"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/config/secret"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/logrusutil"
@@ -48,7 +48,7 @@ type options struct {
 
 	dryRun     bool
 	kubernetes prowflagutil.KubernetesOptions
-	github     prowflagutil.GitHubOptions
+	github     prowflagutil.GitHubOptions // TODO(fejta): remove
 }
 
 func gatherOptions(fs *flag.FlagSet, args ...string) options {
@@ -58,7 +58,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
 	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
 	fs.StringVar(&o.selector, "label-selector", labels.Everything().String(), "Label selector to be applied in prowjobs. See https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors for constructing a label selector.")
-	fs.BoolVar(&o.skipReport, "skip-report", false, "Whether or not to ignore report with githubClient")
+	fs.BoolVar(&o.skipReport, "skip-report", false, "Validate that crier is reporting to github, not plank")
 
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Whether or not to make mutating API calls to GitHub.")
 	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github} {
@@ -66,11 +66,11 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	}
 
 	fs.Parse(args)
-	o.configPath = config.ConfigPath(o.configPath)
 	return o
 }
 
 func (o *options) Validate() error {
+	o.github.AllowAnonymous = true
 	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github} {
 		if err := group.Validate(o.dryRun); err != nil {
 			return err
@@ -85,7 +85,7 @@ func (o *options) Validate() error {
 }
 
 func main() {
-	logrusutil.ComponentInit("plank")
+	logrusutil.ComponentInit()
 
 	o := gatherOptions(flag.NewFlagSet(os.Args[0], flag.ExitOnError), os.Args[1:]...)
 	if err := o.Validate(); err != nil {
@@ -96,31 +96,33 @@ func main() {
 
 	pjutil.ServePProf()
 
-	configAgent := &config.Agent{}
+	var configAgent config.Agent
 	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 	cfg := configAgent.Config
 
-	secretAgent := &secret.Agent{}
-	if o.github.TokenPath != "" {
-		if err := secretAgent.Start([]string{o.github.TokenPath}); err != nil {
-			logrus.WithError(err).Fatal("Error starting secrets agent.")
+	var reporter func(context.Context)
+	if !o.skipReport {
+		logrus.Warn("Plank no longer supports github reporting, migrate to crier before June 2020")
+		var err error
+		reporter, err = deprecatedReporter(o.github, o.kubernetes, o.dryRun, cfg)
+		if err != nil {
+			logrus.WithError(err).Fatal("Error creating github reporter")
 		}
-	}
-
-	githubClient, err := o.github.GitHubClient(secretAgent, o.dryRun)
-	if err != nil {
-		logrus.WithError(err).Fatal("Error getting GitHub client.")
 	}
 
 	infrastructureClusterConfig, err := o.kubernetes.InfrastructureClusterConfig(o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting infrastructure cluster config.")
 	}
-	infrastructureClusterClient, err := ctrlruntimeclient.New(infrastructureClusterConfig, ctrlruntimeclient.Options{})
+	opts := manager.Options{
+		MetricsBindAddress: "0",
+		Namespace:          cfg().ProwJobNamespace,
+	}
+	mgr, err := manager.New(infrastructureClusterConfig, opts)
 	if err != nil {
-		logrus.WithError(err).Fatal("Error getting infrastructure cluster client.")
+		logrus.WithError(err).Fatal("Error creating manager")
 	}
 
 	buildClusterClients, err := o.kubernetes.BuildClusterUncachedRuntimeClients(o.dryRun)
@@ -128,7 +130,7 @@ func main() {
 		logrus.WithError(err).Fatal("Error creating build cluster clients.")
 	}
 
-	c, err := plank.NewController(infrastructureClusterClient, buildClusterClients, githubClient, nil, cfg, o.totURL, o.selector, o.skipReport)
+	c, err := plank.NewController(mgr.GetClient(), buildClusterClients, nil, cfg, o.totURL, o.selector)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating plank controller.")
 	}
@@ -136,6 +138,9 @@ func main() {
 	// Expose prometheus metrics
 	metrics.ExposeMetrics("plank", cfg().PushGateway)
 	// gather metrics for the jobs handled by plank.
+	if reporter != nil {
+		interrupts.Run(reporter)
+	}
 	interrupts.TickLiteral(func() {
 		start := time.Now()
 		c.SyncMetrics()
@@ -143,11 +148,10 @@ func main() {
 	}, 30*time.Second)
 
 	// run the controller
-	interrupts.TickLiteral(func() {
-		start := time.Now()
-		if err := c.Sync(); err != nil {
-			logrus.WithError(err).Error("Error syncing.")
-		}
-		logrus.WithField("duration", fmt.Sprintf("%v", time.Since(start))).Info("Synced")
-	}, 30*time.Second)
+	if err := mgr.Add(c); err != nil {
+		logrus.WithError(err).Fatal("failed to add controller to manager")
+	}
+	if err := mgr.Start(interrupts.Context().Done()); err != nil {
+		logrus.WithError(err).Fatal("failed to start manager")
+	}
 }

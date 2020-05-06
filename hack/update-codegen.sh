@@ -35,7 +35,8 @@ clientgen=$PWD/$1
 deepcopygen=$PWD/$2
 informergen=$PWD/$3
 listergen=$PWD/$4
-do_clean=${5:-}
+go_bindata=$PWD/$5
+do_clean=${6:-}
 
 ensure-in-gopath() {
   fake_gopath=$(mktemp -d -t codegen.gopath.XXXX)
@@ -104,6 +105,16 @@ gen-client() {
     --input k8s.io/test-infra/prow/apis/prowjobs/v1 \
     --output-package k8s.io/test-infra/prow/client/clientset
   copyfiles "./prow/client/clientset" "*.go"
+
+  clean prow/pipeline/clientset '*.go'
+  echo "Generating client for pipeline..." >&2
+  "$clientgen" \
+    --go-header-file hack/boilerplate/boilerplate.generated.go.txt \
+    --clientset-name versioned \
+    --input-base "" \
+    --input github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1 \
+    --output-package k8s.io/test-infra/prow/pipeline/clientset
+  copyfiles "./prow/pipeline/clientset" "*.go"
 }
 
 gen-lister() {
@@ -114,6 +125,14 @@ gen-lister() {
     --input-dirs k8s.io/test-infra/prow/apis/prowjobs/v1 \
     --output-package k8s.io/test-infra/prow/client/listers
   copyfiles "./prow/client/listers" "*.go"
+
+  clean prow/pipeline/listers '*.go'
+  echo "Generating lister for pipeline..." >&2
+  "$listergen" \
+    --go-header-file hack/boilerplate/boilerplate.generated.go.txt \
+    --input-dirs github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1 \
+    --output-package k8s.io/test-infra/prow/pipeline/listers
+  copyfiles "./prow/pipeline/listers" "*.go"
 }
 
 gen-informer() {
@@ -126,6 +145,23 @@ gen-informer() {
     --listers-package k8s.io/test-infra/prow/client/listers \
     --output-package k8s.io/test-infra/prow/client/informers
   copyfiles "./prow/client/informers" "*.go"
+
+  clean prow/pipeline/informers '*.go'
+  echo "Generating informer for pipeline..." >&2
+  "$informergen" \
+    --go-header-file hack/boilerplate/boilerplate.generated.go.txt \
+    --input-dirs github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1 \
+    --versioned-clientset-package k8s.io/test-infra/prow/pipeline/clientset/versioned \
+    --listers-package k8s.io/test-infra/prow/pipeline/listers \
+    --output-package k8s.io/test-infra/prow/pipeline/informers
+  copyfiles "./prow/pipeline/informers" "*.go"
+}
+
+gen-spyglass-bindata(){
+  cd prow/spyglass/lenses/common/
+  $go_bindata -pkg=common static/
+  "$go_sdk/bin/gofmt" -s -w ./
+  cd -
 }
 
 export GO111MODULE=off
@@ -142,4 +178,5 @@ gen-deepcopy
 gen-client
 gen-lister
 gen-informer
+gen-spyglass-bindata
 export GO111MODULE=on

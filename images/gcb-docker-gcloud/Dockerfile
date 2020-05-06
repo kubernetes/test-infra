@@ -12,8 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+ARG GO_VERSION
+
 # Includes bash, docker, and gcloud
-FROM golang:1.12.12-alpine
+FROM golang:${GO_VERSION}-alpine
 
 # add env we can debug with the image name:tag
 ARG IMAGE_ARG
@@ -36,5 +38,11 @@ RUN echo http://dl-cdn.alpinelinux.org/alpine/latest-stable/community >> /etc/ap
         --path-update=false \
         --usage-reporting=false && \
     gcloud info > /workspace/gcloud-info.txt
+
+# Install docker Buildx for fast docker builds
+ENV HOME=/root
+RUN mkdir -p  $HOME/.docker/cli-plugins \
+    && curl -fsSL "https://github.com/docker/buildx/releases/download/v0.3.1/buildx-v0.3.1.linux-amd64" --output $HOME/.docker/cli-plugins/docker-buildx \
+    && chmod a+x $HOME/.docker/cli-plugins/docker-buildx
 
 ENTRYPOINT ["/bin/bash"]

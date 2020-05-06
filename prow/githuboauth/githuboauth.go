@@ -21,16 +21,17 @@ import (
 	"encoding/gob"
 	"encoding/hex"
 	"fmt"
+	"k8s.io/test-infra/prow/flagutil"
 	"net/http"
 	"net/url"
 	"time"
 
-	"github.com/google/go-github/github"
 	"github.com/gorilla/sessions"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 	"golang.org/x/net/xsrftoken"
 	"golang.org/x/oauth2"
+	"k8s.io/test-infra/prow/github"
 )
 
 const (
@@ -64,15 +65,21 @@ func (c *Config) InitGitHubOAuthConfig(cookie *sessions.CookieStore) {
 	c.CookieStore = cookie
 }
 
-// GitHubClientWrapper is an interface for github clients which implements GetUser method
-// that returns github.User.
-type GitHubClientWrapper interface {
-	GetUser(login string) (*github.User, error)
+// AuthenticatedUserIdentifier knows how to get the identity of an authenticated user
+type AuthenticatedUserIdentifier interface {
+	LoginForRequester(requester, token string) (string, error)
 }
 
-// GitHubClientGetter interface is used by handleRedirect to get a GitHub client.
-type GitHubClientGetter interface {
-	GetGitHubClient(accessToken string, dryRun bool) GitHubClientWrapper
+func NewAuthenticatedUserIdentifier(options *flagutil.GitHubOptions) AuthenticatedUserIdentifier {
+	return &authenticatedUserIdentifier{clientFactory: options.GitHubClientWithAccessToken}
+}
+
+type authenticatedUserIdentifier struct {
+	clientFactory func(accessToken string) github.Client
+}
+
+func (a *authenticatedUserIdentifier) LoginForRequester(requester, token string) (string, error) {
+	return a.clientFactory(token).ForSubcomponent(requester).BotName()
 }
 
 // OAuthClient is an interface for a GitHub OAuth client.
@@ -160,7 +167,7 @@ func (ga *Agent) HandleLogin(client OAuthClient, secure bool) http.HandlerFunc {
 }
 
 // GetLogin returns the username of the already authenticated GitHub user.
-func (ga *Agent) GetLogin(r *http.Request, getter GitHubClientGetter) (string, error) {
+func (ga *Agent) GetLogin(r *http.Request, identifier AuthenticatedUserIdentifier) (string, error) {
 	session, err := ga.gc.CookieStore.Get(r, tokenSession)
 	if err != nil {
 		return "", err
@@ -169,12 +176,11 @@ func (ga *Agent) GetLogin(r *http.Request, getter GitHubClientGetter) (string, e
 	if !ok || !token.Valid() {
 		return "", fmt.Errorf("Could not find GitHub token")
 	}
-	ghc := getter.GetGitHubClient(token.AccessToken, false)
-	userInfo, err := ghc.GetUser("")
+	login, err := identifier.LoginForRequester("rerun", token.AccessToken)
 	if err != nil {
 		return "", err
 	}
-	return *userInfo.Login, nil
+	return login, nil
 }
 
 // HandleLogout handles GitHub logout request from front-end. It invalidates cookie sessions and
@@ -205,7 +211,7 @@ func (ga *Agent) HandleLogout(client OAuthClient) http.HandlerFunc {
 // HandleRedirect handles the redirection from GitHub. It exchanges the code from redirect URL for
 // user access token. The access token is then saved to the cookie and the page is redirected to
 // the final destination in the config, which should be the front-end.
-func (ga *Agent) HandleRedirect(client OAuthClient, getter GitHubClientGetter, secure bool) http.HandlerFunc {
+func (ga *Agent) HandleRedirect(client OAuthClient, identifier AuthenticatedUserIdentifier, secure bool) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// This is string manipulation for clarity, and to avoid surprising parse mismatches.
 		scheme := "http"
@@ -276,15 +282,14 @@ func (ga *Agent) HandleRedirect(client OAuthClient, getter GitHubClientGetter, s
 			ga.serverError(w, "Save session", err)
 			return
 		}
-		ghc := getter.GetGitHubClient(token.AccessToken, false)
-		user, err := ghc.GetUser("")
+		user, err := identifier.LoginForRequester("oauth", token.AccessToken)
 		if err != nil {
 			ga.serverError(w, "Get user login", err)
 			return
 		}
 		http.SetCookie(w, &http.Cookie{
 			Name:    loginSession,
-			Value:   *user.Login,
+			Value:   user,
 			Path:    "/",
 			Expires: time.Now().Add(time.Hour * 24 * 30),
 			Secure:  secure,

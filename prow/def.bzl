@@ -25,6 +25,7 @@ load(
 
 ## prow_image is a macro for creating :app and :image targets
 def prow_image(
+        component,
         name,  # use "image"
         base = None,
         stamp = True,  # stamp by default, but allow overrides
@@ -37,6 +38,7 @@ def prow_image(
         goarch = "amd64",
         goos = "linux",
         pure = "on",
+        x_defs = {"k8s.io/test-infra/prow/version.Name": component},
     )
 
     container_image(
@@ -174,8 +176,8 @@ def component(cmd, *kinds, **kwargs):
 # target which includes everything.
 #
 # Thus you can do things like:
-#   bazel run //prow/cluster:hook.apply  # Update all hook resources
-#   bazel run //prow/cluster:staging.apply  # Update everything on staging prow
+#   bazel run //config/prow/cluster:hook.apply  # Update all hook resources
+#   bazel run //config/prow/cluster:staging.apply  # Update everything on staging prow
 #
 # Concretely, the following:
 #   release(

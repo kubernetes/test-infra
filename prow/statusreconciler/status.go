@@ -24,8 +24,8 @@ import (
 	"github.com/sirupsen/logrus"
 	"sigs.k8s.io/yaml"
 
-	"k8s.io/test-infra/pkg/io"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/io"
 )
 
 type storedState struct {
@@ -37,9 +37,15 @@ type statusClient interface {
 	Save() error
 }
 
+// opener has methods to read and write paths
+type opener interface {
+	Reader(ctx context.Context, path string) (io.ReadCloser, error)
+	Writer(ctx context.Context, path string, opts ...io.WriterOptions) (io.WriteCloser, error)
+}
+
 type statusController struct {
 	logger        *logrus.Entry
-	opener        io.Opener
+	opener        opener
 	statusURI     string
 	configPath    string
 	jobConfigPath string

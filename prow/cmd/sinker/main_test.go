@@ -715,15 +715,6 @@ func TestFlags(t *testing.T) {
 			},
 		},
 		{
-			name: "default config-path when empty",
-			args: map[string]string{
-				"--config-path": "",
-			},
-			expected: func(o *options) {
-				o.configPath = config.DefaultConfigPath
-			},
-		},
-		{
 			name: "expicitly set --dry-run=false",
 			args: map[string]string{
 				"--dry-run": "false",
@@ -805,5 +796,18 @@ func TestFlags(t *testing.T) {
 				t.Errorf("%#v != expected %#v", actual, *expected)
 			}
 		})
+	}
+}
+
+func TestDeletePodToleratesNotFound(t *testing.T) {
+	client := corev1fake.NewSimpleClientset().CoreV1().Pods("default")
+	m := &sinkerReconciliationMetrics{}
+	c := &controller{}
+	l := logrus.NewEntry(logrus.New())
+
+	c.deletePod(l, "i-do-not-exist", "reason", client, m)
+
+	if n := len(m.podRemovalErrors); n != 0 {
+		t.Errorf("Expected no pod removal errors, got %v", m.podRemovalErrors)
 	}
 }

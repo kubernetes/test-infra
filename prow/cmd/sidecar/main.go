@@ -27,7 +27,7 @@ import (
 )
 
 func main() {
-	logrusutil.ComponentInit("sidecar")
+	logrusutil.ComponentInit()
 
 	o := sidecar.NewOptions()
 	if err := options.Load(o); err != nil {

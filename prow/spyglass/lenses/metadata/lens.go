@@ -31,10 +31,12 @@ import (
 
 	"github.com/GoogleCloudPlatform/testgrid/metadata"
 	"github.com/sirupsen/logrus"
-	v1 "k8s.io/api/core/v1"
+	"k8s.io/api/core/v1"
+
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	k8sreporter "k8s.io/test-infra/prow/crier/reporters/gcs/kubernetes"
 	"k8s.io/test-infra/prow/pod-utils/gcs"
+	"k8s.io/test-infra/prow/spyglass/api"
 	"k8s.io/test-infra/prow/spyglass/lenses"
 )
 
@@ -62,7 +64,7 @@ func (lens Lens) Config() lenses.LensConfig {
 }
 
 // Header renders the <head> from template.html.
-func (lens Lens) Header(artifacts []lenses.Artifact, resourceDir string, config json.RawMessage) string {
+func (lens Lens) Header(artifacts []api.Artifact, resourceDir string, config json.RawMessage) string {
 	t, err := template.ParseFiles(filepath.Join(resourceDir, "template.html"))
 	if err != nil {
 		return fmt.Sprintf("<!-- FAILED LOADING HEADER: %v -->", err)
@@ -75,12 +77,12 @@ func (lens Lens) Header(artifacts []lenses.Artifact, resourceDir string, config 
 }
 
 // Callback does nothing.
-func (lens Lens) Callback(artifacts []lenses.Artifact, resourceDir string, data string, config json.RawMessage) string {
+func (lens Lens) Callback(artifacts []api.Artifact, resourceDir string, data string, config json.RawMessage) string {
 	return ""
 }
 
 // Body creates a view for prow job metadata.
-func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data string, config json.RawMessage) string {
+func (lens Lens) Body(artifacts []api.Artifact, resourceDir string, data string, config json.RawMessage) string {
 	var buf bytes.Buffer
 	type MetadataViewData struct {
 		StartTime    time.Time
@@ -224,7 +226,7 @@ func hintFromPodInfo(buf []byte) string {
 
 	// There are a bunch of fun ways for the node to fail that we've seen before
 	for _, e := range report.Events {
-		if e.Reason == "FailedCreatePodSandbox" || e.Reason == "FailedSync" || e.Reason == "FailedKillPod" {
+		if e.Reason == "FailedCreatePodSandbox" || e.Reason == "FailedSync" {
 			return "The job may have executed on an unhealthy node. Contact your prow maintainers with a link to this page or check the detailed pod information."
 		}
 	}

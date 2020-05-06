@@ -19,10 +19,13 @@ package serviceaccount
 import (
 	"testing"
 
+	authorizationv1beta1 "k8s.io/api/authorization/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
 	k8sFake "k8s.io/client-go/kubernetes/fake"
+	k8sTesting "k8s.io/client-go/testing"
 )
 
 func TestCreateClusterServiceAccountCredentials(t *testing.T) {
@@ -34,8 +37,10 @@ func TestCreateClusterServiceAccountCredentials(t *testing.T) {
 		{
 			name: "create cluster service account success",
 			createClient: func() kubernetes.Interface {
-				return k8sFake.NewSimpleClientset(
-					&corev1.Secret{
+				var client kubernetes.Interface = &k8sFake.Clientset{}
+
+				client.(*k8sFake.Clientset).Fake.AddReactor("get", "secrets", func(action k8sTesting.Action) (handled bool, ret runtime.Object, err error) {
+					r := &corev1.Secret{
 						TypeMeta: metav1.TypeMeta{},
 						ObjectMeta: metav1.ObjectMeta{
 							Name:      "secret-abc",
@@ -45,14 +50,32 @@ func TestCreateClusterServiceAccountCredentials(t *testing.T) {
 							corev1.ServiceAccountTokenKey:  {1, 2, 3},
 							corev1.ServiceAccountRootCAKey: {1, 2, 3},
 						},
-					},
-					&corev1.ServiceAccount{
+					}
+					return true, r, nil
+				})
+
+				client.(*k8sFake.Clientset).Fake.AddReactor("get", "serviceaccounts", func(action k8sTesting.Action) (handled bool, ret runtime.Object, err error) {
+					r := &corev1.ServiceAccount{
 						ObjectMeta: metav1.ObjectMeta{
 							Name:      serviceAccountName,
 							Namespace: corev1.NamespaceDefault,
 						},
 						Secrets: []corev1.ObjectReference{{Name: "secret-abc"}},
-					})
+					}
+					return true, r, nil
+				})
+
+				client.(*k8sFake.Clientset).Fake.AddReactor("create", "selfsubjectaccessreviews", func(action k8sTesting.Action) (handled bool, ret runtime.Object, err error) {
+					r := &authorizationv1beta1.SelfSubjectAccessReview{
+						Status: authorizationv1beta1.SubjectAccessReviewStatus{
+							Allowed: true,
+							Reason:  "I am a test!",
+						},
+					}
+					return true, r, nil
+				})
+
+				return client
 			},
 			expected: true,
 		},
