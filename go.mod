@@ -7,7 +7,7 @@ replace github.com/golang/lint => golang.org/x/lint v0.0.0-20190301231843-5614ed
 // to point to the same kubernetes v0.KubernetesMinor.KubernetesPatch version
 // before running update-deps.sh.
 replace (
-	cloud.google.com/go => cloud.google.com/go v0.44.3
+	cloud.google.com/go => cloud.google.com/go v0.57.0
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v12.2.0+incompatible
 	golang.org/x/lint => golang.org/x/lint v0.0.0-20190409202823-959b441ac422
 	k8s.io/api => k8s.io/api v0.17.3
@@ -17,7 +17,8 @@ replace (
 )
 
 require (
-	cloud.google.com/go v0.47.0
+	cloud.google.com/go/pubsub v1.2.0
+	cloud.google.com/go/storage v1.6.0
 	github.com/Azure/azure-sdk-for-go v38.0.0+incompatible
 	github.com/Azure/azure-storage-blob-go v0.8.0
 	github.com/Azure/go-autorest/autorest v0.9.6
@@ -45,8 +46,7 @@ require (
 	github.com/go-openapi/swag v0.19.7 // indirect
 	github.com/go-test/deep v1.0.4
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
-	github.com/golang/mock v1.3.1
-	github.com/golang/protobuf v1.3.4 // indirect
+	github.com/golang/mock v1.4.3
 	github.com/gomodule/redigo v1.7.0
 	github.com/google/go-cmp v0.4.0
 	github.com/google/go-github v17.0.0+incompatible
@@ -80,17 +80,15 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.6.2
 	github.com/tektoncd/pipeline v0.11.0
-	go.opencensus.io v0.22.3 // indirect
 	gocloud.dev v0.19.0
 	golang.org/x/crypto v0.0.0-20200302210943-78000ba7a073
 	golang.org/x/lint v0.0.0-20200302205851-738671d3881b
-	golang.org/x/net v0.0.0-20200301022130-244492dfa37a
+	golang.org/x/net v0.0.0-20200501053045-e0ff5e5a1de5
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
-	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
-	golang.org/x/sys v0.0.0-20200302150141-5c8b2ff67527 // indirect
+	golang.org/x/sync v0.0.0-20200317015054-43a5402ce75a
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0
-	golang.org/x/tools v0.0.0-20200303214625-2b0b585e22fe
-	google.golang.org/api v0.15.0
+	golang.org/x/tools v0.0.0-20200501065659-ab2804fb9c9d
+	google.golang.org/api v0.22.0
 	gopkg.in/ini.v1 v1.52.0 // indirect
 	gopkg.in/robfig/cron.v2 v2.0.0-20150107220207-be2e0b0deed5
 	gopkg.in/yaml.v3 v3.0.0-20190709130402-674ba3eaed22
