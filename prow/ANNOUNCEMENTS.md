@@ -101,6 +101,7 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
+ - *May 18, 2020* `expiry` field has been replaced with `created_at` in the HMAC secret.
  - *April 24, 2020* Horologium now defaults to `--dry-run=true`
  - *April 23, 2020* Explicitly setting `--config-path` is now required.
  - *April 23, 2020* Update the `autobump` image to at least `v20200422-8c8546d74` before June 2020.
