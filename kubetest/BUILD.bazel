@@ -5,7 +5,7 @@ go_library(
     srcs = [
         "aks.go",
         "aksengine.go",
-        "azure_helpers.go",
+        "aksengine_helpers.go",
         "bash.go",
         "build.go",
         "dump.go",
@@ -59,7 +59,7 @@ go_binary(
 go_test(
     name = "go_default_test",
     srcs = [
-        "azure_test.go",
+        "aksengine_test.go",
         "dump_test.go",
         "extract_test.go",
         "kubernetes_test.go",

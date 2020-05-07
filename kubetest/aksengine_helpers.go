@@ -208,6 +208,7 @@ type AzureClient struct {
 type FeatureFlags struct {
 	EnableIPv6DualStack bool `json:"enableIPv6DualStack,omitempty"`
 	EnableIPv6Only      bool `json:"enableIPv6Only,omitempty"`
+	EnableTelemetry     bool `json:"enableTelemetry,omitempty"`
 }
 
 // CustomCloudProfile defines configuration for custom cloud profile( for ex: Azure Stack)
