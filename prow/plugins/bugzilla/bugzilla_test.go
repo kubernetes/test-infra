@@ -1197,7 +1197,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			name:                "failure to clone bug for cherrypick results in error",
 			bugs:                []bugzilla.Bug{{Product: "Test", Component: []string{"TestComponent"}, TargetRelease: []string{"v2"}, ID: 123, Status: "CLOSED", Severity: "urgent"}},
 			bugComments:         map[int][]bugzilla.Comment{123: {{BugID: 123, Count: 0, Text: "This is a bug"}}},
-			bugCreateErrors:     []string{"This is a clone of Bug #123. This is the description of that bug:\nThis is a bug"},
+			bugCreateErrors:     []string{"+++ This bug was initially created as a clone of Bug #123 +++\n\nThis is a bug"},
 			prs:                 []github.PullRequest{{Number: base.number, Body: base.body, Title: base.body}, {Number: 2, Body: "This is an automated cherry-pick of #1.\n\n/assign user", Title: "[v1] " + base.body}},
 			body:                "[v1] " + base.body,
 			cherryPick:          true,
