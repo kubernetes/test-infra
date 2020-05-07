@@ -926,6 +926,18 @@ repos:
         target: both
         prowPlugin: label
         addedBy: anyone
+      - color: 0052cc
+        description: Issues or PR related to prow, build clusters, migrating jobs
+        name: area/prow
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to the Release Engineering subproject
+        name: area/release-eng
+        target: both
+        prowPlugin: label
+        addedBy: anyone
   kubernetes/kubernetes:
     labels:
       - color: 0052cc
