@@ -268,18 +268,32 @@ func cloneBugStruct(bug *Bug, subcomponents map[string][]string, comments []Comm
 	if len(subcomponents) > 0 {
 		newBug.SubComponents = subcomponents
 	}
-	if len(comments) > 0 && comments[0].Count == 0 {
-		desc := comments[0]
-		newBug.Description = fmt.Sprintf("This is a clone of Bug #%d. This is the description of that bug:\n%s", bug.ID, desc.Text)
-		newBug.CommentIsPrivate = desc.IsPrivate
-		newBug.CommentTags = desc.Tags
-		newBug.IsMarkdown = desc.IsMarkdown
-	} else {
-		// This cases _shouldn't_ happen. But just in case...
-		newBug.Description = fmt.Sprintf("This is a clone of Bug #%d.", bug.ID)
-		// We don't know whether this bug should be private. Default to private in case this bug contains private information.
-		newBug.CommentIsPrivate = true
+	for _, comment := range comments {
+		if comment.IsPrivate {
+			newBug.CommentIsPrivate = true
+			break
+		}
 	}
+	var newDesc strings.Builder
+	// The following builds a description comprising all the bug's comments formatted the same way that Bugzilla does on clone
+	newDesc.WriteString(fmt.Sprintf("+++ This bug was initially created as a clone of Bug #%d +++\n\n", bug.ID))
+	if len(comments) > 0 {
+		newDesc.WriteString(comments[0].Text)
+	}
+	// This is a standard time layout string for golang, which formats the time `Mon Jan 2 15:04:05 -0700 MST 2006` to the layout we want
+	bzTimeLayout := "2006-01-02 15:04:05 MST"
+	for _, comment := range comments[1:] {
+		// Header
+		newDesc.WriteString("\n\n--- Additional comment from ")
+		newDesc.WriteString(comment.Creator)
+		newDesc.WriteString(" on ")
+		newDesc.WriteString(comment.Time.UTC().Format(bzTimeLayout))
+		newDesc.WriteString(" ---\n\n")
+
+		// Comment
+		newDesc.WriteString(comment.Text)
+	}
+	newBug.Description = newDesc.String()
 	return newBug
 }
 
