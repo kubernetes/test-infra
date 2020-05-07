@@ -43,7 +43,7 @@ periodics:
     testgrid-tab-name: unit tests
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
     testgrid-num-failures-to-alert: "2"
-- name: periodic-cluster-api-capd-e2e-test
+- name: periodic-cluster-api-e2e-test
   interval: 1h
   decorate: true
   labels:
@@ -59,17 +59,17 @@ periodics:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
         args:
           - runner.sh
-          - "./scripts/ci-capd-e2e.sh"
+          - "./scripts/ci-e2e.sh"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
         resources:
           requests:
-            cpu: "4000m"
+            cpu: "6000m"
             memory: "6Gi"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-    testgrid-tab-name: capd e2e tests
+    testgrid-tab-name: capi e2e tests
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
     testgrid-num-failures-to-alert: "2"
 - name: periodic-cluster-api-build-release-0-2
@@ -118,7 +118,7 @@ periodics:
     testgrid-num-failures-to-alert: "2"
 postsubmits:
   kubernetes-sigs/cluster-api:
-  - name: postsubmit-cluster-api-capd-e2e-tests-master
+  - name: postsubmit-cluster-api-e2e-tests-master
     interval: 1h
     decorate: true
     path_alias: sigs.k8s.io/cluster-api
@@ -132,16 +132,16 @@ postsubmits:
         - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
           args:
             - runner.sh
-            - "./scripts/ci-capd-e2e.sh"
+            - "./scripts/ci-e2e.sh"
           # we need privileged mode in order to do docker in docker
           securityContext:
             privileged: true
           resources:
             requests:
-              cpu: 4
-              memory: "6Gi"
+            cpu: "6000m"
+            memory: "6Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-      testgrid-tab-name: capd e2e tests-master
+      testgrid-tab-name: capi e2e tests-master
       testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
       testgrid-num-failures-to-alert: "2"
