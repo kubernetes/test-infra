@@ -4,6 +4,7 @@ aliases:
   - BenTheElder
   - chases2
   - cjwagner
+  - clarketm
   - fejta
   - Katharine
   - michelle192837
@@ -270,7 +271,7 @@ aliases:
   kubebuilder-reviewers:
   - alexeldeib
 
-  kubebuilder-emeritus-approvers: 
+  kubebuilder-emeritus-approvers:
   - pwittrock
 
   # end sigs.k8s.io/kubebuilder/OWNERS_ALIASES
