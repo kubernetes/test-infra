@@ -1064,7 +1064,8 @@ func TestVerifyOwnersPresence(t *testing.T) {
 func TestOptions(t *testing.T) {
 
 	var defaultGitHubOptions flagutil.GitHubOptions
-	defaultGitHubOptions.AddFlagsWithoutDefaultGitHubTokenPath(flag.NewFlagSet("", flag.ContinueOnError))
+	defaultGitHubOptions.AddFlags(flag.NewFlagSet("", flag.ContinueOnError))
+	defaultGitHubOptions.AllowAnonymous = true
 
 	StringsFlag := func(vals []string) flagutil.Strings {
 		var flag flagutil.Strings
@@ -1362,6 +1363,15 @@ func TestValidateTideContextPolicy(t *testing.T) {
 				}
 			}),
 		},
+		{
+			name: "repo key is not in org/repo format, no error",
+			cfg: cfg(func(c *config.Config) {
+				c.PresubmitsStatic["https://kunit-review.googlesource.com/linux"] = []config.Presubmit{
+					{Reporter: config.Reporter{Context: "a"}, Brancher: config.Brancher{Branches: []string{"a"}}},
+					{AlwaysRun: true, Reporter: config.Reporter{Context: "a"}, Brancher: config.Brancher{Branches: []string{"b"}}},
+				}
+			}),
+		},
 	}
 
 	for _, tc := range testCases {
@@ -1375,6 +1385,28 @@ func TestValidateTideContextPolicy(t *testing.T) {
 			}
 			if errMsg != tc.expectedError {
 				t.Errorf("expected error %q, got error %q", tc.expectedError, errMsg)
+			}
+		})
+	}
+}
+
+func TestValidate(t *testing.T) {
+	testCases := []struct {
+		name string
+		opts options
+	}{
+		{
+			name: "combined config",
+			opts: options{
+				configPath: "testdata/combined.yaml",
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			if err := validate(tc.opts); err != nil {
+				t.Fatalf("validation failed: %v", err)
 			}
 		})
 	}

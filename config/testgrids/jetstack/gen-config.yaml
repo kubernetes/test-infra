@@ -17,7 +17,7 @@ dashboards:
       url: https://github.com/jetstack/cert-manager/issues/
     test_group_name: ci-cert-manager-bazel
   - alert_options:
-      alert_mail_to_addresses: james+alerts@munnelly.eu
+      alert_mail_to_addresses: james+alerts@munnelly.eu,maartje.eyskens+alerts@jetstack.io
     code_search_url_template:
       url: https://github.com/jetstack/cert-manager/compare/<start-custom-0>...<end-custom-0>
     description: Runs 'bazel test //...' using the 'experimental' Bazel version
@@ -26,7 +26,7 @@ dashboards:
       url: https://github.com/jetstack/cert-manager/issues/
     test_group_name: ci-cert-manager-bazel-experimental
   - alert_options:
-      alert_mail_to_addresses: james+alerts@munnelly.eu
+      alert_mail_to_addresses: james+alerts@munnelly.eu,maartje.eyskens+alerts@jetstack.io
     code_search_url_template:
       url: https://github.com/jetstack/cert-manager/compare/<start-custom-0>...<end-custom-0>
     description: Runs the end-to-end test suite against a Kubernetes v1.11 cluster
@@ -35,7 +35,7 @@ dashboards:
       url: https://github.com/jetstack/cert-manager/issues/
     test_group_name: ci-cert-manager-e2e-v1-11
   - alert_options:
-      alert_mail_to_addresses: james+alerts@munnelly.eu
+      alert_mail_to_addresses: james+alerts@munnelly.eu,maartje.eyskens+alerts@jetstack.io
     code_search_url_template:
       url: https://github.com/jetstack/cert-manager/compare/<start-custom-0>...<end-custom-0>
     description: Runs the end-to-end test suite against a Kubernetes v1.12 cluster
@@ -44,7 +44,7 @@ dashboards:
       url: https://github.com/jetstack/cert-manager/issues/
     test_group_name: ci-cert-manager-e2e-v1-12
   - alert_options:
-      alert_mail_to_addresses: james+alerts@munnelly.eu
+      alert_mail_to_addresses: james+alerts@munnelly.eu,maartje.eyskens+alerts@jetstack.io
     code_search_url_template:
       url: https://github.com/jetstack/cert-manager/compare/<start-custom-0>...<end-custom-0>
     description: Runs the end-to-end test suite against a Kubernetes v1.13 cluster
@@ -53,7 +53,7 @@ dashboards:
       url: https://github.com/jetstack/cert-manager/issues/
     test_group_name: ci-cert-manager-e2e-v1-13
   - alert_options:
-      alert_mail_to_addresses: james+alerts@munnelly.eu
+      alert_mail_to_addresses: james+alerts@munnelly.eu,maartje.eyskens+alerts@jetstack.io
     code_search_url_template:
       url: https://github.com/jetstack/cert-manager/compare/<start-custom-0>...<end-custom-0>
     description: Runs the end-to-end test suite against a Kubernetes v1.14 cluster
@@ -62,7 +62,7 @@ dashboards:
       url: https://github.com/jetstack/cert-manager/issues/
     test_group_name: ci-cert-manager-e2e-v1-14
   - alert_options:
-      alert_mail_to_addresses: james+alerts@munnelly.eu
+      alert_mail_to_addresses: james+alerts@munnelly.eu,maartje.eyskens+alerts@jetstack.io
     code_search_url_template:
       url: https://github.com/jetstack/cert-manager/compare/<start-custom-0>...<end-custom-0>
     description: Runs the end-to-end test suite against a Kubernetes v1.15 cluster
@@ -71,7 +71,7 @@ dashboards:
       url: https://github.com/jetstack/cert-manager/issues/
     test_group_name: ci-cert-manager-e2e-v1-15
   - alert_options:
-      alert_mail_to_addresses: james+alerts@munnelly.eu
+      alert_mail_to_addresses: james+alerts@munnelly.eu,maartje.eyskens+alerts@jetstack.io
     code_search_url_template:
       url: https://github.com/jetstack/cert-manager/compare/<start-custom-0>...<end-custom-0>
     description: Runs the end-to-end test suite against a Kubernetes v1.16 cluster
@@ -80,7 +80,7 @@ dashboards:
       url: https://github.com/jetstack/cert-manager/issues/
     test_group_name: ci-cert-manager-e2e-v1-16
   - alert_options:
-      alert_mail_to_addresses: james+alerts@munnelly.eu
+      alert_mail_to_addresses: james+alerts@munnelly.eu,maartje.eyskens+alerts@jetstack.io
     code_search_url_template:
       url: https://github.com/jetstack/cert-manager/compare/<start-custom-0>...<end-custom-0>
     description: Runs the end-to-end test suite against a Kubernetes v1.17 cluster
@@ -88,9 +88,20 @@ dashboards:
     open_bug_template:
       url: https://github.com/jetstack/cert-manager/issues/
     test_group_name: ci-cert-manager-e2e-v1-17
+  - alert_options:
+      alert_mail_to_addresses: james+alerts@munnelly.eu,maartje.eyskens+alerts@jetstack.io
+    code_search_url_template:
+      url: https://github.com/jetstack/cert-manager/compare/<start-custom-0>...<end-custom-0>
+    description: Runs the end-to-end test suite against a Kubernetes v1.18 cluster
+    name: ci-cert-manager-e2e-v1-18
+    open_bug_template:
+      url: https://github.com/jetstack/cert-manager/issues/
+    test_group_name: ci-cert-manager-e2e-v1-18
   name: jetstack-cert-manager-master
 - dashboard_tab:
-  - code_search_url_template:
+  - alert_options:
+      alert_mail_to_addresses: james+alerts@munnelly.eu,maartje.eyskens+alerts@jetstack.io
+    code_search_url_template:
       url: https://github.com/jetstack/cert-manager/compare/<start-custom-0>...<end-custom-0>
     description: Runs 'bazel test //...'
     name: ci-cert-manager-previous-bazel
@@ -98,7 +109,7 @@ dashboards:
       url: https://github.com/jetstack/cert-manager/issues/
     test_group_name: ci-cert-manager-previous-bazel
   - alert_options:
-      alert_mail_to_addresses: james+alerts@munnelly.eu
+      alert_mail_to_addresses: james+alerts@munnelly.eu,maartje.eyskens+alerts@jetstack.io
     code_search_url_template:
       url: https://github.com/jetstack/cert-manager/compare/<start-custom-0>...<end-custom-0>
     description: Runs 'bazel test //...' using the 'experimental' Bazel version
@@ -107,7 +118,7 @@ dashboards:
       url: https://github.com/jetstack/cert-manager/issues/
     test_group_name: ci-cert-manager-previous-bazel-experimental
   - alert_options:
-      alert_mail_to_addresses: james+alerts@munnelly.eu
+      alert_mail_to_addresses: james+alerts@munnelly.eu,maartje.eyskens+alerts@jetstack.io
     code_search_url_template:
       url: https://github.com/jetstack/cert-manager/compare/<start-custom-0>...<end-custom-0>
     description: Runs the end-to-end test suite against a Kubernetes v1.11 cluster
@@ -116,7 +127,7 @@ dashboards:
       url: https://github.com/jetstack/cert-manager/issues/
     test_group_name: ci-cert-manager-previous-e2e-v1-11
   - alert_options:
-      alert_mail_to_addresses: james+alerts@munnelly.eu
+      alert_mail_to_addresses: james+alerts@munnelly.eu,maartje.eyskens+alerts@jetstack.io
     code_search_url_template:
       url: https://github.com/jetstack/cert-manager/compare/<start-custom-0>...<end-custom-0>
     description: Runs the end-to-end test suite against a Kubernetes v1.12 cluster
@@ -125,7 +136,7 @@ dashboards:
       url: https://github.com/jetstack/cert-manager/issues/
     test_group_name: ci-cert-manager-previous-e2e-v1-12
   - alert_options:
-      alert_mail_to_addresses: james+alerts@munnelly.eu
+      alert_mail_to_addresses: james+alerts@munnelly.eu,maartje.eyskens+alerts@jetstack.io
     code_search_url_template:
       url: https://github.com/jetstack/cert-manager/compare/<start-custom-0>...<end-custom-0>
     description: Runs the end-to-end test suite against a Kubernetes v1.13 cluster
@@ -134,7 +145,7 @@ dashboards:
       url: https://github.com/jetstack/cert-manager/issues/
     test_group_name: ci-cert-manager-previous-e2e-v1-13
   - alert_options:
-      alert_mail_to_addresses: james+alerts@munnelly.eu
+      alert_mail_to_addresses: james+alerts@munnelly.eu,maartje.eyskens+alerts@jetstack.io
     code_search_url_template:
       url: https://github.com/jetstack/cert-manager/compare/<start-custom-0>...<end-custom-0>
     description: Runs the end-to-end test suite against a Kubernetes v1.14 cluster
@@ -143,7 +154,7 @@ dashboards:
       url: https://github.com/jetstack/cert-manager/issues/
     test_group_name: ci-cert-manager-previous-e2e-v1-14
   - alert_options:
-      alert_mail_to_addresses: james+alerts@munnelly.eu
+      alert_mail_to_addresses: james+alerts@munnelly.eu,maartje.eyskens+alerts@jetstack.io
     code_search_url_template:
       url: https://github.com/jetstack/cert-manager/compare/<start-custom-0>...<end-custom-0>
     description: Runs the end-to-end test suite against a Kubernetes v1.15 cluster
@@ -152,7 +163,7 @@ dashboards:
       url: https://github.com/jetstack/cert-manager/issues/
     test_group_name: ci-cert-manager-previous-e2e-v1-15
   - alert_options:
-      alert_mail_to_addresses: james+alerts@munnelly.eu
+      alert_mail_to_addresses: james+alerts@munnelly.eu,maartje.eyskens+alerts@jetstack.io
     code_search_url_template:
       url: https://github.com/jetstack/cert-manager/compare/<start-custom-0>...<end-custom-0>
     description: Runs the end-to-end test suite against a Kubernetes v1.16 cluster
@@ -161,7 +172,7 @@ dashboards:
       url: https://github.com/jetstack/cert-manager/issues/
     test_group_name: ci-cert-manager-previous-e2e-v1-16
   - alert_options:
-      alert_mail_to_addresses: james+alerts@munnelly.eu
+      alert_mail_to_addresses: james+alerts@munnelly.eu,maartje.eyskens+alerts@jetstack.io
     code_search_url_template:
       url: https://github.com/jetstack/cert-manager/compare/<start-custom-0>...<end-custom-0>
     description: Runs the end-to-end test suite against a Kubernetes v1.17 cluster
@@ -171,7 +182,9 @@ dashboards:
     test_group_name: ci-cert-manager-previous-e2e-v1-17
   name: jetstack-cert-manager-previous
 - dashboard_tab:
-  - code_search_url_template:
+  - alert_options:
+      alert_mail_to_addresses: james+alerts@munnelly.eu,maartje.eyskens+alerts@jetstack.io
+    code_search_url_template:
       url: https://github.com/jetstack/cert-manager/compare/<start-custom-0>...<end-custom-0>
     description: Runs 'bazel test //...'
     name: ci-cert-manager-next-bazel
@@ -179,7 +192,7 @@ dashboards:
       url: https://github.com/jetstack/cert-manager/issues/
     test_group_name: ci-cert-manager-next-bazel
   - alert_options:
-      alert_mail_to_addresses: james+alerts@munnelly.eu
+      alert_mail_to_addresses: james+alerts@munnelly.eu,maartje.eyskens+alerts@jetstack.io
     code_search_url_template:
       url: https://github.com/jetstack/cert-manager/compare/<start-custom-0>...<end-custom-0>
     description: Runs 'bazel test //...' using the 'experimental' Bazel version
@@ -188,7 +201,7 @@ dashboards:
       url: https://github.com/jetstack/cert-manager/issues/
     test_group_name: ci-cert-manager-next-bazel-experimental
   - alert_options:
-      alert_mail_to_addresses: james+alerts@munnelly.eu
+      alert_mail_to_addresses: james+alerts@munnelly.eu,maartje.eyskens+alerts@jetstack.io
     code_search_url_template:
       url: https://github.com/jetstack/cert-manager/compare/<start-custom-0>...<end-custom-0>
     description: Runs the end-to-end test suite against a Kubernetes v1.11 cluster
@@ -197,7 +210,7 @@ dashboards:
       url: https://github.com/jetstack/cert-manager/issues/
     test_group_name: ci-cert-manager-next-e2e-v1-11
   - alert_options:
-      alert_mail_to_addresses: james+alerts@munnelly.eu
+      alert_mail_to_addresses: james+alerts@munnelly.eu,maartje.eyskens+alerts@jetstack.io
     code_search_url_template:
       url: https://github.com/jetstack/cert-manager/compare/<start-custom-0>...<end-custom-0>
     description: Runs the end-to-end test suite against a Kubernetes v1.12 cluster
@@ -206,7 +219,7 @@ dashboards:
       url: https://github.com/jetstack/cert-manager/issues/
     test_group_name: ci-cert-manager-next-e2e-v1-12
   - alert_options:
-      alert_mail_to_addresses: james+alerts@munnelly.eu
+      alert_mail_to_addresses: james+alerts@munnelly.eu,maartje.eyskens+alerts@jetstack.io
     code_search_url_template:
       url: https://github.com/jetstack/cert-manager/compare/<start-custom-0>...<end-custom-0>
     description: Runs the end-to-end test suite against a Kubernetes v1.13 cluster
@@ -215,7 +228,7 @@ dashboards:
       url: https://github.com/jetstack/cert-manager/issues/
     test_group_name: ci-cert-manager-next-e2e-v1-13
   - alert_options:
-      alert_mail_to_addresses: james+alerts@munnelly.eu
+      alert_mail_to_addresses: james+alerts@munnelly.eu,maartje.eyskens+alerts@jetstack.io
     code_search_url_template:
       url: https://github.com/jetstack/cert-manager/compare/<start-custom-0>...<end-custom-0>
     description: Runs the end-to-end test suite against a Kubernetes v1.14 cluster
@@ -224,7 +237,7 @@ dashboards:
       url: https://github.com/jetstack/cert-manager/issues/
     test_group_name: ci-cert-manager-next-e2e-v1-14
   - alert_options:
-      alert_mail_to_addresses: james+alerts@munnelly.eu
+      alert_mail_to_addresses: james+alerts@munnelly.eu,maartje.eyskens+alerts@jetstack.io
     code_search_url_template:
       url: https://github.com/jetstack/cert-manager/compare/<start-custom-0>...<end-custom-0>
     description: Runs the end-to-end test suite against a Kubernetes v1.15 cluster
@@ -233,7 +246,7 @@ dashboards:
       url: https://github.com/jetstack/cert-manager/issues/
     test_group_name: ci-cert-manager-next-e2e-v1-15
   - alert_options:
-      alert_mail_to_addresses: james+alerts@munnelly.eu
+      alert_mail_to_addresses: james+alerts@munnelly.eu,maartje.eyskens+alerts@jetstack.io
     code_search_url_template:
       url: https://github.com/jetstack/cert-manager/compare/<start-custom-0>...<end-custom-0>
     description: Runs the end-to-end test suite against a Kubernetes v1.16 cluster
@@ -242,7 +255,7 @@ dashboards:
       url: https://github.com/jetstack/cert-manager/issues/
     test_group_name: ci-cert-manager-next-e2e-v1-16
   - alert_options:
-      alert_mail_to_addresses: james+alerts@munnelly.eu
+      alert_mail_to_addresses: james+alerts@munnelly.eu,maartje.eyskens+alerts@jetstack.io
     code_search_url_template:
       url: https://github.com/jetstack/cert-manager/compare/<start-custom-0>...<end-custom-0>
     description: Runs the end-to-end test suite against a Kubernetes v1.17 cluster
@@ -250,6 +263,15 @@ dashboards:
     open_bug_template:
       url: https://github.com/jetstack/cert-manager/issues/
     test_group_name: ci-cert-manager-next-e2e-v1-17
+  - alert_options:
+      alert_mail_to_addresses: james+alerts@munnelly.eu,maartje.eyskens+alerts@jetstack.io
+    code_search_url_template:
+      url: https://github.com/jetstack/cert-manager/compare/<start-custom-0>...<end-custom-0>
+    description: Runs the end-to-end test suite against a Kubernetes v1.18 cluster
+    name: ci-cert-manager-next-e2e-v1-18
+    open_bug_template:
+      url: https://github.com/jetstack/cert-manager/issues/
+    test_group_name: ci-cert-manager-next-e2e-v1-18
   name: jetstack-cert-manager-next
 - dashboard_tab:
   - code_search_url_template:
@@ -329,6 +351,13 @@ dashboards:
     open_bug_template:
       url: https://github.com/jetstack/cert-manager/issues/
     test_group_name: pull-cert-manager-e2e-v1-17
+  - code_search_url_template:
+      url: https://github.com/jetstack/cert-manager/compare/<start-custom-0>...<end-custom-0>
+    description: Runs the end-to-end test suite against a Kubernetes v1.18 cluster
+    name: pull-cert-manager-e2e-v1-18
+    open_bug_template:
+      url: https://github.com/jetstack/cert-manager/issues/
+    test_group_name: pull-cert-manager-e2e-v1-18
   name: jetstack-cert-manager-presubmits-blocking
 - dashboard_tab:
   - alert_options:
@@ -459,6 +488,8 @@ test_groups:
   name: ci-cert-manager-e2e-v1-16
 - gcs_prefix: jetstack-logs/logs/ci-cert-manager-e2e-v1-17
   name: ci-cert-manager-e2e-v1-17
+- gcs_prefix: jetstack-logs/logs/ci-cert-manager-e2e-v1-18
+  name: ci-cert-manager-e2e-v1-18
 - gcs_prefix: jetstack-logs/logs/ci-cert-manager-next-bazel
   name: ci-cert-manager-next-bazel
 - gcs_prefix: jetstack-logs/logs/ci-cert-manager-next-bazel-experimental
@@ -477,6 +508,8 @@ test_groups:
   name: ci-cert-manager-next-e2e-v1-16
 - gcs_prefix: jetstack-logs/logs/ci-cert-manager-next-e2e-v1-17
   name: ci-cert-manager-next-e2e-v1-17
+- gcs_prefix: jetstack-logs/logs/ci-cert-manager-next-e2e-v1-18
+  name: ci-cert-manager-next-e2e-v1-18
 - gcs_prefix: jetstack-logs/logs/ci-cert-manager-previous-bazel
   name: ci-cert-manager-previous-bazel
 - gcs_prefix: jetstack-logs/logs/ci-cert-manager-previous-bazel-experimental
@@ -551,4 +584,7 @@ test_groups:
   num_columns_recent: 20
 - gcs_prefix: jetstack-logs/pr-logs/directory/pull-cert-manager-e2e-v1-17
   name: pull-cert-manager-e2e-v1-17
+  num_columns_recent: 20
+- gcs_prefix: jetstack-logs/pr-logs/directory/pull-cert-manager-e2e-v1-18
+  name: pull-cert-manager-e2e-v1-18
   num_columns_recent: 20

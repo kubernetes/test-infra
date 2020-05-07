@@ -17,6 +17,7 @@ limitations under the License.
 package git
 
 import (
+	"errors"
 	"fmt"
 	"net/url"
 	"path"
@@ -72,24 +73,28 @@ func (f *sshRemoteResolverFactory) PublishRemote(_, repo string) RemoteResolver 
 	}
 }
 
-type simpleAuthResolverFactory struct {
-	host     string
+type httpResolverFactory struct {
+	host string
+	// Optional, either both or none must be set
 	username LoginGetter
 	token    TokenGetter
 }
 
 // CentralRemote creates a remote resolver that refers to an authoritative remote
 // for the repository.
-func (f *simpleAuthResolverFactory) CentralRemote(org, repo string) RemoteResolver {
-	return simpleAuthResolver(func() (*url.URL, error) {
+func (f *httpResolverFactory) CentralRemote(org, repo string) RemoteResolver {
+	return httpResolver(func() (*url.URL, error) {
 		return &url.URL{Scheme: "https", Host: f.host, Path: fmt.Sprintf("%s/%s", org, repo)}, nil
 	}, f.username, f.token)
 }
 
 // PublishRemote creates a remote resolver that refers to a user's remote
 // for the repository that can be published to.
-func (f *simpleAuthResolverFactory) PublishRemote(_, repo string) RemoteResolver {
-	return simpleAuthResolver(func() (*url.URL, error) {
+func (f *httpResolverFactory) PublishRemote(_, repo string) RemoteResolver {
+	return httpResolver(func() (*url.URL, error) {
+		if f.username == nil {
+			return nil, errors.New("username not configured, no publish repo available")
+		}
 		o, err := f.username()
 		if err != nil {
 			return nil, err
@@ -98,18 +103,22 @@ func (f *simpleAuthResolverFactory) PublishRemote(_, repo string) RemoteResolver
 	}, f.username, f.token)
 }
 
-// simpleAuthResolver builds URLs with simple auth credentials, resolved dynamically.
-func simpleAuthResolver(remote func() (*url.URL, error), username LoginGetter, token TokenGetter) RemoteResolver {
+// httpResolverbuilds http URLs that may optionally contain simple auth credentials, resolved dynamically.
+func httpResolver(remote func() (*url.URL, error), username LoginGetter, token TokenGetter) RemoteResolver {
 	return func() (string, error) {
 		remote, err := remote()
 		if err != nil {
 			return "", fmt.Errorf("could not resolve remote: %v", err)
 		}
-		name, err := username()
-		if err != nil {
-			return "", fmt.Errorf("could not resolve username: %v", err)
+
+		if username != nil {
+			name, err := username()
+			if err != nil {
+				return "", fmt.Errorf("could not resolve username: %v", err)
+			}
+			remote.User = url.UserPassword(name, string(token()))
 		}
-		remote.User = url.UserPassword(name, string(token()))
+
 		return remote.String(), nil
 	}
 }

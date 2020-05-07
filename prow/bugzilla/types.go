@@ -149,6 +149,9 @@ type BugCreate struct {
 	Severity string `json:"severity,omitempty"`
 	// Status is the current status of the bug.
 	Status string `json:"status,omitempty"`
+	// SubComponents are the subcomponents of the component for the bug. The key is the Component name, while the value is an array of length 1 containing the subcomponent name.
+	// This is a Red Hat bugzilla specific extra field.
+	SubComponents map[string][]string `json:"sub_components,omitempty"`
 	// Summary is the summary of this bug.
 	Summary string `json:"summary,omitempty"`
 	// TargetMilestone is the milestone that this bug is supposed to be fixed by, or for closed bugs, the milestone that it was fixed for.
@@ -219,11 +222,25 @@ type Flag struct {
 // BugUpdate contains fields to update on a Bug. See API documentation at:
 // https://bugzilla.readthedocs.io/en/latest/api/core/v1/bug.html#update-bug
 type BugUpdate struct {
+	// DependsOn specifies the bugs that this bug depends on
+	DependsOn  *IDUpdate `json:"depends_on,omitempty"`
+	Resolution string    `json:"resolution,omitempty"`
 	// Status is the current status of the bug.
-	Status     string `json:"status,omitempty"`
-	Resolution string `json:"resolution,omitempty"`
-	// Version are the versions the bug was reported against.
-	Version []string `json:"version,omitempty"`
+	Status string `json:"status,omitempty"`
+	// TargetRelease is the release version this bugfix is targeting
+	TargetRelease []string `json:"target_release,omitempty"`
+	// Version is the version the bug was reported against.
+	Version string `json:"version,omitempty"`
+}
+
+// IDUpdate is the struct used in Update calls to update fields that are arrays of IDs (ex. DependsOn)
+type IDUpdate struct {
+	// Add contains Bug IDs to add to this field.
+	Add []int `json:"add,omitempty"`
+	// Remove specifies Bug IDs to remove from this field. If the bug IDs are not already in the field, they will be ignored.
+	Remove []int `json:"remove,omitempty"`
+	// Set is An exact set of bug IDs to set this field to, overriding the current value. If Set is specified, then Add and Remove will be ignored.
+	Set []int `json:"set,omitempty"`
 }
 
 // ExternalBug contains details about an external bug linked to a Bugzilla bug.

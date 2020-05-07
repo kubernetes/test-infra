@@ -34,7 +34,7 @@ type Publisher interface {
 type GitUserGetter func() (name, email string, err error)
 
 type publisher struct {
-	executor Executor
+	executor executor
 	remote   RemoteResolver
 	info     GitUserGetter
 	logger   *logrus.Entry

@@ -125,7 +125,7 @@ postsubmits:
   kubernetes-sigs/some-repo-name:
     # The name should be changed to match the repo name above
     - name: post-some-repo-name-push-images
-      cluster: test-infra-trusted
+      cluster: k8s-infra-prow-build-trusted
       annotations:
         # This is the name of some testgrid dashboard to report to.
         # If this is the first one for your sig, you may need to create one
@@ -137,7 +137,7 @@ postsubmits:
       branches:
         - ^master$
       spec:
-        serviceAccountName: deployer # TODO(fejta): use pusher
+        serviceAccountName: gcb-builder
         containers:
           - image: gcr.io/k8s-testimages/image-builder:v20190906-d5d7ce3
             command:

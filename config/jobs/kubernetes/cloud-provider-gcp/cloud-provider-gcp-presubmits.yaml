@@ -25,6 +25,7 @@ presubmits:
         - //...
         - -//vendor/...
   - name: cloud-provider-gcp-e2e-create
+    always_run: true
     decorate: true
     path_alias: k8s.io/cloud-provider-gcp
     labels:
@@ -36,7 +37,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200422-8c8546d-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200507-2ed1a50-master
         command:
         - runner.sh
         args:

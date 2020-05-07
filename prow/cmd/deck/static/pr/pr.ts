@@ -536,7 +536,7 @@ function createPRCardTitle(pr: PullRequest, tidePools: TidePool[], jobStatus: Va
     subtitle.classList.add("mdl-card__subtitle-text");
 
     const link = document.createElement("a");
-    link.href = `https://github.com/${pr.Repository.NameWithOwner}/pull/${pr.Number}`;
+    link.href = `/github-link?dest=${pr.Repository.NameWithOwner}/pull/${pr.Number}`;
     link.appendChild(title);
 
     const prTitleText = document.createElement("div");

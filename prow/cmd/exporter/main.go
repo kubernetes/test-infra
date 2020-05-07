@@ -47,7 +47,6 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	if err := fs.Parse(os.Args[1:]); err != nil {
 		logrus.WithError(err).Fatalf("cannot parse args: '%s'", os.Args[1:])
 	}
-	o.configPath = config.ConfigPath(o.configPath)
 	return o
 }
 

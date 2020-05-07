@@ -176,7 +176,8 @@ func (o *options) gatherOptions(flag *flag.FlagSet, args []string) error {
 	flag.Var(&o.excludeWarnings, "exclude-warning", "Warnings to exclude. Use repeatedly to provide a list of warnings to exclude")
 	flag.BoolVar(&o.expensive, "expensive-checks", false, "If set, additional expensive warnings will be enabled")
 	flag.BoolVar(&o.strict, "strict", false, "If set, consider all warnings as errors.")
-	o.github.AddFlagsWithoutDefaultGitHubTokenPath(flag)
+	o.github.AddFlags(flag)
+	o.github.AllowAnonymous = true
 	if err := flag.Parse(args); err != nil {
 		return fmt.Errorf("parse flags: %v", err)
 	}
@@ -194,6 +195,21 @@ func main() {
 		logrus.Fatalf("Error parsing options - %v", err)
 	}
 
+	if err := validate(o); err != nil {
+		switch e := err.(type) {
+		case utilerrors.Aggregate:
+			reportWarning(o.strict, e)
+		default:
+			logrus.WithError(err).Fatal("Validation failed")
+		}
+
+	} else {
+		logrus.Info("checkconfig passes without any error!")
+	}
+
+}
+
+func validate(o options) error {
 	// use all warnings by default
 	if len(o.warnings.Strings()) == 0 {
 		if o.expensive {
@@ -205,13 +221,13 @@ func main() {
 
 	configAgent := config.Agent{}
 	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
-		logrus.WithError(err).Fatal("Error loading Prow config.")
+		return fmt.Errorf("error loading prow config: %w", err)
 	}
 	cfg := configAgent.Config()
 
 	if o.prowYAMLRepoName != "" {
 		if err := validateInRepoConfig(cfg, o.prowYAMLPath, o.prowYAMLRepoName); err != nil {
-			logrus.WithError(err).Fatal("Error validating .prow.yaml")
+			return fmt.Errorf("error validating .prow.yaml: %w", err)
 		}
 	}
 
@@ -219,7 +235,7 @@ func main() {
 	var pcfg *plugins.Configuration
 	if o.pluginConfig != "" {
 		if err := pluginAgent.Load(o.pluginConfig, true); err != nil {
-			logrus.WithError(err).Fatal("Error loading Prow plugin config.")
+			return fmt.Errorf("error loading Prow plugin config: %w", err)
 		}
 		pcfg = pluginAgent.Config()
 	}
@@ -231,18 +247,18 @@ func main() {
 	var errs []error
 	if pcfg != nil && o.warningEnabled(verifyOwnersFilePresence) {
 		if o.github.TokenPath == "" {
-			logrus.Fatal("Cannot verify OWNERS file presence without a GitHub token")
+			return errors.New("cannot verify OWNERS file presence without a GitHub token")
 		}
 		secretAgent := &secret.Agent{}
 		if o.github.TokenPath != "" {
 			if err := secretAgent.Start([]string{o.github.TokenPath}); err != nil {
-				logrus.WithError(err).Fatal("Error starting secrets agent.")
+				return fmt.Errorf("error starting secrets agent: %w", err)
 			}
 		}
 
 		githubClient, err := o.github.GitHubClient(secretAgent, false)
 		if err != nil {
-			logrus.WithError(err).Fatal("Error getting GitHub client.")
+			return fmt.Errorf("error loading GitHub client: %w", err)
 		}
 		githubClient.Throttle(3000, 100) // 300 hourly tokens, bursts of 100
 		// 404s are expected to happen, no point in retrying
@@ -299,18 +315,18 @@ func main() {
 	if o.warningEnabled(unknownFieldsWarning) {
 		cfgBytes, err := ioutil.ReadFile(o.configPath)
 		if err != nil {
-			logrus.WithError(err).Fatal("Error loading Prow config for validation.")
+			return fmt.Errorf("error reading Prow config for validation: %w", err)
 		}
-		if err := validateUnknownFields(cfg, cfgBytes, o.configPath); err != nil {
+		if err := validateUnknownFields(&config.Config{}, cfgBytes, o.configPath); err != nil {
 			errs = append(errs, err)
 		}
 	}
 	if pcfg != nil && o.warningEnabled(unknownFieldsWarning) {
 		pcfgBytes, err := ioutil.ReadFile(o.pluginConfig)
 		if err != nil {
-			logrus.WithError(err).Fatal("Error loading Prow plugin config for validation.")
+			return fmt.Errorf("error reading Prow plugin config for validation: %w", err)
 		}
-		if err := validateUnknownFields(pcfg, pcfgBytes, o.pluginConfig); err != nil {
+		if err := validateUnknownFields(&plugins.Configuration{}, pcfgBytes, o.pluginConfig); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -324,12 +340,8 @@ func main() {
 			errs = append(errs, err)
 		}
 	}
-	if len(errs) > 0 {
-		reportWarning(o.strict, utilerrors.NewAggregate(errs))
-		return
-	}
 
-	logrus.Info("checkconfig passes without any error!")
+	return utilerrors.NewAggregate(errs)
 }
 func policyIsStrict(p config.Policy) bool {
 	if p.Protect == nil || !*p.Protect {
@@ -962,7 +974,7 @@ func validateTideContextPolicy(cfg *config.Config) error {
 	for orgRepo, branches := range allKnownOrgRepoBranches {
 		split := strings.Split(orgRepo, "/")
 		if n := len(split); n != 2 {
-			errs = append(errs, fmt.Errorf("expected to get two results when splitting string %s by '/', got %d", orgRepo, n))
+			// May happen for gerrit
 			continue
 		}
 		org, repo := split[0], split[1]

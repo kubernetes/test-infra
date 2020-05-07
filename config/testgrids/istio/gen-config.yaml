@@ -55,6 +55,7 @@ dashboard_groups:
   name: istio_release-1.4
 - dashboard_names:
   - istio_istio.io_periodic
+  - istio_test-infra_periodic
   - istio_istio_postsubmit
   - istio_api_postsubmit
   - istio_bots_postsubmit
@@ -117,29 +118,20 @@ dashboards:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
     code_search_url_template:
       url: https://github.com/istio/api/compare/<start-custom-0>...<end-custom-0>
-    description: gen_client-go_api_postsubmit
-    name: gen_client-go_api_postsubmit
-    open_bug_template:
-      url: https://github.com/istio/api/issues/
-    test_group_name: gen_client-go_api_postsubmit
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio/api/compare/<start-custom-0>...<end-custom-0>
-    description: gen_istio_api_postsubmit
-    name: gen_istio_api_postsubmit
-    open_bug_template:
-      url: https://github.com/istio/api/issues/
-    test_group_name: gen_istio_api_postsubmit
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio/api/compare/<start-custom-0>...<end-custom-0>
     description: gencheck_api_postsubmit
     name: gencheck_api_postsubmit
     open_bug_template:
       url: https://github.com/istio/api/issues/
     test_group_name: gencheck_api_postsubmit
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/api/compare/<start-custom-0>...<end-custom-0>
+    description: update_api_dep_api_postsubmit
+    name: update_api_dep_api_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/api/issues/
+    test_group_name: update_api_dep_api_postsubmit
   name: istio_api_postsubmit
 - dashboard_tab:
   - code_search_url_template:
@@ -630,6 +622,13 @@ dashboards:
     test_group_name: integ-multicluster-k8s-tests_istio
   - code_search_url_template:
       url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-operator-controller-tests_istio
+    name: integ-operator-controller-tests_istio
+    open_bug_template:
+      url: https://github.com/istio/istio/issues/
+    test_group_name: integ-operator-controller-tests_istio
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
     description: integ-pilot-k8s-tests_istio
     name: integ-pilot-k8s-tests_istio
     open_bug_template:
@@ -670,8 +669,29 @@ dashboards:
     open_bug_template:
       url: https://github.com/istio/istio/issues/
     test_group_name: unit-tests_istio
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: update-ref-docs-dry-run_istio
+    name: update-ref-docs-dry-run_istio
+    open_bug_template:
+      url: https://github.com/istio/istio/issues/
+    test_group_name: update-ref-docs-dry-run_istio
   name: istio_istio
 - dashboard_tab:
+  - code_search_url_template:
+      url: https://github.com/istio/istio.io/compare/<start-custom-0>...<end-custom-0>
+    description: gencheck_istio.io
+    name: gencheck_istio.io
+    open_bug_template:
+      url: https://github.com/istio/istio.io/issues/
+    test_group_name: gencheck_istio.io
+  - code_search_url_template:
+      url: https://github.com/istio/istio.io/compare/<start-custom-0>...<end-custom-0>
+    description: k8s-tests_istio.io
+    name: k8s-tests_istio.io
+    open_bug_template:
+      url: https://github.com/istio/istio.io/issues/
+    test_group_name: k8s-tests_istio.io
   - code_search_url_template:
       url: https://github.com/istio/istio.io/compare/<start-custom-0>...<end-custom-0>
     description: lint_istio.io
@@ -681,6 +701,15 @@ dashboards:
     test_group_name: lint_istio.io
   name: istio_istio.io
 - dashboard_tab:
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio.io/compare/<start-custom-0>...<end-custom-0>
+    description: gencheck_istio.io_postsubmit
+    name: gencheck_istio.io_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/istio.io/issues/
+    test_group_name: gencheck_istio.io_postsubmit
   - alert_options:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
     code_search_url_template:
@@ -3450,6 +3479,17 @@ dashboards:
     test_group_name: test_test-infra_postsubmit
   name: istio_test-infra_postsubmit
 - dashboard_tab:
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/test-infra/compare/<start-custom-0>...<end-custom-0>
+    description: bump-k8s-prow-images_test-infra_periodic
+    name: bump-k8s-prow-images_test-infra_periodic
+    open_bug_template:
+      url: https://github.com/istio/test-infra/issues/
+    test_group_name: bump-k8s-prow-images_test-infra_periodic
+  name: istio_test-infra_periodic
+- dashboard_tab:
   - code_search_url_template:
       url: https://github.com/istio/tools/compare/<start-custom-0>...<end-custom-0>
     description: tools-containers_release-1.4
@@ -3457,6 +3497,13 @@ dashboards:
     open_bug_template:
       url: https://github.com/istio/tools/issues/
     test_group_name: tools-containers_release-1.4
+  - code_search_url_template:
+      url: https://github.com/istio/tools/compare/<start-custom-0>...<end-custom-0>
+    description: benchmark_check_tools
+    name: benchmark_check_tools
+    open_bug_template:
+      url: https://github.com/istio/tools/issues/
+    test_group_name: benchmark_check_tools
   - code_search_url_template:
       url: https://github.com/istio/tools/compare/<start-custom-0>...<end-custom-0>
     description: build_tools
@@ -3550,6 +3597,9 @@ dashboards:
     test_group_name: test_tools_postsubmit
   name: istio_tools_postsubmit
 test_groups:
+- gcs_prefix: istio-prow/logs/bump-k8s-prow-images_test-infra_periodic
+  name: bump-k8s-prow-images_test-infra_periodic
+  num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/daily-performance-benchmark
   name: daily-performance-benchmark
   num_failures_to_alert: 1
@@ -3577,14 +3627,8 @@ test_groups:
 - gcs_prefix: istio-prow/logs/build_api_release-1.5_postsubmit
   name: build_api_release-1.5_postsubmit
   num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/gen_client-go_api_postsubmit
-  name: gen_client-go_api_postsubmit
-  num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/gen_client-go_api_release-1.5_postsubmit
   name: gen_client-go_api_release-1.5_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/gen_istio_api_postsubmit
-  name: gen_istio_api_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/gen_istio_api_release-1.5_postsubmit
   name: gen_istio_api_release-1.5_postsubmit
@@ -3597,6 +3641,9 @@ test_groups:
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/gencheck_api_release-1.5_postsubmit
   name: gencheck_api_release-1.5_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/update_api_dep_api_postsubmit
+  name: update_api_dep_api_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/build_bots_postsubmit
   name: build_bots_postsubmit
@@ -3993,6 +4040,9 @@ test_groups:
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/unit-tests_istio_release-1.5_postsubmit
   name: unit-tests_istio_release-1.5_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/gencheck_istio.io_postsubmit
+  name: gencheck_istio.io_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/k8s-tests_istio.io_postsubmit
   name: k8s-tests_istio.io_postsubmit
@@ -4493,6 +4543,9 @@ test_groups:
 - gcs_prefix: istio-prow/pr-logs/directory/integ-new-install-k8s-tests_istio_release-1.4
   name: integ-new-install-k8s-tests_istio_release-1.4
   num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/integ-operator-controller-tests_istio
+  name: integ-operator-controller-tests_istio
+  num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/integ-pilot-k8s-tests_istio
   name: integ-pilot-k8s-tests_istio
   num_columns_recent: 20
@@ -4573,6 +4626,15 @@ test_groups:
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/unit-tests_istio_release-1.5
   name: unit-tests_istio_release-1.5
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/update-ref-docs-dry-run_istio
+  name: update-ref-docs-dry-run_istio
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/gencheck_istio.io
+  name: gencheck_istio.io
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/k8s-tests_istio.io
+  name: k8s-tests_istio.io
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/lint_istio.io
   name: lint_istio.io
@@ -4738,6 +4800,9 @@ test_groups:
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/unit-test-authentikos_test-infra
   name: unit-test-authentikos_test-infra
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/benchmark_check_tools
+  name: benchmark_check_tools
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/build_tools
   name: build_tools

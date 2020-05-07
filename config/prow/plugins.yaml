@@ -45,7 +45,6 @@ approve:
   - kubernetes/contrib
   - kubernetes/dashboard
   - kubernetes/dns
-  - kubernetes/enhancements
   - kubernetes/examples
   - kubernetes/federation
   - kubernetes/gengo
@@ -69,6 +68,7 @@ approve:
   require_self_approval: false
   lgtm_acts_as_approve: true
 - repos:
+  - kubernetes/enhancements
   - kubernetes/kops
   - kubernetes/kubernetes
   - kubernetes-client
@@ -324,6 +324,10 @@ milestone_applier:
     master: v0.5
     release-0.4: v0.4
     release-0.3: v0.3
+  kubernetes-sigs/cluster-api-provider-digitalocean:
+    master: v0.3
+    release-0.4: v0.4
+    release-0.3: v0.3
 
 repo_milestone:
   # Default maintainer
@@ -349,6 +353,10 @@ repo_milestone:
     maintainers_id: 3063852
     maintainers_team: cluster-api-provider-azure-maintainers
     maintainers_friendly_name: Cluster API Provider Azure Maintainers
+  kubernetes-sigs/cluster-api-provider-digitalocean:
+    maintainers_id: 2978501
+    maintainers_team: cluster-api-provider-digitalocean-maintainers
+    maintainers_friendly_name: Cluster API Provider DigitalOcean Maintainers
   kubernetes-sigs/cluster-api-provider-docker:
     maintainers_id: 3297612
     maintainers_team: cluster-api-provider-docker-maintainers
@@ -640,6 +648,7 @@ plugins:
   - stage
 
   kubernetes/kops:
+  - mergecommitblocker
   - milestone
   - milestoneapplier
 
@@ -821,6 +830,13 @@ plugins:
   - milestone
 
   kubernetes-sigs/cluster-api-provider-azure:
+  - milestone
+  - milestoneapplier
+  - milestonestatus
+  - release-note
+  - require-matching-label
+
+  kubernetes-sigs/cluster-api-provider-digitalocean:
   - milestone
   - milestoneapplier
   - milestonestatus

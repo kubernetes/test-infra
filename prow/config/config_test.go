@@ -333,11 +333,11 @@ periodics:
 			expectError: true,
 		},
 		{
-			name: "with bad repo config",
+			name: "repo should inherit from default config",
 			rawConfig: `
 plank:
   default_decoration_configs:
-    '*': # good
+    '*':
       timeout: 2h
       grace_period: 15s
       utility_images:
@@ -351,14 +351,10 @@ plank:
         default_org: "kubernetes"
         default_repo: "kubernetes"
       gcs_credentials_secret: "default-service-account"
-    'org/bad': # bad
+    'org/inherit':
       timeout: 2h
       grace_period: 15s
-      utility_images:
-      # clonerefs: "clonerefs:default"
-        initupload: "initupload:default"
-        entrypoint: "entrypoint:default"
-        sidecar: "sidecar:default"
+      utility_images: {}
       gcs_configuration:
         bucket: "default-bucket"
         path_strategy: "legacy"
@@ -375,7 +371,6 @@ periodics:
       args:
       - "test"
       - "./..."`,
-			expectError: true,
 		},
 		{
 			name: "with default and repo, use default",
@@ -4168,5 +4163,125 @@ func TestDefaultAndValidateReportTemplate(t *testing.T) {
 				t.Fatalf("\nGot: %#v\nExpected: %#v", tc.controller, tc.expected)
 			}
 		})
+	}
+}
+
+func TestValidatePresubmits(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name          string
+		presubmits    []Presubmit
+		expectedError string
+	}{
+		{
+			name: "Duplicate context causes error",
+			presubmits: []Presubmit{
+				{JobBase: JobBase{Name: "a"}, Reporter: Reporter{Context: "repeated"}},
+				{JobBase: JobBase{Name: "b"}, Reporter: Reporter{Context: "repeated"}},
+			},
+			expectedError: `[jobs b and a report to the same GitHub context "repeated", jobs a and b report to the same GitHub context "repeated"]`,
+		},
+		{
+			name: "Duplicate context on different branch doesn't cause error",
+			presubmits: []Presubmit{
+				{JobBase: JobBase{Name: "a"}, Reporter: Reporter{Context: "repeated"}, Brancher: Brancher{Branches: []string{"master"}}},
+				{JobBase: JobBase{Name: "b"}, Reporter: Reporter{Context: "repeated"}, Brancher: Brancher{Branches: []string{"next"}}},
+			},
+		},
+		{
+			name: "Duplicate jobname causes error",
+			presubmits: []Presubmit{
+				{JobBase: JobBase{Name: "a"}, Reporter: Reporter{Context: "foo"}},
+				{JobBase: JobBase{Name: "a"}, Reporter: Reporter{Context: "bar"}},
+			},
+			expectedError: "duplicated presubmit job: a",
+		},
+		{
+			name: "Duplicate jobname on different branches doesn't cause error",
+			presubmits: []Presubmit{
+				{JobBase: JobBase{Name: "a"}, Reporter: Reporter{Context: "foo"}, Brancher: Brancher{Branches: []string{"master"}}},
+				{JobBase: JobBase{Name: "a"}, Reporter: Reporter{Context: "foo"}, Brancher: Brancher{Branches: []string{"next"}}},
+			},
+		},
+		{
+			name:          "Invalid JobBase causes error",
+			presubmits:    []Presubmit{{Reporter: Reporter{Context: "foo"}}},
+			expectedError: `invalid presubmit job : name: must match regex "^[A-Za-z0-9-._]+$"`,
+		},
+		{
+			name:          "Invalid triggering config causes error",
+			presubmits:    []Presubmit{{Trigger: "some-trigger", JobBase: JobBase{Name: "my-job"}, Reporter: Reporter{Context: "foo"}}},
+			expectedError: `Either both of job.Trigger and job.RerunCommand must be set, wasnt the case for job "my-job"`,
+		},
+		{
+			name:          "Invalid reporting config causes error",
+			presubmits:    []Presubmit{{JobBase: JobBase{Name: "my-job"}}},
+			expectedError: "invalid presubmit job my-job: job is set to report but has no context configured",
+		},
+	}
+
+	for _, tc := range testCases {
+		var errMsg string
+		err := validatePresubmits(tc.presubmits, "")
+		if err != nil {
+			errMsg = err.Error()
+		}
+		if errMsg != tc.expectedError {
+			t.Errorf("expected error '%s', got error '%s'", tc.expectedError, errMsg)
+		}
+	}
+}
+
+func TestValidatePostsubmits(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name          string
+		postsubmits   []Postsubmit
+		expectedError string
+	}{
+		{
+			name: "Duplicate context causes error",
+			postsubmits: []Postsubmit{
+				{JobBase: JobBase{Name: "a"}, Reporter: Reporter{Context: "repeated"}},
+				{JobBase: JobBase{Name: "b"}, Reporter: Reporter{Context: "repeated"}},
+			},
+			expectedError: `[jobs b and a report to the same GitHub context "repeated", jobs a and b report to the same GitHub context "repeated"]`,
+		},
+		{
+			name: "Duplicate context on different branch doesn't cause error",
+			postsubmits: []Postsubmit{
+				{JobBase: JobBase{Name: "a"}, Reporter: Reporter{Context: "repeated"}, Brancher: Brancher{Branches: []string{"master"}}},
+				{JobBase: JobBase{Name: "b"}, Reporter: Reporter{Context: "repeated"}, Brancher: Brancher{Branches: []string{"next"}}},
+			},
+		},
+		{
+			name: "Duplicate jobname causes error",
+			postsubmits: []Postsubmit{
+				{JobBase: JobBase{Name: "a"}, Reporter: Reporter{Context: "foo"}},
+				{JobBase: JobBase{Name: "a"}, Reporter: Reporter{Context: "bar"}},
+			},
+			expectedError: "duplicated postsubmit job: a",
+		},
+		{
+			name:          "Invalid JobBase causes error",
+			postsubmits:   []Postsubmit{{Reporter: Reporter{Context: "foo"}}},
+			expectedError: `invalid postsubmit job : name: must match regex "^[A-Za-z0-9-._]+$"`,
+		},
+		{
+			name:          "Invalid reporting config causes error",
+			postsubmits:   []Postsubmit{{JobBase: JobBase{Name: "my-job"}}},
+			expectedError: "invalid postsubmit job my-job: job is set to report but has no context configured",
+		},
+	}
+
+	for _, tc := range testCases {
+		var errMsg string
+		err := validatePostsubmits(tc.postsubmits, "")
+		if err != nil {
+			errMsg = err.Error()
+		}
+		if errMsg != tc.expectedError {
+			t.Errorf("expected error '%s', got error '%s'", tc.expectedError, errMsg)
+		}
 	}
 }

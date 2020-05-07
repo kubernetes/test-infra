@@ -66,11 +66,11 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	}
 
 	fs.Parse(args)
-	o.configPath = config.ConfigPath(o.configPath)
 	return o
 }
 
 func (o *options) Validate() error {
+	o.github.AllowAnonymous = true
 	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github} {
 		if err := group.Validate(o.dryRun); err != nil {
 			return err

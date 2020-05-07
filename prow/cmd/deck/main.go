@@ -196,9 +196,9 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.BoolVar(&o.dryRun, "dry-run", false, "Whether or not to make mutating API calls to GitHub.")
 	fs.StringVar(&o.pluginConfig, "plugin-config", "", "Path to plugin config file, probably /etc/plugins/plugins.yaml")
 	o.kubernetes.AddFlags(fs)
-	o.github.AddFlagsWithoutDefaultGitHubTokenPath(fs)
+	o.github.AddFlags(fs)
+	o.github.AllowAnonymous = true
 	fs.Parse(args)
-	o.configPath = config.ConfigPath(o.configPath)
 	return o
 }
 
@@ -227,6 +227,7 @@ var simplifier = simplifypath.NewSimplifier(l("", // shadow element mimicing the
 	l("favicon.ico"),
 	l("github-login",
 		l("redirect")),
+	l("github-link"),
 	l("job-history",
 		v("job")),
 	l("log"),
@@ -599,6 +600,11 @@ func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, authCfgGe
 		mux.Handle("/tide-history.js", gziphandler.GzipHandler(handleTideHistory(ta, logrus.WithField("handler", "/tide-history.js"))))
 	}
 
+	secure := !o.allowInsecure
+
+	// Handles link to github
+	mux.HandleFunc("/github-link", HandleGitHubLink(o.github.Host, secure))
+
 	// Enable Git OAuth feature if oauthURL is provided.
 	var goa *githuboauth.Agent
 	if o.oauthURL != "" {
@@ -650,10 +656,11 @@ func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, authCfgGe
 			&o.github,
 			logrus.WithField("client", "pr-status"))
 
-		secure := !o.allowInsecure
-
+		clientCreator := func(accessToken string) prstatus.GitHubClient {
+			return o.github.GitHubClientWithAccessToken(accessToken)
+		}
 		mux.Handle("/pr-data.js", handleNotCached(
-			prStatusAgent.HandlePrStatus(prStatusAgent)))
+			prStatusAgent.HandlePrStatus(prStatusAgent, clientCreator)))
 		// Handles login request.
 		mux.Handle("/github-login", goa.HandleLogin(oauthClient, secure))
 		// Handles redirect from GitHub OAuth server.
@@ -1546,6 +1553,17 @@ func handleFavicon(staticFilesLocation string, cfg config.Getter) http.HandlerFu
 		} else {
 			http.ServeFile(w, r, staticFilesLocation+"/favicon.ico")
 		}
+	}
+}
+
+func HandleGitHubLink(githubHost string, secure bool) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		scheme := "http"
+		if secure {
+			scheme = "https"
+		}
+		redirectURL := scheme + "://" + githubHost + "/" + r.URL.Query().Get("dest")
+		http.Redirect(w, r, redirectURL, http.StatusFound)
 	}
 }
 

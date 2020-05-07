@@ -535,3 +535,33 @@ func makeFakeGitRepo(fakeTimestamp int) (string, error) {
 	}
 	return fakeGitDir, nil
 }
+
+func TestCensorGitCommand(t *testing.T) {
+	testCases := []struct {
+		id       string
+		token    string
+		command  string
+		expected string
+	}{
+		{
+			id:       "no token",
+			command:  "git fetch https://github.com/kubernetes/test-infra.git",
+			expected: "git fetch https://github.com/kubernetes/test-infra.git",
+		},
+		{
+			id:       "with token",
+			token:    "123456789",
+			command:  "git fetch 123456789:x-oauth-basic@https://github.com/kubernetes/test-infra.git",
+			expected: "git fetch CENSORED:x-oauth-basic@https://github.com/kubernetes/test-infra.git",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.id, func(t *testing.T) {
+			censoredCommand := censorGitCommand(tc.command, tc.token)
+			if !reflect.DeepEqual(censoredCommand, tc.expected) {
+				t.Fatalf("expected: %s got %s", tc.expected, censoredCommand)
+			}
+		})
+	}
+}

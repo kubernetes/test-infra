@@ -24,6 +24,7 @@ dashboard_groups:
   - redhat-osde2e-int-aws
   - redhat-osde2e-int-gcp
   - redhat-osde2e-prod-aws
+  - redhat-osde2e-prod-gcp
   - redhat-osde2e-stage-aws
   - redhat-osde2e-stage-gcp
   name: redhat

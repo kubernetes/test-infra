@@ -7,7 +7,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-digitalocean"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200422-8c8546d-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200507-2ed1a50-master
         command:
         - "./scripts/ci-test.sh"
     annotations:
@@ -20,7 +20,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-digitalocean"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200422-8c8546d-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200507-2ed1a50-master
         command:
         - "./scripts/ci-build.sh"
     annotations:
@@ -33,7 +33,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-digitalocean"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200422-8c8546d-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200507-2ed1a50-master
         command:
         - make
         args:

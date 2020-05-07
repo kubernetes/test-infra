@@ -926,15 +926,6 @@ func Test_gatherOptions(t *testing.T) {
 			},
 		},
 		{
-			name: "empty config-path defaults to old value",
-			args: map[string]string{
-				"--config-path": "",
-			},
-			expected: func(o *options) {
-				o.configPath = config.DefaultConfigPath
-			},
-		},
-		{
 			name: "explicitly set both --hidden-only and --show-hidden to true",
 			args: map[string]string{
 				"--hidden-only": "true",
@@ -954,7 +945,8 @@ func Test_gatherOptions(t *testing.T) {
 	for _, tc := range cases {
 		fs := flag.NewFlagSet("fake-flags", flag.PanicOnError)
 		ghoptions := flagutil.GitHubOptions{}
-		ghoptions.AddFlagsWithoutDefaultGitHubTokenPath(fs)
+		ghoptions.AddFlags(fs)
+		ghoptions.AllowAnonymous = true
 		t.Run(tc.name, func(t *testing.T) {
 			expected := &options{
 				configPath:            "yo",
@@ -1256,5 +1248,27 @@ func TestSpyglassConfigDefaulting(t *testing.T) {
 				t.Error(err)
 			}
 		})
+	}
+}
+
+func TestHandleGitHubLink(t *testing.T) {
+	ghoptions := flagutil.GitHubOptions{Host: "github.mycompany.com"}
+	org, repo := "org", "repo"
+	handler := HandleGitHubLink(ghoptions.Host, true)
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("/github-link?dest=%s/%s", org, repo), nil)
+	if err != nil {
+		t.Fatalf("Error making request: %v", err)
+	}
+	rr := httptest.NewRecorder()
+	handler.ServeHTTP(rr, req)
+	if rr.Code != http.StatusFound {
+		t.Fatalf("Bad error code: %d", rr.Code)
+	}
+	resp := rr.Result()
+	defer resp.Body.Close()
+	actual := resp.Header.Get("Location")
+	expected := fmt.Sprintf("https://%s/%s/%s", ghoptions.Host, org, repo)
+	if expected != actual {
+		t.Fatalf("%v", actual)
 	}
 }

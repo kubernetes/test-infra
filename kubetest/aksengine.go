@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -482,8 +483,10 @@ func (c *aksEngineDeployer) populateAPIModelTemplate() error {
 		if err != nil {
 			return fmt.Errorf("error reading ApiModel template file: %v.", err)
 		}
-		err = json.Unmarshal(template, &v)
-		if err != nil {
+		dec := json.NewDecoder(bytes.NewReader(template))
+		// Enforce strict JSON
+		dec.DisallowUnknownFields()
+		if err := dec.Decode(&v); err != nil {
 			return fmt.Errorf("error unmarshaling ApiModel template file: %v", err)
 		}
 	} else {

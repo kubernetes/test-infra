@@ -129,7 +129,7 @@ func TestCreateBug(t *testing.T) {
 			http.Error(w, "400 Bad Request", http.StatusBadRequest)
 			return
 		}
-		if !strings.HasPrefix(r.URL.Path, "/rest/bug/") {
+		if !strings.HasPrefix(r.URL.Path, "/rest/bug") {
 			t.Errorf("incorrect path to create a bug: %s", r.URL.Path)
 			http.Error(w, "400 Bad Request", http.StatusBadRequest)
 			return
@@ -297,6 +297,7 @@ func TestCloneBugStruct(t *testing.T) {
 			Component:       []string{"TestComponent"},
 			Flags:           []Flag{{ID: 1, Name: "Test Flag"}},
 			Groups:          []string{"group1"},
+			ID:              123,
 			Keywords:        []string{"segfault"},
 			OperatingSystem: "Fedora",
 			Platform:        "x86_64",
@@ -311,10 +312,8 @@ func TestCloneBugStruct(t *testing.T) {
 			Version:         []string{"31"},
 		},
 		comments: []Comment{{
-			Text:       "There is a segfault that occurs when opening applications.",
-			IsPrivate:  true,
-			IsMarkdown: true,
-			Tags:       []string{"description"},
+			Text:      "There is a segfault that occurs when opening applications.",
+			IsPrivate: true,
 		}},
 		expected: BugCreate{
 			Alias:            []string{"this_is_an_alias"},
@@ -333,14 +332,60 @@ func TestCloneBugStruct(t *testing.T) {
 			Summary:          "Segfault when opening program",
 			TargetMilestone:  "milestone1",
 			Version:          []string{"31"},
-			Description:      "This is a clone of Bug #0. This is the description of that bug:\nThere is a segfault that occurs when opening applications.",
+			Description:      "+++ This bug was initially created as a clone of Bug #123 +++\n\nThere is a segfault that occurs when opening applications.",
 			CommentIsPrivate: true,
-			IsMarkdown:       true,
-			CommentTags:      []string{"description"},
+		},
+	}, {
+		name: "Clone bug with multiple comments",
+		bug: Bug{
+			ID: 123,
+		},
+		comments: []Comment{{
+			Text: "There is a segfault that occurs when opening applications.",
+		}, {
+			Text:         "This is another comment.",
+			Time:         time.Date(2020, time.May, 7, 2, 3, 4, 0, time.UTC),
+			CreationTime: time.Date(2020, time.May, 7, 2, 3, 4, 0, time.UTC),
+			Tags:         []string{"description"},
+			Creator:      "Test Commenter",
+		}},
+		expected: BugCreate{
+			Description: `+++ This bug was initially created as a clone of Bug #123 +++
+
+There is a segfault that occurs when opening applications.
+
+--- Additional comment from Test Commenter on 2020-05-07 02:03:04 UTC ---
+
+This is another comment.`,
+		},
+	}, {
+		name: "Clone bug with one private comments",
+		bug: Bug{
+			ID: 123,
+		},
+		comments: []Comment{{
+			Text: "There is a segfault that occurs when opening applications.",
+		}, {
+			Text:         "This is another comment.",
+			Time:         time.Date(2020, time.May, 7, 2, 3, 4, 0, time.UTC),
+			CreationTime: time.Date(2020, time.May, 7, 2, 3, 4, 0, time.UTC),
+			IsPrivate:    true,
+			Tags:         []string{"description"},
+			Creator:      "Test Commenter",
+		}},
+		expected: BugCreate{
+			Description: `+++ This bug was initially created as a clone of Bug #123 +++
+
+There is a segfault that occurs when opening applications.
+
+--- Additional comment from Test Commenter on 2020-05-07 02:03:04 UTC ---
+
+This is another comment.`,
+			CommentIsPrivate: true,
 		},
 	}}
 	for _, testCase := range testCases {
-		newBug := cloneBugStruct(&testCase.bug, testCase.comments)
+		newBug := cloneBugStruct(&testCase.bug, nil, testCase.comments)
 		if !reflect.DeepEqual(*newBug, testCase.expected) {
 			t.Errorf("%s: Difference in expected BugCreate and actual: %s", testCase.name, cmp.Diff(testCase.expected, *newBug))
 		}
@@ -384,8 +429,8 @@ func TestUpdateBug(t *testing.T) {
 				if err != nil {
 					t.Errorf("failed to read update body: %v", err)
 				}
-				if actual, expected := string(raw), `{"status":"UPDATED"}`; actual != expected {
-					t.Errorf("got incorrect udpate: expected %v, got %v", expected, actual)
+				if actual, expected := string(raw), `{"depends_on":{"add":[1705242]},"status":"UPDATED"}`; actual != expected {
+					t.Errorf("got incorrect update: expected %v, got %v", expected, actual)
 				}
 			} else if id == 2 {
 				w.Header().Set("Content-Type", "application/json")
@@ -399,13 +444,20 @@ func TestUpdateBug(t *testing.T) {
 	defer testServer.Close()
 	client := clientForUrl(testServer.URL)
 
+	update := BugUpdate{
+		DependsOn: &IDUpdate{
+			Add: []int{1705242},
+		},
+		Status: "UPDATED",
+	}
+
 	// this should run an update
-	if err := client.UpdateBug(1705243, BugUpdate{Status: "UPDATED"}); err != nil {
+	if err := client.UpdateBug(1705243, update); err != nil {
 		t.Errorf("expected no error, but got one: %v", err)
 	}
 
 	// this should 404
-	err := client.UpdateBug(1, BugUpdate{Status: "UPDATE"})
+	err := client.UpdateBug(1, update)
 	if err == nil {
 		t.Error("expected an error, but got none")
 	} else if !IsNotFound(err) {
@@ -413,7 +465,7 @@ func TestUpdateBug(t *testing.T) {
 	}
 
 	// this is a 200 with an error payload
-	if err := client.UpdateBug(2, BugUpdate{Status: "UPDATE"}); err == nil {
+	if err := client.UpdateBug(2, update); err == nil {
 		t.Error("expected an error, but got none")
 	}
 }

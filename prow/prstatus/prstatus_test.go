@@ -19,10 +19,12 @@ package prstatus
 import (
 	"context"
 	"encoding/gob"
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
+	"strconv"
 	"testing"
 	"time"
 
@@ -32,7 +34,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"sigs.k8s.io/yaml"
 
-	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/githuboauth"
 )
@@ -42,31 +43,42 @@ type MockQueryHandler struct {
 	contextMap map[int][]Context
 }
 
-func (mh *MockQueryHandler) QueryPullRequests(ctx context.Context, ghc githubClient, query string) ([]PullRequest, error) {
+func (mh *MockQueryHandler) queryPullRequests(ctx context.Context, ghc githubQuerier, query string) ([]PullRequest, error) {
 	return mh.prs, nil
 }
 
-func (mh *MockQueryHandler) GetHeadContexts(ghc githubClient, pr PullRequest) ([]Context, error) {
+func (mh *MockQueryHandler) getHeadContexts(ghc githubStatusFetcher, pr PullRequest) ([]Context, error) {
 	return mh.contextMap[int(pr.Number)], nil
-}
-
-func (mh *MockQueryHandler) BotName(github.Client) (*github.User, error) {
-	login := "random_user"
-	return &github.User{
-		Login: login,
-	}, nil
 }
 
 type fgc struct {
 	combinedStatus *github.CombinedStatus
+	botName        string
 }
 
-func (c *fgc) Query(context.Context, interface{}, map[string]interface{}) error {
+func (c fgc) Query(context.Context, interface{}, map[string]interface{}) error {
 	return nil
 }
 
-func (c *fgc) GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error) {
+func (c fgc) GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error) {
 	return c.combinedStatus, nil
+}
+
+func (c fgc) BotName() (string, error) {
+	if c.botName == "error" {
+		return "", errors.New("injected BotName() error")
+	}
+	return c.botName, nil
+}
+
+func newGitHubClientCreator(tokenUsers map[string]fgc) githubClientCreator {
+	return func(accessToken string) GitHubClient {
+		who, ok := tokenUsers[accessToken]
+		if !ok {
+			panic("unexpected access token: " + accessToken)
+		}
+		return who
+	}
 }
 
 func newMockQueryHandler(prs []PullRequest, contextMap map[int][]Context) *MockQueryHandler {
@@ -78,10 +90,9 @@ func newMockQueryHandler(prs []PullRequest, contextMap map[int][]Context) *MockQ
 
 func createMockAgent(repos []string, config *githuboauth.Config) *DashboardAgent {
 	return &DashboardAgent{
-		repos:  repos,
-		goac:   config,
-		log:    logrus.WithField("unit-test", "dashboard-agent"),
-		github: prowflagutil.NewGitHubOptions(),
+		repos: repos,
+		goac:  config,
+		log:   logrus.WithField("unit-test", "dashboard-agent"),
 	}
 }
 
@@ -100,7 +111,9 @@ func TestHandlePrStatusWithoutLogin(t *testing.T) {
 	request := httptest.NewRequest(http.MethodGet, "/pr-data.js", nil)
 
 	mockQueryHandler := newMockQueryHandler(nil, nil)
-	prHandler := mockAgent.HandlePrStatus(mockQueryHandler)
+
+	ghClientCreator := newGitHubClientCreator(map[string]fgc{"should-not-find-me": {}})
+	prHandler := mockAgent.HandlePrStatus(mockQueryHandler, ghClientCreator)
 	prHandler.ServeHTTP(rr, request)
 	if rr.Code != http.StatusOK {
 		t.Fatalf("Bad status code: %d", rr.Code)
@@ -133,7 +146,8 @@ func TestHandlePrStatusWithInvalidToken(t *testing.T) {
 	rr := httptest.NewRecorder()
 	request := httptest.NewRequest(http.MethodGet, "/pr-data.js", nil)
 	request.AddCookie(&http.Cookie{Name: tokenSession, Value: "garbage"})
-	prHandler := mockAgent.HandlePrStatus(mockQueryHandler)
+	ghClientCreator := newGitHubClientCreator(map[string]fgc{"should-not-find-me": {}})
+	prHandler := mockAgent.HandlePrStatus(mockQueryHandler, ghClientCreator)
 	prHandler.ServeHTTP(rr, request)
 	if rr.Code != http.StatusOK {
 		t.Fatalf("Bad status code: %d", rr.Code)
@@ -272,37 +286,43 @@ func TestHandlePrStatusWithLogin(t *testing.T) {
 		},
 	}
 	for id, testcase := range testCases {
-		t.Logf("Test %d:", id)
-		rr := httptest.NewRecorder()
-		request := httptest.NewRequest(http.MethodGet, "/pr-data.js", nil)
-		mockSession, err := sessions.GetRegistry(request).Get(mockCookieStore, tokenSession)
-		if err != nil {
-			t.Errorf("Error with creating mock session: %v", err)
-		}
-		gob.Register(oauth2.Token{})
-		token := &oauth2.Token{AccessToken: "secret-token", Expiry: time.Now().Add(time.Duration(24*365) * time.Hour)}
-		mockSession.Values[tokenKey] = token
-		mockSession.Values[loginKey] = "random_user"
-		mockQueryHandler := newMockQueryHandler(testcase.prs, testcase.contextMap)
-		prHandler := mockAgent.HandlePrStatus(mockQueryHandler)
-		prHandler.ServeHTTP(rr, request)
-		if rr.Code != http.StatusOK {
-			t.Fatalf("Bad status code: %d", rr.Code)
-		}
-		response := rr.Result()
-		body, err := ioutil.ReadAll(response.Body)
-		if err != nil {
-			t.Fatalf("Error with reading response body: %v", err)
-		}
-		var dataReturned UserData
-		if err := yaml.Unmarshal(body, &dataReturned); err != nil {
-			t.Errorf("Error with unmarshaling response: %v", err)
-		}
-		if !reflect.DeepEqual(dataReturned, testcase.expectedData) {
-			t.Fatalf("Invalid user data. Got %v, expected %v.", dataReturned, testcase.expectedData)
-		}
-		t.Logf("Passed")
-		response.Body.Close()
+		t.Run(strconv.Itoa(id), func(t *testing.T) {
+			rr := httptest.NewRecorder()
+			request := httptest.NewRequest(http.MethodGet, "/pr-data.js", nil)
+			mockSession, err := sessions.GetRegistry(request).Get(mockCookieStore, tokenSession)
+			if err != nil {
+				t.Errorf("Error with creating mock session: %v", err)
+			}
+			gob.Register(oauth2.Token{})
+			const (
+				accessToken = "secret-token"
+				botName     = "random_user"
+			)
+			token := &oauth2.Token{AccessToken: accessToken, Expiry: time.Now().Add(time.Duration(24*365) * time.Hour)}
+			mockSession.Values[tokenKey] = token
+			mockSession.Values[loginKey] = botName
+			mockQueryHandler := newMockQueryHandler(testcase.prs, testcase.contextMap)
+			ghClientCreator := newGitHubClientCreator(map[string]fgc{accessToken: {botName: botName}})
+			prHandler := mockAgent.HandlePrStatus(mockQueryHandler, ghClientCreator)
+			prHandler.ServeHTTP(rr, request)
+			if rr.Code != http.StatusOK {
+				t.Fatalf("Bad status code: %d", rr.Code)
+			}
+			response := rr.Result()
+			defer response.Body.Close()
+			body, err := ioutil.ReadAll(response.Body)
+			if err != nil {
+				t.Fatalf("Error with reading response body: %v", err)
+			}
+			var dataReturned UserData
+			if err := yaml.Unmarshal(body, &dataReturned); err != nil {
+				t.Errorf("Error with unmarshaling response: %v", err)
+			}
+			if !reflect.DeepEqual(dataReturned, testcase.expectedData) {
+				t.Fatalf("Invalid user data. Got %v, expected %v.", dataReturned, testcase.expectedData)
+			}
+			t.Logf("Passed")
+		})
 	}
 }
 
@@ -365,7 +385,7 @@ func TestGetHeadContexts(t *testing.T) {
 	}
 	for id, testcase := range testCases {
 		t.Logf("Test %d:", id)
-		contexts, err := mockAgent.GetHeadContexts(&fgc{
+		contexts, err := mockAgent.getHeadContexts(&fgc{
 			combinedStatus: testcase.combinedStatus,
 		}, testcase.pr)
 		if err != nil {

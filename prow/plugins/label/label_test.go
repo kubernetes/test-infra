@@ -575,6 +575,17 @@ func TestLabel(t *testing.T) {
 			expectedBotComment:    false,
 			action:                github.GenericCommentActionDeleted,
 		},
+		{
+			name:                  "Don't take action while editing body",
+			body:                  "/kind bug",
+			repoLabels:            []string{labels.Bug},
+			issueLabels:           []string{},
+			expectedNewLabels:     []string{},
+			expectedRemovedLabels: []string{},
+			commenter:             orgMember,
+			expectedBotComment:    false,
+			action:                github.GenericCommentActionEdited,
+		},
 	}
 
 	for _, tc := range testcases {

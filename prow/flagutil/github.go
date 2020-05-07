@@ -18,6 +18,7 @@ package flagutil
 
 import (
 	"bytes"
+	"errors"
 	"flag"
 	"fmt"
 	"net/url"
@@ -30,46 +31,25 @@ import (
 )
 
 // GitHubOptions holds options for interacting with GitHub.
+//
+// Set AllowAnonymous to be true if you want to allow anonymous github access.
 type GitHubOptions struct {
-	Host                string
-	endpoint            Strings
-	graphqlEndpoint     string
-	TokenPath           string
-	deprecatedTokenFile string
+	Host            string
+	endpoint        Strings
+	graphqlEndpoint string
+	TokenPath       string
+	AllowAnonymous  bool
 }
 
-// NewGitHubOptions creates a GitHubOptions with default values.
-func NewGitHubOptions() *GitHubOptions {
-	return &GitHubOptions{
-		Host:            github.DefaultHost,
-		endpoint:        NewStrings(github.DefaultAPIEndpoint),
-		graphqlEndpoint: github.DefaultAPIEndpoint,
-	}
-}
+const DefaultGitHubTokenPath = "/etc/github/oauth" // Exported for testing purposes
 
 // AddFlags injects GitHub options into the given FlagSet.
 func (o *GitHubOptions) AddFlags(fs *flag.FlagSet) {
-	o.addFlags(true, fs)
-}
-
-// AddFlagsWithoutDefaultGitHubTokenPath injects GitHub options into the given
-// Flagset without setting a default for for the githubTokenPath, allowing to
-// use an anonymous GitHub client
-func (o *GitHubOptions) AddFlagsWithoutDefaultGitHubTokenPath(fs *flag.FlagSet) {
-	o.addFlags(false, fs)
-}
-
-func (o *GitHubOptions) addFlags(wantDefaultGitHubTokenPath bool, fs *flag.FlagSet) {
 	fs.StringVar(&o.Host, "github-host", github.DefaultHost, "GitHub's default host (may differ for enterprise)")
 	o.endpoint = NewStrings(github.DefaultAPIEndpoint)
 	fs.Var(&o.endpoint, "github-endpoint", "GitHub's API endpoint (may differ for enterprise).")
 	fs.StringVar(&o.graphqlEndpoint, "github-graphql-endpoint", github.DefaultGraphQLEndpoint, "GitHub GraphQL API endpoint (may differ for enterprise).")
-	var defaultGitHubTokenPath string
-	if wantDefaultGitHubTokenPath {
-		defaultGitHubTokenPath = "/etc/github/oauth"
-	}
-	fs.StringVar(&o.TokenPath, "github-token-path", defaultGitHubTokenPath, "Path to the file containing the GitHub OAuth secret.")
-	fs.StringVar(&o.deprecatedTokenFile, "github-token-file", "", "DEPRECATED: use -github-token-path instead.  -github-token-file may be removed anytime after 2019-01-01.")
+	fs.StringVar(&o.TokenPath, "github-token-path", "", "Path to the file containing the GitHub OAuth secret.")
 }
 
 // Validate validates GitHub options.
@@ -83,18 +63,22 @@ func (o *GitHubOptions) Validate(dryRun bool) error {
 		}
 	}
 	if len(endpoints) == 1 && endpoints[0] == github.DefaultAPIEndpoint {
-		logrus.Error("It doesn't look like you are using ghproxy to cache API calls to GitHub! This has become a required component of Prow and other components will soon be allowed to add features that may rapidly consume API ratelimit without caching. Starting May 1, 2020 use Prow components without ghproxy at your own risk! https://github.com/kubernetes/test-infra/tree/master/ghproxy#ghproxy")
+		logrus.Warn("It doesn't look like you are using ghproxy to cache API calls to GitHub! This has become a required component of Prow and other components will soon be allowed to add features that may rapidly consume API ratelimit without caching. Starting May 1, 2020 use Prow components without ghproxy at your own risk! https://github.com/kubernetes/test-infra/tree/master/ghproxy#ghproxy")
+	}
+
+	if o.TokenPath == "" && !o.AllowAnonymous {
+		// TODO(fejta): just return error after May 2020
+		logrus.Warnf("missing required flag: please set to --github-token-path=%s before June 2020", DefaultGitHubTokenPath)
+		o.TokenPath = DefaultGitHubTokenPath
+		if o.TokenPath == "" {
+			return errors.New("missing required flag: --github-token-path")
+		}
 	}
 
 	if o.graphqlEndpoint == "" {
 		o.graphqlEndpoint = github.DefaultGraphQLEndpoint
 	} else if _, err := url.Parse(o.graphqlEndpoint); err != nil {
 		return fmt.Errorf("invalid -github-graphql-endpoint URI: %q", o.graphqlEndpoint)
-	}
-
-	if o.deprecatedTokenFile != "" {
-		o.TokenPath = o.deprecatedTokenFile
-		logrus.Error("-github-token-file is deprecated and may be removed anytime after 2019-01-01.  Use -github-token-path instead.")
 	}
 
 	return nil

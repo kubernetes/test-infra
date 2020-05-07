@@ -16,7 +16,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20200417-6b47d16-master
+      - image: gcr.io/k8s-testimages/krte:v20200430-04773e2-master
         command:
         - wrapper.sh
         - bash
@@ -27,7 +27,7 @@ presubmits:
           value: "."
         # TODO(bentheelder): reduce the skip list further
         - name: SKIP
-          value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Network.should.set.TCP.CLOSE_WAIT.timeout|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|ReplicationController.light.Should.scale.from.1.pod.to.2.pods|should.provide.basic.identity|\[NodeFeature:PodReadinessGate\]
+          value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing
         - name: PARALLEL
           value: "true"
         - name: BUILD_TYPE
@@ -78,7 +78,7 @@ presubmits:
           value: "."
         # TODO(bentheelder): reduce the skip list further
         - name: SKIP
-          value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|ReplicationController.light.Should.scale.from.1.pod.to.2.pods|should.provide.basic.identity|\[NodeFeature:PodReadinessGate\]
+          value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing
         - name: PARALLEL
           value: "true"
         - name: BUILD_TYPE
@@ -116,7 +116,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20200417-6b47d16-master
+      - image: gcr.io/k8s-testimages/krte:v20200430-04773e2-master
         command:
         - wrapper.sh
         - bash
@@ -127,7 +127,7 @@ presubmits:
           value: "."
         # TODO(bentheelder): reduce the skip list further
         - name: SKIP
-          value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Network.should.set.TCP.CLOSE_WAIT.timeout|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|ReplicationController.light.Should.scale.from.1.pod.to.2.pods|should.provide.basic.identity|\[NodeFeature:PodReadinessGate\]
+          value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing
         - name: PARALLEL
           value: "true"
         - name: BUILD_TYPE
@@ -182,7 +182,7 @@ presubmits:
           value: "."
         # TODO(bentheelder): reduce the skip list further
         - name: SKIP
-          value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|ReplicationController.light.Should.scale.from.1.pod.to.2.pods|should.provide.basic.identity|\[NodeFeature:PodReadinessGate\]
+          value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing
         - name: PARALLEL
           value: "true"
         - name: BUILD_TYPE
@@ -225,7 +225,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20200417-6b47d16-master
+      - image: gcr.io/k8s-testimages/krte:v20200430-04773e2-master
         command:
         - wrapper.sh
         - bash
@@ -254,7 +254,6 @@ presubmits:
       testgrid-dashboards: sig-testing-kind
 
   - name: pull-kubernetes-conformance-kind-ga-only-parallel
-    optional: true
     always_run: true
     decorate: true
     skip_branches:
@@ -269,7 +268,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20200417-6b47d16-master
+      - image: gcr.io/k8s-testimages/krte:v20200430-04773e2-master
         command:
         - wrapper.sh
         - bash

@@ -19,7 +19,6 @@ package slack
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"text/template"
 
 	"github.com/sirupsen/logrus"
@@ -27,6 +26,7 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/pjutil"
 	slackclient "k8s.io/test-infra/prow/slack"
 )
 
@@ -39,9 +39,16 @@ type slackReporter struct {
 	dryRun bool
 }
 
-func channel(cfg config.SlackReporter, pj *v1.ProwJob) string {
+func jobChannel(pj *v1.ProwJob) (string, bool) {
 	if pj.Spec.ReporterConfig != nil && pj.Spec.ReporterConfig.Slack != nil && pj.Spec.ReporterConfig.Slack.Channel != "" {
-		return pj.Spec.ReporterConfig.Slack.Channel
+		return pj.Spec.ReporterConfig.Slack.Channel, true
+	}
+	return "", false
+}
+
+func channel(cfg config.SlackReporter, pj *v1.ProwJob) string {
+	if channel, set := jobChannel(pj); set {
+		return channel
 	}
 	return cfg.Channel
 }
@@ -78,6 +85,13 @@ func (sr *slackReporter) GetName() string {
 }
 
 func (sr *slackReporter) ShouldReport(pj *v1.ProwJob) bool {
+	logger := sr.logger.WithFields(pjutil.ProwJobFields(pj))
+	// if a user specifically put a channel on their job, they want
+	// it to be reported regardless of what other settings exist
+	if _, set := jobChannel(pj); set {
+		logger.Debugf("reporting as channel is explicitly set")
+		return true
+	}
 	config := sr.config(pj.Spec.Refs)
 
 	stateShouldReport := false
@@ -96,21 +110,15 @@ func (sr *slackReporter) ShouldReport(pj *v1.ProwJob) bool {
 		}
 	}
 
-	sr.logger.WithField("prowjob", pj.Name).
-		Debugf("reporting=%t", stateShouldReport && typeShouldReport)
+	logger.Debugf("reporting=%t", stateShouldReport && typeShouldReport)
 	return stateShouldReport && typeShouldReport
 }
 
-func New(cfg func(refs *prowapi.Refs) config.SlackReporter, dryRun bool, tokenFile string) (*slackReporter, error) {
-	token, err := ioutil.ReadFile(tokenFile)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read -token-file: %v", err)
-	}
-
+func New(cfg func(refs *prowapi.Refs) config.SlackReporter, dryRun bool, token func() []byte) *slackReporter {
 	return &slackReporter{
-		client: slackclient.NewClient(func() []byte { return token }),
+		client: slackclient.NewClient(token),
 		config: cfg,
 		logger: logrus.WithField("component", reporterName),
 		dryRun: dryRun,
-	}, nil
+	}
 }

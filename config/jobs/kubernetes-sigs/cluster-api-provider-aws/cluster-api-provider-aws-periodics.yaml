@@ -17,7 +17,7 @@ periodics:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200422-8c8546d-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200507-2ed1a50-master
       command:
         - "runner.sh"
         - "./scripts/ci-e2e.sh"
@@ -55,7 +55,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200422-8c8546d-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200507-2ed1a50-master
         command:
           - "runner.sh"
           - "./scripts/ci-e2e.sh"
@@ -93,7 +93,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200422-8c8546d-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200507-2ed1a50-master
         command:
           - "runner.sh"
           - "./scripts/ci-e2e-conformance.sh"
@@ -131,7 +131,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200422-8c8546d-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200507-2ed1a50-master
         command:
           - "runner.sh"
           - "./scripts/ci-e2e-conformance.sh"
@@ -180,7 +180,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200422-8c8546d-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200507-2ed1a50-master
         env:
           - name: CAPI_BRANCH
             value: "stable"
@@ -203,7 +203,7 @@ periodics:
             # during the tests more like 3-20m is used
             cpu: 2000m
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws, sig-release-master-informing
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
     testgrid-tab-name: capa-conformance-v1alpha2-k8s-master
     testgrid-num-columns-recent: '20'
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
@@ -236,7 +236,7 @@ periodics:
       path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200422-8c8546d-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200507-2ed1a50-master
         env:
           - name: BOSKOS_HOST
             value: "boskos.test-pods.svc.cluster.local"
@@ -257,7 +257,7 @@ periodics:
             # during the tests more like 3-20m is used
             cpu: 2000m
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws, sig-release-master-informing
     testgrid-tab-name: capa-conformance-v1alpha3-k8s-master
     testgrid-num-columns-recent: '20'
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com

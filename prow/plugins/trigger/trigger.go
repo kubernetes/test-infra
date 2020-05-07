@@ -202,22 +202,6 @@ func skippedStatusFor(context string) github.Status {
 	}
 }
 
-// RunAndSkipJobs executes the config.Presubmits that are requested and posts skipped statuses
-// for the reporting jobs that are skipped
-func RunAndSkipJobs(c Client, pr *github.PullRequest, baseSHA string, requestedJobs []config.Presubmit, skippedJobs []config.Presubmit, eventGUID string, elideSkippedContexts bool) error {
-	if err := validateContextOverlap(requestedJobs, skippedJobs); err != nil {
-		c.Logger.WithError(err).Warn("Could not run or skip requested jobs, overlapping contexts.")
-		return err
-	}
-	runErr := runRequested(c, pr, baseSHA, requestedJobs, eventGUID)
-	var skipErr error
-	if !elideSkippedContexts {
-		skipErr = skipRequested(c, pr, skippedJobs)
-	}
-
-	return utilerrors.NewAggregate([]error{runErr, skipErr})
-}
-
 // validateContextOverlap ensures that there will be no overlap in contexts between a set of jobs running and a set to skip
 func validateContextOverlap(toRun, toSkip []config.Presubmit) error {
 	requestedContexts := sets.NewString()
@@ -235,8 +219,8 @@ func validateContextOverlap(toRun, toSkip []config.Presubmit) error {
 	return nil
 }
 
-// runRequested executes the config.Presubmits that are requested
-func runRequested(c Client, pr *github.PullRequest, baseSHA string, requestedJobs []config.Presubmit, eventGUID string) error {
+// RunRequested executes the config.Presubmits that are requested
+func RunRequested(c Client, pr *github.PullRequest, baseSHA string, requestedJobs []config.Presubmit, eventGUID string) error {
 	var errors []error
 	for _, job := range requestedJobs {
 		c.Logger.Infof("Starting %s build.", job.Name)
@@ -244,21 +228,6 @@ func runRequested(c Client, pr *github.PullRequest, baseSHA string, requestedJob
 		c.Logger.WithFields(pjutil.ProwJobFields(&pj)).Info("Creating a new prowjob.")
 		if _, err := c.ProwJobClient.Create(&pj); err != nil {
 			c.Logger.WithError(err).Error("Failed to create prowjob.")
-			errors = append(errors, err)
-		}
-	}
-	return utilerrors.NewAggregate(errors)
-}
-
-// skipRequested posts skipped statuses for the config.Presubmits that are requested
-func skipRequested(c Client, pr *github.PullRequest, skippedJobs []config.Presubmit) error {
-	var errors []error
-	for _, job := range skippedJobs {
-		if job.SkipReport {
-			continue
-		}
-		c.Logger.Infof("Skipping %s build.", job.Name)
-		if err := c.GitHubClient.CreateStatus(pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, pr.Head.SHA, skippedStatusFor(job.Context)); err != nil {
 			errors = append(errors, err)
 		}
 	}

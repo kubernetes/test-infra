@@ -16,7 +16,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200422-8c8546d-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200507-2ed1a50-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -24,6 +24,9 @@ presubmits:
         - ./hack/jenkins/verify-dockerized.sh
         env:
         - name: EXCLUDE_TYPECHECK
+          value: "y"
+        # this is now covered by pull-kubernetes-files-remake
+        - name: EXCLUDE_FILES_REMAKE
           value: "y"
         - name: EXCLUDE_GODEP
           value: "y"
@@ -39,6 +42,7 @@ presubmits:
             cpu: 4
 periodics:
 - interval: 1h
+  cluster: k8s-infra-prow-build
   name: ci-kubernetes-verify-master
   labels:
     preset-service-account: "true"
@@ -59,7 +63,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200422-8c8546d-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200507-2ed1a50-master
       imagePullPolicy: Always
       command:
       - runner.sh
