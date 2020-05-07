@@ -1244,7 +1244,7 @@ In response to [this](http.com):
 Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.
 </details>`,
 		}, {
-			name: "If bug clone with correct target version already exists, do not create new clone",
+			name: "If bug clone with correct target version already exists, just retitle PR",
 			bugs: []bugzilla.Bug{
 				{Summary: "This is a test bug", Product: "Test", Component: []string{"TestComponent"}, TargetRelease: []string{"v2"}, ID: 123, Status: "CLOSED", Severity: "urgent", Blocks: []int{124}},
 				{Summary: "This is a test bug", Product: "Test", Component: []string{"TestComponent"}, TargetRelease: []string{"v1"}, ID: 124, Status: "NEW", Severity: "urgent", DependsOn: []int{123}},
@@ -1256,8 +1256,8 @@ Instructions for interacting with me using PR comments are available [here](http
 			cherryPickFromPRNum: 1,
 			cherryPickTo:        "v1",
 			options:             plugins.BugzillaBranchOptions{TargetRelease: &v1},
-			expectedComment: `org/repo#1:@user: Not creating new clone for [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123) as [Bugzilla bug 124](www.bugzilla/show_bug.cgi?id=124) has been detected as a clone for the correct target release of this cherrypick. Running refresh:
-/bugzilla refresh
+			expectedComment: `org/repo#1:@user: Detected clone of [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123) with correct target release. Retitling PR to link to clone:
+/retitle [v1] Bug 124: fixed it!
 
 <details>
 

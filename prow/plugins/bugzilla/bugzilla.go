@@ -876,7 +876,8 @@ func handleCherrypick(e event, gc githubClient, bc bugzilla.Client, options plug
 	}
 	for _, clone := range clones {
 		if len(clone.TargetRelease) == 1 && clone.TargetRelease[0] == targetRelease {
-			return comment(fmt.Sprintf("Not creating new clone for %s as %s has been detected as a clone for the correct target release of this cherrypick. Running refresh:\n/bugzilla refresh", oldLink, fmt.Sprintf(bugLink, clone.ID, bc.Endpoint(), clone.ID)))
+			newTitle := strings.Replace(e.body, fmt.Sprintf("Bug %d", bugID), fmt.Sprintf("Bug %d", clone.ID), 1)
+			return comment(fmt.Sprintf("Detected clone of %s with correct target release. Retitling PR to link to clone:\n/retitle %s", oldLink, newTitle))
 		}
 	}
 	cloneID, err := bc.CloneBug(bug)
