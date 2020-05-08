@@ -506,3 +506,37 @@ presubmits:
         - make
         args:
         - verify-all
+
+  - name: pull-perf-tests-verify-dashboard
+    # TODO(oxddr): make it non-optional once we are confident in the presubmit
+    optional: true
+    decorate: true
+    run_if_changed: ^clusterloader2/pkg/prometheus/manifests/dashboards/.*\.json$
+    path_alias: "k8s.io/perf-tests"
+    annotations:
+      testgrid-dashboards: presubmits-kubernetes-scalability
+      testgrid-tab-name: pull-perf-tests-verify-dashboard
+    spec:
+      containers:
+      - image: python:3.7
+        command:
+        - make
+        args:
+        - verify-dashboard
+
+  - name: pull-perf-tests-verify-lint
+    # TODO(oxddr): make it non-optional once we are confident in the presubmit
+    optional: true
+    decorate: true
+    always_run: true
+    path_alias: "k8s.io/perf-tests"
+    annotations:
+      testgrid-dashboards: presubmits-kubernetes-scalability
+      testgrid-tab-name: pull-perf-tests-verify-lint
+    spec:
+      containers:
+      - image: golangci/golangci-lint:v1.26
+        command:
+        - make
+        args:
+        - verify-lint
