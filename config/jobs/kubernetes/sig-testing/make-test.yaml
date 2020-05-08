@@ -28,6 +28,9 @@ periodics:
               time tar -czf cache.tar.gz -C _output/local/go cache/ || result=$?
               time gsutil cp cache.tar.gz gs://kubernetes-jenkins/cache/poc/k8s-test-cache.tar.gz || result=$?
               exit $result
+          # some unit tests require running the container in privileged mode (unfortunately)
+          securityContext:
+            privileged: true
   - interval: 15m
     name: ci-kubernetes-cached-make-test
     annotations:
@@ -56,3 +59,6 @@ periodics:
               ( cd hack/tools && GO111MODULE=on go install gotest.tools/gotestsum ) || result=$?
               time make test KUBE_TIMEOUT="--timeout=600s" || result=$?
               exit $result
+          # some unit tests require running the container in privileged mode (unfortunately)
+          securityContext:
+            privileged: true
