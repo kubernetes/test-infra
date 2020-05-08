@@ -799,7 +799,11 @@ func (c *client) doRequest(method, path, accept string, body interface{}) (*http
 }
 
 func (c *client) authHeader() string {
-	return fmt.Sprintf("Bearer %s", c.getToken())
+	token := c.getToken()
+	if len(token) == 0 {
+		return ""
+	}
+	return fmt.Sprintf("Bearer %s", token)
 }
 
 // userInfo provides the 'github_user_info' vector that is indexed
