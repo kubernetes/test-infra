@@ -5,6 +5,7 @@ periodics:
     testgrid-num-columns-recent: "3"
     testgrid-num-failures-to-alert: "1"
     testgrid-tab-name: Conformance - GCE - 1.15
+  cluster: k8s-infra-prow-build
   interval: 3h
   labels:
     preset-k8s-ssh: "true"
@@ -18,6 +19,7 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --extract=ci/latest-1.15
+      - --gcp-project-type=k8s-infra-gce-project
       - --gcp-master-image=gci
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
@@ -64,6 +66,7 @@ periodics:
     testgrid-alert-email: kubernetes-sig-node+testgrid@googlegroups.com
     testgrid-dashboards: sig-release-1.15-blocking, sig-node-kubelet
     testgrid-tab-name: node-kubelet-1.15
+  cluster: k8s-infra-prow-build
   interval: 24h
   labels:
     preset-k8s-ssh: "true"
@@ -78,7 +81,7 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --deployment=node
-      - --gcp-project-type=node-e2e-project
+      - --gcp-project-type=k8s-infra-gce-project
       - --gcp-zone=us-west1-b
       - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
       - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
@@ -95,6 +98,7 @@ periodics:
 - annotations:
     testgrid-dashboards: sig-node-kubelet, sig-release-1.15-informing
     testgrid-tab-name: node-kubelet-features-1.15
+  cluster: k8s-infra-prow-build
   interval: 1h
   labels:
     preset-k8s-ssh: "true"
@@ -109,7 +113,7 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --deployment=node
-      - --gcp-project=k8s-jkns-ci-node-e2e
+      - --gcp-project-type=k8s-infra-gce-project
       - --gcp-zone=us-west1-b
       - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
       - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
@@ -335,6 +339,7 @@ periodics:
     testgrid-alert-email: kubernetes-release-team@googlegroups.com
     testgrid-dashboards: sig-release-1.15-blocking, google-unit
     testgrid-tab-name: integration-1.15
+  cluster: k8s-infra-prow-build
   interval: 24h
   labels:
     preset-dind-enabled: "true"
@@ -364,6 +369,7 @@ periodics:
       release-managers@kubernetes.io
     testgrid-dashboards: sig-release-1.15-blocking, google-unit
     testgrid-tab-name: verify-1.15
+  cluster: k8s-infra-prow-build
   decorate: true
   extra_refs:
   - base_ref: release-1.15
