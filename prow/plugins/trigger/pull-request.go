@@ -76,8 +76,13 @@ func handlePR(c Client, trigger plugins.Trigger, pr github.PullRequestEvent) err
 			return fmt.Errorf("could not check membership: %s", err)
 		}
 		if member {
+			// dedicated draft check for create to comment on the PR
+			if pr.PullRequest.Draft {
+				c.Logger.Info("Skipping all jobs for draft PR.")
+				return draftMsg(c.GitHubClient, pr.PullRequest)
+			}
 			c.Logger.Info("Starting all jobs for new PR.")
-			return buildAll(c, &pr.PullRequest, pr.GUID, baseSHA, presubmits)
+			return buildAllButDrafts(c, &pr.PullRequest, pr.GUID, baseSHA, presubmits)
 		}
 		c.Logger.Infof("Welcome message to PR author %q.", author)
 		if err := welcomeMsg(c.GitHubClient, trigger, pr.PullRequest); err != nil {
@@ -98,7 +103,7 @@ func handlePR(c Client, trigger plugins.Trigger, pr github.PullRequestEvent) err
 				}
 			}
 			c.Logger.Info("Starting all jobs for updated PR.")
-			return buildAll(c, &pr.PullRequest, pr.GUID, baseSHA, presubmits)
+			return buildAllButDrafts(c, &pr.PullRequest, pr.GUID, baseSHA, presubmits)
 		}
 	case github.PullRequestActionEdited:
 		// if someone changes the base of their PR, we will get this
@@ -132,7 +137,7 @@ func handlePR(c Client, trigger plugins.Trigger, pr github.PullRequestEvent) err
 				return fmt.Errorf("could not validate PR: %s", err)
 			} else if !trusted {
 				c.Logger.Info("Starting all jobs for untrusted PR with LGTM.")
-				return buildAll(c, &pr.PullRequest, pr.GUID, baseSHA, presubmits)
+				return buildAllButDrafts(c, &pr.PullRequest, pr.GUID, baseSHA, presubmits)
 			}
 		}
 		if pr.Label.Name == labels.OkToTest {
@@ -147,7 +152,7 @@ func handlePR(c Client, trigger plugins.Trigger, pr github.PullRequestEvent) err
 				c.Logger.Debug("Label added by the bot, skipping.")
 				return nil
 			}
-			return buildAll(c, &pr.PullRequest, pr.GUID, baseSHA, presubmits)
+			return buildAllButDrafts(c, &pr.PullRequest, pr.GUID, baseSHA, presubmits)
 		}
 	case github.PullRequestActionClosed:
 		if err := abortAllJobs(c, &pr.PullRequest); err != nil {
@@ -233,7 +238,7 @@ func buildAllIfTrusted(c Client, trigger plugins.Trigger, pr github.PullRequestE
 			}
 		}
 		c.Logger.Info("Starting all jobs for updated PR.")
-		return buildAll(c, &pr.PullRequest, pr.GUID, baseSHA, presubmits)
+		return buildAllButDrafts(c, &pr.PullRequest, pr.GUID, baseSHA, presubmits)
 	}
 	return nil
 }
@@ -297,6 +302,13 @@ I understand the commands that are listed [here](https://go.k8s.io/bot-commands?
 	return nil
 }
 
+func draftMsg(ghc githubClient, pr github.PullRequest) error {
+	org, repo, _ := orgRepoAuthor(pr)
+
+	comment := "Skipping CI for Draft Pull Request.\nIf you want CI signal for your change, please convert it to an actual PR.\nYou can still manually trigger a test run with `/test all`"
+	return ghc.CreateComment(org, repo, pr.Number, comment)
+}
+
 // TrustedPullRequest returns whether or not the given PR should be tested.
 // It first checks if the author is in the org, then looks for "ok-to-test" label.
 // If already known, GitHub labels should be provided to save tokens. Otherwise, it fetches them.
@@ -316,6 +328,15 @@ func TrustedPullRequest(tprc trustedPullRequestClient, trigger plugins.Trigger, 
 		}
 	}
 	return l, github.HasLabel(labels.OkToTest, l), nil
+}
+
+// buildAllButDrafts ensures that all builds that should run and will be required are built, but skips draft PRs
+func buildAllButDrafts(c Client, pr *github.PullRequest, eventGUID string, baseSHA string, presubmits []config.Presubmit) error {
+	if pr.Draft {
+		c.Logger.Info("Skipping all jobs for draft PR.")
+		return nil
+	}
+	return buildAll(c, pr, eventGUID, baseSHA, presubmits)
 }
 
 // buildAll ensures that all builds that should run and will be required are built
