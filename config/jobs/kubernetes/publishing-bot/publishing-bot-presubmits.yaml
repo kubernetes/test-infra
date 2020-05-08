@@ -27,7 +27,7 @@ presubmits:
       path_alias: k8s.io/publishing-bot
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200507-2ed1a50-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200507-36c6a27-master
         command:
         - go
         args:
