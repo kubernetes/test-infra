@@ -7,6 +7,7 @@ periodics:
     testgrid-num-columns-recent: "3"
     testgrid-num-failures-to-alert: "2"
     testgrid-tab-name: skew-cluster-latest-kubectl-k8s-stable1-gce
+  cluster: k8s-infra-prow-build
   interval: 1h
   labels:
     preset-k8s-ssh: "true"
@@ -23,6 +24,7 @@ periodics:
       - --check-version-skew=false
       - --extract=ci/k8s-stable1
       - --extract=ci/latest
+      - --gcp-project-type=k8s-infra-gce-project
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=25
@@ -40,6 +42,7 @@ periodics:
     testgrid-num-columns-recent: "3"
     testgrid-num-failures-to-alert: "1"
     testgrid-tab-name: Conformance - GCE - 1.17
+  cluster: k8s-infra-prow-build
   interval: 3h
   labels:
     preset-k8s-ssh: "true"
@@ -53,6 +56,7 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --extract=ci/latest-1.17
+      - --gcp-project-type=k8s-infra-gce-project
       - --gcp-master-image=gci
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
@@ -99,6 +103,7 @@ periodics:
     testgrid-alert-email: kubernetes-sig-node+testgrid@googlegroups.com
     testgrid-dashboards: sig-release-1.17-blocking, sig-node-kubelet
     testgrid-tab-name: node-kubelet-1.17
+  cluster: k8s-infra-prow-build
   interval: 2h
   labels:
     preset-k8s-ssh: "true"
@@ -113,7 +118,7 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --deployment=node
-      - --gcp-project-type=node-e2e-project
+      - --gcp-project-type=k8s-infra-gce-project
       - --gcp-zone=us-west1-b
       - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
       - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
@@ -130,6 +135,7 @@ periodics:
 - annotations:
     testgrid-dashboards: sig-node-kubelet, sig-release-1.17-informing
     testgrid-tab-name: node-kubelet-features-1.17
+  cluster: k8s-infra-prow-build
   interval: 1h
   labels:
     preset-k8s-ssh: "true"
@@ -144,7 +150,7 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --deployment=node
-      - --gcp-project=k8s-jkns-ci-node-e2e
+      - --gcp-project-type=k8s-infra-gce-project
       - --gcp-zone=us-west1-b
       - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
       - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
@@ -395,6 +401,7 @@ periodics:
     testgrid-alert-email: kubernetes-release-team@googlegroups.com
     testgrid-dashboards: sig-release-1.17-blocking, google-unit
     testgrid-tab-name: integration-1.17
+  cluster: k8s-infra-prow-build
   decorate: true
   extra_refs:
   - base_ref: release-1.17
@@ -426,6 +433,7 @@ periodics:
       release-managers@kubernetes.io
     testgrid-dashboards: sig-release-1.17-blocking, google-unit
     testgrid-tab-name: verify-1.17
+  cluster: k8s-infra-prow-build
   decorate: true
   extra_refs:
   - base_ref: release-1.17
