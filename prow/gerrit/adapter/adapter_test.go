@@ -640,186 +640,186 @@ func TestProcessChange(t *testing.T) {
 		},
 	}
 
+	testInfraPresubmits := []config.Presubmit{
+		{
+			JobBase: config.JobBase{
+				Name: "always-runs-all-branches",
+			},
+			AlwaysRun: true,
+			Reporter: config.Reporter{
+				Context:    "always-runs-all-branches",
+				SkipReport: true,
+			},
+		},
+		{
+			JobBase: config.JobBase{
+				Name: "run-if-changed-all-branches",
+			},
+			RegexpChangeMatcher: config.RegexpChangeMatcher{
+				RunIfChanged: "\\.go",
+			},
+			Reporter: config.Reporter{
+				Context:    "run-if-changed-all-branches",
+				SkipReport: true,
+			},
+		},
+		{
+			JobBase: config.JobBase{
+				Name: "runs-on-pony-branch",
+			},
+			Brancher: config.Brancher{
+				Branches: []string{"pony"},
+			},
+			AlwaysRun: true,
+			Reporter: config.Reporter{
+				Context:    "runs-on-pony-branch",
+				SkipReport: true,
+			},
+		},
+		{
+			JobBase: config.JobBase{
+				Name: "runs-on-all-but-baz-branch",
+			},
+			Brancher: config.Brancher{
+				SkipBranches: []string{"baz"},
+			},
+			AlwaysRun: true,
+			Reporter: config.Reporter{
+				Context:    "runs-on-all-but-baz-branch",
+				SkipReport: true,
+			},
+		},
+		{
+			JobBase: config.JobBase{
+				Name: "trigger-regex-all-branches",
+			},
+			Trigger:      `.*/test\s*troll.*`,
+			RerunCommand: "/test troll",
+			Reporter: config.Reporter{
+				Context:    "trigger-regex-all-branches",
+				SkipReport: true,
+			},
+		},
+		{
+			JobBase: config.JobBase{
+				Name: "foo-job",
+			},
+			Reporter: config.Reporter{
+				Context:    "foo-job",
+				SkipReport: true,
+			},
+		},
+		{
+			JobBase: config.JobBase{
+				Name: "bar-job",
+			},
+			Reporter: config.Reporter{
+				Context:    "bar-job",
+				SkipReport: true,
+			},
+		},
+		{
+			JobBase: config.JobBase{
+				Name: "reported-job-runs-on-foo-file-change",
+			},
+			RegexpChangeMatcher: config.RegexpChangeMatcher{
+				RunIfChanged: "\\.foo",
+			},
+			Reporter: config.Reporter{
+				Context: "foo-job-reported",
+			},
+		},
+	}
+	if err := config.SetPresubmitRegexes(testInfraPresubmits); err != nil {
+		t.Fatalf("could not set regexes: %v", err)
+	}
+
+	config := &config.Config{
+		JobConfig: config.JobConfig{
+			PresubmitsStatic: map[string][]config.Presubmit{
+				"gerrit/test-infra": testInfraPresubmits,
+				"https://gerrit/other-repo": {
+					{
+						JobBase: config.JobBase{
+							Name: "other-test",
+						},
+						AlwaysRun: true,
+					},
+				},
+			},
+			PostsubmitsStatic: map[string][]config.Postsubmit{
+				"gerrit/postsubmits-project": {
+					{
+						JobBase: config.JobBase{
+							Name: "test-bar",
+						},
+					},
+				},
+			},
+		},
+	}
+	testInstance := "https://gerrit"
+	fca := &fca{
+		c: config,
+	}
 	for _, tc := range testcases {
-		testInfraPresubmits := []config.Presubmit{
-			{
-				JobBase: config.JobBase{
-					Name: "always-runs-all-branches",
-				},
-				AlwaysRun: true,
-				Reporter: config.Reporter{
-					Context:    "always-runs-all-branches",
-					SkipReport: true,
-				},
-			},
-			{
-				JobBase: config.JobBase{
-					Name: "run-if-changed-all-branches",
-				},
-				RegexpChangeMatcher: config.RegexpChangeMatcher{
-					RunIfChanged: "\\.go",
-				},
-				Reporter: config.Reporter{
-					Context:    "run-if-changed-all-branches",
-					SkipReport: true,
-				},
-			},
-			{
-				JobBase: config.JobBase{
-					Name: "runs-on-pony-branch",
-				},
-				Brancher: config.Brancher{
-					Branches: []string{"pony"},
-				},
-				AlwaysRun: true,
-				Reporter: config.Reporter{
-					Context:    "runs-on-pony-branch",
-					SkipReport: true,
-				},
-			},
-			{
-				JobBase: config.JobBase{
-					Name: "runs-on-all-but-baz-branch",
-				},
-				Brancher: config.Brancher{
-					SkipBranches: []string{"baz"},
-				},
-				AlwaysRun: true,
-				Reporter: config.Reporter{
-					Context:    "runs-on-all-but-baz-branch",
-					SkipReport: true,
-				},
-			},
-			{
-				JobBase: config.JobBase{
-					Name: "trigger-regex-all-branches",
-				},
-				Trigger:      `.*/test\s*troll.*`,
-				RerunCommand: "/test troll",
-				Reporter: config.Reporter{
-					Context:    "trigger-regex-all-branches",
-					SkipReport: true,
-				},
-			},
-			{
-				JobBase: config.JobBase{
-					Name: "foo-job",
-				},
-				Reporter: config.Reporter{
-					Context:    "foo-job",
-					SkipReport: true,
-				},
-			},
-			{
-				JobBase: config.JobBase{
-					Name: "bar-job",
-				},
-				Reporter: config.Reporter{
-					Context:    "bar-job",
-					SkipReport: true,
-				},
-			},
-			{
-				JobBase: config.JobBase{
-					Name: "reported-job-runs-on-foo-file-change",
-				},
-				RegexpChangeMatcher: config.RegexpChangeMatcher{
-					RunIfChanged: "\\.foo",
-				},
-				Reporter: config.Reporter{
-					Context: "foo-job-reported",
-				},
-			},
-		}
-		if err := config.SetPresubmitRegexes(testInfraPresubmits); err != nil {
-			t.Fatalf("could not set regexes: %v", err)
-		}
+		t.Run(tc.name, func(t *testing.T) {
+			tc := tc // capture range variable
+			t.Parallel()
 
-		testInstance := "https://gerrit"
-		fca := &fca{
-			c: &config.Config{
-				JobConfig: config.JobConfig{
-					PresubmitsStatic: map[string][]config.Presubmit{
-						"gerrit/test-infra": testInfraPresubmits,
-						"https://gerrit/other-repo": {
-							{
-								JobBase: config.JobBase{
-									Name: "other-test",
-								},
-								AlwaysRun: true,
-							},
-						},
-					},
-					PostsubmitsStatic: map[string][]config.Postsubmit{
-						"gerrit/postsubmits-project": {
-							{
-								JobBase: config.JobBase{
-									Name: "test-bar",
-								},
-							},
-						},
-					},
-				},
-			},
-		}
-
-		fakeProwJobClient := prowfake.NewSimpleClientset()
-		fakeLastSync := client.LastSyncState{testInstance: map[string]time.Time{}}
-
-		for _, tc := range testcases {
+			fakeProwJobClient := prowfake.NewSimpleClientset()
+			fakeLastSync := client.LastSyncState{testInstance: map[string]time.Time{}}
 			fakeLastSync[testInstance][tc.change.Project] = timeNow.Add(-time.Minute)
-		}
 
-		var gc fgc
-		c := &Controller{
-			config:        fca.Config,
-			prowJobClient: fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
-			gc:            &gc,
-			tracker:       &fakeSync{val: fakeLastSync},
-		}
+			var gc fgc
+			c := &Controller{
+				config:        fca.Config,
+				prowJobClient: fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
+				gc:            &gc,
+				tracker:       &fakeSync{val: fakeLastSync},
+			}
 
-		err := c.ProcessChange(testInstance, tc.change)
-		if err != nil && !tc.shouldError {
-			t.Errorf("tc %s, expect no error, but got %v", tc.name, err)
-			continue
-		} else if err == nil && tc.shouldError {
-			t.Errorf("tc %s, expect error, but got none", tc.name)
-			continue
-		}
+			err := c.ProcessChange(testInstance, tc.change)
+			if err != nil && !tc.shouldError {
+				t.Errorf("expect no error, but got %v", err)
+			} else if err == nil && tc.shouldError {
+				t.Errorf("expect error, but got none")
+			}
 
-		var prowjobs []*prowapi.ProwJob
-		for _, action := range fakeProwJobClient.Fake.Actions() {
-			switch action := action.(type) {
-			case clienttesting.CreateActionImpl:
-				if prowjob, ok := action.Object.(*prowapi.ProwJob); ok {
-					prowjobs = append(prowjobs, prowjob)
+			var prowjobs []*prowapi.ProwJob
+			for _, action := range fakeProwJobClient.Fake.Actions() {
+				switch action := action.(type) {
+				case clienttesting.CreateActionImpl:
+					if prowjob, ok := action.Object.(*prowapi.ProwJob); ok {
+						prowjobs = append(prowjobs, prowjob)
+					}
 				}
 			}
-		}
 
-		if len(prowjobs) != tc.numPJ {
-			t.Errorf("tc %s - should make %d prowjob, got %d", tc.name, tc.numPJ, len(prowjobs))
-		}
+			if len(prowjobs) != tc.numPJ {
+				t.Errorf("should make %d prowjob, got %d", tc.numPJ, len(prowjobs))
+			}
 
-		if len(prowjobs) > 0 {
-			refs := prowjobs[0].Spec.Refs
-			if refs.Org != "gerrit" {
-				t.Errorf("%s: org %s != gerrit", tc.name, refs.Org)
+			if len(prowjobs) > 0 {
+				refs := prowjobs[0].Spec.Refs
+				if refs.Org != "gerrit" {
+					t.Errorf("org %s != gerrit", refs.Org)
+				}
+				if refs.Repo != tc.change.Project {
+					t.Errorf("repo %s != expected %s", refs.Repo, tc.change.Project)
+				}
+				if prowjobs[0].Spec.Refs.Pulls[0].Ref != tc.pjRef {
+					t.Errorf("ref should be %s, got %s", tc.pjRef, prowjobs[0].Spec.Refs.Pulls[0].Ref)
+				}
+				if prowjobs[0].Spec.Refs.BaseSHA != "abc" {
+					t.Errorf("BaseSHA should be abc, got %s", prowjobs[0].Spec.Refs.BaseSHA)
+				}
 			}
-			if refs.Repo != tc.change.Project {
-				t.Errorf("%s: repo %s != expected %s", tc.name, refs.Repo, tc.change.Project)
+			if tc.shouldSkipReport {
+				if gc.reviews > 0 {
+					t.Errorf("expected no comments, got: %d", gc.reviews)
+				}
 			}
-			if prowjobs[0].Spec.Refs.Pulls[0].Ref != tc.pjRef {
-				t.Errorf("tc %s - ref should be %s, got %s", tc.name, tc.pjRef, prowjobs[0].Spec.Refs.Pulls[0].Ref)
-			}
-			if prowjobs[0].Spec.Refs.BaseSHA != "abc" {
-				t.Errorf("tc %s - BaseSHA should be abc, got %s", tc.name, prowjobs[0].Spec.Refs.BaseSHA)
-			}
-		}
-		if tc.shouldSkipReport {
-			if gc.reviews > 0 {
-				t.Errorf("tc %s - expected no comments, got: %d", tc.name, gc.reviews)
-			}
-		}
+		})
 	}
 }
