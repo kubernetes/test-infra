@@ -26,20 +26,20 @@ import (
 	"k8s.io/klog"
 )
 
-// Clean-up ELBs
+// Clean-up Classic ELBs
 
-type LoadBalancers struct{}
+type ClassicLoadBalancers struct{}
 
-func (LoadBalancers) MarkAndSweep(sess *session.Session, account string, region string, set *Set) error {
+func (ClassicLoadBalancers) MarkAndSweep(sess *session.Session, account string, region string, set *Set) error {
 	svc := elb.New(sess, &aws.Config{Region: aws.String(region)})
 
-	var toDelete []*loadBalancer // Paged call, defer deletion until we have the whole list.
+	var toDelete []*classicLoadBalancer // Paged call, defer deletion until we have the whole list.
 
 	pageFunc := func(page *elb.DescribeLoadBalancersOutput, _ bool) bool {
 		for _, lb := range page.LoadBalancerDescriptions {
-			a := &loadBalancer{region: region, account: account, name: *lb.LoadBalancerName, dnsName: *lb.DNSName}
+			a := &classicLoadBalancer{region: region, account: account, name: *lb.LoadBalancerName, dnsName: *lb.DNSName}
 			if set.Mark(a) {
-				klog.Warningf("%s: deleting %T: %s", a.ARN(), a, a.name)
+				klog.Warningf("%s: deleting %T: %s", a.ARN(), lb, a.name)
 				toDelete = append(toDelete, a)
 			}
 		}
@@ -63,7 +63,7 @@ func (LoadBalancers) MarkAndSweep(sess *session.Session, account string, region 
 	return nil
 }
 
-func (LoadBalancers) ListAll(sess *session.Session, acct, region string) (*Set, error) {
+func (ClassicLoadBalancers) ListAll(sess *session.Session, acct, region string) (*Set, error) {
 	c := elb.New(sess, aws.NewConfig().WithRegion(region))
 	set := NewSet(0)
 	input := &elb.DescribeLoadBalancersInput{}
@@ -71,7 +71,7 @@ func (LoadBalancers) ListAll(sess *session.Session, acct, region string) (*Set, 
 	err := c.DescribeLoadBalancersPages(input, func(lbs *elb.DescribeLoadBalancersOutput, isLast bool) bool {
 		now := time.Now()
 		for _, lb := range lbs.LoadBalancerDescriptions {
-			arn := loadBalancer{
+			arn := classicLoadBalancer{
 				region:  region,
 				account: acct,
 				name:    *lb.LoadBalancerName,
@@ -83,20 +83,20 @@ func (LoadBalancers) ListAll(sess *session.Session, acct, region string) (*Set, 
 		return true
 	})
 
-	return set, errors.Wrapf(err, "couldn't describe load balancers for %q in %q", acct, region)
+	return set, errors.Wrapf(err, "couldn't describe classic load balancers for %q in %q", acct, region)
 }
 
-type loadBalancer struct {
+type classicLoadBalancer struct {
 	region  string
 	account string
 	name    string
 	dnsName string
 }
 
-func (lb loadBalancer) ARN() string {
+func (lb classicLoadBalancer) ARN() string {
 	return "fakearn:elb:" + lb.region + ":" + lb.account + ":" + lb.dnsName
 }
 
-func (lb loadBalancer) ResourceKey() string {
+func (lb classicLoadBalancer) ResourceKey() string {
 	return lb.ARN()
 }
