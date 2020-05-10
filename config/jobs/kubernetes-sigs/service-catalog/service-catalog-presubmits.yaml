@@ -13,7 +13,7 @@ presubmits:
     decorate: true
     spec:
       containers:
-      - image: golang:1.12
+      - image: golang:1.13
         command:
         - make
         args:
