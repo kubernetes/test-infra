@@ -1,13 +1,8 @@
 presubmits:
-  kubernetes-csi/csi-driver-windows-poc:
+  kubernetes-csi/csi-driver-host-path:
   - name: pull-kubernetes-csi-csi-driver-windows-poc
     always_run: false
     decorate: true
-    extra_refs:
-    - org: jingxu97
-      repo: csi-driver-host-path
-      base_ref: windows-poc
-      path_alias: kubernetes-csi/csi-driver-host-path
     skip_report: false
     skip_branches: []
     labels:
