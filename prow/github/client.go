@@ -3213,7 +3213,7 @@ func (c *client) IsMergeable(org, repo string, number int, SHA string) (bool, er
 		if pr.Mergable != nil {
 			// In certain cases, the mergeable field is lying.
 			switch pr.MergeableState {
-			case MergeableStateBehind, MergeableStateBlocked, MergeableStateDraft, MergeableStateUnknown:
+			case MergeableStateBehind:
 				c.logger.WithFields(logrus.Fields{
 					"repo":           fmt.Sprintf("%v/%v", org, repo),
 					"pr":             number,
