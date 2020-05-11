@@ -12,7 +12,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200507-36c6a27-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200509-be34c64-master
       command:
       - runner.sh
       - make
@@ -36,7 +36,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200507-36c6a27-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200509-be34c64-master
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -78,7 +78,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200507-36c6a27-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200509-be34c64-master
       env:
       # enable IPV6 in bootstrap image
       - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
@@ -127,7 +127,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200507-36c6a27-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200509-be34c64-master
       env:
       # skip serial tests and run with --ginkgo-parallel
       - name: "PARALLEL"
@@ -172,7 +172,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200507-36c6a27-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200509-be34c64-master
       env:
       # enable IPV6 in bootstrap image
       - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
@@ -223,7 +223,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200507-36c6a27-1.15
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200509-be34c64-1.15
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
