@@ -1,0 +1,47 @@
+presubmits:
+  kubernetes-csi/csi-driver-windows-poc:
+  - name: pull-kubernetes-csi-csi-driver-windows-poc
+    always_run: false
+    decorate: true
+    extra_refs:
+    - org: jingxu97
+      repo: csi-driver-host-path
+      base_ref: windows-poc
+      path_alias: kubernetes-csi/csi-driver-host-path
+    skip_report: false
+    skip_branches: []
+    labels:
+      preset-service-account: "true"
+      preset-common-gce-windows: "true"
+      preset-e2e-gce-windows: "true"
+    annotations:
+      testgrid-dashboards: sig-storage-csi-other
+      testgrid-tab-name: pull-kubernetes-csi-csi-driver-windows-poc
+      description: Kubernetes-CSI pull job in repo csi-driver-windows-poc
+    spec:
+      containers:
+      # We need this image because it has Docker in Docker and go.
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200507-2ed1a50-master
+        command:
+        - runner.sh
+        args:
+        - bash
+        - -c
+        - >-
+          cd $(GOPATH)/src/k8s.io/kubernetes &&
+          /workspace/kubetest
+          - --test
+          - --up
+          - --down
+          - --dump=$(ARTIFACTS)
+          # gcp-specific test args
+          - --provider=gce &&
+          /go/src/github.com/kubernetes-csi/csi-driver-host-path/deploy/util/deploy.sh
+        env:
+        - name: WINDOWS_NODE_OS_DISTRIBUTION
+          value: "win2019"
+        - name: PREPULL_YAML
+          value: "prepull-head.yaml"
+        resources:
+          requests:
+            cpu: 2000m
