@@ -13,7 +13,7 @@ periodics:
         args:
         - --root=/go/src
         - --repo=k8s.io/perf-tests=master
-        - --timeout=60
+        - --timeout=75
         - --scenario=execute
         - --
         - make
