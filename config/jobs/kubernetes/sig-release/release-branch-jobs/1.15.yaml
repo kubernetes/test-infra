@@ -250,6 +250,7 @@ periodics:
       - --test-cmd-args=--testconfig=testing/load/config.yaml
       - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
       - --test-cmd-args=--testoverrides=./testing/load/kubemark/500_nodes/override.yaml
+      - --test-cmd-args=--testoverrides=./testing/prometheus/not-scrape-kube-proxy.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=80m
       - --use-logexporter
@@ -901,6 +902,7 @@ presubmits:
         - --test-cmd-args=--testconfig=testing/load/config.yaml
         - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
         - --test-cmd-args=--testoverrides=./testing/load/kubemark/500_nodes/override.yaml
+        - --test-cmd-args=--testoverrides=./testing/prometheus/not-scrape-kube-proxy.yaml
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=100m
         image: gcr.io/k8s-testimages/kubekins-e2e:v20200509-be34c64-1.15
