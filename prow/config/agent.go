@@ -62,7 +62,20 @@ func IsConfigMapMount(path string) (bool, error) {
 }
 
 // GetCMMountWatcher returns a function that watches a configmap mounted directory and runs the provided "eventFunc" every time
-// the directory gets updated and the provided "errFunc" every time it encounters an error
+// the directory gets updated and the provided "errFunc" every time it encounters an error.
+// Example of a possible eventFunc:
+// func() error {
+//		value, err := RunUpdate()
+//		if err != nil {
+//			return err
+//		}
+//		globalValue = value
+//		return nil
+// }
+// Example of errFunc:
+// func(err error, msg string) {
+//		logrus.WithError(err).Error(msg)
+// }
 func GetCMMountWatcher(eventFunc func() error, errFunc func(error, string), path string) (func(ctx context.Context), error) {
 	isCMMount, err := IsConfigMapMount(path)
 	if err != nil {
@@ -105,6 +118,25 @@ func GetCMMountWatcher(eventFunc func() error, errFunc func(error, string), path
 // GetFileWatcher returns a function that watches the specified file(s), running the "eventFunc" whenever an event for the file(s) occurs
 // and the "errFunc" whenever an error is encountered. In this function, the eventFunc has access to the watcher, allowing the eventFunc
 // to add new files/directories to be watched as needed.
+// Example of a possible eventFunc:
+// func(w *fsnotify.Watcher) error {
+//		value, err := RunUpdate()
+//		if err != nil {
+//			return err
+//		}
+//		globalValue = value
+//      newFiles := getNewFiles()
+//      for _, file := range newFiles {
+//			if err := w.Add(file); err != nil {
+//				return err
+//			}
+// 		}
+//		return nil
+// }
+// Example of errFunc:
+// func(err error, msg string) {
+//		logrus.WithError(err).Error(msg)
+// }
 func GetFileWatcher(eventFunc func(*fsnotify.Watcher) error, errFunc func(error, string), files ...string) (func(ctx context.Context), error) {
 	w, err := fsnotify.NewWatcher()
 	if err != nil {
