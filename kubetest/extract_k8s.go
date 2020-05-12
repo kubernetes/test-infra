@@ -40,7 +40,7 @@ const (
 	none       extractMode = iota
 	localBazel             // local bazel
 	local                  // local
-	gci                    // gci/FAMILY
+	gci                    // gci/FAMILY, gci/FAMILY?project=IMAGE_PROJECT:version-map-bucket=BUCKET_NAME
 	gciCi                  // gci/FAMILY/CI_VERSION
 	gke                    // gke(deprecated), gke-default, gke-latest, gke-channel-CHANNEL_NAME
 	ci                     // ci/latest, ci/latest-1.5
@@ -75,8 +75,8 @@ func (l *extractStrategies) Set(value string) error {
 		`^(bazel)$`: localBazel,
 		`^(local)`:  local,
 		`^gke-?(default|channel-(rapid|regular|stable)|latest(-\d+.\d+(.\d+(-gke)?)?)?)?$`: gke,
-		`^gci/([\w-]+)$`:              gci,
-		`^gci/([\w-]+)/(.+)$`:         gciCi,
+		`^gci/([\w-]+(?:\?{1}(?::?[\w-]+=[\w-]+)+)?)$`: gci,
+		`^gci/([\w-]+(?:\?{1}(?::?[\w-]+=[\w-]+)+)?)/(.+)$`: gciCi,
 		`^ci/(.+)$`:                   ci,
 		`^release/(latest.*)$`:        rc,
 		`^release/(stable.*)$`:        stable,
@@ -346,8 +346,25 @@ func setReleaseFromHTTP(prefix, suffix string, getSrc bool) error {
 	return getKube(url, strings.TrimSpace(string(release)), getSrc)
 }
 
-func setupGciVars(family string) (string, error) {
-	p := "container-vm-image-staging"
+var parseGciExtractOption = func(option string) (string, map[string]string) {
+	arr := strings.Split(option, "?")
+	family := arr[0]
+	paramsMap := map[string]string{
+		// default values
+		"project": "container-vm-image-staging",
+		"version-map-bucket": "container-vm-image-staging",
+	}
+	if len(arr) == 2 {
+		params := strings.Split(arr[1], ":")
+		for _, param := range params {
+			kv := strings.Split(param, "=")
+			paramsMap[kv[0]] = kv[1]
+		}
+	}
+	return family, paramsMap
+}
+
+func setupGciVars(family string, p string) (string, error) {
 	b, err := control.Output(exec.Command("gcloud", "compute", "images", "describe-from-family", family, fmt.Sprintf("--project=%v", p), "--format=value(name)"))
 	if err != nil {
 		return "", err
@@ -389,8 +406,8 @@ func setupGciVars(family string) (string, error) {
 	return i, nil
 }
 
-func setReleaseFromGci(image string, getSrc bool) error {
-	b, err := gsutilCat(fmt.Sprintf("gs://container-vm-image-staging/k8s-version-map/%s", image))
+func setReleaseFromGci(image string, versionMapBucket string, getSrc bool) error {
+	b, err := gsutilCat(fmt.Sprintf("gs://%s/k8s-version-map/%s", versionMapBucket, image))
 	if err != nil {
 		return err
 	}
@@ -435,12 +452,15 @@ func (e extractStrategy) Extract(project, zone, region string, extractSrc bool) 
 		}
 		return getKube(fmt.Sprintf("file://%s", url), release, extractSrc)
 	case gci, gciCi:
-		if i, err := setupGciVars(e.option); err != nil {
+		family, gciExtractParams := parseGciExtractOption(e.option)
+		project := gciExtractParams["project"]
+		versionMapBucket := gciExtractParams["version-map-bucket"]
+		if i, err := setupGciVars(family, project); err != nil {
 			return err
 		} else if e.ciVersion != "" {
 			return setReleaseFromGcs("kubernetes-release-dev/ci", e.ciVersion, extractSrc)
 		} else {
-			return setReleaseFromGci(i, extractSrc)
+			return setReleaseFromGci(i, versionMapBucket, extractSrc)
 		}
 	case gke:
 		// TODO(fejta): prod v staging v test
