@@ -1096,7 +1096,7 @@ presubmits:
         - runner.sh
         env:
         - name: WHAT
-          value: vendor vendor-licenses
+          value: external-dependencies-version vendor vendor-licenses
         image: gcr.io/k8s-testimages/kubekins-e2e:v20200511-cdd819c-1.17
         name: main
         resources: {}

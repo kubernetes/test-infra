@@ -30,7 +30,7 @@ presubmits:
         env:
         # Space separated list of the checks to run
         - name: WHAT
-          value: "vendor vendor-licenses"
+          value: "external-dependencies-version vendor vendor-licenses"
   - name: pull-kubernetes-dependencies-canary
     path_alias: "k8s.io/kubernetes"
     decorate: true
@@ -56,7 +56,7 @@ presubmits:
         env:
         # Space separated list of the checks to run
         - name: WHAT
-          value: "vendor vendor-licenses"
+          value: "external-dependencies-version vendor vendor-licenses"
     annotations:
       testgrid-create-test-group: 'true'
   - name: pull-kubernetes-godeps
