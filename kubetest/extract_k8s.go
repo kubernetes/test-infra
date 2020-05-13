@@ -364,8 +364,12 @@ var parseGciExtractOption = func(option string) (string, map[string]string) {
 	return family, paramsMap
 }
 
+var gcloudGetImageName = func(family string, project string) ([]byte, error) {
+	return control.Output(exec.Command("gcloud", "compute", "images", "describe-from-family", family, fmt.Sprintf("--project=%v", project), "--format=value(name)"))
+}
+
 func setupGciVars(family string, p string) (string, error) {
-	b, err := control.Output(exec.Command("gcloud", "compute", "images", "describe-from-family", family, fmt.Sprintf("--project=%v", p), "--format=value(name)"))
+	b, err := gcloudGetImageName(family, p)
 	if err != nil {
 		return "", err
 	}
