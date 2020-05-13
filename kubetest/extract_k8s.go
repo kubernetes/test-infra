@@ -75,8 +75,8 @@ func (l *extractStrategies) Set(value string) error {
 		`^(bazel)$`: localBazel,
 		`^(local)`:  local,
 		`^gke-?(default|channel-(rapid|regular|stable)|latest(-\d+.\d+(.\d+(-gke)?)?)?)?$`: gke,
-		`^gci/([\w-]+(?:\?{1}(?::?[\w-]+=[\w-]+)+)?)$`: gci,
-		`^gci/([\w-]+(?:\?{1}(?::?[\w-]+=[\w-]+)+)?)/(.+)$`: gciCi,
+		`^gci/([\w-]+(?:\?{1}(?::?[\w-]+=[\w-]+)+)?)$`:                                     gci,
+		`^gci/([\w-]+(?:\?{1}(?::?[\w-]+=[\w-]+)+)?)/(.+)$`:                                gciCi,
 		`^ci/(.+)$`:                   ci,
 		`^release/(latest.*)$`:        rc,
 		`^release/(stable.*)$`:        stable,
@@ -351,7 +351,7 @@ var parseGciExtractOption = func(option string) (string, map[string]string) {
 	family := arr[0]
 	paramsMap := map[string]string{
 		// default values
-		"project": "container-vm-image-staging",
+		"project":            "container-vm-image-staging",
 		"version-map-bucket": "container-vm-image-staging",
 	}
 	if len(arr) == 2 {
