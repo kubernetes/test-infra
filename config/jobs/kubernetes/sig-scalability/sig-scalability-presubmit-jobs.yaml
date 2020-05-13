@@ -499,6 +499,8 @@ presubmits:
     optional: true
     decorate: true
     always_run: true
+    skip_branches:
+    - release-1.1[2-8] # Presubmit has been implemented for 1.19+ releases
     path_alias: "k8s.io/perf-tests"
     annotations:
       testgrid-dashboards: presubmits-kubernetes-scalability
@@ -516,6 +518,8 @@ presubmits:
     optional: true
     decorate: true
     run_if_changed: ^clusterloader2/pkg/prometheus/manifests/dashboards/.*\.json$
+    skip_branches:
+    - release-1.1[2-8] # Presubmit has been implemented for 1.19+ releases
     path_alias: "k8s.io/perf-tests"
     annotations:
       testgrid-dashboards: presubmits-kubernetes-scalability
@@ -533,6 +537,8 @@ presubmits:
     optional: true
     decorate: true
     always_run: true
+    skip_branches:
+    - release-1.1[2-8] # Presubmit has been implemented for 1.19+ releases
     path_alias: "k8s.io/perf-tests"
     annotations:
       testgrid-dashboards: presubmits-kubernetes-scalability
