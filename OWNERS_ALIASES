@@ -9,6 +9,13 @@ aliases:
   - Katharine
   - michelle192837
 
+  # kubernetes.io org admins
+  wg-k8s-infra-oncall:
+  - cblecker
+  - dims
+  - spiffxp
+  - thockin
+
   # copied from git.k8s.io/community/OWNERS_ALIASES
   sig-api-machinery-leads:
     - deads2k
