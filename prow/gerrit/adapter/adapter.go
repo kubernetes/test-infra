@@ -182,7 +182,11 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 		return fmt.Errorf("failed to get SHA from base branch: %v", err)
 	}
 
-	triggeredJobs := []string{}
+	type triggeredJob struct {
+		name   string
+		report bool
+	}
+	var triggeredJobs []triggeredJob
 
 	refs, err := createRefs(instance, change, cloneURI, baseSHA)
 	if err != nil {
@@ -293,19 +297,29 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 			logger.WithError(err).Errorf("fail to create prowjob %v", pj)
 		} else {
 			logger.Infof("Triggered Prowjob %s", jSpec.spec.Job)
-			triggeredJobs = append(triggeredJobs, jSpec.spec.Job)
+			triggeredJobs = append(triggeredJobs, triggeredJob{
+				name:   jSpec.spec.Job,
+				report: jSpec.spec.Report,
+			})
 		}
 	}
 
 	if len(triggeredJobs) > 0 {
-		// comment back to gerrit
-		message := fmt.Sprintf("Triggered %d prow jobs:", len(triggeredJobs))
+		// comment back to gerrit if Report is set for any of the jobs
+		var reportingJobs int
+		var message string
 		for _, job := range triggeredJobs {
-			message += fmt.Sprintf("\n  * Name: %s", job)
+			if job.report {
+				message += fmt.Sprintf("\n  * Name: %s", job.name)
+				reportingJobs++
+			}
 		}
 
-		if err := c.gc.SetReview(instance, change.ID, change.CurrentRevision, message, nil); err != nil {
-			return err
+		if reportingJobs > 0 {
+			message = fmt.Sprintf("Triggered %d prow jobs (%d suppressed reporting):", len(triggeredJobs), len(triggeredJobs)-reportingJobs) + message
+			if err := c.gc.SetReview(instance, change.ID, change.CurrentRevision, message, nil); err != nil {
+				return err
+			}
 		}
 	}
 
