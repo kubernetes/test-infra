@@ -3,6 +3,9 @@
 ## New features
 
 New features added to each component:
+ - *May 13, 2020* Added a `decorate_all_jobs` option to job configuration that
+     allows to control whether jobs are decorated by default. Individual jobs
+     can use the `decorate` option to override this setting.
  - *March 25, 2020* Added a `report_templates` option to the Plank config that allows
     to specify different report templates for each organization or a specific repository.
     The `report_template` option is deprecated and it will be removed on *September 2020*
