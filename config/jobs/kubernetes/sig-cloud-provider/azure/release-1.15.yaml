@@ -14,7 +14,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200511-cdd819c-1.15
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200512-5bf6c1a-1.15
         command:
         - runner.sh
         - kubetest
@@ -64,7 +64,7 @@ presubmits:
       path_alias: sigs.k8s.io/azuredisk-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200511-cdd819c-1.15
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200512-5bf6c1a-1.15
         command:
         - runner.sh
         - kubetest
@@ -114,7 +114,7 @@ presubmits:
       path_alias: sigs.k8s.io/azuredisk-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200511-cdd819c-1.15
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200512-5bf6c1a-1.15
         command:
         - runner.sh
         - kubetest
@@ -166,7 +166,7 @@ presubmits:
       path_alias: sigs.k8s.io/azurefile-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200511-cdd819c-1.15
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200512-5bf6c1a-1.15
         command:
         - runner.sh
         - kubetest
@@ -219,7 +219,7 @@ periodics:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200511-cdd819c-1.15
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200512-5bf6c1a-1.15
       command:
       - runner.sh
       - kubetest
@@ -274,7 +274,7 @@ periodics:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200511-cdd819c-1.15
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200512-5bf6c1a-1.15
       command:
       - runner.sh
       - kubetest
@@ -331,7 +331,7 @@ periodics:
     path_alias: sigs.k8s.io/azurefile-csi-driver
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200511-cdd819c-1.15
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200512-5bf6c1a-1.15
       command:
       - runner.sh
       - kubetest
