@@ -18,10 +18,10 @@ presubmits:
       - name: main
         command:
         - make
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200507-2ed1a50-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200511-cdd819c-master
         args:
         - verify
         env:
         # Space separated list of the checks to run
         - name: WHAT
-          value: typecheck typecheck-providerless
+          value: typecheck typecheck-providerless typecheck-dockerless

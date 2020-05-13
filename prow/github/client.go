@@ -799,7 +799,11 @@ func (c *client) doRequest(method, path, accept string, body interface{}) (*http
 }
 
 func (c *client) authHeader() string {
-	return fmt.Sprintf("Bearer %s", c.getToken())
+	token := c.getToken()
+	if len(token) == 0 {
+		return ""
+	}
+	return fmt.Sprintf("Bearer %s", token)
 }
 
 // userInfo provides the 'github_user_info' vector that is indexed
@@ -2875,7 +2879,15 @@ func (c *client) ListTeamRepos(id int) ([]Repo, error) {
 			return &[]Repo{}
 		},
 		func(obj interface{}) {
-			repos = append(repos, *(obj.(*[]Repo))...)
+			for _, repo := range *obj.(*[]Repo) {
+				// Currently, GitHub API returns false for all permission levels
+				// for a repo on which the team has 'Maintain' or 'Triage' role.
+				// This check is to avoid listing a repo under the team but
+				// showing the permission level as none.
+				if LevelFromPermissions(repo.Permissions) != None {
+					repos = append(repos, repo)
+				}
+			}
 		},
 	)
 	if err != nil {

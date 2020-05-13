@@ -20,7 +20,7 @@ presubmits:
       - name: main
         command:
         - runner.sh
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200507-2ed1a50-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200511-cdd819c-master
         args:
         - make
         - verify
@@ -30,7 +30,7 @@ presubmits:
         env:
         # Space separated list of the checks to run
         - name: WHAT
-          value: "vendor vendor-licenses"
+          value: "external-dependencies-version vendor vendor-licenses"
   - name: pull-kubernetes-dependencies-canary
     path_alias: "k8s.io/kubernetes"
     decorate: true
@@ -46,7 +46,7 @@ presubmits:
       - name: main
         command:
         - runner.sh
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200507-2ed1a50-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200511-cdd819c-master
         args:
         - make
         - verify
@@ -56,7 +56,7 @@ presubmits:
         env:
         # Space separated list of the checks to run
         - name: WHAT
-          value: "vendor vendor-licenses"
+          value: "external-dependencies-version vendor vendor-licenses"
     annotations:
       testgrid-create-test-group: 'true'
   - name: pull-kubernetes-godeps
@@ -78,7 +78,7 @@ presubmits:
       - name: main
         command:
         - runner.sh
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200507-2ed1a50-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200511-cdd819c-master
         args:
         - make
         - verify

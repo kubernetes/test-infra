@@ -428,7 +428,7 @@ func newAKSEngine() (*aksEngineDeployer, error) {
 func (c *aksEngineDeployer) azLogin() error {
 	// Check if azure-cli has been installed
 	if err := control.FinishRunning(exec.Command("az")); err != nil {
-		if err := control.FinishRunning(exec.Command("pip", "install", "azure-cli==2.2")); err != nil {
+		if err := installAzureCLI(); err != nil {
 			return err
 		}
 	}

@@ -8,13 +8,6 @@ dashboard_groups:
 dashboards:
 - dashboard_tab:
   - code_search_url_template:
-      url: https://github.com/GoogleCloudPlatform/compute-image-packages/compare/<start-custom-0>...<end-custom-0>
-    description: disk-expand-build
-    name: disk-expand-build
-    open_bug_template:
-      url: https://github.com/GoogleCloudPlatform/compute-image-packages/issues/
-    test_group_name: disk-expand-build
-  - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/guest-agent/compare/<start-custom-0>...<end-custom-0>
     description: guest-agent-build
     name: guest-agent-build
@@ -23,11 +16,18 @@ dashboards:
     test_group_name: guest-agent-build
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/guest-configs/compare/<start-custom-0>...<end-custom-0>
-    description: guest-config-build
-    name: guest-config-build
+    description: gce-build
+    name: gce-build
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/guest-configs/issues/
-    test_group_name: guest-config-build
+    test_group_name: gce-build
+  - code_search_url_template:
+      url: https://github.com/GoogleCloudPlatform/guest-diskexpand/compare/<start-custom-0>...<end-custom-0>
+    description: disk-expand-build
+    name: disk-expand-build
+    open_bug_template:
+      url: https://github.com/GoogleCloudPlatform/guest-diskexpand/issues/
+    test_group_name: disk-expand-build
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/guest-oslogin/compare/<start-custom-0>...<end-custom-0>
     description: oslogin-build
@@ -332,12 +332,12 @@ test_groups:
   name: ci-google-oss-test-infra-resultstore-upload
 - gcs_prefix: oss-prow/logs/ci-oss-test-infra-autobump-prow
   name: ci-oss-test-infra-autobump-prow
-- gcs_prefix: oss-prow/logs/disk-expand-build
-  name: disk-expand-build
 - gcs_prefix: oss-prow/logs/guest-agent-build
   name: guest-agent-build
-- gcs_prefix: oss-prow/logs/guest-config-build
-  name: guest-config-build
+- gcs_prefix: oss-prow/logs/gce-build
+  name: gce-build
+- gcs_prefix: oss-prow/logs/disk-expand-build
+  name: disk-expand-build
 - gcs_prefix: oss-prow/logs/oslogin-build
   name: oslogin-build
 - gcs_prefix: oss-prow/logs/osconfig-build

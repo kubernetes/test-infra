@@ -33,6 +33,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/utils/diff"
@@ -2212,5 +2213,81 @@ func TestUpdateRepo(t *testing.T) {
 				t.Errorf("%s: repo differs from expected:\n%s", tc.description, diff.ObjectReflectDiff(tc.expectRepo, repo))
 			}
 		})
+	}
+}
+
+type fakeHttpClient struct {
+	received []*http.Request
+}
+
+func (fhc *fakeHttpClient) Do(req *http.Request) (*http.Response, error) {
+	if fhc.received == nil {
+		fhc.received = []*http.Request{}
+	}
+	fhc.received = append(fhc.received, req)
+	return &http.Response{}, nil
+}
+
+func TestAuthHeaderGetsSet(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name           string
+		mod            func(*client)
+		expectedHeader http.Header
+	}{
+		{
+			name: "Empty token, no auth header",
+			mod:  func(c *client) { c.getToken = func() []byte { return []byte{} } },
+		},
+		{
+			name:           "Token, auth header",
+			mod:            func(c *client) { c.getToken = func() []byte { return []byte("sup") } },
+			expectedHeader: http.Header{"Authorization": []string{"Bearer sup"}},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			fake := &fakeHttpClient{}
+			c := &client{delegate: &delegate{client: fake}}
+			tc.mod(c)
+			if _, err := c.doRequest("POST", "/hello", "", nil); err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if tc.expectedHeader == nil {
+				tc.expectedHeader = http.Header{}
+			}
+			tc.expectedHeader["Accept"] = []string{"application/vnd.github.v3+json"}
+
+			// Bazel injects some stuff in here, exclude it from comparison so both bazel test
+			// and go test yield the same result.
+			delete(fake.received[0].Header, "User-Agent")
+			if diff := cmp.Diff(tc.expectedHeader, fake.received[0].Header); diff != "" {
+				t.Errorf("expected header differs from actual: %s", diff)
+			}
+		})
+	}
+}
+func TestListTeamRepos(t *testing.T) {
+	ts := simpleTestServer(t, "/teams/1/repos",
+		[]Repo{
+			{
+				Name:        "repo-bar",
+				Permissions: RepoPermissions{Pull: true},
+			},
+			{
+				Name: "repo-invalid-permission-level",
+			},
+		},
+	)
+	defer ts.Close()
+	c := getClient(ts.URL)
+	repos, err := c.ListTeamRepos(1)
+	if err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	} else if len(repos) != 1 {
+		t.Errorf("Expected one repo, found %d: %v", len(repos), repos)
+	} else if repos[0].Name != "repo-bar" {
+		t.Errorf("Wrong repos: %v", repos)
 	}
 }
