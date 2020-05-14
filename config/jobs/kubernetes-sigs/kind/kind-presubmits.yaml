@@ -42,7 +42,7 @@ presubmits:
       containers:
       - image: gcr.io/k8s-testimages/krte:v20200428-2225715-experimental
         command:
-        - wrappper.sh
+        - wrapper.sh
         - ./hack/verify/all.sh
         # we need privileged mode in order to do docker in docker
         securityContext:
