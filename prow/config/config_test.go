@@ -29,9 +29,9 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	pipelinev1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/util/diff"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
 	utilpointer "k8s.io/utils/pointer"
@@ -545,37 +545,94 @@ periodics:
 				GCSCredentialsSecret: "explicit-service-account",
 			},
 		},
+		{
+			name: "with default, configures bucket explicitly",
+			rawConfig: `
+plank:
+  default_decoration_configs:
+    '*':
+      timeout: 2h
+      grace_period: 15s
+      utility_images:
+        clonerefs: "clonerefs:default"
+        initupload: "initupload:default"
+        entrypoint: "entrypoint:default"
+        sidecar: "sidecar:default"
+      gcs_configuration:
+        bucket: "default-bucket"
+        path_strategy: "legacy"
+        default_org: "kubernetes"
+        default_repo: "kubernetes"
+        mediaTypes:
+          log: text/plain
+      gcs_credentials_secret: "default-service-account"
+
+periodics:
+- name: kubernetes-defaulted-decoration
+  interval: 1h
+  decorate: true
+  decoration_config:
+    gcs_configuration:
+      bucket: "explicit-bucket"
+    gcs_credentials_secret: "explicit-service-account"
+  spec:
+    containers:
+    - image: golang:latest
+      args:
+      - "test"
+      - "./..."`,
+			expected: &prowapi.DecorationConfig{
+				Timeout:     &prowapi.Duration{Duration: 2 * time.Hour},
+				GracePeriod: &prowapi.Duration{Duration: 15 * time.Second},
+				UtilityImages: &prowapi.UtilityImages{
+					CloneRefs:  "clonerefs:default",
+					InitUpload: "initupload:default",
+					Entrypoint: "entrypoint:default",
+					Sidecar:    "sidecar:default",
+				},
+				GCSConfiguration: &prowapi.GCSConfiguration{
+					Bucket:       "explicit-bucket",
+					PathStrategy: prowapi.PathStrategyLegacy,
+					DefaultOrg:   "kubernetes",
+					DefaultRepo:  "kubernetes",
+					MediaTypes:   map[string]string{"log": "text/plain"},
+				},
+				GCSCredentialsSecret: "explicit-service-account",
+			},
+		},
 	}
 
 	for _, tc := range testCases {
-		// save the config
-		prowConfigDir, err := ioutil.TempDir("", "prowConfig")
-		if err != nil {
-			t.Fatalf("fail to make tempdir: %v", err)
-		}
-		defer os.RemoveAll(prowConfigDir)
+		t.Run(tc.name, func(t *testing.T) {
+			// save the config
+			prowConfigDir, err := ioutil.TempDir("", "prowConfig")
+			if err != nil {
+				t.Fatalf("fail to make tempdir: %v", err)
+			}
+			defer os.RemoveAll(prowConfigDir)
 
-		prowConfig := filepath.Join(prowConfigDir, "config.yaml")
-		if err := ioutil.WriteFile(prowConfig, []byte(tc.rawConfig), 0666); err != nil {
-			t.Fatalf("fail to write prow config: %v", err)
-		}
-
-		cfg, err := Load(prowConfig, "")
-		if tc.expectError && err == nil {
-			t.Errorf("tc %s: Expect error, but got nil", tc.name)
-		} else if !tc.expectError && err != nil {
-			t.Fatalf("tc %s: Expect no error, but got error %v", tc.name, err)
-		}
-
-		if tc.expected != nil {
-			if len(cfg.Periodics) != 1 {
-				t.Fatalf("tc %s: Expect to have one periodic job, got none", tc.name)
+			prowConfig := filepath.Join(prowConfigDir, "config.yaml")
+			if err := ioutil.WriteFile(prowConfig, []byte(tc.rawConfig), 0666); err != nil {
+				t.Fatalf("fail to write prow config: %v", err)
 			}
 
-			if !reflect.DeepEqual(cfg.Periodics[0].DecorationConfig, tc.expected) {
-				t.Errorf("%s: expected defaulted config:\n%#v\n but got:\n%#v\n", tc.name, tc.expected, cfg.Periodics[0].DecorationConfig)
+			cfg, err := Load(prowConfig, "")
+			if tc.expectError && err == nil {
+				t.Errorf("tc %s: Expect error, but got nil", tc.name)
+			} else if !tc.expectError && err != nil {
+				t.Fatalf("tc %s: Expect no error, but got error %v", tc.name, err)
 			}
-		}
+
+			if tc.expected != nil {
+				if len(cfg.Periodics) != 1 {
+					t.Fatalf("tc %s: Expect to have one periodic job, got none", tc.name)
+				}
+
+				if diff := cmp.Diff(cfg.Periodics[0].DecorationConfig, tc.expected, cmpopts.EquateEmpty()); diff != "" {
+					t.Errorf("got diff: %s", diff)
+				}
+			}
+		})
 	}
 }
 
@@ -3784,13 +3841,13 @@ func TestSetDecorationDefaults(t *testing.T) {
 			postsubmit := &Postsubmit{JobBase: JobBase{UtilityConfig: tc.utilityConfig}}
 
 			setPresubmitDecorationDefaults(tc.config, presubmit, tc.repo)
-			if !reflect.DeepEqual(presubmit.DecorationConfig, tc.expected) {
-				t.Fatalf("%v", diff.ObjectReflectDiff(presubmit.DecorationConfig, tc.expected))
+			if diff := cmp.Diff(presubmit.DecorationConfig, tc.expected, cmpopts.EquateEmpty()); diff != "" {
+				t.Errorf("presubmit: %s", diff)
 			}
 
 			setPostsubmitDecorationDefaults(tc.config, postsubmit, tc.repo)
-			if !reflect.DeepEqual(postsubmit.DecorationConfig, tc.expected) {
-				t.Fatalf("%v", diff.ObjectReflectDiff(postsubmit.DecorationConfig, tc.expected))
+			if diff := cmp.Diff(postsubmit.DecorationConfig, tc.expected, cmpopts.EquateEmpty()); diff != "" {
+				t.Errorf("postsubmit: %s", diff)
 			}
 		})
 	}
@@ -4057,8 +4114,8 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 		t.Run(tc.id, func(t *testing.T) {
 			periodic := &Periodic{JobBase: JobBase{UtilityConfig: tc.utilityConfig}}
 			setPeriodicDecorationDefaults(tc.config, periodic)
-			if !reflect.DeepEqual(periodic.DecorationConfig, tc.expected) {
-				t.Fatalf("%v", diff.ObjectReflectDiff(periodic.DecorationConfig, tc.expected))
+			if diff := cmp.Diff(periodic.DecorationConfig, tc.expected, cmpopts.EquateEmpty()); diff != "" {
+				t.Error(diff)
 			}
 		})
 	}

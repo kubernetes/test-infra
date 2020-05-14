@@ -17,9 +17,11 @@ limitations under the License.
 package v1
 
 import (
-	"reflect"
 	"testing"
 	"time"
+
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 )
 
 func TestDecorationDefaulting(t *testing.T) {
@@ -186,8 +188,9 @@ func TestDecorationDefaulting(t *testing.T) {
 			t.Parallel()
 
 			expected := tc.expected(tc.provided, defaults)
-			if actual := tc.provided.ApplyDefault(defaults); !reflect.DeepEqual(actual, expected) {
-				t.Errorf("expected defaulted config %v but got %v", expected, actual)
+			actual := tc.provided.ApplyDefault(defaults)
+			if diff := cmp.Diff(actual, expected, cmpopts.EquateEmpty()); diff != "" {
+				t.Errorf("expected defaulted config but got diff %v", diff)
 			}
 		})
 	}
