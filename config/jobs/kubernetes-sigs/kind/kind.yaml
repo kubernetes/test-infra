@@ -40,8 +40,6 @@ periodics:
     repo: kubernetes
     base_ref: master
     path_alias: k8s.io/kubernetes
-  decoration_config:
-    timeout: 40m
   spec:
     containers:
     - image: gcr.io/k8s-testimages/krte:v20200430-04773e2-master
@@ -87,8 +85,6 @@ periodics:
     repo: kubernetes
     base_ref: master
     path_alias: k8s.io/kubernetes
-  decoration_config:
-    timeout: 40m
   spec:
     containers:
     - image: gcr.io/k8s-testimages/krte:v20200430-04773e2-master
@@ -141,8 +137,6 @@ periodics:
     repo: kubernetes
     base_ref: master
     path_alias: k8s.io/kubernetes
-  decoration_config:
-    timeout: 40m
   spec:
     containers:
     - image: gcr.io/k8s-testimages/krte:v20200430-04773e2-master
@@ -191,8 +185,6 @@ periodics:
     repo: kubernetes
     base_ref: master
     path_alias: k8s.io/kubernetes
-  decoration_config:
-    timeout: 40m
   spec:
     containers:
     - image: gcr.io/k8s-testimages/krte:v20200430-04773e2-master
