@@ -17,55 +17,57 @@ limitations under the License.
 package adapter
 
 import (
-	"strings"
 	"time"
 
+	"github.com/andygrunwald/go-gerrit"
 	"github.com/sirupsen/logrus"
-
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/test-infra/prow/apis/prowjobs/v1"
+
 	"k8s.io/test-infra/prow/config"
-	reporter "k8s.io/test-infra/prow/crier/reporters/gerrit"
-	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/pjutil"
 )
 
-// messageFilter builds a filter for jobs based on the messageBody matching the trigger regex of the jobs.
-func messageFilter(lastUpdate time.Time, change client.ChangeInfo, presubmits []config.Presubmit, latestReport *reporter.JobReport, logger *logrus.Entry) (pjutil.Filter, error) {
-	var filters []pjutil.Filter
-	currentRevision := change.Revisions[change.CurrentRevision].Number
-
-	contextGetter := func() (sets.String, sets.String, error) {
-		allContexts := sets.String{}
-		failedContexts := sets.String{}
-		for _, presubmit := range presubmits {
-			allContexts.Insert(presubmit.Name)
-		}
-		if latestReport != nil {
-			jobs := map[string]*reporter.Job{}
-			for _, job := range latestReport.Jobs {
-				jobs[job.Name] = job
-			}
-			for _, presubmit := range presubmits {
-				j, ok := jobs[presubmit.Name]
-				if ok && (strings.ToLower(j.State) == string(v1.FailureState) || strings.ToLower(j.State) == string(v1.ErrorState)) {
-					failedContexts.Insert(presubmit.Name)
-				}
-			}
-		}
-		return failedContexts, allContexts, nil
+// presubmitContexts returns the set of failing and all job names contained in the reports.
+func presubmitContexts(failed sets.String, presubmits []config.Presubmit, logger *logrus.Entry) (sets.String, sets.String) {
+	allContexts := sets.String{}
+	for _, presubmit := range presubmits {
+		allContexts.Insert(presubmit.Name) // TODO(fejta): context, not name
 	}
-	for _, message := range change.Messages {
-		messageTime := message.Date.Time
-		if message.RevisionNumber != currentRevision || !messageTime.After(lastUpdate) {
+	failedContexts := allContexts.Intersection(failed)
+	return failedContexts, allContexts
+}
+
+// currentMessages returns messages on the current revision after the specified time.
+func currentMessages(change gerrit.ChangeInfo, since time.Time) []string {
+	var messages []string
+	want := change.Revisions[change.CurrentRevision].Number
+	for _, have := range change.Messages {
+		if have.RevisionNumber != want {
 			continue
 		}
-		filter, err := pjutil.PresubmitFilter(false, contextGetter, message.Message, logger)
-		if err != nil || filter == nil {
-			logger.Warnf("failed to create filter for %s", message.Message)
+		if !have.Date.Time.After(since) {
+			continue
+		}
+		messages = append(messages, have.Message)
+	}
+	return messages
+}
+
+// messageFilter returns filter that matches all /test all, /test foo, /retest comments since lastUpdate.
+//
+// The behavior of each message matches the behavior of pjutil.PresubmitFilter.
+func messageFilter(messages []string, failingContexts, allContexts sets.String, logger *logrus.Entry) pjutil.Filter {
+	var filters []pjutil.Filter
+	contextGetter := func() (sets.String, sets.String, error) {
+		return failingContexts, allContexts, nil
+	}
+	for _, message := range messages {
+		filter, err := pjutil.PresubmitFilter(false, contextGetter, message, logger)
+		if err != nil {
+			logger.WithError(err).WithField("message", message).Warn("failed to create presubmit filter")
 			continue
 		}
 		filters = append(filters, filter)
 	}
-	return pjutil.AggregateFilter(filters), nil
+	return pjutil.AggregateFilter(filters)
 }
