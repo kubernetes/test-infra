@@ -40,7 +40,10 @@ periodics:
     repo: kubernetes
     base_ref: master
     path_alias: k8s.io/kubernetes
-  path_alias: sigs.k8s.io/kind
+  - org: kubernetes-sigs
+    repo: kind
+    base_ref: master
+    path_alias: sigs.k8s.io/kind
   decoration_config:
     timeout: 40m
   spec:
@@ -88,7 +91,10 @@ periodics:
     repo: kubernetes
     base_ref: master
     path_alias: k8s.io/kubernetes
-  path_alias: sigs.k8s.io/kind
+  - org: kubernetes-sigs
+    repo: kind
+    base_ref: master
+    path_alias: sigs.k8s.io/kind
   decoration_config:
     timeout: 40m
   spec:
@@ -143,7 +149,10 @@ periodics:
     repo: kubernetes
     base_ref: master
     path_alias: k8s.io/kubernetes
-  path_alias: sigs.k8s.io/kind
+  - org: kubernetes-sigs
+    repo: kind
+    base_ref: master
+    path_alias: sigs.k8s.io/kind
   decoration_config:
     timeout: 40m
   spec:
@@ -194,7 +203,10 @@ periodics:
     repo: kubernetes
     base_ref: master
     path_alias: k8s.io/kubernetes
-  path_alias: sigs.k8s.io/kind
+  - org: kubernetes-sigs
+    repo: kind
+    base_ref: master
+    path_alias: sigs.k8s.io/kind
   decoration_config:
     timeout: 40m
   spec:
