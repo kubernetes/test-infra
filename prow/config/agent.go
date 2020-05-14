@@ -263,18 +263,22 @@ func watchConfigs(ca *Agent, prowConfig, jobConfig string, additionals ...func(*
 	} else {
 		dirs.Insert(prowConfig)
 	}
+	var runFuncs []func(context.Context)
 	for cm := range cms {
 		runFunc, err := GetCMMountWatcher(cmEventFunc, errFunc, cm)
 		if err != nil {
 			return err
 		}
-		interrupts.Run(runFunc)
+		runFuncs = append(runFuncs, runFunc)
 	}
 	if len(dirs) > 0 {
 		runFunc, err := GetFileWatcher(dirsEventFunc, errFunc, dirs.UnsortedList()...)
 		if err != nil {
 			return err
 		}
+		runFuncs = append(runFuncs, runFunc)
+	}
+	for _, runFunc := range runFuncs {
 		interrupts.Run(runFunc)
 	}
 	return nil
