@@ -40,12 +40,6 @@ periodics:
     repo: kubernetes
     base_ref: master
     path_alias: k8s.io/kubernetes
-  - org: kubernetes-sigs
-    repo: kind
-    base_ref: master
-    path_alias: sigs.k8s.io/kind
-  decoration_config:
-    timeout: 40m
   spec:
     containers:
     - image: gcr.io/k8s-testimages/krte:v20200430-04773e2-master
@@ -53,7 +47,7 @@ periodics:
         - wrapper.sh
         - bash
         - -c
-        - cd ./../../k8s.io/kubernetes && ./../../sigs.k8s.io/kind/hack/ci/e2e.sh
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
       env:
       # don't retry conformance tests
       - name: GINKGO_TOLERATE_FLAKES
@@ -91,12 +85,6 @@ periodics:
     repo: kubernetes
     base_ref: master
     path_alias: k8s.io/kubernetes
-  - org: kubernetes-sigs
-    repo: kind
-    base_ref: master
-    path_alias: sigs.k8s.io/kind
-  decoration_config:
-    timeout: 40m
   spec:
     containers:
     - image: gcr.io/k8s-testimages/krte:v20200430-04773e2-master
@@ -104,7 +92,7 @@ periodics:
         - wrapper.sh
         - bash
         - -c
-        - cd ./../../k8s.io/kubernetes && ./../../sigs.k8s.io/kind/hack/ci/e2e.sh
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
       env:
       # enable IPV6 in bootstrap image
       - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
@@ -149,12 +137,6 @@ periodics:
     repo: kubernetes
     base_ref: master
     path_alias: k8s.io/kubernetes
-  - org: kubernetes-sigs
-    repo: kind
-    base_ref: master
-    path_alias: sigs.k8s.io/kind
-  decoration_config:
-    timeout: 40m
   spec:
     containers:
     - image: gcr.io/k8s-testimages/krte:v20200430-04773e2-master
@@ -171,7 +153,7 @@ periodics:
         - wrapper.sh
         - bash
         - -c
-        - cd ./../../k8s.io/kubernetes && ./../../sigs.k8s.io/kind/hack/ci/e2e.sh
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -203,12 +185,6 @@ periodics:
     repo: kubernetes
     base_ref: master
     path_alias: k8s.io/kubernetes
-  - org: kubernetes-sigs
-    repo: kind
-    base_ref: master
-    path_alias: sigs.k8s.io/kind
-  decoration_config:
-    timeout: 40m
   spec:
     containers:
     - image: gcr.io/k8s-testimages/krte:v20200430-04773e2-master
@@ -231,7 +207,7 @@ periodics:
         - wrapper.sh
         - bash
         - -c
-        - cd ./../../k8s.io/kubernetes && ./../../sigs.k8s.io/kind/hack/ci/e2e.sh
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
