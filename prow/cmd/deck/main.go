@@ -334,11 +334,11 @@ func main() {
 		content, err := ioutil.ReadFile(staticPjsPath)
 		if err != nil {
 			logrus.WithError(err).Fatal("Failed to read jobs from prowjobs.json.")
-		} else if err = json.Unmarshal(content, &pjs); err == nil {
-			fjc.pjs = &pjs
-		} else {
+		}
+		if err = json.Unmarshal(content, &pjs); err != nil {
 			logrus.WithError(err).Fatal("Failed to unmarshal jobs from prowjobs.json.")
 		}
+		fjc.pjs = &pjs
 		pjListingClient = &fjc
 	} else {
 		fallbackHandler = http.NotFound
