@@ -40,7 +40,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20200430-04773e2-experimental
+      - image: gcr.io/k8s-testimages/krte:v20200428-2225715-experimental
         command:
         - wrappper.sh
         - ./hack/verify/all.sh

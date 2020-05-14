@@ -78,7 +78,7 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=430m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200512-5bf6c1a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
       # docker-in-docker needs privilged mode
       securityContext:
         privileged: true
@@ -137,7 +137,7 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=1050m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200512-5bf6c1a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
       resources:
         requests:
           cpu: 6
@@ -190,7 +190,7 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=1050m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200512-5bf6c1a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
       resources:
         requests:
           cpu: 6
