@@ -3167,6 +3167,8 @@ func TestRefGetterForGitHubPullRequest(t *testing.T) {
 }
 
 func TestSetDecorationDefaults(t *testing.T) {
+	yes := true
+	no := false
 	testCases := []struct {
 		id            string
 		repo          string
@@ -3176,13 +3178,13 @@ func TestSetDecorationDefaults(t *testing.T) {
 	}{
 		{
 			id:            "no dc in presubmit or in plank's config, expect no changes",
-			utilityConfig: UtilityConfig{Decorate: true},
+			utilityConfig: UtilityConfig{Decorate: &yes},
 			config:        &Config{ProwConfig: ProwConfig{}},
 			expected:      nil,
 		},
 		{
 			id:            "no dc in presubmit or in plank's by repo config, expect plank's defaults",
-			utilityConfig: UtilityConfig{Decorate: true},
+			utilityConfig: UtilityConfig{Decorate: &yes},
 			config: &Config{
 				ProwConfig: ProwConfig{
 					Plank: Plank{
@@ -3224,7 +3226,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 		},
 		{
 			id:            "no dc in presubmit, part of plank's by repo config, expect merged by repo config and defaults",
-			utilityConfig: UtilityConfig{Decorate: true},
+			utilityConfig: UtilityConfig{Decorate: &yes},
 			repo:          "org/repo",
 			config: &Config{
 				ProwConfig: ProwConfig{
@@ -3277,7 +3279,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 			id:   "dc in presubmit and plank's defaults, expect presubmit's dc",
 			repo: "org/repo",
 			utilityConfig: UtilityConfig{
-				Decorate: true,
+				Decorate: &yes,
 				DecorationConfig: &prowapi.DecorationConfig{
 					UtilityImages: &prowapi.UtilityImages{
 						CloneRefs:  "clonerefs:test-from-ps",
@@ -3337,7 +3339,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 			id:   "dc in presubmit, plank's by repo config and defaults, expected presubmit's dc",
 			repo: "org/repo",
 			utilityConfig: UtilityConfig{
-				Decorate: true,
+				Decorate: &yes,
 				DecorationConfig: &prowapi.DecorationConfig{
 					UtilityImages: &prowapi.UtilityImages{
 						CloneRefs:  "clonerefs:test-from-ps",
@@ -3411,7 +3413,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 		{
 			id:            "no dc in presubmit, dc in plank's by repo config and defaults, expect by repo config's dc",
 			repo:          "org/repo",
-			utilityConfig: UtilityConfig{Decorate: true},
+			utilityConfig: UtilityConfig{Decorate: &yes},
 			config: &Config{
 				ProwConfig: ProwConfig{
 					Plank: Plank{
@@ -3469,7 +3471,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 		{
 			id:            "no dc in presubmit, dc in plank's by repo config and defaults, expect by org config's dc",
 			repo:          "org/repo",
-			utilityConfig: UtilityConfig{Decorate: true},
+			utilityConfig: UtilityConfig{Decorate: &yes},
 			config: &Config{
 				ProwConfig: ProwConfig{
 					Plank: Plank{
@@ -3527,7 +3529,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 		{
 			id:            "no dc in presubmit, dc in plank's by repo config and defaults, expect by * config's dc",
 			repo:          "org/repo",
-			utilityConfig: UtilityConfig{Decorate: true},
+			utilityConfig: UtilityConfig{Decorate: &yes},
 			config: &Config{
 				ProwConfig: ProwConfig{
 					Plank: Plank{
@@ -3571,7 +3573,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 		{
 			id:            "no dc in presubmit, dc in plank's by repo config org and org/repo co-exists, expect by org/repo config's dc",
 			repo:          "org/repo",
-			utilityConfig: UtilityConfig{Decorate: true},
+			utilityConfig: UtilityConfig{Decorate: &yes},
 			config: &Config{
 				ProwConfig: ProwConfig{
 					Plank: Plank{
@@ -3645,7 +3647,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 		{
 			id:            "no dc in presubmit, dc in plank's by repo config with org and * to co-exists, expect by 'org' config's dc",
 			repo:          "org/repo",
-			utilityConfig: UtilityConfig{Decorate: true},
+			utilityConfig: UtilityConfig{Decorate: &yes},
 			config: &Config{
 				ProwConfig: ProwConfig{
 					Plank: Plank{
@@ -3700,6 +3702,80 @@ func TestSetDecorationDefaults(t *testing.T) {
 				GCSCredentialsSecret: "credentials-gcs-by-org",
 			},
 		},
+		{
+			id: "decorate_all_jobs set, no dc in presubmit or in plank's by repo config, expect plank's defaults",
+			config: &Config{
+				JobConfig: JobConfig{
+					DecorateAllJobs: true,
+				},
+				ProwConfig: ProwConfig{
+					Plank: Plank{
+						DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
+							"*": {
+								UtilityImages: &prowapi.UtilityImages{
+									CloneRefs:  "clonerefs:test",
+									InitUpload: "initupload:test",
+									Entrypoint: "entrypoint:test",
+									Sidecar:    "sidecar:test",
+								},
+								GCSConfiguration: &prowapi.GCSConfiguration{
+									Bucket:       "test-bucket",
+									PathStrategy: "single",
+									DefaultOrg:   "org",
+									DefaultRepo:  "repo",
+								},
+								GCSCredentialsSecret: "credentials-gcs",
+							},
+						},
+					},
+				},
+			},
+			expected: &prowapi.DecorationConfig{
+				UtilityImages: &prowapi.UtilityImages{
+					CloneRefs:  "clonerefs:test",
+					InitUpload: "initupload:test",
+					Entrypoint: "entrypoint:test",
+					Sidecar:    "sidecar:test",
+				},
+				GCSConfiguration: &prowapi.GCSConfiguration{
+					Bucket:       "test-bucket",
+					PathStrategy: "single",
+					DefaultOrg:   "org",
+					DefaultRepo:  "repo",
+				},
+				GCSCredentialsSecret: "credentials-gcs",
+			},
+		},
+		{
+			id:            "opt out of decorate_all_jobs by setting decorated to false",
+			utilityConfig: UtilityConfig{Decorate: &no},
+			config: &Config{
+				JobConfig: JobConfig{
+					DecorateAllJobs: true,
+				},
+				ProwConfig: ProwConfig{
+					Plank: Plank{
+						DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
+							"*": {
+								UtilityImages: &prowapi.UtilityImages{
+									CloneRefs:  "clonerefs:test",
+									InitUpload: "initupload:test",
+									Entrypoint: "entrypoint:test",
+									Sidecar:    "sidecar:test",
+								},
+								GCSConfiguration: &prowapi.GCSConfiguration{
+									Bucket:       "test-bucket",
+									PathStrategy: "single",
+									DefaultOrg:   "org",
+									DefaultRepo:  "repo",
+								},
+								GCSCredentialsSecret: "credentials-gcs",
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 
 	for _, tc := range testCases {
@@ -3721,6 +3797,8 @@ func TestSetDecorationDefaults(t *testing.T) {
 }
 
 func TestSetPeriodicDecorationDefaults(t *testing.T) {
+	yes := true
+	no := false
 	testCases := []struct {
 		id            string
 		config        *Config
@@ -3752,7 +3830,7 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 					},
 				},
 			},
-			utilityConfig: UtilityConfig{Decorate: true},
+			utilityConfig: UtilityConfig{Decorate: &yes},
 			expected: &prowapi.DecorationConfig{
 				UtilityImages: &prowapi.UtilityImages{
 					CloneRefs:  "clonerefs:test-by-*",
@@ -3810,7 +3888,7 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 				},
 			},
 			utilityConfig: UtilityConfig{
-				Decorate: true,
+				Decorate: &yes,
 				ExtraRefs: []prowapi.Refs{
 					{
 						Org:  "org",
@@ -3875,7 +3953,7 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 				},
 			},
 			utilityConfig: UtilityConfig{
-				Decorate: true,
+				Decorate: &yes,
 				ExtraRefs: []prowapi.Refs{
 					{
 						Org:  "org",
@@ -3899,6 +3977,80 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 				GCSCredentialsSecret: "credentials-gcs-by-org-repo",
 			},
 		},
+		{
+			id: "decorate_all_jobs set, plank's default decoration config expected",
+			config: &Config{
+				JobConfig: JobConfig{
+					DecorateAllJobs: true,
+				},
+				ProwConfig: ProwConfig{
+					Plank: Plank{
+						DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
+							"*": {
+								UtilityImages: &prowapi.UtilityImages{
+									CloneRefs:  "clonerefs:test-by-*",
+									InitUpload: "initupload:test-by-*",
+									Entrypoint: "entrypoint:test-by-*",
+									Sidecar:    "sidecar:test-by-*",
+								},
+								GCSConfiguration: &prowapi.GCSConfiguration{
+									Bucket:       "test-bucket-by-*",
+									PathStrategy: "single-by-*",
+									DefaultOrg:   "org-by-*",
+									DefaultRepo:  "repo-by-*",
+								},
+								GCSCredentialsSecret: "credentials-gcs-by-*",
+							},
+						},
+					},
+				},
+			},
+			expected: &prowapi.DecorationConfig{
+				UtilityImages: &prowapi.UtilityImages{
+					CloneRefs:  "clonerefs:test-by-*",
+					InitUpload: "initupload:test-by-*",
+					Entrypoint: "entrypoint:test-by-*",
+					Sidecar:    "sidecar:test-by-*",
+				},
+				GCSConfiguration: &prowapi.GCSConfiguration{
+					Bucket:       "test-bucket-by-*",
+					PathStrategy: "single-by-*",
+					DefaultOrg:   "org-by-*",
+					DefaultRepo:  "repo-by-*",
+				},
+				GCSCredentialsSecret: "credentials-gcs-by-*",
+			},
+		},
+		{
+			id:            "opt out of decorate_all_jobs by specifying undecorated",
+			utilityConfig: UtilityConfig{Decorate: &no},
+			config: &Config{
+				JobConfig: JobConfig{
+					DecorateAllJobs: true,
+				},
+				ProwConfig: ProwConfig{
+					Plank: Plank{
+						DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
+							"*": {
+								UtilityImages: &prowapi.UtilityImages{
+									CloneRefs:  "clonerefs:test-by-*",
+									InitUpload: "initupload:test-by-*",
+									Entrypoint: "entrypoint:test-by-*",
+									Sidecar:    "sidecar:test-by-*",
+								},
+								GCSConfiguration: &prowapi.GCSConfiguration{
+									Bucket:       "test-bucket-by-*",
+									PathStrategy: "single-by-*",
+									DefaultOrg:   "org-by-*",
+									DefaultRepo:  "repo-by-*",
+								},
+								GCSCredentialsSecret: "credentials-gcs-by-*",
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 
 	for _, tc := range testCases {
@@ -3907,6 +4059,93 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 			setPeriodicDecorationDefaults(tc.config, periodic)
 			if !reflect.DeepEqual(periodic.DecorationConfig, tc.expected) {
 				t.Fatalf("%v", diff.ObjectReflectDiff(periodic.DecorationConfig, tc.expected))
+			}
+		})
+	}
+}
+
+func TestDecorationRequested(t *testing.T) {
+	yes := true
+	no := false
+	testCases := []struct {
+		name        string
+		decorateAll bool
+		presubmits  map[string][]Presubmit
+		postsubmits map[string][]Postsubmit
+		periodics   []Periodic
+		expected    bool
+	}{
+		{
+			name:        "decorate_all_jobs set",
+			decorateAll: true,
+			presubmits: map[string][]Presubmit{
+				"org/repo": {
+					{JobBase: JobBase{Name: "presubmit-job"}},
+				},
+			},
+			expected: true,
+		},
+		{
+			name: "at-least one job is decorated",
+			presubmits: map[string][]Presubmit{
+				"org/repo": {
+					{JobBase: JobBase{Name: "presubmit-job"}},
+				},
+			},
+			postsubmits: map[string][]Postsubmit{
+				"org/repo": {
+					{JobBase: JobBase{UtilityConfig: UtilityConfig{Decorate: &yes}}},
+				},
+			},
+			expected: true,
+		},
+		{
+			name:        "decorate_all_jobs set, at-least one job does not opt out",
+			decorateAll: true,
+			presubmits: map[string][]Presubmit{
+				"org/repo": {
+					{JobBase: JobBase{UtilityConfig: UtilityConfig{Decorate: &no}}},
+				},
+			},
+			postsubmits: map[string][]Postsubmit{
+				"org/repo": {
+					{JobBase: JobBase{UtilityConfig: UtilityConfig{Decorate: &no}}},
+				},
+			},
+			periodics: []Periodic{
+				{JobBase: JobBase{Name: "periodic-job"}},
+			},
+			expected: true,
+		},
+		{
+			name: "decorate_all_jobs set, all jobs opt out",
+			presubmits: map[string][]Presubmit{
+				"org/repo": {
+					{JobBase: JobBase{UtilityConfig: UtilityConfig{Decorate: &no}}},
+				},
+			},
+			postsubmits: map[string][]Postsubmit{
+				"org/repo": {
+					{JobBase: JobBase{UtilityConfig: UtilityConfig{Decorate: &no}}},
+				},
+			},
+			periodics: []Periodic{
+				{JobBase: JobBase{UtilityConfig: UtilityConfig{Decorate: &no}}},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			jobConfig := &JobConfig{
+				DecorateAllJobs:   tc.decorateAll,
+				PresubmitsStatic:  tc.presubmits,
+				PostsubmitsStatic: tc.postsubmits,
+				Periodics:         tc.periodics,
+			}
+
+			if actual := jobConfig.decorationRequested(); actual != tc.expected {
+				t.Errorf("expected %t got %t", tc.expected, actual)
 			}
 		})
 	}

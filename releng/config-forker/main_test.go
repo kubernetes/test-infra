@@ -516,6 +516,7 @@ func TestGeneratePresubmits(t *testing.T) {
 }
 
 func TestGeneratePeriodics(t *testing.T) {
+	yes := true
 	periodics := []config.Periodic{
 		{
 			Cron: "0 * * * *",
@@ -560,7 +561,7 @@ func TestGeneratePeriodics(t *testing.T) {
 					forkAnnotation: "true",
 				},
 				UtilityConfig: config.UtilityConfig{
-					Decorate:  true,
+					Decorate:  &yes,
 					ExtraRefs: []prowapi.Refs{{Org: "kubernetes", Repo: "kubernetes", BaseRef: "master"}},
 				},
 			},
@@ -613,7 +614,7 @@ func TestGeneratePeriodics(t *testing.T) {
 				Name:        "decorated-periodic-1-15",
 				Annotations: map[string]string{testgridDashboardsAnnotation: "sig-release-job-config-errors"},
 				UtilityConfig: config.UtilityConfig{
-					Decorate:  true,
+					Decorate:  &yes,
 					ExtraRefs: []prowapi.Refs{{Org: "kubernetes", Repo: "kubernetes", BaseRef: "release-1.15"}},
 				},
 			},

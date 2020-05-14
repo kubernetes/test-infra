@@ -414,7 +414,7 @@ func NewGitHubDeferredChangedFilesProvider(client githubClient, org, repo string
 // UtilityConfig holds decoration metadata, such as how to clone and additional containers/etc
 type UtilityConfig struct {
 	// Decorate determines if we decorate the PodSpec or not
-	Decorate bool `json:"decorate,omitempty"`
+	Decorate *bool `json:"decorate,omitempty"`
 
 	// PathAlias is the location under <root-dir>/src
 	// where the repository under test is cloned. If this
