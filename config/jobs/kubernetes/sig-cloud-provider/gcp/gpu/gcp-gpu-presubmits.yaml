@@ -27,7 +27,7 @@ presubmits:
       preset-pull-gce-device-plugin-gpu: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200512-5bf6c1a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
