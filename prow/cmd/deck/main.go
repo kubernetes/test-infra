@@ -320,13 +320,26 @@ func main() {
 	runLocal := o.pregeneratedData != ""
 
 	var fallbackHandler func(http.ResponseWriter, *http.Request)
+	var pjListingClient pjListingClient
+	var githubClient deckGitHubClient
+	var gitClient git.ClientFactory
+	var podLogClients map[string]jobs.PodLogClient
 	if runLocal {
 		localDataHandler := staticHandlerFromDir(o.pregeneratedData)
 		fallbackHandler = localDataHandler.ServeHTTP
 
-		if o.spyglass {
-			initSpyglass(cfg, o, mux, nil, nil, nil)
+		var fjc fakePjListingClientWrapper
+		var pjs prowapi.ProwJobList
+		staticPjsPath := path.Join(o.pregeneratedData, "prowjobs.json")
+		content, err := ioutil.ReadFile(staticPjsPath)
+		if err != nil {
+			logrus.WithError(err).Fatal("Failed to read jobs from prowjobs.json.")
+		} else if err = json.Unmarshal(content, &pjs); err == nil {
+			fjc.pjs = &pjs
+		} else {
+			logrus.WithError(err).Fatal("Failed to unmarshal jobs from prowjobs.json.")
 		}
+		pjListingClient = &fjc
 	} else {
 		fallbackHandler = http.NotFound
 
@@ -355,38 +368,11 @@ func main() {
 			logrus.Fatal("Timed out waiting for cachesync")
 		}
 
-		buildClusterClients, err := o.kubernetes.BuildClusterClients(cfg().PodNamespace, false)
-		if err != nil {
-			logrus.WithError(err).Fatal("Error getting Kubernetes client.")
-		}
-
-		podLogClients := make(map[string]jobs.PodLogClient)
-		for clusterContext, client := range buildClusterClients {
-			podLogClients[clusterContext] = &podLogClient{client: client}
-		}
-
-		ja := jobs.NewJobAgent(&filteringProwJobLister{
-			client: &pjListingClientWrapper{mgr.GetClient()},
-			hiddenRepos: func() sets.String {
-				return sets.NewString(cfg().Deck.HiddenRepos...)
-			},
-			hiddenOnly: o.hiddenOnly,
-			showHidden: o.showHidden,
-		}, podLogClients, cfg)
-		ja.Start()
-
-		// setup prod only handlers. These handlers can work with runlocal as long
-		// as ja is properly mocked, more specifically pjListingClient inside ja
-		mux.Handle("/data.js", gziphandler.GzipHandler(handleData(ja, logrus.WithField("handler", "/data.js"))))
-		mux.Handle("/prowjobs.js", gziphandler.GzipHandler(handleProwJobs(ja, logrus.WithField("handler", "/prowjobs.js"))))
-		mux.Handle("/badge.svg", gziphandler.GzipHandler(handleBadge(ja)))
-		mux.Handle("/log", gziphandler.GzipHandler(handleLog(ja, logrus.WithField("handler", "/log"))))
+		pjListingClient = &pjListingClientWrapper{mgr.GetClient()}
 
 		// We use the GH client to resolve GH teams when determining who is permitted to rerun a job.
 		// When inrepoconfig is enabled, both the GitHubClient and the gitClient are used to resolve
 		// presubmits dynamically which we need for the PR history page.
-		var githubClient deckGitHubClient
-		var gitClient git.ClientFactory
 		secretAgent := &secret.Agent{}
 		if o.github.TokenPath != "" {
 			if err := secretAgent.Start([]string{o.github.TokenPath}); err != nil {
@@ -407,8 +393,14 @@ func main() {
 			}
 		}
 
-		if o.spyglass {
-			initSpyglass(cfg, o, mux, ja, githubClient, gitClient)
+		buildClusterClients, err := o.kubernetes.BuildClusterClients(cfg().PodNamespace, false)
+		if err != nil {
+			logrus.WithError(err).Fatal("Error getting Kubernetes client.")
+		}
+
+		podLogClients = make(map[string]jobs.PodLogClient)
+		for clusterContext, client := range buildClusterClients {
+			podLogClients[clusterContext] = &podLogClient{client: client}
 		}
 	}
 
@@ -431,10 +423,31 @@ func main() {
 		indexHandler(w, r)
 	})
 
+	ja := jobs.NewJobAgent(&filteringProwJobLister{
+		client: pjListingClient,
+		hiddenRepos: func() sets.String {
+			return sets.NewString(cfg().Deck.HiddenRepos...)
+		},
+		hiddenOnly: o.hiddenOnly,
+		showHidden: o.showHidden,
+	}, podLogClients, cfg)
+	ja.Start()
+
+	// setup prod only handlers. These handlers can work with runlocal as long
+	// as ja is properly mocked, more specifically pjListingClient inside ja
+	mux.Handle("/data.js", gziphandler.GzipHandler(handleData(ja, logrus.WithField("handler", "/data.js"))))
+	mux.Handle("/prowjobs.js", gziphandler.GzipHandler(handleProwJobs(ja, logrus.WithField("handler", "/prowjobs.js"))))
+	mux.Handle("/badge.svg", gziphandler.GzipHandler(handleBadge(ja)))
+	mux.Handle("/log", gziphandler.GzipHandler(handleLog(ja, logrus.WithField("handler", "/log"))))
+
+	if o.spyglass {
+		initSpyglass(cfg, o, mux, ja, githubClient, gitClient)
+	}
+
 	if runLocal {
 		mux = localOnlyMain(cfg, o, mux)
 	} else {
-		mux = prodOnlyMain(cfg, pluginAgent, authCfgGetter, o, mux)
+		mux = prodOnlyMain(cfg, pluginAgent, authCfgGetter, githubClient, o, mux)
 	}
 
 	// signal to the world that we're ready
@@ -571,8 +584,18 @@ func (w *pjListingClientWrapper) List(
 	return w.reader.List(ctx, pjl, opts...)
 }
 
+// fakePjListingClientWrapper implements pjListingClient for runlocal
+type fakePjListingClientWrapper struct {
+	pjs *prowapi.ProwJobList
+}
+
+func (fjc *fakePjListingClientWrapper) List(ctx context.Context, pjl *prowapi.ProwJobList, lo ...ctrlruntimeclient.ListOption) error {
+	*pjl = *fjc.pjs
+	return nil
+}
+
 // prodOnlyMain contains logic only used when running deployed, not locally
-func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, authCfgGetter authCfgGetter, o options, mux *http.ServeMux) *http.ServeMux {
+func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, authCfgGetter authCfgGetter, githubClient deckGitHubClient, o options, mux *http.ServeMux) *http.ServeMux {
 	prowJobClient, err := o.kubernetes.ProwJobClient(cfg().ProwJobNamespace, false)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting ProwJob client for infrastructure cluster.")
