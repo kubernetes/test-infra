@@ -12,9 +12,9 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200512-5bf6c1a-master
+    - image: gcr.io/k8s-testimages/krte:v20200430-04773e2-master
       command:
-      - runner.sh
+      - wrapper.sh
       - make
       - unit
       # we need privileged mode in order to do docker in docker
@@ -45,7 +45,7 @@ periodics:
     timeout: 40m
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200512-5bf6c1a-master
+    - image: gcr.io/k8s-testimages/krte:v20200430-04773e2-master
       command:
         - wrapper.sh
         - bash
@@ -93,7 +93,7 @@ periodics:
     timeout: 40m
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200512-5bf6c1a-master
+    - image: gcr.io/k8s-testimages/krte:v20200430-04773e2-master
       command:
         - wrapper.sh
         - bash
@@ -148,7 +148,7 @@ periodics:
     timeout: 40m
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200512-5bf6c1a-master
+    - image: gcr.io/k8s-testimages/krte:v20200430-04773e2-master
       env:
       # skip serial tests and run with --ginkgo-parallel
       - name: "PARALLEL"
@@ -199,7 +199,7 @@ periodics:
     timeout: 40m
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200512-5bf6c1a-master
+    - image: gcr.io/k8s-testimages/krte:v20200430-04773e2-master
       env:
       # enable IPV6 in bootstrap image
       - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
