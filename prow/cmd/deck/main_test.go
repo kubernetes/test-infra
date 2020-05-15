@@ -1272,3 +1272,57 @@ func TestHandleGitHubLink(t *testing.T) {
 		t.Fatalf("%v", actual)
 	}
 }
+
+func TestCanTriggerJob(t *testing.T) {
+	t.Parallel()
+	org := "org"
+	trustedUser := "trusted"
+	untrustedUser := "untrusted"
+
+	pcfg := &plugins.Configuration{
+		Triggers: []plugins.Trigger{{Repos: []string{org}}},
+	}
+	pcfgGetter := func() *plugins.Configuration { return pcfg }
+
+	ghc := &fakegithub.FakeClient{
+		OrgMembers: map[string][]string{org: {trustedUser}},
+	}
+
+	pj := prowapi.ProwJob{
+		Spec: prowapi.ProwJobSpec{
+			Refs: &prowapi.Refs{
+				Org:   org,
+				Repo:  "repo",
+				Pulls: []prowapi.Pull{{Author: trustedUser}},
+			},
+			Type: prowapi.PresubmitJob,
+		},
+	}
+	testCases := []struct {
+		name          string
+		user          string
+		expectAllowed bool
+	}{
+		{
+			name:          "Unauthorized user can not rerun",
+			user:          untrustedUser,
+			expectAllowed: false,
+		},
+		{
+			name:          "Authorized user can re-run",
+			user:          trustedUser,
+			expectAllowed: true,
+		},
+	}
+
+	log := logrus.NewEntry(logrus.StandardLogger())
+	for _, tc := range testCases {
+		result, err := canTriggerJob(tc.user, pj, nil, ghc, pcfgGetter, log)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+		if result != tc.expectAllowed {
+			t.Errorf("got result %t, expected %t", result, tc.expectAllowed)
+		}
+	}
+}
