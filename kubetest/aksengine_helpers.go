@@ -141,6 +141,7 @@ type KubernetesConfig struct {
 	CloudProviderRateLimitQPS        float64           `json:"cloudProviderRateLimitQPS,omitempty"`
 	CloudProviderRateLimitBucket     int               `json:"cloudProviderRateLimitBucket,omitempty"`
 	APIServerConfig                  map[string]string `json:"apiServerConfig,omitempty"`
+	CloudControllerManagerConfig     map[string]string `json:"cloudControllerManagerConfig,omitempty"`
 	KubernetesImageBase              string            `json:"kubernetesImageBase,omitempty"`
 	ControllerManagerConfig          map[string]string `json:"controllerManagerConfig,omitempty"`
 	KubeletConfig                    map[string]string `json:"kubeletConfig,omitempty"`
@@ -194,6 +195,7 @@ type AgentPoolProfile struct {
 	Extensions             []map[string]string `json:"extensions,omitempty"`
 	OSDiskSizeGB           int                 `json:"osDiskSizeGB,omitempty" validate:"min=0,max=1023"`
 	EnableVMSSNodePublicIP bool                `json:"enableVMSSNodePublicIP,omitempty"`
+	StorageProfile         string              `json:"storageProfile,omitempty"`
 }
 
 type AzureClient struct {
@@ -486,6 +488,10 @@ func installAzureCLI() error {
 	}
 
 	if err := control.FinishRunning(exec.Command("apt-get", "install", "-y", "azure-cli")); err != nil {
+		return err
+	}
+
+	if err := os.Remove("msft.asc"); err != nil {
 		return err
 	}
 
