@@ -207,6 +207,8 @@ const (
 	PullRequestActionSynchronize PullRequestEventAction = "synchronize"
 	// PullRequestActionReadyForReview means the PR is no longer a draft PR.
 	PullRequestActionReadyForReview PullRequestEventAction = "ready_for_review"
+	// PullRequestConvertedToDraft means the PR is now a draft PR.
+	PullRequestConvertedToDraft PullRequestEventAction = "converted_to_draft"
 )
 
 // GenericEvent is a lightweight struct containing just Sender and Repo as all events are expected to have this information.
