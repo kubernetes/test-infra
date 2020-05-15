@@ -1383,8 +1383,10 @@ func handleProwJob(prowJobClient prowv1.ProwJobInterface, log *logrus.Entry) htt
 	}
 }
 
+type pluginsCfg func() *plugins.Configuration
+
 // canTriggerJob determines whether the given user can trigger any job.
-func canTriggerJob(user string, pj prowapi.ProwJob, cfg *prowapi.RerunAuthConfig, cli prowgithub.RerunClient, pluginAgent *plugins.ConfigAgent, log *logrus.Entry) (bool, error) {
+func canTriggerJob(user string, pj prowapi.ProwJob, cfg *prowapi.RerunAuthConfig, cli prowgithub.RerunClient, pluginsCfg pluginsCfg, log *logrus.Entry) (bool, error) {
 
 	// Then check config-level rerun auth config.
 	if auth, err := cfg.IsAuthorized(user, cli); err != nil {
@@ -1408,14 +1410,14 @@ func canTriggerJob(user string, pj prowapi.ProwJob, cfg *prowapi.RerunAuthConfig
 	// If the job is a presubmit and has an associated PR, and a plugin config is provided,
 	// do the same checks as for /test
 	if pj.Spec.Type == prowapi.PresubmitJob && pj.Spec.Refs != nil && len(pj.Spec.Refs.Pulls) > 0 {
-		if pluginAgent == nil {
+		if pluginsCfg == nil {
 			log.Info("No plugin config was provided so we cannot check if the user would be allowed to use /test.")
 		} else {
-			pcfg := pluginAgent.Config()
+			pcfg := pluginsCfg()
 			pull := pj.Spec.Refs.Pulls[0]
 			org := pj.Spec.Refs.Org
 			repo := pj.Spec.Refs.Repo
-			_, allowed, err := trigger.TrustedPullRequest(cli, pcfg.TriggerFor(org, repo), pull.Author, org, repo, pull.Number, nil)
+			_, allowed, err := trigger.TrustedPullRequest(cli, pcfg.TriggerFor(org, repo), user, org, repo, pull.Number, nil)
 			return allowed, err
 		}
 	}
@@ -1472,7 +1474,7 @@ func handleRerun(prowJobClient prowv1.ProwJobInterface, createProwJob bool, cfg 
 					return
 				}
 				l = l.WithField("user", login)
-				allowed, err = canTriggerJob(login, newPJ, authConfig, cli, pluginAgent, l)
+				allowed, err = canTriggerJob(login, newPJ, authConfig, cli, pluginAgent.Config, l)
 				if err != nil {
 					http.Error(w, fmt.Sprintf("Error checking if user can trigger job: %v", err), http.StatusInternalServerError)
 					l.WithError(err).Errorf("Error checking if user can trigger job")
