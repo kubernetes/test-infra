@@ -592,6 +592,10 @@ func (g *GCSConfiguration) ApplyDefault(def *GCSConfiguration) *GCSConfiguration
 		merged.DefaultRepo = def.DefaultRepo
 	}
 
+	if merged.MediaTypes == nil {
+		merged.MediaTypes = map[string]string{}
+	}
+
 	for extension, mediaType := range def.MediaTypes {
 		merged.MediaTypes[extension] = mediaType
 	}

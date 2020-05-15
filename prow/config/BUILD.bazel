@@ -33,6 +33,7 @@ go_test(
         "//prow/pod-utils/decorate:go_default_library",
         "//prow/pod-utils/downwardapi:go_default_library",
         "@com_github_google_go_cmp//cmp:go_default_library",
+        "@com_github_google_go_cmp//cmp/cmpopts:go_default_library",
         "@com_github_tektoncd_pipeline//pkg/apis/pipeline/v1alpha1:go_default_library",
         "@io_k8s_api//core/v1:go_default_library",
         "@io_k8s_apimachinery//pkg/util/diff:go_default_library",
