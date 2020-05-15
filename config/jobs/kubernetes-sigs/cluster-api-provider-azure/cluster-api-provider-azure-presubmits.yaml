@@ -170,7 +170,7 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: verify-boilerplate
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
-  - name: pull-cluster-api-provider-azure-conformance-v1alpha3
+  - name: pull-cluster-api-provider-azure-conformance-v1alpha3-master
     always_run: false
     optional: true
     decorate: true
@@ -191,7 +191,7 @@ presubmits:
         - image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
           command:
             - "runner.sh"
-            - "./scripts/ci-conformance.sh"
+            - "./scripts/ci-entrypoint.sh"
           securityContext:
             privileged: true
           resources:
@@ -200,4 +200,35 @@ presubmits:
               memory: "4Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-      testgrid-tab-name: pull-conformance-v1alpha3
+      testgrid-tab-name: pull-conformance-v1alpha3-master
+  - name: pull-cluster-api-provider-azure-conformance-v1alpha3-1-18
+    always_run: false
+    optional: true
+    decorate: true
+    decoration_config:
+      timeout: 4h
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-cred: "true"
+    path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: release-1.18
+      path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.18
+          command:
+            - "runner.sh"
+            - "./scripts/ci-entrypoint.sh"
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: 1
+              memory: "4Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
+      testgrid-tab-name: pull-conformance-v1alpha3-k8s-1-18
