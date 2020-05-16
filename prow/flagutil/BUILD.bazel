@@ -11,6 +11,8 @@ go_library(
         "k8s_client.go",
         "kubernetes_cluster_clients.go",
         "storage.go",
+        "string_slice.go",
+        "string_to_strings.go",
         "strings.go",
     ],
     importpath = "k8s.io/test-infra/prow/flagutil",
@@ -50,7 +52,14 @@ filegroup(
 
 go_test(
     name = "go_default_test",
-    srcs = ["kubernetes_cluster_clients_test.go"],
+    srcs = [
+        "kubernetes_cluster_clients_test.go",
+        "string_slice_test.go",
+        "string_to_strings_test.go",
+    ],
     embed = [":go_default_library"],
-    deps = ["//pkg/flagutil:go_default_library"],
+    deps = [
+        "//pkg/flagutil:go_default_library",
+        "@com_github_google_go_cmp//cmp:go_default_library",
+    ],
 )
