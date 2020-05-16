@@ -182,11 +182,11 @@ presets:
                 hostPath:
                   path: /etc/cni/net.d
   - name: KUBE_UP_AUTOMATIC_CLEANUP
-    value: true
+    value: "true"
   - name: KUBE_GCE_ENABLE_IP_ALIASES
-    value: true
+    value: "true"
   - name: KUBE_ENABLE_NETD
-    value: true
+    value: "true"
 
 - labels:
     preset-kubernetes-e2e-enable-netd-calico: "true"
@@ -371,11 +371,11 @@ presets:
                 hostPath:
                   path: /etc/cni/net.d
   - name: KUBE_UP_AUTOMATIC_CLEANUP
-    value: true
+    value: "true"
   - name: KUBE_GCE_ENABLE_IP_ALIASES
-    value: true
+    value: "true"
   - name: KUBE_ENABLE_NETD
-    value: true
+    value: "true"
   - name: KUBE_CUSTOM_CALICO_NODE_DAEMONSET_YAML
     value: |2
         kind: DaemonSet
@@ -656,7 +656,7 @@ presets:
     preset-kubernetes-e2e-enable-calico: "true"
   env:
   - name: KUBE_UP_AUTOMATIC_CLEANUP
-    value: true
+    value: "true"
   - name: KUBE_CUSTOM_CALICO_NODE_DAEMONSET_YAML
     value: |2
         kind: DaemonSet
