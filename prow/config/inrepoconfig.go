@@ -27,7 +27,7 @@ import (
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 
 	"k8s.io/test-infra/prow/git/v2"
-	"sigs.k8s.io/yaml"
+	"k8s.io/test-infra/prow/yaml"
 )
 
 const (

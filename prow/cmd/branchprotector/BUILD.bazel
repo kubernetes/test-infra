@@ -55,8 +55,8 @@ go_test(
         "//prow/config:go_default_library",
         "//prow/flagutil:go_default_library",
         "//prow/github:go_default_library",
+        "//prow/yaml:go_default_library",
         "@io_k8s_apimachinery//pkg/util/diff:go_default_library",
-        "@io_k8s_sigs_yaml//:go_default_library",
     ],
 )
 

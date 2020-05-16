@@ -29,7 +29,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation"
-	"sigs.k8s.io/yaml"
+	"k8s.io/test-infra/prow/yaml"
 
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 

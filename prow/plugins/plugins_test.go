@@ -19,7 +19,7 @@ package plugins
 import (
 	"testing"
 
-	"sigs.k8s.io/yaml"
+	"k8s.io/test-infra/prow/yaml"
 )
 
 func TestHasSelfApproval(t *testing.T) {

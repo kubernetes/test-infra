@@ -82,6 +82,7 @@ go_test(
         "//prow/spyglass/lenses/metadata:go_default_library",
         "//prow/tide:go_default_library",
         "//prow/tide/history:go_default_library",
+        "//prow/yaml:go_default_library",
         "@com_github_fsouza_fake_gcs_server//fakestorage:go_default_library",
         "@com_github_google_go_cmp//cmp:go_default_library",
         "@com_github_gorilla_sessions//:go_default_library",
@@ -93,7 +94,6 @@ go_test(
         "@io_k8s_apimachinery//pkg/util/sets:go_default_library",
         "@io_k8s_sigs_controller_runtime//pkg/client:go_default_library",
         "@io_k8s_sigs_controller_runtime//pkg/client/fake:go_default_library",
-        "@io_k8s_sigs_yaml//:go_default_library",
         "@org_golang_x_oauth2//:go_default_library",
     ],
 )
@@ -148,6 +148,7 @@ go_library(
         "//prow/spyglass/lenses/restcoverage:go_default_library",
         "//prow/tide:go_default_library",
         "//prow/tide/history:go_default_library",
+        "//prow/yaml:go_default_library",
         "@com_github_gorilla_csrf//:go_default_library",
         "@com_github_gorilla_sessions//:go_default_library",
         "@com_github_nytimes_gziphandler//:go_default_library",
@@ -162,7 +163,6 @@ go_library(
         "@io_k8s_client_go//kubernetes/typed/core/v1:go_default_library",
         "@io_k8s_sigs_controller_runtime//pkg/client:go_default_library",
         "@io_k8s_sigs_controller_runtime//pkg/manager:go_default_library",
-        "@io_k8s_sigs_yaml//:go_default_library",
         "@org_golang_x_oauth2//:go_default_library",
     ],
 )

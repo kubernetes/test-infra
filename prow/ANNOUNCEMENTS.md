@@ -3,6 +3,7 @@
 ## New features
 
 New features added to each component:
+ - *May 16, 2020* Prow gained support for yaml anchors
  - *May 13, 2020* Added a `decorate_all_jobs` option to job configuration that
      allows to control whether jobs are decorated by default. Individual jobs
      can use the `decorate` option to override this setting.

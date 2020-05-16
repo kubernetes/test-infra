@@ -25,7 +25,7 @@ import (
 
 	flag "github.com/spf13/pflag"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api/v1"
-	"sigs.k8s.io/yaml"
+	"k8s.io/test-infra/prow/yaml"
 
 	"k8s.io/test-infra/prow/kube"
 )

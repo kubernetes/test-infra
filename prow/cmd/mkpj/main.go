@@ -24,7 +24,7 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
-	"sigs.k8s.io/yaml"
+	"k8s.io/test-infra/prow/yaml"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"

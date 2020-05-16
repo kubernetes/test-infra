@@ -23,7 +23,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/sirupsen/logrus"
-	"sigs.k8s.io/yaml"
+	"k8s.io/test-infra/prow/yaml"
 	"strings"
 	"time"
 )

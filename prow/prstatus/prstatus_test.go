@@ -32,7 +32,7 @@ import (
 
 	"github.com/gorilla/sessions"
 	"github.com/sirupsen/logrus"
-	"sigs.k8s.io/yaml"
+	"k8s.io/test-infra/prow/yaml"
 
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/githuboauth"

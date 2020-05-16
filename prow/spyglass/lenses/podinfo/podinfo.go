@@ -30,7 +30,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	k8sreporter "k8s.io/test-infra/prow/crier/reporters/gcs/kubernetes"
 	"k8s.io/test-infra/prow/entrypoint"
-	"sigs.k8s.io/yaml"
+	"k8s.io/test-infra/prow/yaml"
 
 	"k8s.io/test-infra/prow/spyglass/api"
 	"k8s.io/test-infra/prow/spyglass/lenses"

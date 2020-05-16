@@ -22,7 +22,7 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
-	"sigs.k8s.io/yaml"
+	"k8s.io/test-infra/prow/yaml"
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/io"

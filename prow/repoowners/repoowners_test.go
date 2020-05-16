@@ -1275,13 +1275,13 @@ func TestSaveSimpleConfig(t *testing.T) {
 				},
 			},
 			expected: `approvers:
-- david
-- sig-alias
-- Alice
+  - david
+  - sig-alias
+  - Alice
 options: {}
 reviewers:
-- adam
-- sig-alias
+  - adam
+  - sig-alias
 `,
 		},
 	}
@@ -1333,16 +1333,16 @@ func TestSaveFullConfig(t *testing.T) {
 				},
 			},
 			expected: `filters:
-  .*:
-    approvers:
-    - alice
-    - bob
-    - carol
-    - david
-    reviewers:
-    - adam
-    - bob
-    - carol
+    .*:
+        approvers:
+          - alice
+          - bob
+          - carol
+          - david
+        reviewers:
+          - adam
+          - bob
+          - carol
 options: {}
 `,
 		},

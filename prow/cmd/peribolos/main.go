@@ -26,7 +26,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
-	"sigs.k8s.io/yaml"
+	"k8s.io/test-infra/prow/yaml"
 
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/test-infra/prow/config/org"

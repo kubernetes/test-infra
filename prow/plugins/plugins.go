@@ -29,7 +29,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"k8s.io/client-go/kubernetes"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
-	"sigs.k8s.io/yaml"
 
 	"k8s.io/test-infra/prow/bugzilla"
 	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
@@ -40,6 +39,7 @@ import (
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/repoowners"
 	"k8s.io/test-infra/prow/slack"
+	"k8s.io/test-infra/prow/yaml"
 )
 
 var (

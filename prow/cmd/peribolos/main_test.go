@@ -30,7 +30,7 @@ import (
 	"k8s.io/test-infra/prow/github"
 
 	"k8s.io/apimachinery/pkg/util/sets"
-	"sigs.k8s.io/yaml"
+	"k8s.io/test-infra/prow/yaml"
 )
 
 func TestOptions(t *testing.T) {
