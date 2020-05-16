@@ -37,9 +37,10 @@ import (
 type options struct {
 	port int
 
-	dryRun bool
-	github prowflagutil.GitHubOptions
-	labels prowflagutil.Strings
+	dryRun            bool
+	github            prowflagutil.GitHubOptions
+	labels            prowflagutil.StringSlice
+	conditionalLabels prowflagutil.StringToStringSlice
 
 	webhookSecretFile string
 	prowAssignments   bool
@@ -62,6 +63,7 @@ func gatherOptions() options {
 	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 	fs.IntVar(&o.port, "port", 8888, "Port to listen on.")
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
+	fs.Var(&o.conditionalLabels, "conditional-labels", "Labels to conditionally apply to the cherrypicked PR when another label is present.")
 	fs.Var(&o.labels, "labels", "Labels to apply to the cherrypicked PR.")
 	fs.StringVar(&o.webhookSecretFile, "hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
 	fs.BoolVar(&o.prowAssignments, "use-prow-assignments", true, "Use prow commands to assign cherrypicked PRs.")
@@ -127,10 +129,11 @@ func main() {
 		ghc: githubClient,
 		log: log,
 
-		labels:          o.labels.Strings(),
-		prowAssignments: o.prowAssignments,
-		allowAll:        o.allowAll,
-		issueOnConflict: o.issueOnConflict,
+		conditionalLabels: o.conditionalLabels.Get(),
+		labels:            o.labels.Get(),
+		prowAssignments:   o.prowAssignments,
+		allowAll:          o.allowAll,
+		issueOnConflict:   o.issueOnConflict,
 
 		bare:     &http.Client{},
 		patchURL: "https://patch-diff.githubusercontent.com",

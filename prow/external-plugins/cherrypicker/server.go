@@ -40,8 +40,17 @@ import (
 
 const pluginName = "cherrypick"
 
-var cherryPickRe = regexp.MustCompile(`(?m)^(?:/cherrypick|/cherry-pick)\s+(.+)$`)
-var releaseNoteRe = regexp.MustCompile(`(?s)(?:Release note\*\*:\s*(?:<!--[^<>]*-->\s*)?` + "```(?:release-note)?|```release-note)(.+?)```")
+var (
+	cherryPickRe     = regexp.MustCompile(`(?m)^(?:/cherrypick|/cherry-pick)\s+(.+)$`)
+	releaseNoteRe    = regexp.MustCompile(`(?s)(?:Release note\*\*:\s*(?:<!--[^<>]*-->\s*)?` + "```(?:release-note)?|```release-note)(.+?)```")
+	cherryPickBodyRe = regexp.MustCompile(`^This is an automated cherry-pick of #\d+$`)
+	cherryPickRefRe  = regexp.MustCompile(`^cherry-pick-\d+-to-.+$`)
+)
+
+const (
+	cherryPickTitleFmt  = "[%s] %s"
+	cherryPickBranchFmt = "cherry-pick-%d-to-%s"
+)
 
 type githubClient interface {
 	AddLabel(org, repo string, number int, label string) error
@@ -89,6 +98,8 @@ type Server struct {
 	ghc  githubClient
 	log  *logrus.Entry
 
+	// Conditional labels to apply to the cherrypicked PR when another label is present.
+	conditionalLabels map[string][]string
 	// Labels to apply to the cherrypicked PR.
 	labels []string
 	// Use prow to assign users to cherrypicked PRs.
@@ -242,13 +253,11 @@ func (s *Server) handlePullRequest(l *logrus.Entry, pre github.PullRequestEvent)
 	}
 
 	pr := pre.PullRequest
-	if !pr.Merged || pr.MergeSHA == nil {
-		return nil
-	}
-
+	author := pr.User.Login
 	org := pr.Base.Repo.Owner.Login
 	repo := pr.Base.Repo.Name
 	baseBranch := pr.Base.Ref
+	headBranch := pr.Head.Ref
 	num := pr.Number
 	title := pr.Title
 	body := pr.Body
@@ -258,6 +267,28 @@ func (s *Server) handlePullRequest(l *logrus.Entry, pre github.PullRequestEvent)
 		github.RepoLogField: repo,
 		github.PrLogField:   num,
 	})
+
+	labels, err := s.ghc.GetIssueLabels(org, repo, num)
+	if err != nil {
+		return err
+	}
+
+	if pre.Action == github.PullRequestActionLabeled && s.isCherryPickPR(author, body, headBranch) {
+		for _, label := range labels {
+			if conditionalLabels, hasLabel := s.conditionalLabels[label.Name]; hasLabel {
+				for _, conditionalLabel := range conditionalLabels {
+					if err := s.ghc.AddLabel(org, repo, num, conditionalLabel); err != nil {
+						s.log.WithFields(l.Data).Warningf("Cannot add conditional label %s to new cherry-pick PR %d: %v", conditionalLabel, num, err)
+					}
+				}
+			}
+		}
+		return nil
+	}
+
+	if !pr.Merged || pr.MergeSHA == nil {
+		return nil
+	}
 
 	comments, err := s.ghc.ListIssueComments(org, repo, num)
 	if err != nil {
@@ -283,12 +314,6 @@ func (s *Server) handlePullRequest(l *logrus.Entry, pre github.PullRequestEvent)
 	}
 
 	foundCherryPickComments := len(requestorToComments) != 0
-
-	// now look for our special labels
-	labels, err := s.ghc.GetIssueLabels(org, repo, num)
-	if err != nil {
-		return err
-	}
 
 	if requestorToComments[pr.User.Login] == nil {
 		requestorToComments[pr.User.Login] = make(map[string]*github.IssueComment)
@@ -357,8 +382,6 @@ func (s *Server) handlePullRequest(l *logrus.Entry, pre github.PullRequestEvent)
 	return nil
 }
 
-var cherryPickBranchFmt = "cherry-pick-%d-to-%s"
-
 func (s *Server) handle(l *logrus.Entry, requestor string, comment *github.IssueComment, org, repo, targetBranch, title, body string, num int) error {
 	if err := s.ensureForkExists(org, repo); err != nil {
 		return err
@@ -424,7 +447,7 @@ func (s *Server) handle(l *logrus.Entry, requestor string, comment *github.Issue
 	}
 
 	// Title for GitHub issue/PR.
-	title = fmt.Sprintf("[%s] %s", targetBranch, title)
+	title = fmt.Sprintf(cherryPickTitleFmt, targetBranch, title)
 
 	// Apply the patch.
 	if err := r.Am(localPath); err != nil {
@@ -558,6 +581,13 @@ func repoExists(repo string, repos []github.Repo) bool {
 		}
 	}
 	return false
+}
+
+// isCherryPickPR indicates if the pull request is a cherry-pick PR created by the plugin.
+func (s *Server) isCherryPickPR(owner, body, ref string) bool {
+	return s.botName == owner &&
+		cherryPickBodyRe.MatchString(body) &&
+		cherryPickRefRe.MatchString(ref)
 }
 
 // getPatch gets the patch for the provided PR and creates a local
