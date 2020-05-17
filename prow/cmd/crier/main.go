@@ -23,9 +23,7 @@ import (
 	"os"
 	"time"
 
-	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
-	"google.golang.org/api/option"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowjobinformer "k8s.io/test-infra/prow/client/informers/externalversions"
@@ -272,25 +270,13 @@ func main() {
 	}
 
 	if o.gcsWorkers > 0 || o.k8sGCSWorkers > 0 {
-		ctx := context.Background()
-		// FIXME(sbueringer): try to get rid of storage.Client in this PR
-		var s *storage.Client
-		var opts []option.ClientOption
-		if o.storage.GCSCredentialsFile != "" {
-			opts = append(opts, option.WithCredentialsFile(o.storage.GCSCredentialsFile))
-		}
-		s, err = storage.NewClient(ctx, opts...)
-		if err != nil {
-			// FIXME: handle the same as in deck, don't just ignore the error
-			logrus.WithError(err).Error("Error creating storage client for gcs workers.")
-		}
-		opener, err := io.NewOpener(ctx, o.storage.GCSCredentialsFile, o.storage.S3CredentialsFile)
+		opener, err := io.NewOpener(context.Background(), o.storage.GCSCredentialsFile, o.storage.S3CredentialsFile)
 		if err != nil {
 			logrus.WithError(err).Fatal("Error creating opener")
 		}
 
 		if o.gcsWorkers > 0 {
-			gcsReporter := gcsreporter.New(cfg, s, opener, o.dryrun)
+			gcsReporter := gcsreporter.New(cfg, opener, o.dryrun)
 			controllers = append(
 				controllers,
 				crier.NewController(
@@ -307,7 +293,7 @@ func main() {
 				logrus.WithError(err).Fatal("Error building pod client sets for Kubernetes GCS workers")
 			}
 
-			k8sGcsReporter := k8sgcsreporter.New(cfg, s, opener, coreClients, float32(o.k8sReportFraction), o.dryrun)
+			k8sGcsReporter := k8sgcsreporter.New(cfg, opener, coreClients, float32(o.k8sReportFraction), o.dryrun)
 			controllers = append(
 				controllers,
 				crier.NewController(

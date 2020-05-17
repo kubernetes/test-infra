@@ -23,15 +23,14 @@ import (
 	"io"
 	"net/http"
 
-	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/api/googleapi"
+	utilpointer "k8s.io/utils/pointer"
 
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/gcsupload"
 	pkgio "k8s.io/test-infra/prow/io"
-	"k8s.io/test-infra/prow/io/providers"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 )
 
@@ -40,7 +39,6 @@ type Author interface {
 }
 
 type StorageAuthor struct {
-	Client *storage.Client
 	Opener pkgio.Opener
 }
 
@@ -49,44 +47,7 @@ func (sa StorageAuthor) NewWriter(ctx context.Context, bucket, path string, over
 	if err != nil {
 		return nil, err
 	}
-
-	if pp.StorageProvider() == providers.GS {
-		obj := sa.Client.Bucket(bucket).Object(path)
-		if !overwrite {
-			obj = obj.If(storage.Conditions{DoesNotExist: true})
-		}
-		return obj.NewWriter(ctx), nil
-	}
-
-	absolutePath := fmt.Sprintf("%s/%s", bucket, path)
-	writer, err := sa.Opener.Writer(ctx, absolutePath)
-	if err != nil {
-		return nil, err
-	}
-	return &noOverwriteWriter{ctx, sa.Opener, writer, absolutePath}, nil
-}
-
-type noOverwriteWriter struct {
-	ctx    context.Context
-	opener pkgio.Opener
-	io.WriteCloser
-	path string
-}
-
-var PreconditionFileAlreadyExistsFailed = fmt.Errorf("error file already exists")
-
-func (w *noOverwriteWriter) Write(p []byte) (int, error) {
-	_, err := w.opener.Reader(w.ctx, w.path)
-	// we got an error, but not file not exists
-	if err != nil && !pkgio.IsNotExist(err) {
-		return 0, err
-	}
-	// we got no error => file already exists
-	if err == nil {
-		return 0, PreconditionFileAlreadyExistsFailed
-	}
-
-	return w.WriteCloser.Write(p)
+	return sa.Opener.Writer(ctx, fmt.Sprintf("%s://%s/%s", pp.StorageProvider(), pp.Bucket(), path), pkgio.WriterOptions{PreconditionDoesNotExist: utilpointer.BoolPtr(true)})
 }
 
 func WriteContent(ctx context.Context, logger *logrus.Entry, author Author, bucket, path string, overwrite bool, content []byte) error {
@@ -99,12 +60,12 @@ func WriteContent(ctx context.Context, logger *logrus.Entry, author Author, buck
 	var reportErr error
 	if isErrUnexpected(err) {
 		reportErr = err
-		logger.WithError(err).WithFields(logrus.Fields{"bucket": bucket, "path": path}).Warn("Uploading info to GCS failed (write)")
+		logger.WithError(err).WithFields(logrus.Fields{"bucket": bucket, "path": path}).Warn("Uploading info to storage failed (write)")
 	}
 	err = w.Close()
 	if isErrUnexpected(err) {
 		reportErr = err
-		logger.WithError(err).WithFields(logrus.Fields{"bucket": bucket, "path": path}).Warn("Uploading info to GCS failed (close)")
+		logger.WithError(err).WithFields(logrus.Fields{"bucket": bucket, "path": path}).Warn("Uploading info to storage failed (close)")
 	}
 	return reportErr
 }
@@ -120,7 +81,7 @@ func isErrUnexpected(err error) bool {
 		}
 	}
 	// Precondition file already exists is expected
-	if err == PreconditionFileAlreadyExistsFailed {
+	if errors.Is(err, pkgio.PreconditionFailedObjectAlreadyExists) {
 		return false
 	}
 

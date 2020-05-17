@@ -24,7 +24,6 @@ import (
 	"path"
 	"time"
 
-	"cloud.google.com/go/storage"
 	"github.com/GoogleCloudPlatform/testgrid/metadata"
 	"github.com/sirupsen/logrus"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
@@ -153,8 +152,8 @@ func (gr *gcsReporter) ShouldReport(pj *prowv1.ProwJob) bool {
 	return pj.Status.BuildID != ""
 }
 
-func New(cfg config.Getter, storage *storage.Client, opener io.Opener, dryRun bool) *gcsReporter {
-	return newWithAuthor(cfg, util.StorageAuthor{Client: storage, Opener: opener}, dryRun)
+func New(cfg config.Getter, opener io.Opener, dryRun bool) *gcsReporter {
+	return newWithAuthor(cfg, util.StorageAuthor{Opener: opener}, dryRun)
 }
 
 func newWithAuthor(cfg config.Getter, author util.Author, dryRun bool) *gcsReporter {

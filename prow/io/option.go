@@ -25,10 +25,11 @@ import (
 
 // WriterOptions are options for the opener Writer method
 type WriterOptions struct {
-	BufferSize      *int64
-	ContentEncoding *string
-	ContentType     *string
-	Metadata        map[string]string
+	BufferSize               *int64
+	ContentEncoding          *string
+	ContentType              *string
+	Metadata                 map[string]string
+	PreconditionDoesNotExist *bool
 }
 
 // Apply applies the WriterOptions to storage.Writer and blob.WriterOptions

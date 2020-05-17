@@ -26,7 +26,6 @@ import (
 	"path"
 	"time"
 
-	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -172,8 +171,8 @@ func (gr *gcsK8sReporter) ShouldReport(pj *prowv1.ProwJob) bool {
 	return true
 }
 
-func New(cfg config.Getter, storage *storage.Client, opener io.Opener, podClientSets map[string]corev1.CoreV1Interface, reportFraction float32, dryRun bool) *gcsK8sReporter {
-	return internalNew(cfg, util.StorageAuthor{Client: storage, Opener: opener}, k8sResourceGetter{podClientSets: podClientSets}, reportFraction, dryRun)
+func New(cfg config.Getter, opener io.Opener, podClientSets map[string]corev1.CoreV1Interface, reportFraction float32, dryRun bool) *gcsK8sReporter {
+	return internalNew(cfg, util.StorageAuthor{Opener: opener}, k8sResourceGetter{podClientSets: podClientSets}, reportFraction, dryRun)
 }
 
 func internalNew(cfg config.Getter, author util.Author, rg resourceGetter, reportFraction float32, dryRun bool) *gcsK8sReporter {

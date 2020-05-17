@@ -240,13 +240,25 @@ func (o *opener) RangeReader(ctx context.Context, path string, offset, length in
 	return reader, nil
 }
 
+var PreconditionFailedObjectAlreadyExists = fmt.Errorf("object already exists")
+
 // Writer returns a writer that overwrites the path.
 func (o *opener) Writer(ctx context.Context, p string, opts ...WriterOptions) (io.WriteCloser, error) {
+	var preconditionDoesNotExist bool
+	for _, opt := range opts {
+		if opt.PreconditionDoesNotExist != nil {
+			preconditionDoesNotExist = *opt.PreconditionDoesNotExist
+		}
+	}
 	if strings.HasPrefix(p, providers.GS+"://") {
 		g, err := o.openGCS(p)
 		if err != nil {
 			return nil, fmt.Errorf("bad gcs path: %v", err)
 		}
+		if preconditionDoesNotExist {
+			g = g.If(storage.Conditions{DoesNotExist: true})
+		}
+
 		writer := g.NewWriter(ctx)
 		for _, opt := range opts {
 			opt.Apply(writer, nil)
@@ -270,6 +282,22 @@ func (o *opener) Writer(ctx context.Context, p string, opts ...WriterOptions) (i
 	for _, opt := range opts {
 		opt.Apply(nil, &wOpts)
 	}
+
+	if preconditionDoesNotExist {
+		wOpts.BeforeWrite = func(asFunc func(interface{}) bool) error {
+			_, err := o.Reader(ctx, p)
+			// we got an error, but not file not exists
+			if err != nil && !IsNotExist(err) {
+				return err
+			}
+			// we got not err => file already exists
+			if err == nil {
+				return PreconditionFailedObjectAlreadyExists
+			}
+			return nil
+		}
+	}
+
 	writer, err := bucket.NewWriter(ctx, relativePath, &wOpts)
 	if err != nil {
 		return nil, err
