@@ -23,16 +23,22 @@ go_library(
 
 go_test(
     name = "go_default_test",
-    srcs = ["adapter_test.go"],
+    srcs = [
+        "adapter_test.go",
+        "trigger_test.go",
+    ],
     embed = [":go_default_library"],
     deps = [
         "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/client/clientset/versioned/fake:go_default_library",
         "//prow/config:go_default_library",
+        "//prow/crier/reporters/gerrit:go_default_library",
         "//prow/gerrit/client:go_default_library",
         "@com_github_andygrunwald_go_gerrit//:go_default_library",
+        "@com_github_sirupsen_logrus//:go_default_library",
         "@io_k8s_apimachinery//pkg/api/equality:go_default_library",
         "@io_k8s_apimachinery//pkg/util/diff:go_default_library",
+        "@io_k8s_apimachinery//pkg/util/sets:go_default_library",
         "@io_k8s_client_go//testing:go_default_library",
     ],
 )

@@ -26,6 +26,7 @@ import (
 
 	"github.com/andygrunwald/go-gerrit"
 	"github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/util/sets"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
@@ -168,6 +169,43 @@ func createRefs(reviewHost string, change client.ChangeInfo, cloneURI *url.URL, 
 	return refs, nil
 }
 
+// failedJobs find jobs currently reported as failing (used for retesting).
+//
+// Failing means the job is complete and not passing.
+// Scans messages for prow reports, which lists jobs and whether they passed.
+// Job is included in the set if the latest report has it failing.
+func failedJobs(account int, revision int, messages ...gerrit.ChangeMessageInfo) sets.String {
+	failures := sets.String{}
+	times := map[string]time.Time{}
+	for _, message := range messages {
+		if message.Author.AccountID != account { // Ignore reports from other accounts
+			continue
+		}
+		if message.RevisionNumber != revision { // Ignore reports for old commits
+			continue
+		}
+		// TODO(fejta): parse triggered job reports and remove from failure set.
+		// (alternatively refactor this whole process rely less on fragile string parsing)
+		report := reporter.ParseReport(message.Message)
+		if report == nil {
+			continue
+		}
+		for _, job := range report.Jobs {
+			name := job.Name
+			if latest, present := times[name]; present && message.Date.Before(latest) {
+				continue
+			}
+			times[name] = message.Date.Time
+			if job.State == prowapi.FailureState || job.State == prowapi.ErrorState {
+				failures.Insert(name)
+			} else {
+				failures.Delete(name)
+			}
+		}
+	}
+	return failures
+}
+
 // ProcessChange creates new presubmit prowjobs base off the gerrit changes
 func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) error {
 	logger := logrus.WithField("gerrit change", change.Number)
@@ -222,31 +260,10 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 		presubmits := c.config().PresubmitsStatic[cloneURI.String()]
 		presubmits = append(presubmits, c.config().PresubmitsStatic[cloneURI.Host+"/"+cloneURI.Path]...)
 
-		var filters []pjutil.Filter
-		var latestReport *reporter.JobReport
-		var latestReportTime time.Time
 		account := c.gc.Account(instance)
 		// Should not happen, since this means auth failed
 		if account == nil {
 			return fmt.Errorf("unable to get gerrit account")
-		}
-
-		for _, message := range change.Messages {
-			// If message status report is not from the prow account ignore
-			if message.Author.AccountID != account.AccountID {
-				continue
-			}
-			if message.Date.Before(latestReportTime) {
-				continue
-			}
-			report := reporter.ParseReport(message.Message)
-			if report != nil {
-				latestReport = report
-				latestReportTime = message.Date.Time
-			}
-		}
-		if latestReport != nil {
-			logger.Infof("Found latest report: %s", latestReport)
 		}
 
 		lastUpdate, ok := c.tracker.Current()[instance][change.Project]
@@ -255,13 +272,14 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 			lastUpdate = time.Now()
 		}
 
-		filter, err := messageFilter(lastUpdate, change, presubmits, latestReport, logger)
-		if err != nil {
-			logger.WithError(err).Warn("failed to create filter on messages for presubmits")
-		} else {
-			filters = append(filters, filter)
+		revision := change.Revisions[change.CurrentRevision]
+		failedJobs := failedJobs(account.AccountID, revision.Number, change.Messages...)
+		failed, all := presubmitContexts(failedJobs, presubmits, logger)
+		messages := currentMessages(change, lastUpdate)
+		filters := []pjutil.Filter{
+			messageFilter(messages, failed, all, logger),
 		}
-		if change.Revisions[change.CurrentRevision].Created.Time.After(lastUpdate) {
+		if revision.Created.Time.After(lastUpdate) {
 			filters = append(filters, pjutil.TestAllFilter())
 		}
 		toTrigger, err := pjutil.FilterPresubmits(pjutil.AggregateFilter(filters), listChangedFiles(change), change.Branch, presubmits, logger)

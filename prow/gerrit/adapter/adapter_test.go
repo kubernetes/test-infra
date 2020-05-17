@@ -22,15 +22,16 @@ import (
 	"time"
 
 	"github.com/andygrunwald/go-gerrit"
-
-	clienttesting "k8s.io/client-go/testing"
-	"k8s.io/test-infra/prow/gerrit/client"
-
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/util/diff"
+	"k8s.io/apimachinery/pkg/util/sets"
+	clienttesting "k8s.io/client-go/testing"
+
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowfake "k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
+	reporter "k8s.io/test-infra/prow/crier/reporters/gerrit"
+	"k8s.io/test-infra/prow/gerrit/client"
 )
 
 func makeStamp(t time.Time) gerrit.Timestamp {
@@ -192,6 +193,145 @@ func TestCreateRefs(t *testing.T) {
 	}
 	if !equality.Semantic.DeepEqual(expected, actual) {
 		t.Errorf("diff between expected and actual refs:%s", diff.ObjectReflectDiff(expected, actual))
+	}
+}
+
+func TestFailedJobs(t *testing.T) {
+	const (
+		me      = 314159
+		stan    = 666
+		current = 555
+		old     = 4
+	)
+	now := time.Now()
+	message := func(msg string, patch func(*gerrit.ChangeMessageInfo)) gerrit.ChangeMessageInfo {
+		var out gerrit.ChangeMessageInfo
+		out.Author.AccountID = me
+		out.Message = msg
+		out.RevisionNumber = current
+		out.Date.Time = now
+		now = now.Add(time.Minute)
+		if patch != nil {
+			patch(&out)
+		}
+		return out
+	}
+
+	report := func(jobs map[string]prowapi.ProwJobState) string {
+		var pjs []*prowapi.ProwJob
+		for name, state := range jobs {
+			var pj prowapi.ProwJob
+			pj.Spec.Job = name
+			pj.Status.State = state
+			pj.Status.URL = "whatever"
+			pjs = append(pjs, &pj)
+		}
+		return reporter.GenerateReport(pjs).String()
+	}
+
+	cases := []struct {
+		name     string
+		messages []gerrit.ChangeMessageInfo
+		expected sets.String
+	}{
+		{
+			name: "basically works",
+		},
+		{
+			name: "report parses",
+			messages: []gerrit.ChangeMessageInfo{
+				message("ignore this", nil),
+				message(report(map[string]prowapi.ProwJobState{
+					"foo":         prowapi.SuccessState,
+					"should-fail": prowapi.FailureState,
+				}), nil),
+				message("also ignore this", nil),
+			},
+			expected: sets.NewString("should-fail"),
+		},
+		{
+			name: "ignore report from someone else",
+			messages: []gerrit.ChangeMessageInfo{
+				message(report(map[string]prowapi.ProwJobState{
+					"foo":                  prowapi.SuccessState,
+					"ignore-their-failure": prowapi.FailureState,
+				}), func(msg *gerrit.ChangeMessageInfo) {
+					msg.Author.AccountID = stan
+				}),
+				message(report(map[string]prowapi.ProwJobState{
+					"whatever":    prowapi.SuccessState,
+					"should-fail": prowapi.FailureState,
+				}), nil),
+			},
+			expected: sets.NewString("should-fail"),
+		},
+		{
+			name: "ignore failures on other revisions",
+			messages: []gerrit.ChangeMessageInfo{
+				message(report(map[string]prowapi.ProwJobState{
+					"current-pass": prowapi.SuccessState,
+					"current-fail": prowapi.FailureState,
+				}), nil),
+				message(report(map[string]prowapi.ProwJobState{
+					"old-pass": prowapi.SuccessState,
+					"old-fail": prowapi.FailureState,
+				}), func(msg *gerrit.ChangeMessageInfo) {
+					msg.RevisionNumber = old
+				}),
+			},
+			expected: sets.NewString("current-fail"),
+		},
+		{
+			name: "ignore jobs in my earlier report",
+			messages: []gerrit.ChangeMessageInfo{
+				message(report(map[string]prowapi.ProwJobState{
+					"failed-then-pass": prowapi.FailureState,
+					"old-broken":       prowapi.FailureState,
+					"old-pass":         prowapi.SuccessState,
+					"pass-then-failed": prowapi.SuccessState,
+					"still-fail":       prowapi.FailureState,
+					"still-pass":       prowapi.SuccessState,
+				}), nil),
+				message(report(map[string]prowapi.ProwJobState{
+					"failed-then-pass": prowapi.SuccessState,
+					"new-broken":       prowapi.FailureState,
+					"new-pass":         prowapi.SuccessState,
+					"pass-then-failed": prowapi.FailureState,
+					"still-fail":       prowapi.FailureState,
+					"still-pass":       prowapi.SuccessState,
+				}), nil),
+			},
+			expected: sets.NewString("old-broken", "new-broken", "still-fail", "pass-then-failed"),
+		},
+		{
+			// https://en.wikipedia.org/wiki/Gravitational_redshift
+			name: "handle gravitationally redshifted results",
+			messages: []gerrit.ChangeMessageInfo{
+				message(report(map[string]prowapi.ProwJobState{
+					"earth-broken":              prowapi.FailureState,
+					"earth-pass":                prowapi.SuccessState,
+					"fail-earth-pass-blackhole": prowapi.FailureState,
+					"pass-earth-fail-blackhole": prowapi.SuccessState,
+				}), nil),
+				message(report(map[string]prowapi.ProwJobState{
+					"blackhole-broken":          prowapi.FailureState,
+					"blackhole-pass":            prowapi.SuccessState,
+					"fail-earth-pass-blackhole": prowapi.SuccessState,
+					"pass-earth-fail-blackhole": prowapi.FailureState,
+				}), func(change *gerrit.ChangeMessageInfo) {
+					change.Date.Time = change.Date.Time.Add(-time.Hour)
+				}),
+			},
+			expected: sets.NewString("earth-broken", "blackhole-broken", "fail-earth-pass-blackhole"),
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			if actual, expected := failedJobs(me, current, tc.messages...), tc.expected; !equality.Semantic.DeepEqual(expected, actual) {
+				t.Errorf(diff.ObjectReflectDiff(expected, actual))
+			}
+		})
 	}
 }
 
