@@ -18,28 +18,19 @@ package spyglass
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"math/rand"
 	"net/url"
-	"os"
 	"path"
 	"strings"
 	"time"
 
-	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
-	"google.golang.org/api/iterator"
 
-	"github.com/GoogleCloudPlatform/testgrid/util/gcs"
+	pkgio "k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/spyglass/api"
-)
-
-const (
-	httpScheme  = "http"
-	httpsScheme = "https"
 )
 
 var (
@@ -49,8 +40,7 @@ var (
 
 // GCSArtifactFetcher contains information used for fetching artifacts from GCS
 type GCSArtifactFetcher struct {
-	client        *storage.Client
-	gcsCredsFile  string
+	opener        pkgio.Opener
 	useCookieAuth bool
 }
 
@@ -67,10 +57,9 @@ type gcsJobSource struct {
 }
 
 // NewGCSArtifactFetcher creates a new ArtifactFetcher with a real GCS Client
-func NewGCSArtifactFetcher(c *storage.Client, gcsCredsFile string, useCookieAuth bool) *GCSArtifactFetcher {
+func NewGCSArtifactFetcher(opener pkgio.Opener, useCookieAuth bool) *GCSArtifactFetcher {
 	return &GCSArtifactFetcher{
-		client:        c,
-		gcsCredsFile:  gcsCredsFile,
+		opener:        opener,
 		useCookieAuth: useCookieAuth,
 	}
 }
@@ -81,19 +70,25 @@ func fieldsForJob(src *gcsJobSource) logrus.Fields {
 	}
 }
 
-// newGCSJobSource creates a new gcsJobSource from a given bucket and jobPrefix
+// newGCSJobSource creates a new gcsJobSource from a given storage provider bucket and jobPrefix. If no scheme is given we assume GS, e.g.:
+// * test-bucket/logs/sig-flexing/example-ci-run/403 or
+// * gs://test-bucket/logs/sig-flexing/example-ci-run/403
 func newGCSJobSource(src string) (*gcsJobSource, error) {
-	gcsURL, err := url.Parse(fmt.Sprintf("gs://%s", src))
+	if !strings.Contains(src, "://") {
+		src = "gs://" + src
+	}
+	gcsURL, err := url.Parse(src)
 	if err != nil {
 		return &gcsJobSource{}, ErrCannotParseSource
 	}
-	gcsPath := &gcs.Path{}
-	err = gcsPath.SetURL(gcsURL)
-	if err != nil {
-		return &gcsJobSource{}, ErrCannotParseSource
+	var object string
+	if gcsURL.Path == "" {
+		object = gcsURL.Path
+	} else {
+		object = gcsURL.Path[1:]
 	}
 
-	tokens := strings.FieldsFunc(gcsPath.Object(), func(c rune) bool { return c == '/' })
+	tokens := strings.FieldsFunc(object, func(c rune) bool { return c == '/' })
 	if len(tokens) < 2 {
 		return &gcsJobSource{}, ErrCannotParseSource
 	}
@@ -101,34 +96,40 @@ func newGCSJobSource(src string) (*gcsJobSource, error) {
 	name := tokens[len(tokens)-2]
 	return &gcsJobSource{
 		source:     src,
-		linkPrefix: "gs://",
-		bucket:     gcsPath.Bucket(),
-		jobPrefix:  path.Clean(gcsPath.Object()) + "/",
+		linkPrefix: gcsURL.Scheme + "://",
+		bucket:     gcsURL.Host,
+		jobPrefix:  path.Clean(object) + "/",
 		jobName:    name,
 		buildID:    buildID,
 	}, nil
 }
 
 // Artifacts lists all artifacts available for the given job source
-func (af *GCSArtifactFetcher) artifacts(key string) ([]string, error) {
+// If no scheme is given we assume GS, e.g.:
+// * test-bucket/logs/sig-flexing/example-ci-run/403 or
+// * gs://test-bucket/logs/sig-flexing/example-ci-run/403
+func (af *GCSArtifactFetcher) artifacts(ctx context.Context, key string) ([]string, error) {
+	if !strings.Contains(key, "://") {
+		key = "gs://" + key
+	}
 	src, err := newGCSJobSource(key)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to get GCS job source from %s: %v", key, err)
 	}
 
 	listStart := time.Now()
-	bucketName, prefix := extractBucketPrefixPair(src.jobPath())
+	_, prefix := extractBucketPrefixPair(src.jobPath())
 	artifacts := []string{}
-	bkt := af.client.Bucket(bucketName)
-	q := storage.Query{
-		Prefix:   prefix,
-		Versions: false,
+
+	it, err := af.opener.Iterator(ctx, key, "")
+	if err != nil {
+		return artifacts, err
 	}
-	objIter := bkt.Objects(context.Background(), &q)
+
 	wait := []time.Duration{16, 32, 64, 128, 256, 256, 512, 512}
 	for i := 0; ; {
-		oAttrs, err := objIter.Next()
-		if err == iterator.Done {
+		oAttrs, err := it.Next(ctx)
+		if err == io.EOF {
 			break
 		}
 		if err != nil {
@@ -147,86 +148,48 @@ func (af *GCSArtifactFetcher) artifacts(key string) ([]string, error) {
 	return artifacts, nil
 }
 
-const (
-	anonHost   = "storage.googleapis.com"
-	cookieHost = "storage.cloud.google.com"
-)
-
-func (af *GCSArtifactFetcher) signURL(bucket, obj string) (string, error) {
-	// We specifically want to use cookie auth, see:
-	// https://cloud.google.com/storage/docs/access-control/cookie-based-authentication
-	if af.useCookieAuth {
-		artifactLink := &url.URL{
-			Scheme: httpsScheme,
-			Host:   cookieHost,
-			Path:   path.Join(bucket, obj),
-		}
-		return artifactLink.String(), nil
-	}
-
-	// If we're anonymous we can just return a plain URL.
-	if af.gcsCredsFile == "" {
-		artifactLink := &url.URL{
-			Scheme: httpsScheme,
-			Host:   anonHost,
-			Path:   path.Join(bucket, obj),
-		}
-		return artifactLink.String(), nil
-	}
-
-	// TODO(fejta): do not require the json file https://github.com/kubernetes/test-infra/issues/16489
-	// As far as I can tell, there is no sane way to get these values other than just
-	// reading them out of the JSON file ourselves.
-	f, err := os.Open(af.gcsCredsFile)
-	if err != nil {
-		return "", err
-	}
-	defer f.Close()
-	auth := struct {
-		Type        string `json:"type"`
-		PrivateKey  string `json:"private_key"`
-		ClientEmail string `json:"client_email"`
-	}{}
-	if err := json.NewDecoder(f).Decode(&auth); err != nil {
-		return "", err
-	}
-	if auth.Type != "service_account" {
-		return "", fmt.Errorf("only service_account GCS auth is supported, got %q", auth.Type)
-	}
-	return storage.SignedURL(bucket, obj, &storage.SignedURLOptions{
-		Method:         "GET",
-		Expires:        time.Now().Add(10 * time.Minute),
-		GoogleAccessID: auth.ClientEmail,
-		PrivateKey:     []byte(auth.PrivateKey),
+func (af *GCSArtifactFetcher) signURL(ctx context.Context, key string) (string, error) {
+	return af.opener.SignedURL(ctx, key, pkgio.SignedURLOptions{
+		UseGSCookieAuth: af.useCookieAuth,
 	})
 }
 
 type gcsArtifactHandle struct {
-	*storage.ObjectHandle
+	pkgio.Opener
+	Name string
 }
 
 func (h *gcsArtifactHandle) NewReader(ctx context.Context) (io.ReadCloser, error) {
-	return h.ObjectHandle.NewReader(ctx)
+	return h.Opener.Reader(ctx, h.Name)
 }
 
 func (h *gcsArtifactHandle) NewRangeReader(ctx context.Context, offset, length int64) (io.ReadCloser, error) {
-	return h.ObjectHandle.NewRangeReader(ctx, offset, length)
+	return h.Opener.RangeReader(ctx, h.Name, offset, length)
+}
+
+func (h *gcsArtifactHandle) Attrs(ctx context.Context) (pkgio.Attributes, error) {
+	return h.Opener.Attributes(ctx, h.Name)
 }
 
 // Artifact constructs a GCS artifact from the given GCS bucket and key. Uses the golang GCS library
 // to get read handles. If the artifactName is not a valid key in the bucket a handle will still be
 // constructed and returned, but all read operations will fail (dictated by behavior of golang GCS lib).
-func (af *GCSArtifactFetcher) Artifact(key string, artifactName string, sizeLimit int64) (api.Artifact, error) {
+// If no scheme is given we assume GS, e.g.:
+// * test-bucket/logs/sig-flexing/example-ci-run/403 or
+// * gs://test-bucket/logs/sig-flexing/example-ci-run/403
+func (af *GCSArtifactFetcher) Artifact(ctx context.Context, key string, artifactName string, sizeLimit int64) (api.Artifact, error) {
+	if !strings.Contains(key, "://") {
+		key = "gs://" + key
+	}
 	src, err := newGCSJobSource(key)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to get GCS job source from %s: %v", key, err)
+		return nil, fmt.Errorf("failed to get GCS job source from %s: %v", key, err)
 	}
 
-	bucketName, prefix := extractBucketPrefixPair(src.jobPath())
-	bkt := af.client.Bucket(bucketName)
+	_, prefix := extractBucketPrefixPair(src.jobPath())
 	objName := path.Join(prefix, artifactName)
-	obj := &gcsArtifactHandle{bkt.Object(objName)}
-	signedURL, err := af.signURL(bucketName, objName)
+	obj := &gcsArtifactHandle{Opener: af.opener, Name: fmt.Sprintf("%s%s/%s", src.linkPrefix, src.bucket, objName)}
+	signedURL, err := af.signURL(ctx, fmt.Sprintf("%s%s/%s", src.linkPrefix, src.bucket, objName))
 	if err != nil {
 		return nil, err
 	}

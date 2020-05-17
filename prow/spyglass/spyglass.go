@@ -28,13 +28,15 @@ import (
 	"strconv"
 	"strings"
 
-	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
 
 	"github.com/GoogleCloudPlatform/testgrid/metadata"
+
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/deck/jobs"
+	pkgio "k8s.io/test-infra/prow/io"
+	"k8s.io/test-infra/prow/io/providers"
 	"k8s.io/test-infra/prow/pod-utils/gcs"
 	"k8s.io/test-infra/prow/spyglass/api"
 	"k8s.io/test-infra/prow/spyglass/lenses"
@@ -78,15 +80,15 @@ type ExtraLink struct {
 }
 
 // New constructs a Spyglass object from a JobAgent, a config.Agent, and a storage Client.
-func New(ctx context.Context, ja *jobs.JobAgent, cfg config.Getter, c *storage.Client, gcsCredsFile string, useCookieAuth bool) *Spyglass {
+func New(ctx context.Context, ja *jobs.JobAgent, cfg config.Getter, opener pkgio.Opener, useCookieAuth bool) *Spyglass {
 	return &Spyglass{
 		JobAgent:              ja,
 		config:                cfg,
 		PodLogArtifactFetcher: NewPodLogArtifactFetcher(ja),
-		GCSArtifactFetcher:    NewGCSArtifactFetcher(c, gcsCredsFile, useCookieAuth),
+		GCSArtifactFetcher:    NewGCSArtifactFetcher(opener, useCookieAuth),
 		testgrid: &TestGrid{
 			conf:   cfg,
-			client: c,
+			opener: opener,
 			ctx:    ctx,
 		},
 	}
@@ -148,18 +150,16 @@ func (sg *Spyglass) ResolveSymlink(src string) (string, error) {
 	switch keyType {
 	case prowKeyType:
 		return src, nil // prowjob keys cannot be symlinks.
-	case gcsKeyType:
-		parts := strings.SplitN(key, "/", 2)
-		if len(parts) != 2 {
-			return "", fmt.Errorf("gcs path should look like '{bucket}/{path}', missing at least one.")
+	default:
+		if keyType == api.GCSKeyType {
+			keyType = providers.GS
 		}
-		bucketName := parts[0]
-		prefix := parts[1]
-		bkt := sg.client.Bucket(bucketName)
-		obj := bkt.Object(prefix + ".txt")
-		reader, err := obj.NewReader(context.Background())
+		reader, err := sg.opener.Reader(context.TODO(), fmt.Sprintf("%s://%s.txt", keyType, key))
 		if err != nil {
-			return src, nil
+			if pkgio.IsNotExist(err) {
+				return fmt.Sprintf("%s/%s", keyType, key), nil
+			}
+			return "", err
 		}
 		// Avoid using ReadAll here to prevent an attacker forcing us to read a giant file into memory.
 		bytes := make([]byte, 4096) // assume we won't get more than 4 kB of symlink to read
@@ -174,12 +174,7 @@ func (sg *Spyglass) ResolveSymlink(src string) (string, error) {
 		if err != nil {
 			return "", fmt.Errorf("failed to parse URL: %v", err)
 		}
-		if u.Scheme != "gs" {
-			return "", fmt.Errorf("expected gs:// symlink, got '%s://'", u.Scheme)
-		}
-		return path.Join(gcsKeyType, u.Host, u.Path), nil
-	default:
-		return "", fmt.Errorf("unknown src key type %q", keyType)
+		return path.Join(keyType, u.Host, u.Path), nil
 	}
 }
 
@@ -192,20 +187,6 @@ func (sg *Spyglass) JobPath(src string) (string, error) {
 	}
 	split := strings.Split(key, "/")
 	switch keyType {
-	case gcsKeyType:
-		if len(split) < 4 {
-			return "", fmt.Errorf("invalid key %s: expected <bucket-name>/<log-type>/.../<job-name>/<build-id>", key)
-		}
-		// see https://github.com/kubernetes/test-infra/tree/master/gubernator
-		bktName := split[0]
-		logType := split[1]
-		jobName := split[len(split)-2]
-		if logType == gcs.NonPRLogs {
-			return path.Dir(key), nil
-		} else if logType == gcs.PRLogs {
-			return path.Join(bktName, gcs.PRLogs, "directory", jobName), nil
-		}
-		return "", fmt.Errorf("unrecognized GCS key: %s", key)
 	case prowKeyType:
 		if len(split) < 2 {
 			return "", fmt.Errorf("invalid key %s: expected <job-name>/<build-id>", key)
@@ -223,12 +204,34 @@ func (sg *Spyglass) JobPath(src string) (string, error) {
 			return "", fmt.Errorf("failed to locate GCS upload bucket for %s: missing GCS configuration", jobName)
 		}
 		bktName := job.Spec.DecorationConfig.GCSConfiguration.Bucket
+		if strings.Contains(bktName, "://") {
+			// handle :// in bucket name if necessary
+			bktName = strings.Replace(bktName, "://", "/", 1)
+		} else {
+			// fallback to gs/ if bucket name is given without storage type
+			bktName = fmt.Sprintf("%s/%s", providers.GS, bktName)
+		}
 		if job.Spec.Type == prowapi.PresubmitJob {
 			return path.Join(bktName, gcs.PRLogs, "directory", jobName), nil
 		}
 		return path.Join(bktName, gcs.NonPRLogs, jobName), nil
 	default:
-		return "", fmt.Errorf("unrecognized key type for src: %v", src)
+		if keyType == gcsKeyType {
+			keyType = providers.GS
+		}
+		if len(split) < 4 {
+			return "", fmt.Errorf("invalid key %s: expected <bucket-name>/<log-type>/.../<job-name>/<build-id>", key)
+		}
+		// see https://github.com/kubernetes/test-infra/tree/master/gubernator
+		bktName := split[0]
+		logType := split[1]
+		jobName := split[len(split)-2]
+		if logType == gcs.NonPRLogs {
+			return path.Join(keyType, path.Dir(key)), nil
+		} else if logType == gcs.PRLogs {
+			return path.Join(keyType, bktName, gcs.PRLogs, "directory", jobName), nil
+		}
+		return "", fmt.Errorf("unrecognized GCS key: %s", key)
 	}
 }
 
@@ -244,12 +247,6 @@ func (sg *Spyglass) ProwJobName(src string) (string, error) {
 	var jobName string
 	var buildID string
 	switch keyType {
-	case gcsKeyType:
-		if len(split) < 4 {
-			return "", fmt.Errorf("invalid key %s: expected <bucket-name>/<log-type>/.../<job-name>/<build-id>", key)
-		}
-		jobName = split[len(split)-2]
-		buildID = split[len(split)-1]
 	case prowKeyType:
 		if len(split) < 2 {
 			return "", fmt.Errorf("invalid key %s: expected <job-name>/<build-id>", key)
@@ -257,7 +254,11 @@ func (sg *Spyglass) ProwJobName(src string) (string, error) {
 		jobName = split[0]
 		buildID = split[1]
 	default:
-		return "", fmt.Errorf("unrecognized key type for src: %v", src)
+		if len(split) < 4 {
+			return "", fmt.Errorf("invalid key %s: expected <bucket-name>/<log-type>/.../<job-name>/<build-id>", key)
+		}
+		jobName = split[len(split)-2]
+		buildID = split[len(split)-1]
 	}
 	job, err := sg.jobAgent.GetProwJob(jobName, buildID)
 	if err != nil {
@@ -277,12 +278,14 @@ func (sg *Spyglass) RunPath(src string) (string, error) {
 		return "", fmt.Errorf("error parsing src: %v", src)
 	}
 	switch keyType {
-	case gcsKeyType:
-		return key, nil
 	case prowKeyType:
-		return sg.prowToGCS(key)
+		_, gcsKey, err := sg.prowToGCS(key)
+		if err != nil {
+			return "", err
+		}
+		return gcsKey, nil
 	default:
-		return "", fmt.Errorf("unrecognized key type for src: %v", src)
+		return key, nil
 	}
 }
 
@@ -299,7 +302,21 @@ func (sg *Spyglass) RunToPR(src string) (string, string, int, error) {
 		return "", "", 0, fmt.Errorf("expected more URL components in %q", src)
 	}
 	switch keyType {
-	case gcsKeyType:
+	case prowKeyType:
+		if len(split) < 2 {
+			return "", "", 0, fmt.Errorf("invalid key %s: expected <job-name>/<build-id>", key)
+		}
+		jobName := split[0]
+		buildID := split[1]
+		job, err := sg.jobAgent.GetProwJob(jobName, buildID)
+		if err != nil {
+			return "", "", 0, fmt.Errorf("failed to get prow job from src %q: %v", key, err)
+		}
+		if job.Spec.Refs == nil || len(job.Spec.Refs.Pulls) == 0 {
+			return "", "", 0, fmt.Errorf("no PRs on job %q", job.Name)
+		}
+		return job.Spec.Refs.Org, job.Spec.Refs.Repo, job.Spec.Refs.Pulls[0].Number, nil
+	default:
 		// In theory, we could derive this information without trying to parse the URL by instead fetching the
 		// data from uploaded artifacts. In practice, that would not be a great solution: it would require us
 		// to try pulling two different metadata files (one for bootstrap and one for podutils), then parse them
@@ -347,28 +364,12 @@ func (sg *Spyglass) RunToPR(src string) (string, string, int, error) {
 		} else {
 			return "", "", 0, fmt.Errorf("unknown log type: %q", logType)
 		}
-	case prowKeyType:
-		if len(split) < 2 {
-			return "", "", 0, fmt.Errorf("invalid key %s: expected <job-name>/<build-id>", key)
-		}
-		jobName := split[0]
-		buildID := split[1]
-		job, err := sg.jobAgent.GetProwJob(jobName, buildID)
-		if err != nil {
-			return "", "", 0, fmt.Errorf("failed to get prow job from src %q: %v", key, err)
-		}
-		if job.Spec.Refs == nil || len(job.Spec.Refs.Pulls) == 0 {
-			return "", "", 0, fmt.Errorf("no PRs on job %q", job.Name)
-		}
-		return job.Spec.Refs.Org, job.Spec.Refs.Repo, job.Spec.Refs.Pulls[0].Number, nil
-	default:
-		return "", "", 0, fmt.Errorf("unrecognized key type for src: %v", src)
 	}
 }
 
 // ExtraLinks fetches started.json and extracts links from metadata.links.
-func (sg *Spyglass) ExtraLinks(src string) ([]ExtraLink, error) {
-	artifacts, err := sg.FetchArtifacts(src, "", 1000000, []string{"started.json"})
+func (sg *Spyglass) ExtraLinks(ctx context.Context, src string) ([]ExtraLink, error) {
+	artifacts, err := sg.FetchArtifacts(ctx, src, "", 1000000, []string{"started.json"})
 	// Failing to find started.json is okay, just return nothing quietly.
 	if err != nil || len(artifacts) == 0 {
 		logrus.WithError(err).Debugf("Failed to find started.json while looking for extra links.")

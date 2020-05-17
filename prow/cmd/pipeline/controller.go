@@ -343,7 +343,10 @@ func (c *controller) pipelineID(pj prowjobv1.ProwJob) (string, string, error) {
 		return "", "", err
 	}
 	pj.Status.BuildID = id
-	url := pjutil.JobURL(c.config().Plank, pj, logrus.NewEntry(logrus.StandardLogger()))
+	url, err := pjutil.JobURL(c.config().Plank, pj, logrus.NewEntry(logrus.StandardLogger()))
+	if err != nil {
+		logrus.WithFields(pjutil.ProwJobFields(&pj)).WithError(err).Error("Error calculating job status url")
+	}
 	return id, url, nil
 }
 

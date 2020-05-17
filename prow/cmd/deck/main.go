@@ -36,14 +36,12 @@ import (
 	"strings"
 	"time"
 
-	"cloud.google.com/go/storage"
 	"github.com/NYTimes/gziphandler"
 	"github.com/gorilla/csrf"
 	"github.com/gorilla/sessions"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
-	"google.golang.org/api/option"
 	coreapi "k8s.io/api/core/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -64,6 +62,7 @@ import (
 	prowgithub "k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/githuboauth"
 	"k8s.io/test-infra/prow/interrupts"
+	"k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
@@ -119,6 +118,7 @@ type options struct {
 	spyglass              bool
 	spyglassFilesLocation string
 	gcsCredentialsFile    string
+	s3CredentialsFile     string
 	gcsNoAuth             bool
 	gcsCookieAuth         bool
 	rerunCreatesJob       bool
@@ -162,7 +162,9 @@ func (o *options) Validate() error {
 	if o.hiddenOnly && o.showHidden {
 		return errors.New("'--hidden-only' and '--show-hidden' are mutually exclusive, the first one shows only hidden job, the second one shows both hidden and non-hidden jobs")
 	}
-
+	if o.gcsNoAuth {
+		logrus.Warn("'--gcs-no-auth' is deprecated and is not used anymore. We always fall back to an anonymous client now, if all other options fail.")
+	}
 	if o.gcsCredentialsFile != "" && o.gcsNoAuth {
 		return errors.New("--gcs-credentials-file must not be set when --gcs-no-auth is set")
 	}
@@ -188,7 +190,8 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.StringVar(&o.spyglassFilesLocation, "spyglass-files-location", "/lenses", "Location of the static files for spyglass.")
 	fs.StringVar(&o.staticFilesLocation, "static-files-location", "/static", "Path to the static files")
 	fs.StringVar(&o.templateFilesLocation, "template-files-location", "/template", "Path to the template files")
-	fs.StringVar(&o.gcsCredentialsFile, "gcs-credentials-file", "", "Path to the GCS credentials file")
+	fs.StringVar(&o.gcsCredentialsFile, "gcs-credentials-file", "", "File where GCS credentials are stored")
+	fs.StringVar(&o.s3CredentialsFile, "s3-credentials-file", "", "File where s3 credentials are stored. For the exact format see https://github.com/kubernetes/test-infra/blob/master/prow/io/providers/providers.go")
 	fs.BoolVar(&o.gcsNoAuth, "gcs-no-auth", false, "Whether to use anonymous auth for GCP. Requires when running outside of GCP and not setting gcs-credentials-file")
 	fs.BoolVar(&o.gcsCookieAuth, "gcs-cookie-auth", false, "Use storage.cloud.google.com instead of signed URLs")
 	fs.BoolVar(&o.rerunCreatesJob, "rerun-creates-job", false, "Change the re-run option in Deck to actually create the job. **WARNING:** Only use this with non-public deck instances, otherwise strangers can DOS your Prow instance")
@@ -725,25 +728,18 @@ func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, authCfgGe
 
 func initSpyglass(cfg config.Getter, o options, mux *http.ServeMux, ja *jobs.JobAgent, gitHubClient deckGitHubClient, gitClient git.ClientFactory) {
 	ctx := context.TODO()
-	var options []option.ClientOption
-	if creds := o.gcsCredentialsFile; creds != "" {
-		options = append(options, option.WithCredentialsFile(creds))
-	}
-	if o.gcsNoAuth {
-		options = append(options, option.WithoutAuthentication())
-	}
-	c, err := storage.NewClient(ctx, options...)
+	opener, err := io.NewOpener(ctx, o.gcsCredentialsFile, o.s3CredentialsFile)
 	if err != nil {
-		logrus.WithError(err).Fatal("Error getting GCS client")
+		logrus.WithError(err).Fatal("Error creating opener")
 	}
-	sg := spyglass.New(ctx, ja, cfg, c, o.gcsCredentialsFile, o.gcsCookieAuth)
+	sg := spyglass.New(ctx, ja, cfg, opener, o.gcsCookieAuth)
 	sg.Start()
 
 	mux.Handle("/spyglass/static/", http.StripPrefix("/spyglass/static", staticHandlerFromDir(o.spyglassFilesLocation)))
 	mux.Handle("/spyglass/lens/", gziphandler.GzipHandler(http.StripPrefix("/spyglass/lens/", handleArtifactView(o, sg, cfg))))
 	mux.Handle("/view/", gziphandler.GzipHandler(handleRequestJobViews(sg, cfg, o, logrus.WithField("handler", "/view"))))
-	mux.Handle("/job-history/", gziphandler.GzipHandler(handleJobHistory(o, cfg, c, logrus.WithField("handler", "/job-history"))))
-	mux.Handle("/pr-history/", gziphandler.GzipHandler(handlePRHistory(o, cfg, c, gitHubClient, gitClient, logrus.WithField("handler", "/pr-history"))))
+	mux.Handle("/job-history/", gziphandler.GzipHandler(handleJobHistory(o, cfg, opener, logrus.WithField("handler", "/job-history"))))
+	mux.Handle("/pr-history/", gziphandler.GzipHandler(handlePRHistory(o, cfg, opener, gitHubClient, gitClient, logrus.WithField("handler", "/pr-history"))))
 	if err := initLocalLensHandler(cfg, o, sg); err != nil {
 		logrus.WithError(err).Fatal("Failed to initialize local lens handler")
 	}
@@ -914,23 +910,29 @@ func handleBadge(ja *jobs.JobAgent) http.HandlerFunc {
 }
 
 // handleJobHistory handles requests to get the history of a given job
-// The url must look like this for presubmits:
+// There is also a new format since we started supporting other storageProvider
+// like s3 and not only GCS.
+// The url must look like one of these for presubmits:
 //
-// /job-history/<gcs-bucket-name>/pr-logs/directory/<job-name>
+// - /job-history/<gcs-bucket-name>/pr-logs/directory/<job-name>
+// - /job-history/<storage-provider>/<bucket-name>/pr-logs/directory/<job-name>
 //
 // Example:
 // - /job-history/kubernetes-jenkins/pr-logs/directory/pull-test-infra-verify-gofmt
+// - /job-history/gs/kubernetes-jenkins/pr-logs/directory/pull-test-infra-verify-gofmt
 //
-// For periodics or postsubmits, the url must look like this:
+// For periodics or postsubmits, the url must look like one of these:
 //
-// /job-history/<gcs-bucket-name>/logs/<job-name>
+// - /job-history/<gcs-bucket-name>/logs/<job-name>
+// - /job-history/<storage-provider>/<bucket-name>/logs/<job-name>
 //
 // Example:
 // - /job-history/kubernetes-jenkins/logs/ci-kubernetes-e2e-prow-canary
-func handleJobHistory(o options, cfg config.Getter, gcsClient *storage.Client, log *logrus.Entry) http.HandlerFunc {
+// - /job-history/gs/kubernetes-jenkins/logs/ci-kubernetes-e2e-prow-canary
+func handleJobHistory(o options, cfg config.Getter, opener io.Opener, log *logrus.Entry) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		setHeadersNoCaching(w)
-		tmpl, err := getJobHistory(r.URL, cfg(), gcsClient)
+		tmpl, err := getJobHistory(r.Context(), r.URL, cfg(), opener)
 		if err != nil {
 			msg := fmt.Sprintf("failed to get job history: %v", err)
 			log.WithField("url", r.URL.String()).Warn(msg)
@@ -945,10 +947,10 @@ func handleJobHistory(o options, cfg config.Getter, gcsClient *storage.Client, l
 // The url must look like this:
 //
 // /pr-history?org=<org>&repo=<repo>&pr=<pr number>
-func handlePRHistory(o options, cfg config.Getter, gcsClient *storage.Client, gitHubClient deckGitHubClient, gitClient git.ClientFactory, log *logrus.Entry) http.HandlerFunc {
+func handlePRHistory(o options, cfg config.Getter, opener io.Opener, gitHubClient deckGitHubClient, gitClient git.ClientFactory, log *logrus.Entry) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		setHeadersNoCaching(w)
-		tmpl, err := getPRHistory(r.URL, cfg(), gcsClient, gitHubClient, gitClient)
+		tmpl, err := getPRHistory(r.Context(), r.URL, cfg(), opener, gitHubClient, gitClient)
 		if err != nil {
 			msg := fmt.Sprintf("failed to get PR history: %v", err)
 			log.WithField("url", r.URL.String()).Info(msg)
@@ -974,7 +976,7 @@ func handleRequestJobViews(sg *spyglass.Spyglass, cfg config.Getter, o options, 
 		src := strings.TrimPrefix(r.URL.Path, "/view/")
 
 		csrfToken := csrf.Token(r)
-		page, err := renderSpyglass(sg, cfg, src, o, csrfToken, log)
+		page, err := renderSpyglass(r.Context(), sg, cfg, src, o, csrfToken, log)
 		if err != nil {
 			log.WithError(err).Error("error rendering spyglass page")
 			message := fmt.Sprintf("error rendering spyglass page: %v", err)
@@ -993,7 +995,7 @@ func handleRequestJobViews(sg *spyglass.Spyglass, cfg config.Getter, o options, 
 }
 
 // renderSpyglass returns a pre-rendered Spyglass page from the given source string
-func renderSpyglass(sg *spyglass.Spyglass, cfg config.Getter, src string, o options, csrfToken string, log *logrus.Entry) (string, error) {
+func renderSpyglass(ctx context.Context, sg *spyglass.Spyglass, cfg config.Getter, src string, o options, csrfToken string, log *logrus.Entry) (string, error) {
 	renderStart := time.Now()
 
 	src = strings.TrimSuffix(src, "/")
@@ -1003,7 +1005,7 @@ func renderSpyglass(sg *spyglass.Spyglass, cfg config.Getter, src string, o opti
 	}
 	src = realPath
 
-	artifactNames, err := sg.ListArtifacts(src)
+	artifactNames, err := sg.ListArtifacts(ctx, src)
 	if err != nil {
 		return "", fmt.Errorf("error listing artifacts: %v", err)
 	}
@@ -1124,7 +1126,7 @@ lensesLoop:
 		tgLink = ""
 	}
 
-	extraLinks, err := sg.ExtraLinks(src)
+	extraLinks, err := sg.ExtraLinks(ctx, src)
 	if err != nil {
 		log.WithError(err).WithField("page", src).Warn("Failed to fetch extra links")
 		extraLinks = nil

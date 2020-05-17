@@ -17,33 +17,39 @@ limitations under the License.
 package spyglass
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
 	"github.com/sirupsen/logrus"
+
+	"k8s.io/test-infra/prow/io/providers"
 	"k8s.io/test-infra/prow/spyglass/api"
 	"k8s.io/test-infra/prow/spyglass/lenses/common"
 )
 
 // ListArtifacts gets the names of all artifacts available from the given source
-func (s *Spyglass) ListArtifacts(src string) ([]string, error) {
+func (s *Spyglass) ListArtifacts(ctx context.Context, src string) ([]string, error) {
 	keyType, key, err := splitSrc(src)
 	if err != nil {
 		return []string{}, fmt.Errorf("error parsing src: %v", err)
 	}
 	gcsKey := ""
 	switch keyType {
-	case gcsKeyType:
-		gcsKey = key
 	case prowKeyType:
-		if gcsKey, err = s.prowToGCS(key); err != nil {
+		storageProvider, key, err := s.prowToGCS(key)
+		if err != nil {
 			logrus.Warningf("Failed to get gcs source for prow job: %v", err)
 		}
+		gcsKey = fmt.Sprintf("%s://%s", storageProvider, key)
 	default:
-		return nil, fmt.Errorf("Unrecognized key type for src: %v", src)
+		if keyType == gcsKeyType {
+			keyType = providers.GS
+		}
+		gcsKey = fmt.Sprintf("%s://%s", keyType, key)
 	}
 
-	artifactNames, err := s.GCSArtifactFetcher.artifacts(gcsKey)
+	artifactNames, err := s.GCSArtifactFetcher.artifacts(ctx, gcsKey)
 	logFound := false
 	for _, name := range artifactNames {
 		if name == "build-log.txt" {
@@ -70,14 +76,14 @@ func (*Spyglass) KeyToJob(src string) (jobName string, buildID string, err error
 }
 
 // prowToGCS returns the GCS key corresponding to the given prow key
-func (s *Spyglass) prowToGCS(prowKey string) (string, error) {
+func (s *Spyglass) prowToGCS(prowKey string) (string, string, error) {
 	return common.ProwToGCS(s.JobAgent, s.config, prowKey)
 }
 
 // FetchArtifacts constructs and returns Artifact objects for each artifact name in the list.
 // This includes getting any handles needed for read write operations, direct artifact links, etc.
-func (s *Spyglass) FetchArtifacts(src string, podName string, sizeLimit int64, artifactNames []string) ([]api.Artifact, error) {
-	return common.FetchArtifacts(s.JobAgent, s.config, s.GCSArtifactFetcher, s.PodLogArtifactFetcher, src, podName, sizeLimit, artifactNames)
+func (s *Spyglass) FetchArtifacts(ctx context.Context, src string, podName string, sizeLimit int64, artifactNames []string) ([]api.Artifact, error) {
+	return common.FetchArtifacts(ctx, s.JobAgent, s.config, s.GCSArtifactFetcher, s.PodLogArtifactFetcher, src, podName, sizeLimit, artifactNames)
 }
 
 func splitSrc(src string) (keyType, key string, err error) {

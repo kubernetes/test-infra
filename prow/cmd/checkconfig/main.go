@@ -32,6 +32,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
+
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
@@ -91,6 +92,7 @@ const (
 	tideStrictBranchWarning      = "tide-strict-branch"
 	tideContextPolicy            = "tide-context-policy"
 	nonDecoratedJobsWarning      = "non-decorated-jobs"
+	validDecorationConfigWarning = "valid-decoration-config"
 	jobNameLengthWarning         = "long-job-names"
 	jobRefsDuplicationWarning    = "duplicate-job-refs"
 	needsOkToTestWarning         = "needs-ok-to-test"
@@ -279,6 +281,11 @@ func validate(o options) error {
 	}
 	if o.warningEnabled(nonDecoratedJobsWarning) {
 		if err := validateDecoratedJobs(cfg); err != nil {
+			errs = append(errs, err)
+		}
+	}
+	if o.warningEnabled(validDecorationConfigWarning) {
+		if err := validateDecorationConfig(cfg); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -804,6 +811,34 @@ func validateDecoratedJobs(cfg *config.Config) error {
 		return fmt.Errorf("the following jobs use the kubernetes provider but do not use the pod utilities: %v", nonDecoratedJobs)
 	}
 	return nil
+}
+
+func validateDecorationConfig(cfg *config.Config) error {
+	var configErrors []error
+	for _, presubmit := range cfg.AllStaticPresubmits([]string{}) {
+		if presubmit.Agent == string(v1.KubernetesAgent) && presubmit.Decorate != nil && *presubmit.Decorate && presubmit.DecorationConfig != nil {
+			if err := presubmit.DecorationConfig.Validate(); err != nil {
+				configErrors = append(configErrors, err)
+			}
+		}
+	}
+
+	for _, postsubmit := range cfg.AllStaticPostsubmits([]string{}) {
+		if postsubmit.Agent == string(v1.KubernetesAgent) && postsubmit.Decorate != nil && *postsubmit.Decorate && postsubmit.DecorationConfig != nil {
+			if err := postsubmit.DecorationConfig.Validate(); err != nil {
+				configErrors = append(configErrors, err)
+			}
+		}
+	}
+
+	for _, periodic := range cfg.AllPeriodics() {
+		if periodic.Agent == string(v1.KubernetesAgent) && periodic.Decorate != nil && *periodic.Decorate && periodic.DecorationConfig != nil {
+			if err := periodic.DecorationConfig.Validate(); err != nil {
+				configErrors = append(configErrors, err)
+			}
+		}
+	}
+	return utilerrors.NewAggregate(configErrors)
 }
 
 func validateNeedsOkToTestLabel(cfg *config.Config) error {

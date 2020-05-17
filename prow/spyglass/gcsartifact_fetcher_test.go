@@ -17,50 +17,122 @@ limitations under the License.
 package spyglass
 
 import (
+	"context"
 	"encoding/base64"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"
 	"testing"
+
+	"k8s.io/test-infra/prow/io"
 )
 
 func TestNewGCSJobSource(t *testing.T) {
 	testCases := []struct {
-		name        string
-		src         string
-		exJobPrefix string
-		exBucket    string
-		exName      string
-		exBuildID   string
-		expectedErr error
+		name         string
+		src          string
+		exJobPrefix  string
+		exBucket     string
+		exName       string
+		exBuildID    string
+		exLinkPrefix string
+		expectedErr  error
 	}{
 		{
-			name:        "Test standard GCS link",
-			src:         "test-bucket/logs/example-ci-run/403",
-			exBucket:    "test-bucket",
-			exJobPrefix: "logs/example-ci-run/403/",
-			exName:      "example-ci-run",
-			exBuildID:   "403",
-			expectedErr: nil,
+			name:         "Test standard GCS link (old format)",
+			src:          "test-bucket/logs/example-ci-run/403",
+			exBucket:     "test-bucket",
+			exJobPrefix:  "logs/example-ci-run/403/",
+			exName:       "example-ci-run",
+			exBuildID:    "403",
+			exLinkPrefix: "gs://",
+			expectedErr:  nil,
 		},
 		{
-			name:        "Test GCS link with trailing /",
-			src:         "test-bucket/logs/example-ci-run/403/",
-			exBucket:    "test-bucket",
-			exJobPrefix: "logs/example-ci-run/403/",
-			exName:      "example-ci-run",
-			exBuildID:   "403",
-			expectedErr: nil,
+			name:         "Test GCS link with trailing / (old format)",
+			src:          "test-bucket/logs/example-ci-run/403/",
+			exBucket:     "test-bucket",
+			exJobPrefix:  "logs/example-ci-run/403/",
+			exName:       "example-ci-run",
+			exBuildID:    "403",
+			exLinkPrefix: "gs://",
+			expectedErr:  nil,
 		},
 		{
-			name:        "Test GCS link with org name",
-			src:         "test-bucket/logs/sig-flexing/example-ci-run/403",
-			exBucket:    "test-bucket",
-			exJobPrefix: "logs/sig-flexing/example-ci-run/403/",
-			exName:      "example-ci-run",
-			exBuildID:   "403",
-			expectedErr: nil,
+			name:         "Test GCS link with org name (old format)",
+			src:          "test-bucket/logs/sig-flexing/example-ci-run/403",
+			exBucket:     "test-bucket",
+			exJobPrefix:  "logs/sig-flexing/example-ci-run/403/",
+			exName:       "example-ci-run",
+			exBuildID:    "403",
+			exLinkPrefix: "gs://",
+			expectedErr:  nil,
+		},
+		{
+			name:         "Test standard GCS link (new format)",
+			src:          "gs://test-bucket/logs/example-ci-run/403",
+			exBucket:     "test-bucket",
+			exJobPrefix:  "logs/example-ci-run/403/",
+			exName:       "example-ci-run",
+			exBuildID:    "403",
+			exLinkPrefix: "gs://",
+			expectedErr:  nil,
+		},
+		{
+			name:         "Test GCS link with trailing / (new format)",
+			src:          "gs://test-bucket/logs/example-ci-run/403/",
+			exBucket:     "test-bucket",
+			exJobPrefix:  "logs/example-ci-run/403/",
+			exName:       "example-ci-run",
+			exBuildID:    "403",
+			exLinkPrefix: "gs://",
+			expectedErr:  nil,
+		},
+		{
+			name:         "Test GCS link with org name (new format)",
+			src:          "gs://test-bucket/logs/sig-flexing/example-ci-run/403",
+			exBucket:     "test-bucket",
+			exJobPrefix:  "logs/sig-flexing/example-ci-run/403/",
+			exName:       "example-ci-run",
+			exBuildID:    "403",
+			exLinkPrefix: "gs://",
+			expectedErr:  nil,
+		},
+		{
+			name:         "Test standard S3 link",
+			src:          "s3://test-bucket/logs/example-ci-run/403",
+			exBucket:     "test-bucket",
+			exJobPrefix:  "logs/example-ci-run/403/",
+			exName:       "example-ci-run",
+			exBuildID:    "403",
+			exLinkPrefix: "s3://",
+			expectedErr:  nil,
+		},
+		{
+			name:         "Test S3 link with trailing /",
+			src:          "s3://test-bucket/logs/example-ci-run/403/",
+			exBucket:     "test-bucket",
+			exJobPrefix:  "logs/example-ci-run/403/",
+			exName:       "example-ci-run",
+			exBuildID:    "403",
+			exLinkPrefix: "s3://",
+			expectedErr:  nil,
+		},
+		{
+			name:         "Test S3 link with org name",
+			src:          "s3://test-bucket/logs/sig-flexing/example-ci-run/403",
+			exBucket:     "test-bucket",
+			exJobPrefix:  "logs/sig-flexing/example-ci-run/403/",
+			exName:       "example-ci-run",
+			exBuildID:    "403",
+			exLinkPrefix: "s3://",
+			expectedErr:  nil,
+		},
+		{
+			name:        "Test S3 link which cannot be parsed",
+			src:         "s3;://test-bucket/logs/sig-flexing/example-ci-run/403",
+			expectedErr: ErrCannotParseSource,
 		},
 	}
 	for _, tc := range testCases {
@@ -73,10 +145,13 @@ func TestNewGCSJobSource(t *testing.T) {
 				t.Errorf("Expected bucket %s, got %s", tc.exBucket, jobSource.bucket)
 			}
 			if tc.exName != jobSource.jobName {
-				t.Errorf("Expected name %s, got %s", tc.exName, jobSource.jobName)
+				t.Errorf("Expected jobName %s, got %s", tc.exName, jobSource.jobName)
 			}
 			if tc.exJobPrefix != jobSource.jobPrefix {
-				t.Errorf("Expected name %s, got %s", tc.exJobPrefix, jobSource.jobPrefix)
+				t.Errorf("Expected jobPrefix %s, got %s", tc.exJobPrefix, jobSource.jobPrefix)
+			}
+			if tc.exLinkPrefix != jobSource.linkPrefix {
+				t.Errorf("Expected linkPrefix %s, got %s", tc.exLinkPrefix, jobSource.linkPrefix)
 			}
 		})
 	}
@@ -85,7 +160,7 @@ func TestNewGCSJobSource(t *testing.T) {
 // Tests listing objects associated with the current job in GCS
 func TestArtifacts_ListGCS(t *testing.T) {
 	fakeGCSClient := fakeGCSServer.Client()
-	testAf := NewGCSArtifactFetcher(fakeGCSClient, "", false)
+	testAf := NewGCSArtifactFetcher(io.NewGCSOpener(fakeGCSClient), false)
 	testCases := []struct {
 		name              string
 		handle            artifactHandle
@@ -93,7 +168,7 @@ func TestArtifacts_ListGCS(t *testing.T) {
 		expectedArtifacts []string
 	}{
 		{
-			name:   "Test ArtifactFetcher simple list artifacts",
+			name:   "Test ArtifactFetcher simple list artifacts (old format)",
 			source: "test-bucket/logs/example-ci-run/403",
 			expectedArtifacts: []string{
 				"build-log.txt",
@@ -104,14 +179,30 @@ func TestArtifacts_ListGCS(t *testing.T) {
 			},
 		},
 		{
-			name:              "Test ArtifactFetcher list artifacts on source with no artifacts",
+			name:              "Test ArtifactFetcher list artifacts on source with no artifacts (old format)",
 			source:            "test-bucket/logs/example-ci/404",
+			expectedArtifacts: []string{},
+		},
+		{
+			name:   "Test ArtifactFetcher simple list artifacts (new format)",
+			source: "gs://test-bucket/logs/example-ci-run/403",
+			expectedArtifacts: []string{
+				"build-log.txt",
+				"started.json",
+				"finished.json",
+				"junit_01.xml",
+				"long-log.txt",
+			},
+		},
+		{
+			name:              "Test ArtifactFetcher list artifacts on source with no artifacts (new format)",
+			source:            "gs://test-bucket/logs/example-ci/404",
 			expectedArtifacts: []string{},
 		},
 	}
 
 	for _, tc := range testCases {
-		actualArtifacts, err := testAf.artifacts(tc.source)
+		actualArtifacts, err := testAf.artifacts(context.Background(), tc.source)
 		if err != nil {
 			t.Errorf("Failed to get artifact names: %v", err)
 		}
@@ -137,7 +228,7 @@ func TestArtifacts_ListGCS(t *testing.T) {
 // Tests getting handles to objects associated with the current job in GCS
 func TestFetchArtifacts_GCS(t *testing.T) {
 	fakeGCSClient := fakeGCSServer.Client()
-	testAf := NewGCSArtifactFetcher(fakeGCSClient, "", false)
+	testAf := NewGCSArtifactFetcher(io.NewGCSOpener(fakeGCSClient), false)
 	maxSize := int64(500e6)
 	testCases := []struct {
 		name         string
@@ -158,10 +249,22 @@ func TestFetchArtifacts_GCS(t *testing.T) {
 			source:       "test-bucket/logs/example-ci-run/404",
 			expectErr:    true,
 		},
+		{
+			name:         "Fetch build-log.txt from valid source",
+			artifactName: "build-log.txt",
+			source:       "gs://test-bucket/logs/example-ci-run/403",
+			expectedSize: 25,
+		},
+		{
+			name:         "Fetch build-log.txt from invalid source",
+			artifactName: "build-log.txt",
+			source:       "gs://test-bucket/logs/example-ci-run/404",
+			expectErr:    true,
+		},
 	}
 
 	for _, tc := range testCases {
-		artifact, err := testAf.Artifact(tc.source, tc.artifactName, maxSize)
+		artifact, err := testAf.Artifact(context.Background(), tc.source, tc.artifactName, maxSize)
 		if err != nil {
 			t.Errorf("Failed to get artifacts: %v", err)
 		}
@@ -223,21 +326,21 @@ RU5EIFBSSVZBVEUgS0VZLS0tLS1cbgo=`)
 		useCookie bool
 		expected  string
 		contains  []string
-		err       bool
+		err       string
 	}{
 		{
 			name:     "anon auth works",
-			expected: fmt.Sprintf("https://%s/foo/bar/stuff", anonHost),
+			expected: fmt.Sprintf("https://%s/foo/bar/stuff", io.GSAnonHost),
 		},
 		{
 			name:      "cookie auth works",
 			useCookie: true,
-			expected:  fmt.Sprintf("https://%s/foo/bar/stuff", cookieHost),
+			expected:  fmt.Sprintf("https://%s/foo/bar/stuff", io.GSCookieHost),
 		},
 		{
 			name:      "invalid json file errors",
 			fakeCreds: "yaml: 123",
-			err:       true,
+			err:       "dialing: invalid character 'y' looking for beginning of value",
 		},
 		{
 			name: "bad private key errors",
@@ -246,7 +349,7 @@ RU5EIFBSSVZBVEUgS0VZLS0tLS1cbgo=`)
 			  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIE==\n-----END PRIVATE KEY-----\n",
 			  "client_email": "fake-user@k8s.io"
 			}`,
-			err: true,
+			err: "asn1: structure error: tags don't match (16 vs {class:0 tag:13 length:45 isCompound:true}) {optional:false explicit:false application:false private:false defaultValue:<nil> tag:<nil> stringType:0 timeType:0 set:false omitEmpty:false} pkcs1PrivateKey @2",
 		},
 		{
 			name: "bad type errors",
@@ -255,7 +358,7 @@ RU5EIFBSSVZBVEUgS0VZLS0tLS1cbgo=`)
 			  "private_key": "` + fakePrivateKey + `",
 			  "client_email": "fake-user@k8s.io"
 			}`,
-			err: true,
+			err: "dialing: unknown credential type: \"user\"",
 		},
 		{
 			name: "signed URLs work",
@@ -291,14 +394,25 @@ RU5EIFBSSVZBVEUgS0VZLS0tLS1cbgo=`)
 					t.Fatalf("Failed to close fake creds %s: %v", path, err)
 				}
 			}
-			af := NewGCSArtifactFetcher(nil, path, tc.useCookie)
-			actual, err := af.signURL("foo", "bar/stuff")
+			// We're testing the combination of NewOpener and signURL here
+			// to make sure that the behaviour is more or less the same as before
+			// we moved the signURL code to the io package.
+			// The errors which were previously tested on the signURL method are now
+			// already returned by newOpener.
+			// Before, these error should have already lead to errors on gcs client creation, so signURL probably was never able to produce these errors during runtime.
+			// (because deck crashed on gcsClient creation)
+			var actual string
+			opener, err := io.NewOpener(context.Background(), path, "")
+			if err == nil {
+				af := NewGCSArtifactFetcher(opener, tc.useCookie)
+				actual, err = af.signURL(context.Background(), "gs://foo/bar/stuff")
+			}
 			switch {
 			case err != nil:
-				if !tc.err {
-					t.Errorf("unexpected error: %v", err)
+				if tc.err != err.Error() {
+					t.Errorf("expected error: %v, got: %v", tc.err, err)
 				}
-			case tc.err:
+			case tc.err != "":
 				t.Errorf("Failed to receive an expected error, got %q", actual)
 			case len(tc.contains) == 0 && actual != tc.expected:
 				t.Errorf("signURL(): got %q, want %q", actual, tc.expected)

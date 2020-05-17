@@ -271,23 +271,32 @@ func ProwJobFields(pj *prowapi.ProwJob) logrus.Fields {
 // JobURL returns the expected URL for ProwJobStatus.
 //
 // TODO(fejta): consider moving default JobURLTemplate and JobURLPrefix out of plank
-func JobURL(plank config.Plank, pj prowapi.ProwJob, log *logrus.Entry) string {
+func JobURL(plank config.Plank, pj prowapi.ProwJob, log *logrus.Entry) (string, error) {
 	if pj.Spec.DecorationConfig != nil && plank.GetJobURLPrefix(pj.Spec.Refs) != "" {
 		spec := downwardapi.NewJobSpec(pj.Spec, pj.Status.BuildID, pj.Name)
 		gcsConfig := pj.Spec.DecorationConfig.GCSConfiguration
 		_, gcsPath, _ := gcsupload.PathsForJob(gcsConfig, &spec, "")
 
 		prefix, _ := url.Parse(plank.GetJobURLPrefix(pj.Spec.Refs))
-		prefix.Path = path.Join(prefix.Path, gcsConfig.Bucket, gcsPath)
-		return prefix.String()
+
+		prowPath, err := prowapi.ParsePath(gcsConfig.Bucket)
+		if err != nil {
+			return "", fmt.Errorf("calculating joburl: %w", err)
+		}
+
+		// Final path will be, e.g.:
+		// prefix.Path                   + bucketName         + gcsPath
+		// https://prow.k8s.io/view/gs/  + kubernetes-jenkins + pr-logs/pull/kubernetes-sigs_cluster-api-provider-openstack/541/pull-cluster-api-provider-openstack-test/1247344427123347459
+		prefix.Path = path.Join(prefix.Path, prowPath.FullPath(), gcsPath)
+		return prefix.String(), nil
 	}
 	var b bytes.Buffer
 	if err := plank.JobURLTemplate.Execute(&b, &pj); err != nil {
 		log.WithFields(ProwJobFields(&pj)).Errorf("error executing URL template: %v", err)
 	} else {
-		return b.String()
+		return b.String(), nil
 	}
-	return ""
+	return "", nil
 }
 
 // ClusterToCtx converts the prow job's cluster to a cluster context

@@ -22,9 +22,9 @@ import (
 	"io"
 	"io/ioutil"
 
-	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
 
+	pkgio "k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/spyglass/lenses"
 )
 
@@ -48,7 +48,7 @@ type GCSArtifact struct {
 }
 
 type artifactHandle interface {
-	Attrs(ctx context.Context) (*storage.ObjectAttrs, error)
+	Attrs(ctx context.Context) (pkgio.Attributes, error)
 	NewRangeReader(ctx context.Context, offset, length int64) (io.ReadCloser, error)
 	NewReader(ctx context.Context) (io.ReadCloser, error)
 }
