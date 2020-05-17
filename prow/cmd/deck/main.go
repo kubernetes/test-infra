@@ -117,8 +117,7 @@ type options struct {
 	showHidden            bool
 	spyglass              bool
 	spyglassFilesLocation string
-	gcsCredentialsFile    string
-	s3CredentialsFile     string
+	storage               prowflagutil.StorageClientOptions
 	gcsNoAuth             bool
 	gcsCookieAuth         bool
 	rerunCreatesJob       bool
@@ -165,7 +164,7 @@ func (o *options) Validate() error {
 	if o.gcsNoAuth {
 		logrus.Warn("'--gcs-no-auth' is deprecated and is not used anymore. We always fall back to an anonymous client now, if all other options fail.")
 	}
-	if o.gcsCredentialsFile != "" && o.gcsNoAuth {
+	if o.storage.GCSCredentialsFile != "" && o.gcsNoAuth {
 		return errors.New("--gcs-credentials-file must not be set when --gcs-no-auth is set")
 	}
 	return nil
@@ -190,8 +189,6 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.StringVar(&o.spyglassFilesLocation, "spyglass-files-location", "/lenses", "Location of the static files for spyglass.")
 	fs.StringVar(&o.staticFilesLocation, "static-files-location", "/static", "Path to the static files")
 	fs.StringVar(&o.templateFilesLocation, "template-files-location", "/template", "Path to the template files")
-	fs.StringVar(&o.gcsCredentialsFile, "gcs-credentials-file", "", "File where GCS credentials are stored")
-	fs.StringVar(&o.s3CredentialsFile, "s3-credentials-file", "", "File where s3 credentials are stored. For the exact format see https://github.com/kubernetes/test-infra/blob/master/prow/io/providers/providers.go")
 	fs.BoolVar(&o.gcsNoAuth, "gcs-no-auth", false, "Whether to use anonymous auth for GCP. Requires when running outside of GCP and not setting gcs-credentials-file")
 	fs.BoolVar(&o.gcsCookieAuth, "gcs-cookie-auth", false, "Use storage.cloud.google.com instead of signed URLs")
 	fs.BoolVar(&o.rerunCreatesJob, "rerun-creates-job", false, "Change the re-run option in Deck to actually create the job. **WARNING:** Only use this with non-public deck instances, otherwise strangers can DOS your Prow instance")
@@ -202,6 +199,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	o.github.AddFlags(fs)
 	o.github.AllowAnonymous = true
 	o.github.AllowDirectAccess = true
+	o.storage.AddFlags(fs)
 	fs.Parse(args)
 	return o
 }
@@ -729,7 +727,7 @@ func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, authCfgGe
 
 func initSpyglass(cfg config.Getter, o options, mux *http.ServeMux, ja *jobs.JobAgent, gitHubClient deckGitHubClient, gitClient git.ClientFactory) {
 	ctx := context.TODO()
-	opener, err := io.NewOpener(ctx, o.gcsCredentialsFile, o.s3CredentialsFile)
+	opener, err := io.NewOpener(ctx, o.storage.GCSCredentialsFile, o.storage.S3CredentialsFile)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating opener")
 	}

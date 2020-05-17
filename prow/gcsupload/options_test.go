@@ -20,6 +20,7 @@ import (
 	"testing"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/flagutil"
 )
 
 func TestOptions_Validate(t *testing.T) {
@@ -41,8 +42,10 @@ func TestOptions_Validate(t *testing.T) {
 		{
 			name: "push to GCS, ok",
 			input: Options{
-				DryRun:             false,
-				GcsCredentialsFile: "secrets",
+				DryRun: false,
+				StorageClientOptions: flagutil.StorageClientOptions{
+					GCSCredentialsFile: "secrets",
+				},
 				GCSConfiguration: &prowapi.GCSConfiguration{
 					Bucket:       "seal",
 					PathStrategy: prowapi.PathStrategyExplicit,
@@ -53,8 +56,10 @@ func TestOptions_Validate(t *testing.T) {
 		{
 			name: "push to GCS, missing bucket",
 			input: Options{
-				DryRun:             false,
-				GcsCredentialsFile: "secrets",
+				DryRun: false,
+				StorageClientOptions: flagutil.StorageClientOptions{
+					GCSCredentialsFile: "secrets",
+				},
 				GCSConfiguration: &prowapi.GCSConfiguration{
 					PathStrategy: prowapi.PathStrategyExplicit,
 				},
