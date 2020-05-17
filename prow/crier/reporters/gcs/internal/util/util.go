@@ -27,7 +27,7 @@ import (
 	"google.golang.org/api/googleapi"
 	utilpointer "k8s.io/utils/pointer"
 
-	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/gcsupload"
 	pkgio "k8s.io/test-infra/prow/io"
@@ -43,7 +43,7 @@ type StorageAuthor struct {
 }
 
 func (sa StorageAuthor) NewWriter(ctx context.Context, bucket, path string, overwrite bool) (io.WriteCloser, error) {
-	pp, err := v1.ParsePath(bucket)
+	pp, err := prowv1.ParsePath(bucket)
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +88,7 @@ func isErrUnexpected(err error) bool {
 	return true
 }
 
-func GetJobDestination(cfg config.Getter, pj *v1.ProwJob) (bucket, dir string, err error) {
+func GetJobDestination(cfg config.Getter, pj *prowv1.ProwJob) (bucket, dir string, err error) {
 	// We can't divine a destination for jobs that don't have a build ID, so don't try.
 	if pj.Status.BuildID == "" {
 		return "", "", errors.New("cannot get job destination for job with no BuildID")
@@ -104,7 +104,7 @@ func GetJobDestination(cfg config.Getter, pj *v1.ProwJob) (bucket, dir string, e
 
 	ddc := cfg().Plank.GetDefaultDecorationConfigs(repo)
 
-	var gcsConfig *v1.GCSConfiguration
+	var gcsConfig *prowv1.GCSConfiguration
 	if pj.Spec.DecorationConfig != nil && pj.Spec.DecorationConfig.GCSConfiguration != nil {
 		gcsConfig = pj.Spec.DecorationConfig.GCSConfiguration
 	} else if ddc != nil && ddc.GCSConfiguration != nil {

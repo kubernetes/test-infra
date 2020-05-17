@@ -174,7 +174,7 @@ type openerObjectWriter struct {
 	Context     context.Context
 	Bucket      string
 	Dest        string
-	opts        []pkgio.WriterOptions
+	opts        []pkgio.WriterOption
 	writeCloser pkgio.WriteCloser
 }
 

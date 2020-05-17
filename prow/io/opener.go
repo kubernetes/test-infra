@@ -67,7 +67,7 @@ type Attributes struct {
 type Opener interface {
 	Reader(ctx context.Context, path string) (ReadCloser, error)
 	RangeReader(ctx context.Context, path string, offset, length int64) (io.ReadCloser, error)
-	Writer(ctx context.Context, path string, opts ...WriterOptions) (WriteCloser, error)
+	Writer(ctx context.Context, path string, opts ...WriterOption) (WriteCloser, error)
 	Attributes(ctx context.Context, path string) (Attributes, error)
 	SignedURL(ctx context.Context, path string, opts SignedURLOptions) (string, error)
 	Iterator(ctx context.Context, prefix, delimiter string) (ObjectIterator, error)
@@ -243,26 +243,22 @@ func (o *opener) RangeReader(ctx context.Context, path string, offset, length in
 var PreconditionFailedObjectAlreadyExists = fmt.Errorf("object already exists")
 
 // Writer returns a writer that overwrites the path.
-func (o *opener) Writer(ctx context.Context, p string, opts ...WriterOptions) (io.WriteCloser, error) {
-	var preconditionDoesNotExist bool
+func (o *opener) Writer(ctx context.Context, p string, opts ...WriterOption) (io.WriteCloser, error) {
+	options := &WriterOptions{}
 	for _, opt := range opts {
-		if opt.PreconditionDoesNotExist != nil {
-			preconditionDoesNotExist = *opt.PreconditionDoesNotExist
-		}
+		opt.Apply(options)
 	}
 	if strings.HasPrefix(p, providers.GS+"://") {
 		g, err := o.openGCS(p)
 		if err != nil {
 			return nil, fmt.Errorf("bad gcs path: %v", err)
 		}
-		if preconditionDoesNotExist {
+		if options.PreconditionDoesNotExist != nil && *options.PreconditionDoesNotExist {
 			g = g.If(storage.Conditions{DoesNotExist: true})
 		}
 
 		writer := g.NewWriter(ctx)
-		for _, opt := range opts {
-			opt.Apply(writer, nil)
-		}
+		options.apply(writer, nil)
 		return writer, nil
 	}
 	if strings.HasPrefix(p, "/") {
@@ -279,22 +275,21 @@ func (o *opener) Writer(ctx context.Context, p string, opts ...WriterOptions) (i
 		return nil, err
 	}
 	var wOpts blob.WriterOptions
-	for _, opt := range opts {
-		opt.Apply(nil, &wOpts)
-	}
+	options.apply(nil, &wOpts)
 
-	if preconditionDoesNotExist {
+	if options.PreconditionDoesNotExist != nil && *options.PreconditionDoesNotExist {
 		wOpts.BeforeWrite = func(asFunc func(interface{}) bool) error {
 			_, err := o.Reader(ctx, p)
-			// we got an error, but not file not exists
-			if err != nil && !IsNotExist(err) {
-				return err
+			if err != nil {
+				// we got an error, but not object not exists
+				if !IsNotExist(err) {
+					return err
+				}
+				// Precondition fulfilled, return nil
+				return nil
 			}
-			// we got not err => file already exists
-			if err == nil {
-				return PreconditionFailedObjectAlreadyExists
-			}
-			return nil
+			// Precondition failed, we got no err because object already exists
+			return PreconditionFailedObjectAlreadyExists
 		}
 	}
 

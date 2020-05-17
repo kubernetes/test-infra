@@ -30,6 +30,7 @@ import (
 
 	"cloud.google.com/go/storage"
 	"k8s.io/apimachinery/pkg/util/sets"
+
 	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/io"
 )
@@ -40,7 +41,7 @@ func (o fakeOpener) Reader(ctx context.Context, path string) (io.ReadCloser, err
 	return nil, storage.ErrObjectNotExist
 }
 
-func (o fakeOpener) Writer(ctx context.Context, path string, _ ...io.WriterOptions) (io.WriteCloser, error) {
+func (o fakeOpener) Writer(ctx context.Context, path string, _ ...io.WriterOption) (io.WriteCloser, error) {
 	return nil, errors.New("do not call Writer")
 }
 

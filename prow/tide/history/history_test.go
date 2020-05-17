@@ -148,7 +148,7 @@ func (t *testOpener) Reader(ctx context.Context, path string) (io.ReadCloser, er
 	return t, nil
 }
 
-func (t *testOpener) Writer(ctx context.Context, path string, _ ...pkgio.WriterOptions) (io.WriteCloser, error) {
+func (t *testOpener) Writer(ctx context.Context, path string, _ ...pkgio.WriterOption) (io.WriteCloser, error) {
 	if path != fakePath {
 		return nil, fmt.Errorf("path %q != expected %q", path, fakePath)
 	}
