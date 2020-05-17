@@ -26,32 +26,76 @@ import (
 	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/api/googleapi"
-	"k8s.io/test-infra/prow/apis/prowjobs/v1"
+
+	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/gcsupload"
+	pkgio "k8s.io/test-infra/prow/io"
+	"k8s.io/test-infra/prow/io/providers"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 )
 
 type Author interface {
-	NewWriter(ctx context.Context, bucket, path string, overwrite bool) io.WriteCloser
+	NewWriter(ctx context.Context, bucket, path string, overwrite bool) (io.WriteCloser, error)
 }
 
 type StorageAuthor struct {
 	Client *storage.Client
+	Opener pkgio.Opener
 }
 
-func (sa StorageAuthor) NewWriter(ctx context.Context, bucket, path string, overwrite bool) io.WriteCloser {
-	obj := sa.Client.Bucket(bucket).Object(path)
-	if !overwrite {
-		obj = obj.If(storage.Conditions{DoesNotExist: true})
+func (sa StorageAuthor) NewWriter(ctx context.Context, bucket, path string, overwrite bool) (io.WriteCloser, error) {
+	pp, err := v1.ParsePath(bucket)
+	if err != nil {
+		return nil, err
 	}
-	return obj.NewWriter(ctx)
+
+	if pp.StorageProvider() == providers.GS {
+		obj := sa.Client.Bucket(bucket).Object(path)
+		if !overwrite {
+			obj = obj.If(storage.Conditions{DoesNotExist: true})
+		}
+		return obj.NewWriter(ctx), nil
+	}
+
+	absolutePath := fmt.Sprintf("%s/%s", bucket, path)
+	writer, err := sa.Opener.Writer(ctx, absolutePath)
+	if err != nil {
+		return nil, err
+	}
+	return &noOverwriteWriter{ctx, sa.Opener, writer, absolutePath}, nil
+}
+
+type noOverwriteWriter struct {
+	ctx    context.Context
+	opener pkgio.Opener
+	io.WriteCloser
+	path string
+}
+
+var PreconditionFileAlreadyExistsFailed = fmt.Errorf("error file already exists")
+
+func (w *noOverwriteWriter) Write(p []byte) (int, error) {
+	_, err := w.opener.Reader(w.ctx, w.path)
+	// we got an error, but not file not exists
+	if err != nil && !pkgio.IsNotExist(err) {
+		return 0, err
+	}
+	// we got no error => file already exists
+	if err == nil {
+		return 0, PreconditionFileAlreadyExistsFailed
+	}
+
+	return w.WriteCloser.Write(p)
 }
 
 func WriteContent(ctx context.Context, logger *logrus.Entry, author Author, bucket, path string, overwrite bool, content []byte) error {
-	logger.WithFields(logrus.Fields{"bucket": bucket, "path": path}).Debugf("Uploading to gs://%s/%s; overwrite: %v", bucket, path, overwrite)
-	w := author.NewWriter(ctx, bucket, path, overwrite)
-	_, err := w.Write(content)
+	logger.WithFields(logrus.Fields{"bucket": bucket, "path": path}).Debugf("Uploading to %s/%s; overwrite: %v", bucket, path, overwrite)
+	w, err := author.NewWriter(ctx, bucket, path, overwrite)
+	if err != nil {
+		return err
+	}
+	_, err = w.Write(content)
 	var reportErr error
 	if isErrUnexpected(err) {
 		reportErr = err
@@ -75,6 +119,11 @@ func isErrUnexpected(err error) bool {
 			return false
 		}
 	}
+	// Precondition file already exists is expected
+	if err == PreconditionFileAlreadyExistsFailed {
+		return false
+	}
+
 	return true
 }
 

@@ -41,6 +41,7 @@ import (
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	gerritclient "k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/interrupts"
+	"k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
@@ -70,7 +71,7 @@ type options struct {
 
 	slackTokenFile string
 
-	gcsCredentialsFile string
+	storage prowflagutil.StorageClientOptions
 
 	k8sReportFraction float64
 
@@ -140,7 +141,6 @@ func (o *options) parseArgs(fs *flag.FlagSet, args []string) error {
 	fs.IntVar(&o.gcsWorkers, "gcs-workers", 0, "Number of GCS report workers (0 means disabled)")
 	fs.IntVar(&o.k8sGCSWorkers, "kubernetes-gcs-workers", 0, "Number of Kubernetes-specific GCS report workers (0 means disabled)")
 	fs.Float64Var(&o.k8sReportFraction, "kubernetes-report-fraction", 1.0, "Approximate portion of jobs to report pod information for, if kubernetes-gcs-workers are enabled (0 - > none, 1.0 -> all)")
-	fs.StringVar(&o.gcsCredentialsFile, "gcs-credentials-file", "", "Location of the GCS credentials file, if gcs-workers is non-zero")
 	fs.StringVar(&o.slackTokenFile, "slack-token-file", "", "Path to a Slack token file")
 	fs.StringVar(&o.reportAgent, "report-agent", "", "Only report specified agent - empty means report to all agents (effective for github and Slack only)")
 
@@ -152,6 +152,7 @@ func (o *options) parseArgs(fs *flag.FlagSet, args []string) error {
 
 	o.github.AddFlags(fs)
 	o.client.AddFlags(fs)
+	o.storage.AddFlags(fs)
 
 	fs.Parse(args)
 
@@ -271,19 +272,25 @@ func main() {
 	}
 
 	if o.gcsWorkers > 0 || o.k8sGCSWorkers > 0 {
+		ctx := context.Background()
+		// FIXME(sbueringer): try to get rid of storage.Client in this PR
 		var s *storage.Client
 		var opts []option.ClientOption
-		if o.gcsCredentialsFile != "" {
-			opts = append(opts, option.WithCredentialsFile(o.gcsCredentialsFile))
+		if o.storage.GCSCredentialsFile != "" {
+			opts = append(opts, option.WithCredentialsFile(o.storage.GCSCredentialsFile))
 		}
-		s, err = storage.NewClient(context.Background(), opts...)
-
+		s, err = storage.NewClient(ctx, opts...)
 		if err != nil {
-			logrus.WithError(err).Fatal("Error creating storage client for gcs workers.")
+			// FIXME: handle the same as in deck, don't just ignore the error
+			logrus.WithError(err).Error("Error creating storage client for gcs workers.")
+		}
+		opener, err := io.NewOpener(ctx, o.storage.GCSCredentialsFile, o.storage.S3CredentialsFile)
+		if err != nil {
+			logrus.WithError(err).Fatal("Error creating opener")
 		}
 
 		if o.gcsWorkers > 0 {
-			gcsReporter := gcsreporter.New(cfg, s, o.dryrun)
+			gcsReporter := gcsreporter.New(cfg, s, opener, o.dryrun)
 			controllers = append(
 				controllers,
 				crier.NewController(
@@ -300,7 +307,7 @@ func main() {
 				logrus.WithError(err).Fatal("Error building pod client sets for Kubernetes GCS workers")
 			}
 
-			k8sGcsReporter := k8sgcsreporter.New(cfg, s, coreClients, float32(o.k8sReportFraction), o.dryrun)
+			k8sGcsReporter := k8sgcsreporter.New(cfg, s, opener, coreClients, float32(o.k8sReportFraction), o.dryrun)
 			controllers = append(
 				controllers,
 				crier.NewController(

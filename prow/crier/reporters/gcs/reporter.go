@@ -28,10 +28,11 @@ import (
 	"github.com/GoogleCloudPlatform/testgrid/metadata"
 	"github.com/sirupsen/logrus"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
-	"k8s.io/test-infra/prow/crier/reporters/gcs/internal/util"
 
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/crier/reporters/gcs/internal/util"
+	"k8s.io/test-infra/prow/io"
 )
 
 const reporterName = "gcsreporter"
@@ -152,8 +153,8 @@ func (gr *gcsReporter) ShouldReport(pj *prowv1.ProwJob) bool {
 	return pj.Status.BuildID != ""
 }
 
-func New(cfg config.Getter, storage *storage.Client, dryRun bool) *gcsReporter {
-	return newWithAuthor(cfg, util.StorageAuthor{Client: storage}, dryRun)
+func New(cfg config.Getter, storage *storage.Client, opener io.Opener, dryRun bool) *gcsReporter {
+	return newWithAuthor(cfg, util.StorageAuthor{Client: storage, Opener: opener}, dryRun)
 }
 
 func newWithAuthor(cfg config.Getter, author util.Author, dryRun bool) *gcsReporter {
