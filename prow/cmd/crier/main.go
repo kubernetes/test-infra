@@ -60,12 +60,14 @@ type options struct {
 	configPath    string
 	jobConfigPath string
 
-	gerritWorkers int
-	pubsubWorkers int
-	githubWorkers int
-	slackWorkers  int
-	gcsWorkers    int
-	k8sGCSWorkers int
+	gerritWorkers         int
+	pubsubWorkers         int
+	githubWorkers         int
+	slackWorkers          int
+	gcsWorkers            int
+	k8sGCSWorkers         int
+	blobStorageWorkers    int
+	k8sBlobStorageWorkers int
 
 	slackTokenFile string
 
@@ -89,7 +91,7 @@ func (o *options) validate() error {
 		o.gerritWorkers = 1
 	}
 
-	if o.gerritWorkers+o.pubsubWorkers+o.githubWorkers+o.slackWorkers+o.gcsWorkers+o.k8sGCSWorkers <= 0 {
+	if o.gerritWorkers+o.pubsubWorkers+o.githubWorkers+o.slackWorkers+o.gcsWorkers+o.k8sGCSWorkers+o.blobStorageWorkers+o.k8sBlobStorageWorkers <= 0 {
 		return errors.New("crier need to have at least one report worker to start")
 	}
 
@@ -119,6 +121,21 @@ func (o *options) validate() error {
 		}
 	}
 
+	if o.gcsWorkers > 0 {
+		// use gcsWorkers if blobStorageWorkers is not set
+		if o.blobStorageWorkers == 0 {
+			o.blobStorageWorkers = o.gcsWorkers
+		}
+		logrus.Warn("--gcs-workers is deprecated and will be removed in August 2020. Use --blob-storage-workers instead.")
+	}
+	if o.k8sGCSWorkers > 0 {
+		// use k8sGCSWorkers if k8sBlobStorageWorkers is not set
+		if o.k8sBlobStorageWorkers == 0 {
+			o.k8sBlobStorageWorkers = o.k8sGCSWorkers
+		}
+		logrus.Warn("--kubernetes-gcs-workers is deprecated and will be removed in August 2020. Use --kubernetes-blob-storage-workers instead.")
+	}
+
 	if err := o.client.Validate(o.dryrun); err != nil {
 		return err
 	}
@@ -138,6 +155,8 @@ func (o *options) parseArgs(fs *flag.FlagSet, args []string) error {
 	fs.IntVar(&o.slackWorkers, "slack-workers", 0, "Number of Slack report workers (0 means disabled)")
 	fs.IntVar(&o.gcsWorkers, "gcs-workers", 0, "Number of GCS report workers (0 means disabled)")
 	fs.IntVar(&o.k8sGCSWorkers, "kubernetes-gcs-workers", 0, "Number of Kubernetes-specific GCS report workers (0 means disabled)")
+	fs.IntVar(&o.blobStorageWorkers, "blob-storage-workers", 0, "Number of blob storage report workers (0 means disabled)")
+	fs.IntVar(&o.k8sBlobStorageWorkers, "kubernetes-blob-storage-workers", 0, "Number of Kubernetes-specific blob storage report workers (0 means disabled)")
 	fs.Float64Var(&o.k8sReportFraction, "kubernetes-report-fraction", 1.0, "Approximate portion of jobs to report pod information for, if kubernetes-gcs-workers are enabled (0 - > none, 1.0 -> all)")
 	fs.StringVar(&o.slackTokenFile, "slack-token-file", "", "Path to a Slack token file")
 	fs.StringVar(&o.reportAgent, "report-agent", "", "Only report specified agent - empty means report to all agents (effective for github and Slack only)")
@@ -269,13 +288,13 @@ func main() {
 				o.githubWorkers))
 	}
 
-	if o.gcsWorkers > 0 || o.k8sGCSWorkers > 0 {
+	if o.blobStorageWorkers > 0 || o.k8sBlobStorageWorkers > 0 {
 		opener, err := io.NewOpener(context.Background(), o.storage.GCSCredentialsFile, o.storage.S3CredentialsFile)
 		if err != nil {
 			logrus.WithError(err).Fatal("Error creating opener")
 		}
 
-		if o.gcsWorkers > 0 {
+		if o.blobStorageWorkers > 0 {
 			gcsReporter := gcsreporter.New(cfg, opener, o.dryrun)
 			controllers = append(
 				controllers,
@@ -284,10 +303,10 @@ func main() {
 					kube.RateLimiter(gcsReporter.GetName()),
 					prowjobInformerFactory.Prow().V1().ProwJobs(),
 					gcsReporter,
-					o.gcsWorkers))
+					o.blobStorageWorkers))
 		}
 
-		if o.k8sGCSWorkers > 0 {
+		if o.k8sBlobStorageWorkers > 0 {
 			coreClients, err := o.client.BuildClusterCoreV1Clients(o.dryrun)
 			if err != nil {
 				logrus.WithError(err).Fatal("Error building pod client sets for Kubernetes GCS workers")
@@ -301,7 +320,7 @@ func main() {
 					kube.RateLimiter(k8sGcsReporter.GetName()),
 					prowjobInformerFactory.Prow().V1().ProwJobs(),
 					k8sGcsReporter,
-					o.k8sGCSWorkers))
+					o.k8sBlobStorageWorkers))
 		}
 	}
 
