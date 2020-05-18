@@ -284,16 +284,84 @@ func watchConfigs(ca *Agent, prowConfig, jobConfig string, additionals ...func(*
 	return nil
 }
 
-// Start will begin watching the config file at the path. If the first load
-// fails, Start will return the error and abort. Future load failures will log
-// the failure message but continue attempting to load.
-func (ca *Agent) Start(prowConfig, jobConfig string, additionals ...func(*Config) error) error {
+// StartWatch will begin watching the config files at the provided paths. If the
+// first load fails, Start will return the error and abort. Future load failures
+// will log the failure message but continue attempting to load.
+// This function will replace Start in a future release.
+func (ca *Agent) StartWatch(prowConfig, jobConfig string, additionals ...func(*Config) error) error {
 	c, err := Load(prowConfig, jobConfig, additionals...)
 	if err != nil {
 		return err
 	}
 	ca.Set(c)
 	watchConfigs(ca, prowConfig, jobConfig, additionals...)
+	return nil
+}
+
+func lastConfigModTime(prowConfig, jobConfig string) (time.Time, error) {
+	// Check if the file changed to see if it needs to be re-read.
+	// os.Stat follows symbolic links, which is how ConfigMaps work.
+	prowStat, err := os.Stat(prowConfig)
+	if err != nil {
+		logrus.WithField("prowConfig", prowConfig).WithError(err).Error("Error loading prow config.")
+		return time.Time{}, err
+	}
+	recentModTime := prowStat.ModTime()
+	// TODO(krzyzacy): allow empty jobConfig till fully migrate config to subdirs
+	if jobConfig != "" {
+		jobConfigStat, err := os.Stat(jobConfig)
+		if err != nil {
+			logrus.WithField("jobConfig", jobConfig).WithError(err).Error("Error loading job configs.")
+			return time.Time{}, err
+		}
+
+		if jobConfigStat.ModTime().After(recentModTime) {
+			recentModTime = jobConfigStat.ModTime()
+		}
+	}
+	return recentModTime, nil
+}
+
+// Start will begin polling the config file at the path. If the first load
+// fails, Start will return the error and abort. Future load failures will log
+// the failure message but continue attempting to load.
+func (ca *Agent) Start(prowConfig, jobConfig string, additionals ...func(*Config) error) error {
+	lastModTime, err := lastConfigModTime(prowConfig, jobConfig)
+	if err != nil {
+		lastModTime = time.Time{}
+	}
+	c, err := Load(prowConfig, jobConfig, additionals...)
+	if err != nil {
+		return err
+	}
+	ca.Set(c)
+	go func() {
+		// Rarely, if two changes happen in the same second, mtime will
+		// be the same for the second change, and an mtime-based check would
+		// fail. Reload periodically just in case.
+		skips := 0
+		for range time.Tick(1 * time.Second) {
+			if skips < 600 {
+				recentModTime, err := lastConfigModTime(prowConfig, jobConfig)
+				if err != nil {
+					continue
+				}
+				if !recentModTime.After(lastModTime) {
+					skips++
+					continue // file hasn't been modified
+				}
+				lastModTime = recentModTime
+			}
+			if c, err := Load(prowConfig, jobConfig, additionals...); err != nil {
+				logrus.WithField("prowConfig", prowConfig).
+					WithField("jobConfig", jobConfig).
+					WithError(err).Error("Error loading config.")
+			} else {
+				skips = 0
+				ca.Set(c)
+			}
+		}
+	}()
 	return nil
 }
 
