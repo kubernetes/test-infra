@@ -37,6 +37,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/clock"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
@@ -325,7 +326,11 @@ func TestTerminateDupes(t *testing.T) {
 					clock:        clock.RealClock{},
 				}
 				for _, pj := range tc.PJs {
-					if err := r.teminateDupes(&pj); err != nil {
+					res, err := r.reconcile(&pj)
+					if res != nil {
+						err = utilerrors.NewAggregate([]error{err, fmt.Errorf("expected reconcile.Result to be nil, was %v", res)})
+					}
+					if err != nil {
 						t.Fatalf("Error terminating dupes: %v", err)
 					}
 				}

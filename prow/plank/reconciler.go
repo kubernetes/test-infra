@@ -169,6 +169,12 @@ func (r *reconciler) defaultReconcile(request reconcile.Request) (reconcile.Resu
 }
 
 func (r *reconciler) reconcile(pj *prowv1.ProwJob) (*reconcile.Result, error) {
+	// terminateDupes first, as that might reduce cluster load and prevent us
+	// from doing pointless work.
+	if err := r.terminateDupes(pj); err != nil {
+		return nil, fmt.Errorf("terminateDupes failed: %w", err)
+	}
+
 	switch pj.Status.State {
 	case prowv1.PendingState:
 		return nil, r.syncPendingJob(pj)
@@ -181,7 +187,7 @@ func (r *reconciler) reconcile(pj *prowv1.ProwJob) (*reconcile.Result, error) {
 	return nil, nil
 }
 
-func (r *reconciler) teminateDupes(pj *prowv1.ProwJob) error {
+func (r *reconciler) terminateDupes(pj *prowv1.ProwJob) error {
 	pjs := &prowv1.ProwJobList{}
 	if err := r.pjClient.List(r.ctx, pjs, optNotCompletedProwJobs()); err != nil {
 		return fmt.Errorf("failed to list prowjobs: %v", err)
