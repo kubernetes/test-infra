@@ -133,7 +133,7 @@ func TestOptions(t *testing.T) {
 		},
 		{
 			name: "k8s-gcs enables k8s-gcs",
-			args: []string{"--kubernetes-gcs-workers=3", "--config-path=foo"},
+			args: []string{"--kubernetes-blob-storage-workers=3", "--config-path=foo"},
 			expected: &options{
 				k8sBlobStorageWorkers: 3,
 				configPath:            "foo",
@@ -144,7 +144,7 @@ func TestOptions(t *testing.T) {
 		},
 		{
 			name: "k8s-gcs with report fraction sets report fraction",
-			args: []string{"--kubernetes-gcs-workers=3", "--config-path=foo", "--kubernetes-report-fraction=0.5"},
+			args: []string{"--kubernetes-blob-storage-workers=3", "--config-path=foo", "--kubernetes-report-fraction=0.5"},
 			expected: &options{
 				k8sBlobStorageWorkers: 3,
 				configPath:            "foo",
