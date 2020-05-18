@@ -322,7 +322,6 @@ presubmits:
         - --gcp-zone=us-east1-b
         - --provider=gce
         - --tear-down-previous
-        - --env=CL2_ALLOWED_SLOW_API_CALLS=1
         - --env=CL2_ENABLE_DNS_PROGRAMMING=true
         - --test=false
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
@@ -442,7 +441,6 @@ presubmits:
             - --test-cmd-args=--nodes=100
             - --test-cmd-args=--prometheus-scrape-node-exporter
             - --test-cmd-args=--provider=kubemark
-            - --env=CL2_ALLOWED_SLOW_API_CALLS=1
             - --env=CL2_ENABLE_DNS_PROGRAMMING=true
             - --env=CL2_ENABLE_PVS=false # TODO(https://github.com/kubernetes/perf-tests/issues/803): Fix me
             - --test-cmd-args=--report-dir=/workspace/_artifacts
