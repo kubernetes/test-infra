@@ -91,6 +91,7 @@ require (
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0
 	golang.org/x/tools v0.0.0-20200303214625-2b0b585e22fe
 	google.golang.org/api v0.15.0
+	gopkg.in/fsnotify.v1 v1.4.7
 	gopkg.in/ini.v1 v1.52.0 // indirect
 	gopkg.in/robfig/cron.v2 v2.0.0-20150107220207-be2e0b0deed5
 	gopkg.in/yaml.v3 v3.0.0-20190709130402-674ba3eaed22
