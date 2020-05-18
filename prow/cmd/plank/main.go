@@ -195,6 +195,12 @@ func v2Main(o options, mgr manager.Manager, cfg config.Getter) error {
 		return fmt.Errorf("failed to construct build cluster managers: %w", err)
 	}
 
+	for _, buildManager := range buildManagers {
+		if err := mgr.Add(buildManager); err != nil {
+			return fmt.Errorf("failed to add build manager to main manager: %w", err)
+		}
+	}
+
 	if err := plank.Add(mgr, buildManagers, cfg, o.totURL, o.selector); err != nil {
 		return fmt.Errorf("failed to add plank to mgr: %w", err)
 	}
