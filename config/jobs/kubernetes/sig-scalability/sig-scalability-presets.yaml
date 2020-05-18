@@ -86,6 +86,8 @@ presets:
   # https://github.com/kubernetes/kubernetes/pull/85030 while not making the tests flaky.
   - name: CL2_SCHEDULER_THROUGHPUT_THRESHOLD
     value: 90
+  - name: CL2_ALLOWED_SLOW_API_CALLS
+    value: 1
 
 ### kubemark-gce-scale
 - labels:
@@ -184,6 +186,8 @@ presets:
   # https://github.com/kubernetes/kubernetes/pull/85030 while not making the tests flaky.
   - name: CL2_SCHEDULER_THROUGHPUT_THRESHOLD
     value: 90
+  - name: CL2_ALLOWED_SLOW_API_CALLS
+    value: 1
 
   ###### Scalability Envs
   ### Common env variables for containerd scalability-related suites.
