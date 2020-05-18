@@ -192,6 +192,15 @@ presubmits:
           command:
             - "runner.sh"
             - "./scripts/ci-entrypoint.sh"
+          env:
+            - name: FOCUS
+              value: "\\[Conformance\\]|\\[NodeConformance\\]"
+            - name: SKIP
+              value: "\\[Slow\\]|\\[Serial\\]|\\[Flaky\\]"
+            - name: PARALLEL
+              value: "true"
+            - name: USE_CI_ARTIFACTS
+              value: "true"
           securityContext:
             privileged: true
           resources:
@@ -223,6 +232,15 @@ presubmits:
           command:
             - "runner.sh"
             - "./scripts/ci-entrypoint.sh"
+          env:
+            - name: FOCUS
+              value: "\\[Conformance\\]|\\[NodeConformance\\]"
+            - name: SKIP
+              value: "\\[Slow\\]|\\[Serial\\]|\\[Flaky\\]"
+            - name: PARALLEL
+              value: "true"
+            - name: USE_CI_ARTIFACTS
+              value: "true"
           securityContext:
             privileged: true
           resources:
