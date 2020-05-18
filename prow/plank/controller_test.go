@@ -2002,45 +2002,59 @@ func (c *createErroringClient) Create(ctx context.Context, obj runtime.Object, o
 func TestSyncAbortedJob(t *testing.T) {
 	t.Parallel()
 
-	testCases := []struct {
-		name           string
-		pod            *v1.Pod
-		deleteError    error
-		expectSyncFail bool
-		expectDelete   bool
-		expectComplete bool
-	}{
+	type testCase struct {
+		Name           string
+		Pod            *v1.Pod
+		DeleteError    error
+		IsV2           bool
+		ExpectSyncFail bool
+		ExpectDelete   bool
+		ExpectComplete bool
+	}
+
+	testCases := []testCase{
 		{
-			name:           "Pod is deleted",
-			pod:            &v1.Pod{ObjectMeta: metav1.ObjectMeta{Name: "my-pj"}},
-			expectDelete:   true,
-			expectComplete: true,
+			Name:           "Pod is deleted",
+			Pod:            &v1.Pod{ObjectMeta: metav1.ObjectMeta{Name: "my-pj"}},
+			ExpectDelete:   true,
+			ExpectComplete: true,
 		},
 		{
-			name:           "No pod there",
-			expectDelete:   false,
-			expectComplete: true,
+			Name:           "No pod there",
+			ExpectDelete:   false,
+			ExpectComplete: true,
 		},
 		{
-			name:           "NotFound on delete is tolerated",
-			pod:            &v1.Pod{ObjectMeta: metav1.ObjectMeta{Name: "my-pj"}},
-			deleteError:    kapierrors.NewNotFound(schema.GroupResource{}, "my-pj"),
-			expectDelete:   false,
-			expectComplete: true,
+			Name:           "NotFound on delete is tolerated",
+			Pod:            &v1.Pod{ObjectMeta: metav1.ObjectMeta{Name: "my-pj"}},
+			DeleteError:    kapierrors.NewNotFound(schema.GroupResource{}, "my-pj"),
+			ExpectDelete:   false,
+			ExpectComplete: true,
 		},
 		{
-			name:           "Failed delete does not set job to completed",
-			pod:            &v1.Pod{ObjectMeta: metav1.ObjectMeta{Name: "my-pj"}},
-			deleteError:    errors.New("erroring as requested"),
-			expectSyncFail: true,
-			expectDelete:   false,
-			expectComplete: false,
+			Name:           "Failed delete does not set job to completed",
+			Pod:            &v1.Pod{ObjectMeta: metav1.ObjectMeta{Name: "my-pj"}},
+			DeleteError:    errors.New("erroring as requested"),
+			ExpectSyncFail: true,
+			ExpectDelete:   false,
+			ExpectComplete: false,
 		},
+	}
+
+	// Duplicate all tests for PlankV2
+	for _, tc := range testCases {
+		if tc.IsV2 {
+			continue
+		}
+		newTc := deepcopy.Copy(tc).(testCase)
+		newTc.Name = "[PlankV2] " + newTc.Name
+		newTc.IsV2 = true
+		testCases = append(testCases, newTc)
 	}
 
 	const cluster = "cluster"
 	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
+		t.Run(tc.Name, func(t *testing.T) {
 
 			pj := &prowapi.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
@@ -2056,34 +2070,55 @@ func TestSyncAbortedJob(t *testing.T) {
 
 			var pods []runtime.Object
 			var podMap map[string]v1.Pod
-			if tc.pod != nil {
-				pods = append(pods, tc.pod)
-				podMap = map[string]v1.Pod{pj.Name: *tc.pod}
+			if tc.Pod != nil {
+				pods = append(pods, tc.Pod)
+				podMap = map[string]v1.Pod{pj.Name: *tc.Pod}
 			}
 			podClient := &deleteTrackingFakeClient{
-				deleteError: tc.deleteError,
+				deleteError: tc.DeleteError,
 				Client:      fakectrlruntimeclient.NewFakeClient(pods...),
 			}
 
-			c := &Controller{
-				log:           logrus.NewEntry(logrus.New()),
-				prowJobClient: fakectrlruntimeclient.NewFakeClient(pj),
-				buildClients:  map[string]ctrlruntimeclient.Client{cluster: podClient},
+			pjClient := fakectrlruntimeclient.NewFakeClient(pj)
+			var sync func() error
+			if !tc.IsV2 {
+				c := &Controller{
+					log:           logrus.NewEntry(logrus.New()),
+					prowJobClient: pjClient,
+					buildClients:  map[string]ctrlruntimeclient.Client{cluster: podClient},
+				}
+				sync = func() error {
+					return c.syncAbortedJob(*pj, podMap)
+				}
+			} else {
+				r := &reconciler{
+					log:          logrus.NewEntry(logrus.New()),
+					config:       func() *config.Config { return &config.Config{} },
+					pjClient:     pjClient,
+					buildClients: map[string]ctrlruntimeclient.Client{cluster: podClient},
+				}
+				sync = func() error {
+					res, err := r.reconcile(pj)
+					if res != nil {
+						err = utilerrors.NewAggregate([]error{err, fmt.Errorf("expected reconcile.Result to be nil, was %v", res)})
+					}
+					return err
+				}
 			}
 
-			if err := c.syncAbortedJob(*pj, podMap); (err != nil) != tc.expectSyncFail {
-				t.Fatalf("sync failed: %v, expected it to fail: %t", err, tc.expectSyncFail)
+			if err := sync(); (err != nil) != tc.ExpectSyncFail {
+				t.Fatalf("sync failed: %v, expected it to fail: %t", err, tc.ExpectSyncFail)
 			}
 
-			if err := c.prowJobClient.Get(context.Background(), types.NamespacedName{Name: pj.Name}, pj); err != nil {
+			if err := pjClient.Get(context.Background(), types.NamespacedName{Name: pj.Name}, pj); err != nil {
 				t.Fatalf("failed to get job from client: %v", err)
 			}
-			if pj.Complete() != tc.expectComplete {
-				t.Errorf("expected complete: %t, got complete: %t", tc.expectComplete, pj.Complete())
+			if pj.Complete() != tc.ExpectComplete {
+				t.Errorf("expected complete: %t, got complete: %t", tc.ExpectComplete, pj.Complete())
 			}
 
-			if tc.expectDelete != podClient.deleted.Has(pj.Name) {
-				t.Errorf("expected delete: %t, got delete: %t", tc.expectDelete, podClient.deleted.Has(pj.Name))
+			if tc.ExpectDelete != podClient.deleted.Has(pj.Name) {
+				t.Errorf("expected delete: %t, got delete: %t", tc.ExpectDelete, podClient.deleted.Has(pj.Name))
 			}
 		})
 	}

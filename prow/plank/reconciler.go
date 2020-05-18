@@ -174,6 +174,8 @@ func (r *reconciler) reconcile(pj *prowv1.ProwJob) (*reconcile.Result, error) {
 		return nil, r.syncPendingJob(pj)
 	case prowv1.TriggeredState:
 		return r.syncTriggeredJob(pj)
+	case prowv1.AbortedState:
+		return nil, r.syncAbortedJob(pj)
 	}
 
 	return nil, nil
@@ -323,7 +325,10 @@ func (r *reconciler) syncPendingJob(pj *prowv1.ProwJob) error {
 		}
 	}
 
-	pj.Status.URL = pjutil.JobURL(r.config().Plank, *pj, r.log)
+	pj.Status.URL, err = pjutil.JobURL(r.config().Plank, *pj, r.log)
+	if err != nil {
+		r.log.WithFields(pjutil.ProwJobFields(pj)).WithError(err).Warn("failed to get jobURL")
+	}
 
 	if prevPJ.Status.State != pj.Status.State {
 		r.log.WithFields(pjutil.ProwJobFields(pj)).
@@ -384,7 +389,10 @@ func (r *reconciler) syncTriggeredJob(pj *prowv1.ProwJob) (*reconcile.Result, er
 		pj.Status.State = prowv1.PendingState
 		pj.Status.PodName = pn
 		pj.Status.Description = "Job triggered."
-		pj.Status.URL = pjutil.JobURL(r.config().Plank, *pj, r.log)
+		pj.Status.URL, err = pjutil.JobURL(r.config().Plank, *pj, r.log)
+		if err != nil {
+			r.log.WithFields(pjutil.ProwJobFields(pj)).WithError(err).Warn("failed to get jobURL")
+		}
 	}
 
 	if prevPJ.Status.State != pj.Status.State {
@@ -393,6 +401,27 @@ func (r *reconciler) syncTriggeredJob(pj *prowv1.ProwJob) (*reconcile.Result, er
 			WithField("to", pj.Status.State).Info("Transitioning states.")
 	}
 	return nil, r.pjClient.Patch(r.ctx, pj.DeepCopy(), ctrlruntimeclient.MergeFrom(prevPJ))
+}
+
+func (r *reconciler) syncAbortedJob(pj *prowv1.ProwJob) error {
+
+	buildClient, ok := r.buildClients[pj.ClusterAlias()]
+	if !ok {
+		return fmt.Errorf("no build client available for cluster %s", pj.ClusterAlias())
+	}
+
+	// Just optimistically delete and swallow the potential 404
+	pod := &corev1.Pod{ObjectMeta: metav1.ObjectMeta{
+		Name:      pj.Name,
+		Namespace: r.config().PodNamespace,
+	}}
+	if err := buildClient.Delete(r.ctx, pod); err != nil && !kerrors.IsNotFound(err) {
+		return fmt.Errorf("failed to delete pod %s/%s in cluster %s: %w", pod.Namespace, pod.Name, pj.ClusterAlias(), err)
+	}
+
+	originalPJ := pj.DeepCopy()
+	pj.SetComplete()
+	return r.pjClient.Patch(r.ctx, pj, ctrlruntimeclient.MergeFrom(originalPJ))
 }
 
 func (r *reconciler) pod(pj *prowv1.ProwJob) (*corev1.Pod, bool, error) {
