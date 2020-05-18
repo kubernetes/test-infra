@@ -190,7 +190,7 @@ func TestAdd(t *testing.T) {
 						return
 					case predicateDenied = <-predicateResultChan:
 						// Actual request has to pass through the workqueue first
-						// so it might take an addional moment
+						// so it might take an additional moment
 						if predicateDenied {
 							return
 						}
