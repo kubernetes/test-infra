@@ -64,6 +64,7 @@ require (
 	github.com/klauspost/compress v1.10.2 // indirect
 	github.com/klauspost/pgzip v1.2.1
 	github.com/mattn/go-zglob v0.0.1
+	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826
 	github.com/pelletier/go-toml v1.6.0
 	github.com/peterbourgon/diskv v2.0.1+incompatible
 	github.com/pkg/errors v0.9.1
@@ -103,7 +104,7 @@ require (
 	k8s.io/utils v0.0.0-20191114184206-e782cd3c129f
 	knative.dev/pkg v0.0.0-20200207155214-fef852970f43
 	mvdan.cc/xurls/v2 v2.0.0
-	sigs.k8s.io/controller-runtime v0.5.0
+	sigs.k8s.io/controller-runtime v0.5.1
 	sigs.k8s.io/yaml v1.2.0
 )
 
