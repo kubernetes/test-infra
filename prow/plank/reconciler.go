@@ -565,13 +565,18 @@ func predicates(additionalSelector string, callback func(bool)) (predicate.Predi
 
 	return predicatesFromFilter(func(m metav1.Object, r runtime.Object) bool {
 		result := func() bool {
-			// Predicates only apply to prowjobs, not to pods
 			pj, ok := r.(*prowv1.ProwJob)
-			if ok {
-				return pj.Spec.Agent == prowv1.KubernetesAgent
+			if !ok {
+				// We ignore pods that do not match our selector
+				return selector.Matches(labels.Set(m.GetLabels()))
 			}
 
-			return selector.Matches(labels.Set(m.GetLabels()))
+			// We can ignore completed prowjobs
+			if pj.Complete() {
+				return false
+			}
+
+			return pj.Spec.Agent == prowv1.KubernetesAgent
 		}()
 		if callback != nil {
 			callback(result)

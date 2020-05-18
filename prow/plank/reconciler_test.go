@@ -54,6 +54,15 @@ func TestAdd(t *testing.T) {
 			expectPredicateDenied: true,
 		},
 		{
+			name: "ProwJob that is completed does not generate event",
+			prowJob: &prowv1.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{Namespace: prowJobNamespace, Name: "my-pj"},
+				Spec:       prowv1.ProwJobSpec{Agent: prowv1.KubernetesAgent},
+				Status:     prowv1.ProwJobStatus{CompletionTime: &metav1.Time{}},
+			},
+			expectPredicateDenied: true,
+		},
+		{
 			name: "Pod generates event",
 			pod: &corev1.Pod{
 				ObjectMeta: metav1.ObjectMeta{
