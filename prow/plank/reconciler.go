@@ -18,7 +18,6 @@ package plank
 
 import (
 	"context"
-	_ "encoding/json"
 	"fmt"
 	"time"
 
@@ -85,6 +84,7 @@ func add(
 		WithOptions(controller.Options{MaxConcurrentReconciles: numWorkers})
 
 	r := &reconciler{
+		ctx:                context.Background(),
 		pjClient:           mgr.GetClient(),
 		buildClients:       map[string]ctrlruntimeclient.Client{},
 		overwriteReconcile: overwriteReconcile,
