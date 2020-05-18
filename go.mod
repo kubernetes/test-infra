@@ -82,6 +82,7 @@ require (
 	github.com/spf13/viper v1.6.2
 	github.com/tektoncd/pipeline v0.11.0
 	go.opencensus.io v0.22.3 // indirect
+	go.uber.org/zap v1.14.1
 	gocloud.dev v0.19.0
 	golang.org/x/crypto v0.0.0-20200302210943-78000ba7a073
 	golang.org/x/lint v0.0.0-20200302205851-738671d3881b

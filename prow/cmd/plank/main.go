@@ -24,8 +24,11 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	uberzap "go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/labels"
+	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+	ctrlruntimelog "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 
 	"k8s.io/test-infra/pkg/flagutil"
 	"k8s.io/test-infra/prow/config"
@@ -104,6 +107,15 @@ func main() {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 	cfg := configAgent.Config
+
+	var logOpts []zap.Opts
+	if cfg().LogLevel == "debug" {
+		logOpts = append(logOpts, func(o *zap.Options) {
+			lvl := uberzap.NewAtomicLevelAt(uberzap.DebugLevel)
+			o.Level = &lvl
+		})
+	}
+	ctrlruntimelog.SetLogger(zap.New(logOpts...))
 
 	var reporter func(context.Context)
 	if !o.skipReport {
