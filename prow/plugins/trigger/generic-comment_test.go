@@ -65,7 +65,8 @@ type testcase struct {
 }
 
 func TestHandleGenericComment(t *testing.T) {
-	helpComment := "The following commands are available to trigger jobs:\n* `/test job`\n* `/test jib`\n\nUse `/test all` to run all jobs."
+	helpComment := "The following commands are available to trigger jobs:\n* `/test job`\n* `/test jib`\n\n"
+	helpTestAllWithJobsComment := fmt.Sprintf("Use `/test all` to run the following jobs:%s\n\n", "\n* `job`")
 	var testcases = []testcase{
 		{
 			name: "Not a PR.",
@@ -664,12 +665,38 @@ func TestHandleGenericComment(t *testing.T) {
 			IssueLabels: issueLabels(labels.LGTM, labels.Approved),
 		},
 		{
-			name:         `help command "/test ?" lists available presubmits`,
-			Author:       "trusted-member",
-			Body:         "/test ?",
-			State:        "open",
-			IsPR:         true,
-			AddedComment: helpComment,
+			name:   `help command "/test ?" lists available presubmits`,
+			Author: "trusted-member",
+			Body:   "/test ?",
+			State:  "open",
+			IsPR:   true,
+			Presubmits: map[string][]config.Presubmit{
+				"org/repo": {
+					{
+						JobBase: config.JobBase{
+							Name: "job",
+						},
+						AlwaysRun: true,
+						Reporter: config.Reporter{
+							Context: "pull-job",
+						},
+						Trigger:      `(?m)^/test (?:.*? )?job(?: .*?)?$`,
+						RerunCommand: `/test job`,
+					},
+					{
+						JobBase: config.JobBase{
+							Name: "jib",
+						},
+						AlwaysRun: true,
+						Reporter: config.Reporter{
+							Context: "pull-jib",
+						},
+						Trigger:      `(?m)^/test (?:.*? )?jib(?: .*?)?$`,
+						RerunCommand: `/test jib`,
+					},
+				},
+			},
+			AddedComment: helpComment + "Use `/test all` to run all jobs.",
 		},
 		{
 			name:   `help command "/test ?" uses RerunCommand field of presubmits`,
@@ -683,6 +710,7 @@ func TestHandleGenericComment(t *testing.T) {
 						JobBase: config.JobBase{
 							Name: "jub",
 						},
+						AlwaysRun: true,
 						Reporter: config.Reporter{
 							Context: "pull-jub",
 						},
@@ -693,6 +721,7 @@ func TestHandleGenericComment(t *testing.T) {
 						JobBase: config.JobBase{
 							Name: "jib",
 						},
+						AlwaysRun: true,
 						Reporter: config.Reporter{
 							Context: "pull-jib",
 						},
@@ -709,7 +738,7 @@ func TestHandleGenericComment(t *testing.T) {
 			Body:         "/test",
 			State:        "open",
 			IsPR:         true,
-			AddedComment: testWithoutTargetNote + helpComment,
+			AddedComment: testWithoutTargetNote + helpComment + helpTestAllWithJobsComment,
 		},
 		{
 			name:         "/test with no target but ? in the next line results in an invalid test command message",
@@ -717,7 +746,7 @@ func TestHandleGenericComment(t *testing.T) {
 			Body:         "/test \r\n?",
 			State:        "open",
 			IsPR:         true,
-			AddedComment: testWithoutTargetNote + helpComment,
+			AddedComment: testWithoutTargetNote + helpComment + helpTestAllWithJobsComment,
 		},
 		{
 			name:         "/retest with trailing words results in a help message",
@@ -725,7 +754,7 @@ func TestHandleGenericComment(t *testing.T) {
 			Body:         "/retest FOO",
 			State:        "open",
 			IsPR:         true,
-			AddedComment: retestWithTargetNote + helpComment,
+			AddedComment: retestWithTargetNote + helpComment + helpTestAllWithJobsComment,
 		},
 		{
 			name:          "/retest without target but with lines following it, is valid",
@@ -742,7 +771,122 @@ func TestHandleGenericComment(t *testing.T) {
 			Body:         "/test FOO",
 			State:        "open",
 			IsPR:         true,
-			AddedComment: targetNotFoundNote + helpComment,
+			AddedComment: targetNotFoundNote + helpComment + helpTestAllWithJobsComment,
+		},
+		{
+			name:   "help comment should list only eligible jobs under '/test all'",
+			Author: "trusted-member",
+			Body:   "/test ?",
+			State:  "open",
+			IsPR:   true,
+			Presubmits: map[string][]config.Presubmit{
+				"org/repo": {
+					{
+						JobBase: config.JobBase{
+							Name: "job",
+						},
+						AlwaysRun: true,
+						Reporter: config.Reporter{
+							Context: "pull-job",
+						},
+						Trigger:      `(?m)^/test job$`,
+						RerunCommand: `/test job`,
+					},
+					{
+						JobBase: config.JobBase{
+							Name: "jib",
+						},
+						Reporter: config.Reporter{
+							Context: "pull-jib",
+						},
+						Trigger:      `(?m)^/test (?:.*? )?jib(?: .*?)?$`,
+						RerunCommand: `/test jib`,
+					},
+				},
+			},
+			AddedComment: helpComment + helpTestAllWithJobsComment,
+		},
+		{
+			name:   "when no jobs can be run with /test all, respond accordingly",
+			Author: "trusted-member",
+			Body:   "/test all",
+			State:  "open",
+			IsPR:   true,
+			Presubmits: map[string][]config.Presubmit{
+				"org/repo": {
+					{
+						JobBase: config.JobBase{
+							Name: "job",
+						},
+						AlwaysRun: false,
+						Reporter: config.Reporter{
+							Context: "pull-job",
+						},
+						Trigger:      `(?m)^/test job$`,
+						RerunCommand: `/test job`,
+					},
+					{
+						JobBase: config.JobBase{
+							Name: "jib",
+						},
+						AlwaysRun: false,
+						Reporter: config.Reporter{
+							Context: "pull-jib",
+						},
+						Trigger:      `(?m)^/test jib$`,
+						RerunCommand: `/test jib`,
+					},
+				},
+			},
+			AddedComment: thereAreNoTestAllJobsNote + helpComment,
+		},
+		{
+			name:   "available presubmits should not list those excluded by branch",
+			Author: "trusted-member",
+			Body:   "/test ?",
+			State:  "open",
+			IsPR:   true,
+
+			Presubmits: map[string][]config.Presubmit{
+				"org/repo": {
+					{
+						JobBase: config.JobBase{
+							Name: "job-excluded-by-brancher",
+						},
+						Brancher: config.Brancher{
+							SkipBranches: []string{"master"},
+						},
+						AlwaysRun: true,
+						Reporter: config.Reporter{
+							Context: "pull-job-excluded-by-brancher",
+						},
+						Trigger:      `(?m)^/test job-excluded$`,
+						RerunCommand: `/test job-excluded`,
+					},
+					{
+						JobBase: config.JobBase{
+							Name: "job",
+						},
+						AlwaysRun: true,
+						Reporter: config.Reporter{
+							Context: "pull-job",
+						},
+						Trigger:      `(?m)^/test job$`,
+						RerunCommand: `/test job`,
+					},
+					{
+						JobBase: config.JobBase{
+							Name: "jib",
+						},
+						Reporter: config.Reporter{
+							Context: "pull-jib",
+						},
+						Trigger:      `(?m)^/test (?:.*? )?jib(?: .*?)?$`,
+						RerunCommand: `/test jib`,
+					},
+				},
+			},
+			AddedComment: helpComment + helpTestAllWithJobsComment,
 		},
 	}
 	for _, tc := range testcases {
