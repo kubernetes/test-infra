@@ -49,6 +49,10 @@ flakeReasonOrdinalRE = re.compile(
     r'|(?<=minion-group-|default-pool-)[-0-9a-z]{4,}'  # node names
 )
 
+LONG_OUTPUT_LEN = 10000
+TRUNCATED_SEP = '\n...[truncated]...\n'
+MAX_CLUSTER_TEXT_LEN = LONG_OUTPUT_LEN + len(TRUNCATED_SEP)
+
 
 def normalize(s):
     """
@@ -84,12 +88,12 @@ def normalize(s):
 
     s = flakeReasonOrdinalRE.sub(repl, s)
 
-    if len(s) > 10000:
+    if len(s) > LONG_OUTPUT_LEN:
         # for long strings, remove repeated lines!
         s = re.sub(r'(?m)^(.*\n)\1+', r'\1', s)
 
-    if len(s) > 10000:  # ridiculously long test output
-        s = s[:5000] + '\n...[truncated]...\n' + s[-5000:]
+    if len(s) > LONG_OUTPUT_LEN:  # ridiculously long test output
+        s = s[:int(LONG_OUTPUT_LEN/2)] + TRUNCATED_SEP + s[-int(LONG_OUTPUT_LEN/2):]
 
     return s
 
@@ -287,7 +291,7 @@ def cluster_local(failed_tests):
                    reverse=True),
             1):
         num_failures += len(tests)
-        logging.info('%4d/%4d, %d failures, %s', n, len(failed_tests), len(tests), test_name)
+        logging.info('%4d/%4d tests, %5d failures, %s', n, len(failed_tests), len(tests), test_name)
         sys.stdout.flush()
         clustered[test_name] = cluster_test(tests)
     elapsed = time.time() - start
@@ -333,19 +337,37 @@ def cluster_global(clustered, previous_clustered):
                    key=lambda kv: sum(len(x) for x in kv[1].values()),
                    reverse=True),
             1):
-        logging.info('%4d/%4d, %d clusters, %s', n, len(clustered), len(test_clusters), test_name)
+        logging.info('%4d/%4d tests, %4d clusters, %s', n, len(clustered), len(test_clusters), test_name)
+        test_start = time.time()
         # Look at clusters with the most failures first
-        for key, tests in sorted(test_clusters.items(),
-                                 key=lambda x: len(x[1]), reverse=True):
-            num_failures += len(tests)
+        for m, (key, tests) in enumerate(
+                sorted(test_clusters.items(),
+                       key=lambda x: len(x[1]),
+                       reverse=True),
+                1):
+            cluster_start = time.time()
+            ftext_len = len(key)
+            num_clusters = len(test_clusters)
+            num_tests = len(tests)
+            cluster_case = ""
+            logging.info('  %4d/%4d clusters, %5d chars failure text, %5d failures ...', m, num_clusters, ftext_len, num_tests)
+            num_failures += num_tests
             if key in clusters:
+                cluster_case = "EXISTING"
                 clusters[key].setdefault(test_name, []).extend(tests)
+            # if we've taken longer than 30 seconds for this test, bail on pathological / low value cases
+            elif time.time() > test_start + 30 and ftext_len > MAX_CLUSTER_TEXT_LEN/2 and num_tests == 1:
+                cluster_case = "BAILED"
             else:
                 other = find_match(key, clusters)
                 if other:
+                    cluster_case = "OTHER"
                     clusters[other].setdefault(test_name, []).extend(tests)
                 else:
+                    cluster_case = "NEW"
                     clusters[key] = {test_name: list(tests)}
+            cluster_dur = time.time() - cluster_start
+            logging.info('  %4d/%4d clusters, %5d chars failure text, %5d failures, cluster:%s in %d sec, test: %s', m, num_clusters, ftext_len, num_tests, cluster_case, cluster_dur, test_name)
 
     # If we seeded clusters using the previous run's keys, some of those
     # clusters may have disappeared. Remove the resulting empty entries.
