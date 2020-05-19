@@ -515,7 +515,7 @@ func (r *reconciler) canExecuteConcurrently(pj *prowv1.ProwJob) (bool, error) {
 	var olderMatchingPJs int
 	for _, foundPJ := range pjs.Items {
 		// Ignore self here. Second half of the condition is needed for tests.
-		if foundPJ.UID == pj.UID && pj.UID != types.UID("") {
+		if foundPJ.UID == pj.UID {
 			continue
 		}
 

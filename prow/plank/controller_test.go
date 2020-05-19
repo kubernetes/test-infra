@@ -1937,6 +1937,7 @@ func TestMaxConcurency(t *testing.T) {
 					clock:        clock.RealClock{},
 				}
 				var err error
+				tc.ProwJob.UID = types.UID("under-test")
 				result, err = r.canExecuteConcurrently(&tc.ProwJob)
 				if err != nil {
 					t.Fatalf("canExecuteConcurrently: %v", err)
