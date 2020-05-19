@@ -114,34 +114,34 @@ def build_test(cloud='aws', distro=None, networking=None, k8s_version=None):
         kops_image = None
     elif distro == 'amzn2':
         kops_ssh_user = 'ec2-user'
-        kops_image = '137112412989/amzn2-ami-hvm-2.0.20200304.0-x86_64-gp2'
+        kops_image = '137112412989/amzn2-ami-hvm-2.0.20200406.0-x86_64-gp2'
     elif distro == 'centos7':
         kops_ssh_user = 'centos'
-        kops_image = "679593333241/CentOS Linux 7 x86_64 HVM EBS ENA 1901_01-b7ee8a69-ee97-4a49-9e68-afaee216db2e-ami-05713873c6794f575.4" # pylint: disable=line-too-long
+        kops_image = "679593333241/CentOS Linux 7 x86_64 HVM EBS ENA 2002_01-b7ee8a69-ee97-4a49-9e68-afaee216db2e-ami-0042af67f8e4dcc20.4" # pylint: disable=line-too-long
     elif distro == 'deb9':
         kops_ssh_user = 'admin'
-        kops_image = '379101102735/debian-stretch-hvm-x86_64-gp2-2019-11-13-63558'
+        kops_image = '379101102735/debian-stretch-hvm-x86_64-gp2-2020-02-10-73984'
     elif distro == 'deb10':
         kops_ssh_user = 'admin'
-        kops_image = '136693071363/debian-10-amd64-20200210-166'
+        kops_image = '136693071363/debian-10-amd64-20200511-260'
     elif distro == 'flatcar':
         kops_ssh_user = 'core'
-        kops_image = '075585003325/Flatcar-stable-2303.3.1-hvm'
+        kops_image = '075585003325/Flatcar-stable-2345.3.1-hvm'
     elif distro == 'u1604':
         kops_ssh_user = 'ubuntu'
-        kops_image = '099720109477/ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-20200407'
+        kops_image = '099720109477/ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-20200429'
     elif distro == 'u1804':
         kops_ssh_user = 'ubuntu'
-        kops_image = '099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20200408'
+        kops_image = '099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20200430'
     elif distro == 'u2004':
         kops_ssh_user = 'ubuntu'
         kops_image = '099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200423'
     elif distro == 'rhel7':
         kops_ssh_user = 'ec2-user'
-        kops_image = '309956199498/RHEL-7.7_HVM-20191119-x86_64-2-Hourly2-GP2'
+        kops_image = '309956199498/RHEL-7.8_HVM_GA-20200225-x86_64-1-Hourly2-GP2'
     elif distro == 'rhel8':
         kops_ssh_user = 'ec2-user'
-        kops_image = '309956199498/RHEL-8.1.0_HVM-20191029-x86_64-0-Hourly2-GP2'
+        kops_image = '309956199498/RHEL-8.2.0_HVM-20200423-x86_64-0-Hourly2-GP2'
     else:
         raise Exception('unknown distro ' + distro)
 

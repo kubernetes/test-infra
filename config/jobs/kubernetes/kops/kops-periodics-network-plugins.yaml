@@ -23,7 +23,8 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/stable
       - --ginkgo-parallel
-      - --kops-args=--networking=amazon-vpc-routed-eni --node-size=t3.large --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200423
+      - --kops-args=--networking=amazon-vpc-routed-eni --node-size=t3.large
+      - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200423
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-ssh-user=ubuntu
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
@@ -58,7 +59,8 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/stable
       - --ginkgo-parallel
-      - --kops-args=--networking=calico --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200423
+      - --kops-args=--networking=calico
+      - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200423
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-ssh-user=ubuntu
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
@@ -93,7 +95,8 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/stable
       - --ginkgo-parallel
-      - --kops-args=--networking=canal --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200423
+      - --kops-args=--networking=canal
+      - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200423
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-ssh-user=ubuntu
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
@@ -128,7 +131,8 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/stable
       - --ginkgo-parallel
-      - --kops-args=--networking=cilium --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200423
+      - --kops-args=--networking=cilium
+      - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200423
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-ssh-user=ubuntu
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
@@ -163,7 +167,8 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/stable
       - --ginkgo-parallel
-      - --kops-args=--networking=flannel --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200423
+      - --kops-args=--networking=flannel
+      - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200423
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-ssh-user=ubuntu
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
@@ -198,7 +203,8 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/stable
       - --ginkgo-parallel
-      - --kops-args=--networking=kopeio --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200423
+      - --kops-args=--networking=kopeio
+      - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200423
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-ssh-user=ubuntu
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
@@ -232,7 +238,8 @@ periodics:
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --extract=release/stable
       - --ginkgo-parallel
-      - --kops-args=--networking=kube-router --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200423
+      - --kops-args=--networking=kube-router
+      - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200423
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-ssh-user=ubuntu
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
@@ -267,7 +274,8 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/stable
       - --ginkgo-parallel
-      - --kops-args=--networking=weave --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200423
+      - --kops-args=--networking=weave
+      - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200423
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-ssh-user=ubuntu
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
@@ -302,7 +310,8 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/stable
       - --ginkgo-parallel
-      - --kops-args=--networking=lyftvpc --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200423
+      - --kops-args=--networking=lyftvpc
+      - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200423
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-ssh-user=ubuntu
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
