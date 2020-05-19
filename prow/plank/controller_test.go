@@ -23,6 +23,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"reflect"
+	"strconv"
 	"sync"
 	"testing"
 	"text/template"
@@ -798,7 +799,9 @@ func TestSyncTriggeredJobs(t *testing.T) {
 					totURL:       totServ.URL,
 					clock:        fakeClock,
 				}
-				if _, err := r.syncTriggeredJob(tc.PJ.DeepCopy()); (err != nil) != tc.ExpectError {
+				pj := tc.PJ.DeepCopy()
+				pj.UID = types.UID("under-test")
+				if _, err := r.syncTriggeredJob(pj); (err != nil) != tc.ExpectError {
 					if tc.ExpectError {
 						t.Errorf("for case %q expected an error, but got none", tc.Name)
 					} else {
@@ -1698,6 +1701,7 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 			for i := range test.PJs {
 				test.PJs[i].Namespace = "prowjobs"
 				test.PJs[i].Spec.Agent = prowapi.KubernetesAgent
+				test.PJs[i].UID = types.UID(strconv.Itoa(i))
 				prowJobs = append(prowJobs, &test.PJs[i])
 			}
 			fakeProwJobClient := fakectrlruntimeclient.NewFakeClient(prowJobs...)
@@ -1937,6 +1941,7 @@ func TestMaxConcurency(t *testing.T) {
 					clock:        clock.RealClock{},
 				}
 				var err error
+				// We filter ourselves out via the UID, so make sure its not the empty string
 				tc.ProwJob.UID = types.UID("under-test")
 				result, err = r.canExecuteConcurrently(&tc.ProwJob)
 				if err != nil {
