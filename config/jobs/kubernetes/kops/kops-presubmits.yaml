@@ -464,7 +464,7 @@ periodics:
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-kops
+    testgrid-dashboards: kops-presubmits
     testgrid-tab-name: kops-build
     testgrid-alert-email: kubernetes-release-team@googlegroups.com
 postsubmits:
@@ -493,4 +493,4 @@ postsubmits:
           requests:
             memory: "2Gi"
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-kops
+      testgrid-dashboards: kops-presubmits

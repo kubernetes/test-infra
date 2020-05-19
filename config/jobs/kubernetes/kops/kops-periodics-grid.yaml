@@ -34,7 +34,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid
 
 # {"cloud": "aws", "distro": null, "k8s_version": "1.16", "networking": null}
@@ -70,7 +70,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.16
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-k16
 
 # {"cloud": "aws", "distro": null, "k8s_version": "1.17", "networking": null}
@@ -106,7 +106,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.17
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-k17
 
 # {"cloud": "aws", "distro": null, "k8s_version": "1.18", "networking": null}
@@ -142,7 +142,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.18
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-k18
 
 # {"cloud": "aws", "distro": "amzn2", "k8s_version": null, "networking": null}
@@ -179,7 +179,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-amzn2
 
 # {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.16", "networking": null}
@@ -216,7 +216,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.16
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-amzn2-k16
 
 # {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.17", "networking": null}
@@ -253,7 +253,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.17
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-amzn2-k17
 
 # {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.18", "networking": null}
@@ -290,7 +290,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.18
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-amzn2-k18
 
 # {"cloud": "aws", "distro": "centos7", "k8s_version": null, "networking": null}
@@ -327,7 +327,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-centos7
 
 # {"cloud": "aws", "distro": "centos7", "k8s_version": "1.16", "networking": null}
@@ -364,7 +364,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.16
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-centos7-k16
 
 # {"cloud": "aws", "distro": "centos7", "k8s_version": "1.17", "networking": null}
@@ -401,7 +401,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.17
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-centos7-k17
 
 # {"cloud": "aws", "distro": "centos7", "k8s_version": "1.18", "networking": null}
@@ -438,7 +438,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.18
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-centos7-k18
 
 # {"cloud": "aws", "distro": "deb9", "k8s_version": null, "networking": null}
@@ -475,7 +475,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-deb9
 
 # {"cloud": "aws", "distro": "deb9", "k8s_version": "1.16", "networking": null}
@@ -512,7 +512,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.16
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-deb9-k16
 
 # {"cloud": "aws", "distro": "deb9", "k8s_version": "1.17", "networking": null}
@@ -549,7 +549,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.17
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-deb9-k17
 
 # {"cloud": "aws", "distro": "deb9", "k8s_version": "1.18", "networking": null}
@@ -586,7 +586,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.18
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-deb9-k18
 
 # {"cloud": "aws", "distro": "deb10", "k8s_version": null, "networking": null}
@@ -623,7 +623,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-deb10
 
 # {"cloud": "aws", "distro": "deb10", "k8s_version": "1.16", "networking": null}
@@ -660,7 +660,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.16
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-deb10-k16
 
 # {"cloud": "aws", "distro": "deb10", "k8s_version": "1.17", "networking": null}
@@ -697,7 +697,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.17
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-deb10-k17
 
 # {"cloud": "aws", "distro": "deb10", "k8s_version": "1.18", "networking": null}
@@ -734,7 +734,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.18
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-deb10-k18
 
 # {"cloud": "aws", "distro": "flatcar", "k8s_version": null, "networking": null}
@@ -771,7 +771,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-flatcar
 
 # {"cloud": "aws", "distro": "flatcar", "k8s_version": "1.16", "networking": null}
@@ -808,7 +808,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.16
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-flatcar-k16
 
 # {"cloud": "aws", "distro": "flatcar", "k8s_version": "1.17", "networking": null}
@@ -845,7 +845,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.17
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-flatcar-k17
 
 # {"cloud": "aws", "distro": "flatcar", "k8s_version": "1.18", "networking": null}
@@ -882,7 +882,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.18
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-flatcar-k18
 
 # {"cloud": "aws", "distro": "rhel7", "k8s_version": null, "networking": null}
@@ -919,7 +919,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-rhel7
 
 # {"cloud": "aws", "distro": "rhel7", "k8s_version": "1.16", "networking": null}
@@ -956,7 +956,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.16
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-rhel7-k16
 
 # {"cloud": "aws", "distro": "rhel7", "k8s_version": "1.17", "networking": null}
@@ -993,7 +993,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.17
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-rhel7-k17
 
 # {"cloud": "aws", "distro": "rhel7", "k8s_version": "1.18", "networking": null}
@@ -1030,7 +1030,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.18
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-rhel7-k18
 
 # {"cloud": "aws", "distro": "rhel8", "k8s_version": null, "networking": null}
@@ -1067,7 +1067,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-rhel8
 
 # {"cloud": "aws", "distro": "rhel8", "k8s_version": "1.16", "networking": null}
@@ -1104,7 +1104,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.16
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-rhel8-k16
 
 # {"cloud": "aws", "distro": "rhel8", "k8s_version": "1.17", "networking": null}
@@ -1141,7 +1141,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.17
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-rhel8-k17
 
 # {"cloud": "aws", "distro": "rhel8", "k8s_version": "1.18", "networking": null}
@@ -1178,7 +1178,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.18
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-rhel8-k18
 
 # {"cloud": "aws", "distro": "u1604", "k8s_version": null, "networking": null}
@@ -1215,7 +1215,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-u1604
 
 # {"cloud": "aws", "distro": "u1604", "k8s_version": "1.16", "networking": null}
@@ -1252,7 +1252,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.16
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-u1604-k16
 
 # {"cloud": "aws", "distro": "u1604", "k8s_version": "1.17", "networking": null}
@@ -1289,7 +1289,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.17
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-u1604-k17
 
 # {"cloud": "aws", "distro": "u1604", "k8s_version": "1.18", "networking": null}
@@ -1326,7 +1326,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.18
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-u1604-k18
 
 # {"cloud": "aws", "distro": "u1804", "k8s_version": null, "networking": null}
@@ -1363,7 +1363,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-u1804
 
 # {"cloud": "aws", "distro": "u1804", "k8s_version": "1.16", "networking": null}
@@ -1400,7 +1400,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.16
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-u1804-k16
 
 # {"cloud": "aws", "distro": "u1804", "k8s_version": "1.17", "networking": null}
@@ -1437,7 +1437,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.17
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-u1804-k17
 
 # {"cloud": "aws", "distro": "u1804", "k8s_version": "1.18", "networking": null}
@@ -1474,7 +1474,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.18
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-u1804-k18
 
 # {"cloud": "aws", "distro": "u2004", "k8s_version": null, "networking": null}
@@ -1511,7 +1511,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-u2004
 
 # {"cloud": "aws", "distro": "u2004", "k8s_version": "1.16", "networking": null}
@@ -1548,7 +1548,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.16
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-u2004-k16
 
 # {"cloud": "aws", "distro": "u2004", "k8s_version": "1.17", "networking": null}
@@ -1585,7 +1585,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.17
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-u2004-k17
 
 # {"cloud": "aws", "distro": "u2004", "k8s_version": "1.18", "networking": null}
@@ -1622,7 +1622,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.18
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-u2004-k18
 
 # {"cloud": "aws", "distro": null, "k8s_version": null, "networking": "calico"}
@@ -1658,7 +1658,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-calico
 
 # {"cloud": "aws", "distro": null, "k8s_version": "1.16", "networking": "calico"}
@@ -1694,7 +1694,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.16
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-calico-k16
 
 # {"cloud": "aws", "distro": null, "k8s_version": "1.17", "networking": "calico"}
@@ -1730,7 +1730,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.17
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-calico-k17
 
 # {"cloud": "aws", "distro": null, "k8s_version": "1.18", "networking": "calico"}
@@ -1766,7 +1766,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.18
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-calico-k18
 
 # {"cloud": "aws", "distro": "amzn2", "k8s_version": null, "networking": "calico"}
@@ -1803,7 +1803,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-calico-amzn2
 
 # {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.16", "networking": "calico"}
@@ -1840,7 +1840,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.16
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-calico-amzn2-k16
 
 # {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.17", "networking": "calico"}
@@ -1877,7 +1877,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.17
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-calico-amzn2-k17
 
 # {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.18", "networking": "calico"}
@@ -1914,7 +1914,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.18
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-calico-amzn2-k18
 
 # {"cloud": "aws", "distro": "centos7", "k8s_version": null, "networking": "calico"}
@@ -1951,7 +1951,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-calico-centos7
 
 # {"cloud": "aws", "distro": "centos7", "k8s_version": "1.16", "networking": "calico"}
@@ -1988,7 +1988,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.16
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-calico-centos7-k16
 
 # {"cloud": "aws", "distro": "centos7", "k8s_version": "1.17", "networking": "calico"}
@@ -2025,7 +2025,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.17
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-calico-centos7-k17
 
 # {"cloud": "aws", "distro": "centos7", "k8s_version": "1.18", "networking": "calico"}
@@ -2062,7 +2062,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.18
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-calico-centos7-k18
 
 # {"cloud": "aws", "distro": "deb9", "k8s_version": null, "networking": "calico"}
@@ -2099,7 +2099,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-calico-deb9
 
 # {"cloud": "aws", "distro": "deb9", "k8s_version": "1.16", "networking": "calico"}
@@ -2136,7 +2136,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.16
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-calico-deb9-k16
 
 # {"cloud": "aws", "distro": "deb9", "k8s_version": "1.17", "networking": "calico"}
@@ -2173,7 +2173,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.17
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-calico-deb9-k17
 
 # {"cloud": "aws", "distro": "deb9", "k8s_version": "1.18", "networking": "calico"}
@@ -2210,7 +2210,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.18
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-calico-deb9-k18
 
 # {"cloud": "aws", "distro": "deb10", "k8s_version": null, "networking": "calico"}
@@ -2247,7 +2247,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-calico-deb10
 
 # {"cloud": "aws", "distro": "deb10", "k8s_version": "1.16", "networking": "calico"}
@@ -2284,7 +2284,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.16
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-calico-deb10-k16
 
 # {"cloud": "aws", "distro": "deb10", "k8s_version": "1.17", "networking": "calico"}
@@ -2321,7 +2321,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.17
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-calico-deb10-k17
 
 # {"cloud": "aws", "distro": "deb10", "k8s_version": "1.18", "networking": "calico"}
@@ -2358,7 +2358,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.18
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-calico-deb10-k18
 
 # {"cloud": "aws", "distro": "flatcar", "k8s_version": null, "networking": "calico"}
@@ -2395,7 +2395,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-calico-flatcar
 
 # {"cloud": "aws", "distro": "flatcar", "k8s_version": "1.16", "networking": "calico"}
@@ -2432,7 +2432,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.16
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-calico-flatcar-k16
 
 # {"cloud": "aws", "distro": "flatcar", "k8s_version": "1.17", "networking": "calico"}
@@ -2469,7 +2469,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.17
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-calico-flatcar-k17
 
 # {"cloud": "aws", "distro": "flatcar", "k8s_version": "1.18", "networking": "calico"}
@@ -2506,7 +2506,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.18
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-calico-flatcar-k18
 
 # {"cloud": "aws", "distro": "rhel7", "k8s_version": null, "networking": "calico"}
@@ -2543,7 +2543,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-calico-rhel7
 
 # {"cloud": "aws", "distro": "rhel7", "k8s_version": "1.16", "networking": "calico"}
@@ -2580,7 +2580,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.16
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-calico-rhel7-k16
 
 # {"cloud": "aws", "distro": "rhel7", "k8s_version": "1.17", "networking": "calico"}
@@ -2617,7 +2617,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.17
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-calico-rhel7-k17
 
 # {"cloud": "aws", "distro": "rhel7", "k8s_version": "1.18", "networking": "calico"}
@@ -2654,7 +2654,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.18
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-calico-rhel7-k18
 
 # {"cloud": "aws", "distro": "rhel8", "k8s_version": null, "networking": "calico"}
@@ -2691,7 +2691,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-calico-rhel8
 
 # {"cloud": "aws", "distro": "rhel8", "k8s_version": "1.16", "networking": "calico"}
@@ -2728,7 +2728,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.16
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-calico-rhel8-k16
 
 # {"cloud": "aws", "distro": "rhel8", "k8s_version": "1.17", "networking": "calico"}
@@ -2765,7 +2765,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.17
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-calico-rhel8-k17
 
 # {"cloud": "aws", "distro": "rhel8", "k8s_version": "1.18", "networking": "calico"}
@@ -2802,7 +2802,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.18
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-calico-rhel8-k18
 
 # {"cloud": "aws", "distro": "u1604", "k8s_version": null, "networking": "calico"}
@@ -2839,7 +2839,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-calico-u1604
 
 # {"cloud": "aws", "distro": "u1604", "k8s_version": "1.16", "networking": "calico"}
@@ -2876,7 +2876,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.16
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-calico-u1604-k16
 
 # {"cloud": "aws", "distro": "u1604", "k8s_version": "1.17", "networking": "calico"}
@@ -2913,7 +2913,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.17
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-calico-u1604-k17
 
 # {"cloud": "aws", "distro": "u1604", "k8s_version": "1.18", "networking": "calico"}
@@ -2950,7 +2950,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.18
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-calico-u1604-k18
 
 # {"cloud": "aws", "distro": "u1804", "k8s_version": null, "networking": "calico"}
@@ -2987,7 +2987,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-calico-u1804
 
 # {"cloud": "aws", "distro": "u1804", "k8s_version": "1.16", "networking": "calico"}
@@ -3024,7 +3024,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.16
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-calico-u1804-k16
 
 # {"cloud": "aws", "distro": "u1804", "k8s_version": "1.17", "networking": "calico"}
@@ -3061,7 +3061,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.17
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-calico-u1804-k17
 
 # {"cloud": "aws", "distro": "u1804", "k8s_version": "1.18", "networking": "calico"}
@@ -3098,7 +3098,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.18
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-calico-u1804-k18
 
 # {"cloud": "aws", "distro": "u2004", "k8s_version": null, "networking": "calico"}
@@ -3135,7 +3135,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-calico-u2004
 
 # {"cloud": "aws", "distro": "u2004", "k8s_version": "1.16", "networking": "calico"}
@@ -3172,7 +3172,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.16
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-calico-u2004-k16
 
 # {"cloud": "aws", "distro": "u2004", "k8s_version": "1.17", "networking": "calico"}
@@ -3209,7 +3209,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.17
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-calico-u2004-k17
 
 # {"cloud": "aws", "distro": "u2004", "k8s_version": "1.18", "networking": "calico"}
@@ -3246,7 +3246,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.18
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-calico-u2004-k18
 
 # {"cloud": "aws", "distro": null, "k8s_version": null, "networking": "cilium"}
@@ -3282,7 +3282,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-cilium
 
 # {"cloud": "aws", "distro": null, "k8s_version": "1.16", "networking": "cilium"}
@@ -3318,7 +3318,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.16
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-cilium-k16
 
 # {"cloud": "aws", "distro": null, "k8s_version": "1.17", "networking": "cilium"}
@@ -3354,7 +3354,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.17
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-cilium-k17
 
 # {"cloud": "aws", "distro": null, "k8s_version": "1.18", "networking": "cilium"}
@@ -3390,7 +3390,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.18
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-cilium-k18
 
 # {"cloud": "aws", "distro": "amzn2", "k8s_version": null, "networking": "cilium"}
@@ -3427,7 +3427,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-cilium-amzn2
 
 # {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.16", "networking": "cilium"}
@@ -3464,7 +3464,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.16
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-cilium-amzn2-k16
 
 # {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.17", "networking": "cilium"}
@@ -3501,7 +3501,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.17
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-cilium-amzn2-k17
 
 # {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.18", "networking": "cilium"}
@@ -3538,7 +3538,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.18
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-cilium-amzn2-k18
 
 # {"cloud": "aws", "distro": "centos7", "k8s_version": null, "networking": "cilium"}
@@ -3575,7 +3575,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-cilium-centos7
 
 # {"cloud": "aws", "distro": "centos7", "k8s_version": "1.16", "networking": "cilium"}
@@ -3612,7 +3612,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.16
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-cilium-centos7-k16
 
 # {"cloud": "aws", "distro": "centos7", "k8s_version": "1.17", "networking": "cilium"}
@@ -3649,7 +3649,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.17
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-cilium-centos7-k17
 
 # {"cloud": "aws", "distro": "centos7", "k8s_version": "1.18", "networking": "cilium"}
@@ -3686,7 +3686,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.18
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-cilium-centos7-k18
 
 # {"cloud": "aws", "distro": "deb9", "k8s_version": null, "networking": "cilium"}
@@ -3723,7 +3723,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-cilium-deb9
 
 # {"cloud": "aws", "distro": "deb9", "k8s_version": "1.16", "networking": "cilium"}
@@ -3760,7 +3760,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.16
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-cilium-deb9-k16
 
 # {"cloud": "aws", "distro": "deb9", "k8s_version": "1.17", "networking": "cilium"}
@@ -3797,7 +3797,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.17
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-cilium-deb9-k17
 
 # {"cloud": "aws", "distro": "deb9", "k8s_version": "1.18", "networking": "cilium"}
@@ -3834,7 +3834,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.18
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-cilium-deb9-k18
 
 # {"cloud": "aws", "distro": "deb10", "k8s_version": null, "networking": "cilium"}
@@ -3871,7 +3871,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-cilium-deb10
 
 # {"cloud": "aws", "distro": "deb10", "k8s_version": "1.16", "networking": "cilium"}
@@ -3908,7 +3908,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.16
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-cilium-deb10-k16
 
 # {"cloud": "aws", "distro": "deb10", "k8s_version": "1.17", "networking": "cilium"}
@@ -3945,7 +3945,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.17
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-cilium-deb10-k17
 
 # {"cloud": "aws", "distro": "deb10", "k8s_version": "1.18", "networking": "cilium"}
@@ -3982,7 +3982,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.18
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-cilium-deb10-k18
 
 # {"cloud": "aws", "distro": "flatcar", "k8s_version": null, "networking": "cilium"}
@@ -4019,7 +4019,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-cilium-flatcar
 
 # {"cloud": "aws", "distro": "flatcar", "k8s_version": "1.16", "networking": "cilium"}
@@ -4056,7 +4056,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.16
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-cilium-flatcar-k16
 
 # {"cloud": "aws", "distro": "flatcar", "k8s_version": "1.17", "networking": "cilium"}
@@ -4093,7 +4093,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.17
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-cilium-flatcar-k17
 
 # {"cloud": "aws", "distro": "flatcar", "k8s_version": "1.18", "networking": "cilium"}
@@ -4130,7 +4130,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.18
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-cilium-flatcar-k18
 
 # {"cloud": "aws", "distro": "rhel7", "k8s_version": null, "networking": "cilium"}
@@ -4167,7 +4167,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-cilium-rhel7
 
 # {"cloud": "aws", "distro": "rhel7", "k8s_version": "1.16", "networking": "cilium"}
@@ -4204,7 +4204,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.16
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-cilium-rhel7-k16
 
 # {"cloud": "aws", "distro": "rhel7", "k8s_version": "1.17", "networking": "cilium"}
@@ -4241,7 +4241,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.17
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-cilium-rhel7-k17
 
 # {"cloud": "aws", "distro": "rhel7", "k8s_version": "1.18", "networking": "cilium"}
@@ -4278,7 +4278,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.18
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-cilium-rhel7-k18
 
 # {"cloud": "aws", "distro": "rhel8", "k8s_version": null, "networking": "cilium"}
@@ -4315,7 +4315,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-cilium-rhel8
 
 # {"cloud": "aws", "distro": "rhel8", "k8s_version": "1.16", "networking": "cilium"}
@@ -4352,7 +4352,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.16
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-cilium-rhel8-k16
 
 # {"cloud": "aws", "distro": "rhel8", "k8s_version": "1.17", "networking": "cilium"}
@@ -4389,7 +4389,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.17
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-cilium-rhel8-k17
 
 # {"cloud": "aws", "distro": "rhel8", "k8s_version": "1.18", "networking": "cilium"}
@@ -4426,7 +4426,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.18
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-cilium-rhel8-k18
 
 # {"cloud": "aws", "distro": "u1604", "k8s_version": null, "networking": "cilium"}
@@ -4463,7 +4463,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-cilium-u1604
 
 # {"cloud": "aws", "distro": "u1604", "k8s_version": "1.16", "networking": "cilium"}
@@ -4500,7 +4500,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.16
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-cilium-u1604-k16
 
 # {"cloud": "aws", "distro": "u1604", "k8s_version": "1.17", "networking": "cilium"}
@@ -4537,7 +4537,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.17
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-cilium-u1604-k17
 
 # {"cloud": "aws", "distro": "u1604", "k8s_version": "1.18", "networking": "cilium"}
@@ -4574,7 +4574,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.18
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-cilium-u1604-k18
 
 # {"cloud": "aws", "distro": "u1804", "k8s_version": null, "networking": "cilium"}
@@ -4611,7 +4611,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-cilium-u1804
 
 # {"cloud": "aws", "distro": "u1804", "k8s_version": "1.16", "networking": "cilium"}
@@ -4648,7 +4648,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.16
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-cilium-u1804-k16
 
 # {"cloud": "aws", "distro": "u1804", "k8s_version": "1.17", "networking": "cilium"}
@@ -4685,7 +4685,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.17
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-cilium-u1804-k17
 
 # {"cloud": "aws", "distro": "u1804", "k8s_version": "1.18", "networking": "cilium"}
@@ -4722,7 +4722,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.18
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-cilium-u1804-k18
 
 # {"cloud": "aws", "distro": "u2004", "k8s_version": null, "networking": "cilium"}
@@ -4759,7 +4759,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-cilium-u2004
 
 # {"cloud": "aws", "distro": "u2004", "k8s_version": "1.16", "networking": "cilium"}
@@ -4796,7 +4796,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.16
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-cilium-u2004-k16
 
 # {"cloud": "aws", "distro": "u2004", "k8s_version": "1.17", "networking": "cilium"}
@@ -4833,7 +4833,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.17
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-cilium-u2004-k17
 
 # {"cloud": "aws", "distro": "u2004", "k8s_version": "1.18", "networking": "cilium"}
@@ -4870,7 +4870,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.18
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-cilium-u2004-k18
 
 # {"cloud": "aws", "distro": null, "k8s_version": null, "networking": "flannel"}
@@ -4906,7 +4906,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-flannel
 
 # {"cloud": "aws", "distro": null, "k8s_version": "1.16", "networking": "flannel"}
@@ -4942,7 +4942,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.16
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-flannel-k16
 
 # {"cloud": "aws", "distro": null, "k8s_version": "1.17", "networking": "flannel"}
@@ -4978,7 +4978,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.17
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-flannel-k17
 
 # {"cloud": "aws", "distro": null, "k8s_version": "1.18", "networking": "flannel"}
@@ -5014,7 +5014,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.18
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-flannel-k18
 
 # {"cloud": "aws", "distro": "amzn2", "k8s_version": null, "networking": "flannel"}
@@ -5051,7 +5051,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-flannel-amzn2
 
 # {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.16", "networking": "flannel"}
@@ -5088,7 +5088,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.16
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-flannel-amzn2-k16
 
 # {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.17", "networking": "flannel"}
@@ -5125,7 +5125,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.17
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-flannel-amzn2-k17
 
 # {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.18", "networking": "flannel"}
@@ -5162,7 +5162,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.18
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-flannel-amzn2-k18
 
 # {"cloud": "aws", "distro": "centos7", "k8s_version": null, "networking": "flannel"}
@@ -5199,7 +5199,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-flannel-centos7
 
 # {"cloud": "aws", "distro": "centos7", "k8s_version": "1.16", "networking": "flannel"}
@@ -5236,7 +5236,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.16
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-flannel-centos7-k16
 
 # {"cloud": "aws", "distro": "centos7", "k8s_version": "1.17", "networking": "flannel"}
@@ -5273,7 +5273,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.17
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-flannel-centos7-k17
 
 # {"cloud": "aws", "distro": "centos7", "k8s_version": "1.18", "networking": "flannel"}
@@ -5310,7 +5310,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.18
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-flannel-centos7-k18
 
 # {"cloud": "aws", "distro": "deb9", "k8s_version": null, "networking": "flannel"}
@@ -5347,7 +5347,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-flannel-deb9
 
 # {"cloud": "aws", "distro": "deb9", "k8s_version": "1.16", "networking": "flannel"}
@@ -5384,7 +5384,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.16
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-flannel-deb9-k16
 
 # {"cloud": "aws", "distro": "deb9", "k8s_version": "1.17", "networking": "flannel"}
@@ -5421,7 +5421,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.17
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-flannel-deb9-k17
 
 # {"cloud": "aws", "distro": "deb9", "k8s_version": "1.18", "networking": "flannel"}
@@ -5458,7 +5458,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.18
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-flannel-deb9-k18
 
 # {"cloud": "aws", "distro": "deb10", "k8s_version": null, "networking": "flannel"}
@@ -5495,7 +5495,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-flannel-deb10
 
 # {"cloud": "aws", "distro": "deb10", "k8s_version": "1.16", "networking": "flannel"}
@@ -5532,7 +5532,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.16
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-flannel-deb10-k16
 
 # {"cloud": "aws", "distro": "deb10", "k8s_version": "1.17", "networking": "flannel"}
@@ -5569,7 +5569,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.17
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-flannel-deb10-k17
 
 # {"cloud": "aws", "distro": "deb10", "k8s_version": "1.18", "networking": "flannel"}
@@ -5606,7 +5606,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.18
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-flannel-deb10-k18
 
 # {"cloud": "aws", "distro": "flatcar", "k8s_version": null, "networking": "flannel"}
@@ -5643,7 +5643,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-flannel-flatcar
 
 # {"cloud": "aws", "distro": "flatcar", "k8s_version": "1.16", "networking": "flannel"}
@@ -5680,7 +5680,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.16
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-flannel-flatcar-k16
 
 # {"cloud": "aws", "distro": "flatcar", "k8s_version": "1.17", "networking": "flannel"}
@@ -5717,7 +5717,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.17
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-flannel-flatcar-k17
 
 # {"cloud": "aws", "distro": "flatcar", "k8s_version": "1.18", "networking": "flannel"}
@@ -5754,7 +5754,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.18
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-flannel-flatcar-k18
 
 # {"cloud": "aws", "distro": "rhel7", "k8s_version": null, "networking": "flannel"}
@@ -5791,7 +5791,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-flannel-rhel7
 
 # {"cloud": "aws", "distro": "rhel7", "k8s_version": "1.16", "networking": "flannel"}
@@ -5828,7 +5828,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.16
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-flannel-rhel7-k16
 
 # {"cloud": "aws", "distro": "rhel7", "k8s_version": "1.17", "networking": "flannel"}
@@ -5865,7 +5865,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.17
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-flannel-rhel7-k17
 
 # {"cloud": "aws", "distro": "rhel7", "k8s_version": "1.18", "networking": "flannel"}
@@ -5902,7 +5902,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.18
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-flannel-rhel7-k18
 
 # {"cloud": "aws", "distro": "rhel8", "k8s_version": null, "networking": "flannel"}
@@ -5939,7 +5939,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-flannel-rhel8
 
 # {"cloud": "aws", "distro": "rhel8", "k8s_version": "1.16", "networking": "flannel"}
@@ -5976,7 +5976,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.16
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-flannel-rhel8-k16
 
 # {"cloud": "aws", "distro": "rhel8", "k8s_version": "1.17", "networking": "flannel"}
@@ -6013,7 +6013,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.17
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-flannel-rhel8-k17
 
 # {"cloud": "aws", "distro": "rhel8", "k8s_version": "1.18", "networking": "flannel"}
@@ -6050,7 +6050,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.18
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-flannel-rhel8-k18
 
 # {"cloud": "aws", "distro": "u1604", "k8s_version": null, "networking": "flannel"}
@@ -6087,7 +6087,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-flannel-u1604
 
 # {"cloud": "aws", "distro": "u1604", "k8s_version": "1.16", "networking": "flannel"}
@@ -6124,7 +6124,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.16
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-flannel-u1604-k16
 
 # {"cloud": "aws", "distro": "u1604", "k8s_version": "1.17", "networking": "flannel"}
@@ -6161,7 +6161,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.17
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-flannel-u1604-k17
 
 # {"cloud": "aws", "distro": "u1604", "k8s_version": "1.18", "networking": "flannel"}
@@ -6198,7 +6198,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.18
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-flannel-u1604-k18
 
 # {"cloud": "aws", "distro": "u1804", "k8s_version": null, "networking": "flannel"}
@@ -6235,7 +6235,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-flannel-u1804
 
 # {"cloud": "aws", "distro": "u1804", "k8s_version": "1.16", "networking": "flannel"}
@@ -6272,7 +6272,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.16
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-flannel-u1804-k16
 
 # {"cloud": "aws", "distro": "u1804", "k8s_version": "1.17", "networking": "flannel"}
@@ -6309,7 +6309,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.17
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-flannel-u1804-k17
 
 # {"cloud": "aws", "distro": "u1804", "k8s_version": "1.18", "networking": "flannel"}
@@ -6346,7 +6346,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.18
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-flannel-u1804-k18
 
 # {"cloud": "aws", "distro": "u2004", "k8s_version": null, "networking": "flannel"}
@@ -6383,7 +6383,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-flannel-u2004
 
 # {"cloud": "aws", "distro": "u2004", "k8s_version": "1.16", "networking": "flannel"}
@@ -6420,7 +6420,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.16
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-flannel-u2004-k16
 
 # {"cloud": "aws", "distro": "u2004", "k8s_version": "1.17", "networking": "flannel"}
@@ -6457,7 +6457,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.17
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-flannel-u2004-k17
 
 # {"cloud": "aws", "distro": "u2004", "k8s_version": "1.18", "networking": "flannel"}
@@ -6494,7 +6494,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.18
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-flannel-u2004-k18
 
 # {"cloud": "aws", "distro": null, "k8s_version": null, "networking": "kopeio"}
@@ -6530,7 +6530,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-kopeio
 
 # {"cloud": "aws", "distro": null, "k8s_version": "1.16", "networking": "kopeio"}
@@ -6566,7 +6566,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.16
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-kopeio-k16
 
 # {"cloud": "aws", "distro": null, "k8s_version": "1.17", "networking": "kopeio"}
@@ -6602,7 +6602,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.17
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-kopeio-k17
 
 # {"cloud": "aws", "distro": null, "k8s_version": "1.18", "networking": "kopeio"}
@@ -6638,7 +6638,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.18
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-kopeio-k18
 
 # {"cloud": "aws", "distro": "amzn2", "k8s_version": null, "networking": "kopeio"}
@@ -6675,7 +6675,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-kopeio-amzn2
 
 # {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.16", "networking": "kopeio"}
@@ -6712,7 +6712,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.16
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-kopeio-amzn2-k16
 
 # {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.17", "networking": "kopeio"}
@@ -6749,7 +6749,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.17
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-kopeio-amzn2-k17
 
 # {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.18", "networking": "kopeio"}
@@ -6786,7 +6786,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.18
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-kopeio-amzn2-k18
 
 # {"cloud": "aws", "distro": "centos7", "k8s_version": null, "networking": "kopeio"}
@@ -6823,7 +6823,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-kopeio-centos7
 
 # {"cloud": "aws", "distro": "centos7", "k8s_version": "1.16", "networking": "kopeio"}
@@ -6860,7 +6860,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.16
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-kopeio-centos7-k16
 
 # {"cloud": "aws", "distro": "centos7", "k8s_version": "1.17", "networking": "kopeio"}
@@ -6897,7 +6897,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.17
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-kopeio-centos7-k17
 
 # {"cloud": "aws", "distro": "centos7", "k8s_version": "1.18", "networking": "kopeio"}
@@ -6934,7 +6934,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.18
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-kopeio-centos7-k18
 
 # {"cloud": "aws", "distro": "deb9", "k8s_version": null, "networking": "kopeio"}
@@ -6971,7 +6971,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-kopeio-deb9
 
 # {"cloud": "aws", "distro": "deb9", "k8s_version": "1.16", "networking": "kopeio"}
@@ -7008,7 +7008,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.16
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-kopeio-deb9-k16
 
 # {"cloud": "aws", "distro": "deb9", "k8s_version": "1.17", "networking": "kopeio"}
@@ -7045,7 +7045,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.17
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-kopeio-deb9-k17
 
 # {"cloud": "aws", "distro": "deb9", "k8s_version": "1.18", "networking": "kopeio"}
@@ -7082,7 +7082,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.18
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-kopeio-deb9-k18
 
 # {"cloud": "aws", "distro": "deb10", "k8s_version": null, "networking": "kopeio"}
@@ -7119,7 +7119,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-kopeio-deb10
 
 # {"cloud": "aws", "distro": "deb10", "k8s_version": "1.16", "networking": "kopeio"}
@@ -7156,7 +7156,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.16
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-kopeio-deb10-k16
 
 # {"cloud": "aws", "distro": "deb10", "k8s_version": "1.17", "networking": "kopeio"}
@@ -7193,7 +7193,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.17
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-kopeio-deb10-k17
 
 # {"cloud": "aws", "distro": "deb10", "k8s_version": "1.18", "networking": "kopeio"}
@@ -7230,7 +7230,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.18
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-kopeio-deb10-k18
 
 # {"cloud": "aws", "distro": "flatcar", "k8s_version": null, "networking": "kopeio"}
@@ -7267,7 +7267,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-kopeio-flatcar
 
 # {"cloud": "aws", "distro": "flatcar", "k8s_version": "1.16", "networking": "kopeio"}
@@ -7304,7 +7304,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.16
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-kopeio-flatcar-k16
 
 # {"cloud": "aws", "distro": "flatcar", "k8s_version": "1.17", "networking": "kopeio"}
@@ -7341,7 +7341,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.17
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-kopeio-flatcar-k17
 
 # {"cloud": "aws", "distro": "flatcar", "k8s_version": "1.18", "networking": "kopeio"}
@@ -7378,7 +7378,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.18
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-kopeio-flatcar-k18
 
 # {"cloud": "aws", "distro": "rhel7", "k8s_version": null, "networking": "kopeio"}
@@ -7415,7 +7415,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-kopeio-rhel7
 
 # {"cloud": "aws", "distro": "rhel7", "k8s_version": "1.16", "networking": "kopeio"}
@@ -7452,7 +7452,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.16
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-kopeio-rhel7-k16
 
 # {"cloud": "aws", "distro": "rhel7", "k8s_version": "1.17", "networking": "kopeio"}
@@ -7489,7 +7489,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.17
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-kopeio-rhel7-k17
 
 # {"cloud": "aws", "distro": "rhel7", "k8s_version": "1.18", "networking": "kopeio"}
@@ -7526,7 +7526,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.18
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-kopeio-rhel7-k18
 
 # {"cloud": "aws", "distro": "rhel8", "k8s_version": null, "networking": "kopeio"}
@@ -7563,7 +7563,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-kopeio-rhel8
 
 # {"cloud": "aws", "distro": "rhel8", "k8s_version": "1.16", "networking": "kopeio"}
@@ -7600,7 +7600,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.16
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-kopeio-rhel8-k16
 
 # {"cloud": "aws", "distro": "rhel8", "k8s_version": "1.17", "networking": "kopeio"}
@@ -7637,7 +7637,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.17
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-kopeio-rhel8-k17
 
 # {"cloud": "aws", "distro": "rhel8", "k8s_version": "1.18", "networking": "kopeio"}
@@ -7674,7 +7674,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.18
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-kopeio-rhel8-k18
 
 # {"cloud": "aws", "distro": "u1604", "k8s_version": null, "networking": "kopeio"}
@@ -7711,7 +7711,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-kopeio-u1604
 
 # {"cloud": "aws", "distro": "u1604", "k8s_version": "1.16", "networking": "kopeio"}
@@ -7748,7 +7748,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.16
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-kopeio-u1604-k16
 
 # {"cloud": "aws", "distro": "u1604", "k8s_version": "1.17", "networking": "kopeio"}
@@ -7785,7 +7785,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.17
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-kopeio-u1604-k17
 
 # {"cloud": "aws", "distro": "u1604", "k8s_version": "1.18", "networking": "kopeio"}
@@ -7822,7 +7822,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.18
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-kopeio-u1604-k18
 
 # {"cloud": "aws", "distro": "u1804", "k8s_version": null, "networking": "kopeio"}
@@ -7859,7 +7859,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-kopeio-u1804
 
 # {"cloud": "aws", "distro": "u1804", "k8s_version": "1.16", "networking": "kopeio"}
@@ -7896,7 +7896,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.16
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-kopeio-u1804-k16
 
 # {"cloud": "aws", "distro": "u1804", "k8s_version": "1.17", "networking": "kopeio"}
@@ -7933,7 +7933,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.17
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-kopeio-u1804-k17
 
 # {"cloud": "aws", "distro": "u1804", "k8s_version": "1.18", "networking": "kopeio"}
@@ -7970,7 +7970,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.18
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-kopeio-u1804-k18
 
 # {"cloud": "aws", "distro": "u2004", "k8s_version": null, "networking": "kopeio"}
@@ -8007,7 +8007,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-kopeio-u2004
 
 # {"cloud": "aws", "distro": "u2004", "k8s_version": "1.16", "networking": "kopeio"}
@@ -8044,7 +8044,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.16
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-kopeio-u2004-k16
 
 # {"cloud": "aws", "distro": "u2004", "k8s_version": "1.17", "networking": "kopeio"}
@@ -8081,7 +8081,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.17
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-kopeio-u2004-k17
 
 # {"cloud": "aws", "distro": "u2004", "k8s_version": "1.18", "networking": "kopeio"}
@@ -8118,7 +8118,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.18
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-grid
     testgrid-tab-name: kops-grid-kopeio-u2004-k18
 
 # 220 jobs, total of 220 runs per week

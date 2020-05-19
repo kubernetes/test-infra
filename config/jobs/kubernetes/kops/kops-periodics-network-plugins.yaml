@@ -33,7 +33,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-network-plugins
     testgrid-tab-name: kops-aws-cni-amazon-vpc
 
 - interval: 8h
@@ -69,7 +69,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-network-plugins
     testgrid-tab-name: kops-aws-cni-calico
 
 - interval: 8h
@@ -105,7 +105,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-network-plugins
     testgrid-tab-name: kops-aws-cni-canal
 
 - interval: 8h
@@ -141,7 +141,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-network-plugins
     testgrid-tab-name: kops-aws-cni-cilium
 
 - interval: 8h
@@ -177,7 +177,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-network-plugins
     testgrid-tab-name: kops-aws-cni-flannel
 
 - interval: 8h
@@ -213,7 +213,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-network-plugins
     testgrid-tab-name: kops-aws-cni-kopeio
 
 - interval: 2h
@@ -248,7 +248,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-network-plugins
     testgrid-tab-name: kops-aws-cni-kuberouter
 
 - interval: 8h
@@ -284,7 +284,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-network-plugins
     testgrid-tab-name: kops-aws-cni-weave
 
 - interval: 8h
@@ -320,5 +320,5 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-network-plugins
     testgrid-tab-name: kops-aws-cni-lyft
