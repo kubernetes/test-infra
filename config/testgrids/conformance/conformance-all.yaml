@@ -267,6 +267,9 @@ dashboards:
     - name: Periodic Arm64 conformance test on AWS
       test_group_name: arm64-conformance-aws-cluster
       description: Runs conformance tests by using kubetest against latest version of kubernetes on AWS"
+    - name: Periodic Arm64 conformance test on PACKET.net
+      test_group_name: arm64-conformance-packet-cluster
+      description: Runs conformance tests by using kubetest against latest version of kubernetes on packet.net"
     - name: Arm64 conformance test on AWS v1.13.2
       test_group_name: arm64-conformance-aws-cluster-1-13-2
       description: Runs conformance tests by using kubetest against stable version v1.13.2 of kubernetes on AWS"
@@ -660,6 +663,8 @@ test_groups:
   gcs_prefix: k8s-conformance-arm/logs/ci-k8s-conformance-arm64-aws-cluster
 - name: arm64-conformance-aws-cluster-1-13-2
   gcs_prefix: k8s-conformance-arm/logs/ci-k8s-conformance-arm64-aws-v1.13.2
+- name: arm64-conformance-packet-cluster
+  gcs_prefix: k8s-conformance-arm/logs/ci-k8s-conformance-arm64-packet-cluster
 - name: arm64-conformance-vexxhost-cluster
   gcs_prefix: k8s-conformance-arm/logs/ci-k8s-conformance-arm64-vexxhost-multi-node
 - name: pull-kubernetes-e2e-gce-100-performance
