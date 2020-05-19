@@ -37,10 +37,10 @@ plank:
       timeout: 2h
       grace_period: 15s
       utility_images:
-        clonerefs: "gcr.io/k8s-prow/clonerefs:v20200513-6ad6776a6"
-        initupload: "gcr.io/k8s-prow/initupload:v20200513-6ad6776a6"
-        entrypoint: "gcr.io/k8s-prow/entrypoint:v20200513-6ad6776a6"
-        sidecar: "gcr.io/k8s-prow/sidecar:v20200513-6ad6776a6"
+        clonerefs: "gcr.io/k8s-prow/clonerefs:v20200518-8da074ad4"
+        initupload: "gcr.io/k8s-prow/initupload:v20200518-8da074ad4"
+        entrypoint: "gcr.io/k8s-prow/entrypoint:v20200518-8da074ad4"
+        sidecar: "gcr.io/k8s-prow/sidecar:v20200518-8da074ad4"
       gcs_configuration:
         path_strategy: explicit
         bucket: "maistra-prow-testing"
