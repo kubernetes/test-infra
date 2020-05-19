@@ -559,6 +559,9 @@ func (k kops) DumpClusterLogs(localPath, gcsPath string) error {
 		return err
 	}
 
+	// Capture sysctl settings
+	logDumper.DumpSysctls = true
+
 	ctx, cancel := context.WithCancel(context.TODO())
 	defer cancel()
 
