@@ -23,9 +23,9 @@ import (
 var globalSecret = `
 '*':
   - value: abc
-    expiry: 9999-10-02T15:00:00Z
+    created_at: 2020-10-02T15:00:00Z
   - value: key2
-    expiry: 2018-10-02T15:00:00Z
+    created_at: 2018-10-02T15:00:00Z
 `
 
 var defaultTokenGenerator = func() []byte {

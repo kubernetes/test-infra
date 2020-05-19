@@ -25,6 +25,7 @@ import (
 	"regexp"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/google/go-cmp/cmp"
 	"k8s.io/apimachinery/pkg/util/diff"
@@ -900,6 +901,69 @@ func TestValidateStrictBranches(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestValidateManagedWebhooks(t *testing.T) {
+	testCases := []struct {
+		name      string
+		config    config.ProwConfig
+		expectErr bool
+	}{
+		{
+			name:      "empty config",
+			config:    config.ProwConfig{},
+			expectErr: false,
+		},
+		{
+			name: "no duplicate webhooks",
+			config: config.ProwConfig{
+				ManagedWebhooks: map[string]config.ManagedWebhookInfo{
+					"foo1":     {TokenCreatedAfter: time.Now()},
+					"foo2":     {TokenCreatedAfter: time.Now()},
+					"foo/bar":  {TokenCreatedAfter: time.Now()},
+					"foo/bar1": {TokenCreatedAfter: time.Now()},
+					"foo/bar2": {TokenCreatedAfter: time.Now()},
+				}},
+			expectErr: false,
+		},
+		{
+			name: "has duplicate webhooks",
+			config: config.ProwConfig{
+				ManagedWebhooks: map[string]config.ManagedWebhookInfo{
+					"foo":      {TokenCreatedAfter: time.Now()},
+					"foo1":     {TokenCreatedAfter: time.Now()},
+					"foo2":     {TokenCreatedAfter: time.Now()},
+					"foo/bar":  {TokenCreatedAfter: time.Now()},
+					"foo/bar1": {TokenCreatedAfter: time.Now()},
+					"foo/bar2": {TokenCreatedAfter: time.Now()},
+				}},
+			expectErr: true,
+		},
+		{
+			name: "has multiple duplicate webhooks",
+			config: config.ProwConfig{
+				ManagedWebhooks: map[string]config.ManagedWebhookInfo{
+					"foo":       {TokenCreatedAfter: time.Now()},
+					"foo1":      {TokenCreatedAfter: time.Now()},
+					"foo2":      {TokenCreatedAfter: time.Now()},
+					"foo/bar":   {TokenCreatedAfter: time.Now()},
+					"foo/bar1":  {TokenCreatedAfter: time.Now()},
+					"foo1/bar1": {TokenCreatedAfter: time.Now()},
+				}},
+			expectErr: true,
+		},
+	}
+
+	for _, testCase := range testCases {
+		err := validateManagedWebhooks(&config.Config{ProwConfig: testCase.config})
+		if testCase.expectErr && err == nil {
+			t.Errorf("%s: expected the config %+v to have errors but not", testCase.name, testCase.config)
+		}
+		if !testCase.expectErr && err != nil {
+			t.Errorf("%s: expected the config %+v to be correct but got an error in validation: %v",
+				testCase.name, testCase.config, err)
+		}
 	}
 }
 
