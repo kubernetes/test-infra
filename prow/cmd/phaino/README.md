@@ -20,7 +20,7 @@ Usage:
 # Use a job from deck
 bazel run //prow/cmd/phaino -- $URL # or /path/to/prowjob.yaml
 # Use mkpj to create the job
-bazel run //prow/cmd/mkpj -- --config-path=/your/config --job=foo > /tmp/foo
+bazel run //prow/cmd/mkpj -- --config-path=/path/to/prow/config.yaml --job-config-path=/path/to/prow/job/configs --job=foo > /tmp/foo
 bazel run //prow/cmd/phaino -- /tmp/foo
 ```
 
