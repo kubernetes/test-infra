@@ -837,6 +837,7 @@ func TestNonCollaboratorsV2(t *testing.T) {
 }
 
 func testNonCollaborators(clients localgit.Clients, t *testing.T) {
+	const nonTrustedNotMemberNotCollaborator = "User is not a member of the org and is not a collaborator."
 	var tests = []struct {
 		name                 string
 		filesChanged         []string
@@ -848,6 +849,7 @@ func testNonCollaborators(clients localgit.Clients, t *testing.T) {
 		skipTrustedUserCheck bool
 		shouldLabel          bool
 		shouldComment        bool
+		commentShouldContain string
 	}{
 		{
 			name:          "collaborators additions in OWNERS file",
@@ -866,12 +868,13 @@ func testNonCollaborators(clients localgit.Clients, t *testing.T) {
 			shouldComment: false,
 		},
 		{
-			name:          "non-collaborators additions in OWNERS file",
-			filesChanged:  []string{"OWNERS"},
-			ownersFile:    "nonCollaborators",
-			ownersPatch:   "nonCollaboratorAdditions",
-			shouldLabel:   true,
-			shouldComment: true,
+			name:                 "non-collaborators additions in OWNERS file",
+			filesChanged:         []string{"OWNERS"},
+			ownersFile:           "nonCollaborators",
+			ownersPatch:          "nonCollaboratorAdditions",
+			shouldLabel:          true,
+			shouldComment:        true,
+			commentShouldContain: nonTrustedNotMemberNotCollaborator,
 		},
 		{
 			name:          "non-collaborators removal in OWNERS file",
@@ -891,13 +894,14 @@ func testNonCollaborators(clients localgit.Clients, t *testing.T) {
 			shouldComment:        false,
 		},
 		{
-			name:               "non-collaborators additions in OWNERS_ALIASES file",
-			filesChanged:       []string{"OWNERS_ALIASES"},
-			ownersFile:         "collaboratorsWithAliases",
-			ownersAliasesFile:  "nonCollaborators",
-			ownersAliasesPatch: "nonCollaboratorAdditions",
-			shouldLabel:        true,
-			shouldComment:      true,
+			name:                 "non-collaborators additions in OWNERS_ALIASES file",
+			filesChanged:         []string{"OWNERS_ALIASES"},
+			ownersFile:           "collaboratorsWithAliases",
+			ownersAliasesFile:    "nonCollaborators",
+			ownersAliasesPatch:   "nonCollaboratorAdditions",
+			shouldLabel:          true,
+			shouldComment:        true,
+			commentShouldContain: nonTrustedNotMemberNotCollaborator,
 		},
 		{
 			name:               "non-collaborators removals in OWNERS_ALIASES file",
@@ -937,14 +941,15 @@ func testNonCollaborators(clients localgit.Clients, t *testing.T) {
 			shouldComment:        false,
 		},
 		{
-			name:               "non-collaborators additions in both OWNERS and OWNERS_ALIASES file",
-			filesChanged:       []string{"OWNERS", "OWNERS_ALIASES"},
-			ownersFile:         "nonCollaboratorsWithAliases",
-			ownersPatch:        "nonCollaboratorsWithAliases",
-			ownersAliasesFile:  "nonCollaborators",
-			ownersAliasesPatch: "nonCollaboratorAdditions",
-			shouldLabel:        true,
-			shouldComment:      true,
+			name:                 "non-collaborators additions in both OWNERS and OWNERS_ALIASES file",
+			filesChanged:         []string{"OWNERS", "OWNERS_ALIASES"},
+			ownersFile:           "nonCollaboratorsWithAliases",
+			ownersPatch:          "nonCollaboratorsWithAliases",
+			ownersAliasesFile:    "nonCollaborators",
+			ownersAliasesPatch:   "nonCollaboratorAdditions",
+			shouldLabel:          true,
+			shouldComment:        true,
+			commentShouldContain: nonTrustedNotMemberNotCollaborator,
 		},
 		{
 			name:               "collaborator additions in both OWNERS and OWNERS_ALIASES file",
@@ -965,21 +970,23 @@ func testNonCollaborators(clients localgit.Clients, t *testing.T) {
 			shouldComment: false,
 		},
 		{
-			name:                "non-collaborators additions in OWNERS file in vendor subdir, but include it",
-			filesChanged:        []string{"vendor/k8s.io/client-go/OWNERS"},
-			ownersFile:          "nonCollaborators",
-			ownersPatch:         "nonCollaboratorAdditions",
-			includeVendorOwners: true,
-			shouldLabel:         true,
-			shouldComment:       true,
+			name:                 "non-collaborators additions in OWNERS file in vendor subdir, but include it",
+			filesChanged:         []string{"vendor/k8s.io/client-go/OWNERS"},
+			ownersFile:           "nonCollaborators",
+			ownersPatch:          "nonCollaboratorAdditions",
+			includeVendorOwners:  true,
+			shouldLabel:          true,
+			shouldComment:        true,
+			commentShouldContain: nonTrustedNotMemberNotCollaborator,
 		},
 		{
-			name:          "non-collaborators additions in OWNERS file in vendor dir",
-			filesChanged:  []string{"vendor/OWNERS"},
-			ownersFile:    "nonCollaborators",
-			ownersPatch:   "nonCollaboratorAdditions",
-			shouldLabel:   true,
-			shouldComment: true,
+			name:                 "non-collaborators additions in OWNERS file in vendor dir",
+			filesChanged:         []string{"vendor/OWNERS"},
+			ownersFile:           "nonCollaborators",
+			ownersPatch:          "nonCollaboratorAdditions",
+			shouldLabel:          true,
+			shouldComment:        true,
+			commentShouldContain: nonTrustedNotMemberNotCollaborator,
 		},
 	}
 	lg, c, err := clients()
@@ -1085,6 +1092,9 @@ func testNonCollaborators(clients localgit.Clients, t *testing.T) {
 		}
 		if test.shouldComment && len(fghc.IssueComments[pr]) == 0 {
 			t.Errorf("%s: expected comment but didn't receive", test.name)
+		}
+		if test.shouldComment && len(test.commentShouldContain) > 0 && !strings.Contains(fghc.IssueComments[pr][0].Body, test.commentShouldContain) {
+			t.Errorf("%s: expected comment to contain\n%s\nbut it was actually\n%s", test.name, test.commentShouldContain, fghc.IssueComments[pr][0].Body)
 		}
 	}
 }
