@@ -12,7 +12,7 @@ presubmits:
     skip_report: false
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200519-d13d3ca-master
         command:
           # generic runner script, handles DIND, bazelrc for caching, etc.
           - runner.sh
@@ -34,7 +34,7 @@ presubmits:
     skip_report: false
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200519-d13d3ca-master
         command:
           # generic runner script, handles DIND, bazelrc for caching, etc.
           - runner.sh
