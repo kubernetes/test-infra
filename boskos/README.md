@@ -244,7 +244,7 @@ For the boskos server that handles k8s e2e jobs, the status is available from th
 
 ## Adding UserData to a resource
 
-1. Check it out: 
+1. Check it out:
     ```shell
     curl -X POST "http://localhost:8080/acquire?type=my-resource&state=free&dest=busy&owner=$(whoami)"
     {"type":"my-resource","name":"resource1","state":"busy","owner":"user","lastupdate":"2019-02-07T22:33:38.01350902Z","userdata":null}
@@ -288,10 +288,11 @@ If you don't see a command prompt, try pressing enter.
 [ root@curl-XXXXX:/ ]$ curl -X POST 'http://boskos.test-pods.svc.cluster.local/acquire?type=project&state=free&dest=busy&owner=user'
 ````
 
-[`Reaper`]: ./reaper
-[`Janitor`]: ./janitor
-[`Metrics`]: ./metrics
+[`Reaper`]: ./cmd/reaper
+[`Janitor`]: ./cmd/janitor
+[`Metrics`]: ./cmd/metrics
 [`Mason`]: ./mason
+[`cleaner`]: ./cmd/cleaner
 [`Storage`]: ./storage
 [`crds`]: ./crds
 [`Velodrome dashboard`]: http://velodrome.k8s.io/dashboard/db/boskos-dashboard
