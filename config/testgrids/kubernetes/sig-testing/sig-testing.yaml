@@ -10,6 +10,7 @@ dashboard_groups:
   - sig-testing-maintenance
   - sig-testing-prow
   - sig-testing-images
+  - sig-testing-boskos
 
 # Dashboards
 
@@ -21,3 +22,4 @@ dashboards:
 - name: sig-testing-maintenance
 - name: sig-testing-prow
 - name: sig-testing-images
+- name: sig-testing-boskos
