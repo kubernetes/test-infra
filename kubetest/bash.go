@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"os/exec"
@@ -30,9 +31,14 @@ type bashDeployer struct {
 	gcpZone                 string
 	gcpSSHProxyInstanceName string
 	provider                string
+	nodeLoggingEnabled      bool
 }
 
 var _ deployer = &bashDeployer{}
+
+var (
+	bashNodeLogging = flag.Bool("bash-node-logging", false, "(bash only) enable node logging to gcp")
+)
 
 func newBash(clusterIPRange *string, gcpProject, gcpZone, gcpSSHProxyInstanceName, provider string) *bashDeployer {
 	if *clusterIPRange == "" {
@@ -40,7 +46,7 @@ func newBash(clusterIPRange *string, gcpProject, gcpZone, gcpSSHProxyInstanceNam
 			*clusterIPRange = getClusterIPRange(numNodes)
 		}
 	}
-	b := &bashDeployer{*clusterIPRange, gcpProject, gcpZone, gcpSSHProxyInstanceName, provider}
+	b := &bashDeployer{*clusterIPRange, gcpProject, gcpZone, gcpSSHProxyInstanceName, provider, *bashNodeLogging}
 	return b
 }
 
@@ -49,6 +55,7 @@ func (b *bashDeployer) Up() error {
 	cmd := exec.Command(script)
 	cmd.Env = os.Environ()
 	cmd.Env = append(cmd.Env, fmt.Sprintf("CLUSTER_IP_RANGE=%s", b.clusterIPRange))
+	cmd.Env = append(cmd.Env, fmt.Sprintf("KUBE_ENABLE_NODE_LOGGING=%t", b.nodeLoggingEnabled))
 	return control.FinishRunning(cmd)
 }
 
