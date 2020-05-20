@@ -37,10 +37,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 
-	"k8s.io/test-infra/prow/github/fakegithub"
-	"k8s.io/test-infra/prow/githuboauth"
-	"k8s.io/test-infra/prow/plugins"
-
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"sigs.k8s.io/yaml"
@@ -49,7 +45,10 @@ import (
 	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/flagutil"
+	"k8s.io/test-infra/prow/github/fakegithub"
+	"k8s.io/test-infra/prow/githuboauth"
 	"k8s.io/test-infra/prow/pluginhelp"
+	"k8s.io/test-infra/prow/plugins"
 	_ "k8s.io/test-infra/prow/spyglass/lenses/buildlog"
 	"k8s.io/test-infra/prow/spyglass/lenses/common"
 	_ "k8s.io/test-infra/prow/spyglass/lenses/junit"
@@ -1045,6 +1044,90 @@ func TestCanTriggerJob(t *testing.T) {
 		}
 		if result != tc.expectAllowed {
 			t.Errorf("got result %t, expected %t", result, tc.expectAllowed)
+		}
+	}
+}
+
+func TestValidatePath(t *testing.T) {
+	testCases := []struct {
+		name        string
+		config      config.ProwConfig
+		path        string
+		expectedErr bool
+	}{
+		{
+			name:        "whitelist disabled",
+			config:      config.ProwConfig{Deck: config.Deck{EnableWhitelist: false}},
+			path:        "to/some/wild/location",
+			expectedErr: false,
+		},
+		{
+			name:        "whitelist enabled",
+			config:      config.ProwConfig{Deck: config.Deck{EnableWhitelist: true}},
+			path:        "to/some/wild/location",
+			expectedErr: true,
+		},
+		{
+			name: "decoration config whitelisted bucket",
+			config: config.ProwConfig{
+				Deck: config.Deck{EnableWhitelist: true},
+				Plank: config.Plank{
+					DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
+						"*": {
+							GCSConfiguration: &prowapi.GCSConfiguration{
+								Bucket: "kubernetes-jenkins",
+							},
+						},
+					},
+				},
+			},
+			path:        "gs/kubernetes-jenkins/pr-logs/directory/pull-capi",
+			expectedErr: false,
+		},
+		{
+			name:        "custom whitelisted bucket",
+			config:      config.ProwConfig{Deck: config.Deck{EnableWhitelist: true, AdditionalBuckets: []string{"kubernetes-prow"}}},
+			path:        "gs/kubernetes-prow/pr-logs/directory/pull-echo",
+			expectedErr: false,
+		},
+		{
+			name:        "non-whitelisted bucket",
+			config:      config.ProwConfig{Deck: config.Deck{EnableWhitelist: true}},
+			path:        "gs/istio-prow/pr-logs/directory/post-check",
+			expectedErr: true,
+		},
+		{
+			name:        "default whitelisted folder",
+			config:      config.ProwConfig{Deck: config.Deck{EnableWhitelist: true, AdditionalBuckets: []string{"kubernetes-jenkins"}}},
+			path:        "gs/kubernetes-jenkins/pr-logs/directory/pull-capi",
+			expectedErr: false,
+		},
+		{
+			name:        "custom whitelisted folder",
+			config:      config.ProwConfig{Deck: config.Deck{EnableWhitelist: true, AdditionalBuckets: []string{"kubernetes-jenkins"}, AdditionalFolders: []string{"custom"}}},
+			path:        "gs/kubernetes-jenkins/custom/directory/pull-echo",
+			expectedErr: false,
+		},
+		{
+			name:        "non-whitelisted folder",
+			config:      config.ProwConfig{Deck: config.Deck{EnableWhitelist: true, AdditionalBuckets: []string{"kubernetes-jenkins"}}},
+			path:        "gs/kubernetes-jenkins/invalid/directory/post-check",
+			expectedErr: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		cfg := config.Config{ProwConfig: tc.config}
+		ca := config.Agent{}
+		ca.Set(&cfg)
+
+		err := ValidatePath(ca.Config, tc.path)
+
+		if err == nil && tc.expectedErr {
+			t.Fatal("error expected")
+		}
+		if err != nil && !tc.expectedErr {
+			t.Fatalf("unexpected error: %v", err)
 		}
 	}
 }

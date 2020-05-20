@@ -32,6 +32,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/test-infra/prow/config"
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	pkgio "k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/io/providers"
@@ -392,13 +393,16 @@ func (a int64slice) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a int64slice) Less(i, j int) bool { return a[i] < a[j] }
 
 // Gets job history from the bucket specified in config.
-func getJobHistory(ctx context.Context, url *url.URL, opener pkgio.Opener) (jobHistoryTemplate, error) {
+func getJobHistory(ctx context.Context, url *url.URL, cfg config.Getter, opener pkgio.Opener) (jobHistoryTemplate, error) {
 	start := time.Now()
 	tmpl := jobHistoryTemplate{}
 
 	storageProvider, bucketName, root, top, err := parseJobHistURL(url)
 	if err != nil {
 		return tmpl, fmt.Errorf("invalid url %s: %v", url.String(), err)
+	}
+	if err := ValidatePath(cfg, strings.Join([]string{storageProvider, bucketName, root}, "/")); err != nil {
+		return tmpl, err
 	}
 	tmpl.Name = root
 	bucket := blobStorageBucket{bucketName, storageProvider, opener}
