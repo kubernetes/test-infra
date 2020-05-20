@@ -40,7 +40,7 @@ type statusClient interface {
 // opener has methods to read and write paths
 type opener interface {
 	Reader(ctx context.Context, path string) (io.ReadCloser, error)
-	Writer(ctx context.Context, path string, opts ...io.WriterOption) (io.WriteCloser, error)
+	Writer(ctx context.Context, path string, opts ...io.WriterOptions) (io.WriteCloser, error)
 }
 
 type statusController struct {

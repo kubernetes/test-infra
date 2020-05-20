@@ -23,10 +23,6 @@ import (
 	"google.golang.org/api/googleapi"
 )
 
-type WriterOption interface {
-	Apply(wo *WriterOptions)
-}
-
 // WriterOptions are options for the opener Writer method
 type WriterOptions struct {
 	BufferSize               *int64

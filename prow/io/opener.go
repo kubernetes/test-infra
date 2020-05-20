@@ -67,7 +67,7 @@ type Attributes struct {
 type Opener interface {
 	Reader(ctx context.Context, path string) (ReadCloser, error)
 	RangeReader(ctx context.Context, path string, offset, length int64) (io.ReadCloser, error)
-	Writer(ctx context.Context, path string, opts ...WriterOption) (WriteCloser, error)
+	Writer(ctx context.Context, path string, opts ...WriterOptions) (WriteCloser, error)
 	Attributes(ctx context.Context, path string) (Attributes, error)
 	SignedURL(ctx context.Context, path string, opts SignedURLOptions) (string, error)
 	Iterator(ctx context.Context, prefix, delimiter string) (ObjectIterator, error)
@@ -243,7 +243,7 @@ func (o *opener) RangeReader(ctx context.Context, path string, offset, length in
 var PreconditionFailedObjectAlreadyExists = fmt.Errorf("object already exists")
 
 // Writer returns a writer that overwrites the path.
-func (o *opener) Writer(ctx context.Context, p string, opts ...WriterOption) (io.WriteCloser, error) {
+func (o *opener) Writer(ctx context.Context, p string, opts ...WriterOptions) (io.WriteCloser, error) {
 	options := &WriterOptions{}
 	for _, opt := range opts {
 		opt.Apply(options)
