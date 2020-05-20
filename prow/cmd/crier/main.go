@@ -122,18 +122,22 @@ func (o *options) validate() error {
 	}
 
 	if o.gcsWorkers > 0 {
-		// use gcsWorkers if blobStorageWorkers is not set
-		if o.blobStorageWorkers == 0 {
-			o.blobStorageWorkers = o.gcsWorkers
-		}
 		logrus.Warn("--gcs-workers is deprecated and will be removed in August 2020. Use --blob-storage-workers instead.")
+		// return an error when the old and new flags are both set
+		if o.blobStorageWorkers != 0 {
+			return errors.New("only one of --gcs-workers or --blog-storage-workers can be set at the same time")
+		}
+		// use gcsWorkers if blobStorageWorkers is not set
+		o.blobStorageWorkers = o.gcsWorkers
 	}
 	if o.k8sGCSWorkers > 0 {
-		// use k8sGCSWorkers if k8sBlobStorageWorkers is not set
-		if o.k8sBlobStorageWorkers == 0 {
-			o.k8sBlobStorageWorkers = o.k8sGCSWorkers
-		}
 		logrus.Warn("--kubernetes-gcs-workers is deprecated and will be removed in August 2020. Use --kubernetes-blob-storage-workers instead.")
+		// return an error when the old and new flags are both set
+		if o.k8sBlobStorageWorkers != 0 {
+			return errors.New("only one of --kubernetes-gcs-workers or --kubernetes-blog-storage-workers can be set at the same time")
+		}
+		// use k8sGCSWorkers if k8sBlobStorageWorkers is not set
+		o.k8sBlobStorageWorkers = o.k8sGCSWorkers
 	}
 
 	if err := o.client.Validate(o.dryrun); err != nil {
