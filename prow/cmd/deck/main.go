@@ -201,6 +201,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	o.kubernetes.AddFlags(fs)
 	o.github.AddFlags(fs)
 	o.github.AllowAnonymous = true
+	o.github.AllowDirectAccess = true
 	fs.Parse(args)
 	return o
 }

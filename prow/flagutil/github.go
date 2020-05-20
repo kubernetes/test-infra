@@ -33,12 +33,14 @@ import (
 // GitHubOptions holds options for interacting with GitHub.
 //
 // Set AllowAnonymous to be true if you want to allow anonymous github access.
+// Set AllowDirectAccess to be true if you want to suppress warnings on direct github access (without ghproxy).
 type GitHubOptions struct {
-	Host            string
-	endpoint        Strings
-	graphqlEndpoint string
-	TokenPath       string
-	AllowAnonymous  bool
+	Host              string
+	endpoint          Strings
+	graphqlEndpoint   string
+	TokenPath         string
+	AllowAnonymous    bool
+	AllowDirectAccess bool
 }
 
 const DefaultGitHubTokenPath = "/etc/github/oauth" // Exported for testing purposes
@@ -62,9 +64,6 @@ func (o *GitHubOptions) Validate(dryRun bool) error {
 			return fmt.Errorf("invalid -github-endpoint URI: %q", uri)
 		}
 	}
-	if len(endpoints) == 1 && endpoints[0] == github.DefaultAPIEndpoint {
-		logrus.Warn("It doesn't look like you are using ghproxy to cache API calls to GitHub! This has become a required component of Prow and other components will soon be allowed to add features that may rapidly consume API ratelimit without caching. Starting May 1, 2020 use Prow components without ghproxy at your own risk! https://github.com/kubernetes/test-infra/tree/master/ghproxy#ghproxy")
-	}
 
 	if o.TokenPath == "" && !o.AllowAnonymous {
 		// TODO(fejta): just return error after May 2020
@@ -73,6 +72,10 @@ func (o *GitHubOptions) Validate(dryRun bool) error {
 		if o.TokenPath == "" {
 			return errors.New("missing required flag: --github-token-path")
 		}
+	}
+
+	if o.TokenPath != "" && len(endpoints) == 1 && endpoints[0] == github.DefaultAPIEndpoint && !o.AllowDirectAccess {
+		logrus.Warn("It doesn't look like you are using ghproxy to cache API calls to GitHub! This has become a required component of Prow and other components will soon be allowed to add features that may rapidly consume API ratelimit without caching. Starting May 1, 2020 use Prow components without ghproxy at your own risk! https://github.com/kubernetes/test-infra/tree/master/ghproxy#ghproxy")
 	}
 
 	if o.graphqlEndpoint == "" {
