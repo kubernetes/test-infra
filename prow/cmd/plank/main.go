@@ -65,6 +65,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 		group.AddFlags(fs)
 	}
 
+	o.github.AllowDirectAccess = true
 	fs.Parse(args)
 	return o
 }

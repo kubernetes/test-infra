@@ -947,6 +947,7 @@ func Test_gatherOptions(t *testing.T) {
 		ghoptions := flagutil.GitHubOptions{}
 		ghoptions.AddFlags(fs)
 		ghoptions.AllowAnonymous = true
+		ghoptions.AllowDirectAccess = true
 		t.Run(tc.name, func(t *testing.T) {
 			expected := &options{
 				configPath:            "yo",

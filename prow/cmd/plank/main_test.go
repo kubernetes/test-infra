@@ -90,6 +90,7 @@ func Test_gatherOptions(t *testing.T) {
 			expectedfs := flag.NewFlagSet("fake-flags", flag.PanicOnError)
 			expected.github.AddFlags(expectedfs)
 			expected.github.AllowAnonymous = true
+			expected.github.AllowDirectAccess = true
 			if tc.expected != nil {
 				tc.expected(expected)
 			}
