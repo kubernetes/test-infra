@@ -19,10 +19,10 @@ def repositories():
     if not native.existing_rule("io_k8s_repo_infra"):
         http_archive(
             name = "io_k8s_repo_infra",
-            strip_prefix = "repo-infra-0.0.3",
-            sha256 = "a6ca952e365600a17f56f0fc8e41016e1d13cfb2b74c0c29bad6bdba3e3d8a4d",
+            sha256 = "55e56b332ead9c32e1d53c9834a5c918a4cecd6859b70645eba6cd10372fd68f",
+            strip_prefix = "repo-infra-0.0.5",
             urls = [
-                "https://github.com/kubernetes/repo-infra/archive/v0.0.3.tar.gz",
+                "https://github.com/kubernetes/repo-infra/archive/v0.0.5.tar.gz",
             ],
         )
 
