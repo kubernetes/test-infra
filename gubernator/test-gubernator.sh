@@ -19,6 +19,8 @@ set -o pipefail
 set -o xtrace
 
 cd "$(dirname "$0")"
+pip -V
+pip install --upgrade pip
 pip install -r test_requirements.txt
 mkdir -p "${WORKSPACE}/_artifacts"
 ./test.sh --nologcapture --with-xunit --xunit-file="${WORKSPACE}/_artifacts/junit_nosetests.xml"
