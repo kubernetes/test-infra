@@ -175,6 +175,28 @@ func TestHandlePullRequest(t *testing.T) {
 			prIsDraft:   true,
 		},
 		{
+			name: "Trusted user switch PR from draft to normal shoud build",
+
+			Author:      "t",
+			ShouldBuild: true,
+			prAction:    github.PullRequestActionReadyForReview,
+		},
+		{
+			name: "Untrusted user switch PR from draft to normal should not build",
+
+			Author:      "u",
+			ShouldBuild: false,
+			prAction:    github.PullRequestActionReadyForReview,
+		},
+		{
+			name: "Untrusted user switch PR from draft to normal with ok-to-test should build",
+
+			Author:      "u",
+			HasOkToTest: true,
+			ShouldBuild: true,
+			prAction:    github.PullRequestActionReadyForReview,
+		},
+		{
 			name: "Untrusted user reopen PR with ok-to-test should build",
 
 			Author:      "u",

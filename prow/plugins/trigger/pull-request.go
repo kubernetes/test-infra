@@ -159,7 +159,10 @@ func handlePR(c Client, trigger plugins.Trigger, pr github.PullRequestEvent) err
 			c.Logger.WithError(err).Error("Failed to abort jobs for closed pull request")
 			return err
 		}
+	case github.PullRequestActionReadyForReview:
+		return buildAllIfTrusted(c, trigger, pr, baseSHA, presubmits)
 	}
+
 	return nil
 }
 
