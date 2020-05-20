@@ -114,6 +114,19 @@ func TestTrusted(t *testing.T) {
 }
 
 func TestHandlePullRequest(t *testing.T) {
+	jobToAbort := &prowapi.ProwJob{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "job-to-abort",
+			Namespace: "namespace",
+			Labels: map[string]string{
+				kube.OrgLabel:         "org",
+				kube.RepoLabel:        "repo",
+				kube.PullLabel:        "0",
+				kube.ProwJobTypeLabel: string(prowapi.PresubmitJob),
+			},
+		},
+	}
+
 	var testcases = []struct {
 		name string
 
@@ -125,6 +138,7 @@ func TestHandlePullRequest(t *testing.T) {
 		prChanges     bool
 		prAction      github.PullRequestEventAction
 		prIsDraft     bool
+		jobToAbort    *prowapi.ProwJob
 	}{
 		{
 			name: "Trusted user open PR should build",
@@ -352,6 +366,24 @@ func TestHandlePullRequest(t *testing.T) {
 			prAction:    github.PullRequestActionLabeled,
 			ShouldBuild: false,
 		},
+		{
+			name: "Abort jobs if PR is closed",
+
+			Author:      "t",
+			HasOkToTest: true,
+			prAction:    github.PullRequestActionClosed,
+			ShouldBuild: false,
+			jobToAbort:  jobToAbort,
+		},
+		{
+			name: "Abort jobs if PR is changed to draft",
+
+			Author:      "t",
+			HasOkToTest: true,
+			prAction:    github.PullRequestConvertedToDraft,
+			ShouldBuild: false,
+			jobToAbort:  jobToAbort,
+		},
 	}
 	for _, tc := range testcases {
 		t.Logf("running scenario %q", tc.name)
@@ -374,7 +406,7 @@ func TestHandlePullRequest(t *testing.T) {
 					},
 				},
 			}
-			fakeProwJobClient := fake.NewSimpleClientset()
+			fakeProwJobClient := fake.NewSimpleClientset(jobToAbort)
 			c := Client{
 				GitHubClient:  g,
 				ProwJobClient: fakeProwJobClient.ProwV1().ProwJobs("namespace"),
@@ -445,6 +477,19 @@ func TestHandlePullRequest(t *testing.T) {
 				t.Error("Expected comment to github")
 			} else if !tc.ShouldComment && len(g.IssueCommentsAdded) > 0 {
 				t.Errorf("Expected no comments to github, but got %d", len(g.IssueCommentsAdded))
+			}
+			if tc.jobToAbort != nil {
+				pj, err := fakeProwJobClient.ProwV1().ProwJobs("namespace").Get(tc.jobToAbort.Name, metav1.GetOptions{})
+				if err != nil {
+					t.Fatalf("failed to get prowjob: %v", err)
+				}
+
+				if pj.Status.State != prowapi.AbortedState {
+					t.Errorf("exptected job %s to be aborted, found state: %v", tc.jobToAbort.Name, pj.Status.State)
+				}
+				if pj.Complete() {
+					t.Errorf("exptected job %s to not be set to complete.", tc.jobToAbort.Name)
+				}
 			}
 		})
 	}

@@ -146,6 +146,11 @@ func handlePR(c Client, trigger plugins.Trigger, pr github.PullRequestEvent) err
 		}
 	case github.PullRequestActionReadyForReview:
 		return buildAllIfTrusted(c, trigger, pr, baseSHA, presubmits)
+	case github.PullRequestConvertedToDraft:
+		if err := abortAllJobs(c, &pr.PullRequest); err != nil {
+			c.Logger.WithError(err).Error("Failed to abort jobs for pull request converted to draft")
+			return err
+		}
 	}
 
 	return nil
