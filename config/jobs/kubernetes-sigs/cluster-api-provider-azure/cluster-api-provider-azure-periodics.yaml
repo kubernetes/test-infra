@@ -30,8 +30,6 @@ periodics:
             value: "\\[Slow\\]|\\[Serial\\]|\\[Flaky\\]"
           - name: PARALLEL
             value: "true"
-          - name: USE_CI_ARTIFACTS
-            value: "true"
         securityContext:
           privileged: true
         resources:
