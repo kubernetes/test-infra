@@ -34,7 +34,7 @@ import (
 
 const (
 	pluginName            = "welcome"
-	defaultWelcomeMessage = "Welcome @{{.AuthorLogin}}! It looks like this is your first PR to {{.Org}}/{{.Repo}} 🎉"
+	defaultWelcomeMessage = "Welcome @{{.AuthorLogin}}! It looks like this is your first PR to {{.Org}}/{{.Repo}}"
 )
 
 // PRInfo contains info used provided to the welcome message template
