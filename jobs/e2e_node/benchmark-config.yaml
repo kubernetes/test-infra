@@ -100,30 +100,35 @@ images:
     image: cos-beta-81-12871-44-0
     project: cos-cloud
     machine: n1-standard-1
+    metadata: "user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled"
     tests:
       - 'create 35 pods with 0s? interval \[Benchmark\]'
   cosbeta-density2:
     image: cos-beta-81-12871-44-0
     project: cos-cloud
     machine: n1-standard-1
+    metadata: "user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled"
     tests:
       - 'create 105 pods with 0s? interval \[Benchmark\]'
   cosbeta-density2-qps60:
     image: cos-beta-81-12871-44-0
     project: cos-cloud
     machine: n1-standard-1
+    metadata: "user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled"
     tests:
       - 'create 105 pods with 0s? interval \(QPS 60\) \[Benchmark\]'
   cosbeta-density3:
     image: cos-beta-81-12871-44-0
     project: cos-cloud
     machine: n1-standard-2
+    metadata: "user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled"
     tests:
       - 'create 105 pods with 0s? interval \[Benchmark\]'
   cosbeta-density4:
     image: cos-beta-81-12871-44-0
     project: cos-cloud
     machine: n1-standard-1
+    metadata: "user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled"
     tests:
       - 'create 105 pods with 100ms interval \[Benchmark\]'
 
