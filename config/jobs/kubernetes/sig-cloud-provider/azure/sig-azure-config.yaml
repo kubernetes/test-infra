@@ -294,12 +294,14 @@ periodics:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20200519-d13d3ca-master
       command:
       - "runner.sh"
-      - "./scripts/ci-conformance.sh"
+      - "./scripts/ci-entrypoint.sh"
       env:
       - name: FOCUS
         value: "\\[Conformance\\]|\\[NodeConformance\\]"
       - name: SKIP
         value: "\\[Slow\\]|\\[Serial\\]|\\[Flaky\\]"
+      - name: PARALLEL
+        value: "true"
       - name: USE_CI_ARTIFACTS
         value: "true"
       securityContext:
