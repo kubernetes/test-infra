@@ -693,6 +693,13 @@ type Deck struct {
 	// accepts a key of: `org/repo`, `org` or `*` (wildcard) to define what GitHub org (or repo) a particular
 	// config applies to and a value of: `RerunAuthConfig` struct to define the users/groups authorized to rerun jobs.
 	RerunAuthConfigs RerunAuthConfigs `json:"rerun_auth_configs,omitempty"`
+	// EnableWhitelist restricts artifact requests to the list of whitelisted buckets and folders.
+	// Buckets listed in the GCSConfiguration are automatically whitelisted.
+	EnableWhitelist bool `json:"enable_whitelist,omitempty"`
+	// AdditionalBuckets is a list of additional storage buckets to whitelist.
+	AdditionalBuckets []string `json:"additional_buckets,omitempty"`
+	// AdditionalFolders is a list of additional top-level storage folders to whitelist.
+	AdditionalFolders []string `json:"additional_folders,omitempty"`
 }
 
 // ExternalAgentLog ensures an external agent like Jenkins can expose

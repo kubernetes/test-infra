@@ -69,6 +69,7 @@ import (
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/plugins/trigger"
+	"k8s.io/test-infra/prow/pod-utils/gcs"
 	"k8s.io/test-infra/prow/prstatus"
 	"k8s.io/test-infra/prow/simplifypath"
 	"k8s.io/test-infra/prow/spyglass"
@@ -889,7 +890,7 @@ func handleBadge(ja *jobs.JobAgent) http.HandlerFunc {
 func handleJobHistory(o options, cfg config.Getter, opener io.Opener, log *logrus.Entry) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		setHeadersNoCaching(w)
-		tmpl, err := getJobHistory(r.Context(), r.URL, opener)
+		tmpl, err := getJobHistory(r.Context(), r.URL, cfg, opener)
 		if err != nil {
 			msg := fmt.Sprintf("failed to get job history: %v", err)
 			log.WithField("url", r.URL.String()).Warn(msg)
@@ -961,7 +962,9 @@ func renderSpyglass(ctx context.Context, sg *spyglass.Spyglass, cfg config.Gette
 		return "", fmt.Errorf("error when resolving real path %s: %v", src, err)
 	}
 	src = realPath
-
+	if err := ValidatePath(cfg, src); err != nil {
+		return "", err
+	}
 	artifactNames, err := sg.ListArtifacts(ctx, src)
 	if err != nil {
 		return "", fmt.Errorf("error listing artifacts: %v", err)
@@ -1175,6 +1178,10 @@ func handleArtifactView(o options, sg *spyglass.Spyglass, cfg config.Getter) htt
 		var request spyglass.LensRequest
 		if err := json.Unmarshal([]byte(reqString), &request); err != nil {
 			http.Error(w, fmt.Sprintf("Failed to parse request: %v", err), http.StatusBadRequest)
+			return
+		}
+		if err := ValidatePath(cfg, request.Source); err != nil {
+			http.Error(w, fmt.Sprintf("Failed to process request: %v", err), http.StatusBadRequest)
 			return
 		}
 
@@ -1620,6 +1627,43 @@ func defaultLensRemoteConfig(lfc *config.LensFileConfig) error {
 	if lfc.RemoteConfig.HideTitle == nil {
 		hideTitle := lens.Config().HideTitle
 		lfc.RemoteConfig.HideTitle = &hideTitle
+	}
+
+	return nil
+}
+
+// ValidatePath validates various parts (e.g. bucket, folder, etc.) of a storage path.
+func ValidatePath(cfg config.Getter, path string) error {
+	if !cfg().Deck.EnableWhitelist {
+		return nil
+	}
+
+	parts := strings.SplitN(path, "/", 4)
+	if len(parts) < 4 {
+		return fmt.Errorf("invalid path: %s expected <key-type>/<bucket>/<folder>/<sub-folder...>", path)
+	}
+
+	// Check bucket
+	bucket := parts[1]
+	bwl := sets.String{}
+	for _, dc := range cfg().Plank.DefaultDecorationConfigs {
+		bwl.Insert(dc.GCSConfiguration.Bucket)
+	}
+	for _, bucket := range cfg().Deck.AdditionalBuckets {
+		bwl.Insert(bucket)
+	}
+	if !bwl.Has(bucket) {
+		return fmt.Errorf("bucket %q not in whitelist %v", bucket, bwl)
+	}
+
+	// Check folder
+	folder := parts[2]
+	fwl := sets.NewString(gcs.PRLogs, gcs.NonPRLogs)
+	for _, folder := range cfg().Deck.AdditionalFolders {
+		fwl.Insert(folder)
+	}
+	if !fwl.Has(folder) {
+		return fmt.Errorf("folder %q not in whitelist %v", folder, fwl)
 	}
 
 	return nil
