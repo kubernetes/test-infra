@@ -13,7 +13,7 @@ periodics:
       preset-service-account: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200519-d13d3ca-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
           command:
             - runner.sh
             - bash
@@ -40,7 +40,7 @@ periodics:
         path_alias: k8s.io/kubernetes
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200519-d13d3ca-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
           command:
             - runner.sh
             - bash
