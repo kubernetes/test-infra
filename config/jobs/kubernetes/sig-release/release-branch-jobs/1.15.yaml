@@ -456,6 +456,7 @@ periodics:
     testgrid-dashboards: sig-release-1.15-blocking, sig-testing-kind
     testgrid-num-columns-recent: "6"
     testgrid-tab-name: kind-1.15-parallel
+  cluster: k8s-infra-prow-build
   interval: 24h
   labels:
     preset-bazel-remote-cache-enabled: "true"

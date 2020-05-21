@@ -517,6 +517,7 @@ periodics:
     testgrid-dashboards: sig-release-1.17-blocking, sig-testing-kind
     testgrid-num-columns-recent: "6"
     testgrid-tab-name: kind-1.17-parallel
+  cluster: k8s-infra-prow-build
   interval: 2h
   labels:
     preset-bazel-remote-cache-enabled: "true"
@@ -556,6 +557,7 @@ periodics:
     testgrid-dashboards: sig-release-1.17-blocking, sig-testing-kind
     testgrid-num-columns-recent: "6"
     testgrid-tab-name: kind-ipv6-1.17-parallel
+  cluster: k8s-infra-prow-build
   interval: 2h
   labels:
     preset-bazel-remote-cache-enabled: "true"
