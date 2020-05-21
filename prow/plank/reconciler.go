@@ -46,7 +46,7 @@ import (
 	"k8s.io/test-infra/prow/pod-utils/decorate"
 )
 
-const controllerName = "plank"
+const ControllerName = "plank"
 
 func Add(
 	mgr controllerruntime.Manager,
@@ -78,7 +78,7 @@ func add(
 	}
 
 	blder := controllerruntime.NewControllerManagedBy(mgr).
-		Named(controllerName).
+		Named(ControllerName).
 		For(&prowv1.ProwJob{}).
 		WithEventFilter(predicate).
 		WithOptions(controller.Options{MaxConcurrentReconciles: numWorkers})
