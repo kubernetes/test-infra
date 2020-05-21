@@ -303,7 +303,7 @@ func TestTrustedUser(t *testing.T) {
 			org:             "kubernetes",
 			repo:            "kubernetes",
 			expectedTrusted: false,
-			expectedReason:  nonTrustedNotMember,
+			expectedReason:  untrustedReasonString(notMember),
 		},
 		{
 			name:            "user is trusted org member",
@@ -321,7 +321,7 @@ func TestTrustedUser(t *testing.T) {
 			org:             "kubernetes",
 			repo:            "kubernetes",
 			expectedTrusted: false,
-			expectedReason:  nonTrustedNotMemberNotCollaborator,
+			expectedReason:  untrustedReasonString(notMember | notCollaborator),
 		},
 		{
 			name:            "user is not org member or trusted org member",
@@ -331,7 +331,7 @@ func TestTrustedUser(t *testing.T) {
 			org:             "kubernetes",
 			repo:            "kubernetes",
 			expectedTrusted: false,
-			expectedReason:  nonTrustedNotMemberNotSecondaryMemberNotCollaborator,
+			expectedReason:  untrustedReasonString(notMember | notCollaborator | notSecondaryMember),
 		},
 		{
 			name:            "user is not org member or trusted org member, onlyOrgMembers true",
@@ -341,7 +341,7 @@ func TestTrustedUser(t *testing.T) {
 			org:             "kubernetes",
 			repo:            "kubernetes",
 			expectedTrusted: false,
-			expectedReason:  nonTrustedNotMemberNotSecondaryMember,
+			expectedReason:  untrustedReasonString(notMember | notSecondaryMember),
 		},
 	}
 

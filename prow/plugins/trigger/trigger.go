@@ -36,12 +36,34 @@ import (
 const (
 	// PluginName is the name of the trigger plugin
 	PluginName = "trigger"
-
-	nonTrustedNotMember                                  = "User is not a member of the org."
-	nonTrustedNotMemberNotCollaborator                   = "User is not a member of the org and is not a collaborator. Either will make the user trusted."
-	nonTrustedNotMemberNotSecondaryMember                = "User is not a member of the org or the trusted (secondary) org"
-	nonTrustedNotMemberNotSecondaryMemberNotCollaborator = "User is not a member of the org or the trusted (secondary) org and is not a collaborator. Any of these being true will make the user trusted."
 )
+
+// untrustedReason represents a combination (by ORing the appropriate consts) of reasons
+// why a user is not trusted by TrustedUser. It is used to generate messaging for users.
+type untrustedReason int
+
+const (
+	notMember untrustedReason = 1 << iota
+	notCollaborator
+	notSecondaryMember
+)
+
+// untrustedReasonString constructs a string explaining the reason for a user's denail of trust
+// from untrustedReason as described above.
+func untrustedReasonString(reasons untrustedReason) string {
+	var response string
+	if reasons&notMember != 0 {
+		response += "User is not a member of the org. "
+	}
+	if reasons&notCollaborator != 0 {
+		response += "User is not a collaborator. "
+	}
+	if reasons&notSecondaryMember != 0 {
+		response += "User is not a member of the trusted secondary org. "
+	}
+	response += "Satisfy at least one of these conditions to make the user trusted."
+	return response
+}
 
 func init() {
 	plugins.RegisterGenericCommentHandler(PluginName, handleGenericCommentEvent, helpProvider)
@@ -202,9 +224,9 @@ func TrustedUser(ghc trustedUserClient, onlyOrgMembers bool, trustedOrg, user, o
 	if trustedOrg == "" || trustedOrg == org {
 		// the if/else is only to improve error messaging
 		if onlyOrgMembers {
-			return TrustedUserResponse{IsTrusted: false, Reason: nonTrustedNotMember}, nil // No trusted org and/or it is the same
+			return TrustedUserResponse{IsTrusted: false, Reason: untrustedReasonString(notMember)}, nil // No trusted org and/or it is the same
 		}
-		return TrustedUserResponse{IsTrusted: false, Reason: nonTrustedNotMemberNotCollaborator}, nil // No trusted org and/or it is the same
+		return TrustedUserResponse{IsTrusted: false, Reason: untrustedReasonString(notMember | notCollaborator)}, nil // No trusted org and/or it is the same
 	}
 
 	// Check the second trusted org.
@@ -216,9 +238,9 @@ func TrustedUser(ghc trustedUserClient, onlyOrgMembers bool, trustedOrg, user, o
 	} else {
 		// the if/else is only to improve error messaging
 		if onlyOrgMembers {
-			return TrustedUserResponse{IsTrusted: false, Reason: nonTrustedNotMemberNotSecondaryMember}, nil
+			return TrustedUserResponse{IsTrusted: false, Reason: untrustedReasonString(notMember | notSecondaryMember)}, nil
 		}
-		return TrustedUserResponse{IsTrusted: false, Reason: nonTrustedNotMemberNotSecondaryMemberNotCollaborator}, nil
+		return TrustedUserResponse{IsTrusted: false, Reason: untrustedReasonString(notMember | notSecondaryMember | notCollaborator)}, nil
 	}
 }
 

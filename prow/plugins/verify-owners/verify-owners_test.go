@@ -837,7 +837,7 @@ func TestNonCollaboratorsV2(t *testing.T) {
 }
 
 func testNonCollaborators(clients localgit.Clients, t *testing.T) {
-	const nonTrustedNotMemberNotCollaborator = "User is not a member of the org and is not a collaborator."
+	const nonTrustedNotMemberNotCollaborator = "User is not a member of the org. User is not a collaborator."
 	var tests = []struct {
 		name                 string
 		filesChanged         []string
