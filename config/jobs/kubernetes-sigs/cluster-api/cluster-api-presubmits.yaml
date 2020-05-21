@@ -10,7 +10,7 @@ presubmits:
     - gh-pages
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200519-d13d3ca-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
         command:
         - runner.sh
         - ./scripts/ci-build.sh
@@ -34,7 +34,7 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200519-d13d3ca-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
         resources:
           requests:
             memory: "6Gi"
@@ -56,7 +56,7 @@ presubmits:
       - command:
         - runner.sh
         - ./scripts/ci-apidiff.sh
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200519-d13d3ca-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
       testgrid-tab-name: pr-apidiff
@@ -70,7 +70,7 @@ presubmits:
     - gh-pages
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200519-d13d3ca-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
         command:
         - "runner.sh"
         - "make"
@@ -92,7 +92,7 @@ presubmits:
     - gh-pages
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200519-d13d3ca-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
         args:
         - runner.sh
         - ./scripts/ci-test.sh
@@ -113,7 +113,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200519-d13d3ca-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
         command:
         - runner.sh
         - ./scripts/ci-integration.sh
@@ -140,7 +140,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200519-d13d3ca-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
