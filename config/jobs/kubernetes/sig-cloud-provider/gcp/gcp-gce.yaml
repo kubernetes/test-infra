@@ -301,6 +301,7 @@ presubmits:
 periodics:
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gce
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -314,14 +315,13 @@ periodics:
       - --check-leaked-resources
       - --env=ENABLE_POD_SECURITY_POLICY=true
       - --extract=ci/latest
+      - --gcp-project-type=k8s-infra-gce-project
       - --gcp-master-image=gci
       - --gcp-node-image=gci
       - --gcp-nodes=4
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=30
       - --provider=gce
-      # TODO: cannot migrate over to k8s-infra-prow-build until this writes to another bucket
-      - --publish=gs://kubernetes-release-dev/ci/latest-green.txt
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200519-d13d3ca-master
