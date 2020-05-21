@@ -6,6 +6,7 @@ dashboard_groups:
     - sig-storage-local-static-provisioner
     - sig-storage-csi-ci
     - sig-storage-csi-csi-driver-host-path
+    - sig-storage-csi-csi-proxy
     - sig-storage-csi-external-attacher
     - sig-storage-csi-external-provisioner
     - sig-storage-csi-external-resizer
@@ -99,6 +100,7 @@ dashboards:
 
 - name: sig-storage-csi-ci
 - name: sig-storage-csi-csi-driver-host-path
+- name: sig-storage-csi-csi-proxy
 - name: sig-storage-csi-external-attacher
 - name: sig-storage-csi-external-provisioner
 - name: sig-storage-csi-external-resizer
