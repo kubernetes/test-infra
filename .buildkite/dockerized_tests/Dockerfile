@@ -16,14 +16,10 @@ RUN apt-get -qq update && \
     zlib1g-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Install the requested version of bazel and stick it in the right place so that the tools/bazel script doesn't re-download the same version.
-ENV BAZEL_VERSION="0.27.0"
-RUN export BAZEL_INSTALL_DIR="/home/user/.bazel_installations/${BAZEL_VERSION}" \
-    && curl -LSs -o /tmp/bazel.deb https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel_${BAZEL_VERSION}-linux-x86_64.deb \
-    && dpkg -i /tmp/bazel.deb \
-    && rm /tmp/bazel.deb \
-    && mkdir -p ${BAZEL_INSTALL_DIR}/bin \
-    && ln -s /usr/bin/bazel-real ${BAZEL_INSTALL_DIR}/bin/bazel
+# Install bazelisk on the path as Bazel so we don't need to explicitly keep Bazel up to date.
+ENV BAZELISK_VERSION="1.4.0"
+RUN curl -LSs -o /usr/local/bin/bazel "https://github.com/bazelbuild/bazelisk/releases/download/v${BAZEL_VERSION}/bazelisk-linux-amd64" \
+    && chmod +x /usr/local/bin/bazel
 
 RUN mkdir /bazel_cache && chmod -R 777 /bazel_cache
 

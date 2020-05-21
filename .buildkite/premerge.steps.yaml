@@ -15,7 +15,7 @@ linux_builders: &linux_builders
     - "environment=production"
     - "permission_set=builder"
     - "platform=linux"
-    - "queue=${CI_LINUX_BUILDER_QUEUE:-v3-1564411674-9c5746811d9f2beb-------z}"
+    - "queue=${CI_LINUX_BUILDER_QUEUE:-v4-20-05-21-134527-bk11577-85e05f62}"
     - "scaler_version=2"
 
 steps:
