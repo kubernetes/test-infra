@@ -187,6 +187,7 @@ periodics:
     testgrid-num-columns-recent: '3'
 
 - name: ci-kubernetes-conformance-kind-ga-only
+  cluster: k8s-infra-prow-build
   interval: 12h
   decorate: true
   skip_branches:
