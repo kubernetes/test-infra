@@ -177,6 +177,7 @@ periodics:
       - --deployment=node
       - --gcp-project-type=node-e2e-project
       - --gcp-zone=us-west1-b
+      - --gcp-node-size=n1-standard-32
       - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
       - --node-test-args= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
       - --node-tests=true
