@@ -18,7 +18,7 @@ RUN apt-get -qq update && \
 
 # Install bazelisk on the path as Bazel so we don't need to explicitly keep Bazel up to date.
 ENV BAZELISK_VERSION="1.4.0"
-RUN curl -LSs -o /usr/local/bin/bazel "https://github.com/bazelbuild/bazelisk/releases/download/v${BAZEL_VERSION}/bazelisk-linux-amd64" \
+RUN curl -LSs -o /usr/local/bin/bazel "https://github.com/bazelbuild/bazelisk/releases/download/v${BAZELISK_VERSION}/bazelisk-linux-amd64" \
     && chmod +x /usr/local/bin/bazel
 
 RUN mkdir /bazel_cache && chmod -R 777 /bazel_cache
