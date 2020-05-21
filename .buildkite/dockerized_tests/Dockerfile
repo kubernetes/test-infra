@@ -10,6 +10,7 @@ RUN apt-get -qq update && \
     openjdk-8-jdk \
     patch \
     python \
+    python3 \
     ssh \
     unzip \
     xz-utils \
