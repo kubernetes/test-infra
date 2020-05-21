@@ -50,8 +50,8 @@ const (
 type nonTrustedReasons struct {
 	// files is a list of files they are being added in
 	files []string
-	// trigger is the reason that trigger's TrustedUser responds with for a failed trust check
-	trigger string
+	// triggerReason is the reason that trigger's TrustedUser responds with for a failed trust check
+	triggerReason string
 }
 
 var (
@@ -422,7 +422,7 @@ func markdownFriendlyComment(org, joinOrgURL string, nonTrustedUsers map[string]
 
 	for user, reasons := range nonTrustedUsers {
 		commentLines = append(commentLines, fmt.Sprintf("- %s", user))
-		commentLines = append(commentLines, fmt.Sprintf("  - %s", reasons.trigger))
+		commentLines = append(commentLines, fmt.Sprintf("  - %s", reasons.triggerReason))
 		for _, filename := range reasons.files {
 			commentLines = append(commentLines, fmt.Sprintf("  - %s", filename))
 		}
@@ -521,13 +521,13 @@ func checkIfTrustedUser(ghc githubClient, log *logrus.Entry, triggerConfig plugi
 		trustedUsers.Insert(owner)
 	} else if !isAlreadyTrusted && !triggerTrustedResponse.IsTrusted {
 		if reasons, ok := nonTrustedUsers[owner]; ok {
-			reasons.trigger = triggerTrustedResponse.Reason
+			reasons.triggerReason = triggerTrustedResponse.Reason
 			nonTrustedUsers[owner] = reasons
 		} else {
 			nonTrustedUsers[owner] = nonTrustedReasons{
 				// ensure that files is initialized to avoid nil pointer
-				files:   []string{},
-				trigger: triggerTrustedResponse.Reason,
+				files:         []string{},
+				triggerReason: triggerTrustedResponse.Reason,
 			}
 		}
 	}

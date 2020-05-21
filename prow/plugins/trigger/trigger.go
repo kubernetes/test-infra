@@ -48,17 +48,17 @@ const (
 	notSecondaryMember
 )
 
-// untrustedReasonString constructs a string explaining the reason for a user's denail of trust
+// String constructs a string explaining the reason for a user's denial of trust
 // from untrustedReason as described above.
-func untrustedReasonString(reasons untrustedReason) string {
+func (u untrustedReason) String() string {
 	var response string
-	if reasons&notMember != 0 {
+	if u&notMember != 0 {
 		response += "User is not a member of the org. "
 	}
-	if reasons&notCollaborator != 0 {
+	if u&notCollaborator != 0 {
 		response += "User is not a collaborator. "
 	}
-	if reasons&notSecondaryMember != 0 {
+	if u&notSecondaryMember != 0 {
 		response += "User is not a member of the trusted secondary org. "
 	}
 	response += "Satisfy at least one of these conditions to make the user trusted."
@@ -224,9 +224,9 @@ func TrustedUser(ghc trustedUserClient, onlyOrgMembers bool, trustedOrg, user, o
 	if trustedOrg == "" || trustedOrg == org {
 		// the if/else is only to improve error messaging
 		if onlyOrgMembers {
-			return TrustedUserResponse{IsTrusted: false, Reason: untrustedReasonString(notMember)}, nil // No trusted org and/or it is the same
+			return TrustedUserResponse{IsTrusted: false, Reason: notMember.String()}, nil // No trusted org and/or it is the same
 		}
-		return TrustedUserResponse{IsTrusted: false, Reason: untrustedReasonString(notMember | notCollaborator)}, nil // No trusted org and/or it is the same
+		return TrustedUserResponse{IsTrusted: false, Reason: (notMember | notCollaborator).String()}, nil // No trusted org and/or it is the same
 	}
 
 	// Check the second trusted org.
@@ -235,13 +235,13 @@ func TrustedUser(ghc trustedUserClient, onlyOrgMembers bool, trustedOrg, user, o
 		return errorResponse, fmt.Errorf("error in IsMember(%s): %v", trustedOrg, err)
 	} else if member {
 		return okResponse, nil
-	} else {
-		// the if/else is only to improve error messaging
-		if onlyOrgMembers {
-			return TrustedUserResponse{IsTrusted: false, Reason: untrustedReasonString(notMember | notSecondaryMember)}, nil
-		}
-		return TrustedUserResponse{IsTrusted: false, Reason: untrustedReasonString(notMember | notSecondaryMember | notCollaborator)}, nil
 	}
+
+	// the if/else is only to improve error messaging
+	if onlyOrgMembers {
+		return TrustedUserResponse{IsTrusted: false, Reason: (notMember | notSecondaryMember).String()}, nil
+	}
+	return TrustedUserResponse{IsTrusted: false, Reason: (notMember | notSecondaryMember | notCollaborator).String()}, nil
 }
 
 func skippedStatusFor(context string) github.Status {
