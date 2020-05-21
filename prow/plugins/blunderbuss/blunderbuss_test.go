@@ -396,6 +396,8 @@ func TestHandleWithoutExcludeApproversMixed(t *testing.T) {
 
 				"e.go":  "5",
 				"ee.go": "5",
+				"f.go":  "6",
+				"g.go":  "7",
 			},
 			approvers: map[string]sets.String{
 				"a.go": sets.NewString("al"),
@@ -404,6 +406,8 @@ func TestHandleWithoutExcludeApproversMixed(t *testing.T) {
 
 				"e.go":  sets.NewString(),
 				"ee.go": sets.NewString("larry"),
+				"f.go":  sets.NewString("approver1"),
+				"g.go":  sets.NewString("Approver1"),
 			},
 			leafApprovers: map[string]sets.String{
 				"a.go": sets.NewString("alice"),
@@ -412,6 +416,8 @@ func TestHandleWithoutExcludeApproversMixed(t *testing.T) {
 
 				"e.go":  sets.NewString("erick", "evan"),
 				"ee.go": sets.NewString("erick", "evan"),
+				"f.go":  sets.NewString("leafApprover1", "leafApprover2"),
+				"g.go":  sets.NewString("leafApprover1", "leafApprover2"),
 			},
 			reviewers: map[string]sets.String{
 				"a.go": sets.NewString("al"),
@@ -476,6 +482,20 @@ func TestHandleWithoutExcludeApproversMixed(t *testing.T) {
 			filesChanged:      []string{"e.go", "ee.go"},
 			reviewerCount:     4,
 			expectedRequested: []string{"erick", "ellen", "evan", "larry"},
+		},
+		{
+			name:              "1 file, 2 leaf approvers, 1 approver, request 3, max 2",
+			filesChanged:      []string{"f.go"},
+			reviewerCount:     3,
+			maxReviewerCount:  2,
+			expectedRequested: []string{"leafApprover1", "leafApprover2"},
+		},
+		{
+			name:              "1 file, 2 leaf approvers, 1 approver (capitalized), request 3, max 2",
+			filesChanged:      []string{"g.go"},
+			reviewerCount:     3,
+			maxReviewerCount:  2,
+			expectedRequested: []string{"leafApprover1", "leafApprover2"},
 		},
 	}
 	for _, tc := range testcases {
