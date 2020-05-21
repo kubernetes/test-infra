@@ -27,4 +27,4 @@ echo "Using ${BAZEL_BIN} as Bazel."
 
 "${BAZEL_BIN}" run \
   --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 \
-  //prow:improbable-push
+  //improbable:improbable-push

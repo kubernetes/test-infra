@@ -1,0 +1,60 @@
+load("@io_bazel_rules_docker//container:bundle.bzl", "container_bundle")
+load("@io_bazel_rules_docker//contrib:push-all.bzl", "docker_push")
+load("//prow:def.bzl", "prow_push", "tags")
+
+package(default_visibility = ["//visibility:public"])
+
+container_bundle(
+    name = "release-deck",
+    images = tags(
+      cmds = ["deck"],
+      targets = {},
+    ),
+)
+
+docker_push(
+    name = "release-push-deck",
+    bundle = ":release-deck",
+)
+
+container_bundle(
+    name = "release-hook",
+    images = tags(
+      cmds = ["hook"],
+      targets = {},
+    ),
+)
+
+docker_push(
+    name = "release-push-hook",
+    bundle = ":release-hook",
+)
+
+container_bundle(
+    name = "release-tide",
+    images = tags(
+      cmds = ["tide"],
+      targets = {},
+    ),
+)
+
+docker_push(
+    name = "release-push-tide",
+    bundle = ":release-tide",
+)
+
+prow_push(
+    name = "improbable-push",
+    bundle_name = "improbable-release",
+    images = tags(
+        cmds = [
+            "deck",
+            "hook",
+            "tide",
+        ],
+        targets = {
+            "ghproxy": "//ghproxy:image",
+            "needs-rebase": "//prow/external-plugins/needs-rebase:image",
+        },
+    ),
+)
