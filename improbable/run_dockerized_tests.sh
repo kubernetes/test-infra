@@ -11,4 +11,4 @@ docker run -e LOCAL_USER_ID="$(id -u)" \
   --entrypoint=/usr/local/bin/entrypoint.sh \
   -it \
   dockerized_tests \
-  bash -c 'cd /repo && bazel test //prow/...'
+  bash -c 'cd /repo && bazel test //...'

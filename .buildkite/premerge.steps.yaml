@@ -20,5 +20,5 @@ linux_builders: &linux_builders
 
 steps:
   - label: "Prow Unit Tests"
-    command: ".buildkite/run_dockerized_tests.sh"
+    command: "improbable/run_dockerized_tests.sh"
     <<: *linux_builders
