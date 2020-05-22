@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-CACHE_ROOT="${CACHE_ROOT:-https://storage.googleapis.com/io-internal-infra-bazel-remote-cache-production}"
+CACHE_ROOT="${CACHE_ROOT:-storage.googleapis.com/io-internal-infra-bazel-remote-cache-production}"
 
 # get the installed version of a debian package
 package_to_version () {
@@ -65,7 +65,7 @@ make_bazel_rc () {
     local cache_id
     cache_id="improbable/k8s-test-infra,$(hash_toolchains)"
     local cache_url
-    cache_url="http://${CACHE_ROOT}/${cache_id}"
+    cache_url="https://${CACHE_ROOT}/${cache_id}"
     echo "build:imp-ci --remote_http_cache=${cache_url}"
 }
 
