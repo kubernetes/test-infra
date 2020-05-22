@@ -61,19 +61,9 @@ hash_toolchains () {
     echo "${tool_versions}" | md5sum | cut -d" " -f1
 }
 
-get_workspace () {
-    # get org/repo from prow, otherwise use $PWD
-    PWD=$(pwd)
-    if [[ -n "${REPO_NAME}" ]] && [[ -n "${REPO_OWNER}" ]]; then
-        echo "${REPO_OWNER}/${REPO_NAME}"
-    else
-        echo "$(basename "$(dirname "$PWD")")/$(basename "$PWD")"
-    fi
-}
-
 make_bazel_rc () {
     local cache_id
-    cache_id="$(get_workspace),$(hash_toolchains)"
+    cache_id="improbable/k8s-test-infra,$(hash_toolchains)"
     local cache_url
     cache_url="http://${CACHE_ROOT}/${cache_id}"
     echo "build:imp-ci --remote_http_cache=${cache_url}"
