@@ -123,11 +123,13 @@ type reconciler struct {
 }
 
 func (r *reconciler) syncMetrics(stop <-chan struct{}) error {
+	ticker := time.NewTicker(30 * time.Second)
+	defer ticker.Stop()
 	for {
 		select {
 		case <-stop:
 			return nil
-		case <-time.NewTicker(30 * time.Second).C:
+		case <-ticker.C:
 			pjs := &prowv1.ProwJobList{}
 			if err := r.pjClient.List(r.ctx, pjs, optAllProwJobs()); err != nil {
 				r.log.WithError(err).Error("failed to list prowjobs for metrics")
