@@ -456,6 +456,7 @@ periodics:
       - bash
       - -c
       - >-
+        kubectl apply -f templates/addons/azurefile-role.yaml &&
         cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&
         make e2e-test
       env:
