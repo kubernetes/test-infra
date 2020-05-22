@@ -1,0 +1,52 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+#secretGenerator:
+#  - literals:
+#      - hmac=hmac-token
+#    name: hmac-token
+#    type: Opaque
+#  - literals:
+#      - oauth=oauth-token
+#    name: oauth-token
+#    type: Opaque
+#  - literals:
+#      - secret=cookie
+#    name: cookie
+#    type: Opaque
+#  - literals:
+#      - token=slack-token
+#    name: slack-token
+#    type: Opaque
+#  - name: github-oauth-config
+#    files:
+#      - secret=resources/oauth-config
+#    type: Opaque
+#  - name: prow-bucket-gcs-credentials
+#    files:
+#      - service-account.json=resources/sa-00000-e4cc74cf3dd8.json
+#    type: Opaque
+
+configMapGenerator:
+  - name: config
+    files:
+      - config.yaml=config.yaml
+  - name: plugins
+    files:
+      - plugins.yaml=plugins.yaml
+  - name: label-config
+    files:
+      - labels.yaml=labels.yaml
+
+resources:
+  #  - cluster/branch_protector_cron_job.yaml
+  - cluster/crier_deployment.yaml
+  - cluster/crier_rbac.yaml
+  #  - cluster/label_sync_cron_job.yaml
+  - cluster/needs-rebase_deployment.yaml
+  - cluster/needs-rebase_service.yaml
+  - cluster/pipeline_deployment.yaml
+  - cluster/pipeline_rbac.yaml
+  - cluster/pushgateway_deployment.yaml
+  - cluster/starter.yaml
+  - cluster/ghproxy.yaml
