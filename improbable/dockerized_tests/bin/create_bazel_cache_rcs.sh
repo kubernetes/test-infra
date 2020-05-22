@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-CACHE_ROOT="${CACHE_ROOT:-https://storage.googleapis.com/io-internal-infra-bazel-remote-cache-production/}"
+CACHE_ROOT="${CACHE_ROOT:-https://storage.googleapis.com/io-internal-infra-bazel-remote-cache-production}"
 
 # get the installed version of a debian package
 package_to_version () {
@@ -63,6 +63,7 @@ hash_toolchains () {
 
 get_workspace () {
     # get org/repo from prow, otherwise use $PWD
+    PWD=$(pwd)
     if [[ -n "${REPO_NAME}" ]] && [[ -n "${REPO_OWNER}" ]]; then
         echo "${REPO_OWNER}/${REPO_NAME}"
     else
