@@ -270,6 +270,7 @@ func TestTrustedUser(t *testing.T) {
 		repo string
 
 		expectedTrusted bool
+		expectedReason  string
 	}{
 		{
 			name:            "user is member of trusted org",
@@ -302,6 +303,7 @@ func TestTrustedUser(t *testing.T) {
 			org:             "kubernetes",
 			repo:            "kubernetes",
 			expectedTrusted: false,
+			expectedReason:  (notMember).String(),
 		},
 		{
 			name:            "user is trusted org member",
@@ -319,6 +321,27 @@ func TestTrustedUser(t *testing.T) {
 			org:             "kubernetes",
 			repo:            "kubernetes",
 			expectedTrusted: false,
+			expectedReason:  (notMember | notCollaborator).String(),
+		},
+		{
+			name:            "user is not org member or trusted org member",
+			onlyOrgMembers:  false,
+			trustedOrg:      "kubernetes-sigs",
+			user:            "test-2",
+			org:             "kubernetes",
+			repo:            "kubernetes",
+			expectedTrusted: false,
+			expectedReason:  (notMember | notCollaborator | notSecondaryMember).String(),
+		},
+		{
+			name:            "user is not org member or trusted org member, onlyOrgMembers true",
+			onlyOrgMembers:  true,
+			trustedOrg:      "kubernetes-sigs",
+			user:            "test-2",
+			org:             "kubernetes",
+			repo:            "kubernetes",
+			expectedTrusted: false,
+			expectedReason:  (notMember | notSecondaryMember).String(),
 		},
 	}
 
@@ -331,12 +354,15 @@ func TestTrustedUser(t *testing.T) {
 				Collaborators: []string{"test-collaborator"},
 			}
 
-			trusted, err := TrustedUser(fc, tc.onlyOrgMembers, tc.trustedOrg, tc.user, tc.org, tc.repo)
+			trustedResponse, err := TrustedUser(fc, tc.onlyOrgMembers, tc.trustedOrg, tc.user, tc.org, tc.repo)
 			if err != nil {
 				t.Errorf("For case %s, didn't expect error from TrustedUser: %v", tc.name, err)
 			}
-			if trusted != tc.expectedTrusted {
-				t.Errorf("For case %s, expect result: %v, but got: %v", tc.name, tc.expectedTrusted, trusted)
+			if trustedResponse.IsTrusted != tc.expectedTrusted {
+				t.Errorf("For case %s, expect trusted: %v, but got: %v", tc.name, tc.expectedTrusted, trustedResponse.IsTrusted)
+			}
+			if trustedResponse.Reason != tc.expectedReason {
+				t.Errorf("For case %s, expect trusted reason: %v, but got: %v", tc.name, tc.expectedReason, trustedResponse.Reason)
 			}
 		})
 	}
