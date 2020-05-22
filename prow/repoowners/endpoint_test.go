@@ -7,6 +7,8 @@ import (
 	"net/http/httptest"
 	"regexp"
 	"testing"
+
+	"k8s.io/test-infra/prow/git/localgit"
 )
 
 // TestEndpointSuccess tests the handling of normal input by the owners endpoint.
@@ -96,7 +98,7 @@ func TestEndpointSuccess(t *testing.T) {
 		},
 	}
 
-	client, cleanup, initErr := getTestClient(testFiles, true, false, true, false, nil, nil, nil, nil)
+	client, cleanup, initErr := getTestClient(testFiles, true, false, true, false, nil, nil, nil, nil, localgit.New)
 	switch {
 	case initErr != nil:
 		t.Fatalf("Error creating test client: %v.", initErr)
@@ -184,7 +186,7 @@ func TestEndPointRegex(t *testing.T) {
 		},
 	}
 
-	client, cleanup, initErr := getTestClient(testFiles, true, false, true, false, nil, nil, nil, nil)
+	client, cleanup, initErr := getTestClient(testFiles, true, false, true, false, nil, nil, nil, nil, localgit.New)
 	switch {
 	case initErr != nil:
 		t.Fatalf("Error creating test client: %v.", initErr)
@@ -241,7 +243,7 @@ func TestEndpointCorrupted(t *testing.T) {
 		},
 	}
 
-	client, cleanup, initErr := getTestClient(testFiles, true, false, true, false, nil, nil, nil, nil)
+	client, cleanup, initErr := getTestClient(testFiles, true, false, true, false, nil, nil, nil, nil, localgit.New)
 	switch {
 	case initErr != nil:
 		t.Fatalf("Error creating test client: %v.", initErr)
