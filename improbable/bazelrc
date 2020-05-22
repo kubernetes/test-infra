@@ -1,5 +1,11 @@
 build --config=improbable
 
+common:imp-ci --curses=no
+common:imp-ci --noshow_loading_progress
+common:imp-ci --show_progress_rate_limit=2
+
+build:imp-ci --remote_upload_local_results=true
+
 build:imp-ci --google_default_credentials
 
 build:imp-release --config=imp-ci
