@@ -384,7 +384,8 @@ func (sc *statusController) setStatuses(all []PullRequest, pool map[string]PullR
 			wantDesc = fmt.Sprintf("%s...", wantDesc[0:(maxStatusDescriptionLength-3)])
 			log.WithField("original-desc", original).Warn("GitHub status description needed to be truncated to fit GH API limit")
 		}
-		if wantState != strings.ToLower(string(actualState)) || wantDesc != actualDesc {
+		actualState = githubql.StatusState(strings.ToLower(string(actualState)))
+		if wantState != string(actualState) || wantDesc != actualDesc {
 			if err := sc.ghc.CreateStatus(
 				org,
 				repo,
@@ -396,9 +397,11 @@ func (sc *statusController) setStatuses(all []PullRequest, pool map[string]PullR
 					TargetURL:   targetURL(c, pr, log),
 				}); err != nil {
 				log.WithError(err).Errorf(
-					"Failed to set status context from %q to %q.",
-					string(actualState),
+					"Failed to set status context from %q to %q and description from %q to %q",
+					actualState,
 					wantState,
+					actualDesc,
+					wantDesc,
 				)
 			}
 		}
