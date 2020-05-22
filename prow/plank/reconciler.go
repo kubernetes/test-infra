@@ -213,6 +213,7 @@ func (r *reconciler) terminateDupes(pj *prowv1.ProwJob) error {
 	})
 }
 
+// syncPendingJob syncs jobs for which we already created the test workload
 func (r *reconciler) syncPendingJob(pj *prowv1.ProwJob) error {
 	prevPJ := pj.DeepCopy()
 
@@ -243,7 +244,8 @@ func (r *reconciler) syncPendingJob(pj *prowv1.ProwJob) error {
 		switch pod.Status.Phase {
 		case corev1.PodUnknown:
 			// Pod is in Unknown state. This can happen if there is a problem with
-			// the node. Delete the old pod, we'll start a new one next loop.
+			// the node. Delete the old pod, this will fire an event that triggers
+			// a new reconciliation in which we will re-create the pod.
 			r.log.WithFields(pjutil.ProwJobFields(pj)).Info("Pod is in unknown state, deleting & restarting pod")
 			client, ok := r.buildClients[pj.ClusterAlias()]
 			if !ok {
@@ -254,7 +256,7 @@ func (r *reconciler) syncPendingJob(pj *prowv1.ProwJob) error {
 			return client.Delete(r.ctx, pod)
 
 		case corev1.PodSucceeded:
-			// Pod succeeded. Update ProwJob, talk to GitHub, and start next jobs.
+			// Pod succeeded. Update ProwJob and talk to GitHub.
 			pj.SetComplete()
 			pj.Status.State = prowv1.SuccessState
 			pj.Status.Description = "Job succeeded."
@@ -351,6 +353,7 @@ func (r *reconciler) syncPendingJob(pj *prowv1.ProwJob) error {
 	return nil
 }
 
+// syncTriggeredJob syncs jobs that do not yet have an associated test workload running
 func (r *reconciler) syncTriggeredJob(pj *prowv1.ProwJob) (*reconcile.Result, error) {
 	prevPJ := pj.DeepCopy()
 
@@ -364,7 +367,10 @@ func (r *reconciler) syncTriggeredJob(pj *prowv1.ProwJob) (*reconcile.Result, er
 	// updated to pending if we successfully create a new pod in a previous
 	// sync but the prowjob update fails. Simply ignore creating a new pod
 	// and rerun the prowjob update.
-	if !podExists {
+	if podExists {
+		id = getPodBuildID(pod)
+		pn = pod.ObjectMeta.Name
+	} else {
 		// Do not start more jobs than specified and check again later.
 		canExecuteConcurrently, err := r.canExecuteConcurrently(pj)
 		if err != nil {
@@ -384,9 +390,6 @@ func (r *reconciler) syncTriggeredJob(pj *prowv1.ProwJob) (*reconcile.Result, er
 			pj.Status.Description = "Job cannot be processed."
 			logrus.WithField("job", pj.Spec.Job).WithError(err).Warning("Unprocessable pod.")
 		}
-	} else {
-		id = getPodBuildID(pod)
-		pn = pod.ObjectMeta.Name
 	}
 
 	if pj.Status.State == prowv1.TriggeredState {
@@ -411,6 +414,8 @@ func (r *reconciler) syncTriggeredJob(pj *prowv1.ProwJob) (*reconcile.Result, er
 	return nil, r.pjClient.Patch(r.ctx, pj.DeepCopy(), ctrlruntimeclient.MergeFrom(prevPJ))
 }
 
+// syncAbortedJob syncs jobs that got aborted because their result isn't needed anymore,
+// for example because of a new push or because a pull request got closed.
 func (r *reconciler) syncAbortedJob(pj *prowv1.ProwJob) error {
 
 	buildClient, ok := r.buildClients[pj.ClusterAlias()]
