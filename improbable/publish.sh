@@ -26,5 +26,6 @@ fi
 echo "Using ${BAZEL_BIN} as Bazel."
 
 "${BAZEL_BIN}" run \
-  --config=release \
+  --bazelrc="$(dirname "$0")/bazelrc" \
+  --config=imp-release \
   //improbable:improbable-push
