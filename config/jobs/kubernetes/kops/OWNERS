@@ -1,17 +1,25 @@
 # See the OWNERS docs at https://go.k8s.io/owners
-# Synced to the root OWNERS file in k8s.io/kops as of 12/21/19
+# Synced to the root OWNERS file in k8s.io/kops as of 05/22/20
+emeritus_approvers:
+- chrislovecnm
+- chrisz100
+- gambol99
+- granular-ryanbonham
 approvers:
-  - justinsb
-  - chrislovecnm
-  - geojaz
-  - kashifsaadat
-  - gambol99
-  - mikesplain
-  - chrisz100
-  - rdrgmnzs
-  - granular-ryanbonham
-  - rifelpet
-  - zetaab
+- justinsb
+- geojaz
+- kashifsaadat
+- mikesplain
+- rdrgmnzs
+- rifelpet
+- zetaab
 reviewers:
-  - joshbranham
-  - robinpercy
+- hakman
+- johngmyers
+- joshbranham
+- kashifsaadat
+- mikesplain
+- rdrgmnzs
+- zetaab
+labels:
+- sig/cluster-lifecycle
