@@ -143,7 +143,7 @@ periodics:
       - --env=KUBE_MASTER_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/master.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-release-1.2/env
       - --env=KUBE_NODE_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/node.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-release-1.2/env
       - --env=ENABLE_POD_SECURITY_POLICY=true
-      - --extract=ci/latest-1.13
+      - --extract=ci/latest-1.15
       - --gcp-node-image=gci
       - --gcp-nodes=4
       - --gcp-zone=us-west1-b
@@ -151,7 +151,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-3656cc1-1.13
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200521-100609e-1.15
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: containerd-e2e-gci-1.2
@@ -253,10 +253,10 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-3656cc1-1.13
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200521-100609e-1.15
       args:
       - --root=/go/src
-      - --repo=k8s.io/kubernetes=release-1.13
+      - --repo=k8s.io/kubernetes=release-1.15
       - --repo=github.com/containerd/cri=release/1.2
       - --timeout=90
       - --scenario=kubernetes_e2e
@@ -343,10 +343,10 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-3656cc1-1.13
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200521-100609e-1.15
       args:
       - --root=/go/src
-      - --repo=k8s.io/kubernetes=release-1.13
+      - --repo=k8s.io/kubernetes=release-1.15
       - --repo=github.com/containerd/cri=release/1.2
       - --timeout=90
       - --scenario=kubernetes_e2e
