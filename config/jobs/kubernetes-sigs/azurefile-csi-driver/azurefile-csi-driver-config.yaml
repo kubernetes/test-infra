@@ -16,6 +16,8 @@ presubmits:
         args:
         - make
         - verify
+        securityContext:
+          privileged: true
     annotations:
       testgrid-dashboards: provider-azure-azurefile-csi-driver, provider-azure-presubmit
       testgrid-tab-name: pr-azurefile-csi-driver-verify
