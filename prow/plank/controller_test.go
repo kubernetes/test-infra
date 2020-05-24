@@ -39,6 +39,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
@@ -317,7 +318,7 @@ func TestTerminateDupes(t *testing.T) {
 }
 
 func handleTot(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "42")
+	fmt.Fprint(w, "0987654321")
 }
 
 func TestSyncTriggeredJobs(t *testing.T) {
@@ -365,6 +366,7 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			expectedPodHasName:  true,
 			expectedNumPods:     map[string]int{"default": 1},
 			expectedURL:         "blabla/pending",
+			expectedBuildID:     "0987654321",
 		},
 		{
 			name: "pod with a max concurrency of 1",
@@ -638,10 +640,53 @@ func TestSyncTriggeredJobs(t *testing.T) {
 						ObjectMeta: metav1.ObjectMeta{
 							Name:      "foo",
 							Namespace: "pods",
+							Labels: map[string]string{
+								kube.ProwBuildIDLabel: "0987654321",
+							},
+						},
+						Status: v1.PodStatus{
+							Phase: v1.PodRunning,
+						},
+					},
+				},
+			},
+			expectedState:       prowapi.PendingState,
+			expectedNumPods:     map[string]int{"default": 1},
+			expectedPendingTime: &pendingTime,
+			expectedURL:         "foo/pending",
+			expectedBuildID:     "0987654321",
+			expectedPodHasName:  true,
+		},
+		{
+			name: "running pod, failed prowjob update, backwards compatible on pods with build label not set",
+			pj: prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "foo",
+					Namespace: "prowjobs",
+				},
+				Spec: prowapi.ProwJobSpec{
+					Job:     "boop",
+					Type:    prowapi.PeriodicJob,
+					PodSpec: &v1.PodSpec{Containers: []v1.Container{{Name: "test-name", Env: []v1.EnvVar{}}}},
+				},
+				Status: prowapi.ProwJobStatus{
+					State: prowapi.TriggeredState,
+				},
+			},
+			pods: map[string][]v1.Pod{
+				"default": {
+					{
+						ObjectMeta: metav1.ObjectMeta{
+							Name:      "foo",
+							Namespace: "pods",
+							Labels: map[string]string{
+								kube.ProwBuildIDLabel: "",
+							},
 						},
 						Spec: v1.PodSpec{
 							Containers: []v1.Container{
 								{
+									Name: "test-name",
 									Env: []v1.EnvVar{
 										{
 											Name:  "BUILD_ID",
@@ -662,6 +707,7 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			expectedPendingTime: &pendingTime,
 			expectedURL:         "foo/pending",
 			expectedBuildID:     "0987654321",
+			expectedPodHasName:  true,
 		},
 	}
 	for _, tc := range testcases {
@@ -726,6 +772,9 @@ func TestSyncTriggeredJobs(t *testing.T) {
 		if (actual.Status.PodName == "") && tc.expectedPodHasName {
 			t.Errorf("for case %q got no pod name, expected one", tc.name)
 		}
+		if tc.expectedBuildID != "" && actual.Status.BuildID != tc.expectedBuildID {
+			t.Errorf("for case %q expected BuildID: %q, got: %q", tc.name, tc.expectedBuildID, actual.Status.BuildID)
+		}
 		for alias, expected := range tc.expectedNumPods {
 			actualPods := &v1.PodList{}
 			if err := buildClients[alias].List(context.Background(), actualPods); err != nil {
@@ -760,6 +809,7 @@ func TestSyncPendingJob(t *testing.T) {
 		expectedCreatedPJs int
 		expectedReport     bool
 		expectedURL        string
+		expectedBuildID    string
 	}{
 		{
 			name: "reset when pod goes missing",
@@ -782,6 +832,7 @@ func TestSyncPendingJob(t *testing.T) {
 			expectedReport:  true,
 			expectedNumPods: 1,
 			expectedURL:     "boop-41/pending",
+			expectedBuildID: "0987654321",
 		},
 		{
 			name: "delete pod in unknown state",
@@ -1235,6 +1286,9 @@ func TestSyncPendingJob(t *testing.T) {
 		actual := actualProwJobs.Items[0]
 		if actual.Status.State != tc.expectedState {
 			t.Errorf("for case %q got state %v", tc.name, actual.Status.State)
+		}
+		if tc.expectedBuildID != "" && actual.Status.BuildID != tc.expectedBuildID {
+			t.Errorf("for case %q expected BuildID %q, got %q", tc.name, tc.expectedBuildID, actual.Status.BuildID)
 		}
 		actualPods := &v1.PodList{}
 		if err := buildClients[prowapi.DefaultClusterAlias].List(context.Background(), actualPods); err != nil {
