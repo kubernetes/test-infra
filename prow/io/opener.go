@@ -240,17 +240,25 @@ func (o *opener) RangeReader(ctx context.Context, path string, offset, length in
 	return reader, nil
 }
 
+var PreconditionFailedObjectAlreadyExists = fmt.Errorf("object already exists")
+
 // Writer returns a writer that overwrites the path.
 func (o *opener) Writer(ctx context.Context, p string, opts ...WriterOptions) (io.WriteCloser, error) {
+	options := &WriterOptions{}
+	for _, opt := range opts {
+		opt.Apply(options)
+	}
 	if strings.HasPrefix(p, providers.GS+"://") {
 		g, err := o.openGCS(p)
 		if err != nil {
 			return nil, fmt.Errorf("bad gcs path: %v", err)
 		}
-		writer := g.NewWriter(ctx)
-		for _, opt := range opts {
-			opt.Apply(writer, nil)
+		if options.PreconditionDoesNotExist != nil && *options.PreconditionDoesNotExist {
+			g = g.If(storage.Conditions{DoesNotExist: true})
 		}
+
+		writer := g.NewWriter(ctx)
+		options.apply(writer, nil)
 		return writer, nil
 	}
 	if strings.HasPrefix(p, "/") {
@@ -267,9 +275,24 @@ func (o *opener) Writer(ctx context.Context, p string, opts ...WriterOptions) (i
 		return nil, err
 	}
 	var wOpts blob.WriterOptions
-	for _, opt := range opts {
-		opt.Apply(nil, &wOpts)
+	options.apply(nil, &wOpts)
+
+	if options.PreconditionDoesNotExist != nil && *options.PreconditionDoesNotExist {
+		wOpts.BeforeWrite = func(asFunc func(interface{}) bool) error {
+			_, err := o.Reader(ctx, p)
+			if err != nil {
+				// we got an error, but not object not exists
+				if !IsNotExist(err) {
+					return err
+				}
+				// Precondition fulfilled, return nil
+				return nil
+			}
+			// Precondition failed, we got no err because object already exists
+			return PreconditionFailedObjectAlreadyExists
+		}
 	}
+
 	writer, err := bucket.NewWriter(ctx, relativePath, &wOpts)
 	if err != nil {
 		return nil, err

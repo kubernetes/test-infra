@@ -25,15 +25,34 @@ import (
 
 // WriterOptions are options for the opener Writer method
 type WriterOptions struct {
-	BufferSize      *int64
-	ContentEncoding *string
-	ContentType     *string
-	Metadata        map[string]string
+	BufferSize               *int64
+	ContentEncoding          *string
+	ContentType              *string
+	Metadata                 map[string]string
+	PreconditionDoesNotExist *bool
+}
+
+func (wo WriterOptions) Apply(opts *WriterOptions) {
+	if wo.BufferSize != nil {
+		opts.BufferSize = wo.BufferSize
+	}
+	if wo.ContentEncoding != nil {
+		opts.ContentEncoding = wo.ContentEncoding
+	}
+	if wo.ContentType != nil {
+		opts.ContentType = wo.ContentType
+	}
+	if wo.Metadata != nil {
+		opts.Metadata = wo.Metadata
+	}
+	if wo.PreconditionDoesNotExist != nil {
+		opts.PreconditionDoesNotExist = wo.PreconditionDoesNotExist
+	}
 }
 
 // Apply applies the WriterOptions to storage.Writer and blob.WriterOptions
 // Both arguments are allowed to be nil.
-func (wo WriterOptions) Apply(writer *storage.Writer, o *blob.WriterOptions) {
+func (wo WriterOptions) apply(writer *storage.Writer, o *blob.WriterOptions) {
 	if writer != nil {
 		if wo.BufferSize != nil {
 			if *wo.BufferSize < googleapi.DefaultUploadChunkSize {
