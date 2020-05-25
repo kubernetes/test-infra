@@ -21,7 +21,6 @@ import (
 	"testing"
 	"time"
 
-	coreapi "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/kube"
@@ -40,10 +39,7 @@ func (f fkc) ListProwJobs(s string) ([]prowapi.ProwJob, error) {
 
 type fpkc string
 
-func (f fpkc) GetLogs(name string, opts *coreapi.PodLogOptions) ([]byte, error) {
-	if opts.Container != kube.TestContainerName {
-		return nil, fmt.Errorf("wrong container: %s", opts.Container)
-	}
+func (f fpkc) GetLogs(name string) ([]byte, error) {
 	if name == "wowowow" || name == "powowow" {
 		return []byte(f), nil
 	}
