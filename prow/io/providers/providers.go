@@ -25,6 +25,8 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/credentials/ec2rolecreds"
+	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"gocloud.dev/blob"
 	_ "gocloud.dev/blob/memblob"
@@ -96,10 +98,27 @@ func getS3Bucket(ctx context.Context, creds []byte, bucketName string) (*blob.Bu
 		return nil, fmt.Errorf("error getting S3 credentials from JSON: %v", err)
 	}
 
-	staticCredentials := credentials.NewStaticCredentials(s3Credentials.AccessKey, s3Credentials.SecretKey, "")
+	var staticCredentials credentials.StaticProvider
+	if s3Credentials.AccessKey != "" && s3Credentials.SecretKey != "" {
+		staticCredentials = credentials.StaticProvider{
+			Value: credentials.Value{
+				AccessKeyID:     s3Credentials.AccessKey,
+				SecretAccessKey: s3Credentials.SecretKey,
+			},
+		}
+	}
+
+	credentialChain := credentials.NewChainCredentials(
+		[]credentials.Provider{
+			&staticCredentials,
+			&credentials.EnvProvider{},
+			&ec2rolecreds.EC2RoleProvider{
+				Client: ec2metadata.New(session.New()),
+			},
+		})
 
 	sess, err := session.NewSession(&aws.Config{
-		Credentials:      staticCredentials,
+		Credentials:      credentialChain,
 		Endpoint:         aws.String(s3Credentials.Endpoint),
 		DisableSSL:       aws.Bool(s3Credentials.Insecure),
 		S3ForcePathStyle: aws.Bool(s3Credentials.S3ForcePathStyle),
