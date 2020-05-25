@@ -265,19 +265,19 @@ type ExternalBugType struct {
 }
 
 // AddExternalBugParameters are the parameters required to add an external
-// tracker bug to a Bugtzilla bug
+// tracker bug to a Bugzilla bug
 type AddExternalBugParameters struct {
 	// APIKey is the API key to use when authenticating with Bugzilla
 	APIKey string `json:"api_key"`
 	// BugIDs are the IDs of Bugzilla bugs to update
 	BugIDs []int `json:"bug_ids"`
 	// ExternalBugs are the external bugs to add
-	ExternalBugs []NewExternalBugIdentifier `json:"external_bugs"`
+	ExternalBugs []ExternalBugIdentifier `json:"external_bugs"`
 }
 
-// NewExternalBugIdentifier holds fields used to identify new external bugs when
-// adding them using the JSONRPC API
-type NewExternalBugIdentifier struct {
+// ExternalBugIdentifier holds fields used to identify external bugs when
+// modifying them using the JSONRPC API
+type ExternalBugIdentifier struct {
 	// Type is the URL prefix that identifies the external bug tracker type.
 	// For GitHub, this is commonly https://github.com/
 	Type string `json:"ext_type_url"`
@@ -285,4 +285,15 @@ type NewExternalBugIdentifier struct {
 	// For GitHub issues and pull requests, this ID is commonly the path
 	// like `org/repo/pull/number` or `org/repo/issue/number`.
 	ID string `json:"ext_bz_bug_id"`
+}
+
+// RemoveExternalBugParameters are the parameters required to remove an external
+// tracker bug from a Bugzilla bug
+type RemoveExternalBugParameters struct {
+	// APIKey is the API key to use when authenticating with Bugzilla
+	APIKey string `json:"api_key"`
+	// BugIDs are the IDs of Bugzilla bugs to update
+	BugIDs []int `json:"bug_ids"`
+	// The inline identifier for which external bug to remove
+	ExternalBugIdentifier
 }

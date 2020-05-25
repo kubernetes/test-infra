@@ -120,6 +120,31 @@ func (c *Fake) AddPullRequestAsExternalBug(id int, org, repo string, num int) (b
 	return false, &requestError{statusCode: http.StatusNotFound, message: "bug not registered in the fake"}
 }
 
+// RemovePullRequestAsExternalBug removes an external bug from the Bugzilla bug,
+// if registered, or an error, if set, or responds with an error that
+// matches IsNotFound
+func (c *Fake) RemovePullRequestAsExternalBug(id int, org, repo string, num int) (bool, error) {
+	if c.BugErrors.Has(id) {
+		return false, errors.New("injected error removing external bug from bug")
+	}
+	if _, exists := c.Bugs[id]; exists {
+		pullIdentifier := IdentifierForPull(org, repo, num)
+		toRemove := -1
+		for i, bug := range c.ExternalBugs[id] {
+			if bug.BugzillaBugID == id && bug.ExternalBugID == pullIdentifier {
+				toRemove = i
+				break
+			}
+		}
+		if toRemove != -1 {
+			c.ExternalBugs[id] = append(c.ExternalBugs[id][:toRemove], c.ExternalBugs[id][toRemove+1:]...)
+			return true, nil
+		}
+		return false, nil
+	}
+	return false, &requestError{statusCode: http.StatusNotFound, message: "bug not registered in the fake"}
+}
+
 // CreateBug creates a new bug and associated description comment given a BugCreate or and error
 // if description is in BugCreateErrors set
 func (c *Fake) CreateBug(bug *BugCreate) (int, error) {

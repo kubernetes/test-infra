@@ -226,11 +226,11 @@ func getCherryPickMatch(pre github.PullRequestEvent) (bool, int, string, error) 
 
 // digestPR determines if any action is necessary and creates the objects for handle() if it is
 func digestPR(log *logrus.Entry, pre github.PullRequestEvent, validateByDefault *bool) (*event, error) {
-	// These are the only actions indicating the PR title may have changed or that the PR merged
+	// These are the only actions indicating the PR title may have changed or that the PR merged or was closed
 	if pre.Action != github.PullRequestActionOpened &&
 		pre.Action != github.PullRequestActionReopened &&
 		pre.Action != github.PullRequestActionEdited &&
-		!(pre.Action == github.PullRequestActionClosed && pre.PullRequest.Merged) {
+		pre.Action != github.PullRequestActionClosed {
 		return nil, nil
 	}
 
@@ -242,7 +242,7 @@ func digestPR(log *logrus.Entry, pre github.PullRequestEvent, validateByDefault 
 		title   = pre.PullRequest.Title
 	)
 
-	e := &event{org: org, repo: repo, baseRef: baseRef, number: number, merged: pre.PullRequest.Merged, state: pre.PullRequest.State, body: title, htmlUrl: pre.PullRequest.HTMLURL, login: pre.PullRequest.User.Login}
+	e := &event{org: org, repo: repo, baseRef: baseRef, number: number, merged: pre.PullRequest.Merged, closed: pre.Action == github.PullRequestActionClosed, state: pre.PullRequest.State, body: title, htmlUrl: pre.PullRequest.HTMLURL, login: pre.PullRequest.User.Login}
 	// Check if PR is a cherrypick
 	cherrypick, cherrypickFromPRNum, cherrypickTo, err := getCherryPickMatch(pre)
 	if err != nil {
@@ -263,6 +263,13 @@ func digestPR(log *logrus.Entry, pre github.PullRequestEvent, validateByDefault 
 	if err != nil {
 		log.WithError(err).Debug("Failed to get bug ID from title")
 		return nil, err
+	}
+
+	if e.closed && !e.merged {
+		// if the PR was closed, we do not need to check for any other
+		// conditions like cherry-picks or title edits and can just
+		// handle it
+		return e, nil
 	}
 
 	// when exiting early from errors trying to find out if the PR previously referenced a bug,
@@ -353,15 +360,15 @@ func digestComment(gc githubClient, log *logrus.Entry, gce github.GenericComment
 }
 
 type event struct {
-	org, repo, baseRef   string
-	number, bugId        int
-	missing, merged      bool
-	state                string
-	body, htmlUrl, login string
-	assign, cc           bool
-	cherrypick           bool
-	cherrypickFromPRNum  int
-	cherrypickTo         string
+	org, repo, baseRef      string
+	number, bugId           int
+	missing, merged, closed bool
+	state                   string
+	body, htmlUrl, login    string
+	assign, cc              bool
+	cherrypick              bool
+	cherrypickFromPRNum     int
+	cherrypickTo            string
 }
 
 func (e *event) comment(gc githubClient) func(body string) error {
@@ -424,6 +431,10 @@ func handle(e event, gc githubClient, bc bugzilla.Client, options plugins.Bugzil
 	// merges follow a different pattern from the normal validation
 	if e.merged {
 		return handleMerge(e, gc, bc, options, log)
+	}
+	// close events follow a different pattern from the normal validation
+	if e.closed && !e.merged {
+		return handleClose(e, gc, bc, options, log)
 	}
 	// cherrypicks follow a different pattern than normal validation
 	if e.cherrypick {
@@ -512,7 +523,7 @@ To reference a bug, add 'Bug XXX:' to the title of this pull request and request
 					}
 					response += fmt.Sprint("\n\n", processQuery(query, email, log))
 					if e.assign {
-						response += ("\n\n**DEPRECATION NOTICE**: The command `assign-qa` has been deprecated. Please use the `cc-qa` command instead.")
+						response += "\n\n**DEPRECATION NOTICE**: The command `assign-qa` has been deprecated. Please use the `cc-qa` command instead."
 					}
 				}
 			}
@@ -934,4 +945,19 @@ func formatError(action, endpoint string, bugId int, err error) string {
 > %v
 Please contact an administrator to resolve this issue, then request a bug refresh with <code>/bugzilla refresh</code>.`,
 		action, bugId, endpoint, err)
+}
+
+func handleClose(e event, gc githubClient, bc bugzilla.Client, options plugins.BugzillaBranchOptions, log *logrus.Entry) error {
+	comment := e.comment(gc)
+	if options.AddExternalLink != nil && *options.AddExternalLink {
+		changed, err := bc.RemovePullRequestAsExternalBug(e.bugId, e.org, e.repo, e.number)
+		if err != nil {
+			log.WithError(err).Warn("Unexpected error removing external tracker bug from Bugzilla bug.")
+			return comment(formatError("removing this pull request from the external tracker bugs", bc.Endpoint(), e.bugId, err))
+		}
+		if changed {
+			return comment(fmt.Sprintf(`This pull request references `+bugLink+`. The bug has been updated to no longer refer to the pull request using the external bug tracker.`, e.bugId, bc.Endpoint(), e.bugId))
+		}
+	}
+	return nil
 }
