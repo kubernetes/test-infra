@@ -109,13 +109,15 @@ func unmarshalClientError(b []byte) error {
 
 // ClientError represents https://developer.github.com/v3/#client-errors
 type ClientError struct {
-	Message string `json:"message"`
-	Errors  []struct {
-		Resource string `json:"resource"`
-		Field    string `json:"field"`
-		Code     string `json:"code"`
-		Message  string `json:"message,omitempty"`
-	} `json:"errors,omitempty"`
+	Message string                `json:"message"`
+	Errors  []clientErrorSubError `json:"errors,omitempty"`
+}
+
+type clientErrorSubError struct {
+	Resource string `json:"resource"`
+	Field    string `json:"field"`
+	Code     string `json:"code"`
+	Message  string `json:"message,omitempty"`
 }
 
 func (r ClientError) Error() string {

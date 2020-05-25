@@ -604,8 +604,8 @@ func IsNotFound(err error) bool {
 		return false
 	}
 
-	requestErr, ok := err.(requestError)
-	if !ok {
+	var requestErr requestError
+	if !errors.As(err, &requestErr) {
 		return false
 	}
 
