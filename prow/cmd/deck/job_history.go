@@ -448,7 +448,9 @@ func getJobHistory(ctx context.Context, url *url.URL, config *config.Config, ope
 			id := strconv.FormatInt(buildID, 10)
 			dir, err := bucket.getPath(ctx, root, id, "")
 			if err != nil {
-				logrus.Errorf("failed to get path: %v", err)
+				if !pkgio.IsNotExist(err) {
+					logrus.WithError(err).Error("Failed to get path")
+				}
 				bch <- buildData{}
 				return
 			}
