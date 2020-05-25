@@ -19,11 +19,14 @@ package io
 import (
 	"context"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"
 	"testing"
+
+	"cloud.google.com/go/storage"
 )
 
 func Test_opener_SignedURL(t *testing.T) {
@@ -145,6 +148,58 @@ RU5EIFBSSVZBVEUgS0VZLS0tLS1cbgo=`)
 						t.Errorf("SignedURL() got = %q, does not contain %q", got, contains)
 					}
 				}
+			}
+		})
+	}
+}
+
+func TestIsNotExist(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name        string
+		err         error
+		expectMatch bool
+	}{
+		{
+			name:        "Direct ErrNotExist",
+			err:         os.ErrNotExist,
+			expectMatch: true,
+		},
+		{
+			name:        "Direct storage.ErrObjectNotExist",
+			err:         storage.ErrObjectNotExist,
+			expectMatch: true,
+		},
+		{
+			name:        "Direct other",
+			err:         errors.New("not workx"),
+			expectMatch: false,
+		},
+		{
+			name:        "Wrapped ErrNotExist",
+			err:         fmt.Errorf("around: %w", os.ErrNotExist),
+			expectMatch: true,
+		},
+		{
+			name:        "Wrapped storage.ErrObjectNotExist",
+			err:         fmt.Errorf("around: %w", storage.ErrObjectNotExist),
+			expectMatch: true,
+		},
+		{
+			name:        "Wrapped other",
+			err:         fmt.Errorf("I see it %w", errors.New("not workx")),
+			expectMatch: false,
+		},
+		{
+			name:        "Don't panic",
+			expectMatch: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			if result := IsNotExist(tc.err); result != tc.expectMatch {
+				t.Errorf("expect match: %t, got match: %t", tc.expectMatch, result)
 			}
 		})
 	}

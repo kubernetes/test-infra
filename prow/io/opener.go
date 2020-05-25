@@ -137,13 +137,16 @@ var ErrNotFoundTest = fmt.Errorf("not found error which should only be used in t
 
 // IsNotExist will return true if the error shows that the object does not exist.
 func IsNotExist(err error) bool {
-	if os.IsNotExist(err) || err == storage.ErrObjectNotExist {
+	if os.IsNotExist(err) {
 		return true
 	}
-	if err == ErrNotFoundTest {
+	if errors.Is(err, ErrNotFoundTest) {
 		return true
 	}
 	if errors.Is(err, os.ErrNotExist) {
+		return true
+	}
+	if errors.Is(err, storage.ErrObjectNotExist) {
 		return true
 	}
 	return gcerrors.Code(err) == gcerrors.NotFound
