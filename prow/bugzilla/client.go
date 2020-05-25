@@ -46,6 +46,7 @@ type Client interface {
 	CloneBug(bug *Bug) (int, error)
 	UpdateBug(id int, update BugUpdate) error
 	AddPullRequestAsExternalBug(id int, org, repo string, num int) (bool, error)
+	RemovePullRequestAsExternalBug(id int, org, repo string, num int) (bool, error)
 }
 
 func NewClient(getAPIKey func() []byte, endpoint string) Client {
@@ -447,7 +448,7 @@ func (c *client) AddPullRequestAsExternalBug(id int, org, repo string, num int) 
 		Parameters: []AddExternalBugParameters{{
 			APIKey: string(c.getAPIKey()),
 			BugIDs: []int{id},
-			ExternalBugs: []NewExternalBugIdentifier{{
+			ExternalBugs: []ExternalBugIdentifier{{
 				Type: "https://github.com/",
 				ID:   pullIdentifier,
 			}},
@@ -504,6 +505,86 @@ func (c *client) AddPullRequestAsExternalBug(id int, org, repo string, num int) 
 			if bug.ID == id {
 				changed = changed || strings.Contains(bug.Changes.ExternalBugs.Added, pullIdentifier)
 			}
+		}
+	}
+	return changed, nil
+}
+
+// RemovePullRequestAsExternalBug attempts to remove a PR from the external tracker list.
+// External bugs are assumed to fall under the type identified by their hostname,
+// so we will provide https://github.com/ here for the URL identifier. We return
+// any error as well as whether a change was actually made.
+// This will be done via JSONRPC:
+// https://bugzilla.redhat.com/docs/en/html/integrating/api/Bugzilla/Extension/ExternalBugs/WebService.html#remove-external-bug
+func (c *client) RemovePullRequestAsExternalBug(id int, org, repo string, num int) (bool, error) {
+	logger := c.logger.WithFields(logrus.Fields{methodField: "RemoveExternalBug", "id": id, "org": org, "repo": repo, "num": num})
+	pullIdentifier := IdentifierForPull(org, repo, num)
+	rpcPayload := struct {
+		// Version is the version of JSONRPC to use. All Bugzilla servers
+		// support 1.0. Some support 1.1 and some support 2.0
+		Version string `json:"jsonrpc"`
+		Method  string `json:"method"`
+		// Parameters must be specified in JSONRPC 1.0 as a structure in the first
+		// index of this slice
+		Parameters []RemoveExternalBugParameters `json:"params"`
+		ID         string                        `json:"id"`
+	}{
+		Version: "1.0", // some Bugzilla servers support 2.0 but all support 1.0
+		Method:  "ExternalBugs.remove_external_bug",
+		ID:      "identifier", // this is useful when fielding asynchronous responses, but not here
+		Parameters: []RemoveExternalBugParameters{{
+			APIKey: string(c.getAPIKey()),
+			BugIDs: []int{id},
+			ExternalBugIdentifier: ExternalBugIdentifier{
+				Type: "https://github.com/",
+				ID:   pullIdentifier,
+			},
+		}},
+	}
+	body, err := json.Marshal(rpcPayload)
+	if err != nil {
+		return false, fmt.Errorf("failed to marshal JSONRPC payload: %v", err)
+	}
+	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/jsonrpc.cgi", c.endpoint), bytes.NewBuffer(body))
+	if err != nil {
+		return false, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := c.request(req, logger)
+	if err != nil {
+		return false, err
+	}
+	var response struct {
+		Error *struct {
+			Code    int    `json:"code"`
+			Message string `json:"message"`
+		} `json:"error,omitempty"`
+		ID     string `json:"id"`
+		Result *struct {
+			ExternalBugs []struct {
+				Type string `json:"ext_type_url"`
+				ID   string `json:"ext_bz_bug_id"`
+			} `json:"external_bugs"`
+		} `json:"result,omitempty"`
+	}
+	if err := json.Unmarshal(resp, &response); err != nil {
+		return false, fmt.Errorf("failed to unmarshal JSONRPC response: %v", err)
+	}
+	if response.Error != nil {
+		if response.Error.Code == 1006 && strings.Contains(response.Error.Message, `No external tracker bugs were found that matched your criteria`) {
+			// removing the external bug failed since it is already gone, this is not an error
+			return false, nil
+		}
+		return false, fmt.Errorf("JSONRPC error %d: %v", response.Error.Code, response.Error.Message)
+	}
+	if response.ID != rpcPayload.ID {
+		return false, fmt.Errorf("JSONRPC returned mismatched identifier, expected %s but got %s", rpcPayload.ID, response.ID)
+	}
+	changed := false
+	if response.Result != nil {
+		for _, bug := range response.Result.ExternalBugs {
+			changed = changed || bug.ID == pullIdentifier
 		}
 	}
 	return changed, nil

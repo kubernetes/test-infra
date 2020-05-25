@@ -279,7 +279,33 @@ func TestDigestPR(t *testing.T) {
 				},
 			},
 			expected: &event{
-				org: "org", repo: "repo", baseRef: "branch", number: 1, merged: true, bugId: 123, body: "Bug 123: fixed it!", htmlUrl: "http.com", login: "user",
+				org: "org", repo: "repo", baseRef: "branch", number: 1, merged: true, closed: true, bugId: 123, body: "Bug 123: fixed it!", htmlUrl: "http.com", login: "user",
+			},
+		},
+		{
+			name: "title referencing bug gets an event on PR close",
+			pre: github.PullRequestEvent{
+				Action: github.PullRequestActionClosed,
+				PullRequest: github.PullRequest{
+					Base: github.PullRequestBranch{
+						Repo: github.Repo{
+							Owner: github.User{
+								Login: "org",
+							},
+							Name: "repo",
+						},
+						Ref: "branch",
+					},
+					Number:  1,
+					Title:   "Bug 123: fixed it!",
+					HTMLURL: "http.com",
+					User: github.User{
+						Login: "user",
+					},
+				},
+			},
+			expected: &event{
+				org: "org", repo: "repo", baseRef: "branch", number: 1, merged: false, closed: true, bugId: 123, body: "Bug 123: fixed it!", htmlUrl: "http.com", login: "user",
 			},
 		},
 		{
@@ -673,6 +699,7 @@ func TestHandle(t *testing.T) {
 		labels              []string
 		missing             bool
 		merged              bool
+		closed              bool
 		cherryPick          bool
 		cherryPickFromPRNum int
 		cherryPickTo        string
@@ -960,7 +987,8 @@ In response to [this](http.com):
 
 Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.
 </details>`,
-			expectedBug: &bugzilla.Bug{ID: 123, Status: "CLOSED", Resolution: "MERGED"},
+			expectedBug:          &bugzilla.Bug{ID: 123, Status: "CLOSED", Resolution: "MERGED"},
+			expectedExternalBugs: []bugzilla.ExternalBug{{BugzillaBugID: 123, ExternalBugID: "org/repo/pull/1", Org: "org", Repo: "repo", Num: 1}},
 		},
 		{
 			name:   "valid bug on merged PR with one external link migrates to new state and comments",
@@ -984,7 +1012,8 @@ In response to [this](http.com):
 
 Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.
 </details>`,
-			expectedBug: &bugzilla.Bug{ID: 123, Status: "MODIFIED"},
+			expectedBug:          &bugzilla.Bug{ID: 123, Status: "MODIFIED"},
+			expectedExternalBugs: []bugzilla.ExternalBug{{BugzillaBugID: 123, ExternalBugID: "org/repo/pull/1", Org: "org", Repo: "repo", Num: 1}},
 		},
 		{
 			name:   "valid bug on merged PR with many external links migrates to new state and comments",
@@ -1013,6 +1042,10 @@ In response to [this](http.com):
 Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.
 </details>`,
 			expectedBug: &bugzilla.Bug{ID: 123, Status: "MODIFIED"},
+			expectedExternalBugs: []bugzilla.ExternalBug{
+				{BugzillaBugID: 123, ExternalBugID: "org/repo/pull/1", Org: "org", Repo: "repo", Num: 1},
+				{BugzillaBugID: 123, ExternalBugID: "org/repo/pull/22", Org: "org", Repo: "repo", Num: 22},
+			},
 		},
 		{
 			name:   "valid bug on merged PR with unmerged external links does nothing",
@@ -1030,6 +1063,10 @@ Instructions for interacting with me using PR comments are available [here](http
 			prs:         []github.PullRequest{{Number: base.number, Merged: true}, {Number: 22, Merged: false, State: "open"}},
 			options:     plugins.BugzillaBranchOptions{StateAfterMerge: &modified}, // no requirements --> always valid
 			expectedBug: &bugzilla.Bug{ID: 123},
+			expectedExternalBugs: []bugzilla.ExternalBug{
+				{BugzillaBugID: 123, ExternalBugID: "org/repo/pull/1", Org: "org", Repo: "repo", Num: 1},
+				{BugzillaBugID: 123, ExternalBugID: "org/repo/pull/22", Org: "org", Repo: "repo", Num: 22},
+			},
 			expectedComment: `org/repo#1:@user: Some pull requests linked via external trackers have merged: [org/repo#1](https://github.com/org/repo/pull/1). The following pull requests linked via external trackers have not merged:
  * [org/repo#22](https://github.com/org/repo/pull/22) is open
 [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123) has been moved to the MODIFIED state.
@@ -1053,9 +1090,10 @@ Instructions for interacting with me using PR comments are available [here](http
 				ExternalBugID: fmt.Sprintf("%s/%s/pull/%d", base.org, base.repo, base.number),
 				Org:           base.org, Repo: base.repo, Num: base.number,
 			}},
-			prs:         []github.PullRequest{{Number: base.number, Merged: true}},
-			options:     plugins.BugzillaBranchOptions{}, // no requirements --> always valid
-			expectedBug: &bugzilla.Bug{ID: 123},
+			prs:                  []github.PullRequest{{Number: base.number, Merged: true}},
+			options:              plugins.BugzillaBranchOptions{}, // no requirements --> always valid
+			expectedBug:          &bugzilla.Bug{ID: 123},
+			expectedExternalBugs: []bugzilla.ExternalBug{{BugzillaBugID: 123, ExternalBugID: "org/repo/pull/1", Org: "org", Repo: "repo", Num: 1}},
 		},
 		{
 			name:    "valid bug on merged PR with one external link but no referenced bug in the title does nothing",
@@ -1067,9 +1105,10 @@ Instructions for interacting with me using PR comments are available [here](http
 				ExternalBugID: fmt.Sprintf("%s/%s/pull/%d", base.org, base.repo, base.number),
 				Org:           base.org, Repo: base.repo, Num: base.number,
 			}},
-			prs:         []github.PullRequest{{Number: base.number, Merged: true}},
-			options:     plugins.BugzillaBranchOptions{StateAfterMerge: &modified}, // no requirements --> always valid
-			expectedBug: &bugzilla.Bug{ID: 123},
+			prs:                  []github.PullRequest{{Number: base.number, Merged: true}},
+			options:              plugins.BugzillaBranchOptions{StateAfterMerge: &modified}, // no requirements --> always valid
+			expectedBug:          &bugzilla.Bug{ID: 123},
+			expectedExternalBugs: []bugzilla.ExternalBug{{BugzillaBugID: 123, ExternalBugID: "org/repo/pull/1", Org: "org", Repo: "repo", Num: 1}},
 		},
 		{
 			name:      "valid bug on merged PR with one external link fails to update bug and comments",
@@ -1096,7 +1135,8 @@ In response to [this](http.com):
 
 Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.
 </details>`,
-			expectedBug: &bugzilla.Bug{ID: 123},
+			expectedBug:          &bugzilla.Bug{ID: 123},
+			expectedExternalBugs: []bugzilla.ExternalBug{{BugzillaBugID: 123, ExternalBugID: "org/repo/pull/1", Org: "org", Repo: "repo", Num: 1}},
 		},
 		{
 			name:   "valid bug on merged PR with merged external links but unknown status does not migrate to new state and comments",
@@ -1120,6 +1160,42 @@ In response to [this](http.com):
 
 Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.
 </details>`,
+			expectedBug:          &bugzilla.Bug{ID: 123, Status: "CLOSED", Severity: "urgent"},
+			expectedExternalBugs: []bugzilla.ExternalBug{{BugzillaBugID: 123, ExternalBugID: "org/repo/pull/1", Org: "org", Repo: "repo", Num: 1}},
+		},
+		{
+			name:   "closed PR removes link and comments",
+			merged: false,
+			closed: true,
+			bugs:   []bugzilla.Bug{{ID: 123, Status: "CLOSED", Severity: "urgent"}},
+			externalBugs: []bugzilla.ExternalBug{{
+				BugzillaBugID: base.bugId,
+				ExternalBugID: fmt.Sprintf("%s/%s/pull/%d", base.org, base.repo, base.number),
+				Org:           base.org, Repo: base.repo, Num: base.number,
+			}},
+			prs:     []github.PullRequest{{Number: base.number, Merged: false}},
+			options: plugins.BugzillaBranchOptions{AddExternalLink: &yes},
+			expectedComment: `org/repo#1:@user: This pull request references [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123). The bug has been updated to no longer refer to the pull request using the external bug tracker.
+
+<details>
+
+In response to [this](http.com):
+
+>Bug 123: fixed it!
+
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.
+</details>`,
+			expectedBug:          &bugzilla.Bug{ID: 123, Status: "CLOSED", Severity: "urgent"},
+			expectedExternalBugs: []bugzilla.ExternalBug{},
+		},
+		{
+			name:        "closed PR without a link does nothing",
+			merged:      false,
+			closed:      true,
+			bugs:        []bugzilla.Bug{{ID: 123, Status: "CLOSED", Severity: "urgent"}},
+			prs:         []github.PullRequest{{Number: base.number, Merged: false}},
+			options:     plugins.BugzillaBranchOptions{AddExternalLink: &yes},
 			expectedBug: &bugzilla.Bug{ID: 123, Status: "CLOSED", Severity: "urgent"},
 		},
 		{
@@ -1373,6 +1449,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			}
 			e.missing = testCase.missing
 			e.merged = testCase.merged
+			e.closed = testCase.closed || testCase.merged
 			e.cherrypick = testCase.cherryPick
 			e.cherrypickFromPRNum = testCase.cherryPickFromPRNum
 			e.cherrypickTo = testCase.cherryPickTo
@@ -1406,8 +1483,6 @@ Instructions for interacting with me using PR comments are available [here](http
 				if actual, expected := bc.Bugs[testCase.expectedBug.ID], *testCase.expectedBug; !reflect.DeepEqual(actual, expected) {
 					t.Errorf("%s: got incorrect bug after update: %s", testCase.name, cmp.Diff(actual, expected, allowEvent))
 				}
-			}
-			if len(testCase.expectedExternalBugs) > 0 {
 				if actual, expected := bc.ExternalBugs[testCase.expectedBug.ID], testCase.expectedExternalBugs; !reflect.DeepEqual(actual, expected) {
 					t.Errorf("%s: got incorrect external bugs after update: %s", testCase.name, cmp.Diff(actual, expected, allowEvent))
 				}
