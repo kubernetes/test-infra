@@ -126,7 +126,7 @@ def build_test(cloud='aws', distro=None, networking=None, k8s_version=None):
         kops_image = '136693071363/debian-10-amd64-20200511-260'
     elif distro == 'flatcar':
         kops_ssh_user = 'core'
-        kops_image = '075585003325/Flatcar-stable-2345.3.1-hvm'
+        kops_image = '075585003325/Flatcar-stable-2512.2.0-hvm'
     elif distro == 'u1604':
         kops_ssh_user = 'ubuntu'
         kops_image = '099720109477/ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-20200429'
