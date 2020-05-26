@@ -15,7 +15,6 @@ docker run -e LOCAL_USER_ID="$(id -u)" \
   -it \
   dockerized_tests \
   bash -c 'bazel \
-      --bazelrc="/repo/bazelrc" \
       --bazelrc="/repo/improbable/bazelrc" \
       test \
       --config=imp-ci \
