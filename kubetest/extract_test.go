@@ -38,7 +38,7 @@ func TestParseGciExtractOption(t *testing.T) {
 			expectFamily: "gci-canary",
 			expectParamsMap: map[string]string{
 				"project":            "container-vm-image-staging",
-				"version-map-bucket": "container-vm-image-staging",
+				"k8s-map-bucket": "container-vm-image-staging",
 			},
 		},
 		{
@@ -46,23 +46,23 @@ func TestParseGciExtractOption(t *testing.T) {
 			expectFamily: "gci-canary",
 			expectParamsMap: map[string]string{
 				"project":            "test-project",
-				"version-map-bucket": "container-vm-image-staging",
+				"k8s-map-bucket": "container-vm-image-staging",
 			},
 		},
 		{
-			option:       "gci-canary?version-map-bucket=test-bucket",
+			option:       "gci-canary?k8s-map-bucket=test-bucket",
 			expectFamily: "gci-canary",
 			expectParamsMap: map[string]string{
 				"project":            "container-vm-image-staging",
-				"version-map-bucket": "test-bucket",
+				"k8s-map-bucket": "test-bucket",
 			},
 		},
 		{
-			option:       "gci-canary?project=test-project:version-map-bucket=test-bucket",
+			option:       "gci-canary?project=test-project:k8s-map-bucket=test-bucket",
 			expectFamily: "gci-canary",
 			expectParamsMap: map[string]string{
 				"project":            "test-project",
-				"version-map-bucket": "test-bucket",
+				"k8s-map-bucket": "test-bucket",
 			},
 		},
 	}
@@ -297,7 +297,7 @@ func TestGciExtractStrategy(t *testing.T) {
 			"gs://container-vm-image-staging/k8s-version-map/test-image",
 		},
 		{
-			"gci/gci-canary?project=test-project:version-map-bucket=test-bucket",
+			"gci/gci-canary?project=test-project:k8s-map-bucket=test-bucket",
 			"https://storage.googleapis.com/kubernetes-release/release",
 			"v1.2.3+abcde",
 			"gci-canary",
