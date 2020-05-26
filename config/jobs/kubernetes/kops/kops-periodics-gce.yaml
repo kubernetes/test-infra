@@ -29,7 +29,7 @@ periodics:
       - --provider=gce
       - --timeout=140m
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Firewall|Dashboard|Services.*functioning.*NodePort
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-master
   annotations:
     testgrid-dashboards: google-kops-gce, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-gce-stable
@@ -64,7 +64,7 @@ periodics:
       - --provider=gce
       - --timeout=140m
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Firewall|Dashboard|Services.*functioning.*NodePort
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-master
   annotations:
     testgrid-dashboards: google-kops-gce, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-gce-latest
@@ -98,7 +98,7 @@ periodics:
       - --provider=gce
       - --timeout=140m
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Firewall|Dashboard|Services.*functioning.*NodePort
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-master
   annotations:
     testgrid-dashboards: google-kops-gce, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-canary-gce-stable
@@ -128,7 +128,7 @@ periodics:
 #       - --provider=gce
 #       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
 #       - --timeout=120m
-#       image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
+#       image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-master
 #   annotations:
 #     testgrid-dashboards: google-kops-gce, sig-cluster-lifecycle-kops
 #     testgrid-tab-name: kops-gce-ha
