@@ -37,7 +37,7 @@ func TestParseGciExtractOption(t *testing.T) {
 			option:       "gci-canary",
 			expectFamily: "gci-canary",
 			expectParamsMap: map[string]string{
-				"project":            "container-vm-image-staging",
+				"project":        "container-vm-image-staging",
 				"k8s-map-bucket": "container-vm-image-staging",
 			},
 		},
@@ -45,7 +45,7 @@ func TestParseGciExtractOption(t *testing.T) {
 			option:       "gci-canary?project=test-project",
 			expectFamily: "gci-canary",
 			expectParamsMap: map[string]string{
-				"project":            "test-project",
+				"project":        "test-project",
 				"k8s-map-bucket": "container-vm-image-staging",
 			},
 		},
@@ -53,7 +53,7 @@ func TestParseGciExtractOption(t *testing.T) {
 			option:       "gci-canary?k8s-map-bucket=test-bucket",
 			expectFamily: "gci-canary",
 			expectParamsMap: map[string]string{
-				"project":            "container-vm-image-staging",
+				"project":        "container-vm-image-staging",
 				"k8s-map-bucket": "test-bucket",
 			},
 		},
@@ -61,7 +61,7 @@ func TestParseGciExtractOption(t *testing.T) {
 			option:       "gci-canary?project=test-project:k8s-map-bucket=test-bucket",
 			expectFamily: "gci-canary",
 			expectParamsMap: map[string]string{
-				"project":            "test-project",
+				"project":        "test-project",
 				"k8s-map-bucket": "test-bucket",
 			},
 		},
