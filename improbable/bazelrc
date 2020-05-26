@@ -1,6 +1,7 @@
 common:imp-ci --curses=no
 common:imp-ci --noshow_loading_progress
 common:imp-ci --show_progress_rate_limit=2
+common:imp-ci --announce_rc
 
 build:remote_cache --experimental_remote_download_outputs=toplevel
 build:remote_cache --noexperimental_inmemory_jdeps_files
