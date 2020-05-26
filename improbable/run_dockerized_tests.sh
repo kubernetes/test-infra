@@ -1,8 +1,6 @@
 #!/bin/bash
 set -e -o pipefail
 
-set -x
-
 # cd to the directory where this bash script is located at.
 cd "$(dirname "$0")"
 repo_root=$(dirname "$(pwd -P)")
