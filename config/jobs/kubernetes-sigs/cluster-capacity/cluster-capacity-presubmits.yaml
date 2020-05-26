@@ -1,0 +1,36 @@
+# sigs.k8s.io/cluster-capacity presubmits
+presubmits:
+  kubernetes-sigs/cluster-capacity:
+  - name: pull-cluster-capacity-verify-gofmt
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-capacity
+    always_run: true
+    spec:
+      containers:
+      - image: golang:1.13
+        command:
+        - make
+        args:
+        - verify-gofmt
+  - name: pull-cluster-capacity-verify-build
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-capacity
+    always_run: true
+    spec:
+      containers:
+      - image: golang:1.13
+        command:
+        - make
+        args:
+        - build
+  - name: pull-cluster-capacity-unit-test
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-capacity
+    always_run: true
+    spec:
+      containers:
+      - image: golang:1.13
+        command:
+        - make
+        args:
+        - test-unit
