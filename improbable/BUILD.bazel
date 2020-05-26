@@ -7,8 +7,8 @@ package(default_visibility = ["//visibility:public"])
 container_bundle(
     name = "release-deck",
     images = tags(
-      cmds = ["deck"],
-      targets = {},
+        cmds = ["deck"],
+        targets = {},
     ),
 )
 
@@ -20,8 +20,8 @@ docker_push(
 container_bundle(
     name = "release-hook",
     images = tags(
-      cmds = ["hook"],
-      targets = {},
+        cmds = ["hook"],
+        targets = {},
     ),
 )
 
@@ -33,8 +33,8 @@ docker_push(
 container_bundle(
     name = "release-tide",
     images = tags(
-      cmds = ["tide"],
-      targets = {},
+        cmds = ["tide"],
+        targets = {},
     ),
 )
 
@@ -57,4 +57,18 @@ prow_push(
             "needs-rebase": "//prow/external-plugins/needs-rebase:image",
         },
     ),
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
 )

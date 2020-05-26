@@ -107,6 +107,7 @@ filegroup(
         "//images/builder:all-srcs",
         "//images/krte:all-srcs",
         "//images/kubekins-e2e:all-srcs",
+        "//improbable:all-srcs",
         "//jenkins:all-srcs",
         "//jobs:all-srcs",
         "//kettle:all-srcs",

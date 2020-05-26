@@ -14,4 +14,4 @@ docker run -e LOCAL_USER_ID="$(id -u)" \
   bash -c 'cd /repo &&
     bazel test //... &&
     --bazelrc="${repo_root}/bazelrc" \
-    --config=imp-release \'
+    --config=imp-ci \'
