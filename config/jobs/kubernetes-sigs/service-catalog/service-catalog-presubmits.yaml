@@ -42,7 +42,6 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-    optional: true
     spec:
       containers:
         - image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-master
@@ -63,7 +62,6 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-    optional: true
     spec:
       containers:
         - image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-master
@@ -84,7 +82,6 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-    optional: true
     # Run only on PR created to master branch. K8s in version 1.18 is not supported for
     # legacy (v0.2.x) Service Catalog.
     branches:
