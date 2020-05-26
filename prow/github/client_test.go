@@ -656,6 +656,45 @@ func TestIsNotFound(t *testing.T) {
 	}
 }
 
+func TestIsNotFound_nested(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name        string
+		err         error
+		expectMatch bool
+	}{
+		{
+			name:        "direct match",
+			err:         requestError{ClientError: ClientError{Errors: []clientErrorSubError{{Message: "status code 404"}}}},
+			expectMatch: true,
+		},
+		{
+			name:        "direct, no match",
+			err:         requestError{ClientError: ClientError{Errors: []clientErrorSubError{{Message: "status code 403"}}}},
+			expectMatch: false,
+		},
+		{
+			name:        "nested match",
+			err:         fmt.Errorf("wrapping: %w", requestError{ClientError: ClientError{Errors: []clientErrorSubError{{Message: "status code 404"}}}}),
+			expectMatch: true,
+		},
+		{
+			name:        "nested, no match",
+			err:         fmt.Errorf("wrapping: %w", requestError{ClientError: ClientError{Errors: []clientErrorSubError{{Message: "status code 403"}}}}),
+			expectMatch: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			if result := IsNotFound(tc.err); result != tc.expectMatch {
+				t.Errorf("expected match: %t, got match: %t", tc.expectMatch, result)
+			}
+		})
+	}
+
+}
+
 func TestAssignIssue(t *testing.T) {
 	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
