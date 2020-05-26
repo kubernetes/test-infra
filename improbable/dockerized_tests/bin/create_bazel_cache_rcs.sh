@@ -63,7 +63,7 @@ hash_toolchains () {
 
 make_bazel_rc () {
     local cache_id
-    cache_id="improbable/k8s-test-infra,$(hash_toolchains)"
+    cache_id="k8s-test-infra,$(hash_toolchains)"
     local cache_url
     cache_url="https://${CACHE_ROOT}/${cache_id}"
     echo "build:imp-ci --remote_http_cache=${cache_url}"
