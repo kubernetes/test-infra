@@ -12,6 +12,9 @@ docker run -e LOCAL_USER_ID="$(id -u)" \
   -it \
   dockerized_tests \
   bash -c 'cd /repo &&
-    bazel test //... &&
-    --bazelrc="${repo_root}/bazelrc" \
-    --config=imp-ci \'
+    bazel \
+      --bazelrc="${repo_root}/bazelrc" \
+      --config=imp-ci \
+      test \
+      //prow/... \
+      //ghproxy/...'

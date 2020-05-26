@@ -1,12 +1,16 @@
-build --config=improbable
-
 common:imp-ci --curses=no
 common:imp-ci --noshow_loading_progress
 common:imp-ci --show_progress_rate_limit=2
 
-build:imp-ci --remote_upload_local_results=true
+build:remote_cache --experimental_remote_download_outputs=toplevel
+build:remote_cache --noexperimental_inmemory_jdeps_files
+build:remote_cache --noexperimental_inmemory_dotd_files
+build:remote_cache --incompatible_strict_action_env=true
+build:remote_cache --remote_upload_local_results=true
+build:remote_cache --google_default_credentials=true
 
-build:imp-ci --google_default_credentials
+build:imp-ci --config=ci
+build:imp-ci --config=remote_cache
 
 build:imp-release --config=imp-ci
 build:imp-release --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64
