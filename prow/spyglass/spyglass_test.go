@@ -31,7 +31,6 @@ import (
 
 	"github.com/fsouza/fake-gcs-server/fakestorage"
 	"github.com/sirupsen/logrus"
-	coreapi "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	tgconf "github.com/GoogleCloudPlatform/testgrid/pb/config"
@@ -62,7 +61,7 @@ func (f fkc) ListProwJobs(s string) ([]prowapi.ProwJob, error) {
 
 type fpkc string
 
-func (f fpkc) GetLogs(name string, opts *coreapi.PodLogOptions) ([]byte, error) {
+func (f fpkc) GetLogs(name string) ([]byte, error) {
 	if name == "wowowow" || name == "powowow" {
 		return []byte(f), nil
 	}

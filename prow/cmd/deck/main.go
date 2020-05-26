@@ -514,7 +514,7 @@ type podLogClient struct {
 	client corev1.PodInterface
 }
 
-func (c *podLogClient) GetLogs(name string, opts *coreapi.PodLogOptions) ([]byte, error) {
+func (c *podLogClient) GetLogs(name string) ([]byte, error) {
 	reader, err := c.client.GetLogs(name, &coreapi.PodLogOptions{Container: kube.TestContainerName}).Stream()
 	if err != nil {
 		return nil, err

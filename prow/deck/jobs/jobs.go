@@ -29,11 +29,9 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
-	coreapi "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/kube"
 )
 
 const (
@@ -77,7 +75,7 @@ type serviceClusterClient interface {
 
 // PodLogClient is an interface for interacting with the pod logs.
 type PodLogClient interface {
-	GetLogs(name string, opts *coreapi.PodLogOptions) ([]byte, error)
+	GetLogs(name string) ([]byte, error)
 }
 
 // NewJobAgent is a JobAgent constructor.
@@ -161,7 +159,7 @@ func (ja *JobAgent) GetJobLog(job, id string) ([]byte, error) {
 		if !ok {
 			return nil, fmt.Errorf("cannot get logs for prowjob %q with agent %q: unknown cluster alias %q", j.ObjectMeta.Name, j.Spec.Agent, j.ClusterAlias())
 		}
-		return client.GetLogs(j.Status.PodName, &coreapi.PodLogOptions{Container: kube.TestContainerName})
+		return client.GetLogs(j.Status.PodName)
 	}
 	for _, agentToTmpl := range ja.config().Deck.ExternalAgentLogs {
 		if agentToTmpl.Agent != string(j.Spec.Agent) {
