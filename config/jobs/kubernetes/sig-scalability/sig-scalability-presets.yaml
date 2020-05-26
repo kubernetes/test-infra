@@ -188,6 +188,28 @@ presets:
     value: 90
   - name: CL2_ALLOWED_SLOW_API_CALLS
     value: 1
+  # Override of the default list of whitelisted resources during addons reconciliation
+  # performed by kube-addon-manager. This is the same as the default list in the script
+  # k/k/cluster/addons/addon-manager/kube-addons.sh but without core/v1/Pod resource.
+  # As explained in https://github.com/kubernetes/kubernetes/pull/91018, this results
+  # in a Kubernetes cluster performance bump up.
+  - name: KUBECTL_PRUNE_WHITELIST_OVERRIDE
+    value: >-
+      core/v1/ConfigMap
+      core/v1/Endpoints
+      core/v1/Namespace
+      core/v1/PersistentVolumeClaim
+      core/v1/PersistentVolume
+      core/v1/ReplicationController
+      core/v1/Secret
+      core/v1/Service
+      batch/v1/Job
+      batch/v1beta1/CronJob
+      apps/v1/DaemonSet
+      apps/v1/Deployment
+      apps/v1/ReplicaSet
+      apps/v1/StatefulSet
+      extensions/v1beta1/Ingress
 
   ###### Scalability Envs
   ### Common env variables for containerd scalability-related suites.
