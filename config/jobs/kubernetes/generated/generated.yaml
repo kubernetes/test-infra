@@ -27,7 +27,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-1.18
   annotations:
     testgrid-dashboards: canonical-ubuntu1-k8sbeta
     testgrid-tab-name: ubuntu1-k8sbeta-gkespec
@@ -59,7 +59,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-1.18
   annotations:
     testgrid-dashboards: canonical-ubuntu1-k8sbeta
     testgrid-tab-name: ubuntu1-k8sbeta-serial
@@ -91,7 +91,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-1.17
   annotations:
     testgrid-dashboards: canonical-ubuntu1-k8sstable1
     testgrid-tab-name: ubuntu1-k8sstable1-gkespec
@@ -123,7 +123,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-1.17
   annotations:
     testgrid-dashboards: canonical-ubuntu1-k8sstable1
     testgrid-tab-name: ubuntu1-k8sstable1-serial
@@ -155,7 +155,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-1.16
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-1.16
   annotations:
     testgrid-dashboards: canonical-ubuntu1-k8sstable2
     testgrid-tab-name: ubuntu1-k8sstable2-gkespec
@@ -187,7 +187,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-1.16
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-1.16
   annotations:
     testgrid-dashboards: canonical-ubuntu1-k8sstable2
     testgrid-tab-name: ubuntu1-k8sstable2-serial
@@ -219,7 +219,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-1.15
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-1.15
   annotations:
     testgrid-dashboards: canonical-ubuntu1-k8sstable3
     testgrid-tab-name: ubuntu1-k8sstable3-gkespec
@@ -251,7 +251,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-1.15
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-1.15
   annotations:
     testgrid-dashboards: canonical-ubuntu1-k8sstable3
     testgrid-tab-name: ubuntu1-k8sstable3-serial
@@ -283,7 +283,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-1.18
   annotations:
     testgrid-dashboards: canonical-ubuntu2-k8sbeta
     testgrid-tab-name: ubuntu2-k8sbeta-gkespec
@@ -315,7 +315,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-1.18
   annotations:
     testgrid-dashboards: canonical-ubuntu2-k8sbeta
     testgrid-tab-name: ubuntu2-k8sbeta-serial
@@ -347,7 +347,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-1.17
   annotations:
     testgrid-dashboards: canonical-ubuntu2-k8sstable1
     testgrid-tab-name: ubuntu2-k8sstable1-gkespec
@@ -379,7 +379,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-1.17
   annotations:
     testgrid-dashboards: canonical-ubuntu2-k8sstable1
     testgrid-tab-name: ubuntu2-k8sstable1-serial
@@ -411,7 +411,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-1.16
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-1.16
   annotations:
     testgrid-dashboards: canonical-ubuntu2-k8sstable2
     testgrid-tab-name: ubuntu2-k8sstable2-gkespec
@@ -443,7 +443,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-1.16
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-1.16
   annotations:
     testgrid-dashboards: canonical-ubuntu2-k8sstable2
     testgrid-tab-name: ubuntu2-k8sstable2-serial
@@ -475,7 +475,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-1.15
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-1.15
   annotations:
     testgrid-dashboards: canonical-ubuntu2-k8sstable3
     testgrid-tab-name: ubuntu2-k8sstable3-gkespec
@@ -507,7 +507,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-1.15
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-1.15
   annotations:
     testgrid-dashboards: canonical-ubuntu2-k8sstable3
     testgrid-tab-name: ubuntu2-k8sstable3-serial
@@ -539,7 +539,7 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-master
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-ubuntu1-k8sbeta-default
@@ -572,7 +572,7 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-master
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-ubuntu1-k8sbeta-slow
@@ -605,7 +605,7 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-master
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-ubuntu1-k8sbeta-serial
@@ -638,7 +638,7 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-master
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-ubuntu1-k8sstable1-default
@@ -671,7 +671,7 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-master
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-ubuntu1-k8sstable1-slow
@@ -704,7 +704,7 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-master
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-ubuntu1-k8sstable1-serial
@@ -737,7 +737,7 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-master
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-ubuntu1-k8sstable2-default
@@ -770,7 +770,7 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-master
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-ubuntu1-k8sstable2-slow
@@ -803,7 +803,7 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-master
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-ubuntu1-k8sstable2-serial
@@ -836,7 +836,7 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-master
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-ubuntu1-k8sstable3-default
@@ -869,7 +869,7 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-master
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-ubuntu1-k8sstable3-slow
@@ -902,7 +902,7 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-master
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-ubuntu1-k8sstable3-serial
@@ -935,7 +935,7 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-master
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-ubuntu2-k8sbeta-default
@@ -968,7 +968,7 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-master
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-ubuntu2-k8sbeta-slow
@@ -1001,7 +1001,7 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-master
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-ubuntu2-k8sbeta-serial
@@ -1034,7 +1034,7 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-master
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-ubuntu2-k8sstable1-default
@@ -1067,7 +1067,7 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-master
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-ubuntu2-k8sstable1-slow
@@ -1100,7 +1100,7 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-master
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-ubuntu2-k8sstable1-serial
@@ -1133,7 +1133,7 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-master
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-ubuntu2-k8sstable2-default
@@ -1166,7 +1166,7 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-master
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-ubuntu2-k8sstable2-slow
@@ -1199,7 +1199,7 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-master
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-ubuntu2-k8sstable2-serial
@@ -1232,7 +1232,7 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-master
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-ubuntu2-k8sstable3-default
@@ -1265,7 +1265,7 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-master
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-ubuntu2-k8sstable3-slow
@@ -1298,7 +1298,7 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-master
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-ubuntu2-k8sstable3-serial
@@ -1327,7 +1327,7 @@ periodics:
       - --timeout=180m
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-master
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-cos-k8sbeta-reboot
@@ -1356,7 +1356,7 @@ periodics:
       - --timeout=150m
       - --test_args=--ginkgo.focus=\[Feature:Ingress\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-master
   annotations:
     testgrid-tab-name: gce-cos-k8sbeta-ingress
     testgrid-dashboards: sig-release-1.18-blocking
@@ -1387,7 +1387,7 @@ periodics:
       - --env=ENABLE_POD_SECURITY_POLICY=true
       - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-master
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-cos-k8sbeta-default
@@ -1417,7 +1417,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-master
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-cos-k8sbeta-serial
@@ -1448,7 +1448,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-master
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-cos-k8sbeta-slow
@@ -1483,7 +1483,7 @@ periodics:
       - --runtime-config=api/all=true
       - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandCSIVolumes|ExpandInUseVolumes)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-master
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-cos-k8sbeta-alphafeatures
@@ -1512,7 +1512,7 @@ periodics:
       - --timeout=180m
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-master
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-cos-k8sstable1-reboot
@@ -1541,7 +1541,7 @@ periodics:
       - --timeout=150m
       - --test_args=--ginkgo.focus=\[Feature:Ingress\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-master
   annotations:
     testgrid-tab-name: gce-cos-k8sstable1-ingress
     testgrid-dashboards: sig-release-1.17-blocking
@@ -1571,7 +1571,7 @@ periodics:
       - --ginkgo-parallel=30
       - --env=ENABLE_POD_SECURITY_POLICY=true
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-master
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-cos-k8sstable1-default
@@ -1602,7 +1602,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-master
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-cos-k8sstable1-serial
@@ -1633,7 +1633,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-master
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-cos-k8sstable1-slow
@@ -1668,7 +1668,7 @@ periodics:
       - --runtime-config=api/all=true
       - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandCSIVolumes|ExpandInUseVolumes)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-master
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-cos-k8sstable1-alphafeatures
@@ -1697,7 +1697,7 @@ periodics:
       - --timeout=180m
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-master
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-cos-k8sstable2-reboot
@@ -1726,7 +1726,7 @@ periodics:
       - --timeout=150m
       - --test_args=--ginkgo.focus=\[Feature:Ingress\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-master
   annotations:
     testgrid-tab-name: gce-cos-k8sstable2-ingress
     testgrid-dashboards: sig-release-1.16-blocking
@@ -1755,7 +1755,7 @@ periodics:
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-master
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-cos-k8sstable2-default
@@ -1786,7 +1786,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-master
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-cos-k8sstable2-serial
@@ -1817,7 +1817,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-master
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-cos-k8sstable2-slow
@@ -1852,7 +1852,7 @@ periodics:
       - --runtime-config=api/all=true
       - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandCSIVolumes|ExpandInUseVolumes)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-master
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-cos-k8sstable2-alphafeatures
@@ -1881,7 +1881,7 @@ periodics:
       - --timeout=150m
       - --test_args=--ginkgo.focus=\[Feature:Ingress\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-master
   annotations:
     testgrid-tab-name: gce-cos-k8sstable3-ingress
     testgrid-dashboards: sig-release-1.15-blocking
@@ -1909,7 +1909,7 @@ periodics:
       - --timeout=180m
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-master
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-cos-k8sstable3-reboot
@@ -1939,7 +1939,7 @@ periodics:
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-master
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-cos-k8sstable3-default
@@ -1970,7 +1970,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-master
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-cos-k8sstable3-serial
@@ -2001,7 +2001,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-master
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-cos-k8sstable3-slow
@@ -2036,7 +2036,7 @@ periodics:
       - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
       - --runtime-config=api/all=true
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200520-95b3c72-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200523-57fc12692-master
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-cos-k8sstable3-alphafeatures
