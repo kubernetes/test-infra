@@ -149,6 +149,11 @@ branch-protection:
             users: []
             teams:
             - stage-bots
+        controller-manager:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
         cri-api:
           restrictions:
             users: []
