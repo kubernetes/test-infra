@@ -220,6 +220,7 @@ slack:
     - kubernetes/client-go
     - kubernetes/code-generator
     - kubernetes/component-base
+    - kubernetes/controller-manager
     - kubernetes/kube-aggregator
     - kubernetes/kube-controller-manager
     - kubernetes/sample-apiserver
