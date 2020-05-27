@@ -39,6 +39,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
@@ -317,7 +318,7 @@ func TestTerminateDupes(t *testing.T) {
 }
 
 func handleTot(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "42")
+	fmt.Fprint(w, "0987654321")
 }
 
 func TestSyncTriggeredJobs(t *testing.T) {
@@ -365,6 +366,7 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			expectedPodHasName:  true,
 			expectedNumPods:     map[string]int{"default": 1},
 			expectedURL:         "blabla/pending",
+			expectedBuildID:     "0987654321",
 		},
 		{
 			name: "pod with a max concurrency of 1",
@@ -638,10 +640,53 @@ func TestSyncTriggeredJobs(t *testing.T) {
 						ObjectMeta: metav1.ObjectMeta{
 							Name:      "foo",
 							Namespace: "pods",
+							Labels: map[string]string{
+								kube.ProwBuildIDLabel: "0987654321",
+							},
+						},
+						Status: v1.PodStatus{
+							Phase: v1.PodRunning,
+						},
+					},
+				},
+			},
+			expectedState:       prowapi.PendingState,
+			expectedNumPods:     map[string]int{"default": 1},
+			expectedPendingTime: &pendingTime,
+			expectedURL:         "foo/pending",
+			expectedBuildID:     "0987654321",
+			expectedPodHasName:  true,
+		},
+		{
+			name: "running pod, failed prowjob update, backwards compatible on pods with build label not set",
+			pj: prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "foo",
+					Namespace: "prowjobs",
+				},
+				Spec: prowapi.ProwJobSpec{
+					Job:     "boop",
+					Type:    prowapi.PeriodicJob,
+					PodSpec: &v1.PodSpec{Containers: []v1.Container{{Name: "test-name", Env: []v1.EnvVar{}}}},
+				},
+				Status: prowapi.ProwJobStatus{
+					State: prowapi.TriggeredState,
+				},
+			},
+			pods: map[string][]v1.Pod{
+				"default": {
+					{
+						ObjectMeta: metav1.ObjectMeta{
+							Name:      "foo",
+							Namespace: "pods",
+							Labels: map[string]string{
+								kube.ProwBuildIDLabel: "",
+							},
 						},
 						Spec: v1.PodSpec{
 							Containers: []v1.Container{
 								{
+									Name: "test-name",
 									Env: []v1.EnvVar{
 										{
 											Name:  "BUILD_ID",
@@ -662,82 +707,87 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			expectedPendingTime: &pendingTime,
 			expectedURL:         "foo/pending",
 			expectedBuildID:     "0987654321",
+			expectedPodHasName:  true,
 		},
 	}
 	for _, tc := range testcases {
-		totServ := httptest.NewServer(http.HandlerFunc(handleTot))
-		defer totServ.Close()
-		pm := make(map[string]v1.Pod)
-		for _, pods := range tc.pods {
-			for i := range pods {
-				pm[pods[i].ObjectMeta.Name] = pods[i]
+		t.Run(tc.name, func(t *testing.T) {
+			totServ := httptest.NewServer(http.HandlerFunc(handleTot))
+			defer totServ.Close()
+			pm := make(map[string]v1.Pod)
+			for _, pods := range tc.pods {
+				for i := range pods {
+					pm[pods[i].ObjectMeta.Name] = pods[i]
+				}
 			}
-		}
-		fakeProwJobClient := fakectrlruntimeclient.NewFakeClient(&tc.pj)
-		buildClients := map[string]ctrlruntimeclient.Client{}
-		for alias, pods := range tc.pods {
-			var data []runtime.Object
-			for i := range pods {
-				pod := pods[i]
-				data = append(data, &pod)
+			fakeProwJobClient := fakectrlruntimeclient.NewFakeClient(&tc.pj)
+			buildClients := map[string]ctrlruntimeclient.Client{}
+			for alias, pods := range tc.pods {
+				var data []runtime.Object
+				for i := range pods {
+					pod := pods[i]
+					data = append(data, &pod)
+				}
+				fakeClient := &createErroringClient{
+					Client: fakectrlruntimeclient.NewFakeClient(data...),
+					err:    tc.podErr,
+				}
+				buildClients[alias] = fakeClient
 			}
-			fakeClient := &createErroringClient{
-				Client: fakectrlruntimeclient.NewFakeClient(data...),
-				err:    tc.podErr,
+			c := Controller{
+				prowJobClient: fakeProwJobClient,
+				buildClients:  buildClients,
+				log:           logrus.NewEntry(logrus.StandardLogger()),
+				config:        newFakeConfigAgent(t, tc.maxConcurrency).Config,
+				totURL:        totServ.URL,
+				pendingJobs:   make(map[string]int),
+				clock:         fakeClock,
 			}
-			buildClients[alias] = fakeClient
-		}
-		c := Controller{
-			prowJobClient: fakeProwJobClient,
-			buildClients:  buildClients,
-			log:           logrus.NewEntry(logrus.StandardLogger()),
-			config:        newFakeConfigAgent(t, tc.maxConcurrency).Config,
-			totURL:        totServ.URL,
-			pendingJobs:   make(map[string]int),
-			clock:         fakeClock,
-		}
-		if tc.pendingJobs != nil {
-			c.pendingJobs = tc.pendingJobs
-		}
+			if tc.pendingJobs != nil {
+				c.pendingJobs = tc.pendingJobs
+			}
 
-		if err := c.syncTriggeredJob(tc.pj, pm); (err != nil) != tc.expectError {
-			if tc.expectError {
-				t.Errorf("for case %q expected an error, but got none", tc.name)
-			} else {
-				t.Errorf("for case %q got an unexpected error: %v", tc.name, err)
+			if err := c.syncTriggeredJob(tc.pj, pm); (err != nil) != tc.expectError {
+				if tc.expectError {
+					t.Fatal("expected an error, but got none")
+				} else {
+					t.Fatalf("got an unexpected error: %v", err)
+				}
 			}
-			continue
-		}
 
-		actualProwJobs := &prowapi.ProwJobList{}
-		if err := fakeProwJobClient.List(context.Background(), actualProwJobs); err != nil {
-			t.Errorf("for case %q could not list prowJobs from the client: %v", tc.name, err)
-		}
-		if len(actualProwJobs.Items) != tc.expectedCreatedPJs+1 {
-			t.Errorf("for case %q got %d created prowjobs", tc.name, len(actualProwJobs.Items)-1)
-		}
-		actual := actualProwJobs.Items[0]
-		if actual.Status.State != tc.expectedState {
-			t.Errorf("for case %q got state %v", tc.name, actual.Status.State)
-		}
-		if !reflect.DeepEqual(actual.Status.PendingTime, tc.expectedPendingTime) {
-			t.Errorf("for case %q got pending time %v, expected %v", tc.name, actual.Status.PendingTime, tc.expectedPendingTime)
-		}
-		if (actual.Status.PodName == "") && tc.expectedPodHasName {
-			t.Errorf("for case %q got no pod name, expected one", tc.name)
-		}
-		for alias, expected := range tc.expectedNumPods {
-			actualPods := &v1.PodList{}
-			if err := buildClients[alias].List(context.Background(), actualPods); err != nil {
-				t.Errorf("for case %q could not list pods from the client: %v", tc.name, err)
+			actualProwJobs := &prowapi.ProwJobList{}
+			if err := fakeProwJobClient.List(context.Background(), actualProwJobs); err != nil {
+				t.Errorf("could not list prowJobs from the client: %v", err)
 			}
-			if got := len(actualPods.Items); got != expected {
-				t.Errorf("for case %q got %d pods for alias %q, but expected %d", tc.name, got, alias, expected)
+			if len(actualProwJobs.Items) != tc.expectedCreatedPJs+1 {
+				t.Errorf("got %d created prowjobs", len(actualProwJobs.Items)-1)
 			}
-		}
-		if actual.Complete() != tc.expectedComplete {
-			t.Errorf("for case %q got wrong completion", tc.name)
-		}
+			actual := actualProwJobs.Items[0]
+			if actual.Status.State != tc.expectedState {
+				t.Errorf("got state %v", actual.Status.State)
+			}
+			if !reflect.DeepEqual(actual.Status.PendingTime, tc.expectedPendingTime) {
+				t.Errorf("got pending time %v, expected %v", actual.Status.PendingTime, tc.expectedPendingTime)
+			}
+			if (actual.Status.PodName == "") && tc.expectedPodHasName {
+				t.Errorf("got no pod name, expected one")
+			}
+			if tc.expectedBuildID != "" && actual.Status.BuildID != tc.expectedBuildID {
+				t.Errorf("expected BuildID: %q, got: %q", tc.expectedBuildID, actual.Status.BuildID)
+			}
+			for alias, expected := range tc.expectedNumPods {
+				actualPods := &v1.PodList{}
+				if err := buildClients[alias].List(context.Background(), actualPods); err != nil {
+					t.Errorf("could not list pods from the client: %v", err)
+				}
+				if got := len(actualPods.Items); got != expected {
+					t.Errorf("got %d pods for alias %q, but expected %d", got, alias, expected)
+				}
+			}
+			if actual.Complete() != tc.expectedComplete {
+				t.Error("got wrong completion")
+			}
+		})
 	}
 }
 
@@ -760,6 +810,7 @@ func TestSyncPendingJob(t *testing.T) {
 		expectedCreatedPJs int
 		expectedReport     bool
 		expectedURL        string
+		expectedBuildID    string
 	}{
 		{
 			name: "reset when pod goes missing",
@@ -782,6 +833,7 @@ func TestSyncPendingJob(t *testing.T) {
 			expectedReport:  true,
 			expectedNumPods: 1,
 			expectedURL:     "boop-41/pending",
+			expectedBuildID: "0987654321",
 		},
 		{
 			name: "delete pod in unknown state",
@@ -1190,62 +1242,65 @@ func TestSyncPendingJob(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
-		t.Logf("Running test case %q", tc.name)
-		totServ := httptest.NewServer(http.HandlerFunc(handleTot))
-		defer totServ.Close()
-		pm := make(map[string]v1.Pod)
-		for i := range tc.pods {
-			pm[tc.pods[i].ObjectMeta.Name] = tc.pods[i]
-		}
-		fakeProwJobClient := fakectrlruntimeclient.NewFakeClient(&tc.pj)
-		var data []runtime.Object
-		for i := range tc.pods {
-			pod := tc.pods[i]
-			data = append(data, &pod)
-		}
-		fakeClient := &createErroringClient{
-			Client: fakectrlruntimeclient.NewFakeClient(data...),
-			err:    tc.err,
-		}
-		buildClients := map[string]ctrlruntimeclient.Client{
-			prowapi.DefaultClusterAlias: fakeClient,
-		}
-		c := Controller{
-			prowJobClient: fakeProwJobClient,
-			buildClients:  buildClients,
-			log:           logrus.NewEntry(logrus.StandardLogger()),
-			config:        newFakeConfigAgent(t, 0).Config,
-			totURL:        totServ.URL,
-			pendingJobs:   make(map[string]int),
-			clock:         clock.RealClock{},
-		}
+		t.Run(tc.name, func(t *testing.T) {
+			totServ := httptest.NewServer(http.HandlerFunc(handleTot))
+			defer totServ.Close()
+			pm := make(map[string]v1.Pod)
+			for i := range tc.pods {
+				pm[tc.pods[i].ObjectMeta.Name] = tc.pods[i]
+			}
+			fakeProwJobClient := fakectrlruntimeclient.NewFakeClient(&tc.pj)
+			var data []runtime.Object
+			for i := range tc.pods {
+				pod := tc.pods[i]
+				data = append(data, &pod)
+			}
+			fakeClient := &createErroringClient{
+				Client: fakectrlruntimeclient.NewFakeClient(data...),
+				err:    tc.err,
+			}
+			buildClients := map[string]ctrlruntimeclient.Client{
+				prowapi.DefaultClusterAlias: fakeClient,
+			}
+			c := Controller{
+				prowJobClient: fakeProwJobClient,
+				buildClients:  buildClients,
+				log:           logrus.NewEntry(logrus.StandardLogger()),
+				config:        newFakeConfigAgent(t, 0).Config,
+				totURL:        totServ.URL,
+				pendingJobs:   make(map[string]int),
+				clock:         clock.RealClock{},
+			}
 
-		if err := c.syncPendingJob(tc.pj, pm); err != nil {
-			t.Errorf("for case %q got an error: %v", tc.name, err)
-			continue
-		}
+			if err := c.syncPendingJob(tc.pj, pm); err != nil {
+				t.Fatalf("got an error: %v", err)
+			}
 
-		actualProwJobs := &prowapi.ProwJobList{}
-		if err := fakeProwJobClient.List(context.Background(), actualProwJobs); err != nil {
-			t.Errorf("for case %q could not list prowJobs from the client: %v", tc.name, err)
-		}
-		if len(actualProwJobs.Items) != tc.expectedCreatedPJs+1 {
-			t.Errorf("for case %q got %d created prowjobs", tc.name, len(actualProwJobs.Items)-1)
-		}
-		actual := actualProwJobs.Items[0]
-		if actual.Status.State != tc.expectedState {
-			t.Errorf("for case %q got state %v", tc.name, actual.Status.State)
-		}
-		actualPods := &v1.PodList{}
-		if err := buildClients[prowapi.DefaultClusterAlias].List(context.Background(), actualPods); err != nil {
-			t.Errorf("for case %q could not list pods from the client: %v", tc.name, err)
-		}
-		if got := len(actualPods.Items); got != tc.expectedNumPods {
-			t.Errorf("for case %q got %d pods, expected %d", tc.name, len(actualPods.Items), tc.expectedNumPods)
-		}
-		if actual.Complete() != tc.expectedComplete {
-			t.Errorf("for case %q got wrong completion", tc.name)
-		}
+			actualProwJobs := &prowapi.ProwJobList{}
+			if err := fakeProwJobClient.List(context.Background(), actualProwJobs); err != nil {
+				t.Errorf("could not list prowJobs from the client: %v", err)
+			}
+			if len(actualProwJobs.Items) != tc.expectedCreatedPJs+1 {
+				t.Errorf("got %d created prowjobs", len(actualProwJobs.Items)-1)
+			}
+			actual := actualProwJobs.Items[0]
+			if actual.Status.State != tc.expectedState {
+				t.Errorf("got state %v", actual.Status.State)
+			}
+			if tc.expectedBuildID != "" && actual.Status.BuildID != tc.expectedBuildID {
+				t.Errorf("expected BuildID %q, got %q", tc.expectedBuildID, actual.Status.BuildID)
+			}
+			actualPods := &v1.PodList{}
+			if err := buildClients[prowapi.DefaultClusterAlias].List(context.Background(), actualPods); err != nil {
+				t.Errorf("could not list pods from the client: %v", err)
+			}
+			if got := len(actualPods.Items); got != tc.expectedNumPods {
+				t.Errorf("got %d pods, expected %d", len(actualPods.Items), tc.expectedNumPods)
+			}
+			if actual.Complete() != tc.expectedComplete {
+				t.Error("got wrong completion")
+			}
+		})
 	}
 }
 

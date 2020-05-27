@@ -321,8 +321,7 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]corev1.Pod
 		c.incrementNumPendingJobs(pj.Spec.Job)
 		// Pod is missing. This can happen in case the previous pod was deleted manually or by
 		// a rescheduler. Start a new pod.
-		id, pn, err := c.startPod(pj)
-		if err != nil {
+		if err := c.startPod(&pj); err != nil {
 			if !isRequestError(err) {
 				return fmt.Errorf("error starting pod %s: %v", pod.Name, err)
 			}
@@ -331,8 +330,6 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]corev1.Pod
 			pj.Status.Description = fmt.Sprintf("Job cannot be started: %v", err)
 			c.log.WithFields(pjutil.ProwJobFields(&pj)).WithError(err).Warning("Request error starting pod.")
 		} else {
-			pj.Status.BuildID = id
-			pj.Status.PodName = pn
 			c.log.WithFields(pjutil.ProwJobFields(&pj)).Info("Pod is missing, starting a new pod")
 		}
 	} else {
@@ -474,7 +471,6 @@ func (c *Controller) syncTriggeredJob(pj prowapi.ProwJob, pm map[string]corev1.P
 	prevState := pj.Status.State
 	prevPJ := pj
 
-	var id, pn string
 	pod, podExists := pm[pj.ObjectMeta.Name]
 	// We may end up in a state where the pod exists but the prowjob is not
 	// updated to pending if we successfully create a new pod in a previous
@@ -486,9 +482,7 @@ func (c *Controller) syncTriggeredJob(pj prowapi.ProwJob, pm map[string]corev1.P
 			return nil
 		}
 		// We haven't started the pod yet. Do so.
-		var err error
-		id, pn, err = c.startPod(pj)
-		if err != nil {
+		if err := c.startPod(&pj); err != nil {
 			if !isRequestError(err) {
 				return fmt.Errorf("error starting pod: %v", err)
 			}
@@ -498,17 +492,15 @@ func (c *Controller) syncTriggeredJob(pj prowapi.ProwJob, pm map[string]corev1.P
 			logrus.WithField("job", pj.Spec.Job).WithError(err).Warning("Request error starting pod.")
 		}
 	} else {
-		id = getPodBuildID(&pod)
-		pn = pod.ObjectMeta.Name
+		// BuildID needs to be set before we execute the job url template.
+		pj.Status.BuildID = getPodBuildID(&pod)
+		pj.Status.PodName = pod.ObjectMeta.Name
 	}
 
 	if pj.Status.State == prowapi.TriggeredState {
-		// BuildID needs to be set before we execute the job url template.
-		pj.Status.BuildID = id
 		now := metav1.NewTime(c.clock.Now())
 		pj.Status.PendingTime = &now
 		pj.Status.State = prowapi.PendingState
-		pj.Status.PodName = pn
 		pj.Status.Description = "Job triggered."
 		var err error
 		pj.Status.URL, err = pjutil.JobURL(c.config().Plank, pj, c.log)
@@ -524,30 +516,31 @@ func (c *Controller) syncTriggeredJob(pj prowapi.ProwJob, pm map[string]corev1.P
 	return c.prowJobClient.Patch(c.ctx, pj.DeepCopy(), ctrlruntimeclient.MergeFrom(&prevPJ))
 }
 
-// TODO: No need to return the pod name since we already have the
-// prowjob in the call site.
-func (c *Controller) startPod(pj prowapi.ProwJob) (string, string, error) {
+func (c *Controller) startPod(pj *prowapi.ProwJob) error {
 	buildID, err := c.getBuildID(pj.Spec.Job)
 	if err != nil {
-		return "", "", fmt.Errorf("error getting build ID: %v", err)
+		return fmt.Errorf("error getting build ID: %v", err)
 	}
 
-	pod, err := decorate.ProwJobToPod(pj, buildID)
+	// TODO: remove buildID from input args to ProwJobToPod
+	pj.Status.BuildID = buildID
+	pod, err := decorate.ProwJobToPod(*pj, buildID)
 	if err != nil {
-		return "", "", err
+		return err
 	}
 	pod.Namespace = c.config().PodNamespace
 
 	client, ok := c.buildClients[pj.ClusterAlias()]
 	if !ok {
-		return "", "", fmt.Errorf("unknown cluster alias %q", pj.ClusterAlias())
+		return fmt.Errorf("unknown cluster alias %q", pj.ClusterAlias())
 	}
 	err = client.Create(c.ctx, pod)
-	c.log.WithFields(pjutil.ProwJobFields(&pj)).Debug("Create Pod.")
+	c.log.WithFields(pjutil.ProwJobFields(pj)).Debug("Create Pod.")
 	if err != nil {
-		return "", "", err
+		return err
 	}
-	return buildID, pod.ObjectMeta.Name, nil
+	pj.Status.PodName = pod.ObjectMeta.Name
+	return nil
 }
 
 func (c *Controller) getBuildID(name string) (string, error) {
@@ -555,11 +548,17 @@ func (c *Controller) getBuildID(name string) (string, error) {
 }
 
 func getPodBuildID(pod *corev1.Pod) string {
+	if buildID, ok := pod.ObjectMeta.Labels[kube.ProwBuildIDLabel]; ok && buildID != "" {
+		return buildID
+	}
+
+	// For backwards compatibility: existing pods may not have the buildID label.
 	for _, env := range pod.Spec.Containers[0].Env {
 		if env.Name == "BUILD_ID" {
 			return env.Value
 		}
 	}
+
 	logrus.Warningf("BUILD_ID was not found in pod %q: streaming logs from deck will not work", pod.ObjectMeta.Name)
 	return ""
 }
