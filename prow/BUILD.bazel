@@ -97,7 +97,6 @@ filegroup(
         "//prow/cmd/phony:all-srcs",
         "//prow/cmd/pipeline:all-srcs",
         "//prow/cmd/plank:all-srcs",
-        "//prow/cmd/prow-controller-manager:all-srcs",
         "//prow/cmd/sidecar:all-srcs",
         "//prow/cmd/sinker:all-srcs",
         "//prow/cmd/status-reconciler:all-srcs",

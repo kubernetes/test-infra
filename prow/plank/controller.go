@@ -80,7 +80,6 @@ func NewController(pjClient ctrlruntimeclient.Client, buildClients map[string]ct
 		logger = logrus.NewEntry(logrus.StandardLogger())
 	}
 	return &Controller{
-		ctx:           context.Background(),
 		prowJobClient: pjClient,
 		buildClients:  buildClients,
 		log:           logger,
