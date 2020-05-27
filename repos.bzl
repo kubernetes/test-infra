@@ -1657,8 +1657,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "sigs.k8s.io/controller-runtime",
-        sum = "h1:TNidCfVoU/cs2i+9xoTcL/l7yhl0bDhYXU0NCG6wmiE=",
-        version = "v0.5.1",
+        sum = "h1:CbqIy5fbUX+4E9bpnBFd204YAzRYlM9SWW77BbrcDQo=",
+        version = "v0.5.0",
     )
 
     go_repository(
@@ -3821,12 +3821,4 @@ def go_repositories():
         importpath = "github.com/go-bindata/go-bindata/v3",
         sum = "h1:F0nVttLC3ws0ojc7p60veTurcOm//D4QBODNM7EGrCI=",
         version = "v3.1.3",
-    )
-    go_repository(
-        name = "com_github_mohae_deepcopy",
-        build_file_generation = "on",
-        build_file_proto_mode = "disable",
-        importpath = "github.com/mohae/deepcopy",
-        sum = "h1:RWengNIwukTxcDr9M+97sNutRR1RKhG96O6jWumTTnw=",
-        version = "v0.0.0-20170929034955-c48cc78d4826",
     )

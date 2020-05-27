@@ -64,7 +64,6 @@ require (
 	github.com/klauspost/compress v1.10.2 // indirect
 	github.com/klauspost/pgzip v1.2.1
 	github.com/mattn/go-zglob v0.0.1
-	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826
 	github.com/pelletier/go-toml v1.6.0
 	github.com/peterbourgon/diskv v2.0.1+incompatible
 	github.com/pkg/errors v0.9.1
@@ -82,7 +81,6 @@ require (
 	github.com/spf13/viper v1.6.2
 	github.com/tektoncd/pipeline v0.11.0
 	go.opencensus.io v0.22.3 // indirect
-	go.uber.org/zap v1.14.1
 	gocloud.dev v0.19.0
 	golang.org/x/crypto v0.0.0-20200302210943-78000ba7a073
 	golang.org/x/lint v0.0.0-20200302205851-738671d3881b
@@ -105,7 +103,7 @@ require (
 	k8s.io/utils v0.0.0-20191114184206-e782cd3c129f
 	knative.dev/pkg v0.0.0-20200207155214-fef852970f43
 	mvdan.cc/xurls/v2 v2.0.0
-	sigs.k8s.io/controller-runtime v0.5.1
+	sigs.k8s.io/controller-runtime v0.5.0
 	sigs.k8s.io/yaml v1.2.0
 )
 
