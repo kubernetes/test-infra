@@ -1,0 +1,45 @@
+# sigs.k8s.io/descheduler presubmits
+presubmits:
+  kubernetes-sigs/descheduler:
+  - name: pull-descheduler-verify
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-descheduler-verify
+    decorate: true
+    path_alias: sigs.k8s.io/descheduler
+    always_run: true
+    spec:
+      containers:
+      - image: golang:1.13
+        command:
+        - make
+        args:
+        - verify
+  - name: pull-descheduler-verify-build
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-descheduler-verify-build
+    decorate: true
+    path_alias: sigs.k8s.io/descheduler
+    always_run: true
+    spec:
+      containers:
+      - image: golang:1.13
+        command:
+        - make
+        args:
+        - build
+  - name: pull-descheduler-unit-test
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-descheduler-unit-test
+    decorate: true
+    path_alias: sigs.k8s.io/descheduler
+    always_run: true
+    spec:
+      containers:
+      - image: golang:1.13
+        command:
+        - make
+        args:
+        - test-unit
