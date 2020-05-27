@@ -1627,12 +1627,9 @@ func ValidatePath(cfg config.Getter, path string) error {
 
 	// Check bucket
 	bucket := parts[1]
-	bwl := sets.String{}
+	bwl := sets.NewString(cfg().Deck.AdditionalBuckets...)
 	for _, dc := range cfg().Plank.DefaultDecorationConfigs {
 		bwl.Insert(dc.GCSConfiguration.Bucket)
-	}
-	for _, bucket := range cfg().Deck.AdditionalBuckets {
-		bwl.Insert(bucket)
 	}
 	if !bwl.Has(bucket) {
 		return fmt.Errorf("bucket %q not in whitelist %v", bucket, bwl)
@@ -1641,9 +1638,7 @@ func ValidatePath(cfg config.Getter, path string) error {
 	// Check folder
 	folder := parts[2]
 	fwl := sets.NewString(gcs.PRLogs, gcs.NonPRLogs)
-	for _, folder := range cfg().Deck.AdditionalFolders {
-		fwl.Insert(folder)
-	}
+	fwl.Insert(cfg().Deck.AdditionalFolders...)
 	if !fwl.Has(folder) {
 		return fmt.Errorf("folder %q not in whitelist %v", folder, fwl)
 	}

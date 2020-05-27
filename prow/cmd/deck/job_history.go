@@ -32,8 +32,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/config"
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/config"
 	pkgio "k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/io/providers"
 	"k8s.io/test-infra/prow/pod-utils/gcs"
