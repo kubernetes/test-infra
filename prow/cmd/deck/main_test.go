@@ -1167,7 +1167,7 @@ func TestCanTriggerJob(t *testing.T) {
 	}
 }
 
-func TestValidatePath(t *testing.T) {
+func TestValidateStoragePath(t *testing.T) {
 	testCases := []struct {
 		name        string
 		config      config.ProwConfig
@@ -1175,21 +1175,21 @@ func TestValidatePath(t *testing.T) {
 		expectedErr bool
 	}{
 		{
-			name:        "whitelist disabled",
-			config:      config.ProwConfig{Deck: config.Deck{EnableWhitelist: false}},
+			name:        "validation disabled",
+			config:      config.ProwConfig{Deck: config.Deck{RestrictStoragePaths: false}},
 			path:        "to/some/wild/location",
 			expectedErr: false,
 		},
 		{
-			name:        "whitelist enabled",
-			config:      config.ProwConfig{Deck: config.Deck{EnableWhitelist: true}},
+			name:        "validation enabled",
+			config:      config.ProwConfig{Deck: config.Deck{RestrictStoragePaths: true}},
 			path:        "to/some/wild/location",
 			expectedErr: true,
 		},
 		{
-			name: "decoration config whitelisted bucket",
+			name: "DecorationConfig allowed bucket",
 			config: config.ProwConfig{
-				Deck: config.Deck{EnableWhitelist: true},
+				Deck: config.Deck{RestrictStoragePaths: true},
 				Plank: config.Plank{
 					DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
 						"*": {
@@ -1204,32 +1204,32 @@ func TestValidatePath(t *testing.T) {
 			expectedErr: false,
 		},
 		{
-			name:        "custom whitelisted bucket",
-			config:      config.ProwConfig{Deck: config.Deck{EnableWhitelist: true, AdditionalBuckets: []string{"kubernetes-prow"}}},
+			name:        "custom allowed bucket",
+			config:      config.ProwConfig{Deck: config.Deck{RestrictStoragePaths: true, AdditionalAllowedBuckets: []string{"kubernetes-prow"}}},
 			path:        "gs/kubernetes-prow/pr-logs/directory/pull-echo",
 			expectedErr: false,
 		},
 		{
-			name:        "non-whitelisted bucket",
-			config:      config.ProwConfig{Deck: config.Deck{EnableWhitelist: true}},
+			name:        "unknown bucket path",
+			config:      config.ProwConfig{Deck: config.Deck{RestrictStoragePaths: true}},
 			path:        "gs/istio-prow/pr-logs/directory/post-check",
 			expectedErr: true,
 		},
 		{
-			name:        "default whitelisted folder",
-			config:      config.ProwConfig{Deck: config.Deck{EnableWhitelist: true, AdditionalBuckets: []string{"kubernetes-jenkins"}}},
+			name:        "default allowed folder",
+			config:      config.ProwConfig{Deck: config.Deck{RestrictStoragePaths: true, AdditionalAllowedBuckets: []string{"kubernetes-jenkins"}}},
 			path:        "gs/kubernetes-jenkins/pr-logs/directory/pull-capi",
 			expectedErr: false,
 		},
 		{
-			name:        "custom whitelisted folder",
-			config:      config.ProwConfig{Deck: config.Deck{EnableWhitelist: true, AdditionalBuckets: []string{"kubernetes-jenkins"}, AdditionalFolders: []string{"custom"}}},
+			name:        "custom allowed folder",
+			config:      config.ProwConfig{Deck: config.Deck{RestrictStoragePaths: true, AdditionalAllowedBuckets: []string{"kubernetes-jenkins"}, AdditionalAllowedFolders: []string{"custom"}}},
 			path:        "gs/kubernetes-jenkins/custom/directory/pull-echo",
 			expectedErr: false,
 		},
 		{
-			name:        "non-whitelisted folder",
-			config:      config.ProwConfig{Deck: config.Deck{EnableWhitelist: true, AdditionalBuckets: []string{"kubernetes-jenkins"}}},
+			name:        "unknown folder path",
+			config:      config.ProwConfig{Deck: config.Deck{RestrictStoragePaths: true, AdditionalAllowedBuckets: []string{"kubernetes-jenkins"}}},
 			path:        "gs/kubernetes-jenkins/invalid/directory/post-check",
 			expectedErr: true,
 		},
@@ -1240,7 +1240,7 @@ func TestValidatePath(t *testing.T) {
 		ca := config.Agent{}
 		ca.Set(&cfg)
 
-		err := ValidatePath(ca.Config, tc.path)
+		err := ValidateStoragePath(ca.Config, tc.path)
 
 		if err == nil && tc.expectedErr {
 			t.Fatal("error expected")

@@ -32,8 +32,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/config"
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/config"
 	pkgio "k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/io/providers"
 	"k8s.io/test-infra/prow/pod-utils/gcs"
@@ -401,7 +401,7 @@ func getJobHistory(ctx context.Context, url *url.URL, cfg config.Getter, opener 
 	if err != nil {
 		return tmpl, fmt.Errorf("invalid url %s: %v", url.String(), err)
 	}
-	if err := ValidatePath(cfg, strings.Join([]string{storageProvider, bucketName, root}, "/")); err != nil {
+	if err := ValidateStoragePath(cfg, strings.Join([]string{storageProvider, bucketName, root}, "/")); err != nil {
 		return tmpl, err
 	}
 	tmpl.Name = root

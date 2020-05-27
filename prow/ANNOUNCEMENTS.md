@@ -13,11 +13,11 @@ New features added to each component:
     in *September 2020*. To be clear handling of URLs with `/view/gcs` in Deck is not deprecated.
  - *June 23rd, 2020* An [hmac](/prow/cmd/hmac) tool was added to automatically reconcile webhooks and hmac
     tokens for the orgs and repos integrated with your prow instance.
-- *June 12, 2020* Added _bucket_ and _folder_ whitelisting to Deck in order to restrict artifact requests to 
-     specific storage locations. This feature can be enabled by setting `deck.enable_whitelist` in the Prow config.
-     By default, _buckets_ specified in the `plank.decoration_config[*].gcs_configuration.bucket` are whitelisted and 
-     the `pr-logs` and `logs` _folders_ are whitelisted. Additional _buckets_ can be whitelisted by adding them to 
-     `deck.additional_buckets`. Additional _folders_ can be whitelisted by adding them to `deck.additional_folders`.
+- *June 12, 2020* Added _bucket_ and _folder_ validation features to Deck to restrict artifact requests to only
+     specific storage locations. This feature can be enabled by setting `deck.restrict_storage_paths` in the Prow config.
+     By default, _buckets_ specified in the `plank.decoration_config[*].gcs_configuration.bucket` and 
+     the `pr-logs` and `logs` _folders_ are allowed allowed. _Additional buckets_ can be allowed by adding them to 
+     `deck.additional_allowed_buckets`. _Additional folders_ can be allowed by adding them to `deck.additional_allowed_folders`.
  - *June 8th, 2020* A new informer-based Plank implementation was added. It can be used by deploying
     the new [prow-controller-manager](/config/prow/experimental/controller_manager.yaml) binary.
     We plan to gradually move all our controllers into that binary, see https://github.com/kubernetes/test-infra/issues/17024

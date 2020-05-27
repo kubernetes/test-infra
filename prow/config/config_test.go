@@ -3045,6 +3045,78 @@ func TestValidateComponentConfig(t *testing.T) {
 			}}},
 			errExpected: true,
 		},
+		{
+			name: "RestrictStoragePaths false and AdditionalAllowedBuckets/Folders empty, no err",
+			config: &Config{ProwConfig: ProwConfig{Deck: Deck{
+				RestrictStoragePaths:     false,
+				AdditionalAllowedBuckets: []string{},
+				AdditionalAllowedFolders: []string{},
+			}}},
+			errExpected: false,
+		},
+		{
+			name: "RestrictStoragePaths false and AdditionalAllowedBuckets non-empty, err",
+			config: &Config{ProwConfig: ProwConfig{Deck: Deck{
+				RestrictStoragePaths: false,
+				AdditionalAllowedBuckets: []string{
+					"foo",
+					"bar",
+				},
+				AdditionalAllowedFolders: []string{},
+			}}},
+			errExpected: true,
+		},
+		{
+			name: "RestrictStoragePaths false and AdditionalAllowedFolders non-empty, err",
+			config: &Config{ProwConfig: ProwConfig{Deck: Deck{
+				RestrictStoragePaths:     false,
+				AdditionalAllowedBuckets: []string{},
+				AdditionalAllowedFolders: []string{
+					"batz",
+					"quux",
+				},
+			}}},
+			errExpected: true,
+		},
+		{
+			name: "RestrictStoragePaths true and AdditionalAllowedBuckets non-empty, no err",
+			config: &Config{ProwConfig: ProwConfig{Deck: Deck{
+				RestrictStoragePaths: true,
+				AdditionalAllowedBuckets: []string{
+					"foo",
+					"bar",
+				},
+				AdditionalAllowedFolders: []string{},
+			}}},
+			errExpected: false,
+		},
+		{
+			name: "RestrictStoragePaths true and AdditionalAllowedFolders non-empty, no err",
+			config: &Config{ProwConfig: ProwConfig{Deck: Deck{
+				RestrictStoragePaths:     true,
+				AdditionalAllowedBuckets: []string{},
+				AdditionalAllowedFolders: []string{
+					"batz",
+					"quux",
+				},
+			}}},
+			errExpected: false,
+		},
+		{
+			name: "RestrictStoragePaths true and both AdditionalAllowedBuckers/Folders non-empty, no err",
+			config: &Config{ProwConfig: ProwConfig{Deck: Deck{
+				RestrictStoragePaths: true,
+				AdditionalAllowedBuckets: []string{
+					"foo",
+					"bar",
+				},
+				AdditionalAllowedFolders: []string{
+					"batz",
+					"quux",
+				},
+			}}},
+			errExpected: false,
+		},
 	}
 
 	for _, tc := range testCases {

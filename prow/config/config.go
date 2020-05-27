@@ -693,13 +693,47 @@ type Deck struct {
 	// accepts a key of: `org/repo`, `org` or `*` (wildcard) to define what GitHub org (or repo) a particular
 	// config applies to and a value of: `RerunAuthConfig` struct to define the users/groups authorized to rerun jobs.
 	RerunAuthConfigs RerunAuthConfigs `json:"rerun_auth_configs,omitempty"`
-	// EnableWhitelist restricts artifact requests to the list of whitelisted buckets and folders.
-	// Buckets listed in the GCSConfiguration are automatically whitelisted.
-	EnableWhitelist bool `json:"enable_whitelist,omitempty"`
-	// AdditionalBuckets is a list of additional storage buckets to whitelist.
-	AdditionalBuckets []string `json:"additional_buckets,omitempty"`
-	// AdditionalFolders is a list of additional top-level storage folders to whitelist.
-	AdditionalFolders []string `json:"additional_folders,omitempty"`
+	// RestrictStoragePaths restricts artifact requests to specific buckets and folders.
+	// By default, buckets listed in the GCSConfiguration and the logs/PR logs folders are also automatically allowed.
+	// Additional locations can be allowed via `AdditionalAllowedBuckets/Folders` fields.
+	RestrictStoragePaths bool `json:"restrict_storage_paths,omitempty"`
+	// AdditionalAllowedBuckets is a list of additional storage buckets to allow in artifact requests.
+	// See also "RestrictStoragePaths".
+	AdditionalAllowedBuckets []string `json:"additional_allowed_buckets,omitempty"`
+	// AdditionalAllowedFolders is a list of additional top-level storage folders to allow in artifact requests.
+	// See also "RestrictStoragePaths".
+	AdditionalAllowedFolders []string `json:"additional_allowed_folders,omitempty"`
+}
+
+func (d *Deck) Validate() error {
+	if len(d.AdditionalAllowedBuckets) > 0 && !d.RestrictStoragePaths {
+		return fmt.Errorf("deck.restrict_storage_paths is not enabled despite deck.additional_allowed_buckets being configured: %v", d.AdditionalAllowedBuckets)
+	}
+	if len(d.AdditionalAllowedFolders) > 0 && !d.RestrictStoragePaths {
+		return fmt.Errorf("deck.restrict_storage_paths is not enabled despite deck.additional_allowed_folders being configured: %v", d.AdditionalAllowedFolders)
+	}
+
+	// TODO(@clarketm): Remove "rerun_auth_config" validation in July 2020
+	if d.RerunAuthConfig != nil {
+		logrus.Warning("rerun_auth_config will be deprecated in July 2020, and it will be replaced with rerun_auth_configs['*'].")
+
+		if d.RerunAuthConfigs != nil {
+			return errors.New("rerun_auth_config and rerun_auth_configs['*'] are mutually exclusive")
+		}
+
+		d.RerunAuthConfigs = RerunAuthConfigs{"*": *d.RerunAuthConfig}
+	}
+
+	// Note: The RerunAuthConfigs logic isn't deprecated, only the above RerunAuthConfig stuff is
+	if d.RerunAuthConfigs != nil {
+		for k, config := range d.RerunAuthConfigs {
+			if err := config.Validate(); err != nil {
+				return fmt.Errorf("rerun_auth_configs[%s]: %v", k, err)
+			}
+		}
+	}
+
+	return nil
 }
 
 // ExternalAgentLog ensures an external agent like Jenkins can expose
@@ -1229,7 +1263,7 @@ func (c *Config) finalizeJobConfig() error {
 	return nil
 }
 
-// validateComponentConfig validates the infrastructure component configuration
+// validateComponentConfig validates the various infrastructure components' configurations.
 func (c *Config) validateComponentConfig() error {
 	for k, v := range c.Plank.JobURLPrefixConfig {
 		if _, err := url.Parse(v); err != nil {
@@ -1278,23 +1312,8 @@ func (c *Config) validateComponentConfig() error {
 		}
 	}
 
-	// TODO(@clarketm): Remove in July 2020
-	if c.Deck.RerunAuthConfig != nil {
-		logrus.Warning("rerun_auth_config will be deprecated in July 2020, and it will be replaced with rerun_auth_configs['*'].")
-
-		if c.Deck.RerunAuthConfigs != nil {
-			return errors.New("rerun_auth_config and rerun_auth_configs['*'] are mutually exclusive")
-		}
-
-		c.Deck.RerunAuthConfigs = RerunAuthConfigs{"*": *c.Deck.RerunAuthConfig}
-	}
-
-	if c.Deck.RerunAuthConfigs != nil {
-		for k, config := range c.Deck.RerunAuthConfigs {
-			if err := config.Validate(); err != nil {
-				return fmt.Errorf("rerun_auth_configs[%s]: %v", k, err)
-			}
-		}
+	if err := c.Deck.Validate(); err != nil {
+		return err
 	}
 
 	return nil
