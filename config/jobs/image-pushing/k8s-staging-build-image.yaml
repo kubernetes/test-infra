@@ -26,6 +26,36 @@ postsubmits:
       rerun_auth_config:
         github_team_ids:
           - 2241179 # release-managers
+    - name: post-kubernetes-push-image-debian-hyperkube-base
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-release-releng-informing, sig-release-master-informing, sig-release-image-pushes
+        testgrid-alert-email: release-managers@kubernetes.io
+      decorate: true
+      run_if_changed: '^build\/debian-hyperkube-base\/'
+      branches:
+        # TODO(releng): While hyperkube is deprecated in 1.19, we still need to
+        #               maintain its base image to support publishing it for
+        #               the 1.18, 1.17, and 1.16 releases.
+        #               Here we configure image building only for 1.18.
+        - ^release-1.18$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20200422-c760048
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-build-image
+              - --scratch-bucket=gs://k8s-staging-build-image-gcb
+              - --build-dir=.
+              - build/debian-hyperkube-base
+            env:
+              - name: LOG_TO_STDOUT
+                value: "y"
+      rerun_auth_config:
+        github_team_ids:
+          - 2241179 # release-managers
     - name: post-kubernetes-push-image-debian-iptables
       cluster: k8s-infra-prow-build-trusted
       annotations:
