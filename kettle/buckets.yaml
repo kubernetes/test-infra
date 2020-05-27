@@ -47,9 +47,6 @@ gs://k8s-conformance-openstack/:
 gs://k8s-conformance-gardener:
   contact: "OlegLoewen"
   prefix: "gardener:"
-gs://k8s-conformance-docker:
-  contact: "jeffqwb2017"
-  prefix: "docker:"
 gs://cel-conformance:
   contact: "JimLarson"
   prefix: "cel:"
