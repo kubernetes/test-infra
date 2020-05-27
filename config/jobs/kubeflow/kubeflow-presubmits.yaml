@@ -420,7 +420,7 @@ presubmits:
         - --test_result_folder
         - upgrade_test
 
-  - name: kubeflow-pipelines-sdk-python3.5
+  - name: kubeflow-pipelines-sdk-python35
     always_run: false
     decorate: true
     skip_report: true
@@ -433,7 +433,7 @@ presubmits:
         command:
         - ./test/presubmit-tests-sdk.sh
 
-  - name: kubeflow-pipelines-sdk-python3.6
+  - name: kubeflow-pipelines-sdk-python36
     always_run: false
     decorate: true
     skip_report: true
@@ -446,7 +446,7 @@ presubmits:
         command:
         - ./test/presubmit-tests-sdk.sh
 
-  - name: kubeflow-pipelines-sdk-python3.7
+  - name: kubeflow-pipelines-sdk-python37
     always_run: false
     decorate: true
     skip_report: true
@@ -459,7 +459,7 @@ presubmits:
         command:
         - ./test/presubmit-tests-sdk.sh
 
-  - name: kubeflow-pipelines-sdk-python3.8
+  - name: kubeflow-pipelines-sdk-python38
     always_run: false
     decorate: true
     skip_report: true
@@ -472,7 +472,7 @@ presubmits:
         command:
         - ./test/presubmit-tests-sdk.sh
 
-  - name: kubeflow-pipelines-tfx-python3.6
+  - name: kubeflow-pipelines-tfx-python36
     always_run: false
     decorate: true
     skip_report: true
@@ -498,7 +498,7 @@ presubmits:
         command:
         - ./test/presubmit-component-yaml.sh
 
-  - name: kubeflow-pipelines-components-gcp-python2.7
+  - name: kubeflow-pipelines-components-gcp-python27
     always_run: false
     decorate: true
     skip_report: true
@@ -511,7 +511,7 @@ presubmits:
         command:
         - ./test/presubmit-components-gcp.sh
 
-  - name: kubeflow-pipelines-components-gcp-python3.7
+  - name: kubeflow-pipelines-components-gcp-python37
     always_run: false
     decorate: true
     skip_report: true
