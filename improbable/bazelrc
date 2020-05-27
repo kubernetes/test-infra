@@ -1,0 +1,14 @@
+common:imp-ci --curses=no
+common:imp-ci --noshow_loading_progress
+common:imp-ci --show_progress_rate_limit=2
+common:imp-ci --announce_rc
+
+build:imp-ci --config=remote_cache
+
+build:remote_cache --config=toplevel
+build:remote_cache --incompatible_strict_action_env=true
+build:remote_cache --remote_upload_local_results=true
+build:remote_cache --google_default_credentials=true
+
+build:imp-release --config=imp-ci
+build:imp-release --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64

@@ -8,7 +8,13 @@ repo_root=$(dirname "$(pwd -P)")
 docker build -t dockerized_tests dockerized_tests
 docker run -e LOCAL_USER_ID="$(id -u)" \
   -v "${repo_root}":/repo:rw \
+  --workdir=/repo \
   --entrypoint=/usr/local/bin/entrypoint.sh \
   -it \
   dockerized_tests \
-  bash -c 'cd /repo && bazel test //prow/...'
+  bash -c 'bazel \
+      --bazelrc="/repo/improbable/bazelrc" \
+      test \
+      --config=imp-ci \
+      //prow/... \
+      //ghproxy/...'

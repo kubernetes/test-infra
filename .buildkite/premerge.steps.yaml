@@ -15,10 +15,11 @@ linux_builders: &linux_builders
     - "environment=production"
     - "permission_set=builder"
     - "platform=linux"
+    - "machine_type=single"
     - "queue=${CI_LINUX_BUILDER_QUEUE:-v4-20-05-21-134527-bk11577-85e05f62}"
     - "scaler_version=2"
 
 steps:
   - label: "Prow Unit Tests"
-    command: ".buildkite/run_dockerized_tests.sh"
+    command: "improbable/run_dockerized_tests.sh"
     <<: *linux_builders

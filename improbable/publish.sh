@@ -25,6 +25,8 @@ fi
 
 echo "Using ${BAZEL_BIN} as Bazel."
 
-"${BAZEL_BIN}" run \
-  --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 \
-  //prow:improbable-push
+"${BAZEL_BIN}" \
+  --bazelrc="$(dirname "$0")/bazelrc" \
+  run \
+  --config=imp-release \
+  //improbable:improbable-push

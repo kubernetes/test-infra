@@ -3,9 +3,9 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 go_library(
     name = "go_default_library",
     srcs = [
-        "repoowners.go",
         "endpoint.go",
-        ],
+        "repoowners.go",
+    ],
     importpath = "k8s.io/test-infra/prow/repoowners",
     visibility = ["//visibility:public"],
     deps = [
@@ -21,9 +21,9 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = [
-        "repoowners_test.go",
         "endpoint_test.go",
-        ],
+        "repoowners_test.go",
+    ],
     embed = [":go_default_library"],
     deps = [
         "//prow/config:go_default_library",
