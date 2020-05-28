@@ -231,6 +231,11 @@ branch-protection:
             users: []
             teams:
             - stage-bots
+        mount-utils:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
         node-api:
           restrictions:
             users: []
@@ -436,6 +441,7 @@ tide:
     - kubernetes/kubelet
     - kubernetes/legacy-cloud-providers
     - kubernetes/metrics
+    - kubernetes/mount-utils
     - kubernetes/node-api
     - kubernetes/sample-apiserver
     - kubernetes/sample-cli-plugin
