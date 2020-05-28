@@ -189,12 +189,18 @@ func (w *openerObjectWriter) Write(p []byte) (n int, err error) {
 }
 
 func (w *openerObjectWriter) Close() error {
-	if w.writeCloser != nil {
-		err := w.writeCloser.Close()
-		w.writeCloser = nil
-		return err
+	if w.writeCloser == nil {
+		// Always create a writer even if Write() was never called
+		// otherwise empty files are never created, because Write() is
+		// never called for them
+		if _, err := w.Write([]byte("")); err != nil {
+			return err
+		}
 	}
-	return nil
+
+	err := w.writeCloser.Close()
+	w.writeCloser = nil
+	return err
 }
 
 func (w *openerObjectWriter) ApplyWriterOptions(opts pkgio.WriterOptions) {
