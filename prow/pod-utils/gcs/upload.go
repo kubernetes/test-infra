@@ -193,9 +193,7 @@ func (w *openerObjectWriter) Close() error {
 		// Always create a writer even if Write() was never called
 		// otherwise empty files are never created, because Write() is
 		// never called for them
-		var err error
-		w.writeCloser, err = w.Opener.Writer(w.Context, fmt.Sprintf("%s/%s", w.Bucket, w.Dest), w.opts...)
-		if err != nil {
+		if _, err := w.Write([]byte("")); err != nil {
 			return err
 		}
 	}
