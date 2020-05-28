@@ -64,7 +64,7 @@ presubmits:
     path_alias: sigs.k8s.io/kind
     decoration_config:
       timeout: 40m
-      terminationGracePeriodSeconds: 300
+      grace_period: 15m
     spec:
       containers:
       - image: gcr.io/k8s-testimages/krte:v20200430-04773e2-master
@@ -166,7 +166,7 @@ presubmits:
     path_alias: sigs.k8s.io/kind
     decoration_config:
       timeout: 40m
-      terminationGracePeriodSeconds: 300
+      grace_period: 15m
     spec:
       containers:
       - image: gcr.io/k8s-testimages/krte:v20200430-04773e2-master
@@ -215,7 +215,7 @@ presubmits:
     path_alias: sigs.k8s.io/kind
     decoration_config:
       timeout: 40m
-      terminationGracePeriodSeconds: 300
+      grace_period: 15m
     spec:
       containers:
       - image: gcr.io/k8s-testimages/krte:v20200430-04773e2-1.18

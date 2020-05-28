@@ -13,7 +13,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     decoration_config:
       timeout: 60m
-      terminationGracePeriodSeconds: 300
+      grace_period: 15m
     path_alias: k8s.io/kubernetes
     spec:
       containers:
@@ -64,7 +64,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     decoration_config:
       timeout: 60m
-      terminationGracePeriodSeconds: 300
+      grace_period: 15m
     path_alias: k8s.io/kubernetes
     spec:
       containers:
@@ -115,7 +115,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     decoration_config:
       timeout: 60m
-      terminationGracePeriodSeconds: 300
+      grace_period: 15m
     path_alias: k8s.io/kubernetes
     spec:
       containers:
@@ -170,7 +170,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     decoration_config:
       timeout: 60m
-      terminationGracePeriodSeconds: 300
+      grace_period: 15m
     path_alias: k8s.io/kubernetes
     spec:
       containers:
@@ -226,7 +226,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     decoration_config:
       timeout: 2h # allow plenty of time for a serial conformance run
-      terminationGracePeriodSeconds: 300
+      grace_period: 15m
     path_alias: k8s.io/kubernetes
     spec:
       containers:
@@ -270,7 +270,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     decoration_config:
       timeout: 60m
-      terminationGracePeriodSeconds: 300
+      grace_period: 15m
     path_alias: k8s.io/kubernetes
     spec:
       containers:
