@@ -26,24 +26,28 @@ images:
     image: cos-77-12371-251-0
     project: cos-cloud
     machine: n1-standard-1
+    metadata: "user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled"
     tests:
       - 'create 35 pods with 0s? interval \[Benchmark\]'
   cosstable2-density2:
     image: cos-77-12371-251-0
     project: cos-cloud
     machine: n1-standard-1
+    metadata: "user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled"
     tests:
       - 'create 105 pods with 0s? interval \[Benchmark\]'
   cosstable2-density2-qps60:
     image: cos-77-12371-251-0
     project: cos-cloud
     machine: n1-standard-1
+    metadata: "user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled"
     tests:
       - 'create 105 pods with 0s? interval \(QPS 60\) \[Benchmark\]'
   cosstable2-density3:
     image: cos-77-12371-251-0
     project: cos-cloud
     machine: n1-standard-2
+    metadata: "user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled"
     tests:
       - 'create 105 pods with 0s? interval \[Benchmark\]'
   cosstable2-density4:
