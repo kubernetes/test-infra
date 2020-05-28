@@ -1,0 +1,19 @@
+dashboard_groups:
+- name: kops
+  dashboard_names:
+  - kops-presubmits
+  - kops-distros
+  - kops-network-plugins
+  - kops-versions
+  - kops-misc
+  - kops-gce
+  - kops-grid
+
+dashboards:
+- name: kops-presubmits
+- name: kops-distros
+- name: kops-network-plugins
+- name: kops-versions
+- name: kops-misc
+- name: kops-gce
+- name: kops-grid

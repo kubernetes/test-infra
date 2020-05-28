@@ -55,6 +55,7 @@ var (
 	}
 	orgs = []string{
 		"conformance",
+		"kops",
 		"presubmits",
 		"sig",
 		"wg",

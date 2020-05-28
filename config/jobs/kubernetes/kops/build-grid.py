@@ -49,7 +49,7 @@ template = """
       - --timeout=60m
       image: {{e2e_image}}
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-grid
     testgrid-tab-name: {{tab}}
 """
 
