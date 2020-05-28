@@ -33,7 +33,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
       imagePullPolicy: Always
   annotations:
-    testgrid-dashboards: google-aws, kops-distros
+    testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-distros
     testgrid-tab-name: kops-aws-distro-debian-9
 
 - interval: 8h
@@ -69,7 +69,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
       imagePullPolicy: Always
   annotations:
-    testgrid-dashboards: google-aws, kops-distros
+    testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-distros
     testgrid-tab-name: kops-aws-distro-debian-10
 
 - interval: 8h
@@ -105,7 +105,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
       imagePullPolicy: Always
   annotations:
-    testgrid-dashboards: google-aws, kops-distros
+    testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-distros
     testgrid-tab-name: kops-aws-distro-ubuntu-16.04
 
 - interval: 8h
@@ -141,7 +141,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
       imagePullPolicy: Always
   annotations:
-    testgrid-dashboards: google-aws, kops-distros
+    testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-distros
     testgrid-tab-name: kops-aws-distro-ubuntu-18.04
 
 - interval: 8h
@@ -177,7 +177,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
       imagePullPolicy: Always
   annotations:
-    testgrid-dashboards: google-aws, kops-distros
+    testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-distros
     testgrid-tab-name: kops-aws-distro-ubuntu-20.04
 
 - interval: 8h
@@ -213,7 +213,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
       imagePullPolicy: Always
   annotations:
-    testgrid-dashboards: google-aws, kops-distros
+    testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-distros
     testgrid-tab-name: kops-aws-distro-centos-7
 
 - interval: 8h
@@ -249,7 +249,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
       imagePullPolicy: Always
   annotations:
-    testgrid-dashboards: google-aws, kops-distros
+    testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-distros
     testgrid-tab-name: kops-aws-distro-amazonlinux-2
 
 - interval: 8h
@@ -285,7 +285,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
       imagePullPolicy: Always
   annotations:
-    testgrid-dashboards: google-aws, kops-distros
+    testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-distros
     testgrid-tab-name: kops-aws-distro-rhel-7
 
 - interval: 8h
@@ -321,7 +321,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
       imagePullPolicy: Always
   annotations:
-    testgrid-dashboards: google-aws, kops-distros
+    testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-distros
     testgrid-tab-name: kops-aws-distro-rhel-8
 
 - interval: 8h
@@ -357,5 +357,5 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
       imagePullPolicy: Always
   annotations:
-    testgrid-dashboards: google-aws, kops-distros
+    testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-distros
     testgrid-tab-name: kops-aws-distro-flatcar

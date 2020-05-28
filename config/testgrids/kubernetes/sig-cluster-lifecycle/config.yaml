@@ -14,6 +14,7 @@ dashboard_groups:
     - sig-cluster-lifecycle-cluster-api-provider-openstack
     - sig-cluster-lifecycle-cluster-api-bootstrap-provider-kubeadm
     - sig-cluster-lifecycle-cluster-api-provider-docker
+    - sig-cluster-lifecycle-kops
     - sig-cluster-lifecycle-etcdadm
     - sig-cluster-lifecycle-image-pushes
     - sig-cluster-lifecycle-system-validators
@@ -45,6 +46,7 @@ dashboards:
       test_group_name: ci-cluster-api-provider-openstack-make-conformance-stable-k8s-ci-artifacts
 - name: sig-cluster-lifecycle-cluster-api-bootstrap-provider-kubeadm
 - name: sig-cluster-lifecycle-cluster-api-provider-docker
+- name: sig-cluster-lifecycle-kops
 - name: sig-cluster-lifecycle-etcdadm
 - name: sig-cluster-lifecycle-image-pushes
 - name: sig-cluster-lifecycle-system-validators

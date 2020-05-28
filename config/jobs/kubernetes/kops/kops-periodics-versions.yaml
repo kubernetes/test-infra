@@ -30,7 +30,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, kops-versions
+    testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-versions
     testgrid-tab-name: kops-aws-k8s-latest
 
 - interval: 2h
@@ -62,7 +62,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
   annotations:
-    testgrid-dashboards: google-aws, kops-versions
+    testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-versions
     testgrid-tab-name: kops-aws-k8s-1.18
 
 - interval: 2h
@@ -94,7 +94,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.17
   annotations:
-    testgrid-dashboards: google-aws, kops-versions
+    testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-versions
     testgrid-tab-name: kops-aws-k8s-1.17
 
 - interval: 2h
@@ -126,7 +126,7 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.16
   annotations:
-    testgrid-dashboards: google-aws, kops-versions
+    testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-versions
     testgrid-tab-name: kops-aws-k8s-1.16
 
 - interval: 8h
@@ -159,7 +159,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-1.15
       imagePullPolicy: Always
   annotations:
-    testgrid-dashboards: google-aws, kops-versions
+    testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-versions
     testgrid-tab-name: kops-aws-k8s-1.15
 
 - interval: 8h
@@ -192,7 +192,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.14
       imagePullPolicy: Always
   annotations:
-    testgrid-dashboards: google-aws, kops-versions
+    testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-versions
     testgrid-tab-name: kops-aws-k8s-1.14
 
 - interval: 8h
@@ -225,7 +225,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.13
       imagePullPolicy: Always
   annotations:
-    testgrid-dashboards: google-aws, kops-versions
+    testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-versions
     testgrid-tab-name: kops-aws-k8s-1.13
 
 - interval: 8h
@@ -258,7 +258,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.12
       imagePullPolicy: Always
   annotations:
-    testgrid-dashboards: google-aws, kops-versions
+    testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-versions
     testgrid-tab-name: kops-aws-k8s-1.12
 
 - interval: 8h
@@ -291,7 +291,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.11
       imagePullPolicy: Always
   annotations:
-    testgrid-dashboards: google-aws, kops-versions
+    testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-versions
     testgrid-tab-name: kops-aws-k8s-1.11
 
 - interval: 8h
@@ -325,5 +325,5 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.10
       imagePullPolicy: Always
   annotations:
-    testgrid-dashboards: google-aws, kops-versions
+    testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-versions
     testgrid-tab-name: kops-aws-k8s-1.10

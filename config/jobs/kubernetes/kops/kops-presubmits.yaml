@@ -25,7 +25,7 @@ presubmits:
           requests:
             memory: "2Gi"
     annotations:
-      testgrid-dashboards: presubmits-kops
+      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops
       testgrid-tab-name: bazel-build
   - name: pull-kops-bazel-test
     branches:
@@ -52,7 +52,7 @@ presubmits:
           requests:
             memory: "2Gi"
     annotations:
-      testgrid-dashboards: presubmits-kops
+      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops
       testgrid-tab-name: bazel-test
   - name: pull-kops-e2e-kubernetes-aws
     branches:
@@ -99,7 +99,7 @@ presubmits:
           requests:
             memory: "6Gi"
     annotations:
-      testgrid-dashboards: presubmits-kops
+      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops
       testgrid-tab-name: e2e
   - name: pull-kops-e2e-kubernetes-aws-1-15
     branches:
@@ -145,7 +145,7 @@ presubmits:
           requests:
             memory: "6Gi"
     annotations:
-      testgrid-dashboards: presubmits-kops
+      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops
       testgrid-tab-name: e2e-1-15
   - name: pull-kops-e2e-kubernetes-aws-1-16
     branches:
@@ -191,7 +191,7 @@ presubmits:
           requests:
             memory: "6Gi"
     annotations:
-      testgrid-dashboards: presubmits-kops
+      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops
       testgrid-tab-name: e2e-1-16
   - name: pull-kops-e2e-kubernetes-aws-1-17
     branches:
@@ -237,7 +237,7 @@ presubmits:
           requests:
             memory: "6Gi"
     annotations:
-      testgrid-dashboards: presubmits-kops
+      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops
       testgrid-tab-name: e2e-1-17
   - name: pull-kops-verify-bazel
     branches:
@@ -258,7 +258,7 @@ presubmits:
         - "make"
         - "verify-bazel"
     annotations:
-      testgrid-dashboards: presubmits-kops
+      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops
       testgrid-tab-name: verify-bazel
   - name: pull-kops-verify-generated
     branches:
@@ -279,7 +279,7 @@ presubmits:
         - "make"
         - "verify-generate"
     annotations:
-      testgrid-dashboards: presubmits-kops
+      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops
       testgrid-tab-name: verify-generated
   - name: pull-kops-verify-gomod
     branches:
@@ -300,7 +300,7 @@ presubmits:
         - "make"
         - "verify-gomod"
     annotations:
-      testgrid-dashboards: presubmits-kops
+      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops
       testgrid-tab-name: verify-gomod
   - name: pull-kops-verify-boilerplate
     branches:
@@ -321,7 +321,7 @@ presubmits:
         - "make"
         - "verify-boilerplate"
     annotations:
-      testgrid-dashboards: presubmits-kops
+      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops
       testgrid-tab-name: verify-boilerplate
   - name: pull-kops-verify-gofmt
     branches:
@@ -347,7 +347,7 @@ presubmits:
           requests:
             memory: "2Gi"
     annotations:
-      testgrid-dashboards: presubmits-kops
+      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops
       testgrid-tab-name: verify-gofmt
   - name: pull-kops-verify-govet
     branches:
@@ -368,7 +368,7 @@ presubmits:
         - "make"
         - "govet"
     annotations:
-      testgrid-dashboards: presubmits-kops
+      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops
       testgrid-tab-name: verify-govet
   - name: pull-kops-verify-packages
     branches:
@@ -389,7 +389,7 @@ presubmits:
         - "make"
         - "verify-packages"
     annotations:
-      testgrid-dashboards: presubmits-kops
+      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops
       testgrid-tab-name: verify-packages
   - name: pull-kops-verify-staticcheck
     branches:
@@ -410,7 +410,7 @@ presubmits:
         - "make"
         - "verify-staticcheck"
     annotations:
-      testgrid-dashboards: presubmits-kops
+      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops
       testgrid-tab-name: verify-staticcheck
   - name: pull-kops-verify
     branches:
@@ -439,7 +439,7 @@ presubmits:
         securityContext:
           privileged: true
     annotations:
-      testgrid-dashboards: presubmits-kops
+      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops
       testgrid-tab-name: verify
 periodics:
 - interval: 30m
@@ -464,7 +464,7 @@ periodics:
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: kops-presubmits
+    testgrid-dashboards: sig-cluster-lifecycle-kops, kops-presubmits
     testgrid-tab-name: kops-build
     testgrid-alert-email: kubernetes-release-team@googlegroups.com
 postsubmits:
@@ -493,4 +493,4 @@ postsubmits:
           requests:
             memory: "2Gi"
     annotations:
-      testgrid-dashboards: kops-presubmits
+      testgrid-dashboards: sig-cluster-lifecycle-kops, kops-presubmits
