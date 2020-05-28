@@ -48,6 +48,7 @@ go_test(
         "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/io:go_default_library",
         "//prow/pod-utils/downwardapi:go_default_library",
+        "@com_github_fsouza_fake_gcs_server//fakestorage:go_default_library",
         "@io_k8s_apimachinery//pkg/api/equality:go_default_library",
         "@io_k8s_utils//pointer:go_default_library",
     ],
