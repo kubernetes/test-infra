@@ -6,11 +6,13 @@ reviewers:
 - spiffxp
 - wojtek-t
 - chases2
+- dims
 approvers:
 - cblecker
 - krzyzacy
 - spiffxp
 - wojtek-t
 - chases2
+- dims
 labels:
 - area/config
