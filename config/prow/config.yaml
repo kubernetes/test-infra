@@ -430,6 +430,7 @@ tide:
     - kubernetes/cluster-bootstrap
     - kubernetes/code-generator
     - kubernetes/component-base
+    - kubernetes/controller-manager
     - kubernetes/cri-api
     - kubernetes/csi-api
     - kubernetes/csi-translation-lib
