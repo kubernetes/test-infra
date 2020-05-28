@@ -17,7 +17,7 @@ images:
   cosstable2-resource3:
     image: cos-77-12371-274-0
     project: cos-cloud
-    machine: n1-standard-1
+    machine: n1-standard-2
     metadata: "user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled"
     tests:
       - 'resource tracking for 105 pods per node \[Benchmark\]'
@@ -32,14 +32,14 @@ images:
   cosstable2-density2:
     image: cos-77-12371-274-0
     project: cos-cloud
-    machine: n1-standard-1
+    machine: n1-standard-2
     metadata: "user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled"
     tests:
       - 'create 105 pods with 0s? interval \[Benchmark\]'
   cosstable2-density2-qps60:
     image: cos-77-12371-274-0
     project: cos-cloud
-    machine: n1-standard-1
+    machine: n1-standard-2
     metadata: "user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled"
     tests:
       - 'create 105 pods with 0s? interval \(QPS 60\) \[Benchmark\]'
@@ -53,7 +53,7 @@ images:
   cosstable2-density4:
     image: cos-77-12371-274-0
     project: cos-cloud
-    machine: n1-standard-1
+    machine: n1-standard-2
     metadata: "user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled"
     tests:
       - 'create 105 pods with 100ms interval \[Benchmark\]'
@@ -75,7 +75,7 @@ images:
   cosstable1-resource3:
     image: cos-stable-81-12871-103-0
     project: cos-cloud
-    machine: n1-standard-1
+    machine: n1-standard-2
     metadata: "user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled"
     tests:
       - 'resource tracking for 105 pods per node \[Benchmark\]'
@@ -96,7 +96,7 @@ images:
   cosbeta-resource3:
     image: cos-beta-81-12871-44-0
     project: cos-cloud
-    machine: n1-standard-1
+    machine: n1-standard-2
     metadata: "user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled"
     tests:
       - 'resource tracking for 105 pods per node \[Benchmark\]'
@@ -111,14 +111,14 @@ images:
   cosbeta-density2:
     image: cos-beta-81-12871-44-0
     project: cos-cloud
-    machine: n1-standard-1
+    machine: n1-standard-2
     metadata: "user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled"
     tests:
       - 'create 105 pods with 0s? interval \[Benchmark\]'
   cosbeta-density2-qps60:
     image: cos-beta-81-12871-44-0
     project: cos-cloud
-    machine: n1-standard-1
+    machine: n1-standard-2
     metadata: "user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled"
     tests:
       - 'create 105 pods with 0s? interval \(QPS 60\) \[Benchmark\]'
@@ -132,7 +132,7 @@ images:
   cosbeta-density4:
     image: cos-beta-81-12871-44-0
     project: cos-cloud
-    machine: n1-standard-1
+    machine: n1-standard-2
     metadata: "user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled"
     tests:
       - 'create 105 pods with 100ms interval \[Benchmark\]'
@@ -154,7 +154,7 @@ images:
   cosdev-resource3:
     image: cos-dev-83-13020-12-0
     project: cos-cloud
-    machine: n1-standard-1
+    machine: n1-standard-2
     metadata: "user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled"
     tests:
       - 'resource tracking for 105 pods per node \[Benchmark\]'
