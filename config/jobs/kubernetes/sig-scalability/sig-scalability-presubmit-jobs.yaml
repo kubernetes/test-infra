@@ -47,7 +47,7 @@ presubmits:
         - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
         - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
         - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
-        - --test-cmd-args=--testoverrides=./testing/load/gce/throughput_override.yaml
+        - --test-cmd-args=--testoverrides=./testing/overrides/load_throughput.yaml
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=100m
         - --use-logexporter
@@ -147,8 +147,8 @@ presubmits:
         - --test-cmd-args=--testconfig=testing/density/config.yaml
         - --test-cmd-args=--testconfig=testing/load/config.yaml
         - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
-        - --test-cmd-args=--testoverrides=./testing/density/2000_nodes/override.yaml
         - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
+        - --test-cmd-args=--testoverrides=./testing/overrides/2000_nodes.yaml
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=540m
         - --use-logexporter
@@ -214,7 +214,7 @@ presubmits:
         - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
         - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
         - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
-        - --test-cmd-args=--testoverrides=./testing/load/kubemark/500_nodes/override.yaml
+        - --test-cmd-args=--testoverrides=./testing/overrides/kubemark_500_nodes.yaml
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=100m
         - --use-logexporter
@@ -333,10 +333,10 @@ presubmits:
         - --test-cmd-args=--testconfig=testing/density/config.yaml
         - --test-cmd-args=--testconfig=testing/load/config.yaml
         - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
-        - --test-cmd-args=--testoverrides=./testing/load/gce/throughput_override.yaml
         - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
         - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
         - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
+        - --test-cmd-args=--testoverrides=./testing/overrides/load_throughput.yaml
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=100m
         - --use-logexporter
@@ -386,10 +386,10 @@ presubmits:
             - --test-cmd-args=--testconfig=testing/load/config.yaml
             - --test-cmd-args=--testoverrides=./testing/chaosmonkey/override.yaml
             - --test-cmd-args=--testoverrides=./testing/chaosmonkey/ignore_node_killer_container_restarts_100.yaml
-            - --test-cmd-args=--testoverrides=./testing/load/gce/throughput_override.yaml
             - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
             - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
             - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
+            - --test-cmd-args=--testoverrides=./testing/overrides/load_throughput.yaml
             - --test-cmd-name=ClusterLoaderV2
             - --timeout=100m
             - --use-logexporter
@@ -447,10 +447,10 @@ presubmits:
             - --test-cmd-args=--testconfig=testing/density/config.yaml
             - --test-cmd-args=--testconfig=testing/load/config.yaml
             - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
-            - --test-cmd-args=--testoverrides=./testing/load/kubemark/throughput_override.yaml
             - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
             - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
             - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
+            - --test-cmd-args=--testoverrides=./testing/overrides/kubemark_load_throughput.yaml
             - --test-cmd-name=ClusterLoaderV2
             - --timeout=100m
             - --use-logexporter

@@ -34,7 +34,7 @@ periodics:
       - --test-cmd-args=--provider=gce
       - --test-cmd-args=--report-dir=/workspace/_artifacts
       - --test-cmd-args=--testconfig=testing/node-throughput/config.yaml
-      - --test-cmd-args=--testoverrides=./testing/node-throughput/docker_override.yaml
+      - --test-cmd-args=--testoverrides=./testing/overrides/node_docker.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=40m
       - --use-logexporter
@@ -74,7 +74,7 @@ periodics:
       - --test-cmd-args=--provider=gce
       - --test-cmd-args=--report-dir=/workspace/_artifacts
       - --test-cmd-args=--testconfig=testing/node-throughput/config.yaml
-      - --test-cmd-args=--testoverrides=./testing/node-throughput/containerd_override.yaml
+      - --test-cmd-args=--testoverrides=./testing/overrides/node_containerd.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=40m
       - --use-logexporter
@@ -133,7 +133,7 @@ periodics:
       - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
-      - --test-cmd-args=--testoverrides=./testing/load/kubemark/throughput_override.yaml
+      - --test-cmd-args=--testoverrides=./testing/overrides/kubemark/throughput_override.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=240m
       - --use-logexporter
@@ -193,7 +193,7 @@ periodics:
       - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
-      - --test-cmd-args=--testoverrides=./testing/load/kubemark/500_nodes/override.yaml
+      - --test-cmd-args=--testoverrides=./testing/overrides/kubemark_500_nodes.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=80m
       - --use-logexporter
@@ -308,9 +308,9 @@ periodics:
       - --test-cmd-args=--report-dir=/workspace/_artifacts
       # TODO(https://github.com/kubernetes/perf-tests/issues/1007): load test should be used to test high-density.
       - --test-cmd-args=--testconfig=testing/density/high-density-config.yaml
-      - --test-cmd-args=--testoverrides=./testing/density/600_nodes/high_density_override.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
+      - --test-cmd-args=--testoverrides=./testing/overrides/600_nodes_high_density.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=280m
       - --use-logexporter
