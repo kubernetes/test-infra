@@ -105,7 +105,7 @@ require (
 	k8s.io/utils v0.0.0-20191114184206-e782cd3c129f
 	knative.dev/pkg v0.0.0-20200207155214-fef852970f43
 	mvdan.cc/xurls/v2 v2.0.0
-	sigs.k8s.io/controller-runtime v0.5.1
+	sigs.k8s.io/controller-runtime v0.5.4
 	sigs.k8s.io/yaml v1.2.0
 )
 

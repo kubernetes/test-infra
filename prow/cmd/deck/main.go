@@ -357,6 +357,10 @@ func main() {
 		if err != nil {
 			logrus.WithError(err).Fatal("Error getting manager.")
 		}
+		// Force a cache for ProwJobs
+		if _, err := mgr.GetCache().GetInformer(&prowapi.ProwJob{}); err != nil {
+			logrus.WithError(err).Fatal("Failed to get prowjob informer")
+		}
 		go func() {
 			if err := mgr.Start(make(chan struct{})); err != nil {
 				logrus.WithError(err).Fatal("Error starting manager.")
@@ -426,6 +430,7 @@ func main() {
 	})
 
 	ja := jobs.NewJobAgent(&filteringProwJobLister{
+		ctx:    context.Background(),
 		client: pjListingClient,
 		hiddenRepos: func() sets.String {
 			return sets.NewString(cfg().Deck.HiddenRepos...)
