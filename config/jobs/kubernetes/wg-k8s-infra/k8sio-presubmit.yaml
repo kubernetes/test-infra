@@ -13,10 +13,10 @@ presubmits:
       containers:
       - image: golang:1.13
         command:
-        - go
+        - bash
         args:
-        - test
-        - ./groups/...
+        - -c
+        - "cd groups && go test"
         env:
         - name: GO111MODULE
           value: "on"
