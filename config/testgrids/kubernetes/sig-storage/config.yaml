@@ -13,6 +13,7 @@ dashboard_groups:
     - sig-storage-csi-livenessprobe
     - sig-storage-csi-node-driver-registrar
     - sig-storage-csi-other
+    - sig-storage-image-build
 
 dashboards:
 - name: sig-storage-kubernetes
@@ -107,3 +108,4 @@ dashboards:
 - name: sig-storage-csi-node-driver-registrar
 - name: sig-storage-csi-other
 - name: sig-storage-lib-external-provisioner
+- name: sig-storage-image-build

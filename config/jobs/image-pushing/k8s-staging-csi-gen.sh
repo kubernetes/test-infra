@@ -16,8 +16,13 @@
 output="$(dirname $0)/k8s-staging-csi.yaml"
 repos="
 csi-driver-host-path
+csi-driver-iscsi
+csi-driver-nfs
+csi-driver-smb
+csi-proxy
 csi-test
 external-attacher
+external-health-monitor
 external-provisioner
 external-resizer
 external-snapshotter
@@ -37,16 +42,16 @@ for repo in $repos; do
     - name: post-$repo-push-images
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-storage-csi-$repo
+        testgrid-dashboards: sig-storage-image-build
       decorate: true
       branches:
-        # For publishing canary images. Publishing canary images for release branches can
-        # be added later, but then will depend on which release branches in each repo have
-        # the necessary cloud build files.
+        # For publishing canary images.
         - ^master$
-        # This is a regex for semver, from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string.
-        # This is okay for upcoming releases, but old releases will not have the necessary cloud build
-        # files and thus the job will fail.
+        - ^release-
+        # For publishing tagged images. Those will only get built once, i.e.
+        # existing images are not getting overwritten. A new tag must be set to
+        # trigger another image build. Images are only built for tags that follow
+        # the semver format (regex from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string).
         - ^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
       spec:
         serviceAccountName: gcb-builder
