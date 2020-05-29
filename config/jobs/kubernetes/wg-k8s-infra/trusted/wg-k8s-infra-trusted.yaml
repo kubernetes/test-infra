@@ -1,0 +1,20 @@
+postsubmits:
+  kubernetes/k8s.io:
+  - name: post-k8sio-groups
+    cluster: k8s-infra-prow-build-trusted
+    decorate: true
+    run_if_changed: '^groups/groups.yaml'
+    annotations:
+      testgrid-create-test-group: 'true'
+      testgrid-dashboards: wg-k8s-infra-k8sio
+    spec:
+      serviceAccountName: gsuite-groups-manager
+      containers:
+      - name: groups
+        image: golang:1.13
+        command:
+        - go
+        args:
+        - run
+        - ./groups/reconcile.go
+        - --confirm
