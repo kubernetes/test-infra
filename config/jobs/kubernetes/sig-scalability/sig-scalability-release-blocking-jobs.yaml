@@ -101,6 +101,7 @@ periodics:
           memory: "16Gi"
 
 - interval: 30m
+  cluster: k8s-infra-prow-build
   name: ci-kubernetes-e2e-gci-gce-scalability
   tags:
   - "perfDashPrefix: gce-100Nodes-master"
