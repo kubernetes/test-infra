@@ -13,8 +13,7 @@ postsubmits:
       - name: groups
         image: golang:1.13
         command:
-        - go
+        - bash
         args:
-        - run
-        - ./groups/reconcile.go
-        - --confirm
+        - -c
+        - "cd groups && make run -- --confirm"
