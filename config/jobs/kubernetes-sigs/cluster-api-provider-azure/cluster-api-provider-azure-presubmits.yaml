@@ -170,7 +170,7 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: verify-boilerplate
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
-  - name: pull-cluster-api-provider-azure-conformance-v1alpha3-master
+  - name: pull-cluster-api-provider-azure-conformance-v1alpha3
     always_run: false
     optional: true
     decorate: true
@@ -209,8 +209,8 @@ presubmits:
               memory: "4Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-      testgrid-tab-name: pull-conformance-v1alpha3-master
-  - name: pull-cluster-api-provider-azure-conformance-v1alpha3-1-18
+      testgrid-tab-name: pull-conformance-v1alpha3
+  - name: pull-cluster-api-provider-azure-conformance-machine-pool-v1alpha3
     always_run: false
     optional: true
     decorate: true
@@ -224,11 +224,11 @@ presubmits:
     extra_refs:
     - org: kubernetes
       repo: kubernetes
-      base_ref: release-1.18
+      base_ref: master
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200527-e50e8f5-1.18
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200527-e50e8f5-master
           command:
             - "runner.sh"
             - "./scripts/ci-entrypoint.sh"
@@ -241,6 +241,8 @@ presubmits:
               value: "true"
             - name: USE_CI_ARTIFACTS
               value: "true"
+            - name: FEATURE_GATE_MACHINE_POOL
+              value: "true"
           securityContext:
             privileged: true
           resources:
@@ -249,7 +251,7 @@ presubmits:
               memory: "4Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-      testgrid-tab-name: pull-conformance-v1alpha3-k8s-1-18
+      testgrid-tab-name: pull-conformance-machine-pool-v1alpha3
   - name: pull-cluster-api-provider-azure-apidiff
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-azure
