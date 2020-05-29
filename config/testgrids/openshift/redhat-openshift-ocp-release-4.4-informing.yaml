@@ -1279,7 +1279,7 @@ test_groups:
 - days_of_results: 33
   gcs_prefix: origin-ci-test/logs/promote-release-openshift-machine-os-content-e2e-aws-4.4-s390x
   name: promote-release-openshift-machine-os-content-e2e-aws-4.4-s390x
-- days_of_results: 60
+- days_of_results: 25
   gcs_prefix: origin-ci-test/logs/release-openshift-ocp-e2e-aws-scaleup-rhel7-4.4
   name: release-openshift-ocp-e2e-aws-scaleup-rhel7-4.4
 - days_of_results: 60
