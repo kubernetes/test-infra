@@ -9,8 +9,9 @@ aliases:
   - Katharine
   - michelle192837
 
-  # kubernetes.io org admins
   wg-k8s-infra-oncall:
+  - BenTheElder
+  # kubernetes.io org admins
   - cblecker
   - dims
   - spiffxp
