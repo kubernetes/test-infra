@@ -49,7 +49,7 @@ template = """
       - --timeout=60m
       image: {{e2e_image}}
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-grid
+    testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-grid, kops-distro-{{distro}}, kops-k8s-{{k8s_version}}
     testgrid-tab-name: {{tab}}
 """
 
@@ -60,9 +60,6 @@ run_hourly = [
 ]
 
 run_daily = [
-    # flannel networking issues: https://github.com/kubernetes/kops/pull/8381#issuecomment-616689498
-    'kops-grid-aws-flannel-centos7',
-    'kops-grid-aws-flannel-rhel7',
 ]
 
 def simple_hash(s):
@@ -152,13 +149,13 @@ def build_test(cloud='aws', distro=None, networking=None, k8s_version=None):
         return s.format(**subs)
 
     if k8s_version is None:
-        extract = "release/stable"
-        k8s_deploy_url = "https://storage.googleapis.com/kubernetes-release/release/stable.txt"
+        extract = "release/latest"
+        k8s_deploy_url = "https://storage.googleapis.com/kubernetes-release/release/latest.txt"
         e2e_image = "gcr.io/k8s-testimages/kubekins-e2e:v20200527-e50e8f5-master"
     else:
         extract = expand("release/stable-{k8s_version}")
         k8s_deploy_url = expand("https://storage.googleapis.com/kubernetes-release/release/stable-{k8s_version}.txt") # pylint: disable=line-too-long
-        e2e_image = expand("gcr.io/k8s-testimages/kubekins-e2e:v20171002-6e8d729f-{k8s_version}")
+        e2e_image = expand("gcr.io/k8s-testimages/kubekins-e2e:v20200527-e50e8f5-{k8s_version}")
 
     kops_args = ""
     if networking:
@@ -196,6 +193,16 @@ def build_test(cloud='aws', distro=None, networking=None, k8s_version=None):
     y = y.replace('{{k8s_deploy_url}}', k8s_deploy_url)
     y = y.replace('{{extract}}', extract)
     y = y.replace('{{e2e_image}}', e2e_image)
+
+    if distro:
+        y = y.replace('{{distro}}', distro)
+    else:
+        y = y.replace('{{distro}}', "default")
+
+    if k8s_version:
+        y = y.replace('{{k8s_version}}', k8s_version)
+    else:
+        y = y.replace('{{k8s_version}}', "latest")
 
     if kops_image:
         y = y.replace('{{kops_image}}', kops_image)
