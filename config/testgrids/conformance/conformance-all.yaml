@@ -695,6 +695,8 @@ test_groups:
   gcs_prefix: compute-image-tools-test/logs/ci-images-import-export-cli-e2e-tests
 - name: ci-ovf-import-e2e-tests-daily
   gcs_prefix: compute-image-tools-test/logs/ci-ovf-import-e2e-tests-daily
+- name: ci-windows-upgrade-tests
+  gcs_prefix: compute-image-tools-test/logs/ci-windows-upgrade-tests
 - name: linux-image-tests
   gcs_prefix: compute-image-tools-test/logs/linux-image-tests
 - name: windows-image-tests
