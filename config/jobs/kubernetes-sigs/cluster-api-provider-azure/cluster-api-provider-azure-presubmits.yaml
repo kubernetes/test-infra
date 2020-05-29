@@ -243,8 +243,6 @@ presubmits:
               value: "true"
             - name: FEATURE_GATE_MACHINE_POOL
               value: "true"
-            - name: USE_MACHINE_POOL
-              value: "true"
           securityContext:
             privileged: true
           resources:
