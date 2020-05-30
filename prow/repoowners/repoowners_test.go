@@ -28,7 +28,6 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/davecgh/go-spew/spew"
 	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/apimachinery/pkg/util/sets"
 	prowConf "k8s.io/test-infra/prow/config"
@@ -1124,7 +1123,6 @@ func TestFindLabelsForPath(t *testing.T) {
 			leafDir: regexpAll("wg/save-tokyo"),
 		},
 	}
-	spew.Dump(testOwners)
 	for _, test := range tests {
 		got := testOwners.FindLabelsForFile(test.path)
 		if !got.Equal(test.expectedLabels) {
@@ -1199,14 +1197,6 @@ func TestFindConfigFileByLabel(t *testing.T) {
 			"wg/towel":  "./OWNERS",
 		},
 	}
-	/*
-		        spew.Dump(testOwners)
-			t.Errorf("testOwners.labels[%s] %v", baseDir, testOwners.labels[baseDir])
-			t.Errorf("testOwners.labels[%s] %v", leafDir, testOwners.labels[leafDir])
-			t.Errorf("testOwners.configSources[%s] %v", baseDir, testOwners.configSources[baseDir])
-			t.Errorf("testOwners.configSources[%s] %v", leafDir, testOwners.configSources[leafDir])
-			t.Errorf("testOwners.configSources[%s] %v", noParentsDir, testOwners.configSources[noParentsDir])
-	*/
 	for i, test := range tests {
 		gotConfigSource := testOwners.FindConfigFileForFile(test.path)
 		gotLabels := testOwners.FindLabelsForFile(test.path)
