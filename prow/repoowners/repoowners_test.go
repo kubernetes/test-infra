@@ -28,6 +28,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"github.com/davecgh/go-spew/spew"
 	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/apimachinery/pkg/util/sets"
 	prowConf "k8s.io/test-infra/prow/config"
@@ -1123,6 +1124,7 @@ func TestFindLabelsForPath(t *testing.T) {
 			leafDir: regexpAll("wg/save-tokyo"),
 		},
 	}
+	spew.Dump(testOwners)
 	for _, test := range tests {
 		got := testOwners.FindLabelsForFile(test.path)
 		if !got.Equal(test.expectedLabels) {
@@ -1133,6 +1135,88 @@ func TestFindLabelsForPath(t *testing.T) {
 				test.path,
 				got.List(),
 			)
+		}
+	}
+}
+
+func TestFindConfigFileByLabel(t *testing.T) {
+	tests := []struct {
+		name                 string
+		path                 string
+		expectedLabels       sets.String
+		expectedConfigSource sets.String
+	}{
+		{
+			name:                 "OWNERS in root only",
+			path:                 "foo.txt",
+			expectedLabels:       sets.NewString("sig/hg2tg"),
+			expectedConfigSource: sets.NewString("./OWNERS"),
+		},
+		{ // Should I accomdate this use case (relative path to a root file??)
+			name:                 "OWNERS in root only",
+			path:                 "./foo.txt",
+			expectedLabels:       sets.NewString("sig/hg2tg"),
+			expectedConfigSource: sets.NewString("./OWNERS"),
+		}, {
+			name:                 "OWNERS in root only",
+			path:                 "",
+			expectedLabels:       sets.NewString("sig/hg2tg"),
+			expectedConfigSource: sets.NewString("./OWNERS"),
+		}, {
+			name:                 "OWNERS in root only",
+			path:                 ".",
+			expectedLabels:       sets.NewString("sig/hg2tg"),
+			expectedConfigSource: sets.NewString("./OWNERS"),
+		}, {
+			name: "OWNERS in ROOT and LEAF",
+			// path:                 "a/b/c/",
+			path:                 leafDir,
+			expectedLabels:       sets.NewString("sig/hg2tg", "wg/towel"),
+			expectedConfigSource: sets.NewString("./OWNERS", "a/b/c/OWNERS"),
+		}, {
+			name:                 "OWNERS in ROOT and LEAF",
+			path:                 "a/b/c/foo.txt",
+			expectedLabels:       sets.NewString("sig/hg2tg"),
+			expectedConfigSource: sets.NewString("./OWNERS", "a/b/c/OWNERS"),
+		},
+	}
+
+	testOwners := &RepoOwners{
+		labels: map[string]map[*regexp.Regexp]sets.String{
+			baseDir: regexpAll("sig/hg2tg"),
+			leafDir: regexpAll("wg/towel"),
+		},
+		configSources: map[string]map[*regexp.Regexp]sets.String{
+			".":             regexpAll("./OWNERS"),
+			baseDir:         regexpAll("./OWNERS"),
+			"./foo.txt":     regexpAll("./OWNERS"),
+			"foo.txt":       regexpAll("./OWNERS"),
+			leafDir:         regexpAll("./OWNERS", "a/b/c/OWNERS"),
+			"a/b/c/foo.txt": regexpAll("./OWNERS", "a/b/c/OWNERS"),
+		},
+		configSourceByLabel: map[string]string{
+			"sig/hg2tg": "./OWNERS",
+			"wg/towel":  "./OWNERS",
+		},
+	}
+	/*
+		        spew.Dump(testOwners)
+			t.Errorf("testOwners.labels[%s] %v", baseDir, testOwners.labels[baseDir])
+			t.Errorf("testOwners.labels[%s] %v", leafDir, testOwners.labels[leafDir])
+			t.Errorf("testOwners.configSources[%s] %v", baseDir, testOwners.configSources[baseDir])
+			t.Errorf("testOwners.configSources[%s] %v", leafDir, testOwners.configSources[leafDir])
+			t.Errorf("testOwners.configSources[%s] %v", noParentsDir, testOwners.configSources[noParentsDir])
+	*/
+	for i, test := range tests {
+		gotConfigSource := testOwners.FindConfigFileForFile(test.path)
+		gotLabels := testOwners.FindLabelsForFile(test.path)
+		if !gotConfigSource.Equal(test.expectedConfigSource) {
+			t.Errorf("%d [%s] for %q", i, test.name, test.path)
+			t.Errorf("  expected config(s) %q", test.expectedConfigSource.List())
+			t.Errorf("  but got  config(s) %q", gotConfigSource.List())
+			t.Errorf("  expected labels(s) %q", test.expectedLabels.List())
+			t.Errorf("  but got  labels(s) %q", gotLabels.List())
+
 		}
 	}
 }

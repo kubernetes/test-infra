@@ -48,11 +48,13 @@ type dirOptions struct {
 }
 
 // Config holds roles+usernames and labels for a directory considered as a unit of independent code
+// along with the path to the OWNERS file that was parsed to retrieve those labels, usernames and roles.
 type Config struct {
 	Approvers         []string `json:"approvers,omitempty"`
 	Reviewers         []string `json:"reviewers,omitempty"`
 	RequiredReviewers []string `json:"required_reviewers,omitempty"`
 	Labels            []string `json:"labels,omitempty"`
+	SourcePath        string   `json:"-"`
 }
 
 // SimpleConfig holds options and Config applied to everything under the containing directory
@@ -214,6 +216,9 @@ type RepoOwner interface {
 	FindApproverOwnersForFile(path string) string
 	FindReviewersOwnersForFile(path string) string
 	FindLabelsForFile(path string) sets.String
+	FindOwnersConfigForFile(path string) map[string]map[*regexp.Regexp]sets.String
+	FindConfigFileForFile(path string) sets.String
+	FindConfigFileForLabel(label string) string
 	IsNoParentOwners(path string) bool
 	LeafApprovers(path string) sets.String
 	Approvers(path string) sets.String
@@ -235,11 +240,13 @@ type RepoOwners struct {
 	reviewers         map[string]map[*regexp.Regexp]sets.String
 	requiredReviewers map[string]map[*regexp.Regexp]sets.String
 	labels            map[string]map[*regexp.Regexp]sets.String
+	configSources     map[string]map[*regexp.Regexp]sets.String
 	options           map[string]dirOptions
 
-	baseDir      string
-	enableMDYAML bool
-	dirBlacklist []*regexp.Regexp
+	configSourceByLabel map[string]string
+	baseDir             string
+	enableMDYAML        bool
+	dirBlacklist        []*regexp.Regexp
 
 	log *logrus.Entry
 }
@@ -470,6 +477,7 @@ func loadOwnersFrom(baseDir string, mdYaml bool, aliases RepoAliases, dirBlackli
 		reviewers:         make(map[string]map[*regexp.Regexp]sets.String),
 		requiredReviewers: make(map[string]map[*regexp.Regexp]sets.String),
 		labels:            make(map[string]map[*regexp.Regexp]sets.String),
+		configSources:     make(map[string]map[*regexp.Regexp]sets.String),
 		options:           make(map[string]dirOptions),
 
 		dirBlacklist: dirBlacklist,
@@ -490,8 +498,9 @@ func canonicalize(path string) string {
 
 func (o *RepoOwners) walkFunc(path string, info os.FileInfo, err error) error {
 	log := o.log.WithField("path", path)
+	log.Debugf("walkFunc(%q, %q,  %q)", path, info, err)
 	if err != nil {
-		log.WithError(err).Error("Error while walking OWNERS files.")
+		log.WithError(err).Errorf("Error while walking OWNERS files while processing %q", path)
 		return nil
 	}
 	filename := filepath.Base(path)
@@ -519,10 +528,10 @@ func (o *RepoOwners) walkFunc(path string, info os.FileInfo, err error) error {
 		// Parse the yaml header from the file if it exists and marshal into the config
 		simple := &SimpleConfig{}
 		if err := decodeOwnersMdConfig(path, simple); err != nil {
-			log.WithError(err).Info("Error decoding OWNERS config from '*.md' file.")
+			log.WithError(err).Infof("Error decoding OWNERS config from %q", filename)
 			return nil
 		}
-
+		simple.SourcePath = filename
 		// Set owners for this file (not the directory) using the relative path if they were found
 		o.applyConfigToPath(relPath, nil, &simple.Config)
 		o.applyOptionsToPath(relPath, simple.Options)
@@ -601,7 +610,10 @@ func (o *RepoOwners) ParseSimpleConfig(path string) (SimpleConfig, error) {
 	if err != nil {
 		return SimpleConfig{}, err
 	}
-	return LoadSimpleConfig(b)
+
+	simple, err := LoadSimpleConfig(b)
+	simple.SourcePath = path
+	return simple, err
 }
 
 // LoadSimpleConfig loads SimpleConfig from bytes `b`
@@ -682,6 +694,7 @@ func NormLogins(logins []string) sets.String {
 
 var defaultDirOptions = dirOptions{}
 
+// applyConfigToPath takes a parsed Config for a path and sets up fields in RepoOwners
 func (o *RepoOwners) applyConfigToPath(path string, re *regexp.Regexp, config *Config) {
 	if len(config.Approvers) > 0 {
 		if o.approvers[path] == nil {
@@ -706,6 +719,20 @@ func (o *RepoOwners) applyConfigToPath(path string, re *regexp.Regexp, config *C
 			o.labels[path] = make(map[*regexp.Regexp]sets.String)
 		}
 		o.labels[path][re] = sets.NewString(config.Labels...)
+	}
+	if len(config.SourcePath) > 0 {
+		if o.configSources[path] == nil {
+			o.configSources[path] = make(map[*regexp.Regexp]sets.String)
+		}
+		o.configSources[path][re] = sets.NewString(config.SourcePath)
+		if len(config.Labels) > 0 {
+			if o.configSourceByLabel == nil {
+				o.configSourceByLabel = make(map[string]string)
+			}
+			for _, label := range config.Labels {
+				o.configSourceByLabel[label] = config.SourcePath
+			}
+		}
 	}
 }
 
@@ -784,13 +811,17 @@ func (o *RepoOwners) IsNoParentOwners(path string) bool {
 	return o.options[path].NoParentOwners
 }
 
-// entriesForFile returns a set of users who are assignees to the
-// requested file. The path variable should be a full path to a filename
-// and not directory as the final directory will be discounted if enableMDYAML is true
-// leafOnly indicates whether only the OWNERS deepest in the tree (closest to the file)
-// should be returned or if all OWNERS in filepath should be returned
+// entriesForFile returns a set of entries found in owner configuration file(s)
+// for the file specified by path.
+//
+// path - should be a full path to a filename and not directory as the final directory will be discounted if enableMDYAML is true
+// leafOnly - when true just use OWNERS deepest in the tree (closest to the path)
+//            when false retrieve all entries in all OWNERS file
 func (o *RepoOwners) entriesForFile(path string, people map[string]map[*regexp.Regexp]sets.String, leafOnly bool) sets.String {
 	d := path
+	fmt.Printf("entriesForFile : path %30v=\n", path)
+	fmt.Printf("entriesForFile : entries %v\n", people)
+	fmt.Printf("entriesForFile : %q\n", o.FindOwnersConfigForFile(path))
 	if !o.enableMDYAML || !strings.HasSuffix(path, ".md") {
 		// if path is a directory, this will remove the leaf directory, and returns "." for topmost dir
 		d = filepath.Dir(d)
@@ -801,7 +832,7 @@ func (o *RepoOwners) entriesForFile(path string, people map[string]map[*regexp.R
 	for {
 		relative, err := filepath.Rel(d, path)
 		if err != nil {
-			o.log.WithError(err).WithField("path", path).Errorf("Unable to find relative path between %q and path.", d)
+			o.log.WithError(err).WithField("path", path).Errorf("Unable to find relative path between %q and path %q", d, path)
 			return nil
 		}
 		for re, s := range people[d] {
@@ -862,6 +893,25 @@ func (o *RepoOwners) RequiredReviewers(path string) sets.String {
 	return o.entriesForFile(path, o.requiredReviewers, false)
 }
 
+// TopLevelApprovers return approvers for file at path
 func (o *RepoOwners) TopLevelApprovers() sets.String {
 	return o.entriesForFile(".", o.approvers, false)
+}
+
+// FindOwnersConfigForFile returns the config file as a map (OWNERS, OWNERS_ALIAS, that md file thing that I can't find out anything about)
+// that applies to the specified path
+func (o *RepoOwners) FindOwnersConfigForFile(path string) map[string]map[*regexp.Regexp]sets.String {
+	return o.configSources
+}
+
+// FindConfigFileForFile returns set of config files used to be configure
+// the RepoOwners struct for the repo file specified in path
+func (o *RepoOwners) FindConfigFileForFile(path string) sets.String {
+	return o.configSources[path][nil]
+}
+
+// FindConfigFileForLabel returns set of config files used to configure
+// the RepoOwners struct for the repo file specified in path
+func (o *RepoOwners) FindConfigFileForLabel(label string) string {
+	return o.configSourceByLabel[label]
 }

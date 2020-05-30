@@ -46,6 +46,7 @@ func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhel
 
 type ownersClient interface {
 	FindLabelsForFile(path string) sets.String
+	FindConfigFileForLabel(label string) string
 }
 
 type githubClient interface {
@@ -112,7 +113,7 @@ func handle(ghc githubClient, oc ownersClient, log *logrus.Entry, pre *github.Pu
 			continue
 		}
 		if err := ghc.AddLabel(org, repo, number, labelToAdd); err != nil {
-			log.WithError(err).Errorf("GitHub failed to add the following label: %s", labelToAdd)
+			log.WithError(err).Errorf("GitHub failed to add label: %s found in %s", labelToAdd, oc.FindConfigFileForLabel(labelToAdd))
 		}
 	}
 
