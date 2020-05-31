@@ -3,6 +3,9 @@
 ## New features
 
 New features added to each component:
+ - *May 31, 2020* '--gcs-no-auth' in Deck is deprecated and not used anymore. We always
+    fall back to an anonymous GCS client now, if all other options fail. This flag will 
+    be removed in *July 2020*.
  - *May 25, 2020* Added `--blob-storage-workers` and `--kubernetes-blob-storage-workers` 
     flags to crier. The flags `--gcs-workers` and `--kubernetes-gcs-workers` are now 
     deprecated and will be removed in *August 2020*.

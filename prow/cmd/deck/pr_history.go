@@ -204,8 +204,8 @@ func parsePullURL(u *url.URL) (org, repo string, pr int, err error) {
 	return org, repo, pr, nil
 }
 
-// getGCSDirsForPR returns a map from bucket names -> set of "directories" containing presubmit data
-func getGCSDirsForPR(c *config.Config, gitHubClient deckGitHubClient, gitClient git.ClientFactory, org, repo string, prNumber int) (map[string]sets.String, error) {
+// getStorageDirsForPR returns a map from bucket names -> set of "directories" containing presubmit data
+func getStorageDirsForPR(c *config.Config, gitHubClient deckGitHubClient, gitClient git.ClientFactory, org, repo string, prNumber int) (map[string]sets.String, error) {
 	toSearch := make(map[string]sets.String)
 	fullRepo := org + "/" + repo
 
@@ -267,25 +267,25 @@ func getPRHistory(ctx context.Context, prHistoryURL *url.URL, config *config.Con
 	template.Name = fmt.Sprintf("%s/%s #%d", org, repo, pr)
 	template.Link = githubPRLink(org, repo, pr) // TODO(ibzib) support Gerrit :/
 
-	toSearch, err := getGCSDirsForPR(config, gitHubClient, gitClient, org, repo, pr)
+	toSearch, err := getStorageDirsForPR(config, gitHubClient, gitClient, org, repo, pr)
 	if err != nil {
-		return template, fmt.Errorf("failed to list GCS directories for PR %s: %v", template.Name, err)
+		return template, fmt.Errorf("failed to list directories for PR %s: %v", template.Name, err)
 	}
 
 	builds := []buildData{}
 	// job name -> commit hash -> list of builds
 	jobCommitBuilds := make(map[string]map[string][]buildData)
 
-	for bucket, gcsPaths := range toSearch {
+	for bucket, storagePaths := range toSearch {
 		parsedBucket, err := url.Parse(bucket)
 		if err != nil {
 			return template, fmt.Errorf("parse bucket %s: %w", bucket, err)
 		}
 		bucketName := parsedBucket.Host
 		storageProvider := parsedBucket.Scheme
-		bucket := gcsBucket{bucketName, storageProvider, opener}
-		for gcsPath := range gcsPaths {
-			jobPrefixes, err := bucket.listSubDirs(ctx, gcsPath)
+		bucket := blobStorageBucket{bucketName, storageProvider, opener}
+		for storagePath := range storagePaths {
+			jobPrefixes, err := bucket.listSubDirs(ctx, storagePath)
 			if err != nil {
 				return template, fmt.Errorf("failed to get job names: %v", err)
 			}

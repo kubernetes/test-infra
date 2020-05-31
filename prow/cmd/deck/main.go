@@ -770,7 +770,7 @@ func initLocalLensHandler(cfg config.Getter, o options, sg *spyglass.Spyglass) e
 		})
 	}
 
-	lensServer, err := common.NewLensServer(spyglassLocalLensListenerAddr, sg.JobAgent, sg.GCSArtifactFetcher, sg.PodLogArtifactFetcher, cfg, localLenses)
+	lensServer, err := common.NewLensServer(spyglassLocalLensListenerAddr, sg.JobAgent, sg.StorageArtifactFetcher, sg.PodLogArtifactFetcher, cfg, localLenses)
 	if err != nil {
 		return fmt.Errorf("constructing local lens server: %w", err)
 	}
@@ -936,7 +936,7 @@ func handleBadge(ja *jobs.JobAgent) http.HandlerFunc {
 func handleJobHistory(o options, cfg config.Getter, opener io.Opener, log *logrus.Entry) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		setHeadersNoCaching(w)
-		tmpl, err := getJobHistory(r.Context(), r.URL, cfg(), opener)
+		tmpl, err := getJobHistory(r.Context(), r.URL, opener)
 		if err != nil {
 			msg := fmt.Sprintf("failed to get job history: %v", err)
 			log.WithField("url", r.URL.String()).Warn(msg)

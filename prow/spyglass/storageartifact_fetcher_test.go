@@ -137,7 +137,7 @@ func TestNewGCSJobSource(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			jobSource, err := newGCSJobSource(tc.src)
+			jobSource, err := newStorageJobSource(tc.src)
 			if err != tc.expectedErr {
 				t.Errorf("Expected err: %v, got err: %v", tc.expectedErr, err)
 			}
@@ -160,7 +160,7 @@ func TestNewGCSJobSource(t *testing.T) {
 // Tests listing objects associated with the current job in GCS
 func TestArtifacts_ListGCS(t *testing.T) {
 	fakeGCSClient := fakeGCSServer.Client()
-	testAf := NewGCSArtifactFetcher(io.NewGCSOpener(fakeGCSClient), false)
+	testAf := NewStorageArtifactFetcher(io.NewGCSOpener(fakeGCSClient), false)
 	testCases := []struct {
 		name              string
 		handle            artifactHandle
@@ -228,7 +228,7 @@ func TestArtifacts_ListGCS(t *testing.T) {
 // Tests getting handles to objects associated with the current job in GCS
 func TestFetchArtifacts_GCS(t *testing.T) {
 	fakeGCSClient := fakeGCSServer.Client()
-	testAf := NewGCSArtifactFetcher(io.NewGCSOpener(fakeGCSClient), false)
+	testAf := NewStorageArtifactFetcher(io.NewGCSOpener(fakeGCSClient), false)
 	maxSize := int64(500e6)
 	testCases := []struct {
 		name         string
@@ -404,7 +404,7 @@ RU5EIFBSSVZBVEUgS0VZLS0tLS1cbgo=`)
 			var actual string
 			opener, err := io.NewOpener(context.Background(), path, "")
 			if err == nil {
-				af := NewGCSArtifactFetcher(opener, tc.useCookie)
+				af := NewStorageArtifactFetcher(opener, tc.useCookie)
 				actual, err = af.signURL(context.Background(), "gs://foo/bar/stuff")
 			}
 			switch {

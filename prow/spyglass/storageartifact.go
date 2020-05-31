@@ -28,8 +28,8 @@ import (
 	"k8s.io/test-infra/prow/spyglass/lenses"
 )
 
-// GCSArtifact represents some output of a prow job stored in GCS
-type GCSArtifact struct {
+// StorageArtifact represents some output of a prow job stored in GCS
+type StorageArtifact struct {
 	// The handle of the object in GCS
 	handle artifactHandle
 
@@ -53,9 +53,9 @@ type artifactHandle interface {
 	NewReader(ctx context.Context) (io.ReadCloser, error)
 }
 
-// NewGCSArtifact returns a new GCSArtifact with a given handle, canonical link, and path within the job
-func NewGCSArtifact(ctx context.Context, handle artifactHandle, link string, path string, sizeLimit int64) *GCSArtifact {
-	return &GCSArtifact{
+// NewStorageArtifact returns a new StorageArtifact with a given handle, canonical link, and path within the job
+func NewStorageArtifact(ctx context.Context, handle artifactHandle, link string, path string, sizeLimit int64) *StorageArtifact {
+	return &StorageArtifact{
 		handle:    handle,
 		link:      link,
 		path:      path,
@@ -64,14 +64,14 @@ func NewGCSArtifact(ctx context.Context, handle artifactHandle, link string, pat
 	}
 }
 
-func fieldsFor(a *GCSArtifact) logrus.Fields {
+func fieldsFor(a *StorageArtifact) logrus.Fields {
 	return logrus.Fields{
 		"artifact": a.path,
 	}
 }
 
 // Size returns the size of the artifact in GCS
-func (a *GCSArtifact) Size() (int64, error) {
+func (a *StorageArtifact) Size() (int64, error) {
 	attrs, err := a.handle.Attrs(a.ctx)
 	if err != nil {
 		return 0, fmt.Errorf("error getting gcs attributes for artifact: %v", err)
@@ -80,17 +80,17 @@ func (a *GCSArtifact) Size() (int64, error) {
 }
 
 // JobPath gets the GCS path of the artifact within the current job
-func (a *GCSArtifact) JobPath() string {
+func (a *StorageArtifact) JobPath() string {
 	return a.path
 }
 
 // CanonicalLink gets the GCS web address of the artifact
-func (a *GCSArtifact) CanonicalLink() string {
+func (a *StorageArtifact) CanonicalLink() string {
 	return a.link
 }
 
 // ReadAt reads len(p) bytes from a file in GCS at offset off
-func (a *GCSArtifact) ReadAt(p []byte, off int64) (n int, err error) {
+func (a *StorageArtifact) ReadAt(p []byte, off int64) (n int, err error) {
 	gzipped, err := a.gzipped()
 	if err != nil {
 		return 0, fmt.Errorf("error checking artifact for gzip compression: %v", err)
@@ -137,7 +137,7 @@ func (a *GCSArtifact) ReadAt(p []byte, off int64) (n int, err error) {
 
 // ReadAtMost reads at most n bytes from a file in GCS. If the file is compressed (gzip) in GCS, n bytes
 // of gzipped content will be downloaded and decompressed into potentially GREATER than n bytes of content.
-func (a *GCSArtifact) ReadAtMost(n int64) ([]byte, error) {
+func (a *StorageArtifact) ReadAtMost(n int64) ([]byte, error) {
 	var reader io.ReadCloser
 	var p []byte
 	gzipped, err := a.gzipped()
@@ -189,7 +189,7 @@ func (a *GCSArtifact) ReadAtMost(n int64) ([]byte, error) {
 }
 
 // ReadAll will either read the entire file or throw an error if file size is too big
-func (a *GCSArtifact) ReadAll() ([]byte, error) {
+func (a *StorageArtifact) ReadAll() ([]byte, error) {
 	size, err := a.Size()
 	if err != nil {
 		return nil, fmt.Errorf("error getting artifact size: %v", err)
@@ -210,7 +210,7 @@ func (a *GCSArtifact) ReadAll() ([]byte, error) {
 }
 
 // ReadTail reads the last n bytes from a file in GCS
-func (a *GCSArtifact) ReadTail(n int64) ([]byte, error) {
+func (a *StorageArtifact) ReadTail(n int64) ([]byte, error) {
 	gzipped, err := a.gzipped()
 	if err != nil {
 		return nil, fmt.Errorf("error checking artifact for gzip compression: %v", err)
@@ -241,7 +241,7 @@ func (a *GCSArtifact) ReadTail(n int64) ([]byte, error) {
 }
 
 // gzipped returns whether the file is gzip-encoded in GCS
-func (a *GCSArtifact) gzipped() (bool, error) {
+func (a *StorageArtifact) gzipped() (bool, error) {
 	attrs, err := a.handle.Attrs(a.ctx)
 	if err != nil {
 		return false, fmt.Errorf("error getting gcs attributes for artifact: %v", err)

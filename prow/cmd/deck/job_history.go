@@ -32,7 +32,6 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/config"
 	pkgio "k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/io/providers"
 	"k8s.io/test-infra/prow/pod-utils/gcs"
@@ -75,8 +74,8 @@ type storageBucket interface {
 	readObject(ctx context.Context, key string) ([]byte, error)
 }
 
-// gcsBucket is our real implementation of storageBucket
-type gcsBucket struct {
+// blobStorageBucket is our real implementation of storageBucket
+type blobStorageBucket struct {
 	name            string
 	storageProvider string
 	pkgio.Opener
@@ -92,7 +91,7 @@ type jobHistoryTemplate struct {
 	Builds       []buildData
 }
 
-func (bucket gcsBucket) readObject(ctx context.Context, key string) ([]byte, error) {
+func (bucket blobStorageBucket) readObject(ctx context.Context, key string) ([]byte, error) {
 	rc, err := bucket.Opener.Reader(ctx, fmt.Sprintf("%s://%s/%s", bucket.storageProvider, bucket.name, key))
 	if err != nil {
 		return nil, fmt.Errorf("creating reader for object %s: %w", key, err)
@@ -101,11 +100,11 @@ func (bucket gcsBucket) readObject(ctx context.Context, key string) ([]byte, err
 	return ioutil.ReadAll(rc)
 }
 
-func (bucket gcsBucket) getName() string {
+func (bucket blobStorageBucket) getName() string {
 	return bucket.name
 }
 
-func (bucket gcsBucket) getStorageProvider() string {
+func (bucket blobStorageBucket) getStorageProvider() string {
 	return bucket.storageProvider
 }
 
@@ -125,7 +124,7 @@ func readLatestBuild(ctx context.Context, bucket storageBucket, root string) (in
 // resolve symlinks into the actual log directory for a particular test run, e.g.:
 // * input:  gs://prow-artifacts/pr-logs/pull/cluster-api-provider-openstack/1687/bazel-build/1248207834168954881
 // * output: pr-logs/pull/cluster-api-provider-openstack/1687/bazel-build/1248207834168954881
-func (bucket gcsBucket) resolveSymLink(ctx context.Context, symLink string) (string, error) {
+func (bucket blobStorageBucket) resolveSymLink(ctx context.Context, symLink string) (string, error) {
 	data, err := bucket.readObject(ctx, symLink)
 	if err != nil {
 		return "", fmt.Errorf("failed to read %s: %v", symLink, err)
@@ -139,7 +138,7 @@ func (bucket gcsBucket) resolveSymLink(ctx context.Context, symLink string) (str
 	return strings.TrimPrefix(parsedURL.Path, "/"), nil
 }
 
-func (bucket gcsBucket) spyglassLink(ctx context.Context, root, id string) (string, error) {
+func (bucket blobStorageBucket) spyglassLink(ctx context.Context, root, id string) (string, error) {
 	p, err := bucket.getPath(ctx, root, id, "")
 	if err != nil {
 		return "", fmt.Errorf("failed to get path: %v", err)
@@ -147,7 +146,7 @@ func (bucket gcsBucket) spyglassLink(ctx context.Context, root, id string) (stri
 	return path.Join(spyglassPrefix, bucket.storageProvider, bucket.name, p), nil
 }
 
-func (bucket gcsBucket) getPath(ctx context.Context, root, id, fname string) (string, error) {
+func (bucket blobStorageBucket) getPath(ctx context.Context, root, id, fname string) (string, error) {
 	if strings.HasPrefix(root, logsPrefix) {
 		return path.Join(root, id, fname), nil
 	}
@@ -172,8 +171,8 @@ func readJSON(ctx context.Context, bucket storageBucket, key string, data interf
 	return nil
 }
 
-// Lists the GCS "directory paths" immediately under prefix.
-func (bucket gcsBucket) listSubDirs(ctx context.Context, prefix string) ([]string, error) {
+// Lists the "directory paths" immediately under prefix.
+func (bucket blobStorageBucket) listSubDirs(ctx context.Context, prefix string) ([]string, error) {
 	if !strings.HasSuffix(prefix, "/") {
 		prefix += "/"
 	}
@@ -198,8 +197,8 @@ func (bucket gcsBucket) listSubDirs(ctx context.Context, prefix string) ([]strin
 	return dirs, nil
 }
 
-// Lists all GCS keys with given prefix.
-func (bucket gcsBucket) listAll(ctx context.Context, prefix string) ([]string, error) {
+// Lists all keys with given prefix.
+func (bucket blobStorageBucket) listAll(ctx context.Context, prefix string) ([]string, error) {
 	it, err := bucket.Opener.Iterator(ctx, fmt.Sprintf("%s://%s/%s", bucket.storageProvider, bucket.name, prefix), "")
 	if err != nil {
 		return nil, err
@@ -220,12 +219,12 @@ func (bucket gcsBucket) listAll(ctx context.Context, prefix string) ([]string, e
 }
 
 // Gets all build ids for a job.
-func (bucket gcsBucket) listBuildIDs(ctx context.Context, root string) ([]int64, error) {
+func (bucket blobStorageBucket) listBuildIDs(ctx context.Context, root string) ([]int64, error) {
 	ids := []int64{}
 	if strings.HasPrefix(root, logsPrefix) {
 		dirs, err := bucket.listSubDirs(ctx, root)
 		if err != nil {
-			return ids, fmt.Errorf("failed to list GCS directories: %v", err)
+			return ids, fmt.Errorf("failed to list directories: %v", err)
 		}
 		for _, dir := range dirs {
 			leaf := path.Base(dir)
@@ -239,7 +238,7 @@ func (bucket gcsBucket) listBuildIDs(ctx context.Context, root string) ([]int64,
 	} else {
 		keys, err := bucket.listAll(ctx, root)
 		if err != nil {
-			return ids, fmt.Errorf("failed to list GCS keys: %v", err)
+			return ids, fmt.Errorf("failed to list keys: %v", err)
 		}
 		for _, key := range keys {
 			matches := linkRe.FindStringSubmatch(key)
@@ -290,11 +289,11 @@ func parseJobHistURL(url *url.URL) (storageProvider, bucketName, root string, bu
 	root = s[2] // `root` is the root "directory" prefix for this job's results
 
 	if bucketName == "" {
-		err = fmt.Errorf("missing GCS bucket name: %v", url.Path)
+		err = fmt.Errorf("missing bucket name: %v", url.Path)
 		return
 	}
 	if root == "" {
-		err = fmt.Errorf("invalid GCS path for job: %v", url.Path)
+		err = fmt.Errorf("invalid path for job: %v", url.Path)
 		return
 	}
 
@@ -391,8 +390,8 @@ func (a int64slice) Len() int           { return len(a) }
 func (a int64slice) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a int64slice) Less(i, j int) bool { return a[i] < a[j] }
 
-// Gets job history from the GCS bucket specified in config.
-func getJobHistory(ctx context.Context, url *url.URL, config *config.Config, opener pkgio.Opener) (jobHistoryTemplate, error) {
+// Gets job history from the bucket specified in config.
+func getJobHistory(ctx context.Context, url *url.URL, opener pkgio.Opener) (jobHistoryTemplate, error) {
 	start := time.Now()
 	tmpl := jobHistoryTemplate{}
 
@@ -401,7 +400,7 @@ func getJobHistory(ctx context.Context, url *url.URL, config *config.Config, ope
 		return tmpl, fmt.Errorf("invalid url %s: %v", url.String(), err)
 	}
 	tmpl.Name = root
-	bucket := gcsBucket{bucketName, storageProvider, opener}
+	bucket := blobStorageBucket{bucketName, storageProvider, opener}
 
 	latest, err := readLatestBuild(ctx, bucket, root)
 	if err != nil {

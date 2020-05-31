@@ -61,7 +61,7 @@ type Spyglass struct {
 	config   config.Getter
 	testgrid *TestGrid
 
-	*GCSArtifactFetcher
+	*StorageArtifactFetcher
 	*PodLogArtifactFetcher
 }
 
@@ -82,10 +82,10 @@ type ExtraLink struct {
 // New constructs a Spyglass object from a JobAgent, a config.Agent, and a storage Client.
 func New(ctx context.Context, ja *jobs.JobAgent, cfg config.Getter, opener pkgio.Opener, useCookieAuth bool) *Spyglass {
 	return &Spyglass{
-		JobAgent:              ja,
-		config:                cfg,
-		PodLogArtifactFetcher: NewPodLogArtifactFetcher(ja),
-		GCSArtifactFetcher:    NewGCSArtifactFetcher(opener, useCookieAuth),
+		JobAgent:               ja,
+		config:                 cfg,
+		PodLogArtifactFetcher:  NewPodLogArtifactFetcher(ja),
+		StorageArtifactFetcher: NewStorageArtifactFetcher(opener, useCookieAuth),
 		testgrid: &TestGrid{
 			conf:   cfg,
 			opener: opener,
@@ -178,7 +178,7 @@ func (sg *Spyglass) ResolveSymlink(src string) (string, error) {
 	}
 }
 
-// JobPath returns a link to the GCS directory for the job specified in src
+// JobPath returns a link to the directory for the job specified in src
 func (sg *Spyglass) JobPath(src string) (string, error) {
 	src = strings.TrimSuffix(src, "/")
 	keyType, key, err := splitSrc(src)
@@ -270,7 +270,7 @@ func (sg *Spyglass) ProwJobName(src string) (string, error) {
 	return job.Name, nil
 }
 
-// RunPath returns the path to the GCS directory for the job run specified in src.
+// RunPath returns the path to the directory for the job run specified in src.
 func (sg *Spyglass) RunPath(src string) (string, error) {
 	src = strings.TrimSuffix(src, "/")
 	keyType, key, err := splitSrc(src)
