@@ -27,8 +27,7 @@ import (
 )
 
 func TestPickLatest(t *testing.T) {
-	earliest := metav1.Now()
-	time.Sleep(100 * time.Millisecond)
+	earliest := metav1.Time{}
 	earlier := metav1.Now()
 	jobs := []prowapi.ProwJob{
 		// We're using Cluster as a simple way to distinguish runs
