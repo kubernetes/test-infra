@@ -27,7 +27,6 @@ import (
 )
 
 func TestPickLatest(t *testing.T) {
-	// timestamp, _ := time.Parse("2006-01-02T15:04:05Z", "2020-05-29T15:55:41Z")
 	earliest := metav1.Now()
 	time.Sleep(100 * time.Millisecond)
 	earlier := metav1.Now()
