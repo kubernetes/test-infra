@@ -795,49 +795,87 @@ func TestUnassignIssue(t *testing.T) {
 }
 
 func TestReadPaginatedResults(t *testing.T) {
-	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet {
-			t.Errorf("Bad method: %s", r.Method)
-		}
-		if r.URL.Path == "/label/foo" {
-			objects := []Label{{Name: "foo"}}
-			b, err := json.Marshal(objects)
-			if err != nil {
-				t.Fatalf("Didn't expect error: %v", err)
+	type response struct {
+		labels []Label
+		next   string
+	}
+	cases := []struct {
+		name           string
+		baseSuffix     string
+		initialPath    string
+		responses      map[string]response
+		expectedLabels []Label
+	}{
+		{
+			name:        "regular pagination",
+			initialPath: "/label/foo",
+			responses: map[string]response{
+				"/label/foo": {
+					labels: []Label{{Name: "foo"}},
+					next:   `<blorp>; rel="first", <https://%s/label/bar>; rel="next"`,
+				},
+				"/label/bar": {
+					labels: []Label{{Name: "bar"}},
+				},
+			},
+			expectedLabels: []Label{{Name: "foo"}, {Name: "bar"}},
+		},
+		{
+			name:        "pagination with /api/v3 base suffix",
+			initialPath: "/label/foo",
+			baseSuffix:  "/api/v3",
+			responses: map[string]response{
+				"/api/v3/label/foo": {
+					labels: []Label{{Name: "foo"}},
+					next:   `<blorp>; rel="first", <https://%s/api/v3/label/bar>; rel="next"`,
+				},
+				"/api/v3/label/bar": {
+					labels: []Label{{Name: "bar"}},
+				},
+			},
+			expectedLabels: []Label{{Name: "foo"}, {Name: "bar"}},
+		},
+	}
+	for _, tc := range cases {
+		ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.Method != http.MethodGet {
+				t.Errorf("Bad method: %s", r.Method)
 			}
-			w.Header().Set("Link", fmt.Sprintf(`<blorp>; rel="first", <https://%s/label/bar>; rel="next"`, r.Host))
-			fmt.Fprint(w, string(b))
-		} else if r.URL.Path == "/label/bar" {
-			objects := []Label{{Name: "bar"}}
-			b, err := json.Marshal(objects)
-			if err != nil {
-				t.Fatalf("Didn't expect error: %v", err)
+			if response, ok := tc.responses[r.URL.Path]; ok {
+				b, err := json.Marshal(response.labels)
+				if err != nil {
+					t.Fatalf("Didn't expect error: %v", err)
+				}
+				if response.next != "" {
+					w.Header().Set("Link", fmt.Sprintf(response.next, r.Host))
+				}
+				fmt.Fprint(w, string(b))
+			} else {
+				t.Errorf("Bad request path: %s", r.URL.Path)
 			}
-			fmt.Fprint(w, string(b))
+		}))
+		defer ts.Close()
+
+		c := getClient(ts.URL)
+		c.bases[0] = c.bases[0] + tc.baseSuffix
+		var labels []Label
+		err := c.readPaginatedResults(
+			tc.initialPath,
+			"",
+			func() interface{} {
+				return &[]Label{}
+			},
+			func(obj interface{}) {
+				labels = append(labels, *(obj.(*[]Label))...)
+			},
+		)
+		if err != nil {
+			t.Errorf("%s: didn't expect error: %v", tc.name, err)
 		} else {
-			t.Errorf("Bad request path: %s", r.URL.Path)
+			if !reflect.DeepEqual(labels, tc.expectedLabels) {
+				t.Errorf("%s: expected %s, got %s", tc.name, tc.expectedLabels, labels)
+			}
 		}
-	}))
-	defer ts.Close()
-	c := getClient(ts.URL)
-	path := "/label/foo"
-	var labels []Label
-	err := c.readPaginatedResults(
-		path,
-		"",
-		func() interface{} {
-			return &[]Label{}
-		},
-		func(obj interface{}) {
-			labels = append(labels, *(obj.(*[]Label))...)
-		},
-	)
-	if err != nil {
-		t.Errorf("Didn't expect error: %v", err)
-	} else if len(labels) != 2 {
-		t.Errorf("Expected two labels, found %d: %v", len(labels), labels)
-	} else if labels[0].Name != "foo" || labels[1].Name != "bar" {
-		t.Errorf("Wrong label names: %v", labels)
 	}
 }
 
