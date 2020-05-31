@@ -21,32 +21,36 @@ import (
 	"reflect"
 	"testing"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
 
 func TestPickLatest(t *testing.T) {
+	earliest := metav1.Time{}
+	earlier := metav1.Now()
 	jobs := []prowapi.ProwJob{
 		// We're using Cluster as a simple way to distinguish runs
-		{Spec: prowapi.ProwJobSpec{Job: "glob-1", Cluster: "1"}},
-		{Spec: prowapi.ProwJobSpec{Job: "glob-1", Cluster: "2"}},
-		{Spec: prowapi.ProwJobSpec{Job: "glob-2", Cluster: "1"}},
-		{Spec: prowapi.ProwJobSpec{Job: "job-a", Cluster: "1"}},
-		{Spec: prowapi.ProwJobSpec{Job: "job-ab", Cluster: "1"}},
+		{Status: prowapi.ProwJobStatus{StartTime: earliest}, Spec: prowapi.ProwJobSpec{Job: "glob-1", Cluster: "1"}},
+		{Status: prowapi.ProwJobStatus{StartTime: earlier}, Spec: prowapi.ProwJobSpec{Job: "glob-1", Cluster: "2"}},
+		{Status: prowapi.ProwJobStatus{StartTime: earlier}, Spec: prowapi.ProwJobSpec{Job: "glob-2", Cluster: "1"}},
+		{Status: prowapi.ProwJobStatus{StartTime: earliest}, Spec: prowapi.ProwJobSpec{Job: "job-a", Cluster: "1"}},
+		{Status: prowapi.ProwJobStatus{StartTime: earlier}, Spec: prowapi.ProwJobSpec{Job: "job-a", Cluster: "2"}},
+		{Status: prowapi.ProwJobStatus{StartTime: earlier}, Spec: prowapi.ProwJobSpec{Job: "job-ab", Cluster: "1"}},
 	}
 	expected := []prowapi.ProwJob{
-		{Spec: prowapi.ProwJobSpec{Job: "glob-1", Cluster: "1"}},
-		{Spec: prowapi.ProwJobSpec{Job: "glob-2", Cluster: "1"}},
-		{Spec: prowapi.ProwJobSpec{Job: "job-a", Cluster: "1"}},
+		{Status: prowapi.ProwJobStatus{StartTime: earlier}, Spec: prowapi.ProwJobSpec{Job: "glob-1", Cluster: "2"}},
+		{Status: prowapi.ProwJobStatus{StartTime: earlier}, Spec: prowapi.ProwJobSpec{Job: "glob-2", Cluster: "1"}},
+		{Status: prowapi.ProwJobStatus{StartTime: earlier}, Spec: prowapi.ProwJobSpec{Job: "job-a", Cluster: "2"}},
 	}
 	result := pickLatestJobs(jobs, "glob-*,job-a")
 	if !reflect.DeepEqual(result, expected) {
 		fmt.Println("expected:")
 		for _, job := range expected {
-			fmt.Printf("  job: %s cluster: %s,", job.Spec.Job, job.Spec.Cluster)
+			fmt.Printf("  job: %s cluster: %s, timestamp %s", job.Spec.Job, job.Spec.Cluster, earlier)
 		}
 		fmt.Println("got:")
 		for _, job := range result {
-			fmt.Printf("  job: %s cluster: %s,", job.Spec.Job, job.Spec.Cluster)
+			fmt.Printf("  job: %s cluster: %s, timestamp %s", job.Spec.Job, job.Spec.Cluster, earlier)
 		}
 	}
 }
