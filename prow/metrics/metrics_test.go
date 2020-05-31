@@ -52,7 +52,7 @@ func TestExposeMetrics(t *testing.T) {
 	defer cancel()
 	fls := fakeListenAndServer{ctx: ctx}
 
-	ExposeMetricsWithRegistry("my-component", config.PushGateway{}, nil, fls.CreateServer)
+	ExposeMetricsWithRegistry("my-component", config.PushGateway{}, 9090, nil, fls.CreateServer)
 	resp, err := http.Get(fls.server.URL + "/metrics")
 	if err != nil {
 		t.Fatalf("failed getting metrics: %v", err)
