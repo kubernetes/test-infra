@@ -34,20 +34,20 @@ import (
 )
 
 var (
-	// ErrCannotParseSource is returned by newGCSJobSource when an incorrectly formatted source string is passed
+	// ErrCannotParseSource is returned by newStorageJobSource when an incorrectly formatted source string is passed
 	ErrCannotParseSource = errors.New("could not create job source from provided source")
 )
 
-// GCSArtifactFetcher contains information used for fetching artifacts from GCS
-type GCSArtifactFetcher struct {
+// StorageArtifactFetcher contains information used for fetching artifacts from GCS
+type StorageArtifactFetcher struct {
 	opener        pkgio.Opener
 	useCookieAuth bool
 }
 
-// gcsJobSource is a location in GCS where Prow job-specific artifacts are stored. This implementation assumes
+// storageJobSource is a location in GCS where Prow job-specific artifacts are stored. This implementation assumes
 // Prow's native GCS upload format (treating GCS keys as a directory structure), and is not
 // intended to support arbitrary GCS bucket upload formats.
-type gcsJobSource struct {
+type storageJobSource struct {
 	source     string
 	linkPrefix string
 	bucket     string
@@ -56,48 +56,48 @@ type gcsJobSource struct {
 	buildID    string
 }
 
-// NewGCSArtifactFetcher creates a new ArtifactFetcher with a real GCS Client
-func NewGCSArtifactFetcher(opener pkgio.Opener, useCookieAuth bool) *GCSArtifactFetcher {
-	return &GCSArtifactFetcher{
+// NewStorageArtifactFetcher creates a new ArtifactFetcher with a real GCS Client
+func NewStorageArtifactFetcher(opener pkgio.Opener, useCookieAuth bool) *StorageArtifactFetcher {
+	return &StorageArtifactFetcher{
 		opener:        opener,
 		useCookieAuth: useCookieAuth,
 	}
 }
 
-func fieldsForJob(src *gcsJobSource) logrus.Fields {
+func fieldsForJob(src *storageJobSource) logrus.Fields {
 	return logrus.Fields{
 		"jobPrefix": src.jobPath(),
 	}
 }
 
-// newGCSJobSource creates a new gcsJobSource from a given storage provider bucket and jobPrefix. If no scheme is given we assume GS, e.g.:
+// newStorageJobSource creates a new storageJobSource from a given storage provider bucket and jobPrefix. If no scheme is given we assume GS, e.g.:
 // * test-bucket/logs/sig-flexing/example-ci-run/403 or
 // * gs://test-bucket/logs/sig-flexing/example-ci-run/403
-func newGCSJobSource(src string) (*gcsJobSource, error) {
+func newStorageJobSource(src string) (*storageJobSource, error) {
 	if !strings.Contains(src, "://") {
 		src = "gs://" + src
 	}
-	gcsURL, err := url.Parse(src)
+	storageURL, err := url.Parse(src)
 	if err != nil {
-		return &gcsJobSource{}, ErrCannotParseSource
+		return &storageJobSource{}, ErrCannotParseSource
 	}
 	var object string
-	if gcsURL.Path == "" {
-		object = gcsURL.Path
+	if storageURL.Path == "" {
+		object = storageURL.Path
 	} else {
-		object = gcsURL.Path[1:]
+		object = storageURL.Path[1:]
 	}
 
 	tokens := strings.FieldsFunc(object, func(c rune) bool { return c == '/' })
 	if len(tokens) < 2 {
-		return &gcsJobSource{}, ErrCannotParseSource
+		return &storageJobSource{}, ErrCannotParseSource
 	}
 	buildID := tokens[len(tokens)-1]
 	name := tokens[len(tokens)-2]
-	return &gcsJobSource{
+	return &storageJobSource{
 		source:     src,
-		linkPrefix: gcsURL.Scheme + "://",
-		bucket:     gcsURL.Host,
+		linkPrefix: storageURL.Scheme + "://",
+		bucket:     storageURL.Host,
 		jobPrefix:  path.Clean(object) + "/",
 		jobName:    name,
 		buildID:    buildID,
@@ -108,11 +108,11 @@ func newGCSJobSource(src string) (*gcsJobSource, error) {
 // If no scheme is given we assume GS, e.g.:
 // * test-bucket/logs/sig-flexing/example-ci-run/403 or
 // * gs://test-bucket/logs/sig-flexing/example-ci-run/403
-func (af *GCSArtifactFetcher) artifacts(ctx context.Context, key string) ([]string, error) {
+func (af *StorageArtifactFetcher) artifacts(ctx context.Context, key string) ([]string, error) {
 	if !strings.Contains(key, "://") {
 		key = "gs://" + key
 	}
-	src, err := newGCSJobSource(key)
+	src, err := newStorageJobSource(key)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to get GCS job source from %s: %v", key, err)
 	}
@@ -148,26 +148,26 @@ func (af *GCSArtifactFetcher) artifacts(ctx context.Context, key string) ([]stri
 	return artifacts, nil
 }
 
-func (af *GCSArtifactFetcher) signURL(ctx context.Context, key string) (string, error) {
+func (af *StorageArtifactFetcher) signURL(ctx context.Context, key string) (string, error) {
 	return af.opener.SignedURL(ctx, key, pkgio.SignedURLOptions{
 		UseGSCookieAuth: af.useCookieAuth,
 	})
 }
 
-type gcsArtifactHandle struct {
+type storageArtifactHandle struct {
 	pkgio.Opener
 	Name string
 }
 
-func (h *gcsArtifactHandle) NewReader(ctx context.Context) (io.ReadCloser, error) {
+func (h *storageArtifactHandle) NewReader(ctx context.Context) (io.ReadCloser, error) {
 	return h.Opener.Reader(ctx, h.Name)
 }
 
-func (h *gcsArtifactHandle) NewRangeReader(ctx context.Context, offset, length int64) (io.ReadCloser, error) {
+func (h *storageArtifactHandle) NewRangeReader(ctx context.Context, offset, length int64) (io.ReadCloser, error) {
 	return h.Opener.RangeReader(ctx, h.Name, offset, length)
 }
 
-func (h *gcsArtifactHandle) Attrs(ctx context.Context) (pkgio.Attributes, error) {
+func (h *storageArtifactHandle) Attrs(ctx context.Context) (pkgio.Attributes, error) {
 	return h.Opener.Attributes(ctx, h.Name)
 }
 
@@ -177,36 +177,36 @@ func (h *gcsArtifactHandle) Attrs(ctx context.Context) (pkgio.Attributes, error)
 // If no scheme is given we assume GS, e.g.:
 // * test-bucket/logs/sig-flexing/example-ci-run/403 or
 // * gs://test-bucket/logs/sig-flexing/example-ci-run/403
-func (af *GCSArtifactFetcher) Artifact(ctx context.Context, key string, artifactName string, sizeLimit int64) (api.Artifact, error) {
+func (af *StorageArtifactFetcher) Artifact(ctx context.Context, key string, artifactName string, sizeLimit int64) (api.Artifact, error) {
 	if !strings.Contains(key, "://") {
 		key = "gs://" + key
 	}
-	src, err := newGCSJobSource(key)
+	src, err := newStorageJobSource(key)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get GCS job source from %s: %v", key, err)
 	}
 
 	_, prefix := extractBucketPrefixPair(src.jobPath())
 	objName := path.Join(prefix, artifactName)
-	obj := &gcsArtifactHandle{Opener: af.opener, Name: fmt.Sprintf("%s%s/%s", src.linkPrefix, src.bucket, objName)}
+	obj := &storageArtifactHandle{Opener: af.opener, Name: fmt.Sprintf("%s%s/%s", src.linkPrefix, src.bucket, objName)}
 	signedURL, err := af.signURL(ctx, fmt.Sprintf("%s%s/%s", src.linkPrefix, src.bucket, objName))
 	if err != nil {
 		return nil, err
 	}
-	return NewGCSArtifact(context.Background(), obj, signedURL, artifactName, sizeLimit), nil
+	return NewStorageArtifact(context.Background(), obj, signedURL, artifactName, sizeLimit), nil
 }
 
-func extractBucketPrefixPair(gcsPath string) (string, string) {
-	split := strings.SplitN(gcsPath, "/", 2)
+func extractBucketPrefixPair(storagePath string) (string, string) {
+	split := strings.SplitN(storagePath, "/", 2)
 	return split[0], split[1]
 }
 
 // CanonicalLink gets a link to the location of job-specific artifacts in GCS
-func (src *gcsJobSource) canonicalLink() string {
+func (src *storageJobSource) canonicalLink() string {
 	return path.Join(src.linkPrefix, src.bucket, src.jobPrefix)
 }
 
 // JobPath gets the prefix to all artifacts in GCS in the job
-func (src *gcsJobSource) jobPath() string {
+func (src *storageJobSource) jobPath() string {
 	return fmt.Sprintf("%s/%s", src.bucket, src.jobPrefix)
 }

@@ -45,7 +45,7 @@ type LensWithConfiguration struct {
 func NewLensServer(
 	listenAddress string,
 	pjFetcher ProwJobFetcher,
-	gcsArtifactFetcher ArtifactFetcher,
+	storageArtifactFetcher ArtifactFetcher,
 	podLogArtifactFetcher ArtifactFetcher,
 	cfg config.Getter,
 	lenses []LensWithConfiguration,
@@ -62,11 +62,11 @@ func NewLensServer(
 
 		logrus.WithField("Lens", lens.Config.LensName).Info("Adding handler for lens")
 		opt := lensHandlerOpts{
-			PJFetcher:             pjFetcher,
-			GCSArtifactFetcher:    gcsArtifactFetcher,
-			PodLogArtifactFetcher: podLogArtifactFetcher,
-			ConfigGetter:          cfg,
-			LensOpt:               lens.Config,
+			PJFetcher:              pjFetcher,
+			StorageArtifactFetcher: storageArtifactFetcher,
+			PodLogArtifactFetcher:  podLogArtifactFetcher,
+			ConfigGetter:           cfg,
+			LensOpt:                lens.Config,
 		}
 		mux.Handle(DyanmicPathForLens(lens.Config.LensName), newLensHandler(lens.Lens, opt))
 	}
@@ -85,10 +85,10 @@ type LensOpt struct {
 }
 
 type lensHandlerOpts struct {
-	PJFetcher             ProwJobFetcher
-	GCSArtifactFetcher    ArtifactFetcher
-	PodLogArtifactFetcher ArtifactFetcher
-	ConfigGetter          config.Getter
+	PJFetcher              ProwJobFetcher
+	StorageArtifactFetcher ArtifactFetcher
+	PodLogArtifactFetcher  ArtifactFetcher
+	ConfigGetter           config.Getter
 	LensOpt
 }
 
@@ -106,7 +106,7 @@ func newLensHandler(lens api.Lens, opts lensHandlerOpts) http.HandlerFunc {
 			return
 		}
 
-		artifacts, err := FetchArtifacts(r.Context(), opts.PJFetcher, opts.ConfigGetter, opts.GCSArtifactFetcher, opts.PodLogArtifactFetcher, request.ArtifactSource, "", opts.ConfigGetter().Deck.Spyglass.SizeLimit, request.Artifacts)
+		artifacts, err := FetchArtifacts(r.Context(), opts.PJFetcher, opts.ConfigGetter, opts.StorageArtifactFetcher, opts.PodLogArtifactFetcher, request.ArtifactSource, "", opts.ConfigGetter().Deck.Spyglass.SizeLimit, request.Artifacts)
 		if err != nil {
 			writeHTTPError(w, fmt.Errorf("Failed to retrieve expected artifacts: %w", err), http.StatusInternalServerError)
 			return
@@ -164,7 +164,7 @@ func FetchArtifacts(
 	ctx context.Context,
 	pjFetcher ProwJobFetcher,
 	cfg config.Getter,
-	gcsArtifactFetcher ArtifactFetcher,
+	storageArtifactFetcher ArtifactFetcher,
 	podLogArtifactFetcher ArtifactFetcher,
 	src string,
 	podName string,
@@ -198,9 +198,9 @@ func FetchArtifacts(
 
 	podLogNeeded := false
 	for _, name := range artifactNames {
-		art, err := gcsArtifactFetcher.Artifact(ctx, gcsKey, name, sizeLimit)
+		art, err := storageArtifactFetcher.Artifact(ctx, gcsKey, name, sizeLimit)
 		if err == nil {
-			// Actually try making a request, because calling GCSArtifactFetcher.artifact does no I/O.
+			// Actually try making a request, because calling StorageArtifactFetcher.artifact does no I/O.
 			// (these files are being explicitly requested and so will presumably soon be accessed, so
 			// the extra network I/O should not be too problematic).
 			_, err = art.Size()

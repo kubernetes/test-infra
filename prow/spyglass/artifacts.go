@@ -49,7 +49,7 @@ func (s *Spyglass) ListArtifacts(ctx context.Context, src string) ([]string, err
 		gcsKey = fmt.Sprintf("%s://%s", keyType, key)
 	}
 
-	artifactNames, err := s.GCSArtifactFetcher.artifacts(ctx, gcsKey)
+	artifactNames, err := s.StorageArtifactFetcher.artifacts(ctx, gcsKey)
 	logFound := false
 	for _, name := range artifactNames {
 		if name == "build-log.txt" {
@@ -83,7 +83,7 @@ func (s *Spyglass) prowToGCS(prowKey string) (string, string, error) {
 // FetchArtifacts constructs and returns Artifact objects for each artifact name in the list.
 // This includes getting any handles needed for read write operations, direct artifact links, etc.
 func (s *Spyglass) FetchArtifacts(ctx context.Context, src string, podName string, sizeLimit int64, artifactNames []string) ([]api.Artifact, error) {
-	return common.FetchArtifacts(ctx, s.JobAgent, s.config, s.GCSArtifactFetcher, s.PodLogArtifactFetcher, src, podName, sizeLimit, artifactNames)
+	return common.FetchArtifacts(ctx, s.JobAgent, s.config, s.StorageArtifactFetcher, s.PodLogArtifactFetcher, src, podName, sizeLimit, artifactNames)
 }
 
 func splitSrc(src string) (keyType, key string, err error) {

@@ -153,7 +153,7 @@ func TestReadTail(t *testing.T) {
 		},
 	}
 	for _, tc := range testCases {
-		artifact := NewGCSArtifact(context.Background(), &fakeArtifactHandle{
+		artifact := NewStorageArtifact(context.Background(), &fakeArtifactHandle{
 			contents: tc.contents,
 			oAttrs: pkgio.Attributes{
 				Size:            int64(len(tc.contents)),
@@ -230,7 +230,7 @@ func TestReadAtMost(t *testing.T) {
 		},
 	}
 	for _, tc := range testCases {
-		artifact := NewGCSArtifact(context.Background(), &fakeArtifactHandle{
+		artifact := NewStorageArtifact(context.Background(), &fakeArtifactHandle{
 			contents: tc.contents,
 			oAttrs: pkgio.Attributes{
 				Size:            int64(len(tc.contents)),
@@ -324,7 +324,7 @@ func TestReadAt(t *testing.T) {
 		},
 	}
 	for _, tc := range testCases {
-		artifact := NewGCSArtifact(context.Background(), &fakeArtifactHandle{
+		artifact := NewStorageArtifact(context.Background(), &fakeArtifactHandle{
 			contents: tc.contents,
 			oAttrs: pkgio.Attributes{
 				Size:            int64(len(tc.contents)),
@@ -386,7 +386,7 @@ func TestReadAll(t *testing.T) {
 		},
 	}
 	for _, tc := range testCases {
-		artifact := NewGCSArtifact(context.Background(), &fakeArtifactHandle{
+		artifact := NewStorageArtifact(context.Background(), &fakeArtifactHandle{
 			contents: tc.contents,
 			oAttrs: pkgio.Attributes{
 				Size: int64(len(tc.contents)),
@@ -438,7 +438,7 @@ func TestSize_GCS(t *testing.T) {
 		},
 		{
 			name: "Size of nonexistentArtifact",
-			handle: &gcsArtifactHandle{
+			handle: &storageArtifactHandle{
 				Opener: fakeOpener,
 				Name:   "gs://test-bucket/logs/example-ci-run/404/started.json",
 			},
@@ -446,7 +446,7 @@ func TestSize_GCS(t *testing.T) {
 		},
 	}
 	for _, tc := range testCases {
-		artifact := NewGCSArtifact(context.Background(), tc.handle, "", "started.json", 500e6)
+		artifact := NewStorageArtifact(context.Background(), tc.handle, "", "started.json", 500e6)
 		actual, err := artifact.Size()
 		var actualErr string
 		if err != nil {
