@@ -19,9 +19,11 @@ package plank
 import (
 	"context"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"golang.org/x/sync/semaphore"
 	corev1 "k8s.io/api/core/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -29,6 +31,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/clock"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"sigs.k8s.io/controller-runtime"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -64,7 +67,7 @@ func add(
 	cfg config.Getter,
 	totURL string,
 	additionalSelector string,
-	overwriteReconcile func(reconcile.Request) (reconcile.Result, error),
+	overwriteReconcile reconcileFunc,
 	predicateCallack func(bool),
 	numWorkers int,
 ) error {
@@ -83,16 +86,7 @@ func add(
 		WithEventFilter(predicate).
 		WithOptions(controller.Options{MaxConcurrentReconciles: numWorkers})
 
-	r := &reconciler{
-		ctx:                context.Background(),
-		pjClient:           mgr.GetClient(),
-		buildClients:       map[string]ctrlruntimeclient.Client{},
-		overwriteReconcile: overwriteReconcile,
-		log:                logrus.NewEntry(logrus.StandardLogger()),
-		config:             cfg,
-		totURL:             totURL,
-		clock:              clock.RealClock{},
-	}
+	r := newReconciler(mgr.GetClient(), overwriteReconcile, cfg, totURL)
 	for buildCluster, buildClusterMgr := range buildMgrs {
 		blder = blder.Watches(
 			source.NewKindWithCache(&corev1.Pod{}, buildClusterMgr.GetCache()),
@@ -111,15 +105,49 @@ func add(
 	return nil
 }
 
+func newReconciler(pjClient ctrlruntimeclient.Client, overwriteReconcile reconcileFunc, cfg config.Getter, totURL string) *reconciler {
+	return &reconciler{
+		ctx:                context.Background(),
+		pjClient:           pjClient,
+		buildClients:       map[string]ctrlruntimeclient.Client{},
+		overwriteReconcile: overwriteReconcile,
+		log:                logrus.NewEntry(logrus.StandardLogger()).WithField("controller", ControllerName),
+		config:             cfg,
+		totURL:             totURL,
+		clock:              clock.RealClock{},
+		serializationLocks: &shardedLock{
+			mapLock: &sync.Mutex{},
+			locks:   map[string]*semaphore.Weighted{},
+		},
+	}
+}
+
+type reconcileFunc = func(reconcile.Request) (reconcile.Result, error)
+
 type reconciler struct {
 	ctx                context.Context
 	pjClient           ctrlruntimeclient.Client
 	buildClients       map[string]ctrlruntimeclient.Client
-	overwriteReconcile func(reconcile.Request) (reconcile.Result, error)
+	overwriteReconcile reconcileFunc
 	log                *logrus.Entry
 	config             config.Getter
 	totURL             string
 	clock              clock.Clock
+	serializationLocks *shardedLock
+}
+
+type shardedLock struct {
+	mapLock *sync.Mutex
+	locks   map[string]*semaphore.Weighted
+}
+
+func (s *shardedLock) getLock(key string) *semaphore.Weighted {
+	s.mapLock.Lock()
+	defer s.mapLock.Unlock()
+	if _, exists := s.locks[key]; !exists {
+		s.locks[key] = semaphore.NewWeighted(1)
+	}
+	return s.locks[key]
 }
 
 func (r *reconciler) syncMetrics(stop <-chan struct{}) error {
@@ -160,7 +188,7 @@ func (r *reconciler) defaultReconcile(request reconcile.Request) (reconcile.Resu
 
 	// TODO: Terminal errors for unfixable cases like missing build clusters
 	// and not return an error to prevent requeuing?
-	res, err := r.reconcile(pj)
+	res, err := r.serializeIfNeeded(pj)
 	if res == nil {
 		res = &reconcile.Result{}
 	}
@@ -168,6 +196,22 @@ func (r *reconciler) defaultReconcile(request reconcile.Request) (reconcile.Resu
 		r.log.WithError(err).Error("Reconciliation failed")
 	}
 	return *res, err
+}
+
+// serializeIfNeeded serializes the reconciliation of Jobs that have a MaxConcurrency setting, otherwise
+// multiple reconciliations of the same job may race and not properly respect that setting.
+func (r *reconciler) serializeIfNeeded(pj *prowv1.ProwJob) (*reconcile.Result, error) {
+	if pj.Spec.MaxConcurrency == 0 {
+		return r.reconcile(pj)
+	}
+
+	sema := r.serializationLocks.getLock(pj.Spec.Job)
+	// Use TryAcquire to avoid blocking workers waiting for the lock
+	if !sema.TryAcquire(1) {
+		return &reconcile.Result{RequeueAfter: time.Second}, nil
+	}
+	defer sema.Release(1)
+	return r.reconcile(pj)
 }
 
 func (r *reconciler) reconcile(pj *prowv1.ProwJob) (*reconcile.Result, error) {
@@ -347,7 +391,7 @@ func (r *reconciler) syncPendingJob(pj *prowv1.ProwJob) error {
 	}
 
 	if err := r.pjClient.Patch(r.ctx, pj.DeepCopy(), ctrlruntimeclient.MergeFrom(prevPJ)); err != nil {
-		return fmt.Errorf("patching prowjob: %v", err)
+		return fmt.Errorf("patching prowjob: %w", err)
 	}
 
 	return nil
@@ -411,7 +455,28 @@ func (r *reconciler) syncTriggeredJob(pj *prowv1.ProwJob) (*reconcile.Result, er
 			WithField("from", prevPJ.Status.State).
 			WithField("to", pj.Status.State).Info("Transitioning states.")
 	}
-	return nil, r.pjClient.Patch(r.ctx, pj.DeepCopy(), ctrlruntimeclient.MergeFrom(prevPJ))
+	if err := r.pjClient.Patch(r.ctx, pj.DeepCopy(), ctrlruntimeclient.MergeFrom(prevPJ)); err != nil {
+		return nil, fmt.Errorf("patch prowjob: %w", err)
+	}
+
+	// If the job has a MaxConcurrency setting, we must block here until we observe the state transition in our cache,
+	// otherwise subequent reconciliations for a different run of the same job might incorrectly conclude that they
+	// can run because that decision is made based on the data in the cache.
+	if pj.Spec.MaxConcurrency == 0 {
+		return nil, nil
+	}
+	nn := types.NamespacedName{Namespace: pj.Namespace, Name: pj.Name}
+	state := pj.Status.State
+	if err := wait.Poll(100*time.Millisecond, 2*time.Second, func() (bool, error) {
+		if err := r.pjClient.Get(r.ctx, nn, pj); err != nil {
+			return false, fmt.Errorf("failed to get prowjob: %w", err)
+		}
+		return pj.Status.State == state, nil
+	}); err != nil {
+		return nil, fmt.Errorf("failed to wait for cached prowjob %s to get into state %s: %w", nn.String(), state, err)
+	}
+
+	return nil, nil
 }
 
 // syncAbortedJob syncs jobs that got aborted because their result isn't needed anymore,

@@ -17,20 +17,26 @@ limitations under the License.
 package plank
 
 import (
+	"context"
 	"errors"
+	"sync"
 	"testing"
+	"text/template"
 	"time"
 
 	"github.com/go-test/deep"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/rest"
 	toolscache "k8s.io/client-go/tools/cache"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/cache/informertest"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
+	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllertest"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -326,4 +332,109 @@ func TestProwJobIndexer(t *testing.T) {
 			}
 		})
 	}
+}
+
+// TestMaxConcurrencyConsidersCacheStaleness verifies that the reconciliation considers the fact
+// that there is a delay between doing a change and observing it in the client for determining
+// if another copy of a given job may be started.
+// It:
+// * Creates two runs of the same job that has a MaxConcurrency: 1 setting
+// * Using a fake client that applies Patch operations with a delay but returns instantly
+// * Reconciles them in parallel
+// * Verifies that one of them gets a RequeueAfter: 1 second
+// * Verifies that after the other one returns, its state is set to Pending, i.E. it blocked until it observed the state transition it made
+// * Verifies that there is exactly one pod
+func TestMaxConcurrencyConsidersCacheStaleness(t *testing.T) {
+	t.Parallel()
+	pja := &prowv1.ProwJob{
+		ObjectMeta: metav1.ObjectMeta{Name: "a"},
+		Spec: prowv1.ProwJobSpec{
+			Type:           prowv1.PeriodicJob,
+			Cluster:        "cluster",
+			MaxConcurrency: 1,
+			Job:            "max-1",
+			PodSpec:        &corev1.PodSpec{Containers: []corev1.Container{{}}},
+			Refs:           &prowv1.Refs{},
+		},
+		Status: prowv1.ProwJobStatus{
+			State: prowv1.TriggeredState,
+		},
+	}
+	pjb := pja.DeepCopy()
+	pjb.Name = "b"
+	pjClient := &eventuallyConsistentlyPatchingClient{t: t, Client: fakectrlruntimeclient.NewFakeClient(pja, pjb)}
+
+	cfg := func() *config.Config {
+		return &config.Config{ProwConfig: config.ProwConfig{Plank: config.Plank{Controller: config.Controller{
+			JobURLTemplate: &template.Template{},
+		}}}}
+	}
+
+	r := newReconciler(pjClient, nil, cfg, "")
+	r.buildClients = map[string]ctrlruntimeclient.Client{pja.Spec.Cluster: fakectrlruntimeclient.NewFakeClient()}
+
+	wg := &sync.WaitGroup{}
+	wg.Add(2)
+	// Give capacity of two so this doesn't stuck the test if we have a bug that results in two reconcile afters
+	gotReconcileAfter := make(chan struct{}, 2)
+
+	startAsyncReconcile := func(pjName string) {
+		go func() {
+			defer wg.Done()
+			result, err := r.Reconcile(reconcile.Request{NamespacedName: types.NamespacedName{Name: pjName}})
+			if err != nil {
+				t.Errorf("reconciliation of pj %s failed: %v", pjName, err)
+			}
+			if result.RequeueAfter == time.Second {
+				gotReconcileAfter <- struct{}{}
+				return
+			}
+			pj := &prowv1.ProwJob{}
+			if err := r.pjClient.Get(context.Background(), types.NamespacedName{Name: pjName}, pj); err != nil {
+				t.Errorf("failed to get prowjob %s after reconciliation: %v", pjName, err)
+			}
+			if pj.Status.State != prowv1.PendingState {
+				t.Error("pj wasn't in pending state, reconciliation didn't wait the change to appear in the cache")
+			}
+		}()
+	}
+	startAsyncReconcile(pja.Name)
+	startAsyncReconcile(pjb.Name)
+
+	wg.Wait()
+	close(gotReconcileAfter)
+
+	var numReconcielAfters int
+	for range gotReconcileAfter {
+		numReconcielAfters++
+	}
+	if numReconcielAfters != 1 {
+		t.Errorf("expected to get exactly one reconcileAfter, got %d", numReconcielAfters)
+	}
+
+	pods := &corev1.PodList{}
+	if err := r.buildClients[pja.Spec.Cluster].List(context.Background(), pods); err != nil {
+		t.Fatalf("failed to list pods: %v", err)
+	}
+	if n := len(pods.Items); n != 1 {
+		t.Errorf("expected exactly one pod, got %d", n)
+	}
+}
+
+// eventuallyConsistentlyPatchingClient executes patch operations with a delay but instantly returns, before applying the change.
+// This simulates the behaviour of a caching client where we can observe our change only after a delay.
+type eventuallyConsistentlyPatchingClient struct {
+	t *testing.T
+	ctrlruntimeclient.Client
+}
+
+func (ecpc *eventuallyConsistentlyPatchingClient) Patch(ctx context.Context, obj runtime.Object, patch ctrlruntimeclient.Patch, opts ...ctrlruntimeclient.PatchOption) error {
+	go func() {
+		time.Sleep(100 * time.Millisecond)
+		if err := ecpc.Client.Patch(ctx, obj, patch, opts...); err != nil {
+			ecpc.t.Errorf("eventuallyConsistentlyPatchingClient failed to execute patch: %v", err)
+		}
+	}()
+
+	return nil
 }
