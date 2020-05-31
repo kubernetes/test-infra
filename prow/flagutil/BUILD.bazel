@@ -5,6 +5,7 @@ go_library(
     srcs = [
         "bool.go",
         "bugzilla.go",
+        "common.go",
         "doc.go",
         "git.go",
         "github.go",
