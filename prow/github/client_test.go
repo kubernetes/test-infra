@@ -607,6 +607,12 @@ func TestRemoveLabelNotFound(t *testing.T) {
 	}
 }
 
+func TestNewNotFoundIsNotFound(t *testing.T) {
+	if !IsNotFound(NewNotFound()) {
+		t.Error("NewNotFound didn't return an error that was considered a NotFound")
+	}
+}
+
 func TestIsNotFound(t *testing.T) {
 	testCases := []struct {
 		name       string
