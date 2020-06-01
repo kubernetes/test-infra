@@ -27,6 +27,7 @@ import (
 	"github.com/GoogleCloudPlatform/testgrid/metadata"
 	"github.com/google/go-cmp/cmp"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/crier/reporters/gcs/internal/testutil"
@@ -117,7 +118,7 @@ func TestReportJobFinished(t *testing.T) {
 				t.Fatalf("Unexpected error: %v", err)
 			}
 
-			if !strings.HasSuffix(ta.Path, "finished.json") {
+			if !strings.HasSuffix(ta.Path, prowv1.FinishedStatusFile) {
 				t.Errorf("Expected file to be written to finished.json, but got %q", ta.Path)
 			}
 			if ta.Overwrite {
@@ -189,7 +190,7 @@ func TestReportJobStarted(t *testing.T) {
 				t.Fatalf("Unexpected error: %v", err)
 			}
 
-			if !strings.HasSuffix(ta.Path, "started.json") {
+			if !strings.HasSuffix(ta.Path, prowv1.StartedStatusFile) {
 				t.Errorf("Expected file to be written to started.json, but got %q", ta.Path)
 			}
 			if ta.Overwrite {

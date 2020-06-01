@@ -31,6 +31,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/entrypoint"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 	"k8s.io/test-infra/prow/pod-utils/gcs"
@@ -197,7 +198,7 @@ func (o Options) doUpload(spec *downwardapi.JobSpec, passed, aborted bool, metad
 	if err != nil {
 		logrus.WithError(err).Warn("Could not marshal finishing data")
 	} else {
-		uploadTargets["finished.json"] = gcs.DataUpload(bytes.NewBuffer(finishedData))
+		uploadTargets[prowv1.FinishedStatusFile] = gcs.DataUpload(bytes.NewBuffer(finishedData))
 	}
 
 	if err := o.GcsOptions.Run(spec, uploadTargets); err != nil {

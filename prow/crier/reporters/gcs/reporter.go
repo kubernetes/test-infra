@@ -89,7 +89,7 @@ func (gr *gcsReporter) reportStartedJob(ctx context.Context, pj *prowv1.ProwJob)
 		gr.logger.Infof("Would upload started.json to %q/%q", bucketName, dir)
 		return nil
 	}
-	return util.WriteContent(ctx, gr.logger, gr.author, bucketName, path.Join(dir, "started.json"), false, output)
+	return util.WriteContent(ctx, gr.logger, gr.author, bucketName, path.Join(dir, prowv1.StartedStatusFile), false, output)
 }
 
 // reportFinishedJob uploads a finished.json for the job, iff one did not already exist.
@@ -119,7 +119,7 @@ func (gr *gcsReporter) reportFinishedJob(ctx context.Context, pj *prowv1.ProwJob
 		gr.logger.Infof("Would upload finished.json info to %q/%q", bucketName, dir)
 		return nil
 	}
-	return util.WriteContent(ctx, gr.logger, gr.author, bucketName, path.Join(dir, "finished.json"), false, output)
+	return util.WriteContent(ctx, gr.logger, gr.author, bucketName, path.Join(dir, prowv1.FinishedStatusFile), false, output)
 }
 
 func (gr *gcsReporter) reportProwjob(ctx context.Context, pj *prowv1.ProwJob) error {

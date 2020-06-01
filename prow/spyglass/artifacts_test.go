@@ -21,6 +21,7 @@ import (
 	"reflect"
 	"testing"
 
+	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/io"
 )
 
@@ -41,10 +42,10 @@ func TestSpyglass_ListArtifacts(t *testing.T) {
 			},
 			want: []string{
 				"build-log.txt",
-				"finished.json",
+				prowv1.FinishedStatusFile,
 				"junit_01.xml",
 				"long-log.txt",
-				"started.json",
+				prowv1.StartedStatusFile,
 			},
 		},
 		{
@@ -54,10 +55,10 @@ func TestSpyglass_ListArtifacts(t *testing.T) {
 			},
 			want: []string{
 				"build-log.txt",
-				"finished.json",
+				prowv1.FinishedStatusFile,
 				"junit_01.xml",
 				"long-log.txt",
-				"started.json",
+				prowv1.StartedStatusFile,
 			},
 		},
 		{

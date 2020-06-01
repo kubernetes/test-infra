@@ -25,6 +25,7 @@ import (
 	"strings"
 	"testing"
 
+	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/io"
 )
 
@@ -172,8 +173,8 @@ func TestArtifacts_ListGCS(t *testing.T) {
 			source: "test-bucket/logs/example-ci-run/403",
 			expectedArtifacts: []string{
 				"build-log.txt",
-				"started.json",
-				"finished.json",
+				prowv1.StartedStatusFile,
+				prowv1.FinishedStatusFile,
 				"junit_01.xml",
 				"long-log.txt",
 			},
@@ -188,8 +189,8 @@ func TestArtifacts_ListGCS(t *testing.T) {
 			source: "gs://test-bucket/logs/example-ci-run/403",
 			expectedArtifacts: []string{
 				"build-log.txt",
-				"started.json",
-				"finished.json",
+				prowv1.StartedStatusFile,
+				prowv1.FinishedStatusFile,
 				"junit_01.xml",
 				"long-log.txt",
 			},

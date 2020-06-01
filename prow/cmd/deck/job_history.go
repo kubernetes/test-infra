@@ -32,6 +32,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	pkgio "k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/io/providers"
 	"k8s.io/test-infra/prow/pod-utils/gcs"
@@ -330,7 +331,7 @@ func getBuildData(ctx context.Context, bucket storageBucket, dir string) (buildD
 		commitHash: "Unknown",
 	}
 	started := gcs.Started{}
-	err := readJSON(ctx, bucket, path.Join(dir, "started.json"), &started)
+	err := readJSON(ctx, bucket, path.Join(dir, prowv1.StartedStatusFile), &started)
 	if err != nil {
 		return b, fmt.Errorf("failed to read started.json: %v", err)
 	}
@@ -339,7 +340,7 @@ func getBuildData(ctx context.Context, bucket storageBucket, dir string) (buildD
 		b.commitHash = commitHash
 	}
 	finished := gcs.Finished{}
-	err = readJSON(ctx, bucket, path.Join(dir, "finished.json"), &finished)
+	err = readJSON(ctx, bucket, path.Join(dir, prowv1.FinishedStatusFile), &finished)
 	if err != nil {
 		b.Result = "Pending"
 		logrus.Debugf("failed to read finished.json (job might be unfinished): %v", err)
