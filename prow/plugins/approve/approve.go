@@ -463,7 +463,7 @@ func handle(log *logrus.Entry, ghc githubClient, repo approvers.Repo, githubConf
 	start = time.Now()
 	notifications := filterComments(commentsFromIssueComments, notificationMatcher(botName))
 	latestNotification := getLast(notifications)
-	newMessage := updateNotification(githubConfig.LinkURL, pr.org, pr.repo, pr.branch, latestNotification, approversHandler)
+	newMessage := updateNotification(githubConfig.LinkURL, opts.CommandHelpLink, pr.org, pr.repo, pr.branch, latestNotification, approversHandler)
 	log.WithField("duration", time.Since(start).String()).Debug("Completed getting notifications in handle")
 	start = time.Now()
 	if newMessage != nil {
@@ -582,8 +582,8 @@ func notificationMatcher(botName string) func(*comment) bool {
 	}
 }
 
-func updateNotification(linkURL *url.URL, org, repo, branch string, latestNotification *comment, approversHandler approvers.Approvers) *string {
-	message := approvers.GetMessage(approversHandler, linkURL, org, repo, branch)
+func updateNotification(linkURL *url.URL, commandHelpLink, org, repo, branch string, latestNotification *comment, approversHandler approvers.Approvers) *string {
+	message := approvers.GetMessage(approversHandler, linkURL, commandHelpLink, org, repo, branch)
 	if message == nil || (latestNotification != nil && strings.Contains(latestNotification.Body, *message)) {
 		return nil
 	}
