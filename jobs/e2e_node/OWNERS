@@ -1,11 +1,15 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 reviewers:
-- tallclair
-- derekwaynecarr
+- bart0sh
 - ConnorDoyle
-- klueska
+- derekwaynecarr
 - dims
+- karan
+- klueska
+- MHBauer
+- tallclair
+- vpickard
 approvers:
 - Random-Liu
 - yguo0905

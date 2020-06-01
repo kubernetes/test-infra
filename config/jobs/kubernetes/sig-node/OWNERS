@@ -1,8 +1,15 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
+reviewers:
+- bart0sh
+- derekwaynecarr
+- karan
+- MHBauer
+- vpickard
 approvers:
 - yujuhong
 - Random-Liu
 - dchen1107
+- derekwaynecarr
 labels:
 - sig/node
