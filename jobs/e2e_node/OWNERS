@@ -1,15 +1,15 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 reviewers:
-- Random-Liu
-- yguo0905
-- yujuhong
-- tallclair
-- derekwaynecarr
+- bart0sh
 - ConnorDoyle
-- klueska
-- dchen1107
+- derekwaynecarr
 - dims
+- karan
+- klueska
+- MHBauer
+- tallclair
+- vpickard
 approvers:
 - Random-Liu
 - yguo0905
@@ -20,3 +20,5 @@ approvers:
 - klueska
 - dchen1107
 - dims
+labels:
+- sig/node
