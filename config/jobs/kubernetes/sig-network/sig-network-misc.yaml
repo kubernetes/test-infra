@@ -473,6 +473,6 @@ periodics:
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:SCTP\]
+      - --test_args=--ginkgo.focus=\[Feature:SCTP\] --ginkgo.skip=\[Feature:NetworkPolicy\]
       - --timeout=300m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200527-e50e8f5-master
