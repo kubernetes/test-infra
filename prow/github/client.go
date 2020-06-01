@@ -41,6 +41,7 @@ import (
 	"golang.org/x/oauth2"
 
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
+
 	"k8s.io/test-infra/ghproxy/ghcache"
 	"k8s.io/test-infra/prow/version"
 )
@@ -1378,11 +1379,25 @@ func (c *client) readPaginatedResultsWithValues(path string, values url.Values, 
 		if link == "" {
 			break
 		}
+
+		// Example for github.com:
+		// * c.bases[0]: api.github.com
+		// * initial call: api.github.com/repos/kubernetes/kubernetes/pulls?per_page=100
+		// * next: api.github.com/repositories/22/pulls?per_page=100&page=2
+		// * in this case prefix will be empty and we're just calling the path returned by next
+		// Example for github enterprise:
+		// * c.bases[0]: <ghe-url>/api/v3
+		// * initial call: <ghe-url>/api/v3/repos/kubernetes/kubernetes/pulls?per_page=100
+		// * next: <ghe-url>/api/v3/repositories/22/pulls?per_page=100&page=2
+		// * in this case prefix will be "/api/v3" and we will strip the prefix. If we don't do that,
+		//   the next call will go to <ghe-url>/api/v3/api/v3/repositories/22/pulls?per_page=100&page=2
+		prefix := strings.TrimSuffix(resp.Request.URL.RequestURI(), pagedPath)
+
 		u, err := url.Parse(link)
 		if err != nil {
 			return fmt.Errorf("failed to parse 'next' link: %v", err)
 		}
-		pagedPath = u.RequestURI()
+		pagedPath = strings.TrimPrefix(u.RequestURI(), prefix)
 	}
 	return nil
 }
