@@ -54,35 +54,8 @@ presubmits:
 
 postsubmits:
   IBM/ibm-healthcheck-operator:
-  - name: check_ibm-healthcheck-operator_postsubmit
-    branches:
-    - ^master$
-    decorate: true
-    path_alias: github.com/IBM/ibm-healthcheck-operator
-    spec:
-      containers:
-      - command:
-        - make
-        - check
-        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
-        name: ""
-        securityContext:
-          privileged: true
-  - name: test_ibm-healthcheck-operator_postsubmit
-    branches:
-    - ^master$
-    decorate: true
-    path_alias: github.com/IBM/ibm-healthcheck-operator
-    spec:
-      containers:
-      - command:
-        - make
-        - test
-        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
-        name: ""
-        securityContext:
-          privileged: true
-  - name: coverage_ibm-healthcheck-operator_postsubmit
+  - name: coverage-ibm-healthcheck-operator_postsubmit
+    cluster: default
     branches:
     - ^master$
     decorate: true
@@ -92,7 +65,7 @@ postsubmits:
       - command:
         - make
         - coverage
-        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
+        image: quay.io/multicloudlab/check-tool:v20200319-b5bfe54
         name: ""
         env:
         - name: CODECOV_TOKEN
@@ -102,7 +75,8 @@ postsubmits:
               key: codecov-token
         securityContext:
           privileged: true
-  - name: build_ibm-healthcheck-operator_postsubmit
+  - name: build-ibm-healthcheck-operator-amd64-postsubmit
+    cluster: default
     branches:
     - ^master$
     decorate: true
@@ -110,13 +84,47 @@ postsubmits:
     spec:
       containers:
       - command:
+        - entrypoint
         - make
         - build
-        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
+        image: quay.io/multicloudlab/build-tool:v20200320-5e25536
         name: ""
         securityContext:
           privileged: true
-  - name: images_ibm-healthcheck-operator_postsubmit
+  - name: build-ibm-healthcheck-operator-ppc64le-postsubmit
+    cluster: ppc64le
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/ibm-healthcheck-operator
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build
+        image: quay.io/multicloudlab/build-tool:v20200320-5e25536
+        name: ""
+        securityContext:
+          privileged: true
+  - name: build-ibm-healthcheck-operator-s390x-postsubmit
+    cluster: s390x
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/ibm-healthcheck-operator
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build
+        image: quay.io/multicloudlab/build-tool:v20200320-5e25536
+        name: ""
+        securityContext:
+          privileged: true
+  - name: images-ibm-healthcheck-operator-amd64-postsubmit
+    cluster: default
     branches:
     - ^master$
     decorate: true
@@ -128,8 +136,62 @@ postsubmits:
       - command:
         - entrypoint
         - make
-        - images
-        image: quay.io/multicloudlab/multicloudlab-builder:v20191217-d33a10d
+        - build-push-image
+        image: quay.io/multicloudlab/build-tool:v20200320-5e25536
+        name: ""
+        securityContext:
+          privileged: true
+  - name: images-ibm-healthcheck-operator-ppc64le-postsubmit
+    cluster: ppc64le
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/ibm-healthcheck-operator
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build-push-image
+        image: quay.io/multicloudlab/build-tool:v20200320-5e25536
+        name: ""
+        securityContext:
+          privileged: true
+  - name: images-ibm-healthcheck-operator-s390x-postsubmit
+    cluster: s390x
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/ibm-healthcheck-operator
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build-push-image
+        image: quay.io/multicloudlab/build-tool:v20200320-5e25536
+        name: ""
+        securityContext:
+          privileged: true
+  - name: multiarch-image-ibm-healthcheck-operator-postsubmit
+    cluster: default
+    branches:
+    - ^master$
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    path_alias: github.com/IBM/ibm-healthcheck-operator
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - multiarch-image
+        image: quay.io/multicloudlab/build-tool:v20200320-5e25536
         name: ""
         securityContext:
           privileged: true
