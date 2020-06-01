@@ -341,3 +341,34 @@ periodics:
     testgrid-dashboards: wg-resource-management, sig-node-kubelet
     testgrid-tab-name: kubelet-serial-gce-e2e-topology-manager
     testgrid-alert-email: vpickard@redhat.com, klueska@gmail.com
+
+- name: ci-kubernetes-node-kubelet-serial-hugepages
+  interval: 4h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200513-7c0e31a-master
+        args:
+          - --repo=k8s.io/kubernetes=master
+          - --timeout=240
+          - --root=/go/src
+          - --scenario=kubernetes_e2e
+          - --
+          - --deployment=node
+          - --gcp-project-type=node-e2e-project
+          - --gcp-zone=us-west1-b
+          - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-serial-hugepages.yaml
+          - --node-test-args=--feature-gates=HugePageStorageMediumSize=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
+          - --node-tests=true
+          - --provider=gce
+          - --test_args=--nodes=1 --focus="\[Feature:HugePages\]"
+          - --timeout=180m
+        env:
+          - name: GOPATH
+            value: /go
+  annotations:
+    testgrid-dashboards: wg-resource-management, sig-node-kubelet
+    testgrid-tab-name: kubelet-serial-gce-e2e-hugepages
+    testgrid-alert-email: alukiano@redhat.com, eduard.bartosh@intel.com
