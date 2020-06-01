@@ -3,6 +3,11 @@
 ## New features
 
 New features added to each component:
+ - *July 13th, 2020* Configuring `job_url_prefix_config` with `gcs/` prefix is now deprecated. 
+    Please configure a job url prefix without the `gcs/` storage provider suffix. From now on the storage
+    provider is appended automatically so multiple storage providers can be used for builds of 
+    the same repository. For now we still handle the old configuration format, this will be removed 
+    in *September 2020*. To be clear handling of URLs with `/view/gcs` in Deck is not deprecated.
  - *June 23rd, 2020* An [hmac](/prow/cmd/hmac) tool was added to automatically reconcile webhooks and hmac
     tokens for the orgs and repos integrated with your prow instance.
  - *June 8th, 2020* A new informer-based Plank implementation was added. It can be used by deploying

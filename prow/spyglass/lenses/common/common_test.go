@@ -47,7 +47,7 @@ func TestProwToGCS(t *testing.T) {
 		wantErr             bool
 	}{
 		{
-			name: "legacy gs bucket, gcs status url and gcs job url prefix",
+			name: "legacy gs bucket, gcs status url and deprecated gcs job url prefix",
 			args: args{
 				fetcher: &fakeProwJobFetcher{
 					prowJob: prowapi.ProwJob{
@@ -81,7 +81,7 @@ func TestProwToGCS(t *testing.T) {
 			wantGCSKey:          "kubernetes-jenkins/logs/ci-benchmark-microbenchmarks/1258197944759226371",
 		},
 		{
-			name: "gs bucket, gcs status url and gcs job url prefix",
+			name: "gs bucket, gcs status url and deprecated gcs job url prefix",
 			args: args{
 				fetcher: &fakeProwJobFetcher{
 					prowJob: prowapi.ProwJob{
@@ -115,7 +115,7 @@ func TestProwToGCS(t *testing.T) {
 			wantGCSKey:          "kubernetes-jenkins/logs/ci-benchmark-microbenchmarks/1258197944759226371",
 		},
 		{
-			name: "gs bucket, gs status url and gs job url prefix",
+			name: "gs bucket, gs status url and new job url prefix format",
 			args: args{
 				fetcher: &fakeProwJobFetcher{
 					prowJob: prowapi.ProwJob{
@@ -138,7 +138,7 @@ func TestProwToGCS(t *testing.T) {
 					return &config.Config{
 						ProwConfig: config.ProwConfig{
 							Plank: config.Plank{
-								JobURLPrefixConfig: map[string]string{"*": "https://prow.k8s.io/view/gs/"},
+								JobURLPrefixConfig: map[string]string{"*": "https://prow.k8s.io/view/"},
 							},
 						},
 					}
@@ -149,7 +149,7 @@ func TestProwToGCS(t *testing.T) {
 			wantGCSKey:          "kubernetes-jenkins/logs/ci-benchmark-microbenchmarks/1258197944759226371",
 		},
 		{
-			name: "s3 bucket, s3 status url and s3 job url prefix",
+			name: "s3 bucket, s3 status url and new job url prefix format",
 			args: args{
 				fetcher: &fakeProwJobFetcher{
 					prowJob: prowapi.ProwJob{
@@ -172,7 +172,7 @@ func TestProwToGCS(t *testing.T) {
 					return &config.Config{
 						ProwConfig: config.ProwConfig{
 							Plank: config.Plank{
-								JobURLPrefixConfig: map[string]string{"*": "https://prow.k8s.io/view/s3/"},
+								JobURLPrefixConfig: map[string]string{"*": "https://prow.k8s.io/view/"},
 							},
 						},
 					}

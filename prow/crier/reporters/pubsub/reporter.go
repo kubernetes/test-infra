@@ -28,6 +28,8 @@ import (
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/io/providers"
+	"k8s.io/test-infra/prow/spyglass/api"
 )
 
 const (
@@ -37,8 +39,6 @@ const (
 	PubSubTopicLabel = "prow.k8s.io/pubsub.topic"
 	// PubSubRunIDLabel annotation
 	PubSubRunIDLabel = "prow.k8s.io/pubsub.runID"
-	// GCSPrefix is the prefix for a gcs path
-	GCSPrefix = "gs://"
 )
 
 // ReportMessage is a message structure used to pass a prowjob status to Pub/Sub topic.s
@@ -130,13 +130,40 @@ func (c *Client) generateMessageFromPJ(pj *prowapi.ProwJob) *ReportMessage {
 	}
 	refs = append(refs, pj.Spec.ExtraRefs...)
 
+	var storagePath string
+	// calculate storagePath if pj.Status.URL is set
+	if pj.Status.URL != "" {
+		// example:
+		// * pj.Status.URL: https://prow.k8s.io/view/gs/kubernetes-jenkins/logs/ci-benchmark-microbenchmarks/1258197944759226371
+		// * prefix: https://prow.k8s.io/view/
+		// * storageURLPath: gs/kubernetes-jenkins/logs/ci-benchmark-microbenchmarks/1258197944759226371
+		prefix := c.config().Plank.GetJobURLPrefix(pj.Spec.Refs)
+
+		storageURLPath := strings.TrimPrefix(pj.Status.URL, prefix)
+		if strings.HasPrefix(storageURLPath, api.GCSKeyType) {
+			storageURLPath = strings.Replace(storageURLPath, api.GCSKeyType, providers.GS, 1)
+		}
+
+		if providers.HasStorageProviderPrefix(storageURLPath) {
+			storagePathSegments := strings.SplitN(storageURLPath, "/", 2)
+			if len(storagePathSegments) == 1 {
+				storagePath = storagePathSegments[0]
+			} else {
+				storagePath = fmt.Sprintf("%s://%s", storagePathSegments[0], storagePathSegments[1])
+			}
+		} else {
+			storagePath = fmt.Sprintf("%s://%s", providers.GS, storageURLPath)
+		}
+
+	}
+
 	return &ReportMessage{
 		Project: pubSubMap[PubSubProjectLabel],
 		Topic:   pubSubMap[PubSubTopicLabel],
 		RunID:   pubSubMap[PubSubRunIDLabel],
 		Status:  pj.Status.State,
 		URL:     pj.Status.URL,
-		GCSPath: strings.Replace(pj.Status.URL, c.config().Plank.GetJobURLPrefix(pj.Spec.Refs), GCSPrefix, 1),
+		GCSPath: storagePath,
 		Refs:    refs,
 		JobType: pj.Spec.Type,
 		JobName: pj.Spec.Job,

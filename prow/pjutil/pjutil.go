@@ -285,9 +285,13 @@ func JobURL(plank config.Plank, pj prowapi.ProwJob, log *logrus.Entry) (string, 
 		}
 
 		// Final path will be, e.g.:
-		// prefix.Path                   + bucketName         + gcsPath
-		// https://prow.k8s.io/view/gs/  + kubernetes-jenkins + pr-logs/pull/kubernetes-sigs_cluster-api-provider-openstack/541/pull-cluster-api-provider-openstack-test/1247344427123347459
-		prefix.Path = path.Join(prefix.Path, prowPath.FullPath(), gcsPath)
+		// prefix.Scheme + prefix.Host + prefix.Path + storageProvider + bucketName         + gcsPath
+		// https://prow.k8s.io/view/                 + gs/             + kubernetes-jenkins + pr-logs/pull/kubernetes-sigs_cluster-api-provider-openstack/541/pull-cluster-api-provider-openstack-test/1247344427123347459
+		if plank.JobURLPrefixDisableAppendStorageProvider {
+			prefix.Path = path.Join(prefix.Path, prowPath.FullPath(), gcsPath)
+		} else {
+			prefix.Path = path.Join(prefix.Path, prowPath.StorageProvider(), prowPath.FullPath(), gcsPath)
+		}
 		return prefix.String(), nil
 	}
 	var b bytes.Buffer
