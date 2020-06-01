@@ -1,5 +1,5 @@
 /*
-Copyright 2018 The Kubernetes Authors.
+Copyright 2020 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package ghhook
 
 import (
 	"errors"
@@ -29,15 +29,14 @@ import (
 
 func TestGetOptions(t *testing.T) {
 	defArgs := map[string][]string{
-		"--hmac-path":         {"/fake/hmac-file"},
-		"--hook-url":          {"https://not-a-url"},
-		"--repo":              {"fake-org/fake-repo"},
-		"--github-token-path": {"/fake/github-token"},
+		"--hmac-path": {"/fake/hmac-file"},
+		"--hook-url":  {"https://not-a-url"},
+		"--repo":      {"fake-org/fake-repo"},
 	}
 	cases := []struct {
 		name     string
 		args     map[string][]string
-		expected func(*options)
+		expected func(*Options)
 		err      bool
 	}{
 		{
@@ -66,10 +65,10 @@ func TestGetOptions(t *testing.T) {
 			args: map[string][]string{
 				"--repo": {"org1", "org2/repo"},
 			},
-			expected: func(o *options) {
-				o.repo = flagutil.NewStrings()
-				o.repo.Set("org1")
-				o.repo.Set("org2/repo")
+			expected: func(o *Options) {
+				o.Repos = flagutil.NewStrings()
+				o.Repos.Set("org1")
+				o.Repos.Set("org2/repo")
 			},
 		},
 		{
@@ -78,10 +77,10 @@ func TestGetOptions(t *testing.T) {
 				"--event":   {"this", "that"},
 				"--confirm": {"true"},
 			},
-			expected: func(o *options) {
-				o.events.Set("this")
-				o.events.Set("that")
-				o.confirm = true
+			expected: func(o *Options) {
+				o.Events.Set("this")
+				o.Events.Set("that")
+				o.Confirm = true
 			},
 		},
 	}
@@ -101,20 +100,21 @@ func TestGetOptions(t *testing.T) {
 				}
 			}
 
-			expected := options{
-				hmacPath: "/fake/hmac-file",
-				hookURL:  "https://not-a-url",
-				events:   flagutil.NewStrings(github.AllHookEvents...),
+			expected := Options{
+				HMACPath: "/fake/hmac-file",
+				HookURL:  "https://not-a-url",
+				Events:   flagutil.NewStrings(github.AllHookEvents...),
 			}
-			expected.repo.Set("fake-org/fake-repo")
+			expected.Repos.Set("fake-org/fake-repo")
 
 			if tc.expected != nil {
 				tc.expected(&expected)
 			}
 
-			o, err := getOptions(flag.NewFlagSet("fake-flags", flag.ExitOnError), args)
+			o, err := GetOptions(flag.NewFlagSet("fake-flags", flag.ExitOnError), args)
 			if o != nil { // TODO(fejta): github.GitHubOptions not unit testable
 				expected.GitHubOptions = o.GitHubOptions
+				expected.GitHubHookClient = o.GitHubHookClient
 			}
 			switch {
 			case err != nil:
@@ -173,6 +173,7 @@ func TestReconcileHook(t *testing.T) {
 		hooks        []github.Hook
 		expectCreate bool
 		expectEdit   bool
+		expectDelete bool
 		err          bool
 	}{
 		{
@@ -188,6 +189,18 @@ func TestReconcileHook(t *testing.T) {
 		{
 			name: "fail on edit error",
 			org:  "edit-error",
+			hooks: []github.Hook{
+				{
+					Config: github.HookConfig{
+						URL: goal,
+					},
+				},
+			},
+			err: true,
+		},
+		{
+			name: "fail on delete error",
+			org:  "delete-error",
 			hooks: []github.Hook{
 				{
 					Config: github.HookConfig{
@@ -225,10 +238,22 @@ func TestReconcileHook(t *testing.T) {
 			},
 			expectEdit: true,
 		},
+		{
+			name: "delete exiting item",
+			hooks: []github.Hook{
+				{
+					ID: targetId,
+					Config: github.HookConfig{
+						URL: goal,
+					},
+				},
+			},
+			expectDelete: true,
+		},
 	}
 
 	for _, tc := range cases {
-		var created, edited *github.HookRequest
+		var created, edited, deleted *github.HookRequest
 		ch := changer{
 			lister: func(org string) ([]github.Hook, error) {
 				if org == "list-error" {
@@ -256,6 +281,16 @@ func TestReconcileHook(t *testing.T) {
 				created = &req
 				return targetId, nil
 			},
+			deletor: func(org string, id int, req github.HookRequest) error {
+				if org == "delete-error" {
+					return errors.New("inject delete error")
+				}
+				if deleted != nil {
+					return errors.New("already deleted")
+				}
+				deleted = &req
+				return nil
+			},
 		}
 		req := github.HookRequest{
 			Name:   "web",
@@ -267,7 +302,7 @@ func TestReconcileHook(t *testing.T) {
 			},
 		}
 
-		err := reconcileHook(ch, tc.org, req)
+		err := reconcileHook(ch, tc.org, req, &Options{ShouldDelete: tc.expectDelete})
 		switch {
 		case err != nil:
 			if !tc.err {
@@ -279,10 +314,14 @@ func TestReconcileHook(t *testing.T) {
 			t.Error("failed to create")
 		case tc.expectEdit && edited == nil:
 			t.Error("failed to edit")
+		case tc.expectDelete && deleted == nil:
+			t.Error("failed to delete")
 		case created != nil && !reflect.DeepEqual(req, *created):
 			t.Errorf("created %#v != expected %#v", *created, req)
 		case edited != nil && !reflect.DeepEqual(req, *edited):
 			t.Errorf("edited %#v != expected %#v", *edited, req)
+		case deleted != nil && !reflect.DeepEqual(req, *deleted):
+			t.Errorf("deleted %#v != expected %#v", *deleted, req)
 		}
 	}
 }
