@@ -415,7 +415,6 @@ presubmits:
   - name: pull-kops-verify-hashes
     branches:
     - master
-    optional: true
     run_if_changed: '^nodeup\/pkg\/'
     labels:
       preset-service-account: "true"
