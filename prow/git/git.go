@@ -188,6 +188,7 @@ func (c *Client) Clone(organization, repository string) (*Repo, error) {
 		dir:    t,
 		logger: c.logger,
 		git:    c.git,
+		host:   c.host,
 		base:   base,
 		org:    organization,
 		repo:   repository,
@@ -204,6 +205,8 @@ type Repo struct {
 
 	// git is the path to the git binary.
 	git string
+	// host is the git host.
+	host string
 	// base is the base path for remote git fetch calls.
 	base string
 	// org is the organization name: "org" in "org/repo".
@@ -398,7 +401,7 @@ func (r *Repo) Push(branch string) error {
 		return errors.New("cannot push without credentials - configure your git client")
 	}
 	r.logger.Infof("Pushing to '%s/%s (branch: %s)'.", r.user, r.repo, branch)
-	remote := fmt.Sprintf("https://%s:%s@%s/%s/%s", r.user, r.pass, github, r.user, r.repo)
+	remote := fmt.Sprintf("https://%s:%s@%s/%s/%s", r.user, r.pass, r.host, r.user, r.repo)
 	co := r.gitCommand("push", remote, branch)
 	out, err := co.CombinedOutput()
 	if err != nil {
