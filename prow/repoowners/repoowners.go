@@ -216,7 +216,6 @@ type RepoOwner interface {
 	FindApproverOwnersForFile(path string) string
 	FindReviewersOwnersForFile(path string) string
 	FindLabelsForFile(path string) sets.String
-	FindOwnersConfigForFile(path string) map[string]map[*regexp.Regexp]sets.String
 	FindConfigFileForFile(path string) sets.String
 	FindConfigFileForLabel(label string) string
 	IsNoParentOwners(path string) bool
@@ -819,9 +818,6 @@ func (o *RepoOwners) IsNoParentOwners(path string) bool {
 //            when false retrieve all entries in all OWNERS file
 func (o *RepoOwners) entriesForFile(path string, people map[string]map[*regexp.Regexp]sets.String, leafOnly bool) sets.String {
 	d := path
-	fmt.Printf("entriesForFile : path %30v=\n", path)
-	fmt.Printf("entriesForFile : entries %v\n", people)
-	fmt.Printf("entriesForFile : %q\n", o.FindOwnersConfigForFile(path))
 	if !o.enableMDYAML || !strings.HasSuffix(path, ".md") {
 		// if path is a directory, this will remove the leaf directory, and returns "." for topmost dir
 		d = filepath.Dir(d)
@@ -898,11 +894,6 @@ func (o *RepoOwners) TopLevelApprovers() sets.String {
 	return o.entriesForFile(".", o.approvers, false)
 }
 
-// FindOwnersConfigForFile returns the config file as a map (OWNERS, OWNERS_ALIAS, that md file thing that I can't find out anything about)
-// that applies to the specified path
-func (o *RepoOwners) FindOwnersConfigForFile(path string) map[string]map[*regexp.Regexp]sets.String {
-	return o.configSources
-}
 
 // FindConfigFileForFile returns set of config files used to be configure
 // the RepoOwners struct for the repo file specified in path
