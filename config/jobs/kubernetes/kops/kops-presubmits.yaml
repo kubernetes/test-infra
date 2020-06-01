@@ -412,6 +412,28 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
       testgrid-tab-name: verify-staticcheck
+  - name: pull-kops-verify-hashes
+    branches:
+    - master
+    optional: true
+    run_if_changed: '^nodeup\/pkg\/'
+    labels:
+      preset-service-account: "true"
+    decorate: true
+    decoration_config:
+      timeout: 10m
+    path_alias: k8s.io/kops
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200527-e50e8f5-experimental
+        command:
+        - runner.sh
+        args:
+        - "make"
+        - "verify-hashes"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
+      testgrid-tab-name: verify-hashes
   - name: pull-kops-verify
     branches:
     - master
