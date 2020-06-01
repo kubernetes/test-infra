@@ -9,6 +9,7 @@ dashboard_groups:
     - sig-network-ingress-nginx
     - sig-network-netd
     - sig-network-service-apis
+    - sig-network-ingress-controller-conformance
 
 dashboards:
 - name: sig-network-dns
@@ -118,3 +119,4 @@ dashboards:
 - name: sig-network-ingress-nginx
 - name: sig-network-netd
 - name: sig-network-service-apis
+- name: sig-network-ingress-controller-conformance
