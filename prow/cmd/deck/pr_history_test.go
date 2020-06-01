@@ -147,7 +147,7 @@ func TestUpdateCommitData(t *testing.T) {
 	org := "kubernetes"
 	repo := "test-infra"
 	for _, tc := range cases {
-		updateCommitData(tc.before, org, repo, tc.hash, tc.buildTime, tc.width)
+		updateCommitData(tc.before, "github.com", org, repo, tc.hash, tc.buildTime, tc.width)
 		for hash, expCommit := range tc.after {
 			if commit, ok := tc.before[hash]; ok {
 				if commit.HashPrefix != expCommit.HashPrefix {
@@ -598,7 +598,7 @@ func Test_getPRHistory(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			prHistoryURL, _ := url.Parse(tt.args.url)
-			got, err := getPRHistory(context.Background(), prHistoryURL, c, io.NewGCSOpener(fakeGCSClient), nil, nil)
+			got, err := getPRHistory(context.Background(), prHistoryURL, c, io.NewGCSOpener(fakeGCSClient), nil, nil, "github.com")
 			if (err != nil) != tt.wantErr {
 				t.Errorf("getPRHistory() error = %v, wantErr %v", err, tt.wantErr)
 				return

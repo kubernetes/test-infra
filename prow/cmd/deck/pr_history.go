@@ -87,12 +87,12 @@ func (a byStarted) Len() int           { return len(a) }
 func (a byStarted) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a byStarted) Less(i, j int) bool { return a[i].Started.Before(a[j].Started) }
 
-func githubPRLink(org, repo string, pr int) string {
-	return fmt.Sprintf("https://github.com/%s/%s/pull/%d", org, repo, pr)
+func githubPRLink(githubHost, org, repo string, pr int) string {
+	return fmt.Sprintf("https://%s/%s/%s/pull/%d", githubHost, org, repo, pr)
 }
 
-func githubCommitLink(org, repo, commitHash string) string {
-	return fmt.Sprintf("https://github.com/%s/%s/commit/%s", org, repo, commitHash)
+func githubCommitLink(githubHost, org, repo, commitHash string) string {
+	return fmt.Sprintf("https://%s/%s/%s/commit/%s", githubHost, org, repo, commitHash)
 }
 
 func jobHistLink(storageProvider, bucketName, jobName string) string {
@@ -164,7 +164,7 @@ func getPRBuildData(ctx context.Context, bucket storageBucket, jobs []jobBuilds)
 	return builds
 }
 
-func updateCommitData(commits map[string]*commitData, org, repo, hash string, buildTime time.Time, width int) {
+func updateCommitData(commits map[string]*commitData, githubHost, org, repo, hash string, buildTime time.Time, width int) {
 	commit, ok := commits[hash]
 	if !ok {
 		commits[hash] = &commitData{
@@ -174,7 +174,7 @@ func updateCommitData(commits map[string]*commitData, org, repo, hash string, bu
 		commit = commits[hash]
 		if len(hash) == 40 {
 			commit.HashPrefix = hash[:7]
-			commit.Link = githubCommitLink(org, repo, hash)
+			commit.Link = githubCommitLink(githubHost, org, repo, hash)
 		}
 	}
 	if buildTime.After(commit.latest) {
@@ -256,7 +256,7 @@ func getStorageDirsForPR(c *config.Config, gitHubClient deckGitHubClient, gitCli
 	return toSearch, nil
 }
 
-func getPRHistory(ctx context.Context, prHistoryURL *url.URL, config *config.Config, opener io.Opener, gitHubClient deckGitHubClient, gitClient git.ClientFactory) (prHistoryTemplate, error) {
+func getPRHistory(ctx context.Context, prHistoryURL *url.URL, config *config.Config, opener io.Opener, gitHubClient deckGitHubClient, gitClient git.ClientFactory, githubHost string) (prHistoryTemplate, error) {
 	start := time.Now()
 	template := prHistoryTemplate{}
 
@@ -265,7 +265,7 @@ func getPRHistory(ctx context.Context, prHistoryURL *url.URL, config *config.Con
 		return template, fmt.Errorf("failed to parse URL %s: %v", prHistoryURL.String(), err)
 	}
 	template.Name = fmt.Sprintf("%s/%s #%d", org, repo, pr)
-	template.Link = githubPRLink(org, repo, pr) // TODO(ibzib) support Gerrit :/
+	template.Link = githubPRLink(githubHost, org, repo, pr) // TODO(ibzib) support Gerrit :/
 
 	toSearch, err := getStorageDirsForPR(config, gitHubClient, gitClient, org, repo, pr)
 	if err != nil {
@@ -309,7 +309,7 @@ func getPRHistory(ctx context.Context, prHistoryURL *url.URL, config *config.Con
 		jobName := build.jobName
 		hash := build.commitHash
 		jobCommitBuilds[jobName][hash] = append(jobCommitBuilds[jobName][hash], build)
-		updateCommitData(commits, org, repo, hash, build.Started, len(jobCommitBuilds[jobName][hash]))
+		updateCommitData(commits, githubHost, org, repo, hash, build.Started, len(jobCommitBuilds[jobName][hash]))
 	}
 	for _, commit := range commits {
 		template.Commits = append(template.Commits, *commit)
