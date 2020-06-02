@@ -36,6 +36,8 @@ import (
 	prowConf "k8s.io/test-infra/prow/config"
 )
 
+// Implements https://go.k8s.io/owners
+
 const (
 	ownersFileName  = "OWNERS"
 	aliasesFileName = "OWNERS_ALIASES"
@@ -216,7 +218,6 @@ type RepoOwner interface {
 	FindApproverOwnersForFile(path string) string
 	FindReviewersOwnersForFile(path string) string
 	FindLabelsForFile(path string) sets.String
-	FindConfigFileForFile(path string) sets.String
 	FindConfigFileForLabel(label string) string
 	IsNoParentOwners(path string) bool
 	LeafApprovers(path string) sets.String
@@ -894,12 +895,6 @@ func (o *RepoOwners) TopLevelApprovers() sets.String {
 	return o.entriesForFile(".", o.approvers, false)
 }
 
-
-// FindConfigFileForFile returns set of config files used to be configure
-// the RepoOwners struct for the repo file specified in path
-func (o *RepoOwners) FindConfigFileForFile(path string) sets.String {
-	return o.configSources[path][nil]
-}
 
 // FindConfigFileForLabel returns set of config files used to configure
 // the RepoOwners struct for the repo file specified in path

@@ -1141,41 +1141,40 @@ func TestFindConfigFileByLabel(t *testing.T) {
 	tests := []struct {
 		name                 string
 		path                 string
-		expectedLabels       sets.String
-		expectedConfigSource sets.String
+		label                string
+		expectedConfigSource string
 	}{
 		{
 			name:                 "OWNERS in root only",
 			path:                 "foo.txt",
-			expectedLabels:       sets.NewString("sig/hg2tg"),
-			expectedConfigSource: sets.NewString("./OWNERS"),
+			label:                "sig/hg2tg",
+			expectedConfigSource: "./OWNERS",
 		},
 		{ // Should I accomdate this use case (relative path to a root file??)
 			name:                 "OWNERS in root only",
 			path:                 "./foo.txt",
-			expectedLabels:       sets.NewString("sig/hg2tg"),
-			expectedConfigSource: sets.NewString("./OWNERS"),
+			label:                "sig/hg2tg",
+			expectedConfigSource: "./OWNERS",
 		}, {
 			name:                 "OWNERS in root only",
 			path:                 "",
-			expectedLabels:       sets.NewString("sig/hg2tg"),
-			expectedConfigSource: sets.NewString("./OWNERS"),
+			label:                "sig/hg2tg",
+			expectedConfigSource: "./OWNERS",
 		}, {
 			name:                 "OWNERS in root only",
 			path:                 ".",
-			expectedLabels:       sets.NewString("sig/hg2tg"),
-			expectedConfigSource: sets.NewString("./OWNERS"),
+			label:                "sig/hg2tg",
+			expectedConfigSource: "./OWNERS",
 		}, {
 			name: "OWNERS in ROOT and LEAF",
-			// path:                 "a/b/c/",
 			path:                 leafDir,
-			expectedLabels:       sets.NewString("sig/hg2tg", "wg/towel"),
-			expectedConfigSource: sets.NewString("./OWNERS", "a/b/c/OWNERS"),
+			label:                "sig/hg2tg",
+			expectedConfigSource: "./OWNERS",
 		}, {
 			name:                 "OWNERS in ROOT and LEAF",
 			path:                 "a/b/c/foo.txt",
-			expectedLabels:       sets.NewString("sig/hg2tg"),
-			expectedConfigSource: sets.NewString("./OWNERS", "a/b/c/OWNERS"),
+			label:                "sig/hg2tg",
+			expectedConfigSource: "./OWNERS",
 		},
 	}
 
@@ -1198,15 +1197,11 @@ func TestFindConfigFileByLabel(t *testing.T) {
 		},
 	}
 	for i, test := range tests {
-		gotConfigSource := testOwners.FindConfigFileForFile(test.path)
-		gotLabels := testOwners.FindLabelsForFile(test.path)
-		if !gotConfigSource.Equal(test.expectedConfigSource) {
+		gotConfigSource:= testOwners.FindConfigFileForLabel(test.label)
+		if !(gotConfigSource == test.expectedConfigSource) {
 			t.Errorf("%d [%s] for %q", i, test.name, test.path)
-			t.Errorf("  expected config(s) %q", test.expectedConfigSource.List())
-			t.Errorf("  but got  config(s) %q", gotConfigSource.List())
-			t.Errorf("  expected labels(s) %q", test.expectedLabels.List())
-			t.Errorf("  but got  labels(s) %q", gotLabels.List())
-
+			t.Errorf("  expected config(s) %q", test.expectedConfigSource)
+			t.Errorf("  but got  config(s) %q", gotConfigSource)
 		}
 	}
 }
