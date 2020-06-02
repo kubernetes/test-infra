@@ -1150,7 +1150,7 @@ func TestFindConfigFileByLabel(t *testing.T) {
 			label:                "sig/hg2tg",
 			expectedConfigSource: "./OWNERS",
 		},
-		{ // Should I accomdate this use case (relative path to a root file??)
+		{
 			name:                 "OWNERS in root only",
 			path:                 "./foo.txt",
 			label:                "sig/hg2tg",
