@@ -248,6 +248,10 @@ func (foc *fakeOwnersClient) TopLevelApprovers() sets.String {
 	return sets.String{}
 }
 
+func (foc *fakeOwnersClient) FindConfigFileForLabel(path string) string {
+	return "OWNERS"
+}
+
 func makeFakeRepoOwnersClient() fakeRepoownersClient {
 	return fakeRepoownersClient{
 		foc: &fakeOwnersClient{},

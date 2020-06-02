@@ -49,6 +49,10 @@ func (foc *fakeOwnersClient) FindLabelsForFile(path string) sets.String {
 	return foc.labels[path]
 }
 
+func (foc *fakeOwnersClient) FindConfigFileForLabel(path string) string {
+	return "" 
+}
+
 // TestHandle tests that the handle function requests reviews from the correct number of unique users.
 func TestHandle(t *testing.T) {
 	foc := &fakeOwnersClient{

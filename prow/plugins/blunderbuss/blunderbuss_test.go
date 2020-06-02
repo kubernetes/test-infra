@@ -110,7 +110,20 @@ type fakeOwnersClient struct {
 	reviewers         map[string]sets.String
 	requiredReviewers map[string]sets.String
 	leafReviewers     map[string]sets.String
+	configSources     map[string]sets.String
 	dirBlacklist      []*regexp.Regexp
+}
+
+func (foc *fakeOwnersClient) FindConfigFileForFile(path string) sets.String {
+	return sets.String{}
+}
+
+func (foc *fakeOwnersClient) FindConfigFileForLabel(path string) string {
+	return "OWNERS"
+}
+
+func (foc *fakeOwnersClient) FindOwnersConfigForFile(path string) map[string]map[*regexp.Regexp]sets.String {
+	return nil
 }
 
 func (foc *fakeOwnersClient) Approvers(path string) sets.String {

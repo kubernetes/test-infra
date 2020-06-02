@@ -102,6 +102,10 @@ func (foc *fakeOwnersClient) ParseFullConfig(path string) (repoowners.FullConfig
 	return repoowners.FullConfig{}, nil
 }
 
+func (fro *fakeOwnersClient) FindConfigFileForLabel(label string) string {
+	return ""
+}
+
 type fakeClient struct {
 	comments []string
 	statuses map[string]github.Status

@@ -61,6 +61,10 @@ func (f *fakeOwnersClient) WithGitHubClient(client github.Client) repoowners.Int
 	return f
 }
 
+func (fro fakeRepoOwners) FindConfigFileForLabel(label string) string {
+	return ""
+}
+
 type fakeRepoOwners struct {
 	approvers    map[string]sets.String
 	reviewers    map[string]sets.String

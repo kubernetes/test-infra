@@ -1192,6 +1192,10 @@ type fakeRepoOwners struct {
 	fakeRepo
 }
 
+func (fro fakeRepoOwners) FindConfigFileForLabel(label string) string {
+	return "" 
+}
+
 func (fro fakeRepoOwners) FindLabelsForFile(path string) sets.String {
 	return sets.NewString()
 }
