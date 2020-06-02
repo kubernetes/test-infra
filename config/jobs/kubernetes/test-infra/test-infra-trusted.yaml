@@ -55,29 +55,6 @@ postsubmits:
         env:
         - name: USE_BAZEL_VERSION
           value: real  # Ignore .bazelversion
-  - name: post-test-infra-push-boskosctl-base
-    cluster: test-infra-trusted
-    run_if_changed: '^images/boskosctl-base/'
-    annotations:
-      testgrid-dashboards: "sig-testing-images"
-      testgrid-tab-name: "boskosctl-base"
-    decorate: true
-    branches:
-    - master
-    spec:
-      serviceAccountName: deployer # TODO(fejta): should be pusher
-      containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200520-v0.4-30-g9d6313a
-        command:
-        - images/builder/ci-runner.sh
-        args:
-        - --scratch-bucket=gs://k8s-testimages-scratch
-        - --project=k8s-testimages
-        - --build-dir=.
-        - images/boskosctl-base/
-        env:
-        - name: USE_BAZEL_VERSION
-          value: real  # Ignore .bazelversion
   - name: post-test-infra-deploy-prow
     cluster: test-infra-trusted
     run_if_changed: 'config/prow/cluster/'
@@ -163,27 +140,6 @@ postsubmits:
         - --project=k8s-testimages
         - --build-dir=.
         - velodrome/
-        env:
-        - name: USE_BAZEL_VERSION
-          value: real  # Ignore .bazelversion
-  - name: post-test-infra-push-boskos
-    cluster: test-infra-trusted
-    run_if_changed: '^boskos/'
-    annotations:
-      testgrid-dashboards: "sig-testing-images"
-      testgrid-tab-name: "boskos"
-      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-      testgrid-num-failures-to-alert: '1'
-      description: builds and pushes boskos images
-    decorate: true
-    branches:
-    - master
-    spec:
-      serviceAccountName: pusher
-      containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20200421-b889179-test-infra
-        command:
-        - boskos/push.sh
         env:
         - name: USE_BAZEL_VERSION
           value: real  # Ignore .bazelversion

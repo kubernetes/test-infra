@@ -40,14 +40,6 @@ def repositories():
     )
 
     container_pull(
-        name = "boskosctl-base",
-        digest = "sha256:a23c19a87857140926184d19e8e54812ba4a8acec4097386ca0993a248e83f8b",  # 2019/08/05
-        registry = "gcr.io",
-        repository = "k8s-testimages/boskosctl-base",
-        tag = "latest",  # TODO(fejta): update or replace
-    )
-
-    container_pull(
         name = "gcloud-base",
         digest = "sha256:8e51eea50a45c6be2a735be97139f85a04c623ca448801a317a737c1d9917d00",  # 2019/08/16
         registry = "gcr.io",
@@ -85,12 +77,4 @@ def repositories():
         registry = "gcr.io",
         repository = "k8s-testimages/launcher.gcr.io/google/bazel",
         tag = "2.2.0-from-2.0.0",  # TODO(fejta): switch to test-infra tag once it exists
-    )
-
-    container_pull(
-        name = "cloud-sdk-slim",
-        digest = "sha256:6dafecdad80abf6470eae9e0b57fc083d1f3413fa15b9fab7c2ad3a102d244c4",  # 2020/01/21
-        registry = "gcr.io",
-        repository = "google.com/cloudsdktool/cloud-sdk",
-        tag = "277.0.0-slim",
     )

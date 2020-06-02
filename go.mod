@@ -50,7 +50,6 @@ require (
 	github.com/gorilla/securecookie v1.1.1
 	github.com/gorilla/sessions v1.2.0
 	github.com/gregjones/httpcache v0.0.0-20190212212710-3befbb6ad0cc
-	github.com/hashicorp/go-multierror v1.0.0
 	github.com/influxdata/influxdb v0.0.0-20161215172503-049f9b42e9a5
 	github.com/jinzhu/gorm v1.9.12
 	github.com/klauspost/pgzip v1.2.1
@@ -67,7 +66,6 @@ require (
 	github.com/sirupsen/logrus v1.4.2
 	github.com/spf13/cobra v0.0.6
 	github.com/spf13/pflag v1.0.5
-	github.com/spf13/viper v1.6.2
 	github.com/tektoncd/pipeline v0.11.0
 	go.uber.org/zap v1.14.1
 	gocloud.dev v0.19.0
