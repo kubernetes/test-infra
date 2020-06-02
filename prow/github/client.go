@@ -600,6 +600,15 @@ func (r requestError) ErrorMessages() []string {
 	return []string{}
 }
 
+// NewNotFound returns a NotFound error which may be useful for tests
+func NewNotFound() error {
+	return requestError{
+		ClientError: ClientError{
+			Errors: []clientErrorSubError{{Message: "status code 404"}},
+		},
+	}
+}
+
 func IsNotFound(err error) bool {
 	if err == nil {
 		return false
