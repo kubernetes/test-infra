@@ -14,4 +14,7 @@
 
 FROM gcr.io/k8s-prow/alpine:0.1
 
+ARG IMAGE_ARG
+ENV IMAGE=${IMAGE_ARG}
+
 RUN apk add --no-cache git openssh

@@ -32,6 +32,26 @@ postsubmits:
       testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
       testgrid-num-failures-to-alert: '1'
   kubernetes/test-infra:
+  - name: post-test-infra-push-alpine
+    cluster: test-infra-trusted
+    run_if_changed: '^images/alpine/'
+    annotations:
+      testgrid-dashboards: sig-testing-images
+      testgrid-tab-name: alpine
+    decorate: true
+    branches:
+    - master
+    spec:
+      serviceAccountName: pusher
+      containers:
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200520-v0.4-30-g9d6313a
+        command:
+        - images/builder/ci-runner.sh
+        args:
+        - --scratch-bucket=gs://k8s-testimages-scratch
+        - --project=k8s-prow
+        - --build-dir=.
+        - images/alpine/
   - name: post-test-infra-push-alpine-bash
     cluster: test-infra-trusted
     run_if_changed: '^images/alpine-bash/'
@@ -55,6 +75,26 @@ postsubmits:
         env:
         - name: USE_BAZEL_VERSION
           value: real  # Ignore .bazelversion
+  - name: post-test-infra-push-git
+    cluster: test-infra-trusted
+    run_if_changed: '^images/git/'
+    annotations:
+      testgrid-dashboards: sig-testing-images
+      testgrid-tab-name: git
+    decorate: true
+    branches:
+    - master
+    spec:
+      serviceAccountName: pusher
+      containers:
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200520-v0.4-30-g9d6313a
+        command:
+        - images/builder/ci-runner.sh
+        args:
+        - --scratch-bucket=gs://k8s-testimages-scratch
+        - --project=k8s-prow
+        - --build-dir=.
+        - images/git/
   - name: post-test-infra-deploy-prow
     cluster: test-infra-trusted
     run_if_changed: 'config/prow/cluster/'
