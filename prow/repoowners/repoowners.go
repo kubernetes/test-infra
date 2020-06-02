@@ -895,7 +895,6 @@ func (o *RepoOwners) TopLevelApprovers() sets.String {
 	return o.entriesForFile(".", o.approvers, false)
 }
 
-
 // FindConfigFileForLabel returns set of config files used to configure
 // the RepoOwners struct for the repo file specified in path
 func (o *RepoOwners) FindConfigFileForLabel(label string) string {
