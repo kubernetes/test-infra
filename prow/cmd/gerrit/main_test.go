@@ -130,7 +130,7 @@ func TestFlags(t *testing.T) {
 			}
 			fs := flag.NewFlagSet("fake-flags", flag.PanicOnError)
 			actual := gatherOptions(fs, args...)
-			switch err := actual.Validate(); {
+			switch err := actual.validate(); {
 			case err != nil:
 				if !tc.err {
 					t.Errorf("unexpected error: %v", err)
