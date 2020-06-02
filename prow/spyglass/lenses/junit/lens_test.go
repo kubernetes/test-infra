@@ -784,24 +784,13 @@ func TestBody(t *testing.T) {
 				</testsuites>
 				`),
 			},
-			expected: `
-
-
-
-
-
-<div id="junit-container">
+			expected: `<div id="junit-container">
   <table id="junit-table" class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
-  
   <tr id="failed-theader" class="header section-expander">
     <td class="mdl-data-table__cell--non-numeric expander failed" colspan="1"><h6>2/3 Tests Failed.</h6></td>
     <td class="mdl-data-table__cell--non-numeric expander"><i id="failed-expander" class="icon-button material-icons arrow-icon noselect">expand_less</i></td>
   </tr>
   <tbody id="failed-tbody">
-    
-      
-      
-      
       <tr>
         <td colspan="2" style="padding: 0;">
           <table class="failed-layout">
@@ -816,17 +805,11 @@ func TestBody(t *testing.T) {
                   <dd>b</dd>
                 </dl>
                 <div> failure message 0 </div>
-                
               </td>
             </tr>
           </table>
         </td>
       </tr>
-      
-    
-      
-      
-      
       <tr>
         <td colspan="2" style="padding: 0;">
           <table class="failed-layout">
@@ -836,7 +819,6 @@ func TestBody(t *testing.T) {
             <tr class="hidden">
               <td>
                 <table  class="failed-layout">
-                  
                   <tr  class="failure-text">
                     <td colspan="2" style="padding: 0;">
                       <table class="failed-layout">
@@ -851,13 +833,11 @@ func TestBody(t *testing.T) {
                               <dd>b</dd>
                             </dl>
                             <div> failure message 0 </div>
-                            
                           </td>
                         </tr>
                       </table>
                     </td>
                   </tr>
-                  
                   <tr  class="failure-text">
                     <td colspan="2" style="padding: 0;">
                       <table class="failed-layout">
@@ -872,31 +852,23 @@ func TestBody(t *testing.T) {
                               <dd>d</dd>
                             </dl>
                             <div> failure message 1 </div>
-                            
                           </td>
                         </tr>
                       </table>
                     </td>
                   </tr>
-                  
                 </table>
               </td>
             </tr>
           </table>
         </td>
       </tr>
-      
-    
   </tbody>
-  
-  
   <tr id="flaky-theader" class="header section-expander">
     <td class="mdl-data-table__cell--non-numeric expander flaky" colspan="1"><h6>1/3 Tests Flaky.</h6></td>
     <td class="mdl-data-table__cell--non-numeric expander"><i id="flaky-expander" class="icon-button material-icons arrow-icon noselect">expand_less</i></td>
   </tr>
   <tbody id="flaky-tbody">
-    
-      
       <tr>
         <td colspan="2" style="padding: 0;">
           <table class="flaky-layout">
@@ -906,7 +878,6 @@ func TestBody(t *testing.T) {
             <tr class="hidden">
               <td>
                 <table class="flaky-layout">
-                  
                   <tr  class="flaky-text">
                     <td colspan="2" style="padding: 0;">
                       <table class="flaky-layout">
@@ -921,13 +892,11 @@ func TestBody(t *testing.T) {
                               <dd>b</dd>
                             </dl>
                             <div> failure message 0 </div>
-                            
                           </td>
                         </tr>
                       </table>
                     </td>
                   </tr>
-                  
                   <tr  class="flaky-text">
                     <td colspan="2" style="padding: 0;">
                       <table class="flaky-layout">
@@ -942,28 +911,20 @@ func TestBody(t *testing.T) {
                               <dd>d</dd>
                             </dl>
                             <div>&lt;nil&gt;</div>
-                            
                           </td>
                         </tr>
                       </table>
                     </td>
                   </tr>
-                  
                 </table>
               </td>
             </tr>
           </table>
         </td>
       </tr>
-    
   </tbody>
-  
-  
-  
   </table>
-</div>
-
-`,
+</div>`,
 		},
 	} {
 		t.Run(test.name, func(t *testing.T) {
