@@ -34,6 +34,15 @@
             </tr>
             <tr class="hidden failure-text">
               <td colspan="2" class="mdl-data-table__cell--non-numeric">
+                {{- $numProperties := len $firstTest.Properties.PropertyList}}
+                {{- if gt $numProperties 0}}
+                <dl>
+                  {{- range $ixp, $property := $firstTest.Properties.PropertyList}}
+                  <dt>{{$property.Name}}</dt>
+                  <dd>{{$property.Value}}</dd>
+                  {{- end}}
+                </dl>
+                {{- end}}
                 <div>{{$firstTest.Failure}}</div>
                 {{if $firstTest.Output}}
                 <a href="#" class="open-stdout">open stdout<i class="material-icons" style="font-size: 1em; vertical-align: middle; padding-left: 3px;">open_in_new</i></a>
@@ -64,6 +73,15 @@
                         </tr>
                         <tr class="hidden failure-text">
                           <td colspan="2" class="mdl-data-table__cell--non-numeric">
+                            {{- $numProperties := len $indTest.Properties.PropertyList}}
+                            {{- if gt $numProperties 0}}
+                            <dl>
+                              {{- range $ixp, $property := $indTest.Properties.PropertyList}}
+                              <dt>{{$property.Name}}</dt>
+                              <dd>{{$property.Value}}</dd>
+                              {{- end}}
+                            </dl>
+                            {{- end}}
                             <div>{{$indTest.Failure}}</div>
                             {{if $indTest.Output}}
                             <a href="#" class="open-stdout">open stdout<i class="material-icons" style="font-size: 1em; vertical-align: middle; padding-left: 3px;">open_in_new</i></a>
@@ -112,6 +130,15 @@
                         </tr>
                         <tr class="hidden flaky-text">
                           <td colspan="2" class="mdl-data-table__cell--non-numeric">
+                            {{- $numProperties := len $indTest.Properties.PropertyList}}
+                            {{- if gt $numProperties 0}}
+                            <dl>
+                              {{- range $ixp, $property := $indTest.Properties.PropertyList}}
+                              <dt>{{$property.Name}}</dt>
+                              <dd>{{$property.Value}}</dd>
+                              {{- end}}
+                            </dl>
+                            {{- end}}
                             <div>{{$indTest.Failure}}</div>
                             {{if $indTest.Output}}
                             <a href="#" class="open-stdout">open stdout<i class="material-icons" style="font-size: 1em; vertical-align: middle; padding-left: 3px;">open_in_new</i></a>

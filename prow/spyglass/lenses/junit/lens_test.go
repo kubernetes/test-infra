@@ -617,6 +617,107 @@ func TestGetJvd(t *testing.T) {
 				Flaky:   nil,
 			},
 		},
+		{
+			"Test-cases with properties",
+			[][]byte{
+				[]byte(`
+				<testsuites>
+					<testsuite>
+						<testcase classname="fake_class_0" name="fake_test_0">
+							<failure message="Failed once" type=""> failure message 0 </failure>
+							<properties>
+								<property name="a" value="b"/>
+							</properties>
+						</testcase>
+						<testcase classname="fake_class_0" name="fake_test_1">
+							<failure message="Failed twice" type=""> failure message 0 </failure>
+							<properties>
+								<property name="a" value="b"/>
+							</properties>
+						</testcase>
+						<testcase classname="fake_class_0" name="fake_test_1">
+							<failure message="Failed twice" type=""> failure message 1 </failure>
+							<properties>
+								<property name="c" value="d"/>
+							</properties>
+						</testcase>
+						<testcase classname="fake_class_0" name="fake_test_2">
+							<failure message="Flaked once" type=""> failure message 0 </failure>
+							<properties>
+								<property name="a" value="b"/>
+							</properties>
+						</testcase>
+						<testcase classname="fake_class_0" name="fake_test_2">
+							<properties>
+								<property name="c" value="d"/>
+							</properties>
+						</testcase>
+					</testsuite>
+				</testsuites>
+				`),
+			},
+			JVD{
+				NumTests: 3,
+				Failed: []TestResult{
+					{
+						Junit: []JunitResult{
+							{
+								junit.Result{
+									Name:       "fake_test_0",
+									ClassName:  "fake_class_0",
+									Failure:    &failureMsgs[0],
+									Properties: &junit.Properties{PropertyList: []junit.Property{{Name: "a", Value: "b"}}},
+								},
+							},
+						},
+						Link: "linknotfound.io/404",
+					},
+					{
+						Junit: []JunitResult{
+							{
+								Result: junit.Result{
+									Name:       "fake_test_1",
+									ClassName:  "fake_class_0",
+									Failure:    &failureMsgs[0],
+									Properties: &junit.Properties{PropertyList: []junit.Property{{Name: "a", Value: "b"}}},
+								},
+							},
+							{
+								Result: junit.Result{
+									Name:       "fake_test_1",
+									ClassName:  "fake_class_0",
+									Failure:    &failureMsgs[1],
+									Properties: &junit.Properties{PropertyList: []junit.Property{{Name: "c", Value: "d"}}},
+								},
+							},
+						},
+						Link: "linknotfound.io/404",
+					},
+				},
+				Flaky: []TestResult{
+					{
+						Junit: []JunitResult{
+							{
+								junit.Result{
+									Name:       "fake_test_2",
+									ClassName:  "fake_class_0",
+									Failure:    &failureMsgs[0],
+									Properties: &junit.Properties{PropertyList: []junit.Property{{Name: "a", Value: "b"}}},
+								},
+							},
+							{
+								Result: junit.Result{
+									Name:       "fake_test_2",
+									ClassName:  "fake_class_0",
+									Properties: &junit.Properties{PropertyList: []junit.Property{{Name: "c", Value: "d"}}},
+								},
+							},
+						},
+						Link: "linknotfound.io/404",
+					},
+				},
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -633,6 +734,251 @@ func TestGetJvd(t *testing.T) {
 			got := l.getJvd(artifacts)
 			if diff := cmp.Diff(tt.exp, got); diff != "" {
 				t.Fatalf("JVD mismatch, want(-), got(+): \n%s", diff)
+			}
+		})
+	}
+}
+
+func TestBody(t *testing.T) {
+	for _, test := range []struct {
+		name      string
+		artifacts [][]byte
+		expected  string
+	}{
+		{
+			name: "Test-cases with properties",
+			artifacts: [][]byte{
+				[]byte(`
+				<testsuites>
+					<testsuite>
+						<testcase classname="fake_class_0" name="fake_test_0">
+							<failure message="Failed once" type=""> failure message 0 </failure>
+							<properties>
+								<property name="a" value="b"/>
+							</properties>
+						</testcase>
+						<testcase classname="fake_class_0" name="fake_test_1">
+							<failure message="Failed twice" type=""> failure message 0 </failure>
+							<properties>
+								<property name="a" value="b"/>
+							</properties>
+						</testcase>
+						<testcase classname="fake_class_0" name="fake_test_1">
+							<failure message="Failed twice" type=""> failure message 1 </failure>
+							<properties>
+								<property name="c" value="d"/>
+							</properties>
+						</testcase>
+						<testcase classname="fake_class_0" name="fake_test_2">
+							<failure message="Flaked once" type=""> failure message 0 </failure>
+							<properties>
+								<property name="a" value="b"/>
+							</properties>
+						</testcase>
+						<testcase classname="fake_class_0" name="fake_test_2">
+							<properties>
+								<property name="c" value="d"/>
+							</properties>
+						</testcase>
+					</testsuite>
+				</testsuites>
+				`),
+			},
+			expected: `
+
+
+
+
+
+<div id="junit-container">
+  <table id="junit-table" class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
+  
+  <tr id="failed-theader" class="header section-expander">
+    <td class="mdl-data-table__cell--non-numeric expander failed" colspan="1"><h6>2/3 Tests Failed.</h6></td>
+    <td class="mdl-data-table__cell--non-numeric expander"><i id="failed-expander" class="icon-button material-icons arrow-icon noselect">expand_less</i></td>
+  </tr>
+  <tbody id="failed-tbody">
+    
+      
+      
+      
+      <tr>
+        <td colspan="2" style="padding: 0;">
+          <table class="failed-layout">
+            <tr class="failure-name">
+              <td class="mdl-data-table__cell--non-numeric test-name">fake_test_0&nbsp;<i class="icon-button material-icons arrow-icon">expand_more</i></td>
+              <td class="mdl-data-table__cell--non-numeric" style="text-align: right;">0s</td>
+            </tr>
+            <tr class="hidden failure-text">
+              <td colspan="2" class="mdl-data-table__cell--non-numeric">
+                <dl>
+                  <dt>a</dt>
+                  <dd>b</dd>
+                </dl>
+                <div> failure message 0 </div>
+                
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      
+    
+      
+      
+      
+      <tr>
+        <td colspan="2" style="padding: 0;">
+          <table class="failed-layout">
+            <tr class="failure-name">
+              <td class="mdl-data-table__cell--non-numeric test-name">fake_test_1&nbsp;<i class="icon-button material-icons arrow-icon">expand_more</i></td>
+            </tr>
+            <tr class="hidden">
+              <td>
+                <table  class="failed-layout">
+                  
+                  <tr  class="failure-text">
+                    <td colspan="2" style="padding: 0;">
+                      <table class="failed-layout">
+                        <tr class="failure-name">
+                          <td class="mdl-data-table__cell--non-numeric test-name">Run #0: Failed&nbsp;<i class="icon-button material-icons arrow-icon">expand_more</i></td>
+                          <td class="mdl-data-table__cell--non-numeric" style="text-align: right;">0s</td>
+                        </tr>
+                        <tr class="hidden failure-text">
+                          <td colspan="2" class="mdl-data-table__cell--non-numeric">
+                            <dl>
+                              <dt>a</dt>
+                              <dd>b</dd>
+                            </dl>
+                            <div> failure message 0 </div>
+                            
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                  
+                  <tr  class="failure-text">
+                    <td colspan="2" style="padding: 0;">
+                      <table class="failed-layout">
+                        <tr class="failure-name">
+                          <td class="mdl-data-table__cell--non-numeric test-name">Run #1: Failed&nbsp;<i class="icon-button material-icons arrow-icon">expand_more</i></td>
+                          <td class="mdl-data-table__cell--non-numeric" style="text-align: right;">0s</td>
+                        </tr>
+                        <tr class="hidden failure-text">
+                          <td colspan="2" class="mdl-data-table__cell--non-numeric">
+                            <dl>
+                              <dt>c</dt>
+                              <dd>d</dd>
+                            </dl>
+                            <div> failure message 1 </div>
+                            
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                  
+                </table>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      
+    
+  </tbody>
+  
+  
+  <tr id="flaky-theader" class="header section-expander">
+    <td class="mdl-data-table__cell--non-numeric expander flaky" colspan="1"><h6>1/3 Tests Flaky.</h6></td>
+    <td class="mdl-data-table__cell--non-numeric expander"><i id="flaky-expander" class="icon-button material-icons arrow-icon noselect">expand_less</i></td>
+  </tr>
+  <tbody id="flaky-tbody">
+    
+      
+      <tr>
+        <td colspan="2" style="padding: 0;">
+          <table class="flaky-layout">
+            <tr class="flaky-name">
+              <td class="mdl-data-table__cell--non-numeric test-name">fake_test_2&nbsp;<i class="icon-button material-icons arrow-icon">expand_more</i></td>
+            </tr>
+            <tr class="hidden">
+              <td>
+                <table class="flaky-layout">
+                  
+                  <tr  class="flaky-text">
+                    <td colspan="2" style="padding: 0;">
+                      <table class="flaky-layout">
+                        <tr class="flaky-name">
+                          <td class="mdl-data-table__cell--non-numeric test-name">Run #0: Failed&nbsp;<i class="icon-button material-icons arrow-icon">expand_more</i></td>
+                          <td class="mdl-data-table__cell--non-numeric" style="text-align: right;">0s</td>
+                        </tr>
+                        <tr class="hidden flaky-text">
+                          <td colspan="2" class="mdl-data-table__cell--non-numeric">
+                            <dl>
+                              <dt>a</dt>
+                              <dd>b</dd>
+                            </dl>
+                            <div> failure message 0 </div>
+                            
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                  
+                  <tr  class="flaky-text">
+                    <td colspan="2" style="padding: 0;">
+                      <table class="flaky-layout">
+                        <tr class="flaky-name">
+                          <td class="mdl-data-table__cell--non-numeric test-name">Run #1: Passed&nbsp;<i class="icon-button material-icons arrow-icon">expand_more</i></td>
+                          <td class="mdl-data-table__cell--non-numeric" style="text-align: right;">0s</td>
+                        </tr>
+                        <tr class="hidden flaky-text">
+                          <td colspan="2" class="mdl-data-table__cell--non-numeric">
+                            <dl>
+                              <dt>c</dt>
+                              <dd>d</dd>
+                            </dl>
+                            <div>&lt;nil&gt;</div>
+                            
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                  
+                </table>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    
+  </tbody>
+  
+  
+  
+  </table>
+</div>
+
+`,
+		},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			artifacts := make([]api.Artifact, 0)
+			for _, artifact := range test.artifacts {
+				artifacts = append(artifacts, &FakeArtifact{
+					path:      "log.txt",
+					content:   artifact,
+					sizeLimit: 500e6,
+				})
+			}
+			lens := Lens{}
+			got := lens.Body(artifacts, ".", "data", nil)
+			if diff := cmp.Diff(test.expected, got); diff != "" {
+				t.Fatalf("Body mismatch, want(-), got(+): \n%s", diff)
 			}
 		})
 	}
