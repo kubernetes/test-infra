@@ -45,7 +45,6 @@ import (
 	coreapi "k8s.io/api/core/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/sets"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
@@ -322,7 +321,7 @@ func main() {
 	runLocal := o.pregeneratedData != ""
 
 	var fallbackHandler func(http.ResponseWriter, *http.Request)
-	var pjListingClient pjListingClient
+	var pjListingClient jobs.PJListingClient
 	var githubClient deckGitHubClient
 	var gitClient git.ClientFactory
 	var podLogClients map[string]jobs.PodLogClient
@@ -429,15 +428,7 @@ func main() {
 		indexHandler(w, r)
 	})
 
-	ja := jobs.NewJobAgent(&filteringProwJobLister{
-		ctx:    context.Background(),
-		client: pjListingClient,
-		hiddenRepos: func() sets.String {
-			return sets.NewString(cfg().Deck.HiddenRepos...)
-		},
-		hiddenOnly: o.hiddenOnly,
-		showHidden: o.showHidden,
-	}, podLogClients, cfg)
+	ja := jobs.NewJobAgent(context.Background(), pjListingClient, o.hiddenOnly, o.showHidden, podLogClients, cfg)
 	ja.Start()
 
 	// setup prod only handlers. These handlers can work with runlocal as long
@@ -526,58 +517,6 @@ func (c *podLogClient) GetLogs(name string) ([]byte, error) {
 	}
 	defer reader.Close()
 	return ioutil.ReadAll(reader)
-}
-
-type pjListingClient interface {
-	List(context.Context, *prowapi.ProwJobList, ...ctrlruntimeclient.ListOption) error
-}
-
-type filteringProwJobLister struct {
-	ctx         context.Context
-	client      pjListingClient
-	hiddenRepos func() sets.String
-	hiddenOnly  bool
-	showHidden  bool
-}
-
-func (c *filteringProwJobLister) ListProwJobs(selector string) ([]prowapi.ProwJob, error) {
-	prowJobList := &prowapi.ProwJobList{}
-	parsedSelector, err := labels.Parse(selector)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse selector: %v", err)
-	}
-	listOpts := &ctrlruntimeclient.ListOptions{LabelSelector: parsedSelector}
-	if err := c.client.List(c.ctx, prowJobList, listOpts); err != nil {
-		return nil, err
-	}
-
-	var filtered []prowapi.ProwJob
-	for _, item := range prowJobList.Items {
-		shouldHide := item.Spec.Hidden || c.pjHasHiddenRefs(item)
-		if shouldHide && c.showHidden {
-			filtered = append(filtered, item)
-		} else if shouldHide == c.hiddenOnly {
-			// this is a hidden job, show it if we're asked
-			// to only show hidden jobs otherwise hide it
-			filtered = append(filtered, item)
-		}
-	}
-
-	return filtered, nil
-}
-
-func (c *filteringProwJobLister) pjHasHiddenRefs(pj prowapi.ProwJob) bool {
-	allRefs := pj.Spec.ExtraRefs
-	if pj.Spec.Refs != nil {
-		allRefs = append(allRefs, *pj.Spec.Refs)
-	}
-	for _, refs := range allRefs {
-		if c.hiddenRepos().HasAny(fmt.Sprintf("%s/%s", refs.Org, refs.Repo), refs.Org) {
-			return true
-		}
-	}
-
-	return false
 }
 
 type pjListingClientWrapper struct {
