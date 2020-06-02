@@ -1166,7 +1166,7 @@ func TestFindConfigFileByLabel(t *testing.T) {
 			label:                "sig/hg2tg",
 			expectedConfigSource: "./OWNERS",
 		}, {
-			name: "OWNERS in ROOT and LEAF",
+			name:                 "OWNERS in ROOT and LEAF",
 			path:                 leafDir,
 			label:                "sig/hg2tg",
 			expectedConfigSource: "./OWNERS",
@@ -1197,7 +1197,7 @@ func TestFindConfigFileByLabel(t *testing.T) {
 		},
 	}
 	for i, test := range tests {
-		gotConfigSource:= testOwners.FindConfigFileForLabel(test.label)
+		gotConfigSource := testOwners.FindConfigFileForLabel(test.label)
 		if !(gotConfigSource == test.expectedConfigSource) {
 			t.Errorf("%d [%s] for %q", i, test.name, test.path)
 			t.Errorf("  expected config(s) %q", test.expectedConfigSource)

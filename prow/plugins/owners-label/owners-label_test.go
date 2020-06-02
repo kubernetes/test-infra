@@ -50,7 +50,7 @@ func (foc *fakeOwnersClient) FindLabelsForFile(path string) sets.String {
 }
 
 func (foc *fakeOwnersClient) FindConfigFileForLabel(path string) string {
-	return "" 
+	return ""
 }
 
 // TestHandle tests that the handle function requests reviews from the correct number of unique users.
