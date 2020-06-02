@@ -44,8 +44,8 @@ periodics:
     containers:
     - args:
       - --timeout=460
-      # head of perf-test's master as of 2020-04-28
-      - --repo=k8s.io/perf-tests=master:2a5b685c253ca0b88589d61b5d2c57ff548347e8
+      # head of perf-tests' master as of 2020-05-29
+      - --repo=k8s.io/perf-tests=master:c8e93e287413fb0efec4478e2f47f1e7b1a92bfd
       - --root=/go/src
       - --scenario=kubernetes_e2e
       - --
@@ -75,10 +75,14 @@ periodics:
       - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/ignore_known_kubemark_container_restarts.yaml
       - --test-cmd-args=--testoverrides=./testing/overrides/5000_nodes.yaml
+      - --test-cmd-args=--testoverrides=./testing/load/golang/custom_api_call_thresholds.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=430m
       - --use-logexporter
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200527-e50e8f5-master
+      env:
+      - name: CL2_ENABLE_VIOLATIONS_FOR_API_CALL_PROMETHEUS
+        value: "true"
       # docker-in-docker needs privilged mode
       securityContext:
         privileged: true
