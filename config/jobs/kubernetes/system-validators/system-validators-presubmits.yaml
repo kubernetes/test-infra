@@ -7,7 +7,7 @@ presubmits:
     decorate: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200527-e50e8f5-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-c1964ea-master
         command:
         - "./hack/verify-all.sh"
     annotations:
