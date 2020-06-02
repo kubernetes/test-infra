@@ -3830,3 +3830,11 @@ def go_repositories():
         sum = "h1:RWengNIwukTxcDr9M+97sNutRR1RKhG96O6jWumTTnw=",
         version = "v0.0.0-20170929034955-c48cc78d4826",
     )
+    go_repository(
+        name = "io_k8s_sigs_boskos",
+        build_file_generation = "on",
+        build_file_proto_mode = "disable",
+        importpath = "sigs.k8s.io/boskos",
+        sum = "h1:Q1Bb5+ssL7WekHgJvX2yAp4ueLeEnFX50RcpYRErNOg=",
+        version = "v0.0.0-20200526191642-45fc818e2d00",
+    )

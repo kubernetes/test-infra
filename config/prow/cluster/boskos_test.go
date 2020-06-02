@@ -19,7 +19,7 @@ package cluster
 import (
 	"testing"
 
-	"k8s.io/test-infra/boskos/common"
+	"sigs.k8s.io/boskos/common"
 )
 
 func TestConfig(t *testing.T) {
