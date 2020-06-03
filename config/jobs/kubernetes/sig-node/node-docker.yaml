@@ -69,6 +69,7 @@ periodics:
       - --repo=k8s.io/kubernetes=master
       - --timeout=200
       - --root=/go/src
+      - --scenario=kubernetes_e2e
       - --
       - --deployment=node
       - --gcp-zone=us-west1-b
