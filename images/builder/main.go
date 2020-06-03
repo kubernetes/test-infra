@@ -84,7 +84,12 @@ func (o *options) uploadBuildDir(targetBucket string) (string, error) {
 	defer os.Remove(name)
 
 	log.Printf("Creating source tarball at %s...\n", name)
-	if err := runCmd("tar", "--exclude", ".git", "-czf", name, "."); err != nil {
+	var args []string
+	if !o.withGitDirectory {
+		args = append(args, "--exclude", ".git")
+	}
+	args = append(args, "-czf", name, ".")
+	if err := runCmd("tar", args...); err != nil {
 		return "", fmt.Errorf("failed to tar files: %s", err)
 	}
 
@@ -268,6 +273,9 @@ type options struct {
 	noSource       bool
 	variant        string
 	envPassthrough string
+
+	// withGitDirectory will include the .git directory when uploading the source to GCB
+	withGitDirectory bool
 }
 
 func mergeMaps(maps ...map[string]string) map[string]string {
@@ -291,6 +299,7 @@ func parseFlags() options {
 	flag.BoolVar(&o.noSource, "no-source", false, "If true, no source will be uploaded with this build.")
 	flag.StringVar(&o.variant, "variant", "", "If specified, build only the given variant. An error if no variants are defined.")
 	flag.StringVar(&o.envPassthrough, "env-passthrough", "", "Comma-separated list of specified environment variables to be passed to GCB as substitutions with an _ prefix. If the variable doesn't exist, the substitution will exist but be empty.")
+	flag.BoolVar(&o.withGitDirectory, "with-git-dir", o.withGitDirectory, "If true, upload the .git directory to GCB, so we can e.g. get the git log and tag.")
 
 	flag.Parse()
 
