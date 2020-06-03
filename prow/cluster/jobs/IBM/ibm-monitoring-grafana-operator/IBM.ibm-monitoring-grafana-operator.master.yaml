@@ -1,13 +1,13 @@
 presubmits:
-  IBM/ibm-grafana-operator:
-  - name: check-ibm-grafana-operator
+  IBM/ibm-monitoring-grafana-operator:
+  - name: check-ibm-monitoring-grafana-operator
     cluster: default
     always_run: true
     branches:
     - ^master$
     decorate: true
-    path_alias: github.com/IBM/ibm-grafana-operator
-    rerun_command: /test check-ibm-grafana-operator
+    path_alias: github.com/IBM/ibm-monitoring-grafana-operator
+    rerun_command: /test check-ibm-monitoring-grafana-operator
     spec:
       containers:
       - command:
@@ -18,14 +18,14 @@ presubmits:
         securityContext:
           privileged: true
     trigger: '(?m)^/test (?:.*? )?check(?:.*?)?$'
-  - name: test-ibm-grafana-operator-amd64
+  - name: test-ibm-monitoring-grafana-operator-amd64
     cluster: default
     always_run: true
     branches:
     - ^master$
     decorate: true
-    path_alias: github.com/IBM/ibm-grafana-operator
-    rerun_command: /test test-ibm-grafana-operator-amd64
+    path_alias: github.com/IBM/ibm-monitoring-grafana-operator
+    rerun_command: /test test-ibm-monitoring-grafana-operator-amd64
     spec:
       containers:
       - command:
@@ -37,14 +37,14 @@ presubmits:
         securityContext:
           privileged: true
     trigger: '(?m)^/test (?:.*? )?test(?:.*?)?$'
-  - name: test-ibm-grafana-operator-ppc64le
+  - name: test-ibm-monitoring-grafana-operator-ppc64le
     cluster: ppc64le
     always_run: true
     branches:
     - ^master$
     decorate: true
-    path_alias: github.com/IBM/ibm-grafana-operator
-    rerun_command: /test test-ibm-grafana-operator-ppc64le
+    path_alias: github.com/IBM/ibm-monitoring-grafana-operator
+    rerun_command: /test test-ibm-monitoring-grafana-operator-ppc64le
     spec:
       containers:
       - command:
@@ -56,14 +56,14 @@ presubmits:
         securityContext:
           privileged: true
     trigger: '(?m)^/test (?:.*? )?test(?:.*?)?$'
-  - name: test-ibm-grafana-operator-s390x
+  - name: test-ibm-monitoring-grafana-operator-s390x
     cluster: s390x
     always_run: true
     branches:
     - ^master$
     decorate: true
-    path_alias: github.com/IBM/ibm-grafana-operator
-    rerun_command: /test test-ibm-grafana-operator-s390x
+    path_alias: github.com/IBM/ibm-monitoring-grafana-operator
+    rerun_command: /test test-ibm-monitoring-grafana-operator-s390x
     spec:
       containers:
       - command:
@@ -75,14 +75,14 @@ presubmits:
         securityContext:
           privileged: true
     trigger: '(?m)^/test (?:.*? )?test(?:.*?)?$'
-  - name: build-ibm-grafana-operator-amd64
+  - name: build-ibm-monitoring-grafana-operator-amd64
     cluster: default
     always_run: true
     branches:
     - ^master$
     decorate: true
-    path_alias: github.com/IBM/ibm-grafana-operator
-    rerun_command: /test build-ibm-grafana-operator-amd64
+    path_alias: github.com/IBM/ibm-monitoring-grafana-operator
+    rerun_command: /test build-ibm-monitoring-grafana-operator-amd64
     spec:
       containers:
       - command:
@@ -94,14 +94,14 @@ presubmits:
         securityContext:
           privileged: true
     trigger: '(?m)^/test (?:.*? )?build(?:.*?)?$'
-  - name: build-ibm-grafana-operator-ppc64le
+  - name: build-ibm-monitoring-grafana-operator-ppc64le
     cluster: ppc64le
     always_run: true
     branches:
     - ^master$
     decorate: true
-    path_alias: github.com/IBM/ibm-grafana-operator
-    rerun_command: /test build-ibm-grafana-operator-ppc64le
+    path_alias: github.com/IBM/ibm-monitoring-grafana-operator
+    rerun_command: /test build-ibm-monitoring-grafana-operator-ppc64le
     spec:
       containers:
       - command:
@@ -113,14 +113,14 @@ presubmits:
         securityContext:
           privileged: true
     trigger: '(?m)^/test (?:.*? )?build(?:.*?)?$'
-  - name: build-ibm-grafana-operator-s390x
+  - name: build-ibm-monitoring-grafana-operator-s390x
     cluster: s390x
     always_run: true
     branches:
     - ^master$
     decorate: true
-    path_alias: github.com/IBM/ibm-grafana-operator
-    rerun_command: /test build-ibm-grafana-operator-s390x
+    path_alias: github.com/IBM/ibm-monitoring-grafana-operator
+    rerun_command: /test build-ibm-monitoring-grafana-operator-s390x
     spec:
       containers:
       - command:
@@ -133,13 +133,13 @@ presubmits:
           privileged: true
     trigger: '(?m)^/test (?:.*? )?build(?:.*?)?$'
 postsubmits:
-  IBM/ibm-grafana-operator:
-  - name: coverage-ibm-grafana-operator-postsubmit
+  IBM/ibm-monitoring-grafana-operator:
+  - name: coverage-ibm-monitoring-grafana-operator-postsubmit
     cluster: default
     branches:
     - ^master$
     decorate: true
-    path_alias: github.com/IBM/ibm-grafana-operator
+    path_alias: github.com/IBM/ibm-monitoring-grafana-operator
     spec:
       containers:
       - command:
@@ -151,16 +151,16 @@ postsubmits:
         - name: CODECOV_TOKEN
           valueFrom:
             secretKeyRef:
-              name: ibm-grafana-operator-codecov-token
+              name: ibm-monitoring-grafana-operator-codecov-token
               key: codecov-token
         securityContext:
           privileged: true
-  - name: build-ibm-grafana-operator-amd64-postsubmit
+  - name: build-ibm-monitoring-grafana-operator-amd64-postsubmit
     cluster: default
     branches:
     - ^master$
     decorate: true
-    path_alias: github.com/IBM/ibm-grafana-operator
+    path_alias: github.com/IBM/ibm-monitoring-grafana-operator
     spec:
       containers:
       - command:
@@ -171,12 +171,12 @@ postsubmits:
         name: ""
         securityContext:
           privileged: true
-  - name: build-ibm-grafana-operator-ppc64le-postsubmit
+  - name: build-ibm-monitoring-grafana-operator-ppc64le-postsubmit
     cluster: ppc64le
     branches:
     - ^master$
     decorate: true
-    path_alias: github.com/IBM/ibm-grafana-operator
+    path_alias: github.com/IBM/ibm-monitoring-grafana-operator
     spec:
       containers:
       - command:
@@ -187,12 +187,12 @@ postsubmits:
         name: ""
         securityContext:
           privileged: true
-  - name: build-ibm-grafana-operator-s390x-postsubmit
+  - name: build-ibm-monitoring-grafana-operator-s390x-postsubmit
     cluster: s390x
     branches:
     - ^master$
     decorate: true
-    path_alias: github.com/IBM/ibm-grafana-operator
+    path_alias: github.com/IBM/ibm-monitoring-grafana-operator
     spec:
       containers:
       - command:
@@ -203,14 +203,14 @@ postsubmits:
         name: ""
         securityContext:
           privileged: true
-  - name: image-ibm-grafana-operator-amd64-postsubmit
+  - name: image-ibm-monitoring-grafana-operator-amd64-postsubmit
     cluster: default
     branches:
     - ^master$
     decorate: true
     labels:
       preset-service-account: "true"
-    path_alias: github.com/IBM/ibm-grafana-operator
+    path_alias: github.com/IBM/ibm-monitoring-grafana-operator
     spec:
       containers:
       - command:
@@ -221,14 +221,14 @@ postsubmits:
         name: ""
         securityContext:
           privileged: true
-  - name: image-ibm-grafana-operator-ppc64le-postsubmit
+  - name: image-ibm-monitoring-grafana-operator-ppc64le-postsubmit
     cluster: ppc64le
     branches:
     - ^master$
     decorate: true
     labels:
       preset-service-account: "true"
-    path_alias: github.com/IBM/ibm-grafana-operator
+    path_alias: github.com/IBM/ibm-monitoring-grafana-operator
     spec:
       containers:
       - command:
@@ -239,14 +239,14 @@ postsubmits:
         name: ""
         securityContext:
           privileged: true
-  - name: image-ibm-grafana-operator-s390x-postsubmit
+  - name: image-ibm-monitoring-grafana-operator-s390x-postsubmit
     cluster: s390x
     branches:
     - ^master$
     decorate: true
     labels:
       preset-service-account: "true"
-    path_alias: github.com/IBM/ibm-grafana-operator
+    path_alias: github.com/IBM/ibm-monitoring-grafana-operator
     spec:
       containers:
       - command:
@@ -257,14 +257,14 @@ postsubmits:
         name: ""
         securityContext:
           privileged: true
-  - name: multiarch-image-ibm-grafana-operator-postsubmit
+  - name: multiarch-image-ibm-monitoring-grafana-operator-postsubmit
     cluster: default
     branches:
     - ^master$
     decorate: true
     labels:
       preset-service-account: "true"
-    path_alias: github.com/IBM/ibm-grafana-operator
+    path_alias: github.com/IBM/ibm-monitoring-grafana-operator
     spec:
       containers:
       - command:

@@ -33,7 +33,7 @@ tide:
     IBM/ibm-common-service-operator: squash
     IBM/ibm-common-service-webhook: squash
     IBM/ibm-elastic-stack-operator: squash
-    IBM/ibm-grafana-operator: squash
+    IBM/ibm-monitoring-grafana-operator: squash
     IBM/ibm-healthcheck-operator: squash
     IBM/ibm-helm-api-operator: squash
     IBM/ibm-helm-repo-operator: squash
@@ -85,7 +85,7 @@ tide:
     - IBM/ibm-common-service-operator
     - IBM/ibm-common-service-webhook
     - IBM/ibm-elastic-stack-operator
-    - IBM/ibm-grafana-operator
+    - IBM/ibm-monitoring-grafana-operator
     - IBM/ibm-healthcheck-operator
     - IBM/ibm-helm-api-operator
     - IBM/ibm-helm-repo-operator
