@@ -101,7 +101,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:RuntimeHandler\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-c1964ea-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-misc
     testgrid-tab-name: kops-aws-containerd
@@ -236,7 +236,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.focus=\[k8s.io\]\sNetworking.*\[Conformance\]
       - --timeout=45m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-c1964ea-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-misc
     testgrid-tab-name: kops-aws-updown

@@ -17,7 +17,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-c1964ea-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-master
         command:
         - runner.sh
         args:
@@ -51,7 +51,7 @@ periodics:
     description: "Ends up running: make test-cmd test-integration"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-c1964ea-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-master
       command:
       - runner.sh
       args:
