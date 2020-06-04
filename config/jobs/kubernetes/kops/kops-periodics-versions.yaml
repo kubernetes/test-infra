@@ -1,5 +1,7 @@
 periodics:
 
+# Verify the latest-ci-updown-green version of kops, against most of the e2e tests
+# Publishes gs://kops-ci/bin/latest-ci-green.txt
 - interval: 1h
   name: e2e-kops-aws-k8s-latest
   labels:
