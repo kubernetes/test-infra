@@ -28,7 +28,7 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 3h
-  interval: 2h
+  interval: 30m
   spec:
     containers:
     - image: gcr.io/k8s-testimages/triage:latest
