@@ -403,10 +403,10 @@ periodics:
           - --timeout=50m
         image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-master
   annotations:
-    testgrid-dashboards: sig-release-master-informing, google-gce, google-gci
+    testgrid-dashboards: sig-release-master-blocking, google-gce, google-gci
     testgrid-tab-name: gce-ubuntu-master-containerd
     testgrid-num-failures-to-alert: '6'
-    testgrid-alert-email: kubernetes-release-team@googlegroups.com
+    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, kubernetes-release-team@googlegroups.com
     description: Uses kubetest to run e2e tests (-Slow|Serial|Disruptive|Flaky|Feature) against a cluster (ubuntu based and uses containerd) created with cluster/kube-up.sh
 
 - interval: 30m
