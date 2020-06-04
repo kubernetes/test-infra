@@ -31,7 +31,7 @@ import (
 
 	"github.com/GoogleCloudPlatform/testgrid/metadata"
 	"github.com/sirupsen/logrus"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	k8sreporter "k8s.io/test-infra/prow/crier/reporters/gcs/kubernetes"
@@ -102,12 +102,12 @@ func (lens Lens) Body(artifacts []api.Artifact, resourceDir string, data string,
 			logrus.WithError(err).Error("Failed reading from artifact.")
 		}
 		switch a.JobPath() {
-		case "started.json":
+		case prowv1.StartedStatusFile:
 			if err = json.Unmarshal(read, &started); err != nil {
 				logrus.WithError(err).Error("Error unmarshaling started.json")
 			}
 			metadataViewData.StartTime = time.Unix(started.Timestamp, 0)
-		case "finished.json":
+		case prowv1.FinishedStatusFile:
 			if err = json.Unmarshal(read, &finished); err != nil {
 				logrus.WithError(err).Error("Error unmarshaling finished.json")
 			}

@@ -83,6 +83,16 @@ const (
 	DefaultClusterAlias = "default"
 )
 
+const (
+	// StartedStatusFile is the JSON file that stores information about the build
+	// at the start ob the build. See testgrid/metadata/job.go for more details.
+	StartedStatusFile = "started.json"
+
+	// FinishedStatusFile is the JSON file that stores information about the build
+	// after its completion. See testgrid/metadata/job.go for more details.
+	FinishedStatusFile = "finished.json"
+)
+
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 

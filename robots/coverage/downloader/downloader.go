@@ -30,11 +30,8 @@ import (
 	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/api/iterator"
-)
 
-const (
-	//statusJSON is the JSON file that stores build success info
-	statusJSON = "finished.json"
+	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
 
 //listGcsObjects get the slice of gcs objects under a given path
@@ -90,7 +87,7 @@ func FindBaseProfile(ctx context.Context, client *storage.Client, bucket, prowJo
 	profilePath := ""
 	for _, build := range builds {
 		buildDirPath := path.Join(dirOfJob, strconv.Itoa(build))
-		dirOfStatusJSON := path.Join(buildDirPath, statusJSON)
+		dirOfStatusJSON := path.Join(buildDirPath, prowv1.FinishedStatusFile)
 
 		statusText, err := readGcsObject(ctx, client, bucket, dirOfStatusJSON)
 		if err != nil {

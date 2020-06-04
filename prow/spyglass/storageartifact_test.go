@@ -24,6 +24,7 @@ import (
 	"io"
 	"testing"
 
+	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	pkgio "k8s.io/test-infra/prow/io"
 )
 
@@ -446,7 +447,7 @@ func TestSize_GCS(t *testing.T) {
 		},
 	}
 	for _, tc := range testCases {
-		artifact := NewStorageArtifact(context.Background(), tc.handle, "", "started.json", 500e6)
+		artifact := NewStorageArtifact(context.Background(), tc.handle, "", prowv1.StartedStatusFile, 500e6)
 		actual, err := artifact.Size()
 		var actualErr string
 		if err != nil {
