@@ -424,6 +424,61 @@ periodics:
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Run Azure Disk e2e test with Azure Disk in-tree volume plugin on a CAPZ cluster.
     testgrid-num-columns-recent: '30'
+- interval: 3h
+  name: kubernetes-e2e-capz-azure-disk-vmss-1-16
+  decorate: true
+  decoration_config:
+    timeout: 3h
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-azure-cred: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-azure
+    base_ref: master
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
+  - org: kubernetes-sigs
+    repo: azuredisk-csi-driver
+    base_ref: master
+    path_alias: sigs.k8s.io/azuredisk-csi-driver
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: release-1.16
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-c1964ea-1.16
+      command:
+      - runner.sh
+      - ./scripts/ci-entrypoint.sh
+      args:
+      - bash
+      - -c
+      - >-
+        cd ${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver &&
+        make e2e-test
+      env:
+      - name: SKIP_UPSTREAM_E2E_TESTS
+        value: "true"
+      - name: USE_CI_ARTIFACTS
+        value: "true"
+      - name: FEATURE_GATE_MACHINE_POOL
+        value: "true"
+      - name: AZURE_STORAGE_DRIVER
+        value: kubernetes.io/azure-disk # In-tree Azure disk storage class
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 1
+          memory: "4Gi"
+  annotations:
+    testgrid-dashboards: provider-azure-upstream, provider-azure-periodic
+    testgrid-tab-name: k8s-e2e-azure-disk-vmss-1-16-capz
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    description: Run Azure Disk e2e test with Azure Disk in-tree volume plugin on a CAPZ cluster with Machine Pool.
+    testgrid-num-columns-recent: '30'
 - interval: 24h
   name: kubernetes-e2e-capz-azure-file-1-16
   decorate: true
@@ -477,4 +532,60 @@ periodics:
     testgrid-tab-name: k8s-e2e-azure-file-1-16-capz
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Run Azure File e2e test with Azure File in-tree volume plugin on a CAPZ cluster.
+    testgrid-num-columns-recent: '30'
+- interval: 3h
+  name: kubernetes-e2e-capz-azure-file-vmss-1-16
+  decorate: true
+  decoration_config:
+    timeout: 3h
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-azure-cred: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-azure
+    base_ref: master
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
+  - org: kubernetes-sigs
+    repo: azurefile-csi-driver
+    base_ref: master
+    path_alias: sigs.k8s.io/azurefile-csi-driver
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: release-1.16
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-c1964ea-1.16
+      command:
+      - runner.sh
+      - ./scripts/ci-entrypoint.sh
+      args:
+      - bash
+      - -c
+      - >-
+        kubectl apply -f templates/addons/azurefile-role.yaml &&
+        cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&
+        make e2e-test
+      env:
+      - name: SKIP_UPSTREAM_E2E_TESTS
+        value: "true"
+      - name: USE_CI_ARTIFACTS
+        value: "true"
+      - name: FEATURE_GATE_MACHINE_POOL
+        value: "true"
+      - name: AZURE_STORAGE_DRIVER
+        value: kubernetes.io/azure-file # In-tree Azure file storage class
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 1
+          memory: "4Gi"
+  annotations:
+    testgrid-dashboards: provider-azure-upstream, provider-azure-periodic
+    testgrid-tab-name: k8s-e2e-azure-file-vmss-1-16-capz
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    description: Run Azure File e2e test with Azure File in-tree volume plugin on a CAPZ cluster with Machine Pool.
     testgrid-num-columns-recent: '30'
