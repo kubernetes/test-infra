@@ -351,7 +351,7 @@ func handle(gc githubClient, gitClient git.ClientFactory, kc corev1.ConfigMapsGe
 	var msg string
 	switch n := len(updated); n {
 	case 0:
-		return nil
+		return utilerrors.NewAggregate(errs)
 	case 1:
 		msg = fmt.Sprintf("Updated the %s", updated[0])
 	default:
