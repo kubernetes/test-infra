@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM alpine:3.6
+FROM alpine:latest
+
+ARG IMAGE_ARG
+ENV IMAGE=${IMAGE_ARG}
 
 RUN apk add --no-cache ca-certificates && update-ca-certificates
