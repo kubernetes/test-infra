@@ -309,6 +309,10 @@ func handle(gc githubClient, gitClient git.ClientFactory, kc corev1.ConfigMapsGe
 
 	// Are any of the changes files ones that define a configmap we want to update?
 	toUpdate := FilterChanges(config, changes, defaultNamespace, log)
+	log.WithFields(logrus.Fields{
+		"configmaps_to_update": len(toUpdate),
+		"changes":              len(changes),
+	}).Debug("Identified configmaps to update")
 
 	var updated []string
 	indent := " " // one space
