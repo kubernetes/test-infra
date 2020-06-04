@@ -54,6 +54,7 @@ images:
     image: cos-77-12371-274-0
     project: cos-cloud
     machine: n1-standard-1
+    metadata: "user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled"
     tests:
       - 'create 105 pods with 100ms interval \[Benchmark\]'
 
