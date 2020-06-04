@@ -37,6 +37,7 @@ prow_push(
             "tide",
             "tot",
             "pipeline",
+            "prow-controller-manager",
         ],
         targets = {
             "needs-rebase": "//prow/external-plugins/needs-rebase:image",
