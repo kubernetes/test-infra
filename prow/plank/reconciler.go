@@ -550,6 +550,22 @@ func (r *reconciler) startPod(pj *prowv1.ProwJob) (string, string, error) {
 	if err != nil {
 		return "", "", err
 	}
+
+	// We must block until we see the pod, otherwise a new reconciliation may be triggered that tries to create
+	// the pod because its not in the cache yet, errors with IsAlreadyExists and sets the prowjob to failed
+	podName := types.NamespacedName{Namespace: pod.Namespace, Name: pod.Name}
+	if err := wait.Poll(100*time.Millisecond, 2*time.Second, func() (bool, error) {
+		if err := client.Get(r.ctx, podName, pod); err != nil {
+			if kerrors.IsNotFound(err) {
+				return false, nil
+			}
+			return false, fmt.Errorf("failed to get pod %s in cluster %s: %w", podName.String(), pj.ClusterAlias(), err)
+		}
+		return true, nil
+	}); err != nil {
+		return "", "", fmt.Errorf("failed waiting for new pod %s in cluster %s  appear in cache: %w", podName.String(), pj.ClusterAlias(), err)
+	}
+
 	return buildID, pod.Name, nil
 }
 

@@ -25,6 +25,7 @@ import (
 	"time"
 
 	"github.com/go-test/deep"
+	"github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -362,7 +363,7 @@ func TestMaxConcurrencyConsidersCacheStaleness(t *testing.T) {
 	}
 	pjb := pja.DeepCopy()
 	pjb.Name = "b"
-	pjClient := &eventuallyConsistentlyPatchingClient{t: t, Client: fakectrlruntimeclient.NewFakeClient(pja, pjb)}
+	pjClient := &eventuallyConsistentClient{t: t, Client: fakectrlruntimeclient.NewFakeClient(pja, pjb)}
 
 	cfg := func() *config.Config {
 		return &config.Config{ProwConfig: config.ProwConfig{Plank: config.Plank{Controller: config.Controller{
@@ -421,18 +422,29 @@ func TestMaxConcurrencyConsidersCacheStaleness(t *testing.T) {
 	}
 }
 
-// eventuallyConsistentlyPatchingClient executes patch operations with a delay but instantly returns, before applying the change.
+// eventuallyConsistentClient executes patch and create  operations with a delay but instantly returns, before applying the change.
 // This simulates the behaviour of a caching client where we can observe our change only after a delay.
-type eventuallyConsistentlyPatchingClient struct {
+type eventuallyConsistentClient struct {
 	t *testing.T
 	ctrlruntimeclient.Client
 }
 
-func (ecpc *eventuallyConsistentlyPatchingClient) Patch(ctx context.Context, obj runtime.Object, patch ctrlruntimeclient.Patch, opts ...ctrlruntimeclient.PatchOption) error {
+func (ecc *eventuallyConsistentClient) Patch(ctx context.Context, obj runtime.Object, patch ctrlruntimeclient.Patch, opts ...ctrlruntimeclient.PatchOption) error {
 	go func() {
 		time.Sleep(100 * time.Millisecond)
-		if err := ecpc.Client.Patch(ctx, obj, patch, opts...); err != nil {
-			ecpc.t.Errorf("eventuallyConsistentlyPatchingClient failed to execute patch: %v", err)
+		if err := ecc.Client.Patch(ctx, obj, patch, opts...); err != nil {
+			ecc.t.Errorf("eventuallyConsistentClient failed to execute patch: %v", err)
+		}
+	}()
+
+	return nil
+}
+
+func (ecc *eventuallyConsistentClient) Create(ctx context.Context, obj runtime.Object, opts ...ctrlruntimeclient.CreateOption) error {
+	go func() {
+		time.Sleep(100 * time.Millisecond)
+		if err := ecc.Client.Create(ctx, obj, opts...); err != nil {
+			ecc.t.Errorf("eventuallyConsistentClient failed to execute create: %v", err)
 		}
 	}()
 
@@ -446,5 +458,27 @@ func TestTerminateDupesToleratesNotFound(t *testing.T) {
 	}
 	if err := r.terminateDupesCleanup(prowv1.ProwJob{}); err != nil {
 		t.Errorf("expected no error when deleting absent pod, got %v", err)
+	}
+}
+
+func TestStartPodBlocksUntilItHasThePodInCache(t *testing.T) {
+	t.Parallel()
+	r := &reconciler{
+		log:          logrus.NewEntry(logrus.New()),
+		buildClients: map[string]ctrlruntimeclient.Client{"default": &eventuallyConsistentClient{t: t, Client: fakectrlruntimeclient.NewFakeClient()}},
+		config:       func() *config.Config { return &config.Config{} },
+	}
+	pj := &prowv1.ProwJob{
+		Spec: prowv1.ProwJobSpec{
+			PodSpec: &corev1.PodSpec{Containers: []corev1.Container{{}}},
+			Refs:    &prowv1.Refs{},
+			Type:    prowv1.PeriodicJob,
+		},
+	}
+	if _, _, err := r.startPod(pj); err != nil {
+		t.Fatalf("startPod: %v", err)
+	}
+	if err := r.buildClients["default"].Get(context.Background(), types.NamespacedName{}, &corev1.Pod{}); err != nil {
+		t.Errorf("couldn't get pod, this likely means startPod didn't block: %v", err)
 	}
 }
