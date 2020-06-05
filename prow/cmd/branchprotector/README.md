@@ -208,7 +208,7 @@ bazel run //config/prow/cluster:branchprotector.apply
 ```
 
 See [`prow/bump.sh`] for details on this script.
-See [`config/prow/cluster/branchprotector_cronjob.yaml`] for details on the deployed
+See [`cronjob.yaml`] for details on the deployed
 job resource.
 
 
@@ -220,6 +220,6 @@ job resource.
 [`planter.sh`]: /planter
 [`print-workspace-status.sh`]: ../../../hack/print-workspace-status.sh
 [`prow/bump.sh`]: /prow/bump.sh
-[`config/prow/cluster/branchprotector_cronjob.yaml`]: /config/prow/cluster/branchprotector_cronjob.yaml
+[`cronjob.yaml`]: cronjob.yaml
 [status contexts]: https://developer.github.com/v3/repos/statuses/#create-a-status
 [protection api]: https://developer.github.com/v3/repos/branches/#update-branch-protection
