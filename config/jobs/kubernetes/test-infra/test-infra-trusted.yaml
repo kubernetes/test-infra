@@ -6,10 +6,7 @@ postsubmits:
     max_concurrency: 1
     spec:
       containers:
-      - image: launcher.gcr.io/google/bazel:0.29.1
-        env:
-        - name: USE_BAZEL_VERSION
-          value: real  # Ignore .bazelversion
+      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20200605-0202717-org
         command:
         - bazel
         args:
