@@ -66,17 +66,6 @@ func TestOptions_Validate(t *testing.T) {
 			},
 			expectedErr: true,
 		},
-		{
-			name: "push to GCS, missing credentials",
-			input: Options{
-				DryRun: false,
-				GCSConfiguration: &prowapi.GCSConfiguration{
-					Bucket:       "seal",
-					PathStrategy: prowapi.PathStrategyExplicit,
-				},
-			},
-			expectedErr: true,
-		},
 	}
 
 	for _, testCase := range testCases {
