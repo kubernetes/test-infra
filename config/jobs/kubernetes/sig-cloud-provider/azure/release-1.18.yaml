@@ -448,7 +448,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-c1964ea-1.18
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-1.18
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh
@@ -557,7 +557,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-c1964ea-1.18
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-1.18
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh

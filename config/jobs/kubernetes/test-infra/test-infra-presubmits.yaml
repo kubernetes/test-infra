@@ -10,7 +10,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20200420-c979157-test-infra
+      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20200605-0202717-test-infra
         command:
         - hack/bazel.sh
         args:
@@ -78,7 +78,7 @@ presubmits:
     run_if_changed: '^(config/prow/(config|plugins).yaml$|config/jobs/.*.yaml$)'
     spec:
       containers:
-      - image: gcr.io/k8s-prow/checkconfig:v20200604-4b5c7c99a8
+      - image: gcr.io/k8s-prow/checkconfig:v20200605-c416c9f0f4
         command:
         - /checkconfig
         args:
