@@ -50,7 +50,6 @@ postsubmits:
         args:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-prow
-        - --build-dir=.
         - images/alpine/
   - name: post-test-infra-push-alpine-bash
     cluster: test-infra-trusted
@@ -93,7 +92,6 @@ postsubmits:
         args:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-prow
-        - --build-dir=.
         - images/git/
   - name: post-test-infra-deploy-prow
     cluster: test-infra-trusted
