@@ -438,3 +438,13 @@ func (ecpc *eventuallyConsistentlyPatchingClient) Patch(ctx context.Context, obj
 
 	return nil
 }
+
+func TestTerminateDupesToleratesNotFound(t *testing.T) {
+	r := &reconciler{
+		buildClients: map[string]ctrlruntimeclient.Client{"default": fakectrlruntimeclient.NewFakeClient()},
+		config:       func() *config.Config { return &config.Config{} },
+	}
+	if err := r.terminateDupesCleanup(prowv1.ProwJob{}); err != nil {
+		t.Errorf("expected no error when deleting absent pod, got %v", err)
+	}
+}
