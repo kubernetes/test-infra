@@ -6,7 +6,7 @@ steps:
     - gcr.io/$PROJECT_ID/git:$_GIT_TAG
     - --build-arg=IMAGE_ARG=gcr.io/$PROJECT_ID/git:$_GIT_TAG
     - .
-    dir: images/git/
+    dir: .
   - name: gcr.io/cloud-builders/docker
     args:
     - tag
