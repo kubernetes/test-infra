@@ -187,6 +187,14 @@ branch-protection:
             - continuous-integration/travis-ci
           required_pull_request_reviews:
             required_approving_review_count: 1
+        kops:
+          required_status_checks:
+            contexts:
+            - build (ubuntu-18.04, 1.13)
+            - build (ubuntu-18.04, 1.14)
+            - build (macos-10.15, 1.13)
+            - verify (ubuntu-18.04, 1.13)
+            - continuous-integration/travis-ci/pr
         kubelet:
           restrictions:
             users: []
