@@ -62,6 +62,7 @@ var (
 	kopsState        = flag.String("kops-state", "", "(kops only) s3:// path to kops state store. Must be set.")
 	kopsSSHUser      = flag.String("kops-ssh-user", os.Getenv("USER"), "(kops only) Username for SSH connections to nodes.")
 	kopsSSHKey       = flag.String("kops-ssh-key", "", "(kops only) Path to ssh key-pair for each node (defaults '~/.ssh/kube_aws_rsa' if unset.)")
+	kopsSSHPublicKey = flag.String("kops-ssh-public-key", "", "(kops only) Path to ssh public key for each node (defaults to --kops-ssh-key value with .pub suffix if unset.)")
 	kopsKubeVersion  = flag.String("kops-kubernetes-version", "", "(kops only) If set, the version of Kubernetes to deploy (can be a URL to a GCS path where the release is stored) (Defaults to kops default, latest stable release.).")
 	kopsZones        = flag.String("kops-zones", "", "(kops only) zones for kops deployment, comma delimited.")
 	kopsNodes        = flag.Int("kops-nodes", 2, "(kops only) Number of nodes to create.")
@@ -223,6 +224,10 @@ func newKops(provider, gcpProject, cluster string) (*kops, error) {
 	if err := os.Setenv("KOPS_STATE_STORE", *kopsState); err != nil {
 		return nil, err
 	}
+	sshPublicKey := *kopsSSHPublicKey
+	if sshPublicKey == "" {
+		sshPublicKey = sshKey + ".pub"
+	}
 
 	sshUser := *kopsSSHUser
 	if sshUser != "" {
@@ -343,7 +348,7 @@ func newKops(provider, gcpProject, cluster string) (*kops, error) {
 		path:          *kopsPath,
 		kubeVersion:   *kopsKubeVersion,
 		sshPrivateKey: sshKey,
-		sshPublicKey:  sshKey + ".pub",
+		sshPublicKey:  sshPublicKey,
 		sshUser:       sshUser,
 		zones:         zones,
 		nodes:         *kopsNodes,

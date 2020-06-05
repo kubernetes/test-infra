@@ -40,9 +40,10 @@ const (
 )
 
 var extraFiles = map[string]bool{
-	"config/jobs/kubernetes/kops/build-grid.py": true,
-	"releng/generate_tests.py":                  true,
-	"images/kubekins-e2e/Dockerfile":            true,
+	"config/jobs/kubernetes/kops/build-grid.py":     true,
+	"config/jobs/kubernetes/kops/build-pipeline.py": true,
+	"releng/generate_tests.py":                      true,
+	"images/kubekins-e2e/Dockerfile":                true,
 }
 
 func cdToRootDir() error {
