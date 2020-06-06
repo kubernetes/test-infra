@@ -129,6 +129,7 @@ presubmits:
         - --aws-cluster-domain=test-cncf-aws.k8s.io
         - --check-leaked-resources=false
         - --cluster=
+        - --env=KUBE_SSH_USER=admin
         - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt
         - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
         - --extract=release/stable-1.16
@@ -175,6 +176,7 @@ presubmits:
         - --aws-cluster-domain=test-cncf-aws.k8s.io
         - --check-leaked-resources=false
         - --cluster=
+        - --env=KUBE_SSH_USER=admin
         - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
         - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
         - --extract=release/stable-1.17

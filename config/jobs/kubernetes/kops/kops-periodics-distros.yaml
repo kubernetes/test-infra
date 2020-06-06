@@ -25,7 +25,6 @@ periodics:
       - --ginkgo-parallel
       - --kops-image=379101102735/debian-stretch-hvm-x86_64-gp2-2020-02-10-73984
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-ssh-user=admin
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
@@ -61,7 +60,6 @@ periodics:
       - --ginkgo-parallel
       - --kops-image=136693071363/debian-10-amd64-20200511-260
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-ssh-user=admin
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
@@ -97,7 +95,6 @@ periodics:
       - --ginkgo-parallel
       - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-20200429
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-ssh-user=ubuntu
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
@@ -133,7 +130,6 @@ periodics:
       - --ginkgo-parallel
       - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20200430
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-ssh-user=ubuntu
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
@@ -167,9 +163,8 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/stable
       - --ginkgo-parallel
-      - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200423
+      - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200528
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-ssh-user=ubuntu
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
@@ -205,7 +200,6 @@ periodics:
       - --ginkgo-parallel
       - --kops-image=679593333241/CentOS Linux 7 x86_64 HVM EBS ENA 2002_01-b7ee8a69-ee97-4a49-9e68-afaee216db2e-ami-0042af67f8e4dcc20.4
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-ssh-user=centos
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
@@ -241,7 +235,6 @@ periodics:
       - --ginkgo-parallel
       - --kops-image=137112412989/amzn2-ami-hvm-2.0.20200406.0-x86_64-gp2
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-ssh-user=ec2-user
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:RuntimeHandler\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
@@ -277,7 +270,6 @@ periodics:
       - --ginkgo-parallel
       - --kops-image=309956199498/RHEL-7.8_HVM_GA-20200225-x86_64-1-Hourly2-GP2
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-ssh-user=ec2-user
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
@@ -313,7 +305,6 @@ periodics:
       - --ginkgo-parallel
       - --kops-image=309956199498/RHEL-8.2.0_HVM-20200423-x86_64-0-Hourly2-GP2
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-ssh-user=ec2-user
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
@@ -349,7 +340,6 @@ periodics:
       - --ginkgo-parallel
       - --kops-image=075585003325/Flatcar-stable-2512.2.0-hvm
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-ssh-user=core
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
