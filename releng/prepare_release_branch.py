@@ -37,8 +37,8 @@ class ToolError(Exception):
 
 def check_version(branch_path):
     files = glob.glob(os.path.join(branch_path, "*.yaml"))
-    if len(files) != 4:
-        raise ToolError("Expected exactly four yaml files in " + branch_path)
+    if len(files) < 3 or len(files) > 4:
+        raise ToolError("Expected either 3 or 4 yaml files in " + branch_path)
     basenames = [os.path.splitext(os.path.basename(x))[0] for x in files]
     numbers = sorted([list(map(int, x.split('.'))) for x in basenames])
     lowest = numbers[0]
