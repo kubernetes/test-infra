@@ -42,7 +42,6 @@ template = """
       - --kops-args={{kops_args}}
       - --kops-image={{kops_image}}
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-ssh-user={{kops_ssh_user}}
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
       - --test_args={{test_args}}
@@ -79,6 +78,11 @@ def build_cron(key):
 
     job_count += 1
 
+    # run Ubuntu 20.04 (Focal) jobs more frequently
+    if "u2004" in key:
+        runs_per_week += 7
+        return "%d %d * * *" % (minute, hour)
+
     # run hotlist jobs more frequently
     if key in run_hourly:
         runs_per_week += 24 * 7
@@ -107,7 +111,7 @@ def build_test(cloud='aws', distro=None, networking=None, k8s_version=None):
     # pylint: disable=too-many-statements,too-many-branches
 
     if distro is None:
-        kops_ssh_user = 'admin'
+        kops_ssh_user = 'ubuntu'
         kops_image = None
     elif distro == 'amzn2':
         kops_ssh_user = 'ec2-user'
@@ -132,7 +136,7 @@ def build_test(cloud='aws', distro=None, networking=None, k8s_version=None):
         kops_image = '099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20200430'
     elif distro == 'u2004':
         kops_ssh_user = 'ubuntu'
-        kops_image = '099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200423'
+        kops_image = '099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200528'
     elif distro == 'rhel7':
         kops_ssh_user = 'ec2-user'
         kops_image = '309956199498/RHEL-7.8_HVM_GA-20200225-x86_64-1-Hourly2-GP2'
@@ -232,7 +236,6 @@ networking_options = [
 ]
 
 distro_options = [
-    None,
     'amzn2',
     'centos7',
     'deb9',

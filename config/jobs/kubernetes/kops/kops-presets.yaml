@@ -4,7 +4,7 @@ presets:
   env:
   # TODO(zmerlynn): Eliminate the other uses of this env variable
   - name: KUBE_SSH_USER
-    value: admin
+    value: ubuntu
   # Log dump for kops (relies on kops-e2e-runner.sh support)
   - name: LOG_DUMP_SSH_KEY
     value: /workspace/.ssh/kube_aws_rsa
