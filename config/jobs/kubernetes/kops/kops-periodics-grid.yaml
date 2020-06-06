@@ -19,6 +19,7 @@ periodics:
       args:
       - --cluster=e2e-kops-amzn2.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -55,6 +56,7 @@ periodics:
       args:
       - --cluster=e2e-kops-amzn2-k16.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -91,6 +93,7 @@ periodics:
       args:
       - --cluster=e2e-kops-amzn2-k17.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -127,6 +130,7 @@ periodics:
       args:
       - --cluster=e2e-kops-amzn2-k18.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -163,6 +167,7 @@ periodics:
       args:
       - --cluster=e2e-kops-centos7.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=centos
       - --env=KUBE_SSH_USER=centos
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -199,6 +204,7 @@ periodics:
       args:
       - --cluster=e2e-kops-centos7-k16.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=centos
       - --env=KUBE_SSH_USER=centos
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -235,6 +241,7 @@ periodics:
       args:
       - --cluster=e2e-kops-centos7-k17.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=centos
       - --env=KUBE_SSH_USER=centos
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -271,6 +278,7 @@ periodics:
       args:
       - --cluster=e2e-kops-centos7-k18.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=centos
       - --env=KUBE_SSH_USER=centos
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -307,6 +315,7 @@ periodics:
       args:
       - --cluster=e2e-kops-deb9.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=admin
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -343,6 +352,7 @@ periodics:
       args:
       - --cluster=e2e-kops-deb9-k16.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=admin
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -379,6 +389,7 @@ periodics:
       args:
       - --cluster=e2e-kops-deb9-k17.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=admin
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -415,6 +426,7 @@ periodics:
       args:
       - --cluster=e2e-kops-deb9-k18.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=admin
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -451,6 +463,7 @@ periodics:
       args:
       - --cluster=e2e-kops-deb10.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=admin
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -487,6 +500,7 @@ periodics:
       args:
       - --cluster=e2e-kops-deb10-k16.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=admin
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -523,6 +537,7 @@ periodics:
       args:
       - --cluster=e2e-kops-deb10-k17.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=admin
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -559,6 +574,7 @@ periodics:
       args:
       - --cluster=e2e-kops-deb10-k18.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=admin
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -595,6 +611,7 @@ periodics:
       args:
       - --cluster=e2e-kops-flatcar.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=core
       - --env=KUBE_SSH_USER=core
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -631,6 +648,7 @@ periodics:
       args:
       - --cluster=e2e-kops-flatcar-k16.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=core
       - --env=KUBE_SSH_USER=core
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -667,6 +685,7 @@ periodics:
       args:
       - --cluster=e2e-kops-flatcar-k17.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=core
       - --env=KUBE_SSH_USER=core
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -703,6 +722,7 @@ periodics:
       args:
       - --cluster=e2e-kops-flatcar-k18.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=core
       - --env=KUBE_SSH_USER=core
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -739,6 +759,7 @@ periodics:
       args:
       - --cluster=e2e-kops-rhel7.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -775,6 +796,7 @@ periodics:
       args:
       - --cluster=e2e-kops-rhel7-k16.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -811,6 +833,7 @@ periodics:
       args:
       - --cluster=e2e-kops-rhel7-k17.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -847,6 +870,7 @@ periodics:
       args:
       - --cluster=e2e-kops-rhel7-k18.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -883,6 +907,7 @@ periodics:
       args:
       - --cluster=e2e-kops-rhel8.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -919,6 +944,7 @@ periodics:
       args:
       - --cluster=e2e-kops-rhel8-k16.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -955,6 +981,7 @@ periodics:
       args:
       - --cluster=e2e-kops-rhel8-k17.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -991,6 +1018,7 @@ periodics:
       args:
       - --cluster=e2e-kops-rhel8-k18.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -1027,6 +1055,7 @@ periodics:
       args:
       - --cluster=e2e-kops-u1604.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -1063,6 +1092,7 @@ periodics:
       args:
       - --cluster=e2e-kops-u1604-k16.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -1099,6 +1129,7 @@ periodics:
       args:
       - --cluster=e2e-kops-u1604-k17.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -1135,6 +1166,7 @@ periodics:
       args:
       - --cluster=e2e-kops-u1604-k18.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -1171,6 +1203,7 @@ periodics:
       args:
       - --cluster=e2e-kops-u1804.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -1207,6 +1240,7 @@ periodics:
       args:
       - --cluster=e2e-kops-u1804-k16.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -1243,6 +1277,7 @@ periodics:
       args:
       - --cluster=e2e-kops-u1804-k17.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -1279,6 +1314,7 @@ periodics:
       args:
       - --cluster=e2e-kops-u1804-k18.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -1315,6 +1351,7 @@ periodics:
       args:
       - --cluster=e2e-kops-u2004.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -1351,6 +1388,7 @@ periodics:
       args:
       - --cluster=e2e-kops-u2004-k16.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -1387,6 +1425,7 @@ periodics:
       args:
       - --cluster=e2e-kops-u2004-k17.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -1423,6 +1462,7 @@ periodics:
       args:
       - --cluster=e2e-kops-u2004-k18.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -1459,6 +1499,7 @@ periodics:
       args:
       - --cluster=e2e-kops-calico-amzn2.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -1495,6 +1536,7 @@ periodics:
       args:
       - --cluster=e2e-kops-calico-amzn2-k16.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -1531,6 +1573,7 @@ periodics:
       args:
       - --cluster=e2e-kops-calico-amzn2-k17.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -1567,6 +1610,7 @@ periodics:
       args:
       - --cluster=e2e-kops-calico-amzn2-k18.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -1603,6 +1647,7 @@ periodics:
       args:
       - --cluster=e2e-kops-calico-centos7.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=centos
       - --env=KUBE_SSH_USER=centos
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -1639,6 +1684,7 @@ periodics:
       args:
       - --cluster=e2e-kops-calico-centos7-k16.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=centos
       - --env=KUBE_SSH_USER=centos
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -1675,6 +1721,7 @@ periodics:
       args:
       - --cluster=e2e-kops-calico-centos7-k17.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=centos
       - --env=KUBE_SSH_USER=centos
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -1711,6 +1758,7 @@ periodics:
       args:
       - --cluster=e2e-kops-calico-centos7-k18.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=centos
       - --env=KUBE_SSH_USER=centos
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -1747,6 +1795,7 @@ periodics:
       args:
       - --cluster=e2e-kops-calico-deb9.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=admin
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -1783,6 +1832,7 @@ periodics:
       args:
       - --cluster=e2e-kops-calico-deb9-k16.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=admin
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -1819,6 +1869,7 @@ periodics:
       args:
       - --cluster=e2e-kops-calico-deb9-k17.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=admin
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -1855,6 +1906,7 @@ periodics:
       args:
       - --cluster=e2e-kops-calico-deb9-k18.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=admin
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -1891,6 +1943,7 @@ periodics:
       args:
       - --cluster=e2e-kops-calico-deb10.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=admin
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -1927,6 +1980,7 @@ periodics:
       args:
       - --cluster=e2e-kops-calico-deb10-k16.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=admin
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -1963,6 +2017,7 @@ periodics:
       args:
       - --cluster=e2e-kops-calico-deb10-k17.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=admin
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -1999,6 +2054,7 @@ periodics:
       args:
       - --cluster=e2e-kops-calico-deb10-k18.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=admin
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -2035,6 +2091,7 @@ periodics:
       args:
       - --cluster=e2e-kops-calico-flatcar.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=core
       - --env=KUBE_SSH_USER=core
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -2071,6 +2128,7 @@ periodics:
       args:
       - --cluster=e2e-kops-calico-flatcar-k16.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=core
       - --env=KUBE_SSH_USER=core
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -2107,6 +2165,7 @@ periodics:
       args:
       - --cluster=e2e-kops-calico-flatcar-k17.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=core
       - --env=KUBE_SSH_USER=core
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -2143,6 +2202,7 @@ periodics:
       args:
       - --cluster=e2e-kops-calico-flatcar-k18.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=core
       - --env=KUBE_SSH_USER=core
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -2179,6 +2239,7 @@ periodics:
       args:
       - --cluster=e2e-kops-calico-rhel7.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -2215,6 +2276,7 @@ periodics:
       args:
       - --cluster=e2e-kops-calico-rhel7-k16.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -2251,6 +2313,7 @@ periodics:
       args:
       - --cluster=e2e-kops-calico-rhel7-k17.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -2287,6 +2350,7 @@ periodics:
       args:
       - --cluster=e2e-kops-calico-rhel7-k18.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -2323,6 +2387,7 @@ periodics:
       args:
       - --cluster=e2e-kops-calico-rhel8.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -2359,6 +2424,7 @@ periodics:
       args:
       - --cluster=e2e-kops-calico-rhel8-k16.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -2395,6 +2461,7 @@ periodics:
       args:
       - --cluster=e2e-kops-calico-rhel8-k17.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -2431,6 +2498,7 @@ periodics:
       args:
       - --cluster=e2e-kops-calico-rhel8-k18.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -2467,6 +2535,7 @@ periodics:
       args:
       - --cluster=e2e-kops-calico-u1604.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -2503,6 +2572,7 @@ periodics:
       args:
       - --cluster=e2e-kops-calico-u1604-k16.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -2539,6 +2609,7 @@ periodics:
       args:
       - --cluster=e2e-kops-calico-u1604-k17.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -2575,6 +2646,7 @@ periodics:
       args:
       - --cluster=e2e-kops-calico-u1604-k18.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -2611,6 +2683,7 @@ periodics:
       args:
       - --cluster=e2e-kops-calico-u1804.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -2647,6 +2720,7 @@ periodics:
       args:
       - --cluster=e2e-kops-calico-u1804-k16.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -2683,6 +2757,7 @@ periodics:
       args:
       - --cluster=e2e-kops-calico-u1804-k17.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -2719,6 +2794,7 @@ periodics:
       args:
       - --cluster=e2e-kops-calico-u1804-k18.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -2755,6 +2831,7 @@ periodics:
       args:
       - --cluster=e2e-kops-calico-u2004.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -2791,6 +2868,7 @@ periodics:
       args:
       - --cluster=e2e-kops-calico-u2004-k16.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -2827,6 +2905,7 @@ periodics:
       args:
       - --cluster=e2e-kops-calico-u2004-k17.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -2863,6 +2942,7 @@ periodics:
       args:
       - --cluster=e2e-kops-calico-u2004-k18.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -2899,6 +2979,7 @@ periodics:
       args:
       - --cluster=e2e-kops-cilium-amzn2.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -2935,6 +3016,7 @@ periodics:
       args:
       - --cluster=e2e-kops-cilium-amzn2-k16.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -2971,6 +3053,7 @@ periodics:
       args:
       - --cluster=e2e-kops-cilium-amzn2-k17.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -3007,6 +3090,7 @@ periodics:
       args:
       - --cluster=e2e-kops-cilium-amzn2-k18.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -3043,6 +3127,7 @@ periodics:
       args:
       - --cluster=e2e-kops-cilium-centos7.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=centos
       - --env=KUBE_SSH_USER=centos
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -3079,6 +3164,7 @@ periodics:
       args:
       - --cluster=e2e-kops-cilium-centos7-k16.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=centos
       - --env=KUBE_SSH_USER=centos
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -3115,6 +3201,7 @@ periodics:
       args:
       - --cluster=e2e-kops-cilium-centos7-k17.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=centos
       - --env=KUBE_SSH_USER=centos
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -3151,6 +3238,7 @@ periodics:
       args:
       - --cluster=e2e-kops-cilium-centos7-k18.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=centos
       - --env=KUBE_SSH_USER=centos
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -3187,6 +3275,7 @@ periodics:
       args:
       - --cluster=e2e-kops-cilium-deb9.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=admin
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -3223,6 +3312,7 @@ periodics:
       args:
       - --cluster=e2e-kops-cilium-deb9-k16.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=admin
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -3259,6 +3349,7 @@ periodics:
       args:
       - --cluster=e2e-kops-cilium-deb9-k17.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=admin
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -3295,6 +3386,7 @@ periodics:
       args:
       - --cluster=e2e-kops-cilium-deb9-k18.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=admin
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -3331,6 +3423,7 @@ periodics:
       args:
       - --cluster=e2e-kops-cilium-deb10.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=admin
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -3367,6 +3460,7 @@ periodics:
       args:
       - --cluster=e2e-kops-cilium-deb10-k16.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=admin
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -3403,6 +3497,7 @@ periodics:
       args:
       - --cluster=e2e-kops-cilium-deb10-k17.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=admin
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -3439,6 +3534,7 @@ periodics:
       args:
       - --cluster=e2e-kops-cilium-deb10-k18.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=admin
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -3475,6 +3571,7 @@ periodics:
       args:
       - --cluster=e2e-kops-cilium-flatcar.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=core
       - --env=KUBE_SSH_USER=core
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -3511,6 +3608,7 @@ periodics:
       args:
       - --cluster=e2e-kops-cilium-flatcar-k16.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=core
       - --env=KUBE_SSH_USER=core
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -3547,6 +3645,7 @@ periodics:
       args:
       - --cluster=e2e-kops-cilium-flatcar-k17.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=core
       - --env=KUBE_SSH_USER=core
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -3583,6 +3682,7 @@ periodics:
       args:
       - --cluster=e2e-kops-cilium-flatcar-k18.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=core
       - --env=KUBE_SSH_USER=core
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -3619,6 +3719,7 @@ periodics:
       args:
       - --cluster=e2e-kops-cilium-rhel7.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -3655,6 +3756,7 @@ periodics:
       args:
       - --cluster=e2e-kops-cilium-rhel7-k16.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -3691,6 +3793,7 @@ periodics:
       args:
       - --cluster=e2e-kops-cilium-rhel7-k17.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -3727,6 +3830,7 @@ periodics:
       args:
       - --cluster=e2e-kops-cilium-rhel7-k18.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -3763,6 +3867,7 @@ periodics:
       args:
       - --cluster=e2e-kops-cilium-rhel8.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -3799,6 +3904,7 @@ periodics:
       args:
       - --cluster=e2e-kops-cilium-rhel8-k16.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -3835,6 +3941,7 @@ periodics:
       args:
       - --cluster=e2e-kops-cilium-rhel8-k17.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -3871,6 +3978,7 @@ periodics:
       args:
       - --cluster=e2e-kops-cilium-rhel8-k18.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -3907,6 +4015,7 @@ periodics:
       args:
       - --cluster=e2e-kops-cilium-u1604.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -3943,6 +4052,7 @@ periodics:
       args:
       - --cluster=e2e-kops-cilium-u1604-k16.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -3979,6 +4089,7 @@ periodics:
       args:
       - --cluster=e2e-kops-cilium-u1604-k17.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -4015,6 +4126,7 @@ periodics:
       args:
       - --cluster=e2e-kops-cilium-u1604-k18.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -4051,6 +4163,7 @@ periodics:
       args:
       - --cluster=e2e-kops-cilium-u1804.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -4087,6 +4200,7 @@ periodics:
       args:
       - --cluster=e2e-kops-cilium-u1804-k16.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -4123,6 +4237,7 @@ periodics:
       args:
       - --cluster=e2e-kops-cilium-u1804-k17.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -4159,6 +4274,7 @@ periodics:
       args:
       - --cluster=e2e-kops-cilium-u1804-k18.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -4195,6 +4311,7 @@ periodics:
       args:
       - --cluster=e2e-kops-cilium-u2004.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -4231,6 +4348,7 @@ periodics:
       args:
       - --cluster=e2e-kops-cilium-u2004-k16.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -4267,6 +4385,7 @@ periodics:
       args:
       - --cluster=e2e-kops-cilium-u2004-k17.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -4303,6 +4422,7 @@ periodics:
       args:
       - --cluster=e2e-kops-cilium-u2004-k18.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -4339,6 +4459,7 @@ periodics:
       args:
       - --cluster=e2e-kops-flannel-amzn2.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -4375,6 +4496,7 @@ periodics:
       args:
       - --cluster=e2e-kops-flannel-amzn2-k16.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -4411,6 +4533,7 @@ periodics:
       args:
       - --cluster=e2e-kops-flannel-amzn2-k17.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -4447,6 +4570,7 @@ periodics:
       args:
       - --cluster=e2e-kops-flannel-amzn2-k18.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -4483,6 +4607,7 @@ periodics:
       args:
       - --cluster=e2e-kops-flannel-centos7.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=centos
       - --env=KUBE_SSH_USER=centos
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -4519,6 +4644,7 @@ periodics:
       args:
       - --cluster=e2e-kops-flannel-centos7-k16.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=centos
       - --env=KUBE_SSH_USER=centos
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -4555,6 +4681,7 @@ periodics:
       args:
       - --cluster=e2e-kops-flannel-centos7-k17.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=centos
       - --env=KUBE_SSH_USER=centos
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -4591,6 +4718,7 @@ periodics:
       args:
       - --cluster=e2e-kops-flannel-centos7-k18.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=centos
       - --env=KUBE_SSH_USER=centos
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -4627,6 +4755,7 @@ periodics:
       args:
       - --cluster=e2e-kops-flannel-deb9.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=admin
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -4663,6 +4792,7 @@ periodics:
       args:
       - --cluster=e2e-kops-flannel-deb9-k16.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=admin
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -4699,6 +4829,7 @@ periodics:
       args:
       - --cluster=e2e-kops-flannel-deb9-k17.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=admin
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -4735,6 +4866,7 @@ periodics:
       args:
       - --cluster=e2e-kops-flannel-deb9-k18.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=admin
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -4771,6 +4903,7 @@ periodics:
       args:
       - --cluster=e2e-kops-flannel-deb10.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=admin
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -4807,6 +4940,7 @@ periodics:
       args:
       - --cluster=e2e-kops-flannel-deb10-k16.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=admin
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -4843,6 +4977,7 @@ periodics:
       args:
       - --cluster=e2e-kops-flannel-deb10-k17.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=admin
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -4879,6 +5014,7 @@ periodics:
       args:
       - --cluster=e2e-kops-flannel-deb10-k18.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=admin
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -4915,6 +5051,7 @@ periodics:
       args:
       - --cluster=e2e-kops-flannel-flatcar.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=core
       - --env=KUBE_SSH_USER=core
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -4951,6 +5088,7 @@ periodics:
       args:
       - --cluster=e2e-kops-flannel-flatcar-k16.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=core
       - --env=KUBE_SSH_USER=core
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -4987,6 +5125,7 @@ periodics:
       args:
       - --cluster=e2e-kops-flannel-flatcar-k17.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=core
       - --env=KUBE_SSH_USER=core
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -5023,6 +5162,7 @@ periodics:
       args:
       - --cluster=e2e-kops-flannel-flatcar-k18.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=core
       - --env=KUBE_SSH_USER=core
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -5059,6 +5199,7 @@ periodics:
       args:
       - --cluster=e2e-kops-flannel-rhel7.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -5095,6 +5236,7 @@ periodics:
       args:
       - --cluster=e2e-kops-flannel-rhel7-k16.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -5131,6 +5273,7 @@ periodics:
       args:
       - --cluster=e2e-kops-flannel-rhel7-k17.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -5167,6 +5310,7 @@ periodics:
       args:
       - --cluster=e2e-kops-flannel-rhel7-k18.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -5203,6 +5347,7 @@ periodics:
       args:
       - --cluster=e2e-kops-flannel-rhel8.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -5239,6 +5384,7 @@ periodics:
       args:
       - --cluster=e2e-kops-flannel-rhel8-k16.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -5275,6 +5421,7 @@ periodics:
       args:
       - --cluster=e2e-kops-flannel-rhel8-k17.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -5311,6 +5458,7 @@ periodics:
       args:
       - --cluster=e2e-kops-flannel-rhel8-k18.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -5347,6 +5495,7 @@ periodics:
       args:
       - --cluster=e2e-kops-flannel-u1604.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -5383,6 +5532,7 @@ periodics:
       args:
       - --cluster=e2e-kops-flannel-u1604-k16.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -5419,6 +5569,7 @@ periodics:
       args:
       - --cluster=e2e-kops-flannel-u1604-k17.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -5455,6 +5606,7 @@ periodics:
       args:
       - --cluster=e2e-kops-flannel-u1604-k18.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -5491,6 +5643,7 @@ periodics:
       args:
       - --cluster=e2e-kops-flannel-u1804.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -5527,6 +5680,7 @@ periodics:
       args:
       - --cluster=e2e-kops-flannel-u1804-k16.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -5563,6 +5717,7 @@ periodics:
       args:
       - --cluster=e2e-kops-flannel-u1804-k17.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -5599,6 +5754,7 @@ periodics:
       args:
       - --cluster=e2e-kops-flannel-u1804-k18.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -5635,6 +5791,7 @@ periodics:
       args:
       - --cluster=e2e-kops-flannel-u2004.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -5671,6 +5828,7 @@ periodics:
       args:
       - --cluster=e2e-kops-flannel-u2004-k16.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -5707,6 +5865,7 @@ periodics:
       args:
       - --cluster=e2e-kops-flannel-u2004-k17.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -5743,6 +5902,7 @@ periodics:
       args:
       - --cluster=e2e-kops-flannel-u2004-k18.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -5779,6 +5939,7 @@ periodics:
       args:
       - --cluster=e2e-kops-kopeio-amzn2.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -5815,6 +5976,7 @@ periodics:
       args:
       - --cluster=e2e-kops-kopeio-amzn2-k16.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -5851,6 +6013,7 @@ periodics:
       args:
       - --cluster=e2e-kops-kopeio-amzn2-k17.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -5887,6 +6050,7 @@ periodics:
       args:
       - --cluster=e2e-kops-kopeio-amzn2-k18.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -5923,6 +6087,7 @@ periodics:
       args:
       - --cluster=e2e-kops-kopeio-centos7.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=centos
       - --env=KUBE_SSH_USER=centos
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -5959,6 +6124,7 @@ periodics:
       args:
       - --cluster=e2e-kops-kopeio-centos7-k16.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=centos
       - --env=KUBE_SSH_USER=centos
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -5995,6 +6161,7 @@ periodics:
       args:
       - --cluster=e2e-kops-kopeio-centos7-k17.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=centos
       - --env=KUBE_SSH_USER=centos
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -6031,6 +6198,7 @@ periodics:
       args:
       - --cluster=e2e-kops-kopeio-centos7-k18.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=centos
       - --env=KUBE_SSH_USER=centos
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -6067,6 +6235,7 @@ periodics:
       args:
       - --cluster=e2e-kops-kopeio-deb9.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=admin
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -6103,6 +6272,7 @@ periodics:
       args:
       - --cluster=e2e-kops-kopeio-deb9-k16.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=admin
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -6139,6 +6309,7 @@ periodics:
       args:
       - --cluster=e2e-kops-kopeio-deb9-k17.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=admin
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -6175,6 +6346,7 @@ periodics:
       args:
       - --cluster=e2e-kops-kopeio-deb9-k18.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=admin
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -6211,6 +6383,7 @@ periodics:
       args:
       - --cluster=e2e-kops-kopeio-deb10.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=admin
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -6247,6 +6420,7 @@ periodics:
       args:
       - --cluster=e2e-kops-kopeio-deb10-k16.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=admin
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -6283,6 +6457,7 @@ periodics:
       args:
       - --cluster=e2e-kops-kopeio-deb10-k17.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=admin
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -6319,6 +6494,7 @@ periodics:
       args:
       - --cluster=e2e-kops-kopeio-deb10-k18.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=admin
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -6355,6 +6531,7 @@ periodics:
       args:
       - --cluster=e2e-kops-kopeio-flatcar.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=core
       - --env=KUBE_SSH_USER=core
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -6391,6 +6568,7 @@ periodics:
       args:
       - --cluster=e2e-kops-kopeio-flatcar-k16.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=core
       - --env=KUBE_SSH_USER=core
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -6427,6 +6605,7 @@ periodics:
       args:
       - --cluster=e2e-kops-kopeio-flatcar-k17.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=core
       - --env=KUBE_SSH_USER=core
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -6463,6 +6642,7 @@ periodics:
       args:
       - --cluster=e2e-kops-kopeio-flatcar-k18.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=core
       - --env=KUBE_SSH_USER=core
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -6499,6 +6679,7 @@ periodics:
       args:
       - --cluster=e2e-kops-kopeio-rhel7.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -6535,6 +6716,7 @@ periodics:
       args:
       - --cluster=e2e-kops-kopeio-rhel7-k16.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -6571,6 +6753,7 @@ periodics:
       args:
       - --cluster=e2e-kops-kopeio-rhel7-k17.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -6607,6 +6790,7 @@ periodics:
       args:
       - --cluster=e2e-kops-kopeio-rhel7-k18.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -6643,6 +6827,7 @@ periodics:
       args:
       - --cluster=e2e-kops-kopeio-rhel8.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -6679,6 +6864,7 @@ periodics:
       args:
       - --cluster=e2e-kops-kopeio-rhel8-k16.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -6715,6 +6901,7 @@ periodics:
       args:
       - --cluster=e2e-kops-kopeio-rhel8-k17.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -6751,6 +6938,7 @@ periodics:
       args:
       - --cluster=e2e-kops-kopeio-rhel8-k18.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -6787,6 +6975,7 @@ periodics:
       args:
       - --cluster=e2e-kops-kopeio-u1604.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -6823,6 +7012,7 @@ periodics:
       args:
       - --cluster=e2e-kops-kopeio-u1604-k16.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -6859,6 +7049,7 @@ periodics:
       args:
       - --cluster=e2e-kops-kopeio-u1604-k17.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -6895,6 +7086,7 @@ periodics:
       args:
       - --cluster=e2e-kops-kopeio-u1604-k18.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -6931,6 +7123,7 @@ periodics:
       args:
       - --cluster=e2e-kops-kopeio-u1804.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -6967,6 +7160,7 @@ periodics:
       args:
       - --cluster=e2e-kops-kopeio-u1804-k16.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -7003,6 +7197,7 @@ periodics:
       args:
       - --cluster=e2e-kops-kopeio-u1804-k17.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -7039,6 +7234,7 @@ periodics:
       args:
       - --cluster=e2e-kops-kopeio-u1804-k18.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -7075,6 +7271,7 @@ periodics:
       args:
       - --cluster=e2e-kops-kopeio-u2004.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -7111,6 +7308,7 @@ periodics:
       args:
       - --cluster=e2e-kops-kopeio-u2004-k16.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -7147,6 +7345,7 @@ periodics:
       args:
       - --cluster=e2e-kops-kopeio-u2004-k17.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -7183,6 +7382,7 @@ periodics:
       args:
       - --cluster=e2e-kops-kopeio-u2004-k18.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release

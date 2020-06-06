@@ -9,7 +9,7 @@ presets:
   - name: LOG_DUMP_SSH_KEY
     value: /workspace/.ssh/kube_aws_rsa
   - name: LOG_DUMP_SSH_USER
-    value: admin
+    value: ubuntu
   - name: LOG_DUMP_SAVE_LOGS
     value: cloud-init-output
   - name: LOG_DUMP_SAVE_SERVICES
