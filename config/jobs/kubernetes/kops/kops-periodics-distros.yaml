@@ -17,6 +17,7 @@ periodics:
       args:
       - --cluster=e2e-kops-aws-distro-debian-9.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=admin
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -52,6 +53,7 @@ periodics:
       args:
       - --cluster=e2e-kops-aws-distro-debian-10.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=admin
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -87,6 +89,7 @@ periodics:
       args:
       - --cluster=e2e-kops-aws-distro-ubuntu-1604.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -122,6 +125,7 @@ periodics:
       args:
       - --cluster=e2e-kops-aws-distro-ubuntu-1804.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -157,6 +161,7 @@ periodics:
       args:
       - --cluster=e2e-kops-aws-distro-ubuntu-2004.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -192,6 +197,7 @@ periodics:
       args:
       - --cluster=e2e-kops-aws-distro-centos-7.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=centos
       - --env=KUBE_SSH_USER=centos
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -227,6 +233,7 @@ periodics:
       args:
       - --cluster=e2e-kops-aws-distro-amazonlinux-2.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -262,6 +269,7 @@ periodics:
       args:
       - --cluster=e2e-kops-aws-distro-rhel-7.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -297,6 +305,7 @@ periodics:
       args:
       - --cluster=e2e-kops-aws-distro-rhel-8.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=ec2-user
       - --env=KUBE_SSH_USER=ec2-user
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -332,6 +341,7 @@ periodics:
       args:
       - --cluster=e2e-kops-aws-distro-flatcar.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=core
       - --env=KUBE_SSH_USER=core
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release

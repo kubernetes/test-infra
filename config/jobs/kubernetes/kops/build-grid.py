@@ -33,6 +33,7 @@ template = """
       args:
       - --cluster=e2e-kops{{suffix}}.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user={{kops_ssh_user}}
       - --env=KUBE_SSH_USER={{kops_ssh_user}}
       - --env=KOPS_DEPLOY_LATEST_URL={{k8s_deploy_url}}
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
