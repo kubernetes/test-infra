@@ -82,6 +82,8 @@ presubmits:
         - --aws-cluster-domain=test-cncf-aws.k8s.io
         - --check-leaked-resources=false
         - --cluster=
+        - --kops-ssh-user=ubuntu
+        - --env=KUBE_SSH_USER=ubuntu
         - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
         - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
         - --env=KOPS_RUN_TOO_NEW_VERSION=1
@@ -225,6 +227,8 @@ presubmits:
         - --aws-cluster-domain=test-cncf-aws.k8s.io
         - --check-leaked-resources=false
         - --cluster=
+        - --kops-ssh-user=ubuntu
+        - --env=KUBE_SSH_USER=ubuntu
         - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
         - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
         - --extract=release/stable-1.18
