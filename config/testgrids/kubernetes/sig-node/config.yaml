@@ -111,8 +111,29 @@ dashboards:
 - name: sig-node-node-problem-detector
 
 test_groups:
-- name: ci-kubernetes-node-kubelet-serial-alpha
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-serial-alpha
+- name: ci-kubernetes-node-kubelet-alpha
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-alpha
+  test_name_config:
+    name_elements:
+    - target_config: Tests name
+    - target_config: Context
+    name_format: '%s [%s]'
+- name: ci-kubernetes-node-kubelet-benchmark
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-benchmark
+  test_name_config:
+    name_elements:
+    - target_config: Tests name
+    - target_config: Context
+    name_format: '%s [%s]'
+- name: ci-kubernetes-node-kubelet-conformance
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-conformance
+  test_name_config:
+    name_elements:
+    - target_config: Tests name
+    - target_config: Context
+    name_format: '%s [%s]'
+- name: ci-kubernetes-node-kubelet-flaky
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-flaky
   test_name_config:
     name_elements:
     - target_config: Tests name
@@ -120,6 +141,41 @@ test_groups:
     name_format: '%s [%s]'
 - name: ci-kubernetes-node-kubelet-features
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-features
+  test_name_config:
+    name_elements:
+    - target_config: Tests name
+    - target_config: Context
+    name_format: '%s [%s]'
+- name: ci-kubernetes-node-kubelet
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet
+  test_name_config:
+    name_elements:
+    - target_config: Tests name
+    - target_config: Context
+    name_format: '%s [%s]'
+- name: ci-kubernetes-node-kubelet-orphans
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-orphans
+  test_name_config:
+    name_elements:
+    - target_config: Tests name
+    - target_config: Context
+    name_format: '%s [%s]'
+- name: ci-kubernetes-node-kubelet-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-serial
+  test_name_config:
+    name_elements:
+    - target_config: Tests name
+    - target_config: Context
+    name_format: '%s [%s]'
+- name: ci-kubernetes-node-kubelet-serial-alpha
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-serial-alpha
+  test_name_config:
+    name_elements:
+    - target_config: Tests name
+    - target_config: Context
+    name_format: '%s [%s]'
+- name: ci-kubernetes-node-kubelet-serial-topology-manager
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-serial-topology-manager
   test_name_config:
     name_elements:
     - target_config: Tests name
