@@ -222,10 +222,16 @@ func handle(ghc githubClient, roc repoownersClient, log *logrus.Entry, reviewerC
 				if err != nil {
 					return err
 				}
+				var added int
 				combinedReviewers := sets.NewString(reviewers...)
-				combinedReviewers.Insert(approvers...)
-				log.Infof("Added %d approvers as reviewers. %d/%d reviewers found.", combinedReviewers.Len()-len(reviewers), combinedReviewers.Len(), *reviewerCount)
-				reviewers = combinedReviewers.List()
+				for _, approver := range approvers {
+					if !combinedReviewers.Has(approver) {
+						reviewers = append(reviewers, approver)
+						combinedReviewers.Insert(approver)
+						added++
+					}
+				}
+				log.Infof("Added %d approvers as reviewers. %d/%d reviewers found.", added, combinedReviewers.Len(), *reviewerCount)
 			}
 		}
 		if missing := *reviewerCount - len(reviewers); missing > 0 {
@@ -250,7 +256,9 @@ func handle(ghc githubClient, roc repoownersClient, log *logrus.Entry, reviewerC
 
 func getReviewers(rc reviewersClient, ghc githubClient, log *logrus.Entry, author string, files []github.PullRequestChange, minReviewers int, useStatusAvailability bool) ([]string, []string, error) {
 	authorSet := sets.NewString(github.NormLogin(author))
-	reviewers := sets.NewString()
+	stage1 := sets.NewString()
+	stage2 := sets.NewString()
+	stage3 := sets.NewString()
 	requiredReviewers := sets.NewString()
 	leafReviewers := sets.NewString()
 	busyReviewers := sets.NewString()
@@ -266,34 +274,40 @@ func getReviewers(rc reviewersClient, ghc githubClient, log *logrus.Entry, autho
 		// record required reviewers if any
 		requiredReviewers.Insert(rc.RequiredReviewers(file.Filename).UnsortedList()...)
 
-		fileUnusedLeafs := rc.LeafReviewers(file.Filename).Difference(reviewers).Difference(authorSet)
+		fileUnusedLeafs := rc.LeafReviewers(file.Filename).Difference(stage1).Difference(authorSet)
 		if fileUnusedLeafs.Len() == 0 {
 			continue
 		}
 		leafReviewers = leafReviewers.Union(fileUnusedLeafs)
 		if r := findReviewer(ghc, log, useStatusAvailability, &busyReviewers, &fileUnusedLeafs); r != "" {
-			reviewers.Insert(r)
+			stage1.Insert(r)
 		}
 	}
 	// now ensure that we request review from at least minReviewers reviewers. Favor leaf reviewers.
-	unusedLeafs := leafReviewers.Difference(reviewers)
-	for reviewers.Len() < minReviewers && unusedLeafs.Len() > 0 {
+	unusedLeafs := leafReviewers.Difference(stage1)
+	for stage1.Len()+stage2.Len() < minReviewers && unusedLeafs.Len() > 0 {
 		if r := findReviewer(ghc, log, useStatusAvailability, &busyReviewers, &unusedLeafs); r != "" {
-			reviewers.Insert(r)
+			if stage1.Has(r) {
+				continue
+			}
+			stage2.Insert(r)
 		}
 	}
 	for _, file := range files {
-		if reviewers.Len() >= minReviewers {
+		if stage1.Len()+stage2.Len()+stage3.Len() >= minReviewers {
 			break
 		}
 		fileReviewers := rc.Reviewers(file.Filename).Difference(authorSet)
-		for reviewers.Len() < minReviewers && fileReviewers.Len() > 0 {
+		for stage1.Len()+stage2.Len()+stage3.Len() < minReviewers && fileReviewers.Len() > 0 {
 			if r := findReviewer(ghc, log, useStatusAvailability, &busyReviewers, &fileReviewers); r != "" {
-				reviewers.Insert(r)
+				if stage1.Has(r) || stage2.Has(r) {
+					continue
+				}
+				stage3.Insert(r)
 			}
 		}
 	}
-	return reviewers.List(), requiredReviewers.List(), nil
+	return append(stage1.UnsortedList(), append(stage2.UnsortedList(), stage3.UnsortedList()...)...), requiredReviewers.List(), nil
 }
 
 // popRandom randomly selects an element of 'set' and pops it.
