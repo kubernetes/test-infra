@@ -163,7 +163,7 @@ func (s *Server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent
 	num := ic.Issue.Number
 	commentAuthor := ic.Comment.User.Login
 
-	l = l.WithFields(logrus.Fields{
+	logger := s.log.WithFields(logrus.Fields{
 		github.OrgLogField:  org,
 		github.RepoLogField: repo,
 		github.PrLogField:   num,
@@ -184,12 +184,12 @@ func (s *Server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent
 			}
 			if !ok {
 				resp := fmt.Sprintf("only [%s](https://github.com/orgs/%s/people) org members may request cherry-picks. You can still do the cherry-pick manually.", org, org)
-				s.log.WithFields(l.Data).Info(resp)
+				logger.Info(resp)
 				return s.ghc.CreateComment(org, repo, num, plugins.FormatICResponse(ic.Comment, resp))
 			}
 		}
 		resp := fmt.Sprintf("once the present PR merges, I will cherry-pick it on top of %s in a new PR and assign it to you.", targetBranch)
-		s.log.WithFields(l.Data).Info(resp)
+		logger.Info(resp)
 		return s.ghc.CreateComment(org, repo, num, plugins.FormatICResponse(ic.Comment, resp))
 	}
 
@@ -204,14 +204,14 @@ func (s *Server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent
 	// Cherry-pick only merged PRs.
 	if !pr.Merged {
 		resp := "cannot cherry-pick an unmerged PR"
-		s.log.WithFields(l.Data).Info(resp)
+		logger.Info(resp)
 		return s.ghc.CreateComment(org, repo, num, plugins.FormatICResponse(ic.Comment, resp))
 	}
 
 	// TODO: Use a whitelist for allowed base and target branches.
 	if baseBranch == targetBranch {
 		resp := fmt.Sprintf("base branch (%s) needs to differ from target branch (%s)", baseBranch, targetBranch)
-		s.log.WithFields(l.Data).Info(resp)
+		logger.Info(resp)
 		return s.ghc.CreateComment(org, repo, num, plugins.FormatICResponse(ic.Comment, resp))
 	}
 
@@ -223,16 +223,16 @@ func (s *Server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent
 		}
 		if !ok {
 			resp := fmt.Sprintf("only [%s](https://github.com/orgs/%s/people) org members may request cherry picks. You can still do the cherry-pick manually.", org, org)
-			s.log.WithFields(l.Data).Info(resp)
+			logger.Info(resp)
 			return s.ghc.CreateComment(org, repo, num, plugins.FormatICResponse(ic.Comment, resp))
 		}
 	}
 
-	s.log.WithFields(l.Data).
-		WithField("requestor", ic.Comment.User.Login).
-		WithField("target_branch", targetBranch).
-		Debug("Cherrypick request.")
-	return s.handle(l, ic.Comment.User.Login, &ic.Comment, org, repo, targetBranch, title, body, num)
+	logger.WithFields(logrus.Fields{
+		"requestor":     ic.Comment.User.Login,
+		"target_branch": targetBranch,
+	}).Debug("Cherrypick request.")
+	return s.handle(logger, ic.Comment.User.Login, &ic.Comment, org, repo, targetBranch, title, body, num)
 }
 
 func (s *Server) handlePullRequest(l *logrus.Entry, pre github.PullRequestEvent) error {
@@ -253,7 +253,7 @@ func (s *Server) handlePullRequest(l *logrus.Entry, pre github.PullRequestEvent)
 	title := pr.Title
 	body := pr.Body
 
-	l = l.WithFields(logrus.Fields{
+	logger := s.log.WithFields(logrus.Fields{
 		github.OrgLogField:  org,
 		github.RepoLogField: repo,
 		github.PrLogField:   num,
@@ -335,7 +335,7 @@ func (s *Server) handlePullRequest(l *logrus.Entry, pre github.PullRequestEvent)
 		for targetBranch, ic := range branches {
 			if targetBranch == baseBranch {
 				resp := fmt.Sprintf("base branch (%s) needs to differ from target branch (%s)", baseBranch, targetBranch)
-				s.log.WithFields(l.Data).Info(resp)
+				logger.Info(resp)
 				s.createComment(org, repo, num, ic, resp)
 				continue
 			}
@@ -344,11 +344,11 @@ func (s *Server) handlePullRequest(l *logrus.Entry, pre github.PullRequestEvent)
 				continue
 			}
 			handledBranches[targetBranch] = true
-			s.log.WithFields(l.Data).
-				WithField("requestor", requestor).
-				WithField("target_branch", targetBranch).
-				Debug("Cherrypick request.")
-			err := s.handle(l, requestor, ic, org, repo, targetBranch, title, body, num)
+			logger.WithFields(logrus.Fields{
+				"requestor":     requestor,
+				"target_branch": targetBranch,
+			}).Debug("Cherrypick request.")
+			err := s.handle(logger, requestor, ic, org, repo, targetBranch, title, body, num)
 			if err != nil {
 				return err
 			}
@@ -359,11 +359,11 @@ func (s *Server) handlePullRequest(l *logrus.Entry, pre github.PullRequestEvent)
 
 var cherryPickBranchFmt = "cherry-pick-%d-to-%s"
 
-func (s *Server) handle(l *logrus.Entry, requestor string, comment *github.IssueComment, org, repo, targetBranch, title, body string, num int) error {
+func (s *Server) handle(logger *logrus.Entry, requestor string, comment *github.IssueComment, org, repo, targetBranch, title, body string, num int) error {
 	forkName, err := s.ensureForkExists(org, repo)
 	if err != nil {
 		resp := fmt.Sprintf("cannot fork %s/%s: %v", org, repo, err)
-		s.log.WithFields(l.Data).Info(resp)
+		logger.Warningf(resp)
 		return s.createComment(org, repo, num, comment, resp)
 	}
 
@@ -375,15 +375,15 @@ func (s *Server) handle(l *logrus.Entry, requestor string, comment *github.Issue
 	}
 	defer func() {
 		if err := r.Clean(); err != nil {
-			s.log.WithError(err).WithFields(l.Data).Error("Error cleaning up repo.")
+			logger.WithError(err).Error("Error cleaning up repo.")
 		}
 	}()
 	if err := r.Checkout(targetBranch); err != nil {
 		resp := fmt.Sprintf("cannot checkout %s: %v", targetBranch, err)
-		s.log.WithFields(l.Data).Info(resp)
+		logger.Warningf(resp)
 		return s.createComment(org, repo, num, comment, resp)
 	}
-	s.log.WithFields(l.Data).WithField("duration", time.Since(startClone)).Info("Cloned and checked out target branch.")
+	logger.WithField("duration", time.Since(startClone)).Info("Cloned and checked out target branch.")
 
 	// Fetch the patch from GitHub
 	localPath, err := s.getPatch(org, repo, targetBranch, num)
@@ -415,7 +415,7 @@ func (s *Server) handle(l *logrus.Entry, requestor string, comment *github.Issue
 		for _, pr := range prs {
 			if pr.Head.Ref == fmt.Sprintf("%s:%s", s.botName, newBranch) {
 				resp := fmt.Sprintf("Looks like #%d has already been cherry picked in %s", num, pr.HTMLURL)
-				s.log.WithFields(l.Data).Info(resp)
+				logger.Info(resp)
 				return s.createComment(org, repo, num, comment, resp)
 			}
 		}
@@ -432,7 +432,7 @@ func (s *Server) handle(l *logrus.Entry, requestor string, comment *github.Issue
 	// Apply the patch.
 	if err := r.Am(localPath); err != nil {
 		resp := fmt.Sprintf("#%d failed to apply on top of branch %q:\n```%v\n```", num, targetBranch, err)
-		s.log.WithFields(l.Data).Info(resp)
+		logger.Info(resp)
 		err := s.createComment(org, repo, num, comment, resp)
 
 		if s.issueOnConflict {
@@ -450,7 +450,7 @@ func (s *Server) handle(l *logrus.Entry, requestor string, comment *github.Issue
 	// Push the new branch in the bot's fork.
 	if err := push(newBranch); err != nil {
 		resp := fmt.Sprintf("failed to push cherry-picked changes in GitHub: %v", err)
-		s.log.WithFields(l.Data).Info(resp)
+		logger.Info(resp)
 		return s.createComment(org, repo, num, comment, resp)
 	}
 
@@ -465,11 +465,11 @@ func (s *Server) handle(l *logrus.Entry, requestor string, comment *github.Issue
 	createdNum, err := s.ghc.CreatePullRequest(org, repo, title, cherryPickBody, head, targetBranch, true)
 	if err != nil {
 		resp := fmt.Sprintf("new pull request could not be created: %v", err)
-		s.log.WithFields(l.Data).Info(resp)
+		logger.Info(resp)
 		return s.createComment(org, repo, num, comment, resp)
 	}
 	resp := fmt.Sprintf("new pull request created: #%d", createdNum)
-	s.log.WithFields(l.Data).Info(resp)
+	logger.Info(resp)
 	if err := s.createComment(org, repo, num, comment, resp); err != nil {
 		return err
 	}
@@ -480,7 +480,7 @@ func (s *Server) handle(l *logrus.Entry, requestor string, comment *github.Issue
 	}
 	if !s.prowAssignments {
 		if err := s.ghc.AssignIssue(org, repo, createdNum, []string{requestor}); err != nil {
-			s.log.WithFields(l.Data).Warningf("Cannot assign to new PR: %v", err)
+			logger.Warningf("Cannot assign to new PR: %v", err)
 			// Ignore returning errors on failure to assign as this is most likely
 			// due to users not being members of the org so that they can't be assigned
 			// in PRs.

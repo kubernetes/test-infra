@@ -172,8 +172,8 @@ func (f *fghc) ListOrgMembers(org, role string) ([]github.TeamMember, error) {
 	return f.orgMembers, nil
 }
 
-func (f *fghc) CreateFork(org, repo string) error {
-	return nil
+func (f *fghc) CreateFork(org, repo string) (string, error) {
+	return repo, nil
 }
 
 var initialFiles = map[string][]byte{
