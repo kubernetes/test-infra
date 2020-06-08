@@ -113,7 +113,7 @@ func readLatestBuild(ctx context.Context, bucket storageBucket, root string) (in
 	key := path.Join(root, latestBuildFile)
 	data, err := bucket.readObject(ctx, key)
 	if err != nil {
-		return -1, fmt.Errorf("failed to read %s: %v", key, err)
+		return -1, fmt.Errorf("failed to read %s: %w", key, err)
 	}
 	n, err := strconv.ParseInt(strings.TrimSpace(string(data)), 10, 64)
 	if err != nil {
@@ -154,7 +154,7 @@ func (bucket blobStorageBucket) getPath(ctx context.Context, root, id, fname str
 	symLink := path.Join(root, id+".txt")
 	dir, err := bucket.resolveSymLink(ctx, symLink)
 	if err != nil {
-		return "", fmt.Errorf("failed to resolve sym link: %v", err)
+		return "", fmt.Errorf("failed to resolve sym link: %w", err)
 	}
 	return path.Join(dir, fname), nil
 }
