@@ -215,17 +215,17 @@ aliases:
   # copied from git.k8s.io/kubernetes/OWNERS_ALIASES
   release-engineering-approvers:
     - calebamiles # subproject owner
-    - justaugustus # subproject owner / Patch Release Team
-    - tpepper # subproject owner / Patch Release Team
+    - justaugustus # subproject owner / Release Manager
+    - tpepper # subproject owner / Release Manager
   release-engineering-reviewers:
     - calebamiles # subproject owner
-    - cpanato # Branch Manager
-    - feiskyer # Patch Release Team
-    - hasheddan # Branch Manager
-    - hoegaarden # Patch Release Team
-    - justaugustus # subproject owner / Patch Release Team
-    - saschagrunert # Branch Manager
-    - tpepper # subproject owner / Patch Release Team
+    - cpanato # Release Manager
+    - feiskyer # Release Manager
+    - hasheddan # Release Manager
+    - hoegaarden # Release Manager
+    - justaugustus # subproject owner / Release Manager
+    - saschagrunert # Release Manager
+    - tpepper # subproject owner / Release Manager
 
   # copied from git.k8s.io/enhancements/OWNERS_ALIASES
   enhancements-approvers:
