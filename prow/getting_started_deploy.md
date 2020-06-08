@@ -202,11 +202,11 @@ $ bazel run //experiment/add-hook -- \
 
 Now go to your org or repo and click `Settings -> Webhooks`.
 
-Look for the `http://an.ip.addr.ess/hook` you added above.
-A green check mark (for a ping event, if you click edit and view the details of the event) suggests everything is working!
-
-You can click `Add webhook` on the Webhooks page to add the hook manually
-if you do not want to use the `add-hook` utility.
+- Look for the `http://an.ip.addr.ess/hook` you added above to the `Payload URL`.
+- Change the `Content type` to `application/json`, and change your `Secret` to the `hmac-path` secret you created above.
+- Change the trigger to `Send me **everything**.`
+- Click `Add webhook` 
+- A green check mark (for a ping event, if you click edit and view the details of the event) suggests everything is working!
 
 ## Next Steps
 
