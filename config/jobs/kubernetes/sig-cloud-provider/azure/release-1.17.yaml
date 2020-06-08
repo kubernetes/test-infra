@@ -424,7 +424,7 @@ periodics:
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Run Azure Disk e2e test with Azure Disk in-tree volume plugin on a CAPZ cluster.
     testgrid-num-columns-recent: '30'
-- interval: 3h
+- interval: 24h
   name: kubernetes-e2e-capz-azure-disk-vmss-1-17
   decorate: true
   decoration_config:
@@ -533,7 +533,7 @@ periodics:
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Run Azure File e2e test with Azure File in-tree volume plugin on a CAPZ cluster.
     testgrid-num-columns-recent: '30'
-- interval: 3h
+- interval: 24h
   name: kubernetes-e2e-capz-azure-file-vmss-1-17
   decorate: true
   decoration_config:

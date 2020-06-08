@@ -316,7 +316,7 @@ periodics:
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs conformance & node conformance tests latest kubernetes master with cluster-api-provider-azure
     testgrid-num-columns-recent: '30'
-- interval: 3h
+- interval: 24h
   name: ci-kubernetes-e2e-capz-conformance-vmss-master
   decorate: true
   decoration_config:
