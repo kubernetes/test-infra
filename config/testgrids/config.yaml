@@ -204,13 +204,13 @@ dashboards:
         value: 'ci-ovf-import-e2e-tests-daily issue: <test-name>'
       - key: body
         value: <test-url>
-  - name: ci-windows-upgrade-tests
-    test_group_name: ci-windows-upgrade-tests
+  - name: ci-windows-upgrade-e2e-tests
+    test_group_name: ci-windows-upgrade-e2e-tests
     file_bug_template:
       url: https://github.com/GoogleCloudPlatform/compute-image-tools/issues/new
       options:
       - key: title
-        value: 'ci-windows-upgrade-tests issue: <test-name>'
+        value: 'ci-windows-upgrade-e2e-tests issue: <test-name>'
       - key: body
         value: <test-url>
   - name: linux-image-tests
