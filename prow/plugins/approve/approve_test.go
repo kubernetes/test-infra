@@ -100,13 +100,7 @@ func newFakeGitHubClient(hasLabel, humanApproved bool, files []string, comments 
 	if hasLabel {
 		labels = append(labels, fmt.Sprintf("org/repo#%v:approved", prNumber))
 	}
-	events := []github.ListedIssueEvent{
-		{
-			Event: github.IssueActionLabeled,
-			Label: github.Label{Name: "approved"},
-			Actor: github.User{Login: "k8s-merge-robot"},
-		},
-	}
+	events := []github.ListedIssueEvent{}
 	if humanApproved {
 		events = append(
 			events,
