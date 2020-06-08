@@ -128,7 +128,7 @@ func readLatestBuild(ctx context.Context, bucket storageBucket, root string) (in
 func (bucket blobStorageBucket) resolveSymLink(ctx context.Context, symLink string) (string, error) {
 	data, err := bucket.readObject(ctx, symLink)
 	if err != nil {
-		return "", fmt.Errorf("failed to read %s: %v", symLink, err)
+		return "", fmt.Errorf("failed to read %s: %w", symLink, err)
 	}
 	// strip gs://<bucket-name> from global address `u`
 	u := strings.TrimSpace(string(data))
