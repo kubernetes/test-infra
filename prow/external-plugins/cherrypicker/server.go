@@ -361,7 +361,9 @@ var cherryPickBranchFmt = "cherry-pick-%d-to-%s"
 
 func (s *Server) handle(l *logrus.Entry, requestor string, comment *github.IssueComment, org, repo, targetBranch, title, body string, num int) error {
 	if err := s.ensureForkExists(org, repo); err != nil {
-		return err
+		resp := fmt.Sprintf("cannot fork %s/%s: %v", org, repo, err)
+		s.log.WithFields(l.Data).Info(resp)
+		return s.createComment(org, repo, num, comment, resp)
 	}
 
 	// Clone the repo, checkout the target branch.
@@ -525,8 +527,10 @@ func (s *Server) ensureForkExists(org, repo string) error {
 
 func waitForRepo(owner, name string, ghc githubClient) error {
 	// Wait for at most 5 minutes for the fork to appear on GitHub.
-	after := time.After(5 * time.Minute)
-	tick := time.Tick(5 * time.Second)
+	// The documentation instructs us to contact support if this
+	// takes longer than five minutes.
+	after := time.After(6 * time.Minute)
+	tick := time.Tick(30 * time.Second)
 
 	var ghErr string
 	for {
