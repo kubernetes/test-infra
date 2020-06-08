@@ -91,6 +91,7 @@ filegroup(
         "//prow/plugins/label:all-srcs",
         "//prow/plugins/lgtm:all-srcs",
         "//prow/plugins/lifecycle:all-srcs",
+        "//prow/plugins/merge-method-comment:all-srcs",
         "//prow/plugins/mergecommitblocker:all-srcs",
         "//prow/plugins/milestone:all-srcs",
         "//prow/plugins/milestoneapplier:all-srcs",

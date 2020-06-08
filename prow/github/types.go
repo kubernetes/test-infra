@@ -270,6 +270,7 @@ type PullRequest struct {
 	Mergable *bool `json:"mergeable,omitempty"`
 	// If the PR doesn't have any milestone, `milestone` is null and is unmarshaled to nil.
 	Milestone *Milestone `json:"milestone,omitempty"`
+	Commits   int        `json:"commits"`
 }
 
 // PullRequestBranch contains information about a particular branch in a PR.

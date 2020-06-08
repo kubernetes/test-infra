@@ -27,6 +27,7 @@ go_library(
         "//prow/plugins/label:go_default_library",
         "//prow/plugins/lgtm:go_default_library",
         "//prow/plugins/lifecycle:go_default_library",
+        "//prow/plugins/merge-method-comment:go_default_library",
         "//prow/plugins/mergecommitblocker:go_default_library",
         "//prow/plugins/milestone:go_default_library",
         "//prow/plugins/milestoneapplier:go_default_library",
