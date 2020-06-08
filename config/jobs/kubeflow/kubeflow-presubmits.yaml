@@ -550,6 +550,24 @@ presubmits:
         command:
         - ./test/presubmit-backend-visualization.sh
 
+  - name: kubeflow-pipeline-multiuser-test
+    cluster: kubeflow
+    always_run: false
+    decorate: true
+    skip_report: true
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-master
+        command:
+        - ./test/multiuser-tests.sh
+        args:
+        - --workflow_file
+        - multiuser_test.yaml
+        - --test_result_folder
+        - multiuser_test
+
   kubeflow/xgboost-operator:
   - name: kubeflow-xgboost-operator-presubmit
     cluster: kubeflow
