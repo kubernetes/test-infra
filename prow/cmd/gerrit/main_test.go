@@ -31,6 +31,7 @@ import (
 	"cloud.google.com/go/storage"
 	"k8s.io/apimachinery/pkg/util/sets"
 
+	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/io"
 )
@@ -106,6 +107,10 @@ func TestFlags(t *testing.T) {
 				lastSyncFallback: "gs://path",
 				configPath:       "yo",
 				dryRun:           false,
+				instrumentationOptions: flagutil.InstrumentationOptions{
+					MetricsPort: flagutil.DefaultMetricsPort,
+					PProfPort:   flagutil.DefaultPProfPort,
+				},
 			}
 			expected.projects.Set("foo=bar")
 			if tc.expected != nil {

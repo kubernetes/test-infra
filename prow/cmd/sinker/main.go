@@ -45,11 +45,12 @@ import (
 )
 
 type options struct {
-	runOnce       bool
-	configPath    string
-	jobConfigPath string
-	dryRun        flagutil.Bool
-	kubernetes    flagutil.KubernetesOptions
+	runOnce                bool
+	configPath             string
+	jobConfigPath          string
+	dryRun                 flagutil.Bool
+	kubernetes             flagutil.KubernetesOptions
+	instrumentationOptions flagutil.InstrumentationOptions
 }
 
 const (
@@ -71,6 +72,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.Var(&o.dryRun, "dry-run", "Whether or not to make mutating API calls to Kubernetes.")
 
 	o.kubernetes.AddFlags(fs)
+	o.instrumentationOptions.AddFlags(fs)
 	fs.Parse(args)
 	return o
 }
@@ -97,7 +99,7 @@ func main() {
 
 	defer interrupts.WaitForGracefulShutdown()
 
-	pjutil.ServePProf()
+	pjutil.ServePProf(o.instrumentationOptions.PProfPort)
 
 	if !o.dryRun.Explicit {
 		logrus.Warning("Sinker requires --dry-run=false to function correctly in production.")
@@ -110,7 +112,7 @@ func main() {
 	}
 	cfg := configAgent.Config
 
-	metrics.ExposeMetrics("sinker", cfg().PushGateway)
+	metrics.ExposeMetrics("sinker", cfg().PushGateway, o.instrumentationOptions.MetricsPort)
 
 	// Enabling debug logging has the unfortunate side-effect of making the log
 	// unstructured

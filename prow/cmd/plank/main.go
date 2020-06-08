@@ -46,9 +46,10 @@ type options struct {
 	selector      string
 	skipReport    bool
 
-	dryRun     bool
-	kubernetes prowflagutil.KubernetesOptions
-	github     prowflagutil.GitHubOptions // TODO(fejta): remove
+	dryRun                 bool
+	kubernetes             prowflagutil.KubernetesOptions
+	github                 prowflagutil.GitHubOptions // TODO(fejta): remove
+	instrumentationOptions prowflagutil.InstrumentationOptions
 }
 
 func gatherOptions(fs *flag.FlagSet, args ...string) options {
@@ -61,7 +62,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.BoolVar(&o.skipReport, "skip-report", false, "Validate that crier is reporting to github, not plank")
 
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Whether or not to make mutating API calls to GitHub.")
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github} {
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.instrumentationOptions} {
 		group.AddFlags(fs)
 	}
 
@@ -95,7 +96,7 @@ func main() {
 
 	defer interrupts.WaitForGracefulShutdown()
 
-	pjutil.ServePProf()
+	pjutil.ServePProf(o.instrumentationOptions.PProfPort)
 
 	var configAgent config.Agent
 	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
@@ -137,7 +138,7 @@ func main() {
 	}
 
 	// Expose prometheus metrics
-	metrics.ExposeMetrics("plank", cfg().PushGateway)
+	metrics.ExposeMetrics("plank", cfg().PushGateway, o.instrumentationOptions.MetricsPort)
 	// gather metrics for the jobs handled by plank.
 	if reporter != nil {
 		interrupts.Run(reporter)

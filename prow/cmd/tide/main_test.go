@@ -22,6 +22,7 @@ import (
 	"testing"
 
 	"k8s.io/apimachinery/pkg/util/sets"
+
 	"k8s.io/test-infra/prow/flagutil"
 )
 
@@ -97,6 +98,10 @@ func Test_gatherOptions(t *testing.T) {
 				statusThrottle:    400,
 				maxRecordsPerPool: 1000,
 				kubernetes:        flagutil.KubernetesOptions{DeckURI: "http://whatever"},
+				instrumentationOptions: flagutil.InstrumentationOptions{
+					MetricsPort: flagutil.DefaultMetricsPort,
+					PProfPort:   flagutil.DefaultPProfPort,
+				},
 			}
 			expectedfs := flag.NewFlagSet("fake-flags", flag.PanicOnError)
 			expected.github.AddFlags(expectedfs)

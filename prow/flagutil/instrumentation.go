@@ -20,8 +20,13 @@ import (
 	"flag"
 )
 
-// CommonOptions holds common options which are used across Prow components
-type CommonOptions struct {
+const (
+	DefaultMetricsPort = 9090
+	DefaultPProfPort   = 6060
+)
+
+// InstrumentationOptions holds common options which are used across Prow components
+type InstrumentationOptions struct {
 	// MetricsPort is the port which is used to serve metrics
 	MetricsPort int
 	// PProfPort is the port which is used to serve pprof
@@ -29,7 +34,11 @@ type CommonOptions struct {
 }
 
 // AddFlags injects common options into the given FlagSet.
-func (o *CommonOptions) AddFlags(fs *flag.FlagSet) {
-	fs.IntVar(&o.MetricsPort, "metrics-port", 9090, "port to serve metrics")
-	fs.IntVar(&o.PProfPort, "pprof-port", 6060, "port to serve pprof")
+func (o *InstrumentationOptions) AddFlags(fs *flag.FlagSet) {
+	fs.IntVar(&o.MetricsPort, "metrics-port", DefaultMetricsPort, "port to serve metrics")
+	fs.IntVar(&o.PProfPort, "pprof-port", DefaultPProfPort, "port to serve pprof")
+}
+
+func (o *InstrumentationOptions) Validate(_ bool) error {
+	return nil
 }

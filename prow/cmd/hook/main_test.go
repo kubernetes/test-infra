@@ -23,6 +23,7 @@ import (
 	"time"
 
 	"k8s.io/apimachinery/pkg/util/sets"
+
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/plugins"
 )
@@ -92,6 +93,10 @@ func Test_gatherOptions(t *testing.T) {
 				gracePeriod:       180 * time.Second,
 				kubernetes:        flagutil.KubernetesOptions{DeckURI: "http://whatever"},
 				webhookSecretFile: "/etc/webhook/hmac",
+				instrumentationOptions: flagutil.InstrumentationOptions{
+					MetricsPort: flagutil.DefaultMetricsPort,
+					PProfPort:   flagutil.DefaultPProfPort,
+				},
 			}
 			expectedfs := flag.NewFlagSet("fake-flags", flag.PanicOnError)
 			expected.github.AddFlags(expectedfs)

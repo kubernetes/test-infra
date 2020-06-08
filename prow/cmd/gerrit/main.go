@@ -48,10 +48,11 @@ type options struct {
 	projects       client.ProjectsFlag
 	// lastSyncFallback is the path to sync the latest timestamp
 	// Can be /local/path, gs://path/to/object or s3://path/to/object.
-	lastSyncFallback string
-	dryRun           bool
-	kubernetes       prowflagutil.KubernetesOptions
-	storage          prowflagutil.StorageClientOptions
+	lastSyncFallback       string
+	dryRun                 bool
+	kubernetes             prowflagutil.KubernetesOptions
+	storage                prowflagutil.StorageClientOptions
+	instrumentationOptions prowflagutil.InstrumentationOptions
 }
 
 func (o *options) validate() error {
@@ -89,7 +90,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.Var(&o.projects, "gerrit-projects", "Set of gerrit repos to monitor on a host example: --gerrit-host=https://android.googlesource.com=platform/build,toolchain/llvm, repeat fs for each host")
 	fs.StringVar(&o.lastSyncFallback, "last-sync-fallback", "", "The /local/path, gs://path/to/object or s3://path/to/object to sync the latest timestamp")
 	fs.BoolVar(&o.dryRun, "dry-run", false, "Run in dry-run mode, performing no modifying actions.")
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.storage} {
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.storage, &o.instrumentationOptions} {
 		group.AddFlags(fs)
 	}
 	fs.Parse(args)
@@ -231,12 +232,12 @@ func main() {
 
 	defer interrupts.WaitForGracefulShutdown()
 
-	pjutil.ServePProf()
-
 	o := gatherOptions(flag.NewFlagSet(os.Args[0], flag.ExitOnError), os.Args[1:]...)
 	if err := o.validate(); err != nil {
 		logrus.Fatalf("Invalid options: %v", err)
 	}
+
+	pjutil.ServePProf(o.instrumentationOptions.PProfPort)
 
 	ca := &config.Agent{}
 	if err := ca.Start(o.configPath, o.jobConfigPath); err != nil {

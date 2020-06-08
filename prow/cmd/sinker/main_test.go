@@ -763,6 +763,10 @@ func TestFlags(t *testing.T) {
 				dryRun: flagutil.Bool{
 					Explicit: true,
 				},
+				instrumentationOptions: flagutil.InstrumentationOptions{
+					MetricsPort: flagutil.DefaultMetricsPort,
+					PProfPort:   flagutil.DefaultPProfPort,
+				},
 			}
 			if tc.expected != nil {
 				tc.expected(expected)

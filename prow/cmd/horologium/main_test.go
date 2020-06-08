@@ -30,6 +30,7 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/flagutil"
 )
 
 type fakeCron struct {
@@ -300,6 +301,10 @@ func TestFlags(t *testing.T) {
 			expected := &options{
 				configPath: "yo",
 				dryRun:     true,
+				instrumentationOptions: flagutil.InstrumentationOptions{
+					MetricsPort: flagutil.DefaultMetricsPort,
+					PProfPort:   flagutil.DefaultPProfPort,
+				},
 			}
 			expected.kubernetes.DeckURI = "http://whatever"
 			if tc.expected != nil {

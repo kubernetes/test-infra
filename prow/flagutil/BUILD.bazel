@@ -5,10 +5,10 @@ go_library(
     srcs = [
         "bool.go",
         "bugzilla.go",
-        "common.go",
         "doc.go",
         "git.go",
         "github.go",
+        "instrumentation.go",
         "k8s_client.go",
         "kubernetes_cluster_clients.go",
         "storage.go",

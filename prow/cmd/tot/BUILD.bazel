@@ -35,6 +35,7 @@ go_library(
     importpath = "k8s.io/test-infra/prow/cmd/tot",
     deps = [
         "//prow/config:go_default_library",
+        "//prow/flagutil:go_default_library",
         "//prow/interrupts:go_default_library",
         "//prow/logrusutil:go_default_library",
         "//prow/pjutil:go_default_library",

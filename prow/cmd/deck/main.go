@@ -101,7 +101,7 @@ const (
 type options struct {
 	configPath            string
 	jobConfigPath         string
-	common                prowflagutil.CommonOptions
+	instrumentation       prowflagutil.InstrumentationOptions
 	kubernetes            prowflagutil.KubernetesOptions
 	github                prowflagutil.GitHubOptions
 	tideURL               string
@@ -195,7 +195,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.BoolVar(&o.allowInsecure, "allow-insecure", false, "Allows insecure requests for CSRF and GitHub oauth.")
 	fs.BoolVar(&o.dryRun, "dry-run", false, "Whether or not to make mutating API calls to GitHub.")
 	fs.StringVar(&o.pluginConfig, "plugin-config", "", "Path to plugin config file, probably /etc/plugins/plugins.yaml")
-	o.common.AddFlags(fs)
+	o.instrumentation.AddFlags(fs)
 	o.kubernetes.AddFlags(fs)
 	o.github.AddFlags(fs)
 	o.github.AllowAnonymous = true
@@ -279,7 +279,7 @@ func main() {
 	}
 
 	defer interrupts.WaitForGracefulShutdown()
-	pjutil.ServePProf(o.common.PProfPort)
+	pjutil.ServePProf(o.instrumentation.PProfPort)
 
 	// setup config agent, pod log clients etc.
 	configAgent := &config.Agent{}
@@ -297,7 +297,7 @@ func main() {
 	} else {
 		logrus.Info("No plugins configuration was provided to deck. You must provide one to reuse /test checks for rerun")
 	}
-	metrics.ExposeMetrics("deck", cfg().PushGateway, o.common.MetricsPort)
+	metrics.ExposeMetrics("deck", cfg().PushGateway, o.instrumentation.MetricsPort)
 
 	// signal to the world that we are healthy
 	// this needs to be in a separate port as we don't start the

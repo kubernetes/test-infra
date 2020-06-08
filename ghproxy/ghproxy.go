@@ -28,12 +28,12 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
-
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"k8s.io/test-infra/ghproxy/ghcache"
 	"k8s.io/test-infra/greenhouse/diskutil"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
@@ -90,6 +90,8 @@ type options struct {
 	logLevel string
 
 	serveMetrics bool
+
+	instrumentationOptions flagutil.InstrumentationOptions
 }
 
 func (o *options) validate() error {
@@ -123,6 +125,7 @@ func flagOptions() *options {
 	flag.DurationVar(&o.pushGatewayInterval, "push-gateway-interval", time.Minute, "Interval at which prometheus metrics are pushed.")
 	flag.StringVar(&o.logLevel, "log-level", "debug", fmt.Sprintf("Log level is one of %v.", logrus.AllLevels))
 	flag.BoolVar(&o.serveMetrics, "serve-metrics", false, "If true, it serves prometheus metrics")
+	o.instrumentationOptions.AddFlags(flag.CommandLine)
 	return o
 }
 
@@ -149,10 +152,15 @@ func main() {
 		go diskMonitor(o.pushGatewayInterval, o.dir)
 	}
 
-	pjutil.ServePProf()
+	pjutil.ServePProf(o.instrumentationOptions.PProfPort)
 	defer interrupts.WaitForGracefulShutdown()
 	metrics.ExposeMetrics("ghproxy", config.PushGateway{
-		Endpoint: o.pushGateway, Interval: &metav1.Duration{Duration: o.pushGatewayInterval}, ServeMetrics: o.serveMetrics})
+		Endpoint: o.pushGateway,
+		Interval: &metav1.Duration{
+			Duration: o.pushGatewayInterval,
+		},
+		ServeMetrics: o.serveMetrics,
+	}, o.instrumentationOptions.MetricsPort)
 
 	proxy := newReverseProxy(o.upstreamParsed, cache, 30*time.Second)
 	server := &http.Server{Addr: ":" + strconv.Itoa(o.port), Handler: proxy}

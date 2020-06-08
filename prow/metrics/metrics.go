@@ -31,8 +31,6 @@ import (
 	"k8s.io/test-infra/prow/interrupts"
 )
 
-const defaultMetricsPort = 9090
-
 type CreateServer func(http.Handler) interrupts.ListenAndServer
 
 // ExposeMetricsWithRegistry chooses whether to serve or push metrics for the service with the registry
@@ -63,9 +61,6 @@ func ExposeMetricsWithRegistry(component string, pushGateway config.PushGateway,
 	metricsMux.Handle("/metrics", handler)
 	var server interrupts.ListenAndServer
 	if createServer == nil {
-		if port == 0 {
-			port = defaultMetricsPort
-		}
 		server = &http.Server{Addr: ":" + strconv.Itoa(port), Handler: metricsMux}
 	} else {
 		server = createServer(handler)
