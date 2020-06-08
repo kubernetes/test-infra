@@ -157,7 +157,7 @@ type RepositoryClient interface {
 	GetFile(org, repo, filepath, commit string) ([]byte, error)
 	IsCollaborator(org, repo, user string) (bool, error)
 	ListCollaborators(org, repo string) ([]User, error)
-	CreateFork(owner, repo string) error
+	CreateFork(owner, repo string) (string, error)
 	ListRepoTeams(org, repo string) ([]Team, error)
 	CreateRepo(owner string, isUser bool, repo RepoCreateRequest) (*FullRepo, error)
 	UpdateRepo(owner, name string, repo RepoUpdateRequest) (*FullRepo, error)
@@ -3159,16 +3159,24 @@ func (c *client) ListCollaborators(org, repo string) ([]User, error) {
 // recommends contacting their support.
 //
 // See https://developer.github.com/v3/repos/forks/#create-a-fork
-func (c *client) CreateFork(owner, repo string) error {
+func (c *client) CreateFork(owner, repo string) (string, error) {
 	durationLogger := c.log("CreateFork", owner, repo)
 	defer durationLogger()
+
+	resp := struct {
+		name string `json:"name"`
+	}{}
 
 	_, err := c.request(&request{
 		method:    http.MethodPost,
 		path:      fmt.Sprintf("/repos/%s/%s/forks", owner, repo),
 		exitCodes: []int{202},
-	}, nil)
-	return err
+	}, &resp)
+
+	// there are many reasons why GitHub may end up forking the
+	// repo under a different name -- the repo got re-named, the
+	// bot account already has a fork with that name, etc
+	return resp.name, err
 }
 
 // ListRepoTeams gets a list of all the teams with access to a repository

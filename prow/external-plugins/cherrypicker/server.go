@@ -47,7 +47,7 @@ type githubClient interface {
 	AddLabel(org, repo string, number int, label string) error
 	AssignIssue(org, repo string, number int, logins []string) error
 	CreateComment(org, repo string, number int, comment string) error
-	CreateFork(org, repo string) error
+	CreateFork(org, repo string) (string, error)
 	CreatePullRequest(org, repo, title, body, head, base string, canModify bool) (int, error)
 	CreateIssue(org, repo, title, body string, milestone int, labels, assignees []string) (int, error)
 	GetPullRequest(org, repo string, number int) (*github.PullRequest, error)
@@ -360,7 +360,8 @@ func (s *Server) handlePullRequest(l *logrus.Entry, pre github.PullRequestEvent)
 var cherryPickBranchFmt = "cherry-pick-%d-to-%s"
 
 func (s *Server) handle(l *logrus.Entry, requestor string, comment *github.IssueComment, org, repo, targetBranch, title, body string, num int) error {
-	if err := s.ensureForkExists(org, repo); err != nil {
+	forkName, err := s.ensureForkExists(org, repo)
+	if err != nil {
 		resp := fmt.Sprintf("cannot fork %s/%s: %v", org, repo, err)
 		s.log.WithFields(l.Data).Info(resp)
 		return s.createComment(org, repo, num, comment, resp)
@@ -368,7 +369,7 @@ func (s *Server) handle(l *logrus.Entry, requestor string, comment *github.Issue
 
 	// Clone the repo, checkout the target branch.
 	startClone := time.Now()
-	r, err := s.gc.ClientFor(org, repo)
+	r, err := s.gc.ClientFor(org, forkName)
 	if err != nil {
 		return err
 	}
@@ -507,22 +508,25 @@ func (s *Server) createIssue(org, repo, title, body string, num int, comment *gi
 }
 
 // ensureForkExists ensures a fork of org/repo exists for the bot.
-func (s *Server) ensureForkExists(org, repo string) error {
+func (s *Server) ensureForkExists(org, repo string) (string, error) {
 	s.repoLock.Lock()
 	defer s.repoLock.Unlock()
 
 	// Fork repo if it doesn't exist.
 	fork := s.botName + "/" + repo
 	if !repoExists(fork, s.repos) {
-		if err := s.ghc.CreateFork(org, repo); err != nil {
-			return fmt.Errorf("cannot fork %s/%s: %v", org, repo, err)
+		if name, err := s.ghc.CreateFork(org, repo); err != nil {
+			return repo, fmt.Errorf("cannot fork %s/%s: %v", org, repo, err)
+		} else {
+			// we got a fork but it's named differently
+			repo = name
 		}
 		if err := waitForRepo(s.botName, repo, s.ghc); err != nil {
-			return fmt.Errorf("fork of %s/%s cannot show up on GitHub: %v", org, repo, err)
+			return repo, fmt.Errorf("fork of %s/%s cannot show up on GitHub: %v", org, repo, err)
 		}
 		s.repos = append(s.repos, github.Repo{FullName: fork, Fork: true})
 	}
-	return nil
+	return repo, nil
 }
 
 func waitForRepo(owner, name string, ghc githubClient) error {
