@@ -83,6 +83,7 @@ main() {
   local matcher="gcr.io\/k8s-prow\/\([[:alnum:]_-]\+\):v[a-f0-9-]\+"
   local replacer="s/${matcher}/gcr.io\/k8s-prow\/\1:${new_version}/I"
   for file in "${bumpfiles[@]}"; do
+    ${SED} -i "${replacer}" "${file}"
     local images="$(grep -o "${matcher}" "${file}")"
     local arr=(${images//\\n/})
     # image is in the format of gcr.io/k8s-prow/[image_name]:[tag]
@@ -94,10 +95,11 @@ main() {
       local manifest_url=$(echo "$image" | sed "s/:/\/manifests\//" | sed "s/gcr.io/https:\/\/gcr.io\/v2/")
       if ! curl --fail -L -H "Authorization: Bearer $token" -o /dev/null -s "${manifest_url}"; then
         echo "The image ${image} does not exist, please double check." >&2
+        # Revert the changes for this file.
+        git checkout -- "${file}"
         exit 1
       fi
     done
-    ${SED} -i "${replacer}" "${file}"
   done
 
   echo "bump.sh completed successfully!" >&2
