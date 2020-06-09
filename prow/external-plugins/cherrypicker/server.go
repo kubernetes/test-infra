@@ -518,7 +518,7 @@ func (s *Server) ensureForkExists(org, repo string) (string, error) {
 		if name, err := s.ghc.CreateFork(org, repo); err != nil {
 			return repo, fmt.Errorf("cannot fork %s/%s: %v", org, repo, err)
 		} else {
-			// we got a fork but it's named differently
+			// we got a fork but it may be named differently
 			repo = name
 		}
 		if err := waitForRepo(s.botName, repo, s.ghc); err != nil {
