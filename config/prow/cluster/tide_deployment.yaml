@@ -34,11 +34,12 @@ spec:
       serviceAccountName: tide
       containers:
       - name: tide
-        image: gcr.io/k8s-prow/tide:v20200429-134f66873
+        image: gcr.io/k8s-prow/tide:v20200609-2d17640dc1
         args:
         - --dry-run=false
         - --github-endpoint=http://ghproxy
         - --github-endpoint=https://api.github.com
+        - --github-token-path=/etc/github/oauth
         - --config-path=/etc/config/config.yaml
         - --job-config-path=/etc/job-config
         - --history-uri=gs://k8s-prow/tide-history.json

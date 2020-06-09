@@ -28,15 +28,18 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	pipelinev1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/util/diff"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
 	utilpointer "k8s.io/utils/pointer"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config/secret"
+	gerrit "k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/kube"
@@ -542,37 +545,94 @@ periodics:
 				GCSCredentialsSecret: "explicit-service-account",
 			},
 		},
+		{
+			name: "with default, configures bucket explicitly",
+			rawConfig: `
+plank:
+  default_decoration_configs:
+    '*':
+      timeout: 2h
+      grace_period: 15s
+      utility_images:
+        clonerefs: "clonerefs:default"
+        initupload: "initupload:default"
+        entrypoint: "entrypoint:default"
+        sidecar: "sidecar:default"
+      gcs_configuration:
+        bucket: "default-bucket"
+        path_strategy: "legacy"
+        default_org: "kubernetes"
+        default_repo: "kubernetes"
+        mediaTypes:
+          log: text/plain
+      gcs_credentials_secret: "default-service-account"
+
+periodics:
+- name: kubernetes-defaulted-decoration
+  interval: 1h
+  decorate: true
+  decoration_config:
+    gcs_configuration:
+      bucket: "explicit-bucket"
+    gcs_credentials_secret: "explicit-service-account"
+  spec:
+    containers:
+    - image: golang:latest
+      args:
+      - "test"
+      - "./..."`,
+			expected: &prowapi.DecorationConfig{
+				Timeout:     &prowapi.Duration{Duration: 2 * time.Hour},
+				GracePeriod: &prowapi.Duration{Duration: 15 * time.Second},
+				UtilityImages: &prowapi.UtilityImages{
+					CloneRefs:  "clonerefs:default",
+					InitUpload: "initupload:default",
+					Entrypoint: "entrypoint:default",
+					Sidecar:    "sidecar:default",
+				},
+				GCSConfiguration: &prowapi.GCSConfiguration{
+					Bucket:       "explicit-bucket",
+					PathStrategy: prowapi.PathStrategyLegacy,
+					DefaultOrg:   "kubernetes",
+					DefaultRepo:  "kubernetes",
+					MediaTypes:   map[string]string{"log": "text/plain"},
+				},
+				GCSCredentialsSecret: "explicit-service-account",
+			},
+		},
 	}
 
 	for _, tc := range testCases {
-		// save the config
-		prowConfigDir, err := ioutil.TempDir("", "prowConfig")
-		if err != nil {
-			t.Fatalf("fail to make tempdir: %v", err)
-		}
-		defer os.RemoveAll(prowConfigDir)
+		t.Run(tc.name, func(t *testing.T) {
+			// save the config
+			prowConfigDir, err := ioutil.TempDir("", "prowConfig")
+			if err != nil {
+				t.Fatalf("fail to make tempdir: %v", err)
+			}
+			defer os.RemoveAll(prowConfigDir)
 
-		prowConfig := filepath.Join(prowConfigDir, "config.yaml")
-		if err := ioutil.WriteFile(prowConfig, []byte(tc.rawConfig), 0666); err != nil {
-			t.Fatalf("fail to write prow config: %v", err)
-		}
-
-		cfg, err := Load(prowConfig, "")
-		if tc.expectError && err == nil {
-			t.Errorf("tc %s: Expect error, but got nil", tc.name)
-		} else if !tc.expectError && err != nil {
-			t.Fatalf("tc %s: Expect no error, but got error %v", tc.name, err)
-		}
-
-		if tc.expected != nil {
-			if len(cfg.Periodics) != 1 {
-				t.Fatalf("tc %s: Expect to have one periodic job, got none", tc.name)
+			prowConfig := filepath.Join(prowConfigDir, "config.yaml")
+			if err := ioutil.WriteFile(prowConfig, []byte(tc.rawConfig), 0666); err != nil {
+				t.Fatalf("fail to write prow config: %v", err)
 			}
 
-			if !reflect.DeepEqual(cfg.Periodics[0].DecorationConfig, tc.expected) {
-				t.Errorf("%s: expected defaulted config:\n%#v\n but got:\n%#v\n", tc.name, tc.expected, cfg.Periodics[0].DecorationConfig)
+			cfg, err := Load(prowConfig, "")
+			if tc.expectError && err == nil {
+				t.Errorf("tc %s: Expect error, but got nil", tc.name)
+			} else if !tc.expectError && err != nil {
+				t.Fatalf("tc %s: Expect no error, but got error %v", tc.name, err)
 			}
-		}
+
+			if tc.expected != nil {
+				if len(cfg.Periodics) != 1 {
+					t.Fatalf("tc %s: Expect to have one periodic job, got none", tc.name)
+				}
+
+				if diff := cmp.Diff(cfg.Periodics[0].DecorationConfig, tc.expected, cmpopts.EquateEmpty()); diff != "" {
+					t.Errorf("got diff: %s", diff)
+				}
+			}
+		})
 	}
 }
 
@@ -1269,6 +1329,82 @@ func TestValidateRefs(t *testing.T) {
 			}
 			if err := ValidateRefs("org/repo", job); !reflect.DeepEqual(err, tc.expected) {
 				t.Errorf("expected %#v\n!=\nactual %#v", tc.expected, err)
+			}
+		})
+	}
+}
+
+func TestValidateReportingWithGerritLabel(t *testing.T) {
+	cases := []struct {
+		name     string
+		labels   map[string]string
+		reporter Reporter
+		expected error
+	}{
+		{
+			name: "no errors if job is set to report",
+			reporter: Reporter{
+				Context: "context",
+			},
+			labels: map[string]string{
+				gerrit.GerritReportLabel: "label",
+			},
+		},
+		{
+			name:     "no errors if Gerrit report label is not defined",
+			reporter: Reporter{SkipReport: true},
+			labels: map[string]string{
+				"label": "value",
+			},
+		},
+		{
+			name:     "no errors if job is set to skip report and Gerrit report label is empty",
+			reporter: Reporter{SkipReport: true},
+			labels: map[string]string{
+				gerrit.GerritReportLabel: "",
+			},
+		},
+		{
+			name:     "error if job is set to skip report and Gerrit report label is set to non-empty",
+			reporter: Reporter{SkipReport: true},
+			labels: map[string]string{
+				gerrit.GerritReportLabel: "label",
+			},
+			expected: fmt.Errorf("Gerrit report label %s set to non-empty string but job is configured to skip reporting.", gerrit.GerritReportLabel),
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			base := JobBase{
+				Name:   "test-job",
+				Labels: tc.labels,
+			}
+			presubmits := []Presubmit{
+				{
+					JobBase:  base,
+					Reporter: tc.reporter,
+				},
+			}
+			var expected error
+			if tc.expected != nil {
+				expected = fmt.Errorf("invalid presubmit job %s: %v", "test-job", tc.expected)
+			}
+			if err := validatePresubmits(presubmits, "default-namespace"); !reflect.DeepEqual(err, utilerrors.NewAggregate([]error{expected})) {
+				t.Errorf("did not get expected validation result:\n%v", cmp.Diff(expected, err))
+			}
+
+			postsubmits := []Postsubmit{
+				{
+					JobBase:  base,
+					Reporter: tc.reporter,
+				},
+			}
+			if tc.expected != nil {
+				expected = fmt.Errorf("invalid postsubmit job %s: %v", "test-job", tc.expected)
+			}
+			if err := validatePostsubmits(postsubmits, "default-namespace"); !reflect.DeepEqual(err, utilerrors.NewAggregate([]error{expected})) {
+				t.Errorf("did not get expected validation result:\n%v", cmp.Diff(expected, err))
 			}
 		})
 	}
@@ -3088,6 +3224,8 @@ func TestRefGetterForGitHubPullRequest(t *testing.T) {
 }
 
 func TestSetDecorationDefaults(t *testing.T) {
+	yes := true
+	no := false
 	testCases := []struct {
 		id            string
 		repo          string
@@ -3097,13 +3235,13 @@ func TestSetDecorationDefaults(t *testing.T) {
 	}{
 		{
 			id:            "no dc in presubmit or in plank's config, expect no changes",
-			utilityConfig: UtilityConfig{Decorate: true},
+			utilityConfig: UtilityConfig{Decorate: &yes},
 			config:        &Config{ProwConfig: ProwConfig{}},
 			expected:      nil,
 		},
 		{
 			id:            "no dc in presubmit or in plank's by repo config, expect plank's defaults",
-			utilityConfig: UtilityConfig{Decorate: true},
+			utilityConfig: UtilityConfig{Decorate: &yes},
 			config: &Config{
 				ProwConfig: ProwConfig{
 					Plank: Plank{
@@ -3145,7 +3283,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 		},
 		{
 			id:            "no dc in presubmit, part of plank's by repo config, expect merged by repo config and defaults",
-			utilityConfig: UtilityConfig{Decorate: true},
+			utilityConfig: UtilityConfig{Decorate: &yes},
 			repo:          "org/repo",
 			config: &Config{
 				ProwConfig: ProwConfig{
@@ -3198,7 +3336,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 			id:   "dc in presubmit and plank's defaults, expect presubmit's dc",
 			repo: "org/repo",
 			utilityConfig: UtilityConfig{
-				Decorate: true,
+				Decorate: &yes,
 				DecorationConfig: &prowapi.DecorationConfig{
 					UtilityImages: &prowapi.UtilityImages{
 						CloneRefs:  "clonerefs:test-from-ps",
@@ -3258,7 +3396,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 			id:   "dc in presubmit, plank's by repo config and defaults, expected presubmit's dc",
 			repo: "org/repo",
 			utilityConfig: UtilityConfig{
-				Decorate: true,
+				Decorate: &yes,
 				DecorationConfig: &prowapi.DecorationConfig{
 					UtilityImages: &prowapi.UtilityImages{
 						CloneRefs:  "clonerefs:test-from-ps",
@@ -3332,7 +3470,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 		{
 			id:            "no dc in presubmit, dc in plank's by repo config and defaults, expect by repo config's dc",
 			repo:          "org/repo",
-			utilityConfig: UtilityConfig{Decorate: true},
+			utilityConfig: UtilityConfig{Decorate: &yes},
 			config: &Config{
 				ProwConfig: ProwConfig{
 					Plank: Plank{
@@ -3390,7 +3528,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 		{
 			id:            "no dc in presubmit, dc in plank's by repo config and defaults, expect by org config's dc",
 			repo:          "org/repo",
-			utilityConfig: UtilityConfig{Decorate: true},
+			utilityConfig: UtilityConfig{Decorate: &yes},
 			config: &Config{
 				ProwConfig: ProwConfig{
 					Plank: Plank{
@@ -3448,7 +3586,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 		{
 			id:            "no dc in presubmit, dc in plank's by repo config and defaults, expect by * config's dc",
 			repo:          "org/repo",
-			utilityConfig: UtilityConfig{Decorate: true},
+			utilityConfig: UtilityConfig{Decorate: &yes},
 			config: &Config{
 				ProwConfig: ProwConfig{
 					Plank: Plank{
@@ -3492,7 +3630,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 		{
 			id:            "no dc in presubmit, dc in plank's by repo config org and org/repo co-exists, expect by org/repo config's dc",
 			repo:          "org/repo",
-			utilityConfig: UtilityConfig{Decorate: true},
+			utilityConfig: UtilityConfig{Decorate: &yes},
 			config: &Config{
 				ProwConfig: ProwConfig{
 					Plank: Plank{
@@ -3566,7 +3704,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 		{
 			id:            "no dc in presubmit, dc in plank's by repo config with org and * to co-exists, expect by 'org' config's dc",
 			repo:          "org/repo",
-			utilityConfig: UtilityConfig{Decorate: true},
+			utilityConfig: UtilityConfig{Decorate: &yes},
 			config: &Config{
 				ProwConfig: ProwConfig{
 					Plank: Plank{
@@ -3621,6 +3759,80 @@ func TestSetDecorationDefaults(t *testing.T) {
 				GCSCredentialsSecret: "credentials-gcs-by-org",
 			},
 		},
+		{
+			id: "decorate_all_jobs set, no dc in presubmit or in plank's by repo config, expect plank's defaults",
+			config: &Config{
+				JobConfig: JobConfig{
+					DecorateAllJobs: true,
+				},
+				ProwConfig: ProwConfig{
+					Plank: Plank{
+						DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
+							"*": {
+								UtilityImages: &prowapi.UtilityImages{
+									CloneRefs:  "clonerefs:test",
+									InitUpload: "initupload:test",
+									Entrypoint: "entrypoint:test",
+									Sidecar:    "sidecar:test",
+								},
+								GCSConfiguration: &prowapi.GCSConfiguration{
+									Bucket:       "test-bucket",
+									PathStrategy: "single",
+									DefaultOrg:   "org",
+									DefaultRepo:  "repo",
+								},
+								GCSCredentialsSecret: "credentials-gcs",
+							},
+						},
+					},
+				},
+			},
+			expected: &prowapi.DecorationConfig{
+				UtilityImages: &prowapi.UtilityImages{
+					CloneRefs:  "clonerefs:test",
+					InitUpload: "initupload:test",
+					Entrypoint: "entrypoint:test",
+					Sidecar:    "sidecar:test",
+				},
+				GCSConfiguration: &prowapi.GCSConfiguration{
+					Bucket:       "test-bucket",
+					PathStrategy: "single",
+					DefaultOrg:   "org",
+					DefaultRepo:  "repo",
+				},
+				GCSCredentialsSecret: "credentials-gcs",
+			},
+		},
+		{
+			id:            "opt out of decorate_all_jobs by setting decorated to false",
+			utilityConfig: UtilityConfig{Decorate: &no},
+			config: &Config{
+				JobConfig: JobConfig{
+					DecorateAllJobs: true,
+				},
+				ProwConfig: ProwConfig{
+					Plank: Plank{
+						DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
+							"*": {
+								UtilityImages: &prowapi.UtilityImages{
+									CloneRefs:  "clonerefs:test",
+									InitUpload: "initupload:test",
+									Entrypoint: "entrypoint:test",
+									Sidecar:    "sidecar:test",
+								},
+								GCSConfiguration: &prowapi.GCSConfiguration{
+									Bucket:       "test-bucket",
+									PathStrategy: "single",
+									DefaultOrg:   "org",
+									DefaultRepo:  "repo",
+								},
+								GCSCredentialsSecret: "credentials-gcs",
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 
 	for _, tc := range testCases {
@@ -3629,19 +3841,21 @@ func TestSetDecorationDefaults(t *testing.T) {
 			postsubmit := &Postsubmit{JobBase: JobBase{UtilityConfig: tc.utilityConfig}}
 
 			setPresubmitDecorationDefaults(tc.config, presubmit, tc.repo)
-			if !reflect.DeepEqual(presubmit.DecorationConfig, tc.expected) {
-				t.Fatalf("%v", diff.ObjectReflectDiff(presubmit.DecorationConfig, tc.expected))
+			if diff := cmp.Diff(presubmit.DecorationConfig, tc.expected, cmpopts.EquateEmpty()); diff != "" {
+				t.Errorf("presubmit: %s", diff)
 			}
 
 			setPostsubmitDecorationDefaults(tc.config, postsubmit, tc.repo)
-			if !reflect.DeepEqual(postsubmit.DecorationConfig, tc.expected) {
-				t.Fatalf("%v", diff.ObjectReflectDiff(postsubmit.DecorationConfig, tc.expected))
+			if diff := cmp.Diff(postsubmit.DecorationConfig, tc.expected, cmpopts.EquateEmpty()); diff != "" {
+				t.Errorf("postsubmit: %s", diff)
 			}
 		})
 	}
 }
 
 func TestSetPeriodicDecorationDefaults(t *testing.T) {
+	yes := true
+	no := false
 	testCases := []struct {
 		id            string
 		config        *Config
@@ -3673,7 +3887,7 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 					},
 				},
 			},
-			utilityConfig: UtilityConfig{Decorate: true},
+			utilityConfig: UtilityConfig{Decorate: &yes},
 			expected: &prowapi.DecorationConfig{
 				UtilityImages: &prowapi.UtilityImages{
 					CloneRefs:  "clonerefs:test-by-*",
@@ -3731,7 +3945,7 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 				},
 			},
 			utilityConfig: UtilityConfig{
-				Decorate: true,
+				Decorate: &yes,
 				ExtraRefs: []prowapi.Refs{
 					{
 						Org:  "org",
@@ -3796,7 +4010,7 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 				},
 			},
 			utilityConfig: UtilityConfig{
-				Decorate: true,
+				Decorate: &yes,
 				ExtraRefs: []prowapi.Refs{
 					{
 						Org:  "org",
@@ -3820,14 +4034,175 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 				GCSCredentialsSecret: "credentials-gcs-by-org-repo",
 			},
 		},
+		{
+			id: "decorate_all_jobs set, plank's default decoration config expected",
+			config: &Config{
+				JobConfig: JobConfig{
+					DecorateAllJobs: true,
+				},
+				ProwConfig: ProwConfig{
+					Plank: Plank{
+						DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
+							"*": {
+								UtilityImages: &prowapi.UtilityImages{
+									CloneRefs:  "clonerefs:test-by-*",
+									InitUpload: "initupload:test-by-*",
+									Entrypoint: "entrypoint:test-by-*",
+									Sidecar:    "sidecar:test-by-*",
+								},
+								GCSConfiguration: &prowapi.GCSConfiguration{
+									Bucket:       "test-bucket-by-*",
+									PathStrategy: "single-by-*",
+									DefaultOrg:   "org-by-*",
+									DefaultRepo:  "repo-by-*",
+								},
+								GCSCredentialsSecret: "credentials-gcs-by-*",
+							},
+						},
+					},
+				},
+			},
+			expected: &prowapi.DecorationConfig{
+				UtilityImages: &prowapi.UtilityImages{
+					CloneRefs:  "clonerefs:test-by-*",
+					InitUpload: "initupload:test-by-*",
+					Entrypoint: "entrypoint:test-by-*",
+					Sidecar:    "sidecar:test-by-*",
+				},
+				GCSConfiguration: &prowapi.GCSConfiguration{
+					Bucket:       "test-bucket-by-*",
+					PathStrategy: "single-by-*",
+					DefaultOrg:   "org-by-*",
+					DefaultRepo:  "repo-by-*",
+				},
+				GCSCredentialsSecret: "credentials-gcs-by-*",
+			},
+		},
+		{
+			id:            "opt out of decorate_all_jobs by specifying undecorated",
+			utilityConfig: UtilityConfig{Decorate: &no},
+			config: &Config{
+				JobConfig: JobConfig{
+					DecorateAllJobs: true,
+				},
+				ProwConfig: ProwConfig{
+					Plank: Plank{
+						DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
+							"*": {
+								UtilityImages: &prowapi.UtilityImages{
+									CloneRefs:  "clonerefs:test-by-*",
+									InitUpload: "initupload:test-by-*",
+									Entrypoint: "entrypoint:test-by-*",
+									Sidecar:    "sidecar:test-by-*",
+								},
+								GCSConfiguration: &prowapi.GCSConfiguration{
+									Bucket:       "test-bucket-by-*",
+									PathStrategy: "single-by-*",
+									DefaultOrg:   "org-by-*",
+									DefaultRepo:  "repo-by-*",
+								},
+								GCSCredentialsSecret: "credentials-gcs-by-*",
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.id, func(t *testing.T) {
 			periodic := &Periodic{JobBase: JobBase{UtilityConfig: tc.utilityConfig}}
 			setPeriodicDecorationDefaults(tc.config, periodic)
-			if !reflect.DeepEqual(periodic.DecorationConfig, tc.expected) {
-				t.Fatalf("%v", diff.ObjectReflectDiff(periodic.DecorationConfig, tc.expected))
+			if diff := cmp.Diff(periodic.DecorationConfig, tc.expected, cmpopts.EquateEmpty()); diff != "" {
+				t.Error(diff)
+			}
+		})
+	}
+}
+
+func TestDecorationRequested(t *testing.T) {
+	yes := true
+	no := false
+	testCases := []struct {
+		name        string
+		decorateAll bool
+		presubmits  map[string][]Presubmit
+		postsubmits map[string][]Postsubmit
+		periodics   []Periodic
+		expected    bool
+	}{
+		{
+			name:        "decorate_all_jobs set",
+			decorateAll: true,
+			presubmits: map[string][]Presubmit{
+				"org/repo": {
+					{JobBase: JobBase{Name: "presubmit-job"}},
+				},
+			},
+			expected: true,
+		},
+		{
+			name: "at-least one job is decorated",
+			presubmits: map[string][]Presubmit{
+				"org/repo": {
+					{JobBase: JobBase{Name: "presubmit-job"}},
+				},
+			},
+			postsubmits: map[string][]Postsubmit{
+				"org/repo": {
+					{JobBase: JobBase{UtilityConfig: UtilityConfig{Decorate: &yes}}},
+				},
+			},
+			expected: true,
+		},
+		{
+			name:        "decorate_all_jobs set, at-least one job does not opt out",
+			decorateAll: true,
+			presubmits: map[string][]Presubmit{
+				"org/repo": {
+					{JobBase: JobBase{UtilityConfig: UtilityConfig{Decorate: &no}}},
+				},
+			},
+			postsubmits: map[string][]Postsubmit{
+				"org/repo": {
+					{JobBase: JobBase{UtilityConfig: UtilityConfig{Decorate: &no}}},
+				},
+			},
+			periodics: []Periodic{
+				{JobBase: JobBase{Name: "periodic-job"}},
+			},
+			expected: true,
+		},
+		{
+			name: "decorate_all_jobs set, all jobs opt out",
+			presubmits: map[string][]Presubmit{
+				"org/repo": {
+					{JobBase: JobBase{UtilityConfig: UtilityConfig{Decorate: &no}}},
+				},
+			},
+			postsubmits: map[string][]Postsubmit{
+				"org/repo": {
+					{JobBase: JobBase{UtilityConfig: UtilityConfig{Decorate: &no}}},
+				},
+			},
+			periodics: []Periodic{
+				{JobBase: JobBase{UtilityConfig: UtilityConfig{Decorate: &no}}},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			jobConfig := &JobConfig{
+				DecorateAllJobs:   tc.decorateAll,
+				PresubmitsStatic:  tc.presubmits,
+				PostsubmitsStatic: tc.postsubmits,
+				Periodics:         tc.periodics,
+			}
+
+			if actual := jobConfig.decorationRequested(); actual != tc.expected {
+				t.Errorf("expected %t got %t", tc.expected, actual)
 			}
 		})
 	}
@@ -4163,5 +4538,125 @@ func TestDefaultAndValidateReportTemplate(t *testing.T) {
 				t.Fatalf("\nGot: %#v\nExpected: %#v", tc.controller, tc.expected)
 			}
 		})
+	}
+}
+
+func TestValidatePresubmits(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name          string
+		presubmits    []Presubmit
+		expectedError string
+	}{
+		{
+			name: "Duplicate context causes error",
+			presubmits: []Presubmit{
+				{JobBase: JobBase{Name: "a"}, Reporter: Reporter{Context: "repeated"}},
+				{JobBase: JobBase{Name: "b"}, Reporter: Reporter{Context: "repeated"}},
+			},
+			expectedError: `[jobs b and a report to the same GitHub context "repeated", jobs a and b report to the same GitHub context "repeated"]`,
+		},
+		{
+			name: "Duplicate context on different branch doesn't cause error",
+			presubmits: []Presubmit{
+				{JobBase: JobBase{Name: "a"}, Reporter: Reporter{Context: "repeated"}, Brancher: Brancher{Branches: []string{"master"}}},
+				{JobBase: JobBase{Name: "b"}, Reporter: Reporter{Context: "repeated"}, Brancher: Brancher{Branches: []string{"next"}}},
+			},
+		},
+		{
+			name: "Duplicate jobname causes error",
+			presubmits: []Presubmit{
+				{JobBase: JobBase{Name: "a"}, Reporter: Reporter{Context: "foo"}},
+				{JobBase: JobBase{Name: "a"}, Reporter: Reporter{Context: "bar"}},
+			},
+			expectedError: "duplicated presubmit job: a",
+		},
+		{
+			name: "Duplicate jobname on different branches doesn't cause error",
+			presubmits: []Presubmit{
+				{JobBase: JobBase{Name: "a"}, Reporter: Reporter{Context: "foo"}, Brancher: Brancher{Branches: []string{"master"}}},
+				{JobBase: JobBase{Name: "a"}, Reporter: Reporter{Context: "foo"}, Brancher: Brancher{Branches: []string{"next"}}},
+			},
+		},
+		{
+			name:          "Invalid JobBase causes error",
+			presubmits:    []Presubmit{{Reporter: Reporter{Context: "foo"}}},
+			expectedError: `invalid presubmit job : name: must match regex "^[A-Za-z0-9-._]+$"`,
+		},
+		{
+			name:          "Invalid triggering config causes error",
+			presubmits:    []Presubmit{{Trigger: "some-trigger", JobBase: JobBase{Name: "my-job"}, Reporter: Reporter{Context: "foo"}}},
+			expectedError: `Either both of job.Trigger and job.RerunCommand must be set, wasnt the case for job "my-job"`,
+		},
+		{
+			name:          "Invalid reporting config causes error",
+			presubmits:    []Presubmit{{JobBase: JobBase{Name: "my-job"}}},
+			expectedError: "invalid presubmit job my-job: job is set to report but has no context configured",
+		},
+	}
+
+	for _, tc := range testCases {
+		var errMsg string
+		err := validatePresubmits(tc.presubmits, "")
+		if err != nil {
+			errMsg = err.Error()
+		}
+		if errMsg != tc.expectedError {
+			t.Errorf("expected error '%s', got error '%s'", tc.expectedError, errMsg)
+		}
+	}
+}
+
+func TestValidatePostsubmits(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name          string
+		postsubmits   []Postsubmit
+		expectedError string
+	}{
+		{
+			name: "Duplicate context causes error",
+			postsubmits: []Postsubmit{
+				{JobBase: JobBase{Name: "a"}, Reporter: Reporter{Context: "repeated"}},
+				{JobBase: JobBase{Name: "b"}, Reporter: Reporter{Context: "repeated"}},
+			},
+			expectedError: `[jobs b and a report to the same GitHub context "repeated", jobs a and b report to the same GitHub context "repeated"]`,
+		},
+		{
+			name: "Duplicate context on different branch doesn't cause error",
+			postsubmits: []Postsubmit{
+				{JobBase: JobBase{Name: "a"}, Reporter: Reporter{Context: "repeated"}, Brancher: Brancher{Branches: []string{"master"}}},
+				{JobBase: JobBase{Name: "b"}, Reporter: Reporter{Context: "repeated"}, Brancher: Brancher{Branches: []string{"next"}}},
+			},
+		},
+		{
+			name: "Duplicate jobname causes error",
+			postsubmits: []Postsubmit{
+				{JobBase: JobBase{Name: "a"}, Reporter: Reporter{Context: "foo"}},
+				{JobBase: JobBase{Name: "a"}, Reporter: Reporter{Context: "bar"}},
+			},
+			expectedError: "duplicated postsubmit job: a",
+		},
+		{
+			name:          "Invalid JobBase causes error",
+			postsubmits:   []Postsubmit{{Reporter: Reporter{Context: "foo"}}},
+			expectedError: `invalid postsubmit job : name: must match regex "^[A-Za-z0-9-._]+$"`,
+		},
+		{
+			name:          "Invalid reporting config causes error",
+			postsubmits:   []Postsubmit{{JobBase: JobBase{Name: "my-job"}}},
+			expectedError: "invalid postsubmit job my-job: job is set to report but has no context configured",
+		},
+	}
+
+	for _, tc := range testCases {
+		var errMsg string
+		err := validatePostsubmits(tc.postsubmits, "")
+		if err != nil {
+			errMsg = err.Error()
+		}
+		if errMsg != tc.expectedError {
+			t.Errorf("expected error '%s', got error '%s'", tc.expectedError, errMsg)
+		}
 	}
 }

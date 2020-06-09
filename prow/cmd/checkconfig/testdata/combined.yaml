@@ -1,0 +1,361 @@
+branch-protection:
+  allow_disabled_policies: true
+  protect: false
+  orgs:
+    maistra-prow-testing:
+      required_pull_request_reviews:
+        required_approving_review_count: 1
+        require_code_owner_reviews: false
+    Maistra:
+      required_pull_request_reviews:
+        required_approving_review_count: 2
+        require_code_owner_reviews: false
+deck:
+  spyglass:
+    size_limit: 500000000  # 500 MB
+    lenses:
+    - lens:
+        name: buildlog
+        config:
+          highlight_regexes:
+          - timed out
+          - 'ERROR:'
+          - (FAIL|Failure \[)\b
+          - panic\b
+          - ^E\d{4} \d\d:\d\d:\d\d\.\d\d\d]
+      required_files:
+      - build-log.txt
+    - lens:
+        name: junit
+      required_files:
+      - artifacts/junit.*\.xml
+plank:
+  job_url_prefix_config:
+    '*': "https://prow.maistra.io/view/gcs/"
+  default_decoration_configs:
+    '*':
+      timeout: 2h
+      grace_period: 15s
+      utility_images:
+        clonerefs: "gcr.io/k8s-prow/clonerefs:latest"
+        initupload: "gcr.io/k8s-prow/initupload:latest"
+        entrypoint: "gcr.io/k8s-prow/entrypoint:latest"
+        sidecar: "gcr.io/k8s-prow/sidecar:latest"
+      gcs_configuration:
+        path_strategy: explicit
+        bucket: "maistra-prow-testing"
+      gcs_credentials_secret: "gcs-credentials"
+postsubmits:
+  Maistra/test-infra:
+  - name: deploy-prow
+    decorate: true
+    skip_report: false
+    run_if_changed: '^prow/'
+    labels:
+      preset-prow-deployer: "true"
+    max_concurrency: 1
+    branches:
+    - master
+    spec:
+      containers:
+      - image: "quay.io/maistra/maistra-builder:1.1"
+        imagePullPolicy: Always
+        command:
+        - make
+        - gen-check
+        - update-prow
+  - name: push-containers
+    decorate: true
+    path_alias: github.com/maistra/test-infra
+    skip_report: false
+    run_if_changed: '^docker/'
+    branches:
+      - master
+    labels:
+      preset-quay-pusher: "true"
+    max_concurrency: 1
+    spec:
+      containers:
+      - image: "quay.io/maistra/maistra-builder:1.1"
+        imagePullPolicy: Always
+        command:
+        - entrypoint
+        - make
+        - maistra-builder.push
+        securityContext:
+          privileged: true
+presets:
+- labels:
+    preset-prow-deployer: "true"
+  env:
+  - name: KUBECONFIG
+    value: /creds/kubeconfig.yaml
+  volumeMounts:
+  - name: creds
+    mountPath: /creds
+    readOnly: true
+  volumes:
+  - name: creds
+    secret:
+      secretName: prow-deployer-kubeconfig
+- labels:
+    preset-quay-pusher: "true"
+  env:
+  - name: DOCKER_CONFIG
+    value: /creds/
+  volumeMounts:
+  - name: creds
+    mountPath: /creds
+    readOnly: true
+  volumes:
+  - name: creds
+    secret:
+      secretName: quay-pusher-dockercfg
+presubmits:
+  Maistra/maistra.github.io:
+  - name: lint
+    decorate: true
+    always_run: true
+    skip_report: false
+    branches:
+      - maistra-1.2
+      - maistra-1.1
+    spec:
+      containers:
+      - image: "quay.io/maistra/maistra-builder:1.1"
+        command:
+        - make
+        - lint
+    trigger: "(?m)^/test lint"
+    rerun_command: "/test lint"
+  - name: check-links
+    decorate: true
+    always_run: true
+    skip_report: false
+    branches:
+      - maistra-1.2
+      - maistra-1.1
+    spec:
+      containers:
+      - image: "quay.io/maistra/maistra-builder:1.1"
+        command:
+        - make
+        - check-links
+    trigger: "(?m)^/test check-links"
+    rerun_command: "/test check-links"
+  Maistra/istio-operator:
+  - name: unittests
+    decorate: true
+    always_run: true
+    path_alias: github.com/maistra/istio-operator
+    skip_report: false
+    branches:
+      - maistra-1.1
+      - maistra-1.2
+    spec:
+      containers:
+      - image: "quay.io/maistra/maistra-builder:1.1"
+        command:
+        - make
+        - compile
+        - test
+        env:
+        - name: XDG_CACHE_HOME
+          value: /tmp/cache
+        - name: GOCACHE
+          value: /tmp/cache
+  - name: gen-check
+    decorate: true
+    always_run: true
+    path_alias: github.com/maistra/istio-operator
+    skip_report: false
+    branches:
+      - maistra-1.1
+      - maistra-1.2
+    spec:
+      containers:
+      - image: "quay.io/maistra/maistra-builder:1.1"
+        command:
+        - make
+        - gen-check
+        env:
+        - name: XDG_CACHE_HOME
+          value: /tmp/cache
+        - name: GOCACHE
+          value: /tmp/cache
+  Maistra/test-infra:
+  - name: lint
+    decorate: true
+    always_run: true
+    path_alias: github.com/maistra/test-infra
+    skip_report: false
+    branches:
+      - master
+    spec:
+      containers:
+      - image: "quay.io/maistra/maistra-builder:1.1"
+        command:
+        - make
+        - lint
+  - name: gen-check
+    decorate: true
+    always_run: true
+    path_alias: github.com/maistra/test-infra
+    skip_report: false
+    branches:
+      - master
+    spec:
+      containers:
+      - image: "quay.io/maistra/maistra-builder:1.1"
+        command:
+        - make
+        - gen-check
+  - name: build-containers
+    decorate: true
+    path_alias: github.com/maistra/test-infra
+    skip_report: false
+    run_if_changed: '^docker/'
+    branches:
+      - master
+    max_concurrency: 1
+    spec:
+      containers:
+      - image: "quay.io/maistra/maistra-builder:1.1"
+        imagePullPolicy: Always
+        command:
+        - entrypoint
+        - make
+        - build-containers
+        securityContext:
+          privileged: true
+  Maistra/istio:
+  - name: unittests
+    decorate: true
+    always_run: true
+    path_alias: istio.io/istio
+    skip_report: false
+    branches:
+      - maistra-1.1
+    spec:
+      containers:
+      - image: "quay.io/maistra/maistra-builder:1.1"
+        command:
+        - make
+        - init
+        - test
+        env:
+        - name: GOFLAGS
+          value: -mod=vendor
+        - name: XDG_CACHE_HOME
+          value: /tmp/cache
+        - name: GOCACHE
+          value: /tmp/cache
+
+## The presubmits below are for the maistra-prow-testing org, which is our test bed
+  maistra-prow-testing/test-infra:
+  - name: build-containers
+    decorate: true
+    always_run: true
+    path_alias: github.com/maistra/test-infra
+    skip_report: false
+    branches:
+      - master
+    max_concurrency: 1
+    spec:
+      containers:
+      - image: "quay.io/maistra/maistra-builder:1.1"
+        imagePullPolicy: Always
+        command:
+        - entrypoint
+        - make
+        - maistra-builder
+        securityContext:
+          privileged: true
+  maistra-prow-testing/istio-operator:
+  - name: unittests
+    decorate: true
+    always_run: true
+    path_alias: github.com/maistra/istio-operator
+    skip_report: false
+    branches:
+      - maistra-1.1
+      - maistra-1.2
+    spec:
+      containers:
+      - image: "quay.io/maistra/maistra-builder:1.1"
+        command:
+        - make
+        - test
+        env:
+        - name: XDG_CACHE_HOME
+          value: /tmp/cache
+        - name: GOCACHE
+          value: /tmp/cache
+  - name: gen-check
+    decorate: true
+    always_run: true
+    path_alias: github.com/maistra/istio-operator
+    skip_report: false
+    branches:
+      - maistra-1.1
+      - maistra-1.2
+    spec:
+      containers:
+      - image: "quay.io/maistra/maistra-builder:1.1"
+        command:
+        - make
+        - gen-check
+        env:
+        - name: XDG_CACHE_HOME
+          value: /tmp/cache
+        - name: GOCACHE
+          value: /tmp/cache
+  maistra-prow-testing/istio:
+  - name: unittests
+    decorate: true
+    always_run: true
+    path_alias: istio.io/istio
+    skip_report: false
+    branches:
+      - maistra-1.0
+    spec:
+      containers:
+      - image: "quay.io/maistra/maistra-builder:1.0"
+        command:
+        - make
+        - init
+        - test
+        env:
+        - name: ISTIO_BUILD_BUCKET
+          value: "maistra-prow-testing"
+        - name: XDG_CACHE_HOME
+          value: /tmp/cache
+        - name: GOCACHE
+          value: /tmp/cache
+  - name: integrationtests
+    decorate: true
+    always_run: true
+    path_alias: istio.io/istio
+    skip_report: false
+    branches:
+      - maistra-1.0
+    spec:
+      containers:
+      - image: "quay.io/maistra/maistra-builder:1.0"
+        command:
+        - make
+        - init
+        - test.integration.local
+        env:
+        - name: ISTIO_BUILD_BUCKET
+          value: "maistra-prow-testing"
+        - name: XDG_CACHE_HOME
+          value: /tmp/cache
+        - name: GOCACHE
+          value: /tmp/cache
+prowjob_namespace: default
+pod_namespace: test-pods
+sinker:
+  resync_period: 1h
+  max_prowjob_age: 168h
+  max_pod_age: 6h

@@ -77,8 +77,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/aws/aws-sdk-go",
-        sum = "h1:i+sSesaMrSxiUt3NJddOApe2mXK+VNBgfcmRTvNFrXM=",
-        version = "v1.30.5",
+        sum = "h1:SxRRGyhlCagI0DYkhOg+FgdXGXzRTE3vEX/gsgFaiKQ=",
+        version = "v1.31.12",
     )
     go_repository(
         name = "com_github_azure_azure_pipeline_go",
@@ -1657,8 +1657,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "sigs.k8s.io/controller-runtime",
-        sum = "h1:CbqIy5fbUX+4E9bpnBFd204YAzRYlM9SWW77BbrcDQo=",
-        version = "v0.5.0",
+        sum = "h1:2w5Hpxdw2OZ3mHlbl0CB9L4fSOwcplPtaIkVkqmjRdI=",
+        version = "v0.5.4",
     )
 
     go_repository(
@@ -3821,4 +3821,20 @@ def go_repositories():
         importpath = "github.com/go-bindata/go-bindata/v3",
         sum = "h1:F0nVttLC3ws0ojc7p60veTurcOm//D4QBODNM7EGrCI=",
         version = "v3.1.3",
+    )
+    go_repository(
+        name = "com_github_mohae_deepcopy",
+        build_file_generation = "on",
+        build_file_proto_mode = "disable",
+        importpath = "github.com/mohae/deepcopy",
+        sum = "h1:RWengNIwukTxcDr9M+97sNutRR1RKhG96O6jWumTTnw=",
+        version = "v0.0.0-20170929034955-c48cc78d4826",
+    )
+    go_repository(
+        name = "io_k8s_sigs_boskos",
+        build_file_generation = "on",
+        build_file_proto_mode = "disable",
+        importpath = "sigs.k8s.io/boskos",
+        sum = "h1:Q1Bb5+ssL7WekHgJvX2yAp4ueLeEnFX50RcpYRErNOg=",
+        version = "v0.0.0-20200526191642-45fc818e2d00",
     )

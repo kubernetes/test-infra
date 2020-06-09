@@ -309,6 +309,10 @@ func handle(gc githubClient, gitClient git.ClientFactory, kc corev1.ConfigMapsGe
 
 	// Are any of the changes files ones that define a configmap we want to update?
 	toUpdate := FilterChanges(config, changes, defaultNamespace, log)
+	log.WithFields(logrus.Fields{
+		"configmaps_to_update": len(toUpdate),
+		"changes":              len(changes),
+	}).Debug("Identified configmaps to update")
 
 	var updated []string
 	indent := " " // one space
@@ -335,6 +339,7 @@ func handle(gc githubClient, gitClient git.ClientFactory, kc corev1.ConfigMapsGe
 		configMapClient, err := GetConfigMapClient(kc, cm.Namespace, buildClusterCoreV1Clients, cm.Cluster)
 		if err != nil {
 			log.WithError(err).Errorf("Failed to find configMap client")
+			errs = append(errs, err)
 			continue
 		}
 		if err := Update(&OSFileGetter{Root: gitRepo.Directory()}, configMapClient, cm.Name, cm.Namespace, data, bootstrapMode, metrics, logger); err != nil {
@@ -347,7 +352,7 @@ func handle(gc githubClient, gitClient git.ClientFactory, kc corev1.ConfigMapsGe
 	var msg string
 	switch n := len(updated); n {
 	case 0:
-		return nil
+		return utilerrors.NewAggregate(errs)
 	case 1:
 		msg = fmt.Sprintf("Updated the %s", updated[0])
 	default:

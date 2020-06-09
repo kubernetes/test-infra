@@ -22,16 +22,17 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
-	"github.com/sirupsen/logrus"
-	"sigs.k8s.io/yaml"
 	"strings"
 	"time"
+
+	"github.com/sirupsen/logrus"
+	"sigs.k8s.io/yaml"
 )
 
-// hmacSecret contains a hmac token and its expiration time.
+// hmacSecret contains a hmac token and the time when it's created.
 type hmacSecret struct {
-	Value  string    `json:"value"`
-	Expiry time.Time `json:"expiry"`
+	Value     string    `json:"value"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
 // hmacsForRepo contains all hmac tokens configured for a repo, org or globally.
@@ -94,31 +95,29 @@ func extractHmacs(repo string, tokenGenerator func() []byte) ([][]byte, error) {
 		// whole file is a single line hmac token.
 		//TODO : Once this code has been released and file has been moved to new format,
 		// we should delete this code and return error.
-		logrus.WithError(err).Info("couldn't unmarshal the hmac secret as hierarchical file. Parsing as single token format")
+		logrus.WithError(err).Trace("Couldn't unmarshal the hmac secret as hierarchical file. Parsing as single token format")
 		return [][]byte{t}, nil
 	}
 
 	orgName := strings.Split(repo, "/")[0]
 
 	if val, ok := repoToTokenMap[repo]; ok {
-		return extractValidTokens(val), nil
+		return extractTokens(val), nil
 	}
 	if val, ok := repoToTokenMap[orgName]; ok {
-		return extractValidTokens(val), nil
+		return extractTokens(val), nil
 	}
 	if val, ok := repoToTokenMap["*"]; ok {
-		return extractValidTokens(val), nil
+		return extractTokens(val), nil
 	}
-	return nil, errors.New("Invalid content in secret file. Global token doesn't exist.")
+	return nil, errors.New("invalid content in secret file, global token doesn't exist")
 }
 
-// extractValidTokens return valid tokens for any given level of tree. Validity is determined based on time till they are valid.
-func extractValidTokens(allTokens hmacsForRepo) [][]byte {
-	var validTokens [][]byte
-	for _, token := range allTokens {
-		if token.Expiry.After(time.Now()) {
-			validTokens = append(validTokens, []byte(token.Value))
-		}
+// extractTokens return tokens for any given level of tree.
+func extractTokens(allTokens hmacsForRepo) [][]byte {
+	validTokens := make([][]byte, len(allTokens))
+	for i := range allTokens {
+		validTokens[i] = []byte(allTokens[i].Value)
 	}
 	return validTokens
 }

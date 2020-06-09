@@ -28,6 +28,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 )
 
 const (
@@ -39,10 +40,13 @@ type Client interface {
 	GetBug(id int) (*Bug, error)
 	GetComments(id int) ([]Comment, error)
 	GetExternalBugPRsOnBug(id int) ([]ExternalBug, error)
+	GetSubComponentsOnBug(id int) (map[string][]string, error)
+	GetClones(bug *Bug) ([]*Bug, error)
 	CreateBug(bug *BugCreate) (int, error)
 	CloneBug(bug *Bug) (int, error)
 	UpdateBug(id int, update BugUpdate) error
 	AddPullRequestAsExternalBug(id int, org, repo string, num int) (bool, error)
+	RemovePullRequestAsExternalBug(id int, org, repo string, num int) (bool, error)
 }
 
 func NewClient(getAPIKey func() []byte, endpoint string) Client {
@@ -90,6 +94,61 @@ func (c *client) GetBug(id int) (*Bug, error) {
 		return nil, fmt.Errorf("did not get one bug, but %d: %v", len(parsedResponse.Bugs), parsedResponse)
 	}
 	return parsedResponse.Bugs[0], nil
+}
+
+func getClones(c Client, bug *Bug) ([]*Bug, error) {
+	var errs []error
+	clones := []*Bug{}
+	for _, dependentID := range bug.Blocks {
+		dependent, err := c.GetBug(dependentID)
+		if err != nil {
+			errs = append(errs, fmt.Errorf("Failed to get dependent bug #%d: %v", dependentID, err))
+			continue
+		}
+		if dependent.Summary == bug.Summary {
+			clones = append(clones, dependent)
+		}
+	}
+	return clones, utilerrors.NewAggregate(errs)
+}
+
+// GetClones gets the list of bugs that the provided bug blocks that also have a matching summary.
+func (c *client) GetClones(bug *Bug) ([]*Bug, error) {
+	return getClones(c, bug)
+}
+
+// GetSubComponentsOnBug retrieves a the list of SubComponents of the bug.
+// SubComponents are a Red Hat bugzilla specific extra field.
+func (c *client) GetSubComponentsOnBug(id int) (map[string][]string, error) {
+	logger := c.logger.WithFields(logrus.Fields{methodField: "GetSubComponentsOnBug", "id": id})
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/rest/bug/%d", c.endpoint, id), nil)
+	if err != nil {
+		return nil, err
+	}
+	values := req.URL.Query()
+	values.Add("include_fields", "sub_components")
+	req.URL.RawQuery = values.Encode()
+	raw, err := c.request(req, logger)
+	if err != nil {
+		return nil, err
+	}
+	var parsedResponse struct {
+		Bugs []struct {
+			SubComponents map[string][]string `json:"sub_components"`
+		} `json:"bugs"`
+	}
+	if err := json.Unmarshal(raw, &parsedResponse); err != nil {
+		return nil, fmt.Errorf("could not unmarshal response body: %v", err)
+	}
+	// if there is no subcomponent, return an empty struct
+	if parsedResponse.Bugs == nil || len(parsedResponse.Bugs) == 0 {
+		return map[string][]string{}, nil
+	}
+	// make sure there is only 1 bug
+	if len(parsedResponse.Bugs) != 1 {
+		return nil, fmt.Errorf("did not get one bug, but %d: %v", len(parsedResponse.Bugs), parsedResponse)
+	}
+	return parsedResponse.Bugs[0].SubComponents, nil
 }
 
 // GetExternalBugPRsOnBug retrieves external bugs on a Bug from the server
@@ -188,7 +247,7 @@ func (c *client) CreateBug(bug *BugCreate) (int, error) {
 	return idStruct.ID, nil
 }
 
-func cloneBugStruct(bug *Bug, comments []Comment) *BugCreate {
+func cloneBugStruct(bug *Bug, subcomponents map[string][]string, comments []Comment) *BugCreate {
 	newBug := &BugCreate{
 		Alias:           bug.Alias,
 		AssignedTo:      bug.AssignedTo,
@@ -207,29 +266,50 @@ func cloneBugStruct(bug *Bug, comments []Comment) *BugCreate {
 		TargetMilestone: bug.TargetMilestone,
 		Version:         bug.Version,
 	}
-	if len(comments) > 0 && comments[0].Count == 0 {
-		desc := comments[0]
-		newBug.Description = fmt.Sprintf("This is a clone of Bug #%d. This is the description of that bug:\n%s", bug.ID, desc.Text)
-		newBug.CommentIsPrivate = desc.IsPrivate
-		newBug.CommentTags = desc.Tags
-		newBug.IsMarkdown = desc.IsMarkdown
-	} else {
-		// This cases _shouldn't_ happen. But just in case...
-		newBug.Description = fmt.Sprintf("This is a clone of Bug #%d.", bug.ID)
-		// We don't know whether this bug should be private. Default to private in case this bug contains private information.
-		newBug.CommentIsPrivate = true
+	if len(subcomponents) > 0 {
+		newBug.SubComponents = subcomponents
 	}
+	for _, comment := range comments {
+		if comment.IsPrivate {
+			newBug.CommentIsPrivate = true
+			break
+		}
+	}
+	var newDesc strings.Builder
+	// The following builds a description comprising all the bug's comments formatted the same way that Bugzilla does on clone
+	newDesc.WriteString(fmt.Sprintf("+++ This bug was initially created as a clone of Bug #%d +++\n\n", bug.ID))
+	if len(comments) > 0 {
+		newDesc.WriteString(comments[0].Text)
+	}
+	// This is a standard time layout string for golang, which formats the time `Mon Jan 2 15:04:05 -0700 MST 2006` to the layout we want
+	bzTimeLayout := "2006-01-02 15:04:05 MST"
+	for _, comment := range comments[1:] {
+		// Header
+		newDesc.WriteString("\n\n--- Additional comment from ")
+		newDesc.WriteString(comment.Creator)
+		newDesc.WriteString(" on ")
+		newDesc.WriteString(comment.Time.UTC().Format(bzTimeLayout))
+		newDesc.WriteString(" ---\n\n")
+
+		// Comment
+		newDesc.WriteString(comment.Text)
+	}
+	newBug.Description = newDesc.String()
 	return newBug
 }
 
 // clone handles the bz client calls for the bug cloning process and allows us to share the implementation
 // between the real and fake client to prevent bugs from accidental discrepencies between the two.
 func clone(c Client, bug *Bug) (int, error) {
+	subcomponents, err := c.GetSubComponentsOnBug(bug.ID)
+	if err != nil {
+		return 0, fmt.Errorf("failed to check if bug has subcomponents: %v", err)
+	}
 	comments, err := c.GetComments(bug.ID)
 	if err != nil {
 		return 0, fmt.Errorf("failed to get parent bug's comments: %v", err)
 	}
-	id, err := c.CreateBug(cloneBugStruct(bug, comments))
+	id, err := c.CreateBug(cloneBugStruct(bug, subcomponents, comments))
 	if err != nil {
 		return id, err
 	}
@@ -368,7 +448,7 @@ func (c *client) AddPullRequestAsExternalBug(id int, org, repo string, num int) 
 		Parameters: []AddExternalBugParameters{{
 			APIKey: string(c.getAPIKey()),
 			BugIDs: []int{id},
-			ExternalBugs: []NewExternalBugIdentifier{{
+			ExternalBugs: []ExternalBugIdentifier{{
 				Type: "https://github.com/",
 				ID:   pullIdentifier,
 			}},
@@ -425,6 +505,86 @@ func (c *client) AddPullRequestAsExternalBug(id int, org, repo string, num int) 
 			if bug.ID == id {
 				changed = changed || strings.Contains(bug.Changes.ExternalBugs.Added, pullIdentifier)
 			}
+		}
+	}
+	return changed, nil
+}
+
+// RemovePullRequestAsExternalBug attempts to remove a PR from the external tracker list.
+// External bugs are assumed to fall under the type identified by their hostname,
+// so we will provide https://github.com/ here for the URL identifier. We return
+// any error as well as whether a change was actually made.
+// This will be done via JSONRPC:
+// https://bugzilla.redhat.com/docs/en/html/integrating/api/Bugzilla/Extension/ExternalBugs/WebService.html#remove-external-bug
+func (c *client) RemovePullRequestAsExternalBug(id int, org, repo string, num int) (bool, error) {
+	logger := c.logger.WithFields(logrus.Fields{methodField: "RemoveExternalBug", "id": id, "org": org, "repo": repo, "num": num})
+	pullIdentifier := IdentifierForPull(org, repo, num)
+	rpcPayload := struct {
+		// Version is the version of JSONRPC to use. All Bugzilla servers
+		// support 1.0. Some support 1.1 and some support 2.0
+		Version string `json:"jsonrpc"`
+		Method  string `json:"method"`
+		// Parameters must be specified in JSONRPC 1.0 as a structure in the first
+		// index of this slice
+		Parameters []RemoveExternalBugParameters `json:"params"`
+		ID         string                        `json:"id"`
+	}{
+		Version: "1.0", // some Bugzilla servers support 2.0 but all support 1.0
+		Method:  "ExternalBugs.remove_external_bug",
+		ID:      "identifier", // this is useful when fielding asynchronous responses, but not here
+		Parameters: []RemoveExternalBugParameters{{
+			APIKey: string(c.getAPIKey()),
+			BugIDs: []int{id},
+			ExternalBugIdentifier: ExternalBugIdentifier{
+				Type: "https://github.com/",
+				ID:   pullIdentifier,
+			},
+		}},
+	}
+	body, err := json.Marshal(rpcPayload)
+	if err != nil {
+		return false, fmt.Errorf("failed to marshal JSONRPC payload: %v", err)
+	}
+	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/jsonrpc.cgi", c.endpoint), bytes.NewBuffer(body))
+	if err != nil {
+		return false, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := c.request(req, logger)
+	if err != nil {
+		return false, err
+	}
+	var response struct {
+		Error *struct {
+			Code    int    `json:"code"`
+			Message string `json:"message"`
+		} `json:"error,omitempty"`
+		ID     string `json:"id"`
+		Result *struct {
+			ExternalBugs []struct {
+				Type string `json:"ext_type_url"`
+				ID   string `json:"ext_bz_bug_id"`
+			} `json:"external_bugs"`
+		} `json:"result,omitempty"`
+	}
+	if err := json.Unmarshal(resp, &response); err != nil {
+		return false, fmt.Errorf("failed to unmarshal JSONRPC response: %v", err)
+	}
+	if response.Error != nil {
+		if response.Error.Code == 1006 && strings.Contains(response.Error.Message, `No external tracker bugs were found that matched your criteria`) {
+			// removing the external bug failed since it is already gone, this is not an error
+			return false, nil
+		}
+		return false, fmt.Errorf("JSONRPC error %d: %v", response.Error.Code, response.Error.Message)
+	}
+	if response.ID != rpcPayload.ID {
+		return false, fmt.Errorf("JSONRPC returned mismatched identifier, expected %s but got %s", rpcPayload.ID, response.ID)
+	}
+	changed := false
+	if response.Result != nil {
+		for _, bug := range response.Result.ExternalBugs {
+			changed = changed || bug.ID == pullIdentifier
 		}
 	}
 	return changed, nil

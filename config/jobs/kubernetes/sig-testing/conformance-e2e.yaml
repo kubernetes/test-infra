@@ -17,7 +17,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-master
         args:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
@@ -63,7 +63,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-master
         env:
         # enable IPV6 in bootstrap image
         - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
@@ -112,7 +112,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-master
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -154,7 +154,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-1.15
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-1.15
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -187,6 +187,7 @@ periodics:
     testgrid-num-columns-recent: '3'
 
 - name: ci-kubernetes-conformance-kind-ga-only
+  cluster: k8s-infra-prow-build
   interval: 12h
   decorate: true
   skip_branches:
@@ -205,7 +206,7 @@ periodics:
     timeout: 2h # allow plenty of time for a serial conformance run
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/krte:v20200428-2225715-master
+    - image: gcr.io/k8s-testimages/krte:v20200531-b02499e-master
       command:
       - wrapper.sh
       - bash

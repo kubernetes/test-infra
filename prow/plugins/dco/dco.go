@@ -113,11 +113,11 @@ func filterTrustedUsers(gc gitHubClient, l *logrus.Entry, skipDCOCheckForCollabo
 	untrustedCommits := make([]github.RepositoryCommit, 0, len(allCommits))
 
 	for _, commit := range allCommits {
-		trusted, err := trigger.TrustedUser(gc, !skipDCOCheckForCollaborators, trustedOrg, commit.Author.Login, org, repo)
+		trustedResponse, err := trigger.TrustedUser(gc, !skipDCOCheckForCollaborators, trustedOrg, commit.Author.Login, org, repo)
 		if err != nil {
 			return nil, fmt.Errorf("Error checking is member trusted: %v", err)
 		}
-		if !trusted {
+		if !trustedResponse.IsTrusted {
 			l.Debugf("Member %s is not trusted", commit.Author.Login)
 			untrustedCommits = append(untrustedCommits, commit)
 		}

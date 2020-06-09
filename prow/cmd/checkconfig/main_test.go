@@ -25,6 +25,7 @@ import (
 	"regexp"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/google/go-cmp/cmp"
 	"k8s.io/apimachinery/pkg/util/diff"
@@ -903,6 +904,69 @@ func TestValidateStrictBranches(t *testing.T) {
 	}
 }
 
+func TestValidateManagedWebhooks(t *testing.T) {
+	testCases := []struct {
+		name      string
+		config    config.ProwConfig
+		expectErr bool
+	}{
+		{
+			name:      "empty config",
+			config:    config.ProwConfig{},
+			expectErr: false,
+		},
+		{
+			name: "no duplicate webhooks",
+			config: config.ProwConfig{
+				ManagedWebhooks: map[string]config.ManagedWebhookInfo{
+					"foo1":     {TokenCreatedAfter: time.Now()},
+					"foo2":     {TokenCreatedAfter: time.Now()},
+					"foo/bar":  {TokenCreatedAfter: time.Now()},
+					"foo/bar1": {TokenCreatedAfter: time.Now()},
+					"foo/bar2": {TokenCreatedAfter: time.Now()},
+				}},
+			expectErr: false,
+		},
+		{
+			name: "has duplicate webhooks",
+			config: config.ProwConfig{
+				ManagedWebhooks: map[string]config.ManagedWebhookInfo{
+					"foo":      {TokenCreatedAfter: time.Now()},
+					"foo1":     {TokenCreatedAfter: time.Now()},
+					"foo2":     {TokenCreatedAfter: time.Now()},
+					"foo/bar":  {TokenCreatedAfter: time.Now()},
+					"foo/bar1": {TokenCreatedAfter: time.Now()},
+					"foo/bar2": {TokenCreatedAfter: time.Now()},
+				}},
+			expectErr: true,
+		},
+		{
+			name: "has multiple duplicate webhooks",
+			config: config.ProwConfig{
+				ManagedWebhooks: map[string]config.ManagedWebhookInfo{
+					"foo":       {TokenCreatedAfter: time.Now()},
+					"foo1":      {TokenCreatedAfter: time.Now()},
+					"foo2":      {TokenCreatedAfter: time.Now()},
+					"foo/bar":   {TokenCreatedAfter: time.Now()},
+					"foo/bar1":  {TokenCreatedAfter: time.Now()},
+					"foo1/bar1": {TokenCreatedAfter: time.Now()},
+				}},
+			expectErr: true,
+		},
+	}
+
+	for _, testCase := range testCases {
+		err := validateManagedWebhooks(&config.Config{ProwConfig: testCase.config})
+		if testCase.expectErr && err == nil {
+			t.Errorf("%s: expected the config %+v to have errors but not", testCase.name, testCase.config)
+		}
+		if !testCase.expectErr && err != nil {
+			t.Errorf("%s: expected the config %+v to be correct but got an error in validation: %v",
+				testCase.name, testCase.config, err)
+		}
+	}
+}
+
 func TestWarningEnabled(t *testing.T) {
 	var testCases = []struct {
 		name      string
@@ -1363,6 +1427,15 @@ func TestValidateTideContextPolicy(t *testing.T) {
 				}
 			}),
 		},
+		{
+			name: "repo key is not in org/repo format, no error",
+			cfg: cfg(func(c *config.Config) {
+				c.PresubmitsStatic["https://kunit-review.googlesource.com/linux"] = []config.Presubmit{
+					{Reporter: config.Reporter{Context: "a"}, Brancher: config.Brancher{Branches: []string{"a"}}},
+					{AlwaysRun: true, Reporter: config.Reporter{Context: "a"}, Brancher: config.Brancher{Branches: []string{"b"}}},
+				}
+			}),
+		},
 	}
 
 	for _, tc := range testCases {
@@ -1376,6 +1449,28 @@ func TestValidateTideContextPolicy(t *testing.T) {
 			}
 			if errMsg != tc.expectedError {
 				t.Errorf("expected error %q, got error %q", tc.expectedError, errMsg)
+			}
+		})
+	}
+}
+
+func TestValidate(t *testing.T) {
+	testCases := []struct {
+		name string
+		opts options
+	}{
+		{
+			name: "combined config",
+			opts: options{
+				configPath: "testdata/combined.yaml",
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			if err := validate(tc.opts); err != nil {
+				t.Fatalf("validation failed: %v", err)
 			}
 		})
 	}

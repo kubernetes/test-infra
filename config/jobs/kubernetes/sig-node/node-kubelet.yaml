@@ -1,5 +1,6 @@
 periodics:
 - name: ci-kubernetes-node-kubelet
+  cluster: k8s-infra-prow-build
   interval: 1h
   annotations:
     fork-per-release: "true"
@@ -13,7 +14,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=90
@@ -21,7 +22,7 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --deployment=node
-      - --gcp-project-type=node-e2e-project
+      - --gcp-project-type=k8s-infra-gce-project
       - --gcp-zone=us-west1-b
       - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
       - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
@@ -40,7 +41,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=90
@@ -70,7 +71,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=90
@@ -101,7 +102,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=90
@@ -128,6 +129,7 @@ periodics:
     testgrid-tab-name: node-kubelet-conformance
 
 - name: ci-kubernetes-node-kubelet-features
+  cluster: k8s-infra-prow-build
   interval: 1h
   labels:
     preset-service-account: "true"
@@ -138,7 +140,7 @@ periodics:
     testgrid-tab-name: node-kubelet-features
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=90
@@ -146,7 +148,7 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --deployment=node
-      - --gcp-project-type=node-e2e-project
+      - --gcp-project-type=k8s-infra-gce-project
       - --gcp-zone=us-west1-b
       - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
       - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
@@ -165,7 +167,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=90
@@ -195,7 +197,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=400
@@ -225,7 +227,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=320
@@ -255,7 +257,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=200
@@ -285,7 +287,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=240
@@ -316,7 +318,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-master
         args:
           - --repo=k8s.io/kubernetes=master
           - --timeout=240
@@ -339,3 +341,34 @@ periodics:
     testgrid-dashboards: wg-resource-management, sig-node-kubelet
     testgrid-tab-name: kubelet-serial-gce-e2e-topology-manager
     testgrid-alert-email: vpickard@redhat.com, klueska@gmail.com
+
+- name: ci-kubernetes-node-kubelet-serial-hugepages
+  interval: 4h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-master
+        args:
+          - --repo=k8s.io/kubernetes=master
+          - --timeout=240
+          - --root=/go/src
+          - --scenario=kubernetes_e2e
+          - --
+          - --deployment=node
+          - --gcp-project-type=node-e2e-project
+          - --gcp-zone=us-west1-b
+          - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-serial-hugepages.yaml
+          - --node-test-args=--feature-gates=HugePageStorageMediumSize=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
+          - --node-tests=true
+          - --provider=gce
+          - --test_args=--nodes=1 --focus="\[Feature:HugePages\]"
+          - --timeout=180m
+        env:
+          - name: GOPATH
+            value: /go
+  annotations:
+    testgrid-dashboards: wg-resource-management, sig-node-kubelet
+    testgrid-tab-name: kubelet-serial-gce-e2e-hugepages
+    testgrid-alert-email: alukiano@redhat.com, eduard.bartosh@intel.com

@@ -297,6 +297,7 @@ func TestCloneBugStruct(t *testing.T) {
 			Component:       []string{"TestComponent"},
 			Flags:           []Flag{{ID: 1, Name: "Test Flag"}},
 			Groups:          []string{"group1"},
+			ID:              123,
 			Keywords:        []string{"segfault"},
 			OperatingSystem: "Fedora",
 			Platform:        "x86_64",
@@ -311,10 +312,8 @@ func TestCloneBugStruct(t *testing.T) {
 			Version:         []string{"31"},
 		},
 		comments: []Comment{{
-			Text:       "There is a segfault that occurs when opening applications.",
-			IsPrivate:  true,
-			IsMarkdown: true,
-			Tags:       []string{"description"},
+			Text:      "There is a segfault that occurs when opening applications.",
+			IsPrivate: true,
 		}},
 		expected: BugCreate{
 			Alias:            []string{"this_is_an_alias"},
@@ -333,14 +332,60 @@ func TestCloneBugStruct(t *testing.T) {
 			Summary:          "Segfault when opening program",
 			TargetMilestone:  "milestone1",
 			Version:          []string{"31"},
-			Description:      "This is a clone of Bug #0. This is the description of that bug:\nThere is a segfault that occurs when opening applications.",
+			Description:      "+++ This bug was initially created as a clone of Bug #123 +++\n\nThere is a segfault that occurs when opening applications.",
 			CommentIsPrivate: true,
-			IsMarkdown:       true,
-			CommentTags:      []string{"description"},
+		},
+	}, {
+		name: "Clone bug with multiple comments",
+		bug: Bug{
+			ID: 123,
+		},
+		comments: []Comment{{
+			Text: "There is a segfault that occurs when opening applications.",
+		}, {
+			Text:         "This is another comment.",
+			Time:         time.Date(2020, time.May, 7, 2, 3, 4, 0, time.UTC),
+			CreationTime: time.Date(2020, time.May, 7, 2, 3, 4, 0, time.UTC),
+			Tags:         []string{"description"},
+			Creator:      "Test Commenter",
+		}},
+		expected: BugCreate{
+			Description: `+++ This bug was initially created as a clone of Bug #123 +++
+
+There is a segfault that occurs when opening applications.
+
+--- Additional comment from Test Commenter on 2020-05-07 02:03:04 UTC ---
+
+This is another comment.`,
+		},
+	}, {
+		name: "Clone bug with one private comments",
+		bug: Bug{
+			ID: 123,
+		},
+		comments: []Comment{{
+			Text: "There is a segfault that occurs when opening applications.",
+		}, {
+			Text:         "This is another comment.",
+			Time:         time.Date(2020, time.May, 7, 2, 3, 4, 0, time.UTC),
+			CreationTime: time.Date(2020, time.May, 7, 2, 3, 4, 0, time.UTC),
+			IsPrivate:    true,
+			Tags:         []string{"description"},
+			Creator:      "Test Commenter",
+		}},
+		expected: BugCreate{
+			Description: `+++ This bug was initially created as a clone of Bug #123 +++
+
+There is a segfault that occurs when opening applications.
+
+--- Additional comment from Test Commenter on 2020-05-07 02:03:04 UTC ---
+
+This is another comment.`,
+			CommentIsPrivate: true,
 		},
 	}}
 	for _, testCase := range testCases {
-		newBug := cloneBugStruct(&testCase.bug, testCase.comments)
+		newBug := cloneBugStruct(&testCase.bug, nil, testCase.comments)
 		if !reflect.DeepEqual(*newBug, testCase.expected) {
 			t.Errorf("%s: Difference in expected BugCreate and actual: %s", testCase.name, cmp.Diff(testCase.expected, *newBug))
 		}
@@ -539,6 +584,136 @@ func TestAddPullRequestAsExternalBug(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			changed, err := client.AddPullRequestAsExternalBug(testCase.id, "org", "repo", 1)
+			if !testCase.expectedError && err != nil {
+				t.Errorf("%s: expected no error, but got one: %v", testCase.name, err)
+			}
+			if testCase.expectedError && err == nil {
+				t.Errorf("%s: expected an error, but got none", testCase.name)
+			}
+			if testCase.expectedChanged != changed {
+				t.Errorf("%s: got incorrect state change", testCase.name)
+			}
+		})
+	}
+
+	// this should 404
+	changed, err := client.AddPullRequestAsExternalBug(1, "org", "repo", 1)
+	if err == nil {
+		t.Error("expected an error, but got none")
+	} else if !IsNotFound(err) {
+		t.Errorf("expected a not found error, got %v", err)
+	}
+	if changed {
+		t.Error("expected not to change state, but did")
+	}
+}
+
+func TestRemovePullRequestAsExternalBug(t *testing.T) {
+	var testCases = []struct {
+		name            string
+		id              int
+		expectedPayload string
+		response        string
+		expectedError   bool
+		expectedChanged bool
+	}{
+		{
+			name:            "update succeeds, makes a change",
+			id:              1705243,
+			expectedPayload: `{"jsonrpc":"1.0","method":"ExternalBugs.remove_external_bug","params":[{"api_key":"api-key","bug_ids":[1705243],"ext_type_url":"https://github.com/","ext_bz_bug_id":"org/repo/pull/1"}],"id":"identifier"}`,
+			response:        `{"error":null,"id":"identifier","result":{"external_bugs":[{"ext_type_url":"https://github.com/","ext_bz_bug_id":"org/repo/pull/1"}]}}`,
+			expectedError:   false,
+			expectedChanged: true,
+		},
+		{
+			name:            "update succeeds, makes a change as part of multiple changes reported",
+			id:              1705244,
+			expectedPayload: `{"jsonrpc":"1.0","method":"ExternalBugs.remove_external_bug","params":[{"api_key":"api-key","bug_ids":[1705244],"ext_type_url":"https://github.com/","ext_bz_bug_id":"org/repo/pull/1"}],"id":"identifier"}`,
+			response:        `{"error":null,"id":"identifier","result":{"external_bugs":[{"ext_type_url":"https://github.com/","ext_bz_bug_id":"org/repo/pull/1"},{"ext_type_url":"https://github.com/","ext_bz_bug_id":"org/repo/pull/2"}]}}`,
+			expectedError:   false,
+			expectedChanged: true,
+		},
+		{
+			name:            "update succeeds, makes no change",
+			id:              1705245,
+			expectedPayload: `{"jsonrpc":"1.0","method":"ExternalBugs.remove_external_bug","params":[{"api_key":"api-key","bug_ids":[1705245],"ext_type_url":"https://github.com/","ext_bz_bug_id":"org/repo/pull/1"}],"id":"identifier"}`,
+			response:        `{"error":null,"id":"identifier","result":{"external_bugs":[]}}`,
+			expectedError:   false,
+			expectedChanged: false,
+		},
+		{
+			name:            "update fails, makes no change",
+			id:              1705246,
+			expectedPayload: `{"jsonrpc":"1.0","method":"ExternalBugs.remove_external_bug","params":[{"api_key":"api-key","bug_ids":[1705246],"ext_type_url":"https://github.com/","ext_bz_bug_id":"org/repo/pull/1"}],"id":"identifier"}`,
+			response:        `{"error":{"code": 100400,"message":"Invalid params for JSONRPC 1.0."},"id":"identifier","result":null}`,
+			expectedError:   true,
+			expectedChanged: false,
+		},
+		{
+			name:            "get unrelated JSONRPC response",
+			id:              1705247,
+			expectedPayload: `{"jsonrpc":"1.0","method":"ExternalBugs.remove_external_bug","params":[{"api_key":"api-key","bug_ids":[1705247],"ext_type_url":"https://github.com/","ext_bz_bug_id":"org/repo/pull/1"}],"id":"identifier"}`,
+			response:        `{"error":null,"id":"oops","result":{"external_bugs":[]}}`,
+			expectedError:   true,
+			expectedChanged: false,
+		},
+	}
+	testServer := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("Content-Type") != "application/json" {
+			t.Error("did not correctly set content-type header for JSON")
+			http.Error(w, "403 Forbidden", http.StatusForbidden)
+			return
+		}
+		if r.Method != http.MethodPost {
+			t.Errorf("incorrect method to use the JSONRPC API: %s", r.Method)
+			http.Error(w, "400 Bad Request", http.StatusBadRequest)
+			return
+		}
+		if r.URL.Path != "/jsonrpc.cgi" {
+			t.Errorf("incorrect path to use the JSONRPC API: %s", r.URL.Path)
+			http.Error(w, "400 Bad Request", http.StatusBadRequest)
+			return
+		}
+		var payload struct {
+			// Version is the version of JSONRPC to use. All Bugzilla servers
+			// support 1.0. Some support 1.1 and some support 2.0
+			Version string `json:"jsonrpc"`
+			Method  string `json:"method"`
+			// Parameters must be specified in JSONRPC 1.0 as a structure in the first
+			// index of this slice
+			Parameters []RemoveExternalBugParameters `json:"params"`
+			ID         string                        `json:"id"`
+		}
+		raw, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			t.Errorf("failed to read request body: %v", err)
+			http.Error(w, "500 Server Error", http.StatusInternalServerError)
+			return
+		}
+		if err := json.Unmarshal(raw, &payload); err != nil {
+			t.Errorf("malformed JSONRPC payload: %s", string(raw))
+			http.Error(w, "400 Bad Request", http.StatusBadRequest)
+			return
+		}
+		for _, testCase := range testCases {
+			if payload.Parameters[0].BugIDs[0] == testCase.id {
+				if actual, expected := string(raw), testCase.expectedPayload; actual != expected {
+					t.Errorf("%s: got incorrect JSONRPC payload: %v", testCase.name, diff.ObjectReflectDiff(expected, actual))
+				}
+				if _, err := w.Write([]byte(testCase.response)); err != nil {
+					t.Fatalf("%s: failed to send JSONRPC response: %v", testCase.name, err)
+				}
+				return
+			}
+		}
+		http.Error(w, "404 Not Found", http.StatusNotFound)
+	}))
+	defer testServer.Close()
+	client := clientForUrl(testServer.URL)
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			changed, err := client.RemovePullRequestAsExternalBug(testCase.id, "org", "repo", 1)
 			if !testCase.expectedError && err != nil {
 				t.Errorf("%s: expected no error, but got one: %v", testCase.name, err)
 			}

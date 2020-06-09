@@ -1,11 +1,17 @@
 steps:
   - name: gcr.io/cloud-builders/docker
-    args: [ 'build', '-t', 'gcr.io/$PROJECT_ID/alpine-bash:$_GIT_TAG',
-            '--build-arg', 'IMAGE_ARG=gcr.io/$PROJECT_ID/alpine-bash:$_GIT_TAG',
-            '.' ]
+    args:
+    - build
+    - -t
+    - gcr.io/$PROJECT_ID/alpine-bash:$_GIT_TAG
+    - --build-arg=IMAGE_ARG=gcr.io/$PROJECT_ID/alpine-bash:$_GIT_TAG
+    - .
     dir: images/alpine-bash/
   - name: gcr.io/cloud-builders/docker
-    args: [ 'tag', 'gcr.io/$PROJECT_ID/alpine-bash:$_GIT_TAG', 'gcr.io/$PROJECT_ID/alpine-bash:latest']
+    args:
+    - tag
+    - gcr.io/$PROJECT_ID/alpine-bash:$_GIT_TAG
+    - gcr.io/$PROJECT_ID/alpine-bash:latest
 substitutions:
   _GIT_TAG: '12345'
 images:

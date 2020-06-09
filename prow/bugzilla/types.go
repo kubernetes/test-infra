@@ -149,6 +149,9 @@ type BugCreate struct {
 	Severity string `json:"severity,omitempty"`
 	// Status is the current status of the bug.
 	Status string `json:"status,omitempty"`
+	// SubComponents are the subcomponents of the component for the bug. The key is the Component name, while the value is an array of length 1 containing the subcomponent name.
+	// This is a Red Hat bugzilla specific extra field.
+	SubComponents map[string][]string `json:"sub_components,omitempty"`
 	// Summary is the summary of this bug.
 	Summary string `json:"summary,omitempty"`
 	// TargetMilestone is the milestone that this bug is supposed to be fixed by, or for closed bugs, the milestone that it was fixed for.
@@ -219,11 +222,13 @@ type Flag struct {
 // BugUpdate contains fields to update on a Bug. See API documentation at:
 // https://bugzilla.readthedocs.io/en/latest/api/core/v1/bug.html#update-bug
 type BugUpdate struct {
-	// DependOn specifies the bugs that this bug depends on
-	DependsOn *IDUpdate `json:"depends_on,omitempty"`
+	// DependsOn specifies the bugs that this bug depends on
+	DependsOn  *IDUpdate `json:"depends_on,omitempty"`
+	Resolution string    `json:"resolution,omitempty"`
 	// Status is the current status of the bug.
-	Status     string `json:"status,omitempty"`
-	Resolution string `json:"resolution,omitempty"`
+	Status string `json:"status,omitempty"`
+	// TargetRelease is the release version this bugfix is targeting
+	TargetRelease []string `json:"target_release,omitempty"`
 	// Version is the version the bug was reported against.
 	Version string `json:"version,omitempty"`
 }
@@ -260,19 +265,19 @@ type ExternalBugType struct {
 }
 
 // AddExternalBugParameters are the parameters required to add an external
-// tracker bug to a Bugtzilla bug
+// tracker bug to a Bugzilla bug
 type AddExternalBugParameters struct {
 	// APIKey is the API key to use when authenticating with Bugzilla
 	APIKey string `json:"api_key"`
 	// BugIDs are the IDs of Bugzilla bugs to update
 	BugIDs []int `json:"bug_ids"`
 	// ExternalBugs are the external bugs to add
-	ExternalBugs []NewExternalBugIdentifier `json:"external_bugs"`
+	ExternalBugs []ExternalBugIdentifier `json:"external_bugs"`
 }
 
-// NewExternalBugIdentifier holds fields used to identify new external bugs when
-// adding them using the JSONRPC API
-type NewExternalBugIdentifier struct {
+// ExternalBugIdentifier holds fields used to identify external bugs when
+// modifying them using the JSONRPC API
+type ExternalBugIdentifier struct {
 	// Type is the URL prefix that identifies the external bug tracker type.
 	// For GitHub, this is commonly https://github.com/
 	Type string `json:"ext_type_url"`
@@ -280,4 +285,15 @@ type NewExternalBugIdentifier struct {
 	// For GitHub issues and pull requests, this ID is commonly the path
 	// like `org/repo/pull/number` or `org/repo/issue/number`.
 	ID string `json:"ext_bz_bug_id"`
+}
+
+// RemoveExternalBugParameters are the parameters required to remove an external
+// tracker bug from a Bugzilla bug
+type RemoveExternalBugParameters struct {
+	// APIKey is the API key to use when authenticating with Bugzilla
+	APIKey string `json:"api_key"`
+	// BugIDs are the IDs of Bugzilla bugs to update
+	BugIDs []int `json:"bug_ids"`
+	// The inline identifier for which external bug to remove
+	ExternalBugIdentifier
 }

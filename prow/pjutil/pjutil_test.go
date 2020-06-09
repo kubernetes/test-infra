@@ -697,10 +697,11 @@ func TestNewProwJobWithAnnotations(t *testing.T) {
 
 func TestJobURL(t *testing.T) {
 	var testCases = []struct {
-		name     string
-		plank    config.Plank
-		pj       prowapi.ProwJob
-		expected string
+		name        string
+		plank       config.Plank
+		pj          prowapi.ProwJob
+		expected    string
+		expectedErr string
 	}{
 		{
 			name: "non-decorated job uses template",
@@ -733,7 +734,7 @@ func TestJobURL(t *testing.T) {
 			expected: "periodic",
 		},
 		{
-			name: "decorated job with prefix uses gcslib",
+			name: "decorated job with prefix uses gcsupload",
 			plank: config.Plank{
 				JobURLPrefixConfig: map[string]string{"*": "https://gubernator.com/build"},
 			},
@@ -751,13 +752,79 @@ func TestJobURL(t *testing.T) {
 			}},
 			expected: "https://gubernator.com/build/bucket/pr-logs/pull/org_repo/1",
 		},
+		{
+			name: "decorated job with prefix uses gcsupload and new bucket format with gcs",
+			plank: config.Plank{
+				JobURLPrefixConfig: map[string]string{"*": "https://prow.k8s.io/view/gcs"},
+			},
+			pj: prowapi.ProwJob{Spec: prowapi.ProwJobSpec{
+				Type: prowapi.PresubmitJob,
+				Refs: &prowapi.Refs{
+					Org:   "org",
+					Repo:  "repo",
+					Pulls: []prowapi.Pull{{Number: 1}},
+				},
+				DecorationConfig: &prowapi.DecorationConfig{GCSConfiguration: &prowapi.GCSConfiguration{
+					Bucket:       "gs://bucket",
+					PathStrategy: prowapi.PathStrategyExplicit,
+				}},
+			}},
+			expected: "https://prow.k8s.io/view/gcs/bucket/pr-logs/pull/org_repo/1",
+		},
+		{
+			name: "decorated job with prefix uses gcsupload and new bucket format with s3",
+			plank: config.Plank{
+				JobURLPrefixConfig: map[string]string{"*": "https://prow.k8s.io/view/s3"},
+			},
+			pj: prowapi.ProwJob{Spec: prowapi.ProwJobSpec{
+				Type: prowapi.PresubmitJob,
+				Refs: &prowapi.Refs{
+					Org:   "org",
+					Repo:  "repo",
+					Pulls: []prowapi.Pull{{Number: 1}},
+				},
+				DecorationConfig: &prowapi.DecorationConfig{GCSConfiguration: &prowapi.GCSConfiguration{
+					Bucket:       "s3://bucket",
+					PathStrategy: prowapi.PathStrategyExplicit,
+				}},
+			}},
+			expected: "https://prow.k8s.io/view/s3/bucket/pr-logs/pull/org_repo/1",
+		},
+		{
+			name: "decorated job with prefix uses gcsupload with valid bucket with multiple separators",
+			plank: config.Plank{
+				JobURLPrefixConfig: map[string]string{"*": "https://prow.k8s.io/view/s3"},
+			},
+			pj: prowapi.ProwJob{Spec: prowapi.ProwJobSpec{
+				Type: prowapi.PresubmitJob,
+				Refs: &prowapi.Refs{
+					Org:   "org",
+					Repo:  "repo",
+					Pulls: []prowapi.Pull{{Number: 1}},
+				},
+				DecorationConfig: &prowapi.DecorationConfig{GCSConfiguration: &prowapi.GCSConfiguration{
+					Bucket:       "gs://my-floppy-backup/a://doom2.wad.006",
+					PathStrategy: prowapi.PathStrategyExplicit,
+				}},
+			}},
+			expected: "https://prow.k8s.io/view/s3/my-floppy-backup/a:/doom2.wad.006/pr-logs/pull/org_repo/1",
+		},
 	}
 
 	logger := logrus.New()
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			if actual, expected := JobURL(testCase.plank, testCase.pj, logger.WithField("name", testCase.name)), testCase.expected; actual != expected {
-				t.Errorf("%s: expected URL to be %q but got %q", testCase.name, expected, actual)
+			actual, actualErr := JobURL(testCase.plank, testCase.pj, logger.WithField("name", testCase.name))
+			var actualErrStr string
+			if actualErr != nil {
+				actualErrStr = actualErr.Error()
+			}
+
+			if actualErrStr != testCase.expectedErr {
+				t.Errorf("%s: expectedErr = %v, but got %v", testCase.name, testCase.expectedErr, actualErrStr)
+			}
+			if actual != testCase.expected {
+				t.Errorf("%s: expected URL to be %q but got %q", testCase.name, testCase.expected, actual)
 			}
 		})
 	}

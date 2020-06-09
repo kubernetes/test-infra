@@ -37,6 +37,7 @@ prow_push(
             "tide",
             "tot",
             "pipeline",
+            "prow-controller-manager",
         ],
         targets = {
             "needs-rebase": "//prow/external-plugins/needs-rebase:image",
@@ -47,6 +48,7 @@ prow_push(
             "commenter": "//robots/commenter:image",
             "pr-creator": "//robots/pr-creator:image",
             "issue-creator": "//robots/issue-creator:image",
+            "configurator": "//testgrid/cmd/configurator:image",
             "transfigure": "//testgrid/cmd/transfigure:image",
             "gcsweb": "//gcsweb/cmd/gcsweb:image",
         },
@@ -96,6 +98,7 @@ filegroup(
         "//prow/cmd/phony:all-srcs",
         "//prow/cmd/pipeline:all-srcs",
         "//prow/cmd/plank:all-srcs",
+        "//prow/cmd/prow-controller-manager:all-srcs",
         "//prow/cmd/sidecar:all-srcs",
         "//prow/cmd/sinker:all-srcs",
         "//prow/cmd/status-reconciler:all-srcs",

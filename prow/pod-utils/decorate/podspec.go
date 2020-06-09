@@ -533,7 +533,7 @@ func BlobStorageOptions(dc prowapi.DecorationConfig, localMode bool) ([]coreapi.
 			Name:      gcsCredentialsMountName,
 			MountPath: gcsCredentialsMountPath,
 		})
-		opt.GcsCredentialsFile = fmt.Sprintf("%s/service-account.json", gcsCredentialsMountPath)
+		opt.StorageClientOptions.GCSCredentialsFile = fmt.Sprintf("%s/service-account.json", gcsCredentialsMountPath)
 	}
 	if dc.S3CredentialsSecret != "" {
 		volumes = append(volumes, coreapi.Volume{
@@ -548,7 +548,7 @@ func BlobStorageOptions(dc prowapi.DecorationConfig, localMode bool) ([]coreapi.
 			Name:      s3CredentialsMountName,
 			MountPath: s3CredentialsMountPath,
 		})
-		opt.S3CredentialsFile = fmt.Sprintf("%s/service-account.json", s3CredentialsMountPath)
+		opt.StorageClientOptions.S3CredentialsFile = fmt.Sprintf("%s/service-account.json", s3CredentialsMountPath)
 	}
 
 	return volumes, mounts, opt

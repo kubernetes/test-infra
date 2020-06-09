@@ -24,6 +24,8 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -241,9 +243,36 @@ func runCommand(name string, arg ...string) error {
 	return err
 }
 
+func dumpNetworkDebugInfo() {
+	klog.Info("Dumping network connectivity debug info")
+	resolv, err := ioutil.ReadFile("/etc/resolv.conf")
+	if err != nil {
+		klog.Errorf("Failed to read /etc/resolv.conf: %v", err)
+	}
+	klog.Infof("/etc/resolv.conf: %q", string(resolv))
+	addrs, err := net.LookupHost("kubernetes.default")
+	if err != nil {
+		klog.Errorf("Failed to resolve kubernetes.default: %v", err)
+	}
+	klog.Infof("kubernetes.default resolves to: %v", addrs)
+	addrs, err = net.LookupHost("google.com")
+	if err != nil {
+		klog.Errorf("Failed to resolve google.com: %v", err)
+	}
+	klog.Infof("google.com resolves to: %v", addrs)
+	resp, err := http.Get("http://google.com/")
+	if err != nil {
+		klog.Errorf("Failed to get http://google.com/: %v", err)
+	}
+	defer resp.Body.Close()
+	klog.Infof("GET http://google.com finished with: %v code", resp.StatusCode)
+}
+
 func main() {
 	pflag.Parse()
 	if err := checkConfigValidity(); err != nil {
+		klog.Errorf("Bad config provided: %v", err)
+		dumpNetworkDebugInfo()
 		klog.Fatalf("Bad config provided: %v", err)
 	}
 

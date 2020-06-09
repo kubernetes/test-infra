@@ -20,7 +20,8 @@ HOST="https://prow.k8s.io"
 if [[ "${1}" == "openshift" ]]; then
 	HOST="https://deck-ci.svc.ci.openshift.org"
 fi
-curl "${HOST}/prowjobs.js?var=allBuilds&omit=annotations,labels,decoration_config,pod_spec" > prowjobs.js
+
+curl "${HOST}/prowjobs.js" > prowjobs.json
 curl "${HOST}/tide.js?var=tideData" > tide.js
 curl "${HOST}/tide-history.js?var=tideHistory" > tide-history.js
 curl "${HOST}/plugin-help.js?var=allHelp" > plugin-help.js

@@ -2,17 +2,11 @@ dashboard_groups:
 - dashboard_names:
   - googleoss-gcp-guest
   - googleoss-test-infra
-  - googleoss-esp-v2
+  - googleoss-esp-v2-presubmit
+  - googleoss-esp-v2-periodic
   name: googleoss
 dashboards:
 - dashboard_tab:
-  - code_search_url_template:
-      url: https://github.com/GoogleCloudPlatform/compute-image-packages/compare/<start-custom-0>...<end-custom-0>
-    description: disk-expand-build
-    name: disk-expand-build
-    open_bug_template:
-      url: https://github.com/GoogleCloudPlatform/compute-image-packages/issues/
-    test_group_name: disk-expand-build
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/guest-agent/compare/<start-custom-0>...<end-custom-0>
     description: guest-agent-build
@@ -22,11 +16,18 @@ dashboards:
     test_group_name: guest-agent-build
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/guest-configs/compare/<start-custom-0>...<end-custom-0>
-    description: guest-config-build
-    name: guest-config-build
+    description: gce-build
+    name: gce-build
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/guest-configs/issues/
-    test_group_name: guest-config-build
+    test_group_name: gce-build
+  - code_search_url_template:
+      url: https://github.com/GoogleCloudPlatform/guest-diskexpand/compare/<start-custom-0>...<end-custom-0>
+    description: disk-expand-build
+    name: disk-expand-build
+    open_bug_template:
+      url: https://github.com/GoogleCloudPlatform/guest-diskexpand/issues/
+    test_group_name: disk-expand-build
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/guest-oslogin/compare/<start-custom-0>...<end-custom-0>
     description: oslogin-build
@@ -115,187 +116,189 @@ dashboards:
 - dashboard_tab:
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
-    description: ESPv2-continuous-anthos-cloud-run-e2e-cloud-run-http-bookstore
-    name: ESPv2-continuous-anthos-cloud-run-e2e-cloud-run-http-bookstore
-    open_bug_template:
-      url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
-    test_group_name: ESPv2-continuous-anthos-cloud-run-e2e-cloud-run-http-bookstore
-  - code_search_url_template:
-      url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
-    description: ESPv2-continuous-build
-    name: ESPv2-continuous-build
-    open_bug_template:
-      url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
-    test_group_name: ESPv2-continuous-build
-  - code_search_url_template:
-      url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
-    description: ESPv2-continuous-cloud-run-e2e-cloud-function-http-bookstore
-    name: ESPv2-continuous-cloud-run-e2e-cloud-function-http-bookstore
-    open_bug_template:
-      url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
-    test_group_name: ESPv2-continuous-cloud-run-e2e-cloud-function-http-bookstore
-  - code_search_url_template:
-      url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
-    description: ESPv2-continuous-cloud-run-e2e-cloud-run-grpc-echo
-    name: ESPv2-continuous-cloud-run-e2e-cloud-run-grpc-echo
-    open_bug_template:
-      url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
-    test_group_name: ESPv2-continuous-cloud-run-e2e-cloud-run-grpc-echo
-  - code_search_url_template:
-      url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
-    description: ESPv2-continuous-cloud-run-e2e-cloud-run-http-bookstore
-    name: ESPv2-continuous-cloud-run-e2e-cloud-run-http-bookstore
-    open_bug_template:
-      url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
-    test_group_name: ESPv2-continuous-cloud-run-e2e-cloud-run-http-bookstore
-  - code_search_url_template:
-      url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
-    description: ESPv2-continuous-coverage
-    name: ESPv2-continuous-coverage
-    open_bug_template:
-      url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
-    test_group_name: ESPv2-continuous-coverage
-  - code_search_url_template:
-      url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
-    description: ESPv2-continuous-gke-e2e-tight-grpc-echo-managed
-    name: ESPv2-continuous-gke-e2e-tight-grpc-echo-managed
-    open_bug_template:
-      url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
-    test_group_name: ESPv2-continuous-gke-e2e-tight-grpc-echo-managed
-  - code_search_url_template:
-      url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
-    description: ESPv2-continuous-gke-e2e-tight-grpc-interop-managed
-    name: ESPv2-continuous-gke-e2e-tight-grpc-interop-managed
-    open_bug_template:
-      url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
-    test_group_name: ESPv2-continuous-gke-e2e-tight-grpc-interop-managed
-  - code_search_url_template:
-      url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
-    description: ESPv2-continuous-gke-e2e-tight-http-bookstore-managed
-    name: ESPv2-continuous-gke-e2e-tight-http-bookstore-managed
-    open_bug_template:
-      url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
-    test_group_name: ESPv2-continuous-gke-e2e-tight-http-bookstore-managed
-  - code_search_url_template:
-      url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
-    description: ESPv2-continuous-presubmit
-    name: ESPv2-continuous-presubmit
-    open_bug_template:
-      url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
-    test_group_name: ESPv2-continuous-presubmit
-  - code_search_url_template:
-      url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
-    description: ESPv2-continuous-presubmit-asan
-    name: ESPv2-continuous-presubmit-asan
-    open_bug_template:
-      url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
-    test_group_name: ESPv2-continuous-presubmit-asan
-  - code_search_url_template:
-      url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
-    description: ESPv2-continuous-presubmit-tsan
-    name: ESPv2-continuous-presubmit-tsan
-    open_bug_template:
-      url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
-    test_group_name: ESPv2-continuous-presubmit-tsan
-  - code_search_url_template:
-      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
-    description: ESPv2-gke-janitor
-    name: ESPv2-gke-janitor
-    open_bug_template:
-      url: https://github.com/kubernetes/test-infra/issues/
-    test_group_name: ESPv2-gke-janitor
-  - code_search_url_template:
-      url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
-    description: ESPv2-serverless-janitor
-    name: ESPv2-serverless-janitor
-    open_bug_template:
-      url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
-    test_group_name: ESPv2-serverless-janitor
-  - code_search_url_template:
-      url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
-    description: ESPv2-anthos-cloud-run-e2e-anthos-cloud-run-http-bookstore
-    name: ESPv2-anthos-cloud-run-e2e-anthos-cloud-run-http-bookstore
+    description: Runs e2e tests for Cloud Run with Anthos.
+    name: e2e-cloud-run-anthos-http-bookstore
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
     test_group_name: ESPv2-anthos-cloud-run-e2e-anthos-cloud-run-http-bookstore
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
-    description: ESPv2-build
-    name: ESPv2-build
+    description: Generates docker images to deploy in e2e tests.
+    name: build
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
     test_group_name: ESPv2-build
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
-    description: ESPv2-cloud-run-e2e-cloud-function-http-bookstore
-    name: ESPv2-cloud-run-e2e-cloud-function-http-bookstore
+    description: Runs e2e tests for Cloud Functions.
+    name: e2e-cloud-function-http-bookstore
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
     test_group_name: ESPv2-cloud-run-e2e-cloud-function-http-bookstore
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
-    description: ESPv2-cloud-run-e2e-cloud-run-grpc-echo
-    name: ESPv2-cloud-run-e2e-cloud-run-grpc-echo
+    description: Runs e2e tests for Cloud Run.
+    name: e2e-cloud-run-grpc-echo
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
     test_group_name: ESPv2-cloud-run-e2e-cloud-run-grpc-echo
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
-    description: ESPv2-cloud-run-e2e-cloud-run-http-bookstore
-    name: ESPv2-cloud-run-e2e-cloud-run-http-bookstore
+    description: Runs e2e tests for Cloud Run.
+    name: e2e-cloud-run-http-bookstore
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
     test_group_name: ESPv2-cloud-run-e2e-cloud-run-http-bookstore
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
-    description: ESPv2-gke-e2e-tight-grpc-echo-managed
-    name: ESPv2-gke-e2e-tight-grpc-echo-managed
+    description: Runs e2e tests for GKE.
+    name: e2e-gke-grpc-echo
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
     test_group_name: ESPv2-gke-e2e-tight-grpc-echo-managed
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
-    description: ESPv2-gke-e2e-tight-grpc-interop-managed
-    name: ESPv2-gke-e2e-tight-grpc-interop-managed
+    description: Runs e2e tests for GKE.
+    name: e2e-gke-grpc-interop
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
     test_group_name: ESPv2-gke-e2e-tight-grpc-interop-managed
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
-    description: ESPv2-gke-e2e-tight-http-bookstore-managed
-    name: ESPv2-gke-e2e-tight-http-bookstore-managed
+    description: Runs e2e tests for GKE.
+    name: e2e-gke-http-bookstore
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
     test_group_name: ESPv2-gke-e2e-tight-http-bookstore-managed
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
-    description: ESPv2-presubmit
-    name: ESPv2-presubmit
+    description: Runs all unit and integration tests.
+    name: presubmit
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
     test_group_name: ESPv2-presubmit
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
-    description: ESPv2-presubmit-asan
-    name: ESPv2-presubmit-asan
+    description: Runs all unit and integration tests with ASan.
+    name: presubmit-asan
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
     test_group_name: ESPv2-presubmit-asan
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
-    description: ESPv2-presubmit-coverage
-    name: ESPv2-presubmit-coverage
+    description: Generates coverage report for a subset of presubmit tests.
+    name: coverage
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
     test_group_name: ESPv2-presubmit-coverage
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
-    description: ESPv2-presubmit-tsan
-    name: ESPv2-presubmit-tsan
+    description: Runs all unit and integration tests with TSan.
+    name: presubmit-tsan
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
     test_group_name: ESPv2-presubmit-tsan
-  name: googleoss-esp-v2
+  name: googleoss-esp-v2-presubmit
+- dashboard_tab:
+  - code_search_url_template:
+      url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
+    description: Runs e2e tests for Cloud Run with Anthos.
+    name: e2e-cloud-run-anthos-http-bookstore
+    open_bug_template:
+      url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
+    test_group_name: ESPv2-continuous-anthos-cloud-run-e2e-cloud-run-http-bookstore
+  - code_search_url_template:
+      url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
+    description: Generates docker images to deploy in e2e tests.
+    name: build
+    open_bug_template:
+      url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
+    test_group_name: ESPv2-continuous-build
+  - code_search_url_template:
+      url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
+    description: Runs e2e tests for Cloud Functions.
+    name: e2e-cloud-function-http-bookstore
+    open_bug_template:
+      url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
+    test_group_name: ESPv2-continuous-cloud-run-e2e-cloud-function-http-bookstore
+  - code_search_url_template:
+      url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
+    description: Runs e2e tests for Cloud Run.
+    name: e2e-cloud-run-grpc-echo
+    open_bug_template:
+      url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
+    test_group_name: ESPv2-continuous-cloud-run-e2e-cloud-run-grpc-echo
+  - code_search_url_template:
+      url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
+    description: Runs e2e tests for Cloud Run.
+    name: e2e-cloud-run-http-bookstore
+    open_bug_template:
+      url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
+    test_group_name: ESPv2-continuous-cloud-run-e2e-cloud-run-http-bookstore
+  - code_search_url_template:
+      url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
+    description: Generates coverage report for a subset of presubmit tests.
+    name: coverage
+    open_bug_template:
+      url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
+    test_group_name: ESPv2-continuous-coverage
+  - code_search_url_template:
+      url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
+    description: Runs e2e tests for GKE.
+    name: e2e-gke-grpc-echo
+    open_bug_template:
+      url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
+    test_group_name: ESPv2-continuous-gke-e2e-tight-grpc-echo-managed
+  - code_search_url_template:
+      url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
+    description: Runs e2e tests for GKE.
+    name: e2e-gke-grpc-interop
+    open_bug_template:
+      url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
+    test_group_name: ESPv2-continuous-gke-e2e-tight-grpc-interop-managed
+  - code_search_url_template:
+      url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
+    description: Runs e2e tests for GKE.
+    name: e2e-gke-http-bookstore
+    open_bug_template:
+      url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
+    test_group_name: ESPv2-continuous-gke-e2e-tight-http-bookstore-managed
+  - code_search_url_template:
+      url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
+    description: Runs all unit and integration tests.
+    name: presubmit
+    open_bug_template:
+      url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
+    test_group_name: ESPv2-continuous-presubmit
+  - code_search_url_template:
+      url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
+    description: Runs all unit and integration tests with ASan.
+    name: presubmit-asan
+    open_bug_template:
+      url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
+    test_group_name: ESPv2-continuous-presubmit-asan
+  - code_search_url_template:
+      url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
+    description: Runs all unit and integration tests with TSan.
+    name: presubmit-tsan
+    open_bug_template:
+      url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
+    test_group_name: ESPv2-continuous-presubmit-tsan
+  - code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+    description: Cleans up orphan e2e resources for GKE.
+    name: janitor-gke
+    open_bug_template:
+      url: https://github.com/kubernetes/test-infra/issues/
+    test_group_name: ESPv2-gke-janitor
+  - code_search_url_template:
+      url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
+    description: Cleans up orphan e2e resources for Serverless.
+    name: janitor-serverless
+    open_bug_template:
+      url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
+    test_group_name: ESPv2-serverless-janitor
+  name: googleoss-esp-v2-periodic
 test_groups:
 - gcs_prefix: oss-prow/logs/ESPv2-continuous-anthos-cloud-run-e2e-cloud-run-http-bookstore
   name: ESPv2-continuous-anthos-cloud-run-e2e-cloud-run-http-bookstore
@@ -329,12 +332,12 @@ test_groups:
   name: ci-google-oss-test-infra-resultstore-upload
 - gcs_prefix: oss-prow/logs/ci-oss-test-infra-autobump-prow
   name: ci-oss-test-infra-autobump-prow
-- gcs_prefix: oss-prow/logs/disk-expand-build
-  name: disk-expand-build
 - gcs_prefix: oss-prow/logs/guest-agent-build
   name: guest-agent-build
-- gcs_prefix: oss-prow/logs/guest-config-build
-  name: guest-config-build
+- gcs_prefix: oss-prow/logs/gce-build
+  name: gce-build
+- gcs_prefix: oss-prow/logs/disk-expand-build
+  name: disk-expand-build
 - gcs_prefix: oss-prow/logs/oslogin-build
   name: oslogin-build
 - gcs_prefix: oss-prow/logs/osconfig-build

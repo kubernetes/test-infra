@@ -54,7 +54,7 @@ type options struct {
 	storage          prowflagutil.StorageClientOptions
 }
 
-func (o *options) Validate() error {
+func (o *options) validate() error {
 	if len(o.projects) == 0 {
 		return errors.New("--gerrit-projects must be set")
 	}
@@ -72,10 +72,10 @@ func (o *options) Validate() error {
 	}
 
 	if strings.HasPrefix(o.lastSyncFallback, "gs://") && !o.storage.HasGCSCredentials() {
-		logrus.WithField("last-sync-fallback", o.lastSyncFallback).Warn("--gcs-credentials-file unset, will try and access with a default service account")
+		logrus.WithField("last-sync-fallback", o.lastSyncFallback).Info("--gcs-credentials-file unset, will try and access with a default service account")
 	}
 	if strings.HasPrefix(o.lastSyncFallback, "s3://") && !o.storage.HasS3Credentials() {
-		logrus.WithField("last-sync-fallback", o.lastSyncFallback).Warn("--s3-credentials-file unset, will try and access with auto-discovered credentials")
+		logrus.WithField("last-sync-fallback", o.lastSyncFallback).Info("--s3-credentials-file unset, will try and access with auto-discovered credentials")
 	}
 	return nil
 }
@@ -234,7 +234,7 @@ func main() {
 	pjutil.ServePProf()
 
 	o := gatherOptions(flag.NewFlagSet(os.Args[0], flag.ExitOnError), os.Args[1:]...)
-	if err := o.Validate(); err != nil {
+	if err := o.validate(); err != nil {
 		logrus.Fatalf("Invalid options: %v", err)
 	}
 

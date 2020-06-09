@@ -224,7 +224,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       imagePullPolicy: Always
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops, sig-testing-canaries
+    testgrid-dashboards: google-aws, kops-misc, sig-testing-canaries
     testgrid-tab-name: kops-aws-canary
 
 - interval: 30m
@@ -255,7 +255,7 @@ periodics:
       imagePullPolicy: Always
 
   annotations:
-    testgrid-dashboards: google-kops-gce, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-kops-gce, kops-misc
     testgrid-tab-name: kops-gce-canary
 - name: ci-kubernetes-e2e-node-canary
   interval: 1h

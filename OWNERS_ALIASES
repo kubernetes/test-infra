@@ -4,9 +4,18 @@ aliases:
   - BenTheElder
   - chases2
   - cjwagner
+  - clarketm
   - fejta
   - Katharine
   - michelle192837
+
+  wg-k8s-infra-oncall:
+  - BenTheElder
+  # kubernetes.io org admins
+  - cblecker
+  - dims
+  - spiffxp
+  - thockin
 
   # copied from git.k8s.io/community/OWNERS_ALIASES
   sig-api-machinery-leads:
@@ -206,17 +215,17 @@ aliases:
   # copied from git.k8s.io/kubernetes/OWNERS_ALIASES
   release-engineering-approvers:
     - calebamiles # subproject owner
-    - justaugustus # subproject owner / Patch Release Team
-    - tpepper # subproject owner / Patch Release Team
+    - justaugustus # subproject owner / Release Manager
+    - tpepper # subproject owner / Release Manager
   release-engineering-reviewers:
     - calebamiles # subproject owner
-    - cpanato # Branch Manager
-    - feiskyer # Patch Release Team
-    - hasheddan # Branch Manager
-    - hoegaarden # Patch Release Team
-    - justaugustus # subproject owner / Patch Release Team
-    - saschagrunert # Branch Manager
-    - tpepper # subproject owner / Patch Release Team
+    - cpanato # Release Manager
+    - feiskyer # Release Manager
+    - hasheddan # Release Manager
+    - hoegaarden # Release Manager
+    - justaugustus # subproject owner / Release Manager
+    - saschagrunert # Release Manager
+    - tpepper # subproject owner / Release Manager
 
   # copied from git.k8s.io/enhancements/OWNERS_ALIASES
   enhancements-approvers:
@@ -270,7 +279,7 @@ aliases:
   kubebuilder-reviewers:
   - alexeldeib
 
-  kubebuilder-emeritus-approvers: 
+  kubebuilder-emeritus-approvers:
   - pwittrock
 
   # end sigs.k8s.io/kubebuilder/OWNERS_ALIASES

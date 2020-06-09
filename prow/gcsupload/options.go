@@ -24,8 +24,10 @@ import (
 	"strings"
 
 	"github.com/GoogleCloudPlatform/testgrid/util/gcs"
+
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/flagutil"
+	prowflagutil "k8s.io/test-infra/prow/flagutil"
 )
 
 // NewOptions returns an empty Options with no nil fields.
@@ -46,17 +48,7 @@ type Options struct {
 
 	*prowapi.GCSConfiguration
 
-	// GcsCredentialsFile is used for reading/writing to GCS block storage.
-	// It's optional, if you want to write to local paths or GCS credentials auto-discovery is used.
-	// If set, this file is used to read/write to gs:// paths
-	// If not, credential auto-discovery is used
-	GcsCredentialsFile string `json:"gcs_credentials_file,omitempty"`
-	// S3CredentialsFile is used for reading/writing to s3 block storage.
-	// It's optional, if you want to write to local paths or S3 credentials auto-discovery is used.
-	// If set, this file is used to read/write to s3:// paths
-	// If not, go cloud credential auto-discovery is used
-	// For more details see the prow/io/providers pkg.
-	S3CredentialsFile string `json:"s3_credentials_file,omitempty"`
+	prowflagutil.StorageClientOptions
 
 	DryRun bool `json:"dry_run"`
 
@@ -86,10 +78,6 @@ func (o *Options) Validate() error {
 	if !o.DryRun {
 		if o.Bucket == "" {
 			return errors.New("GCS upload was requested no GCS bucket was provided")
-		}
-
-		if o.GcsCredentialsFile == "" && o.S3CredentialsFile == "" {
-			return errors.New("blob storage upload was requested but neither GCS nor S3 credentials file was provided")
 		}
 	}
 
@@ -135,13 +123,13 @@ func (o *Options) AddFlags(fs *flag.FlagSet) {
 	fs.StringVar(&o.DefaultRepo, "default-repo", "", "optional default repo for GCS path encoding")
 
 	fs.Var(&o.gcsPath, "gcs-path", "GCS path to upload into")
-	fs.StringVar(&o.GcsCredentialsFile, "gcs-credentials-file", "", "file where Google Cloud authentication credentials are stored")
-	fs.StringVar(&o.S3CredentialsFile, "s3-credentials-file", "", "file where the S3 credentials are stored")
 	fs.BoolVar(&o.DryRun, "dry-run", true, "do not interact with GCS")
 
 	fs.Var(&o.mediaTypes, "media-type", "Optional comma-delimited set of extension media types.  Each entry is colon-delimited {extension}:{media-type}, for example, log:text/plain.")
 
 	fs.StringVar(&o.LocalOutputDir, "local-output-dir", "", "If specified, files are copied to this dir instead of uploading to GCS.")
+
+	o.StorageClientOptions.AddFlags(fs)
 }
 
 const (

@@ -71,16 +71,19 @@ type Client struct {
 
 // Job is the view of a prowjob scoped for a report
 type Job struct {
-	Name, State, icon, url string
+	Name  string
+	State v1.ProwJobState
+	Icon  string
+	URL   string
 }
 
 // JobReport is the structured job report format
 type JobReport struct {
-	Jobs    []*Job
-	success int
-	total   int
-	message string
-	header  string
+	Jobs    []Job
+	Success int
+	Total   int
+	Message string
+	Header  string
 }
 
 // NewReporter returns a reporter client
@@ -197,8 +200,8 @@ func (c *Client) Report(pj *v1.ProwJob) ([]*v1.ProwJob, error) {
 			toReportJobs = append(toReportJobs, pjOnRevisionWithSameLabel)
 		}
 	}
-	report := generateReport(toReportJobs)
-	message := report.header + report.message
+	report := GenerateReport(toReportJobs)
+	message := report.Header + report.Message
 	// report back
 	gerritID := pj.ObjectMeta.Annotations[clientGerritID]
 	gerritInstance := pj.ObjectMeta.Annotations[clientGerritInstance]
@@ -210,7 +213,7 @@ func (c *Client) Report(pj *v1.ProwJob) ([]*v1.ProwJob, error) {
 		reportLabel = codeReview
 	}
 
-	if report.total <= 0 {
+	if report.Total <= 0 {
 		// Shouldn't happen but return if does
 		logger.Warn("Tried to report empty or aborted jobs.")
 		return nil, nil
@@ -221,7 +224,7 @@ func (c *Client) Report(pj *v1.ProwJob) ([]*v1.ProwJob, error) {
 		// Can only vote below zero before merge
 		// TODO(fejta): cannot vote below previous vote after merge
 		switch {
-		case report.success == report.total:
+		case report.Success == report.Total:
 			vote = lgtm
 		case pj.Spec.Type == v1.PresubmitJob:
 			vote = lbtm
@@ -258,39 +261,43 @@ func statusIcon(state v1.ProwJobState) string {
 	return icon
 }
 
-func jobFromPJ(pj *v1.ProwJob) *Job {
-	return &Job{Name: pj.Spec.Job, State: string(pj.Status.State), icon: statusIcon(pj.Status.State), url: pj.Status.URL}
+func jobFromPJ(pj *v1.ProwJob) Job {
+	return Job{Name: pj.Spec.Job, State: pj.Status.State, Icon: statusIcon(pj.Status.State), URL: pj.Status.URL}
 }
 
 func (j *Job) serialize() string {
-	return fmt.Sprintf(jobReportFormat, j.icon, j.Name, strings.ToUpper(j.State), j.url)
+	return fmt.Sprintf(jobReportFormat, j.Icon, j.Name, strings.ToUpper(string(j.State)), j.URL)
 }
 
-func deserializeJob(s string) *Job {
-	j := &Job{}
-	n, err := fmt.Sscanf(s, jobReportFormat, &j.icon, &j.Name, &j.State, &j.url)
-	if err != nil || n != 4 {
-		logrus.Debugf("Could not deserialize %s to a job: %v", s, err)
-		return nil
+func deserialize(s string, j *Job) error {
+	var state string
+	n, err := fmt.Sscanf(s, jobReportFormat, &j.Icon, &j.Name, &state, &j.URL)
+	if err != nil {
+		return err
 	}
-	return j
+	j.State = v1.ProwJobState(strings.ToLower(state))
+	const want = 4
+	if n != want {
+		return fmt.Errorf("scan: got %d, want %d", n, want)
+	}
+	return nil
 }
 
-func generateReport(pjs []*v1.ProwJob) *JobReport {
-	report := &JobReport{total: len(pjs)}
+func GenerateReport(pjs []*v1.ProwJob) JobReport {
+	report := JobReport{Total: len(pjs)}
 	for _, pj := range pjs {
 		job := jobFromPJ(pj)
 		report.Jobs = append(report.Jobs, job)
 		if pj.Status.State == v1.SuccessState {
-			report.success++
+			report.Success++
 		}
 
-		report.message += job.serialize()
-		report.message += "\n"
+		report.Message += job.serialize()
+		report.Message += "\n"
 
 	}
-	report.header = defaultProwHeader
-	report.header += fmt.Sprintf(" %d out of %d pjs passed!\n", report.success, report.total)
+	report.Header = defaultProwHeader
+	report.Header += fmt.Sprintf(" %d out of %d pjs passed!\n", report.Success, report.Total)
 	return report
 }
 
@@ -309,19 +316,28 @@ func ParseReport(message string) *JobReport {
 	if !isReport {
 		return nil
 	}
-	report := &JobReport{}
-	report.header = contents[start]
-	for i := start; i < len(contents); i++ {
-		j := deserializeJob(contents[i])
-		if j != nil {
-			report.Jobs = append(report.Jobs, j)
+	var report JobReport
+	report.Header = contents[start] + "\n"
+	for i := start + 1; i < len(contents); i++ {
+		if contents[i] == "" {
+			continue
 		}
+		var j Job
+		if err := deserialize(contents[i], &j); err != nil {
+			logrus.Warnf("Could not deserialize %s to a job: %v", contents[i], err)
+			continue
+		}
+		report.Total++
+		if j.State == v1.SuccessState {
+			report.Success++
+		}
+		report.Jobs = append(report.Jobs, j)
 	}
-	report.message = strings.TrimPrefix(message, report.header)
-	return report
+	report.Message = strings.TrimPrefix(message, report.Header+"\n")
+	return &report
 }
 
 // String implements Stringer for JobReport
-func (r *JobReport) String() string {
-	return fmt.Sprintf("%s\n%s", r.header, r.message)
+func (r JobReport) String() string {
+	return fmt.Sprintf("%s\n%s", r.Header, r.Message)
 }

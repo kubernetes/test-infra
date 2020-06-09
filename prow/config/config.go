@@ -47,6 +47,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	gerrit "k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
@@ -92,6 +93,9 @@ type JobConfig struct {
 	// ProwYAMLGetter is the function to get a ProwYAML. Tests should
 	// provide their own implementation.
 	ProwYAMLGetter ProwYAMLGetter `json:"-"`
+
+	// DecorateAllJobs determines whether all jobs are decorated by default
+	DecorateAllJobs bool `json:"decorate_all_jobs,omitempty"`
 }
 
 // ProwConfig is config for all prow controllers
@@ -1062,22 +1066,29 @@ func mergeJobConfigs(a, b JobConfig) (JobConfig, error) {
 	return c, nil
 }
 
+func ShouldDecorate(c *JobConfig, util UtilityConfig) bool {
+	if util.Decorate != nil {
+		return *util.Decorate
+	}
+	return c.DecorateAllJobs
+}
+
 func setPresubmitDecorationDefaults(c *Config, ps *Presubmit, repo string) {
-	if ps.Decorate {
+	if ShouldDecorate(&c.JobConfig, ps.JobBase.UtilityConfig) {
 		def := c.Plank.GetDefaultDecorationConfigs(repo)
 		ps.DecorationConfig = ps.DecorationConfig.ApplyDefault(def)
 	}
 }
 
 func setPostsubmitDecorationDefaults(c *Config, ps *Postsubmit, repo string) {
-	if ps.Decorate {
+	if ShouldDecorate(&c.JobConfig, ps.JobBase.UtilityConfig) {
 		def := c.Plank.GetDefaultDecorationConfigs(repo)
 		ps.DecorationConfig = ps.DecorationConfig.ApplyDefault(def)
 	}
 }
 
 func setPeriodicDecorationDefaults(c *Config, ps *Periodic) {
-	if ps.Decorate {
+	if ShouldDecorate(&c.JobConfig, ps.JobBase.UtilityConfig) {
 		var orgRepo string
 		if len(ps.UtilityConfig.ExtraRefs) > 0 {
 			orgRepo = fmt.Sprintf("%s/%s", ps.UtilityConfig.ExtraRefs[0].Org, ps.UtilityConfig.ExtraRefs[0].Repo)
@@ -1274,7 +1285,6 @@ func validateJobBase(v JobBase, jobType prowapi.ProwJobType, podNamespace string
 // validatePresubmits validates the presubmits for one repo
 func validatePresubmits(presubmits []Presubmit, podNamespace string) error {
 	validPresubmits := map[string][]Presubmit{}
-
 	var errs []error
 	for _, ps := range presubmits {
 		// Checking that no duplicate job in prow config exists on the same branch.
@@ -1283,11 +1293,22 @@ func validatePresubmits(presubmits []Presubmit, podNamespace string) error {
 				errs = append(errs, fmt.Errorf("duplicated presubmit job: %s", ps.Name))
 			}
 		}
+		for _, otherPS := range presubmits {
+			if otherPS.Name == ps.Name || !otherPS.Brancher.Intersects(ps.Brancher) {
+				continue
+			}
+			if otherPS.Context == ps.Context {
+				errs = append(errs, fmt.Errorf("jobs %s and %s report to the same GitHub context %q", otherPS.Name, ps.Name, otherPS.Context))
+			}
+		}
 		if err := validateJobBase(ps.JobBase, prowapi.PresubmitJob, podNamespace); err != nil {
 			errs = append(errs, fmt.Errorf("invalid presubmit job %s: %v", ps.Name, err))
 		}
 		if err := validateTriggering(ps); err != nil {
 			errs = append(errs, err)
+		}
+		if err := validateReporting(ps.JobBase, ps.Reporter); err != nil {
+			errs = append(errs, fmt.Errorf("invalid presubmit job %s: %v", ps.Name, err))
 		}
 		validPresubmits[ps.Name] = append(validPresubmits[ps.Name], ps)
 	}
@@ -1322,20 +1343,33 @@ func ValidateRefs(repo string, jobBase JobBase) error {
 func validatePostsubmits(postsubmits []Postsubmit, podNamespace string) error {
 	validPostsubmits := map[string][]Postsubmit{}
 
+	var errs []error
 	for _, ps := range postsubmits {
 		// Checking that no duplicate job in prow config exists on the same repo / branch.
 		for _, existingJob := range validPostsubmits[ps.Name] {
 			if existingJob.Brancher.Intersects(ps.Brancher) {
-				return fmt.Errorf("duplicated postsubmit job: %s", ps.Name)
+				errs = append(errs, fmt.Errorf("duplicated postsubmit job: %s", ps.Name))
 			}
 		}
+		for _, otherPS := range postsubmits {
+			if otherPS.Name == ps.Name || !otherPS.Brancher.Intersects(ps.Brancher) {
+				continue
+			}
+			if otherPS.Context == ps.Context {
+				errs = append(errs, fmt.Errorf("jobs %s and %s report to the same GitHub context %q", otherPS.Name, ps.Name, otherPS.Context))
+			}
+		}
+
 		if err := validateJobBase(ps.JobBase, prowapi.PostsubmitJob, podNamespace); err != nil {
-			return fmt.Errorf("invalid postsubmit job %s: %v", ps.Name, err)
+			errs = append(errs, fmt.Errorf("invalid postsubmit job %s: %v", ps.Name, err))
+		}
+		if err := validateReporting(ps.JobBase, ps.Reporter); err != nil {
+			errs = append(errs, fmt.Errorf("invalid postsubmit job %s: %v", ps.Name, err))
 		}
 		validPostsubmits[ps.Name] = append(validPostsubmits[ps.Name], ps)
 	}
 
-	return nil
+	return utilerrors.NewAggregate(errs)
 }
 
 // validatePeriodics validates a set of periodics
@@ -1669,7 +1703,7 @@ func parseProwConfig(c *Config) error {
 func (c *JobConfig) decorationRequested() bool {
 	for _, vs := range c.PresubmitsStatic {
 		for i := range vs {
-			if vs[i].Decorate {
+			if ShouldDecorate(c, vs[i].JobBase.UtilityConfig) {
 				return true
 			}
 		}
@@ -1677,14 +1711,14 @@ func (c *JobConfig) decorationRequested() bool {
 
 	for _, js := range c.PostsubmitsStatic {
 		for i := range js {
-			if js[i].Decorate {
+			if ShouldDecorate(c, js[i].JobBase.UtilityConfig) {
 				return true
 			}
 		}
 	}
 
 	for i := range c.Periodics {
-		if c.Periodics[i].Decorate {
+		if ShouldDecorate(c, c.Periodics[i].JobBase.UtilityConfig) {
 			return true
 		}
 	}
@@ -1884,14 +1918,25 @@ func validateTriggering(job Presubmit) error {
 		return fmt.Errorf("job %s is set to always run but also declares run_if_changed targets, which are mutually exclusive", job.Name)
 	}
 
-	if !job.SkipReport && job.Context == "" {
-		return fmt.Errorf("job %s is set to report but has no context configured", job.Name)
-	}
-
 	if (job.Trigger != "" && job.RerunCommand == "") || (job.Trigger == "" && job.RerunCommand != "") {
 		return fmt.Errorf("Either both of job.Trigger and job.RerunCommand must be set, wasnt the case for job %q", job.Name)
 	}
 
+	return nil
+}
+
+func validateReporting(j JobBase, r Reporter) error {
+	if !r.SkipReport && r.Context == "" {
+		return errors.New("job is set to report but has no context configured")
+	}
+	if !r.SkipReport {
+		return nil
+	}
+	for label, value := range j.Labels {
+		if label == gerrit.GerritReportLabel && value != "" {
+			return fmt.Errorf("Gerrit report label %s set to non-empty string but job is configured to skip reporting.", label)
+		}
+	}
 	return nil
 }
 

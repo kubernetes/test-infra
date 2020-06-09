@@ -114,6 +114,19 @@ func TestTrusted(t *testing.T) {
 }
 
 func TestHandlePullRequest(t *testing.T) {
+	jobToAbort := &prowapi.ProwJob{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "job-to-abort",
+			Namespace: "namespace",
+			Labels: map[string]string{
+				kube.OrgLabel:         "org",
+				kube.RepoLabel:        "repo",
+				kube.PullLabel:        "0",
+				kube.ProwJobTypeLabel: string(prowapi.PresubmitJob),
+			},
+		},
+	}
+
 	var testcases = []struct {
 		name string
 
@@ -124,6 +137,8 @@ func TestHandlePullRequest(t *testing.T) {
 		prLabel       string
 		prChanges     bool
 		prAction      github.PullRequestEventAction
+		prIsDraft     bool
+		jobToAbort    *prowapi.ProwJob
 	}{
 		{
 			name: "Trusted user open PR should build",
@@ -131,6 +146,15 @@ func TestHandlePullRequest(t *testing.T) {
 			Author:      "t",
 			ShouldBuild: true,
 			prAction:    github.PullRequestActionOpened,
+		},
+		{
+			name: "Trusted user open draft PR should not build and should comment",
+
+			Author:        "t",
+			ShouldBuild:   false,
+			prAction:      github.PullRequestActionOpened,
+			prIsDraft:     true,
+			ShouldComment: true,
 		},
 		{
 			name: "Untrusted user open PR should not build and should comment",
@@ -141,11 +165,50 @@ func TestHandlePullRequest(t *testing.T) {
 			prAction:      github.PullRequestActionOpened,
 		},
 		{
+			name: "Untrusted user open draft PR should not build and should comment",
+
+			Author:        "u",
+			ShouldBuild:   false,
+			ShouldComment: true,
+			prAction:      github.PullRequestActionOpened,
+			prIsDraft:     true,
+		},
+		{
 			name: "Trusted user reopen PR should build",
 
 			Author:      "t",
 			ShouldBuild: true,
 			prAction:    github.PullRequestActionReopened,
+		},
+		{
+			name: "Trusted user reopen draft PR should not build",
+
+			Author:      "t",
+			ShouldBuild: false,
+			prAction:    github.PullRequestActionReopened,
+			prIsDraft:   true,
+		},
+		{
+			name: "Trusted user switch PR from draft to normal shoud build",
+
+			Author:      "t",
+			ShouldBuild: true,
+			prAction:    github.PullRequestActionReadyForReview,
+		},
+		{
+			name: "Untrusted user switch PR from draft to normal should not build",
+
+			Author:      "u",
+			ShouldBuild: false,
+			prAction:    github.PullRequestActionReadyForReview,
+		},
+		{
+			name: "Untrusted user switch PR from draft to normal with ok-to-test should build",
+
+			Author:      "u",
+			HasOkToTest: true,
+			ShouldBuild: true,
+			prAction:    github.PullRequestActionReadyForReview,
 		},
 		{
 			name: "Untrusted user reopen PR with ok-to-test should build",
@@ -163,12 +226,29 @@ func TestHandlePullRequest(t *testing.T) {
 			prAction:    github.PullRequestActionReopened,
 		},
 		{
+			name: "Untrusted user reopen draft PR should not build",
+
+			Author:      "u",
+			ShouldBuild: false,
+			prAction:    github.PullRequestActionReopened,
+			prIsDraft:   true,
+		},
+		{
 			name: "Trusted user edit PR with changes should build",
 
 			Author:      "t",
 			ShouldBuild: true,
 			prChanges:   true,
 			prAction:    github.PullRequestActionEdited,
+		},
+		{
+			name: "Trusted user edit draft PR with changes should not build",
+
+			Author:      "t",
+			ShouldBuild: false,
+			prChanges:   true,
+			prAction:    github.PullRequestActionEdited,
+			prIsDraft:   true,
 		},
 		{
 			name: "Trusted user edit PR without changes should not build",
@@ -286,98 +366,132 @@ func TestHandlePullRequest(t *testing.T) {
 			prAction:    github.PullRequestActionLabeled,
 			ShouldBuild: false,
 		},
+		{
+			name: "Abort jobs if PR is closed",
+
+			Author:      "t",
+			HasOkToTest: true,
+			prAction:    github.PullRequestActionClosed,
+			ShouldBuild: false,
+			jobToAbort:  jobToAbort,
+		},
+		{
+			name: "Abort jobs if PR is changed to draft",
+
+			Author:      "t",
+			HasOkToTest: true,
+			prAction:    github.PullRequestConvertedToDraft,
+			ShouldBuild: false,
+			jobToAbort:  jobToAbort,
+		},
 	}
 	for _, tc := range testcases {
 		t.Logf("running scenario %q", tc.name)
+		t.Run(tc.name, func(t *testing.T) {
+			g := &fakegithub.FakeClient{
+				IssueComments: map[int][]github.IssueComment{},
+				OrgMembers:    map[string][]string{"org": {"t"}},
+				PullRequests: map[int]*github.PullRequest{
+					0: {
+						Number: 0,
+						User:   github.User{Login: tc.Author},
+						Base: github.PullRequestBranch{
+							Ref: "master",
+							Repo: github.Repo{
+								Owner: github.User{Login: "org"},
+								Name:  "repo",
+							},
+						},
+						Draft: tc.prIsDraft,
+					},
+				},
+			}
+			fakeProwJobClient := fake.NewSimpleClientset(jobToAbort)
+			c := Client{
+				GitHubClient:  g,
+				ProwJobClient: fakeProwJobClient.ProwV1().ProwJobs("namespace"),
+				Config:        &config.Config{},
+				Logger:        logrus.WithField("plugin", PluginName),
+				GitClient:     nil,
+			}
 
-		g := &fakegithub.FakeClient{
-			IssueComments: map[int][]github.IssueComment{},
-			OrgMembers:    map[string][]string{"org": {"t"}},
-			PullRequests: map[int]*github.PullRequest{
-				0: {
+			presubmits := map[string][]config.Presubmit{
+				"org/repo": {
+					{
+						JobBase: config.JobBase{
+							Name: "jib",
+						},
+						AlwaysRun: true,
+					},
+				},
+			}
+			if err := c.Config.SetPresubmits(presubmits); err != nil {
+				t.Fatalf("failed to set presubmits: %v", err)
+			}
+
+			if tc.HasOkToTest {
+				g.IssueLabelsExisting = append(g.IssueLabelsExisting, issueLabels(labels.OkToTest)...)
+			}
+			pr := github.PullRequestEvent{
+				Action: tc.prAction,
+				Label:  github.Label{Name: tc.prLabel},
+				PullRequest: github.PullRequest{
 					Number: 0,
 					User:   github.User{Login: tc.Author},
 					Base: github.PullRequestBranch{
 						Ref: "master",
 						Repo: github.Repo{
-							Owner: github.User{Login: "org"},
-							Name:  "repo",
+							Owner:    github.User{Login: "org"},
+							Name:     "repo",
+							FullName: "org/repo",
 						},
 					},
+					Draft: tc.prIsDraft,
 				},
-			},
-		}
-		fakeProwJobClient := fake.NewSimpleClientset()
-		c := Client{
-			GitHubClient:  g,
-			ProwJobClient: fakeProwJobClient.ProwV1().ProwJobs("namespace"),
-			Config:        &config.Config{},
-			Logger:        logrus.WithField("plugin", PluginName),
-			GitClient:     nil,
-		}
-
-		presubmits := map[string][]config.Presubmit{
-			"org/repo": {
-				{
-					JobBase: config.JobBase{
-						Name: "jib",
-					},
-					AlwaysRun: true,
-				},
-			},
-		}
-		if err := c.Config.SetPresubmits(presubmits); err != nil {
-			t.Fatalf("failed to set presubmits: %v", err)
-		}
-
-		if tc.HasOkToTest {
-			g.IssueLabelsExisting = append(g.IssueLabelsExisting, issueLabels(labels.OkToTest)...)
-		}
-		pr := github.PullRequestEvent{
-			Action: tc.prAction,
-			Label:  github.Label{Name: tc.prLabel},
-			PullRequest: github.PullRequest{
-				Number: 0,
-				User:   github.User{Login: tc.Author},
-				Base: github.PullRequestBranch{
-					Ref: "master",
-					Repo: github.Repo{
-						Owner:    github.User{Login: "org"},
-						Name:     "repo",
-						FullName: "org/repo",
-					},
-				},
-			},
-		}
-		if tc.prChanges {
-			data := []byte(`{"base":{"ref":{"from":"REF"}, "sha":{"from":"SHA"}}}`)
-			pr.Changes = (json.RawMessage)(data)
-		}
-		trigger := plugins.Trigger{
-			TrustedOrg:     "org",
-			OnlyOrgMembers: true,
-		}
-		trigger.SetDefaults()
-		if err := handlePR(c, trigger, pr); err != nil {
-			t.Fatalf("Didn't expect error: %s", err)
-		}
-		var numStarted int
-		for _, action := range fakeProwJobClient.Actions() {
-			switch action.(type) {
-			case clienttesting.CreateActionImpl:
-				numStarted++
 			}
-		}
-		if numStarted > 0 && !tc.ShouldBuild {
-			t.Errorf("Built but should not have: %+v", tc)
-		} else if numStarted == 0 && tc.ShouldBuild {
-			t.Errorf("Not built but should have: %+v", tc)
-		}
-		if tc.ShouldComment && len(g.IssueCommentsAdded) == 0 {
-			t.Error("Expected comment to github")
-		} else if !tc.ShouldComment && len(g.IssueCommentsAdded) > 0 {
-			t.Errorf("Expected no comments to github, but got %d", len(g.CreatedStatuses))
-		}
+			if tc.prChanges {
+				data := []byte(`{"base":{"ref":{"from":"REF"}, "sha":{"from":"SHA"}}}`)
+				pr.Changes = (json.RawMessage)(data)
+			}
+			trigger := plugins.Trigger{
+				TrustedOrg:     "org",
+				OnlyOrgMembers: true,
+			}
+			trigger.SetDefaults()
+			if err := handlePR(c, trigger, pr); err != nil {
+				t.Fatalf("Didn't expect error: %s", err)
+			}
+			var numStarted int
+			for _, action := range fakeProwJobClient.Actions() {
+				switch action.(type) {
+				case clienttesting.CreateActionImpl:
+					numStarted++
+				}
+			}
+			if numStarted > 0 && !tc.ShouldBuild {
+				t.Errorf("Built but should not have: %+v", tc)
+			} else if numStarted == 0 && tc.ShouldBuild {
+				t.Errorf("Not built but should have: %+v", tc)
+			}
+			if tc.ShouldComment && len(g.IssueCommentsAdded) == 0 {
+				t.Error("Expected comment to github")
+			} else if !tc.ShouldComment && len(g.IssueCommentsAdded) > 0 {
+				t.Errorf("Expected no comments to github, but got %d", len(g.IssueCommentsAdded))
+			}
+			if tc.jobToAbort != nil {
+				pj, err := fakeProwJobClient.ProwV1().ProwJobs("namespace").Get(tc.jobToAbort.Name, metav1.GetOptions{})
+				if err != nil {
+					t.Fatalf("failed to get prowjob: %v", err)
+				}
+
+				if pj.Status.State != prowapi.AbortedState {
+					t.Errorf("exptected job %s to be aborted, found state: %v", tc.jobToAbort.Name, pj.Status.State)
+				}
+				if pj.Complete() {
+					t.Errorf("exptected job %s to not be set to complete.", tc.jobToAbort.Name)
+				}
+			}
+		})
 	}
 }
 

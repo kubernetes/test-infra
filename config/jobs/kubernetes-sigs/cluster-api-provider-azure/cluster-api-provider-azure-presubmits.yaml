@@ -7,7 +7,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-experimental
         command:
         - "./scripts/ci-test.sh"
     annotations:
@@ -21,7 +21,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-experimental
         command:
         - "./scripts/ci-build.sh"
     annotations:
@@ -37,7 +37,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-experimental
         command:
         - "runner.sh"
         - "./scripts/ci-integration.sh"
@@ -75,7 +75,7 @@ presubmits:
       preset-azure-cred: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-experimental
         command:
         - "runner.sh"
         - "./scripts/ci-e2e.sh"
@@ -93,7 +93,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-experimental
         command:
         - "runner.sh"
         - "make"
@@ -111,7 +111,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-experimental
         imagePullPolicy: Always
         command:
         - "./hack/verify-bazel.sh"
@@ -128,7 +128,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-experimental
         imagePullPolicy: Always
         command:
         - "./scripts/ci-bazel-test.sh"
@@ -145,7 +145,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-experimental
         imagePullPolicy: Always
         command:
         - "./scripts/ci-bazel-build.sh"
@@ -162,7 +162,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-experimental
         imagePullPolicy: Always
         command:
         - "./hack/verify_boilerplate.py"
@@ -188,10 +188,19 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-master
           command:
             - "runner.sh"
-            - "./scripts/ci-conformance.sh"
+            - "./scripts/ci-entrypoint.sh"
+          env:
+            - name: FOCUS
+              value: "\\[Conformance\\]|\\[NodeConformance\\]"
+            - name: SKIP
+              value: "\\[Slow\\]|\\[Serial\\]|\\[Flaky\\]"
+            - name: PARALLEL
+              value: "true"
+            - name: USE_CI_ARTIFACTS
+              value: "true"
           securityContext:
             privileged: true
           resources:
@@ -201,3 +210,63 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: pull-conformance-v1alpha3
+  - name: pull-cluster-api-provider-azure-conformance-machine-pool-v1alpha3
+    always_run: false
+    optional: true
+    decorate: true
+    decoration_config:
+      timeout: 4h
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-cred: "true"
+    path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-master
+          command:
+            - "runner.sh"
+            - "./scripts/ci-entrypoint.sh"
+          env:
+            - name: FOCUS
+              value: "\\[Conformance\\]|\\[NodeConformance\\]"
+            - name: SKIP
+              value: "\\[Slow\\]|\\[Serial\\]|\\[Flaky\\]"
+            - name: PARALLEL
+              value: "true"
+            - name: USE_CI_ARTIFACTS
+              value: "true"
+            - name: FEATURE_GATE_MACHINE_POOL
+              value: "true"
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: 1
+              memory: "4Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
+      testgrid-tab-name: pull-conformance-machine-pool-v1alpha3
+  - name: pull-cluster-api-provider-azure-apidiff
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
+    always_run: true
+    optional: true
+    labels:
+      preset-service-account: "true"
+    skip_branches:
+    - release-0.3
+    spec:
+      containers:
+      - command:
+        - runner.sh
+        - ./scripts/ci-apidiff.sh
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-master
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
+      testgrid-tab-name: pr-apidiff

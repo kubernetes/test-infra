@@ -45,7 +45,7 @@ PROW_CONFIG_TEMPLATE = """
       containers:
       - args:
         env:
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-master
 """
 
 
@@ -133,6 +133,12 @@ class E2ENodeTest:
         """Returns the Prow config for the job from the given fields."""
         prow_config = yaml.round_trip_load(PROW_CONFIG_TEMPLATE)
         prow_config['name'] = self.job_name
+        # use cluster from test_suite, or job, or not at all
+        if 'cluster' in test_suite:
+            prow_config['cluster'] = test_suite['cluster']
+        elif 'cluster' in self.job:
+            prow_config['cluster'] = self.job['cluster']
+        # pull interval or cron from job
         if 'interval' in self.job:
             del prow_config['cron']
             prow_config['interval'] = self.job['interval']
@@ -242,6 +248,11 @@ class E2ETest:
         """Returns the Prow config for the e2e job from the given fields."""
         prow_config = yaml.round_trip_load(PROW_CONFIG_TEMPLATE)
         prow_config['name'] = self.job_name
+        # use cluster from test_suite, or job, or not at all
+        if 'cluster' in test_suite:
+            prow_config['cluster'] = test_suite['cluster']
+        elif 'cluster' in self.job:
+            prow_config['cluster'] = self.job['cluster']
         if 'interval' in self.job:
             del prow_config['cron']
             prow_config['interval'] = self.job['interval']

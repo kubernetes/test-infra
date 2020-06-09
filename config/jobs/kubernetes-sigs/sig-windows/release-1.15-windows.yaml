@@ -21,7 +21,7 @@ presubmits:
       path_alias: sigs.k8s.io/azuredisk-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-1.15
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-1.15
         command:
         - runner.sh
         - kubetest
@@ -61,7 +61,7 @@ presubmits:
     decorate: true
     always_run: false
     optional: true
-    run_if_changed: 'azure.*\.go'
+    run_if_changed: 'azureabcd.*\.go' # disable it since azure-file-windows e2e test on 1.15 requires go 1.13
     path_alias: k8s.io/kubernetes
     branches:
     - release-1.15
@@ -78,7 +78,7 @@ presubmits:
       path_alias: sigs.k8s.io/azurefile-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-1.15
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-1.15
         command:
         - runner.sh
         - kubetest
@@ -133,7 +133,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-1.15
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-1.15
       command:
       - runner.sh
       - kubetest
@@ -187,7 +187,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-1.15
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-1.15
       command:
       - runner.sh
       - kubetest

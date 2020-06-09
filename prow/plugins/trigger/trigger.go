@@ -38,6 +38,33 @@ const (
 	PluginName = "trigger"
 )
 
+// untrustedReason represents a combination (by ORing the appropriate consts) of reasons
+// why a user is not trusted by TrustedUser. It is used to generate messaging for users.
+type untrustedReason int
+
+const (
+	notMember untrustedReason = 1 << iota
+	notCollaborator
+	notSecondaryMember
+)
+
+// String constructs a string explaining the reason for a user's denial of trust
+// from untrustedReason as described above.
+func (u untrustedReason) String() string {
+	var response string
+	if u&notMember != 0 {
+		response += "User is not a member of the org. "
+	}
+	if u&notCollaborator != 0 {
+		response += "User is not a collaborator. "
+	}
+	if u&notSecondaryMember != 0 {
+		response += "User is not a member of the trusted secondary org. "
+	}
+	response += "Satisfy at least one of these conditions to make the user trusted."
+	return response
+}
+
 func init() {
 	plugins.RegisterGenericCommentHandler(PluginName, handleGenericCommentEvent, helpProvider)
 	plugins.RegisterPullRequestHandler(PluginName, handlePullRequest, helpProvider)
@@ -160,15 +187,26 @@ func handlePush(pc plugins.Agent, pe github.PushEvent) error {
 	return handlePE(getClient(pc), pe)
 }
 
+// TrustedUserResponse is a response from TrustedUser. It contains the boolean response for trust as well
+// a reason for denial if the user is not trusted.
+type TrustedUserResponse struct {
+	IsTrusted bool
+	// Reason contains the reason that a user is not trusted if IsTrusted is false
+	Reason string
+}
+
 // TrustedUser returns true if user is trusted in repo.
 // Trusted users are either repo collaborators, org members or trusted org members.
-func TrustedUser(ghc trustedUserClient, onlyOrgMembers bool, trustedOrg, user, org, repo string) (bool, error) {
+func TrustedUser(ghc trustedUserClient, onlyOrgMembers bool, trustedOrg, user, org, repo string) (TrustedUserResponse, error) {
+	errorResponse := TrustedUserResponse{IsTrusted: false}
+	okResponse := TrustedUserResponse{IsTrusted: true}
+
 	// First check if user is a collaborator, assuming this is allowed
 	if !onlyOrgMembers {
 		if ok, err := ghc.IsCollaborator(org, repo, user); err != nil {
-			return false, fmt.Errorf("error in IsCollaborator: %v", err)
+			return errorResponse, fmt.Errorf("error in IsCollaborator: %v", err)
 		} else if ok {
-			return true, nil
+			return okResponse, nil
 		}
 	}
 
@@ -176,22 +214,34 @@ func TrustedUser(ghc trustedUserClient, onlyOrgMembers bool, trustedOrg, user, o
 
 	// Next see if the user is an org member
 	if member, err := ghc.IsMember(org, user); err != nil {
-		return false, fmt.Errorf("error in IsMember(%s): %v", org, err)
+		return errorResponse, fmt.Errorf("error in IsMember(%s): %v", org, err)
 	} else if member {
-		return true, nil
+		return okResponse, nil
 	}
 
-	// Determine if there is a second org to check
+	// Determine if there is a second org to check. If there is no secondary org or they are the same, the result
+	// is the same because the user already failed the check for the primary org.
 	if trustedOrg == "" || trustedOrg == org {
-		return false, nil // No trusted org and/or it is the same
+		// the if/else is only to improve error messaging
+		if onlyOrgMembers {
+			return TrustedUserResponse{IsTrusted: false, Reason: notMember.String()}, nil // No trusted org and/or it is the same
+		}
+		return TrustedUserResponse{IsTrusted: false, Reason: (notMember | notCollaborator).String()}, nil // No trusted org and/or it is the same
 	}
 
 	// Check the second trusted org.
 	member, err := ghc.IsMember(trustedOrg, user)
 	if err != nil {
-		return false, fmt.Errorf("error in IsMember(%s): %v", trustedOrg, err)
+		return errorResponse, fmt.Errorf("error in IsMember(%s): %v", trustedOrg, err)
+	} else if member {
+		return okResponse, nil
 	}
-	return member, nil
+
+	// the if/else is only to improve error messaging
+	if onlyOrgMembers {
+		return TrustedUserResponse{IsTrusted: false, Reason: (notMember | notSecondaryMember).String()}, nil
+	}
+	return TrustedUserResponse{IsTrusted: false, Reason: (notMember | notSecondaryMember | notCollaborator).String()}, nil
 }
 
 func skippedStatusFor(context string) github.Status {

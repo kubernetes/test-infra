@@ -3,6 +3,18 @@
 ## New features
 
 New features added to each component:
+ - *June 8th, 2020* A new informer-based Plank implementation was added. It can be used by deploying
+    the new [prow-controller-manager](/config/prow/experimental/controller_manager.yaml) binary.
+    We plan to gradually move all our controllers into that binary, see https://github.com/kubernetes/test-infra/issues/17024
+ - *May 31, 2020* '--gcs-no-auth' in Deck is deprecated and not used anymore. We always
+    fall back to an anonymous GCS client now, if all other options fail. This flag will
+    be removed in *July 2020*.
+ - *May 25, 2020* Added `--blob-storage-workers` and `--kubernetes-blob-storage-workers`
+    flags to crier. The flags `--gcs-workers` and `--kubernetes-gcs-workers` are now
+    deprecated and will be removed in *August 2020*.
+ - *May 13, 2020* Added a `decorate_all_jobs` option to job configuration that
+     allows to control whether jobs are decorated by default. Individual jobs
+     can use the `decorate` option to override this setting.
  - *March 25, 2020* Added a `report_templates` option to the Plank config that allows
     to specify different report templates for each organization or a specific repository.
     The `report_template` option is deprecated and it will be removed on *September 2020*
@@ -98,6 +110,7 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
+ - *May 18, 2020* `expiry` field has been replaced with `created_at` in the HMAC secret.
  - *April 24, 2020* Horologium now defaults to `--dry-run=true`
  - *April 23, 2020* Explicitly setting `--config-path` is now required.
  - *April 23, 2020* Update the `autobump` image to at least `v20200422-8c8546d74` before June 2020.

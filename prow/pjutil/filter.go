@@ -114,7 +114,7 @@ func PresubmitFilter(honorOkToTest bool, contextGetter contextGetter, body strin
 	var filters []Filter
 	filters = append(filters, CommandFilter(body))
 	if RetestRe.MatchString(body) {
-		logger.Debug("Using retest filter.")
+		logger.Info("Using retest filter.")
 		failedContexts, allContexts, err := contextGetter()
 		if err != nil {
 			return nil, err

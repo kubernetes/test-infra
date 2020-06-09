@@ -1,7 +1,7 @@
 postsubmits:
   cncf/apisnoop:
     - name: apisnoop-push-webapp-images
-      cluster: test-infra-trusted
+      cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: conformance-apisnoop
         testgrid-tab-name: apisnoop-webapp-image
@@ -11,9 +11,9 @@ postsubmits:
       branches:
         - ^master$
       spec:
-        serviceAccountName: deployer # TODO(fejta): use pusher
+        serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200422-c760048
+          - image: gcr.io/k8s-testimages/image-builder:v20200603-f2d2bf0
             command:
               - /run.sh
             args:
@@ -23,7 +23,7 @@ postsubmits:
               - --env-passthrough=PULL_BASE_REF
               - apps/webapp/app
     - name: apisnoop-push-auditlogger-images
-      cluster: test-infra-trusted
+      cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: conformance-apisnoop
         testgrid-tab-name: apisnoop-auditlogger-image
@@ -33,9 +33,9 @@ postsubmits:
       branches:
         - ^master$
       spec:
-        serviceAccountName: deployer # TODO(fejta): use pusher
+        serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200422-c760048
+          - image: gcr.io/k8s-testimages/image-builder:v20200603-f2d2bf0
             command:
               - /run.sh
             args:
@@ -45,7 +45,7 @@ postsubmits:
               - --env-passthrough=PULL_BASE_REF
               - apps/auditlogger/app
     - name: apisnoop-push-postgres-images
-      cluster: test-infra-trusted
+      cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: conformance-apisnoop
         testgrid-tab-name: apisnoop-postgres-image
@@ -55,9 +55,9 @@ postsubmits:
       branches:
         - ^master$
       spec:
-        serviceAccountName: deployer # TODO(fejta): use pusher
+        serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200422-c760048
+          - image: gcr.io/k8s-testimages/image-builder:v20200603-f2d2bf0
             command:
               - /run.sh
             args:
@@ -67,7 +67,7 @@ postsubmits:
               - --env-passthrough=PULL_BASE_REF
               - apps/postgres/app
     - name: apisnoop-push-hasura-images
-      cluster: test-infra-trusted
+      cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: conformance-apisnoop
         testgrid-tab-name: apisnoop-hasura-image
@@ -77,9 +77,9 @@ postsubmits:
       branches:
         - ^master$
       spec:
-        serviceAccountName: deployer # TODO(fejta): use pusher
+        serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200422-c760048
+          - image: gcr.io/k8s-testimages/image-builder:v20200603-f2d2bf0
             command:
               - /run.sh
             args:

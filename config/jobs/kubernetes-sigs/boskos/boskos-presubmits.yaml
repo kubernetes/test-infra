@@ -1,0 +1,22 @@
+presubmits:
+  kubernetes-sigs/boskos:
+    - name: pull-boskos-build-test-verify
+      decorate: true
+      always_run: true
+      path_alias: sigs.k8s.io/boskos
+      spec:
+        containers:
+          - image: golang:1.14
+            imagePullPolicy: Always
+            command:
+              - make
+            args:
+              - build
+              - test
+              - verify
+            resources:
+              requests:
+                cpu: 4000m
+      annotations:
+        testgrid-dashboards: sig-testing-boskos
+        testgrid-tab-name: pull-build-test-verify

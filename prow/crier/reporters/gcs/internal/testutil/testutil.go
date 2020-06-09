@@ -55,7 +55,7 @@ func (wc *TestAuthorWriteCloser) Close() error {
 	return nil
 }
 
-func (ta *TestAuthor) NewWriter(ctx context.Context, bucket, path string, overwrite bool) io.WriteCloser {
+func (ta *TestAuthor) NewWriter(ctx context.Context, bucket, path string, overwrite bool) (io.WriteCloser, error) {
 	if ta.AlreadyUsed {
 		panic(fmt.Sprintf("NewWriter called on testAuthor twice: first for %q/%q, now for %q/%q", ta.Bucket, ta.Path, bucket, path))
 	}
@@ -63,5 +63,5 @@ func (ta *TestAuthor) NewWriter(ctx context.Context, bucket, path string, overwr
 	ta.Bucket = bucket
 	ta.Path = path
 	ta.Overwrite = overwrite
-	return &TestAuthorWriteCloser{author: ta}
+	return &TestAuthorWriteCloser{author: ta}, nil
 }

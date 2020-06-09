@@ -33,6 +33,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -609,6 +610,12 @@ func TestRemoveLabelNotFound(t *testing.T) {
 	}
 }
 
+func TestNewNotFoundIsNotFound(t *testing.T) {
+	if !IsNotFound(NewNotFound()) {
+		t.Error("NewNotFound didn't return an error that was considered a NotFound")
+	}
+}
+
 func TestIsNotFound(t *testing.T) {
 	testCases := []struct {
 		name       string
@@ -656,6 +663,45 @@ func TestIsNotFound(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestIsNotFound_nested(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name        string
+		err         error
+		expectMatch bool
+	}{
+		{
+			name:        "direct match",
+			err:         requestError{ClientError: ClientError{Errors: []clientErrorSubError{{Message: "status code 404"}}}},
+			expectMatch: true,
+		},
+		{
+			name:        "direct, no match",
+			err:         requestError{ClientError: ClientError{Errors: []clientErrorSubError{{Message: "status code 403"}}}},
+			expectMatch: false,
+		},
+		{
+			name:        "nested match",
+			err:         fmt.Errorf("wrapping: %w", requestError{ClientError: ClientError{Errors: []clientErrorSubError{{Message: "status code 404"}}}}),
+			expectMatch: true,
+		},
+		{
+			name:        "nested, no match",
+			err:         fmt.Errorf("wrapping: %w", requestError{ClientError: ClientError{Errors: []clientErrorSubError{{Message: "status code 403"}}}}),
+			expectMatch: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			if result := IsNotFound(tc.err); result != tc.expectMatch {
+				t.Errorf("expected match: %t, got match: %t", tc.expectMatch, result)
+			}
+		})
+	}
+
 }
 
 func TestAssignIssue(t *testing.T) {
@@ -758,49 +804,87 @@ func TestUnassignIssue(t *testing.T) {
 }
 
 func TestReadPaginatedResults(t *testing.T) {
-	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet {
-			t.Errorf("Bad method: %s", r.Method)
-		}
-		if r.URL.Path == "/label/foo" {
-			objects := []Label{{Name: "foo"}}
-			b, err := json.Marshal(objects)
-			if err != nil {
-				t.Fatalf("Didn't expect error: %v", err)
+	type response struct {
+		labels []Label
+		next   string
+	}
+	cases := []struct {
+		name           string
+		baseSuffix     string
+		initialPath    string
+		responses      map[string]response
+		expectedLabels []Label
+	}{
+		{
+			name:        "regular pagination",
+			initialPath: "/label/foo",
+			responses: map[string]response{
+				"/label/foo": {
+					labels: []Label{{Name: "foo"}},
+					next:   `<blorp>; rel="first", <https://%s/label/bar>; rel="next"`,
+				},
+				"/label/bar": {
+					labels: []Label{{Name: "bar"}},
+				},
+			},
+			expectedLabels: []Label{{Name: "foo"}, {Name: "bar"}},
+		},
+		{
+			name:        "pagination with /api/v3 base suffix",
+			initialPath: "/label/foo",
+			baseSuffix:  "/api/v3",
+			responses: map[string]response{
+				"/api/v3/label/foo": {
+					labels: []Label{{Name: "foo"}},
+					next:   `<blorp>; rel="first", <https://%s/api/v3/label/bar>; rel="next"`,
+				},
+				"/api/v3/label/bar": {
+					labels: []Label{{Name: "bar"}},
+				},
+			},
+			expectedLabels: []Label{{Name: "foo"}, {Name: "bar"}},
+		},
+	}
+	for _, tc := range cases {
+		ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.Method != http.MethodGet {
+				t.Errorf("Bad method: %s", r.Method)
 			}
-			w.Header().Set("Link", fmt.Sprintf(`<blorp>; rel="first", <https://%s/label/bar>; rel="next"`, r.Host))
-			fmt.Fprint(w, string(b))
-		} else if r.URL.Path == "/label/bar" {
-			objects := []Label{{Name: "bar"}}
-			b, err := json.Marshal(objects)
-			if err != nil {
-				t.Fatalf("Didn't expect error: %v", err)
+			if response, ok := tc.responses[r.URL.Path]; ok {
+				b, err := json.Marshal(response.labels)
+				if err != nil {
+					t.Fatalf("Didn't expect error: %v", err)
+				}
+				if response.next != "" {
+					w.Header().Set("Link", fmt.Sprintf(response.next, r.Host))
+				}
+				fmt.Fprint(w, string(b))
+			} else {
+				t.Errorf("Bad request path: %s", r.URL.Path)
 			}
-			fmt.Fprint(w, string(b))
+		}))
+		defer ts.Close()
+
+		c := getClient(ts.URL)
+		c.bases[0] = c.bases[0] + tc.baseSuffix
+		var labels []Label
+		err := c.readPaginatedResults(
+			tc.initialPath,
+			"",
+			func() interface{} {
+				return &[]Label{}
+			},
+			func(obj interface{}) {
+				labels = append(labels, *(obj.(*[]Label))...)
+			},
+		)
+		if err != nil {
+			t.Errorf("%s: didn't expect error: %v", tc.name, err)
 		} else {
-			t.Errorf("Bad request path: %s", r.URL.Path)
+			if !reflect.DeepEqual(labels, tc.expectedLabels) {
+				t.Errorf("%s: expected %s, got %s", tc.name, tc.expectedLabels, labels)
+			}
 		}
-	}))
-	defer ts.Close()
-	c := getClient(ts.URL)
-	path := "/label/foo"
-	var labels []Label
-	err := c.readPaginatedResults(
-		path,
-		"",
-		func() interface{} {
-			return &[]Label{}
-		},
-		func(obj interface{}) {
-			labels = append(labels, *(obj.(*[]Label))...)
-		},
-	)
-	if err != nil {
-		t.Errorf("Didn't expect error: %v", err)
-	} else if len(labels) != 2 {
-		t.Errorf("Expected two labels, found %d: %v", len(labels), labels)
-	} else if labels[0].Name != "foo" || labels[1].Name != "bar" {
-		t.Errorf("Wrong label names: %v", labels)
 	}
 }
 
@@ -2229,5 +2313,103 @@ func TestUpdateRepo(t *testing.T) {
 				t.Errorf("%s: repo differs from expected:\n%s", tc.description, diff.ObjectReflectDiff(tc.expectRepo, repo))
 			}
 		})
+	}
+}
+
+type fakeHttpClient struct {
+	received []*http.Request
+}
+
+func (fhc *fakeHttpClient) Do(req *http.Request) (*http.Response, error) {
+	if fhc.received == nil {
+		fhc.received = []*http.Request{}
+	}
+	fhc.received = append(fhc.received, req)
+	return &http.Response{}, nil
+}
+
+func TestAuthHeaderGetsSet(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name           string
+		mod            func(*client)
+		expectedHeader http.Header
+	}{
+		{
+			name: "Empty token, no auth header",
+			mod:  func(c *client) { c.getToken = func() []byte { return []byte{} } },
+		},
+		{
+			name:           "Token, auth header",
+			mod:            func(c *client) { c.getToken = func() []byte { return []byte("sup") } },
+			expectedHeader: http.Header{"Authorization": []string{"Bearer sup"}},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			fake := &fakeHttpClient{}
+			c := &client{delegate: &delegate{client: fake}}
+			tc.mod(c)
+			if _, err := c.doRequest("POST", "/hello", "", nil); err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if tc.expectedHeader == nil {
+				tc.expectedHeader = http.Header{}
+			}
+			tc.expectedHeader["Accept"] = []string{"application/vnd.github.v3+json"}
+
+			// Bazel injects some stuff in here, exclude it from comparison so both bazel test
+			// and go test yield the same result.
+			delete(fake.received[0].Header, "User-Agent")
+			if diff := cmp.Diff(tc.expectedHeader, fake.received[0].Header); diff != "" {
+				t.Errorf("expected header differs from actual: %s", diff)
+			}
+		})
+	}
+}
+func TestListTeamRepos(t *testing.T) {
+	ts := simpleTestServer(t, "/teams/1/repos",
+		[]Repo{
+			{
+				Name:        "repo-bar",
+				Permissions: RepoPermissions{Pull: true},
+			},
+			{
+				Name: "repo-invalid-permission-level",
+			},
+		},
+	)
+	defer ts.Close()
+	c := getClient(ts.URL)
+	repos, err := c.ListTeamRepos(1)
+	if err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	} else if len(repos) != 1 {
+		t.Errorf("Expected one repo, found %d: %v", len(repos), repos)
+	} else if repos[0].Name != "repo-bar" {
+		t.Errorf("Wrong repos: %v", repos)
+	}
+}
+
+func TestCreateFork(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/repos/k8s/kuber/forks" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		w.WriteHeader(202)
+		w.Write([]byte(`{"name":"other"}`))
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	if name, err := c.CreateFork("k8s", "kuber"); err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	} else {
+		if name != "other" {
+			t.Errorf("Unexpected fork name: %v", name)
+		}
 	}
 }

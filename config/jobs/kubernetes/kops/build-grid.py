@@ -33,6 +33,7 @@ template = """
       args:
       - --cluster=e2e-kops{{suffix}}.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user={{kops_ssh_user}}
       - --env=KUBE_SSH_USER={{kops_ssh_user}}
       - --env=KOPS_DEPLOY_LATEST_URL={{k8s_deploy_url}}
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -42,14 +43,13 @@ template = """
       - --kops-args={{kops_args}}
       - --kops-image={{kops_image}}
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-ssh-user={{kops_ssh_user}}
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
       - --test_args={{test_args}}
       - --timeout=60m
       image: {{e2e_image}}
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-grid, kops-distro-{{distro}}, kops-k8s-{{k8s_version}}
     testgrid-tab-name: {{tab}}
 """
 
@@ -60,9 +60,6 @@ run_hourly = [
 ]
 
 run_daily = [
-    # flannel networking issues: https://github.com/kubernetes/kops/pull/8381#issuecomment-616689498
-    'kops-grid-aws-flannel-centos7',
-    'kops-grid-aws-flannel-rhel7',
 ]
 
 def simple_hash(s):
@@ -81,6 +78,11 @@ def build_cron(key):
     day_of_week = simple_hash("day_of_week:" + key) % 7
 
     job_count += 1
+
+    # run Ubuntu 20.04 (Focal) jobs more frequently
+    if "u2004" in key:
+        runs_per_week += 7
+        return "%d %d * * *" % (minute, hour)
 
     # run hotlist jobs more frequently
     if key in run_hourly:
@@ -110,38 +112,38 @@ def build_test(cloud='aws', distro=None, networking=None, k8s_version=None):
     # pylint: disable=too-many-statements,too-many-branches
 
     if distro is None:
-        kops_ssh_user = 'admin'
+        kops_ssh_user = 'ubuntu'
         kops_image = None
     elif distro == 'amzn2':
         kops_ssh_user = 'ec2-user'
-        kops_image = '137112412989/amzn2-ami-hvm-2.0.20200304.0-x86_64-gp2'
+        kops_image = '137112412989/amzn2-ami-hvm-2.0.20200406.0-x86_64-gp2'
     elif distro == 'centos7':
         kops_ssh_user = 'centos'
-        kops_image = "679593333241/CentOS Linux 7 x86_64 HVM EBS ENA 1901_01-b7ee8a69-ee97-4a49-9e68-afaee216db2e-ami-05713873c6794f575.4" # pylint: disable=line-too-long
+        kops_image = "679593333241/CentOS Linux 7 x86_64 HVM EBS ENA 2002_01-b7ee8a69-ee97-4a49-9e68-afaee216db2e-ami-0042af67f8e4dcc20.4" # pylint: disable=line-too-long
     elif distro == 'deb9':
         kops_ssh_user = 'admin'
-        kops_image = '379101102735/debian-stretch-hvm-x86_64-gp2-2019-11-13-63558'
+        kops_image = '379101102735/debian-stretch-hvm-x86_64-gp2-2020-02-10-73984'
     elif distro == 'deb10':
         kops_ssh_user = 'admin'
-        kops_image = '136693071363/debian-10-amd64-20200210-166'
+        kops_image = '136693071363/debian-10-amd64-20200511-260'
     elif distro == 'flatcar':
         kops_ssh_user = 'core'
-        kops_image = '075585003325/Flatcar-stable-2303.3.1-hvm'
+        kops_image = '075585003325/Flatcar-stable-2512.2.0-hvm'
     elif distro == 'u1604':
         kops_ssh_user = 'ubuntu'
-        kops_image = '099720109477/ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-20200407'
+        kops_image = '099720109477/ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-20200429'
     elif distro == 'u1804':
         kops_ssh_user = 'ubuntu'
-        kops_image = '099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20200408'
+        kops_image = '099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20200430'
     elif distro == 'u2004':
         kops_ssh_user = 'ubuntu'
-        kops_image = '099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200423'
+        kops_image = '099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200528'
     elif distro == 'rhel7':
         kops_ssh_user = 'ec2-user'
-        kops_image = '309956199498/RHEL-7.7_HVM-20191119-x86_64-2-Hourly2-GP2'
+        kops_image = '309956199498/RHEL-7.8_HVM_GA-20200225-x86_64-1-Hourly2-GP2'
     elif distro == 'rhel8':
         kops_ssh_user = 'ec2-user'
-        kops_image = '309956199498/RHEL-8.1.0_HVM-20191029-x86_64-0-Hourly2-GP2'
+        kops_image = '309956199498/RHEL-8.2.0_HVM-20200423-x86_64-0-Hourly2-GP2'
     else:
         raise Exception('unknown distro ' + distro)
 
@@ -152,13 +154,15 @@ def build_test(cloud='aws', distro=None, networking=None, k8s_version=None):
         return s.format(**subs)
 
     if k8s_version is None:
-        extract = "release/stable"
-        k8s_deploy_url = "https://storage.googleapis.com/kubernetes-release/release/stable.txt"
-        e2e_image = "gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master"
+        extract = "release/latest"
+        k8s_deploy_url = "https://storage.googleapis.com/kubernetes-release/release/latest.txt"
+        e2e_image = "gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-master"
     else:
         extract = expand("release/stable-{k8s_version}")
         k8s_deploy_url = expand("https://storage.googleapis.com/kubernetes-release/release/stable-{k8s_version}.txt") # pylint: disable=line-too-long
-        e2e_image = expand("gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-{k8s_version}")
+        # Hack to stop the autobumper getting confused
+        e2e_image = "gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-1.18"
+        e2e_image = e2e_image[:-4] + k8s_version
 
     kops_args = ""
     if networking:
@@ -166,7 +170,7 @@ def build_test(cloud='aws', distro=None, networking=None, k8s_version=None):
 
     kops_args = kops_args.strip()
 
-    test_args = r'--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints' # pylint: disable=line-too-long
+    test_args = r'--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity' # pylint: disable=line-too-long
 
     suffix = ""
     if cloud and cloud != "aws":
@@ -177,10 +181,6 @@ def build_test(cloud='aws', distro=None, networking=None, k8s_version=None):
         suffix += "-" + distro
     if k8s_version:
         suffix += "-k" + k8s_version.replace("1.", "")
-
-    # We current have an issue with long cluster names; let's warn if we encounter them
-    if len(suffix) > 24:
-        raise Exception("suffix name %s is probably too long" % (suffix))
 
     # We current have an issue with long cluster names; let's warn if we encounter them
     if len(suffix) > 24:
@@ -200,6 +200,16 @@ def build_test(cloud='aws', distro=None, networking=None, k8s_version=None):
     y = y.replace('{{k8s_deploy_url}}', k8s_deploy_url)
     y = y.replace('{{extract}}', extract)
     y = y.replace('{{e2e_image}}', e2e_image)
+
+    if distro:
+        y = y.replace('{{distro}}', distro)
+    else:
+        y = y.replace('{{distro}}', "default")
+
+    if k8s_version:
+        y = y.replace('{{k8s_version}}', k8s_version)
+    else:
+        y = y.replace('{{k8s_version}}', "latest")
 
     if kops_image:
         y = y.replace('{{kops_image}}', kops_image)
@@ -227,7 +237,6 @@ networking_options = [
 ]
 
 distro_options = [
-    None,
     'amzn2',
     'centos7',
     'deb9',

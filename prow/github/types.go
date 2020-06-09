@@ -109,13 +109,15 @@ func unmarshalClientError(b []byte) error {
 
 // ClientError represents https://developer.github.com/v3/#client-errors
 type ClientError struct {
-	Message string `json:"message"`
-	Errors  []struct {
-		Resource string `json:"resource"`
-		Field    string `json:"field"`
-		Code     string `json:"code"`
-		Message  string `json:"message,omitempty"`
-	} `json:"errors,omitempty"`
+	Message string                `json:"message"`
+	Errors  []clientErrorSubError `json:"errors,omitempty"`
+}
+
+type clientErrorSubError struct {
+	Resource string `json:"resource"`
+	Field    string `json:"field"`
+	Code     string `json:"code"`
+	Message  string `json:"message,omitempty"`
 }
 
 func (r ClientError) Error() string {
@@ -207,6 +209,8 @@ const (
 	PullRequestActionSynchronize PullRequestEventAction = "synchronize"
 	// PullRequestActionReadyForReview means the PR is no longer a draft PR.
 	PullRequestActionReadyForReview PullRequestEventAction = "ready_for_review"
+	// PullRequestConvertedToDraft means the PR is now a draft PR.
+	PullRequestConvertedToDraft PullRequestEventAction = "converted_to_draft"
 )
 
 // GenericEvent is a lightweight struct containing just Sender and Repo as all events are expected to have this information.

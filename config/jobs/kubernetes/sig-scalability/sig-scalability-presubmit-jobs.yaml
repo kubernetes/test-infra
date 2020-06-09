@@ -47,11 +47,11 @@ presubmits:
         - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
         - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
         - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
-        - --test-cmd-args=--testoverrides=./testing/load/gce/throughput_override.yaml
+        - --test-cmd-args=--testoverrides=./testing/overrides/load_throughput.yaml
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=100m
         - --use-logexporter
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-master
         resources:
           requests:
             memory: "6Gi"
@@ -66,6 +66,7 @@ presubmits:
       preset-k8s-ssh: "true"
       preset-bazel-scratch-dir: "true"
       preset-e2e-scalability-common: "true"
+      preset-e2e-scalability-containerd: "true"
       preset-e2e-scalability-presubmits: "true"
     spec:
       containers:
@@ -101,7 +102,7 @@ presubmits:
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=240m
         - --use-logexporter
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-master
         resources:
           requests:
             memory: "6Gi"
@@ -147,12 +148,12 @@ presubmits:
         - --test-cmd-args=--testconfig=testing/density/config.yaml
         - --test-cmd-args=--testconfig=testing/load/config.yaml
         - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
-        - --test-cmd-args=--testoverrides=./testing/density/2000_nodes/override.yaml
         - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
+        - --test-cmd-args=--testoverrides=./testing/overrides/2000_nodes.yaml
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=540m
         - --use-logexporter
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-master
         resources:
           requests:
             memory: "6Gi"
@@ -175,7 +176,7 @@ presubmits:
       testgrid-create-test-group: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -214,7 +215,7 @@ presubmits:
         - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
         - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
         - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
-        - --test-cmd-args=--testoverrides=./testing/load/kubemark/500_nodes/override.yaml
+        - --test-cmd-args=--testoverrides=./testing/overrides/kubemark_500_nodes.yaml
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=100m
         - --use-logexporter
@@ -243,7 +244,7 @@ presubmits:
       preset-e2e-scalability-presubmits: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -322,6 +323,7 @@ presubmits:
         - --gcp-zone=us-east1-b
         - --provider=gce
         - --tear-down-previous
+        - --env=CL2_ENABLE_DNS_PROGRAMMING=true
         - --test=false
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
         - --test-cmd-args=cluster-loader2
@@ -332,14 +334,14 @@ presubmits:
         - --test-cmd-args=--testconfig=testing/density/config.yaml
         - --test-cmd-args=--testconfig=testing/load/config.yaml
         - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
-        - --test-cmd-args=--testoverrides=./testing/load/gce/throughput_override.yaml
         - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
         - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
         - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
+        - --test-cmd-args=--testoverrides=./testing/overrides/load_throughput.yaml
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=100m
         - --use-logexporter
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-master
         resources:
           requests:
             memory: "6Gi"
@@ -385,14 +387,14 @@ presubmits:
             - --test-cmd-args=--testconfig=testing/load/config.yaml
             - --test-cmd-args=--testoverrides=./testing/chaosmonkey/override.yaml
             - --test-cmd-args=--testoverrides=./testing/chaosmonkey/ignore_node_killer_container_restarts_100.yaml
-            - --test-cmd-args=--testoverrides=./testing/load/gce/throughput_override.yaml
             - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
             - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
             - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
+            - --test-cmd-args=--testoverrides=./testing/overrides/load_throughput.yaml
             - --test-cmd-name=ClusterLoaderV2
             - --timeout=100m
             - --use-logexporter
-          image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+          image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-master
           resources:
             requests:
               memory: "6Gi"
@@ -440,19 +442,20 @@ presubmits:
             - --test-cmd-args=--nodes=100
             - --test-cmd-args=--prometheus-scrape-node-exporter
             - --test-cmd-args=--provider=kubemark
+            - --env=CL2_ENABLE_DNS_PROGRAMMING=true
             - --env=CL2_ENABLE_PVS=false # TODO(https://github.com/kubernetes/perf-tests/issues/803): Fix me
             - --test-cmd-args=--report-dir=/workspace/_artifacts
             - --test-cmd-args=--testconfig=testing/density/config.yaml
             - --test-cmd-args=--testconfig=testing/load/config.yaml
             - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
-            - --test-cmd-args=--testoverrides=./testing/load/kubemark/throughput_override.yaml
             - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
             - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
             - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
+            - --test-cmd-args=--testoverrides=./testing/overrides/kubemark_load_throughput.yaml
             - --test-cmd-name=ClusterLoaderV2
             - --timeout=100m
             - --use-logexporter
-          image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+          image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-master
           resources:
             requests:
               memory: "6Gi"
@@ -474,7 +477,7 @@ presubmits:
       testgrid-tab-name: pull-perf-tests-util-images
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/bootstrap:v20200428-cdaab98
+        - image: gcr.io/k8s-testimages/bootstrap:v20200430-be2a8a9
           args:
           - --root=/go/src
           - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
@@ -489,3 +492,60 @@ presubmits:
             requests:
               cpu: 1
               memory: "2Gi"
+
+  - name: pull-perf-tests-verify-all
+    # TODO(oxddr): make it non-optional once we are confident in the presubmit
+    optional: true
+    decorate: true
+    always_run: true
+    skip_branches:
+    - release-1.1[2-8] # Presubmit has been implemented for 1.19+ releases
+    path_alias: "k8s.io/perf-tests"
+    annotations:
+      testgrid-dashboards: presubmits-kubernetes-scalability
+      testgrid-tab-name: pull-perf-tests-verify-all
+    spec:
+      containers:
+      - image: golang:1.13
+        command:
+        - make
+        args:
+        - verify-all
+
+  - name: pull-perf-tests-verify-dashboard
+    # TODO(oxddr): make it non-optional once we are confident in the presubmit
+    optional: true
+    decorate: true
+    run_if_changed: ^clusterloader2/pkg/prometheus/manifests/dashboards/.*\.json$
+    skip_branches:
+    - release-1.1[2-8] # Presubmit has been implemented for 1.19+ releases
+    path_alias: "k8s.io/perf-tests"
+    annotations:
+      testgrid-dashboards: presubmits-kubernetes-scalability
+      testgrid-tab-name: pull-perf-tests-verify-dashboard
+    spec:
+      containers:
+      - image: python:3.7
+        command:
+        - make
+        args:
+        - verify-dashboard
+
+  - name: pull-perf-tests-verify-lint
+    # TODO(oxddr): make it non-optional once we are confident in the presubmit
+    optional: true
+    decorate: true
+    always_run: true
+    skip_branches:
+    - release-1.1[2-8] # Presubmit has been implemented for 1.19+ releases
+    path_alias: "k8s.io/perf-tests"
+    annotations:
+      testgrid-dashboards: presubmits-kubernetes-scalability
+      testgrid-tab-name: pull-perf-tests-verify-lint
+    spec:
+      containers:
+      - image: golangci/golangci-lint:v1.26
+        command:
+        - make
+        args:
+        - verify-lint

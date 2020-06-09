@@ -48,8 +48,7 @@ cleanup(){
 
 early_exit_handler() {
   >&2 echo "wrapper.sh] [EARLY EXIT] Interrupted, entering handler ..."
-  trap_code=$?
-  if [ -z ${EXIT_VALUE+x} ]; then
+  if [ -n "${EXIT_VALUE:-}" ]; then
     >&2 echo "Original exit code was ${EXIT_VALUE}, not preserving due to interrupt signal"
   fi
   cleanup

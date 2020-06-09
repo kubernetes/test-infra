@@ -29,6 +29,7 @@ import (
 	utilpointer "k8s.io/utils/pointer"
 
 	pkgio "k8s.io/test-infra/prow/io"
+	"k8s.io/test-infra/prow/io/providers"
 )
 
 // UploadFunc knows how to upload into an object
@@ -44,7 +45,7 @@ func Upload(bucket, gcsCredentialsFile, s3CredentialsFile string, uploadTargets 
 		return fmt.Errorf("cannot parse bucket name %s: %w", bucket, err)
 	}
 	if parsedBucket.Scheme == "" {
-		parsedBucket.Scheme = "gs"
+		parsedBucket.Scheme = providers.GS
 	}
 
 	ctx := context.Background()
@@ -188,12 +189,18 @@ func (w *openerObjectWriter) Write(p []byte) (n int, err error) {
 }
 
 func (w *openerObjectWriter) Close() error {
-	if w.writeCloser != nil {
-		err := w.writeCloser.Close()
-		w.writeCloser = nil
-		return err
+	if w.writeCloser == nil {
+		// Always create a writer even if Write() was never called
+		// otherwise empty files are never created, because Write() is
+		// never called for them
+		if _, err := w.Write([]byte("")); err != nil {
+			return err
+		}
 	}
-	return nil
+
+	err := w.writeCloser.Close()
+	w.writeCloser = nil
+	return err
 }
 
 func (w *openerObjectWriter) ApplyWriterOptions(opts pkgio.WriterOptions) {

@@ -592,7 +592,7 @@ function redraw(fz: FuzzySearch): void {
             } else {
                 let repoLink = repo_link;
                 if (!repoLink) {
-                    repoLink = `https://github.com/${org}/${repo}`;
+                    repoLink = `/github-link?dest=${org}/${repo}`;
                 }
                 r.appendChild(cell.link(`${org}/${repo}`, repoLink));
             }
@@ -789,7 +789,7 @@ function batchRevisionCell(build: ProwJob): HTMLTableDataCellElement {
         if (link) {
             l.href = link;
         } else {
-            l.href = `https://github.com/${org}/${repo}/pull/${prNumber}`;
+            l.href = `/github-link?dest=${org}/${repo}/pull/${prNumber}`;
         }
         l.text = prNumber.toString();
         c.appendChild(document.createTextNode("#"));

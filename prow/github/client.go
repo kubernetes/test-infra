@@ -41,6 +41,7 @@ import (
 	"golang.org/x/oauth2"
 
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
+
 	"k8s.io/test-infra/ghproxy/ghcache"
 	"k8s.io/test-infra/prow/version"
 )
@@ -93,6 +94,7 @@ type CommentClient interface {
 
 // IssueClient interface for issue related API actions
 type IssueClient interface {
+	CreateIssue(org, repo, title, body string, milestone int, labels, assignees []string) (int, error)
 	CreateIssueReaction(org, repo string, id int, reaction string) error
 	ListIssueComments(org, repo string, number int) ([]IssueComment, error)
 	GetIssueLabels(org, repo string, number int) ([]Label, error)
@@ -155,7 +157,7 @@ type RepositoryClient interface {
 	GetFile(org, repo, filepath, commit string) ([]byte, error)
 	IsCollaborator(org, repo, user string) (bool, error)
 	ListCollaborators(org, repo string) ([]User, error)
-	CreateFork(owner, repo string) error
+	CreateFork(owner, repo string) (string, error)
 	ListRepoTeams(org, repo string) ([]Team, error)
 	CreateRepo(owner string, isUser bool, repo RepoCreateRequest) (*FullRepo, error)
 	UpdateRepo(owner, name string, repo RepoUpdateRequest) (*FullRepo, error)
@@ -598,13 +600,22 @@ func (r requestError) ErrorMessages() []string {
 	return []string{}
 }
 
+// NewNotFound returns a NotFound error which may be useful for tests
+func NewNotFound() error {
+	return requestError{
+		ClientError: ClientError{
+			Errors: []clientErrorSubError{{Message: "status code 404"}},
+		},
+	}
+}
+
 func IsNotFound(err error) bool {
 	if err == nil {
 		return false
 	}
 
-	requestErr, ok := err.(requestError)
-	if !ok {
+	var requestErr requestError
+	if !errors.As(err, &requestErr) {
 		return false
 	}
 
@@ -798,7 +809,11 @@ func (c *client) doRequest(method, path, accept string, body interface{}) (*http
 }
 
 func (c *client) authHeader() string {
-	return fmt.Sprintf("Bearer %s", c.getToken())
+	token := c.getToken()
+	if len(token) == 0 {
+		return ""
+	}
+	return fmt.Sprintf("Bearer %s", token)
 }
 
 // userInfo provides the 'github_user_info' vector that is indexed
@@ -1252,6 +1267,46 @@ func (c *client) CreateCommentReaction(org, repo string, id int, reaction string
 	return err
 }
 
+// CreateIssue creates a new issue and returns its number if
+// the creation is successful, otherwise any error that is encountered.
+//
+// See https://developer.github.com/v3/issues/#create-an-issue
+func (c *client) CreateIssue(org, repo, title, body string, milestone int, labels, assignees []string) (int, error) {
+	durationLogger := c.log("CreateIssue", org, repo, title)
+	defer durationLogger()
+
+	data := struct {
+		Title     string   `json:"title,omitempty"`
+		Body      string   `json:"body,omitempty"`
+		Milestone int      `json:"milestone,omitempty"`
+		Labels    []string `json:"labels,omitempty"`
+		Assignees []string `json:"assignees,omitempty"`
+	}{
+		Title:     title,
+		Body:      body,
+		Milestone: milestone,
+		Labels:    labels,
+		Assignees: assignees,
+	}
+	var resp struct {
+		Num int `json:"number"`
+	}
+	_, err := c.request(&request{
+		// allow the description and draft fields
+		// https://developer.github.com/changes/2018-02-22-label-description-search-preview/
+		// https://developer.github.com/changes/2019-02-14-draft-pull-requests/
+		accept:      "application/vnd.github.symmetra-preview+json, application/vnd.github.shadow-cat-preview",
+		method:      http.MethodPost,
+		path:        fmt.Sprintf("/repos/%s/%s/issues", org, repo),
+		requestBody: &data,
+		exitCodes:   []int{201},
+	}, &resp)
+	if err != nil {
+		return 0, err
+	}
+	return resp.Num, nil
+}
+
 // CreateIssueReaction responds emotionally to org/repo#id
 //
 // See https://developer.github.com/v3/reactions/#create-reaction-for-an-issue
@@ -1333,11 +1388,25 @@ func (c *client) readPaginatedResultsWithValues(path string, values url.Values, 
 		if link == "" {
 			break
 		}
+
+		// Example for github.com:
+		// * c.bases[0]: api.github.com
+		// * initial call: api.github.com/repos/kubernetes/kubernetes/pulls?per_page=100
+		// * next: api.github.com/repositories/22/pulls?per_page=100&page=2
+		// * in this case prefix will be empty and we're just calling the path returned by next
+		// Example for github enterprise:
+		// * c.bases[0]: <ghe-url>/api/v3
+		// * initial call: <ghe-url>/api/v3/repos/kubernetes/kubernetes/pulls?per_page=100
+		// * next: <ghe-url>/api/v3/repositories/22/pulls?per_page=100&page=2
+		// * in this case prefix will be "/api/v3" and we will strip the prefix. If we don't do that,
+		//   the next call will go to <ghe-url>/api/v3/api/v3/repositories/22/pulls?per_page=100&page=2
+		prefix := strings.TrimSuffix(resp.Request.URL.RequestURI(), pagedPath)
+
 		u, err := url.Parse(link)
 		if err != nil {
 			return fmt.Errorf("failed to parse 'next' link: %v", err)
 		}
-		pagedPath = u.RequestURI()
+		pagedPath = strings.TrimPrefix(u.RequestURI(), prefix)
 	}
 	return nil
 }
@@ -2870,7 +2939,15 @@ func (c *client) ListTeamRepos(id int) ([]Repo, error) {
 			return &[]Repo{}
 		},
 		func(obj interface{}) {
-			repos = append(repos, *(obj.(*[]Repo))...)
+			for _, repo := range *obj.(*[]Repo) {
+				// Currently, GitHub API returns false for all permission levels
+				// for a repo on which the team has 'Maintain' or 'Triage' role.
+				// This check is to avoid listing a repo under the team but
+				// showing the permission level as none.
+				if LevelFromPermissions(repo.Permissions) != None {
+					repos = append(repos, repo)
+				}
+			}
 		},
 	)
 	if err != nil {
@@ -3118,16 +3195,24 @@ func (c *client) ListCollaborators(org, repo string) ([]User, error) {
 // recommends contacting their support.
 //
 // See https://developer.github.com/v3/repos/forks/#create-a-fork
-func (c *client) CreateFork(owner, repo string) error {
+func (c *client) CreateFork(owner, repo string) (string, error) {
 	durationLogger := c.log("CreateFork", owner, repo)
 	defer durationLogger()
+
+	resp := struct {
+		Name string `json:"name"`
+	}{}
 
 	_, err := c.request(&request{
 		method:    http.MethodPost,
 		path:      fmt.Sprintf("/repos/%s/%s/forks", owner, repo),
 		exitCodes: []int{202},
-	}, nil)
-	return err
+	}, &resp)
+
+	// there are many reasons why GitHub may end up forking the
+	// repo under a different name -- the repo got re-named, the
+	// bot account already has a fork with that name, etc
+	return resp.Name, err
 }
 
 // ListRepoTeams gets a list of all the teams with access to a repository

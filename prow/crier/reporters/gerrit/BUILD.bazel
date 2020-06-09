@@ -38,7 +38,9 @@ go_test(
         "//prow/client/listers/prowjobs/v1:go_default_library",
         "//prow/gerrit/client:go_default_library",
         "//prow/kube:go_default_library",
+        "@io_k8s_apimachinery//pkg/api/equality:go_default_library",
         "@io_k8s_apimachinery//pkg/apis/meta/v1:go_default_library",
         "@io_k8s_apimachinery//pkg/labels:go_default_library",
+        "@io_k8s_apimachinery//pkg/util/diff:go_default_library",
     ],
 )

@@ -53,7 +53,6 @@ approve:
   - kubernetes/klog
   - kubernetes/kubeadm
   - kubernetes/kubectl
-  - kubernetes/kube-deploy
   - kubernetes/kubernetes-template-project
   - kubernetes/kube-state-metrics
   - kubernetes/minikube
@@ -77,6 +76,7 @@ approve:
   require_self_approval: false
 - repos:
   - bazelbuild
+  - kubernetes-sigs/boskos
   - kubernetes-sigs/kind
   - kubernetes-sigs/slack-infra
   - kubernetes/community
@@ -126,6 +126,7 @@ lgtm:
 - repos:
   - bazelbuild
   - kubernetes/repo-infra
+  - kubernetes-sigs/boskos
   - kubernetes-sigs/kind
   - kubernetes/test-infra
   review_acts_as_lgtm: true
@@ -219,6 +220,7 @@ slack:
     - kubernetes/client-go
     - kubernetes/code-generator
     - kubernetes/component-base
+    - kubernetes/controller-manager
     - kubernetes/kube-aggregator
     - kubernetes/kube-controller-manager
     - kubernetes/sample-apiserver
@@ -316,12 +318,17 @@ milestone_applier:
   kubernetes/test-infra:
     master: v1.19
   kubernetes/kops:
-    master: v1.18
+    master: v1.19
+    release-1.18: v1.18
     release-1.17: v1.17
     release-1.16: v1.16
     release-1.15: v1.15
   kubernetes-sigs/cluster-api-provider-azure:
     master: v0.5
+    release-0.4: v0.4
+    release-0.3: v0.3
+  kubernetes-sigs/cluster-api-provider-digitalocean:
+    master: v0.3
     release-0.4: v0.4
     release-0.3: v0.3
 
@@ -349,6 +356,10 @@ repo_milestone:
     maintainers_id: 3063852
     maintainers_team: cluster-api-provider-azure-maintainers
     maintainers_friendly_name: Cluster API Provider Azure Maintainers
+  kubernetes-sigs/cluster-api-provider-digitalocean:
+    maintainers_id: 2978501
+    maintainers_team: cluster-api-provider-digitalocean-maintainers
+    maintainers_friendly_name: Cluster API Provider DigitalOcean Maintainers
   kubernetes-sigs/cluster-api-provider-docker:
     maintainers_id: 3297612
     maintainers_team: cluster-api-provider-docker-maintainers
@@ -526,11 +537,14 @@ retitle:
 
 cherry_pick_unapproved:
   comment: |
-    This cherry pick PR is for a release branch and has not yet been approved by the Patch Release Team.
+    This cherry pick PR is for a release branch and has not yet been approved by [Release Managers](https://git.k8s.io/sig-release/release-managers.md).
     Adding the `do-not-merge/cherry-pick-not-approved` label.
 
-    To merge this cherry pick, please ping the **kubernetes/patch-release-team** in a comment, *after* it has been approved by the relevant OWNERS.
-    For details on the patch release process and schedule, see the [Patch Releases](https://git.k8s.io/sig-release/releases/patch-releases.md) page.
+    To merge this cherry pick, it must first be approved (`/lgtm` + `/approve`) by the relevant OWNERS.
+
+    **AFTER** it has been approved by code owners, please ping the **kubernetes/release-managers** team in a comment to request a cherry pick review.
+
+    (For details on the patch release process and schedule, see the [Patch Releases](https://git.k8s.io/sig-release/releases/patch-releases.md) page.)
 
 plugins:
   # Enable the following for any bazelbuild repo (rules_k8s, rules_docker) that sends prow webhooks
@@ -812,6 +826,9 @@ plugins:
   kubernetes-sigs/gcp-compute-persistent-disk-csi-driver:
   - release-note
 
+  kubernetes-sigs/boskos:
+  - override
+
   kubernetes-sigs/kind:
   - override
 
@@ -822,6 +839,13 @@ plugins:
   - milestone
 
   kubernetes-sigs/cluster-api-provider-azure:
+  - milestone
+  - milestoneapplier
+  - milestonestatus
+  - release-note
+  - require-matching-label
+
+  kubernetes-sigs/cluster-api-provider-digitalocean:
   - milestone
   - milestoneapplier
   - milestonestatus

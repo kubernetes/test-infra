@@ -541,19 +541,25 @@ k8sVersions:
 testSuites:
   alphafeatures:
     args:
+    - --gcp-project-type=k8s-infra-gce-project
     - --timeout=180m
     - --test_args=--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly|DynamicKubeletConfig)\]
       --minStartupPods=8
+    cluster: k8s-infra-prow-build
   default:
     args:
+    - --gcp-project-type=k8s-infra-gce-project
     - --timeout=120m
     - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
       --minStartupPods=8
     - --ginkgo-parallel=30
+    cluster: k8s-infra-prow-build
   flaky:
     args:
+    - --gcp-project-type=k8s-infra-gce-project
     - --timeout=300m
     - --test_args=--ginkgo.focus=\[Flaky\] --ginkgo.skip=\[Feature:.+\] --minStartupPods=8
+    cluster: k8s-infra-prow-build
   ingress:
     args:
     - --gcp-project-type=ingress-project
@@ -562,20 +568,26 @@ testSuites:
       --minStartupPods=8
   reboot:
     args:
+    - --gcp-project-type=k8s-infra-gce-project
     - --timeout=180m
     - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
+    cluster: k8s-infra-prow-build
   serial:
     args:
+    - --gcp-project-type=k8s-infra-gce-project
     - --timeout=660m
     - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\]
       --minStartupPods=8
     - --ginkgo-parallel=1
+    cluster: k8s-infra-prow-build
   slow:
     args:
+    - --gcp-project-type=k8s-infra-gce-project
     - --timeout=150m
     - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
       --minStartupPods=8
     - --ginkgo-parallel=30
+    cluster: k8s-infra-prow-build
   soak:
     args:
     - --check-version-skew=false
@@ -645,23 +657,23 @@ nodeK8sVersions:
   dev:
     args:
     - --repo=k8s.io/kubernetes=master
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-master
   beta:
     args:
     - --repo=k8s.io/kubernetes=release-1.18
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-1.18
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-1.18
   stable1:
     args:
     - --repo=k8s.io/kubernetes=release-1.17
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-1.17
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-1.17
   stable2:
     args:
     - --repo=k8s.io/kubernetes=release-1.16
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-1.16
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-1.16
   stable3:
     args:
     - --repo=k8s.io/kubernetes=release-1.15
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-1.15
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-1.15
 
 nodeTestSuites:
   default:
