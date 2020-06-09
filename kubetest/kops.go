@@ -470,7 +470,7 @@ func (k kops) Up() error {
 	}
 
 	// TODO: Once this gets support for N checks in a row, it can replace the above node readiness check
-	if err := control.FinishRunning(exec.Command(k.path, "validate", "cluster", k.cluster, "--wait", "5m")); err != nil {
+	if err := control.FinishRunning(exec.Command(k.path, "validate", "cluster", k.cluster, "--wait", "15m")); err != nil {
 		return fmt.Errorf("kops validate cluster failed: %v", err)
 	}
 
