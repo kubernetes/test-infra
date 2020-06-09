@@ -469,6 +469,11 @@ func (k kops) Up() error {
 		return fmt.Errorf("kops create cluster failed: %v", err)
 	}
 
+	// TODO: Once this gets support for N checks in a row, it can replace the above node readiness check
+	if err := control.FinishRunning(exec.Command(k.path, "validate", "cluster", k.cluster, "--wait", "5m")); err != nil {
+		return fmt.Errorf("kops validate cluster failed: %v", err)
+	}
+
 	// We require repeated successes, so we know that the cluster is stable
 	// (e.g. in HA scenarios, or where we're using multiple DNS servers)
 	// We use a relatively high number as DNS can take a while to
@@ -478,11 +483,6 @@ func (k kops) Up() error {
 	// Wait for nodes to become ready
 	if err := waitForReadyNodes(k.nodes+1, *kopsUpTimeout, requiredConsecutiveSuccesses); err != nil {
 		return fmt.Errorf("kops nodes not ready: %v", err)
-	}
-
-	// TODO: Once this gets support for N checks in a row, it can replace the above node readiness check
-	if err := control.FinishRunning(exec.Command(k.path, "validate", "cluster", k.cluster, "--wait", "5m")); err != nil {
-		return fmt.Errorf("kops validate cluster failed: %v", err)
 	}
 
 	return nil
