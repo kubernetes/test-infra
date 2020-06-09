@@ -77,8 +77,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/aws/aws-sdk-go",
-        sum = "h1:i+sSesaMrSxiUt3NJddOApe2mXK+VNBgfcmRTvNFrXM=",
-        version = "v1.30.5",
+        sum = "h1:SxRRGyhlCagI0DYkhOg+FgdXGXzRTE3vEX/gsgFaiKQ=",
+        version = "v1.31.12",
     )
     go_repository(
         name = "com_github_azure_azure_pipeline_go",
