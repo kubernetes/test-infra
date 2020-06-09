@@ -236,5 +236,21 @@ func (c *Fake) GetClones(bug *Bug) ([]*Bug, error) {
 	return getClones(c, bug)
 }
 
+// GetAllClones gets all clones including its parents and children spanning multiple levels
+func (c *Fake) GetAllClones(bug *Bug) ([]*Bug, error) {
+	if c.BugErrors.Has(bug.ID) {
+		return nil, errors.New("injected error getting subcomponents")
+	}
+	return getAllClones(c, bug)
+}
+
+// GetRootForClone gets the original bug.
+func (c *Fake) GetRootForClone(bug *Bug) (*Bug, error) {
+	if c.BugErrors.Has(bug.ID) {
+		return nil, errors.New("injected error getting bug")
+	}
+	return getRootForClone(c, bug)
+}
+
 // the Fake is a Client
 var _ Client = &Fake{}
