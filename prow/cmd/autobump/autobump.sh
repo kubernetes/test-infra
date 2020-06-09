@@ -44,7 +44,7 @@ main() {
 	version=$(cat "${PLANK_DEPLOYMENT_FILE}" | extract-version)
 
 	if [[ "${old_version}" == "${version}" ]]; then
-		echo "Bump did not change the Prow version. Aborting no-op bump." >&2
+		echo "Bump did not change the Prow version: it's still ${version}. Aborting no-op bump." >&2
 		exit 0
 	fi
 
