@@ -2374,3 +2374,25 @@ func TestListTeamRepos(t *testing.T) {
 		t.Errorf("Wrong repos: %v", repos)
 	}
 }
+
+func TestCreateFork(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/repos/k8s/kuber/forks" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		w.WriteHeader(202)
+		w.Write([]byte(`{"name":"other"}`))
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	if name, err := c.CreateFork("k8s", "kuber"); err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	} else {
+		if name != "other" {
+			t.Errorf("Unexpected fork name: %v", name)
+		}
+	}
+}

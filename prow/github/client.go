@@ -3164,7 +3164,7 @@ func (c *client) CreateFork(owner, repo string) (string, error) {
 	defer durationLogger()
 
 	resp := struct {
-		name string `json:"name"`
+		Name string `json:"name"`
 	}{}
 
 	_, err := c.request(&request{
@@ -3176,7 +3176,7 @@ func (c *client) CreateFork(owner, repo string) (string, error) {
 	// there are many reasons why GitHub may end up forking the
 	// repo under a different name -- the repo got re-named, the
 	// bot account already has a fork with that name, etc
-	return resp.name, err
+	return resp.Name, err
 }
 
 // ListRepoTeams gets a list of all the teams with access to a repository
