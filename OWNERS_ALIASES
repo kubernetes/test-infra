@@ -6,7 +6,6 @@ aliases:
   - cjwagner
   - clarketm
   - fejta
-  - Katharine
   - michelle192837
 
   wg-k8s-infra-oncall:
@@ -101,7 +100,7 @@ aliases:
     - saad-ali
     - xing-yang
   sig-testing-leads:
-    - fejta
+    - BenTheElder
     - spiffxp
     - stevekuznetsov
   sig-ui-leads:
