@@ -71,9 +71,6 @@ postsubmits:
         - --project=k8s-testimages
         - --build-dir=.
         - images/alpine-bash/
-        env:
-        - name: USE_BAZEL_VERSION
-          value: real  # Ignore .bazelversion
   - name: post-test-infra-push-git
     cluster: test-infra-trusted
     run_if_changed: '^images/git/'
@@ -107,9 +104,6 @@ postsubmits:
         - prow/deploy.sh
         args:
         - --confirm
-        env:
-        - name: USE_BAZEL_VERSION
-          value: real  # Ignore .bazelversion
     annotations:
       testgrid-dashboards: sig-testing-prow
       testgrid-tab-name: deploy-prow
@@ -126,9 +120,6 @@ postsubmits:
       - image: gcr.io/k8s-testimages/bazelbuild:v20200421-b889179-test-infra
         command:
         - experiment/resultstore/push.sh
-        env:
-        - name: USE_BAZEL_VERSION
-          value: real  # Ignore .bazelversion
     annotations:
       testgrid-dashboards: sig-testing-prow
       testgrid-tab-name: push-resultstore
@@ -146,9 +137,6 @@ postsubmits:
       - image: gcr.io/k8s-testimages/bazelbuild:v20200421-b889179-test-infra
         command:
         - prow/push.sh
-        env:
-        - name: USE_BAZEL_VERSION
-          value: real  # Ignore .bazelversion
     annotations:
       testgrid-dashboards: sig-testing-prow
       testgrid-tab-name: push-prow
@@ -178,9 +166,6 @@ postsubmits:
         - --project=k8s-testimages
         - --build-dir=.
         - velodrome/
-        env:
-        - name: USE_BAZEL_VERSION
-          value: real  # Ignore .bazelversion
   - name: post-test-infra-push-kettle
     cluster: test-infra-trusted
     annotations:
@@ -204,9 +189,6 @@ postsubmits:
         - --project=k8s-testimages
         - --build-dir=.
         - kettle/
-        env:
-        - name: USE_BAZEL_VERSION
-          value: real  # Ignore .bazelversion
   - name: post-test-infra-push-triage
     cluster: test-infra-trusted
     run_if_changed: '^triage/'
@@ -230,9 +212,6 @@ postsubmits:
         - --project=k8s-testimages
         - --build-dir=.
         - triage/
-        env:
-        - name: USE_BAZEL_VERSION
-          value: real  # Ignore .bazelversion
   - name: post-test-infra-push-bazel
     cluster: test-infra-trusted
     run_if_changed: '^images/bazel/'
@@ -255,9 +234,6 @@ postsubmits:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-testimages
         - images/bazel/
-        env:
-        - name: USE_BAZEL_VERSION
-          value: real  # Ignore .bazelversion
   - name: post-test-infra-push-bazelbuild
     cluster: test-infra-trusted
     run_if_changed: '^images/bazelbuild/'
@@ -281,9 +257,6 @@ postsubmits:
         - --project=k8s-testimages
         - --build-dir=.
         - images/bazelbuild/
-        env:
-        - name: USE_BAZEL_VERSION
-          value: real  # Ignore .bazelversion
   - name: post-test-infra-push-bazel-krte
     cluster: test-infra-trusted
     run_if_changed: '^images/bazel-krte/'
@@ -307,9 +280,6 @@ postsubmits:
         - --project=k8s-testimages
         - --build-dir=.
         - images/bazel-krte/
-        env:
-        - name: USE_BAZEL_VERSION
-          value: real  # Ignore .bazelversion
   - name: post-test-infra-push-bigquery
     cluster: test-infra-trusted
     run_if_changed: '^images/bigquery/'
@@ -333,9 +303,6 @@ postsubmits:
         - --project=k8s-testimages
         - --build-dir=.
         - images/bigquery/
-        env:
-        - name: USE_BAZEL_VERSION
-          value: real  # Ignore .bazelversion
   - name: post-test-infra-push-bootstrap
     cluster: test-infra-trusted
     run_if_changed: '^(images/bootstrap|scenarios)/'
@@ -359,9 +326,6 @@ postsubmits:
         - --project=k8s-testimages
         - --build-dir=.
         - images/bootstrap/
-        env:
-        - name: USE_BAZEL_VERSION
-          value: real  # Ignore .bazelversion
   - name: post-test-infra-push-cluster-api
     cluster: test-infra-trusted
     run_if_changed: '^images/cluster-api/'
@@ -385,9 +349,6 @@ postsubmits:
         - --project=k8s-testimages
         - --build-dir=.
         - images/cluster-api/
-        env:
-        - name: USE_BAZEL_VERSION
-          value: real  # Ignore .bazelversion
   - name: post-test-infra-push-gcb-docker-gcloud
     cluster: test-infra-trusted
     run_if_changed: '^images/gcb-docker-gcloud/'
@@ -411,9 +372,6 @@ postsubmits:
         - --project=k8s-testimages
         - --build-dir=.
         - images/gcb-docker-gcloud/
-        env:
-        - name: USE_BAZEL_VERSION
-          value: real  # Ignore .bazelversion
   - name: post-test-infra-push-gcloud
     cluster: test-infra-trusted
     run_if_changed: '^images/gcloud/'
@@ -437,9 +395,6 @@ postsubmits:
         - --project=k8s-testimages
         - --build-dir=.
         - images/gcloud/
-        env:
-        - name: USE_BAZEL_VERSION
-          value: real  # Ignore .bazelversion
   - name: post-test-infra-push-kubekins-e2e
     cluster: test-infra-trusted
     run_if_changed: '^(images/kubekins-e2e|kubetest|boskos)/'
@@ -463,9 +418,6 @@ postsubmits:
         - --project=k8s-testimages
         - --build-dir=.
         - images/kubekins-e2e/
-        env:
-        - name: USE_BAZEL_VERSION
-          value: real  # Ignore .bazelversion
   - name: post-test-infra-push-krte
     cluster: test-infra-trusted
     run_if_changed: '^images/krte/'
@@ -489,9 +441,6 @@ postsubmits:
         - --project=k8s-testimages
         - --build-dir=.
         - images/krte/
-        env:
-        - name: USE_BAZEL_VERSION
-          value: real  # Ignore .bazelversion
   - name: post-test-infra-push-kubemci
     cluster: test-infra-trusted
     run_if_changed: '^images/kubemci/'
@@ -515,9 +464,6 @@ postsubmits:
         - --project=k8s-testimages
         - --build-dir=.
         - images/kubemci/
-        env:
-        - name: USE_BAZEL_VERSION
-          value: real  # Ignore .bazelversion
   - name: post-test-infra-push-test-gubernator
     cluster: test-infra-trusted
     run_if_changed: '^images/pull-test-infra-gubernator/'
@@ -541,9 +487,6 @@ postsubmits:
         - --project=k8s-testimages
         - --build-dir=.
         - images/pull-test-infra-gubernator/
-        env:
-        - name: USE_BAZEL_VERSION
-          value: real  # Ignore .bazelversion
   - name: post-test-infra-push-image-builder
     cluster: test-infra-trusted
     run_if_changed: '^images/builder/'
@@ -567,9 +510,6 @@ postsubmits:
         - --project=k8s-testimages
         - --build-dir=.
         - images/builder/
-        env:
-        - name: USE_BAZEL_VERSION
-          value: real  # Ignore .bazelversion
   - name: post-test-infra-push-image-benchmarkjunit
     cluster: test-infra-trusted
     run_if_changed: '^pkg/benchmarkjunit/'
@@ -593,9 +533,6 @@ postsubmits:
         - --project=k8s-testimages
         - --build-dir=.
         - pkg/benchmarkjunit/
-        env:
-        - name: USE_BAZEL_VERSION
-          value: real  # Ignore .bazelversion
   - name: post-test-infra-push-gencred
     cluster: test-infra-trusted
     run_if_changed: '^gencred/'
@@ -619,9 +556,6 @@ postsubmits:
         - --project=k8s-testimages
         - --build-dir=.
         - gencred/
-        env:
-        - name: USE_BAZEL_VERSION
-          value: real  # Ignore .bazelversion
   - name: post-test-infra-upload-testgrid-config
     cluster: test-infra-trusted
     branches:
@@ -634,9 +568,6 @@ postsubmits:
       serviceAccountName: testgrid-config-updater
       containers:
       - image: gcr.io/k8s-testimages/bazelbuild:v20200421-b889179-test-infra
-        env:
-        - name: USE_BAZEL_VERSION
-          value: real  # Ignore .bazelversion
         command:
         - ./testgrid/config-upload.sh
         resources:
@@ -660,9 +591,6 @@ postsubmits:
       - image: gcr.io/k8s-testimages/bazelbuild:v20200421-b889179-test-infra
         command:
         - ./boskos/update_prow_config.sh
-        env:
-        - name: USE_BAZEL_VERSION
-          value: real  # Ignore .bazelversion
     annotations:
       testgrid-dashboards: sig-testing-maintenance
       testgrid-tab-name: boskos-config-upload
@@ -801,9 +729,6 @@ periodics:
   spec:
     containers:
     - image: gcr.io/k8s-testimages/bazelbuild:v20200421-b889179-test-infra
-      env:
-      - name: USE_BAZEL_VERSION
-        value: real  # Ignore .bazelversion
       command:
       - hack/autodeps.sh
       args:
@@ -841,9 +766,6 @@ periodics:
   spec:
     containers:
     - image: gcr.io/k8s-testimages/bazelbuild:v20200421-b889179-test-infra
-      env:
-      - name: USE_BAZEL_VERSION
-        value: real  # Ignore .bazelversion
       command:
       - hack/autodeps.sh
       args:
@@ -881,9 +803,6 @@ periodics:
   spec:
     containers:
     - image: gcr.io/k8s-testimages/bazelbuild:v20200421-b889179-test-infra
-      env:
-      - name: USE_BAZEL_VERSION
-        value: real  # Ignore .bazelversion
       command:
       - bazel
       - run
