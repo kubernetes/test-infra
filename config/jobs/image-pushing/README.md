@@ -59,6 +59,9 @@ steps:
     - --tag=gcr.io/$PROJECT_ID/some-image:$_GIT_TAG
     - --tag=gcr.io/$PROJECT_ID/some-image:latest
     - .
+    # default cloudbuild has HOME=/builder/home and docker buildx is in /root/.docker/cli-plugins/docker-buildx
+    # set the home to /root explicitly to if using docker buildx
+    # - HOME=/root
 substitutions:
   _GIT_TAG: '12345'
   _PULL_BASE_REF: 'master'
