@@ -2786,27 +2786,63 @@ func (c *client) ListTeamMembers(id int, role string) ([]TeamMember, error) {
 	if c.fake {
 		return nil, nil
 	}
-	path := fmt.Sprintf("/teams/%d/members", id)
-	var teamMembers []TeamMember
-	err := c.readPaginatedResultsWithValues(
-		path,
-		url.Values{
-			"per_page": []string{"100"},
-			"role":     []string{role},
-		},
-		// This accept header enables the nested teams preview.
-		// https://developer.github.com/changes/2017-08-30-preview-nested-teams/
-		"application/vnd.github.hellcat-preview+json",
-		func() interface{} {
-			return &[]TeamMember{}
-		},
-		func(obj interface{}) {
-			teamMembers = append(teamMembers, *(obj.(*[]TeamMember))...)
-		},
-	)
-	if err != nil {
-		return nil, err
+
+	// the "node_id" field is the same as the v4 "id" field, which encodes
+	// a numeric team ID as base64("04:Team%d"). Reverse this for now, until
+	// We can convert all the IDs to node_ids.
+	teamNumberAsId := base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("04:Team%d", id)))
+
+	var q struct {
+		Node struct {
+			ID   string `graphql:"id"`
+			Team struct {
+				Members struct {
+					Edges []struct {
+						Node struct {
+							Login string
+						}
+						Role string
+					}
+					PageInfo struct {
+						EndCursor   *githubql.String
+						HasNextPage bool
+					}
+					TotalCount int
+				} `graphql:"members(first: 100, after: $memberCursor, membership: IMMEDIATE)"`
+			} `graphql:"... on Team"`
+		} `graphql:"node(id:$id)"`
 	}
+	vars := map[string]interface{}{
+		"id":           githubql.ID(teamNumberAsId),
+		"memberCursor": (*githubql.String)(nil), // Nil to get first page
+	}
+	// The v4 API uses uppercase constants for MAINTAINER and MEMBER, and does not support
+	// the ALL role. To work around this, we filter by role explicitly in the code below so
+	// that we don't need to create two different queries.
+	// Ideally at some point, we could add a role to the TeamMember struct and reduce our API
+	// calls...
+	role = strings.ToUpper(role)
+
+	var teamMembers []TeamMember
+	for {
+		err := c.Query(context.TODO(), &q, vars)
+		if err != nil {
+			return nil, fmt.Errorf("failed to execute graphql(%+v) with params: %v: %w", q, vars, err)
+		}
+		if teamMembers == nil {
+			teamMembers = make([]TeamMember, 0, q.Node.Team.Members.TotalCount)
+		}
+		for _, e := range q.Node.Team.Members.Edges {
+			if role == "ALL" || e.Role == role {
+				teamMembers = append(teamMembers, TeamMember{e.Node.Login})
+			}
+		}
+		if !q.Node.Team.Members.PageInfo.HasNextPage {
+			break
+		}
+		vars["memberCursor"] = q.Node.Team.Members.PageInfo.EndCursor
+	}
+
 	return teamMembers, nil
 }
 

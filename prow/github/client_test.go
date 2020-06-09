@@ -33,6 +33,7 @@ import (
 	"testing"
 	"time"
 
+	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/utils/diff"
@@ -59,6 +60,11 @@ func getClient(url string) *client {
 
 	logger := logrus.New()
 	logger.SetLevel(logrus.DebugLevel)
+	httpClient := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		},
+	}
 	return &client{
 		logger: logrus.NewEntry(logger),
 		delegate: &delegate{
@@ -67,11 +73,8 @@ func getClient(url string) *client {
 			censor: func(content []byte) []byte {
 				return content
 			},
-			client: &http.Client{
-				Transport: &http.Transport{
-					TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-				},
-			},
+			gqlc:          githubql.NewEnterpriseClient(url, httpClient),
+			client:        httpClient,
 			bases:         []string{url},
 			maxRetries:    defaultMaxRetries,
 			max404Retries: defaultMax404Retries,
@@ -1324,9 +1327,15 @@ func TestGetLabels(t *testing.T) {
 func simpleTestServer(t *testing.T, path string, v interface{}) *httptest.Server {
 	return httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == path {
-			b, err := json.Marshal(v)
-			if err != nil {
-				t.Fatalf("Didn't expect error: %v", err)
+			// Allow passing direct results as byte slice. This is handy for
+			// deeply nested GraphQL responses.
+			b, ok := v.([]byte)
+			if !ok {
+				var err error
+				b, err = json.Marshal(v)
+				if err != nil {
+					t.Fatalf("Didn't expect error: %v", err)
+				}
 			}
 			fmt.Fprint(w, string(b))
 		} else {
@@ -1444,7 +1453,15 @@ func TestEditTeam(t *testing.T) {
 }
 
 func TestListTeamMembers(t *testing.T) {
-	ts := simpleTestServer(t, "/teams/1/members", []TeamMember{{Login: "foo"}})
+	result := []byte(`{"data":{"node":{
+		"id": "MDQ6VGVhbTE=",
+		"members": {
+			"pageInfo": {"hasNextPage": false},
+			"edges": [{"node":{"login": "foo"}, "role":"MEMBER"}]
+		}
+	}}}
+	`)
+	ts := simpleTestServer(t, "/", result)
 	defer ts.Close()
 	c := getClient(ts.URL)
 	teamMembers, err := c.ListTeamMembers(1, RoleAll)
