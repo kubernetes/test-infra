@@ -197,7 +197,7 @@ func (c *Controller) updateReportState(pj *v1.ProwJob, log *logrus.Entry, report
 			return false, err
 		}
 		if pj.Status.PrevReportStates != nil &&
-			newpj.Status.PrevReportStates[c.reporter.GetName()] == newpj.Status.State {
+			newpj.Status.PrevReportStates[c.reporter.GetName()] == reportedState {
 			return true, nil
 		}
 		return false, nil
