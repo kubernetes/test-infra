@@ -180,8 +180,7 @@ to start receiving GitHub events!
 
 ## Add the webhook to GitHub
 
-Configure github to send your prow instance `application/json` webhooks
-for specific repos and/or whole orgs.
+You have two options to do this.
 
 You can do this with the `add-hook` utility:
 
@@ -200,7 +199,7 @@ $ bazel run //experiment/add-hook -- \
   --confirm=false  # Remove =false to actually add hook
 ```
 
-Now go to your org or repo and click `Settings -> Webhooks`.
+If you don't want to use the `add-hook` utility, go to your org or repo and click `Settings -> Webhooks`.
 
 - Look for the `http://an.ip.addr.ess/hook` you added above to the `Payload URL`.
 - Change the `Content type` to `application/json`, and change your `Secret` to the `hmac-path` secret you created above.
@@ -249,7 +248,7 @@ $ kubectl create configmap plugins \
   | kubectl replace configmap plugins -f -
 ```
 
-We added a make rule to do this for us:
+We can create a `make` rule to do this for us:
 
 ```Make
 get-cluster-credentials:
@@ -266,6 +265,12 @@ They will pick up the change within a few minutes.
 
 ### Set namespaces for prowjobs and test pods
 
+If you don't have the namespace already, create the `test-pods` namespace:
+
+```sh
+kubectl create namespace test-pods
+```
+
 Add the following to `config.yaml`:
 
 ```yaml
@@ -274,7 +279,7 @@ pod_namespace: test-pods
 ```
 
 By doing so, we keep prowjobs in the `default` namespace and test pods in the
-`test_pods` namespace.
+`test-pods` namespace.
 
 You can also choose other names. Remember to update the RBAC roles and
 rolebindings afterwards.
@@ -284,6 +289,8 @@ fields after deploying the prow components, you will need to redeploy them
 so that they pick up the change.
 
 ### Configure Cloud Storage
+
+> If you want to persist logs and output, you need to set up Cloud Storage, right now these steps are specific to GCP.
 
 When configuring Prow jobs to use the [Pod utilities](./pod-utilities.md)
 with `decorate: true`, job metdata, logs, and artifacts will be uploaded
@@ -304,10 +311,10 @@ In order to configure the bucket, follow the following steps:
 1. edit the `plank` configuration for `default_decoration_configs['*'].gcs_credentials_secret` to point to the `Secret` above
 
 After [downloading](https://cloud.google.com/sdk/gcloud/) the `gcloud` tool and authenticating,
-the following script will execute the above steps for you:
+the following collection of commands will execute the above steps for you:
 
 ```sh
-$ gcloud iam service-accounts create prow-gcs-publisher # step 1
+$ gcloud iam service-accounts create prow-gcs-publisher
 identifier="$(  gcloud iam service-accounts list --filter 'name:prow-gcs-publisher' --format 'value(email)' )"
 $ gsutil mb gs://prow-artifacts/ # step 2
 $ gsutil iam ch allUsers:objectViewer gs://prow-artifacts # step 3
@@ -316,7 +323,7 @@ $ gcloud iam service-accounts keys create --iam-account "${identifier}" service-
 $ kubectl -n test-pods create secret generic gcs-credentials --from-file=service-account.json # step 6
 ```
 
-### Configure the version of plank's utility images
+#### Configure the version of plank's utility images
 
 Before we can update plank's `default_decoration_configs['*']` we'll need to retrieve the version of plank using the following:
 
@@ -343,7 +350,7 @@ plank:
       gcs_credentials_secret: gcs-credentials # the secret we just made
 ```
 
-### Add more jobs by modifying `config.yaml`
+### Adding more jobs
 
 Add the following to `config.yaml`:
 
@@ -389,7 +396,7 @@ $ kubectl create configmap config \
   --from-file=config.yaml=path/to/config.yaml --dry-run -o yaml | kubectl replace configmap config -f -
 ```
 
-We use a make rule:
+We create a `make` rule:
 
 ```Make
 update-config: get-cluster-credentials
@@ -401,7 +408,7 @@ enable that plugin by adding it to the list you created in the last section.
 
 Now when you open a PR it will automatically run the presubmit that you added
 to this file. You can see it on your prow dashboard. Once you are happy that it
-is stable, switch `skip_report` to `false`. Then, it will post a status on the
+is stable, switch `skip_report` in the above `config.yaml` to `false`. Then, it will post a status on the
 PR. When you make a change to the config and push it with `make update-config`,
 you do not need to redeploy any of your cluster components. They will pick up
 the change within a few minutes.
