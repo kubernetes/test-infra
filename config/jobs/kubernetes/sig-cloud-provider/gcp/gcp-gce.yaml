@@ -332,6 +332,7 @@ periodics:
 
 - interval: 120m
   name: ci-kubernetes-e2e-ubuntu-gce
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -351,6 +352,7 @@ periodics:
           - --env=KUBE_NODE_OS_DISTRIBUTION=ubuntu
           - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2004-focal-v20200423
           - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
+          - --gcp-project-type=k8s-infra-prow-build
           - --gcp-master-image=ubuntu
           - --gcp-node-image=ubuntu
           - --gcp-nodes=4
@@ -369,6 +371,7 @@ periodics:
 
 - interval: 120m
   name: ci-kubernetes-e2e-ubuntu-gce-containerd
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -393,6 +396,7 @@ periodics:
           - --env=KUBE_NODE_OS_DISTRIBUTION=ubuntu
           - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2004-focal-v20200423
           - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
+          - --gcp-project-type=k8s-infra-gce-project
           - --gcp-master-image=ubuntu
           - --gcp-node-image=ubuntu
           - --gcp-nodes=4
