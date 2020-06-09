@@ -267,6 +267,7 @@ periodics:
       google-gci
     testgrid-num-failures-to-alert: "2"
     testgrid-tab-name: gce-cos-1.18-scalability-100
+  cluster: k8s-infra-prow-build
   cron: 0 */6 * * *
   labels:
     preset-e2e-scalability-common: "true"

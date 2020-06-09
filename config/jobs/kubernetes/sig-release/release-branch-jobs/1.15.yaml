@@ -164,6 +164,7 @@ periodics:
     testgrid-dashboards: sig-release-1.15-blocking, sig-scalability-gce, google-gce
     testgrid-num-failures-to-alert: "1"
     testgrid-tab-name: gce-cos-1.15-scalability-100
+  cluster: k8s-infra-prow-build
   cron: 0 8-20/12 * * *
   labels:
     preset-e2e-scalability-common: "true"
