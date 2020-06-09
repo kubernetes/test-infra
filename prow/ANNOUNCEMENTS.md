@@ -3,11 +3,14 @@
 ## New features
 
 New features added to each component:
+ - *June 8th, 2020* A new informer-based Plank implementation was added. It can be used by deploying
+    the new [prow-controller-manager](/config/prow/experimental/controller_manager.yaml) binary.
+    We plan to gradually move all our controllers into that binary, see https://github.com/kubernetes/test-infra/issues/17024
  - *May 31, 2020* '--gcs-no-auth' in Deck is deprecated and not used anymore. We always
-    fall back to an anonymous GCS client now, if all other options fail. This flag will 
+    fall back to an anonymous GCS client now, if all other options fail. This flag will
     be removed in *July 2020*.
- - *May 25, 2020* Added `--blob-storage-workers` and `--kubernetes-blob-storage-workers` 
-    flags to crier. The flags `--gcs-workers` and `--kubernetes-gcs-workers` are now 
+ - *May 25, 2020* Added `--blob-storage-workers` and `--kubernetes-blob-storage-workers`
+    flags to crier. The flags `--gcs-workers` and `--kubernetes-gcs-workers` are now
     deprecated and will be removed in *August 2020*.
  - *May 13, 2020* Added a `decorate_all_jobs` option to job configuration that
      allows to control whether jobs are decorated by default. Individual jobs
