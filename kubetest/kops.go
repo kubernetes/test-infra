@@ -462,11 +462,11 @@ func (k kops) Up() error {
 	if len(featureFlags) != 0 {
 		os.Setenv("KOPS_FEATURE_FLAGS", strings.Join(featureFlags, ","))
 	}
+
+	createArgs = append(createArgs, "--yes")
+
 	if err := control.FinishRunning(exec.Command(k.path, createArgs...)); err != nil {
 		return fmt.Errorf("kops create cluster failed: %v", err)
-	}
-	if err := control.FinishRunning(exec.Command(k.path, "update", "cluster", k.cluster, "--yes")); err != nil {
-		return fmt.Errorf("kops update cluster failed: %v", err)
 	}
 
 	// We require repeated successes, so we know that the cluster is stable
