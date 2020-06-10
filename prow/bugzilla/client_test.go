@@ -390,6 +390,18 @@ This is another comment.`,
 			t.Errorf("%s: Difference in expected BugCreate and actual: %s", testCase.name, cmp.Diff(testCase.expected, *newBug))
 		}
 	}
+	// test max length truncation
+	bug := Bug{}
+	baseComment := Comment{Text: "This is a test comment"}
+	comments := []Comment{}
+	// Make sure comments are at lest 65535 in total length
+	for i := 0; i < (65535 / len(baseComment.Text)); i++ {
+		comments = append(comments, baseComment)
+	}
+	newBug := cloneBugStruct(&bug, nil, comments)
+	if len(newBug.Description) != 65535 {
+		t.Errorf("Truncation error in cloneBug; expected description length of 65535, got %d", len(newBug.Description))
+	}
 }
 
 func TestUpdateBug(t *testing.T) {

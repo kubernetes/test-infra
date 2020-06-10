@@ -295,6 +295,10 @@ func cloneBugStruct(bug *Bug, subcomponents map[string][]string, comments []Comm
 		newDesc.WriteString(comment.Text)
 	}
 	newBug.Description = newDesc.String()
+	// make sure comment isn't above maximum length
+	if len(newBug.Description) > 65535 {
+		newBug.Description = fmt.Sprint(newBug.Description[:65532], "...")
+	}
 	return newBug
 }
 
