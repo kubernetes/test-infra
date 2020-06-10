@@ -117,7 +117,7 @@ postsubmits:
     spec:
       serviceAccountName: pusher
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20200421-b889179-test-infra
+      - image: gcr.io/k8s-testimages/bazelbuild:v20200609-e7bfd25-test-infra
         command:
         - experiment/resultstore/push.sh
     annotations:
@@ -134,7 +134,7 @@ postsubmits:
     spec:
       serviceAccountName: pusher
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20200421-b889179-test-infra
+      - image: gcr.io/k8s-testimages/bazelbuild:v20200609-e7bfd25-test-infra
         command:
         - prow/push.sh
     annotations:
@@ -567,7 +567,7 @@ postsubmits:
     spec:
       serviceAccountName: testgrid-config-updater
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20200421-b889179-test-infra
+      - image: gcr.io/k8s-testimages/bazelbuild:v20200609-e7bfd25-test-infra
         command:
         - ./testgrid/config-upload.sh
         resources:
@@ -588,7 +588,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20200421-b889179-test-infra
+      - image: gcr.io/k8s-testimages/bazelbuild:v20200609-e7bfd25-test-infra
         command:
         - ./boskos/update_prow_config.sh
     annotations:
@@ -728,7 +728,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20200421-b889179-test-infra
+    - image: gcr.io/k8s-testimages/bazelbuild:v20200609-e7bfd25-test-infra
       command:
       - hack/autodeps.sh
       args:
@@ -765,7 +765,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20200421-b889179-test-infra
+    - image: gcr.io/k8s-testimages/bazelbuild:v20200609-e7bfd25-test-infra
       command:
       - hack/autodeps.sh
       args:
@@ -802,7 +802,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20200421-b889179-test-infra
+    - image: gcr.io/k8s-testimages/bazelbuild:v20200609-e7bfd25-test-infra
       command:
       - bazel
       - run
@@ -841,7 +841,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20200605-0202717-test-infra
+    - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20200609-e7bfd25-test-infra
       command:
       - bazel
       args:
@@ -899,7 +899,7 @@ periodics:
   spec:
     containers:
     - name: branchprotector
-      image: gcr.io/k8s-prow/branchprotector:v20200609-2d17640dc1
+      image: gcr.io/k8s-prow/branchprotector:v20200610-6c96a0a6ed
       command:
       - /app/prow/cmd/branchprotector/app.binary
       args:
@@ -933,7 +933,7 @@ periodics:
   spec:
     containers:
     - name: label-sync
-      image: gcr.io/k8s-prow/label_sync:v20200609-2d17640dc1
+      image: gcr.io/k8s-prow/label_sync:v20200610-c85932e91e
       command:
       - /app/label_sync/app.binary
       args:
