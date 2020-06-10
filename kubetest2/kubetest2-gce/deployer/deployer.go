@@ -18,12 +18,8 @@ limitations under the License.
 package deployer
 
 import (
-	"fmt"
-	"os"
-
 	"github.com/spf13/pflag"
 
-	"k8s.io/test-infra/kubetest2/pkg/exec"
 	"k8s.io/test-infra/kubetest2/pkg/types"
 )
 
@@ -34,7 +30,7 @@ type deployer struct {
 	// generic parts
 	commonOptions types.Options
 
-	repoRootPath string
+	repoRoot string
 }
 
 // New implements deployer.New for gce
@@ -53,7 +49,7 @@ var _ types.NewDeployer = New
 func bindFlags(d *deployer) *pflag.FlagSet {
 	flags := pflag.NewFlagSet(Name, pflag.ContinueOnError)
 
-	flags.StringVar(&d.repoRootPath, "repo-root-path", "", "The path to the local kubernetes/cloud-provider/gcp repo. Necessary to call certain scripts. Defaults to the current directory. If operating in legacy mode, this should be set to the local kubernetes/kubernetes repo.")
+	flags.StringVar(&d.repoRoot, "repo-root", "", "The path to the root of the local kubernetes/cloud-provider/gcp repo. Necessary to call certain scripts. Defaults to the current directory. If operating in legacy mode, this should be set to the local kubernetes/kubernetes repo.")
 	return flags
 }
 
@@ -61,33 +57,7 @@ func bindFlags(d *deployer) *pflag.FlagSet {
 var _ types.Deployer = &deployer{}
 
 func (d *deployer) Provider() string {
-	return "gce"
-}
-
-func (d *deployer) Build() error {
-	if err := d.verifyBuildFlags(); err != nil {
-		return err
-	}
-
-	err := os.Chdir(d.repoRootPath)
-	if err != nil {
-		return err
-	}
-
-	// this code path supports the kubernetes/cloud-provider-gcp build
-	// TODO: update in future patch to support legacy (k/k) build
-	cmd := exec.Command("bazel", "build", "//release:release-tars")
-	err = cmd.Run()
-	if err != nil {
-		return fmt.Errorf("error during make step of build: %s", err)
-	}
-
-	// no untarring, uploading, etc is necessary because
-	// kube-up/down use find-release-tars and upload-tars
-	// which know how to find the tars, assuming KUBE_ROOT
-	// is set
-
-	return nil
+	return Name
 }
 
 func (d *deployer) Up() error { return nil }

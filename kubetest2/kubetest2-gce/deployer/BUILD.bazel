@@ -4,7 +4,7 @@ go_library(
     name = "go_default_library",
     srcs = [
         "deployer.go",
-        "deployer_helpers.go",
+        "deployer_build.go",
     ],
     importpath = "k8s.io/test-infra/kubetest2/kubetest2-gce/deployer",
     visibility = ["//visibility:public"],

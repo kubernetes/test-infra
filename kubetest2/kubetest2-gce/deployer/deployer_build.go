@@ -19,10 +19,38 @@ package deployer
 import (
 	"fmt"
 	"os"
+
+	"k8s.io/test-infra/kubetest2/pkg/exec"
 )
 
+func (d *deployer) Build() error {
+	if err := d.verifyBuildFlags(); err != nil {
+		return fmt.Errorf("Build() failed to verify build-specific flags: %s", err)
+	}
+
+	err := os.Chdir(d.repoRoot)
+	if err != nil {
+		return fmt.Errorf("Build() failed to change dir to the repo root: %s", err)
+	}
+
+	// this code path supports the kubernetes/cloud-provider-gcp build
+	// TODO: update in future patch to support legacy (k/k) build
+	cmd := exec.Command("bazel", "build", "//release:release-tars")
+	err = cmd.Run()
+	if err != nil {
+		return fmt.Errorf("error during make step of build: %s", err)
+	}
+
+	// no untarring, uploading, etc is necessary because
+	// kube-up/down use find-release-tars and upload-tars
+	// which know how to find the tars, assuming KUBE_ROOT
+	// is set
+
+	return nil
+}
+
 func (d *deployer) setRepoPathIfNotSet() error {
-	if d.repoRootPath != "" {
+	if d.repoRoot != "" {
 		return nil
 	}
 
@@ -30,7 +58,7 @@ func (d *deployer) setRepoPathIfNotSet() error {
 	if err != nil {
 		return fmt.Errorf("Failed to get current working directory for setting Kubernetes root path: %s", err)
 	}
-	d.repoRootPath = path
+	d.repoRoot = path
 
 	return nil
 }

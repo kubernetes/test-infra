@@ -17,27 +17,33 @@ limitations under the License.
 package deployer
 
 import (
+	"os"
 	"testing"
 )
 
 func TestSetEmptyRepoPath(t *testing.T) {
+	err := os.Chdir(os.TempDir())
+	if err != nil {
+		t.Fatalf("failed to chdir for test: %s", err)
+	}
+
 	d := &deployer{}
 
-	err := d.setRepoPathIfNotSet()
+	err = d.setRepoPathIfNotSet()
 
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if len(d.repoRootPath) == 0 {
-		t.Error("expected new root path to be non-empty")
+	if d.repoRoot != os.TempDir() {
+		t.Error("expected new root path to be the OS temp dir")
 	}
 }
 
 func TestSetPopulatedRepoPath(t *testing.T) {
 	path := "/test/path"
 	d := &deployer{
-		repoRootPath: path,
+		repoRoot: path,
 	}
 
 	err := d.setRepoPathIfNotSet()
@@ -46,7 +52,7 @@ func TestSetPopulatedRepoPath(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if d.repoRootPath != path {
+	if d.repoRoot != path {
 		t.Error("repo root path after call is supposed to be the same as before the call")
 	}
 }
