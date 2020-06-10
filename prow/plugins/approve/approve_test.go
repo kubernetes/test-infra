@@ -31,6 +31,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"k8s.io/apimachinery/pkg/util/sets"
+
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
@@ -1085,6 +1086,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 				IssueRequired:       test.needsIssue,
 				LgtmActsAsApprove:   test.lgtmActsAsApprove,
 				IgnoreReviewState:   &irs,
+				CommandHelpLink:     "https://go.k8s.io/bot-commands",
 			},
 			&state{
 				org:       "org",
