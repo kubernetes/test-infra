@@ -10,10 +10,10 @@ approvers:
 - karataliu
 - khenidak
 reviewers:
+- alexeldeib
 - devigned
 - juan-lee
-- serbrech
-- vincepri
+- nader-ziada
 
 labels:
 - sig/cluster-lifecycle
