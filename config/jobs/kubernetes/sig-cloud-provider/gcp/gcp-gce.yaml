@@ -45,6 +45,7 @@ presubmits:
         - --build=bazel
         - --cluster=
         - --extract=local
+        - --env=KUBE_CONTAINER_RUNTIME=docker
         - --gcp-node-image=gci
         - --gcp-zone=us-west1-b
         - --ginkgo-parallel=30
