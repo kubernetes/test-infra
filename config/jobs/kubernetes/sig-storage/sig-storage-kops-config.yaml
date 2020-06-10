@@ -21,6 +21,7 @@ periodics:
       - --extract=ci/latest
       - --ginkgo-parallel
       - --kops-image=679593333241/CentOS Linux 7 x86_64 HVM EBS ENA 2002_01-b7ee8a69-ee97-4a49-9e68-afaee216db2e-ami-0042af67f8e4dcc20.4
+      - --kops-overrides=spec.docker.execOpt=--selinux-enabled
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-ssh-user=centos
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
