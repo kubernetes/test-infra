@@ -1103,6 +1103,14 @@ func compileRegexpsAndDurations(pc *Configuration) error {
 	return nil
 }
 
+func (c *Configuration) ApplyDefaults() {
+	for _, a := range c.Approve {
+		if a.CommandHelpLink == "" {
+			a.CommandHelpLink = "https://go.k8s.io/bot-commands"
+		}
+	}
+}
+
 func (c *Configuration) Validate() error {
 	if len(c.Plugins) == 0 {
 		logrus.Warn("no plugins specified-- check syntax?")

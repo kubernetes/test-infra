@@ -601,9 +601,6 @@ func GenerateTemplate(templ, name string, data interface{}) (string, error) {
 // 	- how an approver can cancel their approval
 func GetMessage(ap Approvers, linkURL *url.URL, commandHelpLink, org, repo, branch string) *string {
 	linkURL.Path = org + "/" + repo
-	if commandHelpLink == "" {
-		commandHelpLink = "https://go.k8s.io/bot-commands"
-	}
 	message, err := GenerateTemplate(`{{if (and (not .ap.RequirementsMet) (call .ap.ManuallyApproved )) }}
 Approval requirements bypassed by manually added approval.
 
