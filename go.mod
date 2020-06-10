@@ -65,7 +65,7 @@ require (
 	github.com/prometheus/common v0.9.1
 	github.com/satori/go.uuid v1.2.0
 	github.com/shurcooL/githubv4 v0.0.0-20191102174205-af46314aec7b
-	github.com/sirupsen/logrus v1.4.2
+	github.com/sirupsen/logrus v1.6.0
 	github.com/spf13/cobra v0.0.6
 	github.com/spf13/pflag v1.0.5
 	github.com/tektoncd/pipeline v0.11.0
@@ -76,6 +76,7 @@ require (
 	golang.org/x/net v0.0.0-20200301022130-244492dfa37a
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
+	golang.org/x/sys v0.0.0-20200610111108-226ff32320da // indirect
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0
 	golang.org/x/tools v0.0.0-20200303214625-2b0b585e22fe
 	google.golang.org/api v0.15.0
