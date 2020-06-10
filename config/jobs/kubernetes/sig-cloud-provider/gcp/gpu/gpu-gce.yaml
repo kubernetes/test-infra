@@ -35,6 +35,7 @@ periodics:
       - --
       - --check-leaked-resources
       - --extract=ci/latest
+      - --env=KUBE_CONTAINER_RUNTIME=docker
       - --gcp-node-image=gci
       - --gcp-project-type=gpu-project
       - --gcp-zone=us-west1-b
