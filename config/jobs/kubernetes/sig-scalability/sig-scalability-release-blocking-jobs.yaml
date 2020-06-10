@@ -52,6 +52,7 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-e2e-scalability-common: "true"
+    preset-e2e-scalability-containerd: "true"
   annotations:
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com, kubernetes-release-team@googlegroups.com
     testgrid-dashboards: sig-release-master-informing, sig-scalability-gce, google-gce
