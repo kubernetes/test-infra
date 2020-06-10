@@ -22,9 +22,6 @@ dashboards:
 - name: conformance-all
   # entries are named $PROVIDER, $KUBERNETES_RELEASE
   dashboard_tab:
-    - name: kind, v1.14 (dev, ARM64)
-      description: Runs conformance tests using kubetest against latest kubernetes release-1.14 with a kubernetes-in-docker cluster on ARM64 platform
-      test_group_name: ci-kubernetes-kind-conformance-latest-1-14-arm64
     - name: OpenStack, master (dev)
       description: Runs conformance tests using kubetest against latest kubernetes master with cloud-provider-openstack
       test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance
