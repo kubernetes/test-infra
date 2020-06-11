@@ -11,6 +11,7 @@ go_library(
     deps = [
         "//kubetest2/pkg/exec:go_default_library",
         "//kubetest2/pkg/types:go_default_library",
+        "@com_github_octago_sflags//gen/gpflag:go_default_library",
         "@com_github_spf13_pflag//:go_default_library",
     ],
 )

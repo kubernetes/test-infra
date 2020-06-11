@@ -18,9 +18,12 @@ limitations under the License.
 package deployer
 
 import (
-	"github.com/spf13/pflag"
+	"fmt"
 
 	"k8s.io/test-infra/kubetest2/pkg/types"
+
+	"github.com/octago/sflags/gen/gpflag"
+	"github.com/spf13/pflag"
 )
 
 // Name is the name of the deployer
@@ -30,7 +33,7 @@ type deployer struct {
 	// generic parts
 	commonOptions types.Options
 
-	repoRoot string
+	RepoRoot string `desc:"The path to the root of the local kubernetes/cloud-provider/gcp repo. Necessary to call certain scripts. Defaults to the current directory. If operating in legacy mode, this should be set to the local kubernetes/kubernetes repo."`
 }
 
 // New implements deployer.New for gce
@@ -39,19 +42,17 @@ func New(opts types.Options) (types.Deployer, *pflag.FlagSet) {
 		commonOptions: opts,
 	}
 
+	flagSet, err := gpflag.Parse(d)
+	if err != nil {
+		panic(fmt.Sprintf("couldn't parse flagset for deployer struct: %s", err))
+	}
+
 	// register flags and return
-	return d, bindFlags(d)
+	return d, flagSet
 }
 
 // assert that New implements types.NewDeployer
 var _ types.NewDeployer = New
-
-func bindFlags(d *deployer) *pflag.FlagSet {
-	flags := pflag.NewFlagSet(Name, pflag.ContinueOnError)
-
-	flags.StringVar(&d.repoRoot, "repo-root", "", "The path to the root of the local kubernetes/cloud-provider/gcp repo. Necessary to call certain scripts. Defaults to the current directory. If operating in legacy mode, this should be set to the local kubernetes/kubernetes repo.")
-	return flags
-}
 
 // assert that deployer implements types.Deployer
 var _ types.Deployer = &deployer{}

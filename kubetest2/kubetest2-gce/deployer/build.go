@@ -31,7 +31,7 @@ func (d *deployer) Build() error {
 	// this code path supports the kubernetes/cloud-provider-gcp build
 	// TODO: update in future patch to support legacy (k/k) build
 	cmd := exec.Command("bazel", "build", "//release:release-tars")
-	cmd.SetDir(d.repoRoot)
+	cmd.SetDir(d.RepoRoot)
 	err := cmd.Run()
 	if err != nil {
 		return fmt.Errorf("error during make step of build: %s", err)
@@ -46,7 +46,7 @@ func (d *deployer) Build() error {
 }
 
 func (d *deployer) setRepoPathIfNotSet() error {
-	if d.repoRoot != "" {
+	if d.RepoRoot != "" {
 		return nil
 	}
 
@@ -54,7 +54,7 @@ func (d *deployer) setRepoPathIfNotSet() error {
 	if err != nil {
 		return fmt.Errorf("Failed to get current working directory for setting Kubernetes root path: %s", err)
 	}
-	d.repoRoot = path
+	d.RepoRoot = path
 
 	return nil
 }

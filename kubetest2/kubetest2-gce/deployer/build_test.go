@@ -35,7 +35,7 @@ func TestSetEmptyRepoPath(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if d.repoRoot != os.TempDir() {
+	if d.RepoRoot != os.TempDir() {
 		t.Error("expected new root path to be the OS temp dir")
 	}
 }
@@ -43,7 +43,7 @@ func TestSetEmptyRepoPath(t *testing.T) {
 func TestSetPopulatedRepoPath(t *testing.T) {
 	path := "/test/path"
 	d := &deployer{
-		repoRoot: path,
+		RepoRoot: path,
 	}
 
 	err := d.setRepoPathIfNotSet()
@@ -52,7 +52,7 @@ func TestSetPopulatedRepoPath(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if d.repoRoot != path {
+	if d.RepoRoot != path {
 		t.Error("repo root path after call is supposed to be the same as before the call")
 	}
 }
