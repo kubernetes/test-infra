@@ -47,22 +47,22 @@ func (gr *gcsReporter) Report(pj *prowv1.ProwJob) ([]*prowv1.ProwJob, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second) // TODO: pass through a global context?
 	defer cancel()
 
-	bucket, dir, err := util.GetJobDestination(gr.cfg, pj)
+	_, _, err := util.GetJobDestination(gr.cfg, pj)
 	if err != nil {
 		gr.logger.Infof("Not uploading %q (%s#%s) because we couldn't find a destination: %v", pj.Name, pj.Spec.Job, pj.Status.BuildID, err)
 		return []*prowv1.ProwJob{pj}, nil
 	}
-	stateErr := gr.reportJobState(ctx, bucket, dir, pj)
-	prowjobErr := gr.reportProwjob(ctx, bucket, dir, pj)
+	stateErr := gr.reportJobState(ctx, pj)
+	prowjobErr := gr.reportProwjob(ctx, pj)
 
 	return []*prowv1.ProwJob{pj}, utilerrors.NewAggregate([]error{stateErr, prowjobErr})
 }
 
-func (gr *gcsReporter) reportJobState(ctx context.Context, bucket, dir string, pj *prowv1.ProwJob) error {
-	startedErr := gr.reportStartedJob(ctx, bucket, dir, pj)
+func (gr *gcsReporter) reportJobState(ctx context.Context, pj *prowv1.ProwJob) error {
+	startedErr := gr.reportStartedJob(ctx, pj)
 	var finishedErr error
 	if pj.Complete() {
-		finishedErr = gr.reportFinishedJob(ctx, bucket, dir, pj)
+		finishedErr = gr.reportFinishedJob(ctx, pj)
 	}
 	return utilerrors.NewAggregate([]error{startedErr, finishedErr})
 }
@@ -70,7 +70,7 @@ func (gr *gcsReporter) reportJobState(ctx context.Context, bucket, dir string, p
 // reportStartedJob uploads a started.json for the job. This will almost certainly
 // happen before the pod itself gets to upload one, at which point the pod will
 // upload its own. If for some reason one already exists, it will not be overwritten.
-func (gr *gcsReporter) reportStartedJob(ctx context.Context, bucket, dir string, pj *prowv1.ProwJob) error {
+func (gr *gcsReporter) reportStartedJob(ctx context.Context, pj *prowv1.ProwJob) error {
 	s := metadata.Started{
 		Timestamp: pj.Status.StartTime.Unix(),
 		Metadata:  metadata.Metadata{"uploader": "crier"},
@@ -80,15 +80,20 @@ func (gr *gcsReporter) reportStartedJob(ctx context.Context, bucket, dir string,
 		return fmt.Errorf("failed to marshal started metadata: %v", err)
 	}
 
-	gr.logger.Debugf("Would upload started.json to %q/%q", bucket, dir)
+	bucketName, dir, err := util.GetJobDestination(gr.cfg, pj)
+	if err != nil {
+		return fmt.Errorf("failed to get job destination: %v", err)
+	}
+
+	gr.logger.Debugf("Would upload started.json to %q/%q", bucketName, dir)
 	if gr.dryRun {
 		return nil
 	}
-	return util.WriteContent(ctx, gr.logger, gr.author, bucket, path.Join(dir, prowv1.StartedStatusFile), false, output)
+	return util.WriteContent(ctx, gr.logger, gr.author, bucketName, path.Join(dir, prowv1.StartedStatusFile), false, output)
 }
 
 // reportFinishedJob uploads a finished.json for the job, iff one did not already exist.
-func (gr *gcsReporter) reportFinishedJob(ctx context.Context, bucket, dir string, pj *prowv1.ProwJob) error {
+func (gr *gcsReporter) reportFinishedJob(ctx context.Context, pj *prowv1.ProwJob) error {
 	if !pj.Complete() {
 		return errors.New("cannot report finished.json for incomplete job")
 	}
@@ -105,25 +110,35 @@ func (gr *gcsReporter) reportFinishedJob(ctx context.Context, bucket, dir string
 		return fmt.Errorf("failed to marshal finished metadata: %v", err)
 	}
 
-	gr.logger.Debugf("Would upload finished.json info to %q/%q", bucket, dir)
+	bucketName, dir, err := util.GetJobDestination(gr.cfg, pj)
+	if err != nil {
+		return fmt.Errorf("failed to get job destination: %v", err)
+	}
+
+	gr.logger.Debugf("Would upload finished.json info to %q/%q", bucketName, dir)
 	if gr.dryRun {
 		return nil
 	}
-	return util.WriteContent(ctx, gr.logger, gr.author, bucket, path.Join(dir, prowv1.FinishedStatusFile), false, output)
+	return util.WriteContent(ctx, gr.logger, gr.author, bucketName, path.Join(dir, prowv1.FinishedStatusFile), false, output)
 }
 
-func (gr *gcsReporter) reportProwjob(ctx context.Context, bucket, dir string, pj *prowv1.ProwJob) error {
+func (gr *gcsReporter) reportProwjob(ctx context.Context, pj *prowv1.ProwJob) error {
 	// Unconditionally dump the prowjob to GCS, on all job updates.
 	output, err := json.MarshalIndent(pj, "", "\t")
 	if err != nil {
 		return fmt.Errorf("failed to marshal prowjob: %v", err)
 	}
 
-	gr.logger.Debugf("Would upload pod info to %q/%q", bucket, dir)
+	bucketName, dir, err := util.GetJobDestination(gr.cfg, pj)
+	if err != nil {
+		return fmt.Errorf("failed to get job destination: %v", err)
+	}
+
+	gr.logger.Debugf("Would upload pod info to %q/%q", bucketName, dir)
 	if gr.dryRun {
 		return nil
 	}
-	return util.WriteContent(ctx, gr.logger, gr.author, bucket, path.Join(dir, "prowjob.json"), true, output)
+	return util.WriteContent(ctx, gr.logger, gr.author, bucketName, path.Join(dir, "prowjob.json"), true, output)
 }
 
 func (gr *gcsReporter) GetName() string {
