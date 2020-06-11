@@ -141,13 +141,12 @@ func (c *Controller) runWorker() {
 	c.wg.Done()
 }
 
-func (c *Controller) retry(key interface{}, err error) bool {
-	keyRaw := key.(string)
+func (c *Controller) retry(key interface{}, log *logrus.Entry, err error) bool {
 	if c.queue.NumRequeues(key) < 5 {
-		logrus.WithError(err).WithField("prowjob", keyRaw).Info("Failed processing item, retrying")
+		log.WithError(err).Info("Failed processing item, retrying")
 		c.queue.AddRateLimited(key)
 	} else {
-		logrus.WithError(err).WithField("prowjob", keyRaw).Error("Failed processing item, no more retries")
+		log.WithError(err).Error("Failed processing item, no more retries")
 		c.queue.Forget(key)
 	}
 
@@ -248,7 +247,7 @@ func (c *Controller) processNextItem() bool {
 			return true
 		}
 
-		return c.retry(key, err)
+		return c.retry(key, log, err)
 	}
 	pj := readOnlyPJ.DeepCopy()
 	log = log.WithField("jobName", pj.Spec.Job)
@@ -276,7 +275,7 @@ func (c *Controller) processNextItem() bool {
 	pjs, err := c.reporter.Report(pj)
 	if err != nil {
 		log.WithError(err).Error("failed to report job")
-		return c.retry(key, err)
+		return c.retry(key, log, err)
 	}
 
 	log.Info("Reported job, now will update pj")
