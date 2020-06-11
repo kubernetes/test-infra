@@ -23,6 +23,7 @@ import (
 	"regexp"
 
 	"k8s.io/apimachinery/pkg/util/sets"
+
 	"k8s.io/test-infra/prow/github"
 )
 
@@ -52,7 +53,7 @@ type FakeClient struct {
 	IssueEvents         map[int][]github.ListedIssueEvent
 	Commits             map[string]github.SingleCommit
 
-	//All Labels That Exist In The Repo
+	// All Labels That Exist In The Repo
 	RepoLabelsExisting []string
 	// org/repo#number:label
 	IssueLabelsAdded    []string
@@ -103,6 +104,11 @@ type FakeClient struct {
 	Column             string
 	OrgRepoIssueLabels map[string][]github.Label
 	OrgProjects        map[string][]github.Project
+
+	// Maps org name to the list of hooks
+	OrgHooks map[string][]github.Hook
+	// Maps repo name to the list of hooks
+	RepoHooks map[string][]github.Hook
 }
 
 // BotName returns authenticated login.

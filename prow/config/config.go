@@ -734,7 +734,7 @@ type ManagedWebhookInfo struct {
 	TokenCreatedAfter time.Time `json:"tokenCreatedAfter"`
 }
 
-// ManagedWebhooks contains information about all the repos/orgs which are onboraded with private tokens.
+// ManagedWebhooks contains information about all the repos/orgs which are onboarded with private tokens.
 type ManagedWebhooks map[string]ManagedWebhookInfo
 
 // SlackReporter represents the config for the Slack reporter. The channel can be overridden
