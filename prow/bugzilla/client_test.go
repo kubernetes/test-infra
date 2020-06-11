@@ -897,20 +897,21 @@ func TestGetExternalBugPRsOnBug(t *testing.T) {
 			http.Error(w, "400 Bad Request", http.StatusBadRequest)
 			return
 		}
-		if id, err := strconv.Atoi(strings.TrimPrefix(r.URL.Path, "/rest/bug/")); err != nil {
+		id, err := strconv.Atoi(strings.TrimPrefix(r.URL.Path, "/rest/bug/"))
+		if err != nil {
 			t.Errorf("malformed bug id: %s", r.URL.Path)
 			http.Error(w, "400 Bad Request", http.StatusBadRequest)
 			return
-		} else {
-			for _, testCase := range testCases {
-				if id == testCase.id {
-					if _, err := w.Write([]byte(testCase.response)); err != nil {
-						t.Fatalf("%s: failed to send response: %v", testCase.name, err)
-					}
-					return
+		}
+		for _, testCase := range testCases {
+			if id == testCase.id {
+				if _, err := w.Write([]byte(testCase.response)); err != nil {
+					t.Fatalf("%s: failed to send response: %v", testCase.name, err)
 				}
+				return
 			}
 		}
+
 	}))
 	defer testServer.Close()
 	client := clientForUrl(testServer.URL)
@@ -926,6 +927,165 @@ func TestGetExternalBugPRsOnBug(t *testing.T) {
 			}
 			if actual, expected := prs, testCase.expectedPRs; !reflect.DeepEqual(actual, expected) {
 				t.Errorf("%s: got incorrect prs: %v", testCase.name, diff.ObjectReflectDiff(actual, expected))
+			}
+		})
+	}
+}
+
+func TestGetAllClones(t *testing.T) {
+	exists := struct{}{}
+	testcases := map[int]struct {
+		bugDetails     string
+		prDetails      string
+		expectedClones map[int]struct{}
+	}{
+		1843407: {
+			`{"bugs" : [{ "alias" : [], "blocks" : [1844101 ], "cf_clone_of" : null, "cf_doc_type" : "If docs needed, set a value", "cf_environment" : "", "cf_fixed_in" : "", "cf_last_closed" : null, "cf_release_notes" : "", "cf_target_upstream_version" : "", "classification" : "Red Hat", "component" : ["Unknown" ], "creation_time" : "2020-06-03T09:03:41Z","deadline" : null, "depends_on" : [], "docs_contact" : "", "dupe_of" : null, "groups" : [], "id" : 1843407, "is_cc_accessible" : true, "is_confirmed" : true, "is_creator_accessible" : true, "is_open" : true, "keywords" : [], "last_change_time" : "2020-06-07T11:08:27Z", "op_sys" : "Unspecified", "platform" : "Unspecified", "priority" : "unspecified", "product" : "OpenShift Container Platform", "resolution" : "", "see_also" : [], "severity" : "medium", "status" : "VERIFIED", "summary" : "[oVirt] add oVirt as a provide to openshift tests", "target_milestone" : "---", "target_release" : ["4.6.0" ], "url" : "", "version" : ["4.5" ], "whiteboard" : ""}],"faults" : []}`,
+			`{"bugs" : [{ "external_bugs" : [{"bug_id" : 1843407,"ext_bz_bug_id" : "openshift/origin/pull/25057","ext_bz_id" : 131,"ext_description" : "Bug 1843407: oVirt, add oVirt as a provide to openshift tests","ext_priority" : "None","ext_status" : "closed","id" : 1185327,"type" : {"can_get" : true,"can_send" : false,"description" : "Github","full_url" : "https://github.com/%id%","id" : 131,"must_send" : false,"send_once" : false,"type" : "GitHub","url" : "https://github.com/"}} ]}],"faults" : []}`,
+			map[int]struct{}{1844101: exists, 1844102: exists},
+		},
+		1844101: {
+			`{"bugs" : [{ "alias" : [],  "blocks" : [1844102 ],  "cf_clone_of" : null, "cf_doc_type" : "If docs needed, set a value", "cf_environment" : "", "cf_fixed_in" : "", "cf_last_closed" : null, "cf_release_notes" : "", "cf_target_upstream_version" : "", "classification" : "Red Hat", "component" : ["Unknown" ], "creation_time" : "2020-06-04T15:43:10Z",  "deadline" : null, "depends_on" : [1843407 ], "docs_contact" : "", "dupe_of" : null, "groups" : [], "id" : 1844101, "is_cc_accessible" : true, "is_confirmed" : true, "is_creator_accessible" : true, "is_open" : true, "keywords" : ["CodeChange" ], "last_change_time" : "2020-06-11T05:39:35Z", "op_sys" : "Unspecified", "platform" : "Unspecified", "priority" : "unspecified", "product" : "OpenShift Container Platform", "resolution" : "", "see_also" : [], "severity" : "medium", "status" : "VERIFIED", "summary" : "[oVirt] add oVirt as a provide to openshift tests", "target_milestone" : "---", "target_release" : ["4.5.0" ], "url" : "", "version" : ["4.5" ], "whiteboard" : ""}],"faults" : []}`,
+			`{"bugs" : [{ "external_bugs" : [{"bug_id" : 1843407,"ext_bz_bug_id" : "openshift/origin/pull/25057","ext_bz_id" : 131,"ext_description" : "Bug 1843407: oVirt, add oVirt as a provide to openshift tests","ext_priority" : "None","ext_status" : "closed","id" : 1185327,"type" : {"can_get" : true,"can_send" : false,"description" : "Github","full_url" : "https://github.com/%id%","id" : 131,"must_send" : false,"send_once" : false,"type{"bugs" : [{ "external_bugs" : [{"bug_id" : 1844101,"ext_bz_bug_id" : "openshift/origin/pull/25065","ext_bz_id" : 131,"ext_description" : "[release-4.5] Bug 1844101: oVirt, add oVirt as a provide to openshift tests","ext_priority" : "None","ext_status" : "open","id" : 1186600,"type" : {"can_get" : true,"can_send" : false,"description" : "Github","full_url" : "https://github.com/%id%","id" : 131,"must_send" : false,"send_once" : false,"type" : "GitHub","url" : "https://github.com/"}} ]}],"faults" : []}`,
+			map[int]struct{}{1843407: exists, 1844102: exists},
+		},
+		1844102: {
+			`{"bugs" : [ {"alias" : [],"blocks" : [],"cf_clone_of" : null,"cf_doc_type" : "If docs needed, set a value","cf_environment" : "","cf_fixed_in" : "","cf_last_closed" : null,"cf_release_notes" : "","cf_target_upstream_version" : "","classification" : "Red Hat","component" : ["Cloud Compute"],"creation_time" : "2020-06-04T15:43:52Z","deadline" : null,"depends_on" : [1844101],"docs_contact" : "","dupe_of" : null,"groups" : [],"id" : 1844102,"is_cc_accessible" : true,"is_confirmed" : true,"is_creator_accessible" : true,"is_open" : true,"keywords" : [],"last_change_time" : "2020-06-11T05:39:58Z","op_sys" : "Unspecified","platform" : "Unspecified","priority" : "unspecified","product" : "OpenShift Container Platform","resolution" : "","see_also" : [],"severity" : "medium","status" : "POST","summary" : "[oVirt] add oVirt as a provide to openshift tests","target_milestone" : "---","target_release" : ["4.4.z"],"url" : "","version" : ["4.5"],"whiteboard" : "" }],"faults" : []}`,
+			`{"bugs" : [{ "external_bugs" : [{"bug_id" : 1844102,"ext_bz_bug_id" : "openshift/origin/pull/25066","ext_bz_id" : 131,"ext_description" : "[release-4.4] Bug 1844102: oVirt, add oVirt as a provide to openshift tests","ext_priority" : "None","ext_status" : "open","id" : 1190587,"type" : {"can_get" : true,"can_send" : false,"description" : "Github","full_url" : "https://github.com/%id%","id" : 131,"must_send" : false,"send_once" : false,"type" : "GitHub","url" : "https://github.com/"}} ]}],"faults" : []}`,
+			map[int]struct{}{1843407: exists, 1844101: exists},
+		},
+	}
+
+	testServer := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("X-BUGZILLA-API-KEY") != "api-key" {
+			t.Error("did not get api-key passed in X-BUGZILLA-API-KEY header")
+			http.Error(w, "403 Forbidden", http.StatusForbidden)
+			return
+		}
+		if r.URL.Query().Get("api_key") != "api-key" {
+			t.Error("did not get api-key passed in api_key query parameter")
+			http.Error(w, "403 Forbidden", http.StatusForbidden)
+			return
+		}
+		if r.Method != http.MethodGet {
+			t.Errorf("incorrect method to get a bug: %s", r.Method)
+			http.Error(w, "400 Bad Request", http.StatusBadRequest)
+			return
+		}
+		if !strings.HasPrefix(r.URL.Path, "/rest/bug/") {
+			t.Errorf("incorrect path to get a bug: %s", r.URL.Path)
+			http.Error(w, "400 Bad Request", http.StatusBadRequest)
+			return
+		}
+		if strings.HasPrefix(r.URL.Path, "/rest/bug/") {
+			id, err := strconv.Atoi(strings.TrimPrefix(r.URL.Path, "/rest/bug/"))
+			if err != nil {
+				t.Errorf("malformed bug id: %s", r.URL.Path)
+				http.Error(w, "400 Bad Request", http.StatusBadRequest)
+				return
+			}
+			if r.URL.Query().Get("include_fields") == "external_bugs" {
+				if val, ok := testcases[id]; ok {
+					w.Write([]byte(val.prDetails))
+				} else {
+					http.Error(w, "404 Not Found", http.StatusNotFound)
+				}
+			} else {
+				if val, ok := testcases[id]; ok {
+					w.Write([]byte(val.bugDetails))
+				} else {
+					http.Error(w, "404 Not Found", http.StatusNotFound)
+				}
+			}
+
+		}
+
+	}))
+	defer testServer.Close()
+	client := clientForUrl(testServer.URL)
+	for tc, tp := range testcases {
+		t.Run(strconv.Itoa(tc), func(t *testing.T) {
+			var parsedResponse struct {
+				Bugs []*Bug `json:"bugs,omitempty"`
+			}
+			if err := json.Unmarshal([]byte(tp.bugDetails), &parsedResponse); err != nil {
+				t.Fatal(err)
+			}
+			clones, err := client.GetAllClones(parsedResponse.Bugs[0])
+			if err != nil {
+				t.Errorf("Error occurred when none was expected: %v", err)
+			}
+			if len(tp.expectedClones) != len(clones) {
+				t.Errorf("Mismatch in number of clones - expected: %d, got %d", len(tp.expectedClones), len(clones))
+			}
+			for _, clone := range clones {
+				if _, ok := tp.expectedClones[clone.ID]; !ok {
+					t.Errorf("Unexpected clone found in list - expecting: %v, got: %d", tp.expectedClones, clone.ID)
+				}
+			}
+		})
+
+	}
+
+}
+
+func TestGetRootForClone(t *testing.T) {
+	bugMappings := map[int]string{
+		1843407: `{"bugs" : [{ "alias" : [],  "blocks" : [1844101 ], "cc" : [], "cc_detail" : [ ], "cf_clone_of" : null, "cf_doc_type" : "If docs needed, set a value", "cf_environment" : "", "cf_fixed_in" : "", "cf_last_closed" : null, "cf_release_notes" : "", "cf_target_upstream_version" : "", "classification" : "Red Hat", "component" : ["Unknown" ], "creation_time" : "2020-06-03T09:03:41Z", "deadline" : null, "depends_on" : [], "docs_contact" : "", "dupe_of" : null, "groups" : [], "id" : 1843407, "is_cc_accessible" : true, "is_confirmed" : true, "is_creator_accessible" : true, "is_open" : true, "keywords" : [], "last_change_time" : "2020-06-07T11:08:27Z", "op_sys" : "Unspecified", "platform" : "Unspecified", "priority" : "unspecified", "product" : "OpenShift Container Platform", "resolution" : "", "see_also" : [], "severity" : "medium", "status" : "VERIFIED", "summary" : "[oVirt] add oVirt as a provide to openshift tests", "target_milestone" : "---", "target_release" : ["4.6.0" ], "url" : "", "version" : ["4.5" ], "whiteboard" : ""}],"faults" : []}`,
+		1844101: `{"bugs" : [{ "alias" : [], "blocks" : [1844102 ], "cc" : [ ], "cc_detail" : [], "cf_clone_of" : null, "cf_doc_type" : "If docs needed, set a value", "cf_environment" : "", "cf_fixed_in" : "", "cf_last_closed" : null, "cf_release_notes" : "", "cf_target_upstream_version" : "", "classification" : "Red Hat", "component" : ["Unknown" ], "creation_time" : "2020-06-04T15:43:10Z", "deadline" : null, "depends_on" : [1843407 ], "docs_contact" : "", "dupe_of" : null, "groups" : [], "id" : 1844101, "is_cc_accessible" : true, "is_confirmed" : true, "is_creator_accessible" : true, "is_open" : true, "keywords" : ["CodeChange" ], "last_change_time" : "2020-06-11T05:39:35Z", "op_sys" : "Unspecified", "platform" : "Unspecified", "priority" : "unspecified", "product" : "OpenShift Container Platform",  "resolution" : "", "see_also" : [], "severity" : "medium", "status" : "VERIFIED", "summary" : "[oVirt] add oVirt as a provide to openshift tests", "target_milestone" : "---", "target_release" : ["4.5.0" ], "url" : "", "version" : ["4.5" ], "whiteboard" : ""}],"faults" : []}`,
+		1844102: `{"bugs" : [ {"alias" : [],"blocks" : [],"cc" : [],"cc_detail" : [],"cf_clone_of" : null,"cf_doc_type" : "If docs needed, set a value","cf_environment" : "","cf_fixed_in" : "","cf_last_closed" : null,"cf_release_notes" : "","cf_target_upstream_version" : "","classification" : "Red Hat","component" : ["Cloud Compute"],"creation_time" : "2020-06-04T15:43:52Z","deadline" : null,"depends_on" : [1844101],"docs_contact" : "","dupe_of" : null,"groups" : [],"id" : 1844102,"is_cc_accessible" : true,"is_confirmed" : true,"is_creator_accessible" : true,"is_open" : true,"keywords" : [],"last_change_time" : "2020-06-11T05:39:58Z","op_sys" : "Unspecified","platform" : "Unspecified","priority" : "unspecified","product" : "OpenShift Container Platform","resolution" : "","see_also" : [],"severity" : "medium","status" : "POST","summary" : "[oVirt] add oVirt as a provide to openshift tests","target_milestone" : "---","target_release" : ["4.4.z"],"url" : "","version" : ["4.5"],"whiteboard" : "" }],"faults" : []}`,
+	}
+	testServer := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("X-BUGZILLA-API-KEY") != "api-key" {
+			t.Error("did not get api-key passed in X-BUGZILLA-API-KEY header")
+			http.Error(w, "403 Forbidden", http.StatusForbidden)
+			return
+		}
+		if r.URL.Query().Get("api_key") != "api-key" {
+			t.Error("did not get api-key passed in api_key query parameter")
+			http.Error(w, "403 Forbidden", http.StatusForbidden)
+			return
+		}
+		if r.Method != http.MethodGet {
+			t.Errorf("incorrect method to get a bug: %s", r.Method)
+			http.Error(w, "400 Bad Request", http.StatusBadRequest)
+			return
+		}
+		if !strings.HasPrefix(r.URL.Path, "/rest/bug/") {
+			t.Errorf("incorrect path to get a bug: %s", r.URL.Path)
+			http.Error(w, "400 Bad Request", http.StatusBadRequest)
+			return
+		}
+		id, err := strconv.Atoi(strings.TrimPrefix(r.URL.Path, "/rest/bug/"))
+		if err != nil {
+			t.Errorf("malformed bug id: %s", r.URL.Path)
+			http.Error(w, "400 Bad Request", http.StatusBadRequest)
+			return
+		}
+		if val, ok := bugMappings[id]; ok {
+			w.Write([]byte(val))
+		} else {
+			http.Error(w, "404 Not Found", http.StatusNotFound)
+		}
+
+	}))
+	defer testServer.Close()
+	client := clientForUrl(testServer.URL)
+	for tc, tp := range bugMappings {
+		t.Run(strconv.Itoa(tc), func(t *testing.T) {
+			var parsedResponse struct {
+				Bugs []*Bug `json:"bugs,omitempty"`
+			}
+			if err := json.Unmarshal([]byte(tp), &parsedResponse); err != nil {
+				t.Fatal(err)
+			}
+			// this should run get the root
+			root, err := client.GetRootForClone(parsedResponse.Bugs[0])
+			if err != nil {
+				t.Errorf("Error occurred when error not expected: %v", err)
+			}
+			if root.ID != 1843407 {
+				t.Errorf("ID of root incorrect.")
 			}
 		})
 	}
