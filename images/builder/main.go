@@ -43,19 +43,21 @@ type Step struct {
 	Args []string
 }
 
+// struct for images/<image>/cloudbuild.yaml
+// Example: images/alpine/cloudbuild.yaml
 type CloudBuildYAMLFile struct {
 	Steps         []Step `yaml:"steps"`
 	Substitutions map[string]string
 	Images        []string
 }
 
-func getProjectId() (string, error) {
+func getProjectID() (string, error) {
 	cmd := exec.Command("gcloud", "config", "get-value", "project")
-	projectId, err := cmd.Output()
+	projectID, err := cmd.Output()
 	if err != nil {
 		return "", fmt.Errorf("failed to get project_id: %v", err)
 	}
-	return string(projectId), nil
+	return string(projectID), nil
 }
 
 func getImageName(o options, tag string, config string) (string, error) {
@@ -64,9 +66,9 @@ func getImageName(o options, tag string, config string) (string, error) {
 	if err := yaml.Unmarshal(buf, &cloudbuildyamlFile); err != nil {
 		return "", fmt.Errorf("failed to get image name: %v", err)
 	}
-	var projectId, _ = getProjectId()
+	var projectID, _ = getProjectID()
 	var imageNames = cloudbuildyamlFile.Images
-	r := strings.NewReplacer("$PROJECT_ID", strings.TrimSpace(projectId), "$_GIT_TAG", tag, "$_CONFIG", config)
+	r := strings.NewReplacer("$PROJECT_ID", strings.TrimSpace(projectID), "$_GIT_TAG", tag, "$_CONFIG", config)
 	var result string
 	for _, name := range imageNames {
 		result = result + r.Replace(name) + " "
@@ -186,13 +188,13 @@ func runSingleJob(o options, jobName, uploaded, version string, subs map[string]
 
 	cmd := exec.Command("gcloud", args...)
 
-	var p string
+	var logFilePath string
 	if o.logDir != "" {
-		p = path.Join(o.logDir, strings.Replace(jobName, "/", "-", -1)+".log")
-		f, err := os.Create(p)
+		logFilePath = path.Join(o.logDir, strings.Replace(jobName, "/", "-", -1)+".log")
+		f, err := os.Create(logFilePath)
 
 		if err != nil {
-			return fmt.Errorf("couldn't create %s: %v", p, err)
+			return fmt.Errorf("couldn't create %s: %v", logFilePath, err)
 		}
 
 		defer f.Sync()
@@ -207,7 +209,7 @@ func runSingleJob(o options, jobName, uploaded, version string, subs map[string]
 
 	if err := cmd.Run(); err != nil {
 		if o.logDir != "" {
-			buildLog, _ := ioutil.ReadFile(p)
+			buildLog, _ := ioutil.ReadFile(logFilePath)
 			fmt.Println(string(buildLog))
 		}
 		return fmt.Errorf("error running %s: %v", cmd.Args, err)
