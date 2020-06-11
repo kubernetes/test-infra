@@ -587,3 +587,51 @@ func TestGetReleaseNote(t *testing.T) {
 		}
 	}
 }
+
+func TestShouldHandlePR(t *testing.T) {
+	tests := []struct {
+		name           string
+		action         github.PullRequestEventAction
+		label          string
+		expectedResult bool
+	}{
+		{
+			name:           "Pull Request Action: Opened",
+			action:         github.PullRequestActionOpened,
+			label:          "",
+			expectedResult: true,
+		},
+		{
+			name:           "Pull Request Action: Edited",
+			action:         github.PullRequestActionEdited,
+			label:          "",
+			expectedResult: true,
+		},
+		{
+			name:           "Pull Request Action: Release Note label",
+			action:         github.PullRequestActionLabeled,
+			label:          ReleaseNoteLabelNeeded,
+			expectedResult: true,
+		},
+		{
+			name:           "Pull Request Action: Non Release Note label",
+			action:         github.PullRequestActionLabeled,
+			label:          "do-not-merge/cherry-pick-not-approved",
+			expectedResult: false,
+		},
+	}
+
+	for _, test := range tests {
+		pr := github.PullRequestEvent{
+			Action: test.action,
+			Label: github.Label{
+				Name: test.label,
+			},
+		}
+		result := shouldHandlePR(&pr)
+
+		if test.expectedResult != result {
+			t.Errorf("(%s): Expected value to be: %t, but got %t.", test.name, test.expectedResult, result)
+		}
+	}
+}
