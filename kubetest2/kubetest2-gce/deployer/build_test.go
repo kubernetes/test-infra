@@ -21,38 +21,45 @@ import (
 	"testing"
 )
 
-func TestSetEmptyRepoPath(t *testing.T) {
+func TestSetRepoPathIfNotSet(t *testing.T) {
+	cases := []struct {
+		name string
+
+		initialDeployer  deployer
+		expectedRepoPath string
+	}{
+		{
+			name:             "set empty repo path",
+			expectedRepoPath: os.TempDir(),
+		},
+		{
+			name: "set preset repo path",
+			initialDeployer: deployer{
+				RepoRoot: "/test/path",
+			},
+			expectedRepoPath: "/test/path",
+		},
+	}
+
 	err := os.Chdir(os.TempDir())
 	if err != nil {
-		t.Fatalf("failed to chdir for test: %s", err)
+		t.Errorf("failed to chdir for test: %s", err)
 	}
 
-	d := &deployer{}
+	for _, c := range cases {
+		c := c
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
 
-	err = d.setRepoPathIfNotSet()
+			d := c.initialDeployer
+			err := d.setRepoPathIfNotSet()
+			if err != nil {
+				t.Errorf("failed to set repo path: %s", err)
+			}
 
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if d.RepoRoot != os.TempDir() {
-		t.Error("expected new root path to be the OS temp dir")
-	}
-}
-
-func TestSetPopulatedRepoPath(t *testing.T) {
-	path := "/test/path"
-	d := &deployer{
-		RepoRoot: path,
-	}
-
-	err := d.setRepoPathIfNotSet()
-
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if d.RepoRoot != path {
-		t.Error("repo root path after call is supposed to be the same as before the call")
+			if d.RepoRoot != c.expectedRepoPath {
+				t.Errorf("expected repo path to be %s but it was %s", c.expectedRepoPath, d.RepoRoot)
+			}
+		})
 	}
 }

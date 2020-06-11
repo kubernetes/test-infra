@@ -18,8 +18,7 @@ limitations under the License.
 package deployer
 
 import (
-	"fmt"
-
+	"k8s.io/klog"
 	"k8s.io/test-infra/kubetest2/pkg/types"
 
 	"github.com/octago/sflags/gen/gpflag"
@@ -44,7 +43,7 @@ func New(opts types.Options) (types.Deployer, *pflag.FlagSet) {
 
 	flagSet, err := gpflag.Parse(d)
 	if err != nil {
-		panic(fmt.Sprintf("couldn't parse flagset for deployer struct: %s", err))
+		klog.Fatalf("couldn't parse flagset for deployer struct: %s", err)
 	}
 
 	// register flags and return
