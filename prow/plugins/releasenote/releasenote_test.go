@@ -588,7 +588,7 @@ func TestGetReleaseNote(t *testing.T) {
 	}
 }
 
-func TestShouldIgnorePR(t *testing.T) {
+func TestShouldHandlePR(t *testing.T) {
 	tests := []struct {
 		name           string
 		action         github.PullRequestEventAction
@@ -599,25 +599,25 @@ func TestShouldIgnorePR(t *testing.T) {
 			name:           "Pull Request Action: Opened",
 			action:         github.PullRequestActionOpened,
 			label:          "",
-			expectedResult: false,
+			expectedResult: true,
 		},
 		{
 			name:           "Pull Request Action: Edited",
 			action:         github.PullRequestActionEdited,
 			label:          "",
-			expectedResult: false,
+			expectedResult: true,
 		},
 		{
 			name:           "Pull Request Action: Release Note label",
 			action:         github.PullRequestActionLabeled,
 			label:          ReleaseNoteLabelNeeded,
-			expectedResult: false,
+			expectedResult: true,
 		},
 		{
 			name:           "Pull Request Action: Non Release Note label",
 			action:         github.PullRequestActionLabeled,
 			label:          "do-not-merge/cherry-pick-not-approved",
-			expectedResult: true,
+			expectedResult: false,
 		},
 	}
 
@@ -628,7 +628,7 @@ func TestShouldIgnorePR(t *testing.T) {
 				Name: test.label,
 			},
 		}
-		result := shouldIgnorePR(&pr)
+		result := shouldHandlePR(&pr)
 
 		if test.expectedResult != result {
 			t.Errorf("(%s): Expected value to be: %t, but got %t.", test.name, test.expectedResult, result)

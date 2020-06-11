@@ -212,32 +212,29 @@ func handlePullRequest(pc plugins.Agent, pr github.PullRequestEvent) error {
 	return handlePR(pc.GitHubClient, pc.Logger, &pr)
 }
 
-func shouldIgnorePR(pr *github.PullRequestEvent) bool {
+func shouldHandlePR(pr *github.PullRequestEvent) bool {
 	// Only consider events that edit the PR body or add a label
 	if pr.Action != github.PullRequestActionOpened &&
 		pr.Action != github.PullRequestActionEdited &&
 		pr.Action != github.PullRequestActionLabeled {
-		return true
+		return false
 	}
 
 	// Ignoring unrelated PR labels prevents duplicate release note messages
 	if pr.Action == github.PullRequestActionLabeled {
-		isRNLabelAdd := false
 		for _, rnLabel := range allRNLabels {
 			if pr.Label.Name == rnLabel {
-				isRNLabelAdd = true
+				return true
 			}
 		}
-
-		if !isRNLabelAdd {
-			return true
-		}
+		return false
 	}
-	return false
+
+	return true
 }
 
 func handlePR(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent) error {
-	if shouldIgnorePR(pr) {
+	if !shouldHandlePR(pr) {
 		return nil
 	}
 	org := pr.Repo.Owner.Login
