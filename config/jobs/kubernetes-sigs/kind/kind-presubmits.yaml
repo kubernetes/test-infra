@@ -98,6 +98,52 @@ presubmits:
             cpu: 2000m
   # conformance test against kubernetes master branch with `kind`, skipping
   # serial tests so it runs in ~20m
+  # GA-only variant
+  - name: pull-kind-conformance-parallel-ga-only
+    labels:
+      preset-service-account: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    always_run: false
+    decorate: true
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    path_alias: sigs.k8s.io/kind
+    decoration_config:
+      timeout: 40m
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/krte:v20200531-b02499e-master
+        env:
+        # skip serial tests and run with --ginkgo-parallel
+        - name: "PARALLEL"
+          value: "true"
+        - name: GA_ONLY
+          value: "true"
+        - name: BUILD_TYPE
+          value: bazel
+        command:
+        - wrapper.sh
+        - bash
+        - -c
+        - cd ./../../k8s.io/kubernetes && ./../../sigs.k8s.io/kind/hack/ci/e2e.sh
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            # these are both a bit below peak usage during build
+            # this is mostly for building kubernetes
+            memory: "9000Mi"
+            # during the tests more like 3-20m is used
+            cpu: 2000m
+  # conformance test against kubernetes master branch with `kind`, skipping
+  # serial tests so it runs in ~20m
   # IPv6 enabled variant
   - name: pull-kind-conformance-parallel-ipv6
     labels:
