@@ -3,8 +3,8 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 go_library(
     name = "go_default_library",
     srcs = [
+        "build.go",
         "deployer.go",
-        "deployer_build.go",
     ],
     importpath = "k8s.io/test-infra/kubetest2/kubetest2-gce/deployer",
     visibility = ["//visibility:public"],
@@ -31,6 +31,6 @@ filegroup(
 
 go_test(
     name = "go_default_test",
-    srcs = ["deployer_helpers_test.go"],
+    srcs = ["build_test.go"],
     embed = [":go_default_library"],
 )

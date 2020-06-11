@@ -28,15 +28,11 @@ func (d *deployer) Build() error {
 		return fmt.Errorf("Build() failed to verify build-specific flags: %s", err)
 	}
 
-	err := os.Chdir(d.repoRoot)
-	if err != nil {
-		return fmt.Errorf("Build() failed to change dir to the repo root: %s", err)
-	}
-
 	// this code path supports the kubernetes/cloud-provider-gcp build
 	// TODO: update in future patch to support legacy (k/k) build
 	cmd := exec.Command("bazel", "build", "//release:release-tars")
-	err = cmd.Run()
+	cmd.SetDir(d.repoRoot)
+	err := cmd.Run()
 	if err != nil {
 		return fmt.Errorf("error during make step of build: %s", err)
 	}
