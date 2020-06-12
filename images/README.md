@@ -36,7 +36,7 @@ We have bazel images that have two versions of bazel installed. The upgrade proc
 
 There is no automated testing pipeline for images:
 - Any jobs that use the `:latest` tag use the latest published image immediately
-- Any jobs that use a `:v{date}-{sha}[-{variant}]` tag (e.g. `:v20200407-c818676-master`) are updated to use the latest published image ~daily.  This is accomplished by PR's created by the [autobumper prowjob](https://testgrid.k8s.io/sig-testing-prow#autobump-prow), which are merged by [test-infra oncall](go.k8s.io/oncall) once a day during weekdays.
+- Any jobs that use a `:v{date}-{sha}[-{variant}]` tag (e.g. `:v20200407-c818676-master`) are updated to use the latest published image ~daily.  This is accomplished by PR's created by the [autobumper prowjob](https://testgrid.k8s.io/sig-testing-prow#autobump-prow), which are merged by [test-infra oncall](https://go.k8s.io/oncall) once a day during weekdays.
 
 1. Merge a PR changing something in the image directory.
 

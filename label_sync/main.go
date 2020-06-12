@@ -72,6 +72,8 @@ type Label struct {
 	Target LabelTarget `json:"target"`
 	// ProwPlugin specifies which prow plugin add/removes this label
 	ProwPlugin string `json:"prowPlugin"`
+	// IsExternalPlugin specifies if the prow plugin is external or not
+	IsExternalPlugin bool `json:"isExternalPlugin"`
 	// AddedBy specifies whether human/munger/bot adds the label
 	AddedBy string `json:"addedBy"`
 	// Previously lists deprecated names for this label
