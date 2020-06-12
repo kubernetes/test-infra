@@ -4,6 +4,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubeflow_kubeflow/kubeflow-postsubmit
 - name: kubeflow-examples-postsubmit
   gcs_prefix: kubernetes-jenkins/logs/kubeflow_examples/kubeflow-examples-postsubmit
+- name: kubeflow-gcp-blueprints-postsubmit
+  gcs_prefix: kubernetes-jenkins/logs/kubeflow_gcp-blueprints/kubeflow-gcp-blueprints-postsubmit
 - name: kubeflow-kfctl-postsubmit
   gcs_prefix: kubernetes-jenkins/logs/kubeflow_kfctl/kubeflow-kfctl-postsubmit
 - name: kubeflow-manifests-postsubmit

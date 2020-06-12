@@ -25,6 +25,19 @@ postsubmits:
     annotations:
       testgrid-dashboards: sig-big-data
       description: Postsubmit tests for kubeflow/internal-acls.
+  kubeflow/gcp-blueprints:
+  - name: kubeflow-gcp-blueprints-postsubmit
+    cluster: kubeflow
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+
+    annotations:
+      testgrid-dashboards: sig-big-data
+      description: Postsubmit tests for kubeflow/gcp-blueprints.
   kubeflow/kubeflow:
   - name: kubeflow-postsubmit
     cluster: kubeflow
