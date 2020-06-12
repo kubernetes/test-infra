@@ -29,6 +29,7 @@ sinker:
   terminated_pod_ttl: 30m
 
 deck:
+  enable_whitelist: true
   spyglass:
     size_limit: 500000000 # 500MB
     gcs_browser_prefix: https://gcsweb.k8s.io/gcs/
