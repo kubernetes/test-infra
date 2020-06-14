@@ -16,7 +16,7 @@ periodics:
     testgrid-num-failures-to-alert: "4"
     testgrid-alert-stale-results-hours: "48"
   decoration_config:
-    timeout: 40m
+    timeout: 60m
   extra_refs:
   - org: kubernetes
     repo: kubernetes
