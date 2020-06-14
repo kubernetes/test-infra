@@ -204,7 +204,7 @@ periodics:
       - --extract=release/stable-1.17
       - --ginkgo-parallel
       - --kops-feature-flags=SpecOverrideFlag
-      - --kops-args=--override="cluster.spec.etcdClusters[*].provider"=Legacy
+      - --kops-args=--override=cluster.spec.etcdClusters[*].provider=Legacy
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
