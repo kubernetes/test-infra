@@ -144,7 +144,7 @@ periodics:
     testgrid-tab-name: kops-aws-coredns
 
 - interval: 4h
-  name: e2e-kops-aws-misc-launchtemplates
+  name: e2e-kops-aws-misc-launchconfigurations
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -159,7 +159,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=e2e-kops-aws-launchtemplates.test-cncf-aws.k8s.io
+      - --cluster=e2e-kops-aws-launchconfigurations.test-cncf-aws.k8s.io
       - --deployment=kops
       - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
@@ -167,7 +167,7 @@ periodics:
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --extract=release/stable
       - --ginkgo-parallel
-      - --kops-feature-flags=EnableLaunchTemplates
+      - --kops-feature-flags=-EnableLaunchTemplates
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
@@ -177,7 +177,7 @@ periodics:
       imagePullPolicy: Always
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-misc
-    testgrid-tab-name: kops-aws-launchtemplates
+    testgrid-tab-name: kops-aws-launchconfigurations
 
 - interval: 1h
   name: e2e-kops-aws-misc-newrunner
