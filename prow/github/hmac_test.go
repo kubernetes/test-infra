@@ -20,7 +20,7 @@ import (
 	"testing"
 )
 
-var globalSecret = `
+var globalToken = `
 '*':
   - value: abc
     created_at: 2020-10-02T15:00:00Z
@@ -29,7 +29,7 @@ var globalSecret = `
 `
 
 var defaultTokenGenerator = func() []byte {
-	return []byte(globalSecret)
+	return []byte(globalToken)
 }
 
 // echo -n 'BODY' | openssl dgst -sha1 -hmac KEY

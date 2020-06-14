@@ -136,7 +136,7 @@ func TestPruneOldTokens(t *testing.T) {
 		{
 			name: "three hmacs, only the latest one is left after pruning",
 			current: map[string]github.HMACsForRepo{
-				"org1/repo1": []github.HMACSecret{
+				"org1/repo1": []github.HMACToken{
 					{
 						Value:     "rand-val1",
 						CreatedAt: time1,
@@ -153,7 +153,7 @@ func TestPruneOldTokens(t *testing.T) {
 			},
 			repo: "org1/repo1",
 			expected: map[string]github.HMACsForRepo{
-				"org1/repo1": []github.HMACSecret{
+				"org1/repo1": []github.HMACToken{
 					{
 						Value:     "rand-val3",
 						CreatedAt: time3,
@@ -164,7 +164,7 @@ func TestPruneOldTokens(t *testing.T) {
 		{
 			name: "two hmacs, only the latest one is left after pruning",
 			current: map[string]github.HMACsForRepo{
-				"org1/repo1": []github.HMACSecret{
+				"org1/repo1": []github.HMACToken{
 					{
 						Value:     "rand-val1",
 						CreatedAt: time1,
@@ -177,7 +177,7 @@ func TestPruneOldTokens(t *testing.T) {
 			},
 			repo: "org1/repo1",
 			expected: map[string]github.HMACsForRepo{
-				"org1/repo1": []github.HMACSecret{
+				"org1/repo1": []github.HMACToken{
 					{
 						Value:     "rand-val2",
 						CreatedAt: time2,
@@ -188,7 +188,7 @@ func TestPruneOldTokens(t *testing.T) {
 		{
 			name: "nothing will be changed if the repo is not in the map",
 			current: map[string]github.HMACsForRepo{
-				"org1/repo1": []github.HMACSecret{
+				"org1/repo1": []github.HMACToken{
 					{
 						Value:     "rand-val1",
 						CreatedAt: time1,
@@ -197,7 +197,7 @@ func TestPruneOldTokens(t *testing.T) {
 			},
 			repo: "org2/repo2",
 			expected: map[string]github.HMACsForRepo{
-				"org1/repo1": []github.HMACSecret{
+				"org1/repo1": []github.HMACToken{
 					{
 						Value:     "rand-val1",
 						CreatedAt: time1,
@@ -245,7 +245,7 @@ func TestHandleRemovedRepo(t *testing.T) {
 			toRemove: map[string]bool{"repo1": true},
 			expectedHMACs: map[string]github.HMACsForRepo{
 				"repo2": {
-					github.HMACSecret{
+					github.HMACToken{
 						Value: "val2",
 					},
 				},
@@ -274,7 +274,7 @@ func TestHandleRemovedRepo(t *testing.T) {
 			toRemove: map[string]bool{"repo1": true, "whatever-repo": true},
 			expectedHMACs: map[string]github.HMACsForRepo{
 				"repo2": {
-					github.HMACSecret{
+					github.HMACToken{
 						Value: "val2",
 					},
 				},
@@ -321,12 +321,12 @@ func TestHandleRemovedRepo(t *testing.T) {
 			c := &client{
 				currentHMACMap: map[string]github.HMACsForRepo{
 					"repo1": {
-						github.HMACSecret{
+						github.HMACToken{
 							Value: "val1",
 						},
 					},
 					"repo2": {
-						github.HMACSecret{
+						github.HMACToken{
 							Value: "val2",
 						},
 					},
@@ -348,7 +348,7 @@ func TestHandleRemovedRepo(t *testing.T) {
 }
 
 func TestHandleAddedRepo(t *testing.T) {
-	globalToken := []github.HMACSecret{
+	globalToken := []github.HMACToken{
 		{
 			Value:     "global-rand-val1",
 			CreatedAt: time.Now().Add(-time.Hour),
@@ -414,13 +414,13 @@ func TestHandleAddedRepo(t *testing.T) {
 func TestHandleRotatedRepo(t *testing.T) {
 	pastTime, _ := time.Parse(time.RFC3339Nano, "2020-01-01T00:00:50Z")
 
-	globalToken := []github.HMACSecret{
+	globalToken := []github.HMACToken{
 		{
 			Value:     "global-rand-val1",
 			CreatedAt: pastTime,
 		},
 	}
-	commonTokens := []github.HMACSecret{
+	commonTokens := []github.HMACToken{
 		{
 			Value:     "rand-val1",
 			CreatedAt: pastTime,
@@ -475,13 +475,13 @@ func TestHandleRotatedRepo(t *testing.T) {
 				"repo2": {TokenCreatedAfter: pastTime},
 			},
 			currentHMACs: map[string]github.HMACsForRepo{
-				"repo1": []github.HMACSecret{
+				"repo1": []github.HMACToken{
 					{
 						Value:     "rand-val1",
 						CreatedAt: pastTime.Add(-1 * time.Hour),
 					},
 				},
-				"repo2": []github.HMACSecret{
+				"repo2": []github.HMACToken{
 					{
 						Value:     "rand-val2",
 						CreatedAt: pastTime.Add(1 * time.Hour),

@@ -24,6 +24,7 @@ import (
 	"fmt"
 	"os"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -134,12 +135,12 @@ func main() {
 		logrus.WithError(err).Fatal("Error getting the current hmac yaml.")
 	}
 
-	var currentHMACMap map[string]github.HMACsForRepo
+	currentHMACMap := map[string]github.HMACsForRepo{}
 	if err := yaml.Unmarshal(currentHMACYaml, &currentHMACMap); err != nil {
 		logrus.WithError(err).Error("Couldn't unmarshal the hmac secret as hierarchical file. Parsing as a single global token and writing it back to the secret.")
 		currentHMACMap["*"] = github.HMACsForRepo{
-			github.HMACSecret{
-				Value: string(currentHMACYaml),
+			github.HMACToken{
+				Value: strings.TrimSpace(string(currentHMACYaml)),
 			},
 		}
 	}
@@ -155,8 +156,9 @@ func main() {
 		githubHookClient: gc,
 		options:          o,
 
-		currentHMACMap: currentHMACMap,
-		newHMACConfig:  newHMACConfig,
+		currentHMACMap:        currentHMACMap,
+		newHMACConfig:         newHMACConfig,
+		hmacMapForBatchUpdate: map[string]string{},
 	}
 
 	if err := c.handleConfigUpdate(); err != nil {
@@ -178,6 +180,10 @@ func (c *client) handleConfigUpdate() error {
 	}
 
 	for repoName := range c.currentHMACMap {
+		// Skip the global hmac token as it should never be deleted.
+		if repoName == "*" {
+			continue
+		}
 		if _, ok := c.newHMACConfig[repoName]; !ok {
 			repoRemoved[repoName] = true
 		}
@@ -217,6 +223,11 @@ func (c *client) handleConfigUpdate() error {
 
 // handleRemoveRepo handles webhook removal and hmac token removal from the current hmac map for all repos removed from the declarative config.
 func (c *client) handleRemovedRepo(removed map[string]bool) error {
+	// If the map is empty, nothing needs to be done.
+	if len(removed) == 0 {
+		return nil
+	}
+
 	repos := make([]string, len(removed))
 	var i int
 	for k := range removed {
@@ -236,6 +247,7 @@ func (c *client) handleRemovedRepo(removed map[string]bool) error {
 		return fmt.Errorf("error validating the options: %v", err)
 	}
 
+	logrus.WithField("repos", repos).Debugf("Deleting webhooks for %q", c.options.hookUrl)
 	if err := o.HandleWebhookConfigChange(); err != nil {
 		return fmt.Errorf("error deleting webhook for repos %q: %v", repos, err)
 	}
@@ -288,14 +300,14 @@ func (c *client) addRepoToBatchUpdate(repo string) error {
 		updatedTokenList = append(updatedTokenList, val...)
 		// Current webhook is possibly using global token so we need to promote that token to repo level, if it exists.
 	} else if globalTokens, ok := c.currentHMACMap["*"]; ok {
-		updatedTokenList = append(updatedTokenList, github.HMACSecret{
+		updatedTokenList = append(updatedTokenList, github.HMACToken{
 			Value: globalTokens[0].Value,
 			// Set CreatedAt as a time slightly before the TokenCreatedAfter time, so that the token can be properly pruned in the end.
 			CreatedAt: c.newHMACConfig[repo].TokenCreatedAfter.Add(-time.Second),
 		})
 	}
 
-	updatedTokenList = append(updatedTokenList, github.HMACSecret{
+	updatedTokenList = append(updatedTokenList, github.HMACToken{
 		Value: generatedToken, CreatedAt: time.Now()})
 	c.currentHMACMap[repo] = updatedTokenList
 	c.hmacMapForBatchUpdate[repo] = generatedToken
@@ -320,6 +332,7 @@ func (c *client) batchOnboardNewTokenForRepos() error {
 			return fmt.Errorf("error validating the options: %v", err)
 		}
 
+		logrus.WithField("repo", repo).Debugf("Updating webhooks for %q", c.options.hookUrl)
 		if err := o.HandleWebhookConfigChange(); err != nil {
 			return fmt.Errorf("error updating webhook for repo %q: %v", repo, err)
 		}
@@ -377,9 +390,9 @@ func (c *client) pruneOldTokens(repo string) {
 	c.currentHMACMap[repo] = tokens[:1]
 }
 
-// generateNewHMACToken generates a hex encoded crypto random string of length 20.
+// generateNewHMACToken generates a hex encoded crypto random string of length 40.
 func generateNewHMACToken() (string, error) {
-	bytes := make([]byte, 10) // 10 bytes of entropy will result in a string of length 20 after hex encoding
+	bytes := make([]byte, 20) // 20 bytes of entropy will result in a string of length 40 after hex encoding
 	if _, err := rand.Read(bytes); err != nil {
 		return "", err
 	}
