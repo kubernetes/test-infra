@@ -384,6 +384,10 @@ repo_milestone:
     maintainers_id: 3175912
     maintainers_team: website-milestone-maintainers
     maintainers_friendly_name: Website milestone maintainers
+  kubernetes/kubeadm:
+    maintainers_id: 2195382
+    maintainers_team: kubeadm-maintainers
+    maintainers_friendly_name: Kubeadm maintainers
 
 project_config:
   project_org_configs:
@@ -657,6 +661,9 @@ plugins:
   - mergecommitblocker
   - milestone
   - milestoneapplier
+
+  kubernetes/kubeadm:
+  - milestone
 
   kubernetes/kubernetes:
   - blockade
