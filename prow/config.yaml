@@ -61,6 +61,7 @@ tide:
     hybridapp-io/ham-application-assembler: squash
     hybridapp-io/ham-deploy: squash
     hybridapp-io/ham-docs: squash
+    hybridapp-io/ham-placement: squash
     hybridapp-io/ham-resource-discoverer: squash
     hybridapp-io/ham-deployable-operator: squash
     hybridapp-io/samples: squash
@@ -113,6 +114,7 @@ tide:
     - hybridapp-io/ham-application-assembler
     - hybridapp-io/ham-deploy
     - hybridapp-io/ham-docs
+    - hybridapp-io/ham-placement
     - hybridapp-io/ham-resource-discoverer
     - hybridapp-io/ham-deployable-operator
     - hybridapp-io/samples
