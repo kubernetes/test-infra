@@ -23,6 +23,7 @@ import (
 	"strings"
 	"testing"
 
+	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/githubeventserver"
 	"k8s.io/test-infra/prow/plugins"
 )
@@ -32,7 +33,7 @@ func TestServeHTTPErrors(t *testing.T) {
 	pa := &plugins.ConfigAgent{}
 	pa.Set(&plugins.Configuration{})
 
-	getSecret := func() []byte {
+	getSecret := func() ([]byte, uint32) {
 		var repoLevelSecret = `
 '*':
   - value: abc
@@ -45,13 +46,15 @@ foo/bar:
   - value: key6
     created_at: 2020-10-02T15:00:00Z
 `
-		return []byte(repoLevelSecret)
+		return []byte(repoLevelSecret), 1
 	}
 
 	s := &Server{
-		Metrics:        metrics,
-		Plugins:        pa,
-		TokenGenerator: getSecret,
+		Metrics: metrics,
+		Plugins: pa,
+		HMACTokenResolver: &github.HMACTokenResolver{
+			TokenGenerator: getSecret,
+		},
 	}
 	// This is the SHA1 signature for payload "{}" and signature "abc"
 	// echo -n '{}' | openssl dgst -sha1 -hmac abc

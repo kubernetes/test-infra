@@ -112,46 +112,46 @@ func TestHook(t *testing.T) {
 	var testcases = []struct {
 		name           string
 		secret         []byte
-		tokenGenerator func() []byte
+		tokenGenerator func() ([]byte, uint32)
 		shouldSucceed  bool
 	}{
 		{
 			name:   "Token present at repository level.",
 			secret: []byte("123abc"),
-			tokenGenerator: func() []byte {
-				return []byte(repoLevelSecret)
+			tokenGenerator: func() ([]byte, uint32) {
+				return []byte(repoLevelSecret), 1
 			},
 			shouldSucceed: true,
 		},
 		{
 			name:   "Token present at org level.",
 			secret: []byte("123abc"),
-			tokenGenerator: func() []byte {
-				return []byte(orgLevelSecret)
+			tokenGenerator: func() ([]byte, uint32) {
+				return []byte(orgLevelSecret), 1
 			},
 			shouldSucceed: true,
 		},
 		{
 			name:   "Token present at global level.",
 			secret: []byte("123abc"),
-			tokenGenerator: func() []byte {
-				return []byte(globalSecret)
+			tokenGenerator: func() ([]byte, uint32) {
+				return []byte(globalSecret), 1
 			},
 			shouldSucceed: true,
 		},
 		{
 			name:   "Token not matching anywhere (wildcard token missing).",
 			secret: []byte("123abc"),
-			tokenGenerator: func() []byte {
-				return []byte(missingMatchingSecret)
+			tokenGenerator: func() ([]byte, uint32) {
+				return []byte(missingMatchingSecret), 1
 			},
 			shouldSucceed: false,
 		},
 		{
 			name:   "Secret in old format.",
 			secret: []byte("123abc"),
-			tokenGenerator: func() []byte {
-				return []byte(secretInOldFormat)
+			tokenGenerator: func() ([]byte, uint32) {
+				return []byte(secretInOldFormat), 1
 			},
 			shouldSucceed: true,
 		},
@@ -161,11 +161,13 @@ func TestHook(t *testing.T) {
 		t.Logf("Running scenario %q", tc.name)
 
 		s := httptest.NewServer(&Server{
-			ClientAgent:    clientAgent,
-			Plugins:        pa,
-			ConfigAgent:    ca,
-			Metrics:        metrics,
-			TokenGenerator: tc.tokenGenerator,
+			ClientAgent: clientAgent,
+			Plugins:     pa,
+			ConfigAgent: ca,
+			Metrics:     metrics,
+			HMACTokenResolver: &github.HMACTokenResolver{
+				TokenGenerator: tc.tokenGenerator,
+			},
 		})
 		defer s.Close()
 		if err := phony.SendHook(s.URL, "issues", payload, tc.secret); (err != nil) == tc.shouldSucceed {

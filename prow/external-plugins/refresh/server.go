@@ -53,15 +53,15 @@ func helpProvider(_ []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
 }
 
 type server struct {
-	tokenGenerator func() []byte
-	prowURL        string
-	configAgent    *config.Agent
-	ghc            github.Client
-	log            *logrus.Entry
+	tokenResolver github.HMACTokenResolver
+	prowURL       string
+	configAgent   *config.Agent
+	ghc           github.Client
+	log           *logrus.Entry
 }
 
 func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	eventType, eventGUID, payload, ok, _ := github.ValidateWebhook(w, r, s.tokenGenerator)
+	eventType, eventGUID, payload, ok, _ := github.ValidateWebhook(w, r, s.tokenResolver.Get())
 	if !ok {
 		return
 	}

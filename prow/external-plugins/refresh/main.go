@@ -27,6 +27,7 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/interrupts"
 
 	"k8s.io/test-infra/pkg/flagutil"
@@ -103,11 +104,13 @@ func main() {
 	}
 
 	serv := &server{
-		tokenGenerator: secretAgent.GetTokenGenerator(o.webhookSecretFile),
-		prowURL:        o.prowURL,
-		configAgent:    configAgent,
-		ghc:            githubClient,
-		log:            log,
+		tokenResolver: github.HMACTokenResolver{
+			TokenGenerator: secretAgent.GetTokenGeneratorWithRevision(o.webhookSecretFile),
+		},
+		prowURL:     o.prowURL,
+		configAgent: configAgent,
+		ghc:         githubClient,
+		log:         log,
 	}
 
 	mux := http.NewServeMux()

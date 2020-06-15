@@ -26,6 +26,7 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+
 	"k8s.io/test-infra/prow/interrupts"
 
 	"k8s.io/test-infra/pkg/flagutil"
@@ -105,9 +106,11 @@ func main() {
 	githubClient.Throttle(360, 360)
 
 	server := &Server{
-		tokenGenerator: secretAgent.GetTokenGenerator(o.webhookSecretFile),
-		ghc:            githubClient,
-		log:            log,
+		tokenResolver: github.HMACTokenResolver{
+			TokenGenerator: secretAgent.GetTokenGeneratorWithRevision(o.webhookSecretFile),
+		},
+		ghc: githubClient,
+		log: log,
 	}
 
 	defer interrupts.WaitForGracefulShutdown()
@@ -130,16 +133,16 @@ func main() {
 // Server implements http.Handler. It validates incoming GitHub webhooks and
 // then dispatches them to the appropriate plugins.
 type Server struct {
-	tokenGenerator func() []byte
-	ghc            github.Client
-	log            *logrus.Entry
+	tokenResolver github.HMACTokenResolver
+	ghc           github.Client
+	log           *logrus.Entry
 }
 
 // ServeHTTP validates an incoming webhook and puts it into the event channel.
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// TODO: Move webhook handling logic out of hook binary so that we don't have to import all
 	// plugins just to validate the webhook.
-	eventType, eventGUID, payload, ok, _ := github.ValidateWebhook(w, r, s.tokenGenerator)
+	eventType, eventGUID, payload, ok, _ := github.ValidateWebhook(w, r, s.tokenResolver.Get())
 	if !ok {
 		return
 	}

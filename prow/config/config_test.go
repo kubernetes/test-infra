@@ -2293,9 +2293,11 @@ func TestSecretAgentLoading(t *testing.T) {
 		t.Fatalf("Error starting secrets agent. %v", err)
 	}
 
+	var revisionBeforeChanged uint32
 	// Check if the values are as expected.
 	for _, tempSecret := range tempSecrets {
-		tempSecretValue := secretAgent.GetSecret(tempSecret)
+		var tempSecretValue []byte
+		tempSecretValue, revisionBeforeChanged = secretAgent.GetSecret(tempSecret)
 		if string(tempSecretValue) != tempTokenValue {
 			t.Fatalf("In secret %s it was expected %s but found %s",
 				tempSecret, tempTokenValue, tempSecretValue)
@@ -2318,7 +2320,7 @@ func TestSecretAgentLoading(t *testing.T) {
 		// Reset counter
 		counter := 0
 		for counter <= retries {
-			tempSecretValue := secretAgent.GetSecret(tempSecret)
+			tempSecretValue, revisionAfterChanged := secretAgent.GetSecret(tempSecret)
 			if string(tempSecretValue) != changedTokenValue {
 				if counter == retries {
 					errors = append(errors, fmt.Sprintf("In secret %s it was expected %s but found %s\n",
@@ -2328,6 +2330,10 @@ func TestSecretAgentLoading(t *testing.T) {
 					time.Sleep(400 * time.Millisecond)
 				}
 			} else {
+				if revisionAfterChanged != revisionBeforeChanged+1 {
+					errors = append(errors, fmt.Sprintf("The revision should be changed from %d to %d after the secret is changed but is actual %d",
+						revisionBeforeChanged, revisionBeforeChanged+1, revisionAfterChanged))
+				}
 				break
 			}
 			counter++

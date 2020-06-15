@@ -33,7 +33,8 @@ import (
 // Agent watches a path and automatically loads the secrets stored.
 type Agent struct {
 	sync.RWMutex
-	secretsMap map[string][]byte
+	secretsMap         map[string][]byte
+	secretRevisionsMap map[string]uint32
 }
 
 // Start creates goroutines to monitor the files that contain the secret value.
@@ -46,9 +47,11 @@ func (a *Agent) Start(paths []string) error {
 	}
 
 	a.secretsMap = secretsMap
+	a.secretRevisionsMap = map[string]uint32{}
 
 	// Start one goroutine for each file to monitor and update the secret's values.
 	for secretPath := range secretsMap {
+		a.secretRevisionsMap[secretPath] = 1
 		go a.reloadSecret(secretPath)
 	}
 
@@ -65,6 +68,7 @@ func (a *Agent) Add(path string) error {
 	}
 
 	a.setSecret(path, secret)
+	a.secretRevisionsMap[path] = 1
 
 	// Start one goroutine for each file to monitor and update the secret's values.
 	go a.reloadSecret(path)
@@ -108,10 +112,10 @@ func (a *Agent) reloadSecret(secretPath string) {
 }
 
 // GetSecret returns the value of a secret stored in a map.
-func (a *Agent) GetSecret(secretPath string) []byte {
+func (a *Agent) GetSecret(secretPath string) ([]byte, uint32) {
 	a.RLock()
 	defer a.RUnlock()
-	return a.secretsMap[secretPath]
+	return a.secretsMap[secretPath], a.secretRevisionsMap[secretPath]
 }
 
 // setSecret sets a value in a map of secrets.
@@ -119,11 +123,20 @@ func (a *Agent) setSecret(secretPath string, secretValue []byte) {
 	a.Lock()
 	defer a.Unlock()
 	a.secretsMap[secretPath] = secretValue
+	a.secretRevisionsMap[secretPath]++
 }
 
 // GetTokenGenerator returns a function that gets the value of a given secret.
 func (a *Agent) GetTokenGenerator(secretPath string) func() []byte {
 	return func() []byte {
+		secret, _ := a.GetSecret(secretPath)
+		return secret
+	}
+}
+
+// GetTokenGenerator returns a function that gets the value of a given secret and its revision.
+func (a *Agent) GetTokenGeneratorWithRevision(secretPath string) func() ([]byte, uint32) {
+	return func() ([]byte, uint32) {
 		return a.GetSecret(secretPath)
 	}
 }
@@ -135,7 +148,7 @@ var censoredBytes = []byte(censored)
 // Censor replaces sensitive parts of the content with a placeholder.
 func (a *Agent) Censor(content []byte) []byte {
 	for sKey := range a.secretsMap {
-		secret := a.GetSecret(sKey)
+		secret, _ := a.GetSecret(sKey)
 		content = bytes.ReplaceAll(content, secret, censoredBytes)
 	}
 	return content

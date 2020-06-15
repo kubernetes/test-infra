@@ -79,9 +79,9 @@ func HelpProvider(_ []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
 // Server implements http.Handler. It validates incoming GitHub webhooks and
 // then dispatches them to the appropriate plugins.
 type Server struct {
-	tokenGenerator func() []byte
-	botName        string
-	email          string
+	tokenResolver github.HMACTokenResolver
+	botName       string
+	email         string
 
 	gc git.ClientFactory
 	// Used for unit testing
@@ -107,7 +107,7 @@ type Server struct {
 
 // ServeHTTP validates an incoming webhook and puts it into the event channel.
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	eventType, eventGUID, payload, ok, _ := github.ValidateWebhook(w, r, s.tokenGenerator)
+	eventType, eventGUID, payload, ok, _ := github.ValidateWebhook(w, r, s.tokenResolver.Get())
 	if !ok {
 		return
 	}

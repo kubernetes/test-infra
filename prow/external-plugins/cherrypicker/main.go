@@ -30,6 +30,7 @@ import (
 	"k8s.io/test-infra/prow/config/secret"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/git/v2"
+	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/pluginhelp/externalplugins"
 )
@@ -119,9 +120,11 @@ func main() {
 	}
 
 	server := &Server{
-		tokenGenerator: secretAgent.GetTokenGenerator(o.webhookSecretFile),
-		botName:        botName,
-		email:          email,
+		tokenResolver: github.HMACTokenResolver{
+			TokenGenerator: secretAgent.GetTokenGeneratorWithRevision(o.webhookSecretFile),
+		},
+		botName: botName,
+		email:   email,
 
 		gc:  git.ClientFactoryFrom(gitClient),
 		ghc: githubClient,

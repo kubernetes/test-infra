@@ -285,18 +285,20 @@ func testCherryPickIC(clients localgit.Clients, t *testing.T) {
 	expectedLabels := []string{}
 	expected := fmt.Sprintf(expectedFmt, expectedTitle, expectedBody, expectedHead, expectedBase, expectedLabels)
 
-	getSecret := func() []byte {
-		return []byte("sha=abcdefg")
+	getSecret := func() ([]byte, uint32) {
+		return []byte("sha=abcdefg"), 1
 	}
 
 	s := &Server{
-		botName:        botName,
-		gc:             c,
-		push:           func(newBranch string, force bool) error { return nil },
-		ghc:            ghc,
-		tokenGenerator: getSecret,
-		log:            logrus.StandardLogger().WithField("client", "cherrypicker"),
-		repos:          []github.Repo{{Fork: true, FullName: "ci-robot/bar"}},
+		botName: botName,
+		gc:      c,
+		push:    func(newBranch string, force bool) error { return nil },
+		ghc:     ghc,
+		tokenResolver: github.HMACTokenResolver{
+			TokenGenerator: getSecret,
+		},
+		log:   logrus.StandardLogger().WithField("client", "cherrypicker"),
+		repos: []github.Repo{{Fork: true, FullName: "ci-robot/bar"}},
 
 		prowAssignments: true,
 	}
@@ -430,18 +432,20 @@ func testCherryPickPR(clients localgit.Clients, t *testing.T) {
 
 	botName := "ci-robot"
 
-	getSecret := func() []byte {
-		return []byte("sha=abcdefg")
+	getSecret := func() ([]byte, uint32) {
+		return []byte("sha=abcdefg"), 1
 	}
 
 	s := &Server{
-		botName:        botName,
-		gc:             c,
-		push:           func(newBranch string, force bool) error { return nil },
-		ghc:            ghc,
-		tokenGenerator: getSecret,
-		log:            logrus.StandardLogger().WithField("client", "cherrypicker"),
-		repos:          []github.Repo{{Fork: true, FullName: "ci-robot/bar"}},
+		botName: botName,
+		gc:      c,
+		push:    func(newBranch string, force bool) error { return nil },
+		ghc:     ghc,
+		tokenResolver: github.HMACTokenResolver{
+			TokenGenerator: getSecret,
+		},
+		log:   logrus.StandardLogger().WithField("client", "cherrypicker"),
+		repos: []github.Repo{{Fork: true, FullName: "ci-robot/bar"}},
 
 		prowAssignments: false,
 	}
@@ -543,8 +547,8 @@ func testCherryPickPRWithLabels(clients localgit.Clients, t *testing.T) {
 
 	botName := "ci-robot"
 
-	getSecret := func() []byte {
-		return []byte("sha=abcdefg")
+	getSecret := func() ([]byte, uint32) {
+		return []byte("sha=abcdefg"), 1
 	}
 
 	for _, evt := range events {
@@ -584,13 +588,15 @@ func testCherryPickPRWithLabels(clients localgit.Clients, t *testing.T) {
 		}
 
 		s := &Server{
-			botName:        botName,
-			gc:             c,
-			push:           func(newBranch string, force bool) error { return nil },
-			ghc:            ghc,
-			tokenGenerator: getSecret,
-			log:            logrus.StandardLogger().WithField("client", "cherrypicker"),
-			repos:          []github.Repo{{Fork: true, FullName: "ci-robot/bar"}},
+			botName: botName,
+			gc:      c,
+			push:    func(newBranch string, force bool) error { return nil },
+			ghc:     ghc,
+			tokenResolver: github.HMACTokenResolver{
+				TokenGenerator: getSecret,
+			},
+			log:   logrus.StandardLogger().WithField("client", "cherrypicker"),
+			repos: []github.Repo{{Fork: true, FullName: "ci-robot/bar"}},
 
 			labels:          []string{"cla: yes"},
 			prowAssignments: false,

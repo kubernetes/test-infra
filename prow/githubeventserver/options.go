@@ -29,7 +29,7 @@ import (
 type Options struct {
 	// HmacTokenGenerator is a function that holds a hmac token that will be used
 	// in a github event server
-	HmacTokenGenerator func() []byte
+	HmacTokenGenerator func() ([]byte, uint32)
 
 	// Metrics will be used to expose prometheus metrics from the
 	// github event server operations.
@@ -51,7 +51,7 @@ func (o *Options) DefaultAndValidate() error {
 	}
 
 	if o.HmacTokenGenerator == nil {
-		o.HmacTokenGenerator = func() []byte { return []byte("") }
+		o.HmacTokenGenerator = func() ([]byte, uint32) { return []byte(""), 1 }
 	}
 
 	if o.Metrics == nil {

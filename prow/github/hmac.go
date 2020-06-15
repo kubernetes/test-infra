@@ -23,11 +23,42 @@ import (
 	"encoding/json"
 	"errors"
 	"strings"
+	"sync"
 	"time"
 
-	"github.com/sirupsen/logrus"
 	"sigs.k8s.io/yaml"
+
+	"github.com/sirupsen/logrus"
 )
+
+// HMACTokenResolver is used for resolving the hmac token map from the secret file.
+type HMACTokenResolver struct {
+	TokenGenerator       func() ([]byte, uint32)
+	currentRepoTokenMap  map[string]HMACsForRepo
+	currentTokenRevision uint32
+	sync.RWMutex
+}
+
+// Get will return the latest hmac token map, it only unmarshalls the secret string into a map if it's changed.
+func (s *HMACTokenResolver) Get() map[string]HMACsForRepo {
+	tokenSecret, revision := s.TokenGenerator()
+	s.Lock()
+	if revision != s.currentTokenRevision {
+		repoTokenMap := map[string]HMACsForRepo{}
+		if err := yaml.Unmarshal(tokenSecret, &repoTokenMap); err != nil {
+			// To keep backward compatibility, we are going to assume that in case of error,
+			// whole file is a single line hmac token.
+			// TODO: Once this code has been released and file has been moved to new format,
+			// we should delete this code and return error.
+			logrus.WithError(err).Trace("Couldn't unmarshal the hmac secret as hierarchical file. Parsing as single token format")
+			repoTokenMap["*"] = []HMACToken{{Value: string(tokenSecret)}}
+		}
+		s.currentRepoTokenMap = repoTokenMap
+		s.currentTokenRevision = revision
+	}
+	s.Unlock()
+	return s.currentRepoTokenMap
+}
 
 // HMACToken contains a hmac token and the time when it's created.
 type HMACToken struct {
@@ -39,7 +70,7 @@ type HMACToken struct {
 type HMACsForRepo []HMACToken
 
 // ValidatePayload ensures that the request payload signature matches the key.
-func ValidatePayload(payload []byte, sig string, tokenGenerator func() []byte) bool {
+func ValidatePayload(payload []byte, sig string, repoTokenMap map[string]HMACsForRepo) bool {
 	var event GenericEvent
 	if err := json.Unmarshal(payload, &event); err != nil {
 		logrus.WithError(err).Info("validatePayload couldn't unmarshal the github event payload")
@@ -60,7 +91,7 @@ func ValidatePayload(payload []byte, sig string, tokenGenerator func() []byte) b
 	if orgRepo == "" {
 		orgRepo = event.Org.Login
 	}
-	hmacs, err := extractHMACs(orgRepo, tokenGenerator)
+	hmacs, err := extractHMACs(orgRepo, repoTokenMap)
 	if err != nil {
 		logrus.WithError(err).Error("couldn't unmarshal the hmac secret")
 		return false
@@ -91,28 +122,16 @@ func PayloadSignature(payload []byte, key []byte) string {
 // For example : if a token for repo is present and it doesn't match the repo, we will
 // not try to find a match with org level token. However if no token is present for repo,
 // we will try to match with org level.
-func extractHMACs(orgRepo string, tokenGenerator func() []byte) ([][]byte, error) {
-	t := tokenGenerator()
-	repoToTokenMap := map[string]HMACsForRepo{}
-
-	if err := yaml.Unmarshal(t, &repoToTokenMap); err != nil {
-		// To keep backward compatibility, we are going to assume that in case of error,
-		// whole file is a single line hmac token.
-		// TODO: Once this code has been released and file has been moved to new format,
-		// we should delete this code and return error.
-		logrus.WithError(err).Trace("Couldn't unmarshal the hmac secret as hierarchical file. Parsing as single token format")
-		return [][]byte{t}, nil
-	}
-
+func extractHMACs(orgRepo string, repoTokenMap map[string]HMACsForRepo) ([][]byte, error) {
 	orgName := strings.Split(orgRepo, "/")[0]
 
-	if val, ok := repoToTokenMap[orgRepo]; ok {
+	if val, ok := repoTokenMap[orgRepo]; ok {
 		return extractTokens(val), nil
 	}
-	if val, ok := repoToTokenMap[orgName]; ok {
+	if val, ok := repoTokenMap[orgName]; ok {
 		return extractTokens(val), nil
 	}
-	if val, ok := repoToTokenMap["*"]; ok {
+	if val, ok := repoTokenMap["*"]; ok {
 		return extractTokens(val), nil
 	}
 	return nil, errors.New("invalid content in secret file, global token doesn't exist")

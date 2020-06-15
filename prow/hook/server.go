@@ -39,11 +39,11 @@ import (
 // Server implements http.Handler. It validates incoming GitHub webhooks and
 // then dispatches them to the appropriate plugins.
 type Server struct {
-	ClientAgent    *plugins.ClientAgent
-	Plugins        *plugins.ConfigAgent
-	ConfigAgent    *config.Agent
-	TokenGenerator func() []byte
-	Metrics        *githubeventserver.Metrics
+	ClientAgent       *plugins.ClientAgent
+	Plugins           *plugins.ConfigAgent
+	ConfigAgent       *config.Agent
+	HMACTokenResolver *github.HMACTokenResolver
+	Metrics           *githubeventserver.Metrics
 
 	// c is an http client used for dispatching events
 	// to external plugin services.
@@ -54,7 +54,8 @@ type Server struct {
 
 // ServeHTTP validates an incoming webhook and puts it into the event channel.
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	eventType, eventGUID, payload, ok, resp := github.ValidateWebhook(w, r, s.TokenGenerator)
+	repoTokenMap := s.HMACTokenResolver.Get()
+	eventType, eventGUID, payload, ok, resp := github.ValidateWebhook(w, r, repoTokenMap)
 	if counter, err := s.Metrics.ResponseCounter.GetMetricWithLabelValues(strconv.Itoa(resp)); err != nil {
 		logrus.WithFields(logrus.Fields{
 			"status-code": resp,

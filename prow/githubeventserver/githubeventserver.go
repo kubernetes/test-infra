@@ -72,10 +72,12 @@ func NewGitHubEventServer(o Options) *GitHubEventServer {
 		port:     o.port,
 		wg:       &wg,
 		serveMuxHandler: &serveMuxHandler{
-			hmacTokenGenerator: o.HmacTokenGenerator,
-			log:                o.Logger,
-			metrics:            o.Metrics,
-			wg:                 &wg,
+			hmacTokenResolver: github.HMACTokenResolver{
+				TokenGenerator: o.HmacTokenGenerator,
+			},
+			log:     o.Logger,
+			metrics: o.Metrics,
+			wg:      &wg,
 		},
 	}
 
@@ -196,8 +198,8 @@ type serveMuxHandler struct {
 
 	externalPlugins map[string][]plugins.ExternalPlugin
 
-	hmacTokenGenerator func() []byte
-	metrics            *Metrics
+	hmacTokenResolver github.HMACTokenResolver
+	metrics           *Metrics
 
 	c http.Client
 }
@@ -398,7 +400,7 @@ func (s *serveMuxHandler) handleEvent(eventType, eventGUID string, payload []byt
 
 // ServeHTTP validates an incoming webhook and puts it into the event channel.
 func (s *serveMuxHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	eventType, eventGUID, payload, ok, resp := github.ValidateWebhook(w, r, s.hmacTokenGenerator)
+	eventType, eventGUID, payload, ok, resp := github.ValidateWebhook(w, r, s.hmacTokenResolver.Get())
 	if counter, err := s.metrics.ResponseCounter.GetMetricWithLabelValues(strconv.Itoa(resp)); err != nil {
 		logrus.WithFields(logrus.Fields{
 			"status-code": resp,

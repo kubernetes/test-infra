@@ -31,6 +31,7 @@ import (
 	"k8s.io/test-infra/prow/config/secret"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/git/v2"
+	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/githubeventserver"
 	"k8s.io/test-infra/prow/hook"
 	"k8s.io/test-infra/prow/interrupts"
@@ -164,7 +165,8 @@ func main() {
 	}
 
 	var slackClient *slack.Client
-	if !o.dryRun && string(secretAgent.GetSecret(o.slackTokenFile)) != "" {
+	slackToken, _ := secretAgent.GetSecret(o.slackTokenFile)
+	if !o.dryRun && string(slackToken) != "" {
 		logrus.Info("Using real slack client.")
 		slackClient = slack.NewClient(secretAgent.GetTokenGenerator(o.slackTokenFile))
 	}
@@ -204,11 +206,13 @@ func main() {
 	pjutil.ServePProf(o.instrumentationOptions.PProfPort)
 
 	server := &hook.Server{
-		ClientAgent:    clientAgent,
-		ConfigAgent:    configAgent,
-		Plugins:        pluginAgent,
-		Metrics:        promMetrics,
-		TokenGenerator: secretAgent.GetTokenGenerator(o.webhookSecretFile),
+		ClientAgent: clientAgent,
+		ConfigAgent: configAgent,
+		Plugins:     pluginAgent,
+		Metrics:     promMetrics,
+		HMACTokenResolver: &github.HMACTokenResolver{
+			TokenGenerator: secretAgent.GetTokenGeneratorWithRevision(o.webhookSecretFile),
+		},
 	}
 	interrupts.OnInterrupt(func() {
 		server.GracefulShutdown()
