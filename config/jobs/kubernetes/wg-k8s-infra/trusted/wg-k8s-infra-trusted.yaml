@@ -44,3 +44,24 @@ postsubmits:
         args:
         - -c
         - "cd groups && make run -- --confirm"
+  - name: k8sio-dns-update
+    cluster: k8s-infra-prow-build-trusted
+    decorate: true
+    run_if_changed: "^dns/zone-configs/"
+    max_concurrency: 1
+    branches:
+    - ^master$
+    annotations:
+      testgrid-create-test-group: 'true'
+      testgrid-dashboards: wg-k8s-infra-k8sio
+      testgrid-alert-email: k8s-infra-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '1'
+    spec:
+      serviceAccountName: k8s-infra-dns-updater
+      containers:
+      - image: us.gcr.io/k8s-artifacts-prod/infra-tools/octodns:v20200612-d4db040
+        command:
+        - bash
+        args:
+        - -c
+        - "cd dns && ./push.sh --dry-run"
