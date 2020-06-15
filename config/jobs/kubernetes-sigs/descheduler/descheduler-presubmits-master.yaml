@@ -52,3 +52,17 @@ presubmits:
         - make
         args:
         - test-unit
+  - name: pull-descheduler-e2e
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-descheduler-e2e
+    decorate: true
+    path_alias: sigs.k8s.io/descheduler
+    always_run: true
+    spec:
+      containers:
+      - image: golang:1.13
+        command:
+        - make
+        args:
+        - test-e2e
