@@ -64,6 +64,11 @@ func (cmd *LocalCmd) SetStderr(w io.Writer) Cmd {
 	return cmd
 }
 
+func (cmd *LocalCmd) SetDir(dir string) Cmd {
+	cmd.Dir = dir
+	return cmd
+}
+
 // Run runs
 func (cmd *LocalCmd) Run() error {
 	return cmd.Cmd.Run()
