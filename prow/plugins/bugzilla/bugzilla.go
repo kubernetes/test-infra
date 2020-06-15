@@ -921,7 +921,7 @@ func updateTitleBugID(title string, oldID, newID int) (string, error) {
 	if match == "" {
 		return "", fmt.Errorf("failed to identify bug string in title")
 	}
-	updatedBug := strings.Replace(match, fmt.Sprintf("%d", oldID), fmt.Sprintf("%d", newID), 1)
+	updatedBug := strings.Replace(match, strconv.Itoa(oldID), strconv.Itoa(newID), 1)
 	newTitle := titleMatch.ReplaceAllString(title, updatedBug)
 	return newTitle, nil
 }
