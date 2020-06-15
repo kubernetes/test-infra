@@ -909,7 +909,7 @@ func handleCherrypick(e event, gc githubClient, bc bugzilla.Client, options plug
 	// Replace old bugID in title with new cloneID
 	newTitle, err := updateTitleBugID(e.body, bugID, cloneID)
 	if err != nil {
-		log.WithError(err).Errorf("Failed to update title bug ID: %v", err)
+		log.WithError(err).Errorf("failed to update title bug ID: %v", err)
 		return comment(formatError(fmt.Sprintf("updating GitHub PR title: Created cherrypick %s, but failed to update GitHub PR title name to match", cloneLink), bc.Endpoint(), cloneID, err))
 	}
 	response := fmt.Sprintf("%s has been cloned as %s. Retitling PR to link against new bug.\n/retitle %s", oldLink, cloneLink, newTitle)
@@ -919,7 +919,7 @@ func handleCherrypick(e event, gc githubClient, bc bugzilla.Client, options plug
 func updateTitleBugID(title string, oldID, newID int) (string, error) {
 	match := titleMatch.FindString(title)
 	if match == "" {
-		return "", fmt.Errorf("Failed to identify bug string in title")
+		return "", fmt.Errorf("failed to identify bug string in title")
 	}
 	updatedBug := strings.Replace(match, fmt.Sprintf("%d", oldID), fmt.Sprintf("%d", newID), 1)
 	newTitle := titleMatch.ReplaceAllString(title, updatedBug)
