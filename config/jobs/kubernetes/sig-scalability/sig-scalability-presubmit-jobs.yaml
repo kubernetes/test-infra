@@ -107,6 +107,53 @@ presubmits:
           requests:
             memory: "6Gi"
 
+  # This is an equivalent of the ci-kubernetes-e2e-gce-scale-correctness test
+  # at 100 node scale. It's an optional presubmit to simplify testing changes
+  # that affect the releasing blocking ci correctness tests.
+  - name: pull-kubernetes-e2e-gce-correctness
+    always_run: false
+    optional: true
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-e2e-scalability-common: "true"
+    annotations:
+      testgrid-dashboards: presubmits-kubernetes-scalability
+      testgrid-tab-name: pull-kubernetes-e2e-gce-correctness
+    spec:
+      containers:
+      - args:
+        - --root=/go/src
+        - --repo=k8s.io/kubernetes=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --timeout=270
+        - --bare
+        - --scenario=kubernetes_e2e
+        - --
+        - --build=bazel
+        - --cluster=gce-cluster
+        - --env=CONCURRENT_SERVICE_SYNCS=5
+        - --env=HEAPSTER_MACHINE_TYPE=n1-standard-2
+        - --extract=local
+        - --gcp-master-image=gci
+        - --gcp-node-image=gci
+        - --gcp-node-size=g1-small
+        - --gcp-nodes=100
+        - --gcp-project-type=scalability-presubmit-project
+        - --gcp-ssh-proxy-instance-name=gce-cluster-master
+        - --gcp-zone=us-east1-b
+        - --ginkgo-parallel=40
+        - --provider=gce
+        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-correctness
+        - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[DisabledForLargeClusters\] --minStartupPods=8 --node-schedulable-timeout=90m
+        - --timeout=240m
+        - --use-logexporter
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-master
+        resources:
+          requests:
+            memory: "6Gi"
+
   - name: pull-kubernetes-e2e-gce-large-performance
     always_run: false
     max_concurrency: 1
