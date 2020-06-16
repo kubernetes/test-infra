@@ -128,7 +128,6 @@ presubmits:
         - --repo=k8s.io/release
         - --upload=gs://kubernetes-jenkins/pr-logs
         - --timeout=270
-        - --bare
         - --scenario=kubernetes_e2e
         - --
         - --build=bazel
