@@ -24,6 +24,7 @@ import (
 	"fmt"
 	"os"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -124,6 +125,13 @@ func main() {
 	if err := agent.Start([]string{o.github.TokenPath}); err != nil {
 		logrus.WithError(err).Fatalf("Error starting secret agent %s", o.github.TokenPath)
 	}
+
+	var configAgent config.Agent
+	if err := configAgent.Start(o.configPath, ""); err != nil {
+		logrus.WithError(err).Fatal("Error starting config agent.")
+	}
+	newHMACConfig := configAgent.Config().ManagedWebhooks
+
 	gc, err := o.github.GitHubClient(agent, o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating github client")
@@ -134,29 +142,30 @@ func main() {
 		logrus.WithError(err).Fatal("Error getting the current hmac yaml.")
 	}
 
-	var currentHMACMap map[string]github.HMACsForRepo
+	currentHMACMap := map[string]github.HMACsForRepo{}
 	if err := yaml.Unmarshal(currentHMACYaml, &currentHMACMap); err != nil {
+		// When the token is still a single global token, respect_legacy_global_token must be set to true before running this tool.
+		// This can prevent the global token from being deleted by mistake before users migrate all repos/orgs to use auto-generated private tokens.
+		if !newHMACConfig.RespectLegacyGlobalToken {
+			logrus.Fatal("respect_legacy_global_token must be set to true before the hmac tool is run for the first time.")
+		}
+
 		logrus.WithError(err).Error("Couldn't unmarshal the hmac secret as hierarchical file. Parsing as a single global token and writing it back to the secret.")
 		currentHMACMap["*"] = github.HMACsForRepo{
-			github.HMACSecret{
-				Value: string(currentHMACYaml),
+			github.HMACToken{
+				Value: strings.TrimSpace(string(currentHMACYaml)),
 			},
 		}
 	}
-
-	var configAgent config.Agent
-	if err := configAgent.Start(o.configPath, ""); err != nil {
-		logrus.WithError(err).Fatal("Error starting config agent.")
-	}
-	newHMACConfig := configAgent.Config().ManagedWebhooks
 
 	c := client{
 		kubernetesClient: kc,
 		githubHookClient: gc,
 		options:          o,
 
-		currentHMACMap: currentHMACMap,
-		newHMACConfig:  newHMACConfig,
+		currentHMACMap:        currentHMACMap,
+		newHMACConfig:         newHMACConfig,
+		hmacMapForBatchUpdate: map[string]string{},
 	}
 
 	if err := c.handleConfigUpdate(); err != nil {
@@ -169,7 +178,7 @@ func (c *client) handleConfigUpdate() error {
 	repoRemoved := map[string]bool{}
 	repoRotated := map[string]config.ManagedWebhookInfo{}
 
-	for repoName, hmacConfig := range c.newHMACConfig {
+	for repoName, hmacConfig := range c.newHMACConfig.OrgRepoConfig {
 		if _, ok := c.currentHMACMap[repoName]; ok {
 			repoRotated[repoName] = hmacConfig
 		} else {
@@ -178,7 +187,11 @@ func (c *client) handleConfigUpdate() error {
 	}
 
 	for repoName := range c.currentHMACMap {
-		if _, ok := c.newHMACConfig[repoName]; !ok {
+		// Skip the global hmac token if it still needs to be respected.
+		if repoName == "*" && c.newHMACConfig.RespectLegacyGlobalToken {
+			continue
+		}
+		if _, ok := c.newHMACConfig.OrgRepoConfig[repoName]; !ok {
 			repoRemoved[repoName] = true
 		}
 	}
@@ -217,30 +230,41 @@ func (c *client) handleConfigUpdate() error {
 
 // handleRemoveRepo handles webhook removal and hmac token removal from the current hmac map for all repos removed from the declarative config.
 func (c *client) handleRemovedRepo(removed map[string]bool) error {
-	repos := make([]string, len(removed))
-	var i int
-	for k := range removed {
-		repos[i] = k
-		i++
+	removeGlobalToken := false
+	repos := make([]string, 0)
+	for r := range removed {
+		if r == "*" {
+			removeGlobalToken = true
+		} else {
+			repos = append(repos, r)
+		}
 	}
 
-	o := ghhook.Options{
-		GitHubOptions:    c.options.github,
-		GitHubHookClient: c.githubHookClient,
-		Repos:            prowflagutil.NewStrings(repos...),
-		HookURL:          c.options.hookUrl,
-		ShouldDelete:     true,
-		Confirm:          true,
-	}
-	if err := o.Validate(); err != nil {
-		return fmt.Errorf("error validating the options: %v", err)
+	if len(repos) != 0 {
+		o := ghhook.Options{
+			GitHubOptions:    c.options.github,
+			GitHubHookClient: c.githubHookClient,
+			Repos:            prowflagutil.NewStrings(repos...),
+			HookURL:          c.options.hookUrl,
+			ShouldDelete:     true,
+			Confirm:          true,
+		}
+		if err := o.Validate(); err != nil {
+			return fmt.Errorf("error validating the options: %v", err)
+		}
+
+		logrus.WithField("repos", repos).Debugf("Deleting webhooks for %q", c.options.hookUrl)
+		if err := o.HandleWebhookConfigChange(); err != nil {
+			return fmt.Errorf("error deleting webhook for repos %q: %v", repos, err)
+		}
+
+		for _, repo := range repos {
+			delete(c.currentHMACMap, repo)
+		}
 	}
 
-	if err := o.HandleWebhookConfigChange(); err != nil {
-		return fmt.Errorf("error deleting webhook for repos %q: %v", repos, err)
-	}
-	for _, repo := range repos {
-		delete(c.currentHMACMap, repo)
+	if removeGlobalToken {
+		delete(c.currentHMACMap, "*")
 	}
 	// No need to update the secret here, the following update will commit the changes together.
 
@@ -288,14 +312,14 @@ func (c *client) addRepoToBatchUpdate(repo string) error {
 		updatedTokenList = append(updatedTokenList, val...)
 		// Current webhook is possibly using global token so we need to promote that token to repo level, if it exists.
 	} else if globalTokens, ok := c.currentHMACMap["*"]; ok {
-		updatedTokenList = append(updatedTokenList, github.HMACSecret{
+		updatedTokenList = append(updatedTokenList, github.HMACToken{
 			Value: globalTokens[0].Value,
 			// Set CreatedAt as a time slightly before the TokenCreatedAfter time, so that the token can be properly pruned in the end.
-			CreatedAt: c.newHMACConfig[repo].TokenCreatedAfter.Add(-time.Second),
+			CreatedAt: c.newHMACConfig.OrgRepoConfig[repo].TokenCreatedAfter.Add(-time.Second),
 		})
 	}
 
-	updatedTokenList = append(updatedTokenList, github.HMACSecret{
+	updatedTokenList = append(updatedTokenList, github.HMACToken{
 		Value: generatedToken, CreatedAt: time.Now()})
 	c.currentHMACMap[repo] = updatedTokenList
 	c.hmacMapForBatchUpdate[repo] = generatedToken
@@ -320,6 +344,7 @@ func (c *client) batchOnboardNewTokenForRepos() error {
 			return fmt.Errorf("error validating the options: %v", err)
 		}
 
+		logrus.WithField("repo", repo).Debugf("Updating webhooks for %q", c.options.hookUrl)
 		if err := o.HandleWebhookConfigChange(); err != nil {
 			return fmt.Errorf("error updating webhook for repo %q: %v", repo, err)
 		}
@@ -377,9 +402,9 @@ func (c *client) pruneOldTokens(repo string) {
 	c.currentHMACMap[repo] = tokens[:1]
 }
 
-// generateNewHMACToken generates a hex encoded crypto random string of length 20.
+// generateNewHMACToken generates a hex encoded crypto random string of length 40.
 func generateNewHMACToken() (string, error) {
-	bytes := make([]byte, 10) // 10 bytes of entropy will result in a string of length 20 after hex encoding
+	bytes := make([]byte, 20) // 20 bytes of entropy will result in a string of length 40 after hex encoding
 	if _, err := rand.Read(bytes); err != nil {
 		return "", err
 	}

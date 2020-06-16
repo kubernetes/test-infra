@@ -29,14 +29,14 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
-// hmacSecret contains a hmac token and the time when it's created.
-type HMACSecret struct {
+// HMACToken contains a hmac token and the time when it's created.
+type HMACToken struct {
 	Value     string    `json:"value"`
 	CreatedAt time.Time `json:"created_at"`
 }
 
 // HMACsForRepo contains all hmac tokens configured for a repo, org or globally.
-type HMACsForRepo []HMACSecret
+type HMACsForRepo []HMACToken
 
 // ValidatePayload ensures that the request payload signature matches the key.
 func ValidatePayload(payload []byte, sig string, tokenGenerator func() []byte) bool {
@@ -55,7 +55,12 @@ func ValidatePayload(payload []byte, sig string, tokenGenerator func() []byte) b
 		return false
 	}
 
-	hmacs, err := extractHMACs(event.Repo.FullName, tokenGenerator)
+	orgRepo := event.Repo.FullName
+	// If orgRepo is empty, the event is probably org-level, so try getting org name from the Org info.
+	if orgRepo == "" {
+		orgRepo = event.Org.Login
+	}
+	hmacs, err := extractHMACs(orgRepo, tokenGenerator)
 	if err != nil {
 		logrus.WithError(err).Error("couldn't unmarshal the hmac secret")
 		return false
@@ -86,7 +91,7 @@ func PayloadSignature(payload []byte, key []byte) string {
 // For example : if a token for repo is present and it doesn't match the repo, we will
 // not try to find a match with org level token. However if no token is present for repo,
 // we will try to match with org level.
-func extractHMACs(repo string, tokenGenerator func() []byte) ([][]byte, error) {
+func extractHMACs(orgRepo string, tokenGenerator func() []byte) ([][]byte, error) {
 	t := tokenGenerator()
 	repoToTokenMap := map[string]HMACsForRepo{}
 
@@ -99,9 +104,9 @@ func extractHMACs(repo string, tokenGenerator func() []byte) ([][]byte, error) {
 		return [][]byte{t}, nil
 	}
 
-	orgName := strings.Split(repo, "/")[0]
+	orgName := strings.Split(orgRepo, "/")[0]
 
-	if val, ok := repoToTokenMap[repo]; ok {
+	if val, ok := repoToTokenMap[orgRepo]; ok {
 		return extractTokens(val), nil
 	}
 	if val, ok := repoToTokenMap[orgName]; ok {
