@@ -228,7 +228,7 @@ presubmits:
         - --cluster=
         - --extract=local
         - --gcp-node-image=ubuntu
-        - --image-family=ubuntu-gke-1804-lts-1
+        - --image-family=ubuntu-gke-1804-1-16-v20200330
         - --image-project=ubuntu-os-gke-cloud
         - --gcp-zone=us-west1-b
         - --provider=gce
@@ -269,7 +269,7 @@ presubmits:
         - --cluster=
         - --extract=local
         - --gcp-node-image=ubuntu
-        - --image-family=ubuntu-gke-1804-lts-1
+        - --image-family=ubuntu-gke-1804-1-16-v20200330
         - --image-project=ubuntu-os-gke-cloud
         - --gcp-zone=us-west1-b
         - --provider=gce
@@ -336,7 +336,7 @@ periodics:
       - --check-leaked-resources
       - --extract=ci/latest
       - --gcp-node-image=ubuntu
-      - --image-family=ubuntu-gke-1804-lts-1
+      - --image-family=ubuntu-gke-1804-1-16-v20200330
       - --image-project=ubuntu-os-gke-cloud
       - --gcp-zone=us-west1-b
       - --provider=gce
@@ -361,7 +361,7 @@ periodics:
       - --check-leaked-resources
       - --extract=ci/latest
       - --gcp-node-image=ubuntu
-      - --image-family=ubuntu-gke-1804-lts-1
+      - --image-family=ubuntu-gke-1804-1-16-v20200330
       - --image-project=ubuntu-os-gke-cloud
       - --gcp-zone=us-west1-b
       - --provider=gce
