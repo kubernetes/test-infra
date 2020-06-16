@@ -17,6 +17,7 @@ limitations under the License.
 package github
 
 import (
+	"errors"
 	"sync"
 	"testing"
 
@@ -169,4 +170,62 @@ func TestShardedLockCleanup(t *testing.T) {
 		t.Error("lock didn't get cleaned up")
 	}
 
+}
+
+func TestReport(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name          string
+		githubError   error
+		expectedError string
+	}{
+		{
+			name: "Success",
+		},
+		{
+			name:        "Maximum sha error gets swallowed",
+			githubError: errors.New("This SHA and context has reached the maximum number of statuses"),
+		},
+		{
+			name:          "Other error get returned",
+			githubError:   errors.New("something went wrong :("),
+			expectedError: "error setting status: something went wrong :(",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			c := Client{
+				gc: &fakegithub.FakeClient{Error: tc.githubError},
+				config: func() *config.Config {
+					return &config.Config{
+						ProwConfig: config.ProwConfig{
+							GitHubReporter: config.GitHubReporter{
+								JobTypesToReport: []v1.ProwJobType{v1.PostsubmitJob},
+							},
+						},
+					}
+				},
+			}
+			pj := &v1.ProwJob{
+				Spec: v1.ProwJobSpec{
+					Type:   v1.PostsubmitJob,
+					Report: true,
+					Refs:   &v1.Refs{},
+				},
+				Status: v1.ProwJobStatus{
+					State: v1.SuccessState,
+				},
+			}
+
+			errMsg := ""
+			_, err := c.Report(pj)
+			if err != nil {
+				errMsg = err.Error()
+			}
+			if errMsg != tc.expectedError {
+				t.Errorf("expected error %q got error %q", tc.expectedError, errMsg)
+			}
+		})
+	}
 }

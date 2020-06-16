@@ -144,7 +144,7 @@ func Report(ghc GitHubClient, reportTemplate *template.Template, pj prowapi.Prow
 	}
 
 	if err := reportStatus(ghc, pj); err != nil {
-		return fmt.Errorf("error setting status: %v", err)
+		return fmt.Errorf("error setting status: %w", err)
 	}
 
 	// Report manually aborted Jenkins jobs and jobs with invalid pod specs alongside
