@@ -2598,19 +2598,77 @@ func (c *client) ReopenPR(org, repo string, number int) error {
 // GetRef returns the SHA of the given ref, such as "heads/master".
 //
 // See https://developer.github.com/v3/git/refs/#get-a-reference
+// The gitbub api does prefix matching and might return multiple results,
+// in which case we will return a GetRefTooManyResultsError
 func (c *client) GetRef(org, repo, ref string) (string, error) {
 	durationLogger := c.log("GetRef", org, repo, ref)
 	defer durationLogger()
 
-	var res struct {
-		Object map[string]string `json:"object"`
-	}
+	res := GetRefResponse{}
 	_, err := c.request(&request{
 		method:    http.MethodGet,
 		path:      fmt.Sprintf("/repos/%s/%s/git/refs/%s", org, repo, ref),
 		exitCodes: []int{200},
 	}, &res)
-	return res.Object["sha"], err
+	if err != nil {
+		return "", nil
+	}
+
+	if n := len(res); n > 1 {
+		return "", GetRefTooManyResultsError{org: org, repo: repo, ref: ref, resultsRefs: res.RefNames()}
+	}
+	return res[0].Object.SHA, nil
+}
+
+type GetRefTooManyResultsError struct {
+	org, repo, ref string
+	resultsRefs    []string
+}
+
+func (GetRefTooManyResultsError) Is(err error) bool {
+	_, ok := err.(GetRefTooManyResultsError)
+	return ok
+}
+
+func (e GetRefTooManyResultsError) Error() string {
+	return fmt.Sprintf("query for %s/%s ref %q didn't match one but multiple refs: %v", e.org, e.repo, e.ref, e.resultsRefs)
+}
+
+type GetRefResponse []GetRefResult
+
+// We need a custom unmarshaler because the GetRefResult may either be a
+// single GetRefResponse or multiple
+func (grr *GetRefResponse) UnmarshalJSON(data []byte) error {
+	result := &GetRefResult{}
+	if err := json.Unmarshal(data, result); err == nil {
+		*(grr) = GetRefResponse{*result}
+		return nil
+	}
+	var response []GetRefResult
+	if err := json.Unmarshal(data, &response); err != nil {
+		return fmt.Errorf("failed to unmarshal response %s: %w", string(data), err)
+	}
+	*grr = GetRefResponse(response)
+	return nil
+}
+
+func (grr *GetRefResponse) RefNames() []string {
+	var result []string
+	for _, item := range *grr {
+		result = append(result, item.Ref)
+	}
+	return result
+}
+
+type GetRefResult struct {
+	Ref    string `json:"ref,omitempty"`
+	NodeID string `json:"node_id,omitempty"`
+	URL    string `json:"url,omitempty"`
+	Object struct {
+		Type string `json:"type,omitempty"`
+		SHA  string `json:"sha,omitempty"`
+		URL  string `json:"url,omitempty"`
+	} `json:"object,omitempty"`
 }
 
 // DeleteRef deletes the given ref
