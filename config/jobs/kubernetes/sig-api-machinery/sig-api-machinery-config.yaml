@@ -80,6 +80,7 @@ presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-e2e-gce-network-proxy-http-connect
     always_run: false
+    run_if_changed: '^(cluster/gce/manifests/konnectivity-server.yaml$|cluster/gce/addons/konnectivity-agent)'
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -118,6 +119,7 @@ presubmits:
       testgrid-dashboards: sig-api-machinery-network-proxy
   - name: pull-kubernetes-e2e-gce-network-proxy-grpc
     always_run: false
+    run_if_changed: '^(cluster/gce/manifests/konnectivity-server.yaml$|cluster/gce/addons/konnectivity-agent)'
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
