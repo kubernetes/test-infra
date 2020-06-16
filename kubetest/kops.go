@@ -462,11 +462,16 @@ func (k kops) Up() error {
 	if len(featureFlags) != 0 {
 		os.Setenv("KOPS_FEATURE_FLAGS", strings.Join(featureFlags, ","))
 	}
+
+	createArgs = append(createArgs, "--yes")
+
 	if err := control.FinishRunning(exec.Command(k.path, createArgs...)); err != nil {
 		return fmt.Errorf("kops create cluster failed: %v", err)
 	}
-	if err := control.FinishRunning(exec.Command(k.path, "update", "cluster", k.cluster, "--yes")); err != nil {
-		return fmt.Errorf("kops update cluster failed: %v", err)
+
+	// TODO: Once this gets support for N checks in a row, it can replace the above node readiness check
+	if err := control.FinishRunning(exec.Command(k.path, "validate", "cluster", k.cluster, "--wait", "15m")); err != nil {
+		return fmt.Errorf("kops validate cluster failed: %v", err)
 	}
 
 	// We require repeated successes, so we know that the cluster is stable
@@ -478,11 +483,6 @@ func (k kops) Up() error {
 	// Wait for nodes to become ready
 	if err := waitForReadyNodes(k.nodes+1, *kopsUpTimeout, requiredConsecutiveSuccesses); err != nil {
 		return fmt.Errorf("kops nodes not ready: %v", err)
-	}
-
-	// TODO: Once this gets support for N checks in a row, it can replace the above node readiness check
-	if err := control.FinishRunning(exec.Command(k.path, "validate", "cluster", k.cluster, "--wait", "5m")); err != nil {
-		return fmt.Errorf("kops validate cluster failed: %v", err)
 	}
 
 	return nil
