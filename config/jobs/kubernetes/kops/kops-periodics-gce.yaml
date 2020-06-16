@@ -16,6 +16,8 @@ periodics:
       args:
       - --cluster=e2e-kops-gce-stable.k8s.local
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
+      - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
@@ -50,6 +52,8 @@ periodics:
       args:
       - --cluster=e2e-kops-gce-latest.k8s.local
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
+      - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
@@ -85,6 +89,8 @@ periodics:
       args:
       - --cluster=e2e-kops-canary-gce-stable.k8s.local
       - --deployment=kops
+      - --kops-ssh-user=ubuntu
+      - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
