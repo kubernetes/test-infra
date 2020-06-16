@@ -22,6 +22,7 @@ import (
 	"crypto/tls"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -368,22 +369,79 @@ func TestGetPullRequestChanges(t *testing.T) {
 }
 
 func TestGetRef(t *testing.T) {
-	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet {
-			t.Errorf("Bad method: %s", r.Method)
-		}
-		if r.URL.Path != "/repos/k8s/kuber/git/refs/heads/mastah" {
-			t.Errorf("Bad request path: %s", r.URL.Path)
-		}
-		fmt.Fprint(w, `{"object": {"sha":"abcde"}}`)
-	}))
-	defer ts.Close()
-	c := getClient(ts.URL)
-	SHA, err := c.GetRef("k8s", "kuber", "heads/mastah")
-	if err != nil {
-		t.Errorf("Didn't expect error: %v", err)
-	} else if SHA != "abcde" {
-		t.Errorf("Wrong SHA: %s", SHA)
+	testCases := []struct {
+		name              string
+		githubResponse    []byte
+		expectedSHA       string
+		expectedError     string
+		expectedErrorType error
+	}{
+		{
+			name:           "single ref",
+			githubResponse: []byte(`{"object": {"sha":"abcde"}}`),
+			expectedSHA:    "abcde",
+		},
+		{
+			name: "multiple refs",
+			githubResponse: []byte(`
+[
+  {
+    "ref": "refs/heads/feature-a",
+    "node_id": "MDM6UmVmcmVmcy9oZWFkcy9mZWF0dXJlLWE=",
+    "url": "https://api.github.com/repos/octocat/Hello-World/git/refs/heads/feature-a",
+    "object": {
+      "type": "commit",
+      "sha": "aa218f56b14c9653891f9e74264a383fa43fefbd",
+      "url": "https://api.github.com/repos/octocat/Hello-World/git/commits/aa218f56b14c9653891f9e74264a383fa43fefbd"
+    }
+  },
+  {
+    "ref": "refs/heads/feature-b",
+    "node_id": "MDM6UmVmcmVmcy9oZWFkcy9mZWF0dXJlLWI=",
+    "url": "https://api.github.com/repos/octocat/Hello-World/git/refs/heads/feature-b",
+    "object": {
+      "type": "commit",
+      "sha": "612077ae6dffb4d2fbd8ce0cccaa58893b07b5ac",
+      "url": "https://api.github.com/repos/octocat/Hello-World/git/commits/612077ae6dffb4d2fbd8ce0cccaa58893b07b5ac"
+    }
+  }
+]`),
+			expectedError:     "query for org/repo ref \"branch\" didn't match one but multiple refs: [refs/heads/feature-a refs/heads/feature-b]",
+			expectedErrorType: GetRefTooManyResultsError{},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(200)
+				if r.Method != http.MethodGet {
+					t.Errorf("Bad method: %s", r.Method)
+				}
+				expectedPath := "/repos/org/repo/git/refs/branch"
+				if r.URL.Path != expectedPath {
+					t.Errorf("expected path %s, got path %s", expectedPath, r.URL.Path)
+				}
+				w.Write(tc.githubResponse)
+			}))
+			defer ts.Close()
+
+			c := getClient(ts.URL)
+			var errMsg string
+			sha, err := c.GetRef("org", "repo", "branch")
+			if err != nil {
+				errMsg = err.Error()
+			}
+			if errMsg != tc.expectedError {
+				t.Fatalf("expected error %q, got error %q", tc.expectedError, err)
+			}
+			if !errors.Is(err, tc.expectedErrorType) {
+				t.Errorf("expected error of type %T, got %T", tc.expectedErrorType, err)
+			}
+			if sha != tc.expectedSHA {
+				t.Errorf("expected sha %q, got sha %q", tc.expectedSHA, sha)
+			}
+		})
 	}
 }
 
