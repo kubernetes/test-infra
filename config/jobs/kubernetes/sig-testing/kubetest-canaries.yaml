@@ -209,7 +209,8 @@ periodics:
       args:
       - --cluster=e2e-kops-aws-canary.test-cncf-aws.k8s.io
       - --deployment=kops
-      - --env=KUBE_SSH_USER=admin
+      - --kops-ssh-user=ubuntu
+      - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=ci/latest
       - --ginkgo-parallel
