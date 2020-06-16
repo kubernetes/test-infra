@@ -19,24 +19,31 @@ set -o nounset
 set -o pipefail
 
 PLANK_DEPLOYMENT_FILE="${PLANK_DEPLOYMENT_FILE:-}"
+# Args for use with GH
 GH_ORG="${GH_ORG:-}"
 GH_REPO="${GH_REPO:-}"
 FORK_GH_REPO="${FORK_GH_REPO:-${GH_REPO}}"
+# Args for use with Gerrit
+GERRIT_HOST_REPO="${GERRIT_HOST_REPO:-}"
+
+# Set this to something more specific if the repo hosts multiple Prow instances.
+# Must be a valid to use as part of a git branch name. (e.g. no spaces)
+PROW_INSTANCE_NAME="${PROW_INSTANCE_NAME:-prow}"
+
 
 
 # TODO(fejta): rewrite this in a better language REAL SOON  <-lol
 main() {
 	if [[ $# -lt 1 ]]; then
-	    echo "Usage: $(basename "$0") </path/to/github/token> [git-name] [git-email]" >&2
+	    echo "Usage: $(basename "$0") <path to github token or http cookiefile> [git-name] [git-email]" >&2
 	    exit 1
 	fi
-	token=$1
+	creds=$1
 	shift
-	user-from-token
-	ensure-git-config "$@"
 	check-args
+	ensure-git-config "$@"
 
-	echo "Bumping prow to upstream (prow.k8s.io) version..." >&2
+	echo "Bumping ${PROW_INSTANCE_NAME} to upstream (prow.k8s.io) version..." >&2
 	/bump.sh --upstream
 
 	cd "$(git rev-parse --show-toplevel)"
@@ -47,22 +54,14 @@ main() {
 		echo "Bump did not change the Prow version: it's still ${version}. Aborting no-op bump." >&2
 		exit 0
 	fi
-
-	title="Bump prow from ${old_version} to ${version}"
 	git add -u
-	git commit -m "${title}"
-	echo -e "Pushing commit to ${user}/${FORK_GH_REPO}:autobump..." >&2
-	git push -f "https://${user}:$(cat "${token}")@github.com/${user}/${FORK_GH_REPO}" HEAD:autobump 2>/dev/null
+	title="Bump ${PROW_INSTANCE_NAME} from ${old_version} to ${version}"
 
-	echo "Creating PR to merge ${user}:autobump into master..." >&2
-	comparison=$(extract-commit "${old_version}")...$(extract-commit "${version}")
-	/pr-creator \
-	  --github-token-path="${token}" \
-	  --org="${GH_ORG}" --repo="${GH_REPO}" --branch=master \
-	  --title="${title}" --match-title="Bump prow from" \
-	  --body="Included changes: https://github.com/kubernetes/test-infra/compare/${comparison}" \
-	  --source="${user}":autobump \
-	  --confirm
+	if [[ -n "${GH_ORG}" ]]; then
+		create-gh-pr
+	else
+		create-gerrit-pr
+	fi
 
 	echo "autobump.sh completed successfully!" >&2
 }
@@ -87,14 +86,53 @@ check-args() {
   	echo "ERROR: $PLANK_DEPLOYMENT_FILE must be specified." >&2
   	exit 1
 	fi
-	if [[ -z "${GH_ORG}" ]]; then
-  	echo "ERROR: $GH_ORG must be specified." >&2
-  	exit 1
+	if [[ -z "${GERRIT_HOST_REPO}" ]]; then
+		if [[ -z "${GH_ORG}" || -z "${GH_REPO}" ]]; then
+	  	echo "ERROR: GH_ORG and GH_REPO must be specified to create a GitHub PR." >&2
+	  	exit 1
+		fi
+	else
+		if [[ -n "${GH_ORG}" || -n "${GH_REPO}" ]]; then
+	  	echo "ERROR: GH_ORG and GH_REPO cannot be used with GERRIT_HOST_REPO." >&2
+	  	exit 1
+		fi
+		if [[ -z "${GERRIT_HOST_REPO}" ]]; then
+	  	echo "ERROR: GERRIT_HOST_REPO must be specified to create a Gerrit PR." >&2
+	  	exit 1
+		fi
 	fi
-	if [[ -z "${GH_REPO}" ]]; then
-  	echo "ERROR: $GH_REPO must be specified." >&2
-  	exit 1
-	fi
+}
+
+create-gh-pr() {
+	git commit -m "${title}"
+
+	token="${creds}"
+	user-from-token
+	
+	echo -e "Pushing commit to github.com/${user}/${FORK_GH_REPO}:autobump-${PROW_INSTANCE_NAME}..." >&2
+	git push -f "https://${user}:$(cat "${token}")@github.com/${user}/${FORK_GH_REPO}" "HEAD:autobump-${PROW_INSTANCE_NAME}" 2>/dev/null
+
+	echo "Creating PR to merge ${user}:autobump-${PROW_INSTANCE_NAME} into master..." >&2
+	comparison=$(extract-commit "${old_version}")...$(extract-commit "${version}")
+	/pr-creator \
+	  --github-token-path="${token}" \
+	  --org="${GH_ORG}" --repo="${GH_REPO}" --branch=master \
+	  --title="${title}" --match-title="Bump prow from" \
+	  --body="Included changes: https://github.com/kubernetes/test-infra/compare/${comparison}" \
+	  --source="${user}:autobump-${PROW_INSTANCE_NAME}" \
+	  --confirm
+}
+
+create-gerrit-pr() {
+  git config http.cookiefile "${creds}"
+  git remote add upstream "${GERRIT_HOST_REPO}"
+
+	change="$( echo "${GERRIT_HOST_REPO}; ${PROW_INSTANCE_NAME}; ${old_version}" | git hash-object --stdin)"
+	git commit -m "${title}
+
+Change-Id: I${change}"
+
+	git push upstream HEAD:refs/for/master
 }
 
 # Convert image: gcr.io/k8s-prow/plank:v20181122-abcd to v20181122-abcd
