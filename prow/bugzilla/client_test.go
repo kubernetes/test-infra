@@ -32,6 +32,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/diff"
+	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 var (
@@ -909,20 +910,21 @@ func TestGetExternalBugPRsOnBug(t *testing.T) {
 			http.Error(w, "400 Bad Request", http.StatusBadRequest)
 			return
 		}
-		if id, err := strconv.Atoi(strings.TrimPrefix(r.URL.Path, "/rest/bug/")); err != nil {
+		id, err := strconv.Atoi(strings.TrimPrefix(r.URL.Path, "/rest/bug/"))
+		if err != nil {
 			t.Errorf("malformed bug id: %s", r.URL.Path)
 			http.Error(w, "400 Bad Request", http.StatusBadRequest)
 			return
-		} else {
-			for _, testCase := range testCases {
-				if id == testCase.id {
-					if _, err := w.Write([]byte(testCase.response)); err != nil {
-						t.Fatalf("%s: failed to send response: %v", testCase.name, err)
-					}
-					return
+		}
+		for _, testCase := range testCases {
+			if id == testCase.id {
+				if _, err := w.Write([]byte(testCase.response)); err != nil {
+					t.Fatalf("%s: failed to send response: %v", testCase.name, err)
 				}
+				return
 			}
 		}
+
 	}))
 	defer testServer.Close()
 	client := clientForUrl(testServer.URL)
@@ -938,6 +940,145 @@ func TestGetExternalBugPRsOnBug(t *testing.T) {
 			}
 			if actual, expected := prs, testCase.expectedPRs; !reflect.DeepEqual(actual, expected) {
 				t.Errorf("%s: got incorrect prs: %v", testCase.name, diff.ObjectReflectDiff(actual, expected))
+			}
+		})
+	}
+}
+func errorChecker(err error, t *testing.T) {
+	if err != nil {
+		t.Fatalf("Error while creating bugs for testing while calling the mocked endpoint!!")
+	}
+}
+func TestGetAllClones(t *testing.T) {
+	fake := &Fake{}
+	fake.Bugs = map[int]Bug{}
+	fake.BugComments = map[int][]Comment{}
+	bug1Create := &BugCreate{
+		Summary: "Dummy bug to test getAllClones",
+	}
+	bug1ID, err := fake.CreateBug(bug1Create)
+	if err != nil {
+		t.Fatalf("Error while creating bug in Fake!\n")
+	}
+	bug1, err := fake.GetBug(bug1ID) //Original bug
+	errorChecker(err, t)
+	bug2ID, err := fake.CloneBug(bug1) //2nd level bug
+	errorChecker(err, t)
+	bug2, err := fake.GetBug(bug2ID)
+	errorChecker(err, t)
+	bug3ID, err := fake.CloneBug(bug2) //3rd level bug
+	errorChecker(err, t)
+	bug4ID, err := fake.CloneBug(bug1) //Sibling of 2nd level
+	errorChecker(err, t)
+	bug1, err = fake.GetBug(bug1ID)
+	errorChecker(err, t)
+	bug2, err = fake.GetBug(bug2ID)
+	errorChecker(err, t)
+	bug3, err := fake.GetBug(bug3ID)
+	errorChecker(err, t)
+	bug4, err := fake.GetBug(bug4ID)
+	errorChecker(err, t)
+	testcases := []struct {
+		name           string
+		bug            *Bug
+		expectedClones sets.Int
+	}{
+		{
+			"Clones including multiple children",
+			bug1,
+			sets.NewInt(bug2ID, bug3ID, bug4ID),
+		},
+		{
+			"Clones should include parent as well as child",
+			bug2,
+			sets.NewInt(bug1ID, bug3ID, bug4ID),
+		},
+		{
+			"Clones includes parent and grandparent",
+			bug3,
+			sets.NewInt(bug1ID, bug2ID, bug4ID),
+		},
+		{
+			"Clones when not directly related",
+			bug4,
+			sets.NewInt(bug1ID, bug2ID, bug3ID),
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			clones, err := getAllClones(fake, tc.bug)
+			if err != nil {
+				t.Errorf("Error occurred when none was expected: %v", err)
+			}
+			if len(tc.expectedClones) != len(clones) {
+				t.Errorf("Mismatch in number of clones - expected: %d, got %d", len(tc.expectedClones), len(clones))
+			}
+			for _, clone := range clones {
+				if ok := tc.expectedClones.Has(clone.ID); !ok {
+					t.Errorf("Unexpected clone found in list - expecting: %v, got: %d", tc.expectedClones, clone.ID)
+				}
+			}
+		})
+
+	}
+
+}
+
+func TestGetRootForClone(t *testing.T) {
+	fake := &Fake{}
+	fake.Bugs = map[int]Bug{}
+	fake.BugComments = map[int][]Comment{}
+	bug1Create := &BugCreate{
+		Summary: "Dummy bug to test getAllClones",
+	}
+	bug1ID, err := fake.CreateBug(bug1Create)
+	if err != nil {
+		t.Fatalf("Error while creating bug in Fake!\n")
+	}
+	bug1, err := fake.GetBug(bug1ID)
+	errorChecker(err, t)
+	bug2ID, err := fake.CloneBug(bug1)
+	errorChecker(err, t)
+	bug2, err := fake.GetBug(bug2ID)
+	errorChecker(err, t)
+	bug3ID, err := fake.CloneBug(bug2)
+	errorChecker(err, t)
+	bug1, err = fake.GetBug(bug1ID)
+	errorChecker(err, t)
+	bug2, err = fake.GetBug(bug2ID)
+	errorChecker(err, t)
+	bug3, err := fake.GetBug(bug3ID)
+	errorChecker(err, t)
+	testcases := []struct {
+		name         string
+		bugPtr       *Bug
+		expectedRoot int
+	}{
+		{
+			"Root is itself",
+			bug1,
+			bug1ID,
+		},
+		{
+			"Root is immediate parent",
+			bug2,
+			bug1ID,
+		},
+		{
+			"Root is grandparent",
+			bug3,
+			bug1ID,
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			// this should run get the root
+			root, err := getRootForClone(fake, tc.bugPtr)
+			if err != nil {
+				t.Errorf("Error occurred when error not expected: %v", err)
+			}
+			if root.ID != tc.expectedRoot {
+				t.Errorf("ID of root incorrect.")
 			}
 		})
 	}
