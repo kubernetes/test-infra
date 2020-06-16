@@ -216,7 +216,7 @@ postsubmits:
         - entrypoint
         - make
         - build-push-image
-        image: quay.io/multicloudlab/build-tool:v20200319-b5bfe54
+        image: quay.io/multicloudlab/build-tool:v20200320-5e25536
         name: ""
         securityContext:
           privileged: true
@@ -234,7 +234,7 @@ postsubmits:
         - entrypoint
         - make
         - build-push-image
-        image: quay.io/multicloudlab/build-tool:v20200319-b5bfe54
+        image: quay.io/multicloudlab/build-tool:v20200320-5e25536
         name: ""
         securityContext:
           privileged: true
@@ -252,7 +252,7 @@ postsubmits:
         - entrypoint
         - make
         - build-push-image
-        image: quay.io/multicloudlab/build-tool:v20200319-b5bfe54
+        image: quay.io/multicloudlab/build-tool:v20200320-5e25536
         name: ""
         securityContext:
           privileged: true         
