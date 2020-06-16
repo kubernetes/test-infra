@@ -1,5 +1,5 @@
 periodics:
-- interval: 24h
+- interval: 12h
   name: ci-kubernetes-e2e-storage-selinux
   labels:
     preset-service-account: "true"
