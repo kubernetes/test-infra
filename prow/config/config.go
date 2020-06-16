@@ -731,11 +731,14 @@ type GitHubOptions struct {
 
 // ManagedWebhookInfo contains metadata about the repo/org which is onboarded.
 type ManagedWebhookInfo struct {
-	TokenCreatedAfter time.Time `json:"tokenCreatedAfter"`
+	TokenCreatedAfter time.Time `json:"token_created_after"`
 }
 
-// ManagedWebhooks contains information about all the repos/orgs which are onboarded with private tokens.
-type ManagedWebhooks map[string]ManagedWebhookInfo
+// ManagedWebhooks contains information about all the repos/orgs which are onboarded with auto-generated tokens.
+type ManagedWebhooks struct {
+	RespectLegacyGlobalToken bool                          `json:"respect_legacy_global_token"`
+	OrgRepoConfig            map[string]ManagedWebhookInfo `json:"org_repo_config"`
+}
 
 // SlackReporter represents the config for the Slack reporter. The channel can be overridden
 // on the job via the .reporter_config.slack.channel property
@@ -1195,10 +1198,10 @@ func (c *Config) validateComponentConfig() error {
 
 	var validationErrs []error
 
-	if c.ManagedWebhooks != nil {
-		for repoName, repoValue := range c.ManagedWebhooks {
+	if c.ManagedWebhooks.OrgRepoConfig != nil {
+		for repoName, repoValue := range c.ManagedWebhooks.OrgRepoConfig {
 			if repoValue.TokenCreatedAfter.After(time.Now()) {
-				validationErrs = append(validationErrs, fmt.Errorf("tokenCreatedAfter %s can be no later than current time for repo/org %s", repoValue.TokenCreatedAfter, repoName))
+				validationErrs = append(validationErrs, fmt.Errorf("token_created_after %s can be no later than current time for repo/org %s", repoValue.TokenCreatedAfter, repoName))
 			}
 		}
 		if len(validationErrs) > 0 {

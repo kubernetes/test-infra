@@ -24,7 +24,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/sets"
 
-	fakeghhook "k8s.io/test-infra/prow/cmd/hmac/fakeghhook"
+	"k8s.io/test-infra/prow/cmd/hmac/fakeghhook"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
