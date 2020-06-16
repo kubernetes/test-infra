@@ -109,6 +109,9 @@ type FakeClient struct {
 	OrgHooks map[string][]github.Hook
 	// Maps repo name to the list of hooks
 	RepoHooks map[string][]github.Hook
+
+	// Error will be returned if set. Currently only implemented for CreateStatus
+	Error error
 }
 
 // BotName returns authenticated login.
@@ -284,6 +287,9 @@ func (f *FakeClient) GetSingleCommit(org, repo, SHA string) (github.SingleCommit
 
 // CreateStatus adds a status context to a commit.
 func (f *FakeClient) CreateStatus(owner, repo, SHA string, s github.Status) error {
+	if f.Error != nil {
+		return f.Error
+	}
 	if f.CreatedStatuses == nil {
 		f.CreatedStatuses = make(map[string][]github.Status)
 	}
