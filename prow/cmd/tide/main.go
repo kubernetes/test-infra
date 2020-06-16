@@ -26,7 +26,6 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
-	"k8s.io/test-infra/prow/interrupts"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	"k8s.io/test-infra/pkg/flagutil"
@@ -34,6 +33,7 @@ import (
 	"k8s.io/test-infra/prow/config/secret"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/git/v2"
+	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
 	"k8s.io/test-infra/prow/pjutil"
@@ -49,11 +49,12 @@ type options struct {
 	syncThrottle   int
 	statusThrottle int
 
-	dryRun     bool
-	runOnce    bool
-	kubernetes prowflagutil.KubernetesOptions
-	github     prowflagutil.GitHubOptions
-	storage    prowflagutil.StorageClientOptions
+	dryRun                 bool
+	runOnce                bool
+	kubernetes             prowflagutil.KubernetesOptions
+	github                 prowflagutil.GitHubOptions
+	storage                prowflagutil.StorageClientOptions
+	instrumentationOptions prowflagutil.InstrumentationOptions
 
 	maxRecordsPerPool int
 	// historyURI where Tide should store its action history.
@@ -87,7 +88,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Whether to mutate any real-world state.")
 	fs.BoolVar(&o.runOnce, "run-once", false, "If true, run only once then quit.")
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.storage} {
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.storage, &o.instrumentationOptions} {
 		group.AddFlags(fs)
 	}
 	fs.IntVar(&o.syncThrottle, "sync-hourly-tokens", 800, "The maximum number of tokens per hour to be used by the sync controller.")
@@ -105,12 +106,12 @@ func main() {
 
 	defer interrupts.WaitForGracefulShutdown()
 
-	pjutil.ServePProf()
-
 	o := gatherOptions(flag.NewFlagSet(os.Args[0], flag.ExitOnError), os.Args[1:]...)
 	if err := o.Validate(); err != nil {
 		logrus.WithError(err).Fatal("Invalid options")
 	}
+
+	pjutil.ServePProf(o.instrumentationOptions.PProfPort)
 
 	opener, err := o.storage.StorageClient(context.Background())
 	if err != nil {
@@ -188,7 +189,7 @@ func main() {
 	server := &http.Server{Addr: ":" + strconv.Itoa(o.port)}
 
 	// Push metrics to the configured prometheus pushgateway endpoint or serve them
-	metrics.ExposeMetrics("tide", cfg().PushGateway)
+	metrics.ExposeMetrics("tide", cfg().PushGateway, o.instrumentationOptions.MetricsPort)
 
 	start := time.Now()
 	sync(c)

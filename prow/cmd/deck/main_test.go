@@ -36,11 +36,6 @@ import (
 	"github.com/gorilla/sessions"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
-
-	"k8s.io/test-infra/prow/github/fakegithub"
-	"k8s.io/test-infra/prow/githuboauth"
-	"k8s.io/test-infra/prow/plugins"
-
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"sigs.k8s.io/yaml"
@@ -49,7 +44,10 @@ import (
 	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/flagutil"
+	"k8s.io/test-infra/prow/github/fakegithub"
+	"k8s.io/test-infra/prow/githuboauth"
 	"k8s.io/test-infra/prow/pluginhelp"
+	"k8s.io/test-infra/prow/plugins"
 	_ "k8s.io/test-infra/prow/spyglass/lenses/buildlog"
 	"k8s.io/test-infra/prow/spyglass/lenses/common"
 	_ "k8s.io/test-infra/prow/spyglass/lenses/junit"
@@ -694,6 +692,10 @@ func Test_gatherOptions(t *testing.T) {
 				spyglassFilesLocation: "/lenses",
 				kubernetes:            flagutil.KubernetesOptions{},
 				github:                ghoptions,
+				instrumentation: flagutil.InstrumentationOptions{
+					MetricsPort: flagutil.DefaultMetricsPort,
+					PProfPort:   flagutil.DefaultPProfPort,
+				},
 			}
 			if tc.expected != nil {
 				tc.expected(expected)

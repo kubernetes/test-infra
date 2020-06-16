@@ -27,12 +27,13 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/test-infra/prow/interrupts"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/cron"
 	"k8s.io/test-infra/prow/flagutil"
+	prowflagutil "k8s.io/test-infra/prow/flagutil"
+	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/pjutil"
 )
@@ -41,8 +42,9 @@ type options struct {
 	configPath    string
 	jobConfigPath string
 
-	kubernetes flagutil.KubernetesOptions
-	dryRun     bool
+	kubernetes             flagutil.KubernetesOptions
+	instrumentationOptions prowflagutil.InstrumentationOptions
+	dryRun                 bool
 }
 
 func gatherOptions(fs *flag.FlagSet, args ...string) options {
@@ -52,6 +54,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Whether or not to make mutating API calls to Kubernetes.")
 	o.kubernetes.AddFlags(fs)
+	o.instrumentationOptions.AddFlags(fs)
 
 	fs.Parse(args)
 	return o
@@ -79,7 +82,7 @@ func main() {
 
 	defer interrupts.WaitForGracefulShutdown()
 
-	pjutil.ServePProf()
+	pjutil.ServePProf(o.instrumentationOptions.PProfPort)
 
 	configAgent := config.Agent{}
 	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {

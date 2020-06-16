@@ -23,9 +23,16 @@ import (
 	"os"
 	"time"
 
+	"github.com/sirupsen/logrus"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
+
 	prowjobset "k8s.io/test-infra/prow/client/clientset/versioned"
 	prowjobinfo "k8s.io/test-infra/prow/client/informers/externalversions"
 	"k8s.io/test-infra/prow/config"
+	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
@@ -34,21 +41,16 @@ import (
 	pipelineinfov1alpha1 "k8s.io/test-infra/prow/pipeline/informers/externalversions/pipeline/v1alpha1"
 	"k8s.io/test-infra/prow/pjutil"
 
-	"github.com/sirupsen/logrus"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
-
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp" // support gcp users in .kube/config
 )
 
 type options struct {
-	allContexts  bool
-	buildCluster string
-	configPath   string
-	kubeconfig   string
-	totURL       string
+	allContexts            bool
+	buildCluster           string
+	configPath             string
+	kubeconfig             string
+	totURL                 string
+	instrumentationOptions prowflagutil.InstrumentationOptions
 }
 
 func parseOptions() options {
@@ -65,6 +67,7 @@ func (o *options) parse(flags *flag.FlagSet, args []string) error {
 	flags.StringVar(&o.kubeconfig, "kubeconfig", "", "Path to kubeconfig. Only required if out of cluster")
 	flags.StringVar(&o.configPath, "config", "", "Path to prow config.yaml")
 	flags.StringVar(&o.buildCluster, "build-cluster", "", "Path to file containing a YAML-marshalled kube.Cluster object. If empty, uses the local cluster.")
+	o.instrumentationOptions.AddFlags(flags)
 	if err := flags.Parse(args); err != nil {
 		return fmt.Errorf("Parse flags: %v", err)
 	}
@@ -116,7 +119,7 @@ func main() {
 
 	defer interrupts.WaitForGracefulShutdown()
 
-	pjutil.ServePProf()
+	pjutil.ServePProf(o.instrumentationOptions.PProfPort)
 
 	configAgent := &config.Agent{}
 	const ignoreJobConfig = ""

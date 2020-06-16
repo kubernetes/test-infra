@@ -31,16 +31,16 @@ import (
 	"github.com/NYTimes/gziphandler"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/test-infra/prow/interrupts"
-	"k8s.io/test-infra/prow/pjutil"
 
 	"k8s.io/test-infra/pkg/flagutil"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
+	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/jenkins"
 	"k8s.io/test-infra/prow/logrusutil"
 	m "k8s.io/test-infra/prow/metrics"
+	"k8s.io/test-infra/prow/pjutil"
 )
 
 type options struct {
@@ -59,9 +59,10 @@ type options struct {
 	csrfProtect            bool
 	skipReport             bool
 
-	dryRun     bool
-	kubernetes prowflagutil.KubernetesOptions
-	github     prowflagutil.GitHubOptions
+	dryRun                 bool
+	kubernetes             prowflagutil.KubernetesOptions
+	github                 prowflagutil.GitHubOptions
+	instrumentationOptions prowflagutil.InstrumentationOptions
 }
 
 func (o *options) Validate() error {
@@ -116,7 +117,7 @@ func gatherOptions() options {
 
 	fs.BoolVar(&o.skipReport, "skip-report", false, "Whether or not to ignore report with githubClient")
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Whether or not to make mutating API calls to GitHub/Kubernetes/Jenkins.")
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github} {
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.instrumentationOptions} {
 		group.AddFlags(fs)
 	}
 	fs.Parse(os.Args[1:])
@@ -133,7 +134,7 @@ func main() {
 
 	defer interrupts.WaitForGracefulShutdown()
 
-	pjutil.ServePProf()
+	pjutil.ServePProf(o.instrumentationOptions.PProfPort)
 
 	if _, err := labels.Parse(o.selector); err != nil {
 		logrus.WithError(err).Fatal("Error parsing label selector.")
@@ -206,7 +207,7 @@ func main() {
 	}
 
 	// Expose prometheus metrics
-	m.ExposeMetrics("jenkins-operator", cfg().PushGateway)
+	m.ExposeMetrics("jenkins-operator", cfg().PushGateway, o.instrumentationOptions.MetricsPort)
 
 	// Serve Jenkins logs here and proxy deck to use this endpoint
 	// instead of baking agent-specific logic in deck
