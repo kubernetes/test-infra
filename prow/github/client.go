@@ -398,13 +398,21 @@ func (t *throttler) Do(req *http.Request) (*http.Response, error) {
 		if ghcache.CacheModeIsFree(cacheMode) {
 			// This request was fulfilled by ghcache without using an API token.
 			// Refund the throttling token we preemptively consumed.
-			log := logrus.WithFields(logrus.Fields{
+			logrus.WithFields(logrus.Fields{
 				"client":     "github",
 				"throttled":  true,
 				"cache-mode": string(cacheMode),
-			})
-			log.Debug("Throttler refunding token for free response from ghcache.")
+			}).Debug("Throttler refunding token for free response from ghcache.")
 			t.Refund()
+		} else {
+			logrus.WithFields(logrus.Fields{
+				"client":     "github",
+				"throttled":  true,
+				"cache-mode": string(cacheMode),
+				"path":       req.URL.Path,
+				"method":     req.Method,
+			}).Debug("Used token for request")
+
 		}
 	}
 	return resp, err
