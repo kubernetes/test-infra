@@ -56,7 +56,7 @@ type Config struct {
 	Reviewers         []string `json:"reviewers,omitempty"`
 	RequiredReviewers []string `json:"required_reviewers,omitempty"`
 	Labels            []string `json:"labels,omitempty"`
-	SourcePath        string   `json:"-"`
+	sourcePath        string
 }
 
 // SimpleConfig holds options and Config applied to everything under the containing directory
@@ -531,7 +531,7 @@ func (o *RepoOwners) walkFunc(path string, info os.FileInfo, err error) error {
 			log.WithError(err).Infof("Error decoding OWNERS config from %q", filename)
 			return nil
 		}
-		simple.SourcePath = filename
+		simple.sourcePath = filename
 		// Set owners for this file (not the directory) using the relative path if they were found
 		o.applyConfigToPath(relPath, nil, &simple.Config)
 		o.applyOptionsToPath(relPath, simple.Options)
@@ -612,7 +612,7 @@ func (o *RepoOwners) ParseSimpleConfig(path string) (SimpleConfig, error) {
 	}
 
 	simple, err := LoadSimpleConfig(b)
-	simple.SourcePath = path
+	simple.sourcePath = path
 	return simple, err
 }
 
@@ -720,17 +720,17 @@ func (o *RepoOwners) applyConfigToPath(path string, re *regexp.Regexp, config *C
 		}
 		o.labels[path][re] = sets.NewString(config.Labels...)
 	}
-	if len(config.SourcePath) > 0 {
+	if len(config.sourcePath) > 0 {
 		if o.configSources[path] == nil {
-			o.configSources[path] = make(map[*regexp.Regexp]sets.String)
+			o.configSources[path] = map[*regexp.Regexp]sets.String{}
 		}
-		o.configSources[path][re] = sets.NewString(config.SourcePath)
+		o.configSources[path][re] = sets.NewString(config.sourcePath)
 		if len(config.Labels) > 0 {
 			if o.configSourceByLabel == nil {
 				o.configSourceByLabel = make(map[string]string)
 			}
 			for _, label := range config.Labels {
-				o.configSourceByLabel[label] = config.SourcePath
+				o.configSourceByLabel[label] = config.sourcePath
 			}
 		}
 	}
