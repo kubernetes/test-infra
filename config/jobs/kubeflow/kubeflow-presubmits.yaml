@@ -554,7 +554,7 @@ presubmits:
     cluster: kubeflow
     always_run: false
     decorate: true
-    skip_report: true
+    skip_report: false
     labels:
       preset-service-account: "true"
     spec:
