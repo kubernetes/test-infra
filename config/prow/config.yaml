@@ -190,15 +190,11 @@ branch-protection:
         kops:
           required_status_checks:
             contexts:
+            - build (ubuntu-18.04, 1.13)
+            - build (ubuntu-18.04, 1.14)
+            - build (macos-10.15, 1.13)
+            - verify (ubuntu-18.04, 1.13)
             - continuous-integration/travis-ci/pr
-          branches:
-            master:
-              required_status_checks:
-                contexts:
-                - build (ubuntu-18.04, 1.13)
-                - build (ubuntu-18.04, 1.14)
-                - build (macos-10.15, 1.13)
-                - verify (ubuntu-18.04, 1.13)
         kubelet:
           restrictions:
             users: []
@@ -531,8 +527,6 @@ tide:
         repos:
           dashboard:
             skip-unknown-contexts: true
-            from-branch-protection: true
-          kops:
             from-branch-protection: true
       kubernetes-sigs:
         repos:
