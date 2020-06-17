@@ -39,6 +39,7 @@ type deployer struct {
 
 	kubeconfigPath string
 	kubectl        string
+	logsDir        string
 	RepoRoot       string `desc:"The path to the root of the local kubernetes/cloud-provider-gcp repo. Necessary to call certain scripts. Defaults to the current directory. If operating in legacy mode, this should be set to the local kubernetes/kubernetes repo."`
 	GCPProject     string `desc:"GCP Project to create VMs in. Must be set."`
 }
@@ -48,6 +49,7 @@ func New(opts types.Options) (types.Deployer, *pflag.FlagSet) {
 	d := &deployer{
 		commonOptions:  opts,
 		kubeconfigPath: filepath.Join(opts.ArtifactsDir(), "kubetest2-kubeconfig"),
+		logsDir:        filepath.Join(opts.ArtifactsDir(), "cluster-logs"),
 	}
 
 	flagSet, err := gpflag.Parse(d)
@@ -95,8 +97,6 @@ func (d *deployer) IsUp() (up bool, err error) {
 
 	return len(lines) > 0, nil
 }
-
-func (d *deployer) DumpClusterLogs() error { return nil }
 
 func (d *deployer) Kubeconfig() (string, error) {
 	_, err := os.Stat(d.kubeconfigPath)

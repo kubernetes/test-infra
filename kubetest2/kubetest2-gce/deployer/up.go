@@ -36,6 +36,12 @@ func (d *deployer) Up() error {
 		return fmt.Errorf("up couldn't enable compute API: %s", err)
 	}
 
+	defer func() {
+		if err := d.DumpClusterLogs(); err != nil {
+			klog.Warningf("Dumping cluster logs at the end of Up() failed: %s", err)
+		}
+	}()
+
 	env := d.buildEnv()
 	script := filepath.Join(d.RepoRoot, "cluster", "kube-up.sh")
 	klog.Infof("About to run script at: %s", script)
@@ -70,7 +76,13 @@ func (d *deployer) buildEnv() []string {
 	var env []string
 
 	// path is necessary for scripts to find gsutil, gcloud, etc
+	// can be removed if env is inherited from the os
 	env = append(env, fmt.Sprintf("PATH=%s", os.Getenv("PATH")))
+
+	// used by config-test.sh to set $NETWORK in the default case
+	// if unset, bash's set -u gets angry and kills the log dump script
+	// can be removed if env is inherited from the os
+	env = append(env, fmt.Sprintf("USER=%s", os.Getenv("USER")))
 
 	// kube-up.sh, kube-down.sh etc. use PROJECT as a parameter for all gcloud commands
 	env = append(env, fmt.Sprintf("PROJECT=%s", d.GCPProject))
