@@ -499,8 +499,9 @@ func canonicalize(path string) string {
 func (o *RepoOwners) walkFunc(path string, info os.FileInfo, err error) error {
 	log := o.log.WithField("path", path)
 	log.Debugf("walkFunc(%q, %q,  %q)", path, info, err)
+
 	if err != nil {
-		log.WithError(err).Errorf("Error while walking OWNERS files while processing %q", path)
+		log.WithError(err).Error("Error while walking OWNERS files")
 		return nil
 	}
 	filename := filepath.Base(path)
