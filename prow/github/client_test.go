@@ -382,7 +382,7 @@ func TestGetRef(t *testing.T) {
 			expectedSHA:    "abcde",
 		},
 		{
-			name: "multiple refs",
+			name: "multiple refs, no match",
 			githubResponse: []byte(`
 [
   {
@@ -406,8 +406,35 @@ func TestGetRef(t *testing.T) {
     }
   }
 ]`),
-			expectedError:     "query for org/repo ref \"branch\" didn't match one but multiple refs: [refs/heads/feature-a refs/heads/feature-b]",
+			expectedError:     "query for org/repo ref \"heads/branch\" didn't match one but multiple refs: [refs/heads/feature-a refs/heads/feature-b]",
 			expectedErrorType: GetRefTooManyResultsError{},
+		},
+		{
+			name: "multiple refs with match",
+			githubResponse: []byte(`
+[
+  {
+    "ref": "refs/heads/branch",
+    "node_id": "MDM6UmVmcmVmcy9oZWFkcy9mZWF0dXJlLWE=",
+    "url": "https://api.github.com/repos/octocat/Hello-World/git/refs/heads/feature-a",
+    "object": {
+      "type": "commit",
+      "sha": "aa218f56b14c9653891f9e74264a383fa43fefbd",
+      "url": "https://api.github.com/repos/octocat/Hello-World/git/commits/aa218f56b14c9653891f9e74264a383fa43fefbd"
+    }
+  },
+  {
+    "ref": "refs/heads/feature-b",
+    "node_id": "MDM6UmVmcmVmcy9oZWFkcy9mZWF0dXJlLWI=",
+    "url": "https://api.github.com/repos/octocat/Hello-World/git/refs/heads/feature-b",
+    "object": {
+      "type": "commit",
+      "sha": "612077ae6dffb4d2fbd8ce0cccaa58893b07b5ac",
+      "url": "https://api.github.com/repos/octocat/Hello-World/git/commits/612077ae6dffb4d2fbd8ce0cccaa58893b07b5ac"
+    }
+  }
+]`),
+			expectedSHA: "aa218f56b14c9653891f9e74264a383fa43fefbd",
 		},
 	}
 
@@ -418,7 +445,7 @@ func TestGetRef(t *testing.T) {
 				if r.Method != http.MethodGet {
 					t.Errorf("Bad method: %s", r.Method)
 				}
-				expectedPath := "/repos/org/repo/git/refs/branch"
+				expectedPath := "/repos/org/repo/git/refs/heads/branch"
 				if r.URL.Path != expectedPath {
 					t.Errorf("expected path %s, got path %s", expectedPath, r.URL.Path)
 				}
@@ -428,7 +455,7 @@ func TestGetRef(t *testing.T) {
 
 			c := getClient(ts.URL)
 			var errMsg string
-			sha, err := c.GetRef("org", "repo", "branch")
+			sha, err := c.GetRef("org", "repo", "heads/branch")
 			if err != nil {
 				errMsg = err.Error()
 			}
