@@ -63,7 +63,9 @@ func ComponentInit() {
 // map in order to not modify the caller's Entry, as that is not a thread
 // safe operation.
 func (f *DefaultFieldsFormatter) Format(entry *logrus.Entry) ([]byte, error) {
-	data := make(logrus.Fields, len(entry.Data)+len(f.DefaultFields))
+	data := make(logrus.Fields, len(entry.Data)+len(f.DefaultFields)+1)
+	// GCP's log collection expects a "severity" field instead of "level"
+	data["severity"] = entry.Level
 	for k, v := range f.DefaultFields {
 		data[k] = v
 	}
