@@ -693,7 +693,7 @@ func NormLogins(logins []string) sets.String {
 	return normed
 }
 
-var defaultDirOptions = dirOptions{}
+var defaultDirOptions dirOptions
 
 // applyConfigToPath takes a parsed Config for a path and sets up fields in RepoOwners
 func (o *RepoOwners) applyConfigToPath(path string, re *regexp.Regexp, config *Config) {
