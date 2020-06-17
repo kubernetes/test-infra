@@ -111,9 +111,9 @@ func (sg *Spyglass) Lenses(lensConfigIndexes []int) (orderedIndexes []int, lensM
 	var ls []ld
 	for _, lensIndex := range lensConfigIndexes {
 		lfc := sg.config().Deck.Spyglass.Lenses[lensIndex]
-		lens, err := lenses.GetLens(lfc.Lens.Name)
+		lens, err := getLensConfig(lfc)
 		if err != nil {
-			logrus.WithField("lensName", lens).WithError(err).Error("Could not find artifact lens")
+			logrus.WithField("lensName", lfc.Lens.Name).WithError(err).Error("Could not find artifact lens")
 		} else {
 			ls = append(ls, ld{lens, lensIndex})
 		}
@@ -139,6 +139,39 @@ func (sg *Spyglass) Lenses(lensConfigIndexes []int) (orderedIndexes []int, lensM
 	}
 
 	return orderedIndexes, lensMap
+}
+
+type lensConfigWrapper struct {
+	lensConfig lenses.LensConfig
+}
+
+func (l lensConfigWrapper) Config() lenses.LensConfig {
+	return l.lensConfig
+}
+
+func getLensConfig(lensFileConfig config.LensFileConfig) (LensConfig, error) {
+	lens, err := lenses.GetLens(lensFileConfig.Lens.Name)
+	if err != nil && err != lenses.ErrInvalidLensName {
+		return nil, err
+	}
+	if err == nil {
+		return lens, nil
+	}
+	// we couldn't find a local lens (err==lenses.ErrInvalidLensName) so let's search for a remote lens
+	if lensFileConfig.RemoteConfig != nil {
+		lc := lenses.LensConfig{
+			Name:  lensFileConfig.Lens.Name,
+			Title: lensFileConfig.RemoteConfig.Title,
+		}
+		if lensFileConfig.RemoteConfig.Priority != nil {
+			lc.Priority = *lensFileConfig.RemoteConfig.Priority
+		}
+		if lensFileConfig.RemoteConfig.HideTitle != nil {
+			lc.HideTitle = *lensFileConfig.RemoteConfig.HideTitle
+		}
+		return lensConfigWrapper{lc}, nil
+	}
+	return nil, fmt.Errorf("could not find lens")
 }
 
 func (sg *Spyglass) ResolveSymlink(src string) (string, error) {
