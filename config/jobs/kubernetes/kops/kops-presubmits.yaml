@@ -445,7 +445,7 @@ presubmits:
   - name: pull-kops-verify-terraform
     branches:
     - master
-    optional: true
+    skip_report: false
     run_if_changed: '^tests\/integration\/update_cluster\/'
     labels:
       preset-service-account: "true"
