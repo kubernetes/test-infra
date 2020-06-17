@@ -2623,6 +2623,12 @@ func (c *client) GetRef(org, repo, ref string) (string, error) {
 	}
 
 	if n := len(res); n > 1 {
+		wantRef := "refs/" + ref
+		for _, r := range res {
+			if r.Ref == wantRef {
+				return r.Object.SHA, nil
+			}
+		}
 		return "", GetRefTooManyResultsError{org: org, repo: repo, ref: ref, resultsRefs: res.RefNames()}
 	}
 	return res[0].Object.SHA, nil
