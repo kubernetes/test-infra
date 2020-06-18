@@ -34,7 +34,7 @@ ARG GO_VERSION
 # - hinting that we are in a docker container
 ENV IMAGE=${IMAGE_ARG} \
     BAZEL_VERSION=${BAZEL_VERSION_ARG} \
-    GOPATH /home/prow/go \
+    GOPATH=/home/prow/go \
     PATH=/home/prow/go/bin:/usr/local/go/bin:/google-cloud-sdk/bin:${PATH} \
     CLOUDSDK_CORE_DISABLE_PROMPTS=1 \
     CONTAINER=docker
