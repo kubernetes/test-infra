@@ -187,7 +187,12 @@ type githubClient interface {
 	Query(ctx context.Context, q interface{}, vars map[string]interface{}) error
 }
 
-func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
+func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("recovered panic in bugzilla plugin: %v", r)
+		}
+	}()
 	event, err := digestComment(pc.GitHubClient, pc.Logger, e)
 	if err != nil {
 		return err
@@ -199,7 +204,12 @@ func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error 
 	return nil
 }
 
-func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
+func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("recovered panic in bugzilla plugin: %v", r)
+		}
+	}()
 	options := pc.PluginConfig.Bugzilla.OptionsForBranch(pre.PullRequest.Base.Repo.Owner.Login, pre.PullRequest.Base.Repo.Name, pre.PullRequest.Base.Ref)
 	event, err := digestPR(pc.Logger, pre, options.ValidateByDefault)
 	if err != nil {
@@ -881,10 +891,10 @@ func handleCherrypick(e event, gc githubClient, bc bugzilla.Client, options plug
 		return comment(formatError(fmt.Sprintf("creating a cherry-pick bug in Bugzilla: could not get list of clones"), bc.Endpoint(), bug.ID, err))
 	}
 	oldLink := fmt.Sprintf(bugLink, bugID, bc.Endpoint(), bugID)
-	targetRelease := *options.TargetRelease
 	if options.TargetRelease == nil {
 		return comment(fmt.Sprintf("Could not make automatic cherrypick of %s for this PR as the target_release is not set for this branch in the bugzilla plugin config. Running refresh:\n/bugzilla refresh", oldLink))
 	}
+	targetRelease := *options.TargetRelease
 	for _, clone := range clones {
 		if len(clone.TargetRelease) == 1 && clone.TargetRelease[0] == targetRelease {
 			newTitle := strings.Replace(e.body, fmt.Sprintf("Bug %d", bugID), fmt.Sprintf("Bug %d", clone.ID), 1)
