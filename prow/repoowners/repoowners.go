@@ -699,25 +699,25 @@ var defaultDirOptions dirOptions
 func (o *RepoOwners) applyConfigToPath(path string, re *regexp.Regexp, config *Config) {
 	if len(config.Approvers) > 0 {
 		if o.approvers[path] == nil {
-			o.approvers[path] = make(map[*regexp.Regexp]sets.String)
+			o.approvers[path] = map[*regexp.Regexp]sets.String{}
 		}
 		o.approvers[path][re] = o.ExpandAliases(NormLogins(config.Approvers))
 	}
 	if len(config.Reviewers) > 0 {
 		if o.reviewers[path] == nil {
-			o.reviewers[path] = make(map[*regexp.Regexp]sets.String)
+			o.reviewers[path] = map[*regexp.Regexp]sets.String{}
 		}
 		o.reviewers[path][re] = o.ExpandAliases(NormLogins(config.Reviewers))
 	}
 	if len(config.RequiredReviewers) > 0 {
 		if o.requiredReviewers[path] == nil {
-			o.requiredReviewers[path] = make(map[*regexp.Regexp]sets.String)
+			o.requiredReviewers[path] = map[*regexp.Regexp]sets.String{}
 		}
 		o.requiredReviewers[path][re] = o.ExpandAliases(NormLogins(config.RequiredReviewers))
 	}
 	if len(config.Labels) > 0 {
 		if o.labels[path] == nil {
-			o.labels[path] = make(map[*regexp.Regexp]sets.String)
+			o.labels[path] = map[*regexp.Regexp]sets.String{}
 		}
 		o.labels[path][re] = sets.NewString(config.Labels...)
 	}
@@ -728,7 +728,7 @@ func (o *RepoOwners) applyConfigToPath(path string, re *regexp.Regexp, config *C
 		o.configSources[path][re] = sets.NewString(config.sourcePath)
 		if len(config.Labels) > 0 {
 			if o.configSourceByLabel == nil {
-				o.configSourceByLabel = make(map[string]string)
+				o.configSourceByLabel = map[string]string{}
 			}
 			for _, label := range config.Labels {
 				o.configSourceByLabel[label] = config.sourcePath
@@ -750,9 +750,9 @@ func (o *RepoOwners) filterCollaborators(toKeep []github.User) *RepoOwners {
 	}
 
 	filter := func(ownerMap map[string]map[*regexp.Regexp]sets.String) map[string]map[*regexp.Regexp]sets.String {
-		filtered := make(map[string]map[*regexp.Regexp]sets.String)
+		filtered := map[string]map[*regexp.Regexp]sets.String{}
 		for path, reMap := range ownerMap {
-			filtered[path] = make(map[*regexp.Regexp]sets.String)
+			filtered[path] = map[*regexp.Regexp]sets.String{}
 			for re, unfiltered := range reMap {
 				filtered[path][re] = unfiltered.Intersection(collabs)
 			}
