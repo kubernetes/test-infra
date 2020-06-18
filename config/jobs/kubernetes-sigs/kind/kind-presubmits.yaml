@@ -90,12 +90,8 @@ presubmits:
           privileged: true
         resources:
           requests:
-            # TODO(BenTheElder): adjust these everywhere
-            # these are both a bit below peak usage during build
-            # this is mostly for building kubernetes
             memory: "9000Mi"
-            # during the tests more like 3-20m is used
-            cpu: 2000m
+            cpu: 7500m
   # conformance test against kubernetes master branch with `kind`, skipping
   # serial tests so it runs in ~20m
   # GA-only variant

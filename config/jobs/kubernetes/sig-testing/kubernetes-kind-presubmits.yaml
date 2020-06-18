@@ -38,12 +38,8 @@ presubmits:
           privileged: true
         resources:
           requests:
-            # TODO(BenTheElder): adjust these everywhere
-            # these are both a bit below peak usage during build
-            # this is mostly for building kubernetes
             memory: "9000Mi"
-            # during the tests more like 3-20m is used
-            cpu: 2000m
+            cpu: 7500m
     annotations:
       testgrid-num-failures-to-alert: '10'
       testgrid-alert-stale-results-hours: '24'
@@ -90,12 +86,8 @@ presubmits:
           privileged: true
         resources:
           requests:
-            # TODO(BenTheElder): adjust these everywhere
-            # these are both a bit below peak usage during build
-            # this is mostly for building kubernetes
             memory: "9000Mi"
-            # during the tests more like 3-20m is used
-            cpu: 2000m
+            cpu: 7500m
     annotations:
       testgrid-num-failures-to-alert: '10'
       testgrid-alert-stale-results-hours: '24'
