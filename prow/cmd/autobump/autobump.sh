@@ -56,6 +56,8 @@ main() {
 	fi
 	git add -u
 	title="Bump ${PROW_INSTANCE_NAME} from ${old_version} to ${version}"
+	comparison=$(extract-commit "${old_version}")...$(extract-commit "${version}")
+	body="Included changes: https://github.com/kubernetes/test-infra/compare/${comparison}"
 
 	if [[ -n "${GH_ORG}" ]]; then
 		create-gh-pr
@@ -113,12 +115,11 @@ create-gh-pr() {
 	git push -f "https://${user}:$(cat "${token}")@github.com/${user}/${FORK_GH_REPO}" "HEAD:autobump-${PROW_INSTANCE_NAME}" 2>/dev/null
 
 	echo "Creating PR to merge ${user}:autobump-${PROW_INSTANCE_NAME} into master..." >&2
-	comparison=$(extract-commit "${old_version}")...$(extract-commit "${version}")
 	/pr-creator \
 	  --github-token-path="${token}" \
 	  --org="${GH_ORG}" --repo="${GH_REPO}" --branch=master \
 	  --title="${title}" --match-title="Bump prow from" \
-	  --body="Included changes: https://github.com/kubernetes/test-infra/compare/${comparison}" \
+	  --body="${body}" \
 	  --source="${user}:autobump-${PROW_INSTANCE_NAME}" \
 	  --confirm
 }
@@ -129,6 +130,8 @@ create-gerrit-pr() {
 
 	change="$( echo "${GERRIT_HOST_REPO}; ${PROW_INSTANCE_NAME}; ${old_version}" | git hash-object --stdin)"
 	git commit -m "${title}
+
+${body}
 
 Change-Id: I${change}"
 
