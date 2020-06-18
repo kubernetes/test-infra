@@ -2,7 +2,7 @@ presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-e2e-kind
     optional: false
-    always_run: true
+    always_run: false
     decorate: true
     skip_branches:
     - release-\d+\.\d+ # per-release settings
