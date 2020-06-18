@@ -402,8 +402,6 @@ func (g *gkeDeployer) IsUp() error {
 //
 // TODO(zmerlynn): This whole path is really gross, but this seemed
 // the least gross hack to get this done.
-//
-// TODO(shyamjvs): Make this work with multizonal and regional clusters.
 func (g *gkeDeployer) DumpClusterLogs(localPath, gcsPath string) error {
 	// gkeLogDumpTemplate is a template of a shell script where
 	// - %[1]s is the project
@@ -412,10 +410,7 @@ func (g *gkeDeployer) DumpClusterLogs(localPath, gcsPath string) error {
 	// - %[4]s is the log-dump.sh command line
 	const gkeLogDumpTemplate = `
 function log_dump_custom_get_instances() {
-  if [[ $1 == "master" ]]; then
-    return 0
-  fi
-
+  if [[ $1 == "master" ]]; then return 0; fi
   gcloud compute instances list '--project=%[1]s' '--filter=%[4]s' '--format=get(name)'
 }
 export -f log_dump_custom_get_instances
@@ -435,9 +430,10 @@ export KUBE_NODE_OS_DISTRIBUTION='%[3]s'
 	if err := g.getInstanceGroups(); err != nil {
 		return err
 	}
-	var filters []string
+	perZoneFilters := make(map[string][]string)
 	for _, ig := range g.instanceGroups {
-		filters = append(filters, fmt.Sprintf("(metadata.created-by:*%s)", ig.path))
+		filter := fmt.Sprintf("(metadata.created-by ~ %s)", ig.path)
+		perZoneFilters[ig.zone] = append(perZoneFilters[ig.zone], filter)
 	}
 
 	// Generate the log-dump.sh command-line
@@ -462,12 +458,22 @@ export KUBE_NODE_OS_DISTRIBUTION='%[3]s'
 		log.Printf("error while ensuring firewall rule: %v", err)
 	}
 
-	return control.FinishRunning(exec.Command("bash", "-c", fmt.Sprintf(gkeLogDumpTemplate,
-		g.project,
-		g.zone,
-		os.Getenv("NODE_OS_DISTRIBUTION"),
-		strings.Join(filters, " OR "),
-		dumpCmd)))
+	var errorMessages []string
+	for zone, filters := range perZoneFilters {
+		err := control.FinishRunning(exec.Command("bash", "-c", fmt.Sprintf(gkeLogDumpTemplate,
+			g.project,
+			zone,
+			os.Getenv("NODE_OS_DISTRIBUTION"),
+			strings.Join(filters, " OR "),
+			dumpCmd)))
+		if err != nil {
+			errorMessages = append(errorMessages, err.Error())
+		}
+	}
+	if len(errorMessages) > 0 {
+		return fmt.Errorf("errors while dumping logs: %s", strings.Join(errorMessages, ", "))
+	}
+	return nil
 }
 
 func (g *gkeDeployer) TestSetup() error {
