@@ -76,7 +76,7 @@ RUN echo "Installing Packages ..." \
             unzip \
         && rm -rf /var/lib/apt/lists/* \
     && echo "Installing Go ..." \
-        && export GO_TARBALL "go${GO_VERSION}.linux-amd64.tar.gz"\
+        && export GO_TARBALL="go${GO_VERSION}.linux-amd64.tar.gz"\
         && wget -q "https://storage.googleapis.com/golang/${GO_TARBALL}" \
         && tar xzf "${GO_TARBALL}" -C /usr/local \
         && rm "${GO_TARBALL}"\
