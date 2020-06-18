@@ -46,9 +46,10 @@ import (
 type options struct {
 	configPath string
 
-	dryRun     bool
-	github     prowflagutil.GitHubOptions
-	kubernetes prowflagutil.KubernetesOptions
+	dryRun        bool
+	github        prowflagutil.GitHubOptions
+	kubernetes    prowflagutil.KubernetesOptions
+	kubeconfigCtx string
 
 	hookUrl                  string
 	hmacTokenSecretNamespace string
@@ -63,6 +64,9 @@ func (o *options) validate() error {
 		}
 	}
 
+	if o.kubeconfigCtx == "" {
+		return errors.New("required flag --kubeconfig-context was unset")
+	}
 	if o.configPath == "" {
 		return errors.New("required flag --config-path was unset")
 	}
@@ -85,6 +89,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	o.github.AddFlags(fs)
 	o.kubernetes.AddFlags(fs)
 
+	fs.StringVar(&o.kubeconfigCtx, "kubeconfig-context", "", "Context of the Prow component cluster in the kubeconfig.")
 	fs.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
 
@@ -116,9 +121,9 @@ func main() {
 		logrus.WithError(err).Fatal("Invalid options")
 	}
 
-	kc, err := o.kubernetes.InfrastructureClusterClient(o.dryRun)
+	kc, err := o.kubernetes.ClusterClientForContext(o.kubeconfigCtx, o.dryRun)
 	if err != nil {
-		logrus.WithError(err).Fatal("Error creating Kubernetes client for infrastructure cluster.")
+		logrus.WithError(err).Fatalf("Error creating Kubernetes client for cluster %q.", o.kubeconfigCtx)
 	}
 
 	agent := &secret.Agent{}

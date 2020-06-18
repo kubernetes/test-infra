@@ -21,9 +21,11 @@ There are two ways to run this tool:
 1. Run it on local:
 
 ```sh
-bazel run //experiment/update-hook -- \
+bazel run //prow/cmd/hmac -- \
   --config-path=/path/to/prow/config \
   --github-token-path=/path/to/oauth/secret \
+  --kubeconfig=/path/to/kubeconfig \
+  --kubeconfig-context=[context of the cluster to connect] \
   --hmac-token-secret-name=[hmac secret name in Prow cluster] \
   --hmac-token-key=[key of the hmac tokens in the secret] \
   --hook-url http://an.ip.addr.ess/hook \
