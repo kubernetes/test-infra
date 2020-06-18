@@ -73,6 +73,8 @@ type options struct {
 
 	storage prowflagutil.StorageClientOptions
 
+	instrumentationOptions prowflagutil.InstrumentationOptions
+
 	k8sReportFraction float64
 
 	dryrun      bool
@@ -174,6 +176,7 @@ func (o *options) parseArgs(fs *flag.FlagSet, args []string) error {
 	o.github.AddFlags(fs)
 	o.client.AddFlags(fs)
 	o.storage.AddFlags(fs)
+	o.instrumentationOptions.AddFlags(fs)
 
 	fs.Parse(args)
 
@@ -197,7 +200,7 @@ func main() {
 
 	defer interrupts.WaitForGracefulShutdown()
 
-	pjutil.ServePProf()
+	pjutil.ServePProf(o.instrumentationOptions.PProfPort)
 
 	configAgent := &config.Agent{}
 	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
@@ -333,7 +336,7 @@ func main() {
 	}
 
 	// Push metrics to the configured prometheus pushgateway endpoint or serve them
-	metrics.ExposeMetrics("crier", cfg().PushGateway)
+	metrics.ExposeMetrics("crier", cfg().PushGateway, o.instrumentationOptions.MetricsPort)
 
 	// run the controller loop to process items
 	prowjobInformerFactory.Start(interrupts.Context().Done())

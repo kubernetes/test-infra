@@ -872,15 +872,16 @@ func validateNeedsOkToTestLabel(cfg *config.Config) error {
 }
 
 func validateManagedWebhooks(cfg *config.Config) error {
+	mw := cfg.ManagedWebhooks
 	var errs []error
 	orgs := sets.String{}
-	for repo := range cfg.ManagedWebhooks {
+	for repo := range mw.OrgRepoConfig {
 		if !strings.Contains(repo, "/") {
 			org := repo
 			orgs.Insert(org)
 		}
 	}
-	for repo := range cfg.ManagedWebhooks {
+	for repo := range mw.OrgRepoConfig {
 		if strings.Contains(repo, "/") {
 			org := strings.SplitN(repo, "/", 2)[0]
 			if orgs.Has(org) {

@@ -918,39 +918,50 @@ func TestValidateManagedWebhooks(t *testing.T) {
 		{
 			name: "no duplicate webhooks",
 			config: config.ProwConfig{
-				ManagedWebhooks: map[string]config.ManagedWebhookInfo{
-					"foo1":     {TokenCreatedAfter: time.Now()},
-					"foo2":     {TokenCreatedAfter: time.Now()},
-					"foo/bar":  {TokenCreatedAfter: time.Now()},
-					"foo/bar1": {TokenCreatedAfter: time.Now()},
-					"foo/bar2": {TokenCreatedAfter: time.Now()},
-				}},
+				ManagedWebhooks: config.ManagedWebhooks{
+					RespectLegacyGlobalToken: false,
+					OrgRepoConfig: map[string]config.ManagedWebhookInfo{
+						"foo1":     {TokenCreatedAfter: time.Now()},
+						"foo2":     {TokenCreatedAfter: time.Now()},
+						"foo/bar":  {TokenCreatedAfter: time.Now()},
+						"foo/bar1": {TokenCreatedAfter: time.Now()},
+						"foo/bar2": {TokenCreatedAfter: time.Now()},
+					},
+				},
+			},
 			expectErr: false,
 		},
 		{
 			name: "has duplicate webhooks",
 			config: config.ProwConfig{
-				ManagedWebhooks: map[string]config.ManagedWebhookInfo{
-					"foo":      {TokenCreatedAfter: time.Now()},
-					"foo1":     {TokenCreatedAfter: time.Now()},
-					"foo2":     {TokenCreatedAfter: time.Now()},
-					"foo/bar":  {TokenCreatedAfter: time.Now()},
-					"foo/bar1": {TokenCreatedAfter: time.Now()},
-					"foo/bar2": {TokenCreatedAfter: time.Now()},
-				}},
+				ManagedWebhooks: config.ManagedWebhooks{
+					OrgRepoConfig: map[string]config.ManagedWebhookInfo{
+						"foo":      {TokenCreatedAfter: time.Now()},
+						"foo1":     {TokenCreatedAfter: time.Now()},
+						"foo2":     {TokenCreatedAfter: time.Now()},
+						"foo/bar":  {TokenCreatedAfter: time.Now()},
+						"foo/bar1": {TokenCreatedAfter: time.Now()},
+						"foo/bar2": {TokenCreatedAfter: time.Now()},
+					},
+				},
+			},
 			expectErr: true,
 		},
 		{
 			name: "has multiple duplicate webhooks",
 			config: config.ProwConfig{
-				ManagedWebhooks: map[string]config.ManagedWebhookInfo{
-					"foo":       {TokenCreatedAfter: time.Now()},
-					"foo1":      {TokenCreatedAfter: time.Now()},
-					"foo2":      {TokenCreatedAfter: time.Now()},
-					"foo/bar":   {TokenCreatedAfter: time.Now()},
-					"foo/bar1":  {TokenCreatedAfter: time.Now()},
-					"foo1/bar1": {TokenCreatedAfter: time.Now()},
-				}},
+				ManagedWebhooks: config.ManagedWebhooks{
+					RespectLegacyGlobalToken: true,
+					OrgRepoConfig: map[string]config.ManagedWebhookInfo{
+						"foo":       {TokenCreatedAfter: time.Now()},
+						"foo1":      {TokenCreatedAfter: time.Now()},
+						"foo2":      {TokenCreatedAfter: time.Now()},
+						"foo/bar":   {TokenCreatedAfter: time.Now()},
+						"foo/bar1":  {TokenCreatedAfter: time.Now()},
+						"foo1/bar1": {TokenCreatedAfter: time.Now()},
+					},
+				},
+			},
 			expectErr: true,
 		},
 	}

@@ -15,7 +15,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200616-45495bd-experimental
         command:
         - runner.sh
         args:
@@ -42,7 +42,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200616-45495bd-experimental
         command:
         - runner.sh
         args:
@@ -259,7 +259,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200616-45495bd-experimental
         command:
         - runner.sh
         args:
@@ -280,7 +280,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200616-45495bd-experimental
         command:
         - runner.sh
         args:
@@ -301,7 +301,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200616-45495bd-experimental
         command:
         - runner.sh
         args:
@@ -322,7 +322,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200616-45495bd-experimental
         command:
         - runner.sh
         args:
@@ -345,7 +345,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200616-45495bd-experimental
         command:
         - runner.sh
         args:
@@ -369,7 +369,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200616-45495bd-experimental
         command:
         - runner.sh
         args:
@@ -390,7 +390,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200616-45495bd-experimental
         command:
         - runner.sh
         args:
@@ -411,7 +411,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200616-45495bd-experimental
         command:
         - runner.sh
         args:
@@ -433,7 +433,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200616-45495bd-experimental
         command:
         - runner.sh
         args:
@@ -442,6 +442,32 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
       testgrid-tab-name: verify-hashes
+  - name: pull-kops-verify-terraform
+    branches:
+    - master
+    skip_report: false
+    run_if_changed: '^tests\/integration\/update_cluster\/'
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    decorate: true
+    decoration_config:
+      timeout: 20m
+    path_alias: k8s.io/kops
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200616-45495bd-experimental
+        command:
+        - runner.sh
+        args:
+        - "make"
+        - "verify-terraform"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
+      testgrid-tab-name: verify-terraform
   - name: pull-kops-verify
     branches:
     - master
@@ -457,7 +483,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200616-45495bd-experimental
         command:
         - runner.sh
         args:
@@ -479,7 +505,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-experimental
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200616-45495bd-experimental
       args:
       - --repo=k8s.io/kops
       - --repo=k8s.io/release
@@ -512,7 +538,7 @@ postsubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200616-45495bd-experimental
         command:
         - runner.sh
         args:

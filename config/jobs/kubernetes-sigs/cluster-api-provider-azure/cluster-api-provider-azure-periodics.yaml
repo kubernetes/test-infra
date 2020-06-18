@@ -15,11 +15,11 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     - org: kubernetes
       repo: kubernetes
-      base_ref: master
+      base_ref: v1.18.3
       path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200616-45495bd-master
         command:
           - "runner.sh"
           - "./scripts/ci-entrypoint.sh"
@@ -30,6 +30,8 @@ periodics:
             value: "\\[Slow\\]|\\[Serial\\]|\\[Flaky\\]"
           - name: PARALLEL
             value: "true"
+          - name: KUBERNETES_VERSION
+            value: "v1.18.3"
         securityContext:
           privileged: true
         resources:

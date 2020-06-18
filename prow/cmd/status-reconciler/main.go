@@ -52,6 +52,7 @@ type options struct {
 	kubernetes              prowflagutil.KubernetesOptions
 	github                  prowflagutil.GitHubOptions
 	storage                 prowflagutil.StorageClientOptions
+	instrumentationOptions  prowflagutil.InstrumentationOptions
 
 	tokenBurst    int
 	tokensPerHour int
@@ -76,7 +77,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Whether or not to make mutating API calls to GitHub.")
 	fs.IntVar(&o.tokensPerHour, "tokens", defaultTokens, "Throttle hourly token consumption (0 to disable)")
 	fs.IntVar(&o.tokenBurst, "token-burst", defaultBurst, "Allow consuming a subset of hourly tokens in a short burst")
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.storage} {
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.storage, &o.instrumentationOptions} {
 		group.AddFlags(fs)
 	}
 	fs.Parse(args)
@@ -103,7 +104,7 @@ func main() {
 
 	defer interrupts.WaitForGracefulShutdown()
 
-	pjutil.ServePProf()
+	pjutil.ServePProf(o.instrumentationOptions.PProfPort)
 
 	configAgent := &config.Agent{}
 	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {

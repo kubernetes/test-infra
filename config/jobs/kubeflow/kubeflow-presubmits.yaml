@@ -13,6 +13,20 @@ presubmits:
       testgrid-dashboards: sig-big-data
       description: Presubmits for kubeflow/examples.
       testgrid-num-columns-recent: '30'
+  kubeflow/gcp-blueprints:
+  - name: kubeflow-gcp-blueprints-presubmit
+    cluster: kubeflow
+    always_run: true         # Run for every PR, or only when requested.
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+    annotations:
+      testgrid-dashboards: sig-big-data
+      description: Presubmit tests for Kubeflow GCP gcp-blueprints.
+      testgrid-num-columns-recent: '30'
   kubeflow/internal-acls:
   - name: kubeflow-internal-acls-presubmit
     cluster: kubeflow
@@ -348,7 +362,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200616-45495bd-master
         command:
         - ./test/presubmit-tests-with-pipeline-deployment.sh
         args:
@@ -364,7 +378,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200616-45495bd-master
         command:
         - ./test/presubmit-tests-with-pipeline-deployment.sh
         args:
@@ -382,7 +396,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200616-45495bd-master
         command:
         - ./test/presubmit-tests-with-pipeline-deployment.sh
         args:
@@ -402,7 +416,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200616-45495bd-master
         command:
         - ./test/presubmit-tests-mkp.sh
   - name: kubeflow-pipeline-upgrade-test
@@ -413,7 +427,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200616-45495bd-master
         command:
         - ./test/upgrade-tests.sh
         args:
@@ -554,12 +568,12 @@ presubmits:
     cluster: kubeflow
     always_run: false
     decorate: true
-    skip_report: true
+    skip_report: false
     labels:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200616-45495bd-master
         command:
         - ./test/multiuser-tests.sh
         args:
@@ -591,7 +605,7 @@ presubmits:
 #       preset-service-account: "true"
 #     spec:
 #       containers:
-#       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-master
+#       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200616-45495bd-master
 #         command:
 #         - ./test/presubmit-tests-gce-minikube.sh
 #         args:

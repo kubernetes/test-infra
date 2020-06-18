@@ -3061,19 +3061,31 @@ func TestManagedHmacEntityValidation(t *testing.T) {
 	}{
 		{
 			name:       "Missing managed HmacEntities",
-			prowConfig: Config{ProwConfig: ProwConfig{ManagedWebhooks: nil}},
+			prowConfig: Config{ProwConfig: ProwConfig{ManagedWebhooks: ManagedWebhooks{}}},
 			shouldFail: false,
 		},
 		{
 			name: "Config with all valid dates",
-			prowConfig: Config{ProwConfig: ProwConfig{ManagedWebhooks: map[string]ManagedWebhookInfo{"foo/bar": {TokenCreatedAfter: time.Now()},
-				"foo/baz": {TokenCreatedAfter: time.Now()}}}},
+			prowConfig: Config{ProwConfig: ProwConfig{
+				ManagedWebhooks: ManagedWebhooks{
+					OrgRepoConfig: map[string]ManagedWebhookInfo{
+						"foo/bar": {TokenCreatedAfter: time.Now()},
+						"foo/baz": {TokenCreatedAfter: time.Now()},
+					},
+				},
+			}},
 			shouldFail: false,
 		},
 		{
 			name: "Config with one invalid dates",
-			prowConfig: Config{ProwConfig: ProwConfig{ManagedWebhooks: map[string]ManagedWebhookInfo{"foo/bar": {TokenCreatedAfter: time.Now()},
-				"foo/baz": {TokenCreatedAfter: time.Now().Add(time.Hour)}}}},
+			prowConfig: Config{ProwConfig: ProwConfig{
+				ManagedWebhooks: ManagedWebhooks{
+					OrgRepoConfig: map[string]ManagedWebhookInfo{
+						"foo/bar": {TokenCreatedAfter: time.Now()},
+						"foo/baz": {TokenCreatedAfter: time.Now().Add(time.Hour)},
+					},
+				},
+			}},
 			shouldFail: true,
 		},
 	}

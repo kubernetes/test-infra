@@ -210,6 +210,7 @@ periodics:
       - --cluster=e2e-kops-aws-canary.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=admin
+      - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=ci/latest
       - --ginkgo-parallel
       - --kops-etcd-version=3.2.24
@@ -243,6 +244,7 @@ periodics:
       args:
       - --cluster=e2e-kops-gce-canary.k8s.local
       - --deployment=kops
+      - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=ci/latest
       - --ginkgo-parallel=30
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64

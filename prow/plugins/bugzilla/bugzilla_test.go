@@ -19,7 +19,6 @@ package bugzilla
 import (
 	"fmt"
 	"reflect"
-	"strconv"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -1510,55 +1509,54 @@ func checkComments(client fakegithub.FakeClient, name, expectedComment string, t
 	}
 }
 
-func TestTitleMatch(t *testing.T) {
+func TestBugIDFromTitle(t *testing.T) {
 	var testCases = []struct {
-		title    string
-		expected int
+		title            string
+		expectedNum      int
+		expectedNotFound bool
 	}{
 		{
-			title:    "no match",
-			expected: -1,
+			title:            "no match",
+			expectedNum:      0,
+			expectedNotFound: true,
 		},
 		{
-			title:    "Bug 12: Canonical",
-			expected: 12,
+			title:       "Bug 12: Canonical",
+			expectedNum: 12,
 		},
 		{
-			title:    "bug 12: Lowercase",
-			expected: 12,
+			title:       "bug 12: Lowercase",
+			expectedNum: 12,
 		},
 		{
-			title:    "Bug 12 : Space before colon",
-			expected: -1,
+			title:            "Bug 12 : Space before colon",
+			expectedNum:      0,
+			expectedNotFound: true,
 		},
 		{
-			title:    "[rebase release-1.0] Bug 12: Prefix",
-			expected: 12,
+			title:       "[rebase release-1.0] Bug 12: Prefix",
+			expectedNum: 12,
 		},
 		{
-			title:    "Revert: \"Bug 12: Revert default\"",
-			expected: 12,
+			title:       "Revert: \"Bug 12: Revert default\"",
+			expectedNum: 12,
 		},
 		{
-			title:    "Bug 34: Revert: \"Bug 12: Revert default\"",
-			expected: 34,
+			title:       "Bug 34: Revert: \"Bug 12: Revert default\"",
+			expectedNum: 34,
 		},
 	}
 	for _, testCase := range testCases {
 		t.Run(testCase.title, func(t *testing.T) {
-			actual := -1
-			match := titleMatch.FindStringSubmatch(testCase.title)
-			if match != nil {
-				id, err := strconv.Atoi(match[1])
-				if err != nil {
-					t.Fatal(err)
-				}
-
-				actual = id
+			num, notFound, err := bugIDFromTitle(testCase.title)
+			if err != nil {
+				t.Errorf("%s: Unexpected error: %v", testCase.title, err)
 			}
-
-			if actual != testCase.expected {
-				t.Errorf("unexpected %d != %d", actual, testCase.expected)
+			if num != testCase.expectedNum {
+				t.Errorf("%s: unexpected %d != %d", testCase.title, num, testCase.expectedNum)
+			}
+			if notFound != testCase.expectedNotFound {
+				t.Errorf("%s: unexpected %t != %t", testCase.title, notFound, testCase.expectedNotFound)
 			}
 		})
 	}
@@ -1906,6 +1904,35 @@ func TestGetCherrypickPRMatch(t *testing.T) {
 		}
 		if cherrypickTo != "v2" {
 			t.Errorf("%s: Got incorrect cherrypick to branch: Expected %s, got %s", testCase.name, branch, cherrypickTo)
+		}
+	}
+}
+
+func TestUpdateTitleBugID(t *testing.T) {
+	testCases := []struct {
+		name     string
+		title    string
+		expected string
+	}{{
+		name:     "handle `Bug`",
+		title:    "Bug 123: Fix segfault",
+		expected: "Bug 124: Fix segfault",
+	}, {
+		name:     "handle `BUG`",
+		title:    "BUG 123: Fix segfault",
+		expected: "BUG 124: Fix segfault",
+	}, {
+		name:     "handle `[release-4.5] BUG`",
+		title:    "[release-4.5] BUG 123: Fix segfault",
+		expected: "[release-4.5] BUG 124: Fix segfault",
+	}}
+	for _, testCase := range testCases {
+		newTitle, err := updateTitleBugID(testCase.title, 123, 124)
+		if err != nil {
+			t.Errorf("%s: unexpected error: %v", testCase.name, err)
+		}
+		if newTitle != testCase.expected {
+			t.Errorf("%s: Expected `%s`, got `%s`", testCase.name, testCase.expected, newTitle)
 		}
 	}
 }

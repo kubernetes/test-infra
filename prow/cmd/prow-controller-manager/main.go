@@ -53,10 +53,11 @@ type options struct {
 	leaderElectionNamespace string
 	enabledControllers      prowflagutil.Strings
 
-	dryRun     bool
-	useV2      bool
-	kubernetes prowflagutil.KubernetesOptions
-	github     prowflagutil.GitHubOptions // TODO(fejta): remove
+	dryRun                 bool
+	useV2                  bool
+	kubernetes             prowflagutil.KubernetesOptions
+	github                 prowflagutil.GitHubOptions // TODO(fejta): remove
+	instrumentationOptions prowflagutil.InstrumentationOptions
 }
 
 func gatherOptions(fs *flag.FlagSet, args ...string) options {
@@ -70,7 +71,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.Var(&o.enabledControllers, "enable-controller", fmt.Sprintf("Controllers to enable. Can be passed multiple times. Defaults to all controllers (%v)", allControllers.List()))
 
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Whether or not to make mutating API calls to GitHub.")
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github} {
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.instrumentationOptions} {
 		group.AddFlags(fs)
 	}
 
@@ -115,7 +116,7 @@ func main() {
 
 	defer interrupts.WaitForGracefulShutdown()
 
-	pjutil.ServePProf()
+	pjutil.ServePProf(o.instrumentationOptions.PProfPort)
 
 	var configAgent config.Agent
 	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
@@ -172,7 +173,7 @@ func main() {
 	}
 
 	// Expose prometheus metrics
-	metrics.ExposeMetrics("plank", cfg().PushGateway)
+	metrics.ExposeMetrics("plank", cfg().PushGateway, o.instrumentationOptions.MetricsPort)
 	if err := mgr.Start(interrupts.Context().Done()); err != nil {
 		logrus.WithError(err).Fatal("failed to start manager")
 	}

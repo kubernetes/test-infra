@@ -16,7 +16,7 @@ periodics:
     testgrid-num-failures-to-alert: "8"
     testgrid-alert-stale-results-hours: "16"
   decoration_config:
-    timeout: 40m
+    timeout: 60m
   extra_refs:
   - org: kubernetes
     repo: kubernetes
@@ -28,7 +28,7 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-1.18
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200616-45495bd-1.18
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"
@@ -56,7 +56,7 @@ periodics:
     testgrid-num-failures-to-alert: "4"
     testgrid-alert-stale-results-hours: "48"
   decoration_config:
-    timeout: 40m
+    timeout: 60m
   extra_refs:
   - org: kubernetes
     repo: kubernetes
@@ -68,7 +68,7 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-1.17
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200616-45495bd-1.17
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"
@@ -96,7 +96,7 @@ periodics:
     testgrid-num-failures-to-alert: "4"
     testgrid-alert-stale-results-hours: "48"
   decoration_config:
-    timeout: 40m
+    timeout: 60m
   extra_refs:
   - org: kubernetes
     repo: kubernetes
@@ -108,7 +108,7 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-1.16
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200616-45495bd-1.16
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"
@@ -136,7 +136,7 @@ periodics:
     testgrid-num-failures-to-alert: "4"
     testgrid-alert-stale-results-hours: "48"
   decoration_config:
-    timeout: 40m
+    timeout: 60m
   extra_refs:
   - org: kubernetes
     repo: kubernetes
@@ -148,7 +148,7 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-1.15
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200616-45495bd-1.15
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"

@@ -25,6 +25,19 @@ postsubmits:
     annotations:
       testgrid-dashboards: sig-big-data
       description: Postsubmit tests for kubeflow/internal-acls.
+  kubeflow/gcp-blueprints:
+  - name: kubeflow-gcp-blueprints-postsubmit
+    cluster: kubeflow
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+
+    annotations:
+      testgrid-dashboards: sig-big-data
+      description: Postsubmit tests for kubeflow/gcp-blueprints.
   kubeflow/kubeflow:
   - name: kubeflow-postsubmit
     cluster: kubeflow
@@ -261,7 +274,7 @@ postsubmits:
       mountPath: /var/lib/docker
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200616-45495bd-master
         command:
         - ./test/postsubmit-tests-with-pipeline-deployment.sh
         args:
@@ -283,7 +296,7 @@ postsubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200616-45495bd-master
         command:
         - ./test/presubmit-tests-with-pipeline-deployment.sh
         args:
@@ -307,7 +320,7 @@ postsubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200602-05eeaff-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200616-45495bd-master
         command:
         - ./test/postsubmit-tests-with-pipeline-deployment.sh
         args:
