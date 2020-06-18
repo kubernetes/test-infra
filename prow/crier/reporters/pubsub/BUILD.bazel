@@ -26,7 +26,7 @@ go_library(
     deps = [
         "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/config:go_default_library",
-        "@com_google_cloud_go//pubsub:go_default_library",
+        "@com_google_cloud_go_pubsub//:go_default_library",
     ],
 )
 
