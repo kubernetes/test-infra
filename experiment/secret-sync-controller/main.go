@@ -1,13 +1,13 @@
 package main
 
 import (
-	"b01901143.git/secret-sync/client_util"
 	"context"
 	"errors"
 	"flag"
 	"fmt"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
+	"k8s.io/test-infra/experiment/secret-sync-controller/client"
 	"os"
 )
 
@@ -34,41 +34,41 @@ func main() {
 	o := gatherOptions()
 
 	// TODO: modularize clients
-	k8s_clientset := client_util.NewK8sClientset()
+	k8sClientset := client.NewK8sClientset()
 
-	secretManager_ctx := context.Background()
-	secretManager_client := client_util.NewSecretManagerClient(secretManager_ctx)
+	secretManagerCtx := context.Background()
+	secretManagerClient := client.NewSecretManagerClient(secretManagerCtx)
 
-	secretSyncSpecs, err := LoadConfig(o.configPath)
+	secretSyncConfig, err := LoadConfig(o.configPath)
 	if err != nil {
 		fmt.Println(err)
 	}
 
 	// TODO: modularize source & destination secrets
 
-	for i, spec := range *secretSyncSpecs {
+	for i, spec := range secretSyncConfig.Specs {
 
 		// always store secret values as map[string][]byte (?)
 		// k8s requires & yields secrets with type map[string][]byte,
 		// while SecretManager uses []byte (e.g. account: "foo"\n secret: "bar")
 		// source
-		var source_secret map[string][]byte
-		source_version := -1
+		var sourceSecret map[string][]byte
+		sourceVersion := -1
 
 		// dest
-		var dest_secret map[string][]byte
-		dest_version := -1
+		var destSecret map[string][]byte
+		destVersion := -1
 
-		source_version, source_secret = spec.Source.GetLatestSecretVersion(k8s_clientset, secretManager_ctx, secretManager_client)
-		dest_version, dest_secret = spec.Destination.GetLatestSecretVersion(k8s_clientset, secretManager_ctx, secretManager_client)
+		sourceVersion, sourceSecret = spec.Source.GetLatestSecretVersion(k8sClientset, secretManagerCtx, secretManagerClient)
+		destVersion, destSecret = spec.Destination.GetLatestSecretVersion(k8sClientset, secretManagerCtx, secretManagerClient)
 
 		fmt.Printf("Secret pair [%d]:\n{\n", i)
-		fmt.Printf("\tSource secret version %d : \n", source_version)
-		for key, val := range source_secret {
+		fmt.Printf("\tSource secret version %d : \n", sourceVersion)
+		for key, val := range sourceSecret {
 			fmt.Printf("\t\t%s: \"%s\"\n", key, val)
 		}
-		fmt.Printf("\tDestination secret version %d : \n", dest_version)
-		for key, val := range dest_secret {
+		fmt.Printf("\tDestination secret version %d : \n", destVersion)
+		for key, val := range destSecret {
 			fmt.Printf("\t\t%s: \"%s\"\n", key, val)
 		}
 		fmt.Printf("}\n========================\n")
@@ -78,7 +78,7 @@ func main() {
 }
 
 // LoadConfig loads from podConfig yaml file and returns the structure
-func LoadConfig(config string) (*[]SecretSyncSpec, error) {
+func LoadConfig(config string) (*SecretSyncConfig, error) {
 	stat, err := os.Stat(config)
 	if err != nil {
 		return nil, err
@@ -93,11 +93,11 @@ func LoadConfig(config string) (*[]SecretSyncSpec, error) {
 		return nil, fmt.Errorf("Error reading YAML file: %s\n", err)
 	}
 
-	specs := []SecretSyncSpec{}
-	err = yaml.Unmarshal(yamlFile, &specs)
+	syncConfig := SecretSyncConfig{}
+	err = yaml.Unmarshal(yamlFile, &syncConfig)
 	if err != nil {
 		return nil, fmt.Errorf("Error reading YAML file: %s\n", err)
 	}
 
-	return &specs, nil
+	return &syncConfig, nil
 }

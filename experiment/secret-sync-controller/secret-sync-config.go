@@ -17,6 +17,10 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
+type SecretSyncConfig struct {
+	Specs []SecretSyncSpec `yaml:"specs"`
+}
+
 type SecretSyncSpec struct {
 	// the target can be either a K8s secret or a SecretManager secret
 	Source      Target `yaml:"source"`
@@ -25,30 +29,32 @@ type SecretSyncSpec struct {
 
 type Target struct {
 	// assert that one of the two should be `nil`
-	Kubernetes    *KubernetesSpec    `yaml:"kubernetes"`
-	SecretManager *SecretManagerSpec `yaml:"secretManager"`
+	Kubernetes    *KubernetesSpec    `yaml:"kubernetes,omitempty"`
+	SecretManager *SecretManagerSpec `yaml:"secretManager,omitempty"`
 }
 
 type KubernetesSpec struct {
-	Namespace string `yaml:"namespace"`
-	Secret    string `yaml:"secret"`
+	Namespace string   `yaml:"namespace"`
+	Secret    string   `yaml:"secret,omitempty"`
+	DenyList  []string `yaml:"denyList,omitempty"`
 }
 
 type SecretManagerSpec struct {
-	Project string `yaml:"project"`
-	Secret  string `yaml:"secret"`
+	Project  string   `yaml:"project"`
+	Secret   string   `yaml:"secret,omitempty"`
+	DenyList []string `yaml:"denyList,omitempty"`
 }
 
-func (target Target) GetLatestSecretVersion(k8s_clientset *kubernetes.Clientset, secretManager_ctx context.Context, secretManager_client *secretmanager.Client) (int, map[string][]byte) {
+func (target Target) GetLatestSecretVersion(k8sClientset *kubernetes.Clientset, secretManagerCtx context.Context, secretManagerClient *secretmanager.Client) (int, map[string][]byte) {
 	if k8s, gsm := target.Kubernetes, target.SecretManager; k8s != nil {
-		return k8s.LatestSecretVersion(k8s_clientset)
+		return k8s.LatestSecretVersion(k8sClientset)
 	} else {
-		return gsm.LatestSecretVersion(secretManager_ctx, secretManager_client)
+		return gsm.LatestSecretVersion(secretManagerCtx, secretManagerClient)
 	}
 }
 
-func (k8s *KubernetesSpec) LatestSecretVersion(k8s_clientset *kubernetes.Clientset) (int, map[string][]byte) {
-	secret, err := k8s_clientset.CoreV1().Secrets(k8s.Namespace).Get(context.TODO(), k8s.Secret, metav1.GetOptions{})
+func (k8s *KubernetesSpec) LatestSecretVersion(k8sClientset *kubernetes.Clientset) (int, map[string][]byte) {
+	secret, err := k8sClientset.CoreV1().Secrets(k8s.Namespace).Get(k8s.Secret, metav1.GetOptions{})
 	if apierrors.IsNotFound(err) {
 		fmt.Println(err)
 	}
@@ -61,25 +67,25 @@ func (gsm *SecretManagerSpec) LatestSecretVersion(ctx context.Context, client *s
 
 	name := "projects/" + gsm.Project + "/secrets/" + gsm.Secret + "/versions/latest"
 	// Build the get request.
-	get_req := &secretmanagerpb.GetSecretVersionRequest{
+	getReq := &secretmanagerpb.GetSecretVersionRequest{
 		Name: name,
 	}
 
 	// Call the API.
-	get_result, _ := client.GetSecretVersion(ctx, get_req)
+	getResult, _ := client.GetSecretVersion(ctx, getReq)
 
-	version_slice := strings.Split(get_result.Name, "/")
-	version, _ := strconv.Atoi(version_slice[len(version_slice)-1])
+	versionSlice := strings.Split(getResult.Name, "/")
+	version, _ := strconv.Atoi(versionSlice[len(versionSlice)-1])
 
 	// Build the access request.
-	acc_req := &secretmanagerpb.AccessSecretVersionRequest{
+	accReq := &secretmanagerpb.AccessSecretVersionRequest{
 		Name: name,
 	}
 
 	// Call the API.
-	acc_result, _ := client.AccessSecretVersion(ctx, acc_req)
+	accResult, _ := client.AccessSecretVersion(ctx, accReq)
 	buf := make(map[interface{}]interface{})
-	yaml.Unmarshal(acc_result.Payload.Data, &buf)
+	yaml.Unmarshal(accResult.Payload.Data, &buf)
 
 	secret := make(map[string][]byte)
 

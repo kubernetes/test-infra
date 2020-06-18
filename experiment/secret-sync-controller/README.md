@@ -15,11 +15,11 @@ Fetch the latest versions of from Secret Manager secret and Kubernetes secrets.
 
 	- Permission to get clusters:
 
-		    gcloud projects add-iam-policy-binding k8s-jkns-gke-soak --member "serviceAccount:<service-account-name>@k8s-jkns-gke-soak.iam.gserviceaccount.com" --role "roles/container.clusterViewer"
+		    gcloud projects add-iam-policy-binding <gcloud-project-id> --member "serviceAccount:<service-account-name>@<gcloud-project-id>.iam.gserviceaccount.com" --role "roles/container.clusterViewer"
 	
 	- Permission to manage secrets:
 
-		    gcloud projects add-iam-policy-binding k8s-jkns-gke-soak --member "serviceAccount:<service-account-name>@k8s-jkns-gke-soak.iam.gserviceaccount.com" --role "roles/secretmanager.admin"
+		    gcloud projects add-iam-policy-binding <gcloud-project-id> --member "serviceAccount:<service-account-name>@<gcloud-project-id>.iam.gserviceaccount.com" --role "roles/secretmanager.admin"
 
 	- Permission to manage secrets within containers:
 
@@ -38,21 +38,21 @@ Fetch the latest versions of from Secret Manager secret and Kubernetes secrets.
 			
 			- Create a custom iam role
 
-				    gcloud iam roles create <iam-role-id> --project=k8s-jkns-gke-soak --file=service-secret-role.yaml
+				    gcloud iam roles create <iam-role-id> --project=<gcloud-project-id> --file=service-secret-role.yaml
 
 			- Add the role to service account `service-account-name`:
 
-				    gcloud projects add-iam-policy-binding k8s-jkns-gke-soak --member "serviceAccount:<service-account-name>@k8s-jkns-gke-soak.iam.gserviceaccount.com" --role "roles/<iam-role-id>"
+				    gcloud projects add-iam-policy-binding <gcloud-project-id> --member "serviceAccount:<service-account-name>@<gcloud-project-id>.iam.gserviceaccount.com" --role "roles/<iam-role-id>"
 
 		- Or just add [Kubernetes Engine Developer] role to service account `service-account-name`:
 
-			    gcloud projects add-iam-policy-binding k8s-jkns-gke-soak --member "serviceAccount:<service-account-name>@k8s-jkns-gke-soak.iam.gserviceaccount.com" --role "roles/container.developer"
+			    gcloud projects add-iam-policy-binding <gcloud-project-id> --member "serviceAccount:<service-account-name>@<gcloud-project-id>.iam.gserviceaccount.com" --role "roles/container.developer"
 
 - [Configure cluster access for kubectl](https://cloud.google.com/kubernetes-engine/docs/how-to/cluster-access-for-kubectl) (This is already done in the entrypoint.sh file in this project)
 
 - Generating service account key for authentication.
 ```
-gcloud iam service-accounts keys create <key-name> --iam-account <service-account-name>@k8s-jkns-gke-soak.iam.gserviceaccount.com
+gcloud iam service-accounts keys create <key-name> --iam-account <service-account-name>@<gcloud-project-id>.iam.gserviceaccount.com
 ```
 
 - Set the environment variable
@@ -63,7 +63,7 @@ export GOOGLE_APPLICATION_CREDENTIALS="<path/to/your/service/account/key.json>"
 ## Usage
 ```
 go build
-./secret-sync --config-path SecretSyncs-config.yaml
+./secret-sync-controller --config-path SecretSyncs-config.yaml
 ```
 
 ## TODO

@@ -1,7 +1,8 @@
+specs:
 - source: 
     kubernetes:
-      namespace: default
-      secret: test-secret
+      namespace: ns1
+      secret: secret1
   destination:
     secretManager:
       project: k8s-jkns-gke-soak

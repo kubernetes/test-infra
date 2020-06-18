@@ -1,4 +1,4 @@
-package client_util
+package client
 
 import (
 	"context"
@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	secretmanager "cloud.google.com/go/secretmanager/apiv1"
+	"google.golang.org/api/option"
 
 	"k8s.io/client-go/kubernetes"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
@@ -38,7 +39,8 @@ func NewK8sClientset() *kubernetes.Clientset {
 
 func NewSecretManagerClient(ctx context.Context) *secretmanager.Client {
 	// Create the client.
-	client, err := secretmanager.NewClient(ctx)
+	jsonPath := "/usr/local/google/home/shanefu/gcloud_key.json"
+	client, err := secretmanager.NewClient(ctx, option.WithCredentialsFile(jsonPath))
 	if err != nil {
 		panic(err.Error())
 	}

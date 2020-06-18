@@ -1,0 +1,43 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "main.go",
+        "secret_sync_spec.go",
+    ],
+    importpath = "k8s.io/test-infra/experiment/secret-sync-controller",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//experiment/secret-sync-controller/client:go_default_library",
+        "@com_google_cloud_go//secretmanager/apiv1:go_default_library",
+        "@in_gopkg_yaml_v2//:go_default_library",
+        "@io_k8s_apimachinery//pkg/api/errors:go_default_library",
+        "@io_k8s_apimachinery//pkg/apis/meta/v1:go_default_library",
+        "@io_k8s_client_go//kubernetes:go_default_library",
+        "@org_golang_google_genproto//googleapis/cloud/secretmanager/v1:go_default_library",
+    ],
+)
+
+go_binary(
+    name = "secret-sync-controller",
+    embed = [":go_default_library"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [
+        ":package-srcs",
+        "//experiment/secret-sync-controller/client:all-srcs",
+    ],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)
