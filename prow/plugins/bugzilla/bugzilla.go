@@ -881,10 +881,10 @@ func handleCherrypick(e event, gc githubClient, bc bugzilla.Client, options plug
 		return comment(formatError(fmt.Sprintf("creating a cherry-pick bug in Bugzilla: could not get list of clones"), bc.Endpoint(), bug.ID, err))
 	}
 	oldLink := fmt.Sprintf(bugLink, bugID, bc.Endpoint(), bugID)
-	targetRelease := *options.TargetRelease
 	if options.TargetRelease == nil {
 		return comment(fmt.Sprintf("Could not make automatic cherrypick of %s for this PR as the target_release is not set for this branch in the bugzilla plugin config. Running refresh:\n/bugzilla refresh", oldLink))
 	}
+	targetRelease := *options.TargetRelease
 	for _, clone := range clones {
 		if len(clone.TargetRelease) == 1 && clone.TargetRelease[0] == targetRelease {
 			newTitle := strings.Replace(e.body, fmt.Sprintf("Bug %d", bugID), fmt.Sprintf("Bug %d", clone.ID), 1)
