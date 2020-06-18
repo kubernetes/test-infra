@@ -75,6 +75,13 @@ approve:
   - kubernetes-sigs
   require_self_approval: false
 - repos:
+  - kubernetes-sigs/cluster-api
+  - kubernetes-sigs/cluster-api-provider-aws
+  - kubernetes-sigs/cluster-api-provider-azure
+  - kubernetes-sigs/cluster-api-provider-gcp
+  - kubernetes-sigs/cluster-api-provider-vsphere
+  require_self_approval: true
+- repos:
   - bazelbuild
   - kubernetes-sigs/boskos
   - kubernetes-sigs/kind
