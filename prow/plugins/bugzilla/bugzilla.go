@@ -187,7 +187,12 @@ type githubClient interface {
 	Query(ctx context.Context, q interface{}, vars map[string]interface{}) error
 }
 
-func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
+func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("recovered panic in bugzilla plugin: %v", r)
+		}
+	}()
 	event, err := digestComment(pc.GitHubClient, pc.Logger, e)
 	if err != nil {
 		return err
@@ -199,7 +204,12 @@ func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error 
 	return nil
 }
 
-func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
+func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("recovered panic in bugzilla plugin: %v", r)
+		}
+	}()
 	options := pc.PluginConfig.Bugzilla.OptionsForBranch(pre.PullRequest.Base.Repo.Owner.Login, pre.PullRequest.Base.Repo.Name, pre.PullRequest.Base.Ref)
 	event, err := digestPR(pc.Logger, pre, options.ValidateByDefault)
 	if err != nil {
