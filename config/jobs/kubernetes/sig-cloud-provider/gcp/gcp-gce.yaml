@@ -631,7 +631,6 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
-      - --env=KUBE_CONTAINER_RUNTIME=docker
       - --extract=ci/latest
       - --gcp-project-type=k8s-infra-gce-project
       - --gcp-master-image=gci
