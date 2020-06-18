@@ -73,8 +73,8 @@ def repositories():
 
     container_pull(
         name = "bazel-base",
-        digest = "sha256:cefc822f93bb3dcf272ce3e4c5162b179d5c165584ace13856afed99662b87cd",
+        digest = "sha256:2e8163b61f3759f6ff0e4df43c40d092dae331b1c2d5326f05f78e72a68d3203",
         registry = "gcr.io",
         repository = "k8s-testimages/launcher.gcr.io/google/bazel",
-        tag = "2.2.0-from-2.0.0",  # TODO(fejta): switch to test-infra tag once it exists
+        tag = "v20200609-e7bfd25-test-infra",
     )
