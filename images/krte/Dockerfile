@@ -77,14 +77,14 @@ RUN echo "Installing Packages ..." \
         && rm -rf /var/lib/apt/lists/* \
     && echo "Installing Go ..." \
         && export GO_TARBALL="go${GO_VERSION}.linux-amd64.tar.gz"\
-        && wget -q "https://storage.googleapis.com/golang/${GO_TARBALL}" \
+        && curl -fsSL "https://storage.googleapis.com/golang/${GO_TARBALL}" --output "${GO_TARBALL}" \
         && tar xzf "${GO_TARBALL}" -C /usr/local \
         && rm "${GO_TARBALL}"\
         && mkdir -p "${GOPATH}/bin" \
     && echo "Installing Bazel ..." \
         && install-bazel.sh \
         && echo "Installing gcloud SDK, kubectl ..." \
-        && curl https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.tar.gz --output google-cloud-sdk.tar.gz \
+        && curl -fsSL https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.tar.gz --output google-cloud-sdk.tar.gz \
         && tar xzf google-cloud-sdk.tar.gz -C / \
         && rm google-cloud-sdk.tar.gz \
         && /google-cloud-sdk/install.sh \
