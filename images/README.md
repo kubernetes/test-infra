@@ -26,6 +26,9 @@ We have bazel images that have two versions of bazel installed. The upgrade proc
   - This should postsubmits to create the `bazel` and `bazelbuild` images.
   - Run the `push.sh` script in `images/gcloud-bazel` to push the new image.
 * Update usage to these new images
+  - Manually update the [`bazel-base`] digtest in `containers.bzl` to the new image.
+    - NOTE: must update the digest (the tag param is just documentation)
+    - `TODO(fejta):` this should be done automatically like the others
   - The periodic prow autobump job should make a PR to start using these images an hour later.
   - The next day oncall should merge this PR, at which point they will start getting used.
 * Create a PR to change [`.bazelversion`] to the target version.
@@ -48,6 +51,7 @@ There is no automated testing pipeline for images:
 1. You are done. If more breaks happen later, [test-infra oncall](go.k8s.io/oncall) will take care of it.
 
 
+[`bazel-base`]: /containers.bzl
 [`.bazelversion`]: /.bazelversion
 [`images/bazel`]: /images/bazel/variants.yaml
 [`images/bazelbuild`]: /images/bazelbuild/variants.yaml
