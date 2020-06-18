@@ -18,6 +18,10 @@ limitations under the License.
 package deployer
 
 import (
+	"fmt"
+	"os"
+	"path/filepath"
+
 	"k8s.io/klog"
 	"k8s.io/test-infra/kubetest2/pkg/types"
 
@@ -32,13 +36,16 @@ type deployer struct {
 	// generic parts
 	commonOptions types.Options
 
-	RepoRoot string `desc:"The path to the root of the local kubernetes/cloud-provider/gcp repo. Necessary to call certain scripts. Defaults to the current directory. If operating in legacy mode, this should be set to the local kubernetes/kubernetes repo."`
+	kubeconfigPath string
+	RepoRoot       string `desc:"The path to the root of the local kubernetes/cloud-provider-gcp repo. Necessary to call certain scripts. Defaults to the current directory. If operating in legacy mode, this should be set to the local kubernetes/kubernetes repo."`
+	GCPProject     string `desc:"GCP Project to create VMs in. Must be set."`
 }
 
 // New implements deployer.New for gce
 func New(opts types.Options) (types.Deployer, *pflag.FlagSet) {
 	d := &deployer{
-		commonOptions: opts,
+		commonOptions:  opts,
+		kubeconfigPath: filepath.Join(opts.ArtifactsDir(), "kubetest2-kubeconfig"),
 	}
 
 	flagSet, err := gpflag.Parse(d)
@@ -60,14 +67,18 @@ func (d *deployer) Provider() string {
 	return Name
 }
 
-func (d *deployer) Up() error { return nil }
-
 func (d *deployer) IsUp() (up bool, err error) { return false, nil }
 
 func (d *deployer) DumpClusterLogs() error { return nil }
 
-func (d *deployer) TestSetup() error { return nil }
-
-func (d *deployer) Kubeconfig() (string, error) { return "", nil }
+func (d *deployer) Kubeconfig() (string, error) {
+	_, err := os.Stat(d.kubeconfigPath)
+	if err == nil {
+		return d.kubeconfigPath, nil
+	} else if os.IsNotExist(err) {
+		return "", fmt.Errorf("kubeconfig does not exist at: %s", d.kubeconfigPath)
+	}
+	return "", fmt.Errorf("unknown error when checking for kubeconfig at %s: %s", d.kubeconfigPath, err)
+}
 
 func (d *deployer) Down() error { return nil }

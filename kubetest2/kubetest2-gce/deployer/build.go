@@ -20,10 +20,13 @@ import (
 	"fmt"
 	"os"
 
+	"k8s.io/klog"
 	"k8s.io/test-infra/kubetest2/pkg/exec"
 )
 
 func (d *deployer) Build() error {
+	klog.Info("GCE deployer starting Build()")
+
 	if err := d.verifyBuildFlags(); err != nil {
 		return fmt.Errorf("Build() failed to verify build-specific flags: %s", err)
 	}
@@ -54,6 +57,7 @@ func (d *deployer) setRepoPathIfNotSet() error {
 	if err != nil {
 		return fmt.Errorf("Failed to get current working directory for setting Kubernetes root path: %s", err)
 	}
+	klog.Infof("defaulting repo root to the current directory: %s", path)
 	d.RepoRoot = path
 
 	return nil
