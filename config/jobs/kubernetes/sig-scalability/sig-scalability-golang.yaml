@@ -38,7 +38,9 @@ periodics:
     preset-e2e-kubemark-common: "true"
     preset-e2e-kubemark-gce-scale: "true"
   annotations:
+    testgrid-alert-email: go-kubernetes-scalability-tickets@googlegroups.com
     testgrid-dashboards: sig-scalability-golang
+    testgrid-num-failures-to-alert: "2"
     testgrid-tab-name: golang-tip-k8s-1-18
   spec:
     containers:
