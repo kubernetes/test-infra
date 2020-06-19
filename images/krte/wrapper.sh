@@ -79,6 +79,18 @@ if [[ "${DOCKER_IN_DOCKER_IPV6_ENABLED}" == "true" ]]; then
   >&2 echo "wrapper.sh] [SETUP] Done enabling IPv6 in Docker config."
 fi
 
+# optionally enable iptables-nft
+export DOCKER_IN_DOCKER_NFT_ENABLED=${DOCKER_IN_DOCKER_NFT_ENABLED:-false}
+if [[ "${DOCKER_IN_DOCKER_NFT_ENABLED}" == "true" ]]; then
+  >&2 echo "wrapper.sh] [SETUP] Enabling iptables-nft ..."
+  # enable iptables-nft
+  update-alternatives --set iptables /usr/sbin/iptables-nft
+  update-alternatives --set ip6tables /usr/sbin/ip6tables-nft
+  # enable nft iptables module
+  modprobe -v nf_tables
+  >&2 echo "wrapper.sh] [SETUP] Done enabling iptables-nft by default."
+fi
+
 # Check if the job has opted-in to docker-in-docker
 export DOCKER_IN_DOCKER_ENABLED=${DOCKER_IN_DOCKER_ENABLED:-false}
 if [[ "${DOCKER_IN_DOCKER_ENABLED}" == "true" ]]; then
