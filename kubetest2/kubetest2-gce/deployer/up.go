@@ -92,6 +92,9 @@ func (d *deployer) buildEnv() []string {
 	// the run of kubetest2 and so should be placed in the artifacts directory
 	env = append(env, fmt.Sprintf("KUBECONFIG=%s", d.kubeconfigPath))
 
+	// kube-up and kube-down get this as a default ("kubernetes") but log-dump
+	// does not. opted to set it manually here for maximum consistency
+	env = append(env, "KUBE_GCE_INSTANCE_PREFIX=kubetest2")
 	return env
 }
 

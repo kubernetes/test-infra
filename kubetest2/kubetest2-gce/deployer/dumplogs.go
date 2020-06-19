@@ -56,7 +56,8 @@ func (d *deployer) makeLogsDir() error {
 
 	if err == nil {
 		return fmt.Errorf("cluster logs directory %s already exists, please clean up manually before continuing", d.logsDir)
-	} else if os.IsNotExist(err) {
+	}
+	if os.IsNotExist(err) {
 		err := os.Mkdir(d.logsDir, os.ModePerm)
 		if err != nil {
 			return fmt.Errorf("failed to create %s: %s", d.logsDir, err)
@@ -69,7 +70,6 @@ func (d *deployer) makeLogsDir() error {
 
 func (d *deployer) sshDump() error {
 	env := d.buildEnv()
-	env = append(env, "KUBE_GCE_INSTANCE_PREFIX=kubernetes")
 
 	args := []string{
 		filepath.Join(d.RepoRoot, "cluster", "log-dump", "log-dump.sh"),
