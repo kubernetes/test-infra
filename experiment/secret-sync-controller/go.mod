@@ -3,6 +3,7 @@ module k8s.io/test-infra/experiment/secret-sync-controller
 go 1.13
 
 replace (
+	github.com/Azure/go-autorest => github.com/Azure/go-autorest v12.2.0+incompatible
 	k8s.io/api => k8s.io/api v0.17.3
 	k8s.io/apimachinery => k8s.io/apimachinery v0.17.3
 	k8s.io/client-go => k8s.io/client-go v0.17.3
@@ -12,8 +13,6 @@ require (
 	cloud.google.com/go v0.58.0
 	github.com/Azure/go-autorest/autorest v0.10.2 // indirect
 	github.com/Azure/go-autorest/autorest/adal v0.8.3 // indirect
-	github.com/gogo/protobuf v1.3.1 // indirect
-	github.com/google/gofuzz v1.1.0 // indirect
 	github.com/googleapis/gnostic v0.4.0 // indirect
 	github.com/gophercloud/gophercloud v0.11.0 // indirect
 	github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79 // indirect
@@ -26,6 +25,6 @@ require (
 	google.golang.org/genproto v0.0.0-20200616192300-fc83d8c00726
 	gopkg.in/yaml.v2 v2.2.8
 	k8s.io/apimachinery v0.18.3
-	k8s.io/client-go v0.0.0-20191004102537-eb5b9a8cfde7
-	sigs.k8s.io/yaml v1.2.0 // indirect
+	k8s.io/client-go v9.0.0+incompatible
+	k8s.io/test-infra v0.0.0-20200618195710-19a078d68a69
 )

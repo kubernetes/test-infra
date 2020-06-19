@@ -8,6 +8,7 @@ import (
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"k8s.io/test-infra/experiment/secret-sync-controller/client"
+	"log"
 	"os"
 )
 
@@ -34,44 +35,62 @@ func main() {
 	o := gatherOptions()
 
 	// TODO: modularize clients
-	k8sClientset := client.NewK8sClientset()
-
+	k8sClientset, err := client.NewK8sClientset()
+	if err != nil {
+		log.Fatal(err)
+	}
 	secretManagerCtx := context.Background()
-	secretManagerClient := client.NewSecretManagerClient(secretManagerCtx)
+	secretManagerClient, err := client.NewSecretManagerClient(secretManagerCtx)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var clientInterface ClientInterface
+
+	client := Client{
+		K8sClientset:        k8sClientset,
+		SecretManagerClient: secretManagerClient,
+		Ctx:                 secretManagerCtx,
+	}
+
+	clientInterface = client
 
 	secretSyncConfig, err := LoadConfig(o.configPath)
 	if err != nil {
-		fmt.Println(err)
+		log.Fatal(err)
 	}
+
+	secretSyncCollection := secretSyncConfig.Parse()
 
 	// TODO: modularize source & destination secrets
 
-	for i, spec := range secretSyncConfig.Specs {
+	for i, pair := range secretSyncCollection.Pairs {
 
-		// always store secret values as map[string][]byte (?)
 		// k8s requires & yields secrets with type map[string][]byte,
 		// while SecretManager uses []byte (e.g. account: "foo"\n secret: "bar")
-		// source
-		var sourceSecret map[string][]byte
-		sourceVersion := -1
 
-		// dest
-		var destSecret map[string][]byte
-		destVersion := -1
+		updated, err := clientInterface.UpdatedVersion(pair.Source)
+		fmt.Println(updated) // should be true
+		updated, err = clientInterface.UpdatedVersion(pair.Destination)
+		fmt.Println(updated) // should be true
 
-		sourceVersion, sourceSecret = spec.Source.GetLatestSecretVersion(k8sClientset, secretManagerCtx, secretManagerClient)
-		destVersion, destSecret = spec.Destination.GetLatestSecretVersion(k8sClientset, secretManagerCtx, secretManagerClient)
+		if err != nil {
+			log.Fatal(err)
+		}
 
 		fmt.Printf("Secret pair [%d]:\n{\n", i)
-		fmt.Printf("\tSource secret version %d : \n", sourceVersion)
-		for key, val := range sourceSecret {
-			fmt.Printf("\t\t%s: \"%s\"\n", key, val)
-		}
-		fmt.Printf("\tDestination secret version %d : \n", destVersion)
-		for key, val := range destSecret {
-			fmt.Printf("\t\t%s: \"%s\"\n", key, val)
-		}
+
+		fmt.Printf("\tSource secret version ")
+		pair.Source.PrintSecret()
+
+		fmt.Printf("\tDestination secret version ")
+		pair.Destination.PrintSecret()
 		fmt.Printf("}\n========================\n")
+
+		updated, err = clientInterface.UpdatedVersion(pair.Source)
+		fmt.Println(updated) // should be false
+		updated, err = clientInterface.UpdatedVersion(pair.Destination)
+		fmt.Println(updated) // should be false
 
 	}
 

@@ -1,97 +1,161 @@
 package main
 
+// configuration and sync-pair defination
+
 import (
 	"context"
-	// b64 "encoding/base64"
-	// "bytes"
 	"fmt"
-	"gopkg.in/yaml.v2"
-	"strconv"
 	"strings"
 
 	secretmanager "cloud.google.com/go/secretmanager/apiv1"
 	secretmanagerpb "google.golang.org/genproto/googleapis/cloud/secretmanager/v1"
 
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 )
 
+// Structs for configuration
 type SecretSyncConfig struct {
 	Specs []SecretSyncSpec `yaml:"specs"`
 }
-
 type SecretSyncSpec struct {
 	// the target can be either a K8s secret or a SecretManager secret
-	Source      Target `yaml:"source"`
-	Destination Target `yaml:"destination"`
+	Source      TargetSpec `yaml:"source"`
+	Destination TargetSpec `yaml:"destination"`
 }
-
-type Target struct {
+type TargetSpec struct {
 	// assert that one of the two should be `nil`
 	Kubernetes    *KubernetesSpec    `yaml:"kubernetes,omitempty"`
 	SecretManager *SecretManagerSpec `yaml:"secretManager,omitempty"`
 }
-
 type KubernetesSpec struct {
 	Namespace string   `yaml:"namespace"`
 	Secret    string   `yaml:"secret,omitempty"`
 	DenyList  []string `yaml:"denyList,omitempty"`
 }
-
 type SecretManagerSpec struct {
 	Project  string   `yaml:"project"`
 	Secret   string   `yaml:"secret,omitempty"`
 	DenyList []string `yaml:"denyList,omitempty"`
 }
 
-func (target Target) GetLatestSecretVersion(k8sClientset *kubernetes.Clientset, secretManagerCtx context.Context, secretManagerClient *secretmanager.Client) (int, map[string][]byte) {
-	if k8s, gsm := target.Kubernetes, target.SecretManager; k8s != nil {
-		return k8s.LatestSecretVersion(k8sClientset)
+// structs for client interface
+type ClientInterface interface {
+	UpdatedVersion(Target) (bool, error)
+}
+type Client struct { // actual client
+	K8sClientset        *kubernetes.Interface
+	SecretManagerClient *secretmanager.Client
+	Ctx                 context.Context
+}
+
+// structs for synchronzation pairs
+type SyncPairCollection struct {
+	Pairs []SyncPair
+}
+type SyncPair struct {
+	Source      Target
+	Destination Target
+}
+type Target struct {
+	Kubernetes    *KubernetesSecret
+	SecretManager *SecretManagerSecret
+}
+type KubernetesSecret struct {
+	Namespace string
+	Secret    string
+	Version   string
+	Data      map[string][]byte
+}
+type SecretManagerSecret struct {
+	Project string
+	Secret  string
+	Version string
+	Data    []uint8
+}
+
+// parse config to sync-pairs
+func (config SecretSyncConfig) Parse() (collection SyncPairCollection) {
+	for _, spec := range config.Specs {
+		pair := SyncPair{
+			Source:      createTarget(spec.Source),
+			Destination: createTarget(spec.Destination),
+		}
+		collection.Pairs = append(collection.Pairs, pair)
+	}
+	return collection
+}
+func createTarget(ts TargetSpec) (target Target) {
+	if k8s, gsm := ts.Kubernetes, ts.SecretManager; k8s != nil {
+		target.Kubernetes = &KubernetesSecret{
+			Namespace: k8s.Namespace,
+			Secret:    k8s.Secret,
+		}
 	} else {
-		return gsm.LatestSecretVersion(secretManagerCtx, secretManagerClient)
+		target.SecretManager = &SecretManagerSecret{
+			Project: gsm.Project,
+			Secret:  gsm.Secret,
+		}
+	}
+	return target
+}
+
+func (cl Client) UpdatedVersion(target Target) (bool, error) {
+	updated := false
+	if k8s, gsm := target.Kubernetes, target.SecretManager; k8s != nil {
+		// k8s secret
+		secret, err := (*cl.K8sClientset).CoreV1().Secrets(k8s.Namespace).Get(k8s.Secret, metav1.GetOptions{})
+		if err != nil {
+			return updated, err
+		}
+
+		newVersion := secret.ObjectMeta.ResourceVersion
+		if newVersion != target.Kubernetes.Version {
+			updated = true
+		}
+
+		// update to latest version
+		target.Kubernetes.Version = newVersion
+		target.Kubernetes.Data = secret.Data
+
+		return updated, nil
+	} else {
+		// secret manager secret
+		name := "projects/" + gsm.Project + "/secrets/" + gsm.Secret + "/versions/latest"
+		getReq := &secretmanagerpb.GetSecretVersionRequest{
+			Name: name,
+		}
+		getResult, err := cl.SecretManagerClient.GetSecretVersion(cl.Ctx, getReq)
+		if err != nil {
+			return updated, err
+		}
+		accReq := &secretmanagerpb.AccessSecretVersionRequest{
+			Name: name,
+		}
+		accResult, err := cl.SecretManagerClient.AccessSecretVersion(cl.Ctx, accReq)
+		if err != nil {
+			return updated, err
+		}
+
+		versionSlice := strings.Split(getResult.Name, "/")
+		newVersion := versionSlice[len(versionSlice)-1]
+		if newVersion != target.SecretManager.Version {
+			updated = true
+		}
+
+		// update to latest version
+		target.SecretManager.Version = newVersion
+		target.SecretManager.Data = accResult.Payload.Data
+
+		return updated, nil
 	}
 }
 
-func (k8s *KubernetesSpec) LatestSecretVersion(k8sClientset *kubernetes.Clientset) (int, map[string][]byte) {
-	secret, err := k8sClientset.CoreV1().Secrets(k8s.Namespace).Get(k8s.Secret, metav1.GetOptions{})
-	if apierrors.IsNotFound(err) {
-		fmt.Println(err)
+func (target Target) PrintSecret() {
+	if k8s, gsm := target.Kubernetes, target.SecretManager; k8s != nil {
+		fmt.Printf("%s :\n %s\n", k8s.Version, k8s.Data)
+	} else {
+		fmt.Printf("%s :\n %s\n", gsm.Version, gsm.Data)
+
 	}
-	version, _ := strconv.Atoi(secret.ObjectMeta.ResourceVersion)
-
-	return version, secret.Data
-}
-
-func (gsm *SecretManagerSpec) LatestSecretVersion(ctx context.Context, client *secretmanager.Client) (int, map[string][]byte) {
-
-	name := "projects/" + gsm.Project + "/secrets/" + gsm.Secret + "/versions/latest"
-	// Build the get request.
-	getReq := &secretmanagerpb.GetSecretVersionRequest{
-		Name: name,
-	}
-
-	// Call the API.
-	getResult, _ := client.GetSecretVersion(ctx, getReq)
-
-	versionSlice := strings.Split(getResult.Name, "/")
-	version, _ := strconv.Atoi(versionSlice[len(versionSlice)-1])
-
-	// Build the access request.
-	accReq := &secretmanagerpb.AccessSecretVersionRequest{
-		Name: name,
-	}
-
-	// Call the API.
-	accResult, _ := client.AccessSecretVersion(ctx, accReq)
-	buf := make(map[interface{}]interface{})
-	yaml.Unmarshal(accResult.Payload.Data, &buf)
-
-	secret := make(map[string][]byte)
-
-	for key, val := range buf {
-		secret[fmt.Sprintf("%v", key)] = []byte(fmt.Sprintf("%v", val))
-	}
-
-	return version, secret
 }

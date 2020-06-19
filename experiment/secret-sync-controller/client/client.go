@@ -2,47 +2,31 @@ package client
 
 import (
 	"context"
-	"flag"
 	"os"
 	"path/filepath"
 
 	secretmanager "cloud.google.com/go/secretmanager/apiv1"
-	"google.golang.org/api/option"
 
 	"k8s.io/client-go/kubernetes"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
-	"k8s.io/client-go/tools/clientcmd"
+	prowkube "k8s.io/test-infra/prow/kube"
 )
 
-func NewK8sClientset() *kubernetes.Clientset {
-	var kubeconfig *string
-	if home := os.Getenv("HOME"); home != "" {
-		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
-	} else {
-		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
-	}
-	flag.Parse()
-
-	// use the current context in kubeconfig
-	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
-	if err != nil {
-		panic(err.Error())
-	}
-
+func NewK8sClientset() (*kubernetes.Interface, error) {
+	kubeconfig := filepath.Join(os.Getenv("HOME"), ".kube", "config")
 	// create the clientset
-	clientset, err := kubernetes.NewForConfig(config)
+	clientset, err := prowkube.GetKubernetesClient("", kubeconfig)
 	if err != nil {
-		panic(err.Error())
+		return nil, err
 	}
-	return clientset
+	return &clientset, nil
 }
 
-func NewSecretManagerClient(ctx context.Context) *secretmanager.Client {
+func NewSecretManagerClient(ctx context.Context) (*secretmanager.Client, error) {
 	// Create the client.
-	jsonPath := "/usr/local/google/home/shanefu/gcloud_key.json"
-	client, err := secretmanager.NewClient(ctx, option.WithCredentialsFile(jsonPath))
+	client, err := secretmanager.NewClient(ctx)
 	if err != nil {
-		panic(err.Error())
+		return nil, err
 	}
-	return client
+	return client, nil
 }
