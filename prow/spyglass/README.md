@@ -106,3 +106,9 @@ deck:
       required_files:
         - ^podinfo\.json$
 ```
+
+### Accessing custom storage buckets
+
+By default, spyglass has access to all storage buckets defined globally
+(`plank.default_decoration_configs[...].gcs_configuration`) or on individual jobs (`<path-to-job>.gcs_configuration.bucket`).
+In order to access additional/custom storage buckets, those buckets must be listed in `deck.additional_storage_buckets`.

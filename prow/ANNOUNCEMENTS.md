@@ -3,6 +3,12 @@
 ## New features
 
 New features added to each component:
+  - *September 15, 2020* Added validation to Deck that will restrict artifact requests based on storage buckets.
+    Opt-out by setting `deck.skip_storage_path_validation` in your Prow config.
+    Buckets specified in job configs (`<job>.gcs_configuration.bucket`) and 
+    plank configs (`plank.default_decoration_configs[*].gcs_configuration.bucket`) are automatically allowed access.
+    Additional buckets can be allowed by adding them to the `deck.additional_allowed_buckets` list.
+    (This feature will be enabled by default ~Jan 2021. For now, you will begin to notice violation warnings in your logs.)
  - *August 31th, 2020* Added `gcs_browser_prefixes` field in spyglass configuration. `gcs_browser_prefix` will
     be deprecated in February 2021. You can now specify different values for different repositories. The
     format should be in org, org/repo or '\*' which is the default value.
@@ -13,11 +19,6 @@ New features added to each component:
     in *September 2020*. To be clear handling of URLs with `/view/gcs` in Deck is not deprecated.
  - *June 23rd, 2020* An [hmac](/prow/cmd/hmac) tool was added to automatically reconcile webhooks and hmac
     tokens for the orgs and repos integrated with your prow instance.
-- *June 12, 2020* Added _bucket_ and _folder_ validation features to Deck to restrict artifact requests to only
-     specific storage locations. This feature can be enabled by setting `deck.restrict_storage_paths` in the Prow config.
-     By default, _buckets_ specified in the `plank.decoration_config[*].gcs_configuration.bucket` and 
-     the `pr-logs` and `logs` _folders_ are allowed allowed. _Additional buckets_ can be allowed by adding them to 
-     `deck.additional_allowed_buckets`. _Additional folders_ can be allowed by adding them to `deck.additional_allowed_folders`.
  - *June 8th, 2020* A new informer-based Plank implementation was added. It can be used by deploying
     the new [prow-controller-manager](/config/prow/experimental/controller_manager.yaml) binary.
     We plan to gradually move all our controllers into that binary, see https://github.com/kubernetes/test-infra/issues/17024

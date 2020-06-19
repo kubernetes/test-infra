@@ -1167,86 +1167,32 @@ func TestCanTriggerJob(t *testing.T) {
 	}
 }
 
-func TestValidateStoragePath(t *testing.T) {
+func TestHttpStatusForError(t *testing.T) {
 	testCases := []struct {
-		name        string
-		config      config.ProwConfig
-		path        string
-		expectedErr bool
+		name           string
+		input          error
+		expectedStatus int
 	}{
 		{
-			name:        "validation disabled",
-			config:      config.ProwConfig{Deck: config.Deck{RestrictStoragePaths: false}},
-			path:        "to/some/wild/location",
-			expectedErr: false,
+			name:           "normal_error",
+			input:          errors.New("some error message"),
+			expectedStatus: http.StatusInternalServerError,
 		},
 		{
-			name:        "validation enabled",
-			config:      config.ProwConfig{Deck: config.Deck{RestrictStoragePaths: true}},
-			path:        "to/some/wild/location",
-			expectedErr: true,
-		},
-		{
-			name: "DecorationConfig allowed bucket",
-			config: config.ProwConfig{
-				Deck: config.Deck{RestrictStoragePaths: true},
-				Plank: config.Plank{
-					DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
-						"*": {
-							GCSConfiguration: &prowapi.GCSConfiguration{
-								Bucket: "kubernetes-jenkins",
-							},
-						},
-					},
-				},
+			name: "httpError",
+			input: httpError{
+				error:      errors.New("some error message"),
+				statusCode: http.StatusGone,
 			},
-			path:        "gs/kubernetes-jenkins/pr-logs/directory/pull-capi",
-			expectedErr: false,
-		},
-		{
-			name:        "custom allowed bucket",
-			config:      config.ProwConfig{Deck: config.Deck{RestrictStoragePaths: true, AdditionalAllowedBuckets: []string{"kubernetes-prow"}}},
-			path:        "gs/kubernetes-prow/pr-logs/directory/pull-echo",
-			expectedErr: false,
-		},
-		{
-			name:        "unknown bucket path",
-			config:      config.ProwConfig{Deck: config.Deck{RestrictStoragePaths: true}},
-			path:        "gs/istio-prow/pr-logs/directory/post-check",
-			expectedErr: true,
-		},
-		{
-			name:        "default allowed folder",
-			config:      config.ProwConfig{Deck: config.Deck{RestrictStoragePaths: true, AdditionalAllowedBuckets: []string{"kubernetes-jenkins"}}},
-			path:        "gs/kubernetes-jenkins/pr-logs/directory/pull-capi",
-			expectedErr: false,
-		},
-		{
-			name:        "custom allowed folder",
-			config:      config.ProwConfig{Deck: config.Deck{RestrictStoragePaths: true, AdditionalAllowedBuckets: []string{"kubernetes-jenkins"}, AdditionalAllowedFolders: []string{"custom"}}},
-			path:        "gs/kubernetes-jenkins/custom/directory/pull-echo",
-			expectedErr: false,
-		},
-		{
-			name:        "unknown folder path",
-			config:      config.ProwConfig{Deck: config.Deck{RestrictStoragePaths: true, AdditionalAllowedBuckets: []string{"kubernetes-jenkins"}}},
-			path:        "gs/kubernetes-jenkins/invalid/directory/post-check",
-			expectedErr: true,
+			expectedStatus: http.StatusGone,
 		},
 	}
-
 	for _, tc := range testCases {
-		cfg := config.Config{ProwConfig: tc.config}
-		ca := config.Agent{}
-		ca.Set(&cfg)
-
-		err := ValidateStoragePath(ca.Config, tc.path)
-
-		if err == nil && tc.expectedErr {
-			t.Fatal("error expected")
-		}
-		if err != nil && !tc.expectedErr {
-			t.Fatalf("unexpected error: %v", err)
-		}
+		t.Run(tc.name, func(nested *testing.T) {
+			actual := httpStatusForError(tc.input)
+			if actual != tc.expectedStatus {
+				t.Fatalf("unexpected HTTP status (expected=%v, actual=%v) for error: %v", tc.expectedStatus, actual, tc.input)
+			}
+		})
 	}
 }

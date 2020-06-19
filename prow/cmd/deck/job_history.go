@@ -401,7 +401,7 @@ func getJobHistory(ctx context.Context, url *url.URL, cfg config.Getter, opener 
 	if err != nil {
 		return tmpl, fmt.Errorf("invalid url %s: %v", url.String(), err)
 	}
-	if err := ValidateStoragePath(cfg, strings.Join([]string{storageProvider, bucketName, root}, "/")); err != nil {
+	if err := validateStorageBucket(cfg, strings.Join([]string{storageProvider, bucketName, root}, "/")); err != nil {
 		return tmpl, err
 	}
 	tmpl.Name = root

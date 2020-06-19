@@ -69,7 +69,6 @@ import (
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/plugins/trigger"
-	"k8s.io/test-infra/prow/pod-utils/gcs"
 	"k8s.io/test-infra/prow/prstatus"
 	"k8s.io/test-infra/prow/simplifypath"
 	"k8s.io/test-infra/prow/spyglass"
@@ -893,8 +892,10 @@ func handleJobHistory(o options, cfg config.Getter, opener io.Opener, log *logru
 		tmpl, err := getJobHistory(r.Context(), r.URL, cfg, opener)
 		if err != nil {
 			msg := fmt.Sprintf("failed to get job history: %v", err)
-			log.WithField("url", r.URL.String()).Warn(msg)
-			http.Error(w, msg, http.StatusInternalServerError)
+			if shouldLogHTTPErrors(err) {
+				log.WithField("url", r.URL.String()).Warn(msg)
+			}
+			http.Error(w, msg, httpStatusForError(err))
 			return
 		}
 		handleSimpleTemplate(o, cfg, "job-history.html", tmpl)(w, r)
@@ -936,9 +937,11 @@ func handleRequestJobViews(sg *spyglass.Spyglass, cfg config.Getter, o options, 
 		csrfToken := csrf.Token(r)
 		page, err := renderSpyglass(r.Context(), sg, cfg, src, o, csrfToken, log)
 		if err != nil {
-			log.WithError(err).Error("error rendering spyglass page")
-			message := fmt.Sprintf("error rendering spyglass page: %v", err)
-			http.Error(w, message, http.StatusInternalServerError)
+			msg := fmt.Sprintf("error rendering spyglass page: %v", err)
+			if shouldLogHTTPErrors(err) {
+				log.WithError(err).Error(msg)
+			}
+			http.Error(w, msg, httpStatusForError(err))
 			return
 		}
 
@@ -962,8 +965,8 @@ func renderSpyglass(ctx context.Context, sg *spyglass.Spyglass, cfg config.Gette
 		return "", fmt.Errorf("error when resolving real path %s: %v", src, err)
 	}
 	src = realPath
-	if err := ValidateStoragePath(cfg, src); err != nil {
-		return "", err // TODO(eblackwelder@): indicate it's http.StatusBadRequest (from inside ValidateStoragePath)
+	if err := validateStorageBucket(cfg, src); err != nil {
+		return "", err
 	}
 	artifactNames, err := sg.ListArtifacts(ctx, src)
 	if err != nil {
@@ -1180,8 +1183,8 @@ func handleArtifactView(o options, sg *spyglass.Spyglass, cfg config.Getter) htt
 			http.Error(w, fmt.Sprintf("Failed to parse request: %v", err), http.StatusBadRequest)
 			return
 		}
-		if err := ValidateStoragePath(cfg, request.Source); err != nil {
-			http.Error(w, fmt.Sprintf("Failed to process request: %v", err), http.StatusBadRequest)
+		if err := validateStorageBucket(cfg, request.Source); err != nil {
+			http.Error(w, fmt.Sprintf("Failed to process request: %v", err), httpStatusForError(err))
 			return
 		}
 
@@ -1632,38 +1635,28 @@ func defaultLensRemoteConfig(lfc *config.LensFileConfig) error {
 	return nil
 }
 
-// ValidateStoragePath validates the storage bucket/folder path, if the `Deck.RestrictStoragePaths` config field is true.
-// The path should match "<key-type>/<bucket>/<folder>/<sub-folder...>" pattern.
-// Additionally, the path bucket or folder should match either the built-in and default storage locations _or_
-// should be contained in the `Deck.AdditionalAllowedBuckets/Folders` config fields.
-// If the `Deck.RestrictStoragePaths` field is false, no validation is performed (and no errors are returned).
-func ValidateStoragePath(cfg config.Getter, path string) error {
-	if !cfg().Deck.RestrictStoragePaths {
-		return nil
+func validateStorageBucket(cfg config.Getter, path string) error {
+	if err := cfg().ValidateStorageBucket(path); err != nil {
+		return httpError{
+			error:      err,
+			statusCode: http.StatusBadRequest,
+		}
 	}
-
-	parts := strings.SplitN(path, "/", 4)
-	if len(parts) < 4 {
-		return fmt.Errorf("invalid path: %s expected <key-type>/<bucket>/<folder>/<sub-folder...>", path)
-	}
-
-	// Check bucket
-	bucket := parts[1]
-	allowed_buckets := sets.NewString(cfg().Deck.AdditionalAllowedBuckets...)
-	for _, dc := range cfg().Plank.DefaultDecorationConfigs {
-		allowed_buckets.Insert(dc.GCSConfiguration.Bucket)
-	}
-	if !allowed_buckets.Has(bucket) {
-		return fmt.Errorf("bucket %q not in allowed list %v", bucket, allowed_buckets)
-	}
-
-	// Check folder
-	folder := parts[2]
-	allowed_folders := sets.NewString(gcs.PRLogs, gcs.NonPRLogs)
-	allowed_folders.Insert(cfg().Deck.AdditionalAllowedFolders...)
-	if !allowed_folders.Has(folder) {
-		return fmt.Errorf("folder %q not in allowed list %v", folder, allowed_folders)
-	}
-
 	return nil
+}
+
+type httpError struct {
+	error
+	statusCode int
+}
+
+func httpStatusForError(e error) int {
+	if httpErr, ok := e.(httpError); ok {
+		return httpErr.statusCode
+	}
+	return http.StatusInternalServerError
+}
+
+func shouldLogHTTPErrors(e error) bool {
+	return httpStatusForError(e) >= http.StatusInternalServerError // 5XX
 }

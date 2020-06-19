@@ -344,10 +344,13 @@ func Test_getJobHistory(t *testing.T) {
 
 	fakeGCSClient := gcsServer.Client()
 
+	boolTrue := true
 	ca := &config.Agent{}
 	ca.Set(&config.Config{
 		ProwConfig: config.ProwConfig{
-			Deck: config.Deck{},
+			Deck: config.Deck{
+				SkipStoragePathValidation: &boolTrue,
+			},
 		},
 	})
 
