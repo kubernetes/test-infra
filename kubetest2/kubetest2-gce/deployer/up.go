@@ -48,6 +48,15 @@ func (d *deployer) Up() error {
 		return fmt.Errorf("error encountered during %s: %s", script, err)
 	}
 
+	isUp, err := d.IsUp()
+	if err != nil {
+		klog.Warningf("failed to check if cluster is up: %s", err)
+	} else if isUp {
+		klog.Infof("cluster reported as up")
+	} else {
+		klog.Errorf("cluster reported as down")
+	}
+
 	return nil
 }
 
@@ -78,6 +87,8 @@ func (d *deployer) verifyFlags() error {
 	if err := d.setRepoPathIfNotSet(); err != nil {
 		return err
 	}
+
+	d.kubectl = filepath.Join(d.RepoRoot, "cluster", "kubectl.sh")
 
 	if d.GCPProject == "" {
 		return fmt.Errorf("gcp project must be set")
