@@ -127,7 +127,7 @@ func (gr *gcsK8sReporter) reportPodInfo(ctx context.Context, pj *prowv1.ProwJob)
 		Events: events,
 	}
 
-	output, err := json.Marshal(report)
+	output, err := json.MarshalIndent(report, "", "\t")
 	if err != nil {
 		// This should never happen.
 		gr.logger.WithError(err).Warn("Couldn't marshal pod info")
