@@ -619,7 +619,7 @@ func (g *gkeDeployer) ensureFirewall() error {
 
 	tagOut, err := exec.Command("gcloud", "compute", "instances", "list",
 		"--project="+g.project,
-		"--filter=metadata.created-by:*"+g.instanceGroups[0].path,
+		"--filter=metadata.created-by ~ "+g.instanceGroups[0].path,
 		"--limit=1",
 		"--format=get(tags.items)").Output()
 	if err != nil {
