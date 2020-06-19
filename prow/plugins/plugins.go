@@ -238,6 +238,9 @@ func (pa *ConfigAgent) Load(path string, checkUnknownPlugins bool) error {
 	if err := yaml.Unmarshal(b, np); err != nil {
 		return err
 	}
+
+	np.ApplyDefaults()
+
 	if err := np.Validate(); err != nil {
 		return err
 	}

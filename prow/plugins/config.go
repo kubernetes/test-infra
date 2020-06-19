@@ -31,6 +31,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
+
 	"k8s.io/test-infra/prow/bugzilla"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/labels"
@@ -268,6 +269,11 @@ type Approve struct {
 	// * an APPROVE github review is equivalent to leaving an "/approve" message.
 	// * A REQUEST_CHANGES github review is equivalent to leaving an /approve cancel" message.
 	IgnoreReviewState *bool `json:"ignore_review_state,omitempty"`
+
+	// CommandHelpLink is the link to the help page which shows the available commands for each repo.
+	// The default value is "https://go.k8s.io/bot-commands". The command help page is served by Deck
+	// and available under https://<deck-url>/command-help, e.g. "https://prow.k8s.io/command-help"
+	CommandHelpLink string `json:"commandHelpLink"`
 }
 
 var (
@@ -1095,6 +1101,14 @@ func compileRegexpsAndDurations(pc *Configuration) error {
 		rs[i].GracePeriodDuration = dur
 	}
 	return nil
+}
+
+func (c *Configuration) ApplyDefaults() {
+	for _, a := range c.Approve {
+		if a.CommandHelpLink == "" {
+			a.CommandHelpLink = "https://go.k8s.io/bot-commands"
+		}
+	}
 }
 
 func (c *Configuration) Validate() error {
