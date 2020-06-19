@@ -493,15 +493,70 @@ func (g *gkeDeployer) TestSetup() error {
 	if err := g.ensureNat(); err != nil {
 		return err
 	}
+	if err := g.setupBastion(); err != nil {
+		return err
+	}
 	if err := g.setupEnv(); err != nil {
 		return err
 	}
-	if g.sshProxyInstanceName != "" {
-		if err := setKubeShhBastionEnv(g.project, g.zone, g.sshProxyInstanceName); err != nil {
-			return err
-		}
-	}
 	g.setup = true
+	return nil
+}
+
+func (g *gkeDeployer) setupBastion() error {
+	if g.sshProxyInstanceName == "" {
+		return nil
+	}
+	var filtersToTry []string
+	// Use exact name first, VM does not have to belong to the cluster
+	exactFilter := "name=" + g.sshProxyInstanceName
+	filtersToTry = append(filtersToTry, exactFilter)
+	// As a fallback - use proxy instance name as a regex but check only cluster nodes
+	var igFilters []string
+	for _, ig := range g.instanceGroups {
+		igFilters = append(igFilters, fmt.Sprintf("(metadata.created-by ~ %s)", ig.path))
+	}
+	fuzzyFilter := fmt.Sprintf("(name ~ %s) AND (%s)",
+		g.sshProxyInstanceName,
+		strings.Join(igFilters, " OR "))
+	filtersToTry = append(filtersToTry, fuzzyFilter)
+
+	var bastion, zone string
+	for _, filter := range filtersToTry {
+		log.Printf("Checking for proxy instance with filter: %q", filter)
+		output, err := exec.Command("gcloud", "compute", "instances", "list",
+			"--filter="+filter,
+			"--format=value(name,zone)",
+			"--limit=1",
+			"--project="+g.project).Output()
+		if err != nil {
+			return fmt.Errorf("listing instances failed: %s", util.ExecError(err))
+		}
+		if len(output) == 0 {
+			continue
+		}
+		// Proxy instance found
+		fields := strings.Split(strings.TrimSpace(string(output)), "\t")
+		if len(fields) != 2 {
+			return fmt.Errorf("error parsing instances list output %q", output)
+		}
+		bastion, zone = fields[0], fields[1]
+		break
+	}
+	if bastion == "" {
+		return fmt.Errorf("proxy instance %q not found", g.sshProxyInstanceName)
+	}
+	log.Printf("Found proxy instance %q", bastion)
+
+	log.Printf("Adding NAT access config if not present")
+	control.NoOutput(exec.Command("gcloud", "compute", "instances", "add-access-config", bastion,
+		"--zone="+zone,
+		"--project="+g.project))
+
+	err := setKubeShhBastionEnv(g.project, zone, bastion)
+	if err != nil {
+		return fmt.Errorf("setting KUBE_SSH_BASTION variable failed: %s", util.ExecError(err))
+	}
 	return nil
 }
 
