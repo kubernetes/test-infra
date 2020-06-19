@@ -16,7 +16,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200618-fcde257-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200619-e117c8e-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -63,7 +63,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200618-fcde257-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200619-e117c8e-master
       imagePullPolicy: Always
       command:
       - runner.sh
