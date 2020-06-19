@@ -71,7 +71,7 @@ main() {
   bumpfiles=($(add_suffix "$(split_on_commas "$COMPONENT_FILE_DIR")"))
   bumpfiles+=("${CONFIG_PATH}")
   if [[ -n "${JOB_CONFIG_PATH}" ]]; then
-    bumpfiles+=($(grep -rl -e "gcr.io/k8s-prow/" "${JOB_CONFIG_PATH}"))
+    bumpfiles+=($(grep -rl -e "gcr.io/k8s-prow/" "${JOB_CONFIG_PATH}"; true))
   fi
 
   echo "Attempting to bump the following files:" >&2
