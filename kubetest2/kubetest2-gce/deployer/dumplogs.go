@@ -36,44 +36,16 @@ func (d *deployer) DumpClusterLogs() error {
 		return fmt.Errorf("couldn't make logs dir: %s", err)
 	}
 
-	env := d.buildEnv()
-	outfile, err := os.Create(filepath.Join(d.logsDir, "cluster-info.log"))
-	if err != nil {
-		return fmt.Errorf("failed to create cluster-info log file: %s", err)
-	}
-	defer outfile.Close()
-
-	command := []string{
-		d.kubectl,
-		"cluster-info",
-		"dump",
-	}
-	klog.Infof("About to run: %s", command)
-
-	cmd := exec.Command(command[0], command[1:]...)
-	cmd.SetEnv(env...)
-	exec.InheritOutput(cmd)
-	cmd.SetStderr(os.Stderr)
-	cmd.SetStdout(outfile)
-	err = cmd.Run()
-	if err != nil {
-		return fmt.Errorf("couldn't use kubectl to dump cluster info: %s", err)
+	// Run sshDump before kubectlDump because kubectl could fail if master kube
+	// didn't come up successfully but the instances were still created and setup
+	// proceeded to a certain point. This allows retrieval of logs that could
+	// indicate why master coming up failed.
+	if err := d.sshDump(); err != nil {
+		return fmt.Errorf("failed to dump logs from instance log files: %s", err)
 	}
 
-	env = append(env, "KUBE_GCE_INSTANCE_PREFIX=kubernetes")
-
-	command = []string{
-		filepath.Join(d.RepoRoot, "cluster", "log-dump", "log-dump.sh"),
-		d.logsDir,
-	}
-	klog.Infof("About to run: %s", command)
-
-	cmd = exec.Command(command[0], command[1:]...)
-	cmd.SetEnv(env...)
-	exec.InheritOutput(cmd)
-	err = cmd.Run()
-	if err != nil {
-		return fmt.Errorf("failed to use log-dump.sh for cluster logs: %s", err)
+	if err := d.kubectlDump(); err != nil {
+		return fmt.Errorf("failed to dump cluster info with kubectl: %s", err)
 	}
 
 	return nil
@@ -83,7 +55,6 @@ func (d *deployer) makeLogsDir() error {
 	_, err := os.Stat(d.logsDir)
 
 	if err == nil {
-		// TODO: removeall instead?
 		return fmt.Errorf("cluster logs directory %s already exists, please clean up manually before continuing", d.logsDir)
 	} else if os.IsNotExist(err) {
 		err := os.Mkdir(d.logsDir, os.ModePerm)
@@ -94,4 +65,51 @@ func (d *deployer) makeLogsDir() error {
 	}
 
 	return fmt.Errorf("unexpected exception when making cluster logs directory: %s", err)
+}
+
+func (d *deployer) sshDump() error {
+	env := d.buildEnv()
+	env = append(env, "KUBE_GCE_INSTANCE_PREFIX=kubernetes")
+
+	args := []string{
+		filepath.Join(d.RepoRoot, "cluster", "log-dump", "log-dump.sh"),
+		d.logsDir,
+	}
+	klog.Infof("About to run: %s", args)
+
+	cmd := exec.Command(args[0], args[1:]...)
+	cmd.SetEnv(env...)
+	exec.InheritOutput(cmd)
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("failed to use log-dump.sh for cluster logs: %s", err)
+	}
+
+	return nil
+}
+
+func (d *deployer) kubectlDump() error {
+	env := d.buildEnv()
+	outfile, err := os.Create(filepath.Join(d.logsDir, "cluster-info.log"))
+	if err != nil {
+		return fmt.Errorf("failed to create cluster-info log file: %s", err)
+	}
+	defer outfile.Close()
+
+	args := []string{
+		d.kubectl,
+		"cluster-info",
+		"dump",
+	}
+	klog.Infof("About to run: %s", args)
+
+	cmd := exec.Command(args[0], args[1:]...)
+	cmd.SetEnv(env...)
+	cmd.SetStderr(os.Stderr)
+	cmd.SetStdout(outfile)
+	err = cmd.Run()
+	if err != nil {
+		return fmt.Errorf("couldn't use kubectl to dump cluster info: %s", err)
+	}
+
+	return nil
 }
