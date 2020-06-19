@@ -203,7 +203,7 @@ periodics:
     base_ref: master
     path_alias: k8s.io/kubernetes
   decoration_config:
-    timeout: 2h # allow plenty of time for a serial conformance run
+    timeout: 200m # allow plenty of time for a serial conformance run
   spec:
     containers:
     - image: gcr.io/k8s-testimages/krte:v20200531-b02499e-master
