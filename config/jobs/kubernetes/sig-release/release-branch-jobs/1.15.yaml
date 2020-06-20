@@ -681,7 +681,7 @@ presubmits:
         resources:
           requests:
             memory: 6Gi
-  - always_run: true
+  - always_run: false
     annotations:
       testgrid-alert-stale-results-hours: "24"
       testgrid-create-test-group: "true"

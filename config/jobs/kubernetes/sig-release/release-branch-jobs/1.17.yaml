@@ -746,7 +746,7 @@ presubmits:
         resources:
           requests:
             memory: 6Gi
-  - always_run: true
+  - always_run: false
     branches:
     - release-1.17
     decorate: true
