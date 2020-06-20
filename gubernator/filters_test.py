@@ -85,7 +85,7 @@ class HelperTest(unittest.TestCase):
             ('k8s.io/kubernetes/pkg/api/errors TestErrorNew',
              'go test -v k8s.io/kubernetes/pkg/api/errors -run TestErrorNew$'),
             ('[k8s.io] Proxy [k8s.io] works',
-            "go run hack/e2e.go -v --test --test_args='--ginkgo.focus="
+            "kubetest -v --test --test_args='--ginkgo.focus="
             "Proxy\\s\\[k8s\\.io\\]\\sworks$'"),
             ('//pkg/foo/bar:go_default_test',
             'bazel test //pkg/foo/bar:go_default_test'),
