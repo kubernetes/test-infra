@@ -193,7 +193,7 @@ func (c *Controller) Sync() error {
 	pm := map[string]corev1.Pod{}
 	for alias, client := range c.buildClients {
 		listOpts := &ctrlruntimeclient.ListOptions{
-			Namespace: c.config().PodNamespace,
+			Namespace: "",
 			Raw:       &metav1.ListOptions{LabelSelector: selector},
 		}
 		pods := &corev1.PodList{}
@@ -529,7 +529,13 @@ func (c *Controller) startPod(pj *prowapi.ProwJob) error {
 	if err != nil {
 		return err
 	}
-	pod.Namespace = c.config().PodNamespace
+
+	// If the prowJob has a namespace specified use that value, else use the config prowJob namespace.
+	if pj.Spec.Namespace != "" {
+		pod.Namespace = pj.Spec.Namespace
+	} else {
+		pod.Namespace = c.config().PodNamespace
+	}
 
 	client, ok := c.buildClients[pj.ClusterAlias()]
 	if !ok {
