@@ -75,7 +75,7 @@ func (gr *gcsReporter) reportStartedJob(ctx context.Context, pj *prowv1.ProwJob)
 		Timestamp: pj.Status.StartTime.Unix(),
 		Metadata:  metadata.Metadata{"uploader": "crier"},
 	}
-	output, err := json.Marshal(s)
+	output, err := json.MarshalIndent(s, "", "\t")
 	if err != nil {
 		return fmt.Errorf("failed to marshal started metadata: %v", err)
 	}
@@ -105,7 +105,7 @@ func (gr *gcsReporter) reportFinishedJob(ctx context.Context, pj *prowv1.ProwJob
 		Metadata:  metadata.Metadata{"uploader": "crier"},
 		Result:    string(pj.Status.State),
 	}
-	output, err := json.Marshal(f)
+	output, err := json.MarshalIndent(f, "", "\t")
 	if err != nil {
 		return fmt.Errorf("failed to marshal finished metadata: %v", err)
 	}
@@ -124,7 +124,7 @@ func (gr *gcsReporter) reportFinishedJob(ctx context.Context, pj *prowv1.ProwJob
 
 func (gr *gcsReporter) reportProwjob(ctx context.Context, pj *prowv1.ProwJob) error {
 	// Unconditionally dump the prowjob to GCS, on all job updates.
-	output, err := json.Marshal(pj)
+	output, err := json.MarshalIndent(pj, "", "\t")
 	if err != nil {
 		return fmt.Errorf("failed to marshal prowjob: %v", err)
 	}
