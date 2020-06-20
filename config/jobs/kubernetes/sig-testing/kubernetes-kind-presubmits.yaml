@@ -81,9 +81,6 @@ presubmits:
           value: "true"
         - name: BUILD_TYPE
           value: bazel
-        # tell kind CI script to use iptables-nft
-        - name: "DOCKER_IN_DOCKER_NFT_ENABLED"
-          value: "true"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -136,9 +133,6 @@ presubmits:
         # tell kind CI script to use ipv6
         - name: "IP_FAMILY"
           value: "ipv6"
-        # tell kind CI script to use iptables-nft
-        - name: "DOCKER_IN_DOCKER_NFT_ENABLED"
-          value: "true"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
