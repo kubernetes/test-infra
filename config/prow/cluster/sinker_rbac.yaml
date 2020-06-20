@@ -36,10 +36,9 @@ rules:
     verbs:
       - create
 ---
-kind: Role
+kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
-  namespace: test-pods
   name: "sinker"
 rules:
   - apiGroups:
@@ -63,14 +62,13 @@ subjects:
 - kind: ServiceAccount
   name: "sinker"
 ---
-kind: RoleBinding
+kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
-  namespace: test-pods
   name: "sinker"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
-  kind: Role
+  kind: ClusterRole
   name: "sinker"
 subjects:
 - kind: ServiceAccount
