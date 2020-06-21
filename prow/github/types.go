@@ -819,6 +819,13 @@ type SingleCommit struct {
 	} `json:"commit"`
 }
 
+// Tagger contains information about an individual creating a tag.
+type Tagger struct {
+	Name  string `json:"name"`
+	Email string `json:"email"`
+	Date  string `json:"date"`
+}
+
 // ReviewEventAction enumerates the triggers for this
 // webhook payload type. See also:
 // https://developer.github.com/v3/activity/events/types/#pullrequestreviewevent
