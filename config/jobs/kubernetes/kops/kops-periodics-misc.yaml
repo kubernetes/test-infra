@@ -72,7 +72,7 @@ periodics:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-misc
     testgrid-tab-name: kops-aws-ha-euwest1
 
-- interval: 4h
+- interval: 3h
   name: e2e-kops-aws-misc-arm64
   labels:
     preset-service-account: "true"
@@ -96,9 +96,10 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/stable
       - --ginkgo-parallel
-      - --kops-args=--node-size=a1.large --node-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20200609 -v=9
+      - --kops-args=--node-size=a1.large --node-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20200609
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
+      - --kops-zones=eu-west-1a,eu-west-1b,eu-west-1c
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
       - --timeout=120m
