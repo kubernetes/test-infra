@@ -293,8 +293,7 @@ func (c *Controller) processNextItem() bool {
 			return c.updateReportState(pj, log, reportedState)
 		}); err != nil {
 			log.WithError(err).Error("Failed to update report state on prowjob")
-			c.queue.Forget(key)
-			return true
+			return c.retry(key, log, err)
 		}
 
 		log.Info("Successfully updated prowjob")
