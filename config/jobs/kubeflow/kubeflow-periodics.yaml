@@ -80,9 +80,12 @@ periodics:
     # TODO: use a public email group
     testgrid-alert-email: kubeflow-engineering@google.com
     testgrid-num-failures-to-alert: "3"
-- name: kubeflow-gcp-blueprints-master
+# Periodic tests currently aren't deploying infrastructure; they are
+# just running against the auto deployed clusters so we can run them
+# fairly frequently.
+- name: kubeflow-gcp-blueprints-master-periodic
   cluster: kubeflow
-  interval: 4h
+  interval: 20m
   labels:
     preset-service-account: "true"
   spec:
