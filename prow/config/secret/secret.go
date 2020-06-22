@@ -20,11 +20,7 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
-	"regexp"
 )
-
-// base64token/token68 following RFC 6750
-var tokenRegex = regexp.MustCompile(`^[-\w._~+/]+$`)
 
 // LoadSecrets loads multiple paths of secrets and add them in a map.
 func LoadSecrets(paths []string) (map[string][]byte, error) {
@@ -46,11 +42,5 @@ func LoadSingleSecret(path string) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error reading %s: %v", path, err)
 	}
-
-	secret := bytes.TrimSpace(b)
-
-	if !tokenRegex.Match(secret) {
-		return nil, fmt.Errorf("error reading %s: invalid token format (does not match `%v`)", path, tokenRegex)
-	}
-	return secret, nil
+	return bytes.TrimSpace(b), nil
 }

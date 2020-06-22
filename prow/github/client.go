@@ -777,7 +777,7 @@ func (c *client) requestRetry(method, path, accept string, body interface{}) (*h
 				"backoff":      backoff.String(),
 				"old-endpoint": c.bases[oldHostIndex],
 				"new-endpoint": c.bases[hostIndex],
-			}).Debugf("Retrying request due to connection problem: %v", err)
+			}).Debug("Retrying request due to connection problem")
 			c.time.Sleep(backoff)
 			backoff *= 2
 		}
