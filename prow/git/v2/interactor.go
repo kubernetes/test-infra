@@ -278,6 +278,20 @@ func (i *interactor) FetchRef(refspec string) error {
 	return nil
 }
 
+// FetchFromRemote fetches all update from a specific remote and branch and leaves it as FETCH_HEAD.
+func (i *interactor) FetchFromRemote(remote RemoteResolver, branch string) error {
+	r, err := remote()
+	if err != nil {
+		return fmt.Errorf("couldn't get remote: %v", err)
+	}
+
+	i.logger.Infof("Fetching %s from %s", branch, r)
+	if out, err := i.executor.Run("fetch", r, branch); err != nil {
+		return fmt.Errorf("error fetching %s from %s: %v %v", branch, r, err, string(out))
+	}
+	return nil
+}
+
 // CheckoutPullRequest fetches the HEAD of a pull request using a synthetic refspec
 // available on GitHub remotes and creates a branch at that commit.
 func (i *interactor) CheckoutPullRequest(number int) error {
