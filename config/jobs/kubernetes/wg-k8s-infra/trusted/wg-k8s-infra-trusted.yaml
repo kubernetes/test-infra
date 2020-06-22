@@ -44,7 +44,7 @@ postsubmits:
         args:
         - -c
         - "cd groups && make run -- --confirm"
-  - name: k8sio-dns-update
+  - name: post-k8sio-dns-update
     cluster: k8s-infra-prow-build-trusted
     decorate: true
     run_if_changed: "^dns/zone-configs/"
@@ -59,9 +59,9 @@ postsubmits:
     spec:
       serviceAccountName: k8s-infra-dns-updater
       containers:
-      - image: us.gcr.io/k8s-artifacts-prod/infra-tools/octodns:v20200612-d4db040
+      - image: us.gcr.io/k8s-artifacts-prod/infra-tools/octodns:v20200616-67ce585
         command:
         - bash
         args:
         - -c
-        - "cd dns && ./push.sh --dry-run"
+        - "cd dns && make dry-run-local"
