@@ -15,7 +15,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200619-e117c8e-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-experimental
         command:
         - runner.sh
         args:
@@ -42,7 +42,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200619-e117c8e-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-experimental
         command:
         - runner.sh
         args:
@@ -259,7 +259,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200619-e117c8e-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-experimental
         command:
         - runner.sh
         args:
@@ -280,7 +280,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200619-e117c8e-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-experimental
         command:
         - runner.sh
         args:
@@ -301,7 +301,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200619-e117c8e-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-experimental
         command:
         - runner.sh
         args:
@@ -322,7 +322,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200619-e117c8e-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-experimental
         command:
         - runner.sh
         args:
@@ -345,7 +345,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200619-e117c8e-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-experimental
         command:
         - runner.sh
         args:
@@ -369,7 +369,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200619-e117c8e-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-experimental
         command:
         - runner.sh
         args:
@@ -390,7 +390,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200619-e117c8e-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-experimental
         command:
         - runner.sh
         args:
@@ -411,7 +411,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200619-e117c8e-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-experimental
         command:
         - runner.sh
         args:
@@ -433,7 +433,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200619-e117c8e-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-experimental
         command:
         - runner.sh
         args:
@@ -456,7 +456,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200619-e117c8e-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-experimental
         command:
         - runner.sh
         args:
@@ -483,7 +483,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200619-e117c8e-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-experimental
         command:
         - runner.sh
         args:
@@ -505,7 +505,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200619-e117c8e-experimental
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-experimental
       args:
       - --repo=k8s.io/kops
       - --repo=k8s.io/release
@@ -538,7 +538,7 @@ postsubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200619-e117c8e-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-experimental
         command:
         - runner.sh
         args:
