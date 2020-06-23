@@ -1,17 +1,15 @@
 specs:
 - source: 
-    kubernetes:
-      namespace: ns1
-      secret: secret1
+    project: k8s-jkns-gke-soak
+    secret: test-secret
   destination:
-    secretManager:
-      project: k8s-jkns-gke-soak
-      secret: test-secret
+    namespace: ns1
+    secret: secret1
+    key: password
 - source: 
-    secretManager:
-      project: k8s-jkns-gke-soak
-      secret: docker-secret
+    project: k8s-jkns-gke-soak
+    secret: docker-secret
   destination:
-    kubernetes:
-      namespace: default
-      secret: docker-secret
+    namespace: default
+    secret: docker-secret
+    key: password

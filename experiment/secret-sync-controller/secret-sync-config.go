@@ -4,13 +4,15 @@ package main
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
-	"strings"
+	"gopkg.in/yaml.v2"
 
 	secretmanager "cloud.google.com/go/secretmanager/apiv1"
 	secretmanagerpb "google.golang.org/genproto/googleapis/cloud/secretmanager/v1"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	types "k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
 )
 
@@ -18,144 +20,96 @@ import (
 type SecretSyncConfig struct {
 	Specs []SecretSyncSpec `yaml:"specs"`
 }
+
 type SecretSyncSpec struct {
-	// the target can be either a K8s secret or a SecretManager secret
-	Source      TargetSpec `yaml:"source"`
-	Destination TargetSpec `yaml:"destination"`
+	// the Source is always a SecretManager secret
+	// the Destination is always a Kubernetes secret
+	Source      SecretManagerSpec `yaml:"source"`
+	Destination KubernetesSpec    `yaml:"destination"`
 }
-type TargetSpec struct {
-	// assert that one of the two should be `nil`
-	Kubernetes    *KubernetesSpec    `yaml:"kubernetes,omitempty"`
-	SecretManager *SecretManagerSpec `yaml:"secretManager,omitempty"`
-}
+
 type KubernetesSpec struct {
-	Namespace string   `yaml:"namespace"`
-	Secret    string   `yaml:"secret,omitempty"`
-	DenyList  []string `yaml:"denyList,omitempty"`
+	Namespace string `yaml:"namespace"`
+	Secret    string `yaml:"secret"`
+	Key       string `yaml:"key"`
 }
+
 type SecretManagerSpec struct {
-	Project  string   `yaml:"project"`
-	Secret   string   `yaml:"secret,omitempty"`
-	DenyList []string `yaml:"denyList,omitempty"`
+	Project string `yaml:"project"`
+	Secret  string `yaml:"secret"`
+}
+
+func (config SecretSyncConfig) String() string {
+	d, _ := yaml.Marshal(config)
+	return string(d)
+}
+
+type SecretData struct {
+	Data []byte
+	// Potentially more information
 }
 
 // structs for client interface
 type ClientInterface interface {
-	UpdatedVersion(Target) (bool, error)
+	GetKubernetesSecret(KubernetesSpec) (*SecretData, error)
+	GetSecretManagerSecret(SecretManagerSpec) (*SecretData, error)
+	UpsertKubernetesSecret(KubernetesSpec, *SecretData) (*SecretData, error)
 }
 type Client struct { // actual client
 	K8sClientset        *kubernetes.Interface
 	SecretManagerClient *secretmanager.Client
-	Ctx                 context.Context
 }
 
-// structs for synchronzation pairs
-type SyncPairCollection struct {
-	Pairs []SyncPair
-}
-type SyncPair struct {
-	Source      Target
-	Destination Target
-}
-type Target struct {
-	Kubernetes    *KubernetesSecret
-	SecretManager *SecretManagerSecret
-}
-type KubernetesSecret struct {
-	Namespace string
-	Secret    string
-	Version   string
-	Data      map[string][]byte
-}
-type SecretManagerSecret struct {
-	Project string
-	Secret  string
-	Version string
-	Data    []uint8
-}
-
-// parse config to sync-pairs
-func (config SecretSyncConfig) Parse() (collection SyncPairCollection) {
-	for _, spec := range config.Specs {
-		pair := SyncPair{
-			Source:      createTarget(spec.Source),
-			Destination: createTarget(spec.Destination),
-		}
-		collection.Pairs = append(collection.Pairs, pair)
+// GetKubernetesSecret gets the K8s secret data specified in KubernetesSpec.
+// It gets a single secret values with the given spec.Key.
+func (cl Client) GetKubernetesSecret(spec KubernetesSpec) (*SecretData, error) {
+	secret, err := (*cl.K8sClientset).CoreV1().Secrets(spec.Namespace).Get(spec.Secret, metav1.GetOptions{})
+	if err != nil {
+		return nil, err
 	}
-	return collection
-}
-func createTarget(ts TargetSpec) (target Target) {
-	if k8s, gsm := ts.Kubernetes, ts.SecretManager; k8s != nil {
-		target.Kubernetes = &KubernetesSecret{
-			Namespace: k8s.Namespace,
-			Secret:    k8s.Secret,
-		}
-	} else {
-		target.SecretManager = &SecretManagerSecret{
-			Project: gsm.Project,
-			Secret:  gsm.Secret,
-		}
+
+	// Get the secert value according to the key.
+	// Allow the case where the key-value pair for spec.Key is not yet create,
+	// a key-value pair will be inserted with the UpsertKubernetesSecret() function.
+	value, ok := secret.Data[spec.Key]
+	if !ok {
+		return new(SecretData), nil
 	}
-	return target
+
+	return &SecretData{value}, nil
 }
 
-func (cl Client) UpdatedVersion(target Target) (bool, error) {
-	updated := false
-	if k8s, gsm := target.Kubernetes, target.SecretManager; k8s != nil {
-		// k8s secret
-		secret, err := (*cl.K8sClientset).CoreV1().Secrets(k8s.Namespace).Get(k8s.Secret, metav1.GetOptions{})
-		if err != nil {
-			return updated, err
-		}
+// GetKubernetesSecret gets the SecretManager secret data specified in SecretManagerSpec
+func (cl Client) GetSecretManagerSecret(spec SecretManagerSpec) (*SecretData, error) {
+	ctx := context.TODO()
+	name := "projects/" + spec.Project + "/secrets/" + spec.Secret + "/versions/latest"
 
-		newVersion := secret.ObjectMeta.ResourceVersion
-		if newVersion != target.Kubernetes.Version {
-			updated = true
-		}
-
-		// update to latest version
-		target.Kubernetes.Version = newVersion
-		target.Kubernetes.Data = secret.Data
-
-		return updated, nil
-	} else {
-		// secret manager secret
-		name := "projects/" + gsm.Project + "/secrets/" + gsm.Secret + "/versions/latest"
-		getReq := &secretmanagerpb.GetSecretVersionRequest{
-			Name: name,
-		}
-		getResult, err := cl.SecretManagerClient.GetSecretVersion(cl.Ctx, getReq)
-		if err != nil {
-			return updated, err
-		}
-		accReq := &secretmanagerpb.AccessSecretVersionRequest{
-			Name: name,
-		}
-		accResult, err := cl.SecretManagerClient.AccessSecretVersion(cl.Ctx, accReq)
-		if err != nil {
-			return updated, err
-		}
-
-		versionSlice := strings.Split(getResult.Name, "/")
-		newVersion := versionSlice[len(versionSlice)-1]
-		if newVersion != target.SecretManager.Version {
-			updated = true
-		}
-
-		// update to latest version
-		target.SecretManager.Version = newVersion
-		target.SecretManager.Data = accResult.Payload.Data
-
-		return updated, nil
+	accReq := &secretmanagerpb.AccessSecretVersionRequest{
+		Name: name,
 	}
+	accResult, err := cl.SecretManagerClient.AccessSecretVersion(ctx, accReq)
+	if err != nil {
+		return nil, err
+	}
+
+	return &SecretData{accResult.Payload.Data}, nil
 }
 
-func (target Target) PrintSecret() {
-	if k8s, gsm := target.Kubernetes, target.SecretManager; k8s != nil {
-		fmt.Printf("%s :\n %s\n", k8s.Version, k8s.Data)
-	} else {
-		fmt.Printf("%s :\n %s\n", gsm.Version, gsm.Data)
-
+// UpsertKubernetesSecret updates or inserts a key-value pair in the K8s secret with the given spec.Key.
+func (cl Client) UpsertKubernetesSecret(spec KubernetesSpec, src *SecretData) (*SecretData, error) {
+	// encode with base64 encoding
+	encodedSrc := base64.StdEncoding.EncodeToString(src.Data)
+	patch := []byte("{\"data\":{\"" + spec.Key + "\": \"" + encodedSrc + "\"}}")
+	secret, err := (*cl.K8sClientset).CoreV1().Secrets(spec.Namespace).Patch(spec.Secret, types.MergePatchType, patch)
+	if err != nil {
+		return nil, err
 	}
+
+	// get the secert value according to the key
+	value, ok := secret.Data[spec.Key]
+	if !ok {
+		return nil, fmt.Errorf("K8s:/namespaces/%s/secrets/%s does not contain key: %s", spec.Namespace, spec.Secret, spec.Key)
+	}
+
+	return &SecretData{value}, nil
 }

@@ -1,5 +1,8 @@
 package client
 
+// package client implemets client creation utilities
+// creates K8s clientset and Secret Manager client
+
 import (
 	"context"
 	"os"
