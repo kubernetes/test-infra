@@ -222,7 +222,7 @@ periodics:
           - --gcp-node-image=gci
           - --gcp-nodes=100
           - --gcp-project-type=scalability-project
-          - --gcp-ssh-proxy-instance-name=gce-cluster-master
+          - --gcp-ssh-proxy-instance-name=e2e-containerd-conformance-master
           - --gcp-zone=us-east1-b
           - --provider=gce
           - --test=true
