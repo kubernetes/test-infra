@@ -227,7 +227,7 @@ periodics:
           # this is mostly for building kubernetes
           memory: "9000Mi"
           # during the tests more like 3-20m is used
-          cpu: 2000m
+          cpu: 7400m
   annotations:
     testgrid-num-failures-to-alert: '2'
     testgrid-alert-stale-results-hours: '48'
