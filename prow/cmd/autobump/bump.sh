@@ -198,17 +198,18 @@ list() {
   fi
 }
 
-split_on_commas() {
-  local IFS=,
-  local array=("$1")
-  echo "${array[@]}"
-}
+ split_on_commas() {
+   local IFS=,
+   local array
+   read -ra array <<< "$1"
+   echo "${array[@]}"
+ }
 
-add_suffix() {
-  local array=("$1")
-  local suffix="${2:-/*.yaml}"
-  echo "${array[@]/%/$suffix}"
-}
+ add_suffix() {
+   local array=($1)
+   local suffix="${2:-/*.yaml}"
+   echo "${array[@]/%/$suffix}"
+ }
 
 # See https://misc.flogisoft.com/bash/tip_colors_and_formatting
 color-image() { # Bold magenta
