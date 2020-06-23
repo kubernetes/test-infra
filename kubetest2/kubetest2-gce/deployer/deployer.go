@@ -37,11 +37,12 @@ type deployer struct {
 	// generic parts
 	commonOptions types.Options
 
-	kubeconfigPath string
-	kubectl        string
-	logsDir        string
-	RepoRoot       string `desc:"The path to the root of the local kubernetes/cloud-provider-gcp repo. Necessary to call certain scripts. Defaults to the current directory. If operating in legacy mode, this should be set to the local kubernetes/kubernetes repo."`
-	GCPProject     string `desc:"GCP Project to create VMs in. Must be set."`
+	kubeconfigPath   string
+	kubectl          string
+	logsDir          string
+	RepoRoot         string `desc:"The path to the root of the local kubernetes/cloud-provider-gcp repo. Necessary to call certain scripts. Defaults to the current directory. If operating in legacy mode, this should be set to the local kubernetes/kubernetes repo."`
+	GCPProject       string `desc:"GCP Project to create VMs in. Must be set."`
+	OverwriteLogsDir bool   `desc:"If set, will overwrite an existing logs directory if one is encountered during dumping of logs. Useful when runnning tests locally."`
 }
 
 // New implements deployer.New for gce

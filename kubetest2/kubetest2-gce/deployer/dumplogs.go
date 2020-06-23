@@ -55,6 +55,17 @@ func (d *deployer) makeLogsDir() error {
 	_, err := os.Stat(d.logsDir)
 
 	if err == nil {
+		if d.OverwriteLogsDir {
+			if err := os.RemoveAll(d.logsDir); err != nil {
+				return fmt.Errorf("failed to delete existing logs directory: %s", err)
+			}
+
+			err := os.Mkdir(d.logsDir, os.ModePerm)
+			if err != nil {
+				return fmt.Errorf("failed to create %s: %s", d.logsDir, err)
+			}
+			return nil
+		}
 		return fmt.Errorf("cluster logs directory %s already exists, please clean up manually before continuing", d.logsDir)
 	}
 	if os.IsNotExist(err) {
