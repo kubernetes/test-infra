@@ -80,5 +80,3 @@ func (d *deployer) Kubeconfig() (string, error) {
 	}
 	return "", fmt.Errorf("unknown error when checking for kubeconfig at %s: %s", d.kubeconfigPath, err)
 }
-
-func (d *deployer) Down() error { return nil }
