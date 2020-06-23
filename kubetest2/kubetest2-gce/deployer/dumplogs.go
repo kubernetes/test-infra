@@ -54,20 +54,6 @@ func (d *deployer) DumpClusterLogs() error {
 func (d *deployer) makeLogsDir() error {
 	_, err := os.Stat(d.logsDir)
 
-	if err == nil {
-		if d.OverwriteLogsDir {
-			if err := os.RemoveAll(d.logsDir); err != nil {
-				return fmt.Errorf("failed to delete existing logs directory: %s", err)
-			}
-
-			err := os.Mkdir(d.logsDir, os.ModePerm)
-			if err != nil {
-				return fmt.Errorf("failed to create %s: %s", d.logsDir, err)
-			}
-			return nil
-		}
-		return fmt.Errorf("cluster logs directory %s already exists, please clean up manually before continuing", d.logsDir)
-	}
 	if os.IsNotExist(err) {
 		err := os.Mkdir(d.logsDir, os.ModePerm)
 		if err != nil {
@@ -75,8 +61,25 @@ func (d *deployer) makeLogsDir() error {
 		}
 		return nil
 	}
+	if err != nil {
+		return fmt.Errorf("unexpected exception when making cluster logs directory: %s", err)
+	}
 
-	return fmt.Errorf("unexpected exception when making cluster logs directory: %s", err)
+	// file definitely exists, overwrite if requested
+
+	if d.OverwriteLogsDir {
+		if err := os.RemoveAll(d.logsDir); err != nil {
+			return fmt.Errorf("failed to delete existing logs directory: %s", err)
+		}
+
+		err := os.Mkdir(d.logsDir, os.ModePerm)
+		if err != nil {
+			return fmt.Errorf("failed to create %s: %s", d.logsDir, err)
+		}
+		return nil
+	}
+
+	return fmt.Errorf("cluster logs directory %s already exists, please clean up manually or use the overwrite flag before continuing", d.logsDir)
 }
 
 func (d *deployer) sshDump() error {

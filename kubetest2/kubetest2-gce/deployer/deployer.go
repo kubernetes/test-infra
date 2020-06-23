@@ -101,10 +101,12 @@ func (d *deployer) IsUp() (up bool, err error) {
 
 func (d *deployer) Kubeconfig() (string, error) {
 	_, err := os.Stat(d.kubeconfigPath)
-	if err == nil {
-		return d.kubeconfigPath, nil
-	} else if os.IsNotExist(err) {
+	if os.IsNotExist(err) {
 		return "", fmt.Errorf("kubeconfig does not exist at: %s", d.kubeconfigPath)
 	}
-	return "", fmt.Errorf("unknown error when checking for kubeconfig at %s: %s", d.kubeconfigPath, err)
+	if err != nil {
+		return "", fmt.Errorf("unknown error when checking for kubeconfig at %s: %s", d.kubeconfigPath, err)
+	}
+
+	return d.kubeconfigPath, nil
 }
