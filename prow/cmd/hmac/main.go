@@ -89,7 +89,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	o.github.AddFlags(fs)
 	o.kubernetes.AddFlags(fs)
 
-	fs.StringVar(&o.kubeconfigCtx, "kubeconfig-context", "", "Context of the Prow component cluster in the kubeconfig.")
+	fs.StringVar(&o.kubeconfigCtx, "kubeconfig-context", "", "Context of the Prow component cluster and namespace in the kubeconfig.")
 	fs.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
 

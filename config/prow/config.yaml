@@ -73,6 +73,10 @@ prowjob_namespace: default
 pod_namespace: test-pods
 log_level: debug
 
+managed_webhooks:
+  # This has to be true if any of the managed repo/org is using the legacy global token that is manually created.
+  respect_legacy_global_token: true
+
 slack_reporter_configs:
   '*':
     job_types_to_report:
