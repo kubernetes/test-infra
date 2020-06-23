@@ -23,6 +23,7 @@ import (
 	"path/filepath"
 
 	"k8s.io/klog"
+	"k8s.io/test-infra/kubetest2/pkg/exec"
 	"k8s.io/test-infra/kubetest2/pkg/types"
 
 	"github.com/octago/sflags/gen/gpflag"
@@ -37,6 +38,7 @@ type deployer struct {
 	commonOptions types.Options
 
 	kubeconfigPath string
+	kubectl        string
 	RepoRoot       string `desc:"The path to the root of the local kubernetes/cloud-provider-gcp repo. Necessary to call certain scripts. Defaults to the current directory. If operating in legacy mode, this should be set to the local kubernetes/kubernetes repo."`
 	GCPProject     string `desc:"GCP Project to create VMs in. Must be set."`
 }
@@ -67,7 +69,32 @@ func (d *deployer) Provider() string {
 	return Name
 }
 
-func (d *deployer) IsUp() (up bool, err error) { return false, nil }
+func (d *deployer) IsUp() (up bool, err error) {
+	klog.Info("GCE deployer starting IsUp()")
+
+	if err := d.verifyFlags(); err != nil {
+		return false, fmt.Errorf("is up failed to verify flags: %s", err)
+	}
+
+	env := d.buildEnv()
+	// naive assumption: nodes reported = cluster up
+	// similar to other deployers' implementations
+	args := []string{
+		d.kubectl,
+		"get",
+		"nodes",
+		"-o=name",
+	}
+	cmd := exec.Command(args[0], args[1:]...)
+	cmd.SetEnv(env...)
+	cmd.SetStderr(os.Stderr)
+	lines, err := exec.OutputLines(cmd)
+	if err != nil {
+		return false, fmt.Errorf("is up failed to get nodes: %s", err)
+	}
+
+	return len(lines) > 0, nil
+}
 
 func (d *deployer) DumpClusterLogs() error { return nil }
 
