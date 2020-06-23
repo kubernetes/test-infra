@@ -203,6 +203,7 @@ periodics:
       # - --test-cmd-args=--testoverrides=./testing/chaosmonkey/override.yaml
       # - --test-cmd-args=--testoverrides=./testing/chaosmonkey/ignore_node_killer_container_restarts_100.yaml
       - --test-cmd-args=--testoverrides=./testing/load/gce/throughput_override.yaml
+      - --test-cmd-args=--testoverrides=./testing/overrides/enable_oom_tracking.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=120m
       - --use-logexporter
@@ -257,6 +258,7 @@ periodics:
       - --test-cmd-args=--testconfig=testing/load/config.yaml
       - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
       - --test-cmd-args=--testoverrides=./testing/load/kubemark/500_nodes/override.yaml
+      - --test-cmd-args=--testoverrides=./testing/overrides/enable_oom_tracking.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=80m
       - --use-logexporter
