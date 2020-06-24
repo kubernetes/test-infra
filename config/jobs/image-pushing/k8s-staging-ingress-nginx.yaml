@@ -35,7 +35,7 @@ postsubmits:
       annotations:
         testgrid-dashboards: sig-network-ingress-nginx
       decorate: true
-      run_if_changed: '^\/images\/nginx\/'
+      run_if_changed: 'images/nginx/.*'
       branches:
         - ^master$
       spec:
