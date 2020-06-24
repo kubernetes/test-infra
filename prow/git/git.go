@@ -400,7 +400,7 @@ func (r *Repo) Push(branch string) error {
 	if r.user == "" || r.pass == "" {
 		return errors.New("cannot push without credentials - configure your git client")
 	}
-	r.logger.Infof("Pushing to '%s/%s (branch: %s)'.", r.user, r.repo, branch)
+	r.logger.Infof("Pushing to '%s/%s (branch: %s)'.", r.org, r.repo, branch)
 	remote := fmt.Sprintf("https://%s:%s@%s/%s/%s", r.user, r.pass, r.host, r.org, r.repo)
 	co := r.gitCommand("push", remote, branch)
 	out, err := co.CombinedOutput()
