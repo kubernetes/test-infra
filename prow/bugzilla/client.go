@@ -201,7 +201,7 @@ func getRootForClone(c Client, bug *Bug) (*Bug, error) {
 		}
 		switch l := len(parent); {
 		case l <= 0:
-			break
+			return curr, utilerrors.NewAggregate(errs)
 		case l == 1:
 			curr = parent[0]
 		case l > 1:

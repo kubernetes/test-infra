@@ -1031,10 +1031,22 @@ func TestGetRootForClone(t *testing.T) {
 	bug1Create := &BugCreate{
 		Summary: "Dummy bug to test getAllClones",
 	}
+	bugDiffCreate := &BugCreate{
+		Summary: "Different bug",
+	}
+	diffBugID, err := fake.CreateBug(bugDiffCreate)
+	errorChecker(err, t)
 	bug1ID, err := fake.CreateBug(bug1Create)
 	if err != nil {
 		t.Fatalf("Error while creating bug in Fake!\n")
 	}
+	idUpdate := &IDUpdate{
+		Add: []int{diffBugID},
+	}
+	update := BugUpdate{
+		DependsOn: idUpdate,
+	}
+	fake.UpdateBug(bug1ID, update)
 	bug1, err := fake.GetBug(bug1ID)
 	errorChecker(err, t)
 	bug2ID, err := fake.CloneBug(bug1)
