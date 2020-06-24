@@ -128,14 +128,35 @@ create-gerrit-pr() {
   git config http.cookiefile "${creds}"
   git remote add upstream "${GERRIT_HOST_REPO}"
 
-	change="$( echo "${GERRIT_HOST_REPO}; ${PROW_INSTANCE_NAME}; ${old_version}" | git hash-object --stdin)"
+	change_id="$(get-change-id)"
+	echo "Commit will have Change-Id: ${change_id}"
+
 	git commit -m "${title}
 
 ${body}
 
-Change-Id: I${change}"
+Change-Id: ${change_id}"
 
 	git push upstream HEAD:refs/for/master
+}
+
+# get-change-id generates a change ID for the gerrit PR that is deterministic
+# rather than being random as is normally preferable.
+# In particular this chooses a change ID that is unique to the host/repo,
+# prow instance name, and the version we are bumping *from*. This ensures we
+# update the existing open CL rather than opening a new one.
+# HOWEVER, this doesn't work if there is a revert to a previous version since
+# we will generated the change-id of an already merged PR. We avoid this by
+# iteratively hashing the chosen ID until we find an unused ID.
+get-change-id() {
+	local id="I$(echo "${GERRIT_HOST_REPO}; ${PROW_INSTANCE_NAME}; ${old_version}" | git hash-object --stdin)"
+
+	# While a commit on the base branch exists with this change ID...
+	while [[ -n "$(git log --grep="Change-Id: ${id}" -F)" ]]; do
+		# Choose another ID by hashing the current ID.
+		id="I$(echo "${id}" | git hash-object --stdin)"
+	done
+	echo "${id}"
 }
 
 # Convert image: gcr.io/k8s-prow/plank:v20181122-abcd to v20181122-abcd
