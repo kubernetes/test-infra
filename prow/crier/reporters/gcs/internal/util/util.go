@@ -25,6 +25,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"google.golang.org/api/googleapi"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	utilpointer "k8s.io/utils/pointer"
 
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -47,27 +48,30 @@ func (sa StorageAuthor) NewWriter(ctx context.Context, bucket, path string, over
 	if err != nil {
 		return nil, err
 	}
-	return sa.Opener.Writer(ctx, fmt.Sprintf("%s://%s/%s", pp.StorageProvider(), pp.Bucket(), path), pkgio.WriterOptions{PreconditionDoesNotExist: utilpointer.BoolPtr(true)})
+	return sa.Opener.Writer(ctx, fmt.Sprintf("%s://%s/%s", pp.StorageProvider(), pp.Bucket(), path),
+		pkgio.WriterOptions{PreconditionDoesNotExist: utilpointer.BoolPtr(!overwrite)})
 }
 
 func WriteContent(ctx context.Context, logger *logrus.Entry, author Author, bucket, path string, overwrite bool, content []byte) error {
-	logger.WithFields(logrus.Fields{"bucket": bucket, "path": path}).Debugf("Uploading to %s/%s; overwrite: %v", bucket, path, overwrite)
+	log := logger.WithFields(logrus.Fields{"bucket": bucket, "path": path})
+	log.Debugf("Uploading to %s/%s; overwrite: %v", bucket, path, overwrite)
 	w, err := author.NewWriter(ctx, bucket, path, overwrite)
 	if err != nil {
 		return err
 	}
 	_, err = w.Write(content)
-	var reportErr error
+	var writeErr error
 	if isErrUnexpected(err) {
-		reportErr = err
-		logger.WithError(err).WithFields(logrus.Fields{"bucket": bucket, "path": path}).Warn("Uploading info to storage failed (write)")
+		writeErr = err
+		log.WithError(err).Warn("Uploading info to storage failed (write)")
 	}
 	err = w.Close()
+	var closeErr error
 	if isErrUnexpected(err) {
-		reportErr = err
-		logger.WithError(err).WithFields(logrus.Fields{"bucket": bucket, "path": path}).Warn("Uploading info to storage failed (close)")
+		closeErr = err
+		log.WithError(err).Warn("Uploading info to storage failed (close)")
 	}
-	return reportErr
+	return utilerrors.NewAggregate([]error{writeErr, closeErr})
 }
 
 func isErrUnexpected(err error) bool {

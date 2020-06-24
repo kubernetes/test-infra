@@ -85,8 +85,8 @@ func (gr *gcsReporter) reportStartedJob(ctx context.Context, pj *prowv1.ProwJob)
 		return fmt.Errorf("failed to get job destination: %v", err)
 	}
 
+	gr.logger.Debugf("Would upload started.json to %q/%q", bucketName, dir)
 	if gr.dryRun {
-		gr.logger.Infof("Would upload started.json to %q/%q", bucketName, dir)
 		return nil
 	}
 	return util.WriteContent(ctx, gr.logger, gr.author, bucketName, path.Join(dir, prowv1.StartedStatusFile), false, output)
@@ -115,8 +115,8 @@ func (gr *gcsReporter) reportFinishedJob(ctx context.Context, pj *prowv1.ProwJob
 		return fmt.Errorf("failed to get job destination: %v", err)
 	}
 
+	gr.logger.Debugf("Would upload finished.json info to %q/%q", bucketName, dir)
 	if gr.dryRun {
-		gr.logger.Infof("Would upload finished.json info to %q/%q", bucketName, dir)
 		return nil
 	}
 	return util.WriteContent(ctx, gr.logger, gr.author, bucketName, path.Join(dir, prowv1.FinishedStatusFile), false, output)
@@ -134,8 +134,8 @@ func (gr *gcsReporter) reportProwjob(ctx context.Context, pj *prowv1.ProwJob) er
 		return fmt.Errorf("failed to get job destination: %v", err)
 	}
 
+	gr.logger.Debugf("Would upload pod info to %q/%q", bucketName, dir)
 	if gr.dryRun {
-		gr.logger.Infof("Would upload pod info to %q/%q", bucketName, dir)
 		return nil
 	}
 	return util.WriteContent(ctx, gr.logger, gr.author, bucketName, path.Join(dir, "prowjob.json"), true, output)
