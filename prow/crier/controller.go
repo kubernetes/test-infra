@@ -279,8 +279,8 @@ func (c *Controller) processNextItem() bool {
 	}
 
 	log.Info("Reported job, now will update pj")
-	reportedState := pj.Status.State
 	for _, pjob := range pjs {
+		reportedState := pjob.Status.State
 		// We have to retry here, if we return we lose the information that we already reported this job.
 		if err := retry.RetryOnConflict(retry.DefaultBackoff, func() error {
 			// Get it first, this is very cheap
