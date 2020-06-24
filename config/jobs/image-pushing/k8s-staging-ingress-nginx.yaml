@@ -29,3 +29,23 @@ postsubmits:
               - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
               - --env-passthrough=PULL_BASE_REF
               - .
+
+    - name: post-ingress-nginx-build-nginx-image
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-network-ingress-nginx
+      decorate: true
+      run_if_changed: '^\/images\/nginx\/'
+      branches:
+        - ^master$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20200612-cd781f9
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-ingress-nginx
+              - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - images/nginx
