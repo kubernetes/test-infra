@@ -440,6 +440,7 @@ func TestHandleRotatedRepo(t *testing.T) {
 		currentHMACMapForBatchUpdate map[string]string
 		expectedHMACsSize            map[string]int
 		expectedReposForBatchUpdate  []string
+		expectedHMACMapForRecovery   map[string]github.HMACsForRepo
 	}{
 		{
 			name: "test a repo that needs its hmac to be rotated, and global token does not exist",
@@ -454,6 +455,10 @@ func TestHandleRotatedRepo(t *testing.T) {
 			currentHMACMapForBatchUpdate: map[string]string{"whatever-repo": "whatever-token"},
 			expectedHMACsSize:            map[string]int{"repo1": 3, "repo2": 3},
 			expectedReposForBatchUpdate:  []string{"repo1", "repo2"},
+			expectedHMACMapForRecovery: map[string]github.HMACsForRepo{
+				"repo1": commonTokens,
+				"repo2": commonTokens,
+			},
 		},
 		{
 			name: "test a repo that needs its hmac to be rotated, and global token exists",
@@ -469,6 +474,10 @@ func TestHandleRotatedRepo(t *testing.T) {
 			currentHMACMapForBatchUpdate: map[string]string{"whatever-repo": "whatever-token"},
 			expectedHMACsSize:            map[string]int{"repo1": 3, "repo2": 3},
 			expectedReposForBatchUpdate:  []string{"repo1", "repo2"},
+			expectedHMACMapForRecovery: map[string]github.HMACsForRepo{
+				"repo1": commonTokens,
+				"repo2": commonTokens,
+			},
 		},
 		{
 			name: "test a repo that does not need its hmac to be rotated",
@@ -493,6 +502,14 @@ func TestHandleRotatedRepo(t *testing.T) {
 			currentHMACMapForBatchUpdate: map[string]string{"whatever-repo": "whatever-token"},
 			expectedHMACsSize:            map[string]int{"repo1": 2, "repo2": 1},
 			expectedReposForBatchUpdate:  []string{"repo1"},
+			expectedHMACMapForRecovery: map[string]github.HMACsForRepo{
+				"repo1": []github.HMACToken{
+					{
+						Value:     "rand-val1",
+						CreatedAt: pastTime.Add(-1 * time.Hour),
+					},
+				},
+			},
 		},
 	}
 
@@ -501,6 +518,7 @@ func TestHandleRotatedRepo(t *testing.T) {
 			c := &client{
 				currentHMACMap:        tc.currentHMACs,
 				hmacMapForBatchUpdate: tc.currentHMACMapForBatchUpdate,
+				hmacMapForRecovery:    map[string]github.HMACsForRepo{},
 			}
 			if err := c.handledRotatedRepo(tc.toRotate); err != nil {
 				t.Errorf("unexpected error: %v", err)
@@ -516,6 +534,9 @@ func TestHandleRotatedRepo(t *testing.T) {
 				if _, ok := c.hmacMapForBatchUpdate[repo]; !ok {
 					t.Errorf("repo %q is expected to be added to the batch update map, but not", repo)
 				}
+			}
+			if !reflect.DeepEqual(tc.expectedHMACMapForRecovery, c.hmacMapForRecovery) {
+				t.Errorf("The hmacMapForRecovery %#v != expected %#v", c.hmacMapForRecovery, tc.expectedHMACMapForRecovery)
 			}
 		})
 	}

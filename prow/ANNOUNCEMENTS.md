@@ -3,6 +3,8 @@
 ## New features
 
 New features added to each component:
+ - *June 23rd, 2020* An [hmac](/prow/cmd/hmac) tool was added to automatically reconcile webhooks and hmac
+    tokens for the orgs and repos integrated with your prow instance.
  - *June 8th, 2020* A new informer-based Plank implementation was added. It can be used by deploying
     the new [prow-controller-manager](/config/prow/experimental/controller_manager.yaml) binary.
     We plan to gradually move all our controllers into that binary, see https://github.com/kubernetes/test-infra/issues/17024

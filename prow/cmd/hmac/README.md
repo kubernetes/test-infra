@@ -32,10 +32,10 @@ bazel run //prow/cmd/hmac -- \
   --dryrun=true  # Remove it to actually update hmac tokens and webhooks
 ```
 
-1. Run it as a postsubmit job:
+2. Run it as a Prow job:
 
-TODO(chizhg): add the link of the postsubmit job once we have the image and
-configured for k8s Prow.
+The recommended way to run this tool would be running it as a postsubmit job.
+One example Prow job configured for k8s Prow can be found [here](https://github.com/kubernetes/test-infra/blob/b11722064aea0913f4b02cb6aabda1f91f0abc7f/config/jobs/kubernetes/test-infra/test-infra-trusted.yaml#L113-L156).
 
 ## How it works
 

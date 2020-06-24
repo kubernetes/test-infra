@@ -111,6 +111,7 @@ type client struct {
 	newHMACConfig  config.ManagedWebhooks
 
 	hmacMapForBatchUpdate map[string]string
+	hmacMapForRecovery    map[string]github.HMACsForRepo
 }
 
 func main() {
@@ -171,6 +172,7 @@ func main() {
 		currentHMACMap:        currentHMACMap,
 		newHMACConfig:         newHMACConfig,
 		hmacMapForBatchUpdate: map[string]string{},
+		hmacMapForRecovery:    map[string]github.HMACsForRepo{},
 	}
 
 	if err := c.handleConfigUpdate(); err != nil {
@@ -315,6 +317,8 @@ func (c *client) addRepoToBatchUpdate(repo string) error {
 	// Copy over all existing tokens for that repo, if it's already been configured.
 	if val, ok := c.currentHMACMap[repo]; ok {
 		updatedTokenList = append(updatedTokenList, val...)
+		// Back up the hmacs for the current repo, which we can use for recovery in case an error happens in updating the webhook.
+		c.hmacMapForRecovery[repo] = c.currentHMACMap[repo]
 		// Current webhook is possibly using global token so we need to promote that token to repo level, if it exists.
 	} else if globalTokens, ok := c.currentHMACMap["*"]; ok {
 		updatedTokenList = append(updatedTokenList, github.HMACToken{
@@ -349,9 +353,14 @@ func (c *client) batchOnboardNewTokenForRepos() error {
 			return fmt.Errorf("error validating the options: %v", err)
 		}
 
-		logrus.WithField("repo", repo).Debugf("Updating webhooks for %q", c.options.hookUrl)
+		logrus.WithField("repo", repo).Debugf("Updating the webhook for %q", c.options.hookUrl)
 		if err := o.HandleWebhookConfigChange(); err != nil {
-			return fmt.Errorf("error updating webhook for repo %q: %v", repo, err)
+			logrus.WithError(err).Errorf("Error updating the webhook, will revert the hmacs for %q", repo)
+			if hmacs, exist := c.hmacMapForRecovery[repo]; exist {
+				c.currentHMACMap[repo] = hmacs
+			} else {
+				delete(c.currentHMACMap, repo)
+			}
 		}
 	}
 
