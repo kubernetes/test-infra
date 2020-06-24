@@ -38,6 +38,6 @@ larger set of contributors to apply/remove them.
 | Name | Description | Added By | Prow Plugin |
 | ---- | ----------- | -------- | --- |
 {{ range $labelData.Labels -}}
-  | <a id="{{ anchor .Name }}" href="#{{ anchor .Name }}">`{{ .Name }}`</a> | {{ if .DeleteAfter -}} REMOVING. This will be deleted after {{ .DeleteAfter }} <br><br> {{ end -}} {{ .Description }} {{- if .Previously }} <br><br> This was previously {{ range .Previously -}} `{{.Name }}`, {{ end -}}  {{ end -}} | {{.AddedBy }} | {{ if .ProwPlugin }} [{{.ProwPlugin}}](https://git.k8s.io/test-infra/prow/plugins/{{.ProwPlugin}}) {{ end }}|
+  | <a id="{{ anchor .Name }}" href="#{{ anchor .Name }}">`{{ .Name }}`</a> | {{ if .DeleteAfter -}} REMOVING. This will be deleted after {{ .DeleteAfter }} <br><br> {{ end -}} {{ .Description }} {{- if .Previously }} <br><br> This was previously {{ range .Previously -}} `{{.Name }}`, {{ end -}}  {{ end -}} | {{.AddedBy }} | {{ if .ProwPlugin }} [{{.ProwPlugin}}](https://git.k8s.io/test-infra/prow/{{ if .IsExternalPlugin }}external-{{ end }}plugins/{{.ProwPlugin}}) {{ end }}|
 {{ end }}
 {{ end }}

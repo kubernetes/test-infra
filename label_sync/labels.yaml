@@ -363,6 +363,7 @@ default:
       name: needs-rebase
       target: prs
       prowPlugin: needs-rebase
+      isExternalPlugin: true
       addedBy: prow
     - color: ededed
       description: Indicates an issue or PR lacks a `sig/foo` label and requires one.
