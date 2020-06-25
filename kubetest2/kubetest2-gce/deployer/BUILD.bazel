@@ -4,6 +4,7 @@ go_library(
     name = "go_default_library",
     srcs = [
         "build.go",
+        "common.go",
         "deployer.go",
         "down.go",
         "dumplogs.go",
@@ -17,6 +18,8 @@ go_library(
         "@com_github_octago_sflags//gen/gpflag:go_default_library",
         "@com_github_spf13_pflag//:go_default_library",
         "@io_k8s_klog//:go_default_library",
+        "@io_k8s_sigs_boskos//client:go_default_library",
+        "@io_k8s_sigs_boskos//common:go_default_library",
     ],
 )
 

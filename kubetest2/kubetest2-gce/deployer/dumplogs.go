@@ -28,8 +28,8 @@ import (
 func (d *deployer) DumpClusterLogs() error {
 	klog.Info("GCE deployer starting DumpClusterLogs()")
 
-	if err := d.verifyFlags(); err != nil {
-		return fmt.Errorf("dump cluster logs could not verify flags: %s", err)
+	if err := d.init(); err != nil {
+		return fmt.Errorf("dump cluster logs failed to init: %s", err)
 	}
 
 	if err := d.makeLogsDir(); err != nil {

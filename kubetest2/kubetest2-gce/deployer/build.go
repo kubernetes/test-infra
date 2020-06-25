@@ -27,8 +27,8 @@ import (
 func (d *deployer) Build() error {
 	klog.Info("GCE deployer starting Build()")
 
-	if err := d.verifyBuildFlags(); err != nil {
-		return fmt.Errorf("Build() failed to verify build-specific flags: %s", err)
+	if err := d.init(); err != nil {
+		return fmt.Errorf("build failed to init: %s", err)
 	}
 
 	// this code path supports the kubernetes/cloud-provider-gcp build

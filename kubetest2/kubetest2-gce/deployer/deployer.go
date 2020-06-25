@@ -25,6 +25,8 @@ import (
 	"k8s.io/klog"
 	"k8s.io/test-infra/kubetest2/pkg/exec"
 	"k8s.io/test-infra/kubetest2/pkg/types"
+	"sigs.k8s.io/boskos/client"
+	boskosCommon "sigs.k8s.io/boskos/common"
 
 	"github.com/octago/sflags/gen/gpflag"
 	"github.com/spf13/pflag"
@@ -37,9 +39,15 @@ type deployer struct {
 	// generic parts
 	commonOptions types.Options
 
-	kubeconfigPath   string
-	kubectl          string
-	logsDir          string
+	kubeconfigPath string
+	kubectl        string
+	logsDir        string
+
+	// boskos struct fields will be non-nil when the deployer is
+	// using boskos to acquire a GCP project
+	boskos        *client.Client
+	boskosProject *boskosCommon.Resource
+
 	RepoRoot         string `desc:"The path to the root of the local kubernetes/cloud-provider-gcp repo. Necessary to call certain scripts. Defaults to the current directory. If operating in legacy mode, this should be set to the local kubernetes/kubernetes repo."`
 	GCPProject       string `desc:"GCP Project to create VMs in. Must be set."`
 	OverwriteLogsDir bool   `desc:"If set, will overwrite an existing logs directory if one is encountered during dumping of logs. Useful when runnning tests locally."`
@@ -75,8 +83,8 @@ func (d *deployer) Provider() string {
 func (d *deployer) IsUp() (up bool, err error) {
 	klog.Info("GCE deployer starting IsUp()")
 
-	if err := d.verifyFlags(); err != nil {
-		return false, fmt.Errorf("is up failed to verify flags: %s", err)
+	if d.GCPProject == "" {
+		return false, fmt.Errorf("isup requires a GCP project")
 	}
 
 	env := d.buildEnv()

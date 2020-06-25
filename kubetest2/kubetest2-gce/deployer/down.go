@@ -27,8 +27,8 @@ import (
 func (d *deployer) Down() error {
 	klog.Info("GCE deployer starting Down()")
 
-	if err := d.verifyFlags(); err != nil {
-		return fmt.Errorf("down could not verify flags: %s", err)
+	if err := d.init(); err != nil {
+		return fmt.Errorf("down failed to init: %s", err)
 	}
 
 	env := d.buildEnv()
@@ -43,5 +43,18 @@ func (d *deployer) Down() error {
 		return fmt.Errorf("error encountered during %s: %s", script, err)
 	}
 
+	if d.boskos != nil {
+		if err := d.releaseBoskosProject(); err != nil {
+			return fmt.Errorf("down failed to release boskos project: %s", err)
+		}
+	}
+
+	return nil
+}
+
+func (d *deployer) releaseBoskosProject() error {
+	if err := d.boskos.Release(d.boskosProject.Name, "free"); err != nil {
+		return fmt.Errorf("failed to release %s: %s", d.boskosProject.Name, err)
+	}
 	return nil
 }
