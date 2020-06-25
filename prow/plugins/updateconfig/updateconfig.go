@@ -325,8 +325,8 @@ func handle(gc githubClient, gitClient git.ClientFactory, kc corev1.ConfigMapsGe
 		return err
 	}
 	defer func() {
-		if err := gitClient.Clean(); err != nil {
-			log.WithError(err).Error("Could not clean up git client cache.")
+		if err := gitRepo.Clean(); err != nil {
+			log.WithError(err).Error("Could not clean up git repo cache.")
 		}
 	}()
 	if err := gitRepo.Checkout(*pr.MergeSHA); err != nil {
