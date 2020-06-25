@@ -58,3 +58,17 @@ func (d *deployer) releaseBoskosProject() error {
 	}
 	return nil
 }
+
+func (d *deployer) verifyDownFlags() error {
+	if err := d.setRepoPathIfNotSet(); err != nil {
+		return err
+	}
+
+	d.kubectl = filepath.Join(d.RepoRoot, "cluster", "kubectl.sh")
+
+	if d.GCPProject == "" {
+		return fmt.Errorf("gcp project must be set")
+	}
+
+	return nil
+}

@@ -17,12 +17,16 @@ limitations under the License.
 package deployer
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
+	"time"
 
 	"k8s.io/klog"
 	"k8s.io/test-infra/kubetest2/pkg/exec"
+	"sigs.k8s.io/boskos/client"
+	boskosCommon "sigs.k8s.io/boskos/common"
 )
 
 func (d *deployer) Up() error {
@@ -65,6 +69,7 @@ func (d *deployer) Up() error {
 
 	return nil
 }
+
 func enableComputeAPI(project string) error {
 	// In freshly created GCP projects, the compute API is
 	// not enabled. We need it. Enabling it after it has
@@ -85,6 +90,59 @@ func enableComputeAPI(project string) error {
 	if err != nil {
 		return fmt.Errorf("failed to enable compute API: %s", err)
 	}
+
+	return nil
+}
+
+// getProjectFromBoskos creates a boskos client, acquires a gcp project
+// and starts a heartbeat goroutine to keep the project reserved
+func (d *deployer) getProjectFromBoskos() error {
+	boskos, err := client.NewClient(
+		os.Getenv("JOB_NAME")+"-kubetest2",
+		d.BoskosLocation,
+		"",
+		"",
+	)
+	if err != nil {
+		return fmt.Errorf("failed to create boskos client: %s", err)
+	}
+
+	resourceType := "gce-project"
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
+	defer cancel()
+
+	boskosProject, err := boskos.AcquireWait(ctx, resourceType, "free", "busy")
+	if err != nil {
+		return fmt.Errorf("failed to get a %s from boskos: %s", resourceType, err)
+	}
+	if boskosProject == nil {
+		return fmt.Errorf("boskos had no %s available", resourceType)
+	}
+
+	go func(c *client.Client, resource *boskosCommon.Resource) {
+		for range time.Tick(time.Minute * 5) {
+			if err := c.UpdateOne(resource.Name, "busy", nil); err != nil {
+				klog.Warningf("[Boskos] Update of %s failed with %v", resource.Name, err)
+			}
+		}
+	}(boskos, boskosProject)
+
+	d.boskos = boskos
+	d.boskosProject = boskosProject
+	d.GCPProject = boskosProject.Name
+
+	return nil
+}
+
+func (d *deployer) verifyUpFlags() error {
+	if err := d.setRepoPathIfNotSet(); err != nil {
+		return err
+	}
+
+	d.kubectl = filepath.Join(d.RepoRoot, "cluster", "kubectl.sh")
+
+	// verifyUpFlags does not check for a gcp project because it is
+	// assumed that one will be acquired from boskos if it is not set
 
 	return nil
 }

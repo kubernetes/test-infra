@@ -17,15 +17,10 @@ limitations under the License.
 package deployer
 
 import (
-	"context"
 	"fmt"
 	"os"
-	"path/filepath"
-	"time"
 
 	"k8s.io/klog"
-	"sigs.k8s.io/boskos/client"
-	boskosCommon "sigs.k8s.io/boskos/common"
 )
 
 func (d *deployer) init() error {
@@ -36,6 +31,10 @@ func (d *deployer) init() error {
 	}
 
 	if d.commonOptions.ShouldUp() {
+		if err := d.verifyUpFlags(); err != nil {
+			return fmt.Errorf("init failed to verify flags for up: %s", err)
+		}
+
 		if d.GCPProject == "" {
 			klog.Info("No GCP project provided, acquiring from Boskos")
 
@@ -45,72 +44,12 @@ func (d *deployer) init() error {
 			klog.Infof("Got project %s from boskos", d.GCPProject)
 		}
 
-		if err := d.verifyFlags(); err != nil {
-			return fmt.Errorf("init failed to verify flags for up: %s", err)
-		}
 	}
 
 	if d.commonOptions.ShouldDown() {
-		if err := d.verifyFlags(); err != nil {
-			return fmt.Errorf("init failed to verify flags for up: %s", err)
+		if err := d.verifyDownFlags(); err != nil {
+			return fmt.Errorf("init failed to verify flags for down: %s", err)
 		}
-	}
-
-	return nil
-}
-
-// getProjectFromBoskos creates a boskos client, acquires a gcp project
-// and starts a heartbeat goroutine to keep the project reserved
-func (d *deployer) getProjectFromBoskos() error {
-	// TODO
-	// boskosLocation := "http://boskos.test-pods.svc.cluster.local."
-	boskosLocation := "http://localhost:8080"
-	boskos, err := client.NewClient(
-		os.Getenv("JOB_NAME")+"-kubetest2",
-		boskosLocation,
-		"",
-		"",
-	)
-	if err != nil {
-		return fmt.Errorf("failed to create boskos client: %s", err)
-	}
-
-	resourceType := "gce-project"
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
-	defer cancel()
-
-	boskosProject, err := boskos.AcquireWait(ctx, resourceType, "free", "busy")
-	if err != nil {
-		return fmt.Errorf("failed to get a %s from boskos: %s", resourceType, err)
-	}
-	if boskosProject == nil {
-		return fmt.Errorf("boksos had no %s available", resourceType)
-	}
-
-	go func(c *client.Client, resource *boskosCommon.Resource) {
-		for range time.Tick(time.Minute * 5) {
-			if err := c.UpdateOne(resource.Name, "busy", nil); err != nil {
-				klog.Warningf("[Boskos] Update of %s failed with %v", resource.Name, err)
-			}
-		}
-	}(boskos, boskosProject)
-
-	d.boskos = boskos
-	d.boskosProject = boskosProject
-	d.GCPProject = boskosProject.Name
-
-	return nil
-}
-
-func (d *deployer) verifyFlags() error {
-	if err := d.setRepoPathIfNotSet(); err != nil {
-		return err
-	}
-
-	d.kubectl = filepath.Join(d.RepoRoot, "cluster", "kubectl.sh")
-
-	if d.GCPProject == "" {
-		return fmt.Errorf("gcp project must be set")
 	}
 
 	return nil
