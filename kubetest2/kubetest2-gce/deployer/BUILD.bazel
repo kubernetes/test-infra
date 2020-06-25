@@ -6,6 +6,7 @@ go_library(
         "build.go",
         "deployer.go",
         "down.go",
+        "dumplogs.go",
         "up.go",
     ],
     importpath = "k8s.io/test-infra/kubetest2/kubetest2-gce/deployer",

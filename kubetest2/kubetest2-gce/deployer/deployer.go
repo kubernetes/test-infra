@@ -37,10 +37,12 @@ type deployer struct {
 	// generic parts
 	commonOptions types.Options
 
-	kubeconfigPath string
-	kubectl        string
-	RepoRoot       string `desc:"The path to the root of the local kubernetes/cloud-provider-gcp repo. Necessary to call certain scripts. Defaults to the current directory. If operating in legacy mode, this should be set to the local kubernetes/kubernetes repo."`
-	GCPProject     string `desc:"GCP Project to create VMs in. Must be set."`
+	kubeconfigPath   string
+	kubectl          string
+	logsDir          string
+	RepoRoot         string `desc:"The path to the root of the local kubernetes/cloud-provider-gcp repo. Necessary to call certain scripts. Defaults to the current directory. If operating in legacy mode, this should be set to the local kubernetes/kubernetes repo."`
+	GCPProject       string `desc:"GCP Project to create VMs in. Must be set."`
+	OverwriteLogsDir bool   `desc:"If set, will overwrite an existing logs directory if one is encountered during dumping of logs. Useful when runnning tests locally."`
 }
 
 // New implements deployer.New for gce
@@ -48,6 +50,7 @@ func New(opts types.Options) (types.Deployer, *pflag.FlagSet) {
 	d := &deployer{
 		commonOptions:  opts,
 		kubeconfigPath: filepath.Join(opts.ArtifactsDir(), "kubetest2-kubeconfig"),
+		logsDir:        filepath.Join(opts.ArtifactsDir(), "cluster-logs"),
 	}
 
 	flagSet, err := gpflag.Parse(d)
@@ -96,14 +99,14 @@ func (d *deployer) IsUp() (up bool, err error) {
 	return len(lines) > 0, nil
 }
 
-func (d *deployer) DumpClusterLogs() error { return nil }
-
 func (d *deployer) Kubeconfig() (string, error) {
 	_, err := os.Stat(d.kubeconfigPath)
-	if err == nil {
-		return d.kubeconfigPath, nil
-	} else if os.IsNotExist(err) {
+	if os.IsNotExist(err) {
 		return "", fmt.Errorf("kubeconfig does not exist at: %s", d.kubeconfigPath)
 	}
-	return "", fmt.Errorf("unknown error when checking for kubeconfig at %s: %s", d.kubeconfigPath, err)
+	if err != nil {
+		return "", fmt.Errorf("unknown error when checking for kubeconfig at %s: %s", d.kubeconfigPath, err)
+	}
+
+	return d.kubeconfigPath, nil
 }
