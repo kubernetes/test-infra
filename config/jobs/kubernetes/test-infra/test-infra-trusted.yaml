@@ -6,7 +6,7 @@ postsubmits:
     max_concurrency: 1
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20200605-0202717-org
+      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20200609-e7bfd25-org
         command:
         - bazel
         args:
@@ -115,7 +115,7 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-prow/hmac:v20200624-16c251c027
+      - image: gcr.io/k8s-prow/hmac:v20200625-3f9f11c88f
         command:
         - /hmac
         args:
@@ -940,7 +940,7 @@ periodics:
   spec:
     containers:
     - name: branchprotector
-      image: gcr.io/k8s-prow/branchprotector:v20200624-16c251c027
+      image: gcr.io/k8s-prow/branchprotector:v20200625-3f9f11c88f
       command:
       - /app/prow/cmd/branchprotector/app.binary
       args:
@@ -974,7 +974,7 @@ periodics:
   spec:
     containers:
     - name: label-sync
-      image: gcr.io/k8s-prow/label_sync:v20200624-16c251c027
+      image: gcr.io/k8s-prow/label_sync:v20200625-3f9f11c88f
       command:
       - /app/label_sync/app.binary
       args:
