@@ -101,6 +101,7 @@ postsubmits:
         - prow/deploy.sh
         args:
         - --confirm
+        - --config=trusted
     annotations:
       testgrid-dashboards: sig-testing-prow
       testgrid-tab-name: deploy-prow

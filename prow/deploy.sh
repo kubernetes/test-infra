@@ -33,16 +33,14 @@ fi
 
 case "${1:-}" in
 "--confirm")
-    ;;
-"")
+  shift
+  ;;
+*)
   read -p "Deploy prow to prod [no]: " confirm
   if [[ "${confirm}" != y* ]]; then
     exit 1
   fi
   ;;
-*)
-  echo "Usage: $(basename "$0") [--confirm]"
-  exit 1
 esac
 
 # See https://misc.flogisoft.com/bash/tip_colors_and_formatting
@@ -87,7 +85,7 @@ for s in {5..1}; do
     echo -n $'\r'"in $s..."
     sleep 1s
 done
-bazel run //config/prow/cluster:production.apply --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64
-bazel run //config/prow/cluster/monitoring:prow_monitoring_objects.apply --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64
-bazel run //config/prow/cluster/monitoring:production.apply --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64
+bazel run //config/prow/cluster:production.apply --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 "$@"
+bazel run //config/prow/cluster/monitoring:prow_monitoring_objects.apply --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 "$@"
+bazel run //config/prow/cluster/monitoring:production.apply --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 "$@"
 echo "$(color-green SUCCESS)"
