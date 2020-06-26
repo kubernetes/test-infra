@@ -187,7 +187,7 @@ presubmits:
             - --build=bazel
             - --cluster=
             - --env=KUBE_CONTAINER_RUNTIME=containerd
-            - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.3.3
+            - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.3.5
             - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.0.0-rc10
             - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
             - --env=ENABLE_POD_SECURITY_POLICY=true
@@ -386,7 +386,7 @@ periodics:
           - --check-leaked-resources
           - --extract=ci/latest
           - --env=KUBE_CONTAINER_RUNTIME=containerd
-          - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.3.3
+          - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.3.5
           - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.0.0-rc10
           - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
           - --env=ENABLE_POD_SECURITY_POLICY=true
