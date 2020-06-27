@@ -204,6 +204,7 @@ func (c *clientFactory) bootstrapClients(org, repo, dir string) (cacher, cloner,
 			remote:   c.remotes.PublishRemote(org, repo),
 			executor: executor,
 			info:     c.gitUser,
+			logger:   logger,
 		},
 		interactor: interactor{
 			dir:      dir,
