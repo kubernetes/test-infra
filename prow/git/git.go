@@ -488,22 +488,3 @@ func (i *Repo) ShowRef(commitlike string) (string, error) {
 	}
 	return strings.TrimSpace(string(out)), nil
 }
-
-// FetchFromRemote runs a git fetch command for the specified remote.
-// Pass the destination as org/repo format since the actual URI will be constructed
-// using the existing credentials and will always use the https protocol.
-func (r *Repo) FetchFromRemote(orgRepo, branch string) error {
-	r.logger.Infof("Fetching from '%s (branch: %s)'.", orgRepo, branch)
-
-	remoteURI := fmt.Sprintf("https://%s/%s", r.host, orgRepo)
-	if r.user != "" && r.pass != "" {
-		remoteURI = fmt.Sprintf("https://%s:%s@%s/%s", r.user, r.pass, r.host, orgRepo)
-	}
-
-	co := r.gitCommand("fetch", remoteURI, branch)
-	out, err := co.CombinedOutput()
-	if err != nil {
-		return fmt.Errorf("Fetching failed, output: %q, error: %v", string(out), err)
-	}
-	return nil
-}
