@@ -33,7 +33,7 @@ spec:
         - -c
         - |
           while true; do
-            for i in $(seq 0 100); do
+            for i in $(seq 0 1000); do
                 if ! [ -e /dev/loop$i ]; then
                   mknod /dev/loop$i b 7 $i
                 fi
