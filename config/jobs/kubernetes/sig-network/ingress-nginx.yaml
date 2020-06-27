@@ -12,7 +12,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e:v05312020-d250b97b4
+      - image: gcr.io/k8s-staging-ingress-nginx/e2e-test-runner:v20200627-ingress-nginx-2.9.0-9-ga003eabd5
         command:
         - ./hack/verify-boilerplate.sh
         env:
@@ -23,17 +23,17 @@ presubmits:
       testgrid-tab-name: boilerplate
 
   - name: pull-ingress-nginx-codegen
-    always_run: true
     decorate: true
     decoration_config:
-      timeout: 10m
+      timeout: 15m
     path_alias: k8s.io/ingress-nginx
+    run_if_changed: '\.go$'
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e:v05312020-d250b97b4
+      - image: gcr.io/k8s-staging-ingress-nginx/e2e-test-runner:v20200627-ingress-nginx-2.9.0-9-ga003eabd5
         command:
         - ./hack/verify-codegen.sh
         env:
@@ -53,7 +53,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e:v05312020-d250b97b4
+      - image: gcr.io/k8s-staging-ingress-nginx/e2e-test-runner:v20200627-ingress-nginx-2.9.0-9-ga003eabd5
         command:
         - ./hack/verify-gofmt.sh
         env:
@@ -75,7 +75,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e:v05312020-d250b97b4
+      - image: gcr.io/k8s-staging-ingress-nginx/e2e-test-runner:v20200627-ingress-nginx-2.9.0-9-ga003eabd5
         command:
         - ./hack/verify-golint.sh
         env:
@@ -95,7 +95,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e:v05312020-d250b97b4
+      - image: gcr.io/k8s-staging-ingress-nginx/e2e-test-runner:v20200627-ingress-nginx-2.9.0-9-ga003eabd5
         command:
         - ./hack/verify-lualint.sh
         env:
@@ -117,7 +117,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e:v05312020-d250b97b4
+      - image: gcr.io/k8s-staging-ingress-nginx/e2e-test-runner:v20200627-ingress-nginx-2.9.0-9-ga003eabd5
         command:
         - ./hack/verify-chart-lint.sh
         env:
@@ -139,7 +139,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e:v05312020-d250b97b4
+      - image: gcr.io/k8s-staging-ingress-nginx/e2e-test-runner:v20200627-ingress-nginx-2.9.0-9-ga003eabd5
         command:
         - make
         - lua-test
@@ -162,7 +162,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e:v05312020-d250b97b4
+      - image: gcr.io/k8s-staging-ingress-nginx/e2e-test-runner:v20200627-ingress-nginx-2.9.0-9-ga003eabd5
         command:
         - /bin/bash
         - -c
@@ -199,12 +199,12 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e-prow:v05312020-7bd62f5c0
+      - image: gcr.io/k8s-testimages/krte:v20200619-19b0ee3-master
         command:
-        - /usr/local/bin/runner.sh
-        args:
-        - make
-        - kind-e2e-test
+          - wrapper.sh
+          - bash
+          - -c
+          - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && make kind-e2e-test
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -217,7 +217,8 @@ presubmits:
           value: "false"
         resources:
           requests:
-            cpu: 2
+            cpu: 4
+            memory: "2Gi"
     annotations:
       testgrid-dashboards: sig-network-ingress-nginx
       testgrid-tab-name: e2e-1-15
@@ -235,12 +236,12 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e-prow:v05312020-7bd62f5c0
+      - image: gcr.io/k8s-testimages/krte:v20200619-19b0ee3-master
         command:
-        - /usr/local/bin/runner.sh
-        args:
-        - make
-        - kind-e2e-test
+          - wrapper.sh
+          - bash
+          - -c
+          - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && make kind-e2e-test
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -253,7 +254,9 @@ presubmits:
           value: "false"
         resources:
           requests:
-            cpu: 2
+            cpu: 4
+            memory: "2Gi"
+
     annotations:
       testgrid-dashboards: sig-network-ingress-nginx
       testgrid-tab-name: e2e-1-16
@@ -271,12 +274,12 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e-prow:v05312020-7bd62f5c0
+      - image: gcr.io/k8s-testimages/krte:v20200619-19b0ee3-master
         command:
-        - /usr/local/bin/runner.sh
-        args:
-        - make
-        - kind-e2e-test
+          - wrapper.sh
+          - bash
+          - -c
+          - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && make kind-e2e-test
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -289,7 +292,8 @@ presubmits:
           value: "false"
         resources:
           requests:
-            cpu: 2
+            cpu: 4
+            memory: "2Gi"
     annotations:
       testgrid-dashboards: sig-network-ingress-nginx
       testgrid-tab-name: e2e-1-17
@@ -307,12 +311,12 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e-prow:v05312020-7bd62f5c0
+      - image: gcr.io/k8s-testimages/krte:v20200619-19b0ee3-master
         command:
-        - /usr/local/bin/runner.sh
-        args:
-        - make
-        - kind-e2e-test
+          - wrapper.sh
+          - bash
+          - -c
+          - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && make kind-e2e-test
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -325,7 +329,8 @@ presubmits:
           value: "false"
         resources:
           requests:
-            cpu: 2
+            cpu: 4
+            memory: "2Gi"
     annotations:
       testgrid-dashboards: sig-network-ingress-nginx
       testgrid-tab-name: e2e-1-18
@@ -343,12 +348,12 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e-prow:v05312020-7bd62f5c0
+      - image: gcr.io/k8s-testimages/krte:v20200619-19b0ee3-master
         command:
-        - /usr/local/bin/runner.sh
-        args:
-        - make
-        - kind-e2e-chart-tests
+          - wrapper.sh
+          - bash
+          - -c
+          - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && make kind-e2e-chart-tests
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -361,7 +366,8 @@ presubmits:
           value: "false"
         resources:
           requests:
-            cpu: 2
+            cpu: 4
+            memory: "2Gi"
     annotations:
       testgrid-dashboards: sig-network-ingress-nginx
       testgrid-tab-name: e2e-helm-chart
@@ -385,12 +391,12 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: quay.io/kubernetes-ingress-controller/e2e-prow:v05312020-7bd62f5c0
+    - image: gcr.io/k8s-testimages/krte:v20200619-19b0ee3-master
       command:
-      - /usr/local/bin/runner.sh
-      args:
-      - make
-      - kind-e2e-test
+        - wrapper.sh
+        - bash
+        - -c
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && make kind-e2e-test
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
@@ -401,7 +407,8 @@ periodics:
         value: "false"
       resources:
         requests:
-          cpu: 2
+          cpu: 4
+          memory: "2Gi"
   annotations:
     testgrid-dashboards: sig-network-ingress-nginx
     testgrid-tab-name: ci-e2e
