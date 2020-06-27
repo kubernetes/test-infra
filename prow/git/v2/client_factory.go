@@ -90,6 +90,9 @@ func (cfo *ClientFactoryOpts) Apply(target *ClientFactoryOpts) {
 	if cfo.Censor != nil {
 		target.Censor = cfo.Censor
 	}
+	if cfo.Username != nil {
+		target.Username = cfo.Username
+	}
 }
 
 // ClientFactoryOpts allows to manipulate the options for a ClientFactory
