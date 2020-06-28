@@ -210,6 +210,44 @@ func TestTriggerFor(t *testing.T) {
 	}
 }
 
+func TestSetApproveDefaults(t *testing.T) {
+	tests := []struct {
+		name string
+
+		commandHelpLink         string
+		expectedCommandHelpLink string
+	}{
+		{
+			name:                    "set commandHelpLink default",
+			commandHelpLink:         "",
+			expectedCommandHelpLink: "https://go.k8s.io/bot-commands",
+		},
+		{
+			name:                    "keep commandHelpLink value",
+			commandHelpLink:         "https://prow.k8s.io/command-help",
+			expectedCommandHelpLink: "https://prow.k8s.io/command-help",
+		},
+	}
+
+	for _, test := range tests {
+		c := &Configuration{
+			Approve: []Approve{{
+				Repos: []string{
+					"kubernetes/kubernetes",
+					"kubernetes-client",
+				},
+				CommandHelpLink: test.commandHelpLink,
+			}},
+		}
+
+		c.setDefaults()
+
+		if c.Approve[0].CommandHelpLink != test.expectedCommandHelpLink {
+			t.Errorf("unexpected commandHelpLink: %s, expected: %s", c.Approve[0].CommandHelpLink, test.expectedCommandHelpLink)
+		}
+	}
+}
+
 func TestSetTriggerDefaults(t *testing.T) {
 	tests := []struct {
 		name string

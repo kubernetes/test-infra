@@ -850,6 +850,11 @@ func (c *Configuration) setDefaults() {
 			c.ExternalPlugins[repo][i].Endpoint = fmt.Sprintf("http://%s", p.Name)
 		}
 	}
+	for i, approve := range c.Approve {
+		if approve.CommandHelpLink == "" {
+			c.Approve[i].CommandHelpLink = "https://go.k8s.io/bot-commands"
+		}
+	}
 	if c.Blunderbuss.ReviewerCount == nil {
 		c.Blunderbuss.ReviewerCount = new(int)
 		*c.Blunderbuss.ReviewerCount = defaultBlunderbussReviewerCount
@@ -1101,14 +1106,6 @@ func compileRegexpsAndDurations(pc *Configuration) error {
 		rs[i].GracePeriodDuration = dur
 	}
 	return nil
-}
-
-func (c *Configuration) ApplyDefaults() {
-	for _, a := range c.Approve {
-		if a.CommandHelpLink == "" {
-			a.CommandHelpLink = "https://go.k8s.io/bot-commands"
-		}
-	}
 }
 
 func (c *Configuration) Validate() error {
