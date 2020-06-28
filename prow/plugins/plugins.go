@@ -239,8 +239,6 @@ func (pa *ConfigAgent) Load(path string, checkUnknownPlugins bool) error {
 		return err
 	}
 
-	np.ApplyDefaults()
-
 	if err := np.Validate(); err != nil {
 		return err
 	}
