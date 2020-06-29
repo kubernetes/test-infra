@@ -112,9 +112,6 @@ check-args() {
   if [[ -z "${CONFIG_PATH}" ]]; then
     echo "ERROR: CONFIG_PATH must be specified as an env var." >&2
   fi
-  if [[ -z "${JOB_CONFIG_PATH}" ]]; then
-    echo "ERROR: JOB_CONFIG_PATH must be specified as an env var." >&2
-  fi
 }
 
 check-requirements() {
