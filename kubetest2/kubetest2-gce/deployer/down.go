@@ -56,6 +56,9 @@ func (d *deployer) releaseBoskosProject() error {
 	if err := d.boskos.Release(d.boskosProject.Name, "free"); err != nil {
 		return fmt.Errorf("failed to release %s: %s", d.boskosProject.Name, err)
 	}
+
+	close(d.boskosHeartbeatClose)
+
 	return nil
 }
 

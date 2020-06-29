@@ -119,19 +119,38 @@ func (d *deployer) getProjectFromBoskos() error {
 		return fmt.Errorf("boskos had no %s available", resourceType)
 	}
 
-	go func(c *client.Client, resource *boskosCommon.Resource) {
-		for range time.Tick(time.Minute * 5) {
-			if err := c.UpdateOne(resource.Name, "busy", nil); err != nil {
-				klog.Warningf("[Boskos] Update of %s failed with %v", resource.Name, err)
-			}
-		}
-	}(boskos, boskosProject)
+	startBoskosHeartbeat(
+		boskos,
+		boskosProject,
+		time.Duration(d.BoskosAcquireTimeoutSeconds)*time.Second,
+		d.boskosHeartbeatClose,
+	)
 
 	d.boskos = boskos
 	d.boskosProject = boskosProject
 	d.GCPProject = boskosProject.Name
 
 	return nil
+}
+
+// startBoskosHeartbeat starts a goroutine that sends periodic updates to boskos
+// about the provided resource until the channel is closed. This prevents
+// boskos from taking the resource from the deployer while it is still in use.
+func startBoskosHeartbeat(c *client.Client, resource *boskosCommon.Resource, interval time.Duration, close chan struct{}) {
+	go func(c *client.Client, resource *boskosCommon.Resource) {
+		for {
+			select {
+			case <-close:
+				klog.Info("Boskos heartbeat func received signal to close")
+				return
+			case <-time.Tick(interval):
+				klog.Info("Sending heartbeat to Boskos")
+				if err := c.UpdateOne(resource.Name, "busy", nil); err != nil {
+					klog.Warningf("[Boskos] Update of %s failed with %v", resource.Name, err)
+				}
+			}
+		}
+	}(c, resource)
 }
 
 func (d *deployer) verifyUpFlags() error {

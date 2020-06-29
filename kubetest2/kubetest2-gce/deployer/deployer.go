@@ -51,19 +51,26 @@ type deployer struct {
 	boskos        *client.Client
 	boskosProject *boskosCommon.Resource
 
-	RepoRoot         string `desc:"The path to the root of the local kubernetes/cloud-provider-gcp repo. Necessary to call certain scripts. Defaults to the current directory. If operating in legacy mode, this should be set to the local kubernetes/kubernetes repo."`
-	GCPProject       string `desc:"GCP Project to create VMs in. If unset, the deployer will attempt to get a project from boskos."`
-	OverwriteLogsDir bool   `desc:"If set, will overwrite an existing logs directory if one is encountered during dumping of logs. Useful when runnning tests locally."`
-	BoskosLocation   string `desc:"If set, manually specifies the location of the boskos server. If unset and boskos is needed, defaults to http://boskos.test-pods.svc.cluster.local."`
+	// this channel serves as a signal channel for the hearbeat goroutine
+	// so that it can be explicitly closed
+	boskosHeartbeatClose chan struct{}
+
+	BoskosAcquireTimeoutSeconds int    `desc:"How long (in seconds) to hang on a request to Boskos to acquire a resource before erroring."`
+	RepoRoot                    string `desc:"The path to the root of the local kubernetes/cloud-provider-gcp repo. Necessary to call certain scripts. Defaults to the current directory. If operating in legacy mode, this should be set to the local kubernetes/kubernetes repo."`
+	GCPProject                  string `desc:"GCP Project to create VMs in. If unset, the deployer will attempt to get a project from boskos."`
+	OverwriteLogsDir            bool   `desc:"If set, will overwrite an existing logs directory if one is encountered during dumping of logs. Useful when runnning tests locally."`
+	BoskosLocation              string `desc:"If set, manually specifies the location of the boskos server. If unset and boskos is needed, defaults to http://boskos.test-pods.svc.cluster.local."`
 }
 
 // New implements deployer.New for gce
 func New(opts types.Options) (types.Deployer, *pflag.FlagSet) {
 	d := &deployer{
-		commonOptions:  opts,
-		kubeconfigPath: filepath.Join(opts.ArtifactsDir(), "kubetest2-kubeconfig"),
-		logsDir:        filepath.Join(opts.ArtifactsDir(), "cluster-logs"),
-		BoskosLocation: "http://boskos.test-pods.svc.cluster.local.",
+		commonOptions:               opts,
+		kubeconfigPath:              filepath.Join(opts.ArtifactsDir(), "kubetest2-kubeconfig"),
+		logsDir:                     filepath.Join(opts.ArtifactsDir(), "cluster-logs"),
+		boskosHeartbeatClose:        make(chan struct{}),
+		BoskosAcquireTimeoutSeconds: 5 * 60,
+		BoskosLocation:              "http://boskos.test-pods.svc.cluster.local.",
 	}
 
 	flagSet, err := gpflag.Parse(d)
