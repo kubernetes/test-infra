@@ -227,8 +227,9 @@ presubmits:
         - --cluster=
         - --extract=local
         - --gcp-node-image=ubuntu
-        - --image-family=ubuntu-gke-1804-lts-1
-        - --image-project=ubuntu-os-gke-cloud
+        - --image-family=ubuntu-2004-lts
+        - --image-project=ubuntu-oscloud
+        - --env=KUBE_CONTAINER_RUNTIME=docker
         - --gcp-zone=us-west1-b
         - --provider=gce
         - --ginkgo-parallel=30
@@ -268,8 +269,9 @@ presubmits:
         - --cluster=
         - --extract=local
         - --gcp-node-image=ubuntu
-        - --image-family=ubuntu-gke-1804-lts-1
-        - --image-project=ubuntu-os-gke-cloud
+        - --image-family=ubuntu-2004-lts
+        - --image-project=ubuntu-oscloud
+        - --env=KUBE_CONTAINER_RUNTIME=docker
         - --gcp-zone=us-west1-b
         - --provider=gce
         - --runtime-config=batch/v2alpha1=true
@@ -335,8 +337,9 @@ periodics:
       - --check-leaked-resources
       - --extract=ci/latest
       - --gcp-node-image=ubuntu
-      - --image-family=ubuntu-gke-1804-lts-1
-      - --image-project=ubuntu-os-gke-cloud
+      - --image-family=ubuntu-2004-lts
+      - --image-project=ubuntu-oscloud
+      - --env=KUBE_CONTAINER_RUNTIME=docker
       - --gcp-zone=us-west1-b
       - --provider=gce
       - --ginkgo-parallel=30
@@ -360,8 +363,9 @@ periodics:
       - --check-leaked-resources
       - --extract=ci/latest
       - --gcp-node-image=ubuntu
-      - --image-family=ubuntu-gke-1804-lts-1
-      - --image-project=ubuntu-os-gke-cloud
+      - --image-family=ubuntu-2004-lts
+      - --image-project=ubuntu-oscloud
+      - --env=KUBE_CONTAINER_RUNTIME=docker
       - --gcp-zone=us-west1-b
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Driver:.iscsi\].*(\[Serial\]|\[Disruptive\]) --ginkgo.skip=\[Flaky\] --minStartupPods=8
