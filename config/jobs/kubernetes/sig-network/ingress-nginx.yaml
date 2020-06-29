@@ -5,7 +5,7 @@ presubmits:
     always_run: true
     decorate: true
     decoration_config:
-      timeout: 10m
+      timeout: 15m
     path_alias: k8s.io/ingress-nginx
     labels:
       preset-dind-enabled: "true"
@@ -15,9 +15,6 @@ presubmits:
       - image: gcr.io/k8s-staging-ingress-nginx/e2e-test-runner:v20200627-ingress-nginx-2.9.0-9-ga003eabd5
         command:
         - ./hack/verify-boilerplate.sh
-        env:
-        - name: DIND_TASKS
-          value: "false"
     annotations:
       testgrid-dashboards: sig-network-ingress-nginx
       testgrid-tab-name: boilerplate
@@ -36,9 +33,6 @@ presubmits:
       - image: gcr.io/k8s-staging-ingress-nginx/e2e-test-runner:v20200627-ingress-nginx-2.9.0-9-ga003eabd5
         command:
         - ./hack/verify-codegen.sh
-        env:
-        - name: DIND_TASKS
-          value: "false"
     annotations:
       testgrid-dashboards: sig-network-ingress-nginx
       testgrid-tab-name: codegen
@@ -56,9 +50,6 @@ presubmits:
       - image: gcr.io/k8s-staging-ingress-nginx/e2e-test-runner:v20200627-ingress-nginx-2.9.0-9-ga003eabd5
         command:
         - ./hack/verify-gofmt.sh
-        env:
-        - name: DIND_TASKS
-          value: "false"
     annotations:
       testgrid-dashboards: sig-network-ingress-nginx
       testgrid-tab-name: gofmt
@@ -78,9 +69,6 @@ presubmits:
       - image: gcr.io/k8s-staging-ingress-nginx/e2e-test-runner:v20200627-ingress-nginx-2.9.0-9-ga003eabd5
         command:
         - ./hack/verify-golint.sh
-        env:
-        - name: DIND_TASKS
-          value: "false"
     annotations:
       testgrid-dashboards: sig-network-ingress-nginx
       testgrid-tab-name: golint
@@ -98,9 +86,6 @@ presubmits:
       - image: gcr.io/k8s-staging-ingress-nginx/e2e-test-runner:v20200627-ingress-nginx-2.9.0-9-ga003eabd5
         command:
         - ./hack/verify-lualint.sh
-        env:
-        - name: DIND_TASKS
-          value: "false"
     annotations:
       testgrid-dashboards: sig-network-ingress-nginx
       testgrid-tab-name: lualint
@@ -120,9 +105,6 @@ presubmits:
       - image: gcr.io/k8s-staging-ingress-nginx/e2e-test-runner:v20200627-ingress-nginx-2.9.0-9-ga003eabd5
         command:
         - ./hack/verify-chart-lint.sh
-        env:
-        - name: DIND_TASKS
-          value: "false"
     annotations:
       testgrid-dashboards: sig-network-ingress-nginx
       testgrid-tab-name: chart-lint
@@ -143,9 +125,6 @@ presubmits:
         command:
         - make
         - lua-test
-        env:
-        - name: DIND_TASKS
-          value: "false"
     annotations:
       testgrid-dashboards: sig-network-ingress-nginx
       testgrid-tab-name: test-lua
@@ -154,7 +133,7 @@ presubmits:
     always_run: false
     decorate: true
     decoration_config:
-      timeout: 10m
+      timeout: 15m
     path_alias: k8s.io/ingress-nginx
     run_if_changed: '\.go$'
     labels:
@@ -173,8 +152,6 @@ presubmits:
             secretKeyRef:
               name: ingress-nginx-codecov-token
               key: ingress-nginx-codecov-token
-        - name: DIND_TASKS
-          value: "false"
     volumes:
     - name: ingress-nginx-codecov-token
       secret:
@@ -190,7 +167,7 @@ presubmits:
     always_run: false
     decorate: true
     decoration_config:
-      timeout: 50m
+      timeout: 1h
     max_concurrency: 5
     path_alias: k8s.io/ingress-nginx
     run_if_changed: '\.go$|^rootfs/'
@@ -213,12 +190,6 @@ presubmits:
           value: https://github.com/kubernetes/ingress-nginx
         - name: K8S_VERSION
           value: v1.15.11@sha256:6cc31f3533deb138792db2c7d1ffc36f7456a06f1db5556ad3b6927641016f50
-        - name: DIND_TASKS
-          value: "false"
-        resources:
-          requests:
-            cpu: 4
-            memory: "2Gi"
     annotations:
       testgrid-dashboards: sig-network-ingress-nginx
       testgrid-tab-name: e2e-1-15
@@ -227,7 +198,7 @@ presubmits:
     always_run: false
     decorate: true
     decoration_config:
-      timeout: 50m
+      timeout: 1h
     max_concurrency: 5
     path_alias: k8s.io/ingress-nginx
     run_if_changed: '\.go$|^rootfs/'
@@ -250,13 +221,6 @@ presubmits:
           value: https://github.com/kubernetes/ingress-nginx
         - name: K8S_VERSION
           value: v1.16.9@sha256:7175872357bc85847ec4b1aba46ed1d12fa054c83ac7a8a11f5c268957fd5765
-        - name: DIND_TASKS
-          value: "false"
-        resources:
-          requests:
-            cpu: 4
-            memory: "2Gi"
-
     annotations:
       testgrid-dashboards: sig-network-ingress-nginx
       testgrid-tab-name: e2e-1-16
@@ -265,7 +229,7 @@ presubmits:
     always_run: false
     decorate: true
     decoration_config:
-      timeout: 50m
+      timeout: 1h
     max_concurrency: 5
     path_alias: k8s.io/ingress-nginx
     run_if_changed: '\.go$|^rootfs/'
@@ -288,12 +252,6 @@ presubmits:
           value: https://github.com/kubernetes/ingress-nginx
         - name: K8S_VERSION
           value: v1.17.5@sha256:ab3f9e6ec5ad8840eeb1f76c89bb7948c77bbf76bcebe1a8b59790b8ae9a283a
-        - name: DIND_TASKS
-          value: "false"
-        resources:
-          requests:
-            cpu: 4
-            memory: "2Gi"
     annotations:
       testgrid-dashboards: sig-network-ingress-nginx
       testgrid-tab-name: e2e-1-17
@@ -302,7 +260,7 @@ presubmits:
     always_run: false
     decorate: true
     decoration_config:
-      timeout: 50m
+      timeout: 1h
     max_concurrency: 5
     path_alias: k8s.io/ingress-nginx
     run_if_changed: '\.go$|^rootfs/'
@@ -325,12 +283,6 @@ presubmits:
           value: https://github.com/kubernetes/ingress-nginx
         - name: K8S_VERSION
           value: v1.18.2@sha256:7b27a6d0f2517ff88ba444025beae41491b016bc6af573ba467b70c5e8e0d85f
-        - name: DIND_TASKS
-          value: "false"
-        resources:
-          requests:
-            cpu: 4
-            memory: "2Gi"
     annotations:
       testgrid-dashboards: sig-network-ingress-nginx
       testgrid-tab-name: e2e-1-18
@@ -339,7 +291,7 @@ presubmits:
     always_run: false
     decorate: true
     decoration_config:
-      timeout: 50m
+      timeout: 1h
     max_concurrency: 5
     path_alias: k8s.io/ingress-nginx
     run_if_changed: "^charts/"
@@ -362,12 +314,6 @@ presubmits:
           value: https://github.com/kubernetes/ingress-nginx
         - name: K8S_VERSION
           value: v1.18.2@sha256:7b27a6d0f2517ff88ba444025beae41491b016bc6af573ba467b70c5e8e0d85f
-        - name: DIND_TASKS
-          value: "false"
-        resources:
-          requests:
-            cpu: 4
-            memory: "2Gi"
     annotations:
       testgrid-dashboards: sig-network-ingress-nginx
       testgrid-tab-name: e2e-helm-chart
@@ -379,7 +325,7 @@ periodics:
   path_alias: k8s.io/ingress-nginx
   decorate: true
   decoration_config:
-    timeout: 50m
+    timeout: 1h
   extra_refs:
   - org: kubernetes
     repo: ingress-nginx
@@ -403,12 +349,6 @@ periodics:
       env:
       - name: REPO_INFO
         value: https://github.com/kubernetes/ingress-nginx
-      - name: DIND_TASKS
-        value: "false"
-      resources:
-        requests:
-          cpu: 4
-          memory: "2Gi"
   annotations:
     testgrid-dashboards: sig-network-ingress-nginx
     testgrid-tab-name: ci-e2e
