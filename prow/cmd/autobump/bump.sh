@@ -71,7 +71,7 @@ main() {
   local IFS=,
   local component_file_dir_array
   read -ra component_file_dir_array <<< "${COMPONENT_FILE_DIR}"
-  bumpfiles=("${component_file_dir_array[@]/%/*.yaml}")
+  bumpfiles=("${component_file_dir_array[@]/%//*.yaml}")
   bumpfiles+=("${CONFIG_PATH}")
   if [[ -n "${JOB_CONFIG_PATH}" ]]; then
     bumpfiles+=($(grep -rl -e "gcr.io/k8s-prow/" "${JOB_CONFIG_PATH}"; true))
