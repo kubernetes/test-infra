@@ -27,7 +27,6 @@ import (
 	"k8s.io/test-infra/kubetest2/pkg/exec"
 	"k8s.io/test-infra/kubetest2/pkg/types"
 	"sigs.k8s.io/boskos/client"
-	boskosCommon "sigs.k8s.io/boskos/common"
 
 	"github.com/octago/sflags/gen/gpflag"
 	"github.com/spf13/pflag"
@@ -46,10 +45,9 @@ type deployer struct {
 	kubectlPath    string
 	logsDir        string
 
-	// boskos struct fields will be non-nil when the deployer is
+	// boskos struct field will be non-nil when the deployer is
 	// using boskos to acquire a GCP project
-	boskos        *client.Client
-	boskosProject *boskosCommon.Resource
+	boskos *client.Client
 
 	// this channel serves as a signal channel for the hearbeat goroutine
 	// so that it can be explicitly closed

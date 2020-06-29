@@ -17,16 +17,12 @@ limitations under the License.
 package deployer
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"path/filepath"
-	"time"
 
 	"k8s.io/klog"
 	"k8s.io/test-infra/kubetest2/pkg/exec"
-	"sigs.k8s.io/boskos/client"
-	boskosCommon "sigs.k8s.io/boskos/common"
 )
 
 func (d *deployer) Up() error {
@@ -92,65 +88,6 @@ func enableComputeAPI(project string) error {
 	}
 
 	return nil
-}
-
-// getProjectFromBoskos creates a boskos client, acquires a gcp project
-// and starts a heartbeat goroutine to keep the project reserved
-func (d *deployer) getProjectFromBoskos() error {
-	boskos, err := client.NewClient(
-		os.Getenv("JOB_NAME")+"-kubetest2",
-		d.BoskosLocation,
-		"",
-		"",
-	)
-	if err != nil {
-		return fmt.Errorf("failed to create boskos client: %s", err)
-	}
-
-	resourceType := "gce-project"
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
-	defer cancel()
-
-	boskosProject, err := boskos.AcquireWait(ctx, resourceType, "free", "busy")
-	if err != nil {
-		return fmt.Errorf("failed to get a %q from boskos: %s", resourceType, err)
-	}
-	if boskosProject == nil {
-		return fmt.Errorf("boskos had no %s available", resourceType)
-	}
-
-	startBoskosHeartbeat(
-		boskos,
-		boskosProject,
-		time.Duration(d.BoskosAcquireTimeoutSeconds)*time.Second,
-		d.boskosHeartbeatClose,
-	)
-
-	d.boskos = boskos
-	d.boskosProject = boskosProject
-	d.GCPProject = boskosProject.Name
-
-	return nil
-}
-
-// startBoskosHeartbeat starts a goroutine that sends periodic updates to boskos
-// about the provided resource until the channel is closed. This prevents
-// boskos from taking the resource from the deployer while it is still in use.
-func startBoskosHeartbeat(c *client.Client, resource *boskosCommon.Resource, interval time.Duration, close chan struct{}) {
-	go func(c *client.Client, resource *boskosCommon.Resource) {
-		for {
-			select {
-			case <-close:
-				klog.Info("Boskos heartbeat func received signal to close")
-				return
-			case <-time.Tick(interval):
-				klog.Info("Sending heartbeat to Boskos")
-				if err := c.UpdateOne(resource.Name, "busy", nil); err != nil {
-					klog.Warningf("[Boskos] Update of %s failed with %v", resource.Name, err)
-				}
-			}
-		}
-	}(c, resource)
 }
 
 func (d *deployer) verifyUpFlags() error {

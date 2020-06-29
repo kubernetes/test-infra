@@ -19,6 +19,7 @@ package deployer
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"k8s.io/klog"
 )
@@ -45,9 +46,22 @@ func (d *deployer) initialize() error {
 		if d.GCPProject == "" {
 			klog.Info("No GCP project provided, acquiring from Boskos")
 
-			if err := d.getProjectFromBoskos(); err != nil {
+			boskos, err := makeBoskosClient(d.BoskosLocation)
+			if err != nil {
+				return fmt.Errorf("failed to make boskos client: %s", err)
+			}
+			d.boskos = boskos
+
+			projectName, err := getProjectFromBoskos(
+				d.boskos,
+				time.Duration(d.BoskosAcquireTimeoutSeconds)*time.Second,
+				d.boskosHeartbeatClose,
+			)
+
+			if err != nil {
 				return fmt.Errorf("init failed to get project from boskos: %s", err)
 			}
+			d.GCPProject = projectName
 			klog.Infof("Got project %s from boskos", d.GCPProject)
 		}
 

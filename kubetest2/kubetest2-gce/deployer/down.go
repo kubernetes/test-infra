@@ -44,20 +44,15 @@ func (d *deployer) Down() error {
 	}
 
 	if d.boskos != nil {
-		if err := d.releaseBoskosProject(); err != nil {
+		err := releaseBoskosProject(
+			d.boskos,
+			d.GCPProject,
+			d.boskosHeartbeatClose,
+		)
+		if err != nil {
 			return fmt.Errorf("down failed to release boskos project: %s", err)
 		}
 	}
-
-	return nil
-}
-
-func (d *deployer) releaseBoskosProject() error {
-	if err := d.boskos.Release(d.boskosProject.Name, "free"); err != nil {
-		return fmt.Errorf("failed to release %s: %s", d.boskosProject.Name, err)
-	}
-
-	close(d.boskosHeartbeatClose)
 
 	return nil
 }
