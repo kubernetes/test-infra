@@ -63,9 +63,9 @@ export GOOGLE_APPLICATION_CREDENTIALS="<path/to/your/service/account/key.json>"
 ## Usage
 ```
 go build
-./secret-sync-controller --config-path SecretSyncs-config.yaml
+go test -v
+./secret-sync-controller --config-path config.yaml --period 1000
 ```
 
 ## TODO
-Currently using out-of-cluster-client-config, should switch to in-cluster-client-config
-Implement BUILD.bazel
+Script to setup workload identity binding.

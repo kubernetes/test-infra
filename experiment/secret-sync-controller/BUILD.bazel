@@ -10,12 +10,8 @@ go_library(
     visibility = ["//visibility:private"],
     deps = [
         "//experiment/secret-sync-controller/client:go_default_library",
-        "@com_google_cloud_go//secretmanager/apiv1:go_default_library",
         "@in_gopkg_yaml_v2//:go_default_library",
-        "@io_k8s_apimachinery//pkg/apis/meta/v1:go_default_library",
-        "@io_k8s_apimachinery//pkg/types:go_default_library",
-        "@io_k8s_client_go//kubernetes:go_default_library",
-        "@org_golang_google_genproto//googleapis/cloud/secretmanager/v1:go_default_library",
+        "@io_k8s_klog//:go_default_library",
     ],
 )
 
@@ -44,6 +40,10 @@ filegroup(
 
 go_test(
     name = "go_default_test",
-    srcs = ["secret-sync-config_test.go"],
+    srcs = ["main_test.go"],
     embed = [":go_default_library"],
+    deps = [
+        "//experiment/secret-sync-controller/client:go_default_library",
+        "@io_k8s_apimachinery//pkg/apis/meta/v1:go_default_library",
+    ],
 )

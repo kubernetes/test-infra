@@ -3,7 +3,7 @@ specs:
     project: k8s-jkns-gke-soak
     secret: test-secret
   destination:
-    namespace: ns1
+    namespace: ns2
     secret: secret1
     key: password
 - source: 

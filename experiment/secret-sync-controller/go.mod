@@ -24,7 +24,9 @@ require (
 	google.golang.org/api v0.26.0
 	google.golang.org/genproto v0.0.0-20200616192300-fc83d8c00726
 	gopkg.in/yaml.v2 v2.2.8
+	k8s.io/api v0.17.3
 	k8s.io/apimachinery v0.18.3
 	k8s.io/client-go v9.0.0+incompatible
+	k8s.io/klog v1.0.0
 	k8s.io/test-infra v0.0.0-20200618195710-19a078d68a69
 )

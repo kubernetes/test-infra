@@ -8,8 +8,13 @@ go_library(
     deps = [
         "//prow/kube:go_default_library",
         "@com_google_cloud_go//secretmanager/apiv1:go_default_library",
+        "@io_k8s_api//core/v1:go_default_library",
+        "@io_k8s_apimachinery//pkg/api/errors:go_default_library",
+        "@io_k8s_apimachinery//pkg/apis/meta/v1:go_default_library",
+        "@io_k8s_apimachinery//pkg/types:go_default_library",
         "@io_k8s_client_go//kubernetes:go_default_library",
-        "@io_k8s_client_go//plugin/pkg/client/auth:go_default_library",
+        "@org_golang_google_api//iterator:go_default_library",
+        "@org_golang_google_genproto//googleapis/cloud/secretmanager/v1:go_default_library",
     ],
 )
 
