@@ -110,7 +110,7 @@ func (d *deployer) kubectlDump() error {
 	defer outfile.Close()
 
 	args := []string{
-		d.kubectl,
+		d.kubectlPath,
 		"cluster-info",
 		"dump",
 	}

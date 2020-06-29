@@ -64,7 +64,7 @@ func (d *deployer) verifyDownFlags() error {
 		return err
 	}
 
-	d.kubectl = filepath.Join(d.RepoRoot, "cluster", "kubectl.sh")
+	d.kubectlPath = filepath.Join(d.RepoRoot, "cluster", "kubectl.sh")
 
 	if d.GCPProject == "" {
 		return fmt.Errorf("gcp project must be set")

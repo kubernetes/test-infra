@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sync"
 
 	"k8s.io/klog"
 	"k8s.io/test-infra/kubetest2/pkg/exec"
@@ -39,8 +40,10 @@ type deployer struct {
 	// generic parts
 	commonOptions types.Options
 
+	doInit sync.Once
+
 	kubeconfigPath string
-	kubectl        string
+	kubectlPath    string
 	logsDir        string
 
 	// boskos struct fields will be non-nil when the deployer is
@@ -93,7 +96,7 @@ func (d *deployer) IsUp() (up bool, err error) {
 	// naive assumption: nodes reported = cluster up
 	// similar to other deployers' implementations
 	args := []string{
-		d.kubectl,
+		d.kubectlPath,
 		"get",
 		"nodes",
 		"-o=name",

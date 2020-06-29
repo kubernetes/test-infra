@@ -24,6 +24,13 @@ import (
 )
 
 func (d *deployer) init() error {
+	var err error
+	d.doInit.Do(func() { err = d.initialize() })
+	return err
+}
+
+// initialize should only be called by init(), behind a sync.Once
+func (d *deployer) initialize() error {
 	if d.commonOptions.ShouldBuild() {
 		if err := d.verifyBuildFlags(); err != nil {
 			return fmt.Errorf("init failed to check build flags: %s", err)

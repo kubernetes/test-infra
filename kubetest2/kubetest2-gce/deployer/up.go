@@ -113,7 +113,7 @@ func (d *deployer) getProjectFromBoskos() error {
 
 	boskosProject, err := boskos.AcquireWait(ctx, resourceType, "free", "busy")
 	if err != nil {
-		return fmt.Errorf("failed to get a %s from boskos: %s", resourceType, err)
+		return fmt.Errorf("failed to get a %q from boskos: %s", resourceType, err)
 	}
 	if boskosProject == nil {
 		return fmt.Errorf("boskos had no %s available", resourceType)
@@ -139,7 +139,7 @@ func (d *deployer) verifyUpFlags() error {
 		return err
 	}
 
-	d.kubectl = filepath.Join(d.RepoRoot, "cluster", "kubectl.sh")
+	d.kubectlPath = filepath.Join(d.RepoRoot, "cluster", "kubectl.sh")
 
 	// verifyUpFlags does not check for a gcp project because it is
 	// assumed that one will be acquired from boskos if it is not set
