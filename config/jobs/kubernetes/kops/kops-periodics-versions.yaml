@@ -22,6 +22,7 @@ periodics:
       - --deployment=kops
       - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
+      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release-dev/ci/k8s-master.txt
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=ci/latest
       - --ginkgo-parallel
