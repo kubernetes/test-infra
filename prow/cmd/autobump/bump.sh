@@ -68,7 +68,15 @@ main() {
   fi
   echo -e "Bumping: 'gcr.io/k8s-prow/' images to $(color-version "${new_version}") ..." >&2
 
-  bumpfiles=($(add_suffix "$(split_on_commas "$COMPONENT_FILE_DIR")"))
+  local IFS=,
+  local component_file_dir_array
+  read -ra component_file_dir_array <<< "${COMPONENT_FILE_DIR}"
+  bumpfiles=()
+  for c in "${component_file_dir_array[@]}"; do
+    # This expands wildcards into files if they exist
+    bumpfiles+=(${c}/*.yaml)
+  done
+
   bumpfiles+=("${CONFIG_PATH}")
   if [[ -n "${JOB_CONFIG_PATH}" ]]; then
     bumpfiles+=($(grep -rl -e "gcr.io/k8s-prow/" "${JOB_CONFIG_PATH}"; true))
@@ -196,18 +204,6 @@ list() {
       exit 1
     fi
   fi
-}
-
-split_on_commas() {
-  local IFS=,
-  local array=("$1")
-  echo "${array[@]}"
-}
-
-add_suffix() {
-  local array=("$1")
-  local suffix="${2:-/*.yaml}"
-  echo "${array[@]/%/$suffix}"
 }
 
 # See https://misc.flogisoft.com/bash/tip_colors_and_formatting
