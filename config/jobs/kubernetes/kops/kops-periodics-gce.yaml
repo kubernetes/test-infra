@@ -50,7 +50,7 @@ periodics:
       args:
       - --cluster=e2e-kops-gce-latest.k8s.local
       - --deployment=kops
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
+      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release-dev/ci/k8s-master.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=ci/latest
