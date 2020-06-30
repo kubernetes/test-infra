@@ -66,7 +66,7 @@ main() {
   else
     usage
   fi
-  echo -e "Bumping: 'gcr.io/k8s-prow/' images to $(color-version "${new_version}") ..." >&2
+  echo -e "Bumping: 'gcr.io/k8s-prow/' images to $(color-version ${new_version}) ..." >&2
 
   local IFS=,
   local component_file_dir_array
@@ -82,32 +82,12 @@ main() {
     bumpfiles+=($(grep -rl -e "gcr.io/k8s-prow/" "${JOB_CONFIG_PATH}"; true))
   fi
 
-  echo "Attempting to bump the following files:" >&2
-  for bf in "${bumpfiles[@]}"; do
-    echo -e "$bf"
-  done
-  local token="$(gcloud auth print-access-token)"
+  echo -e "Attempting to bump the following files: ${bumpfiles[@]}" >&2
+
   # Update image tags in the identified files.
-  local matcher="gcr.io\/k8s-prow\/\([[:alnum:]_-]\+\):v[a-f0-9-]\+"
-  local replacer="s/${matcher}/gcr.io\/k8s-prow\/\1:${new_version}/I"
+  filter="s/gcr.io\/k8s-prow\/\([[:alnum:]_-]\+\):v[a-f0-9-]\+/gcr.io\/k8s-prow\/\1:${new_version}/I"
   for file in "${bumpfiles[@]}"; do
-    ${SED} -i "${replacer}" "${file}"
-    local images="$(grep -o "${matcher}" "${file}")"
-    local arr=(${images//\\n/})
-    # image is in the format of gcr.io/k8s-prow/[image_name]:[tag]
-    for image in ${arr[@]+"${arr[@]}"}; do
-      echo "Checking the existence of ${image}"
-      # Use the Docker Registry v2 API to query the image manifest to check if the given image tag exists or not.
-      # The manifest_url is in the format of https://gcr.io/v2/k8s-prow/[image_name]/manifests/[tag]
-      # Check more details from https://stackoverflow.com/a/55344819/13578870
-      local manifest_url=$(echo "$image" | sed "s/:/\/manifests\//" | sed "s/gcr.io/https:\/\/gcr.io\/v2/")
-      if ! curl --fail -L -H "Authorization: Bearer $token" -o /dev/null -s "${manifest_url}"; then
-        echo "The image ${image} does not exist, please double check." >&2
-        # Revert the changes for this file.
-        git checkout -- "${file}"
-        exit 1
-      fi
-    done
+    ${SED} -i "${filter}" ${file}
   done
 
   echo "bump.sh completed successfully!" >&2
@@ -115,10 +95,10 @@ main() {
 
 check-args() {
   if [[ -z "${COMPONENT_FILE_DIR}" ]]; then
-    echo "ERROR: COMPONENT_FILE_DIR must be specified as an env var." >&2
+    echo "ERROR: $COMPONENT_FILE_DIR must be specified." >&2
   fi
   if [[ -z "${CONFIG_PATH}" ]]; then
-    echo "ERROR: CONFIG_PATH must be specified as an env var." >&2
+    echo "ERROR: $CONFIG_PATH must be specified." >&2
   fi
 }
 
