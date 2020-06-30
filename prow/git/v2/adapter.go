@@ -74,8 +74,12 @@ func (a *repoClientAdapter) Commit(title, body string) error {
 	return errors.New("no Commit implementation exists in the v1 repo client")
 }
 
-func (a *repoClientAdapter) ForcePush(branch string) error {
+func (a *repoClientAdapter) PushToFork(branch string, force bool) error {
 	return a.Repo.Push(branch)
+}
+
+func (a *repoClientAdapter) PushToCentral(branch string, force bool) error {
+	return errors.New("no PushToCentral implementation exists in the v1 repo client")
 }
 
 func (a *repoClientAdapter) MirrorClone() error {
