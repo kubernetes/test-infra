@@ -18,13 +18,16 @@ limitations under the License.
 package deployer
 
 import (
+	goflag "flag"
 	"fmt"
 	"os"
 	"path/filepath"
+	"sync"
 
 	"k8s.io/klog"
 	"k8s.io/test-infra/kubetest2/pkg/exec"
 	"k8s.io/test-infra/kubetest2/pkg/types"
+	"sigs.k8s.io/boskos/client"
 
 	"github.com/octago/sflags/gen/gpflag"
 	"github.com/spf13/pflag"
@@ -37,26 +40,47 @@ type deployer struct {
 	// generic parts
 	commonOptions types.Options
 
-	kubeconfigPath   string
-	kubectl          string
-	logsDir          string
-	RepoRoot         string `desc:"The path to the root of the local kubernetes/cloud-provider-gcp repo. Necessary to call certain scripts. Defaults to the current directory. If operating in legacy mode, this should be set to the local kubernetes/kubernetes repo."`
-	GCPProject       string `desc:"GCP Project to create VMs in. Must be set."`
-	OverwriteLogsDir bool   `desc:"If set, will overwrite an existing logs directory if one is encountered during dumping of logs. Useful when runnning tests locally."`
+	doInit sync.Once
+
+	kubeconfigPath string
+	kubectlPath    string
+	logsDir        string
+
+	// boskos struct field will be non-nil when the deployer is
+	// using boskos to acquire a GCP project
+	boskos *client.Client
+
+	// this channel serves as a signal channel for the hearbeat goroutine
+	// so that it can be explicitly closed
+	boskosHeartbeatClose chan struct{}
+
+	BoskosAcquireTimeoutSeconds int    `desc:"How long (in seconds) to hang on a request to Boskos to acquire a resource before erroring."`
+	RepoRoot                    string `desc:"The path to the root of the local kubernetes/cloud-provider-gcp repo. Necessary to call certain scripts. Defaults to the current directory. If operating in legacy mode, this should be set to the local kubernetes/kubernetes repo."`
+	GCPProject                  string `desc:"GCP Project to create VMs in. If unset, the deployer will attempt to get a project from boskos."`
+	OverwriteLogsDir            bool   `desc:"If set, will overwrite an existing logs directory if one is encountered during dumping of logs. Useful when runnning tests locally."`
+	BoskosLocation              string `desc:"If set, manually specifies the location of the boskos server. If unset and boskos is needed, defaults to http://boskos.test-pods.svc.cluster.local."`
 }
 
 // New implements deployer.New for gce
 func New(opts types.Options) (types.Deployer, *pflag.FlagSet) {
 	d := &deployer{
-		commonOptions:  opts,
-		kubeconfigPath: filepath.Join(opts.ArtifactsDir(), "kubetest2-kubeconfig"),
-		logsDir:        filepath.Join(opts.ArtifactsDir(), "cluster-logs"),
+		commonOptions:               opts,
+		kubeconfigPath:              filepath.Join(opts.ArtifactsDir(), "kubetest2-kubeconfig"),
+		logsDir:                     filepath.Join(opts.ArtifactsDir(), "cluster-logs"),
+		boskosHeartbeatClose:        make(chan struct{}),
+		BoskosAcquireTimeoutSeconds: 5 * 60,
+		BoskosLocation:              "http://boskos.test-pods.svc.cluster.local.",
 	}
 
 	flagSet, err := gpflag.Parse(d)
 	if err != nil {
 		klog.Fatalf("couldn't parse flagset for deployer struct: %s", err)
 	}
+
+	// initing the klog flags adds them to goflag.CommandLine
+	// they can then be added to the built pflag set
+	klog.InitFlags(nil)
+	flagSet.AddGoFlagSet(goflag.CommandLine)
 
 	// register flags and return
 	return d, flagSet
@@ -73,17 +97,17 @@ func (d *deployer) Provider() string {
 }
 
 func (d *deployer) IsUp() (up bool, err error) {
-	klog.Info("GCE deployer starting IsUp()")
+	klog.V(1).Info("GCE deployer starting IsUp()")
 
-	if err := d.verifyFlags(); err != nil {
-		return false, fmt.Errorf("is up failed to verify flags: %s", err)
+	if d.GCPProject == "" {
+		return false, fmt.Errorf("isup requires a GCP project")
 	}
 
 	env := d.buildEnv()
 	// naive assumption: nodes reported = cluster up
 	// similar to other deployers' implementations
 	args := []string{
-		d.kubectl,
+		d.kubectlPath,
 		"get",
 		"nodes",
 		"-o=name",
