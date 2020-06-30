@@ -228,7 +228,7 @@ presubmits:
         - --extract=local
         - --gcp-node-image=ubuntu
         - --image-family=ubuntu-2004-lts
-        - --image-project=ubuntu-oscloud
+        - --image-project=ubuntu-os-cloud
         - --env=KUBE_CONTAINER_RUNTIME=docker
         - --gcp-zone=us-west1-b
         - --provider=gce
@@ -270,7 +270,7 @@ presubmits:
         - --extract=local
         - --gcp-node-image=ubuntu
         - --image-family=ubuntu-2004-lts
-        - --image-project=ubuntu-oscloud
+        - --image-project=ubuntu-os-cloud
         - --env=KUBE_CONTAINER_RUNTIME=docker
         - --gcp-zone=us-west1-b
         - --provider=gce
@@ -338,7 +338,7 @@ periodics:
       - --extract=ci/latest
       - --gcp-node-image=ubuntu
       - --image-family=ubuntu-2004-lts
-      - --image-project=ubuntu-oscloud
+      - --image-project=ubuntu-os-cloud
       - --env=KUBE_CONTAINER_RUNTIME=docker
       - --gcp-zone=us-west1-b
       - --provider=gce
@@ -364,7 +364,7 @@ periodics:
       - --extract=ci/latest
       - --gcp-node-image=ubuntu
       - --image-family=ubuntu-2004-lts
-      - --image-project=ubuntu-oscloud
+      - --image-project=ubuntu-os-cloud
       - --env=KUBE_CONTAINER_RUNTIME=docker
       - --gcp-zone=us-west1-b
       - --provider=gce
