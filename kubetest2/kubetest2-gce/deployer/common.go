@@ -44,7 +44,7 @@ func (d *deployer) initialize() error {
 		}
 
 		if d.GCPProject == "" {
-			klog.Info("No GCP project provided, acquiring from Boskos")
+			klog.V(1).Info("No GCP project provided, acquiring from Boskos")
 
 			boskos, err := makeBoskosClient(d.BoskosLocation)
 			if err != nil {
@@ -62,7 +62,7 @@ func (d *deployer) initialize() error {
 				return fmt.Errorf("init failed to get project from boskos: %s", err)
 			}
 			d.GCPProject = projectName
-			klog.Infof("Got project %s from boskos", d.GCPProject)
+			klog.V(1).Infof("Got project %s from boskos", d.GCPProject)
 		}
 
 	}

@@ -26,12 +26,13 @@ import (
 )
 
 func (d *deployer) DumpClusterLogs() error {
-	klog.Info("GCE deployer starting DumpClusterLogs()")
+	klog.V(1).Info("GCE deployer starting DumpClusterLogs()")
 
 	if err := d.init(); err != nil {
 		return fmt.Errorf("dump cluster logs failed to init: %s", err)
 	}
 
+	klog.V(2).Info("making logs directory")
 	if err := d.makeLogsDir(); err != nil {
 		return fmt.Errorf("couldn't make logs dir: %s", err)
 	}
@@ -68,6 +69,8 @@ func (d *deployer) makeLogsDir() error {
 	// file definitely exists, overwrite if requested
 
 	if d.OverwriteLogsDir {
+		klog.V(2).Infof("logs directory %s already exists, removing and recreating", d.logsDir)
+
 		if err := os.RemoveAll(d.logsDir); err != nil {
 			return fmt.Errorf("failed to delete existing logs directory: %s", err)
 		}
@@ -89,7 +92,7 @@ func (d *deployer) sshDump() error {
 		filepath.Join(d.RepoRoot, "cluster", "log-dump", "log-dump.sh"),
 		d.logsDir,
 	}
-	klog.Infof("About to run: %s", args)
+	klog.V(2).Infof("About to run: %s", args)
 
 	cmd := exec.Command(args[0], args[1:]...)
 	cmd.SetEnv(env...)
@@ -114,7 +117,7 @@ func (d *deployer) kubectlDump() error {
 		"cluster-info",
 		"dump",
 	}
-	klog.Infof("About to run: %s", args)
+	klog.V(2).Infof("About to run: %s", args)
 
 	cmd := exec.Command(args[0], args[1:]...)
 	cmd.SetEnv(env...)

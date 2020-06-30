@@ -26,12 +26,13 @@ import (
 )
 
 func (d *deployer) Up() error {
-	klog.Info("GCE deployer starting Up()")
+	klog.V(1).Info("GCE deployer starting Up()")
 
 	if err := d.init(); err != nil {
 		return fmt.Errorf("up failed to init: %s", err)
 	}
 
+	klog.V(2).Info("enabling compute API for project")
 	if err := enableComputeAPI(d.GCPProject); err != nil {
 		return fmt.Errorf("up couldn't enable compute API: %s", err)
 	}
@@ -44,7 +45,7 @@ func (d *deployer) Up() error {
 
 	env := d.buildEnv()
 	script := filepath.Join(d.RepoRoot, "cluster", "kube-up.sh")
-	klog.Infof("About to run script at: %s", script)
+	klog.V(2).Infof("About to run script at: %s", script)
 
 	cmd := exec.Command(script)
 	cmd.SetEnv(env...)
@@ -58,7 +59,7 @@ func (d *deployer) Up() error {
 	if err != nil {
 		klog.Warningf("failed to check if cluster is up: %s", err)
 	} else if isUp {
-		klog.Infof("cluster reported as up")
+		klog.V(1).Infof("cluster reported as up")
 	} else {
 		klog.Errorf("cluster reported as down")
 	}

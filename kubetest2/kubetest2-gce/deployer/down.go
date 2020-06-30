@@ -25,7 +25,7 @@ import (
 )
 
 func (d *deployer) Down() error {
-	klog.Info("GCE deployer starting Down()")
+	klog.V(1).Info("GCE deployer starting Down()")
 
 	if err := d.init(); err != nil {
 		return fmt.Errorf("down failed to init: %s", err)
@@ -33,7 +33,7 @@ func (d *deployer) Down() error {
 
 	env := d.buildEnv()
 	script := filepath.Join(d.RepoRoot, "cluster", "kube-down.sh")
-	klog.Infof("About to run script at: %s", script)
+	klog.V(2).Infof("About to run script at: %s", script)
 
 	cmd := exec.Command(script)
 	cmd.SetEnv(env...)
@@ -44,6 +44,7 @@ func (d *deployer) Down() error {
 	}
 
 	if d.boskos != nil {
+		klog.V(2).Info("releasing boskos project")
 		err := releaseBoskosProject(
 			d.boskos,
 			d.GCPProject,

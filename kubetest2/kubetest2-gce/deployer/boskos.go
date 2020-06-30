@@ -74,13 +74,15 @@ func getProjectFromBoskos(boskosClient *client.Client, timeout time.Duration, he
 // reaper from taking the resource from the deployer while it is still in use.
 func startBoskosHeartbeat(boskosClient *client.Client, resource *boskosCommon.Resource, interval time.Duration, close chan struct{}) {
 	go func(c *client.Client, resource *boskosCommon.Resource) {
+		klog.V(2).Info("boskos hearbeat starting")
+
 		for {
 			select {
 			case <-close:
-				klog.Info("Boskos heartbeat func received signal to close")
+				klog.V(2).Info("Boskos heartbeat func received signal to close")
 				return
 			case <-time.Tick(interval):
-				klog.Info("Sending heartbeat to Boskos")
+				klog.V(2).Info("Sending heartbeat to Boskos")
 				if err := c.UpdateOne(resource.Name, "busy", nil); err != nil {
 					klog.Warningf("[Boskos] Update of %s failed with %v", resource.Name, err)
 				}

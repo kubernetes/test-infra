@@ -18,6 +18,7 @@ limitations under the License.
 package deployer
 
 import (
+	goflag "flag"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -76,6 +77,11 @@ func New(opts types.Options) (types.Deployer, *pflag.FlagSet) {
 		klog.Fatalf("couldn't parse flagset for deployer struct: %s", err)
 	}
 
+	// initing the klog flags adds them to goflag.CommandLine
+	// they can then be added to the built pflag set
+	klog.InitFlags(nil)
+	flagSet.AddGoFlagSet(goflag.CommandLine)
+
 	// register flags and return
 	return d, flagSet
 }
@@ -91,7 +97,7 @@ func (d *deployer) Provider() string {
 }
 
 func (d *deployer) IsUp() (up bool, err error) {
-	klog.Info("GCE deployer starting IsUp()")
+	klog.V(1).Info("GCE deployer starting IsUp()")
 
 	if d.GCPProject == "" {
 		return false, fmt.Errorf("isup requires a GCP project")
