@@ -17,74 +17,40 @@ limitations under the License.
 package main
 
 import (
-	"fmt"
-	"os"
+	"flag"
 
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/experiment/autobumper/bumper"
-	"k8s.io/test-infra/prow/config/secret"
-	"k8s.io/test-infra/prow/github"
-	"k8s.io/test-infra/robots/pr-creator/updater"
 )
+
+func parseOptions() *bumper.Options {
+	var o bumper.Options
+	flag.StringVar(&o.GitHubToken, "github-token", "", "The path to the GitHub token file.")
+	flag.StringVar(&o.GitHubLogin, "github-login", "", "The GitHub username to use. If not specified, uses values from the user associated with the access token.")
+	flag.StringVar(&o.GitName, "git-name", "", "The name to use on the git commit. Requires --git-email. If not specified, uses values from the user associated with the access token.")
+	flag.StringVar(&o.GitEmail, "git-email", "", "The email to use on the git commit. Requires --git-name. If not specified, uses values from the user associated with the access token.")
+	flag.StringVar(&o.GitHubOrg, "github-org", "", "The GitHub org name where the autobump PR will be created. Must not be empty when --create-pull-request is not false.")
+	flag.StringVar(&o.GitHubRepo, "github-repo", "", "The GitHub repo name where the autobump PR will be created. Must not be empty when --create-pull-request is not false.")
+	flag.StringVar(&o.OncallAddress, "oncall-address", "", "The oncall address where we can get the JSON file that stores the current oncall information.")
+
+	flag.BoolVar(&o.BumpProwImages, "bump-prow-images", false, "Whether to bump up version of images in gcr.io/k8s-prow/.")
+	flag.BoolVar(&o.BumpTestImages, "bump-test-images", false, "Whether to bump up version of images in gcr.io/k8s-testimages/.")
+	flag.StringVar(&o.TargetVersion, "target-version", "", "The target version to bump images version to, which can be one of latest, upstream, upstream-staging and vYYYYMMDD-deadbeef.")
+
+	flag.Var(&o.IncludedConfigPaths, "include-config-paths", "The config paths to be included in this bump, in which only .yaml files will be considered. By default all files are included.")
+	flag.Var(&o.ExcludedConfigPaths, "exclude-config-paths", "The config paths to be excluded in this bump, in which only .yaml files will be considered.")
+	flag.Var(&o.ExtraFiles, "extra-files", "The extra non-yaml file to be considered in this bump.")
+
+	flag.BoolVar(&o.SkipPullRequest, "skip-pull-request", false, "Whether to skip creating the pull request for this bump.")
+	flag.Parse()
+	return &o
+}
 
 func main() {
 	o := parseOptions()
-	if err := validateOptions(o); err != nil {
-		logrus.WithError(err).Fatal("Invalid arguments.")
-	}
 
-	sa := &secret.Agent{}
-	if err := sa.Start([]string{o.githubToken}); err != nil {
-		logrus.WithError(err).Fatal("Failed to start secrets agent")
-	}
-
-	gc := github.NewClient(sa.GetTokenGenerator(o.githubToken), sa.Censor, github.DefaultGraphQLEndpoint, github.DefaultAPIEndpoint)
-
-	if o.githubLogin == "" || o.gitName == "" || o.gitEmail == "" {
-		user, err := gc.BotUser()
-		if err != nil {
-			logrus.WithError(err).Fatal("Failed to get the user data for the provided GH token.")
-		}
-		if o.githubLogin == "" {
-			o.githubLogin = user.Login
-		}
-		if o.gitName == "" {
-			o.gitName = user.Name
-		}
-		if o.gitEmail == "" {
-			o.gitEmail = user.Email
-		}
-	}
-
-	stdout := bumper.HideSecretsWriter{Delegate: os.Stdout, Censor: sa}
-	stderr := bumper.HideSecretsWriter{Delegate: os.Stderr, Censor: sa}
-
-	if err := cdToRootDir(); err != nil {
-		logrus.WithError(err).Fatal("Failed to change to root dir")
-	}
-	images, err := bumper.UpdateReferences([]string{"."}, extraFiles)
-	if err != nil {
-		logrus.WithError(err).Fatal("Failed to update references.")
-	}
-
-	changed, err := bumper.HasChanges()
-	if err != nil {
-		logrus.WithError(err).Fatal("error occurred when checking changes")
-	}
-
-	if !changed {
-		logrus.Info("no images updated, exiting ...")
-		return
-	}
-
-	remoteBranch := "autobump"
-
-	if err := bumper.MakeGitCommit(fmt.Sprintf("git@github.com:%s/test-infra.git", o.githubLogin), remoteBranch, o.gitName, o.gitEmail, images, stdout, stderr); err != nil {
-		logrus.WithError(err).Fatal("Failed to push changes.")
-	}
-
-	if err := bumper.UpdatePR(gc, githubOrg, githubRepo, images, getAssignment(), "Update prow to", o.githubLogin+":"+remoteBranch, "master", updater.PreventMods); err != nil {
-		logrus.WithError(err).Fatal("PR creation failed.")
+	if err := bumper.Run(o); err != nil {
+		logrus.WithError(err).Fatalf("failed to run the bumper tool")
 	}
 }
