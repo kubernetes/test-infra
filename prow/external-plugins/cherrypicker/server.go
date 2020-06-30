@@ -163,7 +163,8 @@ func (s *Server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent
 	num := ic.Issue.Number
 	commentAuthor := ic.Comment.User.Login
 
-	logger := s.log.WithFields(logrus.Fields{
+	// Do not create a new logger, its fields are re-used by the caller in case of errors
+	l = l.WithFields(logrus.Fields{
 		github.OrgLogField:  org,
 		github.RepoLogField: repo,
 		github.PrLogField:   num,
@@ -184,12 +185,12 @@ func (s *Server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent
 			}
 			if !ok {
 				resp := fmt.Sprintf("only [%s](https://github.com/orgs/%s/people) org members may request cherry-picks. You can still do the cherry-pick manually.", org, org)
-				logger.Info(resp)
+				l.Info(resp)
 				return s.ghc.CreateComment(org, repo, num, plugins.FormatICResponse(ic.Comment, resp))
 			}
 		}
 		resp := fmt.Sprintf("once the present PR merges, I will cherry-pick it on top of %s in a new PR and assign it to you.", targetBranch)
-		logger.Info(resp)
+		l.Info(resp)
 		return s.ghc.CreateComment(org, repo, num, plugins.FormatICResponse(ic.Comment, resp))
 	}
 
@@ -204,14 +205,14 @@ func (s *Server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent
 	// Cherry-pick only merged PRs.
 	if !pr.Merged {
 		resp := "cannot cherry-pick an unmerged PR"
-		logger.Info(resp)
+		l.Info(resp)
 		return s.ghc.CreateComment(org, repo, num, plugins.FormatICResponse(ic.Comment, resp))
 	}
 
 	// TODO: Use a whitelist for allowed base and target branches.
 	if baseBranch == targetBranch {
 		resp := fmt.Sprintf("base branch (%s) needs to differ from target branch (%s)", baseBranch, targetBranch)
-		logger.Info(resp)
+		l.Info(resp)
 		return s.ghc.CreateComment(org, repo, num, plugins.FormatICResponse(ic.Comment, resp))
 	}
 
@@ -223,16 +224,17 @@ func (s *Server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent
 		}
 		if !ok {
 			resp := fmt.Sprintf("only [%s](https://github.com/orgs/%s/people) org members may request cherry picks. You can still do the cherry-pick manually.", org, org)
-			logger.Info(resp)
+			l.Info(resp)
 			return s.ghc.CreateComment(org, repo, num, plugins.FormatICResponse(ic.Comment, resp))
 		}
 	}
 
-	logger.WithFields(logrus.Fields{
+	l = l.WithFields(logrus.Fields{
 		"requestor":     ic.Comment.User.Login,
 		"target_branch": targetBranch,
-	}).Debug("Cherrypick request.")
-	return s.handle(logger, ic.Comment.User.Login, &ic.Comment, org, repo, targetBranch, title, body, num)
+	})
+	l.Debug("Cherrypick request.")
+	return s.handle(l, ic.Comment.User.Login, &ic.Comment, org, repo, targetBranch, title, body, num)
 }
 
 func (s *Server) handlePullRequest(l *logrus.Entry, pre github.PullRequestEvent) error {
@@ -253,7 +255,8 @@ func (s *Server) handlePullRequest(l *logrus.Entry, pre github.PullRequestEvent)
 	title := pr.Title
 	body := pr.Body
 
-	logger := s.log.WithFields(logrus.Fields{
+	// Do not create a new logger, its fields are re-used by the caller in case of errors
+	l = l.WithFields(logrus.Fields{
 		github.OrgLogField:  org,
 		github.RepoLogField: repo,
 		github.PrLogField:   num,
@@ -335,7 +338,7 @@ func (s *Server) handlePullRequest(l *logrus.Entry, pre github.PullRequestEvent)
 		for targetBranch, ic := range branches {
 			if targetBranch == baseBranch {
 				resp := fmt.Sprintf("base branch (%s) needs to differ from target branch (%s)", baseBranch, targetBranch)
-				logger.Info(resp)
+				l.Info(resp)
 				s.createComment(org, repo, num, ic, resp)
 				continue
 			}
@@ -344,11 +347,11 @@ func (s *Server) handlePullRequest(l *logrus.Entry, pre github.PullRequestEvent)
 				continue
 			}
 			handledBranches[targetBranch] = true
-			logger.WithFields(logrus.Fields{
+			l.WithFields(logrus.Fields{
 				"requestor":     requestor,
 				"target_branch": targetBranch,
 			}).Debug("Cherrypick request.")
-			err := s.handle(logger, requestor, ic, org, repo, targetBranch, title, body, num)
+			err := s.handle(l, requestor, ic, org, repo, targetBranch, title, body, num)
 			if err != nil {
 				return err
 			}
