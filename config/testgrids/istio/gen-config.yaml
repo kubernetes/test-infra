@@ -521,6 +521,13 @@ dashboards:
 - dashboard_tab:
   - code_search_url_template:
       url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: analyze-tests_istio
+    name: analyze-tests_istio
+    open_bug_template:
+      url: https://github.com/istio/istio/issues/
+    test_group_name: analyze-tests_istio
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
     description: gencheck_istio
     name: gencheck_istio
     open_bug_template:
@@ -5470,6 +5477,9 @@ test_groups:
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/noauth_installer_release-1.4
   name: noauth_installer_release-1.4
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/analyze-tests_istio
+  name: analyze-tests_istio
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/cache-experiment_istio_release-1.6
   name: cache-experiment_istio_release-1.6
