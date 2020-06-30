@@ -68,9 +68,8 @@ main() {
   fi
   echo -e "Bumping: 'gcr.io/k8s-prow/' images to $(color-version "${new_version}") ..." >&2
 
-  local IFS=,
   local component_file_dir_array
-  read -ra component_file_dir_array <<< "${COMPONENT_FILE_DIR}"
+  IFS=, read -ra component_file_dir_array <<< "${COMPONENT_FILE_DIR}"
   bumpfiles=()
   for c in "${component_file_dir_array[@]}"; do
     # This expands wildcards into files if they exist
