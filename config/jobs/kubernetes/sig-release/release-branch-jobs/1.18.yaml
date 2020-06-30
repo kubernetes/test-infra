@@ -1132,6 +1132,7 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-100-performance
         - --tear-down-previous
         - --test=false
+        - --env=CL2_ENABLE_CLUSTER_OOMS_TRACKER=true
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
         - --test-cmd-args=cluster-loader2
         - --test-cmd-args=--nodes=100
@@ -1196,6 +1197,7 @@ presubmits:
         - --provider=gce
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-kubemark-e2e-gce-big
         - --tear-down-previous
+        - --env=CL2_ENABLE_CLUSTER_OOMS_TRACKER=true
         - --test=false
         - --test_args=--ginkgo.focus=xxxx
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
