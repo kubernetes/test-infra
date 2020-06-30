@@ -521,8 +521,8 @@ tide:
     kubernetes/cloud-provider-openstack: squash
     kubernetes/dashboard: squash
   merge_commit_template:
-    kubeflow/pipelines:
-      title: "{{ .Title }} ({{ .Number }})"
+    kubeflow:
+      title: "{{ .Title }} (#{{ .Number }})"
   pr_status_base_urls:
     '*': https://prow.k8s.io/pr
   blocker_label: tide/merge-blocker
