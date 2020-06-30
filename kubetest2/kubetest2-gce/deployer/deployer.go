@@ -59,6 +59,7 @@ type deployer struct {
 	GCPProject                  string `desc:"GCP Project to create VMs in. If unset, the deployer will attempt to get a project from boskos."`
 	OverwriteLogsDir            bool   `desc:"If set, will overwrite an existing logs directory if one is encountered during dumping of logs. Useful when runnning tests locally."`
 	BoskosLocation              string `desc:"If set, manually specifies the location of the boskos server. If unset and boskos is needed, defaults to http://boskos.test-pods.svc.cluster.local."`
+	LegacyMode                  bool   `desc:"Set if the provided repo root is the kubernetes/kubernetes repo and not kubernetes/cloud-provider-gcp."`
 }
 
 // New implements deployer.New for gce
