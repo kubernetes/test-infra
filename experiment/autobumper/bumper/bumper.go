@@ -17,8 +17,11 @@ limitations under the License.
 package bumper
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -28,7 +31,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/experiment/image-bumper/bumper"
+	imagebumper "k8s.io/test-infra/experiment/image-bumper/bumper"
+	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/robots/pr-creator/updater"
 )
@@ -38,26 +42,207 @@ const (
 	testImagePrefix = "gcr.io/k8s-testimages/"
 	prowRepo        = "https://github.com/kubernetes/test-infra"
 	testImageRepo   = prowRepo
+
+	latestVersion          = "latest"
+	upstreamVersion        = "upstream"
+	upstreamStagingVersion = "upstream-staging"
+	tagVersion             = "vYYYYMMDD-deadbeef"
+
+	upstreamURLBase          = "https://raw.githubusercontent.com/kubernetes/test-infra/master"
+	prowRefConfigFile        = "config/prow/cluster/deck_deployment.yaml"
+	prowStagingRefConfigFile = "config/prow-staging/cluster/deck_deployment.yaml"
+
+	errOncallMsgTempl = "An error occurred while finding an assignee: `%s`.\nFalling back to Blunderbuss."
+	noOncallMsg = "Nobody is currently oncall, so falling back to Blunderbuss."
 )
 
-func Call(stdout, stderr io.Writer, cmd string, args ...string) error {
+var (
+	tagRegexp    = regexp.MustCompile("v[0-9]{8}-[a-f0-9]{6,9}")
+	imageMatcher = regexp.MustCompile(`(?s)^.+image:.+:(v[a-zA-Z0-9_.-]+)`)
+)
+
+type fileArrayFlag []string
+
+func (af *fileArrayFlag) String() string {
+	return fmt.Sprint(*af)
+}
+
+func (af *fileArrayFlag) Set(value string) error {
+	for _, e := range strings.Split(value, ",") {
+		fn := strings.TrimSpace(e)
+		info, err := os.Stat(fn)
+		if err != nil {
+			return fmt.Errorf("error getting file info for %q", fn)
+		}
+		if info.IsDir() && !strings.HasSuffix(fn, string(os.PathSeparator)) {
+			fn = fn + string(os.PathSeparator)
+		}
+		*af = append(*af, fn)
+	}
+	return nil
+}
+
+// Options is the options for autobumper operations.
+type Options struct {
+	GitHubOrg     string
+	GitHubRepo    string
+	GitHubLogin   string
+	GitHubToken   string
+	GitName       string
+	GitEmail      string
+	RemoteBranch  string
+	OncallAddress string
+
+	BumpProwImages bool
+	BumpTestImages bool
+	TargetVersion  string
+
+	IncludedConfigPaths fileArrayFlag
+	ExcludedConfigPaths fileArrayFlag
+	ExtraFiles          fileArrayFlag
+
+	SkipPullRequest bool
+}
+
+func validateOptions(o *Options) error {
+	if !o.SkipPullRequest && o.GitHubToken == "" {
+		return fmt.Errorf("--github-token is mandatory when --skip-pull-request is false")
+	}
+	if !o.SkipPullRequest && (o.GitHubOrg == "" || o.GitHubRepo == "") {
+		return fmt.Errorf("--github-org and --github-repo are mandatory when --skip-pull-request is false")
+	}
+	if !o.SkipPullRequest && o.RemoteBranch == "" {
+		return fmt.Errorf("--remote-branch cannot be empty when --skip-pull-request is false")
+	}
+	if (o.GitEmail == "") != (o.GitName == "") {
+		return fmt.Errorf("--git-name and --git-email must be specified together")
+	}
+
+	if o.TargetVersion != latestVersion && o.TargetVersion != upstreamVersion &&
+		o.TargetVersion != upstreamStagingVersion && !tagRegexp.MatchString(o.TargetVersion) {
+		logrus.Warnf("Warning: --target-version is not one of %v so it might not work properly.",
+			[]string{latestVersion, upstreamVersion, upstreamStagingVersion, tagVersion})
+	}
+	if !o.BumpProwImages && !o.BumpTestImages {
+		return fmt.Errorf("at least one of --bump-prow-images and --bump-test-images must be specified")
+	}
+	if o.BumpProwImages && o.BumpTestImages && o.TargetVersion != latestVersion {
+		return fmt.Errorf("--target-version must be latest if you want to bump both prow and test images")
+	}
+	if o.BumpTestImages && (o.TargetVersion == upstreamVersion || o.TargetVersion == upstreamStagingVersion) {
+		return fmt.Errorf("%q and %q versions can only be specified to bump prow images", upstreamVersion, upstreamStagingVersion)
+	}
+
+	if len(o.IncludedConfigPaths) == 0 {
+		return fmt.Errorf("--include-config-paths is mandatory")
+	}
+
+	return nil
+}
+
+// Run is the entrypoint which will update Prow config files based on the provided options.
+func Run(o *Options) error {
+	if err := validateOptions(o); err != nil {
+		return fmt.Errorf("error validating options: %w", err)
+	}
+
+	if err := cdToRootDir(); err != nil {
+		return fmt.Errorf("failed to change to root dir: %w", err)
+	}
+
+	images, err := updateReferences(
+		o.BumpProwImages, o.BumpTestImages, o.TargetVersion,
+		o.IncludedConfigPaths, o.ExcludedConfigPaths, o.ExtraFiles)
+	if err != nil {
+		return fmt.Errorf("failed to update image references: %w", err)
+	}
+
+	changed, err := hasChanges()
+	if err != nil {
+		return fmt.Errorf("error occurred when checking changes: %w", err)
+	}
+
+	if !changed {
+		logrus.Info("no images updated, exiting ...")
+		return nil
+	}
+
+	if o.SkipPullRequest {
+		logrus.Debugf("--skip-pull-request is set to true, won't create a pull request.")
+	} else {
+		var sa secret.Agent
+		if err := sa.Start([]string{o.GitHubToken}); err != nil {
+			return fmt.Errorf("failed to start secrets agent: %w", err)
+		}
+
+		gc := github.NewClient(sa.GetTokenGenerator(o.GitHubToken), sa.Censor, github.DefaultGraphQLEndpoint, github.DefaultAPIEndpoint)
+
+		if o.GitHubLogin == "" || o.GitName == "" || o.GitEmail == "" {
+			user, err := gc.BotUser()
+			if err != nil {
+				return fmt.Errorf("failed to get the user data for the provided GH token: %w", err)
+			}
+			if o.GitHubLogin == "" {
+				o.GitHubLogin = user.Login
+			}
+			if o.GitName == "" {
+				o.GitName = user.Name
+			}
+			if o.GitEmail == "" {
+				o.GitEmail = user.Email
+			}
+		}
+
+		remoteBranch := "autobump"
+		stdout := hideSecretsWriter{delegate: os.Stdout, censor: &sa}
+		stderr := hideSecretsWriter{delegate: os.Stderr, censor: &sa}
+		if err := makeGitCommit(fmt.Sprintf("git@github.com:%s/test-infra.git", o.GitHubLogin), remoteBranch, o.GitName, o.GitEmail, images, stdout, stderr); err != nil {
+			return fmt.Errorf("failed to push changes to the remote branch: %w", err)
+		}
+
+		if err := updatePR(gc, o.GitHubOrg, o.GitHubRepo, images, getAssignment(o.OncallAddress), "Update prow to", o.GitHubLogin+":"+remoteBranch, "master", updater.PreventMods); err != nil {
+			return fmt.Errorf("failed to create the PR: %w", err)
+		}
+	}
+
+	return nil
+}
+
+func cdToRootDir() error {
+	if bazelWorkspace := os.Getenv("BUILD_WORKSPACE_DIRECTORY"); bazelWorkspace != "" {
+		if err := os.Chdir(bazelWorkspace); err != nil {
+			return fmt.Errorf("failed to chdir to bazel workspace (%s): %w", bazelWorkspace, err)
+		}
+		return nil
+	}
+	cmd := exec.Command("git", "rev-parse", "--show-toplevel")
+	output, err := cmd.Output()
+	if err != nil {
+		return fmt.Errorf("failed to get the repo's root directory: %w", err)
+	}
+	d := strings.TrimSpace(string(output))
+	logrus.Infof("Changing working directory to %s...", d)
+	return os.Chdir(d)
+}
+
+func call(stdout, stderr io.Writer, cmd string, args ...string) error {
 	c := exec.Command(cmd, args...)
 	c.Stdout = stdout
 	c.Stderr = stderr
 	return c.Run()
 }
 
-type Censor interface {
+type censor interface {
 	Censor(content []byte) []byte
 }
 
-type HideSecretsWriter struct {
-	Delegate io.Writer
-	Censor   Censor
+type hideSecretsWriter struct {
+	delegate io.Writer
+	censor   censor
 }
 
-func (w HideSecretsWriter) Write(content []byte) (int, error) {
-	_, err := w.Delegate.Write(w.Censor.Censor(content))
+func (w hideSecretsWriter) Write(content []byte) (int, error) {
+	_, err := w.delegate.Write(w.censor.Censor(content))
 	if err != nil {
 		return 0, err
 	}
@@ -66,51 +251,149 @@ func (w HideSecretsWriter) Write(content []byte) (int, error) {
 
 // UpdatePR updates with github client "gc" the PR of github repo org/repo
 // with "matchTitle" from "source" to "branch"
-// "images" contains the tag replacements that have been made which is returned from "UpdateReferences([]string{"."}, extraFiles)"
+// "images" contains the tag replacements that have been made which is returned from "updateReferences([]string{"."}, extraFiles)"
 // "images" and "extraLineInPRBody" are used to generate commit summary and body of the PR
-func UpdatePR(gc github.Client, org, repo string, images map[string]string, extraLineInPRBody string, matchTitle, source, branch string, allowMods bool) error {
-	return UpdatePullRequest(gc, org, repo, makeCommitSummary(images), generatePRBody(images, extraLineInPRBody), matchTitle, source, branch, allowMods)
+func updatePR(gc github.Client, org, repo string, images map[string]string, extraLineInPRBody string, matchTitle, source, branch string, allowMods bool) error {
+	return updatePullRequest(gc, org, repo, makeCommitSummary(images), generatePRBody(images, extraLineInPRBody), matchTitle, source, branch, allowMods)
 }
 
 // UpdatePullRequest updates with github client "gc" the PR of github repo org/repo
 // with "title" and "body" of PR matching "matchTitle" from "source" to "branch"
-func UpdatePullRequest(gc github.Client, org, repo, title, body, matchTitle, source, branch string, allowMods bool) error {
-	return UpdatePullRequestWithLabels(gc, org, repo, title, body, matchTitle, source, branch, allowMods, nil)
+func updatePullRequest(gc github.Client, org, repo, title, body, matchTitle, source, branch string, allowMods bool) error {
+	return updatePullRequestWithLabels(gc, org, repo, title, body, matchTitle, source, branch, allowMods, nil)
 }
 
-func UpdatePullRequestWithLabels(gc github.Client, org, repo, title, body, matchTitle, source, branch string, allowMods bool, labels []string) error {
+func updatePullRequestWithLabels(gc github.Client, org, repo, title, body, matchTitle, source, branch string, allowMods bool, labels []string) error {
 	logrus.Info("Creating or updating PR...")
 	n, err := updater.EnsurePRWithLabels(org, repo, title, body, source, branch, matchTitle, allowMods, gc, labels)
 	if err != nil {
-		return fmt.Errorf("failed to ensure PR exists: %v", err)
+		return fmt.Errorf("failed to ensure PR exists: %w", err)
 	}
 
 	logrus.Infof("PR %s/%s#%d will merge %s into %s: %s", org, repo, *n, source, branch, title)
 	return nil
 }
 
-// UpdateReferences update the references of prow-images and testimages
-// in the files in any of "subfolders" of the current dir
+// updateReferences update the references of prow-images and/or testimages
+// in the files in any of "subfolders" of the includeConfigPaths but not in excludeConfigPaths
 // if the file is a yaml file (*.yaml) or extraFiles[file]=true
-func UpdateReferences(subfolders []string, extraFiles map[string]bool) (map[string]string, error) {
+func updateReferences(bumpProwImages, bumpTestImages bool, targetVersion string,
+	includeConfigPaths []string, excludeConfigPaths []string, extraFiles []string) (map[string]string, error) {
 	logrus.Info("Bumping image references...")
-	filter := regexp.MustCompile(prowPrefix + "|" + testImagePrefix)
+	filters := make([]string, 0)
+	if bumpProwImages {
+		filters = append(filters, prowPrefix)
+	}
+	if bumpTestImages {
+		filters = append(filters, testImagePrefix)
+	}
+	filterRegexp := regexp.MustCompile(strings.Join(filters, "|"))
 
-	for _, dir := range subfolders {
-		err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
-			if strings.HasSuffix(path, ".yaml") || extraFiles[path] {
-				if err := bumper.UpdateFile(path, filter); err != nil {
-					logrus.WithError(err).Errorf("Failed to update path %s.", path)
-				}
-			}
-			return nil
-		})
+	var tagPicker func(string, string, string) (string, error)
+	var err error
+	switch targetVersion {
+	case latestVersion:
+		tagPicker = imagebumper.FindLatestTag
+	case upstreamVersion:
+		tagPicker, err = upstreamImageVersionResolver(upstreamURLBase + "/" + prowRefConfigFile)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to resolve the upstream Prow image version: %w", err)
+		}
+	case upstreamStagingVersion:
+		tagPicker, err = upstreamImageVersionResolver(upstreamURLBase + "/" + prowStagingRefConfigFile)
+		if err != nil {
+			return nil, fmt.Errorf("failed to resolve the upstream staging Prow image version: %w", err)
+		}
+	default:
+		tagPicker = func(imageHost, imageName, currentTag string) (string, error) { return tagVersion, nil }
+	}
+
+	updateFile := func(name string) error {
+		logrus.Infof("Updating file %s", name)
+		if err := imagebumper.UpdateFile(tagPicker, name, filterRegexp); err != nil {
+			return fmt.Errorf("failed to update the file: %w", err)
+		}
+		return nil
+	}
+	updateYAMLFile := func(name string) error {
+		if strings.HasSuffix(name, ".yaml") && !isUnderPath(name, excludeConfigPaths) {
+			return updateFile(name)
+		}
+		return nil
+	}
+
+	// Updated all .yaml files under the included config paths but not under excluded config paths.
+	for _, path := range includeConfigPaths {
+		info, err := os.Stat(path)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get the file info for %q", path)
+		}
+		if info.IsDir() {
+			err := filepath.Walk(path, func(subpath string, info os.FileInfo, err error) error {
+				return updateYAMLFile(subpath)
+			})
+			if err != nil {
+				return nil, fmt.Errorf("failed to update yaml files under %q: %w", path, err)
+			}
+		} else {
+			if err := updateYAMLFile(path); err != nil {
+				return nil, fmt.Errorf("failed to update the yaml file %q: %w", path, err)
+			}
 		}
 	}
 
-	return bumper.GetReplacements(), nil
+	// Update the extra files in any case.
+	for _, file := range extraFiles {
+		if err := updateFile(file); err != nil {
+			return nil, fmt.Errorf("failed to update the extra file %q: %w", file, err)
+		}
+	}
+
+	return imagebumper.GetReplacements(), nil
+}
+
+func upstreamImageVersionResolver(upstreamAddress string) (func(imageHost, imageName, currentTag string) (string, error), error) {
+	version, err := parseUpstreamImageVersion(upstreamAddress)
+	if err != nil {
+		return nil, fmt.Errorf("error resolving the upstream Prow version from %q: %w", upstreamAddress, err)
+	}
+	return func(imageHost, imageName, currentTag string) (string, error) {
+		// Skip boskos images as they do not have the same image tag as other Prow components.
+		// TODO(chizhg): remove this check after all Prow instances are using boskos images not in gcr.io/k8s-prow/boskos
+		if strings.Contains(imageName, "boskos/") {
+			return currentTag, nil
+		}
+		return version, nil
+	}, nil
+}
+
+func parseUpstreamImageVersion(upstreamAddress string) (string, error) {
+	resp, err := http.Get(upstreamAddress)
+	if err != nil {
+		return "", fmt.Errorf("error sending GET request to %q: %w", upstreamAddress, err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("HTTP error %d (%q) fetching upstream config file", resp.StatusCode, resp.Status)
+	}
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("error reading the response body: %w", err)
+	}
+	res := imageMatcher.FindStringSubmatch(string(body))
+	if len(res) < 2 {
+		return "", fmt.Errorf("the image tag is malformatted: %v", res)
+	}
+	return res[1], nil
+}
+
+func isUnderPath(name string, paths []string) bool {
+	for _, p := range paths {
+		if p != "" && strings.HasPrefix(name, p) {
+			return true
+		}
+	}
+	return false
 }
 
 func getNewProwVersion(images map[string]string) string {
@@ -122,15 +405,15 @@ func getNewProwVersion(images map[string]string) string {
 	return ""
 }
 
-// HasChanges checks if the current git repo contains any changes
-func HasChanges() (bool, error) {
+// hasChanges checks if the current git repo contains any changes
+func hasChanges() (bool, error) {
 	cmd := "git"
 	args := []string{"status", "--porcelain"}
 	logrus.WithField("cmd", cmd).WithField("args", args).Info("running command ...")
 	combinedOutput, err := exec.Command(cmd, args...).CombinedOutput()
 	if err != nil {
 		logrus.WithField("cmd", cmd).Debugf("output is '%s'", string(combinedOutput))
-		return false, err
+		return false, fmt.Errorf("error running command %s %s: %w", cmd, args, err)
 	}
 	return len(strings.TrimSuffix(string(combinedOutput), "\n")) > 0, nil
 }
@@ -139,41 +422,41 @@ func makeCommitSummary(images map[string]string) string {
 	return fmt.Sprintf("Update prow to %s, and other images as necessary.", getNewProwVersion(images))
 }
 
-// MakeGitCommit runs a sequence of git commands to
+// makeGitCommit runs a sequence of git commands to
 // commit and push the changes the "remote" on "remoteBranch"
 // "name" and "email" are used for git-commit command
-// "images" contains the tag replacements that have been made which is returned from "UpdateReferences([]string{"."}, extraFiles)"
+// "images" contains the tag replacements that have been made which is returned from "updateReferences([]string{"."}, extraFiles)"
 // "images" is used to generate commit message
-func MakeGitCommit(remote, remoteBranch, name, email string, images map[string]string, stdout, stderr io.Writer) error {
-	return GitCommitAndPush(remote, remoteBranch, name, email, makeCommitSummary(images), stdout, stderr)
+func makeGitCommit(remote, remoteBranch, name, email string, images map[string]string, stdout, stderr io.Writer) error {
+	return gitCommitAndPush(remote, remoteBranch, name, email, makeCommitSummary(images), stdout, stderr)
 }
 
-// GitCommitAndPush runs a sequence of git commands to commit.
+// gitCommitAndPush runs a sequence of git commands to commit.
 // The "name", "email", and "message" are used for git-commit command
-func GitCommitAndPush(remote, remoteBranch, name, email, message string, stdout, stderr io.Writer) error {
+func gitCommitAndPush(remote, remoteBranch, name, email, message string, stdout, stderr io.Writer) error {
 	logrus.Info("Making git commit...")
 
-	if err := Call(stdout, stderr, "git", "add", "-A"); err != nil {
-		return fmt.Errorf("failed to git add: %v", err)
+	if err := call(stdout, stderr, "git", "add", "-A"); err != nil {
+		return fmt.Errorf("failed to git add: %w", err)
 	}
 	commitArgs := []string{"commit", "-m", message}
 	if name != "" && email != "" {
 		commitArgs = append(commitArgs, "--author", fmt.Sprintf("%s <%s>", name, email))
 	}
-	if err := Call(stdout, stderr, "git", commitArgs...); err != nil {
-		return fmt.Errorf("failed to git commit: %v", err)
+	if err := call(stdout, stderr, "git", commitArgs...); err != nil {
+		return fmt.Errorf("failed to git commit: %w", err)
 	}
-	if err := GitPush(remote, remoteBranch, stdout, stderr); err != nil {
-		return fmt.Errorf("%v", err)
+	if err := gitPush(remote, remoteBranch, stdout, stderr); err != nil {
+		return fmt.Errorf("%w", err)
 	}
 	return nil
 }
 
-// GitPush push the changes to the given remote and branch.
-func GitPush(remote, remoteBranch string, stdout, stderr io.Writer) error {
+// gitPush push the changes to the given remote and branch.
+func gitPush(remote, remoteBranch string, stdout, stderr io.Writer) error {
 	logrus.Info("Pushing to remote...")
-	if err := Call(stdout, stderr, "git", "push", "-f", remote, fmt.Sprintf("HEAD:%s", remoteBranch)); err != nil {
-		return fmt.Errorf("failed to git push: %v", err)
+	if err := call(stdout, stderr, "git", "push", "-f", remote, fmt.Sprintf("HEAD:%s", remoteBranch)); err != nil {
+		return fmt.Errorf("failed to git push: %w", err)
 	}
 	return nil
 }
@@ -216,8 +499,8 @@ func generateSummary(name, repo, prefix string, summarise bool, images map[strin
 		if strings.HasSuffix(image, ":"+newTag) {
 			continue
 		}
-		oldDate, oldCommit, oldVariant := bumper.DeconstructTag(tagFromName(image))
-		newDate, newCommit, _ := bumper.DeconstructTag(newTag)
+		oldDate, oldCommit, oldVariant := imagebumper.DeconstructTag(tagFromName(image))
+		newDate, newCommit, _ := imagebumper.DeconstructTag(newTag)
 		k := oldCommit + ":" + newCommit
 		d := delta{
 			oldCommit: oldCommit,
@@ -260,4 +543,33 @@ func generatePRBody(images map[string]string, assignment string) string {
 	prowSummary := generateSummary("Prow", prowRepo, prowPrefix, true, images)
 	testImagesSummary := generateSummary("test-image", testImageRepo, testImagePrefix, false, images)
 	return prowSummary + "\n\n" + testImagesSummary + "\n\n" + assignment + "\n"
+}
+
+func getAssignment(oncallAddress string) string {
+	if oncallAddress == "" {
+		return ""
+	}
+
+	req, err := http.Get(oncallAddress)
+	if err != nil {
+		return fmt.Sprintf(errOncallMsgTempl, err)
+	}
+	defer req.Body.Close()
+	if req.StatusCode != http.StatusOK {
+		return fmt.Sprintf(errOncallMsgTempl,
+			fmt.Sprintf("Error requesting oncall address: HTTP error %d: %q", req.StatusCode, req.Status))
+	}
+	oncall := struct {
+		Oncall struct {
+			TestInfra string `json:"testinfra"`
+		} `json:"Oncall"`
+	}{}
+	if err := json.NewDecoder(req.Body).Decode(&oncall); err != nil {
+		return fmt.Sprintf(errOncallMsgTempl, err)
+	}
+	curtOncall := oncall.Oncall.TestInfra
+	if curtOncall != "" {
+		return "/cc @" + curtOncall
+	}
+	return noOncallMsg
 }

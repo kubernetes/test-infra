@@ -18,6 +18,8 @@ package bumper
 
 import (
 	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"strings"
@@ -25,6 +27,136 @@ import (
 
 	"k8s.io/test-infra/prow/config/secret"
 )
+
+func TestValidateOptions(t *testing.T) {
+	emptyStr := ""
+	whateverStr := "whatever"
+	falseBool := false
+	trueBool := true
+	emptyArr := make([]string, 0)
+	cases := []struct {
+		name               string
+		bumpProwImages     *bool
+		bumpTestImages     *bool
+		githubToken        *string
+		githubOrg          *string
+		githubRepo         *string
+		remoteBranch       *string
+		skipPullRequest    *bool
+		targetVersion      *string
+		includeConfigPaths *[]string
+		err                bool
+	}{
+		{
+			name: "bumping up Prow and test images together works",
+			err:  false,
+		},
+		{
+			name:           "only bumping up Prow images works",
+			bumpTestImages: &falseBool,
+			err:            false,
+		},
+		{
+			name:           "at least one type of bumps needs to be specified",
+			bumpProwImages: &falseBool,
+			bumpTestImages: &falseBool,
+			err:            true,
+		},
+		{
+			name:        "GitHubToken must not be empty when SkipPullRequest is false",
+			githubToken: &emptyStr,
+			err:         true,
+		},
+		{
+			name:      "GitHubOrg cannot be empty when SkipPullRequest is false",
+			githubOrg: &emptyStr,
+			err:       true,
+		},
+		{
+			name:       "GitHubRepo cannot be empty when SkipPullRequest is false",
+			githubRepo: &emptyStr,
+			err:        true,
+		},
+		{
+			name:         "RemoteBranch cannot be empty when SkipPullRequest is false",
+			remoteBranch: &emptyStr,
+			err:          true,
+		},
+		{
+			name:            "all GitHub related fields can be empty when SkipPullRequest is true",
+			githubOrg:       &emptyStr,
+			githubRepo:      &emptyStr,
+			githubToken:     &emptyStr,
+			remoteBranch:    &emptyStr,
+			skipPullRequest: &trueBool,
+			err:             false,
+		},
+		{
+			name:          "invalid TargetVersion is not allowed",
+			targetVersion: &whateverStr,
+			err:           true,
+		},
+		{
+			name:               "must include at least one config path",
+			includeConfigPaths: &emptyArr,
+			err:                true,
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			defaultOption := &Options{
+				GitHubOrg:           "whatever-org",
+				GitHubRepo:          "whatever-repo",
+				GitHubLogin:         "whatever-login",
+				GitHubToken:         "whatever-token",
+				GitName:             "whatever-name",
+				GitEmail:            "whatever-email",
+				RemoteBranch:        "whatever-branch",
+				BumpProwImages:      true,
+				BumpTestImages:      true,
+				TargetVersion:       latestVersion,
+				IncludedConfigPaths: []string{"whatever-config-path1", "whatever-config-path2"},
+				SkipPullRequest:     false,
+			}
+
+			if tc.skipPullRequest != nil {
+				defaultOption.SkipPullRequest = *tc.skipPullRequest
+			}
+			if tc.githubToken != nil {
+				defaultOption.GitHubToken = *tc.githubToken
+			}
+			if tc.githubOrg != nil {
+				defaultOption.GitHubOrg = *tc.githubOrg
+			}
+			if tc.githubRepo != nil {
+				defaultOption.GitHubRepo = *tc.githubRepo
+			}
+			if tc.remoteBranch != nil {
+				defaultOption.RemoteBranch = *tc.remoteBranch
+			}
+			if tc.bumpProwImages != nil {
+				defaultOption.BumpProwImages = *tc.bumpProwImages
+			}
+			if tc.bumpTestImages != nil {
+				defaultOption.BumpTestImages = *tc.bumpTestImages
+			}
+			if tc.targetVersion != nil {
+				defaultOption.TargetVersion = *tc.targetVersion
+			}
+			if tc.includeConfigPaths != nil {
+				defaultOption.IncludedConfigPaths = *tc.includeConfigPaths
+			}
+
+			err := validateOptions(defaultOption)
+			if err == nil && tc.err {
+				t.Errorf("Expected to get an error for %#v but got nil", defaultOption)
+			}
+			if err != nil && !tc.err {
+				t.Errorf("Expected to not get an error for %#v but got %v", defaultOption, err)
+			}
+		})
+	}
+}
 
 type fakeWriter struct {
 	results []byte
@@ -42,7 +174,6 @@ func writeToFile(t *testing.T, path, content string) {
 }
 
 func TestCallWithWriter(t *testing.T) {
-
 	dir, err := ioutil.TempDir("", "TestCallWithWriter")
 	if err != nil {
 		t.Errorf("failed to create temp dir '%s': '%v'", dir, err)
@@ -63,8 +194,8 @@ func TestCallWithWriter(t *testing.T) {
 	var fakeOut fakeWriter
 	var fakeErr fakeWriter
 
-	stdout := HideSecretsWriter{Delegate: &fakeOut, Censor: &sa}
-	stderr := HideSecretsWriter{Delegate: &fakeErr, Censor: &sa}
+	stdout := hideSecretsWriter{delegate: &fakeOut, censor: &sa}
+	stderr := hideSecretsWriter{delegate: &fakeErr, censor: &sa}
 
 	testCases := []struct {
 		description string
@@ -103,12 +234,113 @@ func TestCallWithWriter(t *testing.T) {
 		t.Run(tc.description, func(t *testing.T) {
 			fakeOut.results = []byte{}
 			fakeErr.results = []byte{}
-			_ = Call(stdout, stderr, tc.command, tc.args...)
+			_ = call(stdout, stderr, tc.command, tc.args...)
 			if full, want := string(fakeOut.results), tc.expectedOut; !strings.Contains(full, want) {
 				t.Errorf("stdout does not contain %q, got %q", full, want)
 			}
 			if full, want := string(fakeErr.results), tc.expectedErr; !strings.Contains(full, want) {
 				t.Errorf("stderr does not contain %q, got %q", full, want)
+			}
+		})
+	}
+}
+
+func TestIsUnderPath(t *testing.T) {
+	cases := []struct {
+		description string
+		paths       []string
+		file        string
+		expected    bool
+	}{
+		{
+			description: "file is under the direct path",
+			paths:       []string{"config/prow/"},
+			file:        "config/prow/config.yaml",
+			expected:    true,
+		},
+		{
+			description: "file is under the indirect path",
+			paths:       []string{"config/prow-staging/"},
+			file:        "config/prow-staging/jobs/config.yaml",
+			expected:    true,
+		},
+		{
+			description: "file is under one path but not others",
+			paths:       []string{"config/prow/", "config/prow-staging/"},
+			file:        "config/prow-staging/jobs/whatever-repo/whatever-file",
+			expected:    true,
+		},
+		{
+			description: "file is not under the path but having the same prefix",
+			paths:       []string{"config/prow/"},
+			file:        "config/prow-staging/config.yaml",
+			expected:    false,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.description, func(t *testing.T) {
+			actual := isUnderPath(tc.file, tc.paths)
+			if actual != tc.expected {
+				t.Errorf("expected to be %t but actual is %t", tc.expected, actual)
+			}
+		})
+	}
+}
+
+func TestGetAssignment(t *testing.T) {
+	cases := []struct {
+		description          string
+		oncallURL            string
+		oncallServerResponse string
+		expectResKeyword     string
+	} {
+		{
+			description:          "empty oncall URL will return an empty string",
+			oncallURL:            "",
+			oncallServerResponse: "",
+			expectResKeyword:     "",
+		},
+		{
+			description:          "an invalid oncall URL will return an error message",
+			oncallURL:            "whatever-url",
+			oncallServerResponse: "",
+			expectResKeyword:     "error",
+		},
+		{
+			description:          "an invalid response will return an error message",
+			oncallURL:            "auto",
+			oncallServerResponse: "whatever-malformed-response",
+			expectResKeyword:     "error",
+		},
+		{
+			description:          "a valid response will return the oncaller",
+			oncallURL:            "auto",
+			oncallServerResponse: `{"Oncall":{"testinfra":"fake-oncall-name"}}`,
+			expectResKeyword:     "fake-oncall-name",
+		},
+		{
+			description:          "a valid response with empty oncall will return on oncall message",
+			oncallURL:            "auto",
+			oncallServerResponse: `{"Oncall":{"testinfra":""}}`,
+			expectResKeyword:     "Nobody",
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.description, func(t *testing.T) {
+			if tc.oncallURL == "auto" {
+				// generate a test server so we can capture and inspect the request
+				testServer := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+					res.Write([]byte(tc.oncallServerResponse))
+				}))
+				defer func() { testServer.Close() }()
+				tc.oncallURL = testServer.URL
+			}
+
+			res := getAssignment(tc.oncallURL)
+			if !strings.Contains(res, tc.expectResKeyword) {
+				t.Errorf("expect the result %q contains keyword %q but it does not", res, tc.expectResKeyword)
 			}
 		})
 	}

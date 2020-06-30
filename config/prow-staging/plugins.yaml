@@ -1,0 +1,32 @@
+approve:
+  - repos:
+    - "k8s-ci-staging-robot"
+    require_self_approval: false
+    ignore_review_state: false
+# Plugins enabled for each repo.
+plugins:
+  k8s-ci-staging-robot:
+  - approve
+  - assign
+  - blunderbuss
+  - buildifier
+  - cat
+  - dog
+  - golint
+  - heart
+  - help
+  - hold
+  - label
+  - lgtm
+  - lifecycle
+  - milestone
+  - owners-label
+  - project
+  - shrug
+  - size
+  - skip
+  - trigger
+  - verify-owners
+  - welcome
+  - wip
+  - yuks
