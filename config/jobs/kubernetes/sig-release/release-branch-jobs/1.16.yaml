@@ -900,6 +900,7 @@ presubmits:
         - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_secrets.yaml
         - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_statefulsets.yaml
         - --test-cmd-args=--testoverrides=./testing/load/gce/throughput_override.yaml
+        - --test-cmd-args=--testoverrides=./testing/overrides/enable_oom_tracking.yaml
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=100m
         - --use-logexporter
@@ -957,6 +958,7 @@ presubmits:
         - --test-cmd-args=--testconfig=testing/load/config.yaml
         - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
         - --test-cmd-args=--testoverrides=./testing/load/kubemark/500_nodes/override.yaml
+        - --test-cmd-args=--testoverrides=./testing/overrides/enable_oom_tracking.yaml
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=100m
         image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-1.16
