@@ -60,6 +60,7 @@ type deployer struct {
 	GCPZone                     string `desc:"GCP Zone to create VMs in. If unset, kube-up.sh and kube-down.sh defaults apply."`
 	OverwriteLogsDir            bool   `desc:"If set, will overwrite an existing logs directory if one is encountered during dumping of logs. Useful when runnning tests locally."`
 	BoskosLocation              string `desc:"If set, manually specifies the location of the boskos server. If unset and boskos is needed, defaults to http://boskos.test-pods.svc.cluster.local."`
+	LegacyMode                  bool   `desc:"Set if the provided repo root is the kubernetes/kubernetes repo and not kubernetes/cloud-provider-gcp."`
 }
 
 // New implements deployer.New for gce
