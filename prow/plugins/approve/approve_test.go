@@ -1043,6 +1043,26 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 </details>
 <!-- META={"approvers":[]} -->`,
 		},
+		{
+			name:     "approval command variant",
+			prBody:   "This is a great PR that will fix\nlots of things!",
+			hasLabel: false,
+			files:    []string{"a/a.go", "a/aa.go"},
+			comments: []github.IssueComment{
+				newTestComment("k8s-ci-robot", "[APPROVALNOTIFIER] This PR is **NOT APPROVED**\n\nblah"),
+				newTestCommentTime(time.Now(), "alice", "stuff\n/approval\nblah"),
+			},
+			reviews:             []github.Review{},
+			selfApprove:         false,
+			needsIssue:          false,
+			lgtmActsAsApprove:   true,
+			reviewActsAsApprove: false,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
+
+			expectDelete:  true,
+			expectToggle:  true,
+			expectComment: true,
+		},
 	}
 
 	fr := fakeRepo{

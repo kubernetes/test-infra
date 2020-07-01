@@ -40,13 +40,14 @@ const (
 	// PluginName defines this plugin's registered name.
 	PluginName = "approve"
 
-	approveCommand  = "APPROVE"
 	cancelArgument  = "cancel"
 	lgtmCommand     = "LGTM"
 	noIssueArgument = "no-issue"
 )
 
 var (
+	approveCommands = []string{"APPROVE", "APPROVAL"}
+
 	associatedIssueRegexFormat = `(?:%s/[^/]+/issues/|#)(\d+)`
 	commandRegex               = regexp.MustCompile(`(?m)^/([^\s]+)[\t ]*([^\n\r]*)`)
 	notificationRegex          = regexp.MustCompile(`(?is)^\[` + approvers.ApprovalNotificationName + `\] *?([^\n]*)(?:\n\n(.*))?`)
@@ -542,7 +543,19 @@ func isApprovalCommand(botName string, lgtmActsAsApprove bool, c *comment) bool 
 
 	for _, match := range commandRegex.FindAllStringSubmatch(c.Body, -1) {
 		cmd := strings.ToUpper(match[1])
-		if (cmd == lgtmCommand && lgtmActsAsApprove) || cmd == approveCommand {
+		if (cmd == lgtmCommand && lgtmActsAsApprove) || isApproveVariant(cmd) {
+			return true
+		}
+	}
+	return false
+}
+
+// isApproveVariant checks to see if the given user command is one of the
+// allowed command variants (e.g. /approve or /approval).
+func isApproveVariant(cmd string) bool {
+	for _, approveCommand := range approveCommands {
+		cmd := strings.ToUpper(cmd)
+		if cmd == approveCommand {
 			return true
 		}
 	}
@@ -614,7 +627,7 @@ func addApprovers(approversHandler *approvers.Approvers, approveComments []*comm
 
 		for _, match := range commandRegex.FindAllStringSubmatch(c.Body, -1) {
 			name := strings.ToUpper(match[1])
-			if name != approveCommand && name != lgtmCommand {
+			if !isApproveVariant(name) && name != lgtmCommand {
 				continue
 			}
 			args := strings.ToLower(strings.TrimSpace(match[2]))
@@ -631,7 +644,7 @@ func addApprovers(approversHandler *approvers.Approvers, approveComments []*comm
 				)
 			}
 
-			if name == approveCommand {
+			if isApproveVariant(name) {
 				approversHandler.AddApprover(
 					c.Author,
 					c.HTMLURL,
