@@ -42,7 +42,10 @@ tide:
     IBM/ibm-licensing-operator: squash
     IBM/ibm-management-ingress-operator: squash
     IBM/ibm-management-repo-operator: squash
+    IBM/ibm-metering-multicloudui-operator: squash
     IBM/ibm-metering-operator: squash
+    IBM/ibm-metering-receiver-operator: squash
+    IBM/ibm-metering-sender-operator: squash
     IBM/ibm-mongodb-operator: squash
     IBM/ibm-monitoring-exporters-operator: squash
     IBM/ibm-monitoring-prometheus-operator-ext: squash
@@ -95,7 +98,10 @@ tide:
     - IBM/ibm-licensing-operator
     - IBM/ibm-management-ingress-operator
     - IBM/ibm-management-repo-operator
+    - IBM/ibm-metering-multicloudui-operator
     - IBM/ibm-metering-operator
+    - IBM/ibm-metering-receiver-operator
+    - IBM/ibm-metering-sender-operator
     - IBM/ibm-mongodb-operator
     - IBM/ibm-monitoring-exporters-operator
     - IBM/ibm-monitoring-prometheus-operator-ext
