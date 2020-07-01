@@ -92,6 +92,10 @@ func enableComputeAPI(project string) error {
 }
 
 func (d *deployer) verifyUpFlags() error {
+	if d.NumNodes < 1 {
+		return fmt.Errorf("number of nodes must be at least 1")
+	}
+
 	if err := d.setRepoPathIfNotSet(); err != nil {
 		return err
 	}

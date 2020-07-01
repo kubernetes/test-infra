@@ -111,5 +111,28 @@ func (d *deployer) buildEnv() []string {
 	// kube-up and kube-down get this as a default ("kubernetes") but log-dump
 	// does not. opted to set it manually here for maximum consistency
 	env = append(env, "KUBE_GCE_INSTANCE_PREFIX=kubetest2")
+
+	// Pass through number of nodes and associated IP range. In the future,
+	// IP range will be configurable.
+	env = append(env, fmt.Sprintf("NUM_NODES=%d", d.NumNodes))
+	env = append(env, fmt.Sprintf("CLUSTER_IP_RANGE=%s", getClusterIPRange(d.NumNodes)))
+
 	return env
+}
+
+// Taken from the kubetest bash (gce) deployer
+// Calculates the cluster IP range based on the no. of nodes in the cluster.
+// Note: This mimics the function get-cluster-ip-range used by kube-up script.
+func getClusterIPRange(numNodes int) string {
+	suggestedRange := "10.64.0.0/14"
+	if numNodes > 1000 {
+		suggestedRange = "10.64.0.0/13"
+	}
+	if numNodes > 2000 {
+		suggestedRange = "10.64.0.0/12"
+	}
+	if numNodes > 4000 {
+		suggestedRange = "10.64.0.0/11"
+	}
+	return suggestedRange
 }

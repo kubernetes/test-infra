@@ -61,6 +61,7 @@ type deployer struct {
 	OverwriteLogsDir            bool   `desc:"If set, will overwrite an existing logs directory if one is encountered during dumping of logs. Useful when runnning tests locally."`
 	BoskosLocation              string `desc:"If set, manually specifies the location of the boskos server. If unset and boskos is needed, defaults to http://boskos.test-pods.svc.cluster.local."`
 	LegacyMode                  bool   `desc:"Set if the provided repo root is the kubernetes/kubernetes repo and not kubernetes/cloud-provider-gcp."`
+	NumNodes                    int    `desc:"The number of nodes in the cluster."`
 }
 
 // New implements deployer.New for gce
@@ -72,6 +73,7 @@ func New(opts types.Options) (types.Deployer, *pflag.FlagSet) {
 		boskosHeartbeatClose:        make(chan struct{}),
 		BoskosAcquireTimeoutSeconds: 5 * 60,
 		BoskosLocation:              "http://boskos.test-pods.svc.cluster.local.",
+		NumNodes:                    3,
 	}
 
 	flagSet, err := gpflag.Parse(d)
