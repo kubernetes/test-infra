@@ -4,6 +4,7 @@ dashboard_groups:
   - googleoss-test-infra
   - googleoss-esp-v2-presubmit
   - googleoss-esp-v2-periodic
+  - googleoss-en-server
   name: googleoss
 dashboards:
 - dashboard_tab:
@@ -306,6 +307,15 @@ dashboards:
       url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
     test_group_name: ESPv2-serverless-janitor
   name: googleoss-esp-v2-periodic
+- dashboard_tab:
+  - code_search_url_template:
+      url: https://github.com/google/exposure-notifications-server/compare/<start-custom-0>...<end-custom-0>
+    description: ci-en-server-performance
+    name: performance
+    open_bug_template:
+      url: https://github.com/google/exposure-notifications-server/issues/
+    test_group_name: ci-en-server-performance
+  name: googleoss-en-server
 test_groups:
 - gcs_prefix: oss-prow/logs/ESPv2-continuous-anthos-cloud-run-e2e-cloud-run-http-bookstore
   name: ESPv2-continuous-anthos-cloud-run-e2e-cloud-run-http-bookstore
@@ -335,6 +345,8 @@ test_groups:
   name: ESPv2-gke-janitor
 - gcs_prefix: oss-prow/logs/ESPv2-serverless-janitor
   name: ESPv2-serverless-janitor
+- gcs_prefix: oss-prow/logs/ci-en-server-performance
+  name: ci-en-server-performance
 - gcs_prefix: oss-prow/logs/ci-google-oss-test-infra-resultstore-upload
   name: ci-google-oss-test-infra-resultstore-upload
 - gcs_prefix: oss-prow/logs/ci-oss-test-infra-autobump-prow
