@@ -94,8 +94,14 @@ func (d *deployer) buildEnv() []string {
 	// can be removed if env is inherited from the os
 	env = append(env, fmt.Sprintf("USER=%s", os.Getenv("USER")))
 
-	// kube-up.sh, kube-down.sh etc. use PROJECT as a parameter for all gcloud commands
+	// kube-up.sh, kube-down.sh etc. use PROJECT as a parameter
+	// for gcloud commands
 	env = append(env, fmt.Sprintf("PROJECT=%s", d.GCPProject))
+
+	// KUBE_GCE_ZONE is used by up and down scripts. It is used mainly
+	// to set the ZONE var, which can't be set directly here because it
+	// will be overridden when the scripts check KUBE_GCE_ZONE.
+	env = append(env, fmt.Sprintf("KUBE_GCE_ZONE=%s", d.GCPZone))
 
 	// kubeconfig is set to tell kube-up.sh where to generate the kubeconfig
 	// we don't want this to be the default because this kubeconfig "belongs" to
