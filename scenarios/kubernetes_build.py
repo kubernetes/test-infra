@@ -42,7 +42,7 @@ def check_output(*cmd):
     print >>sys.stderr, 'Run:', cmd
     return subprocess.check_output(cmd)
 
-def check_build_exists(gcs, suffix):
+def check_build_exists(gcs, suffix, fast):
     """ check if a k8s/federation build with same version
         already exists in remote path
     """
@@ -68,6 +68,8 @@ def check_build_exists(gcs, suffix):
             gcs = 'kubernetes-release-dev'
         gcs = 'gs://' + gcs
         mode = 'ci'
+        if fast:
+            mode += '/fast'
         if suffix:
             mode += suffix
         gcs = os.path.join(gcs, mode, version)
@@ -96,7 +98,7 @@ def main(args):
 
     # pre-check if target build exists in gcs bucket or not
     # if so, don't make duplicated builds
-    if check_build_exists(args.release, args.suffix):
+    if check_build_exists(args.release, args.suffix, args.fast):
         print >>sys.stderr, 'build already exists, exit'
         sys.exit(0)
 
@@ -122,6 +124,8 @@ def main(args):
         push_build_args.append('--docker-registry=%s' % args.registry)
     if args.extra_publish_file:
         push_build_args.append('--extra-publish-file=%s' % args.extra_publish_file)
+    if args.fast:
+        push_build_args.append('--fast')
     if args.allow_dup:
         push_build_args.append('--allow-dup')
     if args.skip_update_latest:
@@ -159,6 +163,8 @@ if __name__ == '__main__':
         '--registry', help='Push images to the specified docker registry')
     PARSER.add_argument(
         '--extra-publish-file', help='Additional version file uploads to')
+    PARSER.add_argument(
+        '--fast', action='store_true', help='Specifies a fast build')
     PARSER.add_argument(
         '--allow-dup', action='store_true', help='Allow overwriting if the build exists on gcs')
     PARSER.add_argument(
