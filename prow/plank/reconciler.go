@@ -235,7 +235,7 @@ func (r *reconciler) reconcile(pj *prowv1.ProwJob) (*reconcile.Result, error) {
 
 func (r *reconciler) terminateDupes(pj *prowv1.ProwJob) error {
 	pjs := &prowv1.ProwJobList{}
-	if err := r.pjClient.List(r.ctx, pjs, optNotCompletedProwJobs()); err != nil {
+	if err := r.pjClient.List(r.ctx, pjs, optPendingTriggeredJobsNamed(pj.Spec.Job)); err != nil {
 		return fmt.Errorf("failed to list prowjobs: %v", err)
 	}
 
@@ -581,7 +581,7 @@ func (r *reconciler) canExecuteConcurrently(pj *prowv1.ProwJob) (bool, error) {
 
 	if max := r.config().Plank.MaxConcurrency; max > 0 {
 		pjs := &prowv1.ProwJobList{}
-		if err := r.pjClient.List(r.ctx, pjs, optNotCompletedProwJobs()); err != nil {
+		if err := r.pjClient.List(r.ctx, pjs, optPendingProwJobs()); err != nil {
 			return false, fmt.Errorf("failed to list prowjobs: %w", err)
 		}
 		// The list contains our own ProwJob
@@ -597,28 +597,34 @@ func (r *reconciler) canExecuteConcurrently(pj *prowv1.ProwJob) (bool, error) {
 	}
 
 	pjs := &prowv1.ProwJobList{}
-	if err := r.pjClient.List(r.ctx, pjs, optNotCompletedProwJobsNamed(pj.Spec.Job)); err != nil {
+	if err := r.pjClient.List(r.ctx, pjs, optPendingTriggeredJobsNamed(pj.Spec.Job)); err != nil {
 		return false, fmt.Errorf("failed listing prowjobs: %w:", err)
 	}
 	r.log.Infof("got %d not completed with same name", len(pjs.Items))
 
-	var olderMatchingPJs int
+	var pendingOrOlderMatchingPJs int
 	for _, foundPJ := range pjs.Items {
 		// Ignore self here.
 		if foundPJ.UID == pj.UID {
 			continue
 		}
+		if foundPJ.Status.State == prowv1.PendingState {
+			pendingOrOlderMatchingPJs++
+			continue
+		}
 
+		// At this point we know that foundPJ is in Triggered state, if its older than our prowJobs it gets
+		// priorized to make sure we execute jobs in creation order.
 		if foundPJ.CreationTimestamp.Before(&pj.CreationTimestamp) {
-			olderMatchingPJs++
+			pendingOrOlderMatchingPJs++
 		}
 
 	}
 
-	if olderMatchingPJs >= pj.Spec.MaxConcurrency {
+	if pendingOrOlderMatchingPJs >= pj.Spec.MaxConcurrency {
 		r.log.WithFields(pjutil.ProwJobFields(pj)).
-			Debugf("Not starting another instance of %s, already %d older instances waiting and %d is the limit",
-				pj.Spec.Job, olderMatchingPJs, pj.Spec.MaxConcurrency)
+			Debugf("Not starting another instance of %s, have %d instances that are pending or older, %d is the limit",
+				pj.Spec.Job, pendingOrOlderMatchingPJs, pj.Spec.MaxConcurrency)
 		return false, nil
 	}
 
@@ -694,13 +700,14 @@ const (
 	prowJobIndexName = "plank-prow-jobs"
 	// prowJobIndexKeyAll is the indexKey for all ProwJobs
 	prowJobIndexKeyAll = "all"
-	// prowJobIndexKeyCompleted is the indexKey for not
-	// completed ProwJobs
-	prowJobIndexKeyNotCompleted = "not-completed"
+	// prowJobIndexKeyPending is the indexKey for prowjobs
+	// that are currently pending AKA a corresponding pod
+	// exists but didn't yet finish
+	prowJobIndexKeyPending = "pending"
 )
 
-func prowJobIndexKeyNotCompletedByName(jobName string) string {
-	return fmt.Sprintf("not-completed-%s", jobName)
+func pendingTriggeredIndexKeyByName(jobName string) string {
+	return fmt.Sprintf("pending-triggered-named-%s", jobName)
 }
 
 func prowJobIndexer(prowJobNamespace string) ctrlruntimeclient.IndexerFunc {
@@ -710,11 +717,18 @@ func prowJobIndexer(prowJobNamespace string) ctrlruntimeclient.IndexerFunc {
 			return nil
 		}
 
-		if !pj.Complete() {
+		if pj.Status.State == prowv1.PendingState {
 			return []string{
 				prowJobIndexKeyAll,
-				prowJobIndexKeyNotCompleted,
-				prowJobIndexKeyNotCompletedByName(pj.Spec.Job),
+				prowJobIndexKeyPending,
+				pendingTriggeredIndexKeyByName(pj.Spec.Job),
+			}
+		}
+
+		if pj.Status.State == prowv1.TriggeredState {
+			return []string{
+				prowJobIndexKeyAll,
+				pendingTriggeredIndexKeyByName(pj.Spec.Job),
 			}
 		}
 
@@ -726,10 +740,10 @@ func optAllProwJobs() ctrlruntimeclient.ListOption {
 	return ctrlruntimeclient.MatchingField(prowJobIndexName, prowJobIndexKeyAll)
 }
 
-func optNotCompletedProwJobs() ctrlruntimeclient.ListOption {
-	return ctrlruntimeclient.MatchingField(prowJobIndexName, prowJobIndexKeyNotCompleted)
+func optPendingProwJobs() ctrlruntimeclient.ListOption {
+	return ctrlruntimeclient.MatchingField(prowJobIndexName, prowJobIndexKeyPending)
 }
 
-func optNotCompletedProwJobsNamed(name string) ctrlruntimeclient.ListOption {
-	return ctrlruntimeclient.MatchingField(prowJobIndexName, prowJobIndexKeyNotCompletedByName(name))
+func optPendingTriggeredJobsNamed(name string) ctrlruntimeclient.ListOption {
+	return ctrlruntimeclient.MatchingField(prowJobIndexName, pendingTriggeredIndexKeyByName(name))
 }
