@@ -44,8 +44,9 @@ periodics:
       - --timeout=180
       - --scenario=kubernetes_build
       - --
+      - --cross
       - --allow-dup
-      - --extra-publish-file=latest-cross,k8s-master
+      - --extra-publish-file=k8s-master
       - --registry=gcr.io/kubernetes-ci-images
       # docker-in-docker needs privileged mode
       securityContext:
