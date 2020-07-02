@@ -170,7 +170,7 @@ presubmits:
       timeout: 1h
     max_concurrency: 5
     path_alias: k8s.io/ingress-nginx
-    run_if_changed: '\.go$|^rootfs/'
+    #run_if_changed: '\.go$|^rootfs/'
     labels:
       preset-kind-volume-mounts: "true"
       preset-dind-enabled: "true"
@@ -201,7 +201,7 @@ presubmits:
       timeout: 1h
     max_concurrency: 5
     path_alias: k8s.io/ingress-nginx
-    run_if_changed: '\.go$|^rootfs/'
+    #run_if_changed: '\.go$|^rootfs/'
     labels:
       preset-kind-volume-mounts: "true"
       preset-dind-enabled: "true"
@@ -232,7 +232,7 @@ presubmits:
       timeout: 1h
     max_concurrency: 5
     path_alias: k8s.io/ingress-nginx
-    run_if_changed: '\.go$|^rootfs/'
+    #run_if_changed: '\.go$|^rootfs/'
     labels:
       preset-kind-volume-mounts: "true"
       preset-dind-enabled: "true"
@@ -263,7 +263,7 @@ presubmits:
       timeout: 1h
     max_concurrency: 5
     path_alias: k8s.io/ingress-nginx
-    run_if_changed: '\.go$|^rootfs/'
+    #run_if_changed: '\.go$|^rootfs/'
     labels:
       preset-kind-volume-mounts: "true"
       preset-dind-enabled: "true"
