@@ -44,6 +44,7 @@ const (
 	gciCi                  // gci/FAMILY/CI_VERSION
 	gke                    // gke(deprecated), gke-default, gke-latest, gke-channel-CHANNEL_NAME
 	ci                     // ci/latest, ci/latest-1.5
+	ciCross                // ci/latest-cross, ci/latest-1.19-cross
 	rc                     // release/latest, release/latest-1.5
 	stable                 // release/stable, release/stable-1.5
 	version                // v1.5.0, v1.5.0-beta.2
@@ -78,6 +79,7 @@ func (l *extractStrategies) Set(value string) error {
 		`^gci/([\w-]+(?:\?{1}(?::?[\w-]+=[\w-]+)+)?)$`:                                     gci,
 		`^gci/([\w-]+(?:\?{1}(?::?[\w-]+=[\w-]+)+)?)/(.+)$`:                                gciCi,
 		`^ci/(.+)$`:                   ci,
+		`^ci/(.+)-cross$`:             ciCross,
 		`^release/(latest.*)$`:        rc,
 		`^release/(stable.*)$`:        stable,
 		`^(v\d+\.\d+\.\d+[\w.\-+]*)$`: version,
@@ -525,6 +527,8 @@ func (e extractStrategy) Extract(project, zone, region string, extractSrc bool) 
 		}
 
 		return setReleaseFromHTTP("kubernetes-release-dev/ci", e.option, extractSrc)
+	case ciCross:
+		return setReleaseFromHTTP("kubernetes-release-dev/ci/cross", e.option, extractSrc)
 	case rc, stable:
 		return setReleaseFromHTTP("kubernetes-release/release", e.option, extractSrc)
 	case version:
