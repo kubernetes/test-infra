@@ -493,15 +493,6 @@ func (c *aksEngineDeployer) populateAPIModelTemplate() error {
 		return fmt.Errorf("No template file specified %v", err)
 	}
 
-	// set default distro so we do not use prebuilt os image
-	if v.Properties.MasterProfile.Distro == "" {
-		v.Properties.MasterProfile.Distro = "ubuntu"
-	}
-	for _, agentPool := range v.Properties.AgentPoolProfiles {
-		if agentPool.Distro == "" {
-			agentPool.Distro = "ubuntu"
-		}
-	}
 	// replace APIModel template properties from flags
 	if c.location != "" {
 		v.Location = c.location
