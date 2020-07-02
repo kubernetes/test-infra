@@ -36,8 +36,10 @@ import (
 )
 
 var (
-	bugData   = []byte(`{"bugs":[{"alias":[],"assigned_to":"Steve Kuznetsov","assigned_to_detail":{"email":"skuznets","id":381851,"name":"skuznets","real_name":"Steve Kuznetsov"},"blocks":[],"cc":["Sudha Ponnaganti"],"cc_detail":[{"email":"sponnaga","id":426940,"name":"sponnaga","real_name":"Sudha Ponnaganti"}],"classification":"Red Hat","component":["Test Infrastructure"],"creation_time":"2019-05-01T19:33:36Z","creator":"Dan Mace","creator_detail":{"email":"dmace","id":330250,"name":"dmace","real_name":"Dan Mace"},"deadline":null,"depends_on":[],"docs_contact":"","dupe_of":null,"groups":[],"id":1705243,"is_cc_accessible":true,"is_confirmed":true,"is_creator_accessible":true,"is_open":true,"keywords":[],"last_change_time":"2019-05-17T15:13:13Z","op_sys":"Unspecified","platform":"Unspecified","priority":"unspecified","product":"OpenShift Container Platform","qa_contact":"","resolution":"","see_also":[],"severity":"medium","status":"VERIFIED","summary":"[ci] cli image flake affecting *-images jobs","target_milestone":"---","target_release":["3.11.z"],"url":"","version":["3.11.0"],"whiteboard":""}],"faults":[]}`)
-	bugStruct = &Bug{Alias: []string{}, AssignedTo: "Steve Kuznetsov", AssignedToDetail: &User{Email: "skuznets", ID: 381851, Name: "skuznets", RealName: "Steve Kuznetsov"}, Blocks: []int{}, CC: []string{"Sudha Ponnaganti"}, CCDetail: []User{{Email: "sponnaga", ID: 426940, Name: "sponnaga", RealName: "Sudha Ponnaganti"}}, Classification: "Red Hat", Component: []string{"Test Infrastructure"}, CreationTime: "2019-05-01T19:33:36Z", Creator: "Dan Mace", CreatorDetail: &User{Email: "dmace", ID: 330250, Name: "dmace", RealName: "Dan Mace"}, DependsOn: []int{}, ID: 1705243, IsCCAccessible: true, IsConfirmed: true, IsCreatorAccessible: true, IsOpen: true, Groups: []string{}, Keywords: []string{}, LastChangeTime: "2019-05-17T15:13:13Z", OperatingSystem: "Unspecified", Platform: "Unspecified", Priority: "unspecified", Product: "OpenShift Container Platform", SeeAlso: []string{}, Severity: "medium", Status: "VERIFIED", Summary: "[ci] cli image flake affecting *-images jobs", TargetRelease: []string{"3.11.z"}, TargetMilestone: "---", Version: []string{"3.11.0"}}
+	bugData         = []byte(`{"bugs":[{"alias":[],"assigned_to":"Steve Kuznetsov","assigned_to_detail":{"email":"skuznets","id":381851,"name":"skuznets","real_name":"Steve Kuznetsov"},"blocks":[],"cc":["Sudha Ponnaganti"],"cc_detail":[{"email":"sponnaga","id":426940,"name":"sponnaga","real_name":"Sudha Ponnaganti"}],"classification":"Red Hat","component":["Test Infrastructure"],"creation_time":"2019-05-01T19:33:36Z","creator":"Dan Mace","creator_detail":{"email":"dmace","id":330250,"name":"dmace","real_name":"Dan Mace"},"deadline":null,"depends_on":[],"docs_contact":"","dupe_of":null,"groups":[],"id":1705243,"is_cc_accessible":true,"is_confirmed":true,"is_creator_accessible":true,"is_open":true,"keywords":[],"last_change_time":"2019-05-17T15:13:13Z","op_sys":"Unspecified","platform":"Unspecified","priority":"unspecified","product":"OpenShift Container Platform","qa_contact":"","resolution":"","see_also":[],"severity":"medium","status":"VERIFIED","summary":"[ci] cli image flake affecting *-images jobs","target_milestone":"---","target_release":["3.11.z"],"url":"","version":["3.11.0"],"whiteboard":""}],"faults":[]}`)
+	bugStruct       = &Bug{Alias: []string{}, AssignedTo: "Steve Kuznetsov", AssignedToDetail: &User{Email: "skuznets", ID: 381851, Name: "skuznets", RealName: "Steve Kuznetsov"}, Blocks: []int{}, CC: []string{"Sudha Ponnaganti"}, CCDetail: []User{{Email: "sponnaga", ID: 426940, Name: "sponnaga", RealName: "Sudha Ponnaganti"}}, Classification: "Red Hat", Component: []string{"Test Infrastructure"}, CreationTime: "2019-05-01T19:33:36Z", Creator: "Dan Mace", CreatorDetail: &User{Email: "dmace", ID: 330250, Name: "dmace", RealName: "Dan Mace"}, DependsOn: []int{}, ID: 1705243, IsCCAccessible: true, IsConfirmed: true, IsCreatorAccessible: true, IsOpen: true, Groups: []string{}, Keywords: []string{}, LastChangeTime: "2019-05-17T15:13:13Z", OperatingSystem: "Unspecified", Platform: "Unspecified", Priority: "unspecified", Product: "OpenShift Container Platform", SeeAlso: []string{}, Severity: "medium", Status: "VERIFIED", Summary: "[ci] cli image flake affecting *-images jobs", TargetRelease: []string{"3.11.z"}, TargetMilestone: "---", Version: []string{"3.11.0"}}
+	bugAccessDenied = []byte(`{"error":true,"code":102,"message":"You are not authorized to access bug #2. To see this bug, you must first log in to an account with the appropriate permissions."}`)
+	bugInvalidBugID = []byte(`{"error":true,"code":101,"message":"Bug #3 does not exist."}`)
 )
 
 func clientForUrl(url string) *client {
@@ -84,6 +86,10 @@ func TestGetBug(t *testing.T) {
 		} else {
 			if id == 1705243 {
 				w.Write(bugData)
+			} else if id == 2 {
+				w.Write(bugAccessDenied)
+			} else if id == 3 {
+				w.Write(bugInvalidBugID)
 			} else {
 				http.Error(w, "404 Not Found", http.StatusNotFound)
 			}
@@ -110,6 +116,28 @@ func TestGetBug(t *testing.T) {
 	}
 	if otherBug != nil {
 		t.Errorf("expected no bug, got: %v", otherBug)
+	}
+
+	// this should return access denied
+	accessDeniedBug, err := client.GetBug(2)
+	if err == nil {
+		t.Error("expected an error, but got none")
+	} else if !IsAccessDenied(err) {
+		t.Errorf("expected an access denied error, got %v", err)
+	}
+	if accessDeniedBug != nil {
+		t.Errorf("expected no bug, got: %v", accessDeniedBug)
+	}
+
+	// this should return invalid Bug ID
+	invalidIDBug, err := client.GetBug(3)
+	if err == nil {
+		t.Error("expected an error, but got none")
+	} else if !IsInvalidBugID(err) {
+		t.Errorf("expected an invalid bug error, got %v", err)
+	}
+	if invalidIDBug != nil {
+		t.Errorf("expected no bug, got: %v", invalidIDBug)
 	}
 }
 
@@ -255,6 +283,10 @@ func TestGetComments(t *testing.T) {
 		} else {
 			if id == 12345 {
 				w.Write(commentsJSON)
+			} else if id == 2 {
+				w.Write(bugAccessDenied)
+			} else if id == 3 {
+				w.Write(bugInvalidBugID)
 			} else {
 				http.Error(w, "404 Not Found", http.StatusNotFound)
 			}
@@ -280,6 +312,28 @@ func TestGetComments(t *testing.T) {
 	}
 	if otherBug != nil {
 		t.Errorf("expected no bug, got: %v", otherBug)
+	}
+
+	// this should return access denied
+	accessDeniedBug, err := client.GetComments(2)
+	if err == nil {
+		t.Error("expected an error, but got none")
+	} else if !IsAccessDenied(err) {
+		t.Errorf("expected an access denied error, got %v", err)
+	}
+	if accessDeniedBug != nil {
+		t.Errorf("expected no bug, got: %v", accessDeniedBug)
+	}
+
+	// this should return invalid Bug ID
+	invalidIDBug, err := client.GetComments(3)
+	if err == nil {
+		t.Error("expected an error, but got none")
+	} else if !IsInvalidBugID(err) {
+		t.Errorf("expected an invalid bug error, got %v", err)
+	}
+	if invalidIDBug != nil {
+		t.Errorf("expected no bug, got: %v", invalidIDBug)
 	}
 }
 
