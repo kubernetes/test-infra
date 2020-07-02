@@ -42,7 +42,7 @@ def check_output(*cmd):
     print >>sys.stderr, 'Run:', cmd
     return subprocess.check_output(cmd)
 
-def check_build_exists(gcs, suffix):
+def check_build_exists(gcs, suffix, cross):
     """ check if a k8s/federation build with same version
         already exists in remote path
     """
@@ -68,6 +68,8 @@ def check_build_exists(gcs, suffix):
             gcs = 'kubernetes-release-dev'
         gcs = 'gs://' + gcs
         mode = 'ci'
+        if cross:
+            mode += '/cross'
         if suffix:
             mode += suffix
         gcs = os.path.join(gcs, mode, version)
@@ -94,9 +96,14 @@ def main(args):
             'Scenario should only run from either kubernetes or federation directory!')
         sys.exit(1)
 
+    if args.cross and args.fast:
+        print >>sys.stderr, (
+            'build scenarios should not specify both the --cross and --fast flag')
+        sys.exit(1)
+
     # pre-check if target build exists in gcs bucket or not
     # if so, don't make duplicated builds
-    if check_build_exists(args.release, args.suffix):
+    if check_build_exists(args.release, args.suffix, args.cross):
         print >>sys.stderr, 'build already exists, exit'
         sys.exit(0)
 
@@ -122,6 +129,8 @@ def main(args):
         push_build_args.append('--docker-registry=%s' % args.registry)
     if args.extra_publish_file:
         push_build_args.append('--extra-publish-file=%s' % args.extra_publish_file)
+    if args.cross:
+        push_build_args.append('--cross')
     if args.allow_dup:
         push_build_args.append('--allow-dup')
     if args.skip_update_latest:
@@ -159,6 +168,8 @@ if __name__ == '__main__':
         '--registry', help='Push images to the specified docker registry')
     PARSER.add_argument(
         '--extra-publish-file', help='Additional version file uploads to')
+    PARSER.add_argument(
+        '--cross', action='store_true', help='Specifies a cross build')
     PARSER.add_argument(
         '--allow-dup', action='store_true', help='Allow overwriting if the build exists on gcs')
     PARSER.add_argument(
