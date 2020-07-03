@@ -871,7 +871,7 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			}
 			actual := actualProwJobs.Items[0]
 			if actual.Status.State != tc.ExpectedState {
-				t.Errorf("got state %v", actual.Status.State)
+				t.Errorf("expected state %v, got state %v", tc.ExpectedState, actual.Status.State)
 			}
 			if !reflect.DeepEqual(actual.Status.PendingTime, tc.ExpectedPendingTime) {
 				t.Errorf("got pending time %v, expected %v", actual.Status.PendingTime, tc.ExpectedPendingTime)
@@ -1798,6 +1798,9 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 								Agent: prowapi.KubernetesAgent,
 								Job:   jobName,
 							},
+							Status: prowapi.ProwJobStatus{
+								State: prowapi.PendingState,
+							},
 						}); err != nil {
 							t.Fatalf("failed to create prowJob: %v", err)
 						}
@@ -1955,11 +1958,6 @@ func TestMaxConcurency(t *testing.T) {
 			if tc.PendingJobs == nil {
 				tc.PendingJobs = map[string]int{}
 			}
-			var prowJobs []runtime.Object
-			for i := range tc.ExistingProwJobs {
-				tc.ExistingProwJobs[i].Namespace = "prowjobs"
-				prowJobs = append(prowJobs, &tc.ExistingProwJobs[i])
-			}
 			buildClients := map[string]ctrlruntimeclient.Client{}
 			logrus.SetLevel(logrus.DebugLevel)
 
@@ -1975,6 +1973,11 @@ func TestMaxConcurency(t *testing.T) {
 				}
 				result = c.canExecuteConcurrently(&tc.ProwJob)
 			} else {
+				var prowJobs []runtime.Object
+				for i := range tc.ExistingProwJobs {
+					tc.ExistingProwJobs[i].Namespace = "prowjobs"
+					prowJobs = append(prowJobs, &tc.ExistingProwJobs[i])
+				}
 				for jobName, numJobsToCreate := range tc.PendingJobs {
 					for i := 0; i < numJobsToCreate; i++ {
 						prowJobs = append(prowJobs, &prowapi.ProwJob{
@@ -1985,6 +1988,9 @@ func TestMaxConcurency(t *testing.T) {
 							Spec: prowapi.ProwJobSpec{
 								Agent: prowapi.KubernetesAgent,
 								Job:   jobName,
+							},
+							Status: prowapi.ProwJobStatus{
+								State: prowapi.PendingState,
 							},
 						})
 					}
@@ -2009,7 +2015,7 @@ func TestMaxConcurency(t *testing.T) {
 			}
 
 			if result != tc.ExpectedResult {
-				t.Errorf("Expected result to be %t but was %t", tc.ExpectedResult, result)
+				t.Errorf("Expected max_concurrency to allow job: %t, result was %t", tc.ExpectedResult, result)
 			}
 		})
 	}
