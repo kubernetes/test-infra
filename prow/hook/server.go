@@ -31,6 +31,7 @@ import (
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/githubeventserver"
 	_ "k8s.io/test-infra/prow/hook/plugin-imports"
 	"k8s.io/test-infra/prow/plugins"
 )
@@ -42,7 +43,7 @@ type Server struct {
 	Plugins        *plugins.ConfigAgent
 	ConfigAgent    *config.Agent
 	TokenGenerator func() []byte
-	Metrics        *Metrics
+	Metrics        *githubeventserver.Metrics
 
 	// c is an http client used for dispatching events
 	// to external plugin services.
