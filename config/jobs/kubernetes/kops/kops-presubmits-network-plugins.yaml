@@ -4,7 +4,7 @@ presubmits:
   - name: pull-kops-e2e-cni-amazonvpc
     branches:
     - master
-    run_if_changed: '^upup\/models\/cloudup\/resources\/addons\/networking\.amazon-vpc-routed-eni\/'
+    run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.amazon-vpc-routed-eni\/|pkg\/model\/(firewall|components\/kubeproxy|iam\/iam_builder).go|nodeup\/pkg\/model\/(context|kubelet).go|upup\/pkg\/fi\/cloudup\/defaults.go)'
     skip_report: false
     labels:
       preset-service-account: "true"
@@ -56,7 +56,7 @@ presubmits:
   - name: pull-kops-e2e-cni-calico
     branches:
     - master
-    run_if_changed: '^upup\/models\/cloudup\/resources\/addons\/networking\.projectcalico\.org\/'
+    run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.projectcalico\.org\/|pkg\/model\/(firewall.go|pki.go|iam\/iam_builder.go)|nodeup\/pkg\/model\/networking\/calico.go)'
     skip_report: false
     labels:
       preset-service-account: "true"
@@ -108,7 +108,7 @@ presubmits:
   - name: pull-kops-e2e-cni-canal
     branches:
     - master
-    run_if_changed: '^upup\/models\/cloudup\/resources\/addons\/networking\.projectcalico\.org\.canal\/'
+    run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.projectcalico\.org\.canal\/|nodeup\/pkg\/model\/networking\/(flannel|canal).go)'
     skip_report: false
     labels:
       preset-service-account: "true"
@@ -160,7 +160,7 @@ presubmits:
   - name: pull-kops-e2e-cni-cilium
     branches:
     - master
-    run_if_changed: '^upup\/models\/cloudup\/resources\/addons\/networking\.cilium\.io\/'
+    run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.cilium\.io\/|pkg\/model\/(firewall|components\/cilium|iam/iam_builder).go|nodeup\/pkg\/model\/(context|networking\/cilium).go|upup\/pkg\/fi\/cloudup\/template_functions.go)'
     skip_report: false
     labels:
       preset-service-account: "true"
@@ -212,7 +212,7 @@ presubmits:
   - name: pull-kops-e2e-cni-flannel
     branches:
     - master
-    run_if_changed: '^upup\/models\/cloudup\/resources\/addons\/networking\.flannel\/'
+    run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.flannel\/|nodeup\/pkg\/model\/(sysctls|networking\/flannel).go|upup\/pkg\/fi\/cloudup\/template_functions.go)'
     skip_report: false
     labels:
       preset-service-account: "true"
@@ -264,7 +264,7 @@ presubmits:
   - name: pull-kops-e2e-cni-weave
     branches:
     - master
-    run_if_changed: '^upup\/models\/cloudup\/resources\/addons\/networking\.weave\/'
+    run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.weave\/|upup\/pkg\/fi\/cloudup\/template_functions.go)'
     skip_report: false
     labels:
       preset-service-account: "true"
