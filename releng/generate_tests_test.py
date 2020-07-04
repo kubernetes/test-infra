@@ -23,16 +23,16 @@ class TestGenerateTests(unittest.TestCase):
 
     def setUp(self):
         self.temp_directory = tempfile.mkdtemp()
-        self.job_name = "ci-kubernetes-e2e-gce-cos-k8sbeta-ingress"
+        self.job_name = "ci-kubernetes-e2e-gce-cos-k8sstable1-ingress"
         self.job = {
             "interval": "1h"
         }
         self.config = {
-            "jobs": {"ci-kubernetes-e2e-gce-cos-k8sbeta-ingress": self.job},
+            "jobs": {"ci-kubernetes-e2e-gce-cos-k8sstable1-ingress": self.job},
             "common": {"args": []},
             "cloudProviders": {"gce": {"args": []}},
             "images": {"cos": {}},
-            "k8sVersions": {"beta": {"version": "2.4"}},
+            "k8sVersions": {"stable1": {"version": "2.4"}},
             "testSuites": {"ingress": {"args": ["--timeout=10"]}},
         }
 

@@ -132,14 +132,14 @@ dashboards:
 - name: vmware-conformance-cloud-provider
 - name: vmware-cluster-api-provider-vsphere
 
-- name: canonical-ubuntu1-k8sbeta
 - name: canonical-ubuntu1-k8sstable1
 - name: canonical-ubuntu1-k8sstable2
 - name: canonical-ubuntu1-k8sstable3
-- name: canonical-ubuntu2-k8sbeta
+- name: canonical-ubuntu1-k8sstable4
 - name: canonical-ubuntu2-k8sstable1
 - name: canonical-ubuntu2-k8sstable2
 - name: canonical-ubuntu2-k8sstable3
+- name: canonical-ubuntu2-k8sstable4
 - name: canonical-cdk
   dashboard_tab:
   - name: cdk-gce-node
@@ -544,14 +544,14 @@ dashboards:
 dashboard_groups:
 - name: canonical
   dashboard_names:
-  - canonical-ubuntu1-k8sbeta
   - canonical-ubuntu1-k8sstable1
   - canonical-ubuntu1-k8sstable2
   - canonical-ubuntu1-k8sstable3
-  - canonical-ubuntu2-k8sbeta
+  - canonical-ubuntu1-k8sstable4
   - canonical-ubuntu2-k8sstable1
   - canonical-ubuntu2-k8sstable2
   - canonical-ubuntu2-k8sstable3
+  - canonical-ubuntu2-k8sstable4
   - canonical-cdk
 
 - name: google
