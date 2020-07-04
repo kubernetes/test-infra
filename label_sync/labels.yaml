@@ -492,7 +492,7 @@ default:
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
-      description: Categorizes an issue or PR as relevant to SIG Instrumentation.
+      description: Categorizes an issue or PR as relevant to SIG Multicluster.
       name: sig/multicluster
       previously:
         - name: sig/federation
