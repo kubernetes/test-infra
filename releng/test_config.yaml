@@ -34,30 +34,17 @@
 jobs:
   # Ubuntu image validation.
   #
-  # +---------+--------+----------+------------+------------+------------+
-  # |         | k8sdev |  k8sbeta | k8sstable1 | k8sstable2 | k8sstable3 |
-  # +---------+--------+----------+------------+------------+------------+
-  # | ubuntu1 |    n/a | every 2h |   every 4h |   every 4h |   every 6h |
-  # +---------+--------+----------+------------+------------+------------+
-  # | ubuntu2 |    n/a | every 2h |   every 4h |   every 4h |   every 6h |
-  # +---------+--------+----------+------------+------------+------------+
+  # +---------+--------+------------+------------+------------+------------+
+  # |         | k8sdev | k8sstable1 | k8sstable2 | k8sstable3 | k8sstable4 |
+  # +---------+--------+------------+------------+------------+------------+
+  # | ubuntu1 | n/a    | every 2h   | every 4h   | every 4h   | every 6h   |
+  # +---------+--------+------------+------------+------------+------------+
+  # | ubuntu2 | n/a    | every 2h   | every 4h   | every 4h   | every 6h   |
+  # +---------+--------+------------+------------+------------+------------+
   #
   # Each cell contains 2 node e2e tests, 3 GCE e2e tests, and 9 GKE e2e tests.
 
   # Node e2e tests
-
-  # ci-kubernetes-e2enode-ubuntu1-k8sbeta-*
-  ci-kubernetes-e2enode-ubuntu1-k8sbeta-gkespec:
-    interval: 2h
-    args:
-    - --gcp-project=ubuntu-image-validation
-    sigOwners: [sig-node]
-  ci-kubernetes-e2enode-ubuntu1-k8sbeta-serial:
-    interval: 2h
-    args:
-    - --gcp-project=ubuntu-image-validation
-    - --node-test-args=--feature-gates=DynamicKubeletConfig=true
-    sigOwners: [sig-node]
 
   # ci-kubernetes-e2enode-ubuntu1-k8sstable1-*
   ci-kubernetes-e2enode-ubuntu1-k8sstable1-gkespec:
@@ -98,13 +85,13 @@ jobs:
     - --node-test-args=--feature-gates=DynamicKubeletConfig=true
     sigOwners: [sig-node]
 
-  # ci-kubernetes-e2enode-ubuntu2-k8sbeta-*
-  ci-kubernetes-e2enode-ubuntu2-k8sbeta-gkespec:
+  # ci-kubernetes-e2enode-ubuntu1-k8sstable4-*
+  ci-kubernetes-e2enode-ubuntu1-k8sstable4-gkespec:
     interval: 2h
     args:
     - --gcp-project=ubuntu-image-validation
     sigOwners: [sig-node]
-  ci-kubernetes-e2enode-ubuntu2-k8sbeta-serial:
+  ci-kubernetes-e2enode-ubuntu1-k8sstable4-serial:
     interval: 2h
     args:
     - --gcp-project=ubuntu-image-validation
@@ -150,27 +137,20 @@ jobs:
     - --node-test-args=--feature-gates=DynamicKubeletConfig=true
     sigOwners: [sig-node]
 
-  # GCE e2e tests
+  # ci-kubernetes-e2enode-ubuntu2-k8sstable4-*
+  ci-kubernetes-e2enode-ubuntu2-k8sstable4-gkespec:
+    interval: 2h
+    args:
+    - --gcp-project=ubuntu-image-validation
+    sigOwners: [sig-node]
+  ci-kubernetes-e2enode-ubuntu2-k8sstable4-serial:
+    interval: 2h
+    args:
+    - --gcp-project=ubuntu-image-validation
+    - --node-test-args=--feature-gates=DynamicKubeletConfig=true
+    sigOwners: [sig-node]
 
-  # ci-kubernetes-e2e-gce-ubuntu1-k8sbeta-*
-  ci-kubernetes-e2e-gce-ubuntu1-k8sbeta-default:
-    interval: 2h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=ubuntu-os-gke-cloud-dev-tests  # Canonical owned project.
-    sigOwners: [sig-node]
-  ci-kubernetes-e2e-gce-ubuntu1-k8sbeta-slow:
-    interval: 2h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=ubuntu-os-gke-cloud-dev-tests  # Canonical owned project.
-    sigOwners: [sig-node]
-  ci-kubernetes-e2e-gce-ubuntu1-k8sbeta-serial:
-    interval: 2h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=ubuntu-os-gke-cloud-dev-tests  # Canonical owned project.
-    sigOwners: [sig-node]
+  # GCE e2e tests
 
   # ci-kubernetes-e2e-gce-ubuntu1-k8sstable1-*
   ci-kubernetes-e2e-gce-ubuntu1-k8sstable1-default:
@@ -232,21 +212,21 @@ jobs:
     - --gcp-project=ubuntu-os-gke-cloud-dev-tests  # Canonical owned project.
     sigOwners: [sig-node]
 
-  # ci-kubernetes-e2e-gce-ubuntu2-k8sbeta-*
-  ci-kubernetes-e2e-gce-ubuntu2-k8sbeta-default:
-    interval: 2h
+  # ci-kubernetes-e2e-gce-ubuntu1-k8sstable4-*
+  ci-kubernetes-e2e-gce-ubuntu1-k8sstable4-default:
+    interval: 6h
     args:
     - --check-leaked-resources=false # disabled since it uses shared project.
     - --gcp-project=ubuntu-os-gke-cloud-dev-tests  # Canonical owned project.
     sigOwners: [sig-node]
-  ci-kubernetes-e2e-gce-ubuntu2-k8sbeta-slow:
-    interval: 2h
+  ci-kubernetes-e2e-gce-ubuntu1-k8sstable4-slow:
+    interval: 6h
     args:
     - --check-leaked-resources=false # disabled since it uses shared project.
     - --gcp-project=ubuntu-os-gke-cloud-dev-tests  # Canonical owned project.
     sigOwners: [sig-node]
-  ci-kubernetes-e2e-gce-ubuntu2-k8sbeta-serial:
-    interval: 2h
+  ci-kubernetes-e2e-gce-ubuntu1-k8sstable4-serial:
+    interval: 6h
     args:
     - --check-leaked-resources=false # disabled since it uses shared project.
     - --gcp-project=ubuntu-os-gke-cloud-dev-tests  # Canonical owned project.
@@ -312,46 +292,27 @@ jobs:
     - --gcp-project=ubuntu-os-gke-cloud-dev-tests  # Canonical owned project.
     sigOwners: [sig-node]
 
+  # ci-kubernetes-e2e-gce-ubuntu2-k8sstable4-*
+  ci-kubernetes-e2e-gce-ubuntu2-k8sstable4-default:
+    interval: 6h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
+    - --gcp-project=ubuntu-os-gke-cloud-dev-tests  # Canonical owned project.
+    sigOwners: [sig-node]
+  ci-kubernetes-e2e-gce-ubuntu2-k8sstable4-slow:
+    interval: 6h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
+    - --gcp-project=ubuntu-os-gke-cloud-dev-tests  # Canonical owned project.
+    sigOwners: [sig-node]
+  ci-kubernetes-e2e-gce-ubuntu2-k8sstable4-serial:
+    interval: 6h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
+    - --gcp-project=ubuntu-os-gke-cloud-dev-tests  # Canonical owned project.
+    sigOwners: [sig-node]
+
   # release branch jobs - cos only (cvm is deprecated at 1.8)
-  # beta release (inactive)
-  ci-kubernetes-e2e-gce-cos-k8sbeta-reboot:
-    interval: 1h
-    sigOwners: [sig-cloud-provider-gcp]
-    releaseBlocking: true
-  ci-kubernetes-e2e-gce-cos-k8sbeta-ingress:
-    interval: 1h
-    sigOwners: [sig-cloud-provider-gcp]
-    releaseBlocking: true
-  ci-kubernetes-e2e-gce-cos-k8sbeta-default:
-    args:
-    - --env=ENABLE_POD_SECURITY_POLICY=true
-    - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
-    interval: 1h
-    sigOwners: [sig-cloud-provider-gcp]
-    releaseBlocking: true
-  ci-kubernetes-e2e-gce-cos-k8sbeta-serial:
-    interval: 1h
-    sigOwners: [sig-cloud-provider-gcp]
-    releaseInforming: true
-    testgridNumFailuresToAlert: 6
-  ci-kubernetes-e2e-gce-cos-k8sbeta-slow:
-    interval: 1h
-    sigOwners: [sig-cloud-provider-gcp]
-    releaseInforming: true
-    testgridNumFailuresToAlert: 6
-  ci-kubernetes-e2e-gce-cos-k8sbeta-alphafeatures:
-    interval: 1h
-    args:
-    - --env=KUBE_PROXY_DAEMONSET=true
-    - --env=ENABLE_POD_PRIORITY=true
-    - --env=KUBE_FEATURE_GATES=AllAlpha=true,CSIMigration=false
-    # Panic if anything mutates a shared informer cache
-    - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
-    - --runtime-config=api/all=true
-    - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandCSIVolumes|ExpandInUseVolumes)\]|Networking
-      --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
-    sigOwners: [sig-cloud-provider-gcp]
-    releaseBlocking: true
   # stable1
   ci-kubernetes-e2e-gce-cos-k8sstable1-reboot:
     interval: 2h
@@ -466,6 +427,42 @@ jobs:
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
 
+  # stable4
+  ci-kubernetes-e2e-gce-cos-k8sstable4-ingress:
+    interval: 24h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseBlocking: true
+  ci-kubernetes-e2e-gce-cos-k8sstable4-reboot:
+    interval: 24h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseBlocking: true
+  ci-kubernetes-e2e-gce-cos-k8sstable4-default:
+    interval: 24h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
+  ci-kubernetes-e2e-gce-cos-k8sstable4-serial:
+    interval: 24h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
+  ci-kubernetes-e2e-gce-cos-k8sstable4-slow:
+    interval: 24h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
+  ci-kubernetes-e2e-gce-cos-k8sstable4-alphafeatures:
+    interval: 24h
+    args:
+    - --env=KUBE_PROXY_DAEMONSET=true
+    - --env=ENABLE_POD_PRIORITY=true
+    - --env=KUBE_FEATURE_GATES=AllAlpha=true,CSIMigration=false
+    # Panic if anything mutates a shared informer cache
+    - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
+    - --runtime-config=api/all=true
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseBlocking: true
+
 # The following settings are used by cluster e2e tests.
 
 common:
@@ -521,19 +518,19 @@ k8sVersions:
     args:
     - --extract=ci/latest
     version: master
-  beta:
+  stable1:
     args:
     - --extract=ci/latest-1.19
     version: '1.19'
-  stable1:
+  stable2:
     args:
     - --extract=ci/latest-1.18
     version: '1.18'
-  stable2:
+  stable3:
     args:
     - --extract=ci/latest-1.17
     version: '1.17'
-  stable3:
+  stable4:
     args:
     - --extract=ci/latest-1.16
     version: '1.16'
@@ -657,19 +654,19 @@ nodeK8sVersions:
     args:
     - --repo=k8s.io/kubernetes=master
     prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-master
-  beta:
+  stable1:
     args:
     - --repo=k8s.io/kubernetes=release-1.19
     prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-1.19
-  stable1:
+  stable2:
     args:
     - --repo=k8s.io/kubernetes=release-1.18
     prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-1.18
-  stable2:
+  stable3:
     args:
     - --repo=k8s.io/kubernetes=release-1.17
     prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-1.17
-  stable3:
+  stable4:
     args:
     - --repo=k8s.io/kubernetes=release-1.16
     prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-1.16
