@@ -188,7 +188,7 @@ periodics:
       - --scenario=kubernetes_build
       - --
       - --allow-dup
-      - --extra-publish-file=latest-1.18-cross,k8s-stable1
+      - --extra-publish-file=k8s-stable1
       - --registry=gcr.io/kubernetes-ci-images
       image: gcr.io/k8s-testimages/bootstrap:v20200430-be2a8a9
       name: ""
