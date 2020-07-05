@@ -1,0 +1,142 @@
+# SIG Network follows a different lifecycle for issues, warning users about stale issues after
+# 1 cycle of SIG Meeting (14 days) and then closes after 1 more cycle (14 more days)
+# It will only check for issues with the label sig/network and triage/needs-information
+
+periodics:
+# In the first 14 days we mark this as stale (first warning)
+- name: periodic-sig-network-stale
+  interval: 1h
+  decorate: true
+  annotations:
+    testgrid-dashboards: sig-network-fejtabot
+    description: Adds lifecycle/stale to SIG Network issues after 14d of inactivity
+    testgrid-tab-name: stale
+  spec:
+    containers:
+    - image: gcr.io/k8s-prow/commenter:v20200630-1dca612287
+      command:
+      - /app/robots/commenter/app.binary
+      args:
+      - |-
+        --query=org:kubernetes
+        -label:lifecycle/frozen
+        -label:lifecycle/stale
+        -label:lifecycle/rotten
+        -label:lifecycle/active
+        label:triage/needs-information
+        label:sig/network
+        is:issue
+        is:open
+      - --updated=336h
+      - --token=/etc/token/bot-github-token
+      - |-
+        --comment=SIG Network Issues needing furhter informations
+        go stale after 14d of inactivity. Mark the issue as fresh
+        with `/remove-lifecycle stale`. Stale issues rot after an
+        additional 14d of inactivity and eventually close.
+
+        If this issue is safe to close now please do so with `/close`.
+
+        Send feedback to sig-network or @rikatz.
+        /cc @rikatz
+        /lifecycle stale
+      - --template
+      - --ceiling=10
+      - --confirm
+      volumeMounts:
+      - name: token
+        mountPath: /etc/token
+    volumes:
+    - name: token
+      secret:
+        secretName: fejta-bot-token
+
+# Following 7 days, we mark this as rotten (2nd warning)
+- name: periodic-sig-network-rotten
+  interval: 1h
+  decorate: true
+  annotations:
+    testgrid-dashboards: sig-network-fejtabot
+    description: Adds lifecycle/rotten to SIG Network stale issues after 7d of inactivity
+    testgrid-tab-name: rotten
+  spec:
+    containers:
+    - image: gcr.io/k8s-prow/commenter:v20200630-1dca612287
+      command:
+      - /app/robots/commenter/app.binary
+      args:
+      - |-
+        --query=org:kubernetes
+        label:lifecycle/stale
+        -label:lifecycle/rotten
+        -label:lifecycle/frozen
+        -label:lifecycle/active
+        label:triage/needs-information
+        label:sig/network
+        is:issue
+        is:open
+      - --updated=168h
+      - --token=/etc/token/bot-github-token
+      - |-
+        --comment=SIG Network stale issues rot after 7d of inactivity.
+        Mark the issue as fresh with `/remove-lifecycle rotten`.
+        Rotten SIG Network issues close after an additional 7d of inactivity.
+
+        If this issue is safe to close now please do so with `/close`.
+
+        Send feedback to sig-network or @rikatz.
+        /cc @rikatz
+        /lifecycle rotten
+      - --template
+      - --ceiling=10
+      - --confirm
+      volumeMounts:
+      - name: token
+        mountPath: /etc/token
+    volumes:
+    - name: token
+      secret:
+        secretName: fejta-bot-token
+
+- name: periodic-sig-network-close
+  interval: 1h
+  decorate: true
+  annotations:
+    testgrid-dashboards: sig-network-fejtabot
+    description: Closes rotten SIG Network issues after 7d of inactivity
+    testgrid-tab-name: close
+  spec:
+    containers:
+    - image: gcr.io/k8s-prow/commenter:v20200630-1dca612287
+      command:
+      - /app/robots/commenter/app.binary
+      args:
+      - |-
+        --query=org:kubernetes
+        label:lifecycle/rotten
+        -label:lifecycle/frozen
+        -label:lifecycle/active
+        label:triage/needs-information
+        label:sig/network
+        is:issue
+        is:open
+      - --updated=168h
+      - --token=/etc/token/bot-github-token
+      - |-
+        --comment=SIG Network Rotten issues close after 7d of inactivity.
+        Reopen the issue with `/reopen`.
+        Mark the issue as fresh with `/remove-lifecycle rotten`.
+
+        Send feedback to sig-network or @rikatz.
+        /cc @rikatz
+        /close
+      - --template
+      - --ceiling=10
+      - --confirm
+      volumeMounts:
+      - name: token
+        mountPath: /etc/token
+    volumes:
+    - name: token
+      secret:
+        secretName: fejta-bot-token
