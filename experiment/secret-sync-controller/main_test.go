@@ -3,104 +3,446 @@ package main
 import (
 	"bytes"
 	"context"
+	"flag"
 	"fmt"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/test-infra/experiment/secret-sync-controller/client"
+	"k8s.io/test-infra/experiment/secret-sync-controller/tests"
+	"os"
 	"testing"
 )
 
-/*
-#testing-setup
+var testClient tests.ClientInterface
 
-secretManager:
-  project:
-  - name: k8s-jkns-gke-soak
-    secret:
-    - name: gsm-password
-      data: gsm-password-v1
-    - name: gsm-token
-      data: gsm-token-v1
-kubernetes:
-  namespace:
-  - name: ns-a
-    secret:
-    - name: secret-a
-      key:
-      - name: key-a
-        data: old-token
-  - name: ns-b
-    secret:
-    - name: secret-a
-  - name: ns-c
-
-*/
-
-var setup = client.Setup{
-	SecretManager: client.SecretManagerSetup{
-		Projects: []client.ProjectSetup{
-			{
-				Name: "k8s-jkns-gke-soak",
-				Secrets: []client.GSMSecretSetup{
-					{
-						Name: "gsm-password",
-						Data: "gsm-password-v1",
-					},
-					{
-						Name: "gsm-token",
-						Data: "gsm-token-v1",
-					},
-				},
-			},
-		},
-	},
-	Kubernetes: client.KubernetesSetup{
-		Namespaces: []client.NamespaceSetup{
-			{
-				Name: "ns-a",
-				Secrets: []client.K8sSecretSetup{
-					{
-						Name: "secret-a",
-						Keys: []client.KeySetup{
-							{
-								Name: "key-a",
-								Data: "old-token",
-							},
-						},
-					},
-				},
-			},
-			{
-				Name: "ns-b",
-				Secrets: []client.K8sSecretSetup{
-					{
-						Name: "secret-b",
-					},
-				},
-			},
-			{
-				Name: "ns-c",
-			},
-		},
-	},
+type testOptions struct {
+	e2eClient bool
 }
 
-func TestSync(t *testing.T) {
+func TestMain(m *testing.M) {
+	o := testOptions{}
+	flag.BoolVar(&o.e2eClient, "e2e-client", false, "Test with API or mock client.")
+	flag.Parse()
 
-	var tests = []struct {
-		config    SecretSyncConfig
-		want      client.KubernetesSetup
+	if !o.e2eClient {
+		testClient = tests.NewMockClient([]string{"k8s-jkns-gke-soak"})
+	} else {
+		// prepare clients
+		k8sClientset, err := client.NewK8sClientset()
+		if err != nil {
+			fmt.Printf("New kubernetes client failed: %s", err)
+			os.Exit(1)
+		}
+		secretManagerClient, err := client.NewSecretManagerClient(context.Background())
+		if err != nil {
+			fmt.Printf("New Secret Manager client failed: %s", err)
+			os.Exit(1)
+		}
+
+		testClient = &tests.E2eTestClient{
+			&client.Client{
+				K8sClientset:        *k8sClientset,
+				SecretManagerClient: *secretManagerClient,
+			},
+		}
+	}
+
+	os.Exit(m.Run())
+}
+
+var fixtureConfig = []byte(`
+{
+  "secretManager": {
+    "k8s-jkns-gke-soak": {
+      "gsm-password": "gsm-password-v1",
+      "gsm-token": "gsm-token-v1",
+      "gsm-old-token": "old-token"
+    }
+  },
+  "kubernetes": {
+    "ns-a": {
+      "secret-a": {
+        "key-a": "old-token"
+      }
+    },
+    "ns-b": {
+      "secret-b": {}
+    },
+    "ns-c": {}
+  }
+}
+`)
+
+func TestSync(t *testing.T) {
+	fixture, err := tests.NewFixture(fixtureConfig)
+	if err != nil {
+		t.Fatalf("Fail to parse fixture: %s", err)
+	}
+
+	var testcases = []struct {
+		name      string
+		spec      SecretSyncSpec
+		want      tests.Fixture
+		update    bool
 		expectErr bool
 	}{
 		{
-			// happy path
-			// syncing from <existing gsm secret> to <existing k8s secret> with <existing key>.
-			// should update the key-value pair
+			name: "Sync from <existing gsm secret> to <existing k8s secret> with <existing key> containing the <same secret values>. Should not update.",
+			spec: SecretSyncSpec{
+				Source: SecretManagerSpec{
+					Project: "k8s-jkns-gke-soak",
+					Secret:  "gsm-old-token",
+				},
+				Destination: KubernetesSpec{
+					Namespace: "ns-a",
+					Secret:    "secret-a",
+					Key:       "key-a",
+				},
+			},
+
+			want: tests.Fixture{
+				"ns-a": map[string]interface{}{
+					"secret-a": map[string]string{
+						"key-a": "old-token",
+					},
+				},
+				"ns-b": map[string]interface{}{
+					"secret-b": nil,
+				},
+				"ns-c": nil,
+			},
+
+			update: false,
+
+			expectErr: false,
+		},
+		{
+			name: "Sync from <existing gsm secret> to <existing k8s secret> with <existing key>. Should update the key-value pair.",
+			spec: SecretSyncSpec{
+				Source: SecretManagerSpec{
+					Project: "k8s-jkns-gke-soak",
+					Secret:  "gsm-password",
+				},
+				Destination: KubernetesSpec{
+					Namespace: "ns-a",
+					Secret:    "secret-a",
+					Key:       "key-a",
+				},
+			},
+
+			want: tests.Fixture{
+				"ns-a": map[string]interface{}{
+					"secret-a": map[string]string{
+						"key-a": "gsm-password-v1",
+					},
+				},
+				"ns-b": map[string]interface{}{
+					"secret-b": nil,
+				},
+				"ns-c": nil,
+			},
+
+			update: true,
+
+			expectErr: false,
+		},
+		{
+			name: "Sync from <existing gsm secret> to <existing k8s secret> with <non-existing key>. Should insert a new key-value pair.",
+			spec: SecretSyncSpec{
+				Source: SecretManagerSpec{
+					Project: "k8s-jkns-gke-soak",
+					Secret:  "gsm-token",
+				},
+				Destination: KubernetesSpec{
+					Namespace: "ns-a",
+					Secret:    "secret-a",
+					Key:       "missed",
+				},
+			},
+
+			want: tests.Fixture{
+				"ns-a": map[string]interface{}{
+					"secret-a": map[string]string{
+						"key-a":  "old-token",
+						"missed": "gsm-token-v1",
+					},
+				},
+				"ns-b": map[string]interface{}{
+					"secret-b": nil,
+				},
+				"ns-c": nil,
+			},
+
+			update: true,
+
+			expectErr: false,
+		},
+		{
+			name: "Sync from <existing gsm secret> to <existing empty k8s secret> with <no key>. Should insert a new key-value pair.",
+			spec: SecretSyncSpec{
+				Source: SecretManagerSpec{
+					Project: "k8s-jkns-gke-soak",
+					Secret:  "gsm-token",
+				},
+				Destination: KubernetesSpec{
+					Namespace: "ns-b",
+					Secret:    "secret-b",
+					Key:       "missed",
+				},
+			},
+
+			want: tests.Fixture{
+				"ns-a": map[string]interface{}{
+					"secret-a": map[string]string{
+						"key-a": "old-token",
+					},
+				},
+				"ns-b": map[string]interface{}{
+					"secret-b": map[string]string{
+						"missed": "gsm-token-v1",
+					},
+				},
+				"ns-c": nil,
+			},
+
+			update: true,
+
+			expectErr: false,
+		},
+		{
+			name: "Sync from <existing gsm secret> to <non-existing k8s secret> in <existing k8s namespace>. Should insert a new secret with the key-value pair.",
+			spec: SecretSyncSpec{
+				Source: SecretManagerSpec{
+					Project: "k8s-jkns-gke-soak",
+					Secret:  "gsm-token",
+				},
+				Destination: KubernetesSpec{
+					Namespace: "ns-c",
+					Secret:    "missed",
+					Key:       "missed",
+				},
+			},
+
+			want: tests.Fixture{
+				"ns-a": map[string]interface{}{
+					"secret-a": map[string]string{
+						"key-a": "old-token",
+					},
+				},
+				"ns-b": map[string]interface{}{
+					"secret-b": nil,
+				},
+				"ns-c": map[string]interface{}{
+					"missed": map[string]string{
+						"missed": "gsm-token-v1",
+					},
+				},
+			},
+
+			update: true,
+
+			expectErr: false,
+		},
+		{
+			name: "Sync from <existing gsm secret> to <k8s secret> in <non-existing k8s namespace>. Should return error.",
+			spec: SecretSyncSpec{
+				Source: SecretManagerSpec{
+					Project: "k8s-jkns-gke-soak",
+					Secret:  "gsm-token",
+				},
+				Destination: KubernetesSpec{
+					Namespace: "missed",
+					Secret:    "secret-a",
+					Key:       "key-a",
+				},
+			},
+
+			want: tests.Fixture{
+				"ns-a": map[string]interface{}{
+					"secret-a": map[string]string{
+						"key-a": "old-token",
+					},
+				},
+				"ns-b": map[string]interface{}{
+					"secret-b": nil,
+				},
+				"ns-c": nil,
+			},
+
+			update: false,
+
+			expectErr: true,
+		},
+		{
+			name: "Sync from <non-existing gsm secret>. Should return error.",
+			spec: SecretSyncSpec{
+				Source: SecretManagerSpec{
+					Project: "k8s-jkns-gke-soak",
+					Secret:  "missed",
+				},
+				Destination: KubernetesSpec{
+					Namespace: "ns-a",
+					Secret:    "secret-a",
+					Key:       "key-a",
+				},
+			},
+
+			want: tests.Fixture{
+				"ns-a": map[string]interface{}{
+					"secret-a": map[string]string{
+						"key-a": "old-token",
+					},
+				},
+				"ns-b": map[string]interface{}{
+					"secret-b": nil,
+				},
+				"ns-c": nil,
+			},
+
+			update: false,
+
+			expectErr: true,
+		},
+	}
+	for _, tc := range testcases {
+		testname := tc.name
+		t.Run(testname, func(t *testing.T) {
+
+			controller := &SecretSyncController{
+				Client:  testClient,
+				RunOnce: true,
+			}
+
+			err = fixture.Setup(testClient)
+			if err != nil {
+				t.Error(err)
+			}
+
+			updated, err := controller.Sync(tc.spec)
+			if tc.update && !updated {
+				t.Errorf("Expected update in destination secret value.")
+			}
+			if !tc.update && updated {
+				t.Errorf("Unexpected update in destination secret value.")
+			}
+			if tc.expectErr && err == nil {
+				t.Errorf("Expected error but got nil.")
+			} else if !tc.expectErr && err != nil {
+				t.Errorf("Unexpected error: %s", err)
+			}
+
+			// validate result
+			for namespace, nsItem := range tc.want {
+				// check if the namespace exists
+				err := controller.Client.ValidateKubernetesNamespace(namespace)
+				if err != nil {
+					t.Error(err)
+				}
+
+				if nsItem == nil {
+					continue
+				}
+				for secret, secretItem := range nsItem.(map[string]interface{}) {
+					err = controller.Client.ValidateKubernetesSecret(namespace, secret)
+					if err != nil {
+						t.Error(err)
+					}
+
+					if secretItem == nil {
+						continue
+					}
+					for key, data := range secretItem.(map[string]string) {
+						value, err := controller.Client.GetKubernetesSecretValue(namespace, secret, key)
+						if err != nil {
+							t.Error(err)
+						}
+						if !bytes.Equal(value, []byte(data)) {
+							t.Errorf("Fail to validate namespaces/%s/secrets/%s[%s]. Expected %s but got %s.", namespace, secret, key, data, value)
+						}
+
+					}
+				}
+			}
+
+			err = fixture.Teardown(testClient)
+			if err != nil {
+				t.Error(err)
+			}
+		})
+	}
+}
+
+func TestValidate(t *testing.T) {
+	var testcases = []struct {
+		name      string
+		config    SecretSyncConfig
+		expectErr bool
+	}{
+		{
+			name: "Correct config.",
 			config: SecretSyncConfig{
 				Specs: []SecretSyncSpec{
 					{
 						Source: SecretManagerSpec{
-							Project: "k8s-jkns-gke-soak",
-							Secret:  "gsm-password",
+							Project: "proj-1",
+							Secret:  "secret-1",
+						},
+						Destination: KubernetesSpec{
+							Namespace: "ns-a",
+							Secret:    "secret-a",
+							Key:       "key-a",
+						},
+					},
+					{
+						Source: SecretManagerSpec{
+							Project: "proj-2",
+							Secret:  "secret-2",
+						},
+						Destination: KubernetesSpec{
+							Namespace: "ns-b",
+							Secret:    "secret-b",
+							Key:       "key-b",
+						},
+					},
+				},
+			},
+			expectErr: false,
+		},
+		{
+			name: "Correct config. <Different source secrets> for <two different secret keys< in the <same Kubernetes secret>.",
+			config: SecretSyncConfig{
+				Specs: []SecretSyncSpec{
+					{
+						Source: SecretManagerSpec{
+							Project: "proj-1",
+							Secret:  "secret-1",
+						},
+						Destination: KubernetesSpec{
+							Namespace: "ns-a",
+							Secret:    "secret-a",
+							Key:       "key-a",
+						},
+					},
+					{
+						Source: SecretManagerSpec{
+							Project: "proj-2",
+							Secret:  "secret-2",
+						},
+						Destination: KubernetesSpec{
+							Namespace: "ns-a",
+							Secret:    "secret-a",
+							Key:       "key-b",
+						},
+					},
+				},
+			},
+			expectErr: false,
+		},
+		{
+			name: "Missing <project> field for <source>.",
+			config: SecretSyncConfig{
+				Specs: []SecretSyncSpec{
+					{
+						Source: SecretManagerSpec{
+							Secret: "secret-1",
 						},
 						Destination: KubernetesSpec{
 							Namespace: "ns-a",
@@ -110,208 +452,258 @@ func TestSync(t *testing.T) {
 					},
 				},
 			},
-
-			want: client.KubernetesSetup{
-				Namespaces: []client.NamespaceSetup{
-					{
-						Name: "ns-a",
-						Secrets: []client.K8sSecretSetup{
-							{
-								Name: "secret-a",
-								Keys: []client.KeySetup{
-									{
-										Name: "key-a",
-										Data: "gsm-password-v1",
-									},
-								},
-							},
-						},
-					},
-					{
-						Name: "ns-b",
-						Secrets: []client.K8sSecretSetup{
-							{
-								Name: "secret-b",
-							},
-						},
-					},
-					{
-						Name: "ns-c",
-					},
-				},
-			},
-			expectErr: false,
+			expectErr: true,
 		},
 		{
-			// syncing from <existing gsm secret> to <existing k8s secret> with <non-existing key>.
-			// should insert a new key-value pair
+			name: "Missing <secret> field for <source>.",
 			config: SecretSyncConfig{
 				Specs: []SecretSyncSpec{
 					{
 						Source: SecretManagerSpec{
-							Project: "k8s-jkns-gke-soak",
-							Secret:  "gsm-token",
+							Project: "proj-1",
 						},
 						Destination: KubernetesSpec{
-							Namespace: "ns-b",
-							Secret:    "secret-b",
-							Key:       "missed",
-						},
-					},
-				},
-			},
-
-			want: client.KubernetesSetup{
-				Namespaces: []client.NamespaceSetup{
-					{
-						Name: "ns-a",
-						Secrets: []client.K8sSecretSetup{
-							{
-								Name: "secret-a",
-								Keys: []client.KeySetup{
-									{
-										Name: "key-a",
-										Data: "old-token",
-									},
-								},
-							},
-						},
-					},
-					{
-						Name: "ns-b",
-						Secrets: []client.K8sSecretSetup{
-							{
-								Name: "secret-b",
-								Keys: []client.KeySetup{
-									{
-										Name: "missed",
-										Data: "gsm-token-v1",
-									},
-								},
-							},
-						},
-					},
-					{
-						Name: "ns-c",
-					},
-				},
-			},
-			expectErr: false,
-		},
-		{
-			// syncing from <existing gsm secret> to <non-existing k8s secret> in <existing k8s namespace>.
-			// should insert a new secret in that namespace with that key-value pair
-			config: SecretSyncConfig{
-				Specs: []SecretSyncSpec{
-					{
-						Source: SecretManagerSpec{
-							Project: "k8s-jkns-gke-soak",
-							Secret:  "gsm-token",
-						},
-						Destination: KubernetesSpec{
-							Namespace: "ns-c",
-							Secret:    "missed",
-							Key:       "missed",
-						},
-					},
-				},
-			},
-
-			want: client.KubernetesSetup{
-				Namespaces: []client.NamespaceSetup{
-					{
-						Name: "ns-a",
-						Secrets: []client.K8sSecretSetup{
-							{
-								Name: "secret-a",
-								Keys: []client.KeySetup{
-									{
-										Name: "key-a",
-										Data: "old-token",
-									},
-								},
-							},
-						},
-					},
-					{
-						Name: "ns-b",
-						Secrets: []client.K8sSecretSetup{
-							{
-								Name: "secret-b",
-							},
-						},
-					},
-					{
-						Name: "ns-c",
-						Secrets: []client.K8sSecretSetup{
-							{
-								Name: "missed",
-								Keys: []client.KeySetup{
-									{
-										Name: "missed",
-										Data: "gsm-token-v1",
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-			expectErr: false,
-		},
-		{
-			// syncing from <existing gsm secret> to <k8s secret> in <non-existing k8s namespace>.
-			// should return error
-			config: SecretSyncConfig{
-				Specs: []SecretSyncSpec{
-					{
-						Source: SecretManagerSpec{
-							Project: "k8s-jkns-gke-soak",
-							Secret:  "gsm-token",
-						},
-						Destination: KubernetesSpec{
-							Namespace: "missed",
+							Namespace: "ns-a",
 							Secret:    "secret-a",
 							Key:       "key-a",
 						},
 					},
 				},
 			},
-
-			want: client.KubernetesSetup{
-				Namespaces: []client.NamespaceSetup{
+			expectErr: true,
+		},
+		{
+			name: "Missing <namespace> field for <destination>.",
+			config: SecretSyncConfig{
+				Specs: []SecretSyncSpec{
 					{
-						Name: "ns-a",
-						Secrets: []client.K8sSecretSetup{
-							{
-								Name: "secret-a",
-								Keys: []client.KeySetup{
-									{
-										Name: "key-a",
-										Data: "old-token",
-									},
-								},
-							},
+						Source: SecretManagerSpec{
+							Project: "proj-1",
+							Secret:  "secret-1",
 						},
-					},
-					{
-						Name: "ns-b",
-						Secrets: []client.K8sSecretSetup{
-							{
-								Name: "secret-b",
-							},
+						Destination: KubernetesSpec{
+							Secret: "secret-a",
+							Key:    "key-a",
 						},
-					},
-					{
-						Name: "ns-c",
 					},
 				},
 			},
 			expectErr: true,
 		},
 		{
-			// syncing from <non-existing gsm secret>.
-			// should return error
+			name: "Missing <secret> field for <destination>.",
+			config: SecretSyncConfig{
+				Specs: []SecretSyncSpec{
+					{
+						Source: SecretManagerSpec{
+							Project: "proj-1",
+							Secret:  "secret-1",
+						},
+						Destination: KubernetesSpec{
+							Namespace: "ns-a",
+							Key:       "key-a",
+						},
+					},
+				},
+			},
+			expectErr: true,
+		},
+		{
+			name: "Missing <key> field for <destination>.",
+			config: SecretSyncConfig{
+				Specs: []SecretSyncSpec{
+					{
+						Source: SecretManagerSpec{
+							Project: "proj-1",
+							Secret:  "secret-1",
+						},
+						Destination: KubernetesSpec{
+							Namespace: "ns-a",
+							Secret:    "secret-a",
+						},
+					},
+				},
+			},
+			expectErr: true,
+		},
+		{
+			name: "<Multiple sources> for a <single Kunernetes secret key>.",
+			config: SecretSyncConfig{
+				Specs: []SecretSyncSpec{
+					{
+						Source: SecretManagerSpec{
+							Project: "proj-1",
+							Secret:  "secret-1",
+						},
+						Destination: KubernetesSpec{
+							Namespace: "ns-a",
+							Secret:    "secret-a",
+							Key:       "key-a",
+						},
+					},
+					{
+						Source: SecretManagerSpec{
+							Project: "proj-2",
+							Secret:  "secret-2",
+						},
+						Destination: KubernetesSpec{
+							Namespace: "ns-a",
+							Secret:    "secret-a",
+							Key:       "key-a",
+						},
+					},
+				},
+			},
+			expectErr: true,
+		},
+		{
+			name: "<Multiple declaration> for the <same secret sync pair>.",
+			config: SecretSyncConfig{
+				Specs: []SecretSyncSpec{
+					{
+						Source: SecretManagerSpec{
+							Project: "proj-1",
+							Secret:  "secret-1",
+						},
+						Destination: KubernetesSpec{
+							Namespace: "ns-a",
+							Secret:    "secret-a",
+							Key:       "key-a",
+						},
+					},
+					{
+						Source: SecretManagerSpec{
+							Project: "proj-1",
+							Secret:  "secret-1",
+						},
+						Destination: KubernetesSpec{
+							Namespace: "ns-a",
+							Secret:    "secret-a",
+							Key:       "key-a",
+						},
+					},
+				},
+			},
+			expectErr: true,
+		},
+	}
+	for _, tc := range testcases {
+		testname := tc.name
+		t.Run(testname, func(t *testing.T) {
+
+			err := tc.config.Validate()
+			if tc.expectErr && err == nil {
+				t.Errorf("Expected error but got nil.")
+			} else if !tc.expectErr && err != nil {
+				t.Errorf("Unexpected error: %s", err)
+			}
+
+		})
+	}
+}
+
+/*
+# fixtureConfig.json
+{
+  "secretManager": {
+    "k8s-jkns-gke-soak": {
+      "gsm-password": "gsm-password-v1",
+      "gsm-token": "gsm-token-v1",
+      "gsm-old-token": "old-token"
+    }
+  },
+  "kubernetes": {
+    "ns-a": {
+      "secret-a": {
+        "key-a": "old-token"
+      }
+    },
+    "ns-b": {
+      "secret-b": {}
+    },
+    "ns-c": {}
+  }
+}
+
+*/
+
+func TestSyncAll(t *testing.T) {
+	fixture, err := tests.NewFixture(fixtureConfig)
+	if err != nil {
+		t.Fatalf("Fail to parse fixture: %s", err)
+	}
+
+	var testcases = []struct {
+		name           string
+		config         SecretSyncConfig
+		resBefore      tests.Fixture
+		fixSource      tests.Fixture
+		fixDestination tests.Fixture
+		resAfter       tests.Fixture
+	}{
+		{
+			name: "Sync all pairs normally.",
+			config: SecretSyncConfig{
+				Specs: []SecretSyncSpec{
+					{
+						Source: SecretManagerSpec{
+							Project: "k8s-jkns-gke-soak",
+							Secret:  "gsm-token",
+						},
+						Destination: KubernetesSpec{
+							Namespace: "ns-a",
+							Secret:    "secret-a",
+							Key:       "key-a",
+						},
+					},
+					{
+						Source: SecretManagerSpec{
+							Project: "k8s-jkns-gke-soak",
+							Secret:  "gsm-password",
+						},
+						Destination: KubernetesSpec{
+							Namespace: "ns-b",
+							Secret:    "secret-b",
+							Key:       "key-b",
+						},
+					},
+				},
+			},
+
+			resBefore: tests.Fixture{
+				"ns-a": map[string]interface{}{
+					"secret-a": map[string]string{
+						"key-a": "gsm-token-v1",
+					},
+				},
+				"ns-b": map[string]interface{}{
+					"secret-b": map[string]string{
+						"key-b": "gsm-password-v1",
+					},
+				},
+				"ns-c": nil,
+			},
+
+			fixSource: nil,
+
+			fixDestination: nil,
+
+			resAfter: tests.Fixture{
+				"ns-a": map[string]interface{}{
+					"secret-a": map[string]string{
+						"key-a": "gsm-token-v1",
+					},
+				},
+				"ns-b": map[string]interface{}{
+					"secret-b": map[string]string{
+						"key-b": "gsm-password-v1",
+					},
+				},
+				"ns-c": nil,
+			},
+		},
+		{
+			name: "Sync other pairs normally, and recover from <non-existing gsm secret> whenever availalbe.",
 			config: SecretSyncConfig{
 				Specs: []SecretSyncSpec{
 					{
@@ -325,108 +717,228 @@ func TestSync(t *testing.T) {
 							Key:       "key-a",
 						},
 					},
-				},
-			},
-			want: client.KubernetesSetup{
-				Namespaces: []client.NamespaceSetup{
 					{
-						Name: "ns-a",
-						Secrets: []client.K8sSecretSetup{
-							{
-								Name: "secret-a",
-								Keys: []client.KeySetup{
-									{
-										Name: "key-a",
-										Data: "old-token",
-									},
-								},
-							},
+						Source: SecretManagerSpec{
+							Project: "k8s-jkns-gke-soak",
+							Secret:  "gsm-password",
 						},
-					},
-					{
-						Name: "ns-b",
-						Secrets: []client.K8sSecretSetup{
-							{
-								Name: "secret-b",
-							},
+						Destination: KubernetesSpec{
+							Namespace: "ns-b",
+							Secret:    "secret-b",
+							Key:       "key-b",
 						},
-					},
-					{
-						Name: "ns-c",
 					},
 				},
 			},
-			expectErr: true,
+
+			resBefore: tests.Fixture{
+				"ns-a": map[string]interface{}{
+					"secret-a": map[string]string{
+						"key-a": "old-token",
+					},
+				},
+				"ns-b": map[string]interface{}{
+					"secret-b": map[string]string{
+						"key-b": "gsm-password-v1",
+					},
+				},
+				"ns-c": nil,
+			},
+
+			fixSource: tests.Fixture{
+				"k8s-jkns-gke-soak": map[string]string{
+					"missed": "new-secret",
+				},
+			},
+
+			fixDestination: nil,
+
+			resAfter: tests.Fixture{
+				"ns-a": map[string]interface{}{
+					"secret-a": map[string]string{
+						"key-a": "new-secret",
+					},
+				},
+				"ns-b": map[string]interface{}{
+					"secret-b": map[string]string{
+						"key-b": "gsm-password-v1",
+					},
+				},
+				"ns-c": nil,
+			},
+		},
+		{
+			name: "Sync other pairs normally, and recover from <non-existing k8s namespace> whenever availalbe.",
+			config: SecretSyncConfig{
+				Specs: []SecretSyncSpec{
+					{
+						Source: SecretManagerSpec{
+							Project: "k8s-jkns-gke-soak",
+							Secret:  "gsm-token",
+						},
+						Destination: KubernetesSpec{
+							Namespace: "ns-a",
+							Secret:    "secret-a",
+							Key:       "key-a",
+						},
+					},
+					{
+						Source: SecretManagerSpec{
+							Project: "k8s-jkns-gke-soak",
+							Secret:  "gsm-password",
+						},
+						Destination: KubernetesSpec{
+							Namespace: "missed",
+							Secret:    "secret-d",
+							Key:       "key-d",
+						},
+					},
+				},
+			},
+
+			resBefore: tests.Fixture{
+				"ns-a": map[string]interface{}{
+					"secret-a": map[string]string{
+						"key-a": "gsm-token-v1",
+					},
+				},
+				"ns-b": map[string]interface{}{
+					"secret-b": nil,
+				},
+				"ns-c": nil,
+			},
+
+			fixSource: nil,
+
+			fixDestination: tests.Fixture{
+				"missed": nil,
+			},
+
+			resAfter: tests.Fixture{
+				"ns-a": map[string]interface{}{
+					"secret-a": map[string]string{
+						"key-a": "gsm-token-v1",
+					},
+				},
+				"ns-b": map[string]interface{}{
+					"secret-b": nil,
+				},
+				"ns-c": nil,
+				"missed": map[string]interface{}{
+					"secret-d": map[string]string{
+						"key-d": "gsm-password-v1",
+					},
+				},
+			},
 		},
 	}
-	for _, tt := range tests {
-		testname := fmt.Sprintf("%s", tt.config)
+	for _, tc := range testcases {
+		testname := tc.name
 		t.Run(testname, func(t *testing.T) {
 
-			// prepare clients
-			k8sClientset, err := client.NewK8sClientset()
-			if err != nil {
-				t.Errorf("New kubernetes client failed: %s", err)
-			}
-			secretManagerClient, err := client.NewSecretManagerClient(context.Background())
-			if err != nil {
-				t.Errorf("New Secret Manager client failed: %s", err)
-			}
-			clientInterface := &client.Client{
-				K8sClientset:        *k8sClientset,
-				SecretManagerClient: *secretManagerClient,
-			}
-
 			controller := &SecretSyncController{
-				Client:  clientInterface,
-				Config:  &tt.config,
+				Client:  testClient,
+				Config:  &tc.config,
 				RunOnce: true,
 			}
 
-			err = controller.Client.SetupTesting(setup)
+			err = fixture.Setup(testClient)
 			if err != nil {
 				t.Error(err)
 			}
 
-			err = controller.ValidateAccess()
-			if err != nil {
-				t.Error(err)
-			}
+			controller.SyncAll()
 
-			var stopChan <-chan struct{}
-			controller.Start(stopChan)
-
-			// validate result
-			for _, namespace := range tt.want.Namespaces {
+			// validate result before recovery
+			for namespace, nsItem := range tc.resBefore {
 				// check if the namespace exists
-				_, err := clientInterface.K8sClientset.CoreV1().Namespaces().Get(namespace.Name, metav1.GetOptions{})
+				err := controller.Client.ValidateKubernetesNamespace(namespace)
 				if err != nil {
 					t.Error(err)
 				}
 
-				for _, secret := range namespace.Secrets {
-					// check if the secret exists
-					secretObj, err := clientInterface.K8sClientset.CoreV1().Secrets(namespace.Name).Get(secret.Name, metav1.GetOptions{})
+				if nsItem == nil {
+					continue
+				}
+				for secret, secretItem := range nsItem.(map[string]interface{}) {
+					err = controller.Client.ValidateKubernetesSecret(namespace, secret)
 					if err != nil {
 						t.Error(err)
 					}
 
-					for _, key := range secret.Keys {
-						// Get the secret value according to the key.
-						value, ok := secretObj.Data[key.Name]
-						if !ok {
-							t.Errorf("keys \"%s\" not found for namespaces/%s/secrets/%s", key.Name, namespace.Name, secret.Name)
+					if secretItem == nil {
+						continue
+					}
+					for key, data := range secretItem.(map[string]string) {
+						value, err := controller.Client.GetKubernetesSecretValue(namespace, secret, key)
+						if err != nil {
+							t.Error(err)
 						}
-						if !bytes.Equal(value, []byte(key.Data)) {
-							t.Errorf("Fail to validate namespaces/%s/secrets/%s. Expected %s but got %s.", namespace.Name, secret.Name, key.Data, value)
+						if !bytes.Equal(value, []byte(data)) {
+							t.Errorf("Fail to validate namespaces/%s/secrets/%s[%s]. Expected %s but got %s.", namespace, secret, key, data, value)
 						}
 
 					}
 				}
 			}
 
-			// clean up the entire namespaces
-			err = controller.Client.CleanupTesting(setup, true)
+			for project, projItem := range tc.fixSource {
+				for id, data := range projItem.(map[string]string) {
+					err = controller.Client.UpsertSecretManagerSecret(project, id, []byte(data))
+					if err != nil {
+						t.Error(err)
+					}
+
+					// record the created secret in fixture for future teardown
+					fixture["secretManager"].(map[string]interface{})[project].(map[string]interface{})[id] = data
+				}
+			}
+			for namespace, _ := range tc.fixDestination {
+				err = controller.Client.CreateKubernetesNamespace(namespace)
+				if err != nil {
+					t.Error(err)
+				}
+
+				// record the created namespace in fixture for future teardown
+				fixture["kubernetes"].(map[string]interface{})[namespace] = nil
+			}
+
+			controller.SyncAll()
+
+			// validate result after recovery
+			for namespace, nsItem := range tc.resAfter {
+				// check if the namespace exists
+				err := controller.Client.ValidateKubernetesNamespace(namespace)
+				if err != nil {
+					t.Error(err)
+				}
+
+				if nsItem == nil {
+					continue
+				}
+				for secret, secretItem := range nsItem.(map[string]interface{}) {
+					err = controller.Client.ValidateKubernetesSecret(namespace, secret)
+					if err != nil {
+						t.Error(err)
+					}
+
+					if secretItem == nil {
+						continue
+					}
+					for key, data := range secretItem.(map[string]string) {
+						value, err := controller.Client.GetKubernetesSecretValue(namespace, secret, key)
+						if err != nil {
+							t.Error(err)
+						}
+						if !bytes.Equal(value, []byte(data)) {
+							t.Errorf("Fail to validate namespaces/%s/secrets/%s[%s]. Expected %s but got %s.", namespace, secret, key, data, value)
+						}
+
+					}
+				}
+			}
+
+			err = fixture.Teardown(testClient)
 			if err != nil {
 				t.Error(err)
 			}

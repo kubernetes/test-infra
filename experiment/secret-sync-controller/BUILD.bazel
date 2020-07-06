@@ -33,6 +33,7 @@ filegroup(
     srcs = [
         ":package-srcs",
         "//experiment/secret-sync-controller/client:all-srcs",
+        "//experiment/secret-sync-controller/tests:all-srcs",
     ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
@@ -44,6 +45,6 @@ go_test(
     embed = [":go_default_library"],
     deps = [
         "//experiment/secret-sync-controller/client:go_default_library",
-        "@io_k8s_apimachinery//pkg/apis/meta/v1:go_default_library",
+        "//experiment/secret-sync-controller/tests:go_default_library",
     ],
 )

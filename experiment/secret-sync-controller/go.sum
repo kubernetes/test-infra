@@ -1244,6 +1244,7 @@ k8s.io/metrics v0.17.2/go.mod h1:3TkNHET4ROd+NfzNxkjoVfQ0Ob4iZnaHmSEA4vYpwLw=
 k8s.io/test-infra v0.0.0-20200514184223-ba32c8aae783/go.mod h1:bW6thaPZfL2hW7ecjx2WYwlP9KQLM47/xIJyttkVk5s=
 k8s.io/test-infra v0.0.0-20200618195710-19a078d68a69 h1:gN4Mnw9H1Y7Tq9O2f4BC4f71D51JaQ0pzhQBEd8x5AE=
 k8s.io/test-infra v0.0.0-20200618195710-19a078d68a69/go.mod h1:L3+cRvwftUq8IW1TrHji5m3msnc4uck/7LsE/GR/aZk=
+k8s.io/test-infra v0.0.0-20200630233406-1dca6122872e h1:enVJTRVMMEZ5DOL4Px9/KjVmTIloibFtyqDFBilx/dA=
 k8s.io/utils v0.0.0-20191114184206-e782cd3c129f h1:GiPwtSzdP43eI1hpPCbROQCCIgCuiMMNF8YUVLF3vJo=
 k8s.io/utils v0.0.0-20191114184206-e782cd3c129f/go.mod h1:sZAwmy6armz5eXlNoLmJcl4F1QuKu7sr+mFQ0byX7Ew=
 knative.dev/caching v0.0.0-20200116200605-67bca2c83dfa/go.mod h1:dHXFU6CGlLlbzaWc32g80cR92iuBSpsslDNBWI8C7eg=

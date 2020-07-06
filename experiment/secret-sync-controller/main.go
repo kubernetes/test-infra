@@ -53,11 +53,11 @@ func main() {
 	// prepare clients
 	k8sClientset, err := client.NewK8sClientset()
 	if err != nil {
-		klog.Errorf("New kubernetes client failed: %s", err)
+		klog.Errorf("Fali to create new kubernetes client: %s", err)
 	}
 	secretManagerClient, err := client.NewSecretManagerClient(context.Background())
 	if err != nil {
-		klog.Errorf("New Secret Manager client failed: %s", err)
+		klog.Errorf("Fail to create new Secret Manager client: %s", err)
 	}
 	clientInterface := &client.Client{
 		K8sClientset:        *k8sClientset,
@@ -67,7 +67,12 @@ func main() {
 	// prepare config
 	secretSyncConfig, err := LoadConfig(o.configPath)
 	if err != nil {
-		klog.Errorf("Load config failed: %s", err)
+		klog.Errorf("Fail to load config: %s", err)
+	}
+
+	err = secretSyncConfig.Validate()
+	if err != nil {
+		klog.Errorf("Fail to validate: %s", err)
 	}
 
 	controller := &SecretSyncController{
@@ -75,11 +80,6 @@ func main() {
 		Config:       secretSyncConfig,
 		RunOnce:      o.runOnce,
 		ResyncPeriod: time.Duration(o.resyncPeriod) * time.Millisecond,
-	}
-
-	err = controller.ValidateAccess()
-	if err != nil {
-		klog.Error(err)
 	}
 
 	var stopChan <-chan struct{}
@@ -105,49 +105,15 @@ func (c *SecretSyncController) Start(stopChan <-chan struct{}) error {
 		case <-runChan:
 			c.SyncAll()
 			if c.RunOnce {
-				c.Client.CleanupKubernetesSecrets("ns1")
 				return nil
 			}
 		}
 	}
 }
 
-// ValidateAccess validates the required access for each sync pair.
-// If finds an invlaid access, return an error and delete that sync pair.
-func (c *SecretSyncController) ValidateAccess() error {
-	invalidIndices := make(map[int]bool)
-
-	for i, spec := range c.Config.Specs {
-		// ping source secret
-		_, srcErr := c.Client.GetSecretManagerSecret(spec.Source.Project, spec.Source.Secret)
-		if srcErr != nil {
-			invalidIndices[i] = true
-			klog.Error(srcErr)
-		}
-		// ping destination namespace
-		destErr := c.Client.ValidateKubernetesNamespace(spec.Destination.Namespace)
-		if destErr != nil {
-			invalidIndices[i] = true
-			klog.Error(destErr)
-		}
-	}
-
-	// if there is any invalid spec to remove
-	if len(invalidIndices) != 0 {
-		validSpecs := []SecretSyncSpec{}
-		for i := range c.Config.Specs {
-			if invalidIndices[i] {
-				continue
-			}
-			validSpecs = append(validSpecs, c.Config.Specs[i])
-		}
-		c.Config.Specs = validSpecs
-	}
-
-	return nil
-}
-
-func (c *SecretSyncController) SyncAll() error {
+// SyncAll sychronizes all secret pairs specified in Config.Specs.
+// Pops error message for any secret pair that it failed to sync or access.
+func (c *SecretSyncController) SyncAll() {
 	for _, spec := range c.Config.Specs {
 		updated, err := c.Sync(spec)
 		if err != nil {
@@ -157,24 +123,20 @@ func (c *SecretSyncController) SyncAll() error {
 			klog.Infof("Secret %s synced from %s", spec.Destination, spec.Source)
 		}
 	}
-	return nil
 }
 
+// Sync sychronizes the secret value from spec.Source to spec.Destination.
+// Returns true if the secret value in spec.Destination is updated,
+// otherwise returns false, meaning that the secret value in spec.Destination remains unchanged.
 func (c *SecretSyncController) Sync(spec SecretSyncSpec) (bool, error) {
 	// get source secret
-	srcData, err := c.Client.GetSecretManagerSecret(spec.Source.Project, spec.Source.Secret)
-	if err != nil {
-		return false, err
-	}
-
-	//checks if the K8s namespace exists
-	err = c.Client.ValidateKubernetesNamespace(spec.Destination.Namespace)
+	srcData, err := c.Client.GetSecretManagerSecretValue(spec.Source.Project, spec.Source.Secret)
 	if err != nil {
 		return false, err
 	}
 
 	// get destination secret
-	destData, err := c.Client.GetKubernetesSecret(spec.Destination.Namespace, spec.Destination.Secret, spec.Destination.Key)
+	destData, err := c.Client.GetKubernetesSecretValue(spec.Destination.Namespace, spec.Destination.Secret, spec.Destination.Key)
 
 	if err != nil {
 		return false, err
@@ -185,9 +147,9 @@ func (c *SecretSyncController) Sync(spec SecretSyncSpec) (bool, error) {
 	}
 	// update destination secret value
 	// inserts a key-value pair if spec.Destination does not exist yet
-	patchErr := c.Client.UpsertKubernetesSecret(spec.Destination.Namespace, spec.Destination.Secret, spec.Destination.Key, srcData)
-	if patchErr != nil {
-		return false, patchErr
+	err = c.Client.UpsertKubernetesSecret(spec.Destination.Namespace, spec.Destination.Secret, spec.Destination.Key, srcData)
+	if err != nil {
+		return false, err
 	}
 
 	return true, nil

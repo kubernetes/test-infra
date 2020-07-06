@@ -23,6 +23,7 @@ require (
 	golang.org/x/time v0.0.0-20200416051211-89c76fbcd5d1 // indirect
 	google.golang.org/api v0.26.0
 	google.golang.org/genproto v0.0.0-20200616192300-fc83d8c00726
+	google.golang.org/grpc v1.29.1
 	gopkg.in/yaml.v2 v2.2.8
 	k8s.io/api v0.17.3
 	k8s.io/apimachinery v0.18.3

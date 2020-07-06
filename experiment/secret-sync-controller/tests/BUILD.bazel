@@ -2,17 +2,17 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = ["client.go"],
-    importpath = "k8s.io/test-infra/experiment/secret-sync-controller/client",
+    srcs = [
+        "fixture.go",
+        "mockclient.go",
+    ],
+    importpath = "k8s.io/test-infra/experiment/secret-sync-controller/tests",
     visibility = ["//visibility:public"],
     deps = [
-        "//prow/kube:go_default_library",
-        "@com_google_cloud_go//secretmanager/apiv1:go_default_library",
-        "@io_k8s_api//core/v1:go_default_library",
+        "//experiment/secret-sync-controller/client:go_default_library",
         "@io_k8s_apimachinery//pkg/api/errors:go_default_library",
         "@io_k8s_apimachinery//pkg/apis/meta/v1:go_default_library",
-        "@io_k8s_apimachinery//pkg/types:go_default_library",
-        "@io_k8s_client_go//kubernetes:go_default_library",
+        "@io_k8s_apimachinery//pkg/runtime/schema:go_default_library",
         "@org_golang_google_genproto//googleapis/cloud/secretmanager/v1:go_default_library",
         "@org_golang_google_grpc//codes:go_default_library",
         "@org_golang_google_grpc//status:go_default_library",
