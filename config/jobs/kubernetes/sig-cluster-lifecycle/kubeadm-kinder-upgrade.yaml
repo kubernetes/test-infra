@@ -10,7 +10,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kubeadm,sig-release-master-informing
     testgrid-tab-name: kubeadm-kinder-upgrade-1-18-master
-    testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com
+    testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com, kubernetes-release-team@googlegroups.com
     description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster, upgrade it and run kubeadm-e2e and the conformance suite"
     testgrid-num-columns-recent: "20"
     testgrid-num-failures-to-alert: "8"
@@ -50,7 +50,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kubeadm,sig-release-1.18-informing
     testgrid-tab-name: kubeadm-kinder-upgrade-1-17-1-18
-    testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com
+    testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com, kubernetes-release-team@googlegroups.com
     description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster, upgrade it and run kubeadm-e2e and the conformance suite"
     testgrid-num-columns-recent: "20"
     testgrid-num-failures-to-alert: "4"
@@ -90,7 +90,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kubeadm,sig-release-1.17-informing
     testgrid-tab-name: kubeadm-kinder-upgrade-1-16-1-17
-    testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com
+    testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com, kubernetes-release-team@googlegroups.com
     description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster, upgrade it and run kubeadm-e2e and the conformance suite"
     testgrid-num-columns-recent: "20"
     testgrid-num-failures-to-alert: "4"
@@ -130,7 +130,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kubeadm,sig-release-1.16-informing
     testgrid-tab-name: kubeadm-kinder-upgrade-1-15-1-16
-    testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com
+    testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com, kubernetes-release-team@googlegroups.com
     description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster, upgrade it and run kubeadm-e2e and the conformance suite"
     testgrid-num-columns-recent: "20"
     testgrid-num-failures-to-alert: "4"
