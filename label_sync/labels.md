@@ -19,6 +19,7 @@
 - [Labels that apply to kubernetes/kubernetes, for both issues and PRs](#labels-that-apply-to-kuberneteskubernetes-for-both-issues-and-prs)
 - [Labels that apply to kubernetes/kubernetes, only for issues](#labels-that-apply-to-kuberneteskubernetes-only-for-issues)
 - [Labels that apply to kubernetes/kubernetes, only for PRs](#labels-that-apply-to-kuberneteskubernetes-only-for-prs)
+- [Labels that apply to kubernetes/org, for both issues and PRs](#labels-that-apply-to-kubernetesorg-for-both-issues-and-prs)
 - [Labels that apply to kubernetes/org, only for issues](#labels-that-apply-to-kubernetesorg-only-for-issues)
 - [Labels that apply to kubernetes/release, for both issues and PRs](#labels-that-apply-to-kubernetesrelease-for-both-issues-and-prs)
 - [Labels that apply to kubernetes/sig-release, for both issues and PRs](#labels-that-apply-to-kubernetessig-release-for-both-issues-and-prs)
@@ -292,6 +293,12 @@ larger set of contributors to apply/remove them.
 | ---- | ----------- | -------- | --- |
 | <a id="do-not-merge/contains-merge-commits" href="#do-not-merge/contains-merge-commits">`do-not-merge/contains-merge-commits`</a> | Indicates a PR which contains merge commits.| prow |  [mergecommitblocker](https://git.k8s.io/test-infra/prow/plugins/mergecommitblocker) |
 | <a id="needs-priority" href="#needs-priority">`needs-priority`</a> | Indicates a PR lacks a `priority/foo` label and requires one.| prow |  [require-matching-label](https://git.k8s.io/test-infra/prow/plugins/require-matching-label) |
+
+## Labels that apply to kubernetes/org, for both issues and PRs
+
+| Name | Description | Added By | Prow Plugin |
+| ---- | ----------- | -------- | --- |
+| <a id="area/github-management" href="#area/github-management">`area/github-management`</a> | Issues or PRs related to GitHub Management subproject| label | |
 
 ## Labels that apply to kubernetes/org, only for issues
 
