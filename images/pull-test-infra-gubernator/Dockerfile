@@ -12,29 +12,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM ubuntu:16.04
+# https://hub.docker.com/_/ubuntu?tab=tags
+# https://wiki.ubuntu.com/Releases
+FROM ubuntu:bionic-20200526
 
-RUN apt-get update && apt-get install -y \
-    git \
-    wget \
-    unzip \
-    python \
-    python-pip \
-    mocha && \
-    rm -rf /var/lib/apt/lists/*
 
-ENV GCLOUD_VERSION 138.0.0
-RUN wget https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-$GCLOUD_VERSION-linux-x86_64.tar.gz && \
-    tar xf google-cloud-sdk-$GCLOUD_VERSION-linux-x86_64.tar.gz && \
-    rm google-cloud-sdk-$GCLOUD_VERSION-linux-x86_64.tar.gz && \
-    ./google-cloud-sdk/install.sh
-ENV PATH "/google-cloud-sdk/bin:${PATH}"
+RUN apt update && apt install -y \
+      git \
+      mocha \
+      python \
+      python-pip \
+      unzip \
+      wget \
+    && rm -rf /var/lib/apt/lists/*
 
-# Based on https://github.com/travis-ci/travis-ci/issues/738#issuecomment-11179888
 ENV GAE_ZIP=google_appengine_1.9.40.zip GAE_ROOT=/google_appengine
-RUN wget -nv https://storage.googleapis.com/appengine-sdks/featured/${GAE_ZIP} && \
-    unzip -q ${GAE_ZIP} -d /
+RUN touch /etc/apt/sources.list.d/google-cloud-sdk.list \
+    && echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://packages.cloud.google.com/apt cloud-sdk main" \
+    >> /etc/apt/sources.list.d/google-cloud-sdk.list \
+    && wget -O - https://packages.cloud.google.com/apt/doc/apt-key.gpg \
+    | apt-key --keyring /usr/share/keyrings/cloud.google.gpg add - \
+    && apt update && apt install -y \
+      google-cloud-sdk \
+    && rm -rf /var/lib/apt/lists/* \
+    && wget -nv https://storage.googleapis.com/appengine-sdks/featured/${GAE_ZIP} \
+    && unzip -q ${GAE_ZIP} -d /
 
 WORKDIR /workspace
-ADD runner /
-ENTRYPOINT ["/bin/bash", "/runner"]
