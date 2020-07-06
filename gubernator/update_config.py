@@ -34,6 +34,9 @@ def main(prow_config, prow_job_config, gubernator_config):
     for config in configs:
         prow_data = yaml.load(open(config))
 
+        if not prow_data:
+            continue
+
         if 'presubmits' in prow_data and 'kubernetes/kubernetes' in prow_data['presubmits']:
             for job in prow_data['presubmits']['kubernetes/kubernetes']:
                 if job.get('always_run'):
