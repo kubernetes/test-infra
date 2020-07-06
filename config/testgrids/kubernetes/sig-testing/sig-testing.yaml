@@ -27,7 +27,7 @@ dashboards:
   dashboard_tab:
   - name: ci-kubernetes-coverage-unit
     test_group_name: ci-kubernetes-coverage-unit
-    base_options: "sort-by-name="
+    base_options: "exclude-filter-by-regex=Overall$&group-by-directory=&expand-groups=&sort-by-name="
 - name: sig-testing-fejtabot
 - name: sig-testing-kind
 - name: sig-testing-maintenance
