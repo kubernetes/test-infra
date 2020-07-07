@@ -1018,6 +1018,11 @@ repos:
         name: area/github-repo
         target: issues
         addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to GitHub Management subproject
+        name: area/github-management
+        target: both
+        addedBy: label
   kubernetes/release:
     labels:
       - color: 0052cc
