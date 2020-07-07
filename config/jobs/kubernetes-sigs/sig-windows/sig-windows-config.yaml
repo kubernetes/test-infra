@@ -748,7 +748,7 @@ periodics:
     testgrid-tab-name: aks-engine-azure-windows-1903-master
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs SIG-Windows release tests on K8s clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
-- interval: 72h
+- interval: 24h
   name: ci-kubernetes-e2e-aks-engine-azure-master-windows-1909
   decorate: true
   decoration_config:
@@ -802,7 +802,7 @@ periodics:
     testgrid-tab-name: aks-engine-azure-windows-1909-master
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs SIG-Windows release tests on K8s clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
-- interval: 72h
+- interval: 24h
   name: ci-kubernetes-e2e-aks-engine-azure-master-windows-2004
   decorate: true
   decoration_config:
