@@ -65,22 +65,3 @@ jqfilter: |
     p75_duration: (.p75_duration|tonumber),
     p99_duration: (.p99_duration|tonumber),
   })]
-measurements:
-  backfill: job_health
-  jq: |
-    [(.[] | {
-      measurement: "job_health",
-      time: (.day|tonumber),
-      tags: {
-        job: .job,
-      },
-      fields: {
-        runs: (.runs|tonumber),
-        failure_rate: (.failure_rate|tonumber),
-        tests: (.tests|tonumber),
-        test_failure_rate: (.test_failure_rate|tonumber),
-        p50_duration: (.p50_duration|tonumber),
-        p75_duration: (.p75_duration|tonumber),
-        p99_duration: (.p99_duration|tonumber),
-      }
-    })]
