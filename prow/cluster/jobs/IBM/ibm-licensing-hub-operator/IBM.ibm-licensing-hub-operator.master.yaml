@@ -1,0 +1,276 @@
+presubmits:
+  IBM/ibm-licensing-hub-operator:
+  - name: check_ibm-licensing-hub-operator
+    cluster: default
+    branches:
+    - ^master$
+    decorate: true
+    always_run: true
+    path_alias: github.com/IBM/ibm-licensing-hub-operator
+    rerun_command: /test check ibm-licensing-hub-operator
+    spec:
+      containers:
+      - command:
+        - make
+        - check
+        image: quay.io/multicloudlab/check-tool:v20200319-b5bfe54
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?check(?: .*?)?$'
+  - name: test_ibm-licensing-hub-operator-amd64
+    cluster: default
+    branches:
+    - ^master$
+    decorate: true
+    always_run: true
+    path_alias: github.com/IBM/ibm-licensing-hub-operator
+    rerun_command: /test test ibm-licensing-hub-operator-amd64
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - test
+        image: quay.io/multicloudlab/build-tool:v20200320-5e25536
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?test(?: .*?)?$'
+  - name: test_ibm-licensing-hub-operator-ppc64le
+    cluster: ppc64le
+    branches:
+    - ^master$
+    decorate: true
+    always_run: true
+    path_alias: github.com/IBM/ibm-licensing-hub-operator
+    rerun_command: /test test ibm-licensing-hub-operator-ppc64le
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - test
+        image: quay.io/multicloudlab/build-tool:v20200320-5e25536
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?test(?: .*?)?$'
+  - name: test_ibm-licensing-hub-operator-s390x
+    cluster: s390x
+    branches:
+    - ^master$
+    decorate: true
+    always_run: true
+    path_alias: github.com/IBM/ibm-licensing-hub-operator
+    rerun_command: /test test ibm-licensing-hub-operator-s390x
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - test
+        image: quay.io/multicloudlab/build-tool:v20200320-5e25536
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?test(?: .*?)?$'
+  - name: build_ibm-licensing-hub-operator-amd64
+    cluster: default
+    branches:
+    - ^master$
+    decorate: true
+    always_run: true
+    path_alias: github.com/IBM/ibm-licensing-hub-operator
+    rerun_command: /test build ibm-licensing-hub-operator-amd64
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build
+        image: quay.io/multicloudlab/build-tool:v20200320-5e25536
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?build(?: .*?)?$'
+  - name: build_ibm-licensing-hub-operator-ppc64le
+    cluster: ppc64le
+    branches:
+    - ^master$
+    decorate: true
+    always_run: true
+    path_alias: github.com/IBM/ibm-licensing-hub-operator
+    rerun_command: /test build ibm-licensing-hub-operator-ppc64le
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build
+        image: quay.io/multicloudlab/build-tool:v20200320-5e25536
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?build(?: .*?)?$'
+  - name: build_ibm-licensing-hub-operator-s390x
+    cluster: s390x
+    branches:
+    - ^master$
+    decorate: true
+    always_run: true
+    path_alias: github.com/IBM/ibm-licensing-hub-operator
+    rerun_command: /test build ibm-licensing-hub-operator-s390x
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build
+        image: quay.io/multicloudlab/build-tool:v20200320-5e25536
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?build(?: .*?)?$'      
+postsubmits:
+  IBM/ibm-licensing-hub-operator:
+  - name: coverage-ibm-licensing-hub-operator-postsubmit
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/ibm-licensing-hub-operator
+    spec:
+      containers:
+      - command:
+        - make
+        - coverage
+        image: quay.io/multicloudlab/build-tool:v20200320-5e25536
+        name: ""
+        env:
+        - name: CODECOV_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: ibm-licensing-hub-operator-codecov-token
+              key: codecov-token
+        securityContext:
+          privileged: true
+  - name: build-ibm-licensing-hub-operator-amd64-postsubmit
+    cluster: default
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/ibm-licensing-hub-operator
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build
+        image: quay.io/multicloudlab/build-tool:v20200320-5e25536
+        name: ""
+        securityContext:
+          privileged: true
+  - name: build-ibm-licensing-hub-operator-ppc64le-postsubmit
+    cluster: ppc64le
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/ibm-licensing-hub-operator
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build
+        image: quay.io/multicloudlab/build-tool:v20200320-5e25536
+        name: ""
+        securityContext:
+          privileged: true
+  - name: build-ibm-licensing-hub-operator-s390x-postsubmit
+    cluster: s390x
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/ibm-licensing-hub-operator
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build
+        image: quay.io/multicloudlab/build-tool:v20200320-5e25536
+        name: ""
+        securityContext:
+          privileged: true        
+  - name: image-ibm-licensing-hub-operator-amd64-postsubmit
+    cluster: default
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/ibm-licensing-hub-operator
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build-push-image
+        image: quay.io/multicloudlab/build-tool:v20200320-5e25536
+        name: ""
+        securityContext:
+          privileged: true
+  - name: image-ibm-licensing-hub-operator-ppc64le-postsubmit
+    cluster: ppc64le
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/ibm-licensing-hub-operator
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build-push-image
+        image: quay.io/multicloudlab/build-tool:v20200320-5e25536
+        name: ""
+        securityContext:
+          privileged: true
+  - name: image-ibm-licensing-hub-operator-s390x-postsubmit
+    cluster: s390x
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/ibm-licensing-hub-operator
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build-push-image
+        image: quay.io/multicloudlab/build-tool:v20200320-5e25536
+        name: ""
+        securityContext:
+          privileged: true         
+  - name: multiarch-image-ibm-licensing-postsubmit
+    cluster: default
+    branches:
+    - ^master$
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    path_alias: github.com/IBM/operand-deployment-lifecycle-manager
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - multiarch-image
+        image: quay.io/multicloudlab/build-tool:v20200320-5e25536
+        name: ""
+        securityContext:
+          privileged: true

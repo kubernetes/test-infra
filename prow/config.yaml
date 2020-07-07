@@ -39,6 +39,7 @@ tide:
     IBM/ibm-helm-repo-operator: squash
     IBM/ibm-iam-operator: squash
     IBM/ibm-ingress-nginx-operator: squash
+    IBM/ibm-licensing-hub-operator: squash
     IBM/ibm-licensing-operator: squash
     IBM/ibm-management-ingress-operator: squash
     IBM/ibm-management-repo-operator: squash
@@ -95,6 +96,7 @@ tide:
     - IBM/ibm-helm-repo-operator
     - IBM/ibm-iam-operator
     - IBM/ibm-ingress-nginx-operator
+    - IBM/ibm-licensing-hub-operator
     - IBM/ibm-licensing-operator
     - IBM/ibm-management-ingress-operator
     - IBM/ibm-management-repo-operator
