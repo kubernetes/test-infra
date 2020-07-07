@@ -127,7 +127,7 @@ periodics:
     description: build instrumented kubernetes, run (non-slow/serial/disruptive/flaky/feature) e2e tests, generate line coverage using gopherage
 - interval: 1h
   name: ci-kubernetes-coverage-unit
-  annotations:	
+  annotations:
     testgrid-dashboards: sig-testing-canaries
   decorate: true
   extra_refs:
