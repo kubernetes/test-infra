@@ -162,6 +162,7 @@ def row_for_build(path, started, finished, results):
 
     def get_metadata(build):
         metadata = None
+        metapairs = None
         if finished and 'metadata' in finished:
             metadata = finished['metadata']
         elif started:
@@ -182,7 +183,8 @@ def row_for_build(path, started, finished, results):
                 if not isinstance(value, str):
                     # the schema specifies a string value. force it!
                     metadata[key] = json.dumps(value)
-            return [{'key': k, 'value': v} for k, v in sorted(metadata.items())]
+            metapairs = [{'key': k, 'value': v} for k, v in sorted(metadata.items())]
+        return metapairs
 
     metadata = get_metadata(build)
     if metadata:
