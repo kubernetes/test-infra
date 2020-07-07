@@ -342,6 +342,9 @@ func (r *reconciler) syncPendingJob(pj *prowv1.ProwJob) error {
 					pj.Status.State = prowv1.ErrorState
 					pj.Status.Description = "Pod scheduling timeout."
 					r.log.WithFields(pjutil.ProwJobFields(pj)).Info("Marked job for stale unscheduled pod as errored.")
+					if err := r.deletePod(pj); err != nil {
+						return fmt.Errorf("failed to delete pod %s/%s in cluster %s: %w", pod.Namespace, pod.Name, pj.ClusterAlias(), err)
+					}
 					break
 				}
 			} else if time.Since(pod.Status.StartTime.Time) >= maxPodPending {
@@ -351,6 +354,9 @@ func (r *reconciler) syncPendingJob(pj *prowv1.ProwJob) error {
 				pj.Status.State = prowv1.ErrorState
 				pj.Status.Description = "Pod pending timeout."
 				r.log.WithFields(pjutil.ProwJobFields(pj)).Info("Marked job for stale pending pod as errored.")
+				if err := r.deletePod(pj); err != nil {
+					return fmt.Errorf("failed to delete pod %s/%s in cluster %s: %w", pod.Namespace, pod.Name, pj.ClusterAlias(), err)
+				}
 				break
 			}
 			// Pod is running. Do nothing.
@@ -367,14 +373,9 @@ func (r *reconciler) syncPendingJob(pj *prowv1.ProwJob) error {
 			pj.SetComplete()
 			pj.Status.State = prowv1.AbortedState
 			pj.Status.Description = "Pod running timeout."
-			client, ok := r.buildClients[pj.ClusterAlias()]
-			if !ok {
-				return fmt.Errorf("running pod %s: unknown cluster alias %q", pod.Name, pj.ClusterAlias())
+			if err := r.deletePod(pj); err != nil {
+				return fmt.Errorf("failed to delete pod %s/%s in cluster %s: %w", pod.Namespace, pod.Name, pj.ClusterAlias(), err)
 			}
-			if err := client.Delete(r.ctx, pod); err != nil {
-				return fmt.Errorf("failed to delete pod %s that was in running timeout: %v", pod.Name, err)
-			}
-			r.log.WithFields(pjutil.ProwJobFields(pj)).Info("Deleted stale running pod.")
 		default:
 			// other states, ignore
 			return nil
@@ -526,6 +527,29 @@ func (r *reconciler) pod(pj *prowv1.ProwJob) (*corev1.Pod, bool, error) {
 	}
 
 	return pod, true, nil
+}
+
+func (r *reconciler) deletePod(pj *prowv1.ProwJob) error {
+	buildClient, buildClientExists := r.buildClients[pj.ClusterAlias()]
+	if !buildClientExists {
+		// TODO: Use terminal error type to prevent requeuing, this wont be fixed without
+		// a restart
+		return fmt.Errorf("no build client found for cluster %q", pj.ClusterAlias())
+	}
+
+	pod := &corev1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: r.config().PodNamespace,
+			Name:      pj.Name,
+		},
+	}
+
+	if err := buildClient.Delete(r.ctx, pod); err != nil && !kerrors.IsNotFound(err) {
+		return fmt.Errorf("failed to delete pod: %w", err)
+	}
+
+	r.log.WithFields(pjutil.ProwJobFields(pj)).Info("Deleted stale running pod.")
+	return nil
 }
 
 func (r *reconciler) startPod(pj *prowv1.ProwJob) (string, string, error) {
