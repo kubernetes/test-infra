@@ -187,7 +187,7 @@ presubmits:
             - --build=bazel
             - --cluster=
             - --env=KUBE_CONTAINER_RUNTIME=containerd
-            - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.3.3
+            - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.3.5
             - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.0.0-rc10
             - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
             - --env=ENABLE_POD_SECURITY_POLICY=true
@@ -243,7 +243,7 @@ presubmits:
             - --build=bazel
             - --cluster=
             - --env=KUBE_CONTAINER_RUNTIME=containerd
-            - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.3.5
+            - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.3.6
             - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.0.0-rc10
             - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
             - --env=ENABLE_POD_SECURITY_POLICY=true
@@ -276,6 +276,7 @@ presubmits:
     - release-\d+\.\d+ # per-release image
     annotations:
       fork-per-release: "true"
+      testgrid-create-test-group: "true"
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -343,7 +344,7 @@ presubmits:
         - --provider=gce
         - --runtime-config=api/all=true
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-alpha-features
-        - --test_args=--ginkgo.focus=\[Feature:(ServiceAccountIssuerDiscovery|StorageVersionHash|Audit|PodPreset|ExpandCSIVolumes|ExpandInUseVolumes|RunAsGroup|TTLAfterFinished|NodeLease|VolumeSnapshotDataSource|CSIInlineVolume)\]|Networking --ginkgo.skip=\[Feature:(SCTPConnectivity|Volumes|Networking-Performance)\]|IPv6|csi-hostpath-v0 --minStartupPods=8
+        - --test_args=--ginkgo.focus=\[Feature:(ServiceAccountIssuerDiscovery|StorageVersionHash|Audit|PodPreset|ExpandCSIVolumes|ExpandInUseVolumes|RunAsGroup|TTLAfterFinished|NodeLease|VolumeSnapshotDataSource|CSIInlineVolume|CSIStorageCapacity)\]|Networking --ginkgo.skip=\[Feature:(SCTPConnectivity|Volumes|Networking-Performance)\]|IPv6|csi-hostpath-v0 --minStartupPods=8
         - --timeout=180m
         image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-master
         resources:
@@ -442,7 +443,7 @@ periodics:
           - --check-leaked-resources
           - --extract=ci/latest
           - --env=KUBE_CONTAINER_RUNTIME=containerd
-          - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.3.3
+          - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.3.5
           - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.0.0-rc10
           - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
           - --env=ENABLE_POD_SECURITY_POLICY=true

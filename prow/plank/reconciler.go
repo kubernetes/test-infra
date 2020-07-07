@@ -235,7 +235,7 @@ func (r *reconciler) reconcile(pj *prowv1.ProwJob) (*reconcile.Result, error) {
 
 func (r *reconciler) terminateDupes(pj *prowv1.ProwJob) error {
 	pjs := &prowv1.ProwJobList{}
-	if err := r.pjClient.List(r.ctx, pjs, optNotCompletedProwJobs()); err != nil {
+	if err := r.pjClient.List(r.ctx, pjs, optPendingTriggeredJobsNamed(pj.Spec.Job)); err != nil {
 		return fmt.Errorf("failed to list prowjobs: %v", err)
 	}
 
@@ -342,6 +342,9 @@ func (r *reconciler) syncPendingJob(pj *prowv1.ProwJob) error {
 					pj.Status.State = prowv1.ErrorState
 					pj.Status.Description = "Pod scheduling timeout."
 					r.log.WithFields(pjutil.ProwJobFields(pj)).Info("Marked job for stale unscheduled pod as errored.")
+					if err := r.deletePod(pj); err != nil {
+						return fmt.Errorf("failed to delete pod %s/%s in cluster %s: %w", pod.Namespace, pod.Name, pj.ClusterAlias(), err)
+					}
 					break
 				}
 			} else if time.Since(pod.Status.StartTime.Time) >= maxPodPending {
@@ -351,6 +354,9 @@ func (r *reconciler) syncPendingJob(pj *prowv1.ProwJob) error {
 				pj.Status.State = prowv1.ErrorState
 				pj.Status.Description = "Pod pending timeout."
 				r.log.WithFields(pjutil.ProwJobFields(pj)).Info("Marked job for stale pending pod as errored.")
+				if err := r.deletePod(pj); err != nil {
+					return fmt.Errorf("failed to delete pod %s/%s in cluster %s: %w", pod.Namespace, pod.Name, pj.ClusterAlias(), err)
+				}
 				break
 			}
 			// Pod is running. Do nothing.
@@ -367,14 +373,9 @@ func (r *reconciler) syncPendingJob(pj *prowv1.ProwJob) error {
 			pj.SetComplete()
 			pj.Status.State = prowv1.AbortedState
 			pj.Status.Description = "Pod running timeout."
-			client, ok := r.buildClients[pj.ClusterAlias()]
-			if !ok {
-				return fmt.Errorf("running pod %s: unknown cluster alias %q", pod.Name, pj.ClusterAlias())
+			if err := r.deletePod(pj); err != nil {
+				return fmt.Errorf("failed to delete pod %s/%s in cluster %s: %w", pod.Namespace, pod.Name, pj.ClusterAlias(), err)
 			}
-			if err := client.Delete(r.ctx, pod); err != nil {
-				return fmt.Errorf("failed to delete pod %s that was in running timeout: %v", pod.Name, err)
-			}
-			r.log.WithFields(pjutil.ProwJobFields(pj)).Info("Deleted stale running pod.")
 		default:
 			// other states, ignore
 			return nil
@@ -528,6 +529,29 @@ func (r *reconciler) pod(pj *prowv1.ProwJob) (*corev1.Pod, bool, error) {
 	return pod, true, nil
 }
 
+func (r *reconciler) deletePod(pj *prowv1.ProwJob) error {
+	buildClient, buildClientExists := r.buildClients[pj.ClusterAlias()]
+	if !buildClientExists {
+		// TODO: Use terminal error type to prevent requeuing, this wont be fixed without
+		// a restart
+		return fmt.Errorf("no build client found for cluster %q", pj.ClusterAlias())
+	}
+
+	pod := &corev1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: r.config().PodNamespace,
+			Name:      pj.Name,
+		},
+	}
+
+	if err := buildClient.Delete(r.ctx, pod); err != nil && !kerrors.IsNotFound(err) {
+		return fmt.Errorf("failed to delete pod: %w", err)
+	}
+
+	r.log.WithFields(pjutil.ProwJobFields(pj)).Info("Deleted stale running pod.")
+	return nil
+}
+
 func (r *reconciler) startPod(pj *prowv1.ProwJob) (string, string, error) {
 	buildID, err := r.getBuildID(pj.Spec.Job)
 	if err != nil {
@@ -581,7 +605,7 @@ func (r *reconciler) canExecuteConcurrently(pj *prowv1.ProwJob) (bool, error) {
 
 	if max := r.config().Plank.MaxConcurrency; max > 0 {
 		pjs := &prowv1.ProwJobList{}
-		if err := r.pjClient.List(r.ctx, pjs, optNotCompletedProwJobs()); err != nil {
+		if err := r.pjClient.List(r.ctx, pjs, optPendingProwJobs()); err != nil {
 			return false, fmt.Errorf("failed to list prowjobs: %w", err)
 		}
 		// The list contains our own ProwJob
@@ -597,28 +621,34 @@ func (r *reconciler) canExecuteConcurrently(pj *prowv1.ProwJob) (bool, error) {
 	}
 
 	pjs := &prowv1.ProwJobList{}
-	if err := r.pjClient.List(r.ctx, pjs, optNotCompletedProwJobsNamed(pj.Spec.Job)); err != nil {
+	if err := r.pjClient.List(r.ctx, pjs, optPendingTriggeredJobsNamed(pj.Spec.Job)); err != nil {
 		return false, fmt.Errorf("failed listing prowjobs: %w:", err)
 	}
 	r.log.Infof("got %d not completed with same name", len(pjs.Items))
 
-	var olderMatchingPJs int
+	var pendingOrOlderMatchingPJs int
 	for _, foundPJ := range pjs.Items {
 		// Ignore self here.
 		if foundPJ.UID == pj.UID {
 			continue
 		}
+		if foundPJ.Status.State == prowv1.PendingState {
+			pendingOrOlderMatchingPJs++
+			continue
+		}
 
+		// At this point we know that foundPJ is in Triggered state, if its older than our prowJobs it gets
+		// priorized to make sure we execute jobs in creation order.
 		if foundPJ.CreationTimestamp.Before(&pj.CreationTimestamp) {
-			olderMatchingPJs++
+			pendingOrOlderMatchingPJs++
 		}
 
 	}
 
-	if olderMatchingPJs >= pj.Spec.MaxConcurrency {
+	if pendingOrOlderMatchingPJs >= pj.Spec.MaxConcurrency {
 		r.log.WithFields(pjutil.ProwJobFields(pj)).
-			Debugf("Not starting another instance of %s, already %d older instances waiting and %d is the limit",
-				pj.Spec.Job, olderMatchingPJs, pj.Spec.MaxConcurrency)
+			Debugf("Not starting another instance of %s, have %d instances that are pending or older, %d is the limit",
+				pj.Spec.Job, pendingOrOlderMatchingPJs, pj.Spec.MaxConcurrency)
 		return false, nil
 	}
 
@@ -694,13 +724,14 @@ const (
 	prowJobIndexName = "plank-prow-jobs"
 	// prowJobIndexKeyAll is the indexKey for all ProwJobs
 	prowJobIndexKeyAll = "all"
-	// prowJobIndexKeyCompleted is the indexKey for not
-	// completed ProwJobs
-	prowJobIndexKeyNotCompleted = "not-completed"
+	// prowJobIndexKeyPending is the indexKey for prowjobs
+	// that are currently pending AKA a corresponding pod
+	// exists but didn't yet finish
+	prowJobIndexKeyPending = "pending"
 )
 
-func prowJobIndexKeyNotCompletedByName(jobName string) string {
-	return fmt.Sprintf("not-completed-%s", jobName)
+func pendingTriggeredIndexKeyByName(jobName string) string {
+	return fmt.Sprintf("pending-triggered-named-%s", jobName)
 }
 
 func prowJobIndexer(prowJobNamespace string) ctrlruntimeclient.IndexerFunc {
@@ -710,11 +741,18 @@ func prowJobIndexer(prowJobNamespace string) ctrlruntimeclient.IndexerFunc {
 			return nil
 		}
 
-		if !pj.Complete() {
+		if pj.Status.State == prowv1.PendingState {
 			return []string{
 				prowJobIndexKeyAll,
-				prowJobIndexKeyNotCompleted,
-				prowJobIndexKeyNotCompletedByName(pj.Spec.Job),
+				prowJobIndexKeyPending,
+				pendingTriggeredIndexKeyByName(pj.Spec.Job),
+			}
+		}
+
+		if pj.Status.State == prowv1.TriggeredState {
+			return []string{
+				prowJobIndexKeyAll,
+				pendingTriggeredIndexKeyByName(pj.Spec.Job),
 			}
 		}
 
@@ -726,10 +764,10 @@ func optAllProwJobs() ctrlruntimeclient.ListOption {
 	return ctrlruntimeclient.MatchingField(prowJobIndexName, prowJobIndexKeyAll)
 }
 
-func optNotCompletedProwJobs() ctrlruntimeclient.ListOption {
-	return ctrlruntimeclient.MatchingField(prowJobIndexName, prowJobIndexKeyNotCompleted)
+func optPendingProwJobs() ctrlruntimeclient.ListOption {
+	return ctrlruntimeclient.MatchingField(prowJobIndexName, prowJobIndexKeyPending)
 }
 
-func optNotCompletedProwJobsNamed(name string) ctrlruntimeclient.ListOption {
-	return ctrlruntimeclient.MatchingField(prowJobIndexName, prowJobIndexKeyNotCompletedByName(name))
+func optPendingTriggeredJobsNamed(name string) ctrlruntimeclient.ListOption {
+	return ctrlruntimeclient.MatchingField(prowJobIndexName, pendingTriggeredIndexKeyByName(name))
 }

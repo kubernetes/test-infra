@@ -46,12 +46,12 @@ func TestSetRepoPathIfNotSet(t *testing.T) {
 		t.Errorf("failed to chdir for test: %s", err)
 	}
 
-	for _, c := range cases {
-		c := c
+	for i := range cases {
+		c := &cases[i]
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
 
-			d := c.initialDeployer
+			d := &c.initialDeployer
 			err := d.setRepoPathIfNotSet()
 			if err != nil {
 				t.Errorf("failed to set repo path: %s", err)

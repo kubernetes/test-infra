@@ -559,6 +559,23 @@ presubmits:
         args:
         - verify-all
 
+  - name: pull-perf-tests-verify-test
+    # TODO(jkaniuk): make it non-optional once we are confident in the presubmit
+    optional: true
+    decorate: true
+    always_run: true
+    branches:
+    - release-1.1[2-8] # Newer branches use verify-all
+    path_alias: "k8s.io/perf-tests"
+    annotations:
+      testgrid-dashboards: presubmits-kubernetes-scalability
+      testgrid-tab-name: pull-perf-tests-verify-test
+    spec:
+      containers:
+      - image: golang:1.13
+        command:
+        - verify/test.sh
+
   - name: pull-perf-tests-verify-dashboard
     # TODO(oxddr): make it non-optional once we are confident in the presubmit
     optional: true

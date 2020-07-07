@@ -16,6 +16,8 @@ presubmits:
         args:
         - make
         - verify
+        securityContext:
+          privileged: true
     annotations:
       testgrid-dashboards: provider-azure-blobfuse-csi-driver, provider-azure-presubmit
       testgrid-tab-name: pr-blobfuse-csi-driver-verify
@@ -37,6 +39,8 @@ presubmits:
         args:
         - make
         - unit-test
+        securityContext:
+          privileged: true
     annotations:
       testgrid-dashboards: provider-azure-blobfuse-csi-driver, provider-azure-presubmit
       testgrid-tab-name: pr-blobfuse-csi-driver-unit

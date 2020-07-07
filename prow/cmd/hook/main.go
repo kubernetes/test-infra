@@ -31,6 +31,7 @@ import (
 	"k8s.io/test-infra/prow/config/secret"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/git/v2"
+	"k8s.io/test-infra/prow/githubeventserver"
 	"k8s.io/test-infra/prow/hook"
 	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/logrusutil"
@@ -194,7 +195,7 @@ func main() {
 		BugzillaClient:            bugzillaClient,
 	}
 
-	promMetrics := hook.NewMetrics()
+	promMetrics := githubeventserver.NewMetrics()
 
 	defer interrupts.WaitForGracefulShutdown()
 

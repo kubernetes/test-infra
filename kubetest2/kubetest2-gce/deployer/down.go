@@ -25,15 +25,15 @@ import (
 )
 
 func (d *deployer) Down() error {
-	klog.Info("GCE deployer starting Down()")
+	klog.V(1).Info("GCE deployer starting Down()")
 
-	if err := d.verifyFlags(); err != nil {
-		return fmt.Errorf("down could not verify flags: %s", err)
+	if err := d.init(); err != nil {
+		return fmt.Errorf("down failed to init: %s", err)
 	}
 
 	env := d.buildEnv()
 	script := filepath.Join(d.RepoRoot, "cluster", "kube-down.sh")
-	klog.Infof("About to run script at: %s", script)
+	klog.V(2).Infof("About to run script at: %s", script)
 
 	cmd := exec.Command(script)
 	cmd.SetEnv(env...)
@@ -41,6 +41,32 @@ func (d *deployer) Down() error {
 	err := cmd.Run()
 	if err != nil {
 		return fmt.Errorf("error encountered during %s: %s", script, err)
+	}
+
+	if d.boskos != nil {
+		klog.V(2).Info("releasing boskos project")
+		err := releaseBoskosProject(
+			d.boskos,
+			d.GCPProject,
+			d.boskosHeartbeatClose,
+		)
+		if err != nil {
+			return fmt.Errorf("down failed to release boskos project: %s", err)
+		}
+	}
+
+	return nil
+}
+
+func (d *deployer) verifyDownFlags() error {
+	if err := d.setRepoPathIfNotSet(); err != nil {
+		return err
+	}
+
+	d.kubectlPath = filepath.Join(d.RepoRoot, "cluster", "kubectl.sh")
+
+	if d.GCPProject == "" {
+		return fmt.Errorf("gcp project must be set")
 	}
 
 	return nil

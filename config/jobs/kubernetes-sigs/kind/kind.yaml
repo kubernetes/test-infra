@@ -35,6 +35,8 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
   decorate: true
+  decoration_config:
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kubernetes
@@ -80,6 +82,8 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
   decorate: true
+  decoration_config:
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kubernetes

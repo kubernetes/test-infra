@@ -533,7 +533,7 @@ func (c *client) request(req *http.Request, logger *logrus.Entry) ([]byte, error
 		logger.WithError(err).Debug("could not read response body as error")
 	}
 	if error.Error {
-		return nil, &requestError{statusCode: resp.StatusCode, message: fmt.Sprintf("code %d: %s", error.Code, error.Message)}
+		return nil, &requestError{statusCode: resp.StatusCode, bugzillaCode: error.Code, message: error.Message}
 	} else if resp.StatusCode != http.StatusOK {
 		return nil, &requestError{statusCode: resp.StatusCode, message: fmt.Sprintf("response code %d not %d", resp.StatusCode, http.StatusOK)}
 	}
@@ -541,11 +541,15 @@ func (c *client) request(req *http.Request, logger *logrus.Entry) ([]byte, error
 }
 
 type requestError struct {
-	statusCode int
-	message    string
+	statusCode   int
+	bugzillaCode int
+	message      string
 }
 
 func (e requestError) Error() string {
+	if e.bugzillaCode != 0 {
+		return fmt.Sprintf("code %d: %s", e.bugzillaCode, e.message)
+	}
 	return e.message
 }
 
@@ -555,6 +559,22 @@ func IsNotFound(err error) bool {
 		return false
 	}
 	return reqError.statusCode == http.StatusNotFound
+}
+
+func IsInvalidBugID(err error) bool {
+	reqError, ok := err.(*requestError)
+	if !ok {
+		return false
+	}
+	return reqError.bugzillaCode == 101
+}
+
+func IsAccessDenied(err error) bool {
+	reqError, ok := err.(*requestError)
+	if !ok {
+		return false
+	}
+	return reqError.bugzillaCode == 102
 }
 
 // AddPullRequestAsExternalBug attempts to add a PR to the external tracker list.

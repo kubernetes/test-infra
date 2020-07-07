@@ -11,10 +11,10 @@ plank:
       timeout: 2h
       grace_period: 15s
       utility_images:
-        clonerefs: "gcr.io/k8s-prow/clonerefs:v20200628-cc1c099dad"
-        initupload: "gcr.io/k8s-prow/initupload:v20200628-cc1c099dad"
-        entrypoint: "gcr.io/k8s-prow/entrypoint:v20200628-cc1c099dad"
-        sidecar: "gcr.io/k8s-prow/sidecar:v20200628-cc1c099dad"
+        clonerefs: "gcr.io/k8s-prow/clonerefs:v20200703-4509c055d7"
+        initupload: "gcr.io/k8s-prow/initupload:v20200703-4509c055d7"
+        entrypoint: "gcr.io/k8s-prow/entrypoint:v20200703-4509c055d7"
+        sidecar: "gcr.io/k8s-prow/sidecar:v20200703-4509c055d7"
       gcs_configuration:
         bucket: "kubernetes-jenkins"
         path_strategy: "legacy"
@@ -395,6 +395,14 @@ branch-protection:
           required_status_checks:
             contexts:
             - continuous-integration/travis-ci
+    kubeflow:
+      protect: true
+      required_status_checks:
+        contexts:
+        - cla/google
+      exclude:
+      - "^revert-" # don't protect revert branches
+      - "^dependabot/" # don't protect branches created by dependabot
 
 tide:
   sync_period: 2m
@@ -521,8 +529,8 @@ tide:
     kubernetes/cloud-provider-openstack: squash
     kubernetes/dashboard: squash
   merge_commit_template:
-    kubeflow/pipelines:
-      title: "{{ .Title }} ({{ .Number }})"
+    kubeflow:
+      title: "{{ .Title }} (#{{ .Number }})"
   pr_status_base_urls:
     '*': https://prow.k8s.io/pr
   blocker_label: tide/merge-blocker

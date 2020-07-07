@@ -391,6 +391,9 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]corev1.Pod
 					pj.Status.State = prowapi.ErrorState
 					pj.Status.Description = "Pod scheduling timeout."
 					c.log.WithFields(pjutil.ProwJobFields(&pj)).Info("Marked job for stale unscheduled pod as errored.")
+					if err := c.deletePod(&pj); err != nil {
+						return fmt.Errorf("failed to delete pod %s/%s in cluster %s: %w", pod.Namespace, pod.Name, pj.ClusterAlias(), err)
+					}
 					break
 				}
 			} else if time.Since(pod.Status.StartTime.Time) >= maxPodPending {
@@ -400,6 +403,9 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]corev1.Pod
 				pj.Status.State = prowapi.ErrorState
 				pj.Status.Description = "Pod pending timeout."
 				c.log.WithFields(pjutil.ProwJobFields(&pj)).Info("Marked job for stale pending pod as errored.")
+				if err := c.deletePod(&pj); err != nil {
+					return fmt.Errorf("failed to delete pod %s/%s in cluster %s: %w", pod.Namespace, pod.Name, pj.ClusterAlias(), err)
+				}
 				break
 			}
 			// Pod is running. Do nothing.
@@ -418,14 +424,9 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]corev1.Pod
 			pj.SetComplete()
 			pj.Status.State = prowapi.AbortedState
 			pj.Status.Description = "Pod running timeout."
-			client, ok := c.buildClients[pj.ClusterAlias()]
-			if !ok {
-				return fmt.Errorf("running pod %s: unknown cluster alias %q", pod.Name, pj.ClusterAlias())
+			if err := c.deletePod(&pj); err != nil {
+				return fmt.Errorf("failed to delete pod %s/%s in cluster %s: %w", pod.Namespace, pod.Name, pj.ClusterAlias(), err)
 			}
-			if err := client.Delete(c.ctx, &pod); err != nil {
-				return fmt.Errorf("failed to delete pod %s that was in running timeout: %v", pod.Name, err)
-			}
-			c.log.WithFields(pjutil.ProwJobFields(&pj)).Info("Deleted stale running pod.")
 		default:
 			// other states, ignore
 			c.incrementNumPendingJobs(pj.Spec.Job)
@@ -541,6 +542,27 @@ func (c *Controller) startPod(pj *prowapi.ProwJob) error {
 		return err
 	}
 	pj.Status.PodName = pod.ObjectMeta.Name
+	return nil
+}
+
+func (c *Controller) deletePod(pj *prowapi.ProwJob) error {
+	client, ok := c.buildClients[pj.ClusterAlias()]
+	if !ok {
+		return fmt.Errorf("unknown cluster alias %q", pj.ClusterAlias())
+	}
+
+	pod := &corev1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: c.config().PodNamespace,
+			Name:      pj.Name,
+		},
+	}
+
+	if err := client.Delete(c.ctx, pod); err != nil && !kerrors.IsNotFound(err) {
+		return fmt.Errorf("failed to delete pod: %w", err)
+	}
+
+	c.log.WithFields(pjutil.ProwJobFields(pj)).Info("Deleted stale running pod.")
 	return nil
 }
 

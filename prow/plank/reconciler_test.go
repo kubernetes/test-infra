@@ -287,6 +287,9 @@ func TestProwJobIndexer(t *testing.T) {
 				Job:   pjName,
 				Agent: prowv1.KubernetesAgent,
 			},
+			Status: prowv1.ProwJobStatus{
+				State: prowv1.PendingState,
+			},
 		}
 		for _, m := range modify {
 			m(pj)
@@ -300,7 +303,12 @@ func TestProwJobIndexer(t *testing.T) {
 	}{
 		{
 			name:     "Matches all keys",
-			expected: []string{prowJobIndexKeyAll, prowJobIndexKeyNotCompleted, prowJobIndexKeyNotCompletedByName(pjName)},
+			expected: []string{prowJobIndexKeyAll, prowJobIndexKeyPending, pendingTriggeredIndexKeyByName(pjName)},
+		},
+		{
+			name:     "Triggered goes into triggeredPending",
+			modify:   func(pj *prowv1.ProwJob) { pj.Status.State = prowv1.TriggeredState },
+			expected: []string{prowJobIndexKeyAll, pendingTriggeredIndexKeyByName(pjName)},
 		},
 		{
 			name:   "Wrong namespace, no key",
@@ -311,14 +319,14 @@ func TestProwJobIndexer(t *testing.T) {
 			modify: func(pj *prowv1.ProwJob) { pj.Spec.Agent = prowv1.TektonAgent },
 		},
 		{
-			name:     "Completed, matches only the `all` key",
-			modify:   func(pj *prowv1.ProwJob) { pj.SetComplete() },
+			name:     "Success, matches only the `all` key",
+			modify:   func(pj *prowv1.ProwJob) { pj.Status.State = prowv1.SuccessState },
 			expected: []string{prowJobIndexKeyAll},
 		},
 		{
 			name:     "Changing name changes notCompletedByName index",
 			modify:   func(pj *prowv1.ProwJob) { pj.Spec.Job = "some-name" },
-			expected: []string{prowJobIndexKeyAll, prowJobIndexKeyNotCompleted, prowJobIndexKeyNotCompletedByName("some-name")},
+			expected: []string{prowJobIndexKeyAll, prowJobIndexKeyPending, pendingTriggeredIndexKeyByName("some-name")},
 		},
 	}
 

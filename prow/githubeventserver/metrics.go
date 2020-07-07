@@ -14,10 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package hook
+package githubeventserver
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
+
 	"k8s.io/test-infra/prow/plugins"
 )
 

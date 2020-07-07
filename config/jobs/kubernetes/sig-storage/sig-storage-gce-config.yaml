@@ -79,7 +79,7 @@ presubmits:
         - --repo=k8s.io/kubernetes=$(PULL_REFS)
         - --repo=k8s.io/release
         - --upload=gs://kubernetes-jenkins/pr-logs
-        - --timeout=125
+        - --timeout=150
         - --scenario=kubernetes_e2e
         - --
         - --build=bazel
@@ -91,7 +91,7 @@ presubmits:
         - --runtime-config=batch/v2alpha1=true
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-storage-snapshot
         - --test_args=--ginkgo.focus=\[Feature:VolumeSnapshotDataSource\] --ginkgo.skip=\[Disruptive\]|\[Flaky\] --minStartupPods=8
-        - --timeout=80m
+        - --timeout=120m
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -228,7 +228,7 @@ presubmits:
         - --extract=local
         - --gcp-node-image=ubuntu
         - --image-family=ubuntu-2004-lts
-        - --image-project=ubuntu-oscloud
+        - --image-project=ubuntu-os-cloud
         - --env=KUBE_CONTAINER_RUNTIME=docker
         - --gcp-zone=us-west1-b
         - --provider=gce
@@ -270,7 +270,7 @@ presubmits:
         - --extract=local
         - --gcp-node-image=ubuntu
         - --image-family=ubuntu-2004-lts
-        - --image-project=ubuntu-oscloud
+        - --image-project=ubuntu-os-cloud
         - --env=KUBE_CONTAINER_RUNTIME=docker
         - --gcp-zone=us-west1-b
         - --provider=gce
@@ -338,7 +338,7 @@ periodics:
       - --extract=ci/latest
       - --gcp-node-image=ubuntu
       - --image-family=ubuntu-2004-lts
-      - --image-project=ubuntu-oscloud
+      - --image-project=ubuntu-os-cloud
       - --env=KUBE_CONTAINER_RUNTIME=docker
       - --gcp-zone=us-west1-b
       - --provider=gce
@@ -364,7 +364,7 @@ periodics:
       - --extract=ci/latest
       - --gcp-node-image=ubuntu
       - --image-family=ubuntu-2004-lts
-      - --image-project=ubuntu-oscloud
+      - --image-project=ubuntu-os-cloud
       - --env=KUBE_CONTAINER_RUNTIME=docker
       - --gcp-zone=us-west1-b
       - --provider=gce

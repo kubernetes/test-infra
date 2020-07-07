@@ -24,7 +24,7 @@ periodics:
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release-dev/ci/k8s-master.txt
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
-      - --extract=ci/latest
+      - --extract=ci/k8s-master
       - --ginkgo-parallel
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-publish=gs://kops-ci/bin/latest-ci-green.txt

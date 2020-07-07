@@ -25,13 +25,13 @@ presubmits:
   - name: pull-test-infra-gubernator
     branches:
     - master
-    run_if_changed: 'gubernator|config/prow/config.yaml'
+    run_if_changed: 'gubernator|config/prow/config.yaml' # TODO(fejta): |config/jobs/.+\.yaml
     decorate: true
     labels:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gubernator:v20200520-098b536
+      - image: gcr.io/k8s-testimages/gubernator:v20200706-8ff7838
         command:
         - ./gubernator/test-gubernator.sh
         env:
@@ -78,7 +78,7 @@ presubmits:
     run_if_changed: '^(config/prow/(config|plugins).yaml$|config/jobs/.*.yaml$)'
     spec:
       containers:
-      - image: gcr.io/k8s-prow/checkconfig:v20200628-cc1c099dad
+      - image: gcr.io/k8s-prow/checkconfig:v20200703-4509c055d7
         command:
         - /checkconfig
         args:

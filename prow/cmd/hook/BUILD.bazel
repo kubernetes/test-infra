@@ -46,6 +46,7 @@ go_library(
         "//prow/config/secret:go_default_library",
         "//prow/flagutil:go_default_library",
         "//prow/git/v2:go_default_library",
+        "//prow/githubeventserver:go_default_library",
         "//prow/hook:go_default_library",
         "//prow/interrupts:go_default_library",
         "//prow/logrusutil:go_default_library",

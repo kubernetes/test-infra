@@ -253,7 +253,7 @@ postsubmits:
   - name: kubeflow-pipeline-postsubmit-standalone-component-test
     cluster: kubeflow
     branches:
-    - ^master$
+    - ^master|release-.+$
     decorate: true
     labels:
       preset-service-account: "true"
@@ -290,7 +290,7 @@ postsubmits:
   - name: kubeflow-pipeline-postsubmit-integration-test
     cluster: kubeflow
     branches:
-    - ^master$
+    - ^master|release-.+$
     decorate: true
     labels:
       preset-service-account: "true"
@@ -314,7 +314,7 @@ postsubmits:
   - name: kubeflow-pipeline-postsubmit-mkp-e2e-test
     cluster: kubeflow
     branches:
-    - ^master$
+    - ^master|release-.+$
     decorate: true
     labels:
       preset-service-account: "true"

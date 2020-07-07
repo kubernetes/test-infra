@@ -25,19 +25,32 @@ import (
 )
 
 func (d *deployer) Build() error {
-	klog.Info("GCE deployer starting Build()")
+	klog.V(1).Info("GCE deployer starting Build()")
 
-	if err := d.verifyBuildFlags(); err != nil {
-		return fmt.Errorf("Build() failed to verify build-specific flags: %s", err)
+	if err := d.init(); err != nil {
+		return fmt.Errorf("build failed to init: %s", err)
 	}
 
-	// this code path supports the kubernetes/cloud-provider-gcp build
-	// TODO: update in future patch to support legacy (k/k) build
-	cmd := exec.Command("bazel", "build", "//release:release-tars")
-	cmd.SetDir(d.RepoRoot)
-	err := cmd.Run()
-	if err != nil {
-		return fmt.Errorf("error during make step of build: %s", err)
+	if d.LegacyMode {
+		// this supports the kubernetes/kubernetes build
+		klog.V(2).Info("starting the legacy build")
+
+		cmd := exec.Command("make", "bazel-release")
+		cmd.SetDir(d.RepoRoot)
+		err := cmd.Run()
+		if err != nil {
+			return fmt.Errorf("error during make step of build: %s", err)
+		}
+	} else {
+		// this code path supports the kubernetes/cloud-provider-gcp build
+		klog.V(2).Info("starting the build")
+
+		cmd := exec.Command("bazel", "build", "//release:release-tars")
+		cmd.SetDir(d.RepoRoot)
+		err := cmd.Run()
+		if err != nil {
+			return fmt.Errorf("error during make step of build: %s", err)
+		}
 	}
 
 	// no untarring, uploading, etc is necessary because
@@ -57,7 +70,7 @@ func (d *deployer) setRepoPathIfNotSet() error {
 	if err != nil {
 		return fmt.Errorf("Failed to get current working directory for setting Kubernetes root path: %s", err)
 	}
-	klog.Infof("defaulting repo root to the current directory: %s", path)
+	klog.V(1).Infof("defaulting repo root to the current directory: %s", path)
 	d.RepoRoot = path
 
 	return nil
