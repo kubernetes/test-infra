@@ -1,19 +1,60 @@
 steps:
+# Step 1: Set up multiarch support.
   - name: gcr.io/cloud-builders/docker
     args:
+    - run
+    - --privileged
+    - multiarch/qemu-user-static
+    - --reset -p yes
+
+# Step 2: Create buildx builder.
+  - name: gcr.io/cloud-builders/docker
+    env:
+      - DOCKER_CLI_EXPERIMENTAL=enabled
+    args:
+    - buildx
+    - create
+    - --use
+    - --name=k8s-testimages
+
+# Step 3: Build multi-arch images, then push.
+  - name: gcr.io/cloud-builders/docker
+    env:
+      - DOCKER_CLI_EXPERIMENTAL=enabled
+    args:
+    - buildx
     - build
+    - --platform=linux/amd64,linux/arm64,linux/ppc64le,linux/s390x
+    - --push
     - -t
     - gcr.io/$PROJECT_ID/alpine:$_GIT_TAG
     - --build-arg=IMAGE_ARG=gcr.io/$PROJECT_ID/alpine:$_GIT_TAG
+    - --pull
     - .
     dir: .
+
   - name: gcr.io/cloud-builders/docker
+    env:
+      - DOCKER_CLI_EXPERIMENTAL=enabled
     args:
-    - tag
-    - gcr.io/$PROJECT_ID/alpine:$_GIT_TAG
+    - buildx
+    - build
+    - --platform=linux/amd64,linux/arm64,linux/ppc64le,linux/s390x
+    - --push
+    - -t
     - gcr.io/$PROJECT_ID/alpine:latest
+    - --build-arg=IMAGE_ARG=gcr.io/$PROJECT_ID/alpine:latest
+    - --pull
+    - .
+    dir: .
+
 substitutions:
   _GIT_TAG: '12345'
-images:
-  - 'gcr.io/$PROJECT_ID/alpine:$_GIT_TAG'
-  - 'gcr.io/$PROJECT_ID/alpine:latest'
+
+# Expected multi-arch images:
+#   gcr.io/$PROJECT_ID/alpine:$_GIT_TAG with multi-arch manifest.
+#   gcr.io/$PROJECT_ID/alpine:latest with multi-arch manifest.
+# Notice:
+# Multi-arch images can't be loaded into the local docker daemon with 'buildx --load' parameter.
+# The feature should get support for loading multi-arch with moby/moby#38738.
+# So the images field can not be used for the multi-arch case.
