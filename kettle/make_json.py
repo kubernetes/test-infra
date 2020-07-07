@@ -32,6 +32,7 @@ except ImportError:
 
 import model
 
+SECONDS_PER_DAY = 86400
 
 def parse_junit(xml):
     """Generate failed tests as a series of dicts. Ignore skipped tests."""
@@ -146,6 +147,8 @@ def row_for_build(path, started, finished, results):
         build['started'] = int(started['timestamp'])
         if 'node' in started:
             build['executor'] = started['node']
+        build['repo_commit'] = started.get('repo-commit', started.get('repo-version'))
+        build['repos'] = started.get('repos')
     if finished:
         build['finished'] = int(finished['timestamp'])
         if 'result' in finished:
@@ -157,13 +160,16 @@ def row_for_build(path, started, finished, results):
         if 'version' in finished:
             build['version'] = finished['version']
 
-    def get_metadata():
+    def get_metadata(build):
         metadata = None
         if finished and 'metadata' in finished:
             metadata = finished['metadata']
         elif started:
             metadata = started.get('metadata')
+
         if metadata:
+            if not build.get('repos'):
+                build['repos'] = metadata.get('repos')
             # clean useless/duplicated metadata fields
             if 'repo' in metadata and not metadata['repo']:
                 metadata.pop('repo')
@@ -176,11 +182,9 @@ def row_for_build(path, started, finished, results):
                 if not isinstance(value, str):
                     # the schema specifies a string value. force it!
                     metadata[key] = json.dumps(value)
-        if not metadata:
-            return None
-        return [{'key': k, 'value': v} for k, v in sorted(metadata.items())]
+            return [{'key': k, 'value': v} for k, v in sorted(metadata.items())]
 
-    metadata = get_metadata()
+    metadata = get_metadata(build)
     if metadata:
         build['metadata'] = metadata
     if started and finished:
@@ -219,14 +223,14 @@ def make_rows(db, builds):
 
 
 def main(db, opts, outfile):
-    min_started = None
+    min_started = 0
     if opts.days:
-        min_started = time.time() - (opts.days or 1) * 24 * 60 * 60
+        min_started = time.time() - (opts.days or 1) * SECONDS_PER_DAY
     incremental_table = get_table(opts.days)
 
     if opts.assert_oldest:
         oldest = db.get_oldest_emitted(incremental_table)
-        if oldest < time.time() - opts.assert_oldest * 24 * 60 * 60:
+        if oldest < time.time() - opts.assert_oldest * SECONDS_PER_DAY:
             return 1
         return 0
 

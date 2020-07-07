@@ -119,14 +119,22 @@ class Database:
     @staticmethod
     def _get_builds(results):
         for rowid, path, started, finished in results:
-            started = started and json.loads(started)
-            finished = finished and json.loads(finished)
+            started = json.loads(started) if started else started
+            finished = json.loads(finished) if finished else finished
             yield rowid, path, started, finished
 
-    def get_builds(self, path='', min_started=None, incremental_table=DEFAULT_INCREMENTAL_TABLE):
+    def get_builds(self, path='', min_started=0, incremental_table=DEFAULT_INCREMENTAL_TABLE):
         """
         Iterate through (buildid, gcs_path, started, finished) for each build under
         the given path that has not already been emitted.
+
+        Args:
+            path (string, optional): build path to fetch
+            min_started (int, optional): epoch time to fetch builds since
+            incremental_table (string, optional): table name
+
+        Returns:
+            Generator containing rowID, path, and dicts representing the started and finished json
         """
         self._init_incremental(incremental_table)
         results = self.db.execute(
@@ -135,7 +143,7 @@ class Database:
             ' and finished_time >= ?' +
             ' and rowid not in (select build_id from %s)'
             ' order by finished_time' % incremental_table
-            , (path + '%', min_started or 0)).fetchall()
+            , (path + '%', min_started)).fetchall()
         return self._get_builds(results)
 
     def get_builds_from_paths(self, paths, incremental_table=DEFAULT_INCREMENTAL_TABLE):

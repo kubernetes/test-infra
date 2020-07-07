@@ -71,22 +71,22 @@ class MakeJsonTest(unittest.TestCase):
                {'timestamp': 10, 'node': 'agent-34'},
                {'timestamp': 15, 'result': 'SUCCESS', 'version': 'v1.2.3'},
                [],
-               job='J', number=123,
-               started=10, finished=15, elapsed=5,
+               job='J', number=123, repos=None,
+               started=10, finished=15, elapsed=5, repo_commit=None,
                version='v1.2.3', result='SUCCESS', executor='agent-34',
               )
         expect(path,
                {'timestamp': 10},
                {'timestamp': 15, 'passed': True},
                [],
-               job='J', number=123,
-               started=10, finished=15, elapsed=5,
+               job='J', number=123, repos=None,
+               started=10, finished=15, elapsed=5, repo_commit=None,
                result='SUCCESS',
               )
         expect(path, None,
                {'timestamp': 15, 'result': 'FAILURE',
                 'metadata': {'repo': 'ignored', 'pull': 'asdf'}}, [],
-               result='FAILURE', job='J', number=123, finished=15,
+               result='FAILURE', job='J', number=123, finished=15, repos=None,
                metadata=[{'key': 'pull', 'value': 'asdf'}, {'key': 'repo', 'value': 'ignored'}])
         expect(path, None, None, ['''
                    <testsuite>
