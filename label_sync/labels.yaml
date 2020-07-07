@@ -426,73 +426,73 @@ default:
       prowPlugin: releasenote
       addedBy: prow or member or author
     - color: d2b48c
-      description: Categorizes an issue or PR as relevant to sig-api-machinery.
+      description: Categorizes an issue or PR as relevant to SIG API Machinery.
       name: sig/api-machinery
       target: both
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
-      description: Categorizes an issue or PR as relevant to sig-apps.
+      description: Categorizes an issue or PR as relevant to SIG Apps.
       name: sig/apps
       target: both
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
-      description: Categorizes an issue or PR as relevant to sig-architecture.
+      description: Categorizes an issue or PR as relevant to SIG Architecture.
       name: sig/architecture
       target: both
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
-      description: Categorizes an issue or PR as relevant to sig-auth.
+      description: Categorizes an issue or PR as relevant to SIG Auth.
       name: sig/auth
       target: both
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
-      description: Categorizes an issue or PR as relevant to sig-autoscaling.
+      description: Categorizes an issue or PR as relevant to SIG Autoscaling.
       name: sig/autoscaling
       target: both
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
-      description: Categorizes an issue or PR as relevant to sig-cli.
+      description: Categorizes an issue or PR as relevant to SIG CLI.
       name: sig/cli
       target: both
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
-      description: Categorizes an issue or PR as relevant to sig-cloud-provider.
+      description: Categorizes an issue or PR as relevant to SIG Cloud Provider.
       name: sig/cloud-provider
       target: both
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
-      description: Categorizes an issue or PR as relevant to sig-cluster-lifecycle.
+      description: Categorizes an issue or PR as relevant to SIG Cluster Lifecycle.
       name: sig/cluster-lifecycle
       target: both
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
-      description: Categorizes an issue or PR as relevant to sig-contributor-experience.
+      description: Categorizes an issue or PR as relevant to SIG Contributor Experience.
       name: sig/contributor-experience
       target: both
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
-      description: Categorizes an issue or PR as relevant to sig-docs.
+      description: Categorizes an issue or PR as relevant to SIG Docs.
       name: sig/docs
       target: both
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
-      description: Categorizes an issue or PR as relevant to sig-multicluster.
+      description: Categorizes an issue or PR as relevant to SIG Instrumentation.
       name: sig/instrumentation
       target: both
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
-      description: Categorizes an issue or PR as relevant to sig-multicluster.
+      description: Categorizes an issue or PR as relevant to SIG Multicluster.
       name: sig/multicluster
       previously:
         - name: sig/federation
@@ -501,73 +501,73 @@ default:
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
-      description: Categorizes an issue or PR as relevant to sig-network.
+      description: Categorizes an issue or PR as relevant to SIG Network.
       name: sig/network
       target: both
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
-      description: Categorizes an issue or PR as relevant to sig-node.
+      description: Categorizes an issue or PR as relevant to SIG Node.
       name: sig/node
       target: both
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
-      description: Categorizes an issue or PR as relevant to sig-release.
+      description: Categorizes an issue or PR as relevant to SIG Release.
       name: sig/release
       target: both
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
-      description: Categorizes an issue or PR as relevant to sig-scalability.
+      description: Categorizes an issue or PR as relevant to SIG Scalability.
       name: sig/scalability
       target: both
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
-      description: Categorizes an issue or PR as relevant to sig-scheduling.
+      description: Categorizes an issue or PR as relevant to SIG Scheduling.
       name: sig/scheduling
       target: both
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
-      description: Categorizes an issue or PR as relevant to sig-service-catalog.
+      description: Categorizes an issue or PR as relevant to SIG Service Catalog.
       name: sig/service-catalog
       target: both
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
-      description: Categorizes an issue or PR as relevant to sig-storage.
+      description: Categorizes an issue or PR as relevant to SIG Storage.
       name: sig/storage
       target: both
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
-      description: Categorizes an issue or PR as relevant to sig-testing.
+      description: Categorizes an issue or PR as relevant to SIG Testing.
       name: sig/testing
       target: both
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
-      description: Categorizes an issue or PR as relevant to sig-ui.
+      description: Categorizes an issue or PR as relevant to SIG UI.
       name: sig/ui
       target: both
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
-      description: Categorizes an issue or PR as relevant to sig-usability.
+      description: Categorizes an issue or PR as relevant to SIG Usability.
       name: sig/usability
       target: both
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
-      description: Categorizes an issue or PR as relevant to sig-windows.
+      description: Categorizes an issue or PR as relevant to SIG Windows.
       name: sig/windows
       target: both
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
-      description: Categorizes an issue or PR as relevant to wg-api-expression.
+      description: Categorizes an issue or PR as relevant to WG API Expression.
       name: wg/api-expression
       target: both
       prowPlugin: label
@@ -575,31 +575,31 @@ default:
       previously:
         - name: wg/apply
     - color: d2b48c
-      description: Categorizes an issue or PR as relevant to wg-iot-edge.
+      description: Categorizes an issue or PR as relevant to WG IOT Edge.
       name: wg/iot-edge
       target: both
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
-      description: Categorizes an issue or PR as relevant to wg-k8s-infra.
+      description: Categorizes an issue or PR as relevant to WG k8s Infra.
       name: wg/k8s-infra
       target: both
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
-      description: Categorizes an issue or PR as relevant to wg-lts.
+      description: Categorizes an issue or PR as relevant to WG LTS.
       name: wg/lts
       target: both
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
-      description: Categorizes an issue or PR as relevant to wg-machine-learning.
+      description: Categorizes an issue or PR as relevant to WG Machine Learning.
       name: wg/machine-learning
       target: both
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
-      description: Categorizes an issue or PR as relevant to wg-multitenancy.
+      description: Categorizes an issue or PR as relevant to WG Multitenancy.
       name: wg/multitenancy
       target: both
       prowPlugin: label
@@ -611,26 +611,26 @@ default:
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
-      description: Categorizes an issue or PR as relevant to wg-policy.
+      description: Categorizes an issue or PR as relevant to WG Policy.
       name: wg/policy
       target: both
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
-      description: Categorizes an issue or PR as relevant to wg-resource-management.
+      description: Categorizes an issue or PR as relevant to WG Resource Management.
       name: wg/resource-management
       target: both
       prowPlugin: label
       addedBy: anyone
       deleteAfter: 2020-04-08T00:00:00Z
     - color: d2b48c
-      description: Categorizes an issue or PR as relevant to wg-security-audit.
+      description: Categorizes an issue or PR as relevant to WG Security Audit.
       name: wg/security-audit
       target: both
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
-      description: Categorizes an issue or PR as relevant to wg-component-standard.
+      description: Categorizes an issue or PR as relevant to WG Component Standard.
       name: wg/component-standard
       target: both
       prowPlugin: label
