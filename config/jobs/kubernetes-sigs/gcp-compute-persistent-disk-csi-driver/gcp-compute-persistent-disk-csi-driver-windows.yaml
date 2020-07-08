@@ -33,7 +33,7 @@ periodics:
         value: "win2019"
       - name: PREPULL_YAML
         value: "prepull-head.yaml"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200616-45495bd-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-master
   annotations:
     testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
     testgrid-tab-name: Kubernetes Master Driver Latest for Windows
@@ -90,7 +90,7 @@ presubmits:
           value: "win2019"
         - name: PREPULL_YAML
           value: "prepull-head.yaml"
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200616-45495bd-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-master
     annotations:
       testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
       testgrid-tab-name: Presubmit Kubernetes Master Driver Latest for Windows
