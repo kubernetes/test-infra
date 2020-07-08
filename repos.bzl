@@ -1495,8 +1495,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "google.golang.org/api",
-        sum = "h1:VJZ8h6E8ip82FRpQl848c5vAadxlTXrUh8RzQzSRm08=",
-        version = "v0.26.0",
+        sum = "h1:jMF5hhVfMkTZwHW1SDpKq5CkgWLXOb31Foaca9Zr3oM=",
+        version = "v0.28.0",
     )
     go_repository(
         name = "org_golang_google_appengine",
@@ -1511,8 +1511,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "google.golang.org/genproto",
-        sum = "h1:i+Aiej6cta/Frzp13/swvwz5O00kYcSe0A/C5Wd7zX8=",
-        version = "v0.0.0-20200608115520-7c474a2e3482",
+        sum = "h1:FGjyjrQGURdc98leD1P65IdQD9Zlr4McvRcqIlV6OSs=",
+        version = "v0.0.0-20200618031413-b414f8b61790",
     )
     go_repository(
         name = "org_golang_google_grpc",
@@ -1600,8 +1600,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "golang.org/x/tools",
-        sum = "h1:5Y8c5HBW6hBYnGEE3AbJPV0R8RsQmg1/eaJrpvasns0=",
-        version = "v0.0.0-20200606014950-c42cb6316fb6",
+        sum = "h1:FD4wDsP+CQUqh2V12OBOt90pLHVToe58P++fUu3ggV4=",
+        version = "v0.0.0-20200618134242-20370b0cb4b2",
     )
     go_repository(
         name = "org_uber_go_atomic",
@@ -1730,8 +1730,9 @@ def go_repositories():
         build_file_generation = "off",
         build_file_proto_mode = "disable_global",
         importpath = "github.com/GoogleCloudPlatform/testgrid",
-        sum = "h1:tKM75ScxinVqDkguwG5AnsQZn9XCNpxAdEey1OfJgiE=",
-        version = "v0.0.7",
+        replace = "github.com/GoogleCloudPlatform/testgrid",
+        sum = "h1:6Pp/n2BtwiqJHX3OI1hYMzO5MEttj8j4Q1aQrIJ1Law=",
+        version = "v0.0.0-20200708212023-60287481cea3",
     )
     go_repository(
         name = "com_github_munnerz_goautoneg",
@@ -3923,8 +3924,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "cloud.google.com/go/storage",
-        sum = "h1:86K1Gel7BQ9/WmNWn7dTKMvTLFzwtBe5FNqYbi9X35g=",
-        version = "v1.8.0",
+        sum = "h1:STgFzyU5/8miMl0//zKh2aQeTyeaUH3WN9bSUiJ09bA=",
+        version = "v1.10.0",
     )
     go_repository(
         name = "com_shuralyov_dmitri_gpu_mtl",

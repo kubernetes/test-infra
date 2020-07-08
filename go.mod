@@ -4,6 +4,9 @@ module k8s.io/test-infra
 
 replace github.com/golang/lint => golang.org/x/lint v0.0.0-20190301231843-5614ed5bae6f
 
+// TODO(spiffxp): switch to a tag that contains this commit
+replace github.com/GoogleCloudPlatform/testgrid => github.com/GoogleCloudPlatform/testgrid v0.0.0-20200708212023-60287481cea3
+
 // Pin all k8s.io staging repositories to kubernetes v0.17.3
 // When bumping Kubernetes dependencies, you should update each of these lines
 // to point to the same kubernetes v0.KubernetesMinor.KubernetesPatch version
@@ -20,12 +23,12 @@ replace (
 require (
 	cloud.google.com/go v0.58.0 // indirect
 	cloud.google.com/go/pubsub v1.3.1
-	cloud.google.com/go/storage v1.8.0
+	cloud.google.com/go/storage v1.10.0
 	github.com/Azure/azure-sdk-for-go v38.0.0+incompatible
 	github.com/Azure/azure-storage-blob-go v0.8.0
 	github.com/Azure/go-autorest/autorest v0.9.6
 	github.com/Azure/go-autorest/autorest/adal v0.8.2
-	github.com/GoogleCloudPlatform/testgrid v0.0.7
+	github.com/GoogleCloudPlatform/testgrid v0.0.12
 	github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46
 	github.com/andygrunwald/go-gerrit v0.0.0-20190120104749-174420ebee6c
 	github.com/aws/aws-k8s-tester v1.0.0
@@ -80,8 +83,8 @@ require (
 	golang.org/x/sync v0.0.0-20200317015054-43a5402ce75a
 	golang.org/x/sys v0.0.0-20200610111108-226ff32320da // indirect
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0
-	golang.org/x/tools v0.0.0-20200606014950-c42cb6316fb6
-	google.golang.org/api v0.26.0
+	golang.org/x/tools v0.0.0-20200618134242-20370b0cb4b2
+	google.golang.org/api v0.28.0
 	gopkg.in/fsnotify.v1 v1.4.7
 	gopkg.in/robfig/cron.v2 v2.0.0-20150107220207-be2e0b0deed5
 	gopkg.in/yaml.v3 v3.0.0-20190709130402-674ba3eaed22
