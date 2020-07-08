@@ -32,6 +32,7 @@ type Fake struct {
 	BugCreateErrors sets.String
 	ExternalBugs    map[int][]ExternalBug
 	SubComponents   map[int]map[string][]string
+	FakeClonesCache map[int][]int
 }
 
 // Endpoint returns the endpoint for this fake
@@ -233,15 +234,17 @@ func (c *Fake) GetClones(bug *Bug) ([]*Bug, error) {
 	if c.BugErrors.Has(bug.ID) {
 		return nil, errors.New("injected error getting subcomponents")
 	}
-	return getClones(c, bug)
+	cache := NewBugDetailsCache()
+	return getClones(c, bug, cache)
 }
 
 // GetAllClones gets all clones including its parents and children spanning multiple levels
-func (c *Fake) GetAllClones(bug *Bug) ([]*Bug, error) {
-	if c.BugErrors.Has(bug.ID) {
-		return nil, errors.New("injected error getting subcomponents")
+func (c *Fake) GetAllClones(bugID int) ([]*Bug, *Bug, *Bug, error) {
+	if c.BugErrors.Has(bugID) {
+		return nil, nil, nil, errors.New("injected error getting subcomponents")
 	}
-	return getAllClones(c, bug)
+	cache := NewBugDetailsCache()
+	return getAllClones(c, bugID, cache)
 }
 
 // GetRootForClone gets the original bug.
@@ -249,7 +252,19 @@ func (c *Fake) GetRootForClone(bug *Bug) (*Bug, error) {
 	if c.BugErrors.Has(bug.ID) {
 		return nil, errors.New("injected error getting bug")
 	}
-	return getRootForClone(c, bug)
+	cache := NewBugDetailsCache()
+	return getRootForClone(c, bug, cache)
+}
+
+// GetCachedClones gets the clones from the fake cache
+func (c *Fake) GetCachedClones(bugID int) ([]int, bool) {
+	clones, ok := c.FakeClonesCache[bugID]
+	return clones, ok
+}
+
+// SetCachedClones sets the clones in the fake cache
+func (c *Fake) SetCachedClones(bugID int, clonesList []int) {
+	c.FakeClonesCache[bugID] = clonesList
 }
 
 // the Fake is a Client

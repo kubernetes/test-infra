@@ -24,11 +24,14 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/sync/errgroup"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
+	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 const (
@@ -75,25 +78,77 @@ type Client interface {
 	RemovePullRequestAsExternalBug(id int, org, repo string, num int) (bool, error)
 	// GetAllClones returns all the clones of the bug including itself
 	// Differs from GetClones as GetClones only gets the child clones which are one level lower
-	GetAllClones(bug *Bug) ([]*Bug, error)
+	// GetAllClones will also fetch bugDetails and the root bug details in addition to clones
+	// since we want to parallelize all the HTTP calls
+	GetAllClones(bugID int) (clones []*Bug, bug *Bug, root *Bug, err error)
 	// GetRootForClone returns the original bug.
 	GetRootForClone(bug *Bug) (*Bug, error)
+	// GetCachedClones will fetch the clones from the clones cache
+	GetCachedClones(bugID int) ([]int, bool)
+	// SetCachedClones will push the cloneIDs associated with the bug to the cache
+	SetCachedClones(bugID int, clonesList []int)
 }
 
 func NewClient(getAPIKey func() []byte, endpoint string) Client {
 	return &client{
-		logger:    logrus.WithField("client", "bugzilla"),
-		client:    &http.Client{},
-		endpoint:  endpoint,
-		getAPIKey: getAPIKey,
+		logger:      logrus.WithField("client", "bugzilla"),
+		client:      &http.Client{},
+		endpoint:    endpoint,
+		getAPIKey:   getAPIKey,
+		clonesCache: clonesCacheWithMutex{cache: map[int][]int{}},
 	}
 }
 
+type clonesCacheWithMutex struct {
+	cache map[int][]int
+	lock  sync.Mutex
+}
+
+func (cc *clonesCacheWithMutex) Get(key int) ([]int, bool) {
+	cc.lock.Lock()
+	defer cc.lock.Unlock()
+	clones, ok := cc.cache[key]
+	return clones, ok
+}
+
+func (cc *clonesCacheWithMutex) Set(key int, value []int) {
+	cc.lock.Lock()
+	defer cc.lock.Unlock()
+	cc.cache[key] = value
+}
+
+// NewBugDetailsCache is a constructor for bugDetailsCache
+func NewBugDetailsCache() *BugDetailsCache {
+	return &BugDetailsCache{cache: map[int]*Bug{}}
+}
+
+// BugDetailsCache holds the already retrieved bug details
+type BugDetailsCache struct {
+	cache map[int]*Bug
+	lock  sync.Mutex
+}
+
+// Get retrieves bug details from the cache and is thread safe
+func (bd *BugDetailsCache) Get(key int) (*Bug, bool) {
+	bd.lock.Lock()
+	defer bd.lock.Unlock()
+	bug, ok := bd.cache[key]
+	return bug, ok
+}
+
+// Set stores the bug details in the cache and is thread safe
+func (bd *BugDetailsCache) Set(key int, value *Bug) {
+	bd.lock.Lock()
+	defer bd.lock.Unlock()
+	bd.cache[key] = value
+}
+
 type client struct {
-	logger    *logrus.Entry
-	client    *http.Client
-	endpoint  string
-	getAPIKey func() []byte
+	logger      *logrus.Entry
+	client      *http.Client
+	endpoint    string
+	getAPIKey   func() []byte
+	clonesCache clonesCacheWithMutex
 }
 
 // the client is a Client impl
@@ -127,29 +182,37 @@ func (c *client) GetBug(id int) (*Bug, error) {
 	return parsedResponse.Bugs[0], nil
 }
 
-func getClones(c Client, bug *Bug) ([]*Bug, error) {
+func getClones(c Client, bug *Bug, bugCache *BugDetailsCache) ([]*Bug, error) {
 	var errs []error
 	clones := []*Bug{}
 	for _, dependentID := range bug.Blocks {
-		dependent, err := c.GetBug(dependentID)
-		if err != nil {
-			errs = append(errs, fmt.Errorf("Failed to get dependent bug #%d: %v", dependentID, err))
-			continue
+
+		dependent, ok := bugCache.Get(dependentID)
+		if !ok {
+			var err error
+			dependent, err = c.GetBug(dependentID)
+			if err != nil {
+				errs = append(errs, fmt.Errorf("Failed to get dependent bug #%d: %v", dependentID, err))
+				break
+			}
+			bugCache.Set(dependentID, dependent)
 		}
 		if dependent.Summary == bug.Summary {
 			clones = append(clones, dependent)
 		}
+
 	}
 	return clones, utilerrors.NewAggregate(errs)
 }
 
 // GetClones gets the list of bugs that the provided bug blocks that also have a matching summary.
 func (c *client) GetClones(bug *Bug) ([]*Bug, error) {
-	return getClones(c, bug)
+	bugCache := NewBugDetailsCache()
+	return getClones(c, bug, bugCache)
 }
 
 // Gets children clones recursively using a mechanism similar to bfs
-func getRecursiveClones(c Client, root *Bug) ([]*Bug, error) {
+func getRecursiveClones(c Client, root *Bug, bugCache *BugDetailsCache) ([]*Bug, error) {
 	var errs []error
 	var bug *Bug
 	clones := []*Bug{}
@@ -160,7 +223,7 @@ func getRecursiveClones(c Client, root *Bug) ([]*Bug, error) {
 	for len(childrenQ) > 0 {
 		bug, childrenQ = childrenQ[0], childrenQ[1:]
 		clones = append(clones, bug)
-		children, err := getClones(c, bug)
+		children, err := getClones(c, bug, bugCache)
 		if err != nil {
 			errs = append(errs, fmt.Errorf("Error finding clones Bug#%d: %v", bug.ID, err))
 		}
@@ -172,18 +235,25 @@ func getRecursiveClones(c Client, root *Bug) ([]*Bug, error) {
 }
 
 // getImmediateParents gets the Immediate parents of bugs with a matching summary
-func getImmediateParents(c Client, bug *Bug) ([]*Bug, error) {
+func getImmediateParents(c Client, bug *Bug, bugCache *BugDetailsCache) ([]*Bug, error) {
 	var errs []error
 	parents := []*Bug{}
 	// One option would be to return as soon as the first parent is found
 	// ideally that should be enough, although there is a check in the getRootForClone function to verify this
 	// Logs would need to be monitored to verify this behavior
 	for _, parentID := range bug.DependsOn {
-		parent, err := c.GetBug(parentID)
-		if err != nil {
-			errs = append(errs, fmt.Errorf("Failed to get parent bug #%d: %v", parentID, err))
-			continue
+
+		parent, ok := bugCache.Get(parentID)
+		if !ok {
+			var err error
+			parent, err = c.GetBug(parentID)
+			if err != nil {
+				errs = append(errs, fmt.Errorf("Failed to get parent bug #%d: %v", parentID, err))
+				continue
+			}
+			bugCache.Set(parentID, parent)
 		}
+
 		if parent.Summary == bug.Summary {
 			parents = append(parents, parent)
 		}
@@ -191,11 +261,11 @@ func getImmediateParents(c Client, bug *Bug) ([]*Bug, error) {
 	return parents, utilerrors.NewAggregate(errs)
 }
 
-func getRootForClone(c Client, bug *Bug) (*Bug, error) {
+func getRootForClone(c Client, bug *Bug, bugCache *BugDetailsCache) (*Bug, error) {
 	curr := bug
 	var errs []error
 	for len(curr.DependsOn) > 0 {
-		parent, err := getImmediateParents(c, curr)
+		parent, err := getImmediateParents(c, curr, bugCache)
 		if err != nil {
 			errs = append(errs, err)
 		}
@@ -214,37 +284,83 @@ func getRootForClone(c Client, bug *Bug) (*Bug, error) {
 
 // GetRootForClone returns the original bug.
 func (c *client) GetRootForClone(bug *Bug) (*Bug, error) {
-	return getRootForClone(c, bug)
+	bugCache := NewBugDetailsCache()
+	return getRootForClone(c, bug, bugCache)
 }
 
 // GetAllClones returns all the clones of the bug including itself
 // Differs from GetClones as GetClones only gets the child clones which are one level lower
-func (c *client) GetAllClones(bug *Bug) ([]*Bug, error) {
-	return getAllClones(c, bug)
+func (c *client) GetAllClones(bugID int) (clones []*Bug, bug *Bug, root *Bug, err error) {
+	bugCache := NewBugDetailsCache()
+	return getAllClones(c, bugID, bugCache)
 }
-func getAllClones(c Client, bug *Bug) ([]*Bug, error) {
-	root, err := getRootForClone(c, bug)
-	if err != nil {
-		return nil, err
-	}
-	clones, err := getRecursiveClones(c, root)
-	if err != nil {
-		return nil, err
-	}
-	// Getting rid of the bug whose clones we are searching for
-	// we could optimize this (maybe?) if the list turns out to be too long
-	indexOfOriginal := -1
-	for index, clone := range clones {
-		if clone.ID == bug.ID {
-			// Check if there is a more elegant way to do this
-			indexOfOriginal = index
+
+func (c *client) GetCachedClones(bugID int) ([]int, bool) {
+	return c.clonesCache.Get(bugID)
+}
+
+func (c *client) SetCachedClones(bugID int, clonesList []int) {
+	c.clonesCache.Set(bugID, clonesList)
+}
+
+func getAllClones(c Client, bugID int, bugCache *BugDetailsCache) ([]*Bug, *Bug, *Bug, error) {
+
+	var bug *Bug
+	g := new(errgroup.Group)
+	g.Go(func() error {
+		var err error
+		bug, err = c.GetBug(bugID)
+		if err != nil {
+			return err
+		}
+		bugCache.Set(bugID, bug)
+		return nil
+	})
+
+	if clonesID, ok := c.GetCachedClones(bugID); ok {
+		for _, cloneID := range clonesID {
+			cloneID := cloneID
+			g.Go(func() error {
+				var clone *Bug
+				clone, ok = bugCache.Get(cloneID)
+				if !ok {
+					var err error
+					clone, err = c.GetBug(cloneID)
+					if err != nil {
+						return err
+					}
+				}
+				bugCache.Set(clone.ID, clone)
+				return nil
+			})
 		}
 	}
-	if indexOfOriginal == -1 {
-		return nil, fmt.Errorf("Original bug not found in list of clones. Error in logic for getRecursiveClones/getRootForClone")
+	if err := g.Wait(); err != nil {
+		return nil, nil, nil, fmt.Errorf("failed to get bug details: %v", err)
 	}
-	clones = append(clones[:indexOfOriginal], clones[indexOfOriginal+1:]...)
-	return clones, nil
+
+	root, err := getRootForClone(c, bug, bugCache)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	clones, err := getRecursiveClones(c, root, bugCache)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	// Populate the main cache with relevant cloneIDs
+	// Remember to use a mutex to ensure thread safety
+	// Do not move this section after the section where the original bug is removed
+	cloneSet := sets.NewInt()
+	for bugID := range bugCache.cache {
+		cloneSet.Insert(bugID)
+	}
+	for _, clone := range clones {
+		cloneSet.Delete(clone.ID)
+		c.SetCachedClones(clone.ID, cloneSet.List())
+		cloneSet.Insert(clone.ID)
+	}
+
+	return clones, bug, root, nil
 }
 
 // GetSubComponentsOnBug retrieves a the list of SubComponents of the bug.

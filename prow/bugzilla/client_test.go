@@ -1007,6 +1007,7 @@ func TestGetAllClones(t *testing.T) {
 	fake := &Fake{}
 	fake.Bugs = map[int]Bug{}
 	fake.BugComments = map[int][]Comment{}
+	fake.FakeClonesCache = map[int][]int{}
 	bug1Create := &BugCreate{
 		Summary: "Dummy bug to test getAllClones",
 	}
@@ -1036,36 +1037,48 @@ func TestGetAllClones(t *testing.T) {
 		name           string
 		bug            *Bug
 		expectedClones sets.Int
+		root           *Bug
 	}{
 		{
 			"Clones including multiple children",
 			bug1,
 			sets.NewInt(bug2ID, bug3ID, bug4ID),
+			bug1,
 		},
 		{
 			"Clones should include parent as well as child",
 			bug2,
 			sets.NewInt(bug1ID, bug3ID, bug4ID),
+			bug1,
 		},
 		{
 			"Clones includes parent and grandparent",
 			bug3,
 			sets.NewInt(bug1ID, bug2ID, bug4ID),
+			bug1,
 		},
 		{
 			"Clones when not directly related",
 			bug4,
 			sets.NewInt(bug1ID, bug2ID, bug3ID),
+			bug1,
 		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			clones, err := getAllClones(fake, tc.bug)
+			cache := NewBugDetailsCache()
+			clones, bug, root, err := getAllClones(fake, tc.bug.ID, cache)
 			if err != nil {
 				t.Errorf("Error occurred when none was expected: %v", err)
 			}
 			if len(tc.expectedClones) != len(clones) {
 				t.Errorf("Mismatch in number of clones - expected: %d, got %d", len(tc.expectedClones), len(clones))
+			}
+			if root.ID != tc.root.ID {
+				t.Errorf("root ID mismatch - expected %d, got %d", tc.root.ID, root.ID)
+			}
+			if bug.ID != tc.bug.ID {
+				t.Errorf("bug ID mismatch - expected %d, got %d", tc.bug.ID, bug.ID)
 			}
 			for _, clone := range clones {
 				if ok := tc.expectedClones.Has(clone.ID); !ok {
@@ -1139,7 +1152,8 @@ func TestGetRootForClone(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			// this should run get the root
-			root, err := getRootForClone(fake, tc.bugPtr)
+			cache := NewBugDetailsCache()
+			root, err := getRootForClone(fake, tc.bugPtr, cache)
 			if err != nil {
 				t.Errorf("Error occurred when error not expected: %v", err)
 			}
