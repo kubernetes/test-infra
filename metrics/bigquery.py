@@ -17,9 +17,7 @@
 """Runs bigquery metrics and uploads the result to GCS."""
 
 import argparse
-import calendar
 import glob
-import json
 import os
 import pipes
 import re
