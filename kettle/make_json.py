@@ -199,7 +199,7 @@ def path_to_job_and_number(path):
 def row_for_build(path, started, finished, results):
     """
     Generate an dictionary that represents a build as described by TestGrid's
-    job schema. See link for refernce.
+    job schema. See link for reference.
     github.com/GoogleCloudPlatform/testgrid/blob/7d818/metadata/job.go#L23-L77
 
     Args:
@@ -209,7 +209,7 @@ def row_for_build(path, started, finished, results):
         results (array): List of file data that exits under path
 
     Return:
-        Dict holding metadata and infromation pertinent to a build
+        Dict holding metadata and information pertinent to a build
         to be stored in BigQuery
     """
     tests = []
