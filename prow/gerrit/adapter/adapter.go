@@ -65,23 +65,13 @@ type LastSyncTracker interface {
 }
 
 // NewController returns a new gerrit controller client
-func NewController(lastSyncTracker LastSyncTracker, cookiefilePath string, projects map[string][]string, prowJobClient prowv1.ProwJobInterface, cfg config.Getter) (*Controller, error) {
-	if lastSyncTracker == nil {
-		return nil, errors.New("lastSyncTracker required")
-	}
-
-	c, err := client.NewClient(projects)
-	if err != nil {
-		return nil, err
-	}
-	c.Start(cookiefilePath)
-
+func NewController(lastSyncTracker LastSyncTracker, gc gerritClient, prowJobClient prowv1.ProwJobInterface, cfg config.Getter) *Controller {
 	return &Controller{
 		prowJobClient: prowJobClient,
 		config:        cfg,
-		gc:            c,
+		gc:            gc,
 		tracker:       lastSyncTracker,
-	}, nil
+	}
 }
 
 // Sync looks for newly made gerrit changes
@@ -92,7 +82,7 @@ func (c *Controller) Sync() error {
 
 	for instance, changes := range c.gc.QueryChanges(syncTime, c.config().Gerrit.RateLimit) {
 		for _, change := range changes {
-			if err := c.ProcessChange(instance, change); err != nil {
+			if err := c.processChange(instance, change); err != nil {
 				logrus.WithError(err).Errorf("Failed process change %v", change.CurrentRevision)
 			}
 			lastTime, ok := latest[instance][change.Project]
@@ -206,8 +196,8 @@ func failedJobs(account int, revision int, messages ...gerrit.ChangeMessageInfo)
 	return failures
 }
 
-// ProcessChange creates new presubmit prowjobs base off the gerrit changes
-func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) error {
+// processChange creates new presubmit prowjobs base off the gerrit changes
+func (c *Controller) processChange(instance string, change client.ChangeInfo) error {
 	logger := logrus.WithField("gerrit change", change.Number)
 
 	cloneURI, err := makeCloneURI(instance, change.Project)
