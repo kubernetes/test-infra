@@ -344,9 +344,10 @@ func TestConfig(t *testing.T) {
 	}
 }
 
-// TODO(spiffxp): These are all repos that don't have their presubmits in testgrid.
+// TODO: These are all repos that don't have their presubmits in testgrid.
 // Convince sig leads or subproject owners this is a bad idea and whittle this down
 // to just kubernetes-security/
+// Tracking issue: https://github.com/kubernetes/test-infra/issues/18159
 var noPresubmitsInTestgridPrefixes = []string{
 	"containerd/cri",
 	"GoogleCloudPlatform/k8s-multicluster-ingress",
@@ -442,7 +443,7 @@ func TestKubernetesProwInstanceJobsMustHaveMatchingTestgridEntries(t *testing.T)
 	for testgroup, valid := range testgroups {
 		if !valid {
 			badconfigs = append(badconfigs, testgroup)
-			t.Errorf("Testgrid group %v does not have a matching jenkins or prow job", testgroup)
+			t.Errorf("Testgrid group %v is supposed to be moved to have their presubmits in testgrid. See this issue: https://github.com/kubernetes/test-infra/issues/18159", testgroup)
 		}
 	}
 }
