@@ -353,7 +353,6 @@ var noPresubmitsInTestgridPrefixes = []string{
 	"GoogleCloudPlatform/k8s-multicluster-ingress",
 	"kubeflow/pipelines",
 	"kubernetes-sigs/cluster-capacity",
-	"kubernetes-sigs/gcp-compute-persistent-disk-csi-driver",
 	"kubernetes-sigs/gcp-filestore-csi-driver",
 	"kubernetes-sigs/kind",
 	"kubernetes-sigs/kubebuilder-declarative-pattern",

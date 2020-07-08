@@ -36,21 +36,16 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-master
   annotations:
     testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
-    testgrid-tab-name: Kubernetes Master Driver Latest for Windows
-    description: Kubernetes Integration tests for Kubernetes Master branch and Driver latest build
+    testgrid-tab-name: ci-windows-provider-gcp-compute-persistent-disk-csi-driver
+    description: Kubernetes Integration tests for Kubernetes Master branch and Driver latest
 
 presubmits:
-  kubernetes/kubernetes:
+  kubernetes-sigs/gcp-compute-persistent-disk-csi-driver:
   - name: pull-gcp-compute-persistent-disk-csi-driver-e2e-windows
     decorate: true
     decoration_config:
       timeout: 200m
-    path_alias: k8s.io/kubernetes
     extra_refs:
-    - org: kubernetes
-      repo: release
-      base_ref: master
-      path_alias: k8s.io/release
     - org: kubernetes-sigs
       repo: gcp-compute-persistent-disk-csi-driver
       base_ref: master
@@ -73,15 +68,13 @@ presubmits:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
         args:
-        - --build=release
         - --check-leaked-resources
         - --cluster=
-        - --extract=local
+        - --extract=ci/latest
         - --gcp-zone=us-west1-b
         - --ginkgo-parallel=8
         - --provider=gce
         - --gcp-nodes=2
-        - --stage=gs://kubernetes-release-pull/ci/pull-gcp-compute-persistent-disk-csi-driver-e2e-windows
         - --test=false
         - --test-cmd=$GOPATH/src/sigs.k8s.io/gcp-compute-persistent-disk-csi-driver/test/run-windows-k8s-integration.sh
         - --timeout=120m
@@ -90,8 +83,11 @@ presubmits:
           value: "win2019"
         - name: PREPULL_YAML
           value: "prepull-head.yaml"
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200616-45495bd-master
+        securityContext:
+          privileged: true
     annotations:
       testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
-      testgrid-tab-name: Presubmit Kubernetes Master Driver Latest for Windows
+      testgrid-tab-name: windows-presubmit-gcp-compute-persistent-disk-csi-driver
       description: Kubernetes Integration tests for Kubernetes Master branch and Driver latest build
+      testgrid-alert-email: jinxu@google.com
