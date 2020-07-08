@@ -1,0 +1,97 @@
+periodics:
+- name: ci-gce-pd-csi-driver-latest-k8s-master-windows-2019
+  decorate: true
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: gcp-compute-persistent-disk-csi-driver
+    base_ref: master
+    path_alias: sigs.k8s.io/gcp-compute-persistent-disk-csi-driver
+  interval: 2h
+  labels:
+    preset-k8s-ssh: "true"
+    preset-service-account: "true"
+    preset-common-gce-windows: "true"
+    preset-e2e-gce-windows: "true"
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --check-leaked-resources
+      - --cluster=
+      - --extract=ci/k8s-master
+      - --gcp-zone=us-west1-b
+      - --ginkgo-parallel=8
+      - --provider=gce
+      - --gcp-nodes=2
+      - --test=false
+      - --test-cmd=$GOPATH/src/sigs.k8s.io/gcp-compute-persistent-disk-csi-driver/test/run-windows-k8s-integration.sh
+      - --timeout=120m
+      env:
+      - name: WINDOWS_NODE_OS_DISTRIBUTION
+        value: "win2019"
+      - name: PREPULL_YAML
+        value: "prepull-head.yaml"
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200616-45495bd-master
+  annotations:
+    testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
+    testgrid-tab-name: Kubernetes Master Driver Latest for Windows
+    description: Kubernetes Integration tests for Kubernetes Master branch and Driver latest build
+
+presubmits:
+  kubernetes/kubernetes:
+  - name: pull-gcp-compute-persistent-disk-csi-driver-e2e-windows
+    decorate: true
+    decoration_config:
+      timeout: 200m
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
+    - org: kubernetes-sigs
+      repo: gcp-compute-persistent-disk-csi-driver
+      base_ref: master
+      path_alias: sigs.k8s.io/gcp-compute-persistent-disk-csi-driver
+    labels:
+      preset-k8s-ssh: "true"
+      preset-service-account: "true"
+      preset-common-gce-windows: "true"
+      preset-e2e-gce-windows: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-dind-enabled: "true"
+    always_run: false
+    optional: true
+    branches:
+    - master
+    spec:
+      containers:
+      - command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --build=release
+        - --check-leaked-resources
+        - --cluster=
+        - --extract=local
+        - --gcp-zone=us-west1-b
+        - --ginkgo-parallel=8
+        - --provider=gce
+        - --gcp-nodes=2
+        - --stage=gs://kubernetes-release-pull/ci/pull-gcp-compute-persistent-disk-csi-driver-e2e-windows
+        - --test=false
+        - --test-cmd=$GOPATH/src/sigs.k8s.io/gcp-compute-persistent-disk-csi-driver/test/run-windows-k8s-integration.sh
+        - --timeout=120m
+        env:
+        - name: WINDOWS_NODE_OS_DISTRIBUTION
+          value: "win2019"
+        - name: PREPULL_YAML
+          value: "prepull-head.yaml"
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200616-45495bd-master
+    annotations:
+      testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
+      testgrid-tab-name: Presubmit Kubernetes Master Driver Latest for Windows
+      description: Kubernetes Integration tests for Kubernetes Master branch and Driver latest build
