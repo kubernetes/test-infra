@@ -44,11 +44,24 @@ type Options struct {
 	port int
 }
 
-// Validate validates the option's values.
-func (o *Options) Validate() error {
+// DefaultAndValidate validates the option's values and defaults them if they are empty.
+func (o *Options) DefaultAndValidate() error {
 	if !strings.HasPrefix(o.endpoint, "/") {
 		return fmt.Errorf("endpoint %s is not a valid url path", o.endpoint)
 	}
+
+	if o.HmacTokenGenerator == nil {
+		o.HmacTokenGenerator = func() []byte { return []byte("") }
+	}
+
+	if o.Metrics == nil {
+		o.Metrics = NewMetrics()
+	}
+
+	if o.Logger == nil {
+		o.Logger = logrus.NewEntry(logrus.New())
+	}
+
 	return nil
 }
 
