@@ -21,6 +21,7 @@ package client
 import (
 	"fmt"
 	"io/ioutil"
+	"sort"
 	"strings"
 	"time"
 
@@ -85,6 +86,7 @@ type gerritAccount interface {
 type gerritChange interface {
 	QueryChanges(opt *gerrit.QueryChangeOptions) (*[]gerrit.ChangeInfo, *gerrit.Response, error)
 	SetReview(changeID, revisionID string, input *gerrit.ReviewInput) (*gerrit.ReviewResult, *gerrit.Response, error)
+	ListChangeComments(changeID string) (*map[string][]gerrit.CommentInfo, *gerrit.Response, error)
 }
 
 type gerritProjects interface {
@@ -281,15 +283,42 @@ func (h *gerritInstanceHandler) queryAllChanges(lastState map[string]time.Time, 
 func parseStamp(value gerrit.Timestamp) time.Time {
 	return value.Time
 }
+func (h *gerritInstanceHandler) injectPatchsetMessages(change *gerrit.ChangeInfo) error {
+	out, _, err := h.changeService.ListChangeComments(change.ChangeID)
+	if err != nil {
+		return err
+	}
+	outer := *out
+	comments, ok := outer["/PATCHSET_LEVEL"]
+	if !ok {
+		return nil
+	}
+	var changed bool
+	for _, c := range comments {
+		change.Messages = append(change.Messages, gerrit.ChangeMessageInfo{
+			Author:         c.Author,
+			Date:           *c.Updated,
+			Message:        c.Message,
+			RevisionNumber: c.PatchSet,
+		})
+		changed = true
+	}
+	if changed {
+		sort.SliceStable(change.Messages, func(i, j int) bool {
+			return change.Messages[i].Date.Before(change.Messages[j].Date.Time)
+		})
+	}
+	return nil
+}
 
 func (h *gerritInstanceHandler) queryChangesForProject(project string, lastUpdate time.Time, rateLimit int) ([]gerrit.ChangeInfo, error) {
 	pending := []gerrit.ChangeInfo{}
 
-	opt := &gerrit.QueryChangeOptions{}
+	var opt gerrit.QueryChangeOptions
 	opt.Query = append(opt.Query, "project:"+project)
 	opt.AdditionalFields = []string{"CURRENT_REVISION", "CURRENT_COMMIT", "CURRENT_FILES", "MESSAGES"}
 
-	start := 0
+	var start int
 
 	for {
 		opt.Limit = rateLimit
@@ -297,7 +326,7 @@ func (h *gerritInstanceHandler) queryChangesForProject(project string, lastUpdat
 
 		// The change output is sorted by the last update time, most recently updated to oldest updated.
 		// Gerrit API docs: https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#list-changes
-		changes, _, err := h.changeService.QueryChanges(opt)
+		changes, _, err := h.changeService.QueryChanges(&opt)
 		if err != nil {
 			// should not happen? Let next sync loop catch up
 			return nil, fmt.Errorf("failed to query gerrit changes: %v", err)
@@ -338,8 +367,9 @@ func (h *gerritInstanceHandler) queryChangesForProject(project string, lastUpdat
 					}
 
 					created := parseStamp(rev.Created)
+					h.injectPatchsetMessages(&change)
 					changeMessages := change.Messages
-					newMessages := false
+					var newMessages bool
 
 					for _, message := range changeMessages {
 						if message.RevisionNumber == rev.Number {
