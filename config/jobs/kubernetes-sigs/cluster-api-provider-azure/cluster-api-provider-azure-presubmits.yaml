@@ -81,7 +81,7 @@ presubmits:
         - "./scripts/ci-e2e.sh"
         env:
           - name: GINKGO_FOCUS
-            value: "Workoad cluster creation"
+            value: "Workload cluster creation"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
