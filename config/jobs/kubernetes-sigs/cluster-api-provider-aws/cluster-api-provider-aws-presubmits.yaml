@@ -74,7 +74,7 @@ presubmits:
     always_run: false
     optional: true
     decorate: true
-    decorate_config:
+    decoration_config:
       timeout: 3h
     max_concurrency: 1
     extra_refs:
