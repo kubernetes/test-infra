@@ -116,7 +116,7 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-prow/hmac:v20200708-1254fdd37f
+      - image: gcr.io/k8s-prow/hmac:v20200709-50d1ee0ba5
         command:
         - /hmac
         args:
@@ -941,7 +941,7 @@ periodics:
   spec:
     containers:
     - name: branchprotector
-      image: gcr.io/k8s-prow/branchprotector:v20200708-1254fdd37f
+      image: gcr.io/k8s-prow/branchprotector:v20200709-50d1ee0ba5
       command:
       - /app/prow/cmd/branchprotector/app.binary
       args:
@@ -975,7 +975,7 @@ periodics:
   spec:
     containers:
     - name: label-sync
-      image: gcr.io/k8s-prow/label_sync:v20200708-1254fdd37f
+      image: gcr.io/k8s-prow/label_sync:v20200709-50d1ee0ba5
       command:
       - /app/label_sync/app.binary
       args:
