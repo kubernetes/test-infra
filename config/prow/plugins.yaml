@@ -244,31 +244,41 @@ slack:
     - k8s-ci-robot # future home of tide
     - k8s-release-robot # anago
     branch_whitelist:
-        release-1.15:
-            - dougm # Patch Release Team
-            - feiskyer # Patch Release Team
-            - hoegaarden # Patch Release Team
-            - idealhack # Patch Release Team
-            - justaugustus # Patch Release Team
-            - tpepper # Patch Release Team
         release-1.16:
+            - cpanato # Branch Manager
             - dougm # Patch Release Team
             - feiskyer # Patch Release Team
+            - hasheddan # Branch Manager
             - hoegaarden # Patch Release Team
             - idealhack # Patch Release Team
             - justaugustus # Patch Release Team
+            - saschagrunert # Branch Manager
             - tpepper # Patch Release Team
         release-1.17:
+            - cpanato # Branch Manager
             - dougm # Patch Release Team
             - feiskyer # Patch Release Team
+            - hasheddan # Branch Manager
             - hoegaarden # Patch Release Team
             - idealhack # Patch Release Team
             - justaugustus # Patch Release Team
+            - saschagrunert # Branch Manager
             - tpepper # Patch Release Team
         release-1.18:
             - cpanato # Branch Manager
             - dougm # Patch Release Team
             - feiskyer # Patch Release Team
+            - hasheddan # Branch Manager
+            - hoegaarden # Patch Release Team
+            - idealhack # Patch Release Team
+            - justaugustus # Patch Release Team
+            - saschagrunert # Branch Manager
+            - tpepper # Patch Release Team
+        release-1.19:
+            - cpanato # Branch Manager
+            - dougm # Patch Release Team
+            - feiskyer # Patch Release Team
+            - hasheddan # Branch Manager
             - hoegaarden # Patch Release Team
             - idealhack # Patch Release Team
             - justaugustus # Patch Release Team
