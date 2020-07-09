@@ -85,7 +85,7 @@ type Server struct {
 
 	gc git.ClientFactory
 	// Used for unit testing
-	push func(newBranch string) error
+	push func(newBranch string, force bool) error
 	ghc  githubClient
 	log  *logrus.Entry
 
@@ -446,12 +446,12 @@ func (s *Server) handle(logger *logrus.Entry, requestor string, comment *github.
 		return err
 	}
 
-	push := r.ForcePush
+	push := r.PushToFork
 	if s.push != nil {
 		push = s.push
 	}
 	// Push the new branch in the bot's fork.
-	if err := push(newBranch); err != nil {
+	if err := push(newBranch, true); err != nil {
 		resp := fmt.Sprintf("failed to push cherry-picked changes in GitHub: %v", err)
 		logger.Info(resp)
 		return s.createComment(org, repo, num, comment, resp)

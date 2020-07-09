@@ -204,7 +204,10 @@ func (c *clientFactory) bootstrapClients(org, repo, dir string) (cacher, cloner,
 	}
 	client := &repoClient{
 		publisher: publisher{
-			remote:   c.remotes.PublishRemote(org, repo),
+			remotes: remotes{
+				publishRemote: c.remotes.PublishRemote(org, repo),
+				centralRemote: c.remotes.CentralRemote(org, repo),
+			},
 			executor: executor,
 			info:     c.gitUser,
 			logger:   logger,

@@ -292,7 +292,7 @@ func testCherryPickIC(clients localgit.Clients, t *testing.T) {
 	s := &Server{
 		botName:        botName,
 		gc:             c,
-		push:           func(newBranch string) error { return nil },
+		push:           func(newBranch string, force bool) error { return nil },
 		ghc:            ghc,
 		tokenGenerator: getSecret,
 		log:            logrus.StandardLogger().WithField("client", "cherrypicker"),
@@ -437,7 +437,7 @@ func testCherryPickPR(clients localgit.Clients, t *testing.T) {
 	s := &Server{
 		botName:        botName,
 		gc:             c,
-		push:           func(newBranch string) error { return nil },
+		push:           func(newBranch string, force bool) error { return nil },
 		ghc:            ghc,
 		tokenGenerator: getSecret,
 		log:            logrus.StandardLogger().WithField("client", "cherrypicker"),
@@ -586,7 +586,7 @@ func testCherryPickPRWithLabels(clients localgit.Clients, t *testing.T) {
 		s := &Server{
 			botName:        botName,
 			gc:             c,
-			push:           func(newBranch string) error { return nil },
+			push:           func(newBranch string, force bool) error { return nil },
 			ghc:            ghc,
 			tokenGenerator: getSecret,
 			log:            logrus.StandardLogger().WithField("client", "cherrypicker"),
