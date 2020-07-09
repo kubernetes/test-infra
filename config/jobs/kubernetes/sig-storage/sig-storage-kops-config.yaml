@@ -18,7 +18,8 @@ periodics:
       - --deployment=kops
       - --env=KUBE_SSH_USER=centos
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
-      - --extract=ci/latest
+      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release-dev/ci/k8s-master.txt
+      - --extract=ci/k8s-master
       - --ginkgo-parallel
       - --kops-image=679593333241/CentOS Linux 7 x86_64 HVM EBS ENA 2002_01-b7ee8a69-ee97-4a49-9e68-afaee216db2e-ami-0042af67f8e4dcc20.4
       - --kops-args=--master-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200609
