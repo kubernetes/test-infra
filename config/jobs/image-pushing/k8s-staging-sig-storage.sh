@@ -17,19 +17,20 @@ set -o errexit
 
 readonly OUTPUT="$(dirname $0)/k8s-staging-sig-storage.yaml"
 readonly REPOS=(
-    csi-driver-host-path
-    csi-driver-iscsi
-    csi-driver-nfs
-    csi-driver-smb
-    csi-proxy
-    csi-test
-    external-attacher
-    external-health-monitor
-    external-provisioner
-    external-resizer
-    external-snapshotter
-    livenessprobe
-    node-driver-registrar
+    kubernetes-csi/csi-driver-host-path
+    kubernetes-csi/csi-driver-iscsi
+    kubernetes-csi/csi-driver-nfs
+    kubernetes-csi/csi-driver-smb
+    kubernetes-csi/csi-proxy
+    kubernetes-csi/csi-test
+    kubernetes-csi/external-attacher
+    kubernetes-csi/external-health-monitor
+    kubernetes-csi/external-provisioner
+    kubernetes-csi/external-resizer
+    kubernetes-csi/external-snapshotter
+    kubernetes-csi/livenessprobe
+    kubernetes-csi/node-driver-registrar
+    kubernetes-sigs/sig-storage-local-static-provisioner
 )
 
 cat >"${OUTPUT}" <<EOF
@@ -39,8 +40,9 @@ postsubmits:
 EOF
 
 for repo in "${REPOS[@]}"; do
+    IFS=/ read -r org repo <<<"${repo}"
     cat >>"${OUTPUT}" <<EOF
-  kubernetes-csi/${repo}:
+  ${org}/${repo}:
     - name: post-${repo}-push-images
       cluster: k8s-infra-prow-build-trusted
       annotations:
@@ -58,7 +60,7 @@ for repo in "${REPOS[@]}"; do
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200603-f2d2bf0
+          - image: gcr.io/k8s-testimages/image-builder:v20200612-cd781f9
             command:
               - /run.sh
             args:
