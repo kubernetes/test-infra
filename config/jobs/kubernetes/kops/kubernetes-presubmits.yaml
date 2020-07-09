@@ -36,6 +36,7 @@ presubmits:
         - --aws-cluster-domain=test-cncf-aws.k8s.io
         - --build=bazel
         - --cluster=
+        - --env=KOPS_ARCH=amd64
         - --env=KOPS_LATEST=latest-ci-green.txt
         - --env=KOPS_DEPLOY_LATEST_KUBE=n
         - --env=KUBE_GCS_UPDATE_LATEST=n
