@@ -517,6 +517,7 @@ func TestInteractor_MergeWithStrategy(t *testing.T) {
 		name          string
 		commitlike    string
 		strategy      string
+		opts          []MergeOpt
 		remote        RemoteResolver
 		responses     map[string]execResponse
 		expectedCalls [][]string
@@ -534,6 +535,58 @@ func TestInteractor_MergeWithStrategy(t *testing.T) {
 			},
 			expectedCalls: [][]string{
 				{"merge", "--no-ff", "--no-stat", "-m", "merge", "shasum"},
+			},
+			expectedMerge: true,
+			expectedErr:   false,
+		},
+		{
+			name:       "happy merge case with options",
+			commitlike: "shasum",
+			strategy:   "merge",
+			opts:       []MergeOpt{{CommitMessage: "message"}},
+			responses: map[string]execResponse{
+				"merge --no-ff --no-stat -m message shasum": {
+					out: []byte(`ok`),
+				},
+			},
+			expectedCalls: [][]string{
+				{"merge", "--no-ff", "--no-stat", "-m", "message", "shasum"},
+			},
+			expectedMerge: true,
+			expectedErr:   false,
+		},
+		{
+			name:       "happy merge case with multi words message",
+			commitlike: "shasum",
+			strategy:   "merge",
+			opts:       []MergeOpt{{CommitMessage: "my happy merge message"}},
+			responses: map[string]execResponse{
+				"merge --no-ff --no-stat -m \"my happy merge message\" shasum": {
+					out: []byte(`ok`),
+				},
+			},
+			expectedCalls: [][]string{
+				{"merge", "--no-ff", "--no-stat", "-m", "\"my happy merge message\"", "shasum"},
+			},
+			expectedMerge: true,
+			expectedErr:   false,
+		},
+		{
+			name:       "happy merge case with multiple options with single/multi words message",
+			commitlike: "shasum",
+			strategy:   "merge",
+			opts: []MergeOpt{
+				{CommitMessage: "my"},
+				{CommitMessage: "happy merge"},
+				{CommitMessage: "message"},
+			},
+			responses: map[string]execResponse{
+				"merge --no-ff --no-stat -m my -m \"happy merge\" -m message shasum": {
+					out: []byte(`ok`),
+				},
+			},
+			expectedCalls: [][]string{
+				{"merge", "--no-ff", "--no-stat", "-m", "my", "-m", "\"happy merge\"", "-m", "message", "shasum"},
 			},
 			expectedMerge: true,
 			expectedErr:   false,
@@ -701,7 +754,7 @@ func TestInteractor_MergeWithStrategy(t *testing.T) {
 				remote:   testCase.remote,
 				logger:   logrus.WithField("test", testCase.name),
 			}
-			actualMerge, actualErr := i.MergeWithStrategy(testCase.commitlike, testCase.strategy)
+			actualMerge, actualErr := i.MergeWithStrategy(testCase.commitlike, testCase.strategy, testCase.opts...)
 			if testCase.expectedMerge != actualMerge {
 				t.Errorf("%s: got incorrect output: expected %v, got %v", testCase.name, testCase.expectedMerge, actualMerge)
 			}

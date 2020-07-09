@@ -45,7 +45,7 @@ type Interactor interface {
 	// Merge merges the commitlike into the current HEAD
 	Merge(commitlike string) (bool, error)
 	// MergeWithStrategy merges the commitlike into the current HEAD with the strategy
-	MergeWithStrategy(commitlike, mergeStrategy string) (bool, error)
+	MergeWithStrategy(commitlike, mergeStrategy string, opts ...MergeOpt) (bool, error)
 	// MergeAndCheckout merges all commitlikes into the current HEAD with the appropriate strategy
 	MergeAndCheckout(baseSHA string, mergeStrategy string, headSHAs ...string) error
 	// Am calls `git am`
@@ -78,6 +78,21 @@ type cacher interface {
 type cloner interface {
 	// Clone clones the repository from a local path.
 	Clone(from string) error
+}
+
+// MergeOpt holds options for git merge operations.
+// Currently only commit message option is supported.
+type MergeOpt struct {
+	CommitMessage string
+}
+
+// trimMessage surrounds the message with double quotes if is a multi word message
+func trimMessage(message string) string {
+	// In case of a message with multiple words, put it into quotes
+	if len(strings.Split(message, " ")) > 1 {
+		return fmt.Sprintf("\"%s\"", message)
+	}
+	return message
 }
 
 type interactor struct {
@@ -164,11 +179,11 @@ func (i *interactor) Merge(commitlike string) (bool, error) {
 // MergeWithStrategy attempts to merge commitlike into the current branch given the merge strategy.
 // It returns true if the merge completes. if the merge does not complete successfully, we try to
 // abort it and return an error if the abort fails.
-func (i *interactor) MergeWithStrategy(commitlike, mergeStrategy string) (bool, error) {
+func (i *interactor) MergeWithStrategy(commitlike, mergeStrategy string, opts ...MergeOpt) (bool, error) {
 	i.logger.Infof("Merging %q using the %q strategy", commitlike, mergeStrategy)
 	switch mergeStrategy {
 	case "merge":
-		return i.mergeMerge(commitlike)
+		return i.mergeMerge(commitlike, opts...)
 	case "squash":
 		return i.squashMerge(commitlike)
 	default:
@@ -176,8 +191,20 @@ func (i *interactor) MergeWithStrategy(commitlike, mergeStrategy string) (bool, 
 	}
 }
 
-func (i *interactor) mergeMerge(commitlike string) (bool, error) {
-	out, err := i.executor.Run("merge", "--no-ff", "--no-stat", "-m", "merge", commitlike)
+func (i *interactor) mergeMerge(commitlike string, opts ...MergeOpt) (bool, error) {
+	args := []string{"merge", "--no-ff", "--no-stat"}
+
+	if len(opts) == 0 {
+		args = append(args, []string{"-m", "merge"}...)
+	} else {
+		for _, opt := range opts {
+			args = append(args, []string{"-m", trimMessage(opt.CommitMessage)}...)
+		}
+	}
+
+	args = append(args, commitlike)
+
+	out, err := i.executor.Run(args...)
 	if err == nil {
 		return true, nil
 	}

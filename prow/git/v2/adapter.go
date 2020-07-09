@@ -62,7 +62,7 @@ func (a *repoClientAdapter) MergeAndCheckout(baseSHA string, mergeStrategy strin
 	return a.Repo.MergeAndCheckout(baseSHA, github.PullRequestMergeType(mergeStrategy), headSHAs...)
 }
 
-func (a *repoClientAdapter) MergeWithStrategy(commitlike, mergeStrategy string) (bool, error) {
+func (a *repoClientAdapter) MergeWithStrategy(commitlike, mergeStrategy string, opts ...MergeOpt) (bool, error) {
 	return a.Repo.MergeWithStrategy(commitlike, github.PullRequestMergeType(mergeStrategy))
 }
 
