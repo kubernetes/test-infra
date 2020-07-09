@@ -2,11 +2,11 @@ presubmits:
 
   kubernetes/ingress-nginx:
   - name: pull-ingress-nginx-boilerplate
-    always_run: true
     decorate: true
     decoration_config:
       timeout: 15m
     path_alias: k8s.io/ingress-nginx
+    run_if_changed: '\.go$|\.sh$'
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -170,7 +170,7 @@ presubmits:
       timeout: 1h
     max_concurrency: 5
     path_alias: k8s.io/ingress-nginx
-    run_if_changed: '\.go$|^rootfs/'
+    #run_if_changed: '\.go$|^rootfs/'
     labels:
       preset-kind-volume-mounts: "true"
       preset-dind-enabled: "true"
@@ -201,7 +201,7 @@ presubmits:
       timeout: 1h
     max_concurrency: 5
     path_alias: k8s.io/ingress-nginx
-    run_if_changed: '\.go$|^rootfs/'
+    #run_if_changed: '\.go$|^rootfs/'
     labels:
       preset-kind-volume-mounts: "true"
       preset-dind-enabled: "true"
@@ -232,7 +232,7 @@ presubmits:
       timeout: 1h
     max_concurrency: 5
     path_alias: k8s.io/ingress-nginx
-    run_if_changed: '\.go$|^rootfs/'
+    #run_if_changed: '\.go$|^rootfs/'
     labels:
       preset-kind-volume-mounts: "true"
       preset-dind-enabled: "true"
@@ -263,7 +263,7 @@ presubmits:
       timeout: 1h
     max_concurrency: 5
     path_alias: k8s.io/ingress-nginx
-    run_if_changed: '\.go$|^rootfs/'
+    #run_if_changed: '\.go$|^rootfs/'
     labels:
       preset-kind-volume-mounts: "true"
       preset-dind-enabled: "true"
@@ -313,7 +313,7 @@ presubmits:
         - name: REPO_INFO
           value: https://github.com/kubernetes/ingress-nginx
         - name: K8S_VERSION
-          value: v1.18.2@sha256:7b27a6d0f2517ff88ba444025beae41491b016bc6af573ba467b70c5e8e0d85f
+          value: v1.18.4@sha256:d8ff5fc405fc679dd3dd0cccc01543ba4942ed90823817d2e9e2c474a5343c4f
     annotations:
       testgrid-dashboards: sig-network-ingress-nginx
       testgrid-tab-name: e2e-helm-chart

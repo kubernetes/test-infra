@@ -1,18 +1,13 @@
 postsubmits:
-  # This is the github repo we'll build from. This block needs to be repeated
-  # for each repo.
+
   kubernetes/ingress-nginx:
-    # The name should be changed to match the repo name above
+
     - name: post-ingress-nginx-push-images
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        # This is the name of some testgrid dashboard to report to.
-        # If this is the first one for your sig, you may need to create one
         testgrid-dashboards: sig-network-ingress-nginx
       decorate: true
-      # this causes the job to only run on the master branch. Remove it if your
-      # job makes sense on every branch (unless it's setting a `latest` tag it
-      # probably does).
+      run_if_changed: '\.go$|^rootfs/.*|TAG|go.mod|go.sum'
       branches:
         - ^master$
       spec:
@@ -22,10 +17,7 @@ postsubmits:
             command:
               - /run.sh
             args:
-              # this is the project GCB will run in, which is the same as the GCR
-              # images are pushed to.
               - --project=k8s-staging-ingress-nginx
-              # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
               - --env-passthrough=PULL_BASE_REF
               - .
@@ -55,7 +47,7 @@ postsubmits:
       annotations:
         testgrid-dashboards: sig-network-ingress-nginx
       decorate: true
-      run_if_changed: 'images/e2e/.*'
+      run_if_changed: 'images/test-runner/.*'
       branches:
         - ^master$
       spec:
@@ -68,7 +60,7 @@ postsubmits:
               - --project=k8s-staging-ingress-nginx
               - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
               - --env-passthrough=PULL_BASE_REF
-              - images/e2e
+              - images/test-runner
 
     - name: post-ingress-nginx-build-cfssl-image
       cluster: k8s-infra-prow-build-trusted
