@@ -54,6 +54,8 @@ type Interactor interface {
 	Fetch() error
 	// FetchRef fetches the refspec
 	FetchRef(refspec string) error
+	// FetchFromRemote fetches the branch of the given remote
+	FetchFromRemote(remote RemoteResolver, branch string) error
 	// CheckoutPullRequest fetches and checks out the synthetic refspec from GitHub for a pull request HEAD
 	CheckoutPullRequest(number int) error
 	// Config runs `git config`
