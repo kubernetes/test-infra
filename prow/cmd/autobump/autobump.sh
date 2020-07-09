@@ -35,8 +35,8 @@ PROW_INSTANCE_NAME="${PROW_INSTANCE_NAME:-prow}"
 # TODO(fejta): rewrite this in a better language REAL SOON  <-lol
 main() {
 	if [[ $# -lt 1 ]]; then
-	    echo "Usage: $(basename "$0") <path to github token or http cookiefile> [git-name] [git-email]" >&2
-	    exit 1
+			echo "Usage: $(basename "$0") <path to github token or http cookiefile> [git-name] [git-email]" >&2
+			return 1
 	fi
 	creds=$1
 	shift
@@ -52,7 +52,7 @@ main() {
 
 	if [[ "${old_version}" == "${version}" ]]; then
 		echo "Bump did not change the Prow version: it's still ${version}. Aborting no-op bump." >&2
-		exit 0
+		return 0
 	fi
 	git add -u
 	title="Bump ${PROW_INSTANCE_NAME} from ${old_version} to ${version}"
@@ -73,34 +73,34 @@ user-from-token() {
 }
 
 ensure-git-config() {
-  if [[ $# -eq 2 ]]; then
-    echo "git config user.name=$1 user.email=$2..." >&2
-    git config user.name "$1"
-    git config user.email "$2"
-  fi
-  git config user.name &>/dev/null && git config user.email &>/dev/null && return 0
-  echo "ERROR: git config user.name, user.email unset. No defaults provided" >&2
-  return 1
+	if [[ $# -eq 2 ]]; then
+		echo "git config user.name=$1 user.email=$2..." >&2
+		git config user.name "$1"
+		git config user.email "$2"
+	fi
+	git config user.name &>/dev/null && git config user.email &>/dev/null && return 0
+	echo "ERROR: git config user.name, user.email unset. No defaults provided" >&2
+	return 1
 }
 
 check-args() {
 	if [[ -z "${PLANK_DEPLOYMENT_FILE}" ]]; then
-  	echo "ERROR: $PLANK_DEPLOYMENT_FILE must be specified." >&2
-  	exit 1
+		echo "ERROR: $PLANK_DEPLOYMENT_FILE must be specified." >&2
+		return 1
 	fi
 	if [[ -z "${GERRIT_HOST_REPO}" ]]; then
 		if [[ -z "${GH_ORG}" || -z "${GH_REPO}" ]]; then
-	  	echo "ERROR: GH_ORG and GH_REPO must be specified to create a GitHub PR." >&2
-	  	exit 1
+			echo "ERROR: GH_ORG and GH_REPO must be specified to create a GitHub PR." >&2
+			return 1
 		fi
 	else
 		if [[ -n "${GH_ORG}" || -n "${GH_REPO}" ]]; then
-	  	echo "ERROR: GH_ORG and GH_REPO cannot be used with GERRIT_HOST_REPO." >&2
-	  	exit 1
+			echo "ERROR: GH_ORG and GH_REPO cannot be used with GERRIT_HOST_REPO." >&2
+			return 1
 		fi
 		if [[ -z "${GERRIT_HOST_REPO}" ]]; then
-	  	echo "ERROR: GERRIT_HOST_REPO must be specified to create a Gerrit PR." >&2
-	  	exit 1
+			echo "ERROR: GERRIT_HOST_REPO must be specified to create a Gerrit PR." >&2
+			return 1
 		fi
 	fi
 }
@@ -116,20 +116,36 @@ create-gh-pr() {
 
 	echo "Creating PR to merge ${user}:autobump-${PROW_INSTANCE_NAME} into master..." >&2
 	/pr-creator \
-	  --github-token-path="${token}" \
-	  --org="${GH_ORG}" --repo="${GH_REPO}" --branch=master \
-	  --title="${title}" --match-title="Bump ${PROW_INSTANCE_NAME} from" \
-	  --body="${body}" \
-	  --source="${user}:autobump-${PROW_INSTANCE_NAME}" \
-	  --confirm
+		--github-token-path="${token}" \
+		--org="${GH_ORG}" --repo="${GH_REPO}" --branch=master \
+		--title="${title}" --match-title="Bump ${PROW_INSTANCE_NAME} from" \
+		--body="${body}" \
+		--source="${user}:autobump-${PROW_INSTANCE_NAME}" \
+		--confirm
 }
 
 create-gerrit-pr() {
-  git config http.cookiefile "${creds}"
-  git remote add upstream "${GERRIT_HOST_REPO}"
+	git config http.cookiefile "${creds}"
+	git remote add upstream "${GERRIT_HOST_REPO}"
 
-	change_id="$(get-change-id)"
+	local change_id="$(get-change-id)"
 	echo "Commit will have Change-Id: ${change_id}"
+
+	# Check for an existing open PR and see if it needs to be updated.
+	echo "Checking for an existing open Gerrit PR to update..."
+	git fetch upstream "+refs/changes/*:refs/remotes/upstream/changes/*" 2> /dev/null
+	local pr_commit="$(git log --all --grep="Change-Id: ${change_id}" -1 --format="%H")"
+	if [[ -n "${pr_commit}" ]]; then
+		local pr_diff="$(git diff "${pr_commit}")"
+		if [[ -z "${pr_diff}" ]]; then
+			echo "Bump PR is already up to date. Aborting no-op update." >&2
+			return 0
+		fi
+		echo "Bump PR is not up to date. Updating PR with the following diff:"
+		echo "${pr_diff}"
+	else
+		echo "Did not find an existing PR to update. A new Gerrit PR will be created."
+	fi
 
 	git commit -m "${title}
 
@@ -161,13 +177,13 @@ get-change-id() {
 
 # Convert image: gcr.io/k8s-prow/plank:v20181122-abcd to v20181122-abcd
 extract-version() {
-  local v=$(grep plank:v "$@")
-  echo ${v##*plank:}
+	local v=$(grep plank:v "$@")
+	echo ${v##*plank:}
 }
 # Convert v20181111-abcd to abcd
 extract-commit() {
-  local c=$1
-  echo ${c##*-}
+	local c=$1
+	echo ${c##*-}
 }
 
 main "$@"
