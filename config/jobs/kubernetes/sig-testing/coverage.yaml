@@ -133,6 +133,10 @@ periodics:
     repo: kubernetes
     base_ref: master
     path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-master
@@ -145,7 +149,10 @@ periodics:
         result=0
         ( cd hack/tools && GO111MODULE=on go install gotest.tools/gotestsum ) || result=$?
         make test KUBE_COVER=y KUBE_COVER_REPORT_DIR="${ARTIFACTS}" KUBE_TIMEOUT="--timeout=300s" || result=$?
-        grep -v -E 'zz_generated|generated\.pb\.go' "${ARTIFACTS}/combined-coverage.out" > "${ARTIFACTS}/filtered.cov" || result=$?
+        cd ../test-infra/gopherage
+        GO111MODULE=on go build .
+        ./gopherage filter --exclude-path="zz_generated,generated\.pb\.go"  "${ARTIFACTS}/combined-coverage.out" > "${ARTIFACTS}/filtered.cov" || result=$?
+        ./gopherage junit --threshold 0 "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/junit_coverage.xml" || result=$?
         exit $result
       securityContext:
         privileged: true
