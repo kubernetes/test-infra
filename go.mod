@@ -21,7 +21,7 @@ replace (
 )
 
 require (
-	cloud.google.com/go v0.58.0 // indirect
+	cloud.google.com/go v0.60.0 // indirect
 	cloud.google.com/go/pubsub v1.3.1
 	cloud.google.com/go/storage v1.10.0
 	github.com/Azure/azure-sdk-for-go v38.0.0+incompatible
@@ -42,14 +42,14 @@ require (
 	github.com/docker/docker v1.4.2-0.20200203170920-46ec8731fbce
 	github.com/evanphx/json-patch v4.5.0+incompatible
 	github.com/fsnotify/fsnotify v1.4.7
-	github.com/fsouza/fake-gcs-server v0.0.0-20180612165233-e85be23bdaa8
+	github.com/fsouza/fake-gcs-server v1.19.4
 	github.com/go-bindata/go-bindata/v3 v3.1.3
 	github.com/go-openapi/spec v0.19.6
 	github.com/go-test/deep v1.0.4
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/golang/mock v1.4.3
 	github.com/gomodule/redigo v1.7.0
-	github.com/google/go-cmp v0.4.1
+	github.com/google/go-cmp v0.5.0
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/uuid v1.1.1
 	github.com/gorilla/csrf v1.6.2
@@ -74,17 +74,21 @@ require (
 	github.com/spf13/cobra v0.0.6
 	github.com/spf13/pflag v1.0.5
 	github.com/tektoncd/pipeline v0.11.0
+	go.opencensus.io v0.22.4 // indirect
 	go.uber.org/zap v1.14.1
 	gocloud.dev v0.19.0
-	golang.org/x/crypto v0.0.0-20200302210943-78000ba7a073
+	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
 	golang.org/x/lint v0.0.0-20200302205851-738671d3881b
-	golang.org/x/net v0.0.0-20200520182314-0ba52f642ac2
+	golang.org/x/net v0.0.0-20200707034311-ab3426394381
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
-	golang.org/x/sync v0.0.0-20200317015054-43a5402ce75a
-	golang.org/x/sys v0.0.0-20200610111108-226ff32320da // indirect
+	golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208
+	golang.org/x/sys v0.0.0-20200625212154-ddb9806d33ae // indirect
+	golang.org/x/text v0.3.3 // indirect
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0
-	golang.org/x/tools v0.0.0-20200618134242-20370b0cb4b2
-	google.golang.org/api v0.28.0
+	golang.org/x/tools v0.0.0-20200709181711-e327e1019dfe
+	google.golang.org/api v0.29.0
+	google.golang.org/genproto v0.0.0-20200709005830-7a2ca40e9dc3 // indirect
+	google.golang.org/grpc v1.30.0 // indirect
 	gopkg.in/fsnotify.v1 v1.4.7
 	gopkg.in/robfig/cron.v2 v2.0.0-20150107220207-be2e0b0deed5
 	gopkg.in/yaml.v3 v3.0.0-20190709130402-674ba3eaed22
