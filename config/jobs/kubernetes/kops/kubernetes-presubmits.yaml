@@ -29,12 +29,12 @@ presubmits:
         - "--repo=k8s.io/release"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--timeout=200"
+        - "--timeout=75"
         - --scenario=kubernetes_e2e
         - --
         - --aws
         - --aws-cluster-domain=test-cncf-aws.k8s.io
-        - --build=release
+        - --build=bazel
         - --cluster=
         - --env=KOPS_LATEST=latest-ci-green.txt
         - --env=KOPS_DEPLOY_LATEST_KUBE=n
@@ -45,7 +45,7 @@ presubmits:
         - --provider=aws
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-kops-aws
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
-        - --timeout=150m
+        - --timeout=55m
         resources:
           requests:
             memory: "6Gi"
