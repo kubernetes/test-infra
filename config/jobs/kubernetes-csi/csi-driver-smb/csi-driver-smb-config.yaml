@@ -1,0 +1,117 @@
+presubmits:
+  kubernetes-csi/csi-driver-smb:
+  - name: pull-csi-driver-smb-verify
+    decorate: true
+    always_run: true
+    path_alias: sigs.k8s.io/csi-driver-smb
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - verify
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-storage-csi-other
+      testgrid-tab-name: pr-csi-driver-smb-verify
+      description: "Run code verification tests for CSI driver smb."
+      testgrid-num-columns-recent: '30'
+  - name: pull-csi-driver-smb-unit
+    decorate: true
+    always_run: true
+    path_alias: sigs.k8s.io/csi-driver-smb
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - unit-test
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-storage-csi-other
+      testgrid-tab-name: pr-csi-driver-smb-unit
+      description: "Run unit tests for CSI driver smb."
+      testgrid-num-columns-recent: '30'
+  - name: pull-csi-driver-smb-sanity
+    decorate: true
+    always_run: true
+    path_alias: sigs.k8s.io/csi-driver-smb
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+      preset-azure-cred: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - sanity-test
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-storage-csi-other
+      testgrid-tab-name: pr-csi-driver-smb-sanity
+      description: "Run sanity tests for CSI driver smb."
+      testgrid-num-columns-recent: '30'
+  - name: pull-csi-driver-smb-integration
+    decorate: true
+    always_run: true
+    path_alias: sigs.k8s.io/csi-driver-smb
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+      preset-azure-cred: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - integration-test
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-storage-csi-other
+      testgrid-tab-name: pr-csi-driver-smb-integration
+      description: "Run integration tests for CSI driver smb."
+      testgrid-num-columns-recent: '30'
+  - name: pull-csi-driver-smb-windows-build
+    decorate: true
+    always_run: true
+    path_alias: sigs.k8s.io/csi-driver-smb
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - smb-windows
+    annotations:
+      testgrid-dashboards: sig-storage-csi-other
+      testgrid-tab-name: pr-csi-driver-smb-windows-build
+      description: "Run make smb-windows for CSI driver smb."
+      testgrid-num-columns-recent: '30'
