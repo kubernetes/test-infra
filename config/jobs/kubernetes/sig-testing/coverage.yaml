@@ -151,8 +151,9 @@ periodics:
         make test KUBE_COVER=y KUBE_COVER_REPORT_DIR="${ARTIFACTS}" KUBE_TIMEOUT="--timeout=300s" || result=$?
         cd ../test-infra/gopherage
         GO111MODULE=on go build .
+        export JUNIT=$(find ${ARTIFACTS} -type f -iname 'junit*.xml')
         ./gopherage filter --exclude-path="zz_generated,generated\.pb\.go"  "${ARTIFACTS}/combined-coverage.out" > "${ARTIFACTS}/filtered.cov" || result=$?
-        ./gopherage junit --threshold 0 "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/junit_coverage.xml" || result=$?
+        ./gopherage junit --threshold 0 "${ARTIFACTS}/filtered.cov" > "${JUNIT}" || result=$?
         exit $result
       securityContext:
         privileged: true
