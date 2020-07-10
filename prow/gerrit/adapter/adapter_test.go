@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/andygrunwald/go-gerrit"
+	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -919,7 +920,7 @@ func TestProcessChange(t *testing.T) {
 				tracker:       &fakeSync{val: fakeLastSync},
 			}
 
-			err := c.processChange(testInstance, tc.change)
+			err := c.processChange(logrus.WithField("name", tc.name), testInstance, tc.change)
 			if err != nil && !tc.shouldError {
 				t.Errorf("expect no error, but got %v", err)
 			} else if err == nil && tc.shouldError {

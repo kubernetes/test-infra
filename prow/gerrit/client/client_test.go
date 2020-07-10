@@ -24,6 +24,7 @@ import (
 	"time"
 
 	gerrit "github.com/andygrunwald/go-gerrit"
+	"github.com/sirupsen/logrus"
 )
 
 type fgc struct {
@@ -634,6 +635,7 @@ func TestQueryChange(t *testing.T) {
 						instance: "foo",
 						comments: tc.comments,
 					},
+					log: logrus.WithField("host", "foo"),
 				},
 				"baz": {
 					instance: "baz",
@@ -642,6 +644,7 @@ func TestQueryChange(t *testing.T) {
 						changes:  tc.changes,
 						instance: "baz",
 					},
+					log: logrus.WithField("host", "baz"),
 				},
 			},
 		}

@@ -70,7 +70,7 @@ func AggregateFilter(filters []Filter) Filter {
 }
 
 // FilterPresubmits determines which presubmits should run by evaluating the user-provided filter.
-func FilterPresubmits(filter Filter, changes config.ChangedFilesProvider, branch string, presubmits []config.Presubmit, logger *logrus.Entry) ([]config.Presubmit, error) {
+func FilterPresubmits(filter Filter, changes config.ChangedFilesProvider, branch string, presubmits []config.Presubmit, logger logrus.FieldLogger) ([]config.Presubmit, error) {
 
 	var toTrigger []config.Presubmit
 	var namesToTrigger []string
@@ -104,7 +104,7 @@ func RetestFilter(failedContexts, allContexts sets.String) Filter {
 type contextGetter func() (sets.String, sets.String, error)
 
 // PresubmitFilter creates a filter for presubmits
-func PresubmitFilter(honorOkToTest bool, contextGetter contextGetter, body string, logger *logrus.Entry) (Filter, error) {
+func PresubmitFilter(honorOkToTest bool, contextGetter contextGetter, body string, logger logrus.FieldLogger) (Filter, error) {
 	// the filters determine if we should check whether a job should run, whether
 	// it should run regardless of whether its triggering conditions match, and
 	// what the default behavior should be for that check. Multiple filters

@@ -61,6 +61,9 @@ func (o *options) validate() error {
 		return errors.New("--gerrit-projects must be set")
 	}
 
+	if o.cookiefilePath != "" && o.tokenPathOverride != "" {
+		return fmt.Errorf("only one of --cookiefile=%q --token-path=%q allowed, not both", o.cookiefilePath, o.tokenPathOverride)
+	}
 	if o.cookiefilePath == "" && o.tokenPathOverride == "" {
 		logrus.Info("--cookiefile is not set, using anonymous authentication")
 	}
