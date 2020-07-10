@@ -463,7 +463,7 @@ periodics:
         value: "true"
       - name: USE_CI_ARTIFACTS
         value: "true"
-      - name: FEATURE_GATE_MACHINE_POOL
+      - name: EXP_MACHINE_POOL
         value: "true"
       - name: AZURE_STORAGE_DRIVER
         value: kubernetes.io/azure-disk # In-tree Azure disk storage class
@@ -573,7 +573,7 @@ periodics:
         value: "true"
       - name: USE_CI_ARTIFACTS
         value: "true"
-      - name: FEATURE_GATE_MACHINE_POOL
+      - name: EXP_MACHINE_POOL
         value: "true"
       - name: AZURE_STORAGE_DRIVER
         value: kubernetes.io/azure-file # In-tree Azure file storage class

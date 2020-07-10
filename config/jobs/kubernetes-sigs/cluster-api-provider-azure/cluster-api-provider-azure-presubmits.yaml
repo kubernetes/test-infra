@@ -272,7 +272,7 @@ presubmits:
               value: "true"
             - name: USE_CI_ARTIFACTS
               value: "true"
-            - name: FEATURE_GATE_MACHINE_POOL
+            - name: EXP_MACHINE_POOL
               value: "true"
           securityContext:
             privileged: true
