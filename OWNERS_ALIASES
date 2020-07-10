@@ -81,8 +81,9 @@ aliases:
     - justaugustus
     - lachie83
   sig-release-leads:
-    - calebamiles
+    - alejandrox1
     - justaugustus
+    - saschagrunert
     - tpepper
   sig-scalability-leads:
     - mm4tt
