@@ -32,6 +32,7 @@ periodics:
       - --deployment=kops
       - --provider=aws
       - --cluster=e2e-kops-pipeline-updown-kopsmaster.test-cncf-aws.k8s.io
+      - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --kops-ssh-user=ubuntu
       - --kops-nodes=4
       - --extract=release/latest
@@ -80,6 +81,7 @@ periodics:
       - --deployment=kops
       - --provider=aws
       - --cluster=e2e-kops-pipeline-updown-kops116.test-cncf-aws.k8s.io
+      - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --kops-ssh-user=admin
       - --kops-nodes=4
       - --extract=release/stable-1.16
@@ -128,6 +130,7 @@ periodics:
       - --deployment=kops
       - --provider=aws
       - --cluster=e2e-kops-pipeline-updown-kops117.test-cncf-aws.k8s.io
+      - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --kops-ssh-user=admin
       - --kops-nodes=4
       - --extract=release/stable-1.17
@@ -176,6 +179,7 @@ periodics:
       - --deployment=kops
       - --provider=aws
       - --cluster=e2e-kops-pipeline-updown-kops118.test-cncf-aws.k8s.io
+      - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --kops-ssh-user=ubuntu
       - --kops-nodes=4
       - --extract=release/stable-1.18
