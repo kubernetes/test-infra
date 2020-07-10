@@ -88,15 +88,6 @@ type MergeOpt struct {
 	CommitMessage string
 }
 
-// trimMessage surrounds the message with double quotes if is a multi word message
-func trimMessage(message string) string {
-	// In case of a message with multiple words, put it into quotes
-	if len(strings.Split(message, " ")) > 1 {
-		return fmt.Sprintf("\"%s\"", message)
-	}
-	return message
-}
-
 type interactor struct {
 	executor executor
 	remote   RemoteResolver
@@ -200,7 +191,7 @@ func (i *interactor) mergeMerge(commitlike string, opts ...MergeOpt) (bool, erro
 		args = append(args, []string{"-m", "merge"}...)
 	} else {
 		for _, opt := range opts {
-			args = append(args, []string{"-m", trimMessage(opt.CommitMessage)}...)
+			args = append(args, []string{"-m", opt.CommitMessage}...)
 		}
 	}
 
