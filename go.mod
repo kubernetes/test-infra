@@ -4,9 +4,6 @@ module k8s.io/test-infra
 
 replace github.com/golang/lint => golang.org/x/lint v0.0.0-20190301231843-5614ed5bae6f
 
-// TODO(spiffxp): switch to a tag that contains this commit
-replace github.com/GoogleCloudPlatform/testgrid => github.com/GoogleCloudPlatform/testgrid v0.0.0-20200708212023-60287481cea3
-
 // Pin all k8s.io staging repositories to kubernetes v0.17.3
 // When bumping Kubernetes dependencies, you should update each of these lines
 // to point to the same kubernetes v0.KubernetesMinor.KubernetesPatch version
@@ -28,7 +25,7 @@ require (
 	github.com/Azure/azure-storage-blob-go v0.8.0
 	github.com/Azure/go-autorest/autorest v0.9.6
 	github.com/Azure/go-autorest/autorest/adal v0.8.2
-	github.com/GoogleCloudPlatform/testgrid v0.0.12
+	github.com/GoogleCloudPlatform/testgrid v0.0.13
 	github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46
 	github.com/andygrunwald/go-gerrit v0.0.0-20190120104749-174420ebee6c
 	github.com/aws/aws-k8s-tester v1.0.0
