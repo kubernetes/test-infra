@@ -56,6 +56,11 @@ type Options struct {
 	MetadataFile string `json:"metadata_file"`
 }
 
+type MarkerResult struct {
+	ReturnCode int
+	Err        error
+}
+
 // AddFlags adds flags to the FlagSet that populate
 // the wrapper options struct provided.
 func (o *Options) AddFlags(fs *flag.FlagSet) {
@@ -78,49 +83,71 @@ func (o *Options) Validate() error {
 	return nil
 }
 
-func WaitForMarker(ctx context.Context, path string) (int, error) {
+func WaitForMarkers(ctx context.Context, paths ...string) map[string]MarkerResult {
 	// Only start watching file events if the file doesn't exist
 	// If the file exists, it means the main process already completed.
-	if _, err := os.Stat(path); os.IsNotExist(err) {
-		watcher, err := fsnotify.NewWatcher()
-		if err != nil {
-			return -1, fmt.Errorf("new fsnotify watch: %v", err)
-		}
-		defer watcher.Close()
-		dir := filepath.Dir(path)
-		if err := watcher.Add(dir); err != nil {
-			return -1, fmt.Errorf("add %s to fsnotify watch: %v", dir, err)
-		}
 
-		ticker := time.NewTicker(10 * time.Second)
-		defer ticker.Stop()
-		missing := true
-		for missing {
-			select {
-			case <-ctx.Done():
-				return -1, fmt.Errorf("cancelled: %v", ctx.Err())
-			case event := <-watcher.Events:
-				if event.Name == path && event.Op&fsnotify.Create == fsnotify.Create {
-					missing = false
+	results := make(map[string]MarkerResult)
+
+	if len(paths) == 0 {
+		return results
+	}
+
+	for _, path := range paths {
+		if _, err := os.Stat(path); !os.IsNotExist(err) {
+			results[path] = readMarkerFile(path)
+		}
+	}
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		return results
+	}
+	defer watcher.Close()
+	dir := filepath.Dir(paths[0])
+	if err := watcher.Add(dir); err != nil {
+		return results
+	}
+
+	ticker := time.NewTicker(10 * time.Second)
+	defer ticker.Stop()
+
+	for len(results) < len(paths) {
+		select {
+		case <-ctx.Done():
+			for _, path := range paths {
+				if _, exists := results[path]; !exists {
+					results[path] = MarkerResult{-1, fmt.Errorf("cancelled: %v", ctx.Err())}
 				}
-			case err := <-watcher.Errors:
-				logrus.WithError(err).Info("fsnotify watch error")
-			case <-ticker.C:
-				switch _, err := os.Stat(path); {
-				case err == nil, !os.IsNotExist(err):
-					missing = false
+			}
+			return results
+		case event := <-watcher.Events:
+			for _, path := range paths {
+				if event.Name == path && event.Op&fsnotify.Create == fsnotify.Create {
+					results[path] = readMarkerFile(path)
+				}
+			}
+		case err := <-watcher.Errors:
+			logrus.WithError(err).Info("fsnotify watch error")
+		case <-ticker.C:
+			for _, path := range paths {
+				if _, err := os.Stat(path); !os.IsNotExist(err) {
+					results[path] = readMarkerFile(path)
 				}
 			}
 		}
 	}
+	return results
 
+}
+
+func readMarkerFile(path string) MarkerResult {
 	returnCodeData, err := ioutil.ReadFile(path)
 	if err != nil {
-		return -1, fmt.Errorf("bad read: %v", err)
+		return MarkerResult{-1, fmt.Errorf("bad read: %v", err)}
 	}
 	returnCode, err := strconv.Atoi(strings.TrimSpace(string(returnCodeData)))
 	if err != nil {
-		return -1, fmt.Errorf("invalid return code: %v", err)
+		return MarkerResult{-1, fmt.Errorf("invalid return code: %v", err)}
 	}
-	return returnCode, nil
+	return MarkerResult{returnCode, nil}
 }

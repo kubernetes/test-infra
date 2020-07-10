@@ -148,6 +148,129 @@ func TestWait(t *testing.T) {
 	}
 }
 
+func TestWaitParallelContainers(t *testing.T) {
+	aborted := strconv.Itoa(entrypoint.AbortedErrorCode)
+	const (
+		pass = "0"
+		fail = "1"
+	)
+	cases := []struct {
+		name         string
+		markers      []string
+		abort        bool
+		pass         bool
+		accessDenied bool
+		missing      bool
+		failures     int
+	}{
+		{
+			name:    "pass, not abort when 1 item passes",
+			markers: []string{pass},
+			pass:    true,
+		},
+		{
+			name:    "pass when all items pass",
+			markers: []string{pass, pass, pass},
+			pass:    true,
+		},
+		{
+			name:     "fail, not abort when 1 item fails",
+			markers:  []string{fail},
+			failures: 1,
+		},
+		{
+			name:     "fail when any item fails",
+			markers:  []string{pass, fail, pass},
+			failures: 1,
+		},
+		{
+			name:     "abort and fail when 1 item aborts",
+			markers:  []string{aborted},
+			abort:    true,
+			failures: 1,
+		},
+		{
+			name:     "abort when any item aborts",
+			markers:  []string{pass, aborted, fail},
+			abort:    true,
+			failures: 2,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			tmpDir, err := ioutil.TempDir("", tc.name)
+			if err != nil {
+				t.Errorf("%s: error creating temp dir: %v", tc.name, err)
+			}
+			defer func() {
+				if err := os.RemoveAll(tmpDir); err != nil {
+					t.Errorf("%s: error cleaning up temp dir: %v", tc.name, err)
+				}
+			}()
+
+			var entries []wrapper.Options
+
+			for i := range tc.markers {
+				p := path.Join(tmpDir, fmt.Sprintf("marker-%d.txt", i))
+				var opt wrapper.Options
+				opt.MarkerFile = p
+				entries = append(entries, opt)
+			}
+
+			ctx, cancel := context.WithCancel(context.Background())
+
+			type WaitResult struct {
+				pass     bool
+				abort    bool
+				failures int
+			}
+
+			waitResultsCh := make(chan WaitResult)
+
+			go func() {
+				pass, abort, failures := wait(ctx, entries)
+				waitResultsCh <- WaitResult{pass, abort, failures}
+			}()
+
+			errCh := make(chan error, len(tc.markers))
+			for i, m := range tc.markers {
+
+				options := entries[i]
+				entrypointOptions := entrypoint.Options{
+					Options: &options,
+				}
+				marker, err := strconv.Atoi(m)
+				if err != nil {
+					errCh <- fmt.Errorf("invalid exit code: %v", err)
+				}
+				go func() {
+					errCh <- entrypointOptions.Mark(marker)
+				}()
+			}
+
+			for range tc.markers {
+				if err := <-errCh; err != nil {
+					t.Fatalf("could not create marker: %v", err)
+				}
+			}
+
+			waitRes := <-waitResultsCh
+
+			cancel()
+			if waitRes.pass != tc.pass {
+				t.Errorf("expected pass %t != actual %t", tc.pass, waitRes.pass)
+			}
+			if waitRes.abort != tc.abort {
+				t.Errorf("expected abort %t != actual %t", tc.abort, waitRes.abort)
+			}
+			if waitRes.failures != tc.failures {
+				t.Errorf("expected failures %d != actual %d", tc.failures, waitRes.failures)
+			}
+		})
+	}
+}
+
 func TestCombineMetadata(t *testing.T) {
 	cases := []struct {
 		name     string

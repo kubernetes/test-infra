@@ -43,19 +43,29 @@ func nameEntry(idx int, opt wrapper.Options) string {
 }
 
 func wait(ctx context.Context, entries []wrapper.Options) (bool, bool, int) {
+
+	var paths []string
+
+	for _, opt := range entries {
+		paths = append(paths, opt.MarkerFile)
+	}
+
+	results := wrapper.WaitForMarkers(ctx, paths...)
+
 	passed := true
 	var aborted bool
 	var failures int
 
-	for _, opt := range entries {
-		returnCode, err := wrapper.WaitForMarker(ctx, opt.MarkerFile)
-		passed = passed && err == nil && returnCode == 0
-		aborted = aborted || returnCode == entrypoint.AbortedErrorCode
-		if returnCode != 0 && returnCode != entrypoint.PreviousErrorCode {
+	for _, res := range results {
+		passed = passed && res.Err == nil && res.ReturnCode == 0
+		aborted = aborted || res.ReturnCode == entrypoint.AbortedErrorCode
+		if res.ReturnCode != 0 && res.ReturnCode != entrypoint.PreviousErrorCode {
 			failures++
 		}
 	}
+
 	return passed, aborted, failures
+
 }
 
 // Run will watch for the process being wrapped to exit
