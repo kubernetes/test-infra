@@ -93,5 +93,6 @@ presubmits:
         - --warnings=missing-trigger
         - --warnings=validate-urls
         - --warnings=unknown-fields
+        - --warnings=duplicate-job-refs
     annotations:
       testgrid-dashboards: presubmits-test-infra
