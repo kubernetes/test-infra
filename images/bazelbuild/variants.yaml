@@ -7,3 +7,7 @@ variants:
     CONFIG: test-infra
     BAZEL_VERSION: 3.1.0
     OLD_BAZEL_VERSION: 3.0.0
+  testgrid:
+    CONFIG: testgrid
+    BAZEL_VERSION: 3.3.0
+    OLD_BAZEL_VERSION: 3.0.0
