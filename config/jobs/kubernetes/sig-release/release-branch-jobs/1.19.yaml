@@ -27,7 +27,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Conformance\]
       - --timeout=200m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-1.19
       name: ""
       resources: {}
 - annotations:
@@ -60,7 +60,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-1.19
       name: ""
       resources: {}
 - annotations:
@@ -94,7 +94,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-1.19
       name: ""
       resources: {}
 - annotations:
@@ -126,7 +126,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-1.19
       name: ""
       resources: {}
 - annotations:
@@ -212,7 +212,7 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=80m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-1.19
       name: ""
       resources: {}
       securityContext:
@@ -275,7 +275,7 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=120m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-1.19
       name: ""
       resources: {}
   tags:
@@ -317,7 +317,7 @@ periodics:
             --version-suffix=-bazel
       command:
       - bash
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-1.19
       name: ""
       resources: {}
 - annotations:
@@ -378,7 +378,7 @@ periodics:
       - ./hack/jenkins/test-dockerized.sh
       command:
       - runner.sh
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-1.19
       name: ""
       resources:
         requests:
@@ -417,7 +417,7 @@ periodics:
         value: release-1.19
       - name: REPO_DIR
         value: /workspace/k8s.io/kubernetes
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-1.19
       imagePullPolicy: Always
       name: ""
       resources:
@@ -465,7 +465,7 @@ periodics:
         value: win2019
       - name: PREPULL_YAML
         value: prepull-head.yaml
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-1.19
       name: ""
       resources: {}
 - annotations:
@@ -508,7 +508,7 @@ periodics:
         value: win1909
       - name: PREPULL_YAML
         value: prepull-head.yaml
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-1.19
       name: ""
       resources: {}
 - annotations:
@@ -637,7 +637,7 @@ postsubmits:
         - --release=//build/release-tars
         - --gcs=gs://kubernetes-release-dev/ci
         - --version-suffix=-bazel
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-1.19
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-1.19
         name: ""
         resources:
           requests:
@@ -716,7 +716,7 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-kops-aws
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
         - --timeout=55m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-1.19
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-1.19
         name: ""
         resources:
           requests:
@@ -755,7 +755,7 @@ presubmits:
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
           --minStartupPods=8
         - --timeout=80m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-1.19
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-1.19
         name: ""
         resources:
           requests:
@@ -794,7 +794,7 @@ presubmits:
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
           --minStartupPods=8
         - --timeout=80m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-1.19
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-1.19
         name: ""
         resources:
           requests:
@@ -841,7 +841,7 @@ presubmits:
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
           --minStartupPods=8
         - --timeout=80m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-1.19
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-1.19
         name: ""
         resources:
           requests:
@@ -891,7 +891,7 @@ presubmits:
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
           --minStartupPods=8
         - --timeout=80m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-1.19
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-1.19
         name: ""
         resources:
           requests:
@@ -941,7 +941,7 @@ presubmits:
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
           --minStartupPods=8
         - --timeout=80m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-1.19
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-1.19
         name: ""
         resources:
           requests:
@@ -986,7 +986,7 @@ presubmits:
         - --timeout=80m
         command:
         - ../test-infra/scenarios/kubernetes_e2e.py
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-1.19
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-1.19
         name: ""
         resources: {}
   - always_run: true
@@ -1026,7 +1026,7 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-device-plugin-gpu
         - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
         - --timeout=60m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-1.19
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-1.19
         name: ""
         resources:
           requests:
@@ -1059,7 +1059,7 @@ presubmits:
         - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"
         - --timeout=65m
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-1.19
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-1.19
         name: ""
         resources:
           requests:
@@ -1100,7 +1100,7 @@ presubmits:
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:RuntimeHandler\]
           --minStartupPods=8
         - --timeout=80m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-1.19
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-1.19
         name: ""
         resources:
           requests:
@@ -1153,7 +1153,7 @@ presubmits:
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=100m
         - --use-logexporter
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-1.19
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-1.19
         name: ""
         resources:
           requests:
@@ -1214,7 +1214,7 @@ presubmits:
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=100m
         - --use-logexporter
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-1.19
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-1.19
         name: ""
         resources:
           requests:
@@ -1291,7 +1291,7 @@ presubmits:
         env:
         - name: WHAT
           value: external-dependencies-version vendor vendor-licenses
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-1.19
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-1.19
         name: main
         resources: {}
         securityContext:
@@ -1311,7 +1311,7 @@ presubmits:
         env:
         - name: WHAT
           value: generated-files-remake
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-1.19
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-1.19
         name: main
         resources: {}
   - always_run: true
@@ -1329,7 +1329,7 @@ presubmits:
         - ./hack/jenkins/test-dockerized.sh
         command:
         - runner.sh
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-1.19
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-1.19
         name: ""
         resources:
           requests:
@@ -1390,7 +1390,7 @@ presubmits:
         env:
         - name: WHAT
           value: typecheck typecheck-providerless typecheck-dockerless
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-1.19
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-1.19
         name: main
         resources: {}
   - always_run: true
@@ -1419,7 +1419,7 @@ presubmits:
           value: release-1.19
         - name: REPO_DIR
           value: /workspace/k8s.io/kubernetes
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-1.19
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-1.19
         imagePullPolicy: Always
         name: ""
         resources:
