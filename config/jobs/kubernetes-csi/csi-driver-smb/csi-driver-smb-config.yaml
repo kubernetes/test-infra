@@ -72,7 +72,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-csi-driver-smb-integration
     decorate: true
-    always_run: true
+    always_run: false
     path_alias: sigs.k8s.io/csi-driver-smb
     branches:
     - master
