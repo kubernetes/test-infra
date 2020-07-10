@@ -219,7 +219,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-1.18
           command:
             - "runner.sh"
             - "./scripts/ci-entrypoint.sh"
@@ -259,7 +259,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-1.18
           command:
             - "runner.sh"
             - "./scripts/ci-entrypoint.sh"
