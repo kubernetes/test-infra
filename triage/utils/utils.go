@@ -19,6 +19,10 @@ Package utils is a small collection of utility functions helpful to Triage.
 */
 package utils
 
+import (
+	"strings"
+)
+
 // Min takes any number of integers and returns the smallest.
 func Min(nums ...int) int {
 	smallest := nums[0]
@@ -73,4 +77,31 @@ func ByteSliceInsert(slc *[]byte, element byte, index int) {
 
 	// Add in the new element
 	(*slc)[index] = element
+}
+
+// RemoveDuplicateLines takes a "\n"-delimited string and removes duplicates.
+// Strings consisting only of "\n" characters will return the empty string.
+func RemoveDuplicateLines(text string) string {
+	// First convert to a slice for easy traversal
+	lines := strings.Split(text, "\n")
+
+	// Holds the de-duplicated lines
+	// Add the first line, which will always be included
+	result := []string{lines[0]}
+
+	// Traverse through the rest of the lines to find duplicates
+	previousLine := lines[0]
+	for _, currentLine := range lines[1:] {
+		if currentLine == previousLine {
+			continue
+		}
+
+		// Otherwise, store the result
+		result = append(result, currentLine)
+		// Update previousLine for the next iteration
+		previousLine = currentLine
+	}
+
+	// Return the reassembled line
+	return strings.Join(result, "\n")
 }
