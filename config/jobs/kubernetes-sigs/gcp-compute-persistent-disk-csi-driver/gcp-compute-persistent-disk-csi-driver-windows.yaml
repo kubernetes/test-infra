@@ -45,11 +45,7 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 200m
-    extra_refs:
-    - org: kubernetes-sigs
-      repo: gcp-compute-persistent-disk-csi-driver
-      base_ref: master
-      path_alias: sigs.k8s.io/gcp-compute-persistent-disk-csi-driver
+    path_alias: sigs.k8s.io/gcp-compute-persistent-disk-csi-driver
     labels:
       preset-k8s-ssh: "true"
       preset-service-account: "true"
