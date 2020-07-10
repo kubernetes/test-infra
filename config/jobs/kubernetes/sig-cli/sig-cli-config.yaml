@@ -172,8 +172,6 @@ periodics:
     testgrid-num-columns-recent: "3"
     testgrid-num-failures-to-alert: "2"
     testgrid-alert-stale-results-hours: "24"
-    fork-per-release: "true"
-    fork-per-release-generic-suffix: "true"
 - interval: 1h
   name: ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew-serial
   labels:
