@@ -92,7 +92,7 @@ func NewReporter(cookiefilePath string, projects map[string][]string, lister pjl
 	if err != nil {
 		return nil, err
 	}
-	gc.Start(cookiefilePath)
+	gc.Authenticate(cookiefilePath, "")
 	return &Client{
 		gc:     gc,
 		lister: lister,

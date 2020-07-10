@@ -919,7 +919,7 @@ func TestProcessChange(t *testing.T) {
 				tracker:       &fakeSync{val: fakeLastSync},
 			}
 
-			err := c.ProcessChange(testInstance, tc.change)
+			err := c.processChange(testInstance, tc.change)
 			if err != nil && !tc.shouldError {
 				t.Errorf("expect no error, but got %v", err)
 			} else if err == nil && tc.shouldError {

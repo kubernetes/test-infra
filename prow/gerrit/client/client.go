@@ -23,6 +23,7 @@ import (
 	"io/ioutil"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/andygrunwald/go-gerrit"
@@ -109,6 +110,9 @@ type Client struct {
 	handlers map[string]*gerritInstanceHandler
 	// map of instance to gerrit account
 	accounts map[string]*gerrit.AccountInfo
+
+	authentication func() (string, error)
+	lock           sync.RWMutex
 }
 
 // ChangeInfo is a gerrit.ChangeInfo
@@ -159,47 +163,79 @@ func NewClient(instances map[string][]string) (*Client, error) {
 	return c, nil
 }
 
-func auth(c *Client, cookiefilePath string) {
-	logrus.Info("Starting auth loop...")
-	var previousToken string
-	wait := time.Minute
-	for {
-		raw, err := ioutil.ReadFile(cookiefilePath)
-		if err != nil {
-			logrus.WithError(err).Error("Failed to read auth cookie")
-		}
-		fields := strings.Fields(string(raw))
-		token := fields[len(fields)-1]
+func (c *Client) authenticateOnce(previousToken string) string {
+	c.lock.RLock()
+	auth := c.authentication
+	c.lock.RUnlock()
 
-		if token == previousToken {
-			time.Sleep(wait)
+	current, err := auth()
+	if err != nil {
+		logrus.WithError(err).Error("Failed to read gerrit auth token")
+	}
+
+	if current == previousToken {
+		return current
+	}
+
+	c.lock.Lock()
+	defer c.lock.Unlock()
+	logrus.Info("New gerrit token, updating handlers...")
+
+	// update auth token for each instance
+	for instance, handler := range c.handlers {
+		handler.authService.SetCookieAuth("o", current)
+
+		self, _, err := handler.accountService.GetAccount("self")
+		if err != nil {
+			logrus.WithField("instance", instance).WithError(err).Error("Failed to auth with token")
 			continue
 		}
-
-		logrus.Info("New token, updating handlers...")
-
-		// update auth token for each instance
-		for instance, handler := range c.handlers {
-			handler.authService.SetCookieAuth("o", token)
-
-			self, _, err := handler.accountService.GetAccount("self")
-			if err != nil {
-				logrus.WithError(err).Error("Failed to auth with token")
-				continue
-			}
-			logrus.Infof("Authentication to %s successful, Username: %s", handler.instance, self.Name)
-			c.accounts[instance] = self
-		}
-		previousToken = token
-		time.Sleep(wait)
+		logrus.Infof("Authentication to %s successful, Username: %s", handler.instance, self.Name)
+		c.accounts[instance] = self
 	}
+	return current
 }
 
-// Start will authenticate the client with gerrit periodically
-// Start must be called before user calls any client functions.
-func (c *Client) Start(cookiefilePath string) {
-	if cookiefilePath != "" {
-		go auth(c, cookiefilePath)
+// Authenticate client calls using the specified file.
+// Periodically re-reads the file to check for an updated value.
+func (c *Client) Authenticate(cookiefilePath, tokenPath string) {
+	var was, auth func() (string, error)
+	switch {
+	case cookiefilePath != "":
+		auth = func() (string, error) {
+			// TODO(fejta): listen for changes
+			raw, err := ioutil.ReadFile(cookiefilePath)
+			if err != nil {
+				return "", fmt.Errorf("read cookie: %w", err)
+			}
+			fields := strings.Fields(string(raw))
+			token := fields[len(fields)-1]
+			return token, nil
+		}
+	case tokenPath != "":
+		auth = func() (string, error) {
+			raw, err := ioutil.ReadFile(tokenPath)
+			if err != nil {
+				return "", fmt.Errorf("read token: %w", err)
+			}
+			return strings.TrimSpace(string(raw)), nil
+		}
+	default:
+		logrus.Info("Using anonymous authentication to gerrit")
+		return
+	}
+	c.lock.Lock()
+	was, c.authentication = c.authentication, auth
+	c.lock.Unlock()
+	logrus.Info("Authenticating gerrit requests...")
+	previousToken := c.authenticateOnce("") // Ensure requests immediately authenticated
+	if was == nil {
+		go func() {
+			for {
+				previousToken = c.authenticateOnce(previousToken)
+				time.Sleep(time.Minute)
+			}
+		}()
 	}
 }
 
@@ -283,6 +319,7 @@ func (h *gerritInstanceHandler) queryAllChanges(lastState map[string]time.Time, 
 func parseStamp(value gerrit.Timestamp) time.Time {
 	return value.Time
 }
+
 func (h *gerritInstanceHandler) injectPatchsetMessages(change *gerrit.ChangeInfo) error {
 	out, _, err := h.changeService.ListChangeComments(change.ChangeID)
 	if err != nil {
