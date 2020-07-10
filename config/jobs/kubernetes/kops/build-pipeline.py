@@ -88,13 +88,17 @@ def build_tests(branch, k8s_version, ssh_user):
     name = name.replace('.', '')
 
     y = template
-    y = y.replace('{{branch}}', branch)
     y = y.replace('{{extract}}', extract)
     y = y.replace('{{e2e_image}}', e2e_image)
     y = y.replace('{{k8s_version}}', k8s_version)
     y = y.replace('{{name}}', name)
     y = y.replace('{{ssh_user}}', ssh_user)
     y = y.replace('{{tab}}', tab)
+
+    if branch == 'master':
+        y = y.replace('{{branch}}', "master")
+    else:
+        y = y.replace('{{branch}}', "release-" + branch)
 
     spec = {
         'branch': branch,
