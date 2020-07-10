@@ -153,7 +153,7 @@ periodics:
         GO111MODULE=on go build .
         find ${ARTIFACTS} -type f -iname 'junit*.xml' -exec rm {} \;
         ./gopherage filter --exclude-path="zz_generated,generated\.pb\.go"  "${ARTIFACTS}/combined-coverage.out" > "${ARTIFACTS}/filtered.cov" || result=$?
-        ./gopherage junit --threshold 0 "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/junit_coverage.xml" || result=$?
+        ./gopherage junit --threshold 0.05 "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/junit_coverage.xml" || result=$?
         exit $result
       securityContext:
         privileged: true
