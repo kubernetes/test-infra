@@ -45,7 +45,6 @@ template = """
       - --deployment=kops
       - --provider=aws
       - --cluster={{name}}.test-cncf-aws.k8s.io
-      - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --kops-ssh-user={{ssh_user}}
       - --kops-nodes=4
       - --extract={{extract}}
