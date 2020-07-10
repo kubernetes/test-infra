@@ -15,7 +15,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=e2e-kops-aws-cni-amazon-vpc.test-cncf-aws.k8s.io
+      - --cluster=e2e-kops-aws-cni-amazonvpc.test-cncf-aws.k8s.io
       - --deployment=kops
       - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
@@ -24,7 +24,7 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/stable
       - --ginkgo-parallel
-      - --kops-args=--networking=amazon-vpc-routed-eni --node-size=t3.large
+      - --kops-args=--networking=amazonvpc --node-size=t3.large
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
@@ -210,7 +210,7 @@ periodics:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-network-plugins
     testgrid-tab-name: kops-aws-cni-kopeio
 
-- interval: 2h
+- interval: 8h
   name: e2e-kops-aws-cni-kuberouter
   labels:
     preset-service-account: "true"
@@ -237,7 +237,7 @@ periodics:
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|load-balancer|hairpin|affinity\stimeout
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-master
   annotations:
@@ -278,38 +278,3 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-network-plugins
     testgrid-tab-name: kops-aws-cni-weave
-
-- interval: 8h
-  name: e2e-kops-aws-cni-lyft
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
-  decorate: true
-  decoration_config:
-    timeout: 90m
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --cluster=e2e-kops-aws-cni-lyft.test-cncf-aws.k8s.io
-      - --deployment=kops
-      - --kops-ssh-user=ubuntu
-      - --env=KUBE_SSH_USER=ubuntu
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
-      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --env=KOPS_RUN_TOO_NEW_VERSION=1
-      - --extract=release/stable
-      - --ginkgo-parallel
-      - --kops-args=--networking=lyftvpc
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
-      - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-master
-  annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-network-plugins
-    testgrid-tab-name: kops-aws-cni-lyft
