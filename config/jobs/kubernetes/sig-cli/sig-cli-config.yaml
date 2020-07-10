@@ -103,7 +103,7 @@ periodics:
       - --ginkgo-parallel
       - --provider=gce
       - --skew
-      - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\]|\[Deprecated\] --minStartupPods=8
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-master
 
@@ -130,7 +130,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --provider=gce
       - --skew
-      - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --ginkgo.skip=\[Deprecated\] --minStartupPods=8
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-master
 
@@ -160,7 +160,7 @@ periodics:
       - --ginkgo-parallel=25
       - --provider=gce
       - --skew
-      - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\]|\[Deprecated\] --minStartupPods=8
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-master
 
@@ -194,7 +194,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --provider=gce
       - --skew
-      - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --ginkgo.skip=\[Deprecated\] --minStartupPods=8
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-master
 
@@ -222,7 +222,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=25
       - --provider=gce
-      - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
+      - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\]|\[Deprecated\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-master
 
@@ -249,7 +249,7 @@ periodics:
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --provider=gce
-      - --test_args=--ginkgo.focus=Kubectl.*\[Serial\]  --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
+      - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --ginkgo.skip=\[Deprecated\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-master
 
@@ -277,7 +277,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel
       - --provider=gce
-      - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
+      - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\]|\[Deprecated\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-master
 
@@ -303,7 +303,7 @@ periodics:
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --provider=gce
-      - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
+      - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --ginkgo.skip=\[Deprecated\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-master
 
@@ -331,7 +331,7 @@ periodics:
       - --ginkgo-parallel
       - --provider=gce
       - --skew
-      - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\]|\[Deprecated\] --minStartupPods=8
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-master
 
@@ -358,7 +358,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --provider=gce
       - --skew
-      - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --ginkgo.skip=\[Deprecated\] --minStartupPods=8
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-master
 
@@ -385,7 +385,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel
       - --provider=gce
-      - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
+      - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\]|\[Deprecated\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-master
 
@@ -411,7 +411,7 @@ periodics:
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --provider=gce
-      - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
+      - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --ginkgo.skip=\[Deprecated\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-master
 
