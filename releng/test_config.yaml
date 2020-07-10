@@ -523,20 +523,20 @@ k8sVersions:
     version: master
   beta:
     args:
+    - --extract=ci/latest-1.19
+    version: '1.19'
+  stable1:
+    args:
     - --extract=ci/latest-1.18
     version: '1.18'
-  stable1:
+  stable2:
     args:
     - --extract=ci/latest-1.17
     version: '1.17'
-  stable2:
+  stable3:
     args:
     - --extract=ci/latest-1.16
     version: '1.16'
-  stable3:
-    args:
-    - --extract=ci/latest-1.15
-    version: '1.15'
 
 testSuites:
   alphafeatures:
@@ -564,8 +564,7 @@ testSuites:
     args:
     - --gcp-project-type=ingress-project
     - --timeout=150m
-    - --test_args=--ginkgo.focus=\[Feature:Ingress\]
-      --minStartupPods=8
+    - --test_args=--ginkgo.focus=\[Feature:Ingress\] --minStartupPods=8
   reboot:
     args:
     - --gcp-project-type=k8s-infra-gce-project
@@ -660,20 +659,20 @@ nodeK8sVersions:
     prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-master
   beta:
     args:
+    - --repo=k8s.io/kubernetes=release-1.19
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-1.19
+  stable1:
+    args:
     - --repo=k8s.io/kubernetes=release-1.18
     prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-1.18
-  stable1:
+  stable2:
     args:
     - --repo=k8s.io/kubernetes=release-1.17
     prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-1.17
-  stable2:
+  stable3:
     args:
     - --repo=k8s.io/kubernetes=release-1.16
     prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-1.16
-  stable3:
-    args:
-    - --repo=k8s.io/kubernetes=release-1.15
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-1.15
 
 nodeTestSuites:
   default:

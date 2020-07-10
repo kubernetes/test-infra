@@ -49,8 +49,12 @@ def check_version(branch_path):
 
 
 def delete_dead_branch(branch_path, current_version):
+    print("Deleting dead branch...")
     filename = '%d.%d.yaml' % (current_version[0], current_version[1] - 3)
-    os.unlink(os.path.join(branch_path, filename))
+    if os.path.exists(filename):
+        os.unlink(os.path.join(branch_path, filename))
+    else:
+        print("the branch config (%s) does not exist" % filename)
 
 
 def rotate_files(rotator_bin, branch_path, current_version):
@@ -117,7 +121,6 @@ def main():
     d = os.environ.get('BUILD_WORKSPACE_DIRECTORY')
     version = check_version(os.path.join(d, BRANCH_JOB_DIR))
     print("Current version: %d.%d" % (version[0], version[1]))
-    print("Deleting dead branch...")
     delete_dead_branch(os.path.join(d, BRANCH_JOB_DIR), version)
     print("Rotating files...")
     rotate_files(rotator_bin, os.path.join(d, BRANCH_JOB_DIR), version)

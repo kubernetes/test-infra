@@ -137,7 +137,7 @@ periodics:
   annotations:
     fork-per-release: "true"
     testgrid-dashboards: sig-node-kubelet, sig-release-master-informing
-    testgrid-tab-name: node-kubelet-features
+    testgrid-tab-name: node-kubelet-features-master
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-master

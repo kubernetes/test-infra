@@ -30,19 +30,19 @@ periodics:
       name: ""
       resources: {}
 - annotations:
-    fork-per-release-cron: 0 8-23/24 * * *
+    fork-per-release-cron: ""
     fork-per-release-generic-suffix: "true"
     testgrid-alert-email: gke-kubernetes-accelerators-bugs@google.com
     testgrid-alert-stale-results-hours: "24"
     testgrid-dashboards: sig-release-1.16-blocking, google-gce
     testgrid-num-failures-to-alert: "12"
     testgrid-tab-name: gce-device-plugin-gpu-1.16
-  cron: 0 8-23/12 * * *
+  cron: 0 8-23/24 * * *
   labels:
     preset-ci-gce-device-plugin-gpu: "true"
     preset-k8s-ssh: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable2
+  name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable3
   spec:
     containers:
     - args:
@@ -62,12 +62,12 @@ periodics:
       name: ""
       resources: {}
 - annotations:
-    fork-per-release-periodic-interval: 24h
+    fork-per-release-periodic-interval: ""
     testgrid-alert-email: kubernetes-sig-node+testgrid@googlegroups.com
     testgrid-dashboards: sig-release-1.16-blocking, sig-node-kubelet
     testgrid-tab-name: node-kubelet-1.16
   cluster: k8s-infra-prow-build
-  interval: 6h
+  interval: 24h
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
@@ -136,7 +136,7 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-build-stable2
+  name: ci-kubernetes-build-stable3
   spec:
     containers:
     - args:
@@ -147,7 +147,7 @@ periodics:
       - --scenario=kubernetes_build
       - --
       - --allow-dup
-      - --extra-publish-file=latest-1.16-cross,k8s-stable2
+      - --extra-publish-file=latest-1.16-cross,k8s-stable3
       - --registry=gcr.io/kubernetes-ci-images
       image: gcr.io/k8s-testimages/bootstrap:v20200430-be2a8a9
       name: ""
@@ -158,7 +158,7 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    fork-per-release-cron: 0 8-20/12 * * *
+    fork-per-release-cron: ""
     fork-per-release-generic-suffix: "true"
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com
     testgrid-dashboards: sig-release-1.16-blocking, sig-scalability-gce, google-gce,
@@ -166,12 +166,12 @@ periodics:
     testgrid-num-failures-to-alert: "2"
     testgrid-tab-name: gce-cos-1.16-scalability-100
   cluster: k8s-infra-prow-build
-  cron: 0 4-16/12 * * *
+  cron: 0 8-20/12 * * *
   labels:
     preset-e2e-scalability-common: "true"
     preset-k8s-ssh: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-e2e-gci-gce-scalability-stable2
+  name: ci-kubernetes-e2e-gci-gce-scalability-stable3
   spec:
     containers:
     - args:
@@ -199,9 +199,6 @@ periodics:
       - --test-cmd-args=--testconfig=testing/density/config.yaml
       - --test-cmd-args=--testconfig=testing/load/config.yaml
       - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
-      # TODO(oxddr): re-enable this once we understand impact on https://github.com/kubernetes/kubernetes/issues/89051
-      # - --test-cmd-args=--testoverrides=./testing/chaosmonkey/override.yaml
-      # - --test-cmd-args=--testoverrides=./testing/chaosmonkey/ignore_node_killer_container_restarts_100.yaml
       - --test-cmd-args=--testoverrides=./testing/load/gce/throughput_override.yaml
       - --test-cmd-args=--testoverrides=./testing/overrides/enable_oom_tracking.yaml
       - --test-cmd-name=ClusterLoaderV2
@@ -215,18 +212,18 @@ periodics:
   - 'perfDashJobType: performance'
   - 'perfDashBuildsCount: 500'
 - annotations:
-    fork-per-release-cron: 0 21 * * *
+    fork-per-release-cron: ""
     fork-per-release-generic-suffix: "true"
     testgrid-dashboards: sig-scalability-kubemark, sig-release-job-config-errors
     testgrid-num-failures-to-alert: "1"
     testgrid-tab-name: kubemark-1.16-500
-  cron: 0 15 * * *
+  cron: 0 21 * * *
   labels:
     preset-dind-enabled: "true"
     preset-e2e-kubemark-common: "true"
     preset-k8s-ssh: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-kubemark-500-gce-stable2
+  name: ci-kubernetes-kubemark-500-gce-stable3
   spec:
     containers:
     - args:
@@ -344,7 +341,7 @@ periodics:
       resources: {}
 - annotations:
     fork-per-release-generic-suffix: "true"
-    fork-per-release-periodic-interval: 24h
+    fork-per-release-periodic-interval: ""
     testgrid-alert-email: kubernetes-release-team@googlegroups.com
     testgrid-dashboards: sig-release-1.16-blocking, google-unit
     testgrid-tab-name: integration-1.16
@@ -355,11 +352,11 @@ periodics:
     org: kubernetes
     path_alias: k8s.io/kubernetes
     repo: kubernetes
-  interval: 6h
+  interval: 24h
   labels:
     preset-dind-enabled: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-integration-stable2
+  name: ci-kubernetes-integration-stable3
   spec:
     containers:
     - args:
@@ -375,7 +372,7 @@ periodics:
         privileged: true
 - annotations:
     fork-per-release-generic-suffix: "true"
-    fork-per-release-periodic-interval: 24h
+    fork-per-release-periodic-interval: ""
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com,
       release-managers@kubernetes.io
     testgrid-dashboards: sig-release-1.16-blocking, google-unit
@@ -387,11 +384,11 @@ periodics:
     org: kubernetes
     path_alias: k8s.io/kubernetes
     repo: kubernetes
-  interval: 6h
+  interval: 24h
   labels:
     preset-dind-enabled: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-verify-stable2
+  name: ci-kubernetes-verify-stable3
   spec:
     containers:
     - args:
@@ -430,7 +427,7 @@ periodics:
     preset-e2e-gce-windows: "true"
     preset-k8s-ssh: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-e2e-windows-gce-stable2
+  name: ci-kubernetes-e2e-windows-gce-stable3
   spec:
     containers:
     - args:
@@ -459,15 +456,15 @@ periodics:
       name: ""
       resources: {}
 - annotations:
-    fork-per-release-periodic-interval: 24h
     description: Uses kubetest to run e2e tests (+Conformance, -Serial) against a
       latest kubernetes release-1.16 cluster created with sigs.k8s.io/kind
+    fork-per-release-periodic-interval: ""
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,kubernetes-release-team@googlegroups.com
     testgrid-dashboards: sig-release-1.16-blocking, sig-testing-kind
     testgrid-num-columns-recent: "6"
     testgrid-tab-name: kind-1.16-parallel
   cluster: k8s-infra-prow-build
-  interval: 6h
+  interval: 24h
   labels:
     preset-bazel-remote-cache-enabled: "true"
     preset-bazel-scratch-dir: "true"
@@ -499,15 +496,15 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    fork-per-release-periodic-interval: 24h
     description: Uses kubetest to run e2e tests (+Conformance, -Serial) against a
       latest kubernetes release-1.16 IPv6 cluster created with sigs.k8s.io/kind
+    fork-per-release-periodic-interval: ""
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,kubernetes-release-team@googlegroups.com
     testgrid-dashboards: sig-release-1.16-blocking, sig-testing-kind
     testgrid-num-columns-recent: "6"
     testgrid-tab-name: kind-ipv6-1.16-parallel
   cluster: k8s-infra-prow-build
-  interval: 6h
+  interval: 24h
   labels:
     preset-bazel-remote-cache-enabled: "true"
     preset-bazel-scratch-dir: "true"
