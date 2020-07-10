@@ -561,12 +561,12 @@ func TestInteractor_MergeWithStrategy(t *testing.T) {
 			strategy:   "merge",
 			opts:       []MergeOpt{{CommitMessage: "my happy merge message"}},
 			responses: map[string]execResponse{
-				"merge --no-ff --no-stat -m \"my happy merge message\" shasum": {
+				"merge --no-ff --no-stat -m my happy merge message shasum": {
 					out: []byte(`ok`),
 				},
 			},
 			expectedCalls: [][]string{
-				{"merge", "--no-ff", "--no-stat", "-m", "\"my happy merge message\"", "shasum"},
+				{"merge", "--no-ff", "--no-stat", "-m", "my happy merge message", "shasum"},
 			},
 			expectedMerge: true,
 			expectedErr:   false,
@@ -581,12 +581,12 @@ func TestInteractor_MergeWithStrategy(t *testing.T) {
 				{CommitMessage: "message"},
 			},
 			responses: map[string]execResponse{
-				"merge --no-ff --no-stat -m my -m \"happy merge\" -m message shasum": {
+				"merge --no-ff --no-stat -m my -m happy merge -m message shasum": {
 					out: []byte(`ok`),
 				},
 			},
 			expectedCalls: [][]string{
-				{"merge", "--no-ff", "--no-stat", "-m", "my", "-m", "\"happy merge\"", "-m", "message", "shasum"},
+				{"merge", "--no-ff", "--no-stat", "-m", "my", "-m", "happy merge", "-m", "message", "shasum"},
 			},
 			expectedMerge: true,
 			expectedErr:   false,
