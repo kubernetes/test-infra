@@ -63,15 +63,13 @@ def do_jq(jq_filter, data_filename, out_filename, jq_bin='jq'):
 
 
 class BigQuerier:
-    def __init__(self, project, bucket_path, backfill_days):
+    def __init__(self, project, bucket_path):
         if not project:
             raise ValueError('project', project)
         self.project = project
         if not bucket_path:
             print('Not uploading results, no bucket specified.', file=sys.stderr)
         self.prefix = bucket_path
-
-        self.backfill_days = backfill_days
 
     def do_query(self, query, out_filename):
         """Executes a bigquery query, outputting the results to a file."""
@@ -142,9 +140,9 @@ def ints_to_floats(point):
     return point
 
 
-def main(configs, project, bucket_path, backfill_days):
+def main(configs, project, bucket_path):
     """Loads metric config files and runs each metric."""
-    queryer = BigQuerier(project, bucket_path, backfill_days)
+    queryer = BigQuerier(project, bucket_path)
 
     # the 'bq show' command is called as a hack to dodge the config prompts that bq presents
     # the first time it is run. A newline is passed to stdin to skip the prompt for default project
@@ -187,5 +185,6 @@ if __name__ == '__main__':
         '--bucket',
         help='Upload results to the specified gcs bucket.')
 
+
     ARGS = PARSER.parse_args()
-    main(ARGS.config, ARGS.project, ARGS.bucket, ARGS.backfill_days)
+    main(ARGS.config, ARGS.project, ARGS.bucket)
