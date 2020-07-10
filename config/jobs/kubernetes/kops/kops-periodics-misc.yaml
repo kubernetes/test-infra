@@ -72,7 +72,7 @@ periodics:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-misc
     testgrid-tab-name: kops-aws-ha-euwest1
 
-- interval: 3h
+- interval: 8h
   name: e2e-kops-aws-misc-arm64-latest
   labels:
     preset-service-account: "true"
@@ -96,7 +96,7 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/latest
       - --ginkgo-parallel
-      - --kops-args=--node-size=a1.large --node-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20200609
+      - --kops-args=--node-size=a1.large --node-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20200701
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --kops-zones=eu-west-1a,eu-west-1b,eu-west-1c
@@ -108,7 +108,7 @@ periodics:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-misc
     testgrid-tab-name: kops-aws-arm64-latest
 
-- interval: 3h
+- interval: 8h
   name: e2e-kops-aws-misc-arm64-ci
   labels:
     preset-service-account: "true"
@@ -131,7 +131,7 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=ci/k8s-master
       - --ginkgo-parallel
-      - --kops-args=--node-size=a1.large --node-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20200609
+      - --kops-args=--node-size=a1.large --node-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20200701
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --kops-zones=eu-west-1a,eu-west-1b,eu-west-1c
@@ -143,7 +143,7 @@ periodics:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-misc
     testgrid-tab-name: kops-aws-arm64-ci
 
-- interval: 3h
+- interval: 8h
   name: e2e-kops-aws-misc-arm64-conformance
   labels:
     preset-service-account: "true"
@@ -166,7 +166,7 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=ci/k8s-master
       - --ginkgo-parallel
-      - --kops-args=--node-size=a1.large --node-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20200609
+      - --kops-args=--node-size=a1.xlarge --node-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20200701
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --kops-zones=eu-west-1a,eu-west-1b,eu-west-1c
