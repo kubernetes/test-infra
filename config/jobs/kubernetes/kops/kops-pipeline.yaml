@@ -50,7 +50,7 @@ periodics:
     testgrid-tab-name: kops-pipeline-updown-master
 
 # {"branch": "1.16", "k8s_version": "1.16"}
-# Verify the latest-ci version from the 1.16 branch of kops
+# Verify the latest-ci version from the release-1.16 branch of kops
 # Runs a small subset of the e2e tests.
 # Publishes the version to latest-ci-updown-green on success.
 - interval: 60m
@@ -86,8 +86,8 @@ periodics:
       - --kops-state=s3://k8s-kops-prow/
       - --kops-ssh-key=$(AWS_SSH_PRIVATE_KEY_FILE)
       - --kops-ssh-public-key=$(AWS_SSH_PUBLIC_KEY_FILE)
-      - --kops-publish=gs://k8s-staging-kops/kops/releases/markers/1.16/latest-ci-updown-green.txt
-      - --kops-version=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/1.16/latest-ci.txt
+      - --kops-publish=gs://k8s-staging-kops/kops/releases/markers/release-1.16/latest-ci-updown-green.txt
+      - --kops-version=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.16/latest-ci.txt
       #- --kops-kubernetes-version should be inferred by kubetest from --extract
       #- --kops-zone should be randomized by kubetest
       # Specific test args
@@ -98,7 +98,7 @@ periodics:
     testgrid-tab-name: kops-pipeline-updown-1.16
 
 # {"branch": "1.17", "k8s_version": "1.17"}
-# Verify the latest-ci version from the 1.17 branch of kops
+# Verify the latest-ci version from the release-1.17 branch of kops
 # Runs a small subset of the e2e tests.
 # Publishes the version to latest-ci-updown-green on success.
 - interval: 60m
@@ -134,8 +134,8 @@ periodics:
       - --kops-state=s3://k8s-kops-prow/
       - --kops-ssh-key=$(AWS_SSH_PRIVATE_KEY_FILE)
       - --kops-ssh-public-key=$(AWS_SSH_PUBLIC_KEY_FILE)
-      - --kops-publish=gs://k8s-staging-kops/kops/releases/markers/1.17/latest-ci-updown-green.txt
-      - --kops-version=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/1.17/latest-ci.txt
+      - --kops-publish=gs://k8s-staging-kops/kops/releases/markers/release-1.17/latest-ci-updown-green.txt
+      - --kops-version=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.17/latest-ci.txt
       #- --kops-kubernetes-version should be inferred by kubetest from --extract
       #- --kops-zone should be randomized by kubetest
       # Specific test args
@@ -146,7 +146,7 @@ periodics:
     testgrid-tab-name: kops-pipeline-updown-1.17
 
 # {"branch": "1.18", "k8s_version": "1.18"}
-# Verify the latest-ci version from the 1.18 branch of kops
+# Verify the latest-ci version from the release-1.18 branch of kops
 # Runs a small subset of the e2e tests.
 # Publishes the version to latest-ci-updown-green on success.
 - interval: 60m
@@ -182,8 +182,8 @@ periodics:
       - --kops-state=s3://k8s-kops-prow/
       - --kops-ssh-key=$(AWS_SSH_PRIVATE_KEY_FILE)
       - --kops-ssh-public-key=$(AWS_SSH_PUBLIC_KEY_FILE)
-      - --kops-publish=gs://k8s-staging-kops/kops/releases/markers/1.18/latest-ci-updown-green.txt
-      - --kops-version=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/1.18/latest-ci.txt
+      - --kops-publish=gs://k8s-staging-kops/kops/releases/markers/release-1.18/latest-ci-updown-green.txt
+      - --kops-version=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.18/latest-ci.txt
       #- --kops-kubernetes-version should be inferred by kubetest from --extract
       #- --kops-zone should be randomized by kubetest
       # Specific test args
