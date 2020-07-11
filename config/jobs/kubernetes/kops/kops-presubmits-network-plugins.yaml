@@ -32,10 +32,10 @@ presubmits:
         - --cluster=
         - --kops-ssh-user=ubuntu
         - --env=KUBE_SSH_USER=ubuntu
-        - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
+        - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
         - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
         - --env=KOPS_RUN_TOO_NEW_VERSION=1
-        - --extract=release/latest
+        - --extract=release/stable
         - --ginkgo-parallel
         - --kops-build
         - --kops-args=--networking=amazonvpc --node-size=t3.large
@@ -84,10 +84,10 @@ presubmits:
         - --cluster=
         - --kops-ssh-user=ubuntu
         - --env=KUBE_SSH_USER=ubuntu
-        - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
+        - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
         - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
         - --env=KOPS_RUN_TOO_NEW_VERSION=1
-        - --extract=release/latest
+        - --extract=release/stable
         - --ginkgo-parallel
         - --kops-build
         - --kops-args=--networking=calico
@@ -136,10 +136,10 @@ presubmits:
         - --cluster=
         - --kops-ssh-user=ubuntu
         - --env=KUBE_SSH_USER=ubuntu
-        - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
+        - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
         - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
         - --env=KOPS_RUN_TOO_NEW_VERSION=1
-        - --extract=release/latest
+        - --extract=release/stable
         - --ginkgo-parallel
         - --kops-build
         - --kops-args=--networking=canal
@@ -188,10 +188,10 @@ presubmits:
         - --cluster=
         - --kops-ssh-user=ubuntu
         - --env=KUBE_SSH_USER=ubuntu
-        - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
+        - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
         - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
         - --env=KOPS_RUN_TOO_NEW_VERSION=1
-        - --extract=release/latest
+        - --extract=release/stable
         - --ginkgo-parallel
         - --kops-build
         - --kops-args=--networking=cilium
@@ -240,10 +240,10 @@ presubmits:
         - --cluster=
         - --kops-ssh-user=ubuntu
         - --env=KUBE_SSH_USER=ubuntu
-        - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
+        - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
         - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
         - --env=KOPS_RUN_TOO_NEW_VERSION=1
-        - --extract=release/latest
+        - --extract=release/stable
         - --ginkgo-parallel
         - --kops-build
         - --kops-args=--networking=flannel
@@ -292,10 +292,10 @@ presubmits:
         - --cluster=
         - --kops-ssh-user=ubuntu
         - --env=KUBE_SSH_USER=ubuntu
-        - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
+        - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
         - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
         - --env=KOPS_RUN_TOO_NEW_VERSION=1
-        - --extract=release/latest
+        - --extract=release/stable
         - --ginkgo-parallel
         - --kops-build
         - --kops-args=--networking=kube-router
@@ -344,10 +344,10 @@ presubmits:
         - --cluster=
         - --kops-ssh-user=ubuntu
         - --env=KUBE_SSH_USER=ubuntu
-        - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
+        - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
         - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
         - --env=KOPS_RUN_TOO_NEW_VERSION=1
-        - --extract=release/latest
+        - --extract=release/stable
         - --ginkgo-parallel
         - --kops-build
         - --kops-args=--networking=weave
