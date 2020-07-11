@@ -27,6 +27,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"k8s.io/test-infra/prow/entrypoint"
 	"k8s.io/test-infra/prow/pod-utils/wrapper"
@@ -151,8 +152,9 @@ func TestWait(t *testing.T) {
 func TestWaitParallelContainers(t *testing.T) {
 	aborted := strconv.Itoa(entrypoint.AbortedErrorCode)
 	const (
-		pass = "0"
-		fail = "1"
+		pass                 = "0"
+		fail                 = "1"
+		missingMarkerTimeout = time.Second
 	)
 	cases := []struct {
 		name         string
@@ -195,6 +197,12 @@ func TestWaitParallelContainers(t *testing.T) {
 			abort:    true,
 			failures: 2,
 		},
+		{
+			name:     "fail when marker does not exist",
+			markers:  []string{pass},
+			missing:  true,
+			failures: 1,
+		},
 	}
 
 	for _, tc := range cases {
@@ -218,6 +226,10 @@ func TestWaitParallelContainers(t *testing.T) {
 				entries = append(entries, opt)
 			}
 
+			if tc.missing {
+				entries = append(entries, wrapper.Options{MarkerFile: "missing-marker.txt"})
+			}
+
 			ctx, cancel := context.WithCancel(context.Background())
 
 			type WaitResult struct {
@@ -237,6 +249,7 @@ func TestWaitParallelContainers(t *testing.T) {
 			for i, m := range tc.markers {
 
 				options := entries[i]
+
 				entrypointOptions := entrypoint.Options{
 					Options: &options,
 				}
@@ -246,6 +259,17 @@ func TestWaitParallelContainers(t *testing.T) {
 				}
 				go func() {
 					errCh <- entrypointOptions.Mark(marker)
+				}()
+
+			}
+
+			if tc.missing {
+				go func() {
+					select {
+					case <-time.After(missingMarkerTimeout):
+						cancel()
+						errCh <- nil
+					}
 				}()
 			}
 
