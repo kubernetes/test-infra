@@ -462,7 +462,7 @@ postsubmits:
         - images/kubekins-e2e/
   - name: post-test-infra-push-krte
     cluster: test-infra-trusted
-    run_if_changed: '^images/krte/'
+    run_if_changed: '^images/(krte/|kubekins-e2e/variants.yaml)'
     annotations:
       testgrid-dashboards: "sig-testing-images"
       testgrid-tab-name: "krte"
