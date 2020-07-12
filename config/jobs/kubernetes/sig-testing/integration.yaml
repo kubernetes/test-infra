@@ -56,6 +56,9 @@ periodics:
       - runner.sh
       args:
       - ./hack/jenkins/test-dockerized.sh
+      env:
+      - name: SHORT
+        value: --short=false
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
