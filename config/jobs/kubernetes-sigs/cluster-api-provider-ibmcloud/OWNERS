@@ -1,6 +1,6 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
-reviwers:
+reviewers:
 - gyliu513
 - jichenjc
 # - morvencao # TODO: kubernetes-sigs member, must join kubernetes org

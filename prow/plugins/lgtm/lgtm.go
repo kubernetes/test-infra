@@ -279,7 +279,7 @@ func handle(wantLGTM bool, config *plugins.Configuration, ownersClient repoowner
 		return gc.CreateComment(org, repoName, number, plugins.FormatResponseRaw(body, htmlURL, author, resp))
 	}
 
-	// either ensure that the commentor is a collaborator or an approver/reviwer
+	// either ensure that the commentor is a collaborator or an approver/reviewer
 	if !isAuthor && !isAssignee && !skipCollaborators {
 		// in this case we need to ensure the commentor is assignable to the PR
 		// by assigning them
@@ -289,7 +289,7 @@ func handle(wantLGTM bool, config *plugins.Configuration, ownersClient repoowner
 		}
 	} else if !isAuthor && skipCollaborators {
 		// in this case we depend on OWNERS files instead to check if the author
-		// is an approver or reviwer of the changed files
+		// is an approver or reviewer of the changed files
 		log.Debugf("Skipping collaborator checks and loading OWNERS for %s/%s#%d", org, repoName, number)
 		ro, err := loadRepoOwners(gc, ownersClient, org, repoName, number)
 		if err != nil {

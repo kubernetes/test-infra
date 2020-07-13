@@ -1,6 +1,6 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
-reviwers:
+reviewers:
   - sig-cluster-lifecycle-leads
   - provider-vmware
   - cluster-api-admins
