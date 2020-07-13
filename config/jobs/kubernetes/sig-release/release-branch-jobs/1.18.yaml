@@ -595,7 +595,7 @@ periodics:
         value: "true"
       - name: BUILD_TYPE
         value: bazel
-      image: gcr.io/k8s-testimages/krte:v20200619-19b0ee3-1.18
+      image: gcr.io/k8s-testimages/krte:v20200712-5349a04-1.18
       name: ""
       resources:
         requests:
@@ -646,7 +646,7 @@ periodics:
         value: "true"
       - name: BUILD_TYPE
         value: bazel
-      image: gcr.io/k8s-testimages/krte:v20200619-19b0ee3-1.18
+      image: gcr.io/k8s-testimages/krte:v20200712-5349a04-1.18
       name: ""
       resources:
         requests:
@@ -1353,7 +1353,7 @@ presubmits:
           value: "true"
         - name: BUILD_TYPE
           value: bazel
-        image: gcr.io/k8s-testimages/krte:v20200619-19b0ee3-1.18
+        image: gcr.io/k8s-testimages/krte:v20200712-5349a04-1.18
         name: ""
         resources:
           requests:
