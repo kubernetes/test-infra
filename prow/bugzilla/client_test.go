@@ -1042,25 +1042,25 @@ func TestGetAllClones(t *testing.T) {
 		{
 			"Clones including multiple children",
 			bug1,
-			sets.NewInt(bug2ID, bug3ID, bug4ID),
+			sets.NewInt(bug1ID, bug2ID, bug3ID, bug4ID),
 			bug1,
 		},
 		{
 			"Clones should include parent as well as child",
 			bug2,
-			sets.NewInt(bug1ID, bug3ID, bug4ID),
+			sets.NewInt(bug1ID, bug2ID, bug3ID, bug4ID),
 			bug1,
 		},
 		{
 			"Clones includes parent and grandparent",
 			bug3,
-			sets.NewInt(bug1ID, bug2ID, bug4ID),
+			sets.NewInt(bug1ID, bug2ID, bug3ID, bug4ID),
 			bug1,
 		},
 		{
 			"Clones when not directly related",
 			bug4,
-			sets.NewInt(bug1ID, bug2ID, bug3ID),
+			sets.NewInt(bug1ID, bug2ID, bug3ID, bug4ID),
 			bug1,
 		},
 	}

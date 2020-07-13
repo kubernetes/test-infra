@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"math"
 	"net/http"
 	"strconv"
 	"strings"
@@ -218,11 +219,17 @@ func getRecursiveClones(c Client, root *Bug, bugCache *BugDetailsCache) ([]*Bug,
 	clones := []*Bug{}
 	childrenQ := []*Bug{}
 	childrenQ = append(childrenQ, root)
+	// data structure to keep track of already inserted clones to avoid inserting duplicates
+	// not using a map directly here since I want to maintain the order of insertion
+	insertedClones := sets.NewInt()
 	// FYI Cannot think of any situation for circular clones
 	// But might need to revisit in case there are infinite loops at any point
 	for len(childrenQ) > 0 {
 		bug, childrenQ = childrenQ[0], childrenQ[1:]
-		clones = append(clones, bug)
+		if !insertedClones.Has(bug.ID) {
+			clones = append(clones, bug)
+			insertedClones.Insert(bug.ID)
+		}
 		children, err := getClones(c, bug, bugCache)
 		if err != nil {
 			errs = append(errs, fmt.Errorf("Error finding clones Bug#%d: %v", bug.ID, err))
@@ -261,6 +268,18 @@ func getImmediateParents(c Client, bug *Bug, bugCache *BugDetailsCache) ([]*Bug,
 	return parents, utilerrors.NewAggregate(errs)
 }
 
+func oldestBug(list []*Bug) *Bug {
+	min := math.MaxInt32
+	var oldest *Bug
+	for _, bug := range list {
+		if bug.ID < min {
+			oldest = bug
+			min = bug.ID
+		}
+	}
+	return oldest
+}
+
 func getRootForClone(c Client, bug *Bug, bugCache *BugDetailsCache) (*Bug, error) {
 	curr := bug
 	var errs []error
@@ -275,8 +294,7 @@ func getRootForClone(c Client, bug *Bug, bugCache *BugDetailsCache) (*Bug, error
 		case l == 1:
 			curr = parent[0]
 		case l > 1:
-			curr = parent[0]
-			errs = append(errs, fmt.Errorf("More than one parent found for bug #%d", curr.ID))
+			curr = oldestBug(parent)
 		}
 	}
 	return curr, utilerrors.NewAggregate(errs)
