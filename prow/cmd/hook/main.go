@@ -24,15 +24,16 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
-	"k8s.io/test-infra/prow/bugzilla"
-	"k8s.io/test-infra/prow/interrupts"
 
 	"k8s.io/test-infra/pkg/flagutil"
+	"k8s.io/test-infra/prow/bugzilla"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/git/v2"
+	"k8s.io/test-infra/prow/githubeventserver"
 	"k8s.io/test-infra/prow/hook"
+	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
 	"k8s.io/test-infra/prow/pjutil"
@@ -50,11 +51,12 @@ type options struct {
 	jobConfigPath string
 	pluginConfig  string
 
-	dryRun      bool
-	gracePeriod time.Duration
-	kubernetes  prowflagutil.KubernetesOptions
-	github      prowflagutil.GitHubOptions
-	bugzilla    prowflagutil.BugzillaOptions
+	dryRun                 bool
+	gracePeriod            time.Duration
+	kubernetes             prowflagutil.KubernetesOptions
+	github                 prowflagutil.GitHubOptions
+	bugzilla               prowflagutil.BugzillaOptions
+	instrumentationOptions prowflagutil.InstrumentationOptions
 
 	webhookSecretFile string
 	slackTokenFile    string
@@ -80,14 +82,13 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
 	fs.DurationVar(&o.gracePeriod, "grace-period", 180*time.Second, "On shutdown, try to handle remaining events for the specified duration. ")
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.bugzilla} {
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.bugzilla, &o.instrumentationOptions} {
 		group.AddFlags(fs)
 	}
 
 	fs.StringVar(&o.webhookSecretFile, "hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
 	fs.StringVar(&o.slackTokenFile, "slack-token-file", "", "Path to the file containing the Slack token to use.")
 	fs.Parse(args)
-	o.configPath = config.ConfigPath(o.configPath)
 	return o
 }
 
@@ -194,13 +195,13 @@ func main() {
 		BugzillaClient:            bugzillaClient,
 	}
 
-	promMetrics := hook.NewMetrics()
+	promMetrics := githubeventserver.NewMetrics()
 
 	defer interrupts.WaitForGracefulShutdown()
 
 	// Expose prometheus metrics
-	metrics.ExposeMetrics("hook", configAgent.Config().PushGateway)
-	pjutil.ServePProf()
+	metrics.ExposeMetrics("hook", configAgent.Config().PushGateway, o.instrumentationOptions.MetricsPort)
+	pjutil.ServePProf(o.instrumentationOptions.PProfPort)
 
 	server := &hook.Server{
 		ClientAgent:    clientAgent,

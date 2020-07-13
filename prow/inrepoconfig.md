@@ -68,7 +68,7 @@ presubmits:
       - -c
       - config/jobs/.yamllint.conf
       - config/jobs
-      - prow/cluster
+      - config/prow/cluster
 
 postsubmits:
 - name: push-test-infra-yamllint
@@ -82,7 +82,7 @@ postsubmits:
       - -c
       - config/jobs/.yamllint.conf
       - config/jobs
-      - prow/cluster
+      - config/prow/cluster
 ```
 
 For a more detailed documentation of possible configuration parameters for jobs, please check the [job documentation](/prow/jobs.md)

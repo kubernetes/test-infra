@@ -66,7 +66,7 @@ func TestEnsurePRWithLabel(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			prNumberPtr, err := EnsurePRWithLabels(org, repo, "title", "body", "source", "branch", "matchTitle", tc.client, labels)
+			prNumberPtr, err := EnsurePRWithLabels(org, repo, "title", "body", "source", "branch", "matchTitle", PreventMods, tc.client, labels)
 			if err != nil {
 				t.Fatalf("error: %v", err)
 			}

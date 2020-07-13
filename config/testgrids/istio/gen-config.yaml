@@ -1,5 +1,30 @@
 dashboard_groups:
 - dashboard_names:
+  - istio_release-1.6_istio_postsubmit
+  - istio_release-1.6_client-go_postsubmit
+  - istio_release-1.6_cni_postsubmit
+  - istio_release-1.6_common-files_postsubmit
+  - istio_release-1.6_gogo-genproto_postsubmit
+  - istio_release-1.6_istio.io_postsubmit
+  - istio_release-1.6_pkg_postsubmit
+  - istio_release-1.6_proxy_postsubmit
+  - istio_release-1.6_api_postsubmit
+  - istio_release-1.6_tools_postsubmit
+  - istio_release-1.6_release-builder_postsubmit
+  - istio_release-1.6_istio
+  - istio_release-1.6_api
+  - istio_release-1.6_client-go
+  - istio_release-1.6_cni
+  - istio_release-1.6_common-files
+  - istio_release-1.6_envoy
+  - istio_release-1.6_gogo-genproto
+  - istio_release-1.6_istio.io
+  - istio_release-1.6_pkg
+  - istio_release-1.6_proxy
+  - istio_release-1.6_tools
+  - istio_release-1.6_release-builder
+  name: istio_release-1.6
+- dashboard_names:
   - istio_release-1.5_istio_postsubmit
   - istio_release-1.5_client-go_postsubmit
   - istio_release-1.5_cni_postsubmit
@@ -55,11 +80,11 @@ dashboard_groups:
   name: istio_release-1.4
 - dashboard_names:
   - istio_istio.io_periodic
+  - istio_test-infra_periodic
   - istio_istio_postsubmit
   - istio_api_postsubmit
   - istio_bots_postsubmit
   - istio_client-go_postsubmit
-  - istio_cni_postsubmit
   - istio_cri_postsubmit
   - istio_common-files_postsubmit
   - istio_community_postsubmit
@@ -73,7 +98,6 @@ dashboard_groups:
   - istio_api
   - istio_bots
   - istio_client-go
-  - istio_cni
   - istio_cri
   - istio_common-files
   - istio_community
@@ -117,29 +141,20 @@ dashboards:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
     code_search_url_template:
       url: https://github.com/istio/api/compare/<start-custom-0>...<end-custom-0>
-    description: gen_client-go_api_postsubmit
-    name: gen_client-go_api_postsubmit
-    open_bug_template:
-      url: https://github.com/istio/api/issues/
-    test_group_name: gen_client-go_api_postsubmit
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio/api/compare/<start-custom-0>...<end-custom-0>
-    description: gen_istio_api_postsubmit
-    name: gen_istio_api_postsubmit
-    open_bug_template:
-      url: https://github.com/istio/api/issues/
-    test_group_name: gen_istio_api_postsubmit
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio/api/compare/<start-custom-0>...<end-custom-0>
     description: gencheck_api_postsubmit
     name: gencheck_api_postsubmit
     open_bug_template:
       url: https://github.com/istio/api/issues/
     test_group_name: gencheck_api_postsubmit
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/api/compare/<start-custom-0>...<end-custom-0>
+    description: update_api_dep_api_postsubmit
+    name: update_api_dep_api_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/api/issues/
+    test_group_name: update_api_dep_api_postsubmit
   name: istio_api_postsubmit
 - dashboard_tab:
   - code_search_url_template:
@@ -270,74 +285,6 @@ dashboards:
       url: https://github.com/istio/client-go/issues/
     test_group_name: lint_client-go_postsubmit
   name: istio_client-go_postsubmit
-- dashboard_tab:
-  - code_search_url_template:
-      url: https://github.com/istio/cni/compare/<start-custom-0>...<end-custom-0>
-    description: build_cni
-    name: build_cni
-    open_bug_template:
-      url: https://github.com/istio/cni/issues/
-    test_group_name: build_cni
-  - code_search_url_template:
-      url: https://github.com/istio/cni/compare/<start-custom-0>...<end-custom-0>
-    description: gencheck_cni
-    name: gencheck_cni
-    open_bug_template:
-      url: https://github.com/istio/cni/issues/
-    test_group_name: gencheck_cni
-  - code_search_url_template:
-      url: https://github.com/istio/cni/compare/<start-custom-0>...<end-custom-0>
-    description: install_cni
-    name: install_cni
-    open_bug_template:
-      url: https://github.com/istio/cni/issues/
-    test_group_name: install_cni
-  - code_search_url_template:
-      url: https://github.com/istio/cni/compare/<start-custom-0>...<end-custom-0>
-    description: lint_cni
-    name: lint_cni
-    open_bug_template:
-      url: https://github.com/istio/cni/issues/
-    test_group_name: lint_cni
-  name: istio_cni
-- dashboard_tab:
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio/cni/compare/<start-custom-0>...<end-custom-0>
-    description: build_cni_postsubmit
-    name: build_cni_postsubmit
-    open_bug_template:
-      url: https://github.com/istio/cni/issues/
-    test_group_name: build_cni_postsubmit
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio/cni/compare/<start-custom-0>...<end-custom-0>
-    description: gencheck_cni_postsubmit
-    name: gencheck_cni_postsubmit
-    open_bug_template:
-      url: https://github.com/istio/cni/issues/
-    test_group_name: gencheck_cni_postsubmit
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio/cni/compare/<start-custom-0>...<end-custom-0>
-    description: install_cni_postsubmit
-    name: install_cni_postsubmit
-    open_bug_template:
-      url: https://github.com/istio/cni/issues/
-    test_group_name: install_cni_postsubmit
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio/cni/compare/<start-custom-0>...<end-custom-0>
-    description: lint_cni_postsubmit
-    name: lint_cni_postsubmit
-    open_bug_template:
-      url: https://github.com/istio/cni/issues/
-    test_group_name: lint_cni_postsubmit
-  name: istio_cni_postsubmit
 - dashboard_tab:
   - code_search_url_template:
       url: https://github.com/istio/cri/compare/<start-custom-0>...<end-custom-0>
@@ -574,25 +521,11 @@ dashboards:
 - dashboard_tab:
   - code_search_url_template:
       url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
-    description: cache-experiment_istio
-    name: cache-experiment_istio
-    open_bug_template:
-      url: https://github.com/istio/istio/issues/
-    test_group_name: cache-experiment_istio
-  - code_search_url_template:
-      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
     description: gencheck_istio
     name: gencheck_istio
     open_bug_template:
       url: https://github.com/istio/istio/issues/
     test_group_name: gencheck_istio
-  - code_search_url_template:
-      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
-    description: integ-conformance-k8s-tests_istio
-    name: integ-conformance-k8s-tests_istio
-    open_bug_template:
-      url: https://github.com/istio/istio/issues/
-    test_group_name: integ-conformance-k8s-tests_istio
   - code_search_url_template:
       url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
     description: integ-distroless-k8s-tests_istio
@@ -609,11 +542,11 @@ dashboards:
     test_group_name: integ-galley-k8s-tests_istio
   - code_search_url_template:
       url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
-    description: integ-local-tests_istio
-    name: integ-local-tests_istio
+    description: integ-ipv6-k8s-tests_istio
+    name: integ-ipv6-k8s-tests_istio
     open_bug_template:
       url: https://github.com/istio/istio/issues/
-    test_group_name: integ-local-tests_istio
+    test_group_name: integ-ipv6-k8s-tests_istio
   - code_search_url_template:
       url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
     description: integ-mixer-k8s-tests_istio
@@ -630,11 +563,25 @@ dashboards:
     test_group_name: integ-multicluster-k8s-tests_istio
   - code_search_url_template:
       url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-operator-controller-tests_istio
+    name: integ-operator-controller-tests_istio
+    open_bug_template:
+      url: https://github.com/istio/istio/issues/
+    test_group_name: integ-operator-controller-tests_istio
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
     description: integ-pilot-k8s-tests_istio
     name: integ-pilot-k8s-tests_istio
     open_bug_template:
       url: https://github.com/istio/istio/issues/
     test_group_name: integ-pilot-k8s-tests_istio
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-pilot-multicluster-tests_istio
+    name: integ-pilot-multicluster-tests_istio
+    open_bug_template:
+      url: https://github.com/istio/istio/issues/
+    test_group_name: integ-pilot-multicluster-tests_istio
   - code_search_url_template:
       url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
     description: integ-security-k8s-tests_istio
@@ -674,13 +621,43 @@ dashboards:
 - dashboard_tab:
   - code_search_url_template:
       url: https://github.com/istio/istio.io/compare/<start-custom-0>...<end-custom-0>
+    description: gencheck_istio.io
+    name: gencheck_istio.io
+    open_bug_template:
+      url: https://github.com/istio/istio.io/issues/
+    test_group_name: gencheck_istio.io
+  - code_search_url_template:
+      url: https://github.com/istio/istio.io/compare/<start-custom-0>...<end-custom-0>
+    description: k8s-tests_istio.io
+    name: k8s-tests_istio.io
+    open_bug_template:
+      url: https://github.com/istio/istio.io/issues/
+    test_group_name: k8s-tests_istio.io
+  - code_search_url_template:
+      url: https://github.com/istio/istio.io/compare/<start-custom-0>...<end-custom-0>
     description: lint_istio.io
     name: lint_istio.io
     open_bug_template:
       url: https://github.com/istio/istio.io/issues/
     test_group_name: lint_istio.io
+  - code_search_url_template:
+      url: https://github.com/istio/istio.io/compare/<start-custom-0>...<end-custom-0>
+    description: update-ref-docs-dry-run_istio.io
+    name: update-ref-docs-dry-run_istio.io
+    open_bug_template:
+      url: https://github.com/istio/istio.io/issues/
+    test_group_name: update-ref-docs-dry-run_istio.io
   name: istio_istio.io
 - dashboard_tab:
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio.io/compare/<start-custom-0>...<end-custom-0>
+    description: gencheck_istio.io_postsubmit
+    name: gencheck_istio.io_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/istio.io/issues/
+    test_group_name: gencheck_istio.io_postsubmit
   - alert_options:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
     code_search_url_template:
@@ -716,24 +693,6 @@ dashboards:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
     code_search_url_template:
       url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
-    description: cache-experiment_istio_postsubmit
-    name: cache-experiment_istio_postsubmit
-    open_bug_template:
-      url: https://github.com/istio/istio/issues/
-    test_group_name: cache-experiment_istio_postsubmit
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
-    description: integ-conformance-k8s-tests_istio_postsubmit
-    name: integ-conformance-k8s-tests_istio_postsubmit
-    open_bug_template:
-      url: https://github.com/istio/istio/issues/
-    test_group_name: integ-conformance-k8s-tests_istio_postsubmit
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
     description: integ-distroless-k8s-tests_istio_postsubmit
     name: integ-distroless-k8s-tests_istio_postsubmit
     open_bug_template:
@@ -752,11 +711,11 @@ dashboards:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
     code_search_url_template:
       url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
-    description: integ-k8s-115_istio_postsubmit
-    name: integ-k8s-115_istio_postsubmit
+    description: integ-ipv6-k8s-tests_istio_postsubmit
+    name: integ-ipv6-k8s-tests_istio_postsubmit
     open_bug_template:
       url: https://github.com/istio/istio/issues/
-    test_group_name: integ-k8s-115_istio_postsubmit
+    test_group_name: integ-ipv6-k8s-tests_istio_postsubmit
   - alert_options:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
     code_search_url_template:
@@ -788,15 +747,6 @@ dashboards:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
     code_search_url_template:
       url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
-    description: integ-local-tests_istio_postsubmit
-    name: integ-local-tests_istio_postsubmit
-    open_bug_template:
-      url: https://github.com/istio/istio/issues/
-    test_group_name: integ-local-tests_istio_postsubmit
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
     description: integ-mixer-k8s-tests_istio_postsubmit
     name: integ-mixer-k8s-tests_istio_postsubmit
     open_bug_template:
@@ -811,6 +761,15 @@ dashboards:
     open_bug_template:
       url: https://github.com/istio/istio/issues/
     test_group_name: integ-pilot-k8s-tests_istio_postsubmit
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-pilot-multicluster-tests_istio_postsubmit
+    name: integ-pilot-multicluster-tests_istio_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/istio/issues/
+    test_group_name: integ-pilot-multicluster-tests_istio_postsubmit
   - alert_options:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
     code_search_url_template:
@@ -926,6 +885,13 @@ dashboards:
     test_group_name: check-wasm_proxy
   - code_search_url_template:
       url: https://github.com/istio/proxy/compare/<start-custom-0>...<end-custom-0>
+    description: release-centos-test_proxy
+    name: release-centos-test_proxy
+    open_bug_template:
+      url: https://github.com/istio/proxy/issues/
+    test_group_name: release-centos-test_proxy
+  - code_search_url_template:
+      url: https://github.com/istio/proxy/compare/<start-custom-0>...<end-custom-0>
     description: release-test_proxy
     name: release-test_proxy
     open_bug_template:
@@ -964,6 +930,889 @@ dashboards:
       url: https://github.com/istio/proxy/issues/
     test_group_name: release_proxy_postsubmit
   name: istio_proxy_postsubmit
+- dashboard_tab:
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: cache-experiment_istio_release-1.6
+    name: cache-experiment_istio_release-1.6
+    open_bug_template:
+      url: https://github.com/istio/istio/issues/
+    test_group_name: cache-experiment_istio_release-1.6
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: gencheck_istio_release-1.6
+    name: gencheck_istio_release-1.6
+    open_bug_template:
+      url: https://github.com/istio/istio/issues/
+    test_group_name: gencheck_istio_release-1.6
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-conformance-k8s-tests_istio_release-1.6
+    name: integ-conformance-k8s-tests_istio_release-1.6
+    open_bug_template:
+      url: https://github.com/istio/istio/issues/
+    test_group_name: integ-conformance-k8s-tests_istio_release-1.6
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-distroless-k8s-tests_istio_release-1.6
+    name: integ-distroless-k8s-tests_istio_release-1.6
+    open_bug_template:
+      url: https://github.com/istio/istio/issues/
+    test_group_name: integ-distroless-k8s-tests_istio_release-1.6
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-galley-k8s-tests_istio_release-1.6
+    name: integ-galley-k8s-tests_istio_release-1.6
+    open_bug_template:
+      url: https://github.com/istio/istio/issues/
+    test_group_name: integ-galley-k8s-tests_istio_release-1.6
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-local-tests_istio_release-1.6
+    name: integ-local-tests_istio_release-1.6
+    open_bug_template:
+      url: https://github.com/istio/istio/issues/
+    test_group_name: integ-local-tests_istio_release-1.6
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-mixer-k8s-tests_istio_release-1.6
+    name: integ-mixer-k8s-tests_istio_release-1.6
+    open_bug_template:
+      url: https://github.com/istio/istio/issues/
+    test_group_name: integ-mixer-k8s-tests_istio_release-1.6
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-multicluster-k8s-tests_istio_release-1.6
+    name: integ-multicluster-k8s-tests_istio_release-1.6
+    open_bug_template:
+      url: https://github.com/istio/istio/issues/
+    test_group_name: integ-multicluster-k8s-tests_istio_release-1.6
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-operator-controller-tests_istio_release-1.6
+    name: integ-operator-controller-tests_istio_release-1.6
+    open_bug_template:
+      url: https://github.com/istio/istio/issues/
+    test_group_name: integ-operator-controller-tests_istio_release-1.6
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-pilot-k8s-tests_istio_release-1.6
+    name: integ-pilot-k8s-tests_istio_release-1.6
+    open_bug_template:
+      url: https://github.com/istio/istio/issues/
+    test_group_name: integ-pilot-k8s-tests_istio_release-1.6
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-security-k8s-tests_istio_release-1.6
+    name: integ-security-k8s-tests_istio_release-1.6
+    open_bug_template:
+      url: https://github.com/istio/istio/issues/
+    test_group_name: integ-security-k8s-tests_istio_release-1.6
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-telemetry-k8s-tests_istio_release-1.6
+    name: integ-telemetry-k8s-tests_istio_release-1.6
+    open_bug_template:
+      url: https://github.com/istio/istio/issues/
+    test_group_name: integ-telemetry-k8s-tests_istio_release-1.6
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: lint_istio_release-1.6
+    name: lint_istio_release-1.6
+    open_bug_template:
+      url: https://github.com/istio/istio/issues/
+    test_group_name: lint_istio_release-1.6
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: release-test_istio_release-1.6
+    name: release-test_istio_release-1.6
+    open_bug_template:
+      url: https://github.com/istio/istio/issues/
+    test_group_name: release-test_istio_release-1.6
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: unit-tests_istio_release-1.6
+    name: unit-tests_istio_release-1.6
+    open_bug_template:
+      url: https://github.com/istio/istio/issues/
+    test_group_name: unit-tests_istio_release-1.6
+  name: istio_release-1.6_istio
+- dashboard_tab:
+  - code_search_url_template:
+      url: https://github.com/istio/api/compare/<start-custom-0>...<end-custom-0>
+    description: build_api_release-1.6
+    name: build_api_release-1.6
+    open_bug_template:
+      url: https://github.com/istio/api/issues/
+    test_group_name: build_api_release-1.6
+  - code_search_url_template:
+      url: https://github.com/istio/api/compare/<start-custom-0>...<end-custom-0>
+    description: gencheck_api_release-1.6
+    name: gencheck_api_release-1.6
+    open_bug_template:
+      url: https://github.com/istio/api/issues/
+    test_group_name: gencheck_api_release-1.6
+  name: istio_release-1.6_api
+- dashboard_tab:
+  - code_search_url_template:
+      url: https://github.com/istio/client-go/compare/<start-custom-0>...<end-custom-0>
+    description: build_client-go_release-1.6
+    name: build_client-go_release-1.6
+    open_bug_template:
+      url: https://github.com/istio/client-go/issues/
+    test_group_name: build_client-go_release-1.6
+  - code_search_url_template:
+      url: https://github.com/istio/client-go/compare/<start-custom-0>...<end-custom-0>
+    description: gencheck_client-go_release-1.6
+    name: gencheck_client-go_release-1.6
+    open_bug_template:
+      url: https://github.com/istio/client-go/issues/
+    test_group_name: gencheck_client-go_release-1.6
+  - code_search_url_template:
+      url: https://github.com/istio/client-go/compare/<start-custom-0>...<end-custom-0>
+    description: lint_client-go_release-1.6
+    name: lint_client-go_release-1.6
+    open_bug_template:
+      url: https://github.com/istio/client-go/issues/
+    test_group_name: lint_client-go_release-1.6
+  name: istio_release-1.6_client-go
+- dashboard_tab:
+  - code_search_url_template:
+      url: https://github.com/istio/cni/compare/<start-custom-0>...<end-custom-0>
+    description: build_cni_release-1.6
+    name: build_cni_release-1.6
+    open_bug_template:
+      url: https://github.com/istio/cni/issues/
+    test_group_name: build_cni_release-1.6
+  - code_search_url_template:
+      url: https://github.com/istio/cni/compare/<start-custom-0>...<end-custom-0>
+    description: gencheck_cni_release-1.6
+    name: gencheck_cni_release-1.6
+    open_bug_template:
+      url: https://github.com/istio/cni/issues/
+    test_group_name: gencheck_cni_release-1.6
+  - code_search_url_template:
+      url: https://github.com/istio/cni/compare/<start-custom-0>...<end-custom-0>
+    description: install_cni_release-1.6
+    name: install_cni_release-1.6
+    open_bug_template:
+      url: https://github.com/istio/cni/issues/
+    test_group_name: install_cni_release-1.6
+  - code_search_url_template:
+      url: https://github.com/istio/cni/compare/<start-custom-0>...<end-custom-0>
+    description: lint_cni_release-1.6
+    name: lint_cni_release-1.6
+    open_bug_template:
+      url: https://github.com/istio/cni/issues/
+    test_group_name: lint_cni_release-1.6
+  name: istio_release-1.6_cni
+- dashboard_tab:
+  - code_search_url_template:
+      url: https://github.com/istio/common-files/compare/<start-custom-0>...<end-custom-0>
+    description: lint_common-files_release-1.6
+    name: lint_common-files_release-1.6
+    open_bug_template:
+      url: https://github.com/istio/common-files/issues/
+    test_group_name: lint_common-files_release-1.6
+  name: istio_release-1.6_common-files
+- dashboard_tab:
+  - code_search_url_template:
+      url: https://github.com/istio/envoy/compare/<start-custom-0>...<end-custom-0>
+    description: test-asan_envoy_release-1.6
+    name: test-asan_envoy_release-1.6
+    open_bug_template:
+      url: https://github.com/istio/envoy/issues/
+    test_group_name: test-asan_envoy_release-1.6
+  - code_search_url_template:
+      url: https://github.com/istio/envoy/compare/<start-custom-0>...<end-custom-0>
+    description: test-release_envoy_release-1.6
+    name: test-release_envoy_release-1.6
+    open_bug_template:
+      url: https://github.com/istio/envoy/issues/
+    test_group_name: test-release_envoy_release-1.6
+  - code_search_url_template:
+      url: https://github.com/istio/envoy/compare/<start-custom-0>...<end-custom-0>
+    description: test-tsan_envoy_release-1.6
+    name: test-tsan_envoy_release-1.6
+    open_bug_template:
+      url: https://github.com/istio/envoy/issues/
+    test_group_name: test-tsan_envoy_release-1.6
+  name: istio_release-1.6_envoy
+- dashboard_tab:
+  - code_search_url_template:
+      url: https://github.com/istio/gogo-genproto/compare/<start-custom-0>...<end-custom-0>
+    description: build_gogo-genproto_release-1.6
+    name: build_gogo-genproto_release-1.6
+    open_bug_template:
+      url: https://github.com/istio/gogo-genproto/issues/
+    test_group_name: build_gogo-genproto_release-1.6
+  - code_search_url_template:
+      url: https://github.com/istio/gogo-genproto/compare/<start-custom-0>...<end-custom-0>
+    description: gencheck_gogo-genproto_release-1.6
+    name: gencheck_gogo-genproto_release-1.6
+    open_bug_template:
+      url: https://github.com/istio/gogo-genproto/issues/
+    test_group_name: gencheck_gogo-genproto_release-1.6
+  - code_search_url_template:
+      url: https://github.com/istio/gogo-genproto/compare/<start-custom-0>...<end-custom-0>
+    description: lint_gogo-genproto_release-1.6
+    name: lint_gogo-genproto_release-1.6
+    open_bug_template:
+      url: https://github.com/istio/gogo-genproto/issues/
+    test_group_name: lint_gogo-genproto_release-1.6
+  name: istio_release-1.6_gogo-genproto
+- dashboard_tab:
+  - code_search_url_template:
+      url: https://github.com/istio/istio.io/compare/<start-custom-0>...<end-custom-0>
+    description: gencheck_istio.io_release-1.6
+    name: gencheck_istio.io_release-1.6
+    open_bug_template:
+      url: https://github.com/istio/istio.io/issues/
+    test_group_name: gencheck_istio.io_release-1.6
+  - code_search_url_template:
+      url: https://github.com/istio/istio.io/compare/<start-custom-0>...<end-custom-0>
+    description: k8s-tests_istio.io_release-1.6
+    name: k8s-tests_istio.io_release-1.6
+    open_bug_template:
+      url: https://github.com/istio/istio.io/issues/
+    test_group_name: k8s-tests_istio.io_release-1.6
+  - code_search_url_template:
+      url: https://github.com/istio/istio.io/compare/<start-custom-0>...<end-custom-0>
+    description: lint_istio.io_release-1.6
+    name: lint_istio.io_release-1.6
+    open_bug_template:
+      url: https://github.com/istio/istio.io/issues/
+    test_group_name: lint_istio.io_release-1.6
+  name: istio_release-1.6_istio.io
+- dashboard_tab:
+  - code_search_url_template:
+      url: https://github.com/istio/pkg/compare/<start-custom-0>...<end-custom-0>
+    description: build_pkg_release-1.6
+    name: build_pkg_release-1.6
+    open_bug_template:
+      url: https://github.com/istio/pkg/issues/
+    test_group_name: build_pkg_release-1.6
+  - code_search_url_template:
+      url: https://github.com/istio/pkg/compare/<start-custom-0>...<end-custom-0>
+    description: gencheck_pkg_release-1.6
+    name: gencheck_pkg_release-1.6
+    open_bug_template:
+      url: https://github.com/istio/pkg/issues/
+    test_group_name: gencheck_pkg_release-1.6
+  - code_search_url_template:
+      url: https://github.com/istio/pkg/compare/<start-custom-0>...<end-custom-0>
+    description: lint_pkg_release-1.6
+    name: lint_pkg_release-1.6
+    open_bug_template:
+      url: https://github.com/istio/pkg/issues/
+    test_group_name: lint_pkg_release-1.6
+  - code_search_url_template:
+      url: https://github.com/istio/pkg/compare/<start-custom-0>...<end-custom-0>
+    description: test_pkg_release-1.6
+    name: test_pkg_release-1.6
+    open_bug_template:
+      url: https://github.com/istio/pkg/issues/
+    test_group_name: test_pkg_release-1.6
+  name: istio_release-1.6_pkg
+- dashboard_tab:
+  - code_search_url_template:
+      url: https://github.com/istio/proxy/compare/<start-custom-0>...<end-custom-0>
+    description: check-wasm_proxy_release-1.6
+    name: check-wasm_proxy_release-1.6
+    open_bug_template:
+      url: https://github.com/istio/proxy/issues/
+    test_group_name: check-wasm_proxy_release-1.6
+  - code_search_url_template:
+      url: https://github.com/istio/proxy/compare/<start-custom-0>...<end-custom-0>
+    description: release-test_proxy_release-1.6
+    name: release-test_proxy_release-1.6
+    open_bug_template:
+      url: https://github.com/istio/proxy/issues/
+    test_group_name: release-test_proxy_release-1.6
+  - code_search_url_template:
+      url: https://github.com/istio/proxy/compare/<start-custom-0>...<end-custom-0>
+    description: test-asan_proxy_release-1.6
+    name: test-asan_proxy_release-1.6
+    open_bug_template:
+      url: https://github.com/istio/proxy/issues/
+    test_group_name: test-asan_proxy_release-1.6
+  - code_search_url_template:
+      url: https://github.com/istio/proxy/compare/<start-custom-0>...<end-custom-0>
+    description: test-tsan_proxy_release-1.6
+    name: test-tsan_proxy_release-1.6
+    open_bug_template:
+      url: https://github.com/istio/proxy/issues/
+    test_group_name: test-tsan_proxy_release-1.6
+  - code_search_url_template:
+      url: https://github.com/istio/proxy/compare/<start-custom-0>...<end-custom-0>
+    description: test_proxy_release-1.6
+    name: test_proxy_release-1.6
+    open_bug_template:
+      url: https://github.com/istio/proxy/issues/
+    test_group_name: test_proxy_release-1.6
+  name: istio_release-1.6_proxy
+- dashboard_tab:
+  - code_search_url_template:
+      url: https://github.com/istio/tools/compare/<start-custom-0>...<end-custom-0>
+    description: build_tools_release-1.6
+    name: build_tools_release-1.6
+    open_bug_template:
+      url: https://github.com/istio/tools/issues/
+    test_group_name: build_tools_release-1.6
+  - code_search_url_template:
+      url: https://github.com/istio/tools/compare/<start-custom-0>...<end-custom-0>
+    description: containers-test_tools_release-1.6
+    name: containers-test_tools_release-1.6
+    open_bug_template:
+      url: https://github.com/istio/tools/issues/
+    test_group_name: containers-test_tools_release-1.6
+  - code_search_url_template:
+      url: https://github.com/istio/tools/compare/<start-custom-0>...<end-custom-0>
+    description: gencheck_tools_release-1.6
+    name: gencheck_tools_release-1.6
+    open_bug_template:
+      url: https://github.com/istio/tools/issues/
+    test_group_name: gencheck_tools_release-1.6
+  - code_search_url_template:
+      url: https://github.com/istio/tools/compare/<start-custom-0>...<end-custom-0>
+    description: lint_tools_release-1.6
+    name: lint_tools_release-1.6
+    open_bug_template:
+      url: https://github.com/istio/tools/issues/
+    test_group_name: lint_tools_release-1.6
+  - code_search_url_template:
+      url: https://github.com/istio/tools/compare/<start-custom-0>...<end-custom-0>
+    description: test_tools_release-1.6
+    name: test_tools_release-1.6
+    open_bug_template:
+      url: https://github.com/istio/tools/issues/
+    test_group_name: test_tools_release-1.6
+  name: istio_release-1.6_tools
+- dashboard_tab:
+  - code_search_url_template:
+      url: https://github.com/istio/release-builder/compare/<start-custom-0>...<end-custom-0>
+    description: build-warning_release-builder_release-1.6
+    name: build-warning_release-builder_release-1.6
+    open_bug_template:
+      url: https://github.com/istio/release-builder/issues/
+    test_group_name: build-warning_release-builder_release-1.6
+  - code_search_url_template:
+      url: https://github.com/istio/release-builder/compare/<start-custom-0>...<end-custom-0>
+    description: dry-run_release-builder_release-1.6
+    name: dry-run_release-builder_release-1.6
+    open_bug_template:
+      url: https://github.com/istio/release-builder/issues/
+    test_group_name: dry-run_release-builder_release-1.6
+  - code_search_url_template:
+      url: https://github.com/istio/release-builder/compare/<start-custom-0>...<end-custom-0>
+    description: gencheck_release-builder_release-1.6
+    name: gencheck_release-builder_release-1.6
+    open_bug_template:
+      url: https://github.com/istio/release-builder/issues/
+    test_group_name: gencheck_release-builder_release-1.6
+  - code_search_url_template:
+      url: https://github.com/istio/release-builder/compare/<start-custom-0>...<end-custom-0>
+    description: lint_release-builder_release-1.6
+    name: lint_release-builder_release-1.6
+    open_bug_template:
+      url: https://github.com/istio/release-builder/issues/
+    test_group_name: lint_release-builder_release-1.6
+  - code_search_url_template:
+      url: https://github.com/istio/release-builder/compare/<start-custom-0>...<end-custom-0>
+    description: publish-warning_release-builder_release-1.6
+    name: publish-warning_release-builder_release-1.6
+    open_bug_template:
+      url: https://github.com/istio/release-builder/issues/
+    test_group_name: publish-warning_release-builder_release-1.6
+  - code_search_url_template:
+      url: https://github.com/istio/release-builder/compare/<start-custom-0>...<end-custom-0>
+    description: test_release-builder_release-1.6
+    name: test_release-builder_release-1.6
+    open_bug_template:
+      url: https://github.com/istio/release-builder/issues/
+    test_group_name: test_release-builder_release-1.6
+  name: istio_release-1.6_release-builder
+- dashboard_tab:
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: cache-experiment_istio_release-1.6_postsubmit
+    name: cache-experiment_istio_release-1.6_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/istio/issues/
+    test_group_name: cache-experiment_istio_release-1.6_postsubmit
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-conformance-k8s-tests_istio_release-1.6_postsubmit
+    name: integ-conformance-k8s-tests_istio_release-1.6_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/istio/issues/
+    test_group_name: integ-conformance-k8s-tests_istio_release-1.6_postsubmit
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-distroless-k8s-tests_istio_release-1.6_postsubmit
+    name: integ-distroless-k8s-tests_istio_release-1.6_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/istio/issues/
+    test_group_name: integ-distroless-k8s-tests_istio_release-1.6_postsubmit
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-galley-k8s-tests_istio_release-1.6_postsubmit
+    name: integ-galley-k8s-tests_istio_release-1.6_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/istio/issues/
+    test_group_name: integ-galley-k8s-tests_istio_release-1.6_postsubmit
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-k8s-115_istio_release-1.6_postsubmit
+    name: integ-k8s-115_istio_release-1.6_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/istio/issues/
+    test_group_name: integ-k8s-115_istio_release-1.6_postsubmit
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-k8s-116_istio_release-1.6_postsubmit
+    name: integ-k8s-116_istio_release-1.6_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/istio/issues/
+    test_group_name: integ-k8s-116_istio_release-1.6_postsubmit
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-k8s-117_istio_release-1.6_postsubmit
+    name: integ-k8s-117_istio_release-1.6_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/istio/issues/
+    test_group_name: integ-k8s-117_istio_release-1.6_postsubmit
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-k8s-119_istio_release-1.6_postsubmit
+    name: integ-k8s-119_istio_release-1.6_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/istio/issues/
+    test_group_name: integ-k8s-119_istio_release-1.6_postsubmit
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-local-tests_istio_release-1.6_postsubmit
+    name: integ-local-tests_istio_release-1.6_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/istio/issues/
+    test_group_name: integ-local-tests_istio_release-1.6_postsubmit
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-mixer-k8s-tests_istio_release-1.6_postsubmit
+    name: integ-mixer-k8s-tests_istio_release-1.6_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/istio/issues/
+    test_group_name: integ-mixer-k8s-tests_istio_release-1.6_postsubmit
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-pilot-k8s-tests_istio_release-1.6_postsubmit
+    name: integ-pilot-k8s-tests_istio_release-1.6_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/istio/issues/
+    test_group_name: integ-pilot-k8s-tests_istio_release-1.6_postsubmit
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-security-k8s-tests_istio_release-1.6_postsubmit
+    name: integ-security-k8s-tests_istio_release-1.6_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/istio/issues/
+    test_group_name: integ-security-k8s-tests_istio_release-1.6_postsubmit
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-telemetry-k8s-tests_istio_release-1.6_postsubmit
+    name: integ-telemetry-k8s-tests_istio_release-1.6_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/istio/issues/
+    test_group_name: integ-telemetry-k8s-tests_istio_release-1.6_postsubmit
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: release_istio_release-1.6_postsubmit
+    name: release_istio_release-1.6_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/istio/issues/
+    test_group_name: release_istio_release-1.6_postsubmit
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: unit-tests_istio_release-1.6_postsubmit
+    name: unit-tests_istio_release-1.6_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/istio/issues/
+    test_group_name: unit-tests_istio_release-1.6_postsubmit
+  name: istio_release-1.6_istio_postsubmit
+- dashboard_tab:
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/client-go/compare/<start-custom-0>...<end-custom-0>
+    description: build_client-go_release-1.6_postsubmit
+    name: build_client-go_release-1.6_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/client-go/issues/
+    test_group_name: build_client-go_release-1.6_postsubmit
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/client-go/compare/<start-custom-0>...<end-custom-0>
+    description: gencheck_client-go_release-1.6_postsubmit
+    name: gencheck_client-go_release-1.6_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/client-go/issues/
+    test_group_name: gencheck_client-go_release-1.6_postsubmit
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/client-go/compare/<start-custom-0>...<end-custom-0>
+    description: lint_client-go_release-1.6_postsubmit
+    name: lint_client-go_release-1.6_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/client-go/issues/
+    test_group_name: lint_client-go_release-1.6_postsubmit
+  name: istio_release-1.6_client-go_postsubmit
+- dashboard_tab:
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/cni/compare/<start-custom-0>...<end-custom-0>
+    description: build_cni_release-1.6_postsubmit
+    name: build_cni_release-1.6_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/cni/issues/
+    test_group_name: build_cni_release-1.6_postsubmit
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/cni/compare/<start-custom-0>...<end-custom-0>
+    description: gencheck_cni_release-1.6_postsubmit
+    name: gencheck_cni_release-1.6_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/cni/issues/
+    test_group_name: gencheck_cni_release-1.6_postsubmit
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/cni/compare/<start-custom-0>...<end-custom-0>
+    description: install_cni_release-1.6_postsubmit
+    name: install_cni_release-1.6_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/cni/issues/
+    test_group_name: install_cni_release-1.6_postsubmit
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/cni/compare/<start-custom-0>...<end-custom-0>
+    description: lint_cni_release-1.6_postsubmit
+    name: lint_cni_release-1.6_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/cni/issues/
+    test_group_name: lint_cni_release-1.6_postsubmit
+  name: istio_release-1.6_cni_postsubmit
+- dashboard_tab:
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/common-files/compare/<start-custom-0>...<end-custom-0>
+    description: lint_common-files_release-1.6_postsubmit
+    name: lint_common-files_release-1.6_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/common-files/issues/
+    test_group_name: lint_common-files_release-1.6_postsubmit
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/common-files/compare/<start-custom-0>...<end-custom-0>
+    description: update-build-tools-image_common-files_release-1.6_postsubmit
+    name: update-build-tools-image_common-files_release-1.6_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/common-files/issues/
+    test_group_name: update-build-tools-image_common-files_release-1.6_postsubmit
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/common-files/compare/<start-custom-0>...<end-custom-0>
+    description: update-common_common-files_release-1.6_postsubmit
+    name: update-common_common-files_release-1.6_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/common-files/issues/
+    test_group_name: update-common_common-files_release-1.6_postsubmit
+  name: istio_release-1.6_common-files_postsubmit
+- dashboard_tab:
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/gogo-genproto/compare/<start-custom-0>...<end-custom-0>
+    description: build_gogo-genproto_release-1.6_postsubmit
+    name: build_gogo-genproto_release-1.6_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/gogo-genproto/issues/
+    test_group_name: build_gogo-genproto_release-1.6_postsubmit
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/gogo-genproto/compare/<start-custom-0>...<end-custom-0>
+    description: gencheck_gogo-genproto_release-1.6_postsubmit
+    name: gencheck_gogo-genproto_release-1.6_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/gogo-genproto/issues/
+    test_group_name: gencheck_gogo-genproto_release-1.6_postsubmit
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/gogo-genproto/compare/<start-custom-0>...<end-custom-0>
+    description: lint_gogo-genproto_release-1.6_postsubmit
+    name: lint_gogo-genproto_release-1.6_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/gogo-genproto/issues/
+    test_group_name: lint_gogo-genproto_release-1.6_postsubmit
+  name: istio_release-1.6_gogo-genproto_postsubmit
+- dashboard_tab:
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio.io/compare/<start-custom-0>...<end-custom-0>
+    description: gencheck_istio.io_release-1.6_postsubmit
+    name: gencheck_istio.io_release-1.6_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/istio.io/issues/
+    test_group_name: gencheck_istio.io_release-1.6_postsubmit
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio.io/compare/<start-custom-0>...<end-custom-0>
+    description: k8s-tests_istio.io_release-1.6_postsubmit
+    name: k8s-tests_istio.io_release-1.6_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/istio.io/issues/
+    test_group_name: k8s-tests_istio.io_release-1.6_postsubmit
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio.io/compare/<start-custom-0>...<end-custom-0>
+    description: lint_istio.io_release-1.6_postsubmit
+    name: lint_istio.io_release-1.6_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/istio.io/issues/
+    test_group_name: lint_istio.io_release-1.6_postsubmit
+  name: istio_release-1.6_istio.io_postsubmit
+- dashboard_tab:
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/pkg/compare/<start-custom-0>...<end-custom-0>
+    description: build_pkg_release-1.6_postsubmit
+    name: build_pkg_release-1.6_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/pkg/issues/
+    test_group_name: build_pkg_release-1.6_postsubmit
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/pkg/compare/<start-custom-0>...<end-custom-0>
+    description: gencheck_pkg_release-1.6_postsubmit
+    name: gencheck_pkg_release-1.6_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/pkg/issues/
+    test_group_name: gencheck_pkg_release-1.6_postsubmit
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/pkg/compare/<start-custom-0>...<end-custom-0>
+    description: lint_pkg_release-1.6_postsubmit
+    name: lint_pkg_release-1.6_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/pkg/issues/
+    test_group_name: lint_pkg_release-1.6_postsubmit
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/pkg/compare/<start-custom-0>...<end-custom-0>
+    description: test_pkg_release-1.6_postsubmit
+    name: test_pkg_release-1.6_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/pkg/issues/
+    test_group_name: test_pkg_release-1.6_postsubmit
+  name: istio_release-1.6_pkg_postsubmit
+- dashboard_tab:
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/proxy/compare/<start-custom-0>...<end-custom-0>
+    description: release_proxy_release-1.6_postsubmit
+    name: release_proxy_release-1.6_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/proxy/issues/
+    test_group_name: release_proxy_release-1.6_postsubmit
+  name: istio_release-1.6_proxy_postsubmit
+- dashboard_tab:
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/api/compare/<start-custom-0>...<end-custom-0>
+    description: build_api_release-1.6_postsubmit
+    name: build_api_release-1.6_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/api/issues/
+    test_group_name: build_api_release-1.6_postsubmit
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/api/compare/<start-custom-0>...<end-custom-0>
+    description: gencheck_api_release-1.6_postsubmit
+    name: gencheck_api_release-1.6_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/api/issues/
+    test_group_name: gencheck_api_release-1.6_postsubmit
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/api/compare/<start-custom-0>...<end-custom-0>
+    description: update_api_dep_api_release-1.6_postsubmit
+    name: update_api_dep_api_release-1.6_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/api/issues/
+    test_group_name: update_api_dep_api_release-1.6_postsubmit
+  name: istio_release-1.6_api_postsubmit
+- dashboard_tab:
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/tools/compare/<start-custom-0>...<end-custom-0>
+    description: build_tools_release-1.6_postsubmit
+    name: build_tools_release-1.6_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/tools/issues/
+    test_group_name: build_tools_release-1.6_postsubmit
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/tools/compare/<start-custom-0>...<end-custom-0>
+    description: containers_tools_release-1.6_postsubmit
+    name: containers_tools_release-1.6_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/tools/issues/
+    test_group_name: containers_tools_release-1.6_postsubmit
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/tools/compare/<start-custom-0>...<end-custom-0>
+    description: deploy-perf-dashboard_tools_release-1.6_postsubmit
+    name: deploy-perf-dashboard_tools_release-1.6_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/tools/issues/
+    test_group_name: deploy-perf-dashboard_tools_release-1.6_postsubmit
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/tools/compare/<start-custom-0>...<end-custom-0>
+    description: gencheck_tools_release-1.6_postsubmit
+    name: gencheck_tools_release-1.6_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/tools/issues/
+    test_group_name: gencheck_tools_release-1.6_postsubmit
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/tools/compare/<start-custom-0>...<end-custom-0>
+    description: lint_tools_release-1.6_postsubmit
+    name: lint_tools_release-1.6_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/tools/issues/
+    test_group_name: lint_tools_release-1.6_postsubmit
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/tools/compare/<start-custom-0>...<end-custom-0>
+    description: test_tools_release-1.6_postsubmit
+    name: test_tools_release-1.6_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/tools/issues/
+    test_group_name: test_tools_release-1.6_postsubmit
+  name: istio_release-1.6_tools_postsubmit
+- dashboard_tab:
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/release-builder/compare/<start-custom-0>...<end-custom-0>
+    description: build-release_release-builder_release-1.6_postsubmit
+    name: build-release_release-builder_release-1.6_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/release-builder/issues/
+    test_group_name: build-release_release-builder_release-1.6_postsubmit
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/release-builder/compare/<start-custom-0>...<end-custom-0>
+    description: dry-run_release-builder_release-1.6_postsubmit
+    name: dry-run_release-builder_release-1.6_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/release-builder/issues/
+    test_group_name: dry-run_release-builder_release-1.6_postsubmit
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/release-builder/compare/<start-custom-0>...<end-custom-0>
+    description: gencheck_release-builder_release-1.6_postsubmit
+    name: gencheck_release-builder_release-1.6_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/release-builder/issues/
+    test_group_name: gencheck_release-builder_release-1.6_postsubmit
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/release-builder/compare/<start-custom-0>...<end-custom-0>
+    description: lint_release-builder_release-1.6_postsubmit
+    name: lint_release-builder_release-1.6_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/release-builder/issues/
+    test_group_name: lint_release-builder_release-1.6_postsubmit
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/release-builder/compare/<start-custom-0>...<end-custom-0>
+    description: publish-release_release-builder_release-1.6_postsubmit
+    name: publish-release_release-builder_release-1.6_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/release-builder/issues/
+    test_group_name: publish-release_release-builder_release-1.6_postsubmit
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/release-builder/compare/<start-custom-0>...<end-custom-0>
+    description: test_release-builder_release-1.6_postsubmit
+    name: test_release-builder_release-1.6_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/release-builder/issues/
+    test_group_name: test_release-builder_release-1.6_postsubmit
+  name: istio_release-1.6_release-builder_postsubmit
 - dashboard_tab:
   - alert_options:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
@@ -3278,38 +4127,74 @@ dashboards:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
     code_search_url_template:
       url: https://github.com/istio/tools/compare/<start-custom-0>...<end-custom-0>
-    description: daily-performance-benchmark
-    name: daily-performance-benchmark
+    description: daily-fortio-performance-benchmark
+    name: daily-fortio-performance-benchmark
     open_bug_template:
       url: https://github.com/istio/tools/issues/
-    test_group_name: daily-performance-benchmark
+    test_group_name: daily-fortio-performance-benchmark
   - alert_options:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
     code_search_url_template:
       url: https://github.com/istio/tools/compare/<start-custom-0>...<end-custom-0>
-    description: daily-performance-benchmark-release-1.5
-    name: daily-performance-benchmark-release-1.5
+    description: daily-fortio-performance-benchmark-release-1.6
+    name: daily-fortio-performance-benchmark-release-1.6
     open_bug_template:
       url: https://github.com/istio/tools/issues/
-    test_group_name: daily-performance-benchmark-release-1.5
+    test_group_name: daily-fortio-performance-benchmark-release-1.6
   - alert_options:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
     code_search_url_template:
       url: https://github.com/istio/tools/compare/<start-custom-0>...<end-custom-0>
-    description: istio-upgrade-using-istioctl-1.4_latest-1.5_latest
-    name: istio-upgrade-using-istioctl-1.4_latest-1.5_latest
+    description: daily-nighthawk-performance-benchmark
+    name: daily-nighthawk-performance-benchmark
     open_bug_template:
       url: https://github.com/istio/tools/issues/
-    test_group_name: istio-upgrade-using-istioctl-1.4_latest-1.5_latest
+    test_group_name: daily-nighthawk-performance-benchmark
   - alert_options:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
     code_search_url_template:
       url: https://github.com/istio/tools/compare/<start-custom-0>...<end-custom-0>
-    description: istio-upgrade-using-istioctl-1.5_latest-master
-    name: istio-upgrade-using-istioctl-1.5_latest-master
+    description: daily-nighthawk-performance-benchmark-release-1.6
+    name: daily-nighthawk-performance-benchmark-release-1.6
     open_bug_template:
       url: https://github.com/istio/tools/issues/
-    test_group_name: istio-upgrade-using-istioctl-1.5_latest-master
+    test_group_name: daily-nighthawk-performance-benchmark-release-1.6
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/tools/compare/<start-custom-0>...<end-custom-0>
+    description: istio-downgrade-using-istioctl-1.6_latest-1.5_latest
+    name: istio-downgrade-using-istioctl-1.6_latest-1.5_latest
+    open_bug_template:
+      url: https://github.com/istio/tools/issues/
+    test_group_name: istio-downgrade-using-istioctl-1.6_latest-1.5_latest
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/tools/compare/<start-custom-0>...<end-custom-0>
+    description: istio-downgrade-using-istioctl-master-1.6_latest
+    name: istio-downgrade-using-istioctl-master-1.6_latest
+    open_bug_template:
+      url: https://github.com/istio/tools/issues/
+    test_group_name: istio-downgrade-using-istioctl-master-1.6_latest
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/tools/compare/<start-custom-0>...<end-custom-0>
+    description: istio-upgrade-using-istioctl-1.5_latest-1.6_latest
+    name: istio-upgrade-using-istioctl-1.5_latest-1.6_latest
+    open_bug_template:
+      url: https://github.com/istio/tools/issues/
+    test_group_name: istio-upgrade-using-istioctl-1.5_latest-1.6_latest
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/tools/compare/<start-custom-0>...<end-custom-0>
+    description: istio-upgrade-using-istioctl-1.6_latest-master
+    name: istio-upgrade-using-istioctl-1.6_latest-master
+    open_bug_template:
+      url: https://github.com/istio/tools/issues/
+    test_group_name: istio-upgrade-using-istioctl-1.6_latest-master
   name: istio_release-pipeline
 - dashboard_tab:
   - code_search_url_template:
@@ -3450,6 +4335,17 @@ dashboards:
     test_group_name: test_test-infra_postsubmit
   name: istio_test-infra_postsubmit
 - dashboard_tab:
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/test-infra/compare/<start-custom-0>...<end-custom-0>
+    description: bump-k8s-prow-images_test-infra_periodic
+    name: bump-k8s-prow-images_test-infra_periodic
+    open_bug_template:
+      url: https://github.com/istio/test-infra/issues/
+    test_group_name: bump-k8s-prow-images_test-infra_periodic
+  name: istio_test-infra_periodic
+- dashboard_tab:
   - code_search_url_template:
       url: https://github.com/istio/tools/compare/<start-custom-0>...<end-custom-0>
     description: tools-containers_release-1.4
@@ -3457,6 +4353,13 @@ dashboards:
     open_bug_template:
       url: https://github.com/istio/tools/issues/
     test_group_name: tools-containers_release-1.4
+  - code_search_url_template:
+      url: https://github.com/istio/tools/compare/<start-custom-0>...<end-custom-0>
+    description: benchmark_check_tools
+    name: benchmark_check_tools
+    open_bug_template:
+      url: https://github.com/istio/tools/issues/
+    test_group_name: benchmark_check_tools
   - code_search_url_template:
       url: https://github.com/istio/tools/compare/<start-custom-0>...<end-custom-0>
     description: build_tools
@@ -3550,17 +4453,32 @@ dashboards:
     test_group_name: test_tools_postsubmit
   name: istio_tools_postsubmit
 test_groups:
-- gcs_prefix: istio-prow/logs/daily-performance-benchmark
-  name: daily-performance-benchmark
+- gcs_prefix: istio-prow/logs/bump-k8s-prow-images_test-infra_periodic
+  name: bump-k8s-prow-images_test-infra_periodic
   num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/daily-performance-benchmark-release-1.5
-  name: daily-performance-benchmark-release-1.5
+- gcs_prefix: istio-prow/logs/daily-fortio-performance-benchmark
+  name: daily-fortio-performance-benchmark
   num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/istio-upgrade-using-istioctl-1.4_latest-1.5_latest
-  name: istio-upgrade-using-istioctl-1.4_latest-1.5_latest
+- gcs_prefix: istio-prow/logs/daily-fortio-performance-benchmark-release-1.6
+  name: daily-fortio-performance-benchmark-release-1.6
   num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/istio-upgrade-using-istioctl-1.5_latest-master
-  name: istio-upgrade-using-istioctl-1.5_latest-master
+- gcs_prefix: istio-prow/logs/daily-nighthawk-performance-benchmark
+  name: daily-nighthawk-performance-benchmark
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/daily-nighthawk-performance-benchmark-release-1.6
+  name: daily-nighthawk-performance-benchmark-release-1.6
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/istio-downgrade-using-istioctl-1.6_latest-1.5_latest
+  name: istio-downgrade-using-istioctl-1.6_latest-1.5_latest
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/istio-downgrade-using-istioctl-master-1.6_latest
+  name: istio-downgrade-using-istioctl-master-1.6_latest
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/istio-upgrade-using-istioctl-1.5_latest-1.6_latest
+  name: istio-upgrade-using-istioctl-1.5_latest-1.6_latest
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/istio-upgrade-using-istioctl-1.6_latest-master
+  name: istio-upgrade-using-istioctl-1.6_latest-master
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/monitoring-verify-gcsweb
   name: monitoring-verify-gcsweb
@@ -3577,14 +4495,11 @@ test_groups:
 - gcs_prefix: istio-prow/logs/build_api_release-1.5_postsubmit
   name: build_api_release-1.5_postsubmit
   num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/gen_client-go_api_postsubmit
-  name: gen_client-go_api_postsubmit
+- gcs_prefix: istio-prow/logs/build_api_release-1.6_postsubmit
+  name: build_api_release-1.6_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/gen_client-go_api_release-1.5_postsubmit
   name: gen_client-go_api_release-1.5_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/gen_istio_api_postsubmit
-  name: gen_istio_api_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/gen_istio_api_release-1.5_postsubmit
   name: gen_istio_api_release-1.5_postsubmit
@@ -3597,6 +4512,15 @@ test_groups:
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/gencheck_api_release-1.5_postsubmit
   name: gencheck_api_release-1.5_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/gencheck_api_release-1.6_postsubmit
+  name: gencheck_api_release-1.6_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/update_api_dep_api_postsubmit
+  name: update_api_dep_api_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/update_api_dep_api_release-1.6_postsubmit
+  name: update_api_dep_api_release-1.6_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/build_bots_postsubmit
   name: build_bots_postsubmit
@@ -3622,6 +4546,9 @@ test_groups:
 - gcs_prefix: istio-prow/logs/build_client-go_release-1.5_postsubmit
   name: build_client-go_release-1.5_postsubmit
   num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/build_client-go_release-1.6_postsubmit
+  name: build_client-go_release-1.6_postsubmit
+  num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/gencheck_client-go_postsubmit
   name: gencheck_client-go_postsubmit
   num_failures_to_alert: 1
@@ -3630,6 +4557,9 @@ test_groups:
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/gencheck_client-go_release-1.5_postsubmit
   name: gencheck_client-go_release-1.5_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/gencheck_client-go_release-1.6_postsubmit
+  name: gencheck_client-go_release-1.6_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/lint_client-go_postsubmit
   name: lint_client-go_postsubmit
@@ -3640,8 +4570,8 @@ test_groups:
 - gcs_prefix: istio-prow/logs/lint_client-go_release-1.5_postsubmit
   name: lint_client-go_release-1.5_postsubmit
   num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/build_cni_postsubmit
-  name: build_cni_postsubmit
+- gcs_prefix: istio-prow/logs/lint_client-go_release-1.6_postsubmit
+  name: lint_client-go_release-1.6_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/build_cni_release-1.4_postsubmit
   name: build_cni_release-1.4_postsubmit
@@ -3649,17 +4579,17 @@ test_groups:
 - gcs_prefix: istio-prow/logs/build_cni_release-1.5_postsubmit
   name: build_cni_release-1.5_postsubmit
   num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/build_cni_release-1.6_postsubmit
+  name: build_cni_release-1.6_postsubmit
+  num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/e2e_cni_release-1.4_postsubmit
   name: e2e_cni_release-1.4_postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/gencheck_cni_postsubmit
-  name: gencheck_cni_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/gencheck_cni_release-1.5_postsubmit
   name: gencheck_cni_release-1.5_postsubmit
   num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/install_cni_postsubmit
-  name: install_cni_postsubmit
+- gcs_prefix: istio-prow/logs/gencheck_cni_release-1.6_postsubmit
+  name: gencheck_cni_release-1.6_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/install_cni_release-1.4_postsubmit
   name: install_cni_release-1.4_postsubmit
@@ -3667,14 +4597,17 @@ test_groups:
 - gcs_prefix: istio-prow/logs/install_cni_release-1.5_postsubmit
   name: install_cni_release-1.5_postsubmit
   num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/lint_cni_postsubmit
-  name: lint_cni_postsubmit
+- gcs_prefix: istio-prow/logs/install_cni_release-1.6_postsubmit
+  name: install_cni_release-1.6_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/lint_cni_release-1.4_postsubmit
   name: lint_cni_release-1.4_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/lint_cni_release-1.5_postsubmit
   name: lint_cni_release-1.5_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/lint_cni_release-1.6_postsubmit
+  name: lint_cni_release-1.6_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/lint_common-files_postsubmit
   name: lint_common-files_postsubmit
@@ -3685,6 +4618,9 @@ test_groups:
 - gcs_prefix: istio-prow/logs/lint_common-files_release-1.5_postsubmit
   name: lint_common-files_release-1.5_postsubmit
   num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/lint_common-files_release-1.6_postsubmit
+  name: lint_common-files_release-1.6_postsubmit
+  num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/update-build-tools-image_common-files_postsubmit
   name: update-build-tools-image_common-files_postsubmit
   num_failures_to_alert: 1
@@ -3694,11 +4630,17 @@ test_groups:
 - gcs_prefix: istio-prow/logs/update-build-tools-image_common-files_release-1.5_postsubmit
   name: update-build-tools-image_common-files_release-1.5_postsubmit
   num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/update-build-tools-image_common-files_release-1.6_postsubmit
+  name: update-build-tools-image_common-files_release-1.6_postsubmit
+  num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/update-common_common-files_postsubmit
   name: update-common_common-files_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/update-common_common-files_release-1.5_postsubmit
   name: update-common_common-files_release-1.5_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/update-common_common-files_release-1.6_postsubmit
+  name: update-common_common-files_release-1.6_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/lint_community_postsubmit
   name: lint_community_postsubmit
@@ -3730,6 +4672,9 @@ test_groups:
 - gcs_prefix: istio-prow/logs/build_gogo-genproto_release-1.5_postsubmit
   name: build_gogo-genproto_release-1.5_postsubmit
   num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/build_gogo-genproto_release-1.6_postsubmit
+  name: build_gogo-genproto_release-1.6_postsubmit
+  num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/gencheck_gogo-genproto_postsubmit
   name: gencheck_gogo-genproto_postsubmit
   num_failures_to_alert: 1
@@ -3739,6 +4684,9 @@ test_groups:
 - gcs_prefix: istio-prow/logs/gencheck_gogo-genproto_release-1.5_postsubmit
   name: gencheck_gogo-genproto_release-1.5_postsubmit
   num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/gencheck_gogo-genproto_release-1.6_postsubmit
+  name: gencheck_gogo-genproto_release-1.6_postsubmit
+  num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/lint_gogo-genproto_postsubmit
   name: lint_gogo-genproto_postsubmit
   num_failures_to_alert: 1
@@ -3747,6 +4695,9 @@ test_groups:
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/lint_gogo-genproto_release-1.5_postsubmit
   name: lint_gogo-genproto_release-1.5_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/lint_gogo-genproto_release-1.6_postsubmit
+  name: lint_gogo-genproto_release-1.6_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/base_installer_release-1.4_postsubmit
   name: base_installer_release-1.4_postsubmit
@@ -3763,8 +4714,8 @@ test_groups:
 - gcs_prefix: istio-prow/logs/noauth_installer_release-1.4_postsubmit
   name: noauth_installer_release-1.4_postsubmit
   num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/cache-experiment_istio_postsubmit
-  name: cache-experiment_istio_postsubmit
+- gcs_prefix: istio-prow/logs/cache-experiment_istio_release-1.6_postsubmit
+  name: cache-experiment_istio_release-1.6_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/codecov_istio_release-1.4_postsubmit
   name: codecov_istio_release-1.4_postsubmit
@@ -3823,14 +4774,14 @@ test_groups:
 - gcs_prefix: istio-prow/logs/gencheck_istio_release-1.5_postsubmit
   name: gencheck_istio_release-1.5_postsubmit
   num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/integ-conformance-k8s-tests_istio_postsubmit
-  name: integ-conformance-k8s-tests_istio_postsubmit
-  num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/integ-conformance-k8s-tests_istio_release-1.4_postsubmit
   name: integ-conformance-k8s-tests_istio_release-1.4_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/integ-conformance-k8s-tests_istio_release-1.5_postsubmit
   name: integ-conformance-k8s-tests_istio_release-1.5_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/integ-conformance-k8s-tests_istio_release-1.6_postsubmit
+  name: integ-conformance-k8s-tests_istio_release-1.6_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/integ-conformance-local-tests_istio_release-1.4_postsubmit
   name: integ-conformance-local-tests_istio_release-1.4_postsubmit
@@ -3843,6 +4794,9 @@ test_groups:
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/integ-distroless-k8s-tests_istio_release-1.5_postsubmit
   name: integ-distroless-k8s-tests_istio_release-1.5_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/integ-distroless-k8s-tests_istio_release-1.6_postsubmit
+  name: integ-distroless-k8s-tests_istio_release-1.6_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/integ-framework-k8s-tests_istio_release-1.4_postsubmit
   name: integ-framework-k8s-tests_istio_release-1.4_postsubmit
@@ -3859,11 +4813,17 @@ test_groups:
 - gcs_prefix: istio-prow/logs/integ-galley-k8s-tests_istio_release-1.5_postsubmit
   name: integ-galley-k8s-tests_istio_release-1.5_postsubmit
   num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/integ-galley-k8s-tests_istio_release-1.6_postsubmit
+  name: integ-galley-k8s-tests_istio_release-1.6_postsubmit
+  num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/integ-galley-local-tests_istio_release-1.4_postsubmit
   name: integ-galley-local-tests_istio_release-1.4_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/integ-galley-local-tests_istio_release-1.5_postsubmit
   name: integ-galley-local-tests_istio_release-1.5_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/integ-ipv6-k8s-tests_istio_postsubmit
+  name: integ-ipv6-k8s-tests_istio_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/integ-istioctl-k8s-tests_istio_release-1.4_postsubmit
   name: integ-istioctl-k8s-tests_istio_release-1.4_postsubmit
@@ -3883,11 +4843,11 @@ test_groups:
 - gcs_prefix: istio-prow/logs/integ-k8s-114_istio_release-1.5_postsubmit
   name: integ-k8s-114_istio_release-1.5_postsubmit
   num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/integ-k8s-115_istio_postsubmit
-  name: integ-k8s-115_istio_postsubmit
-  num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/integ-k8s-115_istio_release-1.5_postsubmit
   name: integ-k8s-115_istio_release-1.5_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/integ-k8s-115_istio_release-1.6_postsubmit
+  name: integ-k8s-115_istio_release-1.6_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/integ-k8s-116_istio_postsubmit
   name: integ-k8s-116_istio_postsubmit
@@ -3898,14 +4858,23 @@ test_groups:
 - gcs_prefix: istio-prow/logs/integ-k8s-116_istio_release-1.5_postsubmit
   name: integ-k8s-116_istio_release-1.5_postsubmit
   num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/integ-k8s-116_istio_release-1.6_postsubmit
+  name: integ-k8s-116_istio_release-1.6_postsubmit
+  num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/integ-k8s-117_istio_postsubmit
   name: integ-k8s-117_istio_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/integ-k8s-117_istio_release-1.6_postsubmit
+  name: integ-k8s-117_istio_release-1.6_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/integ-k8s-119_istio_postsubmit
   name: integ-k8s-119_istio_postsubmit
   num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/integ-local-tests_istio_postsubmit
-  name: integ-local-tests_istio_postsubmit
+- gcs_prefix: istio-prow/logs/integ-k8s-119_istio_release-1.6_postsubmit
+  name: integ-k8s-119_istio_release-1.6_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/integ-local-tests_istio_release-1.6_postsubmit
+  name: integ-local-tests_istio_release-1.6_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/integ-mixer-k8s-tests_istio_postsubmit
   name: integ-mixer-k8s-tests_istio_postsubmit
@@ -3916,6 +4885,9 @@ test_groups:
 - gcs_prefix: istio-prow/logs/integ-mixer-k8s-tests_istio_release-1.5_postsubmit
   name: integ-mixer-k8s-tests_istio_release-1.5_postsubmit
   num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/integ-mixer-k8s-tests_istio_release-1.6_postsubmit
+  name: integ-mixer-k8s-tests_istio_release-1.6_postsubmit
+  num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/integ-pilot-k8s-tests_istio_postsubmit
   name: integ-pilot-k8s-tests_istio_postsubmit
   num_failures_to_alert: 1
@@ -3925,11 +4897,17 @@ test_groups:
 - gcs_prefix: istio-prow/logs/integ-pilot-k8s-tests_istio_release-1.5_postsubmit
   name: integ-pilot-k8s-tests_istio_release-1.5_postsubmit
   num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/integ-pilot-k8s-tests_istio_release-1.6_postsubmit
+  name: integ-pilot-k8s-tests_istio_release-1.6_postsubmit
+  num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/integ-pilot-local-tests_istio_release-1.4_postsubmit
   name: integ-pilot-local-tests_istio_release-1.4_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/integ-pilot-local-tests_istio_release-1.5_postsubmit
   name: integ-pilot-local-tests_istio_release-1.5_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/integ-pilot-multicluster-tests_istio_postsubmit
+  name: integ-pilot-multicluster-tests_istio_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/integ-security-k8s-tests_istio_postsubmit
   name: integ-security-k8s-tests_istio_postsubmit
@@ -3939,6 +4917,9 @@ test_groups:
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/integ-security-k8s-tests_istio_release-1.5_postsubmit
   name: integ-security-k8s-tests_istio_release-1.5_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/integ-security-k8s-tests_istio_release-1.6_postsubmit
+  name: integ-security-k8s-tests_istio_release-1.6_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/integ-security-local-tests_istio_release-1.4_postsubmit
   name: integ-security-local-tests_istio_release-1.4_postsubmit
@@ -3954,6 +4935,9 @@ test_groups:
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/integ-telemetry-k8s-tests_istio_release-1.5_postsubmit
   name: integ-telemetry-k8s-tests_istio_release-1.5_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/integ-telemetry-k8s-tests_istio_release-1.6_postsubmit
+  name: integ-telemetry-k8s-tests_istio_release-1.6_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/istio_e2e_cloudfoundry_istio_release-1.4_postsubmit
   name: istio_e2e_cloudfoundry_istio_release-1.4_postsubmit
@@ -3985,6 +4969,9 @@ test_groups:
 - gcs_prefix: istio-prow/logs/release_istio_release-1.5_postsubmit
   name: release_istio_release-1.5_postsubmit
   num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/release_istio_release-1.6_postsubmit
+  name: release_istio_release-1.6_postsubmit
+  num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/unit-tests_istio_postsubmit
   name: unit-tests_istio_postsubmit
   num_failures_to_alert: 1
@@ -3994,8 +4981,20 @@ test_groups:
 - gcs_prefix: istio-prow/logs/unit-tests_istio_release-1.5_postsubmit
   name: unit-tests_istio_release-1.5_postsubmit
   num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/unit-tests_istio_release-1.6_postsubmit
+  name: unit-tests_istio_release-1.6_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/gencheck_istio.io_postsubmit
+  name: gencheck_istio.io_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/gencheck_istio.io_release-1.6_postsubmit
+  name: gencheck_istio.io_release-1.6_postsubmit
+  num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/k8s-tests_istio.io_postsubmit
   name: k8s-tests_istio.io_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/k8s-tests_istio.io_release-1.6_postsubmit
+  name: k8s-tests_istio.io_release-1.6_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/lint_istio.io_postsubmit
   name: lint_istio.io_postsubmit
@@ -4005,6 +5004,9 @@ test_groups:
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/lint_istio.io_release-1.5_postsubmit
   name: lint_istio.io_release-1.5_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/lint_istio.io_release-1.6_postsubmit
+  name: lint_istio.io_release-1.6_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/lint_operator_release-1.4_postsubmit
   name: lint_operator_release-1.4_postsubmit
@@ -4030,11 +5032,17 @@ test_groups:
 - gcs_prefix: istio-prow/logs/build_pkg_release-1.5_postsubmit
   name: build_pkg_release-1.5_postsubmit
   num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/build_pkg_release-1.6_postsubmit
+  name: build_pkg_release-1.6_postsubmit
+  num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/gencheck_pkg_postsubmit
   name: gencheck_pkg_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/gencheck_pkg_release-1.5_postsubmit
   name: gencheck_pkg_release-1.5_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/gencheck_pkg_release-1.6_postsubmit
+  name: gencheck_pkg_release-1.6_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/lint_pkg_postsubmit
   name: lint_pkg_postsubmit
@@ -4045,6 +5053,9 @@ test_groups:
 - gcs_prefix: istio-prow/logs/lint_pkg_release-1.5_postsubmit
   name: lint_pkg_release-1.5_postsubmit
   num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/lint_pkg_release-1.6_postsubmit
+  name: lint_pkg_release-1.6_postsubmit
+  num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/test_pkg_postsubmit
   name: test_pkg_postsubmit
   num_failures_to_alert: 1
@@ -4053,6 +5064,9 @@ test_groups:
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/test_pkg_release-1.5_postsubmit
   name: test_pkg_release-1.5_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/test_pkg_release-1.6_postsubmit
+  name: test_pkg_release-1.6_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/proxy-postsubmit
   name: proxy-postsubmit
@@ -4063,6 +5077,9 @@ test_groups:
 - gcs_prefix: istio-prow/logs/release_proxy_release-1.5_postsubmit
   name: release_proxy_release-1.5_postsubmit
   num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/release_proxy_release-1.6_postsubmit
+  name: release_proxy_release-1.6_postsubmit
+  num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/build-release_release-builder_postsubmit
   name: build-release_release-builder_postsubmit
   num_failures_to_alert: 1
@@ -4071,6 +5088,9 @@ test_groups:
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/build-release_release-builder_release-1.5_postsubmit
   name: build-release_release-builder_release-1.5_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/build-release_release-builder_release-1.6_postsubmit
+  name: build-release_release-builder_release-1.6_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/dry-run_release-builder_postsubmit
   name: dry-run_release-builder_postsubmit
@@ -4081,6 +5101,9 @@ test_groups:
 - gcs_prefix: istio-prow/logs/dry-run_release-builder_release-1.5_postsubmit
   name: dry-run_release-builder_release-1.5_postsubmit
   num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/dry-run_release-builder_release-1.6_postsubmit
+  name: dry-run_release-builder_release-1.6_postsubmit
+  num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/gencheck_release-builder_postsubmit
   name: gencheck_release-builder_postsubmit
   num_failures_to_alert: 1
@@ -4089,6 +5112,9 @@ test_groups:
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/gencheck_release-builder_release-1.5_postsubmit
   name: gencheck_release-builder_release-1.5_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/gencheck_release-builder_release-1.6_postsubmit
+  name: gencheck_release-builder_release-1.6_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/lint_release-builder_postsubmit
   name: lint_release-builder_postsubmit
@@ -4099,6 +5125,9 @@ test_groups:
 - gcs_prefix: istio-prow/logs/lint_release-builder_release-1.5_postsubmit
   name: lint_release-builder_release-1.5_postsubmit
   num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/lint_release-builder_release-1.6_postsubmit
+  name: lint_release-builder_release-1.6_postsubmit
+  num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/publish-release_release-builder_postsubmit
   name: publish-release_release-builder_postsubmit
   num_failures_to_alert: 1
@@ -4108,6 +5137,9 @@ test_groups:
 - gcs_prefix: istio-prow/logs/publish-release_release-builder_release-1.5_postsubmit
   name: publish-release_release-builder_release-1.5_postsubmit
   num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/publish-release_release-builder_release-1.6_postsubmit
+  name: publish-release_release-builder_release-1.6_postsubmit
+  num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/test_release-builder_postsubmit
   name: test_release-builder_postsubmit
   num_failures_to_alert: 1
@@ -4116,6 +5148,9 @@ test_groups:
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/test_release-builder_release-1.5_postsubmit
   name: test_release-builder_release-1.5_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/test_release-builder_release-1.6_postsubmit
+  name: test_release-builder_release-1.6_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/deploy-boskos-config_test-infra_postsubmit
   name: deploy-boskos-config_test-infra_postsubmit
@@ -4158,20 +5193,32 @@ test_groups:
 - gcs_prefix: istio-prow/logs/build_tools_release-1.5_postsubmit
   name: build_tools_release-1.5_postsubmit
   num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/build_tools_release-1.6_postsubmit
+  name: build_tools_release-1.6_postsubmit
+  num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/containers_tools_postsubmit
   name: containers_tools_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/containers_tools_release-1.5_postsubmit
   name: containers_tools_release-1.5_postsubmit
   num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/containers_tools_release-1.6_postsubmit
+  name: containers_tools_release-1.6_postsubmit
+  num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/deploy-perf-dashboard_tools_postsubmit
   name: deploy-perf-dashboard_tools_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/deploy-perf-dashboard_tools_release-1.6_postsubmit
+  name: deploy-perf-dashboard_tools_release-1.6_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/gencheck_tools_postsubmit
   name: gencheck_tools_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/gencheck_tools_release-1.5_postsubmit
   name: gencheck_tools_release-1.5_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/gencheck_tools_release-1.6_postsubmit
+  name: gencheck_tools_release-1.6_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/lint_tools_postsubmit
   name: lint_tools_postsubmit
@@ -4182,6 +5229,9 @@ test_groups:
 - gcs_prefix: istio-prow/logs/lint_tools_release-1.5_postsubmit
   name: lint_tools_release-1.5_postsubmit
   num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/lint_tools_release-1.6_postsubmit
+  name: lint_tools_release-1.6_postsubmit
+  num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/test_tools_postsubmit
   name: test_tools_postsubmit
   num_failures_to_alert: 1
@@ -4190,6 +5240,9 @@ test_groups:
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/test_tools_release-1.5_postsubmit
   name: test_tools_release-1.5_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/test_tools_release-1.6_postsubmit
+  name: test_tools_release-1.6_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/tools-containers_release-1.4
   name: tools-containers_release-1.4
@@ -4202,6 +5255,9 @@ test_groups:
 - gcs_prefix: istio-prow/pr-logs/directory/build_api_release-1.5
   name: build_api_release-1.5
   num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/build_api_release-1.6
+  name: build_api_release-1.6
+  num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/gencheck_api
   name: gencheck_api
   num_columns_recent: 20
@@ -4210,6 +5266,9 @@ test_groups:
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/gencheck_api_release-1.5
   name: gencheck_api_release-1.5
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/gencheck_api_release-1.6
+  name: gencheck_api_release-1.6
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/build_bots
   name: build_bots
@@ -4232,6 +5291,9 @@ test_groups:
 - gcs_prefix: istio-prow/pr-logs/directory/build_client-go_release-1.5
   name: build_client-go_release-1.5
   num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/build_client-go_release-1.6
+  name: build_client-go_release-1.6
+  num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/gencheck_client-go
   name: gencheck_client-go
   num_columns_recent: 20
@@ -4240,6 +5302,9 @@ test_groups:
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/gencheck_client-go_release-1.5
   name: gencheck_client-go_release-1.5
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/gencheck_client-go_release-1.6
+  name: gencheck_client-go_release-1.6
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/lint_client-go
   name: lint_client-go
@@ -4250,8 +5315,8 @@ test_groups:
 - gcs_prefix: istio-prow/pr-logs/directory/lint_client-go_release-1.5
   name: lint_client-go_release-1.5
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/build_cni
-  name: build_cni
+- gcs_prefix: istio-prow/pr-logs/directory/lint_client-go_release-1.6
+  name: lint_client-go_release-1.6
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/build_cni_release-1.4
   name: build_cni_release-1.4
@@ -4259,17 +5324,17 @@ test_groups:
 - gcs_prefix: istio-prow/pr-logs/directory/build_cni_release-1.5
   name: build_cni_release-1.5
   num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/build_cni_release-1.6
+  name: build_cni_release-1.6
+  num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/e2e_cni_release-1.4
   name: e2e_cni_release-1.4
-  num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/gencheck_cni
-  name: gencheck_cni
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/gencheck_cni_release-1.5
   name: gencheck_cni_release-1.5
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/install_cni
-  name: install_cni
+- gcs_prefix: istio-prow/pr-logs/directory/gencheck_cni_release-1.6
+  name: gencheck_cni_release-1.6
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/install_cni_release-1.4
   name: install_cni_release-1.4
@@ -4277,14 +5342,17 @@ test_groups:
 - gcs_prefix: istio-prow/pr-logs/directory/install_cni_release-1.5
   name: install_cni_release-1.5
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/lint_cni
-  name: lint_cni
+- gcs_prefix: istio-prow/pr-logs/directory/install_cni_release-1.6
+  name: install_cni_release-1.6
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/lint_cni_release-1.4
   name: lint_cni_release-1.4
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/lint_cni_release-1.5
   name: lint_cni_release-1.5
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/lint_cni_release-1.6
+  name: lint_cni_release-1.6
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/lint_common-files
   name: lint_common-files
@@ -4294,6 +5362,9 @@ test_groups:
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/lint_common-files_release-1.5
   name: lint_common-files_release-1.5
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/lint_common-files_release-1.6
+  name: lint_common-files_release-1.6
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/lint_community
   name: lint_community
@@ -4322,6 +5393,9 @@ test_groups:
 - gcs_prefix: istio-prow/pr-logs/directory/test-asan_envoy_release-1.5
   name: test-asan_envoy_release-1.5
   num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/test-asan_envoy_release-1.6
+  name: test-asan_envoy_release-1.6
+  num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/test-release_envoy
   name: test-release_envoy
   num_columns_recent: 20
@@ -4330,6 +5404,9 @@ test_groups:
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/test-release_envoy_release-1.5
   name: test-release_envoy_release-1.5
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/test-release_envoy_release-1.6
+  name: test-release_envoy_release-1.6
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/test-tsan_envoy
   name: test-tsan_envoy
@@ -4340,6 +5417,9 @@ test_groups:
 - gcs_prefix: istio-prow/pr-logs/directory/test-tsan_envoy_release-1.5
   name: test-tsan_envoy_release-1.5
   num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/test-tsan_envoy_release-1.6
+  name: test-tsan_envoy_release-1.6
+  num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/build_gogo-genproto
   name: build_gogo-genproto
   num_columns_recent: 20
@@ -4348,6 +5428,9 @@ test_groups:
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/build_gogo-genproto_release-1.5
   name: build_gogo-genproto_release-1.5
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/build_gogo-genproto_release-1.6
+  name: build_gogo-genproto_release-1.6
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/gencheck_gogo-genproto
   name: gencheck_gogo-genproto
@@ -4358,6 +5441,9 @@ test_groups:
 - gcs_prefix: istio-prow/pr-logs/directory/gencheck_gogo-genproto_release-1.5
   name: gencheck_gogo-genproto_release-1.5
   num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/gencheck_gogo-genproto_release-1.6
+  name: gencheck_gogo-genproto_release-1.6
+  num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/lint_gogo-genproto
   name: lint_gogo-genproto
   num_columns_recent: 20
@@ -4366,6 +5452,9 @@ test_groups:
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/lint_gogo-genproto_release-1.5
   name: lint_gogo-genproto_release-1.5
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/lint_gogo-genproto_release-1.6
+  name: lint_gogo-genproto_release-1.6
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/base_installer_release-1.4
   name: base_installer_release-1.4
@@ -4382,8 +5471,8 @@ test_groups:
 - gcs_prefix: istio-prow/pr-logs/directory/noauth_installer_release-1.4
   name: noauth_installer_release-1.4
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/cache-experiment_istio
-  name: cache-experiment_istio
+- gcs_prefix: istio-prow/pr-logs/directory/cache-experiment_istio_release-1.6
+  name: cache-experiment_istio_release-1.6
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/codecov_istio_release-1.4
   name: codecov_istio_release-1.4
@@ -4430,11 +5519,14 @@ test_groups:
 - gcs_prefix: istio-prow/pr-logs/directory/gencheck_istio_release-1.5
   name: gencheck_istio_release-1.5
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/integ-conformance-k8s-tests_istio
-  name: integ-conformance-k8s-tests_istio
+- gcs_prefix: istio-prow/pr-logs/directory/gencheck_istio_release-1.6
+  name: gencheck_istio_release-1.6
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/integ-conformance-k8s-tests_istio_release-1.5
   name: integ-conformance-k8s-tests_istio_release-1.5
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/integ-conformance-k8s-tests_istio_release-1.6
+  name: integ-conformance-k8s-tests_istio_release-1.6
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/integ-conformance-local-tests_istio_release-1.5
   name: integ-conformance-local-tests_istio_release-1.5
@@ -4444,6 +5536,9 @@ test_groups:
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/integ-distroless-k8s-tests_istio_release-1.5
   name: integ-distroless-k8s-tests_istio_release-1.5
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/integ-distroless-k8s-tests_istio_release-1.6
+  name: integ-distroless-k8s-tests_istio_release-1.6
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/integ-framework-k8s-tests_istio_release-1.4
   name: integ-framework-k8s-tests_istio_release-1.4
@@ -4460,11 +5555,17 @@ test_groups:
 - gcs_prefix: istio-prow/pr-logs/directory/integ-galley-k8s-tests_istio_release-1.5
   name: integ-galley-k8s-tests_istio_release-1.5
   num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/integ-galley-k8s-tests_istio_release-1.6
+  name: integ-galley-k8s-tests_istio_release-1.6
+  num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/integ-galley-local-tests_istio_release-1.4
   name: integ-galley-local-tests_istio_release-1.4
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/integ-galley-local-tests_istio_release-1.5
   name: integ-galley-local-tests_istio_release-1.5
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/integ-ipv6-k8s-tests_istio
+  name: integ-ipv6-k8s-tests_istio
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/integ-istioctl-k8s-tests_istio_release-1.4
   name: integ-istioctl-k8s-tests_istio_release-1.4
@@ -4475,8 +5576,8 @@ test_groups:
 - gcs_prefix: istio-prow/pr-logs/directory/integ-istioio-k8s-tests_istio_release-1.5
   name: integ-istioio-k8s-tests_istio_release-1.5
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/integ-local-tests_istio
-  name: integ-local-tests_istio
+- gcs_prefix: istio-prow/pr-logs/directory/integ-local-tests_istio_release-1.6
+  name: integ-local-tests_istio_release-1.6
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/integ-mixer-k8s-tests_istio
   name: integ-mixer-k8s-tests_istio
@@ -4487,11 +5588,23 @@ test_groups:
 - gcs_prefix: istio-prow/pr-logs/directory/integ-mixer-k8s-tests_istio_release-1.5
   name: integ-mixer-k8s-tests_istio_release-1.5
   num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/integ-mixer-k8s-tests_istio_release-1.6
+  name: integ-mixer-k8s-tests_istio_release-1.6
+  num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/integ-multicluster-k8s-tests_istio
   name: integ-multicluster-k8s-tests_istio
   num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/integ-multicluster-k8s-tests_istio_release-1.6
+  name: integ-multicluster-k8s-tests_istio_release-1.6
+  num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/integ-new-install-k8s-tests_istio_release-1.4
   name: integ-new-install-k8s-tests_istio_release-1.4
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/integ-operator-controller-tests_istio
+  name: integ-operator-controller-tests_istio
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/integ-operator-controller-tests_istio_release-1.6
+  name: integ-operator-controller-tests_istio_release-1.6
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/integ-pilot-k8s-tests_istio
   name: integ-pilot-k8s-tests_istio
@@ -4502,11 +5615,17 @@ test_groups:
 - gcs_prefix: istio-prow/pr-logs/directory/integ-pilot-k8s-tests_istio_release-1.5
   name: integ-pilot-k8s-tests_istio_release-1.5
   num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/integ-pilot-k8s-tests_istio_release-1.6
+  name: integ-pilot-k8s-tests_istio_release-1.6
+  num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/integ-pilot-local-tests_istio_release-1.4
   name: integ-pilot-local-tests_istio_release-1.4
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/integ-pilot-local-tests_istio_release-1.5
   name: integ-pilot-local-tests_istio_release-1.5
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/integ-pilot-multicluster-tests_istio
+  name: integ-pilot-multicluster-tests_istio
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/integ-security-k8s-tests_istio
   name: integ-security-k8s-tests_istio
@@ -4516,6 +5635,9 @@ test_groups:
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/integ-security-k8s-tests_istio_release-1.5
   name: integ-security-k8s-tests_istio_release-1.5
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/integ-security-k8s-tests_istio_release-1.6
+  name: integ-security-k8s-tests_istio_release-1.6
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/integ-security-local-tests_istio_release-1.4
   name: integ-security-local-tests_istio_release-1.4
@@ -4532,6 +5654,9 @@ test_groups:
 - gcs_prefix: istio-prow/pr-logs/directory/integ-telemetry-k8s-tests_istio_release-1.5
   name: integ-telemetry-k8s-tests_istio_release-1.5
   num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/integ-telemetry-k8s-tests_istio_release-1.6
+  name: integ-telemetry-k8s-tests_istio_release-1.6
+  num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/istio_e2e_cloudfoundry_istio_release-1.4
   name: istio_e2e_cloudfoundry_istio_release-1.4
   num_columns_recent: 20
@@ -4543,6 +5668,9 @@ test_groups:
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/lint_istio_release-1.5
   name: lint_istio_release-1.5
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/lint_istio_release-1.6
+  name: lint_istio_release-1.6
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/pilot-e2e-envoyv2-v1alpha3_istio_release-1.4
   name: pilot-e2e-envoyv2-v1alpha3_istio_release-1.4
@@ -4565,6 +5693,9 @@ test_groups:
 - gcs_prefix: istio-prow/pr-logs/directory/release-test_istio_release-1.5
   name: release-test_istio_release-1.5
   num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/release-test_istio_release-1.6
+  name: release-test_istio_release-1.6
+  num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/unit-tests_istio
   name: unit-tests_istio
   num_columns_recent: 20
@@ -4574,6 +5705,21 @@ test_groups:
 - gcs_prefix: istio-prow/pr-logs/directory/unit-tests_istio_release-1.5
   name: unit-tests_istio_release-1.5
   num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/unit-tests_istio_release-1.6
+  name: unit-tests_istio_release-1.6
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/gencheck_istio.io
+  name: gencheck_istio.io
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/gencheck_istio.io_release-1.6
+  name: gencheck_istio.io_release-1.6
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/k8s-tests_istio.io
+  name: k8s-tests_istio.io
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/k8s-tests_istio.io_release-1.6
+  name: k8s-tests_istio.io_release-1.6
+  num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/lint_istio.io
   name: lint_istio.io
   num_columns_recent: 20
@@ -4582,6 +5728,12 @@ test_groups:
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/lint_istio.io_release-1.5
   name: lint_istio.io_release-1.5
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/lint_istio.io_release-1.6
+  name: lint_istio.io_release-1.6
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/update-ref-docs-dry-run_istio.io
+  name: update-ref-docs-dry-run_istio.io
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/lint_operator_release-1.4
   name: lint_operator_release-1.4
@@ -4604,11 +5756,17 @@ test_groups:
 - gcs_prefix: istio-prow/pr-logs/directory/build_pkg_release-1.5
   name: build_pkg_release-1.5
   num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/build_pkg_release-1.6
+  name: build_pkg_release-1.6
+  num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/gencheck_pkg
   name: gencheck_pkg
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/gencheck_pkg_release-1.5
   name: gencheck_pkg_release-1.5
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/gencheck_pkg_release-1.6
+  name: gencheck_pkg_release-1.6
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/lint_pkg
   name: lint_pkg
@@ -4619,6 +5777,9 @@ test_groups:
 - gcs_prefix: istio-prow/pr-logs/directory/lint_pkg_release-1.5
   name: lint_pkg_release-1.5
   num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/lint_pkg_release-1.6
+  name: lint_pkg_release-1.6
+  num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/test_pkg
   name: test_pkg
   num_columns_recent: 20
@@ -4628,11 +5789,17 @@ test_groups:
 - gcs_prefix: istio-prow/pr-logs/directory/test_pkg_release-1.5
   name: test_pkg_release-1.5
   num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/test_pkg_release-1.6
+  name: test_pkg_release-1.6
+  num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/check-wasm_proxy
   name: check-wasm_proxy
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/check-wasm_proxy_release-1.5
   name: check-wasm_proxy_release-1.5
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/check-wasm_proxy_release-1.6
+  name: check-wasm_proxy_release-1.6
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/proxy-presubmit
   name: proxy-presubmit
@@ -4646,11 +5813,17 @@ test_groups:
 - gcs_prefix: istio-prow/pr-logs/directory/proxy-presubmit-tsan
   name: proxy-presubmit-tsan
   num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/release-centos-test_proxy
+  name: release-centos-test_proxy
+  num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/release-test_proxy
   name: release-test_proxy
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/release-test_proxy_release-1.5
   name: release-test_proxy_release-1.5
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/release-test_proxy_release-1.6
+  name: release-test_proxy_release-1.6
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/test-asan_proxy
   name: test-asan_proxy
@@ -4658,17 +5831,26 @@ test_groups:
 - gcs_prefix: istio-prow/pr-logs/directory/test-asan_proxy_release-1.5
   name: test-asan_proxy_release-1.5
   num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/test-asan_proxy_release-1.6
+  name: test-asan_proxy_release-1.6
+  num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/test-tsan_proxy
   name: test-tsan_proxy
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/test-tsan_proxy_release-1.5
   name: test-tsan_proxy_release-1.5
   num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/test-tsan_proxy_release-1.6
+  name: test-tsan_proxy_release-1.6
+  num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/test_proxy
   name: test_proxy
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/test_proxy_release-1.5
   name: test_proxy_release-1.5
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/test_proxy_release-1.6
+  name: test_proxy_release-1.6
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/build-warning_release-builder
   name: build-warning_release-builder
@@ -4679,6 +5861,9 @@ test_groups:
 - gcs_prefix: istio-prow/pr-logs/directory/build-warning_release-builder_release-1.5
   name: build-warning_release-builder_release-1.5
   num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/build-warning_release-builder_release-1.6
+  name: build-warning_release-builder_release-1.6
+  num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/dry-run_release-builder
   name: dry-run_release-builder
   num_columns_recent: 20
@@ -4687,6 +5872,9 @@ test_groups:
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/dry-run_release-builder_release-1.5
   name: dry-run_release-builder_release-1.5
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/dry-run_release-builder_release-1.6
+  name: dry-run_release-builder_release-1.6
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/gencheck_release-builder
   name: gencheck_release-builder
@@ -4697,6 +5885,9 @@ test_groups:
 - gcs_prefix: istio-prow/pr-logs/directory/gencheck_release-builder_release-1.5
   name: gencheck_release-builder_release-1.5
   num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/gencheck_release-builder_release-1.6
+  name: gencheck_release-builder_release-1.6
+  num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/lint_release-builder
   name: lint_release-builder
   num_columns_recent: 20
@@ -4705,6 +5896,9 @@ test_groups:
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/lint_release-builder_release-1.5
   name: lint_release-builder_release-1.5
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/lint_release-builder_release-1.6
+  name: lint_release-builder_release-1.6
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/publish-warning_release-builder
   name: publish-warning_release-builder
@@ -4715,6 +5909,9 @@ test_groups:
 - gcs_prefix: istio-prow/pr-logs/directory/publish-warning_release-builder_release-1.5
   name: publish-warning_release-builder_release-1.5
   num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/publish-warning_release-builder_release-1.6
+  name: publish-warning_release-builder_release-1.6
+  num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/test_release-builder
   name: test_release-builder
   num_columns_recent: 20
@@ -4723,6 +5920,9 @@ test_groups:
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/test_release-builder_release-1.5
   name: test_release-builder_release-1.5
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/test_release-builder_release-1.6
+  name: test_release-builder_release-1.6
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/gencheck_test-infra
   name: gencheck_test-infra
@@ -4739,6 +5939,9 @@ test_groups:
 - gcs_prefix: istio-prow/pr-logs/directory/unit-test-authentikos_test-infra
   name: unit-test-authentikos_test-infra
   num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/benchmark_check_tools
+  name: benchmark_check_tools
+  num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/build_tools
   name: build_tools
   num_columns_recent: 20
@@ -4748,17 +5951,26 @@ test_groups:
 - gcs_prefix: istio-prow/pr-logs/directory/build_tools_release-1.5
   name: build_tools_release-1.5
   num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/build_tools_release-1.6
+  name: build_tools_release-1.6
+  num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/containers-test_tools
   name: containers-test_tools
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/containers-test_tools_release-1.5
   name: containers-test_tools_release-1.5
   num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/containers-test_tools_release-1.6
+  name: containers-test_tools_release-1.6
+  num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/gencheck_tools
   name: gencheck_tools
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/gencheck_tools_release-1.5
   name: gencheck_tools_release-1.5
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/gencheck_tools_release-1.6
+  name: gencheck_tools_release-1.6
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/lint_tools
   name: lint_tools
@@ -4769,6 +5981,9 @@ test_groups:
 - gcs_prefix: istio-prow/pr-logs/directory/lint_tools_release-1.5
   name: lint_tools_release-1.5
   num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/lint_tools_release-1.6
+  name: lint_tools_release-1.6
+  num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/test_tools
   name: test_tools
   num_columns_recent: 20
@@ -4777,4 +5992,7 @@ test_groups:
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/test_tools_release-1.5
   name: test_tools_release-1.5
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/test_tools_release-1.6
+  name: test_tools_release-1.6
   num_columns_recent: 20

@@ -68,19 +68,19 @@ func (w HideSecretsWriter) Write(content []byte) (int, error) {
 // with "matchTitle" from "source" to "branch"
 // "images" contains the tag replacements that have been made which is returned from "UpdateReferences([]string{"."}, extraFiles)"
 // "images" and "extraLineInPRBody" are used to generate commit summary and body of the PR
-func UpdatePR(gc github.Client, org, repo string, images map[string]string, extraLineInPRBody string, matchTitle, source, branch string) error {
-	return UpdatePullRequest(gc, org, repo, makeCommitSummary(images), generatePRBody(images, extraLineInPRBody), matchTitle, source, branch)
+func UpdatePR(gc github.Client, org, repo string, images map[string]string, extraLineInPRBody string, matchTitle, source, branch string, allowMods bool) error {
+	return UpdatePullRequest(gc, org, repo, makeCommitSummary(images), generatePRBody(images, extraLineInPRBody), matchTitle, source, branch, allowMods)
 }
 
 // UpdatePullRequest updates with github client "gc" the PR of github repo org/repo
 // with "title" and "body" of PR matching "matchTitle" from "source" to "branch"
-func UpdatePullRequest(gc github.Client, org, repo, title, body, matchTitle, source, branch string) error {
-	return UpdatePullRequestWithLabels(gc, org, repo, title, body, matchTitle, source, branch, nil)
+func UpdatePullRequest(gc github.Client, org, repo, title, body, matchTitle, source, branch string, allowMods bool) error {
+	return UpdatePullRequestWithLabels(gc, org, repo, title, body, matchTitle, source, branch, allowMods, nil)
 }
 
-func UpdatePullRequestWithLabels(gc github.Client, org, repo, title, body, matchTitle, source, branch string, labels []string) error {
+func UpdatePullRequestWithLabels(gc github.Client, org, repo, title, body, matchTitle, source, branch string, allowMods bool, labels []string) error {
 	logrus.Info("Creating or updating PR...")
-	n, err := updater.EnsurePRWithLabels(org, repo, title, body, source, branch, matchTitle, gc, labels)
+	n, err := updater.EnsurePRWithLabels(org, repo, title, body, source, branch, matchTitle, allowMods, gc, labels)
 	if err != nil {
 		return fmt.Errorf("failed to ensure PR exists: %v", err)
 	}
@@ -148,9 +148,8 @@ func MakeGitCommit(remote, remoteBranch, name, email string, images map[string]s
 	return GitCommitAndPush(remote, remoteBranch, name, email, makeCommitSummary(images), stdout, stderr)
 }
 
-// GitCommitAndPush runs a sequence of git commands to
-// commit and push the changes the "remote" on "remoteBranch"
-// "name", "email", and "message" are used for git-commit command
+// GitCommitAndPush runs a sequence of git commands to commit.
+// The "name", "email", and "message" are used for git-commit command
 func GitCommitAndPush(remote, remoteBranch, name, email, message string, stdout, stderr io.Writer) error {
 	logrus.Info("Making git commit...")
 
@@ -164,6 +163,14 @@ func GitCommitAndPush(remote, remoteBranch, name, email, message string, stdout,
 	if err := Call(stdout, stderr, "git", commitArgs...); err != nil {
 		return fmt.Errorf("failed to git commit: %v", err)
 	}
+	if err := GitPush(remote, remoteBranch, stdout, stderr); err != nil {
+		return fmt.Errorf("%v", err)
+	}
+	return nil
+}
+
+// GitPush push the changes to the given remote and branch.
+func GitPush(remote, remoteBranch string, stdout, stderr io.Writer) error {
 	logrus.Info("Pushing to remote...")
 	if err := Call(stdout, stderr, "git", "push", "-f", remote, fmt.Sprintf("HEAD:%s", remoteBranch)); err != nil {
 		return fmt.Errorf("failed to git push: %v", err)

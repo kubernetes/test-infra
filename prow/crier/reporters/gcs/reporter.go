@@ -24,14 +24,14 @@ import (
 	"path"
 	"time"
 
-	"cloud.google.com/go/storage"
 	"github.com/GoogleCloudPlatform/testgrid/metadata"
 	"github.com/sirupsen/logrus"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
-	"k8s.io/test-infra/prow/crier/reporters/gcs/internal/util"
 
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/crier/reporters/gcs/internal/util"
+	"k8s.io/test-infra/prow/io"
 )
 
 const reporterName = "gcsreporter"
@@ -75,7 +75,7 @@ func (gr *gcsReporter) reportStartedJob(ctx context.Context, pj *prowv1.ProwJob)
 		Timestamp: pj.Status.StartTime.Unix(),
 		Metadata:  metadata.Metadata{"uploader": "crier"},
 	}
-	output, err := json.Marshal(s)
+	output, err := json.MarshalIndent(s, "", "\t")
 	if err != nil {
 		return fmt.Errorf("failed to marshal started metadata: %v", err)
 	}
@@ -85,11 +85,11 @@ func (gr *gcsReporter) reportStartedJob(ctx context.Context, pj *prowv1.ProwJob)
 		return fmt.Errorf("failed to get job destination: %v", err)
 	}
 
+	gr.logger.Debugf("Would upload started.json to %q/%q", bucketName, dir)
 	if gr.dryRun {
-		gr.logger.Infof("Would upload started.json to %q/%q", bucketName, dir)
 		return nil
 	}
-	return util.WriteContent(ctx, gr.logger, gr.author, bucketName, path.Join(dir, "started.json"), false, output)
+	return util.WriteContent(ctx, gr.logger, gr.author, bucketName, path.Join(dir, prowv1.StartedStatusFile), false, output)
 }
 
 // reportFinishedJob uploads a finished.json for the job, iff one did not already exist.
@@ -105,7 +105,7 @@ func (gr *gcsReporter) reportFinishedJob(ctx context.Context, pj *prowv1.ProwJob
 		Metadata:  metadata.Metadata{"uploader": "crier"},
 		Result:    string(pj.Status.State),
 	}
-	output, err := json.Marshal(f)
+	output, err := json.MarshalIndent(f, "", "\t")
 	if err != nil {
 		return fmt.Errorf("failed to marshal finished metadata: %v", err)
 	}
@@ -115,16 +115,16 @@ func (gr *gcsReporter) reportFinishedJob(ctx context.Context, pj *prowv1.ProwJob
 		return fmt.Errorf("failed to get job destination: %v", err)
 	}
 
+	gr.logger.Debugf("Would upload finished.json info to %q/%q", bucketName, dir)
 	if gr.dryRun {
-		gr.logger.Infof("Would upload finished.json info to %q/%q", bucketName, dir)
 		return nil
 	}
-	return util.WriteContent(ctx, gr.logger, gr.author, bucketName, path.Join(dir, "finished.json"), false, output)
+	return util.WriteContent(ctx, gr.logger, gr.author, bucketName, path.Join(dir, prowv1.FinishedStatusFile), false, output)
 }
 
 func (gr *gcsReporter) reportProwjob(ctx context.Context, pj *prowv1.ProwJob) error {
 	// Unconditionally dump the prowjob to GCS, on all job updates.
-	output, err := json.Marshal(pj)
+	output, err := json.MarshalIndent(pj, "", "\t")
 	if err != nil {
 		return fmt.Errorf("failed to marshal prowjob: %v", err)
 	}
@@ -134,8 +134,8 @@ func (gr *gcsReporter) reportProwjob(ctx context.Context, pj *prowv1.ProwJob) er
 		return fmt.Errorf("failed to get job destination: %v", err)
 	}
 
+	gr.logger.Debugf("Would upload pod info to %q/%q", bucketName, dir)
 	if gr.dryRun {
-		gr.logger.Infof("Would upload pod info to %q/%q", bucketName, dir)
 		return nil
 	}
 	return util.WriteContent(ctx, gr.logger, gr.author, bucketName, path.Join(dir, "prowjob.json"), true, output)
@@ -152,8 +152,8 @@ func (gr *gcsReporter) ShouldReport(pj *prowv1.ProwJob) bool {
 	return pj.Status.BuildID != ""
 }
 
-func New(cfg config.Getter, storage *storage.Client, dryRun bool) *gcsReporter {
-	return newWithAuthor(cfg, util.StorageAuthor{Client: storage}, dryRun)
+func New(cfg config.Getter, opener io.Opener, dryRun bool) *gcsReporter {
+	return newWithAuthor(cfg, util.StorageAuthor{Opener: opener}, dryRun)
 }
 
 func newWithAuthor(cfg config.Getter, author util.Author, dryRun bool) *gcsReporter {

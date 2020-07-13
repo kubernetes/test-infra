@@ -19,7 +19,6 @@ package main
 import (
 	"bufio"
 	"bytes"
-	"context"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -37,24 +36,18 @@ import (
 	"github.com/gorilla/sessions"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
-
-	"k8s.io/test-infra/prow/github/fakegithub"
-	"k8s.io/test-infra/prow/githuboauth"
-	"k8s.io/test-infra/prow/plugins"
-
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/sets"
-	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
-	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/yaml"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/flagutil"
+	"k8s.io/test-infra/prow/github/fakegithub"
+	"k8s.io/test-infra/prow/githuboauth"
 	"k8s.io/test-infra/prow/pluginhelp"
+	"k8s.io/test-infra/prow/plugins"
 	_ "k8s.io/test-infra/prow/spyglass/lenses/buildlog"
 	"k8s.io/test-infra/prow/spyglass/lenses/common"
 	_ "k8s.io/test-infra/prow/spyglass/lenses/junit"
@@ -646,265 +639,6 @@ func TestHelp(t *testing.T) {
 	handleAndCheck()
 }
 
-func TestListProwJobs(t *testing.T) {
-	templateJob := &prowapi.ProwJob{
-		ObjectMeta: metav1.ObjectMeta{
-			Namespace: "prowjobs",
-		},
-	}
-
-	var testCases = []struct {
-		name        string
-		selector    string
-		prowJobs    []func(*prowapi.ProwJob) runtime.Object
-		listErr     bool
-		hiddenRepos sets.String
-		hiddenOnly  bool
-		showHidden  bool
-		expected    sets.String
-		expectedErr bool
-	}{
-		{
-			name:        "list error results in filter error",
-			listErr:     true,
-			expectedErr: true,
-		},
-		{
-			name:     "no hidden repos returns all prowjobs",
-			selector: labels.Everything().String(),
-			prowJobs: []func(*prowapi.ProwJob) runtime.Object{
-				func(in *prowapi.ProwJob) runtime.Object {
-					in.Name = "first"
-					return in
-				},
-			},
-			expected: sets.NewString("first"),
-		},
-		{
-			name:     "no hidden repos returns all prowjobs except those not matching label selector",
-			selector: "foo=bar",
-			prowJobs: []func(*prowapi.ProwJob) runtime.Object{
-				func(in *prowapi.ProwJob) runtime.Object {
-					in.Name = "first"
-					return in
-				},
-				func(in *prowapi.ProwJob) runtime.Object {
-					in.Name = "second"
-					in.Labels = map[string]string{"foo": "bar"}
-					return in
-				},
-			},
-			expected: sets.NewString("second"),
-		},
-		{
-			name:     "hidden repos excludes prowjobs from those repos",
-			selector: labels.Everything().String(),
-			prowJobs: []func(*prowapi.ProwJob) runtime.Object{
-				func(in *prowapi.ProwJob) runtime.Object {
-					in.Name = "first"
-					return in
-				},
-				func(in *prowapi.ProwJob) runtime.Object {
-					in.Name = "second"
-					in.Spec.Refs = &prowapi.Refs{
-						Org:  "org",
-						Repo: "repo",
-					}
-					return in
-				},
-			},
-			hiddenRepos: sets.NewString("org/repo"),
-			expected:    sets.NewString("first"),
-		},
-		{
-			name:     "hidden repos doesn't exclude prowjobs from other repos",
-			selector: labels.Everything().String(),
-			prowJobs: []func(*prowapi.ProwJob) runtime.Object{
-				func(in *prowapi.ProwJob) runtime.Object {
-					in.Name = "first"
-					return in
-				},
-				func(in *prowapi.ProwJob) runtime.Object {
-					in.Name = "second"
-					in.Spec.Refs = &prowapi.Refs{
-						Org:  "org",
-						Repo: "other",
-					}
-					return in
-				},
-			},
-			hiddenRepos: sets.NewString("org/repo"),
-			expected:    sets.NewString("first", "second"),
-		},
-		{
-			name:     "hidden orgs excludes prowjobs from those orgs",
-			selector: labels.Everything().String(),
-			prowJobs: []func(*prowapi.ProwJob) runtime.Object{
-				func(in *prowapi.ProwJob) runtime.Object {
-					in.Name = "first"
-					return in
-				},
-				func(in *prowapi.ProwJob) runtime.Object {
-					in.Name = "second"
-					in.Spec.Refs = &prowapi.Refs{
-						Org:  "org",
-						Repo: "other",
-					}
-					return in
-				},
-			},
-			hiddenRepos: sets.NewString("org"),
-			expected:    sets.NewString("first"),
-		},
-		{
-			name:     "hidden orgs doesn't exclude prowjobs from other orgs",
-			selector: labels.Everything().String(),
-			prowJobs: []func(*prowapi.ProwJob) runtime.Object{
-				func(in *prowapi.ProwJob) runtime.Object {
-					in.Name = "first"
-					return in
-				},
-				func(in *prowapi.ProwJob) runtime.Object {
-					in.Name = "second"
-					in.Spec.Refs = &prowapi.Refs{
-						Org:  "other",
-						Repo: "other",
-					}
-					return in
-				},
-			},
-			hiddenRepos: sets.NewString("org"),
-			expected:    sets.NewString("first", "second"),
-		},
-		{
-			name:     "hidden repos excludes prowjobs from those repos even by extra_refs",
-			selector: labels.Everything().String(),
-			prowJobs: []func(*prowapi.ProwJob) runtime.Object{
-				func(in *prowapi.ProwJob) runtime.Object {
-					in.Name = "first"
-					in.Spec.ExtraRefs = []prowapi.Refs{{Org: "org", Repo: "repo"}}
-					return in
-				},
-			},
-			hiddenRepos: sets.NewString("org/repo"),
-			expected:    sets.NewString(),
-		},
-		{
-			name:     "hidden orgs excludes prowjobs from those orgs even by extra_refs",
-			selector: labels.Everything().String(),
-			prowJobs: []func(*prowapi.ProwJob) runtime.Object{
-				func(in *prowapi.ProwJob) runtime.Object {
-					in.Name = "first"
-					in.Spec.ExtraRefs = []prowapi.Refs{{Org: "org", Repo: "repo"}}
-					return in
-				},
-			},
-			hiddenRepos: sets.NewString("org"),
-			expected:    sets.NewString(),
-		},
-		{
-			name:     "prowjobs without refs are returned even with hidden repos filtering",
-			selector: labels.Everything().String(),
-			prowJobs: []func(*prowapi.ProwJob) runtime.Object{
-				func(in *prowapi.ProwJob) runtime.Object {
-					in.Name = "first"
-					return in
-				},
-			},
-			hiddenRepos: sets.NewString("org/repo"),
-			expected:    sets.NewString("first"),
-		},
-		{
-			name:     "all prowjobs are returned when showHidden is true",
-			selector: labels.Everything().String(),
-			prowJobs: []func(*prowapi.ProwJob) runtime.Object{
-				func(in *prowapi.ProwJob) runtime.Object {
-					in.Name = "first"
-					in.Spec.ExtraRefs = []prowapi.Refs{{Org: "org", Repo: "repo"}}
-					return in
-				},
-				func(in *prowapi.ProwJob) runtime.Object {
-					in.Name = "second"
-					return in
-				},
-			},
-			hiddenRepos: sets.NewString("org/repo"),
-			expected:    sets.NewString("first", "second"),
-			showHidden:  true,
-		},
-		{
-			name: "setting pj.Spec.Hidden hides it",
-			prowJobs: []func(*prowapi.ProwJob) runtime.Object{
-				func(in *prowapi.ProwJob) runtime.Object {
-					in.Name = "hidden"
-					in.Spec.Hidden = true
-					return in
-				},
-				func(in *prowapi.ProwJob) runtime.Object {
-					in.Name = "shown"
-					return in
-				},
-			},
-			expected: sets.NewString("shown"),
-		},
-		{
-			name: "hidden repo or org in extra_refs hides it",
-			prowJobs: []func(*prowapi.ProwJob) runtime.Object{
-				func(in *prowapi.ProwJob) runtime.Object {
-					in.Name = "hidden-repo"
-					in.Spec.ExtraRefs = []prowapi.Refs{{Org: "hide", Repo: "me"}}
-					return in
-				},
-				func(in *prowapi.ProwJob) runtime.Object {
-					in.Name = "hidden-org"
-					in.Spec.ExtraRefs = []prowapi.Refs{{Org: "hidden-org"}}
-					return in
-				},
-			},
-			hiddenRepos: sets.NewString("hide/me", "hidden-org"),
-		},
-	}
-
-	for _, testCase := range testCases {
-		var data []runtime.Object
-		for _, generator := range testCase.prowJobs {
-			data = append(data, generator(templateJob.DeepCopy()))
-		}
-		fakeProwJobClient := &possiblyErroringFakeCtrlRuntimeClient{
-			Client:      fakectrlruntimeclient.NewFakeClient(data...),
-			shouldError: testCase.listErr,
-		}
-		lister := filteringProwJobLister{
-			client: fakeProwJobClient,
-			hiddenRepos: func() sets.String {
-				return testCase.hiddenRepos
-			},
-			hiddenOnly: testCase.hiddenOnly,
-			showHidden: testCase.showHidden,
-		}
-
-		filtered, err := lister.ListProwJobs(testCase.selector)
-		if err == nil && testCase.expectedErr {
-			t.Errorf("%s: expected an error but got none", testCase.name)
-		}
-		if err != nil && !testCase.expectedErr {
-			t.Errorf("%s: expected no error but got one: %v", testCase.name, err)
-		}
-
-		filteredNames := sets.NewString()
-		for _, prowJob := range filtered {
-			filteredNames.Insert(prowJob.Name)
-		}
-
-		if missing := testCase.expected.Difference(filteredNames); missing.Len() > 0 {
-			t.Errorf("%s: did not get expected jobs in filtered list: %v", testCase.name, missing.List())
-		}
-		if extra := filteredNames.Difference(testCase.expected); extra.Len() > 0 {
-			t.Errorf("%s: got unexpected jobs in filtered list: %v", testCase.name, extra.List())
-		}
-	}
-}
-
 func Test_gatherOptions(t *testing.T) {
 	cases := []struct {
 		name     string
@@ -923,15 +657,6 @@ func Test_gatherOptions(t *testing.T) {
 			},
 			expected: func(o *options) {
 				o.configPath = "/random/value"
-			},
-		},
-		{
-			name: "empty config-path defaults to old value",
-			args: map[string]string{
-				"--config-path": "",
-			},
-			expected: func(o *options) {
-				o.configPath = config.DefaultConfigPath
 			},
 		},
 		{
@@ -954,7 +679,9 @@ func Test_gatherOptions(t *testing.T) {
 	for _, tc := range cases {
 		fs := flag.NewFlagSet("fake-flags", flag.PanicOnError)
 		ghoptions := flagutil.GitHubOptions{}
-		ghoptions.AddFlagsWithoutDefaultGitHubTokenPath(fs)
+		ghoptions.AddFlags(fs)
+		ghoptions.AllowAnonymous = true
+		ghoptions.AllowDirectAccess = true
 		t.Run(tc.name, func(t *testing.T) {
 			expected := &options{
 				configPath:            "yo",
@@ -965,6 +692,10 @@ func Test_gatherOptions(t *testing.T) {
 				spyglassFilesLocation: "/lenses",
 				kubernetes:            flagutil.KubernetesOptions{},
 				github:                ghoptions,
+				instrumentation: flagutil.InstrumentationOptions{
+					MetricsPort: flagutil.DefaultMetricsPort,
+					PProfPort:   flagutil.DefaultPProfPort,
+				},
 			}
 			if tc.expected != nil {
 				tc.expected(expected)
@@ -1115,21 +846,6 @@ func TestHandlePluginConfig(t *testing.T) {
 	}
 }
 
-type possiblyErroringFakeCtrlRuntimeClient struct {
-	ctrlruntimeclient.Client
-	shouldError bool
-}
-
-func (p *possiblyErroringFakeCtrlRuntimeClient) List(
-	ctx context.Context,
-	pjl *prowapi.ProwJobList,
-	opts ...ctrlruntimeclient.ListOption) error {
-	if p.shouldError {
-		return errors.New("could not list ProwJobs")
-	}
-	return p.Client.List(ctx, pjl, opts...)
-}
-
 func cfgWithLensNamed(lensName string) *config.Config {
 	return &config.Config{
 		ProwConfig: config.ProwConfig{
@@ -1256,5 +972,81 @@ func TestSpyglassConfigDefaulting(t *testing.T) {
 				t.Error(err)
 			}
 		})
+	}
+}
+
+func TestHandleGitHubLink(t *testing.T) {
+	ghoptions := flagutil.GitHubOptions{Host: "github.mycompany.com"}
+	org, repo := "org", "repo"
+	handler := HandleGitHubLink(ghoptions.Host, true)
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("/github-link?dest=%s/%s", org, repo), nil)
+	if err != nil {
+		t.Fatalf("Error making request: %v", err)
+	}
+	rr := httptest.NewRecorder()
+	handler.ServeHTTP(rr, req)
+	if rr.Code != http.StatusFound {
+		t.Fatalf("Bad error code: %d", rr.Code)
+	}
+	resp := rr.Result()
+	defer resp.Body.Close()
+	actual := resp.Header.Get("Location")
+	expected := fmt.Sprintf("https://%s/%s/%s", ghoptions.Host, org, repo)
+	if expected != actual {
+		t.Fatalf("%v", actual)
+	}
+}
+
+func TestCanTriggerJob(t *testing.T) {
+	t.Parallel()
+	org := "org"
+	trustedUser := "trusted"
+	untrustedUser := "untrusted"
+
+	pcfg := &plugins.Configuration{
+		Triggers: []plugins.Trigger{{Repos: []string{org}}},
+	}
+	pcfgGetter := func() *plugins.Configuration { return pcfg }
+
+	ghc := &fakegithub.FakeClient{
+		OrgMembers: map[string][]string{org: {trustedUser}},
+	}
+
+	pj := prowapi.ProwJob{
+		Spec: prowapi.ProwJobSpec{
+			Refs: &prowapi.Refs{
+				Org:   org,
+				Repo:  "repo",
+				Pulls: []prowapi.Pull{{Author: trustedUser}},
+			},
+			Type: prowapi.PresubmitJob,
+		},
+	}
+	testCases := []struct {
+		name          string
+		user          string
+		expectAllowed bool
+	}{
+		{
+			name:          "Unauthorized user can not rerun",
+			user:          untrustedUser,
+			expectAllowed: false,
+		},
+		{
+			name:          "Authorized user can re-run",
+			user:          trustedUser,
+			expectAllowed: true,
+		},
+	}
+
+	log := logrus.NewEntry(logrus.StandardLogger())
+	for _, tc := range testCases {
+		result, err := canTriggerJob(tc.user, pj, nil, ghc, pcfgGetter, log)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+		if result != tc.expectAllowed {
+			t.Errorf("got result %t, expected %t", result, tc.expectAllowed)
+		}
 	}
 }

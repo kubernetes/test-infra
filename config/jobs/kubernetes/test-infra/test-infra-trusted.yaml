@@ -6,10 +6,7 @@ postsubmits:
     max_concurrency: 1
     spec:
       containers:
-      - image: launcher.gcr.io/google/bazel:0.29.1
-        env:
-        - name: USE_BAZEL_VERSION
-          value: real  # Ignore .bazelversion
+      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20200708-6aff115-org
         command:
         - bazel
         args:
@@ -32,6 +29,25 @@ postsubmits:
       testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
       testgrid-num-failures-to-alert: '1'
   kubernetes/test-infra:
+  - name: post-test-infra-push-alpine
+    cluster: test-infra-trusted
+    run_if_changed: '^images/alpine/'
+    annotations:
+      testgrid-dashboards: sig-testing-images
+      testgrid-tab-name: alpine
+    decorate: true
+    branches:
+    - master
+    spec:
+      serviceAccountName: pusher
+      containers:
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200520-v0.4-30-g9d6313a
+        command:
+        - images/builder/ci-runner.sh
+        args:
+        - --scratch-bucket=gs://k8s-testimages-scratch
+        - --project=k8s-prow
+        - images/alpine/
   - name: post-test-infra-push-alpine-bash
     cluster: test-infra-trusted
     run_if_changed: '^images/alpine-bash/'
@@ -44,7 +60,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200420-v0.4-27-ged6f0a7
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200520-v0.4-30-g9d6313a
         command:
         - images/builder/ci-runner.sh
         args:
@@ -52,55 +68,90 @@ postsubmits:
         - --project=k8s-testimages
         - --build-dir=.
         - images/alpine-bash/
-        env:
-        - name: USE_BAZEL_VERSION
-          value: real  # Ignore .bazelversion
-  - name: post-test-infra-push-boskosctl-base
+  - name: post-test-infra-push-git
     cluster: test-infra-trusted
-    run_if_changed: '^images/boskosctl-base/'
+    run_if_changed: '^images/git/'
     annotations:
-      testgrid-dashboards: "sig-testing-images"
-      testgrid-tab-name: "boskosctl-base"
+      testgrid-dashboards: sig-testing-images
+      testgrid-tab-name: git
     decorate: true
     branches:
     - master
     spec:
-      serviceAccountName: deployer # TODO(fejta): should be pusher
+      serviceAccountName: pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200420-v0.4-27-ged6f0a7
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200520-v0.4-30-g9d6313a
         command:
         - images/builder/ci-runner.sh
         args:
         - --scratch-bucket=gs://k8s-testimages-scratch
-        - --project=k8s-testimages
-        - --build-dir=.
-        - images/boskosctl-base/
-        env:
-        - name: USE_BAZEL_VERSION
-          value: real  # Ignore .bazelversion
+        - --project=k8s-prow
+        - images/git/
   - name: post-test-infra-deploy-prow
     cluster: test-infra-trusted
-    run_if_changed: 'prow/cluster/'
+    run_if_changed: 'config/prow/cluster/'
     decorate: true
     branches:
     - master
     spec:
       serviceAccountName: deployer
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200420-v0.4-27-ged6f0a7
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200520-v0.4-30-g9d6313a
         command:
         - prow/deploy.sh
         args:
         - --confirm
-        env:
-        - name: USE_BAZEL_VERSION
-          value: real  # Ignore .bazelversion
+        - --config=trusted
     annotations:
       testgrid-dashboards: sig-testing-prow
       testgrid-tab-name: deploy-prow
       testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
       testgrid-num-failures-to-alert: '1'
       description: deploys the configured version of prow by running prow/deploy.sh
+  - name: post-test-infra-reconcile-hmacs
+    cluster: test-infra-trusted
+    run_if_changed: 'config/prow/config.yaml'
+    decorate: true
+    branches:
+    - master
+    spec:
+      containers:
+      - image: gcr.io/k8s-prow/hmac:v20200710-7fa016752a
+        command:
+        - /hmac
+        args:
+        - --config-path=config/prow/config.yaml
+        - --hook-url=https://prow.k8s.io/hook
+        - --hmac-token-secret-name=hmac-token
+        - --hmac-token-key=hmac
+        - --kubeconfig=/etc/kubeconfig/config
+        - --kubeconfig-context=prow-services
+        - --github-token-path=/etc/github/oauth
+        - --github-endpoint=http://ghproxy.default.svc.cluster.local
+        - --github-endpoint=https://api.github.com
+        - --dry-run=false
+        volumeMounts:
+        - name: kubeconfig
+          mountPath: /etc/kubeconfig
+          readOnly: true
+        - name: oauth
+          mountPath: /etc/github
+          readOnly: true
+      volumes:
+      - name: kubeconfig
+        secret:
+          defaultMode: 420
+          secretName: kubeconfig-prow-services
+      - name: oauth
+        secret:
+          defaultMode: 420
+          secretName: oauth-token
+    annotations:
+      testgrid-dashboards: sig-testing-prow
+      testgrid-tab-name: reconcile-hmacs
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+      testgrid-num-failures-to-alert: '1'
+      description: reconcile the hmac tokens and webhooks based on the managed_webhooks configuration in prow core config file
   - name: post-test-infra-push-resultstore
     cluster: test-infra-trusted
     run_if_changed: '^(WORKSPACE|load.bzl|repos.bzl|prow/prow.bzl|experiment/resultstore/)'
@@ -108,12 +159,9 @@ postsubmits:
     spec:
       serviceAccountName: pusher
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20200421-b889179-test-infra
+      - image: gcr.io/k8s-testimages/bazelbuild:v20200710-e83cfec-test-infra
         command:
         - experiment/resultstore/push.sh
-        env:
-        - name: USE_BAZEL_VERSION
-          value: real  # Ignore .bazelversion
     annotations:
       testgrid-dashboards: sig-testing-prow
       testgrid-tab-name: push-resultstore
@@ -123,17 +171,14 @@ postsubmits:
   - name: post-test-infra-push-prow
     cluster: test-infra-trusted
     # Runs on more than just the Prow dir to include some additional images that we publish to gcr.io/k8s-prow.
-    run_if_changed: '^(WORKSPACE|load.bzl|repos.bzl|containers.bzl|prow|ghproxy|label_sync|robots/commenter|robots/pr-creator|robots/issue-creator|testgrid/cmd/transfigure)/'
+    run_if_changed: '^(WORKSPACE|load.bzl|repos.bzl|containers.bzl|prow|ghproxy|label_sync|robots/commenter|robots/pr-creator|robots/issue-creator|testgrid/cmd)/'
     decorate: true
     spec:
       serviceAccountName: pusher
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20200421-b889179-test-infra
+      - image: gcr.io/k8s-testimages/bazelbuild:v20200710-e83cfec-test-infra
         command:
         - prow/push.sh
-        env:
-        - name: USE_BAZEL_VERSION
-          value: real  # Ignore .bazelversion
     annotations:
       testgrid-dashboards: sig-testing-prow
       testgrid-tab-name: push-prow
@@ -155,7 +200,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200420-v0.4-27-ged6f0a7
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200520-v0.4-30-g9d6313a
         command:
         - images/builder/ci-runner.sh
         args:
@@ -163,30 +208,6 @@ postsubmits:
         - --project=k8s-testimages
         - --build-dir=.
         - velodrome/
-        env:
-        - name: USE_BAZEL_VERSION
-          value: real  # Ignore .bazelversion
-  - name: post-test-infra-push-boskos
-    cluster: test-infra-trusted
-    run_if_changed: '^boskos/'
-    annotations:
-      testgrid-dashboards: "sig-testing-images"
-      testgrid-tab-name: "boskos"
-      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-      testgrid-num-failures-to-alert: '1'
-      description: builds and pushes boskos images
-    decorate: true
-    branches:
-    - master
-    spec:
-      serviceAccountName: pusher
-      containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20200421-b889179-test-infra
-        command:
-        - boskos/push.sh
-        env:
-        - name: USE_BAZEL_VERSION
-          value: real  # Ignore .bazelversion
   - name: post-test-infra-push-kettle
     cluster: test-infra-trusted
     annotations:
@@ -202,7 +223,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200420-v0.4-27-ged6f0a7
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200520-v0.4-30-g9d6313a
         command:
         - images/builder/ci-runner.sh
         args:
@@ -210,9 +231,6 @@ postsubmits:
         - --project=k8s-testimages
         - --build-dir=.
         - kettle/
-        env:
-        - name: USE_BAZEL_VERSION
-          value: real  # Ignore .bazelversion
   - name: post-test-infra-push-triage
     cluster: test-infra-trusted
     run_if_changed: '^triage/'
@@ -228,7 +246,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200420-v0.4-27-ged6f0a7
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200520-v0.4-30-g9d6313a
         command:
         - images/builder/ci-runner.sh
         args:
@@ -236,9 +254,6 @@ postsubmits:
         - --project=k8s-testimages
         - --build-dir=.
         - triage/
-        env:
-        - name: USE_BAZEL_VERSION
-          value: real  # Ignore .bazelversion
   - name: post-test-infra-push-bazel
     cluster: test-infra-trusted
     run_if_changed: '^images/bazel/'
@@ -254,16 +269,13 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200420-v0.4-27-ged6f0a7
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200520-v0.4-30-g9d6313a
         command:
         - images/builder/ci-runner.sh
         args:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-testimages
         - images/bazel/
-        env:
-        - name: USE_BAZEL_VERSION
-          value: real  # Ignore .bazelversion
   - name: post-test-infra-push-bazelbuild
     cluster: test-infra-trusted
     run_if_changed: '^images/bazelbuild/'
@@ -279,7 +291,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200420-v0.4-27-ged6f0a7
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200520-v0.4-30-g9d6313a
         command:
         - images/builder/ci-runner.sh
         args:
@@ -287,9 +299,6 @@ postsubmits:
         - --project=k8s-testimages
         - --build-dir=.
         - images/bazelbuild/
-        env:
-        - name: USE_BAZEL_VERSION
-          value: real  # Ignore .bazelversion
   - name: post-test-infra-push-bazel-krte
     cluster: test-infra-trusted
     run_if_changed: '^images/bazel-krte/'
@@ -305,7 +314,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200420-v0.4-27-ged6f0a7
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200520-v0.4-30-g9d6313a
         command:
         - images/builder/ci-runner.sh
         args:
@@ -313,9 +322,6 @@ postsubmits:
         - --project=k8s-testimages
         - --build-dir=.
         - images/bazel-krte/
-        env:
-        - name: USE_BAZEL_VERSION
-          value: real  # Ignore .bazelversion
   - name: post-test-infra-push-bigquery
     cluster: test-infra-trusted
     run_if_changed: '^images/bigquery/'
@@ -331,7 +337,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200420-v0.4-27-ged6f0a7
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200520-v0.4-30-g9d6313a
         command:
         - images/builder/ci-runner.sh
         args:
@@ -339,9 +345,6 @@ postsubmits:
         - --project=k8s-testimages
         - --build-dir=.
         - images/bigquery/
-        env:
-        - name: USE_BAZEL_VERSION
-          value: real  # Ignore .bazelversion
   - name: post-test-infra-push-bootstrap
     cluster: test-infra-trusted
     run_if_changed: '^(images/bootstrap|scenarios)/'
@@ -357,7 +360,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200420-v0.4-27-ged6f0a7
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200520-v0.4-30-g9d6313a
         command:
         - images/builder/ci-runner.sh
         args:
@@ -365,9 +368,6 @@ postsubmits:
         - --project=k8s-testimages
         - --build-dir=.
         - images/bootstrap/
-        env:
-        - name: USE_BAZEL_VERSION
-          value: real  # Ignore .bazelversion
   - name: post-test-infra-push-cluster-api
     cluster: test-infra-trusted
     run_if_changed: '^images/cluster-api/'
@@ -383,7 +383,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200420-v0.4-27-ged6f0a7
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200520-v0.4-30-g9d6313a
         command:
         - images/builder/ci-runner.sh
         args:
@@ -391,9 +391,6 @@ postsubmits:
         - --project=k8s-testimages
         - --build-dir=.
         - images/cluster-api/
-        env:
-        - name: USE_BAZEL_VERSION
-          value: real  # Ignore .bazelversion
   - name: post-test-infra-push-gcb-docker-gcloud
     cluster: test-infra-trusted
     run_if_changed: '^images/gcb-docker-gcloud/'
@@ -409,7 +406,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200420-v0.4-27-ged6f0a7
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200520-v0.4-30-g9d6313a
         command:
         - images/builder/ci-runner.sh
         args:
@@ -417,9 +414,6 @@ postsubmits:
         - --project=k8s-testimages
         - --build-dir=.
         - images/gcb-docker-gcloud/
-        env:
-        - name: USE_BAZEL_VERSION
-          value: real  # Ignore .bazelversion
   - name: post-test-infra-push-gcloud
     cluster: test-infra-trusted
     run_if_changed: '^images/gcloud/'
@@ -435,7 +429,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200420-v0.4-27-ged6f0a7
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200520-v0.4-30-g9d6313a
         command:
         - images/builder/ci-runner.sh
         args:
@@ -443,9 +437,6 @@ postsubmits:
         - --project=k8s-testimages
         - --build-dir=.
         - images/gcloud/
-        env:
-        - name: USE_BAZEL_VERSION
-          value: real  # Ignore .bazelversion
   - name: post-test-infra-push-kubekins-e2e
     cluster: test-infra-trusted
     run_if_changed: '^(images/kubekins-e2e|kubetest|boskos)/'
@@ -461,7 +452,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200420-v0.4-27-ged6f0a7
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200520-v0.4-30-g9d6313a
         command:
         - images/builder/ci-runner.sh
         args:
@@ -469,12 +460,9 @@ postsubmits:
         - --project=k8s-testimages
         - --build-dir=.
         - images/kubekins-e2e/
-        env:
-        - name: USE_BAZEL_VERSION
-          value: real  # Ignore .bazelversion
   - name: post-test-infra-push-krte
     cluster: test-infra-trusted
-    run_if_changed: '^images/krte/'
+    run_if_changed: '^images/(krte/|kubekins-e2e/variants.yaml)'
     annotations:
       testgrid-dashboards: "sig-testing-images"
       testgrid-tab-name: "krte"
@@ -487,7 +475,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200420-v0.4-27-ged6f0a7
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200520-v0.4-30-g9d6313a
         command:
         - images/builder/ci-runner.sh
         args:
@@ -495,9 +483,6 @@ postsubmits:
         - --project=k8s-testimages
         - --build-dir=.
         - images/krte/
-        env:
-        - name: USE_BAZEL_VERSION
-          value: real  # Ignore .bazelversion
   - name: post-test-infra-push-kubemci
     cluster: test-infra-trusted
     run_if_changed: '^images/kubemci/'
@@ -513,7 +498,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200420-v0.4-27-ged6f0a7
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200520-v0.4-30-g9d6313a
         command:
         - images/builder/ci-runner.sh
         args:
@@ -521,9 +506,6 @@ postsubmits:
         - --project=k8s-testimages
         - --build-dir=.
         - images/kubemci/
-        env:
-        - name: USE_BAZEL_VERSION
-          value: real  # Ignore .bazelversion
   - name: post-test-infra-push-test-gubernator
     cluster: test-infra-trusted
     run_if_changed: '^images/pull-test-infra-gubernator/'
@@ -539,7 +521,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200420-v0.4-27-ged6f0a7
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200520-v0.4-30-g9d6313a
         command:
         - images/builder/ci-runner.sh
         args:
@@ -547,9 +529,6 @@ postsubmits:
         - --project=k8s-testimages
         - --build-dir=.
         - images/pull-test-infra-gubernator/
-        env:
-        - name: USE_BAZEL_VERSION
-          value: real  # Ignore .bazelversion
   - name: post-test-infra-push-image-builder
     cluster: test-infra-trusted
     run_if_changed: '^images/builder/'
@@ -565,7 +544,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200420-v0.4-27-ged6f0a7
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200520-v0.4-30-g9d6313a
         command:
         - images/builder/ci-runner.sh
         args:
@@ -573,9 +552,6 @@ postsubmits:
         - --project=k8s-testimages
         - --build-dir=.
         - images/builder/
-        env:
-        - name: USE_BAZEL_VERSION
-          value: real  # Ignore .bazelversion
   - name: post-test-infra-push-image-benchmarkjunit
     cluster: test-infra-trusted
     run_if_changed: '^pkg/benchmarkjunit/'
@@ -591,7 +567,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200420-v0.4-27-ged6f0a7
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200520-v0.4-30-g9d6313a
         command:
         - images/builder/ci-runner.sh
         args:
@@ -599,9 +575,6 @@ postsubmits:
         - --project=k8s-testimages
         - --build-dir=.
         - pkg/benchmarkjunit/
-        env:
-        - name: USE_BAZEL_VERSION
-          value: real  # Ignore .bazelversion
   - name: post-test-infra-push-gencred
     cluster: test-infra-trusted
     run_if_changed: '^gencred/'
@@ -617,7 +590,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200420-v0.4-27-ged6f0a7
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200520-v0.4-30-g9d6313a
         command:
         - images/builder/ci-runner.sh
         args:
@@ -625,9 +598,6 @@ postsubmits:
         - --project=k8s-testimages
         - --build-dir=.
         - gencred/
-        env:
-        - name: USE_BAZEL_VERSION
-          value: real  # Ignore .bazelversion
   - name: post-test-infra-upload-testgrid-config
     cluster: test-infra-trusted
     branches:
@@ -639,10 +609,7 @@ postsubmits:
     spec:
       serviceAccountName: testgrid-config-updater
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20200421-b889179-test-infra
-        env:
-        - name: USE_BAZEL_VERSION
-          value: real  # Ignore .bazelversion
+      - image: gcr.io/k8s-testimages/bazelbuild:v20200710-e83cfec-test-infra
         command:
         - ./testgrid/config-upload.sh
         resources:
@@ -658,17 +625,14 @@ postsubmits:
     cluster: test-infra-trusted
     branches:
     - master
-    run_if_changed: '^prow/cluster/boskos-resources.yaml$'
+    run_if_changed: '^config/prow/cluster/boskos-resources.yaml$'
     decorate: true
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20200421-b889179-test-infra
+      - image: gcr.io/k8s-testimages/bazelbuild:v20200710-e83cfec-test-infra
         command:
         - ./boskos/update_prow_config.sh
-        env:
-        - name: USE_BAZEL_VERSION
-          value: real  # Ignore .bazelversion
     annotations:
       testgrid-dashboards: sig-testing-maintenance
       testgrid-tab-name: boskos-config-upload
@@ -755,27 +719,6 @@ postsubmits:
       - name: tempelis-creds
         secret:
           secretName: slack-tempelis-auth
-  kubernetes-sigs/slack-infra:
-  - name: post-slack-infra-push-images
-    cluster: test-infra-trusted
-    run_if_changed: '^(slack|tempelis)'
-    annotations:
-      testgrid-num-failures-to-alert: "1"
-      testgrid-alert-email: ktbry@google.com, k8s-infra-oncall@google.com
-      testgrid-dashboards: sig-contribex-slack-infra
-    decorate: true
-    branches:
-    - ^master$
-    spec:
-      serviceAccountName: deployer # TODO(fejta): should be pusher
-      containers:
-      - image: gcr.io/k8s-testimages/image-builder:v20200213-0032cdb
-        command:
-        - /run.sh
-        args:
-        - --scratch-bucket=gs://kubernetes-tools-scratch
-        - --project=kubernetes-tools
-        - .
 
 
 periodics:
@@ -827,10 +770,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20200421-b889179-test-infra
-      env:
-      - name: USE_BAZEL_VERSION
-        value: real  # Ignore .bazelversion
+    - image: gcr.io/k8s-testimages/bazelbuild:v20200710-e83cfec-test-infra
       command:
       - hack/autodeps.sh
       args:
@@ -867,10 +807,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20200421-b889179-test-infra
-      env:
-      - name: USE_BAZEL_VERSION
-        value: real  # Ignore .bazelversion
+    - image: gcr.io/k8s-testimages/bazelbuild:v20200710-e83cfec-test-infra
       command:
       - hack/autodeps.sh
       args:
@@ -907,10 +844,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20200421-b889179-test-infra
-      env:
-      - name: USE_BAZEL_VERSION
-        value: real  # Ignore .bazelversion
+    - image: gcr.io/k8s-testimages/bazelbuild:v20200710-e83cfec-test-infra
       command:
       - bazel
       - run
@@ -949,10 +883,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: launcher.gcr.io/google/bazel:2.0.0
-      env:
-      - name: USE_BAZEL_VERSION
-        value: real  # Ignore .bazelversion
+    - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20200708-6aff115-test-infra
       command:
       - bazel
       args:
@@ -981,7 +912,7 @@ periodics:
   spec:
     serviceAccountName: resultstore
     containers:
-    - image: gcr.io/k8s-testimages/resultstore:v20200421-88887d682
+    - image: gcr.io/k8s-testimages/resultstore:v20200710-49f68eccd3
       command:
       - /app/experiment/resultstore/app.binary
       args:
@@ -1010,7 +941,7 @@ periodics:
   spec:
     containers:
     - name: branchprotector
-      image: gcr.io/k8s-prow/branchprotector:v20200421-88887d682
+      image: gcr.io/k8s-prow/branchprotector:v20200710-7fa016752a
       command:
       - /app/prow/cmd/branchprotector/app.binary
       args:
@@ -1044,7 +975,7 @@ periodics:
   spec:
     containers:
     - name: label-sync
-      image: gcr.io/k8s-prow/label_sync:v20200421-88887d682
+      image: gcr.io/k8s-prow/label_sync:v20200710-7fa016752a
       command:
       - /app/label_sync/app.binary
       args:
@@ -1130,7 +1061,7 @@ periodics:
   spec:
     serviceAccountName: k8s-infra-gcr-promoter-bak
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200420-e830a3a-1.17
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-1.17
       command:
       - infra/gcp/backup_tools/backup.sh
       env:

@@ -1,0 +1,10 @@
+presets:
+# Credentials for using DigitalOcean test account. Used for cluster-api-provider-digitalocean tests.
+- labels:
+    preset-do-credential: "true"
+  env:
+  - name: DIGITALOCEAN_ACCESS_TOKEN
+    valueFrom:
+      secretKeyRef:
+        name: cluster-api-provider-digitalocean-token
+        key: DIGITALOCEAN_ACCESS_TOKEN

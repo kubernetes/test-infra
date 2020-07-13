@@ -57,6 +57,20 @@ func (a *Agent) Start(paths []string) error {
 	return nil
 }
 
+// Add registers a new path to the agent.
+func (a *Agent) Add(path string) error {
+	secret, err := LoadSingleSecret(path)
+	if err != nil {
+		return err
+	}
+
+	a.setSecret(path, secret)
+
+	// Start one goroutine for each file to monitor and update the secret's values.
+	go a.reloadSecret(path)
+	return nil
+}
+
 // reloadSecret will begin polling the secret file at the path. If the first load
 // fails, Start with return the error and abort. Future load failures will log
 // the failure message but continue attempting to load.

@@ -206,10 +206,45 @@ func TestTriggerFor(t *testing.T) {
 			if tc.expectedTrusted != actual.TrustedOrg {
 				t.Errorf("expected TrustedOrg to be %q, but got %q", tc.expectedTrusted, actual.TrustedOrg)
 			}
-			if actual.ElideSkippedContexts == nil {
-				t.Errorf("elide_skipped_contexts was not properly defaulted")
-			}
 		})
+	}
+}
+
+func TestSetApproveDefaults(t *testing.T) {
+	tests := []struct {
+		name string
+
+		commandHelpLink         string
+		expectedCommandHelpLink string
+	}{
+		{
+			name:                    "set commandHelpLink default",
+			commandHelpLink:         "",
+			expectedCommandHelpLink: "https://go.k8s.io/bot-commands",
+		},
+		{
+			name:                    "keep commandHelpLink value",
+			commandHelpLink:         "https://prow.k8s.io/command-help",
+			expectedCommandHelpLink: "https://prow.k8s.io/command-help",
+		},
+	}
+
+	for _, test := range tests {
+		c := &Configuration{
+			Approve: []Approve{{
+				Repos: []string{
+					"kubernetes/kubernetes",
+					"kubernetes-client",
+				},
+				CommandHelpLink: test.commandHelpLink,
+			}},
+		}
+
+		c.setDefaults()
+
+		if c.Approve[0].CommandHelpLink != test.expectedCommandHelpLink {
+			t.Errorf("unexpected commandHelpLink: %s, expected: %s", c.Approve[0].CommandHelpLink, test.expectedCommandHelpLink)
+		}
 	}
 }
 
@@ -1000,7 +1035,7 @@ func TestBugzillaBugState_AsBugUpdate(t *testing.T) {
 				}
 			}
 
-			if actual != nil && tc.expected != nil && *tc.expected != *actual {
+			if !reflect.DeepEqual(tc.expected, actual) {
 				t.Errorf("%s: BugUpdate differs from expected:\n%s", tc.name, diff.ObjectReflectDiff(*actual, *tc.expected))
 			}
 		})

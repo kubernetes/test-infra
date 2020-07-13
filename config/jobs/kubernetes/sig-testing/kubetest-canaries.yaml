@@ -209,7 +209,9 @@ periodics:
       args:
       - --cluster=e2e-kops-aws-canary.test-cncf-aws.k8s.io
       - --deployment=kops
-      - --env=KUBE_SSH_USER=admin
+      - --kops-ssh-user=ubuntu
+      - --env=KUBE_SSH_USER=ubuntu
+      - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=ci/latest
       - --ginkgo-parallel
       - --kops-etcd-version=3.2.24
@@ -224,7 +226,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       imagePullPolicy: Always
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops, sig-testing-canaries
+    testgrid-dashboards: google-aws, kops-misc, sig-testing-canaries
     testgrid-tab-name: kops-aws-canary
 
 - interval: 30m
@@ -243,6 +245,7 @@ periodics:
       args:
       - --cluster=e2e-kops-gce-canary.k8s.local
       - --deployment=kops
+      - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=ci/latest
       - --ginkgo-parallel=30
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
@@ -255,7 +258,7 @@ periodics:
       imagePullPolicy: Always
 
   annotations:
-    testgrid-dashboards: google-kops-gce, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-kops-gce, kops-misc
     testgrid-tab-name: kops-gce-canary
 - name: ci-kubernetes-e2e-node-canary
   interval: 1h

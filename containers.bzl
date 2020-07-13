@@ -25,10 +25,10 @@ def repositories():
 
     container_pull(
         name = "alpine-base",
-        digest = "sha256:bd327018b3effc802514b63cc90102bfcd92765f4486fc5abc28abf7eb9f1e4d",  # 2018/09/20
+        digest = "sha256:55a0c44a09ede57e3193fae6d0918865f2c4d7effe7a8f4dad72eef31f6f7841",
         registry = "gcr.io",
         repository = "k8s-prow/alpine",
-        tag = "0.1",  # TODO(fejta): update or replace
+        # tag = "v20200605-44f6c96",
     )
 
     container_pull(
@@ -36,14 +36,6 @@ def repositories():
         digest = "sha256:d520f733f3d648b81201b28b0f9894ad2940972c516e554958d0177470c6a881",  # 2019/07/29
         registry = "gcr.io",
         repository = "k8s-testimages/alpine-bash",
-        tag = "latest",  # TODO(fejta): update or replace
-    )
-
-    container_pull(
-        name = "boskosctl-base",
-        digest = "sha256:a23c19a87857140926184d19e8e54812ba4a8acec4097386ca0993a248e83f8b",  # 2019/08/05
-        registry = "gcr.io",
-        repository = "k8s-testimages/boskosctl-base",
         tag = "latest",  # TODO(fejta): update or replace
     )
 
@@ -57,10 +49,10 @@ def repositories():
 
     container_pull(
         name = "git-base",
-        digest = "sha256:01b0f83fe91b782ec7ddf1e742ab7cc9a2261894fd9ab0760ebfd39af2d6ab28",  # 2018/07/02
+        digest = "sha256:45a5255060b34151ec1fa913eb0bc18958c909fc088989dd84f0614a22fb1840",
         registry = "gcr.io",
         repository = "k8s-prow/git",
-        tag = "0.2",  # TODO(fejta): update or replace
+        # tag = "v20200605-44f6c96",
     )
 
     container_pull(
@@ -81,16 +73,8 @@ def repositories():
 
     container_pull(
         name = "bazel-base",
-        digest = "sha256:cefc822f93bb3dcf272ce3e4c5162b179d5c165584ace13856afed99662b87cd",
+        digest = "sha256:2e8163b61f3759f6ff0e4df43c40d092dae331b1c2d5326f05f78e72a68d3203",
         registry = "gcr.io",
         repository = "k8s-testimages/launcher.gcr.io/google/bazel",
-        tag = "2.2.0-from-2.0.0",  # TODO(fejta): switch to test-infra tag once it exists
-    )
-
-    container_pull(
-        name = "cloud-sdk-slim",
-        digest = "sha256:6dafecdad80abf6470eae9e0b57fc083d1f3413fa15b9fab7c2ad3a102d244c4",  # 2020/01/21
-        registry = "gcr.io",
-        repository = "google.com/cloudsdktool/cloud-sdk",
-        tag = "277.0.0-slim",
+        tag = "v20200609-e7bfd25-test-infra",
     )

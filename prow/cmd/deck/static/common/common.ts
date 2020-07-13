@@ -97,7 +97,7 @@ export namespace cell {
     const bl = document.createElement("a");
     bl.href = pushCommitLink;
     if (!bl.href) {
-      bl.href = `https://github.com/${repo}/commit/${SHA}`;
+      bl.href = `/github-link?dest=${repo}/commit/${SHA}`;
     }
     bl.text = `${ref} (${SHA.slice(0, 7)})`;
     c.appendChild(bl);
@@ -122,7 +122,7 @@ export namespace cell {
     if (pull.link) {
       pl.href = pull.link;
     } else {
-      pl.href = `https://github.com/${repo}/pull/${pull.number}`;
+      pl.href = `/github-link?dest=${repo}/pull/${pull.number}`;
     }
     pl.text = pull.number.toString();
     if (pull.title) {
@@ -137,7 +137,7 @@ export namespace cell {
       if (pull.commit_link) {
         cl.href = pull.commit_link;
       } else {
-        cl.href = `https://github.com/${repo}/pull/${pull.number}/commits/${pull.sha}`;
+        cl.href = `/github-link?dest=${repo}/pull/${pull.number}/commits/${pull.sha}`;
       }
       cl.text = pull.sha.slice(0, 7);
       elem.appendChild(cl);
@@ -149,7 +149,7 @@ export namespace cell {
       if (pull.author_link) {
         al.href = pull.author_link;
       } else {
-        al.href = "https://github.com/" + pull.author;
+        al.href = "/github-link?dest=" + pull.author;
       }
       al.text = pull.author;
       elem.appendChild(al);

@@ -62,7 +62,7 @@ func (a *repoClientAdapter) MergeAndCheckout(baseSHA string, mergeStrategy strin
 	return a.Repo.MergeAndCheckout(baseSHA, github.PullRequestMergeType(mergeStrategy), headSHAs...)
 }
 
-func (a *repoClientAdapter) MergeWithStrategy(commitlike, mergeStrategy string) (bool, error) {
+func (a *repoClientAdapter) MergeWithStrategy(commitlike, mergeStrategy string, opts ...MergeOpt) (bool, error) {
 	return a.Repo.MergeWithStrategy(commitlike, github.PullRequestMergeType(mergeStrategy))
 }
 
@@ -74,8 +74,12 @@ func (a *repoClientAdapter) Commit(title, body string) error {
 	return errors.New("no Commit implementation exists in the v1 repo client")
 }
 
-func (a *repoClientAdapter) ForcePush(branch string) error {
+func (a *repoClientAdapter) PushToFork(branch string, force bool) error {
 	return a.Repo.Push(branch)
+}
+
+func (a *repoClientAdapter) PushToCentral(branch string, force bool) error {
+	return errors.New("no PushToCentral implementation exists in the v1 repo client")
 }
 
 func (a *repoClientAdapter) MirrorClone() error {
@@ -84,6 +88,10 @@ func (a *repoClientAdapter) MirrorClone() error {
 
 func (a *repoClientAdapter) Fetch() error {
 	return errors.New("no Fetch implementation exists in the v1 repo client")
+}
+
+func (a *repoClientAdapter) FetchFromRemote(resolver RemoteResolver, branch string) error {
+	return errors.New("no FetchFromRemote implementation exists in the v1 repo client")
 }
 
 func (a *repoClientAdapter) RemoteUpdate() error {

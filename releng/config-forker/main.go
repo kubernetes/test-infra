@@ -103,9 +103,9 @@ func generatePresubmits(c config.JobConfig, version string) (map[string][]config
 	return newPresubmits, nil
 }
 
-func generatePeriodics(c config.JobConfig, version string) ([]config.Periodic, error) {
+func generatePeriodics(conf config.JobConfig, version string) ([]config.Periodic, error) {
 	var newPeriodics []config.Periodic
-	for _, periodic := range c.Periodics {
+	for _, periodic := range conf.Periodics {
 		if periodic.Annotations[forkAnnotation] != "true" {
 			continue
 		}
@@ -116,7 +116,7 @@ func generatePeriodics(c config.JobConfig, version string) ([]config.Periodic, e
 				c := &p.Spec.Containers[i]
 				c.Image = fixImage(c.Image, version)
 				c.Env = fixEnvVars(c.Env, version)
-				if !p.Decorate {
+				if !config.ShouldDecorate(&conf, p.JobBase.UtilityConfig) {
 					c.Command = fixBootstrapArgs(c.Command, version)
 					c.Args = fixBootstrapArgs(c.Args, version)
 				}
@@ -127,7 +127,7 @@ func generatePeriodics(c config.JobConfig, version string) ([]config.Periodic, e
 				}
 			}
 		}
-		if p.Decorate {
+		if config.ShouldDecorate(&conf, p.JobBase.UtilityConfig) {
 			p.ExtraRefs = fixExtraRefs(p.ExtraRefs, version)
 		}
 		if interval, ok := p.Annotations[periodicIntervalAnnotation]; ok {

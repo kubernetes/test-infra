@@ -25,6 +25,8 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/credentials/ec2rolecreds"
+	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"gocloud.dev/blob"
 	_ "gocloud.dev/blob/memblob"
@@ -32,7 +34,8 @@ import (
 )
 
 const (
-	providerS3 = "s3"
+	S3 = "s3"
+	GS = "gs"
 )
 
 // GetBucket opens and returns a gocloud blob.Bucket based on credentials and a path.
@@ -64,7 +67,7 @@ func GetBucket(ctx context.Context, s3Credentials []byte, path string) (*blob.Bu
 	if err != nil {
 		return nil, err
 	}
-	if storageProvider == providerS3 && len(s3Credentials) > 0 {
+	if storageProvider == S3 && len(s3Credentials) > 0 {
 		return getS3Bucket(ctx, s3Credentials, bucket)
 	}
 
@@ -95,10 +98,27 @@ func getS3Bucket(ctx context.Context, creds []byte, bucketName string) (*blob.Bu
 		return nil, fmt.Errorf("error getting S3 credentials from JSON: %v", err)
 	}
 
-	staticCredentials := credentials.NewStaticCredentials(s3Credentials.AccessKey, s3Credentials.SecretKey, "")
+	var staticCredentials credentials.StaticProvider
+	if s3Credentials.AccessKey != "" && s3Credentials.SecretKey != "" {
+		staticCredentials = credentials.StaticProvider{
+			Value: credentials.Value{
+				AccessKeyID:     s3Credentials.AccessKey,
+				SecretAccessKey: s3Credentials.SecretKey,
+			},
+		}
+	}
+
+	credentialChain := credentials.NewChainCredentials(
+		[]credentials.Provider{
+			&staticCredentials,
+			&credentials.EnvProvider{},
+			&ec2rolecreds.EC2RoleProvider{
+				Client: ec2metadata.New(session.New()),
+			},
+		})
 
 	sess, err := session.NewSession(&aws.Config{
-		Credentials:      staticCredentials,
+		Credentials:      credentialChain,
 		Endpoint:         aws.String(s3Credentials.Endpoint),
 		DisableSSL:       aws.Bool(s3Credentials.Insecure),
 		S3ForcePathStyle: aws.Bool(s3Credentials.S3ForcePathStyle),
@@ -113,6 +133,14 @@ func getS3Bucket(ctx context.Context, creds []byte, bucketName string) (*blob.Bu
 		return nil, fmt.Errorf("error opening S3 bucket: %v", err)
 	}
 	return bkt, nil
+}
+
+// HasStorageProviderPrefix returns true if the given string starts with
+// any of the known storageProviders and a slash, e.g.
+// * gs/kubernetes-jenkins returns true
+// * kubernetes-jenkins returns false
+func HasStorageProviderPrefix(path string) bool {
+	return strings.HasPrefix(path, GS+"/") || strings.HasPrefix(path, S3+"/")
 }
 
 // ParseStoragePath parses storagePath and returns the storageProvider, bucket and relativePath

@@ -1,7 +1,7 @@
 postsubmits:
   kubernetes-sigs/k8s-container-image-promoter:
     - name: cip-postsubmit-push-to-staging
-      cluster: test-infra-trusted
+      cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-release-releng-blocking
         testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers@kubernetes.io
@@ -10,9 +10,9 @@ postsubmits:
       branches:
         - ^master$
       spec:
-        serviceAccountName: deployer # TODO(fejta): use pusher
+        serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200213-0032cdb
+          - image: gcr.io/k8s-testimages/image-builder:v20200708-4b69e15
             command:
               - /run.sh
             args:

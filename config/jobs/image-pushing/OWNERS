@@ -4,8 +4,9 @@ options:
 
 # Oncallers with context on this
 reviewers:
-- Katharine
+- spiffxp
 
 # All oncallers
 approvers:
-- test-infra-oncall # oncall
+- test-infra-oncall
+- wg-k8s-infra-oncall

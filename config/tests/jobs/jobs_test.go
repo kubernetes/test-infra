@@ -307,12 +307,12 @@ func findRequired(t *testing.T, presubmits []cfg.Presubmit) []string {
 	return required
 }
 
+// Enforce conventions for jobs that run in test-infra-trusted cluster
 func TestTrustedJobs(t *testing.T) {
 	// TODO(fejta): allow each config/jobs/kubernetes/foo/foo-trusted.yaml
 	// that uses a foo-trusted cluster
 	const trusted = "test-infra-trusted"
 	trustedPath := path.Join(*jobConfigPath, "kubernetes", "test-infra", "test-infra-trusted.yaml")
-	imagePushingDir := path.Join(*jobConfigPath, "image-pushing") + "/"
 
 	// Presubmits may not use trusted clusters.
 	for _, pre := range c.AllStaticPresubmits(nil) {
@@ -323,31 +323,52 @@ func TestTrustedJobs(t *testing.T) {
 
 	// Trusted postsubmits must be defined in trustedPath
 	for _, post := range c.AllStaticPostsubmits(nil) {
-		if post.Cluster != trusted {
-			continue
-		}
-		if strings.HasPrefix(post.SourcePath, imagePushingDir) {
-			if err := validateImagePushingImage(post.Spec); err != nil {
-				t.Errorf("%s defined in %s %s", post.Name, post.SourcePath, err)
-			}
-		}
-		if post.SourcePath != trustedPath && !strings.HasPrefix(post.SourcePath, imagePushingDir) {
+		if post.Cluster == trusted && post.SourcePath != trustedPath {
 			t.Errorf("%s defined in %s may not run in trusted cluster", post.Name, post.SourcePath)
 		}
 	}
 
 	// Trusted periodics must be defined in trustedPath
 	for _, per := range c.AllPeriodics() {
-		if per.Cluster != trusted {
+		if per.Cluster == trusted && per.SourcePath != trustedPath {
+			t.Errorf("%s defined in %s may not run in trusted cluster", per.Name, per.SourcePath)
+		}
+	}
+}
+
+// Enforce conventions for jobs that run in k8s-infra-prow-build-trused cluster
+func TestK8sInfraTrusted(t *testing.T) {
+	const trusted = "k8s-infra-prow-build-trusted"
+	trustedPath := path.Join(*jobConfigPath, "kubernetes", "wg-k8s-infra", "trusted", "wg-k8s-infra-trusted.yaml")
+	imagePushingDir := path.Join(*jobConfigPath, "image-pushing") + "/"
+
+	// Presubmits may not use this cluster
+	for _, pre := range c.AllStaticPresubmits(nil) {
+		if pre.Cluster == trusted {
+			t.Errorf("%s: presubmits may not run in cluster: %s", pre.Name, trusted)
+		}
+	}
+
+	// Postsubmits and periodics must
+	// - be defined in config/jobs/image-pushing/ and be a valid image-pushing job, OR
+	// - be defined in config/jobs/kubernetes/wg-k8s-infra/trusted/wg-k8s-infra-trusted.yaml
+	jobs := []cfg.JobBase{}
+	for _, job := range c.AllStaticPostsubmits(nil) {
+		jobs = append(jobs, job.JobBase)
+	}
+	for _, job := range c.AllPeriodics() {
+		jobs = append(jobs, job.JobBase)
+	}
+	for _, job := range jobs {
+		if job.Cluster != trusted {
 			continue
 		}
-		if strings.HasPrefix(per.SourcePath, imagePushingDir) {
-			if err := validateImagePushingImage(per.Spec); err != nil {
-				t.Errorf("%s defined in %s %s", per.Name, per.SourcePath, err)
+		if strings.HasPrefix(job.SourcePath, imagePushingDir) {
+			if err := validateImagePushingImage(job.Spec); err != nil {
+				t.Errorf("%s defined in %s %s", job.Name, job.SourcePath, err)
 			}
-		}
-		if per.SourcePath != trustedPath && !strings.HasPrefix(per.SourcePath, imagePushingDir) {
-			t.Errorf("%s defined in %s may not run in trusted cluster", per.Name, per.SourcePath)
+		} else if job.SourcePath != trustedPath {
+			t.Errorf("%s defined in %s may not run in cluster: %s", job.Name, job.SourcePath, trusted)
 		}
 	}
 }
@@ -676,7 +697,7 @@ func TestValidPresets(t *testing.T) {
 	}
 
 	for _, presubmit := range c.AllStaticPresubmits(nil) {
-		if presubmit.Spec != nil && !presubmit.Decorate {
+		if presubmit.Spec != nil && !cfg.ShouldDecorate(&c.JobConfig, presubmit.JobBase.UtilityConfig) {
 			if err := checkKubekinsPresets(presubmit.Name, presubmit.Spec, presubmit.Labels, validLabels); err != nil {
 				t.Errorf("Error in presubmit %q: %v", presubmit.Name, err)
 			}
@@ -684,7 +705,7 @@ func TestValidPresets(t *testing.T) {
 	}
 
 	for _, postsubmit := range c.AllStaticPostsubmits(nil) {
-		if postsubmit.Spec != nil && !postsubmit.Decorate {
+		if postsubmit.Spec != nil && !cfg.ShouldDecorate(&c.JobConfig, postsubmit.JobBase.UtilityConfig) {
 			if err := checkKubekinsPresets(postsubmit.Name, postsubmit.Spec, postsubmit.Labels, validLabels); err != nil {
 				t.Errorf("Error in postsubmit %q: %v", postsubmit.Name, err)
 			}
@@ -692,7 +713,7 @@ func TestValidPresets(t *testing.T) {
 	}
 
 	for _, periodic := range c.AllPeriodics() {
-		if periodic.Spec != nil && !periodic.Decorate {
+		if periodic.Spec != nil && !cfg.ShouldDecorate(&c.JobConfig, periodic.JobBase.UtilityConfig) {
 			if err := checkKubekinsPresets(periodic.Name, periodic.Spec, periodic.Labels, validLabels); err != nil {
 				t.Errorf("Error in periodic %q: %v", periodic.Name, err)
 			}
@@ -903,7 +924,7 @@ func checkScenarioArgs(jobName, imageName string, args []string) error {
 // TestValidScenarioArgs makes sure all scenario args in job configs are valid
 func TestValidScenarioArgs(t *testing.T) {
 	for _, job := range c.AllStaticPresubmits(nil) {
-		if job.Spec != nil && !job.Decorate {
+		if job.Spec != nil && !cfg.ShouldDecorate(&c.JobConfig, job.JobBase.UtilityConfig) {
 			if err := checkScenarioArgs(job.Name, job.Spec.Containers[0].Image, job.Spec.Containers[0].Args); err != nil {
 				t.Errorf("Invalid Scenario Args : %s", err)
 			}
@@ -911,7 +932,7 @@ func TestValidScenarioArgs(t *testing.T) {
 	}
 
 	for _, job := range c.AllStaticPostsubmits(nil) {
-		if job.Spec != nil && !job.Decorate {
+		if job.Spec != nil && !cfg.ShouldDecorate(&c.JobConfig, job.JobBase.UtilityConfig) {
 			if err := checkScenarioArgs(job.Name, job.Spec.Containers[0].Image, job.Spec.Containers[0].Args); err != nil {
 				t.Errorf("Invalid Scenario Args : %s", err)
 			}
@@ -919,7 +940,7 @@ func TestValidScenarioArgs(t *testing.T) {
 	}
 
 	for _, job := range c.AllPeriodics() {
-		if job.Spec != nil && !job.Decorate {
+		if job.Spec != nil && !cfg.ShouldDecorate(&c.JobConfig, job.JobBase.UtilityConfig) {
 			if err := checkScenarioArgs(job.Name, job.Spec.Containers[0].Image, job.Spec.Containers[0].Args); err != nil {
 				t.Errorf("Invalid Scenario Args : %s", err)
 			}

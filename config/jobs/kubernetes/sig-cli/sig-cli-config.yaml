@@ -18,7 +18,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[sig-cli\].*\[Serial\]|\[sig-cli\].*\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=500m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200420-e830a3a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-master
 
   annotations:
     testgrid-dashboards: sig-cli-master
@@ -47,7 +47,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[sig-cli\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200420-e830a3a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-master
 
   annotations:
     testgrid-dashboards: sig-cli-master
@@ -75,7 +75,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.focus=\[sig-cli\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200420-e830a3a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-master
 
   # kubectl skew tests
   annotations:
@@ -103,9 +103,9 @@ periodics:
       - --ginkgo-parallel
       - --provider=gce
       - --skew
-      - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\]|\[Deprecated\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200420-e830a3a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-master
 
   annotations:
     testgrid-dashboards: sig-release-job-config-errors
@@ -130,15 +130,16 @@ periodics:
       - --gcp-zone=us-west1-b
       - --provider=gce
       - --skew
-      - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --ginkgo.skip=\[Deprecated\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200420-e830a3a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-master
 
   annotations:
     testgrid-dashboards: sig-release-job-config-errors
     testgrid-tab-name: gce-1.14-1.13-gci-kubectl-skew-serial
 - interval: 1h
   name: ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -153,14 +154,15 @@ periodics:
       - --check-version-skew=false
       - --extract=ci/k8s-stable1
       - --extract=ci/latest
+      - --gcp-project-type=k8s-infra-gce-project
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=25
       - --provider=gce
       - --skew
-      - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\]|\[Deprecated\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200420-e830a3a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-master
 
   annotations:
     testgrid-dashboards: sig-release-master-blocking, sig-cli-master
@@ -170,8 +172,6 @@ periodics:
     testgrid-num-columns-recent: "3"
     testgrid-num-failures-to-alert: "2"
     testgrid-alert-stale-results-hours: "24"
-    fork-per-release: "true"
-    fork-per-release-generic-suffix: "true"
 - interval: 1h
   name: ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew-serial
   labels:
@@ -192,9 +192,9 @@ periodics:
       - --gcp-zone=us-west1-b
       - --provider=gce
       - --skew
-      - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --ginkgo.skip=\[Deprecated\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200420-e830a3a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-master
 
   annotations:
     testgrid-dashboards: sig-cli-master
@@ -220,9 +220,9 @@ periodics:
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=25
       - --provider=gce
-      - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
+      - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\]|\[Deprecated\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200420-e830a3a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-master
 
   annotations:
     testgrid-dashboards: sig-cli-master
@@ -247,9 +247,9 @@ periodics:
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --provider=gce
-      - --test_args=--ginkgo.focus=Kubectl.*\[Serial\]  --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
+      - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --ginkgo.skip=\[Deprecated\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200420-e830a3a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-master
 
   annotations:
     testgrid-dashboards: sig-cli-master
@@ -275,9 +275,9 @@ periodics:
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel
       - --provider=gce
-      - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
+      - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\]|\[Deprecated\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200420-e830a3a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-master
 
   annotations:
     testgrid-dashboards: sig-release-job-config-errors
@@ -301,9 +301,9 @@ periodics:
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --provider=gce
-      - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
+      - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --ginkgo.skip=\[Deprecated\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200420-e830a3a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-master
 
   annotations:
     testgrid-dashboards: sig-release-job-config-errors
@@ -329,9 +329,9 @@ periodics:
       - --ginkgo-parallel
       - --provider=gce
       - --skew
-      - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\]|\[Deprecated\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200420-e830a3a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-master
 
   annotations:
     testgrid-dashboards: sig-release-job-config-errors
@@ -356,9 +356,9 @@ periodics:
       - --gcp-zone=us-west1-b
       - --provider=gce
       - --skew
-      - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --ginkgo.skip=\[Deprecated\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200420-e830a3a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-master
 
   annotations:
     testgrid-dashboards: sig-release-job-config-errors
@@ -383,9 +383,9 @@ periodics:
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel
       - --provider=gce
-      - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
+      - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\]|\[Deprecated\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200420-e830a3a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-master
 
   annotations:
     testgrid-dashboards: sig-release-job-config-errors
@@ -409,9 +409,9 @@ periodics:
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --provider=gce
-      - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
+      - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --ginkgo.skip=\[Deprecated\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200420-e830a3a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-master
 
   annotations:
     testgrid-dashboards: sig-release-job-config-errors

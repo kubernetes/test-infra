@@ -41,13 +41,18 @@ import (
 
 const (
 	// PluginName defines this plugin's registered name.
-	PluginName                    = "verify-owners"
-	ownersFileName                = "OWNERS"
-	ownersAliasesFileName         = "OWNERS_ALIASES"
-	nonCollaboratorResponseFormat = `The following users are mentioned in %s file(s) but are not members of the %s org.
-
-Once all users have been added as [members](%s) of the org, you can trigger verification by writing ` + "`/verify-owners`" + ` in a comment.`
+	PluginName              = "verify-owners"
+	ownersFileName          = "OWNERS"
+	ownersAliasesFileName   = "OWNERS_ALIASES"
+	untrustedResponseFormat = `The following users are mentioned in %s file(s) but are untrusted for the following reasons. One way to make the user trusted is to add them as [members](%s) of the %s org. You can then trigger verification by writing ` + "`/verify-owners`" + ` in a comment.`
 )
+
+type nonTrustedReasons struct {
+	// files is a list of files they are being added in
+	files []string
+	// triggerReason is the reason that trigger's TrustedUser responds with for a failed trust check
+	triggerReason string
+}
 
 var (
 	verifyOwnersRe = regexp.MustCompile(`(?mi)^/verify-owners\s*$`)
@@ -324,7 +329,7 @@ func handle(ghc githubClient, gc git.ClientFactory, roc repoownersClient, log *l
 
 		// prune old comments before adding a new one
 		cp.PruneComments(func(comment github.IssueComment) bool {
-			return strings.Contains(comment.Body, fmt.Sprintf(nonCollaboratorResponseFormat, ownersFileName, org, triggerConfig.JoinOrgURL))
+			return strings.Contains(comment.Body, fmt.Sprintf(untrustedResponseFormat, ownersFileName, triggerConfig.JoinOrgURL, org))
 		})
 		if err := ghc.CreateComment(org, repo, number, markdownFriendlyComment(org, triggerConfig.JoinOrgURL, nonTrustedUsers)); err != nil {
 			log.WithError(err).Errorf("Could not create comment for listing non-collaborators in %s files", ownersFileName)
@@ -338,7 +343,7 @@ func handle(ghc githubClient, gc git.ClientFactory, roc repoownersClient, log *l
 			return fmt.Errorf("failed removing %s label: %v", labels.InvalidOwners, err)
 		}
 		cp.PruneComments(func(comment github.IssueComment) bool {
-			return strings.Contains(comment.Body, fmt.Sprintf(nonCollaboratorResponseFormat, ownersFileName, org, triggerConfig.JoinOrgURL))
+			return strings.Contains(comment.Body, fmt.Sprintf(untrustedResponseFormat, ownersFileName, triggerConfig.JoinOrgURL, org))
 		})
 	}
 
@@ -411,23 +416,24 @@ func parseOwnersFile(oc ownersClient, path string, c github.PullRequestChange, l
 	return nil, owners
 }
 
-func markdownFriendlyComment(org, joinOrgURL string, nonTrustedUsers map[string][]string) string {
+func markdownFriendlyComment(org, joinOrgURL string, nonTrustedUsers map[string]nonTrustedReasons) string {
 	var commentLines []string
-	commentLines = append(commentLines, fmt.Sprintf(nonCollaboratorResponseFormat, ownersFileName, org, joinOrgURL))
+	commentLines = append(commentLines, fmt.Sprintf(untrustedResponseFormat, ownersFileName, joinOrgURL, org))
 
-	for user, ownersFiles := range nonTrustedUsers {
+	for user, reasons := range nonTrustedUsers {
 		commentLines = append(commentLines, fmt.Sprintf("- %s", user))
-		for _, filename := range ownersFiles {
+		commentLines = append(commentLines, fmt.Sprintf("  - %s", reasons.triggerReason))
+		for _, filename := range reasons.files {
 			commentLines = append(commentLines, fmt.Sprintf("  - %s", filename))
 		}
 	}
 	return strings.Join(commentLines, "\n")
 }
 
-func nonTrustedUsersInOwnersAliases(ghc githubClient, log *logrus.Entry, triggerConfig plugins.Trigger, org, repo, dir, patch string, ownerAliasesModified, skipTrustedUserCheck bool) (map[string][]string, sets.String, repoowners.RepoAliases, error) {
+func nonTrustedUsersInOwnersAliases(ghc githubClient, log *logrus.Entry, triggerConfig plugins.Trigger, org, repo, dir, patch string, ownerAliasesModified, skipTrustedUserCheck bool) (map[string]nonTrustedReasons, sets.String, repoowners.RepoAliases, error) {
 	repoAliases := make(repoowners.RepoAliases)
-	// nonTrustedUsers is a map of non-trusted users to the list of files they are being added in
-	nonTrustedUsers := map[string][]string{}
+	// nonTrustedUsers is a map of non-trusted users to the reasons they were not trusted
+	nonTrustedUsers := map[string]nonTrustedReasons{}
 	trustedUsers := sets.String{}
 	var err error
 
@@ -458,7 +464,7 @@ func nonTrustedUsersInOwnersAliases(ghc githubClient, log *logrus.Entry, trigger
 	return nonTrustedUsers, trustedUsers, repoAliases, nil
 }
 
-func nonTrustedUsersInOwners(ghc githubClient, log *logrus.Entry, triggerConfig plugins.Trigger, org, repo, patch, fileName string, owners []string, nonTrustedUsers map[string][]string, trustedUsers sets.String, repoAliases repoowners.RepoAliases) (map[string][]string, error) {
+func nonTrustedUsersInOwners(ghc githubClient, log *logrus.Entry, triggerConfig plugins.Trigger, org, repo, patch, fileName string, owners []string, nonTrustedUsers map[string]nonTrustedReasons, trustedUsers sets.String, repoAliases repoowners.RepoAliases) (map[string]nonTrustedReasons, error) {
 	var err error
 	for _, owner := range owners {
 		// ignore if owner is an alias
@@ -476,7 +482,8 @@ func nonTrustedUsersInOwners(ghc githubClient, log *logrus.Entry, triggerConfig 
 
 // checkIfTrustedUser looks for newly addded owners by checking if they are in the patch
 // and then checks if the owner is a trusted user.
-func checkIfTrustedUser(ghc githubClient, log *logrus.Entry, triggerConfig plugins.Trigger, owner, patch, fileName, org, repo string, nonTrustedUsers map[string][]string, trustedUsers sets.String, repoAliases repoowners.RepoAliases) (map[string][]string, error) {
+// returns a map from user to reasons for not being trusted
+func checkIfTrustedUser(ghc githubClient, log *logrus.Entry, triggerConfig plugins.Trigger, owner, patch, fileName, org, repo string, nonTrustedUsers map[string]nonTrustedReasons, trustedUsers sets.String, repoAliases repoowners.RepoAliases) (map[string]nonTrustedReasons, error) {
 	// cap the number of checks to avoid exhausting tokens in case of large OWNERS refactors.
 	if len(nonTrustedUsers)+trustedUsers.Len() > 50 {
 		return nonTrustedUsers, nil
@@ -488,33 +495,42 @@ func checkIfTrustedUser(ghc githubClient, log *logrus.Entry, triggerConfig plugi
 	}
 
 	// if we already flagged the owner for the current file, return early
-	if ownersFiles, ok := nonTrustedUsers[owner]; ok {
-		for _, file := range ownersFiles {
+	if reasons, ok := nonTrustedUsers[owner]; ok {
+		for _, file := range reasons.files {
 			if file == fileName {
 				return nonTrustedUsers, nil
 			}
 		}
-		nonTrustedUsers[owner] = append(ownersFiles, fileName)
+		// have to separate assignment from map update due to map implementation (see "index expressions")
+		reasons.files = append(reasons.files, fileName)
+		nonTrustedUsers[owner] = reasons
 		return nonTrustedUsers, nil
 	}
 
-	isTrustedUser := trustedUsers.Has(owner)
-	if !isTrustedUser {
-		var err error
-		isTrustedUser, err = trigger.TrustedUser(ghc, triggerConfig.OnlyOrgMembers, triggerConfig.TrustedOrg, owner, org, repo)
+	isAlreadyTrusted := trustedUsers.Has(owner)
+	var err error
+	var triggerTrustedResponse trigger.TrustedUserResponse
+	if !isAlreadyTrusted {
+		triggerTrustedResponse, err = trigger.TrustedUser(ghc, triggerConfig.OnlyOrgMembers, triggerConfig.TrustedOrg, owner, org, repo)
 		if err != nil {
 			return nonTrustedUsers, err
 		}
 	}
 
-	if isTrustedUser {
+	if !isAlreadyTrusted && triggerTrustedResponse.IsTrusted {
 		trustedUsers.Insert(owner)
-	} else {
-		if ownersFiles, ok := nonTrustedUsers[owner]; ok {
-			nonTrustedUsers[owner] = append(ownersFiles, fileName)
+	} else if !isAlreadyTrusted && !triggerTrustedResponse.IsTrusted {
+		if reasons, ok := nonTrustedUsers[owner]; ok {
+			reasons.triggerReason = triggerTrustedResponse.Reason
+			nonTrustedUsers[owner] = reasons
 		} else {
-			nonTrustedUsers[owner] = []string{fileName}
+			nonTrustedUsers[owner] = nonTrustedReasons{
+				// ensure that files is initialized to avoid nil pointer
+				files:         []string{},
+				triggerReason: triggerTrustedResponse.Reason,
+			}
 		}
 	}
+
 	return nonTrustedUsers, nil
 }

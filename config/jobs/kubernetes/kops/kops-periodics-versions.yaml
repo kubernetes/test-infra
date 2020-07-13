@@ -1,5 +1,7 @@
 periodics:
 
+# Verify the latest-ci-updown-green version of kops, against most of the e2e tests
+# Publishes gs://kops-ci/bin/latest-ci-green.txt
 - interval: 1h
   name: e2e-kops-aws-k8s-latest
   labels:
@@ -18,9 +20,11 @@ periodics:
       args:
       - --cluster=e2e-kops-aws-k8s-latest.test-cncf-aws.k8s.io
       - --deployment=kops
-      - --env=KUBE_SSH_USER=admin
+      - --kops-ssh-user=ubuntu
+      - --env=KUBE_SSH_USER=ubuntu
+      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release-dev/ci/k8s-master.txt
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
-      - --extract=ci/latest
+      - --extract=ci/k8s-master
       - --ginkgo-parallel
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-publish=gs://kops-ci/bin/latest-ci-green.txt
@@ -28,9 +32,9 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200420-e830a3a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-versions
     testgrid-tab-name: kops-aws-k8s-latest
 
 - interval: 2h
@@ -50,7 +54,8 @@ periodics:
       args:
       - --cluster=e2e-kops-aws-k8s-1-18.test-cncf-aws.k8s.io
       - --deployment=kops
-      - --env=KUBE_SSH_USER=admin
+      - --kops-ssh-user=ubuntu
+      - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --extract=release/stable
@@ -60,9 +65,9 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200420-e830a3a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-master
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-versions
     testgrid-tab-name: kops-aws-k8s-1.18
 
 - interval: 2h
@@ -82,6 +87,7 @@ periodics:
       args:
       - --cluster=e2e-kops-aws-k8s-1-17.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=admin
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -92,9 +98,9 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200420-e830a3a-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-1.17
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-versions
     testgrid-tab-name: kops-aws-k8s-1.17
 
 - interval: 2h
@@ -114,6 +120,7 @@ periodics:
       args:
       - --cluster=e2e-kops-aws-k8s-1-16.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=admin
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -124,9 +131,9 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200420-e830a3a-1.16
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-1.16
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-versions
     testgrid-tab-name: kops-aws-k8s-1.16
 
 - interval: 8h
@@ -146,6 +153,7 @@ periodics:
       args:
       - --cluster=e2e-kops-aws-k8s-1-15.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=admin
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.15.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -156,10 +164,10 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|AdmissionWebhook|Aggregator|CustomResource
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200420-e830a3a-1.15
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-1.15
       imagePullPolicy: Always
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-versions
     testgrid-tab-name: kops-aws-k8s-1.15
 
 - interval: 8h
@@ -179,6 +187,7 @@ periodics:
       args:
       - --cluster=e2e-kops-aws-k8s-1-14.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=admin
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.14.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -189,10 +198,10 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|AdmissionWebhook|Aggregator|CustomResource
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200218-a445c54-1.14
+      image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.14
       imagePullPolicy: Always
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-versions
     testgrid-tab-name: kops-aws-k8s-1.14
 
 - interval: 8h
@@ -212,6 +221,7 @@ periodics:
       args:
       - --cluster=e2e-kops-aws-k8s-1-13.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=admin
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.13.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -225,7 +235,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.13
       imagePullPolicy: Always
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-versions
     testgrid-tab-name: kops-aws-k8s-1.13
 
 - interval: 8h
@@ -245,6 +255,7 @@ periodics:
       args:
       - --cluster=e2e-kops-aws-k8s-1-12.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=admin
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.12.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -258,7 +269,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.12
       imagePullPolicy: Always
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-versions
     testgrid-tab-name: kops-aws-k8s-1.12
 
 - interval: 8h
@@ -278,6 +289,7 @@ periodics:
       args:
       - --cluster=e2e-kops-aws-k8s-1-11.test-cncf-aws.k8s.io
       - --deployment=kops
+      - --kops-ssh-user=admin
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.11.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
@@ -291,39 +303,5 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.11
       imagePullPolicy: Always
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-versions
     testgrid-tab-name: kops-aws-k8s-1.11
-
-- interval: 8h
-  name: e2e-kops-aws-k8s-1-10
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
-  decorate: true
-  decoration_config:
-    timeout: 90m
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --cluster=e2e-kops-aws-k8s-1-10.test-cncf-aws.k8s.io
-      - --deployment=kops
-      - --env=KUBE_SSH_USER=admin
-      - --env=KOPS_RUN_OBSOLETE_VERSION=true
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.10.txt
-      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --extract=release/stable-1.10
-      - --ginkgo-parallel
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --provider=aws
-      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|AdmissionWebhook|Aggregator|CustomResource|SchedulerPredicates|Lease|hostAliases|NodePort
-      - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.10
-      imagePullPolicy: Always
-  annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-aws-k8s-1.10

@@ -92,12 +92,13 @@ func NewClientWithHost(host string) (*Client, error) {
 		return nil, err
 	}
 	return &Client{
-		logger:    logrus.WithField("client", "git"),
-		dir:       t,
-		git:       g,
-		base:      fmt.Sprintf("https://%s", host),
-		host:      host,
-		repoLocks: make(map[string]*sync.Mutex),
+		logger:         logrus.WithField("client", "git"),
+		tokenGenerator: func() []byte { return nil },
+		dir:            t,
+		git:            g,
+		base:           fmt.Sprintf("https://%s", host),
+		host:           host,
+		repoLocks:      make(map[string]*sync.Mutex),
 	}, nil
 }
 
@@ -187,6 +188,7 @@ func (c *Client) Clone(organization, repository string) (*Repo, error) {
 		dir:    t,
 		logger: c.logger,
 		git:    c.git,
+		host:   c.host,
 		base:   base,
 		org:    organization,
 		repo:   repository,
@@ -203,6 +205,8 @@ type Repo struct {
 
 	// git is the path to the git binary.
 	git string
+	// host is the git host.
+	host string
 	// base is the base path for remote git fetch calls.
 	base string
 	// org is the organization name: "org" in "org/repo".
@@ -397,7 +401,7 @@ func (r *Repo) Push(branch string) error {
 		return errors.New("cannot push without credentials - configure your git client")
 	}
 	r.logger.Infof("Pushing to '%s/%s (branch: %s)'.", r.user, r.repo, branch)
-	remote := fmt.Sprintf("https://%s:%s@%s/%s/%s", r.user, r.pass, github, r.user, r.repo)
+	remote := fmt.Sprintf("https://%s:%s@%s/%s/%s", r.user, r.pass, r.host, r.user, r.repo)
 	co := r.gitCommand("push", remote, branch)
 	out, err := co.CombinedOutput()
 	if err != nil {
@@ -473,4 +477,14 @@ func (r *Repo) MergeCommitsExistBetween(target, head string) (bool, error) {
 		return false, fmt.Errorf("error verifying if merge commits exist between %s and %s: %v. output: %s", target, head, err, string(b))
 	}
 	return len(b) != 0, nil
+}
+
+// ShowRef returns the commit for a commitlike. Unlike rev-parse it does not require a checkout.
+func (i *Repo) ShowRef(commitlike string) (string, error) {
+	i.logger.Infof("Getting the commit sha for commitlike %s", commitlike)
+	out, err := i.gitCommand("show-ref", "-s", commitlike).CombinedOutput()
+	if err != nil {
+		return "", fmt.Errorf("failed to get commit sha for commitlike %s: %v", commitlike, err)
+	}
+	return strings.TrimSpace(string(out)), nil
 }

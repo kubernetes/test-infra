@@ -1,0 +1,54 @@
+# sigs.k8s.io/descheduler presubmits
+presubmits:
+  kubernetes-sigs/descheduler:
+  - name: pull-descheduler-verify-master
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-descheduler-verify-master
+    decorate: true
+    path_alias: sigs.k8s.io/descheduler
+    branches:
+    # The script this job runs is not in all branches.
+    - ^master$
+    always_run: true
+    spec:
+      containers:
+      - image: golang:1.14.4
+        command:
+        - make
+        args:
+        - verify
+  - name: pull-descheduler-verify-build-master
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-descheduler-verify-build-master
+    decorate: true
+    path_alias: sigs.k8s.io/descheduler
+    branches:
+    # The script this job runs is not in all branches.
+    - ^master$
+    always_run: true
+    spec:
+      containers:
+      - image: golang:1.14.4
+        command:
+        - make
+        args:
+        - build
+  - name: pull-descheduler-unit-test-master-master
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-descheduler-unit-test-master
+    decorate: true
+    path_alias: sigs.k8s.io/descheduler
+    branches:
+    # The script this job runs is not in all branches.
+    - ^master$
+    always_run: true
+    spec:
+      containers:
+      - image: golang:1.14.4
+        command:
+        - make
+        args:
+        - test-unit

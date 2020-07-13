@@ -1,0 +1,15 @@
+---
+images:
+  cos-stable1:
+    image: cos-81-12871-119-0 # docker 19.03.6, current latest LTS.
+    project: cos-cloud
+    machine: n1-standard-16
+    metadata: "user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled"
+    tests:
+      - 'Node Performance Testing'
+  ubuntu:
+    image: ubuntu-gke-1804-1-17-v20200605 # docker 19.03.2 / containerd 1.2.10
+    project: ubuntu-os-gke-cloud
+    machine: n1-standard-16
+    tests:
+      - 'Node Performance Testing'

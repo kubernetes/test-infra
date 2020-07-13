@@ -10,12 +10,14 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200420-e830a3a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-master
         command:
         - runner.sh
         args:
         - make
         - verify
+        securityContext:
+          privileged: true
     annotations:
       testgrid-dashboards: provider-azure-azurefile-csi-driver, provider-azure-presubmit
       testgrid-tab-name: pr-azurefile-csi-driver-verify
@@ -31,12 +33,14 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200420-e830a3a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-master
         command:
         - runner.sh
         args:
         - make
         - unit-test
+        securityContext:
+          privileged: true
     annotations:
       testgrid-dashboards: provider-azure-azurefile-csi-driver, provider-azure-presubmit
       testgrid-tab-name: pr-azurefile-csi-driver-unit
@@ -53,7 +57,7 @@ presubmits:
       preset-azure-cred: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200420-e830a3a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-master
         command:
         - runner.sh
         args:
@@ -77,7 +81,7 @@ presubmits:
       preset-azure-cred: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200420-e830a3a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-master
         command:
         - runner.sh
         args:
@@ -108,7 +112,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200420-e830a3a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-master
         command:
         - runner.sh
         - kubetest
@@ -155,7 +159,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200420-e830a3a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-master
         command:
         - runner.sh
         - kubetest
@@ -204,7 +208,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200420-e830a3a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-master
         command:
         - runner.sh
         - kubetest
@@ -248,7 +252,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200420-e830a3a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-master
         command:
         - runner.sh
         args:

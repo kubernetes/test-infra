@@ -25,6 +25,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/tools/cache"
@@ -100,7 +101,9 @@ func (fakeInformer) GetController() cache.Controller                            
 func (fakeInformer) LastSyncResourceVersion() string                                           { return "" }
 func (fakeInformer) AddIndexers(indexers cache.Indexers) error                                 { return nil }
 func (fakeInformer) GetIndexer() cache.Indexer                                                 { return nil }
-func (fakeInformer) List(selector labels.Selector) (ret []*prowv1.ProwJob, err error)          { return nil, nil }
+func (fakeInformer) List(selector labels.Selector) (ret []*prowv1.ProwJob, err error) {
+	return nil, nil
+}
 
 func TestController_Run(t *testing.T) {
 	tests := []struct {
@@ -238,7 +241,12 @@ func TestController_Run(t *testing.T) {
 					return test.shouldReport
 				},
 			}
-			cs := fake.NewSimpleClientset()
+
+			var prowjobs []runtime.Object
+			for _, job := range test.knownJobs {
+				prowjobs = append(prowjobs, job)
+			}
+			cs := fake.NewSimpleClientset(prowjobs...)
 			nmwrk := 2
 			c := NewController(cs, q, inf, &rp, nmwrk)
 

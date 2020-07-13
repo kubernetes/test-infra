@@ -26,16 +26,16 @@ import (
 	"path"
 	"time"
 
+	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 
-	"cloud.google.com/go/storage"
-	"github.com/sirupsen/logrus"
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/crier/reporters/gcs/internal/util"
+	"k8s.io/test-infra/prow/io"
 )
 
 const reporterName = "gcsk8sreporter"
@@ -127,7 +127,7 @@ func (gr *gcsK8sReporter) reportPodInfo(ctx context.Context, pj *prowv1.ProwJob)
 		Events: events,
 	}
 
-	output, err := json.Marshal(report)
+	output, err := json.MarshalIndent(report, "", "\t")
 	if err != nil {
 		// This should never happen.
 		gr.logger.WithError(err).Warn("Couldn't marshal pod info")
@@ -171,8 +171,8 @@ func (gr *gcsK8sReporter) ShouldReport(pj *prowv1.ProwJob) bool {
 	return true
 }
 
-func New(cfg config.Getter, storage *storage.Client, podClientSets map[string]corev1.CoreV1Interface, reportFraction float32, dryRun bool) *gcsK8sReporter {
-	return internalNew(cfg, util.StorageAuthor{Client: storage}, k8sResourceGetter{podClientSets: podClientSets}, reportFraction, dryRun)
+func New(cfg config.Getter, opener io.Opener, podClientSets map[string]corev1.CoreV1Interface, reportFraction float32, dryRun bool) *gcsK8sReporter {
+	return internalNew(cfg, util.StorageAuthor{Opener: opener}, k8sResourceGetter{podClientSets: podClientSets}, reportFraction, dryRun)
 }
 
 func internalNew(cfg config.Getter, author util.Author, rg resourceGetter, reportFraction float32, dryRun bool) *gcsK8sReporter {

@@ -18,10 +18,11 @@ package main
 
 import (
 	"flag"
-	"k8s.io/test-infra/prow/flagutil"
-	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	"reflect"
 	"testing"
+
+	"k8s.io/test-infra/prow/flagutil"
+	prowflagutil "k8s.io/test-infra/prow/flagutil"
 )
 
 func TestOptions(t *testing.T) {
@@ -31,6 +32,10 @@ func TestOptions(t *testing.T) {
 
 	defaultGerritProjects := make(map[string][]string, 0)
 
+	defaultInstrumentationOptions := flagutil.InstrumentationOptions{
+		MetricsPort: prowflagutil.DefaultMetricsPort,
+		PProfPort:   prowflagutil.DefaultPProfPort,
+	}
 	cases := []struct {
 		name     string
 		args     []string
@@ -55,9 +60,10 @@ func TestOptions(t *testing.T) {
 				gerritProjects: map[string][]string{
 					"foo": {"bar"},
 				},
-				configPath:        "foo",
-				github:            defaultGitHubOptions,
-				k8sReportFraction: 1.0,
+				configPath:             "foo",
+				github:                 defaultGitHubOptions,
+				k8sReportFraction:      1.0,
+				instrumentationOptions: defaultInstrumentationOptions,
 			},
 		},
 		{
@@ -72,9 +78,10 @@ func TestOptions(t *testing.T) {
 				gerritProjects: map[string][]string{
 					"foo": {"bar"},
 				},
-				configPath:        "foo",
-				github:            defaultGitHubOptions,
-				k8sReportFraction: 1.0,
+				configPath:             "foo",
+				github:                 defaultGitHubOptions,
+				k8sReportFraction:      1.0,
+				instrumentationOptions: defaultInstrumentationOptions,
 			},
 		},
 		//PubSub Reporter
@@ -82,11 +89,12 @@ func TestOptions(t *testing.T) {
 			name: "pubsub workers, sets workers",
 			args: []string{"--pubsub-workers=7", "--config-path=baz"},
 			expected: &options{
-				pubsubWorkers:     7,
-				configPath:        "baz",
-				github:            defaultGitHubOptions,
-				gerritProjects:    defaultGerritProjects,
-				k8sReportFraction: 1.0,
+				pubsubWorkers:          7,
+				configPath:             "baz",
+				github:                 defaultGitHubOptions,
+				gerritProjects:         defaultGerritProjects,
+				k8sReportFraction:      1.0,
+				instrumentationOptions: defaultInstrumentationOptions,
 			},
 		},
 		{
@@ -98,12 +106,13 @@ func TestOptions(t *testing.T) {
 			name: "slack workers, sets workers",
 			args: []string{"--slack-workers=13", "--slack-token-file=/bar/baz", "--config-path=foo"},
 			expected: &options{
-				slackWorkers:      13,
-				slackTokenFile:    "/bar/baz",
-				configPath:        "foo",
-				github:            defaultGitHubOptions,
-				gerritProjects:    defaultGerritProjects,
-				k8sReportFraction: 1.0,
+				slackWorkers:           13,
+				slackTokenFile:         "/bar/baz",
+				configPath:             "foo",
+				github:                 defaultGitHubOptions,
+				gerritProjects:         defaultGerritProjects,
+				k8sReportFraction:      1.0,
+				instrumentationOptions: defaultInstrumentationOptions,
 			},
 		},
 		{
@@ -121,9 +130,10 @@ func TestOptions(t *testing.T) {
 				client: prowflagutil.KubernetesOptions{
 					DeckURI: "http://www.example.com",
 				},
-				github:            defaultGitHubOptions,
-				gerritProjects:    defaultGerritProjects,
-				k8sReportFraction: 1.0,
+				github:                 defaultGitHubOptions,
+				gerritProjects:         defaultGerritProjects,
+				k8sReportFraction:      1.0,
+				instrumentationOptions: defaultInstrumentationOptions,
 			},
 		},
 		{
@@ -132,24 +142,26 @@ func TestOptions(t *testing.T) {
 		},
 		{
 			name: "k8s-gcs enables k8s-gcs",
-			args: []string{"--kubernetes-gcs-workers=3", "--config-path=foo"},
+			args: []string{"--kubernetes-blob-storage-workers=3", "--config-path=foo"},
 			expected: &options{
-				k8sGCSWorkers:     3,
-				configPath:        "foo",
-				github:            defaultGitHubOptions,
-				gerritProjects:    defaultGerritProjects,
-				k8sReportFraction: 1.0,
+				k8sBlobStorageWorkers:  3,
+				configPath:             "foo",
+				github:                 defaultGitHubOptions,
+				gerritProjects:         defaultGerritProjects,
+				k8sReportFraction:      1.0,
+				instrumentationOptions: defaultInstrumentationOptions,
 			},
 		},
 		{
 			name: "k8s-gcs with report fraction sets report fraction",
-			args: []string{"--kubernetes-gcs-workers=3", "--config-path=foo", "--kubernetes-report-fraction=0.5"},
+			args: []string{"--kubernetes-blob-storage-workers=3", "--config-path=foo", "--kubernetes-report-fraction=0.5"},
 			expected: &options{
-				k8sGCSWorkers:     3,
-				configPath:        "foo",
-				github:            defaultGitHubOptions,
-				gerritProjects:    defaultGerritProjects,
-				k8sReportFraction: 0.5,
+				k8sBlobStorageWorkers:  3,
+				configPath:             "foo",
+				github:                 defaultGitHubOptions,
+				gerritProjects:         defaultGerritProjects,
+				k8sReportFraction:      0.5,
+				instrumentationOptions: defaultInstrumentationOptions,
 			},
 		},
 		{

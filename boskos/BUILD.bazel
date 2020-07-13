@@ -1,23 +1,5 @@
 package(default_visibility = ["//visibility:public"])
 
-load("//def:image.bzl", "tags")
-load("//prow:def.bzl", "prow_push")
-
-prow_push(
-    name = "push",
-    images = tags(targets = {
-        "{STABLE_PROW_REPO}/boskos/aws-janitor": "//boskos/aws-janitor:image",
-        "{STABLE_PROW_REPO}/boskos/aws-janitor-boskos": "//boskos/aws-janitor/cmd/aws-janitor-boskos:image",
-        "{STABLE_PROW_REPO}/boskos/boskos": "//boskos/cmd/boskos:image",
-        "{STABLE_PROW_REPO}/boskos/fake-mason": "//boskos/cmd/fake-mason:image",
-        "{STABLE_PROW_REPO}/boskos/cleaner": "//boskos/cmd/cleaner:image",
-        "{STABLE_PROW_REPO}/boskos/janitor": "//boskos/cmd/janitor:image",
-        "{STABLE_PROW_REPO}/boskos/metrics": "//boskos/cmd/metrics:image",
-        "{STABLE_PROW_REPO}/boskos/reaper": "//boskos/cmd/reaper:image",
-        "{STABLE_PROW_REPO}/boskos/cli": "//boskos/cmd/cli:image",
-    }),
-)
-
 filegroup(
     name = "package-srcs",
     srcs = glob(["**"]),
@@ -29,23 +11,7 @@ filegroup(
     name = "all-srcs",
     srcs = [
         ":package-srcs",
-        "//boskos/aws-janitor:all-srcs",
-        "//boskos/cleaner:all-srcs",
-        "//boskos/client:all-srcs",
-        "//boskos/cmd/boskos:all-srcs",
-        "//boskos/cmd/cleaner:all-srcs",
-        "//boskos/cmd/cli:all-srcs",
-        "//boskos/cmd/fake-mason:all-srcs",
         "//boskos/cmd/janitor:all-srcs",
-        "//boskos/cmd/metrics:all-srcs",
-        "//boskos/cmd/reaper:all-srcs",
-        "//boskos/common:all-srcs",
-        "//boskos/crds:all-srcs",
-        "//boskos/handlers:all-srcs",
-        "//boskos/mason:all-srcs",
-        "//boskos/metrics:all-srcs",
-        "//boskos/ranch:all-srcs",
-        "//boskos/storage:all-srcs",
     ],
     tags = ["automanaged"],
 )

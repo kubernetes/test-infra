@@ -98,20 +98,3 @@ jqfilter: |
       flakiest: ([(.flakiest[] | select(.flakes|tonumber >= 4) | {
         (.name): (.flakes|tonumber)}) ])| add
   }})] | add
-
-# No backfilling is used since this metric is only used to display a table with the currently flaky jobs/tests.
-measurements:
-  jq: |
-    [(.[] | {
-      measurement: "flakes",
-      tags: {
-        job: (.job)
-      },
-      fields: {
-        consistency: (.commit_consistency|tonumber),
-        flakes: (.flakes|tonumber),
-        flakiest: (if (.flakiest | has(0)) then (.flakiest[0].flakes + " flakes: " + .flakiest[0].name) else ("") end),
-        flakier: (if (.flakiest | has(1)) then (.flakiest[1].flakes + " flakes: " + .flakiest[1].name) else ("") end),
-        flaky: (if (.flakiest | has(2)) then (.flakiest[2].flakes + " flakes: " + .flakiest[2].name) else ("") end)
-      }
-    })]

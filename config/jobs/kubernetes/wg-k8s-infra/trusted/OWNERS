@@ -1,0 +1,9 @@
+# Only oncall gets approval here because it provides access to magic secrets.
+options:
+  no_parent_owners: true
+
+reviewers:
+- wg-k8s-infra-oncall
+- bartsmykla
+approvers:
+- wg-k8s-infra-oncall

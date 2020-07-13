@@ -38,6 +38,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"sigs.k8s.io/yaml"
 
+	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/logrusutil"
 )
@@ -563,7 +564,7 @@ func insertLink(started *gcs.Started, viewURL string) (bool, error) {
 }
 
 func updateStarted(ctx context.Context, storageClient *storage.Client, path gcs.Path, started gcs.Started) error {
-	startedPath, err := path.ResolveReference(&url.URL{Path: "started.json"})
+	startedPath, err := path.ResolveReference(&url.URL{Path: prowv1.StartedStatusFile})
 	if err != nil {
 		return fmt.Errorf("resolve started.json: %v", err)
 	}

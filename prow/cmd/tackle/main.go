@@ -576,7 +576,7 @@ func applySecret(ctx, ns, name, key, path string) error {
 }
 
 func applyStarter(kc *kubernetes.Clientset, ns, choice, ctx string, overwrite bool) error {
-	const defaultStarter = "https://raw.githubusercontent.com/kubernetes/test-infra/master/prow/cluster/starter.yaml"
+	const defaultStarter = "https://raw.githubusercontent.com/kubernetes/test-infra/master/config/prow/cluster/starter.yaml"
 
 	if choice == "" {
 		choice = prompt("Apply starter.yaml from", "github upstream")

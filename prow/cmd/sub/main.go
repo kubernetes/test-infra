@@ -25,7 +25,6 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
-	"k8s.io/test-infra/prow/interrupts"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
@@ -33,6 +32,7 @@ import (
 	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/crier/reporters/pubsub"
 	"k8s.io/test-infra/prow/flagutil"
+	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
 	"k8s.io/test-infra/prow/pubsub/subscriber"
@@ -51,8 +51,9 @@ type options struct {
 	jobConfigPath string
 	pluginConfig  string
 
-	dryRun      bool
-	gracePeriod time.Duration
+	dryRun                 bool
+	gracePeriod            time.Duration
+	instrumentationOptions flagutil.InstrumentationOptions
 }
 
 type kubeClient struct {
@@ -81,6 +82,7 @@ func init() {
 	fs.DurationVar(&flagOptions.gracePeriod, "grace-period", 180*time.Second, "On shutdown, try to handle remaining events for the specified duration. ")
 
 	flagOptions.client.AddFlags(fs)
+	flagOptions.instrumentationOptions.AddFlags(fs)
 
 	fs.Parse(os.Args[1:])
 }
@@ -119,7 +121,7 @@ func main() {
 	defer interrupts.WaitForGracefulShutdown()
 
 	// Expose prometheus metrics
-	metrics.ExposeMetrics("sub", configAgent.Config().PushGateway)
+	metrics.ExposeMetrics("sub", configAgent.Config().PushGateway, flagOptions.instrumentationOptions.MetricsPort)
 
 	s := &subscriber.Subscriber{
 		ConfigAgent:   configAgent,

@@ -23,8 +23,11 @@ import (
 	"testing"
 	"time"
 
+	"k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/util/diff"
+
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	pjlister "k8s.io/test-infra/prow/client/listers/prowjobs/v1"
 	"k8s.io/test-infra/prow/gerrit/client"
@@ -1157,4 +1160,23 @@ Prow Status: 0 out of 2 pjs passed!
 		}
 	}
 
+}
+
+// TestReportStability ensures a generated report's string parses to the same report
+func TestReportStability(t *testing.T) {
+	job := func(name, url string, state v1.ProwJobState) *v1.ProwJob {
+		var out v1.ProwJob
+		out.Spec.Job = name
+		out.Status.URL = url
+		out.Status.State = state
+		return &out
+	}
+	expected := GenerateReport([]*v1.ProwJob{
+		job("this", "url", v1.SuccessState),
+		job("that", "hey", v1.FailureState),
+	})
+	actual := ParseReport(expected.String())
+	if !equality.Semantic.DeepEqual(&expected, actual) {
+		t.Errorf(diff.ObjectReflectDiff(&expected, actual))
+	}
 }

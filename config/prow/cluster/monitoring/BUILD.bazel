@@ -1,0 +1,108 @@
+load("//prow:def.bzl", "BUILD_CLUSTER", "MULTI_KIND", "component", "release")
+
+# Usage:
+#   bazel run //config/prow/cluster/monitoring:production.apply
+
+release(
+    "production",
+    component("prow_monitoring", "namespace"),
+    component("prometheus_operator_rbac", MULTI_KIND),
+    component("prometheus_operator", "deployment"),
+    component("prow_servicemonitors", MULTI_KIND),
+    component("prometheus_rbac", MULTI_KIND),
+    component("prow", "prometheus"),
+    component("prometheus_expose", MULTI_KIND),
+    component("grafana_rbac", MULTI_KIND),
+    component("grafana_expose", MULTI_KIND),
+    component("grafana_configmaps", MULTI_KIND),
+    component("grafana", "deployment"),
+    component("alertmanager_rbac", MULTI_KIND),
+    component("alertmanager_expose", MULTI_KIND),
+    component("prow", "alertmanager"),
+    component("ing", "ingress"),
+    component("monitoring-prow-canary-k8s-io", "managedcertificate"),
+    component("monitoring-prow-k8s-io", "managedcertificate"),
+    component("additional-scrape-configs", "secret"),
+    component("blackbox_prober", MULTI_KIND),
+)
+
+load("@io_bazel_rules_k8s//k8s:object.bzl", "k8s_object")
+
+k8s_object(
+    name = "alertmanager_crd",
+    cluster = "{STABLE_PROW_CLUSTER}",
+    kind = None,
+    template = "@com_github_operator_framework_community_operators//:upstream-community-operators/prometheus/alertmanager.crd.yaml",
+)
+
+k8s_object(
+    name = "prometheus_crd",
+    cluster = "{STABLE_PROW_CLUSTER}",
+    kind = None,
+    template = "@com_github_operator_framework_community_operators//:upstream-community-operators/prometheus/prometheus.crd.yaml",
+)
+
+k8s_object(
+    name = "prometheusrule_crd",
+    cluster = "{STABLE_PROW_CLUSTER}",
+    kind = None,
+    template = "@com_github_operator_framework_community_operators//:upstream-community-operators/prometheus/prometheusrule.crd.yaml",
+)
+
+k8s_object(
+    name = "servicemonitor_crd",
+    cluster = "{STABLE_PROW_CLUSTER}",
+    kind = None,
+    template = "@com_github_operator_framework_community_operators//:upstream-community-operators/prometheus/servicemonitor.crd.yaml",
+)
+
+k8s_object(
+    name = "prow_prometheusrule",
+    cluster = "{STABLE_PROW_CLUSTER}",
+    kind = None,
+    template = "//config/prow/cluster/monitoring/mixins/prometheus:prow_prometheusrule",
+)
+
+load("@io_bazel_rules_k8s//k8s:objects.bzl", "k8s_objects")
+
+k8s_objects(
+    name = "prow_monitoring_objects",
+    objects = [
+        ":alertmanager_crd",
+        ":prometheus_crd",
+        ":prometheusrule_crd",
+        ":servicemonitor_crd",
+        "//config/prow/cluster/monitoring/mixins/prometheus_out:prow_prometheusrule",
+        "//config/prow/cluster/monitoring/mixins/dashboards_out:grafana-dashboard-boskos",
+        "//config/prow/cluster/monitoring/mixins/dashboards_out:grafana-dashboard-boskos-http",
+        "//config/prow/cluster/monitoring/mixins/dashboards_out:grafana-dashboard-deck",
+        "//config/prow/cluster/monitoring/mixins/dashboards_out:grafana-dashboard-ghproxy",
+        "//config/prow/cluster/monitoring/mixins/dashboards_out:grafana-dashboard-hook",
+        "//config/prow/cluster/monitoring/mixins/dashboards_out:grafana-dashboard-plank",
+        "//config/prow/cluster/monitoring/mixins/dashboards_out:grafana-dashboard-prow",
+        "//config/prow/cluster/monitoring/mixins/dashboards_out:grafana-dashboard-sinker",
+        "//config/prow/cluster/monitoring/mixins/dashboards_out:grafana-dashboard-tide",
+    ],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [
+        ":package-srcs",
+        "//config/prow/cluster/monitoring/mixins/dashboards_out:all-srcs",
+        "//config/prow/cluster/monitoring/mixins/grafana_dashboards:all-srcs",
+        "//config/prow/cluster/monitoring/mixins/lib:all-srcs",
+        "//config/prow/cluster/monitoring/mixins/prometheus:all-srcs",
+        "//config/prow/cluster/monitoring/mixins/prometheus_out:all-srcs",
+        "//config/prow/cluster/monitoring/mixins/vendor/grafonnet:all-srcs",
+    ],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

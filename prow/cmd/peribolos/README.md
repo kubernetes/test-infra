@@ -161,7 +161,7 @@ In order to mitigate the chance of applying erroneous configs, the peribolos bin
 
 These flags are designed to ensure that any problems can be corrected by rerunning the tool with a fixed config and/or binary.
 
-* `--maximimum-removal-delta=0.25` - reject a config that deletes more than 25% of the current memberships.
+* `--maximum-removal-delta=0.25` - reject a config that deletes more than 25% of the current memberships.
 
 This flag is designed to protect against typos in the configuration which might cause massive, unwanted deletions. Raising this value to 1.0 will allow deleting everyone, and reducing it to 0.0 will prevent any deletions.
 

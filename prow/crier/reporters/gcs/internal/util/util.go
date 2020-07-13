@@ -23,46 +23,55 @@ import (
 	"io"
 	"net/http"
 
-	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/api/googleapi"
-	"k8s.io/test-infra/prow/apis/prowjobs/v1"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
+	utilpointer "k8s.io/utils/pointer"
+
+	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/gcsupload"
+	pkgio "k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 )
 
 type Author interface {
-	NewWriter(ctx context.Context, bucket, path string, overwrite bool) io.WriteCloser
+	NewWriter(ctx context.Context, bucket, path string, overwrite bool) (io.WriteCloser, error)
 }
 
 type StorageAuthor struct {
-	Client *storage.Client
+	Opener pkgio.Opener
 }
 
-func (sa StorageAuthor) NewWriter(ctx context.Context, bucket, path string, overwrite bool) io.WriteCloser {
-	obj := sa.Client.Bucket(bucket).Object(path)
-	if !overwrite {
-		obj = obj.If(storage.Conditions{DoesNotExist: true})
+func (sa StorageAuthor) NewWriter(ctx context.Context, bucket, path string, overwrite bool) (io.WriteCloser, error) {
+	pp, err := prowv1.ParsePath(bucket)
+	if err != nil {
+		return nil, err
 	}
-	return obj.NewWriter(ctx)
+	return sa.Opener.Writer(ctx, fmt.Sprintf("%s://%s/%s", pp.StorageProvider(), pp.Bucket(), path),
+		pkgio.WriterOptions{PreconditionDoesNotExist: utilpointer.BoolPtr(!overwrite)})
 }
 
 func WriteContent(ctx context.Context, logger *logrus.Entry, author Author, bucket, path string, overwrite bool, content []byte) error {
-	logger.WithFields(logrus.Fields{"bucket": bucket, "path": path}).Debugf("Uploading to gs://%s/%s; overwrite: %v", bucket, path, overwrite)
-	w := author.NewWriter(ctx, bucket, path, overwrite)
-	_, err := w.Write(content)
-	var reportErr error
+	log := logger.WithFields(logrus.Fields{"bucket": bucket, "path": path})
+	log.Debugf("Uploading to %s/%s; overwrite: %v", bucket, path, overwrite)
+	w, err := author.NewWriter(ctx, bucket, path, overwrite)
+	if err != nil {
+		return err
+	}
+	_, err = w.Write(content)
+	var writeErr error
 	if isErrUnexpected(err) {
-		reportErr = err
-		logger.WithError(err).WithFields(logrus.Fields{"bucket": bucket, "path": path}).Warn("Uploading info to GCS failed (write)")
+		writeErr = err
+		log.WithError(err).Warn("Uploading info to storage failed (write)")
 	}
 	err = w.Close()
+	var closeErr error
 	if isErrUnexpected(err) {
-		reportErr = err
-		logger.WithError(err).WithFields(logrus.Fields{"bucket": bucket, "path": path}).Warn("Uploading info to GCS failed (close)")
+		closeErr = err
+		log.WithError(err).Warn("Uploading info to storage failed (close)")
 	}
-	return reportErr
+	return utilerrors.NewAggregate([]error{writeErr, closeErr})
 }
 
 func isErrUnexpected(err error) bool {
@@ -75,10 +84,15 @@ func isErrUnexpected(err error) bool {
 			return false
 		}
 	}
+	// Precondition file already exists is expected
+	if errors.Is(err, pkgio.PreconditionFailedObjectAlreadyExists) {
+		return false
+	}
+
 	return true
 }
 
-func GetJobDestination(cfg config.Getter, pj *v1.ProwJob) (bucket, dir string, err error) {
+func GetJobDestination(cfg config.Getter, pj *prowv1.ProwJob) (bucket, dir string, err error) {
 	// We can't divine a destination for jobs that don't have a build ID, so don't try.
 	if pj.Status.BuildID == "" {
 		return "", "", errors.New("cannot get job destination for job with no BuildID")
@@ -94,7 +108,7 @@ func GetJobDestination(cfg config.Getter, pj *v1.ProwJob) (bucket, dir string, e
 
 	ddc := cfg().Plank.GetDefaultDecorationConfigs(repo)
 
-	var gcsConfig *v1.GCSConfiguration
+	var gcsConfig *prowv1.GCSConfiguration
 	if pj.Spec.DecorationConfig != nil && pj.Spec.DecorationConfig.GCSConfiguration != nil {
 		gcsConfig = pj.Spec.DecorationConfig.GCSConfiguration
 	} else if ddc != nil && ddc.GCSConfiguration != nil {

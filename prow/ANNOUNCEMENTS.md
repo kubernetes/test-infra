@@ -1,6 +1,22 @@
 # Announcements
 
+## New features
+
 New features added to each component:
+ - *June 23rd, 2020* An [hmac](/prow/cmd/hmac) tool was added to automatically reconcile webhooks and hmac
+    tokens for the orgs and repos integrated with your prow instance.
+ - *June 8th, 2020* A new informer-based Plank implementation was added. It can be used by deploying
+    the new [prow-controller-manager](/config/prow/experimental/controller_manager.yaml) binary.
+    We plan to gradually move all our controllers into that binary, see https://github.com/kubernetes/test-infra/issues/17024
+ - *May 31, 2020* '--gcs-no-auth' in Deck is deprecated and not used anymore. We always
+    fall back to an anonymous GCS client now, if all other options fail. This flag will
+    be removed in *July 2020*.
+ - *May 25, 2020* Added `--blob-storage-workers` and `--kubernetes-blob-storage-workers`
+    flags to crier. The flags `--gcs-workers` and `--kubernetes-gcs-workers` are now
+    deprecated and will be removed in *August 2020*.
+ - *May 13, 2020* Added a `decorate_all_jobs` option to job configuration that
+     allows to control whether jobs are decorated by default. Individual jobs
+     can use the `decorate` option to override this setting.
  - *March 25, 2020* Added a `report_templates` option to the Plank config that allows
     to specify different report templates for each organization or a specific repository.
     The `report_template` option is deprecated and it will be removed on *September 2020*
@@ -87,6 +103,8 @@ New features added to each component:
    triggers. See https://godoc.org/gopkg.in/robfig/cron.v2 for doc to the
    cron library we are using.
 
+## Breaking changes
+
 Breaking changes to external APIs (labels, GitHub interactions, configuration
 or deployment) will be documented in this section. Prow is in a pre-release
 state and no claims of backwards compatibility are made for any external API.
@@ -94,6 +112,12 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
+ - *May 18, 2020* `expiry` field has been replaced with `created_at` in the HMAC secret.
+ - *April 24, 2020* Horologium now defaults to `--dry-run=true`
+ - *April 23, 2020* Explicitly setting `--config-path` is now required.
+ - *April 23, 2020* Update the `autobump` image to at least `v20200422-8c8546d74` before June 2020.
+ - *April 23, 2020* Deleted deprecated `default_decoration_config`.
+ - *April 22, 2020* Deleted the `file_weight_count` blunderbuss option.
  - *April 16, 2020* The `docs-no-retest` prow plugin has been deleted.
    The plugin was deprecated in January 2020.
  - *April 14, 2020* GitHub reporting via plank is deprecated, set --github-workers=1 on crier before July 2020.

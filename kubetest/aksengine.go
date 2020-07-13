@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -427,7 +428,7 @@ func newAKSEngine() (*aksEngineDeployer, error) {
 func (c *aksEngineDeployer) azLogin() error {
 	// Check if azure-cli has been installed
 	if err := control.FinishRunning(exec.Command("az")); err != nil {
-		if err := control.FinishRunning(exec.Command("pip", "install", "azure-cli==2.2")); err != nil {
+		if err := installAzureCLI(); err != nil {
 			return err
 		}
 	}
@@ -482,8 +483,10 @@ func (c *aksEngineDeployer) populateAPIModelTemplate() error {
 		if err != nil {
 			return fmt.Errorf("error reading ApiModel template file: %v.", err)
 		}
-		err = json.Unmarshal(template, &v)
-		if err != nil {
+		dec := json.NewDecoder(bytes.NewReader(template))
+		// Enforce strict JSON
+		dec.DisallowUnknownFields()
+		if err := dec.Decode(&v); err != nil {
 			return fmt.Errorf("error unmarshaling ApiModel template file: %v", err)
 		}
 	} else {
@@ -1205,7 +1208,8 @@ func (c *aksEngineDeployer) DumpClusterLogs(localPath, gcsPath string) error {
 		errors = append(errors, err.Error())
 	}
 	if err := logDumperWindows(); err != nil {
-		errors = append(errors, err.Error())
+		// don't log error since logDumperWindows failed is expected on non-Windows cluster
+		//errors = append(errors, err.Error())
 	}
 	if len(errors) != 0 {
 		return fmt.Errorf(strings.Join(errors, "\n"))

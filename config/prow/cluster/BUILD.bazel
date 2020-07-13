@@ -1,0 +1,114 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_test")
+
+package(default_visibility = ["//prow:__subpackages__"])
+
+load("//prow:def.bzl", "BUILD_CLUSTER", "MULTI_KIND", "component", "release")
+load("//def:configmap.bzl", "k8s_configmap")
+
+# Usage:
+#   bazel run //config/prow/cluster:foo.apply
+
+release(
+    "production",
+    component(
+        "boskos",
+        MULTI_KIND,
+        cluster = BUILD_CLUSTER,
+    ),
+    component(
+        "boskos-janitor",
+        MULTI_KIND,
+        cluster = BUILD_CLUSTER,
+    ),
+    component(
+        "boskos-reaper",
+        "deployment",
+        cluster = BUILD_CLUSTER,
+    ),
+    component(
+        "create-loop-devs",
+        "daemonset",
+        cluster = BUILD_CLUSTER,
+    ),
+    component("crier", "deployment", "rbac"),
+    component("deck", "service", "deployment", "rbac"),
+    component("gce-ssd-retain", "storageclass"),
+    component("ghproxy", MULTI_KIND),
+    component(
+        "grandmatriarch",
+        MULTI_KIND,
+        cluster = BUILD_CLUSTER,
+    ),
+    component("hook", "service", "deployment", "rbac"),
+    component("horologium", "deployment", "rbac"),
+    component("ing", "ingress"),
+    component(
+        "mem-limit-range",
+        "limitrange",
+        cluster = BUILD_CLUSTER,
+    ),
+    component("needs-rebase", "deployment"),
+    component("pipeline", "deployment", "rbac"),
+    component("plank", "service", "deployment", "rbac"),
+    component("prow-canary-k8s-io", "managedcertificate"),
+    component("prow-k8s-io", "managedcertificate"),
+    component("prow-kubernetes-io", "managedcertificate"),
+    component("prowjob", "customresourcedefinition"),
+    component("pushgateway", "deployment"),
+    component("sinker", "service", "deployment", "rbac"),
+    component("statusreconciler", "deployment", "rbac"),
+    component("tide", "service", "deployment", "rbac"),
+    component("tls-ing", "ingress"),
+    component("tot", "service", "deployment"),  # TODO(fejta): delete tot
+    component("trusted_serviceaccounts", MULTI_KIND),
+    component(
+        "tune-sysctls",
+        "daemonset",
+        cluster = BUILD_CLUSTER,
+    ),
+    component(
+        "build_serviceaccounts",
+        MULTI_KIND,
+        cluster = BUILD_CLUSTER,
+    ),
+)
+
+# TODO(fejta): do we want to auto-apply this?
+k8s_configmap(
+    name = "boskos-resources",
+    cluster = BUILD_CLUSTER,
+    data = {
+        "resources.yaml": ":boskos-resources.yaml",
+    },
+    labels = {
+        "app": "boskos",
+        "component": "config",
+    },
+    namespace = "test-pods",
+)
+
+component("starter", MULTI_KIND)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [
+        ":package-srcs",
+        "//config/prow/cluster/monitoring:all-srcs",
+    ],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = ["boskos_test.go"],
+    data = [":boskos-resources.yaml"],
+    deps = ["@io_k8s_sigs_boskos//common:go_default_library"],
+)

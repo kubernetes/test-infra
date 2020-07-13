@@ -4,9 +4,17 @@ aliases:
   - BenTheElder
   - chases2
   - cjwagner
+  - clarketm
   - fejta
-  - Katharine
   - michelle192837
+
+  wg-k8s-infra-oncall:
+  - BenTheElder
+  # kubernetes.io org admins
+  - cblecker
+  - dims
+  - spiffxp
+  - thockin
 
   # copied from git.k8s.io/community/OWNERS_ALIASES
   sig-api-machinery-leads:
@@ -43,7 +51,7 @@ aliases:
     - neolit123
     - timothysc
   sig-contributor-experience-leads:
-    - Phillels
+    - castrojo
     - cblecker
     - mrbobbytables
     - nikhita
@@ -73,8 +81,9 @@ aliases:
     - justaugustus
     - lachie83
   sig-release-leads:
-    - calebamiles
+    - alejandrox1
     - justaugustus
+    - saschagrunert
     - tpepper
   sig-scalability-leads:
     - mm4tt
@@ -92,7 +101,7 @@ aliases:
     - saad-ali
     - xing-yang
   sig-testing-leads:
-    - fejta
+    - BenTheElder
     - spiffxp
     - stevekuznetsov
   sig-ui-leads:
@@ -206,17 +215,17 @@ aliases:
   # copied from git.k8s.io/kubernetes/OWNERS_ALIASES
   release-engineering-approvers:
     - calebamiles # subproject owner
-    - justaugustus # subproject owner / Patch Release Team
-    - tpepper # subproject owner / Patch Release Team
+    - justaugustus # subproject owner / Release Manager
+    - tpepper # subproject owner / Release Manager
   release-engineering-reviewers:
     - calebamiles # subproject owner
-    - cpanato # Branch Manager
-    - feiskyer # Patch Release Team
-    - hasheddan # Branch Manager
-    - hoegaarden # Patch Release Team
-    - justaugustus # subproject owner / Patch Release Team
-    - saschagrunert # Branch Manager
-    - tpepper # subproject owner / Patch Release Team
+    - cpanato # Release Manager
+    - feiskyer # Release Manager
+    - hasheddan # Release Manager
+    - hoegaarden # Release Manager
+    - justaugustus # subproject owner / Release Manager
+    - saschagrunert # Release Manager
+    - tpepper # subproject owner / Release Manager
 
   # copied from git.k8s.io/enhancements/OWNERS_ALIASES
   enhancements-approvers:
@@ -240,3 +249,37 @@ aliases:
     - frapposelli
     - yastij
     - randomvariable
+  # end sigs.k8s.io/cluster-api-provider-vsphere/OWNERS_ALIASES
+
+  # mostly copied from sigs.k8s.io/controller-runtime/OWNERS_ALIASES
+  controller-runtime-admins:
+  - directxman12
+  - mengqiy
+
+  controller-runtime-maintainers:
+  - vincepri
+
+  controller-runtime-approvers:
+  - gerred
+
+  controller-runtime-reviewers:
+  - alvaroaleman
+  - alenkacz
+  - vincepri
+  - alexeldeib
+
+  controller-runtime-emeritus-maintainers:
+  - pwittrock
+
+  # mostly copied from sigs.k8s.io/kubebuilder/OWNERS_ALIASES
+  kubebuilder-admins:
+  - mengqiy
+  - directxman12
+
+  kubebuilder-reviewers:
+  - alexeldeib
+
+  kubebuilder-emeritus-approvers:
+  - pwittrock
+
+  # end sigs.k8s.io/kubebuilder/OWNERS_ALIASES

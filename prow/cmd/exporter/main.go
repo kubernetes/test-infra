@@ -34,8 +34,9 @@ import (
 )
 
 type options struct {
-	configPath string
-	kubernetes prowflagutil.KubernetesOptions
+	configPath             string
+	kubernetes             prowflagutil.KubernetesOptions
+	instrumentationOptions prowflagutil.InstrumentationOptions
 }
 
 func gatherOptions(fs *flag.FlagSet, args ...string) options {
@@ -44,10 +45,10 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
 
 	o.kubernetes.AddFlags(fs)
+	o.instrumentationOptions.AddFlags(fs)
 	if err := fs.Parse(os.Args[1:]); err != nil {
 		logrus.WithError(err).Fatalf("cannot parse args: '%s'", os.Args[1:])
 	}
-	o.configPath = config.ConfigPath(o.configPath)
 	return o
 }
 
@@ -76,7 +77,7 @@ func main() {
 
 	defer interrupts.WaitForGracefulShutdown()
 
-	pjutil.ServePProf()
+	pjutil.ServePProf(o.instrumentationOptions.PProfPort)
 	health := pjutil.NewHealth()
 
 	configAgent := &config.Agent{}
@@ -99,7 +100,7 @@ func main() {
 	registry := mustRegister("exporter", pjLister)
 
 	// Expose prometheus metrics
-	metrics.ExposeMetricsWithRegistry("exporter", cfg().PushGateway, registry, nil)
+	metrics.ExposeMetricsWithRegistry("exporter", cfg().PushGateway, o.instrumentationOptions.MetricsPort, registry, nil)
 
 	logrus.Info("exporter is running ...")
 	health.ServeReady()

@@ -2,12 +2,11 @@ presubmits:
   bazelbuild/rules_k8s:
   - name: pull-rules-k8s-e2e
     cluster: gke_rules-k8s_us-central1-f_testing
-    max_concurrency: 1  # TODO(fejta): increase this
     always_run: true
     decorate: true
     spec:
       containers:
-      - image: gcr.io/rules-k8s/gcloud-bazel:v20200113-v0.3.1-16-g7767a41
+      - image: gcr.io/rules-k8s/gcloud-bazel:v20200619-v0.4-44-g992f469
         args:
         - bash
         - -c

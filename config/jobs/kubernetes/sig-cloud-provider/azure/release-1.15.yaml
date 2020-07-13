@@ -14,7 +14,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200420-e830a3a-1.15
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-1.15
         command:
         - runner.sh
         - kubetest
@@ -64,7 +64,7 @@ presubmits:
       path_alias: sigs.k8s.io/azuredisk-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200420-e830a3a-1.15
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-1.15
         command:
         - runner.sh
         - kubetest
@@ -114,7 +114,7 @@ presubmits:
       path_alias: sigs.k8s.io/azuredisk-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200420-e830a3a-1.15
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-1.15
         command:
         - runner.sh
         - kubetest
@@ -145,6 +145,8 @@ presubmits:
         env:
         - name: AZURE_STORAGE_DRIVER
           value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
+        - name: ENABLE_TOPOLOGY
+          value: "true"
   - name: pull-kubernetes-e2e-azure-file
     decorate: true
     always_run: false
@@ -160,11 +162,11 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: azurefile-csi-driver
-      base_ref: master
+      base_ref: go1.12-e2e-test
       path_alias: sigs.k8s.io/azurefile-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200420-e830a3a-1.15
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-1.15
         command:
         - runner.sh
         - kubetest
@@ -217,7 +219,7 @@ periodics:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200420-e830a3a-1.15
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-1.15
       command:
       - runner.sh
       - kubetest
@@ -272,7 +274,7 @@ periodics:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200420-e830a3a-1.15
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-1.15
       command:
       - runner.sh
       - kubetest
@@ -303,6 +305,8 @@ periodics:
       env:
       - name: AZURE_STORAGE_DRIVER
         value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
+      - name: ENABLE_TOPOLOGY
+        value: "true"
   annotations:
     testgrid-dashboards: provider-azure-upstream, provider-azure-periodic
     testgrid-tab-name: k8s-e2e-azure-disk-vmss-1-15
@@ -327,7 +331,7 @@ periodics:
     path_alias: sigs.k8s.io/azurefile-csi-driver
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200420-e830a3a-1.15
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-1.15
       command:
       - runner.sh
       - kubetest

@@ -402,8 +402,6 @@ func (g *gkeDeployer) IsUp() error {
 //
 // TODO(zmerlynn): This whole path is really gross, but this seemed
 // the least gross hack to get this done.
-//
-// TODO(shyamjvs): Make this work with multizonal and regional clusters.
 func (g *gkeDeployer) DumpClusterLogs(localPath, gcsPath string) error {
 	// gkeLogDumpTemplate is a template of a shell script where
 	// - %[1]s is the project
@@ -412,10 +410,7 @@ func (g *gkeDeployer) DumpClusterLogs(localPath, gcsPath string) error {
 	// - %[4]s is the log-dump.sh command line
 	const gkeLogDumpTemplate = `
 function log_dump_custom_get_instances() {
-  if [[ $1 == "master" ]]; then
-    return 0
-  fi
-
+  if [[ $1 == "master" ]]; then return 0; fi
   gcloud compute instances list '--project=%[1]s' '--filter=%[4]s' '--format=get(name)'
 }
 export -f log_dump_custom_get_instances
@@ -435,9 +430,10 @@ export KUBE_NODE_OS_DISTRIBUTION='%[3]s'
 	if err := g.getInstanceGroups(); err != nil {
 		return err
 	}
-	var filters []string
+	perZoneFilters := make(map[string][]string)
 	for _, ig := range g.instanceGroups {
-		filters = append(filters, fmt.Sprintf("(metadata.created-by:*%s)", ig.path))
+		filter := fmt.Sprintf("(metadata.created-by ~ %s)", ig.path)
+		perZoneFilters[ig.zone] = append(perZoneFilters[ig.zone], filter)
 	}
 
 	// Generate the log-dump.sh command-line
@@ -448,6 +444,12 @@ export KUBE_NODE_OS_DISTRIBUTION='%[3]s'
 		dumpCmd = fmt.Sprintf("./cluster/log-dump/log-dump.sh '%s' '%s'", localPath, gcsPath)
 	}
 
+	// Try to setup cluster access if it's possible. If credentials are already set, this will be no-op. Access to
+	// GKE cluster is required for log-exporter.
+	if err := g.getKubeConfig(); err != nil {
+		log.Printf("error while setting up kubeconfig: %v", err)
+	}
+
 	// Make sure the firewall rule is created. It's needed so the log-dump.sh can ssh into nodes.
 	// If cluster-up operation failed for some reasons (e.g. some nodes didn't register) the
 	// firewall rule isn't automatically created as the TestSetup is not being executed. If firewall
@@ -456,12 +458,22 @@ export KUBE_NODE_OS_DISTRIBUTION='%[3]s'
 		log.Printf("error while ensuring firewall rule: %v", err)
 	}
 
-	return control.FinishRunning(exec.Command("bash", "-c", fmt.Sprintf(gkeLogDumpTemplate,
-		g.project,
-		g.zone,
-		os.Getenv("NODE_OS_DISTRIBUTION"),
-		strings.Join(filters, " OR "),
-		dumpCmd)))
+	var errorMessages []string
+	for zone, filters := range perZoneFilters {
+		err := control.FinishRunning(exec.Command("bash", "-c", fmt.Sprintf(gkeLogDumpTemplate,
+			g.project,
+			zone,
+			os.Getenv("NODE_OS_DISTRIBUTION"),
+			strings.Join(filters, " OR "),
+			dumpCmd)))
+		if err != nil {
+			errorMessages = append(errorMessages, err.Error())
+		}
+	}
+	if len(errorMessages) > 0 {
+		return fmt.Errorf("errors while dumping logs: %s", strings.Join(errorMessages, ", "))
+	}
+	return nil
 }
 
 func (g *gkeDeployer) TestSetup() error {
@@ -481,15 +493,70 @@ func (g *gkeDeployer) TestSetup() error {
 	if err := g.ensureNat(); err != nil {
 		return err
 	}
+	if err := g.setupBastion(); err != nil {
+		return err
+	}
 	if err := g.setupEnv(); err != nil {
 		return err
 	}
-	if g.sshProxyInstanceName != "" {
-		if err := setKubeShhBastionEnv(g.project, g.zone, g.sshProxyInstanceName); err != nil {
-			return err
-		}
-	}
 	g.setup = true
+	return nil
+}
+
+func (g *gkeDeployer) setupBastion() error {
+	if g.sshProxyInstanceName == "" {
+		return nil
+	}
+	var filtersToTry []string
+	// Use exact name first, VM does not have to belong to the cluster
+	exactFilter := "name=" + g.sshProxyInstanceName
+	filtersToTry = append(filtersToTry, exactFilter)
+	// As a fallback - use proxy instance name as a regex but check only cluster nodes
+	var igFilters []string
+	for _, ig := range g.instanceGroups {
+		igFilters = append(igFilters, fmt.Sprintf("(metadata.created-by ~ %s)", ig.path))
+	}
+	fuzzyFilter := fmt.Sprintf("(name ~ %s) AND (%s)",
+		g.sshProxyInstanceName,
+		strings.Join(igFilters, " OR "))
+	filtersToTry = append(filtersToTry, fuzzyFilter)
+
+	var bastion, zone string
+	for _, filter := range filtersToTry {
+		log.Printf("Checking for proxy instance with filter: %q", filter)
+		output, err := exec.Command("gcloud", "compute", "instances", "list",
+			"--filter="+filter,
+			"--format=value(name,zone)",
+			"--limit=1",
+			"--project="+g.project).Output()
+		if err != nil {
+			return fmt.Errorf("listing instances failed: %s", util.ExecError(err))
+		}
+		if len(output) == 0 {
+			continue
+		}
+		// Proxy instance found
+		fields := strings.Split(strings.TrimSpace(string(output)), "\t")
+		if len(fields) != 2 {
+			return fmt.Errorf("error parsing instances list output %q", output)
+		}
+		bastion, zone = fields[0], fields[1]
+		break
+	}
+	if bastion == "" {
+		return fmt.Errorf("proxy instance %q not found", g.sshProxyInstanceName)
+	}
+	log.Printf("Found proxy instance %q", bastion)
+
+	log.Printf("Adding NAT access config if not present")
+	control.NoOutput(exec.Command("gcloud", "compute", "instances", "add-access-config", bastion,
+		"--zone="+zone,
+		"--project="+g.project))
+
+	err := setKubeShhBastionEnv(g.project, zone, bastion)
+	if err != nil {
+		return fmt.Errorf("setting KUBE_SSH_BASTION variable failed: %s", util.ExecError(err))
+	}
 	return nil
 }
 
@@ -552,7 +619,7 @@ func (g *gkeDeployer) ensureFirewall() error {
 
 	tagOut, err := exec.Command("gcloud", "compute", "instances", "list",
 		"--project="+g.project,
-		"--filter=metadata.created-by:*"+g.instanceGroups[0].path,
+		"--filter=metadata.created-by ~ "+g.instanceGroups[0].path,
 		"--limit=1",
 		"--format=get(tags.items)").Output()
 	if err != nil {

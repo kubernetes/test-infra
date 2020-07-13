@@ -27,12 +27,13 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/test-infra/prow/interrupts"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/cron"
 	"k8s.io/test-infra/prow/flagutil"
+	prowflagutil "k8s.io/test-infra/prow/flagutil"
+	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/pjutil"
 )
@@ -41,8 +42,9 @@ type options struct {
 	configPath    string
 	jobConfigPath string
 
-	kubernetes flagutil.KubernetesOptions
-	dryRun     flagutil.Bool
+	kubernetes             flagutil.KubernetesOptions
+	instrumentationOptions prowflagutil.InstrumentationOptions
+	dryRun                 bool
 }
 
 func gatherOptions(fs *flag.FlagSet, args ...string) options {
@@ -50,17 +52,16 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
 	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
 
-	// TODO(fejta): switch dryRun to be a bool, defaulting to true after March 15, 2019.
-	fs.Var(&o.dryRun, "dry-run", "Whether or not to make mutating API calls to Kubernetes.")
+	fs.BoolVar(&o.dryRun, "dry-run", true, "Whether or not to make mutating API calls to Kubernetes.")
 	o.kubernetes.AddFlags(fs)
+	o.instrumentationOptions.AddFlags(fs)
 
 	fs.Parse(args)
-	o.configPath = config.ConfigPath(o.configPath)
 	return o
 }
 
 func (o *options) Validate() error {
-	if err := o.kubernetes.Validate(o.dryRun.Value); err != nil {
+	if err := o.kubernetes.Validate(o.dryRun); err != nil {
 		return err
 	}
 
@@ -81,19 +82,14 @@ func main() {
 
 	defer interrupts.WaitForGracefulShutdown()
 
-	pjutil.ServePProf()
-
-	if !o.dryRun.Explicit {
-		logrus.Warning("Horologium requires --dry-run=false to function correctly in production.")
-		logrus.Warning("--dry-run will soon default to true. Set --dry-run=false by March 15.")
-	}
+	pjutil.ServePProf(o.instrumentationOptions.PProfPort)
 
 	configAgent := config.Agent{}
 	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 
-	prowJobClient, err := o.kubernetes.ProwJobClient(configAgent.Config().ProwJobNamespace, o.dryRun.Value)
+	prowJobClient, err := o.kubernetes.ProwJobClient(configAgent.Config().ProwJobNamespace, o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting Kubernetes client.")
 	}

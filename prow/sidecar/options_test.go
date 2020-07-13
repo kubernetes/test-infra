@@ -21,6 +21,7 @@ import (
 	"testing"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/gcsupload"
 	"k8s.io/test-infra/prow/pod-utils/wrapper"
 )
@@ -70,9 +71,11 @@ func TestOptions_LoadConfig(t *testing.T) {
 						Bucket:       "prow-artifacts",
 						PathStrategy: "explicit",
 					},
-					GcsCredentialsFile: "/secrets/gcs/service-account.json",
-					DryRun:             false,
-					Items:              []string{"/logs/artifacts"},
+					StorageClientOptions: flagutil.StorageClientOptions{
+						GCSCredentialsFile: "/secrets/gcs/service-account.json",
+					},
+					DryRun: false,
+					Items:  []string{"/logs/artifacts"},
 				},
 				Entries: []wrapper.Options{
 					{
@@ -120,9 +123,11 @@ func TestOptions_LoadConfig(t *testing.T) {
 						Bucket:       "s3://prow-artifacts",
 						PathStrategy: "explicit",
 					},
-					S3CredentialsFile: "/secrets/s3-storage/service-account.json",
-					DryRun:            false,
-					Items:             []string{"/logs/artifacts"},
+					StorageClientOptions: flagutil.StorageClientOptions{
+						S3CredentialsFile: "/secrets/s3-storage/service-account.json",
+					},
+					DryRun: false,
+					Items:  []string{"/logs/artifacts"},
 				},
 				Entries: []wrapper.Options{
 					{

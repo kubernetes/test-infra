@@ -66,9 +66,14 @@ func TestGatherOptions(t *testing.T) {
 				kubernetes:    flagutil.KubernetesOptions{DeckURI: "http://whatever"},
 				tokenBurst:    100,
 				tokensPerHour: 300,
+				instrumentationOptions: flagutil.InstrumentationOptions{
+					MetricsPort: flagutil.DefaultMetricsPort,
+					PProfPort:   flagutil.DefaultPProfPort,
+				},
 			}
 			expectedfs := flag.NewFlagSet("fake-flags", flag.PanicOnError)
 			expected.github.AddFlags(expectedfs)
+			expected.github.TokenPath = flagutil.DefaultGitHubTokenPath
 			if tc.expected != nil {
 				tc.expected(expected)
 			}

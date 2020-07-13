@@ -27,7 +27,7 @@ import (
 	jsonpatch "github.com/evanphx/json-patch"
 	"github.com/sirupsen/logrus"
 
-	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/apis/prowjobs/v1"
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -35,6 +35,7 @@ import (
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/tools/cache"
+	"k8s.io/client-go/util/retry"
 	"k8s.io/client-go/util/workqueue"
 	clientset "k8s.io/test-infra/prow/client/clientset/versioned"
 	pjinformers "k8s.io/test-infra/prow/client/informers/externalversions/prowjobs/v1"
@@ -84,7 +85,7 @@ func (c *Controller) Run(ctx context.Context) {
 	c.informer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
 			key, err := cache.MetaNamespaceKeyFunc(obj)
-			logrus.WithField("prowjob", key).Debug("Add prowjob")
+			logrus.WithField("prowjob", key).Trace("Add prowjob")
 			if err != nil {
 				logrus.WithError(err).Error("Cannot get key from object meta")
 				return
@@ -93,7 +94,7 @@ func (c *Controller) Run(ctx context.Context) {
 		},
 		UpdateFunc: func(oldObj, newObj interface{}) {
 			key, err := cache.MetaNamespaceKeyFunc(newObj)
-			logrus.WithField("prowjob", key).Debug("Update prowjob")
+			logrus.WithField("prowjob", key).Trace("Update prowjob")
 			if err != nil {
 				logrus.WithError(err).Error("Cannot get key from object meta")
 				return
@@ -140,20 +141,19 @@ func (c *Controller) runWorker() {
 	c.wg.Done()
 }
 
-func (c *Controller) retry(key interface{}, err error) bool {
-	keyRaw := key.(string)
+func (c *Controller) retry(key interface{}, log *logrus.Entry, err error) bool {
 	if c.queue.NumRequeues(key) < 5 {
-		logrus.WithError(err).WithField("prowjob", keyRaw).Info("Failed processing item, retrying")
+		log.WithError(err).Info("Failed processing item, retrying")
 		c.queue.AddRateLimited(key)
 	} else {
-		logrus.WithError(err).WithField("prowjob", keyRaw).Error("Failed processing item, no more retries")
+		log.WithError(err).Error("Failed processing item, no more retries")
 		c.queue.Forget(key)
 	}
 
 	return true
 }
 
-func (c *Controller) updateReportState(pj *v1.ProwJob) error {
+func (c *Controller) updateReportState(pj *v1.ProwJob, log *logrus.Entry, reportedState v1.ProwJobState) error {
 	pjData, err := json.Marshal(pj)
 	if err != nil {
 		return fmt.Errorf("error marshal pj: %v", err)
@@ -165,7 +165,7 @@ func (c *Controller) updateReportState(pj *v1.ProwJob) error {
 	if newpj.Status.PrevReportStates == nil {
 		newpj.Status.PrevReportStates = map[string]v1.ProwJobState{}
 	}
-	newpj.Status.PrevReportStates[c.reporter.GetName()] = newpj.Status.State
+	newpj.Status.PrevReportStates[c.reporter.GetName()] = reportedState
 
 	newpjData, err := json.Marshal(newpj)
 	if err != nil {
@@ -181,8 +181,7 @@ func (c *Controller) updateReportState(pj *v1.ProwJob) error {
 		logrus.Warnf("Empty merge patch: pjData: %s, newpjData: %s", string(pjData), string(newpjData))
 	}
 
-	logrus.Infof("Created merge patch: %v", string(patch))
-
+	log.Info("Created merge patch")
 	_, err = c.pjclientset.ProwV1().ProwJobs(pj.Namespace).Patch(pj.Name, types.MergePatchType, patch)
 	if err != nil {
 		return err
@@ -197,7 +196,7 @@ func (c *Controller) updateReportState(pj *v1.ProwJob) error {
 			return false, err
 		}
 		if pj.Status.PrevReportStates != nil &&
-			newpj.Status.PrevReportStates[c.reporter.GetName()] == newpj.Status.State {
+			newpj.Status.PrevReportStates[c.reporter.GetName()] == reportedState {
 			return true, nil
 		}
 		return false, nil
@@ -220,11 +219,12 @@ func (c *Controller) processNextItem() bool {
 
 	// assert the string out of the key (format `namespace/name`)
 	keyRaw := key.(string)
-	logrus.WithField("key", keyRaw).Debug("processing next key")
+	log := logrus.WithField("reporter", c.reporter.GetName()).WithField("prowjob", keyRaw)
+	log.Debug("processing next key")
 
 	namespace, name, err := cache.SplitMetaNamespaceKey(keyRaw)
 	if err != nil {
-		logrus.WithError(err).WithField("prowjob", keyRaw).Error("invalid resource key")
+		log.WithError(err).Error("invalid resource key")
 		c.queue.Forget(key)
 		return true
 	}
@@ -242,14 +242,15 @@ func (c *Controller) processNextItem() bool {
 	readOnlyPJ, err := c.informer.Lister().ProwJobs(namespace).Get(name)
 	if err != nil {
 		if errors.IsNotFound(err) {
-			logrus.WithField("prowjob", keyRaw).Info("object no longer exist")
+			log.Debug("object no longer exist")
 			c.queue.Forget(key)
 			return true
 		}
 
-		return c.retry(key, err)
+		return c.retry(key, log, err)
 	}
 	pj := readOnlyPJ.DeepCopy()
+	log = log.WithField("jobName", pj.Spec.Job)
 
 	// not belong to the current reporter
 	if !pj.Spec.Report || !c.reporter.ShouldReport(pj) {
@@ -264,47 +265,38 @@ func (c *Controller) processNextItem() bool {
 
 	// already reported current state
 	if pj.Status.PrevReportStates[c.reporter.GetName()] == pj.Status.State {
-		logrus.WithField("prowjob", keyRaw).Info("Already reported")
+		log.Trace("Already reported")
 		c.queue.Forget(key)
 		return true
 	}
 
-	logrus.WithField("prowjob", keyRaw).Infof("Will report state : %s", pj.Status.State)
+	log = log.WithField("jobStatus", pj.Status.State)
+	log.Info("Will report state")
 	pjs, err := c.reporter.Report(pj)
 	if err != nil {
-		fields := logrus.Fields{
-			"prowjob":   keyRaw,
-			"jobName":   pj.Name,
-			"jobStatus": pj.Status,
-		}
-		logrus.WithError(err).WithFields(fields).Error("failed to report job")
-		return c.retry(key, err)
+		log.WithError(err).Error("failed to report job")
+		return c.retry(key, log, err)
 	}
 
-	logrus.WithField("prowjob", keyRaw).Info("Updated job, now will update pj")
+	log.Info("Reported job, now will update pj")
 	for _, pjob := range pjs {
-		if err := c.updateReportState(pjob); err != nil {
-			logrus.WithError(err).WithField("prowjob", keyRaw).Error("failed to update report state")
-
-			// theoretically patch should not have this issue, but in case:
-			// it might be out-dated, try to re-fetch pj and try again
-
-			updatedPJ, err := c.pjclientset.ProwV1().ProwJobs(pjob.Namespace).Get(pjob.Name, metav1.GetOptions{})
+		reportedState := pjob.Status.State
+		// We have to retry here, if we return we lose the information that we already reported this job.
+		if err := retry.RetryOnConflict(retry.DefaultBackoff, func() error {
+			// Get it first, this is very cheap
+			pj, err := c.pjclientset.ProwV1().ProwJobs(pjob.Namespace).Get(pjob.Name, metav1.GetOptions{})
 			if err != nil {
-				logrus.WithError(err).WithField("prowjob", keyRaw).Error("failed to get prowjob from apiserver")
-				c.queue.Forget(key)
-				return true
+				return err
 			}
-
-			if err := c.updateReportState(updatedPJ); err != nil {
-				// shrug
-				logrus.WithError(err).WithField("prowjob", keyRaw).Error("failed to update report state again, give up")
-				c.queue.Forget(key)
-				return true
-			}
+			// Must not wrap until we have kube 1.19, otherwise the RetryOnConflict won't recognize conflicts
+			// correctly
+			return c.updateReportState(pj, log, reportedState)
+		}); err != nil {
+			log.WithError(err).Error("Failed to update report state on prowjob")
+			return c.retry(key, log, err)
 		}
 
-		logrus.WithField("prowjob", keyRaw).Infof("Hunky Dory!, pj : %v, state : %s", pjob.Spec.Job, pjob.Status.State)
+		log.Info("Successfully updated prowjob")
 	}
 	c.queue.Forget(key)
 	return true

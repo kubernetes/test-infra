@@ -20,9 +20,16 @@ import (
 	"flag"
 	"reflect"
 	"testing"
+
+	prowflagutil "k8s.io/test-infra/prow/flagutil"
 )
 
 func TestOptions(t *testing.T) {
+
+	defaultInstrumentationOptions := prowflagutil.InstrumentationOptions{
+		MetricsPort: prowflagutil.DefaultMetricsPort,
+		PProfPort:   prowflagutil.DefaultPProfPort,
+	}
 	cases := []struct {
 		name     string
 		args     []string
@@ -36,7 +43,8 @@ func TestOptions(t *testing.T) {
 		name: "only config works",
 		args: []string{"--config=/etc/config.yaml"},
 		expected: &options{
-			configPath: "/etc/config.yaml",
+			configPath:             "/etc/config.yaml",
+			instrumentationOptions: defaultInstrumentationOptions,
 		},
 	}, {
 		name: "error when providing both kubeconfig and build-cluter options ",
@@ -44,11 +52,12 @@ func TestOptions(t *testing.T) {
 			"--kubeconfig=/root/kubeconfig", "--config=/etc/config.yaml",
 			"--build-cluster=/etc/build-cluster.yaml"},
 		expected: &options{
-			allContexts:  true,
-			totURL:       "https://tot",
-			kubeconfig:   "/root/kubeconfig",
-			configPath:   "/etc/config.yaml",
-			buildCluster: "/etc/build-cluster.yaml",
+			allContexts:            true,
+			totURL:                 "https://tot",
+			kubeconfig:             "/root/kubeconfig",
+			configPath:             "/etc/config.yaml",
+			buildCluster:           "/etc/build-cluster.yaml",
+			instrumentationOptions: defaultInstrumentationOptions,
 		},
 		err: true,
 	}, {
@@ -56,10 +65,11 @@ func TestOptions(t *testing.T) {
 		args: []string{"--all-contexts=true", "--tot-url=https://tot",
 			"--kubeconfig=/root/kubeconfig", "--config=/etc/config.yaml"},
 		expected: &options{
-			allContexts: true,
-			totURL:      "https://tot",
-			kubeconfig:  "/root/kubeconfig",
-			configPath:  "/etc/config.yaml",
+			allContexts:            true,
+			totURL:                 "https://tot",
+			kubeconfig:             "/root/kubeconfig",
+			configPath:             "/etc/config.yaml",
+			instrumentationOptions: defaultInstrumentationOptions,
 		},
 	}}
 	for _, tc := range cases {

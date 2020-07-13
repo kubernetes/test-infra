@@ -109,13 +109,15 @@ func unmarshalClientError(b []byte) error {
 
 // ClientError represents https://developer.github.com/v3/#client-errors
 type ClientError struct {
-	Message string `json:"message"`
-	Errors  []struct {
-		Resource string `json:"resource"`
-		Field    string `json:"field"`
-		Code     string `json:"code"`
-		Message  string `json:"message,omitempty"`
-	} `json:"errors,omitempty"`
+	Message string                `json:"message"`
+	Errors  []clientErrorSubError `json:"errors,omitempty"`
+}
+
+type clientErrorSubError struct {
+	Resource string `json:"resource"`
+	Field    string `json:"field"`
+	Code     string `json:"code"`
+	Message  string `json:"message,omitempty"`
 }
 
 func (r ClientError) Error() string {
@@ -207,13 +209,17 @@ const (
 	PullRequestActionSynchronize PullRequestEventAction = "synchronize"
 	// PullRequestActionReadyForReview means the PR is no longer a draft PR.
 	PullRequestActionReadyForReview PullRequestEventAction = "ready_for_review"
+	// PullRequestConvertedToDraft means the PR is now a draft PR.
+	PullRequestConvertedToDraft PullRequestEventAction = "converted_to_draft"
 )
 
-// GenericEvent is a lightweight struct containing just Sender and Repo as all events are expected to have this information.
-// https://developer.github.com/webhooks/#payloads
+// GenericEvent is a lightweight struct containing just Sender, Organization and Repo as
+// they are allWebhook payload object common properties:
+// https://developer.github.com/webhooks/event-payloads/#webhook-payload-object-common-properties
 type GenericEvent struct {
-	Sender User `json:"sender"`
-	Repo   Repo `json:"repository"`
+	Sender User         `json:"sender"`
+	Org    Organization `json:"organization"`
+	Repo   Repo         `json:"repository"`
 }
 
 // PullRequestEvent is what GitHub sends us when a PR is changed.
@@ -992,6 +998,9 @@ type Membership struct {
 
 // Organization stores metadata information about an organization
 type Organization struct {
+	// Login has the same meaning as Name, but it's more reliable to use as Name can sometimes be empty,
+	// see https://developer.github.com/v3/orgs/#list-organizations
+	Login string `json:"login"`
 	// BillingEmail holds private billing address
 	BillingEmail string `json:"billing_email"`
 	Company      string `json:"company"`

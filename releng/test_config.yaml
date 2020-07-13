@@ -523,59 +523,70 @@ k8sVersions:
     version: master
   beta:
     args:
+    - --extract=ci/latest-1.19
+    version: '1.19'
+  stable1:
+    args:
     - --extract=ci/latest-1.18
     version: '1.18'
-  stable1:
+  stable2:
     args:
     - --extract=ci/latest-1.17
     version: '1.17'
-  stable2:
+  stable3:
     args:
     - --extract=ci/latest-1.16
     version: '1.16'
-  stable3:
-    args:
-    - --extract=ci/latest-1.15
-    version: '1.15'
 
 testSuites:
   alphafeatures:
     args:
+    - --gcp-project-type=k8s-infra-gce-project
     - --timeout=180m
     - --test_args=--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly|DynamicKubeletConfig)\]
       --minStartupPods=8
+    cluster: k8s-infra-prow-build
   default:
     args:
+    - --gcp-project-type=k8s-infra-gce-project
     - --timeout=120m
     - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
       --minStartupPods=8
     - --ginkgo-parallel=30
+    cluster: k8s-infra-prow-build
   flaky:
     args:
+    - --gcp-project-type=k8s-infra-gce-project
     - --timeout=300m
     - --test_args=--ginkgo.focus=\[Flaky\] --ginkgo.skip=\[Feature:.+\] --minStartupPods=8
+    cluster: k8s-infra-prow-build
   ingress:
     args:
     - --gcp-project-type=ingress-project
     - --timeout=150m
-    - --test_args=--ginkgo.focus=\[Feature:Ingress\]
-      --minStartupPods=8
+    - --test_args=--ginkgo.focus=\[Feature:Ingress\] --minStartupPods=8
   reboot:
     args:
+    - --gcp-project-type=k8s-infra-gce-project
     - --timeout=180m
     - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
+    cluster: k8s-infra-prow-build
   serial:
     args:
+    - --gcp-project-type=k8s-infra-gce-project
     - --timeout=660m
     - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\]
       --minStartupPods=8
     - --ginkgo-parallel=1
+    cluster: k8s-infra-prow-build
   slow:
     args:
+    - --gcp-project-type=k8s-infra-gce-project
     - --timeout=150m
     - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
       --minStartupPods=8
     - --ginkgo-parallel=30
+    cluster: k8s-infra-prow-build
   soak:
     args:
     - --check-version-skew=false
@@ -645,23 +656,23 @@ nodeK8sVersions:
   dev:
     args:
     - --repo=k8s.io/kubernetes=master
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20200420-e830a3a-master
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-master
   beta:
     args:
-    - --repo=k8s.io/kubernetes=release-1.18
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20200420-e830a3a-1.18
+    - --repo=k8s.io/kubernetes=release-1.19
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-1.19
   stable1:
     args:
-    - --repo=k8s.io/kubernetes=release-1.17
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20200420-e830a3a-1.17
+    - --repo=k8s.io/kubernetes=release-1.18
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-1.18
   stable2:
     args:
-    - --repo=k8s.io/kubernetes=release-1.16
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20200420-e830a3a-1.16
+    - --repo=k8s.io/kubernetes=release-1.17
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-1.17
   stable3:
     args:
-    - --repo=k8s.io/kubernetes=release-1.15
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20200420-e830a3a-1.15
+    - --repo=k8s.io/kubernetes=release-1.16
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-1.16
 
 nodeTestSuites:
   default:

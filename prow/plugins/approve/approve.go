@@ -51,10 +51,6 @@ var (
 	commandRegex               = regexp.MustCompile(`(?m)^/([^\s]+)[\t ]*([^\n\r]*)`)
 	notificationRegex          = regexp.MustCompile(`(?is)^\[` + approvers.ApprovalNotificationName + `\] *?([^\n]*)(?:\n\n(.*))?`)
 
-	// deprecatedBotNames are the names of the bots that previously handled approvals.
-	// Each can be removed once every PR approved by the old bot has been merged or unapproved.
-	deprecatedBotNames = []string{"k8s-merge-robot", "openshift-merge-robot"}
-
 	// handleFunc is used to allow mocking out the behavior of 'handle' while testing.
 	handleFunc = handle
 )
@@ -467,7 +463,7 @@ func handle(log *logrus.Entry, ghc githubClient, repo approvers.Repo, githubConf
 	start = time.Now()
 	notifications := filterComments(commentsFromIssueComments, notificationMatcher(botName))
 	latestNotification := getLast(notifications)
-	newMessage := updateNotification(githubConfig.LinkURL, pr.org, pr.repo, pr.branch, latestNotification, approversHandler)
+	newMessage := updateNotification(githubConfig.LinkURL, opts.CommandHelpLink, pr.org, pr.repo, pr.branch, latestNotification, approversHandler)
 	log.WithField("duration", time.Since(start).String()).Debug("Completed getting notifications in handle")
 	start = time.Now()
 	if newMessage != nil {
@@ -517,7 +513,7 @@ func humanAddedApproved(ghc githubClient, log *logrus.Entry, org, repo string, n
 			lastAdded = event
 		}
 
-		if lastAdded.Actor.Login == "" || lastAdded.Actor.Login == botName || isDeprecatedBot(lastAdded.Actor.Login) {
+		if lastAdded.Actor.Login == "" || lastAdded.Actor.Login == botName {
 			return false
 		}
 		return true
@@ -540,7 +536,7 @@ func approvalMatcher(botName string, lgtmActsAsApprove, reviewActsAsApprove bool
 }
 
 func isApprovalCommand(botName string, lgtmActsAsApprove bool, c *comment) bool {
-	if c.Author == botName || isDeprecatedBot(c.Author) {
+	if c.Author == botName {
 		return false
 	}
 
@@ -554,7 +550,7 @@ func isApprovalCommand(botName string, lgtmActsAsApprove bool, c *comment) bool 
 }
 
 func isApprovalState(botName string, reviewActsAsApprove bool, c *comment) bool {
-	if c.Author == botName || isDeprecatedBot(c.Author) {
+	if c.Author == botName {
 		return false
 	}
 
@@ -578,7 +574,7 @@ func isApprovalState(botName string, reviewActsAsApprove bool, c *comment) bool 
 
 func notificationMatcher(botName string) func(*comment) bool {
 	return func(c *comment) bool {
-		if c.Author != botName && !isDeprecatedBot(c.Author) {
+		if c.Author != botName {
 			return false
 		}
 		match := notificationRegex.FindStringSubmatch(c.Body)
@@ -586,8 +582,8 @@ func notificationMatcher(botName string) func(*comment) bool {
 	}
 }
 
-func updateNotification(linkURL *url.URL, org, repo, branch string, latestNotification *comment, approversHandler approvers.Approvers) *string {
-	message := approvers.GetMessage(approversHandler, linkURL, org, repo, branch)
+func updateNotification(linkURL *url.URL, commandHelpLink, org, repo, branch string, latestNotification *comment, approversHandler approvers.Approvers) *string {
+	message := approvers.GetMessage(approversHandler, linkURL, commandHelpLink, org, repo, branch)
 	if message == nil || (latestNotification != nil && strings.Contains(latestNotification.Body, *message)) {
 		return nil
 	}
@@ -741,13 +737,4 @@ func getLast(cs []*comment) *comment {
 		return nil
 	}
 	return cs[len(cs)-1]
-}
-
-func isDeprecatedBot(login string) bool {
-	for _, deprecated := range deprecatedBotNames {
-		if deprecated == login {
-			return true
-		}
-	}
-	return false
 }

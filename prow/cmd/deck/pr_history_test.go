@@ -17,30 +17,43 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/url"
+	"reflect"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/fsouza/fake-gcs-server/fakestorage"
+
+	"k8s.io/test-infra/prow/io"
+
 	"github.com/google/go-cmp/cmp"
 	"k8s.io/apimachinery/pkg/util/sets"
+
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
+	"k8s.io/test-infra/prow/io/providers"
 )
 
 type fakeBucket struct {
-	name    string
-	objects map[string]string
+	name            string
+	storageProvider string
+	objects         map[string]string
 }
 
 func (bucket fakeBucket) getName() string {
 	return bucket.name
 }
 
-func (bucket fakeBucket) listSubDirs(prefix string) ([]string, error) {
+func (bucket fakeBucket) getStorageProvider() string {
+	return bucket.storageProvider
+}
+
+func (bucket fakeBucket) listSubDirs(_ context.Context, prefix string) ([]string, error) {
 	dirs := sets.String{}
 	for k := range bucket.objects {
 		if !strings.HasPrefix(k, prefix) {
@@ -53,7 +66,7 @@ func (bucket fakeBucket) listSubDirs(prefix string) ([]string, error) {
 	return dirs.List(), nil
 }
 
-func (bucket fakeBucket) listAll(prefix string) ([]string, error) {
+func (bucket fakeBucket) listAll(_ context.Context, prefix string) ([]string, error) {
 	keys := []string{}
 	for k := range bucket.objects {
 		if !strings.HasPrefix(k, prefix) {
@@ -64,7 +77,7 @@ func (bucket fakeBucket) listAll(prefix string) ([]string, error) {
 	return keys, nil
 }
 
-func (bucket fakeBucket) readObject(key string) ([]byte, error) {
+func (bucket fakeBucket) readObject(_ context.Context, key string) ([]byte, error) {
 	if obj, ok := bucket.objects[key]; ok {
 		return []byte(obj), nil
 	}
@@ -134,7 +147,7 @@ func TestUpdateCommitData(t *testing.T) {
 	org := "kubernetes"
 	repo := "test-infra"
 	for _, tc := range cases {
-		updateCommitData(tc.before, org, repo, tc.hash, tc.buildTime, tc.width)
+		updateCommitData(tc.before, "github.com", org, repo, tc.hash, tc.buildTime, tc.width)
 		for hash, expCommit := range tc.after {
 			if commit, ok := tc.before[hash]; ok {
 				if commit.HashPrefix != expCommit.HashPrefix {
@@ -217,7 +230,8 @@ func TestParsePullURL(t *testing.T) {
 }
 
 var testBucket = fakeBucket{
-	name: "chum-bucket",
+	name:            "chum-bucket",
+	storageProvider: providers.GS,
 	objects: map[string]string{
 		"pr-logs/pull/123/build-snowman/456/started.json": `{
 			"timestamp": 55555
@@ -244,7 +258,7 @@ func TestListJobBuilds(t *testing.T) {
 		"build-snowman": {"456": {}, "789": {}},
 		"eat-bread":     {"999": {}},
 	}
-	jobs := listJobBuilds(testBucket, jobPrefixes)
+	jobs := listJobBuilds(context.Background(), testBucket, jobPrefixes)
 	if len(jobs) != len(expected) {
 		t.Errorf("expected %d jobs, got %d", len(expected), len(jobs))
 	}
@@ -291,7 +305,7 @@ func TestGetPRBuildData(t *testing.T) {
 				jobName:      "build-snowman",
 				index:        0,
 				ID:           "456",
-				SpyglassLink: "/view/gcs/chum-bucket/pr-logs/pull/123/build-snowman/456",
+				SpyglassLink: "/view/gs/chum-bucket/pr-logs/pull/123/build-snowman/456",
 				Started:      time.Unix(55555, 0),
 				Duration:     time.Unix(66666, 0).Sub(time.Unix(55555, 0)),
 				Result:       "SUCCESS",
@@ -304,7 +318,7 @@ func TestGetPRBuildData(t *testing.T) {
 				jobName:      "build-snowman",
 				index:        1,
 				ID:           "789",
-				SpyglassLink: "/view/gcs/chum-bucket/pr-logs/pull/123/build-snowman/789",
+				SpyglassLink: "/view/gs/chum-bucket/pr-logs/pull/123/build-snowman/789",
 				Started:      time.Unix(98765, 0),
 				Result:       "Pending",
 				commitHash:   "bbdebedaf24c03f9e2eeb88e8ea4bb10c9e1fbfc",
@@ -316,14 +330,14 @@ func TestGetPRBuildData(t *testing.T) {
 				jobName:      "eat-bread",
 				index:        0,
 				ID:           "999",
-				SpyglassLink: "/view/gcs/chum-bucket/pr-logs/pull/765/eat-bread/999",
+				SpyglassLink: "/view/gs/chum-bucket/pr-logs/pull/765/eat-bread/999",
 				Started:      time.Unix(12345, 0),
 				Result:       "Pending",
 				commitHash:   "52252bcc81712c96940fca1d3c913dd76af3d2a2",
 			},
 		},
 	}
-	builds := getPRBuildData(testBucket, jobs)
+	builds := getPRBuildData(context.Background(), testBucket, jobs)
 	if len(builds) != len(expected) {
 		t.Errorf("expected %d builds, found %d", len(expected), len(builds))
 	}
@@ -364,10 +378,10 @@ func TestGetGCSDirsForPR(t *testing.T) {
 		{
 			name: "multiple buckets",
 			expected: map[string][]string{
-				"chum-bucket": {
+				"gs://chum-bucket": {
 					"pr-logs/pull/prow/123/",
 				},
-				"krusty-krab": {
+				"gs://krusty-krab": {
 					"pr-logs/pull/prow/123/",
 				},
 			},
@@ -425,7 +439,7 @@ func TestGetGCSDirsForPR(t *testing.T) {
 				123: {Number: 123},
 			},
 		}
-		toSearch, err := getGCSDirsForPR(tc.config, gitHubClient, nil, tc.org, tc.repo, tc.pr)
+		toSearch, err := getStorageDirsForPR(tc.config, gitHubClient, nil, tc.org, tc.repo, tc.pr)
 		if (err != nil) != tc.expErr {
 			t.Errorf("%s: unexpected error %v", tc.name, err)
 		}
@@ -443,5 +457,155 @@ func TestGetGCSDirsForPR(t *testing.T) {
 				t.Errorf("expected to find %d dirs in bucket %s, found none", len(expDirs), bucket)
 			}
 		}
+	}
+}
+
+func Test_getPRHistory(t *testing.T) {
+	c := &config.Config{
+		JobConfig: config.JobConfig{
+			PresubmitsStatic: map[string][]config.Presubmit{
+				"kubernetes/test-infra": {
+					{
+						JobBase: config.JobBase{
+							Name: "pull-test-infra-bazel",
+							UtilityConfig: config.UtilityConfig{
+								DecorationConfig: &prowapi.DecorationConfig{
+									GCSConfiguration: &prowapi.GCSConfiguration{
+										Bucket:       "kubernetes-jenkins",
+										PathStrategy: prowapi.PathStrategyLegacy,
+										DefaultOrg:   "kubernetes",
+									},
+								},
+							},
+						},
+					},
+					{
+						JobBase: config.JobBase{
+							Name: "pull-test-infra-yamllint",
+						},
+					},
+				},
+			},
+		},
+		ProwConfig: config.ProwConfig{
+			Plank: config.Plank{
+				DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
+					"*": {
+						GCSConfiguration: &prowapi.GCSConfiguration{
+							Bucket:       "gs://kubernetes-jenkins",
+							PathStrategy: prowapi.PathStrategyLegacy,
+							DefaultOrg:   "kubernetes",
+						},
+					},
+				},
+			},
+		},
+	}
+	objects := []fakestorage.Object{
+		{
+			BucketName: "kubernetes-jenkins",
+			Name:       "pr-logs/pull/test-infra/17183/pull-test-infra-bazel/1254406011708510210/started.json",
+			Content:    []byte("{\"timestamp\": 1587908709,\"pull\": \"17183\",\"repos\": {\"kubernetes/test-infra\": \"master:48192e9a938ed25edb646de2ee9b4ec096c02732,17183:664ba002bc2155e7438b810a1bb7473c55dc1c6a\"},\"metadata\": {\"resultstore\": \"https://source.cloud.google.com/results/invocations/8edcebc7-11f3-4c4e-a7c3-cae6d26bd117/targets/test\"},\"repo-version\": \"a31d10b2924182638acad0f4b759f53e73b5f817\",\"Pending\": false}"),
+		},
+		{
+			BucketName: "kubernetes-jenkins",
+			Name:       "pr-logs/pull/test-infra/17183/pull-test-infra-bazel/1254406011708510210/finished.json",
+			Content:    []byte("{\"timestamp\": 1587909145,\"passed\": true,\"result\": \"SUCCESS\",\"revision\": \"664ba002bc2155e7438b810a1bb7473c55dc1c6a\"}"),
+		},
+		{
+			BucketName: "kubernetes-jenkins",
+			Name:       "pr-logs/pull/test-infra/17183/pull-test-infra-yamllint/1254406011708510208/started.json",
+			Content:    []byte("{\"timestamp\": 1587908749,\"pull\": \"17183\",\"repos\": {\"kubernetes/test-infra\": \"master:48192e9a938ed25edb646de2ee9b4ec096c02732,17183:664ba002bc2155e7438b810a1bb7473c55dc1c6a\"},\"metadata\": {\"resultstore\": \"https://source.cloud.google.com/results/invocations/af70141d-0990-4e63-9ebf-db874391865e/targets/test\"},\"repo-version\": \"a31d10b2924182638acad0f4b759f53e73b5f817\",\"Pending\": false}"),
+		},
+		{
+			BucketName: "kubernetes-jenkins",
+			Name:       "pr-logs/pull/test-infra/17183/pull-test-infra-yamllint/1254406011708510208/finished.json",
+			Content:    []byte("{\"timestamp\": 1587908767,\"passed\": true,\"result\": \"SUCCESS\",\"revision\": \"664ba002bc2155e7438b810a1bb7473c55dc1c6a\"}"),
+		},
+	}
+	gcsServer := fakestorage.NewServer(objects)
+	defer gcsServer.Stop()
+
+	fakeGCSClient := gcsServer.Client()
+
+	wantedPRHistory := prHistoryTemplate{
+		Link: "https://github.com/kubernetes/test-infra/pull/17183",
+		Name: "kubernetes/test-infra #17183",
+		Jobs: []prJobData{
+			{
+				Name: "pull-test-infra-bazel",
+				Link: "/job-history/gs/kubernetes-jenkins/pr-logs/directory/pull-test-infra-bazel",
+				Builds: []buildData{
+					{
+						index:        0,
+						jobName:      "pull-test-infra-bazel",
+						prefix:       "pr-logs/pull/test-infra/17183/pull-test-infra-bazel/1254406011708510210/",
+						SpyglassLink: "/view/gs/kubernetes-jenkins/pr-logs/pull/test-infra/17183/pull-test-infra-bazel/1254406011708510210",
+						ID:           "1254406011708510210",
+						Started:      time.Unix(1587908709, 0),
+						Duration:     436000000000,
+						Result:       "SUCCESS",
+						commitHash:   "664ba002bc2155e7438b810a1bb7473c55dc1c6a",
+					},
+				},
+			},
+			{
+				Name: "pull-test-infra-yamllint",
+				Link: "/job-history/gs/kubernetes-jenkins/pr-logs/directory/pull-test-infra-yamllint",
+				Builds: []buildData{
+					{
+						index:        0,
+						jobName:      "pull-test-infra-yamllint",
+						prefix:       "pr-logs/pull/test-infra/17183/pull-test-infra-yamllint/1254406011708510208/",
+						SpyglassLink: "/view/gs/kubernetes-jenkins/pr-logs/pull/test-infra/17183/pull-test-infra-yamllint/1254406011708510208",
+						ID:           "1254406011708510208",
+						Started:      time.Unix(1587908749, 0),
+						Duration:     18000000000,
+						Result:       "SUCCESS",
+						commitHash:   "664ba002bc2155e7438b810a1bb7473c55dc1c6a",
+					},
+				},
+			},
+		},
+		Commits: []commitData{
+			{
+				Hash:       "664ba002bc2155e7438b810a1bb7473c55dc1c6a",
+				HashPrefix: "664ba00",
+				Link:       "https://github.com/kubernetes/test-infra/commit/664ba002bc2155e7438b810a1bb7473c55dc1c6a",
+				MaxWidth:   1,
+				latest:     time.Unix(1587908749, 0),
+			},
+		},
+	}
+
+	type args struct {
+		url string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    prHistoryTemplate
+		wantErr bool
+	}{
+		{
+			name: "get pr history",
+			args: args{
+				url: "https://prow.k8s.io/pr-history/?org=kubernetes&repo=test-infra&pr=17183",
+			},
+			want: wantedPRHistory,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			prHistoryURL, _ := url.Parse(tt.args.url)
+			got, err := getPRHistory(context.Background(), prHistoryURL, c, io.NewGCSOpener(fakeGCSClient), nil, nil, "github.com")
+			if (err != nil) != tt.wantErr {
+				t.Errorf("getPRHistory() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("getPRHistory() got = %v, want %v", got, tt.want)
+			}
+		})
 	}
 }

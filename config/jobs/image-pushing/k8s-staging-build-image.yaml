@@ -1,7 +1,116 @@
 postsubmits:
+  kubernetes/kubernetes:
+    - name: post-kubernetes-push-image-debian-base
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-release-releng-informing, sig-release-master-informing, sig-release-image-pushes
+        testgrid-alert-email: release-managers@kubernetes.io
+      decorate: true
+      run_if_changed: '^build\/debian-base\/'
+      branches:
+        - ^master$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20200708-4b69e15
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-build-image
+              - --scratch-bucket=gs://k8s-staging-build-image-gcb
+              - --build-dir=.
+              - build/debian-base
+            env:
+              - name: LOG_TO_STDOUT
+                value: "y"
+      rerun_auth_config:
+        github_team_ids:
+          - 2241179 # release-managers
+    - name: post-kubernetes-push-image-debian-hyperkube-base
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-release-releng-informing, sig-release-master-informing, sig-release-image-pushes
+        testgrid-alert-email: release-managers@kubernetes.io
+      decorate: true
+      run_if_changed: '^build\/debian-hyperkube-base\/'
+      branches:
+        # TODO(releng): While hyperkube is deprecated in 1.19, we still need to
+        #               maintain its base image to support publishing it for
+        #               the 1.18, 1.17, and 1.16 releases.
+        #               Here we configure image building only for 1.18.
+        - ^release-1.18$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20200708-4b69e15
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-build-image
+              - --scratch-bucket=gs://k8s-staging-build-image-gcb
+              - --build-dir=.
+              - build/debian-hyperkube-base
+            env:
+              - name: LOG_TO_STDOUT
+                value: "y"
+      rerun_auth_config:
+        github_team_ids:
+          - 2241179 # release-managers
+    - name: post-kubernetes-push-image-debian-iptables
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-release-releng-informing, sig-release-master-informing, sig-release-image-pushes
+        testgrid-alert-email: release-managers@kubernetes.io
+      decorate: true
+      run_if_changed: '^build\/debian-iptables\/'
+      branches:
+        - ^master$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20200708-4b69e15
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-build-image
+              - --scratch-bucket=gs://k8s-staging-build-image-gcb
+              - --build-dir=.
+              - build/debian-iptables
+            env:
+              - name: LOG_TO_STDOUT
+                value: "y"
+      rerun_auth_config:
+        github_team_ids:
+          - 2241179 # release-managers
+    - name: post-kubernetes-push-image-go-runner
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-release-releng-informing, sig-release-master-informing, sig-release-image-pushes
+        testgrid-alert-email: release-managers@kubernetes.io
+      decorate: true
+      run_if_changed: '^build\/go-runner\/'
+      branches:
+        - ^master$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20200708-4b69e15
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-build-image
+              - --scratch-bucket=gs://k8s-staging-build-image-gcb
+              - --build-dir=.
+              - build/go-runner
+            env:
+              - name: LOG_TO_STDOUT
+                value: "y"
+      rerun_auth_config:
+        github_team_ids:
+          - 2241179 # release-managers
   kubernetes/release:
     - name: post-release-push-image-kube-cross
-      cluster: test-infra-trusted
+      cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-release-releng-informing, sig-release-master-informing, sig-release-image-pushes
         testgrid-alert-email: release-managers@kubernetes.io
@@ -10,9 +119,9 @@ postsubmits:
       branches:
         - ^master$
       spec:
-        serviceAccountName: deployer # TODO(fejta): use pusher
+        serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200213-0032cdb
+          - image: gcr.io/k8s-testimages/image-builder:v20200708-4b69e15
             command:
               - /run.sh
             args:

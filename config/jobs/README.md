@@ -130,7 +130,7 @@ periodics:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190618-b782256-1.15
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-1.15
       command:
       - "./scripts/ci-aws-cred-test.sh"
 ```
@@ -195,9 +195,9 @@ These test different master/node image versions against multiple k8s branches. I
 want to change these, update [`releng/test_config.yaml`](/releng/test_config.yaml)
 and then run
 
-```shell
+```sh
 # from test-infra root
-./hack/update-generated-tests.sh
+$ ./hack/update-generated-tests.sh
 ```
 
 ### release-branch jobs
@@ -206,9 +206,9 @@ When a release branch of kubernetes is first cut, the current set of master jobs
 must be forked to use the new release branch. Use [`releng/config-forker`] to
 accomplish this, eg:
 
-```shell
+```sh
 # from test-infra root
-bazel run //releng/config-forker -- \
+$ bazel run //releng/config-forker -- \
   --job-config $(pwd)/config/jobs \
   --version 1.15 \
   --output $(pwd)/config/jobs/kubernetes/sig-release/release-branch-jobs/1.15.yaml

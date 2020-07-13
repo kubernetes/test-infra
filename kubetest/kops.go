@@ -47,7 +47,12 @@ import (
 // kopsAWSMasterSize is the default ec2 instance type for kops on aws
 const kopsAWSMasterSize = "c5.large"
 
-const externalIPURL = "http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip"
+const externalIPMetadataURL = "http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip"
+
+var externalIPServiceURLs = []string{
+	"https://ip.jsb.workers.dev",
+	"https://v4.ifconfig.co",
+}
 
 var (
 
@@ -57,6 +62,7 @@ var (
 	kopsState        = flag.String("kops-state", "", "(kops only) s3:// path to kops state store. Must be set.")
 	kopsSSHUser      = flag.String("kops-ssh-user", os.Getenv("USER"), "(kops only) Username for SSH connections to nodes.")
 	kopsSSHKey       = flag.String("kops-ssh-key", "", "(kops only) Path to ssh key-pair for each node (defaults '~/.ssh/kube_aws_rsa' if unset.)")
+	kopsSSHPublicKey = flag.String("kops-ssh-public-key", "", "(kops only) Path to ssh public key for each node (defaults to --kops-ssh-key value with .pub suffix if unset.)")
 	kopsKubeVersion  = flag.String("kops-kubernetes-version", "", "(kops only) If set, the version of Kubernetes to deploy (can be a URL to a GCS path where the release is stored) (Defaults to kops default, latest stable release.).")
 	kopsZones        = flag.String("kops-zones", "", "(kops only) zones for kops deployment, comma delimited.")
 	kopsNodes        = flag.Int("kops-nodes", 2, "(kops only) Number of nodes to create.")
@@ -218,6 +224,10 @@ func newKops(provider, gcpProject, cluster string) (*kops, error) {
 	if err := os.Setenv("KOPS_STATE_STORE", *kopsState); err != nil {
 		return nil, err
 	}
+	sshPublicKey := *kopsSSHPublicKey
+	if sshPublicKey == "" {
+		sshPublicKey = sshKey + ".pub"
+	}
 
 	sshUser := *kopsSSHUser
 	if sshUser != "" {
@@ -338,7 +348,7 @@ func newKops(provider, gcpProject, cluster string) (*kops, error) {
 		path:          *kopsPath,
 		kubeVersion:   *kopsKubeVersion,
 		sshPrivateKey: sshKey,
-		sshPublicKey:  sshKey + ".pub",
+		sshPublicKey:  sshPublicKey,
 		sshUser:       sshUser,
 		zones:         zones,
 		nodes:         *kopsNodes,
@@ -412,24 +422,13 @@ func (k kops) Up() error {
 		createArgs = append(createArgs, "--kubernetes-version", k.kubeVersion)
 	}
 	if k.adminAccess == "" {
-		var b bytes.Buffer
-		err := httpReadWithHeaders(externalIPURL, map[string]string{"Metadata-Flavor": "Google"}, &b)
-
-		count := 0
-		for count < 5 && err != nil && net.ParseIP(strings.TrimSpace(b.String())) == nil {
-			time.Sleep(2 * time.Second)
-			count++
-			b.Reset()
-			err = httpRead("https://v4.ifconfig.co", &b)
+		externalIPRange, err := getExternalIPRange()
+		if err != nil {
+			return fmt.Errorf("external IP cannot be retrieved: %v", err)
 		}
 
-		if err != nil || net.ParseIP(strings.TrimSpace(b.String())) == nil {
-			return fmt.Errorf("external IP cannot be retrieved: %v - %s", err, b.String())
-		}
-
-		externalIP := strings.TrimSpace(b.String()) + "/32"
-		log.Printf("Using external IP for admin access: %v", externalIP)
-		k.adminAccess = externalIP
+		log.Printf("Using external IP for admin access: %v", externalIPRange)
+		k.adminAccess = externalIPRange
 	}
 	createArgs = append(createArgs, "--admin-access", k.adminAccess)
 
@@ -468,11 +467,16 @@ func (k kops) Up() error {
 	if len(featureFlags) != 0 {
 		os.Setenv("KOPS_FEATURE_FLAGS", strings.Join(featureFlags, ","))
 	}
+
+	createArgs = append(createArgs, "--yes")
+
 	if err := control.FinishRunning(exec.Command(k.path, createArgs...)); err != nil {
 		return fmt.Errorf("kops create cluster failed: %v", err)
 	}
-	if err := control.FinishRunning(exec.Command(k.path, "update", "cluster", k.cluster, "--yes")); err != nil {
-		return fmt.Errorf("kops update cluster failed: %v", err)
+
+	// TODO: Once this gets support for N checks in a row, it can replace the above node readiness check
+	if err := control.FinishRunning(exec.Command(k.path, "validate", "cluster", k.cluster, "--wait", "15m")); err != nil {
+		return fmt.Errorf("kops validate cluster failed: %v", err)
 	}
 
 	// We require repeated successes, so we know that the cluster is stable
@@ -486,12 +490,43 @@ func (k kops) Up() error {
 		return fmt.Errorf("kops nodes not ready: %v", err)
 	}
 
-	// TODO: Once this gets support for N checks in a row, it can replace the above node readiness check
-	if err := control.FinishRunning(exec.Command(k.path, "validate", "cluster", k.cluster, "--wait", "5m")); err != nil {
-		return fmt.Errorf("kops validate cluster failed: %v", err)
+	return nil
+}
+
+// getExternalIPRange returns the external IP range where the test job
+// is running, e.g. 8.8.8.8/32, useful for restricting access to the
+// apiserver and any other exposed endpoints.
+func getExternalIPRange() (string, error) {
+	var b bytes.Buffer
+
+	err := httpReadWithHeaders(externalIPMetadataURL, map[string]string{"Metadata-Flavor": "Google"}, &b)
+	if err != nil {
+		// This often fails due to workload identity
+		log.Printf("failed to get external ip from metadata service: %v", err)
+	} else if ip := net.ParseIP(strings.TrimSpace(b.String())); ip != nil {
+		return ip.String() + "/32", nil
+	} else {
+		log.Printf("metadata service returned invalid ip %q", b.String())
 	}
 
-	return nil
+	for attempt := 0; attempt < 5; attempt++ {
+		for _, u := range externalIPServiceURLs {
+			b.Reset()
+			err = httpRead(u, &b)
+			if err != nil {
+				// The external service may well be down
+				log.Printf("failed to get external ip from %s: %v", u, err)
+			} else if ip := net.ParseIP(strings.TrimSpace(b.String())); ip != nil {
+				return ip.String() + "/32", nil
+			} else {
+				log.Printf("service %s returned invalid ip %q", u, b.String())
+			}
+		}
+
+		time.Sleep(2 * time.Second)
+	}
+
+	return "", fmt.Errorf("external IP cannot be retrieved")
 }
 
 func (k kops) IsUp() error {
@@ -528,6 +563,9 @@ func (k kops) DumpClusterLogs(localPath, gcsPath string) error {
 	if err != nil {
 		return err
 	}
+
+	// Capture sysctl settings
+	logDumper.DumpSysctls = true
 
 	ctx, cancel := context.WithCancel(context.TODO())
 	defer cancel()

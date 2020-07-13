@@ -23,6 +23,7 @@ import (
 	"regexp"
 
 	"k8s.io/apimachinery/pkg/util/sets"
+
 	"k8s.io/test-infra/prow/github"
 )
 
@@ -52,7 +53,7 @@ type FakeClient struct {
 	IssueEvents         map[int][]github.ListedIssueEvent
 	Commits             map[string]github.SingleCommit
 
-	//All Labels That Exist In The Repo
+	// All Labels That Exist In The Repo
 	RepoLabelsExisting []string
 	// org/repo#number:label
 	IssueLabelsAdded    []string
@@ -103,6 +104,14 @@ type FakeClient struct {
 	Column             string
 	OrgRepoIssueLabels map[string][]github.Label
 	OrgProjects        map[string][]github.Project
+
+	// Maps org name to the list of hooks
+	OrgHooks map[string][]github.Hook
+	// Maps repo name to the list of hooks
+	RepoHooks map[string][]github.Hook
+
+	// Error will be returned if set. Currently only implemented for CreateStatus
+	Error error
 }
 
 // BotName returns authenticated login.
@@ -278,6 +287,9 @@ func (f *FakeClient) GetSingleCommit(org, repo, SHA string) (github.SingleCommit
 
 // CreateStatus adds a status context to a commit.
 func (f *FakeClient) CreateStatus(owner, repo, SHA string, s github.Status) error {
+	if f.Error != nil {
+		return f.Error
+	}
 	if f.CreatedStatuses == nil {
 		f.CreatedStatuses = make(map[string][]github.Status)
 	}

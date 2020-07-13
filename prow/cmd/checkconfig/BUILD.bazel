@@ -73,6 +73,7 @@ go_binary(
 go_test(
     name = "go_default_test",
     srcs = ["main_test.go"],
+    data = glob(["testdata/**"]),
     embed = [":go_default_library"],
     deps = [
         "//prow/apis/prowjobs/v1:go_default_library",
@@ -85,5 +86,6 @@ go_test(
         "@io_k8s_apimachinery//pkg/util/errors:go_default_library",
         "@io_k8s_apimachinery//pkg/util/sets:go_default_library",
         "@io_k8s_sigs_yaml//:go_default_library",
+        "@io_k8s_utils//pointer:go_default_library",
     ],
 )

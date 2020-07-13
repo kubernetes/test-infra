@@ -54,7 +54,7 @@ type options struct {
 	pullRequest  *github.PullRequest
 }
 
-func (o *options) genJobSpec(conf *config.Config, name string) (config.JobBase, prowapi.ProwJobSpec) {
+func (o *options) genJobSpec(conf *config.Config) (config.JobBase, prowapi.ProwJobSpec) {
 	for fullRepoName, ps := range conf.PresubmitsStatic {
 		org, repo, err := splitRepoName(fullRepoName)
 		if err != nil {
@@ -204,7 +204,9 @@ func gatherOptions() options {
 	fs.IntVar(&o.pullNumber, "pull-number", 0, "Git pull number under test")
 	fs.StringVar(&o.pullSha, "pull-sha", "", "Git pull SHA under test")
 	fs.StringVar(&o.pullAuthor, "pull-author", "", "Git pull author under test")
-	o.github.AddFlagsWithoutDefaultGitHubTokenPath(fs)
+	o.github.AddFlags(fs)
+	o.github.AllowAnonymous = true
+	o.github.AllowDirectAccess = true
 	fs.Parse(os.Args[1:])
 	return o
 }
@@ -231,7 +233,7 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Failed to get GitHub client")
 	}
-	job, pjs := o.genJobSpec(conf, o.jobName)
+	job, pjs := o.genJobSpec(conf)
 	if job.Name == "" {
 		logrus.Fatalf("Job %s not found.", o.jobName)
 	}

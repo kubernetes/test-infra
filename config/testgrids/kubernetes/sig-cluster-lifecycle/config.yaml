@@ -4,6 +4,7 @@ dashboard_groups:
     - sig-cluster-lifecycle-all
     - sig-cluster-lifecycle-kubeadm
     - sig-cluster-lifecycle-multi-platform
+    - sig-cluster-lifecycle-cluster-addons
     - sig-cluster-lifecycle-cluster-api
     - sig-cluster-lifecycle-cluster-api-provider-aws
     - sig-cluster-lifecycle-cluster-api-provider-azure
@@ -33,6 +34,7 @@ dashboards:
       test_group_name: periodic-multi-platform-kubeadm-scaleway-arm64
     - name: periodic-kubeadm-packet-arm64
       test_group_name: periodic-multi-platform-kubeadm-packet-arm64
+- name: sig-cluster-lifecycle-cluster-addons
 - name: sig-cluster-lifecycle-cluster-api
 - name: sig-cluster-lifecycle-cluster-api-provider-aws
 - name: sig-cluster-lifecycle-cluster-api-provider-azure

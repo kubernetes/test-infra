@@ -48,6 +48,7 @@ go_test(
     embed = [":go_default_library"],
     deps = [
         "//prow/config:go_default_library",
+        "//prow/flagutil:go_default_library",
         "//prow/interrupts:go_default_library",
         "@io_k8s_utils//diff:go_default_library",
     ],

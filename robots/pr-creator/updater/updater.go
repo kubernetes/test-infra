@@ -24,6 +24,12 @@ import (
 	"k8s.io/test-infra/prow/github"
 )
 
+// Indicates whether maintainers can modify a pull request in fork.
+const (
+	AllowMods   = true
+	PreventMods = false
+)
+
 type updateClient interface {
 	UpdatePullRequest(org, repo string, number int, title, body *string, open *bool, branch *string, canModify *bool) error
 	BotName() (string, error)
@@ -67,17 +73,16 @@ func UpdatePR(org, repo, title, body, matchTitle string, gc updateClient) (*int,
 	return &n, nil
 }
 
-func EnsurePR(org, repo, title, body, source, branch, matchTitle string, gc ensureClient) (*int, error) {
-	return EnsurePRWithLabels(org, repo, title, body, source, branch, matchTitle, gc, nil)
+func EnsurePR(org, repo, title, body, source, branch, matchTitle string, allowMods bool, gc ensureClient) (*int, error) {
+	return EnsurePRWithLabels(org, repo, title, body, source, branch, matchTitle, allowMods, gc, nil)
 }
 
-func EnsurePRWithLabels(org, repo, title, body, source, branch, matchTitle string, gc ensureClient, labels []string) (*int, error) {
+func EnsurePRWithLabels(org, repo, title, body, source, branch, matchTitle string, allowMods bool, gc ensureClient, labels []string) (*int, error) {
 	n, err := UpdatePR(org, repo, title, body, matchTitle, gc)
 	if err != nil {
 		return nil, fmt.Errorf("update error: %v", err)
 	}
 	if n == nil {
-		allowMods := true
 		pr, err := gc.CreatePullRequest(org, repo, title, body, source, branch, allowMods)
 		if err != nil {
 			return nil, fmt.Errorf("create error: %v", err)

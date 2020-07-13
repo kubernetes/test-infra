@@ -4,7 +4,7 @@ This tool automates the version upgrading of images for the [prow.k8s.io](https:
 Its workflow is:
 
 * Given a local git repo containing the manifests of Prow component deployment,
-    e.g., [prow/cluster](https://github.com/kubernetes/test-infra/tree/master/prow/cluster) folder in this repo.
+    e.g., [/config/prow/cluster](https://github.com/kubernetes/test-infra/tree/master/config/prow/cluster) folder in this repo.
 * Find out the most recent tags of "Prow images" and "k8s-testimages" in `gcr.io` registry
     and modify the yaml files with them.
 * `git-commit` the change, push it to the remote repo, and create/update a PR,

@@ -262,23 +262,12 @@ func TestFlags(t *testing.T) {
 			},
 		},
 		{
-			name: "empty config-path defaults to old value",
-			args: map[string]string{
-				"--config-path": "",
-			},
-			expected: func(o *options) {
-				o.configPath = config.DefaultConfigPath
-			},
-		},
-		{
 			name: "expicitly set --dry-run=false",
 			args: map[string]string{
 				"--dry-run": "false",
 			},
 			expected: func(o *options) {
-				o.dryRun = flagutil.Bool{
-					Explicit: true,
-				}
+				o.dryRun = false
 			},
 		},
 		{
@@ -296,18 +285,13 @@ func TestFlags(t *testing.T) {
 				"--deck-url": "http://whatever",
 			},
 			expected: func(o *options) {
-				o.dryRun = flagutil.Bool{
-					Value:    true,
-					Explicit: true,
-				}
-				o.kubernetes.DeckURI = "http://whatever"
+				o.dryRun = true
 			},
 		},
 		{
-			name: "dry run defaults to false", // TODO(fejta): change to true in April
-			del:  sets.NewString("--dry-run"),
+			name: "dry run defaults to true",
 			expected: func(o *options) {
-				o.dryRun = flagutil.Bool{}
+				o.dryRun = true
 			},
 		},
 	}
@@ -316,17 +300,20 @@ func TestFlags(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			expected := &options{
 				configPath: "yo",
-				dryRun: flagutil.Bool{
-					Explicit: true,
+				dryRun:     true,
+				instrumentationOptions: flagutil.InstrumentationOptions{
+					MetricsPort: flagutil.DefaultMetricsPort,
+					PProfPort:   flagutil.DefaultPProfPort,
 				},
 			}
+			expected.kubernetes.DeckURI = "http://whatever"
 			if tc.expected != nil {
 				tc.expected(expected)
 			}
 
 			argMap := map[string]string{
 				"--config-path": "yo",
-				"--dry-run":     "false",
+				"--deck-url":    "http://whatever",
 			}
 			for k, v := range tc.args {
 				argMap[k] = v

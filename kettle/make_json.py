@@ -32,6 +32,78 @@ except ImportError:
 
 import model
 
+SECONDS_PER_DAY = 86400
+
+class Build:
+    """
+    Represent Metadata and Details of a build. Leveraging the information in
+    Started.json and Finished.json
+    Should confrom to the schema set in TestGrid below
+    github.com/GoogleCloudPlatform/testgrid/blob/7d818/metadata/job.go#L23-L77
+    """
+    # pylint: disable=too-many-instance-attributes
+    # Attrs represent underlying build object
+
+    def __init__(self, path, tests):
+        self.path = path
+        self.test = tests
+        self.tests_run = len(tests)
+        self.tests_failed = sum(t.get('failed', 0) for t in tests)
+        job, number = path_to_job_and_number(path)
+        self.job = job
+        self.number = number if number else None
+        #From Started.json
+        self.started = None
+        self.executor = None
+        self.repo_commit = None
+        #From Finished.json
+        self.finished = None
+        self.result = None
+        self.passed = None
+        self.version = None
+        #From Either/Combo
+        self.repos = None
+        self.metadata = None
+        self.elapsed = None
+
+    @classmethod
+    def generate(cls, path, tests, started, finished, metadata, repos):
+        build = cls(path, tests)
+        build.populate_start(started)
+        build.populate_finish(finished)
+        build.populate_meta(metadata, repos)
+        build.set_elapsed()
+        return build
+
+    def as_dict(self):
+        return {k: v for k, v in self.__dict__.items() if v is not None}
+
+    def populate_start(self, started):
+        if started:
+            self.started = int(started['timestamp'])
+            self.executor = started.get('node')
+            self.repo_commit = started.get('repo-commit', started.get('repo-version'))
+            self.repos = started.get('repos')
+
+    def populate_finish(self, finished):
+        if finished:
+            self.finished = int(finished['timestamp'])
+            self.version = finished.get('version')
+            if 'result' in finished:
+                self.result = finished.get('result')
+                self.passed = self.result == 'SUCCESS'
+            elif isinstance(finished.get('passed'), bool):
+                self.passed = finished['passed']
+                self.result = 'SUCCESS' if self.passed else 'FAILURE'
+
+    def populate_meta(self, metadata, repos):
+        self.metadata = metadata
+        self.repos = repos
+
+    def set_elapsed(self):
+        if self.started and self.finished:
+            self.elapsed = self.finished - self.started
+
 
 def parse_junit(xml):
     """Generate failed tests as a series of dicts. Ignore skipped tests."""
@@ -125,49 +197,42 @@ def path_to_job_and_number(path):
 
 
 def row_for_build(path, started, finished, results):
+    """
+    Generate an dictionary that represents a build as described by TestGrid's
+    job schema. See link for reference.
+    github.com/GoogleCloudPlatform/testgrid/blob/7d818/metadata/job.go#L23-L77
+
+    Args:
+        path (string): Path to file data for a build
+        started (dict): Values pulled from started.json for a build
+        finsihed (dict): Values pulled from finsihed.json for a build
+        results (array): List of file data that exits under path
+
+    Return:
+        Dict holding metadata and information pertinent to a build
+        to be stored in BigQuery
+    """
     tests = []
     for result in results:
         for test in parse_junit(result):
             if '#' in test['name'] and not test.get('failed'):
                 continue  # skip successful repeated tests
             tests.append(test)
-    build = {
-        'path': path,
-        'test': tests,
-        'tests_run': len(tests),
-        'tests_failed': sum(t.get('failed', 0) for t in tests)
-    }
-    job, number = path_to_job_and_number(path)
-    build['job'] = job
-    if number:
-        build['number'] = number
-
-    if started:
-        build['started'] = int(started['timestamp'])
-        if 'node' in started:
-            build['executor'] = started['node']
-    if finished:
-        build['finished'] = int(finished['timestamp'])
-        if 'result' in finished:
-            build['result'] = finished['result']
-            build['passed'] = build['result'] == 'SUCCESS'
-        elif isinstance(finished.get('passed'), bool):
-            build['passed'] = finished['passed']
-            build['result'] = 'SUCCESS' if build['passed'] else 'FAILURE'
-        if 'version' in finished:
-            build['version'] = finished['version']
 
     def get_metadata():
         metadata = None
+        metapairs = None
+        repos = None
         if finished and 'metadata' in finished:
             metadata = finished['metadata']
         elif started:
             metadata = started.get('metadata')
+
         if metadata:
             # clean useless/duplicated metadata fields
             if 'repo' in metadata and not metadata['repo']:
                 metadata.pop('repo')
-            build_version = build.get('version', 'N/A')
+            build_version = finished.get('version', 'N/A')
             if metadata.get('job-version') == build_version:
                 metadata.pop('job-version')
             if metadata.get('version') == build_version:
@@ -176,16 +241,14 @@ def row_for_build(path, started, finished, results):
                 if not isinstance(value, str):
                     # the schema specifies a string value. force it!
                     metadata[key] = json.dumps(value)
-        if not metadata:
-            return None
-        return [{'key': k, 'value': v} for k, v in sorted(metadata.items())]
+                    if key == 'repos':
+                        repos = metadata[key]
+            metapairs = [{'key': k, 'value': v} for k, v in sorted(metadata.items())]
+        return metapairs, repos
 
-    metadata = get_metadata()
-    if metadata:
-        build['metadata'] = metadata
-    if started and finished:
-        build['elapsed'] = build['finished'] - build['started']
-    return build
+    metadata, repos = get_metadata()
+    build = Build.generate(path, tests, started, finished, metadata, repos)
+    return build.as_dict()
 
 
 def get_table(days):
@@ -219,14 +282,14 @@ def make_rows(db, builds):
 
 
 def main(db, opts, outfile):
-    min_started = None
+    min_started = 0
     if opts.days:
-        min_started = time.time() - (opts.days or 1) * 24 * 60 * 60
+        min_started = time.time() - (opts.days or 1) * SECONDS_PER_DAY
     incremental_table = get_table(opts.days)
 
     if opts.assert_oldest:
         oldest = db.get_oldest_emitted(incremental_table)
-        if oldest < time.time() - opts.assert_oldest * 24 * 60 * 60:
+        if oldest < time.time() - opts.assert_oldest * SECONDS_PER_DAY:
             return 1
         return 0
 

@@ -7,10 +7,6 @@ py_test(
         "make_db_test.py",
         "model.py",
     ],
-    # Remove when these are fixed.
-    # https://github.com/bazelbuild/bazel/issues/1973
-    # https://github.com/bazelbuild/bazel/issues/2056
-    local = True,
     python_version = "PY3",
     deps = [
         requirement("certifi"),
@@ -85,8 +81,6 @@ py_test(
         ":package-srcs",
     ],
     data = [":buckets.yaml"],
-    # idem
-    local = True,
     python_version = "PY3",
     deps = [requirement("ruamel.yaml")],
 )

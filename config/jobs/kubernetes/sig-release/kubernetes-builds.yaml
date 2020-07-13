@@ -7,13 +7,12 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20200403-ebc6206
+      - image: gcr.io/k8s-testimages/bootstrap:v20200430-be2a8a9
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--timeout=90"
         - --scenario=execute
         - --
         - --env=KUBE_RELEASE_RUN_TESTS=n
@@ -37,7 +36,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20200403-ebc6206
+    - image: gcr.io/k8s-testimages/bootstrap:v20200430-be2a8a9
       args:
       - --repo=k8s.io/kubernetes
       - --repo=k8s.io/release
@@ -46,7 +45,7 @@ periodics:
       - --scenario=kubernetes_build
       - --
       - --allow-dup
-      - --extra-publish-file=k8s-master
+      - --extra-publish-file=latest-cross,k8s-master
       - --registry=gcr.io/kubernetes-ci-images
       # docker-in-docker needs privileged mode
       securityContext:
@@ -60,8 +59,7 @@ periodics:
       - 2241179 # release-managers
   annotations:
     fork-per-release: "true"
-    fork-per-release-replacements: "--extra-publish-file=k8s-master -> --extra-publish-file=k8s-beta"
-    fork-per-release-generic-suffix: "true"
+    fork-per-release-replacements: "latest-cross -> latest-{{.Version}}-cross, k8s-master -> k8s-beta"
     testgrid-dashboards: sig-release-master-blocking
     testgrid-tab-name: build-master
     testgrid-alert-email: release-managers@kubernetes.io, kubernetes-release-team@googlegroups.com
@@ -73,7 +71,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20200403-ebc6206
+    - image: gcr.io/k8s-testimages/bootstrap:v20200430-be2a8a9
       args:
       - --repo=k8s.io/kubernetes
       - --repo=k8s.io/release

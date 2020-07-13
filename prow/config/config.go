@@ -47,6 +47,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	gerrit "k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
@@ -92,6 +93,9 @@ type JobConfig struct {
 	// ProwYAMLGetter is the function to get a ProwYAML. Tests should
 	// provide their own implementation.
 	ProwYAMLGetter ProwYAMLGetter `json:"-"`
+
+	// DecorateAllJobs determines whether all jobs are decorated by default
+	DecorateAllJobs bool `json:"decorate_all_jobs,omitempty"`
 }
 
 // ProwConfig is config for all prow controllers
@@ -469,14 +473,9 @@ type Plank struct {
 	// PodUnscheduledTimeout is after how long the controller will abort a prowjob
 	// stuck in an unscheduled state. Defaults to one day.
 	PodUnscheduledTimeout *metav1.Duration `json:"pod_unscheduled_timeout,omitempty"`
-	// DefaultDecorationConfig are defaults for shared fields for ProwJobs
-	// that request to have their PodSpecs decorated.
-	// This will be deprecated on April 2020, and it will be replaces with DefaultDecorationConfigs['*'] instead.
-	DefaultDecorationConfig *prowapi.DecorationConfig `json:"default_decoration_config,omitempty"`
-
 	// DefaultDecorationConfigs holds the default decoration config for specific values.
 	// This config will be used on each Presubmit and Postsubmit's corresponding org/repo, and on Periodics
-	// if extraRefs[0] exists. The missing fields will be merged with the DefaultDecorationConfig.
+	// if extraRefs[0] exists.
 	// Use `org/repo`, `org` or `*` as a key.
 	DefaultDecorationConfigs map[string]*prowapi.DecorationConfig `json:"default_decoration_configs,omitempty"`
 
@@ -732,11 +731,14 @@ type GitHubOptions struct {
 
 // ManagedWebhookInfo contains metadata about the repo/org which is onboarded.
 type ManagedWebhookInfo struct {
-	TokenCreatedAfter time.Time `json:"tokenCreatedAfter"`
+	TokenCreatedAfter time.Time `json:"token_created_after"`
 }
 
-// ManagedWebhooks contains information about all the repos/orgs which are onboraded with private tokens.
-type ManagedWebhooks map[string]ManagedWebhookInfo
+// ManagedWebhooks contains information about all the repos/orgs which are onboarded with auto-generated tokens.
+type ManagedWebhooks struct {
+	RespectLegacyGlobalToken bool                          `json:"respect_legacy_global_token"`
+	OrgRepoConfig            map[string]ManagedWebhookInfo `json:"org_repo_config"`
+}
 
 // SlackReporter represents the config for the Slack reporter. The channel can be overridden
 // on the job via the .reporter_config.slack.channel property
@@ -1067,22 +1069,29 @@ func mergeJobConfigs(a, b JobConfig) (JobConfig, error) {
 	return c, nil
 }
 
+func ShouldDecorate(c *JobConfig, util UtilityConfig) bool {
+	if util.Decorate != nil {
+		return *util.Decorate
+	}
+	return c.DecorateAllJobs
+}
+
 func setPresubmitDecorationDefaults(c *Config, ps *Presubmit, repo string) {
-	if ps.Decorate {
+	if ShouldDecorate(&c.JobConfig, ps.JobBase.UtilityConfig) {
 		def := c.Plank.GetDefaultDecorationConfigs(repo)
 		ps.DecorationConfig = ps.DecorationConfig.ApplyDefault(def)
 	}
 }
 
 func setPostsubmitDecorationDefaults(c *Config, ps *Postsubmit, repo string) {
-	if ps.Decorate {
+	if ShouldDecorate(&c.JobConfig, ps.JobBase.UtilityConfig) {
 		def := c.Plank.GetDefaultDecorationConfigs(repo)
 		ps.DecorationConfig = ps.DecorationConfig.ApplyDefault(def)
 	}
 }
 
 func setPeriodicDecorationDefaults(c *Config, ps *Periodic) {
-	if ps.Decorate {
+	if ShouldDecorate(&c.JobConfig, ps.JobBase.UtilityConfig) {
 		var orgRepo string
 		if len(ps.UtilityConfig.ExtraRefs) > 0 {
 			orgRepo = fmt.Sprintf("%s/%s", ps.UtilityConfig.ExtraRefs[0].Org, ps.UtilityConfig.ExtraRefs[0].Repo)
@@ -1142,27 +1151,15 @@ func defaultPeriodics(periodics []Periodic, c *Config) error {
 func (c *Config) finalizeJobConfig() error {
 	if c.decorationRequested() {
 
-		if c.Plank.DefaultDecorationConfig != nil {
-			if len(c.Plank.DefaultDecorationConfigs) > 0 {
-				return errors.New("both default_decoration_config and default_decoration_configs are specified")
-			}
-
-			logrus.Warning("default_decoration_config will be deprecated on April 2020, and it will be replaced with default_decoration_configs['*'].")
-			c.Plank.DefaultDecorationConfigs = make(map[string]*prowapi.DecorationConfig)
-			c.Plank.DefaultDecorationConfigs["*"] = c.Plank.DefaultDecorationConfig
-		}
-
-		if len(c.Plank.DefaultDecorationConfigs) == 0 {
-			return errors.New("both default_decoration_config and default_decoration_configs['*'] are missing")
-
-		}
-
-		if _, ok := c.Plank.DefaultDecorationConfigs["*"]; !ok {
+		def, ok := c.Plank.DefaultDecorationConfigs["*"]
+		if !ok {
 			return errors.New("default_decoration_configs['*'] is missing")
 		}
 
-		if err := c.Plank.DefaultDecorationConfigs["*"].Validate(); err != nil {
-			return fmt.Errorf("decoration config validation error: %v", err)
+		for key, valCfg := range c.Plank.DefaultDecorationConfigs {
+			if err := valCfg.ApplyDefault(def).Validate(); err != nil {
+				return fmt.Errorf("default_decoration_configs[%q]: validation error: %v", key, err)
+			}
 		}
 
 		for i := range c.Periodics {
@@ -1201,10 +1198,10 @@ func (c *Config) validateComponentConfig() error {
 
 	var validationErrs []error
 
-	if c.ManagedWebhooks != nil {
-		for repoName, repoValue := range c.ManagedWebhooks {
+	if c.ManagedWebhooks.OrgRepoConfig != nil {
+		for repoName, repoValue := range c.ManagedWebhooks.OrgRepoConfig {
 			if repoValue.TokenCreatedAfter.After(time.Now()) {
-				validationErrs = append(validationErrs, fmt.Errorf("tokenCreatedAfter %s can be no later than current time for repo/org %s", repoValue.TokenCreatedAfter, repoName))
+				validationErrs = append(validationErrs, fmt.Errorf("token_created_after %s can be no later than current time for repo/org %s", repoValue.TokenCreatedAfter, repoName))
 			}
 		}
 		if len(validationErrs) > 0 {
@@ -1291,7 +1288,6 @@ func validateJobBase(v JobBase, jobType prowapi.ProwJobType, podNamespace string
 // validatePresubmits validates the presubmits for one repo
 func validatePresubmits(presubmits []Presubmit, podNamespace string) error {
 	validPresubmits := map[string][]Presubmit{}
-
 	var errs []error
 	for _, ps := range presubmits {
 		// Checking that no duplicate job in prow config exists on the same branch.
@@ -1300,11 +1296,22 @@ func validatePresubmits(presubmits []Presubmit, podNamespace string) error {
 				errs = append(errs, fmt.Errorf("duplicated presubmit job: %s", ps.Name))
 			}
 		}
+		for _, otherPS := range presubmits {
+			if otherPS.Name == ps.Name || !otherPS.Brancher.Intersects(ps.Brancher) {
+				continue
+			}
+			if otherPS.Context == ps.Context {
+				errs = append(errs, fmt.Errorf("jobs %s and %s report to the same GitHub context %q", otherPS.Name, ps.Name, otherPS.Context))
+			}
+		}
 		if err := validateJobBase(ps.JobBase, prowapi.PresubmitJob, podNamespace); err != nil {
 			errs = append(errs, fmt.Errorf("invalid presubmit job %s: %v", ps.Name, err))
 		}
 		if err := validateTriggering(ps); err != nil {
 			errs = append(errs, err)
+		}
+		if err := validateReporting(ps.JobBase, ps.Reporter); err != nil {
+			errs = append(errs, fmt.Errorf("invalid presubmit job %s: %v", ps.Name, err))
 		}
 		validPresubmits[ps.Name] = append(validPresubmits[ps.Name], ps)
 	}
@@ -1339,20 +1346,33 @@ func ValidateRefs(repo string, jobBase JobBase) error {
 func validatePostsubmits(postsubmits []Postsubmit, podNamespace string) error {
 	validPostsubmits := map[string][]Postsubmit{}
 
+	var errs []error
 	for _, ps := range postsubmits {
 		// Checking that no duplicate job in prow config exists on the same repo / branch.
 		for _, existingJob := range validPostsubmits[ps.Name] {
 			if existingJob.Brancher.Intersects(ps.Brancher) {
-				return fmt.Errorf("duplicated postsubmit job: %s", ps.Name)
+				errs = append(errs, fmt.Errorf("duplicated postsubmit job: %s", ps.Name))
 			}
 		}
+		for _, otherPS := range postsubmits {
+			if otherPS.Name == ps.Name || !otherPS.Brancher.Intersects(ps.Brancher) {
+				continue
+			}
+			if otherPS.Context == ps.Context {
+				errs = append(errs, fmt.Errorf("jobs %s and %s report to the same GitHub context %q", otherPS.Name, ps.Name, otherPS.Context))
+			}
+		}
+
 		if err := validateJobBase(ps.JobBase, prowapi.PostsubmitJob, podNamespace); err != nil {
-			return fmt.Errorf("invalid postsubmit job %s: %v", ps.Name, err)
+			errs = append(errs, fmt.Errorf("invalid postsubmit job %s: %v", ps.Name, err))
+		}
+		if err := validateReporting(ps.JobBase, ps.Reporter); err != nil {
+			errs = append(errs, fmt.Errorf("invalid postsubmit job %s: %v", ps.Name, err))
 		}
 		validPostsubmits[ps.Name] = append(validPostsubmits[ps.Name], ps)
 	}
 
-	return nil
+	return utilerrors.NewAggregate(errs)
 }
 
 // validatePeriodics validates a set of periodics
@@ -1419,20 +1439,6 @@ func (c *Config) ValidateJobConfig() error {
 	}
 
 	return utilerrors.NewAggregate(errs)
-}
-
-// DefaultConfigPath will be used if a --config-path is unset
-const DefaultConfigPath = "/etc/config/config.yaml"
-
-// ConfigPath returns the value for the component's configPath if provided
-// explicitly or default otherwise.
-func ConfigPath(value string) string {
-
-	if value != "" {
-		return value
-	}
-	logrus.Warningf("defaulting to %s until 15 July 2019, please migrate", DefaultConfigPath)
-	return DefaultConfigPath
 }
 
 func parseProwConfig(c *Config) error {
@@ -1700,7 +1706,7 @@ func parseProwConfig(c *Config) error {
 func (c *JobConfig) decorationRequested() bool {
 	for _, vs := range c.PresubmitsStatic {
 		for i := range vs {
-			if vs[i].Decorate {
+			if ShouldDecorate(c, vs[i].JobBase.UtilityConfig) {
 				return true
 			}
 		}
@@ -1708,14 +1714,14 @@ func (c *JobConfig) decorationRequested() bool {
 
 	for _, js := range c.PostsubmitsStatic {
 		for i := range js {
-			if js[i].Decorate {
+			if ShouldDecorate(c, js[i].JobBase.UtilityConfig) {
 				return true
 			}
 		}
 	}
 
 	for i := range c.Periodics {
-		if c.Periodics[i].Decorate {
+		if ShouldDecorate(c, c.Periodics[i].JobBase.UtilityConfig) {
 			return true
 		}
 	}
@@ -1915,14 +1921,25 @@ func validateTriggering(job Presubmit) error {
 		return fmt.Errorf("job %s is set to always run but also declares run_if_changed targets, which are mutually exclusive", job.Name)
 	}
 
-	if !job.SkipReport && job.Context == "" {
-		return fmt.Errorf("job %s is set to report but has no context configured", job.Name)
-	}
-
 	if (job.Trigger != "" && job.RerunCommand == "") || (job.Trigger == "" && job.RerunCommand != "") {
 		return fmt.Errorf("Either both of job.Trigger and job.RerunCommand must be set, wasnt the case for job %q", job.Name)
 	}
 
+	return nil
+}
+
+func validateReporting(j JobBase, r Reporter) error {
+	if !r.SkipReport && r.Context == "" {
+		return errors.New("job is set to report but has no context configured")
+	}
+	if !r.SkipReport {
+		return nil
+	}
+	for label, value := range j.Labels {
+		if label == gerrit.GerritReportLabel && value != "" {
+			return fmt.Errorf("Gerrit report label %s set to non-empty string but job is configured to skip reporting.", label)
+		}
+	}
 	return nil
 }
 

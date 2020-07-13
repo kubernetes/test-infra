@@ -10,7 +10,7 @@ presubmits:
     - gh-pages
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200420-e830a3a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-1.18
         command:
         - runner.sh
         - ./scripts/ci-build.sh
@@ -34,7 +34,7 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200420-e830a3a-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-1.18
         resources:
           requests:
             memory: "6Gi"
@@ -56,7 +56,7 @@ presubmits:
       - command:
         - runner.sh
         - ./scripts/ci-apidiff.sh
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200420-e830a3a-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-1.18
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
       testgrid-tab-name: pr-apidiff
@@ -70,7 +70,7 @@ presubmits:
     - gh-pages
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200420-e830a3a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-1.18
         command:
         - "runner.sh"
         - "make"
@@ -92,7 +92,7 @@ presubmits:
     - gh-pages
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200420-e830a3a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-1.18
         args:
         - runner.sh
         - ./scripts/ci-test.sh
@@ -103,57 +103,6 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
       testgrid-tab-name: pr-test
-  - name: pull-cluster-api-integration
-    labels:
-      preset-dind-enabled: "true"
-      preset-service-account: "true"
-      preset-kind-volume-mounts: "true"
-    decorate: true
-    path_alias: sigs.k8s.io/cluster-api
-    always_run: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200420-e830a3a-master
-        command:
-        - runner.sh
-        - ./scripts/ci-integration.sh
-        # we need privileged mode in order to do docker in docker
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            cpu: "4000m"
-            memory: "6Gi"
-    annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-      testgrid-tab-name: pr-integration
-  - name: pull-cluster-api-capd-e2e
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    decorate: true
-    skip_branches:
-      - gh-pages
-      - release-0.2
-    path_alias: sigs.k8s.io/cluster-api
-    optional: true
-    always_run: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200420-e830a3a-master
-        args:
-          - runner.sh
-          - "./scripts/ci-capd-e2e.sh"
-        # we need privileged mode in order to do docker in docker
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            cpu: "6000m"
-            memory: "6Gi"
-    annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-      testgrid-tab-name: pr-e2e
   - name: pull-cluster-api-e2e
     labels:
       preset-dind-enabled: "true"
@@ -167,7 +116,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200420-e830a3a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-1.18
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -180,4 +129,4 @@ presubmits:
             memory: "6Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-      testgrid-tab-name: pr-e2e-new
+      testgrid-tab-name: pr-e2e
