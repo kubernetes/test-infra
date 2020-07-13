@@ -75,6 +75,8 @@ presubmits:
         env:
         - name: KUBERNETES_VERSION
           value: "v1.18.2"
+        - name: KIND_E2E
+          value: "true"
         args:
         - make
         - test-e2e
