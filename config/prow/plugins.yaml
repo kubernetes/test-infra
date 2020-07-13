@@ -915,12 +915,6 @@ plugins:
   - lgtm
   - size
 
-  spxtr/envoy:
-  - assign
-  - lgtm
-  - lifecycle
-  - trigger
-
   GoogleCloudPlatform/k8s-multicluster-ingress:
   - trigger
 
