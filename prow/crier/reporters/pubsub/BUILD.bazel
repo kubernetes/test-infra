@@ -26,6 +26,8 @@ go_library(
     deps = [
         "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/config:go_default_library",
+        "//prow/io/providers:go_default_library",
+        "//prow/spyglass/api:go_default_library",
         "@com_google_cloud_go_pubsub//:go_default_library",
     ],
 )

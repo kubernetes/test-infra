@@ -2726,6 +2726,11 @@ func TestPlankJobURLPrefix(t *testing.T) {
 			refs:                 &prowapi.Refs{Org: "my-alternate-org", Repo: "my-second-repo"},
 			expectedJobURLPrefix: "https://my-prow",
 		},
+		{
+			name:                 "gcs/ suffix in JobURLPrefix will be automatically trimmed",
+			plank:                Plank{JobURLPrefixConfig: map[string]string{"*": "https://my-prow/view/gcs/"}},
+			expectedJobURLPrefix: "https://my-prow/view/",
+		},
 	}
 
 	for _, tc := range testCases {
