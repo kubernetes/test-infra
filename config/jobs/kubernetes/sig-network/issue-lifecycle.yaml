@@ -98,6 +98,7 @@ periodics:
       secret:
         secretName: fejta-bot-token
 
+# And following more 7 days we close the issue
 - name: periodic-sig-network-close
   interval: 1h
   decorate: true
@@ -131,6 +132,45 @@ periodics:
         /cc @rikatz
         /close
       - --template
+      - --ceiling=10
+      - --confirm
+      volumeMounts:
+      - name: token
+        mountPath: /etc/token
+    volumes:
+    - name: token
+      secret:
+        secretName: fejta-bot-token
+
+# Mark sig/network issues that weren't already triaged
+- name: periodic-sig-network-triage-unresolved
+  interval: 1h
+  decorate: true
+  annotations:
+    testgrid-dashboards: sig-network-fejtabot
+    description: Mark SIG Network unresolved issues
+    testgrid-tab-name: close
+  spec:
+    containers:
+    - image: gcr.io/k8s-prow/commenter:v20200630-1dca612287
+      command:
+      - /app/robots/commenter/app.binary
+      args:
+      - |-
+        --query=org:kubernetes
+        -label:lifecycle/rotten
+        -label:lifecycle/frozen
+        -label:lifecycle/active
+        -label:triage/unresolved
+        label:sig/network
+        is:issue
+        is:open
+        NOT "/remove-triage unresolved" in:comments
+      - --token=/etc/token/bot-github-token
+      - |-
+        --comment=/triage unresolved
+        Comment /remove-triage unresolved when the issue is assessed and confirmed.
+        --template
       - --ceiling=10
       - --confirm
       volumeMounts:
