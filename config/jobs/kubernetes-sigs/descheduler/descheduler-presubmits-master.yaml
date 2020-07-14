@@ -60,7 +60,6 @@ presubmits:
     decoration_config:
       timeout: 20m
     always_run: true
-    optional: true
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
