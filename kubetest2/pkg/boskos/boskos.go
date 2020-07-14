@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package deployer
+package boskos
 
 import (
 	"context"
@@ -30,7 +30,8 @@ import (
 // const (for the run) owner string for consistency between up and down
 var boskosOwner = os.Getenv("JOB_NAME") + "-kubetest2"
 
-func makeBoskosClient(boskosLocation string) (*client.Client, error) {
+// MakeBoskosClient creates a boskos client for kubetest2 deployers.
+func MakeBoskosClient(boskosLocation string) (*client.Client, error) {
 	boskos, err := client.NewClient(
 		boskosOwner,
 		boskosLocation,
@@ -44,9 +45,9 @@ func makeBoskosClient(boskosLocation string) (*client.Client, error) {
 	return boskos, nil
 }
 
-// getProjectFromBoskos creates a boskos client, acquires a gcp project
+// GetProjectFromBoskos creates a boskos client, acquires a gcp project
 // and starts a heartbeat goroutine to keep the project reserved
-func getProjectFromBoskos(boskosClient *client.Client, timeout time.Duration, heartbeatClose chan struct{}) (string, error) {
+func GetProjectFromBoskos(boskosClient *client.Client, timeout time.Duration, heartbeatClose chan struct{}) (string, error) {
 	resourceType := "gce-project"
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
@@ -91,12 +92,11 @@ func startBoskosHeartbeat(boskosClient *client.Client, resource *boskosCommon.Re
 	}(boskosClient, resource)
 }
 
-func releaseBoskosProject(client *client.Client, projectName string, heartbeatClose chan struct{}) error {
+// ReleaseBoskosProject releases a project.
+func ReleaseBoskosProject(client *client.Client, projectName string, heartbeatClose chan struct{}) error {
 	if err := client.Release(projectName, "free"); err != nil {
 		return fmt.Errorf("failed to release %s: %s", projectName, err)
 	}
-
 	close(heartbeatClose)
-
 	return nil
 }

@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"k8s.io/klog"
+	"k8s.io/test-infra/kubetest2/pkg/boskos"
 )
 
 func (d *deployer) init() error {
@@ -46,13 +47,13 @@ func (d *deployer) initialize() error {
 		if d.GCPProject == "" {
 			klog.V(1).Info("No GCP project provided, acquiring from Boskos")
 
-			boskos, err := makeBoskosClient(d.BoskosLocation)
+			boskosClient, err := boskos.MakeBoskosClient(d.BoskosLocation)
 			if err != nil {
 				return fmt.Errorf("failed to make boskos client: %s", err)
 			}
-			d.boskos = boskos
+			d.boskos = boskosClient
 
-			projectName, err := getProjectFromBoskos(
+			projectName, err := boskos.GetProjectFromBoskos(
 				d.boskos,
 				time.Duration(d.BoskosAcquireTimeoutSeconds)*time.Second,
 				d.boskosHeartbeatClose,

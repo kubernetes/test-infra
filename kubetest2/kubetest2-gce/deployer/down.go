@@ -21,6 +21,7 @@ import (
 	"path/filepath"
 
 	"k8s.io/klog"
+	"k8s.io/test-infra/kubetest2/pkg/boskos"
 	"k8s.io/test-infra/kubetest2/pkg/exec"
 )
 
@@ -45,7 +46,7 @@ func (d *deployer) Down() error {
 
 	if d.boskos != nil {
 		klog.V(2).Info("releasing boskos project")
-		err := releaseBoskosProject(
+		err := boskos.ReleaseBoskosProject(
 			d.boskos,
 			d.GCPProject,
 			d.boskosHeartbeatClose,
