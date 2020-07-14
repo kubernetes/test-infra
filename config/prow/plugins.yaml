@@ -898,6 +898,9 @@ plugins:
   kubernetes-sigs/contributor-playground:
   - require-matching-label
 
+  kubernetes-sigs/seccomp-operator:
+  - release-note
+
   containerd/cri:
   - assign
   - cla

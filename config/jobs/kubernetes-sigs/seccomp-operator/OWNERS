@@ -1,0 +1,10 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+reviewers:
+  - hasheddan
+  - pjbgf
+  - saschagrunert
+approvers:
+  - hasheddan
+  - pjbgf
+  - saschagrunert
