@@ -2,22 +2,13 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = [
-        "commandutils.go",
-        "common.go",
-        "deployer.go",
-    ],
-    importpath = "k8s.io/test-infra/kubetest2/kubetest2-gke/deployer",
+    srcs = ["boskos.go"],
+    importpath = "k8s.io/test-infra/kubetest2/pkg/boskos",
     visibility = ["//visibility:public"],
     deps = [
-        "//kubetest2/pkg/boskos:go_default_library",
-        "//kubetest2/pkg/build:go_default_library",
-        "//kubetest2/pkg/exec:go_default_library",
-        "//kubetest2/pkg/metadata:go_default_library",
-        "//kubetest2/pkg/types:go_default_library",
-        "@com_github_spf13_pflag//:go_default_library",
         "@io_k8s_klog//:go_default_library",
         "@io_k8s_sigs_boskos//client:go_default_library",
+        "@io_k8s_sigs_boskos//common:go_default_library",
     ],
 )
 
