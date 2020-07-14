@@ -27,6 +27,7 @@ import (
 	"k8s.io/test-infra/prow/simplifypath"
 )
 
+// HttpRequestDuration returns a histogram vector with relevant fields set
 func HttpRequestDuration(prefix string, min, max float64) *prometheus.HistogramVec {
 	return histogram(
 		prefix+"_http_request_duration_seconds",
@@ -35,11 +36,23 @@ func HttpRequestDuration(prefix string, min, max float64) *prometheus.HistogramV
 	)
 }
 
+// HttpResponseSize returns a histogram vector with relevant fields set
 func HttpResponseSize(prefix string, min, max int) *prometheus.HistogramVec {
 	return histogram(
 		prefix+"_http_response_size_bytes",
 		"http response size in bytes",
 		powersOfTwoBetween(float64(min), float64(max)),
+	)
+}
+
+// ErrorRate returns a counter vector with relevant fields set
+func ErrorRate(prefix string) *prometheus.CounterVec {
+	return prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: prefix + "_error_rate",
+			Help: "number of errors, sorted by label/type",
+		},
+		[]string{"error"},
 	)
 }
 
@@ -88,14 +101,47 @@ func (trw *traceResponseWriter) Write(data []byte) (int, error) {
 	return size, err
 }
 
+// Metrics holds the metrics for Prometheus
+type Metrics struct {
+	HTTPRequestDuration *prometheus.HistogramVec
+	HTTPResponseSize    *prometheus.HistogramVec
+	ErrorRate           *prometheus.CounterVec
+}
+
+// NewMetrics is a constructor for Metrics
+func NewMetrics(namespace string) *Metrics {
+	m := &Metrics{
+		HTTPRequestDuration: HttpRequestDuration(namespace, 0.0001, 2),
+		HTTPResponseSize:    HttpResponseSize(namespace, 256, 65536),
+		ErrorRate:           ErrorRate(namespace),
+	}
+	prometheus.MustRegister(m.HTTPRequestDuration)
+	prometheus.MustRegister(m.HTTPResponseSize)
+	prometheus.MustRegister(m.ErrorRate)
+	return m
+}
+
+// RecordError records the error to prometheus
+func RecordError(label string, errorRate *prometheus.CounterVec) {
+	labels := prometheus.Labels{"error": label}
+	errorRate.With(labels).Inc()
+}
+
+// TraceHandler allows the for a custom timer to be used to log metrics for Handler functions
+// It is an abstraction to allow testing of HandleWithMetrics
 func TraceHandler(simplifier simplifypath.Simplifier, httpRequestDuration, httpResponseSize *prometheus.HistogramVec) func(h http.Handler) http.Handler {
+	return traceHandlerWithCustomTimer(simplifier, httpRequestDuration, httpResponseSize, time.Since)
+}
+
+// Using a custom timer allows for proper testing of the latency functionality
+func traceHandlerWithCustomTimer(simplifier simplifypath.Simplifier, httpRequestDuration *prometheus.HistogramVec, httpResponseSize *prometheus.HistogramVec, timeSince func(time.Time) time.Duration) func(h http.Handler) http.Handler {
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			t := time.Now()
 			// Initialize the status to 200 in case WriteHeader is not called
 			trw := &traceResponseWriter{ResponseWriter: w, statusCode: http.StatusOK}
 			h.ServeHTTP(trw, r)
-			latency := time.Since(t)
+			latency := timeSince(t)
 			labels := prometheus.Labels{"path": simplifier.Simplify(r.URL.Path), "method": r.Method, "status": strconv.Itoa(trw.statusCode), "user_agent": r.Header.Get("User-Agent")}
 			httpRequestDuration.With(labels).Observe(latency.Seconds())
 			httpResponseSize.With(labels).Observe(float64(trw.size))
