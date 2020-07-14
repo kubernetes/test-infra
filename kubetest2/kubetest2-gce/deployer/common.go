@@ -25,6 +25,10 @@ import (
 	"k8s.io/test-infra/kubetest2/pkg/boskos"
 )
 
+const (
+	gceProjectResourceType = "gce-project"
+)
+
 func (d *deployer) init() error {
 	var err error
 	d.doInit.Do(func() { err = d.initialize() })
@@ -47,14 +51,15 @@ func (d *deployer) initialize() error {
 		if d.GCPProject == "" {
 			klog.V(1).Info("No GCP project provided, acquiring from Boskos")
 
-			boskosClient, err := boskos.MakeBoskosClient(d.BoskosLocation)
+			boskosClient, err := boskos.NewClient(d.BoskosLocation)
 			if err != nil {
 				return fmt.Errorf("failed to make boskos client: %s", err)
 			}
 			d.boskos = boskosClient
 
-			projectName, err := boskos.GetProjectFromBoskos(
+			resource, err := boskos.Acquire(
 				d.boskos,
+				gceProjectResourceType,
 				time.Duration(d.BoskosAcquireTimeoutSeconds)*time.Second,
 				d.boskosHeartbeatClose,
 			)
@@ -62,7 +67,7 @@ func (d *deployer) initialize() error {
 			if err != nil {
 				return fmt.Errorf("init failed to get project from boskos: %s", err)
 			}
-			d.GCPProject = projectName
+			d.GCPProject = resource.Name
 			klog.V(1).Infof("Got project %s from boskos", d.GCPProject)
 		}
 

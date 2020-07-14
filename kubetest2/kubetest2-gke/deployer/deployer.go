@@ -18,6 +18,7 @@ limitations under the License.
 package deployer
 
 import (
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -28,13 +29,15 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/spf13/pflag"
-
+	"k8s.io/klog"
 	"k8s.io/test-infra/kubetest2/pkg/build"
 	"k8s.io/test-infra/kubetest2/pkg/exec"
 	"k8s.io/test-infra/kubetest2/pkg/metadata"
 	"k8s.io/test-infra/kubetest2/pkg/types"
+	"sigs.k8s.io/boskos/client"
 )
 
 // Name is the name of the deployer
@@ -77,6 +80,8 @@ type ig struct {
 type deployer struct {
 	// generic parts
 	commonOptions types.Options
+	// doInit helps to make sure the initialization is performed only once
+	doInit sync.Once
 	// gke specific details
 	project           string
 	zone              string
@@ -96,6 +101,17 @@ type deployer struct {
 
 	localLogsDir string
 	gcsLogsDir   string
+
+	boskosLocation              string
+	boskosAcquireTimeoutSeconds int
+
+	// boskos struct field will be non-nil when the deployer is
+	// using boskos to acquire a GCP project
+	boskos *client.Client
+
+	// this channel serves as a signal channel for the hearbeat goroutine
+	// so that it can be explicitly closed
+	boskosHeartbeatClose chan struct{}
 }
 
 // New implements deployer.New for gke
@@ -106,13 +122,28 @@ func New(opts types.Options) (types.Deployer, *pflag.FlagSet) {
 		localLogsDir:  filepath.Join(opts.ArtifactsDir(), "logs"),
 	}
 
-	// register flags and return
-	return d, bindFlags(d)
+	// register flags
+	fs := bindFlags(d)
+
+	// register flags for klog
+	klog.InitFlags(nil)
+	fs.AddGoFlagSet(flag.CommandLine)
+	return d, fs
 }
 
-// verifyFlags validates that required flags are set, as well as
-// ensuring that location() will not return errors.
-func (d *deployer) verifyFlags() error {
+// verifyCommonFlags validates flags for up phase.
+func (d *deployer) verifyUpFlags() error {
+	if d.cluster == "" {
+		return fmt.Errorf("--cluster-name must be set for GKE deployment")
+	}
+	if _, err := d.location(); err != nil {
+		return err
+	}
+	return nil
+}
+
+// verifyDownFlags validates flags for down phase.
+func (d *deployer) verifyDownFlags() error {
 	if d.cluster == "" {
 		return fmt.Errorf("--cluster-name must be set for GKE deployment")
 	}
@@ -157,6 +188,8 @@ func bindFlags(d *deployer) *pflag.FlagSet {
 	flags.StringVar(&d.region, "region", "", "For use with gcloud commands")
 	flags.StringVar(&d.zone, "zone", "", "For use with gcloud commands")
 	flags.StringVar(&d.stageLocation, "stage", "", "Upload binaries to gs://bucket/ci/job-suffix if set")
+	flags.StringVar(&d.boskosLocation, "boskos-location", "http://boskos.test-pods.svc.cluster.local.", "If set, manually specifies the location of the boskos server")
+	flags.IntVar(&d.boskosAcquireTimeoutSeconds, "boskos-acquire-timeout-seconds", 300, "How long (in seconds) to hang on a request to Boskos to acquire a resource before erroring")
 	return flags
 }
 
@@ -182,7 +215,7 @@ func (d *deployer) Build() error {
 
 // Deployer implementation methods below
 func (d *deployer) Up() error {
-	if err := d.verifyFlags(); err != nil {
+	if err := d.init(); err != nil {
 		return err
 	}
 	if err := d.prepareGcpIfNeeded(); err != nil {
@@ -453,7 +486,7 @@ func (d *deployer) cleanupNetworkFirewalls() (int, error) {
 }
 
 func (d *deployer) Down() error {
-	if err := d.verifyFlags(); err != nil {
+	if err := d.init(); err != nil {
 		return err
 	}
 	if err := d.prepareGcpIfNeeded(); err != nil {

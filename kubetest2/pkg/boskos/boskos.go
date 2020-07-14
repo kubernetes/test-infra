@@ -24,14 +24,14 @@ import (
 
 	"k8s.io/klog"
 	"sigs.k8s.io/boskos/client"
-	boskosCommon "sigs.k8s.io/boskos/common"
+	"sigs.k8s.io/boskos/common"
 )
 
 // const (for the run) owner string for consistency between up and down
 var boskosOwner = os.Getenv("JOB_NAME") + "-kubetest2"
 
-// MakeBoskosClient creates a boskos client for kubetest2 deployers.
-func MakeBoskosClient(boskosLocation string) (*client.Client, error) {
+// NewClient creates a boskos client for kubetest2 deployers.
+func NewClient(boskosLocation string) (*client.Client, error) {
 	boskos, err := client.NewClient(
 		boskosOwner,
 		boskosLocation,
@@ -45,36 +45,34 @@ func MakeBoskosClient(boskosLocation string) (*client.Client, error) {
 	return boskos, nil
 }
 
-// GetProjectFromBoskos creates a boskos client, acquires a gcp project
-// and starts a heartbeat goroutine to keep the project reserved
-func GetProjectFromBoskos(boskosClient *client.Client, timeout time.Duration, heartbeatClose chan struct{}) (string, error) {
-	resourceType := "gce-project"
+// Acquire acquires a resource for the given type and starts a heartbeat goroutine to keep the resource reserved.
+func Acquire(boskosClient *client.Client, resourceType string, timeout time.Duration, heartbeatClose chan struct{}) (*common.Resource, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
-	boskosProject, err := boskosClient.AcquireWait(ctx, resourceType, "free", "busy")
+	boskosResource, err := boskosClient.AcquireWait(ctx, resourceType, "free", "busy")
 	if err != nil {
-		return "", fmt.Errorf("failed to get a %q from boskos: %s", resourceType, err)
+		return nil, fmt.Errorf("failed to get a %q from boskos: %s", resourceType, err)
 	}
-	if boskosProject == nil {
-		return "", fmt.Errorf("boskos had no %s available", resourceType)
+	if boskosResource == nil {
+		return nil, fmt.Errorf("boskos had no %s available", resourceType)
 	}
 
 	startBoskosHeartbeat(
 		boskosClient,
-		boskosProject,
+		boskosResource,
 		5*time.Minute,
 		heartbeatClose,
 	)
 
-	return boskosProject.Name, nil
+	return boskosResource, nil
 }
 
 // startBoskosHeartbeat starts a goroutine that sends periodic updates to boskos
 // about the provided resource until the channel is closed. This prevents
 // reaper from taking the resource from the deployer while it is still in use.
-func startBoskosHeartbeat(boskosClient *client.Client, resource *boskosCommon.Resource, interval time.Duration, close chan struct{}) {
-	go func(c *client.Client, resource *boskosCommon.Resource) {
+func startBoskosHeartbeat(boskosClient *client.Client, resource *common.Resource, interval time.Duration, close chan struct{}) {
+	go func(c *client.Client, resource *common.Resource) {
 		klog.V(2).Info("boskos hearbeat starting")
 
 		for {
@@ -92,10 +90,10 @@ func startBoskosHeartbeat(boskosClient *client.Client, resource *boskosCommon.Re
 	}(boskosClient, resource)
 }
 
-// ReleaseBoskosProject releases a project.
-func ReleaseBoskosProject(client *client.Client, projectName string, heartbeatClose chan struct{}) error {
-	if err := client.Release(projectName, "free"); err != nil {
-		return fmt.Errorf("failed to release %s: %s", projectName, err)
+// Release releases a resource.
+func Release(client *client.Client, resourceName string, heartbeatClose chan struct{}) error {
+	if err := client.Release(resourceName, "free"); err != nil {
+		return fmt.Errorf("failed to release %s: %s", resourceName, err)
 	}
 	close(heartbeatClose)
 	return nil
