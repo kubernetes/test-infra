@@ -2,9 +2,15 @@
 
 reviewers:
 - amwat
+- justaugustus
 - spiffxp
 - BenTheElder
 approvers:
 - amwat
+- justaugustus
 - spiffxp
 - BenTheElder
+
+labels:
+- sig/release
+- area/release-eng
