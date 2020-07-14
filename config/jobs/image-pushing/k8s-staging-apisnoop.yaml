@@ -13,7 +13,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200708-4b69e15
+          - image: gcr.io/k8s-testimages/image-builder:v20200713-e9b3d9d
             command:
               - /run.sh
             args:
@@ -35,7 +35,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200708-4b69e15
+          - image: gcr.io/k8s-testimages/image-builder:v20200713-e9b3d9d
             command:
               - /run.sh
             args:
@@ -57,7 +57,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200708-4b69e15
+          - image: gcr.io/k8s-testimages/image-builder:v20200713-e9b3d9d
             command:
               - /run.sh
             args:
@@ -79,7 +79,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200708-4b69e15
+          - image: gcr.io/k8s-testimages/image-builder:v20200713-e9b3d9d
             command:
               - /run.sh
             args:
