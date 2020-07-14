@@ -100,11 +100,13 @@ func WaitForMarkers(ctx context.Context, paths ...string) map[string]MarkerResul
 	}
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
+		populateMapWithError(results, fmt.Errorf("new fsnotify watch: %v", err), paths...)
 		return results
 	}
 	defer watcher.Close()
 	dir := filepath.Dir(paths[0])
 	if err := watcher.Add(dir); err != nil {
+		populateMapWithError(results, fmt.Errorf("add %s to fsnotify watch: %v", dir, err), paths...)
 		return results
 	}
 
@@ -114,11 +116,7 @@ func WaitForMarkers(ctx context.Context, paths ...string) map[string]MarkerResul
 	for len(results) < len(paths) {
 		select {
 		case <-ctx.Done():
-			for _, path := range paths {
-				if _, exists := results[path]; !exists {
-					results[path] = MarkerResult{-1, fmt.Errorf("cancelled: %v", ctx.Err())}
-				}
-			}
+			populateMapWithError(results, fmt.Errorf("cancelled: %v", ctx.Err()), paths...)
 			return results
 		case event := <-watcher.Events:
 			for _, path := range paths {
@@ -138,6 +136,14 @@ func WaitForMarkers(ctx context.Context, paths ...string) map[string]MarkerResul
 	}
 	return results
 
+}
+
+func populateMapWithError(markerMap map[string]MarkerResult, err error, paths ...string) {
+	for _, path := range paths {
+		if _, exists := markerMap[path]; !exists {
+			markerMap[path] = MarkerResult{-1, err}
+		}
+	}
 }
 
 func readMarkerFile(path string) MarkerResult {
