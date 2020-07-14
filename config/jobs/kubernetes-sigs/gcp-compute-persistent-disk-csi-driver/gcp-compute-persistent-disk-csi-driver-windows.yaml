@@ -33,7 +33,7 @@ periodics:
         value: "win2019"
       - name: PREPULL_YAML
         value: "prepull-head.yaml"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200713-e9b3d9d-master
   annotations:
     testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
     testgrid-tab-name: ci-windows-provider-gcp-compute-persistent-disk-csi-driver
@@ -79,7 +79,7 @@ presubmits:
           value: "win2019"
         - name: PREPULL_YAML
           value: "prepull-head.yaml"
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200713-e9b3d9d-master
         securityContext:
           privileged: true
     annotations:
