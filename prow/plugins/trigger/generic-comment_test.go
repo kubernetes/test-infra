@@ -419,7 +419,7 @@ func TestHandleGenericComment(t *testing.T) {
 					},
 				},
 			},
-			ShouldBuild: false,
+			ShouldBuild: true,
 		},
 		{
 			name:   "Run if changed job triggered by /ok-to-test",
@@ -1070,7 +1070,7 @@ func TestRetestFilter(t *testing.T) {
 					},
 				},
 			},
-			expected: [][]bool{{true, false, true}, {false, false, true}},
+			expected: [][]bool{{true, false, true}, {false, false, false}},
 		},
 		{
 			name:           "retest filter matches jobs that would run automatically and haven't yet ",
@@ -1095,7 +1095,7 @@ func TestRetestFilter(t *testing.T) {
 					},
 				},
 			},
-			expected: [][]bool{{false, false, true}, {true, false, true}},
+			expected: [][]bool{{false, false, false}, {true, false, false}},
 		},
 	}
 

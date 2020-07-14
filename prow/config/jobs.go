@@ -354,12 +354,8 @@ func (ps Presubmit) ShouldRun(baseRef string, changes ChangedFilesProvider, forc
 	if forced {
 		return true, nil
 	}
-	if determined, shouldRun, err := ps.RegexpChangeMatcher.ShouldRun(changes); err != nil {
-		return false, err
-	} else if determined {
-		return shouldRun, nil
-	}
-	return defaults, nil
+	determined, shouldRun, err := ps.RegexpChangeMatcher.ShouldRun(changes)
+	return (determined && shouldRun) || defaults, err
 }
 
 // TriggersConditionally determines if the presubmit triggers conditionally (if it may or may not trigger).

@@ -677,6 +677,9 @@ func TestPresubmitShouldRun(t *testing.T) {
 		fileError   error
 		job         Presubmit
 		ref         string
+		forced      bool
+		defaults    bool
+
 		expectedRun bool
 		expectedErr bool
 	}{
@@ -769,6 +772,19 @@ func TestPresubmitShouldRun(t *testing.T) {
 			ref:         "master",
 			fileChanges: []string{"something"},
 			expectedRun: false,
+		}, {
+			name: "job with run_if_changed not matching should run when default=true",
+			job: Presubmit{
+				Trigger:      `(?m)^/test (?:.*? )?foo(?: .*?)?$`,
+				RerunCommand: "/test foo",
+				RegexpChangeMatcher: RegexpChangeMatcher{
+					RunIfChanged: "^file$",
+				},
+			},
+			ref:         "master",
+			fileChanges: []string{"something"},
+			defaults:    true,
+			expectedRun: true,
 		},
 		{
 			name: "job with run_if_changed matching should run",
@@ -793,7 +809,7 @@ func TestPresubmitShouldRun(t *testing.T) {
 			}
 			jobShouldRun, err := jobs[0].ShouldRun(testCase.ref, func() ([]string, error) {
 				return testCase.fileChanges, testCase.fileError
-			}, false, false)
+			}, testCase.forced, testCase.defaults)
 			if err == nil && testCase.expectedErr {
 				t.Errorf("%s: expected an error and got none", testCase.name)
 			}
