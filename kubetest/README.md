@@ -1,3 +1,9 @@
+# Deprecation Notice
+
+July 14, 2020:  
+kubetest will be deprecated in favor of [kubetest2](https://github.com/kubernetes-sigs/kubetest2), 
+so kubetest is moving to a maintenance mode only and we are not taking PRs except for urgent bug fixes. 
+
 # Kubetest
 
 Kubetest is the interface for launching and running e2e tests.
