@@ -6,6 +6,12 @@ variants:
     BAZEL_VERSION: 2.2.0
     OLD_BAZEL_VERSION: 0.28.1
     UPGRADE_DOCKER: 'true'
+  go-canary:
+    CONFIG: go-canary
+    GO_VERSION: 1.15beta1
+    K8S_RELEASE: stable
+    BAZEL_VERSION: 2.2.0
+    OLD_BAZEL_VERSION: 0.23.2
   master:
     CONFIG: master
     GO_VERSION: 1.14.5
