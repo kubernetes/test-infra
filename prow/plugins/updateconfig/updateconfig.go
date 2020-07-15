@@ -19,6 +19,7 @@ package updateconfig
 import (
 	"bytes"
 	"compress/gzip"
+	"context"
 	"fmt"
 	"io/ioutil"
 	"path"
@@ -106,7 +107,7 @@ func (g *OSFileGetter) GetFile(filename string) ([]byte, error) {
 // Existing configmap keys that are not included in the updates are left alone
 // unless bootstrap is true in which case they are deleted.
 func Update(fg FileGetter, kc corev1.ConfigMapInterface, name, namespace string, updates []ConfigMapUpdate, bootstrap bool, metrics *prometheus.GaugeVec, logger *logrus.Entry) error {
-	cm, getErr := kc.Get(name, metav1.GetOptions{})
+	cm, getErr := kc.Get(context.TODO(), name, metav1.GetOptions{})
 	isNotFound := errors.IsNotFound(getErr)
 	if getErr != nil && !isNotFound {
 		return fmt.Errorf("failed to fetch current state of configmap: %v", getErr)
@@ -170,10 +171,10 @@ func Update(fg FileGetter, kc corev1.ConfigMapInterface, name, namespace string,
 	var verb string
 	if getErr != nil && isNotFound {
 		verb = "create"
-		_, updateErr = kc.Create(cm)
+		_, updateErr = kc.Create(context.TODO(), cm, metav1.CreateOptions{})
 	} else {
 		verb = "update"
-		_, updateErr = kc.Update(cm)
+		_, updateErr = kc.Update(context.TODO(), cm, metav1.UpdateOptions{})
 	}
 	if updateErr != nil {
 		return fmt.Errorf("%s config map err: %v", verb, updateErr)

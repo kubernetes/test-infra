@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"crypto/rand"
 	"encoding/hex"
 	"errors"
@@ -395,7 +396,7 @@ func (c *client) updateHMACTokenSecret() error {
 	sec.Name = c.options.hmacTokenSecretName
 	sec.Namespace = c.options.hmacTokenSecretNamespace
 	sec.StringData = map[string]string{c.options.hmacTokenKey: string(secretContent)}
-	if _, err = c.kubernetesClient.CoreV1().Secrets(c.options.hmacTokenSecretNamespace).Update(sec); err != nil {
+	if _, err = c.kubernetesClient.CoreV1().Secrets(c.options.hmacTokenSecretNamespace).Update(context.TODO(), sec, metav1.UpdateOptions{}); err != nil {
 		return fmt.Errorf("error updating the secret: %v", err)
 	}
 	return nil
@@ -427,7 +428,7 @@ func generateNewHMACToken() (string, error) {
 
 // getCurrentHMACTokens returns the hmac tokens currently configured in the cluster.
 func getCurrentHMACTokens(kc kubernetes.Interface, ns, secName, key string) ([]byte, error) {
-	sec, err := kc.CoreV1().Secrets(ns).Get(secName, metav1.GetOptions{})
+	sec, err := kc.CoreV1().Secrets(ns).Get(context.TODO(), secName, metav1.GetOptions{})
 	if err != nil && !apierrors.IsNotFound(err) {
 		return nil, fmt.Errorf("error getting hmac secret %q: %v", secName, err)
 	}

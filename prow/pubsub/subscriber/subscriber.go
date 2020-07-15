@@ -17,6 +17,7 @@ limitations under the License.
 package subscriber
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
@@ -25,6 +26,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	coreapi "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
@@ -69,7 +71,7 @@ func (pe *PeriodicProwJobEvent) ToMessage() (*pubsub.Message, error) {
 
 // ProwJobClient mostly for testing.
 type ProwJobClient interface {
-	Create(job *prowapi.ProwJob) (*prowapi.ProwJob, error)
+	Create(context.Context, *prowapi.ProwJob, metav1.CreateOptions) (*prowapi.ProwJob, error)
 }
 
 // Subscriber handles Pub/Sub subscriptions, update metrics,
@@ -204,7 +206,7 @@ func (s *Subscriber) handlePeriodicJob(l *logrus.Entry, msg messageInterface, su
 		}
 	}
 
-	if _, err := s.ProwJobClient.Create(&prowJob); err != nil {
+	if _, err := s.ProwJobClient.Create(context.TODO(), &prowJob, metav1.CreateOptions{}); err != nil {
 		l.WithError(err).Errorf("failed to create job %q as %q", pe.Name, prowJob.Name)
 		reportProwJobFailure(&prowJob, err)
 		return err

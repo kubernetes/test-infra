@@ -238,17 +238,18 @@ func NewController(ghcSync, ghcStatus github.Client, mgr manager, cfg config.Get
 	}
 	mergeChecker := newMergeChecker(cfg, ghcSync)
 
-	sc, err := newStatusController(logger, ghcStatus, mgr, gc, cfg, opener, statusURI, mergeChecker)
+	ctx := context.Background()
+	sc, err := newStatusController(ctx, logger, ghcStatus, mgr, gc, cfg, opener, statusURI, mergeChecker)
 	if err != nil {
 		return nil, err
 	}
 	go sc.run()
 
-	return newSyncController(logger, ghcSync, mgr, cfg, gc, sc, hist, mergeChecker)
+	return newSyncController(ctx, logger, ghcSync, mgr, cfg, gc, sc, hist, mergeChecker)
 }
 
-func newStatusController(logger *logrus.Entry, ghc githubClient, mgr manager, gc git.ClientFactory, cfg config.Getter, opener io.Opener, statusURI string, mergeChecker *mergeChecker) (*statusController, error) {
-	if err := mgr.GetFieldIndexer().IndexField(&prowapi.ProwJob{}, indexNamePassingJobs, indexFuncPassingJobs); err != nil {
+func newStatusController(ctx context.Context, logger *logrus.Entry, ghc githubClient, mgr manager, gc git.ClientFactory, cfg config.Getter, opener io.Opener, statusURI string, mergeChecker *mergeChecker) (*statusController, error) {
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &prowapi.ProwJob{}, indexNamePassingJobs, indexFuncPassingJobs); err != nil {
 		return nil, fmt.Errorf("failed to add index for passing jobs to cache: %v", err)
 	}
 	return &statusController{
@@ -266,6 +267,7 @@ func newStatusController(logger *logrus.Entry, ghc githubClient, mgr manager, gc
 }
 
 func newSyncController(
+	ctx context.Context,
 	logger *logrus.Entry,
 	ghcSync githubClient,
 	mgr manager,
@@ -276,6 +278,7 @@ func newSyncController(
 	mergeChecker *mergeChecker,
 ) (*Controller, error) {
 	if err := mgr.GetFieldIndexer().IndexField(
+		ctx,
 		&prowapi.ProwJob{},
 		cacheIndexName,
 		cacheIndexFunc,
@@ -283,6 +286,7 @@ func newSyncController(
 		return nil, fmt.Errorf("failed to add baseSHA index to cache: %v", err)
 	}
 	if err := mgr.GetFieldIndexer().IndexField(
+		ctx,
 		&prowapi.ProwJob{},
 		nonFailedBatchByNameBaseAndPullsIndexName,
 		nonFailedBatchByNameBaseAndPullsIndexFunc,
@@ -290,7 +294,7 @@ func newSyncController(
 		return nil, fmt.Errorf("failed to add index for non failed batches: %w", err)
 	}
 	return &Controller{
-		ctx:           context.Background(),
+		ctx:           ctx,
 		logger:        logger.WithField("controller", "sync"),
 		ghc:           ghcSync,
 		prowJobClient: mgr.GetClient(),

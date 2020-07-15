@@ -82,10 +82,10 @@ func startTime(s time.Time) *metav1.Time {
 
 type unreachableCluster struct{}
 
-func (unreachableCluster) Delete(name string, options *metav1.DeleteOptions) error {
+func (unreachableCluster) Delete(_ context.Context, name string, _ metav1.DeleteOptions) error {
 	return fmt.Errorf("I can't hear you.")
 }
-func (unreachableCluster) List(opts metav1.ListOptions) (*corev1api.PodList, error) {
+func (unreachableCluster) List(_ context.Context, _ metav1.ListOptions) (*corev1api.PodList, error) {
 	return nil, fmt.Errorf("I can't hear you.")
 }
 

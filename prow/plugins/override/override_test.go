@@ -17,6 +17,7 @@ limitations under the License.
 package override
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"reflect"
@@ -24,6 +25,7 @@ import (
 	"testing"
 
 	"github.com/sirupsen/logrus"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -227,7 +229,7 @@ func (c *fakeClient) ListTeamMembers(id int, role string) ([]github.TeamMember, 
 	return []github.TeamMember{}, nil
 }
 
-func (c *fakeClient) Create(pj *prowapi.ProwJob) (*prowapi.ProwJob, error) {
+func (c *fakeClient) Create(_ context.Context, pj *prowapi.ProwJob, _ metav1.CreateOptions) (*prowapi.ProwJob, error) {
 	if s := pj.Status.State; s != prowapi.SuccessState {
 		return pj, fmt.Errorf("bad status state: %s", s)
 	}

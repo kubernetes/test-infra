@@ -1876,10 +1876,11 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 						}
 					}
 				}
-				r := newReconciler(&indexingClient{
-					Client:     fakeProwJobClient,
-					indexFuncs: map[string]ctrlruntimeclient.IndexerFunc{prowJobIndexName: prowJobIndexer("prowjobs")},
-				}, nil, newFakeConfigAgent(t, 0).Config, "")
+				r := newReconciler(context.Background(),
+					&indexingClient{
+						Client:     fakeProwJobClient,
+						indexFuncs: map[string]ctrlruntimeclient.IndexerFunc{prowJobIndexName: prowJobIndexer("prowjobs")},
+					}, nil, newFakeConfigAgent(t, 0).Config, "")
 				r.buildClients = buildClients
 				for _, job := range test.PJs {
 					request := reconcile.Request{NamespacedName: types.NamespacedName{

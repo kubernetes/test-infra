@@ -163,8 +163,8 @@ func main() {
 }
 
 type podInterface interface {
-	Delete(name string, options *metav1.DeleteOptions) error
-	List(opts metav1.ListOptions) (*corev1api.PodList, error)
+	Delete(ctx context.Context, name string, options metav1.DeleteOptions) error
+	List(ctx context.Context, opts metav1.ListOptions) (*corev1api.PodList, error)
 }
 
 type controller struct {
@@ -371,7 +371,7 @@ func (c *controller) clean() {
 	selector := fmt.Sprintf("%s = %s", kube.CreatedByProw, "true")
 	for cluster, client := range c.podClients {
 		log := c.logger.WithField("cluster", cluster)
-		pods, err := client.List(metav1.ListOptions{LabelSelector: selector})
+		pods, err := client.List(context.TODO(), metav1.ListOptions{LabelSelector: selector})
 		if err != nil {
 			log.WithError(err).Error("Error listing pods.")
 			continue
@@ -444,7 +444,7 @@ func (c *controller) clean() {
 
 func (c *controller) deletePod(log *logrus.Entry, name, reason string, client podInterface, m *sinkerReconciliationMetrics) {
 	// Delete old finished or orphan pods. Don't quit if we fail to delete one.
-	if err := client.Delete(name, &metav1.DeleteOptions{}); err == nil {
+	if err := client.Delete(context.TODO(), name, metav1.DeleteOptions{}); err == nil {
 		log.WithFields(logrus.Fields{"pod": name, "reason": reason}).Info("Deleted old completed pod.")
 		m.podsRemoved[reason]++
 	} else if !k8serrors.IsNotFound(err) {

@@ -182,7 +182,7 @@ func (c *Controller) updateReportState(pj *v1.ProwJob, log *logrus.Entry, report
 	}
 
 	log.Info("Created merge patch")
-	_, err = c.pjclientset.ProwV1().ProwJobs(pj.Namespace).Patch(pj.Name, types.MergePatchType, patch)
+	_, err = c.pjclientset.ProwV1().ProwJobs(pj.Namespace).Patch(context.TODO(), pj.Name, types.MergePatchType, patch, metav1.PatchOptions{})
 	if err != nil {
 		return err
 	}
@@ -284,7 +284,7 @@ func (c *Controller) processNextItem() bool {
 		// We have to retry here, if we return we lose the information that we already reported this job.
 		if err := retry.RetryOnConflict(retry.DefaultBackoff, func() error {
 			// Get it first, this is very cheap
-			pj, err := c.pjclientset.ProwV1().ProwJobs(pjob.Namespace).Get(pjob.Name, metav1.GetOptions{})
+			pj, err := c.pjclientset.ProwV1().ProwJobs(pjob.Namespace).Get(context.TODO(), pjob.Name, metav1.GetOptions{})
 			if err != nil {
 				return err
 			}

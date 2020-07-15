@@ -18,6 +18,7 @@ limitations under the License.
 package adapter
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/url"
@@ -26,6 +27,7 @@ import (
 
 	"github.com/andygrunwald/go-gerrit"
 	"github.com/sirupsen/logrus"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -37,7 +39,7 @@ import (
 )
 
 type prowJobClient interface {
-	Create(*prowapi.ProwJob) (*prowapi.ProwJob, error)
+	Create(context.Context, *prowapi.ProwJob, metav1.CreateOptions) (*prowapi.ProwJob, error)
 }
 
 type gerritClient interface {
@@ -307,7 +309,7 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 
 		pj := pjutil.NewProwJob(jSpec.spec, labels, annotations)
 		logger := logger.WithField("prowJob", pj)
-		if _, err := c.prowJobClient.Create(&pj); err != nil {
+		if _, err := c.prowJobClient.Create(context.TODO(), &pj, metav1.CreateOptions{}); err != nil {
 			logger.WithError(err).Errorf("Failed to create ProwJob")
 			continue
 		}

@@ -17,6 +17,7 @@ limitations under the License.
 package trigger
 
 import (
+	"context"
 	"encoding/json"
 	"strconv"
 	"testing"
@@ -479,7 +480,7 @@ func TestHandlePullRequest(t *testing.T) {
 				t.Errorf("Expected no comments to github, but got %d", len(g.IssueCommentsAdded))
 			}
 			if tc.jobToAbort != nil {
-				pj, err := fakeProwJobClient.ProwV1().ProwJobs("namespace").Get(tc.jobToAbort.Name, metav1.GetOptions{})
+				pj, err := fakeProwJobClient.ProwV1().ProwJobs("namespace").Get(context.Background(), tc.jobToAbort.Name, metav1.GetOptions{})
 				if err != nil {
 					t.Fatalf("failed to get prowjob: %v", err)
 				}
@@ -579,7 +580,7 @@ func TestAbortAllJobs(t *testing.T) {
 				t.Fatalf("error caling abortAllJobs: %v", err)
 			}
 
-			pj, err := pjClient.ProwV1().ProwJobs("").Get(pj().Name, metav1.GetOptions{})
+			pj, err := pjClient.ProwV1().ProwJobs("").Get(context.Background(), pj().Name, metav1.GetOptions{})
 			if err != nil {
 				t.Fatalf("failed to get prowjob: %v", err)
 			}

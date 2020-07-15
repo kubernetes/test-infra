@@ -19,6 +19,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -431,7 +432,7 @@ func TestRerun(t *testing.T) {
 			}
 
 			if tc.shouldCreateProwJob {
-				pjs, err := fakeProwJobClient.ProwV1().ProwJobs("prowjobs").List(metav1.ListOptions{})
+				pjs, err := fakeProwJobClient.ProwV1().ProwJobs("prowjobs").List(context.Background(), metav1.ListOptions{})
 				if err != nil {
 					t.Fatalf("failed to list prowjobs: %v", err)
 				}

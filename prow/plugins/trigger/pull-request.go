@@ -17,6 +17,7 @@ limitations under the License.
 package trigger
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -163,7 +164,7 @@ func abortAllJobs(c Client, pr *github.PullRequest) error {
 		return fmt.Errorf("failed to construct label selector: %w", err)
 	}
 
-	jobs, err := c.ProwJobClient.List(metav1.ListOptions{LabelSelector: selector.String()})
+	jobs, err := c.ProwJobClient.List(context.TODO(), metav1.ListOptions{LabelSelector: selector.String()})
 	if err != nil {
 		return fmt.Errorf("failed to list prowjobs for pr: %w", err)
 	}
@@ -179,7 +180,7 @@ func abortAllJobs(c Client, pr *github.PullRequest) error {
 		// and must not overwrite changes made to it in the interim by the responsible agent.
 		// The accepted trade-off for now is that this leads to failure if unrelated fields where changed
 		// by another different actor.
-		if _, err := c.ProwJobClient.Update(&job); err != nil && !apierrors.IsConflict(err) {
+		if _, err := c.ProwJobClient.Update(context.TODO(), &job, metav1.UpdateOptions{}); err != nil && !apierrors.IsConflict(err) {
 			errs = append(errs, fmt.Errorf("failed to abort job %s: %w", job.Name, err))
 		}
 	}
