@@ -1,20 +1,20 @@
 variants:
   experimental:
     CONFIG: experimental
-    GO_VERSION: 1.14.4
+    GO_VERSION: 1.14.5
     K8S_RELEASE: stable
     BAZEL_VERSION: 2.2.0
     OLD_BAZEL_VERSION: 0.28.1
     UPGRADE_DOCKER: 'true'
   master:
     CONFIG: master
-    GO_VERSION: 1.14.4
+    GO_VERSION: 1.14.5
     K8S_RELEASE: stable
     BAZEL_VERSION: 2.2.0
     OLD_BAZEL_VERSION: 0.23.2
   '1.19':
     CONFIG: '1.19'
-    GO_VERSION: 1.14.4
+    GO_VERSION: 1.14.5
     K8S_RELEASE: latest-1.19
     BAZEL_VERSION: 2.2.0
     OLD_BAZEL_VERSION: 0.23.2
