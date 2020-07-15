@@ -25,6 +25,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"strings"
 	"syscall"
 	"time"
@@ -111,33 +112,25 @@ func (o Options) Run(ctx context.Context) (int, error) {
 	// uploading, so we ignore the signals.
 	signal.Ignore(os.Interrupt, syscall.SIGTERM)
 
-	buildLog := logReader(entries)
+	buildLogs := logReaders(entries)
 	metadata := combineMetadata(entries)
-	return failures, o.doUpload(spec, passed, aborted, metadata, buildLog)
+	return failures, o.doUpload(spec, passed, aborted, metadata, buildLogs)
 }
 
 const errorKey = "sidecar-errors"
 
-func start(part string) string {
-	return fmt.Sprintf("\n==== start of %s log ====\n", part)
-}
-
-func logReader(entries []wrapper.Options) io.Reader {
-	var readers []io.Reader
-	for i, opt := range entries {
-		ent := nameEntry(i, opt)
-		if len(entries) > 1 {
-			readers = append(readers, strings.NewReader(start(ent)))
-		}
+func logReaders(entries []wrapper.Options) map[string]io.Reader {
+	readers := make(map[string]io.Reader)
+	for _, opt := range entries {
 		log, err := os.Open(opt.ProcessLog)
 		if err != nil {
 			logrus.WithError(err).Errorf("Failed to open %s", opt.ProcessLog)
-			readers = append(readers, strings.NewReader(fmt.Sprintf("Failed to open %s: %v\n", opt.ProcessLog, err)))
+			readers[filepath.Base(opt.ProcessLog)] = strings.NewReader(fmt.Sprintf("Failed to open %s: %v\n", opt.ProcessLog, err))
 		} else {
-			readers = append(readers, log)
+			readers[filepath.Base(opt.ProcessLog)] = log
 		}
 	}
-	return io.MultiReader(readers...)
+	return readers
 }
 
 func combineMetadata(entries []wrapper.Options) map[string]interface{} {
@@ -177,9 +170,11 @@ func combineMetadata(entries []wrapper.Options) map[string]interface{} {
 	return metadata
 }
 
-func (o Options) doUpload(spec *downwardapi.JobSpec, passed, aborted bool, metadata map[string]interface{}, logReader io.Reader) error {
-	uploadTargets := map[string]gcs.UploadFunc{
-		"build-log.txt": gcs.DataUpload(logReader),
+func (o Options) doUpload(spec *downwardapi.JobSpec, passed, aborted bool, metadata map[string]interface{}, logReaders map[string]io.Reader) error {
+	uploadTargets := make(map[string]gcs.UploadFunc)
+
+	for logName, reader := range logReaders {
+		uploadTargets[logName] = gcs.DataUpload(reader)
 	}
 
 	var result string

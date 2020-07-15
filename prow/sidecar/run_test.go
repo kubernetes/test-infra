@@ -25,7 +25,6 @@ import (
 	"path"
 	"regexp"
 	"strconv"
-	"strings"
 	"testing"
 	"time"
 
@@ -399,35 +398,41 @@ func name(idx int) string {
 
 func TestLogReader(t *testing.T) {
 	cases := []struct {
-		name     string
-		pieces   []string
-		expected []string
+		name        string
+		processLogs map[string]string
+		expected    map[string]string
 	}{
 		{
-			name:     "basically works",
-			pieces:   []string{"hello world"},
-			expected: []string{"hello world"},
-		},
-		{
-			name:   "multiple logging works",
-			pieces: []string{"first", "second"},
-			expected: []string{
-				start(name(0)),
-				"first",
-				start(name(1)),
-				"second",
+			name: "basically works",
+			processLogs: map[string]string{
+				"log.txt": "hello world",
+			},
+			expected: map[string]string{
+				"log.txt": "hello world",
 			},
 		},
 		{
-			name:   "note when a part has aproblem",
-			pieces: []string{"first", "missing", "third"},
-			expected: []string{
-				start(name(0)),
-				"first",
-				start(name(1)),
-				"Failed to open log-1.txt: whatever\n",
-				start(name(2)),
-				"third",
+			name: "multiple logs works",
+			processLogs: map[string]string{
+				"log-1.txt": "hello",
+				"log-2.txt": "world",
+			},
+			expected: map[string]string{
+				"log-1.txt": "hello",
+				"log-2.txt": "world",
+			},
+		},
+		{
+			name: "note when a part has a problem",
+			processLogs: map[string]string{
+				"log-1.txt": "hello",
+				"log-2.txt": "missing",
+				"log-3.txt": "world",
+			},
+			expected: map[string]string{
+				"log-1.txt": "hello",
+				"log-2.txt": "Failed to open log-2.txt: whatever\n",
+				"log-3.txt": "world",
 			},
 		},
 	}
@@ -446,28 +451,36 @@ func TestLogReader(t *testing.T) {
 			}()
 			var entries []wrapper.Options
 
-			for i, m := range tc.pieces {
-				p := path.Join(tmpDir, fmt.Sprintf("log-%d.txt", i))
+			for name, log := range tc.processLogs {
+				p := path.Join(tmpDir, name)
 				var opt wrapper.Options
 				opt.ProcessLog = p
 				entries = append(entries, opt)
-				if m == "missing" {
+				if log == "missing" {
 					continue
 				}
-				if err := ioutil.WriteFile(p, []byte(m), 0600); err != nil {
-					t.Fatalf("could not create log %d: %v", i, err)
+				if err := ioutil.WriteFile(p, []byte(log), 0600); err != nil {
+					t.Fatalf("could not create log %s: %v", name, err)
 				}
 			}
 
-			buf, err := ioutil.ReadAll(logReader(entries))
-			if err != nil {
-				t.Fatalf("failed to read all: %v", err)
-			}
+			readers := logReaders((entries))
 			const repl = "$1 <SNIP>"
-			actual := re.ReplaceAllString(string(buf), repl)
-			expected := re.ReplaceAllString(strings.Join(tc.expected, ""), repl)
-			if !equality.Semantic.DeepEqual(expected, actual) {
-				t.Errorf("maps do not match:\n%s", diff.ObjectReflectDiff(expected, actual))
+			actual := make(map[string]string)
+			for name, reader := range readers {
+				buf, err := ioutil.ReadAll(reader)
+				if err != nil {
+					t.Fatalf("failed to read all: %v", err)
+				}
+				actual[name] = re.ReplaceAllString(string(buf), repl)
+			}
+
+			for name, log := range tc.expected {
+				tc.expected[name] = re.ReplaceAllString(log, repl)
+			}
+
+			if !equality.Semantic.DeepEqual(tc.expected, actual) {
+				t.Errorf("maps do not match:\n%s", diff.ObjectReflectDiff(tc.expected, actual))
 			}
 		})
 	}
