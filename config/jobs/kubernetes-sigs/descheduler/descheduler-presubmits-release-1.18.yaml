@@ -64,7 +64,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     branches:
-    - master
+    - ^release-1.18$
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-master
@@ -94,7 +94,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     branches:
-    - master
+    - ^release-1.18$
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-master
@@ -124,7 +124,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     branches:
-    - master
+    - ^release-1.18$
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-master
