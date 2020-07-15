@@ -210,7 +210,7 @@ slack:
   - repos:
     - kubernetes/enhancements
     channels:
-    - sig-pm
+    - enhancements
     whitelist:
     - k8s-ci-robot
   - repos:
