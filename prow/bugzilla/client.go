@@ -120,28 +120,55 @@ func (cc *clonesCacheWithMutex) Set(key int, value []int) {
 
 // NewBugDetailsCache is a constructor for bugDetailsCache
 func NewBugDetailsCache() *BugDetailsCache {
-	return &BugDetailsCache{cache: map[int]*Bug{}}
+	return &BugDetailsCache{cache: map[int]cacheEntry{}}
+}
+
+type cacheEntry struct {
+	bug       *Bug
+	isVisited bool
 }
 
 // BugDetailsCache holds the already retrieved bug details
 type BugDetailsCache struct {
-	cache map[int]*Bug
+	cache map[int]cacheEntry
 	lock  sync.Mutex
 }
 
 // Get retrieves bug details from the cache and is thread safe
-func (bd *BugDetailsCache) Get(key int) (*Bug, bool) {
+func (bd *BugDetailsCache) Get(key int) (bug *Bug, isVisited bool, exists bool) {
 	bd.lock.Lock()
 	defer bd.lock.Unlock()
-	bug, ok := bd.cache[key]
-	return bug, ok
+	entry, ok := bd.cache[key]
+	bug = entry.bug
+	isVisited = entry.isVisited
+	return bug, isVisited, ok
 }
 
 // Set stores the bug details in the cache and is thread safe
 func (bd *BugDetailsCache) Set(key int, value *Bug) {
 	bd.lock.Lock()
 	defer bd.lock.Unlock()
-	bd.cache[key] = value
+	bd.cache[key] = cacheEntry{value, false}
+}
+
+// SetVisited records whether the linkedbugs method was called for an entry
+func (bd *BugDetailsCache) SetVisited(key int) {
+	bd.lock.Lock()
+	defer bd.lock.Unlock()
+	entry := bd.cache[key]
+	entry.isVisited = true
+	bd.cache[key] = entry
+}
+
+// List returns a slice of all bugs in the cache
+func (bd *BugDetailsCache) List() []*Bug {
+	bd.lock.Lock()
+	defer bd.lock.Unlock()
+	result := []*Bug{}
+	for _, entry := range bd.cache {
+		result = append(result, entry.bug)
+	}
+	return result
 }
 
 type client struct {
@@ -188,7 +215,7 @@ func getClones(c Client, bug *Bug, bugCache *BugDetailsCache) ([]*Bug, error) {
 	clones := []*Bug{}
 	for _, dependentID := range bug.Blocks {
 
-		dependent, ok := bugCache.Get(dependentID)
+		dependent, _, ok := bugCache.Get(dependentID)
 		if !ok {
 			var err error
 			dependent, err = c.GetBug(dependentID)
@@ -250,7 +277,7 @@ func getImmediateParents(c Client, bug *Bug, bugCache *BugDetailsCache) ([]*Bug,
 	// Logs would need to be monitored to verify this behavior
 	for _, parentID := range bug.DependsOn {
 
-		parent, ok := bugCache.Get(parentID)
+		parent, _, ok := bugCache.Get(parentID)
 		if !ok {
 			var err error
 			parent, err = c.GetBug(parentID)
@@ -306,13 +333,6 @@ func (c *client) GetRootForClone(bug *Bug) (*Bug, error) {
 	return getRootForClone(c, bug, bugCache)
 }
 
-// GetAllClones returns all the clones of the bug including itself
-// Differs from GetClones as GetClones only gets the child clones which are one level lower
-func (c *client) GetAllClones(bugID int) (clones []*Bug, bug *Bug, root *Bug, err error) {
-	bugCache := NewBugDetailsCache()
-	return getAllClones(c, bugID, bugCache)
-}
-
 func (c *client) GetCachedClones(bugID int) ([]int, bool) {
 	return c.clonesCache.Get(bugID)
 }
@@ -321,9 +341,14 @@ func (c *client) SetCachedClones(bugID int, clonesList []int) {
 	c.clonesCache.Set(bugID, clonesList)
 }
 
-func getAllClones(c Client, bugID int, bugCache *BugDetailsCache) ([]*Bug, *Bug, *Bug, error) {
+// GetAllClones returns all the clones of the bug including itself
+// Differs from GetClones as GetClones only gets the child clones which are one level lower
+func (c *client) GetAllClones(bugID int) (clones []*Bug, bug *Bug, root *Bug, err error) {
+	bugCache := NewBugDetailsCache()
+	return getAllClones(c, bugID, bugCache)
+}
 
-	var bug *Bug
+func getAllClones(c Client, bugID int, bugCache *BugDetailsCache) (clones []*Bug, bug *Bug, root *Bug, err error) {
 	g := new(errgroup.Group)
 	g.Go(func() error {
 		var err error
@@ -340,7 +365,7 @@ func getAllClones(c Client, bugID int, bugCache *BugDetailsCache) ([]*Bug, *Bug,
 			cloneID := cloneID
 			g.Go(func() error {
 				var clone *Bug
-				clone, ok = bugCache.Get(cloneID)
+				clone, _, ok = bugCache.Get(cloneID)
 				if !ok {
 					var err error
 					clone, err = c.GetBug(cloneID)
@@ -356,29 +381,109 @@ func getAllClones(c Client, bugID int, bugCache *BugDetailsCache) ([]*Bug, *Bug,
 	if err := g.Wait(); err != nil {
 		return nil, nil, nil, fmt.Errorf("failed to get bug details: %v", err)
 	}
+	clones = []*Bug{}
+	err = getAllLinkedBugs(c, bug.ID, bugCache, nil)
+	if err != nil {
+		return nil, nil, nil, err
+	}
 
-	root, err := getRootForClone(c, bug, bugCache)
-	if err != nil {
-		return nil, nil, nil, err
+	for _, node := range bugCache.List() {
+		if node.Summary == bug.Summary {
+			clones = append(clones, node)
+		}
 	}
-	clones, err := getRecursiveClones(c, root, bugCache)
-	if err != nil {
-		return nil, nil, nil, err
-	}
-	// Populate the main cache with relevant cloneIDs
-	// Remember to use a mutex to ensure thread safety
-	// Do not move this section after the section where the original bug is removed
-	cloneSet := sets.NewInt()
-	for bugID := range bugCache.cache {
-		cloneSet.Insert(bugID)
+	root = oldestBug(clones)
+	// Populate the clones cache with relevant cloneIDs
+	cloneIDs := []int{}
+	for _, bug := range bugCache.List() {
+		cloneIDs = append(cloneIDs, bug.ID)
 	}
 	for _, clone := range clones {
-		cloneSet.Delete(clone.ID)
-		c.SetCachedClones(clone.ID, cloneSet.List())
-		cloneSet.Insert(clone.ID)
+		c.SetCachedClones(clone.ID, cloneIDs)
 	}
-
 	return clones, bug, root, nil
+}
+
+// Parallel implementation for getAllClones - spawns threads to go up and down the tree
+// Also parallelizes the getBug calls if bug has multiple bugs in DependsOn/Blocks
+func getAllLinkedBugs(c Client, bugID int, bugCache *BugDetailsCache, errGroup *errgroup.Group) error {
+	var shouldWait bool
+	if errGroup == nil {
+		shouldWait = true
+		errGroup = new(errgroup.Group)
+	}
+	var err error
+	bug, _, cacheHasBug := bugCache.Get(bugID)
+	if !cacheHasBug {
+		bug, err = c.GetBug(bugID)
+		if err != nil {
+			return err
+		}
+	}
+	errGroup.Go(func() error {
+		return traverseUp(c, bug, bugCache, errGroup)
+	})
+	errGroup.Go(func() error {
+		return traverseDown(c, bug, bugCache, errGroup)
+	})
+
+	if shouldWait {
+		return errGroup.Wait()
+	}
+	return nil
+}
+
+func traverseUp(c Client, bug *Bug, bugCache *BugDetailsCache, errGroup *errgroup.Group) error {
+	for _, dependsOnID := range bug.DependsOn {
+		dependsOnID := dependsOnID
+		errGroup.Go(func() error {
+			parent, isVisited, alreadyFetched := bugCache.Get(dependsOnID)
+			if isVisited {
+				return nil
+			}
+			var err error
+			if !alreadyFetched {
+				parent, err = c.GetBug(dependsOnID)
+				if err != nil {
+					return err
+				}
+			}
+			bugCache.Set(parent.ID, parent)
+			bugCache.SetVisited(parent.ID)
+			if bug.Summary == parent.Summary {
+				return getAllLinkedBugs(c, parent.ID, bugCache, errGroup)
+			}
+			return nil
+		})
+	}
+	return nil
+}
+
+func traverseDown(c Client, bug *Bug, bugCache *BugDetailsCache, errGroup *errgroup.Group) error {
+	for _, childID := range bug.Blocks {
+		childID := childID
+		errGroup.Go(func() error {
+			child, isVisited, alreadyFetched := bugCache.Get(childID)
+			if isVisited {
+				return nil
+			}
+			if !alreadyFetched {
+				var err error
+				child, err = c.GetBug(childID)
+				if err != nil {
+					return err
+				}
+			}
+
+			bugCache.Set(child.ID, child)
+			bugCache.SetVisited(child.ID)
+			if bug.Summary == child.Summary {
+				return getAllLinkedBugs(c, child.ID, bugCache, errGroup)
+			}
+			return nil
+		})
+	}
+	return nil
 }
 
 // GetSubComponentsOnBug retrieves a the list of SubComponents of the bug.
