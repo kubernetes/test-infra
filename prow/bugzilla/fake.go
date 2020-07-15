@@ -241,7 +241,8 @@ func (c *Fake) GetAllClones(bug *Bug) ([]*Bug, error) {
 	if c.BugErrors.Has(bug.ID) {
 		return nil, errors.New("injected error getting subcomponents")
 	}
-	return getAllClones(c, bug)
+	bugCache := newBugDetailsCache()
+	return getAllClones(c, bug, bugCache)
 }
 
 // GetRootForClone gets the original bug.
