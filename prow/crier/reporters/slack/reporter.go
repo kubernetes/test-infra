@@ -51,25 +51,34 @@ func (sr *slackReporter) getConfig(pj *v1.ProwJob) config.SlackReporter {
 	return sr.config(refs)
 }
 
-func jobChannel(pj *v1.ProwJob) (string, bool) {
-	if pj.Spec.ReporterConfig != nil && pj.Spec.ReporterConfig.Slack != nil && pj.Spec.ReporterConfig.Slack.Channel != "" {
-		return pj.Spec.ReporterConfig.Slack.Channel, true
+func jobConfig(pj *v1.ProwJob) *v1.SlackReporterConfig {
+	if pj.Spec.ReporterConfig != nil {
+		return pj.Spec.ReporterConfig.Slack
 	}
-	return "", false
+	return nil
 }
 
-func channel(cfg config.SlackReporter, pj *v1.ProwJob) string {
-	if channel, set := jobChannel(pj); set {
-		return channel
+func channel(prowCfg config.SlackReporter, jobCfg *v1.SlackReporterConfig) string {
+	if jobCfg != nil && jobCfg.Channel != "" {
+		return jobCfg.Channel
 	}
-	return cfg.Channel
+	return prowCfg.Channel
+}
+
+func reportTemplate(prowCfg config.SlackReporter, jobCfg *v1.SlackReporterConfig) string {
+	if jobCfg != nil && jobCfg.ReportTemplate != "" {
+		return jobCfg.ReportTemplate
+	}
+	return prowCfg.ReportTemplate
 }
 
 func (sr *slackReporter) Report(pj *v1.ProwJob) ([]*v1.ProwJob, error) {
-	config := sr.getConfig(pj)
-	channel := channel(config, pj)
+	prowCfg := sr.getConfig(pj)
+	jobCfg := jobConfig(pj)
+	templateStr := reportTemplate(prowCfg, jobCfg)
+	channel := channel(prowCfg, jobCfg)
 	b := &bytes.Buffer{}
-	tmpl, err := template.New("").Parse(config.ReportTemplate)
+	tmpl, err := template.New("").Parse(templateStr)
 	if err != nil {
 		sr.logger.WithField("prowjob", pj.Name).Errorf("failed to parse template: %v", err)
 		return nil, fmt.Errorf("failed to parse template: %v", err)
@@ -98,32 +107,45 @@ func (sr *slackReporter) GetName() string {
 
 func (sr *slackReporter) ShouldReport(pj *v1.ProwJob) bool {
 	logger := sr.logger.WithFields(pjutil.ProwJobFields(pj))
-	// if a user specifically put a channel on their job, they want
-	// it to be reported regardless of what other settings exist
-	if _, set := jobChannel(pj); set {
-		logger.Debugf("reporting as channel is explicitly set")
-		return true
-	}
-	config := sr.getConfig(pj)
+	jobCfg := jobConfig(pj)
+	prowCfg := sr.getConfig(pj)
 
-	stateShouldReport := false
-	for _, stateToReport := range config.JobStatesToReport {
-		if pj.Status.State == stateToReport {
-			stateShouldReport = true
-			break
-		}
-	}
-
+	// The job needs to be reported, if its type has a match with the
+	// JobTypesToReport in the Prow config.
 	typeShouldReport := false
-	for _, typeToReport := range config.JobTypesToReport {
+	for _, typeToReport := range prowCfg.JobTypesToReport {
 		if typeToReport == pj.Spec.Type {
 			typeShouldReport = true
 			break
 		}
 	}
 
-	logger.Debugf("reporting=%t", stateShouldReport && typeShouldReport)
-	return stateShouldReport && typeShouldReport
+	// If a user specifically put a channel on their job, they want
+	// it to be reported regardless of the job types setting.
+	jobShouldReport := false
+	if jobCfg != nil && jobCfg.Channel != "" {
+		jobShouldReport = true
+	}
+
+	// The job should only be reported if its state has a match with the
+	// JobStatesToReport config.
+	// Note the JobStatesToReport configured in the Prow job can overwrite the
+	// Prow config.
+	jobStatesToReport := prowCfg.JobStatesToReport
+	if jobCfg != nil && len(jobCfg.JobStatesToReport) != 0 {
+		jobStatesToReport = jobCfg.JobStatesToReport
+	}
+	stateShouldReport := false
+	for _, stateToReport := range jobStatesToReport {
+		if pj.Status.State == stateToReport {
+			stateShouldReport = true
+			break
+		}
+	}
+
+	shouldReport := stateShouldReport && (typeShouldReport || jobShouldReport)
+	logger.Debugf("reporting=%t", shouldReport)
+	return shouldReport
 }
 
 func New(cfg func(refs *prowapi.Refs) config.SlackReporter, dryRun bool, token func() []byte) *slackReporter {
