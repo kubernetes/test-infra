@@ -3,24 +3,123 @@
 # their own files.
 ---
 apiVersion: v1
-kind: ConfigMap
+kind: Namespace
 metadata:
-  namespace: default
-  name: plugins
-data:
-  plugins.yaml: ""
+  name: prow
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  namespace: default
+  namespace: prow
+  name: plugins
+data:
+  plugins.yaml: |
+    plugins:
+      << your_github_org >>:
+      - approve
+      - assign
+      - blunderbuss
+      - cat
+      - dog
+      - help
+      - heart
+      - hold
+      - label
+      - lgtm
+      - trigger
+      - verify-owners
+      - wip
+      - yuks
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  namespace: prow
+  name: github-token
+stringData:
+  token: <<insert-token-here>>
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  namespace: prow
+  name: hmac-token
+stringData:
+  # Generate via `openssl rand -hex 20`. This is the secret used in the GitHub webhook configuration
+  hmac: << insert-hmac-token-here >>
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: prow
   name: config
 data:
   config.yaml: |
-    prowjob_namespace: default
+    prowjob_namespace: prow
     pod_namespace: test-pods
+
+    in_repo_config:
+      enabled:
+        "*": true
+
+    deck:
+     spyglass:
+       lenses:
+       - lens:
+           name: metadata
+         required_files:
+         - started.json|finished.json
+       - lens:
+           config:
+           name: buildlog
+         required_files:
+         - build-log.txt
+       - lens:
+           name: junit
+         required_files:
+         - .*/junit.*\.xml
+       - lens:
+           name: podinfo
+         required_files:
+         - podinfo.json
+
+    plank:
+      job_url_prefix_config:
+        # TODO: Remove the gcs suffix once https://github.com/kubernetes/test-infra/pull/17779 is in
+        "*": https://prow.<< your-domain.com >>/view/gcs
+      report_templates:
+        '*': >-
+            [Full PR test history](https://prow..<< your-domain.com >>/pr-history?org={{.Spec.Refs.Org}}&repo={{.Spec.Refs.Repo}}&pr={{with index .Spec.Refs.Pulls 0}}{{.Number}}{{end}}).
+            [Your PR dashboard](https://prow.<< your-domain.com >>/pr?query=is:pr+state:open+author:{{with
+            index .Spec.Refs.Pulls 0}}{{.Author}}{{end}}).
+      default_decoration_configs:
+        "*":
+          gcs_configuration:
+            bucket: gs://bucket-name
+            path_strategy: explicit
+          gcs_credentials_secret: gcs-credentials
+          utility_images:
+            clonerefs: gcr.io/k8s-prow/clonerefs:v20200710-7fa016752a
+            entrypoint: gcr.io/k8s-prow/entrypoint:v20200710-7fa016752a
+            initupload: gcr.io/k8s-prow/initupload:v20200710-7fa016752a
+            sidecar: gcr.io/k8s-prow/sidecar:v20200710-7fa016752a
+
+    tide:
+      queries:
+      - labels:
+        - lgtm
+        - approved
+        missingLabels:
+        - needs-rebase
+        - do-not-merge/hold
+        - do-not-merge/work-in-progress
+        - do-not-merge/invalid-owners-file
+        orgs:
+        - << your_github_org >>
+
+    decorate_all_jobs: true
     periodics:
-    - interval: 10m
+    - interval: 1m
       agent: kubernetes
       name: echo-test
       spec:
@@ -118,7 +217,7 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  namespace: default
+  namespace: prow
   name: hook
   labels:
     app: hook
@@ -146,6 +245,9 @@ spec:
         args:
         - --dry-run=false
         - --config-path=/etc/config/config.yaml
+        - --github-token-path=/etc/github/token
+        - --github-endpoint=http://ghproxy
+        - --github-endpoint=https://api.github.com
         ports:
           - name: http
             containerPort: 8888
@@ -153,7 +255,7 @@ spec:
         - name: hmac
           mountPath: /etc/webhook
           readOnly: true
-        - name: oauth
+        - name: github-token
           mountPath: /etc/github
           readOnly: true
         - name: config
@@ -179,9 +281,9 @@ spec:
       - name: hmac
         secret:
           secretName: hmac-token
-      - name: oauth
+      - name: github-token
         secret:
-          secretName: oauth-token
+          secretName: github-token
       - name: config
         configMap:
           name: config
@@ -192,60 +294,18 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  namespace: default
+  namespace: prow
   name: hook
 spec:
   selector:
     app: hook
   ports:
   - port: 8888
-  type: NodePort
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  namespace: default
-  name: plank
-  labels:
-    app: plank
-spec:
-  selector:
-    matchLabels:
-      app: plank
-  replicas: 1 # Do not scale up.
-  strategy:
-    type: Recreate
-  template:
-    metadata:
-      labels:
-        app: plank
-    spec:
-      serviceAccountName: "plank"
-      containers:
-      - name: plank
-        image: gcr.io/k8s-prow/plank:v20200714-1215e87acc
-        args:
-        - --dry-run=false
-        - --config-path=/etc/config/config.yaml
-        volumeMounts:
-        - name: oauth
-          mountPath: /etc/github
-          readOnly: true
-        - name: config
-          mountPath: /etc/config
-          readOnly: true
-      volumes:
-      - name: oauth
-        secret:
-          secretName: oauth-token
-      - name: config
-        configMap:
-          name: config
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  namespace: default
+  namespace: prow
   name: sinker
   labels:
     app: sinker
@@ -277,7 +337,7 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  namespace: default
+  namespace: prow
   name: deck
   labels:
     app: deck
@@ -306,8 +366,12 @@ spec:
         - --plugin-config=/etc/plugins/plugins.yaml
         - --tide-url=http://tide/
         - --hook-url=http://hook:8888/plugin-help
-        - --github-token-path=/etc/github/oauth
+        - --github-token-path=/etc/github/token
+        - --github-endpoint=http://ghproxy
+        - --github-endpoint=https://api.github.com
+        - --github-graphql-endpoint=http://ghproxy/graphql
         - --plugin-config=/etc/plugins/plugins.yaml
+        - --spyglass=true
         ports:
           - name: http
             containerPort: 8080
@@ -315,11 +379,14 @@ spec:
         - name: config
           mountPath: /etc/config
           readOnly: true
-        - name: oauth
+        - name: github-token
           mountPath: /etc/github
           readOnly: true
         - name: plugins
           mountPath: /etc/plugins
+          readOnly: true
+        - name: gcs-credentials
+          mountPath: /etc/gcs-credentials
           readOnly: true
         livenessProbe:
           httpGet:
@@ -338,17 +405,20 @@ spec:
       - name: config
         configMap:
           name: config
-      - name: oauth
+      - name: github-token
         secret:
-          secretName: oauth-token
+          secretName: github-token
       - name: plugins
         configMap:
           name: plugins
+      - name: gcs-credentials
+        secret:
+          secretName: gcs-credentials
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  namespace: default
+  namespace: prow
   name: deck
 spec:
   selector:
@@ -356,12 +426,11 @@ spec:
   ports:
   - port: 80
     targetPort: 8080
-  type: NodePort
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  namespace: default
+  namespace: prow
   name: horologium
   labels:
     app: horologium
@@ -397,7 +466,7 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  namespace: default
+  namespace: prow
   name: tide
   labels:
     app: tide
@@ -420,28 +489,41 @@ spec:
         args:
         - --dry-run=false
         - --config-path=/etc/config/config.yaml
+        - --github-token-path=/etc/github/token
+        - --github-endpoint=http://ghproxy
+        - --github-endpoint=https://api.github.com
+        - --github-graphql-endpoint=http://ghproxy/graphql
+        - --gcs-credentials-file=/etc/gcs-credentials/service-account.json
+        - --status-path=gs://tide/tide-status
+        - --history-uri=gs://tide/tide-history.json
         ports:
           - name: http
             containerPort: 8888
         volumeMounts:
-        - name: oauth
+        - name: github-token
           mountPath: /etc/github
           readOnly: true
         - name: config
           mountPath: /etc/config
           readOnly: true
+        - name: gcs-credentials
+          mountPath: /etc/gcs-credentials
+          readOnly: true
       volumes:
-      - name: oauth
+      - name: github-token
         secret:
-          secretName: oauth-token
+          secretName: github-token
       - name: config
         configMap:
           name: config
+      - name: gcs-credentials
+        secret:
+          secretName: gcs-credentials
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  namespace: default
+  namespace: prow
   name: tide
 spec:
   selector:
@@ -449,19 +531,24 @@ spec:
   ports:
   - port: 80
     targetPort: 8888
-  type: NodePort
 ---
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  namespace: default
-  name: ing
+  namespace: prow
+  name: prow
+  annotations:
+    # Change this to your issuer when using cert-manager. Does
+    # nothing when not using cert-manager.
+    cert-manager.io/cluster-issuer: letsencrypt-staging
 spec:
-  backend: # specify the default backend for `ingress-gce` (https://cloud.google.com/kubernetes-engine/docs/concepts/ingress#default_backend)
+  backend:
+    # specify the default backend for `ingress-gce` (https://cloud.google.com/kubernetes-engine/docs/concepts/ingress#prow_backend)
     serviceName: deck
     servicePort: 80
   rules:
-  - http:
+  - host: prow.<< your-domain.com >>
+    http:
       paths:
       - path: /
         backend:
@@ -471,12 +558,16 @@ spec:
         backend:
           serviceName: hook
           servicePort: 8888
+  tls:
+  - hosts:
+    - prow.<< your-domain.com >>
+    secretName: prow-ingress-tls
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: statusreconciler
-  namespace: default
+  namespace: prow
   labels:
     app: statusreconciler
 spec:
@@ -499,9 +590,13 @@ spec:
         - --continue-on-error=true
         - --plugin-config=/etc/plugins/plugins.yaml
         - --config-path=/etc/config/config.yaml
-        - --github-token-path=/etc/github/oauth
+        - --github-token-path=/etc/github/token
+        - --github-endpoint=http://ghproxy
+        - --github-endpoint=https://api.github.com
+        - --gcs-credentials-file=/etc/gcs-credentials/service-account.json
+        - --status-path=gs://status-reconciler/status-reconciler-status
         volumeMounts:
-        - name: oauth
+        - name: github-token
           mountPath: /etc/github
           readOnly: true
         - name: config
@@ -510,16 +605,22 @@ spec:
         - name: plugins
           mountPath: /etc/plugins
           readOnly: true
+        - name: gcs-credentials
+          mountPath: /etc/gcs-credentials
+          readOnly: true
       volumes:
-      - name: oauth
+      - name: github-token
         secret:
-          secretName: oauth-token
+          secretName: github-token
       - name: config
         configMap:
           name: config
       - name: plugins
         configMap:
           name: plugins
+      - name: gcs-credentials
+        secret:
+          secretName: gcs-credentials
 ---
 apiVersion: v1
 kind: Namespace
@@ -529,13 +630,13 @@ metadata:
 kind: ServiceAccount
 apiVersion: v1
 metadata:
-  namespace: default
+  namespace: prow
   name: "deck"
 ---
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
-  namespace: default
+  namespace: prow
   name: "deck"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -557,12 +658,12 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: "deck"
-  namespace: default
+  namespace: prow
 ---
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
-  namespace: default
+  namespace: prow
   name: "deck"
 rules:
   - apiGroups:
@@ -594,13 +695,13 @@ rules:
 kind: ServiceAccount
 apiVersion: v1
 metadata:
-  namespace: default
+  namespace: prow
   name: "horologium"
 ---
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
-  namespace: default
+  namespace: prow
   name: "horologium"
 rules:
   - apiGroups:
@@ -614,7 +715,7 @@ rules:
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
-  namespace: default
+  namespace: prow
   name: "horologium"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -627,79 +728,13 @@ subjects:
 kind: ServiceAccount
 apiVersion: v1
 metadata:
-  namespace: default
-  name: "plank"
----
-kind: Role
-apiVersion: rbac.authorization.k8s.io/v1beta1
-metadata:
-  namespace: default
-  name: "plank"
-rules:
-  - apiGroups:
-      - "prow.k8s.io"
-    resources:
-      - prowjobs
-    verbs:
-      - get
-      - create
-      - list
-      - watch
-      - update
-      - patch
----
-kind: Role
-apiVersion: rbac.authorization.k8s.io/v1beta1
-metadata:
-  namespace: test-pods
-  name: "plank"
-rules:
-  - apiGroups:
-      - ""
-    resources:
-      - pods
-    verbs:
-      - create
-      - delete
-      - list
----
-kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
-metadata:
-  namespace: default
-  name: "plank"
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: "plank"
-subjects:
-- kind: ServiceAccount
-  name: "plank"
----
-kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
-metadata:
-  namespace: test-pods
-  name: "plank"
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: "plank"
-subjects:
-- kind: ServiceAccount
-  name: "plank"
-  namespace: default
----
-kind: ServiceAccount
-apiVersion: v1
-metadata:
-  namespace: default
+  namespace: prow
   name: "sinker"
 ---
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
-  namespace: default
+  namespace: prow
   name: "sinker"
 rules:
   - apiGroups:
@@ -745,7 +780,7 @@ rules:
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
-  namespace: default
+  namespace: prow
   name: "sinker"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -767,18 +802,18 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: "sinker"
-  namespace: default
+  namespace: prow
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  namespace: default
+  namespace: prow
   name: "hook"
 ---
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
-  namespace: default
+  namespace: prow
   name: "hook"
 rules:
   - apiGroups:
@@ -788,6 +823,8 @@ rules:
     verbs:
       - create
       - get
+      - list
+      - update
   - apiGroups:
       - ""
     resources:
@@ -800,7 +837,7 @@ rules:
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
-  namespace: default
+  namespace: prow
   name: "hook"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -813,13 +850,13 @@ subjects:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  namespace: default
+  namespace: prow
   name: "tide"
 ---
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
-  namespace: default
+  namespace: prow
   name: "tide"
 rules:
   - apiGroups:
@@ -835,7 +872,7 @@ rules:
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
-  namespace: default
+  namespace: prow
   name: "tide"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -848,13 +885,13 @@ subjects:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  namespace: default
+  namespace: prow
   name: "statusreconciler"
 ---
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
-  namespace: default
+  namespace: prow
   name: "statusreconciler"
 rules:
   - apiGroups:
@@ -867,7 +904,7 @@ rules:
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
-  namespace: default
+  namespace: prow
   name: "statusreconciler"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -876,3 +913,328 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: "statusreconciler"
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  namespace: prow
+  labels:
+    app: ghproxy
+  name: ghproxy
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: prow
+  name: ghproxy
+  labels:
+    app: ghproxy
+spec:
+  selector:
+    matchLabels:
+      app: ghproxy
+  strategy:
+    type: Recreate
+  # GHProxy does not support HA
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: ghproxy
+    spec:
+      containers:
+      - name: ghproxy
+        image: gcr.io/k8s-prow/ghproxy:v20200709-50d1ee0ba5
+        args:
+        - --cache-dir=/cache
+        - --cache-sizeGB=99
+        - --push-gateway=pushgateway
+        - --serve-metrics=true
+        ports:
+        - containerPort: 8888
+        volumeMounts:
+        - name: cache
+          mountPath: /cache
+      volumes:
+      - name: cache
+        persistentVolumeClaim:
+          claimName: ghproxy
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: ghproxy
+  namespace: prow
+  name: ghproxy
+spec:
+  ports:
+  - name: main
+    port: 80
+    protocol: TCP
+    targetPort: 8888
+  - name: metrics
+    port: 9090
+  selector:
+    app: ghproxy
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: prow
+  name: prow-controller-manager
+  labels:
+    app: prow-controller-manager
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prow-controller-manager
+  template:
+    metadata:
+      labels:
+        app: prow-controller-manager
+    spec:
+      serviceAccountName: prow-controller-manager
+      containers:
+      - name: prow-controller-manager
+        args:
+        - --dry-run=false
+        - --config-path=/etc/config/config.yaml
+        - --github-token-path=/etc/github/token
+        - --github-endpoint=http://ghproxy
+        - --github-endpoint=https://api.github.com
+        - --enable-controller=plank
+        image: gcr.io/k8s-prow/prow-controller-manager:v20200714-1215e87acc
+        volumeMounts:
+        - name: github-token
+          mountPath: /etc/github
+          readOnly: true
+        - name: config
+          mountPath: /etc/config
+          readOnly: true
+      volumes:
+      - name: github-token
+        secret:
+          secretName: github-token
+      - name: config
+        configMap:
+          name: config
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  namespace: prow
+  name: prow-controller-manager
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  namespace: prow
+  name: prow-controller-manager
+rules:
+  - apiGroups:
+      - "prow.k8s.io"
+    resources:
+      - prowjobs
+    verbs:
+      - get
+      - list
+      - watch
+      - update
+      - patch
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    resourceNames:
+      - prow-controller-manager-leader-lock
+    verbs:
+      - get
+      - update
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+      - events
+    verbs:
+      - create
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  namespace: test-pods
+  name: prow-controller-manager
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+    verbs:
+      - delete
+      - list
+      - watch
+      - create
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  namespace: prow
+  name: prow-controller-manager
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: prow-controller-manager
+subjects:
+- kind: ServiceAccount
+  name: prow-controller-manager
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  namespace: test-pods
+  name: prow-controller-manager
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: prow-controller-manager
+subjects:
+- kind: ServiceAccount
+  name: prow-controller-manager
+  namespace: prow
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: prow
+  name: crier
+  labels:
+    app: crier
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: crier
+  template:
+    metadata:
+      labels:
+        app: crier
+    spec:
+      serviceAccountName: crier
+      terminationGracePeriodSeconds: 30
+      containers:
+      - name: crier
+        image: gcr.io/k8s-prow/crier:v20200709-50d1ee0ba5
+        args:
+        - --blob-storage-workers=10
+        - --config-path=/etc/config/config.yaml
+        - --gcs-credentials-file=/etc/gcs-credentials/service-account.json
+        - --github-endpoint=http://ghproxy
+        - --github-endpoint=https://api.github.com
+        - --github-token-path=/etc/github/token
+        - --github-workers=10
+        - --kubernetes-blob-storage-workers=10
+        volumeMounts:
+        - name: config
+          mountPath: /etc/config
+          readOnly: true
+        - name: github-token
+          mountPath: /etc/github
+          readOnly: true
+        - name: gcs-credentials
+          mountPath: /etc/gcs-credentials
+          readOnly: true
+      volumes:
+      - name: config
+        configMap:
+          name: config
+      - name: github-token
+        secret:
+          secretName: github-token
+      - name: gcs-credentials
+        secret:
+          secretName: gcs-credentials
+---
+kind: ServiceAccount
+apiVersion: v1
+metadata:
+  name: crier
+  namespace: prow
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  namespace: prow
+  name: crier
+rules:
+- apiGroups:
+    - "prow.k8s.io"
+  resources:
+    - "prowjobs"
+  verbs:
+    - "get"
+    - "watch"
+    - "list"
+    - "patch"
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  namespace: test-pods
+  name: crier
+rules:
+- apiGroups:
+    - ""
+  resources:
+    - "pods"
+    - "events"
+  verbs:
+    - "get"
+    - "list"
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: crier
+  namespace: prow
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: crier
+subjects:
+- kind: ServiceAccount
+  name: crier
+  namespace: prow
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: crier
+  namespace: test-pods
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: crier
+subjects:
+- kind: ServiceAccount
+  name: crier
+  namespace: prow
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: minio
+  namespace: prow
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Gi

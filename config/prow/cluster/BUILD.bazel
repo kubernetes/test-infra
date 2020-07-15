@@ -87,7 +87,9 @@ k8s_configmap(
     namespace = "test-pods",
 )
 
-component("starter", MULTI_KIND)
+component("starter-s3", MULTI_KIND)
+
+component("starter-gcs", MULTI_KIND)
 
 filegroup(
     name = "package-srcs",

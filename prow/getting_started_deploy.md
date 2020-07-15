@@ -106,7 +106,7 @@ in-cluster. If you see an error of the following form, this is likely the case.
 
 ```sh
 Error from server (Forbidden): error when creating
-"config/prow/cluster/starter.yaml": roles.rbac.authorization.k8s.io "<account>" is
+"config/prow/cluster/starter-gcs.yaml": roles.rbac.authorization.k8s.io "<account>" is
 forbidden: attempt to grant extra privileges:
 [PolicyRule{Resources:["pods/log"], APIGroups:[""], Verbs:["get"]}
 PolicyRule{Resources:["prowjobs"], APIGroups:["prow.k8s.io"], Verbs:["get"]}
@@ -135,32 +135,52 @@ $ openssl rand -hex 20 > /path/to/hook/secret
 $ kubectl create secret generic hmac-token --from-file=hmac=/path/to/hook/secret
 ```
 
-The `oauth-token` is the OAuth2 token you created above for the [GitHub bot account].
+The `github-token` is the OAuth2 token you created above for the [GitHub bot account].
 If you need to create one, go to <https://github.com/settings/tokens>.
 
 ```sh
-$ kubectl create secret generic oauth-token --from-file=oauth=/path/to/oauth/secret
+kubectl create secret generic github-token --from-file=github-token=/path/to/oauth/secret
 ```
+
+### Update the sample manifest
+
+There are two sample manifests to get you started:
+* [`starter-s3.yaml`](/config/prow/cluster/starter-s3.yaml) sets up a minio as blob storage for logs and is particularly well suited to quickly get something working
+* [`starter-gcs.yaml`](/config/prow/cluster/starter-gcs.yaml) uses GCS as blob storage and requires additional configuration to set up the bucket and ServiceAccounts. See [this](# Configure a GCS bucket) for details.
+
+Regardless of which object storage you choose, the below adjustments are always needed:
+
+* The github token by replacing the `<<insert-token-here>>` string
+* The hmac token by replacing the `<< insert-hmac-token-here >>` string
+* The domain by replacing the `<< your-domain.com >>` string
+* Optionally, you can update the `cert-manager.io/cluster-issuer:` annotation if you use cert-manager
+* Your github organization(s) by replacing the `<< your_github_org >>` string
 
 ### Add the prow components to the cluster
 
-Run the following command to deploy a basic set of prow components.
+Apply the manifest you edited above by executing one of the following two commands:
 
-```sh
-$ kubectl apply -f config/prow/cluster/starter.yaml
-```
+
+* `kubectl apply -f config/prow/cluster/starter-s3.yaml`
+* `kubectl apply -f config/prow/cluster/starter-gcs.yaml`
 
 After a moment, the cluster components will be running.
 
 ```sh
-$ kubectl get deployments
-NAME         DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
-deck         2         2         2            2           1m
-hook         2         2         2            2           1m
-horologium   1         1         1            1           1m
-plank        1         1         1            1           1m
-sinker       1         1         1            1           1m
-tide         1         1         1            1           1m
+$ kubectl get pods
+NAME                                       READY   STATUS    RESTARTS   AGE
+crier-69b6bd8f48-6sg24                     1/1     Running   0          9m54s
+deck-7f6867c46c-j7nnh                      1/1     Running   0          2m5s
+deck-7f6867c46c-mkxzk                      1/1     Running   0          2m5s
+ghproxy-fdd45dfb6-582fh                    1/1     Running   0          9m54s
+hook-7cc4df66f7-r2qpl                      1/1     Running   1          9m53s
+hook-7cc4df66f7-shnjq                      1/1     Running   1          9m53s
+horologium-7976c7f597-ss86t                1/1     Running   0          9m53s
+minio-d756b6477-d4w4k                      1/1     Running   0          9m53s
+prow-controller-manager-657767bb69-5qzhp   1/1     Running   0          9m53s
+sinker-8b645d469-jjw8r                     1/1     Running   0          9m53s
+statusreconciler-669697d466-zqfsj          1/1     Running   0          3m11s
+tide-65489c49b8-rpnn2                      1/1     Running   0          3m2s
 ```
 
 #### Get ingress IP address
@@ -169,9 +189,9 @@ Find out your external address. It might take a couple minutes for the IP to
 show up.
 
 ```sh
-$ kubectl get ingress ing
-NAME      HOSTS     ADDRESS          PORTS     AGE
-ing       *         an.ip.addr.ess   80        3m
+kubectl get ingress prow
+NAME   CLASS    HOSTS                     ADDRESS               	PORTS     AGE
+prow   <none>   prow.<<yourdomain.com>>   an.ip.addr.ess          80, 443   22d
 ```
 
 Go to that address in a web browser and verify that the "echo-test" job has a
@@ -218,92 +238,16 @@ If you need to configure webhooks for multiple orgs or repos, the manual process
 can be error-prone, and it'll be painful when you want to replace the hmac token if it is accidentally leaked.
 
 In such case, it's recommended to use the [hmac](/prow/cmd/hmac/README.md) tool to automatically manage the webhooks
-and hmac tokens for you via declarative configuration.  
+and hmac tokens for you via declarative configuration.
 
 ## Next Steps
 
 You now have a working Prow cluster (Woohoo!), but it isn't doing anything interesting yet.
-This section will help you configure your first plugin and job, and complete any additional setup that your instance may need.
+This section will help you complete any additional setup that your instance may need.
 
-### Enable some plugins by modifying `plugins.yaml`
+### Configure a GCS bucket
 
-Create a file called `plugins.yaml` and add the following to it:
-
-```yaml
-plugins:
-  YOUR_ORG/YOUR_REPO:
-  - size
-```
-
-Replace `YOUR_ORG/YOUR_REPO:` with the appropriate values. If you want, you can
-instead just say `YOUR_ORG:` and the plugin will run for every repo in the org.
-
-Next, create an empty file called `config.yaml`:
-
-```sh
-$ touch config.yaml
-```
-
-Run the following to test the files, replacing the paths as necessary:
-
-```sh
-$ bazel run //prow/cmd/checkconfig -- --plugin-config=path/to/plugins.yaml --config-path=path/to/config.yaml
-```
-
-There should be no errors. You can run this as a part of your presubmit testing
-so that any errors are caught before you try to update.
-
-Now run the following to update the configmap, replacing the path as necessary:
-
-```sh
-$ kubectl create configmap plugins \
-  --from-file=plugins.yaml=path/to/plugins.yaml --dry-run -o yaml \
-  | kubectl replace configmap plugins -f -
-```
-
-We can create a `make` rule to do this for us:
-
-```Make
-get-cluster-credentials:
-    gcloud container clusters get-credentials "$(CLUSTER)" --project="$(PROJECT)" --zone="$(ZONE)"
-
-update-plugins: get-cluster-credentials
-    kubectl create configmap plugins --from-file=plugins.yaml=plugins.yaml --dry-run -o yaml | kubectl replace configmap plugins -f -
-```
-
-Now when you open a PR, it will automatically be labelled with a `size/*`
-label. When you make a change to the plugin config and push it with `make
-update-plugins`, you do not need to redeploy any of your cluster components.
-They will pick up the change within a few minutes.
-
-### Set namespaces for prowjobs and test pods
-
-If you don't have the namespace already, create the `test-pods` namespace:
-
-```sh
-kubectl create namespace test-pods
-```
-
-Add the following to `config.yaml`:
-
-```yaml
-prowjob_namespace: default
-pod_namespace: test-pods
-```
-
-By doing so, we keep prowjobs in the `default` namespace and test pods in the
-`test-pods` namespace.
-
-You can also choose other names. Remember to update the RBAC roles and
-rolebindings afterwards.
-
-**Note**: If you set or update the `prowjob_namespace` or `pod_namespace`
-fields after deploying the prow components, you will need to redeploy them
-so that they pick up the change.
-
-### Configure Cloud Storage
-
-> If you want to persist logs and output, you need to set up Cloud Storage, right now these steps are specific to GCP.
+> If you want to persist logs and output in GCS, you need to follow the steps below.
 
 When configuring Prow jobs to use the [Pod utilities](./pod-utilities.md)
 with `decorate: true`, job metdata, logs, and artifacts will be uploaded
@@ -364,6 +308,10 @@ plank:
 ```
 
 ### Adding more jobs
+
+There are two ways to configure jobs:
+* Using the [inrepoconfig](/prow/inrepoconfig.md) feature to configure jobs inside the repo under test
+* Using the static config by editing the `config` configmap, some samples below:
 
 Add the following to `config.yaml`:
 
@@ -476,7 +424,7 @@ Use [gencred][5] to create the `kubeconfig` file (and credentials) for accessing
 
 Create a *default* cluster context (if one does not already exist):
 
-> **NOTE:** If executing `gencred` with `bazel` like below, ensure `--output` is an *absolute* path. 
+> **NOTE:** If executing `gencred` with `bazel` like below, ensure `--output` is an *absolute* path.
 
 ```sh
 $ bazel run //gencred -- \
@@ -573,7 +521,7 @@ See [how to configure tide][7] for more details.
 
 #### Set up GitHub OAuth
 GitHub Oauth is required for [PR Status](https://prow.k8s.io/pr)
-and for the rerun button on [Prow Status](https://prow.k8s.io). 
+and for the rerun button on [Prow Status](https://prow.k8s.io).
 To enable these features, follow the
 instructions in [`github_oauth_setup.md`](https://github.com/kubernetes/test-infra/blob/master/prow/cmd/deck/github_oauth_setup.md).
 
