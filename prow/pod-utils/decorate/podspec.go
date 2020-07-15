@@ -76,6 +76,11 @@ func VolumeMountPaths() []string {
 	return []string{logMountPath, codeMountPath, toolsMountPath, gcsCredentialsMountPath, s3CredentialsMountPath}
 }
 
+// PodUtilsContainerNames returns a string slice with pod utility container name consts in it.
+func PodUtilsContainerNames() []string {
+	return []string{cloneRefsName, initUploadName, entrypointName, sidecarName}
+}
+
 // LabelsAndAnnotationsForSpec returns a minimal set of labels to add to prowjobs or its owned resources.
 //
 // User-provided extraLabels and extraAnnotations values will take precedence over auto-provided values.
@@ -171,7 +176,13 @@ func ProwJobToPodLocal(pj prowapi.ProwJob, buildID string, outputDir string) (*c
 
 	spec := pj.Spec.PodSpec.DeepCopy()
 	spec.RestartPolicy = "Never"
-	spec.Containers[0].Name = kube.TestContainerName
+	if len(spec.Containers) == 1 {
+		spec.Containers[0].Name = kube.TestContainerName
+	} else {
+		for i := range spec.Containers {
+			spec.Containers[i].Name = fmt.Sprintf("%s-%d", kube.TestContainerName, i)
+		}
+	}
 
 	// if the user has not provided a serviceaccount to use or explicitly
 	// requested mounting the default token, we treat the unset value as
@@ -183,7 +194,9 @@ func ProwJobToPodLocal(pj prowapi.ProwJob, buildID string, outputDir string) (*c
 	}
 
 	if pj.Spec.DecorationConfig == nil {
-		spec.Containers[0].Env = append(spec.Containers[0].Env, KubeEnv(rawEnv)...)
+		for i, container := range spec.Containers {
+			spec.Containers[i].Env = append(container.Env, KubeEnv(rawEnv)...)
+		}
 	} else {
 		if err := decorate(spec, &pj, rawEnv, outputDir); err != nil {
 			return nil, fmt.Errorf("error decorating podspec: %v", err)
@@ -225,6 +238,9 @@ func CloneLogPath(logMount coreapi.VolumeMount) string {
 
 // Exposed for testing
 const (
+	entrypointName   = "place-entrypoint"
+	initUploadName   = "initupload"
+	sidecarName      = "sidecar"
 	cloneRefsName    = "clonerefs"
 	cloneRefsCommand = "/clonerefs"
 )
@@ -494,7 +510,7 @@ func InjectEntrypoint(c *coreapi.Container, timeout, gracePeriod time.Duration, 
 // PlaceEntrypoint will copy entrypoint from the entrypoint image to the tools volume
 func PlaceEntrypoint(config *prowapi.DecorationConfig, toolsMount coreapi.VolumeMount) coreapi.Container {
 	container := coreapi.Container{
-		Name:         "place-entrypoint",
+		Name:         entrypointName,
 		Image:        config.UtilityImages.Entrypoint,
 		Command:      []string{"/bin/cp"},
 		Args:         []string{"/entrypoint", entrypointLocation(toolsMount)},
@@ -574,7 +590,7 @@ func InitUpload(config *prowapi.DecorationConfig, gcsOptions gcsupload.Options, 
 		return nil, fmt.Errorf("could not encode initupload configuration as JSON: %v", err)
 	}
 	container := &coreapi.Container{
-		Name:    "initupload",
+		Name:    initUploadName,
 		Image:   config.UtilityImages.InitUpload,
 		Command: []string{"/initupload"}, // TODO(fejta): remove this, use image's entrypoint and delete /initupload symlink
 		Env: KubeEnv(map[string]string{
@@ -669,24 +685,32 @@ func decorate(spec *coreapi.PodSpec, pj *prowapi.ProwJob, rawEnv map[string]stri
 		*initUpload,
 		PlaceEntrypoint(pj.Spec.DecorationConfig, toolsMount),
 	)
-	spec.Containers[0].Env = append(spec.Containers[0].Env, KubeEnv(rawEnv)...)
+	for i, container := range spec.Containers {
+		spec.Containers[i].Env = append(container.Env, KubeEnv(rawEnv)...)
+	}
 
-	const ( // these values may change when/if we support multiple containers
-		prefix   = "" // unique per container
+	const (
 		previous = ""
 		exitZero = false
 	)
-	wrapperOptions, err := InjectEntrypoint(&spec.Containers[0], pj.Spec.DecorationConfig.Timeout.Get(), pj.Spec.DecorationConfig.GracePeriod.Get(), prefix, previous, exitZero, logMount, toolsMount)
-	if err != nil {
-		return fmt.Errorf("wrap container: %v", err)
+	var wrappers []wrapper.Options
+
+	for i, container := range spec.Containers {
+		prefix := container.Name
+		if len(spec.Containers) == 1 {
+			prefix = ""
+		}
+		wrapperOptions, err := InjectEntrypoint(&spec.Containers[i], pj.Spec.DecorationConfig.Timeout.Get(), pj.Spec.DecorationConfig.GracePeriod.Get(), prefix, previous, exitZero, logMount, toolsMount)
+		if err != nil {
+			return fmt.Errorf("wrap container: %v", err)
+		}
+		wrappers = append(wrappers, *wrapperOptions)
 	}
 
-	sidecar, err := Sidecar(pj.Spec.DecorationConfig, blobStorageOptions, blobStorageMounts, logMount, outputMount, encodedJobSpec, !RequirePassingEntries, *wrapperOptions)
+	sidecar, err := Sidecar(pj.Spec.DecorationConfig, blobStorageOptions, blobStorageMounts, logMount, outputMount, encodedJobSpec, !RequirePassingEntries, wrappers...)
 	if err != nil {
 		return fmt.Errorf("create sidecar: %v", err)
 	}
-
-	spec.Containers = append(spec.Containers, *sidecar)
 
 	spec.Volumes = append(spec.Volumes, logVolume, toolsVolume)
 	spec.Volumes = append(spec.Volumes, blobStorageVolumes...)
@@ -695,10 +719,14 @@ func decorate(spec *coreapi.PodSpec, pj *prowapi.ProwJob, rawEnv map[string]stri
 	}
 
 	if len(refs) > 0 {
-		spec.Containers[0].WorkingDir = DetermineWorkDir(codeMount.MountPath, refs)
-		spec.Containers[0].VolumeMounts = append(spec.Containers[0].VolumeMounts, codeMount)
+		for i, container := range spec.Containers {
+			spec.Containers[i].WorkingDir = DetermineWorkDir(codeMount.MountPath, refs)
+			spec.Containers[i].VolumeMounts = append(container.VolumeMounts, codeMount)
+		}
 		spec.Volumes = append(spec.Volumes, append(cloneVolumes, codeVolume)...)
 	}
+
+	spec.Containers = append(spec.Containers, *sidecar)
 
 	if spec.TerminationGracePeriodSeconds == nil && pj.Spec.DecorationConfig.GracePeriod != nil {
 		gracePeriodSeconds := int64(pj.Spec.DecorationConfig.GracePeriod.Seconds())
@@ -740,7 +768,7 @@ func Sidecar(config *prowapi.DecorationConfig, gcsOptions gcsupload.Options, blo
 	}
 
 	container := &coreapi.Container{
-		Name:    "sidecar",
+		Name:    sidecarName,
 		Image:   config.UtilityImages.Sidecar,
 		Command: []string{"/sidecar"}, // TODO(fejta): remove, use image's entrypoint
 		Env: KubeEnv(map[string]string{

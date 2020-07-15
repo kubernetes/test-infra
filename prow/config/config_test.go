@@ -896,7 +896,7 @@ func TestValidatePodSpec(t *testing.T) {
 			} else if tc.spec != nil {
 				tc.spec(current)
 			}
-			switch err := validatePodSpec(jt, current); {
+			switch err := validatePodSpec(jt, current, false); {
 			case err == nil && !tc.pass:
 				t.Error("validation failed to raise an error")
 			case err != nil && tc.pass:
@@ -1139,6 +1139,94 @@ func TestValidateLabels(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			switch err := validateLabels(tc.labels); {
+			case err == nil && !tc.pass:
+				t.Error("validation failed to raise an error")
+			case err != nil && tc.pass:
+				t.Errorf("validation should have passed, got: %v", err)
+			}
+		})
+	}
+}
+
+func TestValidateMultipleContainers(t *testing.T) {
+	ka := string(prowjobv1.KubernetesAgent)
+	goodSpec := v1.PodSpec{
+		Containers: []v1.Container{
+			{
+				Name: "test1",
+			},
+			{
+				Name: "test2",
+			},
+		},
+	}
+	ns := "target-namespace"
+	cases := []struct {
+		name string
+		base JobBase
+		pass bool
+	}{
+		{
+			name: "valid kubernetes job with multiple containers",
+			base: JobBase{
+				Name:      "name",
+				Agent:     ka,
+				Spec:      &goodSpec,
+				Namespace: &ns,
+				Annotations: map[string]string{
+					"ProwMultipleContainerSupport": "Yes, I know what I'm doing.",
+				},
+			},
+			pass: true,
+		},
+		{
+			name: "invalid: no ProwMultipleContainerSupport annotation",
+			base: JobBase{
+				Name:        "name",
+				Agent:       ka,
+				Spec:        &goodSpec,
+				Namespace:   &ns,
+				Annotations: map[string]string{},
+			},
+		},
+		{
+			name: "invalid: no container names",
+			base: JobBase{
+				Name:  "name",
+				Agent: ka,
+				Spec: &v1.PodSpec{
+					Containers: []v1.Container{
+						{}, {},
+					},
+				},
+				Namespace:   &ns,
+				Annotations: map[string]string{},
+			},
+		},
+		{
+			name: "invalid: container names reserved for decoration",
+			base: JobBase{
+				Name:  "name",
+				Agent: ka,
+				Spec: &v1.PodSpec{
+					Containers: []v1.Container{
+						{
+							Name: "place-entrypoint",
+						},
+						{
+							Name: "test",
+						},
+					},
+				},
+				Namespace:   &ns,
+				Annotations: map[string]string{},
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			switch err := validateJobBase(tc.base, prowjobv1.PresubmitJob, ns); {
 			case err == nil && !tc.pass:
 				t.Error("validation failed to raise an error")
 			case err != nil && tc.pass:
