@@ -238,6 +238,13 @@ dashboards:
     test_group_name: ESPv2-continuous-build
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
+    description: Runs e2e tests for App Engine.
+    name: e2e-app-engine-http-bookstore
+    open_bug_template:
+      url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
+    test_group_name: ESPv2-continuous-cloud-run-e2e-app-engine-http-bookstore
+  - code_search_url_template:
+      url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
     description: Runs e2e tests for Cloud Functions.
     name: e2e-cloud-function-http-bookstore
     open_bug_template:
@@ -335,6 +342,8 @@ test_groups:
   name: ESPv2-continuous-anthos-cloud-run-e2e-cloud-run-http-bookstore
 - gcs_prefix: oss-prow/logs/ESPv2-continuous-build
   name: ESPv2-continuous-build
+- gcs_prefix: oss-prow/logs/ESPv2-continuous-cloud-run-e2e-app-engine-http-bookstore
+  name: ESPv2-continuous-cloud-run-e2e-app-engine-http-bookstore
 - gcs_prefix: oss-prow/logs/ESPv2-continuous-cloud-run-e2e-cloud-function-http-bookstore
   name: ESPv2-continuous-cloud-run-e2e-cloud-function-http-bookstore
 - gcs_prefix: oss-prow/logs/ESPv2-continuous-cloud-run-e2e-cloud-run-grpc-echo
