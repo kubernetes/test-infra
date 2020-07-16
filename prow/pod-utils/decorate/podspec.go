@@ -28,6 +28,7 @@ import (
 	"github.com/sirupsen/logrus"
 	coreapi "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -66,19 +67,19 @@ func Labels() []string {
 	return []string{kube.ProwJobTypeLabel, kube.CreatedByProw, kube.ProwJobIDLabel}
 }
 
-// VolumeMounts returns a string slice with *MountName consts in it.
-func VolumeMounts() []string {
-	return []string{logMountName, codeMountName, toolsMountName, gcsCredentialsMountName, s3CredentialsMountName}
+// VolumeMounts returns a string set with *MountName consts in it.
+func VolumeMounts() sets.String {
+	return sets.NewString(logMountName, codeMountName, toolsMountName, gcsCredentialsMountName, s3CredentialsMountName)
 }
 
-// VolumeMountPaths returns a string slice with *MountPath consts in it.
-func VolumeMountPaths() []string {
-	return []string{logMountPath, codeMountPath, toolsMountPath, gcsCredentialsMountPath, s3CredentialsMountPath}
+// VolumeMountPaths returns a string set with *MountPath consts in it.
+func VolumeMountPaths() sets.String {
+	return sets.NewString(logMountPath, codeMountPath, toolsMountPath, gcsCredentialsMountPath, s3CredentialsMountPath)
 }
 
-// PodUtilsContainerNames returns a string slice with pod utility container name consts in it.
-func PodUtilsContainerNames() []string {
-	return []string{cloneRefsName, initUploadName, entrypointName, sidecarName}
+// PodUtilsContainerNames returns a string set with pod utility container name consts in it.
+func PodUtilsContainerNames() sets.String {
+	return sets.NewString(cloneRefsName, initUploadName, entrypointName, sidecarName)
 }
 
 // LabelsAndAnnotationsForSpec returns a minimal set of labels to add to prowjobs or its owned resources.
@@ -178,10 +179,6 @@ func ProwJobToPodLocal(pj prowapi.ProwJob, buildID string, outputDir string) (*c
 	spec.RestartPolicy = "Never"
 	if len(spec.Containers) == 1 {
 		spec.Containers[0].Name = kube.TestContainerName
-	} else {
-		for i := range spec.Containers {
-			spec.Containers[i].Name = fmt.Sprintf("%s-%d", kube.TestContainerName, i)
-		}
 	}
 
 	// if the user has not provided a serviceaccount to use or explicitly
@@ -453,14 +450,14 @@ func processLog(log coreapi.VolumeMount, prefix string) string {
 	if prefix == "" {
 		return filepath.Join(log.MountPath, "process-log.txt")
 	}
-	return filepath.Join(log.MountPath, fmt.Sprintf("%s-log.txt", prefix))
+	return filepath.Join(log.MountPath, fmt.Sprintf("%s-build-log.txt", prefix))
 }
 
 func markerFile(log coreapi.VolumeMount, prefix string) string {
 	if prefix == "" {
 		return filepath.Join(log.MountPath, "marker-file.txt")
 	}
-	return filepath.Join(log.MountPath, fmt.Sprintf("%s-marker.txt", prefix))
+	return filepath.Join(log.MountPath, fmt.Sprintf("%s-marker-file.txt", prefix))
 }
 
 func metadataFile(log coreapi.VolumeMount, prefix string) string {

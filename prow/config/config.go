@@ -1264,7 +1264,7 @@ func validateJobBase(v JobBase, jobType prowapi.ProwJobType, podNamespace string
 	if err := validateAgent(v, podNamespace); err != nil {
 		return err
 	}
-	if err := validatePodSpec(jobType, v.Spec, v.Annotations["ProwMultipleContainerSupport"] == "Yes, I know what I'm doing."); err != nil {
+	if err := validatePodSpec(jobType, v.Spec, v.Annotations["ProwMultipleContainerSupport"] == "Yes, I know what I'm doing.", v.Decorate != nil && *v.Decorate); err != nil {
 		return err
 	}
 	if err := ValidatePipelineRunSpec(jobType, v.ExtraRefs, v.PipelineRunSpec); err != nil {
@@ -1857,7 +1857,7 @@ func ValidatePipelineRunSpec(jobType prowapi.ProwJobType, extraRefs []prowapi.Re
 	return nil
 }
 
-func validatePodSpec(jobType prowapi.ProwJobType, spec *v1.PodSpec, multipleContainerSupport bool) error {
+func validatePodSpec(jobType prowapi.ProwJobType, spec *v1.PodSpec, multipleContainerSupport bool, decorationEnabled bool) error {
 	if spec == nil {
 		return nil
 	}
@@ -1877,6 +1877,10 @@ func validatePodSpec(jobType prowapi.ProwJobType, spec *v1.PodSpec, multipleCont
 		return utilerrors.NewAggregate(append(errs, fmt.Errorf("pod spec must specify exactly 1 container, found: %d", n)))
 	}
 
+	if n := len(spec.Containers); n > 1 && !decorationEnabled {
+		return utilerrors.NewAggregate(append(errs, fmt.Errorf("pod utility decoration must be enabled to use multiple containers: %d", n)))
+	}
+
 	if len(spec.Containers) > 1 {
 		containerNames := sets.String{}
 		for _, container := range spec.Containers {
@@ -1889,16 +1893,14 @@ func validatePodSpec(jobType prowapi.ProwJobType, spec *v1.PodSpec, multipleCont
 			}
 			containerNames.Insert(container.Name)
 
-			for _, prowContainer := range decorate.PodUtilsContainerNames() {
-				if container.Name == prowContainer {
-					errs = append(errs, fmt.Errorf("container %s is a reserved for decoration", container.Name))
-				}
+			if decorate.PodUtilsContainerNames().Has(container.Name) {
+				errs = append(errs, fmt.Errorf("container name %s is a reserved for decoration. please specify a different container name that does not conflict with pod utility container names", container.Name))
 			}
 		}
 	}
 
-	envNames := sets.String{}
 	for i := range spec.Containers {
+		envNames := sets.String{}
 		for _, env := range spec.Containers[i].Env {
 			if envNames.Has(env.Name) {
 				errs = append(errs, fmt.Errorf("env var named %q is defined more than once", env.Name))
@@ -1921,10 +1923,8 @@ func validatePodSpec(jobType prowapi.ProwJobType, spec *v1.PodSpec, multipleCont
 		}
 		volumeNames.Insert(volume.Name)
 
-		for _, prowVolume := range decorate.VolumeMounts() {
-			if volume.Name == prowVolume {
-				errs = append(errs, fmt.Errorf("volume %s is a reserved for decoration", volume.Name))
-			}
+		if decorate.VolumeMounts().Has(volume.Name) {
+			errs = append(errs, fmt.Errorf("volume %s is a reserved for decoration", volume.Name))
 		}
 	}
 
@@ -1933,15 +1933,11 @@ func validatePodSpec(jobType prowapi.ProwJobType, spec *v1.PodSpec, multipleCont
 			if !volumeNames.Has(mount.Name) {
 				errs = append(errs, fmt.Errorf("volumeMount named %q is undefined", mount.Name))
 			}
-			for _, prowMount := range decorate.VolumeMounts() {
-				if mount.Name == prowMount {
-					errs = append(errs, fmt.Errorf("volumeMount name %s is reserved for decoration", prowMount))
-				}
+			if decorate.VolumeMounts().Has(mount.Name) {
+				errs = append(errs, fmt.Errorf("volumeMount name %s is reserved for decoration", mount.Name))
 			}
-			for _, prowMountPath := range decorate.VolumeMountPaths() {
-				if mount.MountPath == prowMountPath {
-					errs = append(errs, fmt.Errorf("mount %s at %s conflicts with decoration mount at %s", mount.Name, mount.MountPath, prowMountPath))
-				}
+			if decorate.VolumeMountPaths().Has(mount.MountPath) {
+				errs = append(errs, fmt.Errorf("mount %s at %s conflicts with decoration mount", mount.Name, mount.MountPath))
 			}
 		}
 	}
