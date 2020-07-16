@@ -108,4 +108,4 @@ periodics:
           # this is mostly for building kubernetes
           memory: "9000Mi"
           # during the tests more like 3-20m is used
-          cpu: 2000m
+          cpu: 7400m
