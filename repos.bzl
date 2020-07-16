@@ -897,8 +897,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/mattn/go-zglob",
-        sum = "h1:xsEx/XUoVlI6yXjqBK062zYhRTZltCNmYPx6v+8DNaY=",
-        version = "v0.0.1",
+        sum = "h1:0qT24o2wsZ8cOXQAERwBX6s+rPMs/bJTKxLVVtgfDXc=",
+        version = "v0.0.2",
     )
     go_repository(
         name = "com_github_matttproud_golang_protobuf_extensions",
