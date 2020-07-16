@@ -30,7 +30,7 @@ presubmits:
         - --cluster=
         - --env=KUBE_PROXY_MODE=ipvs
         - --extract=local
-        - --gcp-node-image=ubuntu
+        - --gcp-node-image=gci
         - --gcp-zone=us-west1-b
         - --ginkgo-parallel=30
         - --provider=gce
