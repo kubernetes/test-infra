@@ -1,0 +1,233 @@
+dashboard_groups:
+- dashboard_names:
+  - kyma_integration
+  - kyma_control-plane
+  - kyma_release-1.14
+  - kyma_release-1.13
+  - kyma_release-1.12
+  - kyma-incubator_compass
+  name: kyma
+dashboards:
+- dashboard_tab:
+  - code_search_url_template:
+      url: https://github.com/kyma-project/test-infra/compare/<start-custom-0>...<end-custom-0>
+    description: Kyma AKS nightly build.
+    name: kyma-aks-nightly
+    open_bug_template:
+      url: https://github.com/kyma-project/test-infra/issues/
+    test_group_name: kyma-aks-nightly
+  - code_search_url_template:
+      url: https://github.com/kyma-project/test-infra/compare/<start-custom-0>...<end-custom-0>
+    description: Kyma GKE compass integration job which runs daily at 00:00.
+    name: kyma-gke-compass-integration-daily
+    open_bug_template:
+      url: https://github.com/kyma-project/test-infra/issues/
+    test_group_name: kyma-gke-compass-integration-daily
+  - code_search_url_template:
+      url: https://github.com/kyma-project/test-infra/compare/<start-custom-0>...<end-custom-0>
+    description: Kyma GKE nightly build.
+    name: kyma-gke-nightly
+    open_bug_template:
+      url: https://github.com/kyma-project/test-infra/issues/
+    test_group_name: kyma-gke-nightly
+  - code_search_url_template:
+      url: https://github.com/kyma-project/test-infra/compare/<start-custom-0>...<end-custom-0>
+    description: Kyma GKE weekly build.
+    name: kyma-gke-weekly
+    open_bug_template:
+      url: https://github.com/kyma-project/test-infra/issues/
+    test_group_name: kyma-gke-weekly
+  - code_search_url_template:
+      url: https://github.com/kyma-project/test-infra/compare/<start-custom-0>...<end-custom-0>
+    description: Kyma AWS Gardener integration job.
+    name: kyma-integration-gardener-aws
+    open_bug_template:
+      url: https://github.com/kyma-project/test-infra/issues/
+    test_group_name: kyma-integration-gardener-aws
+  - code_search_url_template:
+      url: https://github.com/kyma-project/test-infra/compare/<start-custom-0>...<end-custom-0>
+    description: Kyma Azure Gardener integration job.
+    name: kyma-integration-gardener-azure
+    open_bug_template:
+      url: https://github.com/kyma-project/test-infra/issues/
+    test_group_name: kyma-integration-gardener-azure
+  - code_search_url_template:
+      url: https://github.com/kyma-project/test-infra/compare/<start-custom-0>...<end-custom-0>
+    description: Kyma GCP Gardener integration job.
+    name: kyma-integration-gardener-gcp
+    open_bug_template:
+      url: https://github.com/kyma-project/test-infra/issues/
+    test_group_name: kyma-integration-gardener-gcp
+  - code_search_url_template:
+      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
+    description: Kyma GKE central-connector job.
+    name: post-master-kyma-gke-central-connector
+    open_bug_template:
+      url: https://github.com/kyma-project/kyma/issues/
+    test_group_name: post-master-kyma-gke-central-connector
+  - code_search_url_template:
+      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
+    description: Kyma GKE compass integration job.
+    name: post-master-kyma-gke-compass-integration
+    open_bug_template:
+      url: https://github.com/kyma-project/kyma/issues/
+    test_group_name: post-master-kyma-gke-compass-integration
+  - code_search_url_template:
+      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
+    description: Kyma GKE integration job.
+    name: post-master-kyma-gke-integration
+    open_bug_template:
+      url: https://github.com/kyma-project/kyma/issues/
+    test_group_name: post-master-kyma-gke-integration
+  - code_search_url_template:
+      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
+    description: Kyma GKE upgrade job.
+    name: post-master-kyma-gke-upgrade
+    open_bug_template:
+      url: https://github.com/kyma-project/kyma/issues/
+    test_group_name: post-master-kyma-gke-upgrade
+  - code_search_url_template:
+      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
+    description: Kyma integration job.
+    name: post-master-kyma-integration
+    open_bug_template:
+      url: https://github.com/kyma-project/kyma/issues/
+    test_group_name: post-master-kyma-integration
+  name: kyma_integration
+- dashboard_tab:
+  - code_search_url_template:
+      url: https://github.com/kyma-project/control-plane/compare/<start-custom-0>...<end-custom-0>
+    description: Kyma control-plane GKE integration job.
+    name: post-master-control-plane-gke-integration
+    open_bug_template:
+      url: https://github.com/kyma-project/control-plane/issues/
+    test_group_name: post-master-control-plane-gke-integration
+  - code_search_url_template:
+      url: https://github.com/kyma-project/control-plane/compare/<start-custom-0>...<end-custom-0>
+    description: Kyma control-plane GKE provisioner integration job.
+    name: post-master-control-plane-gke-provisioner-integration
+    open_bug_template:
+      url: https://github.com/kyma-project/control-plane/issues/
+    test_group_name: post-master-control-plane-gke-provisioner-integration
+  - code_search_url_template:
+      url: https://github.com/kyma-project/control-plane/compare/<start-custom-0>...<end-custom-0>
+    description: post-master-control-plane-integration
+    name: post-master-control-plane-integration
+    open_bug_template:
+      url: https://github.com/kyma-project/control-plane/issues/
+    test_group_name: post-master-control-plane-integration
+  name: kyma_control-plane
+- dashboard_tab:
+  - code_search_url_template:
+      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
+    description: GitHub Release job for Kyma 1.14.
+    name: post-rel114-kyma-github-release
+    open_bug_template:
+      url: https://github.com/kyma-project/kyma/issues/
+    test_group_name: post-rel114-kyma-github-release
+  - code_search_url_template:
+      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
+    description: Release candidate job for Kyma 1.14.
+    name: post-rel114-kyma-release-candidate
+    open_bug_template:
+      url: https://github.com/kyma-project/kyma/issues/
+    test_group_name: post-rel114-kyma-release-candidate
+  name: kyma_release-1.14
+- dashboard_tab:
+  - code_search_url_template:
+      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
+    description: GitHub Release job for Kyma 1.13.
+    name: post-rel113-kyma-github-release
+    open_bug_template:
+      url: https://github.com/kyma-project/kyma/issues/
+    test_group_name: post-rel113-kyma-github-release
+  - code_search_url_template:
+      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
+    description: Release candidate job for Kyma 1.13.
+    name: post-rel113-kyma-release-candidate
+    open_bug_template:
+      url: https://github.com/kyma-project/kyma/issues/
+    test_group_name: post-rel113-kyma-release-candidate
+  name: kyma_release-1.13
+- dashboard_tab:
+  - code_search_url_template:
+      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
+    description: GitHub Release job for Kyma 1.12.
+    name: post-rel112-kyma-github-release
+    open_bug_template:
+      url: https://github.com/kyma-project/kyma/issues/
+    test_group_name: post-rel112-kyma-github-release
+  - code_search_url_template:
+      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
+    description: Release candidate job for Kyma 1.12.
+    name: post-rel112-kyma-release-candidate
+    open_bug_template:
+      url: https://github.com/kyma-project/kyma/issues/
+    test_group_name: post-rel112-kyma-release-candidate
+  name: kyma_release-1.12
+- dashboard_tab:
+  - code_search_url_template:
+      url: https://github.com/kyma-incubator/compass/compare/<start-custom-0>...<end-custom-0>
+    description: Compass GKE integration job.
+    name: post-master-compass-gke-integration
+    open_bug_template:
+      url: https://github.com/kyma-incubator/compass/issues/
+    test_group_name: post-master-compass-gke-integration
+  - code_search_url_template:
+      url: https://github.com/kyma-incubator/compass/compare/<start-custom-0>...<end-custom-0>
+    description: Compass integration job.
+    name: post-master-compass-integration
+    open_bug_template:
+      url: https://github.com/kyma-incubator/compass/issues/
+    test_group_name: post-master-compass-integration
+  name: kyma-incubator_compass
+test_groups:
+- gcs_prefix: kyma-prow-logs/logs/kyma-aks-nightly
+  name: kyma-aks-nightly
+- gcs_prefix: kyma-prow-logs/logs/kyma-gke-compass-integration-daily
+  name: kyma-gke-compass-integration-daily
+- gcs_prefix: kyma-prow-logs/logs/kyma-gke-nightly
+  name: kyma-gke-nightly
+- gcs_prefix: kyma-prow-logs/logs/kyma-gke-weekly
+  name: kyma-gke-weekly
+- gcs_prefix: kyma-prow-logs/logs/kyma-integration-gardener-aws
+  name: kyma-integration-gardener-aws
+- gcs_prefix: kyma-prow-logs/logs/kyma-integration-gardener-azure
+  name: kyma-integration-gardener-azure
+- gcs_prefix: kyma-prow-logs/logs/kyma-integration-gardener-gcp
+  name: kyma-integration-gardener-gcp
+- gcs_prefix: kyma-prow-logs/logs/post-master-compass-gke-integration
+  name: post-master-compass-gke-integration
+- gcs_prefix: kyma-prow-logs/logs/post-master-compass-integration
+  name: post-master-compass-integration
+- gcs_prefix: kyma-prow-logs/logs/post-master-control-plane-gke-integration
+  name: post-master-control-plane-gke-integration
+- gcs_prefix: kyma-prow-logs/logs/post-master-control-plane-gke-provisioner-integration
+  name: post-master-control-plane-gke-provisioner-integration
+- gcs_prefix: kyma-prow-logs/logs/post-master-control-plane-integration
+  name: post-master-control-plane-integration
+- gcs_prefix: kyma-prow-logs/logs/post-master-kyma-gke-central-connector
+  name: post-master-kyma-gke-central-connector
+- gcs_prefix: kyma-prow-logs/logs/post-master-kyma-gke-compass-integration
+  name: post-master-kyma-gke-compass-integration
+- gcs_prefix: kyma-prow-logs/logs/post-master-kyma-gke-integration
+  name: post-master-kyma-gke-integration
+- gcs_prefix: kyma-prow-logs/logs/post-master-kyma-gke-upgrade
+  name: post-master-kyma-gke-upgrade
+- gcs_prefix: kyma-prow-logs/logs/post-master-kyma-integration
+  name: post-master-kyma-integration
+- gcs_prefix: kyma-prow-logs/logs/post-rel112-kyma-github-release
+  name: post-rel112-kyma-github-release
+- gcs_prefix: kyma-prow-logs/logs/post-rel112-kyma-release-candidate
+  name: post-rel112-kyma-release-candidate
+  num_failures_to_alert: 1
+- gcs_prefix: kyma-prow-logs/logs/post-rel113-kyma-github-release
+  name: post-rel113-kyma-github-release
+- gcs_prefix: kyma-prow-logs/logs/post-rel113-kyma-release-candidate
+  name: post-rel113-kyma-release-candidate
+  num_failures_to_alert: 1
+- gcs_prefix: kyma-prow-logs/logs/post-rel114-kyma-github-release
+  name: post-rel114-kyma-github-release
+- gcs_prefix: kyma-prow-logs/logs/post-rel114-kyma-release-candidate
+  name: post-rel114-kyma-release-candidate
+  num_failures_to_alert: 1
