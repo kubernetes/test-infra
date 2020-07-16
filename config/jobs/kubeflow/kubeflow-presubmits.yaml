@@ -345,7 +345,7 @@ presubmits:
       containers:
       - image: l.gcr.io/google/bazel:0.24.0
         command:
-        - ./hack/run_unit_tests_backend.sh
+        - ./test/presubmit-backend-test.sh
   - name: kubeflow-pipeline-e2e-test
     cluster: kubeflow
     always_run: true
