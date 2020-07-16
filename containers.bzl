@@ -17,58 +17,50 @@ load("@io_bazel_rules_docker//container:container.bzl", "container_pull")
 def repositories():
     container_pull(
         name = "distroless-base",
-        digest = "sha256:e37cf3289c1332c5123cbf419a1657c8dad0811f2f8572433b668e13747718f8",
+        digest = "sha256:2b0a8e9a13dcc168b126778d9e947a7081b4d2ee1ee122830d835f176d0e2a70",
         registry = "gcr.io",
         repository = "distroless/base",
-        tag = "latest",
+        # tag = "latest", as of Jul 15 2020
     )
 
     container_pull(
         name = "alpine-base",
-        digest = "sha256:55a0c44a09ede57e3193fae6d0918865f2c4d7effe7a8f4dad72eef31f6f7841",
+        digest = "sha256:94eabd0927065a4fd03136179c4467fc42d3d08f78fd571e395599ff8521c210",
         registry = "gcr.io",
         repository = "k8s-prow/alpine",
-        # tag = "v20200605-44f6c96",
+        # tag = "v20200713-e9b3d9d",
     )
 
     container_pull(
         name = "alpine-bash",
-        digest = "sha256:d520f733f3d648b81201b28b0f9894ad2940972c516e554958d0177470c6a881",  # 2019/07/29
+        digest = "sha256:5b2616c8e2a9ca1e8cd015ad76df3bedecdb7b98b8825c718360ec6b98cb1dcc",
         registry = "gcr.io",
         repository = "k8s-testimages/alpine-bash",
-        tag = "latest",  # TODO(fejta): update or replace
+        # tag = "v20200713-e9b3d9d",
     )
 
     container_pull(
         name = "gcloud-base",
-        digest = "sha256:8e51eea50a45c6be2a735be97139f85a04c623ca448801a317a737c1d9917d00",  # 2019/08/16
+        digest = "sha256:5b49dfb5e366dd75a5fc6d5d447be584f8f229c5a790ee0c3b0bd0cf70ec41dd",
         registry = "gcr.io",
         repository = "cloud-builders/gcloud",
-        tag = "latest",
+        # tag = "latest",
     )
 
     container_pull(
         name = "git-base",
-        digest = "sha256:45a5255060b34151ec1fa913eb0bc18958c909fc088989dd84f0614a22fb1840",
+        digest = "sha256:1527341aff1003b6b27c8ed935e6f0200258bee55b6eb178ca3ef124196384fe",
         registry = "gcr.io",
         repository = "k8s-prow/git",
-        # tag = "v20200605-44f6c96",
-    )
-
-    container_pull(
-        name = "python",
-        digest = "sha256:594a43a1eb22f5a37b15e0394fc0e39e444072e413f10a60bac0babe42280304",  # 2019/08/16
-        registry = "index.docker.io",
-        repository = "library/python",
-        tag = "2",
+        # tag = "v20200713-e9b3d9d",
     )
 
     container_pull(
         name = "gcloud-go",
-        digest = "sha256:0dd11e500c64b7e722ad13bc9616598a14bb0f66d9e1de4330456c646eaf237d",  # 2019/01/25
+        digest = "sha256:ca9873d744f19e77ceafb499846248a82cde74ab5a613dd394348e7904d08d71",
         registry = "gcr.io",
         repository = "k8s-testimages/gcloud-in-go",
-        tag = "v20190125-cc5d6ecff3",  # TODO(fejta): update or replace
+        # tag = "v20200205-602500d",
     )
 
     container_pull(
