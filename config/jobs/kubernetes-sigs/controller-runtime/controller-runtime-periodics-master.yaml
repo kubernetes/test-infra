@@ -13,7 +13,7 @@ periodics:
       - ./hack/ci-check-everything.sh
       resources:
         requests:
-          cpu: 8000m
+          cpu: 6000m
   annotations:
     testgrid-dashboards: sig-api-machinery-kubebuilder
     testgrid-tab-name: controller-runtime-periodic-master
