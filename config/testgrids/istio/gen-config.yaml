@@ -528,6 +528,13 @@ dashboards:
     test_group_name: benchmark_istio
   - code_search_url_template:
       url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: checkReleaseNotes_istio
+    name: checkReleaseNotes_istio
+    open_bug_template:
+      url: https://github.com/istio/istio/issues/
+    test_group_name: checkReleaseNotes_istio
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
     description: gencheck_istio
     name: gencheck_istio
     open_bug_template:
@@ -945,6 +952,15 @@ dashboards:
     open_bug_template:
       url: https://github.com/istio/proxy/issues/
     test_group_name: release_proxy_postsubmit
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/proxy/compare/<start-custom-0>...<end-custom-0>
+    description: update-istio_proxy_postsubmit
+    name: update-istio_proxy_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/proxy/issues/
+    test_group_name: update-istio_proxy_postsubmit
   name: istio_proxy_postsubmit
 - dashboard_tab:
   - code_search_url_template:
@@ -5099,6 +5115,9 @@ test_groups:
 - gcs_prefix: istio-prow/logs/release_proxy_release-1.6_postsubmit
   name: release_proxy_release-1.6_postsubmit
   num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/update-istio_proxy_postsubmit
+  name: update-istio_proxy_postsubmit
+  num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/build-release_release-builder_postsubmit
   name: build-release_release-builder_postsubmit
   num_failures_to_alert: 1
@@ -5495,6 +5514,9 @@ test_groups:
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/cache-experiment_istio_release-1.6
   name: cache-experiment_istio_release-1.6
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/checkReleaseNotes_istio
+  name: checkReleaseNotes_istio
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/codecov_istio_release-1.4
   name: codecov_istio_release-1.4
