@@ -7,6 +7,8 @@ presubmits:
     # run_if_changed: "kubetest2/kubetest2-gce/.*"
     labels:
       preset-service-account: "true"
+    annotations:
+      testgrid-dashboards: sig-testing-canaries
     extra_refs:
     - base_ref: master
       org: kubernetes
