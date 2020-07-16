@@ -362,7 +362,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200715-a03387b-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200716-e3a0033-master
         command:
         - ./test/presubmit-tests-with-pipeline-deployment.sh
         args:
@@ -378,7 +378,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200715-a03387b-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200716-e3a0033-master
         command:
         - ./test/presubmit-tests-with-pipeline-deployment.sh
         args:
@@ -396,7 +396,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200715-a03387b-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200716-e3a0033-master
         command:
         - ./test/presubmit-tests-with-pipeline-deployment.sh
         args:
@@ -416,7 +416,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200715-a03387b-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200716-e3a0033-master
         command:
         - ./test/presubmit-tests-mkp.sh
   - name: kubeflow-pipeline-upgrade-test
@@ -427,7 +427,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200715-a03387b-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200716-e3a0033-master
         command:
         - ./test/upgrade-tests.sh
         args:
@@ -573,7 +573,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200715-a03387b-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200716-e3a0033-master
         command:
         - ./test/multiuser-tests.sh
         args:
@@ -605,7 +605,7 @@ presubmits:
 #       preset-service-account: "true"
 #     spec:
 #       containers:
-#       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200715-a03387b-master
+#       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200716-e3a0033-master
 #         command:
 #         - ./test/presubmit-tests-gce-minikube.sh
 #         args:
