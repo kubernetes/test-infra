@@ -118,7 +118,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/kubeflow-ci/test-worker-py3
+      - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
     annotations:
       testgrid-dashboards: sig-big-data
