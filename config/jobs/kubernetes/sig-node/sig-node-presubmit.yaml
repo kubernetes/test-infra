@@ -82,7 +82,8 @@ presubmits:
   - name: pull-kubernetes-node-e2e-containerd
     branches:
     - master
-    always_run: true
+    # disabled pending resolution of https://github.com/kubernetes/kubernetes/issues/89847
+    always_run: false
     optional: true
     skip_report: true
     max_concurrency: 12
