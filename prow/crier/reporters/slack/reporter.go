@@ -32,11 +32,23 @@ import (
 
 const reporterName = "slackreporter"
 
+type slackClient interface {
+	WriteMessage(text, channel string) error
+}
+
 type slackReporter struct {
-	client *slackclient.Client
+	client slackClient
 	config func(*prowapi.Refs) config.SlackReporter
 	logger *logrus.Entry
 	dryRun bool
+}
+
+func (sr *slackReporter) getConfig(pj *v1.ProwJob) config.SlackReporter {
+	refs := pj.Spec.Refs
+	if refs == nil && len(pj.Spec.ExtraRefs) > 0 {
+		refs = &pj.Spec.ExtraRefs[0]
+	}
+	return sr.config(refs)
 }
 
 func jobChannel(pj *v1.ProwJob) (string, bool) {
@@ -54,7 +66,7 @@ func channel(cfg config.SlackReporter, pj *v1.ProwJob) string {
 }
 
 func (sr *slackReporter) Report(pj *v1.ProwJob) ([]*v1.ProwJob, error) {
-	config := sr.config(pj.Spec.Refs)
+	config := sr.getConfig(pj)
 	channel := channel(config, pj)
 	b := &bytes.Buffer{}
 	tmpl, err := template.New("").Parse(config.ReportTemplate)
@@ -92,7 +104,7 @@ func (sr *slackReporter) ShouldReport(pj *v1.ProwJob) bool {
 		logger.Debugf("reporting as channel is explicitly set")
 		return true
 	}
-	config := sr.config(pj.Spec.Refs)
+	config := sr.getConfig(pj)
 
 	stateShouldReport := false
 	for _, stateToReport := range config.JobStatesToReport {

@@ -322,6 +322,30 @@ func TestUsesChannelOverrideFromJob(t *testing.T) {
 				}},
 			emptyExpected: true,
 		},
+		{
+			name: "Refs unset but extra refs exist, use it",
+			config: func() config.Config {
+				slackCfg := map[string]config.SlackReporter{
+					"istio/proxy": {
+						Channel: "org-repo-config",
+					},
+				}
+				return config.Config{
+					ProwConfig: config.ProwConfig{
+						SlackReporterConfigs: slackCfg,
+					},
+				}
+			},
+			pj: &v1.ProwJob{
+				Spec: v1.ProwJobSpec{
+					ExtraRefs: []v1.Refs{{
+						Org:  "istio",
+						Repo: "proxy",
+					}},
+				},
+			},
+			expected: "org-repo-config",
+		},
 	}
 
 	for _, tc := range testCases {
@@ -329,12 +353,91 @@ func TestUsesChannelOverrideFromJob(t *testing.T) {
 			cfgGetter := func(refs *v1.Refs) config.SlackReporter {
 				return tc.config().SlackReporterConfigs.GetSlackReporter(refs)
 			}
+			sr := slackReporter{
+				config: cfgGetter,
+			}
 
-			slackCfg := cfgGetter(tc.pj.Spec.Refs)
+			slackCfg := sr.getConfig(tc.pj)
 
 			if result := channel(slackCfg, tc.pj); result != tc.expected {
 				t.Fatalf("Expected result to be %q, was %q", tc.expected, result)
 			}
 		})
+	}
+}
+
+func TestShouldReportDefaultsToExtraRefs(t *testing.T) {
+	job := &v1.ProwJob{
+		Spec: v1.ProwJobSpec{
+			Type:      v1.PeriodicJob,
+			ExtraRefs: []v1.Refs{{Org: "org"}},
+		},
+		Status: v1.ProwJobStatus{
+			State: v1.SuccessState,
+		},
+	}
+	sr := slackReporter{
+		logger: logrus.NewEntry(logrus.New()),
+		config: func(r *v1.Refs) config.SlackReporter {
+			if r.Org == "org" {
+				return config.SlackReporter{
+					JobTypesToReport:  []v1.ProwJobType{v1.PeriodicJob},
+					JobStatesToReport: []v1.ProwJobState{v1.SuccessState},
+				}
+			}
+			return config.SlackReporter{}
+		},
+	}
+
+	if !sr.ShouldReport(job) {
+		t.Fatal("expected job to report but did not")
+	}
+}
+
+type fakeSlackClient struct {
+	messages map[string]string
+}
+
+func (fsc *fakeSlackClient) WriteMessage(text, channel string) error {
+	if fsc.messages == nil {
+		fsc.messages = map[string]string{}
+	}
+	fsc.messages[channel] = text
+	return nil
+}
+
+var _ slackClient = &fakeSlackClient{}
+
+func TestReportDefaultsToExtraRefs(t *testing.T) {
+	job := &v1.ProwJob{
+		Spec: v1.ProwJobSpec{
+			Type:      v1.PeriodicJob,
+			ExtraRefs: []v1.Refs{{Org: "org"}},
+		},
+		Status: v1.ProwJobStatus{
+			State: v1.SuccessState,
+		},
+	}
+	sr := slackReporter{
+		logger: logrus.NewEntry(logrus.New()),
+		config: func(r *v1.Refs) config.SlackReporter {
+			if r.Org == "org" {
+				return config.SlackReporter{
+					JobTypesToReport:  []v1.ProwJobType{v1.PeriodicJob},
+					JobStatesToReport: []v1.ProwJobState{v1.SuccessState},
+					Channel:           "emercengy",
+					ReportTemplate:    "there you go",
+				}
+			}
+			return config.SlackReporter{}
+		},
+		client: &fakeSlackClient{},
+	}
+
+	if _, err := sr.Report(job); err != nil {
+		t.Fatalf("reporting failed: %v", err)
+	}
+	if sr.client.(*fakeSlackClient).messages["emercengy"] != "there you go" {
+		t.Errorf("expected the channel 'emergency' to contain message 'there you go' but wasn't the case, all messages: %v", sr.client.(*fakeSlackClient).messages)
 	}
 }
