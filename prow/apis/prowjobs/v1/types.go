@@ -283,9 +283,9 @@ type ReporterConfig struct {
 }
 
 type SlackReporterConfig struct {
-	Channel           string         `json:"channel"`
-	JobStatesToReport []ProwJobState `json:"job_states_to_report"`
-	ReportTemplate    string         `json:"report_template"`
+	Channel           string         `json:"channel,omitempty"`
+	JobStatesToReport []ProwJobState `json:"job_states_to_report,omitempty"`
+	ReportTemplate    string         `json:"report_template,omitempty"`
 }
 
 // Duration is a wrapper around time.Duration that parses times in either
