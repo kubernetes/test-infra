@@ -67,7 +67,6 @@ periodics:
       - test-infra/metrics/bigquery.py
       - --
       - --bucket=gs://k8s-metrics
-      - --backfill-days=90
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
