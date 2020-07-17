@@ -16,7 +16,7 @@ periodics:
     preset-aws-credential: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200716-e3a0033-1.19
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200717-da05571-1.19
       command:
       - runner.sh
       - kubetest
@@ -64,7 +64,7 @@ periodics:
     preset-aws-credential: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200716-e3a0033-1.16
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200717-da05571-1.16
       command:
       - runner.sh
       - kubetest
@@ -112,7 +112,7 @@ periodics:
     preset-aws-credential: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200716-e3a0033-1.17
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200717-da05571-1.17
       command:
       - runner.sh
       - kubetest
@@ -160,7 +160,7 @@ periodics:
     preset-aws-credential: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200716-e3a0033-1.18
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200717-da05571-1.18
       command:
       - runner.sh
       - kubetest
