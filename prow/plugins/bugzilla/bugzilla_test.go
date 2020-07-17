@@ -1415,6 +1415,41 @@ Instructions for interacting with me using PR comments are available [here](http
 			prs:  []github.PullRequest{{Number: base.number, Body: base.body, Title: base.body}},
 			// there should be no comment returned in this test case
 		}, {
+			name: "Bug with non-allowed group on repo with no allowed groups results in comment on /bugzilla refresh",
+			bugs: []bugzilla.Bug{{ID: 123, Groups: []string{"security"}}},
+			prs:  []github.PullRequest{{Number: base.number, Body: base.body, Title: base.body}},
+			body: "/bugzilla refresh",
+			expectedComment: `org/repo#1:@user: [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123) is in a bug group that is not in the allowed groups for this repo. There are no allowed bug groups configured for this repo.
+
+<details>
+
+In response to [this](http.com):
+
+>/bugzilla refresh
+
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.
+</details>`,
+		}, {
+			name:    "Bug with non-allowed group on repo with different allowed groups results in comment on /bugzilla refresh",
+			bugs:    []bugzilla.Bug{{ID: 123, Groups: []string{"security"}}},
+			prs:     []github.PullRequest{{Number: base.number, Body: base.body, Title: base.body}},
+			body:    "/bugzilla refresh",
+			options: plugins.BugzillaBranchOptions{AllowedGroups: []string{"internal"}},
+			expectedComment: `org/repo#1:@user: [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123) is in a bug group that is not in the allowed groups for this repo.
+Allowed groups for this repo are:
+- internal
+
+<details>
+
+In response to [this](http.com):
+
+>/bugzilla refresh
+
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.
+</details>`,
+		}, {
 			name:           "Bug with allowed group is properly handled",
 			bugs:           []bugzilla.Bug{{ID: 123, Severity: "medium", Groups: []string{"security"}}},
 			options:        plugins.BugzillaBranchOptions{StateAfterValidation: &updated, AllowedGroups: []string{"security"}},

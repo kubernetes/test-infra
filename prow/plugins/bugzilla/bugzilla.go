@@ -446,6 +446,18 @@ func handle(e event, gc githubClient, bc bugzilla.Client, options plugins.Bugzil
 		}
 		if !isBugAllowed(bug, options.AllowedGroups) {
 			// ignore bugs that are in non-allowed groups for this repo
+			if refreshCommandMatch.MatchString(e.body) {
+				response := fmt.Sprintf(bugLink+" is in a bug group that is not in the allowed groups for this repo.", e.bugId, bc.Endpoint(), e.bugId)
+				if len(options.AllowedGroups) > 0 {
+					response += "\nAllowed groups for this repo are:"
+					for _, group := range options.AllowedGroups {
+						response += "\n- " + group
+					}
+				} else {
+					response += " There are no allowed bug groups configured for this repo."
+				}
+				return comment(response)
+			}
 			return nil
 		}
 	}
