@@ -427,7 +427,6 @@ presubmits:
         - upgrade_test
 
   - name: kubeflow-pipelines-sdk-python35
-    always_run: true
     decorate: true
     labels:
       preset-service-account: "true"
@@ -439,7 +438,6 @@ presubmits:
         - ./test/presubmit-tests-sdk.sh
 
   - name: kubeflow-pipelines-sdk-python36
-    always_run: true
     decorate: true
     labels:
       preset-service-account: "true"
@@ -451,7 +449,6 @@ presubmits:
         - ./test/presubmit-tests-sdk.sh
 
   - name: kubeflow-pipelines-sdk-python37
-    always_run: true
     decorate: true
     labels:
       preset-service-account: "true"
@@ -463,7 +460,6 @@ presubmits:
         - ./test/presubmit-tests-sdk.sh
 
   - name: kubeflow-pipelines-sdk-python38
-    always_run: true
     decorate: true
     labels:
       preset-service-account: "true"
@@ -475,7 +471,6 @@ presubmits:
         - ./test/presubmit-tests-sdk.sh
 
   - name: kubeflow-pipelines-tfx-python36
-    always_run: true
     decorate: true
     labels:
       preset-service-account: "true"
@@ -487,7 +482,6 @@ presubmits:
         - ./test/presubmit-tests-tfx.sh
 
   - name: kubeflow-pipelines-component-yaml
-    always_run: true
     decorate: true
     labels:
       preset-service-account: "true"
@@ -499,7 +493,6 @@ presubmits:
         - ./test/presubmit-component-yaml.sh
 
   - name: kubeflow-pipelines-components-gcp-python27
-    always_run: true
     decorate: true
     labels:
       preset-service-account: "true"
@@ -511,7 +504,6 @@ presubmits:
         - ./test/presubmit-components-gcp.sh
 
   - name: kubeflow-pipelines-components-gcp-python37
-    always_run: true
     decorate: true
     labels:
       preset-service-account: "true"
@@ -536,7 +528,6 @@ presubmits:
         - ./test/presubmit-component-containers.sh
 
   - name: kubeflow-pipelines-backend-visualization
-    always_run: true
     decorate: true
     labels:
       preset-service-account: "true"
