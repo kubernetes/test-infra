@@ -19,4 +19,4 @@ presubmits:
         command:
         - "runner.sh"
         args:
-        - "./kubetest2/kubetest2-gce/ci-tests/buildupdown.sh"
+        - "./kubetest2-gce/ci-tests/buildupdown.sh"
