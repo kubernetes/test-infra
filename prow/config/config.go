@@ -485,7 +485,7 @@ type Plank struct {
 
 	// JobURLPrefixDisableAppendStorageProvider disables that the storageProvider is
 	// automatically appended to the JobURLPrefix
-	JobURLPrefixDisableAppendStorageProvider bool
+	JobURLPrefixDisableAppendStorageProvider bool `json:"jobURLPrefixDisableAppendStorageProvider,omitempty"`
 }
 
 func (p Plank) GetDefaultDecorationConfigs(repo string) *prowapi.DecorationConfig {
