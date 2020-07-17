@@ -26,26 +26,6 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
       testgrid-tab-name: pr-build
-  - name: pull-cluster-api-provider-aws-integration
-    always_run: true
-    optional: true
-    decorate: true
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    path_alias: "sigs.k8s.io/cluster-api-provider-aws"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200716-e3a0033-1.18
-        command:
-        - "runner.sh"
-        - "./scripts/ci-integration.sh"
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-    annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
-      testgrid-tab-name: pr-integration
   - name: pull-cluster-api-provider-aws-verify
     always_run: true
     optional: false
@@ -61,7 +41,7 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
       testgrid-tab-name: verify
   # conformance test against kubernetes master branch with `kind` + cluster-api-provider-aws
-  - name: pull-cluster-api-provider-aws-make-conformance
+  - name: pull-cluster-api-provider-aws-e2e-conformance-ci-artifacts
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -91,13 +71,14 @@ presubmits:
         - image: gcr.io/k8s-testimages/kubekins-e2e:v20200716-e3a0033-1.18
           command:
             - "runner.sh"
-            - "./scripts/ci-conformance.sh"
-            - "--use-ci-artifacts"
+            - "./scripts/ci-e2e-conformance.sh"
           env:
             - name: BOSKOS_HOST
               value: "boskos.test-pods.svc.cluster.local"
             - name: AWS_REGION
               value: "us-west-2"
+            - name: E2E_ARGS
+              value: "-kubetest.use-ci-artifacts"
           # we need privileged mode in order to do docker in docker
           securityContext:
             privileged: true
