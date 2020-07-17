@@ -33,6 +33,7 @@ import (
 	"strings"
 	"time"
 
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/triage/berghelroach"
 	"k8s.io/test-infra/triage/utils"
 )
@@ -584,4 +585,138 @@ func cluster_global(newlyClustered map[string]map[string][]failure, previouslyCl
 		len(newlyClustered), numFailures, len(globalClustering), elapsed.String())
 
 	return globalClustering
+}
+
+/*
+testsGroupByJob takes a group of failures and a group of builds and returns the list of builds
+that belong to each job.
+*/
+func tests_group_by_job(failures []failure, builds map[string]build) []struct {
+	jobName      string
+	buildNumbers []int
+} {
+	// groups maps job names to sets of build numbers.
+	var groups map[string]sets.Int
+
+	for _, flr := range failures {
+		var bld build
+		// Try to grab the build from builds if it exists
+		if matchedBuild, ok := builds[flr.build]; ok {
+			bld = matchedBuild
+		} else {
+			continue
+		}
+
+		// If the JSON build's "number" field was not null
+		if bld.number != 0 {
+			// Create the "set" if one doesn't exist for the given job
+			if _, ok := groups[bld.job]; !ok {
+				groups[bld.job] = make(sets.Int, 1)
+			}
+
+			groups[bld.job].Insert(bld.number)
+		}
+	}
+
+	// Sort groups in two stages
+
+	// First, sort each build number set in descending order
+	sortedBuildNumbers := make(map[string][]int, len(groups))
+	// Create the slice to hold the set elements, fill it, and sort it
+	for jobName, buildNumberSet := range groups {
+		// Initialize the int slice
+		sortedBuildNumbers[jobName] = make([]int, len(buildNumberSet))
+
+		// Fill it
+		iter := 0
+		for buildNumber := range buildNumberSet {
+			sortedBuildNumbers[jobName][iter] = buildNumber
+			iter++
+		}
+
+		// Sort it. Use > instead of < in less function to sort descending.
+		sort.Slice(sortedBuildNumbers[jobName], func(i, j int) bool { return sortedBuildNumbers[jobName][i] > sortedBuildNumbers[jobName][j] })
+	}
+
+	// Then, sort the jobs by the number of build numbers in each job's build number slice, descending.
+	// The struct acts as a tuple.
+	sortedGroups := make([]struct {
+		jobName      string
+		buildNumbers []int
+	}, len(groups))
+
+	// Fill sortedGroups
+	iter := 0
+	for newJobName, newBuildNumbers := range sortedBuildNumbers {
+		sortedGroups[iter] = struct {
+			jobName      string
+			buildNumbers []int
+		}{newJobName, newBuildNumbers}
+		iter++
+	}
+	// Sort it
+	sort.Slice(sortedGroups, func(i, j int) bool {
+		iGroupLen := len(sortedGroups[i].buildNumbers)
+		jGroupLen := len(sortedGroups[j].buildNumbers)
+
+		// If they're the same length, sort by job name alphabetically
+		if iGroupLen == jGroupLen {
+			return sortedGroups[i].jobName < sortedGroups[j].jobName
+		}
+
+		// Use > instead of < to sort descending.
+		return iGroupLen > jGroupLen
+	})
+
+	return sortedGroups
+}
+
+var spanRE = regexp.MustCompile(`\w+|\W+`)
+
+/*
+commonSpans finds something similar to the longest common subsequence of xs, but much faster.
+
+Returns a list of [matchlen_1, mismatchlen_2, matchlen_2, mismatchlen_2, ...], representing
+sequences of the first element of the list that are present in all members.
+*/
+func common_spans(xs []string) []int {
+	var common sets.String
+	commonModified := false // Flag to keep track of whether common has been modified at least once
+
+	for _, x := range xs {
+		x_split := spanRE.FindAllString(x, -1)
+		if !commonModified { // first iteration
+			common.Insert(x_split...)
+			commonModified = true
+		} else {
+			common = common.Intersection(sets.NewString(x_split...))
+		}
+	}
+
+	var spans []int
+	match := true
+	span_len := 0
+	for _, x := range spanRE.FindAllString(xs[0], -1) {
+		if common.Has(x) {
+			if !match {
+				match = true
+				spans = append(spans, span_len)
+				span_len = 0
+			}
+			span_len += len(x)
+		} else {
+			if match {
+				match = false
+				spans = append(spans, span_len)
+				span_len = 0
+			}
+			span_len += len(x)
+		}
+	}
+
+	if span_len == 0 {
+		spans = append(spans, span_len)
+	}
+
+	return spans
 }
