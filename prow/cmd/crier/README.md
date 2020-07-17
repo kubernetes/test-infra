@@ -153,7 +153,7 @@ slack_reporter_configs:
     channel: istio-channel
 ```
 
-The Slack `channel` can be overridden at the ProwJob level via the `reporter_config.slack.channel` field:
+The `channel`, `job_states_to_report` and `report_template` can be overridden at the ProwJob level via the `reporter_config.slack` field:
 ```yaml
 postsubmits:
   some-org/some-repo:
@@ -162,6 +162,9 @@ postsubmits:
       reporter_config:
         slack:
           channel: 'override-channel-name'
+          job_states_to_report:
+            - success
+          report_template: "Overridden template for job {{.Spec.Job}}"
       spec:
         containers:
           - image: alpine

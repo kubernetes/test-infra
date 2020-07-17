@@ -20,6 +20,7 @@ import (
 	"testing"
 
 	"github.com/sirupsen/logrus"
+
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 )
@@ -88,6 +89,88 @@ func TestShouldReport(t *testing.T) {
 			pj: &v1.ProwJob{
 				Spec: v1.ProwJobSpec{
 					Type: v1.PostsubmitJob,
+				},
+				Status: v1.ProwJobStatus{
+					State: v1.SuccessState,
+				},
+			},
+			expected: false,
+		},
+		{
+			name: "Job with channel config should ignore the JobTypesToReport config",
+			config: config.SlackReporter{
+				JobTypesToReport:  []v1.ProwJobType{},
+				JobStatesToReport: []v1.ProwJobState{v1.SuccessState},
+			},
+			pj: &v1.ProwJob{
+				Spec: v1.ProwJobSpec{
+					Type: v1.PostsubmitJob,
+					ReporterConfig: &v1.ReporterConfig{
+						Slack: &v1.SlackReporterConfig{Channel: "whatever-channel"},
+					},
+				},
+				Status: v1.ProwJobStatus{
+					State: v1.SuccessState,
+				},
+			},
+			expected: true,
+		},
+		{
+			name: "JobStatesToReport in Job config should override the one in Prow config",
+			config: config.SlackReporter{
+				JobTypesToReport:  []v1.ProwJobType{},
+				JobStatesToReport: []v1.ProwJobState{v1.SuccessState},
+			},
+			pj: &v1.ProwJob{
+				Spec: v1.ProwJobSpec{
+					Type: v1.PostsubmitJob,
+					ReporterConfig: &v1.ReporterConfig{
+						Slack: &v1.SlackReporterConfig{
+							Channel:           "whatever-channel",
+							JobStatesToReport: []v1.ProwJobState{v1.FailureState, v1.PendingState},
+						},
+					},
+				},
+				Status: v1.ProwJobStatus{
+					State: v1.FailureState,
+				},
+			},
+			expected: true,
+		},
+		{
+			name: "Job with channel config but does not have matched state in Prow config should not report",
+			config: config.SlackReporter{
+				JobTypesToReport:  []v1.ProwJobType{},
+				JobStatesToReport: []v1.ProwJobState{v1.SuccessState},
+			},
+			pj: &v1.ProwJob{
+				Spec: v1.ProwJobSpec{
+					Type: v1.PostsubmitJob,
+					ReporterConfig: &v1.ReporterConfig{
+						Slack: &v1.SlackReporterConfig{Channel: "whatever-channel"},
+					},
+				},
+				Status: v1.ProwJobStatus{
+					State: v1.PendingState,
+				},
+			},
+			expected: false,
+		},
+		{
+			name: "Job with channel and state config where the state does not match, should not report",
+			config: config.SlackReporter{
+				JobTypesToReport:  []v1.ProwJobType{},
+				JobStatesToReport: []v1.ProwJobState{v1.SuccessState},
+			},
+			pj: &v1.ProwJob{
+				Spec: v1.ProwJobSpec{
+					Type: v1.PostsubmitJob,
+					ReporterConfig: &v1.ReporterConfig{
+						Slack: &v1.SlackReporterConfig{
+							Channel:           "whatever-channel",
+							JobStatesToReport: []v1.ProwJobState{v1.FailureState, v1.PendingState},
+						},
+					},
 				},
 				Status: v1.ProwJobStatus{
 					State: v1.SuccessState,
@@ -357,9 +440,9 @@ func TestUsesChannelOverrideFromJob(t *testing.T) {
 				config: cfgGetter,
 			}
 
-			slackCfg := sr.getConfig(tc.pj)
-
-			if result := channel(slackCfg, tc.pj); result != tc.expected {
+			prowSlackCfg := sr.getConfig(tc.pj)
+			jobSlackCfg := jobConfig(tc.pj)
+			if result := channel(prowSlackCfg, jobSlackCfg); result != tc.expected {
 				t.Fatalf("Expected result to be %q, was %q", tc.expected, result)
 			}
 		})

@@ -117,6 +117,9 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
+ - *July 17, 2020* Slack reporter will no longer report all states of a Prow job if it has `Channel`
+   specified on the Prow job config. Instead, it will report the `job_states_to_report` configured in
+   the Prow job or in the Prow core config if the former does not exist.  
  - *May 18, 2020* `expiry` field has been replaced with `created_at` in the HMAC secret.
  - *April 24, 2020* Horologium now defaults to `--dry-run=true`
  - *April 23, 2020* Explicitly setting `--config-path` is now required.
