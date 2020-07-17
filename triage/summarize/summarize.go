@@ -590,6 +590,8 @@ func cluster_global(newlyClustered map[string]map[string][]failure, previouslyCl
 /*
 testsGroupByJob takes a group of failures and a group of builds and returns the list of builds
 that belong to each job.
+
+builds is a mapping from build names to build objects.
 */
 func tests_group_by_job(failures []failure, builds map[string]build) []struct {
 	jobName      string
