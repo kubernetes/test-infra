@@ -50,7 +50,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200716-e3a0033-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200717-da05571-experimental
         command:
         - ./hack/verify-file-perms.sh
     annotations:
@@ -78,7 +78,7 @@ presubmits:
     run_if_changed: '^(config/prow/(config|plugins).yaml$|config/jobs/.*.yaml$)'
     spec:
       containers:
-      - image: gcr.io/k8s-prow/checkconfig:v20200715-6a0bba187f
+      - image: gcr.io/k8s-prow/checkconfig:v20200717-cf288082e1
         command:
         - /checkconfig
         args:
