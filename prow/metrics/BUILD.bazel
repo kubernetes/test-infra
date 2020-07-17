@@ -50,6 +50,8 @@ go_test(
         "//prow/config:go_default_library",
         "//prow/flagutil:go_default_library",
         "//prow/interrupts:go_default_library",
+        "//prow/simplifypath:go_default_library",
+        "@com_github_prometheus_client_golang//prometheus/testutil:go_default_library",
         "@io_k8s_utils//diff:go_default_library",
     ],
 )
