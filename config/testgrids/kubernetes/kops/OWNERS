@@ -1,11 +1,13 @@
 # See the OWNERS docs at https://go.k8s.io/owners
-# Synced to the root OWNERS file in k8s.io/kops as of 05/27/20
+# Synced to the root OWNERS file in k8s.io/kops as of 07/17/20
 emeritus_approvers:
 - chrislovecnm
 - chrisz100
 - gambol99
 - granular-ryanbonham
 approvers:
+- hakman
+- johngmyers
 - justinsb
 - geojaz
 - kashifsaadat
@@ -20,6 +22,7 @@ reviewers:
 - joshbranham
 - kashifsaadat
 - mikesplain
+- olemarkus
 - rdrgmnzs
 - zetaab
 labels:
