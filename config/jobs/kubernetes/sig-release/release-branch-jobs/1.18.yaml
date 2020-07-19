@@ -396,7 +396,7 @@ periodics:
       - -//vendor/...
       command:
       - ../test-infra/hack/bazel.sh
-      image: launcher.gcr.io/google/bazel:0.25.2
+      image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:2.2.0-from-0.23.2
       name: ""
       resources: {}
 - annotations:
@@ -715,7 +715,7 @@ postsubmits:
         - -//vendor/...
         command:
         - ../test-infra/hack/bazel.sh
-        image: launcher.gcr.io/google/bazel:0.25.2
+        image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:2.2.0-from-0.23.2
         name: ""
         resources: {}
 presubmits:
@@ -1246,7 +1246,7 @@ presubmits:
           ../test-infra/hack/bazel.sh build --config=remote --remote_instance_name=projects/k8s-prow-builds/instances/default_instance -- //... -//vendor/... -//build/... //build/release-tars
         command:
         - bash
-        image: launcher.gcr.io/google/bazel:0.25.2
+        image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:2.2.0-from-0.23.2
         name: ""
         resources: {}
   - always_run: true
@@ -1274,7 +1274,7 @@ presubmits:
         - -//vendor/...
         command:
         - ../test-infra/hack/bazel.sh
-        image: launcher.gcr.io/google/bazel:0.25.2
+        image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:2.2.0-from-0.23.2
         name: ""
         resources: {}
   - always_run: true
