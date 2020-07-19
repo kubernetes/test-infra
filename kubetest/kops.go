@@ -469,6 +469,7 @@ func (k kops) Up() error {
 	}
 
 	createArgs = append(createArgs, "--yes")
+	createArgs = append(createArgs, "--admin")
 
 	if err := control.FinishRunning(exec.Command(k.path, createArgs...)); err != nil {
 		return fmt.Errorf("kops create cluster failed: %v", err)
