@@ -99,7 +99,7 @@ periodics:
       - --kops-args=--node-size=c6g.large --node-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20200701
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --kops-zones=eu-west-1a,eu-west-1b,eu-west-1c
+      - --kops-zones=eu-west-1a,eu-west-1b
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
       - --timeout=120m
@@ -134,7 +134,7 @@ periodics:
       - --kops-args=--node-size=c6g.large --node-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20200701
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --kops-zones=eu-west-1a,eu-west-1b,eu-west-1c
+      - --kops-zones=eu-west-1a,eu-west-1b
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
       - --timeout=120m
@@ -169,7 +169,7 @@ periodics:
       - --kops-args=--node-size=c6g.large --node-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20200701
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --kops-zones=eu-west-1a,eu-west-1b,eu-west-1c
+      - --kops-zones=eu-west-1a
       - --provider=aws
       - --test_args=--ginkgo.focus=\[Conformance\]
       - --timeout=120m
