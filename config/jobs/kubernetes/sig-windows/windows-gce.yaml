@@ -80,6 +80,7 @@ periodics:
       - --test=false
       - --test-cmd=$GOPATH/src/k8s.io/windows-testing/gce/run-e2e.sh
       - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
+      - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
       - --test-cmd-args=--node-os-distro=windows
       - --timeout=120m
       env:
@@ -124,6 +125,7 @@ periodics:
       - --test=false
       - --test-cmd=$GOPATH/src/k8s.io/windows-testing/gce/run-e2e.sh
       - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
+      - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
       - --test-cmd-args=--node-os-distro=windows
       - --timeout=120m
       env:
@@ -168,6 +170,7 @@ periodics:
       - --test=false
       - --test-cmd=$GOPATH/src/k8s.io/windows-testing/gce/run-e2e.sh
       - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\] --minStartupPods=8
+      - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\] --minStartupPods=8
       - --test-cmd-args=--node-os-distro=windows
       - --timeout=120m
       env:
@@ -214,6 +217,7 @@ periodics:
       - --test=false
       - --test-cmd=$GOPATH/src/k8s.io/windows-testing/gce/run-e2e.sh
       - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\]|DaemonRestart --ginkgo.skip=\[Flaky\]|\[LinuxOnly\] --minStartupPods=8
+      - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\]|DaemonRestart --ginkgo.skip=\[Flaky\]|\[LinuxOnly\] --minStartupPods=8
       - --test-cmd-args=--node-os-distro=windows
       - --timeout=350m
       env:
@@ -258,6 +262,7 @@ periodics:
       - --test=false
       - --test-cmd=$GOPATH/src/k8s.io/windows-testing/gce/run-e2e.sh
       - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
+      - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
       - --test-cmd-args=--node-os-distro=windows
       - --timeout=230m
       env:
@@ -300,6 +305,8 @@ periodics:
       - --test=false
       - --test-cmd=$GOPATH/src/k8s.io/windows-testing/gce/run-e2e.sh
       - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]
+        --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
+      - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]
         --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
       - --test-cmd-args=--node-os-distro=windows
       - --timeout=230m
@@ -474,6 +481,7 @@ presubmits:
         - --test=false
         - --test-cmd=$GOPATH/src/k8s.io/windows-testing/gce/run-e2e.sh
         - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
+        - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
         - --test-cmd-args=--node-os-distro=windows
         - --timeout=200m
         env:
