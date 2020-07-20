@@ -259,6 +259,8 @@ class BuildHandler(view_base.BaseHandler):
         if external_config is not None:
             if external_config.get('spyglass'):
                 spyglass_link = 'https://' + external_config['prow_url'] + '/view/gcs/' + build_dir
+                self.redirect(spyglass_link)
+                return
             if '/pull/' in prefix:
                 pr, pr_path, pr_digest, repo = get_pr_info(prefix, self.app.config)
             if want_build_log and not build_log:
@@ -286,7 +288,7 @@ class BuildHandler(view_base.BaseHandler):
             build_log=build_log, build_log_src=build_log_src,
             issues=issues_fut.get_result(), repo=repo,
             pr_path=pr_path, pr=pr, pr_digest=pr_digest,
-            testgrid_query=testgrid_query, spyglass_link=spyglass_link))
+            testgrid_query=testgrid_query))
 
 
 def get_build_config(prefix, config):
