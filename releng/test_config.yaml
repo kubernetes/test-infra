@@ -656,23 +656,23 @@ nodeK8sVersions:
   dev:
     args:
     - --repo=k8s.io/kubernetes=master
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20200717-da05571-master
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20200720-4766100-master
   beta:
     args:
     - --repo=k8s.io/kubernetes=release-1.19
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20200717-da05571-1.19
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20200720-4766100-1.19
   stable1:
     args:
     - --repo=k8s.io/kubernetes=release-1.18
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20200717-da05571-1.18
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20200720-4766100-1.18
   stable2:
     args:
     - --repo=k8s.io/kubernetes=release-1.17
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20200717-da05571-1.17
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20200720-4766100-1.17
   stable3:
     args:
     - --repo=k8s.io/kubernetes=release-1.16
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20200717-da05571-1.16
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20200720-4766100-1.16
 
 nodeTestSuites:
   default:

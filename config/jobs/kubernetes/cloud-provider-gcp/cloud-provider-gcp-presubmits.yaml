@@ -37,7 +37,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200717-da05571-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200720-4766100-master
         command:
         - runner.sh
         args:
