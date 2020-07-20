@@ -10,3 +10,4 @@ substitutions:
 images:
   - 'gcr.io/$PROJECT_ID/kettle:$_GIT_TAG'
   - 'gcr.io/$PROJECT_ID/kettle:latest'
+timeout: 1260s
