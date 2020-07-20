@@ -1173,8 +1173,8 @@ func TestFindConfigFileByLabel(t *testing.T) {
 		}, {
 			name:                 "OWNERS in ROOT and LEAF",
 			path:                 "a/b/c/foo.txt",
-			label:                "sig/hg2tg",
-			expectedConfigSource: "./OWNERS",
+			label:                "sig/hg2tg-secondary-phase",
+			expectedConfigSource: "a/b/c/OWNERS",
 		},
 	}
 
@@ -1193,6 +1193,7 @@ func TestFindConfigFileByLabel(t *testing.T) {
 		},
 		configSourceByLabel: map[string]string{
 			"sig/hg2tg": "./OWNERS",
+			"sig/hg2tg-secondary-phase": "a/b/c/OWNERS",
 			"wg/towel":  "./OWNERS",
 		},
 	}
