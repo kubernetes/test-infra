@@ -39,7 +39,8 @@ var (
 	testFiles = map[string][]byte{
 		"foo": []byte(`approvers:
 - bob`),
-		"OWNERS": []byte(`approvers:
+		"OWNERS": []byte(
+			`approvers:
 - cjwagner
 reviewers:
 - Alice
@@ -1192,9 +1193,9 @@ func TestFindConfigFileByLabel(t *testing.T) {
 			"a/b/c/foo.txt": regexpAll("./OWNERS", "a/b/c/OWNERS"),
 		},
 		configSourceByLabel: map[string]string{
-			"sig/hg2tg": "./OWNERS",
+			"sig/hg2tg":                 "./OWNERS",
 			"sig/hg2tg-secondary-phase": "a/b/c/OWNERS",
-			"wg/towel":  "./OWNERS",
+			"wg/towel":                  "./OWNERS",
 		},
 	}
 	for i, test := range tests {
