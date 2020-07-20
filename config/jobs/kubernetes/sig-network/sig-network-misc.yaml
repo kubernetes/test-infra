@@ -346,7 +346,7 @@ periodics:
       - --env=KUBE_PROXY_MODE=ipvs
       - --extract=ci/latest
       - --gcp-master-image=gci
-      - --gcp-node-image=ubuntu
+      - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=30
       - --provider=gce
