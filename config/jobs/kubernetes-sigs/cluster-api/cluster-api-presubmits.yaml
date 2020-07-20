@@ -112,7 +112,6 @@ presubmits:
       - gh-pages
       - release-0.2
     path_alias: sigs.k8s.io/cluster-api
-    optional: true
     always_run: true
     spec:
       containers:
