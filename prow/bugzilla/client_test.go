@@ -1004,74 +1004,84 @@ func errorChecker(err error, t *testing.T) {
 	}
 }
 func TestGetAllClones(t *testing.T) {
-	fake := &Fake{}
-	fake.Bugs = map[int]Bug{}
-	fake.BugComments = map[int][]Comment{}
-	bug1Create := &BugCreate{
-		Summary: "Dummy bug to test getAllClones",
-	}
-	bug1ID, err := fake.CreateBug(bug1Create)
-	if err != nil {
-		t.Fatalf("Error while creating bug in Fake!\n")
-	}
-	bug1, err := fake.GetBug(bug1ID) //Original bug
-	errorChecker(err, t)
-	bug2ID, err := fake.CloneBug(bug1) //2nd level bug
-	errorChecker(err, t)
-	bug2, err := fake.GetBug(bug2ID)
-	errorChecker(err, t)
-	bug3ID, err := fake.CloneBug(bug2) //3rd level bug
-	errorChecker(err, t)
-	bug4ID, err := fake.CloneBug(bug1) //Sibling of 2nd level
-	errorChecker(err, t)
-	bug1, err = fake.GetBug(bug1ID)
-	errorChecker(err, t)
-	bug2, err = fake.GetBug(bug2ID)
-	errorChecker(err, t)
-	bug3, err := fake.GetBug(bug3ID)
-	errorChecker(err, t)
-	bug4, err := fake.GetBug(bug4ID)
-	errorChecker(err, t)
+
 	testcases := []struct {
-		name           string
-		bug            *Bug
-		expectedClones sets.Int
+		name            string
+		bugs            []Bug
+		bugToBeSearched Bug
+		expectedClones  sets.Int
 	}{
 		{
-			"Clones including multiple children",
-			bug1,
-			sets.NewInt(bug2ID, bug3ID, bug4ID),
+			name: "Clones for the root node",
+			bugs: []Bug{
+				{Summary: "", ID: 1, Blocks: []int{2, 5}},
+				{Summary: "", ID: 2, DependsOn: []int{1}, Blocks: []int{3}},
+				{Summary: "", ID: 3, DependsOn: []int{2}},
+				{Summary: "Not a clone", ID: 4, DependsOn: []int{1}},
+				{Summary: "", ID: 5, DependsOn: []int{1}},
+			},
+			bugToBeSearched: Bug{Summary: "", ID: 1, Blocks: []int{2, 5}},
+			expectedClones:  sets.NewInt(1, 2, 3, 5),
 		},
 		{
-			"Clones should include parent as well as child",
-			bug2,
-			sets.NewInt(bug1ID, bug3ID, bug4ID),
+			name: "Clones for child of root",
+			bugs: []Bug{
+				{Summary: "", ID: 1, Blocks: []int{2, 5}},
+				{Summary: "", ID: 2, DependsOn: []int{1}, Blocks: []int{3}},
+				{Summary: "", ID: 3, DependsOn: []int{2}},
+				{Summary: "Not a clone", ID: 4, DependsOn: []int{1}},
+				{Summary: "", ID: 5, DependsOn: []int{1}},
+			},
+			bugToBeSearched: Bug{Summary: "", ID: 2, DependsOn: []int{1}, Blocks: []int{3}},
+			expectedClones:  sets.NewInt(1, 2, 3, 5),
 		},
 		{
-			"Clones includes parent and grandparent",
-			bug3,
-			sets.NewInt(bug1ID, bug2ID, bug4ID),
+			name: "Clones for grandchild of root",
+			bugs: []Bug{
+				{Summary: "", ID: 1, Blocks: []int{2, 5}},
+				{Summary: "", ID: 2, DependsOn: []int{1}, Blocks: []int{3}},
+				{Summary: "", ID: 3, DependsOn: []int{2}},
+				{Summary: "Not a clone", ID: 4, DependsOn: []int{1}},
+				{Summary: "", ID: 5, DependsOn: []int{1}},
+			},
+			bugToBeSearched: Bug{Summary: "", ID: 3, DependsOn: []int{2}},
+			expectedClones:  sets.NewInt(1, 2, 3, 5),
 		},
 		{
-			"Clones when not directly related",
-			bug4,
-			sets.NewInt(bug1ID, bug2ID, bug3ID),
+			name: "Clones when no clone is expected",
+			bugs: []Bug{
+				{Summary: "", ID: 1, Blocks: []int{2, 5}},
+				{Summary: "", ID: 2, DependsOn: []int{1}, Blocks: []int{3}},
+				{Summary: "", ID: 3, DependsOn: []int{2}},
+				{Summary: "Not a clone", ID: 4, DependsOn: []int{1}},
+				{Summary: "", ID: 5, DependsOn: []int{1}},
+			},
+			bugToBeSearched: Bug{Summary: "Not a clone", ID: 4, DependsOn: []int{1}},
+			expectedClones:  sets.NewInt(4),
 		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			clones, err := getAllClones(fake, tc.bug)
+			fake := &Fake{
+				Bugs:        map[int]Bug{},
+				BugComments: map[int][]Comment{},
+			}
+			for _, bug := range tc.bugs {
+				fake.Bugs[bug.ID] = bug
+			}
+			bugCache := newBugDetailsCache()
+			clones, err := getAllClones(fake, &tc.bugToBeSearched, bugCache)
 			if err != nil {
 				t.Errorf("Error occurred when none was expected: %v", err)
 			}
-			if len(tc.expectedClones) != len(clones) {
-				t.Errorf("Mismatch in number of clones - expected: %d, got %d", len(tc.expectedClones), len(clones))
-			}
+			actualCloneSet := sets.NewInt()
 			for _, clone := range clones {
-				if ok := tc.expectedClones.Has(clone.ID); !ok {
-					t.Errorf("Unexpected clone found in list - expecting: %v, got: %d", tc.expectedClones, clone.ID)
-				}
+				actualCloneSet.Insert(clone.ID)
 			}
+			if !tc.expectedClones.Equal(actualCloneSet) {
+				t.Errorf("clones mismatch - expected %v, got %v", tc.expectedClones, actualCloneSet)
+			}
+
 		})
 
 	}
