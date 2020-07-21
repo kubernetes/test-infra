@@ -413,7 +413,7 @@ periodics:
 - annotations:
     description: Runs tests on a Kubernetes 1.16 cluster with Windows 2019 nodes on
       GCE
-    testgrid-dashboards: google-windows, sig-release-1.16-informing, sig-windows
+    testgrid-dashboards: google-windows, sig-release-1.16-informing, sig-windows-releases, sig-windows-gce
     testgrid-tab-name: gce-windows-1.16
   decorate: true
   extra_refs:

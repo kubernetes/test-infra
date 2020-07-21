@@ -62,7 +62,7 @@ presubmits:
         securityContext:
           privileged: true
     annotations:
-      testgrid-dashboards: sig-windows, provider-azure-windows, provider-azure-upstream, provider-azure-presubmit
+      testgrid-dashboards: sig-windows-presubmit, provider-azure-windows, provider-azure-upstream, provider-azure-presubmit
       testgrid-tab-name: pr-aks-engine-azure-windows
       description: Presubmit job for Windows tests on k8s clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
       testgrid-num-columns-recent: '30'
@@ -125,7 +125,7 @@ presubmits:
         - name: TEST_WINDOWS
           value: "true"
     annotations:
-      testgrid-dashboards: provider-azure-windows, provider-azure-upstream, provider-azure-presubmit
+      testgrid-dashboards: sig-windows-azure, sig-windows-presubmit, provider-azure-windows, provider-azure-upstream, provider-azure-presubmit
       testgrid-tab-name: pr-k8s-azure-disk-e2e-master-windows
       description: Run Azure Disk e2e test with Azure Disk in-tree volume plugin in a Windows cluster.
   - name: pull-kubernetes-e2e-azure-file-windows
@@ -187,7 +187,7 @@ presubmits:
         - name: TEST_WINDOWS
           value: "true"
     annotations:
-      testgrid-dashboards: provider-azure-windows, provider-azure-upstream, provider-azure-presubmit
+      testgrid-dashboards: sig-windows-azure, sig-windows-presubmit, provider-azure-windows, provider-azure-upstream, provider-azure-presubmit
       testgrid-tab-name: pr-k8s-azure-file-e2e-master-windows
       description: Run Azure File e2e test with Azure File in-tree volume plugin in a Windows cluster.
 periodics:
@@ -294,7 +294,7 @@ periodics:
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-windows, provider-azure-windows, provider-azure-periodic
+    testgrid-dashboards: sig-windows-releases, sig-windows-azure, provider-azure-windows, provider-azure-periodic
     testgrid-tab-name: aks-engine-azure-windows-master-staging
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Staging job for new Windows tests on a Kubernetes cluster provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
@@ -347,7 +347,7 @@ periodics:
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-windows, provider-azure-windows, provider-azure-periodic
+    testgrid-dashboards: sig-windows-containerd, sig-windows-azure, provider-azure-windows, provider-azure-periodic
     testgrid-tab-name: aks-engine-azure-windows-master-containerd
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs Windows tests on a Kubernetes cluster running containerd provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
@@ -400,7 +400,7 @@ periodics:
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-windows, provider-azure-windows, provider-azure-periodic
+    testgrid-dashboards: sig-windows-containerd, sig-windows-azure, provider-azure-windows, provider-azure-periodic
     testgrid-tab-name: aks-engine-azure-windows-master-containerd-serial-slow
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs serial Windows tests on a Kubernetes cluster running containerd provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
@@ -460,7 +460,7 @@ periodics:
       - name: TEST_WINDOWS
         value: "true"
   annotations:
-    testgrid-dashboards: sig-windows, provider-azure-periodic, provider-azure-windows
+    testgrid-dashboards: sig-windows-containerd,sig-windows-azure, provider-azure-periodic, provider-azure-windows
     testgrid-tab-name: aks-engine-azure-windows-containerd-azuredisk
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: "Run Azure Disk CSI driver E2E tests on a Windows cluster using containerd"
@@ -513,7 +513,7 @@ periodics:
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-windows, provider-azure-windows, provider-azure-periodic
+    testgrid-dashboards: sig-windows-containerd, sig-windows-azure, provider-azure-windows, provider-azure-periodic
     testgrid-tab-name: aks-engine-azure-windows-master-containerd-hyperv
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs Windows tests on a Kubernetes cluster running containerd with HyperV isolation provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
@@ -566,7 +566,7 @@ periodics:
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-windows, provider-azure-windows, provider-azure-periodic
+    testgrid-dashboards: sig-windows-containerd, sig-windows-azure, provider-azure-windows, provider-azure-periodic
     testgrid-tab-name: aks-engine-azure-windows-master-containerd-hyperv-serial-slow
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs serial Windows tests on a Kubernetes cluster running containerd with HyperV isolation provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
@@ -628,7 +628,7 @@ periodics:
       - name: TEST_WINDOWS
         value: "true"
   annotations:
-    testgrid-dashboards: sig-windows, provider-azure-periodic, provider-azure-windows
+    testgrid-dashboards: sig-windows-azure, provider-azure-periodic, provider-azure-windows
     testgrid-tab-name: aks-engine-azure-windows-azure-disk
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Run Azure Disk e2e test with Azure Disk in-tree volume plugin in a Windows cluster.
@@ -690,7 +690,7 @@ periodics:
       - name: TEST_WINDOWS
         value: "true"
   annotations:
-    testgrid-dashboards: sig-windows, provider-azure-periodic, provider-azure-windows
+    testgrid-dashboards: sig-windows-azure, provider-azure-periodic, provider-azure-windows
     testgrid-tab-name: aks-engine-azure-windows-azure-file
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Run Azure File e2e test with Azure File in-tree volume plugin in a Windows cluster.
@@ -744,7 +744,7 @@ periodics:
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-windows, provider-azure-windows, provider-azure-periodic
+    testgrid-dashboards: sig-windows-sac, sig-windows-azure, provider-azure-windows, provider-azure-periodic
     testgrid-tab-name: aks-engine-azure-windows-1903-master
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs SIG-Windows release tests on K8s clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
@@ -798,7 +798,7 @@ periodics:
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-windows, provider-azure-periodic, provider-azure-windows
+    testgrid-dashboards: sig-windows-sac, sig-windows-azure, provider-azure-periodic, provider-azure-windows
     testgrid-tab-name: aks-engine-azure-windows-1909-master
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs SIG-Windows release tests on K8s clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
@@ -852,7 +852,7 @@ periodics:
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-windows, provider-azure-periodic, provider-azure-windows
+    testgrid-dashboards: sig-windows-sac, sig-windows-azure, provider-azure-periodic, provider-azure-windows
     testgrid-tab-name: aks-engine-azure-windows-2004-master
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs SIG-Windows release tests on K8s clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
