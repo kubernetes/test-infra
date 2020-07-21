@@ -407,6 +407,7 @@ tide:
     labels:
     - lgtm
     - approved
+    - "cla: yes"
     missingLabels:
     - do-not-merge
     - do-not-merge/hold
