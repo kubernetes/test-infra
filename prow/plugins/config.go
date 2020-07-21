@@ -1327,6 +1327,11 @@ type BugzillaBranchOptions struct {
 	// StateAfterMerge is the state to which the bug will be moved after all pull requests
 	// in the external bug tracker have been merged.
 	StateAfterMerge *BugzillaBugState `json:"state_after_merge,omitempty"`
+
+	// AllowedGroups is a list of bugzilla bug group names that the bugzilla plugin can
+	// link to in PRs. If a bug is part of a group that is not in this list, the bugzilla
+	// plugin will not link the bug to the PR.
+	AllowedGroups []string `json:"allowed_groups,omitempty"`
 }
 
 type BugzillaBugStateSet map[BugzillaBugState]interface{}
@@ -1484,6 +1489,9 @@ func ResolveBugzillaOptions(parent, child BugzillaBranchOptions) BugzillaBranchO
 		if parent.StateAfterMerge != nil {
 			output.StateAfterMerge = parent.StateAfterMerge
 		}
+		if parent.AllowedGroups != nil {
+			output.AllowedGroups = sets.NewString(output.AllowedGroups...).Insert(parent.AllowedGroups...).UnsortedList()
+		}
 	}
 
 	// override with the child
@@ -1550,6 +1558,9 @@ func ResolveBugzillaOptions(parent, child BugzillaBranchOptions) BugzillaBranchO
 	}
 	if child.StateAfterMerge != nil {
 		output.StateAfterMerge = child.StateAfterMerge
+	}
+	if child.AllowedGroups != nil {
+		output.AllowedGroups = sets.NewString(output.AllowedGroups...).Insert(child.AllowedGroups...).UnsortedList()
 	}
 
 	// Status fields should not be used anywhere now when they were mirrored to states

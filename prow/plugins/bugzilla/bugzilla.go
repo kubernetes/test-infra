@@ -438,6 +438,29 @@ func processQuery(query *emailToLoginQuery, email string, log *logrus.Entry) str
 
 func handle(e event, gc githubClient, bc bugzilla.Client, options plugins.BugzillaBranchOptions, log *logrus.Entry) error {
 	comment := e.comment(gc)
+	// check if bug is part of a restricted group
+	if !e.missing {
+		bug, err := getBug(bc, e.bugId, log, comment)
+		if err != nil || bug == nil {
+			return err
+		}
+		if !isBugAllowed(bug, options.AllowedGroups) {
+			// ignore bugs that are in non-allowed groups for this repo
+			if refreshCommandMatch.MatchString(e.body) {
+				response := fmt.Sprintf(bugLink+" is in a bug group that is not in the allowed groups for this repo.", e.bugId, bc.Endpoint(), e.bugId)
+				if len(options.AllowedGroups) > 0 {
+					response += "\nAllowed groups for this repo are:"
+					for _, group := range options.AllowedGroups {
+						response += "\n- " + group
+					}
+				} else {
+					response += " There are no allowed bug groups configured for this repo."
+				}
+				return comment(response)
+			}
+			return nil
+		}
+	}
 	// merges follow a different pattern from the normal validation
 	if e.merged {
 		return handleMerge(e, gc, bc, options, log)
@@ -886,6 +909,10 @@ func handleCherrypick(e event, gc githubClient, bc bugzilla.Client, options plug
 	if err != nil || bug == nil {
 		return err
 	}
+	if !isBugAllowed(bug, options.AllowedGroups) {
+		// ignore bugs that are in non-allowed groups for this repo
+		return nil
+	}
 	clones, err := bc.GetClones(bug)
 	if err != nil {
 		return comment(formatError(fmt.Sprintf("creating a cherry-pick bug in Bugzilla: could not get list of clones"), bc.Endpoint(), bug.ID, err))
@@ -984,4 +1011,20 @@ func handleClose(e event, gc githubClient, bc bugzilla.Client, options plugins.B
 		}
 	}
 	return nil
+}
+
+func isBugAllowed(bug *bugzilla.Bug, allowedGroups []string) bool {
+	for _, group := range bug.Groups {
+		found := false
+		for _, allowed := range allowedGroups {
+			if group == allowed {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return false
+		}
+	}
+	return true
 }
