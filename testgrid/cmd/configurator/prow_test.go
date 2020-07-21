@@ -290,6 +290,7 @@ func Test_applySingleProwjobAnnotations(t *testing.T) {
 				"testgrid-num-columns-recent":        "13",
 				"testgrid-num-failures-to-alert":     "4",
 				"testgrid-alert-stale-results-hours": "24",
+				"testgrid-days-of-results":           "30",
 			},
 			expectedConfig: config.Configuration{
 				TestGroups: []*config.TestGroup{
@@ -299,6 +300,7 @@ func Test_applySingleProwjobAnnotations(t *testing.T) {
 						NumColumnsRecent:       13,
 						NumFailuresToAlert:     4,
 						AlertStaleResultsHours: 24,
+						DaysOfResults:          30,
 					},
 				},
 				Dashboards: []*config.Dashboard{

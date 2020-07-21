@@ -40,6 +40,7 @@ const testgridEmailAnnotation = "testgrid-alert-email"
 const testgridNumColumnsRecentAnnotation = "testgrid-num-columns-recent"
 const testgridAlertStaleResultsHoursAnnotation = "testgrid-alert-stale-results-hours"
 const testgridNumFailuresToAlertAnnotation = "testgrid-num-failures-to-alert"
+const testgridDaysOfResultsAnnotation = "testgrid-days-of-results"
 const descriptionAnnotation = "description"
 const minPresubmitNumColumnsRecent = 20
 
@@ -86,7 +87,7 @@ func applySingleProwjobAnnotations(c *configpb.Configuration, pc *prowConfig.Con
 
 	if testGroup == nil {
 		for _, a := range []string{testgridNumColumnsRecentAnnotation, testgridAlertStaleResultsHoursAnnotation,
-			testgridNumFailuresToAlertAnnotation, testgridTabNameAnnotation, testgridEmailAnnotation} {
+			testgridNumFailuresToAlertAnnotation, testgridDaysOfResultsAnnotation, testgridTabNameAnnotation, testgridEmailAnnotation} {
 			_, ok := j.Annotations[a]
 			if ok {
 				return fmt.Errorf("no testgroup exists for job %q, but annotation %q implies one should exist", j.Name, a)
@@ -120,6 +121,14 @@ func applySingleProwjobAnnotations(c *configpb.Configuration, pc *prowConfig.Con
 			return fmt.Errorf("%s value %q is not a valid integer", testgridNumFailuresToAlertAnnotation, nfta)
 		}
 		testGroup.NumFailuresToAlert = int32(nftaInt)
+	}
+
+	if dora, ok := j.Annotations[testgridDaysOfResultsAnnotation]; ok {
+		doraInt, err := strconv.ParseInt(dora, 10, 32)
+		if err != nil {
+			return fmt.Errorf("%s value %q is not a valid integer", testgridDaysOfResultsAnnotation, dora)
+		}
+		testGroup.DaysOfResults = int32(doraInt)
 	}
 
 	if tn, ok := j.Annotations[testgridTabNameAnnotation]; ok {
