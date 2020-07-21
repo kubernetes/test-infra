@@ -253,5 +253,10 @@ func (c *Fake) GetRootForClone(bug *Bug) (*Bug, error) {
 	return getRootForClone(c, bug)
 }
 
+// SetRoundTripper sets the Transport in http.Client to a custom RoundTripper
+func (c *Fake) SetRoundTripper(t http.RoundTripper) {
+	// Do nothing here
+}
+
 // the Fake is a Client
 var _ Client = &Fake{}
