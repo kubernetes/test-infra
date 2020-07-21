@@ -21,6 +21,19 @@ plank:
         default_org: "kubernetes"
         default_repo: "kubernetes"
       gcs_credentials_secret: "service-account"
+      resources:
+        clonerefs:
+          requests:
+            cpu: 100m
+        initupload:
+          requests:
+            cpu: 100m
+        place_entrypoint:
+          requests:
+            cpu: 100m
+        sidecar:
+          requests:
+            cpu: 100m
 
 sinker:
   resync_period: 1m
