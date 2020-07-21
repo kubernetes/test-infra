@@ -1,0 +1,22 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+reviewers:
+- celestehorgan
+- irvifa
+- jimangel
+- kbarnard10
+- kbhawkey
+- onlydole
+- sftim
+- zacharysarah
+approvers:
+- celestehorgan
+- irvifa
+- jimangel
+- kbarnard10
+- kbhawkey
+- onlydole
+- sftim
+- zacharysarah
+labels:
+- sig/docs

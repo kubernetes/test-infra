@@ -1,0 +1,20 @@
+periodics:
+  - name: kubernetes-website-link-checker
+    annotations:
+      testgrid-dashboards: sig-docs-kubernetes-website
+      testgrid-tab-name: website-link-check-result
+    decorate: true
+    interval: 168h # 1 week
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    extra_refs:
+    - org: kubernetes
+      repo: website
+      base_ref: master
+      path_alias: "k8s.io/website"
+    spec:
+      containers:
+        - image: irvifa/kubernetes-hugo:1.0
+          command: ["/bin/sh"]
+          args: ["-c", "hugo --config config.toml,linkcheck-config.toml --buildFuture && htmltest"]

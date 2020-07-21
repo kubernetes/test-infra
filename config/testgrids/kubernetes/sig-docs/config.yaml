@@ -1,0 +1,7 @@
+dashboard_groups:
+- name: sig-docs
+  dashboard_names:
+    - sig-docs-kubernetes-website
+
+dashboards:
+- name: sig-docs-kubernetes-website
