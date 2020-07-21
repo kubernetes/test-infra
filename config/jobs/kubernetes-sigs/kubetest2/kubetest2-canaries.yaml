@@ -7,7 +7,6 @@ presubmits:
     # run_if_changed: "kubetest2-gce/.*"
     labels:
       preset-service-account: "true"
-      preset-k8s-ssh: "true"
     annotations:
       testgrid-dashboards: sig-testing-canaries
     extra_refs:
