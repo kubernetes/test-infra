@@ -398,14 +398,6 @@ branch-protection:
           required_status_checks:
             contexts:
             - continuous-integration/travis-ci
-    kubeflow:
-      protect: true
-      required_status_checks:
-        contexts:
-        - cla/google
-      exclude:
-      - "^revert-" # don't protect revert branches
-      - "^dependabot/" # don't protect branches created by dependabot
 
 tide:
   sync_period: 2m
