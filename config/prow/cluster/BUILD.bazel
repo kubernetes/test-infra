@@ -26,6 +26,11 @@ release(
         cluster = BUILD_CLUSTER,
     ),
     component(
+        "cpu-limit-range",
+        "limitrange",
+        cluster = BUILD_CLUSTER,
+    ),
+    component(
         "create-loop-devs",
         "daemonset",
         cluster = BUILD_CLUSTER,
