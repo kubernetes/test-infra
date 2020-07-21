@@ -91,7 +91,7 @@ presubmits:
         resources:
           requests:
             memory: "9000Mi"
-            cpu: 7500m
+            cpu: 7400m
   # conformance test against kubernetes master branch with `kind`, skipping
   # serial tests so it runs in ~20m
   # GA-only variant

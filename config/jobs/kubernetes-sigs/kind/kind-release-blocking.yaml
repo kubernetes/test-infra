@@ -50,7 +50,7 @@ periodics:
           # this is mostly for building kubernetes
           memory: "9000Mi"
           # during the tests more like 3-20m is used
-          cpu: 7400m
+          cpu: 7300m
 - interval: 1h
   cluster: k8s-infra-prow-build
   name: ci-kubernetes-kind-ipv6-e2e-parallel
@@ -108,4 +108,4 @@ periodics:
           # this is mostly for building kubernetes
           memory: "9000Mi"
           # during the tests more like 3-20m is used
-          cpu: 7400m
+          cpu: 7300m
