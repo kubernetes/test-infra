@@ -136,13 +136,12 @@ create-gerrit-pr() {
 	git fetch upstream "+refs/changes/*:refs/remotes/upstream/changes/*" 2> /dev/null
 	local pr_commit="$(git log --all --grep="Change-Id: ${change_id}" -1 --format="%H")"
 	if [[ -n "${pr_commit}" ]]; then
-		local pr_diff="$(git diff "${pr_commit}")"
-		if [[ -z "${pr_diff}" ]]; then
-			echo "Bump PR is already up to date. Aborting no-op update." >&2
+		local pr_version="$(git show "${pr_commit}:${PLANK_DEPLOYMENT_FILE}" | extract-version)"
+		if [[ "${pr_version}" == "${version}" ]]; then
+			echo "Bump PR is already up to date (version ${version}). Aborting no-op update." >&2
 			return 0
 		fi
-		echo "Bump PR is not up to date. Updating PR with the following diff:"
-		echo "${pr_diff}"
+		echo "Bump PR is not up to date, it currently updates to ${pr_version}. Updating PR to ${version}."
 	else
 		echo "Did not find an existing PR to update. A new Gerrit PR will be created."
 	fi
