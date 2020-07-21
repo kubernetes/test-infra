@@ -127,6 +127,10 @@ branch-protection:
             users: []
             teams:
             - stage-bots
+        autoscaler:
+          required_status_checks:
+            contexts:
+            - continuous-integration/travis-ci/pr
         client-go:
           restrictions:
             users: []
