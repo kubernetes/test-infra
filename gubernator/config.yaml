@@ -39,7 +39,6 @@ jobs:
   - pull-kubernetes-integration
   - pull-kubernetes-kubemark-e2e-gce-big
   - pull-kubernetes-node-e2e
-  - pull-kubernetes-node-e2e-containerd
   - pull-kubernetes-typecheck
   - pull-kubernetes-verify
 recursive_artifacts: false

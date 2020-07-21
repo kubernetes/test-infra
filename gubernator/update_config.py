@@ -27,7 +27,7 @@ def main(prow_config, prow_job_config, gubernator_config):
             if name.endswith('.yaml'):
                 configs.append(os.path.join(root, name))
 
-    print configs
+    print(configs) # pylint: disable=superfluous-parens
 
     default_presubmits = set()
     periodic_names = set()
