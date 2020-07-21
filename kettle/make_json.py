@@ -124,14 +124,19 @@ def parse_junit(xml):
     # Note: skipped tests are ignored because they make rows too large for BigQuery.
     # Knowing that a given build could have ran a test but didn't for some reason
     # isn't very interesting.
+
+    def parse_result(child_node):
+        time = float(child_node.attrib.get('time', 0))
+        failure_text = None
+        for param in child_node.findall('failure'):
+            failure_text = param.text
+        skipped = child_node.findall('skipped')
+        return time, failure_text, skipped
+
     if tree.tag == 'testsuite':
         for child in tree.findall('testcase'):
             name = child.attrib['name']
-            time = float(child.attrib['time'] or 0)
-            failure_text = None
-            for param in child.findall('failure'):
-                failure_text = param.text
-            skipped = child.findall('skipped')
+            time, failure_text, skipped = parse_result(child)
             if skipped:
                 continue
             yield make_result(name, time, failure_text)
@@ -140,11 +145,7 @@ def parse_junit(xml):
             suite_name = testsuite.attrib['name']
             for child in testsuite.findall('testcase'):
                 name = '%s %s' % (suite_name, child.attrib['name'])
-                time = float(child.attrib['time'] or 0)
-                failure_text = None
-                for param in child.findall('failure'):
-                    failure_text = param.text
-                skipped = child.findall('skipped')
+                time, failure_text, skipped = parse_result(child)
                 if skipped:
                     continue
                 yield make_result(name, time, failure_text)
