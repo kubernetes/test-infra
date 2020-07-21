@@ -39,7 +39,7 @@ presubmits:
         resources:
           requests:
             memory: "9000Mi"
-            cpu: 7500m
+            cpu: 7400m
     annotations:
       testgrid-num-failures-to-alert: '10'
       testgrid-alert-stale-results-hours: '24'
@@ -87,7 +87,7 @@ presubmits:
         resources:
           requests:
             memory: "9000Mi"
-            cpu: 7500m
+            cpu: 7400m
     annotations:
       testgrid-num-failures-to-alert: '10'
       testgrid-alert-stale-results-hours: '24'

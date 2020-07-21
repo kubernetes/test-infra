@@ -554,7 +554,7 @@ periodics:
       name: ""
       resources:
         requests:
-          cpu: 7400m
+          cpu: 7300m
           memory: 9000Mi
       securityContext:
         privileged: true
@@ -1321,7 +1321,7 @@ presubmits:
         name: ""
         resources:
           requests:
-            cpu: 7500m
+            cpu: 7400m
             memory: 9000Mi
         securityContext:
           privileged: true
