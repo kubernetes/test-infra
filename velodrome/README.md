@@ -1,6 +1,8 @@
 [Velodrome](http://velodrome.k8s.io/)
 =========
 
+ > # :warning: **Velodrome no longer exists**: Cleanup is in progress
+
 Overview
 --------
 
