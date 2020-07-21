@@ -446,7 +446,7 @@ periodics:
     - args:
       - --check-leaked-resources
       - --cluster=
-      - --extract=ci/k8s-beta
+      - --extract=ci/latest-1.19
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=8
       - --provider=gce
@@ -489,7 +489,7 @@ periodics:
     - args:
       - --check-leaked-resources
       - --cluster=
-      - --extract=ci/k8s-beta
+      - --extract=ci/latest-1.19
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=8
       - --provider=gce
