@@ -66,8 +66,6 @@ jqfilter: |
 To add a new metric, create a PR that adds a new yaml config file
 specifying the metric name (`metric`), the bigquery query to execute (`query`), and a
 jq filter to filter the data for the daily and latest files (`jqfilter`).
-*Optionally*: Include a jq filter to extract influxdb timeseries measurements
-from the raw query results (`jqmeasurements`).
 
 Run `./bigquery.py --config configs/my-new-config.yaml` and verify that the
 output is what you expect.
