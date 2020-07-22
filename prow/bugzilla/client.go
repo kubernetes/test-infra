@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -277,6 +278,9 @@ func getAllClones(c Client, bug *Bug, bugCache *bugDetailsCache) (clones []*Bug,
 			clones = append(clones, &cachedBugs[index])
 		}
 	}
+	sort.SliceStable(clones, func(i, j int) bool {
+		return clones[i].ID < clones[j].ID
+	})
 	return clones, nil
 }
 
