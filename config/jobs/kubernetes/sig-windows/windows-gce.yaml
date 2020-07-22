@@ -72,7 +72,7 @@ periodics:
       args:
       - --check-leaked-resources
       - --cluster=
-      - --extract=ci/k8s-master
+      - --extract=ci/latest
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=8
       - --provider=gce
@@ -91,7 +91,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200720-4766100-master
   annotations:
     fork-per-release: "true"
-    fork-per-release-replacements: "--extract=ci/k8s-master -> --extract=ci/k8s-beta"
+    fork-per-release-replacements: "--extract=ci/latest -> --extract=ci/k8s-beta"
     testgrid-dashboards: google-windows, sig-windows-gce, sig-windows-releases, sig-release-master-informing
     testgrid-tab-name: gce-windows-2019-master
     description: Runs tests on a Kubernetes cluster with Windows 2019 nodes on GCE
@@ -117,7 +117,7 @@ periodics:
       args:
       - --check-leaked-resources
       - --cluster=
-      - --extract=ci/k8s-master
+      - --extract=ci/latest
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=8
       - --provider=gce
@@ -136,7 +136,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200720-4766100-master
   annotations:
     fork-per-release: "true"
-    fork-per-release-replacements: "--extract=ci/k8s-master -> --extract=ci/k8s-beta"
+    fork-per-release-replacements: "--extract=ci/latest -> --extract=ci/k8s-beta"
     testgrid-dashboards: google-windows, sig-windows-sac, sig-windows-gce, sig-release-master-informing
     testgrid-tab-name: gce-windows-1909-master
     description: Runs tests on a Kubernetes cluster with Windows 1909 nodes on GCE
@@ -162,7 +162,7 @@ periodics:
       args:
       - --check-leaked-resources
       - --cluster=
-      - --extract=ci/k8s-master
+      - --extract=ci/latest
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=8
       - --provider=gce
@@ -209,7 +209,7 @@ periodics:
       args:
       - --check-leaked-resources
       - --cluster=
-      - --extract=ci/k8s-master
+      - --extract=ci/latest
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=1
       - --provider=gce
@@ -254,7 +254,7 @@ periodics:
       args:
       - --check-leaked-resources
       - --cluster=
-      - --extract=ci/k8s-master
+      - --extract=ci/latest
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=8
       - --provider=gce
@@ -363,7 +363,7 @@ periodics:
       args:
       - --check-leaked-resources
       - --cluster=
-      - --extract=ci/k8s-master
+      - --extract=ci/latest
       - --gcp-zone=us-west1-b
       - --provider=gce
       - --gcp-nodes=1
@@ -419,7 +419,7 @@ periodics:
       args:
       - --check-leaked-resources
       - --cluster=
-      - --extract=ci/k8s-master
+      - --extract=ci/latest
       - --gcp-zone=us-west1-b
       - --provider=gce
       - --gcp-nodes=1
