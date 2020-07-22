@@ -48,9 +48,9 @@ type jsonBuild struct {
 	number       string
 }
 
-// newBuild is a factory function that creates a build object from a jsonBuild object, appropriately
+// asBuild is a factory function that creates a build object from a jsonBuild object, appropriately
 // handling all type conversions.
-func newBuild(jb jsonBuild) (build, error) {
+func (jb *jsonBuild) asBuild() (build, error) {
 	// The build object that will be returned, initialized with the values that
 	// don't need conversion.
 	b := build{
@@ -97,20 +97,20 @@ func newBuild(jb jsonBuild) (build, error) {
 	return b, nil
 }
 
-// jsonTest represents a (failed) test as reported by the JSON. All values are strings.
+// jsonFailure represents a test failure as reported by the JSON. All values are strings.
 // This should not be instantiated directly, but rather via the encoding/json package's
 // Unmarshal method. This is an intermediary state for the data until it can be put into
-// a build object.
-type jsonTest struct {
+// a failure object.
+type jsonFailure struct {
 	started      string
 	build        string
 	name         string
 	failure_text string
 }
 
-// newTest is a factory function that creates a test object from a jsonTest object, appropriately
-// handling all type conversions.
-func newTest(jf jsonTest) (failure, error) {
+// asFailure is a factory function that creates a failure object from the jsonFailure object,
+// appropriately handling all type conversions.
+func (jf *jsonFailure) asFailure() (failure, error) {
 	// The failure object that will be returned, initialized with the values that
 	// don't need conversion.
 	f := failure{
@@ -169,7 +169,7 @@ func loadBuilds(filepath string) (map[string]build, error) {
 			continue
 		}
 
-		bld, err := newBuild(jBuild)
+		bld, err := jBuild.asBuild()
 		if err != nil {
 			return nil, fmt.Errorf("Could not create build object from jsonBuild object: %s", err)
 		}
@@ -193,26 +193,26 @@ func loadTests(testsFilepaths []string) (map[string][]failure, error) {
 
 	// jsonTests temporarily stores the tests as they are retrieved from the JSON file
 	// until they can be converted to build objects
-	var jsonTests []jsonTest
+	var jsonFailures []jsonFailure
 	for _, filepath := range testsFilepaths {
-		err := getJSON(filepath, &jsonTests)
+		err := getJSON(filepath, &jsonFailures)
 		if err != nil {
 			return nil, fmt.Errorf("Could not get tests JSON: %s", err)
 		}
 
 		// Convert the failure information to internal failure objects and store them in the failed_tests map
-		for _, jt := range jsonTests {
+		for _, jf := range jsonFailures {
 			// Check if tests of this type are already in the map
-			if _, ok := tests[jt.name]; !ok {
-				tests[jt.name] = make([]failure, 0)
+			if _, ok := tests[jf.name]; !ok {
+				tests[jf.name] = make([]failure, 0)
 			}
 
-			test, err := newTest(jt)
+			test, err := jf.asFailure()
 			if err != nil {
 				return nil, fmt.Errorf("Could not create failure object from jsonFailure object: %s", err)
 			}
 
-			tests[jt.name] = append(tests[jt.name], test)
+			tests[jf.name] = append(tests[jf.name], test)
 		}
 	}
 
@@ -224,8 +224,8 @@ func loadTests(testsFilepaths []string) (map[string][]failure, error) {
 	return tests, nil
 }
 
-// getJSON opens a JSON file, parses it according to the s, and places the results into v.
-// Internally, it calls encoding/json's Unmarshal using v as the second argument. Therefore,
+// getJSON opens a JSON file, parses it according to the schema provided by v, and places the results
+// into v. Internally, it calls encoding/json's Unmarshal using v as the second argument. Therefore,
 // v mut be a non-nil pointer.
 func getJSON(filepath string, v interface{}) error {
 	// Open the tests file
