@@ -198,7 +198,8 @@ test_groups:
   name: kyma-integration-gardener-gcp
 - gcs_prefix: kyma-prow-logs/logs/post-master-compass-gke-integration
   name: post-master-compass-gke-integration
-- gcs_prefix: kyma-prow-logs/logs/post-master-compass-integration
+- days_of_results: 60
+  gcs_prefix: kyma-prow-logs/logs/post-master-compass-integration
   name: post-master-compass-integration
 - gcs_prefix: kyma-prow-logs/logs/post-master-control-plane-gke-integration
   name: post-master-control-plane-gke-integration
@@ -206,15 +207,19 @@ test_groups:
   name: post-master-control-plane-gke-provisioner-integration
 - gcs_prefix: kyma-prow-logs/logs/post-master-control-plane-integration
   name: post-master-control-plane-integration
-- gcs_prefix: kyma-prow-logs/logs/post-master-kyma-gke-central-connector
+- days_of_results: 60
+  gcs_prefix: kyma-prow-logs/logs/post-master-kyma-gke-central-connector
   name: post-master-kyma-gke-central-connector
 - gcs_prefix: kyma-prow-logs/logs/post-master-kyma-gke-compass-integration
   name: post-master-kyma-gke-compass-integration
-- gcs_prefix: kyma-prow-logs/logs/post-master-kyma-gke-integration
+- days_of_results: 60
+  gcs_prefix: kyma-prow-logs/logs/post-master-kyma-gke-integration
   name: post-master-kyma-gke-integration
-- gcs_prefix: kyma-prow-logs/logs/post-master-kyma-gke-upgrade
+- days_of_results: 60
+  gcs_prefix: kyma-prow-logs/logs/post-master-kyma-gke-upgrade
   name: post-master-kyma-gke-upgrade
-- gcs_prefix: kyma-prow-logs/logs/post-master-kyma-integration
+- days_of_results: 60
+  gcs_prefix: kyma-prow-logs/logs/post-master-kyma-integration
   name: post-master-kyma-integration
 - gcs_prefix: kyma-prow-logs/logs/post-rel112-kyma-github-release
   name: post-rel112-kyma-github-release
