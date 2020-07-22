@@ -36,8 +36,7 @@ presubmits:
     decorate: true
     skip_branches:
     - release-\d+.\d+ # per-release job
-    always_run: true
-    skip_report: true
+    always_run: false
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
