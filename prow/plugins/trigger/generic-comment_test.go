@@ -545,31 +545,6 @@ func TestHandleGenericComment(t *testing.T) {
 			},
 		},
 		{
-			name: "/retest of RunIfChanged job that doesn't need to run and hasn't run",
-
-			Author: "trusted-member",
-			Body:   "/retest",
-			State:  "open",
-			IsPR:   true,
-			Presubmits: map[string][]config.Presubmit{
-				"org/repo": {
-					{
-						JobBase: config.JobBase{
-							Name: "jeb",
-						},
-						RegexpChangeMatcher: config.RegexpChangeMatcher{
-							RunIfChanged: "CHANGED2",
-						},
-						Reporter: config.Reporter{
-							Context: "pull-jeb",
-						},
-						Trigger:      `(?m)^/test (?:.*? )?jeb(?: .*?)?$`,
-						RerunCommand: `/test jeb`,
-					},
-				},
-			},
-		},
-		{
 			name: "explicit /test for RunIfChanged job that doesn't need to run",
 
 			Author: "trusted-member",
