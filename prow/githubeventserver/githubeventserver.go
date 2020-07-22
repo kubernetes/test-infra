@@ -61,9 +61,9 @@ type GitHubEventServer struct {
 	httpServeMux    *http.ServeMux
 }
 
-// NewGitHubEventServer creates a new *GitHubEventServer from the given arguments.
+// New creates a new GitHubEventServer from the given arguments.
 // It also assigns the serveMuxHandler in the http.ServeMux.
-func NewGitHubEventServer(o Options) *GitHubEventServer {
+func New(o Options, hmacTokenGenerator func() []byte, logger *logrus.Entry) *GitHubEventServer {
 	var wg sync.WaitGroup
 
 	httpServeMux := http.NewServeMux()
@@ -72,8 +72,8 @@ func NewGitHubEventServer(o Options) *GitHubEventServer {
 		port:     o.port,
 		wg:       &wg,
 		serveMuxHandler: &serveMuxHandler{
-			hmacTokenGenerator: o.HmacTokenGenerator,
-			log:                o.Logger,
+			hmacTokenGenerator: hmacTokenGenerator,
+			log:                logger,
 			metrics:            o.Metrics,
 			wg:                 &wg,
 		},

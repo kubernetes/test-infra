@@ -20,23 +20,14 @@ import (
 	"flag"
 	"fmt"
 	"strings"
-
-	"github.com/sirupsen/logrus"
 )
 
 // Options holds the endpoint and port information that can be used
 // to create a new github event server
 type Options struct {
-	// HmacTokenGenerator is a function that holds a hmac token that will be used
-	// in a github event server
-	HmacTokenGenerator func() []byte
-
 	// Metrics will be used to expose prometheus metrics from the
 	// github event server operations.
 	Metrics *Metrics
-
-	// Logger is the logger that the github event server will use.
-	Logger *logrus.Entry
 
 	// endpoint is the main url path that the github event server will be served.
 	endpoint string
@@ -50,16 +41,8 @@ func (o *Options) DefaultAndValidate() error {
 		return fmt.Errorf("endpoint %s is not a valid url path", o.endpoint)
 	}
 
-	if o.HmacTokenGenerator == nil {
-		o.HmacTokenGenerator = func() []byte { return []byte("") }
-	}
-
 	if o.Metrics == nil {
 		o.Metrics = NewMetrics()
-	}
-
-	if o.Logger == nil {
-		o.Logger = logrus.NewEntry(logrus.New())
 	}
 
 	return nil
