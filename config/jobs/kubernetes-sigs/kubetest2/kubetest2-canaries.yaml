@@ -1,10 +1,8 @@
 presubmits:
   kubernetes-sigs/kubetest2:
   - name: gce-build-up-down
-    always_run: false
     decorate: true
-    # TODO: uncomment when job has been tested successfully
-    # run_if_changed: "kubetest2-gce/.*"
+    run_if_changed: "kubetest2-gce/.*"
     labels:
       preset-service-account: "true"
     annotations:
