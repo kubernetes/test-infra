@@ -48,7 +48,7 @@ func (f fkc) ListProwJobs(s string) ([]prowapi.ProwJob, error) {
 
 type fpkc string
 
-func (f fpkc) GetLogs(name string) ([]byte, error) {
+func (f fpkc) GetLogs(name, container string) ([]byte, error) {
 	if name == "wowowow" || name == "powowow" {
 		return []byte(f), nil
 	}
@@ -86,13 +86,13 @@ func TestGetLog(t *testing.T) {
 	if err := ja.update(); err != nil {
 		t.Fatalf("Updating: %v", err)
 	}
-	if res, err := ja.GetJobLog("job", "123"); err != nil {
+	if res, err := ja.GetJobLog("job", "123", kube.TestContainerName); err != nil {
 		t.Fatalf("Failed to get log: %v", err)
 	} else if got, expect := string(res), "clusterA"; got != expect {
 		t.Errorf("Unexpected result getting logs for job 'job'. Expected %q, but got %q.", expect, got)
 	}
 
-	if res, err := ja.GetJobLog("jib", "123"); err != nil {
+	if res, err := ja.GetJobLog("jib", "123", kube.TestContainerName); err != nil {
 		t.Fatalf("Failed to get log: %v", err)
 	} else if got, expect := string(res), "clusterB"; got != expect {
 		t.Errorf("Unexpected result getting logs for job 'job'. Expected %q, but got %q.", expect, got)

@@ -511,8 +511,8 @@ type podLogClient struct {
 	client corev1.PodInterface
 }
 
-func (c *podLogClient) GetLogs(name string) ([]byte, error) {
-	reader, err := c.client.GetLogs(name, &coreapi.PodLogOptions{Container: kube.TestContainerName}).Stream(context.TODO())
+func (c *podLogClient) GetLogs(name, container string) ([]byte, error) {
+	reader, err := c.client.GetLogs(name, &coreapi.PodLogOptions{Container: container}).Stream(context.TODO())
 	if err != nil {
 		return nil, err
 	}
@@ -1282,7 +1282,7 @@ func handlePluginHelp(ha *helpAgent, log *logrus.Entry) http.HandlerFunc {
 }
 
 type logClient interface {
-	GetJobLog(job, id string) ([]byte, error)
+	GetJobLog(job, id, container string) ([]byte, error)
 }
 
 // TODO(spxtr): Cache, rate limit.
@@ -1292,12 +1292,16 @@ func handleLog(lc logClient, log *logrus.Entry) http.HandlerFunc {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		job := r.URL.Query().Get("job")
 		id := r.URL.Query().Get("id")
-		logger := log.WithFields(logrus.Fields{"job": job, "id": id})
+		container := r.URL.Query().Get("container")
+		if container == "" {
+			container = kube.TestContainerName
+		}
+		logger := log.WithFields(logrus.Fields{"job": job, "id": id, "container": container})
 		if err := validateLogRequest(r); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		jobLog, err := lc.GetJobLog(job, id)
+		jobLog, err := lc.GetJobLog(job, id, container)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("Log not found: %v", err), http.StatusNotFound)
 			logger := logger.WithError(err)

@@ -23,6 +23,7 @@ import (
 	"html/template"
 	"io/ioutil"
 	"net/http"
+	"regexp"
 	"strings"
 	"time"
 
@@ -177,10 +178,6 @@ func FetchArtifacts(
 	if err != nil {
 		return arts, fmt.Errorf("error parsing src: %v", err)
 	}
-	jobName, buildID, err := keyToJob(src)
-	if err != nil {
-		return arts, fmt.Errorf("could not derive job: %v", err)
-	}
 	gcsKey := ""
 	switch keyType {
 	case api.ProwKeyType:
@@ -196,7 +193,8 @@ func FetchArtifacts(
 		gcsKey = fmt.Sprintf("%s://%s", keyType, strings.TrimSuffix(key, "/"))
 	}
 
-	podLogNeeded := false
+	logsNeeded := []string{}
+
 	for _, name := range artifactNames {
 		art, err := storageArtifactFetcher.Artifact(ctx, gcsKey, name, sizeLimit)
 		if err == nil {
@@ -206,16 +204,16 @@ func FetchArtifacts(
 			_, err = art.Size()
 		}
 		if err != nil {
-			if name == "build-log.txt" {
-				podLogNeeded = true
+			if matched, err := regexp.MatchString(".*build-log.txt", name); err == nil && matched {
+				logsNeeded = append(logsNeeded, name)
 			}
 			continue
 		}
 		arts = append(arts, art)
 	}
 
-	if podLogNeeded {
-		art, err := podLogArtifactFetcher.Artifact(ctx, jobName, buildID, sizeLimit)
+	for _, logName := range logsNeeded {
+		art, err := podLogArtifactFetcher.Artifact(ctx, src, logName, sizeLimit)
 		if err != nil {
 			logrus.Errorf("Failed to fetch pod log: %v", err)
 		} else {
@@ -235,7 +233,7 @@ type ProwJobFetcher interface {
 // prowToGCS returns the GCS key corresponding to the given prow key
 // TODO: Unexport once we only have remote lenses
 func ProwToGCS(fetcher ProwJobFetcher, config config.Getter, prowKey string) (string, string, error) {
-	jobName, buildID, err := keyToJob(prowKey)
+	jobName, buildID, err := KeyToJob(prowKey)
 	if err != nil {
 		return "", "", fmt.Errorf("could not get GCS src: %v", err)
 	}
@@ -290,7 +288,7 @@ func splitSrc(src string) (keyType, key string, err error) {
 }
 
 // keyToJob takes a spyglass URL and returns the jobName and buildID.
-func keyToJob(src string) (jobName string, buildID string, err error) {
+func KeyToJob(src string) (jobName string, buildID string, err error) {
 	src = strings.Trim(src, "/")
 	parsed := strings.Split(src, "/")
 	if len(parsed) < 2 {

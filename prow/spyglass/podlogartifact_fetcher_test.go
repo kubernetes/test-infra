@@ -27,31 +27,37 @@ func TestFetchArtifacts_Prow(t *testing.T) {
 	maxSize := int64(500e6)
 	testCases := []struct {
 		name      string
-		job       string
-		buildID   string
+		key       string
+		artifact  string
 		expectErr bool
 	}{
 		{
-			name:    "Fetch build-log.txt from valid src",
-			job:     "BFG",
-			buildID: "435",
+			name:     "Fetch build-log.txt from valid src",
+			key:      "BFG/435",
+			artifact: "build-log.txt",
 		},
 		{
 			name:      "Fetch log from empty src",
-			job:       "",
-			buildID:   "",
+			key:       "",
+			artifact:  "build-log.txt",
 			expectErr: true,
 		},
 		{
 			name:      "Fetch log from incomplete src",
-			job:       "BFG",
-			buildID:   "",
+			key:       "BFG",
+			artifact:  "build-log.txt",
+			expectErr: true,
+		},
+		{
+			name:      "Fetch log with no artifact name",
+			key:       "BFG/435",
+			artifact:  "",
 			expectErr: true,
 		},
 	}
 
 	for _, tc := range testCases {
-		artifact, err := goodFetcher.Artifact(context.Background(), tc.job, tc.buildID, maxSize)
+		artifact, err := goodFetcher.Artifact(context.Background(), tc.key, tc.artifact, maxSize)
 		if err != nil && !tc.expectErr {
 			t.Errorf("%s: failed unexpectedly for artifact %s, err: %v", tc.name, artifact.JobPath(), err)
 		}

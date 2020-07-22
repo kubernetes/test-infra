@@ -118,7 +118,7 @@ func TestOptions_Validate(t *testing.T) {
 
 type flc int
 
-func (f flc) GetJobLog(job, id string) ([]byte, error) {
+func (f flc) GetJobLog(job, id, container string) ([]byte, error) {
 	if job == "job" && id == "123" {
 		return []byte("hello"), nil
 	}

@@ -63,7 +63,7 @@ func (f fkc) List(ctx context.Context, pjs *prowapi.ProwJobList, _ ...ctrlruntim
 
 type fpkc string
 
-func (f fpkc) GetLogs(name string) ([]byte, error) {
+func (f fpkc) GetLogs(name, container string) ([]byte, error) {
 	if name == "wowowow" || name == "powowow" {
 		return []byte(f), nil
 	}

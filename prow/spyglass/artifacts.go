@@ -50,29 +50,47 @@ func (s *Spyglass) ListArtifacts(ctx context.Context, src string) ([]string, err
 	}
 
 	artifactNames, err := s.StorageArtifactFetcher.artifacts(ctx, gcsKey)
-	logFound := false
-	for _, name := range artifactNames {
-		if name == "build-log.txt" {
-			logFound = true
-			break
+	if err != nil {
+		return artifactNames, fmt.Errorf("error retrieving artifact names from gcs storage: %v", err)
+	}
+
+	jobName, buildID, err := s.KeyToJob(src)
+	if err != nil {
+		return artifactNames, fmt.Errorf("error parsing src: %v", err)
+	}
+
+	job, err := s.jobAgent.GetProwJob(jobName, buildID)
+	if err != nil {
+		return artifactNames, nil
+	}
+
+	jobContainers := job.Spec.PodSpec.Containers
+
+	for _, container := range jobContainers {
+		logName := SingleLogName
+		if len(jobContainers) > 1 {
+			logName = fmt.Sprintf("%s-build-log.txt", container.Name)
+		}
+		if !contains(artifactNames, logName) {
+			artifactNames = append(artifactNames, logName)
 		}
 	}
-	if err != nil || !logFound {
-		artifactNames = append(artifactNames, "build-log.txt")
-	}
+
 	return artifactNames, nil
+}
+
+func contains(artifactNames []string, artifactName string) bool {
+	for _, art := range artifactNames {
+		if art == artifactName {
+			return true
+		}
+	}
+	return false
 }
 
 // KeyToJob takes a spyglass URL and returns the jobName and buildID.
 func (*Spyglass) KeyToJob(src string) (jobName string, buildID string, err error) {
-	src = strings.Trim(src, "/")
-	parsed := strings.Split(src, "/")
-	if len(parsed) < 2 {
-		return "", "", fmt.Errorf("expected at least two path components in %q", src)
-	}
-	jobName = parsed[len(parsed)-2]
-	buildID = parsed[len(parsed)-1]
-	return jobName, buildID, nil
+	return common.KeyToJob(src)
 }
 
 // prowToGCS returns the GCS key corresponding to the given prow key

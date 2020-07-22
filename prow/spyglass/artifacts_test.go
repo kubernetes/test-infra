@@ -66,9 +66,7 @@ func TestSpyglass_ListArtifacts(t *testing.T) {
 			args: args{
 				src: "gs/test-bucket/logs/example-ci-run/404",
 			},
-			want: []string{
-				"build-log.txt",
-			},
+			want: []string{},
 		},
 	}
 	for _, tt := range tests {
