@@ -28,7 +28,6 @@ jobs:
   - pull-kubernetes-bazel-test
   - pull-kubernetes-conformance-kind-ga-only-parallel
   - pull-kubernetes-dependencies
-  - pull-kubernetes-dependencies-canary
   - pull-kubernetes-e2e-gce
   - pull-kubernetes-e2e-gce-100-performance
   - pull-kubernetes-e2e-gce-device-plugin-gpu
