@@ -688,6 +688,19 @@ presets:
     mountPath: /etc/aws-ssh
     readOnly: true
 - labels:
+    preset-windows-private-registry-cred: "true"
+  env:
+  - name: DOCKER_CONFIG_FILE
+    value: /etc/docker-cred/config.json
+  volumes:
+  - name: windows-private-registry-cred
+    secret:
+      secretName: windows-private-registry-docker-config
+  volumeMounts:
+  - name: windows-private-registry-cred
+    mountPath: /etc/docker-cred/
+    readOnly: true
+- labels:
     preset-azure-cred: "true"
   env:
   - name: AZURE_CREDENTIALS
