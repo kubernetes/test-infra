@@ -195,6 +195,9 @@ postsubmits:
       description: builds and pushes the kettle image
     run_if_changed: '^kettle/'
     decorate: true
+    decoration_config:
+      timeout: 50m
+      grace_period: 10m
     branches:
     - master
     spec:
