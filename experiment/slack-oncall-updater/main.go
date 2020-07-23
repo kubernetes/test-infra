@@ -32,18 +32,14 @@ import (
 // and clicking "Copy user ID".
 var githubToSlack = map[string]string{
 	"amwat":          "U9B1P2UGP",
+	"bentheelder":    "U1P7T516X",
 	"chases2":        "UJ9R0FWD6",
 	"cjwagner":       "U4QFZFMCM",
-	"clarketm":       "UKMR3JF29",
-	"bentheelder":    "U1P7T516X",
 	"fejta":          "U0E2KHQ13",
 	"katharine":      "UBTBNJ6GL",
-	"krzyzacy":       "U22Q65CTG",
-	"mushuee":        "U013TPFJWC8",
-	"mirandachrist":  "UJR3XHHNF",
 	"michelle192837": "U3TRY5WV7",
+	"mushuee":        "U013TPFJWC8",
 	"spiffxp":        "U09R2FL93",
-	"tony-yang":      "UK3MVSP3J",
 }
 
 // rotationToSlack group maps the rotation in go.k8s.io/oncall to the slack
