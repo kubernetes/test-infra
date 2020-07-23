@@ -40,8 +40,7 @@ presubmits:
         - cip
         args:
         - -thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
-        - -vuln-severity-threshold=3
-        - -use-service-account
+        - -vuln-severity-threshold=1
   # Check that changes to backup scripts are valid.
   - name: pull-k8sio-backup
     annotations:
