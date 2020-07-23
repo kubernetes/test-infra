@@ -44,8 +44,8 @@ func (covList *CoverageList) Ratio() float32 {
 // summarize summarizes all items in the Group and stores the result
 func (covList *CoverageList) summarize() {
 	for _, item := range covList.Group {
-		covList.Coverage.NumCoveredStmts += item.NumCoveredStmts
-		covList.Coverage.NumAllStmts += item.NumAllStmts
+		covList.NumCoveredStmts += item.NumCoveredStmts
+		covList.NumAllStmts += item.NumAllStmts
 	}
 }
 
