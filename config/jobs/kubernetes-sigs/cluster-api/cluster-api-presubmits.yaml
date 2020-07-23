@@ -37,7 +37,7 @@ presubmits:
         image: gcr.io/k8s-testimages/kubekins-e2e:v20200720-4766100-1.18
         resources:
           requests:
-            memory: "6Gi"
+            cpu: 7300m
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
       testgrid-tab-name: pr-make
@@ -77,8 +77,7 @@ presubmits:
         - "verify"
         resources:
           requests:
-            cpu: "6000m"
-            memory: "6Gi"
+            cpu: 7300m
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
       testgrid-tab-name: pr-verify
@@ -98,8 +97,7 @@ presubmits:
         - ./scripts/ci-test.sh
         resources:
           requests:
-            cpu: "6000m"
-            memory: "6Gi"
+            cpu: 7300m
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
       testgrid-tab-name: pr-test
@@ -124,8 +122,7 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: "6000m"
-            memory: "6Gi"
+            cpu: 7300m
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
       testgrid-tab-name: pr-e2e

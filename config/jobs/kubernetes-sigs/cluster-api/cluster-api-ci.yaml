@@ -1,24 +1,4 @@
 periodics:
-- name: periodic-cluster-api-build
-  interval: 1h
-  decorate: true
-  labels:
-    preset-service-account: "true"
-  extra_refs:
-  - org: kubernetes-sigs
-    repo: cluster-api
-    base_ref: master
-    path_alias: sigs.k8s.io/cluster-api
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200720-4766100-1.18
-      command:
-      - "./scripts/ci-build.sh"
-  annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-    testgrid-tab-name: build
-    testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
-    testgrid-num-failures-to-alert: "2"
 - name: periodic-cluster-api-test
   interval: 1h
   decorate: true
@@ -36,8 +16,7 @@ periodics:
       - "./scripts/ci-test.sh"
       resources:
         requests:
-          cpu: 3
-          memory: "6Gi"
+          cpu: 7300m
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api
     testgrid-tab-name: unit tests
@@ -65,54 +44,9 @@ periodics:
           privileged: true
         resources:
           requests:
-            cpu: "6000m"
-            memory: "6Gi"
+            cpu: 7300m
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api
     testgrid-tab-name: capi e2e tests
-    testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
-    testgrid-num-failures-to-alert: "2"
-- name: periodic-cluster-api-build-release-0-2
-  interval: 1h
-  decorate: true
-  labels:
-    preset-service-account: "true"
-  extra_refs:
-  - org: kubernetes-sigs
-    repo: cluster-api
-    base_ref: release-0.2
-    path_alias: sigs.k8s.io/cluster-api
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200720-4766100-1.18
-      command:
-      - "./scripts/ci-build.sh"
-  annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-    testgrid-tab-name: build-release-0-2
-    testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
-    testgrid-num-failures-to-alert: "2"
-- name: periodic-cluster-api-test-release-0-2
-  interval: 1h
-  decorate: true
-  labels:
-    preset-service-account: "true"
-  extra_refs:
-  - org: kubernetes-sigs
-    repo: cluster-api
-    base_ref: release-0.2
-    path_alias: sigs.k8s.io/cluster-api
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200720-4766100-1.18
-      command:
-      - "./scripts/ci-test.sh"
-      resources:
-        requests:
-          cpu: 3
-          memory: "6Gi"
-  annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-    testgrid-tab-name: unit tests-release-0-2
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
     testgrid-num-failures-to-alert: "2"
