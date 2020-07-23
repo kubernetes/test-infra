@@ -10,6 +10,7 @@ dashboard_groups:
     - sig-network-netd
     - sig-network-service-apis
     - sig-network-ingress-controller-conformance
+    - sig-network-kind
 
 dashboards:
 - name: sig-network-dns
@@ -120,3 +121,4 @@ dashboards:
 - name: sig-network-netd
 - name: sig-network-service-apis
 - name: sig-network-ingress-controller-conformance
+- name: sig-network-kind
