@@ -43,26 +43,24 @@ func (covList *CoverageList) Ratio() float32 {
 
 // summarize summarizes all items in the Group and stores the result
 func (covList *CoverageList) summarize() {
-	covList.NumCoveredStmts = 0
-	covList.NumAllStmts = 0
 	for _, item := range covList.Group {
-		covList.NumCoveredStmts += item.NumCoveredStmts
-		covList.NumAllStmts += item.NumAllStmts
+		covList.Coverage.NumCoveredStmts += item.NumCoveredStmts
+		covList.Coverage.NumAllStmts += item.NumAllStmts
 	}
 }
 
 // Subset returns the subset obtained through applying filter
 func (covList *CoverageList) Subset(prefix string) *CoverageList {
-	s := newCoverageList("Filtered Summary")
+	s := newCoverageList("Filtered Summary: " + prefix)
 	for _, c := range covList.Group {
 		if strings.HasPrefix(c.Name, prefix) {
-			covList.Group = append(covList.Group, c)
+			s.Group = append(s.Group, c)
 		}
 	}
 	return s
 }
 
-// ListDirectories gets a list a sub-directories that contains source code.
+// ListDirectories gets a list of sub-directories that contains source code.
 func (covList CoverageList) ListDirectories() []string {
 	dirSet := map[string]bool{}
 	for _, cov := range covList.Group {
