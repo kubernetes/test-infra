@@ -221,18 +221,24 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: kyma-prow-logs/logs/post-master-kyma-integration
   name: post-master-kyma-integration
-- gcs_prefix: kyma-prow-logs/logs/post-rel112-kyma-github-release
+- days_of_results: 90
+  gcs_prefix: kyma-prow-logs/logs/post-rel112-kyma-github-release
   name: post-rel112-kyma-github-release
-- gcs_prefix: kyma-prow-logs/logs/post-rel112-kyma-release-candidate
+- days_of_results: 90
+  gcs_prefix: kyma-prow-logs/logs/post-rel112-kyma-release-candidate
   name: post-rel112-kyma-release-candidate
   num_failures_to_alert: 1
-- gcs_prefix: kyma-prow-logs/logs/post-rel113-kyma-github-release
+- days_of_results: 90
+  gcs_prefix: kyma-prow-logs/logs/post-rel113-kyma-github-release
   name: post-rel113-kyma-github-release
-- gcs_prefix: kyma-prow-logs/logs/post-rel113-kyma-release-candidate
+- days_of_results: 90
+  gcs_prefix: kyma-prow-logs/logs/post-rel113-kyma-release-candidate
   name: post-rel113-kyma-release-candidate
   num_failures_to_alert: 1
-- gcs_prefix: kyma-prow-logs/logs/post-rel114-kyma-github-release
+- days_of_results: 90
+  gcs_prefix: kyma-prow-logs/logs/post-rel114-kyma-github-release
   name: post-rel114-kyma-github-release
-- gcs_prefix: kyma-prow-logs/logs/post-rel114-kyma-release-candidate
+- days_of_results: 90
+  gcs_prefix: kyma-prow-logs/logs/post-rel114-kyma-release-candidate
   name: post-rel114-kyma-release-candidate
   num_failures_to_alert: 1
