@@ -868,7 +868,6 @@ periodics:
       - //experiment/slack-oncall-updater
       - --
       - --token-path=/etc/slack-token/token
-      - --group-id=SGLF0GUQH
       volumeMounts:
       - name: slack
         mountPath: /etc/slack-token
