@@ -1014,6 +1014,10 @@ func handleClose(e event, gc githubClient, bc bugzilla.Client, options plugins.B
 }
 
 func isBugAllowed(bug *bugzilla.Bug, allowedGroups []string) bool {
+	if len(allowedGroups) == 0 {
+		return true
+	}
+
 	for _, group := range bug.Groups {
 		found := false
 		for _, allowed := range allowedGroups {

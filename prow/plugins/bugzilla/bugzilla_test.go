@@ -1410,16 +1410,20 @@ In response to [this](http.com):
 Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.
 </details>`,
 		}, {
-			name: "Bug with non-allowed group is ignored",
-			bugs: []bugzilla.Bug{{ID: 123, Groups: []string{"security"}}},
-			prs:  []github.PullRequest{{Number: base.number, Body: base.body, Title: base.body}},
+			name:    "Bug with non-allowed group is ignored",
+			bugs:    []bugzilla.Bug{{ID: 123, Groups: []string{"security"}}},
+			options: plugins.BugzillaBranchOptions{AllowedGroups: []string{"internal"}},
+			prs:     []github.PullRequest{{Number: base.number, Body: base.body, Title: base.body}},
 			// there should be no comment returned in this test case
 		}, {
-			name: "Bug with non-allowed group on repo with no allowed groups results in comment on /bugzilla refresh",
-			bugs: []bugzilla.Bug{{ID: 123, Groups: []string{"security"}}},
-			prs:  []github.PullRequest{{Number: base.number, Body: base.body, Title: base.body}},
-			body: "/bugzilla refresh",
-			expectedComment: `org/repo#1:@user: [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123) is in a bug group that is not in the allowed groups for this repo. There are no allowed bug groups configured for this repo.
+			name:           "Bug with non-allowed group on repo with no allowed groups results in comment on /bugzilla refresh",
+			bugs:           []bugzilla.Bug{{ID: 123, Groups: []string{"security"}}},
+			prs:            []github.PullRequest{{Number: base.number, Body: base.body, Title: base.body}},
+			body:           "/bugzilla refresh",
+			expectedLabels: []string{"bugzilla/valid-bug"},
+			expectedComment: `org/repo#1:@user: This pull request references [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123), which is valid.
+
+<details><summary>No validations were run on this bug</summary></details>
 
 <details>
 
@@ -1993,6 +1997,50 @@ func TestUpdateTitleBugID(t *testing.T) {
 		}
 		if newTitle != testCase.expected {
 			t.Errorf("%s: Expected `%s`, got `%s`", testCase.name, testCase.expected, newTitle)
+		}
+	}
+}
+
+func TestIsBugAllowed(t *testing.T) {
+	testCases := []struct {
+		name     string
+		bug      *bugzilla.Bug
+		groups   []string
+		expected bool
+	}{
+		{
+			name:     "no groups configured means always allowed",
+			groups:   []string{},
+			expected: true,
+		},
+		{
+			name: "all groups matching is allowed",
+			bug: &bugzilla.Bug{
+				Groups: []string{"whoa", "really", "cool"},
+			},
+			groups:   []string{"whoa", "really", "cool"},
+			expected: true,
+		},
+		{
+			name: "some but not all groups matching is not allowed",
+			bug: &bugzilla.Bug{
+				Groups: []string{"whoa", "really", "cool"},
+			},
+			groups:   []string{"whoa", "really"},
+			expected: false,
+		},
+		{
+			name: "no groups matching is not allowed",
+			bug: &bugzilla.Bug{
+				Groups: []string{"whoa", "really", "cool"},
+			},
+			groups:   []string{"other"},
+			expected: false,
+		},
+	}
+	for _, testCase := range testCases {
+		if actual, expected := isBugAllowed(testCase.bug, testCase.groups), testCase.expected; actual != expected {
+			t.Errorf("%s: isBugAllowed returned %v incorrectly", testCase.name, actual)
 		}
 	}
 }
