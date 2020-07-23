@@ -180,6 +180,15 @@ dashboards:
     open_bug_template:
       url: https://github.com/jetstack/cert-manager/issues/
     test_group_name: ci-cert-manager-previous-e2e-v1-17
+  - alert_options:
+      alert_mail_to_addresses: james+alerts@munnelly.eu,maartje.eyskens+alerts@jetstack.io
+    code_search_url_template:
+      url: https://github.com/jetstack/cert-manager/compare/<start-custom-0>...<end-custom-0>
+    description: Runs the end-to-end test suite against a Kubernetes v1.18 cluster
+    name: ci-cert-manager-previous-e2e-v1-18
+    open_bug_template:
+      url: https://github.com/jetstack/cert-manager/issues/
+    test_group_name: ci-cert-manager-previous-e2e-v1-18
   name: jetstack-cert-manager-previous
 - dashboard_tab:
   - alert_options:
@@ -535,6 +544,8 @@ test_groups:
   name: ci-cert-manager-previous-e2e-v1-16
 - gcs_prefix: jetstack-logs/logs/ci-cert-manager-previous-e2e-v1-17
   name: ci-cert-manager-previous-e2e-v1-17
+- gcs_prefix: jetstack-logs/logs/ci-cert-manager-previous-e2e-v1-18
+  name: ci-cert-manager-previous-e2e-v1-18
 - gcs_prefix: jetstack-logs/logs/periodic-testing-close
   name: periodic-testing-close
 - gcs_prefix: jetstack-logs/logs/periodic-testing-retester
