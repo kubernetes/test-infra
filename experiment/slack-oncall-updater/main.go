@@ -45,7 +45,7 @@ var githubToSlack = map[string]string{
 // rotationToSlack group maps the rotation in go.k8s.io/oncall to the slack
 // group ID for the oncall alias group for this rotation
 var rotationToSlackGroup = map[string]string{
-	"test-infra":         "SGLF0GUQH",   // @test-infra-oncall
+	"testinfra":          "SGLF0GUQH",   // @test-infra-oncall
 	"google-build-admin": "S017N31TLNN", // @google-build-admin
 	// TODO: create this slack group?
 	// "scalability": "",
