@@ -575,7 +575,6 @@ tide:
       kubernetes:
         repos:
           dashboard:
-            skip-unknown-contexts: true
             from-branch-protection: true
       kubernetes-sigs:
         repos:
