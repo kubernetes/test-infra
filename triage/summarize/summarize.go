@@ -569,7 +569,7 @@ func cluster_global(newlyClustered map[string]map[string][]failure, previouslyCl
 			clusterDuration := int(time.Since(clusterStart).Seconds())
 			log.Printf("  %4d/%4d clusters, %5d chars failure text, %5d failures, cluster:%s in %d sec, test: %s",
 				m, numClusters, fTextLen, numTests, clusterCase, clusterDuration, testName)
-	}
+		}
 	}
 
 	// If we seeded clusters using the previous run's keys, some of those
@@ -587,42 +587,43 @@ func cluster_global(newlyClustered map[string]map[string][]failure, previouslyCl
 	return globalClustering
 }
 
-/*
-testsGroupByJob takes a group of failures and a group of builds and returns the list of builds
-that belong to each job.
-
-builds is a mapping from build names to build objects.
-*/
-func tests_group_by_job(failures []failure, builds map[string]build) []struct {
-	jobName      string
+// job represents a job name and a collection of associated build numbers.
+type job struct {
+	name         string
 	buildNumbers []int
-} {
-	// groups maps job names to sets of build numbers.
+}
+
+/*
+testsGroupByJob takes a group of failures and a map of builds and returns the list of build numbers
+that belong to each failure's job.
+
+builds is a mapping from build paths to build objects.
+*/
+func testsGroupByJob(failures []failure, builds map[string]build) []job {
+	// groups maps job names to sets of failures' build numbers.
 	var groups map[string]sets.Int
 
+	// For each failure, grab its build's job name. Map the job name to the failure's build number.
 	for _, flr := range failures {
-		var bld build
 		// Try to grab the build from builds if it exists
-		if matchedBuild, ok := builds[flr.build]; ok {
-			bld = matchedBuild
-		} else {
-			continue
-		}
-
-		// If the JSON build's "number" field was not null
-		if bld.number != 0 {
-			// Create the "set" if one doesn't exist for the given job
-			if _, ok := groups[bld.job]; !ok {
-				groups[bld.job] = make(sets.Int, 1)
+		if bld, ok := builds[flr.build]; ok {
+			// If the JSON build's "number" field was not null
+			if bld.number != 0 {
+				// Create the set if one doesn't exist for the given job
+				if _, ok := groups[bld.job]; !ok {
+					groups[bld.job] = make(sets.Int, 1)
+				}
+				groups[bld.job].Insert(bld.number)
 			}
-
-			groups[bld.job].Insert(bld.number)
 		}
 	}
 
-	// Sort groups in two stages
+	// Sort groups in two stages.
+	// First, sort each build number set in descending order.
+	// Then, sort the jobs by the number of build numbers in each job's build number slice, descending.
 
-	// First, sort each build number set in descending order
+	// First stage
+	// sortedBuildNumbers is essentially groups, but with the build numbers sorted.
 	sortedBuildNumbers := make(map[string][]int, len(groups))
 	// Create the slice to hold the set elements, fill it, and sort it
 	for jobName, buildNumberSet := range groups {
@@ -640,21 +641,12 @@ func tests_group_by_job(failures []failure, builds map[string]build) []struct {
 		sort.Slice(sortedBuildNumbers[jobName], func(i, j int) bool { return sortedBuildNumbers[jobName][i] > sortedBuildNumbers[jobName][j] })
 	}
 
-	// Then, sort the jobs by the number of build numbers in each job's build number slice, descending.
-	// The struct acts as a tuple.
-	sortedGroups := make([]struct {
-		jobName      string
-		buildNumbers []int
-	}, len(groups))
+	// Second stage
+	sortedGroups := make([]job, len(groups))
 
 	// Fill sortedGroups
-	iter := 0
 	for newJobName, newBuildNumbers := range sortedBuildNumbers {
-		sortedGroups[iter] = struct {
-			jobName      string
-			buildNumbers []int
-		}{newJobName, newBuildNumbers}
-		iter++
+		sortedGroups = append(sortedGroups, job{newJobName, newBuildNumbers})
 	}
 	// Sort it
 	sort.Slice(sortedGroups, func(i, j int) bool {
@@ -663,7 +655,7 @@ func tests_group_by_job(failures []failure, builds map[string]build) []struct {
 
 		// If they're the same length, sort by job name alphabetically
 		if iGroupLen == jGroupLen {
-			return sortedGroups[i].jobName < sortedGroups[j].jobName
+			return sortedGroups[i].name < sortedGroups[j].name
 		}
 
 		// Use > instead of < to sort descending.
@@ -681,7 +673,7 @@ commonSpans finds something similar to the longest common subsequence of xs, but
 Returns a list of [matchlen_1, mismatchlen_2, matchlen_2, mismatchlen_2, ...], representing
 sequences of the first element of the list that are present in all members.
 */
-func common_spans(xs []string) []int {
+func commonSpans(xs []string) []int {
 	var common sets.String
 	commonModified := false // Flag to keep track of whether common has been modified at least once
 
@@ -721,4 +713,83 @@ func common_spans(xs []string) []int {
 	}
 
 	return spans
+}
+
+// flattenedGlobalCluster is the key and value of a specific global cluster (as clusterText and
+// sortedTests, respectively), plus the result of calling makeNgramCountsDigest on the key.
+type flattenedGlobalCluster struct {
+	clusterText       string
+	ngramCountsDigest string
+	sortedTests       []failuresGroupPair
+}
+
+// test represents a test name and a collection of associated jobs.
+type test struct {
+	name string
+	jobs []job
+}
+
+/*
+jsonCluster represents a global cluster as it will be written to the JSON.
+
+	key:   the cluster text
+	id:    the result of calling makeNgramCountsDigest() on key
+	text:  a failure text from one of the cluster's failures
+	spans: common spans between all of the cluster's failure texts
+	tests: the build numbers that belong to the cluster's failures as per testGroupByJob()
+*/
+type jsonCluster struct {
+	key   string
+	id    string
+	text  string
+	spans []int
+	tests []test
+}
+
+// clustersToDisplay transposes and sorts the flattened output of clusterGlobal.
+// builds maps a build path to a build object.
+func clustersToDisplay(clustered []flattenedGlobalCluster, builds map[string]build) []jsonCluster {
+	jsonClusters := make([]jsonCluster, 0, len(clustered))
+
+	for _, flattened := range clustered {
+		key := flattened.clusterText
+		keyId := flattened.ngramCountsDigest
+		clusters := flattened.sortedTests
+
+		// Determine the number of failures across all clusters
+		numClusterFailures := 0
+		for _, cluster := range clusters {
+			numClusterFailures += len(cluster.failures)
+		}
+
+		if numClusterFailures > 1 {
+			jCluster := jsonCluster{
+				key:   key,
+				id:    keyId,
+				text:  clusters[0].failures[0].failureText,
+				tests: make([]test, len(clusters)),
+			}
+
+			// Get all of the failure texts from all clusters
+			clusterFailureTexts := make([]string, numClusterFailures)
+			for _, cluster := range clusters {
+				for _, flr := range cluster.failures {
+					clusterFailureTexts = append(clusterFailureTexts, flr.failureText)
+				}
+			}
+			jCluster.spans = commonSpans(clusterFailureTexts)
+
+			// Fill out jCluster.tests
+			for i, cluster := range clusters {
+				jCluster.tests[i] = test{
+					name: cluster.key,
+					jobs: testsGroupByJob(cluster.failures, builds),
+				}
+			}
+
+			jsonClusters = append(jsonClusters, jCluster)
+		}
+	}
+
+	return jsonClusters
 }
