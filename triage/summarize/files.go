@@ -131,7 +131,7 @@ func (jf *jsonFailure) asFailure() (failure, error) {
 	return f, nil
 }
 
-// Load builds and failed tests files. Group builds by path, group failed test by test name.
+// Load builds and failed tests files. Map build paths to builds, group test failures by test name.
 // @file_memoize("loading failed tests", "memo_load_failures.json") TODO
 func loadFailures(buildsFilepath string, testsFilepaths []string) (map[string]build, map[string][]failure, error) {
 	builds, err := loadBuilds(buildsFilepath)
@@ -186,7 +186,7 @@ func loadBuilds(filepath string) (map[string]build, error) {
 }
 
 // loadTests parses multiple JSON files containing test information for failed tests. It returns a
-// map from test names to build objects.
+// map from test names to failure objects.
 func loadTests(testsFilepaths []string) (map[string][]failure, error) {
 	// The map
 	var tests map[string][]failure
@@ -241,7 +241,7 @@ func getJSON(filepath string, v interface{}) error {
 		return fmt.Errorf("Could not read file '%s': %s", filepath, err)
 	}
 
-	// Decode the JSON into failures
+	// Decode the JSON into the provided interface
 	err = json.Unmarshal(contents, v)
 	if err != nil {
 		return fmt.Errorf("Could not unmarshal JSON: %s", err)

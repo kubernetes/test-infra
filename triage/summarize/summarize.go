@@ -15,7 +15,6 @@ limitations under the License.
 */
 
 // TODO Fix function and variable case to use camelCase
-// TODO Convert complex map types to type aliases
 // TODO Revise comments to better match arguments
 
 // Package summarize groups test failures together by finding edit distances between their failure messages,
@@ -54,9 +53,6 @@ var longOutputLen = 10000
 var truncatedSep = "\n...[truncated]...\n"
 var maxClusterTextLen = longOutputLen + len(truncatedSep)
 
-// Will be used across make_ngram_counts() calls
-var ngram_counts map[string][]int
-
 // build represents a specific instance of a build.
 type build struct {
 	path        string
@@ -77,89 +73,6 @@ type failure struct {
 	build       string
 	name        string
 	failureText string
-}
-
-// sfsmSort (string failure-slice map sort) provides the keys and values of the
-// provided map as a slice of key-value pairs, sorted in descending order based
-// on number of failures.
-func sfsmSort(m map[string][]failure) (result []struct {
-	string
-	failures []failure
-}) {
-	// Fill the slice
-	for key, val := range m {
-		result = append(result, struct {
-			string
-			failures []failure
-		}{key, val})
-	}
-
-	// Sort the slice. Use > instead of < in less function so largest values
-	// (i.e. clusters with the most failures) are first.
-	sort.Slice(result, func(i, j int) bool { return len(result[i].failures) > len(result[j].failures) })
-
-	return result
-}
-
-// sfsmKeys (string failure-slice map keys) provides the keys of a map as a slice.
-func sfsmKeys(m map[string][]failure) []string {
-	result := make([]string, len(m))
-
-	iter := 0
-	for key := range m {
-		result[iter] = key
-		iter++
-	}
-
-	return result
-}
-
-// ssfsmSort (string string failure-slice map sort) provides the keys and values of the
-// provided map as a slice of key-value pairs, sorted in descending order based on the
-// aggregate number of failures across all of a test's clusters.
-func ssfsmSort(m map[string]map[string][]failure) (result []struct {
-	string
-	m map[string][]failure
-}) {
-	// Fill the slice
-	for key, val := range m {
-		result = append(result, struct {
-			string
-			m map[string][]failure
-		}{key, val})
-	}
-
-	// Sort the slice. Use > instead of < in less function so largest values
-	// (i.e. largest number of failures across all clusters) are first.
-	sort.Slice(result, func(i, j int) bool {
-		testIFailures := 0
-		testJFailures := 0
-
-		for _, failureSlice := range result[i].m {
-			testIFailures += len(failureSlice)
-		}
-
-		for _, failureSlice := range result[j].m {
-			testJFailures += len(failureSlice)
-		}
-
-		return testIFailures > testJFailures
-	})
-
-	return result
-}
-
-// ssfsmKeys (string string failure-slice map keys) provides the keys of a map as a slice.
-func ssfsmKeys(m map[string]map[string][]failure) []string {
-	result := make([]string, len(m))
-
-	iter := 0
-	for key := range m {
-		result[iter] = key
-		iter++
-	}
-
-	return result
 }
 
 /*
@@ -187,12 +100,6 @@ func normalize(s string) string {
 	// do alpha conversion-- rename random garbage strings (hex pointer values, node names, etc)
 	// into 'UNIQ1', 'UNIQ2', etc.
 	var matches map[string]string
-	repl := func(match string) string {
-		if _, ok := matches[match]; !ok {
-			matches[match] = fmt.Sprintf("UNIQ%d", len(matches)+1)
-		}
-		return matches[match]
-	}
 
 	// Go's maps are in a random order. Try to sort them to reduce diffs.
 	if strings.Contains(s, "map[") {
@@ -211,14 +118,20 @@ func normalize(s string) string {
 			})
 	}
 
-	s = flakeReasonOrdinalRE.ReplaceAllStringFunc(s, repl)
+	s = flakeReasonOrdinalRE.ReplaceAllStringFunc(s, func(match string) string {
+		if _, ok := matches[match]; !ok {
+			matches[match] = fmt.Sprintf("UNIQ%d", len(matches)+1)
+		}
+		return matches[match]
+	})
 
 	// for long strings, remove repeated lines!
 	if len(s) > longOutputLen {
 		s = utils.RemoveDuplicateLines(s)
 	}
 
-	if len(s) > longOutputLen { // ridiculously long test output
+	// truncate ridiculously long test output
+	if len(s) > longOutputLen {
 		s = s[:longOutputLen/2] + truncatedSep + s[len(s)-longOutputLen/2:]
 	}
 
@@ -232,6 +145,9 @@ func normalize_name(name string) string {
 	return strings.TrimSpace(name)
 }
 
+// Will be used across makeNgramCounts() calls
+var memoizedNgramCounts map[string][]int
+
 /*
 Convert a string into a histogram of frequencies for different byte combinations.
 This can be used as a heuristic to estimate edit distance between two strings in
@@ -242,14 +158,14 @@ This makes the output count size constant.
 */
 func make_ngram_counts(s string) []int {
 	size := 64
-	if _, ok := ngram_counts[s]; ok {
+	if _, ok := memoizedNgramCounts[s]; ok {
 		counts := make([]int, size)
 		for x := 0; x < len(s)-3; x++ {
 			counts[int(crc32.Checksum([]byte(s[x:x+4]), crc32.MakeTable(0))&uint32(size-1))]++
 		}
-		ngram_counts[s] = counts // memoize
+		memoizedNgramCounts[s] = counts // memoize
 	}
-	return ngram_counts[s]
+	return memoizedNgramCounts[s]
 }
 
 /*
@@ -362,7 +278,7 @@ Returns:
 		...
 	}
 */
-func cluster_test(failures []failure) (result map[string][]failure) {
+func cluster_test(failures []failure) (result failuresGroup) {
 	start := time.Now()
 
 	for _, flr := range failures {
@@ -373,7 +289,7 @@ func cluster_test(failures []failure) (result map[string][]failure) {
 			result[fNorm] = append(result[fNorm], flr)
 		} else {
 			// Otherwise, check if a match can be found for the normalized string
-			other, found := find_match(fNorm, sfsmKeys(result))
+			other, found := find_match(fNorm, result.keys())
 			if found {
 				result[other] = append(result[other], flr)
 			} else {
@@ -419,7 +335,7 @@ Returns:
 	}
 */
 // @file_memoize("clustering inside each test", "memo_cluster_local.json") TODO
-func cluster_local(failuresByTest map[string][]failure) (localClustering map[string]map[string][]failure) {
+func cluster_local(failuresByTest failuresGroup) (localClustering nestedFailuresGroups) {
 	numFailures := 0
 	start := time.Now()
 	log.Printf("Clustering failures for %d unique tests...", len(failuresByTest))
@@ -484,7 +400,10 @@ Returns:
 */
 // TODO make sure type of previouslyClustered is correct and update documentation to match
 // @file_memoize("clustering across tests", "memo_cluster_global.json") TODO
-func cluster_global(newlyClustered map[string]map[string][]failure, previouslyClustered []map[string]string) (globalClustering map[string]map[string][]failure) {
+func cluster_global(newlyClustered nestedFailuresGroups, previouslyClustered []map[string]string) nestedFailuresGroups {
+	// The eventual global clusters
+	var clusters nestedFailuresGroups
+
 	numFailures := 0
 
 	log.Printf("Combining clustered failures for %d unique tests...", len(newlyClustered))
@@ -502,10 +421,10 @@ func cluster_global(newlyClustered map[string]map[string][]failure, previouslyCl
 				continue
 			}
 
-			globalClustering[key] = make(map[string][]failure)
+			clusters[key] = make(failuresGroup)
 		}
 
-		log.Printf("Seeding with %d previous clusters", len(globalClustering))
+		log.Printf("Seeding with %d previous clusters", len(clusters))
 
 		if n != 0 {
 			log.Printf("!!! %d clusters lost from different normalization! !!!", n)
@@ -513,16 +432,16 @@ func cluster_global(newlyClustered map[string]map[string][]failure, previouslyCl
 	}
 
 	// Look at tests with the most failures over all clusters first
-	for n, outerPair := range ssfsmSort(newlyClustered) {
-		testName := outerPair.string
-		testClusters := outerPair.m
+	for n, outerPair := range newlyClustered.sortByAggregateNumberOfFailures() {
+		testName := outerPair.key
+		testClusters := outerPair.group
 
 		log.Printf("%4d/%4d tests, %4d clusters, %s", n+1, len(newlyClustered), len(testClusters), testName)
 		testStart := time.Now()
 
 		// Look at clusters with the most failures first
-		for m, innerPair := range sfsmSort(testClusters) {
-			key := innerPair.string // The cluster text
+		for m, innerPair := range testClusters.sortByNumberOfFailures() {
+			key := innerPair.key // The cluster text
 			tests := innerPair.failures
 
 			clusterStart := time.Now()
@@ -535,34 +454,34 @@ func cluster_global(newlyClustered map[string]map[string][]failure, previouslyCl
 			numFailures += numTests
 
 			// If a cluster exists for the given
-			if _, ok := globalClustering[key]; ok {
+			if _, ok := clusters[key]; ok {
 				clusterCase = "EXISTING"
 
 				// If there isn't yet a slice of failures that test, make a new one
-				if _, ok := globalClustering[key][testName]; !ok {
-					globalClustering[key][testName] = make([]failure, len(tests))
+				if _, ok := clusters[key][testName]; !ok {
+					clusters[key][testName] = make([]failure, len(tests))
 				}
 
 				// Copy the contents into the test's failure slice
-				globalClustering[key][testName] = append(globalClustering[key][testName], tests...)
+				clusters[key][testName] = append(clusters[key][testName], tests...)
 			} else if time.Since(testStart).Seconds() > 30 && fTextLen > maxClusterTextLen/2 && numTests == 1 {
 				// if we've taken longer than 30 seconds for this test, bail on pathological / low value cases
 				clusterCase = "BAILED"
 			} else {
-				other, found := find_match(key, ssfsmKeys(globalClustering))
+				other, found := find_match(key, clusters.keys())
 				if found {
 					clusterCase = "OTHER"
 
 					// If there isn't yet a slice of failures that test, make a new one
-					if _, ok := globalClustering[other][testName]; !ok {
-						globalClustering[other][testName] = make([]failure, len(tests))
+					if _, ok := clusters[other][testName]; !ok {
+						clusters[other][testName] = make([]failure, len(tests))
 					}
 
 					// Copy the contents into the test's failure slice
-					globalClustering[other][testName] = append(globalClustering[other][testName], tests...)
+					clusters[other][testName] = append(clusters[other][testName], tests...)
 				} else {
 					clusterCase = "NEW"
-					globalClustering[key] = map[string][]failure{testName: tests}
+					clusters[key] = failuresGroup{testName: tests}
 				}
 			}
 
@@ -574,17 +493,16 @@ func cluster_global(newlyClustered map[string]map[string][]failure, previouslyCl
 
 	// If we seeded clusters using the previous run's keys, some of those
 	// clusters may have disappeared. Remove the resulting empty entries.
-	for key, val := range globalClustering {
+	for key, val := range clusters {
 		if len(val) == 0 {
-			delete(globalClustering, key)
+			delete(clusters, key)
 		}
 	}
 
 	elapsed := time.Since(start)
-	log.Printf("Finished clustering %d unique tests (%d failures) into %d clusters in %s",
-		len(newlyClustered), numFailures, len(globalClustering), elapsed.String())
+		len(newlyClustered), numFailures, len(clusters), elapsed.String())
 
-	return globalClustering
+	return clusters
 }
 
 // job represents a job name and a collection of associated build numbers.
