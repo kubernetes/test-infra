@@ -81,8 +81,11 @@ type Client interface {
 	GetAllClones(bug *Bug) ([]*Bug, error)
 	// GetRootForClone returns the original bug.
 	GetRootForClone(bug *Bug) (*Bug, error)
+	// SetRoundTripper sets a custom implementation of RoundTripper as the Transport for http.Client
+	SetRoundTripper(t http.RoundTripper)
 }
 
+// NewClient returns a bugzilla client.
 func NewClient(getAPIKey func() []byte, endpoint string) Client {
 	return &client{
 		logger:    logrus.WithField("client", "bugzilla"),
@@ -90,6 +93,11 @@ func NewClient(getAPIKey func() []byte, endpoint string) Client {
 		endpoint:  endpoint,
 		getAPIKey: getAPIKey,
 	}
+}
+
+// SetRoundTripper sets the Transport in http.Client to a custom RoundTripper
+func (c *client) SetRoundTripper(t http.RoundTripper) {
+	c.client.Transport = t
 }
 
 // newBugDetailsCache is a constructor for bugDetailsCache
