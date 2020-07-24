@@ -26,13 +26,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"os"
 	"sort"
 	"strconv"
 	"strings"
 )
 
-// Load builds and failed tests files. Map build paths to builds, group test failures by test name.
+// loadFailures loads a builds file and one or more test failure files. It maps build paths to builds
+// and groups test failures by test name.
 // @file_memoize("loading failed tests", "memo_load_failures.json") TODO
 func loadFailures(buildsFilepath string, testsFilepaths []string) (map[string]build, map[string][]failure, error) {
 	builds, err := loadBuilds(buildsFilepath)
@@ -46,6 +46,55 @@ func loadFailures(buildsFilepath string, testsFilepaths []string) (map[string]bu
 	}
 
 	return builds, tests, nil
+}
+
+// loadPrevious loads a previous output and returns the 'clustered' field.
+func loadPrevious(filepath string) ([]jsonCluster, error) {
+	var previous jsonOutput
+
+	err := getJSON(filepath, &previous)
+	if err != nil {
+		return nil, fmt.Errorf("Could not get previous results JSON: %s", err)
+	}
+
+	return previous.clustered, nil
+}
+
+// loadOwners loads an owners JSON file and returns it.
+func loadOwners(filepath string) (map[string][]string, error) {
+	var owners map[string][]string
+
+	err := getJSON(filepath, &owners)
+	if err != nil {
+		return nil, fmt.Errorf("Could not get owners JSON: %s", err)
+	}
+
+	return owners, nil
+}
+
+// writeResults outputs the results of clustering to a file.
+func writeResults(filepath string, data jsonOutput) error {
+	err := writeJSON(filepath, data)
+	if err != nil {
+		return fmt.Errorf("Could not write results to disk: %s", err)
+	}
+	return nil
+}
+
+// writeRenderedSlice outputs the results of a call to renderSlice() to a file.
+func writeRenderedSlice(filepath string, clustered []jsonCluster, cols columns) error {
+	output := struct {
+		clustered []jsonCluster
+		cols      columns
+	}{
+		clustered, cols,
+	}
+
+	err := writeJSON(filepath, output)
+	if err != nil {
+		return fmt.Errorf("Could not write subset to disk: %s", err)
+	}
+	return nil
 }
 
 // jsonBuild represents a build as reported by the JSON. All values are strings.
@@ -192,7 +241,7 @@ func loadTests(testsFilepaths []string) (map[string][]failure, error) {
 	var tests map[string][]failure
 
 	// jsonTests temporarily stores the tests as they are retrieved from the JSON file
-	// until they can be converted to build objects
+	// until they can be converted to failure objects
 	var jsonFailures []jsonFailure
 	for _, filepath := range testsFilepaths {
 		err := getJSON(filepath, &jsonFailures)
@@ -216,7 +265,7 @@ func loadTests(testsFilepaths []string) (map[string][]failure, error) {
 		}
 	}
 
-	// Sort the failures withing each test by build
+	// Sort the failures within each test by build
 	for _, testSlice := range tests {
 		sort.Slice(testSlice, func(i, j int) bool { return testSlice[i].build < testSlice[j].build })
 	}
@@ -228,23 +277,30 @@ func loadTests(testsFilepaths []string) (map[string][]failure, error) {
 // into v. Internally, it calls encoding/json's Unmarshal using v as the second argument. Therefore,
 // v mut be a non-nil pointer.
 func getJSON(filepath string, v interface{}) error {
-	// Open the tests file
-	fd, err := os.Open(filepath)
+	contents, err := ioutil.ReadFile(filepath)
 	if err != nil {
 		return fmt.Errorf("Could not open file '%s': %s", filepath, err)
-	}
-	defer fd.Close()
-
-	// Read the file
-	contents, err := ioutil.ReadAll(fd)
-	if err != nil {
-		return fmt.Errorf("Could not read file '%s': %s", filepath, err)
 	}
 
 	// Decode the JSON into the provided interface
 	err = json.Unmarshal(contents, v)
 	if err != nil {
 		return fmt.Errorf("Could not unmarshal JSON: %s", err)
+	}
+
+	return nil
+}
+
+// getJSON generates JSON according to v and writes the results to filepath.
+func writeJSON(filepath string, v interface{}) error {
+	output, err := json.Marshal(v)
+	if err != nil {
+		return fmt.Errorf("Could not encode JSON: %s", err)
+	}
+
+	err = ioutil.WriteFile(filepath, output, 0644)
+	if err != nil {
+		return fmt.Errorf("Could not write JSON to file: %s", err)
 	}
 
 	return nil
