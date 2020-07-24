@@ -18,6 +18,7 @@ package githubeventserver
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -30,7 +31,6 @@ import (
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
-	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/pluginhelp"
 	pluginhelp_externalplugins "k8s.io/test-infra/prow/pluginhelp/externalplugins"
 	pluginhelp_hook "k8s.io/test-infra/prow/pluginhelp/hook"
@@ -54,11 +54,10 @@ const (
 type GitHubEventServer struct {
 	wg *sync.WaitGroup
 
-	endpoint string
-	port     int
-
 	serveMuxHandler *serveMuxHandler
 	httpServeMux    *http.ServeMux
+
+	httpServer *http.Server
 }
 
 // New creates a new GitHubEventServer from the given arguments.
@@ -66,11 +65,8 @@ type GitHubEventServer struct {
 func New(o Options, hmacTokenGenerator func() []byte, logger *logrus.Entry) *GitHubEventServer {
 	var wg sync.WaitGroup
 
-	httpServeMux := http.NewServeMux()
 	githubEventServer := &GitHubEventServer{
-		endpoint: o.endpoint,
-		port:     o.port,
-		wg:       &wg,
+		wg: &wg,
 		serveMuxHandler: &serveMuxHandler{
 			hmacTokenGenerator: hmacTokenGenerator,
 			log:                logger,
@@ -79,22 +75,23 @@ func New(o Options, hmacTokenGenerator func() []byte, logger *logrus.Entry) *Git
 		},
 	}
 
+	httpServeMux := http.NewServeMux()
 	httpServeMux.Handle(o.endpoint, githubEventServer.serveMuxHandler)
+
 	githubEventServer.httpServeMux = httpServeMux
+	githubEventServer.httpServer = &http.Server{Addr: ":" + strconv.Itoa(o.port), Handler: httpServeMux}
 
 	return githubEventServer
 }
 
-// GetHTTPServeMux returns the http.ServeMux of GitHubEventServerOptions
-func (g *GitHubEventServer) GetHTTPServeMux() *http.ServeMux {
-	return g.httpServeMux
+// ListenAndServe runs the http server
+func (g *GitHubEventServer) ListenAndServe() error {
+	return g.httpServer.ListenAndServe()
 }
 
-// Listen runs an http server by using the existing http.ServeMux, port and the
-// given grace period duration
-func (g *GitHubEventServer) Listen(gracePeriod time.Duration) {
-	defer interrupts.WaitForGracefulShutdown()
-	interrupts.ListenAndServe(&http.Server{Addr: ":" + strconv.Itoa(g.port), Handler: g.httpServeMux}, gracePeriod)
+// Shutdown shutdowns the http server
+func (g *GitHubEventServer) Shutdown(ctx context.Context) error {
+	return g.httpServer.Shutdown(ctx)
 }
 
 // ReviewCommentEventHandler is a type of function that handles GitHub's review comment events

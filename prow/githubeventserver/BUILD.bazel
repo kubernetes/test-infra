@@ -12,7 +12,6 @@ go_library(
     deps = [
         "//prow/config:go_default_library",
         "//prow/github:go_default_library",
-        "//prow/interrupts:go_default_library",
         "//prow/pluginhelp:go_default_library",
         "//prow/pluginhelp/externalplugins:go_default_library",
         "//prow/pluginhelp/hook:go_default_library",
