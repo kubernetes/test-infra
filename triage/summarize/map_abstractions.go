@@ -22,7 +22,9 @@ key-value pairs as a map.
 
 package summarize
 
-import "sort"
+import (
+	"sort"
+)
 
 // map[string][]failure type alias
 
@@ -128,31 +130,28 @@ func (nfg *nestedFailuresGroups) asSlice() []nestedFailuresGroupsPair {
 func (nfg *nestedFailuresGroups) sortByAggregateNumberOfFailures() []nestedFailuresGroupsPair {
 	result := nfg.asSlice()
 
-	// TODO(michaelkolber) Pre-compute the aggregate failures for each element of result so that the less
-	// function doesn't have to compute it on every compare. This may require implementing sort.Interface.
+	// Pre-compute the aggregate failures for each element of result so that the less
+	// function doesn't have to compute it on every compare.
+	// aggregates maps nestedFailuresGroups strings to number of aggregate failures across oall of
+	// their failure slices.
+	aggregates := make(map[string]int, len(*nfg))
+	for str, fg := range *nfg {
+		aggregate := 0
+		for _, group := range fg {
+			aggregate += len(group)
+		}
+		aggregates[str] = aggregate
+	}
 
 	// Sort the slice.
 	sort.Slice(result, func(i, j int) bool {
-		iAggregateFailures := 0
-		jAggregateFailures := 0
-
-		iGroup := result[i].group
-		for _, failures := range iGroup {
-			iAggregateFailures += len(failures)
-		}
-
-		jGroup := result[j].group
-		for _, failures := range jGroup {
-			jAggregateFailures += len(failures)
-		}
-
-		if iAggregateFailures == jAggregateFailures {
+		if aggregates[result[i].key] == aggregates[result[j].key] {
 			return result[i].key < result[j].key
 		}
 
 		// Use > instead of < so the largest values (i.e. largest number of failures across all
 		// clusters) are first.
-		return iAggregateFailures > jAggregateFailures
+		return aggregates[result[i].key] > aggregates[result[j].key]
 	})
 
 	return result
