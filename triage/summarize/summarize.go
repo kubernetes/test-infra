@@ -14,8 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// TODO Define build, test, job, failure, etc. in the README
-
 // Package summarize groups test failures together by finding edit distances between their failure messages,
 // and emits JSON for rendering in a browser.
 package summarize
