@@ -49,9 +49,16 @@ Returns:
 		...
 	}
 */
-// @file_memoize("clustering inside each test", "memo_cluster_local.json") TODO
 func clusterLocal(failuresByTest failuresGroup) nestedFailuresGroups {
+	const memoPath string = "memo_cluster_local.json"
+	const memoMessage string = "clustering inside each test"
+
 	clustered := make(nestedFailuresGroups)
+
+	// Try to retrieve memoized results first to avoid another computation
+	if getMemoizedResults(memoPath, memoMessage, &clustered) {
+		return clustered
+	}
 
 	numFailures := 0
 	start := time.Now()
@@ -67,6 +74,8 @@ func clusterLocal(failuresByTest failuresGroup) nestedFailuresGroups {
 	elapsed := time.Since(start)
 	logInfo("Finished locally clustering %d unique tests (%d failures) in %s", len(clustered), numFailures, elapsed.String())
 
+	// Memoize the results
+	memoizeResults(memoPath, memoMessage, clustered)
 	return clustered
 }
 
@@ -123,10 +132,17 @@ Returns:
 		...
 	}
 */
-// @file_memoize("clustering across tests", "memo_cluster_global.json") TODO
 func clusterGlobal(newlyClustered nestedFailuresGroups, previouslyClustered []jsonCluster) nestedFailuresGroups {
+	const memoPath string = "memo_cluster_global.json"
+	const memoMessage string = "clustering across tests"
+
 	// The eventual global clusters
-	var clusters nestedFailuresGroups
+	clusters := make(nestedFailuresGroups)
+
+	// Try to retrieve memoized results first to avoid another computation
+	if getMemoizedResults(memoPath, memoMessage, &clusters) {
+		return clusters
+	}
 
 	numFailures := 0
 
@@ -228,6 +244,8 @@ func clusterGlobal(newlyClustered nestedFailuresGroups, previouslyClustered []js
 	logInfo("Finished clustering %d unique tests (%d failures) into %d clusters in %s",
 		len(newlyClustered), numFailures, len(clusters), elapsed.String())
 
+	// Memoize the results
+	memoizeResults(memoPath, memoMessage, clusters)
 	return clusters
 }
 

@@ -33,18 +33,32 @@ import (
 
 // loadFailures loads a builds file and one or more test failure files. It maps build paths to builds
 // and groups test failures by test name.
-// @file_memoize("loading failed tests", "memo_load_failures.json") TODO
 func loadFailures(buildsFilepath string, testsFilepaths []string) (map[string]build, map[string][]failure, error) {
+	const memoMessage string = "loading failed tests"
+
+	builds := make(map[string]build)
+	tests := make(map[string][]failure)
+
+	// Try to retrieve memoized results first to avoid another computation
+	if getMemoizedResults("memo_load_failures-builds.json", "", &builds) &&
+		getMemoizedResults("memo_load_failures-tests.json", "", &tests) {
+		logInfo("Done (cached) " + memoMessage)
+		return builds, tests, nil
+	}
+
 	builds, err := loadBuilds(buildsFilepath)
 	if err != nil {
 		return nil, nil, fmt.Errorf("Could not retrieve builds: %s", err)
 	}
 
-	tests, err := loadTests(testsFilepaths)
+	tests, err = loadTests(testsFilepaths)
 	if err != nil {
 		return nil, nil, fmt.Errorf("Could not retrieve tests: %s", err)
 	}
 
+	memoizeResults("memo_load_failures-builds.json", "", builds)
+	memoizeResults("memo_load_failures-tests.json", "", tests)
+	logInfo("Done " + memoMessage)
 	return builds, tests, nil
 }
 
@@ -95,6 +109,43 @@ func writeRenderedSlice(filepath string, clustered []jsonCluster, cols columns) 
 		return fmt.Errorf("Could not write subset to disk: %s", err)
 	}
 	return nil
+}
+
+/*
+getMemoizedResults attempts to retrieve memoized function results from the given filepath. If it
+succeeds, it places the results into v and returns true. Otherwise, it returns false. Internally,
+it calls encoding/json's Unmarshal using v as the second argument. Therefore, v mut be a non-nil
+pointer.
+
+message is a message that gets printed on success, appended to "Done (cached) ". If it is the empty
+string, no message is printed.
+*/
+func getMemoizedResults(filepath string, message string, v interface{}) (ok bool) {
+	err := getJSON(filepath, v)
+	if err == nil {
+		if message != "" {
+			logInfo("Done (cached) " + message)
+		}
+		return true
+	}
+	return false
+}
+
+/*
+memoizeResults saves the results stored in v to a JSON file. v should be a value, not a pointer. It
+prints a warning if the results could not be memoized.
+
+message is a message that gets printed on success, appended to "Done ". If it is the empty
+string, no message is printed.
+*/
+func memoizeResults(filepath string, message string, v interface{}) {
+	err := writeJSON(filepath, v)
+	if err == nil && message != "" {
+		logInfo("Done " + message)
+		return
+	}
+
+	logWarning("Could not memoize results to '%s': %s", filepath, err)
 }
 
 /* Functions below this comment are only used within this file as of this commit. */
@@ -297,7 +348,7 @@ func getJSON(filepath string, v interface{}) error {
 	return nil
 }
 
-// getJSON generates JSON according to v and writes the results to filepath.
+// writeJSON generates JSON according to v and writes the results to filepath.
 func writeJSON(filepath string, v interface{}) error {
 	output, err := json.Marshal(v)
 	if err != nil {
