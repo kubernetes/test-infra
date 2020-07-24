@@ -398,7 +398,6 @@ Returns:
 		...
 	}
 */
-// TODO make sure type of previouslyClustered is correct and update documentation to match
 // @file_memoize("clustering across tests", "memo_cluster_global.json") TODO
 func clusterGlobal(newlyClustered nestedFailuresGroups, previouslyClustered []jsonCluster) nestedFailuresGroups {
 	// The eventual global clusters

@@ -128,7 +128,7 @@ func (nfg *nestedFailuresGroups) asSlice() []nestedFailuresGroupsPair {
 func (nfg *nestedFailuresGroups) sortByAggregateNumberOfFailures() []nestedFailuresGroupsPair {
 	result := nfg.asSlice()
 
-	// TODO(kolber) Pre-compute the aggregate failures for each element of result so that the less
+	// TODO(michaelkolber) Pre-compute the aggregate failures for each element of result so that the less
 	// function doesn't have to compute it on every compare. This may require implementing sort.Interface.
 
 	// Sort the slice.
