@@ -55,4 +55,4 @@ presubmits:
           cd "${REPO_ROOT}/../kubetest2" || exit 1;
           make install;
           make install-deployer-gce;
-          kubetest2 gce -v 2 --repo-root $REPO_ROOT --build --up --down --test=exec -- kubectl get all --all-namespaces;
+          kubetest2 gce -v 2 --repo-root $REPO_ROOT --build --up --down --test=exec -- kubectl get all --all-namespaces --kubeconfig="${ARTIFACTS}/kubetest2-kubeconfig";
