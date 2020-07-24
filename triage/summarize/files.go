@@ -111,6 +111,8 @@ type jsonBuild struct {
 	executor     string
 	job          string
 	number       string
+	pr           string
+	key          string // Often nonexistent
 }
 
 // asBuild is a factory function that creates a build object from a jsonBuild object, appropriately
@@ -123,6 +125,8 @@ func (jb *jsonBuild) asBuild() (build, error) {
 		result:   jb.result,
 		executor: jb.executor,
 		job:      jb.job,
+		pr:       jb.pr,
+		key:      jb.key,
 	}
 
 	// To avoid assignment issues

@@ -16,7 +16,6 @@ limitations under the License.
 
 // TODO Define build, test, job, failure, etc. in the README
 // TODO Go through function chain in README
-// TODO add JSON annotations to build and failure, and any other field names necessary
 
 // Package summarize groups test failures together by finding edit distances between their failure messages,
 // and emits JSON for rendering in a browser.
@@ -260,7 +259,7 @@ type failure struct {
 	started     int
 	build       string
 	name        string
-	failureText string
+	failureText string `json:"failure_text"`
 }
 
 /*
@@ -511,7 +510,7 @@ func clusterGlobal(newlyClustered nestedFailuresGroups, previouslyClustered []js
 // job represents a job name and a collection of associated build numbers.
 type job struct {
 	name         string
-	buildNumbers []int
+	buildNumbers []int `json:"build_numbers"`
 }
 
 // build represents a specific instance of a build.
@@ -519,8 +518,8 @@ type build struct {
 	path        string
 	started     int
 	elapsed     int
-	testsRun    int
-	testsFailed int
+	testsRun    int `json:"tests_run"`
+	testsFailed int `json:"tests_failed"`
 	result      string
 	executor    string
 	job         string
@@ -740,13 +739,13 @@ For example, the 4th (0-indexed) build's start time can be found in started[4], 
 time can be found in elapsed[4].
 */
 type columnarBuilds struct {
-	started      []int
-	tests_failed []int
-	elapsed      []int
-	tests_run    []int
-	result       []string
-	executor     []string
-	pr           []string
+	started     []int
+	testsFailed []int `json:"tests_failed"`
+	elapsed     []int
+	testsRun    []int `json:"tests_run"`
+	result      []string
+	executor    []string
+	pr          []string
 }
 
 // currentIndex returns the index of the next build to be stored (and, by extension, the number of
@@ -758,9 +757,9 @@ func (cb *columnarBuilds) currentIndex() int {
 // insert adds a build into the columnarBuilds object.
 func (cb *columnarBuilds) insert(b build) {
 	cb.started = append(cb.started, b.started)
-	cb.tests_failed = append(cb.tests_failed, b.testsFailed)
+	cb.testsFailed = append(cb.testsFailed, b.testsFailed)
 	cb.elapsed = append(cb.elapsed, b.elapsed)
-	cb.tests_run = append(cb.tests_run, b.testsRun)
+	cb.testsRun = append(cb.testsRun, b.testsRun)
 	cb.result = append(cb.result, b.result)
 	cb.executor = append(cb.executor, b.executor)
 	cb.pr = append(cb.pr, b.pr)
@@ -771,13 +770,13 @@ func (cb *columnarBuilds) insert(b build) {
 func newColumnarBuilds(columns int) columnarBuilds {
 	// Start the length at 0 because columnarBuilds.currentIndex() relies on the length.
 	return columnarBuilds{
-		started:      make([]int, 0, columns),
-		tests_failed: make([]int, 0, columns),
-		elapsed:      make([]int, 0, columns),
-		tests_run:    make([]int, 0, columns),
-		result:       make([]string, 0, columns),
-		executor:     make([]string, 0, columns),
-		pr:           make([]string, 0, columns),
+		started:     make([]int, 0, columns),
+		testsFailed: make([]int, 0, columns),
+		elapsed:     make([]int, 0, columns),
+		testsRun:    make([]int, 0, columns),
+		result:      make([]string, 0, columns),
+		executor:    make([]string, 0, columns),
+		pr:          make([]string, 0, columns),
 	}
 }
 
@@ -800,9 +799,9 @@ cols is the collection of builds in columnar form.
 jobPaths maps a job name to a build path, minus the last path segment.
 */
 type columns struct {
-	jobs      map[string]jobCollection
-	cols      columnarBuilds
-	job_paths map[string]string // TODO this probably needs to remain in snake case for JSON compatibility, revisit later
+	jobs     map[string]jobCollection
+	cols     columnarBuilds
+	jobPaths map[string]string `json:"job_paths"`
 }
 
 // buildsToColumns converts a map (from build paths to builds) into a columnar form. This compresses
@@ -854,7 +853,7 @@ func buildsToColumns(builds map[string]build) columns {
 
 		// Store the job path
 		if len(job) == 0 {
-			result.job_paths[bld.job] = bld.path[:strings.LastIndex(bld.path, "/")]
+			result.jobPaths[bld.job] = bld.path[:strings.LastIndex(bld.path, "/")]
 		}
 
 		// Store the column number (index) so we know in which column to find which build
@@ -962,7 +961,7 @@ func annotateOwners(data jsonOutput, builds map[string]build, owners map[string]
 		return fmt.Errorf("Could not compile ownerRE from provided SIG names and prefixes: %s", err)
 	}
 
-	jobPaths := data.builds.job_paths
+	jobPaths := data.builds.jobPaths
 	yesterday := utils.Max(data.builds.cols.started...) - (60 * 60 * 24)
 
 	// Determine the owner for each cluster
