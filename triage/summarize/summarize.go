@@ -14,9 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// TODO Fix function and variable case to use camelCase and remove named parameters
-// TODO Revise comments to better match arguments
-// TODO Move structs to be before their first uses, including build and failure
 // TODO Define build, test, job, failure, etc. in the README
 // TODO Go through function chain in README
 // TODO add JSON annotations to build and failure, and any other field names necessary
@@ -58,37 +55,14 @@ const longOutputLen = 10000
 const truncatedSep = "\n...[truncated]...\n"
 const maxClusterTextLen = longOutputLen + len(truncatedSep)
 
-// log logs a message, prepending [I] to it.
+// logInfo logs a message, prepending [I] to it.
 func logInfo(format string, v ...interface{}) {
 	log.Printf("[I]"+format, v)
 }
 
-// log logs a message, prepending [W] to it.
+// logWarning logs a message, prepending [W] to it.
 func logWarning(format string, v ...interface{}) {
 	log.Printf("[W]"+format, v)
-}
-
-// build represents a specific instance of a build.
-type build struct {
-	path        string
-	started     int
-	elapsed     int
-	testsRun    int
-	testsFailed int
-	result      string
-	executor    string
-	job         string
-	number      int
-	pr          string
-	key         string // Often nonexistent
-}
-
-// failure represents a specific instance of a test failure.
-type failure struct {
-	started     int
-	build       string
-	name        string
-	failureText string
 }
 
 /*
@@ -281,6 +255,14 @@ func findMatch(fnorm string, candidates []string) (result string, found bool) {
 	return "", false
 }
 
+// failure represents a specific instance of a test failure.
+type failure struct {
+	started     int
+	build       string
+	name        string
+	failureText string
+}
+
 /*
 clusterTest clusters a given a list of failures for one test.
 Failure texts are normalized prior to clustering to avoid needless entropy.
@@ -352,7 +334,9 @@ Returns:
 	}
 */
 // @file_memoize("clustering inside each test", "memo_cluster_local.json") TODO
-func clusterLocal(failuresByTest failuresGroup) (localClustering nestedFailuresGroups) {
+func clusterLocal(failuresByTest failuresGroup) nestedFailuresGroups {
+	clustered := make(nestedFailuresGroups)
+
 	numFailures := 0
 	start := time.Now()
 	logInfo("Clustering failures for %d unique tests...", len(failuresByTest))
@@ -361,13 +345,13 @@ func clusterLocal(failuresByTest failuresGroup) (localClustering nestedFailuresG
 	for n, pair := range failuresByTest.sortByNumberOfFailures() {
 		numFailures += len(pair.failures)
 		logInfo("%4d/%4d tests, %5d failures, %s", n+1, len(failuresByTest), len(pair.failures), pair.key)
-		localClustering[pair.key] = clusterTest(pair.failures)
+		clustered[pair.key] = clusterTest(pair.failures)
 	}
 
 	elapsed := time.Since(start)
-	logInfo("Finished locally clustering %d unique tests (%d failures) in %s", len(localClustering), numFailures, elapsed.String())
+	logInfo("Finished locally clustering %d unique tests (%d failures) in %s", len(clustered), numFailures, elapsed.String())
 
-	return localClustering
+	return clustered
 }
 
 /*
@@ -528,6 +512,21 @@ func clusterGlobal(newlyClustered nestedFailuresGroups, previouslyClustered []js
 type job struct {
 	name         string
 	buildNumbers []int
+}
+
+// build represents a specific instance of a build.
+type build struct {
+	path        string
+	started     int
+	elapsed     int
+	testsRun    int
+	testsFailed int
+	result      string
+	executor    string
+	job         string
+	number      int
+	pr          string
+	key         string // Often nonexistent
 }
 
 /*
