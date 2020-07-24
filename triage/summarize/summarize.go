@@ -14,8 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// TODO Fix function and variable case to use camelCase
+// TODO Fix function and variable case to use camelCase and remove named parameters
 // TODO Revise comments to better match arguments
+// TODO Move structs to be before their first uses, including build and failure
+// TODO Define build, test, job, failure, etc. in the README
+// TODO Go through function chain in README
 
 // Package summarize groups test failures together by finding edit distances between their failure messages,
 // and emits JSON for rendering in a browser.
@@ -23,6 +26,7 @@ package summarize
 
 import (
 	"crypto/sha1"
+	"flag"
 	"fmt"
 	"hash/crc32"
 	"io"
@@ -49,9 +53,16 @@ var flakeReasonOrdinalRE *regexp.Regexp = regexp.MustCompile(
 		`|[0-9a-f]{12,32}` + // hex garbage
 		`|(minion-group-|default-pool-)[-0-9a-z]{4,}`) // node names
 
-var longOutputLen = 10000
-var truncatedSep = "\n...[truncated]...\n"
-var maxClusterTextLen = longOutputLen + len(truncatedSep)
+
+// log logs a message, prepending [I] to it.
+func logInfo(format string, v ...interface{}) {
+	log.Printf("[I]"+format, v)
+}
+
+// log logs a message, prepending [W] to it.
+func logWarning(format string, v ...interface{}) {
+	log.Printf("[W]"+format, v)
+}
 
 // build represents a specific instance of a build.
 type build struct {
@@ -65,6 +76,7 @@ type build struct {
 	job         string
 	number      int
 	pr          string
+	key         string // Often nonexistent
 }
 
 // failure represents a specific instance of a test failure.
@@ -299,7 +311,7 @@ func cluster_test(failures []failure) (result failuresGroup) {
 
 		// Bail if the clustering takes too long
 		if time.Since(start).Seconds() > 60 {
-			log.Print("bailing early, taking too long!")
+			logInfo("bailing early, taking too long!")
 			break
 		}
 	}
@@ -338,17 +350,17 @@ Returns:
 func cluster_local(failuresByTest failuresGroup) (localClustering nestedFailuresGroups) {
 	numFailures := 0
 	start := time.Now()
-	log.Printf("Clustering failures for %d unique tests...", len(failuresByTest))
+	logInfo("Clustering failures for %d unique tests...", len(failuresByTest))
 
 	// Look at tests with the most failures first.
-	for n, pair := range sfsmSort(failuresByTest) {
+	for n, pair := range failuresByTest.sortByNumberOfFailures() {
 		numFailures += len(pair.failures)
-		log.Printf("%4d/%4d tests, %5d failures, %s", n+1, len(failuresByTest), len(pair.failures), pair.string)
-		localClustering[pair.string] = cluster_test(pair.failures)
+		logInfo("%4d/%4d tests, %5d failures, %s", n+1, len(failuresByTest), len(pair.failures), pair.key)
+		localClustering[pair.key] = cluster_test(pair.failures)
 	}
 
 	elapsed := time.Since(start)
-	log.Printf("Finished locally clustering %d unique tests (%d failures) in %s", len(localClustering), numFailures, elapsed.String())
+	logInfo("Finished locally clustering %d unique tests (%d failures) in %s", len(localClustering), numFailures, elapsed.String())
 
 	return localClustering
 }
@@ -400,13 +412,13 @@ Returns:
 */
 // TODO make sure type of previouslyClustered is correct and update documentation to match
 // @file_memoize("clustering across tests", "memo_cluster_global.json") TODO
-func cluster_global(newlyClustered nestedFailuresGroups, previouslyClustered []map[string]string) nestedFailuresGroups {
+func cluster_global(newlyClustered nestedFailuresGroups, previouslyClustered []jsonCluster) nestedFailuresGroups {
 	// The eventual global clusters
 	var clusters nestedFailuresGroups
 
 	numFailures := 0
 
-	log.Printf("Combining clustered failures for %d unique tests...", len(newlyClustered))
+	logInfo("Combining clustered failures for %d unique tests...", len(newlyClustered))
 	start := time.Now()
 
 	if previouslyClustered != nil {
@@ -424,10 +436,10 @@ func cluster_global(newlyClustered nestedFailuresGroups, previouslyClustered []m
 			clusters[key] = make(failuresGroup)
 		}
 
-		log.Printf("Seeding with %d previous clusters", len(clusters))
+		logInfo("Seeding with %d previous clusters", len(clusters))
 
 		if n != 0 {
-			log.Printf("!!! %d clusters lost from different normalization! !!!", n)
+			logWarning("!!! %d clusters lost from different normalization! !!!", n)
 		}
 	}
 
@@ -436,7 +448,7 @@ func cluster_global(newlyClustered nestedFailuresGroups, previouslyClustered []m
 		testName := outerPair.key
 		testClusters := outerPair.group
 
-		log.Printf("%4d/%4d tests, %4d clusters, %s", n+1, len(newlyClustered), len(testClusters), testName)
+		logInfo("%4d/%4d tests, %4d clusters, %s", n+1, len(newlyClustered), len(testClusters), testName)
 		testStart := time.Now()
 
 		// Look at clusters with the most failures first
@@ -450,7 +462,7 @@ func cluster_global(newlyClustered nestedFailuresGroups, previouslyClustered []m
 			numTests := len(tests)
 			var clusterCase string
 
-			log.Printf("  %4d/%4d clusters, %5d chars failure text, %5d failures ...", m, numClusters, fTextLen, numTests)
+			logInfo("  %4d/%4d clusters, %5d chars failure text, %5d failures ...", m, numClusters, fTextLen, numTests)
 			numFailures += numTests
 
 			// If a cluster exists for the given
@@ -486,7 +498,7 @@ func cluster_global(newlyClustered nestedFailuresGroups, previouslyClustered []m
 			}
 
 			clusterDuration := int(time.Since(clusterStart).Seconds())
-			log.Printf("  %4d/%4d clusters, %5d chars failure text, %5d failures, cluster:%s in %d sec, test: %s",
+			logInfo("  %4d/%4d clusters, %5d chars failure text, %5d failures, cluster:%s in %d sec, test: %s",
 				m, numClusters, fTextLen, numTests, clusterCase, clusterDuration, testName)
 		}
 	}
@@ -500,6 +512,7 @@ func cluster_global(newlyClustered nestedFailuresGroups, previouslyClustered []m
 	}
 
 	elapsed := time.Since(start)
+	logInfo("Finished clustering %d unique tests (%d failures) into %d clusters in %s",
 		len(newlyClustered), numFailures, len(clusters), elapsed.String())
 
 	return clusters
@@ -655,6 +668,7 @@ jsonCluster represents a global cluster as it will be written to the JSON.
 	text:  a failure text from one of the cluster's failures
 	spans: common spans between all of the cluster's failure texts
 	tests: the build numbers that belong to the cluster's failures as per testGroupByJob()
+	owner: the SIG that owns the cluster, determined by annotateOwners()
 */
 type jsonCluster struct {
 	key   string
@@ -662,6 +676,7 @@ type jsonCluster struct {
 	text  string
 	spans []int
 	tests []test
+	owner string
 }
 
 // clustersToDisplay transposes and sorts the flattened output of clusterGlobal.
@@ -1077,4 +1092,117 @@ func renderSlice(data jsonOutput, builds map[string]build, prefix string, owner 
 	}
 
 	return clustered, buildsToColumns(buildsOut)
+}
+
+// summarizeFlags represents the command-line arguments to the summarize and their values.
+type summarizeFlags struct {
+	builds       *string
+	tests        []string
+	previous     *string
+	owners       *string
+	output       *string
+	outputSlices *string
+}
+
+// parseFlags parses command-line arguments and returns them as a summarizeFlags object.
+func parseFlags() summarizeFlags {
+	var flags summarizeFlags
+
+	flags.builds = flag.String("builds", "", "path to builds.json file from BigQuery")
+	tempTests := flag.String("tests", "", "path to tests.json files from BigQuery")
+	flags.previous = flag.String("previous", "", "path to previous output")
+	flags.owners = flag.String("owners", "", "path to test owner SIGs file")
+	flags.output = flag.String("output", "failure_data.json", "output path")
+	flags.outputSlices = flag.String("output_slices", "", "path to slices output (must include PREFIX in template)")
+
+	// The tests flag can contain multiple arguments, so we'll split it by space
+	flags.tests = strings.Split(*tempTests, " ")
+
+	flag.Parse()
+
+	return flags
+}
+
+func main() {
+	flags := parseFlags()
+
+	builds, failedTests, err := loadFailures(*flags.builds, flags.tests)
+	if err != nil {
+		log.Fatalf("Could not load failures: %s", err)
+	}
+
+	var previousClustered []jsonCluster
+	if *flags.previous != "" {
+		logInfo("Loading previous")
+		previousClustered, err = loadPrevious(*flags.previous)
+		if err != nil {
+			log.Fatalf("Could not get previous results: %s", err)
+		}
+	}
+
+	clusteredLocal := cluster_local(failedTests)
+
+	clustered := cluster_global(clusteredLocal, previousClustered)
+
+	logInfo("Rendering results...")
+	start := time.Now()
+
+	data := render(builds, clustered)
+
+	var owners map[string][]string
+	if *flags.owners != "" {
+		owners, err = loadOwners(*flags.owners)
+		if err != nil {
+			logWarning("Could not get owners, clusters will not be labeled with owners: %s", err)
+
+			// Set the flag to the empty string so the program doesn't try to write owners files later
+			empty := ""
+			flags.owners = &empty
+		} else {
+			err = annotateOwners(&data, builds, owners)
+			if err != nil {
+				logWarning("Could not annotate owners, clusters will not be labeled with owners")
+
+				empty := ""
+				flags.owners = &empty
+			}
+		}
+	}
+
+	err = writeResults(*flags.output, data)
+	if err != nil {
+		logWarning("Could not write results to file: %s", err)
+	}
+
+	if *flags.outputSlices != "" {
+		if !(strings.Contains(*flags.outputSlices, "PREFIX")) {
+			log.Panic("'PREFIX' not in flags.output_slices")
+		}
+
+		for subset := 0; subset < 256; subset++ {
+			idPrefix := fmt.Sprintf("%02x", subset)
+			subset, cols := renderSlice(data, builds, idPrefix, "")
+			err = writeRenderedSlice(strings.Replace(*flags.outputSlices, "PREFIX", idPrefix, -1), subset, cols)
+			if err != nil {
+				logWarning("Could not write subset %d to file: %s", subset, err)
+			}
+		}
+
+		if *flags.owners != "" {
+			// for output
+			if _, ok := owners["testing"]; !ok {
+				owners["testing"] = make([]string, 0)
+			}
+
+			for owner := range owners {
+				ownerResults, cols := renderSlice(data, builds, "", owner)
+				err = writeRenderedSlice(strings.Replace(*flags.outputSlices, "PREFIX", "sig-"+owner, -1), ownerResults, cols)
+				if err != nil {
+					logWarning("Could not write result for owner '%s' to file: %s", owner, err)
+				}
+			}
+		}
+	}
+
+	logInfo("Finished rendering results in %s", time.Since(start).String())
 }
