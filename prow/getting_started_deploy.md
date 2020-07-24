@@ -506,7 +506,7 @@ periodics:
 
 This results in:
 
-* The `cluster-unspecified` and `default-cluster` jobs run in the `default` cluster.
+* The `cluster-unspecified` and `cluster-default` jobs run in the `default` cluster.
 * The `cluster-other` job runs in the `other` cluster.
 
 See [gencred][5] for more details about how to create/update `kubeconfig.yaml`.
