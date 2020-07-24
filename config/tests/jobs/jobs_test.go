@@ -33,6 +33,7 @@ import (
 	"time"
 
 	coreapi "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 
@@ -944,6 +945,51 @@ func TestValidScenarioArgs(t *testing.T) {
 			if err := checkScenarioArgs(job.Name, job.Spec.Containers[0].Image, job.Spec.Containers[0].Args); err != nil {
 				t.Errorf("Invalid Scenario Args : %s", err)
 			}
+		}
+	}
+}
+
+func allStaticJobs() []cfg.JobBase {
+	jobs := []cfg.JobBase{}
+	for _, job := range c.AllStaticPresubmits(nil) {
+		jobs = append(jobs, job.JobBase)
+	}
+	for _, job := range c.AllStaticPostsubmits(nil) {
+		jobs = append(jobs, job.JobBase)
+	}
+	for _, job := range c.AllPeriodics() {
+		jobs = append(jobs, job.JobBase)
+	}
+	return jobs
+}
+
+func isPodQOSBurstable(spec *coreapi.PodSpec) bool {
+	isBurstable := false
+	c := spec.Containers[0]
+	zero := resource.MustParse("0")
+	resources := []coreapi.ResourceName{
+		coreapi.ResourceCPU,
+		coreapi.ResourceMemory,
+	}
+	for _, r := range resources {
+		request, _ := c.Resources.Requests[r]
+		if request.Cmp(zero) == 1 {
+			isBurstable = true
+		}
+	}
+	return isBurstable
+}
+
+func TestK8sInfraProwBuildJobsMustBeBurstable(t *testing.T) {
+	jobs := allStaticJobs()
+	for _, job := range jobs {
+		// Only consider Pods destined for the k8s-infra-prow-builds cluster
+		if job.Spec == nil || job.Cluster != "k8s-infra-prow-build" {
+			continue
+		}
+		isPodQOSBurstable := isPodQOSBurstable(job.Spec)
+		if !isPodQOSBurstable {
+			t.Errorf("%s is not burstable because %+v", job.Name, job.Spec.Containers[0].Resources)
 		}
 	}
 }
