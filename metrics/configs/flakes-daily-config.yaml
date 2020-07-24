@@ -87,24 +87,3 @@ jqfilter: |
     build: (.builds|tonumber),
     consistent_builds: (.consistent_builds|tonumber)
   }})] | add
-
-measurements:
-  backfill: flakes_daily
-  jq: |
-    [(.[] | {
-      measurement: "flakes_daily",
-      time: (.day|tonumber),
-      tags: {
-        job: (.job),
-        day: (.day|tonumber)
-      },
-      fields: {
-        flakes: (.flakes|tonumber),
-        commit_consistency: (.commit_consistency|tonumber),
-        commits: (.commits|tonumber),
-        consistent_commits: (.consistent_commits|tonumber),
-        build_consistency: (.build_consistency|tonumber),
-        builds: (.builds|tonumber),
-        consistent_builds: (.consistent_builds|tonumber)
-      }
-    })]
