@@ -871,3 +871,33 @@ func buildsToColumns(builds map[string]build) columns {
 	}
 	return result
 }
+
+// jsonOutput represents the output as it will be written to the JSON.
+type jsonOutput struct {
+	clustered []jsonCluster
+	builds    columns
+}
+
+// render accepts a map from build paths to builds, and the global clusters, and renders them in a
+// format consumable by the web page.
+func render(builds map[string]build, clustered nestedFailuresGroups) jsonOutput {
+	clusteredSorted := clustered.sortByAggregateNumberOfFailures()
+
+	flattenedClusters := make([]flattenedGlobalCluster, len(clusteredSorted))
+
+	for i, pair := range clusteredSorted {
+		k := pair.key
+		clusters := pair.group
+
+		flattenedClusters[i] = flattenedGlobalCluster{
+			k,
+			make_ngram_counts_digest(k),
+			clusters.sortByNumberOfFailures(),
+		}
+	}
+
+	return jsonOutput{
+		clustersToDisplay(flattenedClusters, builds),
+		buildsToColumns(builds),
+	}
+}
