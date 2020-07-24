@@ -19,6 +19,7 @@ limitations under the License.
 // TODO Move structs to be before their first uses, including build and failure
 // TODO Define build, test, job, failure, etc. in the README
 // TODO Go through function chain in README
+// TODO add JSON annotations to build and failure, and any other field names necessary
 
 // Package summarize groups test failures together by finding edit distances between their failure messages,
 // and emits JSON for rendering in a browser.
@@ -53,6 +54,9 @@ var flakeReasonOrdinalRE *regexp.Regexp = regexp.MustCompile(
 		`|[0-9a-f]{12,32}` + // hex garbage
 		`|(minion-group-|default-pool-)[-0-9a-z]{4,}`) // node names
 
+const longOutputLen = 10000
+const truncatedSep = "\n...[truncated]...\n"
+const maxClusterTextLen = longOutputLen + len(truncatedSep)
 
 // log logs a message, prepending [I] to it.
 func logInfo(format string, v ...interface{}) {
@@ -150,8 +154,9 @@ func normalize(s string) string {
 	return s
 }
 
-// Given a test name, remove [...] and {...}. Matches code in testgrid and kubernetes/hack/update_owners.py.
-func normalize_name(name string) string {
+// normalizeName removes [...] and {...} from a given test name. It matches code in testgrid and
+// kubernetes/hack/update_owners.py.
+func normalizeName(name string) string {
 	name = regexp.MustCompile(`\[.*?\]|{.*?\}`).ReplaceAllLiteralString(name, "")
 	name = regexp.MustCompile(`\s+`).ReplaceAllLiteralString(name, " ")
 	return strings.TrimSpace(name)
@@ -161,14 +166,14 @@ func normalize_name(name string) string {
 var memoizedNgramCounts map[string][]int
 
 /*
-Convert a string into a histogram of frequencies for different byte combinations.
+makeNgramCounts converts a string into a histogram of frequencies for different byte combinations.
 This can be used as a heuristic to estimate edit distance between two strings in
 constant time.
 
 Instead of counting each ngram individually, they are hashed into buckets.
 This makes the output count size constant.
 */
-func make_ngram_counts(s string) []int {
+func makeNgramCounts(s string) []int {
 	size := 64
 	if _, ok := memoizedNgramCounts[s]; ok {
 		counts := make([]int, size)
@@ -181,7 +186,7 @@ func make_ngram_counts(s string) []int {
 }
 
 /*
-Compute a heuristic lower-bound edit distance using ngram counts.
+ngramEditDist computes a heuristic lower-bound edit distance using ngram counts.
 
 An insert/deletion/substitution can cause up to 4 ngrams to differ:
 
@@ -199,22 +204,22 @@ It is useful to avoid more expensive precise computations when they are
 guaranteed to exceed some limit (being a lower bound), or as a proxy when
 the exact edit distance computation is too expensive (for long inputs).
 */
-func ngram_editdist(a string, b string) int {
-	counts_a := make_ngram_counts(a)
-	counts_b := make_ngram_counts(b)
+func ngramEditDist(a string, b string) int {
+	countsA := makeNgramCounts(a)
+	countsB := makeNgramCounts(b)
 
-	shortestCounts := utils.Min(len(counts_a), len(counts_b))
+	shortestCounts := utils.Min(len(countsA), len(countsB))
 	result := 0
 	for i := 0; i < shortestCounts; i++ {
-		result += utils.Abs(counts_a[i] - counts_b[i])
+		result += utils.Abs(countsA[i] - countsB[i])
 	}
 
 	return result / 4
 }
 
-// Returns a hashed version of the ngram counts.
-func make_ngram_counts_digest(s string) string {
-	ngramResults := make_ngram_counts(s)
+// makeNgramCountsDigest returns a hashed version of the ngram counts.
+func makeNgramCountsDigest(s string) string {
+	ngramResults := makeNgramCounts(s)
 	// Build a string representation of the ngram results that can then be hashed
 	var builder strings.Builder
 
@@ -239,7 +244,7 @@ func make_ngram_counts_digest(s string) string {
 }
 
 // findMatch finds a match for a normalized failure string from a selection of candidates.
-func find_match(fnorm string, candidates []string) (result string, found bool) {
+func findMatch(fnorm string, candidates []string) (result string, found bool) {
 	type distancePair struct {
 		distResult int
 		key        string
@@ -249,7 +254,7 @@ func find_match(fnorm string, candidates []string) (result string, found bool) {
 
 	iter := 0
 	for _, candidate := range candidates {
-		distancePairs[iter] = distancePair{ngram_editdist(fnorm, candidate), candidate}
+		distancePairs[iter] = distancePair{ngramEditDist(fnorm, candidate), candidate}
 		iter++
 	}
 	// Sort distancePairs by each pair's distResult
@@ -290,7 +295,7 @@ Returns:
 		...
 	}
 */
-func cluster_test(failures []failure) (result failuresGroup) {
+func clusterTest(failures []failure) (result failuresGroup) {
 	start := time.Now()
 
 	for _, flr := range failures {
@@ -301,7 +306,7 @@ func cluster_test(failures []failure) (result failuresGroup) {
 			result[fNorm] = append(result[fNorm], flr)
 		} else {
 			// Otherwise, check if a match can be found for the normalized string
-			other, found := find_match(fNorm, result.keys())
+			other, found := findMatch(fNorm, result.keys())
 			if found {
 				result[other] = append(result[other], flr)
 			} else {
@@ -347,7 +352,7 @@ Returns:
 	}
 */
 // @file_memoize("clustering inside each test", "memo_cluster_local.json") TODO
-func cluster_local(failuresByTest failuresGroup) (localClustering nestedFailuresGroups) {
+func clusterLocal(failuresByTest failuresGroup) (localClustering nestedFailuresGroups) {
 	numFailures := 0
 	start := time.Now()
 	logInfo("Clustering failures for %d unique tests...", len(failuresByTest))
@@ -356,7 +361,7 @@ func cluster_local(failuresByTest failuresGroup) (localClustering nestedFailures
 	for n, pair := range failuresByTest.sortByNumberOfFailures() {
 		numFailures += len(pair.failures)
 		logInfo("%4d/%4d tests, %5d failures, %s", n+1, len(failuresByTest), len(pair.failures), pair.key)
-		localClustering[pair.key] = cluster_test(pair.failures)
+		localClustering[pair.key] = clusterTest(pair.failures)
 	}
 
 	elapsed := time.Since(start)
@@ -412,7 +417,7 @@ Returns:
 */
 // TODO make sure type of previouslyClustered is correct and update documentation to match
 // @file_memoize("clustering across tests", "memo_cluster_global.json") TODO
-func cluster_global(newlyClustered nestedFailuresGroups, previouslyClustered []jsonCluster) nestedFailuresGroups {
+func clusterGlobal(newlyClustered nestedFailuresGroups, previouslyClustered []jsonCluster) nestedFailuresGroups {
 	// The eventual global clusters
 	var clusters nestedFailuresGroups
 
@@ -425,10 +430,11 @@ func cluster_global(newlyClustered nestedFailuresGroups, previouslyClustered []j
 		// Seed clusters using output from the previous run
 		n := 0
 		for _, cluster := range previouslyClustered {
-			key := cluster["key"]
-			if key != normalize(key) {
-				log.Print(key)
-				log.Print(normalize(key))
+			key := cluster.key
+			normalizedKey := normalize(key)
+			if key != normalizedKey {
+				logInfo(key)
+				logInfo(normalizedKey)
 				n++
 				continue
 			}
@@ -480,7 +486,7 @@ func cluster_global(newlyClustered nestedFailuresGroups, previouslyClustered []j
 				// if we've taken longer than 30 seconds for this test, bail on pathological / low value cases
 				clusterCase = "BAILED"
 			} else {
-				other, found := find_match(key, clusters.keys())
+				other, found := findMatch(key, clusters.keys())
 				if found {
 					clusterCase = "OTHER"
 
@@ -609,38 +615,38 @@ func commonSpans(xs []string) []int {
 	commonModified := false // Flag to keep track of whether common has been modified at least once
 
 	for _, x := range xs {
-		x_split := spanRE.FindAllString(x, -1)
+		xSplit := spanRE.FindAllString(x, -1)
 		if !commonModified { // first iteration
-			common.Insert(x_split...)
+			common.Insert(xSplit...)
 			commonModified = true
 		} else {
-			common = common.Intersection(sets.NewString(x_split...))
+			common = common.Intersection(sets.NewString(xSplit...))
 		}
 	}
 
 	var spans []int
 	match := true
-	span_len := 0
+	spanLen := 0
 	for _, x := range spanRE.FindAllString(xs[0], -1) {
 		if common.Has(x) {
 			if !match {
 				match = true
-				spans = append(spans, span_len)
-				span_len = 0
+				spans = append(spans, spanLen)
+				spanLen = 0
 			}
-			span_len += len(x)
+			spanLen += len(x)
 		} else {
 			if match {
 				match = false
-				spans = append(spans, span_len)
-				span_len = 0
+				spans = append(spans, spanLen)
+				spanLen = 0
 			}
-			span_len += len(x)
+			spanLen += len(x)
 		}
 	}
 
-	if span_len == 0 {
-		spans = append(spans, span_len)
+	if spanLen == 0 {
+		spans = append(spans, spanLen)
 	}
 
 	return spans
@@ -776,11 +782,13 @@ func newColumnarBuilds(columns int) columnarBuilds {
 	}
 }
 
-// jobCollection represents a collection of jobs. It can either be a map[int]int (a mapping from
-// build numbers to indexes of builds in the columnar representation) or a []int (a condensed form
-// of the mapping for dense sequential mappings from builds to indexes; see buildsToColumns() comment).
-// This is necessary because the outputted JSON is unstructured, and has some fields that can be
-// either a map or a slice.
+/*
+jobCollection represents a collection of jobs. It can either be a map[int]int (a mapping from
+build numbers to indexes of builds in the columnar representation) or a []int (a condensed form
+of the mapping for dense sequential mappings from builds to indexes; see buildsToColumns() comment).
+This is necessary because the outputted JSON is unstructured, and has some fields that can be
+either a map or a slice.
+*/
 type jobCollection interface{}
 
 /*
@@ -906,7 +914,7 @@ func render(builds map[string]build, clustered nestedFailuresGroups) jsonOutput 
 
 		flattenedClusters[i] = flattenedGlobalCluster{
 			k,
-			make_ngram_counts_digest(k),
+			makeNgramCountsDigest(k),
 			clusters.sortByNumberOfFailures(),
 		}
 	}
@@ -923,8 +931,7 @@ var sigLabelRE = regexp.MustCompile(`\[sig-([^]]*)\]`)
 // annotateOwners assigns ownership to a cluster based on the share of hits in the last day.
 //
 // owners maps SIG names to collections of SIG-specific prefixes.
-// TODO make sure this function should take a pointer rather than a value
-func annotateOwners(data *jsonOutput, builds map[string]build, owners map[string][]string) error {
+func annotateOwners(data jsonOutput, builds map[string]build, owners map[string][]string) error {
 	// Dynamically create a regular expression based on the value of owners.
 	/*
 		namedOwnerREs is a collection of regular expressions of the form
@@ -970,7 +977,7 @@ func annotateOwners(data *jsonOutput, builds map[string]build, owners map[string
 			if submatches := sigLabelRE.FindStringSubmatch(test.name); submatches != nil {
 				owner = submatches[1] // Get the first (and only) submatch of sigLabelRE
 			} else {
-				normalizedTestName := normalize_name(test.name)
+				normalizedTestName := normalizeName(test.name)
 
 				// Determine whether there were any named groups with matches for normalizedTestName,
 				// and if so what the first named group with a match is
@@ -1140,9 +1147,9 @@ func main() {
 		}
 	}
 
-	clusteredLocal := cluster_local(failedTests)
+	clusteredLocal := clusterLocal(failedTests)
 
-	clustered := cluster_global(clusteredLocal, previousClustered)
+	clustered := clusterGlobal(clusteredLocal, previousClustered)
 
 	logInfo("Rendering results...")
 	start := time.Now()
@@ -1159,7 +1166,7 @@ func main() {
 			empty := ""
 			flags.owners = &empty
 		} else {
-			err = annotateOwners(&data, builds, owners)
+			err = annotateOwners(data, builds, owners)
 			if err != nil {
 				logWarning("Could not annotate owners, clusters will not be labeled with owners")
 

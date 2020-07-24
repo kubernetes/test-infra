@@ -249,7 +249,7 @@ func loadTests(testsFilepaths []string) (map[string][]failure, error) {
 			return nil, fmt.Errorf("Could not get tests JSON: %s", err)
 		}
 
-		// Convert the failure information to internal failure objects and store them in the failed_tests map
+		// Convert the failure information to internal failure objects and store them in tests
 		for _, jf := range jsonFailures {
 			// Check if tests of this type are already in the map
 			if _, ok := tests[jf.name]; !ok {
