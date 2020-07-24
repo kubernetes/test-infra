@@ -901,3 +901,143 @@ func render(builds map[string]build, clustered nestedFailuresGroups) jsonOutput 
 		buildsToColumns(builds),
 	}
 }
+
+// sigLabelRE matches '[sig-x]', so long as x does not contain a closing bracket.
+var sigLabelRE = regexp.MustCompile(`\[sig-([^]]*)\]`)
+
+// annotateOwners assigns ownership to a cluster based on the share of hits in the last day.
+//
+// owners maps SIG names to collections of SIG-specific prefixes.
+// TODO make sure this function should take a pointer rather than a value
+func annotateOwners(data *jsonOutput, builds map[string]build, owners map[string][]string) error {
+	// Dynamically create a regular expression based on the value of owners.
+	/*
+		namedOwnerREs is a collection of regular expressions of the form
+		    (?P<signame>prefixA|prefixB|prefixC)
+		where signame is the name of a SIG (such as 'sig-testing') with '-' replaced with '_' for
+		compatibility with regex capture group name rules. There can be any number of prefixes
+		following the capture group name.
+	*/
+	namedOwnerREs := make([]string, len(owners))
+	for sig, prefixes := range owners {
+		// prefixREs is a collection of non-empty prefixes with any special regex characters quoted
+		prefixREs := make([]string, len(prefixes))
+		for _, prefix := range prefixes {
+			if prefix != "" {
+				prefixREs = append(prefixREs, regexp.QuoteMeta(prefix))
+			}
+		}
+
+		namedOwnerREs = append(namedOwnerREs,
+			fmt.Sprintf("(?P<%s>%s)",
+				strings.Replace(sig, "-", "_", -1), // Regex group names can't have '-', we'll substitute back later
+				strings.Join(prefixREs, "|")))
+	}
+
+	// ownerRE is the final regex created from the values of namedOwnerREs, placed into a
+	// non-capturing group
+	ownerRE, err := regexp.Compile(fmt.Sprintf(`(?:%s)`, strings.Join(namedOwnerREs, "|")))
+	if err != nil {
+		return fmt.Errorf("Could not compile ownerRE from provided SIG names and prefixes: %s", err)
+	}
+
+	jobPaths := data.builds.job_paths
+	yesterday := utils.Max(data.builds.cols.started...) - (60 * 60 * 24)
+
+	// Determine the owner for each cluster
+	for _, cluster := range data.clustered {
+		// Maps owner names to hits (I think hits yesterday and hits today, respectively)
+		ownerCounts := make(map[string][2]int)
+
+		// For each test, determine the owner with the most hits
+		for _, test := range cluster.tests {
+			var owner string
+			if submatches := sigLabelRE.FindStringSubmatch(test.name); submatches != nil {
+				owner = submatches[1] // Get the first (and only) submatch of sigLabelRE
+			} else {
+				normalizedTestName := normalize_name(test.name)
+
+				// Determine whether there were any named groups with matches for normalizedTestName,
+				// and if so what the first named group with a match is
+				namedGroupMatchExists := false
+				firstMatchingGroupName := ""
+				// Names of the named capturing groups, which are really the names of the owners
+				groupNames := ownerRE.SubexpNames()
+			outer:
+				for _, submatches := range ownerRE.FindAllStringSubmatch(normalizedTestName, -1) {
+					for i, submatch := range submatches {
+						// If the group is named and there was a match
+						if groupNames[i] != "" && submatch != "" {
+							namedGroupMatchExists = true
+							firstMatchingGroupName = groupNames[i]
+							break outer
+						}
+					}
+				}
+
+				ownerIndex := ownerRE.FindStringIndex(normalizedTestName)
+
+				if ownerIndex == nil || // If no match was found for the owner, or
+					ownerIndex[0] != 0 || // the test name did not begin with the owner name, or
+					!namedGroupMatchExists { // there were no named groups that matched
+					continue
+				}
+
+				// Get the name of the first named group with a non-empty match, and assign it to owner
+				owner = firstMatchingGroupName
+			}
+
+			owner = strings.Replace(owner, "_", "-", -1) // Substitute '_' back to '-'
+
+			if _, ok := ownerCounts[owner]; !ok {
+				ownerCounts[owner] = [2]int{0, 0}
+			}
+			counts := ownerCounts[owner]
+
+			for _, job := range test.jobs {
+				if strings.Contains(job.name, ":") { // non-standard CI
+					continue
+				}
+
+				jobPath := jobPaths[job.name]
+				for _, build := range job.buildNumbers {
+					bucketKey := fmt.Sprintf("%s/%s", jobPath, build)
+					if _, ok := builds[bucketKey]; !ok {
+						continue
+					} else if builds[bucketKey].started > yesterday {
+						counts[0]++
+					} else {
+						counts[1]++
+					}
+				}
+			}
+		}
+
+		if len(ownerCounts) != 0 {
+			// Get the topOwner with the most hits yesterday, then most hits today, then name
+			currentHasMoreHits := func(topOwner string, topOwnerCounts [2]int, currentOwner string, currentCounts [2]int) bool {
+				if currentCounts[0] == topOwnerCounts[0] {
+					if currentCounts[1] == topOwnerCounts[1] {
+						// Which has the earlier name alphabetically
+						return currentOwner < topOwner
+					}
+					return currentCounts[1] > topOwnerCounts[1]
+				}
+				return currentCounts[0] > topOwnerCounts[0]
+			}
+
+			var topOwner string
+			topCounts := [2]int{}
+			for currentOwner, currentCounts := range ownerCounts {
+				if currentHasMoreHits(topOwner, topCounts, currentOwner, currentCounts) {
+					topOwner = currentOwner
+					topCounts = currentCounts
+				}
+			}
+			cluster.owner = topOwner
+		} else {
+			cluster.owner = "testing"
+		}
+	}
+	return nil
+}
