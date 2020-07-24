@@ -97,6 +97,8 @@ func writeRenderedSlice(filepath string, clustered []jsonCluster, cols columns) 
 	return nil
 }
 
+/* Functions below this comment are only used within this file as of this commit. */
+
 // jsonBuild represents a build as reported by the JSON. All values are strings.
 // This should not be instantiated directly, but rather via the encoding/json package's
 // Unmarshal method. This is an intermediary state for the data until it can be put into
