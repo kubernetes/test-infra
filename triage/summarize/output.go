@@ -279,7 +279,7 @@ func clustersToDisplay(clustered []flattenedGlobalCluster, builds map[string]bui
 
 	for _, flattened := range clustered {
 		key := flattened.clusterText
-		keyId := flattened.ngramCountsDigest
+		keyID := flattened.ngramCountsDigest
 		clusters := flattened.sortedTests
 
 		// Determine the number of failures across all clusters
@@ -291,7 +291,7 @@ func clustersToDisplay(clustered []flattenedGlobalCluster, builds map[string]bui
 		if numClusterFailures > 1 {
 			jCluster := jsonCluster{
 				key:   key,
-				id:    keyId,
+				id:    keyID,
 				text:  clusters[0].failures[0].failureText,
 				tests: make([]test, len(clusters)),
 			}
