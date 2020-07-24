@@ -95,7 +95,7 @@ class BigQuerier:
 
     def run_metric(self, config):
         """Runs query and filters results, uploading data to GCS."""
-        raw = '/tmp/raw-%s.json' % time.strftime('%Y-%m-%d')
+        raw = 'raw-%s.json' % time.strftime('%Y-%m-%d')
 
         self.update_query(config)
         self.do_query(config['query'], raw)
