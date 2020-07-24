@@ -711,3 +711,163 @@ func clustersToDisplay(clustered []flattenedGlobalCluster, builds map[string]bui
 
 	return jsonClusters
 }
+
+/*
+columnarBuilds represents a collection of build objects where the i-th build's property p can be
+found at p[i].
+
+For example, the 4th (0-indexed) build's start time can be found in started[4], while its elapsed
+time can be found in elapsed[4].
+*/
+type columnarBuilds struct {
+	started      []int
+	tests_failed []int
+	elapsed      []int
+	tests_run    []int
+	result       []string
+	executor     []string
+	pr           []string
+}
+
+// currentIndex returns the index of the next build to be stored (and, by extension, the number of
+// builds currently stored).
+func (cb *columnarBuilds) currentIndex() int {
+	return len(cb.started)
+}
+
+// insert adds a build into the columnarBuilds object.
+func (cb *columnarBuilds) insert(b build) {
+	cb.started = append(cb.started, b.started)
+	cb.tests_failed = append(cb.tests_failed, b.testsFailed)
+	cb.elapsed = append(cb.elapsed, b.elapsed)
+	cb.tests_run = append(cb.tests_run, b.testsRun)
+	cb.result = append(cb.result, b.result)
+	cb.executor = append(cb.executor, b.executor)
+	cb.pr = append(cb.pr, b.pr)
+}
+
+// newColumnarBuilds creates a columnarBuilds object with the correct number of columns. The number
+// of columns is the same as the number of builds being converted to columnar form.
+func newColumnarBuilds(columns int) columnarBuilds {
+	// Start the length at 0 because columnarBuilds.currentIndex() relies on the length.
+	return columnarBuilds{
+		started:      make([]int, 0, columns),
+		tests_failed: make([]int, 0, columns),
+		elapsed:      make([]int, 0, columns),
+		tests_run:    make([]int, 0, columns),
+		result:       make([]string, 0, columns),
+		executor:     make([]string, 0, columns),
+		pr:           make([]string, 0, columns),
+	}
+}
+
+// jobCollection represents a collection of jobs. It can either be a map[int]int (a mapping from
+// build numbers to indexes of builds in the columnar representation) or a []int (a condensed form
+// of the mapping for dense sequential mappings from builds to indexes; see buildsToColumns() comment).
+// This is necessary because the outputted JSON is unstructured, and has some fields that can be
+// either a map or a slice.
+type jobCollection interface{}
+
+/*
+columns representas a collection of builds in columnar form, plus the necessary maps to decode it.
+
+jobs maps job names to their location in the columnar form.
+
+cols is the collection of builds in columnar form.
+
+jobPaths maps a job name to a build path, minus the last path segment.
+*/
+type columns struct {
+	jobs      map[string]jobCollection
+	cols      columnarBuilds
+	job_paths map[string]string // TODO this probably needs to remain in snake case for JSON compatibility, revisit later
+}
+
+// buildsToColumns converts a map (from build paths to builds) into a columnar form. This compresses
+// much better with gzip. See columnarBuilds for more information on the columnar form.
+func buildsToColumns(builds map[string]build) columns {
+	// jobs maps job names to either map[int]int or []int. See jobCollection.
+	var jobs map[string]jobCollection
+	// The builds in columnar form
+	columnarBuilds := newColumnarBuilds(len(builds))
+	// The function result
+	result := columns{jobs, columnarBuilds, make(map[string]string, 0)}
+
+	// Sort the builds before making them columnar
+	sortedBuilds := make([]build, len(builds))
+	// Fill the slice
+	for _, bld := range builds {
+		sortedBuilds = append(sortedBuilds, bld)
+	}
+	// Sort the slice
+	sort.Slice(sortedBuilds, func(i, j int) bool {
+		// Sort by job name, then by build number
+		if sortedBuilds[i].job == sortedBuilds[j].job {
+			return sortedBuilds[i].number < sortedBuilds[j].number
+		}
+		return sortedBuilds[i].job < sortedBuilds[j].job
+	})
+
+	// Add the builds to columnarBuilds
+	for _, bld := range sortedBuilds {
+		// If there was no build number when the build was retrieved from the JSON
+		if bld.number == 0 {
+			continue
+		}
+
+		// Get the index within cols's slices of the next inserted build
+		index := columnarBuilds.currentIndex()
+
+		// Add the build
+		columnarBuilds.insert(bld)
+
+		// job maps build numbers to their indexes in the columnar representation
+		var job map[int]int
+		if _, ok := jobs[bld.job]; !ok {
+			jobs[bld.job] = make(map[int]int)
+		}
+		// We can safely assert map[int]int here because replacement of maps with slices only
+		// happens later
+		job = jobs[bld.job].(map[int]int)
+
+		// Store the job path
+		if len(job) == 0 {
+			result.job_paths[bld.job] = bld.path[:strings.LastIndex(bld.path, "/")]
+		}
+
+		// Store the column number (index) so we know in which column to find which build
+		job[bld.number] = index
+	}
+
+	// Sort build numbers and compress some data
+	for jobName, indexes := range jobs {
+		// Sort the build numbers
+		sortedBuildNumbers := make([]int, 0, len(indexes.(map[int]int)))
+		for key := range indexes.(map[int]int) {
+			sortedBuildNumbers = append(sortedBuildNumbers, key)
+		}
+		sort.Ints(sortedBuildNumbers)
+
+		base := indexes.(map[int]int)[sortedBuildNumbers[0]]
+		count := len(sortedBuildNumbers)
+
+		// Optimization: if we have a dense sequential mapping of builds=>indexes,
+		// store only the first build number, the run length, and the first index number.
+		allTrue := true
+		for i, buildNumber := range sortedBuildNumbers {
+			if indexes.(map[int]int)[buildNumber] != i+base {
+				allTrue = false
+				break
+			}
+		}
+		if (sortedBuildNumbers[len(sortedBuildNumbers)-1] == sortedBuildNumbers[0]+count-1) && allTrue {
+			jobs[jobName] = []int{sortedBuildNumbers[0], count, base}
+			for _, n := range sortedBuildNumbers {
+				if !(n <= sortedBuildNumbers[0]+len(sortedBuildNumbers)) {
+					log.Panicf(jobName, n, jobs[jobName], len(sortedBuildNumbers), sortedBuildNumbers)
+				}
+			}
+		}
+	}
+	return result
+}
