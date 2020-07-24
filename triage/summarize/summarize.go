@@ -1041,3 +1041,40 @@ func annotateOwners(data *jsonOutput, builds map[string]build, owners map[string
 	}
 	return nil
 }
+
+// renderSlice returns clusters whose owner field is the owner parameter or whose id field has a
+// prefix of the prefix parameter, and the columnar form of the jobs belonging to those clusters.
+// If parameters prefix and owner are both the empty string, the function will return empty objects.
+func renderSlice(data jsonOutput, builds map[string]build, prefix string, owner string) ([]jsonCluster, columns) {
+	clustered := make([]jsonCluster, 0)
+	// Maps build paths to builds
+	buildsOut := make(map[string]build, 0)
+	var jobs sets.String
+
+	// For each cluster whose owner field is the owner parameter, or whose id field has a prefix of
+	// the prefix parameter, add its tests' jobs to the jobs set.
+	for _, cluster := range data.clustered {
+		if owner != "" && cluster.owner == owner {
+			clustered = append(clustered, cluster)
+		} else if prefix != "" && strings.HasPrefix(cluster.id, prefix) {
+			clustered = append(clustered, cluster)
+		} else {
+			continue
+		}
+
+		for _, tst := range cluster.tests {
+			for _, jb := range tst.jobs {
+				jobs.Insert(jb.name)
+			}
+		}
+	}
+
+	// Add builds whose job is in jobs to buildsOut
+	for _, bld := range builds {
+		if jobs.Has(bld.job) {
+			buildsOut[bld.path] = bld
+		}
+	}
+
+	return clustered, buildsToColumns(buildsOut)
+}
