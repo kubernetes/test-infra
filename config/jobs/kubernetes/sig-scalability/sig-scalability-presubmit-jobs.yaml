@@ -35,6 +35,7 @@ presubmits:
         - --provider=gce
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-100-performance
         - --tear-down-previous
+        - --env=CL2_ENABLE_VIOLATIONS_FOR_SCHEDULING_THROUGHPUT=false
         - --test=false
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
         - --test-cmd-args=cluster-loader2
@@ -371,6 +372,7 @@ presubmits:
         - --provider=gce
         - --tear-down-previous
         - --env=CL2_ENABLE_DNS_PROGRAMMING=true
+        - --env=CL2_ENABLE_VIOLATIONS_FOR_SCHEDULING_THROUGHPUT=false
         - --test=false
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
         - --test-cmd-args=cluster-loader2
@@ -424,6 +426,7 @@ presubmits:
             - --gcp-zone=us-east1-b
             - --provider=gce
             - --tear-down-previous
+            - --env=CL2_ENABLE_VIOLATIONS_FOR_SCHEDULING_THROUGHPUT=false
             - --test=false
             - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
             - --test-cmd-args=cluster-loader2
