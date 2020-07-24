@@ -40,6 +40,7 @@ import (
 	_ "k8s.io/test-infra/prow/plugins/label"
 	_ "k8s.io/test-infra/prow/plugins/lgtm"
 	_ "k8s.io/test-infra/prow/plugins/lifecycle"
+	_ "k8s.io/test-infra/prow/plugins/merge-method-comment"
 	_ "k8s.io/test-infra/prow/plugins/mergecommitblocker"
 	_ "k8s.io/test-infra/prow/plugins/milestone"
 	_ "k8s.io/test-infra/prow/plugins/milestoneapplier"
