@@ -139,7 +139,7 @@ The `github-token` is the OAuth2 token you created above for the [GitHub bot acc
 If you need to create one, go to <https://github.com/settings/tokens>.
 
 ```sh
-kubectl create secret generic github-token --from-file=github-token=/path/to/oauth/secret
+kubectl create secret generic github-token --from-file=token=/path/to/oauth/secret
 ```
 
 ### Update the sample manifest
