@@ -32,6 +32,22 @@ import (
 	"strings"
 )
 
+// Load builds and failed tests files. Map build paths to builds, group test failures by test name.
+// @file_memoize("loading failed tests", "memo_load_failures.json") TODO
+func loadFailures(buildsFilepath string, testsFilepaths []string) (map[string]build, map[string][]failure, error) {
+	builds, err := loadBuilds(buildsFilepath)
+	if err != nil {
+		return nil, nil, fmt.Errorf("Could not retrieve builds: %s", err)
+	}
+
+	tests, err := loadTests(testsFilepaths)
+	if err != nil {
+		return nil, nil, fmt.Errorf("Could not retrieve tests: %s", err)
+	}
+
+	return builds, tests, nil
+}
+
 // jsonBuild represents a build as reported by the JSON. All values are strings.
 // This should not be instantiated directly, but rather via the encoding/json package's
 // Unmarshal method. This is an intermediary state for the data until it can be put into
@@ -97,56 +113,6 @@ func (jb *jsonBuild) asBuild() (build, error) {
 	return b, nil
 }
 
-// jsonFailure represents a test failure as reported by the JSON. All values are strings.
-// This should not be instantiated directly, but rather via the encoding/json package's
-// Unmarshal method. This is an intermediary state for the data until it can be put into
-// a failure object.
-type jsonFailure struct {
-	started      string
-	build        string
-	name         string
-	failure_text string
-}
-
-// asFailure is a factory function that creates a failure object from the jsonFailure object,
-// appropriately handling all type conversions.
-func (jf *jsonFailure) asFailure() (failure, error) {
-	// The failure object that will be returned, initialized with the values that
-	// don't need conversion.
-	f := failure{
-		build:       jf.build,
-		name:        jf.name,
-		failureText: jf.failure_text,
-	}
-
-	// To avoid assignment issues
-	var err error
-
-	// started
-	f.started, err = strconv.Atoi(jf.started)
-	if err != nil {
-		return failure{}, fmt.Errorf("Error converting JSON string '%s' to int: %s", jf.started, err)
-	}
-
-	return f, nil
-}
-
-// Load builds and failed tests files. Map build paths to builds, group test failures by test name.
-// @file_memoize("loading failed tests", "memo_load_failures.json") TODO
-func loadFailures(buildsFilepath string, testsFilepaths []string) (map[string]build, map[string][]failure, error) {
-	builds, err := loadBuilds(buildsFilepath)
-	if err != nil {
-		return nil, nil, fmt.Errorf("Could not retrieve builds: %s", err)
-	}
-
-	tests, err := loadTests(testsFilepaths)
-	if err != nil {
-		return nil, nil, fmt.Errorf("Could not retrieve tests: %s", err)
-	}
-
-	return builds, tests, nil
-}
-
 // loadBuilds parses a JSON file containing build information and returns a map from build paths
 // to build objects.
 func loadBuilds(filepath string) (map[string]build, error) {
@@ -183,6 +149,40 @@ func loadBuilds(filepath string) (map[string]build, error) {
 	}
 
 	return builds, nil
+}
+
+// jsonFailure represents a test failure as reported by the JSON. All values are strings.
+// This should not be instantiated directly, but rather via the encoding/json package's
+// Unmarshal method. This is an intermediary state for the data until it can be put into
+// a failure object.
+type jsonFailure struct {
+	started      string
+	build        string
+	name         string
+	failure_text string
+}
+
+// asFailure is a factory function that creates a failure object from the jsonFailure object,
+// appropriately handling all type conversions.
+func (jf *jsonFailure) asFailure() (failure, error) {
+	// The failure object that will be returned, initialized with the values that
+	// don't need conversion.
+	f := failure{
+		build:       jf.build,
+		name:        jf.name,
+		failureText: jf.failure_text,
+	}
+
+	// To avoid assignment issues
+	var err error
+
+	// started
+	f.started, err = strconv.Atoi(jf.started)
+	if err != nil {
+		return failure{}, fmt.Errorf("Error converting JSON string '%s' to int: %s", jf.started, err)
+	}
+
+	return f, nil
 }
 
 // loadTests parses multiple JSON files containing test information for failed tests. It returns a
