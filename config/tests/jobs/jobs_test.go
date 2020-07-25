@@ -28,6 +28,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"sort"
 	"strings"
 	"testing"
 	"time"
@@ -960,6 +961,9 @@ func allStaticJobs() []cfg.JobBase {
 	for _, job := range c.AllPeriodics() {
 		jobs = append(jobs, job.JobBase)
 	}
+	sort.Slice(jobs, func(i, j int) bool {
+		return jobs[i].Name < jobs[j].Name
+	})
 	return jobs
 }
 
