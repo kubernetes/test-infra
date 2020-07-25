@@ -406,8 +406,12 @@ periodics:
       imagePullPolicy: Always
       name: ""
       resources:
+        limits:
+          cpu: "6"
+          memory: 46Gi
         requests:
           cpu: "6"
+          memory: 46Gi
       securityContext:
         privileged: true
 - annotations:
