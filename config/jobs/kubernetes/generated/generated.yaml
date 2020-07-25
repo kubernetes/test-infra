@@ -28,6 +28,13 @@ periodics:
       - name: GOPATH
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-1.19
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   annotations:
     testgrid-dashboards: canonical-ubuntu1-k8sbeta
     testgrid-tab-name: ubuntu1-k8sbeta-gkespec
@@ -60,6 +67,13 @@ periodics:
       - name: GOPATH
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-1.19
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   annotations:
     testgrid-dashboards: canonical-ubuntu1-k8sbeta
     testgrid-tab-name: ubuntu1-k8sbeta-serial
@@ -92,6 +106,13 @@ periodics:
       - name: GOPATH
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-1.18
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   annotations:
     testgrid-dashboards: canonical-ubuntu1-k8sstable1
     testgrid-tab-name: ubuntu1-k8sstable1-gkespec
@@ -124,6 +145,13 @@ periodics:
       - name: GOPATH
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-1.18
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   annotations:
     testgrid-dashboards: canonical-ubuntu1-k8sstable1
     testgrid-tab-name: ubuntu1-k8sstable1-serial
@@ -156,6 +184,13 @@ periodics:
       - name: GOPATH
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-1.17
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   annotations:
     testgrid-dashboards: canonical-ubuntu1-k8sstable2
     testgrid-tab-name: ubuntu1-k8sstable2-gkespec
@@ -188,6 +223,13 @@ periodics:
       - name: GOPATH
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-1.17
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   annotations:
     testgrid-dashboards: canonical-ubuntu1-k8sstable2
     testgrid-tab-name: ubuntu1-k8sstable2-serial
@@ -220,6 +262,13 @@ periodics:
       - name: GOPATH
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-1.16
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   annotations:
     testgrid-dashboards: canonical-ubuntu1-k8sstable3
     testgrid-tab-name: ubuntu1-k8sstable3-gkespec
@@ -252,6 +301,13 @@ periodics:
       - name: GOPATH
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-1.16
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   annotations:
     testgrid-dashboards: canonical-ubuntu1-k8sstable3
     testgrid-tab-name: ubuntu1-k8sstable3-serial
@@ -284,6 +340,13 @@ periodics:
       - name: GOPATH
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-1.19
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   annotations:
     testgrid-dashboards: canonical-ubuntu2-k8sbeta
     testgrid-tab-name: ubuntu2-k8sbeta-gkespec
@@ -316,6 +379,13 @@ periodics:
       - name: GOPATH
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-1.19
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   annotations:
     testgrid-dashboards: canonical-ubuntu2-k8sbeta
     testgrid-tab-name: ubuntu2-k8sbeta-serial
@@ -348,6 +418,13 @@ periodics:
       - name: GOPATH
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-1.18
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   annotations:
     testgrid-dashboards: canonical-ubuntu2-k8sstable1
     testgrid-tab-name: ubuntu2-k8sstable1-gkespec
@@ -380,6 +457,13 @@ periodics:
       - name: GOPATH
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-1.18
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   annotations:
     testgrid-dashboards: canonical-ubuntu2-k8sstable1
     testgrid-tab-name: ubuntu2-k8sstable1-serial
@@ -412,6 +496,13 @@ periodics:
       - name: GOPATH
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-1.17
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   annotations:
     testgrid-dashboards: canonical-ubuntu2-k8sstable2
     testgrid-tab-name: ubuntu2-k8sstable2-gkespec
@@ -444,6 +535,13 @@ periodics:
       - name: GOPATH
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-1.17
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   annotations:
     testgrid-dashboards: canonical-ubuntu2-k8sstable2
     testgrid-tab-name: ubuntu2-k8sstable2-serial
@@ -476,6 +574,13 @@ periodics:
       - name: GOPATH
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-1.16
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   annotations:
     testgrid-dashboards: canonical-ubuntu2-k8sstable3
     testgrid-tab-name: ubuntu2-k8sstable3-gkespec
@@ -508,6 +613,13 @@ periodics:
       - name: GOPATH
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-1.16
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   annotations:
     testgrid-dashboards: canonical-ubuntu2-k8sstable3
     testgrid-tab-name: ubuntu2-k8sstable3-serial
@@ -540,7 +652,21 @@ periodics:
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   cluster: k8s-infra-prow-build
+  resources: &id001
+    requests:
+      cpu: 2000m
+      memory: 6Gi
+    limits:
+      cpu: 2000m
+      memory: 6Gi
   annotations:
     testgrid-tab-name: gce-ubuntu1-k8sbeta-default
     testgrid-dashboards: sig-release-generated, canonical-ubuntu1-k8sbeta
@@ -573,7 +699,21 @@ periodics:
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   cluster: k8s-infra-prow-build
+  resources: &id002
+    requests:
+      cpu: 1000m
+      memory: 6Gi
+    limits:
+      cpu: 1000m
+      memory: 6Gi
   annotations:
     testgrid-tab-name: gce-ubuntu1-k8sbeta-slow
     testgrid-dashboards: sig-release-generated, canonical-ubuntu1-k8sbeta
@@ -606,6 +746,13 @@ periodics:
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-ubuntu1-k8sbeta-serial
@@ -639,7 +786,15 @@ periodics:
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   cluster: k8s-infra-prow-build
+  resources: *id001
   annotations:
     testgrid-tab-name: gce-ubuntu1-k8sstable1-default
     testgrid-dashboards: sig-release-generated, canonical-ubuntu1-k8sstable1
@@ -672,7 +827,15 @@ periodics:
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   cluster: k8s-infra-prow-build
+  resources: *id002
   annotations:
     testgrid-tab-name: gce-ubuntu1-k8sstable1-slow
     testgrid-dashboards: sig-release-generated, canonical-ubuntu1-k8sstable1
@@ -705,6 +868,13 @@ periodics:
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-ubuntu1-k8sstable1-serial
@@ -738,7 +908,15 @@ periodics:
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   cluster: k8s-infra-prow-build
+  resources: *id001
   annotations:
     testgrid-tab-name: gce-ubuntu1-k8sstable2-default
     testgrid-dashboards: sig-release-generated, canonical-ubuntu1-k8sstable2
@@ -771,7 +949,15 @@ periodics:
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   cluster: k8s-infra-prow-build
+  resources: *id002
   annotations:
     testgrid-tab-name: gce-ubuntu1-k8sstable2-slow
     testgrid-dashboards: sig-release-generated, canonical-ubuntu1-k8sstable2
@@ -804,6 +990,13 @@ periodics:
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-ubuntu1-k8sstable2-serial
@@ -837,7 +1030,15 @@ periodics:
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   cluster: k8s-infra-prow-build
+  resources: *id001
   annotations:
     testgrid-tab-name: gce-ubuntu1-k8sstable3-default
     testgrid-dashboards: sig-release-generated, canonical-ubuntu1-k8sstable3
@@ -870,7 +1071,15 @@ periodics:
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   cluster: k8s-infra-prow-build
+  resources: *id002
   annotations:
     testgrid-tab-name: gce-ubuntu1-k8sstable3-slow
     testgrid-dashboards: sig-release-generated, canonical-ubuntu1-k8sstable3
@@ -903,6 +1112,13 @@ periodics:
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-ubuntu1-k8sstable3-serial
@@ -936,7 +1152,15 @@ periodics:
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   cluster: k8s-infra-prow-build
+  resources: *id001
   annotations:
     testgrid-tab-name: gce-ubuntu2-k8sbeta-default
     testgrid-dashboards: sig-release-generated, canonical-ubuntu2-k8sbeta
@@ -969,7 +1193,15 @@ periodics:
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   cluster: k8s-infra-prow-build
+  resources: *id002
   annotations:
     testgrid-tab-name: gce-ubuntu2-k8sbeta-slow
     testgrid-dashboards: sig-release-generated, canonical-ubuntu2-k8sbeta
@@ -1002,6 +1234,13 @@ periodics:
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-ubuntu2-k8sbeta-serial
@@ -1035,7 +1274,15 @@ periodics:
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   cluster: k8s-infra-prow-build
+  resources: *id001
   annotations:
     testgrid-tab-name: gce-ubuntu2-k8sstable1-default
     testgrid-dashboards: sig-release-generated, canonical-ubuntu2-k8sstable1
@@ -1068,7 +1315,15 @@ periodics:
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   cluster: k8s-infra-prow-build
+  resources: *id002
   annotations:
     testgrid-tab-name: gce-ubuntu2-k8sstable1-slow
     testgrid-dashboards: sig-release-generated, canonical-ubuntu2-k8sstable1
@@ -1101,6 +1356,13 @@ periodics:
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-ubuntu2-k8sstable1-serial
@@ -1134,7 +1396,15 @@ periodics:
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   cluster: k8s-infra-prow-build
+  resources: *id001
   annotations:
     testgrid-tab-name: gce-ubuntu2-k8sstable2-default
     testgrid-dashboards: sig-release-generated, canonical-ubuntu2-k8sstable2
@@ -1167,7 +1437,15 @@ periodics:
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   cluster: k8s-infra-prow-build
+  resources: *id002
   annotations:
     testgrid-tab-name: gce-ubuntu2-k8sstable2-slow
     testgrid-dashboards: sig-release-generated, canonical-ubuntu2-k8sstable2
@@ -1200,6 +1478,13 @@ periodics:
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-ubuntu2-k8sstable2-serial
@@ -1233,7 +1518,15 @@ periodics:
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   cluster: k8s-infra-prow-build
+  resources: *id001
   annotations:
     testgrid-tab-name: gce-ubuntu2-k8sstable3-default
     testgrid-dashboards: sig-release-generated, canonical-ubuntu2-k8sstable3
@@ -1266,7 +1559,15 @@ periodics:
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   cluster: k8s-infra-prow-build
+  resources: *id002
   annotations:
     testgrid-tab-name: gce-ubuntu2-k8sstable3-slow
     testgrid-dashboards: sig-release-generated, canonical-ubuntu2-k8sstable3
@@ -1299,6 +1600,13 @@ periodics:
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-ubuntu2-k8sstable3-serial
@@ -1328,6 +1636,13 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-cos-k8sbeta-reboot
@@ -1357,6 +1672,13 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:Ingress\] --minStartupPods=8
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   annotations:
     testgrid-tab-name: gce-cos-k8sbeta-ingress
     testgrid-dashboards: sig-release-1.19-blocking
@@ -1388,7 +1710,15 @@ periodics:
       - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   cluster: k8s-infra-prow-build
+  resources: *id001
   annotations:
     testgrid-tab-name: gce-cos-k8sbeta-default
     testgrid-dashboards: sig-release-1.19-blocking
@@ -1418,6 +1748,13 @@ periodics:
       - --ginkgo-parallel=1
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-cos-k8sbeta-serial
@@ -1449,7 +1786,15 @@ periodics:
       - --ginkgo-parallel=30
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   cluster: k8s-infra-prow-build
+  resources: *id002
   annotations:
     testgrid-tab-name: gce-cos-k8sbeta-slow
     testgrid-dashboards: sig-release-1.19-informing
@@ -1484,6 +1829,13 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandCSIVolumes|ExpandInUseVolumes)\]|Networking --ginkgo.skip=\[Feature:(SCTPConnectivity|Volumes|Networking-Performance|Networking-IPv6)\]|csi-hostpath-v0 --minStartupPods=8
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-cos-k8sbeta-alphafeatures
@@ -1513,6 +1865,13 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-cos-k8sstable1-reboot
@@ -1542,6 +1901,13 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:Ingress\] --minStartupPods=8
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   annotations:
     testgrid-tab-name: gce-cos-k8sstable1-ingress
     testgrid-dashboards: sig-release-1.18-blocking
@@ -1572,7 +1938,15 @@ periodics:
       - --env=ENABLE_POD_SECURITY_POLICY=true
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   cluster: k8s-infra-prow-build
+  resources: *id001
   annotations:
     testgrid-tab-name: gce-cos-k8sstable1-default
     testgrid-dashboards: sig-release-1.18-informing
@@ -1603,6 +1977,13 @@ periodics:
       - --ginkgo-parallel=1
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-cos-k8sstable1-serial
@@ -1634,7 +2015,15 @@ periodics:
       - --ginkgo-parallel=30
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   cluster: k8s-infra-prow-build
+  resources: *id002
   annotations:
     testgrid-tab-name: gce-cos-k8sstable1-slow
     testgrid-dashboards: sig-release-1.18-informing
@@ -1669,6 +2058,13 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandCSIVolumes|ExpandInUseVolumes)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-cos-k8sstable1-alphafeatures
@@ -1698,6 +2094,13 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-cos-k8sstable2-reboot
@@ -1727,6 +2130,13 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:Ingress\] --minStartupPods=8
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   annotations:
     testgrid-tab-name: gce-cos-k8sstable2-ingress
     testgrid-dashboards: sig-release-1.17-blocking
@@ -1756,7 +2166,15 @@ periodics:
       - --ginkgo-parallel=30
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   cluster: k8s-infra-prow-build
+  resources: *id001
   annotations:
     testgrid-tab-name: gce-cos-k8sstable2-default
     testgrid-dashboards: sig-release-1.17-informing
@@ -1787,6 +2205,13 @@ periodics:
       - --ginkgo-parallel=1
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-cos-k8sstable2-serial
@@ -1818,7 +2243,15 @@ periodics:
       - --ginkgo-parallel=30
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   cluster: k8s-infra-prow-build
+  resources: *id002
   annotations:
     testgrid-tab-name: gce-cos-k8sstable2-slow
     testgrid-dashboards: sig-release-1.17-informing
@@ -1853,6 +2286,13 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandCSIVolumes|ExpandInUseVolumes)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-cos-k8sstable2-alphafeatures
@@ -1882,6 +2322,13 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:Ingress\] --minStartupPods=8
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   annotations:
     testgrid-tab-name: gce-cos-k8sstable3-ingress
     testgrid-dashboards: sig-release-1.16-blocking
@@ -1910,6 +2357,13 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-cos-k8sstable3-reboot
@@ -1940,7 +2394,15 @@ periodics:
       - --ginkgo-parallel=30
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   cluster: k8s-infra-prow-build
+  resources: *id001
   annotations:
     testgrid-tab-name: gce-cos-k8sstable3-default
     testgrid-dashboards: sig-release-1.16-informing
@@ -1971,6 +2433,13 @@ periodics:
       - --ginkgo-parallel=1
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-cos-k8sstable3-serial
@@ -2002,7 +2471,15 @@ periodics:
       - --ginkgo-parallel=30
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   cluster: k8s-infra-prow-build
+  resources: *id002
   annotations:
     testgrid-tab-name: gce-cos-k8sstable3-slow
     testgrid-dashboards: sig-release-1.16-informing
@@ -2037,6 +2514,13 @@ periodics:
       - --runtime-config=api/all=true
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-cos-k8sstable3-alphafeatures
