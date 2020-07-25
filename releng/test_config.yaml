@@ -554,6 +554,13 @@ testSuites:
       --minStartupPods=8
     - --ginkgo-parallel=30
     cluster: k8s-infra-prow-build
+    resources:
+      requests:
+        cpu: 2000m
+        memory: 6Gi
+      limits:
+        cpu: 2000m
+        memory: 6Gi
   flaky:
     args:
     - --gcp-project-type=k8s-infra-gce-project
@@ -587,6 +594,13 @@ testSuites:
       --minStartupPods=8
     - --ginkgo-parallel=30
     cluster: k8s-infra-prow-build
+    resources:
+      requests:
+        cpu: 1000m
+        memory: 6Gi
+      limits:
+        cpu: 1000m
+        memory: 6Gi
   soak:
     args:
     - --check-version-skew=false
