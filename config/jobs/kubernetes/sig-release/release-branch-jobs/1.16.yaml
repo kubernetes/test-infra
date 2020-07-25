@@ -378,8 +378,12 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-1.16
       name: ""
       resources:
+        limits:
+          cpu: 6
+          memory: 20Gi
         requests:
-          cpu: "4"
+          cpu: 6
+          memory: 20Gi
       securityContext:
         privileged: true
 - annotations:
