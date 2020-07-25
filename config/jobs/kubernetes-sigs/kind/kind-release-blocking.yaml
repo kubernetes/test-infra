@@ -45,10 +45,13 @@ periodics:
       securityContext:
         privileged: true
       resources:
+        limits:
+          memory: 14Gi
+          cpu: 7300m
         requests:
           # these are both a bit below peak usage during build
           # this is mostly for building kubernetes
-          memory: "9000Mi"
+          memory: 14Gi
           # during the tests more like 3-20m is used
           cpu: 7300m
 - interval: 1h
@@ -103,9 +106,12 @@ periodics:
       securityContext:
         privileged: true
       resources:
+        limits:
+          memory: 14Gi
+          cpu: 7300m
         requests:
           # these are both a bit below peak usage during build
           # this is mostly for building kubernetes
-          memory: "9000Mi"
+          memory: 14Gi
           # during the tests more like 3-20m is used
           cpu: 7300m

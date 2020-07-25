@@ -522,9 +522,12 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-1.16
       name: ""
       resources:
+        limits:
+          cpu: 7300m
+          memory: 14Gi
         requests:
-          cpu: "2"
-          memory: 9000Mi
+          cpu: 7300m
+          memory: 14Gi
       securityContext:
         privileged: true
 - annotations:
@@ -566,9 +569,12 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-1.16
       name: ""
       resources:
+        limits:
+          cpu: 7300m
+          memory: 14Gi
         requests:
-          cpu: "2"
-          memory: 9000Mi
+          cpu: 7300m
+          memory: 14Gi
       securityContext:
         privileged: true
 postsubmits:
