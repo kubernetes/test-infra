@@ -28,7 +28,13 @@ periodics:
       - --timeout=200m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-1.16
       name: ""
-      resources: {}
+      resources:
+        limits:
+          cpu: 1
+          memory: 3Gi
+        requests:
+          cpu: 1
+          memory: 3Gi
 - annotations:
     fork-per-release-cron: ""
     fork-per-release-generic-suffix: "true"
