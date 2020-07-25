@@ -94,7 +94,13 @@ periodics:
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-1.16
       name: ""
-      resources: {}
+      resources:
+        limits:
+          cpu: 6
+          memory: 6Gi
+        requests:
+          cpu: 6
+          memory: 6Gi
 - annotations:
     testgrid-dashboards: sig-node-kubelet, sig-release-1.16-informing
     testgrid-tab-name: node-kubelet-features-1.16
@@ -126,7 +132,13 @@ periodics:
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-1.16
       name: ""
-      resources: {}
+      resources:
+        limits:
+          cpu: 6
+          memory: 6Gi
+        requests:
+          cpu: 6
+          memory: 6Gi
 - annotations:
     fork-per-release-generic-suffix: "true"
     testgrid-alert-email: release-managers@kubernetes.io, kubernetes-release-team@googlegroups.com
