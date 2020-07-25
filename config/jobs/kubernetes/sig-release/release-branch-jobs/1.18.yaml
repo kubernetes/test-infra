@@ -341,7 +341,13 @@ periodics:
       - --use-logexporter
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-1.18
       name: ""
-      resources: {}
+      resources:
+        requests:
+          cpu: 2
+          memory: 6Gi
+        limits:
+          cpu: 2
+          memory: 6Gi
   tags:
   - 'perfDashPrefix: gce-100Nodes-1.18'
   - 'perfDashJobType: performance'

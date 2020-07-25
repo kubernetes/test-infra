@@ -169,3 +169,10 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=120m
       - --use-logexporter
+      resources:
+        requests:
+          cpu: 2
+          memory: 6Gi
+        limits:
+          cpu: 2
+          memory: 6Gi
