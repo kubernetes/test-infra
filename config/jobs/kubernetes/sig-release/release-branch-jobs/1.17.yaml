@@ -34,7 +34,13 @@ periodics:
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-1.17
       name: ""
-      resources: {}
+      resources:
+        limits:
+          cpu: 1
+          memory: 6Gi
+        requests:
+          cpu: 1
+          memory: 6Gi
 - annotations:
     testgrid-alert-email: kubernetes-release-team@googlegroups.com
     testgrid-alert-stale-results-hours: "24"

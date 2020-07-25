@@ -106,6 +106,13 @@ periodics:
       - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\]|\[Deprecated\] --minStartupPods=8
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
+      resources:
+        limits:
+          cpu: 1
+          memory: 6Gi
+        requests:
+          cpu: 1
+          memory: 6Gi
 
   annotations:
     testgrid-dashboards: sig-release-job-config-errors
@@ -163,6 +170,13 @@ periodics:
       - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\]|\[Deprecated\] --minStartupPods=8
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
+      resources:
+        limits:
+          cpu: 1
+          memory: 6Gi
+        requests:
+          cpu: 1
+          memory: 6Gi
 
   annotations:
     testgrid-dashboards: sig-release-master-blocking, sig-cli-master
