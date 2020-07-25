@@ -980,16 +980,33 @@ func isPodQOSBurstable(spec *coreapi.PodSpec) bool {
 	return isBurstable
 }
 
-func TestK8sInfraProwBuildJobsMustBeBurstable(t *testing.T) {
+func isPodQOSGuaranteed(spec *coreapi.PodSpec) bool {
+	isGuaranteed := true
+	c := spec.Containers[0]
+	zero := resource.MustParse("0")
+	resources := []coreapi.ResourceName{
+		coreapi.ResourceCPU,
+		coreapi.ResourceMemory,
+	}
+	for _, r := range resources {
+		limit, ok := c.Resources.Limits[r]
+		if !ok || limit.Cmp(zero) == 0 || limit.Cmp(c.Resources.Requests[r]) != 0 {
+			isGuaranteed = false
+		}
+	}
+	return isGuaranteed
+}
+
+func TestK8sInfraProwBuildJobsMustHavePodQOSGuaranteed(t *testing.T) {
 	jobs := allStaticJobs()
 	for _, job := range jobs {
 		// Only consider Pods destined for the k8s-infra-prow-builds cluster
 		if job.Spec == nil || job.Cluster != "k8s-infra-prow-build" {
 			continue
 		}
-		isPodQOSBurstable := isPodQOSBurstable(job.Spec)
-		if !isPodQOSBurstable {
-			t.Errorf("%s is not burstable because %+v", job.Name, job.Spec.Containers[0].Resources)
+		isPodQOSGuaranteed := isPodQOSGuaranteed(job.Spec)
+		if !isPodQOSGuaranteed {
+			t.Errorf("%s is not guaranteed because %+v", job.Name, job.Spec.Containers[0].Resources)
 		}
 	}
 }
