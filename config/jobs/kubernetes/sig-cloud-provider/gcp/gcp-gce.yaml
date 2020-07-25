@@ -427,6 +427,13 @@ periodics:
           - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
           - --timeout=50m
         image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
+        resources:
+          limits:
+            cpu: 2
+            memory: 6Gi
+          requests:
+            cpu: 2
+            memory: 6Gi
   annotations:
     testgrid-dashboards: sig-release-master-informing, google-gce, google-gci
     testgrid-tab-name: gce-ubuntu-master-default
@@ -471,6 +478,13 @@ periodics:
           - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
           - --timeout=50m
         image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
+        resources:
+          limits:
+            cpu: 2
+            memory: 6Gi
+          requests:
+            cpu: 2
+            memory: 6Gi
   annotations:
     testgrid-dashboards: sig-release-master-blocking, google-gce, google-gci
     testgrid-tab-name: gce-ubuntu-master-containerd
