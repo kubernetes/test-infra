@@ -967,35 +967,21 @@ func allStaticJobs() []cfg.JobBase {
 	return jobs
 }
 
-func isPodQOSBurstable(spec *coreapi.PodSpec) bool {
-	isBurstable := false
-	c := spec.Containers[0]
-	zero := resource.MustParse("0")
-	resources := []coreapi.ResourceName{
-		coreapi.ResourceCPU,
-		coreapi.ResourceMemory,
-	}
-	for _, r := range resources {
-		request, _ := c.Resources.Requests[r]
-		if request.Cmp(zero) == 1 {
-			isBurstable = true
-		}
-	}
-	return isBurstable
-}
-
+// isPodQOSGuaranteed returns true if the PodSpec's containers have non-zero
+// resource limits that are equal to their resource requests
 func isPodQOSGuaranteed(spec *coreapi.PodSpec) bool {
 	isGuaranteed := true
-	c := spec.Containers[0]
-	zero := resource.MustParse("0")
-	resources := []coreapi.ResourceName{
+	resourceNames := []coreapi.ResourceName{
 		coreapi.ResourceCPU,
 		coreapi.ResourceMemory,
 	}
-	for _, r := range resources {
-		limit, ok := c.Resources.Limits[r]
-		if !ok || limit.Cmp(zero) == 0 || limit.Cmp(c.Resources.Requests[r]) != 0 {
-			isGuaranteed = false
+	zero := resource.MustParse("0")
+	for _, c := range spec.Containers {
+		for _, r := range resourceNames {
+			limit, ok := c.Resources.Limits[r]
+			if !ok || limit.Cmp(zero) == 0 || limit.Cmp(c.Resources.Requests[r]) != 0 {
+				isGuaranteed = false
+			}
 		}
 	}
 	return isGuaranteed
@@ -1010,7 +996,49 @@ func TestK8sInfraProwBuildJobsMustHavePodQOSGuaranteed(t *testing.T) {
 		}
 		isPodQOSGuaranteed := isPodQOSGuaranteed(job.Spec)
 		if !isPodQOSGuaranteed {
-			t.Errorf("%s is not guaranteed because %+v", job.Name, job.Spec.Containers[0].Resources)
+			t.Errorf("%s: must have non-zero resource.requests == resource.limits to run on k8s-infra-prow-build cluster, has %+v", job.Name, job.Spec.Containers[0].Resources)
+		}
+	}
+}
+
+// We have k8s-infra-prow-build setup to auto-scale, but if we want an earlier
+// warning that resource limits are growing higher than expected...
+func TestK8sInfraProwBuildJobsMustNotExceedTotalCapacity(t *testing.T) {
+	// k8s-infra-prow-build pool1 is 3-zonal 6-30 n1-highmem-8's
+	maxLimit := coreapi.ResourceList{
+		coreapi.ResourceCPU:    resource.MustParse("144000m"), // 3 * 6 * 8 CPUs per n1-highmem-8
+		coreapi.ResourceMemory: resource.MustParse("936Gi"),   // 3 * 6 * 52 Gi per n1-highmem-8
+	}
+	resourceNames := []coreapi.ResourceName{
+		coreapi.ResourceCPU,
+		coreapi.ResourceMemory,
+	}
+	zero := resource.MustParse("0")
+	totalLimit := coreapi.ResourceList{}
+	for _, r := range resourceNames {
+		totalLimit[r] = zero.DeepCopy()
+	}
+	jobs := allStaticJobs()
+	for _, job := range jobs {
+		// Only consider Pods destined for the k8s-infra-prow-builds cluster
+		if job.Spec == nil || job.Cluster != "k8s-infra-prow-build" {
+			continue
+		}
+		for _, c := range job.Spec.Containers {
+			for _, r := range resourceNames {
+				if limit, ok := c.Resources.Limits[r]; ok {
+					total := totalLimit[r]
+					total.Add(limit)
+					totalLimit[r] = total
+				}
+			}
+		}
+	}
+	for _, r := range resourceNames {
+		total, _ := totalLimit[r]
+		max, _ := maxLimit[r]
+		if total.Cmp(max) > -1 {
+			t.Errorf("Total %s limit %s greater than expected limit %s", r, total.String(), max.String())
 		}
 	}
 }
