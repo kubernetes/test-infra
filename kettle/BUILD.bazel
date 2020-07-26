@@ -27,19 +27,6 @@ py_binary(
     python_version = "PY3",
 )
 
-# TODO(rmmh): re-enable when Bazel is fixed.
-# https://github.com/bazelbuild/rules_python/issues/14
-# py_binary(
-#    name = "monitor",
-#    srcs = [
-#        "monitor.py",
-#    ],
-#    deps = [
-#        requirement("influxdb"),
-#        requirement("google-cloud-bigquery"),
-#    ],
-# )
-
 py_test(
     name = "model_test",
     srcs = [
