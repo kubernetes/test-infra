@@ -54,7 +54,7 @@ presubmits:
     spec:
       serviceAccountName: k8s-infra-gcr-promoter-test
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200720-4766100-1.17
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-1.17
         command:
         - infra/gcp/backup_tools/backup_test.sh
         env:
@@ -77,7 +77,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200720-4766100-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
         command:
         - "./test-e2e/cip/e2e-entrypoint-from-container.sh"
         env:
@@ -105,7 +105,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200720-4766100-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
         command:
         - "./test-e2e/cip-auditor/entrypoint-from-container.sh"
         env:
@@ -131,7 +131,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200720-4766100-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
         command:
         - "make"
         args:

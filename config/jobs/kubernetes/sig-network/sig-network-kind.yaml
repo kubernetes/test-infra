@@ -18,7 +18,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/krte:v20200720-4766100-master
+    - image: gcr.io/k8s-testimages/krte:v20200726-f8d6253-master
       command:
         - wrapper.sh
         - bash
@@ -69,7 +69,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/krte:v20200720-4766100-master
+    - image: gcr.io/k8s-testimages/krte:v20200726-f8d6253-master
       command:
         - wrapper.sh
         - bash
@@ -125,7 +125,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/krte:v20200720-4766100-master
+    - image: gcr.io/k8s-testimages/krte:v20200726-f8d6253-master
       env:
       # skip serial tests and run with --ginkgo-parallel
       - name: "PARALLEL"
@@ -177,7 +177,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/krte:v20200720-4766100-master
+    - image: gcr.io/k8s-testimages/krte:v20200726-f8d6253-master
       env:
       # enable IPV6 in bootstrap image
       - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
