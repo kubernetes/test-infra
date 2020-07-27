@@ -86,6 +86,35 @@ func (fg *failuresGroup) sortByNumberOfFailures() []failuresGroupPair {
 	return result
 }
 
+// equal determines whether this failuresGroup is deeply equal to another failuresGroup.
+func (a *failuresGroup) equal(b *failuresGroup) bool {
+	// First check the length to deal with different-length maps
+	if len(*a) != len(*b) {
+		return false
+	}
+
+	for key, failuresA := range *a {
+		// Make sure the other map contains the same keys
+		if failuresB, ok := (*b)[key]; ok {
+			// Check lengths
+			if len(failuresA) != len(failuresB) {
+				return false
+			}
+			// Compare the failures slices
+			for i := range failuresA {
+				if failuresA[i] != failuresB[i] {
+					return false
+				}
+			}
+		} else {
+			// The other map is missing a key
+			return false
+		}
+	}
+
+	return true
+}
+
 // map[string]failuresGroup type alias, which is really a map[string]map[string][]failure type alias
 
 // nestedFailuresGroups maps strings to failuresGroup instances.
@@ -155,4 +184,26 @@ func (nfg *nestedFailuresGroups) sortByAggregateNumberOfFailures() []nestedFailu
 	})
 
 	return result
+}
+
+// equal determines whether this nestedFailuresGroups object is deeply equal to another nestedFailuresGroups object.
+func (a *nestedFailuresGroups) equal(b *nestedFailuresGroups) bool {
+	// First check the length to deal with different-length maps
+	if len(*a) != len(*b) {
+		return false
+	}
+
+	for key, failuresGroupA := range *a {
+		// Make sure the other map contains the same keys
+		if failuresGroupB, ok := (*b)[key]; ok {
+			if !failuresGroupA.equal(&failuresGroupB) {
+				return false
+			}
+		} else {
+			// The other map is missing a key
+			return false
+		}
+	}
+
+	return true
 }
