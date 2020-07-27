@@ -1264,7 +1264,7 @@ func validateJobBase(v JobBase, jobType prowapi.ProwJobType, podNamespace string
 	if err := validateAgent(v, podNamespace); err != nil {
 		return err
 	}
-	if err := validatePodSpec(jobType, v.Spec, v.Annotations["ProwMultipleContainerSupport"] == "Yes, I know what I'm doing.", v.Decorate != nil && *v.Decorate); err != nil {
+	if err := validatePodSpec(jobType, v.Spec, v.Annotations["ProwMultipleContainerSupport"] == "Yes, I know what I'm doing.", v.DecorationConfig != nil); err != nil {
 		return err
 	}
 	if err := ValidatePipelineRunSpec(jobType, v.ExtraRefs, v.PipelineRunSpec); err != nil {

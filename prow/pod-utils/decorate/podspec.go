@@ -450,14 +450,14 @@ func processLog(log coreapi.VolumeMount, prefix string) string {
 	if prefix == "" {
 		return filepath.Join(log.MountPath, "process-log.txt")
 	}
-	return filepath.Join(log.MountPath, fmt.Sprintf("%s-build-log.txt", prefix))
+	return filepath.Join(log.MountPath, fmt.Sprintf("%s-log.txt", prefix))
 }
 
 func markerFile(log coreapi.VolumeMount, prefix string) string {
 	if prefix == "" {
 		return filepath.Join(log.MountPath, "marker-file.txt")
 	}
-	return filepath.Join(log.MountPath, fmt.Sprintf("%s-marker-file.txt", prefix))
+	return filepath.Join(log.MountPath, fmt.Sprintf("%s-marker.txt", prefix))
 }
 
 func metadataFile(log coreapi.VolumeMount, prefix string) string {
