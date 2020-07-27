@@ -818,7 +818,7 @@ func TestValidatePodSpec(t *testing.T) {
 			name: "reject reserved mount name",
 			spec: func(s *v1.PodSpec) {
 				s.Containers[0].VolumeMounts = append(s.Containers[0].VolumeMounts, v1.VolumeMount{
-					Name:      decorate.VolumeMounts()[0],
+					Name:      decorate.VolumeMounts().List()[0],
 					MountPath: "/whatever",
 				})
 			},
@@ -828,7 +828,7 @@ func TestValidatePodSpec(t *testing.T) {
 			spec: func(s *v1.PodSpec) {
 				s.Containers[0].VolumeMounts = append(s.Containers[0].VolumeMounts, v1.VolumeMount{
 					Name:      "fun",
-					MountPath: decorate.VolumeMountPaths()[0],
+					MountPath: decorate.VolumeMountPaths().List()[0],
 				})
 			},
 		},
@@ -837,7 +837,7 @@ func TestValidatePodSpec(t *testing.T) {
 			spec: func(s *v1.PodSpec) {
 				s.Containers[0].VolumeMounts = append(s.Containers[0].VolumeMounts, v1.VolumeMount{
 					Name:      "foo",
-					MountPath: filepath.Dir(decorate.VolumeMountPaths()[0]),
+					MountPath: filepath.Dir(decorate.VolumeMountPaths().List()[0]),
 				})
 			},
 		},
@@ -846,14 +846,14 @@ func TestValidatePodSpec(t *testing.T) {
 			spec: func(s *v1.PodSpec) {
 				s.Containers[0].VolumeMounts = append(s.Containers[0].VolumeMounts, v1.VolumeMount{
 					Name:      "foo",
-					MountPath: filepath.Join(decorate.VolumeMountPaths()[0], "extra"),
+					MountPath: filepath.Join(decorate.VolumeMountPaths().List()[0], "extra"),
 				})
 			},
 		},
 		{
 			name: "reject reserved volume",
 			spec: func(s *v1.PodSpec) {
-				s.Volumes = append(s.Volumes, v1.Volume{Name: decorate.VolumeMounts()[0]})
+				s.Volumes = append(s.Volumes, v1.Volume{Name: decorate.VolumeMounts().List()[0]})
 			},
 		},
 		{
@@ -896,7 +896,7 @@ func TestValidatePodSpec(t *testing.T) {
 			} else if tc.spec != nil {
 				tc.spec(current)
 			}
-			switch err := validatePodSpec(jt, current); {
+			switch err := validatePodSpec(jt, current, false, true); {
 			case err == nil && !tc.pass:
 				t.Error("validation failed to raise an error")
 			case err != nil && tc.pass:
@@ -1139,6 +1139,159 @@ func TestValidateLabels(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			switch err := validateLabels(tc.labels); {
+			case err == nil && !tc.pass:
+				t.Error("validation failed to raise an error")
+			case err != nil && tc.pass:
+				t.Errorf("validation should have passed, got: %v", err)
+			}
+		})
+	}
+}
+
+func TestValidateMultipleContainers(t *testing.T) {
+	ka := string(prowjobv1.KubernetesAgent)
+	yes := true
+	defCfg := prowapi.DecorationConfig{
+		UtilityImages: &prowjobv1.UtilityImages{
+			CloneRefs:  "clone-me",
+			InitUpload: "upload-me",
+			Entrypoint: "enter-me",
+			Sidecar:    "official-drink-of-the-org",
+		},
+		GCSCredentialsSecret: "upload-secret",
+		GCSConfiguration: &prowjobv1.GCSConfiguration{
+			PathStrategy: prowjobv1.PathStrategyExplicit,
+			DefaultOrg:   "so-org",
+			DefaultRepo:  "very-repo",
+		},
+	}
+	goodSpec := v1.PodSpec{
+		Containers: []v1.Container{
+			{
+				Name:    "test1",
+				Command: []string{"hello", "world"},
+			},
+			{
+				Name: "test2",
+				Args: []string{"hello", "world"},
+			},
+		},
+	}
+	ns := "target-namespace"
+	cases := []struct {
+		name string
+		base JobBase
+		pass bool
+	}{
+		{
+			name: "valid kubernetes job with multiple containers",
+			base: JobBase{
+				Name:          "name",
+				Agent:         ka,
+				UtilityConfig: UtilityConfig{Decorate: &yes, DecorationConfig: &defCfg},
+				Spec:          &goodSpec,
+				Namespace:     &ns,
+				Annotations: map[string]string{
+					"ProwMultipleContainerSupport": "Yes, I know what I'm doing.",
+				},
+			},
+			pass: true,
+		},
+		{
+			name: "invalid: containers with no cmd or args",
+			base: JobBase{
+				Name:          "name",
+				Agent:         ka,
+				UtilityConfig: UtilityConfig{Decorate: &yes, DecorationConfig: &defCfg},
+				Spec: &v1.PodSpec{
+					Containers: []v1.Container{
+						{
+							Name: "test1",
+						},
+						{
+							Name: "test2",
+						},
+					},
+				},
+				Namespace: &ns,
+				Annotations: map[string]string{
+					"ProwMultipleContainerSupport": "Yes, I know what I'm doing.",
+				},
+			},
+		},
+		{
+			name: "invalid: containers with no names",
+			base: JobBase{
+				Name:          "name",
+				Agent:         ka,
+				UtilityConfig: UtilityConfig{Decorate: &yes, DecorationConfig: &defCfg},
+				Spec: &v1.PodSpec{
+					Containers: []v1.Container{
+						{
+							Command: []string{"hello", "world"},
+						},
+						{
+							Args: []string{"hello", "world"},
+						},
+					},
+				},
+				Namespace: &ns,
+				Annotations: map[string]string{
+					"ProwMultipleContainerSupport": "Yes, I know what I'm doing.",
+				},
+			},
+		},
+		{
+			name: "invalid: no ProwMultipleContainerSupport annotation",
+			base: JobBase{
+				Name:          "name",
+				Agent:         ka,
+				UtilityConfig: UtilityConfig{Decorate: &yes, DecorationConfig: &defCfg},
+				Spec:          &goodSpec,
+				Namespace:     &ns,
+				Annotations:   map[string]string{},
+			},
+		},
+		{
+			name: "invalid: no decoration enabled",
+			base: JobBase{
+				Name:      "name",
+				Agent:     ka,
+				Spec:      &goodSpec,
+				Namespace: &ns,
+				Annotations: map[string]string{
+					"ProwMultipleContainerSupport": "Yes, I know what I'm doing.",
+				},
+			},
+		},
+		{
+			name: "invalid: container names reserved for decoration",
+			base: JobBase{
+				Name:          "name",
+				Agent:         ka,
+				UtilityConfig: UtilityConfig{Decorate: &yes, DecorationConfig: &defCfg},
+				Spec: &v1.PodSpec{
+					Containers: []v1.Container{
+						{
+							Name:    "place-entrypoint",
+							Command: []string{"hello", "world"},
+						},
+						{
+							Name: "sidecar",
+							Args: []string{"hello", "world"},
+						},
+					},
+				}, Namespace: &ns,
+				Annotations: map[string]string{
+					"ProwMultipleContainerSupport": "Yes, I know what I'm doing.",
+				},
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			switch err := validateJobBase(tc.base, prowjobv1.PresubmitJob, ns); {
 			case err == nil && !tc.pass:
 				t.Error("validation failed to raise an error")
 			case err != nil && tc.pass:
