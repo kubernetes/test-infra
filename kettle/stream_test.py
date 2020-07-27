@@ -128,6 +128,8 @@ class StreamTest(unittest.TestCase):
                    'time': 4.0}],
                  2,
                  1,
+                 None,
+                 None,
                  None]],
                [1]),
               {'skip_invalid_rows': True}],

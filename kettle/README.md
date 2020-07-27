@@ -23,7 +23,7 @@ If you change:
 
 # Restarting
 
-#### Find out when the build started failinga
+#### Find out when the build started failing
 
 eg: by looking at the logs
 
@@ -62,6 +62,10 @@ kubectl logs -f $(kubectl get pod -l app=kettle -oname)
 ```
 
 It might take a couple of hours to be fully functional and start updating BigQuery. You can always go back to the [Gubernator BigQuery page](https://bigquery.cloud.google.com/table/k8s-gubernator:build.all?pli=1&tab=details) and check to see if data collection has resumed.  Backfill should happen automatically.
+
+#### Adding Fields
+
+To add fields to the BQ table, Visit the [k8s-gubernator:build BigQuery dataset](https://bigquery.cloud.google.com/dataset/k8s-gubernator:build) and Select the table (Ex. Build > All). Schema -> Edit Schema -> Add field. As well as update [schema.json](./schema.json)
 
 # CI
 
