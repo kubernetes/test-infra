@@ -1,6 +1,6 @@
 postsubmits:
-  kubernetes-sigs/k8s-staging-k8s-gsm-tools:
-    - name: post-k8s-staging-k8s-gsm-tools-push-images
+  kubernetes-sigs/k8s-gsm-tools:
+    - name: post-k8s-gsm-tools-push-images
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-testing-images
