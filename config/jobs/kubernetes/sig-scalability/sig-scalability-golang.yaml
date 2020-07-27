@@ -81,7 +81,7 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=430m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200720-4766100-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
       env:
       - name: CL2_ENABLE_VIOLATIONS_FOR_API_CALL_PROMETHEUS
         value: "true"
@@ -143,7 +143,7 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=1050m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200720-4766100-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
       resources:
         requests:
           cpu: 6
@@ -196,7 +196,7 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=1050m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200720-4766100-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
       resources:
         requests:
           cpu: 6
