@@ -64,9 +64,11 @@ func render(builds map[string]build, clustered nestedFailuresGroups) jsonOutput 
 // sigLabelRE matches '[sig-x]', so long as x does not contain a closing bracket.
 var sigLabelRE = regexp.MustCompile(`\[sig-([^]]*)\]`)
 
-// annotateOwners assigns ownership to a cluster based on the share of hits in the last day.
-//
-// owners maps SIG names to collections of SIG-specific prefixes.
+/*
+annotateOwners assigns ownership to a cluster based on the share of hits in the last day.
+
+owners maps SIG names to collections of SIG-specific prefixes.
+*/
 func annotateOwners(data jsonOutput, builds map[string]build, owners map[string][]string) error {
 	// Dynamically create a regular expression based on the value of owners.
 	/*
@@ -159,7 +161,7 @@ func annotateOwners(data jsonOutput, builds map[string]build, owners map[string]
 
 				jobPath := jobPaths[job.name]
 				for _, build := range job.buildNumbers {
-					bucketKey := fmt.Sprintf("%s/%s", jobPath, build)
+					bucketKey := fmt.Sprintf("%s/%d", jobPath, build)
 					if _, ok := builds[bucketKey]; !ok {
 						continue
 					} else if builds[bucketKey].started > yesterday {

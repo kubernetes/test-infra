@@ -265,7 +265,8 @@ Returns:
 		...
 	}
 */
-func clusterTest(failures []failure) (result failuresGroup) {
+func clusterTest(failures []failure) failuresGroup {
+	result := make(failuresGroup, len(failures))
 	start := time.Now()
 
 	for _, flr := range failures {

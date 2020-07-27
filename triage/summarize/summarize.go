@@ -32,12 +32,12 @@ const maxClusterTextLen = longOutputLen + len(truncatedSep)
 
 // logInfo logs a message, prepending [I] to it.
 func logInfo(format string, v ...interface{}) {
-	log.Printf("[I]"+format, v)
+	log.Printf("[I]"+format, v...)
 }
 
 // logWarning logs a message, prepending [W] to it.
 func logWarning(format string, v ...interface{}) {
-	log.Printf("[W]"+format, v)
+	log.Printf("[W]"+format, v...)
 }
 
 // summarizeFlags represents the command-line arguments to the summarize and their values.
@@ -69,9 +69,7 @@ func parseFlags() summarizeFlags {
 	return flags
 }
 
-func main() {
-	flags := parseFlags()
-
+func summarize(flags summarizeFlags) {
 	builds, failedTests, err := loadFailures(*flags.builds, flags.tests)
 	if err != nil {
 		log.Fatalf("Could not load failures: %s", err)
@@ -151,4 +149,8 @@ func main() {
 	}
 
 	logInfo("Finished rendering results in %s", time.Since(start).String())
+}
+
+func main() {
+	summarize(parseFlags())
 }
