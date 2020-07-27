@@ -123,11 +123,15 @@ func logReaders(entries []wrapper.Options) map[string]io.Reader {
 	readers := make(map[string]io.Reader)
 	for _, opt := range entries {
 		log, err := os.Open(opt.ProcessLog)
+		buildLog := "build-log.txt"
+		if len(entries) > 1 {
+			buildLog = fmt.Sprintf("%s-build-log.txt", strings.TrimSuffix(filepath.Base(opt.ProcessLog), "-log.txt"))
+		}
 		if err != nil {
 			logrus.WithError(err).Errorf("Failed to open %s", opt.ProcessLog)
-			readers[filepath.Base(opt.ProcessLog)] = strings.NewReader(fmt.Sprintf("Failed to open %s: %v\n", opt.ProcessLog, err))
+			readers[buildLog] = strings.NewReader(fmt.Sprintf("Failed to open %s: %v\n", opt.ProcessLog, err))
 		} else {
-			readers[filepath.Base(opt.ProcessLog)] = log
+			readers[buildLog] = log
 		}
 	}
 	return readers

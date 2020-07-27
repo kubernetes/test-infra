@@ -405,39 +405,39 @@ func TestLogReader(t *testing.T) {
 		{
 			name: "basically works",
 			processLogs: map[string]string{
-				"log.txt": "hello world",
+				"process-log.txt": "hello world",
 			},
 			expected: map[string]string{
-				"log.txt": "hello world",
+				"build-log.txt": "hello world",
 			},
 		},
 		{
 			name: "multiple logs works",
 			processLogs: map[string]string{
-				"log-1.txt": "hello",
-				"log-2.txt": "world",
+				"test1-log.txt": "hello",
+				"test2-log.txt": "world",
 			},
 			expected: map[string]string{
-				"log-1.txt": "hello",
-				"log-2.txt": "world",
+				"test1-build-log.txt": "hello",
+				"test2-build-log.txt": "world",
 			},
 		},
 		{
 			name: "note when a part has a problem",
 			processLogs: map[string]string{
-				"log-1.txt": "hello",
-				"log-2.txt": "missing",
-				"log-3.txt": "world",
+				"test1-log.txt": "hello",
+				"test2-log.txt": "missing",
+				"test3-log.txt": "world",
 			},
 			expected: map[string]string{
-				"log-1.txt": "hello",
-				"log-2.txt": "Failed to open log-2.txt: whatever\n",
-				"log-3.txt": "world",
+				"test1-build-log.txt": "hello",
+				"test2-build-log.txt": "Failed to open test2-log.txt: whatever\n",
+				"test3-build-log.txt": "world",
 			},
 		},
 	}
 
-	re := regexp.MustCompile(`(?m)(Failed to open) .*log-\d.txt: .*$`)
+	re := regexp.MustCompile(`(?m)(Failed to open) .*log\.txt: .*$`)
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			tmpDir, err := ioutil.TempDir("", tc.name)
