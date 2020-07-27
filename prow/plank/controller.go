@@ -350,10 +350,17 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]corev1.Pod
 			return client.Delete(c.ctx, &pod)
 
 		case corev1.PodSucceeded:
-			// Pod succeeded. Update ProwJob, and start next jobs.
 			pj.SetComplete()
-			pj.Status.State = prowapi.SuccessState
-			pj.Status.Description = "Job succeeded."
+			// There were bugs around this in the past so be paranoid and verify each container
+			// https://github.com/kubernetes/kubernetes/issues/58711 is only fixed in 1.18+
+			if didPodSucceed(&pod) {
+				// Pod succeeded. Update ProwJob and talk to GitHub.
+				pj.Status.State = prowapi.SuccessState
+				pj.Status.Description = "Job succeeded."
+			} else {
+				pj.Status.State = prowapi.ErrorState
+				pj.Status.Description = "Pod was in succeeded phase but some containers didn't finish"
+			}
 
 		case corev1.PodFailed:
 			if pod.Status.Reason == Evicted {

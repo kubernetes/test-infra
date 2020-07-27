@@ -302,10 +302,17 @@ func (r *reconciler) syncPendingJob(pj *prowv1.ProwJob) error {
 			return client.Delete(r.ctx, pod)
 
 		case corev1.PodSucceeded:
-			// Pod succeeded. Update ProwJob and talk to GitHub.
 			pj.SetComplete()
-			pj.Status.State = prowv1.SuccessState
-			pj.Status.Description = "Job succeeded."
+			// There were bugs around this in the past so be paranoid and verify each container
+			// https://github.com/kubernetes/kubernetes/issues/58711 is only fixed in 1.18+
+			if didPodSucceed(pod) {
+				// Pod succeeded. Update ProwJob and talk to GitHub.
+				pj.Status.State = prowv1.SuccessState
+				pj.Status.Description = "Job succeeded."
+			} else {
+				pj.Status.State = prowv1.ErrorState
+				pj.Status.Description = "Pod was in succeeded phase but some containers didn't finish"
+			}
 
 		case corev1.PodFailed:
 			if pod.Status.Reason == Evicted {
@@ -770,4 +777,17 @@ func optPendingProwJobs() ctrlruntimeclient.ListOption {
 
 func optPendingTriggeredJobsNamed(name string) ctrlruntimeclient.ListOption {
 	return ctrlruntimeclient.MatchingField(prowJobIndexName, pendingTriggeredIndexKeyByName(name))
+}
+
+func didPodSucceed(p *corev1.Pod) bool {
+	if p.Status.Phase != corev1.PodSucceeded {
+		return false
+	}
+	for _, container := range append(p.Status.ContainerStatuses, p.Status.InitContainerStatuses...) {
+		if container.State.Terminated == nil || container.State.Terminated.ExitCode != 0 || container.State.Terminated.FinishedAt.IsZero() {
+			return false
+		}
+	}
+
+	return true
 }

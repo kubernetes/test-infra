@@ -1010,6 +1010,76 @@ func TestSyncPendingJob(t *testing.T) {
 			ExpectedURL:        "boop-42/success",
 		},
 		{
+			Name: "succeeded pod with unfinished containers",
+			PJ: prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "boop-42",
+					Namespace: "prowjobs",
+				},
+				Spec: prowapi.ProwJobSpec{
+					Type:    prowapi.BatchJob,
+					PodSpec: &v1.PodSpec{Containers: []v1.Container{{Name: "test-name", Env: []v1.EnvVar{}}}},
+					Refs:    &prowapi.Refs{Org: "fejtaverse"},
+				},
+				Status: prowapi.ProwJobStatus{
+					State:   prowapi.PendingState,
+					PodName: "boop-42",
+				},
+			},
+			Pods: []v1.Pod{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "boop-42",
+						Namespace: "pods",
+					},
+					Status: v1.PodStatus{
+						Phase:             v1.PodSucceeded,
+						ContainerStatuses: []v1.ContainerStatus{{LastTerminationState: v1.ContainerState{Terminated: &v1.ContainerStateTerminated{}}}},
+					},
+				},
+			},
+			ExpectedComplete:   true,
+			ExpectedState:      prowapi.ErrorState,
+			ExpectedNumPods:    1,
+			ExpectedCreatedPJs: 0,
+			ExpectedURL:        "boop-42/success",
+		},
+		{
+			Name: "succeeded pod with unfinished initcontainers",
+			PJ: prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "boop-42",
+					Namespace: "prowjobs",
+				},
+				Spec: prowapi.ProwJobSpec{
+					Type:    prowapi.BatchJob,
+					PodSpec: &v1.PodSpec{Containers: []v1.Container{{Name: "test-name", Env: []v1.EnvVar{}}}},
+					Refs:    &prowapi.Refs{Org: "fejtaverse"},
+				},
+				Status: prowapi.ProwJobStatus{
+					State:   prowapi.PendingState,
+					PodName: "boop-42",
+				},
+			},
+			Pods: []v1.Pod{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "boop-42",
+						Namespace: "pods",
+					},
+					Status: v1.PodStatus{
+						Phase:                 v1.PodSucceeded,
+						InitContainerStatuses: []v1.ContainerStatus{{LastTerminationState: v1.ContainerState{Terminated: &v1.ContainerStateTerminated{}}}},
+					},
+				},
+			},
+			ExpectedComplete:   true,
+			ExpectedState:      prowapi.ErrorState,
+			ExpectedNumPods:    1,
+			ExpectedCreatedPJs: 0,
+			ExpectedURL:        "boop-42/success",
+		},
+		{
 			Name: "failed pod",
 			PJ: prowapi.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
@@ -1427,8 +1497,8 @@ func TestSyncPendingJob(t *testing.T) {
 			if got := len(actualPods.Items); got != tc.ExpectedNumPods {
 				t.Errorf("got %d pods, expected %d", len(actualPods.Items), tc.ExpectedNumPods)
 			}
-			if actual.Complete() != tc.ExpectedComplete {
-				t.Error("got wrong completion")
+			if actual := actual.Complete(); actual != tc.ExpectedComplete {
+				t.Errorf("expected complete: %t, got complete: %t", tc.ExpectedComplete, actual)
 			}
 
 		})
