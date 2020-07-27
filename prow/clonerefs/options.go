@@ -26,7 +26,9 @@ import (
 	"text/template"
 
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/gcsupload"
 )
 
 // Options configures the clonerefs tool
@@ -72,6 +74,12 @@ type Options struct {
 	cloneURI   orgRepoFormat
 	keys       stringSlice
 	CookiePath string `json:"cookie_path,omitempty"`
+
+	// Caches specify the prowjob caches to be restored
+	Caches v1.Caches `json:"caches,omitempty"`
+
+	// GcsOptions is required for cache restoring
+	GcsOptions *gcsupload.Options `json:"gcs_options,omitempty"`
 }
 
 // Validate ensures that the configuration options are valid

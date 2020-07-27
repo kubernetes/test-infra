@@ -29,9 +29,11 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/cache"
 	"k8s.io/test-infra/prow/entrypoint"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 	"k8s.io/test-infra/prow/pod-utils/gcs"
@@ -199,6 +201,12 @@ func (o Options) doUpload(spec *downwardapi.JobSpec, passed, aborted bool, metad
 		logrus.WithError(err).Warn("Could not marshal finishing data")
 	} else {
 		uploadTargets[prowv1.FinishedStatusFile] = gcs.DataUpload(bytes.NewBuffer(finishedData))
+	}
+
+	if passed {
+		if err := cache.CopyToGCS(o.Caches, o.SrcRoot, o.GcsOptions); err != nil {
+			return errors.Wrap(err, "copy caches to GCS")
+		}
 	}
 
 	if err := o.GcsOptions.Run(spec, uploadTargets); err != nil {

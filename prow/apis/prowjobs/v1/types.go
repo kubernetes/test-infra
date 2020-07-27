@@ -364,6 +364,8 @@ type DecorationConfig struct {
 	// OauthTokenSecret is a Kubernetes secret that contains the OAuth token,
 	// which is going to be used for fetching a private repository.
 	OauthTokenSecret *OauthTokenSecret `json:"oauth_token_secret,omitempty"`
+	// Caches specifies the caching configuration for the prow job
+	Caches Caches `json:"caches,omitempty"`
 }
 
 // Resources holds resource requests and limits for
@@ -486,6 +488,9 @@ func (d *DecorationConfig) Validate() error {
 	}
 	if d.OauthTokenSecret != nil && len(d.SSHKeySecrets) > 0 {
 		return errors.New("both OAuth token and SSH key secrets are specified")
+	}
+	if err := d.Caches.Validate(); err != nil {
+		return fmt.Errorf("validating caches: %v", err)
 	}
 	return nil
 }

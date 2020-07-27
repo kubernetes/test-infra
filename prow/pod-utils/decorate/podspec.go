@@ -359,7 +359,7 @@ func cookiefileVolume(secret string) (coreapi.Volume, coreapi.VolumeMount, strin
 //
 // The container may need to mount SSH keys and/or cookiefiles in order to access private refs.
 // CloneRefs returns a list of volumes containing these secrets required by the container.
-func CloneRefs(pj prowapi.ProwJob, codeMount, logMount coreapi.VolumeMount) (*coreapi.Container, []prowapi.Refs, []coreapi.Volume, error) {
+func CloneRefs(pj prowapi.ProwJob, codeMount, logMount coreapi.VolumeMount, cacheMounts []coreapi.VolumeMount, gcsOptions *gcsupload.Options) (*coreapi.Container, []prowapi.Refs, []coreapi.Volume, error) {
 	if pj.Spec.DecorationConfig == nil {
 		return nil, nil, nil, nil
 	}
@@ -386,6 +386,9 @@ func CloneRefs(pj prowapi.ProwJob, codeMount, logMount coreapi.VolumeMount) (*co
 
 	var cloneMounts []coreapi.VolumeMount
 	var sshKeyPaths []string
+
+	cloneMounts = append(cloneMounts, cacheMounts...)
+
 	for _, secret := range pj.Spec.DecorationConfig.SSHKeySecrets {
 		volume, mount := sshVolume(secret)
 		cloneMounts = append(cloneMounts, mount)
@@ -426,6 +429,8 @@ func CloneRefs(pj prowapi.ProwJob, codeMount, logMount coreapi.VolumeMount) (*co
 		Log:              CloneLogPath(logMount),
 		SrcRoot:          codeMount.MountPath,
 		OauthTokenFile:   oauthMountPath,
+		Caches:           pj.Spec.DecorationConfig.Caches,
+		GcsOptions:       gcsOptions,
 	})
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("clone env: %v", err)
@@ -662,7 +667,13 @@ func decorate(spec *coreapi.PodSpec, pj *prowapi.ProwJob, rawEnv map[string]stri
 
 	blobStorageVolumes, blobStorageMounts, blobStorageOptions := BlobStorageOptions(*pj.Spec.DecorationConfig, localMode)
 
-	cloner, refs, cloneVolumes, err := CloneRefs(*pj, codeMount, logMount)
+	cacheVolumes, cacheMounts := pj.Spec.DecorationConfig.Caches.VolumesAndMounts()
+	spec.Volumes = append(spec.Volumes, cacheVolumes...)
+	for i := range spec.Containers {
+		spec.Containers[i].VolumeMounts = append(spec.Containers[i].VolumeMounts, cacheMounts...)
+	}
+
+	cloner, refs, cloneVolumes, err := CloneRefs(*pj, codeMount, logMount, cacheMounts, &blobStorageOptions)
 	if err != nil {
 		return fmt.Errorf("create clonerefs container: %v", err)
 	}
@@ -704,7 +715,7 @@ func decorate(spec *coreapi.PodSpec, pj *prowapi.ProwJob, rawEnv map[string]stri
 		wrappers = append(wrappers, *wrapperOptions)
 	}
 
-	sidecar, err := Sidecar(pj.Spec.DecorationConfig, blobStorageOptions, blobStorageMounts, logMount, outputMount, encodedJobSpec, !RequirePassingEntries, wrappers...)
+	sidecar, err := Sidecar(pj.Spec.DecorationConfig, blobStorageOptions, cacheMounts, blobStorageMounts, logMount, codeMount, outputMount, encodedJobSpec, !RequirePassingEntries, wrappers...)
 	if err != nil {
 		return fmt.Errorf("create sidecar: %v", err)
 	}
@@ -748,18 +759,22 @@ const (
 	RequirePassingEntries = true
 )
 
-func Sidecar(config *prowapi.DecorationConfig, gcsOptions gcsupload.Options, blobStorageMounts []coreapi.VolumeMount, logMount coreapi.VolumeMount, outputMount *coreapi.VolumeMount, encodedJobSpec string, requirePassingEntries bool, wrappers ...wrapper.Options) (*coreapi.Container, error) {
+func Sidecar(config *prowapi.DecorationConfig, gcsOptions gcsupload.Options, blobStorageMounts, cacheMounts []coreapi.VolumeMount, logMount, codeMount coreapi.VolumeMount, outputMount *coreapi.VolumeMount, encodedJobSpec string, requirePassingEntries bool, wrappers ...wrapper.Options) (*coreapi.Container, error) {
 	gcsOptions.Items = append(gcsOptions.Items, artifactsDir(logMount))
 	sidecarConfigEnv, err := sidecar.Encode(sidecar.Options{
 		GcsOptions: &gcsOptions,
 		Entries:    wrappers,
 		EntryError: requirePassingEntries,
+		SrcRoot:    codeMount.MountPath,
+		Caches:     config.Caches,
 	})
 	if err != nil {
 		return nil, err
 	}
 	mounts := []coreapi.VolumeMount{logMount}
 	mounts = append(mounts, blobStorageMounts...)
+	mounts = append(mounts, cacheMounts...)
+	mounts = append(mounts, codeMount)
 	if outputMount != nil {
 		mounts = append(mounts, *outputMount)
 	}

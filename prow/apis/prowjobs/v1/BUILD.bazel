@@ -3,6 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 go_library(
     name = "go_default_library",
     srcs = [
+        "cache.go",
         "doc.go",
         "register.go",
         "types.go",
@@ -13,6 +14,7 @@ go_library(
     deps = [
         "//prow/apis/prowjobs:go_default_library",
         "//prow/github:go_default_library",
+        "@com_github_pkg_errors//:go_default_library",
         "@com_github_tektoncd_pipeline//pkg/apis/pipeline/v1alpha1:go_default_library",
         "@io_k8s_api//core/v1:go_default_library",
         "@io_k8s_apimachinery//pkg/apis/meta/v1:go_default_library",
@@ -38,10 +40,14 @@ filegroup(
 
 go_test(
     name = "go_default_test",
-    srcs = ["types_test.go"],
+    srcs = [
+        "cache_test.go",
+        "types_test.go",
+    ],
     embed = [":go_default_library"],
     deps = [
         "@com_github_google_go_cmp//cmp:go_default_library",
         "@com_github_google_go_cmp//cmp/cmpopts:go_default_library",
+        "@io_k8s_api//core/v1:go_default_library",
     ],
 )

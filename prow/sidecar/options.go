@@ -22,6 +22,7 @@ import (
 	"flag"
 	"fmt"
 
+	"k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/gcsupload"
 	"k8s.io/test-infra/prow/pod-utils/wrapper"
 )
@@ -46,6 +47,13 @@ type Options struct {
 
 	// EntryError requires all entries to pass in order to exit cleanly.
 	EntryError bool `json:"entry_error,omitempty"`
+
+	// SrcRoot is the root directory under which
+	// all source code is cloned
+	SrcRoot string `json:"src_root"`
+
+	// Caches specify the prowjob caches to be saved
+	Caches v1.Caches `json:"caches,omitempty"`
 }
 
 func (o Options) entries() []wrapper.Options {

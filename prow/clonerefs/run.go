@@ -28,6 +28,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/cache"
 	"k8s.io/test-infra/prow/pod-utils/clone"
 )
 
@@ -115,6 +116,10 @@ func (o Options) Run() error {
 
 	if o.Fail && hasFailedRecord {
 		return fmt.Errorf("one or more of the records are in failed state")
+	}
+
+	if err := cache.CopyFromGCS(o.Caches, o.SrcRoot, o.GcsOptions); err != nil {
+		return fmt.Errorf("copy caches from GCS: %v", err)
 	}
 
 	return nil
