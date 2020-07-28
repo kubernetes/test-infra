@@ -4,6 +4,7 @@ presubmits:
     decorate: true
     run_if_changed: "kubetest2-gce/.*"
     labels:
+      preset-dind-enabled: "true"
       preset-service-account: "true"
     annotations:
       testgrid-dashboards: sig-testing-canaries
@@ -18,3 +19,5 @@ presubmits:
         - "runner.sh"
         args:
         - "./kubetest2-gce/ci-tests/buildupdown.sh"
+        securityContext:
+          privileged: true
