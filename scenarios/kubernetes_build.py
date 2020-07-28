@@ -147,7 +147,6 @@ def main(args):
 if __name__ == '__main__':
     PARSER = argparse.ArgumentParser(
         'Build and push.')
-    PARSER.add_argument('--fast', action='store_true', help='Build quickly')
     PARSER.add_argument(
         '--release', help='Upload binaries to the specified gs:// path')
     PARSER.add_argument(
