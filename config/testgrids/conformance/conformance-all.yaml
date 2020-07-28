@@ -14,7 +14,6 @@ dashboard_groups:
     - conformance-hack-local-up-cluster
     - conformance-arm
     - conformance-ppc64le
-    - conformance-eks
     - conformance-oracle-cloud-infrastructure
     - conformance-gardener
 
@@ -280,14 +279,6 @@ dashboards:
     - name: Periodic ppc64le conformance test on local cluster
       test_group_name: ppc64le-conformance
       description: Runs conformance tests against latest version of kubernetes on local ppc64le cluster"
-
-# EKS dashboard
-- name: conformance-eks
-  dashboard_tab:
-    - name: periodic-v1.13
-      test_group_name: ci-kubernetes-e2e-aws-eks-1-13-conformance
-      description: Runs conformance tests on a Kubernetes cluster provided by AWS EKS (https://docs.aws.amazon.com/eks)"
-      alert_mail_to_addresses: k8s-oss-test-alerts@amazon.com
 
 - name: conformance-oracle-cloud-infrastructure
   dashboard_tab:
