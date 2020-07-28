@@ -325,7 +325,7 @@ func clustersToDisplay(clustered []flattenedGlobalCluster, builds map[string]bui
 // job represents a job name and a collection of associated build numbers.
 type job struct {
 	name         string
-	buildNumbers []int `json:"build_numbers"`
+	buildNumbers []int `json:"builds"`
 }
 
 // build represents a specific instance of a build.
