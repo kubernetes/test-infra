@@ -1,13 +1,13 @@
 presubmits:
-  hybridapp-io/ham-application-assembler:
-  - name: check-ham-application-assembler
+  hybridapp-io/ham-placement:
+  - name: check-ham-placement
     cluster: default
     always_run: true
     branches:
-    - ^release-0.0.1$
+    - ^release-.*$
     decorate: true
-    path_alias: github.com/hybridapp-io/ham-application-assembler
-    rerun_command: /test check-ham-application-assembler
+    path_alias: github.com/hybridapp-io/ham-placement
+    rerun_command: /test check-ham-placement
     spec:
       containers:
       - command:
@@ -18,14 +18,14 @@ presubmits:
         securityContext:
           privileged: true
     trigger: '(?m)^/test (?:.*? )?check(?:.*?)?$'
-  - name: test-ham-application-assembler-amd64
+  - name: test-ham-placement-amd64
     cluster: default
     always_run: true
     branches:
-    - ^release-0.0.1$
+    - ^release-.*$
     decorate: true
-    path_alias: github.com/hybridapp-io/ham-application-assembler
-    rerun_command: /test test-ham-application-assembler-amd64
+    path_alias: github.com/hybridapp-io/ham-placement
+    rerun_command: /test test-ham-placement-amd64
     spec:
       containers:
       - command:
@@ -37,14 +37,14 @@ presubmits:
         securityContext:
           privileged: true
     trigger: '(?m)^/test (?:.*? )?test(?:.*?)?$'
-  - name: build-ham-application-assembler-amd64
+  - name: build-ham-placement-amd64
     cluster: default
     always_run: true
     branches:
-    - ^release-0.0.1$
+    - ^release-.*$
     decorate: true
-    path_alias: github.com/hybridapp-io/ham-application-assembler
-    rerun_command: /test build-ham-application-assembler-amd64
+    path_alias: github.com/hybridapp-io/ham-placement
+    rerun_command: /test build-ham-placement-amd64
     spec:
       containers:
       - command:
@@ -56,14 +56,14 @@ presubmits:
         securityContext:
           privileged: true
     trigger: '(?m)^/test (?:.*? )?build(?:.*?)?$'
-  - name: build-ham-application-assembler-ppc64le
+  - name: build-ham-placement-ppc64le
     cluster: ppc64le
     always_run: true
     branches:
-    - ^release-0.0.1$
+    - ^release-.*$
     decorate: true
-    path_alias: github.com/hybridapp-io/ham-application-assembler
-    rerun_command: /test build-ham-application-assembler-ppc64le
+    path_alias: github.com/hybridapp-io/ham-placement
+    rerun_command: /test build-ham-placement-ppc64le
     spec:
       containers:
       - command:
@@ -75,14 +75,14 @@ presubmits:
         securityContext:
           privileged: true
     trigger: '(?m)^/test (?:.*? )?build(?:.*?)?$'
-  - name: build-ham-application-assembler-s390x
+  - name: build-ham-placement-s390x
     cluster: s390x
     always_run: true
     branches:
-    - ^release-0.0.1$
+    - ^release-.*$
     decorate: true
-    path_alias: github.com/hybridapp-io/ham-application-assembler
-    rerun_command: /test build-ham-application-assembler-s390x
+    path_alias: github.com/hybridapp-io/ham-placement
+    rerun_command: /test build-ham-placement-s390x
     spec:
       containers:
       - command:
@@ -95,13 +95,13 @@ presubmits:
           privileged: true
     trigger: '(?m)^/test (?:.*? )?build(?:.*?)?$'
 postsubmits:
-  hybridapp-io/ham-application-assembler:
-  - name: coverage-ham-application-assembler-postsubmit
+  hybridapp-io/ham-placement:
+  - name: coverage-ham-placement-postsubmit
     cluster: default
     branches:
-    - ^release-0.0.1$
+    - ^release-.*$
     decorate: true
-    path_alias: github.com/hybridapp-io/ham-application-assembler
+    path_alias: github.com/hybridapp-io/ham-placement
     spec:
       containers:
       - command:
@@ -113,16 +113,16 @@ postsubmits:
         - name: CODECOV_TOKEN
           valueFrom:
             secretKeyRef:
-              name: hybridapp-io-ham-application-assembler-codecov-token
+              name: hybridapp-io-ham-placement-codecov-token
               key: codecov-token
         securityContext:
           privileged: true
-  - name: build-ham-application-assembler-amd64-postsubmit
+  - name: build-ham-placement-amd64-postsubmit
     cluster: default
     branches:
-    - ^release-0.0.1$
+    - ^release-.*$
     decorate: true
-    path_alias: github.com/hybridapp-io/ham-application-assembler
+    path_alias: github.com/hybridapp-io/ham-placement
     spec:
       containers:
       - command:
@@ -133,12 +133,12 @@ postsubmits:
         name: ""
         securityContext:
           privileged: true
-  - name: build-ham-application-assembler-ppc64le-postsubmit
+  - name: build-ham-placement-ppc64le-postsubmit
     cluster: ppc64le
     branches:
-    - ^release-0.0.1$
+    - ^release-.*$
     decorate: true
-    path_alias: github.com/hybridapp-io/ham-application-assembler
+    path_alias: github.com/hybridapp-io/ham-placement
     spec:
       containers:
       - command:
@@ -149,12 +149,12 @@ postsubmits:
         name: ""
         securityContext:
           privileged: true
-  - name: build-ham-application-assembler-s390x-postsubmit
+  - name: build-ham-placement-s390x-postsubmit
     cluster: s390x
     branches:
-    - ^release-0.0.1$
+    - ^release-.*$
     decorate: true
-    path_alias: github.com/hybridapp-io/ham-application-assembler
+    path_alias: github.com/hybridapp-io/ham-placement
     spec:
       containers:
       - command:
@@ -165,14 +165,14 @@ postsubmits:
         name: ""
         securityContext:
           privileged: true
-  - name: image-ham-application-assembler-amd64-postsubmit
+  - name: image-ham-placement-amd64-postsubmit
     cluster: default
     branches:
-    - ^release-0.0.1$
+    - ^release-.*$
     decorate: true
     labels:
       preset-service-account: "true"
-    path_alias: github.com/hybridapp-io/ham-application-assembler
+    path_alias: github.com/hybridapp-io/ham-placement
     spec:
       containers:
       - command:
@@ -183,14 +183,14 @@ postsubmits:
         name: ""
         securityContext:
           privileged: true
-  - name: image-ham-application-assembler-ppc64le-postsubmit
+  - name: image-ham-placement-ppc64le-postsubmit
     cluster: ppc64le
     branches:
-    - ^release-0.0.1$
+    - ^release-.*$
     decorate: true
     labels:
       preset-service-account: "true"
-    path_alias: github.com/hybridapp-io/ham-application-assembler
+    path_alias: github.com/hybridapp-io/ham-placement
     spec:
       containers:
       - command:
@@ -201,14 +201,14 @@ postsubmits:
         name: ""
         securityContext:
           privileged: true
-  - name: image-ham-application-assembler-s390x-postsubmit
+  - name: image-ham-placement-s390x-postsubmit
     cluster: s390x
     branches:
-    - ^release-0.0.1$
+    - ^release-.*$
     decorate: true
     labels:
       preset-service-account: "true"
-    path_alias: github.com/hybridapp-io/ham-application-assembler
+    path_alias: github.com/hybridapp-io/ham-placement
     spec:
       containers:
       - command:
@@ -219,14 +219,14 @@ postsubmits:
         name: ""
         securityContext:
           privileged: true
-  - name: multiarch-image-ham-application-assembler-postsubmit
+  - name: multiarch-image-ham-placement-postsubmit
     cluster: default
     branches:
-    - ^release-0.0.1$
+    - ^release-.*$
     decorate: true
     labels:
       preset-service-account: "true"
-    path_alias: github.com/hybridapp-io/ham-application-assembler
+    path_alias: github.com/hybridapp-io/ham-placement
     spec:
       containers:
       - command:
