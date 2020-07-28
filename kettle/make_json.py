@@ -126,7 +126,7 @@ def parse_junit(xml):
     # isn't very interesting.
 
     def parse_result(child_node):
-        time = float(child_node.attrib.get('time', 0))
+        time = float(child_node.attrib.get('time', 0) or 0) #time val can be ''
         failure_text = None
         for param in child_node.findall('failure'):
             failure_text = param.text
