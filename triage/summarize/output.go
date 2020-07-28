@@ -474,7 +474,7 @@ either a map or a slice.
 type jobCollection interface{}
 
 /*
-columns representas a collection of builds in columnar form, plus the necessary maps to decode it.
+columns represents a collection of builds in columnar form, plus the necessary maps to decode it.
 
 jobs maps job names to their location in the columnar form.
 
