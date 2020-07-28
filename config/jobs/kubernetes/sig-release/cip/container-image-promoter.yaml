@@ -21,12 +21,13 @@ presubmits:
         # /home/prow/go/src/github.com/{{.Org}}/{{.Repo}}, so just '.' should
         # suffice, but it's nice to be explicit.
         - -thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
-  # Check that images to be promoted are free of vulnerabilities
+  # Check that images to be promoted are free of fixable vulnerabilities
   - name: pull-k8sio-cip-vuln
     annotations:
       testgrid-create-test-group: 'true'
       testgrid-dashboards: wg-k8s-infra-k8sio
     decorate: true
+    optional: true
     skip_report: false
     run_if_changed: 'k8s.gcr.io/((images/.*/images\.yaml)|(manifests/.*/promoter-manifest\.yaml))'
     max_concurrency: 10
@@ -35,7 +36,7 @@ presubmits:
     spec:
       serviceAccountName: k8s-infra-gcr-vuln-scanning
       containers:
-      - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20200723-v2.3.1-242-g7c328ba
+      - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20200728-v2.3.1-248-g62b6885
         command:
         - cip
         args:
