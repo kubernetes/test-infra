@@ -356,6 +356,7 @@ var noPresubmitsInTestgridPrefixes = []string{
 	"kubernetes-sigs/cluster-capacity",
 	"kubernetes-sigs/gcp-filestore-csi-driver",
 	"kubernetes-sigs/kind",
+	"kubernetes-sigs/kubetest2",
 	"kubernetes-sigs/kubebuilder-declarative-pattern",
 	"kubernetes-sigs/scheduler-plugins",
 	"kubernetes-sigs/service-catalog",
@@ -391,7 +392,11 @@ func TestKubernetesProwInstanceJobsMustHaveMatchingTestgridEntries(t *testing.T)
 	}
 
 	for repo, presubmits := range prowConfig.PresubmitsStatic {
+		// Assume that all jobs in the exceptionList are valid
 		if hasAnyPrefix(repo, noPresubmitsInTestgridPrefixes) {
+			for _, job := range presubmits {
+				jobs[job.Name] = true
+			}
 			continue
 		}
 		for _, job := range presubmits {
