@@ -82,7 +82,7 @@ periodics:
       resources:
         limits:
           cpu: 6
-          memory: 46Gi
+          memory: 42Gi
         requests:
           cpu: 6
-          memory: 46Gi
+          memory: 42Gi
