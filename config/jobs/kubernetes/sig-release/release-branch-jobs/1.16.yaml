@@ -28,7 +28,13 @@ periodics:
       - --timeout=200m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-1.16
       name: ""
-      resources: {}
+      resources:
+        limits:
+          cpu: 1
+          memory: 3Gi
+        requests:
+          cpu: 1
+          memory: 3Gi
 - annotations:
     fork-per-release-cron: ""
     fork-per-release-generic-suffix: "true"
@@ -94,7 +100,13 @@ periodics:
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-1.16
       name: ""
-      resources: {}
+      resources:
+        limits:
+          cpu: 6
+          memory: 6Gi
+        requests:
+          cpu: 6
+          memory: 6Gi
 - annotations:
     testgrid-dashboards: sig-node-kubelet, sig-release-1.16-informing
     testgrid-tab-name: node-kubelet-features-1.16
@@ -126,7 +138,13 @@ periodics:
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-1.16
       name: ""
-      resources: {}
+      resources:
+        limits:
+          cpu: 6
+          memory: 6Gi
+        requests:
+          cpu: 6
+          memory: 6Gi
 - annotations:
     fork-per-release-generic-suffix: "true"
     testgrid-alert-email: release-managers@kubernetes.io, kubernetes-release-team@googlegroups.com
@@ -206,7 +224,13 @@ periodics:
       - --use-logexporter
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-1.16
       name: ""
-      resources: {}
+      resources:
+        requests:
+          cpu: 2
+          memory: 6Gi
+        limits:
+          cpu: 2
+          memory: 6Gi
   tags:
   - 'perfDashPrefix: gce-100Nodes-1.16'
   - 'perfDashJobType: performance'
@@ -366,8 +390,12 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-1.16
       name: ""
       resources:
+        limits:
+          cpu: 6
+          memory: 20Gi
         requests:
-          cpu: "4"
+          cpu: 6
+          memory: 20Gi
       securityContext:
         privileged: true
 - annotations:
@@ -406,8 +434,12 @@ periodics:
       imagePullPolicy: Always
       name: ""
       resources:
+        limits:
+          cpu: "6"
+          memory: 46Gi
         requests:
           cpu: "6"
+          memory: 46Gi
       securityContext:
         privileged: true
 - annotations:
@@ -490,9 +522,12 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-1.16
       name: ""
       resources:
+        limits:
+          cpu: 7300m
+          memory: 14Gi
         requests:
-          cpu: "2"
-          memory: 9000Mi
+          cpu: 7300m
+          memory: 14Gi
       securityContext:
         privileged: true
 - annotations:
@@ -534,9 +569,12 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-1.16
       name: ""
       resources:
+        limits:
+          cpu: 7300m
+          memory: 14Gi
         requests:
-          cpu: "2"
-          memory: 9000Mi
+          cpu: 7300m
+          memory: 14Gi
       securityContext:
         privileged: true
 postsubmits:

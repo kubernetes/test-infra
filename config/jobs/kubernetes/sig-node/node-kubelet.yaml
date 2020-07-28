@@ -33,6 +33,13 @@ periodics:
       env:
       - name: GOPATH
         value: /go
+      resources:
+        limits:
+          cpu: 6
+          memory: 6Gi
+        requests:
+          cpu: 6
+          memory: 6Gi
 
 - name: ci-kubernetes-node-kubelet-alpha
   interval: 1h
@@ -159,6 +166,13 @@ periodics:
       env:
       - name: GOPATH
         value: /go
+      resources:
+        limits:
+          cpu: 6
+          memory: 6Gi
+        requests:
+          cpu: 6
+          memory: 6Gi
 
 - name: ci-kubernetes-node-kubelet-flaky
   interval: 2h

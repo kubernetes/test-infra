@@ -80,5 +80,9 @@ periodics:
       securityContext:
         privileged: true
       resources:
+        limits:
+          cpu: 6
+          memory: 46Gi
         requests:
           cpu: 6
+          memory: 46Gi

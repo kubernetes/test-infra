@@ -28,11 +28,13 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"sort"
 	"strings"
 	"testing"
 	"time"
 
 	coreapi "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 
@@ -944,6 +946,99 @@ func TestValidScenarioArgs(t *testing.T) {
 			if err := checkScenarioArgs(job.Name, job.Spec.Containers[0].Image, job.Spec.Containers[0].Args); err != nil {
 				t.Errorf("Invalid Scenario Args : %s", err)
 			}
+		}
+	}
+}
+
+func allStaticJobs() []cfg.JobBase {
+	jobs := []cfg.JobBase{}
+	for _, job := range c.AllStaticPresubmits(nil) {
+		jobs = append(jobs, job.JobBase)
+	}
+	for _, job := range c.AllStaticPostsubmits(nil) {
+		jobs = append(jobs, job.JobBase)
+	}
+	for _, job := range c.AllPeriodics() {
+		jobs = append(jobs, job.JobBase)
+	}
+	sort.Slice(jobs, func(i, j int) bool {
+		return jobs[i].Name < jobs[j].Name
+	})
+	return jobs
+}
+
+// isPodQOSGuaranteed returns true if the PodSpec's containers have non-zero
+// resource limits that are equal to their resource requests
+func isPodQOSGuaranteed(spec *coreapi.PodSpec) bool {
+	isGuaranteed := true
+	resourceNames := []coreapi.ResourceName{
+		coreapi.ResourceCPU,
+		coreapi.ResourceMemory,
+	}
+	zero := resource.MustParse("0")
+	for _, c := range spec.Containers {
+		for _, r := range resourceNames {
+			limit, ok := c.Resources.Limits[r]
+			if !ok || limit.Cmp(zero) == 0 || limit.Cmp(c.Resources.Requests[r]) != 0 {
+				isGuaranteed = false
+			}
+		}
+	}
+	return isGuaranteed
+}
+
+func TestK8sInfraProwBuildJobsMustHavePodQOSGuaranteed(t *testing.T) {
+	jobs := allStaticJobs()
+	for _, job := range jobs {
+		// Only consider Pods destined for the k8s-infra-prow-builds cluster
+		if job.Spec == nil || job.Cluster != "k8s-infra-prow-build" {
+			continue
+		}
+		isPodQOSGuaranteed := isPodQOSGuaranteed(job.Spec)
+		if !isPodQOSGuaranteed {
+			t.Errorf("%s: must have non-zero resource.requests == resource.limits to run on k8s-infra-prow-build cluster, has %+v", job.Name, job.Spec.Containers[0].Resources)
+		}
+	}
+}
+
+// We have k8s-infra-prow-build setup to auto-scale, but if we want an earlier
+// warning that resource limits are growing higher than expected...
+func TestK8sInfraProwBuildJobsMustNotExceedTotalCapacity(t *testing.T) {
+	// k8s-infra-prow-build pool1 is 3-zonal 6-30 n1-highmem-8's
+	maxLimit := coreapi.ResourceList{
+		coreapi.ResourceCPU:    resource.MustParse("288000m"), // 3 * 12 * 8 CPUs per n1-highmem-8
+		coreapi.ResourceMemory: resource.MustParse("1872Gi"),  // 3 * 12 * 52 Gi per n1-highmem-8
+	}
+	resourceNames := []coreapi.ResourceName{
+		coreapi.ResourceCPU,
+		coreapi.ResourceMemory,
+	}
+	zero := resource.MustParse("0")
+	totalLimit := coreapi.ResourceList{}
+	for _, r := range resourceNames {
+		totalLimit[r] = zero.DeepCopy()
+	}
+	jobs := allStaticJobs()
+	for _, job := range jobs {
+		// Only consider Pods destined for the k8s-infra-prow-builds cluster
+		if job.Spec == nil || job.Cluster != "k8s-infra-prow-build" {
+			continue
+		}
+		for _, c := range job.Spec.Containers {
+			for _, r := range resourceNames {
+				if limit, ok := c.Resources.Limits[r]; ok {
+					total := totalLimit[r]
+					total.Add(limit)
+					totalLimit[r] = total
+				}
+			}
+		}
+	}
+	for _, r := range resourceNames {
+		total, _ := totalLimit[r]
+		max, _ := maxLimit[r]
+		if total.Cmp(max) > -1 {
+			t.Errorf("Total %s limit %s greater than expected limit %s", r, total.String(), max.String())
 		}
 	}
 }
