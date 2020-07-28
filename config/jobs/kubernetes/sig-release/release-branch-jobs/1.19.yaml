@@ -452,10 +452,10 @@ periodics:
       resources:
         limits:
           cpu: "6"
-          memory: 42Gi
+          memory: 16Gi
         requests:
           cpu: "6"
-          memory: 42Gi
+          memory: 16Gi
       securityContext:
         privileged: true
 - annotations:
