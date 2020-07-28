@@ -47,9 +47,9 @@ var githubToSlack = map[string]string{
 var rotationToSlackGroup = map[string]string{
 	"testinfra":          "SGLF0GUQH",   // @test-infra-oncall
 	"google-build-admin": "S017N31TLNN", // @google-build-admin
-	// TODO(bentheelder): remove plural form once the oncall.json updates
-	"google-build-admins": "S017N31TLNN", // @google-build-admin
 	// TODO: create this slack group?
+	// NOTE: If anyone adds this group, you must also send a PR like:
+	// https://github.com/kubernetes-sigs/slack-infra/pull/36
 	// "scalability": "",
 }
 
