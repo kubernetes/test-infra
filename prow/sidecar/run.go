@@ -25,7 +25,6 @@ import (
 	"io/ioutil"
 	"os"
 	"os/signal"
-	"path/filepath"
 	"strings"
 	"syscall"
 	"time"
@@ -122,11 +121,11 @@ const errorKey = "sidecar-errors"
 func logReaders(entries []wrapper.Options) map[string]io.Reader {
 	readers := make(map[string]io.Reader)
 	for _, opt := range entries {
-		log, err := os.Open(opt.ProcessLog)
 		buildLog := "build-log.txt"
 		if len(entries) > 1 {
-			buildLog = fmt.Sprintf("%s-build-log.txt", strings.TrimSuffix(filepath.Base(opt.ProcessLog), "-log.txt"))
+			buildLog = fmt.Sprintf("%s-build-log.txt", opt.ContainerName)
 		}
+		log, err := os.Open(opt.ProcessLog)
 		if err != nil {
 			logrus.WithError(err).Errorf("Failed to open %s", opt.ProcessLog)
 			readers[buildLog] = strings.NewReader(fmt.Sprintf("Failed to open %s: %v\n", opt.ProcessLog, err))

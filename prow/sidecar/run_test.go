@@ -36,6 +36,8 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
+var re = regexp.MustCompile(`(?m)(Failed to open) .*log\.txt: .*$`)
+
 func TestWait(t *testing.T) {
 	aborted := strconv.Itoa(entrypoint.AbortedErrorCode)
 	skip := strconv.Itoa(entrypoint.PreviousErrorCode)
@@ -226,7 +228,8 @@ func TestWaitParallelContainers(t *testing.T) {
 			}
 
 			if tc.missing {
-				entries = append(entries, wrapper.Options{MarkerFile: "missing-marker.txt"})
+				missingPath := path.Join(tmpDir, "missing-marker.txt")
+				entries = append(entries, wrapper.Options{MarkerFile: missingPath})
 			}
 
 			ctx, cancel := context.WithCancel(context.Background())
@@ -396,14 +399,30 @@ func name(idx int) string {
 	return nameEntry(idx, wrapper.Options{})
 }
 
-func TestLogReader(t *testing.T) {
+func TestLogReaders(t *testing.T) {
 	cases := []struct {
-		name        string
-		processLogs map[string]string
-		expected    map[string]string
+		name           string
+		containerNames []string
+		processLogs    map[string]string
+		expected       map[string]string
 	}{
 		{
-			name: "basically works",
+			name: "works with 1 container",
+			containerNames: []string{
+				"test",
+			},
+			processLogs: map[string]string{
+				"process-log.txt": "hello world",
+			},
+			expected: map[string]string{
+				"build-log.txt": "hello world",
+			},
+		},
+		{
+			name: "works with 1 container with no name",
+			containerNames: []string{
+				"",
+			},
 			processLogs: map[string]string{
 				"process-log.txt": "hello world",
 			},
@@ -413,6 +432,10 @@ func TestLogReader(t *testing.T) {
 		},
 		{
 			name: "multiple logs works",
+			containerNames: []string{
+				"test1",
+				"test2",
+			},
 			processLogs: map[string]string{
 				"test1-log.txt": "hello",
 				"test2-log.txt": "world",
@@ -424,6 +447,11 @@ func TestLogReader(t *testing.T) {
 		},
 		{
 			name: "note when a part has a problem",
+			containerNames: []string{
+				"test1",
+				"test2",
+				"test3",
+			},
 			processLogs: map[string]string{
 				"test1-log.txt": "hello",
 				"test2-log.txt": "missing",
@@ -437,7 +465,6 @@ func TestLogReader(t *testing.T) {
 		},
 	}
 
-	re := regexp.MustCompile(`(?m)(Failed to open) .*log\.txt: .*$`)
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			tmpDir, err := ioutil.TempDir("", tc.name)
@@ -449,13 +476,9 @@ func TestLogReader(t *testing.T) {
 					t.Errorf("%s: error cleaning up temp dir: %v", tc.name, err)
 				}
 			}()
-			var entries []wrapper.Options
 
 			for name, log := range tc.processLogs {
 				p := path.Join(tmpDir, name)
-				var opt wrapper.Options
-				opt.ProcessLog = p
-				entries = append(entries, opt)
 				if log == "missing" {
 					continue
 				}
@@ -464,7 +487,21 @@ func TestLogReader(t *testing.T) {
 				}
 			}
 
-			readers := logReaders((entries))
+			var entries []wrapper.Options
+
+			for _, containerName := range tc.containerNames {
+				log := "process-log.txt"
+				if len(tc.containerNames) > 1 {
+					log = fmt.Sprintf("%s-log.txt", containerName)
+				}
+				p := path.Join(tmpDir, log)
+				var opt wrapper.Options
+				opt.ProcessLog = p
+				opt.ContainerName = containerName
+				entries = append(entries, opt)
+			}
+
+			readers := logReaders(entries)
 			const repl = "$1 <SNIP>"
 			actual := make(map[string]string)
 			for name, reader := range readers {

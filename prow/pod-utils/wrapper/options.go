@@ -38,6 +38,10 @@ type Options struct {
 	// Args is the process and args to run
 	Args []string `json:"args,omitempty"`
 
+	// ContainerName will contain the name of the container
+	// for the wrapped test process
+	ContainerName string `json:"container_name,omitempty"`
+
 	// ProcessLog will contain std{out,err} from the
 	// wrapped test process
 	ProcessLog string `json:"process_log"`
@@ -84,8 +88,6 @@ func (o *Options) Validate() error {
 }
 
 func WaitForMarkers(ctx context.Context, paths ...string) map[string]MarkerResult {
-	// Only start watching file events if the file doesn't exist
-	// If the file exists, it means the main process already completed.
 
 	results := make(map[string]MarkerResult)
 
@@ -104,7 +106,17 @@ func WaitForMarkers(ctx context.Context, paths ...string) map[string]MarkerResul
 		return results
 	}
 	defer watcher.Close()
+
+	// we are assuming that all marker files will be written to the same directory.
+	// this should be the case since all marker files are written to the "logs" VolumeMount
 	dir := filepath.Dir(paths[0])
+	for _, path := range paths {
+		if filepath.Dir(path) != dir {
+			populateMapWithError(results, fmt.Errorf("marker files are not all written to the same directory"), paths...)
+			return results
+		}
+	}
+
 	if err := watcher.Add(dir); err != nil {
 		populateMapWithError(results, fmt.Errorf("add %s to fsnotify watch: %v", dir, err), paths...)
 		return results
@@ -125,7 +137,7 @@ func WaitForMarkers(ctx context.Context, paths ...string) map[string]MarkerResul
 				}
 			}
 		case err := <-watcher.Errors:
-			logrus.WithError(err).Info("fsnotify watch error")
+			logrus.WithError(err).Warn("fsnotify watch error")
 		case <-ticker.C:
 			for _, path := range paths {
 				if _, err := os.Stat(path); !os.IsNotExist(err) {
