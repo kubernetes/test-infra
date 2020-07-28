@@ -275,7 +275,6 @@ presubmits:
     skip_branches:
     - release-1.17
     - release-1.16
-    - release-1.15
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200731-4e0521e-experimental
@@ -422,7 +421,6 @@ presubmits:
     skip_branches:
     - release-1.17
     - release-1.16
-    - release-1.15
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200731-4e0521e-experimental
@@ -447,7 +445,6 @@ presubmits:
     skip_branches:
     - release-1.17
     - release-1.16
-    - release-1.15
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200731-4e0521e-experimental
