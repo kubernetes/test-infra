@@ -374,9 +374,6 @@ dashboards:
   - name: pull-kubernetes-dependencies
     test_group_name: pull-kubernetes-dependencies
     base_options: width=10
-  - name: pull-kubernetes-godeps
-    test_group_name: pull-kubernetes-godeps
-    base_options: width=10
   - name: pull-kubernetes-cross
     test_group_name: pull-kubernetes-cross
     base_options: width=10
