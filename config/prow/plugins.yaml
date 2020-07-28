@@ -854,6 +854,9 @@ plugins:
   kubernetes-sigs/gcp-compute-persistent-disk-csi-driver:
   - release-note
 
+  kubernetes-sigs/gcp-filestore-csi-driver:
+  - release-note
+
   kubernetes-sigs/boskos:
   - override
 
