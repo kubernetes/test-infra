@@ -9,7 +9,7 @@ periodics:
   spec:
     containers:
     - command:
-      - /app/boskos/aws-janitor/app.binary
+      - /app
       args:
       - --ttl=2h30m
       - --path=s3://k8s-kops-prow/objs.json
