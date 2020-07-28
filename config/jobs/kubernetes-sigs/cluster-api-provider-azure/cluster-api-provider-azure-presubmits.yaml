@@ -215,7 +215,7 @@ presubmits:
     extra_refs:
     - org: kubernetes
       repo: kubernetes
-      base_ref: master
+      base_ref: v1.18.6
       path_alias: k8s.io/kubernetes
     spec:
       containers:
@@ -230,8 +230,8 @@ presubmits:
               value: "\\[Slow\\]|\\[Serial\\]|\\[Flaky\\]"
             - name: PARALLEL
               value: "true"
-            - name: USE_CI_ARTIFACTS
-              value: "true"
+            - name: KUBERNETES_VERSION
+              value: "v1.18.6"
           securityContext:
             privileged: true
           resources:
@@ -255,7 +255,7 @@ presubmits:
     extra_refs:
     - org: kubernetes
       repo: kubernetes
-      base_ref: master
+      base_ref: v1.18.6
       path_alias: k8s.io/kubernetes
     spec:
       containers:
@@ -270,8 +270,8 @@ presubmits:
               value: "\\[Slow\\]|\\[Serial\\]|\\[Flaky\\]"
             - name: PARALLEL
               value: "true"
-            - name: USE_CI_ARTIFACTS
-              value: "true"
+            - name: KUBERNETES_VERSION
+              value: "v1.18.6"
             - name: EXP_MACHINE_POOL
               value: "true"
           securityContext:
