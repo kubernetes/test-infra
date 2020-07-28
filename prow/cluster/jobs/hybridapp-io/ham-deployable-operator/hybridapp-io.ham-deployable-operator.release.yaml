@@ -4,7 +4,7 @@ presubmits:
     cluster: default
     always_run: true
     branches:
-    - ^release-*$
+    - ^release-.*$
     decorate: true
     path_alias: github.com/hybridapp-io/ham-deployable-operator
     rerun_command: /test check-ham-deployable-operator
@@ -22,7 +22,7 @@ presubmits:
     cluster: default
     always_run: true
     branches:
-    - ^release-*$
+    - ^release-.*$
     decorate: true
     path_alias: github.com/hybridapp-io/ham-deployable-operator
     rerun_command: /test test-ham-deployable-operator-amd64
@@ -41,7 +41,7 @@ presubmits:
     cluster: default
     always_run: true
     branches:
-    - ^release-*$
+    - ^release-.*$
     decorate: true
     path_alias: github.com/hybridapp-io/ham-deployable-operator
     rerun_command: /test build-ham-deployable-operator-amd64
@@ -60,7 +60,7 @@ presubmits:
     cluster: ppc64le
     always_run: true
     branches:
-    - ^release-*$
+    - ^release-.*$
     decorate: true
     path_alias: github.com/hybridapp-io/ham-deployable-operator
     rerun_command: /test build-ham-deployable-operator-ppc64le
@@ -79,7 +79,7 @@ presubmits:
     cluster: s390x
     always_run: true
     branches:
-    - ^release-*$
+    - ^release-.*$
     decorate: true
     path_alias: github.com/hybridapp-io/ham-deployable-operator
     rerun_command: /test build-ham-deployable-operator-s390x
@@ -99,7 +99,7 @@ postsubmits:
   - name: coverage-ham-deployable-operator-postsubmit
     cluster: default
     branches:
-    - ^release-*$
+    - ^release-.*$
     decorate: true
     path_alias: github.com/hybridapp-io/ham-deployable-operator
     spec:
@@ -120,7 +120,7 @@ postsubmits:
   - name: build-ham-deployable-operator-amd64-postsubmit
     cluster: default
     branches:
-    - ^release-*$
+    - ^release-.*$
     decorate: true
     path_alias: github.com/hybridapp-io/ham-deployable-operator
     spec:
@@ -136,7 +136,7 @@ postsubmits:
   - name: build-ham-deployable-operator-ppc64le-postsubmit
     cluster: ppc64le
     branches:
-    - ^release-*$
+    - ^release-.*$
     decorate: true
     path_alias: github.com/hybridapp-io/ham-deployable-operator
     spec:
@@ -152,7 +152,7 @@ postsubmits:
   - name: build-ham-deployable-operator-s390x-postsubmit
     cluster: s390x
     branches:
-    - ^release-*$
+    - ^release-.*$
     decorate: true
     path_alias: github.com/hybridapp-io/ham-deployable-operator
     spec:
@@ -168,7 +168,7 @@ postsubmits:
   - name: image-ham-deployable-operator-amd64-postsubmit
     cluster: default
     branches:
-    - ^release-*$
+    - ^release-.*$
     decorate: true
     labels:
       preset-service-account: "true"
@@ -186,7 +186,7 @@ postsubmits:
   - name: image-ham-deployable-operator-ppc64le-postsubmit
     cluster: ppc64le
     branches:
-    - ^release-*$
+    - ^release-.*$
     decorate: true
     labels:
       preset-service-account: "true"
@@ -204,7 +204,7 @@ postsubmits:
   - name: image-ham-deployable-operator-s390x-postsubmit
     cluster: s390x
     branches:
-    - ^release-*$
+    - ^release-.*$
     decorate: true
     labels:
       preset-service-account: "true"
@@ -222,7 +222,7 @@ postsubmits:
   - name: multiarch-image-ham-deployable-operator-postsubmit
     cluster: default
     branches:
-    - ^release-*$
+    - ^release-.*$
     decorate: true
     labels:
       preset-service-account: "true"
