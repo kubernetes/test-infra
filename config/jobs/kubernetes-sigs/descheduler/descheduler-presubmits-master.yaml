@@ -52,6 +52,36 @@ presubmits:
         - make
         args:
         - test-unit
+  - name: pull-descheduler-test-e2e-k8s-master-1-19
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-descheduler-test-e2e-k8s-master-1.19
+    decorate: true
+    decoration_config:
+      timeout: 20m
+    always_run: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    branches:
+    - master
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
+        command:
+        # generic runner script, handles DIND, bazelrc for caching, etc.
+        - runner.sh
+        env:
+        - name: KUBERNETES_VERSION
+          value: "v1.19.0"
+        - name: KIND_E2E
+          value: "true"
+        args:
+        - make
+        - test-e2e
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
   - name: pull-descheduler-test-e2e-k8s-master-1-18
     annotations:
       testgrid-dashboards: sig-scheduling
@@ -104,36 +134,6 @@ presubmits:
         env:
         - name: KUBERNETES_VERSION
           value: "v1.17.5"
-        - name: KIND_E2E
-          value: "true"
-        args:
-        - make
-        - test-e2e
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-  - name: pull-descheduler-test-e2e-k8s-master-1-16
-    annotations:
-      testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-descheduler-test-e2e-k8s-master-1.16
-    decorate: true
-    decoration_config:
-      timeout: 20m
-    always_run: true
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    branches:
-    - master
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-master
-        command:
-        # generic runner script, handles DIND, bazelrc for caching, etc.
-        - runner.sh
-        env:
-        - name: KUBERNETES_VERSION
-          value: "v1.16.9"
         - name: KIND_E2E
           value: "true"
         args:
