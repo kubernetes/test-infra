@@ -23,9 +23,11 @@ results to JSON, and outputting results once the summarization process is comple
 package summarize
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"sort"
 	"strconv"
 	"strings"
@@ -313,9 +315,24 @@ func loadTests(testsFilepaths []string) (map[string][]failure, error) {
 	// until they can be converted to failure objects
 	jsonFailures := make([]jsonFailure, 0)
 	for _, filepath := range testsFilepaths {
-		err := getJSON(filepath, &jsonFailures)
+		file, err := os.Open(filepath)
 		if err != nil {
-			return nil, fmt.Errorf("Could not get tests JSON: %s", err)
+			return nil, fmt.Errorf("Could not open tests file '%s': %s", filepath, err)
+		}
+		defer file.Close()
+
+		// Read each line in the file as its own JSON object
+		scanner := bufio.NewScanner(file)
+		for scanner.Scan() {
+			var jf jsonFailure
+			err = json.Unmarshal(scanner.Bytes(), &jf)
+			if err != nil {
+				return nil, fmt.Errorf("Could not unmarshal JSON for text '%s': %s", scanner.Text(), err)
+			}
+			jsonFailures = append(jsonFailures, jf)
+		}
+		if err := scanner.Err(); err != nil {
+			return nil, fmt.Errorf("Could not read file line by line: %s", err)
 		}
 
 		// Convert the failure information to internal failure objects and store them in tests
