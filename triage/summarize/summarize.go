@@ -101,7 +101,7 @@ func summarize(flags summarizeFlags) {
 			// Set the flag to the empty string so the program doesn't try to write owners files later
 			flags.owners = ""
 		} else {
-			err = annotateOwners(data, builds, owners)
+			err = annotateOwners(&data, builds, owners)
 			if err != nil {
 				logWarning("Could not annotate owners, clusters will not be labeled with owners")
 				flags.owners = ""

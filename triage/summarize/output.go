@@ -65,11 +65,12 @@ func render(builds map[string]build, clustered nestedFailuresGroups) jsonOutput 
 var sigLabelRE = regexp.MustCompile(`\[sig-([^]]*)\]`)
 
 /*
-annotateOwners assigns ownership to a cluster based on the share of hits in the last day.
+annotateOwners assigns ownership to a cluster based on the share of hits in the last day. It modifies
+the data parameter in place.
 
 owners maps SIG names to collections of SIG-specific prefixes.
 */
-func annotateOwners(data jsonOutput, builds map[string]build, owners map[string][]string) error {
+func annotateOwners(data *jsonOutput, builds map[string]build, owners map[string][]string) error {
 	// Dynamically create a regular expression based on the value of owners.
 	/*
 		namedOwnerREs is a collection of regular expressions of the form
@@ -105,9 +106,10 @@ func annotateOwners(data jsonOutput, builds map[string]build, owners map[string]
 	yesterday := utils.Max(data.builds.cols.started...) - (60 * 60 * 24)
 
 	// Determine the owner for each cluster
-	for _, cluster := range data.clustered {
+	for i := range data.clustered {
+		cluster := &data.clustered[i]
 		// Maps owner names to hits (I think hits yesterday and hits today, respectively)
-		ownerCounts := make(map[string][2]int)
+		ownerCounts := make(map[string][]int)
 
 		// For each test, determine the owner with the most hits
 		for _, test := range cluster.tests {
