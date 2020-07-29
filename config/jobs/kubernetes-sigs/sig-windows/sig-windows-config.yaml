@@ -813,6 +813,7 @@ periodics:
     preset-azure-cred: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
+    preset-windows-private-registry-cred: "true"
   extra_refs:
   - org: kubernetes
     repo: kubernetes
