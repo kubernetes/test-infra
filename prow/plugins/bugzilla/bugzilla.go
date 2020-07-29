@@ -252,7 +252,7 @@ func digestPR(log *logrus.Entry, pre github.PullRequestEvent, validateByDefault 
 		title   = pre.PullRequest.Title
 	)
 
-	e := &event{org: org, repo: repo, baseRef: baseRef, number: number, merged: pre.PullRequest.Merged, closed: pre.Action == github.PullRequestActionClosed, state: pre.PullRequest.State, body: title, htmlUrl: pre.PullRequest.HTMLURL, login: pre.PullRequest.User.Login}
+	e := &event{org: org, repo: repo, baseRef: baseRef, number: number, merged: pre.PullRequest.Merged, closed: pre.Action == github.PullRequestActionClosed, opened: pre.Action == github.PullRequestActionOpened, state: pre.PullRequest.State, body: title, htmlUrl: pre.PullRequest.HTMLURL, login: pre.PullRequest.User.Login}
 	// Check if PR is a cherrypick
 	cherrypick, cherrypickFromPRNum, cherrypickTo, err := getCherryPickMatch(pre)
 	if err != nil {
@@ -370,15 +370,15 @@ func digestComment(gc githubClient, log *logrus.Entry, gce github.GenericComment
 }
 
 type event struct {
-	org, repo, baseRef      string
-	number, bugId           int
-	missing, merged, closed bool
-	state                   string
-	body, htmlUrl, login    string
-	assign, cc              bool
-	cherrypick              bool
-	cherrypickFromPRNum     int
-	cherrypickTo            string
+	org, repo, baseRef              string
+	number, bugId                   int
+	missing, merged, closed, opened bool
+	state                           string
+	body, htmlUrl, login            string
+	assign, cc                      bool
+	cherrypick                      bool
+	cherrypickFromPRNum             int
+	cherrypickTo                    string
 }
 
 func (e *event) comment(gc githubClient) func(body string) error {
@@ -446,7 +446,7 @@ func handle(e event, gc githubClient, bc bugzilla.Client, options plugins.Bugzil
 		}
 		if !isBugAllowed(bug, options.AllowedGroups) {
 			// ignore bugs that are in non-allowed groups for this repo
-			if refreshCommandMatch.MatchString(e.body) {
+			if e.opened || refreshCommandMatch.MatchString(e.body) {
 				response := fmt.Sprintf(bugLink+" is in a bug group that is not in the allowed groups for this repo.", e.bugId, bc.Endpoint(), e.bugId)
 				if len(options.AllowedGroups) > 0 {
 					response += "\nAllowed groups for this repo are:"

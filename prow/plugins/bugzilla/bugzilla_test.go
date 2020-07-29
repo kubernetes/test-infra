@@ -224,7 +224,7 @@ func TestDigestPR(t *testing.T) {
 			},
 			validateByDefault: &yes,
 			expected: &event{
-				org: "org", repo: "repo", baseRef: "branch", number: 1, state: "open", missing: true, bugId: 0, body: "fixing a typo", htmlUrl: "http.com", login: "user",
+				org: "org", repo: "repo", baseRef: "branch", number: 1, state: "open", missing: true, opened: true, bugId: 0, body: "fixing a typo", htmlUrl: "http.com", login: "user",
 			},
 		},
 		{
@@ -251,7 +251,7 @@ func TestDigestPR(t *testing.T) {
 				},
 			},
 			expected: &event{
-				org: "org", repo: "repo", baseRef: "branch", number: 1, state: "open", bugId: 123, body: "Bug 123: fixed it!", htmlUrl: "http.com", login: "user",
+				org: "org", repo: "repo", baseRef: "branch", number: 1, state: "open", opened: true, bugId: 123, body: "Bug 123: fixed it!", htmlUrl: "http.com", login: "user",
 			},
 		},
 		{
@@ -333,7 +333,7 @@ func TestDigestPR(t *testing.T) {
 				},
 			},
 			expected: &event{
-				org: "org", repo: "repo", baseRef: "release-4.4", number: 3, body: "[release-4.4] Bug 123: fixed it!", htmlUrl: "http.com", login: "user", cherrypick: true, cherrypickFromPRNum: 2, cherrypickTo: "release-4.4",
+				org: "org", repo: "repo", baseRef: "release-4.4", number: 3, opened: true, body: "[release-4.4] Bug 123: fixed it!", htmlUrl: "http.com", login: "user", cherrypick: true, cherrypickFromPRNum: 2, cherrypickTo: "release-4.4",
 			},
 		},
 		{
@@ -413,7 +413,7 @@ func TestDigestPR(t *testing.T) {
 				Changes: []byte(`{"title":{"from":"fixed it! (WIP)"}}`),
 			},
 			expected: &event{
-				org: "org", repo: "repo", baseRef: "branch", number: 1, bugId: 123, body: "Bug 123: fixed it!", htmlUrl: "http.com", login: "user",
+				org: "org", repo: "repo", baseRef: "branch", number: 1, opened: true, bugId: 123, body: "Bug 123: fixed it!", htmlUrl: "http.com", login: "user",
 			},
 		},
 		{
@@ -440,7 +440,7 @@ func TestDigestPR(t *testing.T) {
 				Changes: []byte(`{"title":{"from":"Bug 123: fixed it! (WIP)"}}`),
 			},
 			expected: &event{
-				org: "org", repo: "repo", baseRef: "branch", number: 1, missing: true, body: "fixed it!", htmlUrl: "http.com", login: "user",
+				org: "org", repo: "repo", baseRef: "branch", number: 1, opened: true, missing: true, body: "fixed it!", htmlUrl: "http.com", login: "user",
 			},
 		},
 		{
@@ -699,6 +699,7 @@ func TestHandle(t *testing.T) {
 		missing             bool
 		merged              bool
 		closed              bool
+		opened              bool
 		cherryPick          bool
 		cherryPickFromPRNum int
 		cherryPickTo        string
@@ -1454,6 +1455,26 @@ In response to [this](http.com):
 Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.
 </details>`,
 		}, {
+			name:    "Bug with non-allowed group on repo with different allowed groups results in comment on PR creation",
+			bugs:    []bugzilla.Bug{{ID: 123, Groups: []string{"security"}}},
+			prs:     []github.PullRequest{{Number: base.number, Body: base.body, Title: base.body}},
+			body:    "/bugzilla refresh",
+			opened:  true,
+			options: plugins.BugzillaBranchOptions{AllowedGroups: []string{"internal"}},
+			expectedComment: `org/repo#1:@user: [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123) is in a bug group that is not in the allowed groups for this repo.
+Allowed groups for this repo are:
+- internal
+
+<details>
+
+In response to [this](http.com):
+
+>/bugzilla refresh
+
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.
+</details>`,
+		}, {
 			name:           "Bug with allowed group is properly handled",
 			bugs:           []bugzilla.Bug{{ID: 123, Severity: "medium", Groups: []string{"security"}}},
 			options:        plugins.BugzillaBranchOptions{StateAfterValidation: &updated, AllowedGroups: []string{"security"}},
@@ -1513,6 +1534,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			e.missing = testCase.missing
 			e.merged = testCase.merged
 			e.closed = testCase.closed || testCase.merged
+			e.opened = testCase.opened
 			e.cherrypick = testCase.cherryPick
 			e.cherrypickFromPRNum = testCase.cherryPickFromPRNum
 			e.cherrypickTo = testCase.cherryPickTo
