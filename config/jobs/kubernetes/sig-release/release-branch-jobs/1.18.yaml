@@ -503,10 +503,10 @@ periodics:
       resources:
         limits:
           cpu: "6"
-          memory: 16Gi
+          memory: 24Gi
         requests:
           cpu: "6"
-          memory: 16Gi
+          memory: 24Gi
       securityContext:
         privileged: true
 - annotations:
