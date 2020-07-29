@@ -50,7 +50,6 @@ periodics:
   annotations:
     fork-per-release: "true"
     fork-per-release-periodic-interval: 2h 2h 6h 24h
-    fork-per-release-generic-suffix: "true"
     testgrid-dashboards: sig-release-master-blocking, google-unit
     testgrid-tab-name: verify-master
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com, release-managers@kubernetes.io
