@@ -71,7 +71,7 @@ func normalize(s string) string {
 
 	// do alpha conversion-- rename random garbage strings (hex pointer values, node names, etc)
 	// into 'UNIQ1', 'UNIQ2', etc.
-	var matches map[string]string
+	matches := make(map[string]string)
 
 	// Go's maps are in a random order. Try to sort them to reduce diffs.
 	if strings.Contains(s, "map[") {
@@ -236,7 +236,7 @@ func commonSpans(xs []string) []int {
 		}
 	}
 
-	var spans []int
+	spans := make([]int, 0)
 	match := true
 	spanLen := 0
 	for _, x := range spanRE.FindAllString(xs[0], -1) {
@@ -267,7 +267,7 @@ func commonSpans(xs []string) []int {
 /* Functions below this comment are only used within this file as of this commit. */
 
 // Will be used across makeNgramCounts() calls
-var memoizedNgramCounts map[string][]int
+var memoizedNgramCounts = make(map[string][]int)
 
 /*
 makeNgramCounts converts a string into a histogram of frequencies for different byte combinations.

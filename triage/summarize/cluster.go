@@ -194,13 +194,13 @@ func clusterGlobal(newlyClustered nestedFailuresGroups, previouslyClustered []js
 			logInfo("  %4d/%4d clusters, %5d chars failure text, %5d failures ...", m, numClusters, fTextLen, numTests)
 			numFailures += numTests
 
-			// If a cluster exists for the given
+			// If a cluster exists for the given cluster text
 			if _, ok := clusters[key]; ok {
 				clusterCase = "EXISTING"
 
-				// If there isn't yet a slice of failures that test, make a new one
+				// If there isn't yet a slice of failures for that test, make a new one
 				if _, ok := clusters[key][testName]; !ok {
-					clusters[key][testName] = make([]failure, len(tests))
+					clusters[key][testName] = make([]failure, 0, len(tests))
 				}
 
 				// Copy the contents into the test's failure slice
@@ -215,7 +215,7 @@ func clusterGlobal(newlyClustered nestedFailuresGroups, previouslyClustered []js
 
 					// If there isn't yet a slice of failures that test, make a new one
 					if _, ok := clusters[other][testName]; !ok {
-						clusters[other][testName] = make([]failure, len(tests))
+						clusters[other][testName] = make([]failure, 0, len(tests))
 					}
 
 					// Copy the contents into the test's failure slice

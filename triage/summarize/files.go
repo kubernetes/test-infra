@@ -295,11 +295,11 @@ func (jf *jsonFailure) asFailure() (failure, error) {
 // map from test names to failure objects.
 func loadTests(testsFilepaths []string) (map[string][]failure, error) {
 	// The map
-	var tests map[string][]failure
+	tests := make(map[string][]failure)
 
 	// jsonTests temporarily stores the tests as they are retrieved from the JSON file
 	// until they can be converted to failure objects
-	var jsonFailures []jsonFailure
+	jsonFailures := make([]jsonFailure, 0)
 	for _, filepath := range testsFilepaths {
 		err := getJSON(filepath, &jsonFailures)
 		if err != nil {

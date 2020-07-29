@@ -78,10 +78,10 @@ func annotateOwners(data jsonOutput, builds map[string]build, owners map[string]
 		compatibility with regex capture group name rules. There can be any number of prefixes
 		following the capture group name.
 	*/
-	namedOwnerREs := make([]string, len(owners))
+	namedOwnerREs := make([]string, 0, len(owners))
 	for sig, prefixes := range owners {
 		// prefixREs is a collection of non-empty prefixes with any special regex characters quoted
-		prefixREs := make([]string, len(prefixes))
+		prefixREs := make([]string, 0, len(prefixes))
 		for _, prefix := range prefixes {
 			if prefix != "" {
 				prefixREs = append(prefixREs, regexp.QuoteMeta(prefix))
@@ -150,7 +150,7 @@ func annotateOwners(data jsonOutput, builds map[string]build, owners map[string]
 			owner = strings.Replace(owner, "_", "-", -1) // Substitute '_' back to '-'
 
 			if _, ok := ownerCounts[owner]; !ok {
-				ownerCounts[owner] = [2]int{0, 0}
+				ownerCounts[owner] = []int{0, 0}
 			}
 			counts := ownerCounts[owner]
 
@@ -187,7 +187,7 @@ func annotateOwners(data jsonOutput, builds map[string]build, owners map[string]
 			}
 
 			var topOwner string
-			topCounts := [2]int{}
+			topCounts := []int{0, 0}
 			for currentOwner, currentCounts := range ownerCounts {
 				if currentHasMoreHits(topOwner, topCounts, currentOwner, currentCounts) {
 					topOwner = currentOwner
@@ -208,7 +208,7 @@ func annotateOwners(data jsonOutput, builds map[string]build, owners map[string]
 func renderSlice(data jsonOutput, builds map[string]build, prefix string, owner string) ([]jsonCluster, columns) {
 	clustered := make([]jsonCluster, 0)
 	// Maps build paths to builds
-	buildsOut := make(map[string]build, 0)
+	buildsOut := make(map[string]build)
 	var jobs sets.String
 
 	// For each cluster whose owner field is the owner parameter, or whose id field has a prefix of
@@ -299,7 +299,7 @@ func clustersToDisplay(clustered []flattenedGlobalCluster, builds map[string]bui
 			}
 
 			// Get all of the failure texts from all clusters
-			clusterFailureTexts := make([]string, numClusterFailures)
+			clusterFailureTexts := make([]string, 0, numClusterFailures)
 			for _, cluster := range clusters {
 				for _, flr := range cluster.failures {
 					clusterFailureTexts = append(clusterFailureTexts, flr.failureText)
@@ -351,7 +351,7 @@ builds is a mapping from build paths to build objects.
 */
 func testsGroupByJob(failures []failure, builds map[string]build) []job {
 	// groups maps job names to sets of failures' build numbers.
-	var groups map[string]sets.Int
+	groups := make(map[string]sets.Int)
 
 	// For each failure, grab its build's job name. Map the job name to the failure's build number.
 	for _, flr := range failures {
@@ -392,7 +392,7 @@ func testsGroupByJob(failures []failure, builds map[string]build) []job {
 	}
 
 	// Second stage
-	sortedGroups := make([]job, len(groups))
+	sortedGroups := make([]job, 0, len(groups))
 
 	// Fill sortedGroups
 	for newJobName, newBuildNumbers := range sortedBuildNumbers {
@@ -491,15 +491,12 @@ type columns struct {
 // buildsToColumns converts a map (from build paths to builds) into a columnar form. This compresses
 // much better with gzip. See columnarBuilds for more information on the columnar form.
 func buildsToColumns(builds map[string]build) columns {
-	// jobs maps job names to either map[int]int or []int. See jobCollection.
-	var jobs map[string]jobCollection
-	// The builds in columnar form
-	columnarBuilds := newColumnarBuilds(len(builds))
 	// The function result
-	result := columns{jobs, columnarBuilds, make(map[string]string, 0)}
+	// result.jobs maps job names to either map[int]int or []int. See jobCollection.
+	result := columns{make(map[string]jobCollection), newColumnarBuilds(len(builds)), make(map[string]string, 0)}
 
 	// Sort the builds before making them columnar
-	sortedBuilds := make([]build, len(builds))
+	sortedBuilds := make([]build, 0, len(builds))
 	// Fill the slice
 	for _, bld := range builds {
 		sortedBuilds = append(sortedBuilds, bld)
@@ -513,7 +510,7 @@ func buildsToColumns(builds map[string]build) columns {
 		return sortedBuilds[i].job < sortedBuilds[j].job
 	})
 
-	// Add the builds to columnarBuilds
+	// Add the builds to result.cols
 	for _, bld := range sortedBuilds {
 		// If there was no build number when the build was retrieved from the JSON
 		if bld.number == 0 {
@@ -521,19 +518,19 @@ func buildsToColumns(builds map[string]build) columns {
 		}
 
 		// Get the index within cols's slices of the next inserted build
-		index := columnarBuilds.currentIndex()
+		index := result.cols.currentIndex()
 
 		// Add the build
-		columnarBuilds.insert(bld)
+		result.cols.insert(bld)
 
 		// job maps build numbers to their indexes in the columnar representation
 		var job map[int]int
-		if _, ok := jobs[bld.job]; !ok {
-			jobs[bld.job] = make(map[int]int)
+		if _, ok := result.jobs[bld.job]; !ok {
+			result.jobs[bld.job] = make(map[int]int)
 		}
 		// We can safely assert map[int]int here because replacement of maps with slices only
 		// happens later
-		job = jobs[bld.job].(map[int]int)
+		job = result.jobs[bld.job].(map[int]int)
 
 		// Store the job path
 		if len(job) == 0 {
@@ -545,7 +542,7 @@ func buildsToColumns(builds map[string]build) columns {
 	}
 
 	// Sort build numbers and compress some data
-	for jobName, indexes := range jobs {
+	for jobName, indexes := range result.jobs {
 		// Sort the build numbers
 		sortedBuildNumbers := make([]int, 0, len(indexes.(map[int]int)))
 		for key := range indexes.(map[int]int) {
@@ -566,10 +563,10 @@ func buildsToColumns(builds map[string]build) columns {
 			}
 		}
 		if (sortedBuildNumbers[len(sortedBuildNumbers)-1] == sortedBuildNumbers[0]+count-1) && allTrue {
-			jobs[jobName] = []int{sortedBuildNumbers[0], count, base}
+			result.jobs[jobName] = []int{sortedBuildNumbers[0], count, base}
 			for _, n := range sortedBuildNumbers {
 				if !(n <= sortedBuildNumbers[0]+len(sortedBuildNumbers)) {
-					log.Panicf(jobName, n, jobs[jobName], len(sortedBuildNumbers), sortedBuildNumbers)
+					log.Panicf(jobName, n, result.jobs[jobName], len(sortedBuildNumbers), sortedBuildNumbers)
 				}
 			}
 		}
