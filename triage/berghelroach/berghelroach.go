@@ -187,15 +187,8 @@ func (br *berghelRoach) getDistance(target string, limit int) int {
 		br.currentLeft[0] = mainRow
 
 		// Rotate rows around for next round: current=>last=>prior (=>current)
-		tmp := br.priorLeft
-		br.priorLeft = br.lastLeft
-		br.lastLeft = br.currentLeft
-		br.currentLeft = tmp
-
-		tmp = br.priorRight
-		br.priorRight = br.lastRight
-		br.lastRight = br.currentRight
-		br.currentRight = tmp
+		br.priorLeft, br.lastLeft, br.currentLeft = br.lastLeft, br.currentLeft, br.priorLeft
+		br.priorRight, br.lastRight, br.currentRight = br.lastRight, br.currentRight, br.priorRight
 
 		// Update evenness, too
 		even = !even
@@ -229,7 +222,9 @@ func (br *berghelRoach) ensureCapacityRight(index int, cp bool) {
 // resize resizes an array, copying old contents if requested.
 func resize(array []int, size int, cp bool) []int {
 	if cp {
-		return append(array, make([]int, size-len(array))...)
+		new := make([]int, size)
+		copy(new, array)
+		return new
 	}
 	return make([]int, size)
 }
