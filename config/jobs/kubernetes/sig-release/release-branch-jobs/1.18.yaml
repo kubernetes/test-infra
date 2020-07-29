@@ -100,7 +100,7 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
-      - --extract=ci/latest
+      - --extract=ci/latest-1.18
       - --env=KUBE_CONTAINER_RUNTIME=docker
       - --gcp-node-image=gci
       - --gcp-project-type=gpu-project
@@ -312,7 +312,7 @@ periodics:
       - --check-leaked-resources
       - --env=KUBEPROXY_TEST_LOG_LEVEL=--v=4
       - --cluster=e2e-big
-      - --extract=ci/latest
+      - --extract=ci/latest-1.18
       - --gcp-node-image=gci
       - --gcp-nodes=100
       - --gcp-project-type=scalability-project
