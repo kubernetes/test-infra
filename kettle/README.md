@@ -9,7 +9,7 @@ which is publicly accessible.
 
 # Deploying
 
-Kettle runs as a pod in the `k8s-gubernator/g8r` cluster
+Kettle runs as a pod in the `k8s-gubernator/g8r` cluster. To drop into it's context, run `<root>$ make -C kettle get-cluster-credentials`
 
 If you change:
 
@@ -20,6 +20,9 @@ If you change:
     - `update` sets the image of the existing kettle *Pod* which triggers a restart cycle
     - this will build the image to [Pantheon Container Registry](https://pantheon.corp.google.com/gcr/images/k8s-gubernator/GLOBAL/kettle?project=k8s-gubernator&organizationId=433637338589&gcrImageListsize=30)
     - See [Makefile](Makefile) for details
+
+#### Note:
+ - If you make local changes in the branch prior to `make push/update` the image will be uploaded with `-dirty` in the tag. Keep this in mind when seeting the image. If you see a Pod in a `ImagePullBackOff` loop, there is likely an issue when `kubectl image set` was run, where the image does not exist in the specified location.
 
 # Restarting
 

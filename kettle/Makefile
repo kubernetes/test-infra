@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-IMG = gcr.io/k8s-testimages/kettle
+IMG = gcr.io/k8s-gubernator/kettle
 TAG := $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
 
 # These are the usual GKE variables.
