@@ -50,10 +50,10 @@ periodics:
       args:
       - --cluster=e2e-kops-gce-latest.k8s.local
       - --deployment=kops
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release-dev/ci/k8s-master.txt
+      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release-dev/ci/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
-      - --extract=ci/k8s-master
+      - --extract=ci/latest
       - --ginkgo-parallel
       # Temporarily use default service account: https://github.com/kubernetes/test-infra/issues/17558
       #- --kops-args=--gce-service-account=pr-kubekins@kubernetes-jenkins-pull.iam.gserviceaccount.com
