@@ -161,7 +161,7 @@ func (nfg *nestedFailuresGroups) sortByAggregateNumberOfFailures() []nestedFailu
 
 	// Pre-compute the aggregate failures for each element of result so that the less
 	// function doesn't have to compute it on every compare.
-	// aggregates maps nestedFailuresGroups strings to number of aggregate failures across oall of
+	// aggregates maps nestedFailuresGroups strings to number of aggregate failures across all of
 	// their failure slices.
 	aggregates := make(map[string]int, len(*nfg))
 	for str, fg := range *nfg {

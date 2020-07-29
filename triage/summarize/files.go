@@ -103,7 +103,8 @@ func writeRenderedSlice(filepath string, clustered []jsonCluster, cols columns) 
 		clustered []jsonCluster
 		cols      columns
 	}{
-		clustered, cols,
+		clustered,
+		cols,
 	}
 
 	err := writeJSON(filepath, output)

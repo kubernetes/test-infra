@@ -191,7 +191,7 @@ func clusterGlobal(newlyClustered nestedFailuresGroups, previouslyClustered []js
 			numTests := len(tests)
 			var clusterCase string
 
-			logInfo("  %4d/%4d clusters, %5d chars failure text, %5d failures ...", m, numClusters, fTextLen, numTests)
+			logInfo("  %4d/%4d clusters, %5d chars failure text, %5d failures ...", m+1, numClusters, fTextLen, numTests)
 			numFailures += numTests
 
 			// If a cluster exists for the given cluster text
@@ -228,7 +228,7 @@ func clusterGlobal(newlyClustered nestedFailuresGroups, previouslyClustered []js
 
 			clusterDuration := int(time.Since(clusterStart).Seconds())
 			logInfo("  %4d/%4d clusters, %5d chars failure text, %5d failures, cluster:%s in %d sec, test: %s",
-				m, numClusters, fTextLen, numTests, clusterCase, clusterDuration, testName)
+				m+1, numClusters, fTextLen, numTests, clusterCase, clusterDuration, testName)
 		}
 	}
 

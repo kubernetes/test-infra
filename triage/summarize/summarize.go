@@ -121,8 +121,8 @@ func summarize(flags summarizeFlags) {
 
 		for subset := 0; subset < 256; subset++ {
 			idPrefix := fmt.Sprintf("%02x", subset)
-			subset, cols := renderSlice(data, builds, idPrefix, "")
-			err = writeRenderedSlice(strings.Replace(flags.outputSlices, "PREFIX", idPrefix, -1), subset, cols)
+			subsetClusters, cols := renderSlice(data, builds, idPrefix, "")
+			err = writeRenderedSlice(strings.Replace(flags.outputSlices, "PREFIX", idPrefix, -1), subsetClusters, cols)
 			if err != nil {
 				logWarning("Could not write subset %d to file: %s", subset, err)
 			}

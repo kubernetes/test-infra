@@ -176,8 +176,9 @@ func annotateOwners(data *jsonOutput, builds map[string]build, owners map[string
 		}
 
 		if len(ownerCounts) != 0 {
-			// Get the topOwner with the most hits yesterday, then most hits today, then name
-			currentHasMoreHits := func(topOwner string, topOwnerCounts [2]int, currentOwner string, currentCounts [2]int) bool {
+			// Utility function to find the owner with the most hits yesterday, then most hits today,
+			// then first name alphabetically. Returns true if current owner wins, false otherwise.
+			newOwnerHasMoreHits := func(topOwner string, topOwnerCounts []int, currentOwner string, currentCounts []int) bool {
 				if currentCounts[0] == topOwnerCounts[0] {
 					if currentCounts[1] == topOwnerCounts[1] {
 						// Which has the earlier name alphabetically
@@ -188,12 +189,13 @@ func annotateOwners(data *jsonOutput, builds map[string]build, owners map[string
 				return currentCounts[0] > topOwnerCounts[0]
 			}
 
+			// Find the owner with the most hits
 			var topOwner string
 			topCounts := []int{0, 0}
-			for currentOwner, currentCounts := range ownerCounts {
-				if currentHasMoreHits(topOwner, topCounts, currentOwner, currentCounts) {
-					topOwner = currentOwner
-					topCounts = currentCounts
+			for owner, counts := range ownerCounts {
+				if newOwnerHasMoreHits(topOwner, topCounts, owner, counts) {
+					topOwner = owner
+					topCounts = counts
 				}
 			}
 			cluster.owner = topOwner
