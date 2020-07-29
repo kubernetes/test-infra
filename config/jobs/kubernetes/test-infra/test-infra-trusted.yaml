@@ -116,7 +116,7 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-prow/hmac:v20200724-b2cdf8399d
+      - image: gcr.io/k8s-prow/hmac:v20200727-9592e624ac
         command:
         - /hmac
         args:
@@ -943,7 +943,7 @@ periodics:
   spec:
     containers:
     - name: branchprotector
-      image: gcr.io/k8s-prow/branchprotector:v20200724-b2cdf8399d
+      image: gcr.io/k8s-prow/branchprotector:v20200727-9592e624ac
       command:
       - /app/prow/cmd/branchprotector/app.binary
       args:
@@ -977,7 +977,7 @@ periodics:
   spec:
     containers:
     - name: label-sync
-      image: gcr.io/k8s-prow/label_sync:v20200724-b2cdf8399d
+      image: gcr.io/k8s-prow/label_sync:v20200727-9592e624ac
       command:
       - /app/label_sync/app.binary
       args:
@@ -1063,7 +1063,7 @@ periodics:
   spec:
     serviceAccountName: k8s-infra-gcr-promoter-bak
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200726-f8d6253-1.17
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200728-3610e67-1.17
       command:
       - infra/gcp/backup_tools/backup.sh
       env:
