@@ -34,8 +34,8 @@ type failuresGroup map[string][]failure
 // failuresGroupPair is a representation of a failuresGroup key-value mapping as a two-element
 // struct.
 type failuresGroupPair struct {
-	key      string
-	failures []failure
+	Key      string    `json:"key"`
+	Failures []failure `json:"failures"`
 }
 
 // keys provides the failuresGroup's keys as a string slice.
@@ -72,11 +72,11 @@ func (fg *failuresGroup) sortByNumberOfFailures() []failuresGroupPair {
 
 	// Sort the slice.
 	sort.Slice(result, func(i, j int) bool {
-		iFailures := len(result[i].failures)
-		jFailures := len(result[j].failures)
+		iFailures := len(result[i].Failures)
+		jFailures := len(result[j].Failures)
 
 		if iFailures == jFailures {
-			return result[i].key < result[j].key
+			return result[i].Key < result[j].Key
 		}
 
 		// Use > instead of < so the largest values (i.e. clusters with the most failures) are first.
@@ -123,8 +123,8 @@ type nestedFailuresGroups map[string]failuresGroup
 // nestedFailuresGroupsPair is a representation of a nestedFailuresGroups key-value mapping as a
 // two-element struct.
 type nestedFailuresGroupsPair struct {
-	key   string
-	group failuresGroup
+	Key   string        `json:"key"`
+	Group failuresGroup `json:"group"`
 }
 
 // keys provides the nestedFailuresGroups's keys as a string slice.
@@ -174,13 +174,13 @@ func (nfg *nestedFailuresGroups) sortByAggregateNumberOfFailures() []nestedFailu
 
 	// Sort the slice.
 	sort.Slice(result, func(i, j int) bool {
-		if aggregates[result[i].key] == aggregates[result[j].key] {
-			return result[i].key < result[j].key
+		if aggregates[result[i].Key] == aggregates[result[j].Key] {
+			return result[i].Key < result[j].Key
 		}
 
 		// Use > instead of < so the largest values (i.e. largest number of failures across all
 		// clusters) are first.
-		return aggregates[result[i].key] > aggregates[result[j].key]
+		return aggregates[result[i].Key] > aggregates[result[j].Key]
 	})
 
 	return result

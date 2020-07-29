@@ -73,7 +73,7 @@ func loadPrevious(filepath string) ([]jsonCluster, error) {
 		return nil, fmt.Errorf("Could not get previous results JSON: %s", err)
 	}
 
-	return previous.clustered, nil
+	return previous.Clustered, nil
 }
 
 // loadOwners loads an owners JSON file and returns it.
@@ -158,17 +158,17 @@ func memoizeResults(filepath string, message string, v interface{}) {
 // Unmarshal method. This is an intermediary state for the data until it can be put into
 // a build object.
 type jsonBuild struct {
-	path         string
-	started      string
-	elapsed      string
-	tests_run    string
-	tests_failed string
-	result       string
-	executor     string
-	job          string
-	number       string
-	pr           string
-	key          string // Often nonexistent
+	Path        string `json:"path"`
+	Started     string `json:"started"`
+	Elapsed     string `json:"elapsed"`
+	TestsRun    string `json:"tests_run"`
+	TestsFailed string `json:"tests_failed"`
+	Result      string `json:"result"`
+	Executor    string `json:"executor"`
+	Job         string `json:"job"`
+	Number      string `json:"number"`
+	PR          string `json:"pr"`
+	Key         string `json:"key"` // Often nonexistent
 }
 
 // asBuild is a factory function that creates a build object from a jsonBuild object, appropriately
@@ -177,55 +177,55 @@ func (jb *jsonBuild) asBuild() (build, error) {
 	// The build object that will be returned, initialized with the values that
 	// don't need conversion.
 	b := build{
-		path:     jb.path,
-		result:   jb.result,
-		executor: jb.executor,
-		job:      jb.job,
-		pr:       jb.pr,
-		key:      jb.key,
+		Path:     jb.Path,
+		Result:   jb.Result,
+		Executor: jb.Executor,
+		Job:      jb.Job,
+		PR:       jb.PR,
+		Key:      jb.Key,
 	}
 
 	// To avoid assignment issues
 	var err error
 
 	// started
-	if jb.started != "" {
-		b.started, err = strconv.Atoi(jb.started)
+	if jb.Started != "" {
+		b.Started, err = strconv.Atoi(jb.Started)
 		if err != nil {
-			return build{}, fmt.Errorf("Error converting JSON string '%s' to int for build field 'started': %s", jb.started, err)
+			return build{}, fmt.Errorf("Error converting JSON string '%s' to int for build field 'started': %s", jb.Started, err)
 		}
 	}
 
 	// elapsed
-	if jb.elapsed != "" {
-		tempElapsed, err := strconv.ParseFloat(jb.elapsed, 32)
+	if jb.Elapsed != "" {
+		tempElapsed, err := strconv.ParseFloat(jb.Elapsed, 32)
 		if err != nil {
-			return build{}, fmt.Errorf("Error converting JSON string '%s' to float32 for build field 'elapsed': %s", jb.elapsed, err)
+			return build{}, fmt.Errorf("Error converting JSON string '%s' to float32 for build field 'elapsed': %s", jb.Elapsed, err)
 		}
-		b.elapsed = int(tempElapsed)
+		b.Elapsed = int(tempElapsed)
 	}
 
 	// testsRun
-	if jb.tests_run != "" {
-		b.testsRun, err = strconv.Atoi(jb.tests_run)
+	if jb.TestsRun != "" {
+		b.TestsRun, err = strconv.Atoi(jb.TestsRun)
 		if err != nil {
-			return build{}, fmt.Errorf("Error converting JSON string '%s' to int for build field 'testsRun': %s", jb.tests_run, err)
+			return build{}, fmt.Errorf("Error converting JSON string '%s' to int for build field 'testsRun': %s", jb.TestsRun, err)
 		}
 	}
 
 	// testsFailed
-	if jb.tests_failed != "" {
-		b.testsFailed, err = strconv.Atoi(jb.tests_failed)
+	if jb.TestsFailed != "" {
+		b.TestsFailed, err = strconv.Atoi(jb.TestsFailed)
 		if err != nil {
-			return build{}, fmt.Errorf("Error converting JSON string '%s' to int for build field 'testsFailed': %s", jb.tests_failed, err)
+			return build{}, fmt.Errorf("Error converting JSON string '%s' to int for build field 'testsFailed': %s", jb.TestsFailed, err)
 		}
 	}
 
 	// number
-	if jb.number != "" {
-		b.number, err = strconv.Atoi(jb.number)
+	if jb.Number != "" {
+		b.Number, err = strconv.Atoi(jb.Number)
 		if err != nil {
-			return build{}, fmt.Errorf("Error converting JSON string '%s' to int for build field 'number': %s", jb.number, err)
+			return build{}, fmt.Errorf("Error converting JSON string '%s' to int for build field 'number': %s", jb.Number, err)
 		}
 	}
 
@@ -250,7 +250,7 @@ func loadBuilds(filepath string) (map[string]build, error) {
 	// Convert the build information to internal build objects and store them in the builds map
 	for _, jBuild := range jsonBuilds {
 		// Skip builds without a start time or build number
-		if jBuild.started == "" || jBuild.number == "" {
+		if jBuild.Started == "" || jBuild.Number == "" {
 			continue
 		}
 
@@ -259,12 +259,12 @@ func loadBuilds(filepath string) (map[string]build, error) {
 			return nil, fmt.Errorf("Could not create build object from jsonBuild object: %s", err)
 		}
 
-		if strings.Contains(bld.path, "pr-logs") {
-			parts := strings.Split(bld.path, "/")
-			bld.pr = parts[len(parts)-3]
+		if strings.Contains(bld.Path, "pr-logs") {
+			parts := strings.Split(bld.Path, "/")
+			bld.PR = parts[len(parts)-3]
 		}
 
-		builds[bld.path] = bld
+		builds[bld.Path] = bld
 	}
 
 	return builds, nil
@@ -275,10 +275,10 @@ func loadBuilds(filepath string) (map[string]build, error) {
 // Unmarshal method. This is an intermediary state for the data until it can be put into
 // a failure object.
 type jsonFailure struct {
-	started      string
-	build        string
-	name         string
-	failure_text string
+	Started     string `json:"started"`
+	Build       string `json:"build"`
+	Name        string `json:"name"`
+	FailureText string `json:"failure_text"`
 }
 
 // asFailure is a factory function that creates a failure object from the jsonFailure object,
@@ -287,19 +287,19 @@ func (jf *jsonFailure) asFailure() (failure, error) {
 	// The failure object that will be returned, initialized with the values that
 	// don't need conversion.
 	f := failure{
-		build:       jf.build,
-		name:        jf.name,
-		failureText: jf.failure_text,
+		Build:       jf.Build,
+		Name:        jf.Name,
+		FailureText: jf.FailureText,
 	}
 
 	// To avoid assignment issues
 	var err error
 
 	// started
-	if jf.started != "" {
-		f.started, err = strconv.Atoi(jf.started)
+	if jf.Started != "" {
+		f.Started, err = strconv.Atoi(jf.Started)
 		if err != nil {
-			return failure{}, fmt.Errorf("Error converting JSON string '%s' to int for failure field 'started': %s", jf.started, err)
+			return failure{}, fmt.Errorf("Error converting JSON string '%s' to int for failure field 'started': %s", jf.Started, err)
 		}
 	}
 
@@ -339,8 +339,8 @@ func loadTests(testsFilepaths []string) (map[string][]failure, error) {
 		// Convert the failure information to internal failure objects and store them in tests
 		for _, jf := range jsonFailures {
 			// Check if tests of this type are already in the map
-			if _, ok := tests[jf.name]; !ok {
-				tests[jf.name] = make([]failure, 0)
+			if _, ok := tests[jf.Name]; !ok {
+				tests[jf.Name] = make([]failure, 0)
 			}
 
 			test, err := jf.asFailure()
@@ -348,13 +348,13 @@ func loadTests(testsFilepaths []string) (map[string][]failure, error) {
 				return nil, fmt.Errorf("Could not create failure object from jsonFailure object: %s", err)
 			}
 
-			tests[jf.name] = append(tests[jf.name], test)
+			tests[jf.Name] = append(tests[jf.Name], test)
 		}
 	}
 
 	// Sort the failures within each test by build
 	for _, testSlice := range tests {
-		sort.Slice(testSlice, func(i, j int) bool { return testSlice[i].build < testSlice[j].build })
+		sort.Slice(testSlice, func(i, j int) bool { return testSlice[i].Build < testSlice[j].Build })
 	}
 
 	return tests, nil

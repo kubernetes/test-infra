@@ -33,8 +33,8 @@ import (
 
 // jsonOutput represents the output as it will be written to the JSON.
 type jsonOutput struct {
-	clustered []jsonCluster
-	builds    columns
+	Clustered []jsonCluster `json:"clustered"`
+	Builds    columns       `json:"builds"`
 }
 
 // render accepts a map from build paths to builds, and the global clusters, and renders them in a
@@ -45,8 +45,8 @@ func render(builds map[string]build, clustered nestedFailuresGroups) jsonOutput 
 	flattenedClusters := make([]flattenedGlobalCluster, len(clusteredSorted))
 
 	for i, pair := range clusteredSorted {
-		k := pair.key
-		clusters := pair.group
+		k := pair.Key
+		clusters := pair.Group
 
 		flattenedClusters[i] = flattenedGlobalCluster{
 			k,
@@ -102,22 +102,22 @@ func annotateOwners(data *jsonOutput, builds map[string]build, owners map[string
 		return fmt.Errorf("Could not compile ownerRE from provided SIG names and prefixes: %s", err)
 	}
 
-	jobPaths := data.builds.jobPaths
-	yesterday := utils.Max(data.builds.cols.started...) - (60 * 60 * 24)
+	jobPaths := data.Builds.JobPaths
+	yesterday := utils.Max(data.Builds.Cols.Started...) - (60 * 60 * 24)
 
 	// Determine the owner for each cluster
-	for i := range data.clustered {
-		cluster := &data.clustered[i]
+	for i := range data.Clustered {
+		cluster := &data.Clustered[i]
 		// Maps owner names to hits (I think hits yesterday and hits today, respectively)
 		ownerCounts := make(map[string][]int)
 
 		// For each test, determine the owner with the most hits
-		for _, test := range cluster.tests {
+		for _, test := range cluster.Tests {
 			var owner string
-			if submatches := sigLabelRE.FindStringSubmatch(test.name); submatches != nil {
+			if submatches := sigLabelRE.FindStringSubmatch(test.Name); submatches != nil {
 				owner = submatches[1] // Get the first (and only) submatch of sigLabelRE
 			} else {
-				normalizedTestName := normalizeName(test.name)
+				normalizedTestName := normalizeName(test.Name)
 
 				// Determine whether there were any named groups with matches for normalizedTestName,
 				// and if so what the first named group with a match is
@@ -156,17 +156,17 @@ func annotateOwners(data *jsonOutput, builds map[string]build, owners map[string
 			}
 			counts := ownerCounts[owner]
 
-			for _, job := range test.jobs {
-				if strings.Contains(job.name, ":") { // non-standard CI
+			for _, job := range test.Jobs {
+				if strings.Contains(job.Name, ":") { // non-standard CI
 					continue
 				}
 
-				jobPath := jobPaths[job.name]
-				for _, build := range job.buildNumbers {
+				jobPath := jobPaths[job.Name]
+				for _, build := range job.BuildNumbers {
 					bucketKey := fmt.Sprintf("%s/%d", jobPath, build)
 					if _, ok := builds[bucketKey]; !ok {
 						continue
-					} else if builds[bucketKey].started > yesterday {
+					} else if builds[bucketKey].Started > yesterday {
 						counts[0]++
 					} else {
 						counts[1]++
@@ -198,9 +198,9 @@ func annotateOwners(data *jsonOutput, builds map[string]build, owners map[string
 					topCounts = counts
 				}
 			}
-			cluster.owner = topOwner
+			cluster.Owner = topOwner
 		} else {
-			cluster.owner = "testing"
+			cluster.Owner = "testing"
 		}
 	}
 	return nil
@@ -217,26 +217,26 @@ func renderSlice(data jsonOutput, builds map[string]build, prefix string, owner 
 
 	// For each cluster whose owner field is the owner parameter, or whose id field has a prefix of
 	// the prefix parameter, add its tests' jobs to the jobs set.
-	for _, cluster := range data.clustered {
-		if owner != "" && cluster.owner == owner {
+	for _, cluster := range data.Clustered {
+		if owner != "" && cluster.Owner == owner {
 			clustered = append(clustered, cluster)
-		} else if prefix != "" && strings.HasPrefix(cluster.id, prefix) {
+		} else if prefix != "" && strings.HasPrefix(cluster.ID, prefix) {
 			clustered = append(clustered, cluster)
 		} else {
 			continue
 		}
 
-		for _, tst := range cluster.tests {
-			for _, jb := range tst.jobs {
-				jobs.Insert(jb.name)
+		for _, tst := range cluster.Tests {
+			for _, jb := range tst.Jobs {
+				jobs.Insert(jb.Name)
 			}
 		}
 	}
 
 	// Add builds whose job is in jobs to buildsOut
 	for _, bld := range builds {
-		if jobs.Has(bld.job) {
-			buildsOut[bld.path] = bld
+		if jobs.Has(bld.Job) {
+			buildsOut[bld.Path] = bld
 		}
 	}
 
@@ -255,8 +255,8 @@ type flattenedGlobalCluster struct {
 
 // test represents a test name and a collection of associated jobs.
 type test struct {
-	name string
-	jobs []job
+	Name string `json:"name"`
+	Jobs []job  `json:"jobs"`
 }
 
 /*
@@ -270,12 +270,12 @@ jsonCluster represents a global cluster as it will be written to the JSON.
 	owner: the SIG that owns the cluster, determined by annotateOwners()
 */
 type jsonCluster struct {
-	key   string
-	id    string
-	text  string
-	spans []int
-	tests []test
-	owner string
+	Key   string `json:"key"`
+	ID    string `json:"id"`
+	Text  string `json:"text"`
+	Spans []int  `json:"spans"`
+	Tests []test `json:"tests"`
+	Owner string `json:"owner"`
 }
 
 // clustersToDisplay transposes and sorts the flattened output of clusterGlobal.
@@ -291,31 +291,31 @@ func clustersToDisplay(clustered []flattenedGlobalCluster, builds map[string]bui
 		// Determine the number of failures across all clusters
 		numClusterFailures := 0
 		for _, cluster := range clusters {
-			numClusterFailures += len(cluster.failures)
+			numClusterFailures += len(cluster.Failures)
 		}
 
 		if numClusterFailures > 1 {
 			jCluster := jsonCluster{
-				key:   key,
-				id:    keyID,
-				text:  clusters[0].failures[0].failureText,
-				tests: make([]test, len(clusters)),
+				Key:   key,
+				ID:    keyID,
+				Text:  clusters[0].Failures[0].FailureText,
+				Tests: make([]test, len(clusters)),
 			}
 
 			// Get all of the failure texts from all clusters
 			clusterFailureTexts := make([]string, 0, numClusterFailures)
 			for _, cluster := range clusters {
-				for _, flr := range cluster.failures {
-					clusterFailureTexts = append(clusterFailureTexts, flr.failureText)
+				for _, flr := range cluster.Failures {
+					clusterFailureTexts = append(clusterFailureTexts, flr.FailureText)
 				}
 			}
-			jCluster.spans = commonSpans(clusterFailureTexts)
+			jCluster.Spans = commonSpans(clusterFailureTexts)
 
 			// Fill out jCluster.tests
 			for i, cluster := range clusters {
-				jCluster.tests[i] = test{
-					name: cluster.key,
-					jobs: testsGroupByJob(cluster.failures, builds),
+				jCluster.Tests[i] = test{
+					Name: cluster.Key,
+					Jobs: testsGroupByJob(cluster.Failures, builds),
 				}
 			}
 
@@ -328,23 +328,23 @@ func clustersToDisplay(clustered []flattenedGlobalCluster, builds map[string]bui
 
 // job represents a job name and a collection of associated build numbers.
 type job struct {
-	name         string
-	buildNumbers []int `json:"builds"`
+	Name         string `json:"name"`
+	BuildNumbers []int  `json:"builds"`
 }
 
 // build represents a specific instance of a build.
 type build struct {
-	path        string
-	started     int
-	elapsed     int
-	testsRun    int `json:"tests_run"`
-	testsFailed int `json:"tests_failed"`
-	result      string
-	executor    string
-	job         string
-	number      int
-	pr          string
-	key         string // Often nonexistent
+	Path        string `json:"path"`
+	Started     int    `json:"started"`
+	Elapsed     int    `json:"elapsed"`
+	TestsRun    int    `json:"tests_run"`
+	TestsFailed int    `json:"tests_failed"`
+	Result      string `json:"result"`
+	Executor    string `json:"executor"`
+	Job         string `json:"job"`
+	Number      int    `json:"number"`
+	PR          string `json:"pr"`
+	Key         string `json:"key"` // Often nonexistent
 }
 
 /*
@@ -360,14 +360,14 @@ func testsGroupByJob(failures []failure, builds map[string]build) []job {
 	// For each failure, grab its build's job name. Map the job name to the failure's build number.
 	for _, flr := range failures {
 		// Try to grab the build from builds if it exists
-		if bld, ok := builds[flr.build]; ok {
+		if bld, ok := builds[flr.Build]; ok {
 			// If the JSON build's "number" field was not null
-			if bld.number != 0 {
+			if bld.Number != 0 {
 				// Create the set if one doesn't exist for the given job
-				if _, ok := groups[bld.job]; !ok {
-					groups[bld.job] = make(sets.Int, 1)
+				if _, ok := groups[bld.Job]; !ok {
+					groups[bld.Job] = make(sets.Int, 1)
 				}
-				groups[bld.job].Insert(bld.number)
+				groups[bld.Job].Insert(bld.Number)
 			}
 		}
 	}
@@ -404,12 +404,12 @@ func testsGroupByJob(failures []failure, builds map[string]build) []job {
 	}
 	// Sort it
 	sort.Slice(sortedGroups, func(i, j int) bool {
-		iGroupLen := len(sortedGroups[i].buildNumbers)
-		jGroupLen := len(sortedGroups[j].buildNumbers)
+		iGroupLen := len(sortedGroups[i].BuildNumbers)
+		jGroupLen := len(sortedGroups[j].BuildNumbers)
 
 		// If they're the same length, sort by job name alphabetically
 		if iGroupLen == jGroupLen {
-			return sortedGroups[i].name < sortedGroups[j].name
+			return sortedGroups[i].Name < sortedGroups[j].Name
 		}
 
 		// Use > instead of < to sort descending.
@@ -427,30 +427,30 @@ For example, the 4th (0-indexed) build's start time can be found in started[4], 
 time can be found in elapsed[4].
 */
 type columnarBuilds struct {
-	started     []int
-	testsFailed []int `json:"tests_failed"`
-	elapsed     []int
-	testsRun    []int `json:"tests_run"`
-	result      []string
-	executor    []string
-	pr          []string
+	Started     []int    `json:"started"`
+	TestsFailed []int    `json:"tests_failed"`
+	Elapsed     []int    `json:"elapsed"`
+	TestsRun    []int    `json:"tests_run"`
+	Result      []string `json:"result"`
+	Executor    []string `json:"executor"`
+	PR          []string `json:"pr"`
 }
 
 // currentIndex returns the index of the next build to be stored (and, by extension, the number of
 // builds currently stored).
 func (cb *columnarBuilds) currentIndex() int {
-	return len(cb.started)
+	return len(cb.Started)
 }
 
 // insert adds a build into the columnarBuilds object.
 func (cb *columnarBuilds) insert(b build) {
-	cb.started = append(cb.started, b.started)
-	cb.testsFailed = append(cb.testsFailed, b.testsFailed)
-	cb.elapsed = append(cb.elapsed, b.elapsed)
-	cb.testsRun = append(cb.testsRun, b.testsRun)
-	cb.result = append(cb.result, b.result)
-	cb.executor = append(cb.executor, b.executor)
-	cb.pr = append(cb.pr, b.pr)
+	cb.Started = append(cb.Started, b.Started)
+	cb.TestsFailed = append(cb.TestsFailed, b.TestsFailed)
+	cb.Elapsed = append(cb.Elapsed, b.Elapsed)
+	cb.TestsRun = append(cb.TestsRun, b.TestsRun)
+	cb.Result = append(cb.Result, b.Result)
+	cb.Executor = append(cb.Executor, b.Executor)
+	cb.PR = append(cb.PR, b.PR)
 }
 
 // newColumnarBuilds creates a columnarBuilds object with the correct number of columns. The number
@@ -458,13 +458,13 @@ func (cb *columnarBuilds) insert(b build) {
 func newColumnarBuilds(columns int) columnarBuilds {
 	// Start the length at 0 because columnarBuilds.currentIndex() relies on the length.
 	return columnarBuilds{
-		started:     make([]int, 0, columns),
-		testsFailed: make([]int, 0, columns),
-		elapsed:     make([]int, 0, columns),
-		testsRun:    make([]int, 0, columns),
-		result:      make([]string, 0, columns),
-		executor:    make([]string, 0, columns),
-		pr:          make([]string, 0, columns),
+		Started:     make([]int, 0, columns),
+		TestsFailed: make([]int, 0, columns),
+		Elapsed:     make([]int, 0, columns),
+		TestsRun:    make([]int, 0, columns),
+		Result:      make([]string, 0, columns),
+		Executor:    make([]string, 0, columns),
+		PR:          make([]string, 0, columns),
 	}
 }
 
@@ -487,9 +487,9 @@ cols is the collection of builds in columnar form.
 jobPaths maps a job name to a build path, minus the last path segment.
 */
 type columns struct {
-	jobs     map[string]jobCollection
-	cols     columnarBuilds
-	jobPaths map[string]string `json:"job_paths"`
+	Jobs     map[string]jobCollection `json:"jobs"`
+	Cols     columnarBuilds           `json:"cols"`
+	JobPaths map[string]string        `json:"job_paths"`
 }
 
 // buildsToColumns converts a map (from build paths to builds) into a columnar form. This compresses
@@ -508,45 +508,45 @@ func buildsToColumns(builds map[string]build) columns {
 	// Sort the slice
 	sort.Slice(sortedBuilds, func(i, j int) bool {
 		// Sort by job name, then by build number
-		if sortedBuilds[i].job == sortedBuilds[j].job {
-			return sortedBuilds[i].number < sortedBuilds[j].number
+		if sortedBuilds[i].Job == sortedBuilds[j].Job {
+			return sortedBuilds[i].Number < sortedBuilds[j].Number
 		}
-		return sortedBuilds[i].job < sortedBuilds[j].job
+		return sortedBuilds[i].Job < sortedBuilds[j].Job
 	})
 
 	// Add the builds to result.cols
 	for _, bld := range sortedBuilds {
 		// If there was no build number when the build was retrieved from the JSON
-		if bld.number == 0 {
+		if bld.Number == 0 {
 			continue
 		}
 
 		// Get the index within cols's slices of the next inserted build
-		index := result.cols.currentIndex()
+		index := result.Cols.currentIndex()
 
 		// Add the build
-		result.cols.insert(bld)
+		result.Cols.insert(bld)
 
 		// job maps build numbers to their indexes in the columnar representation
 		var job map[int]int
-		if _, ok := result.jobs[bld.job]; !ok {
-			result.jobs[bld.job] = make(map[int]int)
+		if _, ok := result.Jobs[bld.Job]; !ok {
+			result.Jobs[bld.Job] = make(map[int]int)
 		}
 		// We can safely assert map[int]int here because replacement of maps with slices only
 		// happens later
-		job = result.jobs[bld.job].(map[int]int)
+		job = result.Jobs[bld.Job].(map[int]int)
 
 		// Store the job path
 		if len(job) == 0 {
-			result.jobPaths[bld.job] = bld.path[:strings.LastIndex(bld.path, "/")]
+			result.JobPaths[bld.Job] = bld.Path[:strings.LastIndex(bld.Path, "/")]
 		}
 
 		// Store the column number (index) so we know in which column to find which build
-		job[bld.number] = index
+		job[bld.Number] = index
 	}
 
 	// Sort build numbers and compress some data
-	for jobName, indexes := range result.jobs {
+	for jobName, indexes := range result.Jobs {
 		// Sort the build numbers
 		sortedBuildNumbers := make([]int, 0, len(indexes.(map[int]int)))
 		for key := range indexes.(map[int]int) {
@@ -567,10 +567,10 @@ func buildsToColumns(builds map[string]build) columns {
 			}
 		}
 		if (sortedBuildNumbers[len(sortedBuildNumbers)-1] == sortedBuildNumbers[0]+count-1) && allTrue {
-			result.jobs[jobName] = []int{sortedBuildNumbers[0], count, base}
+			result.Jobs[jobName] = []int{sortedBuildNumbers[0], count, base}
 			for _, n := range sortedBuildNumbers {
 				if !(n <= sortedBuildNumbers[0]+len(sortedBuildNumbers)) {
-					log.Panicf(jobName, n, result.jobs[jobName], len(sortedBuildNumbers), sortedBuildNumbers)
+					log.Panicf(jobName, n, result.Jobs[jobName], len(sortedBuildNumbers), sortedBuildNumbers)
 				}
 			}
 		}

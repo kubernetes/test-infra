@@ -66,9 +66,9 @@ func clusterLocal(failuresByTest failuresGroup) nestedFailuresGroups {
 
 	// Look at tests with the most failures first.
 	for n, pair := range failuresByTest.sortByNumberOfFailures() {
-		numFailures += len(pair.failures)
-		logInfo("%4d/%4d tests, %5d failures, %s", n+1, len(failuresByTest), len(pair.failures), pair.key)
-		clustered[pair.key] = clusterTest(pair.failures)
+		numFailures += len(pair.Failures)
+		logInfo("%4d/%4d tests, %5d failures, %s", n+1, len(failuresByTest), len(pair.Failures), pair.Key)
+		clustered[pair.Key] = clusterTest(pair.Failures)
 	}
 
 	elapsed := time.Since(start)
@@ -81,10 +81,10 @@ func clusterLocal(failuresByTest failuresGroup) nestedFailuresGroups {
 
 // failure represents a specific instance of a test failure.
 type failure struct {
-	started     int
-	build       string
-	name        string
-	failureText string `json:"failure_text"`
+	Started     int    `json:"started"`
+	Build       string `json:"build"`
+	Name        string `json:"name"`
+	FailureText string `json:"failure_text"`
 }
 
 /*
@@ -153,7 +153,7 @@ func clusterGlobal(newlyClustered nestedFailuresGroups, previouslyClustered []js
 		// Seed clusters using output from the previous run
 		n := 0
 		for _, cluster := range previouslyClustered {
-			key := cluster.key
+			key := cluster.Key
 			normalizedKey := normalize(key)
 			if key != normalizedKey {
 				logInfo(key)
@@ -174,16 +174,16 @@ func clusterGlobal(newlyClustered nestedFailuresGroups, previouslyClustered []js
 
 	// Look at tests with the most failures over all clusters first
 	for n, outerPair := range newlyClustered.sortByAggregateNumberOfFailures() {
-		testName := outerPair.key
-		testClusters := outerPair.group
+		testName := outerPair.Key
+		testClusters := outerPair.Group
 
 		logInfo("%4d/%4d tests, %4d clusters, %s", n+1, len(newlyClustered), len(testClusters), testName)
 		testStart := time.Now()
 
 		// Look at clusters with the most failures first
 		for m, innerPair := range testClusters.sortByNumberOfFailures() {
-			key := innerPair.key // The cluster text
-			tests := innerPair.failures
+			key := innerPair.Key // The cluster text
+			tests := innerPair.Failures
 
 			clusterStart := time.Now()
 			fTextLen := len(key)
@@ -270,7 +270,7 @@ func clusterTest(failures []failure) failuresGroup {
 	start := time.Now()
 
 	for _, flr := range failures {
-		fNorm := normalize(flr.failureText)
+		fNorm := normalize(flr.FailureText)
 
 		// If this string is already in the result list, store it
 		if _, ok := result[fNorm]; ok {
