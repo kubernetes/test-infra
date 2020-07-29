@@ -240,6 +240,7 @@ py_binary(
         requirement("influxdb"),
         requirement("isort"),
         requirement("lazy-object-proxy"),
+        requirement("parameterized"),
         requirement("pylint"),
         requirement("pytz"),
         requirement("PyYAML"),
