@@ -186,34 +186,44 @@ func (jb *jsonBuild) asBuild() (build, error) {
 	var err error
 
 	// started
-	b.started, err = strconv.Atoi(jb.started)
-	if err != nil {
-		return build{}, fmt.Errorf("Error converting JSON string '%s' to int: %s", jb.started, err)
+	if jb.started != "" {
+		b.started, err = strconv.Atoi(jb.started)
+		if err != nil {
+			return build{}, fmt.Errorf("Error converting JSON string '%s' to int for build field 'started': %s", jb.started, err)
+		}
 	}
 
 	// elapsed
-	tempElapsed, err := strconv.ParseFloat(jb.elapsed, 32)
-	if err != nil {
-		return build{}, fmt.Errorf("Error converting JSON string '%s' to float32: %s", jb.elapsed, err)
+	if jb.elapsed != "" {
+		tempElapsed, err := strconv.ParseFloat(jb.elapsed, 32)
+		if err != nil {
+			return build{}, fmt.Errorf("Error converting JSON string '%s' to float32 for build field 'elapsed': %s", jb.elapsed, err)
+		}
+		b.elapsed = int(tempElapsed)
 	}
-	b.elapsed = int(tempElapsed)
 
 	// testsRun
-	b.testsRun, err = strconv.Atoi(jb.tests_run)
-	if err != nil {
-		return build{}, fmt.Errorf("Error converting JSON string '%s' to int: %s", jb.tests_run, err)
+	if jb.tests_run != "" {
+		b.testsRun, err = strconv.Atoi(jb.tests_run)
+		if err != nil {
+			return build{}, fmt.Errorf("Error converting JSON string '%s' to int for build field 'testsRun': %s", jb.tests_run, err)
+		}
 	}
 
 	// testsFailed
-	b.testsFailed, err = strconv.Atoi(jb.tests_failed)
-	if err != nil {
-		return build{}, fmt.Errorf("Error converting JSON string '%s' to int: %s", jb.tests_failed, err)
+	if jb.tests_failed != "" {
+		b.testsFailed, err = strconv.Atoi(jb.tests_failed)
+		if err != nil {
+			return build{}, fmt.Errorf("Error converting JSON string '%s' to int for build field 'testsFailed': %s", jb.tests_failed, err)
+		}
 	}
 
 	// number
-	b.number, err = strconv.Atoi(jb.number)
-	if err != nil {
-		return build{}, fmt.Errorf("Error converting JSON string '%s' to int: %s", jb.number, err)
+	if jb.number != "" {
+		b.number, err = strconv.Atoi(jb.number)
+		if err != nil {
+			return build{}, fmt.Errorf("Error converting JSON string '%s' to int for build field 'number': %s", jb.number, err)
+		}
 	}
 
 	return b, nil
@@ -283,9 +293,11 @@ func (jf *jsonFailure) asFailure() (failure, error) {
 	var err error
 
 	// started
-	f.started, err = strconv.Atoi(jf.started)
-	if err != nil {
-		return failure{}, fmt.Errorf("Error converting JSON string '%s' to int: %s", jf.started, err)
+	if jf.started != "" {
+		f.started, err = strconv.Atoi(jf.started)
+		if err != nil {
+			return failure{}, fmt.Errorf("Error converting JSON string '%s' to int for failure field 'started': %s", jf.started, err)
+		}
 	}
 
 	return f, nil
