@@ -142,7 +142,7 @@ func TestQueryChange(t *testing.T) {
 				"foo": {
 					{
 						Project:         "bar",
-						ID:              "100",
+						ID:              "bar~branch~random-string",
 						ChangeID:        "random-string",
 						CurrentRevision: "1-1",
 						Updated:         makeStamp(now),
@@ -169,7 +169,7 @@ func TestQueryChange(t *testing.T) {
 				},
 			},
 			comments: map[string]map[string][]gerrit.CommentInfo{
-				"random-string": {
+				"bar~branch~random-string": {
 					"/PATCHSET_LEVEL": {
 						{
 							Message:  "before",
