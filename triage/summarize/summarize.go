@@ -42,26 +42,26 @@ func logWarning(format string, v ...interface{}) {
 
 // summarizeFlags represents the command-line arguments to the summarize and their values.
 type summarizeFlags struct {
-	builds       *string
+	builds       string
 	tests        []string
-	previous     *string
-	owners       *string
-	output       *string
-	outputSlices *string
+	previous     string
+	owners       string
+	output       string
+	outputSlices string
 }
 
 // parseFlags parses command-line arguments and returns them as a summarizeFlags object.
 func parseFlags() summarizeFlags {
 	var flags summarizeFlags
 
-	flags.builds = flag.String("builds", "", "path to builds.json file from BigQuery")
-	tempTests := flag.String("tests", "", "path to tests.json files from BigQuery")
-	flags.previous = flag.String("previous", "", "path to previous output")
-	flags.owners = flag.String("owners", "", "path to test owner SIGs file")
-	flags.output = flag.String("output", "failure_data.json", "output path")
-	flags.outputSlices = flag.String("output_slices", "", "path to slices output (must include PREFIX in template)")
+	flags.builds = *flag.String("builds", "", "path to builds.json file from BigQuery")
+	flags.previous = *flag.String("previous", "", "path to previous output")
+	flags.owners = *flag.String("owners", "", "path to test owner SIGs file")
+	flags.output = *flag.String("output", "failure_data.json", "output path")
+	flags.outputSlices = *flag.String("output_slices", "", "path to slices output (must include PREFIX in template)")
 
 	// The tests flag can contain multiple arguments, so we'll split it by space
+	tempTests := flag.String("tests", "", "path to tests.json files from BigQuery")
 	flags.tests = strings.Split(*tempTests, " ")
 
 	flag.Parse()
@@ -70,15 +70,15 @@ func parseFlags() summarizeFlags {
 }
 
 func summarize(flags summarizeFlags) {
-	builds, failedTests, err := loadFailures(*flags.builds, flags.tests)
+	builds, failedTests, err := loadFailures(flags.builds, flags.tests)
 	if err != nil {
 		log.Fatalf("Could not load failures: %s", err)
 	}
 
 	var previousClustered []jsonCluster
-	if *flags.previous != "" {
+	if flags.previous != "" {
 		logInfo("Loading previous")
-		previousClustered, err = loadPrevious(*flags.previous)
+		previousClustered, err = loadPrevious(flags.previous)
 		if err != nil {
 			log.Fatalf("Could not get previous results: %s", err)
 		}
@@ -94,45 +94,41 @@ func summarize(flags summarizeFlags) {
 	data := render(builds, clustered)
 
 	var owners map[string][]string
-	if *flags.owners != "" {
-		owners, err = loadOwners(*flags.owners)
+	if flags.owners != "" {
+		owners, err = loadOwners(flags.owners)
 		if err != nil {
 			logWarning("Could not get owners, clusters will not be labeled with owners: %s", err)
-
 			// Set the flag to the empty string so the program doesn't try to write owners files later
-			empty := ""
-			flags.owners = &empty
+			flags.owners = ""
 		} else {
 			err = annotateOwners(data, builds, owners)
 			if err != nil {
 				logWarning("Could not annotate owners, clusters will not be labeled with owners")
-
-				empty := ""
-				flags.owners = &empty
+				flags.owners = ""
 			}
 		}
 	}
 
-	err = writeResults(*flags.output, data)
+	err = writeResults(flags.output, data)
 	if err != nil {
 		logWarning("Could not write results to file: %s", err)
 	}
 
-	if *flags.outputSlices != "" {
-		if !(strings.Contains(*flags.outputSlices, "PREFIX")) {
+	if flags.outputSlices != "" {
+		if !(strings.Contains(flags.outputSlices, "PREFIX")) {
 			log.Panic("'PREFIX' not in flags.output_slices")
 		}
 
 		for subset := 0; subset < 256; subset++ {
 			idPrefix := fmt.Sprintf("%02x", subset)
 			subset, cols := renderSlice(data, builds, idPrefix, "")
-			err = writeRenderedSlice(strings.Replace(*flags.outputSlices, "PREFIX", idPrefix, -1), subset, cols)
+			err = writeRenderedSlice(strings.Replace(flags.outputSlices, "PREFIX", idPrefix, -1), subset, cols)
 			if err != nil {
 				logWarning("Could not write subset %d to file: %s", subset, err)
 			}
 		}
 
-		if *flags.owners != "" {
+		if flags.owners != "" {
 			// for output
 			if _, ok := owners["testing"]; !ok {
 				owners["testing"] = make([]string, 0)
@@ -140,7 +136,7 @@ func summarize(flags summarizeFlags) {
 
 			for owner := range owners {
 				ownerResults, cols := renderSlice(data, builds, "", owner)
-				err = writeRenderedSlice(strings.Replace(*flags.outputSlices, "PREFIX", "sig-"+owner, -1), ownerResults, cols)
+				err = writeRenderedSlice(strings.Replace(flags.outputSlices, "PREFIX", "sig-"+owner, -1), ownerResults, cols)
 				if err != nil {
 					logWarning("Could not write result for owner '%s' to file: %s", owner, err)
 				}
