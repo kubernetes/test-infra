@@ -337,7 +337,7 @@ func parseStamp(value gerrit.Timestamp) time.Time {
 }
 
 func (h *gerritInstanceHandler) injectPatchsetMessages(change *gerrit.ChangeInfo) error {
-	out, _, err := h.changeService.ListChangeComments(change.ChangeID)
+	out, _, err := h.changeService.ListChangeComments(change.ID)
 	if err != nil {
 		return err
 	}
@@ -432,7 +432,9 @@ func (h *gerritInstanceHandler) queryChangesForProject(log logrus.FieldLogger, p
 
 				created := parseStamp(rev.Created)
 				log := log.WithField("created", created)
-				h.injectPatchsetMessages(&change)
+				if err := h.injectPatchsetMessages(&change); err != nil {
+					log.WithError(err).Error("Failed to inject patchset messages")
+				}
 				changeMessages := change.Messages
 				var newMessages bool
 
