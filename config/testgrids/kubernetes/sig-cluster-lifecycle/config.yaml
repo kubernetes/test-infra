@@ -20,6 +20,7 @@ dashboard_groups:
     - sig-cluster-lifecycle-image-pushes
     - sig-cluster-lifecycle-system-validators
     - sig-cluster-lifecycle-kubespray
+    - sig-cluster-lifecycle-image-builder
 
 dashboards:
 - name: sig-cluster-lifecycle-all
@@ -53,6 +54,7 @@ dashboards:
 - name: sig-cluster-lifecycle-image-pushes
 - name: sig-cluster-lifecycle-system-validators
 - name: sig-cluster-lifecycle-kubespray
+- name: sig-cluster-lifecycle-image-builder
 
 test_groups:
 # @luxas' multiarch e2e results
