@@ -153,22 +153,15 @@ func ngramEditDist(a string, b string) int {
 // makeNgramCountsDigest returns a hashed version of the ngram counts.
 func makeNgramCountsDigest(s string) string {
 	ngramResults := makeNgramCounts(s)
-	// Build a string representation of the ngram results that can then be hashed
-	var builder strings.Builder
 
 	// In Python, given an array [x, y, z], calling str() on the array will output
 	// "[x, y, z]". This will try to replicate that behavior.
-	builder.WriteString("[")
-	for i := 0; i < len(ngramResults)-1; i++ {
-		builder.WriteString(fmt.Sprintf("%d, ", ngramResults[i]))
-	}
-	// Add the last element separately to avoid a trailing comma and space,
-	// and add the closing bracket.
-	builder.WriteString(fmt.Sprintf("%d]", ngramResults[len(ngramResults)-1]))
+	// Represent the ngramResults
+	ngramResultsAsString := strings.Replace(fmt.Sprintf("%v", ngramResults), " ", ", ", -1)
 
 	// Generate the hash
 	hash := sha1.New()
-	_, err := io.WriteString(hash, builder.String())
+	_, err := io.WriteString(hash, ngramResultsAsString)
 	if err != nil {
 		log.Fatal("Error writing ngram results string to sha1 hash.")
 	}
