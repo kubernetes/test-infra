@@ -45,6 +45,7 @@ filegroup(
     srcs = [
         ":package-srcs",
         "//triage/berghelroach:all-srcs",
+        "//triage/summarize:all-srcs",
         "//triage/utils:all-srcs",
     ],
     tags = ["automanaged"],
