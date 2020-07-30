@@ -14,7 +14,7 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200728-3610e67-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200730-e636ee2-master
         resources:
           requests:
             memory: "6Gi"
@@ -29,7 +29,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200728-3610e67-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200730-e636ee2-master
         command:
         - "./scripts/ci-test.sh"
     annotations:
