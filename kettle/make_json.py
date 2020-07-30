@@ -98,7 +98,7 @@ class Build:
 
     def populate_meta(self, metadata, repos):
         self.metadata = metadata
-        self.repos = repos
+        self.repos = self.repos if self.repos else repos
 
     def set_elapsed(self):
         if self.started and self.finished:
