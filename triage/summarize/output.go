@@ -213,7 +213,7 @@ func renderSlice(data jsonOutput, builds map[string]build, prefix string, owner 
 	clustered := make([]jsonCluster, 0)
 	// Maps build paths to builds
 	buildsOut := make(map[string]build)
-	var jobs sets.String
+	jobs := make(sets.String)
 
 	// For each cluster whose owner field is the owner parameter, or whose id field has a prefix of
 	// the prefix parameter, add its tests' jobs to the jobs set.

@@ -236,11 +236,11 @@ func (jb *jsonBuild) asBuild() (build, error) {
 // to build objects.
 func loadBuilds(filepath string) (map[string]build, error) {
 	// The map
-	var builds map[string]build
+	builds := make(map[string]build)
 
 	// jsonBuilds temporarily stores the builds as they are retrieved from the JSON file
 	// until they can be converted to build objects
-	var jsonBuilds []jsonBuild
+	jsonBuilds := make([]jsonBuild, 0)
 
 	err := getJSON(filepath, &jsonBuilds)
 	if err != nil {

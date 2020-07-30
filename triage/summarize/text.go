@@ -216,7 +216,7 @@ Returns a list of [matchlen_1, mismatchlen_2, matchlen_2, mismatchlen_2, ...], r
 sequences of the first element of the list that are present in all members.
 */
 func commonSpans(xs []string) []int {
-	var common sets.String
+	common := make(sets.String)
 	commonModified := false // Flag to keep track of whether common has been modified at least once
 
 	for _, x := range xs {
