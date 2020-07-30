@@ -51,7 +51,9 @@ template = """
       - --kops-state=s3://k8s-kops-prow/
       - --kops-ssh-key=$(AWS_SSH_PRIVATE_KEY_FILE)
       - --kops-ssh-public-key=$(AWS_SSH_PUBLIC_KEY_FILE)
-      - --kops-publish=gs://k8s-staging-kops/kops/releases/markers/{{branch}}/latest-ci-updown-green.txt
+      # We don't have permission to write to gs://k8s-staging-kops
+      - --kops-publish=gs://kops-ci/markers/{{branch}}/latest-ci-updown-green.txt
+      # Published by the kops staging build jobs
       - --kops-version=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/{{branch}}/latest-ci.txt
       #- --kops-kubernetes-version should be inferred by kubetest from --extract
       #- --kops-zone should be randomized by kubetest
