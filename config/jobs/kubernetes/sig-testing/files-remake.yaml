@@ -3,7 +3,9 @@ presubmits:
   - name: pull-kubernetes-files-remake
     path_alias: "k8s.io/kubernetes"
     decorate: true
-    always_run: true
+    optional: true
+    run_if_changed: 'Makefile.generated_files|make-rules'
+    always_run: false
     skip_report: false
     # branched per release (older go versions)
     skip_branches:
