@@ -152,6 +152,7 @@ func TestWait(t *testing.T) {
 
 func TestWaitParallelContainers(t *testing.T) {
 	aborted := strconv.Itoa(entrypoint.AbortedErrorCode)
+	skip := strconv.Itoa(entrypoint.PreviousErrorCode)
 	const (
 		pass                 = "0"
 		fail                 = "1"
@@ -203,6 +204,12 @@ func TestWaitParallelContainers(t *testing.T) {
 			markers:  []string{pass},
 			missing:  true,
 			failures: 1,
+		},
+		{
+			name:     "count all failures",
+			markers:  []string{pass, fail, aborted, skip, fail, pass},
+			abort:    true,
+			failures: 3,
 		},
 	}
 
