@@ -23,7 +23,7 @@ import (
 	"strings"
 )
 
-// Min takes any number of integers and returns the smallest.
+// Min takes any number of integers and returns the smallest. Panics if nothing is supplied.
 func Min(nums ...int) int {
 	smallest := nums[0]
 
@@ -36,7 +36,7 @@ func Min(nums ...int) int {
 	return smallest
 }
 
-// Max takes any number of integers and returns the largest.
+// Max takes any number of integers and returns the largest. Panics if nothing is supplied.
 func Max(nums ...int) int {
 	largest := nums[0]
 
