@@ -34,7 +34,7 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
-      - --extract=ci/latest
+      - --extract=ci/latest-fast
       - --env=KUBE_CONTAINER_RUNTIME=docker
       - --gcp-node-image=gci
       - --gcp-project-type=gpu-project

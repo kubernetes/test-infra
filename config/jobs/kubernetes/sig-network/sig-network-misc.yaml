@@ -261,7 +261,7 @@ periodics:
       - --check-leaked-resources
       - --env=GCE_ALPHA_FEATURES=NetworkEndpointGroup
       - --env=KUBE_GCE_ENABLE_IP_ALIASES=true
-      - --extract=ci/latest
+      - --extract=ci/latest-fast
       - --gcp-node-image=gci
       - --gcp-project-type=ingress-project
       - --gcp-zone=asia-southeast1-a
