@@ -43,7 +43,9 @@ presubmits:
       testgrid-num-columns-recent: '30'
       testgrid-create-test-group: 'true'
     labels:
+      preset-service-account: "true"
       preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200710-6b3b6fe-master
@@ -54,6 +56,8 @@ presubmits:
             memory: 9000Mi
             cpu: 7500m
         command:
+        - runner.sh
+        args:
         - hack/pull-seccomp-operator-build-image
 
   - name: pull-seccomp-operator-test-e2e
@@ -63,7 +67,9 @@ presubmits:
       testgrid-num-columns-recent: '30'
       testgrid-create-test-group: 'true'
     labels:
+      preset-service-account: "true"
       preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
     spec:
       hostNetwork: true
       containers:
@@ -75,4 +81,6 @@ presubmits:
             memory: 9000Mi
             cpu: 7500m
         command:
+        - runner.sh
+        args:
         - hack/pull-seccomp-operator-test-e2e
