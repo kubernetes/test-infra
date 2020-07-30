@@ -1,0 +1,21 @@
+postsubmits:
+  kubernetes-sigs/seccomp-operator:
+    - name: post-seccomp-operator-push-image
+      cluster: k8s-infra-prow-build-trusted
+      decorate: true
+      always_run: true
+      branches:
+        - ^master$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20200708-4b69e15
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-infra-staging-seccomp-operator
+              - --scratch-bucket=gs://k8s-infra-staging-seccomp-operator-gcb
+              - .
+            env:
+              - name: LOG_TO_STDOUT
+                value: "y"
