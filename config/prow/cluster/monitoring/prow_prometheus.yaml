@@ -16,7 +16,7 @@ spec:
         resources:
           requests:
             storage: 100Gi
-  retention: "30d"
+  retention: "90d"
   serviceAccountName: prometheus-prow
   alerting:
     alertmanagers:
