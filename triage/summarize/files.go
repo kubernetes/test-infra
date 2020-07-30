@@ -97,14 +97,16 @@ func writeResults(filepath string, data jsonOutput) error {
 	return nil
 }
 
+type renderedSliceOutput struct {
+	Clustered []jsonCluster `json:"clustered"`
+	Builds    columns       `json:"builds"`
+}
+
 // writeRenderedSlice outputs the results of a call to renderSlice() to a file.
-func writeRenderedSlice(filepath string, clustered []jsonCluster, cols columns) error {
-	output := struct {
-		clustered []jsonCluster
-		cols      columns
-	}{
+func writeRenderedSlice(filepath string, clustered []jsonCluster, builds columns) error {
+	output := renderedSliceOutput{
 		clustered,
-		cols,
+		builds,
 	}
 
 	err := writeJSON(filepath, output)
