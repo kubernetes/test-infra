@@ -96,6 +96,10 @@ func (l *extractStrategies) Set(value string) error {
 		if mat == nil {
 			continue
 		}
+		if mode == ci && strings.HasSuffix(value, "-fast") {
+			// do not match ci mode if will also match ciFast
+			continue
+		}
 		e := extractStrategy{
 			mode:   mode,
 			option: mat[1],
@@ -105,6 +109,7 @@ func (l *extractStrategies) Set(value string) error {
 			e.ciVersion = mat[2]
 		}
 		*l = append(*l, e)
+		log.Printf("Matched extraction strategy: %s", search)
 		return nil
 	}
 	return fmt.Errorf("Unknown extraction strategy: %v", value)
