@@ -1042,3 +1042,24 @@ func TestK8sInfraProwBuildJobsMustNotExceedTotalCapacity(t *testing.T) {
 		}
 	}
 }
+
+// Fast builds take 20-30m, cross builds take 90m-2h. We want to pick up builds
+// containing the latest merged PRs as soon as possible for the in-development release
+func TestSigReleaseMasterBlockingOrInformingJobsShouldUseFastBuilds(t *testing.T) {
+	jobs := allStaticJobs()
+	for _, job := range jobs {
+		dashboards, ok := job.Annotations["testgrid-dashboards"]
+		if !ok || !strings.Contains(dashboards, "sig-release-master-blocking") || !strings.Contains(dashboards, "sig-release-master-informing") {
+			continue
+		}
+		extract := ""
+		for _, arg := range job.Spec.Containers[0].Args {
+			if strings.HasPrefix(arg, "--extract=") {
+				extract = strings.TrimPrefix(arg, "--extract=")
+				if extract == "ci/latest" {
+					t.Errorf("%s: release-master-blocking e2e jobs must use --extract=ci/latest-fast, found --extract=ci/latest instead", job.Name)
+				}
+			}
+		}
+	}
+}
