@@ -4,7 +4,7 @@ periodics:
   name: ci-kubernetes-gce-conformance-latest
   annotations:
     fork-per-release: "true"
-    fork-per-release-replacements: "--extract=ci/latest -> --extract=ci/latest-{{.Version}}"
+    fork-per-release-replacements: "--extract=ci/latest-fast -> --extract=ci/latest-{{.Version}}"
     testgrid-dashboards: sig-release-master-blocking, conformance-all, conformance-gce
     testgrid-tab-name: Conformance - GCE - master
     description: Runs conformance tests using kubetest against kubernetes master on GCE
