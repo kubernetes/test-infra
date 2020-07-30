@@ -27,7 +27,7 @@ push-prod:
   bazel run //images/builder -- --project=k8s-testimages --scratch-bucket=gs://k8s-testimages-scratch kettle
 
 push:
-	bazel run //images/builder -- --allow-dirty --build-dir=. kettle/
+	bazel run //images/builder -- --project=k8s-testimages --allow-dirty --build-dir=. kettle/
 
 deploy: get-cluster-credentials
 	sed "s/:latest/:$(TAG)/g" deployment.yaml | kubectl apply -f - --record
