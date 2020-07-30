@@ -180,6 +180,11 @@ func TestExtractStrategies(t *testing.T) {
 			"v1.2.3+abcde",
 		},
 		{
+			"ci/latest-fast",
+			"https://storage.googleapis.com/kubernetes-release-dev/ci/fast",
+			"v1.2.3+abcde",
+		},
+		{
 			"ci/gke-staging-latest",
 			"https://storage.googleapis.com/gke-release-staging/kubernetes/release",
 			"v1.2.3+abcde",
