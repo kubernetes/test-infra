@@ -166,7 +166,7 @@ func makeNgramCountsDigest(s string) string {
 		log.Fatal("Error writing ngram results string to sha1 hash.")
 	}
 
-	return fmt.Sprintf("%x", hash.Sum(nil)[:20])
+	return fmt.Sprintf("%x", hash.Sum(nil))[:20]
 }
 
 // findMatch finds a match for a normalized failure string from a selection of candidates.
@@ -250,7 +250,7 @@ func commonSpans(xs []string) []int {
 		}
 	}
 
-	if spanLen == 0 {
+	if spanLen != 0 {
 		spans = append(spans, spanLen)
 	}
 
@@ -272,10 +272,10 @@ This makes the output count size constant.
 */
 func makeNgramCounts(s string) []int {
 	size := 64
-	if _, ok := memoizedNgramCounts[s]; ok {
+	if _, ok := memoizedNgramCounts[s]; !ok {
 		counts := make([]int, size)
 		for x := 0; x < len(s)-3; x++ {
-			counts[int(crc32.Checksum([]byte(s[x:x+4]), crc32.MakeTable(0))&uint32(size-1))]++
+			counts[int(crc32.Checksum([]byte(s[x:x+4]), crc32.IEEETable)&uint32(size-1))]++
 		}
 		memoizedNgramCounts[s] = counts // memoize
 	}
