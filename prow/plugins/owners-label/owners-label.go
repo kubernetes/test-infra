@@ -26,6 +26,7 @@ import (
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
+	"fmt"
 )
 
 const (
@@ -113,7 +114,11 @@ func handle(ghc githubClient, oc ownersClient, log *logrus.Entry, pre *github.Pu
 			continue
 		}
 		if err := ghc.AddLabel(org, repo, number, labelToAdd); err != nil {
-			log.WithError(err).Errorf("GitHub failed to add label: %s found in %s", labelToAdd, oc.FindConfigFileForLabel(labelToAdd))
+			log.WithError(err).WithFields(
+				logrus.Fields{
+					"label":        labelToAdd,
+					"config-files": oc.FindConfigFileForLabel(labelToAdd),
+				}).Error("Failed to add label found in config-file(s)")
 		}
 	}
 
