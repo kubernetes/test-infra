@@ -37,7 +37,6 @@ dashboard.new(
         {instance: "104.197.27.114:9090", type: "aws-account", friendly: "AWS account"},
         {instance: "104.197.27.114:9090", type: "gce-project", friendly: "GCE project"},
         {instance: "35.225.208.117:9090", type: "gce-project", friendly: "GCE project (k8s-infra)"},
-        {instance: "35.225.208.117:9090", type: "k8s-infra-gce-project", friendly: "GCE project (old) (k8s-infra)"},
         {instance: "104.197.27.114:9090", type: "gke-project", friendly: "GKE project"},
         {instance: "104.197.27.114:9090", type: "gpu-project", friendly: "GPU project"},
         {instance: "104.197.27.114:9090", type: "ingress-project", friendly: "Ingress project"},
