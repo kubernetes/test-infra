@@ -216,16 +216,22 @@ func TestSetApproveDefaults(t *testing.T) {
 
 		commandHelpLink         string
 		expectedCommandHelpLink string
+		prProcessLink           string
+		expectedPrProcessLink   string
 	}{
 		{
-			name:                    "set commandHelpLink default",
+			name:                    "set commandHelpLink and prProcessLink default",
 			commandHelpLink:         "",
+			prProcessLink:           "",
 			expectedCommandHelpLink: "https://go.k8s.io/bot-commands",
+			expectedPrProcessLink:   "https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process",
 		},
 		{
-			name:                    "keep commandHelpLink value",
+			name:                    "keep commandHelpLink and prProcessLink value",
 			commandHelpLink:         "https://prow.k8s.io/command-help",
+			prProcessLink:           "https://github.com/kubernetes/community/blob/427ccfbc7d423d8763ed756f3b8c888b7de3cf34/contributors/guide/pull-requests.md",
 			expectedCommandHelpLink: "https://prow.k8s.io/command-help",
+			expectedPrProcessLink:   "https://github.com/kubernetes/community/blob/427ccfbc7d423d8763ed756f3b8c888b7de3cf34/contributors/guide/pull-requests.md",
 		},
 	}
 
@@ -237,6 +243,7 @@ func TestSetApproveDefaults(t *testing.T) {
 					"kubernetes-client",
 				},
 				CommandHelpLink: test.commandHelpLink,
+				PrProcessLink:   test.prProcessLink,
 			}},
 		}
 
@@ -244,6 +251,10 @@ func TestSetApproveDefaults(t *testing.T) {
 
 		if c.Approve[0].CommandHelpLink != test.expectedCommandHelpLink {
 			t.Errorf("unexpected commandHelpLink: %s, expected: %s", c.Approve[0].CommandHelpLink, test.expectedCommandHelpLink)
+		}
+
+		if c.Approve[0].PrProcessLink != test.expectedPrProcessLink {
+			t.Errorf("unexpected prProcessLink: %s, expected: %s", c.Approve[0].PrProcessLink, test.expectedPrProcessLink)
 		}
 	}
 }
