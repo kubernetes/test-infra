@@ -48,6 +48,12 @@ template = """
       - --test_args={{test_args}}
       - --timeout=60m
       image: {{e2e_image}}
+      resources:
+        limits:
+          memory: 2Gi
+        requests:
+          cpu: "2"
+          memory: 2Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-grid, kops-distro-{{distro}}, kops-k8s-{{k8s_version}}
     testgrid-tab-name: {{tab}}
