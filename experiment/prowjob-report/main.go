@@ -31,6 +31,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"encoding/json"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -44,6 +45,27 @@ import (
 //	- jobs that don't declare testgrid info via annotations
 var configPath = flag.String("config", "../../config/prow/config.yaml", "Path to prow config")
 var jobConfigPath = flag.String("job-config", "../../config/jobs", "Path to prow job config")
+var reportFormat = flag.String("format", "csv", "Output format [csv|json] defaults to csv")
+
+// struct to report on stated resource requests and limits
+// a empty strings field indicates that no request was found 
+type RequestedResources struct {
+	cpuRequested string ; // "req.cpu": String(r.Requests[corev1.ResourceCPU], resource.Milli),
+	cpuLimitedTo string ; // "lim.cpu": String(r.Limits[corev1.ResourceCPU], resource.Milli),
+	memRequested string ; // "req.mem": String(r.Requests[corev1.ResourceMemory], resource.Giga),
+	memLimitedTo string ; // "lim.mem": String(r.Limits[corev1.ResourceCPU], resource.Giga),
+}
+
+// From a CI runtime perspective a Job has configuration data located in multiple locations
+// using multiple means of specification.
+// For the purposes of this report, the decoratedJobConfig contains JobBase config data
+// along with associated data that we are currently interested in reporting on.
+type DecoratedJobConfig struct {
+	Job cfg.JobBase;
+	Dashboard string;
+	Cluster string;
+	RequestedContainerResources map[string]map[string]string// Maps cntr name to RequestedResources 
+}
 
 // Loaded at TestMain.
 var c *cfg.Config
@@ -61,12 +83,18 @@ func main() {
 
 	conf, err := cfg.Load(*configPath, *jobConfigPath)
 	if err != nil {
-		fmt.Printf("Could not load config: %v", err)
+		fmt.Printf("configPath: %v\n", *configPath)
+		fmt.Printf("jobConfigPath: %v\n", *jobConfigPath)
+		fmt.Printf("Could not load config: %v\n", err)
 		os.Exit(1)
 	}
 	c = conf
-
-	PrintCsvOfJobResources()
+	switch *reportFormat {
+	case "csv":
+		PrintCsvOfJobResources()
+	case "json":
+		PrintJSONJobResources()
+	}
 }
 
 func allStaticJobs() []cfg.JobBase {
@@ -99,19 +127,28 @@ func isPodQOSGuaranteed(spec *corev1.PodSpec) bool {
 	}
 	return isGuaranteed
 }
-
-func GetResources(spec *corev1.PodSpec) map[string]string {
-	m := make(map[string]string)
+// GetResources returns a map of container names to resources requested by that container
+func GetResources(spec *corev1.PodSpec) map[string]map[string]string {
+	m := make(map[string]map[string]string)
 	if spec == nil {
 		return m
 	}
-	// TODO: support N containers
-	r := spec.Containers[0].Resources
-	m = map[string]string{
-		"req.cpu": String(r.Requests[corev1.ResourceCPU], resource.Milli),
-		"lim.cpu": String(r.Limits[corev1.ResourceCPU], resource.Milli),
-		"req.mem": String(r.Requests[corev1.ResourceMemory], resource.Giga),
-		"lim.mem": String(r.Limits[corev1.ResourceCPU], resource.Giga),
+	// Range over all Containers present in spec.
+	// Q : I have not managed to find any spces with more than one Container
+
+	fmt.Printf("Container count is %d\n", len(spec.Containers));
+  	for i,c := range spec.Containers {
+		cntrName := c.Name + "-" + strconv.Itoa(i);
+		r := c.Resources ;
+
+		m = map[string]map[string]string{
+			cntrName : {
+			"req.cpu": String(r.Requests[corev1.ResourceCPU], resource.Milli),
+			"lim.cpu": String(r.Limits[corev1.ResourceCPU], resource.Milli),
+			"req.mem": String(r.Requests[corev1.ResourceMemory], resource.Giga),
+				"lim.mem": String(r.Limits[corev1.ResourceCPU], resource.Giga),
+			},
+		}
 	}
 	return m
 }
@@ -166,7 +203,28 @@ func OwnerDashboard(job cfg.JobBase) string {
 	return dashboards[0]
 }
 
+func PrintJSONJobResources() {
+
+	var decoratedJobs []DecoratedJobConfig;
+	for _, job := range c.JobConfig.AllStaticPresubmits(nil) {
+		var cluster string = job.Cluster;
+		var dashboard = job.Annotations["testgrid-dashboards"];
+		var requestedResources = GetResources(job.Spec);
+		decoratedJobs = append(decoratedJobs, DecoratedJobConfig{
+			Cluster: cluster,
+			Dashboard : dashboard,
+			Job : job.JobBase,
+			RequestedContainerResources : requestedResources,
+		});
+	}
+	b, err := json.Marshal(decoratedJobs);
+	if err != nil {
+		fmt.Println("error:", err)
+	}
+	os.Stdout.Write(b)
+}
 func PrintCsvOfJobResources() {
+	/** 
 	fmt.Printf("primary dashboard, owner dashboard, name, type, repo, cluster, concurrency, req.cpu (m), lim.cpu (m), req.mem (Gi), lim.mem (Gi)\n")
 	printJobBaseColumns := func(jobType, repo string, job cfg.JobBase) {
 		name := job.Name
@@ -191,6 +249,7 @@ func PrintCsvOfJobResources() {
 			printJobBaseColumns("presubmit", repo, job.JobBase)
 		}
 	}
+*/
 }
 
 func TestQueryReleaseBlockingJobs() {
@@ -225,3 +284,4 @@ func TestQueryReleaseBlockingJobs() {
 		}
 	}
 }
+
