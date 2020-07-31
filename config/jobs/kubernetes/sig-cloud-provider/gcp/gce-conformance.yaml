@@ -23,7 +23,6 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --extract=ci/latest-fast
-      - --gcp-project-type=k8s-infra-gce-project
       - --gcp-master-image=gci
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
