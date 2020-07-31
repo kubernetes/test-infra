@@ -100,7 +100,7 @@ class GenerateBuilds(unittest.TestCase):
                 'started': 1595284709,
                 'finished': 1595286616,
                 'repo_commit': '5a529aa3a0dd3a050c5302329681e871ef6c162e',
-                'repos': {"kubernetes/kubernetes":"master"},
+                'repos': '{"kubernetes/kubernetes": "master"}',
             },
         ),
         (
@@ -133,7 +133,7 @@ class GenerateBuilds(unittest.TestCase):
                 'started': 1595277241,
                 'finished': 1595279434,
                 'repo_commit': '30f64c5b1fc57a3beb1476f9beb29280166954d1',
-                'repos': {"kubernetes/kubernetes":"master:5feab0"},
+                'repos': '{"kubernetes/kubernetes": "master:5feab0"}',
             },
         ),
         (
@@ -182,7 +182,7 @@ class GenerateBuilds(unittest.TestCase):
                 'finished': 1595282312,
                 'version': 'v1.20.0-alpha.0.261+06ea384605f172',
                 'repo_commit': 'v1.20.0-alpha.0.261+06ea384605f172',
-                'repos': {'k8s.io/kubernetes': 'master:5a529', 'k8s.io/release': 'master'},
+                'repos': '{"k8s.io/kubernetes": "master:5a529", "k8s.io/release": "master"}',
                 'metadata': {
                     "node_os_image": "cos-81-12871-59-0",
                     "infra-commit": "2a9a0f868",
@@ -238,7 +238,7 @@ class GenerateBuilds(unittest.TestCase):
                 'finished': 1595263185,
                 'version': 'v1.20.0-alpha.0.255+5feab0aa1e592a',
                 'repo_commit': 'v1.20.0-alpha.0.255+5feab0aa1e592a',
-                'repos': {'k8s.io/kubernetes': 'master', 'k8s.io/release': 'master'},
+                'repos': '{"k8s.io/kubernetes": "master", "k8s.io/release": "master"}',
                 'metadata': {
                     "repo": "k8s.io/kubernetes",
                     "repos": {
@@ -274,7 +274,7 @@ class GenerateBuilds(unittest.TestCase):
                 'tests_run': 1,
                 'tests_failed':0,
                 'repo_commit': 'v1.20.0-alpha.0.255+5feab0aa1e592a',
-                'repos': {'k8s.io/kubernetes': 'master', 'k8s.io/release': 'master'},
+                'repos': '{"k8s.io/kubernetes": "master", "k8s.io/release": "master"}',
                 'started': 1595263104,
             },
         ),
