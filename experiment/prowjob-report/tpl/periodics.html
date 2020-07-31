@@ -1,0 +1,25 @@
+{{define "periodics"}}
+    <form action="/action_page.php" method="get">
+        <table border="1" >
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Path</th>
+            <th>Url</th>
+        </tr>
+
+        {{- range . -}}
+            <tr>
+                {{if .Checked}}
+                <td><label><input type="checkbox" />{{ .Name }}</label></td>
+                {{ else }}
+                <td><label><input type="checkbox" checked>{{ .Name }}</label></td>
+                {{ end }}
+                <td>{{ .Type }}</td>
+                <td>TODO</td>
+                <td>TODO</td>
+            </tr>
+        {{- end}}
+        </table>
+    </form>
+{{end}}
