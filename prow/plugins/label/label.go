@@ -34,6 +34,7 @@ const pluginName = "label"
 
 var (
 	defaultLabels          = []string{"kind", "priority", "area"}
+	commentRegex           = regexp.MustCompile(`(?s)<!--(.*?)-->`)
 	labelRegex             = regexp.MustCompile(`(?m)^/(area|committee|kind|language|priority|sig|triage|wg)\s*(.*?)\s*$`)
 	removeLabelRegex       = regexp.MustCompile(`(?m)^/remove-(area|committee|kind|language|priority|sig|triage|wg)\s*(.*?)\s*$`)
 	customLabelRegex       = regexp.MustCompile(`(?m)^/label\s*(.*?)\s*$`)
@@ -125,10 +126,11 @@ func handle(gc githubClient, log *logrus.Entry, additionalLabels []string, e *gi
 		return nil
 	}
 
-	labelMatches := labelRegex.FindAllStringSubmatch(e.Body, -1)
-	removeLabelMatches := removeLabelRegex.FindAllStringSubmatch(e.Body, -1)
-	customLabelMatches := customLabelRegex.FindAllStringSubmatch(e.Body, -1)
-	customRemoveLabelMatches := customRemoveLabelRegex.FindAllStringSubmatch(e.Body, -1)
+	bodyWithoutComments := commentRegex.ReplaceAllString(e.Body, "")
+	labelMatches := labelRegex.FindAllStringSubmatch(bodyWithoutComments, -1)
+	removeLabelMatches := removeLabelRegex.FindAllStringSubmatch(bodyWithoutComments, -1)
+	customLabelMatches := customLabelRegex.FindAllStringSubmatch(bodyWithoutComments, -1)
+	customRemoveLabelMatches := customRemoveLabelRegex.FindAllStringSubmatch(bodyWithoutComments, -1)
 	if len(labelMatches) == 0 && len(removeLabelMatches) == 0 && len(customLabelMatches) == 0 && len(customRemoveLabelMatches) == 0 {
 		return nil
 	}
@@ -194,19 +196,19 @@ func handle(gc githubClient, log *logrus.Entry, additionalLabels []string, e *gi
 	if len(nonexistent) > 0 {
 		log.Infof("Nonexistent labels: %v", nonexistent)
 		msg := fmt.Sprintf("The label(s) `%s` cannot be applied. These labels are supported: `%s`", strings.Join(nonexistent, ", "), strings.Join(additionalLabels, ", "))
-		return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg))
+		return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(bodyWithoutComments, e.HTMLURL, e.User.Login, msg))
 	}
 
 	if len(noSuchLabelsInRepo) > 0 {
 		log.Infof("Labels missing in repo: %v", noSuchLabelsInRepo)
 		msg := fmt.Sprintf("The label(s) `%s` cannot be applied, because the repository doesn't have them", strings.Join(noSuchLabelsInRepo, ", "))
-		return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg))
+		return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(bodyWithoutComments, e.HTMLURL, e.User.Login, msg))
 	}
 
 	// Tried to remove Labels that were not present on the Issue
 	if len(noSuchLabelsOnIssue) > 0 {
 		msg := fmt.Sprintf("Those labels are not set on the issue: `%v`", strings.Join(noSuchLabelsOnIssue, ", "))
-		return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg))
+		return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(bodyWithoutComments, e.HTMLURL, e.User.Login, msg))
 	}
 
 	return nil
