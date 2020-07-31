@@ -693,7 +693,7 @@ func TestOptionsForBranch(t *testing.T) {
 	verifiedState, modifiedState := BugzillaBugState{Status: "VERIFIED"}, BugzillaBugState{Status: "MODIFIED"}
 	postState, preState, releaseState, notabugState := BugzillaBugState{Status: post}, BugzillaBugState{Status: pre}, BugzillaBugState{Status: release}, BugzillaBugState{Status: notabug}
 	closedErrata := BugzillaBugState{Status: "CLOSED", Resolution: "ERRATA"}
-	orgAllowedGroups, repoAllowedGroups := []string{"test"}, []string{"test", "security"}
+	orgAllowedGroups, repoAllowedGroups := []string{"test"}, []string{"security", "test"}
 
 	rawConfig := `default:
   "*":
