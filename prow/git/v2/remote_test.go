@@ -73,7 +73,7 @@ func TestHTTPResolver(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			actual, actualErr := httpResolver(testCase.remote, testCase.username, testCase.token)()
+			actual, actualErr := HttpResolver(testCase.remote, testCase.username, testCase.token)()
 			if testCase.expectedErr && actualErr == nil {
 				t.Errorf("%s: expected an error but got none", testCase.name)
 			}
