@@ -1,6 +1,6 @@
 presubmits:
   kubernetes-sigs/kubetest2:
-  - name: pull-kubetest2-verify-lint
+  - name: pull-kubetest2-verify
     decorate: true
     always_run: true
     labels:
@@ -12,37 +12,7 @@ presubmits:
         - wrapper.sh
         args:
         - make
-        - lint
-        securityContext:
-          privileged: true
-  - name: pull-kubetest2-verify-shellcheck
-    decorate: true
-    always_run: true
-    labels:
-      preset-dind-enabled: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/krte:v20200726-f8d6253-master
-        command:
-        - wrapper.sh
-        args:
-        - make
-        - shellcheck
-        securityContext:
-          privileged: true
-  - name: pull-kubetest2-verify-unit
-    decorate: true
-    always_run: true
-    labels:
-      preset-dind-enabled: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/krte:v20200726-f8d6253-master
-        command:
-        - wrapper.sh
-        args:
-        - make
-        - unit
+        - verify
         securityContext:
           privileged: true
   - name: pull-kubetest2-build
