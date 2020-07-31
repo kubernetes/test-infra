@@ -28,7 +28,6 @@ require (
 	github.com/GoogleCloudPlatform/testgrid v0.0.13
 	github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46
 	github.com/andygrunwald/go-gerrit v0.0.0-20190120104749-174420ebee6c
-	github.com/aws/aws-k8s-tester v1.0.0
 	github.com/aws/aws-sdk-go v1.31.12
 	github.com/bazelbuild/buildtools v0.0.0-20190917191645-69366ca98f89
 	github.com/blang/semver v3.5.1+incompatible
@@ -58,7 +57,6 @@ require (
 	github.com/klauspost/pgzip v1.2.1
 	github.com/mattn/go-zglob v0.0.2
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826
-	github.com/octago/sflags v0.2.0
 	github.com/pelletier/go-toml v1.6.0
 	github.com/peterbourgon/diskv v2.0.1+incompatible
 	github.com/pkg/errors v0.9.1
