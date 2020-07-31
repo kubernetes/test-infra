@@ -4,12 +4,20 @@ presets:
   env:
   - name: WIN_BUILD
     value: https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/build/build-windows-k8s.sh
-  - name: KUBE_TEST_REPO_LIST_DOWNLOAD_LOCATION
-    value: https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/images/image-repo-list
   - name: K8S_SSH_PUBLIC_KEY_PATH
     value: /etc/ssh-key-secret/ssh-public # from preset-k8s-ssh label
   - name: K8S_SSH_PRIVATE_KEY_PATH
     value: /etc/ssh-key-secret/ssh-private # from preset-k8s-ssh label
+- labels:
+    preset-windows-repo-list: "true"
+  env:
+  - name: KUBE_TEST_REPO_LIST_DOWNLOAD_LOCATION
+    value: https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/images/image-repo-list
+- labels:
+    preset-windows-repo-list-2004: "true"
+  env:
+  - name: KUBE_TEST_REPO_LIST_DOWNLOAD_LOCATION
+    value: https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/images/image-repo-list-2004
 
 presubmits:
   kubernetes/kubernetes:
@@ -26,6 +34,7 @@ presubmits:
       preset-service-account: "true"
       preset-azure-cred: "true"
       preset-azure-windows: "true"
+      preset-windows-repo-list: "true"
       preset-k8s-ssh: "true"
       preset-dind-enabled: "true"
     spec:
@@ -80,6 +89,7 @@ presubmits:
       preset-service-account: "true"
       preset-azure-cred: "true"
       preset-azure-windows: "true"
+      preset-windows-repo-list: "true"
       preset-k8s-ssh: "true"
       preset-dind-enabled: "true"
     extra_refs:
@@ -142,6 +152,7 @@ presubmits:
       preset-service-account: "true"
       preset-azure-cred: "true"
       preset-azure-windows: "true"
+      preset-windows-repo-list: "true"
       preset-k8s-ssh: "true"
       preset-dind-enabled: "true"
     extra_refs:
@@ -254,6 +265,7 @@ periodics:
     preset-service-account: "true"
     preset-azure-cred: "true"
     preset-azure-windows: "true"
+    preset-windows-repo-list: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
   extra_refs:
@@ -360,6 +372,7 @@ periodics:
     preset-service-account: "true"
     preset-azure-cred: "true"
     preset-azure-windows: "true"
+    preset-windows-repo-list: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
   extra_refs:
@@ -413,6 +426,7 @@ periodics:
     preset-service-account: "true"
     preset-azure-cred: "true"
     preset-azure-windows: "true"
+    preset-windows-repo-list: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
   extra_refs:
@@ -473,6 +487,7 @@ periodics:
     preset-service-account: "true"
     preset-azure-cred: "true"
     preset-azure-windows: "true"
+    preset-windows-repo-list: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
   extra_refs:
@@ -526,6 +541,7 @@ periodics:
     preset-service-account: "true"
     preset-azure-cred: "true"
     preset-azure-windows: "true"
+    preset-windows-repo-list: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
   extra_refs:
@@ -579,6 +595,7 @@ periodics:
     preset-service-account: "true"
     preset-azure-cred: "true"
     preset-azure-windows: "true"
+    preset-windows-repo-list: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
   extra_refs:
@@ -641,6 +658,7 @@ periodics:
     preset-service-account: "true"
     preset-azure-cred: "true"
     preset-azure-windows: "true"
+    preset-windows-repo-list: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
   extra_refs:
@@ -703,6 +721,7 @@ periodics:
     preset-service-account: "true"
     preset-azure-cred: "true"
     preset-azure-windows: "true"
+    preset-windows-repo-list: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
   extra_refs:
@@ -756,6 +775,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-azure-windows: "true"
+    preset-windows-repo-list: "true"
     preset-azure-cred: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
@@ -810,6 +830,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-azure-windows: "true"
+    preset-windows-repo-list-2004: "true"
     preset-azure-cred: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
@@ -848,7 +869,7 @@ periodics:
       - --aksengine-deploy-custom-k8s
       - --aksengine-agentpoolcount=2
       # Specific test args
-      - --test_args=--ginkgo.flakeAttempts=2 --node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[sig-apps\].CronJob|\[sig-api-machinery\].ResourceQuota|\[sig-scheduling\].SchedulerPreemption|\[sig-autoscaling\].\[Feature:HPA\]  --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application
+      - --test_args=--ginkgo.flakeAttempts=2 --node-os-distro=windows --docker-config-file=$(DOCKER_CONFIG_FILE) --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[sig-apps\].CronJob|\[sig-api-machinery\].ResourceQuota|\[sig-scheduling\].SchedulerPreemption|\[sig-autoscaling\].\[Feature:HPA\]  --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application
       - --ginkgo-parallel=6
       securityContext:
         privileged: true
