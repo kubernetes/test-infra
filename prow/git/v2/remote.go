@@ -83,7 +83,7 @@ type httpResolverFactory struct {
 // CentralRemote creates a remote resolver that refers to an authoritative remote
 // for the repository.
 func (f *httpResolverFactory) CentralRemote(org, repo string) RemoteResolver {
-	return httpResolver(func() (*url.URL, error) {
+	return HttpResolver(func() (*url.URL, error) {
 		return &url.URL{Scheme: "https", Host: f.host, Path: fmt.Sprintf("%s/%s", org, repo)}, nil
 	}, f.username, f.token)
 }
@@ -91,7 +91,7 @@ func (f *httpResolverFactory) CentralRemote(org, repo string) RemoteResolver {
 // PublishRemote creates a remote resolver that refers to a user's remote
 // for the repository that can be published to.
 func (f *httpResolverFactory) PublishRemote(_, repo string) RemoteResolver {
-	return httpResolver(func() (*url.URL, error) {
+	return HttpResolver(func() (*url.URL, error) {
 		if f.username == nil {
 			return nil, errors.New("username not configured, no publish repo available")
 		}
@@ -103,8 +103,8 @@ func (f *httpResolverFactory) PublishRemote(_, repo string) RemoteResolver {
 	}, f.username, f.token)
 }
 
-// httpResolverbuilds http URLs that may optionally contain simple auth credentials, resolved dynamically.
-func httpResolver(remote func() (*url.URL, error), username LoginGetter, token TokenGetter) RemoteResolver {
+// HttpResolver builds http URLs that may optionally contain simple auth credentials, resolved dynamically.
+func HttpResolver(remote func() (*url.URL, error), username LoginGetter, token TokenGetter) RemoteResolver {
 	return func() (string, error) {
 		remote, err := remote()
 		if err != nil {
