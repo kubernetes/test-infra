@@ -370,7 +370,6 @@ periodics:
       - --check-leaked-resources
       - --env=ENABLE_POD_SECURITY_POLICY=true
       - --extract=ci/latest-fast
-      - --gcp-project-type=k8s-infra-gce-project
       - --gcp-master-image=gci
       - --gcp-node-image=gci
       - --gcp-nodes=4
@@ -417,7 +416,6 @@ periodics:
           - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2004-focal-v20200423
           - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
           - --env=KUBE_CONTAINER_RUNTIME=docker
-          - --gcp-project-type=k8s-infra-gce-project
           - --gcp-master-image=ubuntu
           - --gcp-node-image=ubuntu
           - --gcp-nodes=4
@@ -468,7 +466,6 @@ periodics:
           - --env=KUBE_NODE_OS_DISTRIBUTION=ubuntu
           - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2004-focal-v20200423
           - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
-          - --gcp-project-type=k8s-infra-gce-project
           - --gcp-master-image=ubuntu
           - --gcp-node-image=ubuntu
           - --gcp-nodes=4
@@ -539,7 +536,6 @@ periodics:
       - --env=KUBE_PROXY_DAEMONSET=true
       - --env=ENABLE_POD_PRIORITY=true
       - --extract=ci/latest-fast
-      - --gcp-project-type=k8s-infra-gce-project
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --provider=gce
@@ -576,7 +572,6 @@ periodics:
       - --check-leaked-resources
       - --env=ENABLE_POD_SECURITY_POLICY=true
       - --extract=ci/latest
-      - --gcp-project-type=k8s-infra-gce-project
       - --gcp-master-image=gci
       - --gcp-node-image=gci
       - --gcp-nodes=4
@@ -664,7 +659,6 @@ periodics:
       - --check-leaked-resources
       - --cluster=err-e2e
       - --extract=ci/latest-fast
-      - --gcp-project-type=k8s-infra-gce-project
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --provider=gce
@@ -701,7 +695,6 @@ periodics:
       - --check-leaked-resources
       - --env=NODE_LOCAL_SSDS_EXT=1,scsi,fs
       - --extract=ci/latest
-      - --gcp-project-type=k8s-infra-gce-project
       - --gcp-master-image=gci
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
@@ -738,7 +731,6 @@ periodics:
       - --
       - --check-leaked-resources
       - --extract=ci/latest
-      - --gcp-project-type=k8s-infra-gce-project
       - --gcp-master-image=gci
       - --gcp-node-image=gci
       - --gcp-zone=europe-west1-c
