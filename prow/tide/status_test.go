@@ -17,6 +17,7 @@ limitations under the License.
 package tide
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"
@@ -557,7 +558,7 @@ func TestExpectedStatus(t *testing.T) {
 			ca.Set(&config.Config{})
 			mmc := newMergeChecker(ca.Config, &fgc{})
 
-			sc, err := newStatusController(logrus.NewEntry(logrus.StandardLogger()), nil, newFakeManager(tc.prowJobs...), nil, nil, nil, "", mmc)
+			sc, err := newStatusController(context.Background(), logrus.NewEntry(logrus.StandardLogger()), nil, newFakeManager(tc.prowJobs...), nil, nil, nil, "", mmc)
 			if err != nil {
 				t.Fatalf("failed to get statusController: %v", err)
 			}
@@ -687,7 +688,7 @@ func TestSetStatuses(t *testing.T) {
 		}
 
 		mmc := newMergeChecker(ca.Config, fc)
-		sc, err := newStatusController(log, fc, newFakeManager(), nil, ca.Config, nil, "", mmc)
+		sc, err := newStatusController(context.Background(), log, fc, newFakeManager(), nil, ca.Config, nil, "", mmc)
 		if err != nil {
 			t.Fatalf("failed to get statusController: %v", err)
 		}

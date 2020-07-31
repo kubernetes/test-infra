@@ -713,7 +713,7 @@ func TestDividePool(t *testing.T) {
 	mmc := newMergeChecker(configGetter, fc)
 	mgr := newFakeManager()
 	c, err := newSyncController(
-		log, fc, mgr, configGetter, nil, nil, nil, mmc,
+		context.Background(), log, fc, mgr, configGetter, nil, nil, nil, mmc,
 	)
 	if err != nil {
 		t.Fatalf("failed to construct sync controller: %v", err)
@@ -1642,6 +1642,7 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 			}
 			fgc := fgc{mergeErrs: tc.mergeErrs}
 			c, err := newSyncController(
+				context.Background(),
 				logrus.WithField("controller", "tide"),
 				&fgc,
 				newFakeManager(tc.preExistingJobs...),
@@ -3507,7 +3508,7 @@ type fakeFieldIndexer struct {
 	client *indexingClient
 }
 
-func (fi *fakeFieldIndexer) IndexField(_ runtime.Object, field string, extractValue ctrlruntimeclient.IndexerFunc) error {
+func (fi *fakeFieldIndexer) IndexField(_ context.Context, _ runtime.Object, field string, extractValue ctrlruntimeclient.IndexerFunc) error {
 	fi.client.indexFuncs[field] = extractValue
 	return nil
 }

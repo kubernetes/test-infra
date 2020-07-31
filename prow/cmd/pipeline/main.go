@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"errors"
 	"flag"
 	"fmt"
@@ -98,7 +99,7 @@ func newPipelineConfig(cfg rest.Config, stop <-chan struct{}) (*pipelineConfig, 
 
 	// Ensure the pipeline CRD is deployed
 	// TODO(fejta): probably a better way to do this
-	if _, err := bc.TektonV1alpha1().PipelineRuns("").List(metav1.ListOptions{Limit: 1}); err != nil {
+	if _, err := bc.TektonV1alpha1().PipelineRuns("").List(context.TODO(), metav1.ListOptions{Limit: 1}); err != nil {
 		return nil, err
 	}
 

@@ -17,6 +17,7 @@ limitations under the License.
 package updateconfig
 
 import (
+	"context"
 	"strings"
 	"testing"
 
@@ -1198,7 +1199,7 @@ func testUpdateConfig(clients localgit.Clients, t *testing.T) {
 		}
 
 		for _, expected := range tc.expectedConfigMaps {
-			actual, err := fkc.CoreV1().ConfigMaps(expected.Namespace).Get(expected.Name, metav1.GetOptions{})
+			actual, err := fkc.CoreV1().ConfigMaps(expected.Namespace).Get(context.TODO(), expected.Name, metav1.GetOptions{})
 			if err != nil && errors.IsNotFound(err) {
 				t.Errorf("%s: Should have updated or created configmap for '%s'", tc.name, expected)
 			} else if !equality.Semantic.DeepEqual(expected, actual) {
@@ -1460,7 +1461,7 @@ func testUpdate(clients localgit.Clients, t *testing.T) {
 		}
 
 		expected := tc.expectedConfigMap
-		actual, err := fkc.CoreV1().ConfigMaps(expected.Namespace).Get(expected.Name, metav1.GetOptions{})
+		actual, err := fkc.CoreV1().ConfigMaps(expected.Namespace).Get(context.TODO(), expected.Name, metav1.GetOptions{})
 		if err != nil && errors.IsNotFound(err) {
 			t.Errorf("%s: Should have updated or created configmap for '%s'", tc.name, expected)
 		} else if !equality.Semantic.DeepEqual(expected, actual) {

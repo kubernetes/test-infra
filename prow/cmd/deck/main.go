@@ -358,7 +358,7 @@ func main() {
 			logrus.WithError(err).Fatal("Error getting manager.")
 		}
 		// Force a cache for ProwJobs
-		if _, err := mgr.GetCache().GetInformer(&prowapi.ProwJob{}); err != nil {
+		if _, err := mgr.GetCache().GetInformer(context.TODO(), &prowapi.ProwJob{}); err != nil {
 			logrus.WithError(err).Fatal("Failed to get prowjob informer")
 		}
 		go func() {
@@ -512,7 +512,7 @@ type podLogClient struct {
 }
 
 func (c *podLogClient) GetLogs(name string) ([]byte, error) {
-	reader, err := c.client.GetLogs(name, &coreapi.PodLogOptions{Container: kube.TestContainerName}).Stream()
+	reader, err := c.client.GetLogs(name, &coreapi.PodLogOptions{Container: kube.TestContainerName}).Stream(context.TODO())
 	if err != nil {
 		return nil, err
 	}
@@ -1344,7 +1344,7 @@ func handleProwJob(prowJobClient prowv1.ProwJobInterface, log *logrus.Entry) htt
 			return
 		}
 
-		pj, err := prowJobClient.Get(name, metav1.GetOptions{})
+		pj, err := prowJobClient.Get(context.TODO(), name, metav1.GetOptions{})
 		if err != nil {
 			http.Error(w, fmt.Sprintf("ProwJob not found: %v", err), http.StatusNotFound)
 			if !kerrors.IsNotFound(err) {
@@ -1409,7 +1409,7 @@ func handleRerun(prowJobClient prowv1.ProwJobInterface, createProwJob bool, cfg 
 			http.Error(w, "request did not provide the 'prowjob' query parameter", http.StatusBadRequest)
 			return
 		}
-		pj, err := prowJobClient.Get(name, metav1.GetOptions{})
+		pj, err := prowJobClient.Get(context.TODO(), name, metav1.GetOptions{})
 		if err != nil {
 			http.Error(w, fmt.Sprintf("ProwJob not found: %v", err), http.StatusNotFound)
 			if !kerrors.IsNotFound(err) {
@@ -1464,7 +1464,7 @@ func handleRerun(prowJobClient prowv1.ProwJobInterface, createProwJob bool, cfg 
 				}
 				return
 			}
-			created, err := prowJobClient.Create(&newPJ)
+			created, err := prowJobClient.Create(context.TODO(), &newPJ, metav1.CreateOptions{})
 			if err != nil {
 				l.WithError(err).Error("Error creating job")
 				http.Error(w, fmt.Sprintf("Error creating job: %v", err), http.StatusInternalServerError)

@@ -379,7 +379,7 @@ func TestMaxConcurrencyConsidersCacheStaleness(t *testing.T) {
 		}}}}
 	}
 
-	r := newReconciler(pjClient, nil, cfg, "")
+	r := newReconciler(context.Background(), pjClient, nil, cfg, "")
 	r.buildClients = map[string]ctrlruntimeclient.Client{pja.Spec.Cluster: fakectrlruntimeclient.NewFakeClient()}
 
 	wg := &sync.WaitGroup{}
@@ -477,6 +477,7 @@ func TestStartPodBlocksUntilItHasThePodInCache(t *testing.T) {
 		config:       func() *config.Config { return &config.Config{} },
 	}
 	pj := &prowv1.ProwJob{
+		ObjectMeta: metav1.ObjectMeta{Name: "name"},
 		Spec: prowv1.ProwJobSpec{
 			PodSpec: &corev1.PodSpec{Containers: []corev1.Container{{}}},
 			Refs:    &prowv1.Refs{},
@@ -486,7 +487,7 @@ func TestStartPodBlocksUntilItHasThePodInCache(t *testing.T) {
 	if _, _, err := r.startPod(pj); err != nil {
 		t.Fatalf("startPod: %v", err)
 	}
-	if err := r.buildClients["default"].Get(context.Background(), types.NamespacedName{}, &corev1.Pod{}); err != nil {
+	if err := r.buildClients["default"].Get(context.Background(), types.NamespacedName{Name: "name"}, &corev1.Pod{}); err != nil {
 		t.Errorf("couldn't get pod, this likely means startPod didn't block: %v", err)
 	}
 }

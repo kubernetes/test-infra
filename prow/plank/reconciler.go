@@ -76,7 +76,8 @@ func add(
 		return fmt.Errorf("failed to construct predicate: %w", err)
 	}
 
-	if err := mgr.GetFieldIndexer().IndexField(&prowv1.ProwJob{}, prowJobIndexName, prowJobIndexer(cfg().ProwJobNamespace)); err != nil {
+	ctx := context.Background()
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &prowv1.ProwJob{}, prowJobIndexName, prowJobIndexer(cfg().ProwJobNamespace)); err != nil {
 		return fmt.Errorf("failed to add indexer: %w", err)
 	}
 
@@ -86,7 +87,7 @@ func add(
 		WithEventFilter(predicate).
 		WithOptions(controller.Options{MaxConcurrentReconciles: numWorkers})
 
-	r := newReconciler(mgr.GetClient(), overwriteReconcile, cfg, totURL)
+	r := newReconciler(ctx, mgr.GetClient(), overwriteReconcile, cfg, totURL)
 	for buildCluster, buildClusterMgr := range buildMgrs {
 		blder = blder.Watches(
 			source.NewKindWithCache(&corev1.Pod{}, buildClusterMgr.GetCache()),
@@ -105,9 +106,9 @@ func add(
 	return nil
 }
 
-func newReconciler(pjClient ctrlruntimeclient.Client, overwriteReconcile reconcileFunc, cfg config.Getter, totURL string) *reconciler {
+func newReconciler(ctx context.Context, pjClient ctrlruntimeclient.Client, overwriteReconcile reconcileFunc, cfg config.Getter, totURL string) *reconciler {
 	return &reconciler{
-		ctx:                context.Background(),
+		ctx:                ctx,
 		pjClient:           pjClient,
 		buildClients:       map[string]ctrlruntimeclient.Client{},
 		overwriteReconcile: overwriteReconcile,

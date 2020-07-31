@@ -18,6 +18,7 @@ limitations under the License.
 package override
 
 import (
+	"context"
 	"fmt"
 	"regexp"
 	"strings"
@@ -54,7 +55,7 @@ type githubClient interface {
 }
 
 type prowJobClient interface {
-	Create(pj *prowapi.ProwJob) (*prowapi.ProwJob, error)
+	Create(context.Context, *prowapi.ProwJob, metav1.CreateOptions) (*prowapi.ProwJob, error)
 }
 
 type ownersClient interface {
@@ -103,8 +104,8 @@ func (c client) ListTeamMembers(id int, role string) ([]github.TeamMember, error
 	return c.ghc.ListTeamMembers(id, role)
 }
 
-func (c client) Create(pj *prowapi.ProwJob) (*prowapi.ProwJob, error) {
-	return c.prowJobClient.Create(pj)
+func (c client) Create(ctx context.Context, pj *prowapi.ProwJob, o metav1.CreateOptions) (*prowapi.ProwJob, error) {
+	return c.prowJobClient.Create(ctx, pj, o)
 }
 
 func (c client) presubmits(org, repo string, baseSHAGetter config.RefGetter, headSHA string) ([]config.Presubmit, error) {
@@ -379,7 +380,7 @@ Only the following contexts were expected:
 				URL:            e.HTMLURL,
 			}
 			log.WithFields(pjutil.ProwJobFields(&pj)).Info("Creating a new prowjob.")
-			if _, err := oc.Create(&pj); err != nil {
+			if _, err := oc.Create(context.TODO(), &pj, metav1.CreateOptions{}); err != nil {
 				resp := fmt.Sprintf("Failed to create override job for %s", status.Context)
 				log.WithError(err).Warn(resp)
 				return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))

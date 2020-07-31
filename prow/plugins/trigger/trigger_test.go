@@ -17,6 +17,7 @@ limitations under the License.
 package trigger
 
 import (
+	"context"
 	"testing"
 
 	"github.com/pkg/errors"
@@ -187,7 +188,7 @@ func TestRunRequested(t *testing.T) {
 			}
 
 			observedCreatedProwJobs := sets.NewString()
-			existingProwJobs, err := fakeProwJobClient.ProwV1().ProwJobs("prowjobs").List(metav1.ListOptions{})
+			existingProwJobs, err := fakeProwJobClient.ProwV1().ProwJobs("prowjobs").List(context.Background(), metav1.ListOptions{})
 			if err != nil {
 				t.Errorf("could not list current state of prow jobs: %v", err)
 				return

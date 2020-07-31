@@ -25,6 +25,7 @@ import (
 
 	jsonpatch "github.com/evanphx/json-patch"
 	"github.com/sirupsen/logrus"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ktypes "k8s.io/apimachinery/pkg/types"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
@@ -40,7 +41,7 @@ type patchClient interface {
 
 // prowClient a minimalistic prow client required by the aborter
 type prowClient interface {
-	Patch(name string, pt ktypes.PatchType, data []byte, subresources ...string) (result *prowapi.ProwJob, err error)
+	Patch(ctx context.Context, name string, pt ktypes.PatchType, data []byte, o metav1.PatchOptions, subresources ...string) (result *prowapi.ProwJob, err error)
 }
 
 // ProwJobResourcesCleanup type for a callback function which it is expected to clean up
@@ -135,7 +136,7 @@ func TerminateOlderJobs(pjc patchClient, log *logrus.Entry, pjs []prowapi.ProwJo
 	return nil
 }
 
-func PatchProwjob(pjc prowClient, log *logrus.Entry, srcPJ prowapi.ProwJob, destPJ prowapi.ProwJob) (*prowapi.ProwJob, error) {
+func PatchProwjob(ctx context.Context, pjc prowClient, log *logrus.Entry, srcPJ prowapi.ProwJob, destPJ prowapi.ProwJob) (*prowapi.ProwJob, error) {
 	srcPJData, err := json.Marshal(srcPJ)
 	if err != nil {
 		return nil, fmt.Errorf("marshal source prow job: %v", err)
@@ -151,7 +152,7 @@ func PatchProwjob(pjc prowClient, log *logrus.Entry, srcPJ prowapi.ProwJob, dest
 		return nil, fmt.Errorf("cannot create JSON patch: %v", err)
 	}
 
-	newPJ, err := pjc.Patch(srcPJ.Name, ktypes.MergePatchType, patch)
+	newPJ, err := pjc.Patch(ctx, srcPJ.Name, ktypes.MergePatchType, patch, metav1.PatchOptions{})
 	log.WithFields(ProwJobFields(&destPJ)).Debug("Patched ProwJob.")
 	return newPJ, err
 }

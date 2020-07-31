@@ -67,7 +67,7 @@ func (rg k8sResourceGetter) GetPod(cluster, namespace, name string) (*v1.Pod, er
 	if _, ok := rg.podClientSets[cluster]; !ok {
 		return nil, fmt.Errorf("couldn't find cluster %q", cluster)
 	}
-	return rg.podClientSets[cluster].Pods(namespace).Get(name, metav1.GetOptions{})
+	return rg.podClientSets[cluster].Pods(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 }
 
 func (rg k8sResourceGetter) GetEvents(cluster, namespace string, pod *v1.Pod) ([]v1.Event, error) {

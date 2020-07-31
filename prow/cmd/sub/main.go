@@ -25,6 +25,7 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
@@ -61,11 +62,11 @@ type kubeClient struct {
 	dryRun bool
 }
 
-func (c *kubeClient) Create(job *prowapi.ProwJob) (*prowapi.ProwJob, error) {
+func (c *kubeClient) Create(ctx context.Context, job *prowapi.ProwJob, o metav1.CreateOptions) (*prowapi.ProwJob, error) {
 	if c.dryRun {
 		return job, nil
 	}
-	return c.client.Create(job)
+	return c.client.Create(ctx, job, o)
 }
 
 func init() {

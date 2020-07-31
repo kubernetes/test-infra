@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	context2 "context"
 	"crypto/rand"
 	"errors"
 	"flag"
@@ -585,7 +586,7 @@ func applyStarter(kc *kubernetes.Clientset, ns, choice, ctx string, overwrite bo
 		choice = defaultStarter
 		fmt.Println("Loading from", choice)
 	}
-	_, err := kc.AppsV1().Deployments(ns).Get("plank", metav1.GetOptions{})
+	_, err := kc.AppsV1().Deployments(ns).Get(context2.TODO(), "plank", metav1.GetOptions{})
 	switch {
 	case err != nil && apierrors.IsNotFound(err):
 		// Great, new clean namespace to deploy!
@@ -631,9 +632,9 @@ func ingress(kc *kubernetes.Clientset, ns, service string) (url.URL, error) {
 
 		// Detect ingress API to use based on Kubernetes version
 		if hasResource(kc.Discovery(), networking.SchemeGroupVersion.WithResource("ingresses")) {
-			ing, err = kc.NetworkingV1beta1().Ingresses(ns).List(metav1.ListOptions{})
+			ing, err = kc.NetworkingV1beta1().Ingresses(ns).List(context2.TODO(), metav1.ListOptions{})
 		} else {
-			oldIng, err := kc.ExtensionsV1beta1().Ingresses(ns).List(metav1.ListOptions{})
+			oldIng, err := kc.ExtensionsV1beta1().Ingresses(ns).List(context2.TODO(), metav1.ListOptions{})
 			if err == nil {
 				ing, err = toNewIngress(oldIng)
 			}
@@ -753,7 +754,7 @@ func orgRepo(in string) (string, string) {
 }
 
 func ensureHmac(kc *kubernetes.Clientset, ns string) (string, error) {
-	secret, err := kc.CoreV1().Secrets(ns).Get("hmac-token", metav1.GetOptions{})
+	secret, err := kc.CoreV1().Secrets(ns).Get(context2.TODO(), "hmac-token", metav1.GetOptions{})
 	if err != nil && !apierrors.IsNotFound(err) {
 		return "", fmt.Errorf("get: %v", err)
 	}
@@ -772,11 +773,11 @@ func ensureHmac(kc *kubernetes.Clientset, ns string) (string, error) {
 	secret.Namespace = ns
 	secret.StringData = map[string]string{"hmac": hmac}
 	if err == nil {
-		if _, err = kc.CoreV1().Secrets(ns).Update(secret); err != nil {
+		if _, err = kc.CoreV1().Secrets(ns).Update(context2.TODO(), secret, metav1.UpdateOptions{}); err != nil {
 			return "", fmt.Errorf("update: %v", err)
 		}
 	} else {
-		if _, err = kc.CoreV1().Secrets(ns).Create(secret); err != nil {
+		if _, err = kc.CoreV1().Secrets(ns).Create(context2.TODO(), secret, metav1.CreateOptions{}); err != nil {
 			return "", fmt.Errorf("create: %v", err)
 		}
 	}
@@ -848,7 +849,7 @@ func enableHooks(client github.Client, loc url.URL, secret string, repos ...stri
 }
 
 func ensureConfigMap(kc *kubernetes.Clientset, ns, name, key string) error {
-	cm, err := kc.CoreV1().ConfigMaps(ns).Get(name, metav1.GetOptions{})
+	cm, err := kc.CoreV1().ConfigMaps(ns).Get(context2.TODO(), name, metav1.GetOptions{})
 	if err != nil {
 		if !apierrors.IsNotFound(err) {
 			return fmt.Errorf("get: %v", err)
@@ -858,7 +859,7 @@ func ensureConfigMap(kc *kubernetes.Clientset, ns, name, key string) error {
 		}
 		cm.Name = name
 		cm.Namespace = ns
-		_, err := kc.CoreV1().ConfigMaps(ns).Create(cm)
+		_, err := kc.CoreV1().ConfigMaps(ns).Create(context2.TODO(), cm, metav1.CreateOptions{})
 		if err != nil {
 			return fmt.Errorf("create: %v", err)
 		}
@@ -872,7 +873,7 @@ func ensureConfigMap(kc *kubernetes.Clientset, ns, name, key string) error {
 		cm.Data = map[string]string{}
 	}
 	cm.Data[key] = ""
-	if _, err := kc.CoreV1().ConfigMaps(ns).Update(cm); err != nil {
+	if _, err := kc.CoreV1().ConfigMaps(ns).Update(context2.TODO(), cm, metav1.UpdateOptions{}); err != nil {
 		return fmt.Errorf("update: %v", err)
 	}
 	return nil

@@ -1490,7 +1490,7 @@ func ResolveBugzillaOptions(parent, child BugzillaBranchOptions) BugzillaBranchO
 			output.StateAfterMerge = parent.StateAfterMerge
 		}
 		if parent.AllowedGroups != nil {
-			output.AllowedGroups = sets.NewString(output.AllowedGroups...).Insert(parent.AllowedGroups...).UnsortedList()
+			output.AllowedGroups = sets.NewString(output.AllowedGroups...).Insert(parent.AllowedGroups...).List()
 		}
 	}
 
@@ -1560,7 +1560,7 @@ func ResolveBugzillaOptions(parent, child BugzillaBranchOptions) BugzillaBranchO
 		output.StateAfterMerge = child.StateAfterMerge
 	}
 	if child.AllowedGroups != nil {
-		output.AllowedGroups = sets.NewString(output.AllowedGroups...).Insert(child.AllowedGroups...).UnsortedList()
+		output.AllowedGroups = sets.NewString(output.AllowedGroups...).Insert(child.AllowedGroups...).List()
 	}
 
 	// Status fields should not be used anywhere now when they were mirrored to states
