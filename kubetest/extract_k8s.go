@@ -316,9 +316,10 @@ var gsutilCat = func(url string) ([]byte, error) {
 
 func setReleaseFromGcs(prefix, suffix string, getSrc bool) error {
 	url := fmt.Sprintf("https://storage.googleapis.com/%v", prefix)
-	release, err := gsutilCat(fmt.Sprintf("gs://%v/%v.txt", prefix, suffix))
+	catURL := fmt.Sprintf("gs://%v/%v.txt", prefix, suffix)
+	release, err := gsutilCat(catURL)
 	if err != nil {
-		return err
+		return fmt.Errorf("Failed to set release from %s (%v)", catURL, err)
 	}
 	return getKube(url, strings.TrimSpace(string(release)), getSrc)
 }
@@ -345,9 +346,10 @@ var httpCat = func(url string) ([]byte, error) {
 
 func setReleaseFromHTTP(prefix, suffix string, getSrc bool) error {
 	url := fmt.Sprintf("https://storage.googleapis.com/%s", prefix)
-	release, err := httpCat(fmt.Sprintf("%s/%s.txt", url, suffix))
+	catURL := fmt.Sprintf("%s/%s.txt", url, suffix)
+	release, err := httpCat(catURL)
 	if err != nil {
-		return err
+		return fmt.Errorf("Failed to set release from %s (%v)", catURL, err)
 	}
 
 	return getKube(url, strings.TrimSpace(string(release)), getSrc)
@@ -418,9 +420,10 @@ func setupGciVars(f string, p string) (string, error) {
 }
 
 func setReleaseFromGci(image string, k8sMapBucket string, getSrc bool) error {
-	b, err := gsutilCat(fmt.Sprintf("gs://%s/k8s-version-map/%s", k8sMapBucket, image))
+	catURL := fmt.Sprintf("gs://%s/k8s-version-map/%s", k8sMapBucket, image)
+	b, err := gsutilCat(catURL)
 	if err != nil {
-		return err
+		return fmt.Errorf("Failed to set release from %s (%v)", catURL, err)
 	}
 	r := fmt.Sprintf("v%s", b)
 	return getKube("https://storage.googleapis.com/kubernetes-release/release", strings.TrimSpace(r), getSrc)
