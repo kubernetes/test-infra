@@ -9,7 +9,7 @@ postsubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200730-e636ee2-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200731-4e0521e-master
         command:
         - runner.sh
         - make
