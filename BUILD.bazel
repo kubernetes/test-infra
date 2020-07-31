@@ -111,7 +111,6 @@ filegroup(
         "//jobs:all-srcs",
         "//kettle:all-srcs",
         "//kubetest:all-srcs",
-        "//kubetest2:all-srcs",
         "//label_sync:all-srcs",
         "//linkcheck:all-srcs",
         "//logexporter/cmd:all-srcs",

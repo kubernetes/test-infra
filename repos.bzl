@@ -3830,14 +3830,7 @@ def go_repositories():
         sum = "h1:Q1Bb5+ssL7WekHgJvX2yAp4ueLeEnFX50RcpYRErNOg=",
         version = "v0.0.0-20200526191642-45fc818e2d00",
     )
-    go_repository(
-        name = "com_github_octago_sflags",
-        build_file_generation = "on",
-        build_file_proto_mode = "disable",
-        importpath = "github.com/octago/sflags",
-        sum = "h1:XceYzkRXGAHa/lSFmKLcaxSrsh4MTuOMQdIGsUD0wlk=",
-        version = "v0.2.0",
-    )
+
     go_repository(
         name = "com_github_chzyer_logex",
         build_file_generation = "on",
