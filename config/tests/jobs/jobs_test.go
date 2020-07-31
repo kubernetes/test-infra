@@ -28,6 +28,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 	"testing"
@@ -967,10 +968,7 @@ func allStaticJobs() []cfg.JobBase {
 	return jobs
 }
 
-// isPodQOSGuaranteed returns true if the PodSpec's containers have non-zero
-// resource limits that are equal to their resource requests
-func isPodQOSGuaranteed(spec *coreapi.PodSpec) bool {
-	isGuaranteed := true
+func verifyPodQOSGuaranteed(spec *coreapi.PodSpec) (errs []error) {
 	resourceNames := []coreapi.ResourceName{
 		coreapi.ResourceCPU,
 		coreapi.ResourceMemory,
@@ -979,12 +977,78 @@ func isPodQOSGuaranteed(spec *coreapi.PodSpec) bool {
 	for _, c := range spec.Containers {
 		for _, r := range resourceNames {
 			limit, ok := c.Resources.Limits[r]
-			if !ok || limit.Cmp(zero) == 0 || limit.Cmp(c.Resources.Requests[r]) != 0 {
-				isGuaranteed = false
+			if !ok {
+				errs = append(errs, fmt.Errorf("container '%v' should have resources.limits[%v] specified", c.Name, r))
+			}
+			request, ok := c.Resources.Requests[r]
+			if !ok {
+				errs = append(errs, fmt.Errorf("container '%v' should have resources.requests[%v] specified", c.Name, r))
+			}
+			if limit.Cmp(zero) == 0 {
+				errs = append(errs, fmt.Errorf("container '%v' resources.limits[%v] should be non-zero", c.Name, r))
+			} else if limit.Cmp(request) != 0 {
+				errs = append(errs, fmt.Errorf("container '%v' resources.limits[%v] (%v) should match request (%v)", c.Name, r, limit.String(), request.String()))
 			}
 		}
 	}
-	return isGuaranteed
+	return errs
+}
+
+// isPodQOSGuaranteed returns true if the PodSpec's containers have non-zero
+// resource limits that are equal to their resource requests
+func isPodQOSGuaranteed(spec *coreapi.PodSpec) bool {
+	return len(verifyPodQOSGuaranteed(spec)) == 0
+}
+
+// A job is merge-blocking if it:
+// - is not optional
+// - reports (aka does not skip reporting)
+// - always runs OR runs if some path changed
+func isMergeBlocking(job cfg.Presubmit) bool {
+	return !job.Optional && !job.SkipReport && (job.AlwaysRun || job.RunIfChanged != "")
+}
+
+func isKubernetesReleaseBlocking(job cfg.JobBase) bool {
+	re := regexp.MustCompile(`sig-release-(1.[0-9]{2}|master)-blocking`)
+	dashboards, ok := job.Annotations["testgrid-dashboards"]
+	if !ok {
+		return false
+	}
+	return re.MatchString(dashboards)
+}
+
+// TODO: s/Should/Must and s/Logf/Errorf when all jobs pass
+func TestKubernetesMergeBlockingJobsShouldHavePodQOSGuaranteed(t *testing.T) {
+	repo := "kubernetes/kubernetes"
+	jobs := c.AllStaticPresubmits([]string{repo})
+	sort.Slice(jobs, func(i, j int) bool {
+		return jobs[i].Name < jobs[j].Name
+	})
+	for _, job := range jobs {
+		// Only consider Pods that are merge-blocking
+		if job.Spec == nil || !isMergeBlocking(job) {
+			continue
+		}
+		branches := job.Branches
+		errs := verifyPodQOSGuaranteed(job.Spec)
+		for _, err := range errs {
+			t.Logf("%v (%v): %v", job.Name, branches, err)
+		}
+	}
+}
+
+// TODO: s/Should/Must and s/Logf/Errorf when all jobs pass
+func TestKubernetesReleaseBlockingJobsShouldHavePodQOSGuaranteed(t *testing.T) {
+	for _, job := range allStaticJobs() {
+		// Only consider Pods that are release-blocking
+		if job.Spec == nil || !isKubernetesReleaseBlocking(job) {
+			continue
+		}
+		errs := verifyPodQOSGuaranteed(job.Spec)
+		for _, err := range errs {
+			t.Logf("%v: %v", job.Name, err)
+		}
+	}
 }
 
 func TestK8sInfraProwBuildJobsMustHavePodQOSGuaranteed(t *testing.T) {
@@ -994,15 +1058,17 @@ func TestK8sInfraProwBuildJobsMustHavePodQOSGuaranteed(t *testing.T) {
 		if job.Spec == nil || job.Cluster != "k8s-infra-prow-build" {
 			continue
 		}
-		isPodQOSGuaranteed := isPodQOSGuaranteed(job.Spec)
-		if !isPodQOSGuaranteed {
-			t.Errorf("%s: must have non-zero resource.requests == resource.limits to run on k8s-infra-prow-build cluster, has %+v", job.Name, job.Spec.Containers[0].Resources)
+		errs := verifyPodQOSGuaranteed(job.Spec)
+		for _, err := range errs {
+			t.Errorf("%v: %v", job.Name, err)
 		}
 	}
 }
 
-// We have k8s-infra-prow-build setup to auto-scale, but if we want an earlier
-// warning that resource limits are growing higher than expected...
+// We have k8s-infra-prow-build setup to auto-scale, but as a quick static
+// check, let's pretend every job schedules one instance to the cluster
+// at the exact same time. This is a poor approximation since there will
+// likely be N presubmits running simultaneously.
 func TestK8sInfraProwBuildJobsMustNotExceedTotalCapacity(t *testing.T) {
 	// k8s-infra-prow-build pool1 is 3-zonal 6-30 n1-highmem-8's
 	maxLimit := coreapi.ResourceList{
