@@ -1,3 +1,4 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 load("@npm_bazel_jasmine//:index.bzl", "jasmine_node_test")
 
 py_test(
@@ -49,5 +50,19 @@ filegroup(
         "//triage/utils:all-srcs",
     ],
     tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)
+
+go_library(
+    name = "go_default_library",
+    srcs = ["main.go"],
+    importpath = "k8s.io/test-infra/triage",
+    visibility = ["//visibility:private"],
+    deps = ["//triage/summarize:go_default_library"],
+)
+
+go_binary(
+    name = "triage",
+    embed = [":go_default_library"],
     visibility = ["//visibility:public"],
 )
