@@ -271,7 +271,7 @@ func runBuildJobs(o options) []error {
 	log.Println("Running build jobs...")
 	tagFlags := []string{"--tags", "--always", "--dirty"}
 	if len(o.tagMatch) > 0 {
-		tagFlags = append(tagFlags, "--match "+o.tagMatch)
+		tagFlags = append(tagFlags, fmt.Sprintf(`--match "%s"`, o.tagMatch))
 	}
 	tag, err := getVersion(tagFlags)
 	if err != nil {
