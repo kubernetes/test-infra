@@ -497,7 +497,7 @@ type columns struct {
 func buildsToColumns(builds map[string]build) columns {
 	// The function result
 	// result.jobs maps job names to either map[int]int or []int. See jobCollection.
-	result := columns{make(map[string]jobCollection), newColumnarBuilds(len(builds)), make(map[string]string, 0)}
+	result := columns{make(map[string]jobCollection), newColumnarBuilds(len(builds)), make(map[string]string)}
 
 	// Sort the builds before making them columnar
 	sortedBuilds := make([]build, 0, len(builds))

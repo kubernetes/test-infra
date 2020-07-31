@@ -147,6 +147,6 @@ func summarize(flags summarizeFlags) {
 	logInfo("Finished rendering results in %s", time.Since(start).String())
 }
 
-func main() {
+func Main() {
 	summarize(parseFlags())
 }
