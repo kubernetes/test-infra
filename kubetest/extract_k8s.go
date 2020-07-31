@@ -536,7 +536,7 @@ func (e extractStrategy) Extract(project, zone, region string, extractSrc bool) 
 
 		return setReleaseFromHTTP("kubernetes-release-dev/ci", e.option, extractSrc)
 	case ciFast:
-		return setReleaseFromHTTP("kubernetes-release-dev/ci/fast", e.option, extractSrc)
+		return setReleaseFromHTTP("kubernetes-release-dev/ci", fmt.Sprintf("%s-fast", e.option), extractSrc)
 	case rc, stable:
 		return setReleaseFromHTTP("kubernetes-release/release", e.option, extractSrc)
 	case version:
