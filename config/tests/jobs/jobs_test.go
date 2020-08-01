@@ -1051,6 +1051,42 @@ func TestKubernetesReleaseBlockingJobsShouldHavePodQOSGuaranteed(t *testing.T) {
 	}
 }
 
+// TODO: may need to rewrite to handle nodepools or handle jobs that can't be
+// migrated over for a while
+// TODO: s/Should/Must and s/Logf/Errorf when all jobs pass
+func TestKubernetesMergeBlockingJobsShouldRunOnK8sInfraProwBuild(t *testing.T) {
+	repo := "kubernetes/kubernetes"
+	jobs := c.AllStaticPresubmits([]string{repo})
+	sort.Slice(jobs, func(i, j int) bool {
+		return jobs[i].Name < jobs[j].Name
+	})
+	for _, job := range jobs {
+		// Only consider Pods that are merge-blocking
+		if job.Spec == nil || !isMergeBlocking(job) {
+			continue
+		}
+		branches := job.Branches
+		if job.Cluster != "k8s-infra-prow-build" {
+			t.Logf("%v (%v): should run on cluster: k8s-infra-prow-build, found: %v", job.Name, branches, job.Cluster)
+		}
+	}
+}
+
+// TODO: may need to rewrite to handle nodepools or handle jobs that can't be
+// migrated over for a while
+// TODO: s/Should/Must and s/Logf/Errorf when all jobs pass
+func TestKubernetesReleaseBlockingJobsShouldRunOnK8sInfraProwBuild(t *testing.T) {
+	for _, job := range allStaticJobs() {
+		// Only consider Pods that are release-blocking
+		if job.Spec == nil || !isKubernetesReleaseBlocking(job) {
+			continue
+		}
+		if job.Cluster != "k8s-infra-prow-build" {
+			t.Logf("%v: should run on cluster: k8s-infra-prow-build, found: %v", job.Name, job.Cluster)
+		}
+	}
+}
+
 func TestK8sInfraProwBuildJobsMustHavePodQOSGuaranteed(t *testing.T) {
 	jobs := allStaticJobs()
 	for _, job := range jobs {
