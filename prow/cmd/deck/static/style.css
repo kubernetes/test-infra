@@ -955,7 +955,7 @@ Plugin Help style
     padding: 0;
     max-width: 50px;
     display: block;
-    transform-origin: 267.5px 261.5px;
+    transform-origin: 50% 50%;
 }
 
 /* fix tooltips should not copy */
