@@ -42,9 +42,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python-dev \
     python-openssl \
     python-pip \
-    python3 \
-    python3-distutils \
-    python3-pip \
     rsync \
     unzip \
     wget \
@@ -52,8 +49,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     zip \
     zlib1g-dev \
     && rm -rf /var/lib/apt/lists/* \
-    && python -m pip install --upgrade pip setuptools wheel \
-    && python3 -m pip install --upgrade pip setuptools wheel
+    && python -m pip install --upgrade pip setuptools wheel
 
 # Install gcloud
 
