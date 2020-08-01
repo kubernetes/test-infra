@@ -8,7 +8,7 @@ periodics:
     testgrid-tab-name: snapshots-cleanup
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200731-2efbce0-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200801-95dd1ba-master
       args:
       - --repo=k8s.io/perf-tests=master
       - --root=/go/src
