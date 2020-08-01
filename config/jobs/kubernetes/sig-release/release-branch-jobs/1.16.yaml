@@ -427,7 +427,7 @@ periodics:
         value: release-1.16
       - name: REPO_DIR
         value: /workspace/k8s.io/kubernetes
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200731-2efbce0-1.16
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200730-e636ee2-1.16
       imagePullPolicy: Always
       name: ""
       resources:
@@ -1202,7 +1202,7 @@ presubmits:
           value: release-1.16
         - name: REPO_DIR
           value: /workspace/k8s.io/kubernetes
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200731-2efbce0-1.16
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200730-e636ee2-1.16
         imagePullPolicy: Always
         name: ""
         resources:
