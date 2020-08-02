@@ -165,7 +165,7 @@ def build_test(cloud='aws', distro=None, networking=None, k8s_version=None, kops
         # TODO: Move to kops-ci/markers/master/ once validated
         kops_deploy_url = "https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt"
     else:
-        kops_deploy_url = expand("https://storage.googleapis.com/kops-ci/markers/release-{{kops_version}}/latest-ci-updown-green.txt") # pylint: disable=line-too-long
+        kops_deploy_url = expand("https://storage.googleapis.com/kops-ci/markers/release-{kops_version}/latest-ci-updown-green.txt") # pylint: disable=line-too-long
 
     if k8s_version is None:
         extract = "release/latest"
