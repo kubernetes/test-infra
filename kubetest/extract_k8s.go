@@ -344,15 +344,14 @@ var httpCat = func(url string) ([]byte, error) {
 	return release, nil
 }
 
-func setReleaseFromHTTP(prefix, suffix string, getSrc bool) error {
+func setReleaseFromHTTP(prefix, suffix string) (string, string, error) {
 	url := fmt.Sprintf("https://storage.googleapis.com/%s", prefix)
 	catURL := fmt.Sprintf("%s/%s.txt", url, suffix)
 	release, err := httpCat(catURL)
 	if err != nil {
-		return fmt.Errorf("Failed to set release from %s (%v)", catURL, err)
+		return "", "", fmt.Errorf("Failed to set release from %s (%v)", catURL, err)
 	}
-
-	return getKube(url, strings.TrimSpace(string(release)), getSrc)
+	return url, strings.TrimSpace(string(release)), nil
 }
 
 var parseGciExtractOption = func(option string) (string, map[string]string) {
@@ -534,11 +533,26 @@ func (e extractStrategy) Extract(project, zone, region string, extractSrc bool) 
 			return setReleaseFromGcs("gke-release-staging/kubernetes/release", e.option, extractSrc)
 		}
 
-		return setReleaseFromHTTP("kubernetes-release-dev/ci", e.option, extractSrc)
+		url, release, err := setReleaseFromHTTP("kubernetes-release-dev/ci", e.option)
+		if err != nil {
+			return err
+		}
+		return getKube(url, release, extractSrc)
 	case ciFast:
-		return setReleaseFromHTTP("kubernetes-release-dev/ci", fmt.Sprintf("%s-fast", e.option), extractSrc)
+		// ciFast latest version marker is published to
+		// 'kubernetes-release-dev/ci/<version>-fast.txt' but the actual source
+		// is at 'kubernetes-release-dev/ci/fast/<version>/kubernetes.tar.gz'
+		url, release, err := setReleaseFromHTTP("kubernetes-release-dev/ci", fmt.Sprintf("%s-fast", e.option))
+		if err != nil {
+			return err
+		}
+		return getKube(fmt.Sprintf("%s/fast", url), release, extractSrc)
 	case rc, stable:
-		return setReleaseFromHTTP("kubernetes-release/release", e.option, extractSrc)
+		url, release, err := setReleaseFromHTTP("kubernetes-release/release", e.option)
+		if err != nil {
+			return err
+		}
+		return getKube(url, release, extractSrc)
 	case version:
 		var url string
 		release := e.option
