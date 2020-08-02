@@ -89,6 +89,7 @@ func (lens Lens) Body(artifacts []api.Artifact, resourceDir string, data string,
 		FinishedTime time.Time
 		Finished     bool
 		Passed       bool
+		Errored      bool
 		Elapsed      time.Duration
 		Hint         string
 		Metadata     map[string]interface{}
@@ -126,7 +127,9 @@ func (lens Lens) Body(artifacts []api.Artifact, resourceDir string, data string,
 			// Only show the prowjob-based hint if we don't have a pod-based one
 			// (the pod-based ones are probably more useful when they exist)
 			if metadataViewData.Hint == "" {
-				metadataViewData.Hint = hintFromProwJob(read)
+				hint, errored := hintFromProwJob(read)
+				metadataViewData.Hint = hint
+				metadataViewData.Errored = errored
 			}
 		}
 	}
@@ -235,18 +238,18 @@ func hintFromPodInfo(buf []byte) string {
 	return ""
 }
 
-func hintFromProwJob(buf []byte) string {
+func hintFromProwJob(buf []byte) (string, bool) {
 	var pj prowv1.ProwJob
 	if err := json.Unmarshal(buf, &pj); err != nil {
 		logrus.WithError(err).Info("Failed to decode prowjob.json")
-		return ""
+		return "", false
 	}
 
 	if pj.Status.State == prowv1.ErrorState {
-		return fmt.Sprintf("Job execution failed: %s", pj.Status.Description)
+		return fmt.Sprintf("Job execution failed: %s", pj.Status.Description), true
 	}
 
-	return ""
+	return "", false
 }
 
 // flattenMetadata flattens the metadata for use by Body.
