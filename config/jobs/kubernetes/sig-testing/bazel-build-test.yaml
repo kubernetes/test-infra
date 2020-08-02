@@ -275,13 +275,12 @@ periodics:
       - 2241179 # release-managers
 
 # periodic bazel test jobs
-- name: periodic-kubernetes-bazel-test-master
+- name: periodic-kubernetes-bazel-test-canary
   annotations:
     fork-per-release: "true"
     fork-per-release-periodic-interval: 6h
-    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-    testgrid-dashboards: sig-release-master-blocking, google-unit
-    testgrid-tab-name: bazel-test-master
+    testgrid-dashboards: sig-testing-canaries
+    testgrid-tab-name: bazel-test
     description: "runs bazel test //... //hack:verify-all -//build/... -//vendor/..."
   interval: 5m
   decorate: true
@@ -317,13 +316,14 @@ periodics:
         requests:
           cpu: 4
           memory: "38Gi"
-- name: periodic-kubernetes-bazel-test-canary
-  cluster: k8s-infra-prow-build
+- name: periodic-kubernetes-bazel-test-master
   annotations:
-    testgrid-dashboards: sig-testing-canaries
-    testgrid-tab-name: bazel-test
+    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+    testgrid-dashboards: sig-release-master-blocking, google-unit
+    testgrid-tab-name: bazel-test-master
     description: run kubernetes-bazel-test without RBE on k8s-infra-prow-build
   interval: 1h
+  cluster: k8s-infra-prow-build
   decorate: true
   labels:
     preset-service-account: "true"
