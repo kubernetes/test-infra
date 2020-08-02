@@ -3,22 +3,18 @@ presubmits:
   - name: pull-kubernetes-cross
     optional: true
     always_run: false
+    decorate: true
     labels:
-      preset-service-account: "true"
       preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bootstrap:v20200729-ee80a02
+        command:
+        - runner.sh
         args:
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - --scenario=execute
-        - --
-        - --env=KUBE_RELEASE_RUN_TESTS=n
         - make
         - release
+        - KUBE_RELEASE_RUN_TESTS=n
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
