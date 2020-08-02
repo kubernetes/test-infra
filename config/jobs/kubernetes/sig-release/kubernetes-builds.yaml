@@ -1,7 +1,8 @@
 presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-cross
-    run_if_changed: '^((build\/|hack\/lib\/).*)|(.*Makefile.*)$'
+    optional: true
+    always_run: false
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
