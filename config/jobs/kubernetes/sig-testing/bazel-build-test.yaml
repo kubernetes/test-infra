@@ -303,7 +303,13 @@ periodics:
       - --
       - -//build/...
       - -//vendor/...
-
+      resources:
+        limits:
+          cpu: 4
+          memory: "38Gi"
+        requests:
+          cpu: 4
+          memory: "38Gi"
 - name: periodic-kubernetes-bazel-test-canary
   cluster: k8s-infra-prow-build
   annotations:
