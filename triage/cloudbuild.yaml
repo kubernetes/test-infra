@@ -1,11 +1,20 @@
 steps:
+# Build Python triage
   - name: gcr.io/cloud-builders/docker
     args: [ 'build', '-t', 'gcr.io/$PROJECT_ID/triage:$_GIT_TAG', '.' ]
     dir: triage/
   - name: gcr.io/cloud-builders/docker
     args: [ 'tag', 'gcr.io/$PROJECT_ID/triage:$_GIT_TAG', 'gcr.io/$PROJECT_ID/triage:latest']
+# Build Go triage
+  - name: gcr.io/cloud-builders/docker
+    args: [ 'build', '-t', 'gcr.io/$PROJECT_ID/triage:go-$_GIT_TAG', '-f', 'triage/Dockerfile-go', '.' ]
+    dir: /
+  - name: gcr.io/cloud-builders/docker
+    args: [ 'tag', 'gcr.io/$PROJECT_ID/triage:go-$_GIT_TAG', 'gcr.io/$PROJECT_ID/triage:go-latest']
 substitutions:
   _GIT_TAG: '12345'
 images:
   - 'gcr.io/$PROJECT_ID/triage:$_GIT_TAG'
   - 'gcr.io/$PROJECT_ID/triage:latest'
+  - 'gcr.io/$PROJECT_ID/triage:go-$_GIT_TAG'
+  - 'gcr.io/$PROJECT_ID/triage:go-latest'
