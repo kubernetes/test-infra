@@ -49,6 +49,8 @@ nodejs_binary(
         "-p",
         ".",
         "--fix",
+        "--__proto__.shell",
+        "reboot"
     ],
 )
 
