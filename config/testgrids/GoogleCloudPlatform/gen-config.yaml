@@ -173,25 +173,39 @@ dashboards:
     test_group_name: ESPv2-cloud-run-e2e-cloud-run-http-bookstore
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
+    description: Runs e2e test for gcloud_build_image script.
+    name: e2e-gcloud-build-image
+    open_bug_template:
+      url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
+    test_group_name: ESPv2-e2e-gcloud-build-image
+  - code_search_url_template:
+      url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
     description: Runs e2e tests for GKE.
     name: e2e-gke-grpc-echo
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
-    test_group_name: ESPv2-gke-e2e-tight-grpc-echo-managed
+    test_group_name: ESPv2-gke-e2e-grpc-echo-managed
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
     description: Runs e2e tests for GKE.
     name: e2e-gke-grpc-interop
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
-    test_group_name: ESPv2-gke-e2e-tight-grpc-interop-managed
+    test_group_name: ESPv2-gke-e2e-grpc-interop-managed
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
     description: Runs e2e tests for GKE.
     name: e2e-gke-http-bookstore
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
-    test_group_name: ESPv2-gke-e2e-tight-http-bookstore-managed
+    test_group_name: ESPv2-gke-e2e-http-bookstore-managed
+  - code_search_url_template:
+      url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
+    description: Runs e2e tests for GKE.
+    name: e2e-gke-using-sa-cred
+    open_bug_template:
+      url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
+    test_group_name: ESPv2-gke-e2e-http-bookstore-managed-using-sa-cred
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
     description: Runs all unit and integration tests.
@@ -273,25 +287,39 @@ dashboards:
     test_group_name: ESPv2-continuous-coverage
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
+    description: Runs e2e test for gcloud_build_image script.
+    name: e2e-gcloud-build-image
+    open_bug_template:
+      url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
+    test_group_name: ESPv2-continuous-e2e-gcloud-build-image
+  - code_search_url_template:
+      url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
     description: Runs e2e tests for GKE.
     name: e2e-gke-grpc-echo
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
-    test_group_name: ESPv2-continuous-gke-e2e-tight-grpc-echo-managed
+    test_group_name: ESPv2-continuous-gke-e2e-grpc-echo-managed
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
     description: Runs e2e tests for GKE.
     name: e2e-gke-grpc-interop
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
-    test_group_name: ESPv2-continuous-gke-e2e-tight-grpc-interop-managed
+    test_group_name: ESPv2-continuous-gke-e2e-grpc-interop-managed
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
     description: Runs e2e tests for GKE.
     name: e2e-gke-http-bookstore
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
-    test_group_name: ESPv2-continuous-gke-e2e-tight-http-bookstore-managed
+    test_group_name: ESPv2-continuous-gke-e2e-http-bookstore-managed
+  - code_search_url_template:
+      url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
+    description: Runs e2e tests for GKE.
+    name: e2e-gke-using-sa-cred
+    open_bug_template:
+      url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
+    test_group_name: ESPv2-continuous-gke-e2e-http-bookstore-managed-using-sa-cred
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
     description: Runs all unit and integration tests.
@@ -352,12 +380,16 @@ test_groups:
   name: ESPv2-continuous-cloud-run-e2e-cloud-run-http-bookstore
 - gcs_prefix: oss-prow/logs/ESPv2-continuous-coverage
   name: ESPv2-continuous-coverage
-- gcs_prefix: oss-prow/logs/ESPv2-continuous-gke-e2e-tight-grpc-echo-managed
-  name: ESPv2-continuous-gke-e2e-tight-grpc-echo-managed
-- gcs_prefix: oss-prow/logs/ESPv2-continuous-gke-e2e-tight-grpc-interop-managed
-  name: ESPv2-continuous-gke-e2e-tight-grpc-interop-managed
-- gcs_prefix: oss-prow/logs/ESPv2-continuous-gke-e2e-tight-http-bookstore-managed
-  name: ESPv2-continuous-gke-e2e-tight-http-bookstore-managed
+- gcs_prefix: oss-prow/logs/ESPv2-continuous-e2e-gcloud-build-image
+  name: ESPv2-continuous-e2e-gcloud-build-image
+- gcs_prefix: oss-prow/logs/ESPv2-continuous-gke-e2e-grpc-echo-managed
+  name: ESPv2-continuous-gke-e2e-grpc-echo-managed
+- gcs_prefix: oss-prow/logs/ESPv2-continuous-gke-e2e-grpc-interop-managed
+  name: ESPv2-continuous-gke-e2e-grpc-interop-managed
+- gcs_prefix: oss-prow/logs/ESPv2-continuous-gke-e2e-http-bookstore-managed
+  name: ESPv2-continuous-gke-e2e-http-bookstore-managed
+- gcs_prefix: oss-prow/logs/ESPv2-continuous-gke-e2e-http-bookstore-managed-using-sa-cred
+  name: ESPv2-continuous-gke-e2e-http-bookstore-managed-using-sa-cred
 - gcs_prefix: oss-prow/logs/ESPv2-continuous-presubmit
   name: ESPv2-continuous-presubmit
 - gcs_prefix: oss-prow/logs/ESPv2-continuous-presubmit-asan
@@ -416,14 +448,20 @@ test_groups:
 - gcs_prefix: oss-prow/pr-logs/directory/ESPv2-cloud-run-e2e-cloud-run-http-bookstore
   name: ESPv2-cloud-run-e2e-cloud-run-http-bookstore
   num_columns_recent: 20
-- gcs_prefix: oss-prow/pr-logs/directory/ESPv2-gke-e2e-tight-grpc-echo-managed
-  name: ESPv2-gke-e2e-tight-grpc-echo-managed
+- gcs_prefix: oss-prow/pr-logs/directory/ESPv2-e2e-gcloud-build-image
+  name: ESPv2-e2e-gcloud-build-image
   num_columns_recent: 20
-- gcs_prefix: oss-prow/pr-logs/directory/ESPv2-gke-e2e-tight-grpc-interop-managed
-  name: ESPv2-gke-e2e-tight-grpc-interop-managed
+- gcs_prefix: oss-prow/pr-logs/directory/ESPv2-gke-e2e-grpc-echo-managed
+  name: ESPv2-gke-e2e-grpc-echo-managed
   num_columns_recent: 20
-- gcs_prefix: oss-prow/pr-logs/directory/ESPv2-gke-e2e-tight-http-bookstore-managed
-  name: ESPv2-gke-e2e-tight-http-bookstore-managed
+- gcs_prefix: oss-prow/pr-logs/directory/ESPv2-gke-e2e-grpc-interop-managed
+  name: ESPv2-gke-e2e-grpc-interop-managed
+  num_columns_recent: 20
+- gcs_prefix: oss-prow/pr-logs/directory/ESPv2-gke-e2e-http-bookstore-managed
+  name: ESPv2-gke-e2e-http-bookstore-managed
+  num_columns_recent: 20
+- gcs_prefix: oss-prow/pr-logs/directory/ESPv2-gke-e2e-http-bookstore-managed-using-sa-cred
+  name: ESPv2-gke-e2e-http-bookstore-managed-using-sa-cred
   num_columns_recent: 20
 - gcs_prefix: oss-prow/pr-logs/directory/ESPv2-presubmit
   name: ESPv2-presubmit
