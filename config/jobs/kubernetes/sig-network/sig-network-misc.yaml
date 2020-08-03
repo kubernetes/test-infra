@@ -269,6 +269,13 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:Ingress\]|\[Feature:NEG\]
       - --timeout=320m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200802-ff98b58-master
+      resources:
+        limits:
+          cpu: "1"
+          memory: "3Gi"
+        requests:
+          cpu: "1"
+          memory: "3Gi"
   annotations:
     testgrid-dashboards: sig-release-master-blocking, google-gce, sig-network-gce
     testgrid-tab-name: gci-gce-ingress
