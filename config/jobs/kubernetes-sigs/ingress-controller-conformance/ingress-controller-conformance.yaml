@@ -42,6 +42,28 @@ presubmits:
       testgrid-dashboards: sig-network-ingress-controller-conformance
       testgrid-tab-name: verify-codegen
 
+  - name: pull-ingress-controller-conformance-gherkin
+    always_run: true
+    decorate: true
+    decoration_config:
+      timeout: 10m
+    path_alias: sigs.k8s.io/ingress-controller-conformance
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200720-4766100-master
+        command:
+        - runner.sh
+        args:
+        - bash
+        - -c
+        - apt update && apt-get install -y python3-pip && pip3 install reformat-gherkin && make verify-gherkin
+    annotations:
+      testgrid-dashboards: sig-network-ingress-controller-conformance
+      testgrid-tab-name: verify-gherkin
+
   - name: pull-ingress-controller-conformance-gofmt
     always_run: true
     decorate: true
