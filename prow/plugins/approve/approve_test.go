@@ -1087,6 +1087,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 				LgtmActsAsApprove:   test.lgtmActsAsApprove,
 				IgnoreReviewState:   &irs,
 				CommandHelpLink:     "https://go.k8s.io/bot-commands",
+				PrProcessLink:       "https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process",
 			},
 			&state{
 				org:       "org",

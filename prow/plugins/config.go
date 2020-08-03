@@ -274,6 +274,10 @@ type Approve struct {
 	// The default value is "https://go.k8s.io/bot-commands". The command help page is served by Deck
 	// and available under https://<deck-url>/command-help, e.g. "https://prow.k8s.io/command-help"
 	CommandHelpLink string `json:"commandHelpLink"`
+
+	// PrProcessLink is the link to the help page which explains the code review process.
+	// The default value is "https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process".
+	PrProcessLink string `json:"pr_process_link,omitempty"`
 }
 
 var (
@@ -853,6 +857,9 @@ func (c *Configuration) setDefaults() {
 	for i, approve := range c.Approve {
 		if approve.CommandHelpLink == "" {
 			c.Approve[i].CommandHelpLink = "https://go.k8s.io/bot-commands"
+		}
+		if approve.PrProcessLink == "" {
+			c.Approve[i].PrProcessLink = "https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process"
 		}
 	}
 	if c.Blunderbuss.ReviewerCount == nil {

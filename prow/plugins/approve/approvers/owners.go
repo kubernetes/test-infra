@@ -599,7 +599,7 @@ func GenerateTemplate(templ, name string, data interface{}) (string, error) {
 // 	- a suggested list of people from each OWNERS files that can fully approve the PR
 // 	- how an approver can indicate their approval
 // 	- how an approver can cancel their approval
-func GetMessage(ap Approvers, linkURL *url.URL, commandHelpLink, org, repo, branch string) *string {
+func GetMessage(ap Approvers, linkURL *url.URL, commandHelpLink, prProcessLink, org, repo, branch string) *string {
 	linkURL.Path = org + "/" + repo
 	message, err := GenerateTemplate(`{{if (and (not .ap.RequirementsMet) (call .ap.ManuallyApproved )) }}
 Approval requirements bypassed by manually added approval.
@@ -608,7 +608,7 @@ Approval requirements bypassed by manually added approval.
 This pull-request has been approved by:{{range $index, $approval := .ap.ListApprovals}}{{if $index}}, {{else}} {{end}}{{$approval}}{{end}}
 
 {{- if (and (not .ap.AreFilesApproved) (not (call .ap.ManuallyApproved))) }}
-To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign {{range $index, $cc := .ap.GetCCs}}{{if $index}}, {{end}}**{{$cc}}**{{end}}
+To complete the [pull request process]({{ .prProcessLink }}), please assign {{range $index, $cc := .ap.GetCCs}}{{if $index}}, {{end}}**{{$cc}}**{{end}}
 You can assign the PR to them by writing `+"`/assign {{range $index, $cc := .ap.GetCCs}}{{if $index}} {{end}}@{{$cc}}{{end}}`"+` in a comment when ready.
 {{- end}}
 
@@ -630,7 +630,7 @@ Associated issue requirement bypassed by:{{range $index, $approval := .ap.ListNo
 The full list of commands accepted by this bot can be found [here]({{ .commandHelpLink }}?repo={{ .org }}%2F{{ .repo }}).
 
 {{ if (or .ap.AreFilesApproved (call .ap.ManuallyApproved)) -}}
-The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
+The pull request process is described [here]({{ .prProcessLink }})
 
 {{ end -}}
 <details {{if (and (not .ap.AreFilesApproved) (not (call .ap.ManuallyApproved))) }}open{{end}}>
@@ -639,7 +639,7 @@ Needs approval from an approver in each of these files:
 {{range .ap.GetFiles .baseURL .branch}}{{.}}{{end}}
 Approvers can indicate their approval by writing `+"`/approve`"+` in a comment
 Approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
-</details>`, "message", map[string]interface{}{"ap": ap, "baseURL": linkURL, "commandHelpLink": commandHelpLink, "org": org, "repo": repo, "branch": branch})
+</details>`, "message", map[string]interface{}{"ap": ap, "baseURL": linkURL, "commandHelpLink": commandHelpLink, "prProcessLink": prProcessLink, "org": org, "repo": repo, "branch": branch})
 	if err != nil {
 		ap.owners.log.WithError(err).Errorf("Error generating message.")
 		return nil
