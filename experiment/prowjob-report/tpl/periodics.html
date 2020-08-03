@@ -3,21 +3,15 @@
         <table border="1" >
         <tr>
             <th>Name</th>
-            <th>Type</th>
-            <th>Path</th>
-            <th>Url</th>
+            <th>Dashboard</th>
+            <th>Resources (Cpu Req, Cpu Limit, Mem Request, Mem Limit)</th>
         </tr>
 
         {{- range . -}}
             <tr>
-                {{if .Checked}}
-                <td><label><input type="checkbox" />{{ .Name }}</label></td>
-                {{ else }}
-                <td><label><input type="checkbox" checked>{{ .Name }}</label></td>
-                {{ end }}
-                <td>{{ .Type }}</td>
-                <td>TODO</td>
-                <td>TODO</td>
+                <td><label><input type="checkbox" {{ if .ResourcesSet }}checked{{ end }}>{{ .Job.Name }}</label></td>
+                <td><label>{{ .Dashboard }}</label></td>
+                <td><label>{{index .RequestedContainerResources "-0" }}</label></td>
             </tr>
         {{- end}}
         </table>

@@ -52,10 +52,10 @@ var reportFormat = flag.String("format", "csv", "Output format [csv|json|html] d
 // struct to report on stated resource requests and limits
 // a empty strings field indicates that no request was found
 type RequestedResources struct {
-	cpuRequested string // "req.cpu": String(r.Requests[corev1.ResourceCPU], resource.Milli),
-	cpuLimitedTo string // "lim.cpu": String(r.Limits[corev1.ResourceCPU], resource.Milli),
-	memRequested string // "req.mem": String(r.Requests[corev1.ResourceMemory], resource.Giga),
-	memLimitedTo string // "lim.mem": String(r.Limits[corev1.ResourceCPU], resource.Giga),
+	CpuRequested string // "req.cpu": String(r.Requests[corev1.ResourceCPU], resource.Milli),
+	CpuLimitedTo string // "lim.cpu": String(r.Limits[corev1.ResourceCPU], resource.Milli),
+	MemRequested string // "req.mem": String(r.Requests[corev1.ResourceMemory], resource.Giga),
+	MemLimitedTo string // "lim.mem": String(r.Limits[corev1.ResourceCPU], resource.Giga),
 }
 
 // From a CI runtime perspective a Job has configuration data located in multiple locations
@@ -66,13 +66,9 @@ type DecoratedJobConfig struct {
 	Job                         cfg.JobBase
 	Dashboard                   string
 	Cluster                     string
-	RequestedContainerResources map[string]map[string]string // Maps cntr name to RequestedResources
-}
-
-type Jobs struct {
-	Name    string
-	Type    string
-	Checked bool
+	RequestedContainerResources map[string]*RequestedResources // Maps cntr name to RequestedResources
+	JobType                     string
+	ResourcesSet                bool
 }
 
 // Loaded at TestMain.
@@ -104,6 +100,21 @@ func main() {
 		PrintJSONJobResources()
 	case "html":
 		GenerateJobReportHTML()
+	}
+}
+
+func (r RequestedResources) IsSet() bool {
+	switch val := "0"; val {
+	case r.CpuRequested:
+		return false
+	case r.CpuLimitedTo:
+		return false
+	case r.MemRequested:
+		return false
+	case r.MemLimitedTo:
+		return false
+	default:
+		return true
 	}
 }
 
@@ -139,8 +150,8 @@ func isPodQOSGuaranteed(spec *corev1.PodSpec) bool {
 }
 
 // GetResources returns a map of container names to resources requested by that container
-func GetResources(spec *corev1.PodSpec) map[string]map[string]string {
-	m := make(map[string]map[string]string)
+func GetResources(spec *corev1.PodSpec) map[string]*RequestedResources {
+	m := make(map[string]*RequestedResources)
 	if spec == nil {
 		return m
 	}
@@ -152,12 +163,12 @@ func GetResources(spec *corev1.PodSpec) map[string]map[string]string {
 		cntrName := c.Name + "-" + strconv.Itoa(i)
 		r := c.Resources
 
-		m = map[string]map[string]string{
+		m = map[string]*RequestedResources{
 			cntrName: {
-				"req.cpu": String(r.Requests[corev1.ResourceCPU], resource.Milli),
-				"lim.cpu": String(r.Limits[corev1.ResourceCPU], resource.Milli),
-				"req.mem": String(r.Requests[corev1.ResourceMemory], resource.Giga),
-				"lim.mem": String(r.Limits[corev1.ResourceCPU], resource.Giga),
+				CpuRequested: String(r.Requests[corev1.ResourceCPU], resource.Milli),
+				CpuLimitedTo: String(r.Limits[corev1.ResourceCPU], resource.Milli),
+				MemRequested: String(r.Requests[corev1.ResourceMemory], resource.Giga),
+				MemLimitedTo: String(r.Limits[corev1.ResourceCPU], resource.Giga),
 			},
 		}
 	}
@@ -227,6 +238,8 @@ func PrintJSONJobResources() {
 			Job:                         job.JobBase,
 			RequestedContainerResources: requestedResources,
 		})
+		//TODO remove break
+		break
 	}
 	b, err := json.Marshal(decoratedJobs)
 	if err != nil {
@@ -263,18 +276,85 @@ func PrintCsvOfJobResources() {
 	*/
 }
 
-func jobReportHandler(f *os.File) {
-	//TODO use real Job objects with info
-	p := []Job{
-		{Name: "Prow Job", Type: "Presubmit", Checked: true},
-		{Name: "Prow Job2", Type: "Presubmit2", Checked: false},
-	}
+type Reports struct {
+	Presubmits  []DecoratedJobConfig
+	Postsubmits []DecoratedJobConfig
+	Periodics   []DecoratedJobConfig
+}
+
+func jobReportHandler(f *os.File, reports Reports) {
 	t := template.Must(template.ParseGlob("./tpl/*"))
-	err := t.ExecuteTemplate(f, "report", p)
+	err := t.ExecuteTemplate(f, "report", reports)
 	if err != nil {
 		fmt.Print("execute: ", err)
 		return
 	}
+}
+
+func GetPresubmits() []DecoratedJobConfig {
+	var decoratedJobs []DecoratedJobConfig
+	for _, job := range c.JobConfig.AllStaticPresubmits(nil) {
+		var cluster string = job.Cluster
+		var dashboard = job.Annotations["testgrid-dashboards"]
+		var requestedResources = GetResources(job.Spec)
+		var resourceSet = true
+
+		for _, r := range requestedResources {
+			resourceSet = resourceSet && r.IsSet()
+		}
+		decoratedJobs = append(decoratedJobs, DecoratedJobConfig{
+			Cluster:                     cluster,
+			Dashboard:                   dashboard,
+			Job:                         job.JobBase,
+			RequestedContainerResources: requestedResources,
+			ResourcesSet:                resourceSet,
+		})
+	}
+	return decoratedJobs
+}
+
+func GetPostsubmits() []DecoratedJobConfig {
+	var decoratedJobs []DecoratedJobConfig
+	for _, job := range c.JobConfig.AllStaticPostsubmits(nil) {
+		var cluster string = job.Cluster
+		var dashboard = job.Annotations["testgrid-dashboards"]
+		var requestedResources = GetResources(job.Spec)
+		var resourceSet = true
+
+		for _, r := range requestedResources {
+			resourceSet = resourceSet && r.IsSet()
+		}
+		decoratedJobs = append(decoratedJobs, DecoratedJobConfig{
+			Cluster:                     cluster,
+			Dashboard:                   dashboard,
+			Job:                         job.JobBase,
+			RequestedContainerResources: requestedResources,
+			ResourcesSet:                resourceSet,
+		})
+	}
+	return decoratedJobs
+}
+
+func GetPeriodics() []DecoratedJobConfig {
+	var decoratedJobs []DecoratedJobConfig
+	for _, job := range c.AllPeriodics() {
+		var cluster string = job.Cluster
+		var dashboard = job.Annotations["testgrid-dashboards"]
+		var requestedResources = GetResources(job.Spec)
+		var resourceSet = true
+
+		for _, r := range requestedResources {
+			resourceSet = resourceSet && r.IsSet()
+		}
+		decoratedJobs = append(decoratedJobs, DecoratedJobConfig{
+			Cluster:                     cluster,
+			Dashboard:                   dashboard,
+			Job:                         job.JobBase,
+			RequestedContainerResources: requestedResources,
+			ResourcesSet:                resourceSet,
+		})
+	}
+	return decoratedJobs
 }
 
 func GenerateJobReportHTML() {
@@ -284,7 +364,12 @@ func GenerateJobReportHTML() {
 		log.Println("create file: ", err)
 		return
 	}
-	jobReportHandler(f)
+
+	jobReportHandler(f,
+		Reports{Presubmits: GetPresubmits(),
+			Postsubmits: GetPostsubmits(),
+			Periodics:   GetPeriodics(),
+		})
 }
 
 func TestQueryReleaseBlockingJobs() {

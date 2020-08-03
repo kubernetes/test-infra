@@ -24,12 +24,12 @@
         <body>
 
         <h1>Prow Job Report</h1>
-            <h2>Periodics</h2>
-            {{template "periodics" .}}
             <h2>Presubmits</h2>
-            {{template "periodics" .}}
+            {{template "presubmits" .Presubmits}}
             <h2>Postsubmits</h2>
-            {{template "periodics" .}}
+            {{template "postsubmits" .Postsubmits}}
+            <h2>Periodics</h2>
+            {{template "periodics" .Periodics}}
         </body>
     </html>
 {{end}}
