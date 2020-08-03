@@ -81,6 +81,28 @@ func TestMax(t *testing.T) {
 	}
 }
 
+func TestAbs(t *testing.T) {
+	testCases := []struct {
+		name     string
+		argument int
+		want     int
+	}{
+		{"Negative", -1, 1},
+		{"Positive", 1, 1},
+		{"Zero", 0, 0},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := Abs(tc.argument)
+
+			if got != tc.want {
+				t.Errorf("Abs(%d) = %d; wanted %d", tc.argument, got, tc.want)
+			}
+		})
+	}
+}
+
 func TestBtoI(t *testing.T) {
 	testCases := []struct {
 		name     string
@@ -125,23 +147,29 @@ func TestByteSliceInsert(t *testing.T) {
 	})
 }
 
-func TestAbs(t *testing.T) {
+func TestRemoveDuplicateLines(t *testing.T) {
 	testCases := []struct {
 		name     string
-		argument int
-		want     int
+		argument string
+		want     string
 	}{
-		{"Negative", -1, 1},
-		{"Positive", 1, 1},
-		{"Zero", 0, 0},
+		{"No duplicates", "this\nis\nmultiline\nstring", "this\nis\nmultiline\nstring"},
+		{"Duplicates", "this\nis\nis\nstring", "this\nis\nstring"},
+		{"\\n at beginning", "\nthis\nis\nmultiline\nstring", "\nthis\nis\nmultiline\nstring"},
+		{"\\n at end", "this\nis\nmultiline\nstring\n", "this\nis\nmultiline\nstring\n"},
+		{"No \\n", "this is multiline string", "this is multiline string"},
+		{"Only one \\n", "\n", ""},
+		{"Only two \\n", "\n\n", ""},
+		{"Two \\n with space", "\n \n", "\n \n"},
+		{"Empty string", "", ""},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := Abs(tc.argument)
+			got := RemoveDuplicateLines(tc.argument)
 
 			if got != tc.want {
-				t.Errorf("Abs(%d) = %d; wanted %d", tc.argument, got, tc.want)
+				t.Errorf("RemoveDuplicateLines(%#v) = %#v, wanted %#v", tc.argument, got, tc.want)
 			}
 		})
 	}
