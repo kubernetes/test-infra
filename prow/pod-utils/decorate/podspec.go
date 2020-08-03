@@ -479,10 +479,11 @@ func entrypointLocation(tools coreapi.VolumeMount) string {
 // InjectEntrypoint will make the entrypoint binary in the tools volume the container's entrypoint, which will output to the log volume.
 func InjectEntrypoint(c *coreapi.Container, timeout, gracePeriod time.Duration, prefix, previousMarker string, exitZero bool, log, tools coreapi.VolumeMount) (*wrapper.Options, error) {
 	wrapperOptions := &wrapper.Options{
-		Args:         append(c.Command, c.Args...),
-		ProcessLog:   processLog(log, prefix),
-		MarkerFile:   markerFile(log, prefix),
-		MetadataFile: metadataFile(log, prefix),
+		Args:          append(c.Command, c.Args...),
+		ContainerName: c.Name,
+		ProcessLog:    processLog(log, prefix),
+		MarkerFile:    markerFile(log, prefix),
+		MetadataFile:  metadataFile(log, prefix),
 	}
 	// TODO(fejta): use flags
 	entrypointConfigEnv, err := entrypoint.Encode(entrypoint.Options{

@@ -25,7 +25,6 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
-	"path/filepath"
 	"strconv"
 	"syscall"
 	"time"
@@ -79,7 +78,7 @@ func (o Options) Run() int {
 	if err != nil {
 		logrus.WithError(err).Error("Error executing test process")
 	}
-	if err := o.mark(code); err != nil {
+	if err := o.Mark(code); err != nil {
 		logrus.WithError(err).Error("Error writing exit code to marker file")
 		return InternalErrorCode // we need to mark the real error code to safely return AlwaysZero
 	}
@@ -122,7 +121,8 @@ func (o Options) ExecuteProcess() (int, error) {
 			case <-ctx.Done():
 			}
 		}()
-		code, err := wrapper.WaitForMarker(ctx, o.PreviousMarker)
+		prevMarkerResult := wrapper.WaitForMarkers(ctx, o.PreviousMarker)[o.PreviousMarker]
+		code, err := prevMarkerResult.ReturnCode, prevMarkerResult.Err
 		cancel() // end previous go-routine when not interrupted
 		if err != nil {
 			return InternalErrorCode, fmt.Errorf("wait for previous marker %s: %v", o.PreviousMarker, err)
@@ -196,14 +196,13 @@ func (o Options) ExecuteProcess() (int, error) {
 	return returnCode, commandErr
 }
 
-func (o *Options) mark(exitCode int) error {
+func (o *Options) Mark(exitCode int) error {
 	content := []byte(strconv.Itoa(exitCode))
 
-	// create temp file in the same directory as the desired marker file
-	dir := filepath.Dir(o.MarkerFile)
-	tempFile, err := ioutil.TempFile(dir, "temp-marker")
+	// create temp file outside the directory of the desired marker file
+	tempFile, err := ioutil.TempFile("", "temp-marker")
 	if err != nil {
-		return fmt.Errorf("could not create temp marker file in %s: %v", dir, err)
+		return fmt.Errorf("could not create temp marker file: %v", err)
 	}
 	// write the exit code to the tempfile, sync to disk and close
 	if _, err = tempFile.Write(content); err != nil {
