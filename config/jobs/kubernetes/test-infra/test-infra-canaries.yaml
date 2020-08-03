@@ -34,3 +34,22 @@ periodics:
     testgrid-dashboards: sig-testing-canaries
     testgrid-tab-name: benchmark-demo
     description: Demoing JUnit golang benchmark results.
+- interval: 10m
+  name: ci-test-infra-multiple-container-test
+  decorate: true
+  spec:
+    containers:
+    - name: test-1
+      image: alpine
+      command: ["/bin/echo"]
+      args: ["I am the first container"]
+    - name: test-2
+      image: alpine
+      command: ["/bin/echo"]
+      args: ["I am the second container"]
+  annotations:
+    testgrid-alert-email: anthonytong@google.com
+    ProwMultipleContainerSupport: Yes, I know what I'm doing.
+    testgrid-dashboards: sig-testing-canaries
+    testgrid-tab-name: multiple-container-test
+    description: echo from two different containers
