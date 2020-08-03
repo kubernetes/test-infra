@@ -82,9 +82,12 @@ periodics:
       securityContext:
         privileged: true
       resources:
+        limits:
+          cpu: 6
+          memory: "12Gi"
         requests:
-          cpu: 4
-          memory: "8Gi"
+          cpu: 6
+          memory: "12Gi"
   rerun_auth_config:
     github_team_ids:
       - 2241179 # release-managers
