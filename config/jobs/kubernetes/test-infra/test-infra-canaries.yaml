@@ -39,10 +39,12 @@ periodics:
   decorate: true
   spec:
     containers:
-    - image: alpine
+    - name: test-1
+      image: alpine
       command: ["/bin/echo"]
       args: ["I am the first container"]
-    - image: alpine
+    - name: test-2
+      image: alpine
       command: ["/bin/echo"]
       args: ["I am the second container"]
   annotations:
