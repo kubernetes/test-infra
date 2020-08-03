@@ -12,6 +12,7 @@ replace (
 	cloud.google.com/go/pubsub => cloud.google.com/go/pubsub v1.3.1
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v12.2.0+incompatible
 	github.com/docker/docker => github.com/docker/docker v1.4.2-0.20200203170920-46ec8731fbce
+	github.com/pelletier/go-toml => github.com/pelletier/go-toml v1.6.0
 	golang.org/x/lint => golang.org/x/lint v0.0.0-20190409202823-959b441ac422
 	k8s.io/api => k8s.io/api v0.18.6
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.18.6

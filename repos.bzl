@@ -1028,8 +1028,9 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/pelletier/go-toml",
-        sum = "h1:Keo9qb7iRJs2voHvunFtuuYFsbWeOBh8/P9v/kVMFtw=",
-        version = "v1.8.0",
+        replace = "github.com/pelletier/go-toml",
+        sum = "h1:aetoXYr0Tv7xRU/V4B4IZJ2QcbtMUFoNb3ORp7TzIK4=",
+        version = "v1.6.0",
     )
     go_repository(
         name = "com_github_peterbourgon_diskv",
