@@ -209,9 +209,12 @@ periodics:
       image: gcr.io/k8s-testimages/bootstrap:v20200801-23e4b0e
       name: ""
       resources:
+        limits:
+          cpu: 7300m
+          memory: "34Gi"
         requests:
-          cpu: "4"
-          memory: 8Gi
+          cpu: 7300m
+          memory: "34Gi"
       securityContext:
         privileged: true
 - annotations:
