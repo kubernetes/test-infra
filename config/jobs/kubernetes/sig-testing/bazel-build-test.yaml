@@ -224,6 +224,13 @@ periodics:
             --release=//build/release-tars \
             --gcs=gs://kubernetes-release-dev/ci-periodic \
             --version-suffix=-bazel
+      resources:
+        limits:
+          cpu: 4
+          memory: "12Gi"
+        requests:
+          cpu: 4
+          memory: "12Gi"
   rerun_auth_config:
     github_team_ids:
       - 2241179 # release-managers

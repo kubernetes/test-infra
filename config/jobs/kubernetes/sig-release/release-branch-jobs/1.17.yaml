@@ -386,7 +386,13 @@ periodics:
       - bash
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200802-ff98b58-1.17
       name: ""
-      resources: {}
+      resources:
+        limits:
+          cpu: 4
+          memory: "12Gi"
+        requests:
+          cpu: 4
+          memory: "12Gi"
 - annotations:
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
     testgrid-dashboards: sig-release-1.17-blocking, google-unit
