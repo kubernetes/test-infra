@@ -303,11 +303,13 @@ periodics:
       - --
       - -//build/...
       - -//vendor/...
+
 - name: periodic-kubernetes-bazel-test-canary
+  cluster: k8s-infra-prow-build
   annotations:
     testgrid-dashboards: sig-testing-canaries
     testgrid-tab-name: bazel-test
-    description: run kubernetes-bazel-test with latest image
+    description: run kubernetes-bazel-test without RBE on k8s-infra-prow-build
   interval: 1h
   decorate: true
   labels:
@@ -328,10 +330,15 @@ periodics:
       args:
       - test
       - --config=unit
-      - --config=remote
-      - --remote_instance_name=projects/k8s-prow-builds/instances/default_instance
       - //...
       - //hack:verify-all
       - --
       - -//build/...
       - -//vendor/...
+      resources:
+        limits:
+          cpu: 7
+          memory: 38Gi
+        requests:
+          cpu: 7
+          memory: 38Gi
