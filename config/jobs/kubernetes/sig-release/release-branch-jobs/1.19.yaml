@@ -67,7 +67,13 @@ periodics:
       - --timeout=180m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200802-ff98b58-1.19
       name: ""
-      resources: {}
+      resources:
+        limits:
+          cpu: 1
+          memory: 3Gi
+        requests:
+          cpu: 1
+          memory: 3Gi
 - annotations:
     fork-per-release-periodic-interval: 2h 6h 24h
     testgrid-alert-email: kubernetes-sig-node+testgrid@googlegroups.com
