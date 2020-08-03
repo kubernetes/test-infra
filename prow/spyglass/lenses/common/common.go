@@ -37,6 +37,7 @@ import (
 )
 
 var lensTemplate = template.Must(template.New("sg").Parse(string(MustAsset("static/spyglass-lens.html"))))
+var buildLogRegex = regexp.MustCompile(".*build-log.txt")
 
 type LensWithConfiguration struct {
 	Config LensOpt
@@ -204,7 +205,7 @@ func FetchArtifacts(
 			_, err = art.Size()
 		}
 		if err != nil {
-			if matched, err := regexp.MatchString(".*build-log.txt", name); err == nil && matched {
+			if buildLogRegex.MatchString(name) {
 				logsNeeded = append(logsNeeded, name)
 			}
 			continue

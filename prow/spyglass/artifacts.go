@@ -23,6 +23,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/io/providers"
 	"k8s.io/test-infra/prow/spyglass/api"
 	"k8s.io/test-infra/prow/spyglass/lenses/common"
@@ -54,14 +55,16 @@ func (s *Spyglass) ListArtifacts(ctx context.Context, src string) ([]string, err
 		return artifactNames, fmt.Errorf("error retrieving artifact names from gcs storage: %v", err)
 	}
 
+	artifactNamesSet := sets.NewString(artifactNames...)
+
 	jobName, buildID, err := s.KeyToJob(src)
 	if err != nil {
-		return artifactNames, fmt.Errorf("error parsing src: %v", err)
+		return artifactNamesSet.List(), fmt.Errorf("error parsing src: %v", err)
 	}
 
 	job, err := s.jobAgent.GetProwJob(jobName, buildID)
 	if err != nil {
-		return artifactNames, nil
+		return artifactNamesSet.List(), nil
 	}
 
 	jobContainers := job.Spec.PodSpec.Containers
@@ -71,21 +74,12 @@ func (s *Spyglass) ListArtifacts(ctx context.Context, src string) ([]string, err
 		if len(jobContainers) > 1 {
 			logName = fmt.Sprintf("%s-build-log.txt", container.Name)
 		}
-		if !contains(artifactNames, logName) {
-			artifactNames = append(artifactNames, logName)
+		if artifactNamesSet.Has(logName) {
+			artifactNamesSet.Insert(logName)
 		}
 	}
 
-	return artifactNames, nil
-}
-
-func contains(artifactNames []string, artifactName string) bool {
-	for _, art := range artifactNames {
-		if art == artifactName {
-			return true
-		}
-	}
-	return false
+	return artifactNamesSet.List(), nil
 }
 
 // KeyToJob takes a spyglass URL and returns the jobName and buildID.
