@@ -217,8 +217,12 @@ presubmits:
             - --timeout=80m # thinking about making this longer? don't! 80m is a hard cap, and should get down to no more than 60m.
           image: gcr.io/k8s-testimages/kubekins-e2e:v20200802-ff98b58-master
           resources:
+            limits:
+              cpu: 4
+              memory: "14Gi"
             requests:
-              memory: "6Gi"
+              cpu: 4
+              memory: "14Gi"
 
   - name: pull-kubernetes-e2e-gce-ubuntu-containerd-canary
     always_run: false
