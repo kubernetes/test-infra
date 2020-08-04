@@ -25,6 +25,7 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
+	"path/filepath"
 	"strconv"
 	"syscall"
 	"time"
@@ -199,10 +200,15 @@ func (o Options) ExecuteProcess() (int, error) {
 func (o *Options) Mark(exitCode int) error {
 	content := []byte(strconv.Itoa(exitCode))
 
-	// create temp file outside the directory of the desired marker file
-	tempFile, err := ioutil.TempFile("", "temp-marker")
+	// create temp file in the same directory as the desired marker file
+	dir := filepath.Dir(o.MarkerFile)
+	tmpDir, err := ioutil.TempDir(dir, o.ContainerName)
 	if err != nil {
-		return fmt.Errorf("could not create temp marker file: %v", err)
+		return fmt.Errorf("%s: error creating temp dir: %v", o.ContainerName, err)
+	}
+	tempFile, err := ioutil.TempFile(tmpDir, "temp-marker")
+	if err != nil {
+		return fmt.Errorf("could not create temp marker file in %s: %v", tmpDir, err)
 	}
 	// write the exit code to the tempfile, sync to disk and close
 	if _, err = tempFile.Write(content); err != nil {
