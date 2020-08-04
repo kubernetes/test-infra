@@ -31,24 +31,21 @@ import (
 	"strings"
 	"time"
 
+	"github.com/sirupsen/logrus"
+
 	"k8s.io/test-infra/gcsweb/pkg/version"
 )
 
-// The base URL for GCS's HTTP API.
-const gcsBaseURL = "https://storage.googleapis.com"
-const gcsPath = "/gcs" // path for GCS browsing on this server
-
-// The base URL for GCP's GCS browser.
-const gcsBrowserURL = "https://console.cloud.google.com/storage/browser"
-
-var flPort = flag.Int("p", 8080, "port number on which to listen")
-var flIcons = flag.String("i", "/icons", "path to the icons directory")
-var flStyles = flag.String("s", "/styles", "path to the styles directory")
-var flVersion = flag.Bool("version", false, "print version and exit")
-var flUpgradeProxiedHTTPtoHTTPS = flag.Bool("upgrade-proxied-http-to-https", false,
-	"upgrade any proxied request (e.g. from GCLB) from http to https")
-
 const (
+	// The base URL for GCS's HTTP API.
+	gcsBaseURL = "https://storage.googleapis.com"
+
+	// path for GCS browsing on this server
+	gcsPath = "/gcs"
+
+	// The base URL for GCP's GCS browser.
+	gcsBrowserURL = "https://console.cloud.google.com/storage/browser"
+
 	iconFile = "/icons/file.png"
 	iconDir  = "/icons/dir.png"
 	iconBack = "/icons/back.png"
@@ -67,14 +64,55 @@ func (ss *strslice) Set(value string) error {
 	return nil
 }
 
-// Only buckets in this list will be served.
-var allowedBuckets strslice
+type options struct {
+	flPort int
+
+	flIcons  string
+	flStyles string
+
+	flVersion bool
+
+	// Only buckets in this list will be served.
+	allowedBuckets strslice
+}
+
+var flUpgradeProxiedHTTPtoHTTPS bool
+
+func gatherOptions() options {
+	o := options{}
+	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+
+	fs.IntVar(&o.flPort, "p", 8080, "port number on which to listen")
+
+	fs.StringVar(&o.flIcons, "i", "/icons", "path to the icons directory")
+	fs.StringVar(&o.flStyles, "s", "/styles", "path to the styles directory")
+
+	fs.BoolVar(&o.flVersion, "version", false, "print version and exit")
+	fs.BoolVar(&flUpgradeProxiedHTTPtoHTTPS, "upgrade-proxied-http-to-https", false, "upgrade any proxied request (e.g. from GCLB) from http to https")
+
+	fs.Var(&o.allowedBuckets, "b", "GCS bucket to serve (may be specified more than once)")
+
+	fs.Parse(os.Args[1:])
+	return o
+}
+
+func (o *options) validate() error {
+	if _, err := os.Stat(o.flIcons); os.IsNotExist(err) {
+		return fmt.Errorf("icons path '%s' doesn't exists.", o.flIcons)
+	}
+	if _, err := os.Stat(o.flStyles); os.IsNotExist(err) {
+		return fmt.Errorf("styles path '%s' doesn't exists.", o.flStyles)
+	}
+	return nil
+}
 
 func main() {
-	flag.Var(&allowedBuckets, "b", "GCS bucket to serve (may be specified more than once)")
-	flag.Parse()
+	o := gatherOptions()
+	if err := o.validate(); err != nil {
+		logrus.Fatalf("Invalid options: %v", err)
+	}
 
-	if *flVersion {
+	if o.flVersion {
 		fmt.Println(version.VERSION)
 		os.Exit(0)
 	}
@@ -83,8 +121,8 @@ func main() {
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	// Canonicalize allowed buckets.
-	for i := range allowedBuckets {
-		bucket := joinPath(gcsPath, allowedBuckets[i])
+	for i := range o.allowedBuckets {
+		bucket := joinPath(gcsPath, o.allowedBuckets[i])
 		log.Printf("allowing %s", bucket)
 		http.HandleFunc(bucket+"/", gcsRequest)
 		http.HandleFunc(bucket, func(w http.ResponseWriter, r *http.Request) {
@@ -105,19 +143,19 @@ func main() {
 			h.ServeHTTP(w, r)
 		}
 	}
-	http.Handle("/icons/", longCacheServer(http.StripPrefix("/icons/", http.FileServer(http.Dir(*flIcons)))))
-	http.Handle("/styles/", longCacheServer(http.StripPrefix("/styles/", http.FileServer(http.Dir(*flStyles)))))
+	http.Handle("/icons/", longCacheServer(http.StripPrefix("/icons/", http.FileServer(http.Dir(o.flIcons)))))
+	http.Handle("/styles/", longCacheServer(http.StripPrefix("/styles/", http.FileServer(http.Dir(o.flStyles)))))
 
 	// Serve HTTP.
 	http.HandleFunc("/healthz", healthzRequest)
 	http.HandleFunc("/robots.txt", robotsRequest)
 	http.HandleFunc("/", otherRequest)
-	log.Printf("serving on port %d", *flPort)
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", *flPort), nil))
+	log.Printf("serving on port %d", o.flPort)
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", o.flPort), nil))
 }
 
 func upgradeToHTTPS(w http.ResponseWriter, r *http.Request, logger txnLogger) bool {
-	if *flUpgradeProxiedHTTPtoHTTPS && r.Header.Get("X-Forwarded-Proto") == "http" {
+	if flUpgradeProxiedHTTPtoHTTPS && r.Header.Get("X-Forwarded-Proto") == "http" {
 		newURL := *r.URL
 		newURL.Scheme = "https"
 		if newURL.Host == "" {
