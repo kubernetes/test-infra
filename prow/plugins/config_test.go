@@ -211,50 +211,64 @@ func TestTriggerFor(t *testing.T) {
 }
 
 func TestSetApproveDefaults(t *testing.T) {
-	tests := []struct {
-		name string
-
-		commandHelpLink         string
-		expectedCommandHelpLink string
-		prProcessLink           string
-		expectedPrProcessLink   string
-	}{
-		{
-			name:                    "set commandHelpLink and prProcessLink default",
-			commandHelpLink:         "",
-			prProcessLink:           "",
-			expectedCommandHelpLink: "https://go.k8s.io/bot-commands",
-			expectedPrProcessLink:   "https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process",
-		},
-		{
-			name:                    "keep commandHelpLink and prProcessLink value",
-			commandHelpLink:         "https://prow.k8s.io/command-help",
-			prProcessLink:           "https://github.com/kubernetes/community/blob/427ccfbc7d423d8763ed756f3b8c888b7de3cf34/contributors/guide/pull-requests.md",
-			expectedCommandHelpLink: "https://prow.k8s.io/command-help",
-			expectedPrProcessLink:   "https://github.com/kubernetes/community/blob/427ccfbc7d423d8763ed756f3b8c888b7de3cf34/contributors/guide/pull-requests.md",
-		},
-	}
-
-	for _, test := range tests {
-		c := &Configuration{
-			Approve: []Approve{{
+	c := &Configuration{
+		Approve: []Approve{
+			{
 				Repos: []string{
 					"kubernetes/kubernetes",
 					"kubernetes-client",
 				},
-				CommandHelpLink: test.commandHelpLink,
-				PrProcessLink:   test.prProcessLink,
-			}},
+			},
+			{
+				Repos: []string{
+					"kubernetes-sigs/cluster-api",
+				},
+				CommandHelpLink: "https://prow.k8s.io/command-help",
+				PrProcessLink:   "https://github.com/kubernetes/community/blob/427ccfbc7d423d8763ed756f3b8c888b7de3cf34/contributors/guide/pull-requests.md",
+			},
+		},
+	}
+
+	tests := []struct {
+		name                    string
+		org                     string
+		repo                    string
+		expectedCommandHelpLink string
+		expectedPrProcessLink   string
+	}{
+		{
+			name:                    "default",
+			org:                     "kubernetes",
+			repo:                    "kubernetes",
+			expectedCommandHelpLink: "https://go.k8s.io/bot-commands",
+			expectedPrProcessLink:   "https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process",
+		},
+		{
+			name:                    "overwrite",
+			org:                     "kubernetes-sigs",
+			repo:                    "cluster-api",
+			expectedCommandHelpLink: "https://prow.k8s.io/command-help",
+			expectedPrProcessLink:   "https://github.com/kubernetes/community/blob/427ccfbc7d423d8763ed756f3b8c888b7de3cf34/contributors/guide/pull-requests.md",
+		},
+		{
+			name:                    "default for repo without approve plugin config",
+			org:                     "kubernetes",
+			repo:                    "website",
+			expectedCommandHelpLink: "https://go.k8s.io/bot-commands",
+			expectedPrProcessLink:   "https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process",
+		},
+	}
+
+	for _, test := range tests {
+
+		a := c.ApproveFor(test.org, test.repo)
+
+		if a.CommandHelpLink != test.expectedCommandHelpLink {
+			t.Errorf("unexpected commandHelpLink: %s, expected: %s", a.CommandHelpLink, test.expectedCommandHelpLink)
 		}
 
-		c.setDefaults()
-
-		if c.Approve[0].CommandHelpLink != test.expectedCommandHelpLink {
-			t.Errorf("unexpected commandHelpLink: %s, expected: %s", c.Approve[0].CommandHelpLink, test.expectedCommandHelpLink)
-		}
-
-		if c.Approve[0].PrProcessLink != test.expectedPrProcessLink {
-			t.Errorf("unexpected prProcessLink: %s, expected: %s", c.Approve[0].PrProcessLink, test.expectedPrProcessLink)
+		if a.PrProcessLink != test.expectedPrProcessLink {
+			t.Errorf("unexpected prProcessLink: %s, expected: %s", a.PrProcessLink, test.expectedPrProcessLink)
 		}
 	}
 }

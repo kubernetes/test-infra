@@ -710,6 +710,12 @@ func (c *Configuration) ApproveFor(org, repo string) *Approve {
 		no := false
 		a.DeprecatedReviewActsAsApprove = &no
 	}
+	if a.CommandHelpLink == "" {
+		a.CommandHelpLink = "https://go.k8s.io/bot-commands"
+	}
+	if a.PrProcessLink == "" {
+		a.PrProcessLink = "https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process"
+	}
 	return a
 }
 
@@ -852,14 +858,6 @@ func (c *Configuration) setDefaults() {
 				continue
 			}
 			c.ExternalPlugins[repo][i].Endpoint = fmt.Sprintf("http://%s", p.Name)
-		}
-	}
-	for i, approve := range c.Approve {
-		if approve.CommandHelpLink == "" {
-			c.Approve[i].CommandHelpLink = "https://go.k8s.io/bot-commands"
-		}
-		if approve.PrProcessLink == "" {
-			c.Approve[i].PrProcessLink = "https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process"
 		}
 	}
 	if c.Blunderbuss.ReviewerCount == nil {
