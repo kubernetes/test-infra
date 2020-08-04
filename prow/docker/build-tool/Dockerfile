@@ -49,11 +49,13 @@ RUN OPERATOR_SDK_ARCH=$(echo ${ARCH}| sed 's/amd64/x86_64/g'); \
     chmod 555 ${OUTDIR}/usr/bin/operator-sdk
 
 # kubebuilder
-RUN if [ "${ARCH}" != "s390x" ] ; then \
+# Limit linters installation only for x86_64 and ppc64le platforms
+RUN set -eux; \
+    if [ ${ARCH} != "s390x" ] ; then \
         curl -L https://github.com/kubernetes-sigs/kubebuilder/releases/download/v${KUBEBUILDER_VERSION}/kubebuilder_${KUBEBUILDER_VERSION}_linux_${ARCH}.tar.gz -o /tmp/kubebuilder_${KUBEBUILDER_VERSION}_linux_${ARCH}.tar.gz ; \
         tar -xf /tmp/kubebuilder_${KUBEBUILDER_VERSION}_linux_${ARCH}.tar.gz  -C /tmp; \
         mv /tmp/kubebuilder_${KUBEBUILDER_VERSION}_linux_${ARCH} ${OUTDIR}/usr/bin/kubebuilder; \
-    fi
+    fi;
 
 # Helm
 ADD https://storage.googleapis.com/kubernetes-helm/helm-${HELM_VERSION}-linux-${ARCH}.tar.gz /tmp
