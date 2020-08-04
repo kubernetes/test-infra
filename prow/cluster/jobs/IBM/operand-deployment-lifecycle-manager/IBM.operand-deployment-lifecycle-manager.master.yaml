@@ -75,63 +75,6 @@ presubmits:
         securityContext:
           privileged: true
     trigger: '(?m)^/test (?:.*? )?test(?:.*?)?$'
-  - name: build-operand-deployment-lifecycle-manager-amd64
-    cluster: default
-    always_run: true
-    branches:
-    - ^master$
-    decorate: true
-    path_alias: github.com/IBM/operand-deployment-lifecycle-manager
-    rerun_command: /test build-operand-deployment-lifecycle-manager-amd64
-    spec:
-      containers:
-      - command:
-        - entrypoint
-        - make
-        - build
-        image: quay.io/multicloudlab/build-tool:v20200320-5e25536
-        name: ""
-        securityContext:
-          privileged: true
-    trigger: '(?m)^/test (?:.*? )?build(?:.*?)?$'
-  - name: build-operand-deployment-lifecycle-manager-ppc64le
-    cluster: ppc64le
-    always_run: true
-    branches:
-    - ^master$
-    decorate: true
-    path_alias: github.com/IBM/operand-deployment-lifecycle-manager
-    rerun_command: /test build-operand-deployment-lifecycle-manager-ppc64le
-    spec:
-      containers:
-      - command:
-        - entrypoint
-        - make
-        - build
-        image: quay.io/multicloudlab/build-tool:v20200320-5e25536
-        name: ""
-        securityContext:
-          privileged: true
-    trigger: '(?m)^/test (?:.*? )?build(?:.*?)?$'
-  - name: build-operand-deployment-lifecycle-manager-s390x
-    cluster: s390x
-    always_run: true
-    branches:
-    - ^master$
-    decorate: true
-    path_alias: github.com/IBM/operand-deployment-lifecycle-manager
-    rerun_command: /test build-operand-deployment-lifecycle-manager-s390x
-    spec:
-      containers:
-      - command:
-        - entrypoint
-        - make
-        - build
-        image: quay.io/multicloudlab/build-tool:v20200320-5e25536
-        name: ""
-        securityContext:
-          privileged: true
-    trigger: '(?m)^/test (?:.*? )?build(?:.*?)?$'
 postsubmits:
   IBM/operand-deployment-lifecycle-manager:
   - name: coverage-operand-deployment-lifecycle-manager-postsubmit
@@ -153,54 +96,6 @@ postsubmits:
             secretKeyRef:
               name: operand-deployment-lifecycle-manager-codecov-token
               key: codecov-token
-        securityContext:
-          privileged: true
-  - name: build-operand-deployment-lifecycle-manager-amd64-postsubmit
-    cluster: default
-    branches:
-    - ^master$
-    decorate: true
-    path_alias: github.com/IBM/operand-deployment-lifecycle-manager
-    spec:
-      containers:
-      - command:
-        - entrypoint
-        - make
-        - build
-        image: quay.io/multicloudlab/build-tool:v20200320-5e25536
-        name: ""
-        securityContext:
-          privileged: true
-  - name: build-operand-deployment-lifecycle-manager-ppc64le-postsubmit
-    cluster: ppc64le
-    branches:
-    - ^master$
-    decorate: true
-    path_alias: github.com/IBM/operand-deployment-lifecycle-manager
-    spec:
-      containers:
-      - command:
-        - entrypoint
-        - make
-        - build
-        image: quay.io/multicloudlab/build-tool:v20200320-5e25536
-        name: ""
-        securityContext:
-          privileged: true
-  - name: build-operand-deployment-lifecycle-manager-s390x-postsubmit
-    cluster: s390x
-    branches:
-    - ^master$
-    decorate: true
-    path_alias: github.com/IBM/operand-deployment-lifecycle-manager
-    spec:
-      containers:
-      - command:
-        - entrypoint
-        - make
-        - build
-        image: quay.io/multicloudlab/build-tool:v20200320-5e25536
-        name: ""
         securityContext:
           privileged: true
   - name: image-operand-deployment-lifecycle-manager-amd64-postsubmit
