@@ -778,90 +778,6 @@ presubmits:
         resources:
           requests:
             memory: 6Gi
-  - always_run: true
-    branches:
-    - release-1.19
-    labels:
-      preset-bazel-remote-cache-enabled: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-k8s-ssh: "true"
-      preset-pull-kubernetes-e2e: "true"
-      preset-pull-kubernetes-e2e-gce: "true"
-      preset-service-account: "true"
-    name: pull-kubernetes-e2e-gce
-    spec:
-      containers:
-      - args:
-        - --root=/go/src
-        - --repo=k8s.io/kubernetes=$(PULL_REFS)
-        - --repo=k8s.io/release
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --timeout=105
-        - --scenario=kubernetes_e2e
-        - --
-        - --build=bazel
-        - --cluster=
-        - --extract=local
-        - --gcp-node-image=gci
-        - --gcp-zone=us-west1-b
-        - --ginkgo-parallel=30
-        - --provider=gce
-        - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
-        - --runtime-config=batch/v2alpha1=true
-        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce
-        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
-          --minStartupPods=8
-        - --timeout=80m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200802-ff98b58-1.19
-        name: ""
-        resources:
-          requests:
-            cpu: 4
-            memory: 14Gi
-          limits:
-            cpu: 4
-            memory: 14Gi
-  - always_run: false
-    branches:
-    - release-1.19
-    labels:
-      preset-dind-enabled: "true"
-      preset-k8s-ssh: "true"
-      preset-pull-kubernetes-e2e: "true"
-      preset-pull-kubernetes-e2e-gce: "true"
-      preset-service-account: "true"
-    name: pull-kubernetes-e2e-gce-canary
-    skip_report: true
-    spec:
-      containers:
-      - args:
-        - --root=/go/src
-        - --repo=k8s.io/kubernetes=$(PULL_REFS)
-        - --repo=k8s.io/release
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --timeout=105
-        - --scenario=kubernetes_e2e
-        - --
-        - --build=quick
-        - --cluster=
-        - --extract=local
-        - --gcp-node-image=gci
-        - --gcp-zone=us-west1-b
-        - --ginkgo-parallel=30
-        - --provider=gce
-        - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
-        - --runtime-config=batch/v2alpha1=true
-        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-canary
-        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
-          --minStartupPods=8
-        - --timeout=80m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200802-ff98b58-1.19
-        name: ""
-        resources:
-          requests:
-            memory: 6Gi
-        securityContext:
-          privileged: true
   - always_run: false
     branches:
     - release-1.19
@@ -917,7 +833,7 @@ presubmits:
       preset-pull-kubernetes-e2e: "true"
       preset-pull-kubernetes-e2e-gce: "true"
       preset-service-account: "true"
-    name: pull-kubernetes-e2e-gce-ubuntu-containerd
+    name: pull-kubernetes-e2e
     spec:
       containers:
       - args:
@@ -948,7 +864,7 @@ presubmits:
         - --gcp-zone=us-west1-b
         - --ginkgo-parallel=30
         - --provider=gce
-        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-ubuntu-containerd
+        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
           --minStartupPods=8
         - --timeout=80m
