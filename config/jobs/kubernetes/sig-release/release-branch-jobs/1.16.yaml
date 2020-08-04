@@ -786,7 +786,11 @@ presubmits:
         name: ""
         resources:
           requests:
-            memory: 6Gi
+            cpu: 4
+            memory: 14Gi
+          limits:
+            cpu: 4
+            memory: 14Gi
   - always_run: false
     branches:
     - release-1.16
