@@ -19,6 +19,13 @@ presubmits:
         command:
         - make
         image: gcr.io/k8s-testimages/kubekins-e2e:v20200802-ff98b58-master
+        resources:
+          limits:
+            cpu: 5
+            memory: 36Gi
+          requests:
+            cpu: 5
+            memory: 36Gi
         args:
         - verify
         env:
