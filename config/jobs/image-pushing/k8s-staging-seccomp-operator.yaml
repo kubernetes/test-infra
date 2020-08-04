@@ -14,7 +14,7 @@ postsubmits:
               - /run.sh
             args:
               - --project=k8s-infra-staging-seccomp-operator
-              - --scratch-bucket=gs://k8s-infra-staging-seccomp-operator
+              - --scratch-bucket=gs://k8s-infra-staging-seccomp-operator-gcb
               - .
             env:
               - name: LOG_TO_STDOUT
