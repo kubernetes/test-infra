@@ -50,3 +50,38 @@ periodics:
         requests:
           cpu: 1
           memory: 3Gi
+- name: ci-kubernetes-e2e-gce-device-plugin-gpu-canary
+  cron: "30 1-23/2 * * *"
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-ci-gce-device-plugin-gpu: "true"
+  annotations:
+    testgrid-dashboards: sig-testing-canaries
+    testgrid-tab-name: gce-device-plugin-gpu
+    description: Duplicate of ci-kubernetes-e2e-gce-device-plugin-gpu pinned to a k8s-infra project to verify quota
+    testgrid-alert-stale-results-hours: '24'
+  spec:
+    containers:
+    - args:
+      - --timeout=300
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --extract=ci/latest-fast
+      - --env=KUBE_CONTAINER_RUNTIME=docker
+      - --gcp-node-image=gci
+      - --gcp-project=k8s-infra-e2e-gpu-project
+      - --gcp-zone=us-west1-b
+      - --provider=gce
+      - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
+      - --timeout=180m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200802-ff98b58-master
+      resources:
+        limits:
+          cpu: 1
+          memory: 3Gi
+        requests:
+          cpu: 1
+          memory: 3Gi
