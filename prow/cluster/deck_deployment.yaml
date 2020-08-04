@@ -1,3 +1,0 @@
-# fake deck_deployment file to help autobump.sh
-# TODO(fejta): delete this file June 2020
-image: v20200501-e6124e633
