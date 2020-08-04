@@ -1099,7 +1099,13 @@ presubmits:
           value: external-dependencies-version vendor vendor-licenses
         image: gcr.io/k8s-testimages/kubekins-e2e:v20200802-ff98b58-1.16
         name: main
-        resources: {}
+        resources:
+          limits:
+            cpu: "2"
+            memory: "1.2Gi"
+          requests:
+            cpu: "2"
+            memory: "1.2Gi"
         securityContext:
           privileged: true
   - always_run: true
