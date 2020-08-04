@@ -5,7 +5,7 @@ plank:
   job_url_prefix_config:
     '*': https://prow.k8s.io/view/
   pod_pending_timeout: 15m
-  pod_unscheduled_timeout: 1m
+  pod_unscheduled_timeout: 5m
   default_decoration_configs:
     '*':
       timeout: 2h
