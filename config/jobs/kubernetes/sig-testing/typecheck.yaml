@@ -19,7 +19,7 @@ presubmits:
         command:
         - make
         image: gcr.io/k8s-testimages/kubekins-e2e:v20200802-ff98b58-master
-        qresources:
+        resources:
           limits:
             cpu: 5
             memory: 36Gi
@@ -32,4 +32,3 @@ presubmits:
         # Space separated list of the checks to run
         - name: WHAT
           value: typecheck typecheck-providerless typecheck-dockerless
-
