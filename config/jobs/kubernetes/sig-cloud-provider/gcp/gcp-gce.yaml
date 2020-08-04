@@ -58,7 +58,11 @@ presubmits:
         image: gcr.io/k8s-testimages/kubekins-e2e:v20200802-ff98b58-master
         resources:
           requests:
-            memory: "6Gi"
+            cpu: 4
+            memory: 14Gi
+          limits:
+            cpu: 4
+            memory: 14Gi
 
   - name: pull-kubernetes-e2e-gce-canary
     always_run: false
@@ -105,7 +109,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            memory: "6Gi"
+            cpu: 4
+            memory: 14Gi
+          limits:
+            cpu: 4
+            memory: 14Gi
 
   - name: pull-kubernetes-e2e-gce-ubuntu
     always_run: false
