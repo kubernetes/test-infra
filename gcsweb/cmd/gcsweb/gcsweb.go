@@ -23,7 +23,6 @@ import (
 	"html/template"
 	"io"
 	"io/ioutil"
-	"log"
 	"math/rand"
 	"net/http"
 	net_url "net/url"
@@ -34,6 +33,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/gcsweb/pkg/version"
+	"k8s.io/test-infra/prow/logrusutil"
 )
 
 const (
@@ -117,13 +117,14 @@ func main() {
 		os.Exit(0)
 	}
 
-	log.Printf("starting")
+	logrusutil.ComponentInit()
+	logrus.Info("Starting GCSWeb")
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	// Canonicalize allowed buckets.
 	for i := range o.allowedBuckets {
 		bucket := joinPath(gcsPath, o.allowedBuckets[i])
-		log.Printf("allowing %s", bucket)
+		logrus.WithField("bucket", bucket).Info("allowing bucket")
 		http.HandleFunc(bucket+"/", gcsRequest)
 		http.HandleFunc(bucket, func(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, bucket+"/", http.StatusPermanentRedirect)
@@ -150,18 +151,21 @@ func main() {
 	http.HandleFunc("/healthz", healthzRequest)
 	http.HandleFunc("/robots.txt", robotsRequest)
 	http.HandleFunc("/", otherRequest)
-	log.Printf("serving on port %d", o.flPort)
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", o.flPort), nil))
+
+	logrus.Infof("serving on port %d", o.flPort)
+	if err := http.ListenAndServe(fmt.Sprintf(":%d", o.flPort), nil); err != nil {
+		logrus.WithError(err).Fatal("couldn't start the http server")
+	}
 }
 
-func upgradeToHTTPS(w http.ResponseWriter, r *http.Request, logger txnLogger) bool {
+func upgradeToHTTPS(w http.ResponseWriter, r *http.Request, logger *logrus.Entry) bool {
 	if flUpgradeProxiedHTTPtoHTTPS && r.Header.Get("X-Forwarded-Proto") == "http" {
 		newURL := *r.URL
 		newURL.Scheme = "https"
 		if newURL.Host == "" {
 			newURL.Host = r.Host
 		}
-		logger.Printf("redirect to %s [https upgrade]", newURL.String())
+		logger.Infof("redirect to %s [https upgrade]", newURL.String())
 		http.Redirect(w, r, newURL.String(), http.StatusPermanentRedirect)
 		return true
 	}
@@ -251,20 +255,27 @@ func gcsRequest(w http.ResponseWriter, r *http.Request) {
 		url += "&prefix=" + net_url.QueryEscape(object+"/")
 	}
 
-	if markers, found := r.URL.Query()["marker"]; found {
+	markers, found := r.URL.Query()["marker"]
+	if found {
 		url += "&marker=" + markers[0]
 	}
 
+	urlLogger := logger.WithFields(logrus.Fields{
+		"url":     url,
+		"bucket":  bucket,
+		"object":  object,
+		"markers": markers})
+
 	resp, err := http.Get(url)
 	if err != nil {
-		logger.Printf("GET %s: %s", url, err)
+		urlLogger.WithError(err).Error("failed to GET from GCS")
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "http.Get: %v", err)
 		return
 	}
 	defer resp.Body.Close()
 
-	logger.Printf("GET %s: %s", url, resp.Status)
+	urlLogger.WithField("status", resp.Status).Info("URL processed")
 
 	if resp.StatusCode != http.StatusOK {
 		w.WriteHeader(resp.StatusCode)
@@ -273,14 +284,14 @@ func gcsRequest(w http.ResponseWriter, r *http.Request) {
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		logger.Printf("ioutil.ReadAll: %v", err)
+		urlLogger.WithError(err).Error("error while reading response body")
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "ioutil.ReadAll: %v", err)
 		return
 	}
 	dir, err := parseXML(body, object+"/")
 	if err != nil {
-		logger.Printf("xml.Unmarshal: %v", err)
+		urlLogger.WithError(err).Error("error while unmarshaling the XML from response body")
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "xml.Unmarshal: %v", err)
 		return
@@ -288,7 +299,7 @@ func gcsRequest(w http.ResponseWriter, r *http.Request) {
 	if dir == nil {
 		// It was a request for a file, send them there directly.
 		url := joinPath(gcsBaseURL, bucket, object)
-		logger.Printf("redirect to %s", url)
+		urlLogger.Infof("redirect to %s", url)
 		http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 		return
 	}
@@ -606,20 +617,10 @@ func (pfx *Prefix) Render(out http.ResponseWriter, inPath string) {
 	htmlGridItem(out, iconDir, url, pfx.Prefix, "-", "-")
 }
 
-// A logger-wrapper that logs a transaction's metadata.
-type txnLogger struct {
-	nonce string
-}
-
-// Printf logs a formatted line to the logging output.
-func (tl txnLogger) Printf(fmt string, args ...interface{}) {
-	args = append([]interface{}{tl.nonce}, args...)
-	log.Printf("[txn-%s] "+fmt, args...)
-}
-
-func newTxnLogger(r *http.Request) txnLogger {
-	nonce := fmt.Sprintf("%08x", rand.Int31())
-	logger := txnLogger{nonce}
-	logger.Printf("request: %s %s", r.Method, r.URL.Path)
-	return logger
+func newTxnLogger(r *http.Request) *logrus.Entry {
+	return logrus.WithFields(logrus.Fields{
+		"txn":      fmt.Sprintf("%08x", rand.Int31()),
+		"method":   r.Method,
+		"url-path": r.URL.Path,
+	})
 }
