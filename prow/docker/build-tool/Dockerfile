@@ -2,16 +2,19 @@
 # Binary tools
 #############
 
-FROM golang:1.13.8 as binary_tools_context
+FROM golang:1.14.6 as binary_tools_context
 
 ARG ARCH=amd64
 
 # Pinned versions of stuff
+ENV CONTROLLER_GEN_VERSION=v0.3.0
 ENV GOIMPORTS_VERSION=379209517ffe
 ENV GOLANGCI_LINT_VERSION=v1.23.1
 ENV HELM_VERSION=v2.16.1
 ENV KUBECTL_VERSION=v1.16.0
-ENV OPERATOR_SDK_VERSION=v0.12.0
+ENV KUBEBUILDER_VERSION=2.3.1
+ENV KUSTOMIZE_VERSION=v3.5.4
+ENV OPERATOR_SDK_VERSION=v0.19.2
 
 ENV GO111MODULE=on
 ENV GOPROXY=https://proxy.golang.org
@@ -35,15 +38,22 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     software-properties-common
 
 # Build and install Go tools
+RUN go get -ldflags="-s -w" sigs.k8s.io/controller-tools/cmd/controller-gen@${CONTROLLER_GEN_VERSION}
 RUN go get -ldflags="-s -w" golang.org/x/tools/cmd/goimports@${GOIMPORTS_VERSION}
 RUN go get -ldflags="-s -w" github.com/golangci/golangci-lint/cmd/golangci-lint@${GOLANGCI_LINT_VERSION}
+RUN go get -ldflags="-s -w" sigs.k8s.io/kustomize/kustomize/v3@${KUSTOMIZE_VERSION}
 
-# Build and install operator-sdk
-RUN git clone --branch ${OPERATOR_SDK_VERSION} https://github.com/operator-framework/operator-sdk.git \
-    ${GOPATH}/src/github.com/operator-framework/operator-sdk && \
-    cd ${GOPATH}/src/github.com/operator-framework/operator-sdk && \
-    make install && \
-    cd /tmp
+# operator-sdk
+RUN OPERATOR_SDK_ARCH=$(echo ${ARCH}| sed 's/amd64/x86_64/g'); \
+    curl -L https://github.com/operator-framework/operator-sdk/releases/download/${OPERATOR_SDK_VERSION}/operator-sdk-${OPERATOR_SDK_VERSION}-${OPERATOR_SDK_ARCH}-linux-gnu -o ${OUTDIR}/usr/bin/operator-sdk; \
+    chmod 555 ${OUTDIR}/usr/bin/operator-sdk
+
+# kubebuilder
+RUN if [ "${ARCH}" != "s390x" ] ; then \
+        curl -L https://github.com/kubernetes-sigs/kubebuilder/releases/download/v${KUBEBUILDER_VERSION}/kubebuilder_${KUBEBUILDER_VERSION}_linux_${ARCH}.tar.gz -o /tmp/kubebuilder_${KUBEBUILDER_VERSION}_linux_${ARCH}.tar.gz ; \
+        tar -xf /tmp/kubebuilder_${KUBEBUILDER_VERSION}_linux_${ARCH}.tar.gz  -C /tmp; \
+        mv /tmp/kubebuilder_${KUBEBUILDER_VERSION}_linux_${ARCH} ${OUTDIR}/usr/bin/kubebuilder; \
+    fi
 
 # Helm
 ADD https://storage.googleapis.com/kubernetes-helm/helm-${HELM_VERSION}-linux-${ARCH}.tar.gz /tmp
@@ -141,7 +151,7 @@ ENV GOROOT=/usr/local/go
 ENV GOPATH=${HOME}/go
 ENV GOBIN=${HOME}/gobin
 ENV GOCACHE=${HOME}/gocache
-ENV PATH=/usr/lib/google-cloud-sdk/bin:/usr/local/go/bin:${HOME}/go/bin:${HOME}/gobin:$PATH
+ENV PATH=/usr/lib/google-cloud-sdk/bin:/usr/local/go/bin:/usr/local/kubebuilder:${HOME}/go/bin:${HOME}/gobin:$PATH
 
 # Docker support
 ENV DOCKER_CONFIG=${HOME}/.docker
