@@ -26,7 +26,7 @@ import (
 	"k8s.io/test-infra/prow/spyglass/lenses/common"
 )
 
-const SingleLogName = "build-log.txt"
+const singleLogName = "build-log.txt"
 
 // PodLogArtifactFetcher is used to fetch artifacts from k8s apiserver
 type PodLogArtifactFetcher struct {
@@ -53,8 +53,8 @@ func (af *PodLogArtifactFetcher) Artifact(_ context.Context, key, artifactName s
 }
 
 func containerName(artifactName string) string {
-	if artifactName == SingleLogName {
+	if artifactName == singleLogName {
 		return kube.TestContainerName
 	}
-	return strings.TrimSuffix(artifactName, "-build-log.txt")
+	return strings.TrimSuffix(artifactName, fmt.Sprintf("-%s", singleLogName))
 }

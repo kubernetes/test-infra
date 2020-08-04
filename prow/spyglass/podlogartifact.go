@@ -59,9 +59,6 @@ func NewPodLogArtifact(jobName string, buildID string, artifactName string, cont
 	if artifactName == "" {
 		return nil, errInsufficientJobInfo
 	}
-	if container == "" {
-		return nil, errInsufficientJobInfo
-	}
 	if sizeLimit < 0 {
 		return nil, errInvalidSizeLimit
 	}
@@ -80,6 +77,9 @@ func (a *PodLogArtifact) CanonicalLink() string {
 	q := url.Values{
 		"job": []string{a.name},
 		"id":  []string{a.buildID},
+	}
+	if a.artifactName != singleLogName {
+		q.Set("container", a.container)
 	}
 	u := url.URL{
 		Path:     "/log",

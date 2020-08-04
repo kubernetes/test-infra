@@ -50,7 +50,7 @@ type fpkc string
 
 func (f fpkc) GetLogs(name, container string) ([]byte, error) {
 	if name == "wowowow" || name == "powowow" {
-		return []byte(f), nil
+		return []byte(fmt.Sprintf("%s.%s", f, container)), nil
 	}
 	return nil, fmt.Errorf("pod not found: %s", name)
 }
@@ -88,13 +88,20 @@ func TestGetLog(t *testing.T) {
 	}
 	if res, err := ja.GetJobLog("job", "123", kube.TestContainerName); err != nil {
 		t.Fatalf("Failed to get log: %v", err)
-	} else if got, expect := string(res), "clusterA"; got != expect {
+	} else if got, expect := string(res), fmt.Sprintf("clusterA.%s", kube.TestContainerName); got != expect {
 		t.Errorf("Unexpected result getting logs for job 'job'. Expected %q, but got %q.", expect, got)
 	}
 
 	if res, err := ja.GetJobLog("jib", "123", kube.TestContainerName); err != nil {
 		t.Fatalf("Failed to get log: %v", err)
-	} else if got, expect := string(res), "clusterB"; got != expect {
+	} else if got, expect := string(res), fmt.Sprintf("clusterB.%s", kube.TestContainerName); got != expect {
+		t.Errorf("Unexpected result getting logs for job 'job'. Expected %q, but got %q.", expect, got)
+	}
+
+	customContainerName := "custom-container-name"
+	if res, err := ja.GetJobLog("jib", "123", customContainerName); err != nil {
+		t.Fatalf("Failed to get log: %v", err)
+	} else if got, expect := string(res), fmt.Sprintf("clusterB.%s", customContainerName); got != expect {
 		t.Errorf("Unexpected result getting logs for job 'job'. Expected %q, but got %q.", expect, got)
 	}
 }

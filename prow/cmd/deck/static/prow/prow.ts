@@ -500,6 +500,7 @@ function redraw(fz: FuzzySearch): void {
                 job = "",
                 agent = "",
                 refs: {org = "", repo = "", repo_link = "", base_sha = "", base_link = "", pulls = [], base_ref = ""} = {},
+                pod_spec,
             },
             status: {startTime, completionTime = "", state = "", pod_name, build_id = "", url = ""},
         } = build;
@@ -571,7 +572,17 @@ function redraw(fz: FuzzySearch): void {
         r.appendChild(cell.state(state));
         if ((agent === "kubernetes" && pod_name) || agent !== "kubernetes") {
             const logIcon = icon.create("description", "Build log");
-            logIcon.href = `log?job=${job}&id=${build_id}`;
+            if (pod_spec == null || pod_spec.containers.length <= 1) {
+                logIcon.href = `log?job=${job}&id=${build_id}`;
+            } else {
+                const buildIndex = url.indexOf('/build/');
+                if (buildIndex !== -1) {
+                    const gcsUrl = `${window.location.origin}/view/gcs/${url.substring(buildIndex + '/build/'.length)}`;
+                    logIcon.href = gcsUrl;
+                } else if (url.includes('/view/')) {
+                    logIcon.href = url;
+                }
+            }
             const c = document.createElement("td");
             c.classList.add("icon-cell");
             c.appendChild(logIcon);

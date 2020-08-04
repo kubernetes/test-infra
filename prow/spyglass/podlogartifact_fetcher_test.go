@@ -17,7 +17,9 @@ limitations under the License.
 package spyglass
 
 import (
+	"bytes"
 	"context"
+	"fmt"
 	"testing"
 )
 
@@ -26,26 +28,31 @@ func TestFetchArtifacts_Prow(t *testing.T) {
 	goodFetcher := NewPodLogArtifactFetcher(&fakePodLogJAgent{})
 	maxSize := int64(500e6)
 	testCases := []struct {
-		name      string
-		key       string
-		artifact  string
-		expectErr bool
+		name         string
+		key          string
+		artifact     string
+		expectedPath string
+		expectedLink string
+		expected     []byte
+		expectErr    bool
 	}{
 		{
-			name:     "Fetch build-log.txt from valid src",
-			key:      "BFG/435",
-			artifact: "build-log.txt",
+			name:         "Fetch build-log.txt from valid src",
+			key:          "BFG/435",
+			artifact:     singleLogName,
+			expectedLink: "/log?id=435&job=BFG",
+			expected:     []byte("frobscottle"),
 		},
 		{
 			name:      "Fetch log from empty src",
 			key:       "",
-			artifact:  "build-log.txt",
+			artifact:  singleLogName,
 			expectErr: true,
 		},
 		{
 			name:      "Fetch log from incomplete src",
 			key:       "BFG",
-			artifact:  "build-log.txt",
+			artifact:  singleLogName,
 			expectErr: true,
 		},
 		{
@@ -54,15 +61,43 @@ func TestFetchArtifacts_Prow(t *testing.T) {
 			artifact:  "",
 			expectErr: true,
 		},
+		{
+			name:         "Fetch custom build-log with no artifact name",
+			key:          "BFG/435",
+			artifact:     fmt.Sprintf("%s-%s", customContainerName, singleLogName),
+			expectedLink: fmt.Sprintf("/log?container=%s&id=435&job=BFG", customContainerName),
+			expected:     []byte("snozzcumber"),
+		},
 	}
 
 	for _, tc := range testCases {
 		artifact, err := goodFetcher.Artifact(context.Background(), tc.key, tc.artifact, maxSize)
 		if err != nil && !tc.expectErr {
 			t.Errorf("%s: failed unexpectedly for artifact %s, err: %v", tc.name, artifact.JobPath(), err)
+			continue
 		}
 		if err == nil && tc.expectErr {
 			t.Errorf("%s: expected error, got no error", tc.name)
+			continue
 		}
+
+		if artifact != nil {
+			if artifact.JobPath() != tc.artifact {
+				t.Errorf("Unexpected job path, expected %s, got %q", artifact.JobPath(), tc.artifact)
+			}
+			link := artifact.CanonicalLink()
+			if link != tc.expectedLink {
+				t.Errorf("Unexpected link, expected %s, got %q", tc.expectedLink, link)
+			}
+			res, err := artifact.ReadAll()
+			if err != nil {
+				t.Fatalf("%s failed reading bytes of log. got err: %v", tc.name, err)
+				continue
+			}
+			if !bytes.Equal(tc.expected, res) {
+				t.Errorf("Unexpected result of reading pod logs, expected %q, got %q", tc.expected, res)
+			}
+		}
+
 	}
 }

@@ -52,39 +52,35 @@ func (s *Spyglass) ListArtifacts(ctx context.Context, src string) ([]string, err
 
 	artifactNames, err := s.StorageArtifactFetcher.artifacts(ctx, gcsKey)
 	if err != nil {
-		return artifactNames, fmt.Errorf("error retrieving artifact names from gcs storage: %v", err)
+		logrus.Warningf("error retrieving artifact names from gcs storage: %v", err)
 	}
 
 	artifactNamesSet := sets.NewString(artifactNames...)
 
-	jobName, buildID, err := s.KeyToJob(src)
+	jobName, buildID, err := common.KeyToJob(src)
 	if err != nil {
 		return artifactNamesSet.List(), fmt.Errorf("error parsing src: %v", err)
 	}
 
 	job, err := s.jobAgent.GetProwJob(jobName, buildID)
 	if err != nil {
+		// we don't return the error because we assume that if we cannot get the prowjob from the jobAgent,
+		// then we must already have all the build-logs in gcs
+		logrus.Infof("unable to get prowjob from Pod: %v", err)
 		return artifactNamesSet.List(), nil
 	}
 
 	jobContainers := job.Spec.PodSpec.Containers
 
 	for _, container := range jobContainers {
-		logName := SingleLogName
+		logName := singleLogName
 		if len(jobContainers) > 1 {
-			logName = fmt.Sprintf("%s-build-log.txt", container.Name)
+			logName = fmt.Sprintf("%s-%s", container.Name, singleLogName)
 		}
-		if artifactNamesSet.Has(logName) {
-			artifactNamesSet.Insert(logName)
-		}
+		artifactNamesSet.Insert(logName)
 	}
 
 	return artifactNamesSet.List(), nil
-}
-
-// KeyToJob takes a spyglass URL and returns the jobName and buildID.
-func (*Spyglass) KeyToJob(src string) (jobName string, buildID string, err error) {
-	return common.KeyToJob(src)
 }
 
 // prowToGCS returns the GCS key corresponding to the given prow key

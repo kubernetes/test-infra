@@ -37,7 +37,7 @@ import (
 )
 
 var lensTemplate = template.Must(template.New("sg").Parse(string(MustAsset("static/spyglass-lens.html"))))
-var buildLogRegex = regexp.MustCompile(".*build-log.txt")
+var buildLogRegex = regexp.MustCompile(`^(?:[^/]*-)?build-log\.txt$`)
 
 type LensWithConfiguration struct {
 	Config LensOpt

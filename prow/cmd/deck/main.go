@@ -1032,7 +1032,7 @@ lensesLoop:
 		prHistLink = "/pr-history?org=" + org + "&repo=" + repo + "&pr=" + strconv.Itoa(number)
 	}
 
-	jobName, buildID, err := sg.KeyToJob(src)
+	jobName, buildID, err := common.KeyToJob(src)
 	if err != nil {
 		return "", fmt.Errorf("error determining jobName / buildID: %v", err)
 	}

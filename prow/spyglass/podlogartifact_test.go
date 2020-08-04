@@ -27,6 +27,8 @@ import (
 	"k8s.io/test-infra/prow/spyglass/lenses"
 )
 
+const customContainerName = "custom-container"
+
 // fakePodLogJAgent used for pod log artifact dependency injection
 type fakePodLogJAgent struct {
 }
@@ -37,11 +39,16 @@ func (j *fakePodLogJAgent) GetProwJob(job, id string) (prowapi.ProwJob, error) {
 
 func (j *fakePodLogJAgent) GetJobLog(job, id, container string) ([]byte, error) {
 	if job == "BFG" && id == "435" {
-		return []byte("frobscottle"), nil
+		switch container {
+		case kube.TestContainerName:
+			return []byte("frobscottle"), nil
+		case customContainerName:
+			return []byte("snozzcumber"), nil
+		}
 	} else if job == "Fantastic Mr. Fox" && id == "4" {
 		return []byte("a hundred smoked hams and fifty sides of bacon"), nil
 	}
-	return nil, fmt.Errorf("could not find job %s, id %s", job, id)
+	return nil, fmt.Errorf("could not find job %s, id %s, container %s", job, id, container)
 }
 
 func TestNewPodLogArtifact(t *testing.T) {
@@ -50,6 +57,7 @@ func TestNewPodLogArtifact(t *testing.T) {
 		jobName      string
 		buildID      string
 		container    string
+		artifact     string
 		sizeLimit    int64
 		expectedErr  error
 		expectedLink string
@@ -59,15 +67,27 @@ func TestNewPodLogArtifact(t *testing.T) {
 			jobName:      "job",
 			buildID:      "123",
 			container:    kube.TestContainerName,
+			artifact:     singleLogName,
 			sizeLimit:    500e6,
 			expectedErr:  nil,
 			expectedLink: "/log?id=123&job=job",
+		},
+		{
+			name:         "Create pod log with valid fields and custom container",
+			jobName:      "job",
+			buildID:      "123",
+			container:    customContainerName,
+			artifact:     fmt.Sprintf("%s-%s", customContainerName, singleLogName),
+			sizeLimit:    500e6,
+			expectedErr:  nil,
+			expectedLink: fmt.Sprintf("/log?container=%s&id=123&job=job", customContainerName),
 		},
 		{
 			name:         "Create pod log with no jobName",
 			jobName:      "",
 			buildID:      "123",
 			container:    kube.TestContainerName,
+			artifact:     singleLogName,
 			sizeLimit:    500e6,
 			expectedErr:  errInsufficientJobInfo,
 			expectedLink: "",
@@ -77,6 +97,7 @@ func TestNewPodLogArtifact(t *testing.T) {
 			jobName:      "job",
 			buildID:      "",
 			container:    kube.TestContainerName,
+			artifact:     singleLogName,
 			sizeLimit:    500e6,
 			expectedErr:  errInsufficientJobInfo,
 			expectedLink: "",
@@ -86,6 +107,7 @@ func TestNewPodLogArtifact(t *testing.T) {
 			jobName:      "job",
 			buildID:      "123",
 			container:    kube.TestContainerName,
+			artifact:     singleLogName,
 			sizeLimit:    -4,
 			expectedErr:  errInvalidSizeLimit,
 			expectedLink: "",
@@ -93,7 +115,7 @@ func TestNewPodLogArtifact(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			artifact, err := NewPodLogArtifact(tc.jobName, tc.buildID, "build-log.txt", tc.container, tc.sizeLimit, &fakePodLogJAgent{})
+			artifact, err := NewPodLogArtifact(tc.jobName, tc.buildID, tc.artifact, tc.container, tc.sizeLimit, &fakePodLogJAgent{})
 			if err != nil {
 				if err != tc.expectedErr {
 					t.Fatalf("failed creating artifact. err: %v", err)
@@ -136,6 +158,22 @@ func TestReadTail_PodLog(t *testing.T) {
 			expected:  []byte("con"),
 		},
 		{
+			name:      "Podlog ReadTail longer for different container",
+			jobName:   "BFG",
+			buildID:   "435",
+			container: customContainerName,
+			n:         50,
+			expected:  []byte("snozzcumber"),
+		},
+		{
+			name:      "Podlog ReadTail shorter for different container",
+			jobName:   "BFG",
+			buildID:   "435",
+			container: customContainerName,
+			n:         3,
+			expected:  []byte("ber"),
+		},
+		{
 			name:      "Podlog ReadTail nonexistent pod",
 			jobName:   "Fax",
 			buildID:   "4",
@@ -146,7 +184,7 @@ func TestReadTail_PodLog(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			artifact, err := NewPodLogArtifact(tc.jobName, tc.buildID, "build-log.txt", tc.container, 500e6, &fakePodLogJAgent{})
+			artifact, err := NewPodLogArtifact(tc.jobName, tc.buildID, singleLogName, tc.container, 500e6, &fakePodLogJAgent{})
 			if err != nil {
 				t.Fatalf("Pod Log Tests failed to create pod log artifact, err %v", err)
 			}
@@ -198,7 +236,7 @@ func TestReadAt_PodLog(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			artifact, err := NewPodLogArtifact(tc.jobName, tc.buildID, "build-log.txt", tc.container, 500e6, &fakePodLogJAgent{})
+			artifact, err := NewPodLogArtifact(tc.jobName, tc.buildID, singleLogName, tc.container, 500e6, &fakePodLogJAgent{})
 			if err != nil {
 				t.Fatalf("Pod Log Tests failed to create pod log artifact, err %v", err)
 			}
@@ -245,7 +283,7 @@ func TestReadAtMost_PodLog(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			artifact, err := NewPodLogArtifact(tc.jobName, tc.buildID, "build-log.txt", tc.container, 500e6, &fakePodLogJAgent{})
+			artifact, err := NewPodLogArtifact(tc.jobName, tc.buildID, singleLogName, tc.container, 500e6, &fakePodLogJAgent{})
 			if err != nil {
 				t.Fatalf("Pod Log Tests failed to create pod log artifact, err %v", err)
 			}
@@ -278,7 +316,7 @@ func TestReadAll_PodLog(t *testing.T) {
 			buildID:     "123",
 			container:   kube.TestContainerName,
 			sizeLimit:   500e6,
-			expectedErr: fmt.Errorf("error getting pod log size: error getting size of pod log: could not find job job, id 123"),
+			expectedErr: fmt.Errorf("error getting pod log size: error getting size of pod log: could not find job job, id 123, container %s", kube.TestContainerName),
 			expected:    nil,
 		},
 		{
@@ -289,6 +327,15 @@ func TestReadAll_PodLog(t *testing.T) {
 			sizeLimit:   500e6,
 			expectedErr: nil,
 			expected:    []byte("frobscottle"),
+		},
+		{
+			name:        "Simple \"BFG\" Podlog readall for custom container",
+			jobName:     "BFG",
+			buildID:     "435",
+			container:   customContainerName,
+			sizeLimit:   500e6,
+			expectedErr: nil,
+			expected:    []byte("snozzcumber"),
 		},
 		{
 			name:        "\"Fantastic Mr. Fox\" Podlog readall",
@@ -310,7 +357,7 @@ func TestReadAll_PodLog(t *testing.T) {
 		},
 	}
 	for _, tc := range testCases {
-		artifact, err := NewPodLogArtifact(tc.jobName, tc.buildID, "build-log.txt", tc.container, tc.sizeLimit, fakePodLogAgent)
+		artifact, err := NewPodLogArtifact(tc.jobName, tc.buildID, singleLogName, tc.container, tc.sizeLimit, fakePodLogAgent)
 		if err != nil {
 			t.Fatalf("Pod Log Tests failed to create pod log artifact, err %v", err)
 		}

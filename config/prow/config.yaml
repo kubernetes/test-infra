@@ -57,7 +57,7 @@ deck:
     - lens:
         name: buildlog
       required_files:
-        - .*build-log\.txt
+        - ^.*build-log\.txt$
     - lens:
         name: junit
       required_files:
