@@ -27,3 +27,10 @@ presubmits:
         # Space separated list of the checks to run
         - name: WHAT
           value: generated-files-remake
+        resources:
+          limits:
+            cpu: 1500m
+            memory: 7Gi
+          requests:
+            cpu: 1500m
+            1memory: 7Gi
