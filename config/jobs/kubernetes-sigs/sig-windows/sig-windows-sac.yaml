@@ -1,3 +1,4 @@
+periodics:
 - interval: 72h
   name: ci-kubernetes-e2e-aks-engine-azure-master-windows-1903
   decorate: true
