@@ -54,8 +54,12 @@ presubmits:
         - --use-logexporter
         image: gcr.io/k8s-testimages/kubekins-e2e:v20200802-ff98b58-master
         resources:
+          limits:
+            cpu: 4
+            memory: "14Gi"
           requests:
-            memory: "6Gi"
+            cpu: 4
+            memory: "14Gi"
 
   - name: pull-kubernetes-e2e-gce-big-performance
     always_run: false
