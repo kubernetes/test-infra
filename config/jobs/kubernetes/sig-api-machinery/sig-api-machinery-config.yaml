@@ -114,7 +114,11 @@ presubmits:
         image: gcr.io/k8s-testimages/kubekins-e2e:v20200802-ff98b58-master
         resources:
           requests:
-            memory: "6Gi"
+            cpu: 2
+            memory: 6Gi
+          limits:
+            cpu: 2
+            memory: 6Gi
     annotations:
       testgrid-dashboards: sig-api-machinery-network-proxy
   - name: pull-kubernetes-e2e-gce-network-proxy-grpc
