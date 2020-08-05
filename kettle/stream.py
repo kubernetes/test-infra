@@ -74,7 +74,7 @@ def get_started_finished(gcs_client, db, todo):
                 todo):
             if finished:
                 if not db.insert_build(build_dir, started, finished):
-                    print('already present??')
+                    print('build dir already present in db: ', build_dir)
                 start = time.localtime(started.get('timestamp', 0) if started else 0)
                 print((build_dir, bool(started), bool(finished),
                        time.strftime('%F %T %Z', start),
@@ -87,14 +87,6 @@ def get_started_finished(gcs_client, db, todo):
         pool.close()
     db.commit()
     return acks, build_dirs
-
-
-def row_to_mapping(row, schema):
-    """Convert a dictionary to a list for bigquery.Table.insert_data.
-
-    Silly. See https://github.com/GoogleCloudPlatform/google-cloud-python/issues/3396
-    """
-    return [row.get(field.name, [] if field.mode == 'REPEATED' else None) for field in schema]
 
 
 def retry(func, *args, **kwargs):
@@ -128,7 +120,7 @@ def insert_data(table, rows_iter):
         if len(json.dumps(row)) > 1e6:
             print('ERROR: row too long', row['path'])
             continue
-        row = row_to_mapping(row, table.schema)
+        row = table.row_from_mapping(row)
         rows.append(row)
         row_ids.append(row_id)
 
