@@ -314,7 +314,7 @@ periodics:
   name: ci-kubernetes-e2e-aks-engine-azure-master-staging-windows-serial-slow
   decorate: true
   decoration_config:
-    timeout: 3h
+    timeout: 5h
   labels:
     preset-service-account: "true"
     preset-azure-cred: "true"
