@@ -713,4 +713,3 @@ periodics:
     testgrid-tab-name: aks-engine-azure-windows-azure-file
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Run Azure File e2e test with Azure File in-tree volume plugin in a Windows cluster.
-
