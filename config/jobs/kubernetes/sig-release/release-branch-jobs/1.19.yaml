@@ -1172,8 +1172,12 @@ presubmits:
         image: gcr.io/k8s-testimages/kubekins-e2e:v20200802-ff98b58-1.19
         name: ""
         resources:
+          limits:
+            cpu: 4
+            memory: "14Gi"
           requests:
-            memory: 6Gi
+            cpu: 4
+            memory: "14Gi"
   - always_run: true
     branches:
     - release-1.19
