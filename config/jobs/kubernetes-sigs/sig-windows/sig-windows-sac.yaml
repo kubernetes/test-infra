@@ -230,7 +230,7 @@ periodics:
     preset-service-account: "true"
     preset-azure-cred: "true"
     preset-azure-windows: "true"
-    preset-windows-repo-list: "true"
+    preset-windows-repo-list-2004: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
   extra_refs:
@@ -340,7 +340,7 @@ periodics:
     preset-service-account: "true"
     preset-azure-cred: "true"
     preset-azure-windows: "true"
-    preset-windows-repo-list: "true"
+    preset-windows-repo-list-2004: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
   extra_refs:
