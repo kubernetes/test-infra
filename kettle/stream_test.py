@@ -49,6 +49,21 @@ class FakeTable:
         self.trace.append(['insert-data', args, kwargs])
         return []
 
+    def row_from_mapping(self, mapping
+    ):
+        row = []
+        for field in self.schema:
+            if field.mode == 'REQUIRED':
+                row.append(mapping[field.name])
+            elif field.mode == 'REPEATED':
+                row.append(mapping.get(field.name, ()))
+            elif field.mode == 'NULLABLE':
+                row.append(mapping.get(field.name))
+            else:
+                raise ValueError(
+                    "Unknown field mode: {}".format(field.mode))
+        return tuple(row)
+
 
 class Attrs:
     def __init__(self, attributes):
@@ -111,7 +126,7 @@ class StreamTest(unittest.TestCase):
              ['modify-ack', ['b'], 180],
              ['ack', ['b']],
              ['insert-data',
-              ([[5,
+              ([(5,
                  now - 5,
                  now,
                  True,
@@ -120,7 +135,7 @@ class StreamTest(unittest.TestCase):
                  'gs://kubernetes-jenkins/logs/fake/123',
                  'fake',
                  123,
-                 [],
+                 (),
                  [{'name': 'Foo', 'time': 3.0},
                   {'failed': True,
                    'failure_text': 'stacktrace',
@@ -130,7 +145,7 @@ class StreamTest(unittest.TestCase):
                  1,
                  None,
                  None,
-                 None]],
+                 None)],
                [1]),
               {'skip_invalid_rows': True}],
              ['pull', False], ['pull', True],
