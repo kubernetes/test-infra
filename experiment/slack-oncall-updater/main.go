@@ -40,6 +40,7 @@ var githubToSlack = map[string]string{
 	"michelle192837": "U3TRY5WV7",
 	"mushuee":        "U013TPFJWC8",
 	"spiffxp":        "U09R2FL93",
+	"chaodaiG":       "U010XUQ9VPE",
 }
 
 // rotationToSlack group maps the rotation in go.k8s.io/oncall to the slack
