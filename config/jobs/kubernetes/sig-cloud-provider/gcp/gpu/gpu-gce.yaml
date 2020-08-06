@@ -51,6 +51,7 @@ periodics:
           cpu: 1
           memory: 3Gi
 - name: ci-kubernetes-e2e-gce-device-plugin-gpu-canary
+  cluster: k8s-infra-prow-build
   cron: "30 1-23/2 * * *"
   labels:
     preset-service-account: "true"
