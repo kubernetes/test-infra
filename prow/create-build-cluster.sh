@@ -1,5 +1,19 @@
 #!/usr/bin/env bash
-# This script is used to create a new build cluster for use with oss-prow. The cluster will have a 
+# Copyright 2020 The Kubernetes Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This script is used to create a new build cluster for use with prow. The cluster will have a 
 # single pd-ssd nodepool that will have autoupgrade and autorepair enabled.
 #
 # Usage: populate the parameters by setting them below or specifying environment variables then run
@@ -11,22 +25,25 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+# Specific to Prow instance
+PROW_INSTANCE_NAME="${PROW_INSTANCE_NAME:-}"
+GCS_BUCKET="${GCS_BUCKET:-${PROW_INSTANCE_NAME}}"
+
+# Specific to the build cluster
 TEAM="${TEAM:-}"
-PROJECT="${PROJECT:-oss-prow-build-${TEAM}}"
+PROJECT="${PROJECT:-${PROW_INSTANCE_NAME}-build-${TEAM}}"
 ZONE="${ZONE:-us-west1-b}"
 CLUSTER="${CLUSTER:-${PROJECT}}"
 
 # Only needed for creating cluster
-MACHINE="${MACHINE:-n1-highmem-8}"
-NODECOUNT="${NODECOUNT:-15}"
+MACHINE="${MACHINE:-n1-standard-8}"
+NODECOUNT="${NODECOUNT:-5}"
 DISKSIZE="${DISKSIZE:-100GB}"
 
 # Only needed for creating project
 FOLDER_ID="${FOLDER_ID:-0123}"
 BILLING_ACCOUNT_ID="${BILLING_ACCOUNT_ID:-0123}"  # Find the billing account ID in the cloud console.
-
-# Specific to Prow instance VV
-GCSBUCKET="${GCSBUCKET:-oss-prow}"
+ADMIN_IAM_MEMBER="${ADMIN_IAM_MEMBER:-group:mdb.cloud-kubernetes-engprod-oncall@google.com}"
 
 # Overriding output
 OUT_FILE="${OUT_FILE:-build-cluster-kubeconfig.yaml}"
@@ -77,7 +94,7 @@ function createProject() {
   gcloud projects create "${PROJECT}" --name="${PROJECT}" --folder="${FOLDER_ID}"
   gcloud beta billing projects link "${PROJECT}" --billing-account="${BILLING_ACCOUNT_ID}"
   gcloud services enable "container.googleapis.com" --project="${PROJECT}"
-  gcloud projects add-iam-policy-binding "${PROJECT}" --member="group:mdb.cloud-kubernetes-engprod-oncall@google.com" --role="roles/owner"
+  gcloud projects add-iam-policy-binding "${PROJECT}" --member="${ADMIN_IAM_MEMBER}" --role="roles/owner"
 }
 function createCluster() {
   echo "Creating cluster '${CLUSTER}' (this may take a few minutes)..."
@@ -98,7 +115,7 @@ function createUploadSASecret() {
   kubectl create secret generic "service-account" -n "test-pods" --from-file="service-account.json=sa-key.json"
   echo
   echo "Please ask the test-infra oncall (https://go.k8s.io/oncall) to run the following:"
-  echo "  gsutil acl ch -u \"${saFull}:O\" \"gs://${GCSBUCKET}\""
+  echo "  gsutil acl ch -u \"${saFull}:O\" \"gs://${GCS_BUCKET}\""
   echo
   echo "Press any key to aknowledge (this doesn't need to be completed to continue this script, but it needs to be done before uploading will work)..."
   pause
@@ -120,7 +137,7 @@ function gencreds() {
   cd "${origdir}"
   echo
   echo "Supply the file '${outfile}' to the current oncall for them to add to Prow's kubeconfig secret via:"
-  echo "  ./merge_kubeconfig_secret.py --secret-key=oss-config ${outfile}"
+  echo "  kubernetes/test-infra/gencred/merge_kubeconfig_secret.py --auto --context=<kubeconfig-context-for-prow-cluster> ${outfile}"
   echo "ProwJobs that intend to use this cluster should specify 'cluster: ${clusterAlias}'" # TODO: color this
   echo
   echo "Press any key to acknowledge (this doesn't need to be completed to continue this script, but it needs to be done before Prow can schedule jobs to your cluster)..."
