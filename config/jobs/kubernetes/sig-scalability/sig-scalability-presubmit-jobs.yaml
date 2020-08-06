@@ -276,8 +276,12 @@ presubmits:
         # - name: KUBEMARK_BAZEL_BUILD
         # value: "y"
         resources:
+          limits:
+            cpu: 6
+            memory: 24Gi
           requests:
-            memory: "6Gi"
+            cpu: 6
+            memory: 24Gi
         securityContext:
           privileged: true # TODO(fejta): https://github.com/kubernetes/kubernetes/issues/76484
 
