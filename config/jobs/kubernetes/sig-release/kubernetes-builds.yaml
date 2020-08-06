@@ -19,8 +19,11 @@ presubmits:
         securityContext:
           privileged: true
         resources:
+          limits:
+            cpu: 7300m
+            memory: "41Gi"
           requests:
-            cpu: 7
+            cpu: 7300m
             memory: "41Gi"
     annotations:
       testgrid-create-test-group: 'true'
