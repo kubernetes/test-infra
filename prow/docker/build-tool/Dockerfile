@@ -54,7 +54,7 @@ RUN set -eux; \
     if [ ${ARCH} != "s390x" ] ; then \
         curl -L https://github.com/kubernetes-sigs/kubebuilder/releases/download/v${KUBEBUILDER_VERSION}/kubebuilder_${KUBEBUILDER_VERSION}_linux_${ARCH}.tar.gz -o /tmp/kubebuilder_${KUBEBUILDER_VERSION}_linux_${ARCH}.tar.gz ; \
         tar -xf /tmp/kubebuilder_${KUBEBUILDER_VERSION}_linux_${ARCH}.tar.gz  -C /tmp; \
-        mv /tmp/kubebuilder_${KUBEBUILDER_VERSION}_linux_${ARCH} ${OUTDIR}/usr/bin/kubebuilder; \
+        mv /tmp/kubebuilder_${KUBEBUILDER_VERSION}_linux_${ARCH} ${OUTDIR}/usr/local/kubebuilder; \
     fi;
 
 # Helm
@@ -153,7 +153,7 @@ ENV GOROOT=/usr/local/go
 ENV GOPATH=${HOME}/go
 ENV GOBIN=${HOME}/gobin
 ENV GOCACHE=${HOME}/gocache
-ENV PATH=/usr/lib/google-cloud-sdk/bin:/usr/local/go/bin:/usr/local/kubebuilder:${HOME}/go/bin:${HOME}/gobin:$PATH
+ENV PATH=/usr/lib/google-cloud-sdk/bin:/usr/local/go/bin:/usr/local/kubebuilder/bin:${HOME}/go/bin:${HOME}/gobin:$PATH
 
 # Docker support
 ENV DOCKER_CONFIG=${HOME}/.docker
