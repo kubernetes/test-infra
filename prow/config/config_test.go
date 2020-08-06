@@ -896,7 +896,7 @@ func TestValidatePodSpec(t *testing.T) {
 			} else if tc.spec != nil {
 				tc.spec(current)
 			}
-			switch err := validatePodSpec(jt, current, false, true); {
+			switch err := validatePodSpec(jt, current, true); {
 			case err == nil && !tc.pass:
 				t.Error("validation failed to raise an error")
 			case err != nil && tc.pass:
@@ -1191,9 +1191,6 @@ func TestValidateMultipleContainers(t *testing.T) {
 				UtilityConfig: UtilityConfig{Decorate: &yes, DecorationConfig: &defCfg},
 				Spec:          &goodSpec,
 				Namespace:     &ns,
-				Annotations: map[string]string{
-					"ProwMultipleContainerSupport": "Yes, I know what I'm doing.",
-				},
 			},
 			pass: true,
 		},
@@ -1214,9 +1211,6 @@ func TestValidateMultipleContainers(t *testing.T) {
 					},
 				},
 				Namespace: &ns,
-				Annotations: map[string]string{
-					"ProwMultipleContainerSupport": "Yes, I know what I'm doing.",
-				},
 			},
 		},
 		{
@@ -1236,20 +1230,6 @@ func TestValidateMultipleContainers(t *testing.T) {
 					},
 				},
 				Namespace: &ns,
-				Annotations: map[string]string{
-					"ProwMultipleContainerSupport": "Yes, I know what I'm doing.",
-				},
-			},
-		},
-		{
-			name: "invalid: no ProwMultipleContainerSupport annotation",
-			base: JobBase{
-				Name:          "name",
-				Agent:         ka,
-				UtilityConfig: UtilityConfig{Decorate: &yes, DecorationConfig: &defCfg},
-				Spec:          &goodSpec,
-				Namespace:     &ns,
-				Annotations:   map[string]string{},
 			},
 		},
 		{
@@ -1259,9 +1239,6 @@ func TestValidateMultipleContainers(t *testing.T) {
 				Agent:     ka,
 				Spec:      &goodSpec,
 				Namespace: &ns,
-				Annotations: map[string]string{
-					"ProwMultipleContainerSupport": "Yes, I know what I'm doing.",
-				},
 			},
 		},
 		{
@@ -1282,9 +1259,6 @@ func TestValidateMultipleContainers(t *testing.T) {
 						},
 					},
 				}, Namespace: &ns,
-				Annotations: map[string]string{
-					"ProwMultipleContainerSupport": "Yes, I know what I'm doing.",
-				},
 			},
 		},
 	}
