@@ -2,14 +2,14 @@
 # Binary tools
 #############
 
-FROM golang:1.13.8 as binary_tools_context
+FROM golang:1.14.6.8 as binary_tools_context
 
 # Pinned versions of stuff
 ENV GOIMPORTS_VERSION=379209517ffe
 ENV GOLANGCI_LINT_VERSION=v1.23.1
 ENV HADOLINT_VERSION=v1.17.2
 ENV HELM_VERSION=v2.16.1
-ENV KUBECTL_VERSION=v1.15.0
+ENV KUBECTL_VERSION=v1.16.0
 ENV SHELLCHECK_VERSION=v0.7.0
 
 ENV GO111MODULE=on
