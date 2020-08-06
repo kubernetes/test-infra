@@ -70,7 +70,7 @@ mkdir -p slices
 
 /triage \
   --builds triage_builds.json \
-  --previous triage_tests/*.json \
+  --tests triage_tests/*.json \
   --output failure_data.json \
   --output_slices slices/failure_data_PREFIX.json
 
