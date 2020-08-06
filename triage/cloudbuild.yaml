@@ -5,22 +5,13 @@ steps:
     dir: triage/
   - name: gcr.io/cloud-builders/docker
     args: [ 'tag', 'gcr.io/$PROJECT_ID/triage:$_GIT_TAG', 'gcr.io/$PROJECT_ID/triage:latest']
-# Build Go triage and copy the binary into a Docker image
-  - name: golang:$_GO_VERSION
-    args: ['go', 'build', '-v', '-o=/workspace/builds/triage', './triage/main.go']
-    env:
-      - GOOS=linux
-      - GOARCH=amd64
-      - GO111MODULE=on
-      - GOPROXY=https://proxy.golang.org
-      - GOSUMDB=sum.golang.org
+# Build Go triage
   - name: gcr.io/cloud-builders/docker
     args: [ 'build', '-t', 'gcr.io/$PROJECT_ID/triage:go-$_GIT_TAG', '-f', './triage/Dockerfile-go', '.' ]
   - name: gcr.io/cloud-builders/docker
     args: [ 'tag', 'gcr.io/$PROJECT_ID/triage:go-$_GIT_TAG', 'gcr.io/$PROJECT_ID/triage:go-latest']
 substitutions:
   _GIT_TAG: '12345'
-  _GO_VERSION: '1.13'
 images:
   - 'gcr.io/$PROJECT_ID/triage:$_GIT_TAG'
   - 'gcr.io/$PROJECT_ID/triage:latest'
