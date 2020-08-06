@@ -43,7 +43,8 @@ presubmits:
       - image: gcr.io/k8s-testimages/krte:v20200726-f8d6253-experimental
         command:
         - wrapper.sh
-        - ./hack/verify/all.sh
+        - make
+        - verify
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
