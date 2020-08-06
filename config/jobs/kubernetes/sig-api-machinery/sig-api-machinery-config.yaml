@@ -158,9 +158,9 @@ presubmits:
         resources:
           requests:
             cpu: 4
-            memory: 12Gi
+            memory: 14Gi
           limits:
             cpu: 4
-            memory: 12Gi
+            memory: 14Gi
     annotations:
       testgrid-dashboards: sig-api-machinery-network-proxy
