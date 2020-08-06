@@ -132,6 +132,9 @@ presubmits:
         - --ginkgo-parallel=30
         securityContext:
           privileged: true
+        env:
+        - name: K8S_AZURE_LOADBALANCE_SKU
+          value: "standard"
     annotations:
       testgrid-dashboards: provider-azure-cloud-provider-azure, provider-azure-presubmit
       testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm
