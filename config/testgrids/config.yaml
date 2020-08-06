@@ -20,20 +20,6 @@ test_groups:
     - target_config: Tests name
     - target_config: Context
     name_format: '%s [%s]'
-- name: ci-cri-containerd-node-e2e-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-node-e2e-serial
-  test_name_config:
-    name_elements:
-    - target_config: Tests name
-    - target_config: Context
-    name_format: '%s [%s]'
-- name: ci-cri-containerd-node-e2e-flaky
-  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-node-e2e-flaky
-  test_name_config:
-    name_elements:
-    - target_config: Tests name
-    - target_config: Context
-    name_format: '%s [%s]'
 - name: ci-cri-containerd-node-e2e-benchmark
   gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-node-e2e-benchmark
   test_name_config:
