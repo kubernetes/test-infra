@@ -31,7 +31,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200802-ff98b58-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200806-da6d139-master
         command:
         - runner.sh
         - make
