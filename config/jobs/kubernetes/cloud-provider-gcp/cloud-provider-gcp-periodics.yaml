@@ -4,6 +4,7 @@ periodics:
   name: ci-cloud-provider-gcp-conformance-latest
   annotations:
     testgrid-tab-name: Conformance - Cloud Provider GCP - master
+    testgrid-dashboards: provider-gcp-periodics
     description: Runs conformance tests using kubetest2 against cloud-provider-gcp master on GCE
   labels:
     preset-service-account: "true"
