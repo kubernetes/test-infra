@@ -54,17 +54,17 @@ type summarizeFlags struct {
 func parseFlags() summarizeFlags {
 	var flags summarizeFlags
 
-	flags.builds = *flag.String("builds", "", "path to builds.json file from BigQuery")
-	flags.previous = *flag.String("previous", "", "path to previous output")
-	flags.owners = *flag.String("owners", "", "path to test owner SIGs file")
-	flags.output = *flag.String("output", "failure_data.json", "output path")
-	flags.outputSlices = *flag.String("output_slices", "", "path to slices output (must include PREFIX in template)")
+	flag.StringVar(&flags.builds, "builds", "", "path to builds.json file from BigQuery")
+	flag.StringVar(&flags.previous, "previous", "", "path to previous output")
+	flag.StringVar(&flags.owners, "owners", "", "path to test owner SIGs file")
+	flag.StringVar(&flags.output, "output", "failure_data.json", "output path")
+	flag.StringVar(&flags.outputSlices, "output_slices", "", "path to slices output (must include PREFIX in template)")
 
 	// The tests flag can contain multiple arguments, so we'll split it by space
 	tempTests := flag.String("tests", "", "path to tests.json files from BigQuery")
-	flags.tests = strings.Split(*tempTests, " ")
 
 	flag.Parse()
+	flags.tests = strings.Split(*tempTests, " ")
 
 	return flags
 }
