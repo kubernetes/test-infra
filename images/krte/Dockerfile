@@ -66,6 +66,7 @@ RUN echo "Installing Packages ..." \
             kmod \
             lsb-release \
             mercurial \
+            openssh-client \
             pkg-config \
             procps \
             python \
@@ -93,6 +94,8 @@ RUN echo "Installing Packages ..." \
             --path-update=false \
             --usage-reporting=false \
         && gcloud components install kubectl \
+        && gcloud components install alpha \
+        && gcloud components install beta \
     && echo "Installing Docker ..." \
         && curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")/gpg | apt-key add - \
         && add-apt-repository \
