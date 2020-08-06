@@ -54,7 +54,7 @@ RUN set -eux; \
     if [ ${ARCH} != "s390x" ] ; then \
         curl -L https://github.com/kubernetes-sigs/kubebuilder/releases/download/v${KUBEBUILDER_VERSION}/kubebuilder_${KUBEBUILDER_VERSION}_linux_${ARCH}.tar.gz -o /tmp/kubebuilder_${KUBEBUILDER_VERSION}_linux_${ARCH}.tar.gz ; \
         tar -xf /tmp/kubebuilder_${KUBEBUILDER_VERSION}_linux_${ARCH}.tar.gz  -C /tmp; \
-        mv /tmp/kubebuilder_${KUBEBUILDER_VERSION}_linux_${ARCH} ${OUTDIR}/usr/local/kubebuilder; \
+        mv /tmp/kubebuilder_${KUBEBUILDER_VERSION}_linux_${ARCH}/bin ${OUTDIR}/usr/local/kubebuilder; \
     fi;
 
 # Helm
