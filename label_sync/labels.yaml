@@ -1543,3 +1543,15 @@ repos:
         name: kind/user-story
         target: issues
         addedBy: humans
+  kubernetes-sigs/kind:
+    labels:
+      - color: 19abff
+        description: Issues or PRs related to docker
+        name: area/provider/docker
+        target: both
+        addedBy: humans
+      - color: 970fff
+        description: Issues or PRs related to podman
+        name: area/provider/podman
+        target: both
+        addedBy: humans
