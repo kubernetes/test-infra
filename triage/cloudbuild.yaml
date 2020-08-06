@@ -15,7 +15,7 @@ steps:
       - GOPROXY=https://proxy.golang.org
       - GOSUMDB=sum.golang.org
   - name: gcr.io/cloud-builders/docker
-    args: [ 'build', '-t', 'gcr.io/$PROJECT_ID/triage:go-$_GIT_TAG', '-f', 'Dockerfile-go', '.' ]
+    args: [ 'build', '-t', 'gcr.io/$PROJECT_ID/triage:go-$_GIT_TAG', '-f', './triage/Dockerfile-go', '.' ]
   - name: gcr.io/cloud-builders/docker
     args: [ 'tag', 'gcr.io/$PROJECT_ID/triage:go-$_GIT_TAG', 'gcr.io/$PROJECT_ID/triage:go-latest']
 substitutions:
