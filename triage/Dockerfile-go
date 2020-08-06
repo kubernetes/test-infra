@@ -12,23 +12,39 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM alpine:3.12.0
+# This Dockerfile uses multi-stage builds. The first stage builds Triage and gathers the Google
+# Cloud SDK, and the resulting files are then used in the second stage.
 
-# Google Cloud SDK requires python 2.7.9+ (https://cloud.google.com/python/setup#installing_the_cloud_sdk)
-# and curl to download it.
-# update_summaries.sh requires bash.
-RUN apk add --no-cache python2 bash curl
+# Stage 1
+FROM golang:1.13 AS build
 
+COPY . /test-infra/
+
+# Build Triage
+RUN cd /test-infra/triage/ && \
+    go build -v -o triage ./main.go
 # Get the Google Cloud SDK
 RUN curl -o installer https://sdk.cloud.google.com && \
     bash installer --disable-prompts --install-dir=/ && \
     rm installer
 
-# Link the binaries
+
+# Stage 2
+FROM alpine:3.12.0
+
+# Google Cloud SDK requires python 2.7.9+ (https://cloud.google.com/python/setup#installing_the_cloud_sdk).
+# update_summaries.sh requires bash.
+RUN apk add --no-cache python2 bash
+
+# Copy over the triage binary
+COPY --from=build /test-infra/triage/triage /
+
+# Copy the Google Cloud SDK and link the binaries
+COPY --from=build /google-cloud-sdk/ /google-cloud-sdk/
 RUN ln -s /google-cloud-sdk/bin/* /bin/
 
-# Copy over the triage binary from the previous Cloud Build stage, and the shell script that orchestrates everything
-COPY /workspace/builds/triage update_summaries-go.sh /
+# Copy over the shell script that orchestrates everything
+COPY ./triage/update_summaries-go.sh /
 
 # Point GOOGLE_APPLICATION_CREDENTIALS at a serviceaccount.json with the necessary permissions.
 ENTRYPOINT ["timeout", "10800", "/update_summaries-go.sh"]
