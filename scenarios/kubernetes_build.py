@@ -142,7 +142,8 @@ def main(args):
         check('make', 'quick-release')
     else:
         check('make', 'release')
-    check(args.push_build_script, *push_build_args)
+    output = check_output(args.push_build_script, *push_build_args)
+    print >>sys.stderr, 'Push build result: ', output
 
 if __name__ == '__main__':
     PARSER = argparse.ArgumentParser(
