@@ -67,7 +67,15 @@ func getImageName(o options, tag string, config string) (string, error) {
 	if err := yaml.Unmarshal(buf, &cloudbuildyamlFile); err != nil {
 		return "", fmt.Errorf("failed to get image name: %v", err)
 	}
-	var projectID, _ = getProjectID()
+	projectID := o.project
+	// if projectID wasn't set explicitly, discover it
+	if projectID == "" {
+		p, err := getProjectID()
+		if err != nil {
+			return "", err
+		}
+		projectID = p
+	}
 	var imageNames = cloudbuildyamlFile.Images
 	r := strings.NewReplacer("$PROJECT_ID", strings.TrimSpace(projectID), "$_GIT_TAG", tag, "$_CONFIG", config)
 	var result string
