@@ -11,6 +11,13 @@ periodics:
   spec:
     containers:
     - image: gcr.io/k8s-testimages/krte:v20200806-28035c4-1.16
+      resources:
+        limits:
+          cpu: 2000m
+          memory: 2G
+        requests:
+          cpu: 2000m
+          memory: 2G
       command:
       - wrapper.sh
       args:
