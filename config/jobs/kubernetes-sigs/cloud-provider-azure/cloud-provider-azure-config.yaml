@@ -213,6 +213,9 @@ periodics:
       # Specific test args
       - --test-ccm
       - --ginkgo-parallel=30
+      env:
+      - name: K8S_AZURE_LOADBALANCE_SKU
+        value: "standard"
       securityContext:
         privileged: true
   annotations:
@@ -276,6 +279,8 @@ periodics:
       env:
       - name: CCM_E2E_ARGS
         value: "-ginkgo.focus=autoscaler"
+      - name: K8S_AZURE_LOADBALANCE_SKU
+        value: "standard"
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure, provider-azure-periodic
     testgrid-tab-name: cloud-provider-azure-autoscaling
@@ -515,6 +520,9 @@ periodics:
       # Specific test args
       - --test-ccm
       - --ginkgo-parallel=30
+      env:
+      - name: K8S_AZURE_LOADBALANCE_SKU
+        value: "standard"
       securityContext:
         privileged: true
   annotations:
