@@ -566,9 +566,9 @@ testSuites:
     cluster: k8s-infra-prow-build
   ingress:
     args:
-    - --gcp-project-type=ingress-project
     - --timeout=150m
     - --test_args=--ginkgo.focus=\[Feature:Ingress\] --minStartupPods=8
+    cluster: k8s-infra-prow-build
   reboot:
     args:
     - --timeout=180m

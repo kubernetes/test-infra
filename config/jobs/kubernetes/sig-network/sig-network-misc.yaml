@@ -248,6 +248,7 @@ periodics:
 
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gce-ingress
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -263,7 +264,6 @@ periodics:
       - --env=KUBE_GCE_ENABLE_IP_ALIASES=true
       - --extract=ci/latest-fast
       - --gcp-node-image=gci
-      - --gcp-project-type=ingress-project
       - --gcp-zone=asia-southeast1-a
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:Ingress\]|\[Feature:NEG\]
@@ -300,7 +300,6 @@ periodics:
       - --env=KUBE_GCE_ENABLE_IP_ALIASES=true
       - --extract=ci/latest-fast
       - --gcp-node-image=gci
-      - --gcp-project=k8s-infra-e2e-ingress-project
       - --gcp-zone=asia-southeast1-a
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:Ingress\]|\[Feature:NEG\]
