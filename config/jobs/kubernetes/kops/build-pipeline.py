@@ -45,7 +45,7 @@ template = """
       - --deployment=kops
       - --provider=aws
       - --cluster={{name}}.test-cncf-aws.k8s.io
-      - --kops-ssh-user={{ssh_user}}
+      - --kops-ssh-user=ubuntu
       - --kops-nodes=4
       - --extract={{extract}}
       - --kops-state=s3://k8s-kops-prow/
@@ -65,7 +65,7 @@ template = """
     testgrid-tab-name: {{tab}}
 """
 
-def build_tests(branch, k8s_version, ssh_user):
+def build_tests(branch, k8s_version):
     def expand(s):
         subs = {}
         if k8s_version:
@@ -94,7 +94,6 @@ def build_tests(branch, k8s_version, ssh_user):
     y = y.replace('{{e2e_image}}', e2e_image)
     y = y.replace('{{k8s_version}}', k8s_version)
     y = y.replace('{{name}}', name)
-    y = y.replace('{{ssh_user}}', ssh_user)
     y = y.replace('{{tab}}', tab)
 
     if branch == 'master':
@@ -115,8 +114,6 @@ def build_tests(branch, k8s_version, ssh_user):
 
 branches = [
     "master",
-    "1.16",
-    "1.17",
     "1.18",
 ]
 
@@ -125,7 +122,6 @@ def generate():
     print("periodics:")
     for branch in branches:
         k8s_version = "1.19" if branch == "master" else branch
-        ssh_user = "admin" if branch in ("1.16", "1.17") else "ubuntu"
-        build_tests(branch=branch, k8s_version=k8s_version, ssh_user=ssh_user)
+        build_tests(branch=branch, k8s_version=k8s_version)
 
 generate()
