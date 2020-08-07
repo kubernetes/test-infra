@@ -935,27 +935,6 @@ periodics:
     testgrid-tab-name: slack-oncall-updater
     testgrid-alert-email: ktbry@google.com, k8s-infra-oncall@google.com
     description: runs experiment/slack-oncall-updater to update the membership of the test-infra-oncall slack usergroup
-- interval: 5m
-  name: ci-test-infra-resultstore-upload
-  cluster: test-infra-trusted
-  decorate: true
-  spec:
-    serviceAccountName: resultstore
-    containers:
-    - image: gcr.io/k8s-testimages/resultstore:v20200731-2efbce017d
-      command:
-      - /app/experiment/resultstore/app.binary
-      args:
-      - --upload=k8s-prow # Must be able to upload results into this project
-      - --timeout=10m
-      - --latest=5
-      - --gcs-auth # See trusted_serviceaccounts.yaml, currently resultstore@k8s-prow.iam.gserviceaccount.com
-      - --bucket=gs://kubernetes-jenkins # Must be able to write to bucket
-      - --config=gs://k8s-testgrid/config
-  annotations:
-    testgrid-dashboards: sig-testing-prow
-    testgrid-tab-name: resultstore-upload
-    description: transfer finished results into resultstore
 - cron: "54 * * * *"  # Every hour at 54 minutes past the hour
   name: ci-test-infra-branchprotector
   cluster: test-infra-trusted
