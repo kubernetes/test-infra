@@ -658,7 +658,7 @@ postsubmits:
     spec:
       serviceAccountName: pusher
       containers:
-      - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20200328-v2.3.1-172-gfeb5dc0
+      - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20200807-v2.3.1-258-gc35b3a0
         command:
         - cip
         args:
@@ -685,7 +685,7 @@ postsubmits:
     spec:
       serviceAccountName: k8s-infra-gcr-promoter
       containers:
-      - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20200328-v2.3.1-172-gfeb5dc0
+      - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20200807-v2.3.1-258-gc35b3a0
         command:
         - cip
         args:
@@ -1042,7 +1042,7 @@ periodics:
     # interactive bash session:
     #
     #   docker run --rm -it gcr.io/cip-demo-staging/cip:<tag> "cd /cip && bash"
-    - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20200328-v2.3.1-172-gfeb5dc0
+    - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20200807-v2.3.1-258-gc35b3a0
       command:
       - cip
       args:
