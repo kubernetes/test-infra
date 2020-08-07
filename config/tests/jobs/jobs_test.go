@@ -1108,8 +1108,8 @@ func TestK8sInfraProwBuildJobsMustHavePodQOSGuaranteed(t *testing.T) {
 func TestK8sInfraProwBuildJobsMustNotExceedTotalCapacity(t *testing.T) {
 	// k8s-infra-prow-build pool1 is 3-zonal 6-30 n1-highmem-8's
 	maxLimit := coreapi.ResourceList{
-		coreapi.ResourceCPU:    resource.MustParse("288000m"), // 3 * 12 * 8 CPUs per n1-highmem-8
-		coreapi.ResourceMemory: resource.MustParse("1872Gi"),  // 3 * 12 * 52 Gi per n1-highmem-8
+		coreapi.ResourceCPU:    resource.MustParse("432"),    // 3 * 18 * 8 CPUs per n1-highmem-8
+		coreapi.ResourceMemory: resource.MustParse("2808Gi"), // 3 * 18 * 52 Gi per n1-highmem-8
 	}
 	resourceNames := []coreapi.ResourceName{
 		coreapi.ResourceCPU,
