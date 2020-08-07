@@ -76,42 +76,10 @@ The entire process is orchestrated by `update_summaries.sh`, as follows:
 ## File Structure
 
 Below are the file structures for the ingested and outputted files. `...` denotes a repetition of the
-previous element.
+previous element. "`x` Flag" denotes the file format of a file passed to flag `x` of the summarizer.
 
-### `builds` Flag
-```json
-[
-   {
-      "path": string,
-      "started": int as string,
-      "elapsed": int as string,
-      "tests_run": int as string,
-      "tests_failed": int as string,
-      "result": string,
-      "executor": string,
-      "job": string,
-      "number": int as string,
-      "pr": string,
-      "key": string
-   },
-   ...
-]
+### Main Output
 ```
-
-### `tests` Flag
-This is a newline-delimited list of JSON objects. **Note the lack of trailing comma between objects!**
-```json
-{
-   "started": int as string,
-   "build": string,
-   "name": string,
-   "failure_text": string
-}
-...
-```
-
-### `previous` Flag (same as Main Output)
-```json
 {
    "clustered": [
       {
@@ -163,8 +131,43 @@ This is a newline-delimited list of JSON objects. **Note the lack of trailing co
 }
 ```
 
+### `builds` Flag
+```
+[
+   {
+      "path": string,
+      "started": int as string,
+      "elapsed": int as string,
+      "tests_run": int as string,
+      "tests_failed": int as string,
+      "result": string,
+      "executor": string,
+      "job": string,
+      "number": int as string,
+      "pr": string,
+      "key": string
+   },
+   ...
+]
+```
+
+### `tests` Flag
+This is a newline-delimited list of JSON objects. **Note the lack of comma between objects.**
+```
+{
+   "started": int as string,
+   "build": string,
+   "name": string,
+   "failure_text": string
+}
+...
+```
+
+### `previous` Flag
+See [Main Output](#main-output).
+
 ### `owners` Flag
-```json
+```
 {
    string: [
       string,
@@ -174,11 +177,8 @@ This is a newline-delimited list of JSON objects. **Note the lack of trailing co
 }
 ```
 
-### Main Output
-See `previous` flag.
-
 ### Slice Output
-See Main Output. This is only a subset of the main output.
+See [Main Output](#main-output). This is only a subset of the main output.
 
 
 ## Updating JS dependencies for the web page
