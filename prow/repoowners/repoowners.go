@@ -187,7 +187,7 @@ func (c *Client) WithGitHubClient(client github.Client) Interface {
 // NewClient is the constructor for Client
 func NewClient(
 	gc git.ClientFactory,
-	ghc github.Client,
+	ghc githubClient,
 	mdYAMLEnabled func(org, repo string) bool,
 	skipCollaborators func(org, repo string) bool,
 	ownersDirBlacklist func() prowConf.OwnersDirBlacklist,
