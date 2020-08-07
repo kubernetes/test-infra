@@ -1004,8 +1004,7 @@ presubmits:
         image: gcr.io/k8s-testimages/kubekins-e2e:v20200806-f332249-1.19
         name: ""
         resources: {}
-  - always_run: true
-    branches:
+  - branches:
     - release-1.19
     labels:
       preset-bazel-remote-cache-enabled: "true"
@@ -1014,7 +1013,7 @@ presubmits:
       preset-pull-gce-device-plugin-gpu: "true"
       preset-pull-kubernetes-e2e: "true"
       preset-service-account: "true"
-    max_concurrency: 12
+    max_concurrency: 5
     name: pull-kubernetes-e2e-gce-device-plugin-gpu
     optional: true
     spec:

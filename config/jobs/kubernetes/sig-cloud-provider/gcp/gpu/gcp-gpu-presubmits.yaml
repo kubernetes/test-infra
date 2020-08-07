@@ -15,9 +15,8 @@ presubmits:
     annotations:
       fork-per-release: "true"
       testgrid-create-test-group: "true"
-    always_run: true
     optional: true
-    max_concurrency: 12
+    max_concurrency: 5
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
