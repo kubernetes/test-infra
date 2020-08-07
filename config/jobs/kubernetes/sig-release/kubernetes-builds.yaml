@@ -8,7 +8,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20200806-a6f19af
+      - image: gcr.io/k8s-testimages/bootstrap:v20200806-9438e2c
         command:
         - runner.sh
         args:
@@ -36,7 +36,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20200806-a6f19af
+    - image: gcr.io/k8s-testimages/bootstrap:v20200806-9438e2c
       args:
       - --repo=k8s.io/kubernetes
       - --repo=k8s.io/release
@@ -74,7 +74,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20200806-a6f19af
+    - image: gcr.io/k8s-testimages/bootstrap:v20200806-9438e2c
       args:
       - --repo=k8s.io/kubernetes
       - --repo=k8s.io/release
