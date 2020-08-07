@@ -613,7 +613,7 @@ postsubmits:
     spec:
       serviceAccountName: pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200520-v0.4-30-g9d6313a
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200806-f332249-master
         command:
         - make
         args:
