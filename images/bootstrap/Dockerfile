@@ -42,6 +42,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python-dev \
     python-openssl \
     python-pip \
+    python-yaml \
     python3 \
     python3-distutils \
     python3-pip \
