@@ -12,6 +12,30 @@ and a web page which can be used to browse the results. The web page is a static
 the results in JSON format, parses them, and displays them.
 
 
+## Usage
+
+Triage summarization is generally run via `update_summaries.sh`, which downloads the input files in
+the correct format and passes them automatically to `triage`. (File formats are listed below.)
+However, summarization can be run directly with the following flags:
+- `builds`: a path to a JSON file containing build information
+- `tests`: a space-delimited series of paths to file containing test informatiob
+- `previous` (optional): a path to a previous output which can be used to maintain consistent cluster
+  IDs
+- `owners` (optional): a path to a file that maps SIGs to the labels they own (see [Methodology](#methodology));
+  no longer used as labels are read straight from test names
+- `output` (optional): the path to where the output should be written to; defaults to `./failure_data.json`
+- `outputSlices` (optional): a pattern to be used when outputting slices, if desired (see
+  [Methodology](#methodology)); e.g. `slices/failure_data_PREFIX.json`, where `PREFIX` will be replaced
+  with some identifier
+
+The web page can be accessed at https://go.k8s.io/triage with the following options:
+- `Date`: defaults to "today"; note that all usages of "today" on the page refer to the currently set date
+- `Show clusters for SIG`: filter results by the SIG assigned to the majority of the tests; allows multi-select
+- `Include results from`: toggle between CI tests, PR tests, or both
+- `Sort by`: basic sorting
+- `Include filter`/`Exclude filter`: advanced regex filtering by field
+
+
 ## Go Packages
 
 Package `berghelroach` contains a modified Levenshtein distance formula. Its only export is a `Dist()` function.  
@@ -40,11 +64,12 @@ The entire process is orchestrated by `update_summaries.sh`, as follows:
    1. Transform the global clustering into a format that compresses better, and which is consumable
       by the web page.
    1. If a mapping of owners to owner prefixes (such as `sig-testing => [sig-testing]`) was provided
-      as a flag, load it and annotate each cluster with an owner.
+      as a flag, load it.
+   1. Annotate each cluster with an owner, by parsing the test name or using the provided mapping
+      from the previous step. This can be used to filter the clusters by SIG on the web page.
    1. Write the results to a JSON file.
-   1. If the `output_slices` flag is set, create individual files ("slices") for each owner (if the
-      owners were provided). Also, split the results into 256 slices based on the cluster IDs.
-   1. Write the slices to JSON files.
+   1. If the `output_slices` flag is set, create individual files ("slices") for each owner. Also,
+      split the results into 256 slices based on the cluster IDs. Write the slices to JSON files.
 1. Upload the results into Google Cloud Storage so they can be browsed via the web page.
 
 
