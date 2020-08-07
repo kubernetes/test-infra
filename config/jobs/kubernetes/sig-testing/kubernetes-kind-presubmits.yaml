@@ -94,7 +94,7 @@ presubmits:
       testgrid-create-test-group: 'true'
 
   - name: pull-kubernetes-e2e-kind-ipv6
-    optional: true
+    optional: false
     always_run: true
     skip_report: false
     decorate: true
