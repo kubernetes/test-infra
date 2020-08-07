@@ -19,11 +19,11 @@ periodics:
     - image: gcr.io/k8s-testimages/krte:v20200806-28035c4-1.16
       resources:
         limits:
-          cpu: 2000m
-          memory: 2G
+          cpu: 4
+          memory: 14Gi
         requests:
-          cpu: 2000m
-          memory: 2G
+          cpu: 4
+          memory: 14Gi
       command:
       - wrapper.sh
       args:
