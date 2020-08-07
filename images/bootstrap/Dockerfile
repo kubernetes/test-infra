@@ -40,11 +40,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     procps \
     python \
     python-dev \
+    python-gflags \
     python-openssl \
     python-pip \
     python-yaml \
     python3 \
     python3-distutils \
+    python3-gflags \
     python3-pip \
     python3-yaml \
     rsync \
