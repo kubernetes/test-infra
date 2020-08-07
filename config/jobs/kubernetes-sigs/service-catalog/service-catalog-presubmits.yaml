@@ -202,7 +202,7 @@ presubmits:
             - runner.sh
           args:
             - make
-            - arch-image-ppc64le
+            - arch-image-s390x
           # docker-in-docker needs privileged mode
           securityContext:
             privileged: true
