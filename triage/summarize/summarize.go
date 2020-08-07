@@ -93,20 +93,17 @@ func summarize(flags summarizeFlags) {
 
 	data := render(builds, clustered)
 
-	var owners map[string][]string
+	// Load the owners from the file, if given
+	var owners map[string][]string = nil
 	if flags.owners != "" {
 		owners, err = loadOwners(flags.owners)
 		if err != nil {
-			logWarning("Could not get owners, clusters will not be labeled with owners: %s", err)
-			// Set the flag to the empty string so the program doesn't try to write owners files later
-			flags.owners = ""
-		} else {
-			err = annotateOwners(&data, builds, owners)
-			if err != nil {
-				logWarning("Could not annotate owners, clusters will not be labeled with owners")
-				flags.owners = ""
-			}
+			logWarning("Could not load owners file, clusters will only be labeled based on test names: %s", err)
 		}
+	}
+	err = annotateOwners(&data, builds, owners)
+	if err != nil {
+		logWarning("Could not annotate owners: %s", err)
 	}
 
 	err = writeResults(flags.output, data)
@@ -128,18 +125,14 @@ func summarize(flags summarizeFlags) {
 			}
 		}
 
-		if flags.owners != "" {
-			// for output
-			if _, ok := owners["testing"]; !ok {
-				owners["testing"] = make([]string, 0)
-			}
-
-			for owner := range owners {
-				ownerResults, cols := renderSlice(data, builds, "", owner)
-				err = writeRenderedSlice(strings.Replace(flags.outputSlices, "PREFIX", "sig-"+owner, -1), ownerResults, cols)
-				if err != nil {
-					logWarning("Could not write result for owner '%s' to file: %s", owner, err)
-				}
+		if _, ok := owners["testing"]; !ok {
+			owners["testing"] = make([]string, 0)
+		}
+		for owner := range owners {
+			ownerResults, cols := renderSlice(data, builds, "", owner)
+			err = writeRenderedSlice(strings.Replace(flags.outputSlices, "PREFIX", "sig-"+owner, -1), ownerResults, cols)
+			if err != nil {
+				logWarning("Could not write result for owner '%s' to file: %s", owner, err)
 			}
 		}
 	}

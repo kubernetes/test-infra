@@ -71,35 +71,39 @@ the data parameter in place.
 owners maps SIG names to collections of SIG-specific prefixes.
 */
 func annotateOwners(data *jsonOutput, builds map[string]build, owners map[string][]string) error {
-	// Dynamically create a regular expression based on the value of owners.
-	/*
-		namedOwnerREs is a collection of regular expressions of the form
-		    (?P<signame>prefixA|prefixB|prefixC)
-		where signame is the name of a SIG (such as 'sig-testing') with '-' replaced with '_' for
-		compatibility with regex capture group name rules. There can be any number of prefixes
-		following the capture group name.
-	*/
-	namedOwnerREs := make([]string, 0, len(owners))
-	for sig, prefixes := range owners {
-		// prefixREs is a collection of non-empty prefixes with any special regex characters quoted
-		prefixREs := make([]string, 0, len(prefixes))
-		for _, prefix := range prefixes {
-			if prefix != "" {
-				prefixREs = append(prefixREs, regexp.QuoteMeta(prefix))
+	var ownerRE *regexp.Regexp = nil
+	if owners != nil {
+		// Dynamically create a regular expression based on the value of owners.
+		/*
+			namedOwnerREs is a collection of regular expressions of the form
+				(?P<signame>prefixA|prefixB|prefixC)
+			where signame is the name of a SIG (such as 'sig-testing') with '-' replaced with '_' for
+			compatibility with regex capture group name rules. There can be any number of prefixes
+			following the capture group name.
+		*/
+		namedOwnerREs := make([]string, 0, len(owners))
+		for sig, prefixes := range owners {
+			// prefixREs is a collection of non-empty prefixes with any special regex characters quoted
+			prefixREs := make([]string, 0, len(prefixes))
+			for _, prefix := range prefixes {
+				if prefix != "" {
+					prefixREs = append(prefixREs, regexp.QuoteMeta(prefix))
+				}
 			}
+
+			namedOwnerREs = append(namedOwnerREs,
+				fmt.Sprintf("(?P<%s>%s)",
+					strings.Replace(sig, "-", "_", -1), // Regex group names can't have '-', we'll substitute back later
+					strings.Join(prefixREs, "|")))
 		}
 
-		namedOwnerREs = append(namedOwnerREs,
-			fmt.Sprintf("(?P<%s>%s)",
-				strings.Replace(sig, "-", "_", -1), // Regex group names can't have '-', we'll substitute back later
-				strings.Join(prefixREs, "|")))
-	}
-
-	// ownerRE is the final regex created from the values of namedOwnerREs, placed into a
-	// non-capturing group
-	ownerRE, err := regexp.Compile(fmt.Sprintf(`(?:%s)`, strings.Join(namedOwnerREs, "|")))
-	if err != nil {
-		return fmt.Errorf("Could not compile ownerRE from provided SIG names and prefixes: %s", err)
+		// ownerRE is the final regex created from the values of namedOwnerREs, placed into a
+		// non-capturing group
+		var err error
+		ownerRE, err = regexp.Compile(fmt.Sprintf(`(?:%s)`, strings.Join(namedOwnerREs, "|")))
+		if err != nil {
+			return fmt.Errorf("Could not compile ownerRE from provided SIG names and prefixes: %s", err)
+		}
 	}
 
 	jobPaths := data.Builds.JobPaths
@@ -116,7 +120,7 @@ func annotateOwners(data *jsonOutput, builds map[string]build, owners map[string
 			var owner string
 			if submatches := sigLabelRE.FindStringSubmatch(test.Name); submatches != nil {
 				owner = submatches[1] // Get the first (and only) submatch of sigLabelRE
-			} else {
+			} else if ownerRE != nil {
 				normalizedTestName := normalizeName(test.Name)
 
 				// Determine whether there were any named groups with matches for normalizedTestName,
