@@ -51,7 +51,7 @@ For periodic jobs the expected GCS path is in the following form (see [gcs bucke
 gs://kubernetes-github-redhat/logs/${JOB_NAME}/${BUILD_NUMBER}/
 ```
 
-The `TestGrid` then expects the following content of each build:
+The [`TestGrid`](https://github.com/GoogleCloudPlatform/testgrid/blob/master/metadata/job.go) then expects the following content of each build:
 
 * started.json
 
@@ -63,8 +63,9 @@ The `TestGrid` then expects the following content of each build:
     "repos": {
       "k8s.io/kubernetes": "master"
     },
-    "version": "v1.10.0-alpha.0.684+51033c4dec6e00",
-    "repo-version": "v1.10.0-alpha.0.684+51033c4dec6e00"
+    "repo-commit": "51033c4dec6e00cbbb550fcc09940efc54e54f79",
+    "repo-version": "v1.10.0-alpha.0.684+51033c4dec6e00", *deprecated*
+    "job-version": "v1.10.0-alpha.0.684+51033c4dec6e00" *deprecated*
   }
   ```
 
@@ -74,7 +75,6 @@ The `TestGrid` then expects the following content of each build:
   ```json
   {
     "timestamp": 1511907565,
-    "version": "v1.10.0-alpha.0.684+51033c4dec6e00",
     "result": "SUCCESS",
     "passed": true,
     "job-version": "v1.10.0-alpha.0.684+51033c4dec6e00",
@@ -83,9 +83,9 @@ The `TestGrid` then expects the following content of each build:
       "repos": {
         "k8s.io/kubernetes": "master"
       },
-      "repo-commit": "51033c4dec6e00cbbb550fcc09940efc54e54f79",
-      "version": "v1.10.0-alpha.0.684+51033c4dec6e00",
-      "job-version": "v1.10.0-alpha.0.684+51033c4dec6e00"
+      "repo-commit": "51033c4dec6e00cbbb550fcc09940efc54e54f79",  *deprecated*
+      "revision": "v1.10.0-alpha.0.684+51033c4dec6e00", *deprecated*
+      "job-version": "v1.10.0-alpha.0.684+51033c4dec6e00" *deprecated*
     }
   }
   ```

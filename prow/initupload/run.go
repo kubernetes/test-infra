@@ -35,17 +35,22 @@ import (
 // specToStarted translate a jobspec into a started struct
 // optionally overwrite RepoVersion with provided cloneRecords
 func specToStarted(spec *downwardapi.JobSpec, cloneRecords []clone.Record) gcs.Started {
+	var version string
+
 	started := gcs.Started{
 		Timestamp: time.Now().Unix(),
 	}
 
 	if mainRefs := spec.MainRefs(); mainRefs != nil {
-		started.DeprecatedRepoVersion = shaForRefs(*mainRefs, cloneRecords)
+		version = shaForRefs(*mainRefs, cloneRecords)
 	}
 
-	if started.DeprecatedRepoVersion == "" {
-		started.DeprecatedRepoVersion = downwardapi.GetRevisionFromSpec(spec)
+	if version == "" {
+		version = downwardapi.GetRevisionFromSpec(spec)
 	}
+
+	started.DeprecatedRepoVersion = version
+	started.RepoCommit = version
 
 	// TODO(fejta): VM name
 
