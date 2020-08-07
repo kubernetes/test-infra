@@ -365,27 +365,7 @@ branch-protection:
         - "^dependabot/" # don't protect branches created by dependabot
         - "^greenkeeper/" # don't protect branches created by greenkeeper
       repos:
-        apiserver-builder:
-          required_status_checks:
-            contexts:
-            - continuous-integration/travis-ci
-        bootkube:
-          required_status_checks:
-            contexts:
-            - continuous-integration/travis-ci
-        cluster-proportional-autoscaler:
-          required_status_checks:
-            contexts:
-            - continuous-integration/travis-ci
-        external-storage:
-          required_status_checks:
-            contexts:
-            - continuous-integration/travis-ci
         kube-aws:
-          required_status_checks:
-            contexts:
-            - continuous-integration/travis-ci
-        metrics-server:
           required_status_checks:
             contexts:
             - continuous-integration/travis-ci
