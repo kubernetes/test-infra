@@ -21,11 +21,23 @@ presubmits:
       containers:
       - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:2.2.0-from-0.23.2
         command:
-        - bash
+        - ../test-infra/hack/bazel.sh
         args:
-        - -c
-        - |
-          ../test-infra/hack/bazel.sh build --config=remote --remote_instance_name=projects/k8s-prow-builds/instances/default_instance -- //... -//vendor/... -//build/... //build/release-tars
+        - build
+        - --config=remote
+        - --remote_instance_name=projects/k8s-prow-builds/instances/default_instance
+        - --
+        - //...
+        - -//vendor/...
+        - -//build/...
+        - //build/release-tars
+        resources:
+          limits:
+            cpu: 4
+            memory: "36Gi"
+          requests:
+            cpu: 4
+            memory: "36Gi"
   - name: pull-kubernetes-bazel-test
     decorate: true
     always_run: true
