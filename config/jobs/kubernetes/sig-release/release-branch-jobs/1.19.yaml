@@ -43,6 +43,7 @@ periodics:
     testgrid-dashboards: sig-release-1.19-blocking, google-gce
     testgrid-num-failures-to-alert: "6"
     testgrid-tab-name: gce-device-plugin-gpu-1.19
+  cluster: k8s-infra-prow-build
   cron: 0 0-23/2 * * *
   labels:
     preset-ci-gce-device-plugin-gpu: "true"
