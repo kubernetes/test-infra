@@ -1037,8 +1037,7 @@ func TestKubernetesMergeBlockingJobsShouldHavePodQOSGuaranteed(t *testing.T) {
 	}
 }
 
-// TODO: s/Should/Must and s/Logf/Errorf when all jobs pass
-func TestKubernetesReleaseBlockingJobsShouldHavePodQOSGuaranteed(t *testing.T) {
+func TestKubernetesReleaseBlockingJobsMustHavePodQOSGuaranteed(t *testing.T) {
 	for _, job := range allStaticJobs() {
 		// Only consider Pods that are release-blocking
 		if job.Spec == nil || !isKubernetesReleaseBlocking(job) {
@@ -1046,7 +1045,7 @@ func TestKubernetesReleaseBlockingJobsShouldHavePodQOSGuaranteed(t *testing.T) {
 		}
 		errs := verifyPodQOSGuaranteed(job.Spec)
 		for _, err := range errs {
-			t.Logf("%v: %v", job.Name, err)
+			t.Errorf("%v: %v", job.Name, err)
 		}
 	}
 }
