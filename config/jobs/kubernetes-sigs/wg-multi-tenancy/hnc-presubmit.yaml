@@ -9,6 +9,6 @@ presubmits:
     run_if_changed: "incubator/hnc/.*"
     spec:
       containers:
-      - image: golang:1.13
+      - image: golang:1.14
         command:
         - ./incubator/hnc/hack/ci-test.sh
