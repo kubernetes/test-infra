@@ -130,67 +130,6 @@ postsubmits:
       testgrid-dashboards: sig-release-master-informing
       testgrid-tab-name: bazel-build-master
       description: 'OWNER: sig-testing; Builds kubernetes at each bommit using bazel with RBE'
-  - name: ci-kubernetes-bazel-test # TODO(fejta): delete after 1m (dup of post-kubernetes-bazel-test)
-    decorate: true
-    labels:
-      preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-    annotations:
-      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-      testgrid-dashboards: google-unit
-    extra_refs:
-    - base_ref: master
-      org: kubernetes
-      repo: test-infra
-    skip_branches:
-    - release-\d+.\d+ # per-release job
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:2.2.0-from-0.23.2
-        command:
-        - ../test-infra/hack/bazel.sh
-        args:
-        - test
-        - --config=unit
-        - --config=remote
-        - --remote_instance_name=projects/k8s-prow-builds/instances/default_instance
-        - //...
-        - //hack:verify-all
-        - --
-        - -//build/...
-        - -//vendor/...
-
-  - name: post-kubernetes-bazel-test
-    decorate: true
-    labels:
-      preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-    annotations:
-      fork-per-release: "true"
-      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-      testgrid-dashboards: sig-release-master-informing, google-unit
-      description: 'OWNER: sig-testing; Runs kubernetes unit tests at each commit using bazel'
-    extra_refs:
-    - base_ref: master
-      org: kubernetes
-      repo: test-infra
-    skip_branches:
-    - release-\d+.\d+ # per-release job
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:2.2.0-from-0.23.2
-        command:
-        - ../test-infra/hack/bazel.sh
-        args:
-        - test
-        - --config=unit
-        - --config=remote
-        - --remote_instance_name=projects/k8s-prow-builds/instances/default_instance
-        - //...
-        - //hack:verify-all
-        - --
-        - -//build/...
-        - -//vendor/...
 
 periodics:
 # periodic bazel build jobs
@@ -246,7 +185,8 @@ periodics:
   annotations:
     testgrid-dashboards: sig-testing-canaries
     testgrid-tab-name: bazel-build
-    description: run kubernetes-bazel-build with latest image
+    description: run kubernetes-bazel-build on k8s-infra-prow-build without RBE
+  cluster: k8s-infra-prow-build
   interval: 1h
   decorate: true
   labels:
@@ -272,11 +212,17 @@ periodics:
         set -o errexit
         gcloud auth activate-service-account --key-file=/etc/service-account/service-account.json
         ../test-infra/scenarios/kubernetes_bazel.py \
-            --config=ci \
             "--build=//... -//vendor/..." \
             --release=//build/release-tars \
-            --gcs=gs://kubernetes-release-dev/ci-canary \
+            --gcs=gs://k8s-release-dev/ci-canary \
             --version-suffix=-bazel
+      resources:
+        limits:
+          cpu: 4
+          memory: "12Gi"
+        requests:
+          cpu: 4
+          memory: "12Gi"
   rerun_auth_config:
     github_team_ids:
       - 2241179 # release-managers
@@ -288,7 +234,7 @@ periodics:
     fork-per-release-periodic-interval: 6h
     testgrid-dashboards: sig-testing-canaries
     testgrid-tab-name: bazel-test
-    description: "runs bazel test //... //hack:verify-all -//build/... -//vendor/..."
+    description: runs bazel test //... //hack:verify-all -//build/... -//vendor/... (using RBE)
   interval: 5m
   decorate: true
   labels:
@@ -328,7 +274,7 @@ periodics:
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
     testgrid-dashboards: sig-release-master-blocking, google-unit
     testgrid-tab-name: bazel-test-master
-    description: run kubernetes-bazel-test without RBE on k8s-infra-prow-build
+    description: runs bazel test //... //hack:verify-all -//build/... -//vendor/...
   interval: 1h
   cluster: k8s-infra-prow-build
   decorate: true
