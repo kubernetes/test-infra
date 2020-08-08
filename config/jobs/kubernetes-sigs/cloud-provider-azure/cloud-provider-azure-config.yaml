@@ -464,6 +464,9 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private # Requires preset-k8s-ssh label
       - name: KUBE_SSH_USER
         value: azureuser
+      - name: K8S_AZURE_LOADBALANCE_SKU
+        value: "basic"
+
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure, provider-azure-periodic
     testgrid-tab-name: cloud-provider-azure-serial
