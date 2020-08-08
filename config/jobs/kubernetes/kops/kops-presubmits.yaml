@@ -459,59 +459,6 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
       testgrid-tab-name: verify-terraform
-  - name: pull-kops-verify
-    optional: true
-    labels:
-      preset-dind-enabled: "true"
-      preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
-    decorate: true
-    decoration_config:
-      timeout: 15m
-    path_alias: k8s.io/kops
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200807-c10eea0-experimental
-        command:
-        - runner.sh
-        args:
-        - "make"
-        - "verify"
-        resources:
-          requests:
-            memory: "2Gi"
-        securityContext:
-          privileged: true
-    annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
-      testgrid-tab-name: verify
-periodics:
-- interval: 30m
-  name: ci-kops-build
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200807-c10eea0-experimental
-      args:
-      - --repo=k8s.io/kops
-      - --repo=k8s.io/release
-      - --root=/go/src
-      - --timeout=30
-      - --scenario=execute
-      - --
-      - make
-      - gcs-publish-ci
-      - GCS_LOCATION=gs://kops-ci/bin
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-  annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-kops, kops-presubmits
-    testgrid-tab-name: kops-build
-    testgrid-alert-email: kubernetes-release-team@googlegroups.com
 postsubmits:
   kubernetes/kops:
   - name: kops-postsubmit
