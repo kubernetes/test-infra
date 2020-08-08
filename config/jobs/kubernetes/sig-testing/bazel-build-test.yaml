@@ -288,7 +288,7 @@ periodics:
     fork-per-release-periodic-interval: 6h
     testgrid-dashboards: sig-testing-canaries
     testgrid-tab-name: bazel-test
-    description: "runs bazel test //... //hack:verify-all -//build/... -//vendor/..."
+    description: runs bazel test //... //hack:verify-all -//build/... -//vendor/... (using RBE)
   interval: 5m
   decorate: true
   labels:
@@ -328,7 +328,7 @@ periodics:
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
     testgrid-dashboards: sig-release-master-blocking, google-unit
     testgrid-tab-name: bazel-test-master
-    description: run kubernetes-bazel-test without RBE on k8s-infra-prow-build
+    description: runs bazel test //... //hack:verify-all -//build/... -//vendor/...
   interval: 1h
   cluster: k8s-infra-prow-build
   decorate: true
