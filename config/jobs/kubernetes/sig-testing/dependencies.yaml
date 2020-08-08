@@ -31,6 +31,13 @@ presubmits:
         # Space separated list of the checks to run
         - name: WHAT
           value: "external-dependencies-version vendor vendor-licenses"
+        resources:
+          limits:
+            cpu: 2
+            memory: 1.2Gi
+          requests:
+            cpu: 2
+            memory: 1.2Gi
   - name: pull-kubernetes-dependencies-canary
     path_alias: "k8s.io/kubernetes"
     decorate: true
@@ -56,5 +63,12 @@ presubmits:
         # Space separated list of the checks to run
         - name: WHAT
           value: "external-dependencies-version vendor vendor-licenses"
+        resources:
+          limits:
+            cpu: 2
+            memory: 1.2Gi
+          requests:
+            cpu: 2
+            memory: 1.2Gi
     annotations:
       testgrid-create-test-group: 'true'
