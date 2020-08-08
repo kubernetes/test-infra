@@ -160,38 +160,6 @@ postsubmits:
         - -//build/...
         - -//vendor/...
 
-  - name: post-kubernetes-bazel-test
-    decorate: true
-    labels:
-      preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-    annotations:
-      fork-per-release: "true"
-      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-      testgrid-dashboards: sig-release-master-informing, google-unit
-      description: 'OWNER: sig-testing; Runs kubernetes unit tests at each commit using bazel'
-    extra_refs:
-    - base_ref: master
-      org: kubernetes
-      repo: test-infra
-    skip_branches:
-    - release-\d+.\d+ # per-release job
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:2.2.0-from-0.23.2
-        command:
-        - ../test-infra/hack/bazel.sh
-        args:
-        - test
-        - --config=unit
-        - --config=remote
-        - --remote_instance_name=projects/k8s-prow-builds/instances/default_instance
-        - //...
-        - //hack:verify-all
-        - --
-        - -//build/...
-        - -//vendor/...
-
 periodics:
 # periodic bazel build jobs
 - name: periodic-kubernetes-bazel-build-master
