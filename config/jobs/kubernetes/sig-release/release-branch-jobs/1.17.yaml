@@ -1160,7 +1160,13 @@ presubmits:
         - ../test-infra/hack/bazel.sh
         image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:2.2.0-from-0.23.2
         name: ""
-        resources: {}
+        resources:
+          limits:
+            cpu: 4
+            memory: 38Gi
+          requests:
+            cpu: 4
+            memory: 38Gi
   - always_run: true
     branches:
     - release-1.17

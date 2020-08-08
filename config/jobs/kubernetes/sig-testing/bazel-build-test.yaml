@@ -69,13 +69,13 @@ presubmits:
         - --
         - -//build/...
         - -//vendor/...
-      resources:
-        limits:
-          cpu: 4
-          memory: "38Gi"
-        requests:
-          cpu: 4
-          memory: "38Gi"
+        resources:
+          limits:
+            cpu: 4
+            memory: 38Gi
+          requests:
+            cpu: 4
+            memory: 38Gi
 postsubmits:
   kubernetes/kubernetes:
   - name: ci-kubernetes-bazel-build
