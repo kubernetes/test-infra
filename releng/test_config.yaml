@@ -619,13 +619,6 @@ testSuites:
     - --timeout=40m
     - --test_args=--ginkgo.focus=\[Feature:NoSNAT\] --minStartupPods=8
     - --ginkgo-parallel=1
-  gpu:
-    args:
-    - --gcp-project-type=gpu-project
-    - --timeout=180m
-    - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
-    - --env=NVIDIA_DRIVER_INSTALLER_DAEMONSET=https://raw.githubusercontent.com/GoogleCloudPlatform/container-engine-accelerators/master/nvidia-driver-installer/ubuntu/daemonset-preloaded.yaml
-    - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-k80,count=2
 
 # The following settings are used by node e2e tests.
 
