@@ -246,7 +246,8 @@ periodics:
   annotations:
     testgrid-dashboards: sig-testing-canaries
     testgrid-tab-name: bazel-build
-    description: run kubernetes-bazel-build with latest image
+    description: run kubernetes-bazel-build on k8s-infra-prow-build without RBE
+  cluster: k8s-infra-prow-build
   interval: 1h
   decorate: true
   labels:
@@ -272,11 +273,17 @@ periodics:
         set -o errexit
         gcloud auth activate-service-account --key-file=/etc/service-account/service-account.json
         ../test-infra/scenarios/kubernetes_bazel.py \
-            --config=ci \
             "--build=//... -//vendor/..." \
             --release=//build/release-tars \
-            --gcs=gs://kubernetes-release-dev/ci-canary \
+            --gcs=gs://k8s-release-dev/ci-canary \
             --version-suffix=-bazel
+      resources:
+        limits:
+          cpu: 4
+          memory: "12Gi"
+        requests:
+          cpu: 4
+          memory: "12Gi"
   rerun_auth_config:
     github_team_ids:
       - 2241179 # release-managers
