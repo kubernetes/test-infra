@@ -1338,12 +1338,13 @@ presubmits:
             memory: 1.2Gi
         securityContext:
           privileged: true
-  - always_run: true
-    branches:
+  - branches:
     - release-1.19
     decorate: true
     name: pull-kubernetes-files-remake
+    optional: true
     path_alias: k8s.io/kubernetes
+    run_if_changed: 'Makefile.generated_files|make-rules'
     spec:
       containers:
       - args:
@@ -1355,7 +1356,13 @@ presubmits:
           value: generated-files-remake
         image: gcr.io/k8s-testimages/kubekins-e2e:v20200807-c10eea0-1.19
         name: main
-        resources: {}
+        resources:
+          limits:
+            cpu: 1500m
+            memory: 7Gi
+          requests:
+            cpu: 1500m
+            1memory: 7Gi
   - always_run: true
     branches:
     - release-1.19
