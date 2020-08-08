@@ -1133,7 +1133,13 @@ presubmits:
           value: typecheck
         image: gcr.io/k8s-testimages/kubekins-e2e:v20200807-c10eea0-1.16
         name: main
-        resources: {}
+        resources:
+          limits:
+            cpu: 5
+            memory: 36Gi
+          requests:
+            cpu: 5
+            memory: 36Gi
   - always_run: true
     branches:
     - release-1.16
