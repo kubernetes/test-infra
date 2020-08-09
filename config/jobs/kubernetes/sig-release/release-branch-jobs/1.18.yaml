@@ -1514,11 +1514,13 @@ presubmits:
         imagePullPolicy: Always
         name: ""
         resources:
+          # Consider reducing memory limits after govet memory usage issue is
+          # addressed in https://github.com/kubernetes/kubernetes/issues/93822
           limits:
             cpu: "7"
-            memory: 10Gi
+            memory: 12Gi
           requests:
             cpu: "7"
-            memory: 10Gi
+            memory: 12Gi
         securityContext:
           privileged: true
