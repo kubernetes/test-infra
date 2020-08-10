@@ -25,6 +25,7 @@ import (
 	"log"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -167,7 +168,7 @@ func annotateOwners(data *jsonOutput, builds map[string]build, owners map[string
 
 				jobPath := jobPaths[job.Name]
 				for _, build := range job.BuildNumbers {
-					bucketKey := fmt.Sprintf("%s/%d", jobPath, build)
+					bucketKey := fmt.Sprintf("%s/%s", jobPath, build)
 					if _, ok := builds[bucketKey]; !ok {
 						continue
 					} else if builds[bucketKey].Started > yesterday {
@@ -332,8 +333,8 @@ func clustersToDisplay(clustered []flattenedGlobalCluster, builds map[string]bui
 
 // job represents a job name and a collection of associated build numbers.
 type job struct {
-	Name         string `json:"name"`
-	BuildNumbers []int  `json:"builds"`
+	Name         string   `json:"name"`
+	BuildNumbers []string `json:"builds"`
 }
 
 // build represents a specific instance of a build.
@@ -358,8 +359,8 @@ that belong to each failure's job.
 builds is a mapping from build paths to build objects.
 */
 func testsGroupByJob(failures []failure, builds map[string]build) []job {
-	// groups maps job names to sets of failures' build numbers.
-	groups := make(map[string]sets.Int)
+	// groups maps job names to sets of failures' build numbers (as strings).
+	groups := make(map[string]sets.String)
 
 	// For each failure, grab its build's job name. Map the job name to the failure's build number.
 	for _, flr := range failures {
@@ -369,9 +370,9 @@ func testsGroupByJob(failures []failure, builds map[string]build) []job {
 			if bld.Number != 0 {
 				// Create the set if one doesn't exist for the given job
 				if _, ok := groups[bld.Job]; !ok {
-					groups[bld.Job] = make(sets.Int, 1)
+					groups[bld.Job] = make(sets.String, 1)
 				}
-				groups[bld.Job].Insert(bld.Number)
+				groups[bld.Job].Insert(strconv.Itoa(bld.Number))
 			}
 		}
 	}
@@ -382,11 +383,11 @@ func testsGroupByJob(failures []failure, builds map[string]build) []job {
 
 	// First stage
 	// sortedBuildNumbers is essentially groups, but with the build numbers sorted.
-	sortedBuildNumbers := make(map[string][]int, len(groups))
+	sortedBuildNumbers := make(map[string][]string, len(groups))
 	// Create the slice to hold the set elements, fill it, and sort it
 	for jobName, buildNumberSet := range groups {
 		// Initialize the int slice
-		sortedBuildNumbers[jobName] = make([]int, len(buildNumberSet))
+		sortedBuildNumbers[jobName] = make([]string, len(buildNumberSet))
 
 		// Fill it
 		iter := 0
