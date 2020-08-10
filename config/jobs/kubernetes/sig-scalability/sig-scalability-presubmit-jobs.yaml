@@ -52,7 +52,7 @@ presubmits:
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=100m
         - --use-logexporter
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200807-c10eea0-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200809-b9b3222-master
         resources:
           limits:
             cpu: 4
@@ -107,7 +107,7 @@ presubmits:
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=240m
         - --use-logexporter
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200807-c10eea0-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200809-b9b3222-master
         resources:
           requests:
             memory: "6Gi"
@@ -153,7 +153,7 @@ presubmits:
         - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[DisabledForLargeClusters\] --minStartupPods=8 --node-schedulable-timeout=90m
         - --timeout=240m
         - --use-logexporter
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200807-c10eea0-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200809-b9b3222-master
         resources:
           requests:
             memory: "6Gi"
@@ -205,7 +205,7 @@ presubmits:
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=540m
         - --use-logexporter
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200807-c10eea0-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200809-b9b3222-master
         resources:
           requests:
             memory: "6Gi"
@@ -228,7 +228,7 @@ presubmits:
       testgrid-create-test-group: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200807-c10eea0-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200809-b9b3222-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -300,7 +300,7 @@ presubmits:
       preset-e2e-scalability-presubmits: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200807-c10eea0-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200809-b9b3222-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -398,7 +398,7 @@ presubmits:
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=100m
         - --use-logexporter
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200807-c10eea0-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200809-b9b3222-master
         resources:
           requests:
             memory: "6Gi"
@@ -452,7 +452,7 @@ presubmits:
             - --test-cmd-name=ClusterLoaderV2
             - --timeout=100m
             - --use-logexporter
-          image: gcr.io/k8s-testimages/kubekins-e2e:v20200807-c10eea0-master
+          image: gcr.io/k8s-testimages/kubekins-e2e:v20200809-b9b3222-master
           resources:
             requests:
               memory: "6Gi"
@@ -513,7 +513,7 @@ presubmits:
             - --test-cmd-name=ClusterLoaderV2
             - --timeout=100m
             - --use-logexporter
-          image: gcr.io/k8s-testimages/kubekins-e2e:v20200807-c10eea0-master
+          image: gcr.io/k8s-testimages/kubekins-e2e:v20200809-b9b3222-master
           resources:
             requests:
               memory: "6Gi"
