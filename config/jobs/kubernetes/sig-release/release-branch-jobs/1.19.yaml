@@ -1362,7 +1362,7 @@ presubmits:
             memory: 7Gi
           requests:
             cpu: 1500m
-            1memory: 7Gi
+            memory: 7Gi
   - always_run: true
     branches:
     - release-1.19
