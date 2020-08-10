@@ -46,7 +46,7 @@ func TestAnnotateOwners(t *testing.T) {
 								Jobs: []job{
 									{
 										Name:         "somejob",
-										BuildNumbers: []int{123, 125},
+										BuildNumbers: []string{"123", "125"},
 									},
 								},
 							},

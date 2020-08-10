@@ -407,7 +407,7 @@ func TestSummarize(t *testing.T) {
 						{
 							Jobs: []job{
 								{
-									BuildNumbers: []int{4, 3, 2, 1},
+									BuildNumbers: []string{"4", "3", "2", "1"},
 									Name:         "some-job",
 								},
 							},
@@ -425,7 +425,7 @@ func TestSummarize(t *testing.T) {
 						{
 							Jobs: []job{
 								{
-									BuildNumbers: []int{7, 5},
+									BuildNumbers: []string{"7", "5"},
 									Name:         "other-job",
 								},
 							},
@@ -434,7 +434,7 @@ func TestSummarize(t *testing.T) {
 						{
 							Jobs: []job{
 								{
-									BuildNumbers: []int{4},
+									BuildNumbers: []string{"4"},
 									Name:         "some-job",
 								},
 							},
