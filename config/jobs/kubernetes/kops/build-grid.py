@@ -68,10 +68,37 @@ run_hourly = [
 run_daily = [
 ]
 
-# These are jobs known to be unsupported
+# These are job tab names of unsupported grid combinations
 skip_jobs = [
     # https://github.com/cilium/cilium/blob/71cfb265d53b63a2be3806fb3fd4425fa36262ff/Documentation/install/system_requirements.rst#centos-foot
-    'kops-grid-cilium-centos7-ko18'
+    'kops-grid-cilium-amzn2',
+    'kops-grid-cilium-amzn2-k18',
+    'kops-grid-cilium-centos7',
+    'kops-grid-cilium-centos7-k16',
+    'kops-grid-cilium-centos7-k16-ko18',
+    'kops-grid-cilium-centos7-k17',
+    'kops-grid-cilium-centos7-k17-ko18',
+    'kops-grid-cilium-centos7-k18',
+    'kops-grid-cilium-centos7-k18-ko18',
+    'kops-grid-cilium-centos7-ko18',
+    'kops-grid-cilium-deb9',
+    'kops-grid-cilium-deb9-k18',
+    'kops-grid-cilium-rhel7',
+    'kops-grid-cilium-rhel7-k16',
+    'kops-grid-cilium-rhel7-k16-ko18',
+    'kops-grid-cilium-rhel7-k17',
+    'kops-grid-cilium-rhel7-k17-ko18',
+    'kops-grid-cilium-rhel7-k18',
+    'kops-grid-cilium-rhel7-k18-ko18',
+    'kops-grid-cilium-rhel7-ko18',
+    'kops-grid-cilium-u1604',
+    'kops-grid-cilium-u1604-k16',
+    'kops-grid-cilium-u1604-k16-ko18',
+    'kops-grid-cilium-u1604-k17',
+    'kops-grid-cilium-u1604-k17-ko18',
+    'kops-grid-cilium-u1604-k18',
+    'kops-grid-cilium-u1604-k18-ko18',
+    'kops-grid-cilium-u1604-ko18',
 ]
 
 def simple_hash(s):
