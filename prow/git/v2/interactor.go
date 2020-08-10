@@ -373,3 +373,14 @@ func (i *interactor) ShowRef(commitlike string) (string, error) {
 	}
 	return strings.TrimSpace(string(out)), nil
 }
+
+// GetHeadRef returns the head commit revision
+func (i *interactor) GetHeadRef(branch string) (string, error) {
+	i.logger.Infof("Getting head commit ref from branch: %q", branch)
+	out, err := i.executor.Run("ls-remote", "--exit-code", "--heads", "origin", branch)
+	if err != nil {
+		return "", fmt.Errorf("error running ls-remote: %v", err)
+	}
+
+	return strings.Split(string(out), "\t")[0], nil
+}

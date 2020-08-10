@@ -1741,3 +1741,67 @@ func TestInteractor_ShowRef(t *testing.T) {
 		})
 	}
 }
+
+func TestInteractor_GetHeadRef(t *testing.T) {
+	var testCases = []struct {
+		name          string
+		branch        string
+		remote        RemoteResolver
+		responses     map[string]execResponse
+		expectedCalls [][]string
+		expectedOut   string
+		errorExpected bool
+	}{
+		{
+			name:   "happy case",
+			branch: "branch",
+			responses: map[string]execResponse{
+				"ls-remote --exit-code --heads origin branch": {
+					out: []byte(`c165713776618ff3162643ea4d0382ca039adfeb	refs/heads/branch`),
+				},
+			},
+			expectedCalls: [][]string{
+				{"ls-remote", "--exit-code", "--heads", "origin", "branch"},
+			},
+			expectedOut: "c165713776618ff3162643ea4d0382ca039adfeb",
+		},
+		{
+			name:   "ls-remote fails",
+			branch: "branch",
+			responses: map[string]execResponse{
+				"ls-remote --exit-code --heads origin branch": {
+					err: errors.New("oops"),
+				},
+			},
+			expectedCalls: [][]string{
+				{"ls-remote", "--exit-code", "--heads", "origin", "branch"},
+			},
+			errorExpected: true,
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			e := fakeExecutor{
+				records:   [][]string{},
+				responses: testCase.responses,
+			}
+			i := interactor{
+				executor: &e,
+				remote:   testCase.remote,
+				logger:   logrus.WithField("test", testCase.name),
+			}
+			actualOut, err := i.GetHeadRef(testCase.branch)
+			if err != nil && !testCase.errorExpected {
+				t.Fatalf("error not expected: %v", err)
+			}
+
+			if testCase.expectedOut != actualOut {
+				t.Errorf("%s: got incorrect output: expected %v, got %v", testCase.name, testCase.expectedOut, actualOut)
+			}
+			if actual, expected := e.records, testCase.expectedCalls; !reflect.DeepEqual(actual, expected) {
+				t.Errorf("%s: got incorrect git calls: %v", testCase.name, diff.ObjectReflectDiff(actual, expected))
+			}
+		})
+	}
+}
