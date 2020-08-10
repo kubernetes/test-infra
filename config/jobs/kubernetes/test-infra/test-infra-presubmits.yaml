@@ -25,7 +25,7 @@ presubmits:
   - name: pull-test-infra-gubernator
     branches:
     - master
-    run_if_changed: 'gubernator|config/prow/config.yaml' # TODO(fejta): |config/jobs/.+\.yaml
+    run_if_changed: 'gubernator|config/prow/config.yaml|config/jobs/.+\.yaml'
     decorate: true
     labels:
       preset-service-account: "true"

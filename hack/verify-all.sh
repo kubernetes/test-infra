@@ -19,4 +19,3 @@ set -o pipefail
 
 cd "$(git rev-parse --show-toplevel)"
 find hack -name 'verify-*.sh' -not -name "$(basename "$0")" \( -print -exec '{}' ';' -o -quit \)
-./guberantor/verify_config.sh
