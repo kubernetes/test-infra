@@ -35,8 +35,12 @@ presubmits:
         - --timeout=65m
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
         resources:
+          limits:
+            cpu: 4
+            memory: 3Gi
           requests:
-            memory: "6Gi"
+            cpu: 4
+            memory: 3Gi
   - name: pull-kubernetes-e2e-containerd-gce
     always_run: false
     optional: true
