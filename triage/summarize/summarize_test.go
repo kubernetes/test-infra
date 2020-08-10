@@ -548,4 +548,16 @@ func TestSummarize(t *testing.T) {
 			failOnMismatchedSlices(t, want, got)
 		})
 	})
+
+	// Call summarize() with no owners file
+	t.Run("No owners file", func(t *testing.T) {
+		summarize(summarizeFlags{
+			builds:       buildsPath,
+			tests:        []string{testsPath},
+			previous:     "",
+			owners:       "",
+			output:       "failure_data.json",
+			outputSlices: "failure_data_PREFIX.json",
+		})
+	})
 }
