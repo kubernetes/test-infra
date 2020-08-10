@@ -253,6 +253,16 @@ func digestPR(log *logrus.Entry, pre github.PullRequestEvent, validateByDefault 
 	)
 
 	e := &event{org: org, repo: repo, baseRef: baseRef, number: number, merged: pre.PullRequest.Merged, closed: pre.Action == github.PullRequestActionClosed, opened: pre.Action == github.PullRequestActionOpened, state: pre.PullRequest.State, body: title, htmlUrl: pre.PullRequest.HTMLURL, login: pre.PullRequest.User.Login}
+	// Make sure the PR title is referencing a bug
+	var err error
+	e.bugId, e.missing, err = bugIDFromTitle(title)
+	// in the case that the title used to reference a bug and no longer does we
+	// want to handle this to remove labels
+	if err != nil {
+		log.WithError(err).Debug("Failed to get bug ID from title")
+		return nil, err
+	}
+
 	// Check if PR is a cherrypick
 	cherrypick, cherrypickFromPRNum, cherrypickTo, err := getCherryPickMatch(pre)
 	if err != nil {
@@ -265,14 +275,6 @@ func digestPR(log *logrus.Entry, pre github.PullRequestEvent, validateByDefault 
 			e.cherrypickTo = cherrypickTo
 			return e, nil
 		}
-	}
-	// Make sure the PR title is referencing a bug
-	e.bugId, e.missing, err = bugIDFromTitle(title)
-	// in the case that the title used to reference a bug and no longer does we
-	// want to handle this to remove labels
-	if err != nil {
-		log.WithError(err).Debug("Failed to get bug ID from title")
-		return nil, err
 	}
 
 	if e.closed && !e.merged {
