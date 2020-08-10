@@ -68,6 +68,12 @@ run_hourly = [
 run_daily = [
 ]
 
+# These are jobs known to be unsupported
+skip_jobs = [
+    # https://github.com/cilium/cilium/blob/71cfb265d53b63a2be3806fb3fd4425fa36262ff/Documentation/install/system_requirements.rst#centos-foot
+    'kops-grid-cilium-centos7-ko18'
+]
+
 def simple_hash(s):
     # & 0xffffffff avoids python2/python3 compatibility
     return zlib.crc32(s.encode()) & 0xffffffff
@@ -206,6 +212,9 @@ def build_test(cloud='aws', distro=None, networking=None, k8s_version=None, kops
         raise Exception("cluster name %s is probably too long" % (cluster_name))
 
     tab = 'kops-grid' + suffix
+
+    if tab in skip_jobs:
+        return
 
     cron = build_cron(tab)
 
