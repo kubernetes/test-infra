@@ -23,9 +23,9 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: canary-release-openshift-origin-installer-e2e-aws-4.7-cnv
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
@@ -50,9 +50,9 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: promote-release-openshift-machine-os-content-e2e-aws-4.7
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
@@ -77,9 +77,9 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: promote-release-openshift-machine-os-content-e2e-aws-4.7-ppc64le
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
@@ -104,9 +104,9 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: promote-release-openshift-machine-os-content-e2e-aws-4.7-s390x
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
@@ -131,9 +131,9 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-e2e-aws-scaleup-rhel7-4.7
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
@@ -158,9 +158,9 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-console-aws-4.7
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
@@ -185,9 +185,9 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-e2e-aws-csi-4.7
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
@@ -212,9 +212,9 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-e2e-aws-fips-4.7
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
@@ -239,9 +239,9 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-e2e-aws-fips-serial-4.7
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
@@ -266,9 +266,9 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-e2e-aws-mirrors-4.7
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
@@ -293,9 +293,9 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-e2e-aws-ovn-4.7
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
@@ -320,9 +320,9 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-e2e-aws-serial-4.7
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
@@ -347,9 +347,9 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-e2e-aws-upi-4.7
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
@@ -374,9 +374,9 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-e2e-azure-4.7
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
@@ -401,9 +401,9 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-e2e-azure-fips-4.7
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
@@ -428,9 +428,9 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-e2e-azure-fips-serial-4.7
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
@@ -455,9 +455,9 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-e2e-azure-ovn-4.7
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
@@ -482,9 +482,9 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-e2e-azure-serial-4.7
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
@@ -509,9 +509,9 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-e2e-gcp-4.7
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
@@ -536,9 +536,9 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-e2e-gcp-fips-4.7
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
@@ -563,9 +563,9 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-e2e-gcp-fips-serial-4.7
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
@@ -590,9 +590,9 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-e2e-gcp-ovn-4.7
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
@@ -617,9 +617,9 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-e2e-gcp-rt-4.7
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
@@ -644,9 +644,9 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-e2e-gcp-serial-4.7
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
@@ -671,9 +671,9 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-e2e-metal-4.7
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
@@ -698,9 +698,9 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-e2e-metal-compact-4.7
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
@@ -725,9 +725,9 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-e2e-metal-serial-4.7
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
@@ -752,9 +752,9 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-e2e-openstack-4.7
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
@@ -779,9 +779,9 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-e2e-openstack-serial-4.7
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
@@ -806,9 +806,9 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-e2e-ovirt-4.7
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
@@ -833,9 +833,9 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-e2e-vsphere-upi-4.7
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
@@ -860,9 +860,9 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-e2e-vsphere-upi-serial-4.7
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
@@ -887,9 +887,9 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-origin-installer-e2e-aws-4.7
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
@@ -914,9 +914,9 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-origin-installer-e2e-aws-compact-4.7
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
@@ -941,9 +941,9 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-origin-installer-e2e-aws-disruptive-4.7
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
@@ -968,9 +968,9 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-origin-installer-e2e-aws-sdn-multitenant-4.7
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
@@ -995,9 +995,9 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-origin-installer-e2e-aws-serial-4.7
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
@@ -1022,9 +1022,9 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-origin-installer-e2e-aws-shared-vpc-4.7
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
@@ -1049,9 +1049,9 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-origin-installer-e2e-aws-upgrade-4.3-to-4.4-to-4.6-to-4.7-ci
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
@@ -1076,9 +1076,9 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-origin-installer-e2e-aws-upgrade-4.6-stable-to-4.7-ci
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
@@ -1103,9 +1103,9 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.6-to-4.7
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
@@ -1130,9 +1130,9 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.7
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
@@ -1157,9 +1157,9 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-origin-installer-e2e-azure-compact-4.7
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
@@ -1184,9 +1184,9 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-origin-installer-e2e-azure-shared-vpc-4.7
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
@@ -1211,9 +1211,9 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-origin-installer-e2e-azure-upgrade-4.6-stable-to-4.7-ci
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
@@ -1238,9 +1238,9 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-origin-installer-e2e-azure-upgrade-4.7
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
@@ -1265,9 +1265,9 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-origin-installer-e2e-gcp-compact-4.7
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
@@ -1292,9 +1292,9 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-origin-installer-e2e-gcp-serial-4.7
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
@@ -1319,9 +1319,9 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-origin-installer-e2e-gcp-shared-vpc-4.7
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
@@ -1346,9 +1346,9 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-origin-installer-e2e-gcp-upgrade-4.6-stable-to-4.7-ci
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
@@ -1373,9 +1373,9 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-origin-installer-e2e-gcp-upgrade-4.7
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
@@ -1400,9 +1400,9 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-origin-installer-old-rhcos-e2e-aws-4.7
   name: redhat-openshift-ocp-release-4.7-informing
 test_groups:
