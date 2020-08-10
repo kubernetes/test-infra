@@ -1,9 +1,9 @@
 presubmits:
-  kubernetes-sigs/blobfuse-csi-driver:
-  - name: pull-blobfuse-csi-driver-verify
+  kubernetes-sigs/blob-csi-driver:
+  - name: pull-blob-csi-driver-verify
     decorate: true
     always_run: true
-    path_alias: sigs.k8s.io/blobfuse-csi-driver
+    path_alias: sigs.k8s.io/blob-csi-driver
     branches:
     - master
     labels:
@@ -20,13 +20,13 @@ presubmits:
           privileged: true
     annotations:
       testgrid-dashboards: provider-azure-blobfuse-csi-driver, provider-azure-presubmit
-      testgrid-tab-name: pr-blobfuse-csi-driver-verify
-      description: "Run code verification tests for Blobfuse CSI driver."
+      testgrid-tab-name: pr-blob-csi-driver-verify
+      description: "Run code verification tests for Azure Blob Storage CSI driver."
       testgrid-num-columns-recent: '30'
-  - name: pull-blobfuse-csi-driver-unit
+  - name: pull-blob-csi-driver-unit
     decorate: true
     always_run: true
-    path_alias: sigs.k8s.io/blobfuse-csi-driver
+    path_alias: sigs.k8s.io/blob-csi-driver
     branches:
     - master
     labels:
@@ -43,13 +43,13 @@ presubmits:
           privileged: true
     annotations:
       testgrid-dashboards: provider-azure-blobfuse-csi-driver, provider-azure-presubmit
-      testgrid-tab-name: pr-blobfuse-csi-driver-unit
-      description: "Run unit tests for Blobfuse CSI driver."
+      testgrid-tab-name: pr-blob-csi-driver-unit
+      description: "Run unit tests for Azure Blob Storage CSI driver."
       testgrid-num-columns-recent: '30'
-  - name: pull-blobfuse-csi-driver-sanity
+  - name: pull-blob-csi-driver-sanity
     decorate: true
     always_run: true
-    path_alias: sigs.k8s.io/blobfuse-csi-driver
+    path_alias: sigs.k8s.io/blob-csi-driver
     branches:
     - master
     labels:
@@ -67,13 +67,13 @@ presubmits:
           privileged: true
     annotations:
       testgrid-dashboards: provider-azure-blobfuse-csi-driver, provider-azure-presubmit
-      testgrid-tab-name: pr-blobfuse-csi-driver-sanity
-      description: "Run sanity tests for Blobfuse CSI driver."
+      testgrid-tab-name: pr-blob-csi-driver-sanity
+      description: "Run sanity tests for Azure Blob Storage CSI driver."
       testgrid-num-columns-recent: '30'
-  - name: pull-blobfuse-csi-driver-integration
+  - name: pull-blob-csi-driver-integration
     decorate: true
     always_run: true
-    path_alias: sigs.k8s.io/blobfuse-csi-driver
+    path_alias: sigs.k8s.io/blob-csi-driver
     branches:
     - master
     labels:
@@ -91,13 +91,13 @@ presubmits:
           privileged: true
     annotations:
       testgrid-dashboards: provider-azure-blobfuse-csi-driver, provider-azure-presubmit
-      testgrid-tab-name: pr-blobfuse-csi-driver-integration
-      description: "Run integration tests for Blobfuse CSI driver."
+      testgrid-tab-name: pr-blob-csi-driver-integration
+      description: "Run integration tests for Azure Blob Storage CSI driver."
       testgrid-num-columns-recent: '30'
-  - name: pull-blobfuse-csi-driver-e2e
+  - name: pull-blob-csi-driver-e2e
     decorate: true
     always_run: true
-    path_alias: sigs.k8s.io/blobfuse-csi-driver
+    path_alias: sigs.k8s.io/blob-csi-driver
     branches:
     - master
     labels:
@@ -130,7 +130,7 @@ presubmits:
         - --aksengine-orchestratorRelease=1.17
         - --aksengine-location=eastus2
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
-        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/blobfuse-csi-driver/master/test/manifest/linux.json
+        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/blob-csi-driver/master/test/manifest/linux.json
         - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.54.0/aks-engine-v0.54.0-linux-amd64.tar.gz
         - --test-blobfuse-csi-driver
         # Specific test args
@@ -140,13 +140,13 @@ presubmits:
           privileged: true
     annotations:
       testgrid-dashboards: provider-azure-blobfuse-csi-driver, provider-azure-presubmit
-      testgrid-tab-name: pr-blobfuse-csi-driver-e2e
-      description: "Run E2E tests for Blobfuse CSI driver."
+      testgrid-tab-name: pr-blob-csi-driver-e2e
+      description: "Run E2E tests for Azure Blob Storage CSI driver."
       testgrid-num-columns-recent: '30'
-  - name: pull-blobfuse-csi-driver-e2e-vmss
+  - name: pull-blob-csi-driver-e2e-vmss
     decorate: true
     always_run: true
-    path_alias: sigs.k8s.io/blobfuse-csi-driver
+    path_alias: sigs.k8s.io/blob-csi-driver
     branches:
     - master
     labels:
@@ -179,7 +179,7 @@ presubmits:
         - --aksengine-orchestratorRelease=1.17
         - --aksengine-location=eastus2
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
-        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/blobfuse-csi-driver/master/test/manifest/linux-vmss.json
+        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/blob-csi-driver/master/test/manifest/linux-vmss.json
         - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.54.0/aks-engine-v0.54.0-linux-amd64.tar.gz
         # Specific test args
         - --test-blobfuse-csi-driver
@@ -187,6 +187,6 @@ presubmits:
           privileged: true
     annotations:
       testgrid-dashboards: provider-azure-blobfuse-csi-driver, provider-azure-presubmit
-      testgrid-tab-name: pr-blobfuse-csi-driver-e2e-vmss
-      description: "Run E2E tests on a VMSS-based cluster for Blobfuse CSI driver."
+      testgrid-tab-name: pr-blob-csi-driver-e2e-vmss
+      description: "Run E2E tests on a VMSS-based cluster for Azure Blob Storage CSI driver."
       testgrid-num-columns-recent: '30'
