@@ -94,7 +94,7 @@ func summarize(flags summarizeFlags) {
 	data := render(builds, clustered)
 
 	// Load the owners from the file, if given
-	var owners map[string][]string = nil
+	var owners map[string][]string
 	if flags.owners != "" {
 		owners, err = loadOwners(flags.owners)
 		if err != nil {
@@ -125,6 +125,10 @@ func summarize(flags summarizeFlags) {
 			}
 		}
 
+		// If owners is nil, initialize it
+		if owners == nil {
+			owners = make(map[string][]string)
+		}
 		if _, ok := owners["testing"]; !ok {
 			owners["testing"] = make([]string, 0)
 		}
