@@ -38,7 +38,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: deck
-        image: gcr.io/k8s-prow/deck:v20200806-18cc6e5099
+        image: gcr.io/k8s-prow/deck:v20200808-0caff2cd1b
         imagePullPolicy: Always
         ports:
           - name: http
