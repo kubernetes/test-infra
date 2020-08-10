@@ -308,6 +308,35 @@ func TestDigestPR(t *testing.T) {
 			},
 		},
 		{
+			name: "non-bugzilla cherrypick PR sets e.missing to true",
+			pre: github.PullRequestEvent{
+				Action: github.PullRequestActionOpened,
+				PullRequest: github.PullRequest{
+					Base: github.PullRequestBranch{
+						Repo: github.Repo{
+							Owner: github.User{
+								Login: "org",
+							},
+							Name: "repo",
+						},
+						Ref: "release-4.4",
+					},
+					Number:  3,
+					Title:   "[release-4.4] fixing a typo",
+					HTMLURL: "http.com",
+					User: github.User{
+						Login: "user",
+					},
+					Body: `This is an automated cherry-pick of #2
+
+/assign user`,
+				},
+			},
+			expected: &event{
+				org: "org", repo: "repo", baseRef: "release-4.4", number: 3, opened: true, body: "[release-4.4] fixing a typo", htmlUrl: "http.com", login: "user", cherrypick: true, cherrypickFromPRNum: 2, cherrypickTo: "release-4.4", missing: true,
+			},
+		},
+		{
 			name: "cherrypicked PR gets cherrypick event",
 			pre: github.PullRequestEvent{
 				Action: github.PullRequestActionOpened,
@@ -333,7 +362,7 @@ func TestDigestPR(t *testing.T) {
 				},
 			},
 			expected: &event{
-				org: "org", repo: "repo", baseRef: "release-4.4", number: 3, opened: true, body: "[release-4.4] Bug 123: fixed it!", htmlUrl: "http.com", login: "user", cherrypick: true, cherrypickFromPRNum: 2, cherrypickTo: "release-4.4",
+				org: "org", repo: "repo", baseRef: "release-4.4", number: 3, opened: true, body: "[release-4.4] Bug 123: fixed it!", htmlUrl: "http.com", login: "user", cherrypick: true, cherrypickFromPRNum: 2, cherrypickTo: "release-4.4", bugId: 123,
 			},
 		},
 		{
