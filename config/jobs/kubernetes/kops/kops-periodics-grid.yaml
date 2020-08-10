@@ -7268,49 +7268,6 @@ periodics:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-grid, kops-distro-centos7, kops-k8s-latest
     testgrid-tab-name: kops-grid-cilium-centos7
 
-# {"cloud": "aws", "distro": "centos7", "k8s_version": null, "kops_version": "1.18", "networking": "cilium"}
-- name: e2e-kops-grid-cilium-centos7-ko18
-  cron: '43 7 * * 1'
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
-  decorate: true
-  decoration_config:
-    timeout: 90m
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --cluster=e2e-kops-cilium-centos7-ko18.test-cncf-aws.k8s.io
-      - --deployment=kops
-      - --kops-ssh-user=centos
-      - --env=KUBE_SSH_USER=centos
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
-      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --env=KOPS_RUN_TOO_NEW_VERSION=1
-      - --extract=release/latest
-      - --ginkgo-parallel
-      - --kops-args=--networking=cilium
-      - --kops-image=679593333241/CentOS Linux 7 x86_64 HVM EBS ENA 2002_01-b7ee8a69-ee97-4a49-9e68-afaee216db2e-ami-0042af67f8e4dcc20.4
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-version=https://storage.googleapis.com/kops-ci/markers/release-1.18/latest-ci-updown-green.txt
-      - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
-      - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200807-c10eea0-master
-      resources:
-        limits:
-          memory: 2Gi
-        requests:
-          cpu: "2"
-          memory: 2Gi
-  annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-grid, kops-distro-centos7, kops-k8s-latest
-    testgrid-tab-name: kops-grid-cilium-centos7-ko18
-
 # {"cloud": "aws", "distro": "centos7", "k8s_version": "1.16", "kops_version": null, "networking": "cilium"}
 - name: e2e-kops-grid-cilium-centos7-k16
   cron: '55 13 * * 5'
@@ -17201,4 +17158,4 @@ periodics:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-grid, kops-distro-u2004, kops-k8s-1.18
     testgrid-tab-name: kops-grid-kopeio-u2004-k18-ko18
 
-# 400 jobs, total of 640 runs per week
+# 399 jobs, total of 639 runs per week
