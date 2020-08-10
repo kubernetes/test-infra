@@ -159,60 +159,21 @@ images:
     tests:
       - 'resource tracking for 90 pods per node \[Benchmark\]'
 
-  # NOTE: recommended versions of the ubuntu-gke images for GKE 1.14, 1.15 and 1.16 clusters
-  # were taken from https://cloud.google.com/kubernetes-engine/docs/release-notes
-  ubuntustable1-resource1:
-    image: ubuntu-gke-1804-1-16-v20200330
+# ubuntu gke image pre-configured to run kubernetes
+  ubuntu-gke-1804-resource1:
+    image: ubuntu-gke-1804-1-17-v20200729
     project: ubuntu-os-gke-cloud
     machine: n1-standard-1
     tests:
       - 'resource tracking for 0 pods per node \[Benchmark\]'
-  ubuntustable1-resource2:
-    image: ubuntu-gke-1804-1-16-v20200330
+  ubuntu-gke-1804-resource2:
+    image: ubuntu-gke-1804-1-17-v20200729
     project: ubuntu-os-gke-cloud
     machine: n1-standard-1
     tests:
       - 'resource tracking for 35 pods per node \[Benchmark\]'
-  ubuntustable1-resource3:
-    image: ubuntu-gke-1804-1-16-v20200330
-    project: ubuntu-os-gke-cloud
-    machine: n1-standard-1
-    tests:
-      - 'resource tracking for 90 pods per node \[Benchmark\]'
-
-  ubuntustable2-resource1:
-    image: ubuntu-gke-1804-1-15-v20200330
-    project: ubuntu-os-gke-cloud
-    machine: n1-standard-1
-    tests:
-      - 'resource tracking for 0 pods per node \[Benchmark\]'
-  ubuntustable2-resource2:
-    image: ubuntu-gke-1804-1-15-v20200330
-    project: ubuntu-os-gke-cloud
-    machine: n1-standard-1
-    tests:
-      - 'resource tracking for 35 pods per node \[Benchmark\]'
-  ubuntustable2-resource3:
-    image: ubuntu-gke-1804-1-15-v20200330
-    project: ubuntu-os-gke-cloud
-    machine: n1-standard-1
-    tests:
-      - 'resource tracking for 90 pods per node \[Benchmark\]'
-
-  ubuntustable3-resource1:
-    image: ubuntu-gke-1804-1-14-v20200219
-    project: ubuntu-os-gke-cloud
-    machine: n1-standard-1
-    tests:
-      - 'resource tracking for 0 pods per node \[Benchmark\]'
-  ubuntustable3-resource2:
-    image: ubuntu-gke-1804-1-14-v20200219
-    project: ubuntu-os-gke-cloud
-    machine: n1-standard-1
-    tests:
-      - 'resource tracking for 35 pods per node \[Benchmark\]'
-  ubuntustable3-resource3:
-    image: ubuntu-gke-1804-1-14-v20200219
+  ubuntu-gke-1804-resource3:
+    image: ubuntu-gke-1804-1-17-v20200729
     project: ubuntu-os-gke-cloud
     machine: n1-standard-1
     tests:
