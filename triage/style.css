@@ -66,21 +66,29 @@ button.toggle.active {
 }
 
 /* colors from http://colorbrewer2.org/#type=qualitative&scheme=Set3&n=12 */
-.sig-api-machinery      { --color: #bc80bd; }
-.sig-apps               { --color: #ffffb3; }
-.sig-autoscaling        { --color: #bebada; }
-.sig-big-data           { --color: #fb8072; }
-.sig-cli                { --color: #80b1d3; }
-.sig-cluster-lifecycle  { --color: #fdb462; }
-.sig-multicluster       { --color: #b3de69; }
-.sig-instrumentation    { --color: #fccde5; }
-.sig-network            { --color: #d9d9d9; }
-.sig-node               { --color: #8dd3c7; }
-.sig-scalability        { --color: #ccebc5; }
-.sig-scheduling         { --color: #ffed6f; }
-.sig-storage            { --color: #aaf; }
-.sig-ui                 { --color: #afa; }
-.sig-testing            { --color: #faa; }
+.sig-api-machinery          { --color: #fef764; }
+.sig-apps                   { --color: #4562c2; }
+.sig-architecture           { --color: #1057a8; }
+.sig-auth                   { --color: #98c0fc; }
+.sig-autoscaling            { --color: #806284; }
+.sig-cli                    { --color: #9000ad; }
+.sig-cloud-provider         { --color: #d70597; }
+.sig-cluster-lifecycle      { --color: #a16a81; }
+.sig-contributor-experience { --color: #63632a; }
+.sig-docs                   { --color: #975a0d; }
+.sig-instrumentation        { --color: #ca0f15; }
+.sig-multicluster           { --color: #d31847; }
+.sig-network                { --color: #c7740e; }
+.sig-node                   { --color: #e8af9b; }
+.sig-release                { --color: #f62962; }
+.sig-scalability            { --color: #05e81e; }
+.sig-scheduling             { --color: #d5fcf2; }
+.sig-service-catalog        { --color: #6edd82; }
+.sig-storage                { --color: #71a87d; }
+.sig-testing                { --color: #8bb023; }
+.sig-ui                     { --color: #3546e3; }
+.sig-usability              { --color: #4b8583; }
+.sig-windows                { --color: #a45dbc; }
 
 div.graph {
   width: 1200px;
