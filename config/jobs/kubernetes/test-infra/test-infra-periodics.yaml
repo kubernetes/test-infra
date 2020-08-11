@@ -27,7 +27,7 @@ periodics:
 - name: ci-test-infra-triage
   decorate: true
   decoration_config:
-    timeout: 3h
+    timeout: 1h30m
   interval: 30m
   spec:
     containers:
@@ -56,39 +56,6 @@ periodics:
     testgrid-tab-name: triage
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
     description: Runs BigQuery queries, summarizes results into clusters, and uploads to GCS for go.k8s.io/triage
-
-- name: ci-test-infra-triage-go
-  decorate: true
-  decoration_config:
-    timeout: 3h
-  interval: 30m
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/triage:go-latest
-      imagePullPolicy: Always
-      env:
-      - name: GOOGLE_APPLICATION_CREDENTIALS
-        value: /etc/service-account/service-account.json
-      command:
-      - "timeout"
-      args:
-      - "10800"
-      - "/update_summaries-go.sh"
-      volumeMounts:
-      - name: service
-        mountPath: /etc/service-account
-        readOnly: true
-    volumes:
-    - name: service
-      secret:
-        secretName: triage-service-account
-  annotations:
-    testgrid-num-failures-to-alert: '18'
-    testgrid-alert-stale-results-hours: '12'
-    testgrid-dashboards: sig-testing-misc
-    testgrid-tab-name: triage-go
-    testgrid-alert-email: kolber@google.com
-    description: Runs BigQuery queries, summarizes results into clusters, and uploads to GCS
 
 - name: metrics-bigquery
   interval: 24h
