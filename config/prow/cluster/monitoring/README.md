@@ -68,8 +68,8 @@ Developing a new dashboard can be achieved by
 
     ```
     ### if you want to take a look at some json file, eg, hook.json
-    $ bazel build //prow/cluster/monitoring/mixins/grafana_dashboards:hook
-    $ cat bazel-bin/prow/cluster/monitoring/mixins/grafana_dashboards/hook.json
+    $ bazel build //config/prow/cluster/monitoring/mixins/grafana_dashboards:hook
+    $ cat bazel-bin/config/prow/cluster/monitoring/mixins/grafana_dashboards/hook.json
     ```
 
 * Add `bazel` target to [dashboards_out/BUILD.bazel](grafana_dashboards/BUILD.bazel) for generating the configMap with the json file above.
@@ -88,7 +88,7 @@ and [`gojsontoyaml`](https://github.com/brancz/gojsontoyaml) should be included 
 ## Access components' Web page
 
 * For `grafana`, visit [monitoring.prow.k8s.io](https://monitoring.prow.k8s.io). Anonymous users are with read-only mode.
-Use `adm` and [password](https://github.com/kubernetes/test-infra/blob/master/prow/cluster/monitoring/grafana_deployment.yaml#L39-L45) to become admin.
+Use `adm` and [password](https://github.com/kubernetes/test-infra/blob/master/config/prow/cluster/monitoring/grafana_deployment.yaml#L39-L45) to become admin.
 
 * For `prometheus` and `alertmanager`, there is no public domain configured based on the security
 concerns (no authorization out of the box).
