@@ -63,6 +63,58 @@ presubmits:
           limits:
             cpu: 4
             memory: 14Gi
+  - name: pull-kubernetes-e2e-gce-kubetest2
+    always_run: false
+    decorate: true
+    decoration_config:
+      timeout: 80m # hard cap, based on original pre-kubetest2 job but moved to a prow-level timeout
+    labels:
+      preset-service-account: "true"
+    annotations:
+      testgrid-dashboards: presubmits-kubernetes-nonblocking
+      testgrid-tab-name: pull-kubernetes-e2e-gce-kubetest2
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/krte:v20200806-28035c4-1.16
+        resources:
+          requests:
+            cpu: 4
+            memory: 14Gi
+          limits:
+            cpu: 4
+            memory: 14Gi
+        command:
+        - wrapper.sh
+        args:
+        - "/bin/bash"
+        - "-c"
+        # TODO: Use the e2e.test package built during the "build" step instead of downloading
+        # TODO: Investigate the need of --create-custom-network and debug issues
+        # Please note that the semicolon after the \ is necessary due to how
+        # parsing works out when embedding a bash script in a string like this
+        - set -o errexit;
+          set -o nounset;
+          set -o pipefail;
+          set -o xtrace;
+          REPO_ROOT=$PWD;
+          cd;
+          export GO111MODULE=on;
+          go get sigs.k8s.io/kubetest2@latest;
+          go get sigs.k8s.io/kubetest2/kubetest2-gce@latest;
+          go get sigs.k8s.io/kubetest2/kubetest2-tester-ginkgo@latest;
+          kubetest2 gce -v 2 \;
+          --repo-root $REPO_ROOT \;
+          --legacy-mode \;
+          --build \;
+          --up \;
+          --down \;
+          --enable-cache-mutation-detector \;
+          --runtime-config=batch/v2alpha1=true \;
+          --enable-pod-security-policy \;
+          --test=ginkgo \;
+          -- \;
+          --skip-regex='\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]' \;
+          --parallel=30
 
   - name: pull-kubernetes-e2e-gce-canary
     always_run: false
