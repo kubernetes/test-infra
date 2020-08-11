@@ -1,25 +1,6 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 load("@npm_bazel_jasmine//:index.bzl", "jasmine_node_test")
 
-py_test(
-    name = "summarize_test",
-    srcs = [
-        "berghelroach.py",
-        "summarize.py",
-        "summarize_test.py",
-    ],
-    python_version = "PY3",
-)
-
-py_test(
-    name = "berghelroach_test",
-    srcs = [
-        "berghelroach.py",
-        "berghelroach_test.py",
-    ],
-    python_version = "PY3",
-)
-
 jasmine_node_test(
     name = "script_test",
     srcs = ["script_test.js"],
