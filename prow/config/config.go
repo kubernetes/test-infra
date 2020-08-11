@@ -1289,7 +1289,7 @@ func validateJobBase(v JobBase, jobType prowapi.ProwJobType, podNamespace string
 	if err := validateAgent(v, podNamespace); err != nil {
 		return err
 	}
-	if err := validatePodSpec(jobType, v.Spec, v.Annotations["ProwMultipleContainerSupport"] == "Yes, I know what I'm doing.", v.DecorationConfig != nil); err != nil {
+	if err := validatePodSpec(jobType, v.Spec, v.DecorationConfig != nil); err != nil {
 		return err
 	}
 	if err := ValidatePipelineRunSpec(jobType, v.ExtraRefs, v.PipelineRunSpec); err != nil {
@@ -1882,7 +1882,7 @@ func ValidatePipelineRunSpec(jobType prowapi.ProwJobType, extraRefs []prowapi.Re
 	return nil
 }
 
-func validatePodSpec(jobType prowapi.ProwJobType, spec *v1.PodSpec, multipleContainerSupport bool, decorationEnabled bool) error {
+func validatePodSpec(jobType prowapi.ProwJobType, spec *v1.PodSpec, decorationEnabled bool) error {
 	if spec == nil {
 		return nil
 	}
@@ -1896,10 +1896,6 @@ func validatePodSpec(jobType prowapi.ProwJobType, spec *v1.PodSpec, multipleCont
 	if n := len(spec.Containers); n < 1 {
 		// We must return here to not cause an out of bounds panic in the remaining validation
 		return utilerrors.NewAggregate(append(errs, fmt.Errorf("pod spec must specify at least 1 container, found: %d", n)))
-	}
-
-	if n := len(spec.Containers); n > 1 && !multipleContainerSupport {
-		return utilerrors.NewAggregate(append(errs, fmt.Errorf("pod spec must specify exactly 1 container, found: %d", n)))
 	}
 
 	if n := len(spec.Containers); n > 1 && !decorationEnabled {
