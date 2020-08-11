@@ -132,7 +132,7 @@ presubmits:
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/blob-csi-driver/master/test/manifest/linux.json
         - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.54.0/aks-engine-v0.54.0-linux-amd64.tar.gz
-        - --test-blobfuse-csi-driver
+        - --test-blob-csi-driver
         # Specific test args
         - --ginkgo-parallel=1
         - --timeout=420m
@@ -182,7 +182,7 @@ presubmits:
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/blob-csi-driver/master/test/manifest/linux-vmss.json
         - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.54.0/aks-engine-v0.54.0-linux-amd64.tar.gz
         # Specific test args
-        - --test-blobfuse-csi-driver
+        - --test-blob-csi-driver
         securityContext:
           privileged: true
     annotations:
