@@ -145,14 +145,16 @@ prints a warning if the results could not be memoized.
 message is a message that gets printed on success, appended to "Done ". If it is the empty
 string, no message is printed.
 */
-func memoizeResults(filepath string, message string, v interface{}) {
+func memoizeResults(filepath, message string, v interface{}) {
 	err := writeJSON(filepath, v)
-	if err == nil && message != "" {
-		klog.V(2).Infof("Done %s", message)
+	if err != nil {
+		klog.Warningf("Could not memoize results to '%s': %s", filepath, err)
 		return
 	}
 
-	klog.Warningf("Could not memoize results to '%s': %s", filepath, err)
+	if message != "" {
+		klog.V(2).Infof("Done " + message)
+	}
 }
 
 /* Functions below this comment are only used within this file as of this commit. */
