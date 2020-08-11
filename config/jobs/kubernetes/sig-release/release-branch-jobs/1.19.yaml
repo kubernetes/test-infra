@@ -1182,7 +1182,7 @@ presubmits:
           requests:
             cpu: 4
             memory: "14Gi"
-  - always_run: true
+  - always_run: false
     branches:
     - release-1.19
     labels:
@@ -1194,6 +1194,7 @@ presubmits:
       preset-service-account: "true"
     max_concurrency: 12
     name: pull-kubernetes-kubemark-e2e-gce-big
+    optional: true
     spec:
       containers:
       - args:

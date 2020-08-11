@@ -211,7 +211,8 @@ presubmits:
             memory: "6Gi"
 
   - name: pull-kubernetes-kubemark-e2e-gce-big
-    always_run: true
+    always_run: false
+    optional: true
     skip_report: false
     max_concurrency: 12
     skip_branches:
