@@ -387,11 +387,14 @@ func (r *Repo) Am(path string) error {
 		r.logger.WithError(abortErr).Warningf("Aborting patch apply failed with output: %s", string(b))
 	}
 	applyMsg := "The copy of the patch that failed is found in: .git/rebase-apply/patch"
+	msg := ""
 	if strings.Contains(output, applyMsg) {
 		i := strings.Index(output, applyMsg)
-		err = fmt.Errorf("%s", output[:i])
+		msg = string(output[:i])
+	} else {
+		msg = string(output)
 	}
-	return err
+	return errors.New(msg)
 }
 
 // Push pushes over https to the provided owner/repo#branch using a password
