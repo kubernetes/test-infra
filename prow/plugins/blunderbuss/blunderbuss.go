@@ -22,11 +22,11 @@ import (
 	"math"
 	"math/rand"
 	"regexp"
-	"sort"
 
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/test-infra/prow/pkg/layeredsets"
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
@@ -82,7 +82,7 @@ func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhel
 
 type reviewersClient interface {
 	FindReviewersOwnersForFile(path string) string
-	Reviewers(path string) sets.String
+	Reviewers(path string) layeredsets.String
 	RequiredReviewers(path string) sets.String
 	LeafReviewers(path string) sets.String
 }
@@ -90,7 +90,7 @@ type reviewersClient interface {
 type ownersClient interface {
 	reviewersClient
 	FindApproverOwnersForFile(path string) string
-	Approvers(path string) sets.String
+	Approvers(path string) layeredsets.String
 	LeafApprovers(path string) sets.String
 }
 
@@ -102,7 +102,7 @@ func (foc fallbackReviewersClient) FindReviewersOwnersForFile(path string) strin
 	return foc.ownersClient.FindApproverOwnersForFile(path)
 }
 
-func (foc fallbackReviewersClient) Reviewers(path string) sets.String {
+func (foc fallbackReviewersClient) Reviewers(path string) layeredsets.String {
 	return foc.ownersClient.Approvers(path)
 }
 
@@ -256,11 +256,9 @@ func handle(ghc githubClient, roc repoownersClient, log *logrus.Entry, reviewerC
 
 func getReviewers(rc reviewersClient, ghc githubClient, log *logrus.Entry, author string, files []github.PullRequestChange, minReviewers int, useStatusAvailability bool) ([]string, []string, error) {
 	authorSet := sets.NewString(github.NormLogin(author))
-	stage1 := sets.NewString()
-	stage2 := sets.NewString()
-	stage3 := sets.NewString()
+	reviewers := layeredsets.NewString()
 	requiredReviewers := sets.NewString()
-	leafReviewers := sets.NewString()
+	leafReviewers := layeredsets.NewString()
 	busyReviewers := sets.NewString()
 	ownersSeen := sets.NewString()
 	// first build 'reviewers' by taking a unique reviewer from each OWNERS file.
@@ -274,57 +272,42 @@ func getReviewers(rc reviewersClient, ghc githubClient, log *logrus.Entry, autho
 		// record required reviewers if any
 		requiredReviewers.Insert(rc.RequiredReviewers(file.Filename).UnsortedList()...)
 
-		fileUnusedLeafs := rc.LeafReviewers(file.Filename).Difference(stage1).Difference(authorSet)
+		fileUnusedLeafs := layeredsets.NewString(rc.LeafReviewers(file.Filename).List()...).Difference(reviewers.Set()).Difference(authorSet)
 		if fileUnusedLeafs.Len() == 0 {
 			continue
 		}
 		leafReviewers = leafReviewers.Union(fileUnusedLeafs)
 		if r := findReviewer(ghc, log, useStatusAvailability, &busyReviewers, &fileUnusedLeafs); r != "" {
-			stage1.Insert(r)
+			reviewers.Insert(0, r)
 		}
 	}
 	// now ensure that we request review from at least minReviewers reviewers. Favor leaf reviewers.
-	unusedLeafs := leafReviewers.Difference(stage1)
-	for stage1.Len()+stage2.Len() < minReviewers && unusedLeafs.Len() > 0 {
+	unusedLeafs := leafReviewers.Difference(reviewers.Set())
+	for reviewers.Len() < minReviewers && unusedLeafs.Len() > 0 {
 		if r := findReviewer(ghc, log, useStatusAvailability, &busyReviewers, &unusedLeafs); r != "" {
-			if stage1.Has(r) {
-				continue
-			}
-			stage2.Insert(r)
+			reviewers.Insert(1, r)
 		}
 	}
 	for _, file := range files {
-		if stage1.Len()+stage2.Len()+stage3.Len() >= minReviewers {
+		if reviewers.Len() >= minReviewers {
 			break
 		}
 		fileReviewers := rc.Reviewers(file.Filename).Difference(authorSet)
-		for stage1.Len()+stage2.Len()+stage3.Len() < minReviewers && fileReviewers.Len() > 0 {
+		for reviewers.Len() < minReviewers && fileReviewers.Len() > 0 {
 			if r := findReviewer(ghc, log, useStatusAvailability, &busyReviewers, &fileReviewers); r != "" {
-				if stage1.Has(r) || stage2.Has(r) {
-					continue
-				}
-				stage3.Insert(r)
+				reviewers.Insert(2, r)
 			}
 		}
 	}
-	return append(stage1.UnsortedList(), append(stage2.UnsortedList(), stage3.UnsortedList()...)...), requiredReviewers.List(), nil
-}
-
-// popRandom randomly selects an element of 'set' and pops it.
-func popRandom(set *sets.String) string {
-	list := set.List()
-	sort.Strings(list)
-	sel := list[rand.Intn(len(list))]
-	set.Delete(sel)
-	return sel
+	return reviewers.List(), requiredReviewers.List(), nil
 }
 
 // findReviewer finds a reviewer from a set, potentially using status
 // availability.
-func findReviewer(ghc githubClient, log *logrus.Entry, useStatusAvailability bool, busyReviewers, targetSet *sets.String) string {
+func findReviewer(ghc githubClient, log *logrus.Entry, useStatusAvailability bool, busyReviewers *sets.String, targetSet *layeredsets.String) string {
 	// if we don't care about status availability, just pop a target from the set
 	if !useStatusAvailability {
-		return popRandom(targetSet)
+		return targetSet.PopRandom()
 	}
 
 	// if we do care, start looping through the candidates
@@ -333,7 +316,7 @@ func findReviewer(ghc githubClient, log *logrus.Entry, useStatusAvailability boo
 			// if there are no candidates left, then break
 			break
 		}
-		candidate := popRandom(targetSet)
+		candidate := targetSet.PopRandom()
 		if busyReviewers.Has(candidate) {
 			// we've already verified this reviewer is busy
 			continue
@@ -389,7 +372,7 @@ func getPotentialReviewers(owners ownersClient, author string, files []github.Pu
 		if leafOnly {
 			fileOwners = owners.LeafReviewers(file.Filename)
 		} else {
-			fileOwners = owners.Reviewers(file.Filename)
+			fileOwners = owners.Reviewers(file.Filename).Set()
 		}
 
 		for _, owner := range fileOwners.List() {

@@ -31,6 +31,7 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/pkg/layeredsets"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/repoowners"
 )
@@ -60,8 +61,8 @@ func (foc *fakeOwnersClient) TopLevelApprovers() sets.String {
 	return foc.topLevelApprovers
 }
 
-func (foc *fakeOwnersClient) Approvers(path string) sets.String {
-	return sets.String{}
+func (foc *fakeOwnersClient) Approvers(path string) layeredsets.String {
+	return layeredsets.String{}
 }
 
 func (foc *fakeOwnersClient) LeafApprovers(path string) sets.String {
@@ -72,8 +73,8 @@ func (foc *fakeOwnersClient) FindApproverOwnersForFile(path string) string {
 	return ""
 }
 
-func (foc *fakeOwnersClient) Reviewers(path string) sets.String {
-	return sets.String{}
+func (foc *fakeOwnersClient) Reviewers(path string) layeredsets.String {
+	return layeredsets.String{}
 }
 
 func (foc *fakeOwnersClient) RequiredReviewers(path string) sets.String {

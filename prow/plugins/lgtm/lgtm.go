@@ -23,11 +23,11 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
-	"k8s.io/apimachinery/pkg/util/sets"
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
+	"k8s.io/test-infra/prow/pkg/layeredsets"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/repoowners"
@@ -491,8 +491,8 @@ func getChangedFiles(gc githubClient, org, repo string, number int) ([]string, e
 
 // loadReviewers returns all reviewers and approvers from all OWNERS files that
 // cover the provided filenames.
-func loadReviewers(ro repoowners.RepoOwner, filenames []string) sets.String {
-	reviewers := sets.String{}
+func loadReviewers(ro repoowners.RepoOwner, filenames []string) layeredsets.String {
+	reviewers := layeredsets.String{}
 	for _, filename := range filenames {
 		reviewers = reviewers.Union(ro.Approvers(filename)).Union(ro.Reviewers(filename))
 	}

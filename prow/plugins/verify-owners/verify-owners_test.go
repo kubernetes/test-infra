@@ -34,6 +34,7 @@ import (
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/labels"
+	"k8s.io/test-infra/prow/pkg/layeredsets"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/repoowners"
 )
@@ -203,15 +204,15 @@ func (froc fakeRepoownersClient) LoadRepoOwners(org, repo, base string) (repoown
 
 type fakeOwnersClient struct {
 	owners            map[string]string
-	approvers         map[string]sets.String
+	approvers         map[string]layeredsets.String
 	leafApprovers     map[string]sets.String
-	reviewers         map[string]sets.String
+	reviewers         map[string]layeredsets.String
 	requiredReviewers map[string]sets.String
 	leafReviewers     map[string]sets.String
 	dirBlacklist      []*regexp.Regexp
 }
 
-func (foc *fakeOwnersClient) Approvers(path string) sets.String {
+func (foc *fakeOwnersClient) Approvers(path string) layeredsets.String {
 	return foc.approvers[path]
 }
 
@@ -223,7 +224,7 @@ func (foc *fakeOwnersClient) FindApproverOwnersForFile(path string) string {
 	return foc.owners[path]
 }
 
-func (foc *fakeOwnersClient) Reviewers(path string) sets.String {
+func (foc *fakeOwnersClient) Reviewers(path string) layeredsets.String {
 	return foc.reviewers[path]
 }
 

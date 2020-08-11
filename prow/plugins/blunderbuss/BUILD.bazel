@@ -8,6 +8,7 @@ go_library(
     deps = [
         "//prow/config:go_default_library",
         "//prow/github:go_default_library",
+        "//prow/pkg/layeredsets:go_default_library",
         "//prow/pluginhelp:go_default_library",
         "//prow/plugins:go_default_library",
         "//prow/plugins/assign:go_default_library",
@@ -39,6 +40,7 @@ go_test(
     deps = [
         "//prow/config:go_default_library",
         "//prow/github:go_default_library",
+        "//prow/pkg/layeredsets:go_default_library",
         "//prow/plugins:go_default_library",
         "//prow/repoowners:go_default_library",
         "@com_github_shurcool_githubv4//:go_default_library",

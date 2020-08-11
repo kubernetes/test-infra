@@ -30,6 +30,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/test-infra/prow/pkg/layeredsets"
 )
 
 const (
@@ -40,7 +41,7 @@ const (
 
 // Repo allows querying and interacting with OWNERS information in a repo.
 type Repo interface {
-	Approvers(path string) sets.String
+	Approvers(path string) layeredsets.String
 	LeafApprovers(path string) sets.String
 	FindApproverOwnersForFile(file string) string
 	IsNoParentOwners(path string) bool
@@ -65,7 +66,7 @@ func (o Owners) GetApprovers() map[string]sets.String {
 	ownersToApprovers := map[string]sets.String{}
 
 	for fn := range o.GetOwnersSet() {
-		ownersToApprovers[fn] = o.repo.Approvers(fn)
+		ownersToApprovers[fn] = o.repo.Approvers(fn).Set()
 	}
 
 	return ownersToApprovers
