@@ -40,7 +40,7 @@ ENV IMAGE=${IMAGE_ARG} \
     CONTAINER=docker
 
 # copy in image utility scripts
-COPY ["wrapper.sh", "create_bazel_cache_rcs.sh", "install-bazel.sh", \
+COPY ["wrapper.sh", "create_bazel_cache_rcs.sh", "install-bazel.sh", "setup.sh", \
         "/usr/local/bin/"]
 
 # Install tools needed to:
