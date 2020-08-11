@@ -95,7 +95,6 @@ presubmits:
           set -o xtrace;
           REPO_ROOT=$PWD;
           cd;
-          go get -u github.com/onsi/ginkgo/ginkgo;
           export GO111MODULE=on;
           go get sigs.k8s.io/kubetest2@latest;
           go get sigs.k8s.io/kubetest2/kubetest2-gce@latest;
