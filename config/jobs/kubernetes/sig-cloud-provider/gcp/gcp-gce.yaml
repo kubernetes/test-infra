@@ -70,6 +70,9 @@ presubmits:
       timeout: 80m # hard cap, based on original pre-kubetest2 job but moved to a prow-level timeout
     labels:
       preset-service-account: "true"
+    annotations:
+      testgrid-dashboards: presubmits-kubernetes-nonblocking
+      testgrid-tab-name: pull-kubernetes-e2e-gce-kubetest2
     spec:
       containers:
       - image: gcr.io/k8s-testimages/krte:v20200806-28035c4-1.16
