@@ -100,7 +100,8 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-cred: "true"
+      preset-azure-cred-only: "true"
+      preset-azure-anonymous-pull: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200811-4afd9ba-1.18
@@ -110,6 +111,8 @@ presubmits:
         env:
           - name: GINKGO_FOCUS
             value: "Cluster API E2E tests"
+          - name: LOCAL_ONLY
+            value: "false"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
