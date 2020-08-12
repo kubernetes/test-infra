@@ -434,7 +434,7 @@ func (s *Server) handle(logger *logrus.Entry, requestor string, comment *github.
 
 	// Apply the patch.
 	if err := r.Am(localPath); err != nil {
-		resp := fmt.Sprintf("#%d failed to apply on top of branch %q:\n```%v\n```", num, targetBranch, err)
+		resp := fmt.Sprintf("#%d failed to apply on top of branch %q:\n```\n%v\n```", num, targetBranch, err)
 		logger.Info(resp)
 		err := s.createComment(org, repo, num, comment, resp)
 
