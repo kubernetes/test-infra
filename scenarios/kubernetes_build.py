@@ -124,6 +124,8 @@ def main(args):
         push_build_args.append('--docker-registry=%s' % args.registry)
     if args.extra_publish_file:
         push_build_args.append('--extra-publish-file=%s' % args.extra_publish_file)
+    if args.extra_version_markers:
+        push_build_args.append('--extra-version-markers=%s' % args.extra_version_markers)
     if args.fast:
         push_build_args.append('--fast')
     if args.allow_dup:
@@ -163,6 +165,8 @@ if __name__ == '__main__':
         '--registry', help='Push images to the specified docker registry')
     PARSER.add_argument(
         '--extra-publish-file', help='Additional version file uploads to')
+    PARSER.add_argument(
+        '--extra-version-markers', help='Additional version file uploads to')
     PARSER.add_argument(
         '--fast', action='store_true', help='Specifies a fast build')
     PARSER.add_argument(

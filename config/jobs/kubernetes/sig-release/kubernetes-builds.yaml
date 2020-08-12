@@ -45,7 +45,7 @@ periodics:
       - --scenario=kubernetes_build
       - --
       - --allow-dup
-      - --extra-publish-file=k8s-master
+      - --extra-version-markers=k8s-master
       - --registry=gcr.io/kubernetes-ci-images
       # docker-in-docker needs privileged mode
       securityContext:
