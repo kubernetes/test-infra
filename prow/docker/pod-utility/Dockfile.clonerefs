@@ -1,0 +1,29 @@
+# © Copyright IBM Corporation 2020
+# LICENSE: Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
+
+############################# Dockerfile for pod utilities #####################################
+#
+# This Dockerfile builds binaries for CSI clonerefs pod utility.
+#
+# To build this image, from the directory containing this Dockerfile
+# (assuming that the file is named Dockerfile):
+# docker build -t <image_name> .
+#
+#####################################################################################################
+
+# Base Image
+FROM pod-utilities as builder
+
+# The author
+MAINTAINER  LoZ Open Source Ecosystem (https://www.ibm.com/developerworks/community/groups/community/lozopensource)
+
+# Base Image
+FROM s390x/alpine:3.6.5
+
+# Copying from builder
+COPY --from=builder /usr/local/bin/clonerefs /clonerefs
+
+RUN apk add --no-cache git openssh ca-certificates && \
+  update-ca-certificates
+
+ENTRYPOINT ["/clonerefs"]

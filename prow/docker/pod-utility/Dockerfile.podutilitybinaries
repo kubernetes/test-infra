@@ -1,0 +1,65 @@
+# © Copyright IBM Corporation 2020
+# LICENSE: Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
+
+############################# Dockerfile for pod utilities #####################################
+#
+# This Dockerfile builds binaries for CSI pod utilities.
+#
+# To build this image, from the directory containing this Dockerfile
+# (assuming that the file is named Dockerfile):
+# docker build -t <image_name> .
+#
+#####################################################################################################
+
+# Base Image
+FROM s390x/ubuntu:18.04 as builder
+
+# The author
+MAINTAINER  LoZ Open Source Ecosystem (https://www.ibm.com/developerworks/community/groups/community/lozopensource)
+
+ARG PATCH_DIR=/tmp
+
+WORKDIR $PATCH_DIR
+
+COPY patch_bazel.diff $PATCH_DIR
+COPY patch_nodejs.diff $PATCH_DIR
+
+# Install dependencies
+RUN apt-get update && apt-get install -y \
+        git \
+        openjdk-11-jdk \
+        patch \
+        tar \
+        wget \
+        python \
+	g++ \
+	python3-dev \
+	unzip \
+	zip \
+	
+# Install bazel
+ && mkdir bazel && cd bazel \
+ && wget https://github.com/bazelbuild/bazel/releases/download/2.0.0/bazel-2.0.0-dist.zip \
+ && unzip bazel-2.0.0-dist.zip  \
+ && chmod -R +w . \
+ && patch -p1 < $PATCH_DIR/patch_bazel.diff \
+ && env EXTRA_BAZEL_ARGS="--host_javabase=@local_jdk//:jdk" bash ./compile.sh \
+ && cp $PATCH_DIR/bazel/output/bazel /usr/local/bin/bazel \
+ 
+# Build CSI pod-utilities
+ && cd /tmp \
+ && git clone https://github.com/kubernetes/test-infra.git \
+ && cd test-infra  \
+ && patch -p1 < $PATCH_DIR/patch_nodejs.diff \
+ && bazel build //prow/cmd/clonerefs \
+ && cp bazel-bin/prow/cmd/clonerefs/linux_s390x_pure_stripped/clonerefs /usr/local/bin/clonerefs \
+ && bazel build //prow/cmd/entrypoint \
+ && cp bazel-bin/prow/cmd/entrypoint/linux_s390x_pure_stripped/entrypoint /usr/local/bin/entrypoint \
+ && bazel build //prow/cmd/initupload \
+ && cp bazel-bin/prow/cmd/initupload/linux_s390x_pure_stripped/initupload /usr/local/bin/initupload \
+ && bazel build //prow/cmd/sidecar \
+ && cp bazel-bin/prow/cmd/sidecar/linux_s390x_pure_stripped/sidecar /usr/local/bin/sidecar \ 
+# Clean up source dir and unused packages/libraries
+ && apt-get autoremove -y \
+ && apt autoremove -y \
+ && apt-get clean && rm -rf /var/lib/apt/lists/* && rm -rf /tmp/bazel/bazel-2.0.0-dist.zip 

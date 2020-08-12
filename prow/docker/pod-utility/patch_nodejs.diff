@@ -1,0 +1,39 @@
+diff --git a/WORKSPACE b/WORKSPACE
+index ab21ede3a..88beca3a2 100644
+--- a/WORKSPACE
++++ b/WORKSPACE
+@@ -51,7 +51,13 @@ load("@io_bazel_rules_k8s//k8s:k8s.bzl", "k8s_repositories")
+
+ k8s_repositories()
+
+-load("@build_bazel_rules_nodejs//:defs.bzl", "yarn_install")
++load("@build_bazel_rules_nodejs//:defs.bzl", "node_repositories","yarn_install")
++
++
++node_repositories(
++    node_version = "10.16.0",
++    vendored_node = "@s390x_node_10.16.0//:node-v10.16.0-linux-s390x",
++)
+
+ yarn_install(
+     name = "npm",
+diff --git a/load.bzl b/load.bzl
+index 2e6a75572..c7acbce40 100644
+--- a/load.bzl
++++ b/load.bzl
+@@ -38,6 +38,14 @@ def repositories():
+         urls = ["https://github.com/bazelbuild/rules_k8s/releases/download/v0.3.1/rules_k8s-v0.3.1.tar.gz"],
+     )
+
++    http_archive(
++        name = "s390x_node_10.16.0",
++       build_file_content = """exports_files(["node-v10.16.0-linux-s390x/bin/node"])""",
++       sha256 = "e8202e285a88be9b53bbf50cfae2f08fff2b1ae3597893e4049c9dff3e4b9b14",
++       urls = ["https://nodejs.org/dist/v10.16.0/node-v10.16.0-linux-s390x.tar.xz"],
++    )
++
++
+     # https://github.com/bazelbuild/rules_nodejs
+     http_archive(
+         name = "build_bazel_rules_nodejs",
+
