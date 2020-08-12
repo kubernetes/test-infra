@@ -34,6 +34,7 @@ func TestValidateOptions(t *testing.T) {
 	falseBool := false
 	trueBool := true
 	emptyArr := make([]string, 0)
+	upstreamVersion := "upstream"
 	cases := []struct {
 		name               string
 		bumpProwImages     *bool
@@ -92,8 +93,14 @@ func TestValidateOptions(t *testing.T) {
 			err:             false,
 		},
 		{
-			name:          "invalid TargetVersion is not allowed",
-			targetVersion: &whateverStr,
+			name:           "unformatted TargetVersion is also allowed",
+			targetVersion:  &whateverStr,
+			bumpTestImages: &falseBool,
+			err:            false,
+		},
+		{
+			name:          "only latest version can be used if both Prow and test images are bumped",
+			targetVersion: &upstreamVersion,
 			err:           true,
 		},
 		{
@@ -148,6 +155,7 @@ func TestValidateOptions(t *testing.T) {
 			}
 
 			err := validateOptions(defaultOption)
+			t.Logf("err is: %v", err)
 			if err == nil && tc.err {
 				t.Errorf("Expected to get an error for %#v but got nil", defaultOption)
 			}
@@ -294,7 +302,7 @@ func TestGetAssignment(t *testing.T) {
 		oncallURL            string
 		oncallServerResponse string
 		expectResKeyword     string
-	} {
+	}{
 		{
 			description:          "empty oncall URL will return an empty string",
 			oncallURL:            "",
@@ -340,7 +348,120 @@ func TestGetAssignment(t *testing.T) {
 
 			res := getAssignment(tc.oncallURL)
 			if !strings.Contains(res, tc.expectResKeyword) {
-				t.Errorf("expect the result %q contains keyword %q but it does not", res, tc.expectResKeyword)
+				t.Errorf("Expect the result %q contains keyword %q but it does not", res, tc.expectResKeyword)
+			}
+		})
+	}
+}
+
+func TestParseUpstreamImageVersion(t *testing.T) {
+	cases := []struct {
+		description            string
+		upstreamURL            string
+		upstreamServerResponse string
+		expectedRes            string
+		expectError            bool
+	}{
+		{
+			description:            "empty upstream URL will return an error",
+			upstreamURL:            "",
+			upstreamServerResponse: "",
+			expectedRes:            "",
+			expectError:            true,
+		},
+		{
+			description:            "an invalid upstream URL will return an error",
+			upstreamURL:            "whatever-url",
+			upstreamServerResponse: "",
+			expectedRes:            "",
+			expectError:            true,
+		},
+		{
+			description:            "an invalid response will return an error",
+			upstreamURL:            "auto",
+			upstreamServerResponse: "whatever-response",
+			expectedRes:            "",
+			expectError:            true,
+		},
+		{
+			description:            "a valid response will return the correct tag",
+			upstreamURL:            "auto",
+			upstreamServerResponse: "     image: gcr.io/k8s-prow/deck:v20200717-cf288082e1",
+			expectedRes:            "v20200717-cf288082e1",
+			expectError:            false,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.description, func(t *testing.T) {
+			if tc.upstreamURL == "auto" {
+				// generate a test server so we can capture and inspect the request
+				testServer := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+					res.Write([]byte(tc.upstreamServerResponse))
+				}))
+				defer func() { testServer.Close() }()
+				tc.upstreamURL = testServer.URL
+			}
+
+			res, err := parseUpstreamImageVersion(tc.upstreamURL)
+			if res != tc.expectedRes {
+				t.Errorf("The expected result %q != the actual result %q", tc.expectedRes, res)
+			}
+			if tc.expectError && err == nil {
+				t.Errorf("Expected to get an error but the result is nil")
+			}
+			if !tc.expectError && err != nil {
+				t.Errorf("Expected to not get an error but got one: %v", err)
+			}
+		})
+	}
+}
+
+func TestCDToRootDir(t *testing.T) {
+	envName := "BUILD_WORKSPACE_DIRECTORY"
+
+	cases := []struct {
+		description       string
+		buildWorkspaceDir string
+		expectedResDir    string
+		expectError       bool
+	}{
+		// This test case does not work when running with Bazel.
+		// {
+		// 	description:       "BUILD_WORKSPACE_DIRECTORY is a valid directory",
+		// 	buildWorkspaceDir: "./testdata/dir",
+		// 	expectedResDir:    "testdata/dir",
+		// 	expectError:       false,
+		// },
+		{
+			description:       "BUILD_WORKSPACE_DIRECTORY is an invalid directory",
+			buildWorkspaceDir: "whatever-dir",
+			expectedResDir:    "",
+			expectError:       true,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.description, func(t *testing.T) {
+			curtDir, _ := os.Getwd()
+			curtBuildWorkspaceDir := os.Getenv(envName)
+			defer os.Chdir(curtDir)
+			defer os.Setenv(envName, curtBuildWorkspaceDir)
+
+			os.Setenv(envName, filepath.Join(curtDir, tc.buildWorkspaceDir))
+			err := cdToRootDir()
+			if tc.expectError && err == nil {
+				t.Errorf("Expected to get an error but the result is nil")
+			}
+			if !tc.expectError && err != nil {
+				t.Errorf("Expected to not get an error but got one: %v", err)
+			}
+
+			if !tc.expectError {
+				afterDir, _ := os.Getwd()
+				if !strings.HasSuffix(afterDir, tc.expectedResDir) {
+					t.Errorf("Expected to switch to %q but was switched to: %q", tc.expectedResDir, afterDir)
+				}
 			}
 		})
 	}

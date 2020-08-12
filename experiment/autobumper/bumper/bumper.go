@@ -53,7 +53,7 @@ const (
 	prowStagingRefConfigFile = "config/prow-staging/cluster/deck_deployment.yaml"
 
 	errOncallMsgTempl = "An error occurred while finding an assignee: `%s`.\nFalling back to Blunderbuss."
-	noOncallMsg = "Nobody is currently oncall, so falling back to Blunderbuss."
+	noOncallMsg       = "Nobody is currently oncall, so falling back to Blunderbuss."
 )
 
 var (
@@ -305,7 +305,7 @@ func updateReferences(bumpProwImages, bumpTestImages bool, targetVersion string,
 			return nil, fmt.Errorf("failed to resolve the upstream staging Prow image version: %w", err)
 		}
 	default:
-		tagPicker = func(imageHost, imageName, currentTag string) (string, error) { return tagVersion, nil }
+		tagPicker = func(imageHost, imageName, currentTag string) (string, error) { return targetVersion, nil }
 	}
 
 	updateFile := func(name string) error {
