@@ -75,7 +75,7 @@ presubmits:
       testgrid-tab-name: pull-kubernetes-e2e-gce-kubetest2
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20200806-28035c4-1.16
+      - image: gcr.io/k8s-testimages/krte:v20200809-b9b3222-1.16
         resources:
           requests:
             cpu: 4
