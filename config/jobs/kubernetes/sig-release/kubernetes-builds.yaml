@@ -41,7 +41,7 @@ periodics:
       - --repo=k8s.io/kubernetes
       - --repo=k8s.io/release
       - --root=/go/src
-      - --timeout=180
+      - --timeout=240
       - --scenario=kubernetes_build
       - --
       - --allow-dup
