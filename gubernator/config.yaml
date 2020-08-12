@@ -34,7 +34,6 @@ jobs:
   - pull-kubernetes-e2e-kind
   - pull-kubernetes-e2e-kind-ipv6
   - pull-kubernetes-integration
-  - pull-kubernetes-kubemark-e2e-gce-big
   - pull-kubernetes-node-e2e
   - pull-kubernetes-typecheck
   - pull-kubernetes-verify
