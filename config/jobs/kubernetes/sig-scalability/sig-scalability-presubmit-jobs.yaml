@@ -29,6 +29,7 @@ presubmits:
         - --build=bazel
         - --cluster=
         - --extract=local
+        - --flush-mem-after-build=true
         - --gcp-nodes=100
         - --gcp-project-type=scalability-presubmit-project
         - --gcp-zone=us-east1-b
@@ -54,11 +55,12 @@ presubmits:
         - --use-logexporter
         image: gcr.io/k8s-testimages/kubekins-e2e:v20200811-4afd9ba-master
         resources:
+          # Using 6 CPU to speed up bazel build phase (2 is enough for the test itself)
           limits:
-            cpu: 4
+            cpu: 6
             memory: "14Gi"
           requests:
-            cpu: 4
+            cpu: 6
             memory: "14Gi"
 
   - name: pull-kubernetes-e2e-gce-big-performance
@@ -88,6 +90,7 @@ presubmits:
         - --cluster=
         - --env=HEAPSTER_MACHINE_TYPE=n1-standard-4
         - --extract=local
+        - --flush-mem-after-build=true
         - --gcp-nodes=500
         - --gcp-project=k8s-presubmit-scale
         - --gcp-zone=us-east1-b
@@ -109,8 +112,13 @@ presubmits:
         - --use-logexporter
         image: gcr.io/k8s-testimages/kubekins-e2e:v20200811-4afd9ba-master
         resources:
+          limits:
+            # Using 6 CPU to speed up bazel build phase (4 is enough for the test itself)
+            cpu: 6
+            memory: "16Gi"
           requests:
-            memory: "6Gi"
+            cpu: 6
+            memory: "16Gi"
 
   # This is an equivalent of the ci-kubernetes-e2e-gce-scale-correctness test
   # at 100 node scale. It's an optional presubmit to simplify testing changes
@@ -155,8 +163,12 @@ presubmits:
         - --use-logexporter
         image: gcr.io/k8s-testimages/kubekins-e2e:v20200811-4afd9ba-master
         resources:
+          limits:
+            cpu: 6
+            memory: "16Gi"
           requests:
-            memory: "6Gi"
+            cpu: 6
+            memory: "16Gi"
 
   - name: pull-kubernetes-e2e-gce-large-performance
     always_run: false
@@ -185,6 +197,7 @@ presubmits:
         - --cluster=
         - --env=HEAPSTER_MACHINE_TYPE=n1-standard-8
         - --extract=local
+        - --flush-mem-after-build=true
         - --gcp-nodes=2000
         - --gcp-project=k8s-presubmit-scale
         - --gcp-zone=us-east1-b
@@ -207,8 +220,13 @@ presubmits:
         - --use-logexporter
         image: gcr.io/k8s-testimages/kubekins-e2e:v20200811-4afd9ba-master
         resources:
+          limits:
+            # Using 6 CPU to speed up bazel build phase (4 is enough for the test itself)
+            cpu: 6
+            memory: "16Gi"
           requests:
-            memory: "6Gi"
+            cpu: 6
+            memory: "16Gi"
 
   - name: pull-kubernetes-kubemark-e2e-gce-big
     always_run: true
@@ -243,6 +261,7 @@ presubmits:
         - --build=bazel
         - --cluster=
         - --extract=local
+        - --flush-mem-after-build=true
         - --gcp-master-size=n1-standard-4
         - --gcp-node-size=n1-standard-8
         - --gcp-nodes=7
@@ -277,11 +296,12 @@ presubmits:
         # value: "y"
         resources:
           limits:
+            # Using 6 CPU to speed up bazel build phase (4 is enough for the test itself)
             cpu: 6
-            memory: 24Gi
+            memory: 16Gi
           requests:
             cpu: 6
-            memory: 24Gi
+            memory: 16Gi
         securityContext:
           privileged: true # TODO(fejta): https://github.com/kubernetes/kubernetes/issues/76484
 
@@ -315,6 +335,7 @@ presubmits:
         - --build=bazel
         - --cluster=
         - --extract=local
+        - --flush-mem-after-build=true
         - --gcp-node-size=n1-standard-8
         - --gcp-nodes=84
         - --gcp-project=k8s-presubmit-scale
@@ -342,8 +363,13 @@ presubmits:
         # - name: KUBEMARK_BAZEL_BUILD
         # value: "y"
         resources:
+          limits:
+            # Using 6 CPU to speed up bazel build phase (4 is enough for the test itself)
+            cpu: 6
+            memory: "16Gi"
           requests:
-            memory: "6Gi"
+            cpu: 6
+            memory: "16Gi"
         securityContext:
           privileged: true # TODO(fejta): https://github.com/kubernetes/kubernetes/issues/76484
 
