@@ -97,7 +97,8 @@ func FilterPresubmits(filter Filter, changes config.ChangedFilesProvider, branch
 // RetestFilter builds a filter for `/retest`
 func RetestFilter(failedContexts, allContexts sets.String) Filter {
 	return func(p config.Presubmit) (bool, bool, bool) {
-		return failedContexts.Has(p.Context) || (!p.NeedsExplicitTrigger() && !allContexts.Has(p.Context)), false, true
+		failed := failedContexts.Has(p.Context)
+		return failed || (!p.NeedsExplicitTrigger() && !allContexts.Has(p.Context)), false, failed
 	}
 }
 

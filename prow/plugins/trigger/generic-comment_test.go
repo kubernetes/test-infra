@@ -419,7 +419,7 @@ func TestHandleGenericComment(t *testing.T) {
 					},
 				},
 			},
-			ShouldBuild: false,
+			ShouldBuild: true,
 		},
 		{
 			name:   "Run if changed job triggered by /ok-to-test",
@@ -515,31 +515,6 @@ func TestHandleGenericComment(t *testing.T) {
 						},
 						Trigger:      `(?m)^/test (?:.*? )?jab(?: .*?)?$`,
 						RerunCommand: `/test jab`,
-					},
-				},
-			},
-		},
-		{
-			name: "/retest of RunIfChanged job that doesn't need to run and hasn't run",
-
-			Author: "trusted-member",
-			Body:   "/retest",
-			State:  "open",
-			IsPR:   true,
-			Presubmits: map[string][]config.Presubmit{
-				"org/repo": {
-					{
-						JobBase: config.JobBase{
-							Name: "jeb",
-						},
-						RegexpChangeMatcher: config.RegexpChangeMatcher{
-							RunIfChanged: "CHANGED2",
-						},
-						Reporter: config.Reporter{
-							Context: "pull-jeb",
-						},
-						Trigger:      `(?m)^/test (?:.*? )?jeb(?: .*?)?$`,
-						RerunCommand: `/test jeb`,
 					},
 				},
 			},
@@ -1070,7 +1045,7 @@ func TestRetestFilter(t *testing.T) {
 					},
 				},
 			},
-			expected: [][]bool{{true, false, true}, {false, false, true}},
+			expected: [][]bool{{true, false, true}, {false, false, false}},
 		},
 		{
 			name:           "retest filter matches jobs that would run automatically and haven't yet ",
@@ -1095,7 +1070,7 @@ func TestRetestFilter(t *testing.T) {
 					},
 				},
 			},
-			expected: [][]bool{{false, false, true}, {true, false, true}},
+			expected: [][]bool{{false, false, false}, {true, false, false}},
 		},
 	}
 
