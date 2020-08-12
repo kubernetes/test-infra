@@ -617,6 +617,8 @@ postsubmits:
         command:
         - make
         args:
+        - -C
+        - ./triage/
         - push-static
         - push-staging
         resources:
