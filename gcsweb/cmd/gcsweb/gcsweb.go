@@ -33,6 +33,8 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/gcsweb/pkg/version"
+
+	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/logrusutil"
 )
 
@@ -67,8 +69,9 @@ func (ss *strslice) Set(value string) error {
 type options struct {
 	flPort int
 
-	flIcons  string
-	flStyles string
+	flIcons        string
+	flStyles       string
+	oauthTokenFile string
 
 	flVersion bool
 
@@ -86,6 +89,7 @@ func gatherOptions() options {
 
 	fs.StringVar(&o.flIcons, "i", "/icons", "path to the icons directory")
 	fs.StringVar(&o.flStyles, "s", "/styles", "path to the styles directory")
+	fs.StringVar(&o.oauthTokenFile, "oauth-token-file", "", "Path to the file containing the OAuth 2.0 Bearer Token secret.")
 
 	fs.BoolVar(&o.flVersion, "version", false, "print version and exit")
 	fs.BoolVar(&flUpgradeProxiedHTTPtoHTTPS, "upgrade-proxied-http-to-https", false, "upgrade any proxied request (e.g. from GCLB) from http to https")
@@ -103,6 +107,11 @@ func (o *options) validate() error {
 	if _, err := os.Stat(o.flStyles); os.IsNotExist(err) {
 		return fmt.Errorf("styles path '%s' doesn't exists.", o.flStyles)
 	}
+	if o.oauthTokenFile != "" {
+		if _, err := os.Stat(o.oauthTokenFile); os.IsNotExist(err) {
+			return fmt.Errorf("oauth token file '%s' doesn't exists.", o.oauthTokenFile)
+		}
+	}
 	return nil
 }
 
@@ -118,6 +127,19 @@ func main() {
 	}
 
 	logrusutil.ComponentInit()
+
+	s := &server{
+		httpClient: &http.Client{},
+	}
+
+	if o.oauthTokenFile != "" {
+		secretAgent := &secret.Agent{}
+		if err := secretAgent.Start([]string{o.oauthTokenFile}); err != nil {
+			logrus.WithError(err).Fatal("Error starting secrets agent.")
+		}
+		s.tokenGenerator = secretAgent.GetTokenGenerator(o.oauthTokenFile)
+	}
+
 	logrus.Info("Starting GCSWeb")
 	rand.Seed(time.Now().UTC().UnixNano())
 
@@ -125,7 +147,7 @@ func main() {
 	for i := range o.allowedBuckets {
 		bucket := joinPath(gcsPath, o.allowedBuckets[i])
 		logrus.WithField("bucket", bucket).Info("allowing bucket")
-		http.HandleFunc(bucket+"/", gcsRequest)
+		http.HandleFunc(bucket+"/", s.gcsRequest)
 		http.HandleFunc(bucket, func(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, bucket+"/", http.StatusPermanentRedirect)
 		})
@@ -228,7 +250,12 @@ func otherRequest(w http.ResponseWriter, r *http.Request) {
 	http.NotFound(w, r)
 }
 
-func gcsRequest(w http.ResponseWriter, r *http.Request) {
+type server struct {
+	httpClient     *http.Client
+	tokenGenerator func() []byte
+}
+
+func (s *server) gcsRequest(w http.ResponseWriter, r *http.Request) {
 	logger := newTxnLogger(r)
 
 	if upgradeToHTTPS(w, r, logger) {
@@ -266,7 +293,14 @@ func gcsRequest(w http.ResponseWriter, r *http.Request) {
 		"object":  object,
 		"markers": markers})
 
-	resp, err := http.Get(url)
+	// Create a new request using http
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+
+	if s.tokenGenerator != nil {
+		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", string(s.tokenGenerator())))
+	}
+
+	resp, err := s.httpClient.Do(req)
 	if err != nil {
 		urlLogger.WithError(err).Error("failed to GET from GCS")
 		w.WriteHeader(http.StatusInternalServerError)
