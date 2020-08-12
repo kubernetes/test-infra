@@ -37,9 +37,12 @@ presubmits:
         securityContext:
           privileged: true
         resources:
-          requests:
-            memory: "9000Mi"
+          limits:
             cpu: 7400m
+            memory: 9000Mi
+          requests:
+            cpu: 7400m
+            memory: 9000Mi
     annotations:
       testgrid-num-failures-to-alert: '10'
       testgrid-alert-stale-results-hours: '24'

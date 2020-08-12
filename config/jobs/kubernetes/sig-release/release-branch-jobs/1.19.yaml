@@ -1427,8 +1427,11 @@ presubmits:
         image: gcr.io/k8s-testimages/krte:v20200809-b9b3222-1.19
         name: ""
         resources:
+          limits:
+            cpu: 4
+            memory: 9000Mi
           requests:
-            cpu: 7400m
+            cpu: 4
             memory: 9000Mi
         securityContext:
           privileged: true
