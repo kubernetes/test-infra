@@ -118,9 +118,9 @@ EOF
 run_tests() {
   # binaries needed by the conformance image
   rm -rf _output/bin
-  NEW_GO_RUNNER_DIR="cluster/images/conformance/go-runner"
+  NEW_GO_RUNNER_DIR="test/images/conformance/go-runner"
   if [ -d "$NEW_GO_RUNNER_DIR" ]; then
-      make WHAT="test/e2e/e2e.test vendor/github.com/onsi/ginkgo/ginkgo cmd/kubectl cluster/images/conformance/go-runner"
+      make WHAT="test/e2e/e2e.test vendor/github.com/onsi/ginkgo/ginkgo cmd/kubectl test/images/conformance/go-runner"
   else
       make WHAT="test/e2e/e2e.test vendor/github.com/onsi/ginkgo/ginkgo cmd/kubectl"
   fi
@@ -133,7 +133,7 @@ run_tests() {
   VERSION=$(echo -n "${KUBE_GIT_VERSION}" | cut -f 1 -d '+')
   export VERSION
 
-  pushd ${PWD}/cluster/images/conformance
+  pushd ${PWD}/test/images/conformance
 
   # build and load the conformance image into the kind nodes
   make build ARCH=amd64
