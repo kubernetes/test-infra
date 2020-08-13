@@ -1406,6 +1406,7 @@ presubmits:
   - always_run: true
     branches:
     - release-1.18
+    cluster: k8s-infra-prow-build
     decorate: true
     labels:
       preset-dind-enabled: "true"

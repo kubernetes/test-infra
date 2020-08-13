@@ -2,6 +2,7 @@ presubmits:
   kubernetes/kubernetes:
   # this replaces the bootstrap / scenario based job going forward
   - name: pull-kubernetes-integration
+    cluster: k8s-infra-prow-build
     always_run: true
     decorate: true
     skip_branches:
