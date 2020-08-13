@@ -14,7 +14,6 @@ reviewers:
 - sjenning
 approvers:
 - Random-Liu
-- yguo0905
 - yujuhong
 - tallclair
 - derekwaynecarr
@@ -24,5 +23,7 @@ approvers:
 - dims
 - dashpole
 - sjenning
+emeritus_approvers:
+- yguo0905
 labels:
 - sig/node
