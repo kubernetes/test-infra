@@ -2,9 +2,9 @@
 
 reviewers:
 - krzyzacy
-- katharine
 approvers:
 - krzyzacy
-- katharine
+emeritus_approvers:
+- Katharine
 labels:
 - area/prow/crier

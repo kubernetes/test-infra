@@ -2,9 +2,9 @@
 
 reviewers:
 - paulangton
-- Katharine
 approvers:
 - paulangton
+emeritus_approvers:
 - Katharine
 labels:
  - area/prow/spyglass
