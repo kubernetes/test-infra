@@ -248,6 +248,17 @@ branch-protection:
             users: []
             teams:
             - stage-bots
+        kube-state-metrics:
+          required_status_checks:
+            contexts:
+            - ci/benchmark-tests
+            - ci/build-kube-state-metrics
+            - ci/e2e-tests
+            - ci/go-lint
+            - ci/unit-tests
+            - ci/validate-docs
+            - ci/validate-go-modules
+            - ci/validate-manifests
         kube-scheduler:
           restrictions:
             users: []
