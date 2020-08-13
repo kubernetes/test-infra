@@ -959,6 +959,7 @@ presubmits:
   - always_run: false
     branches:
     - release-1.18
+    cluster: k8s-infra-prow-build
     labels:
       preset-bazel-remote-cache-enabled: "true"
       preset-bazel-scratch-dir: "true"
