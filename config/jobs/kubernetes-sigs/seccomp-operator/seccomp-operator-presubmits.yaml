@@ -8,7 +8,7 @@ presubmits:
       testgrid-create-test-group: 'true'
     spec:
       containers:
-      - image: golang:1.14
+      - image: golang:1.15
         command:
         - hack/pull-seccomp-operator-build
 
@@ -20,7 +20,7 @@ presubmits:
       testgrid-create-test-group: 'true'
     spec:
       containers:
-      - image: golang:1.14
+      - image: golang:1.15
         command:
         - hack/pull-seccomp-operator-verify
 
@@ -32,7 +32,7 @@ presubmits:
       testgrid-create-test-group: 'true'
     spec:
       containers:
-      - image: golang:1.14
+      - image: golang:1.15
         command:
         - hack/pull-seccomp-operator-test-unit
 
