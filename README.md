@@ -28,7 +28,6 @@ after they have been reviewed. All job configs are located in [`config/jobs`]
 
 - [Testgrid](https://testgrid.k8s.io) shows historical test results over time ([`testgrid`])
 - [Triage](https://go.k8s.io/triage) shows clusters of similar test failures across all jobs ([`triage`](/triage))
-- [velodrome/bigquery-metrics] shows failure and flake metrics for jobs related to [kubernetes/kubernetes] ([`velodrome`], [`metrics`])
 
 ### Job and PR Dashboards
 
@@ -37,7 +36,6 @@ after they have been reviewed. All job configs are located in [`config/jobs`]
 - [PR Status](https://prow.k8s.io/pr) shows what needs to be done to get PRs matching a GitHub Query to merge ([`prow/cmd/tide`])
 - [Tide History](https://prow.k8s.io/tide-history) shows what actions tide has taken over time to trigger tests and merge PRs ([`prow/cmd/tide`])
 - [Tide Status](https://prow.k8s.io/tide) shows what PRs are in tide pools to be tested and merged ([`prow/cmd/tide`])
-- [velodrome/monitoring] shows tide pool and merge metrics ([`velodrome`])
 
 ## Other Tools
 
@@ -71,9 +69,6 @@ Please see [CONTRIBUTING.MD](CONTRIBUTING.md)
 [`prow`]: /prow
 [`prow/cmd/tide`]: /prow/cmd/tide
 [`prow/cmd/deck`]: /prow/cmd/deck
-[`velodrome`]: /velodrome
 [`testgrid`]: /testgrid
 [testgrid.k8s.io]: https://testgrid.k8s.io
 [`triage`]: /triage
-[velodrome/bigquery-metrics]: http://velodrome.k8s.io/dashboard/db/bigquery-metrics?orgId=1
-[velodrome/monitoring]: http://velodrome.k8s.io/dashboard/db/monitoring?orgId=1
