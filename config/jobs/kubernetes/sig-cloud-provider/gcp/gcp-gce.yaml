@@ -218,6 +218,7 @@ presubmits:
             memory: "6Gi"
 
   - name: pull-kubernetes-e2e-gce-ubuntu-containerd
+    cluster: k8s-infra-prow-build
     always_run: true
     skip_branches:
       - release-\d+\.\d+ # per-release image
@@ -277,6 +278,7 @@ presubmits:
               memory: "14Gi"
 
   - name: pull-kubernetes-e2e-gce-ubuntu-containerd-canary
+    cluster: k8s-infra-prow-build
     always_run: false
     skip_report: false
     skip_branches:
@@ -329,8 +331,12 @@ presubmits:
             - --timeout=80m # thinking about making this longer? don't! 80m is a hard cap, and should get down to no more than 60m.
           image: gcr.io/k8s-testimages/kubekins-e2e:v20200811-4afd9ba-master
           resources:
+            limits:
+              cpu: 4
+              memory: "14Gi"
             requests:
-              memory: "6Gi"
+              cpu: 4
+              memory: "14Gi"
 
   - name: pull-kubernetes-e2e-gce-rbe
     always_run: false
