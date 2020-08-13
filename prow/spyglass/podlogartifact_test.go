@@ -70,7 +70,7 @@ func TestNewPodLogArtifact(t *testing.T) {
 			artifact:     singleLogName,
 			sizeLimit:    500e6,
 			expectedErr:  nil,
-			expectedLink: "/log?id=123&job=job",
+			expectedLink: fmt.Sprintf("/log?container=%s&id=123&job=job", kube.TestContainerName),
 		},
 		{
 			name:         "Create pod log with valid fields and custom container",

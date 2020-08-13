@@ -75,11 +75,9 @@ func NewPodLogArtifact(jobName string, buildID string, artifactName string, cont
 // CanonicalLink returns a link to where pod logs are streamed
 func (a *PodLogArtifact) CanonicalLink() string {
 	q := url.Values{
-		"job": []string{a.name},
-		"id":  []string{a.buildID},
-	}
-	if a.artifactName != singleLogName {
-		q.Set("container", a.container)
+		"job":       []string{a.name},
+		"id":        []string{a.buildID},
+		"container": []string{a.container},
 	}
 	u := url.URL{
 		Path:     "/log",

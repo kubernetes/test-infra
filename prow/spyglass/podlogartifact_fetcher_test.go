@@ -21,6 +21,8 @@ import (
 	"context"
 	"fmt"
 	"testing"
+
+	"k8s.io/test-infra/prow/kube"
 )
 
 // Tests getting handles to objects associated with the current Prow job
@@ -40,7 +42,7 @@ func TestFetchArtifacts_Prow(t *testing.T) {
 			name:         "Fetch build-log.txt from valid src",
 			key:          "BFG/435",
 			artifact:     singleLogName,
-			expectedLink: "/log?id=435&job=BFG",
+			expectedLink: fmt.Sprintf("/log?container=%s&id=435&job=BFG", kube.TestContainerName),
 			expected:     []byte("frobscottle"),
 		},
 		{
@@ -62,7 +64,7 @@ func TestFetchArtifacts_Prow(t *testing.T) {
 			expectErr: true,
 		},
 		{
-			name:         "Fetch custom build-log with no artifact name",
+			name:         "Fetch log with custom artifact name",
 			key:          "BFG/435",
 			artifact:     fmt.Sprintf("%s-%s", customContainerName, singleLogName),
 			expectedLink: fmt.Sprintf("/log?container=%s&id=435&job=BFG", customContainerName),
