@@ -798,7 +798,13 @@ func handleProwJobs(ja *jobs.JobAgent, log *logrus.Entry) http.HandlerFunc {
 					jobs[i].Spec.DecorationConfig = nil
 				}
 				if set.Has(PodSpec) {
-					jobs[i].Spec.PodSpec = nil
+					emptyContainers := []coreapi.Container{}
+					for range jobs[i].Spec.PodSpec.Containers {
+						emptyContainers = append(emptyContainers, coreapi.Container{})
+					}
+					jobs[i].Spec.PodSpec = &coreapi.PodSpec{
+						Containers: emptyContainers,
+					}
 				}
 			}
 		}
