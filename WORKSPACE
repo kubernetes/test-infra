@@ -39,6 +39,10 @@ load("@io_bazel_rules_docker//repositories:deps.bzl", _container_deps = "deps")
 
 _container_deps()
 
+load("@io_bazel_rules_docker//repositories:pip_repositories.bzl", _pip_deps = "pip_deps")
+
+_pip_deps()
+
 load("@io_bazel_rules_docker//go:image.bzl", _go_repositories = "repositories")
 
 _go_repositories()
