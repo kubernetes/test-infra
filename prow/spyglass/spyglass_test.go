@@ -150,6 +150,11 @@ test/e2e/e2e.go:137 BeforeSuite on Node 1 failed test/e2e/e2e.go:137
 			Name:       "logs/symlink-party/123.txt",
 			Content:    []byte(`gs://test-bucket/logs/the-actual-place/123`),
 		},
+		{
+			BucketName: "multi-container-one-log",
+			Name:       "logs/job/123/test-1-build-log.txt",
+			Content:    []byte("this log exists in gcs!"),
+		},
 	})
 	defer fakeGCSServer.Stop()
 	kc := fkc{
@@ -1256,6 +1261,17 @@ func TestFetchArtifactsPodLog(t *testing.T) {
 				URL:     "https://gubernator.example.com/build/job/123",
 			},
 		},
+		prowapi.ProwJob{
+			Spec: prowapi.ProwJobSpec{
+				Agent: prowapi.KubernetesAgent,
+				Job:   "multi-container-one-log",
+			},
+			Status: prowapi.ProwJobStatus{
+				PodName: "wowowow",
+				BuildID: "123",
+				URL:     "https://gubernator.example.com/build/multi-container/123",
+			},
+		},
 	}
 	fakeConfigAgent := fca{
 		c: config.Config{
@@ -1279,6 +1295,30 @@ func TestFetchArtifactsPodLog(t *testing.T) {
 	}
 
 	for _, key := range testKeys {
+		result, err := sg.FetchArtifacts(context.Background(), key, "", 500e6, []string{"build-log.txt"})
+		if err != nil {
+			t.Errorf("Unexpected error grabbing pod log for %s: %v", key, err)
+			continue
+		}
+		if len(result) != 1 {
+			t.Errorf("Expected 1 artifact for %s, got %d", key, len(result))
+			continue
+		}
+		content, err := result[0].ReadAll()
+		if err != nil {
+			t.Errorf("Unexpected error reading pod log for %s: %v", key, err)
+			continue
+		}
+		if string(content) != fmt.Sprintf("clusterA.%s", kube.TestContainerName) {
+			t.Errorf("Bad pod log content for %s: %q (expected 'clusterA')", key, content)
+		}
+	}
+
+	multiContainerOneLogKey := "gcs/multi-container-one-log/logs/job/123"
+
+	testKeys = append(testKeys, multiContainerOneLogKey)
+
+	for _, key := range testKeys {
 		containers := []string{"test-1", "test-2"}
 		result, err := sg.FetchArtifacts(context.Background(), key, "", 500e6, []string{fmt.Sprintf("%s-%s", containers[0], singleLogName), fmt.Sprintf("%s-%s", containers[1], singleLogName)})
 		if err != nil {
@@ -1292,6 +1332,9 @@ func TestFetchArtifactsPodLog(t *testing.T) {
 				continue
 			}
 			expected := fmt.Sprintf("clusterA.%s", containers[i])
+			if key == multiContainerOneLogKey && containers[i] == "test-1" {
+				expected = "this log exists in gcs!"
+			}
 			if string(content) != expected {
 				t.Errorf("Bad pod log content for %s: %q (expected '%s')", key, content, expected)
 			}
