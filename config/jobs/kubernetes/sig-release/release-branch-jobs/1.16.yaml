@@ -1202,6 +1202,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
       preset-dind-enabled: "true"
     name: pull-kubernetes-e2e-kind
+    cluster: k8s-infra-prow-build
     optional: true
     path_alias: k8s.io/kubernetes
     spec:
