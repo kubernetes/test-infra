@@ -2,11 +2,14 @@
 
 reviewers:
 - amwat
+- spiffxp
 - BenTheElder
-- ixdy
+- MushuEE
 approvers:
 - amwat
+- spiffxp
 - BenTheElder
+emeritus_approvers:
 - ixdy
 
 labels:
