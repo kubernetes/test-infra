@@ -17,7 +17,7 @@ presets:
 presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-e2e-gce
-    always_run: true
+    always_run: false
     skip_branches:
     - release-\d+\.\d+ # per-release image
     annotations:
