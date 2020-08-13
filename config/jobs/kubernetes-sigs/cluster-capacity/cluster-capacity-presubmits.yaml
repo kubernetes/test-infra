@@ -41,6 +41,7 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 20m
+    path_alias: sigs.k8s.io/cluster-capacity
     always_run: true
     labels:
       preset-dind-enabled: "true"
