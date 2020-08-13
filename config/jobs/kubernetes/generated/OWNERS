@@ -2,14 +2,13 @@
 
 reviewers:
 - justaugustus
-- krzyzacy
 - yguo0905
 approvers:
 - justaugustus
-- krzyzacy
 - yguo0905
 emeritus_approvers:
 - Katharine
+- krzyzacy
 
 labels:
 - sig/release

@@ -2,9 +2,9 @@
 
 reviewers:
 - amwat
-- krzyzacy
 approvers:
 - amwat
+emeritus_approvers:
 - krzyzacy
 labels:
 - area/prow/gerrit

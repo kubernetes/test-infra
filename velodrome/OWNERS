@@ -2,12 +2,12 @@
 
 reviewers:
 - cjwagner
-- krzyzacy
 - spiffxp
 approvers:
 - cjwagner
-- krzyzacy
 - spiffxp
+emeritus_approvers:
+- krzyzacy
 
 labels:
 - area/velodrome
