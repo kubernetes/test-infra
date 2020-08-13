@@ -3,10 +3,10 @@
 reviewers:
 - cjwagner
 - fejta
-- krzyzacy
 approvers:
 - cjwagner
 - fejta
+emeritus_approvers:
 - krzyzacy
 
 labels:

@@ -6,11 +6,12 @@ reviewers:
 - wojtek-t # For European timezone emergencies.
 - feiskyer
 approvers:
-- krzyzacy
 - amwat
 - shyamjvs
 - wojtek-t # For European timezone emergencies.
 - feiskyer
+emeritus_approvers:
+- krzyzacy
 
 labels:
 - area/kubetest

@@ -2,17 +2,17 @@
 
 reviewers:
 - cblecker
-- krzyzacy
 - spiffxp
 - wojtek-t
 - chases2
 - dims
 approvers:
 - cblecker
-- krzyzacy
 - spiffxp
 - wojtek-t
 - chases2
 - dims
+emeritus_approvers:
+- krzyzacy
 labels:
 - area/config

@@ -2,9 +2,9 @@
 
 reviewers:
 - fejta
-- Katharine
 approvers:
 - fejta
+emeritus_approvers:
 - Katharine
 labels:
 - area/prow/gerrit
