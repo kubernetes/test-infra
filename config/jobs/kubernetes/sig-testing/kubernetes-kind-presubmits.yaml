@@ -1,6 +1,7 @@
 presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-e2e-kind
+    cluster: k8s-infra-prow-build
     optional: false
     always_run: true
     decorate: true
