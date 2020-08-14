@@ -22,8 +22,11 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"runtime"
 	"strings"
 	"time"
+
+	"k8s.io/test-infra/triage/utils"
 )
 
 const longOutputLen = 10000
@@ -48,6 +51,7 @@ type summarizeFlags struct {
 	owners       string
 	output       string
 	outputSlices string
+	numWorkers   int
 }
 
 // parseFlags parses command-line arguments and returns them as a summarizeFlags object.
@@ -59,6 +63,7 @@ func parseFlags() summarizeFlags {
 	flag.StringVar(&flags.owners, "owners", "", "path to test owner SIGs file")
 	flag.StringVar(&flags.output, "output", "failure_data.json", "output path")
 	flag.StringVar(&flags.outputSlices, "output_slices", "", "path to slices output (must include PREFIX in template)")
+	flag.IntVar(&flags.numWorkers, "num_workers", utils.Max(runtime.NumCPU()-1, 1), "number of worker goroutines to spawn for parallelized functions") // Leave one CPU for the main goroutine, where possible
 
 	// The tests flag can contain multiple arguments, so we'll split it by space
 	tempTests := flag.String("tests", "", "path to tests.json files from BigQuery")
@@ -84,7 +89,7 @@ func summarize(flags summarizeFlags) {
 		}
 	}
 
-	clusteredLocal := clusterLocal(failedTests)
+	clusteredLocal := clusterLocal(failedTests, flags.numWorkers)
 
 	clustered := clusterGlobal(clusteredLocal, previousClustered)
 

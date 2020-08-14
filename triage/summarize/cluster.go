@@ -20,11 +20,17 @@ Contains functions that cluster failures.
 
 package summarize
 
-import "time"
+import (
+	"sync"
+	"time"
+)
 
 /*
 clusterLocal clusters together the failures for each test. Failures come in grouped
 by the test they belong to. These groups are subdivided into clusters.
+
+numWorkers determines how many goroutines to spawn to simultaneously process the failure
+groups. If numWorkers <= 0, the value is set to 1.
 
 Takes:
     {
@@ -49,7 +55,7 @@ Returns:
 		...
 	}
 */
-func clusterLocal(failuresByTest failuresGroup) nestedFailuresGroups {
+func clusterLocal(failuresByTest failuresGroup, numWorkers int) nestedFailuresGroups {
 	const memoPath string = "memo_cluster_local.json"
 	const memoMessage string = "clustering inside each test"
 
@@ -60,16 +66,78 @@ func clusterLocal(failuresByTest failuresGroup) nestedFailuresGroups {
 		return clustered
 	}
 
-	numFailures := 0
+	numFailures := 0 // The number of failures processed so far
 	start := time.Now()
 	logInfo("Clustering failures for %d unique tests...", len(failuresByTest))
 
-	// Look at tests with the most failures first.
-	for n, pair := range failuresByTest.sortByNumberOfFailures() {
-		numFailures += len(pair.Failures)
-		logInfo("%4d/%4d tests, %5d failures, %s", n+1, len(failuresByTest), len(pair.Failures), pair.Key)
-		clustered[pair.Key] = clusterTest(pair.Failures)
+	/*
+		Since local clustering is done within each test, there is no interdependency among the clusters,
+		and the clustering process can be easily parallelized.
+
+		One goroutine will push to a work queue, and one goroutine will read from a done queue.
+		The specified number of goroutines will act as workers. Each worker will pull from the work
+		queue and perform a clustering operation, and then push the result to the done queue.
+	*/
+
+	var workerWG sync.WaitGroup
+	var doneQueueWG sync.WaitGroup // Prevents this function from returning results before they are all written to clustered
+
+	if numWorkers <= 0 {
+		numWorkers = 1
 	}
+
+	workQueue := make(chan *failuresGroupPair, numWorkers)
+
+	type doneGroup struct {
+		input  *failuresGroupPair // The failures to be clustered
+		output failuresGroup      // The clustered failures
+	}
+	doneQueue := make(chan doneGroup, numWorkers)
+
+	// Push to the work queue
+	go func() {
+		// Look at tests with the most failures first.
+		sortedFailures := failuresByTest.sortByNumberOfFailures()
+		for i := range sortedFailures {
+			workQueue <- &sortedFailures[i]
+		}
+
+		// Close the channel so the workers know to stop
+		close(workQueue)
+	}()
+
+	// Read from the done queue
+	doneQueueWG.Add(1)
+	go func() {
+		defer doneQueueWG.Done()
+
+		for dg := range doneQueue {
+			numFailures += len(dg.input.Failures)
+			logInfo("%4d/%4d tests, %5d failures, %s", len(clustered)+1, len(failuresByTest), len(dg.input.Failures), dg.input.Key)
+			clustered[dg.input.Key] = dg.output
+		}
+	}()
+
+	// Create the workers
+	for i := 0; i < numWorkers; i++ {
+		workerWG.Add(1)
+		go func() {
+			defer workerWG.Done()
+			for pair := range workQueue {
+				doneQueue <- doneGroup{
+					pair,
+					clusterTest(pair.Failures),
+				}
+			}
+		}()
+	}
+
+	// Wait for the workers to finish
+	workerWG.Wait()
+	// Close the done queue so the doneQueue goroutine knows to stop
+	close(doneQueue)
+	// Wait for the doneQueue goroutine
+	doneQueueWG.Wait()
 
 	elapsed := time.Since(start)
 	logInfo("Finished locally clustering %d unique tests (%d failures) in %s", len(clustered), numFailures, elapsed.String())
