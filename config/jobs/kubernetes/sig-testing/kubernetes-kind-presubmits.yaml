@@ -49,6 +49,7 @@ presubmits:
       testgrid-alert-stale-results-hours: '24'
       testgrid-create-test-group: 'true'
       fork-per-release: "true"
+      description: "Run a quick subset of e2e tests, skipping those that are flaky."
 
 
   - name: pull-kubernetes-e2e-kind-canary
@@ -156,6 +157,7 @@ presubmits:
       testgrid-num-failures-to-alert: '10'
       testgrid-alert-stale-results-hours: '24'
       testgrid-create-test-group: 'true'
+      description: "Run a quick subset of e2e tests, with IPv6 networking, skipping those that are flaky."
 
   - name: pull-kubernetes-e2e-kind-ipv6-canary
     cluster: k8s-infra-prow-build
@@ -256,6 +258,7 @@ presubmits:
       testgrid-alert-stale-results-hours: '24'
       testgrid-create-test-group: 'true'
       testgrid-dashboards: sig-testing-kind
+      description: "Run all conformance tests with only GA APIs enabled to ensure that conformance tests do not rely on beta APIs or features."
 
   - name: pull-kubernetes-conformance-kind-ga-only-parallel
     always_run: true
@@ -301,4 +304,5 @@ presubmits:
       testgrid-alert-stale-results-hours: '24'
       testgrid-create-test-group: 'true'
       testgrid-dashboards: sig-testing-kind
+      description: "Run only parallel non-[SERIAL] conformance tests with only GA APIs enabled to ensure that conformance tests do not rely on beta APIs or features."
     cluster: k8s-infra-prow-build
