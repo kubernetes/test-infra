@@ -22,13 +22,13 @@ package summarize
 
 import (
 	"fmt"
-	"log"
 	"regexp"
 	"sort"
 	"strconv"
 	"strings"
 
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/klog/v2"
 	"k8s.io/test-infra/triage/utils"
 )
 
@@ -575,7 +575,7 @@ func buildsToColumns(builds map[string]build) columns {
 			result.Jobs[jobName] = []int{sortedBuildNumbers[0], count, base}
 			for _, n := range sortedBuildNumbers {
 				if !(n <= sortedBuildNumbers[0]+len(sortedBuildNumbers)) {
-					log.Panicf(jobName, n, result.Jobs[jobName], len(sortedBuildNumbers), sortedBuildNumbers)
+					klog.Fatal(jobName, n, result.Jobs[jobName], len(sortedBuildNumbers), sortedBuildNumbers)
 				}
 			}
 		}

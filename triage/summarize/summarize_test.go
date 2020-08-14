@@ -20,7 +20,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"testing"
 )
@@ -78,7 +77,8 @@ func failOnMismatchedSlices(t *testing.T, want interface{}, got interface{}) boo
 				}
 			}
 		default:
-			log.Panic("Type of want does not equal type of got")
+			t.Logf("Type of want does not equal type of got")
+			t.FailNow()
 		}
 	case []int:
 		switch got := got.(type) {
@@ -93,10 +93,12 @@ func failOnMismatchedSlices(t *testing.T, want interface{}, got interface{}) boo
 				}
 			}
 		default:
-			log.Panic("Type of want does not equal type of got")
+			t.Logf("Type of want does not equal type of got")
+			t.FailNow()
 		}
 	default:
-		log.Panic("want and got must be of type []string or []int")
+		t.Logf("want and got must be of type []string or []int")
+		t.FailNow()
 	}
 
 	return false

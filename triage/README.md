@@ -28,6 +28,8 @@ However, summarization can be run directly with the following flags:
   [Methodology](#methodology)); e.g. `slices/failure_data_PREFIX.json`, where `PREFIX` will be replaced
   with some identifier
 
+Triage uses klog for logging, so klog flags can be passed in as well.
+
 The web page can be accessed at https://go.k8s.io/triage with the following options:
 - `Date`: defaults to "today"; note that all usages of "today" on the page refer to the currently set date
 - `Show clusters for SIG`: filter results by the SIG assigned to the majority of the tests; allows multi-select
