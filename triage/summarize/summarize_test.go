@@ -227,6 +227,7 @@ func TestSummarize(t *testing.T) {
 		owners:       ownersPath,
 		output:       "failure_data.json",
 		outputSlices: "failure_data_PREFIX.json",
+		numWorkers:   4, // Arbitrary number to keep tests more or less consistent across platforms
 	})
 
 	// Test the output
