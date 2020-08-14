@@ -29,7 +29,7 @@ presubmits:
       - command:
         - make
         - check
-        image: quay.io/multicloudlab/build-tool:v20200806-cf0548d
+        image: quay.io/multicloudlab/check-tool:v20200806-cf0548d
         name: ""
         securityContext:
           privileged: true
@@ -64,7 +64,7 @@ postsubmits:
       - command:
         - make
         - check
-        image: quay.io/multicloudlab/build-tool:v20200806-cf0548d
+        image: quay.io/multicloudlab/check-tool:v20200806-cf0548d
         name: ""
         securityContext:
           privileged: true
