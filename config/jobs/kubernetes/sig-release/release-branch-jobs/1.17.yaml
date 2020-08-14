@@ -1222,11 +1222,11 @@ presubmits:
         name: ""
         resources:
           limits:
-            cpu: 7
-            memory: "15Gi"
+            cpu: 6
+            memory: 15Gi
           requests:
-            cpu: 7
-            memory: "15Gi"
+            cpu: 6
+            memory: 15Gi
         securityContext:
           privileged: true
   - always_run: true
