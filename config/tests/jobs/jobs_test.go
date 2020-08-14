@@ -1017,8 +1017,7 @@ func isKubernetesReleaseBlocking(job cfg.JobBase) bool {
 	return re.MatchString(dashboards)
 }
 
-// TODO: s/Should/Must and s/Logf/Errorf when all jobs pass
-func TestKubernetesMergeBlockingJobsShouldHavePodQOSGuaranteed(t *testing.T) {
+func TestKubernetesMergeBlockingJobsMustHavePodQOSGuaranteed(t *testing.T) {
 	repo := "kubernetes/kubernetes"
 	jobs := c.AllStaticPresubmits([]string{repo})
 	sort.Slice(jobs, func(i, j int) bool {
@@ -1032,7 +1031,7 @@ func TestKubernetesMergeBlockingJobsShouldHavePodQOSGuaranteed(t *testing.T) {
 		branches := job.Branches
 		errs := verifyPodQOSGuaranteed(job.Spec)
 		for _, err := range errs {
-			t.Logf("%v (%v): %v", job.Name, branches, err)
+			t.Errorf("%v (%v): %v", job.Name, branches, err)
 		}
 	}
 }
