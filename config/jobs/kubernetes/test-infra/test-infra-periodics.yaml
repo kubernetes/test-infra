@@ -45,6 +45,13 @@ periodics:
       - name: service
         mountPath: /etc/service-account
         readOnly: true
+      resources:
+        requests:
+          cpu: 4
+          memory: 2Gi
+        limits:
+          cpu: 4
+          memory: 2Gi
     volumes:
     - name: service
       secret:
