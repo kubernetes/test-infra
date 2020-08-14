@@ -49,7 +49,6 @@ periodics:
       args: ["I am the second container"]
   annotations:
     testgrid-alert-email: anthonytong@google.com
-    ProwMultipleContainerSupport: Yes, I know what I'm doing.
     testgrid-dashboards: sig-testing-canaries
     testgrid-tab-name: multiple-container-test
     description: echo from two different containers
@@ -62,7 +61,6 @@ periodics:
     base_ref: master
     path_alias: k8s.io/test-infra
   labels:
-    preset-service-account: "true"
     preset-bazel-scratch-dir: "true"
   spec:
     containers:
@@ -86,7 +84,6 @@ periodics:
       - //...
   annotations:
     testgrid-alert-email: anthonytong@google.com
-    ProwMultipleContainerSupport: Yes, I know what I'm doing.
     testgrid-dashboards: sig-testing-canaries
     testgrid-tab-name: larger-multiple-container-test
     description: combination of test-infra-bazel and ci-test-infra-benchmark-demo to test more complicated multi container behavior
