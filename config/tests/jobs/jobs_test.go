@@ -817,7 +817,6 @@ func checkScenarioArgs(jobName, imageName string, args []string) error {
 	extracts := hasArg("--extract=", args)
 	sharedBuilds := hasArg("--use-shared-build", args)
 	nodeE2e := hasArg("--deployment=node", args)
-	localE2e := hasArg("--deployment=local", args)
 	builds := hasArg("--build", args)
 
 	if sharedBuilds && extracts {
@@ -855,25 +854,6 @@ func checkScenarioArgs(jobName, imageName string, args []string) error {
 
 	if hasArg("--image-family", args) != hasArg("--image-project", args) {
 		return fmt.Errorf("e2e jobs %s should have both --image-family and --image-project, or none of them", jobName)
-	}
-
-	if strings.HasPrefix(jobName, "pull-kubernetes-") &&
-		!nodeE2e &&
-		!localE2e &&
-		!strings.Contains(jobName, "kubeadm") {
-		stage := "gs://kubernetes-release-pull/ci/" + jobName
-		if strings.Contains(jobName, "gke") {
-			stage = "gs://kubernetes-release-dev/ci"
-			if !hasArg("--stage-suffix="+jobName, args) {
-				return fmt.Errorf("presubmit gke jobs %s - need to have --stage-suffix=%s", jobName, jobName)
-			}
-		}
-
-		if !sharedBuilds {
-			if !hasArg("--stage="+stage, args) {
-				return fmt.Errorf("presubmit jobs %s - need to stage to %s", jobName, stage)
-			}
-		}
 	}
 
 	// test_args should not have double slashes on ginkgo flags
