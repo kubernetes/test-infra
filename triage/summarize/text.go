@@ -29,6 +29,7 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"sync"
 
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/triage/berghelroach"
@@ -259,8 +260,8 @@ func commonSpans(xs []string) []int {
 
 /* Functions below this comment are only used within this file as of this commit. */
 
-// Will be used across makeNgramCounts() calls
-var memoizedNgramCounts = make(map[string][]int)
+var memoizedNgramCounts = make(map[string][]int) // Will be used across makeNgramCounts() calls
+var memoizedNgramCountsMutex sync.RWMutex        // makeNgramCounts is eventually depended on by some parallelized functions
 
 /*
 makeNgramCounts converts a string into a histogram of frequencies for different byte combinations.
@@ -272,12 +273,24 @@ This makes the output count size constant.
 */
 func makeNgramCounts(s string) []int {
 	size := 64
+
+	memoizedNgramCountsMutex.RLock() // Lock the map for reading
 	if _, ok := memoizedNgramCounts[s]; !ok {
+		memoizedNgramCountsMutex.RUnlock() // Unlock while calculating
+
 		counts := make([]int, size)
 		for x := 0; x < len(s)-3; x++ {
 			counts[int(crc32.Checksum([]byte(s[x:x+4]), crc32.IEEETable)&uint32(size-1))]++
 		}
+
+		memoizedNgramCountsMutex.Lock() // Lock the map for writing
 		memoizedNgramCounts[s] = counts // memoize
+		memoizedNgramCountsMutex.Unlock()
+
+		return counts
+	} else {
+		result := memoizedNgramCounts[s]
+		memoizedNgramCountsMutex.RUnlock()
+		return result
 	}
-	return memoizedNgramCounts[s]
 }
