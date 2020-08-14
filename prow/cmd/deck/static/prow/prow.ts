@@ -575,7 +575,12 @@ function redraw(fz: FuzzySearch): void {
             if (pod_spec == null || pod_spec.containers.length <= 1) {
                 logIcon.href = `log?job=${job}&id=${build_id}`;
             } else {
-                if (url.includes('/view/')) {
+                // this logic exists for legacy jobs that are configured for gubernator compatibility
+                const buildIndex = url.indexOf('/build/');
+                if (buildIndex !== -1) {
+                    const gcsUrl = `${window.location.origin}/view/gcs/${url.substring(buildIndex + '/build/'.length)}`;
+                    logIcon.href = gcsUrl;
+                } else if (url.includes('/view/')) {
                     logIcon.href = url;
                 }
             }
@@ -622,6 +627,7 @@ function redraw(fz: FuzzySearch): void {
             r.appendChild(cell.text(""));
         }
         if (spyglass) {
+            // this logic exists for legacy jobs that are configured for gubernator compatibility
             const buildIndex = url.indexOf('/build/');
             if (buildIndex !== -1) {
                 const gcsUrl = `${window.location.origin}/view/gcs/${url.substring(buildIndex + '/build/'.length)}`;

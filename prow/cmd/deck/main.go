@@ -798,6 +798,10 @@ func handleProwJobs(ja *jobs.JobAgent, log *logrus.Entry) http.HandlerFunc {
 					jobs[i].Spec.DecorationConfig = nil
 				}
 				if set.Has(PodSpec) {
+					// when we omit the podspec, we don't set it completely to nil
+					// instead, we set it to a new podspec that just has an empty container for each container that exists in the actual podspec
+					// this is so we can determine how many containers there are for a given prowjob without fetching all of the podspec details
+					// this is necessary for prow/cmd/deck/static/prow/prow.ts to determine whether the logIcon should link to a log endpoint or to spyglass
 					emptyContainers := []coreapi.Container{}
 					for range jobs[i].Spec.PodSpec.Containers {
 						emptyContainers = append(emptyContainers, coreapi.Container{})
