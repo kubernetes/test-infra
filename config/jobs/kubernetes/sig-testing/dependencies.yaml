@@ -1,6 +1,7 @@
 presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-dependencies
+    cluster: k8s-infra-prow-build
     path_alias: "k8s.io/kubernetes"
     decorate: true
     skip_branches:
