@@ -5,7 +5,7 @@ Fixes #
 
 **Specify your PR reviewers**:
 <!-- Add or remove reviewers as your request -->
-/cc @gyliu513 @morvencao @clyang82
+/cc @gyliu513 @morvencao
 
 **Special notes for your reviewer**:
 
