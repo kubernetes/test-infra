@@ -22,6 +22,7 @@ periodics:
       - --extract=release/latest
       - --ginkgo-parallel
       - --kops-args=--gce-service-account=pr-kubekins@kubernetes-jenkins-pull.iam.gserviceaccount.com
+      - --kops-feature-flags=GoogleCloudBucketACL
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --kops-zones=us-central1-c
@@ -57,6 +58,7 @@ periodics:
       - --ginkgo-parallel
       # Temporarily use default service account: https://github.com/kubernetes/test-infra/issues/17558
       #- --kops-args=--gce-service-account=pr-kubekins@kubernetes-jenkins-pull.iam.gserviceaccount.com
+      - --kops-feature-flags=GoogleCloudBucketACL
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --kops-zones=us-central1-c
@@ -92,6 +94,7 @@ periodics:
       - --ginkgo-parallel
       - --kops-args=--gce-service-account=pr-kubekins@kubernetes-jenkins-pull.iam.gserviceaccount.com
       - --kops-build
+      - --kops-feature-flags=GoogleCloudBucketACL
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-zones=us-central1-c
       - --provider=gce
