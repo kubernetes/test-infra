@@ -1,6 +1,7 @@
 presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-verify
+    cluster: k8s-infra-prow-build
     always_run: true
     decorate: true
     skip_branches:
