@@ -10,7 +10,7 @@ postsubmits:
     run_if_changed: 'prow/docker/check-tool/*'
     spec:
       containers:
-      - image: quay.io/multicloudlab/multicloudlab-builder-amd64:v20200228-42746cb02
+      - image: quay.io/multicloudlab/build-tool:v20200806-cf0548d
         command:
         - entrypoint
         - make
@@ -27,7 +27,7 @@ postsubmits:
     run_if_changed: 'prow/docker/build-tool/*'
     spec:
       containers:
-      - image: quay.io/multicloudlab/multicloudlab-builder-amd64:v20200228-42746cb02
+      - image: quay.io/multicloudlab/build-tool:v20200806-cf0548d
         command:
         - entrypoint
         - make
@@ -44,7 +44,7 @@ postsubmits:
     run_if_changed: 'prow/docker/build-tool/*'
     spec:
       containers:
-      - image: quay.io/multicloudlab/multicloudlab-builder-ppc64le:v20200228-42746cb02
+      - image: quay.io/multicloudlab/build-tool:v20200806-cf0548d
         command:
         - entrypoint
         - make
@@ -61,7 +61,7 @@ postsubmits:
     run_if_changed: 'prow/docker/build-tool/*'
     spec:
       containers:
-      - image: quay.io/multicloudlab/multicloudlab-builder-s390x:v20200228-42746cb02
+      - image: quay.io/multicloudlab/build-tool:v20200806-cf0548d
         command:
         - entrypoint
         - make
@@ -78,7 +78,7 @@ postsubmits:
     run_if_changed: 'prow/docker/build-tool/*'
     spec:
       containers:
-      - image: quay.io/multicloudlab/multicloudlab-builder-amd64:v20200228-42746cb02
+      - image: quay.io/multicloudlab/build-tool:v20200806-cf0548d
         command:
         - entrypoint
         - make
