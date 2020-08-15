@@ -301,3 +301,4 @@ presubmits:
       testgrid-alert-stale-results-hours: '24'
       testgrid-create-test-group: 'true'
       testgrid-dashboards: sig-testing-kind
+    cluster: k8s-infra-prow-build
