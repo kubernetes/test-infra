@@ -440,7 +440,7 @@ presubmits:
   - name: pull-kubernetes-e2e-windows-gce
     decorate: true
     decoration_config:
-      timeout: 200m
+      timeout: 300m
     path_alias: k8s.io/kubernetes
     extra_refs:
     - org: kubernetes
