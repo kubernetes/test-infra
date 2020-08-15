@@ -129,7 +129,7 @@ postsubmits:
         - entrypoint
         - make
         - images
-        image: quay.io/multicloudlab/multicloudlab-builder:v20191217-d33a10d
+        image: quay.io/multicloudlab/build-tool:v20200806-cf0548d
         name: ""
         securityContext:
           privileged: true
