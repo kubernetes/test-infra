@@ -135,6 +135,13 @@ func TestOptions_Run(t *testing.T) {
 			expectedMarker: "4",
 			expectedCode:   4,
 		},
+		{
+			name:           "start error is written to log",
+			args:           []string{"./this-command-does-not-exist"},
+			expectedLog:    "could not start the process: fork/exec ./this-command-does-not-exist: no such file or directory",
+			expectedMarker: "127",
+			expectedCode:   InternalErrorCode,
+		},
 	}
 
 	// we write logs to the process log if wrapping fails

@@ -27,4 +27,4 @@ them when they have up-to-date passing test results ("tide goes out").
 
 ## History
 
-Tide was created in 2017 by @spxtr to replace [Mungegithub's](/mungegithub) Submit Queue.  It was designed to manage a large number of repositories across organizations without using many API rate limit tokens by identifying mergeable PRs with GitHub search queries fulfilled by GitHub's v4 GraphQL API.
+Tide was created in 2017 by @spxtr to replace `mungegithub`'s Submit Queue.  It was designed to manage a large number of repositories across organizations without using many API rate limit tokens by identifying mergeable PRs with GitHub search queries fulfilled by GitHub's v4 GraphQL API.

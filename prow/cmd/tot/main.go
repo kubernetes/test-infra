@@ -34,6 +34,8 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/config"
+	prowflagutil "k8s.io/test-infra/prow/flagutil"
+	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
@@ -47,9 +49,10 @@ type options struct {
 	useFallback bool
 	fallbackURI string
 
-	configPath     string
-	jobConfigPath  string
-	fallbackBucket string
+	configPath             string
+	jobConfigPath          string
+	fallbackBucket         string
+	instrumentationOptions prowflagutil.InstrumentationOptions
 }
 
 func gatherOptions() options {
@@ -68,7 +71,7 @@ func gatherOptions() options {
 	flag.StringVar(&o.fallbackBucket, "fallback-bucket", "",
 		"Fallback to top-level bucket for jobs that lack a last vended build number. The bucket layout is expected to follow https://github.com/kubernetes/test-infra/tree/master/gubernator#gcs-bucket-layout",
 	)
-
+	o.instrumentationOptions.AddFlags(flag.CommandLine)
 	flag.Parse()
 	return o
 }
@@ -233,14 +236,14 @@ func (f fallbackHandler) getURL(jobName string) string {
 	var spec *downwardapi.JobSpec
 	cfg := f.configAgent.Config()
 
-	for _, pre := range cfg.AllPresubmits(nil) {
+	for _, pre := range cfg.AllStaticPresubmits(nil) {
 		if jobName == pre.Name {
 			spec = pjutil.PresubmitToJobSpec(pre)
 			break
 		}
 	}
 	if spec == nil {
-		for _, post := range cfg.AllPostsubmits(nil) {
+		for _, post := range cfg.AllStaticPostsubmits(nil) {
 			if jobName == post.Name {
 				spec = pjutil.PostsubmitToJobSpec(post)
 				break
@@ -269,15 +272,16 @@ func (f fallbackHandler) getURL(jobName string) string {
 }
 
 func main() {
+	logrusutil.ComponentInit()
+
 	o := gatherOptions()
 	if err := o.Validate(); err != nil {
 		logrus.Fatalf("Invalid options: %v", err)
 	}
-	logrus.SetFormatter(
-		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "tot"}),
-	)
 
-	pjutil.ServePProf()
+	defer interrupts.WaitForGracefulShutdown()
+
+	pjutil.ServePProf(o.instrumentationOptions.PProfPort)
 	health := pjutil.NewHealth()
 
 	s, err := newStore(o.storagePath)
@@ -301,9 +305,9 @@ func main() {
 		}.get
 	}
 
-	http.HandleFunc("/vend/", s.handle)
-
+	mux := http.NewServeMux()
+	mux.HandleFunc("/vend/", s.handle)
+	server := &http.Server{Addr: ":" + strconv.Itoa(o.port), Handler: mux}
 	health.ServeReady()
-
-	logrus.Fatal(http.ListenAndServe(":"+strconv.Itoa(o.port), nil))
+	interrupts.ListenAndServe(server, 5*time.Second)
 }

@@ -39,7 +39,7 @@ func MakeCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "download [bucket] [prowjob]",
 		Short: "Finds and downloads the coverage profile file from the latest healthy build",
-		Long: `Finds and downloads the coverage profile file from the latest healthy build 
+		Long: `Finds and downloads the coverage profile file from the latest healthy build
 stored in given gcs directory.`,
 		Run: func(cmd *cobra.Command, args []string) {
 			run(flags, cmd, args)

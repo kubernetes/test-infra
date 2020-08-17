@@ -21,6 +21,7 @@ import (
 	"strings"
 	"testing"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/plugins"
@@ -87,7 +88,7 @@ func TestPush(t *testing.T) {
 	pushEvManualBranchWhiteListed := pushEv
 	pushEvManualBranchWhiteListed.Pusher.Name = "Warren Teened"
 	pushEvManualBranchWhiteListed.Pusher.Email = "wteened@users.noreply.github.com"
-	pushEvManualBranchWhiteListed.Sender.Login = "wteened"
+	pushEvManualBranchWhiteListed.Sender.Login = "WTeened"
 	pushEvManualBranchWhiteListed.Ref = "refs/heads/warrens-branch"
 
 	pushEvManualNotBranchWhiteListed := pushEvManualBranchWhiteListed
@@ -146,12 +147,12 @@ func TestPush(t *testing.T) {
 			expectedMessages: noMessages,
 		},
 		{
-			name:             "If PR merged by a user not in the whitelist but in THIS branch whitelist, we should NOT send a message to sig-contrib-ax and kubernetes-dev.",
+			name:             "If PR merged by a user not in the whitelist but in THIS branch whitelist, we should NOT send a message to sig-contribex and kubernetes-dev.",
 			pushReq:          pushEvManualBranchWhiteListed,
 			expectedMessages: noMessages,
 		},
 		{
-			name:             "If PR merged by a user not in the whitelist, in a branch whitelist, but not THIS branch whitelist, we should send a message to sig-contrib-ax and kubernetes-dev.",
+			name:             "If PR merged by a user not in the whitelist, in a branch whitelist, but not THIS branch whitelist, we should send a message to sig-contribex and kubernetes-dev.",
 			pushReq:          pushEvManualBranchWhiteListed,
 			expectedMessages: noMessages,
 		},
@@ -319,27 +320,20 @@ func TestComment(t *testing.T) {
 }
 
 func TestHelpProvider(t *testing.T) {
+	enabledRepos := []config.OrgRepo{
+		{Org: "org1", Repo: "repo"},
+		{Org: "org2", Repo: "repo"},
+	}
 	cases := []struct {
 		name         string
 		config       *plugins.Configuration
-		enabledRepos []string
+		enabledRepos []config.OrgRepo
 		err          bool
 	}{
 		{
 			name:         "Empty config",
 			config:       &plugins.Configuration{},
-			enabledRepos: []string{"org1", "org2/repo"},
-		},
-		{
-			name:         "Overlapping org and org/repo",
-			config:       &plugins.Configuration{},
-			enabledRepos: []string{"org2", "org2/repo"},
-		},
-		{
-			name:         "Invalid enabledRepos",
-			config:       &plugins.Configuration{},
-			enabledRepos: []string{"org1", "org2/repo/extra"},
-			err:          true,
+			enabledRepos: enabledRepos,
 		},
 		{
 			name: "All configs enabled",
@@ -358,7 +352,7 @@ func TestHelpProvider(t *testing.T) {
 					},
 				},
 			},
-			enabledRepos: []string{"org1", "org2/repo"},
+			enabledRepos: enabledRepos,
 		},
 	}
 	for _, c := range cases {

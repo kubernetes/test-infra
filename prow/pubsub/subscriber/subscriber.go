@@ -17,6 +17,7 @@ limitations under the License.
 package subscriber
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
@@ -25,6 +26,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	coreapi "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
@@ -69,7 +71,7 @@ func (pe *PeriodicProwJobEvent) ToMessage() (*pubsub.Message, error) {
 
 // ProwJobClient mostly for testing.
 type ProwJobClient interface {
-	Create(job *prowapi.ProwJob) (*prowapi.ProwJob, error)
+	Create(context.Context, *prowapi.ProwJob, metav1.CreateOptions) (*prowapi.ProwJob, error)
 }
 
 // Subscriber handles Pub/Sub subscriptions, update metrics,
@@ -181,10 +183,11 @@ func (s *Subscriber) handlePeriodicJob(l *logrus.Entry, msg messageInterface, su
 	if periodicJob == nil {
 		err := fmt.Errorf("failed to find associated periodic job %q", pe.Name)
 		l.WithError(err).Errorf("failed to create job %q", pe.Name)
-		prowJob = pjutil.NewProwJobWithAnnotation(prowapi.ProwJobSpec{}, nil, pe.Annotations)
+		prowJob = pjutil.NewProwJob(prowapi.ProwJobSpec{}, nil, pe.Annotations)
 		reportProwJobFailure(&prowJob, err)
 		return err
 	}
+
 	prowJobSpec := pjutil.PeriodicSpec(*periodicJob)
 	// Adds / Updates Labels from prow job event
 	for k, v := range pe.Labels {
@@ -192,17 +195,18 @@ func (s *Subscriber) handlePeriodicJob(l *logrus.Entry, msg messageInterface, su
 	}
 
 	// Adds annotations
-	prowJob = pjutil.NewProwJobWithAnnotation(prowJobSpec, periodicJob.Labels, pe.Annotations)
+	prowJob = pjutil.NewProwJob(prowJobSpec, periodicJob.Labels, pe.Annotations)
 	// Adds / Updates Environments to containers
 	if prowJob.Spec.PodSpec != nil {
-		for _, c := range prowJob.Spec.PodSpec.Containers {
+		for i, c := range prowJob.Spec.PodSpec.Containers {
 			for k, v := range pe.Envs {
 				c.Env = append(c.Env, coreapi.EnvVar{Name: k, Value: v})
 			}
+			prowJob.Spec.PodSpec.Containers[i].Env = c.Env
 		}
 	}
 
-	if _, err := s.ProwJobClient.Create(&prowJob); err != nil {
+	if _, err := s.ProwJobClient.Create(context.TODO(), &prowJob, metav1.CreateOptions{}); err != nil {
 		l.WithError(err).Errorf("failed to create job %q as %q", pe.Name, prowJob.Name)
 		reportProwJobFailure(&prowJob, err)
 		return err

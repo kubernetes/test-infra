@@ -80,7 +80,7 @@ Additional fields may be required for some use cases:
 - Repos requiring a non-standard clone path can use the `path_alias` field
 to clone the repo to different go import path than the default of `/home/prow/go/src/github.com/{{.Org}}/{{.Repo}}/` (e.g. `path_alias: k8s.io/test-infra` -> `/home/prow/go/src/k8s.io/test-infra`).
 - Jobs that require additional repos to be checked out can arrange for that with
-the `exta_refs` field.
+the `exta_refs` field. If the cloned path of this repo must be used as a default working dir the `workdir: true` must be specified.
 - Jobs that do not want submodules to be cloned should set `skip_submodules` to `true`
 - Jobs that want to perform shallow cloning can use `clone_depth` field. It can be set to desired clone depth. By default, clone_depth get set to 0 which results in full clone of repo.
 
@@ -95,6 +95,7 @@ the `exta_refs` field.
   - org: kubernetes
     repo: other-repo
     base_ref: master
+    workdir: false
   skip_submodules: true
   clone_depth: 0
   spec:
@@ -113,7 +114,7 @@ Writing a ProwJob that uses the Pod Utilities is much easier than writing one
 that doesn't because the Pod Utilities will transparently handle many of the
 tasks the job would otherwise need to do in order to prepare its environment
 and output more than pass/fail. Historically, this was achieved by wrapping
-every job with a [bootstrap.py](jenkins/bootstrap.py) script that handled cloning
+every job with a [bootstrap.py](/jenkins/bootstrap.py) script that handled cloning
 source code, preparing the test environment, and uploading job metadata, logs,
 and artifacts. This was cumbersome to configure and required every job to be
 wrapped with the script in the job image. The pod utilities achieve the same goals

@@ -24,12 +24,13 @@ import (
 	"regexp"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/sirupsen/logrus"
 	"sigs.k8s.io/yaml"
 
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/test-infra/prow/git"
+	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 
 	prowConf "k8s.io/test-infra/prow/config"
@@ -41,8 +42,6 @@ const (
 	// GitHub's api uses "" (empty) string as basedir by convention but it's clearer to use "/"
 	baseDirConvention = ""
 )
-
-var commonDirBlacklist = []string{"^\\.git$", "^_output$"}
 
 type dirOptions struct {
 	NoParentOwners bool `json:"no_parent_owners,omitempty"`
@@ -78,6 +77,51 @@ type githubClient interface {
 	GetRef(org, repo, ref string) (string, error)
 }
 
+func newCache() *cache {
+	return &cache{
+		lockMapLock: &sync.Mutex{},
+		lockMap:     map[string]*sync.Mutex{},
+		dataLock:    &sync.Mutex{},
+		data:        map[string]cacheEntry{},
+	}
+}
+
+type cache struct {
+	// These are used to lock access to individual keys to avoid wasted tokens
+	// on concurrent requests. This has no effect when using ghproxy, as ghproxy
+	// serializes identical requests anyways. This should be removed once ghproxy
+	// is made mandatory.
+	lockMapLock *sync.Mutex
+	lockMap     map[string]*sync.Mutex
+
+	dataLock *sync.Mutex
+	data     map[string]cacheEntry
+}
+
+// getEntry returns the data for the key, a boolean indicating if data existed and a lock.
+// The lock is already locked, it must be unlocked by the caller.
+func (c *cache) getEntry(key string) (cacheEntry, bool, *sync.Mutex) {
+	c.lockMapLock.Lock()
+	entryLock, ok := c.lockMap[key]
+	if !ok {
+		c.lockMap[key] = &sync.Mutex{}
+		entryLock = c.lockMap[key]
+	}
+	c.lockMapLock.Unlock()
+
+	entryLock.Lock()
+	c.dataLock.Lock()
+	defer c.dataLock.Unlock()
+	entry, ok := c.data[key]
+	return entry, ok, entryLock
+}
+
+func (c *cache) setEntry(key string, data cacheEntry) {
+	c.dataLock.Lock()
+	c.data[key] = data
+	c.dataLock.Unlock()
+}
+
 type cacheEntry struct {
 	sha     string
 	aliases RepoAliases
@@ -96,6 +140,9 @@ func (entry cacheEntry) fullyLoaded() bool {
 type Interface interface {
 	LoadRepoAliases(org, repo, base string) (RepoAliases, error)
 	LoadRepoOwners(org, repo, base string) (RepoOwner, error)
+
+	WithFields(fields logrus.Fields) Interface
+	WithGitHubClient(client github.Client) Interface
 }
 
 // Client is an implementation of the Interface.
@@ -103,35 +150,59 @@ var _ Interface = &Client{}
 
 // Client is the repoowners client
 type Client struct {
-	git    *git.Client
-	ghc    githubClient
 	logger *logrus.Entry
+	ghc    githubClient
+	*delegate
+}
+
+type delegate struct {
+	git git.ClientFactory
 
 	mdYAMLEnabled      func(org, repo string) bool
 	skipCollaborators  func(org, repo string) bool
 	ownersDirBlacklist func() prowConf.OwnersDirBlacklist
 
-	lock  sync.Mutex
-	cache map[string]cacheEntry
+	cache *cache
+}
+
+// WithFields clones the client, keeping the underlying delegate the same but adding
+// fields to the logging context
+func (c *Client) WithFields(fields logrus.Fields) Interface {
+	return &Client{
+		logger:   c.logger.WithFields(fields),
+		delegate: c.delegate,
+	}
+}
+
+// WithGitHubClient clones the client, keeping the underlying delegate the same but adding
+// a new GitHub Client. This is useful when making use a context-local client
+func (c *Client) WithGitHubClient(client github.Client) Interface {
+	return &Client{
+		logger:   c.logger,
+		ghc:      client,
+		delegate: c.delegate,
+	}
 }
 
 // NewClient is the constructor for Client
 func NewClient(
-	gc *git.Client,
-	ghc *github.Client,
+	gc git.ClientFactory,
+	ghc github.Client,
 	mdYAMLEnabled func(org, repo string) bool,
 	skipCollaborators func(org, repo string) bool,
 	ownersDirBlacklist func() prowConf.OwnersDirBlacklist,
 ) *Client {
 	return &Client{
-		git:    gc,
-		ghc:    ghc,
 		logger: logrus.WithField("client", "repoowners"),
-		cache:  make(map[string]cacheEntry),
+		ghc:    ghc,
+		delegate: &delegate{
+			git:   gc,
+			cache: newCache(),
 
-		mdYAMLEnabled:      mdYAMLEnabled,
-		skipCollaborators:  skipCollaborators,
-		ownersDirBlacklist: ownersDirBlacklist,
+			mdYAMLEnabled:      mdYAMLEnabled,
+			skipCollaborators:  skipCollaborators,
+			ownersDirBlacklist: ownersDirBlacklist,
+		},
 	}
 }
 
@@ -149,6 +220,9 @@ type RepoOwner interface {
 	LeafReviewers(path string) sets.String
 	Reviewers(path string) sets.String
 	RequiredReviewers(path string) sets.String
+	ParseSimpleConfig(path string) (SimpleConfig, error)
+	ParseFullConfig(path string) (FullConfig, error)
+	TopLevelApprovers() sets.String
 }
 
 var _ RepoOwner = &RepoOwners{}
@@ -183,12 +257,11 @@ func (c *Client) LoadRepoAliases(org, repo, base string) (RepoAliases, error) {
 		return nil, fmt.Errorf("failed to get current SHA for %s: %v", fullName, err)
 	}
 
-	c.lock.Lock()
-	defer c.lock.Unlock()
-	entry, ok := c.cache[fullName]
+	entry, ok, entryLock := c.cache.getEntry(fullName)
+	defer entryLock.Unlock()
 	if !ok || entry.sha != sha {
 		// entry is non-existent or stale.
-		gitRepo, err := c.git.Clone(cloneRef)
+		gitRepo, err := c.git.ClientFor(org, repo)
 		if err != nil {
 			return nil, fmt.Errorf("failed to clone %s: %v", cloneRef, err)
 		}
@@ -197,9 +270,9 @@ func (c *Client) LoadRepoAliases(org, repo, base string) (RepoAliases, error) {
 			return nil, err
 		}
 
-		entry.aliases = loadAliasesFrom(gitRepo.Dir, log)
+		entry.aliases = loadAliasesFrom(gitRepo.Directory(), log)
 		entry.sha = sha
-		c.cache[fullName] = entry
+		c.cache.setEntry(fullName, entry)
 	}
 
 	return entry.aliases, nil
@@ -211,53 +284,101 @@ func (c *Client) LoadRepoOwners(org, repo, base string) (RepoOwner, error) {
 	log := c.logger.WithFields(logrus.Fields{"org": org, "repo": repo, "base": base})
 	cloneRef := fmt.Sprintf("%s/%s", org, repo)
 	fullName := fmt.Sprintf("%s:%s", cloneRef, base)
-	mdYaml := c.mdYAMLEnabled(org, repo)
 
+	start := time.Now()
 	sha, err := c.ghc.GetRef(org, repo, fmt.Sprintf("heads/%s", base))
 	if err != nil {
 		return nil, fmt.Errorf("failed to get current SHA for %s: %v", fullName, err)
 	}
+	log.WithField("duration", time.Since(start).String()).Debugf("Completed ghc.GetRef(%s, %s, %s)", org, repo, fmt.Sprintf("heads/%s", base))
 
-	c.lock.Lock()
-	defer c.lock.Unlock()
-	entry, ok := c.cache[fullName]
+	entry, err := c.cacheEntryFor(org, repo, base, cloneRef, fullName, sha, log)
+	if err != nil {
+		return nil, err
+	}
+
+	start = time.Now()
+	if c.skipCollaborators(org, repo) {
+		log.WithField("duration", time.Since(start).String()).Debugf("Completed c.skipCollaborators(%s, %s)", org, repo)
+		log.Debugf("Skipping collaborator checks for %s/%s", org, repo)
+		return entry.owners, nil
+	}
+	log.WithField("duration", time.Since(start).String()).Debugf("Completed c.skipCollaborators(%s, %s)", org, repo)
+
+	var owners *RepoOwners
+	// Filter collaborators. We must filter the RepoOwners struct even if it came from the cache
+	// because the list of collaborators could have changed without the git SHA changing.
+	start = time.Now()
+	collaborators, err := c.ghc.ListCollaborators(org, repo)
+	log.WithField("duration", time.Since(start).String()).Debugf("Completed ghc.ListCollaborators(%s, %s)", org, repo)
+	if err != nil {
+		log.WithError(err).Errorf("Failed to list collaborators while loading RepoOwners. Skipping collaborator filtering.")
+		owners = entry.owners
+	} else {
+		start = time.Now()
+		owners = entry.owners.filterCollaborators(collaborators)
+		log.WithField("duration", time.Since(start).String()).Debugf("Completed owners.filterCollaborators(collaborators)")
+	}
+	return owners, nil
+}
+
+func (c *Client) cacheEntryFor(org, repo, base, cloneRef, fullName, sha string, log *logrus.Entry) (cacheEntry, error) {
+	mdYaml := c.mdYAMLEnabled(org, repo)
+	lockStart := time.Now()
+	defer func() {
+		log.WithField("duration", time.Since(lockStart).String()).Debug("Locked section of loadRepoOwners completed")
+	}()
+	entry, ok, entryLock := c.cache.getEntry(fullName)
+	defer entryLock.Unlock()
 	if !ok || entry.sha != sha || entry.owners == nil || !entry.matchesMDYAML(mdYaml) {
-		gitRepo, err := c.git.Clone(cloneRef)
+		start := time.Now()
+		gitRepo, err := c.git.ClientFor(org, repo)
 		if err != nil {
-			return nil, fmt.Errorf("failed to clone %s: %v", cloneRef, err)
+			return cacheEntry{}, fmt.Errorf("failed to clone %s: %v", cloneRef, err)
 		}
+		log.WithField("duration", time.Since(start).String()).Debugf("Completed git.ClientFor(%s, %s)", org, repo)
 		defer gitRepo.Clean()
 
 		reusable := entry.fullyLoaded() && entry.matchesMDYAML(mdYaml)
 		// In most sha changed cases, the files associated with the owners are unchanged.
 		// The cached entry can continue to be used, so need do git diff
 		if reusable {
+			start = time.Now()
 			changes, err := gitRepo.Diff(sha, entry.sha)
 			if err != nil {
-				return nil, fmt.Errorf("failed to diff %s with %s", sha, entry.sha)
+				return cacheEntry{}, fmt.Errorf("failed to diff %s with %s", sha, entry.sha)
 			}
+			log.WithField("duration", time.Since(start).String()).Debugf("Completed git.Diff(%s, %s)", sha, entry.sha)
+			start = time.Now()
 			for _, change := range changes {
 				if mdYaml && strings.HasSuffix(change, ".md") ||
 					strings.HasSuffix(change, aliasesFileName) ||
 					strings.HasSuffix(change, ownersFileName) {
 					reusable = false
+					log.WithField("duration", time.Since(start).String()).Debugf("Completed owners change verification loop")
 					break
 				}
 			}
+			log.WithField("duration", time.Since(start).String()).Debugf("Completed owners change verification loop")
 		}
 		if reusable {
 			entry.sha = sha
 		} else {
+			start = time.Now()
 			if err := gitRepo.Checkout(base); err != nil {
-				return nil, err
+				return cacheEntry{}, err
 			}
+			log.WithField("duration", time.Since(start).String()).Debugf("Completed gitRepo.Checkout(%s)", base)
 
+			start = time.Now()
 			if entry.aliases == nil || entry.sha != sha {
 				// aliases must be loaded
-				entry.aliases = loadAliasesFrom(gitRepo.Dir, log)
+				entry.aliases = loadAliasesFrom(gitRepo.Directory(), log)
 			}
+			log.WithField("duration", time.Since(start).String()).Debugf("Completed loadAliasesFrom(%s, log)", gitRepo.Directory())
 
-			dirBlacklistPatterns := append(c.ownersDirBlacklist().DirBlacklist(org, repo), commonDirBlacklist...)
+			start = time.Now()
+			dirBlacklistPatterns := c.ownersDirBlacklist().DirBlacklist(org, repo)
 			var dirBlacklist []*regexp.Regexp
 			for _, pattern := range dirBlacklistPatterns {
 				re, err := regexp.Compile(pattern)
@@ -267,32 +388,19 @@ func (c *Client) LoadRepoOwners(org, repo, base string) (RepoOwner, error) {
 				}
 				dirBlacklist = append(dirBlacklist, re)
 			}
+			log.WithField("duration", time.Since(start).String()).Debugf("Completed dirBlacklist loading")
 
-			entry.owners, err = loadOwnersFrom(gitRepo.Dir, mdYaml, entry.aliases, dirBlacklist, log)
+			start = time.Now()
+			entry.owners, err = loadOwnersFrom(gitRepo.Directory(), mdYaml, entry.aliases, dirBlacklist, log)
 			if err != nil {
-				return nil, fmt.Errorf("failed to load RepoOwners for %s: %v", fullName, err)
+				return cacheEntry{}, fmt.Errorf("failed to load RepoOwners for %s: %v", fullName, err)
 			}
+			log.WithField("duration", time.Since(start).String()).Debugf("Completed loadOwnersFrom(%s, %t, entry.aliases, dirBlacklist, log)", gitRepo.Directory(), mdYaml)
 			entry.sha = sha
-			c.cache[fullName] = entry
+			c.cache.setEntry(fullName, entry)
 		}
 	}
-
-	if c.skipCollaborators(org, repo) {
-		log.Debugf("Skipping collaborator checks for %s/%s", org, repo)
-		return entry.owners, nil
-	}
-
-	var owners *RepoOwners
-	// Filter collaborators. We must filter the RepoOwners struct even if it came from the cache
-	// because the list of collaborators could have changed without the git SHA changing.
-	collaborators, err := c.ghc.ListCollaborators(org, repo)
-	if err != nil {
-		log.WithError(err).Errorf("Failed to list collaborators while loading RepoOwners. Skipping collaborator filtering.")
-		owners = entry.owners
-	} else {
-		owners = entry.owners.filterCollaborators(collaborators)
-	}
-	return owners, nil
+	return entry, nil
 }
 
 // ExpandAlias returns members of an alias
@@ -311,12 +419,26 @@ func (a RepoAliases) ExpandAliases(logins sets.String) sets.String {
 	// Make logins a copy of the original set to avoid modifying the original.
 	logins = logins.Union(nil)
 	for _, login := range logins.List() {
-		if expanded := a.ExpandAlias(login); len(expanded) > 0 {
+		if expanded, ok := a[github.NormLogin(login)]; ok {
 			logins.Delete(login)
 			logins = logins.Union(expanded)
 		}
 	}
 	return logins
+}
+
+// ExpandAllAliases returns members of all aliases mentioned, duplicates are pruned
+func (a RepoAliases) ExpandAllAliases() sets.String {
+	if a == nil {
+		return nil
+	}
+
+	var result, users sets.String
+	for alias := range a {
+		users = a.ExpandAlias(alias)
+		result = result.Union(users)
+	}
+	return result
 }
 
 func loadAliasesFrom(baseDir string, log *logrus.Entry) RepoAliases {
@@ -329,17 +451,9 @@ func loadAliasesFrom(baseDir string, log *logrus.Entry) RepoAliases {
 		log.WithError(err).Warnf("Failed to read alias file %q. Using empty alias map.", path)
 		return nil
 	}
-	config := &struct {
-		Data map[string][]string `json:"aliases,omitempty"`
-	}{}
-	if err := yaml.Unmarshal(b, config); err != nil {
+	result, err := ParseAliasesConfig(b)
+	if err != nil {
 		log.WithError(err).Errorf("Failed to unmarshal aliases from %q. Using empty alias map.", path)
-		return nil
-	}
-
-	result := make(RepoAliases)
-	for alias, expanded := range config.Data {
-		result[github.NormLogin(alias)] = normLogins(expanded)
 	}
 	log.Infof("Loaded %d aliases from %q.", len(result), path)
 	return result
@@ -405,7 +519,7 @@ func (o *RepoOwners) walkFunc(path string, info os.FileInfo, err error) error {
 		// Parse the yaml header from the file if it exists and marshal into the config
 		simple := &SimpleConfig{}
 		if err := decodeOwnersMdConfig(path, simple); err != nil {
-			log.WithError(err).Error("Error decoding OWNERS config from '*.md' file.")
+			log.WithError(err).Info("Error decoding OWNERS config from '*.md' file.")
 			return nil
 		}
 
@@ -419,15 +533,15 @@ func (o *RepoOwners) walkFunc(path string, info os.FileInfo, err error) error {
 		return nil
 	}
 
-	b, err := ioutil.ReadFile(path)
-	if err != nil {
-		log.WithError(err).Errorf("Failed to read the OWNERS file.")
-		return nil
+	simple, err := o.ParseSimpleConfig(path)
+	if err == filepath.SkipDir {
+		return err
 	}
-
-	simple, err := ParseSimpleConfig(b)
 	if err != nil || simple.Empty() {
-		c, err := ParseFullConfig(b)
+		c, err := o.ParseFullConfig(path)
+		if err == filepath.SkipDir {
+			return err
+		}
 		if err != nil {
 			log.WithError(err).Errorf("Failed to unmarshal %s into either Simple or FullConfig.", path)
 		} else {
@@ -452,20 +566,92 @@ func (o *RepoOwners) walkFunc(path string, info os.FileInfo, err error) error {
 	return nil
 }
 
-// ParseFullConfig will unmarshal OWNERS file's content into a FullConfig
-// Returns an error if the content cannot be unmarshalled
-func ParseFullConfig(b []byte) (FullConfig, error) {
+// ParseFullConfig will unmarshal the content of the OWNERS file at the path into a FullConfig.
+// If the OWNERS directory is blacklisted, it returns filepath.SkipDir.
+// Returns an error if the content cannot be unmarshalled.
+func (o *RepoOwners) ParseFullConfig(path string) (FullConfig, error) {
+	// if path is in a blacklisted directory, ignore it
+	dir := filepath.Dir(path)
+	for _, re := range o.dirBlacklist {
+		if re.MatchString(dir) {
+			return FullConfig{}, filepath.SkipDir
+		}
+	}
+
+	b, err := ioutil.ReadFile(path)
+	if err != nil {
+		return FullConfig{}, err
+	}
+	return LoadFullConfig(b)
+}
+
+// ParseSimpleConfig will unmarshal the content of the OWNERS file at the path into a SimpleConfig.
+// If the OWNERS directory is blacklisted, it returns filepath.SkipDir.
+// Returns an error if the content cannot be unmarshalled.
+func (o *RepoOwners) ParseSimpleConfig(path string) (SimpleConfig, error) {
+	// if path is in a blacklisted directory, ignore it
+	dir := filepath.Dir(path)
+	for _, re := range o.dirBlacklist {
+		if re.MatchString(dir) {
+			return SimpleConfig{}, filepath.SkipDir
+		}
+	}
+
+	b, err := ioutil.ReadFile(path)
+	if err != nil {
+		return SimpleConfig{}, err
+	}
+	return LoadSimpleConfig(b)
+}
+
+// LoadSimpleConfig loads SimpleConfig from bytes `b`
+func LoadSimpleConfig(b []byte) (SimpleConfig, error) {
+	simple := new(SimpleConfig)
+	err := yaml.Unmarshal(b, simple)
+	return *simple, err
+}
+
+// SaveSimpleConfig writes SimpleConfig to `path`
+func SaveSimpleConfig(simple SimpleConfig, path string) error {
+	b, err := yaml.Marshal(simple)
+	if err != nil {
+		return nil
+	}
+	return ioutil.WriteFile(path, b, 0644)
+}
+
+// LoadFullConfig loads FullConfig from bytes `b`
+func LoadFullConfig(b []byte) (FullConfig, error) {
 	full := new(FullConfig)
 	err := yaml.Unmarshal(b, full)
 	return *full, err
 }
 
-// ParseSimpleConfig will unmarshal an OWNERS file's content into a SimpleConfig
-// Returns an error if the content cannot be unmarshalled
-func ParseSimpleConfig(b []byte) (SimpleConfig, error) {
-	simple := new(SimpleConfig)
-	err := yaml.Unmarshal(b, simple)
-	return *simple, err
+// SaveFullConfig writes FullConfig to `path`
+func SaveFullConfig(full FullConfig, path string) error {
+	b, err := yaml.Marshal(full)
+	if err != nil {
+		return nil
+	}
+	return ioutil.WriteFile(path, b, 0644)
+}
+
+// ParseAliasesConfig will unmarshal an OWNERS_ALIASES file's content into RepoAliases.
+// Returns an error if the content cannot be unmarshalled.
+func ParseAliasesConfig(b []byte) (RepoAliases, error) {
+	result := make(RepoAliases)
+
+	config := &struct {
+		Data map[string][]string `json:"aliases,omitempty"`
+	}{}
+	if err := yaml.Unmarshal(b, config); err != nil {
+		return result, err
+	}
+
+	for alias, expanded := range config.Data {
+		result[github.NormLogin(alias)] = NormLogins(expanded)
+	}
+	return result, nil
 }
 
 var mdStructuredHeaderRegex = regexp.MustCompile("^---\n(.|\n)*\n---")
@@ -485,7 +671,8 @@ func decodeOwnersMdConfig(path string, config *SimpleConfig) error {
 	return yaml.Unmarshal([]byte(meta), &config)
 }
 
-func normLogins(logins []string) sets.String {
+// NormLogins normalizes logins
+func NormLogins(logins []string) sets.String {
 	normed := sets.NewString()
 	for _, login := range logins {
 		normed.Insert(github.NormLogin(login))
@@ -500,19 +687,19 @@ func (o *RepoOwners) applyConfigToPath(path string, re *regexp.Regexp, config *C
 		if o.approvers[path] == nil {
 			o.approvers[path] = make(map[*regexp.Regexp]sets.String)
 		}
-		o.approvers[path][re] = o.ExpandAliases(normLogins(config.Approvers))
+		o.approvers[path][re] = o.ExpandAliases(NormLogins(config.Approvers))
 	}
 	if len(config.Reviewers) > 0 {
 		if o.reviewers[path] == nil {
 			o.reviewers[path] = make(map[*regexp.Regexp]sets.String)
 		}
-		o.reviewers[path][re] = o.ExpandAliases(normLogins(config.Reviewers))
+		o.reviewers[path][re] = o.ExpandAliases(NormLogins(config.Reviewers))
 	}
 	if len(config.RequiredReviewers) > 0 {
 		if o.requiredReviewers[path] == nil {
 			o.requiredReviewers[path] = make(map[*regexp.Regexp]sets.String)
 		}
-		o.requiredReviewers[path][re] = o.ExpandAliases(normLogins(config.RequiredReviewers))
+		o.requiredReviewers[path][re] = o.ExpandAliases(NormLogins(config.RequiredReviewers))
 	}
 	if len(config.Labels) > 0 {
 		if o.labels[path] == nil {
@@ -673,4 +860,8 @@ func (o *RepoOwners) Reviewers(path string) sets.String {
 // will return both user1 and user2 for the path pkg/util/sets/file.go
 func (o *RepoOwners) RequiredReviewers(path string) sets.String {
 	return o.entriesForFile(path, o.requiredReviewers, false)
+}
+
+func (o *RepoOwners) TopLevelApprovers() sets.String {
+	return o.entriesForFile(".", o.approvers, false)
 }

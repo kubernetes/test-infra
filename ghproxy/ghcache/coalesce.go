@@ -24,6 +24,8 @@ import (
 	"sync"
 
 	"github.com/sirupsen/logrus"
+
+	"k8s.io/test-infra/ghproxy/ghmetrics"
 )
 
 // requestCoalescer allows concurrent requests for the same URI to share a
@@ -33,6 +35,8 @@ type requestCoalescer struct {
 	keys map[string]*responseWaiter
 
 	delegate http.RoundTripper
+
+	hasher ghmetrics.Hasher
 }
 
 type responseWaiter struct {
@@ -120,14 +124,14 @@ func (r *requestCoalescer) RoundTrip(req *http.Request) (*http.Response, error) 
 		waiter.L.Unlock()
 
 		if err != nil {
-			logrus.WithField("cache-key", key).WithError(err).Error("Error from cache transport layer.")
+			logrus.WithField("cache-key", key).WithError(err).Warn("Error from cache transport layer.")
 			return nil, err
 		}
 		cacheMode = cacheResponseMode(resp.Header)
 		return resp, nil
 	}()
 
-	cacheCounter.WithLabelValues(string(cacheMode)).Inc()
+	ghmetrics.CollectCacheRequestMetrics(string(cacheMode), req.URL.Path, req.Header.Get("User-Agent"), r.hasher.Hash(req))
 	if resp != nil {
 		resp.Header.Set(CacheModeHeader, string(cacheMode))
 	}

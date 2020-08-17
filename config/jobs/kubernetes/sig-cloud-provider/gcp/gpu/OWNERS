@@ -1,0 +1,12 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+reviewers:
+- jiayingz
+- mindprince
+- vishh
+approvers:
+- jiayingz
+- mindprince
+- vishh
+emeritus_approvers:
+- yguo0905

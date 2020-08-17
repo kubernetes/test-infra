@@ -26,22 +26,21 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"os/signal"
-	"syscall"
 	"time"
 
 	"github.com/NYTimes/gziphandler"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/test-infra/prow/pjutil"
 
 	"k8s.io/test-infra/pkg/flagutil"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
+	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/jenkins"
 	"k8s.io/test-infra/prow/logrusutil"
 	m "k8s.io/test-infra/prow/metrics"
+	"k8s.io/test-infra/prow/pjutil"
 )
 
 type options struct {
@@ -58,10 +57,12 @@ type options struct {
 	keyFile                string
 	caCertFile             string
 	csrfProtect            bool
+	skipReport             bool
 
-	dryRun     bool
-	kubernetes prowflagutil.ExperimentalKubernetesOptions
-	github     prowflagutil.GitHubOptions
+	dryRun                 bool
+	kubernetes             prowflagutil.KubernetesOptions
+	github                 prowflagutil.GitHubOptions
+	instrumentationOptions prowflagutil.InstrumentationOptions
 }
 
 func (o *options) Validate() error {
@@ -114,8 +115,9 @@ func gatherOptions() options {
 	fs.StringVar(&o.caCertFile, "ca-cert-file", "", "Path to a PEM-encoded CA certificate file.")
 	fs.BoolVar(&o.csrfProtect, "csrf-protect", false, "Request a CSRF protection token from Jenkins that will be used in all subsequent requests to Jenkins.")
 
+	fs.BoolVar(&o.skipReport, "skip-report", false, "Whether or not to ignore report with githubClient")
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Whether or not to make mutating API calls to GitHub/Kubernetes/Jenkins.")
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github} {
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.instrumentationOptions} {
 		group.AddFlags(fs)
 	}
 	fs.Parse(os.Args[1:])
@@ -123,15 +125,16 @@ func gatherOptions() options {
 }
 
 func main() {
+	logrusutil.ComponentInit()
+
 	o := gatherOptions()
 	if err := o.Validate(); err != nil {
 		logrus.Fatalf("Invalid options: %v", err)
 	}
-	logrus.SetFormatter(
-		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "jenkins-operator"}),
-	)
 
-	pjutil.ServePProf()
+	defer interrupts.WaitForGracefulShutdown()
+
+	pjutil.ServePProf(o.instrumentationOptions.PProfPort)
 
 	if _, err := labels.Parse(o.selector); err != nil {
 		logrus.WithError(err).Fatal("Error parsing label selector.")
@@ -198,40 +201,38 @@ func main() {
 		logrus.WithError(err).Fatal("Error getting GitHub client.")
 	}
 
-	c, err := jenkins.NewController(prowJobClient, jc, githubClient, nil, cfg, o.totURL, o.selector)
+	c, err := jenkins.NewController(prowJobClient, jc, githubClient, nil, cfg, o.totURL, o.selector, o.skipReport)
 	if err != nil {
 		logrus.WithError(err).Fatal("Failed to instantiate Jenkins controller.")
 	}
 
 	// Expose prometheus metrics
-	pushGateway := cfg().PushGateway
-	m.ExposeMetrics("jenkins-operator", pushGateway.Endpoint, pushGateway.Interval.Duration)
+	m.ExposeMetrics("jenkins-operator", cfg().PushGateway, o.instrumentationOptions.MetricsPort)
 
 	// Serve Jenkins logs here and proxy deck to use this endpoint
 	// instead of baking agent-specific logic in deck
-	go serve(jc)
+	logMux := http.NewServeMux()
+	logMux.Handle("/", gziphandler.GzipHandler(handleLog(jc)))
+	server := &http.Server{Addr: ":8080", Handler: logMux}
+	interrupts.ListenAndServe(server, 5*time.Second)
+
 	// gather metrics for the jobs handled by the jenkins controller.
-	go gather(c)
+	interrupts.TickLiteral(func() {
+		start := time.Now()
+		c.SyncMetrics()
+		logrus.WithField("metrics-duration", fmt.Sprintf("%v", time.Since(start))).Debug("Metrics synced")
+	}, 30*time.Second)
 
-	tick := time.Tick(30 * time.Second)
-	sig := make(chan os.Signal, 1)
-	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
-
-	for {
-		select {
-		case <-tick:
-			start := time.Now()
-			if err := c.Sync(); err != nil {
-				logrus.WithError(err).Error("Error syncing.")
-			}
-			duration := time.Since(start)
-			logrus.WithField("duration", fmt.Sprintf("%v", duration)).Info("Synced")
-			metrics.ResyncPeriod.Observe(duration.Seconds())
-		case <-sig:
-			logrus.Info("Jenkins operator is shutting down...")
-			return
+	// run the controller
+	interrupts.TickLiteral(func() {
+		start := time.Now()
+		if err := c.Sync(); err != nil {
+			logrus.WithError(err).Error("Error syncing.")
 		}
-	}
+		duration := time.Since(start)
+		logrus.WithField("duration", fmt.Sprintf("%v", duration)).Info("Synced")
+		metrics.ResyncPeriod.Observe(duration.Seconds())
+	}, 30*time.Second)
 }
 
 func loadCerts(certFile, keyFile, caCertFile string) (*tls.Config, error) {
@@ -256,31 +257,4 @@ func loadCerts(certFile, keyFile, caCertFile string) (*tls.Config, error) {
 
 	tlsConfig.BuildNameToCertificate()
 	return tlsConfig, nil
-}
-
-// serve starts a http server and serves Jenkins logs
-// and. Meant to be called inside a goroutine.
-func serve(jc *jenkins.Client) {
-	http.Handle("/", gziphandler.GzipHandler(handleLog(jc)))
-	logrus.WithError(http.ListenAndServe(":8080", nil)).Fatal("ListenAndServe returned.")
-}
-
-// gather metrics from the jenkins controller.
-// Meant to be called inside a goroutine.
-func gather(c *jenkins.Controller) {
-	tick := time.Tick(30 * time.Second)
-	sig := make(chan os.Signal, 1)
-	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
-
-	for {
-		select {
-		case <-tick:
-			start := time.Now()
-			c.SyncMetrics()
-			logrus.WithField("metrics-duration", fmt.Sprintf("%v", time.Since(start))).Debug("Metrics synced")
-		case <-sig:
-			logrus.Debug("Jenkins operator gatherer is shutting down...")
-			return
-		}
-	}
 }

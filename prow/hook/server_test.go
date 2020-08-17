@@ -23,16 +23,29 @@ import (
 	"strings"
 	"testing"
 
+	"k8s.io/test-infra/prow/githubeventserver"
 	"k8s.io/test-infra/prow/plugins"
 )
 
 func TestServeHTTPErrors(t *testing.T) {
-	metrics := NewMetrics()
+	metrics := githubeventserver.NewMetrics()
 	pa := &plugins.ConfigAgent{}
 	pa.Set(&plugins.Configuration{})
 
 	getSecret := func() []byte {
-		return []byte("abc")
+		var repoLevelSecret = `
+'*':
+  - value: abc
+    created_at: 2019-10-02T15:00:00Z
+  - value: key2
+    created_at: 2020-10-02T15:00:00Z
+foo/bar:
+  - value: 123abc
+    created_at: 2019-10-02T15:00:00Z
+  - value: key6
+    created_at: 2020-10-02T15:00:00Z
+`
+		return []byte(repoLevelSecret)
 	}
 
 	s := &Server{
@@ -147,7 +160,7 @@ func TestServeHTTPErrors(t *testing.T) {
 				"content-type": "application/json",
 			},
 			Body: body,
-			Code: http.StatusOK,
+			Code: http.StatusMethodNotAllowed,
 		},
 	}
 

@@ -17,17 +17,28 @@ limitations under the License.
 package main
 
 import (
+	"flag"
 	"fmt"
+	"io/ioutil"
+	"os"
 	"reflect"
 	"regexp"
+	"strings"
 	"testing"
+	"time"
 
+	"github.com/google/go-cmp/cmp"
 	"k8s.io/apimachinery/pkg/util/diff"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
+	utilpointer "k8s.io/utils/pointer"
+	"sigs.k8s.io/yaml"
+
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/flagutil"
+	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/plugins"
-	"sigs.k8s.io/yaml"
 )
 
 func TestEnsureValidConfiguration(t *testing.T) {
@@ -358,7 +369,7 @@ func TestOrgRepoUnion(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			got := tc.a.union(tc.b)
 			if !reflect.DeepEqual(got, tc.expected) {
-				t.Errorf("%s: did not get expected config:\n%v", tc.name, diff.ObjectGoPrintDiff(tc.expected, got))
+				t.Errorf("%s: did not get expected config:\n%v", tc.name, cmp.Diff(tc.expected, got))
 			}
 		})
 	}
@@ -370,7 +381,7 @@ func TestValidateUnknownFields(t *testing.T) {
 		cfg            interface{}
 		configBytes    []byte
 		config         interface{}
-		expectedErr    error
+		expectedErr    string
 	}{
 		{
 			name:     "valid config",
@@ -387,7 +398,7 @@ config_updater:
       name: plugins
 size:
   s: 1`),
-			expectedErr: nil,
+			expectedErr: "",
 		},
 		{
 			name:     "invalid top-level property",
@@ -404,7 +415,7 @@ notconfig_updater:
       name: plugins
 size:
   s: 1`),
-			expectedErr: fmt.Errorf("unknown fields present in toplvl.yaml: notconfig_updater"),
+			expectedErr: "notconfig_updater",
 		},
 		{
 			name:     "invalid second-level property",
@@ -417,7 +428,7 @@ size:
 size:
   xs: 1
   s: 5`),
-			expectedErr: fmt.Errorf("unknown fields present in seclvl.yaml: size.xs"),
+			expectedErr: "xs",
 		},
 		{
 			name:     "invalid array element",
@@ -432,7 +443,7 @@ triggers:
   - kube/kube
 - repoz:
   - kube/kubez`),
-			expectedErr: fmt.Errorf("unknown fields present in home/array.yaml: triggers[1].repoz"),
+			expectedErr: "repoz",
 		},
 		{
 			name:     "invalid map entry",
@@ -451,10 +462,10 @@ config_updater:
       validation: config
 size:
   s: 1`),
-			expectedErr: fmt.Errorf("unknown fields present in map.yaml: " +
-				"config_updater.maps.kube/config.yaml.validation"),
+			expectedErr: "validation",
 		},
 		{
+			//only one invalid element is printed in the error
 			name:     "multiple invalid elements",
 			filename: "multiple.yaml",
 			cfg:      &plugins.Configuration{},
@@ -470,11 +481,10 @@ triggers:
 size:
   s: 1
   xs: 1`),
-			expectedErr: fmt.Errorf("unknown fields present in multiple.yaml: " +
-				"size.xs, triggers[0].repoz"),
+			expectedErr: "xs",
 		},
 		{
-			name:     "embedded structs",
+			name:     "embedded structs - kube",
 			filename: "embedded.yaml",
 			cfg:      &config.Config{},
 			configBytes: []byte(`presubmits:
@@ -487,15 +497,38 @@ size:
     spec:
       containers:
       - image: alpine
-        command: ["/bin/printenv"]
-tide:
+        command: ["/bin/printenv"]`),
+			expectedErr: "never_run",
+		},
+		{
+			name:     "embedded structs - tide",
+			filename: "embedded.yaml",
+			cfg:      &config.Config{},
+			configBytes: []byte(`tide:
   squash_label: sq
-  not-a-property: true
-size:
+  not-a-property: true`),
+			expectedErr: "not-a-property",
+		},
+		{
+			name:     "embedded structs - size",
+			filename: "embedded.yaml",
+			cfg:      &config.Config{},
+			configBytes: []byte(`size:
   s: 1
   xs: 1`),
-			expectedErr: fmt.Errorf("unknown fields present in embedded.yaml: " +
-				"presubmits.kube/kube[0].never_run, size, tide.not-a-property"),
+			expectedErr: "size",
+		},
+		{
+			name:     "pointer to a slice",
+			filename: "pointer.yaml",
+			cfg:      &plugins.Configuration{},
+			configBytes: []byte(`bugzilla:
+  default:
+    '*':
+      statuses:
+      - foobar
+      extra: oops`),
+			expectedErr: "extra",
 		},
 	}
 
@@ -505,9 +538,17 @@ size:
 				t.Fatalf("Unable to unmarhsal yaml: %v", err)
 			}
 			got := validateUnknownFields(tc.cfg, tc.configBytes, tc.filename)
-			if !reflect.DeepEqual(got, tc.expectedErr) {
-				t.Errorf("%s: did not get expected validation error:\n%v", tc.name,
-					diff.ObjectGoPrintDiff(tc.expectedErr, got))
+
+			if tc.expectedErr == "" {
+				if got != nil {
+					t.Errorf("%s: expected nil error but got:\n%v", tc.name, got)
+				}
+			} else { // check substrings in case yaml lib changes err fmt
+				for _, s := range []string{"unknown field", tc.filename, tc.expectedErr} {
+					if !strings.Contains(got.Error(), s) {
+						t.Errorf("%s: did not get expected validation error: expected substring in error message:\n%s\n but got:\n%s", tc.name, s, got)
+					}
+				}
 			}
 		})
 	}
@@ -863,6 +904,80 @@ func TestValidateStrictBranches(t *testing.T) {
 	}
 }
 
+func TestValidateManagedWebhooks(t *testing.T) {
+	testCases := []struct {
+		name      string
+		config    config.ProwConfig
+		expectErr bool
+	}{
+		{
+			name:      "empty config",
+			config:    config.ProwConfig{},
+			expectErr: false,
+		},
+		{
+			name: "no duplicate webhooks",
+			config: config.ProwConfig{
+				ManagedWebhooks: config.ManagedWebhooks{
+					RespectLegacyGlobalToken: false,
+					OrgRepoConfig: map[string]config.ManagedWebhookInfo{
+						"foo1":     {TokenCreatedAfter: time.Now()},
+						"foo2":     {TokenCreatedAfter: time.Now()},
+						"foo/bar":  {TokenCreatedAfter: time.Now()},
+						"foo/bar1": {TokenCreatedAfter: time.Now()},
+						"foo/bar2": {TokenCreatedAfter: time.Now()},
+					},
+				},
+			},
+			expectErr: false,
+		},
+		{
+			name: "has duplicate webhooks",
+			config: config.ProwConfig{
+				ManagedWebhooks: config.ManagedWebhooks{
+					OrgRepoConfig: map[string]config.ManagedWebhookInfo{
+						"foo":      {TokenCreatedAfter: time.Now()},
+						"foo1":     {TokenCreatedAfter: time.Now()},
+						"foo2":     {TokenCreatedAfter: time.Now()},
+						"foo/bar":  {TokenCreatedAfter: time.Now()},
+						"foo/bar1": {TokenCreatedAfter: time.Now()},
+						"foo/bar2": {TokenCreatedAfter: time.Now()},
+					},
+				},
+			},
+			expectErr: true,
+		},
+		{
+			name: "has multiple duplicate webhooks",
+			config: config.ProwConfig{
+				ManagedWebhooks: config.ManagedWebhooks{
+					RespectLegacyGlobalToken: true,
+					OrgRepoConfig: map[string]config.ManagedWebhookInfo{
+						"foo":       {TokenCreatedAfter: time.Now()},
+						"foo1":      {TokenCreatedAfter: time.Now()},
+						"foo2":      {TokenCreatedAfter: time.Now()},
+						"foo/bar":   {TokenCreatedAfter: time.Now()},
+						"foo/bar1":  {TokenCreatedAfter: time.Now()},
+						"foo1/bar1": {TokenCreatedAfter: time.Now()},
+					},
+				},
+			},
+			expectErr: true,
+		},
+	}
+
+	for _, testCase := range testCases {
+		err := validateManagedWebhooks(&config.Config{ProwConfig: testCase.config})
+		if testCase.expectErr && err == nil {
+			t.Errorf("%s: expected the config %+v to have errors but not", testCase.name, testCase.config)
+		}
+		if !testCase.expectErr && err != nil {
+			t.Errorf("%s: expected the config %+v to be correct but got an error in validation: %v",
+				testCase.name, testCase.config, err)
+		}
+	}
+}
+
 func TestWarningEnabled(t *testing.T) {
 	var testCases = []struct {
 		name      string
@@ -902,5 +1017,472 @@ func TestWarningEnabled(t *testing.T) {
 		if actual, expected := opt.warningEnabled(testCase.candidate), testCase.expected; actual != expected {
 			t.Errorf("%s: expected warning %s enablement to be %v but got %v", testCase.name, testCase.candidate, expected, actual)
 		}
+	}
+}
+
+type fakeGHContent map[string]map[string]map[string]bool // org[repo][path] -> exist/does not exist
+
+type fakeGH struct {
+	files    fakeGHContent
+	archived map[string]bool // org/repo -> true/false
+}
+
+func (f fakeGH) GetFile(org, repo, filepath, _ string) ([]byte, error) {
+	if _, hasOrg := f.files[org]; !hasOrg {
+		return nil, &github.FileNotFound{}
+	}
+	if _, hasRepo := f.files[org][repo]; !hasRepo {
+		return nil, &github.FileNotFound{}
+	}
+	if _, hasPath := f.files[org][repo][filepath]; !hasPath {
+		return nil, &github.FileNotFound{}
+	}
+
+	return []byte("CONTENT"), nil
+}
+
+func (f fakeGH) GetRepos(org string, isUser bool) ([]github.Repo, error) {
+	if _, hasOrg := f.files[org]; !hasOrg {
+		return nil, fmt.Errorf("no such org")
+	}
+	var repos []github.Repo
+	for repo := range f.files[org] {
+		fullname := fmt.Sprintf("%s/%s", org, repo)
+		_, archived := f.archived[fullname]
+		repos = append(
+			repos,
+			github.Repo{
+				Owner:    github.User{Login: org},
+				Name:     repo,
+				FullName: fullname,
+				Archived: archived,
+			})
+	}
+	return repos, nil
+}
+
+func TestVerifyOwnersPresence(t *testing.T) {
+	testCases := []struct {
+		description string
+		cfg         *plugins.Configuration
+		gh          fakeGH
+
+		expected string
+	}{
+		{
+			description: "org with blunderbuss enabled contains a repo without OWNERS",
+			cfg:         &plugins.Configuration{Plugins: map[string][]string{"org": {"blunderbuss"}}},
+			gh:          fakeGH{files: fakeGHContent{"org": {"repo": {"NOOWNERS": true}}}},
+			expected: "the following orgs or repos enable at least one" +
+				" plugin that uses OWNERS files (approve, blunderbuss, owners-label), but" +
+				" its master branch does not contain a root level OWNERS file: [org/repo]",
+		}, {
+			description: "org with approve enable contains a repo without OWNERS",
+			cfg:         &plugins.Configuration{Plugins: map[string][]string{"org": {"approve"}}},
+			gh:          fakeGH{files: fakeGHContent{"org": {"repo": {"NOOWNERS": true}}}},
+			expected: "the following orgs or repos enable at least one" +
+				" plugin that uses OWNERS files (approve, blunderbuss, owners-label), but" +
+				" its master branch does not contain a root level OWNERS file: [org/repo]",
+		}, {
+			description: "org with owners-label enabled contains a repo without OWNERS",
+			cfg:         &plugins.Configuration{Plugins: map[string][]string{"org": {"owners-label"}}},
+			gh:          fakeGH{files: fakeGHContent{"org": {"repo": {"NOOWNERS": true}}}},
+			expected: "the following orgs or repos enable at least one" +
+				" plugin that uses OWNERS files (approve, blunderbuss, owners-label), but" +
+				" its master branch does not contain a root level OWNERS file: [org/repo]",
+		}, {
+			description: "org with owners-label enabled contains an *archived* repo without OWNERS",
+			cfg:         &plugins.Configuration{Plugins: map[string][]string{"org": {"owners-label"}}},
+			gh: fakeGH{
+				files:    fakeGHContent{"org": {"repo": {"NOOWNERS": true}}},
+				archived: map[string]bool{"org/repo": true},
+			},
+			expected: "",
+		}, {
+			description: "repo with owners-label enabled does not contain OWNERS",
+			cfg:         &plugins.Configuration{Plugins: map[string][]string{"org/repo": {"owners-label"}}},
+			gh:          fakeGH{files: fakeGHContent{"org": {"repo": {"NOOWNERS": true}}}},
+			expected: "the following orgs or repos enable at least one" +
+				" plugin that uses OWNERS files (approve, blunderbuss, owners-label), but" +
+				" its master branch does not contain a root level OWNERS file: [org/repo]",
+		}, {
+			description: "org with owners-label enabled contains only repos with OWNERS",
+			cfg:         &plugins.Configuration{Plugins: map[string][]string{"org": {"owners-label"}}},
+			gh:          fakeGH{files: fakeGHContent{"org": {"repo": {"OWNERS": true}}}},
+			expected:    "",
+		}, {
+			description: "repo with owners-label enabled contains OWNERS",
+			cfg:         &plugins.Configuration{Plugins: map[string][]string{"org/repo": {"owners-label"}}},
+			gh:          fakeGH{files: fakeGHContent{"org": {"repo": {"OWNERS": true}}}},
+			expected:    "",
+		}, {
+			description: "repo with unrelated plugin enabled does not contain OWNERS",
+			cfg:         &plugins.Configuration{Plugins: map[string][]string{"org/repo": {"cat"}}},
+			gh:          fakeGH{files: fakeGHContent{"org": {"repo": {"NOOWNERS": true}}}},
+			expected:    "",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.description, func(t *testing.T) {
+			var errMessage string
+			if err := verifyOwnersPresence(tc.cfg, tc.gh); err != nil {
+				errMessage = err.Error()
+			}
+			if errMessage != tc.expected {
+				t.Errorf("result differs:\n%s", diff.StringDiff(tc.expected, errMessage))
+			}
+		})
+	}
+}
+
+func TestOptions(t *testing.T) {
+
+	var defaultGitHubOptions flagutil.GitHubOptions
+	defaultGitHubOptions.AddFlags(flag.NewFlagSet("", flag.ContinueOnError))
+	defaultGitHubOptions.AllowAnonymous = true
+
+	StringsFlag := func(vals []string) flagutil.Strings {
+		var flag flagutil.Strings
+		for _, val := range vals {
+			flag.Set(val)
+		}
+		return flag
+	}
+
+	testCases := []struct {
+		name            string
+		args            []string
+		expectedOptions *options
+		expectedError   bool
+	}{
+		{
+			name: "cannot parse argument, reject",
+			args: []string{
+				"--config-path=prow/config.yaml",
+				"--strict=non-boolean-string",
+			},
+			expectedOptions: nil,
+			expectedError:   true,
+		},
+		{
+			name:            "forgot config-path, reject",
+			args:            []string{"--job-config-path=config/jobs/org/job.yaml"},
+			expectedOptions: nil,
+			expectedError:   true,
+		},
+		{
+			name: "config-path with two warnings but one unknown, reject",
+			args: []string{
+				"--config-path=prow/config.yaml",
+				"--warnings=mismatched-tide",
+				"--warnings=unknown-warning",
+			},
+			expectedOptions: nil,
+			expectedError:   true,
+		},
+		{
+			name: "config-path with many valid options",
+			args: []string{
+				"--config-path=prow/config.yaml",
+				"--plugin-config=prow/plugins/plugin.yaml",
+				"--job-config-path=config/jobs/org/job.yaml",
+				"--warnings=mismatched-tide",
+				"--warnings=mismatched-tide-lenient",
+				"--exclude-warning=tide-strict-branch",
+				"--exclude-warning=mismatched-tide",
+				"--exclude-warning=ok-if-unknown-warning",
+				"--strict=true",
+				"--expensive-checks=false",
+			},
+			expectedOptions: &options{
+				configPath:      "prow/config.yaml",
+				pluginConfig:    "prow/plugins/plugin.yaml",
+				jobConfigPath:   "config/jobs/org/job.yaml",
+				warnings:        StringsFlag([]string{"mismatched-tide", "mismatched-tide-lenient"}),
+				excludeWarnings: StringsFlag([]string{"tide-strict-branch", "mismatched-tide", "ok-if-unknown-warning"}),
+				strict:          true,
+				expensive:       false,
+				github:          defaultGitHubOptions,
+			},
+			expectedError: false,
+		},
+		{
+			name: "prow-yaml-path gets defaulted",
+			args: []string{
+				"--config-path=prow/config.yaml",
+				"--plugin-config=prow/plugins/plugin.yaml",
+				"--job-config-path=config/jobs/org/job.yaml",
+				"--prow-yaml-repo-name=my/repo",
+			},
+			expectedOptions: &options{
+				configPath:       "prow/config.yaml",
+				pluginConfig:     "prow/plugins/plugin.yaml",
+				jobConfigPath:    "config/jobs/org/job.yaml",
+				prowYAMLRepoName: "my/repo",
+				prowYAMLPath:     "/home/prow/go/src/github.com/my/repo/.prow.yaml",
+				github:           defaultGitHubOptions,
+			},
+			expectedError: false,
+		},
+		{
+			name: "prow-yaml-path without prow-yaml-repo-name is invalid",
+			args: []string{
+				"--prow-yaml-path=my-file",
+			},
+			expectedError: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			flags := flag.NewFlagSet(tc.name, flag.ContinueOnError)
+			var actualOptions options
+			switch actualErr := actualOptions.gatherOptions(flags, tc.args); {
+			case tc.expectedError:
+				if actualErr == nil {
+					t.Error("failed to receive an error")
+				}
+			case actualErr != nil:
+				t.Errorf("unexpected error: %v", actualErr)
+			case !reflect.DeepEqual(&actualOptions, tc.expectedOptions):
+				t.Errorf("actual %#v != expected %#v", actualOptions, *tc.expectedOptions)
+			}
+		})
+	}
+}
+
+func TestValidateJobExtraRefs(t *testing.T) {
+	testCases := []struct {
+		name      string
+		extraRefs []prowapi.Refs
+		expected  error
+	}{
+		{
+			name: "validation error if extra ref specifies the repo for which the job is configured",
+			extraRefs: []prowapi.Refs{
+				{
+					Org:  "org",
+					Repo: "repo",
+				},
+			},
+			expected: fmt.Errorf("Invalid job test on repo org/repo: the following refs specified more than once: %s",
+				"org/repo"),
+		},
+		{
+			name: "no errors if there are no duplications",
+			extraRefs: []prowapi.Refs{
+				{
+					Org:  "foo",
+					Repo: "bar",
+				},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			config := config.JobConfig{
+				PresubmitsStatic: map[string][]config.Presubmit{
+					"org/repo": {
+						{
+							JobBase: config.JobBase{
+								Name: "test",
+								UtilityConfig: config.UtilityConfig{
+									ExtraRefs: tc.extraRefs,
+								},
+							},
+						},
+					},
+				},
+			}
+			if err := validateJobExtraRefs(config); !reflect.DeepEqual(err, utilerrors.NewAggregate([]error{tc.expected})) {
+				t.Errorf("%s: did not get expected validation error:\n%v", tc.name,
+					cmp.Diff(tc.expected, err))
+			}
+		})
+	}
+}
+
+func TestValidateInRepoConfig(t *testing.T) {
+	testCases := []struct {
+		name         string
+		prowYAMLData []byte
+		expectedErr  string
+	}{
+		{
+			name:         "Valid prowYAML, no err",
+			prowYAMLData: []byte(`presubmits: [{"name": "hans", "spec": {"containers": [{}]}}]`),
+		},
+		{
+			name:         "Invalid prowYAML presubmit, err",
+			prowYAMLData: []byte(`presubmits: [{"name": "hans"}]`),
+			expectedErr:  "failed to validate .prow.yaml: invalid presubmit job hans: kubernetes jobs require a spec",
+		},
+		{
+			name:         "Invalid prowYAML postsubmit, err",
+			prowYAMLData: []byte(`postsubmits: [{"name": "hans"}]`),
+			expectedErr:  "failed to validate .prow.yaml: invalid postsubmit job hans: kubernetes jobs require a spec",
+		},
+		{
+			name: "Absent prowYAML, no err",
+		},
+	}
+
+	for _, tc := range testCases {
+		prowYAMLFileName := "/this-must-not-exist"
+
+		if tc.prowYAMLData != nil {
+			tempFile, err := ioutil.TempFile("", "prow-test")
+			if err != nil {
+				t.Fatalf("failed to get tempfile: %v", err)
+			}
+			defer func() {
+				if err := tempFile.Close(); err != nil {
+					t.Errorf("failed to close tempFile: %v", err)
+				}
+				if err := os.Remove(tempFile.Name()); err != nil {
+					t.Errorf("failed to remove tempfile: %v", err)
+				}
+			}()
+
+			if _, err := tempFile.Write(tc.prowYAMLData); err != nil {
+				t.Fatalf("failed to write to tempfile: %v", err)
+			}
+
+			prowYAMLFileName = tempFile.Name()
+		}
+
+		// Need an empty file to load the config from so we go through its defaulting
+		tempConfig, err := ioutil.TempFile("/tmp", "prow-test")
+		if err != nil {
+			t.Fatalf("failed to get tempfile: %v", err)
+		}
+		defer func() {
+			if err := os.Remove(tempConfig.Name()); err != nil {
+				t.Errorf("failed to remove tempfile: %v", err)
+			}
+		}()
+		if err := tempConfig.Close(); err != nil {
+			t.Errorf("failed to close tempFile: %v", err)
+		}
+
+		cfg, err := config.Load(tempConfig.Name(), "")
+		if err != nil {
+			t.Fatalf("failed to load config: %v", err)
+		}
+		err = validateInRepoConfig(cfg, prowYAMLFileName, "my/repo")
+		var errString string
+		if err != nil {
+			errString = err.Error()
+		}
+
+		if errString != tc.expectedErr {
+			t.Errorf("expected error %q does not match actual error %q", tc.expectedErr, errString)
+		}
+	}
+}
+
+func TestValidateTideContextPolicy(t *testing.T) {
+	cfg := func(m ...func(*config.Config)) *config.Config {
+		cfg := &config.Config{}
+		cfg.PresubmitsStatic = map[string][]config.Presubmit{}
+		for _, mod := range m {
+			mod(cfg)
+		}
+		return cfg
+	}
+
+	testCases := []struct {
+		name          string
+		cfg           *config.Config
+		expectedError string
+	}{
+		{
+			name: "overlapping branch config, error",
+			cfg: cfg(func(c *config.Config) {
+				c.PresubmitsStatic["a/b"] = []config.Presubmit{
+					{Reporter: config.Reporter{Context: "a"}, Brancher: config.Brancher{Branches: []string{"a"}}},
+					{AlwaysRun: true, Reporter: config.Reporter{Context: "a"}},
+				}
+			}),
+			expectedError: "context policy for a branch in a/b is invalid: contexts a are defined as required and required if present",
+		},
+		{
+			name: "overlapping branch config with empty branch configs, error",
+			cfg: cfg(func(c *config.Config) {
+				c.PresubmitsStatic["a/b"] = []config.Presubmit{
+					{Reporter: config.Reporter{Context: "a"}},
+					{AlwaysRun: true, Reporter: config.Reporter{Context: "a"}},
+				}
+			}),
+			expectedError: "context policy for master branch in a/b is invalid: contexts a are defined as required and required if present",
+		},
+		{
+			name: "overlapping branch config, inrepoconfig enabled, error",
+			cfg: cfg(func(c *config.Config) {
+				c.InRepoConfig.Enabled = map[string]*bool{"*": utilpointer.BoolPtr(true)}
+				c.PresubmitsStatic["a/b"] = []config.Presubmit{
+					{Reporter: config.Reporter{Context: "a"}, Brancher: config.Brancher{Branches: []string{"a"}}},
+					{AlwaysRun: true, Reporter: config.Reporter{Context: "a"}},
+				}
+			}),
+			expectedError: "context policy for a branch in a/b is invalid: contexts a are defined as required and required if present",
+		},
+		{
+			name: "no overlapping branch config, no error",
+			cfg: cfg(func(c *config.Config) {
+				c.PresubmitsStatic["a/b"] = []config.Presubmit{
+					{Reporter: config.Reporter{Context: "a"}, Brancher: config.Brancher{Branches: []string{"a"}}},
+					{AlwaysRun: true, Reporter: config.Reporter{Context: "a"}, Brancher: config.Brancher{Branches: []string{"b"}}},
+				}
+			}),
+		},
+		{
+			name: "repo key is not in org/repo format, no error",
+			cfg: cfg(func(c *config.Config) {
+				c.PresubmitsStatic["https://kunit-review.googlesource.com/linux"] = []config.Presubmit{
+					{Reporter: config.Reporter{Context: "a"}, Brancher: config.Brancher{Branches: []string{"a"}}},
+					{AlwaysRun: true, Reporter: config.Reporter{Context: "a"}, Brancher: config.Brancher{Branches: []string{"b"}}},
+				}
+			}),
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Needed so regexes get compiled
+			tc.cfg.SetPresubmits(tc.cfg.PresubmitsStatic)
+
+			errMsg := ""
+			if err := validateTideContextPolicy(tc.cfg); err != nil {
+				errMsg = err.Error()
+			}
+			if errMsg != tc.expectedError {
+				t.Errorf("expected error %q, got error %q", tc.expectedError, errMsg)
+			}
+		})
+	}
+}
+
+func TestValidate(t *testing.T) {
+	testCases := []struct {
+		name string
+		opts options
+	}{
+		{
+			name: "combined config",
+			opts: options{
+				configPath: "testdata/combined.yaml",
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			if err := validate(tc.opts); err != nil {
+				t.Fatalf("validation failed: %v", err)
+			}
+		})
 	}
 }

@@ -17,6 +17,7 @@ limitations under the License.
 package jenkins
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -25,10 +26,12 @@ import (
 	"sync"
 	"testing"
 	"text/template"
+	"time"
 
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/clock"
 	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -84,7 +87,7 @@ func newFakeConfigAgent(t *testing.T, maxConcurrency int, operators []config.Jen
 				StatusErrorLink: "https://github.com/kubernetes/test-infra/issues",
 			},
 			JobConfig: config.JobConfig{
-				Presubmits: presubmitMap,
+				PresubmitsStatic: presubmitMap,
 			},
 		},
 	}
@@ -102,10 +105,12 @@ func (f *fca) Config() *config.Config {
 
 type fjc struct {
 	sync.Mutex
-	built  bool
-	pjs    []prowapi.ProwJob
-	err    error
-	builds map[string]Build
+	built       bool
+	pjs         []prowapi.ProwJob
+	err         error
+	builds      map[string]Build
+	didAbort    bool
+	abortErrors bool
 }
 
 func (f *fjc) Build(pj *prowapi.ProwJob, buildID string) error {
@@ -131,6 +136,10 @@ func (f *fjc) ListBuilds(jobs []BuildQueryParams) (map[string]Build, error) {
 func (f *fjc) Abort(job string, build *Build) error {
 	f.Lock()
 	defer f.Unlock()
+	if f.abortErrors {
+		return errors.New("erroring on abort as requested")
+	}
+	f.didAbort = true
 	return nil
 }
 
@@ -178,6 +187,9 @@ func (f *fghc) EditComment(org, repo string, ID int, comment string) error {
 }
 
 func TestSyncTriggeredJobs(t *testing.T) {
+	fakeClock := clock.NewFakeClock(time.Now().Truncate(1 * time.Second))
+	pendingTime := metav1.NewTime(fakeClock.Now())
+
 	var testcases = []struct {
 		name           string
 		pj             prowapi.ProwJob
@@ -186,12 +198,13 @@ func TestSyncTriggeredJobs(t *testing.T) {
 		builds         map[string]Build
 		err            error
 
-		expectedState    prowapi.ProwJobState
-		expectedBuild    bool
-		expectedComplete bool
-		expectedReport   bool
-		expectedEnqueued bool
-		expectedError    bool
+		expectedState       prowapi.ProwJobState
+		expectedBuild       bool
+		expectedComplete    bool
+		expectedReport      bool
+		expectedEnqueued    bool
+		expectedError       bool
+		expectedPendingTime *metav1.Time
 	}{
 		{
 			name: "start new job",
@@ -207,10 +220,11 @@ func TestSyncTriggeredJobs(t *testing.T) {
 					State: prowapi.TriggeredState,
 				},
 			},
-			expectedBuild:    true,
-			expectedReport:   true,
-			expectedState:    prowapi.PendingState,
-			expectedEnqueued: true,
+			expectedBuild:       true,
+			expectedReport:      true,
+			expectedState:       prowapi.PendingState,
+			expectedEnqueued:    true,
+			expectedPendingTime: &pendingTime,
 		},
 		{
 			name: "start new job, error",
@@ -273,12 +287,13 @@ func TestSyncTriggeredJobs(t *testing.T) {
 					State: prowapi.TriggeredState,
 				},
 			},
-			pendingJobs:      map[string]int{"motherearth": 10, "allagash": 8, "krusovice": 2},
-			maxConcurrency:   21,
-			expectedBuild:    true,
-			expectedReport:   true,
-			expectedState:    prowapi.PendingState,
-			expectedEnqueued: true,
+			pendingJobs:         map[string]int{"motherearth": 10, "allagash": 8, "krusovice": 2},
+			maxConcurrency:      21,
+			expectedBuild:       true,
+			expectedReport:      true,
+			expectedState:       prowapi.PendingState,
+			expectedEnqueued:    true,
+			expectedPendingTime: &pendingTime,
 		},
 	}
 	for _, tc := range testcases {
@@ -300,6 +315,7 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			totURL:        totServ.URL,
 			lock:          sync.RWMutex{},
 			pendingJobs:   make(map[string]int),
+			clock:         fakeClock,
 		}
 		if tc.pendingJobs != nil {
 			c.pendingJobs = tc.pendingJobs
@@ -312,7 +328,7 @@ func TestSyncTriggeredJobs(t *testing.T) {
 		}
 		close(reports)
 
-		actualProwJobs, err := fakeProwJobClient.ProwV1().ProwJobs("prowjobs").List(metav1.ListOptions{})
+		actualProwJobs, err := fakeProwJobClient.ProwV1().ProwJobs("prowjobs").List(context.Background(), metav1.ListOptions{})
 		if err != nil {
 			t.Fatalf("failed to list prowjobs from client %v", err)
 		}
@@ -346,6 +362,9 @@ func TestSyncTriggeredJobs(t *testing.T) {
 		}
 		if tc.expectedEnqueued && actual.Status.Description != "Jenkins job enqueued." {
 			t.Errorf("expected enqueued prowjob, got %v", actual)
+		}
+		if !reflect.DeepEqual(actual.Status.PendingTime, tc.expectedPendingTime) {
+			t.Errorf("for case %q got pending time %v, expected %v", tc.name, actual.Status.PendingTime, tc.expectedPendingTime)
 		}
 	}
 }
@@ -527,6 +546,7 @@ func TestSyncPendingJobs(t *testing.T) {
 			totURL:        totServ.URL,
 			lock:          sync.RWMutex{},
 			pendingJobs:   make(map[string]int),
+			clock:         clock.RealClock{},
 		}
 
 		reports := make(chan prowapi.ProwJob, 100)
@@ -536,7 +556,7 @@ func TestSyncPendingJobs(t *testing.T) {
 		}
 		close(reports)
 
-		actualProwJobs, err := fakeProwJobClient.ProwV1().ProwJobs("prowjobs").List(metav1.ListOptions{})
+		actualProwJobs, err := fakeProwJobClient.ProwV1().ProwJobs("prowjobs").List(context.Background(), metav1.ListOptions{})
 		if err != nil {
 			t.Fatalf("failed to list prowjobs from client %v", err)
 		}
@@ -608,7 +628,7 @@ func TestBatch(t *testing.T) {
 				SHA:    "qwe",
 			},
 		},
-	}), nil)
+	}), nil, nil)
 	pj.ObjectMeta.Name = "known_name"
 	pj.ObjectMeta.Namespace = "prowjobs"
 	fakeProwJobClient := fake.NewSimpleClientset(&pj)
@@ -630,12 +650,13 @@ func TestBatch(t *testing.T) {
 		totURL:        totServ.URL,
 		pendingJobs:   make(map[string]int),
 		lock:          sync.RWMutex{},
+		clock:         clock.RealClock{},
 	}
 
 	if err := c.Sync(); err != nil {
 		t.Fatalf("Error on first sync: %v", err)
 	}
-	afterFirstSync, err := fakeProwJobClient.ProwV1().ProwJobs("prowjobs").Get("known_name", metav1.GetOptions{})
+	afterFirstSync, err := fakeProwJobClient.ProwV1().ProwJobs("prowjobs").Get(context.Background(), "known_name", metav1.GetOptions{})
 	if err != nil {
 		t.Fatalf("failed to get prowjob from client: %v", err)
 	}
@@ -649,7 +670,7 @@ func TestBatch(t *testing.T) {
 	if err := c.Sync(); err != nil {
 		t.Fatalf("Error on second sync: %v", err)
 	}
-	afterSecondSync, err := fakeProwJobClient.ProwV1().ProwJobs("prowjobs").Get("known_name", metav1.GetOptions{})
+	afterSecondSync, err := fakeProwJobClient.ProwV1().ProwJobs("prowjobs").Get(context.Background(), "known_name", metav1.GetOptions{})
 	if err != nil {
 		t.Fatalf("failed to get prowjob from client: %v", err)
 	}
@@ -663,7 +684,7 @@ func TestBatch(t *testing.T) {
 	if err := c.Sync(); err != nil {
 		t.Fatalf("Error on third sync: %v", err)
 	}
-	afterThirdSync, err := fakeProwJobClient.ProwV1().ProwJobs("prowjobs").Get("known_name", metav1.GetOptions{})
+	afterThirdSync, err := fakeProwJobClient.ProwV1().ProwJobs("prowjobs").Get(context.Background(), "known_name", metav1.GetOptions{})
 	if err != nil {
 		t.Fatalf("failed to get prowjob from client: %v", err)
 	}
@@ -817,6 +838,7 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 			cfg:           newFakeConfigAgent(t, 0, nil).Config,
 			totURL:        totServ.URL,
 			pendingJobs:   test.pendingJobs,
+			clock:         clock.RealClock{},
 		}
 
 		reports := make(chan<- prowapi.ProwJob, len(test.pjs))
@@ -1026,11 +1048,84 @@ func TestOperatorConfig(t *testing.T) {
 		c := Controller{
 			cfg:      newFakeConfigAgent(t, 10, test.operators).Config,
 			selector: test.labelSelector,
+			clock:    clock.RealClock{},
 		}
 
 		got := c.config()
 		if !reflect.DeepEqual(got, test.expected) {
 			t.Errorf("expected controller:\n%#v\ngot controller:\n%#v\n", test.expected, got)
 		}
+	}
+}
+
+func TestSyncAbortedJob(t *testing.T) {
+	testCases := []struct {
+		name           string
+		hasBuild       bool
+		abortErrors    bool
+		expectAbort    bool
+		expectComplete bool
+	}{
+		{
+			name:           "Build is aborted",
+			hasBuild:       true,
+			expectAbort:    true,
+			expectComplete: true,
+		},
+		{
+			name:           "No build, no abort",
+			hasBuild:       false,
+			expectAbort:    false,
+			expectComplete: true,
+		},
+		{
+			name:           "Abort errors, job is not marked completed",
+			hasBuild:       true,
+			abortErrors:    true,
+			expectComplete: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+
+			pj := &prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "my-pj",
+				},
+				Status: prowapi.ProwJobStatus{
+					State: prowapi.AbortedState,
+				},
+			}
+
+			var buildMap map[string]Build
+			if tc.hasBuild {
+				buildMap = map[string]Build{pj.Name: {}}
+			}
+			pjClient := fake.NewSimpleClientset(pj)
+			jobClient := &fjc{abortErrors: tc.abortErrors}
+			c := &Controller{
+				log:           logrus.NewEntry(logrus.New()),
+				prowJobClient: pjClient.ProwV1().ProwJobs(""),
+				jc:            jobClient,
+			}
+
+			if err := c.syncAbortedJob(*pj, nil, buildMap); (err != nil) != tc.abortErrors {
+				t.Fatalf("syncAbortedJob failed: %v", err)
+			}
+
+			pj, err := pjClient.ProwV1().ProwJobs("").Get(context.Background(), pj.Name, metav1.GetOptions{})
+			if err != nil {
+				t.Fatalf("failed to get prowjob: %v", err)
+			}
+
+			if pj.Complete() != tc.expectComplete {
+				t.Errorf("expected completed job: %t, got completed job: %t", tc.expectComplete, pj.Complete())
+			}
+
+			if jobClient.didAbort != tc.expectAbort {
+				t.Errorf("expected abort: %t, did abort: %t", tc.expectAbort, jobClient.didAbort)
+			}
+		})
 	}
 }

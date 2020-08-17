@@ -20,16 +20,18 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/url"
+	"path/filepath"
 	"reflect"
+	"regexp"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/sirupsen/logrus"
-
 	"sigs.k8s.io/yaml"
 
 	"k8s.io/apimachinery/pkg/util/sets"
+
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
@@ -45,7 +47,7 @@ const prNumber = 1
 func TestPluginConfig(t *testing.T) {
 	pa := &plugins.ConfigAgent{}
 
-	b, err := ioutil.ReadFile("../../plugins.yaml")
+	b, err := ioutil.ReadFile("../../../config/prow/plugins.yaml")
 	if err != nil {
 		t.Fatalf("Failed to read plugin config: %v.", err)
 	}
@@ -99,13 +101,7 @@ func newFakeGitHubClient(hasLabel, humanApproved bool, files []string, comments 
 	if hasLabel {
 		labels = append(labels, fmt.Sprintf("org/repo#%v:approved", prNumber))
 	}
-	events := []github.ListedIssueEvent{
-		{
-			Event: github.IssueActionLabeled,
-			Label: github.Label{Name: "approved"},
-			Actor: github.User{Login: "k8s-merge-robot"},
-		},
-	}
+	events := []github.ListedIssueEvent{}
 	if humanApproved {
 		events = append(
 			events,
@@ -133,6 +129,7 @@ func newFakeGitHubClient(hasLabel, humanApproved bool, files []string, comments 
 type fakeRepo struct {
 	approvers, leafApprovers map[string]sets.String
 	approverOwners           map[string]string
+	dirBlacklist             []*regexp.Regexp
 }
 
 func (fr fakeRepo) Approvers(path string) sets.String {
@@ -146,6 +143,43 @@ func (fr fakeRepo) FindApproverOwnersForFile(path string) string {
 }
 func (fr fakeRepo) IsNoParentOwners(path string) bool {
 	return false
+}
+func (fr fakeRepo) TopLevelApprovers() sets.String {
+	return nil
+}
+
+func (fr fakeRepo) ParseSimpleConfig(path string) (repoowners.SimpleConfig, error) {
+	dir := filepath.Dir(path)
+	for _, re := range fr.dirBlacklist {
+		if re.MatchString(dir) {
+			return repoowners.SimpleConfig{}, filepath.SkipDir
+		}
+	}
+
+	b, err := ioutil.ReadFile(path)
+	if err != nil {
+		return repoowners.SimpleConfig{}, err
+	}
+	full := new(repoowners.SimpleConfig)
+	err = yaml.Unmarshal(b, full)
+	return *full, err
+}
+
+func (fr fakeRepo) ParseFullConfig(path string) (repoowners.FullConfig, error) {
+	dir := filepath.Dir(path)
+	for _, re := range fr.dirBlacklist {
+		if re.MatchString(dir) {
+			return repoowners.FullConfig{}, filepath.SkipDir
+		}
+	}
+
+	b, err := ioutil.ReadFile(path)
+	if err != nil {
+		return repoowners.FullConfig{}, err
+	}
+	full := new(repoowners.FullConfig)
+	err = yaml.Unmarshal(b, full)
+	return *full, err
 }
 
 func TestHandle(t *testing.T) {
@@ -228,14 +262,10 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by:
-To fully approve this pull request, please assign additional approvers.
-We suggest the following additional approver: **cjwagner**
-
-If they are not already assigned, you can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
+To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **cjwagner**
+You can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
-
-The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
 <details open>
 Needs approval from an approver in each of these files:
@@ -398,16 +428,12 @@ Approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by: *<a href="#" title="Author self-approved">cjwagner</a>*
-To fully approve this pull request, please assign additional approvers.
-We suggest the following additional approver: **alice**
-
-If they are not already assigned, you can assign the PR to them by writing ` + "`/assign @alice`" + ` in a comment when ready.
+To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **alice**
+You can assign the PR to them by writing ` + "`/assign @alice`" + ` in a comment when ready.
 
 *No associated issue*. Update pull-request body to add a reference to an issue, or get approval with ` + "`/approve no-issue`" + `
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
-
-The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
 <details open>
 Needs approval from an approver in each of these files:
@@ -604,14 +630,10 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 				newTestComment("k8s-ci-robot", `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by:
-To fully approve this pull request, please assign additional approvers.
-We suggest the following additional approver: **alice**
-
-If they are not already assigned, you can assign the PR to them by writing `+"`/assign @alice`"+` in a comment when ready.
+To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **alice**
+You can assign the PR to them by writing `+"`/assign @alice`"+` in a comment when ready.
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
-
-The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
 <details open>
 Needs approval from an approver in each of these files:
@@ -686,14 +708,10 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by:
-To fully approve this pull request, please assign additional approvers.
-We suggest the following additional approver: **cjwagner**
-
-If they are not already assigned, you can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
+To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **cjwagner**
+You can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
-
-The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
 <details open>
 Needs approval from an approver in each of these files:
@@ -760,14 +778,10 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by:
-To fully approve this pull request, please assign additional approvers.
-We suggest the following additional approver: **cjwagner**
-
-If they are not already assigned, you can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
+To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **cjwagner**
+You can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
-
-The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
 <details open>
 Needs approval from an approver in each of these files:
@@ -802,14 +816,10 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by:
-To fully approve this pull request, please assign additional approvers.
-We suggest the following additional approver: **cjwagner**
-
-If they are not already assigned, you can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
+To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **cjwagner**
+You can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
-
-The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
 <details open>
 Needs approval from an approver in each of these files:
@@ -882,14 +892,10 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by:
-To fully approve this pull request, please assign additional approvers.
-We suggest the following additional approver: **cjwagner**
-
-If they are not already assigned, you can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
+To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **cjwagner**
+You can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
-
-The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
 <details open>
 Needs approval from an approver in each of these files:
@@ -921,14 +927,10 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by:
-To fully approve this pull request, please assign additional approvers.
-We suggest the following additional approver: **cjwagner**
-
-If they are not already assigned, you can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
+To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **cjwagner**
+You can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
-
-The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
 <details open>
 Needs approval from an approver in each of these files:
@@ -1084,6 +1086,8 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 				IssueRequired:       test.needsIssue,
 				LgtmActsAsApprove:   test.lgtmActsAsApprove,
 				IgnoreReviewState:   &irs,
+				CommandHelpLink:     "https://go.k8s.io/bot-commands",
+				PrProcessLink:       "https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process",
 			},
 			&state{
 				org:       "org",
@@ -1757,34 +1761,27 @@ func TestHandlePullRequest(t *testing.T) {
 }
 
 func TestHelpProvider(t *testing.T) {
+	enabledRepos := []config.OrgRepo{
+		{Org: "org1", Repo: "repo"},
+		{Org: "org2", Repo: "repo"},
+	}
 	cases := []struct {
 		name         string
 		config       *plugins.Configuration
-		enabledRepos []string
+		enabledRepos []config.OrgRepo
 		err          bool
 	}{
 		{
 			name:         "Empty config",
 			config:       &plugins.Configuration{},
-			enabledRepos: []string{"org1", "org2/repo"},
-		},
-		{
-			name:         "Overlapping org and org/repo",
-			config:       &plugins.Configuration{},
-			enabledRepos: []string{"org2", "org2/repo"},
-		},
-		{
-			name:         "Invalid enabledRepos",
-			config:       &plugins.Configuration{},
-			enabledRepos: []string{"org1", "org2/repo/extra"},
-			err:          true,
+			enabledRepos: enabledRepos,
 		},
 		{
 			name: "All configs enabled",
 			config: &plugins.Configuration{
 				Approve: []plugins.Approve{
 					{
-						Repos:               []string{"org2"},
+						Repos:               []string{"org2/repo"},
 						IssueRequired:       true,
 						RequireSelfApproval: &[]bool{true}[0],
 						LgtmActsAsApprove:   true,
@@ -1792,7 +1789,7 @@ func TestHelpProvider(t *testing.T) {
 					},
 				},
 			},
-			enabledRepos: []string{"org1", "org2/repo"},
+			enabledRepos: enabledRepos,
 		},
 	}
 	for _, c := range cases {

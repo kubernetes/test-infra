@@ -1,4 +1,5 @@
 # MkBuild-Cluster
+> ### **Deprecated**: use [`gencred`](../../../gencred) instead. `mkbuild-cluster` will be removed May 2020. 
 
 The `mkbuild-cluster` program helps create `cluster.yaml` files that [plank] accepts via the `--build-cluster` flag.
 
@@ -13,7 +14,7 @@ Create a new `cluster.yaml` to send to [plank] via `--build-cluster`:
 ```sh
 # Create initial entry
 bazel run //prow/cmd/mkbuild-cluster -- \
-  --project=P --zone=Z --cluster=C --alias=default > cluster.yaml
+  --project=P --zone=Z --cluster=C --alias=default --print-entry > cluster.yaml
 # Write secret with this entry
 kubectl create secret generic build-cluster --from-file=cluster.yaml
 ```

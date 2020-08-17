@@ -19,26 +19,36 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-if [[ "$#" != 2 ]]; then
-  echo "Usage: $(basename "$0") <json creds> <name>" >&2
+if [[ "$#" == 0 ]]; then
+  echo "Usage: $(basename "$0") [json creds] <name>" >&2
   exit 1
 fi
 
-creds="$1"
-name="$2"
-
-if [[ ! -f "$creds" ]]; then
-  echo "Not found: $creds" >&2
-  exit 1
+if [[ $# == 2 ]]; then
+  creds="$1"
+  shift
+else
+  creds=
 fi
-gcloud auth activate-service-account --key-file="$creds"
-gcloud auth list
+name="$1"
 
-user="$(grep -o -E '[^"]+@[^"]+' "$creds")"
+if [[ -n "$creds" ]]; then
+  echo "Activating $creds..." >&2
+  if [[ ! -f "$creds" ]]; then
+    echo "Not found: $creds" >&2
+    exit 1
+  fi
+  gcloud auth activate-service-account --key-file="$creds"
+  gcloud auth list
+  duration=20m
+else
+  duration=1m # Need shorter wait here as metadata server has its own caching
+fi
+
 create=yes
 
 print-token() {
-  gcloud config config-helper --force-auth-refresh | grep access_token | grep -o -E '[^ ]+$'
+  gcloud config config-helper --force-auth-refresh --format='value(credential.access_token)'
 }
 
 # Format of the cookiefile is:
@@ -70,11 +80,13 @@ print-cookie() {
 
 while true; do
   token=$(print-token)
+  # TODO(fejta): parse credential.token_expiry, wait until shortly before then.
   expire=$(expr 60 \* 60 + $(date +%s))
-  echo "token expires at"
+  echo -n "token expires at "
   date -d "@$expire"
   print-cookie .googlesource.com TRUE "$expire" "$token" > cookies
   print-cookie source.developers.google.com FALSE "$expire" "$token" >> cookies
+  echo -n "cookies hash: "
   md5sum cookies
 
   kubectl create secret generic "$name" --from-file=cookies --dry-run -o yaml > secret.yaml
@@ -84,6 +96,6 @@ while true; do
     verb=replace
   fi
   kubectl "$verb" -f secret.yaml
-  echo "successfully updated token, sleeping for 20m..."
-  sleep 20m
+  echo "successfully updated token, sleeping for $duration..."
+  sleep "$duration"
 done

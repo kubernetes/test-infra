@@ -1,13 +1,4 @@
 filegroup(
-    name = "config-yaml",
-    srcs = [
-        "config.yaml",
-        "generated-test-config.yaml",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-filegroup(
     name = "package-srcs",
     srcs = glob(["**"]),
     tags = ["automanaged"],
@@ -18,17 +9,8 @@ filegroup(
     name = "all-srcs",
     srcs = [
         ":package-srcs",
-        "//testgrid/cluster:all-srcs",
         "//testgrid/cmd/configurator:all-srcs",
-        "//testgrid/cmd/updater:all-srcs",
-        "//testgrid/config:all-srcs",
-        "//testgrid/images:all-srcs",
-        "//testgrid/issue_state:all-srcs",
-        "//testgrid/metadata:all-srcs",
-        "//testgrid/resultstore:all-srcs",
-        "//testgrid/state:all-srcs",
-        "//testgrid/summary:all-srcs",
-        "//testgrid/util/gcs:all-srcs",
+        "//testgrid/cmd/transfigure:all-srcs",
     ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],

@@ -18,13 +18,17 @@ package repoowners
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
 	"path/filepath"
 	"reflect"
 	"regexp"
+	"sync"
 	"testing"
 
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/apimachinery/pkg/util/sets"
 	prowConf "k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/git/localgit"
@@ -50,7 +54,7 @@ labels:
 - bob
 reviewers:
 - alice
-- CJWagner
+- "@CJWagner"
 - jakub
 required_reviewers:
 - ben
@@ -73,6 +77,10 @@ approvers:
 labels:
 - docs
 ---`),
+		"vendor/OWNERS": []byte(`approvers:
+- alice`),
+		"vendor/k8s.io/client-go/OWNERS": []byte(`approvers:
+- bob`),
 	}
 
 	testFilesRe = map[string][]byte{
@@ -137,16 +145,18 @@ func getTestClient(
 	enableMdYaml,
 	skipCollab,
 	includeAliases bool,
+	ignorePreconfiguredDefaults bool,
 	ownersDirBlacklistDefault []string,
 	ownersDirBlacklistByRepo map[string][]string,
 	extraBranchesAndFiles map[string]map[string][]byte,
 	cacheOptions *cacheOptions,
+	clients localgit.Clients,
 ) (*Client, func(), error) {
 	testAliasesFile := map[string][]byte{
 		"OWNERS_ALIASES": []byte("aliases:\n  Best-approvers:\n  - carl\n  - cjwagner\n  best-reviewers:\n  - Carl\n  - BOB"),
 	}
 
-	localGit, git, err := localgit.New()
+	localGit, git, err := clients()
 	if err != nil {
 		return nil, nil, err
 	}
@@ -176,7 +186,7 @@ func getTestClient(
 			return nil, nil, err
 		}
 	}
-	cache := make(map[string]cacheEntry)
+	cache := newCache()
 	if cacheOptions != nil {
 		var entry cacheEntry
 		entry.sha, err = localGit.RevParse("org", "repo", "HEAD")
@@ -223,7 +233,7 @@ labels:
 				"OWNERS": []byte(`approvers:
 - cjwagner
 reviewers:
-- Alice
+- "@Alice"
 - bob
 
 required_reviewers:
@@ -235,7 +245,7 @@ labels:
 				return nil, nil, fmt.Errorf("cannot add commit: %v", err)
 			}
 		}
-		cache["org"+"/"+"repo:master"] = entry
+		cache.data["org"+"/"+"repo:master"] = entry
 		// mark this entry is cache
 		entry.owners.baseDir = "cache"
 	}
@@ -245,22 +255,25 @@ labels:
 		return nil, nil, fmt.Errorf("cannot get commit SHA: %v", err)
 	}
 	return &Client{
-			git:    git,
-			ghc:    ghc,
 			logger: logrus.WithField("client", "repoowners"),
-			cache:  cache,
+			ghc:    ghc,
+			delegate: &delegate{
+				git:   git,
+				cache: cache,
 
-			mdYAMLEnabled: func(org, repo string) bool {
-				return enableMdYaml
-			},
-			skipCollaborators: func(org, repo string) bool {
-				return skipCollab
-			},
-			ownersDirBlacklist: func() prowConf.OwnersDirBlacklist {
-				return prowConf.OwnersDirBlacklist{
-					Repos:   ownersDirBlacklistByRepo,
-					Default: ownersDirBlacklistDefault,
-				}
+				mdYAMLEnabled: func(org, repo string) bool {
+					return enableMdYaml
+				},
+				skipCollaborators: func(org, repo string) bool {
+					return skipCollab
+				},
+				ownersDirBlacklist: func() prowConf.OwnersDirBlacklist {
+					return prowConf.OwnersDirBlacklist{
+						Repos:                       ownersDirBlacklistByRepo,
+						Default:                     ownersDirBlacklistDefault,
+						IgnorePreconfiguredDefaults: ignorePreconfiguredDefaults,
+					}
+				},
 			},
 		},
 		// Clean up function
@@ -272,8 +285,16 @@ labels:
 }
 
 func TestOwnersDirBlacklist(t *testing.T) {
-	getRepoOwnersWithBlacklist := func(t *testing.T, defaults []string, byRepo map[string][]string) *RepoOwners {
-		client, cleanup, err := getTestClient(testFiles, true, false, true, defaults, byRepo, nil, nil)
+	testOwnersDirBlacklist(localgit.New, t)
+}
+
+func TestOwnersDirBlacklistV2(t *testing.T) {
+	testOwnersDirBlacklist(localgit.NewV2, t)
+}
+
+func testOwnersDirBlacklist(clients localgit.Clients, t *testing.T) {
+	getRepoOwnersWithBlacklist := func(t *testing.T, defaults []string, byRepo map[string][]string, ignorePreconfiguredDefaults bool) *RepoOwners {
+		client, cleanup, err := getTestClient(testFiles, true, false, true, ignorePreconfiguredDefaults, defaults, byRepo, nil, nil, clients)
 		if err != nil {
 			t.Fatalf("Error creating test client: %v.", err)
 		}
@@ -288,10 +309,11 @@ func TestOwnersDirBlacklist(t *testing.T) {
 	}
 
 	type testConf struct {
-		blacklistDefault []string
-		blacklistByRepo  map[string][]string
-		includeDirs      []string
-		excludeDirs      []string
+		blacklistDefault            []string
+		blacklistByRepo             map[string][]string
+		ignorePreconfiguredDefaults bool
+		includeDirs                 []string
+		excludeDirs                 []string
 	}
 
 	tests := map[string]testConf{}
@@ -349,10 +371,18 @@ func TestOwnersDirBlacklist(t *testing.T) {
 		includeDirs:      []string{"", "src", "src/dir", "src/dir/subdir"},
 		excludeDirs:      []string{"src/dir/conformance"},
 	}
+	tests["exclude preconfigured defaults"] = testConf{
+		includeDirs: []string{"", "src", "src/dir", "src/dir/subdir", "vendor"},
+		excludeDirs: []string{"vendor/k8s.io/client-go"},
+	}
+	tests["ignore preconfigured defaults"] = testConf{
+		includeDirs:                 []string{"", "src", "src/dir", "src/dir/subdir", "vendor", "vendor/k8s.io/client-go"},
+		ignorePreconfiguredDefaults: true,
+	}
 
 	for name, conf := range tests {
 		t.Run(name, func(t *testing.T) {
-			ro := getRepoOwnersWithBlacklist(t, conf.blacklistDefault, conf.blacklistByRepo)
+			ro := getRepoOwnersWithBlacklist(t, conf.blacklistDefault, conf.blacklistByRepo, conf.ignorePreconfiguredDefaults)
 
 			includeDirs := sets.NewString(conf.includeDirs...)
 			excludeDirs := sets.NewString(conf.excludeDirs...)
@@ -377,6 +407,14 @@ func TestOwnersDirBlacklist(t *testing.T) {
 }
 
 func TestOwnersRegexpFiltering(t *testing.T) {
+	testOwnersRegexpFiltering(localgit.New, t)
+}
+
+func TestOwnersRegexpFilteringV2(t *testing.T) {
+	testOwnersRegexpFiltering(localgit.NewV2, t)
+}
+
+func testOwnersRegexpFiltering(clients localgit.Clients, t *testing.T) {
 	tests := map[string]sets.String{
 		"re/a/go.go":   sets.NewString("re/all", "re/go", "re/go-in-a"),
 		"re/a/md.md":   sets.NewString("re/all", "re/md-in-a"),
@@ -386,7 +424,7 @@ func TestOwnersRegexpFiltering(t *testing.T) {
 		"re/b/md.md":   sets.NewString("re/all"),
 	}
 
-	client, cleanup, err := getTestClient(testFilesRe, true, false, true, nil, nil, nil, nil)
+	client, cleanup, err := getTestClient(testFilesRe, true, false, true, false, nil, nil, nil, nil, clients)
 	if err != nil {
 		t.Fatalf("Error creating test client: %v.", err)
 	}
@@ -410,6 +448,14 @@ func strP(str string) *string {
 }
 
 func TestLoadRepoOwners(t *testing.T) {
+	testLoadRepoOwners(localgit.New, t)
+}
+
+func TestLoadRepoOwnersV2(t *testing.T) {
+	testLoadRepoOwners(localgit.NewV2, t)
+}
+
+func testLoadRepoOwners(clients localgit.Clients, t *testing.T) {
 	tests := []struct {
 		name              string
 		mdEnabled         bool
@@ -433,6 +479,7 @@ func TestLoadRepoOwners(t *testing.T) {
 				"src/dir":             patternAll("bob"),
 				"src/dir/conformance": patternAll("mml"),
 				"src/dir/subdir":      patternAll("alice", "bob"),
+				"vendor":              patternAll("alice"),
 			},
 			expectedReviewers: map[string]map[string]sets.String{
 				"":               patternAll("alice", "bob"),
@@ -462,6 +509,7 @@ func TestLoadRepoOwners(t *testing.T) {
 				"src/dir":             patternAll("bob"),
 				"src/dir/conformance": patternAll("mml"),
 				"src/dir/subdir":      patternAll("alice", "bob"),
+				"vendor":              patternAll("alice"),
 			},
 			expectedReviewers: map[string]map[string]sets.String{
 				"":               patternAll("alice", "bob"),
@@ -493,6 +541,7 @@ func TestLoadRepoOwners(t *testing.T) {
 				"src/dir/conformance": patternAll("mml"),
 				"src/dir/subdir":      patternAll("alice", "bob"),
 				"docs/file.md":        patternAll("alice"),
+				"vendor":              patternAll("alice"),
 			},
 			expectedReviewers: map[string]map[string]sets.String{
 				"":               patternAll("alice", "bob"),
@@ -529,6 +578,7 @@ func TestLoadRepoOwners(t *testing.T) {
 				"src/dir/conformance": patternAll("mml"),
 				"src/dir/subdir":      patternAll("alice", "bob"),
 				"src/doc":             patternAll("maggie"),
+				"vendor":              patternAll("alice"),
 			},
 			expectedReviewers: map[string]map[string]sets.String{
 				"":               patternAll("alice", "bob"),
@@ -563,6 +613,7 @@ func TestLoadRepoOwners(t *testing.T) {
 				"src/dir":             patternAll("bob"),
 				"src/dir/conformance": patternAll("mml"),
 				"src/dir/subdir":      patternAll("alice", "bob"),
+				"vendor":              patternAll("alice"),
 			},
 			expectedReviewers: map[string]map[string]sets.String{
 				"":               patternAll("alice", "bob"),
@@ -592,6 +643,7 @@ func TestLoadRepoOwners(t *testing.T) {
 				"src/dir":             patternAll("bob"),
 				"src/dir/conformance": patternAll("mml"),
 				"src/dir/subdir":      patternAll("alice", "bob"),
+				"vendor":              patternAll("alice"),
 			},
 			expectedReviewers: map[string]map[string]sets.String{
 				"":               patternAll("alice", "bob"),
@@ -640,6 +692,7 @@ func TestLoadRepoOwners(t *testing.T) {
 				"src/dir/conformance": patternAll("mml"),
 				"src/dir/subdir":      patternAll("alice", "bob"),
 				"docs/file.md":        patternAll("alice"),
+				"vendor":              patternAll("alice"),
 			},
 			expectedReviewers: map[string]map[string]sets.String{
 				"":               patternAll("alice", "bob"),
@@ -673,6 +726,7 @@ func TestLoadRepoOwners(t *testing.T) {
 				"src/dir/conformance": patternAll("mml"),
 				"src/dir/subdir":      patternAll("alice", "bob"),
 				"docs/file.md":        patternAll("alice"),
+				"vendor":              patternAll("alice"),
 			},
 			expectedReviewers: map[string]map[string]sets.String{
 				"":               patternAll("alice", "bob"),
@@ -706,6 +760,7 @@ func TestLoadRepoOwners(t *testing.T) {
 				"src/dir":             patternAll("bob"),
 				"src/dir/conformance": patternAll("mml"),
 				"src/dir/subdir":      patternAll("alice", "bob"),
+				"vendor":              patternAll("alice"),
 			},
 			expectedReviewers: map[string]map[string]sets.String{
 				"":               patternAll("alice", "bob"),
@@ -739,6 +794,7 @@ func TestLoadRepoOwners(t *testing.T) {
 				"src/dir":             patternAll("bob"),
 				"src/dir/conformance": patternAll("mml"),
 				"src/dir/subdir":      patternAll("alice", "bob"),
+				"vendor":              patternAll("alice"),
 			},
 			expectedReviewers: map[string]map[string]sets.String{
 				"":               patternAll("alice", "bob"),
@@ -783,6 +839,7 @@ func TestLoadRepoOwners(t *testing.T) {
 				"src/dir/conformance": patternAll("mml"),
 				"src/dir/subdir":      patternAll("alice", "bob"),
 				"docs/file.md":        patternAll("alice"),
+				"vendor":              patternAll("alice"),
 			},
 			expectedReviewers: map[string]map[string]sets.String{
 				"":               patternAll("alice", "bob"),
@@ -813,7 +870,7 @@ func TestLoadRepoOwners(t *testing.T) {
 
 	for _, test := range tests {
 		t.Logf("Running scenario %q", test.name)
-		client, cleanup, err := getTestClient(testFiles, test.mdEnabled, test.skipCollaborators, test.aliasesFileExists, nil, nil, test.extraBranchesAndFiles, test.cacheOptions)
+		client, cleanup, err := getTestClient(testFiles, test.mdEnabled, test.skipCollaborators, test.aliasesFileExists, false, nil, nil, test.extraBranchesAndFiles, test.cacheOptions, clients)
 		if err != nil {
 			t.Errorf("Error creating test client: %v.", err)
 			continue
@@ -881,6 +938,14 @@ func TestLoadRepoOwners(t *testing.T) {
 }
 
 func TestLoadRepoAliases(t *testing.T) {
+	testLoadRepoAliases(localgit.New, t)
+}
+
+func TestLoadRepoAliasesV2(t *testing.T) {
+	testLoadRepoAliases(localgit.NewV2, t)
+}
+
+func testLoadRepoAliases(clients localgit.Clients, t *testing.T) {
 	tests := []struct {
 		name string
 
@@ -921,7 +986,7 @@ func TestLoadRepoAliases(t *testing.T) {
 		},
 	}
 	for _, test := range tests {
-		client, cleanup, err := getTestClient(testFiles, false, false, test.aliasFileExists, nil, nil, test.extraBranchesAndFiles, nil)
+		client, cleanup, err := getTestClient(testFiles, false, false, test.aliasFileExists, false, nil, nil, test.extraBranchesAndFiles, nil, clients)
 		if err != nil {
 			t.Errorf("[%s] Error creating test client: %v.", test.name, err)
 			continue
@@ -1137,6 +1202,7 @@ func TestExpandAliases(t *testing.T) {
 	testAliases := RepoAliases{
 		"team/t1": sets.NewString("u1", "u2"),
 		"team/t2": sets.NewString("u1", "u3"),
+		"team/t3": sets.NewString(),
 	}
 	tests := []struct {
 		name             string
@@ -1168,6 +1234,11 @@ func TestExpandAliases(t *testing.T) {
 			unexpanded:       sets.NewString("Team/T1"),
 			expectedExpanded: sets.NewString("u1", "u2"),
 		},
+		{
+			name:             "Empty team.",
+			unexpanded:       sets.NewString("Team/T3"),
+			expectedExpanded: sets.NewString(),
+		},
 	}
 
 	for _, test := range tests {
@@ -1181,4 +1252,150 @@ func TestExpandAliases(t *testing.T) {
 			)
 		}
 	}
+}
+
+func TestSaveSimpleConfig(t *testing.T) {
+	dir, err := ioutil.TempDir("", "simpleConfig")
+	if err != nil {
+		t.Errorf("unexpected error when creating temp dir")
+	}
+	defer os.RemoveAll(dir)
+
+	tests := []struct {
+		name     string
+		given    SimpleConfig
+		expected string
+	}{
+		{
+			name: "No expansions.",
+			given: SimpleConfig{
+				Config: Config{
+					Approvers: []string{"david", "sig-alias", "Alice"},
+					Reviewers: []string{"adam", "sig-alias"},
+				},
+			},
+			expected: `approvers:
+- david
+- sig-alias
+- Alice
+options: {}
+reviewers:
+- adam
+- sig-alias
+`,
+		},
+	}
+
+	for _, test := range tests {
+		file := filepath.Join(dir, fmt.Sprintf("%s.yaml", test.name))
+		err := SaveSimpleConfig(test.given, file)
+		if err != nil {
+			t.Errorf("unexpected error when writing simple config")
+		}
+		b, err := ioutil.ReadFile(file)
+		if err != nil {
+			t.Errorf("unexpected error when reading file: %s", file)
+		}
+		s := string(b)
+		if test.expected != s {
+			t.Errorf("result '%s' is differ from expected: '%s'", s, test.expected)
+		}
+		simple, err := LoadSimpleConfig(b)
+		if err != nil {
+			t.Errorf("unexpected error when load simple config: %v", err)
+		}
+		if !reflect.DeepEqual(simple, test.given) {
+			t.Errorf("unexpected error when loading simple config from: '%s'", diff.ObjectReflectDiff(simple, test.given))
+		}
+	}
+}
+
+func TestSaveFullConfig(t *testing.T) {
+	dir, err := ioutil.TempDir("", "fullConfig")
+	if err != nil {
+		t.Errorf("unexpected error when creating temp dir")
+	}
+	defer os.RemoveAll(dir)
+
+	tests := []struct {
+		name     string
+		given    FullConfig
+		expected string
+	}{
+		{
+			name: "No expansions.",
+			given: FullConfig{
+				Filters: map[string]Config{
+					".*": {
+						Approvers: []string{"alice", "bob", "carol", "david"},
+						Reviewers: []string{"adam", "bob", "carol"},
+					},
+				},
+			},
+			expected: `filters:
+  .*:
+    approvers:
+    - alice
+    - bob
+    - carol
+    - david
+    reviewers:
+    - adam
+    - bob
+    - carol
+options: {}
+`,
+		},
+	}
+
+	for _, test := range tests {
+		file := filepath.Join(dir, fmt.Sprintf("%s.yaml", test.name))
+		err := SaveFullConfig(test.given, file)
+		if err != nil {
+			t.Errorf("unexpected error when writing full config")
+		}
+		b, err := ioutil.ReadFile(file)
+		if err != nil {
+			t.Errorf("unexpected error when reading file: %s", file)
+		}
+		s := string(b)
+		if test.expected != s {
+			t.Errorf("result '%s' is differ from expected: '%s'", s, test.expected)
+		}
+		full, err := LoadFullConfig(b)
+		if err != nil {
+			t.Errorf("unexpected error when load full config: %v", err)
+		}
+		if !reflect.DeepEqual(full, test.given) {
+			t.Errorf("unexpected error when loading simple config from: '%s'", diff.ObjectReflectDiff(full, test.given))
+		}
+	}
+}
+
+func TestTopLevelApprovers(t *testing.T) {
+	expectedApprovers := []string{"alice", "bob"}
+	ro := &RepoOwners{
+		approvers: map[string]map[*regexp.Regexp]sets.String{
+			baseDir: regexpAll(expectedApprovers...),
+			leafDir: regexpAll("carl", "dave"),
+		},
+	}
+
+	foundApprovers := ro.TopLevelApprovers()
+	if !foundApprovers.Equal(sets.NewString(expectedApprovers...)) {
+		t.Errorf("Expected Owners: %v\tFound Owners: %v ", expectedApprovers, foundApprovers)
+	}
+}
+
+func TestCacheDoesntRace(t *testing.T) {
+	key := "key"
+	cache := newCache()
+
+	wg := &sync.WaitGroup{}
+	wg.Add(2)
+
+	go func() { cache.setEntry(key, cacheEntry{}); wg.Done() }()
+	go func() { cache.getEntry(key); wg.Done() }()
+
+	wg.Wait()
 }

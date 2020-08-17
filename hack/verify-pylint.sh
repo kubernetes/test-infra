@@ -17,6 +17,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+DIR=$( cd "$( dirname "$0" )" && pwd )
 
 if [[ -n "${TEST_WORKSPACE:-}" ]]; then # Running inside bazel
   echo "Linting python..." >&2
@@ -32,7 +33,8 @@ else
 fi
 
 export PYLINTHOME=$TEST_TMPDIR
-pylint="$(dirname $0)/pylint_bin"
 
 shopt -s extglob globstar
-${pylint} !(gubernator|external|vendor|bazel-*)/**/*.py
+
+# TODO(clarketm): remove `boskos` exclusion after upgrading to PY3.
+"$DIR/pylint_bin" !(gubernator|external|vendor|jenkins|scenarios|triage|boskos|bazel-*)/**/*.py

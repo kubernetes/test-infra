@@ -19,33 +19,52 @@ package clone
 import (
 	"bytes"
 	"fmt"
+	"net/url"
 	"os/exec"
+	"path"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/sirupsen/logrus"
+
+	"k8s.io/apimachinery/pkg/util/sets"
+
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/logrusutil"
 )
+
+type runnable interface {
+	run() (string, string, error)
+}
 
 // Run clones the refs under the prescribed directory and optionally
 // configures the git username and email in the repository as well.
-func Run(refs prowapi.Refs, dir, gitUserName, gitUserEmail, cookiePath string, env []string) Record {
+func Run(refs prowapi.Refs, dir, gitUserName, gitUserEmail, cookiePath string, env []string, oauthToken string) Record {
+	if len(oauthToken) > 0 {
+		logrus.SetFormatter(logrusutil.NewCensoringFormatter(logrus.StandardLogger().Formatter, func() sets.String {
+			return sets.NewString(oauthToken)
+		}))
+	}
 	logrus.WithFields(logrus.Fields{"refs": refs}).Info("Cloning refs")
 	record := Record{Refs: refs}
 
 	// This function runs the provided commands in order, logging them as they run,
 	// aborting early and returning if any command fails.
-	runCommands := func(commands []cloneCommand) error {
+	runCommands := func(commands []runnable) error {
 		for _, command := range commands {
 			formattedCommand, output, err := command.run()
-			logrus.WithFields(logrus.Fields{"command": formattedCommand, "output": output, "error": err}).Info("Ran command")
+			log := logrus.WithFields(logrus.Fields{"command": formattedCommand, "output": output})
+			if err != nil {
+				log = log.WithField("error", err)
+			}
+			log.Info("Ran command")
 			message := ""
 			if err != nil {
 				message = err.Error()
 				record.Failed = true
 			}
-			record.Commands = append(record.Commands, Command{Command: formattedCommand, Output: output, Error: message})
+			record.Commands = append(record.Commands, Command{Command: censorGitCommand(formattedCommand, oauthToken), Output: output, Error: message})
 			if err != nil {
 				return err
 			}
@@ -53,7 +72,7 @@ func Run(refs prowapi.Refs, dir, gitUserName, gitUserEmail, cookiePath string, e
 		return nil
 	}
 
-	g := gitCtxForRefs(refs, dir, env)
+	g := gitCtxForRefs(refs, dir, env, oauthToken)
 	if err := runCommands(g.commandsForBaseRef(refs, gitUserName, gitUserEmail, cookiePath)); err != nil {
 		return record
 	}
@@ -76,6 +95,14 @@ func Run(refs prowapi.Refs, dir, gitUserName, gitUserEmail, cookiePath string, e
 	return record
 }
 
+func censorGitCommand(command, token string) string {
+	if token == "" {
+		return command
+	}
+	censored := bytes.ReplaceAll([]byte(command), []byte(token), []byte("CENSORED"))
+	return string(censored)
+}
+
 // PathForRefs determines the full path to where
 // refs should be cloned
 func PathForRefs(baseDir string, refs prowapi.Refs) string {
@@ -85,7 +112,7 @@ func PathForRefs(baseDir string, refs prowapi.Refs) string {
 	} else {
 		clonePath = fmt.Sprintf("github.com/%s/%s", refs.Org, refs.Repo)
 	}
-	return fmt.Sprintf("%s/src/%s", baseDir, clonePath)
+	return path.Join(baseDir, "src", clonePath)
 }
 
 // gitCtx collects a few common values needed for all git commands.
@@ -96,7 +123,7 @@ type gitCtx struct {
 }
 
 // gitCtxForRefs creates a gitCtx based on the provide refs and baseDir.
-func gitCtxForRefs(refs prowapi.Refs, baseDir string, env []string) gitCtx {
+func gitCtxForRefs(refs prowapi.Refs, baseDir string, env []string, oauthToken string) gitCtx {
 	g := gitCtx{
 		cloneDir:      PathForRefs(baseDir, refs),
 		env:           env,
@@ -105,6 +132,13 @@ func gitCtxForRefs(refs prowapi.Refs, baseDir string, env []string) gitCtx {
 	if refs.CloneURI != "" {
 		g.repositoryURI = refs.CloneURI
 	}
+
+	if len(oauthToken) > 0 {
+		u, _ := url.Parse(g.repositoryURI)
+		u.User = url.UserPassword(oauthToken, "x-oauth-basic")
+		g.repositoryURI = u.String()
+	}
+
 	return g
 }
 
@@ -112,11 +146,32 @@ func (g *gitCtx) gitCommand(args ...string) cloneCommand {
 	return cloneCommand{dir: g.cloneDir, env: g.env, command: "git", args: args}
 }
 
+var (
+	fetchRetries = []time.Duration{
+		100 * time.Millisecond,
+		200 * time.Millisecond,
+		400 * time.Millisecond,
+		800 * time.Millisecond,
+		2 * time.Second,
+	}
+)
+
+func (g *gitCtx) gitFetch(fetchArgs ...string) retryCommand {
+	args := []string{"fetch"}
+	args = append(args, fetchArgs...)
+
+	return retryCommand{
+		runnable: g.gitCommand(args...),
+		retries:  fetchRetries,
+	}
+}
+
 // commandsForBaseRef returns the list of commands needed to initialize and
 // configure a local git directory, as well as fetch and check out the provided
 // base ref.
-func (g *gitCtx) commandsForBaseRef(refs prowapi.Refs, gitUserName, gitUserEmail, cookiePath string) []cloneCommand {
-	commands := []cloneCommand{{dir: "/", env: g.env, command: "mkdir", args: []string{"-p", g.cloneDir}}}
+func (g *gitCtx) commandsForBaseRef(refs prowapi.Refs, gitUserName, gitUserEmail, cookiePath string) []runnable {
+	var commands []runnable
+	commands = append(commands, cloneCommand{dir: "/", env: g.env, command: "mkdir", args: []string{"-p", g.cloneDir}})
 
 	commands = append(commands, g.gitCommand("init"))
 	if gitUserName != "" {
@@ -130,11 +185,11 @@ func (g *gitCtx) commandsForBaseRef(refs prowapi.Refs, gitUserName, gitUserEmail
 	}
 
 	if refs.CloneDepth > 0 {
-		commands = append(commands, g.gitCommand("fetch", g.repositoryURI, "--tags", "--prune", "--depth", strconv.Itoa(refs.CloneDepth)))
-		commands = append(commands, g.gitCommand("fetch", "--depth", strconv.Itoa(refs.CloneDepth), g.repositoryURI, refs.BaseRef))
+		commands = append(commands, g.gitFetch(g.repositoryURI, "--tags", "--prune", "--depth", strconv.Itoa(refs.CloneDepth)))
+		commands = append(commands, g.gitFetch("--depth", strconv.Itoa(refs.CloneDepth), g.repositoryURI, refs.BaseRef))
 	} else {
-		commands = append(commands, g.gitCommand("fetch", g.repositoryURI, "--tags", "--prune"))
-		commands = append(commands, g.gitCommand("fetch", g.repositoryURI, refs.BaseRef))
+		commands = append(commands, g.gitFetch(g.repositoryURI, "--tags", "--prune"))
+		commands = append(commands, g.gitFetch(g.repositoryURI, refs.BaseRef))
 	}
 	var target string
 	if refs.BaseSHA != "" {
@@ -165,7 +220,7 @@ func (g *gitCtx) gitHeadTimestamp() (int, error) {
 		logrus.WithError(err).Debug("Could not obtain timestamp of git HEAD")
 		return 0, err
 	}
-	timestamp, convErr := strconv.Atoi(string(gitOutput))
+	timestamp, convErr := strconv.Atoi(strings.TrimSpace(string(gitOutput)))
 	if convErr != nil {
 		logrus.WithError(convErr).Errorf("Failed to parse timestamp %q", gitOutput)
 		return 0, convErr
@@ -201,14 +256,14 @@ func (g *gitCtx) gitRevParse() (string, error) {
 // It's recommended that fakeTimestamp be set to the timestamp of the base ref.
 // This enables reproducible timestamps and git tree digests every time the same
 // set of base and pull refs are used.
-func (g *gitCtx) commandsForPullRefs(refs prowapi.Refs, fakeTimestamp int) []cloneCommand {
-	var commands []cloneCommand
+func (g *gitCtx) commandsForPullRefs(refs prowapi.Refs, fakeTimestamp int) []runnable {
+	var commands []runnable
 	for _, prRef := range refs.Pulls {
 		ref := fmt.Sprintf("pull/%d/head", prRef.Number)
 		if prRef.Ref != "" {
 			ref = prRef.Ref
 		}
-		commands = append(commands, g.gitCommand("fetch", g.repositoryURI, ref))
+		commands = append(commands, g.gitFetch(g.repositoryURI, ref))
 		var prCheckout string
 		if prRef.SHA != "" {
 			prCheckout = prRef.SHA
@@ -229,6 +284,30 @@ func (g *gitCtx) commandsForPullRefs(refs prowapi.Refs, fakeTimestamp int) []clo
 	return commands
 }
 
+type retryCommand struct {
+	runnable
+	retries []time.Duration
+}
+
+func (rc retryCommand) run() (string, string, error) {
+	cmd, out, err := rc.runnable.run()
+	if err == nil {
+		return cmd, out, err
+	}
+	for _, dur := range rc.retries {
+		logrus.WithError(err).WithFields(logrus.Fields{
+			"sleep":   dur,
+			"command": cmd,
+		}).Info("Retrying after sleep")
+		time.Sleep(dur)
+		cmd, out, err = rc.runnable.run()
+		if err == nil {
+			break
+		}
+	}
+	return cmd, out, err
+}
+
 type cloneCommand struct {
 	dir     string
 	env     []string
@@ -236,8 +315,8 @@ type cloneCommand struct {
 	args    []string
 }
 
-func (c *cloneCommand) run() (string, string, error) {
-	output := bytes.Buffer{}
+func (c cloneCommand) run() (string, string, error) {
+	var output bytes.Buffer
 	cmd := exec.Command(c.command, c.args...)
 	cmd.Dir = c.dir
 	cmd.Env = append(cmd.Env, c.env...)
@@ -247,6 +326,6 @@ func (c *cloneCommand) run() (string, string, error) {
 	return strings.Join(append([]string{c.command}, c.args...), " "), output.String(), err
 }
 
-func (c *cloneCommand) String() string {
+func (c cloneCommand) String() string {
 	return fmt.Sprintf("PWD=%s %s %s %s", c.dir, strings.Join(c.env, " "), c.command, strings.Join(c.env, " "))
 }

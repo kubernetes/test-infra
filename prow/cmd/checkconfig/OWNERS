@@ -2,3 +2,8 @@
 
 approvers:
 - stevekuznetsov
+- cjwagner
+reviewers:
+- chases2
+- stevekuznetsov
+- cjwagner

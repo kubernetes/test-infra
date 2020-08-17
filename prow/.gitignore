@@ -1,4 +1,3 @@
-cmd/artifact-uploader/artifact-uploader
 cmd/branchprotector/branchprotector
 cmd/build/build
 cmd/checkconfig/checkconfig
@@ -30,3 +29,5 @@ cmd/tot/tot
 external-plugins/cherrypicker/cherrypicker
 external-plugins/needs-rebase/needs-rebase
 external-plugins/refresh/refresh
+pj.yaml
+pod.yaml

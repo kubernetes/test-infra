@@ -20,9 +20,12 @@ Usage:
 # Use a job from deck
 bazel run //prow/cmd/phaino -- $URL # or /path/to/prowjob.yaml
 # Use mkpj to create the job
-bazel run //prow/cmd/mkpj -- --config-path=/your/config --job=foo > /tmp/foo
+bazel run //prow/cmd/mkpj -- --config-path=/path/to/prow/config.yaml --job-config-path=/path/to/prow/job/configs --job=foo > /tmp/foo
 bazel run //prow/cmd/phaino -- /tmp/foo
 ```
+
+Phaino is an interactive utility; it will prompt you for a local copy of any secrets or
+volumes that the Prow Job may require.
 
 ### Common options
 
@@ -35,19 +38,19 @@ See `bazel run //prow/cmd/phaino -- --help` for full option list.
 
 
 ### Usage examples
-URL example:
+#### URL example
 
 * Go to your [deck deployment](https://prow.k8s.io)
 * Pick a job and click the rerun icon on the left
 * Copy the URL (something like https://prow.k8s.io/rerun?prowjob=d08f1ca5-5d63-11e9-ab62-0a580a6c1281)
 * Paste it as a phaino arg
-  - `bazel run //prow/cmd/phaino -- https://prow.k8s.io/rerun?prowjob=d08f1ca5-5d63-11e9-ab62-0a580a6c1281
+  - `bazel run //prow/cmd/phaino -- https://prow.k8s.io/rerun?prowjob=d08f1ca5-5d63-11e9-ab62-0a580a6c1281`
   - Alternatively `bazel run //prow/cmd/phaino -- <(curl $URL)`
 
 
-A `mkpj` example:
+#### Configuration example:
 
-* Use `mkpj` to create the job and pipe this to `phaino`
+* Use [`mkpj`](/prow/cmd/mkpj) to create the job and pipe this to `phaino`
   - For prow.k8s.io jobs use `//config:mkpj`
       ```
       bazel run //config:mkpj -- --job=pull-test-infra-bazel > /tmp/foo

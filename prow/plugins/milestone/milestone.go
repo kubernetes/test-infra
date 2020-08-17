@@ -26,6 +26,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	prowconfig "k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
@@ -53,19 +54,19 @@ func init() {
 	plugins.RegisterGenericCommentHandler(pluginName, handleGenericComment, helpProvider)
 }
 
-func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+func helpProvider(config *plugins.Configuration, enabledRepos []prowconfig.OrgRepo) (*pluginhelp.PluginHelp, error) {
 	msgForTeam := func(team plugins.Milestone) string {
 		return fmt.Sprintf(milestoneTeamMsg, team.MaintainersTeam, team.MaintainersID)
 	}
 
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "The milestone plugin allows members of a configurable GitHub team to set the milestone on an issue or pull request.",
-		Config: func(repos []string) map[string]string {
+		Config: func(repos []prowconfig.OrgRepo) map[string]string {
 			configMap := make(map[string]string)
 			for _, repo := range repos {
-				team, exists := config.RepoMilestone[repo]
+				team, exists := config.RepoMilestone[repo.String()]
 				if exists {
-					configMap[repo] = msgForTeam(team)
+					configMap[repo.String()] = msgForTeam(team)
 				}
 			}
 			configMap[""] = msgForTeam(config.RepoMilestone[""])
@@ -86,7 +87,7 @@ func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error 
 	return handle(pc.GitHubClient, pc.Logger, &e, pc.PluginConfig.RepoMilestone)
 }
 
-func buildMilestoneMap(milestones []github.Milestone) map[string]int {
+func BuildMilestoneMap(milestones []github.Milestone) map[string]int {
 	m := make(map[string]int)
 	for _, ms := range milestones {
 		m[ms.Title] = ms.Number
@@ -145,7 +146,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, r
 		return nil
 	}
 
-	milestoneMap := buildMilestoneMap(milestones)
+	milestoneMap := BuildMilestoneMap(milestones)
 	milestoneNumber, ok := milestoneMap[proposedMilestone]
 	if !ok {
 		slice := make([]string, 0, len(milestoneMap))

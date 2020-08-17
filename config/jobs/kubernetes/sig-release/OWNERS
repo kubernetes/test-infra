@@ -1,9 +1,11 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 approvers:
-- calebamiles
-- justaugustus
-- tpepper
+- release-engineering-approvers
+
+reviewers:
+- release-engineering-reviewers
 
 labels:
 - sig/release
+- area/release-eng

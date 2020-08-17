@@ -18,6 +18,7 @@ limitations under the License.
 package conformance
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -112,7 +113,7 @@ func (d *Deployer) isAPIServerUp() (*v1.ComponentStatusList, error) {
 		return nil, fmt.Errorf("no apiserver client available")
 	}
 	//TODO(Q-Lee): check that relevant components have started. May consider checking addons.
-	return d.apiserver.CoreV1().ComponentStatuses().List(metav1.ListOptions{})
+	return d.apiserver.CoreV1().ComponentStatuses().List(context.TODO(), metav1.ListOptions{})
 }
 
 // DumpClusterLogs is a no-op.
@@ -135,7 +136,7 @@ func (d *Deployer) GetClusterCreated(gcpProject string) (time.Time, error) {
 	return time.Time{}, fmt.Errorf("cannot get cluster create time for conformance cluster")
 }
 
-func (_ *Deployer) KubectlCommand() (*exec.Cmd, error) {
+func (d *Deployer) KubectlCommand() (*exec.Cmd, error) {
 	log.Print("Noop - Conformance KubectlCommand()")
 	return nil, nil
 }

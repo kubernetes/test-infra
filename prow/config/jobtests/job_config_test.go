@@ -22,13 +22,13 @@ import (
 	"os"
 	"testing"
 
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 
 	cfg "k8s.io/test-infra/prow/config"
 )
 
-var configPath = flag.String("config", "../../config.yaml", "Path to prow config")
+var configPath = flag.String("config", "../../../config/prow/config.yaml", "Path to prow config")
 var jobConfigPath = flag.String("job-config", "../../../config/jobs", "Path to prow job config")
 
 // Loaded at TestMain.
@@ -95,12 +95,12 @@ func missingMountsForSpec(spec *v1.PodSpec) sets.String {
 
 // verify that all volume mounts reference volumes that exist
 func TestMountsHaveVolumes(t *testing.T) {
-	for _, job := range c.AllPresubmits(nil) {
+	for _, job := range c.AllStaticPresubmits(nil) {
 		if job.Spec != nil {
 			validateVolumesAndMounts(job.Name, job.Spec, t)
 		}
 	}
-	for _, job := range c.AllPostsubmits(nil) {
+	for _, job := range c.AllStaticPostsubmits(nil) {
 		if job.Spec != nil {
 			validateVolumesAndMounts(job.Name, job.Spec, t)
 		}
@@ -130,7 +130,7 @@ func checkContext(t *testing.T, repo string, p cfg.Presubmit) {
 }
 
 func TestContextMatches(t *testing.T) {
-	for repo, presubmits := range c.Presubmits {
+	for repo, presubmits := range c.PresubmitsStatic {
 		for _, p := range presubmits {
 			checkContext(t, repo, p)
 		}
@@ -147,7 +147,7 @@ func checkRetest(t *testing.T, repo string, presubmits []cfg.Presubmit) {
 }
 
 func TestRetestMatchJobsName(t *testing.T) {
-	for repo, presubmits := range c.Presubmits {
+	for repo, presubmits := range c.PresubmitsStatic {
 		checkRetest(t, repo, presubmits)
 	}
 }
@@ -181,7 +181,7 @@ func allJobs() ([]cfg.Presubmit, []cfg.Postsubmit, []cfg.Periodic, error) {
 	{ // Find all presubmit jobs
 		q := []cfg.Presubmit{}
 
-		for _, p := range c.Presubmits {
+		for _, p := range c.PresubmitsStatic {
 			for _, p2 := range p {
 				q = append(q, p2)
 			}
@@ -196,7 +196,7 @@ func allJobs() ([]cfg.Presubmit, []cfg.Postsubmit, []cfg.Periodic, error) {
 	{ // Find all postsubmit jobs
 		q := []cfg.Postsubmit{}
 
-		for _, p := range c.Postsubmits {
+		for _, p := range c.PostsubmitsStatic {
 			for _, p2 := range p {
 				q = append(q, p2)
 			}

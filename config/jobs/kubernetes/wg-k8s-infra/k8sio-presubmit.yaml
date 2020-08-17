@@ -1,0 +1,22 @@
+presubmits:
+  kubernetes/k8s.io:
+  - name: pull-k8sio-groups-test
+    annotations:
+      testgrid-create-test-group: 'true'
+      testgrid-dashboards: wg-k8s-infra-k8sio
+    decorate: true
+    path_alias: k8s.io/k8s.io
+    run_if_changed: "^groups/"
+    branches:
+    - ^master$
+    spec:
+      containers:
+      - image: golang:1.13
+        command:
+        - bash
+        args:
+        - -c
+        - "cd groups && go test"
+        env:
+        - name: GO111MODULE
+          value: "on"

@@ -147,9 +147,14 @@ func TestCLALabels(t *testing.T) {
 			pullRequests[pr.Number] = &pr
 		}
 
+		issues := make(map[int]*github.Issue)
+		for _, issue := range tc.issues {
+			issues[issue.Number] = &issue
+		}
+
 		fc := &fakegithub.FakeClient{
 			PullRequests:  pullRequests,
-			Issues:        tc.issues,
+			Issues:        issues,
 			IssueComments: make(map[int][]github.IssueComment),
 		}
 		se := github.StatusEvent{

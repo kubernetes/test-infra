@@ -5,7 +5,7 @@ go_library(
     srcs = ["owner.go"],
     importpath = "k8s.io/test-infra/robots/issue-creator/testowner",
     visibility = ["//visibility:public"],
-    deps = ["//vendor/github.com/golang/glog:go_default_library"],
+    deps = ["@com_github_golang_glog//:go_default_library"],
 )
 
 go_test(

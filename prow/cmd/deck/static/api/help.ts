@@ -11,6 +11,7 @@ export interface PluginHelp {
   Config: {[key: string]: string};
   Events: string[];
   Commands: Command[];
+  Snippet?: string;
 }
 
 export interface Help {

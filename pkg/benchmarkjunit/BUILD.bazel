@@ -9,9 +9,9 @@ go_library(
     importpath = "k8s.io/test-infra/pkg/benchmarkjunit",
     visibility = ["//visibility:private"],
     deps = [
-        "//testgrid/metadata/junit:go_default_library",
-        "//vendor/github.com/sirupsen/logrus:go_default_library",
-        "//vendor/github.com/spf13/cobra:go_default_library",
+        "@com_github_googlecloudplatform_testgrid//metadata/junit:go_default_library",
+        "@com_github_sirupsen_logrus//:go_default_library",
+        "@com_github_spf13_cobra//:go_default_library",
     ],
 )
 
@@ -49,5 +49,5 @@ go_test(
         "@go_sdk//:files",
     ],
     embed = [":go_default_library"],
-    deps = ["//testgrid/metadata/junit:go_default_library"],
+    deps = ["@com_github_googlecloudplatform_testgrid//metadata/junit:go_default_library"],
 )

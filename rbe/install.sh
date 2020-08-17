@@ -17,25 +17,27 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-if [[ $# -lt 1 ]]; then
-    echo "Usage: $(basename "$0") <gcp-project-id> [pool-name]" >&2
+if [[ $# -lt 6 ]]; then
+    echo "Usage: $(basename "$0") <gcp-project-id> <pool-name> <workers:200> <diskgb:600> <machine:n1-standard-2> <bot ...>" >&2
     exit 1
 fi
 
 # Note: this currently requires your project to be whitelisted
-# TODO(fejta): make this available to all prow/k8s users
+# Contact fejta on #sig-testing or #prow on kubernetes slack to get on the
+# whitelist.
 # More info: https://cloud.google.com/remote-build-execution/docs/overview
 
 proj=$1
-pool=${2:-}
-workers=200
-disk=600
-machine=n1-standard-2
+pool=$2
+workers=$3
+disk=$4
+machine=$5
+shift 5
 
 users=()
 groups=()
 bots=(
-  "pr-kubekins@kubernetes-jenkins-pull.iam.gserviceaccount.com"
+  "$@"
 )
 
 log() {

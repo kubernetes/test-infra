@@ -1,0 +1,58 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_test")
+
+go_test(
+    name = "go_default_test",
+    srcs = ["config_test.go"],
+    args = [
+        "--config=$(location testconf.pb)",
+        "--prow-config=$(location //config/prow:config.yaml)",
+        "--job-config=config/jobs",
+    ],
+    data = [
+        ":testconf.pb",
+        "//config:prowjobs",
+        "//config/prow:config.yaml",
+    ],
+    rundir = ".",
+    deps = [
+        "//prow/config:go_default_library",
+        "@com_github_googlecloudplatform_testgrid//config:go_default_library",
+        "@com_github_googlecloudplatform_testgrid//pb/config:go_default_library",
+        "@io_k8s_apimachinery//pkg/util/sets:go_default_library",
+    ],
+)
+
+genrule(
+    name = "testgrid_config",
+    srcs = [
+        "//config:testgrids",
+        "//config:prowjobs",
+        "//config:testgrid_default",
+        "//config/prow:config.yaml",
+    ],
+    outs = [":testconf.pb"],
+    cmd = "./$(location //testgrid/cmd/configurator) \
+           --yaml=config/testgrids \
+           --prow-config=$(location //config/prow:config.yaml) \
+           --prow-job-config=config/jobs \
+           --default=$(location //config:testgrid_default) \
+           --output=$@ \
+           --oneshot",
+    tools = [
+        "//testgrid/cmd/configurator",
+    ],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

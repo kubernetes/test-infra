@@ -1,0 +1,13 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+reviewers:
+- cblecker
+- dims
+- spiffxp
+approvers:
+- cblecker
+- dims
+- spiffxp
+
+labels:
+- wg/k8s-infra

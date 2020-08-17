@@ -20,7 +20,7 @@ If you'd like to post other kinds of tests or unrelated content, please consider
 
 - See The following PR from setting up the initial OpenStack bucket: [#7670](https://github.com/kubernetes/test-infra/pull/7670) 
 
-3. Setup a job in your CI system to run the conformance tests. To use [`upload_e2e.py`](./upload_e2e.py) the job environment must have `python` (v2.X) and `gcloud` / `gsutil` commands. For the gcloud CLI see [Installing the Google Cloud SDK](https://cloud.google.com/sdk/downloads).
+3. Setup a job in your CI system to run the conformance tests. To use [`upload_e2e.py`](./upload_e2e.py) the job environment must have `python` (v3.X) and `gcloud` / `gsutil` commands. For the gcloud CLI see [Installing the Google Cloud SDK](https://cloud.google.com/sdk/downloads).
 
 This job will need to:
    - `a)` setup a cluster from the kubernetes release / branch you want to test
@@ -57,7 +57,7 @@ For running the conformance tests and obtaining the result files (`b)` and `c)`)
     ```
    - You can then find the log file and JUnit at `./e2e.log` and `./_artifacts/junit_01.xml` respectively.
 
- - or use the [Sonobuouy CLI](https://github.com/heptio/sonobuoy#using-the-cli) to run the tests and then obtain a "snapshot" with the official instructions [when run locally](https://github.com/heptio/sonobuoy#download-and-run). You can then get the e2e log and JUnit from the snapshot (see the [plugins section](https://github.com/heptio/sonobuoy/blob/master/docs/snapshot.md#plugins) of the snapshot documentation)
+ - or use the [Sonobuouy CLI](https://github.com/heptio/sonobuoy#using-the-cli) to run the tests and then obtain a "snapshot" with the official instructions [when run locally](https://github.com/heptio/sonobuoy#download-and-run). You can then get the e2e log and JUnit from the snapshot (see the [plugins section](https://github.com/heptio/sonobuoy/blob/master/site/docs/master/snapshot.md#plugins) of the snapshot documentation)
 
 For uploading the results (`d)`) you can use the tooling provided here (or build your own mimicking it), to use `upload_e2e.py` provide the following required flags:
 - `--junit` -- The path to the JUnit result file(s): `--junit=/path/to/junit/result/file/junit_01.xml`

@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 # Copyright 2017 The Kubernetes Authors.
 #
@@ -23,7 +23,7 @@ import make_db_test
 import model
 
 
-class FakeSub(object):
+class FakeSub:
     def __init__(self, pulls):
         self.pulls = pulls
         self.trace = []
@@ -39,7 +39,7 @@ class FakeSub(object):
         self.trace.append(['modify-ack', acks, time])
 
 
-class FakeTable(object):
+class FakeTable:
     def __init__(self, name, schema, trace=None):
         self.name = name
         self.schema = schema
@@ -49,13 +49,27 @@ class FakeTable(object):
         self.trace.append(['insert-data', args, kwargs])
         return []
 
+    def row_from_mapping(self, mapping):
+        row = []
+        for field in self.schema:
+            if field.mode == 'REQUIRED':
+                row.append(mapping[field.name])
+            elif field.mode == 'REPEATED':
+                row.append(mapping.get(field.name, ()))
+            elif field.mode == 'NULLABLE':
+                row.append(mapping.get(field.name))
+            else:
+                raise ValueError(
+                    "Unknown field mode: {}".format(field.mode))
+        return tuple(row)
 
-class Attrs(object):
+
+class Attrs:
     def __init__(self, attributes):
         self.attributes = attributes
 
 
-class FakeSchemaField(object):
+class FakeSchemaField:
     def __init__(self, **kwargs):
         self.__dict__ = kwargs
 
@@ -111,16 +125,16 @@ class StreamTest(unittest.TestCase):
              ['modify-ack', ['b'], 180],
              ['ack', ['b']],
              ['insert-data',
-              ([[5,
+              ([(5,
                  now - 5,
                  now,
                  True,
-                 u'SUCCESS',
+                 'SUCCESS',
                  None,
-                 u'gs://kubernetes-jenkins/logs/fake/123',
-                 u'fake',
+                 'gs://kubernetes-jenkins/logs/fake/123',
+                 'fake',
                  123,
-                 [],
+                 (),
                  [{'name': 'Foo', 'time': 3.0},
                   {'failed': True,
                    'failure_text': 'stacktrace',
@@ -128,7 +142,9 @@ class StreamTest(unittest.TestCase):
                    'time': 4.0}],
                  2,
                  1,
-                 None]],
+                 None,
+                 None,
+                 None)],
                [1]),
               {'skip_invalid_rows': True}],
              ['pull', False], ['pull', True],

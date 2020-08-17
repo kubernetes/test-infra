@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright 2017 The Kubernetes Authors.
+# Copyright 2020 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,13 +21,14 @@ start=$(date +%s)
 
 if [[ -e ${GOOGLE_APPLICATION_CREDENTIALS-} ]]; then
   gcloud auth activate-service-account --key-file="${GOOGLE_APPLICATION_CREDENTIALS}"
-  gcloud config set project k8s-gubernator
-  bq show <<< $'\n'
 fi
+
+gcloud config set project k8s-gubernator
+bq show <<< $'\n'
 
 date
 
-bq --headless --format=json query -n 1000000 \
+bq --headless --format=json query --max_rows 1000000 \
   "select
     path,
     timestamp_to_sec(started) started,
@@ -41,10 +42,11 @@ bq --headless --format=json query -n 1000000 \
   from
     [k8s-gubernator:build.all]
   where
-    timestamp_to_sec(started) > TIMESTAMP_TO_SEC(DATE_ADD(CURRENT_DATE(), -14, 'DAY'))" \
+    timestamp_to_sec(started) > TIMESTAMP_TO_SEC(DATE_ADD(CURRENT_DATE(), -14, 'DAY'))
+    and job != 'ci-kubernetes-coverage-unit'" \
   > triage_builds.json
 
-bq query --allow_large_results --headless -n0 --replace --destination_table k8s-gubernator:temp.triage \
+bq query --allow_large_results --headless --max_rows 0 --replace --destination_table k8s-gubernator:temp.triage \
   "select
     timestamp_to_sec(started) started,
     path build,
@@ -54,20 +56,21 @@ bq query --allow_large_results --headless -n0 --replace --destination_table k8s-
     [k8s-gubernator:build.all]
   where
     test.failed
-    and timestamp_to_sec(started) > TIMESTAMP_TO_SEC(DATE_ADD(CURRENT_DATE(), -14, 'DAY'))"
-bq extract --compression GZIP --destination_format NEWLINE_DELIMITED_JSON 'k8s-gubernator:temp.triage' gs://k8s-gubernator/triage_tests.json.gz
-gsutil cp gs://k8s-gubernator/triage_tests.json.gz triage_tests.json.gz
-gzip -df triage_tests.json.gz
+    and timestamp_to_sec(started) > TIMESTAMP_TO_SEC(DATE_ADD(CURRENT_DATE(), -14, 'DAY'))
+    and job != 'ci-kubernetes-coverage-unit'"
+gsutil rm gs://k8s-gubernator/triage_tests/shard_*.json.gz || true
+bq extract --compression GZIP --destination_format NEWLINE_DELIMITED_JSON 'k8s-gubernator:temp.triage' gs://k8s-gubernator/triage_tests/shard_*.json.gz
+mkdir -p triage_tests
+gsutil cp -r gs://k8s-gubernator/triage_tests/* triage_tests/
+gzip -df triage_tests/*.gz
 
 # gsutil cp gs://k8s-gubernator/triage/failure_data.json failure_data_previous.json
-curl -sO --retry 6 https://raw.githubusercontent.com/kubernetes/kubernetes/master/test/test_owners.json
 
 mkdir -p slices
 
-pypy summarize.py \
-  triage_builds.json \
-  triage_tests.json \
-  --owners test_owners.json \
+/triage \
+  --builds triage_builds.json \
+  --tests triage_tests/*.json \
   --output failure_data.json \
   --output_slices slices/failure_data_PREFIX.json
 

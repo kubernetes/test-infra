@@ -1,8 +1,12 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 approvers:
-- krzyzacy
-- sebastienvas
+- alvaroaleman
+- ixdy
+
+reviewers:
+- alvaroaleman
+- ixdy
 
 labels:
 - area/boskos

@@ -22,12 +22,11 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"os/signal"
 	"strconv"
-	"syscall"
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/interrupts"
 
 	"k8s.io/test-infra/pkg/flagutil"
 	"k8s.io/test-infra/prow/config/secret"
@@ -36,9 +35,6 @@ import (
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
 
-	// TODO: Remove the need for this import; it's currently required to allow the plugin config loader to function correctly (it expects plugins to be initialised)
-	// See https://github.com/kubernetes/test-infra/pull/8933#issuecomment-411511180
-	_ "k8s.io/test-infra/prow/hook"
 	"k8s.io/test-infra/prow/pluginhelp/externalplugins"
 	"k8s.io/test-infra/prow/plugins"
 )
@@ -56,9 +52,9 @@ type options struct {
 }
 
 func (o *options) Validate() error {
-	for _, group := range []flagutil.OptionGroup{&o.github} {
+	for idx, group := range []flagutil.OptionGroup{&o.github} {
 		if err := group.Validate(o.dryRun); err != nil {
-			return err
+			return fmt.Errorf("%d: %w", idx, err)
 		}
 	}
 
@@ -92,18 +88,13 @@ func main() {
 	logrus.SetLevel(logrus.InfoLevel)
 	log := logrus.StandardLogger().WithField("plugin", labels.NeedsRebase)
 
-	// Ignore SIGTERM so that we don't drop hooks when the pod is removed.
-	// We'll get SIGTERM first and then SIGKILL after our graceful termination
-	// deadline.
-	signal.Ignore(syscall.SIGTERM)
-
 	secretAgent := &secret.Agent{}
 	if err := secretAgent.Start([]string{o.github.TokenPath, o.webhookSecretFile}); err != nil {
 		logrus.WithError(err).Fatal("Error starting secrets agent.")
 	}
 
 	pa := &plugins.ConfigAgent{}
-	if err := pa.Start(o.pluginConfig); err != nil {
+	if err := pa.Start(o.pluginConfig, false); err != nil {
 		log.WithError(err).Fatalf("Error loading plugin config from %q.", o.pluginConfig)
 	}
 
@@ -119,18 +110,28 @@ func main() {
 		log:            log,
 	}
 
-	go periodicUpdate(log, pa, githubClient, o.updatePeriod)
+	defer interrupts.WaitForGracefulShutdown()
 
-	http.Handle("/", server)
-	externalplugins.ServeExternalPluginHelp(http.DefaultServeMux, log, plugin.HelpProvider)
-	logrus.Fatal(http.ListenAndServe(":"+strconv.Itoa(o.port), nil))
+	interrupts.TickLiteral(func() {
+		start := time.Now()
+		if err := plugin.HandleAll(log, githubClient, pa.Config()); err != nil {
+			log.WithError(err).Error("Error during periodic update of all PRs.")
+		}
+		log.WithField("duration", fmt.Sprintf("%v", time.Since(start))).Info("Periodic update complete.")
+	}, o.updatePeriod)
+
+	mux := http.NewServeMux()
+	mux.Handle("/", server)
+	externalplugins.ServeExternalPluginHelp(mux, log, plugin.HelpProvider)
+	httpServer := &http.Server{Addr: ":" + strconv.Itoa(o.port), Handler: mux}
+	interrupts.ListenAndServe(httpServer, 5*time.Second)
 }
 
 // Server implements http.Handler. It validates incoming GitHub webhooks and
 // then dispatches them to the appropriate plugins.
 type Server struct {
 	tokenGenerator func() []byte
-	ghc            *github.Client
+	ghc            github.Client
 	log            *logrus.Entry
 }
 
@@ -138,7 +139,7 @@ type Server struct {
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// TODO: Move webhook handling logic out of hook binary so that we don't have to import all
 	// plugins just to validate the webhook.
-	eventType, eventGUID, payload, ok, _ := github.ValidateWebhook(w, r, s.tokenGenerator())
+	eventType, eventGUID, payload, ok, _ := github.ValidateWebhook(w, r, s.tokenGenerator)
 	if !ok {
 		return
 	}
@@ -163,27 +164,22 @@ func (s *Server) handleEvent(eventType, eventGUID string, payload []byte) error 
 			return err
 		}
 		go func() {
-			if err := plugin.HandleEvent(l, s.ghc, &pre); err != nil {
-				l.Info("Error handling event.")
+			if err := plugin.HandlePullRequestEvent(l, s.ghc, &pre); err != nil {
+				l.WithField("event-type", eventType).WithError(err).Info("Error handling event.")
+			}
+		}()
+	case "issue_comment":
+		var ice github.IssueCommentEvent
+		if err := json.Unmarshal(payload, &ice); err != nil {
+			return err
+		}
+		go func() {
+			if err := plugin.HandleIssueCommentEvent(l, s.ghc, &ice); err != nil {
+				l.WithField("event-type", eventType).WithError(err).Info("Error handling event.")
 			}
 		}()
 	default:
 		s.log.Debugf("received an event of type %q but didn't ask for it", eventType)
 	}
 	return nil
-}
-
-func periodicUpdate(log *logrus.Entry, pa *plugins.ConfigAgent, ghc *github.Client, period time.Duration) {
-	update := func() {
-		start := time.Now()
-		if err := plugin.HandleAll(log, ghc, pa.Config()); err != nil {
-			log.WithError(err).Error("Error during periodic update of all PRs.")
-		}
-		log.WithField("duration", fmt.Sprintf("%v", time.Since(start))).Info("Periodic update complete.")
-	}
-
-	update()
-	for range time.Tick(period) {
-		update()
-	}
 }

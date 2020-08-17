@@ -27,6 +27,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
@@ -41,18 +42,19 @@ var (
 )
 
 const (
-	dogURL        = realPack("https://random.dog/woof.json")
-	fineURL       = "https://storage.googleapis.com/this-is-fine-images/this_is_fine.png"
-	notFineURL    = "https://storage.googleapis.com/this-is-fine-images/this_is_not_fine.png"
-	unbearableURL = "https://storage.googleapis.com/this-is-fine-images/this_is_unbearable.jpg"
-	pluginName    = "dog"
+	dogURL                = realPack("https://random.dog/woof.json")
+	defaultFineImagesRoot = "https://storage.googleapis.com/this-is-fine-images/"
+	fineIMG               = "this_is_fine.png"
+	notFineIMG            = "this_is_not_fine.png"
+	unbearableIMG         = "this_is_unbearable.jpg"
+	pluginName            = "dog"
 )
 
 func init() {
 	plugins.RegisterGenericCommentHandler(pluginName, handleGenericComment, helpProvider)
 }
 
-func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
 	// The Config field is omitted because this plugin is not configurable.
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "The dog plugin adds a dog image to an issue or PR in response to the `/woof` command.",
@@ -62,7 +64,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 		Description: "Add a dog image to the issue or PR",
 		Featured:    false,
 		WhoCanUse:   "Anyone",
-		Examples:    []string{"/woof", "/bark", "this-is-{fine|not-fine|unbearable}"},
+		Examples:    []string{"/woof", "/bark", "/this-is-{fine|not-fine|unbearable}"},
 	})
 	return pluginHelp, nil
 }
@@ -130,10 +132,10 @@ func (u realPack) readDog(dogURL string) (string, error) {
 }
 
 func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
-	return handle(pc.GitHubClient, pc.Logger, &e, dogURL)
+	return handle(pc.GitHubClient, pc.Logger, &e, dogURL, defaultFineImagesRoot)
 }
 
-func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p pack) error {
+func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p pack, fineImagesRoot string) error {
 	// Only consider new comments.
 	if e.Action != github.GenericCommentActionCreated {
 		return nil
@@ -144,11 +146,11 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 	if mat == nil {
 		// check is this one of the famous.dog
 		if fineRegex.FindStringSubmatch(e.Body) != nil {
-			url = fineURL
+			url = fineImagesRoot + fineIMG
 		} else if notFineRegex.FindStringSubmatch(e.Body) != nil {
-			url = notFineURL
+			url = fineImagesRoot + notFineIMG
 		} else if unbearableRegex.FindStringSubmatch(e.Body) != nil {
-			url = unbearableURL
+			url = fineImagesRoot + unbearableIMG
 		}
 
 		if url == "" {

@@ -186,7 +186,7 @@ projects:
             metrics_path: /prometheus
             static_configs:
               - targets:
-                  - 35.233.210.91
+                  - 34.83.176.210
   tensorflow:
     repositories:
       tensorflow/tensorflow:

@@ -1,4 +1,4 @@
-# Copyright 2017 The Kubernetes Authors.
+# Copyright 2020 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,14 +12,39 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM jamiehewland/alpine-pypy:2
+# This Dockerfile uses multi-stage builds. The first stage builds Triage and gathers the Google
+# Cloud SDK, and the resulting files are then used in the second stage.
 
-RUN apk add --no-cache jq curl bash python
-RUN curl -o installer https://sdk.cloud.google.com && bash installer --disable-prompts --install-dir=/ && rm installer && ln -s /google-cloud-sdk/bin/* /bin/
-ADD requirements.txt /
-RUN pip install --requirement requirements.txt
+# Stage 1
+FROM golang:1.13 AS build
 
-ADD *.py update_summaries.sh /
+COPY . /test-infra/
+
+# Build Triage
+RUN cd /test-infra/triage/ && \
+    go build -v -o triage ./main.go
+# Get the Google Cloud SDK
+RUN curl -o installer https://sdk.cloud.google.com && \
+    bash installer --disable-prompts --install-dir=/ && \
+    rm installer
+
+
+# Stage 2
+FROM alpine:3.12.0
+
+# Google Cloud SDK requires python 2.7.9+ (https://cloud.google.com/python/setup#installing_the_cloud_sdk).
+# update_summaries.sh requires bash.
+RUN apk add --no-cache python2 bash
+
+# Copy over the triage binary
+COPY --from=build /test-infra/triage/triage /
+
+# Copy the Google Cloud SDK and link the binaries
+COPY --from=build /google-cloud-sdk/ /google-cloud-sdk/
+RUN ln -s /google-cloud-sdk/bin/* /bin/
+
+# Copy over the shell script that orchestrates everything
+COPY ./triage/update_summaries.sh /
 
 # Point GOOGLE_APPLICATION_CREDENTIALS at a serviceaccount.json with the necessary permissions.
-ENTRYPOINT ["timeout", "-t", "10800", "/update_summaries.sh"]
+ENTRYPOINT ["timeout", "10800", "/update_summaries.sh"]

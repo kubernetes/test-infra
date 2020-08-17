@@ -5,11 +5,11 @@ that execute e2e test jobs.  This ensures we have coverage of Kubernetes on more
 platforms than just those that the Kubernetes project itself can fund or support.
 
 The process is as follows:
-
-- Designate a point of contact (github handle / e-mail / github team) that we can
-  reach out to if needed (eg: mitigating flood/drought of data, assisting with
-  migrations, etc)
-- Create a GCS bucket that is [world-readable](https://cloud.google.com/storage/docs/access-control/making-data-public)
+- Request a [G Suite](https://gsuite.google.com/) group in [groups.yaml](https://github.com/kubernetes/k8s.io/blob/master/groups/groups.yaml) by a PR.
+  - The approver will help create the GCS bucket accordingly.
+  - If you are using your personal GCS bucket, then you can skip this step.
+- Make sure the GCS bucket is [world-readable](https://cloud.google.com/storage/docs/access-control/making-data-public)
+  - If the GCS bucket is created by a approver, then you can skip this step.
 - Run e2e tests (we recommend using [kubetest](/kubetest/README.md))
 - Store test results in accordance with [Gubernator's GCS Layout](/gubernator/README.md#gcs-layout)
   - Unfortunately this part is currently left as an exercise to the reader. We use
@@ -17,7 +17,7 @@ The process is as follows:
     rewriting it to better support external usage.
 - Add the GCS bucket info to [buckets.yaml](/kettle/buckets.yaml) via a PR (use the
   previously designated github handle for the `contact` field).
-- Add jobs and dashboards to the [testgrid config](/testgrid/config.yaml) via
+- Add jobs and dashboards to the [testgrid config](/config/testgrids) via
   a PR (use the previously designated point of contact info in a comment next to
   added `test_group`s, or even better in the `description` field for added
   `dashboard_tab`s)

@@ -18,6 +18,7 @@ limitations under the License.
 package crier
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"sync"
@@ -26,14 +27,16 @@ import (
 	jsonpatch "github.com/evanphx/json-patch"
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/test-infra/prow/apis/prowjobs/v1"
+
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/tools/cache"
+	"k8s.io/client-go/util/retry"
 	"k8s.io/client-go/util/workqueue"
-	"k8s.io/test-infra/prow/apis/prowjobs/v1"
 	clientset "k8s.io/test-infra/prow/client/clientset/versioned"
 	pjinformers "k8s.io/test-infra/prow/client/informers/externalversions/prowjobs/v1"
 )
@@ -62,31 +65,27 @@ func NewController(
 	queue workqueue.RateLimitingInterface,
 	informer pjinformers.ProwJobInformer,
 	reporter reportClient,
-	numWorkers int,
-	wg *sync.WaitGroup) *Controller {
+	numWorkers int) *Controller {
 	return &Controller{
 		pjclientset: pjclientset,
 		queue:       queue,
 		informer:    informer,
 		reporter:    reporter,
 		numWorkers:  numWorkers,
-		wg:          wg,
+		wg:          &sync.WaitGroup{},
 	}
 }
 
 // Run is the main path of execution for the controller loop.
-func (c *Controller) Run(stopCh <-chan struct{}) {
+func (c *Controller) Run(ctx context.Context) {
 	// handle a panic with logging and exiting
 	defer utilruntime.HandleCrash()
-	// ignore new items in the queue but when all goroutines
-	// have completed existing items then shutdown
-	defer c.queue.ShutDown()
 
 	logrus.Info("Initiating controller")
 	c.informer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
 			key, err := cache.MetaNamespaceKeyFunc(obj)
-			logrus.WithField("prowjob", key).Infof("Add prowjob")
+			logrus.WithField("prowjob", key).Trace("Add prowjob")
 			if err != nil {
 				logrus.WithError(err).Error("Cannot get key from object meta")
 				return
@@ -95,7 +94,7 @@ func (c *Controller) Run(stopCh <-chan struct{}) {
 		},
 		UpdateFunc: func(oldObj, newObj interface{}) {
 			key, err := cache.MetaNamespaceKeyFunc(newObj)
-			logrus.WithField("prowjob", key).Infof("Update prowjob")
+			logrus.WithField("prowjob", key).Trace("Update prowjob")
 			if err != nil {
 				logrus.WithError(err).Error("Cannot get key from object meta")
 				return
@@ -105,10 +104,10 @@ func (c *Controller) Run(stopCh <-chan struct{}) {
 	})
 
 	// run the informer to start listing and watching resources
-	go c.informer.Informer().Run(stopCh)
+	go c.informer.Informer().Run(ctx.Done())
 
 	// do the initial synchronization (one time) to populate resources
-	if !cache.WaitForCacheSync(stopCh, c.HasSynced) {
+	if !cache.WaitForCacheSync(ctx.Done(), c.HasSynced) {
 		utilruntime.HandleError(fmt.Errorf("Error syncing cache"))
 		return
 	}
@@ -116,12 +115,16 @@ func (c *Controller) Run(stopCh <-chan struct{}) {
 
 	// run the runWorker method every second with a stop channel
 	for i := 0; i < c.numWorkers; i++ {
-		go wait.Until(c.runWorker, time.Second, stopCh)
+		go wait.Until(c.runWorker, time.Second, ctx.Done())
 	}
 
 	logrus.Infof("Started %d workers", c.numWorkers)
-	<-stopCh
+	<-ctx.Done()
 	logrus.Info("Shutting down workers")
+	// ignore new items in the queue but when all goroutines
+	// have completed existing items then shutdown
+	c.queue.ShutDown()
+	c.wg.Wait()
 }
 
 // HasSynced allows us to satisfy the Controller interface by wiring up the informer's HasSynced
@@ -138,20 +141,19 @@ func (c *Controller) runWorker() {
 	c.wg.Done()
 }
 
-func (c *Controller) retry(key interface{}, err error) bool {
-	keyRaw := key.(string)
+func (c *Controller) retry(key interface{}, log *logrus.Entry, err error) bool {
 	if c.queue.NumRequeues(key) < 5 {
-		logrus.WithError(err).WithField("prowjob", keyRaw).Error("Failed processing item, retrying")
+		log.WithError(err).Info("Failed processing item, retrying")
 		c.queue.AddRateLimited(key)
 	} else {
-		logrus.WithError(err).WithField("prowjob", keyRaw).Error("Failed processing item, no more retries")
+		log.WithError(err).Error("Failed processing item, no more retries")
 		c.queue.Forget(key)
 	}
 
 	return true
 }
 
-func (c *Controller) updateReportState(pj *v1.ProwJob) error {
+func (c *Controller) updateReportState(pj *v1.ProwJob, log *logrus.Entry, reportedState v1.ProwJobState) error {
 	pjData, err := json.Marshal(pj)
 	if err != nil {
 		return fmt.Errorf("error marshal pj: %v", err)
@@ -163,7 +165,7 @@ func (c *Controller) updateReportState(pj *v1.ProwJob) error {
 	if newpj.Status.PrevReportStates == nil {
 		newpj.Status.PrevReportStates = map[string]v1.ProwJobState{}
 	}
-	newpj.Status.PrevReportStates[c.reporter.GetName()] = newpj.Status.State
+	newpj.Status.PrevReportStates[c.reporter.GetName()] = reportedState
 
 	newpjData, err := json.Marshal(newpj)
 	if err != nil {
@@ -179,10 +181,29 @@ func (c *Controller) updateReportState(pj *v1.ProwJob) error {
 		logrus.Warnf("Empty merge patch: pjData: %s, newpjData: %s", string(pjData), string(newpjData))
 	}
 
-	logrus.Infof("Created merge patch: %v", string(patch))
+	log.Info("Created merge patch")
+	_, err = c.pjclientset.ProwV1().ProwJobs(pj.Namespace).Patch(context.TODO(), pj.Name, types.MergePatchType, patch, metav1.PatchOptions{})
+	if err != nil {
+		return err
+	}
 
-	_, err = c.pjclientset.Prow().ProwJobs(pj.Namespace).Patch(pj.Name, types.MergePatchType, patch)
-	return err
+	// Block until the update is in the lister to make sure that events from another controller
+	// that also does reporting dont trigger another report because our lister doesn't yet contain
+	// the updated Status
+	if err := wait.Poll(time.Second, 3*time.Second, func() (bool, error) {
+		pj, err := c.informer.Lister().ProwJobs(newpj.Namespace).Get(newpj.Name)
+		if err != nil {
+			return false, err
+		}
+		if pj.Status.PrevReportStates != nil &&
+			newpj.Status.PrevReportStates[c.reporter.GetName()] == reportedState {
+			return true, nil
+		}
+		return false, nil
+	}); err != nil {
+		return fmt.Errorf("failed to wait for updated report status to be in lister: %v", err)
+	}
+	return nil
 }
 
 // processNextItem retrieves each queued item and takes the necessary handler action based off of if
@@ -190,6 +211,7 @@ func (c *Controller) updateReportState(pj *v1.ProwJob) error {
 func (c *Controller) processNextItem() bool {
 	key, quit := c.queue.Get()
 	if quit {
+		logrus.Debug("Queue already shut down, exiting processNextItem")
 		return false
 	}
 
@@ -197,9 +219,12 @@ func (c *Controller) processNextItem() bool {
 
 	// assert the string out of the key (format `namespace/name`)
 	keyRaw := key.(string)
+	log := logrus.WithField("reporter", c.reporter.GetName()).WithField("prowjob", keyRaw)
+	log.Debug("processing next key")
+
 	namespace, name, err := cache.SplitMetaNamespaceKey(keyRaw)
 	if err != nil {
-		logrus.WithError(err).WithField("prowjob", keyRaw).Error("invalid resource key")
+		log.WithError(err).Error("invalid resource key")
 		c.queue.Forget(key)
 		return true
 	}
@@ -214,19 +239,21 @@ func (c *Controller) processNextItem() bool {
 	// then we want to retry this particular queue key a certain
 	// number of times (5 here) before we forget the queue key
 	// and throw an error
-	pj, err := c.informer.Lister().ProwJobs(namespace).Get(name)
+	readOnlyPJ, err := c.informer.Lister().ProwJobs(namespace).Get(name)
 	if err != nil {
 		if errors.IsNotFound(err) {
-			logrus.WithField("prowjob", keyRaw).Info("object no longer exist")
+			log.Debug("object no longer exist")
 			c.queue.Forget(key)
 			return true
 		}
 
-		return c.retry(key, err)
+		return c.retry(key, log, err)
 	}
+	pj := readOnlyPJ.DeepCopy()
+	log = log.WithField("jobName", pj.Spec.Job)
 
 	// not belong to the current reporter
-	if !c.reporter.ShouldReport(pj) {
+	if !pj.Spec.Report || !c.reporter.ShouldReport(pj) {
 		c.queue.Forget(key)
 		return true
 	}
@@ -238,47 +265,38 @@ func (c *Controller) processNextItem() bool {
 
 	// already reported current state
 	if pj.Status.PrevReportStates[c.reporter.GetName()] == pj.Status.State {
-		logrus.WithField("prowjob", keyRaw).Info("Already reported")
+		log.Trace("Already reported")
 		c.queue.Forget(key)
 		return true
 	}
 
-	logrus.WithField("prowjob", keyRaw).Infof("Will report state : %s", pj.Status.State)
+	log = log.WithField("jobStatus", pj.Status.State)
+	log.Info("Will report state")
 	pjs, err := c.reporter.Report(pj)
 	if err != nil {
-		fields := logrus.Fields{
-			"prowjob":   keyRaw,
-			"jobName":   pj.Name,
-			"jobStatus": pj.Status,
-		}
-		logrus.WithError(err).WithFields(fields).Error("failed to report job")
-		return c.retry(key, err)
+		log.WithError(err).Error("failed to report job")
+		return c.retry(key, log, err)
 	}
 
-	logrus.WithField("prowjob", keyRaw).Info("Updated job, now will update pj")
+	log.Info("Reported job, now will update pj")
 	for _, pjob := range pjs {
-		if err := c.updateReportState(pjob); err != nil {
-			logrus.WithError(err).WithField("prowjob", keyRaw).Error("failed to update report state")
-
-			// theoretically patch should not have this issue, but in case:
-			// it might be out-dated, try to re-fetch pj and try again
-
-			updatedPJ, err := c.pjclientset.Prow().ProwJobs(pjob.Namespace).Get(pjob.Name, metav1.GetOptions{})
+		reportedState := pjob.Status.State
+		// We have to retry here, if we return we lose the information that we already reported this job.
+		if err := retry.RetryOnConflict(retry.DefaultBackoff, func() error {
+			// Get it first, this is very cheap
+			pj, err := c.pjclientset.ProwV1().ProwJobs(pjob.Namespace).Get(context.TODO(), pjob.Name, metav1.GetOptions{})
 			if err != nil {
-				logrus.WithError(err).WithField("prowjob", keyRaw).Error("failed to get prowjob from apiserver")
-				c.queue.Forget(key)
-				return true
+				return err
 			}
-
-			if err := c.updateReportState(updatedPJ); err != nil {
-				// shrug
-				logrus.WithError(err).WithField("prowjob", keyRaw).Error("failed to update report state again, give up")
-				c.queue.Forget(key)
-				return true
-			}
+			// Must not wrap until we have kube 1.19, otherwise the RetryOnConflict won't recognize conflicts
+			// correctly
+			return c.updateReportState(pj, log, reportedState)
+		}); err != nil {
+			log.WithError(err).Error("Failed to update report state on prowjob")
+			return c.retry(key, log, err)
 		}
 
-		logrus.WithField("prowjob", keyRaw).Infof("Hunky Dory!, pj : %v, state : %s", pjob.Spec.Job, pjob.Status.State)
+		log.Info("Successfully updated prowjob")
 	}
 	c.queue.Forget(key)
 	return true

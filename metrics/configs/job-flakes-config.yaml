@@ -20,7 +20,7 @@ query: |
       select /* Count the runs and passes for each (job, pr-num, commit) */
         max(stamp) stamp,
         num,
-        if(kind = "pull", commit, version) commit,
+        if(kind = "pull", if(commit is NULL, version, commit), version) commit,
         sum(if(result=='SUCCESS',1,0)) passed,
         count(result) runs
       from (
@@ -51,7 +51,7 @@ query: |
 
 jqfilter: |
   [(.[] | select(.job | contains("pr:")) | {(.job): {
-      flakes: (.flakes|tonumber),
-      runs: (.runs|tonumber),
-      consistency: (.commit_consistency|tonumber)
+      flakes: (.flakes//0|tonumber),
+      runs: (.runs//0|tonumber),
+      consistency: (.commit_consistency//0|tonumber)
   }})] | add

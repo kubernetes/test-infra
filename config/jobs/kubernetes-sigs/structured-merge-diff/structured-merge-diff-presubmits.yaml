@@ -8,12 +8,17 @@ presubmits:
     path_alias: sigs.k8s.io/structured-merge-diff
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190516-576b68c-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
         command:
         - go
         args:
         - test
+        - -race
         - ./...
+    annotations:
+      testgrid-dashboards: sig-api-machinery-structured-merge-diff
+      testgrid-tab-name: pr-test
+      testgrid-num-columns-recent: '30'
   - name: pull-structured-merge-diff-gofmt
     labels:
       preset-service-account: "true"
@@ -22,8 +27,37 @@ presubmits:
     path_alias: sigs.k8s.io/structured-merge-diff
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190516-576b68c-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
         command:
         - bash
         - -c
         - test -z "$({ find . -name "*.go" | grep -v "\\/vendor\\/" | xargs gofmt -s -d | tee /dev/stderr; })"
+    annotations:
+      testgrid-dashboards: sig-api-machinery-structured-merge-diff
+      testgrid-tab-name: pr-gofmt
+      testgrid-num-columns-recent: '30'
+  - name: pull-structured-merge-diff-benchmark
+    always_run: false
+    skip_report: true
+    decorate: true
+    path_alias: sigs.k8s.io/structured-merge-diff
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/benchmarkjunit:latest
+        command:
+        - /benchmarkjunit
+        args:
+        - --log-file=$(ARTIFACTS)/benchmark-log.txt
+        - --output=$(ARTIFACTS)/junit_benchmarks.xml
+        - ./...
+        resources:
+          requests:
+            cpu: "6000m"
+            memory: "6Gi"
+          limits:
+            cpu: "6000m"
+            memory: "6Gi"
+    annotations:
+      testgrid-dashboards: sig-api-machinery-structured-merge-diff
+      testgrid-tab-name: pr-benchmark
+      testgrid-num-columns-recent: '30'

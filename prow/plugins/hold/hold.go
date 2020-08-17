@@ -26,6 +26,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/pluginhelp"
@@ -38,8 +39,8 @@ const (
 )
 
 var (
-	labelRe       = regexp.MustCompile(`(?mi)^/hold\s*$`)
-	labelCancelRe = regexp.MustCompile(`(?mi)^/hold cancel\s*$`)
+	labelRe       = regexp.MustCompile(`(?mi)^/hold(\s.*)?$`)
+	labelCancelRe = regexp.MustCompile(`(?mi)^/(hold\s+cancel|unhold)\s*$`)
 )
 
 type hasLabelFunc func(label string, issueLabels []github.Label) bool
@@ -48,17 +49,17 @@ func init() {
 	plugins.RegisterGenericCommentHandler(PluginName, handleGenericComment, helpProvider)
 }
 
-func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
 	// The Config field is omitted because this plugin is not configurable.
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "The hold plugin allows anyone to add or remove the '" + labels.Hold + "' Label from a pull request in order to temporarily prevent the PR from merging without withholding approval.",
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
-		Usage:       "/hold [cancel]",
+		Usage:       "/[un]hold [cancel]",
 		Description: "Adds or removes the `" + labels.Hold + "` Label which is used to indicate that the PR should not be automatically merged.",
 		Featured:    false,
 		WhoCanUse:   "Anyone can use the /hold command to add or remove the '" + labels.Hold + "' Label.",
-		Examples:    []string{"/hold", "/hold cancel"},
+		Examples:    []string{"/hold", "/hold cancel", "/unhold"},
 	})
 	return pluginHelp, nil
 }
@@ -80,14 +81,17 @@ func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error 
 // a /hold directive, we want to add a label if one does not already exist.
 // If they add /hold cancel, we want to remove the label if it exists.
 func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, f hasLabelFunc) error {
+	if !e.IsPR {
+		return nil
+	}
 	if e.Action != github.GenericCommentActionCreated {
 		return nil
 	}
 	needsLabel := false
-	if labelRe.MatchString(e.Body) {
-		needsLabel = true
-	} else if labelCancelRe.MatchString(e.Body) {
+	if labelCancelRe.MatchString(e.Body) {
 		needsLabel = false
+	} else if labelRe.MatchString(e.Body) {
+		needsLabel = true
 	} else {
 		return nil
 	}

@@ -8,7 +8,7 @@ go_library(
     deps = [
         "//gopherage/pkg/cov:go_default_library",
         "//gopherage/pkg/util:go_default_library",
-        "//vendor/github.com/spf13/cobra:go_default_library",
+        "@com_github_spf13_cobra//:go_default_library",
     ],
 )
 

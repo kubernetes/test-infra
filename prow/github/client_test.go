@@ -17,10 +17,12 @@ limitations under the License.
 package github
 
 import (
+	"bytes"
 	"context"
 	"crypto/tls"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -32,7 +34,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
+	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/utils/diff"
+
 	"k8s.io/test-infra/ghproxy/ghcache"
 )
 
@@ -48,20 +54,32 @@ func (tt *testTime) Until(t time.Time) time.Duration {
 	return t.Sub(tt.now)
 }
 
-func getClient(url string) *Client {
+func getClient(url string) *client {
 	getToken := func() []byte {
 		return []byte("")
 	}
 
-	return &Client{
-		time:     &testTime{},
-		getToken: getToken,
-		client: &http.Client{
-			Transport: &http.Transport{
-				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	logger := logrus.New()
+	logger.SetLevel(logrus.DebugLevel)
+	return &client{
+		logger: logrus.NewEntry(logger),
+		delegate: &delegate{
+			time:     &testTime{},
+			getToken: getToken,
+			censor: func(content []byte) []byte {
+				return content
 			},
+			client: &http.Client{
+				Transport: &http.Transport{
+					TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+				},
+			},
+			bases:         []string{url},
+			maxRetries:    defaultMaxRetries,
+			max404Retries: defaultMax404Retries,
+			initialDelay:  defaultInitialDelay,
+			maxSleepTime:  defaultMaxSleepTime,
 		},
-		bases: []string{url},
 	}
 }
 
@@ -127,12 +145,10 @@ func TestRetry404(t *testing.T) {
 }
 
 func TestRetryBase(t *testing.T) {
-	defer func(orig time.Duration) { initialDelay = orig }(initialDelay)
-	initialDelay = time.Microsecond
-
 	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
 	defer ts.Close()
 	c := getClient(ts.URL)
+	c.initialDelay = time.Microsecond
 	// One good endpoint:
 	c.bases = []string{c.bases[0]}
 	resp, err := c.requestRetry(http.MethodGet, "/", "", nil)
@@ -225,6 +241,36 @@ func TestCreateComment(t *testing.T) {
 	}))
 	defer ts.Close()
 	c := getClient(ts.URL)
+	if err := c.CreateComment("k8s", "kuber", 5, "hello"); err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	}
+}
+
+func TestCreateCommentCensored(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/repos/k8s/kuber/issues/5/comments" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		b, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			t.Fatalf("Could not read request body: %v", err)
+		}
+		var ic IssueComment
+		if err := json.Unmarshal(b, &ic); err != nil {
+			t.Errorf("Could not unmarshal request: %v", err)
+		} else if ic.Body != "CENSORED" {
+			t.Errorf("Wrong body: %s", ic.Body)
+		}
+		http.Error(w, "201 Created", http.StatusCreated)
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	c.delegate.censor = func(content []byte) []byte {
+		return bytes.ReplaceAll(content, []byte("hello"), []byte("CENSORED"))
+	}
 	if err := c.CreateComment("k8s", "kuber", 5, "hello"); err != nil {
 		t.Errorf("Didn't expect error: %v", err)
 	}
@@ -323,22 +369,106 @@ func TestGetPullRequestChanges(t *testing.T) {
 }
 
 func TestGetRef(t *testing.T) {
-	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet {
-			t.Errorf("Bad method: %s", r.Method)
-		}
-		if r.URL.Path != "/repos/k8s/kuber/git/refs/heads/mastah" {
-			t.Errorf("Bad request path: %s", r.URL.Path)
-		}
-		fmt.Fprint(w, `{"object": {"sha":"abcde"}}`)
-	}))
-	defer ts.Close()
-	c := getClient(ts.URL)
-	SHA, err := c.GetRef("k8s", "kuber", "heads/mastah")
-	if err != nil {
-		t.Errorf("Didn't expect error: %v", err)
-	} else if SHA != "abcde" {
-		t.Errorf("Wrong SHA: %s", SHA)
+	testCases := []struct {
+		name              string
+		githubResponse    []byte
+		expectedSHA       string
+		expectedError     string
+		expectedErrorType error
+	}{
+		{
+			name:           "single ref",
+			githubResponse: []byte(`{"object": {"sha":"abcde"}}`),
+			expectedSHA:    "abcde",
+		},
+		{
+			name: "multiple refs, no match",
+			githubResponse: []byte(`
+[
+  {
+    "ref": "refs/heads/feature-a",
+    "node_id": "MDM6UmVmcmVmcy9oZWFkcy9mZWF0dXJlLWE=",
+    "url": "https://api.github.com/repos/octocat/Hello-World/git/refs/heads/feature-a",
+    "object": {
+      "type": "commit",
+      "sha": "aa218f56b14c9653891f9e74264a383fa43fefbd",
+      "url": "https://api.github.com/repos/octocat/Hello-World/git/commits/aa218f56b14c9653891f9e74264a383fa43fefbd"
+    }
+  },
+  {
+    "ref": "refs/heads/feature-b",
+    "node_id": "MDM6UmVmcmVmcy9oZWFkcy9mZWF0dXJlLWI=",
+    "url": "https://api.github.com/repos/octocat/Hello-World/git/refs/heads/feature-b",
+    "object": {
+      "type": "commit",
+      "sha": "612077ae6dffb4d2fbd8ce0cccaa58893b07b5ac",
+      "url": "https://api.github.com/repos/octocat/Hello-World/git/commits/612077ae6dffb4d2fbd8ce0cccaa58893b07b5ac"
+    }
+  }
+]`),
+			expectedError:     "query for org/repo ref \"heads/branch\" didn't match one but multiple refs: [refs/heads/feature-a refs/heads/feature-b]",
+			expectedErrorType: GetRefTooManyResultsError{},
+		},
+		{
+			name: "multiple refs with match",
+			githubResponse: []byte(`
+[
+  {
+    "ref": "refs/heads/branch",
+    "node_id": "MDM6UmVmcmVmcy9oZWFkcy9mZWF0dXJlLWE=",
+    "url": "https://api.github.com/repos/octocat/Hello-World/git/refs/heads/feature-a",
+    "object": {
+      "type": "commit",
+      "sha": "aa218f56b14c9653891f9e74264a383fa43fefbd",
+      "url": "https://api.github.com/repos/octocat/Hello-World/git/commits/aa218f56b14c9653891f9e74264a383fa43fefbd"
+    }
+  },
+  {
+    "ref": "refs/heads/feature-b",
+    "node_id": "MDM6UmVmcmVmcy9oZWFkcy9mZWF0dXJlLWI=",
+    "url": "https://api.github.com/repos/octocat/Hello-World/git/refs/heads/feature-b",
+    "object": {
+      "type": "commit",
+      "sha": "612077ae6dffb4d2fbd8ce0cccaa58893b07b5ac",
+      "url": "https://api.github.com/repos/octocat/Hello-World/git/commits/612077ae6dffb4d2fbd8ce0cccaa58893b07b5ac"
+    }
+  }
+]`),
+			expectedSHA: "aa218f56b14c9653891f9e74264a383fa43fefbd",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(200)
+				if r.Method != http.MethodGet {
+					t.Errorf("Bad method: %s", r.Method)
+				}
+				expectedPath := "/repos/org/repo/git/refs/heads/branch"
+				if r.URL.Path != expectedPath {
+					t.Errorf("expected path %s, got path %s", expectedPath, r.URL.Path)
+				}
+				w.Write(tc.githubResponse)
+			}))
+			defer ts.Close()
+
+			c := getClient(ts.URL)
+			var errMsg string
+			sha, err := c.GetRef("org", "repo", "heads/branch")
+			if err != nil {
+				errMsg = err.Error()
+			}
+			if errMsg != tc.expectedError {
+				t.Fatalf("expected error %q, got error %q", tc.expectedError, err)
+			}
+			if !errors.Is(err, tc.expectedErrorType) {
+				t.Errorf("expected error of type %T, got %T", tc.expectedErrorType, err)
+			}
+			if sha != tc.expectedSHA {
+				t.Errorf("expected sha %q, got sha %q", tc.expectedSHA, sha)
+			}
+		})
 	}
 }
 
@@ -411,6 +541,42 @@ func TestCreateStatus(t *testing.T) {
 		Context: "c",
 	}); err != nil {
 		t.Errorf("Didn't expect error: %v", err)
+	}
+}
+
+func TestListIssues(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path == "/repos/k8s/kuber/issues" {
+			ics := []Issue{{Number: 1}}
+			b, err := json.Marshal(ics)
+			if err != nil {
+				t.Fatalf("Didn't expect error: %v", err)
+			}
+			w.Header().Set("Link", fmt.Sprintf(`<blorp>; rel="first", <https://%s/someotherpath>; rel="next"`, r.Host))
+			fmt.Fprint(w, string(b))
+		} else if r.URL.Path == "/someotherpath" {
+			ics := []Issue{{Number: 2}}
+			b, err := json.Marshal(ics)
+			if err != nil {
+				t.Fatalf("Didn't expect error: %v", err)
+			}
+			fmt.Fprint(w, string(b))
+		} else {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	ics, err := c.ListOpenIssues("k8s", "kuber")
+	if err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	} else if len(ics) != 2 {
+		t.Errorf("Expected two issues, found %d: %v", len(ics), ics)
+	} else if ics[0].Number != 1 || ics[1].Number != 2 {
+		t.Errorf("Wrong issue IDs: %v", ics)
 	}
 }
 
@@ -526,6 +692,100 @@ func TestRemoveLabelNotFound(t *testing.T) {
 	}
 }
 
+func TestNewNotFoundIsNotFound(t *testing.T) {
+	if !IsNotFound(NewNotFound()) {
+		t.Error("NewNotFound didn't return an error that was considered a NotFound")
+	}
+}
+
+func TestIsNotFound(t *testing.T) {
+	testCases := []struct {
+		name       string
+		code       int
+		body       string
+		isNotFound bool
+	}{
+		{
+			name:       "should be not found when status code is 404",
+			code:       404,
+			body:       `{"message":"not found","errors":[{"resource":"fake resource","field":"fake field","code":"404","message":"status code 404"}]}`,
+			isNotFound: true,
+		},
+		{
+			name:       "should not be not found when status code is 200",
+			code:       200,
+			body:       `{"message": "ok"}`,
+			isNotFound: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				http.Error(w, tc.body, tc.code)
+			}))
+			defer ts.Close()
+
+			c := getClient(ts.URL)
+
+			code, _, err := c.requestRaw(&request{
+				method:    http.MethodGet,
+				path:      fmt.Sprintf("/repos/%s/%s/branches/%s/protection", "org", "repo", "branch"),
+				exitCodes: []int{200},
+			})
+
+			if code != tc.code {
+				t.Fatalf("Expected code to be %d, but got %d", tc.code, code)
+			}
+
+			isNotFound := IsNotFound(err)
+
+			if isNotFound != tc.isNotFound {
+				t.Fatalf("Expected isNotFound to be %t, but got %t", tc.isNotFound, isNotFound)
+			}
+		})
+	}
+}
+
+func TestIsNotFound_nested(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name        string
+		err         error
+		expectMatch bool
+	}{
+		{
+			name:        "direct match",
+			err:         requestError{ClientError: ClientError{Errors: []clientErrorSubError{{Message: "status code 404"}}}},
+			expectMatch: true,
+		},
+		{
+			name:        "direct, no match",
+			err:         requestError{ClientError: ClientError{Errors: []clientErrorSubError{{Message: "status code 403"}}}},
+			expectMatch: false,
+		},
+		{
+			name:        "nested match",
+			err:         fmt.Errorf("wrapping: %w", requestError{ClientError: ClientError{Errors: []clientErrorSubError{{Message: "status code 404"}}}}),
+			expectMatch: true,
+		},
+		{
+			name:        "nested, no match",
+			err:         fmt.Errorf("wrapping: %w", requestError{ClientError: ClientError{Errors: []clientErrorSubError{{Message: "status code 403"}}}}),
+			expectMatch: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			if result := IsNotFound(tc.err); result != tc.expectMatch {
+				t.Errorf("expected match: %t, got match: %t", tc.expectMatch, result)
+			}
+		})
+	}
+
+}
+
 func TestAssignIssue(t *testing.T) {
 	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
@@ -626,49 +886,87 @@ func TestUnassignIssue(t *testing.T) {
 }
 
 func TestReadPaginatedResults(t *testing.T) {
-	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet {
-			t.Errorf("Bad method: %s", r.Method)
-		}
-		if r.URL.Path == "/label/foo" {
-			objects := []Label{{Name: "foo"}}
-			b, err := json.Marshal(objects)
-			if err != nil {
-				t.Fatalf("Didn't expect error: %v", err)
+	type response struct {
+		labels []Label
+		next   string
+	}
+	cases := []struct {
+		name           string
+		baseSuffix     string
+		initialPath    string
+		responses      map[string]response
+		expectedLabels []Label
+	}{
+		{
+			name:        "regular pagination",
+			initialPath: "/label/foo",
+			responses: map[string]response{
+				"/label/foo": {
+					labels: []Label{{Name: "foo"}},
+					next:   `<blorp>; rel="first", <https://%s/label/bar>; rel="next"`,
+				},
+				"/label/bar": {
+					labels: []Label{{Name: "bar"}},
+				},
+			},
+			expectedLabels: []Label{{Name: "foo"}, {Name: "bar"}},
+		},
+		{
+			name:        "pagination with /api/v3 base suffix",
+			initialPath: "/label/foo",
+			baseSuffix:  "/api/v3",
+			responses: map[string]response{
+				"/api/v3/label/foo": {
+					labels: []Label{{Name: "foo"}},
+					next:   `<blorp>; rel="first", <https://%s/api/v3/label/bar>; rel="next"`,
+				},
+				"/api/v3/label/bar": {
+					labels: []Label{{Name: "bar"}},
+				},
+			},
+			expectedLabels: []Label{{Name: "foo"}, {Name: "bar"}},
+		},
+	}
+	for _, tc := range cases {
+		ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.Method != http.MethodGet {
+				t.Errorf("Bad method: %s", r.Method)
 			}
-			w.Header().Set("Link", fmt.Sprintf(`<blorp>; rel="first", <https://%s/label/bar>; rel="next"`, r.Host))
-			fmt.Fprint(w, string(b))
-		} else if r.URL.Path == "/label/bar" {
-			objects := []Label{{Name: "bar"}}
-			b, err := json.Marshal(objects)
-			if err != nil {
-				t.Fatalf("Didn't expect error: %v", err)
+			if response, ok := tc.responses[r.URL.Path]; ok {
+				b, err := json.Marshal(response.labels)
+				if err != nil {
+					t.Fatalf("Didn't expect error: %v", err)
+				}
+				if response.next != "" {
+					w.Header().Set("Link", fmt.Sprintf(response.next, r.Host))
+				}
+				fmt.Fprint(w, string(b))
+			} else {
+				t.Errorf("Bad request path: %s", r.URL.Path)
 			}
-			fmt.Fprint(w, string(b))
+		}))
+		defer ts.Close()
+
+		c := getClient(ts.URL)
+		c.bases[0] = c.bases[0] + tc.baseSuffix
+		var labels []Label
+		err := c.readPaginatedResults(
+			tc.initialPath,
+			"",
+			func() interface{} {
+				return &[]Label{}
+			},
+			func(obj interface{}) {
+				labels = append(labels, *(obj.(*[]Label))...)
+			},
+		)
+		if err != nil {
+			t.Errorf("%s: didn't expect error: %v", tc.name, err)
 		} else {
-			t.Errorf("Bad request path: %s", r.URL.Path)
+			if !reflect.DeepEqual(labels, tc.expectedLabels) {
+				t.Errorf("%s: expected %s, got %s", tc.name, tc.expectedLabels, labels)
+			}
 		}
-	}))
-	defer ts.Close()
-	c := getClient(ts.URL)
-	path := "/label/foo"
-	var labels []Label
-	err := c.readPaginatedResults(
-		path,
-		"",
-		func() interface{} {
-			return &[]Label{}
-		},
-		func(obj interface{}) {
-			labels = append(labels, *(obj.(*[]Label))...)
-		},
-	)
-	if err != nil {
-		t.Errorf("Didn't expect error: %v", err)
-	} else if len(labels) != 2 {
-		t.Errorf("Expected two labels, found %d: %v", len(labels), labels)
-	} else if labels[0].Name != "foo" || labels[1].Name != "bar" {
-		t.Errorf("Wrong label names: %v", labels)
 	}
 }
 
@@ -1349,7 +1647,10 @@ func TestIsCollaborator(t *testing.T) {
 }
 
 func TestListCollaborators(t *testing.T) {
-	ts := simpleTestServer(t, "/repos/org/repo/collaborators", []User{{Login: "foo"}, {Login: "bar"}})
+	ts := simpleTestServer(t, "/repos/org/repo/collaborators", []User{
+		{Login: "foo", Permissions: RepoPermissions{Pull: true}},
+		{Login: "bar", Permissions: RepoPermissions{Push: true}},
+	})
 	defer ts.Close()
 	c := getClient(ts.URL)
 	users, err := c.ListCollaborators("org", "repo")
@@ -1362,11 +1663,37 @@ func TestListCollaborators(t *testing.T) {
 	if users[0].Login != "foo" {
 		t.Errorf("Wrong user login for index 0: %v", users[0])
 	}
+	if !reflect.DeepEqual(users[0].Permissions, RepoPermissions{Pull: true}) {
+		t.Errorf("Wrong permissions for index 0: %v", users[0])
+	}
 	if users[1].Login != "bar" {
 		t.Errorf("Wrong user login for index 1: %v", users[1])
 	}
+	if !reflect.DeepEqual(users[1].Permissions, RepoPermissions{Push: true}) {
+		t.Errorf("Wrong permissions for index 1: %v", users[1])
+	}
 }
 
+func TestListRepoTeams(t *testing.T) {
+	expectedTeams := []Team{
+		{ID: 1, Slug: "foo", Permission: RepoPull},
+		{ID: 2, Slug: "bar", Permission: RepoPush},
+		{ID: 3, Slug: "foobar", Permission: RepoAdmin},
+	}
+	ts := simpleTestServer(t, "/repos/org/repo/teams", expectedTeams)
+	defer ts.Close()
+	c := getClient(ts.URL)
+	teams, err := c.ListRepoTeams("org", "repo")
+	if err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	} else if len(teams) != 3 {
+		t.Errorf("Expected three teams, found %d: %v", len(teams), teams)
+		return
+	}
+	if !reflect.DeepEqual(teams, expectedTeams) {
+		t.Errorf("Wrong list of teams, expected: %v, got: %v", expectedTeams, teams)
+	}
+}
 func TestListIssueEvents(t *testing.T) {
 	ts := simpleTestServer(
 		t,
@@ -1498,6 +1825,134 @@ func TestGetBranches(t *testing.T) {
 	}
 }
 
+func TestGetBranchProtection(t *testing.T) {
+	contexts := []string{"foo-pr-test", "other"}
+	pushers := []Team{{Slug: "movers"}, {Slug: "awesome-team"}, {Slug: "shakers"}}
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/repos/org/repo/branches/master/protection" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		bp := BranchProtection{
+			RequiredStatusChecks: &RequiredStatusChecks{
+				Contexts: contexts,
+			},
+			Restrictions: &Restrictions{
+				Teams: pushers,
+			},
+		}
+		b, err := json.Marshal(&bp)
+		if err != nil {
+			t.Fatalf("Didn't expect error: %v", err)
+		}
+		fmt.Fprint(w, string(b))
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	bp, err := c.GetBranchProtection("org", "repo", "master")
+	if err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	}
+	switch {
+	case bp.Restrictions == nil:
+		t.Errorf("RestrictionsRequest unset")
+	case bp.Restrictions.Teams == nil:
+		t.Errorf("Teams unset")
+	case len(bp.Restrictions.Teams) != len(pushers):
+		t.Errorf("Bad teams: expected %v, got: %v", pushers, bp.Restrictions.Teams)
+	case bp.RequiredStatusChecks == nil:
+		t.Errorf("RequiredStatusChecks unset")
+	case len(bp.RequiredStatusChecks.Contexts) != len(contexts):
+		t.Errorf("Bad contexts: expected: %v, got: %v", contexts, bp.RequiredStatusChecks.Contexts)
+	default:
+		mc := map[string]bool{}
+		for _, k := range bp.RequiredStatusChecks.Contexts {
+			mc[k] = true
+		}
+		var missing []string
+		for _, k := range contexts {
+			if mc[k] != true {
+				missing = append(missing, k)
+			}
+		}
+		if n := len(missing); n > 0 {
+			t.Errorf("missing %d required contexts: %v", n, missing)
+		}
+		mp := map[string]bool{}
+		for _, k := range bp.Restrictions.Teams {
+			mp[k.Slug] = true
+		}
+		missing = nil
+		for _, k := range pushers {
+			if mp[k.Slug] != true {
+				missing = append(missing, k.Slug)
+			}
+		}
+		if n := len(missing); n > 0 {
+			t.Errorf("missing %d pushers: %v", n, missing)
+		}
+	}
+}
+
+// GetBranchProtection should return nil if the github API call
+// returns 404 with "Branch not protected" message
+func TestGetBranchProtection404BranchNotProtected(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/repos/org/repo/branches/master/protection" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		ge := &githubError{
+			Message: "Branch not protected",
+		}
+		b, err := json.Marshal(&ge)
+		if err != nil {
+			t.Fatalf("Didn't expect error: %v", err)
+		}
+		http.Error(w, string(b), http.StatusNotFound)
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	bp, err := c.GetBranchProtection("org", "repo", "master")
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+	if bp != nil {
+		t.Errorf("Expected nil as BranchProtection object, got: %v", *bp)
+	}
+}
+
+// GetBranchProtection should fail on any 404 which is NOT due to
+// branch not being protected.
+func TestGetBranchProtectionFailsOnOther404(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/repos/org/repo/branches/master/protection" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		ge := &githubError{
+			Message: "Not Found",
+		}
+		b, err := json.Marshal(&ge)
+		if err != nil {
+			t.Fatalf("Didn't expect error: %v", err)
+		}
+		http.Error(w, string(b), http.StatusNotFound)
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	_, err := c.GetBranchProtection("org", "repo", "master")
+	if err == nil {
+		t.Errorf("Expected error, got nil")
+	}
+}
+
 func TestRemoveBranchProtection(t *testing.T) {
 	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodDelete {
@@ -1591,7 +2046,7 @@ func TestUpdateBranchProtection(t *testing.T) {
 			RequiredStatusChecks: &RequiredStatusChecks{
 				Contexts: tc.contexts,
 			},
-			Restrictions: &Restrictions{
+			Restrictions: &RestrictionsRequest{
 				Teams: &tc.pushers,
 			},
 		})
@@ -1737,5 +2192,292 @@ func TestCombinedStatus(t *testing.T) {
 		t.Errorf("Expected two statuses, found %d: %v", len(combined.Statuses), combined.Statuses)
 	} else if combined.Statuses[0].Context != "foo" || combined.Statuses[1].Context != "bar" {
 		t.Errorf("Wrong review IDs: %v", combined.Statuses)
+	}
+}
+
+func TestCreateRepo(t *testing.T) {
+	org := "org"
+	usersRepoName := "users-repository"
+	orgsRepoName := "orgs-repository"
+	repoDesc := "description of users-repository"
+	testCases := []struct {
+		description string
+		isUser      bool
+		repo        RepoCreateRequest
+		statusCode  int
+
+		expectError bool
+		expectRepo  *FullRepo
+	}{
+		{
+			description: "create repo as user",
+			isUser:      true,
+			repo: RepoCreateRequest{
+				RepoRequest: RepoRequest{
+					Name:        &usersRepoName,
+					Description: &repoDesc,
+				},
+			},
+			statusCode: http.StatusCreated,
+			expectRepo: &FullRepo{
+				Repo: Repo{
+					Name:        "users-repository",
+					Description: "CREATED",
+				},
+			},
+		},
+		{
+			description: "create repo as org",
+			isUser:      false,
+			repo: RepoCreateRequest{
+				RepoRequest: RepoRequest{
+					Name:        &orgsRepoName,
+					Description: &repoDesc,
+				},
+			},
+			statusCode: http.StatusCreated,
+			expectRepo: &FullRepo{
+				Repo: Repo{
+					Name:        "orgs-repository",
+					Description: "CREATED",
+				},
+			},
+		},
+		{
+			description: "errors are handled",
+			isUser:      false,
+			repo: RepoCreateRequest{
+				RepoRequest: RepoRequest{
+					Name:        &orgsRepoName,
+					Description: &repoDesc,
+				},
+			},
+			statusCode:  http.StatusForbidden,
+			expectError: true,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.description, func(t *testing.T) {
+			ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if r.Method != http.MethodPost {
+					t.Errorf("Bad method: %s", r.Method)
+				}
+				if tc.isUser && r.URL.Path != "/user/repos" {
+					t.Errorf("Bad request path to create user-owned repo: %s", r.URL.Path)
+				} else if !tc.isUser && r.URL.Path != "/orgs/org/repos" {
+					t.Errorf("Bad request path to create org-owned repo: %s", r.URL.Path)
+				}
+				b, err := ioutil.ReadAll(r.Body)
+				if err != nil {
+					t.Fatalf("Could not read request body: %v", err)
+				}
+				var repo Repo
+				switch err := json.Unmarshal(b, &repo); {
+				case err != nil:
+					t.Errorf("Could not unmarshal request: %v", err)
+				case repo.Name == "":
+					t.Errorf("client should reject empty names")
+				}
+				repo.Description = "CREATED"
+				b, err = json.Marshal(repo)
+				if err != nil {
+					t.Fatalf("Didn't expect error: %v", err)
+				}
+				w.WriteHeader(tc.statusCode) // 201
+				fmt.Fprint(w, string(b))
+			}))
+			defer ts.Close()
+			c := getClient(ts.URL)
+			switch repo, err := c.CreateRepo(org, tc.isUser, tc.repo); {
+			case err != nil && !tc.expectError:
+				t.Errorf("unexpected error: %v", err)
+			case err == nil && tc.expectError:
+				t.Errorf("expected error, but got none")
+			case err == nil && !reflect.DeepEqual(repo, tc.expectRepo):
+				t.Errorf("%s: repo differs from expected:\n%s", tc.description, diff.ObjectReflectDiff(tc.expectRepo, repo))
+			}
+		})
+	}
+}
+
+func TestUpdateRepo(t *testing.T) {
+	org := "org"
+	repoName := "repository"
+	yes := true
+	testCases := []struct {
+		description string
+		repo        RepoUpdateRequest
+		statusCode  int
+
+		expectError bool
+		expectRepo  *FullRepo
+	}{
+		{
+			description: "Update repository",
+			repo: RepoUpdateRequest{
+				RepoRequest: RepoRequest{
+					Name: &repoName,
+				},
+				Archived: &yes,
+			},
+			statusCode: http.StatusOK,
+			expectRepo: &FullRepo{
+				Repo: Repo{
+					Name:        "repository",
+					Description: "UPDATED",
+					Archived:    true,
+				},
+			},
+		},
+		{
+			description: "errors are handled",
+			repo: RepoUpdateRequest{
+				RepoRequest: RepoRequest{
+					Name: &repoName,
+				},
+				Archived: &yes,
+			},
+			statusCode:  http.StatusForbidden,
+			expectError: true,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.description, func(t *testing.T) {
+			ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if r.Method != http.MethodPatch {
+					t.Errorf("Bad method: %s (expected %s)", r.Method, http.MethodPatch)
+				}
+				expectedPath := "/repos/org/repository"
+				if r.URL.Path != expectedPath {
+					t.Errorf("Bad request path to create user-owned repo: %s (expected %s)", r.URL.Path, expectedPath)
+				}
+				b, err := ioutil.ReadAll(r.Body)
+				if err != nil {
+					t.Fatalf("Could not read request body: %v", err)
+				}
+				var repo Repo
+				switch err := json.Unmarshal(b, &repo); {
+				case err != nil:
+					t.Errorf("Could not unmarshal request: %v", err)
+				case repo.Name == "":
+					t.Errorf("client should reject empty names")
+				}
+				repo.Description = "UPDATED"
+				b, err = json.Marshal(repo)
+				if err != nil {
+					t.Fatalf("Didn't expect error: %v", err)
+				}
+				w.WriteHeader(tc.statusCode) // 200
+				fmt.Fprint(w, string(b))
+			}))
+			defer ts.Close()
+			c := getClient(ts.URL)
+			switch repo, err := c.UpdateRepo(org, repoName, tc.repo); {
+			case err != nil && !tc.expectError:
+				t.Errorf("unexpected error: %v", err)
+			case err == nil && tc.expectError:
+				t.Errorf("expected error, but got none")
+			case err == nil && !reflect.DeepEqual(repo, tc.expectRepo):
+				t.Errorf("%s: repo differs from expected:\n%s", tc.description, diff.ObjectReflectDiff(tc.expectRepo, repo))
+			}
+		})
+	}
+}
+
+type fakeHttpClient struct {
+	received []*http.Request
+}
+
+func (fhc *fakeHttpClient) Do(req *http.Request) (*http.Response, error) {
+	if fhc.received == nil {
+		fhc.received = []*http.Request{}
+	}
+	fhc.received = append(fhc.received, req)
+	return &http.Response{}, nil
+}
+
+func TestAuthHeaderGetsSet(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name           string
+		mod            func(*client)
+		expectedHeader http.Header
+	}{
+		{
+			name: "Empty token, no auth header",
+			mod:  func(c *client) { c.getToken = func() []byte { return []byte{} } },
+		},
+		{
+			name:           "Token, auth header",
+			mod:            func(c *client) { c.getToken = func() []byte { return []byte("sup") } },
+			expectedHeader: http.Header{"Authorization": []string{"Bearer sup"}},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			fake := &fakeHttpClient{}
+			c := &client{delegate: &delegate{client: fake}}
+			tc.mod(c)
+			if _, err := c.doRequest("POST", "/hello", "", nil); err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if tc.expectedHeader == nil {
+				tc.expectedHeader = http.Header{}
+			}
+			tc.expectedHeader["Accept"] = []string{"application/vnd.github.v3+json"}
+
+			// Bazel injects some stuff in here, exclude it from comparison so both bazel test
+			// and go test yield the same result.
+			delete(fake.received[0].Header, "User-Agent")
+			if diff := cmp.Diff(tc.expectedHeader, fake.received[0].Header); diff != "" {
+				t.Errorf("expected header differs from actual: %s", diff)
+			}
+		})
+	}
+}
+func TestListTeamRepos(t *testing.T) {
+	ts := simpleTestServer(t, "/teams/1/repos",
+		[]Repo{
+			{
+				Name:        "repo-bar",
+				Permissions: RepoPermissions{Pull: true},
+			},
+			{
+				Name: "repo-invalid-permission-level",
+			},
+		},
+	)
+	defer ts.Close()
+	c := getClient(ts.URL)
+	repos, err := c.ListTeamRepos(1)
+	if err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	} else if len(repos) != 1 {
+		t.Errorf("Expected one repo, found %d: %v", len(repos), repos)
+	} else if repos[0].Name != "repo-bar" {
+		t.Errorf("Wrong repos: %v", repos)
+	}
+}
+
+func TestCreateFork(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/repos/k8s/kuber/forks" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		w.WriteHeader(202)
+		w.Write([]byte(`{"name":"other"}`))
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	if name, err := c.CreateFork("k8s", "kuber"); err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	} else {
+		if name != "other" {
+			t.Errorf("Unexpected fork name: %v", name)
+		}
 	}
 }

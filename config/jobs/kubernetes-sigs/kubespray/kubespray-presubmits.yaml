@@ -1,0 +1,16 @@
+presubmits:
+  kubernetes-sigs/kubespray:
+  - name: pull-kubespray-yamllint
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-kubespray
+      testgrid-tab-name: yamllint
+    always_run: true
+    skip_report: false
+    decorate: true
+    spec:
+      containers:
+      - image: quay.io/kubespray/kubespray:v2.13.0
+        args:
+        - yamllint
+        - "--strict"
+        - .

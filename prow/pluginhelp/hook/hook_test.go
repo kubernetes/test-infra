@@ -27,6 +27,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/apimachinery/pkg/util/sets"
+	prowconfig "k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/pluginhelp/externalplugins"
@@ -75,8 +76,8 @@ func TestGeneratePluginHelp(t *testing.T) {
 	externalplugins.ServeExternalPluginHelp(
 		mux,
 		logrus.WithField("plugin", "helpful-external"),
-		func(enabledRepos []string) (*pluginhelp.PluginHelp, error) {
-			if got, expected := enabledRepos, []string{"org1/repo1"}; !reflect.DeepEqual(got, expected) {
+		func(enabledRepos []prowconfig.OrgRepo) (*pluginhelp.PluginHelp, error) {
+			if got, expected := enabledRepos, []prowconfig.OrgRepo{{Org: "org1", Repo: "repo1"}}; !reflect.DeepEqual(got, expected) {
 				t.Errorf("Plugin 'helpful-external' expected to be enabled on repos %q, but got %q.", expected, got)
 			}
 			return &helpfulExternalHelp, nil
@@ -181,8 +182,8 @@ func TestGeneratePluginHelp(t *testing.T) {
 func registerNormalPlugins(t *testing.T, pluginsToEvents map[string][]string, pluginHelp map[string]pluginhelp.PluginHelp, expectedRepos map[string][]string) {
 	for plugin, events := range pluginsToEvents {
 		plugin := plugin
-		helpProvider := func(_ *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
-			if got, expected := sets.NewString(enabledRepos...), sets.NewString(expectedRepos[plugin]...); !got.Equal(expected) {
+		helpProvider := func(_ *plugins.Configuration, enabledRepos []prowconfig.OrgRepo) (*pluginhelp.PluginHelp, error) {
+			if got, expected := sets.NewString(prowconfig.OrgReposToStrings(enabledRepos)...), sets.NewString(expectedRepos[plugin]...); !got.Equal(expected) {
 				t.Errorf("Plugin '%s' expected to be enabled on repos %q, but got %q.", plugin, expected.List(), got.List())
 			}
 			help := pluginHelp[plugin]

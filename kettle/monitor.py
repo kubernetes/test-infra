@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright 2018 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,7 +30,7 @@ try:
     from google.cloud import bigquery
     import google.cloud.exceptions
 except ImportError:
-    print 'WARNING: unable to load google cloud (test environment?)'
+    print('WARNING: unable to load google cloud (test environment?)')
     import traceback
     traceback.print_exc()
 
@@ -65,8 +65,8 @@ def collect(tables, stale_hours, influx_client):
 
         hours_old = (time.time() - fields['modified_time'] / 1000) / (3600.0)
         if stale_hours and hours_old > stale_hours:
-            print 'ERROR: table %s is %.1f hours old. Max allowed: %s hours.' % (
-                table.table_id, hours_old, stale_hours)
+            print('ERROR: table %s is %.1f hours old. Max allowed: %s hours.' % (
+                table.table_id, hours_old, stale_hours))
             stale = True
 
         lines.append(influxdb.line_protocol.make_lines({
@@ -74,13 +74,13 @@ def collect(tables, stale_hours, influx_client):
             'points': [{'measurement': 'bigquery', 'fields': fields}]
         }))
 
-    print 'Collected data:'
-    print ''.join(lines)
+    print('Collected data:')
+    print(''.join(lines))
 
     if influx_client:
         influx_client.write_points(lines, time_precision='ms', protocol='line')
     else:
-        print 'Not uploading to influxdb; missing client.'
+        print('Not uploading to influxdb; missing client.')
 
     return int(stale)
 

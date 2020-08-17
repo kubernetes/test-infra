@@ -1,0 +1,233 @@
+{{define "header"}}
+<link rel="stylesheet" type="text/css" href="style.css">
+<script type="text/javascript" src="script_bundle.min.js"></script>
+<script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+{{end}}
+
+{{define "body"}}
+{{$pod:=.PodReport.Pod}}
+<div class="mdl-tabs mdl-js-tabs mdl-js-ripple-effect" id="podinfo">
+  <div class="mdl-tabs__tab-bar">
+    <a href="#pod-panel" data-preserve-anchor="true" class="mdl-tabs__tab">Pod</a>
+    <a href="#volumes-panel" data-preserve-anchor="true" class="mdl-tabs__tab">Volumes</a>
+    <a href="#events-panel" data-preserve-anchor="true" class="mdl-tabs__tab">Events</a>
+    {{range .Containers}}
+    <a href="#{{.Container.Name}}-panel" data-preserve-anchor="true" class="mdl-tabs__tab">{{.Container.Name}}</a>
+    {{end}}
+    <a href="#yaml-panel" data-preserve-anchor="true" class="mdl-tabs__tab">YAML</a>
+  </div>
+
+  <div class="mdl-tabs__panel" id="pod-panel">
+    <table class="mdl-data-table mdl-js-data-table metadata-table">
+      <tbody>
+      <tr>
+        <td class="mdl-data-table__cell--non-numeric">Pod name</td>
+        <td class="mdl-data-table__cell--non-numeric literal">{{$pod.Name}}</td>
+      </tr>
+      <tr>
+        <td class="mdl-data-table__cell--non-numeric">Start time</td>
+        <td class="mdl-data-table__cell--non-numeric">{{$pod.Status.StartTime}}</td>
+      </tr>
+      <tr>
+        <td class="mdl-data-table__cell--non-numeric">Pod status</td>
+        <td class="mdl-data-table__cell--non-numeric literal">{{$pod.Status.Phase}}</td>
+      </tr>
+      <tr>
+        <td class="mdl-data-table__cell--non-numeric">Node</td>
+        <td class="mdl-data-table__cell--non-numeric"><code>{{$pod.Spec.NodeName}}</code> / <code>{{$pod.Status.HostIP}}</code></td>
+      </tr>
+      {{$hasInterestingTolerations := false}}
+      {{range $pod.Spec.Tolerations}}
+        {{if not (eq .Key "node.kubernetes.io/not-ready" "node.kubernetes.io/unreachable")}}
+          {{$hasInterestingTolerations = true}}
+        {{end}}
+      {{end}}
+      {{if $hasInterestingTolerations}}
+      <tr>
+        <td class="mdl-data-table__cell--non-numeric">Tolerations</td>
+        <td class="mdl-data-table__cell--non-numeric">
+          <ul class="data">
+          {{range $pod.Spec.Tolerations}}
+          <li><code>{{.Key}}{{if eq .Operator "Equals"}}={{.Value}}{{end}}{{if .Effect}}:{{.Effect}}{{end}}</code>{{if .TolerationSeconds}} for {{.TolerationSeconds}} seconds{{end}}</li>
+          {{end}}
+          </ul>
+        </td>
+      </tr>
+      {{end}}
+      <tr>
+        <td class="mdl-data-table__cell--non-numeric">Labels</td>
+        <td class="mdl-data-table__cell--non-numeric">
+          <ul class="data">
+            {{$hasProw := false}}
+            {{range $k, $v := $pod.Labels}}
+              {{ if not (isProw $k) }}
+                <li class="literal">{{$k}}={{$v}}</li>
+              {{else}}
+                {{$hasProw = true}}
+              {{end}}
+            {{end}}
+            {{if $hasProw}}
+              <li class="more"><a href="#" class="expand-prow">Show prow labels</a></li>
+              {{range $k, $v := $pod.Labels}}
+                {{ if (isProw $k) }}
+                  <li class="hidden literal">{{$k}}={{$v}}</li>
+                {{end}}
+              {{end}}
+            {{end}}
+          </ul>
+        </td>
+      </tr>
+      <tr>
+        <td class="mdl-data-table__cell--non-numeric">Annotations</td>
+        <td class="mdl-data-table__cell--non-numeric">
+          <ul class="data">
+            {{$hasProw := false}}
+            {{range $k, $v := $pod.Annotations}}
+              {{ if not (isProw $k) }}
+                <li class="literal">{{$k}}={{$v}}</li>
+              {{else}}
+                {{$hasProw = true}}
+              {{end}}
+            {{end}}
+            {{if $hasProw}}
+              <li class="more expand-prow"><a href="#" class="expand-prow">Show prow labels</a></li>
+              {{range $k, $v := $pod.Annotations}}
+                {{ if (isProw $k) }}
+                  <li class="hidden literal">{{$k}}={{$v}}</li>
+                {{end}}
+              {{end}}
+            {{end}}
+          </ul>
+        </td>
+      </tr>
+    </table>
+  </div>
+  <div class="mdl-tabs__panel" id="volumes-panel">
+    <table class="mdl-data-table mdl-js-data-table">
+      {{range $pod.Spec.Volumes}}
+      <tr>
+        <td class="mdl-data-table__cell--non-numeric" style="width: 300px;">{{.Name}}</td>
+        <td class="mdl-data-table__cell--non-numeric literal pre">{{toYaml .}}</td>
+      </tr>
+      {{end}}
+    </table>
+  </div>
+  <div class="mdl-tabs__panel" id="events-panel">
+    <table class="mdl-data-table mdl-js-data-table">
+      <thead>
+      <tr>
+        <th>Type</th>
+        <th>Reason</th>
+        <th>Age</th>
+        <th>Source</th>
+        <th>Message</th>
+      </tr>
+      </thead>
+      {{range .PodReport.Events}}
+        <tr class="event-type-{{.Type}}">
+          <td class="mdl-data-table__cell--non-numeric">{{.Type}}</td>
+          <td class="mdl-data-table__cell--non-numeric">{{.Reason}}</td>
+          <td class="mdl-data-table__cell--non-numeric">{{toAge .LastTimestamp.Time}}{{if lt .Count 1}}({{.Count}} times){{end}}</td>
+          <td class="mdl-data-table__cell--non-numeric literal">{{.Source.Component}}</td>
+          <td class="mdl-data-table__cell--non-numeric">{{.Message}}</td>
+        </tr>
+      {{end}}
+    </table>
+  </div>
+  {{range .Containers}}
+  {{$c := .Container}}
+  {{$status := .Status}}
+  <div class="mdl-tabs__panel" id="{{$c.Name}}-panel">
+    <table class="mdl-data-table mdl-js-data-table metadata-table">
+      <tbody>
+      <tr>
+        <td class="mdl-data-table__cell--non-numeric">Image</td>
+        <td class="mdl-data-table__cell--non-numeric literal">{{$c.Image}}</td>
+      </tr>
+      <tr>
+        <td class="mdl-data-table__cell--non-numeric">Status</td>
+        <td class="mdl-data-table__cell--non-numeric">
+          {{if $status.State.Terminated}}
+            Terminated ({{$status.State.Terminated.Reason}}{{if $status.State.Terminated.Message}} - {{$status.State.Terminated.Message}}{{end}}) at {{$status.State.Terminated.FinishedAt}} with exit code <code>{{$status.State.Terminated.ExitCode}}</code>
+          {{else if $status.State.Running}}
+            Running since {{$status.State.Running.StartedAt}}
+          {{else if $status.State.Waiting}}
+            Waiting ({{$status.State.Waiting.Reason}}{{if $status.State.Waiting.Message}} - {{$status.State.Waiting.Message}}{{end}})
+          {{else}}
+            Unclear.
+          {{end}}
+        </td>
+      </tr>
+      {{if or $c.Command $c.Args}}
+      <tr>
+        <td class="mdl-data-table__cell--non-numeric">Command</td>
+        <td class="mdl-data-table__cell--non-numeric literal">
+          {{range $c.Command}}
+            <code class="item command">{{.}}</code>
+          {{end}}
+          {{range $c.Args}}
+            <code class="item">{{.}}</code>
+          {{end}}
+        </td>
+      </tr>
+      {{end}}
+      {{if or .DecoratedArgs}}
+      <tr>
+        <td class="mdl-data-table__cell--non-numeric"><abbr title="When a job is decorated, the original entrypoint/command/args are overwritten. This is the command invoked by the new entrypoint.">Decorated Command</abbr></td>
+        <td class="mdl-data-table__cell--non-numeric literal">
+          {{range .DecoratedArgs}}
+          <code class="item">{{.}}</code>
+          {{end}}
+        </td>
+      </tr>
+      {{end}}
+      {{if $c.VolumeMounts}}
+      <tr>
+        <td class="mdl-data-table__cell--non-numeric">Volume mounts</td>
+        <td class="mdl-data-table__cell--non-numeric">
+          <ul class="data">
+          {{range $c.VolumeMounts}}
+            <li><code>{{.Name}}{{if or .SubPath .SubPathExpr}}/{{or .SubPath .SubPathExpr}}{{end}}</code> at <code>{{.MountPath}}</code>{{if .ReadOnly}} (read-only){{end}}</li>
+          {{end}}
+          </ul>
+        </td>
+      </tr>
+      {{end}}
+      {{if $c.Env}}
+      <td class="mdl-data-table__cell--non-numeric">Environment variables</td>
+      <td class="mdl-data-table__cell--non-numeric">
+        <ul class="data">
+          {{range $c.Env}}
+            <li>
+              <code>{{.Name}}=</code>
+              {{- if .Value -}}
+                <code>{{- .Value -}}</code>
+              {{- else if .ValueFrom -}}
+                {{- if .ValueFrom.ConfigMapKeyRef -}}
+                  (value of configmap key <code>{{.ValueFrom.ConfigMapKeyRef.Name}}.{{.ValueFrom.ConfigMapKeyRef.Key}}</code>{{if .ValueFrom.ConfigMapKeyRef.Optional}}, if it exists{{end}})
+                {{- else if .ValueFrom.SecretKeyRef -}}
+                  (value of secret key <code>{{.ValueFrom.SecretKeyRef.Name}}.{{.ValueFrom.SecretKeyRef.Key}}</code>{{if .ValueFrom.SecretKeyRef.Optional}}, if it exists{{end}})
+                {{- else if .ValueFrom.FieldRef -}}
+                  (value of <code>{{.ValueFrom.FieldRef.APIVersion}}</code> field path <code>{{.ValueFrom.FieldRef.FieldPath}}</code>)
+                {{- else if .ValueFrom.ResourceRef -}}
+                  (container <code>{{.ValueFrom.ResourceFieldRef.ContainerName}}</code>'s <code>{{.ValueFrom.ResourceFieldRef.Resource}}</code> in <code>{{.ValueFrom.ResourceFieldRef.Divisor.String}}</code>)
+                {{- else -}}
+                  (something)
+                {{end}}
+              {{end}}
+            </li>
+          {{end}}
+        </ul>
+      </td>
+      {{end}}
+      </tbody>
+    </table>
+  </div>
+  {{end}}
+  <div class="mdl-tabs__panel" id="yaml-panel">
+    <div class="pre literal">
+      {{- toYaml .PodReport.Pod -}}
+    </div>
+  </div>
+</div>
+{{end}}

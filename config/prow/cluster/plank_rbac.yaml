@@ -1,0 +1,65 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  namespace: default
+  name: "plank"
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  namespace: default
+  name: "plank"
+rules:
+  - apiGroups:
+      - "prow.k8s.io"
+    resources:
+      - prowjobs
+    verbs:
+      - get
+      - create
+      - list
+      - watch
+      - update
+      - patch
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  namespace: test-pods
+  name: "plank"
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+    verbs:
+      - create
+      - delete
+      - list
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  namespace: default
+  name: "plank"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: "plank"
+subjects:
+- kind: ServiceAccount
+  name: "plank"
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  namespace: test-pods
+  name: "plank"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: "plank"
+subjects:
+- kind: ServiceAccount
+  name: "plank"
+  namespace: default

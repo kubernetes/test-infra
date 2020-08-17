@@ -22,6 +22,11 @@ html {
     color: #fff;
     width: calc(100% - 30px);
 }
+.loglines .linetext span {
+    white-space: pre-wrap;
+    word-break: break-all;
+    overflow-wrap: break-word;
+}
 .line-highlighted {
     color: rgba(255, 224, 0, 1.0);
 }
@@ -34,7 +39,9 @@ html {
 
 .linenum {
     user-select: none;
-    color: rgba(255,255,2552,0.6);
+    -moz-user-select: none; /* for Firefox pre-69 */
+    -webkit-user-select: none; /* for Safari, Opera, and Edge (pre-Blink) */
+    color: rgba(255,255,255,0.6);
     text-align: right;
     vertical-align: top;
     width: 50px;
@@ -42,10 +49,23 @@ html {
     position: absolute;
 }
 
+.linenum a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.linenum a:hover {
+    color: rgba(255,255,255,0.4);
+}
+
 .linetext {
     width: calc(100% - 55px);
     margin-left: 55px;
     min-height: 20px;
+}
+
+.highlighted-line {
+    background-color: #555;
 }
 
 /* ansi colors from https://en.wikipedia.org/wiki/ANSI_escape_code#Colors */

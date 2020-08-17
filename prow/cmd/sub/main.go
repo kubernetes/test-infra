@@ -21,23 +21,21 @@ import (
 	"flag"
 	"net/http"
 	"os"
-	"os/signal"
 	"strconv"
-	"sync"
-	"syscall"
 	"time"
 
 	"github.com/sirupsen/logrus"
-	"golang.org/x/sync/errgroup"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
+	"k8s.io/test-infra/prow/crier/reporters/pubsub"
 	"k8s.io/test-infra/prow/flagutil"
+	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
-	"k8s.io/test-infra/prow/pubsub/reporter"
 	"k8s.io/test-infra/prow/pubsub/subscriber"
 )
 
@@ -46,7 +44,7 @@ var (
 )
 
 type options struct {
-	client         flagutil.ExperimentalKubernetesOptions
+	client         flagutil.KubernetesOptions
 	port           int
 	pushSecretFile string
 
@@ -54,8 +52,9 @@ type options struct {
 	jobConfigPath string
 	pluginConfig  string
 
-	dryRun      bool
-	gracePeriod time.Duration
+	dryRun                 bool
+	gracePeriod            time.Duration
+	instrumentationOptions flagutil.InstrumentationOptions
 }
 
 type kubeClient struct {
@@ -63,11 +62,11 @@ type kubeClient struct {
 	dryRun bool
 }
 
-func (c *kubeClient) Create(job *prowapi.ProwJob) (*prowapi.ProwJob, error) {
+func (c *kubeClient) Create(ctx context.Context, job *prowapi.ProwJob, o metav1.CreateOptions) (*prowapi.ProwJob, error) {
 	if c.dryRun {
 		return job, nil
 	}
-	return c.client.Create(job)
+	return c.client.Create(ctx, job, o)
 }
 
 func init() {
@@ -84,13 +83,13 @@ func init() {
 	fs.DurationVar(&flagOptions.gracePeriod, "grace-period", 180*time.Second, "On shutdown, try to handle remaining events for the specified duration. ")
 
 	flagOptions.client.AddFlags(fs)
+	flagOptions.instrumentationOptions.AddFlags(fs)
 
 	fs.Parse(os.Args[1:])
 }
 
 func main() {
-
-	logrus.SetFormatter(logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "pubsub-subscriber"}))
+	logrusutil.ComponentInit()
 
 	configAgent := &config.Agent{}
 	if err := configAgent.Start(flagOptions.configPath, flagOptions.jobConfigPath); err != nil {
@@ -120,24 +119,20 @@ func main() {
 
 	promMetrics := subscriber.NewMetrics()
 
+	defer interrupts.WaitForGracefulShutdown()
+
 	// Expose prometheus metrics
-	pushGateway := configAgent.Config().PushGateway
-	metrics.ExposeMetrics("sub", pushGateway.Endpoint, pushGateway.Interval.Duration)
+	metrics.ExposeMetrics("sub", configAgent.Config().PushGateway, flagOptions.instrumentationOptions.MetricsPort)
 
 	s := &subscriber.Subscriber{
 		ConfigAgent:   configAgent,
 		Metrics:       promMetrics,
 		ProwJobClient: kubeClient,
-		Reporter:      reporter.NewReporter(configAgent.Config),
+		Reporter:      pubsub.NewReporter(configAgent.Config),
 	}
 
 	// Return 200 on / for health checks.
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {})
-
-	// Will call shutdown which will stop the errGroup
-	shutdownCtx, shutdown := context.WithCancel(context.Background())
-	errGroup, derivedCtx := errgroup.WithContext(shutdownCtx)
-	wg := sync.WaitGroup{}
 
 	// Setting up Push Server
 	logrus.Info("Setting up Push Server")
@@ -150,45 +145,12 @@ func main() {
 	// Setting up Pull Server
 	logrus.Info("Setting up Pull Server")
 	pullServer := subscriber.NewPullServer(s)
-	errGroup.Go(func() error {
-		wg.Add(1)
-		defer wg.Done()
-		logrus.Info("Starting Pull Server")
-		err := pullServer.Run(derivedCtx)
-		logrus.WithError(err).Warn("Pull Server exited.")
-		return err
+	interrupts.Run(func(ctx context.Context) {
+		if err := pullServer.Run(ctx); err != nil {
+			logrus.WithError(err).Error("Failed to run Pull Server")
+		}
 	})
 
 	httpServer := &http.Server{Addr: ":" + strconv.Itoa(flagOptions.port)}
-	errGroup.Go(func() error {
-		wg.Add(1)
-		defer wg.Done()
-		logrus.Info("Starting HTTP Server")
-		err := httpServer.ListenAndServe()
-		logrus.WithError(err).Warn("HTTP Server exited.")
-		return err
-	})
-
-	sig := make(chan os.Signal, 1)
-	signal.Notify(sig, os.Interrupt, syscall.SIGTERM, syscall.SIGABRT)
-
-	select {
-	case <-shutdownCtx.Done():
-		err = shutdownCtx.Err()
-		break
-	case <-derivedCtx.Done():
-		err = derivedCtx.Err()
-		break
-	case <-sig:
-		break
-	}
-
-	logrus.WithError(err).Warn("Starting Shutdown")
-	shutdown()
-	// Shutdown gracefully on SIGTERM or SIGINT
-	timeoutCtx, cancel := context.WithTimeout(context.Background(), flagOptions.gracePeriod)
-	defer cancel()
-	httpServer.Shutdown(timeoutCtx)
-	errGroup.Wait()
-	wg.Wait()
+	interrupts.ListenAndServe(httpServer, flagOptions.gracePeriod)
 }

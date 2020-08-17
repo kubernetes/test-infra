@@ -21,7 +21,7 @@ import (
 	"context"
 	"fmt"
 
-	"k8s.io/test-infra/testgrid/resultstore"
+	"github.com/GoogleCloudPlatform/testgrid/resultstore"
 )
 
 func resultstoreClient(ctx context.Context, account string, secret resultstore.Secret) (*resultstore.Client, error) {

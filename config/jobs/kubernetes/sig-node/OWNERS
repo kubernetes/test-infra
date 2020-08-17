@@ -1,6 +1,19 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
+reviewers:
+- bart0sh
+- derekwaynecarr
+- karan
+- MHBauer
+- vpickard
+- dashpole
+- sjenning
 approvers:
 - yujuhong
 - Random-Liu
 - dchen1107
+- derekwaynecarr
+- dashpole
+- sjenning
+labels:
+- sig/node

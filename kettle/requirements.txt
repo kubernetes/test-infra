@@ -1,5 +1,0 @@
-requests
-google-cloud-pubsub==0.25.0
-google-cloud-bigquery==0.24.0
-pyyaml
-influxdb

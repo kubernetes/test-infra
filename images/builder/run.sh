@@ -18,13 +18,16 @@
 
 set -e
 
-echo "Activating service account..."
-gcloud auth activate-service-account --key-file="${GOOGLE_APPLICATION_CREDENTIALS}"
+if [[ -n "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]]; then
+  echo "Activating service account..."
+  gcloud auth activate-service-account --key-file="${GOOGLE_APPLICATION_CREDENTIALS}"
+fi
+
 
 echo "Running..."
-if [[ ! -z "${ARTIFACTS}" ]]; then
+if [ -n "${ARTIFACTS}" ] && [ -z "${LOG_TO_STDOUT}" ]; then
   echo "\$ARTIFACTS is set, sending logs to ${ARTIFACTS}"
-  ./builder --log-dir="${ARTIFACTS}" "$@"
+  /builder --log-dir="${ARTIFACTS}" "$@"
 else
-  ./builder "$@"
+  /builder "$@"
 fi

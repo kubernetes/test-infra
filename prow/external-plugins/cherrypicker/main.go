@@ -18,17 +18,19 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"net/http"
 	"os"
-	"os/signal"
 	"strconv"
-	"syscall"
+	"time"
 
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/pkg/flagutil"
 	"k8s.io/test-infra/prow/config/secret"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
+	"k8s.io/test-infra/prow/git/v2"
+	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/pluginhelp/externalplugins"
 )
 
@@ -37,16 +39,18 @@ type options struct {
 
 	dryRun bool
 	github prowflagutil.GitHubOptions
+	labels prowflagutil.Strings
 
 	webhookSecretFile string
 	prowAssignments   bool
 	allowAll          bool
+	issueOnConflict   bool
 }
 
 func (o *options) Validate() error {
-	for _, group := range []flagutil.OptionGroup{&o.github} {
+	for idx, group := range []flagutil.OptionGroup{&o.github} {
 		if err := group.Validate(o.dryRun); err != nil {
-			return err
+			return fmt.Errorf("%d: %w", idx, err)
 		}
 	}
 
@@ -58,9 +62,11 @@ func gatherOptions() options {
 	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 	fs.IntVar(&o.port, "port", 8888, "Port to listen on.")
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
+	fs.Var(&o.labels, "labels", "Labels to apply to the cherrypicked PR.")
 	fs.StringVar(&o.webhookSecretFile, "hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
 	fs.BoolVar(&o.prowAssignments, "use-prow-assignments", true, "Use prow commands to assign cherrypicked PRs.")
 	fs.BoolVar(&o.allowAll, "allow-all", false, "Allow anybody to use automated cherrypicks by skipping GitHub organization membership checks.")
+	fs.BoolVar(&o.issueOnConflict, "create-issue-on-conflict", false, "Create a GitHub issue and assign it to the requestor on cherrypick conflict.")
 	for _, group := range []flagutil.OptionGroup{&o.github} {
 		group.AddFlags(fs)
 	}
@@ -79,11 +85,6 @@ func main() {
 	logrus.SetLevel(logrus.DebugLevel)
 	log := logrus.StandardLogger().WithField("plugin", "cherrypick")
 
-	// Ignore SIGTERM so that we don't drop hooks when the pod is removed.
-	// We'll get SIGTERM first and then SIGKILL after our graceful termination
-	// deadline.
-	signal.Ignore(syscall.SIGTERM)
-
 	secretAgent := &secret.Agent{}
 	if err := secretAgent.Start([]string{o.github.TokenPath, o.webhookSecretFile}); err != nil {
 		logrus.WithError(err).Fatal("Error starting secrets agent.")
@@ -97,7 +98,11 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting Git client.")
 	}
-	defer gitClient.Clean()
+	interrupts.OnInterrupt(func() {
+		if err := gitClient.Clean(); err != nil {
+			logrus.WithError(err).Error("Could not clean up git client cache.")
+		}
+	})
 
 	email, err := githubClient.Email()
 	if err != nil {
@@ -118,12 +123,14 @@ func main() {
 		botName:        botName,
 		email:          email,
 
-		gc:  gitClient,
+		gc:  git.ClientFactoryFrom(gitClient),
 		ghc: githubClient,
 		log: log,
 
+		labels:          o.labels.Strings(),
 		prowAssignments: o.prowAssignments,
 		allowAll:        o.allowAll,
+		issueOnConflict: o.issueOnConflict,
 
 		bare:     &http.Client{},
 		patchURL: "https://patch-diff.githubusercontent.com",
@@ -131,7 +138,10 @@ func main() {
 		repos: repos,
 	}
 
-	http.Handle("/", server)
-	externalplugins.ServeExternalPluginHelp(http.DefaultServeMux, log, HelpProvider)
-	logrus.Fatal(http.ListenAndServe(":"+strconv.Itoa(o.port), nil))
+	mux := http.NewServeMux()
+	mux.Handle("/", server)
+	externalplugins.ServeExternalPluginHelp(mux, log, HelpProvider)
+	httpServer := &http.Server{Addr: ":" + strconv.Itoa(o.port), Handler: mux}
+	defer interrupts.WaitForGracefulShutdown()
+	interrupts.ListenAndServe(httpServer, 5*time.Second)
 }

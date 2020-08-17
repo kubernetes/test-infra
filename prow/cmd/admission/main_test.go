@@ -20,6 +20,8 @@ import (
 	"flag"
 	"reflect"
 	"testing"
+
+	prowflagutil "k8s.io/test-infra/prow/flagutil"
 )
 
 func TestOptions(t *testing.T) {
@@ -41,6 +43,10 @@ func TestOptions(t *testing.T) {
 			expected: &options{
 				cert:       "c",
 				privateKey: "k",
+				instrumentationOptions: prowflagutil.InstrumentationOptions{
+					MetricsPort: prowflagutil.DefaultMetricsPort,
+					PProfPort:   prowflagutil.DefaultPProfPort,
+				},
 			},
 		},
 		{

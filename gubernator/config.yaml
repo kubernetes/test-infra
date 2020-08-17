@@ -20,22 +20,20 @@ jobs:
   - ci-kubernetes-e2e-gce-scale-performance
   - ci-kubernetes-e2e-gci-gce
   - ci-kubernetes-e2e-gci-gce-slow
-  - ci-kubernetes-e2e-gci-gke
-  - ci-kubernetes-e2e-gci-gke-slow
-  - ci-kubernetes-e2e-kops-aws
   - ci-kubernetes-integration-master
   - ci-kubernetes-kubemark-500-gce
   - ci-kubernetes-verify-master
   kubernetes-jenkins/pr-logs/directory/:
   - pull-kubernetes-bazel-build
   - pull-kubernetes-bazel-test
-  - pull-kubernetes-e2e-aks-engine-azure
+  - pull-kubernetes-conformance-kind-ga-only-parallel
+  - pull-kubernetes-dependencies
   - pull-kubernetes-e2e-gce
   - pull-kubernetes-e2e-gce-100-performance
-  - pull-kubernetes-e2e-gce-device-plugin-gpu
-  - pull-kubernetes-e2e-kops-aws
+  - pull-kubernetes-e2e-gce-ubuntu-containerd
+  - pull-kubernetes-e2e-kind
+  - pull-kubernetes-e2e-kind-ipv6
   - pull-kubernetes-integration
-  - pull-kubernetes-kubemark-e2e-gce-big
   - pull-kubernetes-node-e2e
   - pull-kubernetes-typecheck
   - pull-kubernetes-verify

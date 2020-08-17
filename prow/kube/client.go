@@ -30,7 +30,7 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/yaml"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -139,6 +139,7 @@ type request struct {
 	method      string
 	path        string
 	deckPath    string
+	contentType string
 	query       map[string]string
 	requestBody interface{}
 }
@@ -161,7 +162,7 @@ func (c *Client) retry(r *request) (*http.Response, error) {
 	var err error
 	backoff := retryDelay
 	for retries := 0; retries < maxRetries; retries++ {
-		resp, err = c.doRequest(r.method, r.deckPath, r.path, r.query, r.requestBody)
+		resp, err = c.doRequest(r.method, r.deckPath, r.path, r.contentType, r.query, r.requestBody)
 		if err == nil {
 			if resp.StatusCode < 500 {
 				break
@@ -221,7 +222,7 @@ func (c *Client) requestRetry(r *request) ([]byte, error) {
 	return rb, nil
 }
 
-func (c *Client) doRequest(method, deckPath, urlPath string, query map[string]string, body interface{}) (*http.Response, error) {
+func (c *Client) doRequest(method, deckPath, urlPath, contentType string, query map[string]string, body interface{}) (*http.Response, error) {
 	url := c.baseURL + urlPath
 	if c.deckURL != "" && deckPath != "" {
 		url = c.deckURL + deckPath
@@ -241,8 +242,8 @@ func (c *Client) doRequest(method, deckPath, urlPath string, query map[string]st
 	if c.token != "" {
 		req.Header.Set("Authorization", "Bearer "+c.token)
 	}
-	if method == http.MethodPatch {
-		req.Header.Set("Content-Type", "application/strategic-merge-patch+json")
+	if contentType != "" {
+		req.Header.Set("Content-Type", contentType)
 	} else {
 		req.Header.Set("Content-Type", "application/json")
 	}
@@ -413,9 +414,9 @@ func NewClient(c *Cluster, namespace string) (*Client, error) {
 }
 
 // GetPod is analogous to kubectl get pods/NAME namespace=client.namespace
-func (c *Client) GetPod(name string) (Pod, error) {
+func (c *Client) GetPod(name string) (v1.Pod, error) {
 	c.log("GetPod", name)
-	var retPod Pod
+	var retPod v1.Pod
 	err := c.request(&request{
 		path: fmt.Sprintf("/api/v1/namespaces/%s/pods/%s", c.namespace, name),
 	}, &retPod)
@@ -423,10 +424,10 @@ func (c *Client) GetPod(name string) (Pod, error) {
 }
 
 // ListPods is analogous to kubectl get pods --selector=SELECTOR --namespace=client.namespace
-func (c *Client) ListPods(selector string) ([]Pod, error) {
+func (c *Client) ListPods(selector string) ([]v1.Pod, error) {
 	c.log("ListPods", selector)
 	var pl struct {
-		Items []Pod `json:"items"`
+		Items []v1.Pod `json:"items"`
 	}
 	err := c.request(&request{
 		path:  fmt.Sprintf("/api/v1/namespaces/%s/pods", c.namespace),
@@ -529,9 +530,9 @@ func (c *Client) ReplaceProwJob(name string, job prowapi.ProwJob) (prowapi.ProwJ
 // CreatePod creates a pod in the client's specified namespace.
 //
 // Analogous to kubectl create pod --namespace=client.namespace
-func (c *Client) CreatePod(p v1.Pod) (Pod, error) {
+func (c *Client) CreatePod(p v1.Pod) (v1.Pod, error) {
 	c.log("CreatePod", p)
-	var retPod Pod
+	var retPod v1.Pod
 	err := c.request(&request{
 		method:      http.MethodPost,
 		path:        fmt.Sprintf("/api/v1/namespaces/%s/pods", c.namespace),
@@ -580,9 +581,9 @@ func (c *Client) GetContainerLog(pod, container string) ([]byte, error) {
 // CreateConfigMap creates a configmap, in the client's specified namespace.
 //
 // Analogous to kubectl create configmap --namespace=client.namespace
-func (c *Client) CreateConfigMap(content ConfigMap) (ConfigMap, error) {
+func (c *Client) CreateConfigMap(content v1.ConfigMap) (v1.ConfigMap, error) {
 	c.log("CreateConfigMap")
-	var retConfigMap ConfigMap
+	var retConfigMap v1.ConfigMap
 	err := c.request(&request{
 		method:      http.MethodPost,
 		path:        fmt.Sprintf("/api/v1/namespaces/%s/configmaps", c.namespace),
@@ -595,12 +596,12 @@ func (c *Client) CreateConfigMap(content ConfigMap) (ConfigMap, error) {
 // GetConfigMap gets the configmap identified, in the client's specified namespace.
 //
 // Analogous to kubectl get configmap --namespace=client.namespace
-func (c *Client) GetConfigMap(name, namespace string) (ConfigMap, error) {
+func (c *Client) GetConfigMap(name, namespace string) (v1.ConfigMap, error) {
 	c.log("GetConfigMap", name)
 	if namespace == "" {
 		namespace = c.namespace
 	}
-	var retConfigMap ConfigMap
+	var retConfigMap v1.ConfigMap
 	err := c.request(&request{
 		path: fmt.Sprintf("/api/v1/namespaces/%s/configmaps/%s", namespace, name),
 	}, &retConfigMap)
@@ -614,13 +615,13 @@ func (c *Client) GetConfigMap(name, namespace string) (ConfigMap, error) {
 //
 // If config.Namespace is empty, the client's specified namespace is used.
 // Returns the content returned by the apiserver
-func (c *Client) ReplaceConfigMap(name string, config ConfigMap) (ConfigMap, error) {
+func (c *Client) ReplaceConfigMap(name string, config v1.ConfigMap) (v1.ConfigMap, error) {
 	c.log("ReplaceConfigMap", name)
 	namespace := c.namespace
 	if config.Namespace != "" {
 		namespace = config.Namespace
 	}
-	var retConfigMap ConfigMap
+	var retConfigMap v1.ConfigMap
 	err := c.request(&request{
 		method:      http.MethodPut,
 		path:        fmt.Sprintf("/api/v1/namespaces/%s/configmaps/%s", namespace, name),

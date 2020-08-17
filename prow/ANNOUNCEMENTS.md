@@ -1,6 +1,58 @@
 # Announcements
 
+## New features
+
 New features added to each component:
+ - *July 13th, 2020* Configuring `job_url_prefix_config` with `gcs/` prefix is now deprecated. 
+    Please configure a job url prefix without the `gcs/` storage provider suffix. From now on the storage
+    provider is appended automatically so multiple storage providers can be used for builds of 
+    the same repository. For now we still handle the old configuration format, this will be removed 
+    in *September 2020*. To be clear handling of URLs with `/view/gcs` in Deck is not deprecated.
+ - *June 23rd, 2020* An [hmac](/prow/cmd/hmac) tool was added to automatically reconcile webhooks and hmac
+    tokens for the orgs and repos integrated with your prow instance.
+ - *June 8th, 2020* A new informer-based Plank implementation was added. It can be used by deploying
+    the new [prow-controller-manager](/config/prow/experimental/controller_manager.yaml) binary.
+    We plan to gradually move all our controllers into that binary, see https://github.com/kubernetes/test-infra/issues/17024
+ - *May 31, 2020* '--gcs-no-auth' in Deck is deprecated and not used anymore. We always
+    fall back to an anonymous GCS client now, if all other options fail. This flag will
+    be removed in *July 2020*.
+ - *May 25, 2020* Added `--blob-storage-workers` and `--kubernetes-blob-storage-workers`
+    flags to crier. The flags `--gcs-workers` and `--kubernetes-gcs-workers` are now
+    deprecated and will be removed in *August 2020*.
+ - *May 13, 2020* Added a `decorate_all_jobs` option to job configuration that
+     allows to control whether jobs are decorated by default. Individual jobs
+     can use the `decorate` option to override this setting.
+ - *March 25, 2020* Added a `report_templates` option to the Plank config that allows
+    to specify different report templates for each organization or a specific repository.
+    The `report_template` option is deprecated and it will be removed on *September 2020*
+    which is going to be replaced with the `*` value in `report_templates`.
+ - *January 03, 2020* Added a `pr_status_base_urls` option to the Tide config
+   that allows to specify different tide's URL for each organization or a specific repository.
+   The `pr_status_base_url` will be deprecated on *June 2020* and it will be replaced with the
+   `*` value in `pr_status_base_urls`.
+ - *November 05, 2019* The `config-updater` plugin supports update configs on build clusters
+    by using [`clusters`](https://github.com/kubernetes/test-infra/tree/master/prow/plugins/updateconfig#usage).
+    The fields _namespace_ and _additional_namespaces_ are deprecated.
+ - *October 27, 2019* The `trusted_org` functionality in trigger is being
+   deprecated in favour of being more explicit in the fact that org members or
+   repo collaborators are the trusted users. This option will be removed
+   completely in January 2020.
+ - *October 07, 2019* Added a `default_decoration_configs` option to the Plank config
+   that allows to specify different plank's default configuration for each organization
+   or a specific repository. `default_decoration_config` will be deprecated in April 2020
+   and it will be replaced with the `*` value in `default_decoration_configs`.
+ - *August 29, 2019* Added a `batch_size_limit` option to the Tide config that
+   allows the batch size limit to be specified globally, per org, or per repo.
+   Values default to 0 indicating no size limit. A value of -1 disables batches.
+ - *July 30, 2019* `authorized_users` in `rerun_auth_config` for deck will become `github_users`.
+ - *July 19, 2019* deck will soon remove its default value for `--cookie-secret-file`.
+   If you set `--oauth-url` but not `--cookie-secret-file`, add
+   `--cookie-secret-file=/etc/cookie-secret` to your deck instance. The default value
+   will be removed at the end of October 2019.
+ - *July 2, 2019* prow defaults to report status for both presubmit and postsubmit
+   jobs on GitHub now.
+ - *June 17, 2019* It is now possible to configure the channel for the Slack reporter
+   directly on jobs via the `.reporter_config.slack.channel` config option
  - *May 13, 2019* New `plank` config `pod_running_timeout` is added and
    defaulted to two days to allow plank abort pods stuck in running state.
  - *April 25, 2019* `--job-config` in `peribolos` has never been used; it is
@@ -56,6 +108,8 @@ New features added to each component:
    triggers. See https://godoc.org/gopkg.in/robfig/cron.v2 for doc to the
    cron library we are using.
 
+## Breaking changes
+
 Breaking changes to external APIs (labels, GitHub interactions, configuration
 or deployment) will be documented in this section. Prow is in a pre-release
 state and no claims of backwards compatibility are made for any external API.
@@ -63,6 +117,40 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
+ - *July 17, 2020* Slack reporter will no longer report all states of a Prow job if it has `Channel`
+   specified on the Prow job config. Instead, it will report the `job_states_to_report` configured in
+   the Prow job or in the Prow core config if the former does not exist.  
+ - *May 18, 2020* `expiry` field has been replaced with `created_at` in the HMAC secret.
+ - *April 24, 2020* Horologium now defaults to `--dry-run=true`
+ - *April 23, 2020* Explicitly setting `--config-path` is now required.
+ - *April 23, 2020* Update the `autobump` image to at least `v20200422-8c8546d74` before June 2020.
+ - *April 23, 2020* Deleted deprecated `default_decoration_config`.
+ - *April 22, 2020* Deleted the `file_weight_count` blunderbuss option.
+ - *April 16, 2020* The `docs-no-retest` prow plugin has been deleted.
+   The plugin was deprecated in January 2020.
+ - *April 14, 2020* GitHub reporting via plank is deprecated, set --github-workers=1 on crier before July 2020.
+ - *March 27, 2020*  The deprecated `allow_cancellations` option has been removed from
+   Plank and the Jenkins operator.
+ - *March 19, 2020* The `rerun_auth_config` config field has been deprecated in
+   favor of the new `rerun_auth_configs` field which allows configuration on a global,
+   organization or repo level. `rerun_auth_config` will be removed in July 2020.
+ - *November 21, 2019* The boskos metrics component replaced the existing prometheus
+   metrics with a single, label-qualified metric. Metrics are now served at `/metrics`
+   on port 9090. This actually happened August 5th, but is being documented now.
+   Details: https://github.com/kubernetes/test-infra/pull/13767
+ - *November 18, 2019*  The `mkbuild-cluster` command-line utility and `build-cluster`
+   format is deprecated and will be removed in May 2020. Use `gencred` and the `kubeconfig`
+   format as an alternative.
+ - *November 14, 2019* The `slack_reporter` config field has been deprecated in
+   favor of the new `slack_reporter_configs` field which allows configuration on a global,
+   organization or repo level. `slack_reporter` will be removed in May 2020.
+ - *November 7, 2019*  The `plank.allow_cancellations` and `jenkins_operators.allow_cancellations`
+    settings are deprecated and will be removed and set to always `true` in March 2020.
+ - *October 7, 2019* Prow will drop support for the deprecated knative-builds in
+   November 2019.
+ - *September 24, 2019* Sending an http `GET` request to the `/hook` endpoint now returns a `405`
+   (Method Not Allowed) instead of a `200` (OK).
+ - *September 8, 2019* The deprecated `job_url_prefix` option has been removed from Plank.
  - *May 2, 2019* All components exposing Prometheus metrics will now either push them
    to the Prometheus PushGateway, if configured, or serve them locally on port 9090 at
    `/metrics`, if not configured (the default).

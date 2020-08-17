@@ -17,6 +17,10 @@ limitations under the License.
 package trigger
 
 import (
+	"context"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
@@ -56,11 +60,21 @@ func createRefs(pe github.PushEvent) prowapi.Refs {
 }
 
 func handlePE(c Client, pe github.PushEvent) error {
-	if pe.Deleted {
+	if pe.Deleted || pe.After == "0000000000000000000000000000000000000000" {
 		// we should not trigger jobs for a branch deletion
 		return nil
 	}
-	for _, j := range c.Config.Postsubmits[pe.Repo.FullName] {
+
+	org := pe.Repo.Owner.Login
+	repo := pe.Repo.Name
+
+	shaGetter := func() (string, error) {
+		return pe.After, nil
+	}
+
+	postsubmits := getPostsubmits(c.Logger, c.GitClient, c.Config, org+"/"+repo, shaGetter)
+
+	for _, j := range postsubmits {
 		if shouldRun, err := j.ShouldRun(pe.Branch(), listPushEventChanges(pe)); err != nil {
 			return err
 		} else if !shouldRun {
@@ -72,9 +86,9 @@ func handlePE(c Client, pe github.PushEvent) error {
 			labels[k] = v
 		}
 		labels[github.EventGUID] = pe.GUID
-		pj := pjutil.NewProwJob(pjutil.PostsubmitSpec(j, refs), labels)
+		pj := pjutil.NewProwJob(pjutil.PostsubmitSpec(j, refs), labels, j.Annotations)
 		c.Logger.WithFields(pjutil.ProwJobFields(&pj)).Info("Creating a new prowjob.")
-		if _, err := c.ProwJobClient.Create(&pj); err != nil {
+		if _, err := c.ProwJobClient.Create(context.TODO(), &pj, metav1.CreateOptions{}); err != nil {
 			return err
 		}
 	}

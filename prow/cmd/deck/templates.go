@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"github.com/gorilla/csrf"
 	"github.com/sirupsen/logrus"
 	"html/template"
 	"k8s.io/test-infra/prow/cmd/deck/version"
@@ -60,7 +61,7 @@ func getConcreteSectionFunction(o options) func() baseTemplateSections {
 	}
 }
 
-func prepareBaseTemplate(o options, cfg config.Getter, t *template.Template) (*template.Template, error) {
+func prepareBaseTemplate(o options, cfg config.Getter, csrfToken string, t *template.Template) (*template.Template, error) {
 	return t.Funcs(map[string]interface{}{
 		"settings":         makeBaseTemplateSettings,
 		"branding":         getConcreteBrandingFunction(cfg),
@@ -71,13 +72,14 @@ func prepareBaseTemplate(o options, cfg config.Getter, t *template.Template) (*t
 		"lightMode":        func() bool { return false },
 		"deckVersion":      func() string { return version.Version },
 		"googleAnalytics":  func() string { return cfg().Deck.GoogleAnalytics },
+		"csrfToken":        func() string { return csrfToken },
 	}).ParseFiles(path.Join(o.templateFilesLocation, "base.html"))
 }
 
 func handleSimpleTemplate(o options, cfg config.Getter, templateName string, param interface{}) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		t := template.New(templateName) // the name matters, and must match the filename.
-		if _, err := prepareBaseTemplate(o, cfg, t); err != nil {
+		if _, err := prepareBaseTemplate(o, cfg, csrf.Token(r), t); err != nil {
 			logrus.WithError(err).Error("error preparing base template")
 			http.Error(w, "error preparing base template", http.StatusInternalServerError)
 			return
@@ -88,6 +90,7 @@ func handleSimpleTemplate(o options, cfg config.Getter, templateName string, par
 			http.Error(w, "error parsing template", http.StatusInternalServerError)
 			return
 		}
+
 		if err := t.Execute(w, param); err != nil {
 			logrus.WithError(err).Error("error executing template " + templateName)
 			http.Error(w, "error executing template", http.StatusInternalServerError)

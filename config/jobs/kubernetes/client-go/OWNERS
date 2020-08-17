@@ -1,5 +1,10 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
+reviewers:
+- sttts
+- nikhita
 approvers:
 - sttts
 - nikhita
+labels:
+- sig/apimachinery

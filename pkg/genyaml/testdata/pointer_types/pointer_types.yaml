@@ -1,0 +1,9 @@
+# Employees is an array of employees of the zoo
+employees:
+  - # Age of employee
+    Age: 22
+
+    # Name of employee
+    Name: Jim
+  - Age: 21
+    Name: Jane

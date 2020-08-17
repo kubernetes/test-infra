@@ -40,6 +40,8 @@ type JobSpec struct {
 	Refs      *prowapi.Refs  `json:"refs,omitempty"`
 	ExtraRefs []prowapi.Refs `json:"extra_refs,omitempty"`
 
+	DecorationConfig *prowapi.DecorationConfig `json:"decoration_config,omitempty"`
+
 	// we need to keep track of the agent until we
 	// migrate everyone away from using the $BUILD_NUMBER
 	// environment variable
@@ -49,13 +51,14 @@ type JobSpec struct {
 // NewJobSpec converts a prowapi.ProwJobSpec invocation into a JobSpec
 func NewJobSpec(spec prowapi.ProwJobSpec, buildID, prowJobID string) JobSpec {
 	return JobSpec{
-		Type:      spec.Type,
-		Job:       spec.Job,
-		BuildID:   buildID,
-		ProwJobID: prowJobID,
-		Refs:      spec.Refs,
-		ExtraRefs: spec.ExtraRefs,
-		agent:     spec.Agent,
+		Type:             spec.Type,
+		Job:              spec.Job,
+		BuildID:          buildID,
+		ProwJobID:        prowJobID,
+		Refs:             spec.Refs,
+		ExtraRefs:        spec.ExtraRefs,
+		DecorationConfig: spec.DecorationConfig,
+		agent:            spec.Agent,
 	}
 }
 
@@ -76,6 +79,9 @@ func ResolveSpecFromEnv() (*JobSpec, error) {
 }
 
 const (
+	// ci represents whether the current environment is a CI environment
+	ci = "CI"
+
 	// JobSpecEnv is the name that contains JobSpec marshaled into a string.
 	JobSpecEnv = "JOB_SPEC"
 
@@ -99,6 +105,7 @@ const (
 // to their values that should be available for a job spec
 func EnvForSpec(spec JobSpec) (map[string]string, error) {
 	env := map[string]string{
+		ci:           "true",
 		jobNameEnv:   spec.Job,
 		buildIDEnv:   spec.BuildID,
 		prowJobIDEnv: spec.ProwJobID,
@@ -139,7 +146,7 @@ func EnvForSpec(spec JobSpec) (map[string]string, error) {
 
 // EnvForType returns the slice of environment variables to export for jobType
 func EnvForType(jobType prowapi.ProwJobType) []string {
-	baseEnv := []string{jobNameEnv, JobSpecEnv, jobTypeEnv, prowJobIDEnv, buildIDEnv, prowBuildIDEnv}
+	baseEnv := []string{ci, jobNameEnv, JobSpecEnv, jobTypeEnv, prowJobIDEnv, buildIDEnv, prowBuildIDEnv}
 	refsEnv := []string{repoOwnerEnv, repoNameEnv, pullBaseRefEnv, pullBaseShaEnv, pullRefsEnv}
 	pullEnv := []string{pullNumberEnv, pullPullShaEnv}
 
@@ -176,4 +183,15 @@ func GetRevisionFromSpec(spec *JobSpec) string {
 		return getRevisionFromRef(&spec.ExtraRefs[0])
 	}
 	return ""
+}
+
+// MainRefs determines the main refs under test, if there are any
+func (s *JobSpec) MainRefs() *prowapi.Refs {
+	if s.Refs != nil {
+		return s.Refs
+	}
+	if len(s.ExtraRefs) > 0 {
+		return &s.ExtraRefs[0]
+	}
+	return nil
 }

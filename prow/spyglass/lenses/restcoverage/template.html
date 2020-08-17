@@ -1,0 +1,71 @@
+{{define "header"}}
+  <link rel="stylesheet" type="text/css" href="style.css">
+  <script type="text/javascript" src="script_bundle.min.js"></script>
+{{end}}
+
+{{ define "body" }}
+{{ $warnTh := .Thresholds.Warning }}
+{{ $errorTh := .Thresholds.Error }}
+<div id="report-brief">
+  <span class="info">
+      Total coverage:
+      <span class="info-highlight {{ if le .Percent $errorTh }}error{{ else if le .Percent $warnTh }}warn{{ end }}">
+       {{ printf "%.2f" .Percent }}&#37;
+      </span>
+      , unique hits: {{ .UniqueHits }}, expected unique hits: {{ .ExpectedUniqueHits }}
+  </span>
+  <span id="report-expander">details</span><i class="material-icons" style="font-size: 1em; vertical-align: middle;">unfold_more</i>
+</div>
+<div id="report" class="hidden">
+  <ul id="paths">
+  {{ range $uri, $methods := .Endpoints }}
+    <li class="path">{{ $uri }}
+      <ul class="methods">
+      {{ range $method, $stats := $methods }}
+        <li class="method">
+          <span {{ if le $stats.Percent $errorTh }} class="error" {{ else if le $stats.Percent $warnTh }} class="warn" {{ end }}>
+          {{ $method }}: {{ if $stats.Percent }}{{ printf "%.2f" $stats.Percent }}{{ else }}{{ $stats.Percent }}{{ end }}&#37;
+          </span>
+          {{ if or $stats.Params.Body.Root.Items $stats.Params.Query.Root.Items }}
+          <i class="material-icons" style="font-size: 1em; vertical-align: middle;">arrow_drop_down</i>
+          {{ end }}
+          <span class="method-not-called error">{{ if not $stats.MethodCalled }}not called{{ end }}</span>
+        </li>
+        <li class="hidden">
+          <ul class="params">
+            {{ if $stats.Params.Query.Root.Items }}
+            <li {{if not $stats.Params.Query.Root.Hits }} class="error" {{ end }}>
+                <span class="param-type">query</span>
+                {{ template "params" $stats.Params.Query.Root }}
+            </li>
+            {{ end }}
+            {{ if $stats.Params.Body.Root.Items }}
+            <li {{if not $stats.Params.Body.Root.Hits }} class="error" {{ end }}>
+              <span class="param-type">body</span>
+              {{ template "params" $stats.Params.Body.Root }}
+            </li>
+            {{ end }}
+          </ul>
+        </li>
+      {{ end }}
+      </ul>
+    </li>
+  {{ end }}
+  </ul>
+</div>
+{{ end }}
+
+{{ define "params" }}
+  {{ if .Items }}
+  <ul class="params">
+    {{ range $n, $v := .Items }}
+      <li {{ if not $v.Hits }} class="error" {{ end }}>
+      {{ $n }}: {{ $v.Hits }}
+      {{ if $v.Items }}
+        {{ template "params" $v }}
+      {{ end }}
+      </li>
+    {{ end }}
+  </ul>
+  {{ end }}
+{{ end }}

@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -106,6 +107,25 @@ func countReadyNodes(nodes *nodeList) int {
 	return len(ready)
 }
 
+func kubectlGetPods(ctx context.Context, namespace string, labelSelector []string) (*podList, error) {
+	args := []string{"-n", namespace, "get", "pods", "-ojson"}
+	for _, ls := range labelSelector {
+		args = append(args, "-l", ls)
+	}
+	o, err := control.Output(exec.CommandContext(ctx, "kubectl", args...))
+	if err != nil {
+		log.Printf("kubectl get pods failed: %s\n%s", wrapError(err).Error(), string(o))
+		return nil, err
+	}
+
+	pods := &podList{}
+	if err := json.Unmarshal(o, pods); err != nil {
+		return nil, fmt.Errorf("error parsing kubectl get pods output: %v", err)
+	}
+
+	return pods, nil
+}
+
 // nodeList is a simplified version of the v1.NodeList API type
 type nodeList struct {
 	Items []node `json:"items"`
@@ -139,5 +159,19 @@ type nodeCondition struct {
 
 // metadata is a simplified version of the kubernetes metadata types
 type metadata struct {
-	Name string `json:"name"`
+	Name      string `json:"name"`
+	Namespace string `json:"namespace"`
+}
+
+type podList struct {
+	Items []pod `json:"items"`
+}
+
+type pod struct {
+	Metadata metadata `json:"metadata"`
+	Spec     podSpec  `json:"spec"`
+}
+
+type podSpec struct {
+	NodeName string `json:"nodeName"`
 }

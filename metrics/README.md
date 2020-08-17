@@ -57,6 +57,9 @@ jqmeasurements: |
 * flakes-daily - find flakes from the previous day. Similar to `flakes`, but creates more granular results for display in Velodrome.
     - [Config](configs/flakes-daily-config.yaml)
     - [flakes-daily-latest.json](http://storage.googleapis.com/k8s-metrics/flakes-daily-latest.json)
+* job-health - compute daily health metrics for jobs (runs, tests, failure rate for each, duration percentiles)
+    - [Config](configs/job-health.yaml)
+    - [job-health-latest.json](http://storage.googleapis.com/k8s-metrics/job-health-latest.json)
 * job-flakes - compute consistency of all jobs
     - [Config](configs/job-flakes-config.yaml)
     - [job-flakes-latest.json](http://storage.googleapis.com/k8s-metrics/job-flakes-latest.json)
@@ -75,8 +78,6 @@ jqmeasurements: |
 To add a new metric, create a PR that adds a new yaml config file
 specifying the metric name (`metric`), the bigquery query to execute (`query`), and a
 jq filter to filter the data for the daily and latest files (`jqfilter`).
-*Optionally*: Include a jqfilter to extract influxdb timeseries measurements
-from the raw query results (`jqmeasurements`).
 
 Run `./bigquery.py --config configs/my-new-config.yaml` and verify that the
 output is what you expect.

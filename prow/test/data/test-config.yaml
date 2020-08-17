@@ -1,18 +1,19 @@
 plank:
-  default_decoration_config:
-    timeout: 7200000000000 # 2h
-    grace_period: 15s
-    utility_images:
-      clonerefs: "clonerefs:default"
-      initupload: "initupload:default"
-      entrypoint: "entrypoint:default"
-      sidecar: "sidecar:default"
-    gcs_configuration:
-      bucket: "default-bucket"
-      path_strategy: "legacy"
-      default_org: "kubernetes"
-      default_repo: "kubernetes"
-    gcs_credentials_secret: "default-service-account"
+  default_decoration_configs:
+    '*':
+      timeout: 7200000000000 # 2h
+      grace_period: 15s
+      utility_images:
+        clonerefs: "clonerefs:default"
+        initupload: "initupload:default"
+        entrypoint: "entrypoint:default"
+        sidecar: "sidecar:default"
+      gcs_configuration:
+        bucket: "default-bucket"
+        path_strategy: "legacy"
+        default_org: "kubernetes"
+        default_repo: "kubernetes"
+      gcs_credentials_secret: "default-service-account"
 presubmits:
   test-org/test-repo:
   - name: kubernetes-no-decoration

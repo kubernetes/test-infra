@@ -14,7 +14,10 @@ presubmits:
         args:
         # Copy prebuilt tensorflow into repo, check clang-format, test with board_size 9 and 19.
         - "./testing/setup.sh && ./cc/test.sh"
-
+    annotations:
+      testgrid-dashboards: sig-big-data
+      description: C++ presubmit tests for Minigo.
+      testgrid-num-columns-recent: '30'
   - name: tf-minigo-presubmit
     always_run: true         # Run for every PR, or only when requested.
     branches:
@@ -25,7 +28,10 @@ presubmits:
       - image: gcr.io/minigo-testing/minigo-prow-harness-v2:latest
         command:
         - ./test.sh
-
+    annotations:
+      testgrid-dashboards: sig-big-data
+      description: Python presumbit tests for Minigo.
+      testgrid-num-columns-recent: '30'
 postsubmits:
   tensorflow/minigo:
   - name: tf-minigo-postsubmit
@@ -37,7 +43,9 @@ postsubmits:
       - image: gcr.io/minigo-testing/minigo-prow-harness-v2:latest
         command:
         - ./test.sh
-
+    annotations:
+      testgrid-dashboards: sig-big-data
+      description: Postsubmit tests for Minigo.
 periodics:
 - name: tf-minigo-periodic
   interval: 8h
@@ -51,3 +59,6 @@ periodics:
     - image: gcr.io/minigo-testing/minigo-prow-harness-v2:latest
       command:
       - ./test.sh
+  annotations:
+    testgrid-dashboards: sig-big-data
+    description: Periodic testing of Minigo.

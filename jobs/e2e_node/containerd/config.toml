@@ -1,0 +1,21 @@
+# Kubernetes doesn't use containerd restart manager.
+disabled_plugins = ["restart"]
+
+[debug]
+  level = "debug"
+
+[plugins.cri]
+  stream_server_address = "127.0.0.1"
+  max_container_log_line_size = 262144
+
+[plugins.cri.cni]
+  bin_dir = "/home/containerd/"
+  conf_dir = "/etc/cni/net.d"
+  conf_template = "/home/containerd/cni.template"
+
+[plugins.cri.registry.mirrors."docker.io"]
+  endpoint = ["https://mirror.gcr.io","https://registry-1.docker.io"]
+
+# Runtime handler used for runtime class test.
+[plugins.cri.containerd.runtimes.test-handler]
+  runtime_type = "io.containerd.runtime.v1.linux"

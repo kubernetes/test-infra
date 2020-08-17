@@ -39,14 +39,14 @@
   </table>
   <table style="max-width: 1000px">
     <tr>
-      {{if .LatestLink}}
-      <td><a href="{{.LatestLink}}">Latest Runs</a></td>
+      {{if .OlderLink}}
+      <td><a href="{{.OlderLink}}">&lt;- Older Runs</a></td>
       {{end}}
       {{if .NewerLink}}
-      <td><a href="{{.NewerLink}}">&lt;- Newer Runs</a></td>
+      <td><a href="{{.NewerLink}}">Newer Runs -&gt;</a></td>
       {{end}}
-      {{if .OlderLink}}
-      <td><a href="{{.OlderLink}}">Older Runs -&gt;</a></td>
+      {{if .LatestLink}}
+      <td><a href="{{.LatestLink}}">Latest Runs</a></td>
       {{end}}
       <td></td>
     </tr>

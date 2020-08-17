@@ -24,6 +24,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -38,6 +39,9 @@ type logDumper struct {
 
 	services []string
 	files    []string
+
+	// DumpSysctls will record sysctl values from each node
+	DumpSysctls bool
 }
 
 // newLogDumper is the constructor for a logDumper
@@ -50,6 +54,7 @@ func newLogDumper(sshClientFactory sshClientFactory, artifactsDir string) (*logD
 	d.services = []string{
 		"node-problem-detector",
 		"kubelet",
+		"containerd",
 		"docker",
 		"kops-configuration",
 		"protokube",
@@ -59,6 +64,7 @@ func newLogDumper(sshClientFactory sshClientFactory, artifactsDir string) (*logD
 		"kube-scheduler",
 		"rescheduler",
 		"kube-controller-manager",
+		"kops-controller",
 		"etcd",
 		"etcd-events",
 		"glbc",
@@ -177,6 +183,44 @@ func (d *logDumper) dumpNode(ctx context.Context, name string, ip string) error 
 	return nil
 }
 
+func (d *logDumper) dumpPods(ctx context.Context, namespace string, labelSelector []string) error {
+	pods, err := kubectlGetPods(ctx, namespace, labelSelector)
+	if err != nil {
+		return err
+	}
+	for _, pod := range pods.Items {
+		err = d.dumpPodLogs(ctx, pod)
+		if err != nil {
+			log.Printf("error dumping pod logs %s: %v", pod.Metadata.Name, err)
+		}
+	}
+	return nil
+}
+
+func (d *logDumper) dumpPodLogs(ctx context.Context, pod pod) error {
+	logfileName := filepath.Join(d.artifactsDir, pod.Spec.NodeName, fmt.Sprintf("%v.log", pod.Metadata.Name))
+
+	if err := os.MkdirAll(filepath.Dir(logfileName), 0755); err != nil {
+		log.Printf("unable to mkdir on %q: %v", filepath.Dir(logfileName), err)
+		return err
+	}
+	logfile, err := os.Create(logfileName)
+	if err != nil {
+		log.Printf("unable to create file %q: %v", logfileName, err)
+		return err
+	}
+	defer logfile.Close()
+
+	args := []string{"-n", pod.Metadata.Namespace, "logs", "--all-containers", pod.Metadata.Name}
+	cmd := exec.CommandContext(ctx, "kubectl", args...)
+	cmd.Stdout = logfile
+	cmd.Stderr = logfile
+	if err := control.FinishRunning(cmd); err != nil {
+		return err
+	}
+	return nil
+}
+
 // sshClient is an interface abstracting *ssh.Client, which allows us to test it
 type sshClient interface {
 	io.Closer
@@ -196,6 +240,9 @@ type logDumperNode struct {
 	dumper *logDumper
 
 	dir string
+
+	// DumpSysctls will record sysctl values from the node
+	DumpSysctls bool
 }
 
 // connectToNode makes an SSH connection to the node and returns a logDumperNode
@@ -205,9 +252,10 @@ func (d *logDumper) connectToNode(ctx context.Context, nodeName string, host str
 		return nil, fmt.Errorf("unable to SSH to %q: %v", host, err)
 	}
 	return &logDumperNode{
-		client: client,
-		dir:    filepath.Join(d.artifactsDir, nodeName),
-		dumper: d,
+		client:      client,
+		dir:         filepath.Join(d.artifactsDir, nodeName),
+		dumper:      d,
+		DumpSysctls: d.DumpSysctls,
 	}, nil
 }
 
@@ -233,6 +281,13 @@ func (n *logDumperNode) dump(ctx context.Context) []error {
 	// This does duplicate the other files, but ensures we have all output
 	if err := n.shellToFile(ctx, "sudo journalctl --output=short-precise", filepath.Join(n.dir, "journal.log")); err != nil {
 		errors = append(errors, err)
+	}
+
+	if n.DumpSysctls {
+		// Capture sysctls if asked
+		if err := n.shellToFile(ctx, "sudo sysctl --all", filepath.Join(n.dir, "sysctl.conf")); err != nil {
+			errors = append(errors, err)
+		}
 	}
 
 	// Capture logs from any systemd services in our list, that are registered

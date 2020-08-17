@@ -23,36 +23,38 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/url"
-	"reflect"
-	"sort"
+	"os"
 	"strings"
 
 	"github.com/sirupsen/logrus"
-	"sigs.k8s.io/yaml"
-
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation"
+	"sigs.k8s.io/yaml"
+
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
+
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	"k8s.io/test-infra/prow/errorutil"
+	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/config/secret"
 	needsrebase "k8s.io/test-infra/prow/external-plugins/needs-rebase/plugin"
 	"k8s.io/test-infra/prow/flagutil"
+	"k8s.io/test-infra/prow/github"
+	_ "k8s.io/test-infra/prow/hook/plugin-imports"
 	"k8s.io/test-infra/prow/labels"
+	"k8s.io/test-infra/prow/logrusutil"
+	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/plugins/approve"
 	"k8s.io/test-infra/prow/plugins/blockade"
 	"k8s.io/test-infra/prow/plugins/blunderbuss"
+	"k8s.io/test-infra/prow/plugins/bugzilla"
 	"k8s.io/test-infra/prow/plugins/cherrypickunapproved"
 	"k8s.io/test-infra/prow/plugins/hold"
+	"k8s.io/test-infra/prow/plugins/lgtm"
 	ownerslabel "k8s.io/test-infra/prow/plugins/owners-label"
 	"k8s.io/test-infra/prow/plugins/releasenote"
 	"k8s.io/test-infra/prow/plugins/trigger"
 	verifyowners "k8s.io/test-infra/prow/plugins/verify-owners"
 	"k8s.io/test-infra/prow/plugins/wip"
-
-	"k8s.io/test-infra/prow/config"
-	_ "k8s.io/test-infra/prow/hook"
-	"k8s.io/test-infra/prow/logrusutil"
-	"k8s.io/test-infra/prow/plugins"
-	"k8s.io/test-infra/prow/plugins/lgtm"
 )
 
 type options struct {
@@ -60,14 +62,20 @@ type options struct {
 	jobConfigPath string
 	pluginConfig  string
 
+	prowYAMLRepoName string
+	prowYAMLPath     string
+
 	warnings        flagutil.Strings
 	excludeWarnings flagutil.Strings
 	strict          bool
+	expensive       bool
+
+	github flagutil.GitHubOptions
 }
 
-func reportWarning(strict bool, errs errorutil.Aggregate) {
-	for _, item := range errs.Strings() {
-		logrus.Warn(item)
+func reportWarning(strict bool, errs utilerrors.Aggregate) {
+	for _, item := range errs.Errors() {
+		logrus.Warn(item.Error())
 	}
 	if strict {
 		logrus.Fatal("Strict is set and there were warnings")
@@ -82,31 +90,61 @@ const (
 	mismatchedTideWarning        = "mismatched-tide"
 	mismatchedTideLenientWarning = "mismatched-tide-lenient"
 	tideStrictBranchWarning      = "tide-strict-branch"
+	tideContextPolicy            = "tide-context-policy"
 	nonDecoratedJobsWarning      = "non-decorated-jobs"
+	validDecorationConfigWarning = "valid-decoration-config"
 	jobNameLengthWarning         = "long-job-names"
+	jobRefsDuplicationWarning    = "duplicate-job-refs"
 	needsOkToTestWarning         = "needs-ok-to-test"
+	managedWebhooksWarning       = "managed-webhooks"
 	validateOwnersWarning        = "validate-owners"
 	missingTriggerWarning        = "missing-trigger"
 	validateURLsWarning          = "validate-urls"
 	unknownFieldsWarning         = "unknown-fields"
+	verifyOwnersFilePresence     = "verify-owners-presence"
 )
 
-var allWarnings = []string{
+var defaultWarnings = []string{
 	mismatchedTideWarning,
 	tideStrictBranchWarning,
+	tideContextPolicy,
 	mismatchedTideLenientWarning,
 	nonDecoratedJobsWarning,
 	jobNameLengthWarning,
+	jobRefsDuplicationWarning,
 	needsOkToTestWarning,
+	managedWebhooksWarning,
 	validateOwnersWarning,
 	missingTriggerWarning,
 	validateURLsWarning,
 	unknownFieldsWarning,
 }
 
-func (o *options) Validate() error {
+var expensiveWarnings = []string{
+	verifyOwnersFilePresence,
+}
+
+func getAllWarnings() []string {
+	var all []string
+	all = append(all, defaultWarnings...)
+	all = append(all, expensiveWarnings...)
+
+	return all
+}
+
+func (o *options) DefaultAndValidate() error {
+	allWarnings := getAllWarnings()
 	if o.configPath == "" {
 		return errors.New("required flag --config-path was unset")
+	}
+
+	if o.prowYAMLPath != "" && o.prowYAMLRepoName == "" {
+		return errors.New("--prow-yaml-repo-path requires --prow-yaml-repo-name to be set")
+	}
+	if o.prowYAMLRepoName != "" {
+		if o.prowYAMLPath == "" {
+			o.prowYAMLPath = fmt.Sprintf("/home/prow/go/src/github.com/%s/.prow.yaml", o.prowYAMLRepoName)
+		}
 	}
 	for _, warning := range o.warnings.Strings() {
 		found := false
@@ -123,44 +161,85 @@ func (o *options) Validate() error {
 	return nil
 }
 
-func gatherOptions() options {
+func parseOptions() (options, error) {
 	o := options{}
+
+	if err := o.gatherOptions(flag.CommandLine, os.Args[1:]); err != nil {
+		return options{}, err
+	}
+	return o, nil
+}
+
+func (o *options) gatherOptions(flag *flag.FlagSet, args []string) error {
 	flag.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
 	flag.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
 	flag.StringVar(&o.pluginConfig, "plugin-config", "", "Path to plugin config file.")
+	flag.StringVar(&o.prowYAMLRepoName, "prow-yaml-repo-name", "", "Name of the repo whose .prow.yaml should be checked.")
+	flag.StringVar(&o.prowYAMLPath, "prow-yaml-path", "", "Path to the .prow.yaml file to check. Requires --prow-yaml-repo-name to be set. Defaults to `/home/prow/go/src/github.com/<< prow-yaml-repo-name >>/.prow.yaml`")
 	flag.Var(&o.warnings, "warnings", "Warnings to validate. Use repeatedly to provide a list of warnings")
 	flag.Var(&o.excludeWarnings, "exclude-warning", "Warnings to exclude. Use repeatedly to provide a list of warnings to exclude")
+	flag.BoolVar(&o.expensive, "expensive-checks", false, "If set, additional expensive warnings will be enabled")
 	flag.BoolVar(&o.strict, "strict", false, "If set, consider all warnings as errors.")
-	flag.Parse()
-	return o
+	o.github.AddFlags(flag)
+	o.github.AllowAnonymous = true
+	if err := flag.Parse(args); err != nil {
+		return fmt.Errorf("parse flags: %v", err)
+	}
+	if err := o.DefaultAndValidate(); err != nil {
+		return fmt.Errorf("invalid options: %v", err)
+	}
+	return nil
 }
 
 func main() {
-	o := gatherOptions()
-	if err := o.Validate(); err != nil {
-		logrus.Fatalf("Invalid options: %v", err)
+	logrusutil.ComponentInit()
+
+	o, err := parseOptions()
+	if err != nil {
+		logrus.Fatalf("Error parsing options - %v", err)
 	}
 
+	if err := validate(o); err != nil {
+		switch e := err.(type) {
+		case utilerrors.Aggregate:
+			reportWarning(o.strict, e)
+		default:
+			logrus.WithError(err).Fatal("Validation failed")
+		}
+
+	} else {
+		logrus.Info("checkconfig passes without any error!")
+	}
+
+}
+
+func validate(o options) error {
 	// use all warnings by default
 	if len(o.warnings.Strings()) == 0 {
-		o.warnings = flagutil.NewStrings(allWarnings...)
+		if o.expensive {
+			o.warnings = flagutil.NewStrings(getAllWarnings()...)
+		} else {
+			o.warnings = flagutil.NewStrings(defaultWarnings...)
+		}
 	}
-
-	logrus.SetFormatter(
-		logrusutil.NewDefaultFieldsFormatter(&logrus.TextFormatter{}, logrus.Fields{"component": "checkconfig"}),
-	)
 
 	configAgent := config.Agent{}
 	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
-		logrus.WithError(err).Fatal("Error loading Prow config.")
+		return fmt.Errorf("error loading prow config: %w", err)
 	}
 	cfg := configAgent.Config()
+
+	if o.prowYAMLRepoName != "" {
+		if err := validateInRepoConfig(cfg, o.prowYAMLPath, o.prowYAMLRepoName); err != nil {
+			return fmt.Errorf("error validating .prow.yaml: %w", err)
+		}
+	}
 
 	pluginAgent := plugins.ConfigAgent{}
 	var pcfg *plugins.Configuration
 	if o.pluginConfig != "" {
-		if err := pluginAgent.Load(o.pluginConfig); err != nil {
-			logrus.WithError(err).Fatal("Error loading Prow plugin config.")
+		if err := pluginAgent.Load(o.pluginConfig, true); err != nil {
+			return fmt.Errorf("error loading Prow plugin config: %w", err)
 		}
 		pcfg = pluginAgent.Config()
 	}
@@ -170,6 +249,29 @@ func main() {
 	// detect them here but don't necessarily want to stop config re-load
 	// in all components on their failure.
 	var errs []error
+	if pcfg != nil && o.warningEnabled(verifyOwnersFilePresence) {
+		if o.github.TokenPath == "" {
+			return errors.New("cannot verify OWNERS file presence without a GitHub token")
+		}
+		secretAgent := &secret.Agent{}
+		if o.github.TokenPath != "" {
+			if err := secretAgent.Start([]string{o.github.TokenPath}); err != nil {
+				return fmt.Errorf("error starting secrets agent: %w", err)
+			}
+		}
+
+		githubClient, err := o.github.GitHubClient(secretAgent, false)
+		if err != nil {
+			return fmt.Errorf("error loading GitHub client: %w", err)
+		}
+		githubClient.Throttle(3000, 100) // 300 hourly tokens, bursts of 100
+		// 404s are expected to happen, no point in retrying
+		githubClient.SetMax404Retries(0)
+
+		if err := verifyOwnersPresence(pcfg, githubClient); err != nil {
+			errs = append(errs, err)
+		}
+	}
 	if pcfg != nil && o.warningEnabled(mismatchedTideWarning) {
 		if err := validateTideRequirements(cfg, pcfg, true); err != nil {
 			errs = append(errs, err)
@@ -184,13 +286,28 @@ func main() {
 			errs = append(errs, err)
 		}
 	}
+	if o.warningEnabled(validDecorationConfigWarning) {
+		if err := validateDecorationConfig(cfg); err != nil {
+			errs = append(errs, err)
+		}
+	}
 	if o.warningEnabled(jobNameLengthWarning) {
 		if err := validateJobRequirements(cfg.JobConfig); err != nil {
 			errs = append(errs, err)
 		}
 	}
+	if o.warningEnabled(jobRefsDuplicationWarning) {
+		if err := validateJobExtraRefs(cfg.JobConfig); err != nil {
+			errs = append(errs, err)
+		}
+	}
 	if o.warningEnabled(needsOkToTestWarning) {
 		if err := validateNeedsOkToTestLabel(cfg); err != nil {
+			errs = append(errs, err)
+		}
+	}
+	if o.warningEnabled(managedWebhooksWarning) {
+		if err := validateManagedWebhooks(cfg); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -212,18 +329,18 @@ func main() {
 	if o.warningEnabled(unknownFieldsWarning) {
 		cfgBytes, err := ioutil.ReadFile(o.configPath)
 		if err != nil {
-			logrus.WithError(err).Fatal("Error loading Prow config for validation.")
+			return fmt.Errorf("error reading Prow config for validation: %w", err)
 		}
-		if err := validateUnknownFields(cfg, cfgBytes, o.configPath); err != nil {
+		if err := validateUnknownFields(&config.Config{}, cfgBytes, o.configPath); err != nil {
 			errs = append(errs, err)
 		}
 	}
 	if pcfg != nil && o.warningEnabled(unknownFieldsWarning) {
 		pcfgBytes, err := ioutil.ReadFile(o.pluginConfig)
 		if err != nil {
-			logrus.WithError(err).Fatal("Error loading Prow plugin config for validation.")
+			return fmt.Errorf("error reading Prow plugin config for validation: %w", err)
 		}
-		if err := validateUnknownFields(pcfg, pcfgBytes, o.pluginConfig); err != nil {
+		if err := validateUnknownFields(&plugins.Configuration{}, pcfgBytes, o.pluginConfig); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -232,12 +349,13 @@ func main() {
 			errs = append(errs, err)
 		}
 	}
-	if len(errs) > 0 {
-		reportWarning(o.strict, errorutil.NewAggregate(errs...))
-		return
+	if o.warningEnabled(tideContextPolicy) {
+		if err := validateTideContextPolicy(cfg); err != nil {
+			errs = append(errs, err)
+		}
 	}
 
-	logrus.Info("checkconfig passes without any error!")
+	return utilerrors.NewAggregate(errs)
 }
 func policyIsStrict(p config.Policy) bool {
 	if p.Protect == nil || !*p.Protect {
@@ -334,101 +452,25 @@ func validateURLs(c config.ProwConfig) error {
 		validationErrs = append(validationErrs, fmt.Errorf("status_error_link is not a valid url: %s", c.StatusErrorLink))
 	}
 
-	return errorutil.NewAggregate(validationErrs...)
+	return utilerrors.NewAggregate(validationErrs)
 }
 
 func validateUnknownFields(cfg interface{}, cfgBytes []byte, filePath string) error {
-	var obj interface{}
-	err := yaml.Unmarshal(cfgBytes, &obj)
+	err := yaml.Unmarshal(cfgBytes, &cfg, yaml.DisallowUnknownFields)
 	if err != nil {
-		return fmt.Errorf("error while unmarshaling yaml: %v", err)
-	}
-	unknownFields := checkUnknownFields("", obj, reflect.ValueOf(cfg))
-	if len(unknownFields) > 0 {
-		sort.Strings(unknownFields)
-		return fmt.Errorf("unknown fields present in %s: %v", filePath, strings.Join(unknownFields, ", "))
+		return fmt.Errorf("unknown fields or bad config in %s: %v", filePath, err)
 	}
 	return nil
 }
 
-func checkUnknownFields(keyPref string, obj interface{}, cfg reflect.Value) []string {
-	var uf []string
-	switch concreteVal := obj.(type) {
-	case map[string]interface{}:
-		// Iterate over map and check every value
-		for key, val := range concreteVal {
-			fullKey := fmt.Sprintf("%s.%s", keyPref, key)
-			subCfg := getSubCfg(key, cfg)
-			if !subCfg.IsValid() {
-				// Append fullKey without leading "."
-				uf = append(uf, fullKey[1:])
-			} else {
-				subUf := checkUnknownFields(fullKey, val, subCfg)
-				uf = append(uf, subUf...)
-			}
-		}
-	case []interface{}:
-		for i, val := range concreteVal {
-			fullKey := fmt.Sprintf("%s[%v]", keyPref, i)
-			subCfg := cfg.Index(i)
-			uf = append(uf, checkUnknownFields(fullKey, val, subCfg)...)
-		}
-	}
-	return uf
-}
-
-func getSubCfg(key string, cfg reflect.Value) reflect.Value {
-	cfgElem := cfg
-	if cfg.Kind() == reflect.Interface || cfg.Kind() == reflect.Ptr {
-		cfgElem = cfg.Elem()
-	}
-	switch cfgElem.Kind() {
-	case reflect.Map:
-		for _, k := range cfgElem.MapKeys() {
-			strK := fmt.Sprintf("%v", k.Interface())
-			if strK == key {
-				return cfgElem.MapIndex(k)
-			}
-		}
-	case reflect.Struct:
-		for i := 0; i < cfgElem.NumField(); i++ {
-			structField := cfgElem.Type().Field(i)
-			// Check if field is embedded struct
-			if structField.Anonymous {
-				subStruct := getSubCfg(key, cfgElem.Field(i))
-				if subStruct.IsValid() {
-					return subStruct
-				}
-			} else {
-				field := getJSONTagName(structField, i)
-				if field == key {
-					return cfgElem.Field(i)
-				}
-			}
-		}
-	}
-	return reflect.Value{}
-}
-
-func getJSONTagName(field reflect.StructField, i int) string {
-	jsonTag := field.Tag.Get("json")
-	if jsonTag != "" && jsonTag != "-" {
-		if commaIdx := strings.Index(jsonTag, ","); commaIdx > 0 {
-			return jsonTag[:commaIdx]
-		}
-		return jsonTag
-	}
-	return ""
-}
-
 func validateJobRequirements(c config.JobConfig) error {
 	var validationErrs []error
-	for repo, jobs := range c.Presubmits {
+	for repo, jobs := range c.PresubmitsStatic {
 		for _, job := range jobs {
 			validationErrs = append(validationErrs, validatePresubmitJob(repo, job))
 		}
 	}
-	for repo, jobs := range c.Postsubmits {
+	for repo, jobs := range c.PostsubmitsStatic {
 		for _, job := range jobs {
 			validationErrs = append(validationErrs, validatePostsubmitJob(repo, job))
 		}
@@ -437,7 +479,7 @@ func validateJobRequirements(c config.JobConfig) error {
 		validationErrs = append(validationErrs, validatePeriodicJob(job))
 	}
 
-	return errorutil.NewAggregate(validationErrs...)
+	return utilerrors.NewAggregate(validationErrs)
 }
 
 func validatePresubmitJob(repo string, job config.Presubmit) error {
@@ -446,7 +488,7 @@ func validatePresubmitJob(repo string, job config.Presubmit) error {
 	if job.Agent == string(v1.KubernetesAgent) && len(job.Name) > validation.LabelValueMaxLength {
 		validationErrs = append(validationErrs, fmt.Errorf("name of Presubmit job %q (for repo %q) too long (should be at most 63 characters)", job.Name, repo))
 	}
-	return errorutil.NewAggregate(validationErrs...)
+	return utilerrors.NewAggregate(validationErrs)
 }
 
 func validatePostsubmitJob(repo string, job config.Postsubmit) error {
@@ -455,7 +497,19 @@ func validatePostsubmitJob(repo string, job config.Postsubmit) error {
 	if job.Agent == string(v1.KubernetesAgent) && len(job.Name) > validation.LabelValueMaxLength {
 		validationErrs = append(validationErrs, fmt.Errorf("name of Postsubmit job %q (for repo %q) too long (should be at most 63 characters)", job.Name, repo))
 	}
-	return errorutil.NewAggregate(validationErrs...)
+	return utilerrors.NewAggregate(validationErrs)
+}
+
+func validateJobExtraRefs(cfg config.JobConfig) error {
+	var validationErrs []error
+	for repo, presubmits := range cfg.PresubmitsStatic {
+		for _, presubmit := range presubmits {
+			if err := config.ValidateRefs(repo, presubmit.JobBase); err != nil {
+				validationErrs = append(validationErrs, err)
+			}
+		}
+	}
+	return utilerrors.NewAggregate(validationErrs)
 }
 
 func validatePeriodicJob(job config.Periodic) error {
@@ -464,7 +518,7 @@ func validatePeriodicJob(job config.Periodic) error {
 	if job.Agent == string(v1.KubernetesAgent) && len(job.Name) > validation.LabelValueMaxLength {
 		validationErrs = append(validationErrs, fmt.Errorf("name of Periodic job %q too long (should be at most 63 characters)", job.Name))
 	}
-	return errorutil.NewAggregate(validationErrs...)
+	return utilerrors.NewAggregate(validationErrs)
 }
 
 func validateTideRequirements(cfg *config.Config, pcfg *plugins.Configuration, includeForbidden bool) error {
@@ -511,6 +565,7 @@ func validateTideRequirements(cfg *config.Config, pcfg *plugins.Configuration, i
 		configs = append(configs,
 			plugin{name: hold.PluginName, label: labels.Hold, matcher: forbids},
 			plugin{name: wip.PluginName, label: labels.WorkInProgress, matcher: forbids},
+			plugin{name: bugzilla.PluginName, label: labels.InvalidBug, matcher: forbids},
 			plugin{name: verifyowners.PluginName, label: labels.InvalidOwners, matcher: forbids},
 			plugin{name: releasenote.PluginName, label: releasenote.ReleaseNoteLabelNeeded, matcher: forbids},
 			plugin{name: cherrypickunapproved.PluginName, label: labels.CpUnapproved, matcher: forbids},
@@ -547,7 +602,7 @@ func validateTideRequirements(cfg *config.Config, pcfg *plugins.Configuration, i
 		validationErrs = append(validationErrs, err)
 	}
 
-	return errorutil.NewAggregate(validationErrs...)
+	return utilerrors.NewAggregate(validationErrs)
 }
 
 func newOrgRepoConfig(orgExceptions map[string]sets.String, repos sets.String) *orgRepoConfig {
@@ -736,25 +791,25 @@ func ensureValidConfiguration(plugin, label, verb string, tideSubSet, tideSuperS
 		configErrors = append(configErrors, fmt.Errorf("the following orgs or repos enable the %s plugin but do not %s the %s label for merging: %v", plugin, verb, label, notRequired))
 	}
 
-	return errorutil.NewAggregate(configErrors...)
+	return utilerrors.NewAggregate(configErrors)
 }
 
 func validateDecoratedJobs(cfg *config.Config) error {
 	var nonDecoratedJobs []string
-	for _, presubmit := range cfg.AllPresubmits([]string{}) {
-		if presubmit.Agent == string(v1.KubernetesAgent) && !presubmit.Decorate {
+	for _, presubmit := range cfg.AllStaticPresubmits([]string{}) {
+		if presubmit.Agent == string(v1.KubernetesAgent) && !config.ShouldDecorate(&cfg.JobConfig, presubmit.JobBase.UtilityConfig) {
 			nonDecoratedJobs = append(nonDecoratedJobs, presubmit.Name)
 		}
 	}
 
-	for _, postsubmit := range cfg.AllPostsubmits([]string{}) {
-		if postsubmit.Agent == string(v1.KubernetesAgent) && !postsubmit.Decorate {
+	for _, postsubmit := range cfg.AllStaticPostsubmits([]string{}) {
+		if postsubmit.Agent == string(v1.KubernetesAgent) && !config.ShouldDecorate(&cfg.JobConfig, postsubmit.JobBase.UtilityConfig) {
 			nonDecoratedJobs = append(nonDecoratedJobs, postsubmit.Name)
 		}
 	}
 
 	for _, periodic := range cfg.AllPeriodics() {
-		if periodic.Agent == string(v1.KubernetesAgent) && !periodic.Decorate {
+		if periodic.Agent == string(v1.KubernetesAgent) && !config.ShouldDecorate(&cfg.JobConfig, periodic.JobBase.UtilityConfig) {
 			nonDecoratedJobs = append(nonDecoratedJobs, periodic.Name)
 		}
 	}
@@ -763,6 +818,34 @@ func validateDecoratedJobs(cfg *config.Config) error {
 		return fmt.Errorf("the following jobs use the kubernetes provider but do not use the pod utilities: %v", nonDecoratedJobs)
 	}
 	return nil
+}
+
+func validateDecorationConfig(cfg *config.Config) error {
+	var configErrors []error
+	for _, presubmit := range cfg.AllStaticPresubmits([]string{}) {
+		if presubmit.Agent == string(v1.KubernetesAgent) && presubmit.Decorate != nil && *presubmit.Decorate && presubmit.DecorationConfig != nil {
+			if err := presubmit.DecorationConfig.Validate(); err != nil {
+				configErrors = append(configErrors, err)
+			}
+		}
+	}
+
+	for _, postsubmit := range cfg.AllStaticPostsubmits([]string{}) {
+		if postsubmit.Agent == string(v1.KubernetesAgent) && postsubmit.Decorate != nil && *postsubmit.Decorate && postsubmit.DecorationConfig != nil {
+			if err := postsubmit.DecorationConfig.Validate(); err != nil {
+				configErrors = append(configErrors, err)
+			}
+		}
+	}
+
+	for _, periodic := range cfg.AllPeriodics() {
+		if periodic.Agent == string(v1.KubernetesAgent) && periodic.Decorate != nil && *periodic.Decorate && periodic.DecorationConfig != nil {
+			if err := periodic.DecorationConfig.Validate(); err != nil {
+				configErrors = append(configErrors, err)
+			}
+		}
+	}
+	return utilerrors.NewAggregate(configErrors)
 }
 
 func validateNeedsOkToTestLabel(cfg *config.Config) error {
@@ -785,10 +868,37 @@ func validateNeedsOkToTestLabel(cfg *config.Config) error {
 			}
 		}
 	}
-	return errorutil.NewAggregate(queryErrors...)
+	return utilerrors.NewAggregate(queryErrors)
 }
 
-func verifyOwnersPlugin(cfg *plugins.Configuration) error {
+func validateManagedWebhooks(cfg *config.Config) error {
+	mw := cfg.ManagedWebhooks
+	var errs []error
+	orgs := sets.String{}
+	for repo := range mw.OrgRepoConfig {
+		if !strings.Contains(repo, "/") {
+			org := repo
+			orgs.Insert(org)
+		}
+	}
+	for repo := range mw.OrgRepoConfig {
+		if strings.Contains(repo, "/") {
+			org := strings.SplitN(repo, "/", 2)[0]
+			if orgs.Has(org) {
+				errs = append(errs, fmt.Errorf(
+					"org-level and repo-level webhooks are configured together for %q, "+
+						"which is not allowed as there will be duplicated webhook events", repo))
+			}
+		}
+	}
+	return utilerrors.NewAggregate(errs)
+}
+
+func pluginsWithOwnersFile() string {
+	return strings.Join([]string{approve.PluginName, blunderbuss.PluginName, ownerslabel.PluginName}, ", ")
+}
+
+func orgReposUsingOwnersFile(cfg *plugins.Configuration) *orgRepoConfig {
 	// we do not know the set of repos that use OWNERS, but we
 	// can get a reasonable proxy for this by looking at where
 	// the `approve', `blunderbuss' and `owners-label' plugins
@@ -796,7 +906,62 @@ func verifyOwnersPlugin(cfg *plugins.Configuration) error {
 	approveConfig := enabledOrgReposForPlugin(cfg, approve.PluginName, false)
 	blunderbussConfig := enabledOrgReposForPlugin(cfg, blunderbuss.PluginName, false)
 	ownersLabelConfig := enabledOrgReposForPlugin(cfg, ownerslabel.PluginName, false)
-	ownersConfig := approveConfig.union(blunderbussConfig).union(ownersLabelConfig)
+	return approveConfig.union(blunderbussConfig).union(ownersLabelConfig)
+}
+
+type FileInRepoExistsChecker interface {
+	GetRepos(org string, isUser bool) ([]github.Repo, error)
+	GetFile(org, repo, filepath, commit string) ([]byte, error)
+}
+
+func verifyOwnersPresence(cfg *plugins.Configuration, rc FileInRepoExistsChecker) error {
+	ownersConfig := orgReposUsingOwnersFile(cfg)
+
+	var missing []string
+	for org, excluded := range ownersConfig.orgExceptions {
+		repos, err := rc.GetRepos(org, false)
+		if err != nil {
+			return err
+		}
+
+		for _, repo := range repos {
+			if excluded.Has(repo.FullName) || repo.Archived {
+				continue
+			}
+			if _, err := rc.GetFile(repo.Owner.Login, repo.Name, "OWNERS", ""); err != nil {
+				if _, nf := err.(*github.FileNotFound); nf {
+					missing = append(missing, repo.FullName)
+				} else {
+					return fmt.Errorf("got error: %v", err)
+				}
+			}
+		}
+	}
+
+	for repo := range ownersConfig.repos {
+		items := strings.Split(repo, "/")
+		if len(items) != 2 {
+			return fmt.Errorf("bad repository '%s', expected org/repo format", repo)
+		}
+		if _, err := rc.GetFile(items[0], items[1], "OWNERS", ""); err != nil {
+			if _, nf := err.(*github.FileNotFound); nf {
+				missing = append(missing, repo)
+			} else {
+				return fmt.Errorf("got error: %v", err)
+			}
+		}
+	}
+
+	if len(missing) > 0 {
+		return fmt.Errorf("the following orgs or repos enable at least one"+
+			" plugin that uses OWNERS files (%s), but its master branch does not contain"+
+			" a root level OWNERS file: %v", pluginsWithOwnersFile(), missing)
+	}
+	return nil
+}
+
+func verifyOwnersPlugin(cfg *plugins.Configuration) error {
+	ownersConfig := orgReposUsingOwnersFile(cfg)
 	validateOwnersConfig := enabledOrgReposForPlugin(cfg, verifyowners.PluginName, false)
 
 	invalid := ownersConfig.difference(validateOwnersConfig).items()
@@ -804,8 +969,7 @@ func verifyOwnersPlugin(cfg *plugins.Configuration) error {
 		return fmt.Errorf("the following orgs or repos "+
 			"enable at least one plugin that uses OWNERS files (%s) "+
 			"but do not enable the %s plugin to ensure validity of OWNERS files: %v",
-			strings.Join([]string{approve.PluginName, blunderbuss.PluginName, ownerslabel.PluginName}, ", "),
-			verifyowners.PluginName, invalid,
+			pluginsWithOwnersFile(), verifyowners.PluginName, invalid,
 		)
 	}
 	return nil
@@ -813,10 +977,10 @@ func verifyOwnersPlugin(cfg *plugins.Configuration) error {
 
 func validateTriggers(cfg *config.Config, pcfg *plugins.Configuration) error {
 	configuredRepos := sets.NewString()
-	for orgRepo := range cfg.JobConfig.Presubmits {
+	for orgRepo := range cfg.JobConfig.PresubmitsStatic {
 		configuredRepos.Insert(orgRepo)
 	}
-	for orgRepo := range cfg.JobConfig.Postsubmits {
+	for orgRepo := range cfg.JobConfig.PostsubmitsStatic {
 		configuredRepos.Insert(orgRepo)
 	}
 
@@ -827,4 +991,71 @@ func validateTriggers(cfg *config.Config, pcfg *plugins.Configuration) error {
 		return fmt.Errorf("the following repos have jobs configured but do not have the %s plugin enabled: %s", trigger.PluginName, strings.Join(missing, ", "))
 	}
 	return nil
+}
+
+func validateInRepoConfig(cfg *config.Config, filePath, repoIdentifier string) error {
+	data, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		if !os.IsNotExist(err) {
+			return fmt.Errorf("failed to read file %q: %v", filePath, err)
+		}
+		return nil
+	}
+
+	prowYAML := &config.ProwYAML{}
+	if err := yaml.Unmarshal(data, prowYAML); err != nil {
+		return fmt.Errorf("failed to deserialize content of %q: %v", filePath, err)
+	}
+
+	if err := config.DefaultAndValidateProwYAML(cfg, prowYAML, repoIdentifier); err != nil {
+		return fmt.Errorf("failed to validate .prow.yaml: %v", err)
+	}
+
+	return nil
+}
+
+func validateTideContextPolicy(cfg *config.Config) error {
+	// We can not know all possible branches without asking GitHub, so instead we verify
+	// all branches that are explicitly configured on any job. This will hopefully catch
+	// most cases.
+	allKnownOrgRepoBranches := map[string]sets.String{}
+	for orgRepo, jobs := range cfg.PresubmitsStatic {
+		if _, ok := allKnownOrgRepoBranches[orgRepo]; !ok {
+			allKnownOrgRepoBranches[orgRepo] = sets.String{}
+		}
+
+		for _, job := range jobs {
+			allKnownOrgRepoBranches[orgRepo].Insert(job.Branches...)
+		}
+	}
+
+	// We have to disableInRepoConfig for this check, else we will
+	// attempt to clone the repo if its enabled
+	originalInRepoConfig := cfg.InRepoConfig
+	cfg.InRepoConfig = config.InRepoConfig{}
+	defer func() { cfg.InRepoConfig = originalInRepoConfig }()
+
+	var errs []error
+	for orgRepo, branches := range allKnownOrgRepoBranches {
+		split := strings.Split(orgRepo, "/")
+		if n := len(split); n != 2 {
+			// May happen for gerrit
+			continue
+		}
+		org, repo := split[0], split[1]
+
+		if branches.Len() == 0 {
+			// Make sure we always test at least one branch per repo
+			// to catch cases where ppl only have jobs with empty branch
+			// configs.
+			branches.Insert("master")
+		}
+		for _, branch := range branches.List() {
+			if _, err := cfg.GetTideContextPolicy(nil, org, repo, branch, nil, ""); err != nil {
+				errs = append(errs, fmt.Errorf("context policy for %s branch in %s/%s is invalid: %w", branch, org, repo, err))
+			}
+		}
+	}
+
+	return utilerrors.NewAggregate(errs)
 }

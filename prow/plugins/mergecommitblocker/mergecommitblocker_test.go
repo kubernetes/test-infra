@@ -83,7 +83,15 @@ func (f *fakeGHClient) ListIssueComments(org, repo string, number int) ([]github
 }
 
 func TestHandle(t *testing.T) {
-	lg, c, err := localgit.New()
+	testHandle(localgit.New, t)
+}
+
+func TestHandleV2(t *testing.T) {
+	testHandle(localgit.NewV2, t)
+}
+
+func testHandle(clients localgit.Clients, t *testing.T) {
+	lg, c, err := clients()
 	if err != nil {
 		t.Fatalf("Making localgit: %v", err)
 	}
@@ -152,7 +160,7 @@ func TestHandle(t *testing.T) {
 			name: "merge commit label exists, PR has merge commits",
 			fakeGHClient: &fakeGHClient{
 				labels:   strSet{labels.MergeCommits: struct{}{}},
-				comments: map[int]string{12: blockedBody},
+				comments: map[int]string{12: commentBody},
 			},
 			prNum:         12,
 			checkout:      func() { checkoutBranch("pull/12/head") },
@@ -176,7 +184,7 @@ func TestHandle(t *testing.T) {
 			name: "merge commit label exists, PR doesn't have merge commits",
 			fakeGHClient: &fakeGHClient{
 				labels:   strSet{labels.MergeCommits: struct{}{}},
-				comments: map[int]string{14: blockedBody},
+				comments: map[int]string{14: commentBody},
 			},
 			prNum:         14,
 			checkout:      func() { checkoutBranch("pull/14/head") },

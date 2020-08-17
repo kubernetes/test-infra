@@ -6,28 +6,34 @@ presubmits:
     path_alias: k8s.io/publishing-bot
     spec:
       containers:
-      - image: golang:1.11
+      - image: golang:1.13
         command:
         - make
+    annotations:
+      testgrid-dashboards: sig-release-publishing-bot
+      testgrid-tab-name: build
   kubernetes/kubernetes:
-    - name: pull-publishing-bot-validate
-      always_run: false
-      decorate: true
-      path_alias: k8s.io/kubernetes
-      skip_report: false
-      optional: true
-      run_if_changed: '^staging/publishing.*$'
-      extra_refs:
-        - org: kubernetes
-          repo: publishing-bot
-          base_ref: master
-          path_alias: k8s.io/publishing-bot
-      spec:
-        containers:
-          - image: gcr.io/k8s-testimages/kubekins-e2e:v20190516-576b68c-master
-            command:
-              - go
-            args:
-              - run
-              - k8s.io/publishing-bot/cmd/validate-rules
-              - /home/prow/go/src/k8s.io/kubernetes/staging/publishing/rules.yaml
+  - name: pull-publishing-bot-validate
+    always_run: false
+    decorate: true
+    path_alias: k8s.io/kubernetes
+    skip_report: false
+    optional: true
+    run_if_changed: '^staging/publishing.*$'
+    extra_refs:
+    - org: kubernetes
+      repo: publishing-bot
+      base_ref: master
+      path_alias: k8s.io/publishing-bot
+    spec:
+      containers:
+      - image: golang:1.13
+        command:
+        - go
+        args:
+        - run
+        - k8s.io/publishing-bot/cmd/validate-rules
+        - /home/prow/go/src/k8s.io/kubernetes/staging/publishing/rules.yaml
+    annotations:
+      testgrid-dashboards: sig-release-publishing-bot
+      testgrid-tab-name: validate

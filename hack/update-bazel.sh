@@ -17,36 +17,10 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-if [[ -n "${BUILD_WORKSPACE_DIRECTORY:-}" ]]; then # Running inside bazel
-  echo "Updating bazel rules..." >&2
-elif ! command -v bazel &>/dev/null; then
+if ! command -v bazel &>/dev/null; then
   echo "Install bazel at https://bazel.build" >&2
   exit 1
-elif ! bazel query @io_k8s_test_infra//vendor/github.com/bazelbuild/bazel-gazelle/cmd/gazelle &>/dev/null; then
-  (
-    set -o xtrace
-    bazel run @io_k8s_test_infra//hack:bootstrap-testinfra
-    bazel run @io_k8s_test_infra//hack:update-bazel
-  )
-  exit 0
-else
-  (
-    set -o xtrace
-    bazel run @io_k8s_test_infra//hack:update-bazel
-  )
-  exit 0
 fi
 
-gazelle=$(realpath "$1")
-kazel=$(realpath "$2")
-
-cd "$BUILD_WORKSPACE_DIRECTORY"
-
-if [[ ! -f go.mod ]]; then
-    echo "No module defined, see https://github.com/golang/go/wiki/Modules#how-to-define-a-module" >&2
-    exit 1
-fi
-
-"$gazelle" fix --external=vendored
-"$kazel" --cfg-path=./hack/.kazelcfg.json
-"$gazelle" fix --external=vendored # TODO(fejta): remove this
+set -o xtrace
+bazel run @io_k8s_repo_infra//hack:update-bazel

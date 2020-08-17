@@ -45,6 +45,8 @@ type PluginHelp struct {
 	// The key "" should map to a string describing configuration that applies to all repos if any.
 	// This configuration strings may include HTML.
 	Config map[string]string
+	// Snippet is a snippet of yaml for delineating configuration for the plugin.
+	Snippet string `json:",omitempty"`
 	// Events is a slice containing the events that are handled by the plugin.
 	// NOTE: Plugins do not need to populate this. Hook populates it on their behalf.
 	Events []string

@@ -17,6 +17,7 @@ limitations under the License.
 package spyglass
 
 import (
+	"context"
 	"testing"
 )
 
@@ -50,7 +51,7 @@ func TestFetchArtifacts_Prow(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		artifact, err := goodFetcher.artifact(tc.job, tc.buildID, maxSize)
+		artifact, err := goodFetcher.Artifact(context.Background(), tc.job, tc.buildID, maxSize)
 		if err != nil && !tc.expectErr {
 			t.Errorf("%s: failed unexpectedly for artifact %s, err: %v", tc.name, artifact.JobPath(), err)
 		}

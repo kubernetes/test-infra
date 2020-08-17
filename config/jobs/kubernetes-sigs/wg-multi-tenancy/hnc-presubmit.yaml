@@ -1,0 +1,14 @@
+presubmits:
+  kubernetes-sigs/multi-tenancy:
+  - name: pull-hnc-test
+    annotations:
+      testgrid-dashboards: wg-multi-tenancy-hnc
+      testgrid-tab-name: presubmit-tests
+    decorate: true
+    path_alias: sigs.k8s.io/multi-tenancy
+    run_if_changed: "incubator/hnc/.*"
+    spec:
+      containers:
+      - image: golang:1.14
+        command:
+        - ./incubator/hnc/hack/ci-test.sh

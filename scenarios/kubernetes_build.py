@@ -42,7 +42,7 @@ def check_output(*cmd):
     print >>sys.stderr, 'Run:', cmd
     return subprocess.check_output(cmd)
 
-def check_build_exists(gcs, suffix):
+def check_build_exists(gcs, suffix, fast):
     """ check if a k8s/federation build with same version
         already exists in remote path
     """
@@ -68,14 +68,19 @@ def check_build_exists(gcs, suffix):
             gcs = 'kubernetes-release-dev'
         gcs = 'gs://' + gcs
         mode = 'ci'
+        if fast:
+            mode += '/fast'
         if suffix:
             mode += suffix
         gcs = os.path.join(gcs, mode, version)
         try:
             check_no_stdout('gsutil', 'ls', gcs)
+            check_no_stdout('gsutil', 'ls', gcs + "/kubernetes.tar.gz")
+            check_no_stdout('gsutil', 'ls', gcs + "/bin")
             return True
         except subprocess.CalledProcessError as exc:
-            print >>sys.stderr, 'gcs path %s does not exist yet, continue' % gcs
+            print >>sys.stderr, (
+                'gcs path %s (or some files under it) does not exist yet, continue' % gcs)
     return False
 
 
@@ -93,7 +98,7 @@ def main(args):
 
     # pre-check if target build exists in gcs bucket or not
     # if so, don't make duplicated builds
-    if check_build_exists(args.release, args.suffix):
+    if check_build_exists(args.release, args.suffix, args.fast):
         print >>sys.stderr, 'build already exists, exit'
         sys.exit(0)
 
@@ -117,12 +122,20 @@ def main(args):
         push_build_args.append('--bucket=%s' % args.release)
     if args.registry:
         push_build_args.append('--docker-registry=%s' % args.registry)
-    if args.hyperkube:
-        env['KUBE_BUILD_HYPERKUBE'] = 'y'
     if args.extra_publish_file:
         push_build_args.append('--extra-publish-file=%s' % args.extra_publish_file)
+    if args.extra_version_markers:
+        push_build_args.append('--extra-version-markers=%s' % args.extra_version_markers)
+    if args.fast:
+        push_build_args.append('--fast')
     if args.allow_dup:
         push_build_args.append('--allow-dup')
+    if args.skip_update_latest:
+        push_build_args.append('--noupdatelatest')
+    if args.register_gcloud_helper:
+        # Configure docker client for gcr.io authentication to allow communication
+        # with non-public registries.
+        check_no_stdout('gcloud', 'auth', 'configure-docker')
 
     for key, value in env.items():
         os.environ[key] = value
@@ -131,12 +144,12 @@ def main(args):
         check('make', 'quick-release')
     else:
         check('make', 'release')
-    check(args.push_build_script, *push_build_args)
+    output = check_output(args.push_build_script, *push_build_args)
+    print >>sys.stderr, 'Push build result: ', output
 
 if __name__ == '__main__':
     PARSER = argparse.ArgumentParser(
         'Build and push.')
-    PARSER.add_argument('--fast', action='store_true', help='Build quickly')
     PARSER.add_argument(
         '--release', help='Upload binaries to the specified gs:// path')
     PARSER.add_argument(
@@ -151,12 +164,19 @@ if __name__ == '__main__':
     PARSER.add_argument(
         '--registry', help='Push images to the specified docker registry')
     PARSER.add_argument(
-        '--hyperkube', action='store_true', help='Build hyperkube image')
-    PARSER.add_argument(
         '--extra-publish-file', help='Additional version file uploads to')
+    PARSER.add_argument(
+        '--extra-version-markers', help='Additional version file uploads to')
+    PARSER.add_argument(
+        '--fast', action='store_true', help='Specifies a fast build')
     PARSER.add_argument(
         '--allow-dup', action='store_true', help='Allow overwriting if the build exists on gcs')
     PARSER.add_argument(
+        '--skip-update-latest', action='store_true', help='Do not update the latest file')
+    PARSER.add_argument(
         '--push-build-script', default='../release/push-build.sh', help='location of push-build.sh')
+    PARSER.add_argument(
+        '--register-gcloud-helper', action='store_true',
+        help='Register gcloud as docker credentials helper')
     ARGS = PARSER.parse_args()
     main(ARGS)

@@ -1,18 +1,26 @@
 # periodic jobs
 
 periodics:
-- name: ci-kubernetes-e2e-kubeadm-kinder-master-on-stable
+- name: ci-kubernetes-e2e-kubeadm-kinder-master-on-1-19
   interval: 2h
   decorate: true
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-kubeadm,sig-release-master-informing
+    testgrid-tab-name: kubeadm-kinder-master-on-1-19
+    testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com, kubernetes-release-team@googlegroups.com
+    description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster with version skew and run kubeadm-e2e and the conformance suite"
+    testgrid-num-columns-recent: "20"
+    testgrid-num-failures-to-alert: "8"
+    testgrid-alert-stale-results-hours: "16"
   decoration_config:
-    timeout: 2400000000000 #40m
+    timeout: 60m
   extra_refs:
   - org: kubernetes
     repo: kubernetes
-    base_ref: release-1.14
+    base_ref: release-1.19
     path_alias: k8s.io/kubernetes
   - org: kubernetes
     repo: kubeadm
@@ -20,30 +28,39 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190516-576b68c-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-1.19
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"
       args:
-      - "skew-master-on-stable"
+      - "skew-master-on-1.19"
       securityContext:
         privileged: true
       resources:
         requests:
           memory: "9000Mi"
           cpu: 2000m
-- name: ci-kubernetes-e2e-kubeadm-kinder-1-14-on-1-13
+
+- name: ci-kubernetes-e2e-kubeadm-kinder-1-19-on-1-18
   interval: 12h
   decorate: true
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-kubeadm,sig-release-1.19-informing
+    testgrid-tab-name: kubeadm-kinder-1-19-on-1-18
+    testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com, kubernetes-release-team@googlegroups.com
+    description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster with version skew and run kubeadm-e2e and the conformance suite"
+    testgrid-num-columns-recent: "20"
+    testgrid-num-failures-to-alert: "4"
+    testgrid-alert-stale-results-hours: "48"
   decoration_config:
-    timeout: 2400000000000 #40m
+    timeout: 60m
   extra_refs:
   - org: kubernetes
     repo: kubernetes
-    base_ref: release-1.13
+    base_ref: release-1.18
     path_alias: k8s.io/kubernetes
   - org: kubernetes
     repo: kubeadm
@@ -51,30 +68,39 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190516-576b68c-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-1.18
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"
       args:
-      - "skew-1.14-on-1.13"
+      - "skew-1.19-on-1.18"
       securityContext:
         privileged: true
       resources:
         requests:
           memory: "9000Mi"
           cpu: 2000m
-- name: ci-kubernetes-e2e-kubeadm-kinder-1-13-on-1-12
+
+- name: ci-kubernetes-e2e-kubeadm-kinder-1-18-on-1-17
   interval: 12h
   decorate: true
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-kubeadm,sig-release-1.18-informing
+    testgrid-tab-name: kubeadm-kinder-1-18-on-1-17
+    testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com, kubernetes-release-team@googlegroups.com
+    description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster with version skew and run kubeadm-e2e and the conformance suite"
+    testgrid-num-columns-recent: "20"
+    testgrid-num-failures-to-alert: "4"
+    testgrid-alert-stale-results-hours: "48"
   decoration_config:
-    timeout: 2400000000000 #40m
+    timeout: 60m
   extra_refs:
   - org: kubernetes
     repo: kubernetes
-    base_ref: release-1.12
+    base_ref: release-1.17
     path_alias: k8s.io/kubernetes
   - org: kubernetes
     repo: kubeadm
@@ -82,30 +108,39 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190516-576b68c-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-1.17
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"
       args:
-      - "skew-1.13-on-1.12"
+      - "skew-1.18-on-1.17"
       securityContext:
         privileged: true
       resources:
         requests:
           memory: "9000Mi"
           cpu: 2000m
-- name: ci-kubernetes-e2e-kubeadm-kinder-1-12-on-1-11
+
+- name: ci-kubernetes-e2e-kubeadm-kinder-1-17-on-1-16
   interval: 12h
   decorate: true
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-kubeadm,sig-release-1.17-informing
+    testgrid-tab-name: kubeadm-kinder-1-17-on-1-16
+    testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com, kubernetes-release-team@googlegroups.com
+    description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster with version skew and run kubeadm-e2e and the conformance suite"
+    testgrid-num-columns-recent: "20"
+    testgrid-num-failures-to-alert: "4"
+    testgrid-alert-stale-results-hours: "48"
   decoration_config:
-    timeout: 2400000000000 #40m
+    timeout: 60m
   extra_refs:
   - org: kubernetes
     repo: kubernetes
-    base_ref: release-1.11
+    base_ref: release-1.16
     path_alias: k8s.io/kubernetes
   - org: kubernetes
     repo: kubeadm
@@ -113,12 +148,12 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190516-576b68c-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-1.16
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"
       args:
-      - "skew-1.12-on-1.11"
+      - "skew-1.17-on-1.16"
       securityContext:
         privileged: true
       resources:

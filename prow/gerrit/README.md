@@ -48,18 +48,6 @@ The adapter package implements a controller that is periodically polling gerrit,
 presubmit and postsubmit jobs based on your prow config.
 
 
-#### Reporter
-
-The reporter package sends job results back to gerrit. It implements a reporter interface
-from [crier].
-
-The reporter will send an aggregated summary message after all presubmit jobs on a patchset finish,
-and another message after all postsubmit jobs finish.
-
-The reporter will also cast a +1/-1 vote on the `prow.k8s.io/gerrit-report-label` label of your prowjob,
-or by default it will vote on `CodeReview` label. Where `+1` means all jobs on the patshset pass and `-1`
-means one or more jobs failed on the patchset.
-
 ## Caveat
 
 The gerrit adapter currently does not support [gerrit hooks](https://gerrit-review.googlesource.com/Documentation/config-hooks.html),

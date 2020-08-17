@@ -20,8 +20,7 @@ package main
 import (
 	"testing"
 
-	buildv1alpha1 "github.com/knative/build/pkg/apis/build/v1alpha1"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/util/diff"
 
@@ -54,84 +53,6 @@ func TestContainers(t *testing.T) {
 				},
 				{
 					Image: "there",
-				},
-			},
-		},
-		{
-			name: "only buildspec",
-			jb: config.JobBase{
-				BuildSpec: &buildv1alpha1.BuildSpec{
-					Steps: []v1.Container{
-						{
-							Command: []string{"hiya", "stranger"},
-						},
-						{
-							Args: []string{"fancy", "meeting", "you", "here"},
-						},
-					},
-					Source: &buildv1alpha1.SourceSpec{
-						Custom: &v1.Container{
-							WorkingDir: "so clone",
-						},
-					},
-				},
-			},
-			expected: []v1.Container{
-				{
-					Command: []string{"hiya", "stranger"},
-				},
-				{
-					Args: []string{"fancy", "meeting", "you", "here"},
-				},
-				{
-					WorkingDir: "so clone",
-				},
-			},
-		},
-		{
-			name: "build and pod specs",
-			jb: config.JobBase{
-				BuildSpec: &buildv1alpha1.BuildSpec{
-					Steps: []v1.Container{
-						{
-							Command: []string{"hiya", "stranger"},
-						},
-						{
-							Args: []string{"fancy", "meeting", "you", "here"},
-						},
-					},
-					Source: &buildv1alpha1.SourceSpec{
-						Custom: &v1.Container{
-							WorkingDir: "so clone",
-						},
-					},
-				},
-				Spec: &v1.PodSpec{
-					Containers: []v1.Container{
-						{
-							Name: "hello",
-						},
-						{
-							Image: "there",
-						},
-					},
-				},
-			},
-			expected: []v1.Container{
-				{
-					Name: "hello",
-				},
-				{
-					Image: "there",
-				},
-				{
-					Command: []string{"hiya", "stranger"},
-				},
-				{
-					Args: []string{"fancy", "meeting", "you", "here"},
-				},
-				{
-					WorkingDir: "so clone",
 				},
 			},
 		},

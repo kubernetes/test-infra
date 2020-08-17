@@ -19,6 +19,7 @@ package jobs
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -29,11 +30,12 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
-	coreapi "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/util/sets"
+	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
+
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/kube"
 )
 
 const (
@@ -43,6 +45,10 @@ const (
 var (
 	errProwjobNotFound = errors.New("prowjob not found")
 )
+
+func IsErrProwJobNotFound(err error) bool {
+	return err == errProwjobNotFound
+}
 
 // Job holds information about a job prow is running/has run.
 // TODO(#5216): Remove this, and all associated machinery.
@@ -73,16 +79,77 @@ type serviceClusterClient interface {
 
 // PodLogClient is an interface for interacting with the pod logs.
 type PodLogClient interface {
-	GetLogs(name string, opts *coreapi.PodLogOptions) ([]byte, error)
+	GetLogs(name string) ([]byte, error)
+}
+
+// PJListingClient is an interface to list ProwJobs
+type PJListingClient interface {
+	List(context.Context, *prowapi.ProwJobList, ...ctrlruntimeclient.ListOption) error
 }
 
 // NewJobAgent is a JobAgent constructor.
-func NewJobAgent(kc serviceClusterClient, plClients map[string]PodLogClient, cfg config.Getter) *JobAgent {
+func NewJobAgent(ctx context.Context, pjLister PJListingClient, hiddenOnly, showHidden bool, plClients map[string]PodLogClient, cfg config.Getter) *JobAgent {
 	return &JobAgent{
-		kc:     kc,
+		kc: &filteringProwJobLister{
+			ctx:         ctx,
+			client:      pjLister,
+			hiddenRepos: func() sets.String { return sets.NewString(cfg().Deck.HiddenRepos...) },
+			hiddenOnly:  hiddenOnly,
+			showHidden:  showHidden,
+			cfg:         cfg,
+		},
 		pkcs:   plClients,
 		config: cfg,
 	}
+}
+
+type filteringProwJobLister struct {
+	ctx         context.Context
+	client      PJListingClient
+	cfg         config.Getter
+	hiddenRepos func() sets.String
+	hiddenOnly  bool
+	showHidden  bool
+}
+
+func (c *filteringProwJobLister) ListProwJobs(selector string) ([]prowapi.ProwJob, error) {
+	prowJobList := &prowapi.ProwJobList{}
+	parsedSelector, err := labels.Parse(selector)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse selector: %v", err)
+	}
+	listOpts := &ctrlruntimeclient.ListOptions{LabelSelector: parsedSelector, Namespace: c.cfg().ProwJobNamespace}
+	if err := c.client.List(c.ctx, prowJobList, listOpts); err != nil {
+		return nil, err
+	}
+
+	var filtered []prowapi.ProwJob
+	for _, item := range prowJobList.Items {
+		shouldHide := item.Spec.Hidden || c.pjHasHiddenRefs(item)
+		if shouldHide && c.showHidden {
+			filtered = append(filtered, item)
+		} else if shouldHide == c.hiddenOnly {
+			// this is a hidden job, show it if we're asked
+			// to only show hidden jobs otherwise hide it
+			filtered = append(filtered, item)
+		}
+	}
+
+	return filtered, nil
+}
+
+func (c *filteringProwJobLister) pjHasHiddenRefs(pj prowapi.ProwJob) bool {
+	allRefs := pj.Spec.ExtraRefs
+	if pj.Spec.Refs != nil {
+		allRefs = append(allRefs, *pj.Spec.Refs)
+	}
+	for _, refs := range allRefs {
+		if c.hiddenRepos().HasAny(fmt.Sprintf("%s/%s", refs.Org, refs.Repo), refs.Org) {
+			return true
+		}
+	}
+
+	return false
 }
 
 // JobAgent creates lists of jobs, updates their status and returns their run logs.
@@ -157,7 +224,7 @@ func (ja *JobAgent) GetJobLog(job, id string) ([]byte, error) {
 		if !ok {
 			return nil, fmt.Errorf("cannot get logs for prowjob %q with agent %q: unknown cluster alias %q", j.ObjectMeta.Name, j.Spec.Agent, j.ClusterAlias())
 		}
-		return client.GetLogs(j.Status.PodName, &coreapi.PodLogOptions{Container: kube.TestContainerName})
+		return client.GetLogs(j.Status.PodName)
 	}
 	for _, agentToTmpl := range ja.config().Deck.ExternalAgentLogs {
 		if agentToTmpl.Agent != string(j.Spec.Agent) {
@@ -187,11 +254,13 @@ func (ja *JobAgent) tryUpdate() {
 	}
 }
 
-type byStartTime []Job
+type byPJStartTime []prowapi.ProwJob
 
-func (a byStartTime) Len() int           { return len(a) }
-func (a byStartTime) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a byStartTime) Less(i, j int) bool { return a[i].st.After(a[j].st) }
+func (a byPJStartTime) Len() int      { return len(a) }
+func (a byPJStartTime) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+func (a byPJStartTime) Less(i, j int) bool {
+	return a[i].Status.StartTime.Time.After(a[j].Status.StartTime.Time)
+}
 
 func (ja *JobAgent) update() error {
 	pjs, err := ja.kc.ListProwJobs(labels.Everything().String())
@@ -201,6 +270,9 @@ func (ja *JobAgent) update() error {
 	var njs []Job
 	njsMap := make(map[string]Job)
 	njsIDMap := make(map[string]map[string]prowapi.ProwJob)
+
+	sort.Sort(byPJStartTime(pjs))
+
 	for _, j := range pjs {
 		ft := time.Time{}
 		if j.Status.CompletionTime != nil {
@@ -243,7 +315,6 @@ func (ja *JobAgent) update() error {
 		}
 		njsIDMap[j.Spec.Job][buildID] = j
 	}
-	sort.Sort(byStartTime(njs))
 
 	ja.mut.Lock()
 	defer ja.mut.Unlock()

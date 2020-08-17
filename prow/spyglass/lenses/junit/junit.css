@@ -29,6 +29,10 @@ td.failed {
   color: #ff4040;
 }
 
+td.flaky {
+  color: #dd99dd;
+}
+
 td.passed {
   color: #61ff61;
 }
@@ -37,17 +41,17 @@ td.skipped {
   color: #ffe62d;
 }
 
-.failed-layout {
+.failed-layout, .flaky-layout {
   width: 100%;
   border-collapse: collapse;
 }
 
-.failed-layout td {
+.failed-layout td, .flaky-layout td {
   border: 0;
   padding: 0;
 }
 
-.failure-name {
+.failure-name, .flaky-name {
   cursor: pointer;
 }
 
@@ -56,7 +60,7 @@ td {
 }
 
 /* We are engaged in a never-ending war of cascade escalation against MDL */
-#failed-tbody > tr:hover {
+#failed-tbody > tr:hover, #flaky-tbody > tr:hover {
   background-color: unset !important;
 }
 
@@ -64,7 +68,11 @@ table.failed-layout tbody tr.failure-text:hover {
   background-color: unset !important;
 }
 
-.failure-text div {
+table.flaky-layout tbody tr.flaky-text:hover {
+  background-color: unset !important;
+}
+
+.failure-text div, .flaky-text div {
   padding-left: 20px;
   padding-right: 20px;
   white-space: pre-wrap;
@@ -72,7 +80,7 @@ table.failed-layout tbody tr.failure-text:hover {
   padding-bottom: 10px;
 }
 
-.failure-text td {
+.failure-text td, .flaky-text td {
   padding-bottom: 15px;
 }
 

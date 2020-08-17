@@ -22,20 +22,21 @@ import (
 	"sync"
 	"time"
 
-	"cloud.google.com/go/storage"
+	tgconf "github.com/GoogleCloudPlatform/testgrid/config"
+	tgconfpb "github.com/GoogleCloudPlatform/testgrid/pb/config"
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/config"
-	tgconf "k8s.io/test-infra/testgrid/config"
+	"k8s.io/test-infra/prow/io"
 )
 
 // TestGrid manages a TestGrid configuration, and handles lookups of TestGrid configuration.
 type TestGrid struct {
 	mut    sync.RWMutex
-	c      *tgconf.Configuration
+	c      *tgconfpb.Configuration
 	conf   config.Getter
 	ctx    context.Context
-	client *storage.Client
+	opener io.Opener
 }
 
 // Start synchronously requests the testgrid config, then continues to update it periodically.
@@ -92,7 +93,11 @@ func (tg *TestGrid) updateConfig() error {
 		tg.setConfig(nil)
 		return nil
 	}
-	c, err := tgconf.Read(tg.conf().Deck.Spyglass.TestGridConfig, tg.ctx, tg.client)
+	r, err := tg.opener.Reader(tg.ctx, tg.conf().Deck.Spyglass.TestGridConfig)
+	if err != nil {
+		return err
+	}
+	c, err := tgconf.Unmarshal(r)
 	if err != nil {
 		return err
 	}
@@ -100,13 +105,13 @@ func (tg *TestGrid) updateConfig() error {
 	return nil
 }
 
-func (tg *TestGrid) setConfig(c *tgconf.Configuration) {
+func (tg *TestGrid) setConfig(c *tgconfpb.Configuration) {
 	tg.mut.Lock()
 	defer tg.mut.Unlock()
 	tg.c = c
 }
 
-func (tg *TestGrid) config() *tgconf.Configuration {
+func (tg *TestGrid) config() *tgconfpb.Configuration {
 	tg.mut.RLock()
 	defer tg.mut.RUnlock()
 	return tg.c

@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 # Copyright 2017 The Kubernetes Authors.
 #
@@ -14,10 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import cStringIO as StringIO
+import io as StringIO
 import json
 import time
 import unittest
+
+from parameterized import parameterized
 
 import make_json
 import model
@@ -26,13 +28,264 @@ import model
 class ValidateBuckets(unittest.TestCase):
     def test_buckets(self):
         prefixes = set()
-        for name, options in sorted(make_json.BUCKETS.iteritems()):
+        for name, options in sorted(make_json.BUCKETS.items()):
             if name == 'gs://kubernetes-jenkins/logs/':
                 continue  # only bucket without a prefix
             prefix = options.get('prefix', '')
             self.assertNotEqual(prefix, '', 'bucket %s must have a prefix' % name)
             self.assertNotIn(prefix, prefixes, "bucket %s prefix %r isn't unique" % (name, prefix))
             self.assertEqual(prefix[-1], ':', "bucket %s prefix should be %s:" % (name, prefix))
+
+
+class GenerateBuilds(unittest.TestCase):
+    @parameterized.expand([
+        (
+            "Basic_pass",
+            "gs://kubernetes-jenkins/pr-logs/path",
+            [{'name': "Test1", 'failed': False}],
+            None,
+            None,
+            None,
+            None,
+            {
+                'job': 'pr:pr-logs',
+                'path': 'gs://kubernetes-jenkins/pr-logs/path',
+                'test': [{'name': 'Test1', 'failed': False}],
+                'tests_run': 1,
+                'tests_failed':0,
+            },
+        ),
+        (
+            "Basic_fail",
+            "gs://kubernetes-jenkins/pr-logs/path",
+            [{'name': "Test1", 'failed': True}],
+            None,
+            None,
+            None,
+            None,
+            {
+                'job': 'pr:pr-logs',
+                'path': 'gs://kubernetes-jenkins/pr-logs/path',
+                'test': [{'name': 'Test1', 'failed': True}],
+                'tests_run': 1,
+                'tests_failed':1,
+            },
+        ),
+        (
+            "Ci_decorated",
+            "gs://kubernetes-jenkins/pr-logs/path",
+            [{'name': "Test1", 'failed': True}],
+            {
+                "timestamp":1595284709,
+                "repos":{"kubernetes/kubernetes":"master"},
+                "repo-version":"5a529aa3a0dd3a050c5302329681e871ef6c162e",
+            },
+            {
+                "timestamp":1595286616,
+                "passed":True,
+                "result":"SUCCESS",
+                "revision":"master",
+            },
+            None,
+            None,
+            {
+                'job': 'pr:pr-logs',
+                'path': 'gs://kubernetes-jenkins/pr-logs/path',
+                'test': [{'name': 'Test1', 'failed': True}],
+                'passed': True,
+                'result': 'SUCCESS',
+                'elapsed': 1907,
+                'tests_run': 1,
+                'tests_failed':1,
+                'started': 1595284709,
+                'finished': 1595286616,
+                'repo_commit': '5a529aa3a0dd3a050c5302329681e871ef6c162e',
+                'repos': '{"kubernetes/kubernetes": "master"}',
+            },
+        ),
+        (
+            "Pr_decorated",
+            "gs://kubernetes-jenkins/pr-logs/path",
+            [{'name': "Test1", 'failed': True}],
+            {
+                "timestamp":1595277241,
+                "pull":"93264",
+                "repos":{"kubernetes/kubernetes":"master:5feab0"},
+                "repo-version":"30f64c5b1fc57a3beb1476f9beb29280166954d1",
+            },
+            {
+                "timestamp":1595279434,
+                "passed":True,
+                "result":"SUCCESS",
+                "revision":"5dd9241d43f256984358354d1fec468f274f9ac4"
+            },
+            None,
+            None,
+            {
+                'job': 'pr:pr-logs',
+                'path': 'gs://kubernetes-jenkins/pr-logs/path',
+                'test': [{'name': 'Test1', 'failed': True}],
+                'passed': True,
+                'result': 'SUCCESS',
+                'elapsed': 2193,
+                'tests_run': 1,
+                'tests_failed':1,
+                'started': 1595277241,
+                'finished': 1595279434,
+                'repo_commit': '30f64c5b1fc57a3beb1476f9beb29280166954d1',
+                'repos': '{"kubernetes/kubernetes": "master:5feab0"}',
+            },
+        ),
+        (
+            "Pr_bootstrap",
+            "gs://kubernetes-jenkins/pr-logs/path",
+            [{'name': "Test1", 'failed': True}],
+            {
+                "node": "0790211c-cacb-11ea-a4b9-4a19d9b965b2",
+                "pull": "master:5a529",
+                "repo-version": "v1.20.0-alpha.0.261+06ea384605f172",
+                "timestamp": 1595278460,
+                "repos": {
+                    "k8s.io/kubernetes": "master:5a529",
+                    "k8s.io/release": "master"
+                },
+                "version": "v1.20.0-alpha.0.261+06ea384605f172"
+            },
+            {
+                "timestamp": 1595282312,
+                "version": "v1.20.0-alpha.0.261+06ea384605f172",
+                "result": "SUCCESS",
+                "passed": True,
+                "job-version": "v1.20.0-alpha.0.261+06ea384605f172",
+            },
+            {
+                "node_os_image": "cos-81-12871-59-0",
+                "infra-commit": "2a9a0f868",
+                "repo": "k8s.io/kubernetes",
+                "master_os_image": "cos-81-12871-59-0",
+            },
+            {
+                "k8s.io/kubernetes": "master:5a529",
+                "k8s.io/release": "master"
+            },
+            {
+                'job': 'pr:pr-logs',
+                'executor': '0790211c-cacb-11ea-a4b9-4a19d9b965b2',
+                'path': 'gs://kubernetes-jenkins/pr-logs/path',
+                'test': [{'name': 'Test1', 'failed': True}],
+                'passed': True,
+                'result': 'SUCCESS',
+                'elapsed': 3852,
+                'tests_run': 1,
+                'tests_failed':1,
+                'started': 1595278460,
+                'finished': 1595282312,
+                'version': 'v1.20.0-alpha.0.261+06ea384605f172',
+                'repo_commit': 'v1.20.0-alpha.0.261+06ea384605f172',
+                'repos': '{"k8s.io/kubernetes": "master:5a529", "k8s.io/release": "master"}',
+                'metadata': {
+                    "node_os_image": "cos-81-12871-59-0",
+                    "infra-commit": "2a9a0f868",
+                    "repo": "k8s.io/kubernetes",
+                    "master_os_image": "cos-81-12871-59-0",
+                },
+            },
+        ),
+        (
+            "Ci_bootstrap",
+            "gs://kubernetes-jenkins/pr-logs/path",
+            [{'name': "Test1", 'failed': True}],
+            {
+                "timestamp":1595263104,
+                "node":"592473ae-caa7-11ea-b130-525df2b76a8d",
+                "repos":{
+                    "k8s.io/kubernetes":"master",
+                    "k8s.io/release":"master"
+                },
+                "repo-version":"v1.20.0-alpha.0.255+5feab0aa1e592a",
+            },
+            {
+                "timestamp": 1595263185,
+                "version": "v1.20.0-alpha.0.255+5feab0aa1e592a",
+                "result": "SUCCESS",
+                "passed": True,
+                "job-version": "v1.20.0-alpha.0.255+5feab0aa1e592a",
+            },
+            {
+                "repo": "k8s.io/kubernetes",
+                "repos": {
+                    "k8s.io/kubernetes": "master",
+                    "k8s.io/release": "master"
+                },
+                "infra-commit": "5f39b744b",
+                "repo-commit": "5feab0aa1e592ab413b461bc3ad08a6b74a427b4"
+            },
+            {
+                "k8s.io/kubernetes":"master",
+                "k8s.io/release":"master"
+            },
+            {
+                'job': 'pr:pr-logs',
+                'executor': '592473ae-caa7-11ea-b130-525df2b76a8d',
+                'path': 'gs://kubernetes-jenkins/pr-logs/path',
+                'test': [{'name': 'Test1', 'failed': True}],
+                'passed': True,
+                'result': 'SUCCESS',
+                'elapsed': 81,
+                'tests_run': 1,
+                'tests_failed':1,
+                'started': 1595263104,
+                'finished': 1595263185,
+                'version': 'v1.20.0-alpha.0.255+5feab0aa1e592a',
+                'repo_commit': 'v1.20.0-alpha.0.255+5feab0aa1e592a',
+                'repos': '{"k8s.io/kubernetes": "master", "k8s.io/release": "master"}',
+                'metadata': {
+                    "repo": "k8s.io/kubernetes",
+                    "repos": {
+                        "k8s.io/kubernetes": "master",
+                        "k8s.io/release": "master"
+                    },
+                    "infra-commit": "5f39b744b",
+                    "repo-commit": "5feab0aa1e592ab413b461bc3ad08a6b74a427b4"
+                },
+            },
+        ),
+        (
+            "Started_no_meta_repo",
+            "gs://kubernetes-jenkins/pr-logs/path",
+            [{'name': "Test1", 'failed': False}],
+            {
+                "timestamp":1595263104,
+                "node":"592473ae-caa7-11ea-b130-525df2b76a8d",
+                "repos":{
+                    "k8s.io/kubernetes":"master",
+                    "k8s.io/release":"master"
+                },
+                "repo-version":"v1.20.0-alpha.0.255+5feab0aa1e592a",
+            },
+            None,
+            None,
+            None,
+            {
+                'job': 'pr:pr-logs',
+                'executor': '592473ae-caa7-11ea-b130-525df2b76a8d',
+                'path': 'gs://kubernetes-jenkins/pr-logs/path',
+                'test': [{'name': 'Test1', 'failed': False}],
+                'tests_run': 1,
+                'tests_failed':0,
+                'repo_commit': 'v1.20.0-alpha.0.255+5feab0aa1e592a',
+                'repos': '{"k8s.io/kubernetes": "master", "k8s.io/release": "master"}',
+                'started': 1595263104,
+            },
+        ),
+    ])
+    def test_gen_build(self, _, path, tests, started, finished, metadata, repos, expected):
+        self.maxDiff = None
+        build = make_json.Build.generate(path, tests, started, finished, metadata, repos)
+        build_dict = build.as_dict()
+        self.assertEqual(build_dict, expected)
+
+
 
 
 class MakeJsonTest(unittest.TestCase):
@@ -135,7 +388,7 @@ class MakeJsonTest(unittest.TestCase):
             for needle in negneedles:
                 # Only match negative needles in the middle of a word, to avoid
                 # failures on timestamps that happen to contain a short number.
-                self.assertNotRegexpMatches(result, r'\b%s\b' % needle)
+                self.assertNotRegexpMatches(result, r'\b%s\b' % needle) # pylint: disable=deprecated-method
 
         add_build('some-job/123', last_month, last_month + 10, 'SUCCESS', junits)
         add_build('some-job/456', now - 10, now, 'FAILURE', junits)

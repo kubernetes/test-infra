@@ -20,12 +20,14 @@ limitations under the License.
 package cherrypickunapproved
 
 import (
+	"encoding/json"
 	"fmt"
 	"regexp"
 	"strings"
 
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/pluginhelp"
@@ -41,7 +43,7 @@ func init() {
 	plugins.RegisterPullRequestHandler(PluginName, handlePullRequest, helpProvider)
 }
 
-func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
 	// Only the 'Config' and Description' fields are necessary because this
 	// plugin does not react to any commands.
 	pluginHelp := &pluginhelp.PluginHelp{
@@ -80,26 +82,62 @@ func handlePullRequest(pc plugins.Agent, pr github.PullRequestEvent) error {
 }
 
 func handlePR(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent, cp commentPruner, branchRe *regexp.Regexp, commentBody string) error {
-	// Only consider the events that indicate opening of the PR and
-	// when the cpApproved and cpUnapproved labels are added or removed
-	cpLabelUpdated := (pr.Action == github.PullRequestActionLabeled || pr.Action == github.PullRequestActionUnlabeled) &&
-		(pr.Label.Name == labels.CpApproved || pr.Label.Name == labels.CpUnapproved)
-	if pr.Action != github.PullRequestActionOpened && pr.Action != github.PullRequestActionReopened && !cpLabelUpdated {
-		return nil
-	}
-
 	var (
 		org    = pr.Repo.Owner.Login
 		repo   = pr.Repo.Name
 		branch = pr.PullRequest.Base.Ref
 	)
 
-	// if the branch doesn't match against the branch names allowed for cherry-picks,
-	// don't do anything
-	if !branchRe.MatchString(branch) {
-		return nil
+	switch pr.Action {
+	case github.PullRequestActionOpened, github.PullRequestActionReopened:
+		if !branchRe.MatchString(branch) {
+			return nil
+		}
+		return ensureLabels(gc, org, repo, pr, log, cp, commentBody)
+	case github.PullRequestActionLabeled, github.PullRequestActionUnlabeled:
+		if !branchRe.MatchString(branch) {
+			return nil
+		}
+		if !(pr.Label.Name == labels.CpApproved || pr.Label.Name == labels.CpUnapproved) {
+			return nil
+		}
+		return ensureLabels(gc, org, repo, pr, log, cp, commentBody)
+	case github.PullRequestActionEdited:
+		// if someone changes the base of their PR, we will get this event
+		// and the changes field will list that the base SHA and ref changes
+		var changes struct {
+			Base struct {
+				Ref struct {
+					From string `json:"from"`
+				} `json:"ref"`
+				Sha struct {
+					From string `json:"from"`
+				} `json:"sha"`
+			} `json:"base"`
+		}
+		if err := json.Unmarshal(pr.Changes, &changes); err != nil {
+			// we're detecting this best-effort so we can forget about the event
+			return nil
+		}
+
+		if changes.Base.Ref.From == "" {
+			// PR base ref did not change, ignore the event
+			return nil
+		}
+
+		if branchRe.MatchString(branch) && !branchRe.MatchString(changes.Base.Ref.From) {
+			// base ref changed from a branch not allowed for cherry-picks to a branch that is allowed for cherry-picks
+			return ensureLabels(gc, org, repo, pr, log, cp, commentBody)
+		} else if !branchRe.MatchString(branch) && branchRe.MatchString(changes.Base.Ref.From) {
+			// base ref changed from a branch allowed for cherry-picks to a branch that is not allowed for cherry-picks
+			return pruneLabels(gc, org, repo, pr, log, cp, commentBody)
+		}
 	}
 
+	return nil
+}
+
+func ensureLabels(gc githubClient, org string, repo string, pr *github.PullRequestEvent, log *logrus.Entry, cp commentPruner, commentBody string) error {
 	issueLabels, err := gc.GetIssueLabels(org, repo, pr.Number)
 	if err != nil {
 		return err
@@ -136,6 +174,33 @@ func handlePR(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent, c
 	if err := gc.CreateComment(org, repo, pr.Number, formattedComment); err != nil {
 		log.WithError(err).Errorf("Failed to comment %q", formattedComment)
 	}
+
+	return nil
+}
+
+func pruneLabels(gc githubClient, org string, repo string, pr *github.PullRequestEvent, log *logrus.Entry, cp commentPruner, commentBody string) error {
+	issueLabels, err := gc.GetIssueLabels(org, repo, pr.Number)
+	if err != nil {
+		return err
+	}
+	hasCherryPickApprovedLabel := github.HasLabel(labels.CpApproved, issueLabels)
+	hasCherryPickUnapprovedLabel := github.HasLabel(labels.CpUnapproved, issueLabels)
+
+	if hasCherryPickApprovedLabel {
+		if err := gc.RemoveLabel(org, repo, pr.Number, labels.CpApproved); err != nil {
+			log.WithError(err).Errorf("GitHub failed to remove the following label: %s", labels.CpApproved)
+		}
+	}
+
+	if hasCherryPickUnapprovedLabel {
+		if err := gc.RemoveLabel(org, repo, pr.Number, labels.CpUnapproved); err != nil {
+			log.WithError(err).Errorf("GitHub failed to remove the following label: %s", labels.CpUnapproved)
+		}
+	}
+
+	cp.PruneComments(func(comment github.IssueComment) bool {
+		return strings.Contains(comment.Body, commentBody)
+	})
 
 	return nil
 }

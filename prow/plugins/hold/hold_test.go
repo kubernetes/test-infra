@@ -34,6 +34,7 @@ func TestHandle(t *testing.T) {
 		hasLabel      bool
 		shouldLabel   bool
 		shouldUnlabel bool
+		isPR          bool
 	}{
 		{
 			name:          "nothing to do",
@@ -41,6 +42,15 @@ func TestHandle(t *testing.T) {
 			hasLabel:      false,
 			shouldLabel:   false,
 			shouldUnlabel: false,
+			isPR:          true,
+		},
+		{
+			name:          "quoted hold in a reply",
+			body:          "> /hold",
+			hasLabel:      false,
+			shouldLabel:   false,
+			shouldUnlabel: false,
+			isPR:          true,
 		},
 		{
 			name:          "requested hold",
@@ -48,6 +58,15 @@ func TestHandle(t *testing.T) {
 			hasLabel:      false,
 			shouldLabel:   true,
 			shouldUnlabel: false,
+			isPR:          true,
+		},
+		{
+			name:          "requested hold with reason",
+			body:          "/hold for further review",
+			hasLabel:      false,
+			shouldLabel:   true,
+			shouldUnlabel: false,
+			isPR:          true,
 		},
 		{
 			name:          "requested hold, Label already exists",
@@ -55,6 +74,15 @@ func TestHandle(t *testing.T) {
 			hasLabel:      true,
 			shouldLabel:   false,
 			shouldUnlabel: false,
+			isPR:          true,
+		},
+		{
+			name:          "requested hold with reason, Label already exists",
+			body:          "/hold for further review",
+			hasLabel:      true,
+			shouldLabel:   false,
+			shouldUnlabel: false,
+			isPR:          true,
 		},
 		{
 			name:          "requested hold cancel",
@@ -62,6 +90,15 @@ func TestHandle(t *testing.T) {
 			hasLabel:      true,
 			shouldLabel:   false,
 			shouldUnlabel: true,
+			isPR:          true,
+		},
+		{
+			name:          "requested hold cancel with whitespace",
+			body:          "/hold   cancel  ",
+			hasLabel:      true,
+			shouldLabel:   false,
+			shouldUnlabel: true,
+			isPR:          true,
 		},
 		{
 			name:          "requested hold cancel, Label already gone",
@@ -69,6 +106,47 @@ func TestHandle(t *testing.T) {
 			hasLabel:      false,
 			shouldLabel:   false,
 			shouldUnlabel: false,
+			isPR:          true,
+		},
+		{
+			name:          "requested unhold",
+			body:          "/unhold",
+			hasLabel:      true,
+			shouldLabel:   false,
+			shouldUnlabel: true,
+			isPR:          true,
+		},
+		{
+			name:          "requested unhold with whitespace",
+			body:          "/unhold    ",
+			hasLabel:      true,
+			shouldLabel:   false,
+			shouldUnlabel: true,
+			isPR:          true,
+		},
+		{
+			name:          "requested unhold, Label already gone",
+			body:          "/unhold",
+			hasLabel:      false,
+			shouldLabel:   false,
+			shouldUnlabel: false,
+			isPR:          true,
+		},
+		{
+			name:          "requested hold for issues",
+			body:          "/hold",
+			hasLabel:      false,
+			shouldLabel:   false,
+			shouldUnlabel: false,
+			isPR:          false,
+		},
+		{
+			name:          "requested unhold for issues",
+			body:          "/unhold",
+			hasLabel:      true,
+			shouldLabel:   false,
+			shouldUnlabel: false,
+			isPR:          false,
 		},
 	}
 
@@ -82,6 +160,7 @@ func TestHandle(t *testing.T) {
 			Body:   tc.body,
 			Number: 1,
 			Repo:   github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
+			IsPR:   tc.isPR,
 		}
 		hasLabel := func(label string, issueLabels []github.Label) bool {
 			return tc.hasLabel

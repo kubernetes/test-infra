@@ -1,0 +1,53 @@
+load("@py3_deps//:requirements.bzl", "requirement")
+
+py_binary(
+    name = "generate_tests",
+    srcs = ["generate_tests.py"],
+    data = [
+        "test_config.yaml",
+        "//config:prowjobs",
+        "//config:testgrids",
+        "//config/prow:configs",
+        "//jobs",
+    ],
+    python_version = "PY3",
+    deps = [requirement("ruamel.yaml")],
+)
+
+py_binary(
+    name = "prepare_release_branch",
+    srcs = ["prepare_release_branch.py"],
+    args = [
+        "$(location //releng/config-rotator)",
+        "$(location //releng/config-forker)",
+        "$(location :generate_tests)",
+    ],
+    data = [
+        ":generate_tests",
+        "//releng/config-forker",
+        "//releng/config-rotator",
+    ],
+    python_version = "PY3",
+    deps = [
+        requirement("ruamel.yaml"),
+        requirement("sh"),
+    ],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [
+        ":package-srcs",
+        "//releng/config-forker:all-srcs",
+        "//releng/config-rotator:all-srcs",
+    ],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

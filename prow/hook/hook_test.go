@@ -24,8 +24,10 @@ import (
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/githubeventserver"
 	"k8s.io/test-infra/prow/phony"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/repoowners"
 )
 
 var ice = github.IssueCommentEvent{
@@ -39,11 +41,54 @@ var ice = github.IssueCommentEvent{
 	},
 }
 
+var repoLevelSecret = `
+'*':
+  - value: key1
+    created_at: 2019-10-02T15:00:00Z
+  - value: key2
+    created_at: 2020-10-02T15:00:00Z
+foo/bar:
+  - value: 123abc
+    created_at: 2019-10-02T15:00:00Z
+  - value: key6
+    created_at: 2020-10-02T15:00:00Z
+`
+
+var orgLevelSecret = `
+'*':
+  - value: key1
+    created_at: 2019-10-02T15:00:00Z
+  - value: key2
+    created_at: 2020-10-02T15:00:00Z
+foo:
+  - value: 123abc
+    created_at: 2019-10-02T15:00:00Z
+  - value: key4
+    created_at: 2020-10-02T15:00:00Z
+`
+
+var globalSecret = `
+'*':
+  - value: 123abc
+    created_at: 2019-10-02T15:00:00Z
+  - value: key2
+    created_at: 2020-10-02T15:00:00Z
+`
+
+var missingMatchingSecret = `
+somerandom:
+  - value: 123abc
+    created_at: 2019-10-02T15:00:00Z
+  - value: key2
+    created_at: 2020-10-02T15:00:00Z
+`
+
+var secretInOldFormat = `123abc`
+
 // TestHook sets up a hook.Server and then sends a fake webhook at it. It then
 // ensures that a fake plugin is called.
 func TestHook(t *testing.T) {
 	called := make(chan bool, 1)
-	secret := []byte("123abc")
 	payload, err := json.Marshal(&ice)
 	if err != nil {
 		t.Fatalf("Marshalling ICE: %v", err)
@@ -59,24 +104,75 @@ func TestHook(t *testing.T) {
 	pa := &plugins.ConfigAgent{}
 	pa.Set(&plugins.Configuration{Plugins: map[string][]string{"foo/bar": {"baz"}}})
 	ca := &config.Agent{}
-	clientAgent := &plugins.ClientAgent{}
-	metrics := NewMetrics()
-
-	getSecret := func() []byte {
-		return []byte("123abc")
+	clientAgent := &plugins.ClientAgent{
+		GitHubClient: github.NewFakeClient(),
+		OwnersClient: repoowners.NewClient(nil, nil, func(org, repo string) bool { return false }, func(org, repo string) bool { return false }, func() config.OwnersDirBlacklist { return config.OwnersDirBlacklist{} }),
+	}
+	metrics := githubeventserver.NewMetrics()
+	var testcases = []struct {
+		name           string
+		secret         []byte
+		tokenGenerator func() []byte
+		shouldSucceed  bool
+	}{
+		{
+			name:   "Token present at repository level.",
+			secret: []byte("123abc"),
+			tokenGenerator: func() []byte {
+				return []byte(repoLevelSecret)
+			},
+			shouldSucceed: true,
+		},
+		{
+			name:   "Token present at org level.",
+			secret: []byte("123abc"),
+			tokenGenerator: func() []byte {
+				return []byte(orgLevelSecret)
+			},
+			shouldSucceed: true,
+		},
+		{
+			name:   "Token present at global level.",
+			secret: []byte("123abc"),
+			tokenGenerator: func() []byte {
+				return []byte(globalSecret)
+			},
+			shouldSucceed: true,
+		},
+		{
+			name:   "Token not matching anywhere (wildcard token missing).",
+			secret: []byte("123abc"),
+			tokenGenerator: func() []byte {
+				return []byte(missingMatchingSecret)
+			},
+			shouldSucceed: false,
+		},
+		{
+			name:   "Secret in old format.",
+			secret: []byte("123abc"),
+			tokenGenerator: func() []byte {
+				return []byte(secretInOldFormat)
+			},
+			shouldSucceed: true,
+		},
 	}
 
-	s := httptest.NewServer(&Server{
-		ClientAgent:    clientAgent,
-		Plugins:        pa,
-		ConfigAgent:    ca,
-		Metrics:        metrics,
-		TokenGenerator: getSecret,
-	})
-	defer s.Close()
-	if err := phony.SendHook(s.URL, "issues", payload, secret); err != nil {
-		t.Fatalf("Error sending hook: %v", err)
+	for _, tc := range testcases {
+		t.Logf("Running scenario %q", tc.name)
+
+		s := httptest.NewServer(&Server{
+			ClientAgent:    clientAgent,
+			Plugins:        pa,
+			ConfigAgent:    ca,
+			Metrics:        metrics,
+			TokenGenerator: tc.tokenGenerator,
+		})
+		defer s.Close()
+		if err := phony.SendHook(s.URL, "issues", payload, tc.secret); (err != nil) == tc.shouldSucceed {
+			t.Fatalf("Error sending hook: %v", err)
+		}
 	}
+
 	select {
 	case <-called: // All good.
 	case <-time.After(time.Second):

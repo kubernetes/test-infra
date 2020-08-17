@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright 2017 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,7 +15,7 @@
 
 """Receive push events for new builds and upload rows to BigQuery."""
 
-from __future__ import print_function
+
 
 import argparse
 import json
@@ -69,15 +69,16 @@ def get_started_finished(gcs_client, db, todo):
     pool = multiprocessing.pool.ThreadPool(16)
     try:
         for ack_id, (build_dir, started, finished) in pool.imap_unordered(
-                lambda (ack_id, job, build): (ack_id, gcs_client.get_started_finished(job, build)),
+                lambda ack_id_job_build: (ack_id_job_build[0], gcs_client.get_started_finished(
+                    ack_id_job_build[1], ack_id_job_build[2])),
                 todo):
             if finished:
                 if not db.insert_build(build_dir, started, finished):
-                    print('already present??')
+                    print('build dir already present in db: ', build_dir)
                 start = time.localtime(started.get('timestamp', 0) if started else 0)
-                print(build_dir, bool(started), bool(finished),
-                      time.strftime('%F %T %Z', start),
-                      finished and finished.get('result'))
+                print((build_dir, bool(started), bool(finished),
+                       time.strftime('%F %T %Z', start),
+                       finished and finished.get('result')))
                 build_dirs.append(build_dir)
                 acks.append(ack_id)
             else:
@@ -88,18 +89,10 @@ def get_started_finished(gcs_client, db, todo):
     return acks, build_dirs
 
 
-def row_to_mapping(row, schema):
-    """Convert a dictionary to a list for bigquery.Table.insert_data.
-
-    Silly. See https://github.com/GoogleCloudPlatform/google-cloud-python/issues/3396
-    """
-    return [row.get(field.name, [] if field.mode == 'REPEATED' else None) for field in schema]
-
-
 def retry(func, *args, **kwargs):
     """Run a function with arguments, retrying on server errors. """
     # pylint: disable=no-member
-    for attempt in xrange(20):
+    for attempt in range(20):
         try:
             return func(*args, **kwargs)
         except (socket.error, google.cloud.exceptions.ServerError):
@@ -127,7 +120,7 @@ def insert_data(table, rows_iter):
         if len(json.dumps(row)) > 1e6:
             print('ERROR: row too long', row['path'])
             continue
-        row = row_to_mapping(row, table.schema)
+        row = table.row_from_mapping(row)
         rows.append(row)
         row_ids.append(row_id)
 
@@ -184,7 +177,7 @@ def main(db, sub, tables, client_class=make_db.GCSClient, stop=None):
 
         if acks:
             print('ACK irrelevant', len(acks))
-            for n in xrange(0, len(acks), 1000):
+            for n in range(0, len(acks), 1000):
                 retry(sub.acknowledge, acks[n: n + 1000])
 
         if todo:
@@ -204,7 +197,7 @@ def main(db, sub, tables, client_class=make_db.GCSClient, stop=None):
 
         # stream new rows to tables
         if build_dirs and tables:
-            for table, incremental_table in tables.itervalues():
+            for table, incremental_table in tables.values():
                 builds = db.get_builds_from_paths(build_dirs, incremental_table)
                 emitted = insert_data(table, make_json.make_rows(db, builds))
                 db.insert_emitted(emitted, incremental_table)
@@ -256,7 +249,7 @@ def load_tables(dataset, tablespecs):
     return tables
 
 
-class StopWhen(object):
+class StopWhen:
     """A simple object that returns True once when the given hour begins."""
     def __init__(self, target, clock=lambda: time.localtime().tm_hour):
         self.clock = clock

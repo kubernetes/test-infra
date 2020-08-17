@@ -1,0 +1,7 @@
+dashboard_groups:
+- name: sig-cloud-provider
+  dashboard_names:
+    - sig-cloud-provider-apiserver-network-proxy
+
+dashboards:
+- name: sig-cloud-provider-apiserver-network-proxy

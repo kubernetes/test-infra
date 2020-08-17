@@ -17,10 +17,13 @@ limitations under the License.
 package fakegithub
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"regexp"
 
 	"k8s.io/apimachinery/pkg/util/sets"
+
 	"k8s.io/test-infra/prow/github"
 )
 
@@ -35,7 +38,7 @@ const (
 
 // FakeClient is like client, but fake.
 type FakeClient struct {
-	Issues              []github.Issue
+	Issues              map[int]*github.Issue
 	OrgMembers          map[string][]string
 	Collaborators       []string
 	IssueComments       map[int][]github.IssueComment
@@ -50,7 +53,7 @@ type FakeClient struct {
 	IssueEvents         map[int][]github.ListedIssueEvent
 	Commits             map[string]github.SingleCommit
 
-	//All Labels That Exist In The Repo
+	// All Labels That Exist In The Repo
 	RepoLabelsExisting []string
 	// org/repo#number:label
 	IssueLabelsAdded    []string
@@ -97,8 +100,18 @@ type FakeClient struct {
 	ColumnIDMap map[string]map[int]string
 
 	// The project and column names for an issue or PR
-	Project string
-	Column  string
+	Project            string
+	Column             string
+	OrgRepoIssueLabels map[string][]github.Label
+	OrgProjects        map[string][]github.Project
+
+	// Maps org name to the list of hooks
+	OrgHooks map[string][]github.Hook
+	// Maps repo name to the list of hooks
+	RepoHooks map[string][]github.Hook
+
+	// Error will be returned if set. Currently only implemented for CreateStatus
+	Error error
 }
 
 // BotName returns authenticated login.
@@ -114,6 +127,16 @@ func (f *FakeClient) IsMember(org, user string) (bool, error) {
 		}
 	}
 	return false, nil
+}
+
+// ListOpenIssues returns f.issues
+// To mock a mix of issues and pull requests, see github.Issue.PullRequest
+func (f *FakeClient) ListOpenIssues(org, repo string) ([]github.Issue, error) {
+	var issues []github.Issue
+	for _, issue := range f.Issues {
+		issues = append(issues, *issue)
+	}
+	return issues, nil
 }
 
 // ListIssueComments returns comments.
@@ -145,6 +168,11 @@ func (f *FakeClient) CreateComment(owner, repo string, number int, comment strin
 		User: github.User{Login: botName},
 	})
 	f.IssueCommentID++
+	return nil
+}
+
+// EditComment edits a comment. Its a stub that does nothing.
+func (f *FakeClient) EditComment(org, repo string, ID int, comment string) error {
 	return nil
 }
 
@@ -204,9 +232,36 @@ func (f *FakeClient) DeleteStaleComments(org, repo string, number int, comments 
 func (f *FakeClient) GetPullRequest(owner, repo string, number int) (*github.PullRequest, error) {
 	val, exists := f.PullRequests[number]
 	if !exists {
-		return nil, fmt.Errorf("Pull request number %d does not exit", number)
+		return nil, fmt.Errorf("pull request number %d does not exist", number)
 	}
 	return val, nil
+}
+
+// EditPullRequest edits the pull request.
+func (f *FakeClient) EditPullRequest(org, repo string, number int, issue *github.PullRequest) (*github.PullRequest, error) {
+	if _, exists := f.PullRequests[number]; !exists {
+		return nil, fmt.Errorf("issue number %d does not exist", number)
+	}
+	f.PullRequests[number] = issue
+	return issue, nil
+}
+
+// GetIssue returns the issue.
+func (f *FakeClient) GetIssue(owner, repo string, number int) (*github.Issue, error) {
+	val, exists := f.Issues[number]
+	if !exists {
+		return nil, fmt.Errorf("issue number %d does not exist", number)
+	}
+	return val, nil
+}
+
+// EditIssue edits the issue.
+func (f *FakeClient) EditIssue(org, repo string, number int, issue *github.Issue) (*github.Issue, error) {
+	if _, exists := f.Issues[number]; !exists {
+		return nil, fmt.Errorf("issue number %d does not exist", number)
+	}
+	f.Issues[number] = issue
+	return issue, nil
 }
 
 // GetPullRequestChanges returns the file modifications in a PR.
@@ -232,6 +287,9 @@ func (f *FakeClient) GetSingleCommit(org, repo, SHA string) (github.SingleCommit
 
 // CreateStatus adds a status context to a commit.
 func (f *FakeClient) CreateStatus(owner, repo, SHA string, s github.Status) error {
+	if f.Error != nil {
+		return f.Error
+	}
 	if f.CreatedStatuses == nil {
 		f.CreatedStatuses = make(map[string][]github.Status)
 	}
@@ -316,7 +374,17 @@ func (f *FakeClient) RemoveLabel(owner, repo string, number int, label string) e
 
 // FindIssues returns f.Issues
 func (f *FakeClient) FindIssues(query, sort string, asc bool) ([]github.Issue, error) {
-	return f.Issues, nil
+	var issues []github.Issue
+	for _, issue := range f.Issues {
+		issues = append(issues, *issue)
+	}
+	for _, pr := range f.PullRequests {
+		issues = append(issues, github.Issue{
+			User:   pr.User,
+			Number: pr.Number,
+		})
+	}
+	return issues, nil
 }
 
 // AssignIssue adds assignees.
@@ -466,6 +534,16 @@ func (f *FakeClient) CreateProjectCard(columnID int, projectCard github.ProjectC
 	}
 
 	for project, columnIDMap := range f.ColumnIDMap {
+		if _, exists := columnIDMap[columnID]; exists {
+			for id := range columnIDMap {
+				// Make sure that we behave same as github API
+				// Create project will generate an error when the card already exist in the project
+				card, err := f.GetColumnProjectCard(id, projectCard.ContentURL)
+				if err == nil && card != nil {
+					return nil, fmt.Errorf("Card already exist in the project: %s, column %d, cannot add to column  %d", project, id, columnID)
+				}
+			}
+		}
 		columnName, exists := columnIDMap[columnID]
 		if exists {
 			f.ColumnCardsMap[columnID] = append(
@@ -512,12 +590,22 @@ func (f *FakeClient) DeleteProjectCard(projectCardID int) error {
 	return nil
 }
 
-// GetColumnProjectCard fetches project card if the content_url in the card matched the issue/pr
-func (f *FakeClient) GetColumnProjectCard(columnID int, contentURL string) (*github.ProjectCard, error) {
+// GetColumnProjectCards fetches project cards  under given column
+func (f *FakeClient) GetColumnProjectCards(columnID int) ([]github.ProjectCard, error) {
 	if f.ColumnCardsMap == nil {
 		f.ColumnCardsMap = make(map[int][]github.ProjectCard)
 	}
-	for _, existingCard := range f.ColumnCardsMap[columnID] {
+	return f.ColumnCardsMap[columnID], nil
+}
+
+// GetColumnProjectCard fetches project card if the content_url in the card matched the issue/pr
+func (f *FakeClient) GetColumnProjectCard(columnID int, contentURL string) (*github.ProjectCard, error) {
+	cards, err := f.GetColumnProjectCards(columnID)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, existingCard := range cards {
 		if existingCard.ContentURL == contentURL {
 			return &existingCard, nil
 		}
@@ -538,6 +626,19 @@ func (f *FakeClient) GetRepos(org string, isUser bool) ([]github.Repo, error) {
 				Login: "kubernetes",
 			},
 			Name: "community",
+		},
+	}, nil
+}
+
+func (f FakeClient) GetRepo(owner, name string) (github.FullRepo, error) {
+	return github.FullRepo{
+		Repo: github.Repo{
+			Owner:         github.User{Login: owner},
+			Name:          name,
+			HasIssues:     true,
+			HasWiki:       true,
+			DefaultBranch: "master",
+			Description:   fmt.Sprintf("Test Repo: %s", name),
 		},
 	}, nil
 }
@@ -594,4 +695,59 @@ func (f *FakeClient) TeamHasMember(teamID int, memberLogin string) (bool, error)
 		}
 	}
 	return false, nil
+}
+
+func (f *FakeClient) GetTeamBySlug(slug string, org string) (*github.Team, error) {
+	teams, _ := f.ListTeams(org)
+	for _, team := range teams {
+		if team.Name == slug {
+			return &team, nil
+		}
+	}
+	return &github.Team{}, nil
+}
+
+func (f *FakeClient) CreatePullRequest(org, repo, title, body, head, base string, canModify bool) (int, error) {
+	if f.PullRequests == nil {
+		f.PullRequests = map[int]*github.PullRequest{}
+	}
+	if f.Issues == nil {
+		f.Issues = map[int]*github.Issue{}
+	}
+	for i := 0; i < 999; i++ {
+		if f.PullRequests[i] != nil || f.Issues[i] != nil {
+			continue
+		}
+		f.PullRequests[i] = &github.PullRequest{
+			Number: i,
+			Base: github.PullRequestBranch{
+				Ref:  base,
+				Repo: github.Repo{Owner: github.User{Login: org}, Name: repo},
+			},
+		}
+		f.Issues[i] = &github.Issue{Number: i}
+		return i, nil
+	}
+
+	return 0, errors.New("FakeClient supports only 999 PullRequests")
+}
+
+func (f *FakeClient) UpdatePullRequest(org, repo string, number int, title, body *string, open *bool, branch *string, canModify *bool) error {
+	pr, found := f.PullRequests[number]
+	if !found {
+		return fmt.Errorf("no pr with number %d found", number)
+	}
+	if title != nil {
+		pr.Title = *title
+	}
+	if body != nil {
+		pr.Body = *body
+	}
+	return nil
+}
+
+// Query simply exists to allow the fake client to match the interface for packages that need it.
+// It does not modify the passed interface at all.
+func (f *FakeClient) Query(ctx context.Context, q interface{}, vars map[string]interface{}) error {
+	return nil
 }

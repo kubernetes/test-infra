@@ -135,7 +135,7 @@ else
 fi
 
 # Determine what deployment images we need to update.
-imagedirs="//prow/... + //label_sync/... + //ghproxy/... + //robots/commenter/..."
+imagedirs="//prow/... + //label_sync/... + //ghproxy/... + //robots/commenter/... + //robots/issue-creator/..."
 images=("$@")
 if [[ "${#images[@]}" == 0 ]]; then
   echo -e "querying bazel for $(color-target :image) targets under $(color-target ${imagedirs}) ..." >&2
@@ -163,4 +163,4 @@ for i in "${images[@]}"; do
 done
 
 echo "Deploy with:" >&2
-echo -e "  $(color-target bazel run //prow/cluster:production.apply --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64)"
+echo -e "  $(color-target bazel run //config/prow/cluster:production.apply --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64)"

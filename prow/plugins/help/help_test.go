@@ -175,7 +175,7 @@ func TestLabel(t *testing.T) {
 	for _, tc := range testcases {
 		sort.Strings(tc.expectedNewLabels)
 		fakeClient := &fakegithub.FakeClient{
-			Issues:             make([]github.Issue, 1),
+			Issues:             make(map[int]*github.Issue),
 			IssueComments:      make(map[int][]github.IssueComment),
 			RepoLabelsExisting: []string{labels.Help, labels.GoodFirstIssue},
 			IssueLabelsAdded:   []string{},

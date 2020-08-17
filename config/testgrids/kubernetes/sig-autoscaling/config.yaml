@@ -1,0 +1,11 @@
+dashboard_groups:
+- name: sig-autoscaling
+  dashboard_names:
+    - sig-autoscaling-cluster-autoscaler
+    - sig-autoscaling-hpa
+    - sig-autoscaling-vpa
+
+dashboards:
+- name: sig-autoscaling-cluster-autoscaler
+- name: sig-autoscaling-hpa
+- name: sig-autoscaling-vpa

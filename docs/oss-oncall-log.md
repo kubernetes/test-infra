@@ -2,7 +2,7 @@
 
 "Oh yeah, I remember having to deal with that a while back... what was it again?"
 
-See also: [post-mortems](./post-mortems.md)
+See also: [post-mortems](/docs/post-mortems)
 
 - Issue: bigquery metrics dashboard in velodrome.k8s.io is out of date ([#8703](https://github.com/kubernetes/test-infra/issues/8703))
   - Symptoms:

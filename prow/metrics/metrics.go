@@ -19,53 +19,66 @@ package metrics
 
 import (
 	"net/http"
-	"os"
-	"os/signal"
 	"strconv"
-	"syscall"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/prometheus/client_golang/prometheus/push"
 	"github.com/sirupsen/logrus"
+	ctrlruntimemetrics "sigs.k8s.io/controller-runtime/pkg/metrics"
+
+	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/interrupts"
 )
 
-const metricsPort = 9090
+type CreateServer func(http.Handler) interrupts.ListenAndServer
 
-// ExposeMetrics chooses whether to serve or push metrics for the service
-func ExposeMetrics(component string, endpoint string, interval time.Duration) {
-	if endpoint != "" {
-		go pushMetrics(component, endpoint, interval)
-	} else {
-		serveMetrics()
+// ExposeMetricsWithRegistry chooses whether to serve or push metrics for the service with the registry
+func ExposeMetricsWithRegistry(component string, pushGateway config.PushGateway, port int, reg prometheus.Gatherer, createServer CreateServer) {
+	if pushGateway.Endpoint != "" {
+		pushMetrics(component, pushGateway.Endpoint, pushGateway.Interval.Duration)
+		if !pushGateway.ServeMetrics {
+			return
+		}
 	}
+
+	// These get registered in controller-runtimes registry via an init in the internal/controller/metrics package. if
+	// we dont unregister them, metrics break if that package is somehow imported.
+	// Setting the default prometheus registry in controller-runtime is unfortunately not an option, because that would
+	// result in all metrics that got registered in controller-runtime via an init to vanish, as inits of dependencies
+	// always get executed before our own init.
+	ctrlruntimemetrics.Registry.Unregister(prometheus.NewGoCollector())
+	ctrlruntimemetrics.Registry.Unregister(prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{}))
+
+	if reg == nil {
+		reg = prometheus.DefaultGatherer
+	}
+	handler := promhttp.HandlerFor(
+		prometheus.Gatherers{reg, ctrlruntimemetrics.Registry},
+		promhttp.HandlerOpts{},
+	)
+	metricsMux := http.NewServeMux()
+	metricsMux.Handle("/metrics", handler)
+	var server interrupts.ListenAndServer
+	if createServer == nil {
+		server = &http.Server{Addr: ":" + strconv.Itoa(port), Handler: metricsMux}
+	} else {
+		server = createServer(handler)
+	}
+	interrupts.ListenAndServe(server, 5*time.Second)
 }
 
-// serveMetrics serves prometheus metrics for the service
-func serveMetrics() {
-	metricsMux := http.NewServeMux()
-	metricsMux.Handle("/metrics", promhttp.Handler())
-	go func() {
-		logrus.WithError(http.ListenAndServe(":"+strconv.Itoa(metricsPort), metricsMux)).Fatal("ListenAndServe returned while serving metrics.")
-	}()
+// ExposeMetrics chooses whether to serve or push metrics for the service
+func ExposeMetrics(component string, pushGateway config.PushGateway, port int) {
+	ExposeMetricsWithRegistry(component, pushGateway, port, nil, nil)
 }
 
 // pushMetrics is meant to run in a goroutine and continuously push
 // metrics to the provided endpoint.
 func pushMetrics(component, endpoint string, interval time.Duration) {
-	sig := make(chan os.Signal, 1)
-	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
-
-	for {
-		select {
-		case <-time.Tick(interval):
-			if err := push.FromGatherer(component, push.HostnameGroupingKey(), endpoint, prometheus.DefaultGatherer); err != nil {
-				logrus.WithField("component", component).WithError(err).Error("Failed to push metrics.")
-			}
-		case <-sig:
-			logrus.WithField("component", component).Infof("Metrics pusher shutting down...")
-			return
+	interrupts.TickLiteral(func() {
+		if err := fromGatherer(component, hostnameGroupingKey(), endpoint, prometheus.DefaultGatherer); err != nil {
+			logrus.WithField("component", component).WithError(err).Error("Failed to push metrics.")
 		}
-	}
+	}, interval)
 }

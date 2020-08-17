@@ -11,12 +11,16 @@ periodics:
     path_alias: sigs.k8s.io/structured-merge-diff
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190516-576b68c-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
       command:
       - go
       args:
       - test
+      - -race
       - ./...
+  annotations:
+    testgrid-dashboards: sig-api-machinery-structured-merge-diff
+    testgrid-tab-name: ci-test
 - name: ci-structured-merge-diff-gofmt
   interval: 12h
   labels:
@@ -29,8 +33,38 @@ periodics:
     path_alias: sigs.k8s.io/structured-merge-diff
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190516-576b68c-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
       command:
       - bash
       - -c
       - test -z "$({ find . -name "*.go" | grep -v "\\/vendor\\/" | xargs gofmt -s -d | tee /dev/stderr; })"
+  annotations:
+    testgrid-dashboards: sig-api-machinery-structured-merge-diff
+    testgrid-tab-name: ci-gofmt
+- name: ci-structured-merge-diff-benchmark
+  interval: 1h
+  decorate: true
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: structured-merge-diff
+    base_ref: master
+    path_alias: sigs.k8s.io/structured-merge-diff
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/benchmarkjunit:latest
+      command:
+      - /benchmarkjunit
+      args:
+      - --log-file=$(ARTIFACTS)/benchmark-log.txt
+      - --output=$(ARTIFACTS)/junit_benchmarks.xml
+      - ./...
+      resources:
+        requests:
+          cpu: "6000m"
+          memory: "6Gi"
+        limits:
+          cpu: "6000m"
+          memory: "6Gi"
+  annotations:
+    testgrid-dashboards: sig-api-machinery-structured-merge-diff
+    testgrid-tab-name: ci-benchmark

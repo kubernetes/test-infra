@@ -1,6 +1,7 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
-approvers:
+emeritus_approvers:
 - krzyzacy
+- Katharine
 labels:
 - area/prow/crier

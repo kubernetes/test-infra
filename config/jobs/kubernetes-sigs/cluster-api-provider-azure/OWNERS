@@ -2,13 +2,20 @@
 
 approvers:
 - andyzhangx
+- awesomenix
 - brendandburns
+- CecileRobertMichon
 - feiskyer
+- devigned
 - justaugustus
 - karataliu
 - khenidak
-- soggiest
+- nader-ziada
 reviewers:
-- awesomenix
+- alexeldeib
+- cpanato
 - juan-lee
-- serbrech
+
+labels:
+- sig/cluster-lifecycle
+- area/provider/azure

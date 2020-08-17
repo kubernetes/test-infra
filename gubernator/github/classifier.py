@@ -320,6 +320,8 @@ def distill_events(events, distilled_events=None):
     relevant to determining user state.
     """
     bots = [
+        'google-oss-robot',
+        'istio-testing',
         'k8s-bot',
         'k8s-ci-robot',
         'k8s-merge-robot',

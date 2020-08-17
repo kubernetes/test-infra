@@ -22,7 +22,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/git"
+	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/pluginhelp"
@@ -35,8 +36,7 @@ const (
 )
 
 var (
-	blockedBody = fmt.Sprintf("Adding label: `%s` because PR contains merge commits.", labels.MergeCommits)
-	fixmeBody   = "Your pull request contains merge commits, which are not allowed in this repository. Use `git rebase` to reapply your commits on top of the target branch."
+	commentBody = fmt.Sprintf("Adding label `%s` because PR contains merge commits, which are not allowed in this repository.\nUse `git rebase` to reapply your commits on top of the target branch. Detailed instructions for doing so can be found [here](https://git.k8s.io/community/contributors/guide/github-workflow.md#4-keep-your-branch-in-sync).", labels.MergeCommits)
 )
 
 // init registers out plugin as a pull request handler
@@ -45,7 +45,7 @@ func init() {
 }
 
 // helpProvider provides information on the plugin
-func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
 	// Only the Description field is specified because this plugin is not triggered with commands and is not configurable.
 	return &pluginhelp.PluginHelp{
 		Description: fmt.Sprintf("The merge commit blocker plugin adds the %s label to pull requests that contain merge commits", labels.MergeCommits),
@@ -76,7 +76,7 @@ func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
 	return handle(pc.GitHubClient, pc.GitClient, cp, pc.Logger, &pre)
 }
 
-func handle(ghc githubClient, gc *git.Client, cp pruneClient, log *logrus.Entry, pre *github.PullRequestEvent) error {
+func handle(ghc githubClient, gc git.ClientFactory, cp pruneClient, log *logrus.Entry, pre *github.PullRequestEvent) error {
 	var (
 		org  = pre.PullRequest.Base.Repo.Owner.Login
 		repo = pre.PullRequest.Base.Repo.Name
@@ -84,7 +84,7 @@ func handle(ghc githubClient, gc *git.Client, cp pruneClient, log *logrus.Entry,
 	)
 
 	// Clone the repo, checkout the PR.
-	r, err := gc.Clone(fmt.Sprintf("%s/%s", org, repo))
+	r, err := gc.ClientFor(org, repo)
 	if err != nil {
 		return err
 	}
@@ -113,14 +113,14 @@ func handle(ghc githubClient, gc *git.Client, cp pruneClient, log *logrus.Entry,
 			return err
 		}
 		cp.PruneComments(func(ic github.IssueComment) bool {
-			return strings.Contains(ic.Body, blockedBody)
+			return strings.Contains(ic.Body, commentBody)
 		})
 	} else if !hasLabel && existMergeCommits {
 		log.Infof("Adding %q Label for %s/%s#%d", labels.MergeCommits, org, repo, num)
 		if err := ghc.AddLabel(org, repo, num, labels.MergeCommits); err != nil {
 			return err
 		}
-		msg := plugins.FormatResponse(pre.PullRequest.User.Login, blockedBody, fixmeBody)
+		msg := plugins.FormatSimpleResponse(pre.PullRequest.User.Login, commentBody)
 		return ghc.CreateComment(org, repo, num, msg)
 	}
 	return nil

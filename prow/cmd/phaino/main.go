@@ -25,12 +25,11 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"os/signal"
 	"strings"
-	"syscall"
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/interrupts"
 	"sigs.k8s.io/yaml"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -157,19 +156,12 @@ func jobName(pj prowapi.ProwJob) string {
 
 func main() {
 	opt := gatherOptions()
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	go func() {
-		sigs := make(chan os.Signal)
-		signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-		sig := <-sigs
-		logrus.WithField("signal", sig).Warn("Signaled, cancelling...")
-		cancel()
-	}()
 
 	pjs, errs := readPJs(opt.jobs)
 
-	if err := processJobs(ctx, opt, pjs, errs); err != nil {
+	defer interrupts.WaitForGracefulShutdown()
+
+	if err := processJobs(interrupts.Context(), opt, pjs, errs); err != nil {
 		logrus.WithError(err).Fatal("FAILED")
 	}
 	logrus.Info("SUCCESS")

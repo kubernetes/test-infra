@@ -1,15 +1,55 @@
 presubmits:
   kubernetes/cloud-provider-gcp:
   - name: cloud-provider-gcp-tests
-    max_concurrency: 5
     always_run: true
     decorate: true
+    path_alias: k8s.io/cloud-provider-gcp
+    annotations:
+      testgrid-dashboards: provider-gcp-presubmits
+      description: Build and unit test for kubernetes/cloud-provider-gcp.
+      testgrid-num-columns-recent: '30'
+    extra_refs:
+    - org: kubernetes
+      repo: test-infra
+      base_ref: master
+      path_alias: k8s.io/test-infra
     spec:
       containers:
       - image: gcr.io/cloud-builders/bazel
-        command: ["bash"]
+        command:
+        - ../test-infra/hack/bazel.sh
         args:
-        - -c
-        - |
-          bazel --output_base=/tmp build -- //... -//vendor/... && \
-          bazel --output_base=/tmp test --test_output=errors -- //... -//vendor/...
+        - test
+        - --test_output=errors
+        - --
+        - //...
+        - -//vendor/...
+  - name: cloud-provider-gcp-e2e-create
+    always_run: true
+    decorate: true
+    path_alias: k8s.io/cloud-provider-gcp
+    labels:
+      preset-service-account: "true"
+    annotations:
+      testgrid-dashboards: provider-gcp-presubmits
+      description: End to end cluster creation test using kubetest2 based on kubernetes/cloud-provider-gcp.
+      testgrid-num-columns-recent: '30'
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+        command:
+        - runner.sh
+        args:
+        - "/bin/bash"
+        - "-c"
+        - set -o errexit;
+          set -o nounset;
+          set -o pipefail;
+          set -o xtrace;
+          REPO_ROOT=$(git rev-parse --show-toplevel);
+          cd;
+          export GO111MODULE=on;
+          go get sigs.k8s.io/kubetest2@latest;
+          go get sigs.k8s.io/kubetest2/kubetest2-gce@latest;
+          go get sigs.k8s.io/kubetest2/kubetest2-tester-exec@latest;
+          kubetest2 gce -v 2 --repo-root $REPO_ROOT --build --up --down --test=exec -- kubectl get all --all-namespaces --kubeconfig="${ARTIFACTS}/kubetest2-kubeconfig";

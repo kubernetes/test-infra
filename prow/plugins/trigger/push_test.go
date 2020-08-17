@@ -68,9 +68,22 @@ func TestHandlePE(t *testing.T) {
 			pe: github.PushEvent{
 				Ref: "refs/heads/master",
 				Repo: github.Repo{
-					FullName: "org/repo",
+					Owner: github.User{Login: "org"},
+					Name:  "repo",
 				},
 				Deleted: true,
+			},
+			jobsToRun: 0,
+		},
+		{
+			name: "null after sha",
+			pe: github.PushEvent{
+				After: "0000000000000000000000000000000000000000",
+				Ref:   "refs/heads/master",
+				Repo: github.Repo{
+					Owner: github.User{Login: "org"},
+					Name:  "repo",
+				},
 			},
 			jobsToRun: 0,
 		},
@@ -84,7 +97,8 @@ func TestHandlePE(t *testing.T) {
 					},
 				},
 				Repo: github.Repo{
-					FullName: "org/repo",
+					Owner: github.User{Login: "org"},
+					Name:  "repo",
 				},
 			},
 		},
@@ -99,7 +113,8 @@ func TestHandlePE(t *testing.T) {
 					},
 				},
 				Repo: github.Repo{
-					FullName: "org/repo",
+					Owner: github.User{Login: "org"},
+					Name:  "repo",
 				},
 			},
 			jobsToRun: 1,
@@ -114,7 +129,8 @@ func TestHandlePE(t *testing.T) {
 					},
 				},
 				Repo: github.Repo{
-					FullName: "org2/repo2",
+					Owner: github.User{Login: "org2"},
+					Name:  "repo2",
 				},
 			},
 			jobsToRun: 1,
@@ -129,7 +145,8 @@ func TestHandlePE(t *testing.T) {
 					},
 				},
 				Repo: github.Repo{
-					FullName: "org3/repo3",
+					Owner: github.User{Login: "org3"},
+					Name:  "repo3",
 				},
 			},
 			jobsToRun: 1,

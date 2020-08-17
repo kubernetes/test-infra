@@ -70,6 +70,9 @@ branch-protection:
       # this is the foo org policy
       protect: true  # enable protection
       enforce_admins: true  # rules apply to admins
+      required_linear_history: true  # enforces a linear commit Git history
+      allow_force_pushes: true  # permits force pushes to the protected branch
+      allow_deletions: true  # allows deletion of the protected branch
       required_pull_request_reviews:
         dismiss_stale_reviews: false # automatically dismiss old reviews
         dismissal_restrictions: # allow review dismissals
@@ -156,18 +159,18 @@ Use [`planter.sh`] if [`bazel`] is not already installed on the machine.
 
 ### Run unit tests
 
-`bazel test //prow/cmd/branchprotection:all`
+`bazel test //prow/cmd/branchprotector:all`
 
 ### Run locally
 
-`bazel run //prow/cmd/branchprotection -- --help`, which will tell you about the
+`bazel run //prow/cmd/branchprotector -- --help`, which will tell you about the
 current flags.
 
 Do a dry run (which will not make any changes to github) with
 something like the following command:
 
 ```sh
-bazel run //prow/cmd/branchprotection -- \
+bazel run //prow/cmd/branchprotector -- \
   --config-path=/path/to/config.yaml \
   --github-token-path=/path/to/my-github-token
 ```
@@ -180,11 +183,11 @@ This will say how the binary will actually change github if you add a
 Run things like the following:
 ```sh
 # Build and push image, create job
-bazel run //prow/cmd/branchprotection:oneshot.create
+bazel run //prow/cmd/branchprotector:oneshot.create
 # Delete finished job
-bazel run //prow/cmd/branchprotection:oneshot.delete
+bazel run //prow/cmd/branchprotector:oneshot.delete
 # Describe current state of job
-bazel run //prow/cmd/branchprotection:oneshot.describe
+bazel run //prow/cmd/branchprotector:oneshot.describe
 ```
 
 This will build an image with your local changes, push it to
@@ -201,22 +204,22 @@ Follow the standard prow deployment process:
 # build and push image, update tag used in production
 prow/bump.sh branchprotector
 # apply changes to production
-bazel run //prow/cluster:branchprotector.apply
+bazel run //config/prow/cluster:branchprotector.apply
 ```
 
 See [`prow/bump.sh`] for details on this script.
-See [`prow/cluster/branchprotector_cronjob.yaml`] for details on the deployed
+See [`config/prow/cluster/branchprotector_cronjob.yaml`] for details on the deployed
 job resource.
 
 
 [`bazel`]: https://bazel.build
 [`branch_protection.go`]: /prow/config/branch_protection.go
-[`config.yaml`]: /prow/config.yaml
+[`config.yaml`]: /config/prow/config.yaml
 [github branch protection]: https://help.github.com/articles/about-protected-branches/
 [`oneshot-job.yaml`]: oneshot-job.yaml
 [`planter.sh`]: /planter
 [`print-workspace-status.sh`]: ../../../hack/print-workspace-status.sh
 [`prow/bump.sh`]: /prow/bump.sh
-[`prow/cluster/branchprotector_cronjob.yaml`]: /prow/cluster/branchprotector_cronjob.yaml
+[`config/prow/cluster/branchprotector_cronjob.yaml`]: /config/prow/cluster/branchprotector_cronjob.yaml
 [status contexts]: https://developer.github.com/v3/repos/statuses/#create-a-status
 [protection api]: https://developer.github.com/v3/repos/branches/#update-branch-protection

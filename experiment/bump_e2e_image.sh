@@ -21,7 +21,7 @@ set -o pipefail
 
 TREE="$(git rev-parse --show-toplevel)"
 
-bazel run //experiment/image-bumper -- --image-regex gcr.io/k8s-testimages/kubekins-e2e "${TREE}/experiment/generate_tests.py" "${TREE}/experiment/test_config.yaml" "${TREE}/prow/config.yaml"
+bazel run //experiment/image-bumper -- --image-regex gcr.io/k8s-testimages/kubekins-e2e "${TREE}/experiment/generate_tests.py" "${TREE}/experiment/test_config.yaml" "${TREE}/config/prow/config.yaml"
 find "${TREE}/config/jobs/" . -name "*.yaml" | xargs bazel run //experiment/image-bumper -- --image-regex gcr.io/k8s-testimages/kubekins-e2e
 
 bazel run //experiment:generate_tests -- \

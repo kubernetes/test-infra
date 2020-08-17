@@ -6,6 +6,10 @@ filters:
       - cblecker
       - spiffxp
       - fejta
+    reviewers:
+      - cblecker
+      - spiffxp
+      - fejta
     labels:
       - area/label_sync
   "labels\\.yaml":

@@ -17,12 +17,17 @@ limitations under the License.
 package gcs
 
 import (
+	"bytes"
+	"context"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"sync"
 	"testing"
 
-	"cloud.google.com/go/storage"
+	"github.com/fsouza/fake-gcs-server/fakestorage"
+
+	"k8s.io/test-infra/prow/io"
 )
 
 func TestUploadToGcs(t *testing.T) {
@@ -68,12 +73,12 @@ func TestUploadToGcs(t *testing.T) {
 			count = count + 1
 		}
 
-		fail := func(obj *storage.ObjectHandle) error {
+		fail := func(_ dataWriter) error {
 			update()
 			return errors.New("fail")
 		}
 
-		success := func(obj *storage.ObjectHandle) error {
+		success := func(_ dataWriter) error {
 			update()
 			return nil
 		}
@@ -87,7 +92,7 @@ func TestUploadToGcs(t *testing.T) {
 			targets[fmt.Sprintf("fail-%d", i)] = fail
 		}
 
-		err := Upload(&storage.BucketHandle{}, targets)
+		err := Upload("", "", "", targets)
 		if err != nil && !testCase.expectedErr {
 			t.Errorf("%s: expected no error but got %v", testCase.name, err)
 		}
@@ -98,5 +103,75 @@ func TestUploadToGcs(t *testing.T) {
 		if count != (testCase.passingTargets + testCase.failingTargets) {
 			t.Errorf("%s: had %d passing and %d failing targets but only ran %d targets, not %d", testCase.name, testCase.passingTargets, testCase.failingTargets, count, testCase.passingTargets+testCase.failingTargets)
 		}
+	}
+}
+
+func Test_openerObjectWriter_Write(t *testing.T) {
+
+	fakeBucket := "test-bucket"
+	fakeGCSServer := fakestorage.NewServer([]fakestorage.Object{})
+	fakeGCSServer.CreateBucket(fakeBucket)
+	defer fakeGCSServer.Stop()
+	fakeGCSClient := fakeGCSServer.Client()
+
+	tests := []struct {
+		name          string
+		ObjectDest    string
+		ObjectContent []byte
+		wantN         int
+		wantErr       bool
+	}{
+		{
+			name:          "write regular file",
+			ObjectDest:    "build/log.text",
+			ObjectContent: []byte("Oh wow\nlogs\nthis is\ncrazy"),
+			wantN:         25,
+			wantErr:       false,
+		},
+		{
+			name:          "write empty file",
+			ObjectDest:    "build/marker",
+			ObjectContent: []byte(""),
+			wantN:         0,
+			wantErr:       false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			w := &openerObjectWriter{
+				Opener:  io.NewGCSOpener(fakeGCSClient),
+				Context: context.Background(),
+				Bucket:  fmt.Sprintf("gs://%s", fakeBucket),
+				Dest:    tt.ObjectDest,
+			}
+			gotN, err := w.Write(tt.ObjectContent)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Write() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if gotN != tt.wantN {
+				t.Errorf("Write() gotN = %v, want %v", gotN, tt.wantN)
+			}
+
+			if err := w.Close(); (err != nil) != tt.wantErr {
+				t.Errorf("Close() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			// read object back from bucket and compare with written object
+			reader, err := fakeGCSClient.Bucket(fakeBucket).Object(tt.ObjectDest).NewReader(context.Background())
+			if err != nil {
+				t.Errorf("Got unexpected error reading object %s: %v", tt.ObjectDest, err)
+			}
+
+			gotObjectContent, err := ioutil.ReadAll(reader)
+			if err != nil {
+				t.Errorf("Got unexpected error reading object %s: %v", tt.ObjectDest, err)
+			}
+
+			if bytes.Compare(tt.ObjectContent, gotObjectContent) != 0 {
+				t.Errorf("Write() gotObjectContent = %v, want %v", gotObjectContent, tt.ObjectContent)
+			}
+		})
 	}
 }

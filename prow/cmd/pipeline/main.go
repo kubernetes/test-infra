@@ -17,24 +17,12 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"errors"
 	"flag"
 	"fmt"
 	"os"
-	"os/signal"
-	"syscall"
 	"time"
-
-	prowjobset "k8s.io/test-infra/prow/client/clientset/versioned"
-	prowjobinfo "k8s.io/test-infra/prow/client/informers/externalversions"
-	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/kube"
-	"k8s.io/test-infra/prow/logrusutil"
-	"k8s.io/test-infra/prow/pjutil"
-
-	pipelineset "github.com/tektoncd/pipeline/pkg/client/clientset/versioned"
-	pipelineinfo "github.com/tektoncd/pipeline/pkg/client/informers/externalversions"
-	pipelineinfov1alpha1 "github.com/tektoncd/pipeline/pkg/client/informers/externalversions/pipeline/v1alpha1"
 
 	"github.com/sirupsen/logrus"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -42,15 +30,28 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 
+	prowjobset "k8s.io/test-infra/prow/client/clientset/versioned"
+	prowjobinfo "k8s.io/test-infra/prow/client/informers/externalversions"
+	"k8s.io/test-infra/prow/config"
+	prowflagutil "k8s.io/test-infra/prow/flagutil"
+	"k8s.io/test-infra/prow/interrupts"
+	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/logrusutil"
+	pipelineset "k8s.io/test-infra/prow/pipeline/clientset/versioned"
+	pipelineinfo "k8s.io/test-infra/prow/pipeline/informers/externalversions"
+	pipelineinfov1alpha1 "k8s.io/test-infra/prow/pipeline/informers/externalversions/pipeline/v1alpha1"
+	"k8s.io/test-infra/prow/pjutil"
+
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp" // support gcp users in .kube/config
 )
 
 type options struct {
-	allContexts  bool
-	buildCluster string
-	config       string
-	kubeconfig   string
-	totURL       string
+	allContexts            bool
+	buildCluster           string
+	configPath             string
+	kubeconfig             string
+	totURL                 string
+	instrumentationOptions prowflagutil.InstrumentationOptions
 }
 
 func parseOptions() options {
@@ -65,13 +66,17 @@ func (o *options) parse(flags *flag.FlagSet, args []string) error {
 	flags.BoolVar(&o.allContexts, "all-contexts", false, "Monitor all cluster contexts, not just default")
 	flags.StringVar(&o.totURL, "tot-url", "", "Tot URL")
 	flags.StringVar(&o.kubeconfig, "kubeconfig", "", "Path to kubeconfig. Only required if out of cluster")
-	flags.StringVar(&o.config, "config", "", "Path to prow config.yaml")
+	flags.StringVar(&o.configPath, "config", "", "Path to prow config.yaml")
 	flags.StringVar(&o.buildCluster, "build-cluster", "", "Path to file containing a YAML-marshalled kube.Cluster object. If empty, uses the local cluster.")
+	o.instrumentationOptions.AddFlags(flags)
 	if err := flags.Parse(args); err != nil {
 		return fmt.Errorf("Parse flags: %v", err)
 	}
+	if o.configPath == "" {
+		return errors.New("--config is mandatory, set --config to prow config.yaml file")
+	}
 	if o.kubeconfig != "" && o.buildCluster != "" {
-		return errors.New("deprecated --builde-cluster may not be used with --kubeconfig")
+		return errors.New("deprecated --build-cluster may not be used with --kubeconfig")
 	}
 	if o.buildCluster != "" {
 		// TODO(fejta): change to warn and add a term date after plank migration
@@ -80,29 +85,13 @@ func (o *options) parse(flags *flag.FlagSet, args []string) error {
 	return nil
 }
 
-// stopper returns a channel that remains open until an interrupt is received.
-func stopper() chan struct{} {
-	stop := make(chan struct{})
-	c := make(chan os.Signal, 2)
-	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
-	go func() {
-		<-c
-		logrus.Warn("Interrupt received, attempting clean shutdown...")
-		close(stop)
-		<-c
-		logrus.Error("Second interrupt received, force exiting...")
-		os.Exit(1)
-	}()
-	return stop
-}
-
 type pipelineConfig struct {
 	client   pipelineset.Interface
 	informer pipelineinfov1alpha1.PipelineRunInformer
 }
 
 // newPipelineConfig returns a client and informer capable of mutating and monitoring the specified config.
-func newPipelineConfig(cfg rest.Config, stop chan struct{}) (*pipelineConfig, error) {
+func newPipelineConfig(cfg rest.Config, stop <-chan struct{}) (*pipelineConfig, error) {
 	bc, err := pipelineset.NewForConfig(&cfg)
 	if err != nil {
 		return nil, err
@@ -110,7 +99,7 @@ func newPipelineConfig(cfg rest.Config, stop chan struct{}) (*pipelineConfig, er
 
 	// Ensure the pipeline CRD is deployed
 	// TODO(fejta): probably a better way to do this
-	if _, err := bc.TektonV1alpha1().PipelineRuns("").List(metav1.ListOptions{Limit: 1}); err != nil {
+	if _, err := bc.TektonV1alpha1().PipelineRuns("").List(context.TODO(), metav1.ListOptions{Limit: 1}); err != nil {
 		return nil, err
 	}
 
@@ -125,17 +114,18 @@ func newPipelineConfig(cfg rest.Config, stop chan struct{}) (*pipelineConfig, er
 }
 
 func main() {
-	o := parseOptions()
-	logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "pipeline"})
+	logrusutil.ComponentInit()
 
-	pjutil.ServePProf()
+	o := parseOptions()
+
+	defer interrupts.WaitForGracefulShutdown()
+
+	pjutil.ServePProf(o.instrumentationOptions.PProfPort)
 
 	configAgent := &config.Agent{}
-	if o.config != "" {
-		const ignoreJobConfig = ""
-		if err := configAgent.Start(o.config, ignoreJobConfig); err != nil {
-			logrus.WithError(err).Fatal("failed to load prow config")
-		}
+	const ignoreJobConfig = ""
+	if err := configAgent.Start(o.configPath, ignoreJobConfig); err != nil {
+		logrus.WithError(err).Fatal("failed to load prow config")
 	}
 
 	configs, err := kube.LoadClusterConfigs(o.kubeconfig, o.buildCluster)
@@ -149,9 +139,10 @@ func main() {
 		configs = map[string]rest.Config{
 			kube.DefaultClusterAlias: configs[kube.DefaultClusterAlias],
 		}
+	} else {
+		// the InClusterContext is always mapped to DefaultClusterAlias in the controller, so there is no need to watch for this config.
+		delete(configs, kube.InClusterContext)
 	}
-
-	stop := stopper()
 
 	kc, err := kubernetes.NewForConfig(&local)
 	if err != nil {
@@ -163,14 +154,14 @@ func main() {
 	}
 	pjif := prowjobinfo.NewSharedInformerFactory(pjc, 30*time.Minute)
 	pjif.Prow().V1().ProwJobs().Lister()
-	go pjif.Start(stop)
+	go pjif.Start(interrupts.Context().Done())
 
 	pipelineConfigs := map[string]pipelineConfig{}
 	for context, cfg := range configs {
 		var bc *pipelineConfig
-		bc, err = newPipelineConfig(cfg, stop)
+		bc, err = newPipelineConfig(cfg, interrupts.Context().Done())
 		if apierrors.IsNotFound(err) {
-			logrus.WithError(err).Warnf("Ignoring %s: knative pipeline CRD not deployed", context)
+			logrus.WithError(err).Infof("Ignoring cluster context %s: tekton pipeline CRD not deployed", context)
 			continue
 		}
 		if err != nil {
@@ -193,7 +184,7 @@ func main() {
 		logrus.WithError(err).Fatal("Error creating controller")
 	}
 
-	if err := controller.Run(2, stop); err != nil {
+	if err := controller.Run(2, interrupts.Context().Done()); err != nil {
 		logrus.WithError(err).Fatal("Error running controller")
 	}
 	logrus.Info("Finished")

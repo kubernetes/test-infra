@@ -5,6 +5,9 @@ presubmits:
     - release-\d+\.\d+  # per-release image
     annotations:
       fork-per-release: "true"
+      testgrid-alert-stale-results-hours: "24"
+      testgrid-create-test-group: "true"
+      testgrid-num-failures-to-alert: "10"
     always_run: true
     max_concurrency: 12
     labels:
@@ -12,7 +15,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190516-576b68c-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -28,9 +31,55 @@ presubmits:
         - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
         - --node-tests=true
         - --provider=gce
-        - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]" --flakeAttempts=2
+        - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"
         - --timeout=65m
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
+        resources:
+          limits:
+            cpu: 4
+            memory: 3Gi
+          requests:
+            cpu: 4
+            memory: 3Gi
+  - name: pull-kubernetes-e2e-containerd-gce
+    always_run: false
+    optional: true
+    skip_branches:
+    - release-\d+\.\d+   # per-release image
+    annotations:
+      fork-per-release: "true"
+      testgrid-create-test-group: "true"
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-pull-kubernetes-e2e: "true"
+      preset-pull-kubernetes-e2e-gce: "true"
+    spec:
+      containers:
+      - args:
+        - --root=/go/src
+        - --repo=k8s.io/kubernetes=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --timeout=105
+        - --scenario=kubernetes_e2e
+        - --
+        - --build=bazel
+        - --cluster=
+        - --extract=local
+        - --env=KUBE_CONTAINER_RUNTIME=containerd
+        - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
+        - --gcp-node-image=gci
+        - --gcp-zone=us-west1-b
+        - --ginkgo-parallel=30
+        - --provider=gce
+        - --runtime-config=batch/v2alpha1=true
+        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-containerd-gce
+        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:RuntimeHandler\] --minStartupPods=8
+        - --timeout=80m     # thinking about making this longer? don't! 80m is a hard cap, and should get down to no more than 60m.
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
         resources:
           requests:
             memory: "6Gi"
@@ -38,35 +87,38 @@ presubmits:
     branches:
     - master
     always_run: false
+    optional: true
+    skip_report: true
     max_concurrency: 12
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190516-576b68c-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
         args:
         - --root=/go/src
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--repo=github.com/containerd/cri"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--timeout=90"
+        - --job=$(JOB_NAME)
+        - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
+        - --service-account=/etc/service-account/service-account.json
+        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --timeout=90
         - --scenario=kubernetes_e2e
         - --
         - --deployment=node
-        - --gcp-project=k8s-c8d-pr-node-e2e
+        - --gcp-project-type=node-e2e-project
         - --gcp-zone=us-west1-b
-        - '--node-test-args=--container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
+        - '--node-test-args=--container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
         - --node-tests=true
         - --provider=gce
-        - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]" --flakeAttempts=2
+        - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"
         - --timeout=65m
-        - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/cri-master/image-config.yaml
+        - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/image-config.yaml
         resources:
           requests:
             memory: "6Gi"
+    annotations:
+      testgrid-create-test-group: 'true'
   - name: pull-kubernetes-node-e2e-alpha
     branches:
     - master
@@ -77,7 +129,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190516-576b68c-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -93,9 +145,150 @@ presubmits:
         - --node-test-args=--feature-gates=AllAlpha=true,CSIMigration=false,RotateKubeletServerCertificate=false --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
         - --node-tests=true
         - --provider=gce
-        - --test_args=--nodes=8 --focus="\[NodeConformance\]|\[NodeAlphaFeature:.+\]" --skip="\[Flaky\]|\[Serial\] --flakeAttempts=2"
+        - --test_args=--nodes=8 --focus="\[NodeConformance\]|\[NodeAlphaFeature:.+\]" --skip="\[Flaky\]|\[Serial\]"
         - --timeout=65m
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
+        resources:
+          requests:
+            memory: "6Gi"
+    annotations:
+      testgrid-create-test-group: 'true'
+  - name: pull-kubernetes-node-kubelet-serial-cpu-manager
+    always_run: false
+    optional: true
+    skip_report: false
+    skip_branches:
+    - release-\d+\.\d+  # per-release image
+    annotations:
+      testgrid-dashboards: wg-resource-management
+      testgrid-tab-name: pr-kubelet-serial-gce-e2e-cpu-manager
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+          args:
+            - --repo=k8s.io/kubernetes=$(PULL_REFS)
+            - --repo=k8s.io/release
+            - --timeout=240
+            - --root=/go/src
+            - --scenario=kubernetes_e2e
+            - --
+            - --deployment=node
+            - --gcp-project=k8s-jkns-pr-node-e2e
+            - --gcp-zone=us-west1-b
+            - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-serial-cpu-manager.yaml
+            - --node-test-args=--feature-gates=DynamicKubeletConfig=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
+            - --node-tests=true
+            - --provider=gce
+            - --test_args=--nodes=1 --skip="" --focus="\[Feature:CPUManager\]"
+            - --timeout=180m
+          env:
+            - name: GOPATH
+              value: /go
+  - name: pull-kubernetes-node-kubelet-serial-topology-manager
+    always_run: false
+    optional: true
+    skip_report: false
+    skip_branches:
+    - release-\d+\.\d+  # per-release image
+    annotations:
+      testgrid-dashboards: wg-resource-management
+      testgrid-tab-name: pr-kubelet-serial-gce-e2e-topology-manager
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+          args:
+            - --repo=k8s.io/kubernetes=$(PULL_REFS)
+            - --repo=k8s.io/release
+            - --timeout=240
+            - --root=/go/src
+            - --scenario=kubernetes_e2e
+            - --
+            - --deployment=node
+            - --gcp-project=k8s-jkns-pr-node-e2e
+            - --gcp-zone=us-west1-b
+            - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-serial-cpu-manager.yaml
+            - --node-test-args=--feature-gates=DynamicKubeletConfig=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
+            - --node-tests=true
+            - --provider=gce
+            - --test_args=--nodes=1 --skip="" --focus="\[Feature:TopologyManager\]"
+            - --timeout=180m
+          env:
+            - name: GOPATH
+              value: /go
+  - name: pull-kubernetes-node-kubelet-serial-hugepages
+    always_run: false
+    optional: true
+    skip_report: false
+    skip_branches:
+      - release-\d+\.\d+  # per-release image
+    annotations:
+      testgrid-dashboards: wg-resource-management
+      testgrid-tab-name: pr-kubelet-serial-gce-e2e-hugepages
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+          args:
+            - --repo=k8s.io/kubernetes=$(PULL_REFS)
+            - --repo=k8s.io/release
+            - --timeout=240
+            - --root=/go/src
+            - --scenario=kubernetes_e2e
+            - --
+            - --deployment=node
+            - --gcp-project=k8s-jkns-pr-node-e2e
+            - --gcp-zone=us-west1-b
+            - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-serial-hugepages.yaml
+            - --node-test-args=--feature-gates=HugePageStorageMediumSize=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
+            - --node-tests=true
+            - --provider=gce
+            - --test_args=--nodes=1 --skip="" --focus="\[Feature:HugePages\]"
+            - --timeout=180m
+          env:
+            - name: GOPATH
+              value: /go
+  - name: pull-kubernetes-node-crio1-18-e2e
+    skip_branches:
+    - release-\d+\.\d+  # per-release image
+    annotations:
+      testgrid-dashboards: sig-node-cri-o
+      testgrid-tab-name: pr-crio-1-18-gce-e2e
+    always_run: false
+    optional: true
+    max_concurrency: 12
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+        args:
+        - --root=/go/src
+        - --env=KUBE_SSH_USER=core
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=240"
+        - --scenario=kubernetes_e2e
+        - -- # end bootstrap args, scenario args below
+        - --deployment=node
+        - --gcp-project=k8s-jkns-pr-node-e2e
+        - --gcp-zone=us-west1-b
+        - '--node-test-args=--container-runtime=remote --container-runtime-endpoint=unix:///run/crio/crio.sock --container-runtime-process-name=/usr/local/sbin/crio-v1.18.3/bin/crio-static --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
+        - --node-tests=true
+        - --provider=gce
+        - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"
+        - --timeout=180m
+        - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/crio/1.18/image-config.yaml
         resources:
           requests:
             memory: "6Gi"

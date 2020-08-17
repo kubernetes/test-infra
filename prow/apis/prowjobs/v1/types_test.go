@@ -17,9 +17,11 @@ limitations under the License.
 package v1
 
 import (
-	"reflect"
 	"testing"
 	"time"
+
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 )
 
 func TestDecorationDefaulting(t *testing.T) {
@@ -186,8 +188,9 @@ func TestDecorationDefaulting(t *testing.T) {
 			t.Parallel()
 
 			expected := tc.expected(tc.provided, defaults)
-			if actual := tc.provided.ApplyDefault(defaults); !reflect.DeepEqual(actual, expected) {
-				t.Errorf("expected defaulted config %v but got %v", expected, actual)
+			actual := tc.provided.ApplyDefault(defaults)
+			if diff := cmp.Diff(actual, expected, cmpopts.EquateEmpty()); diff != "" {
+				t.Errorf("expected defaulted config but got diff %v", diff)
 			}
 		})
 	}
@@ -253,5 +256,207 @@ func TestRefsToString(t *testing.T) {
 		if actual != expected {
 			t.Errorf("%s: got ref string: %s, but expected: %s", test.name, actual, expected)
 		}
+	}
+}
+
+func TestRerunAuthConfigValidate(t *testing.T) {
+	var testCases = []struct {
+		name        string
+		config      *RerunAuthConfig
+		errExpected bool
+	}{
+		{
+			name:        "disallow all",
+			config:      &RerunAuthConfig{AllowAnyone: false},
+			errExpected: false,
+		},
+		{
+			name:        "no restrictions",
+			config:      &RerunAuthConfig{},
+			errExpected: false,
+		},
+		{
+			name:        "allow any",
+			config:      &RerunAuthConfig{AllowAnyone: true},
+			errExpected: false,
+		},
+		{
+			name:        "restrict orgs",
+			config:      &RerunAuthConfig{GitHubOrgs: []string{"istio"}},
+			errExpected: false,
+		},
+		{
+			name:        "restrict orgs and users",
+			config:      &RerunAuthConfig{GitHubOrgs: []string{"istio", "kubernetes"}, GitHubUsers: []string{"clarketm", "scoobydoo"}},
+			errExpected: false,
+		},
+		{
+			name:        "allow any and has restriction",
+			config:      &RerunAuthConfig{AllowAnyone: true, GitHubOrgs: []string{"istio"}},
+			errExpected: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+
+			if err := tc.config.Validate(); (err != nil) != tc.errExpected {
+				t.Errorf("Expected error %v, got %v", tc.errExpected, err)
+			}
+		})
+	}
+}
+
+func TestRerunAuthConfigIsAuthorized(t *testing.T) {
+	var testCases = []struct {
+		name       string
+		user       string
+		config     *RerunAuthConfig
+		authorized bool
+	}{
+		{
+			name:       "authorized - AllowAnyone is true",
+			user:       "gumby",
+			config:     &RerunAuthConfig{AllowAnyone: true},
+			authorized: true,
+		},
+		{
+			name:       "authorized - user in GitHubUsers",
+			user:       "gumby",
+			config:     &RerunAuthConfig{GitHubUsers: []string{"gumby"}},
+			authorized: true,
+		},
+		{
+			name:       "unauthorized - RerunAuthConfig is nil",
+			user:       "gumby",
+			config:     nil,
+			authorized: false,
+		},
+		{
+			name:       "unauthorized - cli is nil",
+			user:       "gumby",
+			config:     &RerunAuthConfig{},
+			authorized: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+
+			if actual, _ := tc.config.IsAuthorized(tc.user, nil); actual != tc.authorized {
+				t.Errorf("Expected %v, got %v", tc.authorized, actual)
+			}
+		})
+	}
+}
+
+func TestRerunAuthConfigIsAllowAnyone(t *testing.T) {
+	var testCases = []struct {
+		name     string
+		config   *RerunAuthConfig
+		expected bool
+	}{
+		{
+			name:     "AllowAnyone is true",
+			config:   &RerunAuthConfig{AllowAnyone: true},
+			expected: true,
+		},
+		{
+			name:     "AllowAnyone is false",
+			config:   &RerunAuthConfig{AllowAnyone: false},
+			expected: false,
+		},
+		{
+			name:     "AllowAnyone is unset",
+			config:   &RerunAuthConfig{},
+			expected: false,
+		},
+		{
+			name:     "RerunAuthConfig is nil",
+			config:   nil,
+			expected: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+
+			if actual := tc.config.IsAllowAnyone(); actual != tc.expected {
+				t.Errorf("Expected %v, got %v", tc.expected, actual)
+			}
+		})
+	}
+}
+
+func TestParsePath(t *testing.T) {
+	type args struct {
+		bucket string
+	}
+	tests := []struct {
+		name                string
+		args                args
+		wantStorageProvider string
+		wantBucket          string
+		wantFullPath        string
+		wantErr             string
+	}{
+		{
+			name: "valid gcs bucket",
+			args: args{
+				bucket: "prow-artifacts",
+			},
+			wantStorageProvider: "gs",
+			wantBucket:          "prow-artifacts",
+			wantFullPath:        "prow-artifacts",
+		},
+		{
+			name: "valid gcs bucket with storage provider prefix",
+			args: args{
+				bucket: "gs://prow-artifacts",
+			},
+			wantStorageProvider: "gs",
+			wantBucket:          "prow-artifacts",
+			wantFullPath:        "prow-artifacts",
+		},
+		{
+			name: "valid gcs bucket with multiple separator with storage provider prefix",
+			args: args{
+				bucket: "gs://my-floppy-backup/a://doom2.wad.006",
+			},
+			wantStorageProvider: "gs",
+			wantBucket:          "my-floppy-backup",
+			wantFullPath:        "my-floppy-backup/a://doom2.wad.006",
+		},
+		{
+			name: "valid s3 bucket with storage provider prefix",
+			args: args{
+				bucket: "s3://prow-artifacts",
+			},
+			wantStorageProvider: "s3",
+			wantBucket:          "prow-artifacts",
+			wantFullPath:        "prow-artifacts",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			prowPath, err := ParsePath(tt.args.bucket)
+			var gotErr string
+			if err != nil {
+				gotErr = err.Error()
+			}
+			if gotErr != tt.wantErr {
+				t.Errorf("ParsePath() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if prowPath.StorageProvider() != tt.wantStorageProvider {
+				t.Errorf("ParsePath() gotStorageProvider = %v, wantStorageProvider %v", prowPath.StorageProvider(), tt.wantStorageProvider)
+			}
+			if prowPath.Bucket() != tt.wantBucket {
+				t.Errorf("ParsePath() gotBucket = %v, wantBucket %v", prowPath.Bucket(), tt.wantBucket)
+			}
+			if prowPath.FullPath() != tt.wantFullPath {
+				t.Errorf("ParsePath() gotFullPath = %v, wantFullPath %v", prowPath.FullPath(), tt.wantBucket)
+			}
+		})
 	}
 }

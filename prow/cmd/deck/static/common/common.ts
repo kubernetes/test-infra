@@ -1,5 +1,5 @@
 import moment from "moment";
-import {JobState, Pull} from "../api/prow";
+import {ProwJobState, Pull} from "../api/prow";
 
 // This file likes namespaces, so stick with it for now.
 /* tslint:disable:no-namespace */
@@ -41,7 +41,7 @@ export namespace cell {
     return c;
   }
 
-  export function state(s: JobState): HTMLTableDataCellElement {
+  export function state(s: ProwJobState): HTMLTableDataCellElement {
     const c = document.createElement("td");
     if (!s) {
       c.appendChild(document.createTextNode(""));
@@ -81,7 +81,7 @@ export namespace cell {
     return c;
   }
 
-  function stateToAdj(s: JobState): string {
+  function stateToAdj(s: ProwJobState): string {
     switch (s) {
       case "success":
         return "succeeded";
@@ -97,7 +97,7 @@ export namespace cell {
     const bl = document.createElement("a");
     bl.href = pushCommitLink;
     if (!bl.href) {
-      bl.href = `https://github.com/${repo}/commit/${SHA}`;
+      bl.href = `/github-link?dest=${repo}/commit/${SHA}`;
     }
     bl.text = `${ref} (${SHA.slice(0, 7)})`;
     c.appendChild(bl);
@@ -122,7 +122,7 @@ export namespace cell {
     if (pull.link) {
       pl.href = pull.link;
     } else {
-      pl.href = `https://github.com/${repo}/pull/${pull.number}`;
+      pl.href = `/github-link?dest=${repo}/pull/${pull.number}`;
     }
     pl.text = pull.number.toString();
     if (pull.title) {
@@ -137,7 +137,7 @@ export namespace cell {
       if (pull.commit_link) {
         cl.href = pull.commit_link;
       } else {
-        cl.href = `https://github.com/${repo}/pull/${pull.number}/commits/${pull.sha}`;
+        cl.href = `/github-link?dest=${repo}/pull/${pull.number}/commits/${pull.sha}`;
       }
       cl.text = pull.sha.slice(0, 7);
       elem.appendChild(cl);
@@ -149,7 +149,7 @@ export namespace cell {
       if (pull.author_link) {
         al.href = pull.author_link;
       } else {
-        al.href = "https://github.com/" + pull.author;
+        al.href = "/github-link?dest=" + pull.author;
       }
       al.text = pull.author;
       elem.appendChild(al);
@@ -169,12 +169,15 @@ export namespace tooltip {
 }
 
 export namespace icon {
-  export function create(iconString: string, tip: string = ""): HTMLAnchorElement {
+  export function create(iconString: string, tip: string = "", onClick?: (this: HTMLElement, ev: MouseEvent) => any): HTMLAnchorElement {
     const i = document.createElement("i");
     i.classList.add("icon-button", "material-icons");
     i.innerHTML = iconString;
     if (tip !== "") {
        i.title = tip;
+    }
+    if (onClick) {
+      i.addEventListener("click", onClick);
     }
 
     const container = document.createElement("a");
@@ -200,4 +203,19 @@ export namespace tidehistory {
     link.href = `/tide-history?author=${encodedAuthor}`;
     return link;
   }
+}
+
+export function getCookieByName(name: string): string {
+  if (!document.cookie) {
+    return "";
+  }
+  const docCookies = decodeURIComponent(document.cookie).split(";");
+  for (const cookie of docCookies) {
+    const c = cookie.trim();
+    const pref = name + "=";
+    if (c.indexOf(pref) === 0) {
+      return c.slice(pref.length);
+    }
+  }
+  return "";
 }

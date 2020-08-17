@@ -40,6 +40,7 @@ func TestOptions_AssembleTargets(t *testing.T) {
 		paths    []string
 		extra    map[string]gcs.UploadFunc
 		expected []string
+		wantErr  bool
 	}{
 		{
 			name:    "no extra paths should upload infra files for presubmits",
@@ -153,6 +154,34 @@ func TestOptions_AssembleTargets(t *testing.T) {
 				"pr-logs/pull/org_repo/1/job/latest-build.txt",
 			},
 		},
+		{
+			name:    "only job dir files should be output in local mode",
+			jobType: prowapi.PresubmitJob,
+			options: Options{
+				Items: []string{"something", "more"},
+				GCSConfiguration: &prowapi.GCSConfiguration{
+					PathStrategy:   prowapi.PathStrategyExplicit,
+					LocalOutputDir: "/output",
+				},
+			},
+			paths: []string{"something/", "something/else", "more", "notforupload"},
+			expected: []string{
+				"something/else",
+				"more",
+			},
+		},
+		{
+			name:    "invalid bucket name",
+			jobType: prowapi.PresubmitJob,
+			options: Options{
+				Items: []string{"something"},
+				GCSConfiguration: &prowapi.GCSConfiguration{
+					PathStrategy: prowapi.PathStrategyExplicit,
+					Bucket:       "://bucket",
+				},
+			},
+			wantErr: true,
+		},
 	}
 
 	for _, testCase := range testCases {
@@ -198,7 +227,11 @@ func TestOptions_AssembleTargets(t *testing.T) {
 			}
 
 			var uploadPaths []string
-			for uploadPath := range testCase.options.assembleTargets(spec, testCase.extra) {
+			targets, err := testCase.options.assembleTargets(spec, testCase.extra)
+			if (err != nil) != testCase.wantErr {
+				t.Errorf("assembleTargets() error = %v, wantErr %v", err, testCase.wantErr)
+			}
+			for uploadPath := range targets {
 				uploadPaths = append(uploadPaths, uploadPath)
 			}
 			sort.Strings(uploadPaths)

@@ -1,6 +1,15 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
+reviewers:
+- amwat
+- BenTheElder
+- MushuEE
+- spiffxp
 approvers:
+- amwat
+- BenTheElder
+- spiffxp
+emeritus_approvers:
 - cjwagner
 - fejta
 - krzyzacy

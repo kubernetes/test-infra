@@ -17,10 +17,10 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"flag"
 	"os"
-	"os/signal"
-	"syscall"
+	"time"
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -29,7 +29,7 @@ import (
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
-	_ "k8s.io/test-infra/prow/hook"
+	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/plugins"
@@ -49,36 +49,43 @@ type options struct {
 	continueOnError         bool
 	addedPresubmitBlacklist prowflagutil.Strings
 	dryRun                  bool
-	kubernetes              prowflagutil.ExperimentalKubernetesOptions
+	kubernetes              prowflagutil.KubernetesOptions
 	github                  prowflagutil.GitHubOptions
+	storage                 prowflagutil.StorageClientOptions
+	instrumentationOptions  prowflagutil.InstrumentationOptions
 
 	tokenBurst    int
 	tokensPerHour int
+	// statusURI where Status-reconciler stores last known state, i.e. configuration.
+	// Can be /local/path, gs://path/to/object or s3://path/to/object.
+	// GCS writes will use the bucket's default acl for new objects. Ensure both that
+	// a) the gcs credentials can write to this bucket
+	// b) the default acls do not expose any private info
+	statusURI string
 }
 
-func gatherOptions() options {
+func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	o := options{}
-	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 
 	fs.StringVar(&o.configPath, "config-path", "/etc/config/config.yaml", "Path to config.yaml.")
 	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
 	fs.StringVar(&o.pluginConfig, "plugin-config", "/etc/plugins/plugins.yaml", "Path to plugin config file.")
+	fs.StringVar(&o.statusURI, "status-path", "", "The /local/path, gs://path/to/object or s3://path/to/object to store status controller state. GCS writes will use the default object ACL for the bucket.")
 
 	fs.BoolVar(&o.continueOnError, "continue-on-error", false, "Indicates that the migration should continue if context migration fails for an individual PR.")
 	fs.Var(&o.addedPresubmitBlacklist, "blacklist", "Org or org/repo to ignore new added presubmits for, set more than once to add more.")
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Whether or not to make mutating API calls to GitHub.")
 	fs.IntVar(&o.tokensPerHour, "tokens", defaultTokens, "Throttle hourly token consumption (0 to disable)")
 	fs.IntVar(&o.tokenBurst, "token-burst", defaultBurst, "Allow consuming a subset of hourly tokens in a short burst")
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github} {
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.storage, &o.instrumentationOptions} {
 		group.AddFlags(fs)
 	}
-
-	fs.Parse(os.Args[1:])
+	fs.Parse(args)
 	return o
 }
 
 func (o *options) Validate() error {
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github} {
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.storage} {
 		if err := group.Validate(o.dryRun); err != nil {
 			return err
 		}
@@ -88,23 +95,21 @@ func (o *options) Validate() error {
 }
 
 func main() {
-	o := gatherOptions()
+	logrusutil.ComponentInit()
+
+	o := gatherOptions(flag.NewFlagSet(os.Args[0], flag.ExitOnError), os.Args[1:]...)
 	if err := o.Validate(); err != nil {
 		logrus.WithError(err).Fatal("Invalid options")
 	}
 
-	logrus.SetFormatter(
-		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "status-reconciler"}),
-	)
+	defer interrupts.WaitForGracefulShutdown()
 
-	pjutil.ServePProf()
+	pjutil.ServePProf(o.instrumentationOptions.PProfPort)
 
 	configAgent := &config.Agent{}
 	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
-	changes := make(chan config.Delta)
-	configAgent.Subscribe(changes)
 
 	secretAgent := &secret.Agent{}
 	if o.github.TokenPath != "" {
@@ -114,7 +119,7 @@ func main() {
 	}
 
 	pluginAgent := &plugins.ConfigAgent{}
-	if err := pluginAgent.Start(o.pluginConfig); err != nil {
+	if err := pluginAgent.Start(o.pluginConfig, false); err != nil {
 		logrus.WithError(err).Fatal("Error starting plugin configuration agent.")
 	}
 
@@ -131,9 +136,15 @@ func main() {
 		logrus.WithError(err).Fatal("Error getting kube client.")
 	}
 
-	sig := make(chan os.Signal, 1)
-	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	opener, err := o.storage.StorageClient(ctx)
+	if err != nil {
+		logrus.WithError(err).Fatal("Cannot create opener")
+	}
 
-	c := statusreconciler.NewController(o.continueOnError, sets.NewString(o.addedPresubmitBlacklist.Strings()...), prowJobClient, githubClient, configAgent, pluginAgent)
-	c.Run(sig, changes)
+	c := statusreconciler.NewController(o.continueOnError, sets.NewString(o.addedPresubmitBlacklist.Strings()...), opener, o.configPath, o.jobConfigPath, o.statusURI, prowJobClient, githubClient, pluginAgent)
+	interrupts.Run(func(ctx context.Context) {
+		c.Run(ctx)
+	})
 }

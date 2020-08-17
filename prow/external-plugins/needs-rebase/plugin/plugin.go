@@ -26,6 +26,7 @@ import (
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/pluginhelp"
@@ -49,6 +50,7 @@ type githubClient interface {
 	IsMergeable(org, repo string, number int, sha string) (bool, error)
 	DeleteStaleComments(org, repo string, number int, comments []github.IssueComment, isStale func(github.IssueComment) bool) error
 	Query(context.Context, interface{}, map[string]interface{}) error
+	GetPullRequest(org, repo string, number int) (*github.PullRequest, error)
 }
 
 type commentPruner interface {
@@ -57,7 +59,7 @@ type commentPruner interface {
 
 // HelpProvider constructs the PluginHelp for this plugin that takes into account enabled repositories.
 // HelpProvider defines the type for function that construct the PluginHelp for plugins.
-func HelpProvider(enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+func HelpProvider(_ []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
 	return &pluginhelp.PluginHelp{
 			Description: `The needs-rebase plugin manages the '` + labels.NeedsRebase + `' label by removing it from Pull Requests that are mergeable and adding it to those which are not.
 The plugin reacts to commit changes on PRs in addition to periodically scanning all open PRs for any changes to mergeability that could have resulted from changes in other PRs.`,
@@ -65,22 +67,46 @@ The plugin reacts to commit changes on PRs in addition to periodically scanning 
 		nil
 }
 
-// HandleEvent handles a GitHub PR event to determine if the "needs-rebase"
-// label needs to be added or removed. It depends on GitHub mergeability check
-// to decide the need for a rebase.
-func HandleEvent(log *logrus.Entry, ghc githubClient, pre *github.PullRequestEvent) error {
+// HandlePullRequestEvent handles a GitHub pull request event and adds or removes a
+// "needs-rebase" label based on whether the GitHub api considers the PR mergeable
+func HandlePullRequestEvent(log *logrus.Entry, ghc githubClient, pre *github.PullRequestEvent) error {
 	if pre.Action != github.PullRequestActionOpened && pre.Action != github.PullRequestActionSynchronize && pre.Action != github.PullRequestActionReopened {
 		return nil
 	}
 
+	return handle(log, ghc, &pre.PullRequest)
+}
+
+// HandleIssueCommentEvent handles a GitHub issue comment event and adds or removes a
+// "needs-rebase" label if the issue is a PR based on whether the GitHub api considers
+// the PR mergeable
+func HandleIssueCommentEvent(log *logrus.Entry, ghc githubClient, ice *github.IssueCommentEvent) error {
+	if !ice.Issue.IsPullRequest() {
+		return nil
+	}
+	pr, err := ghc.GetPullRequest(ice.Repo.Owner.Login, ice.Repo.Name, ice.Issue.Number)
+	if err != nil {
+		return err
+	}
+
+	return handle(log, ghc, pr)
+}
+
+// handle handles a GitHub PR to determine if the "needs-rebase"
+// label needs to be added or removed. It depends on GitHub mergeability check
+// to decide the need for a rebase.
+func handle(log *logrus.Entry, ghc githubClient, pr *github.PullRequest) error {
+	if pr.Merged {
+		return nil
+	}
 	// Before checking mergeability wait a few seconds to give github a chance to calculate it.
 	// This initial delay prevents us from always wasting the first API token.
 	sleep(time.Second * 5)
 
-	org := pre.Repo.Owner.Login
-	repo := pre.Repo.Name
-	number := pre.Number
-	sha := pre.PullRequest.Head.SHA
+	org := pr.Base.Repo.Owner.Login
+	repo := pr.Base.Repo.Name
+	number := pr.Number
+	sha := pr.Head.SHA
 
 	mergeable, err := ghc.IsMergeable(org, repo, number, sha)
 	if err != nil {
@@ -92,7 +118,7 @@ func HandleEvent(log *logrus.Entry, ghc githubClient, pre *github.PullRequestEve
 	}
 	hasLabel := github.HasLabel(labels.NeedsRebase, issueLabels)
 
-	return takeAction(log, ghc, org, repo, number, pre.PullRequest.User.Login, hasLabel, mergeable)
+	return takeAction(log, ghc, org, repo, number, pr.User.Login, hasLabel, mergeable)
 }
 
 // HandleAll checks all orgs and repos that enabled this plugin for open PRs to
@@ -106,7 +132,7 @@ func HandleAll(log *logrus.Entry, ghc githubClient, config *plugins.Configuratio
 		return nil
 	}
 	var buf bytes.Buffer
-	fmt.Fprint(&buf, "is:pr is:open")
+	fmt.Fprint(&buf, "archived:false is:pr is:open")
 	for _, org := range orgs {
 		fmt.Fprintf(&buf, " org:\"%s\"", org)
 	}

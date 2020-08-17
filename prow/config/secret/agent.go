@@ -18,11 +18,16 @@ limitations under the License.
 package secret
 
 import (
+	"bytes"
 	"os"
 	"sync"
 	"time"
 
 	"github.com/sirupsen/logrus"
+
+	"k8s.io/apimachinery/pkg/util/sets"
+
+	"k8s.io/test-infra/prow/logrusutil"
 )
 
 // Agent watches a path and automatically loads the secrets stored.
@@ -32,6 +37,8 @@ type Agent struct {
 }
 
 // Start creates goroutines to monitor the files that contain the secret value.
+// Additionally, Start wraps the current standard logger formatter with a
+// censoring formatter that removes secret occurrences from the logs.
 func (a *Agent) Start(paths []string) error {
 	secretsMap, err := LoadSecrets(paths)
 	if err != nil {
@@ -45,6 +52,22 @@ func (a *Agent) Start(paths []string) error {
 		go a.reloadSecret(secretPath)
 	}
 
+	logrus.SetFormatter(logrusutil.NewCensoringFormatter(logrus.StandardLogger().Formatter, a.getSecrets))
+
+	return nil
+}
+
+// Add registers a new path to the agent.
+func (a *Agent) Add(path string) error {
+	secret, err := LoadSingleSecret(path)
+	if err != nil {
+		return err
+	}
+
+	a.setSecret(path, secret)
+
+	// Start one goroutine for each file to monitor and update the secret's values.
+	go a.reloadSecret(path)
 	return nil
 }
 
@@ -103,4 +126,27 @@ func (a *Agent) GetTokenGenerator(secretPath string) func() []byte {
 	return func() []byte {
 		return a.GetSecret(secretPath)
 	}
+}
+
+const censored = "CENSORED"
+
+var censoredBytes = []byte(censored)
+
+// Censor replaces sensitive parts of the content with a placeholder.
+func (a *Agent) Censor(content []byte) []byte {
+	for sKey := range a.secretsMap {
+		secret := a.GetSecret(sKey)
+		content = bytes.ReplaceAll(content, secret, censoredBytes)
+	}
+	return content
+}
+
+func (a *Agent) getSecrets() sets.String {
+	a.RLock()
+	defer a.RUnlock()
+	secrets := sets.NewString()
+	for _, v := range a.secretsMap {
+		secrets.Insert(string(v))
+	}
+	return secrets
 }

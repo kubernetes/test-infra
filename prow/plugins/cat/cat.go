@@ -31,27 +31,31 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 )
 
 var (
-	match = regexp.MustCompile(`(?mi)^/meow(vie)?(?: (.+))?\s*$`)
-	meow  = &realClowder{
-		url: "https://api.thecatapi.com/api/images/get?format=json&results_per_page=1",
+	match          = regexp.MustCompile(`(?mi)^/meow(vie)?(?: (.+))?\s*$`)
+	grumpyKeywords = regexp.MustCompile(`(?mi)^(no|grumpy)\s*$`)
+	meow           = &realClowder{
+		url: "https://api.thecatapi.com/v1/images/search?format=json&results_per_page=1",
 	}
 )
 
 const (
-	pluginName = "cat"
+	pluginName        = "cat"
+	defaultGrumpyRoot = "https://upload.wikimedia.org/wikipedia/commons/e/ee/"
+	grumpyIMG         = "Grumpy_Cat_by_Gage_Skidmore.jpg"
 )
 
 func init() {
 	plugins.RegisterGenericCommentHandler(pluginName, handleGenericComment, helpProvider)
 }
 
-func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "The cat plugin adds a cat image to an issue or PR in response to the `/meow` command.",
 		Config: map[string]string{
@@ -73,7 +77,7 @@ type githubClient interface {
 }
 
 type clowder interface {
-	readCat(string, bool) (string, error)
+	readCat(string, bool, string) (string, error)
 }
 
 type realClowder struct {
@@ -105,27 +109,19 @@ func (c *realClowder) setKey(keyPath string, log *logrus.Entry) {
 }
 
 type catResult struct {
-	Source string `json:"source_url"`
-	Image  string `json:"url"`
+	Image string `json:"url"`
 }
 
 func (cr catResult) Format() (string, error) {
-	if cr.Source == "" {
-		return "", errors.New("empty source_url")
-	}
 	if cr.Image == "" {
 		return "", errors.New("empty image url")
-	}
-	src, err := url.Parse(cr.Source)
-	if err != nil {
-		return "", fmt.Errorf("invalid source_url %s: %v", cr.Source, err)
 	}
 	img, err := url.Parse(cr.Image)
 	if err != nil {
 		return "", fmt.Errorf("invalid image url %s: %v", cr.Image, err)
 	}
 
-	return fmt.Sprintf("[![cat image](%s)](%s)", img, src), nil
+	return fmt.Sprintf("![cat image](%s)", img), nil
 }
 
 func (c *realClowder) URL(category string, movieCat bool) string {
@@ -144,22 +140,26 @@ func (c *realClowder) URL(category string, movieCat bool) string {
 	return uri
 }
 
-func (c *realClowder) readCat(category string, movieCat bool) (string, error) {
-	uri := c.URL(category, movieCat)
-	resp, err := http.Get(uri)
-	if err != nil {
-		return "", fmt.Errorf("could not read cat from %s: %v", uri, err)
-	}
-	defer resp.Body.Close()
-	if sc := resp.StatusCode; sc > 299 || sc < 200 {
-		return "", fmt.Errorf("failing %d response from %s", sc, uri)
-	}
+func (c *realClowder) readCat(category string, movieCat bool, grumpyRoot string) (string, error) {
 	cats := make([]catResult, 0)
-	if err = json.NewDecoder(resp.Body).Decode(&cats); err != nil {
-		return "", err
-	}
-	if len(cats) < 1 {
-		return "", fmt.Errorf("no cats in response from %s", uri)
+	uri := c.URL(category, movieCat)
+	if grumpyKeywords.MatchString(category) {
+		cats = append(cats, catResult{grumpyRoot + grumpyIMG})
+	} else {
+		resp, err := http.Get(uri)
+		if err != nil {
+			return "", fmt.Errorf("could not read cat from %s: %v", uri, err)
+		}
+		defer resp.Body.Close()
+		if sc := resp.StatusCode; sc > 299 || sc < 200 {
+			return "", fmt.Errorf("failing %d response from %s", sc, uri)
+		}
+		if err = json.NewDecoder(resp.Body).Decode(&cats); err != nil {
+			return "", err
+		}
+		if len(cats) < 1 {
+			return "", fmt.Errorf("no cats in response from %s", uri)
+		}
 	}
 	a := cats[0]
 	if a.Image == "" {
@@ -209,7 +209,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, c
 	number := e.Number
 
 	for i := 0; i < 3; i++ {
-		resp, err := c.readCat(category, movieCat)
+		resp, err := c.readCat(category, movieCat, defaultGrumpyRoot)
 		if err != nil {
 			log.WithError(err).Error("Failed to get cat img")
 			continue

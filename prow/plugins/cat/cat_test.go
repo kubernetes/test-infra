@@ -40,7 +40,7 @@ var category = flag.String("category", "", "Request a particular category if set
 var movieCat = flag.Bool("gif", false, "Specifically request a GIF image if set")
 var keyPath = flag.String("key-path", "", "Path to api key if set")
 
-func (c fakeClowder) readCat(category string, movieCat bool) (string, error) {
+func (c fakeClowder) readCat(category string, movieCat bool, grumpyRoot string) (string, error) {
 	if category == "error" {
 		return "", errors.New(string(c))
 	}
@@ -55,7 +55,7 @@ func TestRealCat(t *testing.T) {
 		meow.setKey(*keyPath, logrus.WithField("plugin", pluginName))
 	}
 
-	if cat, err := meow.readCat(*category, *movieCat); err != nil {
+	if cat, err := meow.readCat(*category, *movieCat, defaultGrumpyRoot); err != nil {
 		t.Errorf("Could not read cats from %#v: %v", meow, err)
 	} else {
 		fmt.Println(cat)
@@ -142,51 +142,103 @@ func TestUrl(t *testing.T) {
 	}
 }
 
+func TestGrumpy(t *testing.T) {
+	// fake server for images
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		body := "binary image"
+		io.WriteString(w, body)
+	}))
+	defer ts.Close()
+
+	cases := []struct {
+		name     string
+		url      string
+		category string
+		key      string
+		movie    bool
+		require  []string
+		deny     []string
+	}{
+		{
+			name:     "category",
+			url:      "http://foo",
+			category: "bar",
+			movie:    false,
+			deny:     []string{ts.URL + "/" + grumpyIMG},
+		},
+		{
+			name:     "category and movie",
+			url:      "http://foo",
+			category: "this",
+			movie:    true,
+			deny:     []string{ts.URL + "/" + grumpyIMG},
+		},
+		{
+			name:     "grumpy cat no keyword",
+			url:      "http://foo",
+			category: "no",
+			key:      "that",
+			movie:    false,
+			require:  []string{ts.URL + "/" + grumpyIMG},
+		},
+		{
+			name:     "grumpy cat grumpy keyword",
+			url:      "http://foo",
+			category: "grumpy",
+			key:      "that",
+			movie:    false,
+			require:  []string{ts.URL + "/" + grumpyIMG},
+		},
+	}
+
+	for _, tc := range cases {
+		rc := realClowder{
+			url: tc.url,
+			key: tc.key,
+		}
+		url, _ := rc.readCat(tc.category, tc.movie, ts.URL+"/")
+		for _, r := range tc.require {
+			if !strings.Contains(url, r) {
+				t.Errorf("%s: %s does not contain %s", tc.name, url, r)
+			}
+		}
+		for _, d := range tc.deny {
+			if strings.Contains(url, d) {
+				t.Errorf("%s: %s contained unexpected %s", tc.name, url, d)
+			}
+		}
+	}
+}
+
 func TestFormat(t *testing.T) {
-	re := regexp.MustCompile(`\[!\[.+\]\(.+\)\]\(.+\)`)
+	re := regexp.MustCompile(`!\[.+\]\(.+\)`)
 	basicURL := "http://example.com"
 	testcases := []struct {
 		name string
-		src  string
 		img  string
 		err  bool
 	}{
 		{
 			name: "basically works",
-			src:  basicURL,
 			img:  basicURL,
 			err:  false,
 		},
 		{
-			name: "empty source",
-			src:  "",
-			img:  basicURL,
-			err:  true,
-		},
-		{
 			name: "empty image",
-			src:  basicURL,
 			img:  "",
 			err:  true,
 		},
 		{
-			name: "bad source",
-			src:  "http://this is not a url",
-			img:  basicURL,
-			err:  true,
-		},
-		{
 			name: "bad image",
-			src:  basicURL,
 			img:  "http://still a bad url",
 			err:  true,
 		},
 	}
 	for _, tc := range testcases {
 		ret, err := catResult{
-			Source: tc.src,
-			Image:  tc.img,
+			Image: tc.img,
 		}.Format()
+
 		switch {
 		case tc.err:
 			if err == nil {
@@ -222,8 +274,7 @@ func TestHttpResponse(t *testing.T) {
 	// create test cases for handling http responses
 	img := ts2.URL + "/cat.jpg"
 	bigimg := ts2.URL + "/bigcat.jpg"
-	src := "http://localhost?kind=source_url"
-	validResponse := fmt.Sprintf(`[{"id":"valid","url":"%s","source_url":"%s"}]`, img, src)
+	validResponse := fmt.Sprintf(`[{"id":"valid","url":"%s"}]`, img)
 	var testcases = []struct {
 		name     string
 		path     string
@@ -240,7 +291,7 @@ func TestHttpResponse(t *testing.T) {
 		{
 			name:     "image too big",
 			path:     "/too-big",
-			response: fmt.Sprintf(`[{"id":"toobig","url":"%s","source_url":"%s"}]`, bigimg, src),
+			response: fmt.Sprintf(`[{"id":"toobig","url":"%s"}]`, bigimg),
 		},
 		{
 			name: "return-406",
@@ -301,7 +352,7 @@ Available variants:
 	// run test for each case
 	for _, testcase := range testcases {
 		fakemeow := &realClowder{url: ts.URL + testcase.path}
-		cat, err := fakemeow.readCat(*category, *movieCat)
+		cat, err := fakemeow.readCat(*category, *movieCat, "")
 		if testcase.valid && err != nil {
 			t.Errorf("For case %s, didn't expect error: %v", testcase.name, err)
 		} else if !testcase.valid && err == nil {
@@ -330,8 +381,6 @@ Available variants:
 	}
 	if c := fc.IssueComments[5][0]; !strings.Contains(c.Body, img) {
 		t.Errorf("missing image url: %s from comment: %v", img, c)
-	} else if !strings.Contains(c.Body, src) {
-		t.Errorf("missing source url: %s from comment: %v", src, c)
 	}
 
 }

@@ -1,0 +1,86 @@
+presubmits:
+  kubernetes-sigs/seccomp-operator:
+  - name: pull-seccomp-operator-build
+    always_run: true
+    decorate: true
+    annotations:
+      testgrid-num-columns-recent: '30'
+      testgrid-create-test-group: 'true'
+    spec:
+      containers:
+      - image: golang:1.15
+        command:
+        - hack/pull-seccomp-operator-build
+
+  - name: pull-seccomp-operator-verify
+    always_run: true
+    decorate: true
+    annotations:
+      testgrid-num-columns-recent: '30'
+      testgrid-create-test-group: 'true'
+    spec:
+      containers:
+      - image: golang:1.15
+        command:
+        - hack/pull-seccomp-operator-verify
+
+  - name: pull-seccomp-operator-test-unit
+    always_run: true
+    decorate: true
+    annotations:
+      testgrid-num-columns-recent: '30'
+      testgrid-create-test-group: 'true'
+    spec:
+      containers:
+      - image: golang:1.15
+        command:
+        - hack/pull-seccomp-operator-test-unit
+
+  - name: pull-seccomp-operator-build-image
+    always_run: true
+    decorate: true
+    annotations:
+      testgrid-num-columns-recent: '30'
+      testgrid-create-test-group: 'true'
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+        securityContext:
+          privileged: true  # for dind
+        resources:
+          requests:
+            memory: 9000Mi
+            cpu: 7500m
+        command:
+        - runner.sh
+        args:
+        - hack/pull-seccomp-operator-build-image
+
+  - name: pull-seccomp-operator-test-e2e
+    always_run: true
+    decorate: true
+    annotations:
+      testgrid-num-columns-recent: '30'
+      testgrid-create-test-group: 'true'
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    spec:
+      hostNetwork: true
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+        securityContext:
+          privileged: true  # for dind
+        resources:
+          requests:
+            memory: 9000Mi
+            cpu: 7500m
+        command:
+        - runner.sh
+        args:
+        - hack/pull-seccomp-operator-test-e2e

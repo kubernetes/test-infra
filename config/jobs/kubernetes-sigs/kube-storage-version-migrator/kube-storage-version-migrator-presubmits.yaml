@@ -5,11 +5,14 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190516-576b68c-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
         command:
         - make
         - test
 
+    annotations:
+      testgrid-dashboards: sig-api-machinery-kube-storage-version-migrator
+      testgrid-tab-name: pr-test
   - name: pull-kube-storage-version-migrator-manually-launched-e2e
     decorate: true
     always_run: true
@@ -19,7 +22,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190516-576b68c-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -37,18 +40,19 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
+    annotations:
+      testgrid-dashboards: sig-api-machinery-kube-storage-version-migrator
+      testgrid-tab-name: pr-e2e-manually-launched
   - name: pull-kube-storage-version-migrator-fully-automated-e2e
     decorate: true
     always_run: true
-    # TODO: remove this when the test is stable
-    optional: true
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190516-576b68c-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -67,3 +71,6 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
+    annotations:
+      testgrid-dashboards: sig-api-machinery-kube-storage-version-migrator
+      testgrid-tab-name: pr-e2e-fully-automated

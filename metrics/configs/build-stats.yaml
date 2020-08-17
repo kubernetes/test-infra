@@ -30,19 +30,3 @@ jqfilter: |
     passes: (.passes|tonumber),
     rate: (.rate|tonumber)
   })]
-
-measurements:
-  backfill: build_stats
-  jq: |
-    [(.[] | {
-      measurement: "build_stats",
-      time: (.day|tonumber),
-      tags: {
-        day: (.day|tonumber)
-      },
-      fields: {
-        invocations: (.invocations|tonumber),
-        passes: (.passes|tonumber),
-        rate: (.rate|tonumber)
-      }
-    })]

@@ -1,0 +1,46 @@
+# a simple daemonset to tune sysctls
+# intended to be used in a prow build cluster
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: tune-sysctls
+  namespace: kube-system
+  labels:
+    app: tune-sysctls
+spec:
+  selector:
+    matchLabels:
+      name: tune-sysctls
+  template:
+    metadata:
+      labels:
+        name: tune-sysctls
+    spec:
+      hostNetwork: true
+      hostPID: true
+      hostIPC: true
+      tolerations:
+      - operator: Exists
+        effect: NoSchedule
+      containers:
+      - name: setsysctls
+        command:
+        - sh
+        - -c
+        - |
+          while true; do
+            sysctl -w fs.inotify.max_user_watches=524288
+            sleep 10
+          done
+        image: alpine:3.6
+        imagePullPolicy: IfNotPresent
+        resources: {}
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: sys
+          mountPath: /sys
+      volumes:
+      - name: sys
+        hostPath:
+          path: /sys

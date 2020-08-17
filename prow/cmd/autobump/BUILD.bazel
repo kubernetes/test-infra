@@ -1,0 +1,29 @@
+load("@io_bazel_rules_docker//container:image.bzl", "container_image")
+
+container_image(
+    name = "image",
+    base = "@gcloud-go//image",
+    directory = "/",
+    entrypoint = ["/autobump.sh"],
+    files = [
+        "autobump.sh",
+        "bump.sh",
+        "//robots/pr-creator",
+    ],
+    stamp = True,
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

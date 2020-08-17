@@ -27,16 +27,23 @@ package ghcache
 
 import (
 	"context"
+	"crypto/sha256"
+	"fmt"
 	"net/http"
 	"path"
+	"strconv"
 	"strings"
+	"time"
 
+	"github.com/gomodule/redigo/redis"
 	"github.com/gregjones/httpcache"
 	"github.com/gregjones/httpcache/diskcache"
+	rediscache "github.com/gregjones/httpcache/redis"
 	"github.com/peterbourgon/diskv"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/semaphore"
+	"k8s.io/test-infra/ghproxy/ghmetrics"
 )
 
 type CacheResponseMode string
@@ -70,16 +77,6 @@ func CacheModeIsFree(mode CacheResponseMode) bool {
 	return false
 }
 
-// cacheCounter provides the 'ghcache_responses' counter vec that is indexed
-// by the cache response mode.
-var cacheCounter = prometheus.NewCounterVec(
-	prometheus.CounterOpts{
-		Name: "ghcache_responses",
-		Help: "How many cache responses of each cache response mode there are.",
-	},
-	[]string{"mode"},
-)
-
 // outboundConcurrencyGauge provides the 'concurrent_outbound_requests' gauge that
 // is global to the proxy.
 var outboundConcurrencyGauge = prometheus.NewGauge(prometheus.GaugeOpts{
@@ -94,10 +91,19 @@ var pendingOutboundConnectionsGauge = prometheus.NewGauge(prometheus.GaugeOpts{
 	Help: "How many pending requests are waiting to be sent to GitHub servers.",
 })
 
+var cachePartitionsCounter = prometheus.NewCounterVec(
+	prometheus.CounterOpts{
+		Name: "ghcache_cache_parititions",
+		Help: "Which cache partitions exist",
+	},
+	[]string{"token_hash"},
+)
+
 func init() {
-	prometheus.MustRegister(cacheCounter)
+
 	prometheus.MustRegister(outboundConcurrencyGauge)
 	prometheus.MustRegister(pendingOutboundConnectionsGauge)
+	prometheus.MustRegister(cachePartitionsCounter)
 }
 
 func cacheResponseMode(headers http.Header) CacheResponseMode {
@@ -148,16 +154,23 @@ func (c *throttlingTransport) RoundTrip(req *http.Request) (*http.Response, erro
 // This instructs the cache to store the response, but always consider it stale.
 type upstreamTransport struct {
 	delegate http.RoundTripper
+	hasher   ghmetrics.Hasher
 }
 
 func (u upstreamTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	etag := req.Header.Get("if-none-match")
+	authHeaderHash := u.hasher.Hash(req)
+
+	reqStartTime := time.Now()
 	// Don't modify request, just pass to delegate.
 	resp, err := u.delegate.RoundTrip(req)
 	if err != nil {
-		logrus.WithField("cache-key", req.URL.String()).WithError(err).Error("Error from upstream (GitHub).")
+		ghmetrics.CollectRequestTimeoutMetrics(authHeaderHash, req.URL.Path, req.Header.Get("User-Agent"), reqStartTime, time.Now())
+		logrus.WithField("cache-key", req.URL.String()).WithError(err).Warn("Error from upstream (GitHub).")
 		return nil, err
 	}
+	responseTime := time.Now()
+	roundTripTime := responseTime.Sub(reqStartTime)
 
 	if resp.StatusCode >= 400 {
 		// Don't store errors. They can't be revalidated to save API tokens.
@@ -168,35 +181,104 @@ func (u upstreamTransport) RoundTrip(req *http.Request) (*http.Response, error) 
 	if etag != "" {
 		resp.Header.Set("X-Conditional-Request", etag)
 	}
+
+	apiVersion := "v3"
+	if strings.HasPrefix(req.URL.Path, "graphql") || strings.HasPrefix(req.URL.Path, "/graphql") {
+		resp.Header.Set("Cache-Control", "no-store")
+		apiVersion = "v4"
+	}
+
+	ghmetrics.CollectGitHubTokenMetrics(authHeaderHash, apiVersion, resp.Header, reqStartTime, responseTime)
+	ghmetrics.CollectGitHubRequestMetrics(authHeaderHash, req.URL.Path, strconv.Itoa(resp.StatusCode), req.Header.Get("User-Agent"), roundTripTime.Seconds())
+
 	return resp, nil
 }
 
+func authHeaderHash(req *http.Request) string {
+	// get authorization header to convert to sha256
+	authHeader := req.Header.Get("Authorization")
+	if authHeader == "" {
+		logrus.Warn("Couldn't retrieve 'Authorization' header, adding to unknown bucket")
+		authHeader = "unknown"
+	}
+	return fmt.Sprintf("%x", sha256.Sum256([]byte(authHeader))) // use %x to make this a utf-8 string for use as a label
+}
+
+const LogMessageWithDiskPartitionFields = "Not using a partitioned cache because legacyDisablePartitioningByAuthHeader is true"
+
 // NewDiskCache creates a GitHub cache RoundTripper that is backed by a disk
 // cache.
-func NewDiskCache(delegate http.RoundTripper, cacheDir string, cacheSizeGB, maxConcurrency int) http.RoundTripper {
-	return NewFromCache(delegate, diskcache.NewWithDiskv(
-		diskv.New(diskv.Options{
-			BasePath:     path.Join(cacheDir, "data"),
-			TempDir:      path.Join(cacheDir, "temp"),
-			CacheSizeMax: uint64(cacheSizeGB) * uint64(1000000000), // convert G to B
-		})),
+// It supports a partitioned cache.
+func NewDiskCache(delegate http.RoundTripper, cacheDir string, cacheSizeGB, maxConcurrency int, legacyDisablePartitioningByAuthHeader bool) http.RoundTripper {
+	if legacyDisablePartitioningByAuthHeader {
+		diskCache := diskcache.NewWithDiskv(
+			diskv.New(diskv.Options{
+				BasePath:     path.Join(cacheDir, "data"),
+				TempDir:      path.Join(cacheDir, "temp"),
+				CacheSizeMax: uint64(cacheSizeGB) * uint64(1000000000), // convert G to B
+			}))
+		return NewFromCache(delegate,
+			func(partitionKey string) httpcache.Cache {
+				logrus.WithField("cache-base-path", path.Join(cacheDir, "data", partitionKey)).
+					WithField("cache-temp-path", path.Join(cacheDir, "temp", partitionKey)).
+					Warning(LogMessageWithDiskPartitionFields)
+				return diskCache
+			},
+			maxConcurrency,
+		)
+	}
+	return NewFromCache(delegate,
+		func(partitionKey string) httpcache.Cache {
+			return diskcache.NewWithDiskv(
+				diskv.New(diskv.Options{
+					BasePath:     path.Join(cacheDir, "data", partitionKey),
+					TempDir:      path.Join(cacheDir, "temp", partitionKey),
+					CacheSizeMax: uint64(cacheSizeGB) * uint64(1000000000), // convert G to B
+				}))
+		},
 		maxConcurrency,
 	)
 }
 
 // NewMemCache creates a GitHub cache RoundTripper that is backed by a memory
 // cache.
+// It supports a partitioned cache.
 func NewMemCache(delegate http.RoundTripper, maxConcurrency int) http.RoundTripper {
-	return NewFromCache(delegate, httpcache.NewMemoryCache(), maxConcurrency)
+	return NewFromCache(delegate,
+		func(_ string) httpcache.Cache { return httpcache.NewMemoryCache() },
+		maxConcurrency)
 }
+
+// CachePartitionCreator creates a new cache partition using the given key
+type CachePartitionCreator func(partitionKey string) httpcache.Cache
 
 // NewFromCache creates a GitHub cache RoundTripper that is backed by the
 // specified httpcache.Cache implementation.
-func NewFromCache(delegate http.RoundTripper, cache httpcache.Cache, maxConcurrency int) http.RoundTripper {
-	cacheTransport := httpcache.NewTransport(cache)
-	cacheTransport.Transport = newThrottlingTransport(maxConcurrency, upstreamTransport{delegate: delegate})
-	return &requestCoalescer{
-		keys:     make(map[string]*responseWaiter),
-		delegate: cacheTransport,
+func NewFromCache(delegate http.RoundTripper, cache CachePartitionCreator, maxConcurrency int) http.RoundTripper {
+	hasher := ghmetrics.NewCachingHasher()
+	return newPartitioningRoundTripper(func(partitionKey string) http.RoundTripper {
+		cacheTransport := httpcache.NewTransport(cache(partitionKey))
+		cacheTransport.Transport = newThrottlingTransport(maxConcurrency, upstreamTransport{delegate: delegate, hasher: hasher})
+		return &requestCoalescer{
+			keys:     make(map[string]*responseWaiter),
+			delegate: cacheTransport,
+			hasher:   hasher,
+		}
+	})
+}
+
+// NewRedisCache creates a GitHub cache RoundTripper that is backed by a Redis
+// cache.
+// Important note: The redis implementation does not support partitioning the cache
+// which means that requests to the same path from different tokens will invalidate
+// each other.
+func NewRedisCache(delegate http.RoundTripper, redisAddress string, maxConcurrency int) http.RoundTripper {
+	conn, err := redis.Dial("tcp", redisAddress)
+	if err != nil {
+		logrus.WithError(err).Fatal("Error connecting to Redis")
 	}
+	redisCache := rediscache.NewWithClient(conn)
+	return NewFromCache(delegate,
+		func(_ string) httpcache.Cache { return redisCache },
+		maxConcurrency)
 }

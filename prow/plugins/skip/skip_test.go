@@ -318,7 +318,13 @@ func TestSkipStatus(t *testing.T) {
 		}
 		l := logrus.WithField("plugin", pluginName)
 
-		if err := handle(fghc, l, test.event, test.presubmits, true); err != nil {
+		c := &config.Config{
+			JobConfig: config.JobConfig{
+				PresubmitsStatic: map[string][]config.Presubmit{"org/repo": test.presubmits},
+			},
+		}
+
+		if err := handle(fghc, l, test.event, c, nil, true); err != nil {
 			t.Errorf("%s: unexpected error: %v", test.name, err)
 			continue
 		}

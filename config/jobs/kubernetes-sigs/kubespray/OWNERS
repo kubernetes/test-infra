@@ -1,15 +1,20 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
+reviewers:
+- ant31
+- mattymo
+- atoms
+- chadswen
+- mirwan
+- riverzhang
+- woopstar
+- miouge1
 approvers:
 - ant31
 - mattymo
 - atoms
 - chadswen
-- rsmitty
-- bogdando
-- bradbeam
-- woopstar
+- mirwan
 - riverzhang
-- holser
-- smana
-- verwilst
+- woopstar
+- miouge1

@@ -17,7 +17,7 @@ limitations under the License.
 package slack
 
 import (
-	"errors"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -83,19 +83,28 @@ func (sl *Client) urlValues() *url.Values {
 	return &uv
 }
 
-func (sl *Client) postMessage(url string, uv *url.Values) ([]byte, error) {
+func (sl *Client) postMessage(url string, uv *url.Values) error {
 	resp, err := http.PostForm(url, *uv)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != 200 {
-		t, _ := ioutil.ReadAll(resp.Body)
-		return nil, errors.New(string(t))
+	body, _ := ioutil.ReadAll(resp.Body)
+	apiResponse := struct {
+		Ok    bool   `json:"ok"`
+		Error string `json:"error"`
+	}{}
+
+	if err := json.Unmarshal(body, &apiResponse); err != nil {
+		return fmt.Errorf("API returned invalid JSON (%q): %v", string(body), err)
 	}
-	t, _ := ioutil.ReadAll(resp.Body)
-	return t, nil
+
+	if resp.StatusCode != 200 || !apiResponse.Ok {
+		return fmt.Errorf("request failed: %v", apiResponse.Error)
+	}
+
+	return nil
 }
 
 // WriteMessage adds text to channel
@@ -109,6 +118,5 @@ func (sl *Client) WriteMessage(text, channel string) error {
 	uv.Add("channel", channel)
 	uv.Add("text", text)
 
-	_, err := sl.postMessage(chatPostMessage, uv)
-	return err
+	return sl.postMessage(chatPostMessage, uv)
 }

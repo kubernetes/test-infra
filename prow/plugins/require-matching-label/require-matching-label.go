@@ -26,6 +26,7 @@ import (
 	"strings"
 	"time"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
@@ -69,7 +70,7 @@ func init() {
 	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest, helpProvider)
 }
 
-func helpProvider(config *plugins.Configuration, _ []string) (*pluginhelp.PluginHelp, error) {
+func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
 	descs := make([]string, 0, len(config.RequireMatchingLabel))
 	for _, cfg := range config.RequireMatchingLabel {
 		descs = append(descs, cfg.Describe())

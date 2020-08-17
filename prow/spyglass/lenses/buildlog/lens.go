@@ -28,6 +28,8 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
+
+	"k8s.io/test-infra/prow/spyglass/api"
 	"k8s.io/test-infra/prow/spyglass/lenses"
 )
 
@@ -39,6 +41,12 @@ const (
 	minLinesSkipped    = 5
 	maxHighlightLength = 10000 // Maximum length of a line worth highlighting
 )
+
+type config struct {
+	HighlightRegexes []string `json:"highlight_regexes"`
+}
+
+var _ api.Lens = Lens{}
 
 // Lens implements the build lens.
 type Lens struct{}
@@ -53,12 +61,13 @@ func (lens Lens) Config() lenses.LensConfig {
 }
 
 // Header executes the "header" section of the template.
-func (lens Lens) Header(artifacts []lenses.Artifact, resourceDir string) string {
+func (lens Lens) Header(artifacts []api.Artifact, resourceDir string, config json.RawMessage) string {
 	return executeTemplate(resourceDir, "header", BuildLogsView{})
 }
 
-// errRE matches keywords and glog error messages
-var errRE = regexp.MustCompile(`timed out|ERROR:|(\s|^)(FAIL|Failure \[)\b|(\s|^)panic\b|^E\d{4} \d\d:\d\d:\d\d\.\d\d\d]`)
+// defaultErrRE matches keywords and glog error messages.
+// It is only used if higlight_regexes is not specified in the lens config.
+var defaultErrRE = regexp.MustCompile(`timed out|ERROR:|(FAIL|Failure \[)\b|panic\b|^E\d{4} \d\d:\d\d:\d\d\.\d\d\d]`)
 
 func init() {
 	lenses.RegisterLens(Lens{})
@@ -72,11 +81,12 @@ type SubLine struct {
 
 // LogLine represents a line displayed in the LogArtifactView.
 type LogLine struct {
-	Number      int
-	Length      int
-	Highlighted bool
-	Skip        bool
-	SubLines    []SubLine
+	ArtifactName string
+	Number       int
+	Length       int
+	Highlighted  bool
+	Skip         bool
+	SubLines     []SubLine
 }
 
 // LineGroup holds multiple lines that can be collapsed/expanded as a block
@@ -116,14 +126,38 @@ type BuildLogsView struct {
 	RawGetMoreRequests map[string]string
 }
 
+func getHighlightRegex(rawConfig json.RawMessage) *regexp.Regexp {
+	// No config at all is fine.
+	if len(rawConfig) == 0 {
+		return defaultErrRE
+	}
+
+	var c config
+	if err := json.Unmarshal(rawConfig, &c); err != nil {
+		logrus.WithError(err).Error("Failed to decode buildlog config")
+		return defaultErrRE
+	}
+	if len(c.HighlightRegexes) == 0 {
+		return defaultErrRE
+	}
+
+	re, err := regexp.Compile(strings.Join(c.HighlightRegexes, "|"))
+	if err != nil {
+		logrus.WithError(err).Warnf("Couldn't compile %q", c.HighlightRegexes)
+		return defaultErrRE
+	}
+	return re
+}
+
 // Body returns the <body> content for a build log (or multiple build logs)
-func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data string) string {
+func (lens Lens) Body(artifacts []api.Artifact, resourceDir string, data string, rawConfig json.RawMessage) string {
 	buildLogsView := BuildLogsView{
 		LogViews:           []LogArtifactView{},
 		RawGetAllRequests:  make(map[string]string),
 		RawGetMoreRequests: make(map[string]string),
 	}
 
+	highlightRe := getHighlightRegex(rawConfig)
 	// Read log artifacts and construct template structs
 	for _, a := range artifacts {
 		av := LogArtifactView{
@@ -135,7 +169,7 @@ func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data stri
 			logrus.WithError(err).Info("Error reading log.")
 			continue
 		}
-		av.LineGroups = groupLines(highlightLines(lines, 0))
+		av.LineGroups = groupLines(highlightLines(lines, 0, av.ArtifactName, highlightRe))
 		av.ViewAll = true
 		buildLogsView.LogViews = append(buildLogsView.LogViews, av)
 	}
@@ -144,7 +178,7 @@ func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data stri
 }
 
 // Callback is used to retrieve new log segments
-func (lens Lens) Callback(artifacts []lenses.Artifact, resourceDir string, data string) string {
+func (lens Lens) Callback(artifacts []api.Artifact, resourceDir string, data string, rawConfig json.RawMessage) string {
 	var request LineRequest
 	err := json.Unmarshal([]byte(data), &request)
 	if err != nil {
@@ -165,11 +199,11 @@ func (lens Lens) Callback(artifacts []lenses.Artifact, resourceDir string, data 
 		return fmt.Sprintf("failed to retrieve log lines: %v", err)
 	}
 
-	logLines := highlightLines(lines, request.StartLine)
+	logLines := highlightLines(lines, request.StartLine, request.Artifact, getHighlightRegex(rawConfig))
 	return executeTemplate(resourceDir, "line group", logLines)
 }
 
-func artifactByName(artifacts []lenses.Artifact, name string) (lenses.Artifact, bool) {
+func artifactByName(artifacts []api.Artifact, name string) (api.Artifact, bool) {
 	for _, a := range artifacts {
 		if a.JobPath() == name {
 			return a, true
@@ -179,7 +213,7 @@ func artifactByName(artifacts []lenses.Artifact, name string) (lenses.Artifact, 
 }
 
 // logLinesAll reads all of an artifact and splits it into lines.
-func logLinesAll(artifact lenses.Artifact) ([]string, error) {
+func logLinesAll(artifact api.Artifact) ([]string, error) {
 	read, err := artifact.ReadAll()
 	if err != nil {
 		return nil, fmt.Errorf("failed to read log %q: %v", artifact.JobPath(), err)
@@ -189,7 +223,7 @@ func logLinesAll(artifact lenses.Artifact) ([]string, error) {
 	return logLines, nil
 }
 
-func logLines(artifact lenses.Artifact, offset, length int64) ([]string, error) {
+func logLines(artifact api.Artifact, offset, length int64) ([]string, error) {
 	b := make([]byte, length)
 	_, err := artifact.ReadAt(b, offset)
 	if err != nil && err != io.EOF {
@@ -205,28 +239,29 @@ func logLines(artifact lenses.Artifact, offset, length int64) ([]string, error) 
 	return strings.Split(string(b), "\n"), nil
 }
 
-func highlightLines(lines []string, startLine int) []LogLine {
+func highlightLines(lines []string, startLine int, artifact string, highlightRegex *regexp.Regexp) []LogLine {
 	// mark highlighted lines
 	logLines := make([]LogLine, 0, len(lines))
 	for i, text := range lines {
 		length := len(text)
 		subLines := []SubLine{}
 		if length <= maxHighlightLength {
-			loc := errRE.FindStringIndex(text)
+			loc := highlightRegex.FindStringIndex(text)
 			for loc != nil {
 				subLines = append(subLines, SubLine{false, text[:loc[0]]})
 				subLines = append(subLines, SubLine{true, text[loc[0]:loc[1]]})
 				text = text[loc[1]:]
-				loc = errRE.FindStringIndex(text)
+				loc = highlightRegex.FindStringIndex(text)
 			}
 		}
 		subLines = append(subLines, SubLine{false, text})
 		logLines = append(logLines, LogLine{
-			Length:      length + 1, // counting the "\n"
-			SubLines:    subLines,
-			Number:      startLine + i + 1,
-			Highlighted: len(subLines) > 1,
-			Skip:        true,
+			Length:       length + 1, // counting the "\n"
+			SubLines:     subLines,
+			Number:       startLine + i + 1,
+			Highlighted:  len(subLines) > 1,
+			ArtifactName: artifact,
+			Skip:         true,
 		})
 	}
 	return logLines

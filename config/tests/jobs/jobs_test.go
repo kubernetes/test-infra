@@ -28,11 +28,14 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"regexp"
+	"sort"
 	"strings"
 	"testing"
 	"time"
 
 	coreapi "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 
@@ -40,7 +43,7 @@ import (
 	cfg "k8s.io/test-infra/prow/config"
 )
 
-var configPath = flag.String("config", "../../../prow/config.yaml", "Path to prow config")
+var configPath = flag.String("config", "../../../config/prow/config.yaml", "Path to prow config")
 var jobConfigPath = flag.String("job-config", "../../jobs", "Path to prow job config")
 var deckPath = flag.String("deck-path", "https://prow.k8s.io", "Path to deck")
 var bucket = flag.String("bucket", "kubernetes-jenkins", "Gcs bucket for log upload")
@@ -100,19 +103,18 @@ func TestReportTemplate(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		var b bytes.Buffer
-		if err := c.Plank.ReportTemplate.Execute(&b, &prowapi.ProwJob{
-			Spec: prowapi.ProwJobSpec{
-				Refs: &prowapi.Refs{
-					Org:  tc.org,
-					Repo: tc.repo,
-					Pulls: []prowapi.Pull{
-						{
-							Number: tc.number,
-						},
-					},
+		refs := &prowapi.Refs{
+			Org:  tc.org,
+			Repo: tc.repo,
+			Pulls: []prowapi.Pull{
+				{
+					Number: tc.number,
 				},
 			},
-		}); err != nil {
+		}
+
+		reportTemplate := c.Plank.ReportTemplateForRepo(refs)
+		if err := reportTemplate.Execute(&b, &prowapi.ProwJob{Spec: prowapi.ProwJobSpec{Refs: refs}}); err != nil {
 			t.Errorf("Error executing template: %v", err)
 			continue
 		}
@@ -267,7 +269,7 @@ func checkContext(t *testing.T, repo string, p cfg.Presubmit) {
 }
 
 func TestContextMatches(t *testing.T) {
-	for repo, presubmits := range c.Presubmits {
+	for repo, presubmits := range c.PresubmitsStatic {
 		for _, p := range presubmits {
 			checkContext(t, repo, p)
 		}
@@ -284,7 +286,7 @@ func checkRetest(t *testing.T, repo string, presubmits []cfg.Presubmit) {
 }
 
 func TestRetestMatchJobsName(t *testing.T) {
-	for repo, presubmits := range c.Presubmits {
+	for repo, presubmits := range c.PresubmitsStatic {
 		checkRetest(t, repo, presubmits)
 	}
 }
@@ -308,6 +310,7 @@ func findRequired(t *testing.T, presubmits []cfg.Presubmit) []string {
 	return required
 }
 
+// Enforce conventions for jobs that run in test-infra-trusted cluster
 func TestTrustedJobs(t *testing.T) {
 	// TODO(fejta): allow each config/jobs/kubernetes/foo/foo-trusted.yaml
 	// that uses a foo-trusted cluster
@@ -315,31 +318,74 @@ func TestTrustedJobs(t *testing.T) {
 	trustedPath := path.Join(*jobConfigPath, "kubernetes", "test-infra", "test-infra-trusted.yaml")
 
 	// Presubmits may not use trusted clusters.
-	for _, pre := range c.AllPresubmits(nil) {
+	for _, pre := range c.AllStaticPresubmits(nil) {
 		if pre.Cluster == trusted {
 			t.Errorf("%s: presubmits cannot use trusted clusters", pre.Name)
 		}
 	}
 
 	// Trusted postsubmits must be defined in trustedPath
-	for _, post := range c.AllPostsubmits(nil) {
-		if post.Cluster != trusted {
-			continue
-		}
-		if post.SourcePath != trustedPath {
+	for _, post := range c.AllStaticPostsubmits(nil) {
+		if post.Cluster == trusted && post.SourcePath != trustedPath {
 			t.Errorf("%s defined in %s may not run in trusted cluster", post.Name, post.SourcePath)
 		}
 	}
 
 	// Trusted periodics must be defined in trustedPath
 	for _, per := range c.AllPeriodics() {
-		if per.Cluster != trusted {
-			continue
-		}
-		if per.SourcePath != trustedPath {
+		if per.Cluster == trusted && per.SourcePath != trustedPath {
 			t.Errorf("%s defined in %s may not run in trusted cluster", per.Name, per.SourcePath)
 		}
 	}
+}
+
+// Enforce conventions for jobs that run in k8s-infra-prow-build-trused cluster
+func TestK8sInfraTrusted(t *testing.T) {
+	const trusted = "k8s-infra-prow-build-trusted"
+	trustedPath := path.Join(*jobConfigPath, "kubernetes", "wg-k8s-infra", "trusted", "wg-k8s-infra-trusted.yaml")
+	imagePushingDir := path.Join(*jobConfigPath, "image-pushing") + "/"
+
+	// Presubmits may not use this cluster
+	for _, pre := range c.AllStaticPresubmits(nil) {
+		if pre.Cluster == trusted {
+			t.Errorf("%s: presubmits may not run in cluster: %s", pre.Name, trusted)
+		}
+	}
+
+	// Postsubmits and periodics must
+	// - be defined in config/jobs/image-pushing/ and be a valid image-pushing job, OR
+	// - be defined in config/jobs/kubernetes/wg-k8s-infra/trusted/wg-k8s-infra-trusted.yaml
+	jobs := []cfg.JobBase{}
+	for _, job := range c.AllStaticPostsubmits(nil) {
+		jobs = append(jobs, job.JobBase)
+	}
+	for _, job := range c.AllPeriodics() {
+		jobs = append(jobs, job.JobBase)
+	}
+	for _, job := range jobs {
+		if job.Cluster != trusted {
+			continue
+		}
+		if strings.HasPrefix(job.SourcePath, imagePushingDir) {
+			if err := validateImagePushingImage(job.Spec); err != nil {
+				t.Errorf("%s defined in %s %s", job.Name, job.SourcePath, err)
+			}
+		} else if job.SourcePath != trustedPath {
+			t.Errorf("%s defined in %s may not run in cluster: %s", job.Name, job.SourcePath, trusted)
+		}
+	}
+}
+
+func validateImagePushingImage(spec *coreapi.PodSpec) error {
+	const imagePushingImage = "gcr.io/k8s-testimages/image-builder"
+
+	for _, c := range spec.Containers {
+		if !strings.HasPrefix(c.Image, imagePushingImage+":") {
+			return fmt.Errorf("must use a pinned version of %s", imagePushingImage)
+		}
+	}
+
+	return nil
 }
 
 // Unit test only postsubmit/periodic jobs in config/jobs/<org>/<project>/<project>-trusted.yaml can use
@@ -396,7 +442,7 @@ func TestTrustedJobSecretsRestricted(t *testing.T) {
 	}
 
 	// All presubmit jobs should not use any restricted secrets.
-	for _, job := range c.AllPresubmits(nil) {
+	for _, job := range c.AllStaticPresubmits(nil) {
 		if job.Cluster != prowapi.DefaultClusterAlias {
 			// check against default public cluster only
 			continue
@@ -427,7 +473,7 @@ func TestTrustedJobSecretsRestricted(t *testing.T) {
 	// config/jobs/<org>/<project>/<project>-trusted.yaml can and only can use restricted
 	// secrets for <org>/repo>.
 	jobs := []cfg.JobBase{}
-	for _, job := range c.AllPostsubmits(nil) {
+	for _, job := range c.AllStaticPostsubmits(nil) {
 		jobs = append(jobs, job.JobBase)
 	}
 	for _, job := range c.AllPeriodics() {
@@ -454,7 +500,7 @@ func TestTrustedJobSecretsRestricted(t *testing.T) {
 // Unit test jobs outside kubernetes-security do not use the security cluster
 // and that jobs inside kubernetes-security DO
 func TestConfigSecurityClusterRestricted(t *testing.T) {
-	for repo, jobs := range c.Presubmits {
+	for repo, jobs := range c.PresubmitsStatic {
 		if strings.HasPrefix(repo, "kubernetes-security/") {
 			for _, job := range jobs {
 				if job.Agent != "jenkins" && job.Cluster != "security" {
@@ -469,7 +515,7 @@ func TestConfigSecurityClusterRestricted(t *testing.T) {
 			}
 		}
 	}
-	for repo, jobs := range c.Postsubmits {
+	for repo, jobs := range c.PostsubmitsStatic {
 		if strings.HasPrefix(repo, "kubernetes-security/") {
 			for _, job := range jobs {
 				if job.Agent != "jenkins" && job.Cluster != "security" {
@@ -505,7 +551,7 @@ func checkDockerSocketVolumes(volumes []coreapi.Volume) error {
 
 // Make sure jobs are not using the docker socket as a host path
 func TestJobDoesNotHaveDockerSocket(t *testing.T) {
-	for _, presubmit := range c.AllPresubmits(nil) {
+	for _, presubmit := range c.AllStaticPresubmits(nil) {
 		if presubmit.Spec != nil {
 			if err := checkDockerSocketVolumes(presubmit.Spec.Volumes); err != nil {
 				t.Errorf("Error in presubmit: %v", err)
@@ -513,7 +559,7 @@ func TestJobDoesNotHaveDockerSocket(t *testing.T) {
 		}
 	}
 
-	for _, postsubmit := range c.AllPostsubmits(nil) {
+	for _, postsubmit := range c.AllStaticPostsubmits(nil) {
 		if postsubmit.Spec != nil {
 			if err := checkDockerSocketVolumes(postsubmit.Spec.Volumes); err != nil {
 				t.Errorf("Error in postsubmit: %v", err)
@@ -555,7 +601,7 @@ func checkLatestUsesImagePullPolicy(spec *coreapi.PodSpec) error {
 
 // Make sure jobs that use `latest-*` tags specify `imagePullPolicy: Always`
 func TestLatestUsesImagePullPolicy(t *testing.T) {
-	for _, presubmit := range c.AllPresubmits(nil) {
+	for _, presubmit := range c.AllStaticPresubmits(nil) {
 		if presubmit.Spec != nil {
 			if err := checkLatestUsesImagePullPolicy(presubmit.Spec); err != nil {
 				t.Errorf("Error in presubmit %q: %v", presubmit.Name, err)
@@ -563,7 +609,7 @@ func TestLatestUsesImagePullPolicy(t *testing.T) {
 		}
 	}
 
-	for _, postsubmit := range c.AllPostsubmits(nil) {
+	for _, postsubmit := range c.AllStaticPostsubmits(nil) {
 		if postsubmit.Spec != nil {
 			if err := checkLatestUsesImagePullPolicy(postsubmit.Spec); err != nil {
 				t.Errorf("Error in postsubmit %q: %v", postsubmit.Name, err)
@@ -653,16 +699,16 @@ func TestValidPresets(t *testing.T) {
 		return
 	}
 
-	for _, presubmit := range c.AllPresubmits(nil) {
-		if presubmit.Spec != nil && !presubmit.Decorate {
+	for _, presubmit := range c.AllStaticPresubmits(nil) {
+		if presubmit.Spec != nil && !cfg.ShouldDecorate(&c.JobConfig, presubmit.JobBase.UtilityConfig) {
 			if err := checkKubekinsPresets(presubmit.Name, presubmit.Spec, presubmit.Labels, validLabels); err != nil {
 				t.Errorf("Error in presubmit %q: %v", presubmit.Name, err)
 			}
 		}
 	}
 
-	for _, postsubmit := range c.AllPostsubmits(nil) {
-		if postsubmit.Spec != nil && !postsubmit.Decorate {
+	for _, postsubmit := range c.AllStaticPostsubmits(nil) {
+		if postsubmit.Spec != nil && !cfg.ShouldDecorate(&c.JobConfig, postsubmit.JobBase.UtilityConfig) {
 			if err := checkKubekinsPresets(postsubmit.Name, postsubmit.Spec, postsubmit.Labels, validLabels); err != nil {
 				t.Errorf("Error in postsubmit %q: %v", postsubmit.Name, err)
 			}
@@ -670,7 +716,7 @@ func TestValidPresets(t *testing.T) {
 	}
 
 	for _, periodic := range c.AllPeriodics() {
-		if periodic.Spec != nil && !periodic.Decorate {
+		if periodic.Spec != nil && !cfg.ShouldDecorate(&c.JobConfig, periodic.JobBase.UtilityConfig) {
 			if err := checkKubekinsPresets(periodic.Name, periodic.Spec, periodic.Labels, validLabels); err != nil {
 				t.Errorf("Error in periodic %q: %v", periodic.Name, err)
 			}
@@ -732,15 +778,15 @@ func checkScenarioArgs(jobName, imageName string, args []string) error {
 	}
 
 	// shared build args
-	use_shared_build_in_args := hasArg("--use-shared-build", args)
-	extract_in_args := hasArg("--extract", args)
-	build_in_args := hasArg("--build", args)
+	useSharedBuildInArgs := hasArg("--use-shared-build", args)
+	extractInArgs := hasArg("--extract", args)
+	buildInArgs := hasArg("--build", args)
 
-	if use_shared_build_in_args && extract_in_args {
+	if useSharedBuildInArgs && extractInArgs {
 		return fmt.Errorf("job %s: --use-shared-build and --extract cannot be combined", jobName)
 	}
 
-	if use_shared_build_in_args && build_in_args {
+	if useSharedBuildInArgs && buildInArgs {
 		return fmt.Errorf("job %s: --use-shared-build and --build cannot be combined", jobName)
 	}
 
@@ -771,7 +817,6 @@ func checkScenarioArgs(jobName, imageName string, args []string) error {
 	extracts := hasArg("--extract=", args)
 	sharedBuilds := hasArg("--use-shared-build", args)
 	nodeE2e := hasArg("--deployment=node", args)
-	localE2e := hasArg("--deployment=local", args)
 	builds := hasArg("--build", args)
 
 	if sharedBuilds && extracts {
@@ -811,55 +856,36 @@ func checkScenarioArgs(jobName, imageName string, args []string) error {
 		return fmt.Errorf("e2e jobs %s should have both --image-family and --image-project, or none of them", jobName)
 	}
 
-	if strings.HasPrefix(jobName, "pull-kubernetes-") &&
-		!nodeE2e &&
-		!localE2e &&
-		!strings.Contains(jobName, "kubeadm") {
-		stage := "gs://kubernetes-release-pull/ci/" + jobName
-		if strings.Contains(jobName, "gke") {
-			stage = "gs://kubernetes-release-dev/ci"
-			if !hasArg("--stage-suffix="+jobName, args) {
-				return fmt.Errorf("presubmit gke jobs %s - need to have --stage-suffix=%s", jobName, jobName)
-			}
-		}
-
-		if !sharedBuilds {
-			if !hasArg("--stage="+stage, args) {
-				return fmt.Errorf("presubmit jobs %s - need to stage to %s", jobName, stage)
-			}
-		}
-	}
-
 	// test_args should not have double slashes on ginkgo flags
 	for _, arg := range args {
-		ginkgo_args := ""
+		ginkgoArgs := ""
 		if strings.HasPrefix(arg, "--test_args=") {
 			split := strings.SplitN(arg, "=", 2)
-			ginkgo_args = split[1]
+			ginkgoArgs = split[1]
 		} else if strings.HasPrefix(arg, "--upgrade_args=") {
 			split := strings.SplitN(arg, "=", 2)
-			ginkgo_args = split[1]
+			ginkgoArgs = split[1]
 		}
 
-		if strings.Contains(ginkgo_args, "\\\\") {
+		if strings.Contains(ginkgoArgs, "\\\\") {
 			return fmt.Errorf("jobs %s - double slashes in ginkgo args should be single slash now : arg %s", jobName, arg)
 		}
 	}
 
 	// timeout should be valid
-	bootstrap_timeout := 0 * time.Minute
-	kubetest_timeout := 0 * time.Minute
+	bootstrapTimeout := 0 * time.Minute
+	kubetestTimeout := 0 * time.Minute
 	var err error
 	kubetest := false
 	for _, arg := range args {
 		if strings.HasPrefix(arg, "--timeout=") {
 			timeout := strings.SplitN(arg, "=", 2)[1]
 			if kubetest {
-				if kubetest_timeout, err = time.ParseDuration(timeout); err != nil {
+				if kubetestTimeout, err = time.ParseDuration(timeout); err != nil {
 					return fmt.Errorf("jobs %s - invalid kubetest timeout : arg %s", jobName, arg)
 				}
 			} else {
-				if bootstrap_timeout, err = time.ParseDuration(timeout + "m"); err != nil {
+				if bootstrapTimeout, err = time.ParseDuration(timeout + "m"); err != nil {
 					return fmt.Errorf("jobs %s - invalid bootstrap timeout : arg %s", jobName, arg)
 				}
 			}
@@ -870,9 +896,9 @@ func checkScenarioArgs(jobName, imageName string, args []string) error {
 		}
 	}
 
-	if bootstrap_timeout.Minutes()-kubetest_timeout.Minutes() < 20.0 {
+	if bootstrapTimeout.Minutes()-kubetestTimeout.Minutes() < 20.0 {
 		return fmt.Errorf(
-			"jobs %s - kubetest timeout(%v), bootstrap timeout(%v): bootstrap timeout need to be 20min more than kubetest timeout!", jobName, kubetest_timeout, bootstrap_timeout)
+			"jobs %s - kubetest timeout(%v), bootstrap timeout(%v): bootstrap timeout need to be 20min more than kubetest timeout!", jobName, kubetestTimeout, bootstrapTimeout)
 	}
 
 	return nil
@@ -880,16 +906,16 @@ func checkScenarioArgs(jobName, imageName string, args []string) error {
 
 // TestValidScenarioArgs makes sure all scenario args in job configs are valid
 func TestValidScenarioArgs(t *testing.T) {
-	for _, job := range c.AllPresubmits(nil) {
-		if job.Spec != nil && !job.Decorate {
+	for _, job := range c.AllStaticPresubmits(nil) {
+		if job.Spec != nil && !cfg.ShouldDecorate(&c.JobConfig, job.JobBase.UtilityConfig) {
 			if err := checkScenarioArgs(job.Name, job.Spec.Containers[0].Image, job.Spec.Containers[0].Args); err != nil {
 				t.Errorf("Invalid Scenario Args : %s", err)
 			}
 		}
 	}
 
-	for _, job := range c.AllPostsubmits(nil) {
-		if job.Spec != nil && !job.Decorate {
+	for _, job := range c.AllStaticPostsubmits(nil) {
+		if job.Spec != nil && !cfg.ShouldDecorate(&c.JobConfig, job.JobBase.UtilityConfig) {
 			if err := checkScenarioArgs(job.Name, job.Spec.Containers[0].Image, job.Spec.Containers[0].Args); err != nil {
 				t.Errorf("Invalid Scenario Args : %s", err)
 			}
@@ -897,9 +923,222 @@ func TestValidScenarioArgs(t *testing.T) {
 	}
 
 	for _, job := range c.AllPeriodics() {
-		if job.Spec != nil && !job.Decorate {
+		if job.Spec != nil && !cfg.ShouldDecorate(&c.JobConfig, job.JobBase.UtilityConfig) {
 			if err := checkScenarioArgs(job.Name, job.Spec.Containers[0].Image, job.Spec.Containers[0].Args); err != nil {
 				t.Errorf("Invalid Scenario Args : %s", err)
+			}
+		}
+	}
+}
+
+func allStaticJobs() []cfg.JobBase {
+	jobs := []cfg.JobBase{}
+	for _, job := range c.AllStaticPresubmits(nil) {
+		jobs = append(jobs, job.JobBase)
+	}
+	for _, job := range c.AllStaticPostsubmits(nil) {
+		jobs = append(jobs, job.JobBase)
+	}
+	for _, job := range c.AllPeriodics() {
+		jobs = append(jobs, job.JobBase)
+	}
+	sort.Slice(jobs, func(i, j int) bool {
+		return jobs[i].Name < jobs[j].Name
+	})
+	return jobs
+}
+
+func verifyPodQOSGuaranteed(spec *coreapi.PodSpec) (errs []error) {
+	resourceNames := []coreapi.ResourceName{
+		coreapi.ResourceCPU,
+		coreapi.ResourceMemory,
+	}
+	zero := resource.MustParse("0")
+	for _, c := range spec.Containers {
+		for _, r := range resourceNames {
+			limit, ok := c.Resources.Limits[r]
+			if !ok {
+				errs = append(errs, fmt.Errorf("container '%v' should have resources.limits[%v] specified", c.Name, r))
+			}
+			request, ok := c.Resources.Requests[r]
+			if !ok {
+				errs = append(errs, fmt.Errorf("container '%v' should have resources.requests[%v] specified", c.Name, r))
+			}
+			if limit.Cmp(zero) == 0 {
+				errs = append(errs, fmt.Errorf("container '%v' resources.limits[%v] should be non-zero", c.Name, r))
+			} else if limit.Cmp(request) != 0 {
+				errs = append(errs, fmt.Errorf("container '%v' resources.limits[%v] (%v) should match request (%v)", c.Name, r, limit.String(), request.String()))
+			}
+		}
+	}
+	return errs
+}
+
+// isPodQOSGuaranteed returns true if the PodSpec's containers have non-zero
+// resource limits that are equal to their resource requests
+func isPodQOSGuaranteed(spec *coreapi.PodSpec) bool {
+	return len(verifyPodQOSGuaranteed(spec)) == 0
+}
+
+// A job is merge-blocking if it:
+// - is not optional
+// - reports (aka does not skip reporting)
+// - always runs OR runs if some path changed
+func isMergeBlocking(job cfg.Presubmit) bool {
+	return !job.Optional && !job.SkipReport && (job.AlwaysRun || job.RunIfChanged != "")
+}
+
+func isKubernetesReleaseBlocking(job cfg.JobBase) bool {
+	re := regexp.MustCompile(`sig-release-(1.[0-9]{2}|master)-blocking`)
+	dashboards, ok := job.Annotations["testgrid-dashboards"]
+	if !ok {
+		return false
+	}
+	return re.MatchString(dashboards)
+}
+
+func TestKubernetesMergeBlockingJobsMustHavePodQOSGuaranteed(t *testing.T) {
+	repo := "kubernetes/kubernetes"
+	jobs := c.AllStaticPresubmits([]string{repo})
+	sort.Slice(jobs, func(i, j int) bool {
+		return jobs[i].Name < jobs[j].Name
+	})
+	for _, job := range jobs {
+		// Only consider Pods that are merge-blocking
+		if job.Spec == nil || !isMergeBlocking(job) {
+			continue
+		}
+		branches := job.Branches
+		errs := verifyPodQOSGuaranteed(job.Spec)
+		for _, err := range errs {
+			t.Errorf("%v (%v): %v", job.Name, branches, err)
+		}
+	}
+}
+
+func TestKubernetesReleaseBlockingJobsMustHavePodQOSGuaranteed(t *testing.T) {
+	for _, job := range allStaticJobs() {
+		// Only consider Pods that are release-blocking
+		if job.Spec == nil || !isKubernetesReleaseBlocking(job) {
+			continue
+		}
+		errs := verifyPodQOSGuaranteed(job.Spec)
+		for _, err := range errs {
+			t.Errorf("%v: %v", job.Name, err)
+		}
+	}
+}
+
+// TODO: may need to rewrite to handle nodepools or handle jobs that can't be
+// migrated over for a while
+// TODO: s/Should/Must and s/Logf/Errorf when all jobs pass
+func TestKubernetesMergeBlockingJobsShouldRunOnK8sInfraProwBuild(t *testing.T) {
+	repo := "kubernetes/kubernetes"
+	jobs := c.AllStaticPresubmits([]string{repo})
+	sort.Slice(jobs, func(i, j int) bool {
+		return jobs[i].Name < jobs[j].Name
+	})
+	for _, job := range jobs {
+		// Only consider Pods that are merge-blocking
+		if job.Spec == nil || !isMergeBlocking(job) {
+			continue
+		}
+		branches := job.Branches
+		if job.Cluster != "k8s-infra-prow-build" {
+			t.Logf("%v (%v): should run on cluster: k8s-infra-prow-build, found: %v", job.Name, branches, job.Cluster)
+		}
+	}
+}
+
+// TODO: may need to rewrite to handle nodepools or handle jobs that can't be
+// migrated over for a while
+// TODO: s/Should/Must and s/Logf/Errorf when all jobs pass
+func TestKubernetesReleaseBlockingJobsShouldRunOnK8sInfraProwBuild(t *testing.T) {
+	for _, job := range allStaticJobs() {
+		// Only consider Pods that are release-blocking
+		if job.Spec == nil || !isKubernetesReleaseBlocking(job) {
+			continue
+		}
+		if job.Cluster != "k8s-infra-prow-build" {
+			t.Logf("%v: should run on cluster: k8s-infra-prow-build, found: %v", job.Name, job.Cluster)
+		}
+	}
+}
+
+func TestK8sInfraProwBuildJobsMustHavePodQOSGuaranteed(t *testing.T) {
+	jobs := allStaticJobs()
+	for _, job := range jobs {
+		// Only consider Pods destined for the k8s-infra-prow-builds cluster
+		if job.Spec == nil || job.Cluster != "k8s-infra-prow-build" {
+			continue
+		}
+		errs := verifyPodQOSGuaranteed(job.Spec)
+		for _, err := range errs {
+			t.Errorf("%v: %v", job.Name, err)
+		}
+	}
+}
+
+// We have k8s-infra-prow-build setup to auto-scale, but as a quick static
+// check, let's pretend every job schedules one instance to the cluster
+// at the exact same time. This is a poor approximation since there will
+// likely be N presubmits running simultaneously.
+func TestK8sInfraProwBuildJobsMustNotExceedTotalCapacity(t *testing.T) {
+	// k8s-infra-prow-build pool1 is 3-zonal 6-30 n1-highmem-8's
+	maxLimit := coreapi.ResourceList{
+		coreapi.ResourceCPU:    resource.MustParse("576"),    // 3 * 24 * 8 CPUs per n1-highmem-8
+		coreapi.ResourceMemory: resource.MustParse("3744Gi"), // 3 * 24 * 52 Gi per n1-highmem-8
+	}
+	resourceNames := []coreapi.ResourceName{
+		coreapi.ResourceCPU,
+		coreapi.ResourceMemory,
+	}
+	zero := resource.MustParse("0")
+	totalLimit := coreapi.ResourceList{}
+	for _, r := range resourceNames {
+		totalLimit[r] = zero.DeepCopy()
+	}
+	jobs := allStaticJobs()
+	for _, job := range jobs {
+		// Only consider Pods destined for the k8s-infra-prow-builds cluster
+		if job.Spec == nil || job.Cluster != "k8s-infra-prow-build" {
+			continue
+		}
+		for _, c := range job.Spec.Containers {
+			for _, r := range resourceNames {
+				if limit, ok := c.Resources.Limits[r]; ok {
+					total := totalLimit[r]
+					total.Add(limit)
+					totalLimit[r] = total
+				}
+			}
+		}
+	}
+	for _, r := range resourceNames {
+		total, _ := totalLimit[r]
+		max, _ := maxLimit[r]
+		if total.Cmp(max) > -1 {
+			t.Errorf("Total %s limit %s greater than expected limit %s", r, total.String(), max.String())
+		}
+	}
+}
+
+// Fast builds take 20-30m, cross builds take 90m-2h. We want to pick up builds
+// containing the latest merged PRs as soon as possible for the in-development release
+func TestSigReleaseMasterBlockingOrInformingJobsShouldUseFastBuilds(t *testing.T) {
+	jobs := allStaticJobs()
+	for _, job := range jobs {
+		dashboards, ok := job.Annotations["testgrid-dashboards"]
+		if !ok || !strings.Contains(dashboards, "sig-release-master-blocking") || !strings.Contains(dashboards, "sig-release-master-informing") {
+			continue
+		}
+		extract := ""
+		for _, arg := range job.Spec.Containers[0].Args {
+			if strings.HasPrefix(arg, "--extract=") {
+				extract = strings.TrimPrefix(arg, "--extract=")
+				if extract == "ci/latest" {
+					t.Errorf("%s: release-master-blocking e2e jobs must use --extract=ci/latest-fast, found --extract=ci/latest instead", job.Name)
+				}
 			}
 		}
 	}

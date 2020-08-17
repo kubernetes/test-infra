@@ -17,15 +17,20 @@ limitations under the License.
 package pjutil
 
 import (
+	"errors"
+	"fmt"
 	"reflect"
 	"testing"
 	"text/template"
 	"time"
 
 	"github.com/sirupsen/logrus"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/diff"
+	"k8s.io/apimachinery/pkg/util/sets"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
@@ -256,8 +261,9 @@ func TestPartitionActive(t *testing.T) {
 	tests := []struct {
 		pjs []prowapi.ProwJob
 
-		pending   map[string]struct{}
-		triggered map[string]struct{}
+		pending   sets.String
+		triggered sets.String
+		aborted   sets.String
 	}{
 		{
 			pjs: []prowapi.ProwJob{
@@ -301,27 +307,46 @@ func TestPartitionActive(t *testing.T) {
 						State: prowapi.PendingState,
 					},
 				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "aborted",
+					},
+					Status: prowapi.ProwJobStatus{
+						State: prowapi.AbortedState,
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "aborted-and-completed",
+					},
+					Status: prowapi.ProwJobStatus{
+						State:          prowapi.AbortedState,
+						CompletionTime: &[]metav1.Time{metav1.Now()}[0],
+					},
+				},
 			},
-			pending: map[string]struct{}{
-				"bar": {}, "bak": {},
-			},
-			triggered: map[string]struct{}{
-				"foo": {},
-			},
+			pending:   sets.NewString("bar", "bak"),
+			triggered: sets.NewString("foo"),
+			aborted:   sets.NewString("aborted"),
 		},
 	}
 
 	for i, test := range tests {
 		t.Logf("test run #%d", i)
-		pendingCh, triggeredCh := PartitionActive(test.pjs)
+		pendingCh, triggeredCh, abortedCh := PartitionActive(test.pjs)
 		for job := range pendingCh {
-			if _, ok := test.pending[job.ObjectMeta.Name]; !ok {
+			if !test.pending.Has(job.Name) {
 				t.Errorf("didn't find pending job %#v", job)
 			}
 		}
 		for job := range triggeredCh {
-			if _, ok := test.triggered[job.ObjectMeta.Name]; !ok {
+			if !test.triggered.Has(job.Name) {
 				t.Errorf("didn't find triggered job %#v", job)
+			}
+		}
+		for job := range abortedCh {
+			if !test.aborted.Has(job.Name) {
+				t.Errorf("didn't find aborted job %#v", job)
 			}
 		}
 	}
@@ -428,10 +453,12 @@ func TestGetLatestProwJobs(t *testing.T) {
 
 func TestNewProwJob(t *testing.T) {
 	var testCases = []struct {
-		name           string
-		spec           prowapi.ProwJobSpec
-		labels         map[string]string
-		expectedLabels map[string]string
+		name                string
+		spec                prowapi.ProwJobSpec
+		labels              map[string]string
+		expectedLabels      map[string]string
+		annotations         map[string]string
+		expectedAnnotations map[string]string
 	}{
 		{
 			name: "periodic job, no extra labels",
@@ -444,6 +471,9 @@ func TestNewProwJob(t *testing.T) {
 				kube.CreatedByProw:     "true",
 				kube.ProwJobAnnotation: "job",
 				kube.ProwJobTypeLabel:  "periodic",
+			},
+			expectedAnnotations: map[string]string{
+				kube.ProwJobAnnotation: "job",
 			},
 		},
 		{
@@ -460,6 +490,9 @@ func TestNewProwJob(t *testing.T) {
 				kube.ProwJobAnnotation: "job",
 				kube.ProwJobTypeLabel:  "periodic",
 				"extra":                "stuff",
+			},
+			expectedAnnotations: map[string]string{
+				kube.ProwJobAnnotation: "job",
 			},
 		},
 		{
@@ -484,6 +517,9 @@ func TestNewProwJob(t *testing.T) {
 				kube.RepoLabel:         "repo",
 				kube.PullLabel:         "1",
 			},
+			expectedAnnotations: map[string]string{
+				kube.ProwJobAnnotation: "job",
+			},
 		},
 		{
 			name: "non-github presubmit job",
@@ -507,6 +543,9 @@ func TestNewProwJob(t *testing.T) {
 				kube.RepoLabel:         "repo",
 				kube.PullLabel:         "1",
 			},
+			expectedAnnotations: map[string]string{
+				kube.ProwJobAnnotation: "job",
+			},
 		}, {
 			name: "job with name too long to fit in a label",
 			spec: prowapi.ProwJobSpec{
@@ -529,16 +568,84 @@ func TestNewProwJob(t *testing.T) {
 				kube.RepoLabel:         "repo",
 				kube.PullLabel:         "1",
 			},
+			expectedAnnotations: map[string]string{
+				kube.ProwJobAnnotation: "job-created-by-someone-who-loves-very-very-very-long-names-so-long-that-it-does-not-fit-into-the-Kubernetes-label-so-it-needs-to-be-truncated-to-63-characters",
+			},
+		},
+		{
+			name: "periodic job, extra labels, extra annotations",
+			spec: prowapi.ProwJobSpec{
+				Job:  "job",
+				Type: prowapi.PeriodicJob,
+			},
+			labels: map[string]string{
+				"extra": "stuff",
+			},
+			annotations: map[string]string{
+				"extraannotation": "foo",
+			},
+			expectedLabels: map[string]string{
+				kube.CreatedByProw:     "true",
+				kube.ProwJobAnnotation: "job",
+				kube.ProwJobTypeLabel:  "periodic",
+				"extra":                "stuff",
+			},
+			expectedAnnotations: map[string]string{
+				kube.ProwJobAnnotation: "job",
+				"extraannotation":      "foo",
+			},
+		},
+		{
+			name: "job with podspec",
+			spec: prowapi.ProwJobSpec{
+				Job:     "job",
+				Type:    prowapi.PeriodicJob,
+				PodSpec: &corev1.PodSpec{}, // Needed to catch race
+			},
+			expectedLabels: map[string]string{
+				kube.CreatedByProw:     "true",
+				kube.ProwJobAnnotation: "job",
+				kube.ProwJobTypeLabel:  "periodic",
+			},
+			expectedAnnotations: map[string]string{
+				kube.ProwJobAnnotation: "job",
+			},
 		},
 	}
-
 	for _, testCase := range testCases {
-		pj := NewProwJob(testCase.spec, testCase.labels)
+		pj := NewProwJob(testCase.spec, testCase.labels, testCase.annotations)
 		if actual, expected := pj.Spec, testCase.spec; !equality.Semantic.DeepEqual(actual, expected) {
 			t.Errorf("%s: incorrect ProwJobSpec created: %s", testCase.name, diff.ObjectReflectDiff(actual, expected))
 		}
 		if actual, expected := pj.Labels, testCase.expectedLabels; !reflect.DeepEqual(actual, expected) {
 			t.Errorf("%s: incorrect ProwJob labels created: %s", testCase.name, diff.ObjectReflectDiff(actual, expected))
+		}
+		if actual, expected := pj.Annotations, testCase.expectedAnnotations; !reflect.DeepEqual(actual, expected) {
+			t.Errorf("%s: incorrect ProwJob annotations created: %s", testCase.name, diff.ObjectReflectDiff(actual, expected))
+		}
+		if pj.Spec.PodSpec != nil {
+			futzWithPodSpec := func(spec *corev1.PodSpec, val string) {
+				if spec == nil {
+					return
+				}
+				if spec.NodeSelector == nil {
+					spec.NodeSelector = map[string]string{}
+				}
+				spec.NodeSelector["foo"] = val
+				for i := range spec.Containers {
+					c := &spec.Containers[i]
+					if c.Resources.Limits == nil {
+						c.Resources.Limits = corev1.ResourceList{}
+					}
+					if c.Resources.Requests == nil {
+						c.Resources.Requests = corev1.ResourceList{}
+					}
+					c.Resources.Limits[corev1.ResourceCPU] = resource.MustParse(val)
+					c.Resources.Requests[corev1.ResourceCPU] = resource.MustParse(val)
+				}
+			}
+			go futzWithPodSpec(pj.Spec.PodSpec, "12M")
+			futzWithPodSpec(testCase.spec.PodSpec, "34M")
 		}
 	}
 }
@@ -578,7 +685,7 @@ func TestNewProwJobWithAnnotations(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		pj := NewProwJobWithAnnotation(testCase.spec, nil, testCase.annotations)
+		pj := NewProwJob(testCase.spec, nil, testCase.annotations)
 		if actual, expected := pj.Spec, testCase.spec; !equality.Semantic.DeepEqual(actual, expected) {
 			t.Errorf("%s: incorrect ProwJobSpec created: %s", testCase.name, diff.ObjectReflectDiff(actual, expected))
 		}
@@ -590,10 +697,11 @@ func TestNewProwJobWithAnnotations(t *testing.T) {
 
 func TestJobURL(t *testing.T) {
 	var testCases = []struct {
-		name     string
-		plank    config.Plank
-		pj       prowapi.ProwJob
-		expected string
+		name        string
+		plank       config.Plank
+		pj          prowapi.ProwJob
+		expected    string
+		expectedErr string
 	}{
 		{
 			name: "non-decorated job uses template",
@@ -626,9 +734,10 @@ func TestJobURL(t *testing.T) {
 			expected: "periodic",
 		},
 		{
-			name: "decorated job with prefix uses gcslib",
+			name: "decorated job with prefix uses gcsupload",
 			plank: config.Plank{
-				JobURLPrefixConfig: map[string]string{"*": "https://gubernator.com/build"},
+				JobURLPrefixConfig:                       map[string]string{"*": "https://gubernator.com/build"},
+				JobURLPrefixDisableAppendStorageProvider: true,
 			},
 			pj: prowapi.ProwJob{Spec: prowapi.ProwJobSpec{
 				Type: prowapi.PresubmitJob,
@@ -644,13 +753,117 @@ func TestJobURL(t *testing.T) {
 			}},
 			expected: "https://gubernator.com/build/bucket/pr-logs/pull/org_repo/1",
 		},
+		{
+			name: "decorated job with prefix uses gcsupload and new bucket format with gcs (deprecated job url format)",
+			plank: config.Plank{
+				JobURLPrefixConfig: map[string]string{"*": "https://prow.k8s.io/view/gcs"},
+			},
+			pj: prowapi.ProwJob{Spec: prowapi.ProwJobSpec{
+				Type: prowapi.PresubmitJob,
+				Refs: &prowapi.Refs{
+					Org:   "org",
+					Repo:  "repo",
+					Pulls: []prowapi.Pull{{Number: 1}},
+				},
+				DecorationConfig: &prowapi.DecorationConfig{GCSConfiguration: &prowapi.GCSConfiguration{
+					Bucket:       "gs://bucket",
+					PathStrategy: prowapi.PathStrategyExplicit,
+				}},
+			}},
+			expected: "https://prow.k8s.io/view/gs/bucket/pr-logs/pull/org_repo/1",
+		},
+		{
+			name: "decorated job with prefix uses gcsupload and new bucket format with gcs (deprecated job url format with trailing slash)",
+			plank: config.Plank{
+				JobURLPrefixConfig: map[string]string{"*": "https://prow.k8s.io/view/gcs/"},
+			},
+			pj: prowapi.ProwJob{Spec: prowapi.ProwJobSpec{
+				Type: prowapi.PresubmitJob,
+				Refs: &prowapi.Refs{
+					Org:   "org",
+					Repo:  "repo",
+					Pulls: []prowapi.Pull{{Number: 1}},
+				},
+				DecorationConfig: &prowapi.DecorationConfig{GCSConfiguration: &prowapi.GCSConfiguration{
+					Bucket:       "gs://bucket",
+					PathStrategy: prowapi.PathStrategyExplicit,
+				}},
+			}},
+			expected: "https://prow.k8s.io/view/gs/bucket/pr-logs/pull/org_repo/1",
+		},
+		{
+			name: "decorated job with prefix uses gcsupload and new bucket format with gcs (new job url format)",
+			plank: config.Plank{
+				JobURLPrefixConfig: map[string]string{"*": "https://prow.k8s.io/view/"},
+			},
+			pj: prowapi.ProwJob{Spec: prowapi.ProwJobSpec{
+				Type: prowapi.PresubmitJob,
+				Refs: &prowapi.Refs{
+					Org:   "org",
+					Repo:  "repo",
+					Pulls: []prowapi.Pull{{Number: 1}},
+				},
+				DecorationConfig: &prowapi.DecorationConfig{GCSConfiguration: &prowapi.GCSConfiguration{
+					Bucket:       "gs://bucket",
+					PathStrategy: prowapi.PathStrategyExplicit,
+				}},
+			}},
+			expected: "https://prow.k8s.io/view/gs/bucket/pr-logs/pull/org_repo/1",
+		},
+		{
+			name: "decorated job with prefix uses gcsupload and new bucket format with s3",
+			plank: config.Plank{
+				JobURLPrefixConfig: map[string]string{"*": "https://prow.k8s.io/view/"},
+			},
+			pj: prowapi.ProwJob{Spec: prowapi.ProwJobSpec{
+				Type: prowapi.PresubmitJob,
+				Refs: &prowapi.Refs{
+					Org:   "org",
+					Repo:  "repo",
+					Pulls: []prowapi.Pull{{Number: 1}},
+				},
+				DecorationConfig: &prowapi.DecorationConfig{GCSConfiguration: &prowapi.GCSConfiguration{
+					Bucket:       "s3://bucket",
+					PathStrategy: prowapi.PathStrategyExplicit,
+				}},
+			}},
+			expected: "https://prow.k8s.io/view/s3/bucket/pr-logs/pull/org_repo/1",
+		},
+		{
+			name: "decorated job with prefix uses gcsupload with valid bucket with multiple separators",
+			plank: config.Plank{
+				JobURLPrefixConfig: map[string]string{"*": "https://prow.k8s.io/view/"},
+			},
+			pj: prowapi.ProwJob{Spec: prowapi.ProwJobSpec{
+				Type: prowapi.PresubmitJob,
+				Refs: &prowapi.Refs{
+					Org:   "org",
+					Repo:  "repo",
+					Pulls: []prowapi.Pull{{Number: 1}},
+				},
+				DecorationConfig: &prowapi.DecorationConfig{GCSConfiguration: &prowapi.GCSConfiguration{
+					Bucket:       "gs://my-floppy-backup/a://doom2.wad.006",
+					PathStrategy: prowapi.PathStrategyExplicit,
+				}},
+			}},
+			expected: "https://prow.k8s.io/view/gs/my-floppy-backup/a:/doom2.wad.006/pr-logs/pull/org_repo/1",
+		},
 	}
 
 	logger := logrus.New()
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			if actual, expected := JobURL(testCase.plank, testCase.pj, logger.WithField("name", testCase.name)), testCase.expected; actual != expected {
-				t.Errorf("%s: expected URL to be %q but got %q", testCase.name, expected, actual)
+			actual, actualErr := JobURL(testCase.plank, testCase.pj, logger.WithField("name", testCase.name))
+			var actualErrStr string
+			if actualErr != nil {
+				actualErrStr = actualErr.Error()
+			}
+
+			if actualErrStr != testCase.expectedErr {
+				t.Errorf("%s: expectedErr = %v, but got %v", testCase.name, testCase.expectedErr, actualErrStr)
+			}
+			if actual != testCase.expected {
+				t.Errorf("%s: expected URL to be %q but got %q", testCase.name, testCase.expected, actual)
 			}
 		})
 	}
@@ -698,5 +911,113 @@ func TestCreateRefs(t *testing.T) {
 	}
 	if actual := createRefs(pr, "abcdef"); !reflect.DeepEqual(expected, actual) {
 		t.Errorf("diff between expected and actual refs:%s", diff.ObjectReflectDiff(expected, actual))
+	}
+}
+
+func TestSpecFromJobBase(t *testing.T) {
+	permittedGroups := []int{1234, 5678}
+	permittedUsers := []string{"authorized_user", "another_authorized_user"}
+	permittedOrgs := []string{"kubernetes", "kubernetes-sigs"}
+	rerunAuthConfig := prowapi.RerunAuthConfig{
+		AllowAnyone:   false,
+		GitHubTeamIDs: permittedGroups,
+		GitHubUsers:   permittedUsers,
+		GitHubOrgs:    permittedOrgs,
+	}
+	testCases := []struct {
+		name    string
+		jobBase config.JobBase
+		verify  func(prowapi.ProwJobSpec) error
+	}{
+		{
+			name: "Verify reporter config gets copied",
+			jobBase: config.JobBase{
+				ReporterConfig: &prowapi.ReporterConfig{
+					Slack: &prowapi.SlackReporterConfig{
+						Channel: "my-channel",
+					},
+				},
+			},
+			verify: func(pj prowapi.ProwJobSpec) error {
+				if pj.ReporterConfig == nil {
+					return errors.New("Expected ReporterConfig to be non-nil")
+				}
+				if pj.ReporterConfig.Slack == nil {
+					return errors.New("Expected ReporterConfig.Slack to be non-nil")
+				}
+				if pj.ReporterConfig.Slack.Channel != "my-channel" {
+					return fmt.Errorf("Expected pj.ReporterConfig.Slack.Channel to be \"my-channel\", was %q",
+						pj.ReporterConfig.Slack.Channel)
+				}
+				return nil
+			},
+		},
+		{
+			name: "Verify rerun permissions gets copied",
+			jobBase: config.JobBase{
+				RerunAuthConfig: &rerunAuthConfig,
+			},
+			verify: func(pj prowapi.ProwJobSpec) error {
+				if pj.RerunAuthConfig.AllowAnyone {
+					return errors.New("Expected RerunAuthConfig.AllowAnyone to be false")
+				}
+				if pj.RerunAuthConfig.GitHubTeamIDs == nil {
+					return errors.New("Expected RerunAuthConfig.GitHubTeamIDs to be non-nil")
+				}
+				if pj.RerunAuthConfig.GitHubUsers == nil {
+					return errors.New("Expected RerunAuthConfig.GitHubUsers to be non-nil")
+				}
+				if pj.RerunAuthConfig.GitHubOrgs == nil {
+					return errors.New("Expected RerunAuthConfig.GitHubOrgs to be non-nil")
+				}
+				return nil
+			},
+		},
+		{
+			name: "Verify hidden property gets copied",
+			jobBase: config.JobBase{
+				Hidden: true,
+			},
+			verify: func(pj prowapi.ProwJobSpec) error {
+				if !pj.Hidden {
+					return errors.New("hidden property didnt get copied")
+				}
+				return nil
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			pj := specFromJobBase(tc.jobBase)
+			if err := tc.verify(pj); err != nil {
+				t.Fatalf("Verification failed: %v", err)
+			}
+		})
+	}
+}
+
+func TestPeriodicSpec(t *testing.T) {
+	testCases := []struct {
+		name   string
+		config config.Periodic
+		verify func(prowapi.ProwJobSpec) error
+	}{
+		{
+			name:   "Report gets set to true",
+			config: config.Periodic{},
+			verify: func(p prowapi.ProwJobSpec) error {
+				if !p.Report {
+					return errors.New("report is not true")
+				}
+				return nil
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		if err := tc.verify(PeriodicSpec(tc.config)); err != nil {
+			t.Error(err)
+		}
 	}
 }

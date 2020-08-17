@@ -21,6 +21,7 @@ import (
 	"regexp"
 	"strings"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/pluginhelp"
@@ -68,7 +69,7 @@ func init() {
 	plugins.RegisterIssueHandler(pluginName, handleIssue, helpProvider)
 }
 
-func helpProvider(config *plugins.Configuration, _ []string) (*pluginhelp.PluginHelp, error) {
+func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
 	url := config.RequireSIG.GroupListURL
 	if url == "" {
 		url = "<no url provided>"

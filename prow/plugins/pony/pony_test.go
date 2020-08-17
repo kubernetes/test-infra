@@ -43,6 +43,17 @@ func (c fakeHerd) readPony(tags string) (string, error) {
 	return string(c), nil
 }
 
+func parsePoniesFromComment(comment []github.IssueComment) (ponies int) {
+	if comment == nil {
+		return
+	}
+	// Golang doesn't support lookback regex matches. Hence this hack to parse the pony URLs from rest of the comment.
+	var rawComment = comment[0].Body
+	rawComment = rawComment[strings.Index(rawComment, ":")+1:]
+	rawComment = strings.TrimSpace(rawComment[:strings.Index(rawComment, "<details>")])
+	return len(strings.Split(rawComment, "\n"))
+}
+
 func TestRealPony(t *testing.T) {
 	if !*human {
 		t.Skip("Real ponies disabled for automation. Manual users can add --human [--category=foo]")
@@ -232,69 +243,83 @@ func TestHttpResponse(t *testing.T) {
 // Small, unit tests
 func TestPonies(t *testing.T) {
 	var testcases = []struct {
-		name          string
-		action        github.GenericCommentEventAction
-		body          string
-		state         string
-		pr            bool
-		shouldComment bool
+		name      string
+		action    github.GenericCommentEventAction
+		body      string
+		state     string
+		pr        bool
+		numPonies int
 	}{
 		{
-			name:          "ignore edited comment",
-			state:         "open",
-			action:        github.GenericCommentActionEdited,
-			body:          "/pony",
-			shouldComment: false,
+			name:      "ignore edited comment",
+			state:     "open",
+			action:    github.GenericCommentActionEdited,
+			body:      "/pony",
+			numPonies: 0,
 		},
 		{
-			name:          "leave pony on pr",
-			state:         "open",
-			action:        github.GenericCommentActionCreated,
-			body:          "/pony",
-			pr:            true,
-			shouldComment: true,
+			name:      "leave pony on pr",
+			state:     "open",
+			action:    github.GenericCommentActionCreated,
+			body:      "/pony",
+			pr:        true,
+			numPonies: 1,
 		},
 		{
-			name:          "leave pony on issue",
-			state:         "open",
-			action:        github.GenericCommentActionCreated,
-			body:          "/pony",
-			shouldComment: true,
+			name:      "leave pony on issue",
+			state:     "open",
+			action:    github.GenericCommentActionCreated,
+			body:      "/pony",
+			numPonies: 1,
 		},
 		{
-			name:          "leave pony on issue, trailing space",
-			state:         "open",
-			action:        github.GenericCommentActionCreated,
-			body:          "/pony \r",
-			shouldComment: true,
+			name:      "leave pony on issue, trailing space",
+			state:     "open",
+			action:    github.GenericCommentActionCreated,
+			body:      "/pony \r",
+			numPonies: 1,
 		},
 		{
-			name:          "leave pony on issue, tag specified",
-			state:         "open",
-			action:        github.GenericCommentActionCreated,
-			body:          "/pony Twilight Sparkle",
-			shouldComment: true,
+			name:      "leave pony on issue, tag specified",
+			state:     "open",
+			action:    github.GenericCommentActionCreated,
+			body:      "/pony Twilight Sparkle",
+			numPonies: 1,
 		},
 		{
-			name:          "leave pony on issue, tag specified, trailing space",
-			state:         "open",
-			action:        github.GenericCommentActionCreated,
-			body:          "/pony Twilight Sparkle \r",
-			shouldComment: true,
+			name:      "leave pony on issue, tag specified, trailing space",
+			state:     "open",
+			action:    github.GenericCommentActionCreated,
+			body:      "/pony Twilight Sparkle \r",
+			numPonies: 1,
 		},
 		{
-			name:          "don't leave cats or dogs",
-			state:         "open",
-			action:        github.GenericCommentActionCreated,
-			body:          "/woof\n/meow",
-			shouldComment: false,
+			name:      "leave multiple ponies on issue, mixed tags specified, trailing space",
+			state:     "open",
+			action:    github.GenericCommentActionCreated,
+			body:      "/pony one \n/pony \n/pony three \n/pony \n",
+			numPonies: 4,
 		},
 		{
-			name:          "do nothing in the middle of a line",
-			state:         "open",
-			action:        github.GenericCommentActionCreated,
-			body:          "did you know that /pony makes ponies happen?",
-			shouldComment: false,
+			name:      "More than N ponies on issue but only N are picked",
+			state:     "open",
+			action:    github.GenericCommentActionCreated,
+			body:      "/pony one \n/pony two \n/pony three \n/pony four \n/pony five \n/pony six",
+			numPonies: 5,
+		},
+		{
+			name:      "don't leave cats or dogs",
+			state:     "open",
+			action:    github.GenericCommentActionCreated,
+			body:      "/woof\n/meow",
+			numPonies: 0,
+		},
+		{
+			name:      "do nothing in the middle of a line",
+			state:     "open",
+			action:    github.GenericCommentActionCreated,
+			body:      "did you know that /pony makes ponies happen?",
+			numPonies: 0,
 		},
 	}
 	for _, tc := range testcases {
@@ -312,10 +337,10 @@ func TestPonies(t *testing.T) {
 		if err != nil {
 			t.Errorf("For case %s, didn't expect error: %v", tc.name, err)
 		}
-		if tc.shouldComment && len(fc.IssueComments[5]) != 1 {
-			t.Errorf("For case %s, should have commented.", tc.name)
-		} else if !tc.shouldComment && len(fc.IssueComments[5]) != 0 {
-			t.Errorf("For case %s, should not have commented.", tc.name)
+
+		var actualPonyCount = parsePoniesFromComment(fc.IssueComments[5])
+		if tc.numPonies != actualPonyCount {
+			t.Errorf("For case '%s', #expected ponies %v, #found ponies %v", tc.name, tc.numPonies, actualPonyCount)
 		}
 	}
 }

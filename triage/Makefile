@@ -1,4 +1,4 @@
-# Copyright 2016 The Kubernetes Authors.
+# Copyright 2020 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,12 +15,14 @@
 push:
   bazel run //images/builder -- --project=k8s-testimages --scratch-bucket=gs://k8s-testimages-scratch triage
 
-push_static:
-	gsutil -h 'Cache-Control: no-store, must-revalidate' -m cp -Z -a public-read index.html interactive.js model.js render.js style.css gs://k8s-gubernator/triage/
+STATIC_FILES=index.html interactive.js model.js render.js style.css
 
-push_staging:
-	gsutil -h 'Cache-Control: no-store, must-revalidate' -m cp -Z -a public-read index.html interactive.js model.js render.js style.css gs://k8s-gubernator/triage/staging/
+push-static:
+	gsutil -h 'Cache-Control: no-store, must-revalidate' -m cp -Z -a public-read $(STATIC_FILES) gs://k8s-gubernator/triage/
 
-.PHONY: all push push_static
+push-staging:
+	gsutil -h 'Cache-Control: no-store, must-revalidate' -m cp -Z -a public-read $(STATIC_FILES) gs://k8s-gubernator/triage/staging/
+
+.PHONY: all push push-static push-staging
 
 all: build

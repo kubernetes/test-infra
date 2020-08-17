@@ -17,9 +17,10 @@ limitations under the License.
 package spyglass
 
 import (
+	"context"
 	"fmt"
 
-	"k8s.io/test-infra/prow/spyglass/lenses"
+	"k8s.io/test-infra/prow/spyglass/api"
 )
 
 // PodLogArtifactFetcher is used to fetch artifacts from k8s apiserver
@@ -33,11 +34,11 @@ func NewPodLogArtifactFetcher(ja jobAgent) *PodLogArtifactFetcher {
 }
 
 // artifact constructs an artifact handle for the given job build
-func (af *PodLogArtifactFetcher) artifact(jobName, buildID string, sizeLimit int64) (lenses.Artifact, error) {
+func (af *PodLogArtifactFetcher) Artifact(_ context.Context, jobName, buildID string, sizeLimit int64) (api.Artifact, error) {
 
 	podLog, err := NewPodLogArtifact(jobName, buildID, sizeLimit, af.jobAgent)
 	if err != nil {
-		return nil, fmt.Errorf("Error accessing pod log from given source: %v", err)
+		return nil, fmt.Errorf("error accessing pod log from given source: %w", err)
 	}
 	return podLog, nil
 }

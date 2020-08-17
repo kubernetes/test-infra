@@ -24,8 +24,10 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"strings"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
@@ -48,6 +50,7 @@ type ponyRepresentations struct {
 const (
 	ponyURL    = realHerd("https://theponyapi.com/api/v1/pony/random")
 	pluginName = "pony"
+	maxPonies  = 5
 )
 
 var (
@@ -58,7 +61,7 @@ func init() {
 	plugins.RegisterGenericCommentHandler(pluginName, handleGenericComment, helpProvider)
 }
 
-func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
 	// The Config field is omitted because this plugin is not configurable.
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "The pony plugin adds a pony image to an issue or PR in response to the `/pony` command.",
@@ -124,29 +127,39 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 	if e.Action != github.GenericCommentActionCreated {
 		return nil
 	}
-	// Make sure they are requesting a pony
-	mat := match.FindStringSubmatch(e.Body)
+	// Make sure they are requesting a pony and don't allow requesting more than 'maxPonies' defined.
+	mat := match.FindAllStringSubmatch(e.Body, maxPonies)
 	if mat == nil {
 		return nil
 	}
 
-	tag := mat[1]
 	org := e.Repo.Owner.Login
 	repo := e.Repo.Name
 	number := e.Number
 
-	for i := 0; i < 5; i++ {
-		resp, err := p.readPony(tag)
-		if err != nil {
-			log.WithError(err).Println("Failed to get a pony")
-			continue
+	var respBuilder strings.Builder
+	var tagsSpecified bool
+	for _, tag := range mat {
+		for i := 0; i < 5; i++ {
+			if tag[1] != "" {
+				tagsSpecified = true
+			}
+			resp, err := p.readPony(tag[1])
+			if err != nil {
+				log.WithError(err).Println("Failed to get a pony")
+				continue
+			}
+			respBuilder.WriteString(resp + "\n")
+			break
 		}
-		return gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, resp))
+	}
+	if respBuilder.Len() > 0 {
+		return gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, respBuilder.String()))
 	}
 
 	var msg string
-	if tag != "" {
-		msg = "Couldn't find a pony matching that query."
+	if tagsSpecified {
+		msg = "Couldn't find a pony matching given tag(s)."
 	} else {
 		msg = "https://theponyapi.com appears to be down"
 	}

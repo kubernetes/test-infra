@@ -20,7 +20,7 @@ import (
 	"fmt"
 
 	"github.com/golang/glog"
-	"k8s.io/test-infra/prow/errorutil"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 
 	"k8s.io/test-infra/prow/github"
 )
@@ -218,7 +218,7 @@ type Migrator struct {
 }
 
 // New creates a new migrator with specified options and client.
-func New(mode Mode, client *github.Client, org, repo string, targetBranchFilter func(string) bool, continueOnError bool) *Migrator {
+func New(mode Mode, client github.Client, org, repo string, targetBranchFilter func(string) bool, continueOnError bool) *Migrator {
 	return &Migrator{
 		org:                org,
 		repo:               repo,
@@ -265,5 +265,5 @@ func (m *Migrator) Migrate() error {
 			return err
 		}
 	}
-	return errorutil.NewAggregate(errors...)
+	return utilerrors.NewAggregate(errors)
 }

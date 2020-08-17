@@ -1,0 +1,32 @@
+presubmits:
+  kubernetes-sigs/sig-storage-lib-external-provisioner:
+  - name: pull-sig-storage-lib-external-provisioner-build
+    always_run: true
+    decorate: true
+    path_alias: sigs.k8s.io/sig-storage-lib-external-provisioner
+    annotations:
+      testgrid-dashboards: sig-storage-lib-external-provisioner
+      testgrid-tab-name: build
+      description: Build test in sig-storage-lib-external-provisioner repo.
+    spec:
+      containers:
+      - image: golang:1.13.10
+        command:
+        # Plain make runs also verify
+        - make
+
+  - name: pull-sig-storage-lib-external-provisioner-unit
+    always_run: true
+    decorate: true
+    path_alias: sigs.k8s.io/sig-storage-lib-external-provisioner
+    annotations:
+      testgrid-dashboards: sig-storage-lib-external-provisioner
+      testgrid-tab-name: unit
+      description: Unit tests in sig-storage-lib-external-provisioner repo.
+    spec:
+      containers:
+      - image: golang:1.13.10
+        command:
+        - make
+        args:
+        - test
