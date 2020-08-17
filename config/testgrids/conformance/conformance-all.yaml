@@ -332,6 +332,8 @@ test_groups:
   gcs_prefix: compute-image-tools-test/logs/ci-ovf-import-e2e-tests-daily
 - name: ci-windows-upgrade-e2e-tests
   gcs_prefix: compute-image-tools-test/logs/ci-windows-upgrade-e2e-tests
+- name: ci-v2v-adapt-e2e
+  gcs_prefix: compute-image-tools-test/logs/ci-v2v-adapt-e2e
 - name: linux-image-tests
   gcs_prefix: compute-image-tools-test/logs/linux-image-tests
 - name: windows-image-tests
