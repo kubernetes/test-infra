@@ -12,6 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Specify whether this repo is build locally or not, default values is '1';
+# If set to 1, then you need to also set 'DOCKER_USERNAME' and 'DOCKER_PASSWORD'
+# environment variables before build the repo.
+BUILD_LOCALLY ?= 1
+
 # Image URL to use all building/pushing image targets;
 # Use your own docker registry and image name for dev/test by overridding the
 # IMAGE_REPO, *_IMAGE_NAME environment variable.
@@ -82,17 +87,21 @@ build:
 # images section
 ############################################################
 
+ifeq ($(BUILD_LOCALLY),0)
+    export CONFIG_DOCKER_TARGET = config-docker
+endif
+
 image: check-tool-image build-tool-image build-tool-multiarch-image
 
-check-tool-image: config-docker
+check-tool-image: $(CONFIG_DOCKER_TARGET)
 	@IMAGE_REPO=$(IMAGE_REPO) CHECK_TOOL_IMAGE_NAME=$(CHECK_TOOL_IMAGE_NAME) VERSION=$(VERSION) \
 	cd prow/docker/check-tool && ./build-and-push.sh
 
-build-tool-image: config-docker
+build-tool-image: $(CONFIG_DOCKER_TARGET)
 	@IMAGE_REPO=$(IMAGE_REPO) BUILD_TOOL_IMAGE_NAME=$(BUILD_TOOL_IMAGE_NAME) VERSION=$(VERSION) \
 	cd prow/docker/build-tool && ./build-and-push.sh
 
-build-tool-multiarch-image: config-docker
+build-tool-multiarch-image: $(CONFIG_DOCKER_TARGET)
 	@MAX_PULLING_RETRY=20 RETRY_INTERVAL=120 common/scripts/multiarch_image.sh $(IMAGE_REPO) $(BUILD_TOOL_IMAGE_NAME) $(VERSION)
 
 ############################################################
