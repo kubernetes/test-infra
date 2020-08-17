@@ -19,9 +19,13 @@ set -x
 # enale experimental feature of docker manifest 
 jq -n --arg enable enabled '{"experimental":$enable}' > ${HOME}/.docker/config.json
 
-# fix the MTU settings for DinD daemon, end users have to explicately set the MTU via ENV in prow job.
+# fix the MTU settings for DinD daemon
 DOCKER_MTU=${DOCKER_MTU-1500}
-echo "mtu for docker daemon from env is ${DOCKER_MTU}"
+ARCH=$(uname -m)
+if [ ${ARCH} != "ppc64le" ] ; then
+  DOCKER_MTU=8940
+fi
+echo "MTU for docker daemon is ${DOCKER_MTU}"
 jq -n --arg mtu ${DOCKER_MTU} '{"mtu":$mtu}' > /etc/docker/daemon.json
 
 # Start docker daemon and wait for dockerd to start
