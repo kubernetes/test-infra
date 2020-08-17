@@ -48,10 +48,10 @@ periodics:
       resources:
         requests:
           cpu: 4
-          memory: 2Gi
+          memory: 40Gi
         limits:
           cpu: 4
-          memory: 2Gi
+          memory: 40Gi
     volumes:
     - name: service
       secret:
