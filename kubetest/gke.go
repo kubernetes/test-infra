@@ -336,6 +336,8 @@ func (g *gkeDeployer) Up() error {
 		// gcloud enables node auto-upgrade by default, which doesn't work with CUSTOM image.
 		// We disable auto-upgrade explicitly here.
 		args = append(args, "--no-enable-autoupgrade")
+		// Custom images are not supported with shielded nodes (which is enaled by default) in GKE.
+		args = append(args, "--no-enable-shielded-nodes")
 	}
 	if g.subnetwork != "" {
 		args = append(args, "--subnetwork="+g.subnetwork)
