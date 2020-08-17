@@ -27,7 +27,7 @@ if [ ${ARCH} == "ppc64le" ] ; then
     mkdir -p /etc/docker
     touch /etc/docker/daemon.json
     echo "MTU for docker daemon is ${docker_mtu}"
-    jq -n --arg mtu ${docker_mtu} '{"mtu":$mtu}' > /etc/docker/daemon.json
+    jq -n --arg mtu ${docker_mtu} '{"mtu":$mtu|tonumber}' > /etc/docker/daemon.json
   fi
 fi
 
