@@ -107,7 +107,7 @@ postsubmits:
       - command:
         - make
         - coverage
-        image: quay.io/multicloudlab/check-tool:v20200806-cf0548d
+        image: quay.io/multicloudlab/check-tool:v20200817-b1f2b4c05
         name: ""
         env:
         - name: CODECOV_TOKEN
