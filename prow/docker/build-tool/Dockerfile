@@ -34,7 +34,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     ca-certificates \
     curl \
-    wget \
     gnupg2 \
     software-properties-common
 
@@ -46,14 +45,13 @@ RUN go get -ldflags="-s -w" sigs.k8s.io/kustomize/kustomize/v3@${KUSTOMIZE_VERSI
 
 # operator-sdk
 RUN OPERATOR_SDK_ARCH=$(echo ${ARCH}| sed 's/amd64/x86_64/g'); \
-    wget https://github.com/operator-framework/operator-sdk/releases/download/${OPERATOR_SDK_VERSION}/operator-sdk-${OPERATOR_SDK_VERSION}-${OPERATOR_SDK_ARCH}-linux-gnu -O ${OUTDIR}/usr/bin/operator-sdk; \
+    curl -L https://github.com/operator-framework/operator-sdk/releases/download/${OPERATOR_SDK_VERSION}/operator-sdk-${OPERATOR_SDK_VERSION}-${OPERATOR_SDK_ARCH}-linux-gnu -o ${OUTDIR}/usr/bin/operator-sdk; \
     chmod 555 ${OUTDIR}/usr/bin/operator-sdk
 
-# kubebuilder
-# Limit linters installation only for x86_64 and ppc64le platforms
+# kubebuilder installation only for x86_64 and ppc64le platforms
 RUN set -eux; \
     if [ ${ARCH} != "s390x" ] ; then \
-        wget https://github.com/kubernetes-sigs/kubebuilder/releases/download/v${KUBEBUILDER_VERSION}/kubebuilder_${KUBEBUILDER_VERSION}_linux_${ARCH}.tar.gz -O /tmp/kubebuilder_${KUBEBUILDER_VERSION}_linux_${ARCH}.tar.gz ; \
+        curl -L https://github.com/kubernetes-sigs/kubebuilder/releases/download/v${KUBEBUILDER_VERSION}/kubebuilder_${KUBEBUILDER_VERSION}_linux_${ARCH}.tar.gz -o /tmp/kubebuilder_${KUBEBUILDER_VERSION}_linux_${ARCH}.tar.gz ; \
         tar -xf /tmp/kubebuilder_${KUBEBUILDER_VERSION}_linux_${ARCH}.tar.gz  -C /tmp; \
         mv /tmp/kubebuilder_${KUBEBUILDER_VERSION}_linux_${ARCH}/bin ${OUTDIR}/usr/local/kubebuilder; \
     fi;
