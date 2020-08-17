@@ -99,7 +99,7 @@ func clusterLocal(failuresByTest failuresGroup, numWorkers int) nestedFailuresGr
 	// Push to the work queue
 	go func() {
 		// Look at tests with the most failures first.
-		sortedFailures := failuresByTest.sortByNumberOfFailures()
+		sortedFailures := failuresByTest.sortByMostFailures()
 		for i := range sortedFailures {
 			workQueue <- &sortedFailures[i]
 		}
@@ -243,7 +243,7 @@ func clusterGlobal(newlyClustered nestedFailuresGroups, previouslyClustered []js
 	}
 
 	// Look at tests with the most failures over all clusters first
-	for n, outerPair := range newlyClustered.sortByAggregateNumberOfFailures() {
+	for n, outerPair := range newlyClustered.sortByMostAggregatedFailures() {
 		testName := outerPair.Key
 		testClusters := outerPair.Group
 
@@ -251,7 +251,7 @@ func clusterGlobal(newlyClustered nestedFailuresGroups, previouslyClustered []js
 		testStart := time.Now()
 
 		// Look at clusters with the most failures first
-		for m, innerPair := range testClusters.sortByNumberOfFailures() {
+		for m, innerPair := range testClusters.sortByMostFailures() {
 			key := innerPair.Key // The cluster text
 			tests := innerPair.Failures
 
@@ -318,8 +318,6 @@ func clusterGlobal(newlyClustered nestedFailuresGroups, previouslyClustered []js
 	memoizeResults(memoPath, memoMessage, clusters)
 	return clusters
 }
-
-/* Functions below this comment are only used within this file as of this commit. */
 
 /*
 clusterTest clusters a given a list of failures for one test.

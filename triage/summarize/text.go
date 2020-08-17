@@ -258,8 +258,6 @@ func commonSpans(xs []string) []int {
 	return spans
 }
 
-/* Functions below this comment are only used within this file as of this commit. */
-
 var memoizedNgramCounts = make(map[string][]int) // Will be used across makeNgramCounts() calls
 var memoizedNgramCountsMutex sync.RWMutex        // makeNgramCounts is eventually depended on by some parallelized functions
 
