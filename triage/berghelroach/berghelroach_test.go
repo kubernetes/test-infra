@@ -129,7 +129,7 @@ func TestLevenshteinOnWords(t *testing.T) {
 	// Now for the actual test
 	for _, wordA := range words {
 		for _, wordB := range words {
-			ed := getInstance(wordA)
+			ed := berghelRoach{pattern: wordA}
 			specificAlgorithmVerify(t, ed, wordA, wordB, wordDistances[wordPair{wordA, wordB}])
 		}
 	}
@@ -137,21 +137,21 @@ func TestLevenshteinOnWords(t *testing.T) {
 
 // TestLongerPattern tests Levenshtein edit distance on a longer pattern
 func TestLongerPattern(t *testing.T) {
-	genericLevenshteinVerify(t, "abcdefghijklmnopqrstuvwxyz",
+	specificAlgorithmVerify(t, berghelRoach{pattern: "abcdefghijklmnopqrstuvwxyz"}, "abcdefghijklmnopqrstuvwxyz",
 		"abcefghijklMnopqrStuvwxyz..",
 		5) // dMS..
 }
 
 // TestShortPattern tests Levenshtein edit distance on a very short pattern
 func TestShortPattern(t *testing.T) {
-	genericLevenshteinVerify(t, "short", "shirt", 1)
+	specificAlgorithmVerify(t, berghelRoach{pattern: "short"}, "short", "shirt", 1)
 }
 
 // TestZeroLengthPattern verifies zero-length behavior
 func TestZeroLengthPattern(t *testing.T) {
 	nonEmpty := "target"
-	genericLevenshteinVerify(t, "", nonEmpty, len(nonEmpty))
-	genericLevenshteinVerify(t, nonEmpty, "", len(nonEmpty))
+	specificAlgorithmVerify(t, berghelRoach{pattern: ""}, "", nonEmpty, len(nonEmpty))
+	specificAlgorithmVerify(t, berghelRoach{pattern: nonEmpty}, nonEmpty, "", len(nonEmpty))
 }
 
 // Utility functions
@@ -243,10 +243,6 @@ func generateRandomString(size int, seed int64) string {
 	return builder.String()
 }
 
-func getInstance(s string) berghelRoach {
-	return berghelRoach{pattern: s}
-}
-
 /*
 verifyResult verifies a single edit distance result.
 If the expected distance is within limit, result must b
@@ -324,18 +320,13 @@ func specificAlgorithmVerify(t *testing.T, ed berghelRoach, s1 string, s2 string
 	genericVerification(t, ed, s1, s2, expectedResult)
 }
 
-// genericLevenshteinVerify tests the default Levenshtein engine on a pair of strings
-func genericLevenshteinVerify(t *testing.T, s1 string, s2 string, expectedResult int) {
-	specificAlgorithmVerify(t, getInstance(s1), s1, s2, expectedResult)
-}
-
 // verifySomeEdits verifies the distance between an original string and some
 // number of simple edits on it.  The distance is assumed to
 // be unit-cost Levenshtein distance.
 func verifySomeEdits(t *testing.T, original string, replacements int, insertions int) {
 	edits, modified := performEdits(original, "0123456789", replacements, insertions)
 
-	specificAlgorithmVerify(t, getInstance(original), original, modified, edits)
+	specificAlgorithmVerify(t, berghelRoach{pattern: original}, original, modified, edits)
 
-	specificAlgorithmVerify(t, getInstance(modified), modified, original, edits)
+	specificAlgorithmVerify(t, berghelRoach{pattern: modified}, modified, original, edits)
 }
