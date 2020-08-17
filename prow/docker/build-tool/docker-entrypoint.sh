@@ -20,13 +20,16 @@ set -x
 jq -n --arg enable enabled '{"experimental":$enable}' > ${HOME}/.docker/config.json
 
 # fix the MTU settings for DinD daemon
-DOCKER_MTU=${DOCKER_MTU-1500}
 ARCH=$(uname -m)
-if [ ${ARCH} != "ppc64le" ] ; then
-  DOCKER_MTU=8940
+if [ ${ARCH} == "ppc64le" ] ; then
+  docker_mtu=8940
+  if [ ! -f /etc/docker/daemon.json ]; then
+    mkdir -p /etc/docker
+    touch /etc/docker/daemon.json
+    echo "MTU for docker daemon is ${docker_mtu}"
+    jq -n --arg mtu ${docker_mtu} '{"mtu":$mtu}' > /etc/docker/daemon.json
+  fi
 fi
-echo "MTU for docker daemon is ${DOCKER_MTU}"
-jq -n --arg mtu ${DOCKER_MTU} '{"mtu":$mtu}' > /etc/docker/daemon.json
 
 # Start docker daemon and wait for dockerd to start
 service docker start
