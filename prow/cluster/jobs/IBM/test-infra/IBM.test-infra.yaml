@@ -49,6 +49,9 @@ postsubmits:
         - entrypoint
         - make
         - build-tool-image
+        env:
+        - name: DOCKER_MTU
+          value: "8940"
         securityContext:
           privileged: true
   - name: build-tool-image-s390x-postsubmit
