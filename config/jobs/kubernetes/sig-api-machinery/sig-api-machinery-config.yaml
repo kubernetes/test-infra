@@ -79,6 +79,7 @@ periodics:
 presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-e2e-gce-network-proxy-http-connect
+    cluster: k8s-infra-prow-build
     always_run: false
     run_if_changed: '^(cluster/gce/manifests/konnectivity-server.yaml$|cluster/gce/addons/konnectivity-agent)'
     labels:
