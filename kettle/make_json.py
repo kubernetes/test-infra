@@ -82,7 +82,7 @@ class Build:
         if started:
             self.started = int(started['timestamp'])
             self.executor = started.get('node')
-            self.repo_commit = started.get('repo-commit')
+            self.repo_commit = started.get('repo-commit', started.get('repo-version'))
             self.repos = json.dumps(started.get('repos')) if started.get('repos') else None
 
     def populate_finish(self, finished):

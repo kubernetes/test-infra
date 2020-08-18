@@ -79,6 +79,7 @@ class GenerateBuilds(unittest.TestCase):
                 "timestamp":1595284709,
                 "repos":{"kubernetes/kubernetes":"master"},
                 "repo-version":"5a529aa3a0dd3a050c5302329681e871ef6c162e",
+                "repo-commit":"5a529aa3a0dd3a050c5302329681e871ef6c162e",
             },
             {
                 "timestamp":1595286616,
@@ -112,6 +113,7 @@ class GenerateBuilds(unittest.TestCase):
                 "pull":"93264",
                 "repos":{"kubernetes/kubernetes":"master:5feab0"},
                 "repo-version":"30f64c5b1fc57a3beb1476f9beb29280166954d1",
+                "repo-commit":"30f64c5b1fc57a3beb1476f9beb29280166954d1",
             },
             {
                 "timestamp":1595279434,
