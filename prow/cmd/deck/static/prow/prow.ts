@@ -582,6 +582,8 @@ function redraw(fz: FuzzySearch): void {
                     logIcon.href = gcsUrl;
                 } else if (url.includes('/view/')) {
                     logIcon.href = url;
+                } else {
+                    logIcon.href = `log?job=${job}&id=${build_id}`;
                 }
             }
             const c = document.createElement("td");
