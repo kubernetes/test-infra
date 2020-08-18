@@ -37,44 +37,6 @@ presubmits:
         securityContext:
           privileged: true
     trigger: '(?m)^/test (?:.*? )?test(?:.*?)?$'
-  - name: test-operand-deployment-lifecycle-manager-ppc64le
-    cluster: ppc64le
-    always_run: true
-    branches:
-    - ^master$
-    decorate: true
-    path_alias: github.com/IBM/operand-deployment-lifecycle-manager
-    rerun_command: /test test-operand-deployment-lifecycle-manager-ppc64le
-    spec:
-      containers:
-      - command:
-        - entrypoint
-        - make
-        - test
-        image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
-        name: ""
-        securityContext:
-          privileged: true
-    trigger: '(?m)^/test (?:.*? )?test(?:.*?)?$'
-  - name: test-operand-deployment-lifecycle-manager-s390x
-    cluster: s390x
-    always_run: true
-    branches:
-    - ^master$
-    decorate: true
-    path_alias: github.com/IBM/operand-deployment-lifecycle-manager
-    rerun_command: /test test-operand-deployment-lifecycle-manager-s390x
-    spec:
-      containers:
-      - command:
-        - entrypoint
-        - make
-        - test
-        image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
-        name: ""
-        securityContext:
-          privileged: true
-    trigger: '(?m)^/test (?:.*? )?test(?:.*?)?$'
 postsubmits:
   IBM/operand-deployment-lifecycle-manager:
   - name: coverage-operand-deployment-lifecycle-manager-postsubmit
