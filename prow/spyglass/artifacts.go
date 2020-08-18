@@ -23,6 +23,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/io/providers"
 	"k8s.io/test-infra/prow/spyglass/api"
 	"k8s.io/test-infra/prow/spyglass/lenses/common"
@@ -50,29 +51,36 @@ func (s *Spyglass) ListArtifacts(ctx context.Context, src string) ([]string, err
 	}
 
 	artifactNames, err := s.StorageArtifactFetcher.artifacts(ctx, gcsKey)
-	logFound := false
-	for _, name := range artifactNames {
-		if name == "build-log.txt" {
-			logFound = true
-			break
-		}
+	if err != nil {
+		logrus.Warningf("error retrieving artifact names from gcs storage: %v", err)
 	}
-	if err != nil || !logFound {
-		artifactNames = append(artifactNames, "build-log.txt")
-	}
-	return artifactNames, nil
-}
 
-// KeyToJob takes a spyglass URL and returns the jobName and buildID.
-func (*Spyglass) KeyToJob(src string) (jobName string, buildID string, err error) {
-	src = strings.Trim(src, "/")
-	parsed := strings.Split(src, "/")
-	if len(parsed) < 2 {
-		return "", "", fmt.Errorf("expected at least two path components in %q", src)
+	artifactNamesSet := sets.NewString(artifactNames...)
+
+	jobName, buildID, err := common.KeyToJob(src)
+	if err != nil {
+		return artifactNamesSet.List(), fmt.Errorf("error parsing src: %v", err)
 	}
-	jobName = parsed[len(parsed)-2]
-	buildID = parsed[len(parsed)-1]
-	return jobName, buildID, nil
+
+	job, err := s.jobAgent.GetProwJob(jobName, buildID)
+	if err != nil {
+		// we don't return the error because we assume that if we cannot get the prowjob from the jobAgent,
+		// then we must already have all the build-logs in gcs
+		logrus.Infof("unable to get prowjob from Pod: %v", err)
+		return artifactNamesSet.List(), nil
+	}
+
+	jobContainers := job.Spec.PodSpec.Containers
+
+	for _, container := range jobContainers {
+		logName := singleLogName
+		if len(jobContainers) > 1 {
+			logName = fmt.Sprintf("%s-%s", container.Name, singleLogName)
+		}
+		artifactNamesSet.Insert(logName)
+	}
+
+	return artifactNamesSet.List(), nil
 }
 
 // prowToGCS returns the GCS key corresponding to the given prow key
