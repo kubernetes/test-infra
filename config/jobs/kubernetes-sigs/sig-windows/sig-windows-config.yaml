@@ -60,7 +60,7 @@ presubmits:
         - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
         - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
         - --aksengine-winZipBuildScript=$(WIN_BUILD)
-        - --aksengine-orchestratorRelease=1.18
+        - --aksengine-orchestratorRelease=1.19
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_staging.json
         - --aksengine-win-binaries
         - --aksengine-deploy-custom-k8s
@@ -120,7 +120,7 @@ presubmits:
         - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
         - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
         - --aksengine-winZipBuildScript=$(WIN_BUILD)
-        - --aksengine-orchestratorRelease=1.18
+        - --aksengine-orchestratorRelease=1.19
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_in_tree_volume_plugins.json
         - --aksengine-win-binaries
         - --aksengine-deploy-custom-k8s
@@ -183,7 +183,7 @@ presubmits:
         - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
         - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
         - --aksengine-winZipBuildScript=$(WIN_BUILD)
-        - --aksengine-orchestratorRelease=1.18
+        - --aksengine-orchestratorRelease=1.19
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_in_tree_volume_plugins.json
         - --aksengine-win-binaries
         - --aksengine-deploy-custom-k8s
@@ -234,7 +234,7 @@ periodics:
 #       # Azure-specific test args
 #       - --deployment=aksengine
 #       - --provider=skeleton
-#       - --aksengine-orchestratorRelease=1.18
+#       - --aksengine-orchestratorRelease=1.19
 #       - --aksengine-admin-username=azureuser
 #       - --aksengine-admin-password=AdminPassw0rd
 #       - --aksengine-creds=$(AZURE_CREDENTIALS)
@@ -296,7 +296,7 @@ periodics:
       - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
       - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
       - --aksengine-winZipBuildScript=$(WIN_BUILD)
-      - --aksengine-orchestratorRelease=1.18
+      - --aksengine-orchestratorRelease=1.19
       - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_staging.json
       - --aksengine-win-binaries
       - --aksengine-deploy-custom-k8s
@@ -350,7 +350,7 @@ periodics:
       - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
       - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
       - --aksengine-winZipBuildScript=$(WIN_BUILD)
-      - --aksengine-orchestratorRelease=1.18
+      - --aksengine-orchestratorRelease=1.19
       - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_containerd.json
       - --aksengine-win-binaries
       - --aksengine-deploy-custom-k8s
@@ -404,7 +404,7 @@ periodics:
       - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
       - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
       - --aksengine-winZipBuildScript=$(WIN_BUILD)
-      - --aksengine-orchestratorRelease=1.18
+      - --aksengine-orchestratorRelease=1.19
       - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_containerd.json
       - --aksengine-win-binaries
       - --aksengine-deploy-custom-k8s
@@ -462,7 +462,7 @@ periodics:
       - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
       - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
       - --aksengine-winZipBuildScript=$(WIN_BUILD)
-      - --aksengine-orchestratorRelease=1.18
+      - --aksengine-orchestratorRelease=1.19
       - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_containerd.json
       - --aksengine-win-binaries
       - --aksengine-deploy-custom-k8s
@@ -519,7 +519,7 @@ periodics:
       - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
       - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
       - --aksengine-winZipBuildScript=$(WIN_BUILD)
-      - --aksengine-orchestratorRelease=1.18
+      - --aksengine-orchestratorRelease=1.19
       - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_containerd_hyperv.json
       - --aksengine-win-binaries
       - --aksengine-deploy-custom-k8s
@@ -573,7 +573,7 @@ periodics:
       - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
       - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
       - --aksengine-winZipBuildScript=$(WIN_BUILD)
-      - --aksengine-orchestratorRelease=1.18
+      - --aksengine-orchestratorRelease=1.19
       - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_containerd_hyperv.json
       - --aksengine-win-binaries
       - --aksengine-deploy-custom-k8s
@@ -631,7 +631,7 @@ periodics:
       - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
       - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
       - --aksengine-winZipBuildScript=$(WIN_BUILD)
-      - --aksengine-orchestratorRelease=1.18
+      - --aksengine-orchestratorRelease=1.19
       - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_in_tree_volume_plugins.json
       - --aksengine-win-binaries
       - --aksengine-deploy-custom-k8s
@@ -694,7 +694,7 @@ periodics:
       - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
       - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
       - --aksengine-winZipBuildScript=$(WIN_BUILD)
-      - --aksengine-orchestratorRelease=1.18
+      - --aksengine-orchestratorRelease=1.19
       - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_in_tree_volume_plugins.json
       - --aksengine-win-binaries
       - --aksengine-deploy-custom-k8s
