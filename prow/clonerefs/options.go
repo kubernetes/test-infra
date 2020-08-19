@@ -109,9 +109,9 @@ const (
 	// in when run.
 	JSONConfigEnvVar = "CLONEREFS_OPTIONS"
 	// DefaultGitUserName is the default name used in git config
-	DefaultGitUserName = "ci-robot"
+	DefaultGitUserName = "clonerefs"
 	// DefaultGitUserEmail is the default email used in git config
-	DefaultGitUserEmail = "ci-robot@k8s.io"
+	DefaultGitUserEmail = "clonerefs@k8s.io"
 )
 
 // ConfigVar exposes the environment variable used
