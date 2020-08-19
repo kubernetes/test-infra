@@ -22,14 +22,23 @@
             </style>
         </head>
         <body>
-
         <h1>Prow Job Report</h1>
-            <h2>Presubmits</h2>
-            {{template "presubmits" .Presubmits}}
-            <h2>Postsubmits</h2>
-            {{template "postsubmits" .Postsubmits}}
-            <h2>Periodics</h2>
-            {{template "periodics" .Periodics}}
+        <form action="/action_page.php" method="get">
+            <table border="1" >
+            <tr>
+                <th>Name</th>
+                <th>Primary Dashboard</th>
+                <th>Resources (Cpu Req, Cpu Limit, Mem Request, Mem Limit)</th>
+            </tr>
+            {{- range . -}}
+                <tr>
+                    <td><label><input type="checkbox" {{ if .QOSGuaranteed }}checked{{ end }}>{{ .Name }}</label></td>
+                    <td><label>{{ .PrimaryDashboard }}</label></td>
+                    <td><label>{{ .RequestMilliCPU }}, {{ .LimitMilliCPU }}, {{ .RequestGigaMem }}, {{ .LimitGigaMem }} </label></td>
+                </tr>
+            {{- end}}
+            </table>
+        </form>
         </body>
     </html>
 {{end}}
