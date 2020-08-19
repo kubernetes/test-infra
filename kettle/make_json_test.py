@@ -46,26 +46,28 @@ class BuildObjectTests(unittest.TestCase):
         ),
         (
             "Base_Build",
-            make_json.Build("gs://kubernetes-jenkins/pr-logs/path",[]),
+            make_json.Build("gs://kubernetes-jenkins/pr-logs/path", []),
             {"path":"gs://kubernetes-jenkins/pr-logs/path",
-            "test":[],
-            "tests_run":0,
-            "tests_failed":0,
-            "job":"pr:pr-logs",
+             "test": [],
+             "tests_run": 0,
+             "tests_failed": 0,
+             "job":"pr: pr-logs",
             },
         ),
         (
             "Tests_populate",
-            make_json.Build("gs://kubernetes-jenkins/pr-logs/path", [{'name': 'Test1', 'failed': True}]),
+            make_json.Build(
+                "gs://kubernetes-jenkins/pr-logs/path",
+                [{'name': 'Test1', 'failed': True}],
+            ),
             {"path":"gs://kubernetes-jenkins/pr-logs/path",
-            "test":[{'name': 'Test1', 'failed': True}],
-            "tests_run":1,
-            "tests_failed":1,
-            "job":"pr:pr-logs",
+             "test": [{'name': 'Test1', 'failed': True}],
+             "tests_run": 1,
+             "tests_failed": 1,
+             "job": "pr:pr-logs",
             },
         ),
-    ]
-    )
+    ])
     def test_as_dict(self, _, build, expected):
         self.assertEqual(build.as_dict(), expected)
 

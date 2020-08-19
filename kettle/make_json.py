@@ -103,11 +103,11 @@ class Build:
             if self.path.startswith(bucket):
                 prefix = meta['prefix']
                 break
+
+            if self.path.startswith('gs://kubernetes-jenkins/pr-logs'):
+                prefix = 'pr:'
             else:
-                if self.path.startswith('gs://kubernetes-jenkins/pr-logs'):
-                    prefix = 'pr:'
-                else:
-                    raise ValueError('unknown build path')
+                raise ValueError('unknown build path')
         build = os.path.basename(self.path)
         job = prefix + os.path.basename(os.path.dirname(self.path))
         self.job = job
