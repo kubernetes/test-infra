@@ -9,6 +9,7 @@ presubmits:
       testgrid-create-test-group: "true"
       testgrid-num-failures-to-alert: "10"
     always_run: true
+    cluster: k8s-infra-prow-build
     max_concurrency: 12
     labels:
       preset-service-account: "true"
@@ -26,7 +27,6 @@ presubmits:
         - --scenario=kubernetes_e2e
         - -- # end bootstrap args, scenario args below
         - --deployment=node
-        - --gcp-project=k8s-jkns-pr-node-e2e
         - --gcp-zone=us-west1-b
         - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
         - --node-tests=true

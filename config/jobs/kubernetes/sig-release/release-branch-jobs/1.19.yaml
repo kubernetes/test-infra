@@ -1050,6 +1050,7 @@ presubmits:
   - always_run: true
     branches:
     - release-1.19
+    cluster: k8s-infra-prow-build
     labels:
       preset-k8s-ssh: "true"
       preset-service-account: "true"
@@ -1067,7 +1068,6 @@ presubmits:
         - --scenario=kubernetes_e2e
         - --
         - --deployment=node
-        - --gcp-project=k8s-jkns-pr-node-e2e
         - --gcp-zone=us-west1-b
         - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
         - --node-tests=true
