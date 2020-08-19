@@ -22,6 +22,7 @@ import (
 	"testing"
 	"time"
 
+	"k8s.io/test-infra/prow/bugzilla"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/githubeventserver"
@@ -105,8 +106,9 @@ func TestHook(t *testing.T) {
 	pa.Set(&plugins.Configuration{Plugins: map[string][]string{"foo/bar": {"baz"}}})
 	ca := &config.Agent{}
 	clientAgent := &plugins.ClientAgent{
-		GitHubClient: github.NewFakeClient(),
-		OwnersClient: repoowners.NewClient(nil, nil, func(org, repo string) bool { return false }, func(org, repo string) bool { return false }, func() config.OwnersDirBlacklist { return config.OwnersDirBlacklist{} }),
+		GitHubClient:   github.NewFakeClient(),
+		OwnersClient:   repoowners.NewClient(nil, nil, func(org, repo string) bool { return false }, func(org, repo string) bool { return false }, func() config.OwnersDirBlacklist { return config.OwnersDirBlacklist{} }),
+		BugzillaClient: &bugzilla.Fake{},
 	}
 	metrics := githubeventserver.NewMetrics()
 	var testcases = []struct {
