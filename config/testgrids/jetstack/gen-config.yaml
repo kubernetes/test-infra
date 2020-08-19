@@ -97,6 +97,33 @@ dashboards:
     open_bug_template:
       url: https://github.com/jetstack/cert-manager/issues/
     test_group_name: ci-cert-manager-e2e-v1-18
+  - alert_options:
+      alert_mail_to_addresses: james+alerts@munnelly.eu,maartje.eyskens+alerts@jetstack.io
+    code_search_url_template:
+      url: https://github.com/jetstack/cert-manager/compare/<start-custom-0>...<end-custom-0>
+    description: Runs the end-to-end test suite against a Kubernetes v1.19 cluster
+    name: ci-cert-manager-e2e-v1-19
+    open_bug_template:
+      url: https://github.com/jetstack/cert-manager/issues/
+    test_group_name: ci-cert-manager-e2e-v1-19
+  - alert_options:
+      alert_mail_to_addresses: james+alerts@munnelly.eu,maartje.eyskens+alerts@jetstack.io
+    code_search_url_template:
+      url: https://github.com/jetstack/cert-manager/compare/<start-custom-0>...<end-custom-0>
+    description: Runs the end-to-end test suite against an Openshift v3.11 cluster
+    name: ci-cert-manager-next-openshift-v3-11
+    open_bug_template:
+      url: https://github.com/jetstack/cert-manager/issues/
+    test_group_name: ci-cert-manager-next-openshift-v3-11
+  - alert_options:
+      alert_mail_to_addresses: james+alerts@munnelly.eu,maartje.eyskens+alerts@jetstack.io
+    code_search_url_template:
+      url: https://github.com/jetstack/cert-manager/compare/<start-custom-0>...<end-custom-0>
+    description: Runs the end-to-end test suite against an Openshift v3.11 cluster
+    name: ci-cert-manager-openshift-v3-11
+    open_bug_template:
+      url: https://github.com/jetstack/cert-manager/issues/
+    test_group_name: ci-cert-manager-openshift-v3-11
   name: jetstack-cert-manager-master
 - dashboard_tab:
   - alert_options:
@@ -281,6 +308,15 @@ dashboards:
     open_bug_template:
       url: https://github.com/jetstack/cert-manager/issues/
     test_group_name: ci-cert-manager-next-e2e-v1-18
+  - alert_options:
+      alert_mail_to_addresses: james+alerts@munnelly.eu,maartje.eyskens+alerts@jetstack.io
+    code_search_url_template:
+      url: https://github.com/jetstack/cert-manager/compare/<start-custom-0>...<end-custom-0>
+    description: Runs the end-to-end test suite against a Kubernetes v1.19 cluster
+    name: ci-cert-manager-next-e2e-v1-19
+    open_bug_template:
+      url: https://github.com/jetstack/cert-manager/issues/
+    test_group_name: ci-cert-manager-next-e2e-v1-19
   name: jetstack-cert-manager-next
 - dashboard_tab:
   - code_search_url_template:
@@ -389,20 +425,17 @@ dashboards:
 - dashboard_tab:
   - alert_options:
       alert_mail_to_addresses: james+alerts@munnelly.eu
-    description: Closes PRs and issues that are marked 'rotten' and have been inactive
-      for 30d
+    description: Closes PRs and issues that are marked 'rotten' and have been inactive for 30d
     name: periodic-testing-close
     test_group_name: periodic-testing-close
   - alert_options:
       alert_mail_to_addresses: james+alerts@munnelly.eu
-    description: Periodically comments /retest against approved and lgtm'd PRs that
-      are failing
+    description: Periodically comments /retest against approved and lgtm'd PRs that are failing
     name: periodic-testing-retester
     test_group_name: periodic-testing-retester
   - alert_options:
       alert_mail_to_addresses: james+alerts@munnelly.eu
-    description: Marks PRs and issues that are marked 'stale' and have been inactive
-      for 30d as 'rotten'
+    description: Marks PRs and issues that are marked 'stale' and have been inactive for 30d as 'rotten'
     name: periodic-testing-rotten
     test_group_name: periodic-testing-rotten
   - alert_options:
@@ -506,6 +539,8 @@ test_groups:
   name: ci-cert-manager-e2e-v1-17
 - gcs_prefix: jetstack-logs/logs/ci-cert-manager-e2e-v1-18
   name: ci-cert-manager-e2e-v1-18
+- gcs_prefix: jetstack-logs/logs/ci-cert-manager-e2e-v1-19
+  name: ci-cert-manager-e2e-v1-19
 - gcs_prefix: jetstack-logs/logs/ci-cert-manager-next-bazel
   name: ci-cert-manager-next-bazel
 - gcs_prefix: jetstack-logs/logs/ci-cert-manager-next-bazel-experimental
@@ -526,6 +561,12 @@ test_groups:
   name: ci-cert-manager-next-e2e-v1-17
 - gcs_prefix: jetstack-logs/logs/ci-cert-manager-next-e2e-v1-18
   name: ci-cert-manager-next-e2e-v1-18
+- gcs_prefix: jetstack-logs/logs/ci-cert-manager-next-e2e-v1-19
+  name: ci-cert-manager-next-e2e-v1-19
+- gcs_prefix: jetstack-logs/logs/ci-cert-manager-next-openshift-v3-11
+  name: ci-cert-manager-next-openshift-v3-11
+- gcs_prefix: jetstack-logs/logs/ci-cert-manager-openshift-v3-11
+  name: ci-cert-manager-openshift-v3-11
 - gcs_prefix: jetstack-logs/logs/ci-cert-manager-previous-bazel
   name: ci-cert-manager-previous-bazel
 - gcs_prefix: jetstack-logs/logs/ci-cert-manager-previous-bazel-experimental
