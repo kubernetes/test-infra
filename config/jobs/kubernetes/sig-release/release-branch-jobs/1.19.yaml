@@ -1142,7 +1142,7 @@ presubmits:
       - args:
         - --root=/go/src
         - --repo=k8s.io/kubernetes=$(PULL_REFS)
-        - --repo=k8s.io/perf-tests=master
+        - --repo=k8s.io/perf-tests=release-1.19
         - --repo=k8s.io/release
         - --upload=gs://kubernetes-jenkins/pr-logs
         - --timeout=120
@@ -1151,6 +1151,7 @@ presubmits:
         - --build=bazel
         - --cluster=
         - --extract=local
+        - --flush-mem-after-build=true
         - --gcp-nodes=100
         - --gcp-project-type=scalability-presubmit-project
         - --gcp-zone=us-east1-b
@@ -1177,11 +1178,12 @@ presubmits:
         image: gcr.io/k8s-testimages/kubekins-e2e:v20200817-069584f-1.19
         name: ""
         resources:
+          # Using 6 CPU to speed up bazel build phase (2 is enough for the test itself)
           limits:
-            cpu: 4
+            cpu: 6
             memory: "14Gi"
           requests:
-            cpu: 4
+            cpu: 6
             memory: "14Gi"
   - always_run: false
     branches:
@@ -1202,7 +1204,7 @@ presubmits:
         - --root=/go/src
         - --job=$(JOB_NAME)
         - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
-        - --repo=k8s.io/perf-tests=master
+        - --repo=k8s.io/perf-tests=release-1.19
         - --repo=k8s.io/release
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-jenkins/pr-logs
@@ -1212,6 +1214,7 @@ presubmits:
         - --build=bazel
         - --cluster=
         - --extract=local
+        - --flush-mem-after-build=true
         - --gcp-master-size=n1-standard-4
         - --gcp-node-size=n1-standard-8
         - --gcp-nodes=7
@@ -1244,11 +1247,12 @@ presubmits:
         name: ""
         resources:
           limits:
+            # Using 6 CPU to speed up bazel build phase (4 is enough for the test itself)
             cpu: 6
-            memory: 24Gi
+            memory: 16Gi
           requests:
             cpu: 6
-            memory: 24Gi
+            memory: 16Gi
         securityContext:
           privileged: true
   - always_run: true
