@@ -18,6 +18,7 @@ presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-e2e-gce
     always_run: false
+    cluster: k8s-infra-prow-build
     skip_branches:
     - release-\d+\.\d+ # per-release image
     annotations:
