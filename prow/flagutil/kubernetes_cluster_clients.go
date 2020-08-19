@@ -92,11 +92,6 @@ func (o *KubernetesOptions) resolve(dryRun bool) error {
 		return nil
 	}
 
-	o.dryRun = dryRun
-	if dryRun {
-		return nil
-	}
-
 	clusterConfigs, err := kube.LoadClusterConfigs(o.kubeconfig, o.buildCluster)
 	if err != nil {
 		return fmt.Errorf("load --kubeconfig=%q --build-cluster=%q configs: %v", o.kubeconfig, o.buildCluster, err)
@@ -117,6 +112,11 @@ func (o *KubernetesOptions) resolve(dryRun bool) error {
 	pjClient, err := prow.NewForConfig(&localCfg)
 	if err != nil {
 		return err
+	}
+
+	o.dryRun = dryRun
+	if dryRun {
+		return nil
 	}
 
 	o.prowJobClientset = pjClient
@@ -224,15 +224,11 @@ func (o *KubernetesOptions) BuildClusterManagers(dryRun bool, opts ...func(*mana
 	if err := o.resolve(dryRun); err != nil {
 		return nil, err
 	}
-	if o.dryRun {
-		// TODO: Can be supported after bumping c-r to 0.6.0, ref:
-		// https://github.com/kubernetes-sigs/controller-runtime/pull/839
-		return nil, errors.New("dry-run is currently not supported")
-	}
 
 	options := manager.Options{
 		LeaderElection:     false,
 		MetricsBindAddress: "0",
+		DryRunClient:       o.dryRun,
 	}
 	for _, opt := range opts {
 		opt(&options)
@@ -259,16 +255,15 @@ func (o *KubernetesOptions) BuildClusterUncachedRuntimeClients(dryRun bool) (map
 		return nil, err
 	}
 
-	if o.dryRun {
-		return nil, errors.New("no dry-run pod client is supported for build clusters in dry-run mode")
-	}
-
 	clients := map[string]ctrlruntimeclient.Client{}
 	for name := range o.clusterConfigs {
 		cfg := o.clusterConfigs[name]
 		client, err := ctrlruntimeclient.New(&cfg, ctrlruntimeclient.Options{})
 		if err != nil {
 			return nil, fmt.Errorf("failed to construct client for cluster %q: %v", name, err)
+		}
+		if o.dryRun {
+			client = ctrlruntimeclient.NewDryRunClient(client)
 		}
 		clients[name] = client
 	}
