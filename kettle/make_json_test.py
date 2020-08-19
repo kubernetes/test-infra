@@ -51,7 +51,7 @@ class BuildObjectTests(unittest.TestCase):
              "test": [],
              "tests_run": 0,
              "tests_failed": 0,
-             "job":"pr: pr-logs",
+             "job": "pr:pr-logs",
             },
         ),
         (
