@@ -45,13 +45,13 @@ periodics:
       args: ["I am first"]
     - name: test-2
       image: alpine
-      command: ["/bin/bash"]
+      command: ["/bin/sh"]
       args:
       - -c
       - "sleep 60 && echo I && sleep 60 && echo am && sleep 60 && echo second"
     - name: test-3
       image: alpine
-      command: ["/bin/bash"]
+      command: ["/bin/sh"]
       args:
       - -c
       - "sleep 120 && echo I && sleep 120 && echo am && sleep 120 && echo third"
