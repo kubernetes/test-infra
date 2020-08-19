@@ -966,7 +966,7 @@ func renderSpyglass(ctx context.Context, sg *spyglass.Spyglass, cfg config.Gette
 		return "", fmt.Errorf("error listing artifacts: %v", err)
 	}
 	if len(artifactNames) == 0 {
-		return "", fmt.Errorf("found no artifacts for %s", src)
+		log.Infof("found no artifacts for %s", src)
 	}
 
 	regexCache := cfg().Deck.Spyglass.RegexCache
