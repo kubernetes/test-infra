@@ -964,16 +964,6 @@ plugins:
   - shrug
   - size
 
-## migrate to cncf-infra/prow-config 
-#  cncf/k8s-conformance:
-#  - cat # /meow replies with cat pictures
-#  - dog # /bark replies with dog pictures
-#  - goose
-#  - wip
-#  - assign
-#  - hold
-#  - lgtm
-
 external_plugins:
   kubernetes:
   - name: needs-rebase
