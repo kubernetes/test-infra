@@ -1098,6 +1098,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			},
 			expectedComment: `org/repo#1:@user: Some pull requests linked via external trackers have merged: [org/repo#1](https://github.com/org/repo/pull/1). The following pull requests linked via external trackers have not merged:
  * [org/repo#22](https://github.com/org/repo/pull/22) is open
+
 [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123) has been moved to the MODIFIED state.
 
 <details>
