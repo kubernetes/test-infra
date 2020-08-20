@@ -34,7 +34,7 @@ periodics:
     testgrid-dashboards: sig-testing-canaries
     testgrid-tab-name: benchmark-demo
     description: Demoing JUnit golang benchmark results.
-- interval: 10m
+- interval: 1h
   name: ci-test-infra-multiple-container-test
   decorate: true
   spec:
