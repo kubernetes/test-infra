@@ -862,8 +862,7 @@ func handleMerge(e event, gc githubClient, bc bugzilla.Client, options plugins.B
 	for bug, state := range unmergedPrStates {
 		statements = append(statements, fmt.Sprintf("\n * %s is %s", link(bug), state))
 	}
-	unmergedMessage := fmt.Sprintf(`The following pull requests linked via external trackers have not merged:%s
-`, strings.Join(statements, "\n"))
+	unmergedMessage := fmt.Sprintf(`The following pull requests linked via external trackers have not merged:%s`, strings.Join(statements, "\n"))
 
 	outcomeMessage := func(action string) string {
 		return fmt.Sprintf(bugLink+" has %sbeen moved to the %s state.", e.bugId, bc.Endpoint(), e.bugId, action, options.StateAfterMerge)
