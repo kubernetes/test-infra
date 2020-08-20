@@ -1,0 +1,14 @@
+presubmits:
+    kubernetes-sigs/multi-tenancy:
+    - name: pull-mtb-test
+      annotations:
+        testgrid-dashboards: wg-multi-tenancy-mtb
+        testgrid-tab-name: presubmit-tests
+      decorate: true
+      path_alias: sigs.k8s.io/multi-tenancy
+      run_if_changed: "benchmarks/kubectl-mtb/.*"
+      spec:
+        containers:
+        - image: golang:1.13
+          command:
+          - ./benchmarks/kubectl-mtb/hack/ci-test.sh
