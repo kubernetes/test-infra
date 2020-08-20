@@ -38,31 +38,16 @@ import (
 // loadFailures loads a builds file and one or more test failure files. It maps build paths to builds
 // and groups test failures by test name.
 func loadFailures(buildsFilepath string, testsFilepaths []string) (map[string]build, map[string][]failure, error) {
-	const memoMessage string = "loading failed tests"
-
-	builds := make(map[string]build)
-	tests := make(map[string][]failure)
-
-	// Try to retrieve memoized results first to avoid another computation
-	if getMemoizedResults("memo_load_failures-builds.json", "", &builds) &&
-		getMemoizedResults("memo_load_failures-tests.json", "", &tests) {
-		klog.V(2).Infof("Done (cached) %s", memoMessage)
-		return builds, tests, nil
-	}
-
 	builds, err := loadBuilds(buildsFilepath)
 	if err != nil {
 		return nil, nil, fmt.Errorf("Could not retrieve builds: %s", err)
 	}
 
-	tests, err = loadTests(testsFilepaths)
+	tests, err := loadTests(testsFilepaths)
 	if err != nil {
 		return nil, nil, fmt.Errorf("Could not retrieve tests: %s", err)
 	}
 
-	memoizeResults("memo_load_failures-builds.json", "", builds)
-	memoizeResults("memo_load_failures-tests.json", "", tests)
-	klog.V(2).Infof("Done %s", memoMessage)
 	return builds, tests, nil
 }
 
@@ -157,8 +142,6 @@ func memoizeResults(filepath, message string, v interface{}) {
 	}
 }
 
-/* Functions below this comment are only used within this file as of this commit. */
-
 // jsonBuild represents a build as reported by the JSON. All values are strings.
 // This should not be instantiated directly, but rather via the encoding/json package's
 // Unmarshal method. This is an intermediary state for the data until it can be put into
@@ -241,8 +224,15 @@ func (jb *jsonBuild) asBuild() (build, error) {
 // loadBuilds parses a JSON file containing build information and returns a map from build paths
 // to build objects.
 func loadBuilds(filepath string) (map[string]build, error) {
-	// The map
+	const memoPath string = "memo_load_builds.json"
+	const memoMessage string = "loading builds"
+
 	builds := make(map[string]build)
+
+	// Try to retrieve memoized results first to avoid another computation
+	if getMemoizedResults(memoPath, memoMessage, &builds) {
+		return builds, nil
+	}
 
 	// jsonBuilds temporarily stores the builds as they are retrieved from the JSON file
 	// until they can be converted to build objects
@@ -272,6 +262,8 @@ func loadBuilds(filepath string) (map[string]build, error) {
 
 		builds[bld.Path] = bld
 	}
+
+	memoizeResults(memoPath, memoMessage, builds)
 
 	return builds, nil
 }
@@ -315,8 +307,15 @@ func (jf *jsonFailure) asFailure() (failure, error) {
 // loadTests parses multiple JSON files containing test information for failed tests. It returns a
 // map from test names to failure objects.
 func loadTests(testsFilepaths []string) (map[string][]failure, error) {
-	// The map
+	const memoPath string = "memo_load_tests.json"
+	const memoMessage string = "loading tests"
+
 	tests := make(map[string][]failure)
+
+	// Try to retrieve memoized results first to avoid another computation
+	if getMemoizedResults(memoPath, memoMessage, &tests) {
+		return tests, nil
+	}
 
 	// jsonTests temporarily stores the tests as they are retrieved from the JSON file
 	// until they can be converted to failure objects
@@ -362,6 +361,8 @@ func loadTests(testsFilepaths []string) (map[string][]failure, error) {
 		sort.Slice(testSlice, func(i, j int) bool { return testSlice[i].Build < testSlice[j].Build })
 	}
 
+	memoizeResults(memoPath, memoMessage, tests)
+
 	return tests, nil
 }
 
@@ -377,7 +378,7 @@ func getJSON(filepath string, v interface{}) error {
 	// Decode the JSON into the provided interface
 	err = json.Unmarshal(contents, v)
 	if err != nil {
-		return fmt.Errorf("Could not unmarshal JSON: %s", err)
+		return fmt.Errorf("Could not unmarshal JSON: %s\nTried to unmarshal the following: %#v", err, v)
 	}
 
 	return nil
@@ -387,7 +388,7 @@ func getJSON(filepath string, v interface{}) error {
 func writeJSON(filepath string, v interface{}) error {
 	output, err := json.Marshal(v)
 	if err != nil {
-		return fmt.Errorf("Could not encode JSON: %s", err)
+		return fmt.Errorf("Could not encode JSON: %s\nTried to encode the following: %#v", err, v)
 	}
 
 	err = ioutil.WriteFile(filepath, output, 0644)
