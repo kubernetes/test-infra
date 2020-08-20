@@ -21,27 +21,17 @@ package summarize
 import (
 	"flag"
 	"fmt"
-	"log"
 	"runtime"
 	"strings"
 	"time"
 
+	"k8s.io/klog/v2"
 	"k8s.io/test-infra/triage/utils"
 )
 
 const longOutputLen = 10000
 const truncatedSep = "\n...[truncated]...\n"
 const maxClusterTextLen = longOutputLen + len(truncatedSep)
-
-// logInfo logs a message, prepending [I] to it.
-func logInfo(format string, v ...interface{}) {
-	log.Printf("[I]"+format, v...)
-}
-
-// logWarning logs a message, prepending [W] to it.
-func logWarning(format string, v ...interface{}) {
-	log.Printf("[W]"+format, v...)
-}
 
 // summarizeFlags represents the command-line arguments to the summarize and their values.
 type summarizeFlags struct {
@@ -71,21 +61,49 @@ func parseFlags() summarizeFlags {
 	flag.Parse()
 	flags.tests = strings.Split(*tempTests, " ")
 
+	// Do some checks on the flags
+	if !(strings.Contains(flags.outputSlices, "PREFIX")) {
+		klog.Fatalf("'PREFIX' not in output_slices flag")
+	}
+
+	// Log flag info
+	klog.V(1).Infof("Running with %d workers (%d detected CPUs)", flags.numWorkers, runtime.NumCPU())
+
 	return flags
 }
 
+// setUpLogging adds flags that determine logging behavior for klog. See klog's documentation for how
+// these flags work.
+func setUpLogging(logtostderr bool, v int) {
+	klogFlags := flag.NewFlagSet("klog", flag.PanicOnError)
+	klog.InitFlags(klogFlags) // Add the klog flags
+
+	// Set the flags
+	err := klogFlags.Set("logtostderr", fmt.Sprint(logtostderr))
+	if err != nil {
+		klog.Fatalf("Could not set klog flag 'logtostderr': %s", err)
+	}
+
+	err = klogFlags.Set("v", fmt.Sprint(v))
+	if err != nil {
+		klog.Fatalf("Could not set klog flag 'v': %s", err)
+	}
+}
+
 func summarize(flags summarizeFlags) {
+	setUpLogging(true, 3)
+
 	builds, failedTests, err := loadFailures(flags.builds, flags.tests)
 	if err != nil {
-		log.Fatalf("Could not load failures: %s", err)
+		klog.Fatalf("Could not load failures: %s", err)
 	}
 
 	var previousClustered []jsonCluster
 	if flags.previous != "" {
-		logInfo("Loading previous")
+		klog.V(2).Infof("Loading previous")
 		previousClustered, err = loadPrevious(flags.previous)
 		if err != nil {
-			log.Fatalf("Could not get previous results: %s", err)
+			klog.Warningf("Could not get previous results, they will not be used: %s", err)
 		}
 	}
 
@@ -93,7 +111,7 @@ func summarize(flags summarizeFlags) {
 
 	clustered := clusterGlobal(clusteredLocal, previousClustered)
 
-	logInfo("Rendering results...")
+	klog.V(2).Infof("Rendering results...")
 	start := time.Now()
 
 	data := render(builds, clustered)
@@ -103,30 +121,26 @@ func summarize(flags summarizeFlags) {
 	if flags.owners != "" {
 		owners, err = loadOwners(flags.owners)
 		if err != nil {
-			logWarning("Could not load owners file, clusters will only be labeled based on test names: %s", err)
+			klog.Warningf("Could not load owners file, clusters will only be labeled based on test names: %s", err)
 		}
 	}
 	err = annotateOwners(&data, builds, owners)
 	if err != nil {
-		logWarning("Could not annotate owners: %s", err)
+		klog.Warningf("Could not annotate owners: %s", err)
 	}
 
 	err = writeResults(flags.output, data)
 	if err != nil {
-		logWarning("Could not write results to file: %s", err)
+		klog.Warningf("Could not write results to file: %s", err)
 	}
 
 	if flags.outputSlices != "" {
-		if !(strings.Contains(flags.outputSlices, "PREFIX")) {
-			log.Panic("'PREFIX' not in flags.output_slices")
-		}
-
 		for subset := 0; subset < 256; subset++ {
 			idPrefix := fmt.Sprintf("%02x", subset)
 			subsetClusters, cols := renderSlice(data, builds, idPrefix, "")
 			err = writeRenderedSlice(strings.Replace(flags.outputSlices, "PREFIX", idPrefix, -1), subsetClusters, cols)
 			if err != nil {
-				logWarning("Could not write subset %d to file: %s", subset, err)
+				klog.Warningf("Could not write subset %d to file: %s", subset, err)
 			}
 		}
 
@@ -141,12 +155,12 @@ func summarize(flags summarizeFlags) {
 			ownerResults, cols := renderSlice(data, builds, "", owner)
 			err = writeRenderedSlice(strings.Replace(flags.outputSlices, "PREFIX", "sig-"+owner, -1), ownerResults, cols)
 			if err != nil {
-				logWarning("Could not write result for owner '%s' to file: %s", owner, err)
+				klog.Warningf("Could not write result for owner '%s' to file: %s", owner, err)
 			}
 		}
 	}
 
-	logInfo("Finished rendering results in %s", time.Since(start).String())
+	klog.V(0).Infof("Finished rendering results in %s", time.Since(start).String())
 }
 
 func Main() {

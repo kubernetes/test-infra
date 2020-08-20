@@ -31,6 +31,8 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+
+	"k8s.io/klog/v2"
 )
 
 // loadFailures loads a builds file and one or more test failure files. It maps build paths to builds
@@ -44,7 +46,7 @@ func loadFailures(buildsFilepath string, testsFilepaths []string) (map[string]bu
 	// Try to retrieve memoized results first to avoid another computation
 	if getMemoizedResults("memo_load_failures-builds.json", "", &builds) &&
 		getMemoizedResults("memo_load_failures-tests.json", "", &tests) {
-		logInfo("Done (cached) " + memoMessage)
+		klog.V(2).Infof("Done (cached) %s", memoMessage)
 		return builds, tests, nil
 	}
 
@@ -60,7 +62,7 @@ func loadFailures(buildsFilepath string, testsFilepaths []string) (map[string]bu
 
 	memoizeResults("memo_load_failures-builds.json", "", builds)
 	memoizeResults("memo_load_failures-tests.json", "", tests)
-	logInfo("Done " + memoMessage)
+	klog.V(2).Infof("Done %s", memoMessage)
 	return builds, tests, nil
 }
 
@@ -129,7 +131,7 @@ func getMemoizedResults(filepath string, message string, v interface{}) (ok bool
 	err := getJSON(filepath, v)
 	if err == nil {
 		if message != "" {
-			logInfo("Done (cached) " + message)
+			klog.V(2).Infof("Done (cached) %s", message)
 		}
 		return true
 	}
@@ -146,11 +148,11 @@ string, no message is printed.
 func memoizeResults(filepath string, message string, v interface{}) {
 	err := writeJSON(filepath, v)
 	if err == nil && message != "" {
-		logInfo("Done " + message)
+		klog.V(2).Infof("Done %s", message)
 		return
 	}
 
-	logWarning("Could not memoize results to '%s': %s", filepath, err)
+	klog.Warningf("Could not memoize results to '%s': %s", filepath, err)
 }
 
 /* Functions below this comment are only used within this file as of this commit. */

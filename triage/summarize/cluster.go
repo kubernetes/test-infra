@@ -23,6 +23,8 @@ package summarize
 import (
 	"sync"
 	"time"
+
+	"k8s.io/klog/v2"
 )
 
 /*
@@ -68,7 +70,7 @@ func clusterLocal(failuresByTest failuresGroup, numWorkers int) nestedFailuresGr
 
 	numFailures := 0 // The number of failures processed so far
 	start := time.Now()
-	logInfo("Clustering failures for %d unique tests...", len(failuresByTest))
+	klog.V(2).Infof("Clustering failures for %d unique tests...", len(failuresByTest))
 
 	/*
 		Since local clustering is done within each test, there is no interdependency among the clusters,
@@ -113,7 +115,7 @@ func clusterLocal(failuresByTest failuresGroup, numWorkers int) nestedFailuresGr
 
 		for dg := range doneQueue {
 			numFailures += len(dg.input.Failures)
-			logInfo("%4d/%4d tests, %5d failures, %s", len(clustered)+1, len(failuresByTest), len(dg.input.Failures), dg.input.Key)
+			klog.V(3).Infof("%4d/%4d tests, %5d failures, %s", len(clustered)+1, len(failuresByTest), len(dg.input.Failures), dg.input.Key)
 			clustered[dg.input.Key] = dg.output
 		}
 	}()
@@ -140,7 +142,7 @@ func clusterLocal(failuresByTest failuresGroup, numWorkers int) nestedFailuresGr
 	doneQueueWG.Wait()
 
 	elapsed := time.Since(start)
-	logInfo("Finished locally clustering %d unique tests (%d failures) in %s", len(clustered), numFailures, elapsed.String())
+	klog.V(2).Infof("Finished locally clustering %d unique tests (%d failures) in %s", len(clustered), numFailures, elapsed.String())
 
 	// Memoize the results
 	memoizeResults(memoPath, memoMessage, clustered)
@@ -214,7 +216,7 @@ func clusterGlobal(newlyClustered nestedFailuresGroups, previouslyClustered []js
 
 	numFailures := 0
 
-	logInfo("Combining clustered failures for %d unique tests...", len(newlyClustered))
+	klog.V(2).Infof("Combining clustered failures for %d unique tests...", len(newlyClustered))
 	start := time.Now()
 
 	if previouslyClustered != nil {
@@ -224,8 +226,8 @@ func clusterGlobal(newlyClustered nestedFailuresGroups, previouslyClustered []js
 			key := cluster.Key
 			normalizedKey := normalize(key)
 			if key != normalizedKey {
-				logInfo(key)
-				logInfo(normalizedKey)
+				klog.V(4).Infof(key)
+				klog.V(4).Infof(normalizedKey)
 				n++
 				continue
 			}
@@ -233,10 +235,10 @@ func clusterGlobal(newlyClustered nestedFailuresGroups, previouslyClustered []js
 			clusters[key] = make(failuresGroup)
 		}
 
-		logInfo("Seeding with %d previous clusters", len(clusters))
+		klog.V(2).Infof("Seeding with %d previous clusters", len(clusters))
 
 		if n != 0 {
-			logWarning("!!! %d clusters lost from different normalization! !!!", n)
+			klog.Warningf("!!! %d clusters lost from different normalization! !!!", n)
 		}
 	}
 
@@ -245,7 +247,7 @@ func clusterGlobal(newlyClustered nestedFailuresGroups, previouslyClustered []js
 		testName := outerPair.Key
 		testClusters := outerPair.Group
 
-		logInfo("%4d/%4d tests, %4d clusters, %s", n+1, len(newlyClustered), len(testClusters), testName)
+		klog.V(3).Infof("%4d/%4d tests, %4d clusters, %s", n+1, len(newlyClustered), len(testClusters), testName)
 		testStart := time.Now()
 
 		// Look at clusters with the most failures first
@@ -259,7 +261,7 @@ func clusterGlobal(newlyClustered nestedFailuresGroups, previouslyClustered []js
 			numTests := len(tests)
 			var clusterCase string
 
-			logInfo("  %4d/%4d clusters, %5d chars failure text, %5d failures ...", m+1, numClusters, fTextLen, numTests)
+			klog.V(3).Infof("  %4d/%4d clusters, %5d chars failure text, %5d failures ...", m+1, numClusters, fTextLen, numTests)
 			numFailures += numTests
 
 			// If a cluster exists for the given cluster text
@@ -295,7 +297,7 @@ func clusterGlobal(newlyClustered nestedFailuresGroups, previouslyClustered []js
 			}
 
 			clusterDuration := int(time.Since(clusterStart).Seconds())
-			logInfo("  %4d/%4d clusters, %5d chars failure text, %5d failures, cluster:%s in %d sec, test: %s",
+			klog.V(3).Infof("  %4d/%4d clusters, %5d chars failure text, %5d failures, cluster:%s in %d sec, test: %s",
 				m+1, numClusters, fTextLen, numTests, clusterCase, clusterDuration, testName)
 		}
 	}
@@ -309,7 +311,7 @@ func clusterGlobal(newlyClustered nestedFailuresGroups, previouslyClustered []js
 	}
 
 	elapsed := time.Since(start)
-	logInfo("Finished clustering %d unique tests (%d failures) into %d clusters in %s",
+	klog.V(2).Infof("Finished clustering %d unique tests (%d failures) into %d clusters in %s",
 		len(newlyClustered), numFailures, len(clusters), elapsed.String())
 
 	// Memoize the results
@@ -355,7 +357,7 @@ func clusterTest(failures []failure) failuresGroup {
 
 		// Bail if the clustering takes too long
 		if time.Since(start).Seconds() > 60 {
-			logInfo("bailing early, taking too long!")
+			klog.V(2).Infof("bailing early, taking too long!")
 			break
 		}
 	}
