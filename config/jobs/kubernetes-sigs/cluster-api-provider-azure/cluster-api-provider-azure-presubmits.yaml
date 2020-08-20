@@ -316,7 +316,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200819-491a5ae-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-1.18
         command:
         - runner.sh
         - bash
