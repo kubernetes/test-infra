@@ -853,16 +853,23 @@ func handleMerge(e event, gc githubClient, bc bugzilla.Client, options plugins.B
 	mergedMessage := func(statement string) string {
 		var links []string
 		for _, bug := range mergedPRs {
-			links = append(links, link(bug))
+			links = append(links, fmt.Sprintf(" * %s", link(bug)))
 		}
-		return fmt.Sprintf(`%s pull requests linked via external trackers have merged: %s.`, statement, strings.Join(links, ", "))
+		return fmt.Sprintf(`%s pull requests linked via external trackers have merged:
+%s
+
+`, statement, strings.Join(links, "\n"))
 	}
 
 	var statements []string
 	for bug, state := range unmergedPrStates {
-		statements = append(statements, fmt.Sprintf("\n * %s is %s", link(bug), state))
+		statements = append(statements, fmt.Sprintf(" * %s is %s", link(bug), state))
 	}
-	unmergedMessage := fmt.Sprintf(`The following pull requests linked via external trackers have not merged:%s
+	unmergedMessage := fmt.Sprintf(`The following pull requests linked via external trackers have not merged:
+%s
+
+These pull request must merge or be unlinked from the Bugzilla bug in order for it to move to the next state.
+
 `, strings.Join(statements, "\n"))
 
 	outcomeMessage := func(action string) string {
@@ -880,9 +887,9 @@ func handleMerge(e event, gc githubClient, bc bugzilla.Client, options plugins.B
 			log.WithError(err).Warn("Unexpected error updating Bugzilla bug.")
 			return comment(formatError(fmt.Sprintf("updating to the %s state", options.StateAfterMerge), bc.Endpoint(), e.bugId, err))
 		}
-		return comment(fmt.Sprintf("%s %s", mergedMessage("All"), outcomeMessage("")))
+		return comment(fmt.Sprintf("%s%s", mergedMessage("All"), outcomeMessage("")))
 	}
-	return comment(fmt.Sprintf("%s %s\n%s", mergedMessage("Some"), unmergedMessage, outcomeMessage("")))
+	return comment(fmt.Sprintf("%s%s%s", mergedMessage("Some"), unmergedMessage, outcomeMessage("not ")))
 }
 
 func handleCherrypick(e event, gc githubClient, bc bugzilla.Client, options plugins.BugzillaBranchOptions, log *logrus.Entry) error {
