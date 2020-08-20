@@ -309,6 +309,11 @@ presubmits:
     optional: true
     decorate: true
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+    extra_refs:
+    - org: kubernetes
+      repo: test-infra
+      base_ref: master
+      path_alias: k8s.io/test-infra
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-1.18
