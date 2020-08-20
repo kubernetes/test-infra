@@ -24,7 +24,7 @@ However, summarization can be run directly with the following flags:
 - `owners` (optional): a path to a file that maps SIGs to the labels they own (see [Methodology](#methodology));
   no longer used as labels are read straight from test names
 - `output` (optional): the path to where the output should be written to; defaults to `./failure_data.json`
-- `outputSlices` (optional): a pattern to be used when outputting slices, if desired (see
+- `output_slices` (optional): a pattern to be used when outputting slices, if desired (see
   [Methodology](#methodology)); e.g. `slices/failure_data_PREFIX.json`, where `PREFIX` will be replaced
   with some identifier
 
@@ -36,6 +36,9 @@ The web page can be accessed at https://go.k8s.io/triage with the following opti
 - `Include results from`: toggle between CI tests, PR tests, or both
 - `Sort by`: basic sorting
 - `Include filter`/`Exclude filter`: advanced regex filtering by field
+
+Note that the clusters at the top of the web page are static, and must be added/removed manually.
+Simply adding a button to the HTML is enough.
 
 
 ## Go Packages
