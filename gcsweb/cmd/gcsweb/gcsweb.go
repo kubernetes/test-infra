@@ -23,7 +23,6 @@ import (
 	"html/template"
 	"io"
 	"io/ioutil"
-	"log"
 	"math/rand"
 	"net/http"
 	net_url "net/url"
@@ -31,24 +30,24 @@ import (
 	"strings"
 	"time"
 
+	"github.com/sirupsen/logrus"
+
 	"k8s.io/test-infra/gcsweb/pkg/version"
+
+	"k8s.io/test-infra/prow/config/secret"
+	"k8s.io/test-infra/prow/logrusutil"
 )
 
-// The base URL for GCS's HTTP API.
-const gcsBaseURL = "https://storage.googleapis.com"
-const gcsPath = "/gcs" // path for GCS browsing on this server
-
-// The base URL for GCP's GCS browser.
-const gcsBrowserURL = "https://console.cloud.google.com/storage/browser"
-
-var flPort = flag.Int("p", 8080, "port number on which to listen")
-var flIcons = flag.String("i", "/icons", "path to the icons directory")
-var flStyles = flag.String("s", "/styles", "path to the styles directory")
-var flVersion = flag.Bool("version", false, "print version and exit")
-var flUpgradeProxiedHTTPtoHTTPS = flag.Bool("upgrade-proxied-http-to-https", false,
-	"upgrade any proxied request (e.g. from GCLB) from http to https")
-
 const (
+	// The base URL for GCS's HTTP API.
+	gcsBaseURL = "https://storage.googleapis.com"
+
+	// path for GCS browsing on this server
+	gcsPath = "/gcs"
+
+	// The base URL for GCP's GCS browser.
+	gcsBrowserURL = "https://console.cloud.google.com/storage/browser"
+
 	iconFile = "/icons/file.png"
 	iconDir  = "/icons/dir.png"
 	iconBack = "/icons/back.png"
@@ -67,26 +66,88 @@ func (ss *strslice) Set(value string) error {
 	return nil
 }
 
-// Only buckets in this list will be served.
-var allowedBuckets strslice
+type options struct {
+	flPort int
+
+	flIcons        string
+	flStyles       string
+	oauthTokenFile string
+
+	flVersion bool
+
+	// Only buckets in this list will be served.
+	allowedBuckets strslice
+}
+
+var flUpgradeProxiedHTTPtoHTTPS bool
+
+func gatherOptions() options {
+	o := options{}
+	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+
+	fs.IntVar(&o.flPort, "p", 8080, "port number on which to listen")
+
+	fs.StringVar(&o.flIcons, "i", "/icons", "path to the icons directory")
+	fs.StringVar(&o.flStyles, "s", "/styles", "path to the styles directory")
+	fs.StringVar(&o.oauthTokenFile, "oauth-token-file", "", "Path to the file containing the OAuth 2.0 Bearer Token secret.")
+
+	fs.BoolVar(&o.flVersion, "version", false, "print version and exit")
+	fs.BoolVar(&flUpgradeProxiedHTTPtoHTTPS, "upgrade-proxied-http-to-https", false, "upgrade any proxied request (e.g. from GCLB) from http to https")
+
+	fs.Var(&o.allowedBuckets, "b", "GCS bucket to serve (may be specified more than once)")
+
+	fs.Parse(os.Args[1:])
+	return o
+}
+
+func (o *options) validate() error {
+	if _, err := os.Stat(o.flIcons); os.IsNotExist(err) {
+		return fmt.Errorf("icons path '%s' doesn't exists.", o.flIcons)
+	}
+	if _, err := os.Stat(o.flStyles); os.IsNotExist(err) {
+		return fmt.Errorf("styles path '%s' doesn't exists.", o.flStyles)
+	}
+	if o.oauthTokenFile != "" {
+		if _, err := os.Stat(o.oauthTokenFile); os.IsNotExist(err) {
+			return fmt.Errorf("oauth token file '%s' doesn't exists.", o.oauthTokenFile)
+		}
+	}
+	return nil
+}
 
 func main() {
-	flag.Var(&allowedBuckets, "b", "GCS bucket to serve (may be specified more than once)")
-	flag.Parse()
+	o := gatherOptions()
+	if err := o.validate(); err != nil {
+		logrus.Fatalf("Invalid options: %v", err)
+	}
 
-	if *flVersion {
+	if o.flVersion {
 		fmt.Println(version.VERSION)
 		os.Exit(0)
 	}
 
-	log.Printf("starting")
+	logrusutil.ComponentInit()
+
+	s := &server{
+		httpClient: &http.Client{},
+	}
+
+	if o.oauthTokenFile != "" {
+		secretAgent := &secret.Agent{}
+		if err := secretAgent.Start([]string{o.oauthTokenFile}); err != nil {
+			logrus.WithError(err).Fatal("Error starting secrets agent.")
+		}
+		s.tokenGenerator = secretAgent.GetTokenGenerator(o.oauthTokenFile)
+	}
+
+	logrus.Info("Starting GCSWeb")
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	// Canonicalize allowed buckets.
-	for i := range allowedBuckets {
-		bucket := joinPath(gcsPath, allowedBuckets[i])
-		log.Printf("allowing %s", bucket)
-		http.HandleFunc(bucket+"/", gcsRequest)
+	for i := range o.allowedBuckets {
+		bucket := joinPath(gcsPath, o.allowedBuckets[i])
+		logrus.WithField("bucket", bucket).Info("allowing bucket")
+		http.HandleFunc(bucket+"/", s.gcsRequest)
 		http.HandleFunc(bucket, func(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, bucket+"/", http.StatusPermanentRedirect)
 		})
@@ -105,25 +166,28 @@ func main() {
 			h.ServeHTTP(w, r)
 		}
 	}
-	http.Handle("/icons/", longCacheServer(http.StripPrefix("/icons/", http.FileServer(http.Dir(*flIcons)))))
-	http.Handle("/styles/", longCacheServer(http.StripPrefix("/styles/", http.FileServer(http.Dir(*flStyles)))))
+	http.Handle("/icons/", longCacheServer(http.StripPrefix("/icons/", http.FileServer(http.Dir(o.flIcons)))))
+	http.Handle("/styles/", longCacheServer(http.StripPrefix("/styles/", http.FileServer(http.Dir(o.flStyles)))))
 
 	// Serve HTTP.
 	http.HandleFunc("/healthz", healthzRequest)
 	http.HandleFunc("/robots.txt", robotsRequest)
 	http.HandleFunc("/", otherRequest)
-	log.Printf("serving on port %d", *flPort)
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", *flPort), nil))
+
+	logrus.Infof("serving on port %d", o.flPort)
+	if err := http.ListenAndServe(fmt.Sprintf(":%d", o.flPort), nil); err != nil {
+		logrus.WithError(err).Fatal("couldn't start the http server")
+	}
 }
 
-func upgradeToHTTPS(w http.ResponseWriter, r *http.Request, logger txnLogger) bool {
-	if *flUpgradeProxiedHTTPtoHTTPS && r.Header.Get("X-Forwarded-Proto") == "http" {
+func upgradeToHTTPS(w http.ResponseWriter, r *http.Request, logger *logrus.Entry) bool {
+	if flUpgradeProxiedHTTPtoHTTPS && r.Header.Get("X-Forwarded-Proto") == "http" {
 		newURL := *r.URL
 		newURL.Scheme = "https"
 		if newURL.Host == "" {
 			newURL.Host = r.Host
 		}
-		logger.Printf("redirect to %s [https upgrade]", newURL.String())
+		logger.Infof("redirect to %s [https upgrade]", newURL.String())
 		http.Redirect(w, r, newURL.String(), http.StatusPermanentRedirect)
 		return true
 	}
@@ -186,7 +250,12 @@ func otherRequest(w http.ResponseWriter, r *http.Request) {
 	http.NotFound(w, r)
 }
 
-func gcsRequest(w http.ResponseWriter, r *http.Request) {
+type server struct {
+	httpClient     *http.Client
+	tokenGenerator func() []byte
+}
+
+func (s *server) gcsRequest(w http.ResponseWriter, r *http.Request) {
 	logger := newTxnLogger(r)
 
 	if upgradeToHTTPS(w, r, logger) {
@@ -213,20 +282,34 @@ func gcsRequest(w http.ResponseWriter, r *http.Request) {
 		url += "&prefix=" + net_url.QueryEscape(object+"/")
 	}
 
-	if markers, found := r.URL.Query()["marker"]; found {
+	markers, found := r.URL.Query()["marker"]
+	if found {
 		url += "&marker=" + markers[0]
 	}
 
-	resp, err := http.Get(url)
+	urlLogger := logger.WithFields(logrus.Fields{
+		"url":     url,
+		"bucket":  bucket,
+		"object":  object,
+		"markers": markers})
+
+	// Create a new request using http
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+
+	if s.tokenGenerator != nil {
+		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", string(s.tokenGenerator())))
+	}
+
+	resp, err := s.httpClient.Do(req)
 	if err != nil {
-		logger.Printf("GET %s: %s", url, err)
+		urlLogger.WithError(err).Error("failed to GET from GCS")
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "http.Get: %v", err)
 		return
 	}
 	defer resp.Body.Close()
 
-	logger.Printf("GET %s: %s", url, resp.Status)
+	urlLogger.WithField("status", resp.Status).Info("URL processed")
 
 	if resp.StatusCode != http.StatusOK {
 		w.WriteHeader(resp.StatusCode)
@@ -235,14 +318,14 @@ func gcsRequest(w http.ResponseWriter, r *http.Request) {
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		logger.Printf("ioutil.ReadAll: %v", err)
+		urlLogger.WithError(err).Error("error while reading response body")
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "ioutil.ReadAll: %v", err)
 		return
 	}
 	dir, err := parseXML(body, object+"/")
 	if err != nil {
-		logger.Printf("xml.Unmarshal: %v", err)
+		urlLogger.WithError(err).Error("error while unmarshaling the XML from response body")
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "xml.Unmarshal: %v", err)
 		return
@@ -250,7 +333,7 @@ func gcsRequest(w http.ResponseWriter, r *http.Request) {
 	if dir == nil {
 		// It was a request for a file, send them there directly.
 		url := joinPath(gcsBaseURL, bucket, object)
-		logger.Printf("redirect to %s", url)
+		urlLogger.Infof("redirect to %s", url)
 		http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 		return
 	}
@@ -568,20 +651,10 @@ func (pfx *Prefix) Render(out http.ResponseWriter, inPath string) {
 	htmlGridItem(out, iconDir, url, pfx.Prefix, "-", "-")
 }
 
-// A logger-wrapper that logs a transaction's metadata.
-type txnLogger struct {
-	nonce string
-}
-
-// Printf logs a formatted line to the logging output.
-func (tl txnLogger) Printf(fmt string, args ...interface{}) {
-	args = append([]interface{}{tl.nonce}, args...)
-	log.Printf("[txn-%s] "+fmt, args...)
-}
-
-func newTxnLogger(r *http.Request) txnLogger {
-	nonce := fmt.Sprintf("%08x", rand.Int31())
-	logger := txnLogger{nonce}
-	logger.Printf("request: %s %s", r.Method, r.URL.Path)
-	return logger
+func newTxnLogger(r *http.Request) *logrus.Entry {
+	return logrus.WithFields(logrus.Fields{
+		"txn":      fmt.Sprintf("%08x", rand.Int31()),
+		"method":   r.Method,
+		"url-path": r.URL.Path,
+	})
 }
