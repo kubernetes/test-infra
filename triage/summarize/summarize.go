@@ -26,7 +26,6 @@ import (
 	"time"
 
 	"k8s.io/klog/v2"
-	"k8s.io/test-infra/triage/utils"
 )
 
 const longOutputLen = 10000
@@ -53,7 +52,7 @@ func parseFlags() summarizeFlags {
 	flag.StringVar(&flags.owners, "owners", "", "path to test owner SIGs file")
 	flag.StringVar(&flags.output, "output", "failure_data.json", "output path")
 	flag.StringVar(&flags.outputSlices, "output_slices", "", "path to slices output (must include PREFIX in template)")
-	flag.IntVar(&flags.numWorkers, "num_workers", utils.Max(runtime.NumCPU()-1, 1), "number of worker goroutines to spawn for parallelized functions") // Leave one CPU for the main goroutine, where possible
+	flag.IntVar(&flags.numWorkers, "num_workers", 2*runtime.NumCPU()-1, "number of worker goroutines to spawn for parallelized functions") // This has shown to be a sensible number of workers
 
 	// The tests flag can contain multiple arguments, so we'll split it by space
 	tempTests := flag.String("tests", "", "path to tests.json files from BigQuery")

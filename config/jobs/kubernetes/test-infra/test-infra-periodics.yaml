@@ -46,7 +46,7 @@ periodics:
         mountPath: /etc/service-account
         readOnly: true
       resources:
-        requests:
+        requests:  # When changing CPUs, also change num_workers flag in triage/update_summaries.sh
           cpu: 4
           memory: 40Gi
         limits:
