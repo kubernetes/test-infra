@@ -66,9 +66,6 @@ func parseFlags() summarizeFlags {
 		klog.Fatalf("'PREFIX' not in output_slices flag")
 	}
 
-	// Log flag info
-	klog.V(1).Infof("Running with %d workers (%d detected CPUs)", flags.numWorkers, runtime.NumCPU())
-
 	return flags
 }
 
@@ -92,6 +89,9 @@ func setUpLogging(logtostderr bool, v int) {
 
 func summarize(flags summarizeFlags) {
 	setUpLogging(true, 3)
+
+	// Log flag info
+	klog.V(1).Infof("Running with %d workers (%d detected CPUs)", flags.numWorkers, runtime.NumCPU())
 
 	builds, failedTests, err := loadFailures(flags.builds, flags.tests)
 	if err != nil {
