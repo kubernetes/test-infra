@@ -31,6 +31,7 @@ filegroup(
 go_test(
     name = "go_default_test",
     srcs = ["bumper_test.go"],
+    data = glob(["testdata/**"]),
     embed = [":go_default_library"],
     deps = ["//prow/config/secret:go_default_library"],
 )
