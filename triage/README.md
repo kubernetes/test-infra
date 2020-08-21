@@ -27,6 +27,7 @@ However, summarization can be run directly with the following flags:
 - `output_slices` (optional): a pattern to be used when outputting slices, if desired (see
   [Methodology](#methodology)); e.g. `slices/failure_data_PREFIX.json`, where `PREFIX` will be replaced
   with some identifier
+- `num_workers`: the number of worker goroutines to spawn for parallelized functions; defaults to `2*runtime.NumCPU()-1`. (Since CPU detection is unreliable in Kubernetes, we set it manually according to the number of CPUs in [test-infra-periodics.yaml](https://github.com/kubernetes/test-infra/blob/master/config/jobs/kubernetes/test-infra/test-infra-periodics.yaml).)
 
 Triage uses klog for logging, so klog flags can be passed in as well.
 
