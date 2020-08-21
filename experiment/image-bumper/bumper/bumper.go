@@ -57,7 +57,8 @@ func DeconstructTag(tag string) (date, commit, variant string) {
 	return parts[0][1:], parts[len(parts)-1], currentTagParts[tagExtraPart]
 }
 
-func findLatestTag(imageHost, imageName, currentTag string) (string, error) {
+// FindLatestTag returns the latest valid tag for the given image.
+func FindLatestTag(imageHost, imageName, currentTag string) (string, error) {
 	k := imageHost + "/" + imageName + ":" + currentTag
 	if result, ok := tagCache[k]; ok {
 		return result, nil
@@ -178,13 +179,14 @@ func updateAllTags(tagPicker func(host, image, tag string) (string, error), cont
 }
 
 // UpdateFile updates a file in place.
-func UpdateFile(path string, imageFilter *regexp.Regexp) error {
+func UpdateFile(tagPicker func(imageHost, imageName, currentTag string) (string, error),
+	path string, imageFilter *regexp.Regexp) error {
 	content, err := ioutil.ReadFile(path)
 	if err != nil {
 		return fmt.Errorf("failed to read %s: %v", path, err)
 	}
 
-	newContent := updateAllTags(findLatestTag, content, imageFilter)
+	newContent := updateAllTags(tagPicker, content, imageFilter)
 
 	if err := ioutil.WriteFile(path, newContent, 0644); err != nil {
 		return fmt.Errorf("failed to write %s: %v", path, err)

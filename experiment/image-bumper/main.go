@@ -49,7 +49,7 @@ func main() {
 		}
 	}
 	for _, f := range o.files {
-		if err := bumper.UpdateFile(f, imageRegex); err != nil {
+		if err := bumper.UpdateFile(bumper.FindLatestTag, f, imageRegex); err != nil {
 			log.Printf("Failed to update %s: %v", f, err)
 		}
 	}
