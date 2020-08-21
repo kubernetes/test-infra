@@ -36,6 +36,7 @@ func parseOptions() *bumper.Options {
 	flag.StringVar(&o.OncallAddress, "oncall-address", "", "The oncall address where we can get the JSON file that stores the current oncall information.")
 
 	flag.BoolVar(&o.BumpProwImages, "bump-prow-images", false, "Whether to bump up version of images in gcr.io/k8s-prow/.")
+	flag.BoolVar(&o.BumpBoskosImages, "bump-boskos-images", false, "Whether to bump up version of images in gcr.io/k8s-staging-boskos/.")
 	flag.BoolVar(&o.BumpTestImages, "bump-test-images", false, "Whether to bump up version of images in gcr.io/k8s-testimages/.")
 	flag.StringVar(&o.TargetVersion, "target-version", "", "The target version to bump images version to, which can be one of latest, upstream, upstream-staging and vYYYYMMDD-deadbeef.")
 

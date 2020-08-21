@@ -42,9 +42,11 @@ import (
 
 const (
 	prowPrefix      = "gcr.io/k8s-prow/"
+	boskosPrefix    = "gcr.io/k8s-staging-boskos/"
 	testImagePrefix = "gcr.io/k8s-testimages/"
 	prowRepo        = "https://github.com/kubernetes/test-infra"
 	testImageRepo   = prowRepo
+	boskosRepo      = "https://github.com/kubernetes-sigs/boskos"
 	forkRemoteName  = "bumper-fork-remote"
 
 	latestVersion          = "latest"
@@ -52,9 +54,11 @@ const (
 	upstreamStagingVersion = "upstream-staging"
 	tagVersion             = "vYYYYMMDD-deadbeef"
 
-	upstreamURLBase          = "https://raw.githubusercontent.com/kubernetes/test-infra/master"
-	prowRefConfigFile        = "config/prow/cluster/deck_deployment.yaml"
-	prowStagingRefConfigFile = "config/prow-staging/cluster/deck_deployment.yaml"
+	upstreamURLBase            = "https://raw.githubusercontent.com/kubernetes/test-infra/master"
+	prowRefConfigFile          = "config/prow/cluster/deck_deployment.yaml"
+	prowStagingRefConfigFile   = "config/prow-staging/cluster/deck_deployment.yaml"
+	boskosRefConfigFile        = "config/prow/cluster/boskos.yaml"
+	boskosStagingRefConfigFile = "config/prow-staging/cluster/boskos.yaml"
 
 	errOncallMsgTempl = "An error occurred while finding an assignee: `%s`.\nFalling back to Blunderbuss."
 	noOncallMsg       = "Nobody is currently oncall, so falling back to Blunderbuss."
@@ -99,9 +103,10 @@ type Options struct {
 	RemoteBranch  string
 	OncallAddress string
 
-	BumpProwImages bool
-	BumpTestImages bool
-	TargetVersion  string
+	BumpProwImages   bool
+	BumpBoskosImages bool
+	BumpTestImages   bool
+	TargetVersion    string
 
 	IncludedConfigPaths fileArrayFlag
 	ExcludedConfigPaths fileArrayFlag
@@ -174,14 +179,14 @@ func validateOptions(o *Options) error {
 		logrus.Warnf("Warning: --target-version is not one of %v so it might not work properly.",
 			[]string{latestVersion, upstreamVersion, upstreamStagingVersion, tagVersion})
 	}
-	if !o.BumpProwImages && !o.BumpTestImages {
-		return fmt.Errorf("at least one of --bump-prow-images and --bump-test-images must be specified")
+	if !o.BumpProwImages && !o.BumpBoskosImages && !o.BumpTestImages {
+		return fmt.Errorf("at least one of --bump-prow-images, --bump-boskos-images and --bump-test-images must be specified")
 	}
-	if o.BumpProwImages && o.BumpTestImages && o.TargetVersion != latestVersion {
-		return fmt.Errorf("--target-version must be latest if you want to bump both prow and test images")
+	if (o.BumpProwImages || o.BumpBoskosImages) && o.BumpTestImages && o.TargetVersion != latestVersion {
+		return fmt.Errorf("--target-version must be latest if you want to bump both prow/boskos and test images")
 	}
 	if o.BumpTestImages && (o.TargetVersion == upstreamVersion || o.TargetVersion == upstreamStagingVersion) {
-		return fmt.Errorf("%q and %q versions can only be specified to bump prow images", upstreamVersion, upstreamStagingVersion)
+		return fmt.Errorf("%q and %q versions can only be specified to bump prow/boskos images", upstreamVersion, upstreamStagingVersion)
 	}
 
 	if len(o.IncludedConfigPaths) == 0 {
@@ -202,7 +207,7 @@ func Run(o *Options) error {
 	}
 
 	images, err := UpdateReferences(
-		o.BumpProwImages, o.BumpTestImages, o.TargetVersion,
+		o.BumpProwImages, o.BumpBoskosImages, o.BumpTestImages, o.TargetVersion,
 		o.IncludedConfigPaths, o.ExcludedConfigPaths, o.ExtraFiles)
 	if err != nil {
 		return fmt.Errorf("failed to update image references: %w", err)
@@ -339,35 +344,45 @@ func UpdatePullRequestWithLabels(gc github.Client, org, repo, title, body, match
 	return nil
 }
 
-// updateReferences update the references of prow-images and/or testimages
+// updateReferences update the references of prow-images and/or boskos-images and/or testimages
 // in the files in any of "subfolders" of the includeConfigPaths but not in excludeConfigPaths
 // if the file is a yaml file (*.yaml) or extraFiles[file]=true
-func UpdateReferences(bumpProwImages, bumpTestImages bool, targetVersion string,
+func UpdateReferences(bumpProwImages, bumpBoskosImages bool, bumpTestImages bool, targetVersion string,
 	includeConfigPaths []string, excludeConfigPaths []string, extraFiles []string) (map[string]string, error) {
 	logrus.Info("Bumping image references...")
 	filters := make([]string, 0)
 	if bumpProwImages {
 		filters = append(filters, prowPrefix)
 	}
+	if bumpBoskosImages {
+		filters = append(filters, boskosPrefix)
+	}
 	if bumpTestImages {
 		filters = append(filters, testImagePrefix)
 	}
 	filterRegexp := regexp.MustCompile(strings.Join(filters, "|"))
 
+	imageBumperCli := imagebumper.NewClient()
+	return updateReferences(imageBumperCli, filterRegexp, targetVersion, includeConfigPaths, excludeConfigPaths, extraFiles)
+}
+
+type imageBumper interface {
+	FindLatestTag(imageHost, imageName, currentTag string) (string, error)
+	UpdateFile(tagPicker func(imageHost, imageName, currentTag string) (string, error), path string, imageFilter *regexp.Regexp) error
+	GetReplacements() map[string]string
+}
+
+func updateReferences(imageBumperCli imageBumper, filterRegexp *regexp.Regexp, targetVersion string,
+	includeConfigPaths []string, excludeConfigPaths []string, extraFiles []string) (map[string]string, error) {
 	var tagPicker func(string, string, string) (string, error)
 	var err error
 	switch targetVersion {
 	case latestVersion:
-		tagPicker = imagebumper.FindLatestTag
-	case upstreamVersion:
-		tagPicker, err = upstreamImageVersionResolver(upstreamURLBase + "/" + prowRefConfigFile)
+		tagPicker = imageBumperCli.FindLatestTag
+	case upstreamVersion, upstreamStagingVersion:
+		tagPicker, err = upstreamImageVersionResolver(targetVersion, parseUpstreamImageVersion)
 		if err != nil {
-			return nil, fmt.Errorf("failed to resolve the upstream Prow image version: %w", err)
-		}
-	case upstreamStagingVersion:
-		tagPicker, err = upstreamImageVersionResolver(upstreamURLBase + "/" + prowStagingRefConfigFile)
-		if err != nil {
-			return nil, fmt.Errorf("failed to resolve the upstream staging Prow image version: %w", err)
+			return nil, fmt.Errorf("failed to resolve the %s image version: %w", targetVersion, err)
 		}
 	default:
 		tagPicker = func(imageHost, imageName, currentTag string) (string, error) { return targetVersion, nil }
@@ -375,7 +390,7 @@ func UpdateReferences(bumpProwImages, bumpTestImages bool, targetVersion string,
 
 	updateFile := func(name string) error {
 		logrus.Infof("Updating file %s", name)
-		if err := imagebumper.UpdateFile(tagPicker, name, filterRegexp); err != nil {
+		if err := imageBumperCli.UpdateFile(tagPicker, name, filterRegexp); err != nil {
 			return fmt.Errorf("failed to update the file: %w", err)
 		}
 		return nil
@@ -414,22 +429,51 @@ func UpdateReferences(bumpProwImages, bumpTestImages bool, targetVersion string,
 		}
 	}
 
-	return imagebumper.GetReplacements(), nil
+	return imageBumperCli.GetReplacements(), nil
 }
 
-func upstreamImageVersionResolver(upstreamAddress string) (func(imageHost, imageName, currentTag string) (string, error), error) {
-	version, err := parseUpstreamImageVersion(upstreamAddress)
+func upstreamImageVersionResolver(
+	upstreamVersionType string, parse func(upstreamAddress string) (string, error),
+) (func(imageHost, imageName, currentTag string) (string, error), error) {
+	prowUpstreamAddress, boskosUpstreamAddress, err := upstreamConfigFileAddresses(upstreamVersionType)
 	if err != nil {
-		return nil, fmt.Errorf("error resolving the upstream Prow version from %q: %w", upstreamAddress, err)
+		return nil, err
+	}
+
+	prowVersion, err := parse(prowUpstreamAddress)
+	if err != nil {
+		return nil, fmt.Errorf("error resolving the upstream Prow version from %q: %w", prowUpstreamAddress, err)
+	}
+	boskosVersion, err := parse(boskosUpstreamAddress)
+	if err != nil {
+		return nil, fmt.Errorf("error resolving the upstream Boskos version from %q: %w", boskosUpstreamAddress, err)
 	}
 	return func(imageHost, imageName, currentTag string) (string, error) {
-		// Skip boskos images as they do not have the same image tag as other Prow components.
-		// TODO(chizhg): remove this check after all Prow instances are using boskos images not in gcr.io/k8s-prow/boskos
-		if strings.Contains(imageName, "boskos/") {
+		imageFullPath := imageHost + "/" + imageName
+		if strings.HasPrefix(imageFullPath, prowPrefix) {
+			return prowVersion, nil
+		} else if strings.HasPrefix(imageFullPath, boskosPrefix) {
+			return boskosVersion, nil
+		} else {
 			return currentTag, nil
 		}
-		return version, nil
 	}, nil
+}
+
+// upstreamConfigFileAddresses returns the upstream configuration file addresses for parsing the image version.
+func upstreamConfigFileAddresses(upstreamVersionType string) (prowUpstreamAddress, boskosUpstreamAddress string, err error) {
+	if upstreamVersionType == upstreamVersion {
+		prowUpstreamAddress = upstreamURLBase + "/" + prowRefConfigFile
+		boskosUpstreamAddress = upstreamURLBase + "/" + boskosRefConfigFile
+	} else if upstreamVersionType == upstreamStagingVersion {
+		prowUpstreamAddress = upstreamURLBase + "/" + prowStagingRefConfigFile
+		boskosUpstreamAddress = upstreamURLBase + "/" + boskosStagingRefConfigFile
+	} else {
+		return "", "", fmt.Errorf("unsupported upstream version type: %s, must be one of %v",
+			upstreamVersionType, []string{upstreamVersion, upstreamStagingVersion})
+	}
+
+	return
 }
 
 func parseUpstreamImageVersion(upstreamAddress string) (string, error) {
@@ -698,7 +742,8 @@ func generateSummary(name, repo, prefix string, summarise bool, images map[strin
 func generatePRBody(images map[string]string, assignment string) string {
 	prowSummary := generateSummary("Prow", prowRepo, prowPrefix, true, images)
 	testImagesSummary := generateSummary("test-image", testImageRepo, testImagePrefix, false, images)
-	return prowSummary + "\n\n" + testImagesSummary + "\n\n" + assignment + "\n"
+	boskosSummary := generateSummary("Boskos", boskosRepo, boskosPrefix, false, images)
+	return prowSummary + "\n\n" + testImagesSummary + "\n\n" + boskosSummary + "\n\n" + assignment + "\n"
 }
 
 func getAssignment(oncallAddress string) string {
