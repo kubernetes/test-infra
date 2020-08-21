@@ -12,10 +12,10 @@ periodics:
       - "--root=/go/src"
       - "--upload=gs://kubernetes-jenkins/logs"
       - "--clean"
-      - "--timeout=90" # Minutes
+      - "--timeout=120" # Minutes (usually runs take 1:15)
       - "--scenario=execute"
       - "--" # end bootstrap args, scenario args below
-      - "test/run-k8s-integration.sh"
+      - "test/run-k8s-integration-ci.sh"
       env:
       - name: GCE_PD_OVERLAY_NAME
         value: "stable"
@@ -47,10 +47,10 @@ periodics:
       - "--root=/go/src"
       - "--upload=gs://kubernetes-jenkins/logs"
       - "--clean"
-      - "--timeout=90" # Minutes
+      - "--timeout=120" # Minutes (usually runs take 1:15)
       - "--scenario=execute"
       - "--" # end bootstrap args, scenario args below
-      - "test/run-k8s-integration.sh"
+      - "test/run-k8s-integration-ci.sh"
       env:
       - name: GCE_PD_OVERLAY_NAME
         value: "dev"
