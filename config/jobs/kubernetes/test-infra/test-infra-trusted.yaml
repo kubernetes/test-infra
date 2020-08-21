@@ -876,13 +876,13 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20200720-57a7724-test-infra
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200819-491a5ae-master
       command:
-      - bazel
-      - run
-      - //experiment/autobumper
-      - --
+      - runner.sh
       args:
+      - go
+      - run
+      - experiment/autobumper/main.go
       - --github-login=k8s-ci-robot
       - --github-token=/etc/github-token/oauth
       - --git-name=Kubernetes Prow Robot
