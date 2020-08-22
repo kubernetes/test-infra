@@ -130,7 +130,7 @@ spec:
       - default
   selector:
     matchLabels:
-      app: plank
+      app: prow-controller-manager
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
