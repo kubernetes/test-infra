@@ -49,7 +49,7 @@ presubmits:
   - name: pull-gcp-compute-persistent-disk-csi-driver-e2e-windows
     decorate: true
     decoration_config:
-      timeout: 200m
+      timeout: 350m
     path_alias: sigs.k8s.io/gcp-compute-persistent-disk-csi-driver
     labels:
       preset-k8s-ssh: "true"
