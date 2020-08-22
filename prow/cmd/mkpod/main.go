@@ -31,6 +31,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pod-utils/decorate"
 )
 
@@ -130,6 +131,17 @@ func main() {
 			logrus.WithError(err).Fatal("Could not decorate PodSpec.")
 		}
 	}
+
+	// We need to remove the created-by-prow label, otherwise sinker will promptly clean this
+	// up as there is no associated prowjob
+	newLabels := map[string]string{}
+	for k, v := range pod.Labels {
+		if k == kube.CreatedByProw {
+			continue
+		}
+		newLabels[k] = v
+	}
+	pod.Labels = newLabels
 
 	pod.GetObjectKind().SetGroupVersionKind(v1.SchemeGroupVersion.WithKind("Pod"))
 	podYAML, err := yaml.Marshal(pod)
