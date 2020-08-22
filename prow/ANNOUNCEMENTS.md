@@ -116,7 +116,8 @@ state and no claims of backwards compatibility are made for any external API.
 Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
-
+ 
+ - *August 22, 2020* The `whitelist` and `branch_whitelist` fields in Slack merge warning are deprecated in favor of the new `exempt_users` and `exempt_branches` fields.
  - *July 17, 2020* Slack reporter will no longer report all states of a Prow job if it has `Channel`
    specified on the Prow job config. Instead, it will report the `job_states_to_report` configured in
    the Prow job or in the Prow core config if the former does not exist.  
