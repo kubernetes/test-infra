@@ -129,7 +129,7 @@ func main() {
 
 	buildClusterClients, err := o.kubernetes.BuildClusterUncachedRuntimeClients(o.dryRun)
 	if err != nil {
-		logrus.WithError(err).Fatal("Error creating build cluster clients.")
+		logrus.WithError(err).Warning("Error creating build cluster clients.")
 	}
 
 	c, err := plank.NewController(mgr.GetClient(), buildClusterClients, nil, cfg, o.totURL, o.selector)

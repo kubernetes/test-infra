@@ -255,12 +255,14 @@ func (o *KubernetesOptions) BuildClusterUncachedRuntimeClients(dryRun bool) (map
 		return nil, err
 	}
 
+	var errs []error
 	clients := map[string]ctrlruntimeclient.Client{}
 	for name := range o.clusterConfigs {
 		cfg := o.clusterConfigs[name]
 		client, err := ctrlruntimeclient.New(&cfg, ctrlruntimeclient.Options{})
 		if err != nil {
-			return nil, fmt.Errorf("failed to construct client for cluster %q: %v", name, err)
+			errs = append(errs, fmt.Errorf("failed to construct client for cluster %q: %w", name, err))
+			continue
 		}
 		if o.dryRun {
 			client = ctrlruntimeclient.NewDryRunClient(client)
@@ -268,5 +270,5 @@ func (o *KubernetesOptions) BuildClusterUncachedRuntimeClients(dryRun bool) (map
 		clients[name] = client
 	}
 
-	return clients, nil
+	return clients, utilerrors.NewAggregate(errs)
 }
