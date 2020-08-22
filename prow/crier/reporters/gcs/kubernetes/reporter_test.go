@@ -17,7 +17,6 @@ limitations under the License.
 package kubernetes
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -27,6 +26,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/crier/reporters/gcs/internal/testutil"
 
@@ -35,11 +35,12 @@ import (
 
 func TestShouldReport(t *testing.T) {
 	tests := []struct {
-		name         string
-		agent        prowv1.ProwJobAgent
-		isComplete   bool
-		hasBuildID   bool
-		shouldReport bool
+		name                  string
+		agent                 prowv1.ProwJobAgent
+		isComplete            bool
+		hasNoPendingTimestamp bool
+		hasBuildID            bool
+		shouldReport          bool
 	}{
 		{
 			name:         "completed kubernetes tests are reported",
@@ -49,11 +50,19 @@ func TestShouldReport(t *testing.T) {
 			shouldReport: true,
 		},
 		{
-			name:         "incomplete kubernetes tests are not reported",
+			name:         "pending job is reported",
 			agent:        prowv1.KubernetesAgent,
 			isComplete:   false,
 			hasBuildID:   true,
-			shouldReport: false,
+			shouldReport: true,
+		},
+		{
+			name:                  "not yet pending job is not reported",
+			agent:                 prowv1.KubernetesAgent,
+			isComplete:            false,
+			hasNoPendingTimestamp: true,
+			hasBuildID:            true,
+			shouldReport:          false,
 		},
 		{
 			name:         "complete non-kubernetes tests are not reported",
@@ -96,6 +105,9 @@ func TestShouldReport(t *testing.T) {
 			if tc.hasBuildID {
 				pj.Status.BuildID = "123456789"
 			}
+			if !tc.hasNoPendingTimestamp {
+				pj.Status.PendingTime = &metav1.Time{}
+			}
 
 			kgr := internalNew(testutil.Fca{}.Config, nil, nil, 1.0, false)
 			shouldReport := kgr.ShouldReport(pj)
@@ -111,6 +123,8 @@ type testResourceGetter struct {
 	cluster   string
 	pod       *v1.Pod
 	events    []v1.Event
+	patchData string
+	patchType types.PatchType
 }
 
 func (rg testResourceGetter) GetPod(cluster, namespace, name string) (*v1.Pod, error) {
@@ -145,19 +159,37 @@ func (rg testResourceGetter) GetEvents(cluster, namespace string, pod *v1.Pod) (
 	return rg.events, nil
 }
 
+func (rg testResourceGetter) PatchPod(cluster, namespace, name string, pt types.PatchType, data []byte) error {
+	if _, err := rg.GetPod(cluster, namespace, name); err != nil {
+		return err
+	}
+	if rg.patchType != pt {
+		return fmt.Errorf("expected patch type %s, got patchType %s", rg.patchData, pt)
+	}
+	if diff := cmp.Diff(string(data), rg.patchData); diff != "" {
+		return fmt.Errorf("patch differs from expected patch: %s", diff)
+	}
+
+	return nil
+}
+
 func TestReportPodInfo(t *testing.T) {
 	tests := []struct {
-		name         string
-		pjName       string
-		pod          *v1.Pod
-		events       []v1.Event
-		dryRun       bool
-		expectReport bool
-		expectErr    bool
+		name          string
+		pjName        string
+		pjComplete    bool
+		pjPending     bool
+		pod           *v1.Pod
+		events        []v1.Event
+		dryRun        bool
+		expectReport  bool
+		expectErr     bool
+		expectedPatch string
 	}{
 		{
-			name:   "prowjob picks up pod and events",
-			pjName: "ba123965-4fd4-421f-8509-7590c129ab69",
+			name:       "prowjob picks up pod and events",
+			pjName:     "ba123965-4fd4-421f-8509-7590c129ab69",
+			pjComplete: true,
 			pod: &v1.Pod{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "ba123965-4fd4-421f-8509-7590c129ab69",
@@ -174,8 +206,9 @@ func TestReportPodInfo(t *testing.T) {
 			expectReport: true,
 		},
 		{
-			name:   "prowjob with no events reports pod",
-			pjName: "ba123965-4fd4-421f-8509-7590c129ab69",
+			name:       "prowjob with no events reports pod",
+			pjName:     "ba123965-4fd4-421f-8509-7590c129ab69",
+			pjComplete: true,
 			pod: &v1.Pod{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "ba123965-4fd4-421f-8509-7590c129ab69",
@@ -188,12 +221,14 @@ func TestReportPodInfo(t *testing.T) {
 		{
 			name:         "prowjob with no pod reports nothing but does not error",
 			pjName:       "ba123965-4fd4-421f-8509-7590c129ab69",
+			pjComplete:   true,
 			expectReport: false,
 		},
 		{
-			name:   "nothing is reported in dryrun mode",
-			pjName: "ba123965-4fd4-421f-8509-7590c129ab69",
-			dryRun: true,
+			name:       "nothing is reported in dryrun mode",
+			pjName:     "ba123965-4fd4-421f-8509-7590c129ab69",
+			pjComplete: true,
+			dryRun:     true,
 			pod: &v1.Pod{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "ba123965-4fd4-421f-8509-7590c129ab69",
@@ -208,6 +243,37 @@ func TestReportPodInfo(t *testing.T) {
 				},
 			},
 			expectReport: false,
+		},
+		{
+			name:       "Pending incomplete prowjob gets finalizer and is not reported",
+			pjName:     "ba123965-4fd4-421f-8509-7590c129ab69",
+			pjPending:  true,
+			pjComplete: false,
+			pod: &v1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "ba123965-4fd4-421f-8509-7590c129ab69",
+					Namespace: "test-pods",
+					Labels:    map[string]string{"created-by-prow": "true"},
+				},
+			},
+			expectReport:  false,
+			expectedPatch: `{"metadata":{"finalizers":["prow.x-k8s.io/gcsk8sreporter"]}}`,
+		},
+		{
+			name:       "Finalizer is removed from complete pod",
+			pjName:     "ba123965-4fd4-421f-8509-7590c129ab69",
+			pjPending:  false,
+			pjComplete: true,
+			pod: &v1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					Finalizers: []string{"gcsk8sreporter"},
+					Name:       "ba123965-4fd4-421f-8509-7590c129ab69",
+					Namespace:  "test-pods",
+					Labels:     map[string]string{"created-by-prow": "true"},
+				},
+			},
+			expectReport:  true,
+			expectedPatch: `{"metadata":{"finalizers":null}}`,
 		},
 	}
 
@@ -223,15 +289,20 @@ func TestReportPodInfo(t *testing.T) {
 					Type:    prowv1.PeriodicJob,
 				},
 				Status: prowv1.ProwJobStatus{
-					State:          prowv1.SuccessState,
-					StartTime:      metav1.Time{Time: time.Now()},
-					CompletionTime: &metav1.Time{Time: time.Now()},
-					BuildID:        "12345",
+					State:     prowv1.SuccessState,
+					StartTime: metav1.Time{Time: time.Now()},
+					BuildID:   "12345",
 				},
+			}
+			if tc.pjComplete {
+				pj.Status.CompletionTime = &metav1.Time{Time: time.Now()}
+			}
+			if tc.pjPending {
+				pj.Status.PendingTime = &metav1.Time{}
 			}
 
 			fca := testutil.Fca{C: config.Config{ProwConfig: config.ProwConfig{
-				PodNamespace: "the-test-namespace",
+				PodNamespace: "test-pods",
 				Plank: config.Plank{
 					DefaultDecorationConfigs: map[string]*prowv1.DecorationConfig{"*": {
 						GCSConfiguration: &prowv1.GCSConfiguration{
@@ -246,15 +317,16 @@ func TestReportPodInfo(t *testing.T) {
 			}}}
 
 			rg := testResourceGetter{
-				namespace: "the-test-namespace",
+				namespace: "test-pods",
 				cluster:   "the-build-cluster",
 				pod:       tc.pod,
 				events:    tc.events,
+				patchData: tc.expectedPatch,
+				patchType: types.MergePatchType,
 			}
 			author := &testutil.TestAuthor{}
-			ctx := context.Background()
 			reporter := internalNew(fca.Config, author, rg, 1.0, tc.dryRun)
-			err := reporter.reportPodInfo(ctx, pj)
+			err := reporter.report(pj)
 
 			if tc.expectErr {
 				if err == nil {

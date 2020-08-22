@@ -29,8 +29,11 @@ import (
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes/scheme"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
+	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
@@ -38,7 +41,10 @@ import (
 	"k8s.io/test-infra/prow/io"
 )
 
-const reporterName = "gcsk8sreporter"
+const (
+	reporterName  = "gcsk8sreporter"
+	finalizerName = "prow.x-k8s.io/" + reporterName
+)
 
 type gcsK8sReporter struct {
 	cfg            config.Getter
@@ -57,6 +63,7 @@ type PodReport struct {
 type resourceGetter interface {
 	GetPod(cluster, namespace, name string) (*v1.Pod, error)
 	GetEvents(cluster, namespace string, pod *v1.Pod) ([]v1.Event, error)
+	PatchPod(cluster, namespace, name string, pt types.PatchType, data []byte) error
 }
 
 type k8sResourceGetter struct {
@@ -68,6 +75,15 @@ func (rg k8sResourceGetter) GetPod(cluster, namespace, name string) (*v1.Pod, er
 		return nil, fmt.Errorf("couldn't find cluster %q", cluster)
 	}
 	return rg.podClientSets[cluster].Pods(namespace).Get(context.TODO(), name, metav1.GetOptions{})
+}
+
+func (rg k8sResourceGetter) PatchPod(cluster, namespace, name string, pt types.PatchType, data []byte) error {
+	if _, ok := rg.podClientSets[cluster]; !ok {
+		return fmt.Errorf("couldn't find cluster %q", cluster)
+	}
+
+	_, err := rg.podClientSets[cluster].Pods(namespace).Patch(context.TODO(), name, pt, data, metav1.PatchOptions{})
+	return err
 }
 
 func (rg k8sResourceGetter) GetEvents(cluster, namespace string, pod *v1.Pod) ([]v1.Event, error) {
@@ -82,16 +98,52 @@ func (rg k8sResourceGetter) GetEvents(cluster, namespace string, pod *v1.Pod) ([
 }
 
 func (gr *gcsK8sReporter) Report(pj *prowv1.ProwJob) ([]*prowv1.ProwJob, error) {
+	return []*prowv1.ProwJob{pj}, gr.report(pj)
+}
+
+func (gr *gcsK8sReporter) report(pj *prowv1.ProwJob) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second) // TODO: pass through a global context?
 	defer cancel()
+
+	if !pj.Complete() {
+		if err := gr.addFinalizer(pj); err != nil {
+			return fmt.Errorf("failed to add finalizer to pod: %w", err)
+		}
+		return nil
+	}
 
 	_, _, err := util.GetJobDestination(gr.cfg, pj)
 	if err != nil {
 		gr.logger.Warnf("Not uploading %q (%s#%s) because we couldn't find a destination: %v", pj.Name, pj.Spec.Job, pj.Status.BuildID, err)
-		return []*prowv1.ProwJob{pj}, nil
+		return nil
 	}
 
-	return []*prowv1.ProwJob{pj}, gr.reportPodInfo(ctx, pj)
+	return gr.reportPodInfo(ctx, pj)
+}
+
+func (gr *gcsK8sReporter) addFinalizer(pj *prowv1.ProwJob) error {
+	pod, err := gr.rg.GetPod(pj.Spec.Cluster, gr.cfg().PodNamespace, pj.Name)
+	if err != nil {
+		return fmt.Errorf("failed to get pod %s: %w", pj.Name, err)
+	}
+	finalizers := sets.NewString(pod.Finalizers...)
+	if finalizers.Has(finalizerName) {
+		return nil
+	}
+
+	originalPod := pod.DeepCopy()
+	pod.Finalizers = finalizers.Insert(finalizerName).List()
+	patch := ctrlruntimeclient.MergeFrom(originalPod)
+	patchData, err := patch.Data(pod)
+	if err != nil {
+		return fmt.Errorf("failed to construct patch: %w", err)
+	}
+
+	if err := gr.rg.PatchPod(pj.Spec.Cluster, pod.Namespace, pod.Name, patch.Type(), patchData); err != nil {
+		return fmt.Errorf("failed to patch pod: %w", err)
+	}
+
+	return nil
 }
 
 func (gr *gcsK8sReporter) reportPodInfo(ctx context.Context, pj *prowv1.ProwJob) error {
@@ -143,7 +195,40 @@ func (gr *gcsK8sReporter) reportPodInfo(ctx context.Context, pj *prowv1.ProwJob)
 		return nil
 	}
 
-	return util.WriteContent(ctx, gr.logger, gr.author, bucketName, path.Join(dir, "podinfo.json"), true, output)
+	if err := util.WriteContent(ctx, gr.logger, gr.author, bucketName, path.Join(dir, "podinfo.json"), true, output); err != nil {
+		return fmt.Errorf("failed to upload pod manifest to object storage: %w", err)
+	}
+
+	if pod == nil {
+		return nil
+	}
+
+	if err := gr.removeFinalizer(pj.Spec.Cluster, pod); err != nil {
+		return fmt.Errorf("failed to remove %s finalizer: %w", finalizerName, err)
+	}
+
+	return nil
+}
+
+func (gr *gcsK8sReporter) removeFinalizer(cluster string, pod *v1.Pod) error {
+	finalizers := sets.NewString(pod.Finalizers...)
+	if !finalizers.Has(finalizerName) {
+		return nil
+	}
+
+	oldPod := pod.DeepCopy()
+	pod.Finalizers = finalizers.Delete(finalizerName).List()
+	patch := ctrlruntimeclient.MergeFrom(oldPod)
+	rawPatch, err := patch.Data(pod)
+	if err != nil {
+		return fmt.Errorf("failed to construct patch: %w", err)
+	}
+
+	if err := gr.rg.PatchPod(cluster, pod.Namespace, pod.Name, patch.Type(), rawPatch); err != nil {
+		return fmt.Errorf("failed to patch pod: %w", err)
+	}
+
+	return nil
 }
 
 func (gr *gcsK8sReporter) GetName() string {
@@ -154,7 +239,7 @@ func (gr *gcsK8sReporter) ShouldReport(pj *prowv1.ProwJob) bool {
 	// This reporting only makes sense for the Kubernetes agent (otherwise we don't
 	// have a pod to look up). It is only particularly useful for us to look at
 	// complete jobs that have a build ID.
-	if pj.Spec.Agent != prowv1.KubernetesAgent || !pj.Complete() || pj.Status.BuildID == "" {
+	if pj.Spec.Agent != prowv1.KubernetesAgent || pj.Status.PendingTime == nil || pj.Status.BuildID == "" {
 		return false
 	}
 
