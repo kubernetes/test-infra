@@ -301,6 +301,7 @@ spec:
     app: hook
   ports:
   - port: 8888
+  type: NodePort
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -426,6 +427,7 @@ spec:
   ports:
   - port: 80
     targetPort: 8080
+  type: NodePort
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -531,6 +533,7 @@ spec:
   ports:
   - port: 80
     targetPort: 8888
+  type: NodePort
 ---
 apiVersion: extensions/v1beta1
 kind: Ingress
