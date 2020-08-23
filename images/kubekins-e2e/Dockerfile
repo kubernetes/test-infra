@@ -72,10 +72,11 @@ RUN curl -sL -o ${GIMME_PATH} https://raw.githubusercontent.com/travis-ci/gimme/
 
 # install go
 ARG GO_VERSION
-ENV GO_TARBALL "go${GO_VERSION}.linux-amd64.tar.gz"
-RUN wget -q "https://storage.googleapis.com/golang/${GO_TARBALL}" && \
-    tar xzf "${GO_TARBALL}" -C /usr/local && \
-    rm "${GO_TARBALL}"
+RUN eval "$(gimme $GO_VERSION)"
+
+# optionally install a canary version of go
+ARG CANARY_GO_VERSION
+RUN eval "$(gimme $CANARY_GO_VERSION)"
 
 # install bazel
 ARG BAZEL_VERSION_ARG
