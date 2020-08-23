@@ -74,9 +74,15 @@ RUN curl -sL -o ${GIMME_PATH} https://raw.githubusercontent.com/travis-ci/gimme/
 ARG GO_VERSION
 RUN eval "$(gimme $GO_VERSION)"
 
+RUN go version
+RUN which go
+
 # optionally install a canary version of go
 ARG CANARY_GO_VERSION
 RUN eval "$(gimme $CANARY_GO_VERSION)"
+
+RUN go version
+RUN which go
 
 # install bazel
 ARG BAZEL_VERSION_ARG
