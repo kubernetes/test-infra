@@ -63,6 +63,13 @@ RUN rm -f $(which kubectl) && \
     wget https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl -O /usr/local/bin/kubectl && \
     chmod +x /usr/local/bin/kubectl
 
+# install gimme (to enable swappable Golang versions)
+# https://github.com/travis-ci/gimme
+ARG GIMME_VERSION
+ENV GIMME_PATH="/usr/local/bin/gimme"
+RUN curl -sL -o ${GIMME_PATH} https://raw.githubusercontent.com/travis-ci/gimme/${GIMME_VERSION}/gimme \
+    && chmod +x ${GIMME_PATH}
+
 # install go
 ARG GO_VERSION
 ENV GO_TARBALL "go${GO_VERSION}.linux-amd64.tar.gz"
