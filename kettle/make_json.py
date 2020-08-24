@@ -86,7 +86,7 @@ class Build:
         self.repos = None
         self.metadata = None
         self.elapsed = None
-        self.path_to_job_and_number()
+        self.populate_path_to_job_and_number()
 
     @classmethod
     def generate(cls, path, tests, started, finished, metadata, repos):
@@ -97,7 +97,7 @@ class Build:
         build.set_elapsed()
         return build
 
-    def path_to_job_and_number(self):
+    def populate_path_to_job_and_number(self):
         assert not self.path.endswith('/')
         for bucket, meta in BUCKETS.items():
             if self.path.startswith(bucket):
