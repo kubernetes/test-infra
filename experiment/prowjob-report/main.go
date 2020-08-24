@@ -29,11 +29,11 @@ import (
 	"flag"
 	"fmt"
 	"html/template"
-	"log"
 	"os"
-	"regexp"
+	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -48,31 +48,10 @@ import (
 var configPath = flag.String("config", "../../config/prow/config.yaml", "Path to prow config")
 var jobConfigPath = flag.String("job-config", "../../config/jobs", "Path to prow job config")
 var reportFormat = flag.String("format", "csv", "Output format [csv|json|html] defaults to csv")
-
-// struct to report on stated resource requests and limits
-// a empty strings field indicates that no request was found
-type RequestedResources struct {
-	CpuRequested string // "req.cpu": String(r.Requests[corev1.ResourceCPU], resource.Milli),
-	CpuLimitedTo string // "lim.cpu": String(r.Limits[corev1.ResourceCPU], resource.Milli),
-	MemRequested string // "req.mem": String(r.Requests[corev1.ResourceMemory], resource.Giga),
-	MemLimitedTo string // "lim.mem": String(r.Limits[corev1.ResourceCPU], resource.Giga),
-}
-
-// From a CI runtime perspective a Job has configuration data located in multiple locations
-// using multiple means of specification.
-// For the purposes of this report, the decoratedJobConfig contains JobBase config data
-// along with associated data that we are currently interested in reporting on.
-type DecoratedJobConfig struct {
-	Job                         cfg.JobBase
-	Dashboard                   string
-	Cluster                     string
-	RequestedContainerResources map[string]*RequestedResources // Maps cntr name to RequestedResources
-	JobType                     string
-	ResourcesSet                bool
-}
+var reportDate = flag.String("date", "now", "Date to include in report ('now' is converted to today)")
 
 // Loaded at TestMain.
-var c *cfg.Config
+var prowConfig *cfg.Config
 
 func main() {
 	flag.Parse()
@@ -92,93 +71,106 @@ func main() {
 		fmt.Printf("Could not load config: %v\n", err)
 		os.Exit(1)
 	}
-	c = conf
+	prowConfig = conf
+
+	date := *reportDate
+	if date == "now" {
+		date = time.Now().Format("2006-01-02")
+	}
+
+	rows := GatherProwJobReportRows(date)
 	switch *reportFormat {
 	case "csv":
-		PrintCsvOfJobResources()
+		PrintCSVReport(rows)
 	case "json":
-		PrintJSONJobResources()
+		PrintJSONReport(rows)
 	case "html":
-		GenerateJobReportHTML()
-	}
-}
-
-func (r RequestedResources) IsSet() bool {
-	switch val := "0"; val {
-	case r.CpuRequested:
-		return false
-	case r.CpuLimitedTo:
-		return false
-	case r.MemRequested:
-		return false
-	case r.MemLimitedTo:
-		return false
+		PrintHTMLReport(rows)
 	default:
-		return true
+		fmt.Printf("ERROR: unknown format: %v\n", *reportFormat)
 	}
 }
 
-func allStaticJobs() []cfg.JobBase {
-	jobs := []cfg.JobBase{}
-	for _, job := range c.AllStaticPresubmits(nil) {
-		jobs = append(jobs, job.JobBase)
-	}
-	for _, job := range c.AllStaticPostsubmits(nil) {
-		jobs = append(jobs, job.JobBase)
-	}
-	for _, job := range c.AllPeriodics() {
-		jobs = append(jobs, job.JobBase)
-	}
+// Consistently sorted ProwJob configs
+
+func sortedPeriodics() []cfg.Periodic {
+	jobs := prowConfig.AllPeriodics()
+	sort.Slice(jobs, func(i, j int) bool {
+		return jobs[i].Name < jobs[j].Name
+	})
 	return jobs
 }
 
-func isPodQOSGuaranteed(spec *corev1.PodSpec) bool {
-	isGuaranteed := true
-	c := spec.Containers[0]
-	zero := resource.MustParse("0")
-	resources := []corev1.ResourceName{
+func sortedPresubmitsByRepo() (repos []string, jobsByRepo map[string][]cfg.Presubmit) {
+	jobsByRepo = make(map[string][]cfg.Presubmit)
+	for repo, jobs := range prowConfig.PresubmitsStatic {
+		repos = append(repos, repo)
+		sort.Slice(jobs, func(i, j int) bool {
+			return jobs[i].Name < jobs[j].Name
+		})
+		jobsByRepo[repo] = jobs
+	}
+	sort.Strings(repos)
+	return repos, jobsByRepo
+}
+
+func sortedPostsubmitsByRepo() (repos []string, jobsByRepo map[string][]cfg.Postsubmit) {
+	jobsByRepo = make(map[string][]cfg.Postsubmit)
+	for repo, jobs := range prowConfig.PostsubmitsStatic {
+		repos = append(repos, repo)
+		sort.Slice(jobs, func(i, j int) bool {
+			return jobs[i].Name < jobs[j].Name
+		})
+		jobsByRepo[repo] = jobs
+	}
+	sort.Strings(repos)
+	return repos, jobsByRepo
+}
+
+// ResourceRequirement utils
+
+func TotalResourceRequirements(spec *corev1.PodSpec) corev1.ResourceRequirements {
+	resourceNames := []corev1.ResourceName{
 		corev1.ResourceCPU,
 		corev1.ResourceMemory,
 	}
-	for _, r := range resources {
-		limit, ok := c.Resources.Limits[r]
-		if !ok || limit.Cmp(zero) == 0 || limit.Cmp(c.Resources.Requests[r]) != 0 {
-			isGuaranteed = false
-		}
+	total := corev1.ResourceRequirements{
+		Requests: corev1.ResourceList{},
+		Limits:   corev1.ResourceList{},
 	}
-	return isGuaranteed
-}
-
-// GetResources returns a map of container names to resources requested by that container
-func GetResources(spec *corev1.PodSpec) map[string]*RequestedResources {
-	m := make(map[string]*RequestedResources)
+	zero := resource.MustParse("0")
+	for _, r := range resourceNames {
+		total.Requests[r] = zero.DeepCopy()
+		total.Limits[r] = zero.DeepCopy()
+	}
 	if spec == nil {
-		return m
+		return total
 	}
-	// Range over all Containers present in spec.
-	// Q : I have not managed to find any spces with more than one Container
-
-	fmt.Printf("Container count is %d\n", len(spec.Containers))
-	for i, c := range spec.Containers {
-		cntrName := c.Name + "-" + strconv.Itoa(i)
-		r := c.Resources
-
-		m = map[string]*RequestedResources{
-			cntrName: {
-				CpuRequested: String(r.Requests[corev1.ResourceCPU], resource.Milli),
-				CpuLimitedTo: String(r.Limits[corev1.ResourceCPU], resource.Milli),
-				MemRequested: String(r.Requests[corev1.ResourceMemory], resource.Giga),
-				MemLimitedTo: String(r.Limits[corev1.ResourceCPU], resource.Giga),
-			},
+	for _, c := range spec.Containers {
+		for _, r := range resourceNames {
+			if limit, ok := c.Resources.Limits[r]; ok {
+				tmp := total.Limits[r]
+				tmp.Add(limit)
+				total.Limits[r] = tmp
+			}
+			if request, ok := c.Resources.Requests[r]; ok {
+				tmp := total.Requests[r]
+				tmp.Add(request)
+				total.Requests[r] = tmp
+			}
 		}
 	}
-	return m
+	return total
 }
 
-func String(q resource.Quantity, s resource.Scale) string {
-	return strconv.FormatInt(q.ScaledValue(s), 10)
+func ScaledValue(q resource.Quantity, s resource.Scale) int64 {
+	return q.ScaledValue(s)
 }
 
+// Testgrid dashboard utils
+
+// Primary dashboard aka which is most likely to have more viewers
+// Choose from: sig-release-.*, or sig-.*, or first in list
 func PrimaryDashboard(job cfg.JobBase) string {
 	dashboardsAnnotation, ok := job.Annotations["testgrid-dashboards"]
 	if !ok {
@@ -202,6 +194,8 @@ func PrimaryDashboard(job cfg.JobBase) string {
 	return dashboards[0]
 }
 
+// Owner dashboard aka who is responsible for maintaining the job
+// Choose from: sig-(not-release)-*, or sig-release, or first in list
 func OwnerDashboard(job cfg.JobBase) string {
 	dashboardsAnnotation, ok := job.Annotations["testgrid-dashboards"]
 	if !ok {
@@ -225,182 +219,206 @@ func OwnerDashboard(job cfg.JobBase) string {
 	return dashboards[0]
 }
 
-func PrintJSONJobResources() {
-
-	var decoratedJobs []DecoratedJobConfig
-	for _, job := range c.JobConfig.AllStaticPresubmits(nil) {
-		var cluster string = job.Cluster
-		var dashboard = job.Annotations["testgrid-dashboards"]
-		var requestedResources = GetResources(job.Spec)
-		decoratedJobs = append(decoratedJobs, DecoratedJobConfig{
-			Cluster:                     cluster,
-			Dashboard:                   dashboard,
-			Job:                         job.JobBase,
-			RequestedContainerResources: requestedResources,
-		})
-		//TODO remove break
-		break
+func verifyPodQOSGuaranteed(spec *corev1.PodSpec) (errs []error) {
+	resourceNames := []corev1.ResourceName{
+		corev1.ResourceCPU,
+		corev1.ResourceMemory,
 	}
-	b, err := json.Marshal(decoratedJobs)
+	zero := resource.MustParse("0")
+	for _, c := range spec.Containers {
+		for _, r := range resourceNames {
+			limit, ok := c.Resources.Limits[r]
+			if !ok {
+				errs = append(errs, fmt.Errorf("container '%v' should have resources.limits[%v] specified", c.Name, r))
+			}
+			request, ok := c.Resources.Requests[r]
+			if !ok {
+				errs = append(errs, fmt.Errorf("container '%v' should have resources.requests[%v] specified", c.Name, r))
+			}
+			if limit.Cmp(zero) == 0 {
+				errs = append(errs, fmt.Errorf("container '%v' resources.limits[%v] should be non-zero", c.Name, r))
+			} else if limit.Cmp(request) != 0 {
+				errs = append(errs, fmt.Errorf("container '%v' resources.limits[%v] (%v) should match request (%v)", c.Name, r, limit.String(), request.String()))
+			}
+		}
+	}
+	return errs
+}
+
+// A PodSpec is PodQOS Guaranteed if all of its containers have non-zero
+// resource limits equal to their resource requests for cpu and memory
+func isPodQOSGuaranteed(spec *corev1.PodSpec) bool {
+	return len(verifyPodQOSGuaranteed(spec)) == 0
+}
+
+// A presubmit is merge-blocking if it:
+// - is not optional
+// - reports (aka does not skip reporting)
+// - always runs OR runs if some path changed
+func isMergeBlocking(job cfg.Presubmit) bool {
+	return !job.Optional && !job.SkipReport && (job.AlwaysRun || job.RunIfChanged != "")
+}
+
+func guessPeriodicRepoAndBranch(job cfg.Periodic) (repo, branch string) {
+	repo = "TODO"
+	branch = "TODO"
+	defaultBranch := "master"
+	// First, assume the first extra ref is our repo
+	if len(job.ExtraRefs) > 0 {
+		ref := job.ExtraRefs[0]
+		repo = fmt.Sprintf("%s/%s", ref.Org, ref.Repo)
+		branch = ref.BaseRef
+		return
+	}
+
+	// If we have no extra refs, maybe we're using the defunct bootstrap args,
+	// in which case we assume the job is a single-container pod, and then...
+
+	// Assume the first repo arg we find is "the" repo; save scenario for later
+	scenario := ""
+	for _, arg := range job.Spec.Containers[0].Args {
+		if strings.HasPrefix(arg, "--scenario=") {
+			scenario = strings.Split(arg, "=")[1]
+		}
+		if !strings.HasPrefix(arg, "--repo=") {
+			continue
+		}
+		arg = strings.SplitN(arg, "=", 2)[1]
+		arg = strings.ReplaceAll(arg, "sigs.k8s.io", "kubernetes-sigs")
+		arg = strings.ReplaceAll(arg, "k8s.io", "kubernetes")
+		arg = strings.ReplaceAll(arg, "github.com/", "")
+		split := strings.Split(arg, "=")
+		repo = split[0]
+		branch = defaultBranch
+		if len(split) > 1 {
+			branch = split[1]
+		}
+		return
+	}
+
+	// We didn't find an explicit repo, so now assume if --scenario=kubernetes_e2e
+	// was used, the repo is kubernetes/kubernetes
+	if scenario == "kubernetes_e2e" {
+		repo = "kubernetes/kubernetes"
+		branch = defaultBranch
+	}
+	return
+}
+
+type ProwJobReportRow struct {
+	Date             string // TODO: make this an actual date instead a string pass-through
+	Name             string
+	ProwJobType      string
+	Repo             string
+	Branch           string
+	PrimaryDashboard string
+	OwnerDashboard   string
+	Cluster          string
+	MaxConcurrency   int
+	AlwaysRun        bool // presubmits may be false
+	MergeBlocking    bool // presubmits may be true
+	QOSGuaranteed    bool
+	RequestMilliCPU  int64
+	LimitMilliCPU    int64
+	RequestGigaMem   int64
+	LimitGigaMem     int64
+}
+
+func NewProwJobReportRow(date, jobType, repo, branch string, alwaysRun, mergeBlocking bool, job cfg.JobBase) ProwJobReportRow {
+	r := TotalResourceRequirements(job.Spec)
+	// TODO: actually read testgrid config please
+	primaryDashboard := PrimaryDashboard(job)
+	if mergeBlocking && repo == "kubernetes/kubernetes" {
+		primaryDashboard = "kubernetes-presubmits-blocking"
+	}
+	return ProwJobReportRow{
+		Date:             date,
+		Name:             job.Name,
+		ProwJobType:      jobType,
+		Repo:             repo,
+		Branch:           branch,
+		PrimaryDashboard: primaryDashboard,
+		OwnerDashboard:   OwnerDashboard(job),
+		Cluster:          job.Cluster,
+		MaxConcurrency:   job.MaxConcurrency,
+		AlwaysRun:        alwaysRun,
+		MergeBlocking:    mergeBlocking,
+		QOSGuaranteed:    isPodQOSGuaranteed(job.Spec),
+		RequestMilliCPU:  ScaledValue(r.Requests[corev1.ResourceCPU], resource.Milli),
+		LimitMilliCPU:    ScaledValue(r.Limits[corev1.ResourceCPU], resource.Milli),
+		RequestGigaMem:   ScaledValue(r.Requests[corev1.ResourceMemory], resource.Giga),
+		LimitGigaMem:     ScaledValue(r.Limits[corev1.ResourceMemory], resource.Giga),
+	}
+}
+
+func GatherProwJobReportRows(date string) []ProwJobReportRow {
+	rows := []ProwJobReportRow{}
+	for _, job := range sortedPeriodics() {
+		// TODO: depending on whether decoration or bootstrap is used repo could be any number of repos
+		repo, branch := guessPeriodicRepoAndBranch(job)
+		rows = append(rows, NewProwJobReportRow(date, "periodic", repo, branch, true, false, job.JobBase))
+	}
+	repos, postsubmitsByRepo := sortedPostsubmitsByRepo()
+	for _, repo := range repos {
+		for _, job := range postsubmitsByRepo[repo] {
+			branch := "default"
+			if len(job.Branches) > 0 {
+				branch = strings.Join(job.Branches, "|")
+			}
+			rows = append(rows, NewProwJobReportRow(date, "postsubmit", repo, branch, false, false, job.JobBase))
+		}
+	}
+	repos, presubmitsByRepo := sortedPresubmitsByRepo()
+	for _, repo := range repos {
+		for _, job := range presubmitsByRepo[repo] {
+			branch := "default"
+			if len(job.Branches) > 0 {
+				branch = strings.Join(job.Branches, "|")
+			}
+			rows = append(rows, NewProwJobReportRow(date, "presubmit", repo, branch, job.AlwaysRun, isMergeBlocking(job), job.JobBase))
+		}
+	}
+	return rows
+}
+
+func PrintCSVReport(rows []ProwJobReportRow) {
+	fmt.Printf("report_date, name, type, repo, branch, primary_dash, owner_dash, cluster, concurrency, always_run, merge_blocking, qosGuaranteed, req.cpu (m), lim.cpu (m), req.mem (Gi), lim.mem (Gi)\n")
+	for _, row := range rows {
+		cols := []string{
+			row.Date,
+			row.Name,
+			row.ProwJobType,
+			row.Repo,
+			row.Branch,
+			row.PrimaryDashboard,
+			row.OwnerDashboard,
+			row.Cluster,
+			strconv.Itoa(row.MaxConcurrency),
+			strconv.FormatBool(row.AlwaysRun),
+			strconv.FormatBool(row.MergeBlocking),
+			strconv.FormatBool(row.QOSGuaranteed),
+			strconv.FormatInt(row.RequestMilliCPU, 10),
+			strconv.FormatInt(row.LimitMilliCPU, 10),
+			strconv.FormatInt(row.RequestGigaMem, 10),
+			strconv.FormatInt(row.LimitGigaMem, 10),
+		}
+		fmt.Println(strings.Join(cols, ", "))
+	}
+}
+
+func PrintJSONReport(rows []ProwJobReportRow) {
+	b, err := json.Marshal(rows)
 	if err != nil {
 		fmt.Println("error:", err)
 	}
 	os.Stdout.Write(b)
 }
-func PrintCsvOfJobResources() {
-	/**
-	fmt.Printf("primary dashboard, owner dashboard, name, type, repo, cluster, concurrency, req.cpu (m), lim.cpu (m), req.mem (Gi), lim.mem (Gi)\n")
-	printJobBaseColumns := func(jobType, repo string, job cfg.JobBase) {
-		name := job.Name
-		primaryDash := PrimaryDashboard(job)
-		ownerDash := OwnerDashboard(job)
-		cluster := job.Cluster
-		res := GetResources(job.Spec)
-		cols := []string{primaryDash, ownerDash, name, jobType, repo, cluster, strconv.Itoa(job.MaxConcurrency), res["req.cpu"], res["lim.cpu"], res["req.mem"], res["lim.mem"]}
-		fmt.Println(strings.Join(cols, ", "))
-	}
-	for _, job := range c.AllPeriodics() {
-		// TODO: depending on whether decoration or bootstrap is used repo could be any number of repos
-		printJobBaseColumns("periodic", "TODO", job.JobBase)
-	}
-	for repo, jobs := range c.PostsubmitsStatic {
-		for _, job := range jobs {
-			printJobBaseColumns("postsubmit", repo, job.JobBase)
-		}
-	}
-	for repo, jobs := range c.PresubmitsStatic {
-		for _, job := range jobs {
-			printJobBaseColumns("presubmit", repo, job.JobBase)
-		}
-	}
-	*/
-}
 
-type Reports struct {
-	Presubmits  []DecoratedJobConfig
-	Postsubmits []DecoratedJobConfig
-	Periodics   []DecoratedJobConfig
-}
-
-func jobReportHandler(f *os.File, reports Reports) {
+func PrintHTMLReport(rows []ProwJobReportRow) {
 	t := template.Must(template.ParseGlob("./tpl/*"))
-	err := t.ExecuteTemplate(f, "report", reports)
+	err := t.ExecuteTemplate(os.Stdout, "report", rows)
 	if err != nil {
 		fmt.Print("execute: ", err)
 		return
-	}
-}
-
-func GetPresubmits() []DecoratedJobConfig {
-	var decoratedJobs []DecoratedJobConfig
-	for _, job := range c.JobConfig.AllStaticPresubmits(nil) {
-		var cluster string = job.Cluster
-		var dashboard = job.Annotations["testgrid-dashboards"]
-		var requestedResources = GetResources(job.Spec)
-		var resourceSet = true
-
-		for _, r := range requestedResources {
-			resourceSet = resourceSet && r.IsSet()
-		}
-		decoratedJobs = append(decoratedJobs, DecoratedJobConfig{
-			Cluster:                     cluster,
-			Dashboard:                   dashboard,
-			Job:                         job.JobBase,
-			RequestedContainerResources: requestedResources,
-			ResourcesSet:                resourceSet,
-		})
-	}
-	return decoratedJobs
-}
-
-func GetPostsubmits() []DecoratedJobConfig {
-	var decoratedJobs []DecoratedJobConfig
-	for _, job := range c.JobConfig.AllStaticPostsubmits(nil) {
-		var cluster string = job.Cluster
-		var dashboard = job.Annotations["testgrid-dashboards"]
-		var requestedResources = GetResources(job.Spec)
-		var resourceSet = true
-
-		for _, r := range requestedResources {
-			resourceSet = resourceSet && r.IsSet()
-		}
-		decoratedJobs = append(decoratedJobs, DecoratedJobConfig{
-			Cluster:                     cluster,
-			Dashboard:                   dashboard,
-			Job:                         job.JobBase,
-			RequestedContainerResources: requestedResources,
-			ResourcesSet:                resourceSet,
-		})
-	}
-	return decoratedJobs
-}
-
-func GetPeriodics() []DecoratedJobConfig {
-	var decoratedJobs []DecoratedJobConfig
-	for _, job := range c.AllPeriodics() {
-		var cluster string = job.Cluster
-		var dashboard = job.Annotations["testgrid-dashboards"]
-		var requestedResources = GetResources(job.Spec)
-		var resourceSet = true
-
-		for _, r := range requestedResources {
-			resourceSet = resourceSet && r.IsSet()
-		}
-		decoratedJobs = append(decoratedJobs, DecoratedJobConfig{
-			Cluster:                     cluster,
-			Dashboard:                   dashboard,
-			Job:                         job.JobBase,
-			RequestedContainerResources: requestedResources,
-			ResourcesSet:                resourceSet,
-		})
-	}
-	return decoratedJobs
-}
-
-func GenerateJobReportHTML() {
-	f, err := os.Create("./prow_job_report.html")
-	defer f.Close()
-	if err != nil {
-		log.Println("create file: ", err)
-		return
-	}
-
-	jobReportHandler(f,
-		Reports{Presubmits: GetPresubmits(),
-			Postsubmits: GetPostsubmits(),
-			Periodics:   GetPeriodics(),
-		})
-}
-
-func TestQueryReleaseBlockingJobs() {
-	jobs := allStaticJobs()
-
-	filtered := []cfg.JobBase{}
-	dashboardRE := regexp.MustCompile(`sig-release-master-blocking`)
-	//dashboardRE := regexp.MustCompile(`sig-release-(1.[0-9]{2}|master)-blocking`)
-	for _, job := range jobs {
-		if dashboards, ok := job.Annotations["testgrid-dashboards"]; ok {
-			if dashboardRE.MatchString(dashboards) {
-				filtered = append(filtered, job)
-			}
-		}
-	}
-	jobs = filtered
-
-	jobNamesByCluster := make(map[string][]string)
-	for _, job := range jobs {
-		if job.Cluster != "" {
-			if jobNames, ok := jobNamesByCluster[job.Cluster]; !ok {
-				jobNamesByCluster[job.Cluster] = []string{job.Name}
-			} else {
-				jobNamesByCluster[job.Cluster] = append(jobNames, job.Name)
-			}
-		}
-	}
-	for cluster, jobNames := range jobNamesByCluster {
-		fmt.Printf("There are %4d of %4d sig-release-.*-blocking jobs that use cluster: %s\n", len(jobNames), len(jobs), cluster)
-		for _, name := range jobNames {
-			fmt.Printf("  - %s\n", name)
-		}
 	}
 }
