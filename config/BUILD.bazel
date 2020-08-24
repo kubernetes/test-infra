@@ -49,6 +49,7 @@ filegroup(
     srcs = [
         ":package-srcs",
         "//config/prow:all-srcs",
+        "//config/prow-staging:all-srcs",
         "//config/tests/jobs:all-srcs",
         "//config/tests/lint:all-srcs",
         "//config/tests/testgrids:all-srcs",

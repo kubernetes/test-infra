@@ -42,7 +42,6 @@ type options struct {
 
 	configPath    string
 	jobConfigPath string
-	buildCluster  string
 	selector      string
 	skipReport    bool
 

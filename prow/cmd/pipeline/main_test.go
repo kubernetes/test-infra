@@ -47,20 +47,6 @@ func TestOptions(t *testing.T) {
 			instrumentationOptions: defaultInstrumentationOptions,
 		},
 	}, {
-		name: "error when providing both kubeconfig and build-cluter options ",
-		args: []string{"--all-contexts=true", "--tot-url=https://tot",
-			"--kubeconfig=/root/kubeconfig", "--config=/etc/config.yaml",
-			"--build-cluster=/etc/build-cluster.yaml"},
-		expected: &options{
-			allContexts:            true,
-			totURL:                 "https://tot",
-			kubeconfig:             "/root/kubeconfig",
-			configPath:             "/etc/config.yaml",
-			buildCluster:           "/etc/build-cluster.yaml",
-			instrumentationOptions: defaultInstrumentationOptions,
-		},
-		err: true,
-	}, {
 		name: "parse all arguments",
 		args: []string{"--all-contexts=true", "--tot-url=https://tot",
 			"--kubeconfig=/root/kubeconfig", "--config=/etc/config.yaml"},

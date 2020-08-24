@@ -1214,11 +1214,6 @@ repos:
         target: both
         addedBy: label
       - color: 0052cc
-        description: Issues or PRs related to prow's mkbuild-cluster component
-        name: area/prow/mkbuild-cluster
-        target: both
-        addedBy: label
-      - color: 0052cc
         description: Issues or PRs related to prow's mkpj component
         name: area/prow/mkpj
         target: both

@@ -40,8 +40,7 @@ import (
 // and other resources on the infrastructure cluster, as well as Pods
 // on build clusters.
 type KubernetesOptions struct {
-	buildCluster string
-	kubeconfig   string
+	kubeconfig string
 
 	DeckURI string
 
@@ -56,8 +55,7 @@ type KubernetesOptions struct {
 
 // AddFlags injects Kubernetes options into the given FlagSet.
 func (o *KubernetesOptions) AddFlags(fs *flag.FlagSet) {
-	fs.StringVar(&o.buildCluster, "build-cluster", "", "Path to kube.Cluster YAML file. If empty, uses the local cluster. All clusters are used as build clusters. Cannot be combined with --kubeconfig.")
-	fs.StringVar(&o.kubeconfig, "kubeconfig", "", "Path to .kube/config file. If empty, uses the local cluster. All contexts other than the default are used as build clusters. Cannot be combined with --build-cluster.")
+	fs.StringVar(&o.kubeconfig, "kubeconfig", "", "Path to .kube/config file. If empty, uses the local cluster. All contexts other than the default are used as build clusters.")
 	fs.StringVar(&o.DeckURI, "deck-url", "", "Deck URI for read-only access to the infrastructure cluster.")
 }
 
@@ -79,10 +77,6 @@ func (o *KubernetesOptions) Validate(dryRun bool) error {
 		}
 	}
 
-	if o.kubeconfig != "" && o.buildCluster != "" {
-		return errors.New("must provide only --build-cluster OR --kubeconfig")
-	}
-
 	return nil
 }
 
@@ -92,9 +86,9 @@ func (o *KubernetesOptions) resolve(dryRun bool) error {
 		return nil
 	}
 
-	clusterConfigs, err := kube.LoadClusterConfigs(o.kubeconfig, o.buildCluster)
+	clusterConfigs, err := kube.LoadClusterConfigs(o.kubeconfig)
 	if err != nil {
-		return fmt.Errorf("load --kubeconfig=%q --build-cluster=%q configs: %v", o.kubeconfig, o.buildCluster, err)
+		return fmt.Errorf("load --kubeconfig=%q configs: %v", o.kubeconfig, err)
 	}
 	o.clusterConfigs = clusterConfigs
 

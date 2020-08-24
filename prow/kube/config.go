@@ -19,12 +19,10 @@ package kube
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
-	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 )
 
 func localConfig() (*rest.Config, error) {
@@ -60,65 +58,9 @@ func kubeConfigs(kubeconfig string) (map[string]rest.Config, string, error) {
 	return configs, cfg.CurrentContext, nil
 }
 
-func buildConfigs(buildCluster string) (map[string]rest.Config, error) {
-	if buildCluster == "" { // load from --build-cluster
-		return nil, nil
-	}
-	data, err := ioutil.ReadFile(buildCluster)
-	if err != nil {
-		return nil, fmt.Errorf("read: %v", err)
-	}
-	raw, err := UnmarshalClusterMap(data)
-	if err != nil {
-		return nil, fmt.Errorf("unmarshal: %v", err)
-	}
-	cfg := &clientcmdapi.Config{
-		Clusters:  map[string]*clientcmdapi.Cluster{},
-		AuthInfos: map[string]*clientcmdapi.AuthInfo{},
-		Contexts:  map[string]*clientcmdapi.Context{},
-	}
-	for alias, config := range raw {
-		cfg.Clusters[alias] = &clientcmdapi.Cluster{
-			Server:                   config.Endpoint,
-			CertificateAuthorityData: config.ClusterCACertificate,
-		}
-		cfg.AuthInfos[alias] = &clientcmdapi.AuthInfo{
-			ClientCertificateData: config.ClientCertificate,
-			ClientKeyData:         config.ClientKey,
-		}
-		cfg.Contexts[alias] = &clientcmdapi.Context{
-			Cluster:  alias,
-			AuthInfo: alias,
-			// TODO(fejta): Namespace?
-		}
-	}
-	configs := map[string]rest.Config{}
-	for context := range cfg.Contexts {
-		logrus.Infof("* %s", context)
-		contextCfg, err := clientcmd.NewNonInteractiveClientConfig(*cfg, context, &clientcmd.ConfigOverrides{}, nil).ClientConfig()
-		if err != nil {
-			return nil, fmt.Errorf("create %s client: %v", context, err)
-		}
-		// An arbitrary high number we expect to not exceed. There are various components that need more than the default 5 QPS/10 Burst, e.G.
-		// hook for creating ProwJobs and Plank for creating Pods.
-		contextCfg.QPS = 100
-		contextCfg.Burst = 1000
-		configs[context] = *contextCfg
-	}
-	return configs, nil
-}
-
-func mergeConfigs(local *rest.Config, foreign map[string]rest.Config, currentContext string, buildClusters map[string]rest.Config) (map[string]rest.Config, error) {
-	if buildClusters != nil {
-		if _, ok := buildClusters[DefaultClusterAlias]; !ok {
-			return nil, fmt.Errorf("build-cluster must have a %s context", DefaultClusterAlias)
-		}
-	}
+func mergeConfigs(local *rest.Config, foreign map[string]rest.Config, currentContext string) (map[string]rest.Config, error) {
 	ret := map[string]rest.Config{}
 	for ctx, cfg := range foreign {
-		ret[ctx] = cfg
-	}
-	for ctx, cfg := range buildClusters {
 		ret[ctx] = cfg
 	}
 	if local != nil {
@@ -137,12 +79,11 @@ func mergeConfigs(local *rest.Config, foreign map[string]rest.Config, currentCon
 	return ret, nil
 }
 
-// LoadClusterConfigs loads rest.Configs for creation of clients, by using either a normal
-// .kube/config file, a custom `Cluster` file, or both. The configs are returned in a mapping
-// of context --> config. The default context is included in this mapping and specified as a
-// return vaule. Errors are returned if .kube/config is specified and invalid or if no valid
-// contexts are found.
-func LoadClusterConfigs(kubeconfig, buildCluster string) (map[string]rest.Config, error) {
+// LoadClusterConfigs loads rest.Configs for creation of clients, by using a normal
+// .kube/config file. The configs are returned in a mapping of context --> config. The default
+// context is included in this mapping and specified as a return vaule. Errors are returned if
+// .kube/config is specified and invalid or if no valid contexts are found.
+func LoadClusterConfigs(kubeconfig string) (map[string]rest.Config, error) {
 
 	logrus.Infof("Loading cluster contexts...")
 	// This will work if we are running inside kubernetes
@@ -156,11 +97,5 @@ func LoadClusterConfigs(kubeconfig, buildCluster string) (map[string]rest.Config
 		return nil, fmt.Errorf("kubecfg: %v", err)
 	}
 
-	// TODO(fejta): drop build-cluster support
-	buildCfgs, err := buildConfigs(buildCluster)
-	if err != nil {
-		return nil, fmt.Errorf("build-cluster: %v", err)
-	}
-
-	return mergeConfigs(localCfg, kubeCfgs, currentContext, buildCfgs)
+	return mergeConfigs(localCfg, kubeCfgs, currentContext)
 }
