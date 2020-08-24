@@ -202,8 +202,8 @@ func TestCallWithWriter(t *testing.T) {
 	var fakeOut fakeWriter
 	var fakeErr fakeWriter
 
-	stdout := hideSecretsWriter{delegate: &fakeOut, censor: &sa}
-	stderr := hideSecretsWriter{delegate: &fakeErr, censor: &sa}
+	stdout := HideSecretsWriter{Delegate: &fakeOut, Censor: &sa}
+	stderr := HideSecretsWriter{Delegate: &fakeErr, Censor: &sa}
 
 	testCases := []struct {
 		description string
@@ -242,7 +242,7 @@ func TestCallWithWriter(t *testing.T) {
 		t.Run(tc.description, func(t *testing.T) {
 			fakeOut.results = []byte{}
 			fakeErr.results = []byte{}
-			_ = call(stdout, stderr, tc.command, tc.args...)
+			_ = Call(stdout, stderr, tc.command, tc.args...)
 			if full, want := string(fakeOut.results), tc.expectedOut; !strings.Contains(full, want) {
 				t.Errorf("stdout does not contain %q, got %q", full, want)
 			}
