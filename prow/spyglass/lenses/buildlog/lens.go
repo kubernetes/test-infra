@@ -68,8 +68,7 @@ func (lens Lens) Config() lenses.LensConfig {
 
 // Header executes the "header" section of the template.
 func (lens Lens) Header(artifacts []api.Artifact, resourceDir string, config json.RawMessage) string {
-	conf := getConfig(config)
-	return executeTemplate(resourceDir, "header", BuildLogsView{ShowRawLog: conf.showRawLog})
+	return executeTemplate(resourceDir, "header", BuildLogsView{})
 }
 
 // defaultErrRE matches keywords and glog error messages.
@@ -124,12 +123,12 @@ type LogArtifactView struct {
 	ArtifactLink string
 	LineGroups   []LineGroup
 	ViewAll      bool
+	ShowRawLog   bool
 }
 
 // BuildLogsView holds each log file view
 type BuildLogsView struct {
-	LogViews   []LogArtifactView
-	ShowRawLog bool
+	LogViews []LogArtifactView
 }
 
 func getConfig(rawConfig json.RawMessage) parsedConfig {
@@ -169,12 +168,12 @@ func (lens Lens) Body(artifacts []api.Artifact, resourceDir string, data string,
 	}
 
 	conf := getConfig(rawConfig)
-	buildLogsView.ShowRawLog = conf.showRawLog
 	// Read log artifacts and construct template structs
 	for _, a := range artifacts {
 		av := LogArtifactView{
 			ArtifactName: a.JobPath(),
 			ArtifactLink: a.CanonicalLink(),
+			ShowRawLog:   conf.showRawLog,
 		}
 		lines, err := logLinesAll(a)
 		if err != nil {
