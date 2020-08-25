@@ -10,7 +10,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20200713-e9b3d9d-test-infra
+      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20200824-5d057db-test-infra
         command:
         - hack/bazel.sh
         args:
@@ -31,7 +31,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gubernator:v20200721-0db9121
+      - image: gcr.io/k8s-testimages/gubernator:v20200824-5d057db
         command:
         - ./gubernator/test-gubernator.sh
         env:
@@ -50,7 +50,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200819-491a5ae-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200824-5d057db-experimental
         command:
         - ./hack/verify-file-perms.sh
     annotations:
@@ -78,7 +78,7 @@ presubmits:
     run_if_changed: '^(config/prow/(config|plugins).yaml$|config/jobs/.*.yaml$)'
     spec:
       containers:
-      - image: gcr.io/k8s-prow/checkconfig:v20200820-86c379653b
+      - image: gcr.io/k8s-prow/checkconfig:v20200825-967ee0e48b
         command:
         - /checkconfig
         args:

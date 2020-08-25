@@ -11,7 +11,7 @@ periodics:
     preset-bazel-scratch-dir: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20200713-e9b3d9d-test-infra
+    - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20200824-5d057db-test-infra
       command:
       - hack/bazel.sh
       args:
@@ -72,7 +72,7 @@ periodics:
   interval: 24h
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bigquery:v20191004-77e27616c
+    - image: gcr.io/k8s-testimages/bigquery:v20200824-5d057db
       args:
       - --scenario=execute
       - --
@@ -100,7 +100,7 @@ periodics:
   interval: 1h
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bigquery:v20191004-77e27616c
+    - image: gcr.io/k8s-testimages/bigquery:v20200824-5d057db
       args:
       - --scenario=execute
       - --
