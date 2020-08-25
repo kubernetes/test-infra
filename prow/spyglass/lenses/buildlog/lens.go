@@ -44,12 +44,6 @@ const (
 
 type config struct {
 	HighlightRegexes []string `json:"highlight_regexes"`
-	HideRawLog       bool     `json:"hide_raw_log,omitempty"`
-}
-
-type parsedConfig struct {
-	highlightRegex *regexp.Regexp
-	showRawLog     bool
 }
 
 var _ api.Lens = Lens{}
@@ -68,8 +62,7 @@ func (lens Lens) Config() lenses.LensConfig {
 
 // Header executes the "header" section of the template.
 func (lens Lens) Header(artifacts []api.Artifact, resourceDir string, config json.RawMessage) string {
-	conf := getConfig(config)
-	return executeTemplate(resourceDir, "header", BuildLogsView{ShowRawLog: conf.showRawLog})
+	return executeTemplate(resourceDir, "header", BuildLogsView{})
 }
 
 // defaultErrRE matches keywords and glog error messages.
@@ -128,48 +121,43 @@ type LogArtifactView struct {
 
 // BuildLogsView holds each log file view
 type BuildLogsView struct {
-	LogViews   []LogArtifactView
-	ShowRawLog bool
+	LogViews           []LogArtifactView
+	RawGetAllRequests  map[string]string
+	RawGetMoreRequests map[string]string
 }
 
-func getConfig(rawConfig json.RawMessage) parsedConfig {
-	conf := parsedConfig{
-		highlightRegex: defaultErrRE,
-		showRawLog:     true,
-	}
-
+func getHighlightRegex(rawConfig json.RawMessage) *regexp.Regexp {
 	// No config at all is fine.
 	if len(rawConfig) == 0 {
-		return conf
+		return defaultErrRE
 	}
 
 	var c config
 	if err := json.Unmarshal(rawConfig, &c); err != nil {
 		logrus.WithError(err).Error("Failed to decode buildlog config")
-		return conf
+		return defaultErrRE
 	}
-	conf.showRawLog = !c.HideRawLog
 	if len(c.HighlightRegexes) == 0 {
-		return conf
+		return defaultErrRE
 	}
 
 	re, err := regexp.Compile(strings.Join(c.HighlightRegexes, "|"))
 	if err != nil {
 		logrus.WithError(err).Warnf("Couldn't compile %q", c.HighlightRegexes)
-		return conf
+		return defaultErrRE
 	}
-	conf.highlightRegex = re
-	return conf
+	return re
 }
 
 // Body returns the <body> content for a build log (or multiple build logs)
 func (lens Lens) Body(artifacts []api.Artifact, resourceDir string, data string, rawConfig json.RawMessage) string {
 	buildLogsView := BuildLogsView{
-		LogViews: []LogArtifactView{},
+		LogViews:           []LogArtifactView{},
+		RawGetAllRequests:  make(map[string]string),
+		RawGetMoreRequests: make(map[string]string),
 	}
 
-	conf := getConfig(rawConfig)
-	buildLogsView.ShowRawLog = conf.showRawLog
+	highlightRe := getHighlightRegex(rawConfig)
 	// Read log artifacts and construct template structs
 	for _, a := range artifacts {
 		av := LogArtifactView{
@@ -181,7 +169,7 @@ func (lens Lens) Body(artifacts []api.Artifact, resourceDir string, data string,
 			logrus.WithError(err).Info("Error reading log.")
 			continue
 		}
-		av.LineGroups = groupLines(highlightLines(lines, 0, av.ArtifactName, conf.highlightRegex))
+		av.LineGroups = groupLines(highlightLines(lines, 0, av.ArtifactName, highlightRe))
 		av.ViewAll = true
 		buildLogsView.LogViews = append(buildLogsView.LogViews, av)
 	}
@@ -211,8 +199,7 @@ func (lens Lens) Callback(artifacts []api.Artifact, resourceDir string, data str
 		return fmt.Sprintf("failed to retrieve log lines: %v", err)
 	}
 
-	conf := getConfig(rawConfig)
-	logLines := highlightLines(lines, request.StartLine, request.Artifact, conf.highlightRegex)
+	logLines := highlightLines(lines, request.StartLine, request.Artifact, getHighlightRegex(rawConfig))
 	return executeTemplate(resourceDir, "line group", logLines)
 }
 
