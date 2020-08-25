@@ -30,6 +30,18 @@ dashboards:
   - name: containerd-overlay-windows-master
     description: Runs Windows e2e tests on K8s clusters with Containerd and Flannel CNI in overlay network mode.
     test_group_name: ci-kubernetes-e2e-sdnoverlay-ctrd-master-windows
+  - name: containerd-windows-sac1909-sdnbridge
+    description: Runs Windows (SAC 1909) e2e tests on stable K8s clusters with Containerd and latest Flannel CNI in l2bridge network mode.
+    test_group_name: containerd-windows-sac1909-sdnbridge
+  - name: containerd-windows-sac1909-sdnoverlay
+    description: Runs Windows (SAC 1909) e2e tests on stable K8s clusters with Containerd and latest Flannel CNI in overlay network mode.
+    test_group_name: containerd-windows-sac1909-sdnoverlay
+  - name: containerd-windows-sac2004-sdnbridge
+    description: Runs Windows (SAC 2004) e2e tests on stable K8s clusters with Containerd and latest Flannel CNI in l2bridge network mode.
+    test_group_name: containerd-windows-sac2004-sdnbridge
+  - name: containerd-windows-sac2004-sdnoverlay
+    description: Runs Windows (SAC 2004) e2e tests on stable K8s clusters with Containerd and latest Flannel CNI in overlay network mode.
+    test_group_name: containerd-windows-sac2004-sdnoverlay
 
 test_groups:
 # Flannel CNI on Windows test groups
@@ -41,3 +53,11 @@ test_groups:
   gcs_prefix: k8s-ovn/ci-kubernetes-e2e-sdnoverlay-ctrd-master-windows
 - name: ci-kubernetes-e2e-sdnbridge-ctrd-master-windows
   gcs_prefix: k8s-ovn/ci-kubernetes-e2e-sdnbridge-ctrd-master-windows
+- name: containerd-windows-sac1909-sdnbridge
+  gcs_prefix: k8s-ovn/containerd-windows-sac1909-sdnbridge
+- name: containerd-windows-sac1909-sdnoverlay
+  gcs_prefix: k8s-ovn/containerd-windows-sac1909-sdnoverlay
+- name: containerd-windows-sac2004-sdnbridge
+  gcs_prefix: k8s-ovn/containerd-windows-sac2004-sdnbridge
+- name: containerd-windows-sac2004-sdnoverlay
+  gcs_prefix: k8s-ovn/containerd-windows-sac2004-sdnoverlay
