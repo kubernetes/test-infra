@@ -72,7 +72,7 @@ mkdir -p slices
   --builds triage_builds.json \
   --output failure_data.json \
   --output_slices slices/failure_data_PREFIX.json \
-  --num_workers 7  # Go incorrectly determines the number of CPUs in a pod, set manually to (2*CPUs-1) corresponding to test-infra-periodics.yaml
+  ${NUM_WORKERS:+"--num_workers=${NUM_WORKERS}"} \
   triage_tests/*.json
 
 gsutil_cp() {

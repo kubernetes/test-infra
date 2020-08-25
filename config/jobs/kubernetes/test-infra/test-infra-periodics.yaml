@@ -36,6 +36,9 @@ periodics:
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
+      # Go incorrectly determines the number of CPUs in a pod, set manually to (2*CPUs-1) corresponding to test-infra-periodics.yaml
+      - name: NUM_WORKERS
+        value: "7"
       command:
       - "timeout"
       args:
@@ -45,8 +48,9 @@ periodics:
       - name: service
         mountPath: /etc/service-account
         readOnly: true
+      # When changing CPUs, also change NUM_WORKERS above
       resources:
-        requests:  # When changing CPUs, also change num_workers flag in triage/update_summaries.sh
+        requests:
           cpu: 4
           memory: 40Gi
         limits:
