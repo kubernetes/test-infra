@@ -37,6 +37,40 @@ class ValidateBuckets(unittest.TestCase):
             self.assertEqual(prefix[-1], ':', "bucket %s prefix should be %s:" % (name, prefix))
 
 
+class BuildObjectTests(unittest.TestCase):
+    @parameterized.expand([
+        (
+            "Empty_Build",
+            make_json.Build.__new__(make_json.Build),
+            {},
+        ),
+        (
+            "Base_Build",
+            make_json.Build("gs://kubernetes-jenkins/pr-logs/path", []),
+            {"path":"gs://kubernetes-jenkins/pr-logs/path",
+             "test": [],
+             "tests_run": 0,
+             "tests_failed": 0,
+             "job": "pr:pr-logs",
+            },
+        ),
+        (
+            "Tests_populate",
+            make_json.Build(
+                "gs://kubernetes-jenkins/pr-logs/path",
+                [{'name': 'Test1', 'failed': True}],
+            ),
+            {"path":"gs://kubernetes-jenkins/pr-logs/path",
+             "test": [{'name': 'Test1', 'failed': True}],
+             "tests_run": 1,
+             "tests_failed": 1,
+             "job": "pr:pr-logs",
+            },
+        ),
+    ])
+    def test_as_dict(self, _, build, expected):
+        self.assertEqual(build.as_dict(), expected)
+
 class GenerateBuilds(unittest.TestCase):
     @parameterized.expand([
         (
@@ -296,7 +330,8 @@ class MakeJsonTest(unittest.TestCase):
 
     def test_path_to_job_and_number(self):
         def expect(path, job, number):
-            self.assertEqual(make_json.path_to_job_and_number(path), (job, number))
+            build = make_json.Build(path, [])
+            self.assertEqual((build.job, build.number), (job, number))
 
         expect('gs://kubernetes-jenkins/logs/some-build/123', 'some-build', 123)
         expect('gs://kubernetes-jenkins/logs/some-build/123asdf', 'some-build', None)
@@ -304,6 +339,7 @@ class MakeJsonTest(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             expect('gs://unknown-bucket/foo/123', None, None)
+            expect('gs://unknown-bucket/foo/123/', None, None)
 
     def test_row_for_build(self):
         def expect(path, start, finish, results, **kwargs):
