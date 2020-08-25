@@ -1,0 +1,26 @@
+presubmits:
+  kubernetes-csi/csi-driver-nfs:
+  - name: pull-csi-driver-nfs-sanity
+    decorate: true
+    always_run: true
+    path_alias: sigs.k8s.io/csi-driver-nfs
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+      preset-azure-cred: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200811-4afd9ba-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - sanity-test
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-storage-csi-other
+      testgrid-tab-name: pull-csi-driver-nfs-sanity
+      description: "Run sanity tests for NFS CSI driver."
+      testgrid-num-columns-recent: '30'
