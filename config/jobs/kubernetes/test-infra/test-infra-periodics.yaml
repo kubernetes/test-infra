@@ -27,7 +27,7 @@ periodics:
 - name: ci-test-infra-triage
   decorate: true
   decoration_config:
-    timeout: 1h30m
+    timeout: 3h
   interval: 30m
   spec:
     containers:
@@ -36,9 +36,10 @@ periodics:
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
-      # Go incorrectly determines the number of CPUs in a pod, set manually to (2*CPUs-1) corresponding to test-infra-periodics.yaml
+      # Go incorrectly determines the number of CPUs in a pod, set manually to (2*CPUs-1)
+      # TODO: determine the optimal number of workers, 2*CPU-1 is an assumption
       - name: NUM_WORKERS
-        value: "7"
+        value: "13"
       command:
       - "timeout"
       args:
@@ -51,10 +52,10 @@ periodics:
       # When changing CPUs, also change NUM_WORKERS above
       resources:
         requests:
-          cpu: 4
+          cpu: 7
           memory: 40Gi
         limits:
-          cpu: 4
+          cpu: 7
           memory: 40Gi
     volumes:
     - name: service
