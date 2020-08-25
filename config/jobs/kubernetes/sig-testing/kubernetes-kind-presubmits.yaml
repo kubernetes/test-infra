@@ -18,7 +18,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20200813-af45e55-master
+      - image: gcr.io/k8s-testimages/krte:v20200824-5d057db-master
         command:
         - wrapper.sh
         - bash
@@ -120,7 +120,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20200813-af45e55-master
+      - image: gcr.io/k8s-testimages/krte:v20200824-5d057db-master
         command:
         - wrapper.sh
         - bash
@@ -230,7 +230,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20200813-af45e55-master
+      - image: gcr.io/k8s-testimages/krte:v20200824-5d057db-master
         command:
         - wrapper.sh
         - bash
@@ -273,7 +273,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20200813-af45e55-master
+      - image: gcr.io/k8s-testimages/krte:v20200824-5d057db-master
         command:
         - wrapper.sh
         - bash

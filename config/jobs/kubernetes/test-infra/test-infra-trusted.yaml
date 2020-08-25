@@ -6,7 +6,7 @@ postsubmits:
     max_concurrency: 1
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20200713-e9b3d9d-org
+      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20200824-5d057db-org
         command:
         - bazel
         args:
@@ -116,7 +116,7 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-prow/hmac:v20200820-86c379653b
+      - image: gcr.io/k8s-prow/hmac:v20200825-967ee0e48b
         command:
         - /hmac
         args:
@@ -159,7 +159,7 @@ postsubmits:
     spec:
       serviceAccountName: pusher
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20200720-57a7724-test-infra
+      - image: gcr.io/k8s-testimages/bazelbuild:v20200824-5d057db-test-infra
         command:
         - experiment/resultstore/push.sh
     annotations:
@@ -176,7 +176,7 @@ postsubmits:
     spec:
       serviceAccountName: pusher
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20200720-57a7724-test-infra
+      - image: gcr.io/k8s-testimages/bazelbuild:v20200824-5d057db-test-infra
         command:
         - prow/push.sh
     annotations:
@@ -613,7 +613,7 @@ postsubmits:
     spec:
       serviceAccountName: pusher
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200819-491a5ae-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200824-5d057db-master
         command:
         - make
         args:
@@ -641,7 +641,7 @@ postsubmits:
     spec:
       serviceAccountName: testgrid-config-updater
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20200720-57a7724-test-infra
+      - image: gcr.io/k8s-testimages/bazelbuild:v20200824-5d057db-test-infra
         command:
         - ./testgrid/config-upload.sh
         resources:
@@ -662,7 +662,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20200720-57a7724-test-infra
+      - image: gcr.io/k8s-testimages/bazelbuild:v20200824-5d057db-test-infra
         command:
         - ./boskos/update_prow_config.sh
     annotations:
@@ -802,7 +802,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20200720-57a7724-test-infra
+    - image: gcr.io/k8s-testimages/bazelbuild:v20200824-5d057db-test-infra
       command:
       - hack/autodeps.sh
       args:
@@ -839,7 +839,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20200720-57a7724-test-infra
+    - image: gcr.io/k8s-testimages/bazelbuild:v20200824-5d057db-test-infra
       command:
       - hack/autodeps.sh
       args:
@@ -876,7 +876,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200819-491a5ae-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200824-5d057db-master
       command:
       - runner.sh
       args:
@@ -924,7 +924,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20200713-e9b3d9d-test-infra
+    - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20200824-5d057db-test-infra
       command:
       - bazel
       args:
@@ -960,7 +960,7 @@ periodics:
   spec:
     containers:
     - name: branchprotector
-      image: gcr.io/k8s-prow/branchprotector:v20200820-86c379653b
+      image: gcr.io/k8s-prow/branchprotector:v20200825-967ee0e48b
       command:
       - /app/prow/cmd/branchprotector/app.binary
       args:
@@ -994,7 +994,7 @@ periodics:
   spec:
     containers:
     - name: label-sync
-      image: gcr.io/k8s-prow/label_sync:v20200820-86c379653b
+      image: gcr.io/k8s-prow/label_sync:v20200825-967ee0e48b
       command:
       - /app/label_sync/app.binary
       args:
@@ -1080,7 +1080,7 @@ periodics:
   spec:
     serviceAccountName: k8s-infra-gcr-promoter-bak
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200819-491a5ae-1.17
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200824-5d057db-1.17
       command:
       - infra/gcp/backup_tools/backup.sh
       env:
