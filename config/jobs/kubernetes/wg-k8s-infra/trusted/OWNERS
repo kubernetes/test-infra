@@ -7,3 +7,4 @@ reviewers:
 - bartsmykla
 approvers:
 - wg-k8s-infra-oncall
+- test-infra-oncall
