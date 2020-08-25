@@ -70,10 +70,10 @@ mkdir -p slices
 
 /triage \
   --builds triage_builds.json \
-  --tests triage_tests/*.json \
   --output failure_data.json \
   --output_slices slices/failure_data_PREFIX.json \
   --num_workers 7  # Go incorrectly determines the number of CPUs in a pod, set manually to (2*CPUs-1) corresponding to test-infra-periodics.yaml
+  triage_tests/*.json
 
 gsutil_cp() {
   gsutil -h 'Cache-Control: no-store, must-revalidate' -m cp -Z -a public-read "$@"

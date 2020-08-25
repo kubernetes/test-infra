@@ -54,11 +54,9 @@ func parseFlags() summarizeFlags {
 	flag.StringVar(&flags.outputSlices, "output_slices", "", "path to slices output (must include PREFIX in template)")
 	flag.IntVar(&flags.numWorkers, "num_workers", 2*runtime.NumCPU()-1, "number of worker goroutines to spawn for parallelized functions") // This has shown to be a sensible number of workers
 
-	// The tests flag can contain multiple arguments, so we'll split it by space
-	tempTests := flag.String("tests", "", "path to tests.json files from BigQuery")
-
 	flag.Parse()
-	flags.tests = strings.Split(*tempTests, " ")
+	// list of tests files comes from arguments
+	flags.tests = flag.Args()
 
 	// Do some checks on the flags
 	if !(strings.Contains(flags.outputSlices, "PREFIX")) {
