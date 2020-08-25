@@ -68,14 +68,11 @@ gzip -df triage_tests/*.gz
 
 mkdir -p slices
 
-# --num-workers: Go incorrectly determines the number of CPUs in a pod, set manually to (2*CPUs-1) corresponding to test-infra-periodics.yaml
-# TODO: enable passing this flag via $@ instead so we don't have to keep the image
-# in sync with the infra
 /triage \
   --builds triage_builds.json \
   --output failure_data.json \
   --output_slices slices/failure_data_PREFIX.json \
-  --num_workers 7 \
+  ${NUM_WORKERS:+"--num_workers=${NUM_WORKERS}"} \
   triage_tests/*.json
 
 gsutil_cp() {
