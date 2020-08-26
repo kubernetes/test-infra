@@ -407,6 +407,7 @@ periodics:
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
     testgrid-dashboards: sig-release-1.17-blocking, google-unit
     testgrid-tab-name: bazel-test-1.17
+  cluster: k8s-infra-prow-build
   decorate: true
   extra_refs:
   - base_ref: release-1.17
@@ -425,8 +426,6 @@ periodics:
     - args:
       - test
       - --config=unit
-      - --config=remote
-      - --remote_instance_name=projects/k8s-prow-builds/instances/default_instance
       - //...
       - //hack:verify-all
       - --
@@ -438,10 +437,10 @@ periodics:
       name: ""
       resources:
         limits:
-          cpu: 4
+          cpu: 7
           memory: "38Gi"
         requests:
-          cpu: 4
+          cpu: 7
           memory: "38Gi"
 - annotations:
     fork-per-release-generic-suffix: "true"
