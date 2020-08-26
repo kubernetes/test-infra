@@ -135,7 +135,7 @@ func handlePR(c Client, trigger plugins.Trigger, pr github.PullRequestEvent) err
 			if err != nil {
 				return err
 			}
-			if author == botName {
+			if pr.Sender.Login == botName {
 				c.Logger.Debug("Label added by the bot, skipping.")
 				return nil
 			}
