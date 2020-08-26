@@ -32,7 +32,7 @@ local singlestat = grafana.singlestat;
           format='percentunit',
           decimals=3,
           fill=10,
-          description='How much error budget is left looking at our %.3f%% availability gurantees?' % $._config.SLOs.apiserver.target,
+          description='How much error budget is left looking at our %.3f%% availability guarantees?' % $._config.SLOs.apiserver.target,
         )
         .addTarget(prometheus.target('100 * (apiserver_request:availability%dd{verb="all", %(clusterLabel)s="$cluster"} - %f)' % [$._config.SLOs.apiserver.days, $._config.clusterLabel, $._config.SLOs.apiserver.target], legendFormat='errorbudget'));
 
