@@ -247,7 +247,7 @@ periodics:
     testgrid-dashboards: sig-testing-canaries
     testgrid-tab-name: bazel-test
     description: runs bazel test //... //hack:verify-all -//build/... -//vendor/... (using RBE)
-  interval: 5m
+  interval: 1h
   decorate: true
   labels:
     preset-service-account: "true"
@@ -287,7 +287,7 @@ periodics:
     testgrid-dashboards: sig-release-master-blocking, google-unit
     testgrid-tab-name: bazel-test-master
     description: runs bazel test //... //hack:verify-all -//build/... -//vendor/...
-  interval: 1h
+  interval: 5m
   cluster: k8s-infra-prow-build
   decorate: true
   labels:
