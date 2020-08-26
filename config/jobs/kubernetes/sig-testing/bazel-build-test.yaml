@@ -214,7 +214,7 @@ periodics:
     repo: test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:2.2.0-from-0.23.2
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200824-5d057db-master
       imagePullPolicy: Always
       command:
       - bash
