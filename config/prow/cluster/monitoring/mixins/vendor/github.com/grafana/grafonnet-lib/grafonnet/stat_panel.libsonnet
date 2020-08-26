@@ -30,9 +30,9 @@
    *
    * @method addTarget(target) Adds a target object.
    * @method addTargets(targets) Adds an array of targets.
-   * @method addLink(link) Adds a link. Aregument format: `{ title: 'Link Title', url: 'https://...', targetBlank: true }`.
+   * @method addLink(link) Adds a link. Argument format: `{ title: 'Link Title', url: 'https://...', targetBlank: true }`.
    * @method addLinks(links) Adds an array of links.
-   * @method addThreshold(step) Adds a threshold step. Aregument format: `{ color: 'green', value: 0 }`.
+   * @method addThreshold(step) Adds a threshold step. Argument format: `{ color: 'green', value: 0 }`.
    * @method addThresholds(steps) Adds an array of threshold steps.
    * @method addMapping(mapping) Adds a value mapping.
    * @method addMappings(mappings) Adds an array of value mappings.

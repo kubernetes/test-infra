@@ -36,7 +36,7 @@
    * @param yAxis_logBase Only if dataFormat is 'timeseries'
    * @param yAxis_min Only if dataFormat is 'timeseries', min of the Y axis
    * @param yAxis_max Only if dataFormat is 'timeseries', max of the Y axis
-   * @param yAxis_show Wheter or not to show the Y axis
+   * @param yAxis_show Whether or not to show the Y axis
    * @param yAxis_splitFactor TODO: document
    * @param yBucketBound Which bound ('lower' or 'upper') of the bucket to use, default 'auto'
    * @param yBucketNumber Number of buckets for the Y axis
