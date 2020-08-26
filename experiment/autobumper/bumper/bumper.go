@@ -17,7 +17,9 @@ limitations under the License.
 package bumper
 
 import (
+	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -42,6 +44,7 @@ const (
 	testImagePrefix = "gcr.io/k8s-testimages/"
 	prowRepo        = "https://github.com/kubernetes/test-infra"
 	testImageRepo   = prowRepo
+	forkRemoteName  = "bumper-fork-remote"
 
 	latestVersion          = "latest"
 	upstreamVersion        = "upstream"
@@ -446,9 +449,35 @@ func GitCommitAndPush(remote, remoteBranch, name, email, message string, stdout,
 	if err := Call(stdout, stderr, "git", commitArgs...); err != nil {
 		return fmt.Errorf("failed to git commit: %w", err)
 	}
-	if err := GitPush(remote, remoteBranch, stdout, stderr); err != nil {
-		return fmt.Errorf("%w", err)
+	if err := Call(stdout, stderr, "git", "remote", "add", forkRemoteName, remote); err != nil {
+		return fmt.Errorf("failed to add remote: %w", err)
 	}
+	fetchStderr := &bytes.Buffer{}
+	var remoteTreeRef string
+	if err := Call(stdout, fetchStderr, "git", "fetch", forkRemoteName, remoteBranch); err != nil && !strings.Contains(fetchStderr.String(), fmt.Sprintf("couldn't find remote ref %s", remoteBranch)) {
+		return fmt.Errorf("failed to fetch from fork: %w", err)
+	} else {
+		var err error
+		remoteTreeRef, err = getTreeRef(stderr, fmt.Sprintf("refs/remotes/%s/%s", forkRemoteName, remoteBranch))
+		if err != nil {
+			return fmt.Errorf("failed to get remote tree ref: %w", err)
+		}
+	}
+
+	localTreeRef, err := getTreeRef(stderr, "HEAD")
+	if err != nil {
+		return fmt.Errorf("failed to get local tree ref: %w", err)
+	}
+
+	// Avoid doing metadata-only pushes that re-trigger tests and remove lgtm
+	if localTreeRef != remoteTreeRef {
+		if err := GitPush(forkRemoteName, remoteBranch, stdout, stderr); err != nil {
+			return err
+		}
+	} else {
+		logrus.Info("Not pushing as up-to-date remote branch already exists")
+	}
+
 	return nil
 }
 
@@ -572,4 +601,16 @@ func getAssignment(oncallAddress string) string {
 		return "/cc @" + curtOncall
 	}
 	return noOncallMsg
+}
+
+func getTreeRef(stderr io.Writer, refname string) (string, error) {
+	revParseStdout := &bytes.Buffer{}
+	if err := Call(revParseStdout, stderr, "git", "rev-parse", refname+":"); err != nil {
+		return "", fmt.Errorf("failed to parse ref: %w", err)
+	}
+	fields := strings.Fields(revParseStdout.String())
+	if n := len(fields); n < 1 {
+		return "", errors.New("got no otput when trying to rev-parse")
+	}
+	return fields[0], nil
 }
