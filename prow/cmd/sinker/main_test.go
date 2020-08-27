@@ -18,6 +18,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"reflect"
@@ -28,8 +29,10 @@ import (
 	corev1api "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
 	corev1fake "k8s.io/client-go/kubernetes/fake"
+	corev1client "k8s.io/client-go/kubernetes/typed/core/v1"
 	clienttesting "k8s.io/client-go/testing"
 	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
 
@@ -87,6 +90,9 @@ func (unreachableCluster) Delete(_ context.Context, name string, _ metav1.Delete
 }
 func (unreachableCluster) List(_ context.Context, _ metav1.ListOptions) (*corev1api.PodList, error) {
 	return nil, fmt.Errorf("I can't hear you.")
+}
+func (unreachableCluster) Patch(_ context.Context, _ string, _ types.PatchType, _ []byte, _ metav1.PatchOptions, subresources ...string) (*corev1api.Pod, error) {
+	return nil, errors.New("I can't hear you.")
 }
 
 func TestClean(t *testing.T) {
@@ -404,6 +410,34 @@ func TestClean(t *testing.T) {
 				},
 			},
 		},
+		&corev1api.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:       "completed-and-reported-prowjob-pod-still-has-kubernetes-finalizer",
+				Namespace:  "ns",
+				Finalizers: []string{"prow.x-k8s.io/gcsk8sreporter"},
+				Labels: map[string]string{
+					kube.CreatedByProw: "true",
+				},
+			},
+			Status: corev1api.PodStatus{
+				Phase:     corev1api.PodPending,
+				StartTime: startTime(time.Now().Add(-terminatedPodTTL * 2)),
+			},
+		},
+		&corev1api.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:       "completed-pod-without-prowjob-that-still-has-finalizer",
+				Namespace:  "ns",
+				Finalizers: []string{"prow.x-k8s.io/gcsk8sreporter"},
+				Labels: map[string]string{
+					kube.CreatedByProw: "true",
+				},
+			},
+			Status: corev1api.PodStatus{
+				Phase:     corev1api.PodPending,
+				StartTime: startTime(time.Now().Add(-terminatedPodTTL * 2)),
+			},
+		},
 	}
 	deletedPods := sets.NewString(
 		"job-complete-pod-failed",
@@ -419,6 +453,8 @@ func TestClean(t *testing.T) {
 		"old-running",
 		"ttl-expired",
 		"completed-prowjob-ttl-expired-while-pod-still-pending",
+		"completed-and-reported-prowjob-pod-still-has-kubernetes-finalizer",
+		"completed-pod-without-prowjob-that-still-has-finalizer",
 	)
 	setComplete := func(d time.Duration) *metav1.Time {
 		completed := metav1.NewTime(time.Now().Add(d))
@@ -611,7 +647,18 @@ func TestClean(t *testing.T) {
 				CompletionTime: setComplete(-terminatedPodTTL - time.Second),
 			},
 		},
+		&prowv1.ProwJob{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "completed-and-reported-prowjob-pod-still-has-kubernetes-finalizer",
+			},
+			Status: prowv1.ProwJobStatus{
+				StartTime:        metav1.NewTime(time.Now().Add(-terminatedPodTTL * 2)),
+				CompletionTime:   setComplete(-terminatedPodTTL - time.Second),
+				PrevReportStates: map[string]prowv1.ProwJobState{"gcsk8sreporter": prowv1.AbortedState},
+			},
+		},
 	}
+
 	deletedProwJobs := sets.NewString(
 		"job-complete",
 		"old-failed",
@@ -643,7 +690,7 @@ func TestClean(t *testing.T) {
 	fkc := []*corev1fake.Clientset{corev1fake.NewSimpleClientset(pods...), corev1fake.NewSimpleClientset(podsTrusted...)}
 	fpc := []podInterface{unreachableCluster{}}
 	for _, fakeClient := range fkc {
-		fpc = append(fpc, fakeClient.CoreV1().Pods("ns"))
+		fpc = append(fpc, &finalizerFreeDeleteEnforcingClient{t: t, PodInterface: fakeClient.CoreV1().Pods("ns")})
 	}
 	// Run
 	c := controller{
@@ -814,4 +861,21 @@ func TestDeletePodToleratesNotFound(t *testing.T) {
 	if n := len(m.podRemovalErrors); n != 0 {
 		t.Errorf("Expected no pod removal errors, got %v", m.podRemovalErrors)
 	}
+}
+
+type finalizerFreeDeleteEnforcingClient struct {
+	t *testing.T
+	corev1client.PodInterface
+}
+
+func (c *finalizerFreeDeleteEnforcingClient) Delete(ctx context.Context, name string, options metav1.DeleteOptions) error {
+	pod, err := c.Get(ctx, name, metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+	// The kube api allows this but we want to ensure in tests that we first clean up finalizers before deleting a pod
+	if len(pod.Finalizers) > 0 {
+		c.t.Errorf("attempting to delete pod %s that still has %v finalizers", pod.Name, pod.Finalizers)
+	}
+	return c.PodInterface.Delete(ctx, name, options)
 }

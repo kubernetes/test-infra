@@ -29,6 +29,7 @@ import (
 	corev1api "k8s.io/api/core/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -36,6 +37,7 @@ import (
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	kubernetesreporterapi "k8s.io/test-infra/prow/crier/reporters/gcs/kubernetes/api"
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/kube"
@@ -165,6 +167,7 @@ func main() {
 type podInterface interface {
 	Delete(ctx context.Context, name string, options metav1.DeleteOptions) error
 	List(ctx context.Context, opts metav1.ListOptions) (*corev1api.PodList, error)
+	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts metav1.PatchOptions, subresources ...string) (result *corev1api.Pod, err error)
 }
 
 type controller struct {
@@ -395,6 +398,12 @@ func (c *controller) clean() {
 				terminationTime = pj.Status.CompletionTime.Time
 			}
 
+			if podNeedsKubernetesFinalizerCleanup(log, pjMap[podJobName], &pod) {
+				if err := c.cleanupKubernetesFinalizer(&pod, client); err != nil {
+					log.WithField("pj", pod.Name).WithError(err).Error("Failed to remove kubernetesreporter finalizer")
+				}
+			}
+
 			switch {
 			case !pod.Status.StartTime.IsZero() && time.Since(pod.Status.StartTime.Time) > maxPodAge:
 				clean = true
@@ -442,6 +451,23 @@ func (c *controller) clean() {
 	c.logger.Info("Sinker reconciliation complete.")
 }
 
+func (c *controller) cleanupKubernetesFinalizer(pod *corev1api.Pod, client podInterface) error {
+
+	oldPod := pod.DeepCopy()
+	pod.Finalizers = sets.NewString(pod.Finalizers...).Delete(kubernetesreporterapi.FinalizerName).List()
+	patch := ctrlruntimeclient.MergeFrom(oldPod)
+	rawPatch, err := patch.Data(pod)
+	if err != nil {
+		return fmt.Errorf("failed to construct patch: %w", err)
+	}
+
+	if _, err := client.Patch(context.TODO(), pod.Name, patch.Type(), rawPatch, metav1.PatchOptions{}); err != nil {
+		return fmt.Errorf("failed to patch pod: %w", err)
+	}
+
+	return nil
+}
+
 func (c *controller) deletePod(log *logrus.Entry, name, reason string, client podInterface, m *sinkerReconciliationMetrics) {
 	// Delete old finished or orphan pods. Don't quit if we fail to delete one.
 	if err := client.Delete(context.TODO(), name, metav1.DeleteOptions{}); err == nil {
@@ -452,4 +478,19 @@ func (c *controller) deletePod(log *logrus.Entry, name, reason string, client po
 		m.podRemovalErrors[string(k8serrors.ReasonForError(err))]++
 	}
 
+}
+
+func podNeedsKubernetesFinalizerCleanup(log *logrus.Entry, pj *prowapi.ProwJob, pod *corev1api.Pod) bool {
+	// Can happen if someone deletes the prowjob before it finishes
+	if pj == nil {
+		return true
+	}
+	// This is always a bug
+	if pj.Complete() && pj.Status.PrevReportStates[kubernetesreporterapi.ReporterName] == pj.Status.State && sets.NewString(pod.Finalizers...).Has(kubernetesreporterapi.FinalizerName) {
+		log.WithField("pj", pj.Name).Errorf("BUG: Pod for prowjob still had the %s finalizer after completing and being successfully reported by the %s reporter", kubernetesreporterapi.FinalizerName, kubernetesreporterapi.ReporterName)
+
+		return true
+	}
+
+	return false
 }
