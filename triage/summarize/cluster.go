@@ -34,6 +34,9 @@ by the test they belong to. These groups are subdivided into clusters.
 numWorkers determines how many goroutines to spawn to simultaneously process the failure
 groups. If numWorkers <= 0, the value is set to 1.
 
+memoize determines if memoized results should attempt to be retrieved, and if new results should be
+memoized to JSON.
+
 Takes:
     {
 		testName1: [failure1, failure2, failure3, failure4, ...],
@@ -57,14 +60,14 @@ Returns:
 		...
 	}
 */
-func clusterLocal(failuresByTest failuresGroup, numWorkers int) nestedFailuresGroups {
+func clusterLocal(failuresByTest failuresGroup, numWorkers int, memoize bool) nestedFailuresGroups {
 	const memoPath string = "memo_cluster_local.json"
 	const memoMessage string = "clustering inside each test"
 
 	clustered := make(nestedFailuresGroups)
 
 	// Try to retrieve memoized results first to avoid another computation
-	if getMemoizedResults(memoPath, memoMessage, &clustered) {
+	if memoize && getMemoizedResults(memoPath, memoMessage, &clustered) {
 		return clustered
 	}
 
@@ -145,7 +148,9 @@ func clusterLocal(failuresByTest failuresGroup, numWorkers int) nestedFailuresGr
 	klog.V(2).Infof("Finished locally clustering %d unique tests (%d failures) in %s", len(clustered), numFailures, elapsed.String())
 
 	// Memoize the results
-	memoizeResults(memoPath, memoMessage, clustered)
+	if memoize {
+		memoizeResults(memoPath, memoMessage, clustered)
+	}
 	return clustered
 }
 
@@ -166,6 +171,9 @@ This is done hierarchically for efficiency-- each test's failures are likely to 
 reducing the number of clusters that need to be paired up at this stage.
 
 previouslyClustered can be nil when there aren't previous results to use.
+
+memoize determines if memoized results should attempt to be retrieved, and if new results should be
+memoized to JSON.
 
 Takes:
 	{
@@ -202,7 +210,7 @@ Returns:
 		...
 	}
 */
-func clusterGlobal(newlyClustered nestedFailuresGroups, previouslyClustered []jsonCluster) nestedFailuresGroups {
+func clusterGlobal(newlyClustered nestedFailuresGroups, previouslyClustered []jsonCluster, memoize bool) nestedFailuresGroups {
 	const memoPath string = "memo_cluster_global.json"
 	const memoMessage string = "clustering across tests"
 
@@ -210,7 +218,7 @@ func clusterGlobal(newlyClustered nestedFailuresGroups, previouslyClustered []js
 	clusters := make(nestedFailuresGroups)
 
 	// Try to retrieve memoized results first to avoid another computation
-	if getMemoizedResults(memoPath, memoMessage, &clusters) {
+	if memoize && getMemoizedResults(memoPath, memoMessage, &clusters) {
 		return clusters
 	}
 
@@ -315,7 +323,9 @@ func clusterGlobal(newlyClustered nestedFailuresGroups, previouslyClustered []js
 		len(newlyClustered), numFailures, len(clusters), elapsed.String())
 
 	// Memoize the results
-	memoizeResults(memoPath, memoMessage, clusters)
+	if memoize {
+		memoizeResults(memoPath, memoMessage, clusters)
+	}
 	return clusters
 }
 

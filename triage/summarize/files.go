@@ -36,14 +36,15 @@ import (
 )
 
 // loadFailures loads a builds file and one or more test failure files. It maps build paths to builds
-// and groups test failures by test name.
-func loadFailures(buildsFilepath string, testsFilepaths []string) (map[string]build, map[string][]failure, error) {
-	builds, err := loadBuilds(buildsFilepath)
+// and groups test failures by test name. memoize determines if memoized results should attempt to be
+// retrieved, and if new results should be memoized to JSON.
+func loadFailures(buildsFilepath string, testsFilepaths []string, memoize bool) (map[string]build, map[string][]failure, error) {
+	builds, err := loadBuilds(buildsFilepath, memoize)
 	if err != nil {
 		return nil, nil, fmt.Errorf("Could not retrieve builds: %s", err)
 	}
 
-	tests, err := loadTests(testsFilepaths)
+	tests, err := loadTests(testsFilepaths, memoize)
 	if err != nil {
 		return nil, nil, fmt.Errorf("Could not retrieve tests: %s", err)
 	}
@@ -116,7 +117,7 @@ func getMemoizedResults(filepath string, message string, v interface{}) (ok bool
 	err := getJSON(filepath, v)
 	if err == nil {
 		if message != "" {
-			klog.V(2).Infof("Done (cached) %s", message)
+			klog.V(2).Infof("Retrieved memoized results from %#v, done (cached) %s", filepath, message)
 		}
 		return true
 	}
@@ -131,6 +132,8 @@ message is a message that gets printed on success, appended to "Done ". If it is
 string, no message is printed.
 */
 func memoizeResults(filepath, message string, v interface{}) {
+	klog.V(2).Infof("Memoizing results to %s...", filepath)
+
 	err := writeJSON(filepath, v)
 	if err != nil {
 		klog.Warningf("Could not memoize results to '%s': %s", filepath, err)
@@ -138,7 +141,7 @@ func memoizeResults(filepath, message string, v interface{}) {
 	}
 
 	if message != "" {
-		klog.V(2).Infof("Done " + message)
+		klog.V(2).Infof("Successfully memoized, done " + message)
 	}
 }
 
@@ -222,15 +225,16 @@ func (jb *jsonBuild) asBuild() (build, error) {
 }
 
 // loadBuilds parses a JSON file containing build information and returns a map from build paths
-// to build objects.
-func loadBuilds(filepath string) (map[string]build, error) {
+// to build objects. memoize determines if memoized results should attempt to be retrieved, and if
+// new results should be memoized to JSON.
+func loadBuilds(filepath string, memoize bool) (map[string]build, error) {
 	const memoPath string = "memo_load_builds.json"
 	const memoMessage string = "loading builds"
 
 	builds := make(map[string]build)
 
 	// Try to retrieve memoized results first to avoid another computation
-	if getMemoizedResults(memoPath, memoMessage, &builds) {
+	if memoize && getMemoizedResults(memoPath, memoMessage, &builds) {
 		return builds, nil
 	}
 
@@ -263,7 +267,9 @@ func loadBuilds(filepath string) (map[string]build, error) {
 		builds[bld.Path] = bld
 	}
 
-	memoizeResults(memoPath, memoMessage, builds)
+	if memoize {
+		memoizeResults(memoPath, memoMessage, builds)
+	}
 
 	return builds, nil
 }
@@ -305,15 +311,16 @@ func (jf *jsonFailure) asFailure() (failure, error) {
 }
 
 // loadTests parses multiple JSON files containing test information for failed tests. It returns a
-// map from test names to failure objects.
-func loadTests(testsFilepaths []string) (map[string][]failure, error) {
+// map from test names to failure objects. memoize determines if memoized results should attempt to
+// be retrieved, and if new results should be memoized to JSON.
+func loadTests(testsFilepaths []string, memoize bool) (map[string][]failure, error) {
 	const memoPath string = "memo_load_tests.json"
 	const memoMessage string = "loading tests"
 
 	tests := make(map[string][]failure)
 
 	// Try to retrieve memoized results first to avoid another computation
-	if getMemoizedResults(memoPath, memoMessage, &tests) {
+	if memoize && getMemoizedResults(memoPath, memoMessage, &tests) {
 		return tests, nil
 	}
 
@@ -361,7 +368,9 @@ func loadTests(testsFilepaths []string) (map[string][]failure, error) {
 		sort.Slice(testSlice, func(i, j int) bool { return testSlice[i].Build < testSlice[j].Build })
 	}
 
-	memoizeResults(memoPath, memoMessage, tests)
+	if memoize {
+		memoizeResults(memoPath, memoMessage, tests)
+	}
 
 	return tests, nil
 }
