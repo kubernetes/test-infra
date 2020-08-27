@@ -3,12 +3,11 @@ presubmits:
   - name: pull-azure-all
     labels:
       preset-azure-cred: "true"
-    always_run: true
-    optional: true
     decorate: true
+    run_if_changed: 'images/capi/.*'
     decoration_config:
       timeout: 1h
-    max_concurrency: 12
+    max_concurrency: 5
     path_alias: sigs.k8s.io/image-builder
     spec:
       containers:
