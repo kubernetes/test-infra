@@ -65,7 +65,8 @@ periodics:
       - --provider=gce
       - --timeout=140m
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Firewall|Dashboard|Services.*functioning.*NodePort
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200825-523865b-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
+      imagePullPolicy: Always
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-kops-gce, kops-gce
     testgrid-tab-name: kops-gce-latest
