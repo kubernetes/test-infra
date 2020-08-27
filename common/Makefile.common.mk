@@ -74,6 +74,11 @@ format-go:
 	@${FINDFILES} -name '*.go' \( ! \( -name '*.gen.go' -o -name '*.pb.go' \) \) -print0 | ${XARGS} goimports -w -local "github.com/IBM"
 
 format-python:
+	tt3=$(shell which 2to3)
+ifeq (${tt3},)
+	@apt update
+	@apt install -y 2to3
+endif
 	@${FINDFILES} -name '*.py' -print0 | ${XARGS} autopep8 --max-line-length 160 --aggressive --aggressive -i
 
 format-protos:
