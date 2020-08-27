@@ -38,12 +38,8 @@ import (
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/crier/reporters/gcs/internal/util"
+	kubernetesreporterapi "k8s.io/test-infra/prow/crier/reporters/gcs/kubernetes/api"
 	"k8s.io/test-infra/prow/io"
-)
-
-const (
-	reporterName  = "gcsk8sreporter"
-	finalizerName = "prow.x-k8s.io/" + reporterName
 )
 
 type gcsK8sReporter struct {
@@ -127,12 +123,12 @@ func (gr *gcsK8sReporter) addFinalizer(pj *prowv1.ProwJob) error {
 		return fmt.Errorf("failed to get pod %s: %w", pj.Name, err)
 	}
 	finalizers := sets.NewString(pod.Finalizers...)
-	if finalizers.Has(finalizerName) {
+	if finalizers.Has(kubernetesreporterapi.FinalizerName) {
 		return nil
 	}
 
 	originalPod := pod.DeepCopy()
-	pod.Finalizers = finalizers.Insert(finalizerName).List()
+	pod.Finalizers = finalizers.Insert(kubernetesreporterapi.FinalizerName).List()
 	patch := ctrlruntimeclient.MergeFrom(originalPod)
 	patchData, err := patch.Data(pod)
 	if err != nil {
@@ -204,7 +200,7 @@ func (gr *gcsK8sReporter) reportPodInfo(ctx context.Context, pj *prowv1.ProwJob)
 	}
 
 	if err := gr.removeFinalizer(pj.Spec.Cluster, pod); err != nil {
-		return fmt.Errorf("failed to remove %s finalizer: %w", finalizerName, err)
+		return fmt.Errorf("failed to remove %s finalizer: %w", kubernetesreporterapi.FinalizerName, err)
 	}
 
 	return nil
@@ -212,12 +208,12 @@ func (gr *gcsK8sReporter) reportPodInfo(ctx context.Context, pj *prowv1.ProwJob)
 
 func (gr *gcsK8sReporter) removeFinalizer(cluster string, pod *v1.Pod) error {
 	finalizers := sets.NewString(pod.Finalizers...)
-	if !finalizers.Has(finalizerName) {
+	if !finalizers.Has(kubernetesreporterapi.FinalizerName) {
 		return nil
 	}
 
 	oldPod := pod.DeepCopy()
-	pod.Finalizers = finalizers.Delete(finalizerName).List()
+	pod.Finalizers = finalizers.Delete(kubernetesreporterapi.FinalizerName).List()
 	patch := ctrlruntimeclient.MergeFrom(oldPod)
 	rawPatch, err := patch.Data(pod)
 	if err != nil {
@@ -232,7 +228,7 @@ func (gr *gcsK8sReporter) removeFinalizer(cluster string, pod *v1.Pod) error {
 }
 
 func (gr *gcsK8sReporter) GetName() string {
-	return reporterName
+	return kubernetesreporterapi.ReporterName
 }
 
 func (gr *gcsK8sReporter) ShouldReport(pj *prowv1.ProwJob) bool {
@@ -264,7 +260,7 @@ func internalNew(cfg config.Getter, author util.Author, rg resourceGetter, repor
 	return &gcsK8sReporter{
 		cfg:            cfg,
 		dryRun:         dryRun,
-		logger:         logrus.WithField("component", reporterName),
+		logger:         logrus.WithField("component", kubernetesreporterapi.ReporterName),
 		author:         author,
 		rg:             rg,
 		reportFraction: reportFraction,
