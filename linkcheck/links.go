@@ -49,7 +49,7 @@ var (
 		regexp.MustCompile(`https?://[^A-Za-z].*`),
 		regexp.MustCompile(`https?://localhost.*`),
 	}
-	// URLs listed in exemptURLs won't be checked. This is seperate from
+	// URLs listed in exemptURLs won't be checked. This is separate from
 	// exemptRegexes to improve efficiency. This list includes dummy URLs that
 	// are hard to be generalized by a regex, and URLs that will cause false alerts.
 	exemptURLs = map[string]struct{}{

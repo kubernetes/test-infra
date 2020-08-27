@@ -164,7 +164,7 @@ def assert_tab_keys(tab):
     AND alert_options, if present, must contain and only contain "alert_mail_to_addresses"
     """
     allowedKeys = ["name", "description", "test_group_name", "alert_options",
-                 "num_failures_to_alert", "alert_stale_results_hours", "num_columns_recent"]
+                   "num_failures_to_alert", "alert_stale_results_hours", "num_columns_recent"]
 
     if [k for k in tab.keys() if k not in allowedKeys]:
         return False
@@ -182,7 +182,7 @@ def assert_group_keys(group):
     To be migratable, the group must only contain allowed keys
     """
     allowedKeys = ["name", "gcs_prefix", "alert_stale_results_hours",
-                 "num_failures_to_alert", "num_columns_recent"]
+                   "num_failures_to_alert", "num_columns_recent"]
 
     if [k for k in group.keys() if k not in allowedKeys]:
         return False
