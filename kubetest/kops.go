@@ -19,6 +19,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -35,9 +36,11 @@ import (
 	"strings"
 	"time"
 
+	"cloud.google.com/go/storage"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
+
 	"golang.org/x/crypto/ssh"
 
 	"k8s.io/test-infra/kubetest/e2e"
@@ -442,8 +445,13 @@ func (k kops) Up() error {
 		createArgs = append(createArgs, "--project", k.gcpProject)
 	}
 	if k.isGoogleCloud() {
+		stateBucket, err := k.setupGCEStateStore(k.gcpProject)
+		if err != nil {
+			return err
+		}
 		featureFlags = append(featureFlags, "AlphaAllowGCE")
 		createArgs = append(createArgs, "--cloud", "gce")
+		createArgs = append(createArgs, "--state", fmt.Sprintf("gs://%s", stateBucket))
 	} else {
 		// append cloud type to allow for use of new regions without updates
 		createArgs = append(createArgs, "--cloud", "aws")
@@ -854,4 +862,28 @@ func parseKubeconfig(kubeconfigPath string) (*kubeconfig, error) {
 	}
 
 	return cfg, nil
+}
+
+// setupGCEStateStore is used to create a 1-off state bucket in the active GCP project
+func (k kops) setupGCEStateStore(projectId string) (string, error) {
+	ctx := context.Background()
+	client, err := storage.NewClient(ctx)
+	if err != nil {
+		return "", fmt.Errorf("error building storage API client: %v", err)
+	}
+	name := gceBucketName(projectId)
+	bkt := client.Bucket(name)
+	if err := bkt.Create(ctx, projectId, nil); err != nil {
+		return "", err
+	}
+	log.Printf("Created new GCS bucket for state store: %s\n.", name)
+	return name, nil
+}
+
+// gceBucketName generates a name for GCE state store bucket
+func gceBucketName(projectId string) string {
+	b := make([]byte, 2)
+	rand.Read(b)
+	s := hex.EncodeToString(b)
+	return strings.Join([]string{projectId, "state", s}, "-")
 }
