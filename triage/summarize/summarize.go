@@ -41,6 +41,7 @@ type summarizeFlags struct {
 	output       string
 	outputSlices string
 	numWorkers   int
+	memoize      bool
 }
 
 // parseFlags parses command-line arguments and returns them as a summarizeFlags object.
@@ -53,6 +54,7 @@ func parseFlags() summarizeFlags {
 	flag.StringVar(&flags.output, "output", "failure_data.json", "output path")
 	flag.StringVar(&flags.outputSlices, "output_slices", "", "path to slices output (must include PREFIX in template)")
 	flag.IntVar(&flags.numWorkers, "num_workers", 2*runtime.NumCPU()-1, "number of worker goroutines to spawn for parallelized functions") // This has shown to be a sensible number of workers
+	flag.BoolVar(&flags.memoize, "memoize", false, "whether to memoize certain function results to JSON (and use previously memoized results if they exist)")
 
 	flag.Parse()
 	// list of tests files comes from arguments
@@ -90,7 +92,7 @@ func summarize(flags summarizeFlags) {
 	// Log flag info
 	klog.V(1).Infof("Running with %d workers (%d detected CPUs)", flags.numWorkers, runtime.NumCPU())
 
-	builds, failedTests, err := loadFailures(flags.builds, flags.tests)
+	builds, failedTests, err := loadFailures(flags.builds, flags.tests, flags.memoize)
 	if err != nil {
 		klog.Fatalf("Could not load failures: %s", err)
 	}
@@ -104,9 +106,9 @@ func summarize(flags summarizeFlags) {
 		}
 	}
 
-	clusteredLocal := clusterLocal(failedTests, flags.numWorkers)
+	clusteredLocal := clusterLocal(failedTests, flags.numWorkers, flags.memoize)
 
-	clustered := clusterGlobal(clusteredLocal, previousClustered)
+	clustered := clusterGlobal(clusteredLocal, previousClustered, flags.memoize)
 
 	klog.V(2).Infof("Rendering results...")
 	start := time.Now()
