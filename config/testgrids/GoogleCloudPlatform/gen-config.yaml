@@ -138,6 +138,13 @@ dashboards:
 - dashboard_tab:
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
+    description: Runs all integration tests with latest envoy and old configmanager for api backward compatibility
+    name: api-regression
+    open_bug_template:
+      url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
+    test_group_name: ESPv2-API-regression-test
+  - code_search_url_template:
+      url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
     description: Runs e2e tests for Cloud Run with Anthos.
     name: e2e-cloud-run-anthos-http-bookstore
     open_bug_template:
@@ -439,6 +446,9 @@ test_groups:
   name: post-testgrid-deploy-prod
 - gcs_prefix: oss-prow/logs/push-testgrid-images
   name: push-testgrid-images
+- gcs_prefix: oss-prow/pr-logs/directory/ESPv2-API-regression-test
+  name: ESPv2-API-regression-test
+  num_columns_recent: 20
 - gcs_prefix: oss-prow/pr-logs/directory/ESPv2-anthos-cloud-run-e2e-anthos-cloud-run-http-bookstore
   name: ESPv2-anthos-cloud-run-e2e-anthos-cloud-run-http-bookstore
   num_columns_recent: 20
