@@ -19,7 +19,7 @@ postsubmits:
             args:
               - --project=k8s-staging-ingress-nginx
               - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
-              - --env-passthrough=PULL_BASE_REF
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
               - .
 
     - name: post-ingress-nginx-build-nginx-image
@@ -39,7 +39,7 @@ postsubmits:
             args:
               - --project=k8s-staging-ingress-nginx
               - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
-              - --env-passthrough=PULL_BASE_REF
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
               - images/nginx
 
     - name: post-ingress-nginx-build-e2e-image
@@ -59,7 +59,7 @@ postsubmits:
             args:
               - --project=k8s-staging-ingress-nginx
               - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
-              - --env-passthrough=PULL_BASE_REF
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
               - images/test-runner
 
     - name: post-ingress-nginx-build-cfssl-image
@@ -79,7 +79,7 @@ postsubmits:
             args:
               - --project=k8s-staging-ingress-nginx
               - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
-              - --env-passthrough=PULL_BASE_REF
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
               - images/cfssl
 
     - name: post-ingress-nginx-build-echo-image
@@ -99,7 +99,7 @@ postsubmits:
             args:
               - --project=k8s-staging-ingress-nginx
               - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
-              - --env-passthrough=PULL_BASE_REF
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
               - images/echo
 
     - name: post-ingress-nginx-build-fastcgi-helloserver-image
@@ -119,7 +119,7 @@ postsubmits:
             args:
               - --project=k8s-staging-ingress-nginx
               - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
-              - --env-passthrough=PULL_BASE_REF
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
               - images/fastcgi-helloserver
 
     - name: post-ingress-nginx-build-httpbin-image
@@ -139,5 +139,5 @@ postsubmits:
             args:
               - --project=k8s-staging-ingress-nginx
               - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
-              - --env-passthrough=PULL_BASE_REF
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
               - images/httpbin
