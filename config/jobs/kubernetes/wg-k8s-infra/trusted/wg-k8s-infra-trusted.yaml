@@ -65,7 +65,7 @@ postsubmits:
         - bash
         args:
         - -c
-        - "cd dns && make dry-run-local"
+        - "cd dns && make push-local"
   - name: post-k8sio-deploy-prow-build-resources
     cluster: k8s-infra-prow-build-trusted
     decorate: true
