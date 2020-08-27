@@ -42,9 +42,13 @@ import (
 )
 
 type reportClient interface {
-	Report(pj *v1.ProwJob) ([]*v1.ProwJob, error)
+	// Report reports a Prowjob. The provided logger is already populated with the
+	// prowjob name and the reporter name.
+	Report(log *logrus.Entry, pj *v1.ProwJob) ([]*v1.ProwJob, error)
 	GetName() string
-	ShouldReport(pj *v1.ProwJob) bool
+	// ShouldReport determines if a ProwJob should be reported. The provided logger
+	// is already populated with the prowjob name and the reporter name.
+	ShouldReport(log *logrus.Entry, pj *v1.ProwJob) bool
 }
 
 // Controller struct defines how a controller should encapsulate
@@ -219,7 +223,7 @@ func (c *Controller) processNextItem() bool {
 
 	// assert the string out of the key (format `namespace/name`)
 	keyRaw := key.(string)
-	log := logrus.WithField("reporter", c.reporter.GetName()).WithField("prowjob", keyRaw)
+	log := logrus.WithField("reporter", c.reporter.GetName()).WithField("key", keyRaw)
 	log.Debug("processing next key")
 
 	namespace, name, err := cache.SplitMetaNamespaceKey(keyRaw)
@@ -228,6 +232,7 @@ func (c *Controller) processNextItem() bool {
 		c.queue.Forget(key)
 		return true
 	}
+	log = logrus.WithField("prowjob", name)
 
 	// take the string key and get the object out of the indexer
 	//
@@ -253,7 +258,7 @@ func (c *Controller) processNextItem() bool {
 	log = log.WithField("jobName", pj.Spec.Job)
 
 	// not belong to the current reporter
-	if !pj.Spec.Report || !c.reporter.ShouldReport(pj) {
+	if !pj.Spec.Report || !c.reporter.ShouldReport(log, pj) {
 		c.queue.Forget(key)
 		return true
 	}
@@ -272,7 +277,7 @@ func (c *Controller) processNextItem() bool {
 
 	log = log.WithField("jobStatus", pj.Status.State)
 	log.Info("Will report state")
-	pjs, err := c.reporter.Report(pj)
+	pjs, err := c.reporter.Report(log, pj)
 	if err != nil {
 		log.WithError(err).Error("failed to report job")
 		return c.retry(key, log, err)

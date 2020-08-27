@@ -23,6 +23,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -49,7 +50,7 @@ type fakeReporter struct {
 	shouldReportFunc func(pj *prowv1.ProwJob) bool
 }
 
-func (f *fakeReporter) Report(pj *prowv1.ProwJob) ([]*prowv1.ProwJob, error) {
+func (f *fakeReporter) Report(_ *logrus.Entry, pj *prowv1.ProwJob) ([]*prowv1.ProwJob, error) {
 	f.reported = append(f.reported, pj.Spec.Job)
 	return []*prowv1.ProwJob{pj}, nil
 }
@@ -58,7 +59,7 @@ func (f *fakeReporter) GetName() string {
 	return reporterName
 }
 
-func (f *fakeReporter) ShouldReport(pj *prowv1.ProwJob) bool {
+func (f *fakeReporter) ShouldReport(_ *logrus.Entry, pj *prowv1.ProwJob) bool {
 	return f.shouldReportFunc(pj)
 }
 

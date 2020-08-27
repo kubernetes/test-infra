@@ -23,6 +23,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -1065,7 +1066,7 @@ func TestReport(t *testing.T) {
 			fl := &fakeLister{pjs: allpj}
 			reporter := &Client{gc: fgc, lister: fl}
 
-			shouldReport := reporter.ShouldReport(tc.pj)
+			shouldReport := reporter.ShouldReport(logrus.NewEntry(logrus.StandardLogger()), tc.pj)
 			if shouldReport != tc.expectReport {
 				t.Errorf("shouldReport: %v, expectReport: %v", shouldReport, tc.expectReport)
 			}
@@ -1074,7 +1075,7 @@ func TestReport(t *testing.T) {
 				return
 			}
 
-			reportedJobs, err := reporter.Report(tc.pj)
+			reportedJobs, err := reporter.Report(logrus.NewEntry(logrus.StandardLogger()), tc.pj)
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)
 			}

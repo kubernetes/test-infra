@@ -24,6 +24,7 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -110,7 +111,7 @@ func TestShouldReport(t *testing.T) {
 			}
 
 			kgr := internalNew(testutil.Fca{}.Config, nil, nil, 1.0, false)
-			shouldReport := kgr.ShouldReport(pj)
+			shouldReport := kgr.ShouldReport(logrus.NewEntry(logrus.StandardLogger()), pj)
 			if shouldReport != tc.shouldReport {
 				t.Errorf("Expected ShouldReport() to return %v, but got %v", tc.shouldReport, shouldReport)
 			}
@@ -326,7 +327,7 @@ func TestReportPodInfo(t *testing.T) {
 			}
 			author := &testutil.TestAuthor{}
 			reporter := internalNew(fca.Config, author, rg, 1.0, tc.dryRun)
-			err := reporter.report(pj)
+			err := reporter.report(logrus.NewEntry(logrus.StandardLogger()), pj)
 
 			if tc.expectErr {
 				if err == nil {
