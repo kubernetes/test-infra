@@ -1103,6 +1103,6 @@ periodics:
         - -vuln-target-project=k8s-artifacts-prod
         - -dashboard-bucket=gs://k8s-artifacts-prod-vuln-dashboard
   annotations:
-    testgrid-dashboards: sig-release-releng-blocking, wg-k8s-infra-k8sio
+    testgrid-dashboards: sig-release-releng-informing, wg-k8s-infra-k8sio
     testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers@kubernetes.io
     testgrid-num-failures-to-alert: '1'
