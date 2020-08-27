@@ -18,7 +18,6 @@ Triage summarization is generally run via `update_summaries.sh`, which downloads
 the correct format and passes them automatically to `triage`. (File formats are listed below.)
 However, summarization can be run directly with the following flags:
 - `builds`: a path to a JSON file containing build information
-- `tests`: a space-delimited series of paths to file containing test informatiob
 - `previous` (optional): a path to a previous output which can be used to maintain consistent cluster
   IDs
 - `owners` (optional): a path to a file that maps SIGs to the labels they own (see [Methodology](#methodology));
@@ -27,8 +26,9 @@ However, summarization can be run directly with the following flags:
 - `output_slices` (optional): a pattern to be used when outputting slices, if desired (see
   [Methodology](#methodology)); e.g. `slices/failure_data_PREFIX.json`, where `PREFIX` will be replaced
   with some identifier
-- `num_workers`: the number of worker goroutines to spawn for parallelized functions; defaults to `2*runtime.NumCPU()-1`. (Since CPU detection is unreliable in Kubernetes, we set it manually according to the number of CPUs in [test-infra-periodics.yaml](https://github.com/kubernetes/test-infra/blob/master/config/jobs/kubernetes/test-infra/test-infra-periodics.yaml).)
+- `num_workers` (optional): the number of worker goroutines to spawn for parallelized functions; defaults to `2*runtime.NumCPU()-1`. (Since CPU detection is unreliable in Kubernetes, we set it manually according to the number of CPUs in [test-infra-periodics.yaml](https://github.com/kubernetes/test-infra/blob/master/config/jobs/kubernetes/test-infra/test-infra-periodics.yaml).)
 - `memoize` (optional): whether to memoize certain function results to JSON (and use previously memoized results if they exist); defaults to false
+- `...tests`: after all named flags are passed in, a space-delimited series of paths to files containing test information should be passed in as well
 
 Triage uses klog for logging, so klog flags can be passed in as well.
 
