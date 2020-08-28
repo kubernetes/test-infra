@@ -123,6 +123,7 @@ presubmits:
       testgrid-dashboards: sig-api-machinery-network-proxy
   - name: pull-kubernetes-e2e-gce-network-proxy-grpc
     always_run: false
+    optional: true
     cluster: k8s-infra-prow-build
     run_if_changed: '^(cluster/gce/manifests/konnectivity-server.yaml$|cluster/gce/addons/konnectivity-agent)'
     labels:
