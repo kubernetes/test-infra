@@ -24,6 +24,14 @@ from parameterized import parameterized
 import make_json
 import model
 
+class BaseBuild(self):
+    self.build = make_json.Build("gs://kubernetes-jenkins/pr-logs/path", [])
+    self.base_attr = {"path":"gs://kubernetes-jenkins/pr-logs/path",
+             "test": [],
+             "tests_run": 0,
+             "tests_failed": 0,
+             "job": "pr:pr-logs",
+            }
 
 class ValidateBuckets(unittest.TestCase):
     def test_buckets(self):
@@ -70,6 +78,86 @@ class BuildObjectTests(unittest.TestCase):
     ])
     def test_as_dict(self, _, build, expected):
         self.assertEqual(build.as_dict(), expected)
+
+    @parameterized.expand([
+        (
+            "No finished",
+            {},
+            {},
+        ),
+        (
+            "CI Decorated",
+            {
+                "timestamp":1595286616,
+                "passed":True,
+                "result":"SUCCESS",
+                "revision":"master",
+            },
+            {
+                "finished": 1595286616,
+                "version": "master",
+                "result": "SUCCESS",
+                "passed": True,
+            },
+        ),
+        (
+            "PR Decorated",
+            {
+                "timestamp":1595279434,
+                "passed":True,
+                "result":"SUCCESS",
+                "revision":"5dd9241d43f256984358354d1fec468f274f9ac4"
+            },
+            {
+                "finished": 1595279434,
+                "result": "SUCCESS",
+                "passed": True,
+            },
+        ),
+        (
+            "PR Bootstrap",
+            {
+                "timestamp": 1595282312,
+                "version": "v1.20.0-alpha.0.261+06ea384605f172",
+                "result": "SUCCESS",
+                "passed": True,
+                "job-version": "v1.20.0-alpha.0.261+06ea384605f172",
+            },
+            {
+                "finished": 1595282312,
+                "version": "v1.20.0-alpha.0.261+06ea384605f172",
+                "result": "SUCCESS",
+                "passed": True,
+            },
+        ),
+        (
+            "CI Bootstrap",
+            {
+                "timestamp": 1595263185,
+                "version": "v1.20.0-alpha.0.255+5feab0aa1e592a",
+                "result": "SUCCESS",
+                "passed": True,
+                "job-version": "v1.20.0-alpha.0.255+5feab0aa1e592a",
+            },
+           {
+                "finished": 1595263185,
+                "version": "v1.20.0-alpha.0.255+5feab0aa1e592a",
+                "result": "SUCCESS",
+                "passed": True,
+            },
+        ),
+    ])
+    def test_populate_finish(self, finished, updates):
+        build = make_json.Build("gs://kubernetes-jenkins/pr-logs/path", [])
+        base_attrs = {"path":"gs://kubernetes-jenkins/pr-logs/path",
+             "test": [],
+             "tests_run": 0,
+             "tests_failed": 0,
+             "job": "pr:pr-logs",
+            }
+        build.populate_finish(finished)
+        self.assertEqual(build.as_dict(), base_attrs.updae(updates))
+
 
 class GenerateBuilds(unittest.TestCase):
     @parameterized.expand([
@@ -322,8 +410,6 @@ class GenerateBuilds(unittest.TestCase):
         self.assertEqual(build_dict, expected)
 
 
-
-
 class MakeJsonTest(unittest.TestCase):
     def setUp(self):
         self.db = model.Database(':memory:')
@@ -452,7 +538,6 @@ class MakeJsonTest(unittest.TestCase):
         expect(['--days=30'], ['123', '456'], [])
         expect(['--days=30', '--assert-oldest=60'], [], [], 0)
         expect(['--days=30', '--assert-oldest=25'], [], [], 1)
-
 
 
 if __name__ == '__main__':
