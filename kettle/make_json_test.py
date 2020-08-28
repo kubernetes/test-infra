@@ -74,37 +74,25 @@ class BuildObjectTests(unittest.TestCase):
     @parameterized.expand([
         (
             "No started",
-            make_json.Build("gs://kubernetes-jenkins/pr-logs/path", []),
             {},
-            {"path":"gs://kubernetes-jenkins/pr-logs/path",
-             "test": [],
-             "tests_run": 0,
-             "tests_failed": 0,
-             "job": "pr:pr-logs",
-            },
+            {},
         ),
         (
             "CI Decorated",
-            make_json.Build("gs://kubernetes-jenkins/pr-logs/path", []),
             {
                 "timestamp":1595284709,
                 "repos":{"kubernetes/kubernetes":"master"},
                 "repo-version":"5a529aa3a0dd3a050c5302329681e871ef6c162e",
                 "repo-commit":"5a529aa3a0dd3a050c5302329681e871ef6c162e",
             },
-            {"path":"gs://kubernetes-jenkins/pr-logs/path",
-             "test": [],
-             "tests_run": 0,
-             "tests_failed": 0,
-             "job": "pr:pr-logs",
-             "started": 1595284709,
-             "repo-commit":"5a529aa3a0dd3a050c5302329681e871ef6c162e",
-             "repos":{"kubernetes/kubernetes":"master"},
+            {
+                "started": 1595284709,
+                "repo-commit":"5a529aa3a0dd3a050c5302329681e871ef6c162e",
+                "repos":{"kubernetes/kubernetes":"master"},
             },
         ),
         (
             "PR Decorated",
-            make_json.Build("gs://kubernetes-jenkins/pr-logs/path", []),
             {
                 "timestamp":1595277241,
                 "pull":"93264",
@@ -112,19 +100,14 @@ class BuildObjectTests(unittest.TestCase):
                 "repo-version":"30f64c5b1fc57a3beb1476f9beb29280166954d1",
                 "repo-commit":"30f64c5b1fc57a3beb1476f9beb29280166954d1",
             },
-            {"path":"gs://kubernetes-jenkins/pr-logs/path",
-             "test": [],
-             "tests_run": 0,
-             "tests_failed": 0,
-             "job": "pr:pr-logs",
-             "started": 1595277241,
-             "repo-commit":"30f64c5b1fc57a3beb1476f9beb29280166954d1",
-             "repos":{"kubernetes/kubernetes":"master:5feab0"},
+            {
+                "started": 1595277241,
+                "repo-commit":"30f64c5b1fc57a3beb1476f9beb29280166954d1",
+                "repos":{"kubernetes/kubernetes":"master:5feab0"},
             },
         ),
         (
             "PR Bootstrap",
-            make_json.Build("gs://kubernetes-jenkins/pr-logs/path", []),
             {
                 "node": "0790211c-cacb-11ea-a4b9-4a19d9b965b2",
                 "pull": "master:5a529",
@@ -136,22 +119,18 @@ class BuildObjectTests(unittest.TestCase):
                 },
                 "version": "v1.20.0-alpha.0.261+06ea384605f172"
             },
-            {"path":"gs://kubernetes-jenkins/pr-logs/path",
-             "test": [],
-             "tests_run": 0,
-             "tests_failed": 0,
-             "job": "pr:pr-logs",
-             "started": 1595278460,
-             "repo-commit":"v1.20.0-alpha.0.261+06ea384605f172",
-             "repos": {
-                "k8s.io/kubernetes": "master:5a529",
-                "k8s.io/release": "master"
-             },
-             "node": "0790211c-cacb-11ea-a4b9-4a19d9b965b2",
+            {
+                "started": 1595278460,
+                "repo-commit":"v1.20.0-alpha.0.261+06ea384605f172",
+                "repos": {
+                   "k8s.io/kubernetes": "master:5a529",
+                   "k8s.io/release": "master"
+                },
+                "node": "0790211c-cacb-11ea-a4b9-4a19d9b965b2",
+            },
         ),
         (
             "CI Bootstrap",
-            make_json.Build("gs://kubernetes-jenkins/pr-logs/path", []),
             {
                 "timestamp":1595263104,
                 "node":"592473ae-caa7-11ea-b130-525df2b76a8d",
@@ -161,23 +140,27 @@ class BuildObjectTests(unittest.TestCase):
                 },
                 "repo-version":"v1.20.0-alpha.0.255+5feab0aa1e592a",
             },
-            {"path":"gs://kubernetes-jenkins/pr-logs/path",
+            {
+                "started": 1595263104,
+                "repo-commit":"v1.20.0-alpha.0.255+5feab0aa1e592a",
+                "repos":{
+                    "k8s.io/kubernetes":"master",
+                    "k8s.io/release":"master"
+                },
+                "node": "592473ae-caa7-11ea-b130-525df2b76a8d",
+            },
+        ),
+    ])
+    def test_populate_start(self, started, updates):
+        build = make_json.Build("gs://kubernetes-jenkins/pr-logs/path", [])
+        base_attrs = {"path":"gs://kubernetes-jenkins/pr-logs/path",
              "test": [],
              "tests_run": 0,
              "tests_failed": 0,
              "job": "pr:pr-logs",
-             "started": 1595263104,
-             "repo-commit":"v1.20.0-alpha.0.255+5feab0aa1e592a",
-             "repos":{
-                "k8s.io/kubernetes":"master",
-                "k8s.io/release":"master"
-             },
-             "node": "592473ae-caa7-11ea-b130-525df2b76a8d",
-        ),
-    ])
-    def test_populate_start(self, build, started, expected):
-        build.populate_start(started)
-        self.assertEqual(build.as_dict(), expected)
+            }
+        build.populate_finish(started)
+        self.assertEqual(build.as_dict(), base_attrs.update(updates))
 
 
 class GenerateBuilds(unittest.TestCase):
