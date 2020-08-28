@@ -1086,7 +1086,7 @@ periodics:
 - interval: 24h
   cluster: test-infra-trusted
   max_concurrency: 1
-  name: k8sio-vuln-dashboard-cron
+  name: ci-k8sio-vuln-dashboard-update
   decorate: true
   extra_refs:
   - org: kubernetes
