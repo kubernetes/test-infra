@@ -12,7 +12,7 @@ periodics:
     testgrid-tab-name: echo-test
     description: temporarily echoing things.
 - name: ci-test-infra-benchmark-demo
-  interval: 20m
+  interval: 24h
   decorate: true
   extra_refs:
   - org: kubernetes
