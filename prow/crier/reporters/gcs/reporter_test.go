@@ -26,6 +26,7 @@ import (
 
 	"github.com/GoogleCloudPlatform/testgrid/metadata"
 	"github.com/google/go-cmp/cmp"
+	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -108,7 +109,7 @@ func TestReportJobFinished(t *testing.T) {
 				},
 			}
 
-			err := reporter.reportFinishedJob(ctx, pj)
+			err := reporter.reportFinishedJob(ctx, logrus.NewEntry(logrus.StandardLogger()), pj)
 			if tc.expectErr {
 				if err == nil {
 					t.Fatalf("Expected an error, but didn't get one.")
@@ -185,7 +186,7 @@ func TestReportJobStarted(t *testing.T) {
 				},
 			}
 
-			err := reporter.reportStartedJob(ctx, pj)
+			err := reporter.reportStartedJob(ctx, logrus.NewEntry(logrus.StandardLogger()), pj)
 			if err != nil {
 				t.Fatalf("Unexpected error: %v", err)
 			}
@@ -248,7 +249,7 @@ func TestReportProwJob(t *testing.T) {
 		},
 	}
 
-	if err := reporter.reportProwjob(ctx, pj); err != nil {
+	if err := reporter.reportProwjob(ctx, logrus.NewEntry(logrus.StandardLogger()), pj); err != nil {
 		t.Fatalf("Unexpected error calling reportProwjob: %v", err)
 	}
 
@@ -301,7 +302,7 @@ func TestShouldReport(t *testing.T) {
 				},
 			}
 			gr := newWithAuthor(testutil.Fca{}.Config, nil, false)
-			result := gr.ShouldReport(pj)
+			result := gr.ShouldReport(logrus.NewEntry(logrus.StandardLogger()), pj)
 			if result != tc.shouldReport {
 				t.Errorf("Got ShouldReport() returned %v, but expected %v", result, tc.shouldReport)
 			}

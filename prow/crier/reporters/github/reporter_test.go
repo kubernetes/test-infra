@@ -21,6 +21,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -95,7 +96,7 @@ func TestShouldReport(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			c := NewReporter(nil, nil, tc.reportAgent)
-			if r := c.ShouldReport(&tc.pj); r == tc.report {
+			if r := c.ShouldReport(logrus.NewEntry(logrus.StandardLogger()), &tc.pj); r == tc.report {
 				return
 			}
 			if tc.report {
@@ -145,13 +146,13 @@ func TestPresumitReportingLocks(t *testing.T) {
 	wg := &sync.WaitGroup{}
 	wg.Add(2)
 	go func() {
-		if _, err := reporter.Report(pj); err != nil {
+		if _, err := reporter.Report(logrus.NewEntry(logrus.StandardLogger()), pj); err != nil {
 			t.Errorf("error reporting: %v", err)
 		}
 		wg.Done()
 	}()
 	go func() {
-		if _, err := reporter.Report(pj); err != nil {
+		if _, err := reporter.Report(logrus.NewEntry(logrus.StandardLogger()), pj); err != nil {
 			t.Errorf("error reporting: %v", err)
 		}
 		wg.Done()
@@ -219,7 +220,7 @@ func TestReport(t *testing.T) {
 			}
 
 			errMsg := ""
-			_, err := c.Report(pj)
+			_, err := c.Report(logrus.NewEntry(logrus.StandardLogger()), pj)
 			if err != nil {
 				errMsg = err.Error()
 			}

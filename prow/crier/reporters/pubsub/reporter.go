@@ -25,6 +25,7 @@ import (
 	"strings"
 
 	"cloud.google.com/go/pubsub"
+	"github.com/sirupsen/logrus"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
@@ -85,14 +86,14 @@ func findLabels(pj *prowapi.ProwJob, labels ...string) map[string]string {
 }
 
 // ShouldReport tells if a prowjob should be reported by this reporter
-func (c *Client) ShouldReport(pj *prowapi.ProwJob) bool {
+func (c *Client) ShouldReport(_ *logrus.Entry, pj *prowapi.ProwJob) bool {
 	pubSubMap := findLabels(pj, PubSubProjectLabel, PubSubTopicLabel)
 	return pubSubMap[PubSubProjectLabel] != "" && pubSubMap[PubSubTopicLabel] != ""
 }
 
 // Report takes a prowjob, and generate a pubsub ReportMessage and publish to specific Pub/Sub topic
 // based on Pub/Sub related labels if they exist in this prowjob
-func (c *Client) Report(pj *prowapi.ProwJob) ([]*prowapi.ProwJob, error) {
+func (c *Client) Report(_ *logrus.Entry, pj *prowapi.ProwJob) ([]*prowapi.ProwJob, error) {
 	message := c.generateMessageFromPJ(pj)
 
 	ctx := context.Background()

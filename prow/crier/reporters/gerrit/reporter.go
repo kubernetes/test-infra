@@ -105,17 +105,17 @@ func (c *Client) GetName() string {
 }
 
 // ShouldReport returns if this prowjob should be reported by the gerrit reporter
-func (c *Client) ShouldReport(pj *v1.ProwJob) bool {
+func (c *Client) ShouldReport(log *logrus.Entry, pj *v1.ProwJob) bool {
 
 	if pj.Status.State == v1.TriggeredState || pj.Status.State == v1.PendingState {
 		// not done yet
-		logrus.WithField("prowjob", pj.ObjectMeta.Name).Info("PJ not finished")
+		log.Info("PJ not finished")
 		return false
 	}
 
 	if pj.Status.State == v1.AbortedState {
 		// aborted (new patchset)
-		logrus.WithField("prowjob", pj.ObjectMeta.Name).Info("PJ aborted")
+		log.Info("PJ aborted")
 		return false
 	}
 
@@ -123,7 +123,7 @@ func (c *Client) ShouldReport(pj *v1.ProwJob) bool {
 	if pj.ObjectMeta.Annotations[client.GerritID] == "" ||
 		pj.ObjectMeta.Annotations[client.GerritInstance] == "" ||
 		pj.ObjectMeta.Labels[client.GerritRevision] == "" {
-		logrus.WithField("prowjob", pj.ObjectMeta.Name).Info("Not a gerrit job")
+		log.Info("Not a gerrit job")
 		return false
 	}
 
@@ -141,14 +141,14 @@ func (c *Client) ShouldReport(pj *v1.ProwJob) bool {
 
 	pjs, err := c.lister.List(selector.AsSelector())
 	if err != nil {
-		logrus.WithError(err).Errorf("Cannot list prowjob with selector %v", selector)
+		log.WithError(err).WithField("selector", selector).Error("Failed to list prowjobs")
 		return false
 	}
 
 	for _, pjob := range pjs {
 		if pjob.Status.State == v1.TriggeredState || pjob.Status.State == v1.PendingState {
 			// other jobs with same label are still running on this revision, skip report
-			logrus.WithField("prowjob", pjob.ObjectMeta.Name).Info("Other jobs with same label are still running on this revision")
+			log.Info("Other jobs with same label are still running on this revision")
 			return false
 		}
 	}
@@ -157,9 +157,7 @@ func (c *Client) ShouldReport(pj *v1.ProwJob) bool {
 }
 
 // Report will send the current prowjob status as a gerrit review
-func (c *Client) Report(pj *v1.ProwJob) ([]*v1.ProwJob, error) {
-
-	logger := logrus.WithField("prowjob", pj)
+func (c *Client) Report(logger *logrus.Entry, pj *v1.ProwJob) ([]*v1.ProwJob, error) {
 
 	clientGerritRevision := client.GerritRevision
 	clientGerritID := client.GerritID
@@ -182,7 +180,7 @@ func (c *Client) Report(pj *v1.ProwJob) ([]*v1.ProwJob, error) {
 
 		pjsOnRevisionWithSameLabel, err := c.lister.List(selector.AsSelector())
 		if err != nil {
-			logger.WithError(err).Errorf("Cannot list prowjob with selector %v", selector)
+			logger.WithError(err).WithField("selector", selector).Errorf("Cannot list prowjob with selector")
 			return nil, err
 		}
 
