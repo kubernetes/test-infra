@@ -121,6 +121,11 @@ func (gr *gcsK8sReporter) addFinalizer(pj *prowv1.ProwJob) error {
 	if err != nil {
 		return fmt.Errorf("failed to get pod %s: %w", pj.Name, err)
 	}
+
+	if pod.DeletionTimestamp != nil {
+		return nil
+	}
+
 	finalizers := sets.NewString(pod.Finalizers...)
 	if finalizers.Has(kubernetesreporterapi.FinalizerName) {
 		return nil
