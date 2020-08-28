@@ -151,7 +151,7 @@ class BuildObjectTests(unittest.TestCase):
             },
         ),
     ])
-    def test_populate_start(self, started, updates):
+    def test_populate_start(self, _, started, updates):
         build = make_json.Build("gs://kubernetes-jenkins/pr-logs/path", [])
         attrs = {"path":"gs://kubernetes-jenkins/pr-logs/path",
              "test": [],
