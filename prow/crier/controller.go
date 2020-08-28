@@ -232,7 +232,7 @@ func (c *Controller) processNextItem() bool {
 		c.queue.Forget(key)
 		return true
 	}
-	log = logrus.WithField("prowjob", name)
+	log = log.WithField("prowjob", name)
 
 	// take the string key and get the object out of the indexer
 	//
