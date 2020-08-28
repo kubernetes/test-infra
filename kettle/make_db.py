@@ -40,8 +40,6 @@ def pad_numbers(string):
 
 WORKER_CLIENT = None  # used for multiprocessing
 GARBAGE_JOBS = (
-    'pr-e2e-gce',
-    'maintenance-ci-testgrid-config-upload',
     'ci-test-infra-benchmark-demo',
     'ci-kubernetes-coverage-unit',
     )
