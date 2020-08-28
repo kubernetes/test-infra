@@ -39,7 +39,12 @@ def pad_numbers(string):
     return re.sub(r'\d+', lambda m: m.group(0).rjust(16, '0'), string)
 
 WORKER_CLIENT = None  # used for multiprocessing
-GARBAGE_JOBS = ('pr-e2e-gce', 'maintenance-ci-testgrid-config-upload', 'ci-test-infra-benchmark-demo', 'ci-kubernetes-coverage-unit')
+GARBAGE_JOBS = (
+    'pr-e2e-gce',
+    'maintenance-ci-testgrid-config-upload',
+    'ci-test-infra-benchmark-demo',
+    'ci-kubernetes-coverage-unit',
+    )
 
 class GCSClient:
     def __init__(self, jobs_dir, metadata=None):
