@@ -261,6 +261,21 @@ func TestReportPodInfo(t *testing.T) {
 			expectedPatch: `{"metadata":{"finalizers":["prow.x-k8s.io/gcsk8sreporter"]}}`,
 		},
 		{
+			name:   "Finalizer is not added to deleted pod",
+			pjName: "ba123965-4fd4-421f-8509-7590c129ab69",
+			pod: &v1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					Finalizers:        []string{"gcsk8sreporter"},
+					Name:              "ba123965-4fd4-421f-8509-7590c129ab69",
+					Namespace:         "test-pods",
+					Labels:            map[string]string{"created-by-prow": "true"},
+					DeletionTimestamp: func() *metav1.Time { t := metav1.Now(); return &t }(),
+				},
+			},
+			expectReport:  false,
+			expectedPatch: `{"metadata":{"finalizers":null}}`,
+		},
+		{
 			name:       "Finalizer is removed from complete pod",
 			pjName:     "ba123965-4fd4-421f-8509-7590c129ab69",
 			pjPending:  false,
