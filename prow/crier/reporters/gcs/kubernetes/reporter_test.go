@@ -30,6 +30,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/crier/reporters/gcs/internal/testutil"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
@@ -176,16 +177,18 @@ func (rg testResourceGetter) PatchPod(cluster, namespace, name string, pt types.
 
 func TestReportPodInfo(t *testing.T) {
 	tests := []struct {
-		name          string
-		pjName        string
-		pjComplete    bool
-		pjPending     bool
-		pod           *v1.Pod
-		events        []v1.Event
-		dryRun        bool
-		expectReport  bool
-		expectErr     bool
-		expectedPatch string
+		name                    string
+		pjName                  string
+		pjComplete              bool
+		pjPending               bool
+		pjState                 prowv1.ProwJobState
+		pod                     *v1.Pod
+		events                  []v1.Event
+		dryRun                  bool
+		expectReport            bool
+		expectErr               bool
+		expectedPatch           string
+		expectedReconcileResult *reconcile.Result
 	}{
 		{
 			name:       "prowjob picks up pod and events",
@@ -291,6 +294,32 @@ func TestReportPodInfo(t *testing.T) {
 			expectReport:  true,
 			expectedPatch: `{"metadata":{"finalizers":null}}`,
 		},
+		{
+			name:                    "RequeueAfter is returned for incomplete aborted job and nothing happens",
+			pjName:                  "ba123965-4fd4-421f-8509-7590c129ab69",
+			pjState:                 prowv1.AbortedState,
+			pjPending:               false,
+			pjComplete:              false,
+			expectReport:            false,
+			expectedReconcileResult: &reconcile.Result{RequeueAfter: 10 * time.Second},
+		},
+		{
+			name:       "Completed aborted job is reported",
+			pjName:     "ba123965-4fd4-421f-8509-7590c129ab69",
+			pjState:    prowv1.AbortedState,
+			pjPending:  false,
+			pjComplete: true,
+			pod: &v1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					Finalizers: []string{"gcsk8sreporter"},
+					Name:       "ba123965-4fd4-421f-8509-7590c129ab69",
+					Namespace:  "test-pods",
+					Labels:     map[string]string{"created-by-prow": "true"},
+				},
+			},
+			expectReport:  true,
+			expectedPatch: `{"metadata":{"finalizers":null}}`,
+		},
 	}
 
 	for _, tc := range tests {
@@ -315,6 +344,9 @@ func TestReportPodInfo(t *testing.T) {
 			}
 			if tc.pjPending {
 				pj.Status.PendingTime = &metav1.Time{}
+			}
+			if tc.pjState != "" {
+				pj.Status.State = tc.pjState
 			}
 
 			fca := testutil.Fca{C: config.Config{ProwConfig: config.ProwConfig{
@@ -342,7 +374,7 @@ func TestReportPodInfo(t *testing.T) {
 			}
 			author := &testutil.TestAuthor{}
 			reporter := internalNew(fca.Config, author, rg, 1.0, tc.dryRun)
-			err := reporter.report(logrus.NewEntry(logrus.StandardLogger()), pj)
+			reconcileResult, err := reporter.report(logrus.NewEntry(logrus.StandardLogger()), pj)
 
 			if tc.expectErr {
 				if err == nil {
@@ -351,6 +383,10 @@ func TestReportPodInfo(t *testing.T) {
 				return
 			} else if err != nil {
 				t.Fatalf("Unexpected error: %v", err)
+			}
+
+			if diff := cmp.Diff(reconcileResult, tc.expectedReconcileResult); diff != "" {
+				t.Errorf("reconcileResult differs from expected reconcileResult: %s", diff)
 			}
 
 			if !tc.expectReport {
