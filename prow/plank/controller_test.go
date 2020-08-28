@@ -947,6 +947,30 @@ func TestSyncPendingJob(t *testing.T) {
 			ExpectedBuildID: "0987654321",
 		},
 		{
+			Name: "reset when pod goes missing doesn't overwrite buildid",
+			PJ: prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "boop-41",
+					Namespace: "prowjobs",
+				},
+				Spec: prowapi.ProwJobSpec{
+					Type:    prowapi.PostsubmitJob,
+					PodSpec: &v1.PodSpec{Containers: []v1.Container{{Name: "test-name", Env: []v1.EnvVar{}}}},
+					Refs:    &prowapi.Refs{Org: "fejtaverse"},
+				},
+				Status: prowapi.ProwJobStatus{
+					State:   prowapi.PendingState,
+					PodName: "boop-41",
+					BuildID: "dont-overwrite-me",
+				},
+			},
+			ExpectedState:   prowapi.PendingState,
+			ExpectedReport:  true,
+			ExpectedNumPods: 1,
+			ExpectedURL:     "boop-41/pending",
+			ExpectedBuildID: "dont-overwrite-me",
+		},
+		{
 			Name: "delete pod in unknown state",
 			PJ: prowapi.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{

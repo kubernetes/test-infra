@@ -561,12 +561,17 @@ func (r *reconciler) deletePod(pj *prowv1.ProwJob) error {
 }
 
 func (r *reconciler) startPod(pj *prowv1.ProwJob) (string, string, error) {
-	buildID, err := r.getBuildID(pj.Spec.Job)
-	if err != nil {
-		return "", "", fmt.Errorf("error getting build ID: %v", err)
+	// Must never be changed, that will mess up reporting. Unfortunately, CRDs
+	// don't support immutable fields yet: https://github.com/kubernetes/kubernetes/issues/65973
+	if pj.Status.BuildID == "" {
+		buildID, err := r.getBuildID(pj.Spec.Job)
+		if err != nil {
+			return "", "", fmt.Errorf("error getting build ID: %v", err)
+		}
+		pj.Status.BuildID = buildID
 	}
 
-	pod, err := decorate.ProwJobToPod(*pj, buildID)
+	pod, err := decorate.ProwJobToPod(*pj, pj.Status.BuildID)
 	if err != nil {
 		return "", "", err
 	}
@@ -598,7 +603,7 @@ func (r *reconciler) startPod(pj *prowv1.ProwJob) (string, string, error) {
 		return "", "", fmt.Errorf("failed waiting for new pod %s in cluster %s  appear in cache: %w", podName.String(), pj.ClusterAlias(), err)
 	}
 
-	return buildID, pod.Name, nil
+	return pj.Status.BuildID, pod.Name, nil
 }
 
 func (r *reconciler) getBuildID(name string) (string, error) {

@@ -526,14 +526,18 @@ func (c *Controller) syncTriggeredJob(pj prowapi.ProwJob, pm map[string]corev1.P
 }
 
 func (c *Controller) startPod(pj *prowapi.ProwJob) error {
-	buildID, err := c.getBuildID(pj.Spec.Job)
-	if err != nil {
-		return fmt.Errorf("error getting build ID: %v", err)
-	}
+	// Must never be changed, that will mess up reporting. Unfortunately, CRDs
+	// don't support immutable fields yet: https://github.com/kubernetes/kubernetes/issues/65973
+	if pj.Status.BuildID == "" {
+		buildID, err := c.getBuildID(pj.Spec.Job)
+		if err != nil {
+			return fmt.Errorf("error getting build ID: %v", err)
+		}
 
-	// TODO: remove buildID from input args to ProwJobToPod
-	pj.Status.BuildID = buildID
-	pod, err := decorate.ProwJobToPod(*pj, buildID)
+		// TODO: remove buildID from input args to ProwJobToPod
+		pj.Status.BuildID = buildID
+	}
+	pod, err := decorate.ProwJobToPod(*pj, pj.Status.BuildID)
 	if err != nil {
 		return err
 	}
@@ -583,9 +587,11 @@ func getPodBuildID(pod *corev1.Pod) string {
 	}
 
 	// For backwards compatibility: existing pods may not have the buildID label.
-	for _, env := range pod.Spec.Containers[0].Env {
-		if env.Name == "BUILD_ID" {
-			return env.Value
+	if len(pod.Spec.Containers) > 0 {
+		for _, env := range pod.Spec.Containers[0].Env {
+			if env.Name == "BUILD_ID" {
+				return env.Value
+			}
 		}
 	}
 
