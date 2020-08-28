@@ -31,6 +31,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/clock"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"sigs.k8s.io/controller-runtime"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
@@ -44,6 +45,7 @@ import (
 
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	kubernetesreporterapi "k8s.io/test-infra/prow/crier/reporters/gcs/kubernetes/api"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pod-utils/decorate"
@@ -330,6 +332,14 @@ func (r *reconciler) syncPendingJob(pj *prowv1.ProwJob) error {
 				client, ok := r.buildClients[pj.ClusterAlias()]
 				if !ok {
 					return fmt.Errorf("evicted pod %s: unknown cluster alias %q", pod.Name, pj.ClusterAlias())
+				}
+				if finalizers := sets.NewString(pod.Finalizers...); finalizers.Has(kubernetesreporterapi.FinalizerName) {
+					// We want the end user to not see this, so we have to remove the finalizer, otherwise the pod hangs
+					oldPod := pod.DeepCopy()
+					pod.Finalizers = finalizers.Delete(kubernetesreporterapi.FinalizerName).UnsortedList()
+					if err := client.Patch(r.ctx, pod, ctrlruntimeclient.MergeFrom(oldPod)); err != nil {
+						return fmt.Errorf("failed to patch pod trying to remove %s finalizer: %w", kubernetesreporterapi.FinalizerName, err)
+					}
 				}
 				r.log.WithField("name", pj.ObjectMeta.Name).Debug("Delete Pod.")
 				return client.Delete(r.ctx, pod)
