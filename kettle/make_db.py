@@ -39,6 +39,7 @@ def pad_numbers(string):
     return re.sub(r'\d+', lambda m: m.group(0).rjust(16, '0'), string)
 
 WORKER_CLIENT = None  # used for multiprocessing
+GARBAGE_JOBS = ('pr-e2e-gce', 'maintenance-ci-testgrid-config-upload', 'ci-test-infra-benchmark-demo', 'ci-kubernetes-coverage-unit')
 
 class GCSClient:
     def __init__(self, jobs_dir, metadata=None):
@@ -167,8 +168,8 @@ class GCSClient:
                     yield job, build
             return
         for job in self._get_jobs():
-            if job in ('pr-e2e-gce', 'maintenance-ci-testgrid-config-upload'):
-                continue  # garbage.
+            if job in GARBAGE_JOBS:
+                continue
             have = 0
             precise, builds = self._get_builds(job)
             for build in builds:
