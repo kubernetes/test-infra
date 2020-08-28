@@ -87,7 +87,6 @@ class BuildObjectTests(unittest.TestCase):
             },
             {
                 "finished": 1595286616,
-                "version": "master",
                 "result": "SUCCESS",
                 "passed": True,
             },
