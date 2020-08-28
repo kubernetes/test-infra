@@ -87,8 +87,8 @@ class BuildObjectTests(unittest.TestCase):
             },
             {
                 "started": 1595284709,
-                "repo-commit":"5a529aa3a0dd3a050c5302329681e871ef6c162e",
-                "repos":{"kubernetes/kubernetes":"master"},
+                "repo_commit":"5a529aa3a0dd3a050c5302329681e871ef6c162e",
+                "repos": '{"kubernetes/kubernetes": "master"}',
             },
         ),
         (
@@ -102,8 +102,8 @@ class BuildObjectTests(unittest.TestCase):
             },
             {
                 "started": 1595277241,
-                "repo-commit":"30f64c5b1fc57a3beb1476f9beb29280166954d1",
-                "repos":{"kubernetes/kubernetes":"master:5feab0"},
+                "repo_commit":"30f64c5b1fc57a3beb1476f9beb29280166954d1",
+                "repos": '{"kubernetes/kubernetes": "master:5feab0"}',
             },
         ),
         (
@@ -113,20 +113,14 @@ class BuildObjectTests(unittest.TestCase):
                 "pull": "master:5a529",
                 "repo-version": "v1.20.0-alpha.0.261+06ea384605f172",
                 "timestamp": 1595278460,
-                "repos": {
-                    "k8s.io/kubernetes": "master:5a529",
-                    "k8s.io/release": "master"
-                },
+                "repos": {"k8s.io/kubernetes": "master:5a529", "k8s.io/release": "master"},
                 "version": "v1.20.0-alpha.0.261+06ea384605f172"
             },
             {
                 "started": 1595278460,
-                "repo-commit":"v1.20.0-alpha.0.261+06ea384605f172",
-                "repos": {
-                   "k8s.io/kubernetes": "master:5a529",
-                   "k8s.io/release": "master"
-                },
-                "node": "0790211c-cacb-11ea-a4b9-4a19d9b965b2",
+                "repo_commit":"v1.20.0-alpha.0.261+06ea384605f172",
+                "repos": '{"k8s.io/kubernetes": "master:5a529", "k8s.io/release": "master"}',
+                "executor": "0790211c-cacb-11ea-a4b9-4a19d9b965b2",
             },
         ),
         (
@@ -142,12 +136,9 @@ class BuildObjectTests(unittest.TestCase):
             },
             {
                 "started": 1595263104,
-                "repo-commit":"v1.20.0-alpha.0.255+5feab0aa1e592a",
-                "repos":{
-                    "k8s.io/kubernetes":"master",
-                    "k8s.io/release":"master"
-                },
-                "node": "592473ae-caa7-11ea-b130-525df2b76a8d",
+                "repo_commit":"v1.20.0-alpha.0.255+5feab0aa1e592a",
+                "repos": '{"k8s.io/kubernetes": "master", "k8s.io/release": "master"}',
+                "executor": "592473ae-caa7-11ea-b130-525df2b76a8d",
             },
         ),
     ])
@@ -160,7 +151,7 @@ class BuildObjectTests(unittest.TestCase):
              "job": "pr:pr-logs",
             }
         attrs.update(updates)
-        build.populate_finish(started)
+        build.populate_start(started)
         self.assertEqual(build.as_dict(), attrs)
 
 
