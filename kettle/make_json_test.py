@@ -130,7 +130,7 @@ class BuildObjectTests(unittest.TestCase):
                 "passed": True,
                 "job-version": "v1.20.0-alpha.0.255+5feab0aa1e592a",
             },
-           {
+            {
                 "finished": 1595263185,
                 "version": "v1.20.0-alpha.0.255+5feab0aa1e592a",
                 "result": "SUCCESS",
@@ -141,11 +141,11 @@ class BuildObjectTests(unittest.TestCase):
     def test_populate_finish(self, _, finished, updates):
         build = make_json.Build("gs://kubernetes-jenkins/pr-logs/path", [])
         attrs = {"path":"gs://kubernetes-jenkins/pr-logs/path",
-             "test": [],
-             "tests_run": 0,
-             "tests_failed": 0,
-             "job": "pr:pr-logs",
-            }
+                 "test": [],
+                 "tests_run": 0,
+                 "tests_failed": 0,
+                 "job": "pr:pr-logs",
+                }
         build.populate_finish(finished)
         attrs.update(updates)
         self.assertEqual(build.as_dict(), attrs)
