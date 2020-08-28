@@ -145,6 +145,7 @@ func (lens Lens) getJvd(artifacts []api.Artifact) JVD {
 	for _, artifact := range artifacts {
 		go func(artifact api.Artifact) {
 			groups := make(map[testIdentifier][]JunitResult)
+			var testsSequence []testIdentifier
 			result := testResults{
 				link: artifact.CanonicalLink(),
 				path: artifact.JobPath(),
@@ -177,13 +178,16 @@ func (lens Lens) getJvd(artifacts []api.Artifact) JVD {
 					// flaky if it both succeeded and failed
 					k := testIdentifier{suite.Name, test.ClassName, test.Name}
 					groups[k] = append(groups[k], JunitResult{Result: test})
+					if len(groups[k]) == 1 {
+						testsSequence = append(testsSequence, k)
+					}
 				}
 			}
 			for _, suite := range suites.Suites {
 				record(suite)
 			}
-			for _, results := range groups {
-				result.junit = append(result.junit, results)
+			for _, identifier := range testsSequence {
+				result.junit = append(result.junit, groups[identifier])
 			}
 			resultChan <- result
 		}(artifact)
