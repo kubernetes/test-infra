@@ -876,6 +876,11 @@ func (k kops) setupGCEStateStore(projectId string) (string, error) {
 	if err := bkt.Create(ctx, projectId, nil); err != nil {
 		return "", err
 	}
+	// TODO: just testing out giving allauthenticatedusers RW access on this bucket
+	// but plan to figure out how to limit it to those Service Accounts in the project.
+	if err := bkt.ACL().Set(ctx, storage.AllAuthenticatedUsers, storage.RoleOwner); err != nil {
+		return "", fmt.Errorf("error setting up RW access for the state store.")
+	}
 	log.Printf("Created new GCS bucket for state store: %s\n.", name)
 	return name, nil
 }
