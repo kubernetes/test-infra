@@ -149,14 +149,15 @@ class BuildObjectTests(unittest.TestCase):
     ])
     def test_populate_finish(self, finished, updates):
         build = make_json.Build("gs://kubernetes-jenkins/pr-logs/path", [])
-        base_attrs = {"path":"gs://kubernetes-jenkins/pr-logs/path",
+        attrs = {"path":"gs://kubernetes-jenkins/pr-logs/path",
              "test": [],
              "tests_run": 0,
              "tests_failed": 0,
              "job": "pr:pr-logs",
             }
         build.populate_finish(finished)
-        self.assertEqual(build.as_dict(), base_attrs.updae(updates))
+        attrs.update(updates)
+        self.assertEqual(build.as_dict(), attrs)
 
 
 class GenerateBuilds(unittest.TestCase):
