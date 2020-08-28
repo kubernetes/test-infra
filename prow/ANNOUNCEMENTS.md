@@ -116,7 +116,8 @@ state and no claims of backwards compatibility are made for any external API.
 Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
-
+ 
+ - *August 28, 2020* `tide` now ignores archived repositories in queries.
  - *August 28, 2020* The `Clusters` format and associated `--build-cluster` flag has been removed.
    Use a `.kube/config` with the `--kubeconfig` flag to specify credentials for external build clusters. 
  - *August 22, 2020* The `whitelist` and `branch_whitelist` fields in Slack merge warning are deprecated in favor of the new `exempt_users` and `exempt_branches` fields.
