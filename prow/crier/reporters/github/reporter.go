@@ -26,6 +26,7 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
@@ -132,7 +133,7 @@ func (c *Client) ShouldReport(_ *logrus.Entry, pj *v1.ProwJob) bool {
 }
 
 // Report will report via reportlib
-func (c *Client) Report(_ *logrus.Entry, pj *v1.ProwJob) ([]*v1.ProwJob, error) {
+func (c *Client) Report(_ *logrus.Entry, pj *v1.ProwJob) ([]*v1.ProwJob, *reconcile.Result, error) {
 
 	// The github comment create/update/delete done for presubmits
 	// needs pr-level locking to avoid racing when reporting multiple
@@ -140,7 +141,7 @@ func (c *Client) Report(_ *logrus.Entry, pj *v1.ProwJob) ([]*v1.ProwJob, error) 
 	if pj.Spec.Type == v1.PresubmitJob {
 		key, err := lockKeyForPJ(pj)
 		if err != nil {
-			return nil, fmt.Errorf("failed to get lockkey for job: %v", err)
+			return nil, nil, fmt.Errorf("failed to get lockkey for job: %v", err)
 		}
 		lock := c.prLocks.getLock(*key)
 		lock.Lock()
@@ -153,7 +154,7 @@ func (c *Client) Report(_ *logrus.Entry, pj *v1.ProwJob) ([]*v1.ProwJob, error) 
 		// This is completely unrecoverable, so just swallow the error to make sure we wont retry, even when crier gets restarted.
 		err = nil
 	}
-	return []*v1.ProwJob{pj}, err
+	return []*v1.ProwJob{pj}, nil, err
 }
 
 func lockKeyForPJ(pj *v1.ProwJob) (*simplePull, error) {

@@ -1057,7 +1057,7 @@ func TestReport(t *testing.T) {
 				return
 			}
 
-			reportedJobs, err := reporter.Report(logrus.NewEntry(logrus.StandardLogger()), tc.pj)
+			reportedJobs, _, err := reporter.Report(logrus.NewEntry(logrus.StandardLogger()), tc.pj)
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)
 			}

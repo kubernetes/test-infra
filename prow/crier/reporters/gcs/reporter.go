@@ -27,6 +27,7 @@ import (
 	"github.com/GoogleCloudPlatform/testgrid/metadata"
 	"github.com/sirupsen/logrus"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
@@ -42,19 +43,19 @@ type gcsReporter struct {
 	author util.Author
 }
 
-func (gr *gcsReporter) Report(log *logrus.Entry, pj *prowv1.ProwJob) ([]*prowv1.ProwJob, error) {
+func (gr *gcsReporter) Report(log *logrus.Entry, pj *prowv1.ProwJob) ([]*prowv1.ProwJob, *reconcile.Result, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second) // TODO: pass through a global context?
 	defer cancel()
 
 	_, _, err := util.GetJobDestination(gr.cfg, pj)
 	if err != nil {
 		log.WithError(err).Info("Not uploading prowjob because we couldn't find a destination")
-		return []*prowv1.ProwJob{pj}, nil
+		return []*prowv1.ProwJob{pj}, nil, nil
 	}
 	stateErr := gr.reportJobState(ctx, log, pj)
 	prowjobErr := gr.reportProwjob(ctx, log, pj)
 
-	return []*prowv1.ProwJob{pj}, utilerrors.NewAggregate([]error{stateErr, prowjobErr})
+	return []*prowv1.ProwJob{pj}, nil, utilerrors.NewAggregate([]error{stateErr, prowjobErr})
 }
 
 func (gr *gcsReporter) reportJobState(ctx context.Context, log *logrus.Entry, pj *prowv1.ProwJob) error {

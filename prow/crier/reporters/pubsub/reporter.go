@@ -26,6 +26,7 @@ import (
 
 	"cloud.google.com/go/pubsub"
 	"github.com/sirupsen/logrus"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
@@ -93,20 +94,20 @@ func (c *Client) ShouldReport(_ *logrus.Entry, pj *prowapi.ProwJob) bool {
 
 // Report takes a prowjob, and generate a pubsub ReportMessage and publish to specific Pub/Sub topic
 // based on Pub/Sub related labels if they exist in this prowjob
-func (c *Client) Report(_ *logrus.Entry, pj *prowapi.ProwJob) ([]*prowapi.ProwJob, error) {
+func (c *Client) Report(_ *logrus.Entry, pj *prowapi.ProwJob) ([]*prowapi.ProwJob, *reconcile.Result, error) {
 	message := c.generateMessageFromPJ(pj)
 
 	ctx := context.Background()
 	client, err := pubsub.NewClient(ctx, message.Project)
 
 	if err != nil {
-		return nil, fmt.Errorf("could not create pubsub Client: %v", err)
+		return nil, nil, fmt.Errorf("could not create pubsub Client: %v", err)
 	}
 	topic := client.Topic(message.Topic)
 
 	d, err := json.Marshal(message)
 	if err != nil {
-		return nil, fmt.Errorf("could not marshal pubsub report: %v", err)
+		return nil, nil, fmt.Errorf("could not marshal pubsub report: %v", err)
 	}
 
 	res := topic.Publish(ctx, &pubsub.Message{
@@ -115,12 +116,12 @@ func (c *Client) Report(_ *logrus.Entry, pj *prowapi.ProwJob) ([]*prowapi.ProwJo
 
 	_, err = res.Get(ctx)
 	if err != nil {
-		return nil, fmt.Errorf(
+		return nil, nil, fmt.Errorf(
 			"failed to publish pubsub message with run ID %q to topic: \"%s/%s\". %v",
 			message.RunID, message.Project, message.Topic, err)
 	}
 
-	return []*prowapi.ProwJob{pj}, nil
+	return []*prowapi.ProwJob{pj}, nil, nil
 }
 
 func (c *Client) generateMessageFromPJ(pj *prowapi.ProwJob) *ReportMessage {

@@ -22,6 +22,7 @@ import (
 	"text/template"
 
 	"github.com/sirupsen/logrus"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -70,7 +71,11 @@ func reportTemplate(prowCfg config.SlackReporter, jobCfg *v1.SlackReporterConfig
 	return prowCfg.ReportTemplate
 }
 
-func (sr *slackReporter) Report(log *logrus.Entry, pj *v1.ProwJob) ([]*v1.ProwJob, error) {
+func (sr *slackReporter) Report(log *logrus.Entry, pj *v1.ProwJob) ([]*v1.ProwJob, *reconcile.Result, error) {
+	return []*v1.ProwJob{pj}, nil, sr.report(log, pj)
+}
+
+func (sr *slackReporter) report(log *logrus.Entry, pj *v1.ProwJob) error {
 	prowCfg := sr.getConfig(pj)
 	jobCfg := jobConfig(pj)
 	templateStr := reportTemplate(prowCfg, jobCfg)
@@ -79,21 +84,21 @@ func (sr *slackReporter) Report(log *logrus.Entry, pj *v1.ProwJob) ([]*v1.ProwJo
 	tmpl, err := template.New("").Parse(templateStr)
 	if err != nil {
 		log.WithError(err).Error("failed to parse template")
-		return nil, fmt.Errorf("failed to parse template: %v", err)
+		return fmt.Errorf("failed to parse template: %v", err)
 	}
 	if err := tmpl.Execute(b, pj); err != nil {
 		log.WithError(err).Error("failed to execute report template")
-		return nil, fmt.Errorf("failed to execute report template: %v", err)
+		return fmt.Errorf("failed to execute report template: %v", err)
 	}
 	if sr.dryRun {
 		log.WithField("messagetext", b.String()).Debug("Skipping reporting because dry-run is enabled")
-		return []*v1.ProwJob{pj}, nil
+		return nil
 	}
 	if err := sr.client.WriteMessage(b.String(), channel); err != nil {
 		log.WithError(err).Error("failed to write Slack message")
-		return nil, fmt.Errorf("failed to write Slack message: %v", err)
+		return fmt.Errorf("failed to write Slack message: %v", err)
 	}
-	return []*v1.ProwJob{pj}, nil
+	return nil
 }
 
 func (sr *slackReporter) GetName() string {

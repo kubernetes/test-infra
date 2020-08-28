@@ -146,13 +146,13 @@ func TestPresumitReportingLocks(t *testing.T) {
 	wg := &sync.WaitGroup{}
 	wg.Add(2)
 	go func() {
-		if _, err := reporter.Report(logrus.NewEntry(logrus.StandardLogger()), pj); err != nil {
+		if _, _, err := reporter.Report(logrus.NewEntry(logrus.StandardLogger()), pj); err != nil {
 			t.Errorf("error reporting: %v", err)
 		}
 		wg.Done()
 	}()
 	go func() {
-		if _, err := reporter.Report(logrus.NewEntry(logrus.StandardLogger()), pj); err != nil {
+		if _, _, err := reporter.Report(logrus.NewEntry(logrus.StandardLogger()), pj); err != nil {
 			t.Errorf("error reporting: %v", err)
 		}
 		wg.Done()
@@ -220,7 +220,7 @@ func TestReport(t *testing.T) {
 			}
 
 			errMsg := ""
-			_, err := c.Report(logrus.NewEntry(logrus.StandardLogger()), pj)
+			_, _, err := c.Report(logrus.NewEntry(logrus.StandardLogger()), pj)
 			if err != nil {
 				errMsg = err.Error()
 			}
