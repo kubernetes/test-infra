@@ -645,7 +645,7 @@ func TestTide(t *testing.T) {
 	if len(res.Queries) != 1 {
 		t.Fatalf("Wrong number of pools. Got %d, expected 1 in %v", len(res.Queries), res.Queries)
 	}
-	if expected := "is:pr state:open repo:\"prowapi.netes/test-infra\""; res.Queries[0] != expected {
+	if expected := "is:pr state:open archived:false repo:\"prowapi.netes/test-infra\""; res.Queries[0] != expected {
 		t.Errorf("Wrong query. Got %s, expected %s", res.Queries[0], expected)
 	}
 }

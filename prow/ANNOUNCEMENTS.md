@@ -116,7 +116,8 @@ state and no claims of backwards compatibility are made for any external API.
 Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
-
+ 
+ - *August 28, 2020* `tide` now ignores archived repositories in queries.
  - *August 28, 2020* The `Clusters` format and associated `--build-cluster` flag has been removed.
  - *August 24, 2020* The deprecated reporting functionality has been removed from Plank, use crier with `--github-workers=1` instead
    Use a `.kube/config` with the `--kubeconfig` flag to specify credentials for external build clusters.
