@@ -24,14 +24,6 @@ from parameterized import parameterized
 import make_json
 import model
 
-class BaseBuild(self):
-    self.build = make_json.Build("gs://kubernetes-jenkins/pr-logs/path", [])
-    self.base_attr = {"path":"gs://kubernetes-jenkins/pr-logs/path",
-             "test": [],
-             "tests_run": 0,
-             "tests_failed": 0,
-             "job": "pr:pr-logs",
-            }
 
 class ValidateBuckets(unittest.TestCase):
     def test_buckets(self):
@@ -147,7 +139,7 @@ class BuildObjectTests(unittest.TestCase):
             },
         ),
     ])
-    def test_populate_finish(self, finished, updates):
+    def test_populate_finish(self, _, finished, updates):
         build = make_json.Build("gs://kubernetes-jenkins/pr-logs/path", [])
         attrs = {"path":"gs://kubernetes-jenkins/pr-logs/path",
              "test": [],
