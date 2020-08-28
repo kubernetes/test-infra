@@ -142,10 +142,9 @@ func main() {
 		logrus.WithError(err).Fatal("Error creating build cluster clients.")
 	}
 
-	var podClients []podInterface
-	for _, client := range buildClusterClients {
-		// sinker doesn't care about build cluster aliases
-		podClients = append(podClients, client)
+	podClients := map[string]podInterface{}
+	for cluster, client := range buildClusterClients {
+		podClients[cluster] = client
 	}
 
 	c := controller{
@@ -175,7 +174,7 @@ type controller struct {
 	cancel        context.CancelFunc
 	logger        *logrus.Entry
 	prowJobClient ctrlruntimeclient.Client
-	podClients    []podInterface
+	podClients    map[string]podInterface
 	config        config.Getter
 	runOnce       bool
 }

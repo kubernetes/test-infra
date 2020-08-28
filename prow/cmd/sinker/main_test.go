@@ -22,6 +22,7 @@ import (
 	"flag"
 	"fmt"
 	"reflect"
+	"strconv"
 	"testing"
 	"time"
 
@@ -688,9 +689,9 @@ func TestClean(t *testing.T) {
 
 	fpjc := fakectrlruntimeclient.NewFakeClient(prowJobs...)
 	fkc := []*corev1fake.Clientset{corev1fake.NewSimpleClientset(pods...), corev1fake.NewSimpleClientset(podsTrusted...)}
-	fpc := []podInterface{unreachableCluster{}}
-	for _, fakeClient := range fkc {
-		fpc = append(fpc, &finalizerFreeDeleteEnforcingClient{t: t, PodInterface: fakeClient.CoreV1().Pods("ns")})
+	fpc := map[string]podInterface{"unreachable": unreachableCluster{}}
+	for idx, fakeClient := range fkc {
+		fpc[strconv.Itoa(idx)] = &finalizerFreeDeleteEnforcingClient{t: t, PodInterface: fakeClient.CoreV1().Pods("ns")}
 	}
 	// Run
 	c := controller{
