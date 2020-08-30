@@ -74,7 +74,7 @@ csi-proxy
 
 # All branches that do *not* support Prow testing. All new branches
 # are expected to have that support, therefore these list should be
-# fixed. By blacklisting old branches we can avoid Prow config
+# fixed. By excluding old branches we can avoid Prow config
 # changes each time a new branch gets created.
 skip_branches_cluster_driver_registrar='^(release-1.0)$'
 skip_branches_csi_lib_utils='^(release-0.1|release-0.2)$'
