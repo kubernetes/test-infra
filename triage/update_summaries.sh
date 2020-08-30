@@ -42,7 +42,7 @@ bq --headless --format=json query --max_rows 1000000 \
   from
     [k8s-gubernator:build.all]
   where
-    timestamp_to_sec(started) > TIMESTAMP_TO_SEC(DATE_ADD(CURRENT_DATE(), -14, 'DAY')) \
+    timestamp_to_sec(started) > TIMESTAMP_TO_SEC(DATE_ADD(CURRENT_DATE(), -14, 'DAY'))" \
   > triage_builds.json
 
 bq query --allow_large_results --headless --max_rows 0 --replace --destination_table k8s-gubernator:temp.triage \
