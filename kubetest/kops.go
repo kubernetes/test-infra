@@ -718,7 +718,7 @@ func (k kops) Down() error {
 		return nil
 	}
 	control.FinishRunning(exec.Command(k.path, "delete", "cluster", k.cluster, "--yes"))
-	if kopsState != nil {
+	if kopsState != nil && k.isGoogleCloud() {
 		ctx := context.Background()
 		client, err := storage.NewClient(ctx)
 		if err != nil {
