@@ -23,6 +23,7 @@ presubmits:
         - |
           ../test-infra/hack/bazel.sh build --config=remote --remote_instance_name=projects/k8s-prow-builds/instances/default_instance -- //... -//vendor/... -//build/... //build/release-tars
   - name: pull-kubernetes-bazel-test-canary
+    cluster: k8s-infra-prow-build
     decorate: true
     always_run: false
     labels:
@@ -31,6 +32,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-testing-canaries
       testgrid-tab-name: pull-bazel-test
+      description: runs bazel test //... -//build/... -//vendor/... without RBE
     extra_refs:
     - base_ref: master
       org: kubernetes
@@ -43,12 +45,17 @@ presubmits:
         args:
         - test
         - --config=unit
-        - --config=remote
-        - --remote_instance_name=projects/k8s-prow-builds/instances/default_instance
         - //...
         - --
         - -//build/...
         - -//vendor/...
+        resources:
+          limits:
+            cpu: 4
+            memory: 38Gi
+          requests:
+            cpu: 4
+            memory: 38Gi
   - name: pull-kubernetes-bazel-test-integration-canary
     always_run: false
     labels:
