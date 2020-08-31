@@ -39,7 +39,8 @@ import (
 type ReportClient interface {
 	// Report reports a Prowjob. The provided logger is already populated with the
 	// prowjob name and the reporter name.
-	Report(log *logrus.Entry, pj *prowv1.ProwJob) ([]*prowv1.ProwJob, error)
+	// If a reporter wants to defer reporting, it can return a reconcile.Result with a RequeueAfter
+	Report(log *logrus.Entry, pj *prowv1.ProwJob) ([]*prowv1.ProwJob, *reconcile.Result, error)
 	GetName() string
 	// ShouldReport determines if a ProwJob should be reported. The provided logger
 	// is already populated with the prowjob name and the reporter name.
@@ -115,29 +116,32 @@ func (r *reconciler) updateReportState(pj *prowv1.ProwJob, log *logrus.Entry, re
 func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
 	log := logrus.WithField("reporter", r.reporter.GetName()).WithField("key", req.String()).WithField("prowjob", req.Name)
 	log.Debug("processing next key")
-	err := r.reconcile(log, req)
+	result, err := r.reconcile(log, req)
 	if err != nil {
 		log.WithError(err).Error("Reconciliation failed")
 	}
-	return reconcile.Result{}, err
+	if result == nil {
+		result = &reconcile.Result{}
+	}
+	return *result, err
 }
 
-func (r *reconciler) reconcile(log *logrus.Entry, req reconcile.Request) error {
+func (r *reconciler) reconcile(log *logrus.Entry, req reconcile.Request) (*reconcile.Result, error) {
 
 	var pj prowv1.ProwJob
 	if err := r.pjclientset.Get(r.ctx, req.NamespacedName, &pj); err != nil {
 		if errors.IsNotFound(err) {
 			log.Debug("object no longer exist")
-			return nil
+			return nil, nil
 		}
 
-		return fmt.Errorf("failed to get prowjob %s: %w", req.String(), err)
+		return nil, fmt.Errorf("failed to get prowjob %s: %w", req.String(), err)
 	}
 
 	log = log.WithField("jobName", pj.Spec.Job)
 
 	if !pj.Spec.Report || !r.reporter.ShouldReport(log, &pj) {
-		return nil
+		return nil, nil
 	}
 
 	// we set omitempty on PrevReportStates, so here we need to init it if is nil
@@ -148,15 +152,18 @@ func (r *reconciler) reconcile(log *logrus.Entry, req reconcile.Request) error {
 	// already reported current state
 	if pj.Status.PrevReportStates[r.reporter.GetName()] == pj.Status.State {
 		log.Trace("Already reported")
-		return nil
+		return nil, nil
 	}
 
 	log = log.WithField("jobStatus", pj.Status.State)
 	log.Info("Will report state")
-	pjs, err := r.reporter.Report(log, &pj)
+	pjs, requeue, err := r.reporter.Report(log, &pj)
 	if err != nil {
 		log.WithError(err).Error("failed to report job")
-		return fmt.Errorf("failed to report job: %w", err)
+		return nil, fmt.Errorf("failed to report job: %w", err)
+	}
+	if requeue != nil {
+		return requeue, nil
 	}
 
 	log.Info("Reported job, now will update pj")
@@ -176,11 +183,11 @@ func (r *reconciler) reconcile(log *logrus.Entry, req reconcile.Request) error {
 			// Very subpar, we will report again. But even if we didn't do that now, we would do so
 			// latest when crier gets restarted. In an ideal world, all reporters are idempotent and
 			// reporting has no cost.
-			return fmt.Errorf("faieed to update report state on prowjob: %w", err)
+			return nil, fmt.Errorf("faieed to update report state on prowjob: %w", err)
 		}
 
 		log.Info("Successfully updated prowjob")
 	}
 
-	return nil
+	return nil, nil
 }

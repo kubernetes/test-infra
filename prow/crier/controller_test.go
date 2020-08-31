@@ -22,13 +22,16 @@ import (
 	"fmt"
 	"reflect"
 	"testing"
+	"time"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	ctrlruntime "sigs.k8s.io/controller-runtime"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
@@ -41,12 +44,13 @@ const reporterName = "fakeReporter"
 type fakeReporter struct {
 	reported         []string
 	shouldReportFunc func(pj *prowv1.ProwJob) bool
+	res              *reconcile.Result
 	err              error
 }
 
-func (f *fakeReporter) Report(_ *logrus.Entry, pj *prowv1.ProwJob) ([]*prowv1.ProwJob, error) {
+func (f *fakeReporter) Report(_ *logrus.Entry, pj *prowv1.ProwJob) ([]*prowv1.ProwJob, *reconcile.Result, error) {
 	f.reported = append(f.reported, pj.Spec.Job)
-	return []*prowv1.ProwJob{pj}, f.err
+	return []*prowv1.ProwJob{pj}, f.res, f.err
 }
 
 func (f *fakeReporter) GetName() string {
@@ -64,8 +68,10 @@ func TestController_Run(t *testing.T) {
 		name         string
 		job          *prowv1.ProwJob
 		shouldReport bool
+		result       *reconcile.Result
 		reportErr    error
 
+		expectResult  reconcile.Result
 		expectReport  bool
 		expectPatch   bool
 		expectedError error
@@ -153,6 +159,22 @@ func TestController_Run(t *testing.T) {
 			reportErr:     errors.New("some-err"),
 			expectedError: fmt.Errorf("failed to report job: %w", errors.New("some-err")),
 		},
+		{
+			name: "*reconcile.Result is returned, prowjob is not updated",
+			job: &prowv1.ProwJob{
+				Spec: prowv1.ProwJobSpec{
+					Job:    "foo",
+					Report: true,
+				},
+				Status: prowv1.ProwJobStatus{
+					State: prowv1.TriggeredState,
+				},
+			},
+			shouldReport: true,
+			result:       &reconcile.Result{RequeueAfter: time.Minute},
+			expectResult: reconcile.Result{RequeueAfter: time.Minute},
+			expectReport: true,
+		},
 	}
 
 	for _, test := range tests {
@@ -160,10 +182,11 @@ func TestController_Run(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 			rp := fakeReporter{
-				err: test.reportErr,
 				shouldReportFunc: func(*prowv1.ProwJob) bool {
 					return test.shouldReport
 				},
+				res: test.result,
+				err: test.reportErr,
 			}
 
 			var prowjobs []runtime.Object
@@ -178,12 +201,15 @@ func TestController_Run(t *testing.T) {
 				reporter:    &rp,
 			}
 
-			_, err := r.Reconcile(ctrlruntime.Request{NamespacedName: types.NamespacedName{Name: toReconcile}})
+			result, err := r.Reconcile(ctrlruntime.Request{NamespacedName: types.NamespacedName{Name: toReconcile}})
 			if !reflect.DeepEqual(err, test.expectedError) {
 				t.Fatalf("actual err %v differs from expected err %v", err, test.expectedError)
 			}
 			if err != nil {
 				return
+			}
+			if diff := cmp.Diff(result, test.expectResult); diff != "" {
+				t.Errorf("result differs from expected result: %s", diff)
 			}
 
 			var expectReports []string
@@ -196,7 +222,9 @@ func TestController_Run(t *testing.T) {
 
 			if (cs.patches != 0) != test.expectPatch {
 				if test.expectPatch {
-					t.Errorf("expected patch, but didn't get it")
+					t.Error("expected patch, but didn't get it")
+				} else {
+					t.Error("got unexpected patch")
 				}
 			}
 		})

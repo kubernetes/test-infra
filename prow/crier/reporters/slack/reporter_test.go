@@ -513,7 +513,7 @@ func TestReportDefaultsToExtraRefs(t *testing.T) {
 		client: &fakeSlackClient{},
 	}
 
-	if _, err := sr.Report(logrus.NewEntry(logrus.StandardLogger()), job); err != nil {
+	if _, _, err := sr.Report(logrus.NewEntry(logrus.StandardLogger()), job); err != nil {
 		t.Fatalf("reporting failed: %v", err)
 	}
 	if sr.client.(*fakeSlackClient).messages["emercengy"] != "there you go" {

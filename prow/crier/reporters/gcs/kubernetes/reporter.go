@@ -34,6 +34,7 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
@@ -92,8 +93,8 @@ func (rg k8sResourceGetter) GetEvents(cluster, namespace string, pod *v1.Pod) ([
 	return events.Items, nil
 }
 
-func (gr *gcsK8sReporter) Report(log *logrus.Entry, pj *prowv1.ProwJob) ([]*prowv1.ProwJob, error) {
-	return []*prowv1.ProwJob{pj}, gr.report(log, pj)
+func (gr *gcsK8sReporter) Report(log *logrus.Entry, pj *prowv1.ProwJob) ([]*prowv1.ProwJob, *reconcile.Result, error) {
+	return []*prowv1.ProwJob{pj}, nil, gr.report(log, pj)
 }
 
 func (gr *gcsK8sReporter) report(log *logrus.Entry, pj *prowv1.ProwJob) error {

@@ -24,6 +24,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/gerrit/client"
@@ -159,7 +160,7 @@ func (c *Client) ShouldReport(log *logrus.Entry, pj *v1.ProwJob) bool {
 }
 
 // Report will send the current prowjob status as a gerrit review
-func (c *Client) Report(logger *logrus.Entry, pj *v1.ProwJob) ([]*v1.ProwJob, error) {
+func (c *Client) Report(logger *logrus.Entry, pj *v1.ProwJob) ([]*v1.ProwJob, *reconcile.Result, error) {
 
 	clientGerritRevision := client.GerritRevision
 	clientGerritID := client.GerritID
@@ -183,7 +184,7 @@ func (c *Client) Report(logger *logrus.Entry, pj *v1.ProwJob) ([]*v1.ProwJob, er
 		var pjsOnRevisionWithSameLabel v1.ProwJobList
 		if err := c.lister.List(c.ctx, &pjsOnRevisionWithSameLabel, ctrlruntimeclient.MatchingLabels(selector)); err != nil {
 			logger.WithError(err).WithField("selector", selector).Errorf("Cannot list prowjob with selector")
-			return nil, err
+			return nil, nil, err
 		}
 
 		mostRecentJob := map[string]*v1.ProwJob{}
@@ -216,7 +217,7 @@ func (c *Client) Report(logger *logrus.Entry, pj *v1.ProwJob) ([]*v1.ProwJob, er
 	if report.Total <= 0 {
 		// Shouldn't happen but return if does
 		logger.Warn("Tried to report empty or aborted jobs.")
-		return nil, nil
+		return nil, nil, nil
 	}
 	var reviewLabels map[string]string
 	if reportLabel != "" {
@@ -239,18 +240,18 @@ func (c *Client) Report(logger *logrus.Entry, pj *v1.ProwJob) ([]*v1.ProwJob, er
 		logger.WithError(err).Errorf("fail to set review with label %q on change ID %s", reportLabel, gerritID)
 
 		if reportLabel == "" {
-			return nil, err
+			return nil, nil, err
 		}
 		// Retry without voting on a label
 		message := fmt.Sprintf("[NOTICE]: Prow Bot cannot access %s label!\n%s", reportLabel, message)
 		if err := c.gc.SetReview(gerritInstance, gerritID, gerritRevision, message, nil); err != nil {
 			logger.WithError(err).Errorf("fail to set plain review on change ID %s", gerritID)
-			return nil, err
+			return nil, nil, err
 		}
 	}
 
 	logger.Infof("Review Complete, reported jobs: %v", toReportJobs)
-	return toReportJobs, nil
+	return toReportJobs, nil, nil
 }
 
 func statusIcon(state v1.ProwJobState) string {

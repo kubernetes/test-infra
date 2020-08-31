@@ -27,6 +27,7 @@ import (
 	"github.com/sirupsen/logrus"
 	coreapi "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
@@ -93,7 +94,7 @@ type messageInterface interface {
 }
 
 type reportClient interface {
-	Report(log *logrus.Entry, pj *prowapi.ProwJob) ([]*prowapi.ProwJob, error)
+	Report(log *logrus.Entry, pj *prowapi.ProwJob) ([]*prowapi.ProwJob, *reconcile.Result, error)
 	ShouldReport(log *logrus.Entry, pj *prowapi.ProwJob) bool
 }
 
@@ -164,7 +165,7 @@ func (s *Subscriber) handlePeriodicJob(l *logrus.Entry, msg messageInterface, su
 		pj.Status.State = prowapi.ErrorState
 		pj.Status.Description = err.Error()
 		if s.Reporter.ShouldReport(l, &prowJob) {
-			if _, err := s.Reporter.Report(l, &prowJob); err != nil {
+			if _, _, err := s.Reporter.Report(l, &prowJob); err != nil {
 				l.Warningf("failed to report status. %v", err)
 			}
 		}
