@@ -3,6 +3,9 @@
 ## New features
 
 New features added to each component:
+ - *August 31th, 2020* Added `gcs_browser_prefixes` field in spyglass configuration. `gcs_browser_prefix` will
+    be deprecated in February 2021. You can now specify different values for different repositories. The
+    format should be in org, org/repo or '\*' which is the default value.
  - *July 13th, 2020* Configuring `job_url_prefix_config` with `gcs/` prefix is now deprecated.
     Please configure a job url prefix without the `gcs/` storage provider suffix. From now on the storage
     provider is appended automatically so multiple storage providers can be used for builds of

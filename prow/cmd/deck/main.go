@@ -1025,8 +1025,14 @@ lensesLoop:
 		log.WithError(err).Warningf("Error getting ProwJob name for source %q.", src)
 	}
 
+	prHistLink := ""
+	org, repo, number, err := sg.RunToPR(src)
+	if err == nil {
+		prHistLink = "/pr-history?org=" + org + "&repo=" + repo + "&pr=" + strconv.Itoa(number)
+	}
+
 	artifactsLink := ""
-	gcswebPrefix := cfg().Deck.Spyglass.GCSBrowserPrefix
+	gcswebPrefix := cfg().Deck.Spyglass.GCSBrowserPrefixes.GetGCSBrowserPrefix(org, repo)
 	if gcswebPrefix != "" {
 		runPath, err := sg.RunPath(src)
 		if err == nil {
@@ -1036,12 +1042,6 @@ lensesLoop:
 				artifactsLink += "/"
 			}
 		}
-	}
-
-	prHistLink := ""
-	org, repo, number, err := sg.RunToPR(src)
-	if err == nil {
-		prHistLink = "/pr-history?org=" + org + "&repo=" + repo + "&pr=" + strconv.Itoa(number)
 	}
 
 	jobName, buildID, err := common.KeyToJob(src)
