@@ -598,6 +598,27 @@ func TestHandle(t *testing.T) {
 			},
 		},
 		{
+			name:      "override with allow_top_level_owners works for uppercase user",
+			comment:   "/override job",
+			user:      "Code_owner",
+			options:   plugins.Override{AllowTopLevelOwners: true},
+			approvers: []string{"code_owner"},
+			contexts: map[string]github.Status{
+				"job": {
+					Context:     "job",
+					Description: "failed",
+					State:       github.StatusFailure,
+				},
+			},
+			expected: map[string]github.Status{
+				"job": {
+					Context:     "job",
+					Description: description("Code_owner"),
+					State:       github.StatusSuccess,
+				},
+			},
+		},
+		{
 			name:    "override with allow_top_level_owners fails if user is not in OWNERS file",
 			comment: "/override job",
 			user:    "non_code_owner",
