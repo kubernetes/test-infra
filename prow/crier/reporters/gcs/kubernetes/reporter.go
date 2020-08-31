@@ -94,27 +94,33 @@ func (rg k8sResourceGetter) GetEvents(cluster, namespace string, pod *v1.Pod) ([
 }
 
 func (gr *gcsK8sReporter) Report(log *logrus.Entry, pj *prowv1.ProwJob) ([]*prowv1.ProwJob, *reconcile.Result, error) {
-	return []*prowv1.ProwJob{pj}, nil, gr.report(log, pj)
+	result, err := gr.report(log, pj)
+	return []*prowv1.ProwJob{pj}, result, err
 }
 
-func (gr *gcsK8sReporter) report(log *logrus.Entry, pj *prowv1.ProwJob) error {
+func (gr *gcsK8sReporter) report(log *logrus.Entry, pj *prowv1.ProwJob) (*reconcile.Result, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second) // TODO: pass through a global context?
 	defer cancel()
 
-	if !pj.Complete() {
+	if !pj.Complete() && pj.Status.State != prowv1.AbortedState {
 		if err := gr.addFinalizer(pj); err != nil {
-			return fmt.Errorf("failed to add finalizer to pod: %w", err)
+			return nil, fmt.Errorf("failed to add finalizer to pod: %w", err)
 		}
-		return nil
+		return nil, nil
+	}
+
+	// Aborted jobs are not completed initially
+	if !pj.Complete() {
+		return &reconcile.Result{RequeueAfter: 10 * time.Second}, nil
 	}
 
 	_, _, err := util.GetJobDestination(gr.cfg, pj)
 	if err != nil {
 		log.WithError(err).Warn("Not uploading because we couldn't find a destination")
-		return nil
+		return nil, nil
 	}
 
-	return gr.reportPodInfo(ctx, log, pj)
+	return nil, gr.reportPodInfo(ctx, log, pj)
 }
 
 func (gr *gcsK8sReporter) addFinalizer(pj *prowv1.ProwJob) error {
