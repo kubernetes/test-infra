@@ -1251,3 +1251,15 @@ spec:
   resources:
     requests:
       storage: 100Gi
+---
+# Keep cluster-autoscaler from evicting running test workloads when scaling down
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: prow-pods
+  namespace: test-pods
+spec:
+  maxUnavailable: 0
+  selector:
+    matchLabels:
+      created-by-prow: "true"

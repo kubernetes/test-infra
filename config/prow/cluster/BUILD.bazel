@@ -77,6 +77,15 @@ release(
         MULTI_KIND,
         cluster = BUILD_CLUSTER,
     ),
+    component(
+        "test_pods",
+        "pdb",
+    ),
+    component(
+        "test_pods",
+        "pdb",
+        cluster = BUILD_CLUSTER,
+    ),
 )
 
 # TODO(fejta): do we want to auto-apply this?

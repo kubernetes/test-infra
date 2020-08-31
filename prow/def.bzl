@@ -160,6 +160,8 @@ def component(cmd, *kinds, **kwargs):
         else:
             n = "%s_%s" % (cmd, k)
         kwargs["name"] = _basename(n)
+        if "cluster" in kwargs:
+          kwargs["name"] += "_" + kwargs["cluster"]
         kwargs["kind"] = k
         kwargs["template"] = ":%s.yaml" % n
         object(**kwargs)
