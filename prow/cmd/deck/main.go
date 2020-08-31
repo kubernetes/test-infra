@@ -223,6 +223,7 @@ func init() {
 }
 
 var simplifier = simplifypath.NewSimplifier(l("", // shadow element mimicing the root
+	l(""),
 	l("badge.svg"),
 	l("command-help"),
 	l("config"),

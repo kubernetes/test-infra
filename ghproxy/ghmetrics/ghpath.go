@@ -95,6 +95,7 @@ func organizationTree() []simplifypath.Node {
 }
 
 var simplifier = simplifypath.NewSimplifier(l("", // shadow element mimicing the root
+	l(""),
 	l("repos",
 		v("owner",
 			v("repo",
