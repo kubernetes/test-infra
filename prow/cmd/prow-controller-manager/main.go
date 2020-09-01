@@ -155,7 +155,7 @@ func main() {
 		},
 	)
 	if err != nil {
-		logrus.WithError(err).Fatal("Failed to construct build cluster managers")
+		logrus.WithError(err).Warning("Failed to construct build cluster managers")
 	}
 
 	for _, buildManager := range buildManagers {
