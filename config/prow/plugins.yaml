@@ -920,6 +920,9 @@ plugins:
   - size
   - trigger
 
+  containerd/containerd:
+  - trigger
+
   tensorflow/k8s:
   - trigger
 
