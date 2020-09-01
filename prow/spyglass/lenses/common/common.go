@@ -19,6 +19,7 @@ package common
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"html/template"
 	"io/ioutil"
@@ -109,8 +110,14 @@ func newLensHandler(lens api.Lens, opts lensHandlerOpts) http.HandlerFunc {
 		}
 
 		artifacts, err := FetchArtifacts(r.Context(), opts.PJFetcher, opts.ConfigGetter, opts.StorageArtifactFetcher, opts.PodLogArtifactFetcher, request.ArtifactSource, "", opts.ConfigGetter().Deck.Spyglass.SizeLimit, request.Artifacts)
-		if err != nil {
-			writeHTTPError(w, fmt.Errorf("Failed to retrieve expected artifacts: %w", err), http.StatusInternalServerError)
+		if err != nil || len(artifacts) == 0 {
+			statusCode := http.StatusInternalServerError
+			if len(artifacts) == 0 {
+				statusCode = http.StatusNotFound
+				err = errors.New("no artifacts found")
+			}
+
+			writeHTTPError(w, fmt.Errorf("failed to retrieve expected artifacts: %w", err), statusCode)
 			return
 		}
 
