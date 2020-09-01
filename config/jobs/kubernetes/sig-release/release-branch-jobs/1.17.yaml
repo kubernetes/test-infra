@@ -1042,6 +1042,7 @@ presubmits:
   - always_run: false
     branches:
     - release-1.17
+    cluster: k8s-infra-prow-build
     labels:
       preset-bazel-scratch-dir: "true"
       preset-dind-enabled: "true"
@@ -1072,7 +1073,7 @@ presubmits:
         - --gcp-master-size=n1-standard-4
         - --gcp-node-size=n1-standard-8
         - --gcp-nodes=7
-        - --gcp-project-type=scalability-presubmit-project
+        - --gcp-project-type=scalability-project
         - --gcp-zone=us-east1-b
         - --kubemark
         - --kubemark-nodes=500
