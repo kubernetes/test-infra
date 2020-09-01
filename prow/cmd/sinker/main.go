@@ -137,21 +137,16 @@ func main() {
 		logrus.WithError(err).Fatal("Error creating manager")
 	}
 
-	buildClusterClients, err := o.kubernetes.BuildClusterClients(cfg().PodNamespace, o.dryRun.Value)
+	buildClusterClients, err := o.kubernetes.BuildClusterUncachedRuntimeClients(o.dryRun.Value)
 	if err != nil {
-		logrus.WithError(err).Fatal("Error creating build cluster clients.")
-	}
-
-	podClients := map[string]podInterface{}
-	for cluster, client := range buildClusterClients {
-		podClients[cluster] = client
+		logrus.WithError(err).Error("Error creating build cluster clients.")
 	}
 
 	c := controller{
 		ctx:           context.Background(),
 		logger:        logrus.NewEntry(logrus.StandardLogger()),
 		prowJobClient: mgr.GetClient(),
-		podClients:    podClients,
+		podClients:    buildClusterClients,
 		config:        cfg,
 		runOnce:       o.runOnce,
 	}
@@ -163,18 +158,12 @@ func main() {
 	}
 }
 
-type podInterface interface {
-	Delete(ctx context.Context, name string, options metav1.DeleteOptions) error
-	List(ctx context.Context, opts metav1.ListOptions) (*corev1api.PodList, error)
-	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts metav1.PatchOptions, subresources ...string) (result *corev1api.Pod, err error)
-}
-
 type controller struct {
 	ctx           context.Context
 	cancel        context.CancelFunc
 	logger        *logrus.Entry
 	prowJobClient ctrlruntimeclient.Client
-	podClients    map[string]podInterface
+	podClients    map[string]ctrlruntimeclient.Client
 	config        config.Getter
 	runOnce       bool
 }
@@ -277,14 +266,6 @@ func init() {
 	prometheus.MustRegister(sinkerMetrics.prowJobsCleaningErrors)
 }
 
-func (m *sinkerReconciliationMetrics) getPodsTotalRemoved() int {
-	result := 0
-	for _, v := range m.podsRemoved {
-		result += v
-	}
-	return result
-}
-
 func (m *sinkerReconciliationMetrics) getTimeUsed() time.Duration {
 	return m.finishedAt.Sub(m.startAt)
 }
@@ -370,11 +351,10 @@ func (c *controller) clean() {
 	}
 
 	// Now clean up old pods.
-	selector := fmt.Sprintf("%s = %s", kube.CreatedByProw, "true")
 	for cluster, client := range c.podClients {
 		log := c.logger.WithField("cluster", cluster)
-		pods, err := client.List(context.TODO(), metav1.ListOptions{LabelSelector: selector})
-		if err != nil {
+		var pods corev1api.PodList
+		if err := client.List(c.ctx, &pods, ctrlruntimeclient.MatchingLabels{kube.CreatedByProw: "true"}, ctrlruntimeclient.InNamespace(c.config().PodNamespace)); err != nil {
 			log.WithError(err).Error("Error listing pods.")
 			continue
 		}
@@ -429,7 +409,7 @@ func (c *controller) clean() {
 				continue
 			}
 
-			c.deletePod(log, pod.Name, reason, client, &metrics)
+			c.deletePod(log, &pod, reason, client, &metrics)
 		}
 	}
 
@@ -452,26 +432,22 @@ func (c *controller) clean() {
 	c.logger.Info("Sinker reconciliation complete.")
 }
 
-func (c *controller) cleanupKubernetesFinalizer(pod *corev1api.Pod, client podInterface) error {
+func (c *controller) cleanupKubernetesFinalizer(pod *corev1api.Pod, client ctrlruntimeclient.Client) error {
 
 	oldPod := pod.DeepCopy()
 	pod.Finalizers = sets.NewString(pod.Finalizers...).Delete(kubernetesreporterapi.FinalizerName).List()
-	patch := ctrlruntimeclient.MergeFrom(oldPod)
-	rawPatch, err := patch.Data(pod)
-	if err != nil {
-		return fmt.Errorf("failed to construct patch: %w", err)
-	}
 
-	if _, err := client.Patch(context.TODO(), pod.Name, patch.Type(), rawPatch, metav1.PatchOptions{}); err != nil {
+	if err := client.Patch(c.ctx, pod, ctrlruntimeclient.MergeFrom(oldPod)); err != nil {
 		return fmt.Errorf("failed to patch pod: %w", err)
 	}
 
 	return nil
 }
 
-func (c *controller) deletePod(log *logrus.Entry, name, reason string, client podInterface, m *sinkerReconciliationMetrics) {
+func (c *controller) deletePod(log *logrus.Entry, pod *corev1api.Pod, reason string, client ctrlruntimeclient.Client, m *sinkerReconciliationMetrics) {
+	name := pod.Name
 	// Delete old finished or orphan pods. Don't quit if we fail to delete one.
-	if err := client.Delete(context.TODO(), name, metav1.DeleteOptions{}); err == nil {
+	if err := client.Delete(c.ctx, pod); err == nil {
 		log.WithFields(logrus.Fields{"pod": name, "reason": reason}).Info("Deleted old completed pod.")
 		m.podsRemoved[reason]++
 	} else if !k8serrors.IsNotFound(err) {
