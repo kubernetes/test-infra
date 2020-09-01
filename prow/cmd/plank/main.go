@@ -118,7 +118,7 @@ func main() {
 
 	buildClusterClients, err := o.kubernetes.BuildClusterUncachedRuntimeClients(o.dryRun)
 	if err != nil {
-		logrus.WithError(err).Warning("Error creating build cluster clients.")
+		logrus.WithError(err).Error("Error creating build cluster clients. Is there a bad entry in the kubeconfig secret?")
 	}
 
 	c, err := plank.NewController(mgr.GetClient(), buildClusterClients, nil, cfg, o.totURL, o.selector)
