@@ -392,6 +392,7 @@ func (c *controller) clean() {
 			if value, ok := pod.ObjectMeta.Labels[kube.ProwJobIDLabel]; ok {
 				podJobName = value
 			}
+			log = log.WithField("pj", podJobName)
 			terminationTime := time.Time{}
 			if pj, ok := pjMap[podJobName]; ok && pj.Complete() {
 				terminationTime = pj.Status.CompletionTime.Time
@@ -399,7 +400,7 @@ func (c *controller) clean() {
 
 			if podNeedsKubernetesFinalizerCleanup(log, pjMap[podJobName], &pod) {
 				if err := c.cleanupKubernetesFinalizer(&pod, client); err != nil {
-					log.WithField("pj", pod.Name).WithError(err).Error("Failed to remove kubernetesreporter finalizer")
+					log.WithError(err).Error("Failed to remove kubernetesreporter finalizer")
 				}
 			}
 
@@ -417,7 +418,8 @@ func (c *controller) clean() {
 				// deleting the pod now will result in plank creating a brand new pod
 				clean = false
 			}
-			if _, ok := pjMap[podJobName]; !ok {
+
+			if c.isPodOrphaned(log, &pod, podJobName) {
 				// prowjob has gone, we want to clean orphan pods regardless of the state
 				reason = reasonPodOrphaned
 				clean = true
@@ -477,6 +479,26 @@ func (c *controller) deletePod(log *logrus.Entry, name, reason string, client po
 		m.podRemovalErrors[string(k8serrors.ReasonForError(err))]++
 	}
 
+}
+
+func (c *controller) isPodOrphaned(log *logrus.Entry, pod *corev1api.Pod, prowJobName string) bool {
+	// ProwJobs are cached and the cache may lag a bit behind, so never considers
+	// pods that are less than 30 seconds old as orphaned
+	if !pod.CreationTimestamp.Before(&metav1.Time{Time: time.Now().Add(-30 * time.Second)}) {
+		return false
+	}
+
+	// We do a list in the very beginning of our processing. By the time we reach this check, that
+	// list might be outdated, so do another GET here before declaring the pod orphaned
+	pjName := types.NamespacedName{Namespace: c.config().ProwJobNamespace, Name: prowJobName}
+	if err := c.prowJobClient.Get(c.ctx, pjName, &prowapi.ProwJob{}); err != nil {
+		if k8serrors.IsNotFound(err) {
+			return true
+		}
+		logrus.WithError(err).Error("Failed to get prowjob")
+	}
+
+	return false
 }
 
 func podNeedsKubernetesFinalizerCleanup(log *logrus.Entry, pj *prowapi.ProwJob, pod *corev1api.Pod) bool {
