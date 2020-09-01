@@ -121,6 +121,51 @@ presubmits:
             memory: 6Gi
     annotations:
       testgrid-dashboards: sig-api-machinery-network-proxy
+  - name: pull-kubernetes-e2e-gce-network-proxy-http-connect-canary
+    cluster: k8s-infra-prow-build
+    always_run: false
+    optional: true
+    run_if_changed: '^(cluster/gce/manifests/konnectivity-server.yaml$|cluster/gce/addons/konnectivity-agent)'
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-pull-kubernetes-e2e: "true"
+      preset-pull-kubernetes-e2e-gce: "true"
+    spec:
+      containers:
+      - args:
+        - --root=/go/src
+        - --repo=k8s.io/kubernetes=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --timeout=105
+        - --scenario=kubernetes_e2e
+        - --
+        - --build=bazel
+        - --cluster=
+        - --extract=local
+        - --env=ENABLE_EGRESS_VIA_KONNECTIVITY_SERVICE=true
+        - --env=KONNECTIVITY_SERVICE_PROXY_PROTOCOL_MODE=http-connect
+        - --gcp-node-image=gci
+        - --gcp-zone=us-west1-b
+        - --ginkgo-parallel=30
+        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-network-proxy-http-connect
+        - --provider=gce
+        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=9
+        - --timeout=80m
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200831-9529f9c-master
+        resources:
+          requests:
+            cpu: 2
+            memory: 6Gi
+          limits:
+            cpu: 2
+            memory: 6Gi
+    annotations:
+      testgrid-dashboards: sig-testing-canaries
+      testgrid-tab-name: pull-http-connect-canary
   - name: pull-kubernetes-e2e-gce-network-proxy-grpc
     always_run: false
     optional: true
@@ -150,7 +195,6 @@ presubmits:
         - --env=KONNECTIVITY_SERVICE_PROXY_PROTOCOL_MODE=grpc
         - --gcp-node-image=gci
         - --gcp-zone=us-west1-b
-        - --gcp-project=k8s-network-proxy-e2e
         - --ginkgo-parallel=30
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-network-proxy-grpc
         - --provider=gce
