@@ -869,9 +869,11 @@ plugins:
 
   kubernetes-sigs/cluster-api:
   - milestone
+  - override
 
   kubernetes-sigs/cluster-api-provider-aws:
   - milestone
+  - override
 
   kubernetes-sigs/cluster-api-provider-azure:
   - milestone
@@ -879,6 +881,7 @@ plugins:
   - milestonestatus
   - release-note
   - require-matching-label
+  - override
 
   kubernetes-sigs/cluster-api-provider-digitalocean:
   - milestone
