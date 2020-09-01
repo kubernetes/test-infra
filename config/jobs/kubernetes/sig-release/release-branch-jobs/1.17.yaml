@@ -600,11 +600,11 @@ periodics:
       name: ""
       resources:
         limits:
-          cpu: 7300m
-          memory: 14Gi
+          cpu: 7
+          memory: 9Gi
         requests:
-          cpu: 7300m
-          memory: 14Gi
+          cpu: 7
+          memory: 9Gi
       securityContext:
         privileged: true
 - annotations:
@@ -647,11 +647,11 @@ periodics:
       name: ""
       resources:
         limits:
-          cpu: 7300m
-          memory: 14Gi
+          cpu: 7
+          memory: 9Gi
         requests:
-          cpu: 7300m
-          memory: 14Gi
+          cpu: 7
+          memory: 9Gi
       securityContext:
         privileged: true
 postsubmits:
