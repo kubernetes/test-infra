@@ -35,6 +35,7 @@ import (
 	corev1fake "k8s.io/client-go/kubernetes/fake"
 	corev1client "k8s.io/client-go/kubernetes/typed/core/v1"
 	clienttesting "k8s.io/client-go/testing"
+	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
 
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -439,6 +440,28 @@ func TestClean(t *testing.T) {
 				StartTime: startTime(time.Now().Add(-terminatedPodTTL * 2)),
 			},
 		},
+		&corev1api.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "very-young-orphaned-pod-is-kept-to-account-for-cache-staleness",
+				Namespace: "ns",
+				Labels: map[string]string{
+					kube.CreatedByProw: "true",
+				},
+				CreationTimestamp: metav1.Now(),
+			},
+		},
+		&corev1api.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				// The corresponding prowjob will only show up in a GET and not in a list requests. We do this to make
+				// sure that the orphan check does another get on the prowjob before declaring a pod orphaned rather
+				// than relying on the possibly outdated list created in the very beginning of the sync.
+				Name:      "get-only-prowjob",
+				Namespace: "ns",
+				Labels: map[string]string{
+					kube.CreatedByProw: "true",
+				},
+			},
+		},
 	}
 	deletedPods := sets.NewString(
 		"job-complete-pod-failed",
@@ -687,7 +710,10 @@ func TestClean(t *testing.T) {
 	}
 	deletedPodsTrusted := sets.NewString("old-failed-trusted")
 
-	fpjc := fakectrlruntimeclient.NewFakeClient(prowJobs...)
+	fpjc := &clientWrapper{
+		Client:          fakectrlruntimeclient.NewFakeClient(prowJobs...),
+		getOnlyProwJobs: map[string]*prowv1.ProwJob{"ns/get-only-prowjob": {}},
+	}
 	fkc := []*corev1fake.Clientset{corev1fake.NewSimpleClientset(pods...), corev1fake.NewSimpleClientset(podsTrusted...)}
 	fpc := map[string]podInterface{"unreachable": unreachableCluster{}}
 	for idx, fakeClient := range fkc {
@@ -879,4 +905,17 @@ func (c *finalizerFreeDeleteEnforcingClient) Delete(ctx context.Context, name st
 		c.t.Errorf("attempting to delete pod %s that still has %v finalizers", pod.Name, pod.Finalizers)
 	}
 	return c.PodInterface.Delete(ctx, name, options)
+}
+
+type clientWrapper struct {
+	ctrlruntimeclient.Client
+	getOnlyProwJobs map[string]*prowv1.ProwJob
+}
+
+func (c *clientWrapper) Get(ctx context.Context, key ctrlruntimeclient.ObjectKey, obj runtime.Object) error {
+	if pj, exists := c.getOnlyProwJobs[key.String()]; exists {
+		*obj.(*prowv1.ProwJob) = *pj
+		return nil
+	}
+	return c.Client.Get(ctx, key, obj)
 }
