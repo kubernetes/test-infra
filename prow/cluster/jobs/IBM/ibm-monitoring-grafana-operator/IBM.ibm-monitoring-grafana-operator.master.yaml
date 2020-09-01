@@ -1,13 +1,30 @@
 presubmits:
   IBM/ibm-monitoring-grafana-operator:
-  - name: check-ibm-monitoring-grafana-operator
-    cluster: default
-    always_run: true
+  - name: build_ibm-monitoring-grafana-operator
     branches:
     - ^master$
     decorate: true
+    always_run: true
     path_alias: github.com/IBM/ibm-monitoring-grafana-operator
-    rerun_command: /test check-ibm-monitoring-grafana-operator
+    rerun_command: /test build ibm-monitoring-grafana-operator
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build
+        image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?build(?: .*?)?$'
+  - name: check_ibm-monitoring-grafana-operator
+    branches:
+    - ^master$
+    decorate: true
+    always_run: true
+    path_alias: github.com/IBM/ibm-monitoring-grafana-operator
+    rerun_command: /test check ibm-monitoring-grafana-operator
     spec:
       containers:
       - command:
@@ -17,15 +34,14 @@ presubmits:
         name: ""
         securityContext:
           privileged: true
-    trigger: '(?m)^/test (?:.*? )?check(?:.*?)?$'
-  - name: test-ibm-monitoring-grafana-operator-amd64
-    cluster: default
-    always_run: true
+    trigger: '(?m)^/test (?:.*? )?check(?: .*?)?$'
+  - name: test_ibm-monitoring-grafana-operator
     branches:
     - ^master$
     decorate: true
+    always_run: true
     path_alias: github.com/IBM/ibm-monitoring-grafana-operator
-    rerun_command: /test test-ibm-monitoring-grafana-operator-amd64
+    rerun_command: /test test ibm-monitoring-grafana-operator
     spec:
       containers:
       - command:
@@ -36,106 +52,40 @@ presubmits:
         name: ""
         securityContext:
           privileged: true
-    trigger: '(?m)^/test (?:.*? )?test(?:.*?)?$'
-  - name: test-ibm-monitoring-grafana-operator-ppc64le
-    cluster: ppc64le
-    always_run: true
-    branches:
-    - ^master$
-    decorate: true
-    path_alias: github.com/IBM/ibm-monitoring-grafana-operator
-    rerun_command: /test test-ibm-monitoring-grafana-operator-ppc64le
-    spec:
-      containers:
-      - command:
-        - entrypoint
-        - make
-        - test
-        image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
-        name: ""
-        securityContext:
-          privileged: true
-    trigger: '(?m)^/test (?:.*? )?test(?:.*?)?$'
-  - name: test-ibm-monitoring-grafana-operator-s390x
-    cluster: s390x
-    always_run: true
-    branches:
-    - ^master$
-    decorate: true
-    path_alias: github.com/IBM/ibm-monitoring-grafana-operator
-    rerun_command: /test test-ibm-monitoring-grafana-operator-s390x
-    spec:
-      containers:
-      - command:
-        - entrypoint
-        - make
-        - test
-        image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
-        name: ""
-        securityContext:
-          privileged: true
-    trigger: '(?m)^/test (?:.*? )?test(?:.*?)?$'
-  - name: build-ibm-monitoring-grafana-operator-amd64
-    cluster: default
-    always_run: true
-    branches:
-    - ^master$
-    decorate: true
-    path_alias: github.com/IBM/ibm-monitoring-grafana-operator
-    rerun_command: /test build-ibm-monitoring-grafana-operator-amd64
-    spec:
-      containers:
-      - command:
-        - entrypoint
-        - make
-        - build
-        image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
-        name: ""
-        securityContext:
-          privileged: true
-    trigger: '(?m)^/test (?:.*? )?build(?:.*?)?$'
-  - name: build-ibm-monitoring-grafana-operator-ppc64le
-    cluster: ppc64le
-    always_run: true
-    branches:
-    - ^master$
-    decorate: true
-    path_alias: github.com/IBM/ibm-monitoring-grafana-operator
-    rerun_command: /test build-ibm-monitoring-grafana-operator-ppc64le
-    spec:
-      containers:
-      - command:
-        - entrypoint
-        - make
-        - build
-        image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
-        name: ""
-        securityContext:
-          privileged: true
-    trigger: '(?m)^/test (?:.*? )?build(?:.*?)?$'
-  - name: build-ibm-monitoring-grafana-operator-s390x
-    cluster: s390x
-    always_run: true
-    branches:
-    - ^master$
-    decorate: true
-    path_alias: github.com/IBM/ibm-monitoring-grafana-operator
-    rerun_command: /test build-ibm-monitoring-grafana-operator-s390x
-    spec:
-      containers:
-      - command:
-        - entrypoint
-        - make
-        - build
-        image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
-        name: ""
-        securityContext:
-          privileged: true
-    trigger: '(?m)^/test (?:.*? )?build(?:.*?)?$'
+    trigger: '(?m)^/test (?:.*? )?test(?: .*?)?$'
+
 postsubmits:
   IBM/ibm-monitoring-grafana-operator:
-  - name: coverage-ibm-monitoring-grafana-operator-postsubmit
-    cluster: default
+  - name: check_ibm-monitoring-grafana-operator_postsubmit
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/ibm-monitoring-grafana-operator
+    spec:
+      containers:
+      - command:
+        - make
+        - check
+        image: quay.io/multicloudlab/check-tool:v20200817-b1f2b4c05
+        name: ""
+        securityContext:
+          privileged: true
+  - name: test_ibm-monitoring-grafana-operator_postsubmit
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/ibm-monitoring-grafana-operator
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - test
+        image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
+        name: ""
+        securityContext:
+          privileged: true
+  - name: coverage_ibm-monitoring-grafana-operator_postsubmit
     branches:
     - ^master$
     decorate: true
@@ -155,8 +105,7 @@ postsubmits:
               key: codecov-token
         securityContext:
           privileged: true
-  - name: build-ibm-monitoring-grafana-operator-amd64-postsubmit
-    cluster: default
+  - name: build_ibm-monitoring-grafana-operator_postsubmit
     branches:
     - ^master$
     decorate: true
@@ -171,106 +120,19 @@ postsubmits:
         name: ""
         securityContext:
           privileged: true
-  - name: build-ibm-monitoring-grafana-operator-ppc64le-postsubmit
-    cluster: ppc64le
+  - name: images_ibm-monitoring-grafana-operator_postsubmit
     branches:
     - ^master$
     decorate: true
     path_alias: github.com/IBM/ibm-monitoring-grafana-operator
-    spec:
-      containers:
-      - command:
-        - entrypoint
-        - make
-        - build
-        image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
-        name: ""
-        securityContext:
-          privileged: true
-  - name: build-ibm-monitoring-grafana-operator-s390x-postsubmit
-    cluster: s390x
-    branches:
-    - ^master$
-    decorate: true
-    path_alias: github.com/IBM/ibm-monitoring-grafana-operator
-    spec:
-      containers:
-      - command:
-        - entrypoint
-        - make
-        - build
-        image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
-        name: ""
-        securityContext:
-          privileged: true
-  - name: image-ibm-monitoring-grafana-operator-amd64-postsubmit
-    cluster: default
-    branches:
-    - ^master$
-    decorate: true
     labels:
       preset-service-account: "true"
-    path_alias: github.com/IBM/ibm-monitoring-grafana-operator
     spec:
       containers:
       - command:
         - entrypoint
         - make
-        - build-push-image
-        image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
-        name: ""
-        securityContext:
-          privileged: true
-  - name: image-ibm-monitoring-grafana-operator-ppc64le-postsubmit
-    cluster: ppc64le
-    branches:
-    - ^master$
-    decorate: true
-    labels:
-      preset-service-account: "true"
-    path_alias: github.com/IBM/ibm-monitoring-grafana-operator
-    spec:
-      containers:
-      - command:
-        - entrypoint
-        - make
-        - build-push-image
-        image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
-        name: ""
-        securityContext:
-          privileged: true
-  - name: image-ibm-monitoring-grafana-operator-s390x-postsubmit
-    cluster: s390x
-    branches:
-    - ^master$
-    decorate: true
-    labels:
-      preset-service-account: "true"
-    path_alias: github.com/IBM/ibm-monitoring-grafana-operator
-    spec:
-      containers:
-      - command:
-        - entrypoint
-        - make
-        - build-push-image
-        image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
-        name: ""
-        securityContext:
-          privileged: true
-  - name: multiarch-image-ibm-monitoring-grafana-operator-postsubmit
-    cluster: default
-    branches:
-    - ^master$
-    decorate: true
-    labels:
-      preset-service-account: "true"
-    path_alias: github.com/IBM/ibm-monitoring-grafana-operator
-    spec:
-      containers:
-      - command:
-        - entrypoint
-        - make
-        - multiarch-image
+        - images
         image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
         name: ""
         securityContext:
