@@ -214,7 +214,7 @@ periodics:
       - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
       - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
       - --aksengine-winZipBuildScript=$(WIN_BUILD)
-      - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_1_18.json
+      - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_1_18_serial.json
       - --aksengine-win-binaries
       - --aksengine-deploy-custom-k8s
       # Specific test args
