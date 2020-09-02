@@ -414,12 +414,19 @@ func (o *opener) Iterator(ctx context.Context, prefix, delimiter string) (Object
 			return nil, errors.New("no gcs client configured")
 		}
 		bkt := o.gcsClient.Bucket(bucketName)
+		query := &storage.Query{
+			Prefix:    relativePath,
+			Delimiter: delimiter,
+			Versions:  false,
+		}
+		if delimiter == "" {
+			// query.SetAttrSelection cannot be used in directory-like mode (when delimiter != "").
+			if err := query.SetAttrSelection([]string{"Name"}); err != nil {
+				return nil, err
+			}
+		}
 		return gcsObjectIterator{
-			Iterator: bkt.Objects(ctx, &storage.Query{
-				Prefix:    relativePath,
-				Delimiter: delimiter,
-				Versions:  false,
-			}),
+			Iterator: bkt.Objects(ctx, query),
 		}, nil
 	}
 
