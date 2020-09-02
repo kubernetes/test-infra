@@ -119,7 +119,8 @@ state and no claims of backwards compatibility are made for any external API.
 Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
- 
+
+ - *September 2, 2020* The already deprecated `namespace` and `additional_namespaces` settings in the config updater will be removed in October, 2020
  - *August 28, 2020* `tide` now ignores archived repositories in queries.
  - *August 28, 2020* The `Clusters` format and associated `--build-cluster` flag has been removed.
  - *August 24, 2020* The deprecated reporting functionality has been removed from Plank, use crier with `--github-workers=1` instead

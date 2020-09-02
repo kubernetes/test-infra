@@ -904,7 +904,7 @@ func (c *ConfigUpdater) SetDefaults() {
 
 	for name, spec := range c.Maps {
 		if spec.Namespace != "" || len(spec.AdditionalNamespaces) > 0 {
-			logrus.Warnf("'namespace' and 'additional_namespaces' are deprecated for config-updater plugin, use 'clusters' instead")
+			logrus.Warn("'namespace' and 'additional_namespaces' are deprecated for config-updater plugin and will be removed in October, 2020, use 'clusters' instead")
 		}
 		// as a result, namespaces will never be an empty slice (namespace in the slice could be empty string)
 		// and clusters will never be an empty map (map[cluster] could be am empty slice)
