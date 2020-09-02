@@ -119,7 +119,7 @@ presubmits:
           - "./scripts/ci-e2e.sh"
         env:
           - name: GINKGO_FOCUS
-            value: "[PR-Blocking]"
+            value: "\\[PR-Blocking\\]"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
