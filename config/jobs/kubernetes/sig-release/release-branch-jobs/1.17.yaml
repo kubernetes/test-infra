@@ -1232,6 +1232,7 @@ presubmits:
   - always_run: true
     branches:
     - release-1.17
+    cluster: k8s-infra-prow-build
     decorate: true
     name: pull-kubernetes-typecheck
     path_alias: k8s.io/kubernetes
