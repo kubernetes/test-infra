@@ -131,6 +131,8 @@ func gitCtxForRefs(refs prowapi.Refs, baseDir string, env []string, oauthToken s
 	}
 	if refs.CloneURI != "" {
 		g.repositoryURI = refs.CloneURI
+	} else if refs.RepoLink != "" {
+		g.repositoryURI = fmt.Sprintf("%s.git", refs.RepoLink)
 	}
 
 	if len(oauthToken) > 0 {
