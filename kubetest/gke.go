@@ -321,9 +321,11 @@ func (g *gkeDeployer) Up() error {
 	args = append(args,
 		"--project="+g.project,
 		g.location,
-		"--num-nodes="+strconv.Itoa(def.Nodes),
 		"--network="+g.network,
 	)
+	if def.Nodes > 0 {
+		args = append(args, "--num-nodes="+strconv.Itoa(def.Nodes))
+	}
 	if def.MachineType != "" {
 		args = append(args, "--machine-type="+def.MachineType)
 	}
