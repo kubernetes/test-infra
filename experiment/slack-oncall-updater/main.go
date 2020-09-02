@@ -33,7 +33,7 @@ import (
 var githubToSlack = map[string]string{
 	"amwat":          "U9B1P2UGP",
 	"bentheelder":    "U1P7T516X",
-	"chaodaiG":       "U010XUQ9VPE",
+	"chaodaig":       "U010XUQ9VPE",
 	"chases2":        "UJ9R0FWD6",
 	"cjwagner":       "U4QFZFMCM",
 	"e-blackwelder":  "U011FF4QHAN",
