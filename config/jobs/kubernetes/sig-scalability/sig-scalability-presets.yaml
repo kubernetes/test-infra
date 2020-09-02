@@ -88,6 +88,8 @@ presets:
     value: 90
   - name: CL2_ALLOWED_SLOW_API_CALLS
     value: 1
+  - name: CL2_ENABLE_CLUSTER_OOMS_TRACKER
+    value: true
 
 ### kubemark-gce-scale
 - labels:
