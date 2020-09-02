@@ -478,8 +478,10 @@ func GitCommitAndPush(remote, remoteBranch, name, email, message string, stdout,
 	}
 	fetchStderr := &bytes.Buffer{}
 	var remoteTreeRef string
-	if err := Call(stdout, fetchStderr, "git", "fetch", forkRemoteName, remoteBranch); err != nil && !strings.Contains(fetchStderr.String(), fmt.Sprintf("couldn't find remote ref %s", remoteBranch)) {
-		return fmt.Errorf("failed to fetch from fork: %w", err)
+	if err := Call(stdout, fetchStderr, "git", "fetch", forkRemoteName, remoteBranch); err != nil {
+		if !strings.Contains(fetchStderr.String(), fmt.Sprintf("couldn't find remote ref %s", remoteBranch)) {
+			return fmt.Errorf("failed to fetch from fork: %w", err)
+		}
 	} else {
 		var err error
 		remoteTreeRef, err = getTreeRef(stderr, fmt.Sprintf("refs/remotes/%s/%s", forkRemoteName, remoteBranch))
