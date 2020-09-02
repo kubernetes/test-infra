@@ -873,7 +873,7 @@ periodics:
       - --aksengine-deploy-custom-k8s
       - --aksengine-location=eastus2
       - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
-      - --aksengine-template-url=https://gist.githubusercontent.com/aramase/a19fcbf1f309dab99600ee9c0d700fce/raw/b1e975f8c6a1d3c9a9ae796245c58c6733029dc3/single-stack-ipv6.json
+      - --aksengine-template-url=https://gist.githubusercontent.com/aramase/a19fcbf1f309dab99600ee9c0d700fce/raw/b30a93556f98360f64f08e60a9aa5de4acce3f78/single-stack-ipv6.json
       - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.55.1/aks-engine-v0.55.1-linux-amd64.tar.gz
       # Specific test args
       - --ginkgo-parallel=30
