@@ -40,8 +40,7 @@ import (
 // and other resources on the infrastructure cluster, as well as Pods
 // on build clusters.
 type KubernetesOptions struct {
-	buildCluster string
-	kubeconfig   string
+	kubeconfig string
 
 	DeckURI string
 
@@ -56,8 +55,7 @@ type KubernetesOptions struct {
 
 // AddFlags injects Kubernetes options into the given FlagSet.
 func (o *KubernetesOptions) AddFlags(fs *flag.FlagSet) {
-	fs.StringVar(&o.buildCluster, "build-cluster", "", "Path to kube.Cluster YAML file. If empty, uses the local cluster. All clusters are used as build clusters. Cannot be combined with --kubeconfig.")
-	fs.StringVar(&o.kubeconfig, "kubeconfig", "", "Path to .kube/config file. If empty, uses the local cluster. All contexts other than the default are used as build clusters. Cannot be combined with --build-cluster.")
+	fs.StringVar(&o.kubeconfig, "kubeconfig", "", "Path to .kube/config file. If empty, uses the local cluster. All contexts other than the default are used as build clusters.")
 	fs.StringVar(&o.DeckURI, "deck-url", "", "Deck URI for read-only access to the infrastructure cluster.")
 }
 
@@ -79,10 +77,6 @@ func (o *KubernetesOptions) Validate(dryRun bool) error {
 		}
 	}
 
-	if o.kubeconfig != "" && o.buildCluster != "" {
-		return errors.New("must provide only --build-cluster OR --kubeconfig")
-	}
-
 	return nil
 }
 
@@ -92,14 +86,9 @@ func (o *KubernetesOptions) resolve(dryRun bool) error {
 		return nil
 	}
 
-	o.dryRun = dryRun
-	if dryRun {
-		return nil
-	}
-
-	clusterConfigs, err := kube.LoadClusterConfigs(o.kubeconfig, o.buildCluster)
+	clusterConfigs, err := kube.LoadClusterConfigs(o.kubeconfig)
 	if err != nil {
-		return fmt.Errorf("load --kubeconfig=%q --build-cluster=%q configs: %v", o.kubeconfig, o.buildCluster, err)
+		return fmt.Errorf("load --kubeconfig=%q configs: %v", o.kubeconfig, err)
 	}
 	o.clusterConfigs = clusterConfigs
 
@@ -117,6 +106,11 @@ func (o *KubernetesOptions) resolve(dryRun bool) error {
 	pjClient, err := prow.NewForConfig(&localCfg)
 	if err != nil {
 		return err
+	}
+
+	o.dryRun = dryRun
+	if dryRun {
+		return nil
 	}
 
 	o.prowJobClientset = pjClient
@@ -224,15 +218,11 @@ func (o *KubernetesOptions) BuildClusterManagers(dryRun bool, opts ...func(*mana
 	if err := o.resolve(dryRun); err != nil {
 		return nil, err
 	}
-	if o.dryRun {
-		// TODO: Can be supported after bumping c-r to 0.6.0, ref:
-		// https://github.com/kubernetes-sigs/controller-runtime/pull/839
-		return nil, errors.New("dry-run is currently not supported")
-	}
 
 	options := manager.Options{
 		LeaderElection:     false,
 		MetricsBindAddress: "0",
+		DryRunClient:       o.dryRun,
 	}
 	for _, opt := range opts {
 		opt(&options)
@@ -259,19 +249,20 @@ func (o *KubernetesOptions) BuildClusterUncachedRuntimeClients(dryRun bool) (map
 		return nil, err
 	}
 
-	if o.dryRun {
-		return nil, errors.New("no dry-run pod client is supported for build clusters in dry-run mode")
-	}
-
+	var errs []error
 	clients := map[string]ctrlruntimeclient.Client{}
 	for name := range o.clusterConfigs {
 		cfg := o.clusterConfigs[name]
 		client, err := ctrlruntimeclient.New(&cfg, ctrlruntimeclient.Options{})
 		if err != nil {
-			return nil, fmt.Errorf("failed to construct client for cluster %q: %v", name, err)
+			errs = append(errs, fmt.Errorf("failed to construct client for cluster %q: %w", name, err))
+			continue
+		}
+		if o.dryRun {
+			client = ctrlruntimeclient.NewDryRunClient(client)
 		}
 		clients[name] = client
 	}
 
-	return clients, nil
+	return clients, utilerrors.NewAggregate(errs)
 }

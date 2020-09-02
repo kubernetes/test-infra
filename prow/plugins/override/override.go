@@ -204,7 +204,7 @@ func authorizedTopLevelOwner(oc ownersClient, allowTopLevelOwners bool, log *log
 			log.WithError(err).Warnf("cannot determine whether %s is a top level owner of %s/%s", user, org, repo)
 			return false
 		}
-		return owners.TopLevelApprovers().Has(user)
+		return owners.TopLevelApprovers().Has(github.NormLogin(user))
 	}
 	return false
 }

@@ -146,7 +146,7 @@ kubectl create secret generic github-token --from-file=token=/path/to/oauth/secr
 
 There are two sample manifests to get you started:
 * [`starter-s3.yaml`](/config/prow/cluster/starter-s3.yaml) sets up a minio as blob storage for logs and is particularly well suited to quickly get something working
-* [`starter-gcs.yaml`](/config/prow/cluster/starter-gcs.yaml) uses GCS as blob storage and requires additional configuration to set up the bucket and ServiceAccounts. See [this](# Configure a GCS bucket) for details.
+* [`starter-gcs.yaml`](/config/prow/cluster/starter-gcs.yaml) uses GCS as blob storage and requires additional configuration to set up the bucket and ServiceAccounts. See [this](#Configure a GCS bucket) for details.
 
 Regardless of which object storage you choose, the below adjustments are always needed:
 

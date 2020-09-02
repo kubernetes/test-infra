@@ -101,7 +101,7 @@ const censored = "CENSORED"
 
 var (
 	censoredBytes = []byte(censored)
-	standardLog   = logrus.NewEntry(logrus.StandardLogger())
+	standardLog   = logrus.NewEntry(logrus.New())
 )
 
 // Censor replaces sensitive parts of the content with a placeholder.

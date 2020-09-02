@@ -181,7 +181,12 @@ func (g *gitCtx) commandsForBaseRef(refs prowapi.Refs, gitUserName, gitUserEmail
 		commands = append(commands, g.gitCommand("config", "user.email", gitUserEmail))
 	}
 	if cookiePath != "" {
-		commands = append(commands, g.gitCommand("config", "http.cookiefile", cookiePath))
+		if refs.SkipSubmodules {
+			commands = append(commands, g.gitCommand("config", "http.cookiefile", cookiePath))
+		} else {
+			// --global to ensure that all submodules can use this auth
+			commands = append(commands, g.gitCommand("config", "--global", "http.cookiefile", cookiePath))
+		}
 	}
 
 	if refs.CloneDepth > 0 {

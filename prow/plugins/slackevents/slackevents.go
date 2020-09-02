@@ -62,10 +62,10 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 		if mw != nil {
 			configInfo[repo.String()] = fmt.Sprintf("In this repo merges are considered "+
 				"manual and trigger manual merge warnings if the user who merged is not "+
-				"a member of this universal whitelist: %s or merged to a branch they "+
-				"are not specifically whitelisted for: %#v.<br>Warnings are sent to the "+
-				"following Slack channels: %s.", strings.Join(mw.WhiteList, ", "),
-				mw.BranchWhiteList, strings.Join(mw.Channels, ", "))
+				"a member of this universal exemption list: %s or merged to a branch they "+
+				"are not specifically exempted for: %#v.<br>Warnings are sent to the "+
+				"following Slack channels: %s.", strings.Join(mw.ExemptUsers, ", "),
+				mw.ExemptBranches, strings.Join(mw.Channels, ", "))
 		} else {
 			configInfo[repo.String()] = "There are no manual merge warnings configured for this repo."
 		}
@@ -100,8 +100,8 @@ func handlePush(pc plugins.Agent, pe github.PushEvent) error {
 func notifyOnSlackIfManualMerge(pc client, pe github.PushEvent) error {
 	//Fetch MergeWarning for the repo we received the merge event.
 	if mw := getMergeWarning(pc.SlackConfig.MergeWarnings, config.OrgRepo{Org: pe.Repo.Owner.Login, Repo: pe.Repo.Name}); mw != nil {
-		//If the MergeWarning whitelist has the merge user then no need to send a message.
-		if wl := !isWhiteListed(mw, pe); wl {
+		//If the MergeWarning exemption list has the merge user then no need to send a message.
+		if ok := isExempted(mw, pe); !ok {
 			var message string
 			switch {
 			case pe.Created:
@@ -123,13 +123,13 @@ func notifyOnSlackIfManualMerge(pc client, pe github.PushEvent) error {
 	return nil
 }
 
-func isWhiteListed(mw *plugins.MergeWarning, pe github.PushEvent) bool {
-	whitelistedLogins := sets.String{}
-	for _, login := range append(mw.WhiteList, mw.BranchWhiteList[pe.Branch()]...) {
-		whitelistedLogins.Insert(github.NormLogin(login))
+func isExempted(mw *plugins.MergeWarning, pe github.PushEvent) bool {
+	exemptedLogins := sets.String{}
+	for _, login := range append(mw.ExemptUsers, mw.ExemptBranches[pe.Branch()]...) {
+		exemptedLogins.Insert(github.NormLogin(login))
 	}
 
-	return whitelistedLogins.HasAny(github.NormLogin(pe.Pusher.Name), github.NormLogin(pe.Sender.Login))
+	return exemptedLogins.HasAny(github.NormLogin(pe.Pusher.Name), github.NormLogin(pe.Sender.Login))
 }
 
 func getMergeWarning(mergeWarnings []plugins.MergeWarning, repo config.OrgRepo) *plugins.MergeWarning {

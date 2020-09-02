@@ -22,7 +22,12 @@ COPY . /test-infra/
 
 # Build Triage
 RUN cd /test-infra/triage/ && \
-    go build -v -o triage ./main.go
+    env GOOS=linux \
+        CGO_ENABLED=0 \
+        GO111MODULE=on \
+        GOPROXY=https://proxy.golang.org \
+        GOSUMDB=sum.golang.org \
+        go build -v -o triage ./main.go
 # Get the Google Cloud SDK
 RUN curl -o installer https://sdk.cloud.google.com && \
     bash installer --disable-prompts --install-dir=/ && \

@@ -26,6 +26,7 @@ import (
 	"strings"
 	"testing"
 
+	coreapi "k8s.io/api/core/v1"
 	"k8s.io/test-infra/prow/gcsupload"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 
@@ -42,6 +43,7 @@ import (
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/spyglass/api"
 	"k8s.io/test-infra/prow/spyglass/lenses"
+	"k8s.io/test-infra/prow/spyglass/lenses/common"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -63,9 +65,9 @@ func (f fkc) List(ctx context.Context, pjs *prowapi.ProwJobList, _ ...ctrlruntim
 
 type fpkc string
 
-func (f fpkc) GetLogs(name string) ([]byte, error) {
+func (f fpkc) GetLogs(name, container string) ([]byte, error) {
 	if name == "wowowow" || name == "powowow" {
-		return []byte(f), nil
+		return []byte(fmt.Sprintf("%s.%s", f, container)), nil
 	}
 	return nil, fmt.Errorf("pod not found: %s", name)
 }
@@ -148,6 +150,11 @@ test/e2e/e2e.go:137 BeforeSuite on Node 1 failed test/e2e/e2e.go:137
 			Name:       "logs/symlink-party/123.txt",
 			Content:    []byte(`gs://test-bucket/logs/the-actual-place/123`),
 		},
+		{
+			BucketName: "multi-container-one-log",
+			Name:       "logs/job/123/test-1-build-log.txt",
+			Content:    []byte("this log exists in gcs!"),
+		},
 	})
 	defer fakeGCSServer.Stop()
 	kc := fkc{
@@ -169,6 +176,43 @@ test/e2e/e2e.go:137 BeforeSuite on Node 1 failed test/e2e/e2e.go:137
 			},
 			Status: prowapi.ProwJobStatus{
 				PodName: "powowow",
+				BuildID: "123",
+			},
+		},
+		prowapi.ProwJob{
+			Spec: prowapi.ProwJobSpec{
+				Agent: prowapi.KubernetesAgent,
+				Job:   "example-ci-run",
+				PodSpec: &coreapi.PodSpec{
+					Containers: []coreapi.Container{
+						{
+							Image: "tester",
+						},
+					},
+				},
+			},
+			Status: prowapi.ProwJobStatus{
+				PodName: "wowowow",
+				BuildID: "404",
+			},
+		},
+		prowapi.ProwJob{
+			Spec: prowapi.ProwJobSpec{
+				Agent: prowapi.KubernetesAgent,
+				Job:   "multiple-container-job",
+				PodSpec: &coreapi.PodSpec{
+					Containers: []coreapi.Container{
+						{
+							Name: "test-1",
+						},
+						{
+							Name: "test-2",
+						},
+					},
+				},
+			},
+			Status: prowapi.ProwJobStatus{
+				PodName: "wowowow",
 				BuildID: "123",
 			},
 		},
@@ -1217,6 +1261,17 @@ func TestFetchArtifactsPodLog(t *testing.T) {
 				URL:     "https://gubernator.example.com/build/job/123",
 			},
 		},
+		prowapi.ProwJob{
+			Spec: prowapi.ProwJobSpec{
+				Agent: prowapi.KubernetesAgent,
+				Job:   "multi-container-one-log",
+			},
+			Status: prowapi.ProwJobStatus{
+				PodName: "wowowow",
+				BuildID: "123",
+				URL:     "https://gubernator.example.com/build/multi-container/123",
+			},
+		},
 	}
 	fakeConfigAgent := fca{
 		c: config.Config{
@@ -1254,8 +1309,35 @@ func TestFetchArtifactsPodLog(t *testing.T) {
 			t.Errorf("Unexpected error reading pod log for %s: %v", key, err)
 			continue
 		}
-		if string(content) != "clusterA" {
+		if string(content) != fmt.Sprintf("clusterA.%s", kube.TestContainerName) {
 			t.Errorf("Bad pod log content for %s: %q (expected 'clusterA')", key, content)
+		}
+	}
+
+	multiContainerOneLogKey := "gcs/multi-container-one-log/logs/job/123"
+
+	testKeys = append(testKeys, multiContainerOneLogKey)
+
+	for _, key := range testKeys {
+		containers := []string{"test-1", "test-2"}
+		result, err := sg.FetchArtifacts(context.Background(), key, "", 500e6, []string{fmt.Sprintf("%s-%s", containers[0], singleLogName), fmt.Sprintf("%s-%s", containers[1], singleLogName)})
+		if err != nil {
+			t.Errorf("Unexpected error grabbing pod log for %s: %v", key, err)
+			continue
+		}
+		for i, art := range result {
+			content, err := art.ReadAll()
+			if err != nil {
+				t.Errorf("Unexpected error reading pod log for %s: %v", key, err)
+				continue
+			}
+			expected := fmt.Sprintf("clusterA.%s", containers[i])
+			if key == multiContainerOneLogKey && containers[i] == "test-1" {
+				expected = "this log exists in gcs!"
+			}
+			if string(content) != expected {
+				t.Errorf("Bad pod log content for %s: %q (expected '%s')", key, content, expected)
+			}
 		}
 	}
 }
@@ -1312,8 +1394,7 @@ func TestKeyToJob(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		sg := Spyglass{}
-		jobName, buildID, err := sg.KeyToJob(tc.path)
+		jobName, buildID, err := common.KeyToJob(tc.path)
 		if err != nil {
 			if !tc.expectErr {
 				t.Errorf("%s: unexpected error %v", tc.name, err)

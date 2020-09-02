@@ -86,17 +86,29 @@ type PublicKey struct {
 }
 
 type WindowsProfile struct {
-	AdminUsername         string `json:"adminUsername,omitempty"`
-	AdminPassword         string `json:"adminPassword,omitempty"`
-	ImageVersion          string `json:"imageVersion,omitempty"`
-	WindowsImageSourceURL string `json:"WindowsImageSourceUrl"`
-	WindowsPublisher      string `json:"WindowsPublisher"`
-	WindowsOffer          string `json:"WindowsOffer"`
-	WindowsSku            string `json:"WindowsSku"`
-	WindowsDockerVersion  string `json:"windowsDockerVersion"`
-	SSHEnabled            bool   `json:"sshEnabled,omitempty"`
-	EnableCSIProxy        bool   `json:"enableCSIProxy,omitempty"`
-	CSIProxyURL           string `json:"csiProxyURL,omitempty"`
+	AdminUsername         string           `json:"adminUsername,omitempty"`
+	AdminPassword         string           `json:"adminPassword,omitempty"`
+	ImageVersion          string           `json:"imageVersion,omitempty"`
+	WindowsImageSourceURL string           `json:"WindowsImageSourceUrl"`
+	WindowsPublisher      string           `json:"WindowsPublisher"`
+	WindowsOffer          string           `json:"WindowsOffer"`
+	WindowsSku            string           `json:"WindowsSku"`
+	WindowsDockerVersion  string           `json:"windowsDockerVersion"`
+	SSHEnabled            bool             `json:"sshEnabled,omitempty"`
+	EnableCSIProxy        bool             `json:"enableCSIProxy,omitempty"`
+	CSIProxyURL           string           `json:"csiProxyURL,omitempty"`
+	WindowsRuntimes       *WindowsRuntimes `json:"windowsRuntimes,omitempty"`
+}
+
+// WindowsRuntimes configures containerd runtimes that are available on the windows nodes
+type WindowsRuntimes struct {
+	Default        string            `json:"default,omitempty"`
+	HypervRuntimes []RuntimeHandlers `json:"hypervRuntimes,omitempty"`
+}
+
+// RuntimeHandlers configures the runtime settings in containerd
+type RuntimeHandlers struct {
+	BuildNumber string `json:"buildNumber,omitempty"`
 }
 
 // KubernetesContainerSpec defines configuration for a container spec

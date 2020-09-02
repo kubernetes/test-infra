@@ -25,19 +25,6 @@ jqfilter: |
   | {(.job): {
       latest_pass: (.latest_pass)
   }})] | add
-
-# JQ filter to make influxdb timeseries data points for Velodrome. (Optional)
-jqmeasurements: |
-  [(.[] | select((.latest_pass|length) > 0) | {
-    measurement: "latest_pass_time",
-    tags: {
-      job: (.job)
-    },
-    fields: {
-      job: (.job),
-      latest_pass: (.latest_pass)
-  }})]
-
 ```
 
 ## Metrics
@@ -54,7 +41,7 @@ jqmeasurements: |
 * flakes - find the flakiest jobs this week (and the flakiest tests in each job).
     - [Config](configs/flakes-config.yaml)
     - [flakes-latest.json](http://storage.googleapis.com/k8s-metrics/flakes-latest.json)
-* flakes-daily - find flakes from the previous day. Similar to `flakes`, but creates more granular results for display in Velodrome.
+* flakes-daily - find flakes from the previous day. Similar to `flakes`, but creates more granular results.
     - [Config](configs/flakes-daily-config.yaml)
     - [flakes-daily-latest.json](http://storage.googleapis.com/k8s-metrics/flakes-daily-latest.json)
 * job-health - compute daily health metrics for jobs (runs, tests, failure rate for each, duration percentiles)
@@ -99,7 +86,13 @@ k8s-metrics bucket and named with the format `METRICNAME-latest.json`.
 
 If a config specifies the optional jq filter used to create influxdb timeseries
 data points, then the job will use the filter to generate timeseries points from
-the raw query results. The points are uploaded to [Velodrome](http://velodrome.k8s.io)'s influxdb instance where they can be used to create graphs and tables.
+the raw query results.
+
+At one point, these points were uploaded to a system called velodrome, which had an influxdb instance where they can be used to create graphs and tables, but velodrome is no longer in existence.  This may be revised in the future.
+
+## Query structure
+
+The `query` is written in `Standard SQL` which is really [BigQuery Standard SQL](https://cloud.google.com/bigquery/docs/reference/standard-sql/query-syntax) that allows for working with arrays/repeated fields. Each sub-query, from the most indented out, will build a subtable that the outer query runs against. Any one of the sub query blocks can be run independently from the BigQuery console or opionally added to a test query config and run via the same `bigquery.py` line above.
 
 ## Consistency
 

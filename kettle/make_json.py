@@ -34,6 +34,30 @@ import model
 
 SECONDS_PER_DAY = 86400
 
+def buckets_yaml():
+    import ruamel.yaml as yaml  # pylint: disable=import-outside-toplevel
+    with open(os.path.dirname(os.path.abspath(__file__))+'/buckets.yaml') as fp:
+        return yaml.safe_load(fp)
+
+# pypy compatibility hack
+def python_buckets_yaml(python='python3'):
+    return json.loads(subprocess.check_output(
+        [python, '-c',
+         'import json, ruamel.yaml as yaml; print(json.dumps(yaml.safe_load(open("buckets.yaml"))))'
+         ],
+        cwd=os.path.dirname(os.path.abspath(__file__))).decode("utf-8"))
+
+for attempt in [python_buckets_yaml, buckets_yaml, lambda: python_buckets_yaml(python='python')]:
+    try:
+        BUCKETS = attempt()
+        break
+    except (ImportError, OSError):
+        traceback.print_exc()
+else:
+    # pylint: disable=misplaced-bare-raise
+    # This is safe because the only way we get here is by faling all attempts
+    raise
+
 class Build:
     """
     Represent Metadata and Details of a build. Leveraging the information in
@@ -49,9 +73,6 @@ class Build:
         self.test = tests
         self.tests_run = len(tests)
         self.tests_failed = sum(t.get('failed', 0) for t in tests)
-        job, number = path_to_job_and_number(path)
-        self.job = job
-        self.number = number if number else None
         #From Started.json
         self.started = None
         self.executor = None
@@ -65,6 +86,7 @@ class Build:
         self.repos = None
         self.metadata = None
         self.elapsed = None
+        self.populate_path_to_job_and_number()
 
     @classmethod
     def generate(cls, path, tests, started, finished, metadata, repos):
@@ -74,6 +96,25 @@ class Build:
         build.populate_meta(metadata, repos)
         build.set_elapsed()
         return build
+
+    def populate_path_to_job_and_number(self):
+        assert not self.path.endswith('/')
+        for bucket, meta in BUCKETS.items():
+            if self.path.startswith(bucket):
+                prefix = meta['prefix']
+                break
+
+            if self.path.startswith('gs://kubernetes-jenkins/pr-logs'):
+                prefix = 'pr:'
+            else:
+                raise ValueError('unknown build path')
+        build = os.path.basename(self.path)
+        job = prefix + os.path.basename(os.path.dirname(self.path))
+        self.job = job
+        try:
+            self.number = int(build)
+        except ValueError:
+            self.number = None
 
     def as_dict(self):
         return {k: v for k, v in self.__dict__.items() if v is not None}
@@ -151,51 +192,6 @@ def parse_junit(xml):
                 yield make_result(name, time, failure_text)
     else:
         logging.error('unable to find failures, unexpected tag %s', tree.tag)
-
-
-def buckets_yaml():
-    import ruamel.yaml as yaml  # pylint: disable=import-outside-toplevel
-    with open(os.path.dirname(os.path.abspath(__file__))+'/buckets.yaml') as fp:
-        return yaml.safe_load(fp)
-
-# pypy compatibility hack
-def python_buckets_yaml(python='python3'):
-    return json.loads(subprocess.check_output(
-        [python, '-c',
-         'import json, ruamel.yaml as yaml; print(json.dumps(yaml.safe_load(open("buckets.yaml"))))'
-         ],
-        cwd=os.path.dirname(os.path.abspath(__file__))).decode("utf-8"))
-
-for attempt in [python_buckets_yaml, buckets_yaml, lambda: python_buckets_yaml(python='python')]:
-    try:
-        BUCKETS = attempt()
-        break
-    except (ImportError, OSError):
-        traceback.print_exc()
-else:
-    # pylint: disable=misplaced-bare-raise
-    # This is safe because the only way we get here is by faling all attempts
-    raise
-
-
-def path_to_job_and_number(path):
-    assert not path.endswith('/')
-    for bucket, meta in BUCKETS.items():
-        if path.startswith(bucket):
-            prefix = meta['prefix']
-            break
-    else:
-        if path.startswith('gs://kubernetes-jenkins/pr-logs'):
-            prefix = 'pr:'
-        else:
-            raise ValueError('unknown build path')
-    build = os.path.basename(path)
-    job = prefix + os.path.basename(os.path.dirname(path))
-    try:
-        return job, int(build)
-    except ValueError:
-        return job, None
-
 
 def row_for_build(path, started, finished, results):
     """

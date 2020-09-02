@@ -139,6 +139,7 @@ func TestHandlePullRequest(t *testing.T) {
 		prChanges     bool
 		prAction      github.PullRequestEventAction
 		prIsDraft     bool
+		eventSender   string
 		jobToAbort    *prowapi.ProwJob
 	}{
 		{
@@ -348,6 +349,7 @@ func TestHandlePullRequest(t *testing.T) {
 
 			Author:      "t",
 			ShouldBuild: true,
+			eventSender: "not-k8s-ci-robot",
 			prAction:    github.PullRequestActionLabeled,
 			prLabel:     labels.OkToTest,
 		},
@@ -356,13 +358,15 @@ func TestHandlePullRequest(t *testing.T) {
 
 			Author:      "u",
 			ShouldBuild: true,
+			eventSender: "not-k8s-ci-robot",
 			prAction:    github.PullRequestActionLabeled,
 			prLabel:     labels.OkToTest,
 		},
 		{
 			name: "Label added by a bot. Build should not be triggered in this case.",
 
-			Author:      "k8s-ci-robot",
+			Author:      "u",
+			eventSender: "k8s-ci-robot",
 			prLabel:     labels.OkToTest,
 			prAction:    github.PullRequestActionLabeled,
 			ShouldBuild: false,
@@ -433,6 +437,9 @@ func TestHandlePullRequest(t *testing.T) {
 			if tc.HasOkToTest {
 				g.IssueLabelsExisting = append(g.IssueLabelsExisting, issueLabels(labels.OkToTest)...)
 			}
+			if tc.eventSender == "" {
+				tc.eventSender = tc.Author
+			}
 			pr := github.PullRequestEvent{
 				Action: tc.prAction,
 				Label:  github.Label{Name: tc.prLabel},
@@ -448,6 +455,9 @@ func TestHandlePullRequest(t *testing.T) {
 						},
 					},
 					Draft: tc.prIsDraft,
+				},
+				Sender: github.User{
+					Login: tc.eventSender,
 				},
 			}
 			if tc.prChanges {

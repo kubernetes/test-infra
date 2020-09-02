@@ -32,6 +32,8 @@ import (
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
+
+	"k8s.io/test-infra/prow/version"
 )
 
 const (
@@ -83,15 +85,23 @@ type Client interface {
 	GetRootForClone(bug *Bug) (*Bug, error)
 	// SetRoundTripper sets a custom implementation of RoundTripper as the Transport for http.Client
 	SetRoundTripper(t http.RoundTripper)
+
+	// ForPlugin and ForSubcomponent allow for the logger used in the client
+	// to be created in a more specific manner when spawning parallel workers
+	ForPlugin(plugin string) Client
+	ForSubcomponent(subcomponent string) Client
+	WithFields(fields logrus.Fields) Client
 }
 
 // NewClient returns a bugzilla client.
 func NewClient(getAPIKey func() []byte, endpoint string) Client {
 	return &client{
-		logger:    logrus.WithField("client", "bugzilla"),
-		client:    &http.Client{},
-		endpoint:  endpoint,
-		getAPIKey: getAPIKey,
+		logger: logrus.WithField("client", "bugzilla"),
+		delegate: &delegate{
+			client:    &http.Client{},
+			endpoint:  endpoint,
+			getAPIKey: getAPIKey,
+		},
 	}
 }
 
@@ -137,8 +147,53 @@ func (bd *bugDetailsCache) list() []Bug {
 	return result
 }
 
+// client interacts with the Bugzilla api.
 type client struct {
-	logger    *logrus.Entry
+	// If logger is non-nil, log all method calls with it.
+	logger *logrus.Entry
+	// identifier is used to add more identification to the user-agent header
+	identifier string
+	*delegate
+}
+
+// ForPlugin clones the client, keeping the underlying delegate the same but adding
+// a plugin identifier and log field
+func (c *client) ForPlugin(plugin string) Client {
+	return c.forKeyValue("plugin", plugin)
+}
+
+// ForSubcomponent clones the client, keeping the underlying delegate the same but adding
+// an identifier and log field
+func (c *client) ForSubcomponent(subcomponent string) Client {
+	return c.forKeyValue("subcomponent", subcomponent)
+}
+
+func (c *client) forKeyValue(key, value string) Client {
+	return &client{
+		identifier: value,
+		logger:     c.logger.WithField(key, value),
+		delegate:   c.delegate,
+	}
+}
+
+func (c *client) userAgent() string {
+	if c.identifier != "" {
+		return version.UserAgentWithIdentifier(c.identifier)
+	}
+	return version.UserAgent()
+}
+
+// WithFields clones the client, keeping the underlying delegate the same but adding
+// fields to the logging context
+func (c *client) WithFields(fields logrus.Fields) Client {
+	return &client{
+		logger:   c.logger.WithFields(fields),
+		delegate: c.delegate,
+	}
+}
+
+// delegate actually does the work to talk to Bugzilla
+type delegate struct {
 	client    *http.Client
 	endpoint  string
 	getAPIKey func() []byte
@@ -615,6 +670,9 @@ func (c *client) request(req *http.Request, logger *logrus.Entry) ([]byte, error
 		values := req.URL.Query()
 		values.Add("api_key", string(apiKey))
 		req.URL.RawQuery = values.Encode()
+	}
+	if userAgent := c.userAgent(); userAgent != "" {
+		req.Header.Add("User-Agent", userAgent)
 	}
 	start := time.Now()
 	resp, err := c.client.Do(req)

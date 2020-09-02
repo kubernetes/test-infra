@@ -146,6 +146,10 @@ func main() {
 			logrus.WithError(err).Fatal("Error getting Bugzilla client.")
 		}
 		bugzillaClient = client
+	} else {
+		// we want something non-nil here with good no-op behavior,
+		// so the test fake is a cheap way to do that
+		bugzillaClient = &bugzilla.Fake{}
 	}
 
 	infrastructureClient, err := o.kubernetes.InfrastructureClusterClient(o.dryRun)

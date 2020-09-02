@@ -35,7 +35,7 @@ periodics:
       - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[DisabledForLargeClusters\] --minStartupPods=8 --node-schedulable-timeout=90m
       - --timeout=240m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200901-eeeadc5-master
       resources:
         requests:
           cpu: 6
@@ -99,7 +99,7 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=1050m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200901-eeeadc5-master
       resources:
         requests:
           cpu: 6
@@ -131,7 +131,7 @@ periodics:
     testgrid-num-failures-to-alert: '2'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200901-eeeadc5-master
       args:
       - --timeout=140
       - --repo=k8s.io/kubernetes=master
@@ -146,6 +146,8 @@ periodics:
       - --extract=ci/latest-fast
       - --gcp-node-image=gci
       - --gcp-nodes=100
+      # TODO(k/k#94098): Remove the line below once we get enough data.
+      - --gcp-master-size=n1-standard-8
       - --gcp-project-type=scalability-project
       - --gcp-zone=us-east1-b
       - --provider=gce

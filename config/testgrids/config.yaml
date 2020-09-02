@@ -178,6 +178,15 @@ dashboards:
         value: 'ci-windows-upgrade-e2e-tests issue: <test-name>'
       - key: body
         value: <test-url>
+  - name: ci-v2v-adapt-e2e
+    test_group_name: ci-v2v-adapt-e2e
+    file_bug_template:
+      url: https://github.com/GoogleCloudPlatform/compute-image-tools/issues/new
+      options:
+      - key: title
+        value: 'ci-v2v-adapt-e2e issue: <test-name>'
+      - key: body
+        value: <test-url>
   - name: linux-image-tests
     test_group_name: linux-image-tests
     file_bug_template:

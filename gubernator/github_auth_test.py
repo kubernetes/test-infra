@@ -117,7 +117,7 @@ class TestGithubAuth(unittest.TestCase):
         self.assertEqual(phase2.location, 'http://localhost/pr')
 
     def test_redirect_ignored(self):
-        "login only redirects to whitelisted URLs"
+        "login only redirects to allowed URLs"
         phase1 = self.do_phase1('/bad/redirect')
         phase2 = self.do_phase2(phase1)
         self.assertEqual(phase2.status_code, 200)

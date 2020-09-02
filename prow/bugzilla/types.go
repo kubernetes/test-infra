@@ -258,6 +258,8 @@ type ExternalBug struct {
 	// The following fields are parsed from the external bug identifier
 	Org, Repo string
 	Num       int
+	// Status holds the status of the PR (ie closed, merged, open)
+	Status string `json:"ext_status"`
 }
 
 // ExternalBugType holds identifying metadata for a tracker
