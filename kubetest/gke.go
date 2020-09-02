@@ -147,9 +147,6 @@ func newGKE(provider, project, zone, region, network, image, imageFamily, imageP
 	}
 	g.network = network
 
-	if image == "" {
-		return nil, fmt.Errorf("--gcp-node-image must be set for GKE deployment")
-	}
 	if strings.ToUpper(image) == "CUSTOM" {
 		if imageFamily == "" || imageProject == "" {
 			return nil, fmt.Errorf("--image-family and --image-project must be set for GKE deployment if --gcp-node-image=CUSTOM")
@@ -324,11 +321,15 @@ func (g *gkeDeployer) Up() error {
 	args = append(args,
 		"--project="+g.project,
 		g.location,
-		"--machine-type="+def.MachineType,
-		"--image-type="+g.image,
 		"--num-nodes="+strconv.Itoa(def.Nodes),
 		"--network="+g.network,
 	)
+	if def.MachineType != "" {
+		args = append(args, "--machine-type="+def.MachineType)
+	}
+	if g.image != "" {
+		args = append(args, "--image-type="+g.image)
+	}
 	args = append(args, def.ExtraArgs...)
 	if strings.ToUpper(g.image) == "CUSTOM" {
 		args = append(args, "--image-family="+g.imageFamily)
@@ -384,8 +385,10 @@ func (g *gkeDeployer) Up() error {
 			"--cluster=" + g.cluster,
 			"--project=" + g.project,
 			g.location,
-			"--machine-type=" + pool.MachineType,
 			"--num-nodes=" + strconv.Itoa(pool.Nodes)}
+		if pool.MachineType != "" {
+			poolArgs = append(poolArgs, "--machine-type="+pool.MachineType)
+		}
 		poolArgs = append(poolArgs, pool.ExtraArgs...)
 		if err := control.FinishRunning(exec.Command("gcloud", g.containerArgs(poolArgs...)...)); err != nil {
 			return fmt.Errorf("error creating node pool %q: %v", poolName, err)
