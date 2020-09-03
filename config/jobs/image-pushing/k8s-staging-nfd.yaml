@@ -28,5 +28,5 @@ postsubmits:
               - --project=k8s-staging-nfd
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-nfd-gcb
-              - --env-passthrough=PULL_BASE_REF
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
               - .
