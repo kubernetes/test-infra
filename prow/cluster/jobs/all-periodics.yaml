@@ -1,8 +1,0 @@
-periodics:
-- name: echo-test
-  interval: 120m
-  decorate: true
-  spec:
-    containers:
-    - image: alpine
-      command: ["/bin/date"]
