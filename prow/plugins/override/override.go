@@ -286,7 +286,7 @@ func handle(oc overrideClient, log *logrus.Entry, e *github.GenericCommentEvent,
 			log.Debug(resp)
 			return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
 		}
-		overrides.Insert(m[2])
+		overrides.Insert(strings.TrimSpace(m[2]))
 	}
 
 	authorized := authorizedUser(oc, log, org, repo, user)

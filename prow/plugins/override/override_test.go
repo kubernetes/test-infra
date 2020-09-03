@@ -412,6 +412,25 @@ func TestHandle(t *testing.T) {
 			checkComments: []string{fmt.Sprintf("%s: broken-test, hung-test", adminUser)},
 		},
 		{
+			name: "override with extra whitespace",
+			// Note two spaces here to start, and trailing whitespace
+			comment: "/override  broken-test \n",
+			contexts: map[string]github.Status{
+				"broken-test": {
+					Context: "broken-test",
+					State:   github.StatusFailure,
+				},
+			},
+			expected: map[string]github.Status{
+				"broken-test": {
+					Context:     "broken-test",
+					Description: description(adminUser),
+					State:       github.StatusSuccess,
+				},
+			},
+			checkComments: []string{fmt.Sprintf("%s: broken-test", adminUser)},
+		},
+		{
 			name:    "ignore non-PRs",
 			issue:   true,
 			comment: "/override broken-test",
