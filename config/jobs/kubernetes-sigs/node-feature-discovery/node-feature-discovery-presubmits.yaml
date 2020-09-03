@@ -12,6 +12,18 @@ presubmits:
       - image: golang:1.14
         command:
         - scripts/test-infra/verify.sh
+  - name: pull-node-feature-discovery-build
+    always_run: true
+    decorate: true
+    annotations:
+      testgrid-dashboards: sig-node-node-feature-discovery
+      testgrid-tab-name: build
+      description: "Build node-feature-discovery binaries"
+    spec:
+      containers:
+      - image: golang:1.14
+        command:
+        - scripts/test-infra/build.sh
   - name: pull-node-feature-discovery-build-image
     always_run: true
     decorate: true
