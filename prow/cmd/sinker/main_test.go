@@ -32,9 +32,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
-	corev1fake "k8s.io/client-go/kubernetes/fake"
-	corev1client "k8s.io/client-go/kubernetes/typed/core/v1"
-	clienttesting "k8s.io/client-go/testing"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
 
@@ -85,16 +82,18 @@ func startTime(s time.Time) *metav1.Time {
 	return &start
 }
 
-type unreachableCluster struct{}
+type unreachableCluster struct{ ctrlruntimeclient.Client }
 
-func (unreachableCluster) Delete(_ context.Context, name string, _ metav1.DeleteOptions) error {
+func (unreachableCluster) Delete(_ context.Context, obj runtime.Object, opts ...ctrlruntimeclient.DeleteOption) error {
 	return fmt.Errorf("I can't hear you.")
 }
-func (unreachableCluster) List(_ context.Context, _ metav1.ListOptions) (*corev1api.PodList, error) {
-	return nil, fmt.Errorf("I can't hear you.")
+
+func (unreachableCluster) List(_ context.Context, _ runtime.Object, opts ...ctrlruntimeclient.ListOption) error {
+	return fmt.Errorf("I can't hear you.")
 }
-func (unreachableCluster) Patch(_ context.Context, _ string, _ types.PatchType, _ []byte, _ metav1.PatchOptions, subresources ...string) (*corev1api.Pod, error) {
-	return nil, errors.New("I can't hear you.")
+
+func (unreachableCluster) Patch(_ context.Context, _ runtime.Object, _ ctrlruntimeclient.Patch, _ ...ctrlruntimeclient.PatchOption) error {
+	return errors.New("I can't hear you.")
 }
 
 func TestClean(t *testing.T) {
@@ -714,10 +713,13 @@ func TestClean(t *testing.T) {
 		Client:          fakectrlruntimeclient.NewFakeClient(prowJobs...),
 		getOnlyProwJobs: map[string]*prowv1.ProwJob{"ns/get-only-prowjob": {}},
 	}
-	fkc := []*corev1fake.Clientset{corev1fake.NewSimpleClientset(pods...), corev1fake.NewSimpleClientset(podsTrusted...)}
-	fpc := map[string]podInterface{"unreachable": unreachableCluster{}}
+	fkc := []*podClientWrapper{
+		{t: t, Client: fakectrlruntimeclient.NewFakeClient(pods...)},
+		{t: t, Client: fakectrlruntimeclient.NewFakeClient(podsTrusted...)},
+	}
+	fpc := map[string]ctrlruntimeclient.Client{"unreachable": unreachableCluster{}}
 	for idx, fakeClient := range fkc {
-		fpc[strconv.Itoa(idx)] = &finalizerFreeDeleteEnforcingClient{t: t, PodInterface: fakeClient.CoreV1().Pods("ns")}
+		fpc[strconv.Itoa(idx)] = &podClientWrapper{t: t, Client: fakeClient}
 	}
 	// Run
 	c := controller{
@@ -727,8 +729,8 @@ func TestClean(t *testing.T) {
 		config:        newFakeConfigAgent().Config,
 	}
 	c.clean()
-	assertSetsEqual(deletedPods, getDeletedObjectNames(fkc[0].Fake.Actions()), t, "did not delete correct Pods")
-	assertSetsEqual(deletedPodsTrusted, getDeletedObjectNames(fkc[1].Fake.Actions()), t, "did not delete correct trusted Pods")
+	assertSetsEqual(deletedPods, fkc[0].deletedPods, t, "did not delete correct Pods")
+	assertSetsEqual(deletedPodsTrusted, fkc[1].deletedPods, t, "did not delete correct trusted Pods")
 
 	remainingProwJobs := &prowv1.ProwJobList{}
 	if err := fpjc.List(context.Background(), remainingProwJobs); err != nil {
@@ -742,17 +744,6 @@ func TestClean(t *testing.T) {
 		actuallyDeletedProwJobs.Delete(remainingProwJob.Name)
 	}
 	assertSetsEqual(deletedProwJobs, actuallyDeletedProwJobs, t, "did not delete correct ProwJobs")
-}
-
-func getDeletedObjectNames(actions []clienttesting.Action) sets.String {
-	names := sets.NewString()
-	for _, action := range actions {
-		switch action := action.(type) {
-		case clienttesting.DeleteActionImpl:
-			names.Insert(action.Name)
-		}
-	}
-	return names
 }
 
 func assertSetsEqual(expected, actual sets.String, t *testing.T, prefix string) {
@@ -878,33 +869,44 @@ func TestFlags(t *testing.T) {
 }
 
 func TestDeletePodToleratesNotFound(t *testing.T) {
-	client := corev1fake.NewSimpleClientset().CoreV1().Pods("default")
 	m := &sinkerReconciliationMetrics{}
-	c := &controller{}
+	c := &controller{config: newFakeConfigAgent().Config}
 	l := logrus.NewEntry(logrus.New())
 
-	c.deletePod(l, "i-do-not-exist", "reason", client, m)
+	c.deletePod(l, &corev1api.Pod{}, "reason", fakectrlruntimeclient.NewFakeClient(), m)
 
 	if n := len(m.podRemovalErrors); n != 0 {
 		t.Errorf("Expected no pod removal errors, got %v", m.podRemovalErrors)
 	}
 }
 
-type finalizerFreeDeleteEnforcingClient struct {
+type podClientWrapper struct {
 	t *testing.T
-	corev1client.PodInterface
+	ctrlruntimeclient.Client
+	deletedPods sets.String
 }
 
-func (c *finalizerFreeDeleteEnforcingClient) Delete(ctx context.Context, name string, options metav1.DeleteOptions) error {
-	pod, err := c.Get(ctx, name, metav1.GetOptions{})
-	if err != nil {
+func (c *podClientWrapper) Delete(ctx context.Context, obj runtime.Object, opts ...ctrlruntimeclient.DeleteOption) error {
+	var pod corev1api.Pod
+	name := types.NamespacedName{
+		Namespace: obj.(metav1.Object).GetNamespace(),
+		Name:      obj.(metav1.Object).GetName(),
+	}
+	if err := c.Get(ctx, name, &pod); err != nil {
 		return err
 	}
 	// The kube api allows this but we want to ensure in tests that we first clean up finalizers before deleting a pod
 	if len(pod.Finalizers) > 0 {
 		c.t.Errorf("attempting to delete pod %s that still has %v finalizers", pod.Name, pod.Finalizers)
 	}
-	return c.PodInterface.Delete(ctx, name, options)
+	if err := c.Client.Delete(ctx, obj, opts...); err != nil {
+		return err
+	}
+	if c.deletedPods == nil {
+		c.deletedPods = sets.String{}
+	}
+	c.deletedPods.Insert(pod.Name)
+	return nil
 }
 
 type clientWrapper struct {
