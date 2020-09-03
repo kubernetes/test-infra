@@ -229,6 +229,16 @@ func cdToRootDir() error {
 }
 
 func Call(stdout, stderr io.Writer, cmd string, args ...string) error {
+	(&logrus.Logger{
+		Out:       stderr,
+		Formatter: logrus.StandardLogger().Formatter,
+		Hooks:     logrus.StandardLogger().Hooks,
+		Level:     logrus.StandardLogger().Level,
+	}).WithField("cmd", cmd).
+		// The default formatting uses a space as separator, which is hard to read if an arg contains a space
+		WithField("args", fmt.Sprintf("['%s']", strings.Join(args, "', '"))).
+		Info("running command")
+
 	c := exec.Command(cmd, args...)
 	c.Stdout = stdout
 	c.Stderr = stderr
