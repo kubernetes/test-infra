@@ -137,9 +137,21 @@ func main() {
 		logrus.WithError(err).Fatal("Error creating manager")
 	}
 
-	buildClusterClients, err := o.kubernetes.BuildClusterUncachedRuntimeClients(o.dryRun.Value)
+	buildManagers, err := o.kubernetes.BuildClusterManagers(o.dryRun.Value,
+		func(o *manager.Options) {
+			o.Namespace = cfg().PodNamespace
+		},
+	)
 	if err != nil {
-		logrus.WithError(err).Error("Error creating build cluster clients.")
+		logrus.WithError(err).Error("Failed to construct build cluster managers. Is there a bad entry in the kubeconfig secret?")
+	}
+
+	buildClusterClients := map[string]ctrlruntimeclient.Client{}
+	for clusterName, buildManager := range buildManagers {
+		if err := mgr.Add(buildManager); err != nil {
+			logrus.WithError(err).Fatal("Failed to add build cluster manager to main manager")
+		}
+		buildClusterClients[clusterName] = mgr.GetClient()
 	}
 
 	c := controller{
