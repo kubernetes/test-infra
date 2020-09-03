@@ -432,62 +432,12 @@ presubmits:
         - --use-logexporter
         image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-master
         resources:
-          requests:
+          limits:
+            cpu: 2
             memory: "6Gi"
-
-  # clone of pull-perf-tests-clusterloader2 with enabled node killer and using only load test
-  - name: pull-perf-tests-clusterloader2-nodekiller-experimental
-    always_run: false
-    skip_report: false
-    max_concurrency: 1
-    branches:
-      - master
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-e2e-scalability-common: "true"
-      preset-e2e-scalability-containerd: "true"
-      preset-e2e-scalability-presubmits: "true"
-    spec:
-      containers:
-        - args:
-            - --root=/go/src
-            - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
-            - --repo=k8s.io/release
-            - --upload=gs://kubernetes-jenkins/pr-logs
-            - --timeout=120
-            - --scenario=kubernetes_e2e
-            - --
-            - --cluster=
-            - --extract=ci/latest
-            - --gcp-nodes=100
-            - --gcp-project-type=scalability-presubmit-project
-            - --gcp-zone=us-east1-b
-            - --provider=gce
-            - --tear-down-previous
-            - --env=CL2_ENABLE_VIOLATIONS_FOR_SCHEDULING_THROUGHPUT=false
-            - --test=false
-            - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
-            - --test-cmd-args=cluster-loader2
-            - --test-cmd-args=--nodes=100
-            - --test-cmd-args=--prometheus-scrape-node-exporter
-            - --test-cmd-args=--provider=gce
-            - --test-cmd-args=--report-dir=/workspace/_artifacts
-            - --test-cmd-args=--testconfig=testing/load/config.yaml
-            - --test-cmd-args=--testoverrides=./testing/chaosmonkey/override.yaml
-            - --test-cmd-args=--testoverrides=./testing/chaosmonkey/ignore_node_killer_container_restarts_100.yaml
-            - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
-            - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
-            - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
-            - --test-cmd-args=--testoverrides=./testing/overrides/load_throughput.yaml
-            - --test-cmd-name=ClusterLoaderV2
-            - --timeout=100m
-            - --use-logexporter
-          image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-master
-          resources:
-            requests:
-              memory: "6Gi"
+          requests:
+            cpu: 2
+            memory: "6Gi"
 
   - name: pull-perf-tests-clusterloader2-kubemark
     always_run: false
@@ -547,7 +497,11 @@ presubmits:
             - --use-logexporter
           image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-master
           resources:
+            limits:
+              cpu: 2
+              memory: "6Gi"
             requests:
+              cpu: 2
               memory: "6Gi"
           securityContext:
             privileged: true
@@ -582,6 +536,9 @@ presubmits:
             requests:
               cpu: 1
               memory: "2Gi"
+            limits:
+              cpu: 1
+              memory: "2Gi"
 
   - name: pull-perf-tests-verify-all
     # TODO(oxddr): make it non-optional once we are confident in the presubmit
@@ -601,6 +558,13 @@ presubmits:
         - make
         args:
         - verify-all
+        resources:
+          requests:
+            cpu: 1
+            memory: "2Gi"
+          limits:
+            cpu: 1
+            memory: "2Gi"
 
   - name: pull-perf-tests-verify-test
     # TODO(jkaniuk): make it non-optional once we are confident in the presubmit
@@ -618,6 +582,13 @@ presubmits:
       - image: golang:1.13
         command:
         - verify/test.sh
+        resources:
+          requests:
+            cpu: 1
+            memory: "2Gi"
+          limits:
+            cpu: 1
+            memory: "2Gi"
 
   - name: pull-perf-tests-verify-dashboard
     # TODO(oxddr): make it non-optional once we are confident in the presubmit
@@ -637,6 +608,13 @@ presubmits:
         - make
         args:
         - verify-dashboard
+        resources:
+          requests:
+            cpu: 1
+            memory: "2Gi"
+          limits:
+            cpu: 1
+            memory: "2Gi"
 
   - name: pull-perf-tests-verify-lint
     # TODO(oxddr): make it non-optional once we are confident in the presubmit
@@ -656,3 +634,10 @@ presubmits:
         - make
         args:
         - verify-lint
+        resources:
+          requests:
+            cpu: 1
+            memory: "2Gi"
+          limits:
+            cpu: 1
+            memory: "2Gi"
