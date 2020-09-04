@@ -131,7 +131,7 @@ presubmits:
         - --aksengine-location=eastus2
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/single-az.json
-        - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.54.1/aks-engine-v0.54.1-linux-amd64.tar.gz
+        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
         # Specific test args
         - --test-azure-disk-csi-driver
         securityContext:
@@ -181,7 +181,7 @@ presubmits:
         - --aksengine-location=eastus2
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/multi-az.json
-        - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.54.1/aks-engine-v0.54.1-linux-amd64.tar.gz
+        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
         # Specific test args
         - --test-azure-disk-csi-driver
         securityContext:
@@ -231,7 +231,7 @@ presubmits:
         - --aksengine-location=eastus2
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/migration.json
-        - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.54.1/aks-engine-v0.54.1-linux-amd64.tar.gz
+        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
         # Specific test args
         - --test-azure-disk-csi-driver
         securityContext:
@@ -287,7 +287,7 @@ presubmits:
         - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
         - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_csi_proxy.json
-        - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.54.1/aks-engine-v0.54.1-linux-amd64.tar.gz
+        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
         # Specific test args
         - --test-azure-disk-csi-driver
         securityContext:
