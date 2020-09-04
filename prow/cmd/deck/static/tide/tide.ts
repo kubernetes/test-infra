@@ -124,7 +124,7 @@ function redrawQueries(): void {
 
         // GitHub query search link
         const a = createLink(
-            `/github-link?dest=search?utf8=${encodeURIComponent("\u2713")}&q=${encodeURIComponent(query)}`,
+            `/github-link?dest=${encodeURIComponent("search?utf8=\u2713&q=" + query)}`,
             "GitHub Search Link",
         );
         li.appendChild(a);
