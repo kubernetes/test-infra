@@ -425,9 +425,11 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]corev1.Pod
 				}
 				break
 			}
-			// Pod is running. Do nothing.
-			c.incrementNumPendingJobs(pj.Spec.Job)
-			return nil
+			if pod.DeletionTimestamp == nil {
+				// Pod is running. Do nothing.
+				c.incrementNumPendingJobs(pj.Spec.Job)
+				return nil
+			}
 		case corev1.PodRunning:
 			maxPodRunning := c.config().Plank.PodRunningTimeout.Duration
 			if pod.Status.StartTime.IsZero() || time.Since(pod.Status.StartTime.Time) < maxPodRunning {
@@ -445,11 +447,22 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]corev1.Pod
 				return fmt.Errorf("failed to delete pod %s/%s in cluster %s: %w", pod.Namespace, pod.Name, pj.ClusterAlias(), err)
 			}
 		default:
-			// other states, ignore
-			c.incrementNumPendingJobs(pj.Spec.Job)
-			return nil
+			if pod.DeletionTimestamp == nil {
+				// other states, ignore
+				c.incrementNumPendingJobs(pj.Spec.Job)
+				return nil
+			}
 		}
 	}
+
+	// If a pod gets deleted unexpectedly, it might be in any phase and will stick around until
+	// we complete the job if the kubernetes reporter is used, because it sets a finalizer.
+	if !pj.Complete() && pod.DeletionTimestamp != nil {
+		pj.SetComplete()
+		pj.Status.State = prowapi.ErrorState
+		pj.Status.Description = "Pod got deleteted unexpectedly"
+	}
+
 	var err error
 	pj.Status.URL, err = pjutil.JobURL(c.config().Plank, pj, c.log)
 	if err != nil {

@@ -1445,6 +1445,63 @@ func TestSyncPendingJob(t *testing.T) {
 			ExpectedState:   prowapi.PendingState,
 			ExpectedNumPods: 1,
 		},
+		{
+			Name: "Pod deleted in pending phase, job marked as errored",
+			PJ: prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "deleted-pod-in-pending-marks-job-as-errored",
+					Namespace: "prowjobs",
+				},
+				Spec: prowapi.ProwJobSpec{},
+				Status: prowapi.ProwJobStatus{
+					State:   prowapi.PendingState,
+					PodName: "deleted-pod-in-pending-marks-job-as-errored",
+				},
+			},
+			Pods: []v1.Pod{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:              "deleted-pod-in-pending-marks-job-as-errored",
+						Namespace:         "pods",
+						CreationTimestamp: metav1.Time{Time: time.Now().Add(-time.Second)},
+						DeletionTimestamp: func() *metav1.Time { n := metav1.Now(); return &n }(),
+					},
+					Status: v1.PodStatus{
+						Phase: v1.PodPending,
+					},
+				},
+			},
+			ExpectedState:    prowapi.ErrorState,
+			ExpectedComplete: true,
+			ExpectedNumPods:  1,
+		},
+		{
+			Name: "Pod deleted in unset phase, job marked as errored",
+			PJ: prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "pod-deleted-in-unset-phase",
+					Namespace: "prowjobs",
+				},
+				Spec: prowapi.ProwJobSpec{},
+				Status: prowapi.ProwJobStatus{
+					State:   prowapi.PendingState,
+					PodName: "pod-deleted-in-unset-phase",
+				},
+			},
+			Pods: []v1.Pod{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:              "pod-deleted-in-unset-phase",
+						Namespace:         "pods",
+						CreationTimestamp: metav1.Time{Time: time.Now().Add(-time.Second)},
+						DeletionTimestamp: func() *metav1.Time { n := metav1.Now(); return &n }(),
+					},
+				},
+			},
+			ExpectedState:    prowapi.ErrorState,
+			ExpectedComplete: true,
+			ExpectedNumPods:  1,
+		},
 	}
 
 	// Copy the tests for PlankV2

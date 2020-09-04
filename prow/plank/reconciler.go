@@ -378,7 +378,9 @@ func (r *reconciler) syncPendingJob(pj *prowv1.ProwJob) error {
 				break
 			}
 			// Pod is running. Do nothing.
-			return nil
+			if pod.DeletionTimestamp == nil {
+				return nil
+			}
 		case corev1.PodRunning:
 			maxPodRunning := r.config().Plank.PodRunningTimeout.Duration
 			if pod.Status.StartTime.IsZero() || time.Since(pod.Status.StartTime.Time) < maxPodRunning {
@@ -395,9 +397,19 @@ func (r *reconciler) syncPendingJob(pj *prowv1.ProwJob) error {
 				return fmt.Errorf("failed to delete pod %s/%s in cluster %s: %w", pod.Namespace, pod.Name, pj.ClusterAlias(), err)
 			}
 		default:
-			// other states, ignore
-			return nil
+			if pod.DeletionTimestamp == nil {
+				// other states, ignore
+				return nil
+			}
 		}
+	}
+
+	// If a pod gets deleted unexpectedly, it might be in any phase and will stick around until
+	// we complete the job if the kubernetes reporter is used, because it sets a finalizer.
+	if !pj.Complete() && pod != nil && pod.DeletionTimestamp != nil {
+		pj.SetComplete()
+		pj.Status.State = prowv1.ErrorState
+		pj.Status.Description = "Pod got deleteted unexpectedly"
 	}
 
 	pj.Status.URL, err = pjutil.JobURL(r.config().Plank, *pj, r.log)
