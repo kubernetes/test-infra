@@ -77,7 +77,7 @@ main() {
   fi
 
   echo "Running kubernetes/test-infra tests..."
-  bazel test //config/tests/...
+  bazel test //config/tests/... //hack:verify-spelling
   echo "Tests successful!"
 
   if [[ ${dry_run} = "true" ]]; then
