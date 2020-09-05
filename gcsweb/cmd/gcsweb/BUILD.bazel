@@ -39,7 +39,10 @@ go_binary(
 
 go_library(
     name = "go_default_library",
-    srcs = ["gcsweb.go"],
+    srcs = [
+        "gcsweb.go",
+        "templates.go",
+    ],
     importpath = "k8s.io/test-infra/gcsweb/cmd/gcsweb",
     deps = [
         "//gcsweb/pkg/version:go_default_library",
