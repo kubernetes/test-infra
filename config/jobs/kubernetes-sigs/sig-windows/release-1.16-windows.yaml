@@ -39,7 +39,7 @@ presubmits:
         - --aksengine-admin-username=azureuser
         - --aksengine-admin-password=AdminPassw0rd
         - --aksengine-creds=$(AZURE_CREDENTIALS)
-        - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.54.1/aks-engine-v0.54.1-linux-amd64.tar.gz
+        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
         - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
         - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
         - --aksengine-winZipBuildScript=$(WIN_BUILD)
@@ -97,7 +97,7 @@ presubmits:
         - --aksengine-admin-username=azureuser
         - --aksengine-admin-password=AdminPassw0rd
         - --aksengine-creds=$(AZURE_CREDENTIALS)
-        - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.54.1/aks-engine-v0.54.1-linux-amd64.tar.gz
+        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
         - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
         - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
         - --aksengine-winZipBuildScript=$(WIN_BUILD)
@@ -153,7 +153,7 @@ periodics:
       - --aksengine-admin-username=azureuser
       - --aksengine-admin-password=AdminPassw0rd
       - --aksengine-creds=$(AZURE_CREDENTIALS)
-      - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.54.1/aks-engine-v0.54.1-linux-amd64.tar.gz
+      - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
       - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
       - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
       - --aksengine-winZipBuildScript=$(WIN_BUILD)
@@ -208,7 +208,7 @@ periodics:
       - --aksengine-admin-username=azureuser
       - --aksengine-admin-password=AdminPassw0rd
       - --aksengine-creds=$(AZURE_CREDENTIALS)
-      - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.54.1/aks-engine-v0.54.1-linux-amd64.tar.gz
+      - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
       - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
       - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
       - --aksengine-winZipBuildScript=$(WIN_BUILD)
