@@ -718,9 +718,9 @@ func main() {
 		}
 
 		// there are three ways to configure which repos to sync:
-		//  - a whitelist of org/repo values
+		//  - a list of org/repo values
 		//  - a list of orgs for which we sync all repos
-		//  - a list of orgs with a blacklist of org/repo values
+		//  - a list of orgs to sync with a list of org/repo values to skip
 		if *onlyRepos != "" {
 			reposToSync, parseError := parseCommaDelimitedList(*onlyRepos)
 			if parseError != nil {

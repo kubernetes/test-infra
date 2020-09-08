@@ -1,6 +1,7 @@
 presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-dependencies
+    cluster: k8s-infra-prow-build
     path_alias: "k8s.io/kubernetes"
     decorate: true
     skip_branches:
@@ -20,7 +21,7 @@ presubmits:
       - name: main
         command:
         - runner.sh
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200901-eeeadc5-master
         args:
         - make
         - verify
@@ -52,7 +53,7 @@ presubmits:
       - name: main
         command:
         - runner.sh
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200901-eeeadc5-master
         args:
         - make
         - verify

@@ -1,6 +1,4 @@
-# Plugin repository whitelist.
-# Keys: Full repo name: "org/repo".
-# Values: List of plugins to run against the repo.
+# Plugin configuration
 ---
 triggers:
 - repos:
@@ -205,19 +203,19 @@ slack:
     - kubernetes/org
     channels:
     - sig-contribex
-    whitelist:
+    exempt_users:
     - k8s-ci-robot
   - repos:
     - kubernetes/enhancements
     channels:
     - enhancements
-    whitelist:
+    exempt_users:
     - k8s-ci-robot
   - repos:
     - kubernetes/utils
     channels:
     - sig-architecture
-    whitelist:
+    exempt_users:
     - k8s-ci-robot
   - repos:
     - kubernetes/api
@@ -234,16 +232,16 @@ slack:
     - kubernetes/sample-controller
     channels:
     - sig-api-machinery
-    whitelist:
+    exempt_users:
     - k8s-publishing-bot
   - repos:
     - kubernetes/kubernetes
     channels:
     - kubernetes-dev
-    whitelist:
+    exempt_users:
     - k8s-ci-robot # future home of tide
     - k8s-release-robot # anago
-    branch_whitelist:
+    exempt_branches:
         release-1.16:
             - cpanato # Branch Manager
             - dougm # Patch Release Team
@@ -294,21 +292,21 @@ slack:
     - kubernetes/test-infra
     channels:
     - testing-ops
-    whitelist:
+    exempt_users:
     - k8s-ci-robot
   - repos:
     - kubernetes/sig-release
     channels:
     - sig-release
-    whitelist:
+    exempt_users:
     - k8s-ci-robot
   - repos:
     - kubernetes/release
     channels:
     - sig-release
-    whitelist:
+    exempt_users:
     - k8s-ci-robot
-    branch_whitelist:
+    exempt_branches:
         prototype:
             - justaugustus # k8s-infra prototype Branch Manager
             - tpepper # k8s-infra prototype Branch Manager
@@ -316,24 +314,24 @@ slack:
     - kubernetes/k8s.io
     channels:
     - wg-k8s-infra
-    whitelist:
+    exempt_users:
     - k8s-ci-robot
 
 milestone_applier:
   kubernetes/enhancements:
-    master: v1.19
+    master: v1.20
   kubernetes/kubernetes:
-    master: v1.19
+    master: v1.20
     release-1.19: v1.19
     release-1.18: v1.18
     release-1.17: v1.17
     release-1.16: v1.16
   kubernetes/release:
-    master: v1.19
+    master: v1.20
   kubernetes/sig-release:
-    master: v1.19
+    master: v1.20
   kubernetes/test-infra:
-    master: v1.19
+    master: v1.20
   kubernetes/kops:
     master: v1.19
     release-1.18: v1.18
@@ -571,6 +569,9 @@ cherry_pick_unapproved:
 
     (For details on the patch release process and schedule, see the [Patch Releases](https://git.k8s.io/sig-release/releases/patch-releases.md) page.)
 
+# Enabled plugins per repo.
+# Keys: Full repo name: "org/repo".
+# Values: List of plugins to run against the repo.
 plugins:
   # Enable the following for any bazelbuild repo (rules_k8s, rules_docker) that sends prow webhooks
   # Repos that do not send prow webhooks will see no effect.
@@ -868,9 +869,11 @@ plugins:
 
   kubernetes-sigs/cluster-api:
   - milestone
+  - override
 
   kubernetes-sigs/cluster-api-provider-aws:
   - milestone
+  - override
 
   kubernetes-sigs/cluster-api-provider-azure:
   - milestone
@@ -878,6 +881,7 @@ plugins:
   - milestonestatus
   - release-note
   - require-matching-label
+  - override
 
   kubernetes-sigs/cluster-api-provider-digitalocean:
   - milestone
@@ -963,15 +967,6 @@ plugins:
   - retitle
   - shrug
   - size
-
-  cncf/k8s-conformance:
-  - cat # /meow replies with cat pictures
-  - dog # /bark replies with dog pictures
-  - goose
-  - wip
-  - assign
-  - hold
-  - lgtm
 
 external_plugins:
   kubernetes:

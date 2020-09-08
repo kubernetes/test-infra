@@ -44,15 +44,17 @@ var (
 
 func clientForUrl(url string) *client {
 	return &client{
-		logger:   logrus.WithField("testing", "true"),
-		endpoint: url,
-		client: &http.Client{
-			Transport: &http.Transport{
-				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		logger: logrus.WithField("testing", "true"),
+		delegate: &delegate{
+			endpoint: url,
+			client: &http.Client{
+				Transport: &http.Transport{
+					TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+				},
 			},
-		},
-		getAPIKey: func() []byte {
-			return []byte("api-key")
+			getAPIKey: func() []byte {
+				return []byte("api-key")
+			},
 		},
 	}
 }

@@ -20,6 +20,7 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
@@ -257,6 +258,10 @@ func (c *Fake) GetRootForClone(bug *Bug) (*Bug, error) {
 func (c *Fake) SetRoundTripper(t http.RoundTripper) {
 	// Do nothing here
 }
+
+func (c *Fake) ForPlugin(plugin string) Client             { return c }
+func (c *Fake) ForSubcomponent(subcomponent string) Client { return c }
+func (c *Fake) WithFields(fields logrus.Fields) Client     { return c }
 
 // the Fake is a Client
 var _ Client = &Fake{}

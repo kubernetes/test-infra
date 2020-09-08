@@ -40,12 +40,10 @@ type failuresGroupPair struct {
 
 // keys provides the failuresGroup's keys as a string slice.
 func (fg *failuresGroup) keys() []string {
-	result := make([]string, len(*fg))
+	result := make([]string, 0, len(*fg))
 
-	iter := 0
 	for key := range *fg {
-		result[iter] = key
-		iter++
+		result = append(result, key)
 	}
 
 	return result
@@ -53,21 +51,19 @@ func (fg *failuresGroup) keys() []string {
 
 // asSlice returns the failuresGroup as a failuresGroupPair slice.
 func (fg *failuresGroup) asSlice() []failuresGroupPair {
-	result := make([]failuresGroupPair, len(*fg))
+	result := make([]failuresGroupPair, 0, len(*fg))
 
-	iter := 0
 	for str, failures := range *fg {
-		result[iter] = failuresGroupPair{str, failures}
-		iter++
+		result = append(result, failuresGroupPair{str, failures})
 	}
 
 	return result
 }
 
-// sortByNumberOfFailures returns a failuresGroupPair slice sorted by the number of failures in each
+// sortByMostFailures returns a failuresGroupPair slice sorted by the number of failures in each
 // pair, descending. If the number of failures is the same for two pairs, they are sorted alphabetically
 // by their keys.
-func (fg *failuresGroup) sortByNumberOfFailures() []failuresGroupPair {
+func (fg *failuresGroup) sortByMostFailures() []failuresGroupPair {
 	result := fg.asSlice()
 
 	// Sort the slice.
@@ -79,7 +75,6 @@ func (fg *failuresGroup) sortByNumberOfFailures() []failuresGroupPair {
 			return result[i].Key < result[j].Key
 		}
 
-		// Use > instead of < so the largest values (i.e. clusters with the most failures) are first.
 		return iFailures > jFailures
 	})
 
@@ -153,10 +148,10 @@ func (nfg *nestedFailuresGroups) asSlice() []nestedFailuresGroupsPair {
 	return result
 }
 
-// sortByAggregateNumberOfFailures returns a nestedFailuresGroupsPair slice sorted by the aggregate
+// sortByMostAggregatedFailures returns a nestedFailuresGroupsPair slice sorted by the aggregate
 // number of failures across all failure slices in each failuresGroup, descending. If the aggregate
 // number of failures is the same for two pairs, they are sorted alphabetically by their keys.
-func (nfg *nestedFailuresGroups) sortByAggregateNumberOfFailures() []nestedFailuresGroupsPair {
+func (nfg *nestedFailuresGroups) sortByMostAggregatedFailures() []nestedFailuresGroupsPair {
 	result := nfg.asSlice()
 
 	// Pre-compute the aggregate failures for each element of result so that the less
@@ -178,8 +173,6 @@ func (nfg *nestedFailuresGroups) sortByAggregateNumberOfFailures() []nestedFailu
 			return result[i].Key < result[j].Key
 		}
 
-		// Use > instead of < so the largest values (i.e. largest number of failures across all
-		// clusters) are first.
 		return aggregates[result[i].Key] > aggregates[result[j].Key]
 	})
 

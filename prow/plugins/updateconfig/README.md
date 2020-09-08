@@ -23,7 +23,7 @@ config_updater:
       # DEPRECATED: Please use "clusters" below
       namespace: otherNamespace
       # specify the clusters and namespaces that the configmap targets
-      # which requires that either --build-cluster or --kubeconfig arg is enabled for Hook
+      # which requires that the --kubeconfig arg is enabled for Hook
       # https://github.com/kubernetes/test-infra/blob/master/prow/getting_started_deploy.md#run-test-pods-in-different-clusters
       # if not set or empty, it uses the cluster where prow components are running
       # and the specified namespace(s)

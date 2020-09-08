@@ -22,13 +22,13 @@ package summarize
 
 import (
 	"fmt"
-	"log"
 	"regexp"
 	"sort"
 	"strconv"
 	"strings"
 
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/klog/v2"
 	"k8s.io/test-infra/triage/utils"
 )
 
@@ -41,7 +41,7 @@ type jsonOutput struct {
 // render accepts a map from build paths to builds, and the global clusters, and renders them in a
 // format consumable by the web page.
 func render(builds map[string]build, clustered nestedFailuresGroups) jsonOutput {
-	clusteredSorted := clustered.sortByAggregateNumberOfFailures()
+	clusteredSorted := clustered.sortByMostAggregatedFailures()
 
 	flattenedClusters := make([]flattenedGlobalCluster, len(clusteredSorted))
 
@@ -52,7 +52,7 @@ func render(builds map[string]build, clustered nestedFailuresGroups) jsonOutput 
 		flattenedClusters[i] = flattenedGlobalCluster{
 			k,
 			makeNgramCountsDigest(k),
-			clusters.sortByNumberOfFailures(),
+			clusters.sortByMostFailures(),
 		}
 	}
 
@@ -247,8 +247,6 @@ func renderSlice(data jsonOutput, builds map[string]build, prefix string, owner 
 
 	return clustered, buildsToColumns(buildsOut)
 }
-
-/* Functions below this comment are only used within this file as of this commit. */
 
 // flattenedGlobalCluster is the key and value of a specific global cluster (as clusterText and
 // sortedTests, respectively), plus the result of calling makeNgramCountsDigest on the key.
@@ -575,7 +573,7 @@ func buildsToColumns(builds map[string]build) columns {
 			result.Jobs[jobName] = []int{sortedBuildNumbers[0], count, base}
 			for _, n := range sortedBuildNumbers {
 				if !(n <= sortedBuildNumbers[0]+len(sortedBuildNumbers)) {
-					log.Panicf(jobName, n, result.Jobs[jobName], len(sortedBuildNumbers), sortedBuildNumbers)
+					klog.Fatal(jobName, n, result.Jobs[jobName], len(sortedBuildNumbers), sortedBuildNumbers)
 				}
 			}
 		}

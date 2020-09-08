@@ -127,3 +127,12 @@ func TestCensoringFormatterWithCornerCases(t *testing.T) {
 		})
 	}
 }
+
+func TestCensoringFormatterDoesntDeadLockWhenUsedWithStandardLogger(t *testing.T) {
+	// The whitespace makes the censoring fornmatter emit a warning. If it uses the same global
+	// logger, that results in a deadlock.
+	logrus.SetFormatter(NewCensoringFormatter(logrus.StandardLogger().Formatter, func() sets.String {
+		return sets.NewString(" untrimmed")
+	}))
+	logrus.Info("test")
+}

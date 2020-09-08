@@ -531,6 +531,12 @@ default:
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
+      description: Categorizes an issue or PR as relevant to SIG Security.
+      name: sig/security
+      target: both
+      prowPlugin: label
+      addedBy: anyone
+    - color: d2b48c
       description: Categorizes an issue or PR as relevant to SIG Service Catalog.
       name: sig/service-catalog
       target: both
@@ -1211,11 +1217,6 @@ repos:
       - color: 0052cc
         description: Issues or PRs related to prow's knative-build controller component
         name: area/prow/knative-build
-        target: both
-        addedBy: label
-      - color: 0052cc
-        description: Issues or PRs related to prow's mkbuild-cluster component
-        name: area/prow/mkbuild-cluster
         target: both
         addedBy: label
       - color: 0052cc

@@ -51,6 +51,12 @@ rules:
   verbs:
     - "get"
     - "list"
+- apiGroups:
+    - ""
+  resources:
+    - "pods"
+  verbs:
+    - "patch"
 ---
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1beta1

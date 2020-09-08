@@ -70,9 +70,10 @@ mkdir -p slices
 
 /triage \
   --builds triage_builds.json \
-  --tests triage_tests/*.json \
   --output failure_data.json \
-  --output_slices slices/failure_data_PREFIX.json
+  --output_slices slices/failure_data_PREFIX.json \
+  ${NUM_WORKERS:+"--num_workers=${NUM_WORKERS}"} \
+  triage_tests/*.json
 
 gsutil_cp() {
   gsutil -h 'Cache-Control: no-store, must-revalidate' -m cp -Z -a public-read "$@"

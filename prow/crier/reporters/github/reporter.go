@@ -26,6 +26,8 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"golang.org/x/sync/semaphore"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
@@ -53,34 +55,36 @@ type simplePull struct {
 
 type shardedLock struct {
 	mapLock *sync.Mutex
-	locks   map[simplePull]*sync.Mutex
+	locks   map[simplePull]*semaphore.Weighted
 }
 
-func (s *shardedLock) getLock(key simplePull) *sync.Mutex {
+func (s *shardedLock) getLock(key simplePull) *semaphore.Weighted {
 	s.mapLock.Lock()
 	defer s.mapLock.Unlock()
 	if _, exists := s.locks[key]; !exists {
-		s.locks[key] = &sync.Mutex{}
+		s.locks[key] = semaphore.NewWeighted(1)
 	}
 	return s.locks[key]
 }
 
 // cleanup deletes all locks by acquiring first
-// the mapLock and then each individual lock before
-// deleting it. The individual lock must be acquired
-// because otherwise it may be held, we delete it from
-// the map, it gets recreated and acquired and two
-// routines report in parallel for the same job.
-// Note that while this function is running, no new
-// presubmit reporting can happen, as we hold the mapLock.
+// the mapLock and then the individual lock via TryAcquire.
+// The latter is required, otherwise the lock might be held,
+// deleted by us and then recreated, resulting in two routines
+// having it in parallel.
+// Because running this function requires acquiring the mapLock,
+// no new presubmit reporting can happen. To minimize lock contention,
+// we use TryAcquire and skip locks we didn't acquire.
 func (s *shardedLock) cleanup() {
 	s.mapLock.Lock()
 	defer s.mapLock.Unlock()
 
 	for key, lock := range s.locks {
-		lock.Lock()
+		if !lock.TryAcquire(1) {
+			continue
+		}
 		delete(s.locks, key)
-		lock.Unlock()
+		lock.Release(1)
 	}
 }
 
@@ -104,7 +108,7 @@ func NewReporter(gc report.GitHubClient, cfg config.Getter, reportAgent v1.ProwJ
 		reportAgent: reportAgent,
 		prLocks: &shardedLock{
 			mapLock: &sync.Mutex{},
-			locks:   map[simplePull]*sync.Mutex{},
+			locks:   map[simplePull]*semaphore.Weighted{},
 		},
 	}
 	c.prLocks.runCleanup()
@@ -117,7 +121,7 @@ func (c *Client) GetName() string {
 }
 
 // ShouldReport returns if this prowjob should be reported by the github reporter
-func (c *Client) ShouldReport(pj *v1.ProwJob) bool {
+func (c *Client) ShouldReport(_ *logrus.Entry, pj *v1.ProwJob) bool {
 
 	switch {
 	case pj.Labels[client.GerritReportLabel] != "":
@@ -132,7 +136,7 @@ func (c *Client) ShouldReport(pj *v1.ProwJob) bool {
 }
 
 // Report will report via reportlib
-func (c *Client) Report(pj *v1.ProwJob) ([]*v1.ProwJob, error) {
+func (c *Client) Report(_ *logrus.Entry, pj *v1.ProwJob) ([]*v1.ProwJob, *reconcile.Result, error) {
 
 	// The github comment create/update/delete done for presubmits
 	// needs pr-level locking to avoid racing when reporting multiple
@@ -140,11 +144,14 @@ func (c *Client) Report(pj *v1.ProwJob) ([]*v1.ProwJob, error) {
 	if pj.Spec.Type == v1.PresubmitJob {
 		key, err := lockKeyForPJ(pj)
 		if err != nil {
-			return nil, fmt.Errorf("failed to get lockkey for job: %v", err)
+			return nil, nil, fmt.Errorf("failed to get lockkey for job: %v", err)
 		}
 		lock := c.prLocks.getLock(*key)
-		lock.Lock()
-		defer lock.Unlock()
+		// Don't block a worker waiting for the lock, they are limited.
+		if !lock.TryAcquire(1) {
+			return nil, &reconcile.Result{RequeueAfter: 5 * time.Second}, nil
+		}
+		defer lock.Release(1)
 	}
 
 	// TODO(krzyzacy): ditch ReportTemplate, and we can drop reference to config.Getter
@@ -153,7 +160,7 @@ func (c *Client) Report(pj *v1.ProwJob) ([]*v1.ProwJob, error) {
 		// This is completely unrecoverable, so just swallow the error to make sure we wont retry, even when crier gets restarted.
 		err = nil
 	}
-	return []*v1.ProwJob{pj}, err
+	return []*v1.ProwJob{pj}, nil, err
 }
 
 func lockKeyForPJ(pj *v1.ProwJob) (*simplePull, error) {

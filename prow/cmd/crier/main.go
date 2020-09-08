@@ -21,12 +21,11 @@ import (
 	"errors"
 	"flag"
 	"os"
-	"time"
 
 	"github.com/sirupsen/logrus"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	prowjobinformer "k8s.io/test-infra/prow/client/informers/externalversions"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/crier"
@@ -40,15 +39,9 @@ import (
 	gerritclient "k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/io"
-	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
 	"k8s.io/test-infra/prow/pjutil"
-)
-
-const (
-	resync         = 0 * time.Minute
-	controllerName = "prow-crier"
 )
 
 type options struct {
@@ -213,15 +206,19 @@ func main() {
 		logrus.WithError(err).Fatal("unable to start secret agent")
 	}
 
-	prowjobClientset, err := o.client.ProwJobClientset(cfg().ProwJobNamespace, o.dryrun)
+	restCfg, err := o.client.InfrastructureClusterConfig(o.dryrun)
 	if err != nil {
-		logrus.WithError(err).Fatal("unable to create prow job client")
+		logrus.WithError(err).Fatal("Failed to get kubeconfig")
+	}
+	mgr, err := manager.New(restCfg, manager.Options{
+		Namespace:          cfg().ProwJobNamespace,
+		MetricsBindAddress: "0",
+	})
+	if err != nil {
+		logrus.WithError(err).Fatal("failed to create manager")
 	}
 
-	prowjobInformerFactory := prowjobinformer.NewSharedInformerFactoryWithOptions(prowjobClientset, resync, prowjobinformer.WithNamespace(cfg().ProwJobNamespace))
-
-	var controllers []*crier.Controller
-
+	var hasReporter bool
 	if o.slackWorkers > 0 {
 		if cfg().SlackReporter == nil && cfg().SlackReporterConfigs == nil {
 			logrus.Fatal("slackreporter is enabled but has no config")
@@ -232,44 +229,30 @@ func main() {
 		if err := secretAgent.Add(o.slackTokenFile); err != nil {
 			logrus.WithError(err).Fatal("could not read slack token")
 		}
+		hasReporter = true
 		slackReporter := slackreporter.New(slackConfig, o.dryrun, secretAgent.GetTokenGenerator(o.slackTokenFile))
-		controllers = append(
-			controllers,
-			crier.NewController(
-				prowjobClientset,
-				kube.RateLimiter(slackReporter.GetName()),
-				prowjobInformerFactory.Prow().V1().ProwJobs(),
-				slackReporter,
-				o.slackWorkers))
+		if err := crier.New(mgr, slackReporter, o.slackWorkers); err != nil {
+			logrus.WithError(err).Fatal("failed to construct slack reporter controller")
+		}
 	}
 
 	if o.gerritWorkers > 0 {
-		informer := prowjobInformerFactory.Prow().V1().ProwJobs()
-		gerritReporter, err := gerritreporter.NewReporter(o.cookiefilePath, o.gerritProjects, informer.Lister())
+		gerritReporter, err := gerritreporter.NewReporter(o.cookiefilePath, o.gerritProjects, mgr.GetCache())
 		if err != nil {
 			logrus.WithError(err).Fatal("Error starting gerrit reporter")
 		}
 
-		controllers = append(
-			controllers,
-			crier.NewController(
-				prowjobClientset,
-				kube.RateLimiter(gerritReporter.GetName()),
-				informer,
-				gerritReporter,
-				o.gerritWorkers))
+		hasReporter = true
+		if err := crier.New(mgr, gerritReporter, o.gerritWorkers); err != nil {
+			logrus.WithError(err).Fatal("failed to construct gerrit reporter controller")
+		}
 	}
 
 	if o.pubsubWorkers > 0 {
-		pubsubReporter := pubsubreporter.NewReporter(cfg)
-		controllers = append(
-			controllers,
-			crier.NewController(
-				prowjobClientset,
-				kube.RateLimiter(pubsubReporter.GetName()),
-				prowjobInformerFactory.Prow().V1().ProwJobs(),
-				pubsubReporter,
-				o.pubsubWorkers))
+		hasReporter = true
+		if err := crier.New(mgr, pubsubreporter.NewReporter(cfg), o.pubsubWorkers); err != nil {
+			logrus.WithError(err).Fatal("failed to construct pubsub reporter controller")
+		}
 	}
 
 	if o.githubWorkers > 0 {
@@ -284,15 +267,11 @@ func main() {
 			logrus.WithError(err).Fatal("Error getting GitHub client.")
 		}
 
+		hasReporter = true
 		githubReporter := githubreporter.NewReporter(githubClient, cfg, prowapi.ProwJobAgent(o.reportAgent))
-		controllers = append(
-			controllers,
-			crier.NewController(
-				prowjobClientset,
-				kube.RateLimiter(githubReporter.GetName()),
-				prowjobInformerFactory.Prow().V1().ProwJobs(),
-				githubReporter,
-				o.githubWorkers))
+		if err := crier.New(mgr, githubReporter, o.githubWorkers); err != nil {
+			logrus.WithError(err).Fatal("failed to construct github reporter controller")
+		}
 	}
 
 	if o.blobStorageWorkers > 0 || o.k8sBlobStorageWorkers > 0 {
@@ -301,16 +280,9 @@ func main() {
 			logrus.WithError(err).Fatal("Error creating opener")
 		}
 
-		if o.blobStorageWorkers > 0 {
-			gcsReporter := gcsreporter.New(cfg, opener, o.dryrun)
-			controllers = append(
-				controllers,
-				crier.NewController(
-					prowjobClientset,
-					kube.RateLimiter(gcsReporter.GetName()),
-					prowjobInformerFactory.Prow().V1().ProwJobs(),
-					gcsReporter,
-					o.blobStorageWorkers))
+		hasReporter = true
+		if err := crier.New(mgr, gcsreporter.New(cfg, opener, o.dryrun), o.blobStorageWorkers); err != nil {
+			logrus.WithError(err).Fatal("failed to construct gcsreporter controller")
 		}
 
 		if o.k8sBlobStorageWorkers > 0 {
@@ -320,30 +292,21 @@ func main() {
 			}
 
 			k8sGcsReporter := k8sgcsreporter.New(cfg, opener, coreClients, float32(o.k8sReportFraction), o.dryrun)
-			controllers = append(
-				controllers,
-				crier.NewController(
-					prowjobClientset,
-					kube.RateLimiter(k8sGcsReporter.GetName()),
-					prowjobInformerFactory.Prow().V1().ProwJobs(),
-					k8sGcsReporter,
-					o.k8sBlobStorageWorkers))
+			if err := crier.New(mgr, k8sGcsReporter, o.k8sBlobStorageWorkers); err != nil {
+				logrus.WithError(err).Fatal("failed to construct k8sgcsreporter controller")
+			}
 		}
 	}
 
-	if len(controllers) == 0 {
+	if !hasReporter {
 		logrus.Fatalf("should have at least one controller to start crier.")
 	}
 
 	// Push metrics to the configured prometheus pushgateway endpoint or serve them
 	metrics.ExposeMetrics("crier", cfg().PushGateway, o.instrumentationOptions.MetricsPort)
 
-	// run the controller loop to process items
-	prowjobInformerFactory.Start(interrupts.Context().Done())
-	for i := range controllers {
-		controller := controllers[i]
-		interrupts.Run(func(ctx context.Context) {
-			controller.Run(ctx)
-		})
+	if err := mgr.Start(interrupts.Context().Done()); err != nil {
+		logrus.WithError(err).Fatal("controller manager failed")
 	}
+	logrus.Info("Ended gracefully")
 }

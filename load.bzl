@@ -35,9 +35,9 @@ def repositories():
 
     http_archive(
         name = "io_bazel_rules_k8s",
-        sha256 = "cc75cf0d86312e1327d226e980efd3599704e01099b58b3c2fc4efe5e321fcd9",
-        strip_prefix = "rules_k8s-0.3.1",
-        urls = ["https://github.com/bazelbuild/rules_k8s/releases/download/v0.3.1/rules_k8s-v0.3.1.tar.gz"],
+        strip_prefix = "rules_k8s-0.5",
+        urls = ["https://github.com/bazelbuild/rules_k8s/archive/v0.5.tar.gz"],
+        sha256 = "773aa45f2421a66c8aa651b8cecb8ea51db91799a405bd7b913d77052ac7261a",
     )
 
     # https://github.com/bazelbuild/rules_nodejs

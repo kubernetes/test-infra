@@ -91,7 +91,7 @@ postsubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200901-eeeadc5-master
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -123,7 +123,7 @@ postsubmits:
       repo: test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200901-eeeadc5-master
         command:
         - bash
         args:
@@ -168,7 +168,7 @@ periodics:
     repo: test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200901-eeeadc5-master
       command:
       - bash
       args:
@@ -214,7 +214,7 @@ periodics:
     repo: test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:2.2.0-from-0.23.2
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200901-eeeadc5-master
       imagePullPolicy: Always
       command:
       - bash
@@ -247,7 +247,7 @@ periodics:
     testgrid-dashboards: sig-testing-canaries
     testgrid-tab-name: bazel-test
     description: runs bazel test //... //hack:verify-all -//build/... -//vendor/... (using RBE)
-  interval: 5m
+  interval: 1h
   decorate: true
   labels:
     preset-service-account: "true"
@@ -287,7 +287,7 @@ periodics:
     testgrid-dashboards: sig-release-master-blocking, google-unit
     testgrid-tab-name: bazel-test-master
     description: runs bazel test //... //hack:verify-all -//build/... -//vendor/...
-  interval: 1h
+  interval: 5m
   cluster: k8s-infra-prow-build
   decorate: true
   labels:

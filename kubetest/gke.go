@@ -336,6 +336,8 @@ func (g *gkeDeployer) Up() error {
 		// gcloud enables node auto-upgrade by default, which doesn't work with CUSTOM image.
 		// We disable auto-upgrade explicitly here.
 		args = append(args, "--no-enable-autoupgrade")
+		// Custom images are not supported with shielded nodes (which is enaled by default) in GKE.
+		args = append(args, "--no-enable-shielded-nodes")
 	}
 	if g.subnetwork != "" {
 		args = append(args, "--subnetwork="+g.subnetwork)
@@ -406,8 +408,10 @@ func (g *gkeDeployer) DumpClusterLogs(localPath, gcsPath string) error {
 	// gkeLogDumpTemplate is a template of a shell script where
 	// - %[1]s is the project
 	// - %[2]s is the zone
-	// - %[3]s is a filter composed of the instance groups
-	// - %[4]s is the log-dump.sh command line
+	// - %[3]s is the OS distribution of nodes
+	// - %[4]s is a filter composed of the instance groups
+	// - %[5]s is the zone for logexporter daemonset (defined only for multizonal or regional clusters)
+	// - %[6]s is the log-dump.sh command line
 	const gkeLogDumpTemplate = `
 function log_dump_custom_get_instances() {
   if [[ $1 == "master" ]]; then return 0; fi
@@ -419,7 +423,8 @@ export PROJECT=%[1]s
 export ZONE='%[2]s'
 export KUBERNETES_PROVIDER=gke
 export KUBE_NODE_OS_DISTRIBUTION='%[3]s'
-%[5]s
+export LOGEXPORTER_ZONE='%[5]s'
+%[6]s
 `
 	// Prevent an obvious injection.
 	if strings.Contains(localPath, "'") || strings.Contains(gcsPath, "'") {
@@ -435,6 +440,7 @@ export KUBE_NODE_OS_DISTRIBUTION='%[3]s'
 		filter := fmt.Sprintf("(metadata.created-by ~ %s)", ig.path)
 		perZoneFilters[ig.zone] = append(perZoneFilters[ig.zone], filter)
 	}
+	isMultizonalOrRegional := len(perZoneFilters) > 1
 
 	// Generate the log-dump.sh command-line
 	var dumpCmd string
@@ -460,11 +466,16 @@ export KUBE_NODE_OS_DISTRIBUTION='%[3]s'
 
 	var errorMessages []string
 	for zone, filters := range perZoneFilters {
+		logexporterZone := ""
+		if isMultizonalOrRegional {
+			logexporterZone = zone
+		}
 		err := control.FinishRunning(exec.Command("bash", "-c", fmt.Sprintf(gkeLogDumpTemplate,
 			g.project,
 			zone,
 			os.Getenv("NODE_OS_DISTRIBUTION"),
 			strings.Join(filters, " OR "),
+			logexporterZone,
 			dumpCmd)))
 		if err != nil {
 			errorMessages = append(errorMessages, err.Error())

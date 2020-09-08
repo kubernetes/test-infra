@@ -786,16 +786,16 @@ func TestSyncTriggeredJobs(t *testing.T) {
 					pod := pods[i]
 					data = append(data, &pod)
 				}
-				fakeClient := &createErroringClient{
-					Client: fakectrlruntimeclient.NewFakeClient(data...),
-					err:    tc.PodErr,
+				fakeClient := &clientWrapper{
+					Client:      fakectrlruntimeclient.NewFakeClient(data...),
+					createError: tc.PodErr,
 				}
 				buildClients[alias] = fakeClient
 			}
 			if _, exists := buildClients[prowapi.DefaultClusterAlias]; !exists {
-				buildClients[prowapi.DefaultClusterAlias] = &createErroringClient{
-					Client: fakectrlruntimeclient.NewFakeClient(),
-					err:    tc.PodErr,
+				buildClients[prowapi.DefaultClusterAlias] = &clientWrapper{
+					Client:      fakectrlruntimeclient.NewFakeClient(),
+					createError: tc.PodErr,
 				}
 			}
 
@@ -1148,6 +1148,38 @@ func TestSyncPendingJob(t *testing.T) {
 			ExpectedNumPods:  0,
 		},
 		{
+			Name: "delete evicted pod and remove its k8sreporter finalizer",
+			PJ: prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "boop-42",
+					Namespace: "prowjobs",
+				},
+				Spec: prowapi.ProwJobSpec{
+					PodSpec: &v1.PodSpec{Containers: []v1.Container{{Name: "test-name", Env: []v1.EnvVar{}}}},
+				},
+				Status: prowapi.ProwJobStatus{
+					State:   prowapi.PendingState,
+					PodName: "boop-42",
+				},
+			},
+			Pods: []v1.Pod{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:       "boop-42",
+						Namespace:  "pods",
+						Finalizers: []string{"prow.x-k8s.io/gcsk8sreporter"},
+					},
+					Status: v1.PodStatus{
+						Phase:  v1.PodFailed,
+						Reason: Evicted,
+					},
+				},
+			},
+			ExpectedComplete: false,
+			ExpectedState:    prowapi.PendingState,
+			ExpectedNumPods:  0,
+		},
+		{
 			Name: "don't delete evicted pod w/ error_on_eviction, complete PJ instead",
 			PJ: prowapi.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
@@ -1440,9 +1472,10 @@ func TestSyncPendingJob(t *testing.T) {
 				pod := tc.Pods[i]
 				data = append(data, &pod)
 			}
-			fakeClient := &createErroringClient{
-				Client: fakectrlruntimeclient.NewFakeClient(data...),
-				err:    tc.Err,
+			fakeClient := &clientWrapper{
+				Client:                   fakectrlruntimeclient.NewFakeClient(data...),
+				createError:              tc.Err,
+				errOnDeleteWithFinalizer: true,
 			}
 			buildClients := map[string]ctrlruntimeclient.Client{
 				prowapi.DefaultClusterAlias: fakeClient,
@@ -2134,16 +2167,24 @@ func (c *deleteTrackingFakeClient) Delete(ctx context.Context, obj runtime.Objec
 	return nil
 }
 
-type createErroringClient struct {
+type clientWrapper struct {
 	ctrlruntimeclient.Client
-	err error
+	createError              error
+	errOnDeleteWithFinalizer bool
 }
 
-func (c *createErroringClient) Create(ctx context.Context, obj runtime.Object, opts ...ctrlruntimeclient.CreateOption) error {
-	if c.err != nil {
-		return c.err
+func (c *clientWrapper) Create(ctx context.Context, obj runtime.Object, opts ...ctrlruntimeclient.CreateOption) error {
+	if c.createError != nil {
+		return c.createError
 	}
 	return c.Client.Create(ctx, obj, opts...)
+}
+
+func (c *clientWrapper) Delete(ctx context.Context, obj runtime.Object, opts ...ctrlruntimeclient.DeleteOption) error {
+	if metaObject := obj.(metav1.Object); c.errOnDeleteWithFinalizer && len(metaObject.GetFinalizers()) > 0 {
+		return fmt.Errorf("object still had finalizers when attempting to delete: %v", metaObject.GetFinalizers())
+	}
+	return c.Client.Delete(ctx, obj, opts...)
 }
 
 func TestSyncAbortedJob(t *testing.T) {

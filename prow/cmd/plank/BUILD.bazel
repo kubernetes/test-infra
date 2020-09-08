@@ -20,22 +20,13 @@ go_binary(
 
 go_library(
     name = "go_default_library",
-    srcs = [
-        "main.go",
-        "reporter.go",
-    ],
+    srcs = ["main.go"],
     importpath = "k8s.io/test-infra/prow/cmd/plank",
     deps = [
         "//pkg/flagutil:go_default_library",
-        "//prow/apis/prowjobs/v1:go_default_library",
-        "//prow/client/informers/externalversions:go_default_library",
         "//prow/config:go_default_library",
-        "//prow/config/secret:go_default_library",
-        "//prow/crier:go_default_library",
-        "//prow/crier/reporters/github:go_default_library",
         "//prow/flagutil:go_default_library",
         "//prow/interrupts:go_default_library",
-        "//prow/kube:go_default_library",
         "//prow/logrusutil:go_default_library",
         "//prow/metrics:go_default_library",
         "//prow/pjutil:go_default_library",

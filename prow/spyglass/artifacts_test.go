@@ -70,6 +70,16 @@ func TestSpyglass_ListArtifacts(t *testing.T) {
 				"build-log.txt",
 			},
 		},
+		{
+			name: "list artifacts without results in gs with multiple containers",
+			args: args{
+				src: "gs/test-bucket/logs/multiple-container-job/123",
+			},
+			want: []string{
+				"test-1-build-log.txt",
+				"test-2-build-log.txt",
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

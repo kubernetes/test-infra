@@ -79,7 +79,7 @@ type serviceClusterClient interface {
 
 // PodLogClient is an interface for interacting with the pod logs.
 type PodLogClient interface {
-	GetLogs(name string) ([]byte, error)
+	GetLogs(name, container string) ([]byte, error)
 }
 
 // PJListingClient is an interface to list ProwJobs
@@ -214,7 +214,7 @@ func (ja *JobAgent) GetProwJob(job, id string) (prowapi.ProwJob, error) {
 }
 
 // GetJobLog returns the job logs, works for both kubernetes and jenkins agent types.
-func (ja *JobAgent) GetJobLog(job, id string) ([]byte, error) {
+func (ja *JobAgent) GetJobLog(job, id string, container string) ([]byte, error) {
 	j, err := ja.GetProwJob(job, id)
 	if err != nil {
 		return nil, fmt.Errorf("error getting prowjob: %v", err)
@@ -224,7 +224,7 @@ func (ja *JobAgent) GetJobLog(job, id string) ([]byte, error) {
 		if !ok {
 			return nil, fmt.Errorf("cannot get logs for prowjob %q with agent %q: unknown cluster alias %q", j.ObjectMeta.Name, j.Spec.Agent, j.ClusterAlias())
 		}
-		return client.GetLogs(j.Status.PodName)
+		return client.GetLogs(j.Status.PodName, container)
 	}
 	for _, agentToTmpl := range ja.config().Deck.ExternalAgentLogs {
 		if agentToTmpl.Agent != string(j.Spec.Agent) {

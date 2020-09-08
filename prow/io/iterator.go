@@ -49,6 +49,7 @@ type gcsObjectIterator struct {
 
 func (g gcsObjectIterator) Next(_ context.Context) (ObjectAttributes, error) {
 	oAttrs, err := g.Iterator.Next()
+	// oAttrs object has only 'Name' or 'Prefix' field set.
 	if err == iterator.Done {
 		return ObjectAttributes{}, io.EOF
 	}

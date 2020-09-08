@@ -36,7 +36,7 @@ periodics:
         value: "win2019"
       - name: PREPULL_YAML
         value: "prepull-head.yaml"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200901-eeeadc5-master
       securityContext:
           privileged: true
   annotations:
@@ -49,7 +49,7 @@ presubmits:
   - name: pull-gcp-compute-persistent-disk-csi-driver-e2e-windows
     decorate: true
     decoration_config:
-      timeout: 200m
+      timeout: 350m
     path_alias: sigs.k8s.io/gcp-compute-persistent-disk-csi-driver
     labels:
       preset-k8s-ssh: "true"
@@ -84,7 +84,7 @@ presubmits:
           value: "win2019"
         - name: PREPULL_YAML
           value: "prepull-head.yaml"
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200901-eeeadc5-master
         securityContext:
           privileged: true
     annotations:
@@ -131,7 +131,7 @@ presubmits:
           value: "win2019"
         - name: PREPULL_YAML
           value: "prepull-head.yaml"
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200901-eeeadc5-master
         securityContext:
           privileged: true
     annotations:
