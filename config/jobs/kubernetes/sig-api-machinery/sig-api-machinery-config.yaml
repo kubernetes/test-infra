@@ -105,7 +105,6 @@ presubmits:
         - --env=KONNECTIVITY_SERVICE_PROXY_PROTOCOL_MODE=http-connect
         - --gcp-node-image=gci
         - --gcp-zone=us-west1-b
-        - --gcp-project=k8s-network-proxy-e2e
         - --ginkgo-parallel=30
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-network-proxy-http-connect
         - --provider=gce
