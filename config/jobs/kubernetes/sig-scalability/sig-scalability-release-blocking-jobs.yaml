@@ -39,10 +39,10 @@ periodics:
       resources:
         requests:
           cpu: 6
-          memory: "48Gi"
+          memory: "64Gi"
         limits:
           cpu: 6
-          memory: "48Gi"
+          memory: "64Gi"
 
 # This is a sig-release-master-blocking job.
 - cron: '1 17 * * *' # Run daily at 9:01PST (17:01 UTC)
