@@ -385,6 +385,13 @@ dashboards:
     open_bug_template:
       url: https://github.com/google/exposure-notifications-server/issues/
     test_group_name: ci-en-server-terraform-smoke
+  - code_search_url_template:
+      url: https://github.com/google/exposure-notifications-verification-server/compare/<start-custom-0>...<end-custom-0>
+    description: ci-en-verification-server-terraform-smoke
+    name: verification-terrafrom-smoke
+    open_bug_template:
+      url: https://github.com/google/exposure-notifications-verification-server/issues/
+    test_group_name: ci-en-verification-server-terraform-smoke
   name: googleoss-en-server
 test_groups:
 - gcs_prefix: oss-prow/logs/ESPv2-continuous-anthos-cloud-run-e2e-cloud-run-http-bookstore
@@ -425,6 +432,8 @@ test_groups:
   name: ci-en-server-performance
 - gcs_prefix: oss-prow/logs/ci-en-server-terraform-smoke
   name: ci-en-server-terraform-smoke
+- gcs_prefix: oss-prow/logs/ci-en-verification-server-terraform-smoke
+  name: ci-en-verification-server-terraform-smoke
 - gcs_prefix: oss-prow/logs/ci-google-oss-test-infra-resultstore-upload
   name: ci-google-oss-test-infra-resultstore-upload
 - gcs_prefix: oss-prow/logs/ci-oss-test-infra-autobump-knative-prow
