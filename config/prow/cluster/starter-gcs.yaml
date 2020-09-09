@@ -371,6 +371,7 @@ spec:
         - --github-endpoint=http://ghproxy
         - --github-endpoint=https://api.github.com
         - --github-graphql-endpoint=http://ghproxy/graphql
+        - --gcs-credentials-file=/etc/gcs-credentials/service-account.json
         - --spyglass=true
         ports:
           - name: http
