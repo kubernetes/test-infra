@@ -403,7 +403,7 @@ presubmits:
         - name: "PARALLEL"
           value: "true"
         - name: BUILD_TYPE
-          value: bazel
+          value: not-bazel
         command:
         - wrapper.sh
         - bash
