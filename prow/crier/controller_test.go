@@ -18,14 +18,15 @@ package crier
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"reflect"
+	"sort"
 	"testing"
 	"time"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	ctrlruntime "sigs.k8s.io/controller-runtime"
@@ -34,9 +35,16 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
+	prowLister "k8s.io/test-infra/prow/client/listers/prowjobs/v1"
+	"k8s.io/test-infra/prow/kube"
 )
 
-const reporterName = "fakeReporter"
+const (
+	testTimeout    = time.Second
+	controllerName = "CrierTest"
+	reporterName   = "fakeReporter"
+)
 
 // Fake Reporter
 // Sets: Which jobs should be reported
@@ -61,12 +69,54 @@ func (f *fakeReporter) ShouldReport(_ *logrus.Entry, pj *prowv1.ProwJob) bool {
 	return f.shouldReportFunc(pj)
 }
 
-func TestController_Run(t *testing.T) {
+// Fake Informer
+// Sets: The Prow Job Test Cases
+type fakeInformer struct {
+	jobs map[string]*prowv1.ProwJob
+}
 
-	const toReconcile = "foo"
+func (f fakeInformer) Get(name string) (*prowv1.ProwJob, error) {
+	pj, found := f.jobs[name]
+	if !found {
+		var s schema.GroupResource
+		return nil, errors.NewNotFound(s, "Can't Find ProwJob")
+	}
+	return pj, nil
+}
+
+func (f fakeInformer) ProwJobs(namespace string) prowLister.ProwJobNamespaceLister {
+	return f
+}
+
+func (f fakeInformer) Informer() cache.SharedIndexInformer {
+	return f
+}
+
+func (f fakeInformer) Lister() prowLister.ProwJobLister {
+	return f
+}
+
+func (fakeInformer) HasSynced() bool {
+	return true
+}
+
+func (fakeInformer) AddEventHandler(handler cache.ResourceEventHandler)                        {}
+func (fakeInformer) Run(stopCh <-chan struct{})                                                {}
+func (fakeInformer) AddEventHandlerWithResyncPeriod(cache.ResourceEventHandler, time.Duration) {}
+func (fakeInformer) GetStore() cache.Store                                                     { return nil }
+func (fakeInformer) GetController() cache.Controller                                           { return nil }
+func (fakeInformer) LastSyncResourceVersion() string                                           { return "" }
+func (fakeInformer) AddIndexers(indexers cache.Indexers) error                                 { return nil }
+func (fakeInformer) GetIndexer() cache.Indexer                                                 { return nil }
+func (fakeInformer) List(selector labels.Selector) (ret []*prowv1.ProwJob, err error) {
+	return nil, nil
+}
+
+func TestController_Run(t *testing.T) {
 	tests := []struct {
 		name         string
-		job          *prowv1.ProwJob
+		jobsOnQueue  []string
+		knownJobs    map[string]*prowv1.ProwJob
 		shouldReport bool
 		result       *reconcile.Result
 		reportErr    error
@@ -74,90 +124,114 @@ func TestController_Run(t *testing.T) {
 		expectResult  reconcile.Result
 		expectReport  bool
 		expectPatch   bool
-		expectedError error
 	}{
 		{
-			name: "reports/patches known job",
-			job: &prowv1.ProwJob{
-				Spec: prowv1.ProwJobSpec{
-					Job:    "foo",
-					Report: true,
-				},
-				Status: prowv1.ProwJobStatus{
-					State: prowv1.TriggeredState,
+			name:        "reports/patches known job",
+			jobsOnQueue: []string{"foo"},
+			knownJobs: map[string]*prowv1.ProwJob{
+				"foo": {
+					Spec: prowv1.ProwJobSpec{
+						Job:    "foo",
+						Report: true,
+					},
+					Status: prowv1.ProwJobStatus{
+						State: prowv1.TriggeredState,
+					},
 				},
 			},
-			shouldReport: true,
-			expectReport: true,
-			expectPatch:  true,
+			shouldReport:  true,
+			expectReports: []string{"foo"},
+			expectPatch:   true,
 		},
 		{
-			name: "doesn't report when it shouldn't",
-			job: &prowv1.ProwJob{
-				Spec: prowv1.ProwJobSpec{
-					Job:    "foo",
-					Report: true,
-				},
-				Status: prowv1.ProwJobStatus{
-					State: prowv1.TriggeredState,
+			name:        "doesn't report when it shouldn't",
+			jobsOnQueue: []string{"foo"},
+			knownJobs: map[string]*prowv1.ProwJob{
+				"foo": {
+					Spec: prowv1.ProwJobSpec{
+						Job:    "foo",
+						Report: true,
+					},
+					Status: prowv1.ProwJobStatus{
+						State: prowv1.TriggeredState,
+					},
 				},
 			},
 			shouldReport: false,
-			expectReport: false,
 		},
 		{
 			name:         "doesn't report nonexistant job",
+			jobsOnQueue:  []string{"foo"},
+			knownJobs:    map[string]*prowv1.ProwJob{},
 			shouldReport: true,
-			expectReport: false,
 		},
+		//{
+		//	name: "nil job panics",
+		//	jobsOnQueue: []string{"foo"},
+		//	knownJobs: map[string]*prowv1.ProwJob{
+		//		"foo" : nil,
+		//	},
+		//	shouldReport: func(*prowv1.ProwJob) bool {
+		//		return true
+		//	},
+		//},
 		{
-			name: "doesn't report when SkipReport=true (i.e. Spec.Report=false)",
-			job: &prowv1.ProwJob{
-				Spec: prowv1.ProwJobSpec{
-					Job:    "foo",
-					Report: false,
+			name:        "doesn't report when SkipReport=true (i.e. Spec.Report=false)",
+			jobsOnQueue: []string{"foo"},
+			knownJobs: map[string]*prowv1.ProwJob{
+				"foo": {
+					Spec: prowv1.ProwJobSpec{
+						Job:    "foo",
+						Report: false,
+					},
 				},
 			},
-			shouldReport: true,
-			expectReport: false,
+			shouldReport: false,
 		},
 		{
-			name:         "doesn't report empty job",
-			job:          &prowv1.ProwJob{},
+			name:        "doesn't report empty job",
+			jobsOnQueue: []string{"foo"},
+			knownJobs: map[string]*prowv1.ProwJob{
+				"foo": {},
+			},
 			shouldReport: true,
-			expectReport: false,
 		},
 		{
-			name: "previously-reported job isn't reported",
-			job: &prowv1.ProwJob{
-				Spec: prowv1.ProwJobSpec{
-					Job:    "foo",
-					Report: true,
+			name:        "duplicate jobs report once",
+			jobsOnQueue: []string{"foo", "foo", "foo"},
+			knownJobs: map[string]*prowv1.ProwJob{
+				"foo": {
+					Spec: prowv1.ProwJobSpec{
+						Job:    "foo",
+						Report: true,
+					},
+					Status: prowv1.ProwJobStatus{
+						State: prowv1.TriggeredState,
+					},
 				},
-				Status: prowv1.ProwJobStatus{
-					State: prowv1.TriggeredState,
-					PrevReportStates: map[string]prowv1.ProwJobState{
-						reporterName: prowv1.TriggeredState,
+			},
+			shouldReport:  true,
+			expectReports: []string{"foo"},
+			expectPatch:   true,
+		},
+		{
+			name:        "previously-reported job isn't reported",
+			jobsOnQueue: []string{"foo"},
+			knownJobs: map[string]*prowv1.ProwJob{
+				"foo": {
+					Spec: prowv1.ProwJobSpec{
+						Job:    "foo",
+						Report: true,
+					},
+					Status: prowv1.ProwJobStatus{
+						State: prowv1.TriggeredState,
+						PrevReportStates: map[string]prowv1.ProwJobState{
+							reporterName: prowv1.TriggeredState,
+						},
 					},
 				},
 			},
 			shouldReport: true,
-			expectReport: false,
-		},
-		{
-			name: "error is returned",
-			job: &prowv1.ProwJob{
-				Spec: prowv1.ProwJobSpec{
-					Job:    "foo",
-					Report: true,
-				},
-				Status: prowv1.ProwJobStatus{
-					State: prowv1.TriggeredState,
-				},
-			},
-			shouldReport:  true,
-			reportErr:     errors.New("some-err"),
-			expectedError: fmt.Errorf("failed to report job: %w", errors.New("some-err")),
 		},
 		{
 			name: "*reconcile.Result is returned, prowjob is not updated",
@@ -178,9 +252,16 @@ func TestController_Run(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		test := test
 		t.Run(test.name, func(t *testing.T) {
-			t.Parallel()
+			q := kube.RateLimiter(controllerName)
+			for _, job := range test.jobsOnQueue {
+				q.Add(job)
+			}
+
+			inf := fakeInformer{
+				jobs: test.knownJobs,
+			}
+
 			rp := fakeReporter{
 				shouldReportFunc: func(*prowv1.ProwJob) bool {
 					return test.shouldReport
@@ -190,17 +271,14 @@ func TestController_Run(t *testing.T) {
 			}
 
 			var prowjobs []runtime.Object
-			if test.job != nil {
-				prowjobs = append(prowjobs, test.job)
-				test.job.Name = toReconcile
+			for _, job := range test.knownJobs {
+				prowjobs = append(prowjobs, job)
 			}
-			cs := &patchTrackingClient{Client: fakectrlruntimeclient.NewFakeClient(prowjobs...)}
-			r := &reconciler{
-				ctx:         context.Background(),
-				pjclientset: cs,
-				reporter:    &rp,
-			}
+			cs := fake.NewSimpleClientset(prowjobs...)
+			nmwrk := 2
+			c := NewController(cs, q, inf, &rp, nmwrk)
 
+<<<<<<< HEAD
 			result, err := r.Reconcile(ctrlruntime.Request{NamespacedName: types.NamespacedName{Name: toReconcile}})
 			if !reflect.DeepEqual(err, test.expectedError) {
 				t.Fatalf("actual err %v differs from expected err %v", err, test.expectedError)
@@ -211,32 +289,45 @@ func TestController_Run(t *testing.T) {
 			if diff := cmp.Diff(result, test.expectResult); diff != "" {
 				t.Errorf("result differs from expected result: %s", diff)
 			}
+=======
+			done := make(chan struct{}, 1)
+			ctx, cancel := context.WithCancel(context.Background())
+			go func() {
+				c.Run(ctx)
+				close(done)
+			}()
 
-			var expectReports []string
-			if test.expectReport {
-				expectReports = []string{toReconcile}
-			}
-			if !reflect.DeepEqual(expectReports, rp.reported) {
-				t.Errorf("mismatch report: wants %v, got %v", expectReports, rp.reported)
+			wait.Poll(10*time.Millisecond, testTimeout, func() (done bool, err error) {
+				return c.queue.Len() == 0, nil
+			})
+>>>>>>> parent of 075b356f8e (Make crier controller-runtime based)
+
+			cancel()
+			<-done
+
+			if c.queue.Len() != 0 {
+				t.Errorf("%d messages were unconsumed", c.queue.Len())
 			}
 
-			if (cs.patches != 0) != test.expectPatch {
+			sort.Strings(test.expectReports)
+			sort.Strings(rp.reported)
+			if !reflect.DeepEqual(test.expectReports, rp.reported) {
+				t.Errorf("mismatch report: wants %v, got %v", test.expectReports, rp.reported)
+			}
+
+			if (len(cs.Actions()) != 0) != test.expectPatch {
 				if test.expectPatch {
+<<<<<<< HEAD
 					t.Error("expected patch, but didn't get it")
 				} else {
 					t.Error("got unexpected patch")
+=======
+					t.Errorf("expected patch, but didn't get it")
+				} else {
+					t.Errorf("patch: did not expect %v", cs.Actions())
+>>>>>>> parent of 075b356f8e (Make crier controller-runtime based)
 				}
 			}
 		})
 	}
-}
-
-type patchTrackingClient struct {
-	ctrlruntimeclient.Client
-	patches int
-}
-
-func (c *patchTrackingClient) Patch(ctx context.Context, obj runtime.Object, patch ctrlruntimeclient.Patch, opts ...ctrlruntimeclient.PatchOption) error {
-	c.patches++
-	return c.Client.Patch(ctx, obj, patch, opts...)
 }

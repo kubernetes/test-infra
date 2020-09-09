@@ -19,24 +19,30 @@ package crier
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"sync"
 	"time"
 
+	jsonpatch "github.com/evanphx/json-patch"
 	"github.com/sirupsen/logrus"
-	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/apimachinery/pkg/util/wait"
-	"k8s.io/client-go/util/retry"
-	"sigs.k8s.io/controller-runtime/pkg/builder"
-	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/controller"
-	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
+
+	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
+	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/client-go/tools/cache"
+	"k8s.io/client-go/util/retry"
+	"k8s.io/client-go/util/workqueue"
+	clientset "k8s.io/test-infra/prow/client/clientset/versioned"
+	pjinformers "k8s.io/test-infra/prow/client/informers/externalversions/prowjobs/v1"
 )
 
-type ReportClient interface {
+type reportClient interface {
 	// Report reports a Prowjob. The provided logger is already populated with the
 	// prowjob name and the reporter name.
 	// If a reporter wants to defer reporting, it can return a reconcile.Result with a RequeueAfter
@@ -44,81 +50,188 @@ type ReportClient interface {
 	GetName() string
 	// ShouldReport determines if a ProwJob should be reported. The provided logger
 	// is already populated with the prowjob name and the reporter name.
-	ShouldReport(log *logrus.Entry, pj *prowv1.ProwJob) bool
+	ShouldReport(log *logrus.Entry, pj *v1.ProwJob) bool
 }
 
-// reconciler struct defines how a controller should encapsulate
+// Controller struct defines how a controller should encapsulate
 // logging, client connectivity, informing (list and watching)
 // queueing, and handling of resource changes
-type reconciler struct {
-	ctx         context.Context
-	pjclientset ctrlruntimeclient.Client
-	reporter    ReportClient
+type Controller struct {
+	pjclientset clientset.Interface
+	queue       workqueue.RateLimitingInterface
+	informer    pjinformers.ProwJobInformer
+	reporter    reportClient
+	numWorkers  int
+	wg          *sync.WaitGroup
 }
 
-// New constructs a new instance of the crier reconciler.
-func New(
-	mgr manager.Manager,
-	reporter ReportClient,
-	numWorkers int,
-) error {
-	if err := builder.
-		ControllerManagedBy(mgr).
-		// Is used for metrics, hence must be unique per controller instance
-		Named(fmt.Sprintf("crier_%s", reporter.GetName())).
-		For(&prowv1.ProwJob{}).
-		WithOptions(controller.Options{MaxConcurrentReconciles: numWorkers}).
-		Complete(&reconciler{
-			ctx:         context.Background(),
-			pjclientset: mgr.GetClient(),
-			reporter:    reporter,
-		}); err != nil {
-		return fmt.Errorf("failed to construct controller: %w", err)
+// NewController constructs a new instance of the crier controller.
+func NewController(
+	pjclientset clientset.Interface,
+	queue workqueue.RateLimitingInterface,
+	informer pjinformers.ProwJobInformer,
+	reporter reportClient,
+	numWorkers int) *Controller {
+	return &Controller{
+		pjclientset: pjclientset,
+		queue:       queue,
+		informer:    informer,
+		reporter:    reporter,
+		numWorkers:  numWorkers,
+		wg:          &sync.WaitGroup{},
+	}
+}
+
+// Run is the main path of execution for the controller loop.
+func (c *Controller) Run(ctx context.Context) {
+	// handle a panic with logging and exiting
+	defer utilruntime.HandleCrash()
+
+	logrus.Info("Initiating controller")
+	c.informer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc: func(obj interface{}) {
+			key, err := cache.MetaNamespaceKeyFunc(obj)
+			logrus.WithField("prowjob", key).Trace("Add prowjob")
+			if err != nil {
+				logrus.WithError(err).Error("Cannot get key from object meta")
+				return
+			}
+			c.queue.AddRateLimited(key)
+		},
+		UpdateFunc: func(oldObj, newObj interface{}) {
+			key, err := cache.MetaNamespaceKeyFunc(newObj)
+			logrus.WithField("prowjob", key).Trace("Update prowjob")
+			if err != nil {
+				logrus.WithError(err).Error("Cannot get key from object meta")
+				return
+			}
+			c.queue.AddRateLimited(key)
+		},
+	})
+
+	// run the informer to start listing and watching resources
+	go c.informer.Informer().Run(ctx.Done())
+
+	// do the initial synchronization (one time) to populate resources
+	if !cache.WaitForCacheSync(ctx.Done(), c.HasSynced) {
+		utilruntime.HandleError(fmt.Errorf("Error syncing cache"))
+		return
+	}
+	logrus.Info("Controller.Run: cache sync complete")
+
+	// run the runWorker method every second with a stop channel
+	for i := 0; i < c.numWorkers; i++ {
+		go wait.Until(c.runWorker, time.Second, ctx.Done())
 	}
 
-	return nil
+	logrus.Infof("Started %d workers", c.numWorkers)
+	<-ctx.Done()
+	logrus.Info("Shutting down workers")
+	// ignore new items in the queue but when all goroutines
+	// have completed existing items then shutdown
+	c.queue.ShutDown()
+	c.wg.Wait()
 }
 
-func (r *reconciler) updateReportState(pj *prowv1.ProwJob, log *logrus.Entry, reportedState prowv1.ProwJobState) error {
+// HasSynced allows us to satisfy the Controller interface by wiring up the informer's HasSynced
+// method to it.
+func (c *Controller) HasSynced() bool {
+	return c.informer.Informer().HasSynced()
+}
+
+// runWorker executes the loop to process new items added to the queue.
+func (c *Controller) runWorker() {
+	c.wg.Add(1)
+	for c.processNextItem() {
+	}
+	c.wg.Done()
+}
+
+func (c *Controller) retry(key interface{}, log *logrus.Entry, err error) bool {
+	if c.queue.NumRequeues(key) < 5 {
+		log.WithError(err).Info("Failed processing item, retrying")
+		c.queue.AddRateLimited(key)
+	} else {
+		log.WithError(err).Error("Failed processing item, no more retries")
+		c.queue.Forget(key)
+	}
+
+	return true
+}
+
+func (c *Controller) updateReportState(pj *v1.ProwJob, log *logrus.Entry, reportedState v1.ProwJobState) error {
+	pjData, err := json.Marshal(pj)
+	if err != nil {
+		return fmt.Errorf("error marshal pj: %v", err)
+	}
+
 	// update pj report status
 	newpj := pj.DeepCopy()
 	// we set omitempty on PrevReportStates, so here we need to init it if is nil
 	if newpj.Status.PrevReportStates == nil {
-		newpj.Status.PrevReportStates = map[string]prowv1.ProwJobState{}
+		newpj.Status.PrevReportStates = map[string]v1.ProwJobState{}
 	}
-	newpj.Status.PrevReportStates[r.reporter.GetName()] = reportedState
+	newpj.Status.PrevReportStates[c.reporter.GetName()] = reportedState
 
-	if err := r.pjclientset.Patch(r.ctx, newpj, ctrlruntimeclient.MergeFrom(pj)); err != nil {
-		return fmt.Errorf("failed to patch: %w", err)
+	newpjData, err := json.Marshal(newpj)
+	if err != nil {
+		return fmt.Errorf("error marshal new pj: %v", err)
+	}
+
+	patch, err := jsonpatch.CreateMergePatch(pjData, newpjData)
+	if err != nil {
+		return fmt.Errorf("error CreateMergePatch: %v", err)
+	}
+
+	if len(patch) == 0 {
+		logrus.Warnf("Empty merge patch: pjData: %s, newpjData: %s", string(pjData), string(newpjData))
+	}
+
+	log.Info("Created merge patch")
+	_, err = c.pjclientset.ProwV1().ProwJobs(pj.Namespace).Patch(context.TODO(), pj.Name, types.MergePatchType, patch, metav1.PatchOptions{})
+	if err != nil {
+		return err
 	}
 
 	// Block until the update is in the lister to make sure that events from another controller
 	// that also does reporting dont trigger another report because our lister doesn't yet contain
 	// the updated Status
-	name := types.NamespacedName{Namespace: pj.Namespace, Name: pj.Name}
 	if err := wait.Poll(time.Second, 3*time.Second, func() (bool, error) {
-		if err := r.pjclientset.Get(r.ctx, name, pj); err != nil {
+		pj, err := c.informer.Lister().ProwJobs(newpj.Namespace).Get(newpj.Name)
+		if err != nil {
 			return false, err
 		}
 		if pj.Status.PrevReportStates != nil &&
-			newpj.Status.PrevReportStates[r.reporter.GetName()] == reportedState {
+			newpj.Status.PrevReportStates[c.reporter.GetName()] == reportedState {
 			return true, nil
 		}
 		return false, nil
 	}); err != nil {
-		return fmt.Errorf("failed to wait for updated report status to be in lister: %w", err)
+		return fmt.Errorf("failed to wait for updated report status to be in lister: %v", err)
 	}
 	return nil
 }
 
-// Reconcile retrieves each queued item and takes the necessary handler action based off of if
+// processNextItem retrieves each queued item and takes the necessary handler action based off of if
 // the item was created or deleted.
-func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
-	log := logrus.WithField("reporter", r.reporter.GetName()).WithField("key", req.String()).WithField("prowjob", req.Name)
+func (c *Controller) processNextItem() bool {
+	key, quit := c.queue.Get()
+	if quit {
+		logrus.Debug("Queue already shut down, exiting processNextItem")
+		return false
+	}
+
+	defer c.queue.Done(key)
+
+	// assert the string out of the key (format `namespace/name`)
+	keyRaw := key.(string)
+	log := logrus.WithField("reporter", c.reporter.GetName()).WithField("key", keyRaw)
 	log.Debug("processing next key")
 	result, err := r.reconcile(log, req)
 	if err != nil {
-		log.WithError(err).Error("Reconciliation failed")
+		log.WithError(err).Error("invalid resource key")
+		c.queue.Forget(key)
+		return true
 	}
 	if result == nil {
 		result = &reconcile.Result{}
@@ -137,7 +250,7 @@ func (r *reconciler) reconcile(log *logrus.Entry, req reconcile.Request) (*recon
 
 		return nil, fmt.Errorf("failed to get prowjob %s: %w", req.String(), err)
 	}
-
+	pj := readOnlyPJ.DeepCopy()
 	log = log.WithField("jobName", pj.Spec.Job)
 
 	if !pj.Spec.Report || !r.reporter.ShouldReport(log, &pj) {
@@ -146,11 +259,11 @@ func (r *reconciler) reconcile(log *logrus.Entry, req reconcile.Request) (*recon
 
 	// we set omitempty on PrevReportStates, so here we need to init it if is nil
 	if pj.Status.PrevReportStates == nil {
-		pj.Status.PrevReportStates = map[string]prowv1.ProwJobState{}
+		pj.Status.PrevReportStates = map[string]v1.ProwJobState{}
 	}
 
 	// already reported current state
-	if pj.Status.PrevReportStates[r.reporter.GetName()] == pj.Status.State {
+	if pj.Status.PrevReportStates[c.reporter.GetName()] == pj.Status.State {
 		log.Trace("Already reported")
 		return nil, nil
 	}
@@ -172,12 +285,13 @@ func (r *reconciler) reconcile(log *logrus.Entry, req reconcile.Request) (*recon
 		// We have to retry here, if we return we lose the information that we already reported this job.
 		if err := retry.RetryOnConflict(retry.DefaultBackoff, func() error {
 			// Get it first, this is very cheap
-			if err := r.pjclientset.Get(r.ctx, req.NamespacedName, &pj); err != nil {
+			pj, err := c.pjclientset.ProwV1().ProwJobs(pjob.Namespace).Get(context.TODO(), pjob.Name, metav1.GetOptions{})
+			if err != nil {
 				return err
 			}
 			// Must not wrap until we have kube 1.19, otherwise the RetryOnConflict won't recognize conflicts
 			// correctly
-			return r.updateReportState(&pj, log, reportedState)
+			return c.updateReportState(pj, log, reportedState)
 		}); err != nil {
 			log.WithError(err).Error("Failed to update report state on prowjob")
 			// Very subpar, we will report again. But even if we didn't do that now, we would do so

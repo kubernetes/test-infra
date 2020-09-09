@@ -18,15 +18,15 @@ limitations under the License.
 package gerrit
 
 import (
-	"context"
 	"fmt"
 	"strings"
 
 	"github.com/sirupsen/logrus"
-	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
+	"k8s.io/apimachinery/pkg/labels"
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	pjlister "k8s.io/test-infra/prow/client/listers/prowjobs/v1"
 	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/kube"
 )
@@ -66,9 +66,8 @@ type gerritClient interface {
 
 // Client is a gerrit reporter client
 type Client struct {
-	ctx    context.Context
 	gc     gerritClient
-	lister ctrlruntimeclient.Reader
+	lister pjlister.ProwJobLister
 }
 
 // Job is the view of a prowjob scoped for a report
@@ -89,14 +88,13 @@ type JobReport struct {
 }
 
 // NewReporter returns a reporter client
-func NewReporter(cookiefilePath string, projects map[string][]string, lister ctrlruntimeclient.Reader) (*Client, error) {
+func NewReporter(cookiefilePath string, projects map[string][]string, lister pjlister.ProwJobLister) (*Client, error) {
 	gc, err := client.NewClient(projects)
 	if err != nil {
 		return nil, err
 	}
 	gc.Authenticate(cookiefilePath, "")
 	return &Client{
-		ctx:    context.Background(),
 		gc:     gc,
 		lister: lister,
 	}, nil
@@ -136,19 +134,19 @@ func (c *Client) ShouldReport(log *logrus.Entry, pj *v1.ProwJob) bool {
 	}
 
 	// Only report when all jobs of the same type on the same revision finished
-	selector := map[string]string{
+	selector := labels.Set{
 		client.GerritRevision:    pj.ObjectMeta.Labels[client.GerritRevision],
 		kube.ProwJobTypeLabel:    pj.ObjectMeta.Labels[kube.ProwJobTypeLabel],
 		client.GerritReportLabel: pj.ObjectMeta.Labels[client.GerritReportLabel],
 	}
 
-	var pjs v1.ProwJobList
-	if err := c.lister.List(c.ctx, &pjs, ctrlruntimeclient.MatchingLabels(selector)); err != nil {
-		log.WithError(err).Errorf("Cannot list prowjob with selector %v", selector)
+	pjs, err := c.lister.List(selector.AsSelector())
+	if err != nil {
+		log.WithError(err).WithField("selector", selector).Error("Failed to list prowjobs")
 		return false
 	}
 
-	for _, pjob := range pjs.Items {
+	for _, pjob := range pjs {
 		if pjob.Status.State == v1.TriggeredState || pjob.Status.State == v1.PendingState {
 			// other jobs with same label are still running on this revision, skip report
 			log.Info("Other jobs with same label are still running on this revision")
@@ -175,23 +173,23 @@ func (c *Client) Report(logger *logrus.Entry, pj *v1.ProwJob) ([]*v1.ProwJob, *r
 
 		// list all prowjobs in the patchset matching pj's type (pre- or post-submit)
 
-		selector := map[string]string{
+		selector := labels.Set{
 			clientGerritRevision: pj.ObjectMeta.Labels[clientGerritRevision],
 			pjTypeLabel:          pj.ObjectMeta.Labels[pjTypeLabel],
 			gerritReportLabel:    pj.ObjectMeta.Labels[gerritReportLabel],
 		}
 
-		var pjsOnRevisionWithSameLabel v1.ProwJobList
-		if err := c.lister.List(c.ctx, &pjsOnRevisionWithSameLabel, ctrlruntimeclient.MatchingLabels(selector)); err != nil {
+		pjsOnRevisionWithSameLabel, err := c.lister.List(selector.AsSelector())
+		if err != nil {
 			logger.WithError(err).WithField("selector", selector).Errorf("Cannot list prowjob with selector")
 			return nil, nil, err
 		}
 
 		mostRecentJob := map[string]*v1.ProwJob{}
-		for idx, pjOnRevisionWithSameLabel := range pjsOnRevisionWithSameLabel.Items {
+		for _, pjOnRevisionWithSameLabel := range pjsOnRevisionWithSameLabel {
 			job, ok := mostRecentJob[pjOnRevisionWithSameLabel.Spec.Job]
 			if !ok || job.CreationTimestamp.Time.Before(pjOnRevisionWithSameLabel.CreationTimestamp.Time) {
-				mostRecentJob[pjOnRevisionWithSameLabel.Spec.Job] = &pjsOnRevisionWithSameLabel.Items[idx]
+				mostRecentJob[pjOnRevisionWithSameLabel.Spec.Job] = pjOnRevisionWithSameLabel
 			}
 		}
 		for _, pjOnRevisionWithSameLabel := range mostRecentJob {
