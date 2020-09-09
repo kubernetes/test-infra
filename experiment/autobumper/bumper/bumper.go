@@ -107,6 +107,31 @@ type Options struct {
 	SkipPullRequest bool
 }
 
+// GitCommand is used to pass the various components of the git command which needs to be executed
+type GitCommand struct {
+	baseCommand string
+	args        []string
+	workingDir  string
+}
+
+// Call will execute the Git command and switch the working directory if specified
+func (gc GitCommand) Call(stdout, stderr io.Writer) error {
+	return Call(stdout, stderr, gc.baseCommand, gc.buildCommand()...)
+}
+
+func (gc GitCommand) buildCommand() []string {
+	args := []string{}
+	if gc.workingDir != "" {
+		args = append(args, "-C", gc.workingDir)
+	}
+	args = append(args, gc.args...)
+	return args
+}
+
+func (gc GitCommand) getCommand() string {
+	return fmt.Sprintf("%s %s", gc.baseCommand, strings.Join(gc.buildCommand(), " "))
+}
+
 func validateOptions(o *Options) error {
 	if !o.SkipPullRequest && o.GitHubToken == "" {
 		return fmt.Errorf("--github-token is mandatory when --skip-pull-request is false")
@@ -507,7 +532,7 @@ func GitCommitAndPush(remote, remoteBranch, name, email, message string, stdout,
 
 	// Avoid doing metadata-only pushes that re-trigger tests and remove lgtm
 	if localTreeRef != remoteTreeRef {
-		if err := GitPush(forkRemoteName, remoteBranch, stdout, stderr); err != nil {
+		if err := GitPush(forkRemoteName, remoteBranch, stdout, stderr, ""); err != nil {
 			return err
 		}
 	} else {
@@ -518,12 +543,58 @@ func GitCommitAndPush(remote, remoteBranch, name, email, message string, stdout,
 }
 
 // GitPush push the changes to the given remote and branch.
-func GitPush(remote, remoteBranch string, stdout, stderr io.Writer) error {
+func GitPush(remote, remoteBranch string, stdout, stderr io.Writer, workingDir string) error {
 	logrus.Info("Pushing to remote...")
-	if err := Call(stdout, stderr, "git", "push", "-f", remote, fmt.Sprintf("HEAD:%s", remoteBranch)); err != nil {
-		return fmt.Errorf("failed to git push: %w", err)
+	gitCmd := "git"
+	gc := GitCommand{
+		baseCommand: gitCmd,
+		args:        []string{"push", "-f", remote, fmt.Sprintf("HEAD:%s", remoteBranch)},
+		workingDir:  workingDir,
+	}
+	if err := gc.Call(stdout, stderr); err != nil {
+		return fmt.Errorf("failed to %s: %w", gc.getCommand(), err)
 	}
 	return nil
+}
+
+// RunAndCommitIfNeeded makes a commit in the workingDir if there are
+// any changes resulting from the command execution. Returns true if a commit is made
+func RunAndCommitIfNeeded(stdout, stderr io.Writer, author, cmd string, args []string, workingDir string) (bool, error) {
+	fullCommand := fmt.Sprintf("%s %s", cmd, strings.Join(args, " "))
+
+	logrus.Infof("Running: %s", fullCommand)
+	if err := Call(stdout, stderr, cmd, args...); err != nil {
+		return false, fmt.Errorf("failed to run %s: %w", fullCommand, err)
+	}
+
+	changed, err := HasChanges()
+	if err != nil {
+		return false, fmt.Errorf("error occurred when checking changes: %w", err)
+	}
+
+	if !changed {
+		logrus.WithField("command", fullCommand).Info("No changes to commit")
+		return false, nil
+	}
+	gitCmd := "git"
+	gc := GitCommand{
+		baseCommand: gitCmd,
+		args:        []string{"add", "."},
+		workingDir:  workingDir,
+	}
+	if err := gc.Call(stdout, stderr); err != nil {
+		return false, fmt.Errorf("failed to %s: %w", gc.getCommand(), err)
+	}
+	gc = GitCommand{
+		baseCommand: gitCmd,
+		args:        []string{"commit", "-m", fullCommand, "--author", author},
+		workingDir:  workingDir,
+	}
+	if err := gc.Call(stdout, stderr); err != nil {
+		return false, fmt.Errorf("failed to %s: %w", gc.getCommand(), err)
+	}
+
+	return true, nil
 }
 
 func tagFromName(name string) string {

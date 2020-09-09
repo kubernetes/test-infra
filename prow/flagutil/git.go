@@ -19,6 +19,7 @@ package flagutil
 import (
 	"errors"
 	"flag"
+	"fmt"
 
 	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
@@ -28,8 +29,8 @@ import (
 // GitOptions holds options for interacting with git.
 type GitOptions struct {
 	host          string
-	user          string
-	email         string
+	User          string
+	Email         string
 	tokenPath     string
 	useSSH        bool
 	useGitHubUser bool
@@ -38,8 +39,8 @@ type GitOptions struct {
 // AddFlags injects Git options into the given FlagSet.
 func (o *GitOptions) AddFlags(fs *flag.FlagSet) {
 	fs.StringVar(&o.host, "git-host", "github.com", "host to contact for git operations.")
-	fs.StringVar(&o.user, "git-user", "", "User for git commits, optional. Can be derived from GitHub credentials.")
-	fs.StringVar(&o.email, "git-email", "", "Email for git commits, optional. Can be derived from GitHub credentials.")
+	fs.StringVar(&o.User, "git-user", "", "User for git commits, optional. Can be derived from GitHub credentials.")
+	fs.StringVar(&o.Email, "git-email", "", "Email for git commits, optional. Can be derived from GitHub credentials.")
 	fs.StringVar(&o.tokenPath, "git-token-path", "", "Path to the file containing the git token for HTTPS operations, optional. Can be derived from GitHub credentials.")
 	fs.BoolVar(&o.useSSH, "git-over-ssh", false, "Use SSH when pushing and pulling instead of HTTPS. SSH credentials should be present at ~/.ssh")
 	fs.BoolVar(&o.useGitHubUser, "git-user-from-github", true, "Use GitHub credentials and user identity for git operations.")
@@ -52,10 +53,13 @@ func (o *GitOptions) Validate(dryRun bool) error {
 	}
 
 	if !o.useGitHubUser {
+		if (o.Email == "") != (o.User == "") {
+			return fmt.Errorf("--git-user and --git-email must be specified together")
+		}
 		switch {
-		case o.user == "":
+		case o.User == "":
 			return errors.New("--git-user is required, or may be loaded by setting --git-user-from-github")
-		case o.email == "":
+		case o.Email == "":
 			return errors.New("--git-email is required, or may be loaded by setting --git-user-from-github")
 		}
 	}
@@ -63,13 +67,14 @@ func (o *GitOptions) Validate(dryRun bool) error {
 	if !o.useSSH && !o.useGitHubUser && o.tokenPath == "" {
 		return errors.New("--git-token-path must be provided or defaulted by setting --git-user-from-github or --git-over-ssh")
 	}
+
 	return nil
 }
 
 // GitClient creates a new git client.
 func (o *GitOptions) GitClient(userClient github.UserClient, token func() []byte, censor func(content []byte) []byte, dryRun bool) (git.ClientFactory, error) {
 	gitUser := func() (name, email string, err error) {
-		name, email = o.user, o.email
+		name, email = o.User, o.Email
 		if o.useGitHubUser {
 			user, err := userClient.BotUser()
 			if err != nil {
