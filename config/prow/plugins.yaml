@@ -407,6 +407,10 @@ repo_milestone:
     maintainers_id: 2195382
     maintainers_team: kubeadm-maintainers
     maintainers_friendly_name: Kubeadm maintainers
+  kubernetes-sigs/kubebuilder:
+    maintainers_id: 2688053
+    maintainers_team: kubebuilder-maintainers
+    maintainers_friendly_name: Kubebuilder Maintainers
 
 project_config:
   project_org_configs:
