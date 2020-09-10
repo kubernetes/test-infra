@@ -932,6 +932,15 @@ dashboards:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
     code_search_url_template:
       url: https://github.com/istio/proxy/compare/<start-custom-0>...<end-custom-0>
+    description: release-centos_proxy_postsubmit
+    name: release-centos_proxy_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/proxy/issues/
+    test_group_name: release-centos_proxy_postsubmit
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/proxy/compare/<start-custom-0>...<end-custom-0>
     description: release_proxy_postsubmit
     name: release_proxy_postsubmit
     open_bug_template:
@@ -4604,6 +4613,9 @@ test_groups:
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/test_pkg_release-1.7_postsubmit
   name: test_pkg_release-1.7_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/release-centos_proxy_postsubmit
+  name: release-centos_proxy_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/release_proxy_postsubmit
   name: release_proxy_postsubmit
