@@ -1374,10 +1374,10 @@ presubmits:
         name: ""
         resources:
           limits:
-            cpu: 4
+            cpu: 7
             memory: 38Gi
           requests:
-            cpu: 4
+            cpu: 7
             memory: 38Gi
   - always_run: true
     branches:
