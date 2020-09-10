@@ -779,8 +779,6 @@ rules:
     verbs:
       - delete
       - list
-      - watch
-      - get
       - patch
 ---
 kind: RoleBinding
