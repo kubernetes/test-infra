@@ -39,6 +39,7 @@ presubmits:
             cpu: 4
             memory: "36Gi"
   - name: pull-kubernetes-bazel-test
+    cluster: k8s-infra-prow-build
     decorate: true
     always_run: true
     skip_branches:
@@ -48,6 +49,7 @@ presubmits:
       testgrid-alert-stale-results-hours: "24"
       testgrid-create-test-group: "true"
       testgrid-num-failures-to-alert: "10"
+      description: runs bazel test //... -//build/... -//vendor/...
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
@@ -63,8 +65,6 @@ presubmits:
         args:
         - test
         - --config=unit
-        - --config=remote
-        - --remote_instance_name=projects/k8s-prow-builds/instances/default_instance
         - //...
         - --
         - -//build/...

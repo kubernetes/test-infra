@@ -1289,6 +1289,7 @@ presubmits:
   - always_run: true
     branches:
     - release-1.19
+    cluster: k8s-infra-prow-build
     decorate: true
     extra_refs:
     - base_ref: master
@@ -1303,8 +1304,6 @@ presubmits:
       - args:
         - test
         - --config=unit
-        - --config=remote
-        - --remote_instance_name=projects/k8s-prow-builds/instances/default_instance
         - //...
         - --
         - -//build/...
