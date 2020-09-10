@@ -1,12 +1,13 @@
 presubmits:
   IBM/ibm-grafana-ocpthanos-proxy:
-  - name: check_ibm-grafana-ocpthanos-proxy
+  - name: check-ibm-grafana-ocpthanos-proxy
+    cluster: default
+    always_run: true
     branches:
     - ^master$
     decorate: true
-    always_run: true
     path_alias: github.com/IBM/ibm-grafana-ocpthanos-proxy
-    rerun_command: /test check ibm-grafana-ocpthanos-proxy
+    rerun_command: /test check-ibm-grafana-ocpthanos-proxy
     spec:
       containers:
       - command:
@@ -16,14 +17,15 @@ presubmits:
         name: ""
         securityContext:
           privileged: true
-    trigger: '(?m)^/test (?:.*? )?check(?: .*?)?$'
-  - name: test_ibm-grafana-ocpthanos-proxy
+    trigger: '(?m)^/test (?:.*? )?check(?:.*?)?$'
+  - name: test-ibm-grafana-ocpthanos-proxy-amd64
+    cluster: default
+    always_run: true
     branches:
     - ^master$
     decorate: true
-    always_run: true
     path_alias: github.com/IBM/ibm-grafana-ocpthanos-proxy
-    rerun_command: /test test ibm-grafana-ocpthanos-proxy
+    rerun_command: /test test-ibm-grafana-ocpthanos-proxy-amd64
     spec:
       containers:
       - command:
@@ -34,16 +36,53 @@ presubmits:
         name: ""
         securityContext:
           privileged: true
-    trigger: '(?m)^/test (?:.*? )?test(?: .*?)?$'
-  - name: build_ibm-grafana-ocpthanos-proxy
+    trigger: '(?m)^/test (?:.*? )?test(?:.*?)?$'
+  - name: test-ibm-grafana-ocpthanos-proxy-ppc64le
+    cluster: ppc64le
+    always_run: true
     branches:
     - ^master$
     decorate: true
-    always_run: true
-    labels:
-      preset-service-account: "true"
     path_alias: github.com/IBM/ibm-grafana-ocpthanos-proxy
-    rerun_command: /test build ibm-grafana-ocpthanos-proxy
+    rerun_command: /test test-ibm-grafana-ocpthanos-proxy-ppc64le
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - test
+        image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?test(?:.*?)?$'
+  - name: test-ibm-grafana-ocpthanos-proxy-s390x
+    cluster: s390x
+    always_run: true
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/ibm-grafana-ocpthanos-proxy
+    rerun_command: /test test-ibm-grafana-ocpthanos-proxy-s390x
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - test
+        image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?test(?:.*?)?$'
+  - name: build-ibm-grafana-ocpthanos-proxy-amd64
+    cluster: default
+    always_run: true
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/ibm-grafana-ocpthanos-proxy
+    rerun_command: /test build-ibm-grafana-ocpthanos-proxy-amd64
     spec:
       containers:
       - command:
@@ -54,10 +93,49 @@ presubmits:
         name: ""
         securityContext:
           privileged: true
-    trigger: '(?m)^/test (?:.*? )?build(?: .*?)?$'
+    trigger: '(?m)^/test (?:.*? )?build(?:.*?)?$'
+  - name: build-ibm-grafana-ocpthanos-proxy-ppc64le
+    cluster: ppc64le
+    always_run: true
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/ibm-grafana-ocpthanos-proxy
+    rerun_command: /test build-ibm-grafana-ocpthanos-proxy-ppc64le
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build
+        image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?build(?:.*?)?$'
+  - name: build-ibm-grafana-ocpthanos-proxy-s390x
+    cluster: s390x
+    always_run: true
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/ibm-grafana-ocpthanos-proxy
+    rerun_command: /test build-ibm-grafana-ocpthanos-proxy-s390x
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build
+        image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?build(?:.*?)?$'
 postsubmits:
   IBM/ibm-grafana-ocpthanos-proxy:
-  - name: check_ibm-grafana-ocpthanos-proxy_postsubmit
+  - name: coverage-ibm-grafana-ocpthanos-proxy-postsubmit
+    cluster: default
     branches:
     - ^master$
     decorate: true
@@ -66,17 +144,22 @@ postsubmits:
       containers:
       - command:
         - make
-        - check
+        - coverage
         image: quay.io/multicloudlab/check-tool:v20200817-b1f2b4c05
         name: ""
+        env:
+        - name: CODECOV_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: ibm-grafana-ocpthanos-proxy-codecov-token
+              key: codecov-token
         securityContext:
           privileged: true
-  - name: build_ibm-grafana-ocpthanos-proxy_postsubmit
+  - name: build-ibm-grafana-ocpthanos-proxy-amd64-postsubmit
+    cluster: default
     branches:
     - ^master$
     decorate: true
-    labels:
-      preset-service-account: "true"
     path_alias: github.com/IBM/ibm-grafana-ocpthanos-proxy
     spec:
       containers:
@@ -88,19 +171,106 @@ postsubmits:
         name: ""
         securityContext:
           privileged: true
-  - name: images_ibm-grafana-ocpthanos-proxy_postsubmit
+  - name: build-ibm-grafana-ocpthanos-proxy-ppc64le-postsubmit
+    cluster: ppc64le
     branches:
     - ^master$
     decorate: true
     path_alias: github.com/IBM/ibm-grafana-ocpthanos-proxy
-    labels:
-      preset-service-account: "true"
     spec:
       containers:
       - command:
         - entrypoint
         - make
-        - images
+        - build
+        image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
+        name: ""
+        securityContext:
+          privileged: true
+  - name: build-ibm-grafana-ocpthanos-proxy-s390x-postsubmit
+    cluster: s390x
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/ibm-grafana-ocpthanos-proxy
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build
+        image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
+        name: ""
+        securityContext:
+          privileged: true
+  - name: image-ibm-grafana-ocpthanos-proxy-amd64-postsubmit
+    cluster: default
+    branches:
+    - ^master$
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    path_alias: github.com/IBM/ibm-grafana-ocpthanos-proxy
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build-push-image
+        image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
+        name: ""
+        securityContext:
+          privileged: true
+  - name: image-ibm-grafana-ocpthanos-proxy-ppc64le-postsubmit
+    cluster: ppc64le
+    branches:
+    - ^master$
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    path_alias: github.com/IBM/ibm-grafana-ocpthanos-proxy
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build-push-image
+        image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
+        name: ""
+        securityContext:
+          privileged: true
+  - name: image-ibm-grafana-ocpthanos-proxy-s390x-postsubmit
+    cluster: s390x
+    branches:
+    - ^master$
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    path_alias: github.com/IBM/ibm-grafana-ocpthanos-proxy
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build-push-image
+        image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
+        name: ""
+        securityContext:
+          privileged: true
+  - name: multiarch-image-ibm-grafana-ocpthanos-proxy-postsubmit
+    cluster: default
+    branches:
+    - ^master$
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    path_alias: github.com/IBM/ibm-grafana-ocpthanos-proxy
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - multiarch-image
         image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
         name: ""
         securityContext:
