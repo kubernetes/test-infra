@@ -71,10 +71,10 @@ presubmits:
         - -//vendor/...
         resources:
           limits:
-            cpu: 4
+            cpu: 7
             memory: 38Gi
           requests:
-            cpu: 4
+            cpu: 7
             memory: 38Gi
 postsubmits:
   kubernetes/kubernetes:
