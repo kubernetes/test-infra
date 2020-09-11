@@ -15,14 +15,36 @@
 # limitations under the License.
 
 
+
+
+
 import os
+from datetime import datetime
+
+DUMP = 'dump.txt'
+
+def print_dump(file):
+    if os.path.exists(file):
+        with open(file, "r") as fp:
+            output = fp.read()
+        os.remove(file)
+        print(output)
+    else:
+        print(f'unable to find dump file: {file}')
 
 
-def call(cmd):
-    print('+', cmd)
-    status = os.system(cmd)
+def call(cmd, dump=False):
+
+    started = datetime.now()
+
+    redirect = ' > {DUMP}}' if dump else ''
+    status = os.system(f'{cmd}{redirect}')
+
+    ended = datetime.now()
+    print(f'+{cmd} completed in {started-ended}')
     if status:
-        raise OSError('invocation failed')
+        if dump: print_dump(DUMP)
+        raise OSError(f'invocation failed: {dump}')
 
 
 def main():
@@ -41,13 +63,13 @@ def main():
         mj_ext = ' --reset-emitted'
 
     call(mj_cmd + mj_ext + ' --days 1 | pv | gzip > build_day.json.gz')
-    call(bq_cmd + bq_ext + ' k8s-gubernator:build.day build_day.json.gz schema.json')
+    call(bq_cmd + bq_ext + ' k8s-gubernator:build.day build_day.json.gz schema.json', dump=True)
 
     call(mj_cmd + mj_ext + ' --days 7 | pv | gzip > build_week.json.gz')
-    call(bq_cmd + bq_ext + ' k8s-gubernator:build.week build_week.json.gz schema.json')
+    call(bq_cmd + bq_ext + ' k8s-gubernator:build.week build_week.json.gz schema.json', dump=True)
 
     call(mj_cmd + ' | pv | gzip > build_all.json.gz')
-    call(bq_cmd + ' k8s-gubernator:build.all build_all.json.gz schema.json')
+    call(bq_cmd + ' k8s-gubernator:build.all build_all.json.gz schema.json', dump=True)
 
     call('python3 stream.py --poll kubernetes-jenkins/gcs-changes/kettle '
          ' --dataset k8s-gubernator:build --tables all:0 day:1 week:7 --stop_at=1')
