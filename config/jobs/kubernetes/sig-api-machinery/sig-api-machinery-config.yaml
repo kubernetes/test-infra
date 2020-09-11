@@ -20,7 +20,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200825-523865b-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-master
   annotations:
     testgrid-dashboards: google-gce
     testgrid-tab-name: gci-gce-proto
@@ -47,7 +47,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=9
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200825-523865b-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-master
   annotations:
     testgrid-dashboards: sig-api-machinery-network-proxy
 - interval: 2h
@@ -72,13 +72,14 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=9
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200825-523865b-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-master
   annotations:
     testgrid-dashboards: sig-api-machinery-network-proxy
 
 presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-e2e-gce-network-proxy-http-connect
+    cluster: k8s-infra-prow-build
     always_run: false
     run_if_changed: '^(cluster/gce/manifests/konnectivity-server.yaml$|cluster/gce/addons/konnectivity-agent)'
     labels:
@@ -105,13 +106,12 @@ presubmits:
         - --env=KONNECTIVITY_SERVICE_PROXY_PROTOCOL_MODE=http-connect
         - --gcp-node-image=gci
         - --gcp-zone=us-west1-b
-        - --gcp-project=k8s-network-proxy-e2e
         - --ginkgo-parallel=30
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-network-proxy-http-connect
         - --provider=gce
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=9
         - --timeout=80m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200825-523865b-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-master
         resources:
           requests:
             cpu: 2
@@ -123,6 +123,7 @@ presubmits:
       testgrid-dashboards: sig-api-machinery-network-proxy
   - name: pull-kubernetes-e2e-gce-network-proxy-grpc
     always_run: false
+    optional: true
     cluster: k8s-infra-prow-build
     run_if_changed: '^(cluster/gce/manifests/konnectivity-server.yaml$|cluster/gce/addons/konnectivity-agent)'
     labels:
@@ -149,13 +150,12 @@ presubmits:
         - --env=KONNECTIVITY_SERVICE_PROXY_PROTOCOL_MODE=grpc
         - --gcp-node-image=gci
         - --gcp-zone=us-west1-b
-        - --gcp-project=k8s-network-proxy-e2e
         - --ginkgo-parallel=30
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-network-proxy-grpc
         - --provider=gce
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=9
         - --timeout=80m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200825-523865b-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-master
         resources:
           requests:
             cpu: 4

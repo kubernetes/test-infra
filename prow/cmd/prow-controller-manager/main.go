@@ -149,13 +149,13 @@ func main() {
 		logrus.WithError(err).Fatal("Error creating manager")
 	}
 
-	buildManagers, err := o.kubernetes.BuildClusterManagers(false,
+	buildManagers, err := o.kubernetes.BuildClusterManagers(o.dryRun,
 		func(o *manager.Options) {
 			o.Namespace = cfg().PodNamespace
 		},
 	)
 	if err != nil {
-		logrus.WithError(err).Fatal("Failed to construct build cluster managers")
+		logrus.WithError(err).Error("Failed to construct build cluster managers. Is there a bad entry in the kubeconfig secret?")
 	}
 
 	for _, buildManager := range buildManagers {

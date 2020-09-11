@@ -229,6 +229,16 @@ func cdToRootDir() error {
 }
 
 func Call(stdout, stderr io.Writer, cmd string, args ...string) error {
+	(&logrus.Logger{
+		Out:       stderr,
+		Formatter: logrus.StandardLogger().Formatter,
+		Hooks:     logrus.StandardLogger().Hooks,
+		Level:     logrus.StandardLogger().Level,
+	}).WithField("cmd", cmd).
+		// The default formatting uses a space as separator, which is hard to read if an arg contains a space
+		WithField("args", fmt.Sprintf("['%s']", strings.Join(args, "', '"))).
+		Info("running command")
+
 	c := exec.Command(cmd, args...)
 	c.Stdout = stdout
 	c.Stderr = stderr
@@ -257,7 +267,11 @@ func (w HideSecretsWriter) Write(content []byte) (int, error) {
 // "images" contains the tag replacements that have been made which is returned from "updateReferences([]string{"."}, extraFiles)"
 // "images" and "extraLineInPRBody" are used to generate commit summary and body of the PR
 func UpdatePR(gc github.Client, org, repo string, images map[string]string, extraLineInPRBody string, matchTitle, source, branch string, allowMods bool) error {
-	return UpdatePullRequest(gc, org, repo, makeCommitSummary(images), generatePRBody(images, extraLineInPRBody), matchTitle, source, branch, allowMods)
+	summary, err := makeCommitSummary(images)
+	if err != nil {
+		return err
+	}
+	return UpdatePullRequest(gc, org, repo, summary, generatePRBody(images, extraLineInPRBody), matchTitle, source, branch, allowMods)
 }
 
 // UpdatePullRequest updates with github client "gc" the PR of github repo org/repo
@@ -399,13 +413,25 @@ func isUnderPath(name string, paths []string) bool {
 	return false
 }
 
-func getNewProwVersion(images map[string]string) string {
+func getNewProwVersion(images map[string]string) (string, error) {
+	found := map[string]bool{}
 	for k, v := range images {
 		if strings.HasPrefix(k, prowPrefix) {
-			return v
+			found[v] = true
 		}
 	}
-	return ""
+	switch len(found) {
+	case 0:
+		return "", nil
+	case 1:
+		for version := range found {
+			return version, nil
+		}
+	}
+	return "", fmt.Errorf(
+		"Expected a consistent version for all %q images, but found multiple: %v",
+		prowPrefix,
+		found)
 }
 
 // HasChanges checks if the current git repo contains any changes
@@ -421,8 +447,12 @@ func HasChanges() (bool, error) {
 	return len(strings.TrimSuffix(string(combinedOutput), "\n")) > 0, nil
 }
 
-func makeCommitSummary(images map[string]string) string {
-	return fmt.Sprintf("Update prow to %s, and other images as necessary.", getNewProwVersion(images))
+func makeCommitSummary(images map[string]string) (string, error) {
+	version, err := getNewProwVersion(images)
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("Update prow to %s, and other images as necessary.", version), nil
 }
 
 // MakeGitCommit runs a sequence of git commands to
@@ -431,7 +461,11 @@ func makeCommitSummary(images map[string]string) string {
 // "images" contains the tag replacements that have been made which is returned from "updateReferences([]string{"."}, extraFiles)"
 // "images" is used to generate commit message
 func MakeGitCommit(remote, remoteBranch, name, email string, images map[string]string, stdout, stderr io.Writer) error {
-	return GitCommitAndPush(remote, remoteBranch, name, email, makeCommitSummary(images), stdout, stderr)
+	summary, err := makeCommitSummary(images)
+	if err != nil {
+		return err
+	}
+	return GitCommitAndPush(remote, remoteBranch, name, email, summary, stdout, stderr)
 }
 
 // GitCommitAndPush runs a sequence of git commands to commit.
@@ -454,8 +488,10 @@ func GitCommitAndPush(remote, remoteBranch, name, email, message string, stdout,
 	}
 	fetchStderr := &bytes.Buffer{}
 	var remoteTreeRef string
-	if err := Call(stdout, fetchStderr, "git", "fetch", forkRemoteName, remoteBranch); err != nil && !strings.Contains(fetchStderr.String(), fmt.Sprintf("couldn't find remote ref %s", remoteBranch)) {
-		return fmt.Errorf("failed to fetch from fork: %w", err)
+	if err := Call(stdout, fetchStderr, "git", "fetch", forkRemoteName, remoteBranch); err != nil {
+		if !strings.Contains(fetchStderr.String(), fmt.Sprintf("couldn't find remote ref %s", remoteBranch)) {
+			return fmt.Errorf("failed to fetch from fork: %w", err)
+		}
 	} else {
 		var err error
 		remoteTreeRef, err = getTreeRef(stderr, fmt.Sprintf("refs/remotes/%s/%s", forkRemoteName, remoteBranch))

@@ -1,6 +1,7 @@
 presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-e2e-gce-100-performance
+    cluster: k8s-infra-prow-build
     always_run: true
     skip_report: false
     max_concurrency: 12
@@ -33,7 +34,7 @@ presubmits:
         - --gcp-nodes=100
         # TODO(k/k#94098): Remove the line below once we get enough data.
         - --gcp-master-size=n1-standard-8
-        - --gcp-project-type=scalability-presubmit-project
+        - --gcp-project-type=scalability-project
         - --gcp-zone=us-east1-b
         - --provider=gce
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-100-performance
@@ -55,7 +56,7 @@ presubmits:
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=100m
         - --use-logexporter
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200825-523865b-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-master
         resources:
           # Using 6 CPU to speed up bazel build phase (2 is enough for the test itself)
           limits:
@@ -112,7 +113,7 @@ presubmits:
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=240m
         - --use-logexporter
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200825-523865b-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-master
         resources:
           limits:
             # Using 6 CPU to speed up bazel build phase (4 is enough for the test itself)
@@ -126,6 +127,7 @@ presubmits:
   # at 100 node scale. It's an optional presubmit to simplify testing changes
   # that affect the releasing blocking ci correctness tests.
   - name: pull-kubernetes-e2e-gce-correctness
+    cluster: k8s-infra-prow-build
     always_run: false
     optional: true
     labels:
@@ -154,7 +156,7 @@ presubmits:
         - --gcp-node-image=gci
         - --gcp-node-size=g1-small
         - --gcp-nodes=100
-        - --gcp-project-type=scalability-presubmit-project
+        - --gcp-project-type=scalability-project
         - --gcp-ssh-proxy-instance-name=gce-cluster-master
         - --gcp-zone=us-east1-b
         - --ginkgo-parallel=40
@@ -163,7 +165,7 @@ presubmits:
         - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[DisabledForLargeClusters\] --minStartupPods=8 --node-schedulable-timeout=90m
         - --timeout=240m
         - --use-logexporter
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200825-523865b-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-master
         resources:
           limits:
             cpu: 6
@@ -220,7 +222,7 @@ presubmits:
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=540m
         - --use-logexporter
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200825-523865b-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-master
         resources:
           limits:
             # Using 6 CPU to speed up bazel build phase (4 is enough for the test itself)
@@ -231,6 +233,7 @@ presubmits:
             memory: "16Gi"
 
   - name: pull-kubernetes-kubemark-e2e-gce-big
+    cluster: k8s-infra-prow-build
     always_run: false
     optional: true
     skip_report: false
@@ -249,7 +252,7 @@ presubmits:
       testgrid-create-test-group: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200825-523865b-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -268,7 +271,7 @@ presubmits:
         - --gcp-master-size=n1-standard-4
         - --gcp-node-size=n1-standard-8
         - --gcp-nodes=7
-        - --gcp-project-type=scalability-presubmit-project
+        - --gcp-project-type=scalability-project
         - --gcp-zone=us-east1-b
         - --kubemark
         - --kubemark-nodes=500
@@ -323,7 +326,7 @@ presubmits:
       preset-e2e-scalability-presubmits: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200825-523865b-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -427,64 +430,14 @@ presubmits:
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=100m
         - --use-logexporter
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200825-523865b-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-master
         resources:
-          requests:
+          limits:
+            cpu: 2
             memory: "6Gi"
-
-  # clone of pull-perf-tests-clusterloader2 with enabled node killer and using only load test
-  - name: pull-perf-tests-clusterloader2-nodekiller-experimental
-    always_run: false
-    skip_report: false
-    max_concurrency: 1
-    branches:
-      - master
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-e2e-scalability-common: "true"
-      preset-e2e-scalability-containerd: "true"
-      preset-e2e-scalability-presubmits: "true"
-    spec:
-      containers:
-        - args:
-            - --root=/go/src
-            - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
-            - --repo=k8s.io/release
-            - --upload=gs://kubernetes-jenkins/pr-logs
-            - --timeout=120
-            - --scenario=kubernetes_e2e
-            - --
-            - --cluster=
-            - --extract=ci/latest
-            - --gcp-nodes=100
-            - --gcp-project-type=scalability-presubmit-project
-            - --gcp-zone=us-east1-b
-            - --provider=gce
-            - --tear-down-previous
-            - --env=CL2_ENABLE_VIOLATIONS_FOR_SCHEDULING_THROUGHPUT=false
-            - --test=false
-            - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
-            - --test-cmd-args=cluster-loader2
-            - --test-cmd-args=--nodes=100
-            - --test-cmd-args=--prometheus-scrape-node-exporter
-            - --test-cmd-args=--provider=gce
-            - --test-cmd-args=--report-dir=/workspace/_artifacts
-            - --test-cmd-args=--testconfig=testing/load/config.yaml
-            - --test-cmd-args=--testoverrides=./testing/chaosmonkey/override.yaml
-            - --test-cmd-args=--testoverrides=./testing/chaosmonkey/ignore_node_killer_container_restarts_100.yaml
-            - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
-            - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
-            - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
-            - --test-cmd-args=--testoverrides=./testing/overrides/load_throughput.yaml
-            - --test-cmd-name=ClusterLoaderV2
-            - --timeout=100m
-            - --use-logexporter
-          image: gcr.io/k8s-testimages/kubekins-e2e:v20200825-523865b-master
-          resources:
-            requests:
-              memory: "6Gi"
+          requests:
+            cpu: 2
+            memory: "6Gi"
 
   - name: pull-perf-tests-clusterloader2-kubemark
     always_run: false
@@ -542,9 +495,13 @@ presubmits:
             - --test-cmd-name=ClusterLoaderV2
             - --timeout=100m
             - --use-logexporter
-          image: gcr.io/k8s-testimages/kubekins-e2e:v20200825-523865b-master
+          image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-master
           resources:
+            limits:
+              cpu: 2
+              memory: "6Gi"
             requests:
+              cpu: 2
               memory: "6Gi"
           securityContext:
             privileged: true
@@ -564,7 +521,7 @@ presubmits:
       testgrid-tab-name: pull-perf-tests-util-images
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/bootstrap:v20200824-5d057db
+        - image: gcr.io/k8s-testimages/bootstrap:v20200830-4be1d5f
           args:
           - --root=/go/src
           - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
@@ -577,6 +534,9 @@ presubmits:
             privileged: true
           resources:
             requests:
+              cpu: 1
+              memory: "2Gi"
+            limits:
               cpu: 1
               memory: "2Gi"
 
@@ -598,6 +558,13 @@ presubmits:
         - make
         args:
         - verify-all
+        resources:
+          requests:
+            cpu: 1
+            memory: "2Gi"
+          limits:
+            cpu: 1
+            memory: "2Gi"
 
   - name: pull-perf-tests-verify-test
     # TODO(jkaniuk): make it non-optional once we are confident in the presubmit
@@ -615,6 +582,13 @@ presubmits:
       - image: golang:1.13
         command:
         - verify/test.sh
+        resources:
+          requests:
+            cpu: 1
+            memory: "2Gi"
+          limits:
+            cpu: 1
+            memory: "2Gi"
 
   - name: pull-perf-tests-verify-dashboard
     # TODO(oxddr): make it non-optional once we are confident in the presubmit
@@ -634,6 +608,13 @@ presubmits:
         - make
         args:
         - verify-dashboard
+        resources:
+          requests:
+            cpu: 1
+            memory: "2Gi"
+          limits:
+            cpu: 1
+            memory: "2Gi"
 
   - name: pull-perf-tests-verify-lint
     # TODO(oxddr): make it non-optional once we are confident in the presubmit
@@ -653,3 +634,10 @@ presubmits:
         - make
         args:
         - verify-lint
+        resources:
+          requests:
+            cpu: 1
+            memory: "2Gi"
+          limits:
+            cpu: 1
+            memory: "2Gi"

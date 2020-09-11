@@ -216,6 +216,17 @@ deck:
 `,
 			expectError: true,
 		},
+		{
+			name: "Invalid Spyglass gcs browser web prefix",
+			spyglassConfig: `
+deck:
+  spyglass:
+    gcs_browser_prefix: https://gcsweb.k8s.io/gcs/
+    gcs_browser_prefixes:
+      '*': https://gcsweb.k8s.io/gcs/
+`,
+			expectError: true,
+		},
 	}
 	for _, tc := range testCases {
 		// save the config
@@ -279,6 +290,49 @@ deck:
 		}
 	}
 
+}
+
+func TestGetGCSBrowserPrefix(t *testing.T) {
+	testCases := []struct {
+		id       string
+		config   Spyglass
+		expected string
+	}{
+		{
+			id: "only default",
+			config: Spyglass{
+				GCSBrowserPrefixes: map[string]string{
+					"*": "https://default.com/gcs/",
+				},
+			},
+			expected: "https://default.com/gcs/",
+		},
+		{
+			id: "org exists",
+			config: Spyglass{
+				GCSBrowserPrefixes: map[string]string{
+					"org": "https://org.com/gcs/",
+				},
+			},
+			expected: "https://org.com/gcs/",
+		},
+		{
+			id: "repo exists",
+			config: Spyglass{
+				GCSBrowserPrefixes: map[string]string{
+					"org/repo": "https://repo.com/gcs/",
+				},
+			},
+			expected: "https://repo.com/gcs/",
+		},
+	}
+
+	for _, tc := range testCases {
+		actual := tc.config.GCSBrowserPrefixes.GetGCSBrowserPrefix("org", "repo")
+		if !reflect.DeepEqual(actual, tc.expected) {
+			t.Fatalf("%s", cmp.Diff(tc.expected, actual))
+		}
+	}
 }
 
 func TestDecorationRawYaml(t *testing.T) {

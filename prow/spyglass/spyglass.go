@@ -403,9 +403,14 @@ func (sg *Spyglass) RunToPR(src string) (string, string, int, error) {
 // ExtraLinks fetches started.json and extracts links from metadata.links.
 func (sg *Spyglass) ExtraLinks(ctx context.Context, src string) ([]ExtraLink, error) {
 	artifacts, err := sg.FetchArtifacts(ctx, src, "", 1000000, []string{prowv1.StartedStatusFile})
+	// Failing to parse src, that's an error.
+	if err != nil {
+		return nil, err
+	}
+
 	// Failing to find started.json is okay, just return nothing quietly.
-	if err != nil || len(artifacts) == 0 {
-		logrus.WithError(err).Debugf("Failed to find started.json while looking for extra links.")
+	if len(artifacts) == 0 {
+		logrus.Debugf("Failed to find started.json while looking for extra links.")
 		return nil, nil
 	}
 	// Failing to read an artifact we already know to exist shouldn't happen, so that's an error.

@@ -19,7 +19,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200824-5d057db
+          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
             command:
               - /run.sh
             args:
@@ -28,5 +28,5 @@ postsubmits:
               - --project=k8s-staging-nfd
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-nfd-gcb
-              - --env-passthrough=PULL_BASE_REF
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
               - .

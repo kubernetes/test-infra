@@ -3,6 +3,8 @@ postsubmits:
   - name: post-org-peribolos
     cluster: test-infra-trusted
     decorate: true
+    branches:
+    - ^master$
     max_concurrency: 1
     spec:
       containers:
@@ -37,7 +39,7 @@ postsubmits:
       testgrid-tab-name: alpine
     decorate: true
     branches:
-    - master
+    - ^master$
     spec:
       serviceAccountName: pusher
       containers:
@@ -56,7 +58,7 @@ postsubmits:
       testgrid-tab-name: "alpine-bash"
     decorate: true
     branches:
-    - master
+    - ^master$
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
@@ -76,7 +78,7 @@ postsubmits:
       testgrid-tab-name: git
     decorate: true
     branches:
-    - master
+    - ^master$
     spec:
       serviceAccountName: pusher
       containers:
@@ -92,7 +94,7 @@ postsubmits:
     run_if_changed: 'config/prow/cluster/'
     decorate: true
     branches:
-    - master
+    - ^master$
     spec:
       serviceAccountName: deployer
       containers:
@@ -113,10 +115,10 @@ postsubmits:
     run_if_changed: 'config/prow/config.yaml'
     decorate: true
     branches:
-    - master
+    - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-prow/hmac:v20200827-6d0d0726ec
+      - image: gcr.io/k8s-prow/hmac:v20200910-8c70361b39
         command:
         - /hmac
         args:
@@ -156,6 +158,8 @@ postsubmits:
     cluster: test-infra-trusted
     run_if_changed: '^(WORKSPACE|load.bzl|repos.bzl|prow/prow.bzl|experiment/resultstore/)'
     decorate: true
+    branches:
+    - ^master$
     spec:
       serviceAccountName: pusher
       containers:
@@ -173,6 +177,8 @@ postsubmits:
     # Runs on more than just the Prow dir to include some additional images that we publish to gcr.io/k8s-prow.
     run_if_changed: '^(WORKSPACE|load.bzl|repos.bzl|containers.bzl|prow|ghproxy|label_sync|robots/commenter|robots/pr-creator|robots/issue-creator|testgrid/cmd)/'
     decorate: true
+    branches:
+    - ^master$
     spec:
       serviceAccountName: pusher
       containers:
@@ -199,7 +205,7 @@ postsubmits:
       timeout: 50m
       grace_period: 10m
     branches:
-    - master
+    - ^master$
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
@@ -222,7 +228,7 @@ postsubmits:
       description: builds and pushes the triage image
     decorate: true
     branches:
-    - master
+    - ^master$
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
@@ -245,7 +251,7 @@ postsubmits:
       description: builds and pushes launcher.gcr.io/google/bazel, adding support for a second version
     decorate: true
     branches:
-    - master
+    - ^master$
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
@@ -267,7 +273,7 @@ postsubmits:
       description: builds and pushes the bazelbuild test image
     decorate: true
     branches:
-    - master
+    - ^master$
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
@@ -290,7 +296,7 @@ postsubmits:
       description: builds and pushes the bazel-krte image
     decorate: true
     branches:
-    - master
+    - ^master$
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
@@ -313,7 +319,7 @@ postsubmits:
       description: builds and pushes the bigquery image
     decorate: true
     branches:
-    - master
+    - ^master$
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
@@ -336,7 +342,7 @@ postsubmits:
       description: builds and pushes the bootstrap image
     decorate: true
     branches:
-    - master
+    - ^master$
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
@@ -359,7 +365,7 @@ postsubmits:
       description: builds and pushes the cluster-api image
     decorate: true
     branches:
-    - master
+    - ^master$
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
@@ -382,7 +388,7 @@ postsubmits:
       description: builds and pushes the gcb-docker-gcloud image
     decorate: true
     branches:
-    - master
+    - ^master$
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
@@ -405,7 +411,7 @@ postsubmits:
       description: builds and pushes the gcloud image
     decorate: true
     branches:
-    - master
+    - ^master$
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
@@ -428,7 +434,7 @@ postsubmits:
       description: builds and pushes the kubekins-e2e image
     decorate: true
     branches:
-    - master
+    - ^master$
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
@@ -451,7 +457,7 @@ postsubmits:
       description: builds and pushes the krte image
     decorate: true
     branches:
-    - master
+    - ^master$
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
@@ -474,7 +480,7 @@ postsubmits:
       description: builds and pushes the kubemci image
     decorate: true
     branches:
-    - master
+    - ^master$
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
@@ -497,7 +503,7 @@ postsubmits:
       description: builds and pushes the gubernator image
     decorate: true
     branches:
-    - master
+    - ^master$
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
@@ -520,7 +526,7 @@ postsubmits:
       description: builds and pushes the image builder's own image
     decorate: true
     branches:
-    - master
+    - ^master$
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
@@ -543,7 +549,7 @@ postsubmits:
       description: builds and pushes the benchmarkjunit image
     decorate: true
     branches:
-    - master
+    - ^master$
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
@@ -581,7 +587,7 @@ postsubmits:
   - name: post-test-infra-upload-oncall
     cluster: test-infra-trusted
     branches:
-    - master
+    - ^master$
     run_if_changed: '^maintenance/oncall.html$'
     decorate: true
     spec:
@@ -607,13 +613,13 @@ postsubmits:
   - name: post-test-infra-upload-triage
     cluster: test-infra-trusted
     branches:
-    - master
+    - ^master$
     run_if_changed: '^triage/Makefile$|^triage/[^/]+(\.html|\.js|\.css)$'
     decorate: true
     spec:
       serviceAccountName: pusher
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200825-523865b-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-master
         command:
         - make
         args:
@@ -633,7 +639,7 @@ postsubmits:
   - name: post-test-infra-upload-testgrid-config
     cluster: test-infra-trusted
     branches:
-    - master
+    - ^master$
     labels:
       preset-bazel-scratch-dir: "true"
     run_if_changed: '^config/(jobs|testgrids)/.*$'
@@ -656,7 +662,7 @@ postsubmits:
   - name: post-test-infra-upload-boskos-config
     cluster: test-infra-trusted
     branches:
-    - master
+    - ^master$
     run_if_changed: '^config/prow/cluster/boskos-resources.yaml$'
     decorate: true
     spec:
@@ -876,7 +882,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200825-523865b-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-master
       command:
       - runner.sh
       args:
@@ -960,7 +966,7 @@ periodics:
   spec:
     containers:
     - name: branchprotector
-      image: gcr.io/k8s-prow/branchprotector:v20200827-6d0d0726ec
+      image: gcr.io/k8s-prow/branchprotector:v20200910-8c70361b39
       command:
       - /app/prow/cmd/branchprotector/app.binary
       args:
@@ -994,7 +1000,7 @@ periodics:
   spec:
     containers:
     - name: label-sync
-      image: gcr.io/k8s-prow/label_sync:v20200827-6d0d0726ec
+      image: gcr.io/k8s-prow/label_sync:v20200910-8c70361b39
       command:
       - /app/label_sync/app.binary
       args:
@@ -1080,7 +1086,7 @@ periodics:
   spec:
     serviceAccountName: k8s-infra-gcr-promoter-bak
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200825-523865b-1.17
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-1.17
       command:
       - infra/gcp/backup_tools/backup.sh
       env:
@@ -1091,5 +1097,28 @@ periodics:
         value: /go
   annotations:
     testgrid-dashboards: sig-release-releng-blocking
+    testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers@kubernetes.io
+    testgrid-num-failures-to-alert: '1'
+- interval: 24h
+  cluster: test-infra-trusted
+  max_concurrency: 1
+  name: ci-k8sio-vuln-dashboard-update
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: k8s.io
+    base_ref: master
+  spec:
+    serviceAccountName: k8s-infra-gcr-vuln-dashboard
+    containers:
+    - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20200807-v2.3.1-258-gc35b3a0
+      command:
+      - dashboard
+      args:
+        - -dashboard-file-path=/home/prow/go/src/github.com/kubernetes-sigs/k8s-container-image-promoter/dashboard/
+        - -vuln-target-project=k8s-artifacts-prod
+        - -dashboard-bucket=gs://k8s-artifacts-prod-vuln-dashboard
+  annotations:
+    testgrid-dashboards: sig-release-releng-informing, wg-k8s-infra-k8sio
     testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers@kubernetes.io
     testgrid-num-failures-to-alert: '1'

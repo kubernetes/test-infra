@@ -339,7 +339,7 @@ milestone_applier:
     release-1.16: v1.16
     release-1.15: v1.15
   kubernetes-sigs/cluster-api-provider-azure:
-    master: v0.4.8
+    master: v0.4.9
     release-0.4: v0.4
     release-0.3: v0.3
   kubernetes-sigs/cluster-api-provider-digitalocean:
@@ -407,6 +407,10 @@ repo_milestone:
     maintainers_id: 2195382
     maintainers_team: kubeadm-maintainers
     maintainers_friendly_name: Kubeadm maintainers
+  kubernetes-sigs/kubebuilder:
+    maintainers_id: 2688053
+    maintainers_team: kubebuilder-maintainers
+    maintainers_friendly_name: Kubebuilder Maintainers
 
 project_config:
   project_org_configs:
@@ -869,9 +873,11 @@ plugins:
 
   kubernetes-sigs/cluster-api:
   - milestone
+  - override
 
   kubernetes-sigs/cluster-api-provider-aws:
   - milestone
+  - override
 
   kubernetes-sigs/cluster-api-provider-azure:
   - milestone
@@ -879,6 +885,7 @@ plugins:
   - milestonestatus
   - release-note
   - require-matching-label
+  - override
 
   kubernetes-sigs/cluster-api-provider-digitalocean:
   - milestone
@@ -915,6 +922,9 @@ plugins:
   - lgtm
   - lifecycle
   - size
+  - trigger
+
+  containerd/containerd:
   - trigger
 
   tensorflow/k8s:

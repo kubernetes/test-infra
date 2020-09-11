@@ -17,7 +17,7 @@
 
 ARG OLD_BAZEL_VERSION
 FROM launcher.gcr.io/google/bazel:${OLD_BAZEL_VERSION} as old
-FROM gcr.io/k8s-testimages/bootstrap:v20200824-5d057db
+FROM gcr.io/k8s-testimages/bootstrap:v20200830-4be1d5f
 
 # hint to kubetest that it is in CI
 ENV KUBETEST_IN_DOCKER="true"

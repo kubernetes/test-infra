@@ -22,7 +22,9 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"k8s.io/apimachinery/pkg/util/diff"
+	utilpointer "k8s.io/utils/pointer"
 	"sigs.k8s.io/yaml"
 
 	"k8s.io/test-infra/prow/bugzilla"
@@ -1281,6 +1283,76 @@ func TestValidateConfigUpdater(t *testing.T) {
 			}
 			if tc.expected != nil && actual != nil && tc.expected.Error() != actual.Error() {
 				t.Errorf("expected error '%v', but it is '%v'", tc.expected, actual)
+			}
+		})
+	}
+}
+
+func TestConfigUpdaterResolve(t *testing.T) {
+	testCases := []struct {
+		name           string
+		in             ConfigUpdater
+		expectedConfig ConfigUpdater
+		exppectedError string
+	}{
+		{
+			name:           "both cluster and cluster_groups is set, error",
+			in:             ConfigUpdater{Maps: map[string]ConfigMapSpec{"map": {Clusters: map[string][]string{"cluster": nil}, ClusterGroups: []string{"group"}}}},
+			exppectedError: "item maps.map contains both clusters and cluster_groups",
+		},
+		{
+			name:           "inexistent cluster_group is referenced, error",
+			in:             ConfigUpdater{Maps: map[string]ConfigMapSpec{"map": {ClusterGroups: []string{"group"}}}},
+			exppectedError: "item maps.map.cluster_groups.0 references inexistent cluster group named group",
+		},
+		{
+			name: "successful resolving",
+			in: ConfigUpdater{
+				ClusterGroups: map[string]ClusterGroup{
+					"some-group":    {Clusters: []string{"cluster-a"}, Namespaces: []string{"namespace-a"}},
+					"another-group": {Clusters: []string{"cluster-b"}, Namespaces: []string{"namespace-b"}},
+				},
+				Maps: map[string]ConfigMapSpec{"map": {
+					Name:                 "name",
+					Key:                  "key",
+					Namespace:            "namespace",
+					AdditionalNamespaces: []string{"additional-ns"},
+					GZIP:                 utilpointer.BoolPtr(true),
+					ClusterGroups:        []string{"some-group", "another-group"}},
+				},
+			},
+			expectedConfig: ConfigUpdater{
+				Maps: map[string]ConfigMapSpec{"map": {
+					Name:                 "name",
+					Key:                  "key",
+					Namespace:            "namespace",
+					AdditionalNamespaces: []string{"additional-ns"},
+					GZIP:                 utilpointer.BoolPtr(true),
+					Clusters: map[string][]string{
+						"cluster-a": {"namespace-a"},
+						"cluster-b": {"namespace-b"},
+					}}},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+
+			var errMsg string
+			err := tc.in.resolve()
+			if err != nil {
+				errMsg = err.Error()
+			}
+			if errMsg != tc.exppectedError {
+				t.Fatalf("expected error %s, got error %s", tc.exppectedError, errMsg)
+			}
+			if err != nil {
+				return
+			}
+
+			if diff := cmp.Diff(tc.expectedConfig, tc.in); diff != "" {
+				t.Errorf("expected config differs from actual config: %s", diff)
 			}
 		})
 	}

@@ -17,6 +17,7 @@ limitations under the License.
 package plugins
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"path"
@@ -427,10 +428,21 @@ type ConfigMapSpec struct {
 	// Clusters is a map from cluster to namespaces
 	// which specifies the targets the configMap needs to be deployed, i.e., each namespace in map[cluster]
 	Clusters map[string][]string `json:"clusters"`
+	// ClusterGroup is a list of named cluster_groups to target. Mutually exclusive with clusters.
+	ClusterGroups []string `json:"cluster_groups,omitempty"`
+}
+
+// A ClusterGroup is a list of clusters with namespaces
+type ClusterGroup struct {
+	Clusters   []string `json:"clusters,omitempty"`
+	Namespaces []string `json:"namespaces,omitempty"`
 }
 
 // ConfigUpdater contains the configuration for the config-updater plugin.
 type ConfigUpdater struct {
+	// ClusterGroups is a map of ClusterGroups that can be used as a target
+	// in the map config.
+	ClusterGroups map[string]ClusterGroup `json:"cluster_groups,omitempty"`
 	// A map of filename => ConfigMapSpec.
 	// Whenever a commit changes filename, prow will update the corresponding configmap.
 	// map[string]ConfigMapSpec{ "/my/path.yaml": {Name: "foo", Namespace: "otherNamespace" }}
@@ -439,6 +451,57 @@ type ConfigUpdater struct {
 	// If GZIP is true then files will be gzipped before insertion into
 	// their corresponding configmap
 	GZIP bool `json:"gzip"`
+}
+
+type configUpdatedWithoutUnmarshaler ConfigUpdater
+
+func (cu *ConfigUpdater) UnmarshalJSON(d []byte) error {
+	var target configUpdatedWithoutUnmarshaler
+	if err := json.Unmarshal(d, &target); err != nil {
+		return err
+	}
+	*cu = ConfigUpdater(target)
+	return cu.resolve()
+}
+
+func (cu *ConfigUpdater) resolve() error {
+	var errs []error
+	for k, v := range cu.Maps {
+		if len(v.Clusters) > 0 && len(v.ClusterGroups) > 0 {
+			errs = append(errs, fmt.Errorf("item maps.%s contains both clusters and cluster_groups", k))
+			continue
+		}
+
+		if len(v.Clusters) > 0 {
+			continue
+		}
+
+		clusters := map[string][]string{}
+		for idx, clusterGroupName := range v.ClusterGroups {
+			clusterGroup, hasClusterGroup := cu.ClusterGroups[clusterGroupName]
+			if !hasClusterGroup {
+				errs = append(errs, fmt.Errorf("item maps.%s.cluster_groups.%d references inexistent cluster group named %s", k, idx, clusterGroupName))
+				continue
+			}
+			for _, cluster := range clusterGroup.Clusters {
+				clusters[cluster] = append(clusters[cluster], clusterGroup.Namespaces...)
+			}
+		}
+
+		cu.Maps[k] = ConfigMapSpec{
+			Name:                 v.Name,
+			Key:                  v.Key,
+			Namespace:            v.Namespace,
+			AdditionalNamespaces: v.AdditionalNamespaces,
+			GZIP:                 v.GZIP,
+			Namespaces:           v.Namespaces,
+			Clusters:             clusters,
+		}
+	}
+
+	cu.ClusterGroups = nil
+
+	return utilerrors.NewAggregate(errs)
 }
 
 // ProjectConfig contains the configuration options for the project plugin
@@ -841,7 +904,7 @@ func (c *ConfigUpdater) SetDefaults() {
 
 	for name, spec := range c.Maps {
 		if spec.Namespace != "" || len(spec.AdditionalNamespaces) > 0 {
-			logrus.Warnf("'namespace' and 'additional_namespaces' are deprecated for config-updater plugin, use 'clusters' instead")
+			logrus.Warn("'namespace' and 'additional_namespaces' are deprecated for config-updater plugin and will be removed in October, 2020, use 'clusters' instead")
 		}
 		// as a result, namespaces will never be an empty slice (namespace in the slice could be empty string)
 		// and clusters will never be an empty map (map[cluster] could be am empty slice)

@@ -204,7 +204,7 @@ func authorizedTopLevelOwner(oc ownersClient, allowTopLevelOwners bool, log *log
 			log.WithError(err).Warnf("cannot determine whether %s is a top level owner of %s/%s", user, org, repo)
 			return false
 		}
-		return owners.TopLevelApprovers().Has(user)
+		return owners.TopLevelApprovers().Has(github.NormLogin(user))
 	}
 	return false
 }
@@ -286,7 +286,7 @@ func handle(oc overrideClient, log *logrus.Entry, e *github.GenericCommentEvent,
 			log.Debug(resp)
 			return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
 		}
-		overrides.Insert(m[2])
+		overrides.Insert(strings.TrimSpace(m[2]))
 	}
 
 	authorized := authorizedUser(oc, log, org, repo, user)

@@ -412,6 +412,25 @@ func TestHandle(t *testing.T) {
 			checkComments: []string{fmt.Sprintf("%s: broken-test, hung-test", adminUser)},
 		},
 		{
+			name: "override with extra whitespace",
+			// Note two spaces here to start, and trailing whitespace
+			comment: "/override  broken-test \n",
+			contexts: map[string]github.Status{
+				"broken-test": {
+					Context: "broken-test",
+					State:   github.StatusFailure,
+				},
+			},
+			expected: map[string]github.Status{
+				"broken-test": {
+					Context:     "broken-test",
+					Description: description(adminUser),
+					State:       github.StatusSuccess,
+				},
+			},
+			checkComments: []string{fmt.Sprintf("%s: broken-test", adminUser)},
+		},
+		{
 			name:    "ignore non-PRs",
 			issue:   true,
 			comment: "/override broken-test",
@@ -593,6 +612,27 @@ func TestHandle(t *testing.T) {
 				"job": {
 					Context:     "job",
 					Description: description("code_owner"),
+					State:       github.StatusSuccess,
+				},
+			},
+		},
+		{
+			name:      "override with allow_top_level_owners works for uppercase user",
+			comment:   "/override job",
+			user:      "Code_owner",
+			options:   plugins.Override{AllowTopLevelOwners: true},
+			approvers: []string{"code_owner"},
+			contexts: map[string]github.Status{
+				"job": {
+					Context:     "job",
+					Description: "failed",
+					State:       github.StatusFailure,
+				},
+			},
+			expected: map[string]github.Status{
+				"job": {
+					Context:     "job",
+					Description: description("Code_owner"),
 					State:       github.StatusSuccess,
 				},
 			},

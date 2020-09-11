@@ -16,7 +16,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200825-523865b-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -79,7 +79,7 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-containerd-gce
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:RuntimeHandler\] --minStartupPods=8
         - --timeout=80m     # thinking about making this longer? don't! 80m is a hard cap, and should get down to no more than 60m.
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200825-523865b-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-master
         resources:
           requests:
             memory: "6Gi"
@@ -95,7 +95,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200825-523865b-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-master
         args:
         - --root=/go/src
         - --job=$(JOB_NAME)
@@ -129,7 +129,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200825-523865b-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -167,7 +167,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200825-523865b-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-master
           args:
             - --repo=k8s.io/kubernetes=$(PULL_REFS)
             - --repo=k8s.io/release
@@ -201,7 +201,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200825-523865b-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-master
           args:
             - --repo=k8s.io/kubernetes=$(PULL_REFS)
             - --repo=k8s.io/release
@@ -235,7 +235,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200825-523865b-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-master
           args:
             - --repo=k8s.io/kubernetes=$(PULL_REFS)
             - --repo=k8s.io/release
@@ -269,10 +269,9 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200825-523865b-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-master
         args:
         - --root=/go/src
-        - --env=KUBE_SSH_USER=core
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
@@ -281,6 +280,7 @@ presubmits:
         - --scenario=kubernetes_e2e
         - -- # end bootstrap args, scenario args below
         - --deployment=node
+        - --env=KUBE_SSH_USER=core
         - --gcp-project=k8s-jkns-pr-node-e2e
         - --gcp-zone=us-west1-b
         - '--node-test-args=--container-runtime=remote --container-runtime-endpoint=unix:///run/crio/crio.sock --container-runtime-process-name=/usr/local/sbin/crio-v1.18.3/bin/crio-static --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'

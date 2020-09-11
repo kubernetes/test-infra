@@ -31,6 +31,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/clock"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"sigs.k8s.io/controller-runtime"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
@@ -44,6 +45,7 @@ import (
 
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	kubernetesreporterapi "k8s.io/test-infra/prow/crier/reporters/gcs/kubernetes/api"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pod-utils/decorate"
@@ -331,6 +333,14 @@ func (r *reconciler) syncPendingJob(pj *prowv1.ProwJob) error {
 				if !ok {
 					return fmt.Errorf("evicted pod %s: unknown cluster alias %q", pod.Name, pj.ClusterAlias())
 				}
+				if finalizers := sets.NewString(pod.Finalizers...); finalizers.Has(kubernetesreporterapi.FinalizerName) {
+					// We want the end user to not see this, so we have to remove the finalizer, otherwise the pod hangs
+					oldPod := pod.DeepCopy()
+					pod.Finalizers = finalizers.Delete(kubernetesreporterapi.FinalizerName).UnsortedList()
+					if err := client.Patch(r.ctx, pod, ctrlruntimeclient.MergeFrom(oldPod)); err != nil {
+						return fmt.Errorf("failed to patch pod trying to remove %s finalizer: %w", kubernetesreporterapi.FinalizerName, err)
+					}
+				}
 				r.log.WithField("name", pj.ObjectMeta.Name).Debug("Delete Pod.")
 				return client.Delete(r.ctx, pod)
 			}
@@ -368,7 +378,9 @@ func (r *reconciler) syncPendingJob(pj *prowv1.ProwJob) error {
 				break
 			}
 			// Pod is running. Do nothing.
-			return nil
+			if pod.DeletionTimestamp == nil {
+				return nil
+			}
 		case corev1.PodRunning:
 			maxPodRunning := r.config().Plank.PodRunningTimeout.Duration
 			if pod.Status.StartTime.IsZero() || time.Since(pod.Status.StartTime.Time) < maxPodRunning {
@@ -385,9 +397,19 @@ func (r *reconciler) syncPendingJob(pj *prowv1.ProwJob) error {
 				return fmt.Errorf("failed to delete pod %s/%s in cluster %s: %w", pod.Namespace, pod.Name, pj.ClusterAlias(), err)
 			}
 		default:
-			// other states, ignore
-			return nil
+			if pod.DeletionTimestamp == nil {
+				// other states, ignore
+				return nil
+			}
 		}
+	}
+
+	// If a pod gets deleted unexpectedly, it might be in any phase and will stick around until
+	// we complete the job if the kubernetes reporter is used, because it sets a finalizer.
+	if !pj.Complete() && pod != nil && pod.DeletionTimestamp != nil {
+		pj.SetComplete()
+		pj.Status.State = prowv1.ErrorState
+		pj.Status.Description = "Pod got deleteted unexpectedly"
 	}
 
 	pj.Status.URL, err = pjutil.JobURL(r.config().Plank, *pj, r.log)
