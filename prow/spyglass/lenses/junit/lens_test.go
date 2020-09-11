@@ -350,13 +350,13 @@ func TestGetJvd(t *testing.T) {
 						<testcase classname="fake_class_0" name="fake_test_0"></testcase>
 					</testsuite>
 					<testsuite>
-						<testcase classname="fake_class_0" name="fake_test_0"></testcase>
+						<testcase classname="fake_class_1" name="fake_test_1"></testcase>
 					</testsuite>
 				</testsuites>
 				`),
 			},
 			JVD{
-				NumTests: 1,
+				NumTests: 2,
 				Passed: []TestResult{
 					{
 						Junit: []JunitResult{
@@ -367,10 +367,15 @@ func TestGetJvd(t *testing.T) {
 									Failure:   nil,
 								},
 							},
+						},
+						Link: "linknotfound.io/404",
+					},
+					{
+						Junit: []JunitResult{
 							{
 								junit.Result{
-									Name:      "fake_test_0",
-									ClassName: "fake_class_0",
+									Name:      "fake_test_1",
+									ClassName: "fake_class_1",
 									Failure:   nil,
 								},
 							},
