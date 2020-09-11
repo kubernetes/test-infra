@@ -97,7 +97,6 @@ class GCSClientTest(unittest.TestCase):
         self.assertFalse(precise)
         self.assertEqual(['4', '3', '2', '1'], list(gen))
 
-
     def test_get_builds_latest_fallback(self):
         # fallback: still lists a directory when build-latest.txt isn't an int
         self.assertEqual((True, ['6']), self.client._get_builds('bad-latest'))
@@ -108,6 +107,15 @@ class GCSClientTest(unittest.TestCase):
         self.assertEqual((True, ['4', '3']),
                          self.client._get_builds('latest'))
 
+    def test_get_builds_exclude_list_no_match(self):
+        # special case: job is in excluded list
+        self.client.metadata = {'exclude_jobs': ['notfake']}
+        self.assertEqual([('fake', '123'), ('fake', '122')], list(self.client.get_builds(set())))
+
+    def test_get_builds_exclude_list_match(self):
+        # special case: job is in excluded list
+        self.client.metadata = {'exclude_jobs': ['fake']}
+        self.assertEqual([], list(self.client.get_builds(set())))
 
 class MainTest(unittest.TestCase):
     """End-to-end test of the main function's output."""
