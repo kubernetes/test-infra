@@ -137,14 +137,9 @@ func main() {
 		logrus.WithError(err).Fatal("Error creating manager")
 	}
 
-	buildClusterClients, err := o.kubernetes.BuildClusterClients(cfg().PodNamespace, o.dryRun.Value)
+	buildClusterClients, err := o.kubernetes.BuildClusterUncachedRuntimeClients(o.dryRun.Value)
 	if err != nil {
-		logrus.WithError(err).Fatal("Error creating build cluster clients.")
-	}
-
-	podClients := map[string]podInterface{}
-	for cluster, client := range buildClusterClients {
-		podClients[cluster] = client
+		logrus.WithError(err).Error("Error creating build cluster clients.")
 	}
 
 	c := controller{
