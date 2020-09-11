@@ -15,9 +15,6 @@
 # limitations under the License.
 
 
-
-
-
 import os
 from datetime import datetime
 
@@ -34,7 +31,6 @@ def print_dump(file):
 
 
 def call(cmd, dump=False):
-
     started = datetime.now()
 
     redirect = ' > {DUMP}}' if dump else ''
