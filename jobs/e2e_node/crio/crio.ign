@@ -4,7 +4,7 @@
     "units": [{
       "name": "crio.service",
       "enabled": true,
-      "contents": "[Unit]\nDescription=Download and install crio binaries and configurations.\nAfter=network-online.target\n\n[Service]\nType=oneshot\nExecStartPre=/usr/bin/curl --fail --retry 5 --retry-delay 3 --silent --show-error  -o /usr/local/sbin/crio-config.sh https://raw.githubusercontent.com/harche/crio-fcos-config/master/test.sh\nExecStartPre=/bin/chmod 544 /usr/local/sbin/crio-config.sh\nExecStart=/usr/local/sbin/crio-config.sh\n\n[Install]\nWantedBy=multi-user.target\n" 
+      "contents": "[Unit]\nDescription=Download and install crio binaries and configurations.\nAfter=network-online.target\n\n[Service]\nType=exec\nExecStartPre=/usr/bin/curl --fail --retry 5 --retry-delay 3 --silent --show-error  -o /usr/local/sbin/crio-config.sh https://raw.githubusercontent.com/harche/crio-fcos-config/master/test.sh\nExecStartPre=/bin/chmod 544 /usr/local/sbin/crio-config.sh\nExecStart=/usr/local/sbin/crio-config.sh\n\n[Install]\nWantedBy=multi-user.target\n" 
     }]
   }
 }
