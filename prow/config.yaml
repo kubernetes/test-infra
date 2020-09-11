@@ -63,6 +63,7 @@ tide:
     IBM/multicloud-operators-subscription: squash
     IBM/multicloud-multi-tenancy: squash
     IBM/multicloud-application-monitoring-dashboard: squash
+    IBM/prometheus-metrics-server-simulator: squash
     hybridapp-io/application: squash
     hybridapp-io/ham-application-assembler: squash
     hybridapp-io/ham-deploy: squash
@@ -122,6 +123,7 @@ tide:
     - IBM/multicloud-operators-subscription
     - IBM/multicloud-multi-tenancy
     - IBM/multicloud-application-monitoring-dashboard
+    - IBM/prometheus-metrics-server-simulator
     - hybridapp-io/application
     - hybridapp-io/ham-application-assembler
     - hybridapp-io/ham-deploy
