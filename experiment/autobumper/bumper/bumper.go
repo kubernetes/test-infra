@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"flag"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -105,6 +106,26 @@ type Options struct {
 	ExtraFiles          fileArrayFlag
 
 	SkipPullRequest bool
+}
+
+// GitAuthorOptions is specifically to read the author info for a commit
+type GitAuthorOptions struct {
+	GitName  string
+	GitEmail string
+}
+
+// AddFlags will read the author info from the command line parameters
+func (o *GitAuthorOptions) AddFlags(fs *flag.FlagSet) {
+	fs.StringVar(&o.GitName, "git-name", "", "The name to use on the git commit.")
+	fs.StringVar(&o.GitEmail, "git-email", "", "The email to use on the git commit.")
+}
+
+// Validate will validate the input GitAuthorOptions
+func (o *GitAuthorOptions) Validate() error {
+	if (o.GitEmail == "") != (o.GitName == "") {
+		return fmt.Errorf("--git-name and --git-email must be specified together")
+	}
+	return nil
 }
 
 // GitCommand is used to pass the various components of the git command which needs to be executed
