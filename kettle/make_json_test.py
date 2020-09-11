@@ -73,6 +73,90 @@ class BuildObjectTests(unittest.TestCase):
 
     @parameterized.expand([
         (
+            "No started",
+            {},
+            {},
+        ),
+        (
+            "CI Decorated",
+            {
+                "timestamp":1595284709,
+                "repos":{"kubernetes/kubernetes":"master"},
+                "repo-version":"5a529aa3a0dd3a050c5302329681e871ef6c162e",
+                "repo-commit":"5a529aa3a0dd3a050c5302329681e871ef6c162e",
+            },
+            {
+                "started": 1595284709,
+                "repo_commit":"5a529aa3a0dd3a050c5302329681e871ef6c162e",
+                "repos": '{"kubernetes/kubernetes": "master"}',
+            },
+        ),
+        (
+            "PR Decorated",
+            {
+                "timestamp":1595277241,
+                "pull":"93264",
+                "repos":{"kubernetes/kubernetes":"master:5feab0"},
+                "repo-version":"30f64c5b1fc57a3beb1476f9beb29280166954d1",
+                "repo-commit":"30f64c5b1fc57a3beb1476f9beb29280166954d1",
+            },
+            {
+                "started": 1595277241,
+                "repo_commit":"30f64c5b1fc57a3beb1476f9beb29280166954d1",
+                "repos": '{"kubernetes/kubernetes": "master:5feab0"}',
+            },
+        ),
+        (
+            "PR Bootstrap",
+            {
+                "node": "0790211c-cacb-11ea-a4b9-4a19d9b965b2",
+                "pull": "master:5a529",
+                "repo-version": "v1.20.0-alpha.0.261+06ea384605f172",
+                "timestamp": 1595278460,
+                "repos": {"k8s.io/kubernetes": "master:5a529", "k8s.io/release": "master"},
+                "version": "v1.20.0-alpha.0.261+06ea384605f172"
+            },
+            {
+                "started": 1595278460,
+                "repo_commit":"v1.20.0-alpha.0.261+06ea384605f172",
+                "repos": '{"k8s.io/kubernetes": "master:5a529", "k8s.io/release": "master"}',
+                "executor": "0790211c-cacb-11ea-a4b9-4a19d9b965b2",
+            },
+        ),
+        (
+            "CI Bootstrap",
+            {
+                "timestamp":1595263104,
+                "node":"592473ae-caa7-11ea-b130-525df2b76a8d",
+                "repos":{
+                    "k8s.io/kubernetes":"master",
+                    "k8s.io/release":"master"
+                },
+                "repo-version":"v1.20.0-alpha.0.255+5feab0aa1e592a",
+            },
+            {
+                "started": 1595263104,
+                "repo_commit":"v1.20.0-alpha.0.255+5feab0aa1e592a",
+                "repos": '{"k8s.io/kubernetes": "master", "k8s.io/release": "master"}',
+                "executor": "592473ae-caa7-11ea-b130-525df2b76a8d",
+            },
+        ),
+    ])
+    def test_populate_start(self, _, started, updates):
+        build = make_json.Build("gs://kubernetes-jenkins/pr-logs/path", [])
+        attrs = {
+            "path":"gs://kubernetes-jenkins/pr-logs/path",
+            "test": [],
+            "tests_run": 0,
+            "tests_failed": 0,
+            "job": "pr:pr-logs",
+                }
+        attrs.update(updates)
+        build.populate_start(started)
+        self.assertEqual(build.as_dict(), attrs)
+
+    @parameterized.expand([
+        (
             "No finished",
             {},
             {},
