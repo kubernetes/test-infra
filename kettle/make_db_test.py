@@ -108,7 +108,7 @@ class GCSClientTest(unittest.TestCase):
                          self.client._get_builds('latest'))
 
     def test_get_builds_exclude_list_no_match(self):
-        # special case: job is in excluded list
+        # special case: job is not in excluded list
         self.client.metadata = {'exclude_jobs': ['notfake']}
         self.assertEqual([('fake', '123'), ('fake', '122')], list(self.client.get_builds(set())))
 
