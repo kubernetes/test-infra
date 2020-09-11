@@ -41,6 +41,7 @@ template = """
       - --extract={{extract}}
       - --ginkgo-parallel
       - --kops-args={{kops_args}}
+      - --kops-feature-flags={{kops_feature_flags}}
       - --kops-image={{kops_image}}
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version={{kops_deploy_url}}
@@ -66,6 +67,7 @@ run_hourly = [
 ]
 
 run_daily = [
+    'kops-grid-scenario-public-jwks',
 ]
 
 # These are job tab names of unsupported grid combinations
@@ -141,7 +143,14 @@ def remove_line_with_prefix(s, prefix):
         raise Exception("line not found with prefix: " + prefix)
     return '\n'.join(keep)
 
-def build_test(cloud='aws', distro=None, networking=None, k8s_version=None, kops_version=None):
+def build_test(cloud='aws',
+               distro=None,
+               networking=None,
+               k8s_version=None,
+               kops_version=None,
+               force_name=None,
+               feature_flags=None,
+               extra_flags=None):
     # pylint: disable=too-many-statements,too-many-branches
 
     if distro is None:
@@ -209,6 +218,10 @@ def build_test(cloud='aws', distro=None, networking=None, k8s_version=None, kops
     if networking:
         kops_args = kops_args + " --networking=" + networking
 
+    if extra_flags:
+        for arg in extra_flags:
+            kops_args = kops_args + " " + arg
+
     kops_args = kops_args.strip()
 
     test_args = r'--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity' # pylint: disable=line-too-long
@@ -224,6 +237,9 @@ def build_test(cloud='aws', distro=None, networking=None, k8s_version=None, kops
         suffix += "-k" + k8s_version.replace("1.", "")
     if kops_version:
         suffix += "-ko" + kops_version.replace("1.", "")
+
+    if force_name:
+        suffix = "-" + force_name
 
     # We current have an issue with long cluster names; let's warn if we encounter them
     cluster_name = "e2e-kops" + suffix + ".test-cncf-aws.k8s.io"
@@ -272,6 +288,11 @@ def build_test(cloud='aws', distro=None, networking=None, k8s_version=None, kops
     else:
         y = remove_line_with_prefix(y, "- --kops-image=")
 
+    if feature_flags:
+        y = y.replace('{{kops_feature_flags}}', ','.join(feature_flags))
+    else:
+        y = remove_line_with_prefix(y, "- --kops-feature-flags=")
+
     spec = {
         'cloud': cloud,
         'networking': networking,
@@ -279,6 +300,10 @@ def build_test(cloud='aws', distro=None, networking=None, k8s_version=None, kops
         'k8s_version': k8s_version,
         'kops_version': kops_version,
     }
+    if feature_flags:
+        spec['feature_flags'] = feature_flags
+    if extra_flags:
+        spec['extra_flags'] = extra_flags
     jsonspec = json.dumps(spec, sort_keys=True)
 
     print("")
@@ -330,6 +355,13 @@ def generate():
                                k8s_version=k8s_version,
                                kops_version=kops_version,
                                networking=networking,)
+
+    # A special test for JWKS
+    build_test(force_name="scenario-public-jwks",
+               cloud="aws",
+               distro="u2004",
+               feature_flags=["UseServiceAccountIAM", "PublicJWKS"],
+               extra_flags=['--api-loadbalancer-type=public'])
 
     print("")
     print("# %d jobs, total of %d runs per week" % (job_count, runs_per_week))
