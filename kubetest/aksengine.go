@@ -87,6 +87,7 @@ var (
 	testBlobCSIDriver        = flag.Bool("test-blob-csi-driver", false, "Set to True if you want kubetest to run e2e tests for Azure Blob Storage CSI driver")
 	testSecretStoreCSIDriver = flag.Bool("test-secrets-store-csi-driver", false, "Set to True if you want kubetest to run e2e tests for Secrets Store CSI driver")
 	testSMBCSIDriver         = flag.Bool("test-csi-driver-smb", false, "Set to True if you want kubetest to run e2e tests for SMB CSI driver")
+	testNFSCSIDriver         = flag.Bool("test-csi-driver-nfs", false, "Set to True if you want kubetest to run e2e tests for NFS CSI driver")
 	// Commonly used variables
 	k8sVersion                = getImageVersion(util.K8s("kubernetes"))
 	cloudProviderAzureVersion = getImageVersion(util.K8sSigs("cloud-provider-azure"))
@@ -1088,7 +1089,7 @@ func (c *aksEngineDeployer) Build(b buildStrategy) error {
 		if c.customKubeBinaryURL, err = c.uploadToAzureStorage(newK8sNodeTarball); err != nil {
 			return err
 		}
-	} else if !*testCcm && !*testAzureDiskCSIDriver && !*testAzureFileCSIDriver && !*testBlobCSIDriver && !*testSecretStoreCSIDriver && !*testSMBCSIDriver && !strings.EqualFold(string(b), "none") {
+	} else if !*testCcm && !*testAzureDiskCSIDriver && !*testAzureFileCSIDriver && !*testBlobCSIDriver && !*testSecretStoreCSIDriver && !*testSMBCSIDriver && !*testNFSCSIDriver && !strings.EqualFold(string(b), "none") {
 		// Only build the required components to run upstream e2e tests
 		for _, component := range []string{"WHAT='test/e2e/e2e.test'", "WHAT=cmd/kubectl", "ginkgo"} {
 			cmd := exec.Command("make", component)
@@ -1211,7 +1212,7 @@ func (c *aksEngineDeployer) TestSetup() error {
 			log.Printf("error during setting up azure credentials: %v", err)
 			return err
 		}
-	} else if *testAzureFileCSIDriver || *testAzureDiskCSIDriver || *testBlobCSIDriver || *testSMBCSIDriver {
+	} else if *testAzureFileCSIDriver || *testAzureDiskCSIDriver || *testBlobCSIDriver || *testSMBCSIDriver || *testNFSCSIDriver {
 		// Set env vars required by CSI driver e2e jobs.
 		// tenantId, subscriptionId, aadClientId, and aadClientSecret will be obtained from AZURE_CREDENTIAL
 		if err := os.Setenv("RESOURCE_GROUP", c.resourceGroup); err != nil {
@@ -1275,6 +1276,8 @@ func (c *aksEngineDeployer) BuildTester(o *e2e.BuildTesterOptions) (e2e.Tester, 
 		csiDriverName = "secrets-store-csi-driver"
 	} else if *testSMBCSIDriver {
 		csiDriverName = "csi-driver-smb"
+	} else if *testNFSCSIDriver {
+		csiDriverName = "csi-driver-nfs"
 	}
 	if csiDriverName != "" {
 		return &GinkgoCSIDriverTester{
