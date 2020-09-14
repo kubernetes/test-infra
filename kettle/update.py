@@ -39,7 +39,8 @@ def call(cmd, dump=False):
     ended = datetime.now()
     print(f'+{cmd} completed in {started-ended}')
     if status:
-        if dump: print_dump(DUMP)
+        if dump:
+            print_dump(DUMP)
         raise OSError(f'invocation failed: {dump}')
 
 
