@@ -26,11 +26,11 @@ periodics:
           privileged: true
         resources:
           requests:
-            cpu: 8
-            memory: "32Gi"
+            cpu: 4
+            memory: "16Gi"
           limits:
-            cpu: 8
-            memory: "32Gi"
+            cpu: 4
+            memory: "16Gi"
 
 
 - interval: 8h
