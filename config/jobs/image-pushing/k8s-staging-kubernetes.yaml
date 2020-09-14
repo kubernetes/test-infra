@@ -26,13 +26,14 @@ postsubmits:
       rerun_auth_config:
         github_team_ids:
           - 2241179 # release-managers
-    - name: post-kubernetes-push-image-pause
+  kubernetes/release:
+    - name: post-release-push-image-pause
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-release-releng-informing, sig-release-master-informing, sig-release-image-pushes
         testgrid-alert-email: release-managers@kubernetes.io
       decorate: true
-      run_if_changed: '^build\/pause\/'
+      run_if_changed: '^images\/kubernetes\/pause\/'
       branches:
         - ^master$
       spec:
@@ -45,7 +46,7 @@ postsubmits:
               - --project=k8s-staging-kubernetes
               - --scratch-bucket=gs://k8s-staging-kubernetes-gcb
               - --build-dir=.
-              - build/pause
+              - images/kubernetes/pause
             env:
               - name: LOG_TO_STDOUT
                 value: "y"
