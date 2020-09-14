@@ -55,14 +55,10 @@ query: |
           SELECT
             job,
             if(substr(job, 0, 3) = 'pr:', 'pull', 'ci') kind,  /* pull or ci */
-            version, /* bootstrap git version, empty for ci  */
+            ifnull(repo_commit, version) version, /* bootstrap git version, empty for ci  */
             if(substr(job, 0, 3) = 'pr:',
               regexp_extract(
-                (
-                  select i.value
-                  from t.metadata i
-                  where i.key = 'repos'
-                ),
+                repos,
                 r'[^,]+,\d+:([a-f0-9]+)"'
               ),
               version
@@ -75,13 +71,7 @@ query: |
             and version != 'unknown'
             and (
               (substr(job, 0, 3) = 'ci-' and version != 'unknown') or
-              exists(
-                select as struct
-                  i
-                from t.metadata i
-                where i.key = 'repos' and
-                array_length(split(replace(i.value,', ', ''), ',')) = 2 /*serial pr jobs only (# of PR refs +1 == 2)*/
-              )
+              array_length(split(replace(repos,', ', ''), ',')) = 2 /*serial pr jobs only (# of PR refs +1 == 2)*/
             )
         )
         group by job, commit
