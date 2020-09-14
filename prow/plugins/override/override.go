@@ -51,7 +51,7 @@ type githubClient interface {
 	HasPermission(org, repo, user string, role ...string) (bool, error)
 	ListStatuses(org, repo, ref string) ([]github.Status, error)
 	ListTeams(org string) ([]github.Team, error)
-	ListTeamMembers(id int, role string) ([]github.TeamMember, error)
+	ListTeamMembers(org string, id int, role string) ([]github.TeamMember, error)
 }
 
 type prowJobClient interface {
@@ -100,8 +100,8 @@ func (c client) HasPermission(org, repo, user string, role ...string) (bool, err
 func (c client) ListTeams(org string) ([]github.Team, error) {
 	return c.ghc.ListTeams(org)
 }
-func (c client) ListTeamMembers(id int, role string) ([]github.TeamMember, error) {
-	return c.ghc.ListTeamMembers(id, role)
+func (c client) ListTeamMembers(org string, id int, role string) ([]github.TeamMember, error) {
+	return c.ghc.ListTeamMembers(org string, id, role)
 }
 
 func (c client) Create(ctx context.Context, pj *prowapi.ProwJob, o metav1.CreateOptions) (*prowapi.ProwJob, error) {
