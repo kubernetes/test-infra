@@ -151,7 +151,7 @@ func main() {
 		if err := mgr.Add(buildManager); err != nil {
 			logrus.WithError(err).Fatal("Failed to add build cluster manager to main manager")
 		}
-		buildClusterClients[clusterName] = mgr.GetClient()
+		buildClusterClients[clusterName] = buildManager.GetClient()
 	}
 
 	c := controller{
