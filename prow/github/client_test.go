@@ -1624,7 +1624,7 @@ func TestDeleteTeam(t *testing.T) {
 	}))
 	defer ts.Close()
 	c := getClient(ts.URL)
-        if err := c.DeleteTeam("foo", 63); err != nil {
+	if err := c.DeleteTeam("foo", 63); err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
 }
@@ -2498,4 +2498,3 @@ func TestCreateFork(t *testing.T) {
 		}
 	}
 }
-

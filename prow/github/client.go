@@ -2984,7 +2984,7 @@ func (c *client) ListTeamMembers(id int, role string) ([]TeamMember, error) {
 
 // ListTeamRepos gets a list of team repos for the given team id
 //
-// https://docs.github.com/en/rest/reference/teams#list-team-repos
+// https://docs.github.com/en/rest/reference/teams#list-team-repositories
 func (c *client) ListTeamRepos(id int) ([]Repo, error) {
 	durationLogger := c.log("ListTeamRepos", id)
 	defer durationLogger()
@@ -3025,7 +3025,7 @@ func (c *client) ListTeamRepos(id int) ([]Repo, error) {
 
 // UpdateTeamRepo adds the repo to the team with the provided role.
 //
-// https://docs.github.com/en/rest/reference/teams#add-or-update-team-repository
+// https://docs.github.com/en/rest/reference/teams#add-or-update-team-repository-permissions
 func (c *client) UpdateTeamRepo(id int, org, repo string, permission RepoPermissionLevel) error {
 	durationLogger := c.log("UpdateTeamRepo", id, org, repo, permission)
 	defer durationLogger()
@@ -3051,7 +3051,7 @@ func (c *client) UpdateTeamRepo(id int, org, repo string, permission RepoPermiss
 
 // RemoveTeamRepo removes the team from the repo.
 //
-// https://docs.github.com/en/rest/reference/teams#add-or-update-team-repository
+// https://docs.github.com/en/rest/reference/teams#add-or-update-team-repository-permissions
 func (c *client) RemoveTeamRepo(id int, org, repo string) error {
 	durationLogger := c.log("RemoveTeamRepo", id, org, repo)
 	defer durationLogger()
@@ -3676,7 +3676,7 @@ func (c *client) TeamHasMember(teamID int, memberLogin string) (bool, error) {
 
 // GetTeamBySlug returns information about that team
 //
-// See https://docs.github.com/en/rest/reference/teams#get-team-by-name
+// See https://docs.github.com/en/rest/reference/teams#get-a-team-by-name
 func (c *client) GetTeamBySlug(slug string, org string) (*Team, error) {
 	durationLogger := c.log("GetTeamBySlug", slug, org)
 	defer durationLogger()
@@ -3695,4 +3695,3 @@ func (c *client) GetTeamBySlug(slug string, org string) (*Team, error) {
 	}
 	return &team, err
 }
-
