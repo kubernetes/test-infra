@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"flag"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -57,6 +58,8 @@ const (
 
 	errOncallMsgTempl = "An error occurred while finding an assignee: `%s`.\nFalling back to Blunderbuss."
 	noOncallMsg       = "Nobody is currently oncall, so falling back to Blunderbuss."
+
+	gitCmd = "git"
 )
 
 var (
@@ -105,6 +108,51 @@ type Options struct {
 	ExtraFiles          fileArrayFlag
 
 	SkipPullRequest bool
+}
+
+// GitAuthorOptions is specifically to read the author info for a commit
+type GitAuthorOptions struct {
+	GitName  string
+	GitEmail string
+}
+
+// AddFlags will read the author info from the command line parameters
+func (o *GitAuthorOptions) AddFlags(fs *flag.FlagSet) {
+	fs.StringVar(&o.GitName, "git-name", "", "The name to use on the git commit.")
+	fs.StringVar(&o.GitEmail, "git-email", "", "The email to use on the git commit.")
+}
+
+// Validate will validate the input GitAuthorOptions
+func (o *GitAuthorOptions) Validate() error {
+	if (o.GitEmail == "") != (o.GitName == "") {
+		return fmt.Errorf("--git-name and --git-email must be specified together")
+	}
+	return nil
+}
+
+// GitCommand is used to pass the various components of the git command which needs to be executed
+type GitCommand struct {
+	baseCommand string
+	args        []string
+	workingDir  string
+}
+
+// Call will execute the Git command and switch the working directory if specified
+func (gc GitCommand) Call(stdout, stderr io.Writer) error {
+	return Call(stdout, stderr, gc.baseCommand, gc.buildCommand()...)
+}
+
+func (gc GitCommand) buildCommand() []string {
+	args := []string{}
+	if gc.workingDir != "" {
+		args = append(args, "-C", gc.workingDir)
+	}
+	args = append(args, gc.args...)
+	return args
+}
+
+func (gc GitCommand) getCommand() string {
+	return fmt.Sprintf("%s %s", gc.baseCommand, strings.Join(gc.buildCommand(), " "))
 }
 
 func validateOptions(o *Options) error {
@@ -218,7 +266,7 @@ func cdToRootDir() error {
 		}
 		return nil
 	}
-	cmd := exec.Command("git", "rev-parse", "--show-toplevel")
+	cmd := exec.Command(gitCmd, "rev-parse", "--show-toplevel")
 	output, err := cmd.Output()
 	if err != nil {
 		return fmt.Errorf("failed to get the repo's root directory: %w", err)
@@ -436,13 +484,12 @@ func getNewProwVersion(images map[string]string) (string, error) {
 
 // HasChanges checks if the current git repo contains any changes
 func HasChanges() (bool, error) {
-	cmd := "git"
 	args := []string{"status", "--porcelain"}
-	logrus.WithField("cmd", cmd).WithField("args", args).Info("running command ...")
-	combinedOutput, err := exec.Command(cmd, args...).CombinedOutput()
+	logrus.WithField("cmd", gitCmd).WithField("args", args).Info("running command ...")
+	combinedOutput, err := exec.Command(gitCmd, args...).CombinedOutput()
 	if err != nil {
-		logrus.WithField("cmd", cmd).Debugf("output is '%s'", string(combinedOutput))
-		return false, fmt.Errorf("error running command %s %s: %w", cmd, args, err)
+		logrus.WithField("cmd", gitCmd).Debugf("output is '%s'", string(combinedOutput))
+		return false, fmt.Errorf("error running command %s %s: %w", gitCmd, args, err)
 	}
 	return len(strings.TrimSuffix(string(combinedOutput), "\n")) > 0, nil
 }
@@ -473,22 +520,22 @@ func MakeGitCommit(remote, remoteBranch, name, email string, images map[string]s
 func GitCommitAndPush(remote, remoteBranch, name, email, message string, stdout, stderr io.Writer) error {
 	logrus.Info("Making git commit...")
 
-	if err := Call(stdout, stderr, "git", "add", "-A"); err != nil {
+	if err := Call(stdout, stderr, gitCmd, "add", "-A"); err != nil {
 		return fmt.Errorf("failed to git add: %w", err)
 	}
 	commitArgs := []string{"commit", "-m", message}
 	if name != "" && email != "" {
 		commitArgs = append(commitArgs, "--author", fmt.Sprintf("%s <%s>", name, email))
 	}
-	if err := Call(stdout, stderr, "git", commitArgs...); err != nil {
+	if err := Call(stdout, stderr, gitCmd, commitArgs...); err != nil {
 		return fmt.Errorf("failed to git commit: %w", err)
 	}
-	if err := Call(stdout, stderr, "git", "remote", "add", forkRemoteName, remote); err != nil {
+	if err := Call(stdout, stderr, gitCmd, "remote", "add", forkRemoteName, remote); err != nil {
 		return fmt.Errorf("failed to add remote: %w", err)
 	}
 	fetchStderr := &bytes.Buffer{}
 	var remoteTreeRef string
-	if err := Call(stdout, fetchStderr, "git", "fetch", forkRemoteName, remoteBranch); err != nil {
+	if err := Call(stdout, fetchStderr, gitCmd, "fetch", forkRemoteName, remoteBranch); err != nil {
 		if !strings.Contains(fetchStderr.String(), fmt.Sprintf("couldn't find remote ref %s", remoteBranch)) {
 			return fmt.Errorf("failed to fetch from fork: %w", err)
 		}
@@ -507,7 +554,7 @@ func GitCommitAndPush(remote, remoteBranch, name, email, message string, stdout,
 
 	// Avoid doing metadata-only pushes that re-trigger tests and remove lgtm
 	if localTreeRef != remoteTreeRef {
-		if err := GitPush(forkRemoteName, remoteBranch, stdout, stderr); err != nil {
+		if err := GitPush(forkRemoteName, remoteBranch, stdout, stderr, ""); err != nil {
 			return err
 		}
 	} else {
@@ -518,12 +565,56 @@ func GitCommitAndPush(remote, remoteBranch, name, email, message string, stdout,
 }
 
 // GitPush push the changes to the given remote and branch.
-func GitPush(remote, remoteBranch string, stdout, stderr io.Writer) error {
+func GitPush(remote, remoteBranch string, stdout, stderr io.Writer, workingDir string) error {
 	logrus.Info("Pushing to remote...")
-	if err := Call(stdout, stderr, "git", "push", "-f", remote, fmt.Sprintf("HEAD:%s", remoteBranch)); err != nil {
-		return fmt.Errorf("failed to git push: %w", err)
+	gc := GitCommand{
+		baseCommand: gitCmd,
+		args:        []string{"push", "-f", remote, fmt.Sprintf("HEAD:%s", remoteBranch)},
+		workingDir:  workingDir,
+	}
+	if err := gc.Call(stdout, stderr); err != nil {
+		return fmt.Errorf("failed to %s: %w", gc.getCommand(), err)
 	}
 	return nil
+}
+
+// RunAndCommitIfNeeded makes a commit in the workingDir if there are
+// any changes resulting from the command execution. Returns true if a commit is made
+func RunAndCommitIfNeeded(stdout, stderr io.Writer, author, cmd string, args []string, workingDir string) (bool, error) {
+	fullCommand := fmt.Sprintf("%s %s", cmd, strings.Join(args, " "))
+
+	logrus.Infof("Running: %s", fullCommand)
+	if err := Call(stdout, stderr, cmd, args...); err != nil {
+		return false, fmt.Errorf("failed to run %s: %w", fullCommand, err)
+	}
+
+	changed, err := HasChanges()
+	if err != nil {
+		return false, fmt.Errorf("error occurred when checking changes: %w", err)
+	}
+
+	if !changed {
+		logrus.WithField("command", fullCommand).Info("No changes to commit")
+		return false, nil
+	}
+	gc := GitCommand{
+		baseCommand: gitCmd,
+		args:        []string{"add", "."},
+		workingDir:  workingDir,
+	}
+	if err := gc.Call(stdout, stderr); err != nil {
+		return false, fmt.Errorf("failed to %s: %w", gc.getCommand(), err)
+	}
+	gc = GitCommand{
+		baseCommand: gitCmd,
+		args:        []string{"commit", "-m", fullCommand, "--author", author},
+		workingDir:  workingDir,
+	}
+	if err := gc.Call(stdout, stderr); err != nil {
+		return false, fmt.Errorf("failed to %s: %w", gc.getCommand(), err)
+	}
+
+	return true, nil
 }
 
 func tagFromName(name string) string {
@@ -641,7 +732,7 @@ func getAssignment(oncallAddress string) string {
 
 func getTreeRef(stderr io.Writer, refname string) (string, error) {
 	revParseStdout := &bytes.Buffer{}
-	if err := Call(revParseStdout, stderr, "git", "rev-parse", refname+":"); err != nil {
+	if err := Call(revParseStdout, stderr, gitCmd, "rev-parse", refname+":"); err != nil {
 		return "", fmt.Errorf("failed to parse ref: %w", err)
 	}
 	fields := strings.Fields(revParseStdout.String())
