@@ -1270,7 +1270,7 @@ func configureTeamMembers(client teamMembersClient, gt github.Team, orgName stri
 		}
 		tm, err := client.UpdateTeamMembership(orgName, gt.ID, user, super)
 		if err != nil {
-			logrus.WithError(err).Warnf("UpdateTeamMembership(%s, %d(%s), %s, %t) failed",orgName, gt.ID, gt.Name, user, super)
+			logrus.WithError(err).Warnf("UpdateTeamMembership(%s, %d(%s), %s, %t) failed", orgName, gt.ID, gt.Name, user, super)
 		} else if tm.State == github.StatePending {
 			logrus.Infof("Invited %s to %d(%s) as a %s", user, gt.ID, gt.Name, role)
 		} else {
