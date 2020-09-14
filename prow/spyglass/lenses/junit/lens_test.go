@@ -616,6 +616,97 @@ func TestGetJvd(t *testing.T) {
 				Skipped: nil,
 				Flaky:   nil,
 			},
+		}, {
+			"Sequence of test cases in the artifact file is reflected in the lens",
+			[][]byte{
+				[]byte(`
+				<testsuites>
+					<testsuite>
+						<testcase classname="fake_class_0" name="fake_test_0"></testcase>
+					</testsuite>
+					<testsuite>
+						<testcase classname="fake_class_1" name="fake_test_1"></testcase>
+					</testsuite>
+					<testsuite>
+						<testcase classname="fake_class_2" name="fake_test_2"></testcase>
+					</testsuite>
+					<testsuite>
+						<testcase classname="fake_class_3" name="fake_test_3"></testcase>
+					</testsuite>
+					<testsuite>
+						<testcase classname="fake_class_4" name="fake_test_4"></testcase>
+					</testsuite>
+				</testsuites>
+				`),
+			},
+			JVD{
+				NumTests: 5,
+				Passed: []TestResult{
+					{
+						Junit: []JunitResult{
+							{
+								junit.Result{
+									Name:      "fake_test_0",
+									ClassName: "fake_class_0",
+									Failure:   nil,
+								},
+							},
+						},
+						Link: "linknotfound.io/404",
+					},
+					{
+						Junit: []JunitResult{
+							{
+								junit.Result{
+									Name:      "fake_test_1",
+									ClassName: "fake_class_1",
+									Failure:   nil,
+								},
+							},
+						},
+						Link: "linknotfound.io/404",
+					},
+					{
+						Junit: []JunitResult{
+							{
+								junit.Result{
+									Name:      "fake_test_2",
+									ClassName: "fake_class_2",
+									Failure:   nil,
+								},
+							},
+						},
+						Link: "linknotfound.io/404",
+					},
+					{
+						Junit: []JunitResult{
+							{
+								junit.Result{
+									Name:      "fake_test_3",
+									ClassName: "fake_class_3",
+									Failure:   nil,
+								},
+							},
+						},
+						Link: "linknotfound.io/404",
+					},
+					{
+						Junit: []JunitResult{
+							{
+								junit.Result{
+									Name:      "fake_test_4",
+									ClassName: "fake_class_4",
+									Failure:   nil,
+								},
+							},
+						},
+						Link: "linknotfound.io/404",
+					},
+				},
+				Failed:  nil,
+				Skipped: nil,
+				Flaky:   nil,
+			},
 		},
 	}
 
