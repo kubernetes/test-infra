@@ -1613,10 +1613,10 @@ func TestEditTeam(t *testing.T) {
 }
 
 func TestListTeamMembers(t *testing.T) {
-	ts := simpleTestServer(t, "/teams/1/members", []TeamMember{{Login: "foo"}})
+	ts := simpleTestServer(t, "/orgs/foo/teams/1/members", []TeamMember{{Login: "foo"}})
 	defer ts.Close()
 	c := getClient(ts.URL)
-	teamMembers, err := c.ListTeamMembers(1, RoleAll)
+	teamMembers, err := c.ListTeamMembers("foo", 1, RoleAll)
 	if err != nil {
 		t.Errorf("Didn't expect error: %v", err)
 	} else if len(teamMembers) != 1 {
@@ -2436,8 +2436,9 @@ func TestAuthHeaderGetsSet(t *testing.T) {
 		})
 	}
 }
+
 func TestListTeamRepos(t *testing.T) {
-	ts := simpleTestServer(t, "/teams/1/repos",
+	ts := simpleTestServer(t, "/orgs/foo/teams/1/repos",
 		[]Repo{
 			{
 				Name:        "repo-bar",
@@ -2450,7 +2451,7 @@ func TestListTeamRepos(t *testing.T) {
 	)
 	defer ts.Close()
 	c := getClient(ts.URL)
-	repos, err := c.ListTeamRepos(1)
+	repos, err := c.ListTeamRepos("foo", 1)
 	if err != nil {
 		t.Errorf("Didn't expect error: %v", err)
 	} else if len(repos) != 1 {

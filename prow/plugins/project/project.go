@@ -187,7 +187,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 	if maintainerTeamID == -1 {
 		return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, notTeamConfigMsg))
 	}
-	isAMember, err := gc.TeamHasMember(maintainerTeamID, e.User.Login)
+	isAMember, err := gc.TeamHasMember(org, maintainerTeamID, e.User.Login)
 	if err != nil {
 		return err
 	}

@@ -228,23 +228,14 @@ func (rac *RerunAuthConfig) IsAuthorized(user string, cli prowgithub.RerunClient
 			return true, nil
 		}
 	}
-	for _, ght := range rac.GitHubTeamIDs {
-		member, err := cli.TeamHasMember(ght, user)
-		if err != nil {
-			return false, fmt.Errorf("GitHub failed to fetch members of team %v, verify that you have the correct team number and access token: %v", ght, err)
-		}
-		if member {
-			return true, nil
-		}
-	}
 	for _, ghts := range rac.GitHubTeamSlugs {
 		team, err := cli.GetTeamBySlug(ghts.Slug, ghts.Org)
 		if err != nil {
 			return false, fmt.Errorf("GitHub failed to fetch team with slug %s and org %s: %v", ghts.Slug, ghts.Org, err)
 		}
-		member, err := cli.TeamHasMember(team.ID, user)
+		member, err := cli.TeamHasMember(ghts.Org, team.ID, user)
 		if err != nil {
-			return false, fmt.Errorf("GitHub failed to fetch members of team %v: %v", team, err)
+			return false, fmt.Errorf("GitHub failed to fetch members of org %s team %v: %v", ghts.Org, team, err)
 		}
 		if member {
 			return true, nil
