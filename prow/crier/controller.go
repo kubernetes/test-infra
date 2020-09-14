@@ -96,7 +96,7 @@ func (r *reconciler) updateReportState(pj *prowv1.ProwJob, log *logrus.Entry, re
 	// that also does reporting dont trigger another report because our lister doesn't yet contain
 	// the updated Status
 	name := types.NamespacedName{Namespace: pj.Namespace, Name: pj.Name}
-	if err := wait.Poll(time.Second, 3*time.Second, func() (bool, error) {
+	if err := wait.Poll(100*time.Millisecond, 3*time.Second, func() (bool, error) {
 		if err := r.pjclientset.Get(r.ctx, name, pj); err != nil {
 			return false, err
 		}
