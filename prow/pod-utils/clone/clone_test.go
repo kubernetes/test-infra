@@ -221,7 +221,6 @@ func TestCommandsForRefs(t *testing.T) {
 			expectedBase: []runnable{
 				cloneCommand{dir: "/", command: "mkdir", args: []string{"-p", "/go/src/github.com/org/repo"}},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"init"}},
-				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"config", "--global", "http.cookiefile", "/cookie.txt"}},
 				retryCommand{
 					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "--tags", "--prune"}},
 					fetchRetries,
