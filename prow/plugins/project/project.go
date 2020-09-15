@@ -65,7 +65,7 @@ type githubClient interface {
 	GetColumnProjectCard(columnID int, contentURL string) (*github.ProjectCard, error)
 	MoveProjectCard(projectCardID int, newColumnID int) error
 	DeleteProjectCard(projectCardID int) error
-	TeamHasMember(teamID int, memberLogin string) (bool, error)
+	TeamHasMember(org string, teamID int, memberLogin string) (bool, error)
 }
 
 func init() {
