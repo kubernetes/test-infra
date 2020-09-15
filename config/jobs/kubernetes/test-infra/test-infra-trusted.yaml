@@ -191,6 +191,9 @@ postsubmits:
       testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
       testgrid-num-failures-to-alert: '1'
       description: builds and pushes all prow on each commit by running prow/push.sh
+    rerun_auth_config:
+      github_users:
+      - alvaroaleman
   - name: post-test-infra-push-kettle
     cluster: test-infra-trusted
     annotations:
