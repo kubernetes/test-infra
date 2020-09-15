@@ -415,4 +415,4 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, kops-presubmits
     testgrid-tab-name: kops-build
-    testgrid-alert-email: kubernetes-release-team@googlegroups.com
+    testgrid-alert-email: release-team@kubernetes.io

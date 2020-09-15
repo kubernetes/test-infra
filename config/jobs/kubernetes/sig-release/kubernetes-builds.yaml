@@ -65,7 +65,7 @@ periodics:
     fork-per-release-replacements: "k8s-master -> k8s-beta"
     testgrid-dashboards: sig-release-master-blocking
     testgrid-tab-name: build-master
-    testgrid-alert-email: release-managers@kubernetes.io, kubernetes-release-team@googlegroups.com
+    testgrid-alert-email: release-managers@kubernetes.io, release-team@kubernetes.io
 
 - interval: 5m
   name: ci-kubernetes-build-fast
@@ -100,7 +100,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-release-master-blocking, google-unit
     testgrid-tab-name: build-master-fast
-    testgrid-alert-email: kubernetes-release-team@googlegroups.com
+    testgrid-alert-email: release-team@kubernetes.io
     description: 'Ends up running: make quick-release'
 
 - interval: 4h

@@ -1,7 +1,7 @@
 periodics:
 - annotations:
     fork-per-release-generic-suffix: "true"
-    testgrid-alert-email: kubernetes-release-team@googlegroups.com, kubernetes-sig-cli@googlegroups.com
+    testgrid-alert-email: release-team@kubernetes.io, kubernetes-sig-cli@googlegroups.com
     testgrid-alert-stale-results-hours: "24"
     testgrid-dashboards: sig-release-1.18-blocking, sig-cli-master
     testgrid-num-columns-recent: "3"
@@ -41,7 +41,7 @@ periodics:
           cpu: 1
           memory: 6Gi
 - annotations:
-    testgrid-alert-email: kubernetes-release-team@googlegroups.com
+    testgrid-alert-email: release-team@kubernetes.io
     testgrid-alert-stale-results-hours: "24"
     testgrid-dashboards: sig-release-1.18-blocking, conformance-all, conformance-gce
     testgrid-num-columns-recent: "3"
@@ -194,7 +194,7 @@ periodics:
           memory: 6Gi
 - annotations:
     fork-per-release-generic-suffix: "true"
-    testgrid-alert-email: release-managers@kubernetes.io, kubernetes-release-team@googlegroups.com
+    testgrid-alert-email: release-managers@kubernetes.io, release-team@kubernetes.io
     testgrid-dashboards: sig-release-1.18-blocking
     testgrid-tab-name: build-1.18
   interval: 1h
@@ -450,7 +450,7 @@ periodics:
 - annotations:
     fork-per-release-generic-suffix: "true"
     fork-per-release-periodic-interval: 6h 24h
-    testgrid-alert-email: kubernetes-release-team@googlegroups.com
+    testgrid-alert-email: release-team@kubernetes.io
     testgrid-dashboards: sig-release-1.18-blocking, google-unit
     testgrid-tab-name: integration-1.18
   cluster: k8s-infra-prow-build
@@ -614,7 +614,7 @@ periodics:
       resources: {}
 - annotations:
     fork-per-release-periodic-interval: 6h 24h
-    testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,kubernetes-release-team@googlegroups.com
+    testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,release-team@kubernetes.io
     testgrid-dashboards: sig-release-1.18-blocking, sig-testing-kind
     testgrid-num-columns-recent: "6"
     testgrid-tab-name: kind-1.18-parallel
@@ -664,7 +664,7 @@ periodics:
         privileged: true
 - annotations:
     fork-per-release-periodic-interval: 6h 24h
-    testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,kubernetes-release-team@googlegroups.com
+    testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,release-team@kubernetes.io
     testgrid-dashboards: sig-release-1.18-blocking, sig-testing-kind
     testgrid-num-columns-recent: "6"
     testgrid-tab-name: kind-ipv6-1.18-parallel
