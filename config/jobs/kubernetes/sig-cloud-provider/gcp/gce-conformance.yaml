@@ -11,7 +11,7 @@ periodics:
     testgrid-num-failures-to-alert: '1'
     testgrid-alert-stale-results-hours: '24'
     testgrid-num-columns-recent: '3'
-    testgrid-alert-email: kubernetes-release-team@googlegroups.com
+    testgrid-alert-email: release-team@kubernetes.io
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"

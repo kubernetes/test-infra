@@ -151,7 +151,7 @@ periodics:
           memory: 6Gi
 - annotations:
     fork-per-release-generic-suffix: "true"
-    testgrid-alert-email: release-managers@kubernetes.io, kubernetes-release-team@googlegroups.com
+    testgrid-alert-email: release-managers@kubernetes.io, release-team@kubernetes.io
     testgrid-dashboards: sig-release-1.16-blocking
     testgrid-tab-name: build-1.16
   interval: 1h
@@ -384,7 +384,7 @@ periodics:
 - annotations:
     fork-per-release-generic-suffix: "true"
     fork-per-release-periodic-interval: ""
-    testgrid-alert-email: kubernetes-release-team@googlegroups.com
+    testgrid-alert-email: release-team@kubernetes.io
     testgrid-dashboards: sig-release-1.16-blocking, google-unit
     testgrid-tab-name: integration-1.16
   cluster: k8s-infra-prow-build
@@ -509,7 +509,7 @@ periodics:
     description: Uses kubetest to run e2e tests (+Conformance, -Serial) against a
       latest kubernetes release-1.16 cluster created with sigs.k8s.io/kind
     fork-per-release-periodic-interval: ""
-    testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,kubernetes-release-team@googlegroups.com
+    testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,release-team@kubernetes.io
     testgrid-dashboards: sig-release-1.16-blocking, sig-testing-kind
     testgrid-num-columns-recent: "6"
     testgrid-tab-name: kind-1.16-parallel
@@ -552,7 +552,7 @@ periodics:
     description: Uses kubetest to run e2e tests (+Conformance, -Serial) against a
       latest kubernetes release-1.16 IPv6 cluster created with sigs.k8s.io/kind
     fork-per-release-periodic-interval: ""
-    testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,kubernetes-release-team@googlegroups.com
+    testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,release-team@kubernetes.io
     testgrid-dashboards: sig-release-1.16-blocking, sig-testing-kind
     testgrid-num-columns-recent: "6"
     testgrid-tab-name: kind-ipv6-1.16-parallel
