@@ -63,8 +63,9 @@ The following lenses are available:
 - `junit`: parses junit files and displays their content. It has no configuration
 - `buildlog`: displays the build log (or any other log file), highlighting interesting parts and
   hiding the rest behind expandable folders. You can configure what it considers "interesting" by
-  providing `highlight_regexes`, a list of regexes to highlight. If not specified, it uses defaults
-  optimised for highlighting Kubernetes test results.
+  providing `highlight_regexes`, a list of regexes to highlight. If not specified, it uses [defaults
+  optimised for highlighting Kubernetes test results](https://github.com/kubernetes/test-infra/blob/370da51e0f051504be2e97305e8536ab06b3f0df/prow/spyglass/lenses/buildlog/lens.go#L76). The optional `hide_raw_log` boolean field can be used to omit the link to the raw `build-log.txt` source.
+- `podinfo`: displays info about ProwJob pods including the events and details about containers and volumes. The [`gcsk8sreporter` Crier reporter](https://github.com/kubernetes/test-infra/tree/b6180c95b3383919711cfc97436a2d082281d284/prow/crier/reporters/gcs/kubernetes) must be enabled to upload the required `podinfo.json` file.
 - `coverage`: displays go coverage content
 - `restcoverage`: displays REST API statistics
 
@@ -82,9 +83,9 @@ deck:
     - lens:
         name: metadata
       required_files:
-      - started.json
+      - ^(?:started|finished)\.json$
       optional_files:
-      - finished.json
+      - ^(?:podinfo|prowjob)\.json$
     - lens:
         name: buildlog
         config:
@@ -95,9 +96,13 @@ deck:
           - panic\b
           - ^E\d{4} \d\d:\d\d:\d\d\.\d\d\d]
       required_files:
-      - build-log.txt
+      - ^build-log\.txt$
     - lens:
         name: junit
       required_files:
-      - artifacts/junit.*\.xml
+      - ^artifacts/junit.*\.xml$
+    - lens:
+        name: podinfo
+      required_files:
+        - ^podinfo\.json$
 ```
