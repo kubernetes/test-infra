@@ -2985,8 +2985,8 @@ func (c *client) ListTeamMembers(org string, id int, role string) ([]TeamMember,
 // ListTeamRepos gets a list of team repos for the given team id
 //
 // https://docs.github.com/en/rest/reference/teams#list-team-repositories
-func (c *client) ListTeamRepos(id int) ([]Repo, error) {
-	durationLogger := c.log("ListTeamRepos", id)
+func (c *client) ListTeamRepos(org string, id int) ([]Repo, error) {
+	durationLogger := c.log("ListTeamRepos", org, id)
 	defer durationLogger()
 
 	if c.fake {
@@ -3026,8 +3026,8 @@ func (c *client) ListTeamRepos(id int) ([]Repo, error) {
 // UpdateTeamRepo adds the repo to the team with the provided role.
 //
 // https://docs.github.com/en/rest/reference/teams#add-or-update-team-repository-permissions
-func (c *client) UpdateTeamRepo(id int, org, repo string, permission RepoPermissionLevel) error {
-	durationLogger := c.log("UpdateTeamRepo", id, org, repo, permission)
+func (c *client) UpdateTeamRepo(org string, id int, owner, repo string, permission RepoPermissionLevel) error {
+	durationLogger := c.log("UpdateTeamRepo", org, id, owner, repo, permission)
 	defer durationLogger()
 
 	if c.fake || c.dry {
@@ -3051,9 +3051,9 @@ func (c *client) UpdateTeamRepo(id int, org, repo string, permission RepoPermiss
 
 // RemoveTeamRepo removes the repo from the team.
 //
-// https://docs.github.com/en/rest/reference/teams#add-or-update-team-repository-permissions
-func (c *client) RemoveTeamRepo(id int, org, repo string) error {
-	durationLogger := c.log("RemoveTeamRepo", id, org, repo)
+//https://docs.github.com/en/rest/reference/teams#remove-a-repository-from-a-team
+func (c *client) RemoveTeamRepo(org string, id int, owner, repo string) error {
+	durationLogger := c.log("RemoveTeamRepo", org, id, owner, repo)
 	defer durationLogger()
 
 	if c.fake || c.dry {

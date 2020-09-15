@@ -101,7 +101,11 @@ func (c client) ListTeams(org string) ([]github.Team, error) {
 	return c.ghc.ListTeams(org)
 }
 func (c client) ListTeamMembers(org string, id int, role string) ([]github.TeamMember, error) {
+<<<<<<< HEAD
 	return c.ghc.ListTeamMembers(org, id, role)
+=======
+	return c.ghc.ListTeamMembers(org string, id, role)
+>>>>>>> 7752835d1847ff31c5e0f97d01cd535920c020c2
 }
 
 func (c client) Create(ctx context.Context, pj *prowapi.ProwJob, o metav1.CreateOptions) (*prowapi.ProwJob, error) {
