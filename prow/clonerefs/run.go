@@ -65,6 +65,10 @@ func (o Options) Run() error {
 		}
 	}
 
+	if p := needsGlobalCookiePath(o.CookiePath, o.GitRefs...); p != "" {
+		configureGlobalCookiefile(p)
+	}
+
 	var numWorkers int
 	if o.MaxParallelWorkers != 0 {
 		numWorkers = o.MaxParallelWorkers
@@ -117,6 +121,29 @@ func (o Options) Run() error {
 		return fmt.Errorf("one or more of the records are in failed state")
 	}
 
+	return nil
+}
+
+func needsGlobalCookiePath(cookieFile string, refs ...prowapi.Refs) string {
+	if cookieFile == "" || len(refs) == 0 {
+		return ""
+	}
+
+	for _, r := range refs {
+		if !r.SkipSubmodules {
+			return cookieFile
+		}
+	}
+	return ""
+}
+
+// configureGlobalCookiefile ensures git authenticates submodules correctly.
+//
+// Since this is a global setting, we do it once and before running parallel clones.
+func configureGlobalCookiefile(cookiePath string) error {
+	if err := exec.Command("git", "config", "--global", "http.cookiefile", cookiePath).Run(); err != nil {
+		return fmt.Errorf("git config --global http.cookiefile %q: %w", cookiePath, err)
+	}
 	return nil
 }
 
