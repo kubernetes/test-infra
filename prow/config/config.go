@@ -1061,7 +1061,7 @@ func (c *Config) mergeJobConfig(jc JobConfig) error {
 //	- Presubmits
 //	- Postsubmits
 // 	- Periodics
-//	- PodPresets
+//	- Presets
 func mergeJobConfigs(a, b JobConfig) (JobConfig, error) {
 	// Merge everything
 	// *** Presets ***
