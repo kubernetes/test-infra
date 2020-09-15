@@ -106,7 +106,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, r
 		milestone = repoMilestone[""]
 	}
 
-	milestoneMaintainers, err := gc.ListTeamMembers(milestone.MaintainersID, github.RoleAll)
+	milestoneMaintainers, err := gc.ListTeamMembers(org, milestone.MaintainersID, github.RoleAll)
 	if err != nil {
 		return err
 	}
