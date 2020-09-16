@@ -255,6 +255,8 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"
+      preset-azure-windows: "true"
+      preset-k8s-ssh: "true"
       preset-dind-enabled: "true"
     extra_refs:
     - org: kubernetes
@@ -292,6 +294,8 @@ presubmits:
           - name: AZURE_STORAGE_DRIVER
             value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
           - name: TEST_MIGRATION
+            value: "true"
+          - name: TEST_WINDOWS
             value: "true"
     annotations:
       testgrid-dashboards: provider-azure-azuredisk-csi-driver, provider-azure-presubmit
