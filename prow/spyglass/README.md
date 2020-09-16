@@ -36,7 +36,7 @@ The `spyglass` block has the following properties:
 
 | Name | Required | Example | Description |
 |---|---|---|---|
-| `size_limit` | Yes | `500000000` | The maximum size of an artifact to download, in bytes. Larger values will be omitted or truncated. |
+| `size_limit` | Yes | `100000000` | The maximum size of an artifact to download, in bytes. Larger values will be omitted or truncated. |
 | `gcs_browser_prefix` | No | `https://gcsweb.k8s.io/gcs/` | If you have a GCS browser available, the bucket and path to the artifact directory will be appended to `gcs_browser_prefix` and linked from Spyglass pages. If left unset, no artifacts link will be visible. The provided URL should have a trailing slash |
 | `testgrid_config` | No | `gs://k8s-testgrid/config` | If you have a TestGrid instance available, `testgrid_config` should point to the TestGrid config proto on GCS. If omitted, no TestGrid link will be visible.
 | `testgrid_root` | No | `https://testgrid.k8s.io/` | If you have a TestGrid instance available, `testgrid_root` should point to the root of the TestGrid web interface. If omitted, no TestGrid link will be visible.
@@ -74,7 +74,7 @@ The following lenses are available:
 ```yaml
 deck:
   spyglass:
-    size_limit: 500000000  # 500 MB
+    size_limit: 100000000  # 100 MB
     gcs_browser_prefix: https://gcsweb.k8s.io/gcs/
     testgrid_config: gs://k8s-testgrid/config
     testgrid_root: https://testgrid.k8s.io/
