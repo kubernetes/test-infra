@@ -19,7 +19,7 @@ periodics:
       path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200914-56e05f1-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200916-8dd1247-1.18
         command:
           - "runner.sh"
           - "./scripts/ci-entrypoint.sh"
@@ -57,7 +57,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200914-56e05f1-1.18
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200916-8dd1247-1.18
       command:
       - "runner.sh"
       - "./scripts/ci-e2e.sh"
