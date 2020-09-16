@@ -515,6 +515,6 @@ periodics:
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:SCTP\] --ginkgo.skip=\[Feature:NetworkPolicy\]
+      - --test_args=--ginkgo.focus=\[Feature:(SCTP|SCTPConnectivity)\] --ginkgo.skip=\[Feature:NetworkPolicy\]
       - --timeout=300m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200914-56e05f1-master
