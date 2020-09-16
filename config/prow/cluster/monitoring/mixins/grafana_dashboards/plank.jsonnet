@@ -23,7 +23,7 @@ dashboard.new(
   template.new(
     'cluster',
     'prometheus',
-    'label_values(prowjobs{job="plank"}, cluster)',
+    'label_values(prowjobs{job=~"plank|prow-controller-manager"}, cluster)',
     label='cluster',
     allValues='.*',
     includeAll=true,
@@ -34,7 +34,7 @@ dashboard.new(
   template.new(
     'org',
     'prometheus',
-    'label_values(prowjobs{job="plank"}, org)',
+    'label_values(prowjobs{job=~"plank|prow-controller-manager"}, org)',
     label='org',
     allValues='.*',
     includeAll=true,
@@ -45,7 +45,7 @@ dashboard.new(
   template.new(
     'repo',
     'prometheus',
-    'label_values(prowjobs{job="plank"}, repo)',
+    'label_values(prowjobs{job=~"plank|prow-controller-manager"}, repo)',
     label='repo',
     allValues='.*',
     includeAll=true,
@@ -106,10 +106,10 @@ dashboard.new(
         datasource='prometheus',
         legend_alignAsTable=true,
         legend_rightSide=true,
-        
+
     ) + legendConfig)
     .addTarget(prometheus.target(
-        'sum(prowjobs{job="plank",cluster=~"${cluster}",org=~"${org}",repo=~"${repo}",state=~"${state}",type=~"${type}"}) by (${group_by_1})',
+        'sum(prowjobs{job=~"plank|prow-controller-manager",cluster=~"${cluster}",org=~"${org}",repo=~"${repo}",state=~"${state}",type=~"${type}"}) by (${group_by_1})',
         legendFormat='{{${group_by_1}}}',
     )), gridPos={
     h: 9,
@@ -124,10 +124,10 @@ dashboard.new(
         datasource='prometheus',
         legend_alignAsTable=true,
         legend_rightSide=true,
-        
+
     ) + legendConfig)
     .addTarget(prometheus.target(
-        'sum(prowjobs{job="plank",cluster=~"${cluster}",org=~"${org}",repo=~"${repo}",state=~"${state}",type=~"${type}"}) by (${group_by_2})',
+        'sum(prowjobs{job=~"plank|prow-controller-manager",cluster=~"${cluster}",org=~"${org}",repo=~"${repo}",state=~"${state}",type=~"${type}"}) by (${group_by_2})',
         legendFormat='{{${group_by_2}}}',
     )), gridPos={
     h: 9,
@@ -142,10 +142,10 @@ dashboard.new(
         datasource='prometheus',
         legend_alignAsTable=true,
         legend_rightSide=true,
-        
+
     ) + legendConfig)
     .addTarget(prometheus.target(
-        'sum(prowjobs{job="plank",cluster=~"${cluster}",org=~"${org}",repo=~"${repo}",state=~"${state}",type=~"${type}"}) by (${group_by_3})',
+        'sum(prowjobs{job=~"plank|prow-controller-manager",cluster=~"${cluster}",org=~"${org}",repo=~"${repo}",state=~"${state}",type=~"${type}"}) by (${group_by_3})',
         legendFormat='{{${group_by_3}}}',
     )), gridPos={
     h: 9,
