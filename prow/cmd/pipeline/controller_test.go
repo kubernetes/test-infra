@@ -140,6 +140,10 @@ func (r *fakeReconciler) pipelineID(pj prowjobv1.ProwJob) (string, string, error
 	return pipelineID, "", nil
 }
 
+func (r *fakeReconciler) pipelineRunURL(pj prowjobv1.ProwJob) (string, error) {
+	return fmt.Sprintf("https://tekton.k8s.io/#/namespaces/ns/pipelineruns/%s", pj.Name), nil
+}
+
 type fakeLimiter struct {
 	added string
 }
@@ -260,6 +264,7 @@ func TestReconcile(t *testing.T) {
 					State:       prowjobv1.PendingState,
 					Description: descScheduling,
 					BuildID:     pipelineID,
+					URL:         "https://tekton.k8s.io/#/namespaces/ns/pipelineruns/the-object-name",
 				}
 				return pj
 			},
@@ -455,6 +460,7 @@ func TestReconcile(t *testing.T) {
 			expectedJob: func(pj prowjobv1.ProwJob, _ pipelinev1alpha1.PipelineRun) prowjobv1.ProwJob {
 				pj.Status.State = prowjobv1.PendingState
 				pj.Status.Description = descScheduling
+				pj.Status.URL = "https://tekton.k8s.io/#/namespaces/ns/pipelineruns/the-object-name"
 				return pj
 			},
 			expectedPipelineRun: noPipelineRunChange,
@@ -492,6 +498,7 @@ func TestReconcile(t *testing.T) {
 					StartTime:   now,
 					State:       prowjobv1.PendingState,
 					Description: "scheduling",
+					URL:         "https://tekton.k8s.io/#/namespaces/ns/pipelineruns/the-object-name",
 				}
 				return pj
 			},
@@ -532,6 +539,7 @@ func TestReconcile(t *testing.T) {
 					CompletionTime: &now,
 					State:          prowjobv1.SuccessState,
 					Description:    "hello",
+					URL:            "https://tekton.k8s.io/#/namespaces/ns/pipelineruns/the-object-name",
 				}
 				return pj
 			},
@@ -572,6 +580,7 @@ func TestReconcile(t *testing.T) {
 					CompletionTime: &now,
 					State:          prowjobv1.FailureState,
 					Description:    "hello",
+					URL:            "https://tekton.k8s.io/#/namespaces/ns/pipelineruns/the-object-name",
 				}
 				return pj
 			},
@@ -647,6 +656,7 @@ func TestReconcile(t *testing.T) {
 					CompletionTime: &now,
 					State:          prowjobv1.ErrorState,
 					Description:    "start pipeline: injected create pipeline error",
+					URL:            "https://tekton.k8s.io/#/namespaces/ns/pipelineruns/the-object-name",
 				}
 				return pj
 			},
