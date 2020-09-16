@@ -43,4 +43,4 @@ postsubmits:
               - --project=k8s-staging-apisnoop
               - --scratch-bucket=gs://k8s-staging-apisnoop-gcb
               - --env-passthrough=PULL_BASE_REF
-              - apps/snoopdb/
+              - apps/snoopdb
