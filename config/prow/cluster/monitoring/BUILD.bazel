@@ -81,6 +81,7 @@ k8s_objects(
         "//config/prow/cluster/monitoring/mixins/dashboards_out:grafana-dashboard-plank",
         "//config/prow/cluster/monitoring/mixins/dashboards_out:grafana-dashboard-prow",
         "//config/prow/cluster/monitoring/mixins/dashboards_out:grafana-dashboard-sinker",
+        "//config/prow/cluster/monitoring/mixins/dashboards_out:grafana-dashboard-slo",
         "//config/prow/cluster/monitoring/mixins/dashboards_out:grafana-dashboard-tide",
     ],
 )
