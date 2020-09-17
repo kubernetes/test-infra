@@ -6,14 +6,14 @@ reviewers:
 - karan
 - MHBauer
 - vpickard
-- dashpole
 - sjenning
 approvers:
 - yujuhong
 - Random-Liu
 - dchen1107
 - derekwaynecarr
-- dashpole
 - sjenning
+emeritus_approvers:
+- dashpole
 labels:
 - sig/node
