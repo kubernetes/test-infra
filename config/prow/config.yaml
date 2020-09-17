@@ -110,6 +110,8 @@ managed_webhooks:
       token_created_after: 2020-08-12T00:00:00Z
     kubernetes-sigs:
       token_created_after: 2020-08-12T00:00:00Z
+    containerd/containerd:
+      token_created_after: 2020-09-17T00:00:00Z
 
 slack_reporter_configs:
   '*':
