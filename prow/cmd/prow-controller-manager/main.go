@@ -149,7 +149,7 @@ func main() {
 		logrus.WithError(err).Fatal("Error creating manager")
 	}
 
-	buildManagers, err := o.kubernetes.BuildClusterManagers(false,
+	buildManagers, err := o.kubernetes.BuildClusterManagers(o.dryRun,
 		func(o *manager.Options) {
 			o.Namespace = cfg().PodNamespace
 		},

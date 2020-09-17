@@ -255,3 +255,60 @@ func TestRun(t *testing.T) {
 		})
 	}
 }
+
+func TestNeedsGlobalCookiePath(t *testing.T) {
+	cases := []struct {
+		name       string
+		cookieFile string
+		refs       []prowapi.Refs
+		expected   string
+	}{
+		{
+			name: "basically works",
+		},
+		{
+			name: "return empty when no cookieFile",
+			refs: []prowapi.Refs{
+				{},
+			},
+		},
+		{
+			name:       "return empty when no refs",
+			cookieFile: "foo",
+		},
+		{
+			name:       "return empty when all refs skip submodules",
+			cookieFile: "foo",
+			refs: []prowapi.Refs{
+				{SkipSubmodules: true},
+				{SkipSubmodules: true},
+			},
+		},
+		{
+			name:       "return cookieFile when all refs use submodules",
+			cookieFile: "foo",
+			refs: []prowapi.Refs{
+				{},
+				{},
+			},
+			expected: "foo",
+		},
+		{
+			name:       "return cookieFile when any refs uses submodules",
+			cookieFile: "foo",
+			refs: []prowapi.Refs{
+				{SkipSubmodules: true},
+				{},
+			},
+			expected: "foo",
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			if actual := needsGlobalCookiePath(tc.cookieFile, tc.refs...); actual != tc.expected {
+				t.Errorf("needsGlobalCookiePath(%q,%v) got %q, want %q", tc.cookieFile, tc.refs, actual, tc.expected)
+			}
+		})
+	}
+}

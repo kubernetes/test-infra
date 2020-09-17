@@ -462,10 +462,10 @@ func isUnderPath(name string, paths []string) bool {
 }
 
 func getNewProwVersion(images map[string]string) (string, error) {
-	found := map[string]bool{}
+	found := map[string][]string{}
 	for k, v := range images {
 		if strings.HasPrefix(k, prowPrefix) {
-			found[v] = true
+			found[v] = append(found[v], k)
 		}
 	}
 	switch len(found) {

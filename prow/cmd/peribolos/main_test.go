@@ -756,7 +756,7 @@ func (c *fakeTeamClient) ListTeams(name string) ([]github.Team, error) {
 	return teams, nil
 }
 
-func (c *fakeTeamClient) DeleteTeam(id int) error {
+func (c *fakeTeamClient) DeleteTeam(org string, id int) error {
 	switch _, ok := c.teams[id]; {
 	case !ok:
 		return fmt.Errorf("not found %d", id)
@@ -767,7 +767,7 @@ func (c *fakeTeamClient) DeleteTeam(id int) error {
 	return nil
 }
 
-func (c *fakeTeamClient) EditTeam(team github.Team) (*github.Team, error) {
+func (c *fakeTeamClient) EditTeam(org string, team github.Team) (*github.Team, error) {
 	id := team.ID
 	t, ok := c.teams[id]
 	if !ok {

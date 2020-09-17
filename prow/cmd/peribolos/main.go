@@ -604,7 +604,7 @@ func validateTeamNames(orgConfig org.Config) error {
 type teamClient interface {
 	ListTeams(org string) ([]github.Team, error)
 	CreateTeam(org string, team github.Team) (*github.Team, error)
-	DeleteTeam(id int) error
+	DeleteTeam(org string, id int) error
 }
 
 // configureTeams returns the ids for all expected team names, creating/deleting teams as necessary.
@@ -715,7 +715,7 @@ func configureTeams(client teamClient, orgName string, orgConfig org.Config, max
 	}
 	// Delete undeclared teams.
 	for id := range unused {
-		if err := client.DeleteTeam(id); err != nil {
+		if err := client.DeleteTeam(orgName, id); err != nil {
 			str := fmt.Sprintf("%d(%s)", id, ids[id].Name)
 			logrus.WithError(err).Warnf("Failed to delete team %s from %s", str, orgName)
 			failures = append(failures, str)
@@ -1092,7 +1092,7 @@ func configureTeamAndMembers(opt options, client github.Client, githubTeams map[
 }
 
 type editTeamClient interface {
-	EditTeam(team github.Team) (*github.Team, error)
+	EditTeam(org string, team github.Team) (*github.Team, error)
 }
 
 // configureTeam patches the team name/description/privacy when values differ
@@ -1136,7 +1136,7 @@ func configureTeam(client editTeamClient, orgName, teamName string, team org.Tea
 	}
 
 	if patch { // yes we need to patch
-		if _, err := client.EditTeam(gt); err != nil {
+		if _, err := client.EditTeam(orgName, gt); err != nil {
 			return fmt.Errorf("failed to edit %s team %d(%s): %v", orgName, gt.ID, gt.Name, err)
 		}
 	}

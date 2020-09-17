@@ -466,3 +466,46 @@ func TestCDToRootDir(t *testing.T) {
 		})
 	}
 }
+
+func TestGetNewProwVersion(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name          string
+		images        map[string]string
+		expectedTag   string
+		expectedError string
+	}{
+		{
+			name: "No images, no result, no error",
+		},
+		{
+			name:        "One version is returned",
+			images:      map[string]string{"gcr.io/k8s-prow/deck": "v20200914-1ac05b0ca2"},
+			expectedTag: "v20200914-1ac05b0ca2",
+		},
+		{
+			name:          "Multiple versions, error",
+			images:        map[string]string{"gcr.io/k8s-prow/deck": "v20200914-1ac05b0ca2", "gcr.io/k8s-prow/hook": "v20200915-1ac05", "gcr.io/k8s-prow/tide": "v20200915-1ac05"},
+			expectedError: `Expected a consistent version for all "gcr.io/k8s-prow/" images, but found multiple: map[v20200914-1ac05b0ca2:[gcr.io/k8s-prow/deck] v20200915-1ac05:[gcr.io/k8s-prow/hook gcr.io/k8s-prow/tide]]`,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			var errMsg string
+			actualTag, err := getNewProwVersion(tc.images)
+			if err != nil {
+				errMsg = err.Error()
+			}
+			if errMsg != tc.expectedError {
+				t.Fatalf("got error %v, expected error %s", err, tc.expectedError)
+			}
+			if err != nil {
+				return
+			}
+			if actualTag != tc.expectedTag {
+				t.Errorf("expected tag %s, got tag %s", tc.expectedTag, actualTag)
+			}
+		})
+	}
+}

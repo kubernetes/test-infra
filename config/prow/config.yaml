@@ -11,10 +11,10 @@ plank:
       timeout: 2h
       grace_period: 15m
       utility_images:
-        clonerefs: "gcr.io/k8s-prow/clonerefs:v20200914-b086fe0aaf"
-        initupload: "gcr.io/k8s-prow/initupload:v20200914-b086fe0aaf"
-        entrypoint: "gcr.io/k8s-prow/entrypoint:v20200914-b086fe0aaf"
-        sidecar: "gcr.io/k8s-prow/sidecar:v20200914-b086fe0aaf"
+        clonerefs: "gcr.io/k8s-prow/clonerefs:v20200916-29e367bb39"
+        initupload: "gcr.io/k8s-prow/initupload:v20200916-29e367bb39"
+        entrypoint: "gcr.io/k8s-prow/entrypoint:v20200916-29e367bb39"
+        sidecar: "gcr.io/k8s-prow/sidecar:v20200916-29e367bb39"
       gcs_configuration:
         bucket: "kubernetes-jenkins"
         path_strategy: "legacy"
@@ -43,7 +43,7 @@ sinker:
 
 deck:
   spyglass:
-    size_limit: 500000000 # 500MB
+    size_limit: 100000000 # 100MB
     gcs_browser_prefix: https://gcsweb.k8s.io/gcs/
     testgrid_config: gs://k8s-testgrid/config
     testgrid_root: https://testgrid.k8s.io/
@@ -51,27 +51,36 @@ deck:
     - lens:
         name: metadata
       required_files:
-      - started.json|finished.json
+      - ^(?:started|finished)\.json$
       optional_files:
-      - podinfo.json|prowjob.json
+      - ^(?:podinfo|prowjob)\.json$
     - lens:
         name: buildlog
+        config:
+          highlight_regexes:
+          - timed out
+          - "ERROR:"
+          - (FAIL|Failure \[)\b
+          - panic\b
+          - ^E\d{4} \d\d:\d\d:\d\d\.\d\d\d]
+          # This highlights the start of bazel tests/runs to skip go importing noise.
+          - "^INFO: Analyzed \\d+ targets"
       required_files:
         - ^.*build-log\.txt$
     - lens:
         name: junit
       required_files:
-        - artifacts/junit.*\.xml
+        - ^artifacts/junit.*\.xml$
     - lens:
         name: coverage
       required_files:
-        - artifacts/filtered.cov
+        - ^artifacts/filtered\.cov$
       optional_files:
-        - artifacts/filtered.html
+        - ^artifacts/filtered\.html$
     - lens:
         name: podinfo
       required_files:
-        - podinfo.json
+        - ^podinfo\.json$
   tide_update_period: 1s
   hidden_repos:
   - kubernetes-security

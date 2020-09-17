@@ -1,5 +1,6 @@
 {
   prometheusAlerts+:: {
+    local tideName = $._config.components.tide,
     groups+: [
       {
         name: 'Tide progress',
@@ -12,6 +13,7 @@
             'for': '5m',
             labels: {
               severity: 'critical',
+              slo: tideName,
             },
             annotations: {
               message: 'The Tide "sync" controller has not synced in 15 minutes. See the <https://monitoring.prow.k8s.io/d/d69a91f76d8110d3e72885ee5ce8038e/tide-dashboard?orgId=1&from=now-24h&to=now&fullscreen&panelId=7|processing time graph>.',
@@ -25,6 +27,7 @@
             'for': '5m',
             labels: {
               severity: 'critical',
+              slo: tideName,
             },
             annotations: {
               message: 'The Tide "status-update" controller has not synced in 30 minutes. See the <https://monitoring.prow.k8s.io/d/d69a91f76d8110d3e72885ee5ce8038e/tide-dashboard?orgId=1&from=now-24h&to=now&fullscreen&panelId=7|processing time graph>.',
@@ -51,6 +54,7 @@
             'for': '5m',
             labels: {
               severity: 'critical',
+              slo: tideName,
             },
             annotations: {
               message: 'Tide encountered 3+ sync errors in a 10 minute window in at least 3 different repos that it handles. See the <https://prow.k8s.io/tide-history|tide-history> page and the <https://monitoring.prow.k8s.io/d/d69a91f76d8110d3e72885ee5ce8038e/tide-dashboard?orgId=1&fullscreen&panelId=6&from=now-24h&to=now|sync error graph>.',

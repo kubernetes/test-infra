@@ -17,7 +17,7 @@ periodics:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200914-56e05f1-1.18
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200916-8dd1247-1.18
       command:
         - "runner.sh"
         - "./scripts/ci-e2e.sh"
@@ -57,7 +57,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200914-56e05f1-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200916-8dd1247-1.18
         command:
           - "runner.sh"
           - "./scripts/ci-e2e.sh"
@@ -95,7 +95,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200914-56e05f1-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200916-8dd1247-1.18
         command:
           - "runner.sh"
           - "./scripts/ci-conformance.sh"
@@ -133,7 +133,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200914-56e05f1-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200916-8dd1247-1.18
         command:
           - "runner.sh"
           - "./scripts/ci-e2e-conformance.sh"
@@ -182,7 +182,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200914-56e05f1-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200916-8dd1247-1.18
         env:
           - name: CAPI_BRANCH
             value: "stable"
@@ -238,7 +238,7 @@ periodics:
       path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200914-56e05f1-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200916-8dd1247-1.18
         env:
           - name: BOSKOS_HOST
             value: "boskos.test-pods.svc.cluster.local"
@@ -263,4 +263,4 @@ periodics:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws, sig-release-master-informing
     testgrid-tab-name: capa-conformance-v1alpha3-k8s-master
     testgrid-num-columns-recent: '20'
-    testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com, kubernetes-release-team@googlegroups.com
+    testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com, release-team@kubernetes.io

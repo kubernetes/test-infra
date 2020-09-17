@@ -81,6 +81,7 @@ k8s_objects(
         "//config/prow/cluster/monitoring/mixins/dashboards_out:grafana-dashboard-plank",
         "//config/prow/cluster/monitoring/mixins/dashboards_out:grafana-dashboard-prow",
         "//config/prow/cluster/monitoring/mixins/dashboards_out:grafana-dashboard-sinker",
+        "//config/prow/cluster/monitoring/mixins/dashboards_out:grafana-dashboard-slo",
         "//config/prow/cluster/monitoring/mixins/dashboards_out:grafana-dashboard-tide",
     ],
 )
@@ -101,7 +102,7 @@ filegroup(
         "//config/prow/cluster/monitoring/mixins/lib:all-srcs",
         "//config/prow/cluster/monitoring/mixins/prometheus:all-srcs",
         "//config/prow/cluster/monitoring/mixins/prometheus_out:all-srcs",
-        "//config/prow/cluster/monitoring/mixins/vendor/grafonnet:all-srcs",
+        "//config/prow/cluster/monitoring/mixins/vendor/github.com/grafana/grafonnet-lib/grafonnet:all-srcs",
     ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],

@@ -17,7 +17,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200914-56e05f1-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200916-8dd1247-master
         args:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
@@ -63,7 +63,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200914-56e05f1-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200916-8dd1247-master
         env:
         # enable IPV6 in bootstrap image
         - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
@@ -112,7 +112,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200914-56e05f1-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200916-8dd1247-master
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -165,7 +165,7 @@ periodics:
     timeout: 200m # allow plenty of time for a serial conformance run
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/krte:v20200824-5d057db-master
+    - image: gcr.io/k8s-testimages/krte:v20200916-8dd1247-master
       command:
       - wrapper.sh
       - bash
@@ -191,5 +191,5 @@ periodics:
     testgrid-alert-stale-results-hours: '48'
     testgrid-dashboards: sig-release-master-blocking, conformance-all, conformance-kind, sig-testing-kind
     testgrid-tab-name: conformance-ga-only
-    testgrid-alert-email: "kubernetes-release-team@googlegroups.com, kubernetes-sig-architecture@googlegroups.com"
+    testgrid-alert-email: "release-team@kubernetes.io, kubernetes-sig-architecture@googlegroups.com"
     description: "OWNER: sig-architecture (conformance); conformance tests run against a master kind cluster with only GA APIs and features enabled"

@@ -56,7 +56,7 @@ presubmits:
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=100m
         - --use-logexporter
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200914-56e05f1-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200916-8dd1247-master
         resources:
           # Using 6 CPU to speed up bazel build phase (2 is enough for the test itself)
           limits:
@@ -113,7 +113,7 @@ presubmits:
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=240m
         - --use-logexporter
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200914-56e05f1-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200916-8dd1247-master
         resources:
           limits:
             # Using 6 CPU to speed up bazel build phase (4 is enough for the test itself)
@@ -165,7 +165,7 @@ presubmits:
         - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[DisabledForLargeClusters\] --minStartupPods=8 --node-schedulable-timeout=90m
         - --timeout=240m
         - --use-logexporter
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200914-56e05f1-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200916-8dd1247-master
         resources:
           limits:
             cpu: 6
@@ -222,7 +222,7 @@ presubmits:
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=540m
         - --use-logexporter
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200914-56e05f1-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200916-8dd1247-master
         resources:
           limits:
             # Using 6 CPU to speed up bazel build phase (4 is enough for the test itself)
@@ -252,7 +252,7 @@ presubmits:
       testgrid-create-test-group: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200914-56e05f1-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200916-8dd1247-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -326,7 +326,7 @@ presubmits:
       preset-e2e-scalability-presubmits: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200914-56e05f1-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200916-8dd1247-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -380,6 +380,44 @@ presubmits:
           privileged: true # TODO(fejta): https://github.com/kubernetes/kubernetes/issues/76484
 
   kubernetes/perf-tests:
+  - name: pull-perf-tests-benchmark-kube-dns
+    always_run: false
+    skip_report: false
+    max_concurrency: 3
+    branches:
+      - master
+    annotations:
+      testgrid-dashboards: presubmits-kubernetes-scalability
+      testgrid-tab-name: pull-perf-tests-benchmark-kube-dns
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    run_if_changed: ^dns/.*$
+    spec:
+      containers:
+      - args:
+        - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --root=/go/src
+        - --timeout=140
+        - --scenario=kubernetes_e2e
+        - --
+        - --check-leaked-resources
+        - --cluster=kube-dns-benchmark
+        - --extract=ci/latest
+        - --gcp-nodes=3
+        - --gcp-zone=us-east1-b
+        - --provider=gce
+        - --test=false
+        - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+        - --test-cmd-args=kube-dns
+        - --test-cmd-args=/workspace/_artifacts/out
+        - --test-cmd-args=/workspace/_artifacts
+        - --test-cmd-name=KubeDnsBenchmark
+        - --timeout=120m
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200916-8dd1247-master
+
   - name: pull-perf-tests-clusterloader2
     always_run: false
     skip_report: false
@@ -430,7 +468,7 @@ presubmits:
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=100m
         - --use-logexporter
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200914-56e05f1-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200916-8dd1247-master
         resources:
           limits:
             cpu: 2
@@ -495,7 +533,7 @@ presubmits:
             - --test-cmd-name=ClusterLoaderV2
             - --timeout=100m
             - --use-logexporter
-          image: gcr.io/k8s-testimages/kubekins-e2e:v20200914-56e05f1-master
+          image: gcr.io/k8s-testimages/kubekins-e2e:v20200916-8dd1247-master
           resources:
             limits:
               cpu: 2
@@ -636,8 +674,8 @@ presubmits:
         - verify-lint
         resources:
           requests:
-            cpu: 1
+            cpu: 2
             memory: "2Gi"
           limits:
-            cpu: 1
+            cpu: 2
             memory: "2Gi"

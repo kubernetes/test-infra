@@ -20,7 +20,10 @@ metadata:
   labels:
     app: plank
 spec:
-  replicas: 1 # Do not scale up.
+  # Mutually exclusive with prow-controller-manager. Only one of them may have more than zero replicas.
+  # If this is re-enabled, the service monitor must be changed back to point to plank:
+  # https://github.com/kubernetes/test-infra/blob/a35145f8e7e00d72a69dc1e8be57b8cf09184a52/config/prow/cluster/monitoring/prow_servicemonitors.yaml#L133
+  replicas: 0 # Do not scale up.
   strategy:
     type: Recreate
   selector:
@@ -34,7 +37,7 @@ spec:
       serviceAccountName: plank
       containers:
       - name: plank
-        image: gcr.io/k8s-prow/plank:v20200914-b086fe0aaf
+        image: gcr.io/k8s-prow/plank:v20200916-29e367bb39
         args:
         - --config-path=/etc/config/config.yaml
         - --dry-run=false

@@ -236,6 +236,7 @@ func (o *KubernetesOptions) BuildClusterManagers(dryRun bool, opts ...func(*mana
 		mgr, err := manager.New(&cfg, options)
 		if err != nil {
 			errs = append(errs, fmt.Errorf("failed to construct manager for cluster %s: %w", buildCluserName, err))
+			continue
 		}
 		res[buildCluserName] = mgr
 	}
