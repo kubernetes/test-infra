@@ -97,7 +97,7 @@ postsubmits:
       rerun_auth_config:
         github_team_ids:
           - 2241179 # release-managers
-    - name: post-release-push-image-releng-ci-bazel
+    - name: post-release-push-image-releng-ci
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-release-releng-informing, sig-release-image-pushes
@@ -116,7 +116,8 @@ postsubmits:
               - --project=k8s-staging-releng
               - --scratch-bucket=gs://k8s-staging-releng-gcb
               - --env-passthrough=PULL_BASE_REF
-              - images/releng-ci-bazel
+              - --build-dir=.
+              - images/releng/ci
             env:
               - name: LOG_TO_STDOUT
                 value: "y"
