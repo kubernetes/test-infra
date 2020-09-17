@@ -23,9 +23,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"io"
 	"path/filepath"
+
+	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/spyglass/api"
 )
@@ -42,6 +43,8 @@ var (
 	// ErrFileTooLarge will be thrown when a size-limited operation (ex. ReadAll) is called on an
 	// artifact whose size exceeds the configured limit.
 	ErrFileTooLarge = errors.New("file size over specified limit")
+	// ErrRequestSizeTooLarge will be thrown when any operation is called whose size exceeds the configured limit.
+	ErrRequestSizeTooLarge = errors.New("request size over specified limit")
 	// ErrContextUnsupported is thrown when attempting to use a context with an artifact that
 	// does not support context operations (cancel, withtimeout, etc.)
 	ErrContextUnsupported = errors.New("artifact does not support context operations")
