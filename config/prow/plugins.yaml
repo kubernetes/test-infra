@@ -17,6 +17,9 @@ triggers:
   - containerd/cri
   join_org_url: "https://github.com/containerd/containerd/blob/master/MAINTAINERS"
 - repos:
+  - containerd/containerd
+  join_org_url: "https://github.com/containerd/project/blob/master/MAINTAINERS"
+- repos:
   - kubeflow
   join_org_url: "https://github.com/kubeflow/kubeflow/blob/master/CONTRIBUTING.md"
 - repos:
@@ -925,7 +928,8 @@ plugins:
   - trigger
 
   containerd/containerd:
-  - trigger
+  - assign  # Allow /assign and /cc
+  - trigger # Allow people to configure CI jobs to /test
 
   tensorflow/k8s:
   - trigger
