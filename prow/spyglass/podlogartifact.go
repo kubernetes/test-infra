@@ -96,6 +96,9 @@ func (a *PodLogArtifact) JobPath() string {
 
 // ReadAt implements reading a range of bytes from the pod logs endpoint
 func (a *PodLogArtifact) ReadAt(p []byte, off int64) (n int, err error) {
+	if int64(len(p)) > a.sizeLimit {
+		return 0, lenses.ErrRequestSizeTooLarge
+	}
 	logs, err := a.jobAgent.GetJobLog(a.name, a.buildID, a.container)
 	if err != nil {
 		return 0, fmt.Errorf("error getting pod log: %v", err)
@@ -129,6 +132,9 @@ func (a *PodLogArtifact) ReadAll() ([]byte, error) {
 
 // ReadAtMost reads at most n bytes
 func (a *PodLogArtifact) ReadAtMost(n int64) ([]byte, error) {
+	if n > a.sizeLimit {
+		return nil, lenses.ErrRequestSizeTooLarge
+	}
 	logs, err := a.jobAgent.GetJobLog(a.name, a.buildID, a.container)
 	if err != nil {
 		return nil, fmt.Errorf("error getting pod log: %v", err)
@@ -152,6 +158,9 @@ func (a *PodLogArtifact) ReadAtMost(n int64) ([]byte, error) {
 
 // ReadTail reads the last n bytes of the pod log
 func (a *PodLogArtifact) ReadTail(n int64) ([]byte, error) {
+	if n > a.sizeLimit {
+		return nil, lenses.ErrRequestSizeTooLarge
+	}
 	logs, err := a.jobAgent.GetJobLog(a.name, a.buildID, a.container)
 	if err != nil {
 		return nil, fmt.Errorf("error getting pod log tail: %v", err)

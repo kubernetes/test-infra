@@ -24,6 +24,7 @@ import (
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/spyglass/api"
 	"k8s.io/test-infra/prow/spyglass/lenses"
 )
 
@@ -374,4 +375,92 @@ func TestReadAll_PodLog(t *testing.T) {
 
 	}
 
+}
+
+type fakeAgent struct {
+	contents string
+}
+
+func (f *fakeAgent) GetProwJob(job, id string) (prowapi.ProwJob, error) {
+	return prowapi.ProwJob{}, nil
+}
+
+func (f *fakeAgent) GetJobLog(job, id, container string) ([]byte, error) {
+	return []byte(f.contents), nil
+}
+
+func TestPodLogArtifact_RespectsSizeLimit(t *testing.T) {
+	contents := "Supercalifragilisticexpialidocious"
+	numRequestedBytes := int64(10)
+
+	testCases := []struct {
+		name      string
+		expected  error
+		contents  string
+		skipGzip  bool
+		sizeLimit int64
+		action    func(api.Artifact) error
+	}{
+		{
+			name:     "ReadAll",
+			expected: lenses.ErrFileTooLarge,
+			action: func(a api.Artifact) error {
+				_, err := a.ReadAll()
+				return err
+			},
+		},
+		{
+			name:     "ReadAt",
+			expected: lenses.ErrRequestSizeTooLarge,
+			action: func(a api.Artifact) error {
+				buf := make([]byte, numRequestedBytes)
+				_, err := a.ReadAt(buf, 3)
+				return err
+			},
+		},
+		{
+			name:     "ReadAtMost",
+			expected: lenses.ErrRequestSizeTooLarge,
+			action: func(a api.Artifact) error {
+				_, err := a.ReadAtMost(numRequestedBytes)
+				return err
+			},
+		},
+		{
+			name:     "ReadTail",
+			expected: lenses.ErrRequestSizeTooLarge,
+			action: func(a api.Artifact) error {
+				_, err := a.ReadTail(numRequestedBytes)
+				return err
+			},
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name+"_NoError", func(nested *testing.T) {
+			sizeLimit := int64(2 * len(contents))
+			artifact, err := NewPodLogArtifact("job-name", "build-id", "log-name", "container-name", sizeLimit, &fakeAgent{contents: contents})
+			if err != nil {
+				nested.Fatalf("error creating test data: %s", err)
+			}
+
+			actual := tc.action(artifact)
+			if actual != nil {
+				nested.Fatalf("unexpected error: %s", actual)
+			}
+		})
+		t.Run(tc.name+"_WithError", func(nested *testing.T) {
+			sizeLimit := int64(5)
+			artifact, err := NewPodLogArtifact("job-name", "build-id", "log-name", "container-name", sizeLimit, &fakeAgent{contents: contents})
+			if err != nil {
+				nested.Fatalf("error creating test data: %s", err)
+			}
+
+			actual := tc.action(artifact)
+			if actual == nil {
+				nested.Fatalf("expected error (%s), but got: nil", tc.expected)
+			} else if tc.expected.Error() != actual.Error() {
+				nested.Fatalf("expected error (%s), but got: %s", tc.expected, actual)
+			}
+		})
+	}
 }
