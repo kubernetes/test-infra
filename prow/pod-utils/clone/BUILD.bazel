@@ -33,7 +33,10 @@ filegroup(
 
 go_test(
     name = "go_default_test",
-    srcs = ["clone_test.go"],
+    srcs = [
+        "clone_test.go",
+        "format_test.go",
+    ],
     embed = [":go_default_library"],
     deps = [
         "//prow/apis/prowjobs/v1:go_default_library",
