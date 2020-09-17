@@ -6,11 +6,15 @@
 #   sequential: an optional boolean that indicates whether test runs in this
 #     bucket are numbered sequentially. This is used for an optimization in the
 #     collection phase, and defaults to true.
+#   exclude_jobs: A list of job names that will not be uploaded to BQ
 
 gs://kubernetes-jenkins/logs/:
   contact: "fejta"
   prefix: ""
   sequential: false
+  exclude_jobs:
+    - ci-test-infra-benchmark-demo
+    - ci-kubernetes-coverage-unit
 gs://canonical-kubernetes-tests/logs/:
   contact: "chuckbutler"
   prefix: "juju:"

@@ -70,6 +70,21 @@ It might take a couple of hours to be fully functional and start updating BigQue
 
 To add fields to the BQ table, Visit the [k8s-gubernator:build BigQuery dataset](https://bigquery.cloud.google.com/dataset/k8s-gubernator:build) and Select the table (Ex. Build > All). Schema -> Edit Schema -> Add field. As well as update [schema.json](./schema.json)
 
+## Adding Buckets
+
+To add a new GCS bucket to Kettle, simply update [buckets.yaml](./buckets.yaml) in `master`, it will be auto pulled by Kettle on the next cycle.
+
+```yaml
+gs://<bucket path>: #bucket url
+  contact: "username" #Git Hub Username
+  prefix: "abc:" #the identifier prefixed to jobs from this bucket (ends in :).
+  sequential: (bool) #an optional boolean that indicates whether test runs in this
+  #                  bucket are numbered sequentially
+  exclude_jobs: # list of jobs to explicitly exclude from kettle data collection
+    - job_name1
+    - job_name2
+```
+
 # CI
 
 A [postsubmit job](https://github.com/kubernetes/test-infra/blob/master/config/jobs/kubernetes/test-infra/test-infra-trusted.yaml#L203-L210) runs that pushes Kettle on changes.
@@ -77,4 +92,3 @@ A [postsubmit job](https://github.com/kubernetes/test-infra/blob/master/config/j
 # Known Issues
 
 - Occasionally data from Kettle stops updating, we suspect this is due to a transient hang when contacting GCS ([#8800](https://github.com/kubernetes/test-infra/issues/8800)). If this happens, [restart kettle](#restarting)
-
