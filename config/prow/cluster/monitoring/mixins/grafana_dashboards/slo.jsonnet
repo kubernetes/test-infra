@@ -5,6 +5,12 @@ local graphPanel = grafana.graphPanel;
 local prometheus = grafana.prometheus;
 
 
+local legendConfig = {
+        legend+: {
+            sideWidth: 400
+        },
+    };
+
 local dashboardConfig = {
         uid: config._config.grafanaDashboardIDs['slo.json'],
     };
@@ -15,26 +21,40 @@ dashboard.new(
         schemaVersion=18,
       )
 .addPanel(
-    graphPanel.new(
+    (graphPanel.new(
         'Prow overall SLO compliance',
         description='slo_prow_ok',
         datasource='prometheus',
         legend_rightSide=true,
+        decimals=0,
+        min=0,
+        max=1.25,
+        labelY1='Compliant (T/F)',
+        legend_values=true,
+        legend_avg=true,
+        legend_alignAsTable=true,
     )
     .addTarget(prometheus.target(
-        'slo_prow_ok'
-    )),
+        'label_replace(slo_prow_ok, "__name__", "SLO", "", "")'
+    )) + legendConfig),
     gridPos={h: 4, w: 24, x: 0, y: 0})
 .addPanels([
-    graphPanel.new(
+    (graphPanel.new(
         '%s SLO compliance' % comp,
         description='slo_component_ok{slo="%s"}' % comp,
         datasource='prometheus',
         legend_rightSide=true,
+        decimals=0,
+        min=0,
+        max=1.25,
+        labelY1='Compliant (T/F)',
+        legend_values=true,
+        legend_avg=true,
+        legend_alignAsTable=true,
     )
     .addTarget(prometheus.target(
-        'min(slo_component_ok{slo="%s"}) without (slo)' % comp
-    ))
+        'label_replace(min(slo_component_ok{slo="%s"}) without (slo), "__name__", "SLO", "", "")' % comp
+    )) + legendConfig)
     {gridPos:{h: 4, w: 24, x: 0, y: 0}}
     for comp in config._config.slo.components
 ])
