@@ -33,8 +33,8 @@ def print_dump(file):
 def call(cmd, dump=False):
     started = datetime.now()
 
-    redirect = ' > {DUMP}}' if dump else ''
-    status = os.system(f'{cmd}{redirect}')
+    cmd = f'{cmd} > {DUMP}' if dump else cmd
+    status = os.system(cmd)
 
     ended = datetime.now()
     print(f'+{cmd} completed in {started-ended}')
