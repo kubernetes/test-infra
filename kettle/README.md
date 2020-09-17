@@ -80,10 +80,9 @@ gs://<bucket path>: #bucket url
   prefix: "abc:" #the identifier prefixed to jobs from this bucket (ends in :).
   sequential: (bool) #an optional boolean that indicates whether test runs in this
   #                  bucket are numbered sequentially
-  exclude_jobs: [
-    'job_name1',
-    'job_name2',
-  ] #List of jobs to explicitly exclude from kettle data collection
+  exclude_jobs: # list of jobs to explicitly exclude from kettle data collection
+    - job_name1
+    - job_name2
 ```
 
 # CI
@@ -93,4 +92,3 @@ A [postsubmit job](https://github.com/kubernetes/test-infra/blob/master/config/j
 # Known Issues
 
 - Occasionally data from Kettle stops updating, we suspect this is due to a transient hang when contacting GCS ([#8800](https://github.com/kubernetes/test-infra/issues/8800)). If this happens, [restart kettle](#restarting)
-
