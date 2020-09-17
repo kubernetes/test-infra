@@ -33,9 +33,9 @@ dashboard.new(
         legend_rightSide=true,
     )
     .addTarget(prometheus.target(
-        'slo_component_ok{slo="%s"}' % comp
+        'min(slo_component_ok{slo="%s"}) without (slo)' % comp
     ))
-
+    {gridPos:{h: 4, w: 24, x: 0, y: 0}}
     for comp in config._config.slo.components
 ])
 + dashboardConfig
