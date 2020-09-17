@@ -12,10 +12,9 @@ gs://kubernetes-jenkins/logs/:
   contact: "fejta"
   prefix: ""
   sequential: false
-  exclude_jobs: [
-    'ci-test-infra-benchmark-demo',
-    'ci-kubernetes-coverage-unit',
-  ]
+  exclude_jobs:
+    - ci-test-infra-benchmark-demo
+    - ci-kubernetes-coverage-unit
 gs://canonical-kubernetes-tests/logs/:
   contact: "chuckbutler"
   prefix: "juju:"
