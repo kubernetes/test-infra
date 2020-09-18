@@ -10,7 +10,6 @@ reviewers:
 - MHBauer
 - tallclair
 - vpickard
-- dashpole
 - sjenning
 approvers:
 - Random-Liu
@@ -21,9 +20,9 @@ approvers:
 - klueska
 - dchen1107
 - dims
-- dashpole
 - sjenning
 emeritus_approvers:
 - yguo0905
+- dashpole
 labels:
 - sig/node
