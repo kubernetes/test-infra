@@ -377,6 +377,12 @@ default:
       target: both
       prowPlugin: require-matching-label
       addedBy: prow
+    - color: ededed
+      description: Indicates an issue or PR lacks a `triage/foo` label and requires one.
+      name: needs-triage
+      target: both
+      prowPlugin: require-matching-label
+      addedBy: prow
     - color: 15dd18
       description: Indicates a non-member PR verified by an org member that is safe to test. # This is the opposite of needs-ok-to-test and should be mutually exclusive.
       name: ok-to-test
