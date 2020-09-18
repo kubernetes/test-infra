@@ -47,6 +47,7 @@ spec:
         - --github-token-path=/etc/github/oauth
         - --config-path=/etc/config/config.yaml
         - --job-config-path=/etc/job-config
+        - --kubeconfig=/etc/kubeconfig/config
         ports:
           - name: http
             containerPort: 8888
@@ -65,6 +66,9 @@ spec:
           readOnly: true
         - name: plugins
           mountPath: /etc/plugins
+          readOnly: true
+        - name: kubeconfig
+          mountPath: /etc/kubeconfig
           readOnly: true
         livenessProbe:
           httpGet:
@@ -95,3 +99,7 @@ spec:
       - name: plugins
         configMap:
           name: plugins
+      - name: kubeconfig
+        secret:
+          defaultMode: 420
+          secretName: kubeconfig

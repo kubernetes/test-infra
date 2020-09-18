@@ -451,14 +451,26 @@ config_updater:
           - test-pods
     config/prow/config.yaml:
       name: config
+      clusters:
+        test-infra-trusted:
+          - default
     config/prow/plugins.yaml:
       name: plugins
+      clusters:
+        test-infra-trusted:
+          - default
     config/jobs/**/*.yaml:
       name: job-config
       gzip: true
+      clusters:
+        test-infra-trusted:
+          - default
     experiment/test-configmap.txt:
       name: test-configmap
       gzip: true
+      clusters:
+        test-infra-trusted:
+          - default
 
 welcome:
 - repos:

@@ -48,6 +48,7 @@ spec:
         - --github-token-path=/etc/github/oauth
         - --config-path=/etc/config/config.yaml
         - --job-config-path=/etc/job-config
+        - --kubeconfig=/etc/kubeconfig/config
         ports:
           - name: http
             containerPort: 8888
@@ -74,6 +75,9 @@ spec:
           readOnly: true
         - name: unsplash-api
           mountPath: /etc/unsplash-api
+          readOnly: true
+        - name: kubeconfig
+          mountPath: /etc/kubeconfig
           readOnly: true
         livenessProbe:
           httpGet:
@@ -113,3 +117,7 @@ spec:
       - name: unsplash-api
         secret:
           secretName: unsplash-api-key
+      - name: kubeconfig
+        secret:
+          defaultMode: 420
+          secretName: kubeconfig
