@@ -120,15 +120,6 @@ default:
       target: both
       addedBy: humans
     - color: d455d0
-      description: Indicates an issue that is a support question.
-      name: triage/support
-      previously:
-        - name: close/support
-        - name: kind/support
-        - name: question
-      target: both
-      addedBy: humans
-    - color: d455d0
       description: Indicates an issue that can not or will not be resolved.
       name: triage/unresolved
       previously:
@@ -310,6 +301,15 @@ default:
       target: both
       prowPlugin: label
       addedBy: anyone
+    - color: d455d0
+      description: Categorizes issue or PR as a support question.
+      name: kind/support
+      previously:
+        - name: close/support
+        - name: question
+        - name: triage/support
+      target: both
+      addedBy: humans
     - color: 15dd18
       description: Indicates that a PR is ready to be merged.
       name: lgtm
