@@ -561,6 +561,18 @@ func nodeTest(nodeArgs []string, testArgs, nodeTestArgs, project, zone string) e
 		artifactsDir = filepath.Join(os.Getenv("WORKSPACE"), "_artifacts")
 	}
 
+	var sshUser string
+	// Use the KUBE_SSH_USER environment variable if it is set. This is particularly
+	// required for Fedora CoreOS hosts that only have the user 'core`. Tests
+	// using Fedora CoreOS as a host for node tests must set KUBE_SSH_USER
+	// environment variable so that test infrastructure can communicate with the host
+	// successfully using ssh.
+	if os.Getenv("KUBE_SSH_USER") != "" {
+		sshUser = os.Getenv("KUBE_SSH_USER")
+	} else {
+		sshUser = os.Getenv("USER")
+	}
+
 	// prep node args
 	runner := []string{
 		"run",
@@ -572,7 +584,7 @@ func nodeTest(nodeArgs []string, testArgs, nodeTestArgs, project, zone string) e
 		fmt.Sprintf("--results-dir=%s", artifactsDir),
 		fmt.Sprintf("--project=%s", project),
 		fmt.Sprintf("--zone=%s", zone),
-		fmt.Sprintf("--ssh-user=%s", os.Getenv("USER")),
+		fmt.Sprintf("--ssh-user=%s", sshUser),
 		fmt.Sprintf("--ssh-key=%s", sshKeyPath),
 		fmt.Sprintf("--ginkgo-flags=%s", testArgs),
 		fmt.Sprintf("--test_args=%s", nodeTestArgs),
