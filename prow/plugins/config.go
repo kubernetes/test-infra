@@ -1430,6 +1430,9 @@ type BugzillaBranchOptions struct {
 	// StateAfterMerge is the state to which the bug will be moved after all pull requests
 	// in the external bug tracker have been merged.
 	StateAfterMerge *BugzillaBugState `json:"state_after_merge,omitempty"`
+	// StateAfterClose is the state to which the bug will be moved if all pull requests
+	// in the external bug tracker have been closed.
+	StateAfterClose *BugzillaBugState `json:"state_after_close,omitempty"`
 
 	// AllowedGroups is a list of bugzilla bug group names that the bugzilla plugin can
 	// link to in PRs. If a bug is part of a group that is not in this list, the bugzilla
@@ -1592,6 +1595,9 @@ func ResolveBugzillaOptions(parent, child BugzillaBranchOptions) BugzillaBranchO
 		if parent.StateAfterMerge != nil {
 			output.StateAfterMerge = parent.StateAfterMerge
 		}
+		if parent.StateAfterClose != nil {
+			output.StateAfterClose = parent.StateAfterClose
+		}
 		if parent.AllowedGroups != nil {
 			output.AllowedGroups = sets.NewString(output.AllowedGroups...).Insert(parent.AllowedGroups...).List()
 		}
@@ -1661,6 +1667,9 @@ func ResolveBugzillaOptions(parent, child BugzillaBranchOptions) BugzillaBranchO
 	}
 	if child.StateAfterMerge != nil {
 		output.StateAfterMerge = child.StateAfterMerge
+	}
+	if child.StateAfterClose != nil {
+		output.StateAfterClose = child.StateAfterClose
 	}
 	if child.AllowedGroups != nil {
 		output.AllowedGroups = sets.NewString(output.AllowedGroups...).Insert(child.AllowedGroups...).List()
