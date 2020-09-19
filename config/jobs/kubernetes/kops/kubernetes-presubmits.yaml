@@ -37,6 +37,7 @@ presubmits:
         - --build=bazel
         - --cluster=
         - --env=KOPS_ARCH=amd64
+        - --env=KOPS_RUN_TOO_NEW_VERSION=1
         - --env=KOPS_LATEST=latest-ci-green.txt
         - --env=KOPS_DEPLOY_LATEST_KUBE=n
         - --env=KUBE_GCS_UPDATE_LATEST=n
