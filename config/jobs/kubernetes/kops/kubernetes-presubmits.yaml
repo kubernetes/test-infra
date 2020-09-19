@@ -42,7 +42,7 @@ presubmits:
         - --env=KOPS_DEPLOY_LATEST_KUBE=n
         - --env=KUBE_GCS_UPDATE_LATEST=n
         - --env=KUBE_FASTBUILD=true
-        - --env=KUBE_SSH_USER=ubuntu
+        - --env=USER=ubuntu
         - --extract=local
         - --ginkgo-parallel
         - --provider=aws
