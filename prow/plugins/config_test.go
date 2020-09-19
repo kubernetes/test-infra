@@ -716,9 +716,9 @@ func TestOptionsForBranch(t *testing.T) {
 	open, closed := true, false
 	yes, no := true, false
 	globalDefault, globalBranchDefault, orgDefault, orgBranchDefault, repoDefault, repoBranch, legacyBranch := "global-default", "global-branch-default", "my-org-default", "my-org-branch-default", "my-repo-default", "my-repo-branch", "my-legacy-branch"
-	post, pre, release, notabug := "POST", "PRE", "RELEASE_PENDING", "NOTABUG"
+	post, pre, release, notabug, new, reset := "POST", "PRE", "RELEASE_PENDING", "NOTABUG", "NEW", "RESET"
 	verifiedState, modifiedState := BugzillaBugState{Status: "VERIFIED"}, BugzillaBugState{Status: "MODIFIED"}
-	postState, preState, releaseState, notabugState := BugzillaBugState{Status: post}, BugzillaBugState{Status: pre}, BugzillaBugState{Status: release}, BugzillaBugState{Status: notabug}
+	postState, preState, releaseState, notabugState, newState, resetState := BugzillaBugState{Status: post}, BugzillaBugState{Status: pre}, BugzillaBugState{Status: release}, BugzillaBugState{Status: notabug}, BugzillaBugState{Status: new}, BugzillaBugState{Status: reset}
 	closedErrata := BugzillaBugState{Status: "CLOSED", Resolution: "ERRATA"}
 	orgAllowedGroups, repoAllowedGroups := []string{"test"}, []string{"security", "test"}
 
@@ -736,6 +736,8 @@ orgs:
         target_release: my-org-default
         state_after_validation:
           status: "PRE"
+        state_after_close:
+          status: "NEW"
         allowed_groups:
         - test
       "my-org-branch":
@@ -762,6 +764,8 @@ orgs:
             validate_by_default: true
             state_after_merge:
               status: NOTABUG
+            state_after_close:
+              status: RESET
             allowed_groups:
             - security
           "my-legacy-branch":
@@ -802,28 +806,28 @@ orgs:
 			org:      "my-org",
 			repo:     "some-repo",
 			branch:   "some-branch",
-			expected: BugzillaBranchOptions{IsOpen: &open, TargetRelease: &orgDefault, StateAfterValidation: &preState, AllowedGroups: orgAllowedGroups},
+			expected: BugzillaBranchOptions{IsOpen: &open, TargetRelease: &orgDefault, StateAfterValidation: &preState, AllowedGroups: orgAllowedGroups, StateAfterClose: &newState},
 		},
 		{
 			name:     "branch on configured org but not repo gets org branch default",
 			org:      "my-org",
 			repo:     "some-repo",
 			branch:   "my-org-branch",
-			expected: BugzillaBranchOptions{IsOpen: &open, TargetRelease: &orgBranchDefault, StateAfterValidation: &postState, AllowedGroups: orgAllowedGroups},
+			expected: BugzillaBranchOptions{IsOpen: &open, TargetRelease: &orgBranchDefault, StateAfterValidation: &postState, AllowedGroups: orgAllowedGroups, StateAfterClose: &newState},
 		},
 		{
 			name:     "branch on configured org and repo gets repo default",
 			org:      "my-org",
 			repo:     "my-repo",
 			branch:   "some-branch",
-			expected: BugzillaBranchOptions{ValidateByDefault: &no, IsOpen: &closed, TargetRelease: &repoDefault, ValidStates: &[]BugzillaBugState{verifiedState}, StateAfterValidation: &preState, StateAfterMerge: &releaseState, AllowedGroups: orgAllowedGroups},
+			expected: BugzillaBranchOptions{ValidateByDefault: &no, IsOpen: &closed, TargetRelease: &repoDefault, ValidStates: &[]BugzillaBugState{verifiedState}, StateAfterValidation: &preState, StateAfterMerge: &releaseState, AllowedGroups: orgAllowedGroups, StateAfterClose: &newState},
 		},
 		{
 			name:     "branch on configured org and repo gets branch config",
 			org:      "my-org",
 			repo:     "my-repo",
 			branch:   "my-repo-branch",
-			expected: BugzillaBranchOptions{ValidateByDefault: &yes, IsOpen: &closed, TargetRelease: &repoBranch, ValidStates: &[]BugzillaBugState{modifiedState, closedErrata}, StateAfterValidation: &preState, StateAfterMerge: &notabugState, AllowedGroups: repoAllowedGroups},
+			expected: BugzillaBranchOptions{ValidateByDefault: &yes, IsOpen: &closed, TargetRelease: &repoBranch, ValidStates: &[]BugzillaBugState{modifiedState, closedErrata}, StateAfterValidation: &preState, StateAfterMerge: &notabugState, AllowedGroups: repoAllowedGroups, StateAfterClose: &resetState},
 		},
 	}
 	for _, testCase := range testCases {
@@ -853,8 +857,8 @@ orgs:
 			org:  "my-org",
 			repo: "some-repo",
 			expected: map[string]BugzillaBranchOptions{
-				"*":             {IsOpen: &open, TargetRelease: &orgDefault, StateAfterValidation: &preState, AllowedGroups: orgAllowedGroups},
-				"my-org-branch": {IsOpen: &open, TargetRelease: &orgBranchDefault, StateAfterValidation: &postState, AllowedGroups: orgAllowedGroups},
+				"*":             {IsOpen: &open, TargetRelease: &orgDefault, StateAfterValidation: &preState, AllowedGroups: orgAllowedGroups, StateAfterClose: &newState},
+				"my-org-branch": {IsOpen: &open, TargetRelease: &orgBranchDefault, StateAfterValidation: &postState, AllowedGroups: orgAllowedGroups, StateAfterClose: &newState},
 			},
 		},
 		{
@@ -870,6 +874,7 @@ orgs:
 					StateAfterValidation: &preState,
 					StateAfterMerge:      &releaseState,
 					AllowedGroups:        orgAllowedGroups,
+					StateAfterClose:      &newState,
 				},
 				"my-repo-branch": {
 					ValidateByDefault:    &yes,
@@ -879,6 +884,7 @@ orgs:
 					StateAfterValidation: &preState,
 					StateAfterMerge:      &notabugState,
 					AllowedGroups:        repoAllowedGroups,
+					StateAfterClose:      &resetState,
 				},
 				"my-org-branch": {
 					ValidateByDefault:    &no,
@@ -888,6 +894,7 @@ orgs:
 					StateAfterValidation: &postState,
 					StateAfterMerge:      &releaseState,
 					AllowedGroups:        orgAllowedGroups,
+					StateAfterClose:      &newState,
 				},
 				"my-legacy-branch": {
 					ValidateByDefault:    &yes,
@@ -898,6 +905,7 @@ orgs:
 					StateAfterValidation: &modifiedState,
 					StateAfterMerge:      &notabugState,
 					AllowedGroups:        orgAllowedGroups,
+					StateAfterClose:      &newState,
 				},
 			},
 		},

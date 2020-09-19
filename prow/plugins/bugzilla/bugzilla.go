@@ -1011,13 +1011,34 @@ Please contact an administrator to resolve this issue, then request a bug refres
 func handleClose(e event, gc githubClient, bc bugzilla.Client, options plugins.BugzillaBranchOptions, log *logrus.Entry) error {
 	comment := e.comment(gc)
 	if options.AddExternalLink != nil && *options.AddExternalLink {
+		response := fmt.Sprintf(`This pull request references `+bugLink+`. The bug has been updated to no longer refer to the pull request using the external bug tracker.`, e.bugId, bc.Endpoint(), e.bugId)
 		changed, err := bc.RemovePullRequestAsExternalBug(e.bugId, e.org, e.repo, e.number)
 		if err != nil {
 			log.WithError(err).Warn("Unexpected error removing external tracker bug from Bugzilla bug.")
 			return comment(formatError("removing this pull request from the external tracker bugs", bc.Endpoint(), e.bugId, err))
 		}
+		if options.StateAfterClose != nil {
+			links, err := bc.GetExternalBugPRsOnBug(e.bugId)
+			if err != nil {
+				log.WithError(err).Warn("Unexpected error getting external tracker bugs for Bugzilla bug.")
+				return comment(formatError("getting external tracker bugs", bc.Endpoint(), e.bugId, err))
+			}
+			if len(links) == 0 {
+				bug, err := getBug(bc, e.bugId, log, comment)
+				if err != nil || bug == nil {
+					return err
+				}
+				if update := options.StateAfterClose.AsBugUpdate(bug); update != nil {
+					if err := bc.UpdateBug(e.bugId, *update); err != nil {
+						log.WithError(err).Warn("Unexpected error updating Bugzilla bug.")
+						return comment(formatError(fmt.Sprintf("updating to the %s state", options.StateAfterClose), bc.Endpoint(), e.bugId, err))
+					}
+					response += fmt.Sprintf(" All external bug links have been closed. The bug has been moved to the %s state.", options.StateAfterClose)
+				}
+			}
+		}
 		if changed {
-			return comment(fmt.Sprintf(`This pull request references `+bugLink+`. The bug has been updated to no longer refer to the pull request using the external bug tracker.`, e.bugId, bc.Endpoint(), e.bugId))
+			return comment(response)
 		}
 	}
 	return nil

@@ -1244,6 +1244,66 @@ Instructions for interacting with me using PR comments are available [here](http
 			expectedBug: &bugzilla.Bug{ID: 123, Status: "CLOSED", Severity: "urgent"},
 		},
 		{
+			name:   "closed PR removes link, changes bug state, and comments",
+			merged: false,
+			closed: true,
+			bugs:   []bugzilla.Bug{{ID: 123, Status: "POST", Severity: "urgent"}},
+			externalBugs: []bugzilla.ExternalBug{{
+				BugzillaBugID: base.bugId,
+				ExternalBugID: fmt.Sprintf("%s/%s/pull/%d", base.org, base.repo, base.number),
+				Org:           base.org, Repo: base.repo, Num: base.number,
+			}},
+			prs:     []github.PullRequest{{Number: base.number, Merged: false}},
+			options: plugins.BugzillaBranchOptions{AddExternalLink: &yes, StateAfterClose: &plugins.BugzillaBugState{Status: "NEW"}},
+			expectedComment: `org/repo#1:@user: This pull request references [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123). The bug has been updated to no longer refer to the pull request using the external bug tracker. All external bug links have been closed. The bug has been moved to the NEW state.
+
+<details>
+
+In response to [this](http.com):
+
+>Bug 123: fixed it!
+
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.
+</details>`,
+			expectedBug:          &bugzilla.Bug{ID: 123, Status: "NEW", Severity: "urgent"},
+			expectedExternalBugs: []bugzilla.ExternalBug{},
+		},
+		{
+			name:   "closed PR with multiple exernal links removes link, does not change bug state, and comments",
+			merged: false,
+			closed: true,
+			bugs:   []bugzilla.Bug{{ID: 123, Status: "POST", Severity: "urgent"}},
+			externalBugs: []bugzilla.ExternalBug{{
+				BugzillaBugID: base.bugId,
+				ExternalBugID: fmt.Sprintf("%s/%s/pull/%d", base.org, base.repo, base.number),
+				Org:           base.org, Repo: base.repo, Num: base.number,
+			}, {
+				BugzillaBugID: base.bugId,
+				ExternalBugID: fmt.Sprintf("%s/%s/pull/%d", base.org, base.repo, 42),
+				Org:           base.org, Repo: base.repo, Num: 42,
+			}},
+			prs:     []github.PullRequest{{Number: base.number, Merged: false}},
+			options: plugins.BugzillaBranchOptions{AddExternalLink: &yes, StateAfterClose: &plugins.BugzillaBugState{Status: "NEW"}},
+			expectedComment: `org/repo#1:@user: This pull request references [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123). The bug has been updated to no longer refer to the pull request using the external bug tracker.
+
+<details>
+
+In response to [this](http.com):
+
+>Bug 123: fixed it!
+
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.
+</details>`,
+			expectedBug: &bugzilla.Bug{ID: 123, Status: "POST", Severity: "urgent"},
+			expectedExternalBugs: []bugzilla.ExternalBug{{
+				BugzillaBugID: base.bugId,
+				ExternalBugID: fmt.Sprintf("%s/%s/pull/%d", base.org, base.repo, 42),
+				Org:           base.org, Repo: base.repo, Num: 42,
+			}},
+		},
+		{
 			name:                "Cherrypick PR results in cloned bug creation",
 			bugs:                []bugzilla.Bug{{Product: "Test", Component: []string{"TestComponent"}, TargetRelease: []string{"v2"}, ID: 123, Status: "CLOSED", Severity: "urgent"}},
 			bugComments:         map[int][]bugzilla.Comment{123: {{BugID: 123, Count: 0, Text: "This is a bug"}}},
