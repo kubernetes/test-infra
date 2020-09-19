@@ -36,6 +36,7 @@ presubmits:
         - --aws-cluster-domain=test-cncf-aws.k8s.io
         - --build=bazel
         - --cluster=
+        - --kops-ssh-user=ubuntu
         - --env=KOPS_ARCH=amd64
         - --env=KOPS_RUN_TOO_NEW_VERSION=1
         - --env=KOPS_LATEST=latest-ci-green.txt
