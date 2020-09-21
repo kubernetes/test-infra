@@ -38,6 +38,14 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=40m
       - --use-logexporter
+      resources:
+        requests:
+          cpu: 2
+          memory: "6Gi"
+        limits:
+          cpu: 2
+          memory: "6Gi"
+
 - name: ci-kubernetes-e2e-gce-node-containerd-throughput
   tags:
   - "perfDashPrefix: containerd-node-throughput"
@@ -78,6 +86,13 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=40m
       - --use-logexporter
+      resources:
+        requests:
+          cpu: 2
+          memory: "6Gi"
+        limits:
+          cpu: 2
+          memory: "6Gi"
 
 #kubemark
 - name: ci-kubernetes-kubemark-100-gce
@@ -139,6 +154,13 @@ periodics:
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
+      resources:
+        requests:
+          cpu: 2
+          memory: "6Gi"
+        limits:
+          cpu: 2
+          memory: "6Gi"
 
 - name: ci-kubernetes-kubemark-100-gce-scheduler
   tags:
@@ -196,6 +218,13 @@ periodics:
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
+      resources:
+        requests:
+          cpu: 2
+          memory: "2Gi"
+        limits:
+          cpu: 2
+          memory: "2Gi"
 
 - name: ci-kubernetes-kubemark-500-gce
   tags:
@@ -255,6 +284,13 @@ periodics:
       # docker-in-docker needs privilged mode
       securityContext:
         privileged: true
+      resources:
+        requests:
+          cpu: 2
+          memory: "8Gi"
+        limits:
+          cpu: 2
+          memory: "8Gi"
 
 - name: ci-kubernetes-kubemark-gce-scale
   tags:
@@ -318,6 +354,9 @@ periodics:
         requests:
           cpu: 6
           memory: "16Gi"
+        limits:
+          cpu: 6
+          memory: "16Gi"
 
 - name: ci-kubernetes-kubemark-high-density-100-gce
   tags:
@@ -372,6 +411,13 @@ periodics:
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
+      resources:
+        requests:
+          cpu: 2
+          memory: "8Gi"
+        limits:
+          cpu: 2
+          memory: "8Gi"
 
 - name: ci-perf-tests-kubemark-100-benchmark
   interval: 2h
@@ -391,6 +437,13 @@ periodics:
       - --scenario=execute
       - --
       - ./benchmark/runner.sh
+      resources:
+        requests:
+          cpu: 1
+          memory: "2Gi"
+        limits:
+          cpu: 1
+          memory: "2Gi"
 
 - name: ci-benchmark-scheduler-master
   tags:
@@ -420,6 +473,13 @@ periodics:
         value: --timeout=1h50m
       - name: TEST_PREFIX
         value: BenchmarkScheduling
+      resources:
+        requests:
+          cpu: 8
+          memory: "32Gi"
+        limits:
+          cpu: 8
+          memory: "32Gi"
 
 - name: ci-benchmark-scheduler-perf-master
   tags:
@@ -459,9 +519,11 @@ periodics:
       # incomparable.
       resources:
         requests:
-          cpu: 4
+          cpu: 6
+          memory: "24Gi"
         limits:
-          cpu: 4
+          cpu: 6
+          memory: "24Gi"
 
 - name: ci-benchmark-kube-dns-master
   interval: 2h
@@ -497,6 +559,13 @@ periodics:
       - --test-cmd-args=/workspace/_artifacts
       - --test-cmd-name=KubeDnsBenchmark
       - --timeout=120m
+      resources:
+        requests:
+          cpu: 2
+          memory: "6Gi"
+        limits:
+          cpu: 2
+          memory: "6Gi"
 
 - name: ci-benchmark-nodelocal-dns-master
   interval: 2h
@@ -534,6 +603,13 @@ periodics:
       - --test-cmd-args=169.254.20.10
       - --test-cmd-name=KubeDnsBenchmark
       - --timeout=120m
+      resources:
+        requests:
+          cpu: 2
+          memory: "4Gi"
+        limits:
+          cpu: 2
+          memory: "4Gi"
 
 - name: ci-benchmark-microbenchmarks
   interval: 20m
@@ -564,3 +640,10 @@ periodics:
       - ../kubernetes/vendor/k8s.io/apimachinery/...
       - ../kubernetes/vendor/k8s.io/apiserver/...
       - ../kubernetes/vendor/k8s.io/client-go/...
+      resources:
+        requests:
+          cpu: 1
+          memory: "2Gi"
+        limits:
+          cpu: 1
+          memory: "2Gi"
