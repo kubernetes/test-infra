@@ -976,6 +976,36 @@ func TestSyncPendingJob(t *testing.T) {
 			ExpectedNumPods: 0,
 		},
 		{
+			Name: "delete pod in unknown state with gcsreporter finalizer",
+			PJ: prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "boop-41",
+					Namespace: "prowjobs",
+				},
+				Spec: prowapi.ProwJobSpec{
+					PodSpec: &v1.PodSpec{Containers: []v1.Container{{Name: "test-name", Env: []v1.EnvVar{}}}},
+				},
+				Status: prowapi.ProwJobStatus{
+					State:   prowapi.PendingState,
+					PodName: "boop-41",
+				},
+			},
+			Pods: []v1.Pod{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:       "boop-41",
+						Namespace:  "pods",
+						Finalizers: []string{"prow.x-k8s.io/gcsk8sreporter"},
+					},
+					Status: v1.PodStatus{
+						Phase: v1.PodUnknown,
+					},
+				},
+			},
+			ExpectedState:   prowapi.PendingState,
+			ExpectedNumPods: 0,
+		},
+		{
 			Name: "succeeded pod",
 			PJ: prowapi.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
