@@ -91,7 +91,7 @@ postsubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200916-8dd1247-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200918-58bdf8d-master
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -123,7 +123,7 @@ postsubmits:
       repo: test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200916-8dd1247-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200918-58bdf8d-master
         command:
         - bash
         args:
@@ -168,7 +168,7 @@ periodics:
     repo: test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200916-8dd1247-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200918-58bdf8d-master
       command:
       - bash
       args:
@@ -214,7 +214,7 @@ periodics:
     repo: test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200916-8dd1247-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200918-58bdf8d-master
       imagePullPolicy: Always
       command:
       - bash
