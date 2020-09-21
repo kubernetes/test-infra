@@ -168,9 +168,9 @@ type RepositoryClient interface {
 
 // TeamClient interface for team related API actions
 type TeamClient interface {
-	CreateTeam(org string, t Team) (*Team, error)
-	EditTeam(org string, t Team) (*Team, error)
-	DeleteTeam(org string, id int) error
+	CreateTeam(org string, team Team) (*Team, error)
+	EditTeam(t Team) (*Team, error)
+	DeleteTeam(id int) error
 	ListTeams(org string) ([]Team, error)
 	UpdateTeamMembership(id int, user string, maintainer bool) (*TeamMembership, error)
 	RemoveTeamMembership(id int, user string) error
@@ -2830,18 +2830,18 @@ func (c *client) Query(ctx context.Context, q interface{}, vars map[string]inter
 
 // CreateTeam adds a team with name to the org, returning a struct with the new ID.
 //
-// See https://docs.github.com/en/rest/reference/teams#create-team
-func (c *client) CreateTeam(org string, t Team) (*Team, error) {
-	durationLogger := c.log("CreateTeam", org, t)
+// See https://developer.github.com/v3/teams/#create-team
+func (c *client) CreateTeam(org string, team Team) (*Team, error) {
+	durationLogger := c.log("CreateTeam", org, team)
 	defer durationLogger()
 
-	if t.Name == "" {
+	if team.Name == "" {
 		return nil, errors.New("team.Name must be non-empty")
 	}
 	if c.fake {
 		return nil, nil
 	} else if c.dry {
-		return &t, nil
+		return &team, nil
 	}
 	path := fmt.Sprintf("/orgs/%s/teams", org)
 	var retTeam Team
@@ -2851,7 +2851,7 @@ func (c *client) CreateTeam(org string, t Team) (*Team, error) {
 		// This accept header enables the nested teams preview.
 		// https://developer.github.com/changes/2017-08-30-preview-nested-teams/
 		accept:      "application/vnd.github.hellcat-preview+json",
-		requestBody: &t,
+		requestBody: &team,
 		exitCodes:   []int{201},
 	}, &retTeam)
 	return &retTeam, err
@@ -2859,9 +2859,9 @@ func (c *client) CreateTeam(org string, t Team) (*Team, error) {
 
 // EditTeam patches team.ID to contain the specified other values.
 //
-// See https://docs.github.com/en/rest/reference/teams#edit-team
-func (c *client) EditTeam(org string, t Team) (*Team, error) {
-	durationLogger := c.log("EditTeam", org, t)
+// See https://developer.github.com/v3/teams/#edit-team
+func (c *client) EditTeam(t Team) (*Team, error) {
+	durationLogger := c.log("EditTeam", t)
 	defer durationLogger()
 
 	if t.ID == 0 {
@@ -2881,7 +2881,7 @@ func (c *client) EditTeam(org string, t Team) (*Team, error) {
 		ParentTeamID: t.ParentTeamID,
 	}
 	var retTeam Team
-	path := fmt.Sprintf("/orgs/%s/teams/%d", org, id)
+	path := fmt.Sprintf("/teams/%d", id)
 	_, err := c.request(&request{
 		method: http.MethodPatch,
 		path:   path,
@@ -2896,11 +2896,11 @@ func (c *client) EditTeam(org string, t Team) (*Team, error) {
 
 // DeleteTeam removes team.ID from GitHub.
 //
-// See https://docs.github.com/en/rest/reference/teams#delete-a-team
-func (c *client) DeleteTeam(org string, id int) error {
+// See https://developer.github.com/v3/teams/#delete-team
+func (c *client) DeleteTeam(id int) error {
 	durationLogger := c.log("DeleteTeam", id)
 	defer durationLogger()
-	path := fmt.Sprintf("/orgs/%s/teams/%d", org, id)
+	path := fmt.Sprintf("/teams/%d", id)
 	_, err := c.request(&request{
 		method:    http.MethodDelete,
 		path:      path,
@@ -2911,7 +2911,7 @@ func (c *client) DeleteTeam(org string, id int) error {
 
 // ListTeams gets a list of teams for the given org
 //
-// See https://docs.github.com/en/rest/reference/teams#list-teams
+// See https://developer.github.com/v3/teams/#list-teams
 func (c *client) ListTeams(org string) ([]Team, error) {
 	durationLogger := c.log("ListTeams", org)
 	defer durationLogger()
@@ -3027,7 +3027,7 @@ func (c *client) ListTeamMembers(id int, role string) ([]TeamMember, error) {
 
 // ListTeamRepos gets a list of team repos for the given team id
 //
-// https://docs.github.com/en/rest/reference/teams#list-team-repositories
+// https://developer.github.com/v3/teams/#list-team-repos
 func (c *client) ListTeamRepos(id int) ([]Repo, error) {
 	durationLogger := c.log("ListTeamRepos", id)
 	defer durationLogger()
@@ -3068,7 +3068,7 @@ func (c *client) ListTeamRepos(id int) ([]Repo, error) {
 
 // UpdateTeamRepo adds the repo to the team with the provided role.
 //
-// https://docs.github.com/en/rest/reference/teams#add-or-update-team-repository-permissions
+// https://developer.github.com/v3/teams/#add-or-update-team-repository
 func (c *client) UpdateTeamRepo(id int, org, repo string, permission RepoPermissionLevel) error {
 	durationLogger := c.log("UpdateTeamRepo", id, org, repo, permission)
 	defer durationLogger()
@@ -3094,7 +3094,7 @@ func (c *client) UpdateTeamRepo(id int, org, repo string, permission RepoPermiss
 
 // RemoveTeamRepo removes the team from the repo.
 //
-// https://docs.github.com/en/rest/reference/teams#add-or-update-team-repository-permissions
+// https://developer.github.com/v3/teams/#add-or-update-team-repository
 func (c *client) RemoveTeamRepo(id int, org, repo string) error {
 	durationLogger := c.log("RemoveTeamRepo", id, org, repo)
 	defer durationLogger()
@@ -3719,7 +3719,7 @@ func (c *client) TeamHasMember(teamID int, memberLogin string) (bool, error) {
 
 // GetTeamBySlug returns information about that team
 //
-// See https://docs.github.com/en/rest/reference/teams#get-a-team-by-name
+// See https://developer.github.com/v3/teams/#get-team-by-name
 func (c *client) GetTeamBySlug(slug string, org string) (*Team, error) {
 	durationLogger := c.log("GetTeamBySlug", slug, org)
 	defer durationLogger()
