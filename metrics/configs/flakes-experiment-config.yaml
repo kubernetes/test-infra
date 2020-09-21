@@ -1,4 +1,4 @@
-metric: flakes
+metric: flakes-experiment
 description: Calculates flakiness for each job for the past week and the flakiest tests for each job.
 query: |
   #standardSQL
