@@ -1572,7 +1572,7 @@ func TestEditTeam(t *testing.T) {
 		if r.Method != http.MethodPatch {
 			t.Errorf("Bad method: %s", r.Method)
 		}
-		if r.URL.Path != "/orgs/foo/teams/63" {
+		if r.URL.Path != "/teams/63" {
 			t.Errorf("Bad request path: %s", r.URL.Path)
 		}
 		b, err := ioutil.ReadAll(r.Body)
@@ -1598,10 +1598,10 @@ func TestEditTeam(t *testing.T) {
 	}))
 	defer ts.Close()
 	c := getClient(ts.URL)
-	if _, err := c.EditTeam("foo", Team{ID: 0, Name: "frobber"}); err == nil {
+	if _, err := c.EditTeam(Team{ID: 0, Name: "frobber"}); err == nil {
 		t.Errorf("client should reject id 0")
 	}
-	switch team, err := c.EditTeam("foo", Team{ID: 63, Name: "frobber"}); {
+	switch team, err := c.EditTeam(Team{ID: 63, Name: "frobber"}); {
 	case err != nil:
 		t.Errorf("unexpected error: %v", err)
 	case team.Name != "hello":
@@ -1610,23 +1610,6 @@ func TestEditTeam(t *testing.T) {
 		t.Errorf("bad description: %s", team.Description)
 	case team.Privacy != "special":
 		t.Errorf("bad privacy: %s", team.Privacy)
-	}
-}
-
-func TestDeleteTeam(t *testing.T) {
-	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodDelete {
-			t.Errorf("Bad method: %s", r.Method)
-		}
-		if r.URL.Path != "/orgs/foo/teams/63" {
-			t.Errorf("Bad request path: %s", r.URL.Path)
-		}
-		w.WriteHeader(http.StatusNoContent) // 204
-	}))
-	defer ts.Close()
-	c := getClient(ts.URL)
-	if err := c.DeleteTeam("foo", 63); err != nil {
-		t.Errorf("unexpected error: %v", err)
 	}
 }
 
