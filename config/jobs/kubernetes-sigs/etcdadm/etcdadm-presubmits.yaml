@@ -7,7 +7,7 @@ presubmits:
     decorate: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200916-8dd1247-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200918-58bdf8d-master
         command:
         - "./hack/verify-all.sh"
     annotations:
@@ -21,7 +21,7 @@ presubmits:
     decorate: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200916-8dd1247-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200918-58bdf8d-master
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
