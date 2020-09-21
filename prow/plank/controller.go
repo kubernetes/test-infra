@@ -466,6 +466,27 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]corev1.Pod
 		}
 	}
 
+	// This can happen in any phase and means the node got evicted after it became unresponsive. Delete the finalizer so the pod
+	// vanishes and we will silently re-create it in the next iteration.
+	if pod.DeletionTimestamp != nil && pod.Status.Reason == "NodeLost" {
+		c.log.WithFields(pjutil.ProwJobFields(&pj)).Info("Pods Node got lost, deleting & restarting pod")
+		client, ok := c.buildClients[pj.ClusterAlias()]
+		if !ok {
+			return fmt.Errorf("unknown pod %s: unknown cluster alias %q", pod.Name, pj.ClusterAlias())
+		}
+
+		if finalizers := sets.NewString(pod.Finalizers...); finalizers.Has(kubernetesreporterapi.FinalizerName) {
+			// We want the end user to not see this, so we have to remove the finalizer, otherwise the pod hangs
+			oldPod := pod.DeepCopy()
+			pod.Finalizers = finalizers.Delete(kubernetesreporterapi.FinalizerName).UnsortedList()
+			if err := client.Patch(c.ctx, &pod, ctrlruntimeclient.MergeFrom(oldPod)); err != nil {
+				return fmt.Errorf("failed to patch pod trying to remove %s finalizer: %w", kubernetesreporterapi.FinalizerName, err)
+			}
+		}
+
+		return nil
+	}
+
 	// If a pod gets deleted unexpectedly, it might be in any phase and will stick around until
 	// we complete the job if the kubernetes reporter is used, because it sets a finalizer.
 	if !pj.Complete() && pod.DeletionTimestamp != nil {
