@@ -25,8 +25,6 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/credentials/ec2rolecreds"
-	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"gocloud.dev/blob"
 	_ "gocloud.dev/blob/memblob"
@@ -93,37 +91,31 @@ type s3Credentials struct {
 // getS3Bucket opens a gocloud blob.Bucket based on given credentials in the format the
 // struct s3Credentials defines (see documentation of GetBucket for an example)
 func getS3Bucket(ctx context.Context, creds []byte, bucketName string) (*blob.Bucket, error) {
-	s3Credentials := &s3Credentials{}
-	if err := json.Unmarshal(creds, s3Credentials); err != nil {
+	s3Creds := &s3Credentials{}
+	if err := json.Unmarshal(creds, s3Creds); err != nil {
 		return nil, fmt.Errorf("error getting S3 credentials from JSON: %v", err)
 	}
 
-	var staticCredentials credentials.StaticProvider
-	if s3Credentials.AccessKey != "" && s3Credentials.SecretKey != "" {
-		staticCredentials = credentials.StaticProvider{
+	cfg := &aws.Config{}
+
+	//  Use the default credential chain if no credentials are specified
+	if s3Creds.AccessKey != "" && s3Creds.SecretKey != "" {
+		staticCredentials := credentials.StaticProvider{
 			Value: credentials.Value{
-				AccessKeyID:     s3Credentials.AccessKey,
-				SecretAccessKey: s3Credentials.SecretKey,
+				AccessKeyID:     s3Creds.AccessKey,
+				SecretAccessKey: s3Creds.SecretKey,
 			},
 		}
+
+		cfg.Credentials = credentials.NewChainCredentials([]credentials.Provider{&staticCredentials})
 	}
 
-	credentialChain := credentials.NewChainCredentials(
-		[]credentials.Provider{
-			&staticCredentials,
-			&credentials.EnvProvider{},
-			&ec2rolecreds.EC2RoleProvider{
-				Client: ec2metadata.New(session.New()),
-			},
-		})
+	cfg.Endpoint = aws.String(s3Creds.Endpoint)
+	cfg.DisableSSL = aws.Bool(s3Creds.Insecure)
+	cfg.S3ForcePathStyle = aws.Bool(s3Creds.S3ForcePathStyle)
+	cfg.Region = aws.String(s3Creds.Region)
 
-	sess, err := session.NewSession(&aws.Config{
-		Credentials:      credentialChain,
-		Endpoint:         aws.String(s3Credentials.Endpoint),
-		DisableSSL:       aws.Bool(s3Credentials.Insecure),
-		S3ForcePathStyle: aws.Bool(s3Credentials.S3ForcePathStyle),
-		Region:           aws.String(s3Credentials.Region),
-	})
+	sess, err := session.NewSession(cfg)
 	if err != nil {
 		return nil, fmt.Errorf("error creating S3 Session: %v", err)
 	}
