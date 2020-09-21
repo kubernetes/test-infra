@@ -13,8 +13,7 @@ For the original design doc and further details on the motivation please see [de
 ## Usage Guide
 
 1. First you will need to set up a publicly readable GCS bucket per [contributing test results](https://github.com/kubernetes/test-infra/blob/master/docs/contributing-test-results.md#contributing-test-results) to host your jobs' results.  
-If you cannot or do not want to set up a GCS bucket and only wish to post conformance test results, please contact [@BenTheElder](https://github.com/BenTheElder) or more generally [the gke-kubernetes-engprod team](mailto:gke-kubernetes-engprod@google.com) to arrange for a Google [GKE](https://cloud.google.com/kubernetes-engine/) EngProd provided / maintained bucket for hosting your results. A bucket will be provided following the [playbook](./creating-a-bucket.md) for this.  
-If you'd like to post other kinds of tests or unrelated content, please consider following the playbook yourself to create your own bucket.
+If you cannot or do not want to set up a GCS bucket and only wish to post conformance test results, please file an issue in https://github.com/kubernetes/k8s.io for a staging bucket, referencing https://github.com/kubernetes/k8s.io/pull/501.
 
 2. Make a PR to test-infra adding your bucket to the TestGrid config (again see [contributing test results](https://github.com/kubernetes/test-infra/blob/master/docs/contributing-test-results.md#contributing-test-results)).
 
