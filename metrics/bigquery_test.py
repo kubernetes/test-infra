@@ -58,7 +58,7 @@ class TestBigquery(unittest.TestCase):
 
         # Check that the '**' search finds the same number of yaml
         # files as the default search.
-        self.assertEqual(len(configs), len(config_metrics))
+        self.assertEqual(len(configs), len(config_metrics), "verify the `metric` feild is unique")
 
         # Check that config files correlate with metrics listed in
         # test-infra/metrics/README.md.
