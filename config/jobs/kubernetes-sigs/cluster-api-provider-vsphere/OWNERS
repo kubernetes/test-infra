@@ -7,6 +7,7 @@ reviewers:
   - cluster-api-vsphere-maintainers
   - figo
   - akutz
+  - ncdc
 approvers:
   - sig-cluster-lifecycle-leads
   - provider-vmware
@@ -14,3 +15,4 @@ approvers:
   - cluster-api-vsphere-maintainers
   - figo
   - akutz
+  - ncdc
