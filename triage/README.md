@@ -45,7 +45,7 @@ Simply adding a button to the HTML is enough.
 
 ## Go Packages
 
-Package `berghelroach` contains a modified Levenshtein distance formula. Its only export is a `Dist()` function.  
+Package `berghelroach` contains a modified Levenshtein distance formula. Its only export is a `Dist()` function.
 Package `summarize` depends on package `berghelroach` and does the actual heavy lifting.
 
 
@@ -191,3 +191,13 @@ See [Main Output](#main-output). This is only a subset of the main output.
 ## Updating JS dependencies for the web page
 
 See: `package.json` + `bazel run @yarn//:yarn install`
+
+# Deployment
+Triage runs as static HTML hosted in GCS that is updated as part of a [Prow Periodic](https://github.com/kubernetes/test-infra/blob/418c380ec2d6839cd87e16695c770552a7c2d505/config/jobs/kubernetes/test-infra/test-infra-periodics.yaml#L27).
+
+To update the triage image run `make push` from `./triage` which will trigger a [cloudbuild](https://cloud.google.com/cloud-build) using [`//images/builder`](https://github.com/kubernetes/test-infra/tree/master/images/builder). This will result in a fresh triage image within the cloud image registry of the `k8s-testimages` project. (See Container Registry -> Images)
+
+To update Triage frontend in Production or Staging run `make push-static` or `make push-staging` respectively.
+
+### Staging
+   To acces staging see [Triage Staging](https://storage.googleapis.com/k8s-gubernator/triage/staging).
