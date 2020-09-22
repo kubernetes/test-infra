@@ -976,6 +976,36 @@ func TestSyncPendingJob(t *testing.T) {
 			ExpectedNumPods: 0,
 		},
 		{
+			Name: "delete pod in unknown state with gcsreporter finalizer",
+			PJ: prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "boop-41",
+					Namespace: "prowjobs",
+				},
+				Spec: prowapi.ProwJobSpec{
+					PodSpec: &v1.PodSpec{Containers: []v1.Container{{Name: "test-name", Env: []v1.EnvVar{}}}},
+				},
+				Status: prowapi.ProwJobStatus{
+					State:   prowapi.PendingState,
+					PodName: "boop-41",
+				},
+			},
+			Pods: []v1.Pod{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:       "boop-41",
+						Namespace:  "pods",
+						Finalizers: []string{"prow.x-k8s.io/gcsk8sreporter"},
+					},
+					Status: v1.PodStatus{
+						Phase: v1.PodUnknown,
+					},
+				},
+			},
+			ExpectedState:   prowapi.PendingState,
+			ExpectedNumPods: 0,
+		},
+		{
 			Name: "succeeded pod",
 			PJ: prowapi.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
@@ -1502,6 +1532,68 @@ func TestSyncPendingJob(t *testing.T) {
 			ExpectedComplete: true,
 			ExpectedNumPods:  1,
 		},
+		{
+			Name: "Pod deleted in running phase, job marked as errored",
+			PJ: prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "pod-deleted-in-unset-phase",
+					Namespace: "prowjobs",
+				},
+				Spec: prowapi.ProwJobSpec{},
+				Status: prowapi.ProwJobStatus{
+					State:   prowapi.PendingState,
+					PodName: "pod-deleted-in-unset-phase",
+				},
+			},
+			Pods: []v1.Pod{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:              "pod-deleted-in-unset-phase",
+						Namespace:         "pods",
+						CreationTimestamp: metav1.Time{Time: time.Now().Add(-time.Second)},
+						DeletionTimestamp: func() *metav1.Time { n := metav1.Now(); return &n }(),
+					},
+					Status: v1.PodStatus{
+						Phase: v1.PodRunning,
+					},
+				},
+			},
+			ExpectedState:    prowapi.ErrorState,
+			ExpectedComplete: true,
+			ExpectedNumPods:  1,
+		},
+		{
+			Name: "Pod deleted with NodeLost reason in running phase, pod finalizer gets cleaned up",
+			PJ: prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "pod-deleted-in-running-phase",
+					Namespace: "prowjobs",
+				},
+				Spec: prowapi.ProwJobSpec{},
+				Status: prowapi.ProwJobStatus{
+					State:   prowapi.PendingState,
+					PodName: "pod-deleted-in-running-phase",
+				},
+			},
+			Pods: []v1.Pod{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:              "pod-deleted-in-running-phase",
+						Namespace:         "pods",
+						CreationTimestamp: metav1.Time{Time: time.Now().Add(-time.Second)},
+						DeletionTimestamp: func() *metav1.Time { n := metav1.Now(); return &n }(),
+						Finalizers:        []string{"prow.x-k8s.io/gcsk8sreporter"},
+					},
+					Status: v1.PodStatus{
+						Phase:  v1.PodRunning,
+						Reason: "NodeLost",
+					},
+				},
+			},
+			ExpectedState:    prowapi.PendingState,
+			ExpectedComplete: false,
+			ExpectedNumPods:  1,
+		},
 	}
 
 	// Copy the tests for PlankV2
@@ -1586,6 +1678,11 @@ func TestSyncPendingJob(t *testing.T) {
 			}
 			if got := len(actualPods.Items); got != tc.ExpectedNumPods {
 				t.Errorf("got %d pods, expected %d", len(actualPods.Items), tc.ExpectedNumPods)
+			}
+			for _, pod := range actualPods.Items {
+				if pod.DeletionTimestamp != nil && len(pod.Finalizers) != 0 {
+					t.Errorf("pod %s was deleted but still had finalizers: %v", pod.Name, pod.Finalizers)
+				}
 			}
 			if actual := actual.Complete(); actual != tc.ExpectedComplete {
 				t.Errorf("expected complete: %t, got complete: %t", tc.ExpectedComplete, actual)

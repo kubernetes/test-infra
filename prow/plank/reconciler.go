@@ -301,6 +301,14 @@ func (r *reconciler) syncPendingJob(pj *prowv1.ProwJob) error {
 				return fmt.Errorf("unknown pod %s: unknown cluster alias %q", pod.Name, pj.ClusterAlias())
 			}
 
+			if finalizers := sets.NewString(pod.Finalizers...); finalizers.Has(kubernetesreporterapi.FinalizerName) {
+				// We want the end user to not see this, so we have to remove the finalizer, otherwise the pod hangs
+				oldPod := pod.DeepCopy()
+				pod.Finalizers = finalizers.Delete(kubernetesreporterapi.FinalizerName).UnsortedList()
+				if err := client.Patch(r.ctx, pod, ctrlruntimeclient.MergeFrom(oldPod)); err != nil {
+					return fmt.Errorf("failed to patch pod trying to remove %s finalizer: %w", kubernetesreporterapi.FinalizerName, err)
+				}
+			}
 			r.log.WithField("name", pj.ObjectMeta.Name).Debug("Delete Pod.")
 			return client.Delete(r.ctx, pod)
 
@@ -382,6 +390,9 @@ func (r *reconciler) syncPendingJob(pj *prowv1.ProwJob) error {
 				return nil
 			}
 		case corev1.PodRunning:
+			if pod.DeletionTimestamp != nil {
+				break
+			}
 			maxPodRunning := r.config().Plank.PodRunningTimeout.Duration
 			if pod.Status.StartTime.IsZero() || time.Since(pod.Status.StartTime.Time) < maxPodRunning {
 				// Pod is still running. Do nothing.
@@ -402,6 +413,27 @@ func (r *reconciler) syncPendingJob(pj *prowv1.ProwJob) error {
 				return nil
 			}
 		}
+	}
+
+	// This can happen in any phase and means the node got evicted after it became unresponsive. Delete the finalizer so the pod
+	// vanishes and we will silently re-create it in the next iteration.
+	if pod != nil && pod.DeletionTimestamp != nil && pod.Status.Reason == "NodeLost" {
+		r.log.WithFields(pjutil.ProwJobFields(pj)).Info("Pods Node got lost, deleting & restarting pod")
+		client, ok := r.buildClients[pj.ClusterAlias()]
+		if !ok {
+			return fmt.Errorf("unknown pod %s: unknown cluster alias %q", pod.Name, pj.ClusterAlias())
+		}
+
+		if finalizers := sets.NewString(pod.Finalizers...); finalizers.Has(kubernetesreporterapi.FinalizerName) {
+			// We want the end user to not see this, so we have to remove the finalizer, otherwise the pod hangs
+			oldPod := pod.DeepCopy()
+			pod.Finalizers = finalizers.Delete(kubernetesreporterapi.FinalizerName).UnsortedList()
+			if err := client.Patch(r.ctx, pod, ctrlruntimeclient.MergeFrom(oldPod)); err != nil {
+				return fmt.Errorf("failed to patch pod trying to remove %s finalizer: %w", kubernetesreporterapi.FinalizerName, err)
+			}
+		}
+
+		return nil
 	}
 
 	// If a pod gets deleted unexpectedly, it might be in any phase and will stick around until

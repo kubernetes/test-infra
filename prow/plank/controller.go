@@ -348,6 +348,14 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]corev1.Pod
 				return fmt.Errorf("unknown pod %s: unknown cluster alias %q", pod.Name, pj.ClusterAlias())
 			}
 
+			if finalizers := sets.NewString(pod.Finalizers...); finalizers.Has(kubernetesreporterapi.FinalizerName) {
+				// We want the end user to not see this, so we have to remove the finalizer, otherwise the pod hangs
+				oldPod := pod.DeepCopy()
+				pod.Finalizers = finalizers.Delete(kubernetesreporterapi.FinalizerName).UnsortedList()
+				if err := client.Patch(c.ctx, &pod, ctrlruntimeclient.MergeFrom(oldPod)); err != nil {
+					return fmt.Errorf("failed to patch pod trying to remove %s finalizer: %w", kubernetesreporterapi.FinalizerName, err)
+				}
+			}
 			c.log.WithField("name", pj.ObjectMeta.Name).Debug("Delete Pod.")
 			return client.Delete(c.ctx, &pod)
 
@@ -431,6 +439,9 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]corev1.Pod
 				return nil
 			}
 		case corev1.PodRunning:
+			if pod.DeletionTimestamp != nil {
+				break
+			}
 			maxPodRunning := c.config().Plank.PodRunningTimeout.Duration
 			if pod.Status.StartTime.IsZero() || time.Since(pod.Status.StartTime.Time) < maxPodRunning {
 				// Pod is still running. Do nothing.
@@ -453,6 +464,27 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]corev1.Pod
 				return nil
 			}
 		}
+	}
+
+	// This can happen in any phase and means the node got evicted after it became unresponsive. Delete the finalizer so the pod
+	// vanishes and we will silently re-create it in the next iteration.
+	if pod.DeletionTimestamp != nil && pod.Status.Reason == "NodeLost" {
+		c.log.WithFields(pjutil.ProwJobFields(&pj)).Info("Pods Node got lost, deleting & restarting pod")
+		client, ok := c.buildClients[pj.ClusterAlias()]
+		if !ok {
+			return fmt.Errorf("unknown pod %s: unknown cluster alias %q", pod.Name, pj.ClusterAlias())
+		}
+
+		if finalizers := sets.NewString(pod.Finalizers...); finalizers.Has(kubernetesreporterapi.FinalizerName) {
+			// We want the end user to not see this, so we have to remove the finalizer, otherwise the pod hangs
+			oldPod := pod.DeepCopy()
+			pod.Finalizers = finalizers.Delete(kubernetesreporterapi.FinalizerName).UnsortedList()
+			if err := client.Patch(c.ctx, &pod, ctrlruntimeclient.MergeFrom(oldPod)); err != nil {
+				return fmt.Errorf("failed to patch pod trying to remove %s finalizer: %w", kubernetesreporterapi.FinalizerName, err)
+			}
+		}
+
+		return nil
 	}
 
 	// If a pod gets deleted unexpectedly, it might be in any phase and will stick around until
