@@ -25,7 +25,7 @@ base="$(dirname $0)"
 k8s_versions="
 1.17.0
 1.18.0
-1.19.2
+1.19.1
 "
 
 # All the deployment versions we're testing.
@@ -37,10 +37,10 @@ deployment_versions="
 "
 
 # Experimental versions to make tests optional
-experimental_k8s_version="1.19.2"
+experimental_k8s_version="1.19.1"
 
 # The latest stable Kubernetes version for testing alpha jobs
-latest_stable_k8s_version="1.19.2"
+latest_stable_k8s_version="1.19.1"
 latest_stable_k8s_minor_version="1.19"
 
 # Tag of the hostpath driver we should use for sidecar pull jobs

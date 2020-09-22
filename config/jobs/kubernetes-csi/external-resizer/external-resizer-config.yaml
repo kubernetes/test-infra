@@ -199,7 +199,7 @@ presubmits:
         # unrelated to the PR. Testing against the latest Kubernetes is covered
         # by periodic jobs (see https://k8s-testgrid.appspot.com/sig-storage-csi-ci#Summary).
         - name: CSI_PROW_KUBERNETES_VERSION
-          value: "1.19.2"
+          value: "1.19.1"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.19"
         - name: CSI_PROW_DRIVER_VERSION
@@ -283,7 +283,7 @@ presubmits:
         # unrelated to the PR. Testing against the latest Kubernetes is covered
         # by periodic jobs (see https://k8s-testgrid.appspot.com/sig-storage-csi-ci#Summary).
         - name: CSI_PROW_KUBERNETES_VERSION
-          value: "1.19.2"
+          value: "1.19.1"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.19"
         - name: CSI_PROW_DRIVER_VERSION
