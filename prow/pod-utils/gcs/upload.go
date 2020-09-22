@@ -118,6 +118,9 @@ func FileUploadWithOptions(file string, opts pkgio.WriterOptions) UploadFunc {
 		}
 		if fi, err := reader.Stat(); err == nil {
 			opts.BufferSize = utilpointer.Int64Ptr(fi.Size())
+			if *opts.BufferSize > 25*1024*1024 {
+				*opts.BufferSize = 25 * 1024 * 1024
+			}
 		}
 
 		uploadErr := DataUploadWithOptions(reader, opts)(writer)
