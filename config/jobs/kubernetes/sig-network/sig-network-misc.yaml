@@ -495,7 +495,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200918-58bdf8d-master
 
 - interval: 12h
-  name: ci-kubernetes-e2e-gci-gce-basic-sctp
+  name: ci-kubernetes-e2e-ubuntu-gce-basic-sctp
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -511,10 +511,10 @@ periodics:
       - --env=ALLOW_PRIVILEGED=true
       - --env=NET_PLUGIN=kubenet
       - --extract=ci/latest
-      - --gcp-master-image=gci
-      - --gcp-node-image=gci
+      - --gcp-master-image=ubuntu
+      - --gcp-node-image=ubuntu
       - --gcp-zone=us-west1-b
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:SCTP\] --ginkgo.skip=\[Feature:NetworkPolicy\]
+      - --test_args=--ginkgo.focus=\[Feature:(SCTP|SCTPConnectivity)\] --ginkgo.skip=\[Feature:NetworkPolicy\]
       - --timeout=300m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200918-58bdf8d-master
