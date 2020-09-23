@@ -102,6 +102,7 @@ const (
 	validateURLsWarning          = "validate-urls"
 	unknownFieldsWarning         = "unknown-fields"
 	verifyOwnersFilePresence     = "verify-owners-presence"
+	validateClusterFieldWarning  = "validate-cluster-field"
 )
 
 var defaultWarnings = []string{
@@ -351,6 +352,11 @@ func validate(o options) error {
 	}
 	if o.warningEnabled(tideContextPolicy) {
 		if err := validateTideContextPolicy(cfg); err != nil {
+			errs = append(errs, err)
+		}
+	}
+	if o.warningEnabled(validateClusterFieldWarning) {
+		if err := validateCluster(cfg); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -1057,5 +1063,39 @@ func validateTideContextPolicy(cfg *config.Config) error {
 		}
 	}
 
+	return utilerrors.NewAggregate(errs)
+}
+
+var agentsNotSupportingCluster = sets.NewString("jenkins")
+
+func validateJobCluster(job config.JobBase) error {
+	if job.Cluster != "" && agentsNotSupportingCluster.Has(job.Agent) {
+		return fmt.Errorf("%s: cannot set cluster field if agent is %s", job.Name, job.Agent)
+	}
+	return nil
+}
+
+func validateCluster(cfg *config.Config) error {
+	var errs []error
+	for orgRepo, jobs := range cfg.PresubmitsStatic {
+		for _, job := range jobs {
+			if err := validateJobCluster(job.JobBase); err != nil {
+				errs = append(errs, fmt.Errorf("%s: %w", orgRepo, err))
+			}
+		}
+	}
+	for _, job := range cfg.Periodics {
+		if err := validateJobCluster(job.JobBase); err != nil {
+			errs = append(errs, fmt.Errorf("%s: %w", "invalid periodic job", err))
+		}
+
+	}
+	for orgRepo, jobs := range cfg.PostsubmitsStatic {
+		for _, job := range jobs {
+			if err := validateJobCluster(job.JobBase); err != nil {
+				errs = append(errs, fmt.Errorf("%s: %w", orgRepo, err))
+			}
+		}
+	}
 	return utilerrors.NewAggregate(errs)
 }
