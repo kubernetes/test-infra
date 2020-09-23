@@ -92,7 +92,7 @@ presubmits:
     - gh-pages
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200802-ff98b58-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200918-58bdf8d-1.18
         command:
         - "runner.sh"
         - "make"
