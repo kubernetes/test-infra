@@ -1,0 +1,19 @@
+{
+  "ignition": {
+    "version": "3.1.0"
+  },
+  "systemd": {
+    "units": [
+      {
+        "contents": "[Unit]\nDescription=Enable cgroup v2\nBefore=network-online.target\nConditionFirstBoot=yes\n\n[Service]\nType=oneshot\nExecStart=/usr/bin/rpm-ostree kargs --append systemd.unified_cgroup_hierarchy=1 --reboot\n[Install]\n\nWantedBy=multi-user.target\n",
+        "enabled": true,
+        "name": "cgroupv2.service"
+      },
+      {
+        "contents": "[Unit]\nDescription=Download and install crio binaries and configurations.\nAfter=network-online.target\n\n[Service]\nType=oneshot\nExecStartPre=/usr/bin/bash -c '/usr/bin/curl --fail --retry 5 --retry-delay 3 --silent --show-error -o /usr/local/crio.tar.gz  https://storage.googleapis.com/k8s-conform-cri-o/artifacts/crio-$(git ls-remote https://github.com/cri-o/cri-o master | cut -c1-9).tar.gz -o crio.tar.gz'\nExecStartPre=/usr/bin/tar -zxvf /usr/local/crio.tar.gz -C /usr/local/\nExecStartPre=/usr/bin/bash -c '/usr/bin/mv -f /usr/local/crio-* /usr/local/crio-latest'\nExecStartPre=/usr/bin/bash -c '/usr/bin/mv -f /usr/local/crio-latest/bin/* /usr/local/bin/'\nExecStartPre=/usr/bin/mkdir -p /opt/cni/bin\nExecStartPre=/usr/bin/bash -c '/usr/bin/mv -f /usr/local/crio-latest/cni-plugins/* /opt/cni/bin/'\nExecStartPre=/usr/bin/mv -f /usr/local/crio-latest/contrib/10-crio-bridge.conf /etc/cni/net.d/.\nExecStartPre=/usr/bin/bash -c '/usr/bin/mv -f /usr/local/crio-latest/etc/* /etc/'\nExecStartPre=/usr/bin/mkdir -p /etc/crio/crio.conf.d\nExecStartPre=/usr/bin/bash -c 'echo -e \"[crio.runtime]\\n  default_runtime = \\\\\\\"crun\\\\\\\"\\n[crio.runtime.runtimes]\\n  [crio.runtime.runtimes.crun]\\n    runtime_path=\\\\\\\"/usr/local/bin/crun\\\\\\\"\" \u003e /etc/crio/crio.conf.d/20-crun.conf'\nExecStartPre=/usr/bin/bash -c 'echo -e \"[crio.runtime]\\n  [crio.runtime.runtimes]\\n  [crio.runtime.runtimes.preconfigured-handler]\\n    runtime_path=\\\\\\\"/usr/local/bin/runc\\\\\\\"\" \u003e /etc/crio/crio.conf.d/10-crun.conf'\nExecStartPre=/usr/bin/mv -f /usr/local/crio-latest/contrib/crio.service /etc/systemd/system/ \nExecStartPre=/usr/bin/systemctl enable crio.service\nExecStartPre=/usr/sbin/restorecon /etc/systemd/system/crio.service\nExecStart=/usr/bin/systemctl start crio.service\n\n[Install]\nWantedBy=multi-user.target\n",
+        "enabled": true,
+        "name": "crio-install.service"
+      }
+    ]
+  }
+}
