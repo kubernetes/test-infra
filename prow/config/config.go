@@ -740,17 +740,11 @@ func (d *Deck) Validate() error {
 var warnInRepoStorageBucketValidation time.Time
 
 // ValidateStorageBucket validates a storage bucket (unless the `Deck.SkipStoragePathValidation` field is true).
-// The given storage path should match "<key-type>/<bucket>/<folders...>".
 // The bucket name must be included in any of the following:
 //    1) Any job's `.DecorationConfig.GCSConfiguration.Bucket` (except jobs defined externally via InRepoConfig)
 //    2) `Plank.DefaultDecorationConfigs.GCSConfiguration.Bucket`
 //    3) `Deck.AdditionalAllowedBuckets`
-func (c *Config) ValidateStorageBucket(path string) error {
-	parts := strings.Split(path, "/")
-	if len(parts) < 3 {
-		return fmt.Errorf("invalid path: %s expected <key-type>/<bucket>/<folders...>", path)
-	}
-
+func (c *Config) ValidateStorageBucket(bucketName string) error {
 	if len(c.InRepoConfig.Enabled) > 0 && len(c.Deck.AdditionalAllowedBuckets) == 0 {
 		logrusutil.ThrottledWarnf(&warnInRepoStorageBucketValidation, 1*time.Hour,
 			"skipping storage-path validation because `in_repo_config` is enabled, but `deck.additional_allowed_buckets` empty. "+
@@ -764,9 +758,8 @@ func (c *Config) ValidateStorageBucket(path string) error {
 		return nil
 	}
 
-	bucket := parts[1]
-	if !c.Deck.AllKnownStorageBuckets.Has(bucket) {
-		return fmt.Errorf("bucket %q not in allowed list (%v); you may allow it by including it in `deck.additional_allowed_buckets`", bucket, c.Deck.AllKnownStorageBuckets.List())
+	if !c.Deck.AllKnownStorageBuckets.Has(bucketName) {
+		return fmt.Errorf("bucket %q not in allowed list (%v); you may allow it by including it in `deck.additional_allowed_buckets`", bucketName, c.Deck.AllKnownStorageBuckets.List())
 	}
 	return nil
 }

@@ -4943,13 +4943,13 @@ func TestValidateStorageBucket(t *testing.T) {
 	testCases := []struct {
 		name        string
 		yaml        string
-		path        string
+		bucket      string
 		expectedErr string
 	}{
 		{
 			name:        "unspecified config means no validation",
 			yaml:        ``,
-			path:        "to/some/wild/location",
+			bucket:      "who-knows",
 			expectedErr: "",
 		},
 		{
@@ -4957,7 +4957,7 @@ func TestValidateStorageBucket(t *testing.T) {
 			yaml: `
 deck:
     skip_storage_path_validation: true`,
-			path:        "to/some/wild/location",
+			bucket:      "random-unknown-bucket",
 			expectedErr: "",
 		},
 		{
@@ -4965,16 +4965,8 @@ deck:
 			yaml: `
 deck:
     skip_storage_path_validation: false`,
-			path:        "to/some/wild/location",
-			expectedErr: "bucket \"some\" not in allowed list",
-		},
-		{
-			name: "validation enabled, bad path format",
-			yaml: `
-deck:
-    skip_storage_path_validation: false`,
-			path:        "doesn't look like a properly formatted storage path! :(",
-			expectedErr: "invalid path: doesn't look like a properly formatted storage path",
+			bucket:      "random-unknown-bucket",
+			expectedErr: "bucket \"random-unknown-bucket\" not in allowed list",
 		},
 		{
 			name: "DecorationConfig allowed bucket",
@@ -4986,7 +4978,7 @@ plank:
         '*':
             gcs_configuration:
                 bucket: "kubernetes-jenkins"`,
-			path:        "gs/kubernetes-jenkins/pr-logs/directory/pull-capi",
+			bucket:      "kubernetes-jenkins",
 			expectedErr: "",
 		},
 		{
@@ -4996,7 +4988,7 @@ deck:
     skip_storage_path_validation: false
     additional_allowed_buckets:
     - "kubernetes-prow"`,
-			path:        "gs/kubernetes-prow/random-folder/crazy-subfolder",
+			bucket:      "kubernetes-prow",
 			expectedErr: "",
 		},
 		{
@@ -5004,7 +4996,7 @@ deck:
 			yaml: `
 deck:
     skip_storage_path_validation: false`,
-			path:        "gs/istio-prow/pr-logs/directory/post-check",
+			bucket:      "istio-prow",
 			expectedErr: "bucket \"istio-prow\" not in allowed list",
 		},
 	}
@@ -5013,11 +5005,11 @@ deck:
 		t.Run(tc.name, func(nested *testing.T) {
 			cfg, err := loadConfigYaml(tc.yaml, nested)
 			if err != nil {
-				t.Fatalf("failed to load prow config: err=%v\nYAML=%v", err, tc.yaml)
+				nested.Fatalf("failed to load prow config: err=%v\nYAML=%v", err, tc.yaml)
 			}
 			expectingErr := len(tc.expectedErr) > 0
 
-			err = cfg.ValidateStorageBucket(tc.path)
+			err = cfg.ValidateStorageBucket(tc.bucket)
 
 			if expectingErr && err == nil {
 				nested.Fatalf("no errors, but was expecting error: %v", tc.expectedErr)

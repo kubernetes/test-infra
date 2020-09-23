@@ -965,9 +965,6 @@ func renderSpyglass(ctx context.Context, sg *spyglass.Spyglass, cfg config.Gette
 		return "", fmt.Errorf("error when resolving real path %s: %v", src, err)
 	}
 	src = realPath
-	if err := validateStorageBucket(cfg, src); err != nil {
-		return "", err
-	}
 	artifactNames, err := sg.ListArtifacts(ctx, src)
 	if err != nil {
 		return "", fmt.Errorf("error listing artifacts: %v", err)
@@ -1183,7 +1180,7 @@ func handleArtifactView(o options, sg *spyglass.Spyglass, cfg config.Getter) htt
 			http.Error(w, fmt.Sprintf("Failed to parse request: %v", err), http.StatusBadRequest)
 			return
 		}
-		if err := validateStorageBucket(cfg, request.Source); err != nil {
+		if err := validateStoragePath(cfg, request.Source); err != nil {
 			http.Error(w, fmt.Sprintf("Failed to process request: %v", err), httpStatusForError(err))
 			return
 		}
@@ -1635,8 +1632,13 @@ func defaultLensRemoteConfig(lfc *config.LensFileConfig) error {
 	return nil
 }
 
-func validateStorageBucket(cfg config.Getter, path string) error {
-	if err := cfg().ValidateStorageBucket(path); err != nil {
+func validateStoragePath(cfg config.Getter, path string) error {
+	parts := strings.Split(path, "/")
+	if len(parts) < 3 {
+		return fmt.Errorf("invalid path: %s (expecting format <storageType>/<bucket>/<folders...>)", path)
+	}
+	bucketName := parts[1]
+	if err := cfg().ValidateStorageBucket(bucketName); err != nil {
 		return httpError{
 			error:      err,
 			statusCode: http.StatusBadRequest,

@@ -76,11 +76,20 @@ type storageBucket interface {
 	readObject(ctx context.Context, key string) ([]byte, error)
 }
 
-// blobStorageBucket is our real implementation of storageBucket
+// blobStorageBucket is our real implementation of storageBucket.
+// Use `newBlobStorageBucket` to instantiate (includes bucket-level validation).
 type blobStorageBucket struct {
 	name            string
 	storageProvider string
 	pkgio.Opener
+}
+
+// newBlobStorageBucket validates the bucketName and returns a new instance of blobStorageBucket.
+func newBlobStorageBucket(bucketName, storageProvider string, config *config.Config, opener pkgio.Opener) (blobStorageBucket, error) {
+	if err := config.ValidateStorageBucket(bucketName); err != nil {
+		return blobStorageBucket{}, fmt.Errorf("could not instantiate storage bucket: %v", err)
+	}
+	return blobStorageBucket{bucketName, storageProvider, opener}, nil
 }
 
 type jobHistoryTemplate struct {
@@ -401,12 +410,11 @@ func getJobHistory(ctx context.Context, url *url.URL, cfg config.Getter, opener 
 	if err != nil {
 		return tmpl, fmt.Errorf("invalid url %s: %v", url.String(), err)
 	}
-	if err := validateStorageBucket(cfg, strings.Join([]string{storageProvider, bucketName, root}, "/")); err != nil {
+	bucket, err := newBlobStorageBucket(bucketName, storageProvider, cfg(), opener)
+	if err != nil {
 		return tmpl, err
 	}
 	tmpl.Name = root
-	bucket := blobStorageBucket{bucketName, storageProvider, opener}
-
 	latest, err := readLatestBuild(ctx, bucket, root)
 	if err != nil {
 		return tmpl, fmt.Errorf("failed to locate build data: %v", err)
