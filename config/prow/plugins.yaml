@@ -181,7 +181,7 @@ blockades:
 - repos:
   - kubernetes/release
   blockregexps:
-  - ^(anago|compile-release-tools|find_green_build|gcb\/|lib\/|prin|push-build.sh|release-notify|relnotes)
+  - ^(anago|compile-release-tools|gcb\/|lib\/|prin|push-build.sh)
   explanation: "Changes to certain release tools can affect our ability to test, build, and release Kubernetes. This PR must be explicitly approved by SIG Release repo admins."
 
 blunderbuss:
