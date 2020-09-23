@@ -59,21 +59,21 @@ images:
       - 'create 90 pods with 100ms interval \[Benchmark\]'
 
   cosstable1-resource1:
-    image: cos-stable-81-12871-103-0
+    image_family: cos-85-lts
     project: cos-cloud
     machine: n1-standard-1
     metadata: "user-data</go/src/github.com/containerd/cri/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/cri/cluster/gce/configure.sh,containerd-extra-init-sh</go/src/github.com/containerd/cri/test/e2e_node/gci-init.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/cri-master/env,gci-update-strategy=update_disabled"
     tests:
       - 'resource tracking for 0 pods per node \[Benchmark\]'
   cosstable1-resource2:
-    image: cos-stable-81-12871-103-0
+    image_family: cos-85-lts
     project: cos-cloud
     machine: n1-standard-1
     metadata: "user-data</go/src/github.com/containerd/cri/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/cri/cluster/gce/configure.sh,containerd-extra-init-sh</go/src/github.com/containerd/cri/test/e2e_node/gci-init.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/cri-master/env,gci-update-strategy=update_disabled"
     tests:
       - 'resource tracking for 35 pods per node \[Benchmark\]'
   cosstable1-resource3:
-    image: cos-stable-81-12871-103-0
+    image_family: cos-85-lts
     project: cos-cloud
     machine: n1-standard-1
     metadata: "user-data</go/src/github.com/containerd/cri/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/cri/cluster/gce/configure.sh,containerd-extra-init-sh</go/src/github.com/containerd/cri/test/e2e_node/gci-init.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/cri-master/env,gci-update-strategy=update_disabled"
