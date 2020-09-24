@@ -502,7 +502,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=320
+      - --timeout=70
       - --bare
       - --scenario=kubernetes_e2e
       - --
@@ -510,13 +510,23 @@ periodics:
       - --env=KUBE_FEATURE_GATES=SCTPSupport=true
       - --env=ALLOW_PRIVILEGED=true
       - --env=NET_PLUGIN=kubenet
+      - --env=KUBE_CONTAINER_RUNTIME=containerd
+      - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.4.0
+      - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.0.0-rc92
+      - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
+      - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
+      - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
+      - --env=KUBE_GCE_MASTER_IMAGE=ubuntu-2004-focal-v20200423
+      - --env=KUBE_GCE_MASTER_PROJECT=ubuntu-os-cloud
+      - --env=KUBE_NODE_OS_DISTRIBUTION=ubuntu
+      - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2004-focal-v20200423
+      - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
       - --extract=ci/latest
       - --gcp-master-image=ubuntu
       - --gcp-node-image=ubuntu
-      - --image-family=ubuntu-2004-lts
-      - --image-project=ubuntu-os-cloud
+      - --gcp-nodes=4
       - --gcp-zone=us-west1-b
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:(SCTP|SCTPConnectivity)\] --ginkgo.skip=\[Feature:NetworkPolicy\]
-      - --timeout=300m
+      - --timeout=50m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200918-58bdf8d-master
