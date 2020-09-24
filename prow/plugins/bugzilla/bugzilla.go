@@ -1010,6 +1010,9 @@ Please contact an administrator to resolve this issue, then request a bug refres
 
 func handleClose(e event, gc githubClient, bc bugzilla.Client, options plugins.BugzillaBranchOptions, log *logrus.Entry) error {
 	comment := e.comment(gc)
+	if e.missing {
+		return nil
+	}
 	if options.AddExternalLink != nil && *options.AddExternalLink {
 		response := fmt.Sprintf(`This pull request references `+bugLink+`. The bug has been updated to no longer refer to the pull request using the external bug tracker.`, e.bugId, bc.Endpoint(), e.bugId)
 		changed, err := bc.RemovePullRequestAsExternalBug(e.bugId, e.org, e.repo, e.number)

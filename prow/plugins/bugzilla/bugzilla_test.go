@@ -1270,6 +1270,16 @@ Instructions for interacting with me using PR comments are available [here](http
 			expectedExternalBugs: []bugzilla.ExternalBug{},
 		},
 		{
+			name:        "closed PR with missing bug does nothing",
+			merged:      false,
+			closed:      true,
+			missing:     true,
+			bugs:        []bugzilla.Bug{},
+			prs:         []github.PullRequest{{Number: base.number, Merged: false}},
+			options:     plugins.BugzillaBranchOptions{AddExternalLink: &yes, StateAfterClose: &plugins.BugzillaBugState{Status: "NEW"}},
+			expectedBug: &bugzilla.Bug{},
+		},
+		{
 			name:   "closed PR with multiple exernal links removes link, does not change bug state, and comments",
 			merged: false,
 			closed: true,
