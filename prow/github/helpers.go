@@ -82,19 +82,17 @@ func LevelFromPermissions(permissions RepoPermissions) RepoPermissionLevel {
 	}
 }
 
-// PermissionsFromLevel adapts a repo permission level to the
-// appropriate permissions struct used elsewhere.
-func PermissionsFromLevel(permission RepoPermissionLevel) RepoPermissions {
+// PermissionsFromTeamPermissions
+func PermissionsFromTeamPermission(permission TeamPermission) RepoPermissions {
 	switch permission {
-	case None:
-		return RepoPermissions{}
-	case Read:
+	case RepoPull:
 		return RepoPermissions{Pull: true}
-	case Write:
+	case RepoPush:
 		return RepoPermissions{Pull: true, Push: true}
-	case Admin:
+	case RepoAdmin:
 		return RepoPermissions{Pull: true, Push: true, Admin: true}
 	default:
+		// Should never happen unless the type gets new value
 		return RepoPermissions{}
 	}
 }

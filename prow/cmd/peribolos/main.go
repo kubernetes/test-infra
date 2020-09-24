@@ -29,6 +29,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
+
 	"k8s.io/test-infra/prow/config/org"
 	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/flagutil"
@@ -1145,7 +1146,7 @@ func configureTeam(client editTeamClient, orgName, teamName string, team org.Tea
 
 type teamRepoClient interface {
 	ListTeamRepos(id int) ([]github.Repo, error)
-	UpdateTeamRepo(id int, org, repo string, permission github.RepoPermissionLevel) error
+	UpdateTeamRepo(id int, org, repo string, permission github.TeamPermission) error
 	RemoveTeamRepo(id int, org, repo string) error
 }
 
@@ -1186,11 +1187,17 @@ func configureTeamRepos(client teamRepoClient, githubTeams map[string]github.Tea
 	var updateErrors []error
 	for repo, permission := range actions {
 		var err error
-		if permission == github.None {
+		switch permission {
+		case github.None:
 			err = client.RemoveTeamRepo(gt.ID, orgName, repo)
-		} else {
-			err = client.UpdateTeamRepo(gt.ID, orgName, repo, permission)
+		case github.Admin:
+			err = client.UpdateTeamRepo(gt.ID, orgName, repo, github.RepoAdmin)
+		case github.Write:
+			err = client.UpdateTeamRepo(gt.ID, orgName, repo, github.RepoPush)
+		case github.Read:
+			err = client.UpdateTeamRepo(gt.ID, orgName, repo, github.RepoPull)
 		}
+
 		if err != nil {
 			updateErrors = append(updateErrors, fmt.Errorf("failed to update team %d(%s) permissions on repo %s to %s: %v", gt.ID, name, repo, permission, err))
 		}
