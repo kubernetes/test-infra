@@ -2271,22 +2271,23 @@ func (c *fakeTeamRepoClient) ListTeamRepos(id int) ([]github.Repo, error) {
 	return c.repos[id], nil
 }
 
-func (c *fakeTeamRepoClient) UpdateTeamRepo(id int, org, repo string, permission github.RepoPermissionLevel) error {
+func (c *fakeTeamRepoClient) UpdateTeamRepo(id int, org, repo string, permission github.TeamPermission) error {
 	if c.failUpdate {
 		return errors.New("injected failure to UpdateTeamRepos")
 	}
 
+	permissions := github.PermissionsFromTeamPermission(permission)
 	updated := false
 	for i, repository := range c.repos[id] {
 		if repository.Name == repo {
-			c.repos[id][i].Permissions = github.PermissionsFromLevel(permission)
+			c.repos[id][i].Permissions = permissions
 			updated = true
 			break
 		}
 	}
 
 	if !updated {
-		c.repos[id] = append(c.repos[id], github.Repo{Name: repo, Permissions: github.PermissionsFromLevel(permission)})
+		c.repos[id] = append(c.repos[id], github.Repo{Name: repo, Permissions: permissions})
 	}
 
 	return nil

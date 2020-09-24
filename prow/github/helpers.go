@@ -98,3 +98,18 @@ func PermissionsFromLevel(permission RepoPermissionLevel) RepoPermissions {
 		return RepoPermissions{}
 	}
 }
+
+// PermissionsFromTeamPermissions
+func PermissionsFromTeamPermission(permission TeamPermission) RepoPermissions {
+	switch permission {
+	case RepoPull:
+		return RepoPermissions{Pull: true}
+	case RepoPush:
+		return RepoPermissions{Pull: true, Push: true}
+	case RepoAdmin:
+		return RepoPermissions{Pull: true, Push: true, Admin: true}
+	default:
+		// Should never happen unless the type gets new value
+		return RepoPermissions{}
+	}
+}

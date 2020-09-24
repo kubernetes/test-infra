@@ -176,7 +176,7 @@ type TeamClient interface {
 	RemoveTeamMembership(id int, user string) error
 	ListTeamMembers(id int, role string) ([]TeamMember, error)
 	ListTeamRepos(id int) ([]Repo, error)
-	UpdateTeamRepo(id int, org, repo string, permission RepoPermissionLevel) error
+	UpdateTeamRepo(id int, org, repo string, permission TeamPermission) error
 	RemoveTeamRepo(id int, org, repo string) error
 	ListTeamInvitations(id int) ([]OrgInvitation, error)
 	TeamHasMember(teamID int, memberLogin string) (bool, error)
@@ -3069,7 +3069,7 @@ func (c *client) ListTeamRepos(id int) ([]Repo, error) {
 // UpdateTeamRepo adds the repo to the team with the provided role.
 //
 // https://developer.github.com/v3/teams/#add-or-update-team-repository
-func (c *client) UpdateTeamRepo(id int, org, repo string, permission RepoPermissionLevel) error {
+func (c *client) UpdateTeamRepo(id int, org, repo string, permission TeamPermission) error {
 	durationLogger := c.log("UpdateTeamRepo", id, org, repo, permission)
 	defer durationLogger()
 

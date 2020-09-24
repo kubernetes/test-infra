@@ -131,3 +131,33 @@ func TestPermissionsFromLevel(t *testing.T) {
 		}
 	}
 }
+
+func TestPermissionsFromTeamPermission(t *testing.T) {
+	var testCases = []struct {
+		level       TeamPermission
+		permissions RepoPermissions
+	}{
+		{
+			level:       TeamPermission("foobar"),
+			permissions: RepoPermissions{},
+		},
+		{
+			level:       RepoPull,
+			permissions: RepoPermissions{Pull: true},
+		},
+		{
+			level:       RepoPush,
+			permissions: RepoPermissions{Pull: true, Push: true},
+		},
+		{
+			level:       RepoAdmin,
+			permissions: RepoPermissions{Pull: true, Push: true, Admin: true},
+		},
+	}
+
+	for _, testCase := range testCases {
+		if actual, expected := PermissionsFromTeamPermission(testCase.level), testCase.permissions; actual != expected {
+			t.Errorf("got incorrect permissions from team permissions, expected %v but got %v", expected, actual)
+		}
+	}
+}
