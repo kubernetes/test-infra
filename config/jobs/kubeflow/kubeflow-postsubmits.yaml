@@ -310,6 +310,8 @@ postsubmits:
         - "true"
     annotations:
       testgrid-dashboards: sig-big-data
+      testgrid-alert-email: kubeflow-pipelines@google.com
+      testgrid-num-failures-to-alert: "3"
       description: Postsubmit integration tests for kubeflow/pipeline.
   - name: kubeflow-pipeline-postsubmit-mkp-e2e-test
     cluster: kubeflow
