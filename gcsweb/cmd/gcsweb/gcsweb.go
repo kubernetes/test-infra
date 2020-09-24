@@ -303,8 +303,12 @@ func (s *server) handleObject(w http.ResponseWriter, bucket, object string, head
 	}
 	defer objReader.Close()
 
-	if headers.contentType != "" && headers.contentEncoding != "" {
-		w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=%s", headers.contentType, headers.contentEncoding))
+	if headers.contentType != "" {
+		if headers.contentEncoding != "" {
+			w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=%s", headers.contentType, headers.contentEncoding))
+		} else {
+			w.Header().Set("Content-Type", headers.contentType)
+		}
 	}
 
 	if headers.contentDisposition != "" {
