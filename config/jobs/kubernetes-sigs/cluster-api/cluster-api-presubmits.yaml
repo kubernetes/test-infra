@@ -81,25 +81,6 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
       testgrid-tab-name: pr-verify
-  - name: pull-cluster-api-verify-external-links
-    optional: true
-    decorate: true
-    path_alias: sigs.k8s.io/cluster-api
-    always_run: true
-    labels:
-      preset-service-account: "true"
-    skip_branches:
-    - gh-pages
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200918-58bdf8d-1.18
-        command:
-        - "runner.sh"
-        - "make"
-        - "verify-book-links"
-    annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-      testgrid-tab-name: pr-verify-external-links
   - name: pull-cluster-api-test
     decorate: true
     path_alias: sigs.k8s.io/cluster-api

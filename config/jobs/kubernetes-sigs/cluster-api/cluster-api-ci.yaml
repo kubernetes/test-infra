@@ -50,3 +50,21 @@ periodics:
     testgrid-tab-name: capi e2e tests
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
     testgrid-num-failures-to-alert: "2"
+- name: periodic-cluster-api-verify-external-links
+  interval: 6h
+  decorate: true
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api
+    base_ref: master
+    path_alias: sigs.k8s.io/cluster-api
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:e2e:v20200918-58bdf8d-1.18
+      command:
+      - "runner.sh"
+      - "make"
+      - "verify-book-links"
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api
+    testgrid-tab-name: periodic docs link verification
