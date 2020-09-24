@@ -287,7 +287,14 @@ type server struct {
 	storageClient *storage.Client
 }
 
-func (s *server) handleObject(w http.ResponseWriter, bucket, object string) error {
+type objectHeaders struct {
+	contentType        string
+	contentEncoding    string
+	contentDisposition string
+	contentLanguage    string
+}
+
+func (s *server) handleObject(w http.ResponseWriter, bucket, object string, headers objectHeaders) error {
 	obj := s.storageClient.Bucket(bucket).Object(object)
 
 	objReader, err := obj.NewReader(context.Background())
@@ -295,6 +302,17 @@ func (s *server) handleObject(w http.ResponseWriter, bucket, object string) erro
 		return fmt.Errorf("couldn't create the object reader: %v", err)
 	}
 	defer objReader.Close()
+
+	if headers.contentType != "" && headers.contentEncoding != "" {
+		w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=%s", headers.contentType, headers.contentEncoding))
+	}
+
+	if headers.contentDisposition != "" {
+		w.Header().Set("Content-Disposition", headers.contentDisposition)
+	}
+	if headers.contentLanguage != "" {
+		w.Header().Set("Content-Language", headers.contentLanguage)
+	}
 
 	if _, err := io.Copy(w, objReader); err != nil {
 		return fmt.Errorf("coudln't copy data to the response writer: %v", err)
@@ -371,7 +389,14 @@ func (s *server) gcsRequest(w http.ResponseWriter, r *http.Request) {
 
 	// This means that the object is a file.
 	if objAttrs != nil {
-		if err := s.handleObject(w, bucket, object); err != nil {
+		headers := objectHeaders{
+			contentType:        objAttrs.ContentType,
+			contentEncoding:    objAttrs.ContentEncoding,
+			contentDisposition: objAttrs.ContentDisposition,
+			contentLanguage:    objAttrs.ContentLanguage,
+		}
+
+		if err := s.handleObject(w, bucket, object, headers); err != nil {
 			objectLogger.WithError(err).Error("error while handling object")
 			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Fprintf(w, "Error: %v", err)
