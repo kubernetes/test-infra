@@ -145,13 +145,15 @@ func (s *gcsMockServer) listObjects(w http.ResponseWriter, r *http.Request) {
 
 func TestHandleObject(t *testing.T) {
 	testCases := []struct {
-		id             string
-		initialObjects []gcsObject
-		bucket         string
-		object         string
-		path           string
-		expected       string
-		errorExpected  bool
+		id              string
+		initialObjects  []gcsObject
+		bucket          string
+		object          string
+		path            string
+		headers         objectHeaders
+		expected        string
+		expectedHeaders http.Header
+		errorExpected   bool
 	}{
 		{
 			id:     "happy case",
@@ -169,7 +171,8 @@ func TestHandleObject(t *testing.T) {
 					Content:    []byte("0000000000"),
 				},
 			},
-			expected: "123456789",
+			expectedHeaders: http.Header{"Content-Type": []string{"text/plain; charset=utf-8"}},
+			expected:        "123456789",
 		},
 		{
 			id:     "sad case",
@@ -187,7 +190,51 @@ func TestHandleObject(t *testing.T) {
 					Content:    []byte("0000000000"),
 				},
 			},
-			errorExpected: true,
+			expectedHeaders: http.Header{},
+			errorExpected:   true,
+		},
+		{
+			id:     "happy html case",
+			bucket: "test-bucket",
+			object: "path/to/file1",
+			initialObjects: []gcsObject{
+				{
+					BucketName: "test-bucket",
+					Name:       "path/to/file1",
+					Content: []byte(`
+<!doctype html>
+<html>
+  <head>
+    <title>Test Title</title>
+  </head>
+  <body>
+    My Test Body
+  </body>
+</html>`),
+				},
+				{
+					BucketName: "test-bucket",
+					Name:       "path/to/file2",
+					Content:    []byte("0000000000"),
+				},
+			},
+			headers: objectHeaders{
+				contentType:        "text/html",
+				contentEncoding:    "UTF-8",
+				contentDisposition: "inline",
+				contentLanguage:    "en-US",
+			},
+			expectedHeaders: http.Header{"Content-Disposition": []string{"inline"}, "Content-Language": []string{"en-US"}, "Content-Type": []string{"text/html; charset=UTF-8"}},
+			expected: `
+<!doctype html>
+<html>
+  <head>
+    <title>Test Title</title>
+  </head>
+  <body>
+    My Test Body
+  </body>
+</html>`,
 		},
 	}
 
@@ -209,7 +256,7 @@ func TestHandleObject(t *testing.T) {
 
 			s := server{storageClient: client}
 
-			err = s.handleObject(w, tc.bucket, tc.object)
+			err = s.handleObject(w, tc.bucket, tc.object, tc.headers)
 			if err != nil && !tc.errorExpected {
 				t.Fatalf("Error not expected: %v", err)
 			}
@@ -217,10 +264,15 @@ func TestHandleObject(t *testing.T) {
 			if err == nil && tc.errorExpected {
 				t.Fatalf("Error was expected")
 			}
+			actualHeaders := w.HeaderMap
+			actualBody := w.Body.String()
 
-			actual := w.Body.String()
-			if !reflect.DeepEqual(actual, tc.expected) {
-				t.Fatal(cmp.Diff(actual, tc.expected))
+			if !reflect.DeepEqual(actualHeaders, tc.expectedHeaders) {
+				t.Fatal(cmp.Diff(actualHeaders, tc.expectedHeaders))
+			}
+
+			if !reflect.DeepEqual(actualBody, tc.expected) {
+				t.Fatal(cmp.Diff(actualBody, tc.expected))
 			}
 		})
 	}
