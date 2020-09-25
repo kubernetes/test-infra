@@ -16,7 +16,7 @@
 
 
 import os
-from datetime import datetime
+
 
 DUMP = 'dump.txt'
 
@@ -30,25 +30,18 @@ def print_dump(file):
         print(f'unable to find dump file: {file}')
 
 
-def call(cmd, dump=False):
-    started = datetime.now()
-
-    cmd = f'{cmd} > {DUMP}' if dump else cmd
+def call(cmd):
+    print('+', cmd)
     status = os.system(cmd)
-
-    ended = datetime.now()
-    print(f'+{cmd} completed in {started-ended}')
     if status:
-        if dump:
-            print_dump(DUMP)
-        raise OSError(f'invocation failed: {dump}')
+        raise OSError('invocation failed')
 
 
 def main():
     call('time python3 make_db.py --buckets buckets.yaml --junit --threads 32')
 
     bq_cmd = 'bq load --source_format=NEWLINE_DELIMITED_JSON --max_bad_records=1000'
-    mj_cmd = 'pypy make_json.py'
+    mj_cmd = 'pypy3 make_json.py'
 
     mj_ext = ''
     bq_ext = ''
