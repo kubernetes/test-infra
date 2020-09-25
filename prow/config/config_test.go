@@ -23,6 +23,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"sync"
 	"testing"
 	"text/template"
@@ -1444,6 +1445,53 @@ func TestValidateJobBase(t *testing.T) {
 				t.Error("validation failed to raise an error")
 			case err != nil && tc.pass:
 				t.Errorf("validation should have passed, got: %v", err)
+			}
+		})
+	}
+}
+
+func TestValidateDeck(t *testing.T) {
+	boolTrue := true
+	boolFalse := false
+	cases := []struct {
+		name        string
+		deck        Deck
+		expectedErr string
+	}{
+		{
+			name:        "empty Deck is valid",
+			deck:        Deck{},
+			expectedErr: "",
+		},
+		{
+			name:        "AdditionalAllowedBuckets has items, SkipStoragePathValidation is false => no errors",
+			deck:        Deck{SkipStoragePathValidation: &boolFalse, AdditionalAllowedBuckets: []string{"foo", "bar", "batz"}},
+			expectedErr: "",
+		},
+		{
+			name:        "AdditionalAllowedBuckets has items, SkipStoragePathValidation is default value => error",
+			deck:        Deck{AdditionalAllowedBuckets: []string{"hello", "world"}},
+			expectedErr: "skip_storage_path_validation is enabled",
+		},
+		{
+			name:        "AdditionalAllowedBuckets has items, SkipStoragePathValidation is true => error",
+			deck:        Deck{SkipStoragePathValidation: &boolTrue, AdditionalAllowedBuckets: []string{"hello", "world"}},
+			expectedErr: "skip_storage_path_validation is enabled",
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			expectingErr := len(tc.expectedErr) > 0
+			err := tc.deck.Validate()
+			if expectingErr && err == nil {
+				t.Fatalf("expecting error (%v), but did not get an error", tc.expectedErr)
+			}
+			if !expectingErr && err != nil {
+				t.Fatalf("not expecting error, but got an error: %v", err)
+			}
+			if expectingErr && err != nil && !strings.Contains(err.Error(), tc.expectedErr) {
+				t.Fatalf("expected error (%v), but got unknown error, instead: %v", tc.expectedErr, err)
 			}
 		})
 	}
@@ -2924,6 +2972,8 @@ func TestPlankJobURLPrefix(t *testing.T) {
 }
 
 func TestValidateComponentConfig(t *testing.T) {
+	boolTrue := true
+	boolFalse := false
 	testCases := []struct {
 		name        string
 		config      *Config
@@ -3044,6 +3094,36 @@ func TestValidateComponentConfig(t *testing.T) {
 				},
 			}}},
 			errExpected: true,
+		},
+		{
+			name: "SkipStoragePathValidation true and AdditionalAllowedBuckets empty, no err",
+			config: &Config{ProwConfig: ProwConfig{Deck: Deck{
+				SkipStoragePathValidation: &boolTrue,
+				AdditionalAllowedBuckets:  []string{},
+			}}},
+			errExpected: false,
+		},
+		{
+			name: "SkipStoragePathValidation true and AdditionalAllowedBuckets non-empty, err",
+			config: &Config{ProwConfig: ProwConfig{Deck: Deck{
+				SkipStoragePathValidation: &boolTrue,
+				AdditionalAllowedBuckets: []string{
+					"foo",
+					"bar",
+				},
+			}}},
+			errExpected: true,
+		},
+		{
+			name: "SkipStoragePathValidation false and AdditionalAllowedBuckets non-empty, no err",
+			config: &Config{ProwConfig: ProwConfig{Deck: Deck{
+				SkipStoragePathValidation: &boolFalse,
+				AdditionalAllowedBuckets: []string{
+					"foo",
+					"bar",
+				},
+			}}},
+			errExpected: false,
 		},
 	}
 
@@ -4857,4 +4937,104 @@ func TestValidatePostsubmits(t *testing.T) {
 			t.Errorf("expected error '%s', got error '%s'", tc.expectedError, errMsg)
 		}
 	}
+}
+
+func TestValidateStorageBucket(t *testing.T) {
+	testCases := []struct {
+		name        string
+		yaml        string
+		bucket      string
+		expectedErr string
+	}{
+		{
+			name:        "unspecified config means no validation",
+			yaml:        ``,
+			bucket:      "who-knows",
+			expectedErr: "",
+		},
+		{
+			name: "validation disabled",
+			yaml: `
+deck:
+    skip_storage_path_validation: true`,
+			bucket:      "random-unknown-bucket",
+			expectedErr: "",
+		},
+		{
+			name: "validation enabled",
+			yaml: `
+deck:
+    skip_storage_path_validation: false`,
+			bucket:      "random-unknown-bucket",
+			expectedErr: "bucket \"random-unknown-bucket\" not in allowed list",
+		},
+		{
+			name: "DecorationConfig allowed bucket",
+			yaml: `
+deck:
+    skip_storage_path_validation: false
+plank:
+    default_decoration_configs:
+        '*':
+            gcs_configuration:
+                bucket: "kubernetes-jenkins"`,
+			bucket:      "kubernetes-jenkins",
+			expectedErr: "",
+		},
+		{
+			name: "custom allowed bucket",
+			yaml: `
+deck:
+    skip_storage_path_validation: false
+    additional_allowed_buckets:
+    - "kubernetes-prow"`,
+			bucket:      "kubernetes-prow",
+			expectedErr: "",
+		},
+		{
+			name: "unknown bucket path",
+			yaml: `
+deck:
+    skip_storage_path_validation: false`,
+			bucket:      "istio-prow",
+			expectedErr: "bucket \"istio-prow\" not in allowed list",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(nested *testing.T) {
+			cfg, err := loadConfigYaml(tc.yaml, nested)
+			if err != nil {
+				nested.Fatalf("failed to load prow config: err=%v\nYAML=%v", err, tc.yaml)
+			}
+			expectingErr := len(tc.expectedErr) > 0
+
+			err = cfg.ValidateStorageBucket(tc.bucket)
+
+			if expectingErr && err == nil {
+				nested.Fatalf("no errors, but was expecting error: %v", tc.expectedErr)
+			}
+			if err != nil && !expectingErr {
+				nested.Fatalf("expecting no errors, but got: %v", err)
+			}
+			if expectingErr && err != nil && !strings.Contains(err.Error(), tc.expectedErr) {
+				nested.Fatalf("expecting error substring \"%v\", but got error: %v", tc.expectedErr, err)
+			}
+		})
+	}
+}
+
+func loadConfigYaml(prowConfigYaml string, t *testing.T) (*Config, error) {
+	prowConfigDir, err := ioutil.TempDir("", "prowConfig")
+	if err != nil {
+		t.Fatalf("fail to make tempdir: %v", err)
+	}
+	defer os.RemoveAll(prowConfigDir)
+
+	prowConfig := filepath.Join(prowConfigDir, "config.yaml")
+	if err := ioutil.WriteFile(prowConfig, []byte(prowConfigYaml), 0666); err != nil {
+		t.Fatalf("fail to write prow config: %v", err)
+	}
+
+	return Load(prowConfig, "")
 }

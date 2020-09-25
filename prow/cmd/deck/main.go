@@ -889,11 +889,13 @@ func handleBadge(ja *jobs.JobAgent) http.HandlerFunc {
 func handleJobHistory(o options, cfg config.Getter, opener io.Opener, log *logrus.Entry) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		setHeadersNoCaching(w)
-		tmpl, err := getJobHistory(r.Context(), r.URL, opener)
+		tmpl, err := getJobHistory(r.Context(), r.URL, cfg, opener)
 		if err != nil {
 			msg := fmt.Sprintf("failed to get job history: %v", err)
-			log.WithField("url", r.URL.String()).Warn(msg)
-			http.Error(w, msg, http.StatusInternalServerError)
+			if shouldLogHTTPErrors(err) {
+				log.WithField("url", r.URL.String()).Warn(msg)
+			}
+			http.Error(w, msg, httpStatusForError(err))
 			return
 		}
 		handleSimpleTemplate(o, cfg, "job-history.html", tmpl)(w, r)
@@ -935,9 +937,11 @@ func handleRequestJobViews(sg *spyglass.Spyglass, cfg config.Getter, o options, 
 		csrfToken := csrf.Token(r)
 		page, err := renderSpyglass(r.Context(), sg, cfg, src, o, csrfToken, log)
 		if err != nil {
-			log.WithError(err).Error("error rendering spyglass page")
-			message := fmt.Sprintf("error rendering spyglass page: %v", err)
-			http.Error(w, message, http.StatusInternalServerError)
+			msg := fmt.Sprintf("error rendering spyglass page: %v", err)
+			if shouldLogHTTPErrors(err) {
+				log.WithError(err).Error(msg)
+			}
+			http.Error(w, msg, httpStatusForError(err))
 			return
 		}
 
@@ -961,7 +965,6 @@ func renderSpyglass(ctx context.Context, sg *spyglass.Spyglass, cfg config.Gette
 		return "", fmt.Errorf("error when resolving real path %s: %v", src, err)
 	}
 	src = realPath
-
 	artifactNames, err := sg.ListArtifacts(ctx, src)
 	if err != nil {
 		return "", fmt.Errorf("error listing artifacts: %v", err)
@@ -1175,6 +1178,10 @@ func handleArtifactView(o options, sg *spyglass.Spyglass, cfg config.Getter) htt
 		var request spyglass.LensRequest
 		if err := json.Unmarshal([]byte(reqString), &request); err != nil {
 			http.Error(w, fmt.Sprintf("Failed to parse request: %v", err), http.StatusBadRequest)
+			return
+		}
+		if err := validateStoragePath(cfg, request.Source); err != nil {
+			http.Error(w, fmt.Sprintf("Failed to process request: %v", err), httpStatusForError(err))
 			return
 		}
 
@@ -1623,4 +1630,35 @@ func defaultLensRemoteConfig(lfc *config.LensFileConfig) error {
 	}
 
 	return nil
+}
+
+func validateStoragePath(cfg config.Getter, path string) error {
+	parts := strings.Split(path, "/")
+	if len(parts) < 3 {
+		return fmt.Errorf("invalid path: %s (expecting format <storageType>/<bucket>/<folders...>)", path)
+	}
+	bucketName := parts[1]
+	if err := cfg().ValidateStorageBucket(bucketName); err != nil {
+		return httpError{
+			error:      err,
+			statusCode: http.StatusBadRequest,
+		}
+	}
+	return nil
+}
+
+type httpError struct {
+	error
+	statusCode int
+}
+
+func httpStatusForError(e error) int {
+	if httpErr, ok := e.(httpError); ok {
+		return httpErr.statusCode
+	}
+	return http.StatusInternalServerError
+}
+
+func shouldLogHTTPErrors(e error) bool {
+	return httpStatusForError(e) >= http.StatusInternalServerError // 5XX
 }

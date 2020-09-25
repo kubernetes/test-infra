@@ -1166,3 +1166,33 @@ func TestCanTriggerJob(t *testing.T) {
 		}
 	}
 }
+
+func TestHttpStatusForError(t *testing.T) {
+	testCases := []struct {
+		name           string
+		input          error
+		expectedStatus int
+	}{
+		{
+			name:           "normal_error",
+			input:          errors.New("some error message"),
+			expectedStatus: http.StatusInternalServerError,
+		},
+		{
+			name: "httpError",
+			input: httpError{
+				error:      errors.New("some error message"),
+				statusCode: http.StatusGone,
+			},
+			expectedStatus: http.StatusGone,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(nested *testing.T) {
+			actual := httpStatusForError(tc.input)
+			if actual != tc.expectedStatus {
+				t.Fatalf("unexpected HTTP status (expected=%v, actual=%v) for error: %v", tc.expectedStatus, actual, tc.input)
+			}
+		})
+	}
+}

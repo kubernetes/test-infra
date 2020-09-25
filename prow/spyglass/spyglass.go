@@ -85,7 +85,7 @@ func New(ctx context.Context, ja *jobs.JobAgent, cfg config.Getter, opener pkgio
 		JobAgent:               ja,
 		config:                 cfg,
 		PodLogArtifactFetcher:  NewPodLogArtifactFetcher(ja),
-		StorageArtifactFetcher: NewStorageArtifactFetcher(opener, useCookieAuth),
+		StorageArtifactFetcher: NewStorageArtifactFetcher(opener, cfg, useCookieAuth),
 		testgrid: &TestGrid{
 			conf:   cfg,
 			opener: opener,

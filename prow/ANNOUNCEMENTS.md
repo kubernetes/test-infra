@@ -3,6 +3,12 @@
 ## New features
 
 New features added to each component:
+  - *September 15, 2020* Added validation to Deck that will restrict artifact requests based on storage buckets.
+    Opt-out by setting `deck.skip_storage_path_validation` in your Prow config.
+    Buckets specified in job configs (`<job>.gcs_configuration.bucket`) and 
+    plank configs (`plank.default_decoration_configs[*].gcs_configuration.bucket`) are automatically allowed access.
+    Additional buckets can be allowed by adding them to the `deck.additional_allowed_buckets` list.
+    (This feature will be enabled by default ~Jan 2021. For now, you will begin to notice violation warnings in your logs.)
  - *August 31th, 2020* Added `gcs_browser_prefixes` field in spyglass configuration. `gcs_browser_prefix` will
     be deprecated in February 2021. You can now specify different values for different repositories. The
     format should be in org, org/repo or '\*' which is the default value.

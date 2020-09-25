@@ -283,7 +283,10 @@ func getPRHistory(ctx context.Context, prHistoryURL *url.URL, config *config.Con
 		}
 		bucketName := parsedBucket.Host
 		storageProvider := parsedBucket.Scheme
-		bucket := blobStorageBucket{bucketName, storageProvider, opener}
+		bucket, err := newBlobStorageBucket(bucketName, storageProvider, config, opener)
+		if err != nil {
+			return template, err
+		}
 		for storagePath := range storagePaths {
 			jobPrefixes, err := bucket.listSubDirs(ctx, storagePath)
 			if err != nil {

@@ -24,7 +24,6 @@ import (
 	"regexp"
 	"sort"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -36,6 +35,7 @@ import (
 	"k8s.io/test-infra/prow/bugzilla"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/labels"
+	"k8s.io/test-infra/prow/logrusutil"
 )
 
 const (
@@ -289,7 +289,7 @@ var (
 
 func (a Approve) HasSelfApproval() bool {
 	if a.DeprecatedImplicitSelfApprove != nil {
-		warnDeprecated(&warnImplicitSelfApprove, 5*time.Minute, "Please update plugins.yaml to use require_self_approval instead of the deprecated implicit_self_approve before June 2019")
+		logrusutil.ThrottledWarnf(&warnImplicitSelfApprove, 5*time.Minute, "Please update plugins.yaml to use require_self_approval instead of the deprecated implicit_self_approve before June 2019")
 		return *a.DeprecatedImplicitSelfApprove
 	} else if a.RequireSelfApproval != nil {
 		return !*a.RequireSelfApproval
@@ -299,7 +299,7 @@ func (a Approve) HasSelfApproval() bool {
 
 func (a Approve) ConsiderReviewState() bool {
 	if a.DeprecatedReviewActsAsApprove != nil {
-		warnDeprecated(&warnReviewActsAsApprove, 5*time.Minute, "Please update plugins.yaml to use ignore_review_state instead of the deprecated review_acts_as_approve before June 2019")
+		logrusutil.ThrottledWarnf(&warnReviewActsAsApprove, 5*time.Minute, "Please update plugins.yaml to use ignore_review_state instead of the deprecated review_acts_as_approve before June 2019")
 		return *a.DeprecatedReviewActsAsApprove
 	} else if a.IgnoreReviewState != nil {
 		return !*a.IgnoreReviewState
@@ -685,29 +685,6 @@ func (r RequireMatchingLabel) validate() error {
 		return errors.New("'regexp' must not match 'missing_label'")
 	}
 	return nil
-}
-
-var warnLock sync.RWMutex // Rare updates and concurrent readers, so reuse the same lock
-
-// warnDeprecated prints a deprecation warning for a particular configuration
-// option.
-func warnDeprecated(last *time.Time, freq time.Duration, msg string) {
-	// have we warned within the last freq?
-	warnLock.RLock()
-	fresh := time.Now().Sub(*last) <= freq
-	warnLock.RUnlock()
-	if fresh { // we've warned recently
-		return
-	}
-	// Warning is stale, will we win the race to warn?
-	warnLock.Lock()
-	defer warnLock.Unlock()
-	now := time.Now()           // Recalculate now, we might wait awhile for the lock
-	if now.Sub(*last) <= freq { // Nope, we lost
-		return
-	}
-	*last = now
-	logrus.Warn(msg)
 }
 
 // Describe generates a human readable description of the behavior that this
@@ -1137,7 +1114,7 @@ var warnTriggerTrustedOrg time.Time
 func validateTrigger(triggers []Trigger) error {
 	for _, trigger := range triggers {
 		if trigger.TrustedOrg != "" {
-			warnDeprecated(&warnTriggerTrustedOrg, 5*time.Minute, "trusted_org functionality is deprecated. Please ensure your configuration is updated before the end of December 2019.")
+			logrusutil.ThrottledWarnf(&warnTriggerTrustedOrg, 5*time.Minute, "trusted_org functionality is deprecated. Please ensure your configuration is updated before the end of December 2019.")
 		}
 	}
 	return nil
@@ -1155,7 +1132,7 @@ func validateSlack(slack Slack) error {
 				return errors.New("invalid Slack merge warning configuration: both whitelist (deprecated) and exempt_users are set.")
 			}
 
-			warnDeprecated(&warnSlackMergeWarningWhiteList, 5*time.Minute, "whitelist field in Slack merge warning is deprecated and has been renamed to exempt_users. Please update your configuration.")
+			logrusutil.ThrottledWarnf(&warnSlackMergeWarningWhiteList, 5*time.Minute, "whitelist field in Slack merge warning is deprecated and has been renamed to exempt_users. Please update your configuration.")
 			slack.MergeWarnings[i].ExemptUsers = slack.MergeWarnings[i].WhiteList
 		}
 
@@ -1164,7 +1141,7 @@ func validateSlack(slack Slack) error {
 				return errors.New("invalid Slack merge warning configuration: both branch_whitelist (deprecated) and exempt_branches are set.")
 			}
 
-			warnDeprecated(&warnSlackMergeWarningBranchWhiteList, 5*time.Minute, "branch_whitelist field in Slack merge warning is deprecated and has been renamed to exempt_branches. Please update your configuration.")
+			logrusutil.ThrottledWarnf(&warnSlackMergeWarningBranchWhiteList, 5*time.Minute, "branch_whitelist field in Slack merge warning is deprecated and has been renamed to exempt_branches. Please update your configuration.")
 			slack.MergeWarnings[i].ExemptBranches = slack.MergeWarnings[i].BranchWhiteList
 		}
 	}
@@ -1570,7 +1547,7 @@ func ResolveBugzillaOptions(parent, child BugzillaBranchOptions) BugzillaBranchO
 			output.DependentBugTargetReleases = parent.DependentBugTargetReleases
 		}
 		if parent.DeprecatedDependentBugTargetRelease != nil {
-			warnDeprecated(&warnDependentBugTargetRelease, 5*time.Minute, "Please update plugins.yaml to use dependent_bug_target_releases instead of the deprecated dependent_bug_target_release")
+			logrusutil.ThrottledWarnf(&warnDependentBugTargetRelease, 5*time.Minute, "Please update plugins.yaml to use dependent_bug_target_releases instead of the deprecated dependent_bug_target_release")
 			if parent.DependentBugTargetReleases == nil {
 				output.DependentBugTargetReleases = &[]string{*parent.DeprecatedDependentBugTargetRelease}
 			} else if !sets.NewString(*parent.DependentBugTargetReleases...).Has(*parent.DeprecatedDependentBugTargetRelease) {
@@ -1639,7 +1616,7 @@ func ResolveBugzillaOptions(parent, child BugzillaBranchOptions) BugzillaBranchO
 		output.DependentBugTargetReleases = child.DependentBugTargetReleases
 	}
 	if child.DeprecatedDependentBugTargetRelease != nil {
-		warnDeprecated(&warnDependentBugTargetRelease, 5*time.Minute, "Please update plugins.yaml to use dependent_bug_target_releases instead of the deprecated dependent_bug_target_release")
+		logrusutil.ThrottledWarnf(&warnDependentBugTargetRelease, 5*time.Minute, "Please update plugins.yaml to use dependent_bug_target_releases instead of the deprecated dependent_bug_target_release")
 		if child.DependentBugTargetReleases == nil {
 			output.DependentBugTargetReleases = &[]string{*child.DeprecatedDependentBugTargetRelease}
 		} else if !sets.NewString(*child.DependentBugTargetReleases...).Has(*child.DeprecatedDependentBugTargetRelease) {

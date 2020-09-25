@@ -25,6 +25,7 @@ import (
 
 	"github.com/fsouza/fake-gcs-server/fakestorage"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/io/providers"
 )
@@ -343,6 +344,16 @@ func Test_getJobHistory(t *testing.T) {
 
 	fakeGCSClient := gcsServer.Client()
 
+	boolTrue := true
+	ca := &config.Agent{}
+	ca.Set(&config.Config{
+		ProwConfig: config.ProwConfig{
+			Deck: config.Deck{
+				SkipStoragePathValidation: &boolTrue,
+			},
+		},
+	})
+
 	tests := []struct {
 		name    string
 		url     string
@@ -374,7 +385,7 @@ func Test_getJobHistory(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			jobURL, _ := url.Parse(tt.url)
-			got, err := getJobHistory(context.Background(), jobURL, io.NewGCSOpener(fakeGCSClient))
+			got, err := getJobHistory(context.Background(), jobURL, ca.Config, io.NewGCSOpener(fakeGCSClient))
 			var actualErr string
 			if err != nil {
 				actualErr = err.Error()
