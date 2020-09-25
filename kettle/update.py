@@ -16,7 +16,7 @@
 
 
 import os
-from datetime import datetime
+
 
 DUMP = 'dump.txt'
 
