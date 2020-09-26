@@ -74,8 +74,6 @@ skip_jobs = [
     'kops-grid-cilium-amzn2',
     'kops-grid-cilium-amzn2-k18',
     'kops-grid-cilium-centos7',
-    'kops-grid-cilium-centos7-k16',
-    'kops-grid-cilium-centos7-k16-ko18',
     'kops-grid-cilium-centos7-k17',
     'kops-grid-cilium-centos7-k17-ko18',
     'kops-grid-cilium-centos7-k18',
@@ -84,16 +82,12 @@ skip_jobs = [
     'kops-grid-cilium-deb9',
     'kops-grid-cilium-deb9-k18',
     'kops-grid-cilium-rhel7',
-    'kops-grid-cilium-rhel7-k16',
-    'kops-grid-cilium-rhel7-k16-ko18',
     'kops-grid-cilium-rhel7-k17',
     'kops-grid-cilium-rhel7-k17-ko18',
     'kops-grid-cilium-rhel7-k18',
     'kops-grid-cilium-rhel7-k18-ko18',
     'kops-grid-cilium-rhel7-ko18',
     'kops-grid-cilium-u1604',
-    'kops-grid-cilium-u1604-k16',
-    'kops-grid-cilium-u1604-k16-ko18',
     'kops-grid-cilium-u1604-k17',
     'kops-grid-cilium-u1604-k17-ko18',
     'kops-grid-cilium-u1604-k18',
@@ -314,9 +308,9 @@ distro_options = [
 
 k8s_versions = [
     None,
-    "1.16",
     "1.17",
     "1.18",
+    "1.19"
 ]
 
 kops_versions = [
