@@ -12,7 +12,7 @@ presubmits:
         command:
         - runner.sh
         - make
-        - lint
+        - verify
     annotations:
       testgrid-dashboards: sig-instrumentation-metrics-server
       testgrid-tab-name: pr-verify
