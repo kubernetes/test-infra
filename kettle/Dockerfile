@@ -36,7 +36,8 @@ RUN curl -fsSL https://downloads.python.org/pypy/pypy3.6-v7.3.1-linux64.tar.bz2 
     ln -s /opt/pypy*/bin/pypy3 /usr/bin
 
 RUN curl https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-294.0.0-linux-x86_64.tar.gz | tar xfz - -C . && \
-    ./google-cloud-sdk/install.sh -q
+    ./google-cloud-sdk/install.sh -q && \
+    ln -s /google-cloud-sdk/bin/* /bin/
 
 ADD *.py schema.json runner.sh buckets.yaml /kettle/
 
