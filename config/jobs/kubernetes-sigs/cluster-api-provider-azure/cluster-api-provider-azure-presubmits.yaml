@@ -328,14 +328,11 @@ presubmits:
           cp coverage.* ${ARTIFACTS}
           cd ../../k8s.io/test-infra/gopherage
           GO111MODULE=on go build .
-          find ${ARTIFACTS} -type f -iname 'junit*.xml' -exec rm {} \;
-          ./gopherage filter --exclude-path="zz_generated,generated\.pb\.go" "${ARTIFACTS}/coverage.out" > "${ARTIFACTS}/filtered.cov" || result=$?
+          ./gopherage filter --exclude-path="zz_generated,generated\.go" "${ARTIFACTS}/coverage.out" > "${ARTIFACTS}/filtered.cov" || result=$?
           ./gopherage html "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/coverage.html" || result=$?
-          ./gopherage junit --threshold 0.05 "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/junit_coverage.xml" || result=$?
+          ./gopherage junit --threshold 0 "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/junit_coverage.xml" || result=$?
           exit $result
         securityContext:
           privileged: true
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-      testgrid-tab-name: pr-coverage
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
