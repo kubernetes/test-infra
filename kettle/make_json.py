@@ -36,7 +36,7 @@ SECONDS_PER_DAY = 86400
 
 def buckets_yaml():
     import ruamel.yaml as yaml  # pylint: disable=import-outside-toplevel
-    with open(os.path.dirname(os.path.abspath(__file__))+'/buckets.yaml') as fp:
+    with open(os.path.dirname(os.path.abspath('__file__'))+'/buckets.yaml') as fp:
         return yaml.safe_load(fp)
 
 # pypy compatibility hack
@@ -45,7 +45,7 @@ def python_buckets_yaml(python='python3'):
         [python, '-c',
          'import json, ruamel.yaml as yaml; print(json.dumps(yaml.safe_load(open("buckets.yaml"))))'
          ],
-        cwd=os.path.dirname(os.path.abspath(__file__))).decode("utf-8"))
+        cwd=os.path.dirname(os.path.abspath('__file__'))).decode("utf-8"))
 
 for attempt in [python_buckets_yaml, buckets_yaml, lambda: python_buckets_yaml(python='python')]:
     try:
@@ -57,6 +57,10 @@ else:
     # pylint: disable=misplaced-bare-raise
     # This is safe because the only way we get here is by faling all attempts
     raise
+
+
+class BuildError(Exception):
+    pass
 
 class Build:
     """
@@ -103,11 +107,11 @@ class Build:
             if self.path.startswith(bucket):
                 prefix = meta['prefix']
                 break
-
+        else:
             if self.path.startswith('gs://kubernetes-jenkins/pr-logs'):
                 prefix = 'pr:'
             else:
-                raise ValueError('unknown build path')
+                raise BuildError(f'unknown build path for {self.path} in known bucket paths')
         build = os.path.basename(self.path)
         job = prefix + os.path.basename(os.path.dirname(self.path))
         self.job = job
