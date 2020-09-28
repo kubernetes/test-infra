@@ -250,7 +250,7 @@ func handle(ghc githubClient, gc git.ClientFactory, roc repoownersClient, log *l
 	}
 	// If OWNERS_ALIASES file exists, get all aliases.
 	// If the file was modified, check for non trusted users in the newly added owners.
-	nonTrustedUsers, trustedUsers, repoAliases, err := nonTrustedUsersInOwnersAliases(ghc, log, triggerConfig, org, repo, r.Directory(), modifiedOwnerAliasesFile.Patch, ownerAliasesModified, skipTrustedUserCheck)
+	nonTrustedUsers, trustedUsers, repoAliases, err := NonTrustedUsersInOwnersAliases(ghc, log, triggerConfig, org, repo, r.Directory(), modifiedOwnerAliasesFile.Patch, ownerAliasesModified, skipTrustedUserCheck)
 	if err != nil {
 		return err
 	}
@@ -271,7 +271,7 @@ func handle(ghc githubClient, gc git.ClientFactory, roc repoownersClient, log *l
 		}
 
 		if !skipTrustedUserCheck {
-			nonTrustedUsers, err = nonTrustedUsersInOwners(ghc, log, triggerConfig, org, repo, c.Patch, c.Filename, owners, nonTrustedUsers, trustedUsers, repoAliases)
+			nonTrustedUsers, err = NonTrustedUsersInOwners(ghc, log, triggerConfig, org, repo, c.Patch, c.Filename, owners, nonTrustedUsers, trustedUsers, repoAliases)
 			if err != nil {
 				return err
 			}
@@ -430,7 +430,7 @@ func markdownFriendlyComment(org, joinOrgURL string, nonTrustedUsers map[string]
 	return strings.Join(commentLines, "\n")
 }
 
-func nonTrustedUsersInOwnersAliases(ghc githubClient, log *logrus.Entry, triggerConfig plugins.Trigger, org, repo, dir, patch string, ownerAliasesModified, skipTrustedUserCheck bool) (map[string]nonTrustedReasons, sets.String, repoowners.RepoAliases, error) {
+func NonTrustedUsersInOwnersAliases(ghc githubClient, log *logrus.Entry, triggerConfig plugins.Trigger, org, repo, dir, patch string, ownerAliasesModified, skipTrustedUserCheck bool) (map[string]nonTrustedReasons, sets.String, repoowners.RepoAliases, error) {
 	repoAliases := make(repoowners.RepoAliases)
 	// nonTrustedUsers is a map of non-trusted users to the reasons they were not trusted
 	nonTrustedUsers := map[string]nonTrustedReasons{}
@@ -464,7 +464,7 @@ func nonTrustedUsersInOwnersAliases(ghc githubClient, log *logrus.Entry, trigger
 	return nonTrustedUsers, trustedUsers, repoAliases, nil
 }
 
-func nonTrustedUsersInOwners(ghc githubClient, log *logrus.Entry, triggerConfig plugins.Trigger, org, repo, patch, fileName string, owners []string, nonTrustedUsers map[string]nonTrustedReasons, trustedUsers sets.String, repoAliases repoowners.RepoAliases) (map[string]nonTrustedReasons, error) {
+func NonTrustedUsersInOwners(ghc githubClient, log *logrus.Entry, triggerConfig plugins.Trigger, org, repo, patch, fileName string, owners []string, nonTrustedUsers map[string]nonTrustedReasons, trustedUsers sets.String, repoAliases repoowners.RepoAliases) (map[string]nonTrustedReasons, error) {
 	var err error
 	for _, owner := range owners {
 		// ignore if owner is an alias

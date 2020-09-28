@@ -48,4 +48,5 @@ const (
 	Shrug                       = "¯\\_(ツ)_/¯"
 	WorkInProgress              = "do-not-merge/work-in-progress"
 	ValidBug                    = "bugzilla/valid-bug"
+	Welcome                     = "welcome"
 )
