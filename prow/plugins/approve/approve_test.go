@@ -1385,6 +1385,10 @@ type fakeRepoOwners struct {
 	fakeRepo
 }
 
+func (fro fakeRepoOwners) AllOwners() sets.String {
+	return sets.String{}
+}
+
 func (fro fakeRepoOwners) FindLabelsForFile(path string) sets.String {
 	return sets.NewString()
 }
