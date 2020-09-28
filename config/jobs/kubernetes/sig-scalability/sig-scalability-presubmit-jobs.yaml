@@ -1,5 +1,7 @@
 presubmits:
   kubernetes/kubernetes:
+  # This job is lighweight version of release blocking periodic job 'ci-kubernetes-e2e-gci-gce-scalability'.
+  # Some elements (like access tokens) are removed to speed up testing.
   - name: pull-kubernetes-e2e-gce-100-performance
     cluster: k8s-infra-prow-build
     always_run: true
@@ -48,7 +50,6 @@ presubmits:
         - --test-cmd-args=--report-dir=/workspace/_artifacts
         - --test-cmd-args=--testconfig=testing/density/config.yaml
         - --test-cmd-args=--testconfig=testing/load/config.yaml
-        - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
         - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
         - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
         - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
