@@ -1,7 +1,7 @@
 # periodic jobs
 
 periodics:
-- name: ci-kubernetes-e2e-kubeadm-kinder-master
+- name: ci-kubernetes-e2e-kubeadm-kinder-latest
   interval: 2h
   decorate: true
   labels:
@@ -9,7 +9,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kubeadm,sig-release-master-informing
-    testgrid-tab-name: kubeadm-kinder-master
+    testgrid-tab-name: kubeadm-kinder-latest
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com, release-team@kubernetes.io
     description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster and run kubeadm-e2e and the conformance suite"
     testgrid-num-columns-recent: "20"
@@ -33,7 +33,7 @@ periodics:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"
       args:
-      - "regular-master"
+      - "regular-latest"
       securityContext:
         privileged: true
       resources:

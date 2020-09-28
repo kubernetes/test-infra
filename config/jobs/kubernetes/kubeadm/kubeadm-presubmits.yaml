@@ -13,7 +13,7 @@ presubmits:
         command:
         - "./kinder/hack/verify-all.sh"
 
-  - name: pull-kubeadm-kinder-upgrade-master
+  - name: pull-kubeadm-kinder-upgrade-latest
     optional: false
     decorate: true
     run_if_changed: '^kinder\/.*$'
@@ -36,7 +36,7 @@ presubmits:
         - runner.sh
         - "../kubeadm/kinder/ci/kinder-run.sh"
         args:
-        - "presubmit-upgrade-master"
+        - "presubmit-upgrade-latest"
         securityContext:
           privileged: true
         resources:

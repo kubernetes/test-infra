@@ -1,7 +1,7 @@
 # periodic jobs
 
 periodics:
-- name: ci-kubernetes-e2e-kubeadm-kinder-discovery-master
+- name: ci-kubernetes-e2e-kubeadm-kinder-discovery-latest
   interval: 2h
   decorate: true
   labels:
@@ -9,7 +9,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kubeadm
-    testgrid-tab-name: kubeadm-kinder-discovery-master
+    testgrid-tab-name: kubeadm-kinder-discovery-latest
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com
     description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster and test alternative discovery methods for kubeadm join"
     testgrid-num-columns-recent: "20"
@@ -33,7 +33,7 @@ periodics:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"
       args:
-      - "discovery-master"
+      - "discovery-latest"
       securityContext:
         privileged: true
       resources:
