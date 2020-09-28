@@ -543,14 +543,14 @@ func (o *RepoOwners) walkFunc(path string, info os.FileInfo, err error) error {
 			return err
 		}
 		if err != nil {
-			log.WithError(err).Errorf("Failed to unmarshal %s into either Simple or FullConfig.", path)
+			log.WithError(err).Debugf("Failed to unmarshal %s into either Simple or FullConfig.", path)
 		} else {
 			// it's a FullConfig
 			for pattern, config := range c.Filters {
 				var re *regexp.Regexp
 				if pattern != ".*" {
 					if re, err = regexp.Compile(pattern); err != nil {
-						log.WithError(err).Errorf("Invalid regexp %q.", pattern)
+						log.WithError(err).Debugf("Invalid regexp %q.", pattern)
 						continue
 					}
 				}
