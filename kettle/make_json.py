@@ -59,9 +59,6 @@ else:
     raise
 
 
-class BuildError(Exception):
-    pass
-
 class Build:
     """
     Represent Metadata and Details of a build. Leveraging the information in
@@ -103,15 +100,17 @@ class Build:
 
     def populate_path_to_job_and_number(self):
         assert not self.path.endswith('/')
+        prefix = ''
         for bucket, meta in BUCKETS.items():
             if self.path.startswith(bucket):
                 prefix = meta['prefix']
                 break
+        #if job path not in buckets.yaml or gs://kubernetes-jenkins/pr-logs it is unmatched
         else:
             if self.path.startswith('gs://kubernetes-jenkins/pr-logs'):
                 prefix = 'pr:'
             else:
-                raise BuildError(f'unknown build path for {self.path} in known bucket paths')
+                raise ValueError(f'unknown build path for {self.path} in known bucket paths')
         build = os.path.basename(self.path)
         job = prefix + os.path.basename(os.path.dirname(self.path))
         self.job = job
