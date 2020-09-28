@@ -26,7 +26,7 @@ spec:
       restartPolicy: Never  # https://github.com/kubernetes/kubernetes/issues/54870
       containers:
       - name: label-sync
-        image: gcr.io/k8s-prow/label_sync:v20200924-4bb1aa1ffa
+        image: gcr.io/k8s-prow/label_sync:v20200925-a1858f46d6
         args:
         - --config=/etc/config/labels.yaml
         - --confirm=true
