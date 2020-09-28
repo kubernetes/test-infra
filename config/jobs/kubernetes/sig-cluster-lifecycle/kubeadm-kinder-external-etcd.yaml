@@ -1,7 +1,7 @@
 # periodic jobs
 
 periodics:
-- name: ci-kubernetes-e2e-kubeadm-kinder-external-etcd-master
+- name: ci-kubernetes-e2e-kubeadm-kinder-external-etcd-latest
   interval: 2h
   decorate: true
   labels:
@@ -9,7 +9,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kubeadm
-    testgrid-tab-name: kubeadm-kinder-external-etcd-master
+    testgrid-tab-name: kubeadm-kinder-external-etcd-latest
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com
     description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster with external etcd and run kubeadm-e2e and the conformance suite"
     testgrid-num-columns-recent: "20"
@@ -33,7 +33,7 @@ periodics:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"
       args:
-      - "external-etcd-master"
+      - "external-etcd-latest"
       securityContext:
         privileged: true
       resources:
