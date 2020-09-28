@@ -118,7 +118,8 @@ def main(options):
     pool_to_shrink = options.shrink
 
     # obtain current pool sizes
-    pool_sizes = get_pool_sizes(PROJECT, ZONE, CLUSTER)
+    project, zone, cluster = options.project, options.zone, options.cluster
+    pool_sizes = get_pool_sizes(project, zone, cluster)
     pool_to_grow_initial = pool_sizes[pool_to_grow]
     pool_to_shrink_initial = pool_sizes[pool_to_shrink]
 
@@ -135,7 +136,7 @@ def main(options):
         'Shifting NodePool capacity for project = "{project}",'
         'zone = "{zone}", cluster = "{cluster}"'
         ).format(
-            project=PROJECT, zone=ZONE, cluster=CLUSTER,
+            project=project, zone=zone, cluster=cluster,
         ))
     print('')
     print((
@@ -178,7 +179,7 @@ def main(options):
             shrink_increment=shrink_increment, pool_to_shrink=pool_to_shrink,
         ))
         new_size = max(pool_to_shrink_initial - (i*shrink_increment + shrink_increment), 0)
-        resize_nodepool(pool_to_shrink, new_size, PROJECT, ZONE, CLUSTER)
+        resize_nodepool(pool_to_shrink, new_size, project, zone, cluster)
         print('')
 
         # ditto for growing, modulo the cap
@@ -187,7 +188,7 @@ def main(options):
             num_to_add=num_to_add, pool_to_grow=pool_to_grow,
         ))
         new_size = pool_to_grow_initial + (i*grow_increment + num_to_add)
-        resize_nodepool(pool_to_grow, new_size, PROJECT, ZONE, CLUSTER)
+        resize_nodepool(pool_to_grow, new_size, project, zone, cluster)
         print('')
 
     print('')
