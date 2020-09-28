@@ -8,7 +8,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: golang:1.13
+    - image: golang:1.15
       command:
       - ./hack/ci-check-everything.sh
       resources:
