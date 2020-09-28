@@ -492,7 +492,7 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]corev1.Pod
 	if !pj.Complete() && pod.DeletionTimestamp != nil {
 		pj.SetComplete()
 		pj.Status.State = prowapi.ErrorState
-		pj.Status.Description = "Pod got deleteted unexpectedly"
+		pj.Status.Description = "Pod got deleted unexpectedly"
 	}
 
 	var err error

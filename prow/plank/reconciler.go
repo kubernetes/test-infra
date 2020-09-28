@@ -441,7 +441,7 @@ func (r *reconciler) syncPendingJob(pj *prowv1.ProwJob) error {
 	if !pj.Complete() && pod != nil && pod.DeletionTimestamp != nil {
 		pj.SetComplete()
 		pj.Status.State = prowv1.ErrorState
-		pj.Status.Description = "Pod got deleteted unexpectedly"
+		pj.Status.Description = "Pod got deleted unexpectedly"
 	}
 
 	pj.Status.URL, err = pjutil.JobURL(r.config().Plank, *pj, r.log)
