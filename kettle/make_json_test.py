@@ -499,7 +499,7 @@ class MakeJsonTest(unittest.TestCase):
         expect('gs://kubernetes-jenkins/logs/some-build/123asdf', 'some-build', None)
         expect('gs://kubernetes-jenkins/pr-logs/123/e2e-node/456', 'pr:e2e-node', 456)
 
-        with self.assertRaises(ValueError):
+        with self.assertRaises(make_json.BuildError):
             expect('gs://unknown-bucket/foo/123', None, None)
             expect('gs://unknown-bucket/foo/123/', None, None)
 
