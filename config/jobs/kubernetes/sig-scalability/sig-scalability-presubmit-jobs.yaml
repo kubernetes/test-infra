@@ -603,6 +603,33 @@ presubmits:
             cpu: 1
             memory: "2Gi"
 
+  - name: pull-perf-tests-verify-all-python
+    decorate: true
+    always_run: true
+    # TODO(jprzychodzen): Make this non-optional after verification that it works
+    # See discussion in kubernetes/perf-tests#1470 for context
+    optional: true
+    skip_branches:
+      - release-1.1[2-9] # Presubmit has been implemented for 1.20+ releases
+    path_alias: "k8s.io/perf-tests"
+    annotations:
+      testgrid-dashboards: presubmits-kubernetes-scalability
+      testgrid-tab-name: pull-perf-tests-verify-python-all
+    spec:
+      containers:
+        - image: python:3
+          command:
+            - make
+          args:
+            - verify-all-python
+          resources:
+            requests:
+              cpu: 1
+              memory: "2Gi"
+            limits:
+              cpu: 1
+              memory: "2Gi"
+
   - name: pull-perf-tests-verify-test
     decorate: true
     always_run: true
