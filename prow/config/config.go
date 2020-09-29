@@ -1406,6 +1406,9 @@ func validateJobBase(v JobBase, jobType prowapi.ProwJobType, podNamespace string
 	if err := validateLabels(v.Labels); err != nil {
 		return err
 	}
+	if err := validateAnnotation(v.Annotations); err != nil {
+		return err
+	}
 	if v.Spec == nil || len(v.Spec.Containers) == 0 {
 		return nil // jenkins jobs have no spec
 	}
@@ -1894,6 +1897,15 @@ func validateLabels(labels map[string]string) error {
 		}
 		if errs := validation.IsValidLabelValue(labels[label]); len(errs) != 0 {
 			return fmt.Errorf("label %s has invalid value %s: %v", label, value, errs)
+		}
+	}
+	return nil
+}
+
+func validateAnnotation(a map[string]string) error {
+	for key := range a {
+		if errs := validation.IsQualifiedName(key); len(errs) > 0 {
+			return fmt.Errorf("invalid annotation key %q: %v", key, errs)
 		}
 	}
 	return nil
