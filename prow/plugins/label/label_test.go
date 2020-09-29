@@ -227,6 +227,16 @@ func TestLabel(t *testing.T) {
 			action:                github.GenericCommentActionCreated,
 		},
 		{
+			name:                  "Add Multiple Area Labels, With Trailing Whitespace",
+			body:                  "/area api infra ",
+			repoLabels:            []string{"area/infra", "area/api"},
+			issueLabels:           []string{},
+			expectedNewLabels:     formatLabels("area/api", "area/infra"),
+			expectedRemovedLabels: []string{},
+			commenter:             orgMember,
+			action:                github.GenericCommentActionCreated,
+		},
+		{
 			name:                  "Label Prefix Must Match Command (Area-Priority Mismatch)",
 			body:                  "/area urgent",
 			repoLabels:            []string{"area/infra", "area/api", "priority/critical", "priority/urgent"},
