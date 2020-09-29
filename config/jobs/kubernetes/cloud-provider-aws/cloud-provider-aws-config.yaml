@@ -1,3 +1,22 @@
+presets:
+- labels:
+    preset-cloud-provider-aws-config: "true"
+  env:
+  - name: GCR_KEY_FILE
+    value: /root/.cloud-provider-aws/keyfile.json
+  volumes:
+  - name: cloud-provider-aws-config
+    secret:
+      secretName: cloud-provider-aws-config
+      items:
+      - key: keyfile.json
+        path: keyfile.json
+        mode: 288
+  volumeMounts:
+  - name: cloud-provider-aws-config
+    mountPath: /root/.cloud-provider-aws
+    readOnly: true
+
 presubmits:
   kubernetes/cloud-provider-aws:
   - name: pull-cloud-provider-aws-check
@@ -38,3 +57,65 @@ presubmits:
       testgrid-tab-name: test
       description: aws cloud provider tests
       testgrid-num-columns-recent: '30'
+
+postsubmits:
+  kubernetes/cloud-provider-aws:
+  - name: post-cloud-provider-aws-deploy
+    decorate: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-cloud-provider-aws-e2e-config: "true"
+    max_concurrency: 1
+    branches:
+    - ^master$
+    always_run: true
+    path_alias: k8s.io/cloud-provider-aws
+    skip_submodules: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200925-46c65ff-master
+        resources:
+          requests:
+            cpu: "1000m"
+        command:
+        - "make"
+        args:
+        - "release-push"
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-aws-cloud-provider-aws
+      testgrid-tab-name: deploy
+      testgrid-alert-email: ???
+      testgrid-num-columns-recent: '20'
+      description: Pushes new images and binaries from master
+
+  - name: post-cloud-provider-aws-release
+    decorate: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-cloud-provider-aws-config: "true"
+    max_concurrency: 1
+    branches:
+    - ^v\d+\.\d+\.\d+(-(alpha|beta|rc)\.(\d)+)?$
+    always_run: false
+    path_alias: k8s.io/cloud-provider-aws
+    skip_submodules: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200925-46c65ff-master
+        resources:
+          requests:
+            cpu: "1000m"
+        command:
+        - "make"
+        args:
+        - "release-push"
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-aws-cloud-provider-aws
+      testgrid-tab-name: release
+      testgrid-alert-email: ???
+      description: releases new tagged images and binaries
+
