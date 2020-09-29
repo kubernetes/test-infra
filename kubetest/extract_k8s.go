@@ -293,7 +293,7 @@ var getKube = func(url, version string, getSrc bool) error {
 		return err
 	}
 	log.Printf("U=%s R=%s get-kube.sh", url, version)
-	for i := 0; i < 3; i++ {
+	for i := 0; i < 5; i++ {
 		err = control.FinishRunning(exec.Command(k))
 		if err == nil {
 			break
