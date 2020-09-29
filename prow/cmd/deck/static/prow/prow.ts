@@ -257,6 +257,16 @@ window.onload = (): void => {
         const targetRow = builds.childNodes[rowNumber] as HTMLTableRowElement;
         targetRow.scrollIntoView();
     });
+    window.addEventListener("popstate", () => {
+        const optsPopped = optionsForRepo("");
+        const fzPopped = initFuzzySearch(
+            "job",
+            "job-input",
+            "job-list",
+            Object.keys(optsPopped.jobs).sort());
+        redrawOptions(fzPopped, optsPopped);
+        redraw(fzPopped, false);
+    });
     // set dropdown based on options from query string
     const opts = optionsForRepo("");
     const fz = initFuzzySearch(
@@ -414,7 +424,7 @@ function escapeRegexLiteral(s: string): string {
     return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-function redraw(fz: FuzzySearch): void {
+function redraw(fz: FuzzySearch, pushState: boolean = true): void {
     const rerunStatus = getParameterByName("rerun");
     const modal = document.getElementById('rerun')!;
     const rerunCommand = document.getElementById('rerun-content')!;
@@ -433,7 +443,7 @@ function redraw(fz: FuzzySearch): void {
 
     function getSelection(name: string): string {
         const sel = selectionText(document.getElementById(name) as HTMLSelectElement);
-        if (sel && opts && !opts[name + 's' as keyof RepoOptions][sel]) {
+        if (sel && name !== 'repo' && !opts[name + 's' as keyof RepoOptions][sel]) {
             return "";
         }
         if (sel !== "") {
@@ -451,7 +461,7 @@ function redraw(fz: FuzzySearch): void {
         if (inputText !== "") {
             args.push(`${id}=${encodeURIComponent(inputText)}`);
         }
-        if (inputText !== "" && opts && opts[id + 's' as keyof RepoOptions][inputText]) {
+        if (inputText !== "" && opts[id + 's' as keyof RepoOptions][inputText]) {
             return new RegExp(`^${escapeRegexLiteral(inputText)}$`);
         }
         const expr = inputText.split('*').map(escapeRegexLiteral);
@@ -470,11 +480,11 @@ function redraw(fz: FuzzySearch): void {
     const jobSel = getSelectionFuzzySearch("job", "job-input");
     const stateSel = getSelection("state");
 
-    if (window.history && window.history.replaceState !== undefined) {
+    if (pushState && window.history && window.history.pushState !== undefined) {
         if (args.length > 0) {
-            history.replaceState(null, "", "/?" + args.join('&'));
+            history.pushState(null, "", "/?" + args.join('&'));
         } else {
-            history.replaceState(null, "", "/");
+            history.pushState(null, "", "/");
         }
     }
     fz.setDict(Object.keys(opts.jobs));
