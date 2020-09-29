@@ -263,7 +263,7 @@ postsubmits:
     decorate: true
     labels:
       preset-service-account: "true"
-    path_alias: github.com/IBM/operand-deployment-lifecycle-manager
+    path_alias: github.com/IBM/ibm-licensing-operator
     spec:
       containers:
       - command:
