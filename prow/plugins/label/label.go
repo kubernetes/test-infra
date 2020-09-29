@@ -88,7 +88,7 @@ type githubClient interface {
 // Get Labels from Regexp matches
 func getLabelsFromREMatches(matches [][]string) (labels []string) {
 	for _, match := range matches {
-		for _, label := range strings.Split(match[0], " ")[1:] {
+		for _, label := range strings.Split(strings.TrimSpace(match[0]), " ")[1:] {
 			label = strings.ToLower(match[1] + "/" + strings.TrimSpace(label))
 			labels = append(labels, label)
 		}
