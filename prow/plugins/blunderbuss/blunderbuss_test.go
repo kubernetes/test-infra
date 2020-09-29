@@ -200,7 +200,7 @@ var (
 	reviewers = map[string]sets.String{
 		"a.go": sets.NewString("al"),
 		"b.go": sets.NewString("al"),
-		"c.go": sets.NewString("charles"),
+		"c.go": sets.NewString("charles", "ben"),
 
 		"e.go":  sets.NewString("erick", "evan"),
 		"ee.go": sets.NewString("erick", "evan"),
