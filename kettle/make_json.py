@@ -100,7 +100,6 @@ class Build:
 
     def populate_path_to_job_and_number(self):
         assert not self.path.endswith('/')
-        prefix = ''
         for bucket, meta in BUCKETS.items():
             if self.path.startswith(bucket):
                 prefix = meta['prefix']
