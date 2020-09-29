@@ -580,8 +580,6 @@ presubmits:
               memory: "2Gi"
 
   - name: pull-perf-tests-verify-all
-    # TODO(oxddr): make it non-optional once we are confident in the presubmit
-    optional: true
     decorate: true
     always_run: true
     skip_branches:
@@ -606,8 +604,6 @@ presubmits:
             memory: "2Gi"
 
   - name: pull-perf-tests-verify-test
-    # TODO(jkaniuk): make it non-optional once we are confident in the presubmit
-    optional: true
     decorate: true
     always_run: true
     branches:
@@ -630,8 +626,6 @@ presubmits:
             memory: "2Gi"
 
   - name: pull-perf-tests-verify-dashboard
-    # TODO(oxddr): make it non-optional once we are confident in the presubmit
-    optional: true
     decorate: true
     run_if_changed: ^clusterloader2/pkg/prometheus/manifests/dashboards/.*\.json$
     skip_branches:
@@ -656,8 +650,6 @@ presubmits:
             memory: "2Gi"
 
   - name: pull-perf-tests-verify-lint
-    # TODO(oxddr): make it non-optional once we are confident in the presubmit
-    optional: true
     decorate: true
     always_run: true
     skip_branches:
