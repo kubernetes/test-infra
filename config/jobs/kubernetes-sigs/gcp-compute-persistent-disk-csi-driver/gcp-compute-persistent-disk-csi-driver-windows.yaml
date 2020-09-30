@@ -74,7 +74,7 @@ periodics:
       - --gcp-nodes=2
       - --test=false
       - --test-cmd=$GOPATH/src/sigs.k8s.io/gcp-compute-persistent-disk-csi-driver/test/run-windows-k8s-integration.sh
-      - --timeout=120m
+      - --timeout=180m
       env:
       - name: WINDOWS_NODE_OS_DISTRIBUTION
         value: "win2019"
@@ -122,7 +122,7 @@ presubmits:
         - --gcp-nodes=2
         - --test=false
         - --test-cmd=$GOPATH/src/sigs.k8s.io/gcp-compute-persistent-disk-csi-driver/test/run-windows-k8s-integration.sh
-        - --timeout=120m
+        - --timeout=180m
         env:
         - name: WINDOWS_NODE_OS_DISTRIBUTION
           value: "win2019"
@@ -168,7 +168,7 @@ presubmits:
         - --gcp-nodes=2
         - --test=false
         - --test-cmd=$GOPATH/src/sigs.k8s.io/gcp-compute-persistent-disk-csi-driver/test/run-windows-k8s-integration.sh
-        - --timeout=120m
+        - --timeout=180m
         env:
         - name: WINDOWS_NODE_OS_DISTRIBUTION
           value: "win1909"
@@ -215,7 +215,7 @@ presubmits:
         - --gcp-nodes=2
         - --test=false
         - --test-cmd=$GOPATH/src/sigs.k8s.io/gcp-compute-persistent-disk-csi-driver/test/run-windows-k8s-integration.sh
-        - --timeout=120m
+        - --timeout=180m
         env:
         - name: WINDOWS_NODE_OS_DISTRIBUTION
           value: "win2019"
