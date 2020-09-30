@@ -1,67 +1,53 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
+  name: cherrypicker
   labels:
     app: cherrypicker
-  name: cherrypicker
-  namespace: default
 spec:
   replicas: 1
-  selector:
-    matchLabels:
-      app: cherrypicker
-  strategy:
-    rollingUpdate:
-      maxSurge: 25%
-      maxUnavailable: 25%
-    type: RollingUpdate
   template:
     metadata:
       labels:
         app: cherrypicker
     spec:
+      terminationGracePeriodSeconds: 180
       containers:
-      - args:
+      - name: cherrypicker
+        image: gcr.io/k8s-prow/cherrypicker:v20191011-80f304f54
+        args:
         - --dry-run=false
         - --use-prow-assignments=false
         - --github-endpoint=http://ghproxy
         - --github-endpoint=https://api.github.com
-        image: gcr.io/k8s-prow/cherrypicker:v20191011-80f304f54
-        imagePullPolicy: IfNotPresent
-        name: cherrypicker
         ports:
-        - containerPort: 8888
-          name: http
-          protocol: TCP
+        - name: http
+          containerPort: 8888
         volumeMounts:
-        - mountPath: /etc/webhook
-          name: hmac
+        - name: hmac
+          mountPath: /etc/webhook
           readOnly: true
-        - mountPath: /etc/github
-          name: oauth
+        - name: oauth
+          mountPath: /etc/github
           readOnly: true
       volumes:
       - name: hmac
         secret:
-          defaultMode: 420
           secretName: hmac-token
       - name: oauth
         secret:
-          defaultMode: 420
           secretName: oauth-token
 ---
 apiVersion: v1
 kind: Service
 metadata:
+  name: cherrypicker
   labels:
     app: cherrypicker
-  name: cherrypicker
-  namespace: default
 spec:
   ports:
   - name: http
     port: 80
-    protocol: TCP
     targetPort: http
   selector:
     app: cherrypicker
