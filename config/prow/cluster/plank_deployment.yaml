@@ -37,7 +37,7 @@ spec:
       serviceAccountName: plank
       containers:
       - name: plank
-        image: gcr.io/k8s-prow/plank:v20200929-c9e1a8d1a1
+        image: gcr.io/k8s-prow/plank:v20200930-685869686a
         args:
         - --config-path=/etc/config/config.yaml
         - --dry-run=false
