@@ -632,8 +632,8 @@ presubmits:
   - name: pull-perf-tests-verify-test
     decorate: true
     always_run: true
-    branches:
-    - release-1.1[2-8] # Newer branches use verify-all
+    skip_branches:
+    - release-1.19 # We use verify-all for that branch
     path_alias: "k8s.io/perf-tests"
     annotations:
       testgrid-dashboards: presubmits-kubernetes-scalability
