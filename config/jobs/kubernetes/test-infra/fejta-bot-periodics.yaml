@@ -62,7 +62,6 @@ periodics:
       - |-
         --query=org:kubernetes
         org:kubernetes-sigs
-        org:kubernetes-incubator
         org:kubernetes-client
         org:kubernetes-csi
         is:pr
@@ -102,7 +101,6 @@ periodics:
       - |-
         --query=org:kubernetes
         org:kubernetes-sigs
-        org:kubernetes-incubator
         org:kubernetes-client
         org:kubernetes-csi
         -label:lifecycle/frozen
@@ -199,7 +197,6 @@ periodics:
       - |-
         --query=org:kubernetes
         org:kubernetes-sigs
-        org:kubernetes-incubator
         org:kubernetes-client
         org:kubernetes-csi
         -label:lifecycle/frozen
@@ -243,7 +240,6 @@ periodics:
       - |-
         --query=org:kubernetes
         org:kubernetes-sigs
-        org:kubernetes-incubator
         org:kubernetes-client
         org:kubernetes-csi
         -label:lifecycle/frozen
