@@ -31,6 +31,7 @@ import (
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/interrupts"
+	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pluginhelp/externalplugins"
 )
 
@@ -137,6 +138,9 @@ func main() {
 
 		repos: repos,
 	}
+
+	health := pjutil.NewHealth()
+	health.ServeReady()
 
 	mux := http.NewServeMux()
 	mux.Handle("/", server)
