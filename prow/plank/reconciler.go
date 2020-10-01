@@ -196,7 +196,7 @@ func (r *reconciler) defaultReconcile(request reconcile.Request) (reconcile.Resu
 		res = &reconcile.Result{}
 	}
 	if err != nil {
-		r.log.WithError(err).Error("Reconciliation failed")
+		r.log.WithError(err).WithField("name", request.Name).Error("Reconciliation failed")
 	}
 	return *res, err
 }
