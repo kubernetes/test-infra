@@ -218,10 +218,12 @@ slack:
     - k8s-ci-robot
   - repos:
     - kubernetes/utils
+    - kubernetes/component-helpers
     channels:
     - sig-architecture
     exempt_users:
     - k8s-ci-robot
+    - k8s-publishing-bot
   - repos:
     - kubernetes/api
     - kubernetes/apiextensions-apiserver
