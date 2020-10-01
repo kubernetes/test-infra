@@ -242,24 +242,7 @@ func (r *reconciler) terminateDupes(pj *prowv1.ProwJob) error {
 		return fmt.Errorf("failed to list prowjobs: %v", err)
 	}
 
-	return pjutil.TerminateOlderJobs(r.pjClient, r.log, pjs.Items, r.terminateDupesCleanup)
-}
-
-func (r *reconciler) terminateDupesCleanup(pj prowv1.ProwJob) error {
-	client, ok := r.buildClients[pj.ClusterAlias()]
-	if !ok {
-		return fmt.Errorf("no client for cluster %q present", pj.ClusterAlias())
-	}
-	podToDelete := &corev1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Namespace: r.config().PodNamespace,
-			Name:      pj.Name,
-		},
-	}
-	if err := client.Delete(r.ctx, podToDelete); err != nil && !kerrors.IsNotFound(err) {
-		return fmt.Errorf("failed to delete pod %s/%s in cluster %s: %w", podToDelete.Namespace, podToDelete.Name, pj.ClusterAlias(), err)
-	}
-	return nil
+	return pjutil.TerminateOlderJobs(r.pjClient, r.log, pjs.Items)
 }
 
 // syncPendingJob syncs jobs for which we already created the test workload

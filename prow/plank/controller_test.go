@@ -125,11 +125,9 @@ func TestTerminateDupes(t *testing.T) {
 		Name string
 
 		PJs  []prowapi.ProwJob
-		PM   map[string]v1.Pod
 		IsV2 bool
 
-		TerminatedPJs  sets.String
-		TerminatedPods sets.String
+		TerminatedPJs sets.String
 	}
 	var testcases = []testCase{
 		{
@@ -258,13 +256,8 @@ func TestTerminateDupes(t *testing.T) {
 					},
 				},
 			},
-			PM: map[string]v1.Pod{
-				"newest": {ObjectMeta: metav1.ObjectMeta{Name: "newest", Namespace: "pods"}},
-				"old":    {ObjectMeta: metav1.ObjectMeta{Name: "old", Namespace: "pods"}},
-			},
 
-			TerminatedPJs:  sets.NewString("old"),
-			TerminatedPods: sets.NewString("old"),
+			TerminatedPJs: sets.NewString("old"),
 		},
 	}
 
@@ -289,14 +282,6 @@ func TestTerminateDupes(t *testing.T) {
 			fakeProwJobClient := &patchTrackingFakeClient{
 				Client: fakectrlruntimeclient.NewFakeClient(prowJobs...),
 			}
-			var pods []runtime.Object
-			for name := range tc.PM {
-				pod := tc.PM[name]
-				pods = append(pods, &pod)
-			}
-			fakePodClient := &deleteTrackingFakeClient{
-				Client: fakectrlruntimeclient.NewFakeClient(pods...),
-			}
 			fca := &fca{
 				c: &config.Config{
 					ProwConfig: config.ProwConfig{
@@ -310,22 +295,20 @@ func TestTerminateDupes(t *testing.T) {
 			if !tc.IsV2 {
 				c := Controller{
 					prowJobClient: fakeProwJobClient,
-					buildClients:  map[string]ctrlruntimeclient.Client{prowapi.DefaultClusterAlias: fakePodClient},
 					log:           log,
 					config:        fca.Config,
 					clock:         clock.RealClock{},
 				}
-				if err := c.terminateDupes(tc.PJs, tc.PM); err != nil {
+				if err := c.terminateDupes(tc.PJs); err != nil {
 					t.Fatalf("Error terminating dupes: %v", err)
 				}
 
 			} else {
 				r := &reconciler{
-					pjClient:     fakeProwJobClient,
-					buildClients: map[string]ctrlruntimeclient.Client{prowapi.DefaultClusterAlias: fakePodClient},
-					log:          log,
-					config:       fca.Config,
-					clock:        clock.RealClock{},
+					pjClient: fakeProwJobClient,
+					log:      log,
+					config:   fca.Config,
+					clock:    clock.RealClock{},
 				}
 				for _, pj := range tc.PJs {
 					res, err := r.reconcile(&pj)
@@ -346,13 +329,6 @@ func TestTerminateDupes(t *testing.T) {
 				t.Errorf("found unexpectedly deleted prowJobs: %v", extra.List())
 			}
 
-			observedTerminatedPods := fakePodClient.deleted
-			if missing := tc.TerminatedPods.Difference(observedTerminatedPods); missing.Len() > 0 {
-				t.Errorf("did not delete expected pods: %v", missing.List())
-			}
-			if extra := observedTerminatedPods.Difference(tc.TerminatedPods); extra.Len() > 0 {
-				t.Errorf("found unexpectedly deleted pods: %v", extra.List())
-			}
 		})
 	}
 }
