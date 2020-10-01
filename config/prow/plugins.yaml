@@ -511,6 +511,7 @@ require_matching_label:
   org: kubernetes
   repo: kubernetes
   issues: true
+  prs: true
   regexp: ^triage/accepted$
   missing_comment: |
     This issue is currently awaiting triage.
