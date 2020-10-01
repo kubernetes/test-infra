@@ -310,7 +310,7 @@ func (r *reconciler) syncPendingJob(pj *prowv1.ProwJob) error {
 				}
 			}
 			r.log.WithField("name", pj.ObjectMeta.Name).Debug("Delete Pod.")
-			return client.Delete(r.ctx, pod)
+			return ctrlruntimeclient.IgnoreNotFound(client.Delete(r.ctx, pod))
 
 		case corev1.PodSucceeded:
 			pj.SetComplete()
@@ -350,7 +350,7 @@ func (r *reconciler) syncPendingJob(pj *prowv1.ProwJob) error {
 					}
 				}
 				r.log.WithField("name", pj.ObjectMeta.Name).Debug("Delete Pod.")
-				return client.Delete(r.ctx, pod)
+				return ctrlruntimeclient.IgnoreNotFound(client.Delete(r.ctx, pod))
 			}
 			// Pod failed. Update ProwJob, talk to GitHub.
 			pj.SetComplete()
@@ -558,7 +558,7 @@ func (r *reconciler) syncAbortedJob(pj *prowv1.ProwJob) error {
 		Name:      pj.Name,
 		Namespace: r.config().PodNamespace,
 	}}
-	if err := buildClient.Delete(r.ctx, pod); err != nil && !kerrors.IsNotFound(err) {
+	if err := ctrlruntimeclient.IgnoreNotFound(buildClient.Delete(r.ctx, pod)); err != nil {
 		return fmt.Errorf("failed to delete pod %s/%s in cluster %s: %w", pod.Namespace, pod.Name, pj.ClusterAlias(), err)
 	}
 
@@ -606,7 +606,7 @@ func (r *reconciler) deletePod(pj *prowv1.ProwJob) error {
 		},
 	}
 
-	if err := buildClient.Delete(r.ctx, pod); err != nil && !kerrors.IsNotFound(err) {
+	if err := ctrlruntimeclient.IgnoreNotFound(buildClient.Delete(r.ctx, pod)); err != nil {
 		return fmt.Errorf("failed to delete pod: %w", err)
 	}
 
