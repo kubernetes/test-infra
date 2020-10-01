@@ -195,6 +195,11 @@ branch-protection:
             users: []
             teams:
             - stage-bots
+        component-helpers:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
         controller-manager:
           restrictions:
             users: []
@@ -462,6 +467,7 @@ tide:
     - kubernetes/cluster-bootstrap
     - kubernetes/code-generator
     - kubernetes/component-base
+    - kubernetes/component-helpers
     - kubernetes/controller-manager
     - kubernetes/cri-api
     - kubernetes/csi-api
