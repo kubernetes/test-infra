@@ -28,6 +28,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/interrupts"
+	"k8s.io/test-infra/prow/pjutil"
 
 	"k8s.io/test-infra/pkg/flagutil"
 	"k8s.io/test-infra/prow/config"
@@ -109,6 +110,9 @@ func main() {
 		ghc:            githubClient,
 		log:            log,
 	}
+
+	health := pjutil.NewHealth()
+	health.ServeReady()
 
 	mux := http.NewServeMux()
 	mux.Handle("/", serv)
