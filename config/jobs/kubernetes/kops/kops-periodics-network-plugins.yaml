@@ -105,7 +105,7 @@ periodics:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-network-plugins
     testgrid-tab-name: kops-aws-cni-canal
 
-- interval: 8h
+- interval: 1h
   name: e2e-kops-aws-cni-cilium
   labels:
     preset-service-account: "true"
@@ -133,7 +133,7 @@ periodics:
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|TCP.CLOSE_WAIT.timeout|affinity.*clusterIP|switch.session.affinity|service.type.to.nodeport|Services.*rejected.*endpoints|service\.kubernetes\.io|service.type.to.NodePort
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200929-82b41a1-master
   annotations:
