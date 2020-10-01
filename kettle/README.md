@@ -63,8 +63,7 @@ You can watch the pod startup and collect data from various GCS buckets by looki
 ```sh
 kubectl logs -f $(kubectl get pod -l app=kettle -oname)
 ```
-or access [log history](https://console.cloud.google.com/logs/viewer?project=k8s-gubernator&minLogLevel=0&expandAll=false&timestamp=2020-09-11T21:00:29.231000000Z&customFacets=&limitCustomFacetWidth=true&dateRangeStart=2020-09-10T21:00:29.484Z&dateRangeEnd=2020-09-11T21:00:29.484Z&interval=P1D&resource=k8s_container%2Fcluster_name%2Fg8r%2Fnamespace_name%2Fdefault%2Fcontainer_name%2Fkettle&scrollTimestamp=2020-09-11T20:58:58.783347986Z&filters=text:%2B).
-
+or access [log history](https://console.cloud.google.com/logs/query?project=k8s-gubernator) with the Query: `resource.labels.container_name="kettle"`.
 
 It might take a couple of hours to be fully functional and start updating BigQuery. You can always go back to the [Gubernator BigQuery page](https://bigquery.cloud.google.com/table/k8s-gubernator:build.all?pli=1&tab=details) and check to see if data collection has resumed.  Backfill should happen automatically.
 
@@ -72,7 +71,10 @@ It might take a couple of hours to be fully functional and start updating BigQue
 | :exclamation:  Not Fully Functional Yet |
 |-----------------------------------------|
 
-This is a work in progress. `Kettle Staging` uses a similar deployment to `Kettle` however it is allowed much less dish in it's PVC and has a reduced list of buckets to pull from. It will write to the [build.staging](https://pantheon.corp.google.com/bigquery?project=k8s-gubernator&page=table&t=all&d=build&p=k8s-gubernator&redirect_from_classic=true) table only.
+This is a work in progress. `Kettle Staging` uses a similar deployment to `Kettle` with the following differences
+- much less disk in its PVC
+- reduced list of buckets to pull from
+- writes to [build.staging](https://console.cloud.google.com/bigquery?project=k8s-gubernator&page=table&t=all&d=build&p=k8s-gubernator&redirect_from_classic=true) table only.
 
 It can be deployed with `make -C kettle deploy-staging`. If already deployed, you may just run `make -C kettle update-staging`.
 
