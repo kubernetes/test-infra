@@ -527,6 +527,7 @@ periodics:
       - --gcp-nodes=4
       - --gcp-zone=us-west1-b
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:(SCTP|SCTPConnectivity)\] --ginkgo.skip=\[Feature:NetworkPolicy\]
+      # SCTPConnectivity hangs on GCE when trying to access the NodePort service, but works for ClusterIP
+      - --test_args=--ginkgo.focus=\[Feature:SCTP\] --ginkgo.skip=\[Feature:NetworkPolicy\]
       - --timeout=50m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200930-82b41a1-master
