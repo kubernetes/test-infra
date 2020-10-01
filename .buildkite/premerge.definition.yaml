@@ -6,5 +6,5 @@ github:
 teams:
 - name: Everyone
   permission: BUILD_AND_READ
-- name: eng-foundation/eng-velocity
+- name: gen/team/engvelocity
   permission: MANAGE_BUILD_AND_READ
