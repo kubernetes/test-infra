@@ -385,7 +385,7 @@ func TestHandlePullRequest(t *testing.T) {
 
 			Author:      "t",
 			HasOkToTest: true,
-			prAction:    github.PullRequestConvertedToDraft,
+			prAction:    github.PullRequestActionConvertedToDraft,
 			ShouldBuild: false,
 			jobToAbort:  jobToAbort,
 		},
