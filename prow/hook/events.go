@@ -58,7 +58,9 @@ var (
 		github.PullRequestActionReopened:             true,
 		github.PullRequestActionSynchronize:          true,
 		github.PullRequestActionReadyForReview:       true,
-		github.PullRequestConvertedToDraft:           true,
+		github.PullRequestActionConvertedToDraft:     true,
+		github.PullRequestActionLocked:               true,
+		github.PullRequestActionUnlocked:             true,
 	}
 )
 
