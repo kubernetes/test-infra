@@ -23,7 +23,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"sort"
@@ -1090,12 +1089,13 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 		}
 
 		commitTemplates := tideConfig.MergeCommitTemplate(config.OrgRepo{Org: sp.org, Repo: sp.repo})
-		keepTrying, hasMerged := c.tryMerge(func() error {
+		keepTrying, err := tryMerge(func() error {
 			ghMergeDetails := c.prepareMergeDetails(commitTemplates, pr, mergeMethod)
 			return c.ghc.Merge(sp.org, sp.repo, int(pr.Number), ghMergeDetails)
 		})
-		if !hasMerged {
-			errs = append(errs, errors.New("Failed merging"))
+		if err != nil {
+			log.WithError(err).Debug("Merge failed.")
+			errs = append(errs, err)
 			failed = append(failed, int(pr.Number))
 		} else {
 			log.Info("Merged.")
@@ -1128,16 +1128,14 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 
 // tryMerge attempts 1 merge and returns a bool indicating if we should try
 // to merge the remaining PRs and possibly an error.
-// Return: shouldRetry?, merged?
-func (c *Controller) tryMerge(mergeFunc func() error) (bool, bool) {
+func tryMerge(mergeFunc func() error) (bool, error) {
 	var err error
 	const maxRetries = 3
-	log := c.logger
 	backoff := time.Second * 4
 	for retry := 0; retry < maxRetries; retry++ {
 		if err = mergeFunc(); err == nil {
 			// Successful merge!
-			return true, true
+			return true, nil
 		}
 		// TODO: Add a config option to abort batches if a PR in the batch
 		// cannot be merged for any reason. This would skip merging
@@ -1152,8 +1150,7 @@ func (c *Controller) tryMerge(mergeFunc func() error) (bool, bool) {
 			// modifies their PR as we try to merge it in a batch then we
 			// end up in an untested state. This is unlikely to cause any
 			// real problems.
-			log.Debugf("PR was modified: %v", err)
-			return true, false
+			return true, fmt.Errorf("PR was modified: %v", err)
 		} else if _, ok = err.(github.UnmergablePRBaseChangedError); ok {
 			//  complained that the base branch was modified. This is a
 			// strange error because the API doesn't even allow the request to
@@ -1163,36 +1160,32 @@ func (c *Controller) tryMerge(mergeFunc func() error) (bool, bool) {
 			// in time. https://github.com/kubernetes/test-infra/issues/5171
 			// We handle this by sleeping for a few seconds before trying to
 			// merge again.
-			log.Debugf("base branch was modified: %v", err)
+			err = fmt.Errorf("base branch was modified: %v", err)
 			if retry+1 < maxRetries {
 				sleep(backoff)
 				backoff *= 2
 			}
-			return true, false
 		} else if _, ok = err.(github.UnauthorizedToPushError); ok {
 			// GitHub let us know that the token used cannot push to the branch.
 			// Even if the robot is set up to have write access to the repo, an
 			// overzealous branch protection setting will not allow the robot to
 			// push to a specific branch.
 			// We won't be able to merge the other PRs.
-			log.Debugf("branch needs to be configured to allow this robot to push: %v", err)
-			return false, false
+			return false, fmt.Errorf("branch needs to be configured to allow this robot to push: %v", err)
 		} else if _, ok = err.(github.MergeCommitsForbiddenError); ok {
 			// GitHub let us know that the merge method configured for this repo
 			// is not allowed by other repo settings, so we should let the admins
 			// know that the configuration needs to be updated.
 			// We won't be able to merge the other PRs.
-			log.Debugf("Tide needs to be configured to use the 'rebase' merge method for this repo or the repo needs to allow merge commits: %v", err)
-			return false, false
+			return false, fmt.Errorf("Tide needs to be configured to use the 'rebase' merge method for this repo or the repo needs to allow merge commits: %v", err)
 		} else if _, ok = err.(github.UnmergablePRError); ok {
-			log.Debugf("PR is unmergable. Do the Tide merge requirements match the GitHub settings for the repo? %v", err)
-			return true, false
+			return true, fmt.Errorf("PR is unmergable. Do the Tide merge requirements match the GitHub settings for the repo? %v", err)
 		} else {
-			return true, false
+			return true, err
 		}
 	}
-	// We ran out of retries
-	return true, false
+	// We ran out of retries. Return the last transient error.
+	return true, err
 }
 
 func (c *Controller) trigger(sp subpool, presubmits []config.Presubmit, prs []PullRequest) error {
