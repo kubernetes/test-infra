@@ -156,11 +156,11 @@ func (c *Controller) incrementNumPendingJobs(job string) {
 	c.pendingJobs[job]++
 }
 
-func (c *Controller) Start(stopChan <-chan struct{}) error {
+func (c *Controller) Start(ctx context.Context) error {
 	ticker := time.NewTicker(30 * time.Second)
 	for {
 		select {
-		case <-stopChan:
+		case <-ctx.Done():
 			c.log.Info("Stop signal received, quitting.")
 			return nil
 		case <-ticker.C:

@@ -26,7 +26,6 @@ import (
 	jsonpatch "github.com/evanphx/json-patch"
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	ktypes "k8s.io/apimachinery/pkg/types"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -36,7 +35,7 @@ import (
 
 // patchClient a minimalistic prow client required by the aborter
 type patchClient interface {
-	Patch(ctx context.Context, obj runtime.Object, patch ctrlruntimeclient.Patch, opts ...ctrlruntimeclient.PatchOption) error
+	Patch(ctx context.Context, obj ctrlruntimeclient.Object, patch ctrlruntimeclient.Patch, opts ...ctrlruntimeclient.PatchOption) error
 }
 
 // prowClient a minimalistic prow client required by the aborter

@@ -779,7 +779,7 @@ func TestGetNewProwVersion(t *testing.T) {
 		{
 			name:          "Multiple versions, error",
 			images:        map[string]string{"gcr.io/k8s-prow/deck": "v20200914-1ac05b0ca2", "gcr.io/k8s-prow/hook": "v20200915-1ac05", "gcr.io/k8s-prow/tide": "v20200915-1ac05"},
-			expectedError: `Expected a consistent version for all "gcr.io/k8s-prow/" images, but found multiple: map[v20200914-1ac05b0ca2:[gcr.io/k8s-prow/deck] v20200915-1ac05:[gcr.io/k8s-prow/hook gcr.io/k8s-prow/tide]]`,
+			expectedError: `Expected a consistent version for all "gcr.io/k8s-prow/" images, but found multiple: [{v20200914-1ac05b0ca2 [gcr.io/k8s-prow/deck]} {v20200915-1ac05 [gcr.io/k8s-prow/hook gcr.io/k8s-prow/tide]}]`,
 		},
 	}
 
@@ -791,7 +791,7 @@ func TestGetNewProwVersion(t *testing.T) {
 				errMsg = err.Error()
 			}
 			if errMsg != tc.expectedError {
-				t.Fatalf("got error %v, expected error %s", err, tc.expectedError)
+				t.Fatalf("got error '%v', expected error %s", err, tc.expectedError)
 			}
 			if err != nil {
 				return

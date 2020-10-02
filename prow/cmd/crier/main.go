@@ -305,7 +305,7 @@ func main() {
 	// Push metrics to the configured prometheus pushgateway endpoint or serve them
 	metrics.ExposeMetrics("crier", cfg().PushGateway, o.instrumentationOptions.MetricsPort)
 
-	if err := mgr.Start(interrupts.Context().Done()); err != nil {
+	if err := mgr.Start(interrupts.Context()); err != nil {
 		logrus.WithError(err).Fatal("controller manager failed")
 	}
 	logrus.Info("Ended gracefully")

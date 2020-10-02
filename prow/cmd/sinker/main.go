@@ -32,8 +32,9 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
+	ctrlruntimelog "sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
-	ctrlruntimelog "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
@@ -116,10 +117,7 @@ func main() {
 
 	metrics.ExposeMetrics("sinker", cfg().PushGateway, o.instrumentationOptions.MetricsPort)
 
-	// Enabling debug logging has the unfortunate side-effect of making the log
-	// unstructured
-	// https://github.com/kubernetes-sigs/controller-runtime/issues/442
-	ctrlruntimelog.SetLogger(ctrlruntimelog.ZapLogger(cfg().LogLevel == "debug"))
+	ctrlruntimelog.SetLogger(zap.New(zap.JSONEncoder()))
 
 	infrastructureClusterConfig, err := o.kubernetes.InfrastructureClusterConfig(o.dryRun.Value)
 	if err != nil {
@@ -165,7 +163,7 @@ func main() {
 	if err := mgr.Add(&c); err != nil {
 		logrus.WithError(err).Fatal("failed to add controller to manager")
 	}
-	if err := mgr.Start(interrupts.Context().Done()); err != nil {
+	if err := mgr.Start(interrupts.Context()); err != nil {
 		logrus.WithError(err).Fatal("failed to start manager")
 	}
 }
@@ -180,7 +178,7 @@ type controller struct {
 	runOnce       bool
 }
 
-func (c *controller) Start(stopChan <-chan struct{}) error {
+func (c *controller) Start(ctx context.Context) error {
 	runChan := make(chan struct{})
 
 	// We want to be able to dynamically adjust to changed config values, hence we cant use a time.Ticker
@@ -193,7 +191,7 @@ func (c *controller) Start(stopChan <-chan struct{}) error {
 
 	for {
 		select {
-		case <-stopChan:
+		case <-ctx.Done():
 			c.logger.Info("stop signal received, quitting")
 			return nil
 		case <-runChan:

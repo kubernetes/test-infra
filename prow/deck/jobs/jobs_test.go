@@ -25,7 +25,6 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/sets"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
@@ -264,7 +263,7 @@ func TestListProwJobs(t *testing.T) {
 	var testCases = []struct {
 		name        string
 		selector    string
-		prowJobs    []func(*prowapi.ProwJob) runtime.Object
+		prowJobs    []func(*prowapi.ProwJob) ctrlruntimeclient.Object
 		listErr     bool
 		hiddenRepos sets.String
 		hiddenOnly  bool
@@ -280,8 +279,8 @@ func TestListProwJobs(t *testing.T) {
 		{
 			name:     "no hidden repos returns all prowjobs",
 			selector: labels.Everything().String(),
-			prowJobs: []func(*prowapi.ProwJob) runtime.Object{
-				func(in *prowapi.ProwJob) runtime.Object {
+			prowJobs: []func(*prowapi.ProwJob) ctrlruntimeclient.Object{
+				func(in *prowapi.ProwJob) ctrlruntimeclient.Object {
 					in.Name = "first"
 					return in
 				},
@@ -291,12 +290,12 @@ func TestListProwJobs(t *testing.T) {
 		{
 			name:     "no hidden repos returns all prowjobs except those not matching label selector",
 			selector: "foo=bar",
-			prowJobs: []func(*prowapi.ProwJob) runtime.Object{
-				func(in *prowapi.ProwJob) runtime.Object {
+			prowJobs: []func(*prowapi.ProwJob) ctrlruntimeclient.Object{
+				func(in *prowapi.ProwJob) ctrlruntimeclient.Object {
 					in.Name = "first"
 					return in
 				},
-				func(in *prowapi.ProwJob) runtime.Object {
+				func(in *prowapi.ProwJob) ctrlruntimeclient.Object {
 					in.Name = "second"
 					in.Labels = map[string]string{"foo": "bar"}
 					return in
@@ -307,12 +306,12 @@ func TestListProwJobs(t *testing.T) {
 		{
 			name:     "hidden repos excludes prowjobs from those repos",
 			selector: labels.Everything().String(),
-			prowJobs: []func(*prowapi.ProwJob) runtime.Object{
-				func(in *prowapi.ProwJob) runtime.Object {
+			prowJobs: []func(*prowapi.ProwJob) ctrlruntimeclient.Object{
+				func(in *prowapi.ProwJob) ctrlruntimeclient.Object {
 					in.Name = "first"
 					return in
 				},
-				func(in *prowapi.ProwJob) runtime.Object {
+				func(in *prowapi.ProwJob) ctrlruntimeclient.Object {
 					in.Name = "second"
 					in.Spec.Refs = &prowapi.Refs{
 						Org:  "org",
@@ -327,12 +326,12 @@ func TestListProwJobs(t *testing.T) {
 		{
 			name:     "hidden repos doesn't exclude prowjobs from other repos",
 			selector: labels.Everything().String(),
-			prowJobs: []func(*prowapi.ProwJob) runtime.Object{
-				func(in *prowapi.ProwJob) runtime.Object {
+			prowJobs: []func(*prowapi.ProwJob) ctrlruntimeclient.Object{
+				func(in *prowapi.ProwJob) ctrlruntimeclient.Object {
 					in.Name = "first"
 					return in
 				},
-				func(in *prowapi.ProwJob) runtime.Object {
+				func(in *prowapi.ProwJob) ctrlruntimeclient.Object {
 					in.Name = "second"
 					in.Spec.Refs = &prowapi.Refs{
 						Org:  "org",
@@ -347,12 +346,12 @@ func TestListProwJobs(t *testing.T) {
 		{
 			name:     "hidden orgs excludes prowjobs from those orgs",
 			selector: labels.Everything().String(),
-			prowJobs: []func(*prowapi.ProwJob) runtime.Object{
-				func(in *prowapi.ProwJob) runtime.Object {
+			prowJobs: []func(*prowapi.ProwJob) ctrlruntimeclient.Object{
+				func(in *prowapi.ProwJob) ctrlruntimeclient.Object {
 					in.Name = "first"
 					return in
 				},
-				func(in *prowapi.ProwJob) runtime.Object {
+				func(in *prowapi.ProwJob) ctrlruntimeclient.Object {
 					in.Name = "second"
 					in.Spec.Refs = &prowapi.Refs{
 						Org:  "org",
@@ -367,12 +366,12 @@ func TestListProwJobs(t *testing.T) {
 		{
 			name:     "hidden orgs doesn't exclude prowjobs from other orgs",
 			selector: labels.Everything().String(),
-			prowJobs: []func(*prowapi.ProwJob) runtime.Object{
-				func(in *prowapi.ProwJob) runtime.Object {
+			prowJobs: []func(*prowapi.ProwJob) ctrlruntimeclient.Object{
+				func(in *prowapi.ProwJob) ctrlruntimeclient.Object {
 					in.Name = "first"
 					return in
 				},
-				func(in *prowapi.ProwJob) runtime.Object {
+				func(in *prowapi.ProwJob) ctrlruntimeclient.Object {
 					in.Name = "second"
 					in.Spec.Refs = &prowapi.Refs{
 						Org:  "other",
@@ -387,8 +386,8 @@ func TestListProwJobs(t *testing.T) {
 		{
 			name:     "hidden repos excludes prowjobs from those repos even by extra_refs",
 			selector: labels.Everything().String(),
-			prowJobs: []func(*prowapi.ProwJob) runtime.Object{
-				func(in *prowapi.ProwJob) runtime.Object {
+			prowJobs: []func(*prowapi.ProwJob) ctrlruntimeclient.Object{
+				func(in *prowapi.ProwJob) ctrlruntimeclient.Object {
 					in.Name = "first"
 					in.Spec.ExtraRefs = []prowapi.Refs{{Org: "org", Repo: "repo"}}
 					return in
@@ -400,8 +399,8 @@ func TestListProwJobs(t *testing.T) {
 		{
 			name:     "hidden orgs excludes prowjobs from those orgs even by extra_refs",
 			selector: labels.Everything().String(),
-			prowJobs: []func(*prowapi.ProwJob) runtime.Object{
-				func(in *prowapi.ProwJob) runtime.Object {
+			prowJobs: []func(*prowapi.ProwJob) ctrlruntimeclient.Object{
+				func(in *prowapi.ProwJob) ctrlruntimeclient.Object {
 					in.Name = "first"
 					in.Spec.ExtraRefs = []prowapi.Refs{{Org: "org", Repo: "repo"}}
 					return in
@@ -413,8 +412,8 @@ func TestListProwJobs(t *testing.T) {
 		{
 			name:     "prowjobs without refs are returned even with hidden repos filtering",
 			selector: labels.Everything().String(),
-			prowJobs: []func(*prowapi.ProwJob) runtime.Object{
-				func(in *prowapi.ProwJob) runtime.Object {
+			prowJobs: []func(*prowapi.ProwJob) ctrlruntimeclient.Object{
+				func(in *prowapi.ProwJob) ctrlruntimeclient.Object {
 					in.Name = "first"
 					return in
 				},
@@ -425,13 +424,13 @@ func TestListProwJobs(t *testing.T) {
 		{
 			name:     "all prowjobs are returned when showHidden is true",
 			selector: labels.Everything().String(),
-			prowJobs: []func(*prowapi.ProwJob) runtime.Object{
-				func(in *prowapi.ProwJob) runtime.Object {
+			prowJobs: []func(*prowapi.ProwJob) ctrlruntimeclient.Object{
+				func(in *prowapi.ProwJob) ctrlruntimeclient.Object {
 					in.Name = "first"
 					in.Spec.ExtraRefs = []prowapi.Refs{{Org: "org", Repo: "repo"}}
 					return in
 				},
-				func(in *prowapi.ProwJob) runtime.Object {
+				func(in *prowapi.ProwJob) ctrlruntimeclient.Object {
 					in.Name = "second"
 					return in
 				},
@@ -442,13 +441,13 @@ func TestListProwJobs(t *testing.T) {
 		},
 		{
 			name: "setting pj.Spec.Hidden hides it",
-			prowJobs: []func(*prowapi.ProwJob) runtime.Object{
-				func(in *prowapi.ProwJob) runtime.Object {
+			prowJobs: []func(*prowapi.ProwJob) ctrlruntimeclient.Object{
+				func(in *prowapi.ProwJob) ctrlruntimeclient.Object {
 					in.Name = "hidden"
 					in.Spec.Hidden = true
 					return in
 				},
-				func(in *prowapi.ProwJob) runtime.Object {
+				func(in *prowapi.ProwJob) ctrlruntimeclient.Object {
 					in.Name = "shown"
 					return in
 				},
@@ -457,13 +456,13 @@ func TestListProwJobs(t *testing.T) {
 		},
 		{
 			name: "hidden repo or org in extra_refs hides it",
-			prowJobs: []func(*prowapi.ProwJob) runtime.Object{
-				func(in *prowapi.ProwJob) runtime.Object {
+			prowJobs: []func(*prowapi.ProwJob) ctrlruntimeclient.Object{
+				func(in *prowapi.ProwJob) ctrlruntimeclient.Object {
 					in.Name = "hidden-repo"
 					in.Spec.ExtraRefs = []prowapi.Refs{{Org: "hide", Repo: "me"}}
 					return in
 				},
-				func(in *prowapi.ProwJob) runtime.Object {
+				func(in *prowapi.ProwJob) ctrlruntimeclient.Object {
 					in.Name = "hidden-org"
 					in.Spec.ExtraRefs = []prowapi.Refs{{Org: "hidden-org"}}
 					return in
@@ -474,7 +473,7 @@ func TestListProwJobs(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		var data []runtime.Object
+		var data []ctrlruntimeclient.Object
 		for _, generator := range testCase.prowJobs {
 			data = append(data, generator(templateJob.DeepCopy()))
 		}

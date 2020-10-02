@@ -29,7 +29,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/rest"
@@ -39,16 +38,17 @@ import (
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllertest"
+	ctrlruntimelog "sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	ctrlruntimelog "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 )
 
 func TestAdd(t *testing.T) {
-	ctrlruntimelog.SetLogger(ctrlruntimelog.ZapLogger(true))
+	ctrlruntimelog.SetLogger(zap.New(zap.UseDevMode(true)))
 	const prowJobNamespace = "prowjobs"
 
 	testCases := []struct {
@@ -159,7 +159,7 @@ func TestAdd(t *testing.T) {
 			}
 
 			receivedRequestChan := make(chan string, 1)
-			reconcile := func(r reconcile.Request) (reconcile.Result, error) {
+			reconcile := func(_ context.Context, r reconcile.Request) (reconcile.Result, error) {
 				receivedRequestChan <- r.String()
 				return reconcile.Result{}, nil
 			}
@@ -177,16 +177,16 @@ func TestAdd(t *testing.T) {
 			if errMsg != "" {
 				return
 			}
-			stopCh := make(chan struct{})
-			defer close(stopCh)
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
 
 			go func() {
-				if err := mgr.Start(stopCh); err != nil {
+				if err := mgr.Start(ctx); err != nil {
 					t.Fatalf("failed to start main mgr: %v", err)
 				}
 			}()
 			go func() {
-				if err := buildMgrs["default"].Start(stopCh); err != nil {
+				if err := buildMgrs["default"].Start(ctx); err != nil {
 					t.Fatalf("failed to start build mgr: %v", err)
 				}
 			}()
@@ -390,7 +390,7 @@ func TestMaxConcurrencyConsidersCacheStaleness(t *testing.T) {
 	startAsyncReconcile := func(pjName string) {
 		go func() {
 			defer wg.Done()
-			result, err := r.Reconcile(reconcile.Request{NamespacedName: types.NamespacedName{Name: pjName}})
+			result, err := r.Reconcile(context.Background(), reconcile.Request{NamespacedName: types.NamespacedName{Name: pjName}})
 			if err != nil {
 				t.Errorf("reconciliation of pj %s failed: %v", pjName, err)
 			}
@@ -437,7 +437,7 @@ type eventuallyConsistentClient struct {
 	ctrlruntimeclient.Client
 }
 
-func (ecc *eventuallyConsistentClient) Patch(ctx context.Context, obj runtime.Object, patch ctrlruntimeclient.Patch, opts ...ctrlruntimeclient.PatchOption) error {
+func (ecc *eventuallyConsistentClient) Patch(ctx context.Context, obj ctrlruntimeclient.Object, patch ctrlruntimeclient.Patch, opts ...ctrlruntimeclient.PatchOption) error {
 	go func() {
 		time.Sleep(100 * time.Millisecond)
 		if err := ecc.Client.Patch(ctx, obj, patch, opts...); err != nil {
@@ -448,7 +448,7 @@ func (ecc *eventuallyConsistentClient) Patch(ctx context.Context, obj runtime.Ob
 	return nil
 }
 
-func (ecc *eventuallyConsistentClient) Create(ctx context.Context, obj runtime.Object, opts ...ctrlruntimeclient.CreateOption) error {
+func (ecc *eventuallyConsistentClient) Create(ctx context.Context, obj ctrlruntimeclient.Object, opts ...ctrlruntimeclient.CreateOption) error {
 	go func() {
 		time.Sleep(100 * time.Millisecond)
 		if err := ecc.Client.Create(ctx, obj, opts...); err != nil {
@@ -474,7 +474,7 @@ func TestStartPodBlocksUntilItHasThePodInCache(t *testing.T) {
 			Type:    prowv1.PeriodicJob,
 		},
 	}
-	if _, _, err := r.startPod(pj); err != nil {
+	if _, _, err := r.startPod(context.Background(), pj); err != nil {
 		t.Fatalf("startPod: %v", err)
 	}
 	if err := r.buildClients["default"].Get(context.Background(), types.NamespacedName{Name: "name"}, &corev1.Pod{}); err != nil {

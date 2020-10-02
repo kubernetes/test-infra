@@ -27,9 +27,9 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
+	ctrlruntimelog "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
-	ctrlruntimelog "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 
 	"k8s.io/test-infra/pkg/flagutil"
 	"k8s.io/test-infra/prow/config"
@@ -174,7 +174,7 @@ func main() {
 
 	// Expose prometheus metrics
 	metrics.ExposeMetrics("plank", cfg().PushGateway, o.instrumentationOptions.MetricsPort)
-	if err := mgr.Start(interrupts.Context().Done()); err != nil {
+	if err := mgr.Start(interrupts.Context()); err != nil {
 		logrus.WithError(err).Fatal("failed to start manager")
 	}
 

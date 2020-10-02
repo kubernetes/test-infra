@@ -34,7 +34,6 @@ import (
 	v1 "k8s.io/api/core/v1"
 	kapierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/clock"
@@ -274,7 +273,7 @@ func TestTerminateDupes(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.Name, func(t *testing.T) {
-			var prowJobs []runtime.Object
+			var prowJobs []ctrlruntimeclient.Object
 			for i := range tc.PJs {
 				pj := &tc.PJs[i]
 				prowJobs = append(prowJobs, pj)
@@ -311,7 +310,7 @@ func TestTerminateDupes(t *testing.T) {
 					clock:    clock.RealClock{},
 				}
 				for _, pj := range tc.PJs {
-					res, err := r.reconcile(&pj)
+					res, err := r.reconcile(context.Background(), &pj)
 					if res != nil {
 						err = utilerrors.NewAggregate([]error{err, fmt.Errorf("expected reconcile.Result to be nil, was %v", res)})
 					}
@@ -757,7 +756,7 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			fakeProwJobClient := fakectrlruntimeclient.NewFakeClient(&tc.PJ)
 			buildClients := map[string]ctrlruntimeclient.Client{}
 			for alias, pods := range tc.Pods {
-				var data []runtime.Object
+				var data []ctrlruntimeclient.Object
 				for i := range pods {
 					pod := pods[i]
 					data = append(data, &pod)
@@ -824,7 +823,7 @@ func TestSyncTriggeredJobs(t *testing.T) {
 				}
 				pj := tc.PJ.DeepCopy()
 				pj.UID = types.UID("under-test")
-				if _, err := r.syncTriggeredJob(pj); (err != nil) != tc.ExpectError {
+				if _, err := r.syncTriggeredJob(context.Background(), pj); (err != nil) != tc.ExpectError {
 					if tc.ExpectError {
 						t.Errorf("for case %q expected an error, but got none", tc.Name)
 					} else {
@@ -845,7 +844,10 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			if len(actualProwJobs.Items) != tc.ExpectedCreatedPJs+1 {
 				t.Errorf("got %d created prowjobs, expected %d", len(actualProwJobs.Items)-1, tc.ExpectedCreatedPJs)
 			}
-			actual := actualProwJobs.Items[0]
+			var actual prowapi.ProwJob
+			if err := fakeProwJobClient.Get(context.Background(), types.NamespacedName{Namespace: tc.PJ.Namespace, Name: tc.PJ.Name}, &actual); err != nil {
+				t.Errorf("failed to get prowjob from client: %v", err)
+			}
 			if actual.Status.State != tc.ExpectedState {
 				t.Errorf("expected state %v, got state %v", tc.ExpectedState, actual.Status.State)
 			}
@@ -1592,7 +1594,7 @@ func TestSyncPendingJob(t *testing.T) {
 				pm[tc.Pods[i].ObjectMeta.Name] = tc.Pods[i]
 			}
 			fakeProwJobClient := fakectrlruntimeclient.NewFakeClient(&tc.PJ)
-			var data []runtime.Object
+			var data []ctrlruntimeclient.Object
 			for i := range tc.Pods {
 				pod := tc.Pods[i]
 				data = append(data, &pod)
@@ -1629,7 +1631,7 @@ func TestSyncPendingJob(t *testing.T) {
 					totURL:       totServ.URL,
 					clock:        clock.RealClock{},
 				}
-				if err := r.syncPendingJob(&tc.PJ); err != nil {
+				if err := r.syncPendingJob(context.Background(), &tc.PJ); err != nil {
 					t.Fatalf("syncPendingJob failed: %v", err)
 				}
 			}
@@ -1696,7 +1698,7 @@ func TestOrderedJobs(t *testing.T) {
 		{1, 2, 0},
 		{2, 0, 1},
 	} {
-		newPjs := make([]runtime.Object, 3)
+		newPjs := make([]ctrlruntimeclient.Object, 3)
 		for i := 0; i < len(pjs); i++ {
 			newPjs[i] = &pjs[orders[i]]
 		}
@@ -1781,7 +1783,7 @@ func TestPeriodic(t *testing.T) {
 					clock:        clock.RealClock{},
 				}
 				syncF = func() error {
-					_, err := r.Reconcile(reconcile.Request{NamespacedName: types.NamespacedName{Namespace: "prowjobs", Name: pj.Name}})
+					_, err := r.Reconcile(context.Background(), reconcile.Request{NamespacedName: types.NamespacedName{Namespace: "prowjobs", Name: pj.Name}})
 					return err
 				}
 			}
@@ -1994,7 +1996,7 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 			}
 			close(jobs)
 
-			var prowJobs []runtime.Object
+			var prowJobs []ctrlruntimeclient.Object
 			for i := range test.PJs {
 				test.PJs[i].Namespace = "prowjobs"
 				test.PJs[i].Spec.Agent = prowapi.KubernetesAgent
@@ -2050,7 +2052,7 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 						Name:      job.Name,
 						Namespace: job.Namespace,
 					}}
-					if _, err := r.Reconcile(request); err != nil {
+					if _, err := r.Reconcile(context.Background(), request); err != nil {
 						t.Fatalf("failed to reconcile job %s: %v", request.String(), err)
 					}
 				}
@@ -2207,7 +2209,7 @@ func TestMaxConcurency(t *testing.T) {
 				}
 				result = c.canExecuteConcurrently(&tc.ProwJob)
 			} else {
-				var prowJobs []runtime.Object
+				var prowJobs []ctrlruntimeclient.Object
 				for i := range tc.ExistingProwJobs {
 					tc.ExistingProwJobs[i].Namespace = "prowjobs"
 					prowJobs = append(prowJobs, &tc.ExistingProwJobs[i])
@@ -2242,7 +2244,7 @@ func TestMaxConcurency(t *testing.T) {
 				var err error
 				// We filter ourselves out via the UID, so make sure its not the empty string
 				tc.ProwJob.UID = types.UID("under-test")
-				result, err = r.canExecuteConcurrently(&tc.ProwJob)
+				result, err = r.canExecuteConcurrently(context.Background(), &tc.ProwJob)
 				if err != nil {
 					t.Fatalf("canExecuteConcurrently: %v", err)
 				}
@@ -2261,15 +2263,11 @@ type patchTrackingFakeClient struct {
 	patched sets.String
 }
 
-func (c *patchTrackingFakeClient) Patch(ctx context.Context, obj runtime.Object, patch ctrlruntimeclient.Patch, opts ...ctrlruntimeclient.PatchOption) error {
+func (c *patchTrackingFakeClient) Patch(ctx context.Context, obj ctrlruntimeclient.Object, patch ctrlruntimeclient.Patch, opts ...ctrlruntimeclient.PatchOption) error {
 	if c.patched == nil {
 		c.patched = sets.NewString()
 	}
-	metaObject, ok := obj.(metav1.Object)
-	if !ok {
-		return errors.New("Object is no metav1.Object")
-	}
-	c.patched.Insert(metaObject.GetName())
+	c.patched.Insert(obj.GetName())
 	return c.Client.Patch(ctx, obj, patch, opts...)
 }
 
@@ -2279,21 +2277,17 @@ type deleteTrackingFakeClient struct {
 	deleted sets.String
 }
 
-func (c *deleteTrackingFakeClient) Delete(ctx context.Context, obj runtime.Object, opts ...ctrlruntimeclient.DeleteOption) error {
+func (c *deleteTrackingFakeClient) Delete(ctx context.Context, obj ctrlruntimeclient.Object, opts ...ctrlruntimeclient.DeleteOption) error {
 	if c.deleteError != nil {
 		return c.deleteError
 	}
 	if c.deleted == nil {
 		c.deleted = sets.String{}
 	}
-	metaObject, ok := obj.(metav1.Object)
-	if !ok {
-		return errors.New("object is not a metav1.Object")
-	}
 	if err := c.Client.Delete(ctx, obj, opts...); err != nil {
 		return err
 	}
-	c.deleted.Insert(metaObject.GetName())
+	c.deleted.Insert(obj.GetName())
 	return nil
 }
 
@@ -2303,16 +2297,16 @@ type clientWrapper struct {
 	errOnDeleteWithFinalizer bool
 }
 
-func (c *clientWrapper) Create(ctx context.Context, obj runtime.Object, opts ...ctrlruntimeclient.CreateOption) error {
+func (c *clientWrapper) Create(ctx context.Context, obj ctrlruntimeclient.Object, opts ...ctrlruntimeclient.CreateOption) error {
 	if c.createError != nil {
 		return c.createError
 	}
 	return c.Client.Create(ctx, obj, opts...)
 }
 
-func (c *clientWrapper) Delete(ctx context.Context, obj runtime.Object, opts ...ctrlruntimeclient.DeleteOption) error {
-	if metaObject := obj.(metav1.Object); c.errOnDeleteWithFinalizer && len(metaObject.GetFinalizers()) > 0 {
-		return fmt.Errorf("object still had finalizers when attempting to delete: %v", metaObject.GetFinalizers())
+func (c *clientWrapper) Delete(ctx context.Context, obj ctrlruntimeclient.Object, opts ...ctrlruntimeclient.DeleteOption) error {
+	if len(obj.GetFinalizers()) > 0 {
+		return fmt.Errorf("object still had finalizers when attempting to delete: %v", obj.GetFinalizers())
 	}
 	return c.Client.Delete(ctx, obj, opts...)
 }
@@ -2386,7 +2380,7 @@ func TestSyncAbortedJob(t *testing.T) {
 				},
 			}
 
-			var pods []runtime.Object
+			var pods []ctrlruntimeclient.Object
 			var podMap map[string]v1.Pod
 			if tc.Pod != nil {
 				pods = append(pods, tc.Pod)
@@ -2416,7 +2410,7 @@ func TestSyncAbortedJob(t *testing.T) {
 					buildClients: map[string]ctrlruntimeclient.Client{cluster: podClient},
 				}
 				sync = func() error {
-					res, err := r.reconcile(pj)
+					res, err := r.reconcile(context.Background(), pj)
 					if res != nil {
 						err = utilerrors.NewAggregate([]error{err, fmt.Errorf("expected reconcile.Result to be nil, was %v", res)})
 					}
@@ -2447,7 +2441,7 @@ type indexingClient struct {
 	indexFuncs map[string]ctrlruntimeclient.IndexerFunc
 }
 
-func (c *indexingClient) List(ctx context.Context, list runtime.Object, opts ...ctrlruntimeclient.ListOption) error {
+func (c *indexingClient) List(ctx context.Context, list ctrlruntimeclient.ObjectList, opts ...ctrlruntimeclient.ListOption) error {
 	if err := c.Client.List(ctx, list, opts...); err != nil {
 		return err
 	}

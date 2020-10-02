@@ -26,8 +26,10 @@ import (
 )
 
 // ProwJobLister helps list ProwJobs.
+// All objects returned here must be treated as read-only.
 type ProwJobLister interface {
 	// List lists all ProwJobs in the indexer.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1.ProwJob, err error)
 	// ProwJobs returns an object that can list and get ProwJobs.
 	ProwJobs(namespace string) ProwJobNamespaceLister
@@ -58,10 +60,13 @@ func (s *prowJobLister) ProwJobs(namespace string) ProwJobNamespaceLister {
 }
 
 // ProwJobNamespaceLister helps list and get ProwJobs.
+// All objects returned here must be treated as read-only.
 type ProwJobNamespaceLister interface {
 	// List lists all ProwJobs in the indexer for a given namespace.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1.ProwJob, err error)
 	// Get retrieves the ProwJob from the indexer for a given namespace and name.
+	// Objects returned here must be treated as read-only.
 	Get(name string) (*v1.ProwJob, error)
 	ProwJobNamespaceListerExpansion
 }

@@ -40,7 +40,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/equality"
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/apimachinery/pkg/util/sets"
 	utilpointer "k8s.io/utils/pointer"
@@ -1151,7 +1150,7 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 		nones           []int
 		batchMerges     []int
 		presubmits      map[int][]config.Presubmit
-		preExistingJobs []runtime.Object
+		preExistingJobs []ctrlruntimeclient.Object
 		mergeErrs       map[int]error
 
 		merged           int
@@ -1381,7 +1380,7 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 					{Reporter: config.Reporter{Context: "if-changed"}},
 				},
 			},
-			preExistingJobs: []runtime.Object{&prowapi.ProwJob{
+			preExistingJobs: []ctrlruntimeclient.Object{&prowapi.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{Name: "my-job", Namespace: "pj-ns"},
 				Spec: prowapi.ProwJobSpec{
 					Job:  "bar",
@@ -1418,7 +1417,7 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 					{Reporter: config.Reporter{Context: "if-changed"}},
 				},
 			},
-			preExistingJobs: []runtime.Object{&prowapi.ProwJob{
+			preExistingJobs: []ctrlruntimeclient.Object{&prowapi.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{Name: "my-job", Namespace: "pj-ns"},
 				Spec: prowapi.ProwJobSpec{
 					Job:  "bar",
@@ -1459,7 +1458,7 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 					{Reporter: config.Reporter{Context: "if-changed"}},
 				},
 			},
-			preExistingJobs: []runtime.Object{&prowapi.ProwJob{
+			preExistingJobs: []ctrlruntimeclient.Object{&prowapi.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{Name: "my-job", Namespace: "pj-ns"},
 				Spec: prowapi.ProwJobSpec{
 					Job:  "bar",
@@ -3618,7 +3617,7 @@ func getProwJob(pjtype prowapi.ProwJobType, org, repo, branch, sha string, state
 	return pj
 }
 
-func newFakeManager(objs ...runtime.Object) *fakeManager {
+func newFakeManager(objs ...ctrlruntimeclient.Object) *fakeManager {
 	client := &indexingClient{
 		Client:     fakectrlruntimeclient.NewFakeClient(objs...),
 		indexFuncs: map[string]ctrlruntimeclient.IndexerFunc{},
@@ -3640,7 +3639,7 @@ type fakeFieldIndexer struct {
 	client *indexingClient
 }
 
-func (fi *fakeFieldIndexer) IndexField(_ context.Context, _ runtime.Object, field string, extractValue ctrlruntimeclient.IndexerFunc) error {
+func (fi *fakeFieldIndexer) IndexField(_ context.Context, _ ctrlruntimeclient.Object, field string, extractValue ctrlruntimeclient.IndexerFunc) error {
 	fi.client.indexFuncs[field] = extractValue
 	return nil
 }
@@ -3658,7 +3657,7 @@ type indexingClient struct {
 	indexFuncs map[string]ctrlruntimeclient.IndexerFunc
 }
 
-func (c *indexingClient) List(ctx context.Context, list runtime.Object, opts ...ctrlruntimeclient.ListOption) error {
+func (c *indexingClient) List(ctx context.Context, list ctrlruntimeclient.ObjectList, opts ...ctrlruntimeclient.ListOption) error {
 	if err := c.Client.List(ctx, list, opts...); err != nil {
 		return err
 	}

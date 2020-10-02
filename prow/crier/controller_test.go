@@ -26,7 +26,6 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/sirupsen/logrus"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	ctrlruntime "sigs.k8s.io/controller-runtime"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
@@ -189,19 +188,18 @@ func TestController_Run(t *testing.T) {
 				err: test.reportErr,
 			}
 
-			var prowjobs []runtime.Object
+			var prowjobs []ctrlruntimeclient.Object
 			if test.job != nil {
 				prowjobs = append(prowjobs, test.job)
 				test.job.Name = toReconcile
 			}
 			cs := &patchTrackingClient{Client: fakectrlruntimeclient.NewFakeClient(prowjobs...)}
 			r := &reconciler{
-				ctx:         context.Background(),
 				pjclientset: cs,
 				reporter:    &rp,
 			}
 
-			result, err := r.Reconcile(ctrlruntime.Request{NamespacedName: types.NamespacedName{Name: toReconcile}})
+			result, err := r.Reconcile(context.Background(), ctrlruntime.Request{NamespacedName: types.NamespacedName{Name: toReconcile}})
 			if !reflect.DeepEqual(err, test.expectedError) {
 				t.Fatalf("actual err %v differs from expected err %v", err, test.expectedError)
 			}
@@ -236,7 +234,7 @@ type patchTrackingClient struct {
 	patches int
 }
 
-func (c *patchTrackingClient) Patch(ctx context.Context, obj runtime.Object, patch ctrlruntimeclient.Patch, opts ...ctrlruntimeclient.PatchOption) error {
+func (c *patchTrackingClient) Patch(ctx context.Context, obj ctrlruntimeclient.Object, patch ctrlruntimeclient.Patch, opts ...ctrlruntimeclient.PatchOption) error {
 	c.patches++
 	return c.Client.Patch(ctx, obj, patch, opts...)
 }

@@ -12,13 +12,15 @@ replace (
 	cloud.google.com/go/pubsub => cloud.google.com/go/pubsub v1.3.1
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v12.2.0+incompatible
 	github.com/docker/docker => github.com/docker/docker v1.4.2-0.20200203170920-46ec8731fbce
+	github.com/googleapis/gnostic => github.com/googleapis/gnostic v0.4.1
 	golang.org/x/lint => golang.org/x/lint v0.0.0-20190409202823-959b441ac422
-	k8s.io/api => k8s.io/api v0.18.6
-	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.18.6
-	k8s.io/apimachinery => k8s.io/apimachinery v0.18.6
-	k8s.io/apiserver => k8s.io/apiserver v0.18.6
-	k8s.io/client-go => k8s.io/client-go v0.18.6
-	k8s.io/code-generator => k8s.io/code-generator v0.18.6
+	gopkg.in/yaml.v3 => gopkg.in/yaml.v3 v3.0.0-20190709130402-674ba3eaed22
+	k8s.io/api => k8s.io/api v0.19.3
+	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.19.3
+	k8s.io/apimachinery => k8s.io/apimachinery v0.19.3
+	k8s.io/apiserver => k8s.io/apiserver v0.19.3
+	k8s.io/client-go => k8s.io/client-go v0.19.3
+	k8s.io/code-generator => k8s.io/code-generator v0.19.3
 )
 
 require (
@@ -40,7 +42,7 @@ require (
 	github.com/client9/misspell v0.3.4
 	github.com/djherbis/atime v1.0.0
 	github.com/docker/docker v1.13.1
-	github.com/evanphx/json-patch v4.5.0+incompatible
+	github.com/evanphx/json-patch v4.9.0+incompatible
 	github.com/fsnotify/fsnotify v1.4.9
 	github.com/fsouza/fake-gcs-server v1.19.4
 	github.com/go-bindata/go-bindata/v3 v3.1.3
@@ -49,7 +51,7 @@ require (
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/golang/mock v1.4.3
 	github.com/gomodule/redigo v1.7.0
-	github.com/google/go-cmp v0.5.0
+	github.com/google/go-cmp v0.5.2
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/gofuzz v1.1.0
 	github.com/google/uuid v1.1.1
@@ -67,9 +69,9 @@ require (
 	github.com/pelletier/go-toml v1.8.0
 	github.com/peterbourgon/diskv v2.0.1+incompatible
 	github.com/pkg/errors v0.9.1
-	github.com/prometheus/client_golang v1.6.0
+	github.com/prometheus/client_golang v1.7.1
 	github.com/prometheus/client_model v0.2.0
-	github.com/prometheus/common v0.9.1
+	github.com/prometheus/common v0.10.0
 	github.com/satori/go.uuid v1.2.0
 	github.com/shurcooL/githubv4 v0.0.0-20191102174205-af46314aec7b
 	github.com/sirupsen/logrus v1.6.0
@@ -83,25 +85,24 @@ require (
 	golang.org/x/net v0.0.0-20200707034311-ab3426394381
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208
-	golang.org/x/time v0.0.0-20200416051211-89c76fbcd5d1
+	golang.org/x/time v0.0.0-20200630173020-3af7569d3a1e
 	golang.org/x/tools v0.0.0-20200709181711-e327e1019dfe
 	google.golang.org/api v0.29.0
 	google.golang.org/genproto v0.0.0-20200709005830-7a2ca40e9dc3 // indirect
 	gopkg.in/fsnotify.v1 v1.4.7
 	gopkg.in/robfig/cron.v2 v2.0.0-20150107220207-be2e0b0deed5
-	gopkg.in/yaml.v3 v3.0.0-20190709130402-674ba3eaed22
-	k8s.io/api v0.18.7-rc.0
-	k8s.io/apimachinery v0.18.7-rc.0
+	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776
+	k8s.io/api v0.19.3
+	k8s.io/apimachinery v0.19.3
 	k8s.io/client-go v11.0.1-0.20190805182717-6502b5e7b1b5+incompatible
-	k8s.io/code-generator v0.18.6
+	k8s.io/code-generator v0.19.3
 	k8s.io/klog v1.0.0
-	k8s.io/klog/v2 v2.0.0
-	k8s.io/utils v0.0.0-20200603063816-c1c6865ac451
+	k8s.io/klog/v2 v2.2.0
+	k8s.io/utils v0.0.0-20200912215256-4140de9c8800
 	knative.dev/pkg v0.0.0-20200711004937-22502028e31a
 	mvdan.cc/xurls/v2 v2.0.0
 	sigs.k8s.io/boskos v0.0.0-20200617235605-f289ba6555ba
-	sigs.k8s.io/controller-runtime v0.6.1
-	sigs.k8s.io/structured-merge-diff/v3 v3.0.1-0.20200706213357-43c19bbb7fba // indirect
+	sigs.k8s.io/controller-runtime v0.7.0-alpha.6.0.20201106193838-8d0107636985
 	sigs.k8s.io/yaml v1.2.0
 )
 
