@@ -26,7 +26,6 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
-	"golang.org/x/sync/semaphore"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -55,36 +54,34 @@ type simplePull struct {
 
 type shardedLock struct {
 	mapLock *sync.Mutex
-	locks   map[simplePull]*semaphore.Weighted
+	locks   map[simplePull]*sync.Mutex
 }
 
-func (s *shardedLock) getLock(key simplePull) *semaphore.Weighted {
+func (s *shardedLock) getLock(key simplePull) *sync.Mutex {
 	s.mapLock.Lock()
 	defer s.mapLock.Unlock()
 	if _, exists := s.locks[key]; !exists {
-		s.locks[key] = semaphore.NewWeighted(1)
+		s.locks[key] = &sync.Mutex{}
 	}
 	return s.locks[key]
 }
 
 // cleanup deletes all locks by acquiring first
-// the mapLock and then the individual lock via TryAcquire.
-// The latter is required, otherwise the lock might be held,
-// deleted by us and then recreated, resulting in two routines
-// having it in parallel.
-// Because running this function requires acquiring the mapLock,
-// no new presubmit reporting can happen. To minimize lock contention,
-// we use TryAcquire and skip locks we didn't acquire.
+// the mapLock and then each individual lock before
+// deleting it. The individual lock must be acquired
+// because otherwise it may be held, we delete it from
+// the map, it gets recreated and acquired and two
+// routines report in parallel for the same job.
+// Note that while this function is running, no new
+// presubmit reporting can happen, as we hold the mapLock.
 func (s *shardedLock) cleanup() {
 	s.mapLock.Lock()
 	defer s.mapLock.Unlock()
 
 	for key, lock := range s.locks {
-		if !lock.TryAcquire(1) {
-			continue
-		}
+		lock.Lock()
 		delete(s.locks, key)
-		lock.Release(1)
+		lock.Unlock()
 	}
 }
 
@@ -108,7 +105,7 @@ func NewReporter(gc report.GitHubClient, cfg config.Getter, reportAgent v1.ProwJ
 		reportAgent: reportAgent,
 		prLocks: &shardedLock{
 			mapLock: &sync.Mutex{},
-			locks:   map[simplePull]*semaphore.Weighted{},
+			locks:   map[simplePull]*sync.Mutex{},
 		},
 	}
 	c.prLocks.runCleanup()
@@ -147,11 +144,8 @@ func (c *Client) Report(_ *logrus.Entry, pj *v1.ProwJob) ([]*v1.ProwJob, *reconc
 			return nil, nil, fmt.Errorf("failed to get lockkey for job: %v", err)
 		}
 		lock := c.prLocks.getLock(*key)
-		// Don't block a worker waiting for the lock, they are limited.
-		if !lock.TryAcquire(1) {
-			return nil, &reconcile.Result{RequeueAfter: 5 * time.Second}, nil
-		}
-		defer lock.Release(1)
+		lock.Lock()
+		defer lock.Unlock()
 	}
 
 	// TODO(krzyzacy): ditch ReportTemplate, and we can drop reference to config.Getter
