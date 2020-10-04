@@ -130,6 +130,7 @@ periodics:
       - --extract=release/stable
       - --ginkgo-parallel
       - --kops-args=--networking=cilium
+      - --kops-overrides=spec.kubeDNS.provider=CoreDNS
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
