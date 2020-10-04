@@ -55,7 +55,7 @@ type TokenHandler struct {
 func GetGitHubClient(token string) *github.Client {
 	return github.NewClient(
 		oauth2.NewClient(
-			oauth2.NoContext,
+			context.Background(),
 			oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token}),
 		),
 	)

@@ -214,7 +214,11 @@ func (c *aksEngineDeployer) SetCustomCloudProfileEnvironment() error {
 			Timeout: 30 * time.Second,
 		}
 		endpointsresp, err := httpClient.Get(metadataURL)
-		if err != nil || endpointsresp.StatusCode != 200 {
+		if err != nil {
+			return fmt.Errorf("%s . apimodel invalid: failed to retrieve Azure Stack endpoints from %s", err, metadataURL)
+		}
+		defer endpointsresp.Body.Close()
+		if endpointsresp.StatusCode != 200 {
 			return fmt.Errorf("%s . apimodel invalid: failed to retrieve Azure Stack endpoints from %s", err, metadataURL)
 		}
 
@@ -696,6 +700,9 @@ func (c *aksEngineDeployer) loadARMTemplates() error {
 func (c *aksEngineDeployer) getAzureClient(ctx context.Context) error {
 	// instantiate Azure Resource Manager Client
 	env, err := azure.EnvironmentFromName(c.azureEnvironment)
+	if err != nil {
+		return err
+	}
 	var client *AzureClient
 	if c.isAzureStackCloud() && strings.EqualFold(c.azureIdentitySystem, ADFSIdentitySystem) {
 		if client, err = getAzureClient(env,
@@ -758,7 +765,6 @@ func (c *aksEngineDeployer) createCluster() error {
 func (c *aksEngineDeployer) dockerLogin() error {
 	cwd, _ := os.Getwd()
 	log.Printf("CWD %v", cwd)
-	cmd := &exec.Cmd{}
 	username := ""
 	pwd := ""
 	server := ""
@@ -781,7 +787,7 @@ func (c *aksEngineDeployer) dockerLogin() error {
 		pwd = c.credentials.ClientSecret
 		server = imageRegistry
 	}
-	cmd = exec.Command("docker", "login", fmt.Sprintf("--username=%s", username), fmt.Sprintf("--password=%s", pwd), server)
+	cmd := exec.Command("docker", "login", fmt.Sprintf("--username=%s", username), fmt.Sprintf("--password=%s", pwd), server)
 	if err = cmd.Run(); err != nil {
 		return fmt.Errorf("failed Docker login with error: %v", err)
 	}

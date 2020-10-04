@@ -91,9 +91,6 @@ func RegisterLens(lens Lens) error {
 	if config.Title == "" {
 		return errors.New("empty title field in view metadata")
 	}
-	if config.Priority < 0 {
-		return errors.New("priority must be >=0")
-	}
 	lensReg[config.Name] = lens
 	logrus.Infof("Spyglass registered viewer %s with title %s.", config.Name, config.Title)
 	return nil

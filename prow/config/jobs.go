@@ -262,10 +262,7 @@ func (br Brancher) Intersects(other Brancher) bool {
 		baseBranches := sets.NewString(br.Branches...)
 		if len(other.Branches) > 0 {
 			otherBranches := sets.NewString(other.Branches...)
-			if baseBranches.Intersection(otherBranches).Len() > 0 {
-				return true
-			}
-			return false
+			return baseBranches.Intersection(otherBranches).Len() > 0
 		}
 
 		// Actually test our branches against the other brancher - if there are regex skip lists, simple comparison

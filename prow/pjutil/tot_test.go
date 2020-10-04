@@ -58,7 +58,7 @@ func parrotServer(codes []int, data []string) *httptest.Server {
 
 func TestGetBuildID(t *testing.T) {
 	oldSleep := sleep
-	sleep = func(time.Duration) { return }
+	sleep = func(time.Duration) {}
 	defer func() { sleep = oldSleep }()
 
 	var testCases = []struct {

@@ -73,9 +73,7 @@ func AppendError(errs []error, err error) []error {
 // Home returns $HOME/part/part/part
 func Home(parts ...string) string {
 	p := []string{os.Getenv("HOME")}
-	for _, a := range parts {
-		p = append(p, a)
-	}
+	p = append(p, parts...)
 	return filepath.Join(p...)
 }
 

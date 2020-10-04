@@ -23,7 +23,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"path"
@@ -362,13 +361,8 @@ func (ha *HelpAgent) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "405 Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	b, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		serverError("reading request body", err)
-		return
-	}
 	help := ha.GeneratePluginHelp()
-	b, err = json.Marshal(help)
+	b, err := json.Marshal(help)
 	if err != nil {
 		serverError("marshaling plugin help", err)
 		return

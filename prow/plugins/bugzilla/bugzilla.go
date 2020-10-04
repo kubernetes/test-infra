@@ -925,7 +925,7 @@ func handleCherrypick(e event, gc githubClient, bc bugzilla.Client, options plug
 	}
 	clones, err := bc.GetClones(bug)
 	if err != nil {
-		return comment(formatError(fmt.Sprintf("creating a cherry-pick bug in Bugzilla: could not get list of clones"), bc.Endpoint(), bug.ID, err))
+		return comment(formatError("creating a cherry-pick bug in Bugzilla: could not get list of clones", bc.Endpoint(), bug.ID, err))
 	}
 	oldLink := fmt.Sprintf(bugLink, bugID, bc.Endpoint(), bugID)
 	if options.TargetRelease == nil {
@@ -941,7 +941,7 @@ func handleCherrypick(e event, gc githubClient, bc bugzilla.Client, options plug
 	cloneID, err := bc.CloneBug(bug)
 	if err != nil {
 		log.WithError(err).Debugf("Failed to clone bug %d", bugID)
-		return comment(formatError(fmt.Sprintf("cloning bug for cherrypick"), bc.Endpoint(), bug.ID, err))
+		return comment(formatError("cloning bug for cherrypick", bc.Endpoint(), bug.ID, err))
 	}
 	cloneLink := fmt.Sprintf(bugLink, cloneID, bc.Endpoint(), cloneID)
 	// Update the version of the bug to the target release

@@ -273,10 +273,7 @@ func (r *Repo) BranchExists(branch string) bool {
 	heads := "origin"
 	r.logger.Infof("Checking if branch %s exists in %s.", branch, heads)
 	co := r.gitCommand("ls-remote", "--exit-code", "--heads", heads, branch)
-	if co.Run() == nil {
-		return true
-	}
-	return false
+	return co.Run() == nil
 }
 
 // CheckoutNewBranch creates a new branch and checks it out.

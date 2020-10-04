@@ -365,7 +365,7 @@ func getBuildData(ctx context.Context, bucket storageBucket, dir string) (buildD
 	if finished.Timestamp != nil {
 		b.Duration = time.Unix(*finished.Timestamp, 0).Sub(b.Started)
 	} else {
-		b.Duration = time.Now().Sub(b.Started).Round(time.Second)
+		b.Duration = time.Since(b.Started).Round(time.Second)
 	}
 	if finished.Result != "" {
 		b.Result = finished.Result
@@ -484,7 +484,7 @@ func getJobHistory(ctx context.Context, url *url.URL, cfg config.Getter, opener 
 		tmpl.Builds[b.index] = b
 	}
 
-	elapsed := time.Now().Sub(start)
+	elapsed := time.Since(start)
 	logrus.Infof("loaded %s in %v", url.Path, elapsed)
 	return tmpl, nil
 }
