@@ -97,6 +97,12 @@ default:
       addedBy: humans
       previously:
         - name: cherrypick-approved
+    - color: 8fc951
+      description: Indicates an issue or PR is ready to be actively worked on.
+      name: triage/accepted
+      target: both
+      prowPlugin: label
+      addedBy: org members
     - color: d455d0
       description: Indicates an issue is a duplicate of other open issue.
       name: triage/duplicate
@@ -117,15 +123,6 @@ default:
       name: triage/not-reproducible
       previously:
         - name: close/not-reproducible
-      target: both
-      addedBy: humans
-    - color: d455d0
-      description: Indicates an issue that is a support question.
-      name: triage/support
-      previously:
-        - name: close/support
-        - name: kind/support
-        - name: question
       target: both
       addedBy: humans
     - color: d455d0
@@ -310,6 +307,15 @@ default:
       target: both
       prowPlugin: label
       addedBy: anyone
+    - color: d455d0
+      description: Categorizes issue or PR as a support question.
+      name: kind/support
+      previously:
+        - name: close/support
+        - name: question
+        - name: triage/support
+      target: both
+      addedBy: humans
     - color: 15dd18
       description: Indicates that a PR is ready to be merged.
       name: lgtm
@@ -368,6 +374,12 @@ default:
     - color: ededed
       description: Indicates an issue or PR lacks a `sig/foo` label and requires one.
       name: needs-sig
+      target: both
+      prowPlugin: require-matching-label
+      addedBy: prow
+    - color: ededed
+      description: Indicates an issue or PR lacks a `triage/foo` label and requires one.
+      name: needs-triage
       target: both
       prowPlugin: require-matching-label
       addedBy: prow

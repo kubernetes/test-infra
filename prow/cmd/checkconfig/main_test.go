@@ -1493,3 +1493,76 @@ func TestValidate(t *testing.T) {
 		})
 	}
 }
+
+func TestValidateClusterField(t *testing.T) {
+	testCases := []struct {
+		name          string
+		cfg           *config.Config
+		expectedError string
+	}{
+		{
+			name: "valid case for a jenkins job",
+			cfg: &config.Config{
+				JobConfig: config.JobConfig{
+					PresubmitsStatic: map[string][]config.Presubmit{
+						"org1/repo1": {
+							{
+								JobBase: config.JobBase{
+									Agent: "jenkins",
+								},
+							}}}}},
+		},
+		{
+			name: "jenkins job must not set cluster",
+			cfg: &config.Config{
+				JobConfig: config.JobConfig{
+					PresubmitsStatic: map[string][]config.Presubmit{
+						"org1/repo1": {
+							{
+								JobBase: config.JobBase{
+									Agent:   "jenkins",
+									Cluster: "default",
+									Name:    "some-job",
+								},
+							}}}}},
+			expectedError: "org1/repo1: some-job: cannot set cluster field if agent is jenkins",
+		},
+		{
+			name: "k8s job can set cluster",
+			cfg: &config.Config{
+				JobConfig: config.JobConfig{
+					PresubmitsStatic: map[string][]config.Presubmit{
+						"org1/repo1": {
+							{
+								JobBase: config.JobBase{
+									Agent:   "kubernetes",
+									Cluster: "default",
+								},
+							}}}}},
+		},
+		{
+			name: "empty agent job can set cluster",
+			cfg: &config.Config{
+				JobConfig: config.JobConfig{
+					PresubmitsStatic: map[string][]config.Presubmit{
+						"org1/repo1": {
+							{
+								JobBase: config.JobBase{
+									Cluster: "default",
+								},
+							}}}}},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			errMsg := ""
+			if err := validateCluster(tc.cfg); err != nil {
+				errMsg = err.Error()
+			}
+			if errMsg != tc.expectedError {
+				t.Errorf("expected error %q, got error %q", tc.expectedError, errMsg)
+			}
+		})
+	}
+}

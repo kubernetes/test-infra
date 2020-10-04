@@ -161,7 +161,7 @@ def build_test(cloud='aws', distro=None, networking=None, k8s_version=None, kops
         kops_image = '136693071363/debian-10-amd64-20200511-260'
     elif distro == 'flatcar':
         kops_ssh_user = 'core'
-        kops_image = '075585003325/Flatcar-stable-2512.2.0-hvm'
+        kops_image = '075585003325/Flatcar-stable-2605.6.0-hvm'
     elif distro == 'u1604':
         kops_ssh_user = 'ubuntu'
         kops_image = '099720109477/ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-20200429'
@@ -197,12 +197,12 @@ def build_test(cloud='aws', distro=None, networking=None, k8s_version=None, kops
     if k8s_version is None:
         extract = "release/latest"
         k8s_deploy_url = "https://storage.googleapis.com/kubernetes-release/release/latest.txt"
-        e2e_image = "gcr.io/k8s-testimages/kubekins-e2e:v20200925-46c65ff-master"
+        e2e_image = "gcr.io/k8s-testimages/kubekins-e2e:v20200930-82b41a1-master"
     else:
         extract = expand("release/stable-{k8s_version}")
         k8s_deploy_url = expand("https://storage.googleapis.com/kubernetes-release/release/stable-{k8s_version}.txt") # pylint: disable=line-too-long
         # Hack to stop the autobumper getting confused
-        e2e_image = "gcr.io/k8s-testimages/kubekins-e2e:v20200925-46c65ff-1.18"
+        e2e_image = "gcr.io/k8s-testimages/kubekins-e2e:v20200930-82b41a1-1.18"
         e2e_image = e2e_image[:-4] + k8s_version
 
     kops_args = ""

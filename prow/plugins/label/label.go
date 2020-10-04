@@ -26,6 +26,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
+	prowlabels "k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 )
@@ -67,7 +68,7 @@ func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhel
 		Usage:       "/[remove-](area|committee|kind|language|priority|sig|triage|wg|label) <target>",
 		Description: "Applies or removes a label from one of the recognized types of labels.",
 		Featured:    false,
-		WhoCanUse:   "Anyone can trigger this command on a PR.",
+		WhoCanUse:   "Anyone can trigger this command on issues and PRs. `triage/accepted` can only be added by org members.",
 		Examples:    []string{"/kind bug", "/remove-area prow", "/sig testing", "/language zh", "/label foo-bar-baz"},
 	})
 	return pluginHelp, nil
@@ -80,6 +81,7 @@ func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error 
 type githubClient interface {
 	CreateComment(owner, repo string, number int, comment string) error
 	AddLabel(owner, repo string, number int, label string) error
+	IsMember(org, user string) (bool, error)
 	RemoveLabel(owner, repo string, number int, label string) error
 	GetRepoLabels(owner, repo string) ([]github.Label, error)
 	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
@@ -88,7 +90,7 @@ type githubClient interface {
 // Get Labels from Regexp matches
 func getLabelsFromREMatches(matches [][]string) (labels []string) {
 	for _, match := range matches {
-		for _, label := range strings.Split(match[0], " ")[1:] {
+		for _, label := range strings.Split(strings.TrimSpace(match[0]), " ")[1:] {
 			label = strings.ToLower(match[1] + "/" + strings.TrimSpace(label))
 			labels = append(labels, label)
 		}
@@ -137,6 +139,7 @@ func handle(gc githubClient, log *logrus.Entry, additionalLabels []string, e *gi
 
 	org := e.Repo.Owner.Login
 	repo := e.Repo.Name
+	user := e.User.Login
 
 	repoLabels, err := gc.GetRepoLabels(org, repo)
 	if err != nil {
@@ -152,11 +155,12 @@ func handle(gc githubClient, log *logrus.Entry, additionalLabels []string, e *gi
 		RepoLabelsExisting.Insert(strings.ToLower(l.Name))
 	}
 	var (
-		nonexistent         []string
-		noSuchLabelsInRepo  []string
-		noSuchLabelsOnIssue []string
-		labelsToAdd         []string
-		labelsToRemove      []string
+		nonexistent             []string
+		noSuchLabelsInRepo      []string
+		noSuchLabelsOnIssue     []string
+		labelsToAdd             []string
+		labelsToRemove          []string
+		nonMemberTriageAccepted bool
 	)
 	// Get labels to add and labels to remove from regexp matches
 	labelsToAdd = append(getLabelsFromREMatches(labelMatches), getLabelsFromGenericMatches(customLabelMatches, additionalLabels, &nonexistent)...)
@@ -170,6 +174,17 @@ func handle(gc githubClient, log *logrus.Entry, additionalLabels []string, e *gi
 		if !RepoLabelsExisting.Has(labelToAdd) {
 			noSuchLabelsInRepo = append(noSuchLabelsInRepo, labelToAdd)
 			continue
+		}
+
+		// only org members can add triage/accepted
+		if labelToAdd == prowlabels.TriageAccepted {
+			if member, err := gc.IsMember(org, user); err != nil {
+				log.WithError(err).Errorf("error in IsMember(%s): %v", org, err)
+				continue
+			} else if !member {
+				nonMemberTriageAccepted = true
+				continue
+			}
 		}
 
 		if err := gc.AddLabel(org, repo, e.Number, labelToAdd); err != nil {
@@ -208,6 +223,11 @@ func handle(gc githubClient, log *logrus.Entry, additionalLabels []string, e *gi
 	// Tried to remove Labels that were not present on the Issue
 	if len(noSuchLabelsOnIssue) > 0 {
 		msg := fmt.Sprintf("Those labels are not set on the issue: `%v`", strings.Join(noSuchLabelsOnIssue, ", "))
+		return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(bodyWithoutComments, e.HTMLURL, e.User.Login, msg))
+	}
+
+	if nonMemberTriageAccepted {
+		msg := fmt.Sprintf("The label `%s` cannot be applied. Only GitHub organization members can add the label.", prowlabels.TriageAccepted)
 		return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(bodyWithoutComments, e.HTMLURL, e.User.Login, msg))
 	}
 

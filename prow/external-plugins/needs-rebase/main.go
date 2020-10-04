@@ -27,6 +27,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/interrupts"
+	"k8s.io/test-infra/prow/pjutil"
 
 	"k8s.io/test-infra/pkg/flagutil"
 	"k8s.io/test-infra/prow/config/secret"
@@ -119,6 +120,9 @@ func main() {
 		}
 		log.WithField("duration", fmt.Sprintf("%v", time.Since(start))).Info("Periodic update complete.")
 	}, o.updatePeriod)
+
+	health := pjutil.NewHealth()
+	health.ServeReady()
 
 	mux := http.NewServeMux()
 	mux.Handle("/", server)

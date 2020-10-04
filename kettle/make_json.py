@@ -58,6 +58,7 @@ else:
     # This is safe because the only way we get here is by faling all attempts
     raise
 
+
 class Build:
     """
     Represent Metadata and Details of a build. Leveraging the information in
@@ -103,11 +104,12 @@ class Build:
             if self.path.startswith(bucket):
                 prefix = meta['prefix']
                 break
-
+        #if job path not in buckets.yaml or gs://kubernetes-jenkins/pr-logs it is unmatched
+        else:
             if self.path.startswith('gs://kubernetes-jenkins/pr-logs'):
                 prefix = 'pr:'
             else:
-                raise ValueError('unknown build path')
+                raise ValueError(f'unknown build path for {self.path} in known bucket paths')
         build = os.path.basename(self.path)
         job = prefix + os.path.basename(os.path.dirname(self.path))
         self.job = job

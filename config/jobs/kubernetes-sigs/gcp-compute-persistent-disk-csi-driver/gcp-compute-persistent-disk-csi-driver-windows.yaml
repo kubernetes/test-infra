@@ -36,7 +36,7 @@ periodics:
         value: "win2019"
       - name: PREPULL_YAML
         value: "prepull-head.yaml"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200925-46c65ff-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200930-82b41a1-master
       securityContext:
           privileged: true
   annotations:
@@ -74,13 +74,13 @@ periodics:
       - --gcp-nodes=2
       - --test=false
       - --test-cmd=$GOPATH/src/sigs.k8s.io/gcp-compute-persistent-disk-csi-driver/test/run-windows-k8s-integration.sh
-      - --timeout=120m
+      - --timeout=180m
       env:
       - name: WINDOWS_NODE_OS_DISTRIBUTION
         value: "win2019"
       - name: PREPULL_YAML
         value: "prepull-head.yaml"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200925-46c65ff-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200930-82b41a1-master
       securityContext:
           privileged: true
   annotations:
@@ -122,13 +122,13 @@ presubmits:
         - --gcp-nodes=2
         - --test=false
         - --test-cmd=$GOPATH/src/sigs.k8s.io/gcp-compute-persistent-disk-csi-driver/test/run-windows-k8s-integration.sh
-        - --timeout=120m
+        - --timeout=180m
         env:
         - name: WINDOWS_NODE_OS_DISTRIBUTION
           value: "win2019"
         - name: PREPULL_YAML
           value: "prepull-head.yaml"
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200925-46c65ff-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200930-82b41a1-master
         securityContext:
           privileged: true
     annotations:
@@ -168,13 +168,13 @@ presubmits:
         - --gcp-nodes=2
         - --test=false
         - --test-cmd=$GOPATH/src/sigs.k8s.io/gcp-compute-persistent-disk-csi-driver/test/run-windows-k8s-integration.sh
-        - --timeout=120m
+        - --timeout=180m
         env:
         - name: WINDOWS_NODE_OS_DISTRIBUTION
           value: "win1909"
         - name: PREPULL_YAML
           value: "prepull-head.yaml"
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200925-46c65ff-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200930-82b41a1-master
         securityContext:
           privileged: true
     annotations:
@@ -215,13 +215,13 @@ presubmits:
         - --gcp-nodes=2
         - --test=false
         - --test-cmd=$GOPATH/src/sigs.k8s.io/gcp-compute-persistent-disk-csi-driver/test/run-windows-k8s-integration.sh
-        - --timeout=120m
+        - --timeout=180m
         env:
         - name: WINDOWS_NODE_OS_DISTRIBUTION
           value: "win2019"
         - name: PREPULL_YAML
           value: "prepull-head.yaml"
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200925-46c65ff-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200930-82b41a1-master
         securityContext:
           privileged: true
     annotations:

@@ -1,0 +1,34 @@
+dashboards:
+- dashboard_tab:
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    name: pull-ci-openshift-cluster-etcd-operator-master-e2e-gcp
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: pull-ci-openshift-cluster-etcd-operator-master-e2e-gcp
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    name: pull-ci-openshift-kubernetes-master-e2e-gcp
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: pull-ci-openshift-kubernetes-master-e2e-gcp
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    name: pull-ci-openshift-origin-master-e2e-gcp
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: pull-ci-openshift-origin-master-e2e-gcp
+  name: redhat-openshift-presubmit-master-gcp
+test_groups:
+- days_of_results: 3
+  gcs_prefix: origin-ci-test/pr-logs/directory/pull-ci-openshift-cluster-etcd-operator-master-e2e-gcp
+  name: pull-ci-openshift-cluster-etcd-operator-master-e2e-gcp
+- days_of_results: 3
+  gcs_prefix: origin-ci-test/pr-logs/directory/pull-ci-openshift-kubernetes-master-e2e-gcp
+  name: pull-ci-openshift-kubernetes-master-e2e-gcp
+- days_of_results: 3
+  gcs_prefix: origin-ci-test/pr-logs/directory/pull-ci-openshift-origin-master-e2e-gcp
+  name: pull-ci-openshift-origin-master-e2e-gcp

@@ -196,7 +196,7 @@ func (r *reconciler) defaultReconcile(request reconcile.Request) (reconcile.Resu
 		res = &reconcile.Result{}
 	}
 	if err != nil {
-		r.log.WithError(err).Error("Reconciliation failed")
+		r.log.WithError(err).WithField("name", request.Name).Error("Reconciliation failed")
 	}
 	return *res, err
 }
@@ -242,24 +242,7 @@ func (r *reconciler) terminateDupes(pj *prowv1.ProwJob) error {
 		return fmt.Errorf("failed to list prowjobs: %v", err)
 	}
 
-	return pjutil.TerminateOlderJobs(r.pjClient, r.log, pjs.Items, r.terminateDupesCleanup)
-}
-
-func (r *reconciler) terminateDupesCleanup(pj prowv1.ProwJob) error {
-	client, ok := r.buildClients[pj.ClusterAlias()]
-	if !ok {
-		return fmt.Errorf("no client for cluster %q present", pj.ClusterAlias())
-	}
-	podToDelete := &corev1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Namespace: r.config().PodNamespace,
-			Name:      pj.Name,
-		},
-	}
-	if err := client.Delete(r.ctx, podToDelete); err != nil && !kerrors.IsNotFound(err) {
-		return fmt.Errorf("failed to delete pod %s/%s in cluster %s: %w", podToDelete.Namespace, podToDelete.Name, pj.ClusterAlias(), err)
-	}
-	return nil
+	return pjutil.TerminateOlderJobs(r.pjClient, r.log, pjs.Items)
 }
 
 // syncPendingJob syncs jobs for which we already created the test workload
@@ -310,7 +293,7 @@ func (r *reconciler) syncPendingJob(pj *prowv1.ProwJob) error {
 				}
 			}
 			r.log.WithField("name", pj.ObjectMeta.Name).Debug("Delete Pod.")
-			return client.Delete(r.ctx, pod)
+			return ctrlruntimeclient.IgnoreNotFound(client.Delete(r.ctx, pod))
 
 		case corev1.PodSucceeded:
 			pj.SetComplete()
@@ -350,7 +333,7 @@ func (r *reconciler) syncPendingJob(pj *prowv1.ProwJob) error {
 					}
 				}
 				r.log.WithField("name", pj.ObjectMeta.Name).Debug("Delete Pod.")
-				return client.Delete(r.ctx, pod)
+				return ctrlruntimeclient.IgnoreNotFound(client.Delete(r.ctx, pod))
 			}
 			// Pod failed. Update ProwJob, talk to GitHub.
 			pj.SetComplete()
@@ -441,7 +424,7 @@ func (r *reconciler) syncPendingJob(pj *prowv1.ProwJob) error {
 	if !pj.Complete() && pod != nil && pod.DeletionTimestamp != nil {
 		pj.SetComplete()
 		pj.Status.State = prowv1.ErrorState
-		pj.Status.Description = "Pod got deleteted unexpectedly"
+		pj.Status.Description = "Pod got deleted unexpectedly"
 	}
 
 	pj.Status.URL, err = pjutil.JobURL(r.config().Plank, *pj, r.log)
@@ -558,7 +541,7 @@ func (r *reconciler) syncAbortedJob(pj *prowv1.ProwJob) error {
 		Name:      pj.Name,
 		Namespace: r.config().PodNamespace,
 	}}
-	if err := buildClient.Delete(r.ctx, pod); err != nil && !kerrors.IsNotFound(err) {
+	if err := ctrlruntimeclient.IgnoreNotFound(buildClient.Delete(r.ctx, pod)); err != nil {
 		return fmt.Errorf("failed to delete pod %s/%s in cluster %s: %w", pod.Namespace, pod.Name, pj.ClusterAlias(), err)
 	}
 
@@ -606,7 +589,7 @@ func (r *reconciler) deletePod(pj *prowv1.ProwJob) error {
 		},
 	}
 
-	if err := buildClient.Delete(r.ctx, pod); err != nil && !kerrors.IsNotFound(err) {
+	if err := ctrlruntimeclient.IgnoreNotFound(buildClient.Delete(r.ctx, pod)); err != nil {
 		return fmt.Errorf("failed to delete pod: %w", err)
 	}
 

@@ -1,5 +1,7 @@
 presubmits:
   kubernetes/kubernetes:
+  # This job is lighweight version of release blocking periodic job 'ci-kubernetes-e2e-gci-gce-scalability'.
+  # Some elements (like access tokens) are removed to speed up testing.
   - name: pull-kubernetes-e2e-gce-100-performance
     cluster: k8s-infra-prow-build
     always_run: true
@@ -48,7 +50,6 @@ presubmits:
         - --test-cmd-args=--report-dir=/workspace/_artifacts
         - --test-cmd-args=--testconfig=testing/density/config.yaml
         - --test-cmd-args=--testconfig=testing/load/config.yaml
-        - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
         - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
         - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
         - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
@@ -56,7 +57,7 @@ presubmits:
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=100m
         - --use-logexporter
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200925-46c65ff-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200930-82b41a1-master
         resources:
           # Using 6 CPU to speed up bazel build phase (2 is enough for the test itself)
           limits:
@@ -113,7 +114,7 @@ presubmits:
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=240m
         - --use-logexporter
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200925-46c65ff-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200930-82b41a1-master
         resources:
           limits:
             # Using 6 CPU to speed up bazel build phase (4 is enough for the test itself)
@@ -165,7 +166,7 @@ presubmits:
         - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[DisabledForLargeClusters\] --minStartupPods=8 --node-schedulable-timeout=90m
         - --timeout=240m
         - --use-logexporter
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200925-46c65ff-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200930-82b41a1-master
         resources:
           limits:
             cpu: 6
@@ -222,7 +223,7 @@ presubmits:
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=540m
         - --use-logexporter
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200925-46c65ff-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200930-82b41a1-master
         resources:
           limits:
             # Using 6 CPU to speed up bazel build phase (4 is enough for the test itself)
@@ -252,7 +253,7 @@ presubmits:
       testgrid-create-test-group: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200925-46c65ff-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200930-82b41a1-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -326,7 +327,7 @@ presubmits:
       preset-e2e-scalability-presubmits: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200925-46c65ff-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200930-82b41a1-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -416,7 +417,7 @@ presubmits:
         - --test-cmd-args=/workspace/_artifacts
         - --test-cmd-name=KubeDnsBenchmark
         - --timeout=120m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200925-46c65ff-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200930-82b41a1-master
 
   - name: pull-perf-tests-clusterloader2
     always_run: false
@@ -468,7 +469,7 @@ presubmits:
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=100m
         - --use-logexporter
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200925-46c65ff-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200930-82b41a1-master
         resources:
           limits:
             cpu: 2
@@ -533,7 +534,7 @@ presubmits:
             - --test-cmd-name=ClusterLoaderV2
             - --timeout=100m
             - --use-logexporter
-          image: gcr.io/k8s-testimages/kubekins-e2e:v20200925-46c65ff-master
+          image: gcr.io/k8s-testimages/kubekins-e2e:v20200930-82b41a1-master
           resources:
             limits:
               cpu: 2
@@ -578,13 +579,13 @@ presubmits:
               cpu: 1
               memory: "2Gi"
 
+  # TODO(jprzychodzen): Remove after deprecation of release-1.19
   - name: pull-perf-tests-verify-all
-    # TODO(oxddr): make it non-optional once we are confident in the presubmit
-    optional: true
     decorate: true
     always_run: true
     skip_branches:
     - release-1.1[2-8] # Presubmit has been implemented for 1.19+ releases
+    - master # It's covered by 'pull-perf-tests-verify-all-python' and 'pull-perf-tests-verify-test'
     path_alias: "k8s.io/perf-tests"
     annotations:
       testgrid-dashboards: presubmits-kubernetes-scalability
@@ -604,13 +605,35 @@ presubmits:
             cpu: 1
             memory: "2Gi"
 
-  - name: pull-perf-tests-verify-test
-    # TODO(jkaniuk): make it non-optional once we are confident in the presubmit
-    optional: true
+  - name: pull-perf-tests-verify-all-python
     decorate: true
     always_run: true
-    branches:
-    - release-1.1[2-8] # Newer branches use verify-all
+    skip_branches:
+      - release-1.1[2-9] # Presubmit has been implemented for 1.20+ releases
+    path_alias: "k8s.io/perf-tests"
+    annotations:
+      testgrid-dashboards: presubmits-kubernetes-scalability
+      testgrid-tab-name: pull-perf-tests-verify-python-all
+    spec:
+      containers:
+        - image: python:3
+          command:
+            - make
+          args:
+            - verify-all-python
+          resources:
+            requests:
+              cpu: 1
+              memory: "2Gi"
+            limits:
+              cpu: 1
+              memory: "2Gi"
+
+  - name: pull-perf-tests-verify-test
+    decorate: true
+    always_run: true
+    skip_branches:
+    - release-1.19 # We use verify-all for that branch
     path_alias: "k8s.io/perf-tests"
     annotations:
       testgrid-dashboards: presubmits-kubernetes-scalability
@@ -629,8 +652,6 @@ presubmits:
             memory: "2Gi"
 
   - name: pull-perf-tests-verify-dashboard
-    # TODO(oxddr): make it non-optional once we are confident in the presubmit
-    optional: true
     decorate: true
     run_if_changed: ^clusterloader2/pkg/prometheus/manifests/dashboards/.*\.json$
     skip_branches:
@@ -655,8 +676,6 @@ presubmits:
             memory: "2Gi"
 
   - name: pull-perf-tests-verify-lint
-    # TODO(oxddr): make it non-optional once we are confident in the presubmit
-    optional: true
     decorate: true
     always_run: true
     skip_branches:

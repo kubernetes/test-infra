@@ -40,6 +40,7 @@ import (
 	"k8s.io/test-infra/gcsweb/pkg/version"
 
 	"k8s.io/test-infra/prow/logrusutil"
+	"k8s.io/test-infra/prow/pjutil"
 )
 
 const (
@@ -203,9 +204,11 @@ func main() {
 	http.Handle("/styles/", longCacheServer(http.StripPrefix("/styles/", http.FileServer(http.Dir(o.flStyles)))))
 
 	// Serve HTTP.
-	http.HandleFunc("/healthz", healthzRequest)
 	http.HandleFunc("/robots.txt", robotsRequest)
 	http.HandleFunc("/", otherRequest)
+
+	health := pjutil.NewHealth()
+	health.ServeReady()
 
 	logrus.Infof("serving on port %d", o.flPort)
 	if err := http.ListenAndServe(fmt.Sprintf(":%d", o.flPort), nil); err != nil {
@@ -225,17 +228,6 @@ func upgradeToHTTPS(w http.ResponseWriter, r *http.Request, logger *logrus.Entry
 		return true
 	}
 	return false
-}
-
-func healthzRequest(w http.ResponseWriter, r *http.Request) {
-	newTxnLogger(r)
-
-	if r.Method != "GET" {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		return
-	}
-
-	fmt.Fprintf(w, "ok")
 }
 
 func robotsRequest(w http.ResponseWriter, r *http.Request) {

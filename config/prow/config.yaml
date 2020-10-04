@@ -11,10 +11,10 @@ plank:
       timeout: 2h
       grace_period: 15m
       utility_images:
-        clonerefs: "gcr.io/k8s-prow/clonerefs:v20200925-a1858f46d6"
-        initupload: "gcr.io/k8s-prow/initupload:v20200925-a1858f46d6"
-        entrypoint: "gcr.io/k8s-prow/entrypoint:v20200925-a1858f46d6"
-        sidecar: "gcr.io/k8s-prow/sidecar:v20200925-a1858f46d6"
+        clonerefs: "gcr.io/k8s-prow/clonerefs:v20201001-87ea1a726b"
+        initupload: "gcr.io/k8s-prow/initupload:v20201001-87ea1a726b"
+        entrypoint: "gcr.io/k8s-prow/entrypoint:v20201001-87ea1a726b"
+        sidecar: "gcr.io/k8s-prow/sidecar:v20201001-87ea1a726b"
       gcs_configuration:
         bucket: "kubernetes-jenkins"
         path_strategy: "legacy"
@@ -191,6 +191,11 @@ branch-protection:
             teams:
             - stage-bots
         component-base:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        component-helpers:
           restrictions:
             users: []
             teams:
@@ -384,20 +389,6 @@ branch-protection:
         - "^revert-" # don't protect revert branches
         - "^dependabot/" # don't protect branches created by dependabot
         - "^greenkeeper/" # don't protect branches created by greenkeeper
-    kubernetes-incubator:
-      protect: true
-      required_status_checks:
-        contexts:
-        - cla/linuxfoundation
-      exclude:
-        - "^revert-" # don't protect revert branches
-        - "^dependabot/" # don't protect branches created by dependabot
-        - "^greenkeeper/" # don't protect branches created by greenkeeper
-      repos:
-        kube-aws:
-          required_status_checks:
-            contexts:
-            - continuous-integration/travis-ci
     kubernetes-sigs:
       protect: true
       required_status_checks:
@@ -461,7 +452,6 @@ tide:
     - kubernetes
     - kubernetes-client
     - kubernetes-csi
-    - kubernetes-incubator
     - kubernetes-sigs
     excludedRepos:
     - kubernetes/kubernetes # Handled with a separate Tide query below.
@@ -477,6 +467,7 @@ tide:
     - kubernetes/cluster-bootstrap
     - kubernetes/code-generator
     - kubernetes/component-base
+    - kubernetes/component-helpers
     - kubernetes/controller-manager
     - kubernetes/cri-api
     - kubernetes/csi-api

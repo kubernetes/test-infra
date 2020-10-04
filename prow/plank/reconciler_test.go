@@ -459,16 +459,6 @@ func (ecc *eventuallyConsistentClient) Create(ctx context.Context, obj runtime.O
 	return nil
 }
 
-func TestTerminateDupesToleratesNotFound(t *testing.T) {
-	r := &reconciler{
-		buildClients: map[string]ctrlruntimeclient.Client{"default": fakectrlruntimeclient.NewFakeClient()},
-		config:       func() *config.Config { return &config.Config{} },
-	}
-	if err := r.terminateDupesCleanup(prowv1.ProwJob{}); err != nil {
-		t.Errorf("expected no error when deleting absent pod, got %v", err)
-	}
-}
-
 func TestStartPodBlocksUntilItHasThePodInCache(t *testing.T) {
 	t.Parallel()
 	r := &reconciler{
