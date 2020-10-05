@@ -119,6 +119,7 @@ var defaultWarnings = []string{
 	missingTriggerWarning,
 	validateURLsWarning,
 	unknownFieldsWarning,
+	validateClusterFieldWarning,
 }
 
 var expensiveWarnings = []string{
