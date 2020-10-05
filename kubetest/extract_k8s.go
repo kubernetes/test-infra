@@ -299,14 +299,11 @@ var getKube = func(url, version string, getSrc bool) error {
 			break
 		}
 		err = fmt.Errorf("U=%s R=%s get-kube.sh failed: %v", url, version, err)
-		if i == 2 {
-			return err
-		}
 		log.Println(err)
 		sleep(time.Duration(i) * time.Second)
 	}
 
-	return nil
+	return err
 }
 
 // wrapper for gsutil cat
