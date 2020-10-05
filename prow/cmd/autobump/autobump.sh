@@ -50,6 +50,10 @@ main() {
 	old_version=$(git show "HEAD:${PLANK_DEPLOYMENT_FILE}" | extract-version)
 	version=$(cat "${PLANK_DEPLOYMENT_FILE}" | extract-version)
 
+	if [[ -z "${version}" ]]; then
+		echo "Failed to fetch version from ${PLANK_DEPLOYMENT_FILE}"
+		exit 1
+	fi
 	if [[ "${old_version}" == "${version}" ]]; then
 		echo "Bump did not change the Prow version: it's still ${version}. Aborting no-op bump." >&2
 		return 0
