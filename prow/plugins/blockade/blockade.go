@@ -74,9 +74,30 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 		}
 		blockConfig[repo.String()] = buf.String()
 	}
+	yamlSnippet, err := plugins.CommentMap.GenYaml(&plugins.Configuration{
+		Blockades: []plugins.Blockade{
+			{
+				Repos: []string{
+					"ORGANIZATION",
+					"ORGANIZATION/REPOSITORY",
+				},
+				BlockRegexps: []string{
+					"^examples/",
+				},
+				ExceptionRegexps: []string{
+					"^excepts/",
+				},
+				Explanation: "examples/ has moved elsewhere",
+			},
+		},
+	})
+	if err != nil {
+		logrus.WithError(err).Warn("cannot generate comments for plugin")
+	}
 	return &pluginhelp.PluginHelp{
 			Description: "The blockade plugin blocks pull requests from merging if they touch specific files. The plugin applies the '" + labels.BlockedPaths + "' label to pull requests that touch files that match a blockade's block regular expression and none of the corresponding exception regular expressions.",
 			Config:      blockConfig,
+			Snippet:     yamlSnippet,
 		},
 		nil
 }
