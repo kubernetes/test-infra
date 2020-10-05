@@ -1,31 +1,33 @@
 presubmits:
   kubernetes-sigs/cluster-api:
-  - name: pull-cluster-api-build
+  - name: pull-cluster-api-build-main
     decorate: true
     path_alias: sigs.k8s.io/cluster-api
     always_run: true
     labels:
       preset-service-account: "true"
-    skip_branches:
-    - gh-pages
+    branches:
+    # The script this job runs is not in all branches.
+    - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200930-82b41a1-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200930-82b41a1-1.19
         command:
         - runner.sh
         - ./scripts/ci-build.sh
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-      testgrid-tab-name: pr-build
-  - name: pull-cluster-api-make
+      testgrid-tab-name: capi-pr-build-main
+  - name: pull-cluster-api-make-main
     decorate: true
     path_alias: sigs.k8s.io/cluster-api
     always_run: true
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
-    skip_branches:
-    - gh-pages
+    branches:
+    # The script this job runs is not in all branches.
+    - ^master$
     spec:
       containers:
       - command:
@@ -34,32 +36,32 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200930-82b41a1-1.18
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200930-82b41a1-1.19
         resources:
           requests:
             cpu: 7300m
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-      testgrid-tab-name: pr-make
-  - name: pull-cluster-api-apidiff
+      testgrid-tab-name: capi-pr-make-main
+  - name: pull-cluster-api-apidiff-main
     decorate: true
     path_alias: sigs.k8s.io/cluster-api
     always_run: true
     optional: true
     labels:
       preset-service-account: "true"
-    skip_branches:
-    - gh-pages
-    - release-0.2
+    branches:
+    # The script this job runs is not in all branches.
+    - ^master$
     spec:
       containers:
       - command:
         - runner.sh
         - ./scripts/ci-apidiff.sh
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200930-82b41a1-1.18
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20200930-82b41a1-1.19
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-      testgrid-tab-name: pr-apidiff
+      testgrid-tab-name: capi-pr-apidiff-main
   - name: pull-cluster-api-verify
     decorate: true
     path_alias: sigs.k8s.io/cluster-api
@@ -70,7 +72,7 @@ presubmits:
     - gh-pages
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200930-82b41a1-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200930-82b41a1-1.19
         command:
         - "runner.sh"
         - "make"
@@ -80,18 +82,19 @@ presubmits:
             cpu: 7300m
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-      testgrid-tab-name: pr-verify
-  - name: pull-cluster-api-test
+      testgrid-tab-name: capi-pr-verify-main
+  - name: pull-cluster-api-test-main
     decorate: true
     path_alias: sigs.k8s.io/cluster-api
     always_run: true
     labels:
       preset-service-account: "true"
-    skip_branches:
-    - gh-pages
+    branches:
+    # The script this job runs is not in all branches.
+    - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200930-82b41a1-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200930-82b41a1-1.19
         args:
         - runner.sh
         - ./scripts/ci-test.sh
@@ -100,20 +103,20 @@ presubmits:
             cpu: 7300m
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-      testgrid-tab-name: pr-test
-  - name: pull-cluster-api-e2e
+      testgrid-tab-name: capi-pr-test-main
+  - name: pull-cluster-api-e2e-main
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     decorate: true
-    skip_branches:
-      - gh-pages
-      - release-0.2
+    branches:
+    # The script this job runs is not in all branches.
+    - ^master$
     path_alias: sigs.k8s.io/cluster-api
     run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|scripts|test|third_party|util)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200930-82b41a1-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200930-82b41a1-1.19
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -128,21 +131,21 @@ presubmits:
             cpu: 7300m
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-      testgrid-tab-name: pr-e2e
-  - name: pull-cluster-api-e2e-full
+      testgrid-tab-name: capi-pr-e2e-main
+  - name: pull-cluster-api-e2e-full-main
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     decorate: true
     optional: true
     always_run: false
-    skip_branches:
-      - gh-pages
-      - release-0.2
+    branches:
+    # The script this job runs is not in all branches.
+    - ^master$
     path_alias: sigs.k8s.io/cluster-api
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200930-82b41a1-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200930-82b41a1-1.19
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -154,4 +157,4 @@ presubmits:
             cpu: 7300m
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-      testgrid-tab-name: pr-e2e-full
+      testgrid-tab-name: capi-pr-e2e-full-main

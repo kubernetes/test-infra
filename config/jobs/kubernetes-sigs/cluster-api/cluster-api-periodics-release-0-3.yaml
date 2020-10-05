@@ -1,5 +1,5 @@
 periodics:
-- name: periodic-cluster-api-test
+- name: periodic-cluster-api-test-release-0-3
   interval: 1h
   decorate: true
   labels:
@@ -7,7 +7,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api
-    base_ref: master
+    base_ref: release-0.3
     path_alias: sigs.k8s.io/cluster-api
   spec:
     containers:
@@ -19,10 +19,10 @@ periodics:
           cpu: 7300m
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-    testgrid-tab-name: unit tests
+    testgrid-tab-name: capi-test-release-0-3
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
     testgrid-num-failures-to-alert: "2"
-- name: periodic-cluster-api-e2e-test
+- name: periodic-cluster-api-e2e-release-0-3
   interval: 1h
   decorate: true
   labels:
@@ -31,7 +31,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api
-    base_ref: master
+    base_ref: release-0.3
     path_alias: sigs.k8s.io/cluster-api
   spec:
     containers:
@@ -47,16 +47,16 @@ periodics:
             cpu: 7300m
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-    testgrid-tab-name: capi e2e tests
+    testgrid-tab-name: capi-e2e-release-0-3
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
     testgrid-num-failures-to-alert: "2"
-- name: periodic-cluster-api-verify-external-links
+- name: periodic-cluster-api-verify-book-links-release-0-3
   interval: 6h
   decorate: true
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api
-    base_ref: master
+    base_ref: release-0.3
     path_alias: sigs.k8s.io/cluster-api
   spec:
     containers:
@@ -80,4 +80,4 @@ periodics:
         path: cluster-lifecycle-github-token
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-    testgrid-tab-name: periodic docs link verification
+    testgrid-tab-name: capi-verify-book-links-release-0-3
