@@ -900,6 +900,7 @@ periodics:
       - --github-repo=test-infra
       - --oncall-address=https://storage.googleapis.com/kubernetes-jenkins/oncall.json
       - --bump-prow-images
+      - --bump-boskos-images
       - --bump-test-images
       - --target-version=latest
       - --include-config-paths=.
