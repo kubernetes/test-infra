@@ -133,6 +133,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-kubelet
     testgrid-tab-name: node-kubelet-conformance
+    testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
 
 - name: ci-kubernetes-node-kubelet-features
   cluster: k8s-infra-prow-build
