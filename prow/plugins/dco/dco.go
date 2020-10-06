@@ -75,10 +75,22 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 			configInfo[repo.String()] = fmt.Sprintf("The trusted GitHub organization for this repository is %q.", repo)
 		}
 	}
-
+	yamlSnippet, err := plugins.CommentMap.GenYaml(&plugins.Configuration{
+		Dco: map[string]*plugins.Dco{
+			"org/repo": {
+				SkipDCOCheckForMembers:       true,
+				TrustedOrg:                   "org",
+				SkipDCOCheckForCollaborators: true,
+			},
+		},
+	})
+	if err != nil {
+		logrus.WithError(err).Warnf("cannot generate comments for %s plugin", pluginName)
+	}
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "The dco plugin checks pull request commits for 'DCO sign off' and maintains the '" + dcoContextName + "' status context, as well as the 'dco' label.",
 		Config:      configInfo,
+		Snippet:     yamlSnippet,
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/check-dco",

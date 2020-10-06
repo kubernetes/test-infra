@@ -57,7 +57,7 @@ func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhel
 		},
 	})
 	if err != nil {
-		logrus.WithError(err).Warn("cannot generate comments for heart plugin")
+		logrus.WithError(err).Warnf("cannot generate comments for %s plugin", pluginName)
 	}
 	return &pluginhelp.PluginHelp{
 			Description: "The heart plugin celebrates certain GitHub actions with the reaction emojis. Emojis are added to pull requests that make additions to OWNERS or OWNERS_ALIASES files and to comments left by specified \"adorees\".",

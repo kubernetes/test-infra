@@ -53,11 +53,20 @@ func init() {
 }
 
 func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
+	yamlSnippet, err := plugins.CommentMap.GenYaml(&plugins.Configuration{
+		Goose: plugins.Goose{
+			KeyPath: "/etc/unsplash-api/honk.txt",
+		},
+	})
+	if err != nil {
+		logrus.WithError(err).Warnf("cannot generate comments for %s plugin", pluginName)
+	}
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "The goose plugin adds a goose image to an issue or PR in response to the `/honk` command.",
 		Config: map[string]string{
 			"": fmt.Sprintf("The goose plugin uses an api key for unsplash.com stored in %s.", config.Goose.KeyPath),
 		},
+		Snippet: yamlSnippet,
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/honk",

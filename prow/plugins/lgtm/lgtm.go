@@ -103,7 +103,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 		},
 	})
 	if err != nil {
-		logrus.WithError(err).Warn("cannot generate comments for lgtm plugin")
+		logrus.WithError(err).Warnf("cannot generate comments for %s plugin", PluginName)
 	}
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "The lgtm plugin manages the application and removal of the 'lgtm' (Looks Good To Me) label which is typically used to gate merging.",

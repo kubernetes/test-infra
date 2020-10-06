@@ -46,6 +46,15 @@ func init() {
 func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
 	// Only the 'Config' and Description' fields are necessary because this
 	// plugin does not react to any commands.
+	yamlSnippet, err := plugins.CommentMap.GenYaml(&plugins.Configuration{
+		CherryPickUnapproved: plugins.CherryPickUnapproved{
+			BranchRegexp: "^release-*",
+			Comment:      "This is why your cherry-pick cannot be approved.",
+		},
+	})
+	if err != nil {
+		logrus.WithError(err).Warnf("cannot generate comments for %s plugin", PluginName)
+	}
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "Label PRs against a release branch which do not have the `cherry-pick-approved` label with the `do-not-merge/cherry-pick-not-approved` label.",
 		Config: map[string]string{
@@ -55,6 +64,7 @@ func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhel
 				config.CherryPickUnapproved.Comment,
 			),
 		},
+		Snippet: yamlSnippet,
 	}
 	return pluginHelp, nil
 }
