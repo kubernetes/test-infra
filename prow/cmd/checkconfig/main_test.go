@@ -1501,7 +1501,7 @@ func TestValidateClusterField(t *testing.T) {
 		expectedError string
 	}{
 		{
-			name: "valid case for a jenkins job",
+			name: "Jenkins job with unset cluster",
 			cfg: &config.Config{
 				JobConfig: config.JobConfig{
 					PresubmitsStatic: map[string][]config.Presubmit{
@@ -1509,6 +1509,20 @@ func TestValidateClusterField(t *testing.T) {
 							{
 								JobBase: config.JobBase{
 									Agent: "jenkins",
+								},
+							}}}}},
+		},
+		{
+			name: "jenkins job with defaulted cluster",
+			cfg: &config.Config{
+				JobConfig: config.JobConfig{
+					PresubmitsStatic: map[string][]config.Presubmit{
+						"org1/repo1": {
+							{
+								JobBase: config.JobBase{
+									Agent:   "jenkins",
+									Cluster: "default",
+									Name:    "some-job",
 								},
 							}}}}},
 		},
@@ -1521,7 +1535,7 @@ func TestValidateClusterField(t *testing.T) {
 							{
 								JobBase: config.JobBase{
 									Agent:   "jenkins",
-									Cluster: "default",
+									Cluster: "build1",
 									Name:    "some-job",
 								},
 							}}}}},
