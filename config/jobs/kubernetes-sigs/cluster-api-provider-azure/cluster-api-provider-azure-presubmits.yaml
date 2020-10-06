@@ -28,41 +28,6 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: pr-build
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
-  - name: pull-cluster-api-provider-azure-integration
-    always_run: true
-    optional: true
-    decorate: true
-    labels:
-      preset-dind-enabled: "true"
-    path_alias: "sigs.k8s.io/cluster-api-provider-azure"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-1.18
-        command:
-        - "runner.sh"
-        - "./scripts/ci-integration.sh"
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - mountPath: /lib/modules
-          name: modules
-          readOnly: true
-        - mountPath: /sys/fs/cgroup
-          name: cgroup
-      volumes:
-      - name: modules
-        hostPath:
-          path: /lib/modules
-          type: Directory
-      - name: cgroup
-        hostPath:
-          path: /sys/fs/cgroup
-          type: Directory
-    annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-      testgrid-tab-name: pr-integration
-      testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
   - name: pull-cluster-api-provider-azure-e2e
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     always_run: true
