@@ -40,6 +40,7 @@ import (
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
 	_ "k8s.io/test-infra/prow/hook/plugin-imports"
+	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/plugins"
@@ -1070,7 +1071,7 @@ func validateTideContextPolicy(cfg *config.Config) error {
 var agentsNotSupportingCluster = sets.NewString("jenkins")
 
 func validateJobCluster(job config.JobBase) error {
-	if job.Cluster != "" && agentsNotSupportingCluster.Has(job.Agent) {
+	if job.Cluster != "" && job.Cluster != kube.DefaultClusterAlias && agentsNotSupportingCluster.Has(job.Agent) {
 		return fmt.Errorf("%s: cannot set cluster field if agent is %s", job.Name, job.Agent)
 	}
 	return nil
