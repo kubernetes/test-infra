@@ -1094,9 +1094,8 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 			return c.ghc.Merge(sp.org, sp.repo, int(pr.Number), ghMergeDetails)
 		})
 		if err != nil {
+			// These are user errors, shouldn't be printed as tide errors
 			log.WithError(err).Debug("Merge failed.")
-			errs = append(errs, err)
-			failed = append(failed, int(pr.Number))
 		} else {
 			log.Info("Merged.")
 			merged = append(merged, int(pr.Number))
