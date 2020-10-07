@@ -133,7 +133,7 @@ func (c *Client) ShouldReport(_ *logrus.Entry, pj *v1.ProwJob) bool {
 }
 
 // Report will report via reportlib
-func (c *Client) Report(_ *logrus.Entry, pj *v1.ProwJob) ([]*v1.ProwJob, *reconcile.Result, error) {
+func (c *Client) Report(log *logrus.Entry, pj *v1.ProwJob) ([]*v1.ProwJob, *reconcile.Result, error) {
 
 	// The github comment create/update/delete done for presubmits
 	// needs pr-level locking to avoid racing when reporting multiple
@@ -150,10 +150,18 @@ func (c *Client) Report(_ *logrus.Entry, pj *v1.ProwJob) ([]*v1.ProwJob, *reconc
 
 	// TODO(krzyzacy): ditch ReportTemplate, and we can drop reference to config.Getter
 	err := report.Report(c.gc, c.config().Plank.ReportTemplateForRepo(pj.Spec.Refs), *pj, c.config().GitHubReporter.JobTypesToReport)
-	if err != nil && strings.Contains(err.Error(), "This SHA and context has reached the maximum number of statuses") {
-		// This is completely unrecoverable, so just swallow the error to make sure we wont retry, even when crier gets restarted.
-		err = nil
+	if err != nil {
+		if strings.Contains(err.Error(), "This SHA and context has reached the maximum number of statuses") {
+			// This is completely unrecoverable, so just swallow the error to make sure we wont retry, even when crier gets restarted.
+			log.WithError(err).Debug("Encountered an error, skipping retries")
+			err = nil
+		} else if strings.Contains(err.Error(), "\"message\":\"Not Found\"") {
+			// "message":"Not Found" error occurs when someone force push, which is not a crier error
+			log.WithError(err).Debug("Could not find PR commit, skipping retries")
+			err = nil
+		}
 	}
+
 	return []*v1.ProwJob{pj}, nil, err
 }
 
