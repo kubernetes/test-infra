@@ -532,6 +532,17 @@ require_matching_label:
     SIG Docs takes a lead on issue triage for this website, but any Kubernetes member can accept issues by applying the `triage/accepted` label.
 
     The `triage/accepted` label can be added by org members by writing `/triage accepted` in a comment.
+- missing_label: needs-triage
+  org: kubernetes
+  repo: kubectl
+  issues: true
+  regexp: ^triage/accepted$
+  missing_comment: |
+    This issue is currently awaiting triage.
+
+    SIG CLI takes a lead on issue triage for this repo, but any Kubernetes member can accept issues by applying the `triage/accepted` label.
+
+    The `triage/accepted` label can be added by org members by writing `/triage accepted` in a comment.
 - missing_label: needs-sig
   org: kubernetes
   repo: community
