@@ -28,6 +28,11 @@ dashboard_groups:
   - redhat-openshift-okd-release-4.6-blocking
   - redhat-openshift-okd-release-4.6-informing
   - redhat-openshift-okd-release-4.7-informing
+  - redhat-openshift-presubmits-e2e-master-0
+  - redhat-openshift-presubmits-e2e-master-1
+  - redhat-openshift-presubmits-e2e-master-2
+  - redhat-openshift-presubmits-e2e-master-3
+  - redhat-openshift-presubmits-e2e-master-4
   - redhat-osde2e-int-aws
   - redhat-osde2e-int-gcp
   - redhat-osde2e-int-moa
