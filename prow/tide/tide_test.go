@@ -1142,7 +1142,6 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 		triggered        int
 		triggeredBatches int
 		action           Action
-		expectErr        bool
 	}{
 		{
 			name: "no prs to test, should do nothing",
@@ -1497,7 +1496,6 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 			merged:      2,
 			triggered:   0,
 			action:      MergeBatch,
-			expectErr:   true,
 		},
 		{
 			name: "batch merge errors but continues if a PR has changed",
@@ -1507,7 +1505,6 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 			merged:      2,
 			triggered:   0,
 			action:      MergeBatch,
-			expectErr:   true,
 		},
 		{
 			name: "batch merge errors but continues on unknown error",
@@ -1517,7 +1514,6 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 			merged:      2,
 			triggered:   0,
 			action:      MergeBatch,
-			expectErr:   true,
 		},
 		{
 			name: "batch merge stops on auth error",
@@ -1527,7 +1523,6 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 			merged:      1,
 			triggered:   0,
 			action:      MergeBatch,
-			expectErr:   true,
 		},
 		{
 			name: "batch merge stops on invalid merge method error",
@@ -1537,7 +1532,6 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 			merged:      1,
 			triggered:   0,
 			action:      MergeBatch,
-			expectErr:   true,
 		},
 	}
 
@@ -1663,11 +1657,7 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 			if tc.batchPending {
 				batchPending = []PullRequest{{}}
 			}
-			if act, _, err := c.takeAction(sp, batchPending, genPulls(tc.successes), genPulls(tc.pendings), genPulls(tc.nones), genPulls(tc.batchMerges), sp.presubmits); err != nil && !tc.expectErr {
-				t.Fatalf("Unexpected error in takeAction: %v", err)
-			} else if err == nil && tc.expectErr {
-				t.Error("Missing expected error from takeAction.")
-			} else if act != tc.action {
+			if act, _, _ := c.takeAction(sp, batchPending, genPulls(tc.successes), genPulls(tc.pendings), genPulls(tc.nones), genPulls(tc.batchMerges), sp.presubmits); act != tc.action {
 				t.Errorf("Wrong action. Got %v, wanted %v.", act, tc.action)
 			}
 
