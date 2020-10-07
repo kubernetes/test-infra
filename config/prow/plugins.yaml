@@ -929,7 +929,7 @@ plugins:
   kubernetes-sigs/contributor-playground:
   - require-matching-label
 
-  kubernetes-sigs/seccomp-operator:
+  kubernetes-sigs/security-profiles-operator:
   - release-note
 
   containerd/cri:
