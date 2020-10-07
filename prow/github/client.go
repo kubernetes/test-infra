@@ -1869,7 +1869,7 @@ func (c *client) ListReviews(org, repo string, number int) ([]Review, error) {
 
 // CreateStatus creates or updates the status of a commit.
 //
-// See https://developer.github.com/v3/repos/statuses/#create-a-status
+// See https://docs.github.com/en/free-pro-team@latest/rest/reference/repos#create-a-commit-status
 func (c *client) CreateStatus(org, repo, SHA string, s Status) error {
 	durationLogger := c.log("CreateStatus", org, repo, SHA, s)
 	defer durationLogger()
