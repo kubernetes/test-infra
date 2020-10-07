@@ -5198,3 +5198,27 @@ def go_repositories():
         sum = "h1:KNt/RhmQTOLr7Aj8PsJ7mTronaFyx80mRTT9qF261dA=",
         version = "v0.0.13",
     )
+    go_repository(
+        name = "com_github_andygrunwald_go_jira",
+        build_file_generation = "on",
+        build_file_proto_mode = "disable",
+        importpath = "github.com/andygrunwald/go-jira",
+        sum = "h1:JJi2cEDmDxVtTXxC8ruLDbtOU6pA4OLeL0niyfNcoWw=",
+        version = "v1.12.0",
+    )
+    go_repository(
+        name = "com_github_fatih_structs",
+        build_file_generation = "on",
+        build_file_proto_mode = "disable",
+        importpath = "github.com/fatih/structs",
+        sum = "h1:BrX964Rv5uQ3wwS+KRUAJCBBw5PQmgJfJ6v4yly5QwU=",
+        version = "v1.0.0",
+    )
+    go_repository(
+        name = "com_github_trivago_tgo",
+        build_file_generation = "on",
+        build_file_proto_mode = "disable",
+        importpath = "github.com/trivago/tgo",
+        sum = "h1:bxatjJIXNIpV18bucU4Uk/LaoxvxuOlp/oowRHyncLQ=",
+        version = "v1.0.1",
+    )
