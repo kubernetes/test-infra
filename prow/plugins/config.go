@@ -87,7 +87,7 @@ type Configuration struct {
 	Size                       Size                         `json:"size,omitempty"`
 	Triggers                   []Trigger                    `json:"triggers,omitempty"`
 	Welcome                    []Welcome                    `json:"welcome,omitempty"`
-	Override                   Override                     `json:"override"`
+	Override                   Override                     `json:"override,omitempty"`
 }
 
 // Golint holds configuration for the golint plugin
