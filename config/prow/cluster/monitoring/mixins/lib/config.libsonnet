@@ -36,7 +36,7 @@
 
     // Heartbeat jobs
     heartbeatJobs: [
-      {name: 'ci-test-infra-prow-checkconfig', interval: '10m', alertInterval: '20m'},
+      {name: 'ci-test-infra-prow-checkconfig', interval: '9m', alertInterval: '20m'},
     ],
   },
 }
