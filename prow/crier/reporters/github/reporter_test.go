@@ -188,6 +188,10 @@ func TestReport(t *testing.T) {
 			githubError: errors.New("This SHA and context has reached the maximum number of statuses"),
 		},
 		{
+			name:        "Error from user side gets swallowed",
+			githubError: errors.New("error setting status: status code 404 not one of [201], body: {\"message\":\"Not Found\",\"documentation_url\":\"https://docs.github.com/rest/reference/repos#create-a-commit-status\"}"),
+		},
+		{
 			name:          "Other error get returned",
 			githubError:   errors.New("something went wrong :("),
 			expectedError: "error setting status: something went wrong :(",

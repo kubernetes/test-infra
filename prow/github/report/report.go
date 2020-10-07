@@ -143,10 +143,7 @@ func Report(ghc GitHubClient, reportTemplate *template.Template, pj prowapi.Prow
 		return nil
 	}
 
-	if err := reportStatus(ghc, pj); err != nil &&
-		!strings.Contains(err.Error(), "\"message\":\"Not Found\"") {
-		// "message":"Not Found" error occurs when someone force push, which
-		// is not a crier error
+	if err := reportStatus(ghc, pj); err != nil {
 		return fmt.Errorf("error setting status: %w", err)
 	}
 
