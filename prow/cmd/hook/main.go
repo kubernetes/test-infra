@@ -34,12 +34,14 @@ import (
 	"k8s.io/test-infra/prow/githubeventserver"
 	"k8s.io/test-infra/prow/hook"
 	"k8s.io/test-infra/prow/interrupts"
+	jiraclient "k8s.io/test-infra/prow/jira"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
 	"k8s.io/test-infra/prow/pjutil"
 	pluginhelp "k8s.io/test-infra/prow/pluginhelp/hook"
 	"k8s.io/test-infra/prow/plugins"
 	bzplugin "k8s.io/test-infra/prow/plugins/bugzilla"
+	"k8s.io/test-infra/prow/plugins/jira"
 	"k8s.io/test-infra/prow/repoowners"
 	"k8s.io/test-infra/prow/slack"
 )
@@ -57,13 +59,14 @@ type options struct {
 	github                 prowflagutil.GitHubOptions
 	bugzilla               prowflagutil.BugzillaOptions
 	instrumentationOptions prowflagutil.InstrumentationOptions
+	jira                   prowflagutil.JiraOptions
 
 	webhookSecretFile string
 	slackTokenFile    string
 }
 
 func (o *options) Validate() error {
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.bugzilla} {
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.bugzilla, &o.jira} {
 		if err := group.Validate(o.dryRun); err != nil {
 			return err
 		}
@@ -82,7 +85,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
 	fs.DurationVar(&o.gracePeriod, "grace-period", 180*time.Second, "On shutdown, try to handle remaining events for the specified duration. ")
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.bugzilla, &o.instrumentationOptions} {
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.bugzilla, &o.instrumentationOptions, &o.jira} {
 		group.AddFlags(fs)
 	}
 
@@ -152,6 +155,15 @@ func main() {
 		bugzillaClient = &bugzilla.Fake{}
 	}
 
+	var jiraClient jiraclient.Client
+	if orgs, repos := pluginAgent.Config().EnabledReposForPlugin(jira.PluginName); orgs != nil || repos != nil {
+		client, err := o.jira.Client(secretAgent)
+		if err != nil {
+			logrus.WithError(err).Fatal("Failed to construct Jira Client")
+		}
+		jiraClient = client
+	}
+
 	infrastructureClient, err := o.kubernetes.InfrastructureClusterClient(o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting Kubernetes client for infrastructure cluster.")
@@ -197,6 +209,7 @@ func main() {
 		SlackClient:               slackClient,
 		OwnersClient:              ownersClient,
 		BugzillaClient:            bugzillaClient,
+		JiraClient:                jiraClient,
 	}
 
 	promMetrics := githubeventserver.NewMetrics()
