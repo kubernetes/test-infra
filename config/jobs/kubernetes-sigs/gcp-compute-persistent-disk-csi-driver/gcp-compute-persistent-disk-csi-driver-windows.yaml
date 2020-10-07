@@ -77,7 +77,7 @@ periodics:
       - --timeout=180m
       env:
       - name: WINDOWS_NODE_OS_DISTRIBUTION
-        value: "win2019"
+        value: "win1909"
       - name: PREPULL_YAML
         value: "prepull-head.yaml"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-master
