@@ -153,11 +153,11 @@ func (c *Client) Report(log *logrus.Entry, pj *v1.ProwJob) ([]*v1.ProwJob, *reco
 	if err != nil {
 		if strings.Contains(err.Error(), "This SHA and context has reached the maximum number of statuses") {
 			// This is completely unrecoverable, so just swallow the error to make sure we wont retry, even when crier gets restarted.
-			log.WithError(err).Debug("Encountered unrecoverable error")
+			log.WithError(err).Debug("Encountered an error, skipping retries")
 			err = nil
 		} else if strings.Contains(err.Error(), "\"message\":\"Not Found\"") {
 			// "message":"Not Found" error occurs when someone force push, which is not a crier error
-			log.WithError(err).Debug("Cannot find endpoint")
+			log.WithError(err).Debug("Could not find PR commit, skipping retries")
 			err = nil
 		}
 	}
