@@ -58,11 +58,20 @@ func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhel
 	labels := []string{}
 	labels = append(labels, defaultLabels...)
 	labels = append(labels, config.Label.AdditionalLabels...)
+	yamlSnippet, err := plugins.CommentMap.GenYaml(&plugins.Configuration{
+		Label: plugins.Label{
+			AdditionalLabels: []string{"api-review", "community/discussion"},
+		},
+	})
+	if err != nil {
+		logrus.WithError(err).Warn("cannot generate comments for label plugin")
+	}
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "The label plugin provides commands that add or remove certain types of labels. Labels of the following types can be manipulated: 'area/*', 'committee/*', 'kind/*', 'language/*', 'priority/*', 'sig/*', 'triage/*', and 'wg/*'. More labels can be configured to be used via the /label command.",
 		Config: map[string]string{
 			"": configString(labels),
 		},
+		Snippet: yamlSnippet,
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/[remove-](area|committee|kind|language|priority|sig|triage|wg|label) <target>",

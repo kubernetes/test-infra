@@ -137,8 +137,20 @@ func init() {
 }
 
 func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
+	yamlSnippet, err := plugins.CommentMap.GenYaml(&plugins.Configuration{
+		Override: plugins.Override{
+			AllowTopLevelOwners: true,
+			AllowedGitHubTeams: map[string][]string{
+				"kubernetes/kubernetes": {"team1", "team2"},
+			},
+		},
+	})
+	if err != nil {
+		logrus.WithError(err).Warn("cannot generate comments for override plugin")
+	}
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "The override plugin allows repo admins to force a github status context to pass",
+		Snippet:     yamlSnippet,
 	}
 	overrideConfig := plugins.Override{}
 	if config != nil {
