@@ -92,9 +92,23 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 			configInfo[repo.String()] = strings.Join(configInfoStrings, "\n")
 		}
 	}
+	yamlSnippet, err := plugins.CommentMap.GenYaml(&plugins.Configuration{
+		Lgtm: []plugins.Lgtm{
+			{
+				Repos:            []string{"kubernetes/test-infra"},
+				ReviewActsAsLgtm: true,
+				StickyLgtmTeam:   "team1",
+				StoreTreeHash:    true,
+			},
+		},
+	})
+	if err != nil {
+		logrus.WithError(err).Warn("cannot generate comments for lgtm plugin")
+	}
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "The lgtm plugin manages the application and removal of the 'lgtm' (Looks Good To Me) label which is typically used to gate merging.",
 		Config:      configInfo,
+		Snippet:     yamlSnippet,
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/lgtm [cancel] or GitHub Review action",
