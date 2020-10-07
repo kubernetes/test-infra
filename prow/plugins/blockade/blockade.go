@@ -82,17 +82,17 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 					"ORGANIZATION/REPOSITORY",
 				},
 				BlockRegexps: []string{
-					"^examples/",
+					"^examples*",
 				},
 				ExceptionRegexps: []string{
-					"^excepts/",
+					"^examples-keep/",
 				},
-				Explanation: "examples/ has moved elsewhere",
+				Explanation: "examples have moved elsewhere",
 			},
 		},
 	})
 	if err != nil {
-		logrus.WithError(err).Warn("cannot generate comments for plugin")
+		logrus.WithError(err).Warn("cannot generate comments for blockade plugin")
 	}
 	return &pluginhelp.PluginHelp{
 			Description: "The blockade plugin blocks pull requests from merging if they touch specific files. The plugin applies the '" + labels.BlockedPaths + "' label to pull requests that touch files that match a blockade's block regular expression and none of the corresponding exception regular expressions.",
