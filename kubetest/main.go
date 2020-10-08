@@ -99,7 +99,6 @@ type options struct {
 	kubemarkNodes           string // TODO(fejta): switch to int after migration
 	logexporterGCSPath      string
 	metadataSources         string
-	noAllowDup              bool
 	nodeArgs                string
 	nodeTestArgs            string
 	nodeTests               bool
@@ -168,7 +167,7 @@ func defineFlags() *options {
 	flag.StringVar(&o.metadataSources, "metadata-sources", "images.json", "Comma-separated list of files inside ./artifacts to merge into metadata.json")
 	flag.StringVar(&o.nodeArgs, "node-args", "", "Args for node e2e tests.")
 	flag.StringVar(&o.nodeTestArgs, "node-test-args", "", "Test args specifically for node e2e tests.")
-	flag.BoolVar(&o.noAllowDup, "no-allow-dup", false, "if set --allow-dup will not be passed to push-build and --stage will error if the build already exists on the gcs path")
+	flag.BoolVar(&o.stage.noAllowDup, "no-allow-dup", false, "if set --allow-dup will not be passed to push-build and --stage will error if the build already exists on the gcs path")
 	flag.BoolVar(&o.nodeTests, "node-tests", false, "If true, run node-e2e tests.")
 	flag.StringVar(&o.provider, "provider", "", "Kubernetes provider such as gce, gke, aws, etc")
 	flag.StringVar(&o.publish, "publish", "", "Publish version to the specified gs:// path on success")
@@ -189,6 +188,7 @@ func defineFlags() *options {
 	flag.BoolVar(&o.up, "up", false, "If true, start the e2e cluster. If cluster is already up, recreate it.")
 	flag.StringVar(&o.upgradeArgs, "upgrade_args", "", "If set, run upgrade tests before other tests")
 	flag.DurationVar(&o.boskosWaitDuration, "boskos-wait-duration", 5*time.Minute, "Defines how long it waits until quit getting Boskos resoure, default 5 minutes")
+	flag.BoolVar(&o.stage.useKrel, "use-krel", false, "If true, use the Kubernetes Release Toolbox (krel). Works only for staging right now.")
 
 	// The "-v" flag was also used by glog, which is used by k8s.io/client-go. Duplicate flags cause panics.
 	// 1. Even if we could convince glog to change, they have too many consumers to ever do so.
@@ -435,7 +435,7 @@ func acquireKubernetes(o *options, d deployer) error {
 	// Potentially stage build binaries somewhere on GCS
 	if o.stage.Enabled() {
 		if err := control.XMLWrap(&suite, "Stage", func() error {
-			return o.stage.Stage(o.noAllowDup)
+			return o.stage.Stage()
 		}); err != nil {
 			return err
 		}

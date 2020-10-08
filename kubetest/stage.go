@@ -22,6 +22,10 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/pkg/errors"
+	"k8s.io/release/pkg/build"
+	"k8s.io/release/pkg/object"
+
 	"k8s.io/test-infra/kubetest/util"
 )
 
@@ -31,15 +35,20 @@ type stageStrategy struct {
 	gcsSuffix      string
 	versionSuffix  string
 	dockerRegistry string
+	noAllowDup     bool
+	useKrel        bool
 }
 
 // Return something like gs://bucket/ci/suffix
 func (s *stageStrategy) String() string {
-	p := "devel"
+	return fmt.Sprintf("%v%v%v", s.bucket, s.releaseType(), s.gcsSuffix)
+}
+
+func (s *stageStrategy) releaseType() string {
 	if s.ci {
-		p = "ci"
+		return "ci"
 	}
-	return fmt.Sprintf("%v%v%v", s.bucket, p, s.gcsSuffix)
+	return "devel"
 }
 
 // Parse bucket, ci, suffix from gs://BUCKET/ci/SUFFIX
@@ -65,15 +74,36 @@ func (s *stageStrategy) Enabled() bool {
 }
 
 // Stage the release build to GCS.
-// Essentially release/push-build.sh --bucket=B --ci? --gcs-suffix=S --noupdatelatest
-func (s *stageStrategy) Stage(noAllowDup bool) error {
+func (s *stageStrategy) Stage() error {
+	// Trim the gcs prefix from the bucket
+	s.bucket = strings.TrimPrefix(s.bucket, object.GcsPrefix)
+
+	// Essentially release/push-build.sh --bucket=B --ci? --gcs-suffix=S
+	// --noupdatelatest
+	if !s.useKrel {
+		return errors.Wrap(s.stageViaPushBuildSh(), "stage via push-build.sh")
+	}
+
+	return errors.Wrap(
+		build.NewInstance(&build.Options{
+			Bucket:         s.bucket,
+			Registry:       s.dockerRegistry,
+			GCSRoot:        s.gcsSuffix,
+			VersionSuffix:  s.versionSuffix,
+			AllowDup:       !s.noAllowDup,
+			CI:             s.ci,
+			NoUpdateLatest: true,
+		}).Push(), "stage via krel push",
+	)
+}
+
+func (s *stageStrategy) stageViaPushBuildSh() error {
 	name := util.K8s("release", "push-build.sh")
-	b := strings.TrimPrefix(s.bucket, "gs://")
 	args := []string{
 		"--nomock",
 		"--verbose",
 		"--noupdatelatest", // we may need to expose control of this if build jobs start using kubetest
-		fmt.Sprintf("--bucket=%v", b),
+		fmt.Sprintf("--bucket=%v", s.bucket),
 	}
 	if s.ci {
 		args = append(args, "--ci")
@@ -88,7 +118,7 @@ func (s *stageStrategy) Stage(noAllowDup bool) error {
 		args = append(args, fmt.Sprintf("--docker-registry=%s", s.dockerRegistry))
 	}
 
-	if !noAllowDup {
+	if !s.noAllowDup {
 		args = append(args, "--allow-dup")
 	}
 

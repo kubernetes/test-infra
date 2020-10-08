@@ -59,7 +59,7 @@ require (
 	github.com/hashicorp/go-retryablehttp v0.6.6
 	github.com/influxdata/influxdb v0.0.0-20161215172503-049f9b42e9a5
 	github.com/jinzhu/gorm v1.9.12
-	github.com/klauspost/pgzip v1.2.1
+	github.com/klauspost/pgzip v1.2.5
 	github.com/mattn/go-zglob v0.0.2
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826
 	github.com/pelletier/go-toml v1.8.0
@@ -70,7 +70,7 @@ require (
 	github.com/prometheus/common v0.10.0
 	github.com/satori/go.uuid v1.2.0
 	github.com/shurcooL/githubv4 v0.0.0-20191102174205-af46314aec7b
-	github.com/sirupsen/logrus v1.6.0
+	github.com/sirupsen/logrus v1.7.0
 	github.com/spf13/cobra v1.1.1
 	github.com/spf13/pflag v1.0.5
 	github.com/tektoncd/pipeline v0.13.1-0.20200625065359-44f22a067b75
@@ -79,11 +79,11 @@ require (
 	golang.org/x/crypto v0.0.0-20201002170205-7f63de1d35b0
 	golang.org/x/lint v0.0.0-20200302205851-738671d3881b
 	golang.org/x/net v0.0.0-20201110031124-69a78807bb2b
-	golang.org/x/oauth2 v0.0.0-20200902213428-5d25da1a8d43
-	golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208
+	golang.org/x/oauth2 v0.0.0-20201109201403-9fd604954f58
+	golang.org/x/sync v0.0.0-20201020160332-67f06af15bc9
 	golang.org/x/time v0.0.0-20200630173020-3af7569d3a1e
-	golang.org/x/tools v0.0.0-20200918232735-d647fc253266
-	google.golang.org/api v0.32.0
+	golang.org/x/tools v0.0.0-20201110124207-079ba7bd75cd
+	google.golang.org/api v0.35.0
 	gopkg.in/fsnotify.v1 v1.4.7
 	gopkg.in/robfig/cron.v2 v2.0.0-20150107220207-be2e0b0deed5
 	gopkg.in/yaml.v2 v2.3.0
@@ -94,6 +94,7 @@ require (
 	k8s.io/code-generator v0.20.2
 	k8s.io/klog v1.0.0
 	k8s.io/klog/v2 v2.4.0
+	k8s.io/release v0.6.0
 	k8s.io/utils v0.0.0-20210111153108-fddb29f9d009
 	knative.dev/pkg v0.0.0-20200711004937-22502028e31a
 	mvdan.cc/xurls/v2 v2.0.0
