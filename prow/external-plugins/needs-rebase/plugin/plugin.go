@@ -53,10 +53,6 @@ type githubClient interface {
 	GetPullRequest(org, repo string, number int) (*github.PullRequest, error)
 }
 
-type commentPruner interface {
-	PruneComments(shouldPrune func(github.IssueComment) bool)
-}
-
 // HelpProvider constructs the PluginHelp for this plugin that takes into account enabled repositories.
 // HelpProvider defines the type for function that construct the PluginHelp for plugins.
 func HelpProvider(_ []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
