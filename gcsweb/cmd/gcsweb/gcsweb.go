@@ -505,7 +505,7 @@ func (rec *Record) Render(out http.ResponseWriter, inPath string) {
 		gcsPath+inPath+rec.Name,
 		rec.Name,
 		fmt.Sprintf("%v", rec.Size),
-		rec.MTime.Format("01 Jan 2006 15:04:05"),
+		rec.MTime.Format(time.RFC1123),
 	)
 }
 
