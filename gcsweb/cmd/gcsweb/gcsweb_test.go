@@ -387,19 +387,19 @@ func TestHandleDirectory(t *testing.T) {
     <li class="pure-g grid-row">
 	    <div class="pure-u-2-5"><a href="/gcs/test-bucket/pr-logs/12345/file1"><img src="/icons/file.png"> file1</a></div>
 	    <div class="pure-u-1-5">0</div>
-	    <div class="pure-u-2-5">01 Jan 2000 00:00:00</div>
+	    <div class="pure-u-2-5">Sat, 01 Jan 2000 00:00:00 UTC</div>
 	</li>
 
     <li class="pure-g grid-row">
 	    <div class="pure-u-2-5"><a href="/gcs/test-bucket/pr-logs/12345/file2"><img src="/icons/file.png"> file2</a></div>
 	    <div class="pure-u-1-5">0</div>
-	    <div class="pure-u-2-5">01 Jan 2000 22:00:00</div>
+	    <div class="pure-u-2-5">Sat, 01 Jan 2000 22:00:00 UTC</div>
 	</li>
 
     <li class="pure-g grid-row">
 	    <div class="pure-u-2-5"><a href="/gcs/test-bucket/pr-logs/12345/file3"><img src="/icons/file.png"> file3</a></div>
 	    <div class="pure-u-1-5">0</div>
-	    <div class="pure-u-2-5">01 Jan 2000 23:00:00</div>
+	    <div class="pure-u-2-5">Sat, 01 Jan 2000 23:00:00 UTC</div>
 	</li>
 </ul></body></html>`,
 		},
