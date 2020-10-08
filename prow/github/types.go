@@ -1073,6 +1073,7 @@ type GenericCommentEvent struct {
 	IssueAuthor  User
 	Assignees    []User
 	IssueState   string
+	IssueTitle   string
 	IssueBody    string
 	IssueHTMLURL string
 	GUID         string
