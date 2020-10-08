@@ -38,7 +38,7 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-cred: "true"
+      preset-azure-cred-only: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-1.18
