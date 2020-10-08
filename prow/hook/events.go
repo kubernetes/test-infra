@@ -160,6 +160,7 @@ func (s *Server) handleReviewCommentEvent(l *logrus.Entry, rce github.ReviewComm
 		&github.GenericCommentEvent{
 			GUID:         rce.GUID,
 			IsPR:         true,
+			CommentID:    intPtr(rce.Comment.ID),
 			Action:       action,
 			Body:         rce.Comment.Body,
 			HTMLURL:      rce.Comment.HTMLURL,
@@ -355,6 +356,7 @@ func (s *Server) handleIssueCommentEvent(l *logrus.Entry, ic github.IssueComment
 		l,
 		&github.GenericCommentEvent{
 			ID:           ic.Issue.ID,
+			CommentID:    intPtr(ic.Comment.ID),
 			GUID:         ic.GUID,
 			IsPR:         ic.Issue.IsPullRequest(),
 			Action:       action,
@@ -435,4 +437,8 @@ func (s *Server) handleGenericComment(l *logrus.Entry, ce *github.GenericComment
 			s.Metrics.PluginHandleDuration.With(labels).Observe(time.Since(start).Seconds())
 		}(p, h)
 	}
+}
+
+func intPtr(i int) *int {
+	return &i
 }
