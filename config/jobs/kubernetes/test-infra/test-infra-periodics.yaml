@@ -25,10 +25,10 @@ periodics:
     description: Runs bazel test //... on the test-infra repo every hour
 
 # This job is used as a heartbeat health check of the Prow instance's ability to run jobs.
-# Alerts expect it to run every 10 mins and will fire after 20 mins without a successful run.
+# Alerts expect it to run every 9 mins and will fire after 20 mins without a successful run.
 # Please keep this in sync with the `pull-test-infra-prow-checkconfig` job
 - name: ci-test-infra-prow-checkconfig
-  interval: 10m
+  interval: 9m
   decorate: true
   extra_refs:
   - org: kubernetes

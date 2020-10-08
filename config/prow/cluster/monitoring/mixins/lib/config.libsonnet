@@ -15,6 +15,7 @@
       hook: 'hook',
       horologium: 'horologium',
       monitoring: 'monitoring', // Aggregate of prometheus, alertmanager, and grafana.
+      plank: 'plank',
       prowControllerManager: 'prow-controller-manager',
       sinker: 'sinker',
       tide: 'tide',
@@ -26,10 +27,16 @@
       components: [
         comps.deck,
         comps.hook,
+        comps.plank,
         comps.sinker,
         comps.tide,
         comps.monitoring,
       ],
-    }
+    },
+
+    // Heartbeat jobs
+    heartbeatJobs: [
+      {name: 'ci-test-infra-prow-checkconfig', interval: '9m', alertInterval: '20m'},
+    ],
   },
 }
