@@ -36,7 +36,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/checkconfig:v20201006-e090651f0c
+    - image: gcr.io/k8s-prow/checkconfig:v20201008-84f802ee2a
       command:
       - /checkconfig
       args:
