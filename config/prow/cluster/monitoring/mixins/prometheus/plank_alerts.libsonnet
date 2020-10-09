@@ -17,7 +17,7 @@
             # the alert to fire. (We use 0.5 instead of 1 because query
             # results are not precise integers due to how prometheus interpolates.)
             expr: |||
-              increase(prowjob_state_transitions{job_name="%s", state="success"}[%s]) < 0.5
+              sum(increase(prowjob_state_transitions{job_name="%s", state="success"}[%s])) < 0.5
             ||| % [job.name, job.alertInterval],
             labels: {
               severity: 'critical',
