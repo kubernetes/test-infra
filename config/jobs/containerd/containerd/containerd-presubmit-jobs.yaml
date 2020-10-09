@@ -68,25 +68,3 @@ presubmits:
           '--test_args=--nodes=8 --focus="\[NodeConformance\]|\[NodeFeature:.+\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"'
           --timeout=65m
           "--node-args=--image-config-file=${GOPATH}/src/k8s.io/test-infra/jobs/e2e_node/containerd/cri-master/image-config-pr.yaml -node-env=PULL_REFS=$(PULL_REFS)"
-
-  - name: pull-containerd-verify
-    always_run: false
-    optional: true
-    branches:
-    - master
-    annotations:
-      testgrid-dashboards: sig-node-containerd-io
-      testgrid-tab-name: pull-containerd-verify
-      description: verify job
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-master
-        args:
-        - "--repo=github.com/containerd/$(REPO_NAME)=$(PULL_REFS)"
-        - "--root=/go/src"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - --scenario=execute
-        - --
-        - ./test/verify.sh
