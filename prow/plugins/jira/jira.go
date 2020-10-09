@@ -134,35 +134,56 @@ func updateComment(e *github.GenericCommentEvent, validIssues []string, jiraBase
 	return nil
 }
 
-func insertLinksIntoComment(body string, validIssues []string, jiraBaseURL string) string {
-	words := strings.Fields(body)
-	var didReplace bool
-	for i := range words {
-		// Use "Starts with [" as heuristic for "is already linked". We don't want a complete logic
-		// to fixup existing and potentially broken links, as that is complicated and likely to be
-		// buggy.
-		if strings.HasPrefix(words[i], "[") {
-			continue
-		}
-		var isIssue bool
-		for _, issue := range validIssues {
-			if strings.Contains(words[i], issue) {
-				isIssue = true
-				didReplace = true
-				break
-			}
-		}
-		if !isIssue {
-			continue
-		}
-		words[i] = fmt.Sprintf("[%s](%s/browse/%s)", words[i], jiraBaseURL, words[i])
+func insertLinksIntoComment(body string, issueNames []string, jiraBaseURL string) string {
+	for _, issue := range issueNames {
+		replacement := fmt.Sprintf("[%s](%s/browse/%s)", issue, jiraBaseURL, issue)
+		body = replaceStringIfHasntSquareBracketOrSlashPrefix(body, issue, replacement)
+	}
+	return body
+}
+
+// replaceStringIfHasntSquareBracketOrSlashPrefix replaces a string if it is not prefixed by
+// a `[` which we use as heuristic for "Already replaced" or a `/` which we use as heuristic
+// for "Part of a link in a previous replacement".
+// It golang would support backreferences in regex replacements, this would have been a lot
+// simpler.
+func replaceStringIfHasntSquareBracketOrSlashPrefix(text, old, new string) string {
+	if old == "" {
+		return text
 	}
 
-	if !didReplace {
-		return body
+	var result string
+
+	// Golangs stdlib has no strings.IndexAll, only funcs to get the first
+	// or last index for a substring. Definitions/condition/assignments are not
+	// in the header of the loop because that makes it completely unreadable.
+	var allOldIdx []int
+	var startingIdx int
+	for {
+		idx := strings.Index(text[startingIdx:], old)
+		if idx == -1 {
+			break
+		}
+		idx = startingIdx + idx
+		// Since we always look for a non-empty string, we know that idx++
+		// can not be out of bounds
+		allOldIdx = append(allOldIdx, idx)
+		startingIdx = idx + 1
 	}
-	// TODO: Can we do this without replacing all whitespace types with spaces?
-	return strings.Join(words, " ")
+
+	startingIdx = 0
+	for _, idx := range allOldIdx {
+		result += text[startingIdx:idx]
+		if idx == 0 || (text[idx-1] != '[' && text[idx-1] != '/') {
+			result += new
+		} else {
+			result += old
+		}
+		startingIdx = idx + len(old)
+	}
+	result += text[startingIdx:]
+
+	return result
 }
 
 func upsertGitHubLinkToIssue(log *logrus.Entry, issueID string, jc jiraclient.Client, e *github.GenericCommentEvent) error {
