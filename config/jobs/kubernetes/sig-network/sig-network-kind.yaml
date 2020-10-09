@@ -85,7 +85,7 @@ periodics:
       - name: BUILD_TYPE
         value: bazel
       - name: FOCUS
-        value: \[sig-network\]
+        value: \[sig-network\]|\[Conformance\]
       - name: SKIP
         value: \[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS)\]|LB.health.check|LoadBalancer|load.balancer|GCE|NetworkPolicy|DualStack
       # we need privileged mode in order to do docker in docker
@@ -142,7 +142,7 @@ periodics:
       - name: BUILD_TYPE
         value: bazel
       - name: FOCUS
-        value: \[sig-network\]
+        value: \[sig-network\]|\[Conformance\]
       - name: SKIP
         value: \[Feature:(Networking-IPv4|Example|Federation|PerformanceDNS)\]|Internet.connection|upstream.nameserver|LB.health.check|LoadBalancer|load.balancer|GCE|NetworkPolicy|DualStack
       # we need privileged mode in order to do docker in docker
@@ -195,7 +195,7 @@ periodics:
       - name: KUBE_PROXY_MODE
         value: "ipvs"
       - name: FOCUS
-        value: \[sig-network\]
+        value: \[sig-network\]|\[Conformance\]
       - name: SKIP
         value: \[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS)\]|LB.health.check|LoadBalancer|load.balancer|GCE|NetworkPolicy|DualStack
       # we need privileged mode in order to do docker in docker
@@ -254,7 +254,7 @@ periodics:
       - name: BUILD_TYPE
         value: bazel
       - name: FOCUS
-        value: \[sig-network\]
+        value: \[sig-network\]|\[Conformance\]
       - name: SKIP
         value: \[Feature:(Networking-IPv4|Example|Federation|PerformanceDNS)\]|Internet.connection|upstream.nameserver|LB.health.check|LoadBalancer|load.balancer|GCE|NetworkPolicy|DualStack
       # we need privileged mode in order to do docker in docker
@@ -302,7 +302,7 @@ periodics:
       - name: BUILD_TYPE
         value: bazel
       - name: FOCUS
-        value: \[sig-network\]
+        value: \[sig-network\]|\[Conformance\]
       - name: SKIP
         value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
       command:
@@ -360,7 +360,7 @@ periodics:
       - name: BUILD_TYPE
         value: bazel
       - name: FOCUS
-        value: \[sig-network\]
+        value: \[sig-network\]|\[Conformance\]
       - name: SKIP
         value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
       command:
