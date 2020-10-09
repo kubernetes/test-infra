@@ -722,21 +722,13 @@ presets:
   env:
     - name: AZURE_CREDENTIALS
       value: /etc/azure-cred/credentials
-    - name: AZURE_SSH_PUBLIC_KEY_FILE
-      value: /etc/azure-ssh/azure-ssh-pub
   volumes:
     - name: azure-cred
       secret:
         secretName: azure-cred
-    - name: azure-ssh
-      secret:
-        secretName: azure-ssh
   volumeMounts:
     - name: azure-cred
       mountPath: /etc/azure-cred
-      readOnly: true
-    - name: azure-ssh
-      mountPath: /etc/azure-ssh
       readOnly: true
 # storage / caching presets
 - labels:
@@ -801,4 +793,3 @@ presets:
 - env:
   - name: GOPROXY
     value: "https://proxy.golang.org"
-
