@@ -77,11 +77,30 @@ func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhel
 	}
 	// Only the 'Description' and 'Config' fields are necessary because this plugin does not react
 	// to any commands.
+	yamlSnippet, err := plugins.CommentMap.GenYaml(&plugins.Configuration{
+		RequireMatchingLabel: []plugins.RequireMatchingLabel{
+			{
+				Org:            "org",
+				Repo:           "repo",
+				Branch:         "master",
+				PRs:            true,
+				Issues:         true,
+				Regexp:         "^kind/",
+				MissingLabel:   "needs-kind",
+				MissingComment: "Please add a label referencing the kind.",
+				GracePeriod:    "5s",
+			},
+		},
+	})
+	if err != nil {
+		logrus.WithError(err).Warnf("cannot generate comments for %s plugin", pluginName)
+	}
 	return &pluginhelp.PluginHelp{
 			Description: `The require-matching-label plugin is a configurable plugin that applies a label to issues and/or PRs that do not have any labels matching a regular expression. An example of this is applying a 'needs-sig' label to all issues that do not have a 'sig/*' label. This plugin can have multiple configurations to provide this kind of behavior for multiple different label sets. The configuration allows issue type, PR branch, and an optional explanation comment to be specified.`,
 			Config: map[string]string{
 				"": fmt.Sprintf("The plugin has the following configurations:\n<ul><li>%s</li></ul>", strings.Join(descs, "</li><li>")),
 			},
+			Snippet: yamlSnippet,
 		},
 		nil
 }

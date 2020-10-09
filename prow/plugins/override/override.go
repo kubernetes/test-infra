@@ -146,7 +146,7 @@ func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhel
 		},
 	})
 	if err != nil {
-		logrus.WithError(err).Warn("cannot generate comments for override plugin")
+		logrus.WithError(err).Warnf("cannot generate comments for %s plugin", pluginName)
 	}
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "The override plugin allows repo admins to force a github status context to pass",
