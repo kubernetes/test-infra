@@ -37,6 +37,7 @@ import (
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/jira"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/repoowners"
 	"k8s.io/test-infra/prow/slack"
@@ -145,6 +146,7 @@ type Agent struct {
 	GitClient                 git.ClientFactory
 	SlackClient               *slack.Client
 	BugzillaClient            bugzilla.Client
+	JiraClient                jira.Client
 
 	OwnersClient repoowners.Interface
 
@@ -178,6 +180,7 @@ func NewAgent(configAgent *config.Agent, pluginConfigAgent *ConfigAgent, clientA
 		SlackClient:               clientAgent.SlackClient,
 		OwnersClient:              clientAgent.OwnersClient.WithFields(logger.Data).WithGitHubClient(gitHubClient),
 		BugzillaClient:            clientAgent.BugzillaClient.WithFields(logger.Data).ForPlugin(plugin),
+		JiraClient:                clientAgent.JiraClient,
 		Metrics:                   metrics,
 		Config:                    prowConfig,
 		PluginConfig:              pluginConfig,
@@ -213,6 +216,7 @@ type ClientAgent struct {
 	SlackClient               *slack.Client
 	OwnersClient              repoowners.Interface
 	BugzillaClient            bugzilla.Client
+	JiraClient                jira.Client
 }
 
 // ConfigAgent contains the agent mutex and the Agent configuration.
