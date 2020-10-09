@@ -746,6 +746,9 @@ plugins:
   kubernetes/kubeadm:
   - milestone
 
+  kubernetes/kubectl:
+  - require-matching-label
+
   kubernetes/kubernetes:
   - blockade
   - cherry-pick-unapproved
@@ -795,6 +798,7 @@ plugins:
   kubernetes/website:
   - milestone
   - project
+  - require-matching-label
 
   kubernetes-client:
   - approve
