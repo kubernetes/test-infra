@@ -1373,7 +1373,7 @@ func handleProwJob(prowJobClient prowv1.ProwJobInterface, log *logrus.Entry) htt
 			http.Error(w, fmt.Sprintf("ProwJob not found: %v", err), http.StatusNotFound)
 			if !kerrors.IsNotFound(err) {
 				// admins only care about errors other than not found
-				l.WithError(err).Warning("ProwJob not found.")
+				l.WithError(err).Debug("ProwJob not found.")
 			}
 			return
 		}
