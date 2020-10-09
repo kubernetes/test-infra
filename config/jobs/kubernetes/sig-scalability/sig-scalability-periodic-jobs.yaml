@@ -287,10 +287,10 @@ periodics:
       resources:
         requests:
           cpu: 2
-          memory: "8Gi"
+          memory: "16Gi"
         limits:
           cpu: 2
-          memory: "8Gi"
+          memory: "16Gi"
 
 - name: ci-kubernetes-kubemark-gce-scale
   tags:
