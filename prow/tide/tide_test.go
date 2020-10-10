@@ -30,6 +30,7 @@ import (
 	"time"
 
 	"github.com/go-test/deep"
+	"github.com/google/go-cmp/cmp"
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -2036,6 +2037,7 @@ func TestFilterSubpool(t *testing.T) {
 		number    int
 		mergeable bool
 		contexts  []Context
+		checkRuns []CheckRun
 	}
 	tcs := []struct {
 		name string
@@ -2066,6 +2068,103 @@ func TestFilterSubpool(t *testing.T) {
 				},
 			},
 			expectedPRs: []int{1},
+		},
+		{
+			name: "one mergeable passing PR (omitting optional context), checkrun is considered",
+			prs: []pr{
+				{
+					number:    1,
+					mergeable: true,
+					contexts: []Context{
+						{
+							Context: githubql.String("pj-a"),
+							State:   githubql.StatusStateSuccess,
+						},
+						{
+							Context: githubql.String("pj-b"),
+							State:   githubql.StatusStateSuccess,
+						},
+					},
+					checkRuns: []CheckRun{{
+						Name:       githubql.String("other-a"),
+						Status:     checkRunStatusCompleted,
+						Conclusion: githubql.String(githubql.StatusStateSuccess),
+					}},
+				},
+			},
+			expectedPRs: []int{1},
+		},
+		{
+			name: "one mergeable passing PR (omitting optional context), neutral checkrun is considered success",
+			prs: []pr{
+				{
+					number:    1,
+					mergeable: true,
+					contexts: []Context{
+						{
+							Context: githubql.String("pj-a"),
+							State:   githubql.StatusStateSuccess,
+						},
+						{
+							Context: githubql.String("pj-b"),
+							State:   githubql.StatusStateSuccess,
+						},
+					},
+					checkRuns: []CheckRun{{
+						Name:       githubql.String("other-a"),
+						Status:     checkRunStatusCompleted,
+						Conclusion: checkRunConclusionNeutral,
+					}},
+				},
+			},
+			expectedPRs: []int{1},
+		},
+		{
+			name: "Incomplete checkrun throws the pr out",
+			prs: []pr{
+				{
+					number:    1,
+					mergeable: true,
+					contexts: []Context{
+						{
+							Context: githubql.String("pj-a"),
+							State:   githubql.StatusStateSuccess,
+						},
+						{
+							Context: githubql.String("pj-b"),
+							State:   githubql.StatusStateSuccess,
+						},
+					},
+					checkRuns: []CheckRun{{
+						Name:       githubql.String("other-a"),
+						Conclusion: githubql.String(githubql.StatusStateSuccess),
+					}},
+				},
+			},
+		},
+		{
+			name: "Failing checkrun throws the pr out",
+			prs: []pr{
+				{
+					number:    1,
+					mergeable: true,
+					contexts: []Context{
+						{
+							Context: githubql.String("pj-a"),
+							State:   githubql.StatusStateSuccess,
+						},
+						{
+							Context: githubql.String("pj-b"),
+							State:   githubql.StatusStateSuccess,
+						},
+					},
+					checkRuns: []CheckRun{{
+						Name:       githubql.String("other-a"),
+						Status:     checkRunStatusCompleted,
+						Conclusion: githubql.String(githubql.StatusStateFailure),
+					}},
+				},
+			},
 		},
 		{
 			name: "one unmergeable passing PR",
@@ -2314,11 +2413,20 @@ func TestFilterSubpool(t *testing.T) {
 				pr := PullRequest{
 					Number: githubql.Int(pull.number),
 				}
+				var checkRunNodes []CheckRunNode
+				for _, checkRun := range pull.checkRuns {
+					checkRunNodes = append(checkRunNodes, CheckRunNode{CheckRun: checkRun})
+				}
 				pr.Commits.Nodes = []struct{ Commit Commit }{
 					{
 						Commit{
 							Status: struct{ Contexts []Context }{
 								Contexts: pull.contexts,
+							},
+							StatusCheckRollup: StatusCheckRollup{
+								Contexts: StatusCheckRollupContext{
+									Nodes: checkRunNodes,
+								},
 							},
 						},
 					},
@@ -3671,5 +3779,62 @@ func TestNonFailedBatchByBaseAndPullsIndexFunc(t *testing.T) {
 		if diff := deep.Equal(result, tc.expected); diff != nil {
 			t.Errorf("Result differs from expected, diff: %v", diff)
 		}
+	}
+}
+
+func TestCheckRunNodesToContexts(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name      string
+		checkRuns []CheckRun
+		expected  []Context
+	}{
+		{
+			name:      "Empty checkrun is ignored",
+			checkRuns: []CheckRun{{}},
+		},
+		{
+			name:      "Incomplete checkrun is considered pending",
+			checkRuns: []CheckRun{{Name: githubql.String("some-job"), Status: githubql.String("queued")}},
+			expected:  []Context{{Context: "some-job", State: githubql.StatusStatePending}},
+		},
+		{
+			name:      "Neutral checkrun is considered success",
+			checkRuns: []CheckRun{{Name: githubql.String("some-job"), Status: checkRunStatusCompleted, Conclusion: checkRunConclusionNeutral}},
+			expected:  []Context{{Context: "some-job", State: githubql.StatusStateSuccess}},
+		},
+		{
+			name:      "Successful checkrun is considered success",
+			checkRuns: []CheckRun{{Name: githubql.String("some-job"), Status: checkRunStatusCompleted, Conclusion: githubql.String(githubql.StatusStateSuccess)}},
+			expected:  []Context{{Context: "some-job", State: githubql.StatusStateSuccess}},
+		},
+		{
+			name:      "Other checkrun conclusion is considered failure",
+			checkRuns: []CheckRun{{Name: githubql.String("some-job"), Status: checkRunStatusCompleted, Conclusion: "unclear"}},
+			expected:  []Context{{Context: "some-job", State: githubql.StatusStateFailure}},
+		},
+		{
+			name: "Multiple checkruns are translated correctly",
+			checkRuns: []CheckRun{
+				{Name: githubql.String("some-job"), Status: checkRunStatusCompleted, Conclusion: checkRunConclusionNeutral},
+				{Name: githubql.String("another-job"), Status: checkRunStatusCompleted, Conclusion: checkRunConclusionNeutral},
+			},
+			expected: []Context{
+				{Context: "some-job", State: githubql.StatusStateSuccess},
+				{Context: "another-job", State: githubql.StatusStateSuccess},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			var checkRunNodes []CheckRunNode
+			for _, checkRun := range tc.checkRuns {
+				checkRunNodes = append(checkRunNodes, CheckRunNode{CheckRun: checkRun})
+			}
+			if diff := cmp.Diff(checkRunNodesToContexts(logrus.New().WithField("test", tc.name), checkRunNodes), tc.expected); diff != "" {
+				t.Errorf("actual result differs from expected: %s", diff)
+			}
+		})
 	}
 }
