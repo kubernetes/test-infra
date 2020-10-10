@@ -121,6 +121,27 @@ func TestHandle(t *testing.T) {
 			expectedCommentUpdates: map[string]string{"org/repo:1": "Some text and also [ABC-123](https://my-jira.com/browse/ABC-123)"},
 		},
 		{
+			name: "Link is created based on body with pasted link",
+			event: github.GenericCommentEvent{
+				CommentID:  intPtr(1),
+				HTMLURL:    "https://github.com/org/repo/issues/3",
+				IssueTitle: "Some issue",
+				Body:       "Some text and also https://my-jira.com/browse/ABC-123",
+				Repo:       github.Repo{FullName: "org/repo", Owner: github.User{Login: "org"}, Name: "repo"},
+				Number:     3,
+			},
+			existingIssues: []jira.Issue{{ID: "ABC-123"}},
+			expectedNewLinks: []jira.RemoteLink{{Object: &jira.RemoteLinkObject{
+				URL:   "https://github.com/org/repo/issues/3",
+				Title: "org/repo#3: Some issue",
+				Icon: &jira.RemoteLinkIcon{
+					Url16x16: "https://github.com/favicon.ico",
+					Title:    "GitHub",
+				},
+			},
+			}},
+		},
+		{
 			name: "Link is created based on body and issuecomment suffix is removed from url",
 			event: github.GenericCommentEvent{
 				CommentID:  intPtr(1),
@@ -234,4 +255,86 @@ func TestHandle(t *testing.T) {
 
 func intPtr(i int) *int {
 	return &i
+}
+
+func TestInsertLinksIntoComment(t *testing.T) {
+	t.Parallel()
+	const issueName = "ABC-123"
+	testCases := []struct {
+		name     string
+		body     string
+		expected string
+	}{
+		{
+			name: "Multiline body starting with issue name",
+			body: `ABC-123: Fix problems:
+* First problem
+* Second problem`,
+			expected: `[ABC-123](https://my-jira.com/browse/ABC-123): Fix problems:
+* First problem
+* Second problem`,
+		},
+		{
+			name: "Multiline body starting with already replaced issue name",
+			body: `[ABC-123](https://my-jira.com/browse/ABC-123): Fix problems:
+* First problem
+* Second problem`,
+			expected: `[ABC-123](https://my-jira.com/browse/ABC-123): Fix problems:
+* First problem
+* Second problem`,
+		},
+		{
+			name: "Multiline body with multiple occurrence in the middle",
+			body: `This change:
+* Does stuff related to ABC-123
+* And even more stuff related to ABC-123
+* But also something else`,
+			expected: `This change:
+* Does stuff related to [ABC-123](https://my-jira.com/browse/ABC-123)
+* And even more stuff related to [ABC-123](https://my-jira.com/browse/ABC-123)
+* But also something else`,
+		},
+		{
+			name: "Multiline body with multiple occurrence in the middle, some already replaced",
+			body: `This change:
+* Does stuff related to [ABC-123](https://my-jira.com/browse/ABC-123)
+* And even more stuff related to ABC-123
+* But also something else`,
+			expected: `This change:
+* Does stuff related to [ABC-123](https://my-jira.com/browse/ABC-123)
+* And even more stuff related to [ABC-123](https://my-jira.com/browse/ABC-123)
+* But also something else`,
+		},
+		{
+			name: "Multiline body with issue name at the end",
+			body: `This change:
+is very important
+because of ABC-123`,
+			expected: `This change:
+is very important
+because of [ABC-123](https://my-jira.com/browse/ABC-123)`,
+		},
+		{
+			name: "Multiline body with already replaced issue name at the end",
+			body: `This change:
+is very important
+because of [ABC-123](https://my-jira.com/browse/ABC-123)`,
+			expected: `This change:
+is very important
+because of [ABC-123](https://my-jira.com/browse/ABC-123)`,
+		},
+		{
+			name:     "Pasted links are not replaced, as they are already clickable",
+			body:     "https://my-jira.com/browse/ABC-123",
+			expected: "https://my-jira.com/browse/ABC-123",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			if diff := cmp.Diff(insertLinksIntoComment(tc.body, []string{issueName}, fakeJiraUrl), tc.expected); diff != "" {
+				t.Errorf("actual result differs from expected result: %s", diff)
+			}
+		})
+	}
 }
