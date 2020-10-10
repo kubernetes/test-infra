@@ -117,7 +117,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   decorate: true
   decoration_config:
-    timeout: 150m
+    timeout: 200m
   extra_refs:
   - org: kubernetes
     repo: kubernetes
@@ -168,7 +168,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   decorate: true
   decoration_config:
-    timeout: 150m
+    timeout: 200m
   extra_refs:
   - org: kubernetes
     repo: kubernetes
@@ -225,7 +225,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   decorate: true
   decoration_config:
-    timeout: 150m
+    timeout: 200m
   extra_refs:
   - org: kubernetes
     repo: kubernetes
@@ -278,7 +278,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   decorate: true
   decoration_config:
-    timeout: 150m
+    timeout: 200m
   extra_refs:
   - org: kubernetes
     repo: kubernetes
