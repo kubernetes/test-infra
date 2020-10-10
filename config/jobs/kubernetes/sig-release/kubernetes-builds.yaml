@@ -121,7 +121,7 @@ periodics:
       - --
       - --allow-dup
       - --fast
-      - --release=k8s-release-dev/ci-canary
+      - --release=k8s-release-dev
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
