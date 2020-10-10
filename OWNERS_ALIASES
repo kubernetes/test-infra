@@ -222,6 +222,7 @@ aliases:
     - justaugustus # SIG Chair
     - saschagrunert # Branch Manager
     - tpepper # SIG Chair / Patch Release Team
+    - xmudrii # Branch Manager
 
   # copied from git.k8s.io/enhancements/OWNERS_ALIASES
   enhancements-approvers:
