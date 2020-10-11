@@ -361,6 +361,17 @@ presubmits:
         command:
         - ./test/presubmit-tests-sdk.sh
 
+  - name: kubeflow-pipelines-sdk-python39
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    run_if_changed: "sdk/.*"
+    spec:
+      containers:
+      - image: python:3.9
+        command:
+        - ./test/presubmit-tests-sdk.sh
+
   - name: kubeflow-pipelines-tfx-python36
     decorate: true
     labels:
