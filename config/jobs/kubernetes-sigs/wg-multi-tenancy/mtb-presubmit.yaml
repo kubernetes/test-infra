@@ -8,7 +8,7 @@ presubmits:
       labels:
         preset-kind-volume-mounts: "true"
         preset-dind-enabled: "true"
-      path_alias: /Users/divya/go/src/sigs.k8s.io/multi-tenancy
+      path_alias: sigs.k8s.io/multi-tenancy
       run_if_changed: "benchmarks/kubectl-mtb/.*"
       spec:
         containers:
