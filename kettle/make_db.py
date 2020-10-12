@@ -357,6 +357,7 @@ def get_options(argv):
 
 if __name__ == '__main__':
     OPTIONS = get_options(sys.argv[1:])
+    OPTIONS.buildlimit = OPTIONS.buildlimit or sys.maxsize
     main(
         model.Database(),
         yaml.safe_load(open(OPTIONS.buckets)),
