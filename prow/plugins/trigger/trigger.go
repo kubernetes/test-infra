@@ -82,11 +82,28 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 		}
 		configInfo[repo.String()] = fmt.Sprintf("The trusted GitHub organization for this repository is %q.", org)
 	}
+	yamlSnippet, err := plugins.CommentMap.GenYaml(&plugins.Configuration{
+		Triggers: []plugins.Trigger{
+			{
+				Repos: []string{
+					"org/repo1",
+					"org/repo2",
+				},
+				JoinOrgURL:     "https://github.com/kubernetes/community/blob/master/community-membership.md",
+				OnlyOrgMembers: true,
+				IgnoreOkToTest: true,
+			},
+		},
+	})
+	if err != nil {
+		logrus.WithError(err).Warnf("cannot generate comments for %s plugin", PluginName)
+	}
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: `The trigger plugin starts tests in reaction to commands and pull request events. It is responsible for ensuring that test jobs are only run on trusted PRs. A PR is considered trusted if the author is a member of the 'trusted organization' for the repository or if such a member has left an '/ok-to-test' command on the PR.
 <br>Trigger starts jobs automatically when a new trusted PR is created or when an untrusted PR becomes trusted, but it can also be used to start jobs manually via the '/test' command.
 <br>The '/retest' command can be used to rerun jobs that have reported failure.`,
-		Config: configInfo,
+		Config:  configInfo,
+		Snippet: yamlSnippet,
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/ok-to-test",
