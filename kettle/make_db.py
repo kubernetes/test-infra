@@ -349,7 +349,7 @@ def get_options(argv):
         '--buildlimit',
         help='maximum number of runs within each job to pull, \
          all jobs will be collected if unset or 0',
-        default=int(os.getenv('BUILD_LIMIT', sys.maxsize)),
+        default=int(os.getenv('BUILD_LIMIT', '0')),
         type=int,
     )
     return parser.parse_args(argv)
