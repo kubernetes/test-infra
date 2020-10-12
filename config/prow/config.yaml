@@ -70,7 +70,7 @@ deck:
     - lens:
         name: junit
       required_files:
-        - ^artifacts/junit.*\.xml$
+        - ^artifacts(/.*/|/)junit.*\.xml$ # https://regex101.com/r/vCSegS/1
     - lens:
         name: coverage
       required_files:
