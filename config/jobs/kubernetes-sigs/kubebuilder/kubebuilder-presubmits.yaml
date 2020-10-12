@@ -10,7 +10,7 @@ presubmits:
     - ^feature/plugins-.+$
     spec:
       containers:
-      - image: golang:1.13
+      - image: golang:1.15
         command:
         - ./test.sh
         resources:
