@@ -192,7 +192,7 @@ See [Main Output](#main-output). This is only a subset of the main output.
 
 See: `package.json` + `bazel run @yarn//:yarn install`
 
-# Deployment
+## Deployment
 Triage runs as static HTML hosted in GCS that is updated as part of a [Prow Periodic](https://github.com/kubernetes/test-infra/blob/418c380ec2d6839cd87e16695c770552a7c2d505/config/jobs/kubernetes/test-infra/test-infra-periodics.yaml#L27).
 
 To update the triage image run `make push` from `./triage` which will trigger a [cloudbuild](https://cloud.google.com/cloud-build) using [`//images/builder`](https://github.com/kubernetes/test-infra/tree/master/images/builder). This will result in a fresh triage image within the cloud image registry of the `k8s-testimages` project. (See Container Registry -> Images)
