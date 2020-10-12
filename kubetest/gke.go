@@ -442,11 +442,11 @@ export KUBE_NODE_OS_DISTRIBUTION='%[3]s'
 	}
 
 	// Generate the log-dump.sh command-line
-	var dumpCmd string
+	dumpCmd := logDumpPath("gke")
 	if gcsPath == "" {
-		dumpCmd = fmt.Sprintf("./cluster/log-dump/log-dump.sh '%s'", localPath)
+		dumpCmd = fmt.Sprintf("%s '%s'", dumpCmd, localPath)
 	} else {
-		dumpCmd = fmt.Sprintf("./cluster/log-dump/log-dump.sh '%s' '%s'", localPath, gcsPath)
+		dumpCmd = fmt.Sprintf("%s '%s' '%s'", dumpCmd, localPath, gcsPath)
 	}
 
 	// Try to setup cluster access if it's possible. If credentials are already set, this will be no-op. Access to

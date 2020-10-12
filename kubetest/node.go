@@ -23,7 +23,9 @@ import (
 	"time"
 )
 
-type nodeDeploy struct{}
+type nodeDeploy struct {
+	provider string
+}
 
 var _ deployer = nodeDeploy{}
 
@@ -39,7 +41,7 @@ func (n nodeDeploy) IsUp() error {
 }
 
 func (n nodeDeploy) DumpClusterLogs(localPath, gcsPath string) error {
-	return defaultDumpClusterLogs(localPath, gcsPath)
+	return defaultDumpClusterLogs(localPath, gcsPath, n.provider)
 }
 
 func (n nodeDeploy) TestSetup() error {

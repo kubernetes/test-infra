@@ -98,5 +98,8 @@ ENV IMAGE=${IMAGE_ARG}
 ADD ["kops-e2e-runner.sh", \
     "kubetest", \
     "https://raw.githubusercontent.com/kubernetes/kubernetes/master/cluster/get-kube.sh", \
+    "log-dump.sh", \
+    "logexporter-daemonset.yaml", \
     "/workspace/"]
-RUN ["chmod", "+x", "/workspace/get-kube.sh"]
+ENV LOG_DUMP_SCRIPT_PATH "/workspace/log-dump.sh"
+RUN ["chmod", "+x", "/workspace/get-kube.sh", "/workspace/log-dump.sh"]
