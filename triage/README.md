@@ -45,7 +45,7 @@ Simply adding a button to the HTML is enough.
 
 ## Go Packages
 
-Package `berghelroach` contains a modified Levenshtein distance formula. Its only export is a `Dist()` function.
+Package `berghelroach` contains a modified Levenshtein distance formula. Its only export is a `Dist()` function.  
 Package `summarize` depends on package `berghelroach` and does the actual heavy lifting.
 
 
