@@ -221,7 +221,6 @@ func TestCommandsForRefs(t *testing.T) {
 			expectedBase: []runnable{
 				cloneCommand{dir: "/", command: "mkdir", args: []string{"-p", "/go/src/github.com/org/repo"}},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"init"}},
-				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"config", "--global", "http.cookiefile", "/cookie.txt"}},
 				retryCommand{
 					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "--tags", "--prune"}},
 					fetchRetries,
@@ -670,31 +669,45 @@ func makeFakeGitRepo(fakeTimestamp int) (string, error) {
 	return fakeGitDir, nil
 }
 
-func TestCensorGitCommand(t *testing.T) {
+func TestCensorToken(t *testing.T) {
 	testCases := []struct {
 		id       string
 		token    string
-		command  string
+		msg      string
 		expected string
 	}{
 		{
 			id:       "no token",
-			command:  "git fetch https://github.com/kubernetes/test-infra.git",
+			msg:      "git fetch https://github.com/kubernetes/test-infra.git",
 			expected: "git fetch https://github.com/kubernetes/test-infra.git",
 		},
 		{
 			id:       "with token",
 			token:    "123456789",
-			command:  "git fetch 123456789:x-oauth-basic@https://github.com/kubernetes/test-infra.git",
+			msg:      "git fetch 123456789:x-oauth-basic@https://github.com/kubernetes/test-infra.git",
 			expected: "git fetch CENSORED:x-oauth-basic@https://github.com/kubernetes/test-infra.git",
+		},
+		{
+			id:    "git output with token",
+			token: "123456789",
+			msg: `
+Cloning into 'test-infa'...
+remote: Invalid username or password.
+fatal: Authentication failed for 'https://123456789@github.com/kubernetes/test-infa/'
+`,
+			expected: `
+Cloning into 'test-infa'...
+remote: Invalid username or password.
+fatal: Authentication failed for 'https://CENSORED@github.com/kubernetes/test-infa/'
+`,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.id, func(t *testing.T) {
-			censoredCommand := censorGitCommand(tc.command, tc.token)
-			if !reflect.DeepEqual(censoredCommand, tc.expected) {
-				t.Fatalf("expected: %s got %s", tc.expected, censoredCommand)
+			censoredMsg := censorToken(tc.msg, tc.token)
+			if !reflect.DeepEqual(censoredMsg, tc.expected) {
+				t.Fatalf("expected: %s got %s", tc.expected, censoredMsg)
 			}
 		})
 	}

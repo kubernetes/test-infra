@@ -46,6 +46,7 @@ const (
 	NeedsSig                    = "needs-sig"
 	OkToTest                    = "ok-to-test"
 	Shrug                       = "¯\\_(ツ)_/¯"
+	TriageAccepted              = "triage/accepted"
 	WorkInProgress              = "do-not-merge/work-in-progress"
 	ValidBug                    = "bugzilla/valid-bug"
 )

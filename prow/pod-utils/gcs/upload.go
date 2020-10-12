@@ -25,6 +25,7 @@ import (
 	"sync"
 
 	"github.com/sirupsen/logrus"
+	"golang.org/x/sync/semaphore"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	utilpointer "k8s.io/utils/pointer"
 
@@ -76,11 +77,14 @@ func LocalExport(exportDir string, uploadTargets map[string]UploadFunc) error {
 func upload(dtw destToWriter, uploadTargets map[string]UploadFunc) error {
 	errCh := make(chan error, len(uploadTargets))
 	group := &sync.WaitGroup{}
+	sem := semaphore.NewWeighted(4)
 	group.Add(len(uploadTargets))
 	for dest, upload := range uploadTargets {
 		log := logrus.WithField("dest", dest)
 		log.Info("Queued for upload")
 		go func(f UploadFunc, writer dataWriter, log *logrus.Entry) {
+			sem.Acquire(context.Background(), 1)
+			defer sem.Release(1)
 			defer group.Done()
 			if err := f(writer); err != nil {
 				errCh <- err
@@ -118,6 +122,9 @@ func FileUploadWithOptions(file string, opts pkgio.WriterOptions) UploadFunc {
 		}
 		if fi, err := reader.Stat(); err == nil {
 			opts.BufferSize = utilpointer.Int64Ptr(fi.Size())
+			if *opts.BufferSize > 25*1024*1024 {
+				*opts.BufferSize = 25 * 1024 * 1024
+			}
 		}
 
 		uploadErr := DataUploadWithOptions(reader, opts)(writer)

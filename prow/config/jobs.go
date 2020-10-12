@@ -36,8 +36,7 @@ const (
 	schemeHTTPS = "https"
 )
 
-// Preset is intended to match the k8s' PodPreset feature, and may be removed
-// if that feature goes beta.
+// Presets can be used to re-use settings across multiple jobs.
 type Preset struct {
 	Labels       map[string]string `json:"labels"`
 	Env          []v1.EnvVar       `json:"env"`

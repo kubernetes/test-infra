@@ -12,6 +12,18 @@ presubmits:
       - image: golang:1.14
         command:
         - scripts/test-infra/verify.sh
+  - name: pull-node-feature-discovery-build
+    always_run: true
+    decorate: true
+    annotations:
+      testgrid-dashboards: sig-node-node-feature-discovery
+      testgrid-tab-name: build
+      description: "Build node-feature-discovery binaries"
+    spec:
+      containers:
+      - image: golang:1.14
+        command:
+        - scripts/test-infra/build.sh
   - name: pull-node-feature-discovery-build-image
     always_run: true
     decorate: true
@@ -24,7 +36,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-master
         securityContext:
           privileged: true
         command:

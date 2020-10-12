@@ -447,7 +447,8 @@ func retryCmd(l *logrus.Entry, dir, cmd string, arg ...string) ([]byte, error) {
 		c.Dir = dir
 		b, err = c.CombinedOutput()
 		if err != nil {
-			l.Warningf("Running %s %v returned error %v with output %s.", cmd, arg, err, string(b))
+			err = fmt.Errorf("running %q %v returned error %w with output %q", cmd, arg, err, string(b))
+			l.WithError(err).Debugf("Retrying #%d, if this is not the 3rd try then this will be retried", i+1)
 			time.Sleep(sleepyTime)
 			sleepyTime *= 2
 			continue

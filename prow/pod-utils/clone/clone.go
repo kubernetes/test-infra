@@ -64,7 +64,7 @@ func Run(refs prowapi.Refs, dir, gitUserName, gitUserEmail, cookiePath string, e
 				message = err.Error()
 				record.Failed = true
 			}
-			record.Commands = append(record.Commands, Command{Command: censorGitCommand(formattedCommand, oauthToken), Output: output, Error: message})
+			record.Commands = append(record.Commands, Command{Command: censorToken(formattedCommand, oauthToken), Output: censorToken(output, oauthToken), Error: censorToken(message, oauthToken)})
 			if err != nil {
 				return err
 			}
@@ -95,11 +95,11 @@ func Run(refs prowapi.Refs, dir, gitUserName, gitUserEmail, cookiePath string, e
 	return record
 }
 
-func censorGitCommand(command, token string) string {
+func censorToken(msg, token string) string {
 	if token == "" {
-		return command
+		return msg
 	}
-	censored := bytes.ReplaceAll([]byte(command), []byte(token), []byte("CENSORED"))
+	censored := bytes.ReplaceAll([]byte(msg), []byte(token), []byte("CENSORED"))
 	return string(censored)
 }
 
@@ -180,13 +180,8 @@ func (g *gitCtx) commandsForBaseRef(refs prowapi.Refs, gitUserName, gitUserEmail
 	if gitUserEmail != "" {
 		commands = append(commands, g.gitCommand("config", "user.email", gitUserEmail))
 	}
-	if cookiePath != "" {
-		if refs.SkipSubmodules {
-			commands = append(commands, g.gitCommand("config", "http.cookiefile", cookiePath))
-		} else {
-			// --global to ensure that all submodules can use this auth
-			commands = append(commands, g.gitCommand("config", "--global", "http.cookiefile", cookiePath))
-		}
+	if cookiePath != "" && refs.SkipSubmodules {
+		commands = append(commands, g.gitCommand("config", "http.cookiefile", cookiePath))
 	}
 
 	if refs.CloneDepth > 0 {

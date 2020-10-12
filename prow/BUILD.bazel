@@ -132,6 +132,7 @@ filegroup(
         "//prow/interrupts:all-srcs",
         "//prow/io:all-srcs",
         "//prow/jenkins:all-srcs",
+        "//prow/jira:all-srcs",
         "//prow/kube:all-srcs",
         "//prow/labels:all-srcs",
         "//prow/logrusutil:all-srcs",

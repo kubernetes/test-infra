@@ -91,6 +91,9 @@ func (a *StorageArtifact) CanonicalLink() string {
 
 // ReadAt reads len(p) bytes from a file in GCS at offset off
 func (a *StorageArtifact) ReadAt(p []byte, off int64) (n int, err error) {
+	if int64(len(p)) > a.sizeLimit {
+		return 0, lenses.ErrRequestSizeTooLarge
+	}
 	gzipped, err := a.gzipped()
 	if err != nil {
 		return 0, fmt.Errorf("error checking artifact for gzip compression: %v", err)
@@ -138,6 +141,9 @@ func (a *StorageArtifact) ReadAt(p []byte, off int64) (n int, err error) {
 // ReadAtMost reads at most n bytes from a file in GCS. If the file is compressed (gzip) in GCS, n bytes
 // of gzipped content will be downloaded and decompressed into potentially GREATER than n bytes of content.
 func (a *StorageArtifact) ReadAtMost(n int64) ([]byte, error) {
+	if n > a.sizeLimit {
+		return nil, lenses.ErrRequestSizeTooLarge
+	}
 	var reader io.ReadCloser
 	var p []byte
 	gzipped, err := a.gzipped()
@@ -211,6 +217,9 @@ func (a *StorageArtifact) ReadAll() ([]byte, error) {
 
 // ReadTail reads the last n bytes from a file in GCS
 func (a *StorageArtifact) ReadTail(n int64) ([]byte, error) {
+	if n > a.sizeLimit {
+		return nil, lenses.ErrRequestSizeTooLarge
+	}
 	gzipped, err := a.gzipped()
 	if err != nil {
 		return nil, fmt.Errorf("error checking artifact for gzip compression: %v", err)

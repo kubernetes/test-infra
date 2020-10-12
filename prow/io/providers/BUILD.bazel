@@ -8,8 +8,6 @@ go_library(
     deps = [
         "@com_github_aws_aws_sdk_go//aws:go_default_library",
         "@com_github_aws_aws_sdk_go//aws/credentials:go_default_library",
-        "@com_github_aws_aws_sdk_go//aws/credentials/ec2rolecreds:go_default_library",
-        "@com_github_aws_aws_sdk_go//aws/ec2metadata:go_default_library",
         "@com_github_aws_aws_sdk_go//aws/session:go_default_library",
         "@dev_gocloud//blob:go_default_library",
         "@dev_gocloud//blob/memblob:go_default_library",

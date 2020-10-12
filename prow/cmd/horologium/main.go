@@ -36,6 +36,7 @@ import (
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/logrusutil"
+	"k8s.io/test-infra/prow/metrics"
 	"k8s.io/test-infra/prow/pjutil"
 )
 
@@ -98,6 +99,9 @@ func main() {
 	// start a cron
 	cr := cron.New()
 	cr.Start()
+
+	metrics.ExposeMetrics("horologium", configAgent.Config().PushGateway, o.instrumentationOptions.MetricsPort)
+
 	interrupts.TickLiteral(func() {
 		start := time.Now()
 		if err := sync(prowJobClient, configAgent.Config(), cr, start); err != nil {

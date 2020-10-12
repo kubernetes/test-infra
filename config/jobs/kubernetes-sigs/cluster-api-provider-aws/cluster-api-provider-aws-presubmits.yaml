@@ -7,7 +7,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-1.18
         command:
         - "./scripts/ci-test.sh"
     annotations:
@@ -20,32 +20,12 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-1.18
         command:
         - "./scripts/ci-build.sh"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
       testgrid-tab-name: pr-build
-  - name: pull-cluster-api-provider-aws-integration
-    always_run: true
-    optional: true
-    decorate: true
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    path_alias: "sigs.k8s.io/cluster-api-provider-aws"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-1.18
-        command:
-        - "runner.sh"
-        - "./scripts/ci-integration.sh"
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-    annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
-      testgrid-tab-name: pr-integration
   - name: pull-cluster-api-provider-aws-verify
     always_run: true
     optional: false
@@ -53,7 +33,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-1.18
         command:
         - "make"
         - "verify"
@@ -88,7 +68,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-1.18
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-1.18
           command:
             - "runner.sh"
             - "./scripts/ci-conformance.sh"
@@ -128,7 +108,7 @@ presubmits:
       preset-aws-credential: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-1.18
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-1.18
           command:
             - "runner.sh"
             - "./scripts/ci-conformance.sh"
@@ -165,7 +145,7 @@ presubmits:
       preset-aws-credential: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-1.18
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-1.18
           command:
             - "runner.sh"
             - "./scripts/ci-e2e.sh"

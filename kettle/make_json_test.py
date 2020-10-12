@@ -71,6 +71,170 @@ class BuildObjectTests(unittest.TestCase):
     def test_as_dict(self, _, build, expected):
         self.assertEqual(build.as_dict(), expected)
 
+    @parameterized.expand([
+        (
+            "No started",
+            {},
+            {},
+        ),
+        (
+            "CI Decorated",
+            {
+                "timestamp":1595284709,
+                "repos":{"kubernetes/kubernetes":"master"},
+                "repo-version":"5a529aa3a0dd3a050c5302329681e871ef6c162e",
+                "repo-commit":"5a529aa3a0dd3a050c5302329681e871ef6c162e",
+            },
+            {
+                "started": 1595284709,
+                "repo_commit":"5a529aa3a0dd3a050c5302329681e871ef6c162e",
+                "repos": '{"kubernetes/kubernetes": "master"}',
+            },
+        ),
+        (
+            "PR Decorated",
+            {
+                "timestamp":1595277241,
+                "pull":"93264",
+                "repos":{"kubernetes/kubernetes":"master:5feab0"},
+                "repo-version":"30f64c5b1fc57a3beb1476f9beb29280166954d1",
+                "repo-commit":"30f64c5b1fc57a3beb1476f9beb29280166954d1",
+            },
+            {
+                "started": 1595277241,
+                "repo_commit":"30f64c5b1fc57a3beb1476f9beb29280166954d1",
+                "repos": '{"kubernetes/kubernetes": "master:5feab0"}',
+            },
+        ),
+        (
+            "PR Bootstrap",
+            {
+                "node": "0790211c-cacb-11ea-a4b9-4a19d9b965b2",
+                "pull": "master:5a529",
+                "repo-version": "v1.20.0-alpha.0.261+06ea384605f172",
+                "timestamp": 1595278460,
+                "repos": {"k8s.io/kubernetes": "master:5a529", "k8s.io/release": "master"},
+                "version": "v1.20.0-alpha.0.261+06ea384605f172"
+            },
+            {
+                "started": 1595278460,
+                "repo_commit":"v1.20.0-alpha.0.261+06ea384605f172",
+                "repos": '{"k8s.io/kubernetes": "master:5a529", "k8s.io/release": "master"}',
+                "executor": "0790211c-cacb-11ea-a4b9-4a19d9b965b2",
+            },
+        ),
+        (
+            "CI Bootstrap",
+            {
+                "timestamp":1595263104,
+                "node":"592473ae-caa7-11ea-b130-525df2b76a8d",
+                "repos":{
+                    "k8s.io/kubernetes":"master",
+                    "k8s.io/release":"master"
+                },
+                "repo-version":"v1.20.0-alpha.0.255+5feab0aa1e592a",
+            },
+            {
+                "started": 1595263104,
+                "repo_commit":"v1.20.0-alpha.0.255+5feab0aa1e592a",
+                "repos": '{"k8s.io/kubernetes": "master", "k8s.io/release": "master"}',
+                "executor": "592473ae-caa7-11ea-b130-525df2b76a8d",
+            },
+        ),
+    ])
+    def test_populate_start(self, _, started, updates):
+        build = make_json.Build("gs://kubernetes-jenkins/pr-logs/path", [])
+        attrs = {
+            "path":"gs://kubernetes-jenkins/pr-logs/path",
+            "test": [],
+            "tests_run": 0,
+            "tests_failed": 0,
+            "job": "pr:pr-logs",
+                }
+        attrs.update(updates)
+        build.populate_start(started)
+        self.assertEqual(build.as_dict(), attrs)
+
+    @parameterized.expand([
+        (
+            "No finished",
+            {},
+            {},
+        ),
+        (
+            "CI Decorated",
+            {
+                "timestamp":1595286616,
+                "passed":True,
+                "result":"SUCCESS",
+                "revision":"master",
+            },
+            {
+                "finished": 1595286616,
+                "result": "SUCCESS",
+                "passed": True,
+            },
+        ),
+        (
+            "PR Decorated",
+            {
+                "timestamp":1595279434,
+                "passed":True,
+                "result":"SUCCESS",
+                "revision":"5dd9241d43f256984358354d1fec468f274f9ac4"
+            },
+            {
+                "finished": 1595279434,
+                "result": "SUCCESS",
+                "passed": True,
+            },
+        ),
+        (
+            "PR Bootstrap",
+            {
+                "timestamp": 1595282312,
+                "version": "v1.20.0-alpha.0.261+06ea384605f172",
+                "result": "SUCCESS",
+                "passed": True,
+                "job-version": "v1.20.0-alpha.0.261+06ea384605f172",
+            },
+            {
+                "finished": 1595282312,
+                "version": "v1.20.0-alpha.0.261+06ea384605f172",
+                "result": "SUCCESS",
+                "passed": True,
+            },
+        ),
+        (
+            "CI Bootstrap",
+            {
+                "timestamp": 1595263185,
+                "version": "v1.20.0-alpha.0.255+5feab0aa1e592a",
+                "result": "SUCCESS",
+                "passed": True,
+                "job-version": "v1.20.0-alpha.0.255+5feab0aa1e592a",
+            },
+            {
+                "finished": 1595263185,
+                "version": "v1.20.0-alpha.0.255+5feab0aa1e592a",
+                "result": "SUCCESS",
+                "passed": True,
+            },
+        ),
+    ])
+    def test_populate_finish(self, _, finished, updates):
+        build = make_json.Build("gs://kubernetes-jenkins/pr-logs/path", [])
+        attrs = {"path":"gs://kubernetes-jenkins/pr-logs/path",
+                 "test": [],
+                 "tests_run": 0,
+                 "tests_failed": 0,
+                 "job": "pr:pr-logs",
+                }
+        build.populate_finish(finished)
+        attrs.update(updates)
+        self.assertEqual(build.as_dict(), attrs)
+
+
 class GenerateBuilds(unittest.TestCase):
     @parameterized.expand([
         (
@@ -322,8 +486,6 @@ class GenerateBuilds(unittest.TestCase):
         self.assertEqual(build_dict, expected)
 
 
-
-
 class MakeJsonTest(unittest.TestCase):
     def setUp(self):
         self.db = model.Database(':memory:')
@@ -452,7 +614,6 @@ class MakeJsonTest(unittest.TestCase):
         expect(['--days=30'], ['123', '456'], [])
         expect(['--days=30', '--assert-oldest=60'], [], [], 0)
         expect(['--days=30', '--assert-oldest=25'], [], [], 1)
-
 
 
 if __name__ == '__main__':

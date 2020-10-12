@@ -18,6 +18,18 @@
 import os
 
 
+DUMP = 'dump.txt'
+
+def print_dump(file):
+    if os.path.exists(file):
+        with open(file, "r") as fp:
+            output = fp.read()
+        os.remove(file)
+        print(output)
+    else:
+        print(f'unable to find dump file: {file}')
+
+
 def call(cmd):
     print('+', cmd)
     status = os.system(cmd)
@@ -29,7 +41,7 @@ def main():
     call('time python3 make_db.py --buckets buckets.yaml --junit --threads 32')
 
     bq_cmd = 'bq load --source_format=NEWLINE_DELIMITED_JSON --max_bad_records=1000'
-    mj_cmd = 'pypy make_json.py'
+    mj_cmd = 'pypy3 make_json.py'
 
     mj_ext = ''
     bq_ext = ''

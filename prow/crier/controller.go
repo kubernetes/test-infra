@@ -96,18 +96,46 @@ func (r *reconciler) updateReportState(pj *prowv1.ProwJob, log *logrus.Entry, re
 	// that also does reporting dont trigger another report because our lister doesn't yet contain
 	// the updated Status
 	name := types.NamespacedName{Namespace: pj.Namespace, Name: pj.Name}
-	if err := wait.Poll(time.Second, 3*time.Second, func() (bool, error) {
+	if err := wait.Poll(100*time.Millisecond, 3*time.Second, func() (bool, error) {
 		if err := r.pjclientset.Get(r.ctx, name, pj); err != nil {
 			return false, err
 		}
 		if pj.Status.PrevReportStates != nil &&
-			newpj.Status.PrevReportStates[r.reporter.GetName()] == reportedState {
+			pj.Status.PrevReportStates[r.reporter.GetName()] == reportedState {
 			return true, nil
 		}
 		return false, nil
 	}); err != nil {
 		return fmt.Errorf("failed to wait for updated report status to be in lister: %w", err)
 	}
+	return nil
+}
+
+func (r *reconciler) updateReportStateWithRetries(pj *prowv1.ProwJob, log *logrus.Entry) error {
+	reportState := pj.Status.State
+	log = log.WithFields(logrus.Fields{
+		"prowjob":   pj.Name,
+		"jobName":   pj.Spec.Job,
+		"jobStatus": reportState,
+	})
+	// We have to retry here, if we return we lose the information that we already reported this job.
+	if err := retry.RetryOnConflict(retry.DefaultBackoff, func() error {
+		// Get it first, this is very cheap
+		name := types.NamespacedName{Namespace: pj.Namespace, Name: pj.Name}
+		if err := r.pjclientset.Get(r.ctx, name, pj); err != nil {
+			return err
+		}
+		// Must not wrap until we have kube 1.19, otherwise the RetryOnConflict won't recognize conflicts
+		// correctly
+		return r.updateReportState(pj, log, reportState)
+	}); err != nil {
+		// Very subpar, we will report again. But even if we didn't do that now, we would do so
+		// latest when crier gets restarted. In an ideal world, all reporters are idempotent and
+		// reporting has no cost.
+		return fmt.Errorf("failed to update report state on prowjob: %w", err)
+	}
+
+	log.Info("Successfully updated report state on prowjob")
 	return nil
 }
 
@@ -166,27 +194,12 @@ func (r *reconciler) reconcile(log *logrus.Entry, req reconcile.Request) (*recon
 		return requeue, nil
 	}
 
-	log.Info("Reported job, now will update pj")
+	log.Info("Reported job(s), now will update pj(s)")
 	for _, pjob := range pjs {
-		reportedState := pjob.Status.State
-		// We have to retry here, if we return we lose the information that we already reported this job.
-		if err := retry.RetryOnConflict(retry.DefaultBackoff, func() error {
-			// Get it first, this is very cheap
-			if err := r.pjclientset.Get(r.ctx, req.NamespacedName, &pj); err != nil {
-				return err
-			}
-			// Must not wrap until we have kube 1.19, otherwise the RetryOnConflict won't recognize conflicts
-			// correctly
-			return r.updateReportState(&pj, log, reportedState)
-		}); err != nil {
+		if err := r.updateReportStateWithRetries(pjob, log); err != nil {
 			log.WithError(err).Error("Failed to update report state on prowjob")
-			// Very subpar, we will report again. But even if we didn't do that now, we would do so
-			// latest when crier gets restarted. In an ideal world, all reporters are idempotent and
-			// reporting has no cost.
-			return nil, fmt.Errorf("faieed to update report state on prowjob: %w", err)
+			return nil, err
 		}
-
-		log.Info("Successfully updated prowjob")
 	}
 
 	return nil, nil

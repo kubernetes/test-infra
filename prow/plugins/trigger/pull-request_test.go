@@ -89,7 +89,7 @@ func TestTrusted(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			g := &fakegithub.FakeClient{
-				OrgMembers:    map[string][]string{"kubernetes": {sister}, "kubernetes-incubator": {member, fakegithub.Bot}},
+				OrgMembers:    map[string][]string{"kubernetes": {sister}, "kubernetes-sigs": {member, fakegithub.Bot}},
 				Collaborators: []string{friend},
 				IssueComments: map[int][]github.IssueComment{},
 			}
@@ -103,7 +103,7 @@ func TestTrusted(t *testing.T) {
 					Name: label,
 				})
 			}
-			_, actual, err := TrustedPullRequest(g, trigger, tc.author, "kubernetes-incubator", "random-repo", 1, labels)
+			_, actual, err := TrustedPullRequest(g, trigger, tc.author, "kubernetes-sigs", "random-repo", 1, labels)
 			if err != nil {
 				t.Fatalf("Didn't expect error: %s", err)
 			}
@@ -385,7 +385,7 @@ func TestHandlePullRequest(t *testing.T) {
 
 			Author:      "t",
 			HasOkToTest: true,
-			prAction:    github.PullRequestConvertedToDraft,
+			prAction:    github.PullRequestActionConvertedToDraft,
 			ShouldBuild: false,
 			jobToAbort:  jobToAbort,
 		},

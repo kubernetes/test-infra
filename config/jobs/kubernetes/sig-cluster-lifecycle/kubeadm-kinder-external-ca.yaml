@@ -1,7 +1,7 @@
 # periodic jobs
 
 periodics:
-- name: ci-kubernetes-e2e-kubeadm-kinder-kustomize-master
+- name: ci-kubernetes-e2e-kubeadm-kinder-external-ca-latest
   interval: 2h
   decorate: true
   labels:
@@ -9,9 +9,9 @@ periodics:
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kubeadm
-    testgrid-tab-name: kubeadm-kinder-kustomize-master
+    testgrid-tab-name: kubeadm-kinder-external-ca-latest
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com
-    description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster with kustomizations on static pod manifests"
+    description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster and tests kubeadm's support for external CA mode"
     testgrid-num-columns-recent: "20"
     testgrid-num-failures-to-alert: "8"
     testgrid-alert-stale-results-hours: "16"
@@ -28,12 +28,12 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-master
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"
       args:
-      - "kustomize-master"
+      - "external-ca-latest"
       securityContext:
         privileged: true
       resources:
@@ -41,7 +41,7 @@ periodics:
           memory: "9000Mi"
           cpu: 2000m
 
-- name: ci-kubernetes-e2e-kubeadm-kinder-kustomize-1-19
+- name: ci-kubernetes-e2e-kubeadm-kinder-external-ca-1-19
   interval: 12h
   decorate: true
   labels:
@@ -49,9 +49,9 @@ periodics:
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kubeadm
-    testgrid-tab-name: kubeadm-kinder-kustomize-1-19
+    testgrid-tab-name: kubeadm-kinder-external-ca-1-19
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com
-    description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster with kustomizations on static pod manifests"
+    description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster and tests kubeadm's support for external CA mode"
     testgrid-num-columns-recent: "20"
     testgrid-num-failures-to-alert: "4"
     testgrid-alert-stale-results-hours: "48"
@@ -68,12 +68,12 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-1.19
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-1.19
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"
       args:
-      - "kustomize-1.19"
+      - "external-ca-1.19"
       securityContext:
         privileged: true
       resources:
@@ -81,7 +81,7 @@ periodics:
           memory: "9000Mi"
           cpu: 2000m
 
-- name: ci-kubernetes-e2e-kubeadm-kinder-kustomize-1-18
+- name: ci-kubernetes-e2e-kubeadm-kinder-external-ca-1-18
   interval: 12h
   decorate: true
   labels:
@@ -89,9 +89,9 @@ periodics:
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kubeadm
-    testgrid-tab-name: kubeadm-kinder-kustomize-1-18
+    testgrid-tab-name: kubeadm-kinder-external-ca-1-18
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com
-    description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster with kustomizations on static pod manifests"
+    description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster and tests kubeadm's support for external CA mode"
     testgrid-num-columns-recent: "20"
     testgrid-num-failures-to-alert: "4"
     testgrid-alert-stale-results-hours: "48"
@@ -108,12 +108,12 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-1.18
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-1.18
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"
       args:
-      - "kustomize-1.18"
+      - "external-ca-1.18"
       securityContext:
         privileged: true
       resources:
@@ -121,7 +121,7 @@ periodics:
           memory: "9000Mi"
           cpu: 2000m
 
-- name: ci-kubernetes-e2e-kubeadm-kinder-kustomize-1-17
+- name: ci-kubernetes-e2e-kubeadm-kinder-external-ca-1-17
   interval: 12h
   decorate: true
   labels:
@@ -129,9 +129,9 @@ periodics:
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kubeadm
-    testgrid-tab-name: kubeadm-kinder-kustomize-1-17
+    testgrid-tab-name: kubeadm-kinder-external-ca-1-17
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com
-    description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster with kustomizations on static pod manifests"
+    description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster and tests kubeadm's support for external CA mode"
     testgrid-num-columns-recent: "20"
     testgrid-num-failures-to-alert: "4"
     testgrid-alert-stale-results-hours: "48"
@@ -148,52 +148,12 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-1.17
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-1.17
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"
       args:
-      - "kustomize-1.17"
-      securityContext:
-        privileged: true
-      resources:
-        requests:
-          memory: "9000Mi"
-          cpu: 2000m
-
-- name: ci-kubernetes-e2e-kubeadm-kinder-kustomize-1-16
-  interval: 12h
-  decorate: true
-  labels:
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-  annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-kubeadm
-    testgrid-tab-name: kubeadm-kinder-kustomize-1-16
-    testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com
-    description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster with kustomizations on static pod manifests"
-    testgrid-num-columns-recent: "20"
-    testgrid-num-failures-to-alert: "4"
-    testgrid-alert-stale-results-hours: "48"
-  decoration_config:
-    timeout: 60m
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: release-1.16
-    path_alias: k8s.io/kubernetes
-  - org: kubernetes
-    repo: kubeadm
-    base_ref: master
-    path_alias: k8s.io/kubeadm
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-1.16
-      command:
-      - runner.sh
-      - "../kubeadm/kinder/ci/kinder-run.sh"
-      args:
-      - "kustomize-1.16"
+      - "external-ca-1.17"
       securityContext:
         privileged: true
       resources:

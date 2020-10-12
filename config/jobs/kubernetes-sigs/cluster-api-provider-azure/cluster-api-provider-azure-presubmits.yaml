@@ -7,7 +7,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-1.18
         command:
         - "./scripts/ci-test.sh"
     annotations:
@@ -21,61 +21,27 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-1.18
         command:
         - "./scripts/ci-build.sh"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: pr-build
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
-  - name: pull-cluster-api-provider-azure-integration
-    always_run: true
-    optional: true
-    decorate: true
-    labels:
-      preset-dind-enabled: "true"
-    path_alias: "sigs.k8s.io/cluster-api-provider-azure"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-1.18
-        command:
-        - "runner.sh"
-        - "./scripts/ci-integration.sh"
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - mountPath: /lib/modules
-          name: modules
-          readOnly: true
-        - mountPath: /sys/fs/cgroup
-          name: cgroup
-      volumes:
-      - name: modules
-        hostPath:
-          path: /lib/modules
-          type: Directory
-      - name: cgroup
-        hostPath:
-          path: /sys/fs/cgroup
-          type: Directory
-    annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-      testgrid-tab-name: pr-integration
-      testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
   - name: pull-cluster-api-provider-azure-e2e
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
-    always_run: true
     optional: false
     decorate: true
+    # please see: https://play.golang.org/p/JJSVylVPd53 for more insights
+    run_if_changed: (^[^d].*$)|(^d$)|(^.[^o].*$)|(^do$)|(^..[^c].*$)|(^doc$)|(^...[^s].*$)|(^docs$)|(^....[^/].*$)|(^[^d][^o][^c][^s]/.*$)
     max_concurrency: 5
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-cred: "true"
+      preset-azure-cred-only: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-1.18
         command:
         - "runner.sh"
         - "./scripts/ci-e2e.sh"
@@ -104,7 +70,7 @@ presubmits:
       preset-azure-anonymous-pull: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-1.18
         command:
         - "runner.sh"
         - "./scripts/ci-e2e.sh"
@@ -127,7 +93,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-1.18
         command:
         - "runner.sh"
         - "make"
@@ -145,7 +111,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-1.18
         imagePullPolicy: Always
         command:
         - "./hack/verify-bazel.sh"
@@ -162,7 +128,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-1.18
         imagePullPolicy: Always
         command:
         - "./scripts/ci-bazel-test.sh"
@@ -179,7 +145,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-1.18
         imagePullPolicy: Always
         command:
         - "./scripts/ci-bazel-build.sh"
@@ -196,7 +162,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-1.18
         imagePullPolicy: Always
         command:
         - "./hack/verify_boilerplate.py"
@@ -222,7 +188,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-1.18
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-1.18
           command:
             - "runner.sh"
             - "./scripts/ci-entrypoint.sh"
@@ -262,7 +228,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-1.18
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-1.18
           command:
             - "runner.sh"
             - "./scripts/ci-entrypoint.sh"
@@ -300,7 +266,7 @@ presubmits:
       - command:
         - runner.sh
         - ./scripts/ci-apidiff.sh
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-1.18
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-1.18
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: pr-apidiff
@@ -316,7 +282,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-1.18
         command:
         - runner.sh
         - bash
@@ -328,14 +294,11 @@ presubmits:
           cp coverage.* ${ARTIFACTS}
           cd ../../k8s.io/test-infra/gopherage
           GO111MODULE=on go build .
-          find ${ARTIFACTS} -type f -iname 'junit*.xml' -exec rm {} \;
-          ./gopherage filter --exclude-path="zz_generated,generated\.pb\.go" "${ARTIFACTS}/coverage.out" > "${ARTIFACTS}/filtered.cov" || result=$?
+          ./gopherage filter --exclude-path="zz_generated,generated\.go" "${ARTIFACTS}/coverage.out" > "${ARTIFACTS}/filtered.cov" || result=$?
           ./gopherage html "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/coverage.html" || result=$?
-          ./gopherage junit --threshold 0.05 "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/junit_coverage.xml" || result=$?
+          ./gopherage junit --threshold 0 "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/junit_coverage.xml" || result=$?
           exit $result
         securityContext:
           privileged: true
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-      testgrid-tab-name: pr-coverage
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io

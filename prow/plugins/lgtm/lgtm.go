@@ -92,9 +92,23 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 			configInfo[repo.String()] = strings.Join(configInfoStrings, "\n")
 		}
 	}
+	yamlSnippet, err := plugins.CommentMap.GenYaml(&plugins.Configuration{
+		Lgtm: []plugins.Lgtm{
+			{
+				Repos:            []string{"kubernetes/test-infra"},
+				ReviewActsAsLgtm: true,
+				StickyLgtmTeam:   "team1",
+				StoreTreeHash:    true,
+			},
+		},
+	})
+	if err != nil {
+		logrus.WithError(err).Warn("cannot generate comments for lgtm plugin")
+	}
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "The lgtm plugin manages the application and removal of the 'lgtm' (Looks Good To Me) label which is typically used to gate merging.",
 		Config:      configInfo,
+		Snippet:     yamlSnippet,
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/lgtm [cancel] or GitHub Review action",
@@ -265,23 +279,23 @@ func handle(wantLGTM bool, config *plugins.Configuration, ownersClient repoowner
 	// check if skip collaborators is enabled for this org/repo
 	skipCollaborators := skipCollaborators(config, org, repoName)
 
-	// check if the commentor is a collaborator
+	// check if the commenter is a collaborator
 	isCollaborator, err := gc.IsCollaborator(org, repoName, author)
 	if err != nil {
 		log.WithError(err).Error("Failed to check if author is a collaborator.")
-		return err // abort if we can't determine if commentor is a collaborator
+		return err // abort if we can't determine if commenter is a collaborator
 	}
 
-	// if commentor isn't a collaborator, and we care about collaborators, abort
+	// if commenter isn't a collaborator, and we care about collaborators, abort
 	if !isAuthor && !skipCollaborators && !isCollaborator {
 		resp := "changing LGTM is restricted to collaborators"
 		log.Infof("Reply to /lgtm request with comment: \"%s\"", resp)
 		return gc.CreateComment(org, repoName, number, plugins.FormatResponseRaw(body, htmlURL, author, resp))
 	}
 
-	// either ensure that the commentor is a collaborator or an approver/reviewer
+	// either ensure that the commenter is a collaborator or an approver/reviewer
 	if !isAuthor && !isAssignee && !skipCollaborators {
-		// in this case we need to ensure the commentor is assignable to the PR
+		// in this case we need to ensure the commenter is assignable to the PR
 		// by assigning them
 		log.Infof("Assigning %s/%s#%d to %s", org, repoName, number, author)
 		if err := gc.AssignIssue(org, repoName, number, []string{author}); err != nil {
@@ -307,7 +321,7 @@ func handle(wantLGTM bool, config *plugins.Configuration, ownersClient repoowner
 	}
 
 	// now we update the LGTM labels, having checked all cases where changing
-	// LGTM was not allowed for the commentor
+	// LGTM was not allowed for the commenter
 
 	// Only add the label if it doesn't have it, and vice versa.
 	labels, err := gc.GetIssueLabels(org, repoName, number)
@@ -415,7 +429,7 @@ func handlePullRequest(log *logrus.Entry, gc githubClient, config *plugins.Confi
 	if opts.StoreTreeHash {
 		// Check if we have a tree-hash comment
 		var lastLgtmTreeHash string
-		botname, err := gc.BotName()
+		botName, err := gc.BotName()
 		if err != nil {
 			return err
 		}
@@ -428,7 +442,7 @@ func handlePullRequest(log *logrus.Entry, gc githubClient, config *plugins.Confi
 		for i := len(comments) - 1; i >= 0; i-- {
 			comment := comments[i]
 			m := addLGTMLabelNotificationRe.FindStringSubmatch(comment.Body)
-			if comment.User.Login == botname && m != nil && comment.UpdatedAt.Equal(comment.CreatedAt) {
+			if comment.User.Login == botName && m != nil && comment.UpdatedAt.Equal(comment.CreatedAt) {
 				lastLgtmTreeHash = m[1]
 				break
 			}

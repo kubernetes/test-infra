@@ -1,5 +1,6 @@
 {
   prometheusAlerts+:: {
+    local componentName = $._config.components.hook,
     groups+: [
       {
         name: 'abnormal webhook behaviors',
@@ -14,6 +15,7 @@
             'for': '10m',
             labels: {
               severity: 'high',
+              slo: componentName,
             },
             annotations: {
               message: 'There have been no webhook calls on working hours for 10 minutes',

@@ -20,15 +20,11 @@ import (
 	"errors"
 	"sync"
 	"testing"
-	"time"
 
-	"github.com/google/go-cmp/cmp"
 	"github.com/sirupsen/logrus"
-	"golang.org/x/sync/semaphore"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/github/fakegithub"
@@ -37,15 +33,15 @@ import (
 func TestShouldReport(t *testing.T) {
 	var testcases = []struct {
 		name        string
-		pj          prowv1.ProwJob
+		pj          v1.ProwJob
 		report      bool
-		reportAgent prowv1.ProwJobAgent
+		reportAgent v1.ProwJobAgent
 	}{
 		{
 			name: "should not report periodic job",
-			pj: prowv1.ProwJob{
-				Spec: prowv1.ProwJobSpec{
-					Type:   prowv1.PeriodicJob,
+			pj: v1.ProwJob{
+				Spec: v1.ProwJobSpec{
+					Type:   v1.PeriodicJob,
 					Report: true,
 				},
 			},
@@ -53,9 +49,9 @@ func TestShouldReport(t *testing.T) {
 		},
 		{
 			name: "should report postsubmit job",
-			pj: prowv1.ProwJob{
-				Spec: prowv1.ProwJobSpec{
-					Type:   prowv1.PostsubmitJob,
+			pj: v1.ProwJob{
+				Spec: v1.ProwJobSpec{
+					Type:   v1.PostsubmitJob,
 					Report: true,
 				},
 			},
@@ -63,9 +59,9 @@ func TestShouldReport(t *testing.T) {
 		},
 		{
 			name: "should not report batch job",
-			pj: prowv1.ProwJob{
-				Spec: prowv1.ProwJobSpec{
-					Type:   prowv1.BatchJob,
+			pj: v1.ProwJob{
+				Spec: v1.ProwJobSpec{
+					Type:   v1.BatchJob,
 					Report: true,
 				},
 			},
@@ -73,9 +69,9 @@ func TestShouldReport(t *testing.T) {
 		},
 		{
 			name: "should report presubmit job",
-			pj: prowv1.ProwJob{
-				Spec: prowv1.ProwJobSpec{
-					Type:   prowv1.PresubmitJob,
+			pj: v1.ProwJob{
+				Spec: v1.ProwJobSpec{
+					Type:   v1.PresubmitJob,
 					Report: true,
 				},
 			},
@@ -83,14 +79,14 @@ func TestShouldReport(t *testing.T) {
 		},
 		{
 			name: "github should not report gerrit jobs",
-			pj: prowv1.ProwJob{
+			pj: v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
 						client.GerritReportLabel: "plus-one-this-gerrit-label-please",
 					},
 				},
-				Spec: prowv1.ProwJobSpec{
-					Type:   prowv1.PresubmitJob,
+				Spec: v1.ProwJobSpec{
+					Type:   v1.PresubmitJob,
 					Report: true,
 				},
 			},
@@ -123,26 +119,26 @@ func TestPresumitReportingLocks(t *testing.T) {
 			return &config.Config{
 				ProwConfig: config.ProwConfig{
 					GitHubReporter: config.GitHubReporter{
-						JobTypesToReport: []prowv1.ProwJobType{prowv1.PresubmitJob},
+						JobTypesToReport: []v1.ProwJobType{v1.PresubmitJob},
 					},
 				},
 			}
 		},
-		prowv1.ProwJobAgent(""),
+		v1.ProwJobAgent(""),
 	)
 
-	pj := &prowv1.ProwJob{
-		Spec: prowv1.ProwJobSpec{
-			Refs: &prowv1.Refs{
+	pj := &v1.ProwJob{
+		Spec: v1.ProwJobSpec{
+			Refs: &v1.Refs{
 				Org:   "org",
 				Repo:  "repo",
-				Pulls: []prowv1.Pull{{Number: 1}},
+				Pulls: []v1.Pull{{Number: 1}},
 			},
-			Type:   prowv1.PresubmitJob,
+			Type:   v1.PresubmitJob,
 			Report: true,
 		},
-		Status: prowv1.ProwJobStatus{
-			State:          prowv1.ErrorState,
+		Status: v1.ProwJobStatus{
+			State:          v1.ErrorState,
 			CompletionTime: &metav1.Time{},
 		},
 	}
@@ -167,9 +163,9 @@ func TestPresumitReportingLocks(t *testing.T) {
 
 func TestShardedLockCleanup(t *testing.T) {
 	t.Parallel()
-	sl := &shardedLock{mapLock: &sync.Mutex{}, locks: map[simplePull]*semaphore.Weighted{}}
+	sl := &shardedLock{mapLock: &sync.Mutex{}, locks: map[simplePull]*sync.Mutex{}}
 	key := simplePull{"org", "repo", 1}
-	sl.locks[key] = semaphore.NewWeighted(1)
+	sl.locks[key] = &sync.Mutex{}
 	sl.cleanup()
 	if _, exists := sl.locks[key]; exists {
 		t.Error("lock didn't get cleaned up")
@@ -180,95 +176,61 @@ func TestShardedLockCleanup(t *testing.T) {
 func TestReport(t *testing.T) {
 	t.Parallel()
 	testCases := []struct {
-		name                  string
-		jobType               prowv1.ProwJobType
-		locks                 *shardedLock
-		githubError           error
-		expectedError         string
-		expectReport          bool
-		expectReconcileResult *reconcile.Result
+		name          string
+		githubError   error
+		expectedError string
 	}{
 		{
-			name:         "Success",
-			expectReport: true,
+			name: "Success",
 		},
 		{
 			name:        "Maximum sha error gets swallowed",
 			githubError: errors.New("This SHA and context has reached the maximum number of statuses"),
 		},
 		{
+			name:        "Error from user side gets swallowed",
+			githubError: errors.New("error setting status: status code 404 not one of [201], body: {\"message\":\"Not Found\",\"documentation_url\":\"https://docs.github.com/rest/reference/repos#create-a-commit-status\"}"),
+		},
+		{
 			name:          "Other error get returned",
 			githubError:   errors.New("something went wrong :("),
 			expectedError: "error setting status: something went wrong :(",
-		},
-		{
-			name:                  "Presubmit that is currently locked doesn't report, doesn't block and returns with RequeueAfter",
-			jobType:               prowv1.PresubmitJob,
-			locks:                 &shardedLock{mapLock: &sync.Mutex{}, locks: map[simplePull]*semaphore.Weighted{{}: semaphore.NewWeighted(0)}},
-			expectReconcileResult: &reconcile.Result{RequeueAfter: 5 * time.Second},
-			expectReport:          false,
-		},
-		{
-			name:         "Presubmit that is currently unlocked reports",
-			jobType:      prowv1.PresubmitJob,
-			locks:        &shardedLock{mapLock: &sync.Mutex{}, locks: map[simplePull]*semaphore.Weighted{{}: semaphore.NewWeighted(1)}},
-			expectReport: true,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			githubClient := &fakegithub.FakeClient{Error: tc.githubError}
 			c := Client{
-				gc: githubClient,
+				gc: &fakegithub.FakeClient{Error: tc.githubError},
 				config: func() *config.Config {
 					return &config.Config{
 						ProwConfig: config.ProwConfig{
 							GitHubReporter: config.GitHubReporter{
-								JobTypesToReport: []prowv1.ProwJobType{prowv1.PostsubmitJob, prowv1.PresubmitJob},
+								JobTypesToReport: []v1.ProwJobType{v1.PostsubmitJob},
 							},
 						},
 					}
 				},
-				prLocks: tc.locks,
 			}
-			pj := &prowv1.ProwJob{
-				Spec: prowv1.ProwJobSpec{
-					Type:   prowv1.PostsubmitJob,
+			pj := &v1.ProwJob{
+				Spec: v1.ProwJobSpec{
+					Type:   v1.PostsubmitJob,
 					Report: true,
-					Refs:   &prowv1.Refs{},
+					Refs:   &v1.Refs{},
 				},
-				Status: prowv1.ProwJobStatus{
-					State: prowv1.SuccessState,
+				Status: v1.ProwJobStatus{
+					State: v1.SuccessState,
 				},
-			}
-			if tc.jobType != "" {
-				pj.Spec.Type = tc.jobType
-			}
-			if pj.Spec.Type == prowv1.PresubmitJob {
-				pj.Spec.Refs.Pulls = []prowv1.Pull{{}}
 			}
 
 			errMsg := ""
-			_, reconcileResult, err := c.Report(logrus.NewEntry(logrus.StandardLogger()), pj)
+			_, _, err := c.Report(logrus.NewEntry(logrus.StandardLogger()), pj)
 			if err != nil {
 				errMsg = err.Error()
 			}
 			if errMsg != tc.expectedError {
 				t.Errorf("expected error %q got error %q", tc.expectedError, errMsg)
 			}
-			if err != nil {
-				return
-			}
-
-			if diff := cmp.Diff(reconcileResult, tc.expectReconcileResult); diff != "" {
-				t.Errorf("received reconcileResult differs from expected: %s", diff)
-			}
-
-			if reported := len(githubClient.CreatedStatuses) > 0; reported != tc.expectReport {
-				t.Errorf("did report: %t, expected report: %t", reported, tc.expectReport)
-			}
-
 		})
 	}
 }

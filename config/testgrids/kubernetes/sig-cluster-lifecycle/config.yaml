@@ -39,6 +39,13 @@ dashboards:
 - name: sig-cluster-lifecycle-cluster-api
 - name: sig-cluster-lifecycle-cluster-api-provider-aws
 - name: sig-cluster-lifecycle-cluster-api-provider-azure
+  dashboard_tab:
+    - name: periodic-cluster-api-provider-azure-coverage
+      test_group_name: periodic-cluster-api-provider-azure-coverage
+      base_options: "exclude-filter-by-regex=Overall$&group-by-directory=&expand-groups=&sort-by-name="
+    - name: pr-coverage
+      test_group_name: pull-cluster-api-provider-azure-coverage
+      base_options: "exclude-filter-by-regex=Overall$&group-by-directory=&expand-groups=&sort-by-name="
 - name: sig-cluster-lifecycle-cluster-api-provider-digitalocean
 - name: sig-cluster-lifecycle-cluster-api-provider-gcp
 - name: sig-cluster-lifecycle-cluster-api-provider-ibmcloud
@@ -68,3 +75,9 @@ test_groups:
   gcs_prefix: kubernetes-multiarch-e2e-results/logs/kubeadm-luxas-packet-arm64
 - name: ci-cluster-api-provider-openstack-make-conformance-stable-k8s-ci-artifacts
   gcs_prefix: k8s-conform-capi-openstack/periodic-logs/ci-cluster-api-provider-openstack-stable-acceptance-test-master
+- name: periodic-cluster-api-provider-azure-coverage
+  gcs_prefix: kubernetes-jenkins/logs/periodic-cluster-api-provider-azure-coverage
+  short_text_metric: coverage
+- name: pull-cluster-api-provider-azure-coverage
+  gcs_prefix: kubernetes-jenkins/logs/pull-cluster-api-provider-azure-coverage
+  short_text_metric: coverage

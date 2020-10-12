@@ -1,7 +1,7 @@
 # periodic jobs
 
 periodics:
-- name: ci-kubernetes-e2e-kubeadm-kinder-master-on-1-19
+- name: ci-kubernetes-e2e-kubeadm-kinder-latest-on-1-19
   interval: 2h
   decorate: true
   labels:
@@ -9,8 +9,8 @@ periodics:
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kubeadm,sig-release-master-informing
-    testgrid-tab-name: kubeadm-kinder-master-on-1-19
-    testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com, kubernetes-release-team@googlegroups.com
+    testgrid-tab-name: kubeadm-kinder-latest-on-1-19
+    testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com, release-team@kubernetes.io
     description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster with version skew and run kubeadm-e2e and the conformance suite"
     testgrid-num-columns-recent: "20"
     testgrid-num-failures-to-alert: "8"
@@ -28,12 +28,12 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-1.19
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-1.19
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"
       args:
-      - "skew-master-on-1.19"
+      - "skew-latest-on-1.19"
       securityContext:
         privileged: true
       resources:
@@ -50,7 +50,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kubeadm,sig-release-1.19-informing
     testgrid-tab-name: kubeadm-kinder-1-19-on-1-18
-    testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com, kubernetes-release-team@googlegroups.com
+    testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com, release-team@kubernetes.io
     description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster with version skew and run kubeadm-e2e and the conformance suite"
     testgrid-num-columns-recent: "20"
     testgrid-num-failures-to-alert: "4"
@@ -68,7 +68,7 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-1.18
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-1.18
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"
@@ -90,7 +90,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kubeadm,sig-release-1.18-informing
     testgrid-tab-name: kubeadm-kinder-1-18-on-1-17
-    testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com, kubernetes-release-team@googlegroups.com
+    testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com, release-team@kubernetes.io
     description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster with version skew and run kubeadm-e2e and the conformance suite"
     testgrid-num-columns-recent: "20"
     testgrid-num-failures-to-alert: "4"
@@ -108,7 +108,7 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-1.17
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-1.17
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"
@@ -130,7 +130,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kubeadm,sig-release-1.17-informing
     testgrid-tab-name: kubeadm-kinder-1-17-on-1-16
-    testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com, kubernetes-release-team@googlegroups.com
+    testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com, release-team@kubernetes.io
     description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster with version skew and run kubeadm-e2e and the conformance suite"
     testgrid-num-columns-recent: "20"
     testgrid-num-failures-to-alert: "4"
@@ -148,7 +148,7 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-1.16
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-1.16
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"

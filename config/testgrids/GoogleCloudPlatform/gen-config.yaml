@@ -371,13 +371,42 @@ dashboards:
     test_group_name: ESPv2-serverless-janitor
   name: googleoss-esp-v2-periodic
 - dashboard_tab:
-  - code_search_url_template:
+  - alert_options:
+      alert_mail_to_addresses: en-server-prow-test-alert@google.com
+    code_search_url_template:
       url: https://github.com/google/exposure-notifications-server/compare/<start-custom-0>...<end-custom-0>
     description: ci-en-server-performance
     name: performance
     open_bug_template:
       url: https://github.com/google/exposure-notifications-server/issues/
     test_group_name: ci-en-server-performance
+  - alert_options:
+      alert_mail_to_addresses: en-server-prow-test-alert@google.com
+    code_search_url_template:
+      url: https://github.com/google/exposure-notifications-server/compare/<start-custom-0>...<end-custom-0>
+    description: ci-en-server-terraform-e2e
+    name: e2e
+    open_bug_template:
+      url: https://github.com/google/exposure-notifications-server/issues/
+    test_group_name: ci-en-server-terraform-e2e
+  - alert_options:
+      alert_mail_to_addresses: en-server-prow-test-alert@google.com
+    code_search_url_template:
+      url: https://github.com/google/exposure-notifications-server/compare/<start-custom-0>...<end-custom-0>
+    description: ci-en-server-terraform-smoke
+    name: terrafrom-smoke
+    open_bug_template:
+      url: https://github.com/google/exposure-notifications-server/issues/
+    test_group_name: ci-en-server-terraform-smoke
+  - alert_options:
+      alert_mail_to_addresses: en-server-prow-test-alert@google.com
+    code_search_url_template:
+      url: https://github.com/google/exposure-notifications-verification-server/compare/<start-custom-0>...<end-custom-0>
+    description: ci-en-verification-server-terraform-smoke
+    name: verification-terrafrom-smoke
+    open_bug_template:
+      url: https://github.com/google/exposure-notifications-verification-server/issues/
+    test_group_name: ci-en-verification-server-terraform-smoke
   name: googleoss-en-server
 test_groups:
 - gcs_prefix: oss-prow/logs/ESPv2-continuous-anthos-cloud-run-e2e-cloud-run-http-bookstore
@@ -416,6 +445,16 @@ test_groups:
   name: ESPv2-serverless-janitor
 - gcs_prefix: oss-prow/logs/ci-en-server-performance
   name: ci-en-server-performance
+  num_failures_to_alert: 1
+- gcs_prefix: oss-prow/logs/ci-en-server-terraform-e2e
+  name: ci-en-server-terraform-e2e
+  num_failures_to_alert: 1
+- gcs_prefix: oss-prow/logs/ci-en-server-terraform-smoke
+  name: ci-en-server-terraform-smoke
+  num_failures_to_alert: 1
+- gcs_prefix: oss-prow/logs/ci-en-verification-server-terraform-smoke
+  name: ci-en-verification-server-terraform-smoke
+  num_failures_to_alert: 1
 - gcs_prefix: oss-prow/logs/ci-google-oss-test-infra-resultstore-upload
   name: ci-google-oss-test-infra-resultstore-upload
 - gcs_prefix: oss-prow/logs/ci-oss-test-infra-autobump-knative-prow

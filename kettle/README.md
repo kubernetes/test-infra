@@ -58,17 +58,44 @@ kubectl get pod -l app=kettle # should show a new pod name
 
 #### Verify functionality
 
-You can watch the pod startup and collect data from various GCS buckets by looking at its logs
+You can watch the pod startup and collect data from various GCS buckets by looking at its logs via:
 
 ```sh
 kubectl logs -f $(kubectl get pod -l app=kettle -oname)
 ```
+or access [log history](https://console.cloud.google.com/logs/query?project=k8s-gubernator) with the Query: `resource.labels.container_name="kettle"`.
 
 It might take a couple of hours to be fully functional and start updating BigQuery. You can always go back to the [Gubernator BigQuery page](https://bigquery.cloud.google.com/table/k8s-gubernator:build.all?pli=1&tab=details) and check to see if data collection has resumed.  Backfill should happen automatically.
+
+#### Kettle Staging
+| :exclamation:  Not Fully Functional Yet |
+|-----------------------------------------|
+
+This is a work in progress. `Kettle Staging` uses a similar deployment to `Kettle` with the following differences
+- much less disk in its PVC
+- reduced list of buckets to pull from
+- writes to [build.staging](https://console.cloud.google.com/bigquery?project=k8s-gubernator&page=table&t=all&d=build&p=k8s-gubernator&redirect_from_classic=true) table only.
+
+It can be deployed with `make -C kettle deploy-staging`. If already deployed, you may just run `make -C kettle update-staging`.
 
 #### Adding Fields
 
 To add fields to the BQ table, Visit the [k8s-gubernator:build BigQuery dataset](https://bigquery.cloud.google.com/dataset/k8s-gubernator:build) and Select the table (Ex. Build > All). Schema -> Edit Schema -> Add field. As well as update [schema.json](./schema.json)
+
+## Adding Buckets
+
+To add a new GCS bucket to Kettle, simply update [buckets.yaml](./buckets.yaml) in `master`, it will be auto pulled by Kettle on the next cycle.
+
+```yaml
+gs://<bucket path>: #bucket url
+  contact: "username" #Git Hub Username
+  prefix: "abc:" #the identifier prefixed to jobs from this bucket (ends in :).
+  sequential: (bool) #an optional boolean that indicates whether test runs in this
+  #                  bucket are numbered sequentially
+  exclude_jobs: # list of jobs to explicitly exclude from kettle data collection
+    - job_name1
+    - job_name2
+```
 
 # CI
 
@@ -77,4 +104,3 @@ A [postsubmit job](https://github.com/kubernetes/test-infra/blob/master/config/j
 # Known Issues
 
 - Occasionally data from Kettle stops updating, we suspect this is due to a transient hang when contacting GCS ([#8800](https://github.com/kubernetes/test-infra/issues/8800)). If this happens, [restart kettle](#restarting)
-

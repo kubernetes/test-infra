@@ -869,14 +869,32 @@ func TestFlags(t *testing.T) {
 }
 
 func TestDeletePodToleratesNotFound(t *testing.T) {
-	m := &sinkerReconciliationMetrics{}
+	m := &sinkerReconciliationMetrics{
+		podsRemoved:      map[string]int{},
+		podRemovalErrors: map[string]int{},
+	}
 	c := &controller{config: newFakeConfigAgent().Config}
 	l := logrus.NewEntry(logrus.New())
+	pod := &corev1api.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "existing",
+			Namespace: "ns",
+			Labels: map[string]string{
+				kube.CreatedByProw:  "true",
+				kube.ProwJobIDLabel: "job-running",
+			},
+		},
+	}
+	client := fakectrlruntimeclient.NewFakeClient(pod)
 
-	c.deletePod(l, &corev1api.Pod{}, "reason", fakectrlruntimeclient.NewFakeClient(), m)
+	c.deletePod(l, &corev1api.Pod{}, "reason", client, m)
+	c.deletePod(l, pod, "reason", client, m)
 
-	if n := len(m.podRemovalErrors); n != 0 {
-		t.Errorf("Expected no pod removal errors, got %v", m.podRemovalErrors)
+	if n := len(m.podRemovalErrors); n != 1 {
+		t.Errorf("Expected 1 pod removal errors, got %v", m.podRemovalErrors)
+	}
+	if n := len(m.podsRemoved); n != 1 {
+		t.Errorf("Expected 1 pod removal, got %v", m.podsRemoved)
 	}
 }
 

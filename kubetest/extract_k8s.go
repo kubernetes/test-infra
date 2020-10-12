@@ -293,20 +293,17 @@ var getKube = func(url, version string, getSrc bool) error {
 		return err
 	}
 	log.Printf("U=%s R=%s get-kube.sh", url, version)
-	for i := 0; i < 3; i++ {
+	for i := 0; i < 5; i++ {
 		err = control.FinishRunning(exec.Command(k))
 		if err == nil {
 			break
 		}
 		err = fmt.Errorf("U=%s R=%s get-kube.sh failed: %v", url, version, err)
-		if i == 2 {
-			return err
-		}
 		log.Println(err)
 		sleep(time.Duration(i) * time.Second)
 	}
 
-	return nil
+	return err
 }
 
 // wrapper for gsutil cat

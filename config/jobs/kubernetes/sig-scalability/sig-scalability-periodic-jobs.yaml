@@ -13,7 +13,7 @@ periodics:
     testgrid-tab-name: node-throughput
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -38,6 +38,14 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=40m
       - --use-logexporter
+      resources:
+        requests:
+          cpu: 2
+          memory: "6Gi"
+        limits:
+          cpu: 2
+          memory: "6Gi"
+
 - name: ci-kubernetes-e2e-gce-node-containerd-throughput
   tags:
   - "perfDashPrefix: containerd-node-throughput"
@@ -53,7 +61,7 @@ periodics:
     testgrid-tab-name: node-containerd-throughput
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -78,6 +86,13 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=40m
       - --use-logexporter
+      resources:
+        requests:
+          cpu: 2
+          memory: "6Gi"
+        limits:
+          cpu: 2
+          memory: "6Gi"
 
 #kubemark
 - name: ci-kubernetes-kubemark-100-gce
@@ -98,7 +113,7 @@ periodics:
     testgrid-num-failures-to-alert: '1'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -139,6 +154,13 @@ periodics:
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
+      resources:
+        requests:
+          cpu: 2
+          memory: "6Gi"
+        limits:
+          cpu: 2
+          memory: "6Gi"
 
 - name: ci-kubernetes-kubemark-100-gce-scheduler
   tags:
@@ -156,7 +178,7 @@ periodics:
     testgrid-num-failures-to-alert: '1'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -196,6 +218,13 @@ periodics:
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
+      resources:
+        requests:
+          cpu: 2
+          memory: "2Gi"
+        limits:
+          cpu: 2
+          memory: "2Gi"
 
 - name: ci-kubernetes-kubemark-500-gce
   tags:
@@ -216,7 +245,7 @@ periodics:
     testgrid-num-failures-to-alert: '1'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -255,12 +284,21 @@ periodics:
       # docker-in-docker needs privilged mode
       securityContext:
         privileged: true
+      resources:
+        requests:
+          cpu: 2
+          memory: "16Gi"
+        limits:
+          cpu: 2
+          memory: "16Gi"
 
 - name: ci-kubernetes-kubemark-gce-scale
   tags:
   - "perfDashPrefix: kubemark-5000Nodes"
   - "perfDashJobType: performance"
-  interval: 12h
+  # Run twice a day (at 00:01 and 16:01 UTC) on the odd days of each month. The
+  # job is expected to take ~12-14h, hence the 16 hour gap.
+  cron: '1 0,16 1-31/2 * *'
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -274,7 +312,7 @@ periodics:
     testgrid-num-columns-recent: '3'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -318,6 +356,75 @@ periodics:
         requests:
           cpu: 6
           memory: "16Gi"
+        limits:
+          cpu: 6
+          memory: "16Gi"
+
+- name: ci-kubernetes-kubemark-gce-scale-scheduler
+  tags:
+  - "perfDashPrefix: kubemark-5000Nodes-scheduler"
+  - "perfDashJobType: performance"
+  # Run at 10:01 UTC on the even days of each month. There will be ample time
+  # between the kubemark-5000Nodes job (expected to start at 16:01 UTC the
+  # previous day and finish in around ~12-14 hours) and this job. This job is
+  # expected to take ~6-8 hours, which should allow it to finish well before
+  # the next kubemark-5000Nodes job (at 00:01 UTC).
+  cron: '1 10 2-31/2 * *'
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
+    preset-e2e-kubemark-common: "true"
+    preset-e2e-kubemark-gce-scale: "true"
+  annotations:
+    testgrid-dashboards: sig-scalability-kubemark
+    testgrid-tab-name: kubemark-5000-scheduler
+    testgrid-num-failures-to-alert: '1'
+    testgrid-num-columns-recent: '3'
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-master
+      args:
+      - --repo=k8s.io/kubernetes=master
+      - --repo=k8s.io/perf-tests=master
+      - --root=/go/src
+      - --timeout=1100
+      - --scenario=kubernetes_e2e
+      - --
+      - --cluster=kubemark-5000
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-node-size=n1-standard-8
+      - --gcp-nodes=84
+      - --gcp-project=kubemark-scalability-testing
+      - --gcp-zone=us-east1-b
+      - --kubemark
+      - --kubemark-nodes=5000
+      - --provider=gce
+      - --test=false
+      - --test_args=--ginkgo.focus=xxxx
+      - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+      - --test-cmd-args=cluster-loader2
+      - --test-cmd-args=--experimental-gcp-snapshot-prometheus-disk=true
+      - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=${JOB_NAME}-${BUILD_ID}
+      - --test-cmd-args=--nodes=5000
+      - --test-cmd-args=--provider=kubemark
+      - --env=CL2_ENABLE_PVS=false # TODO(https://github.com/kubernetes/perf-tests/issues/803): Fix me
+      - --test-cmd-args=--report-dir=/workspace/_artifacts
+      - --test-cmd-args=--testsuite=testing/density/scheduler-suite.yaml
+      - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
+      - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
+      - --test-cmd-args=--testoverrides=./testing/experiments/ignore_known_kubemark_container_restarts.yaml
+      - --test-cmd-name=ClusterLoaderV2
+      - --timeout=1080m
+      - --use-logexporter
+      # docker-in-docker needs privilged mode
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 6
+          memory: "16Gi"
 
 - name: ci-kubernetes-kubemark-high-density-100-gce
   tags:
@@ -335,7 +442,7 @@ periodics:
     testgrid-num-failures-to-alert: '1'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -372,6 +479,13 @@ periodics:
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
+      resources:
+        requests:
+          cpu: 2
+          memory: "8Gi"
+        limits:
+          cpu: 2
+          memory: "8Gi"
 
 - name: ci-perf-tests-kubemark-100-benchmark
   interval: 2h
@@ -383,7 +497,7 @@ periodics:
     testgrid-tab-name: kubemark-100-benchmark
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-master
       args:
       - --repo=k8s.io/perf-tests=master
       - --root=/go/src
@@ -391,6 +505,13 @@ periodics:
       - --scenario=execute
       - --
       - ./benchmark/runner.sh
+      resources:
+        requests:
+          cpu: 1
+          memory: "2Gi"
+        limits:
+          cpu: 1
+          memory: "2Gi"
 
 - name: ci-benchmark-scheduler-master
   tags:
@@ -410,7 +531,7 @@ periodics:
     timeout: 1h55m
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-master
       command:
       - ./hack/jenkins/benchmark-dockerized.sh
       args:
@@ -420,6 +541,13 @@ periodics:
         value: --timeout=1h50m
       - name: TEST_PREFIX
         value: BenchmarkScheduling
+      resources:
+        requests:
+          cpu: 8
+          memory: "32Gi"
+        limits:
+          cpu: 8
+          memory: "32Gi"
 
 - name: ci-benchmark-scheduler-perf-master
   tags:
@@ -439,7 +567,7 @@ periodics:
     timeout: 1h55m
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-master
       command:
       - ./hack/jenkins/benchmark-dockerized.sh
       args:
@@ -459,9 +587,11 @@ periodics:
       # incomparable.
       resources:
         requests:
-          cpu: 4
+          cpu: 6
+          memory: "24Gi"
         limits:
-          cpu: 4
+          cpu: 6
+          memory: "24Gi"
 
 - name: ci-benchmark-kube-dns-master
   interval: 2h
@@ -476,7 +606,7 @@ periodics:
     testgrid-tab-name: kube-dns
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -497,6 +627,13 @@ periodics:
       - --test-cmd-args=/workspace/_artifacts
       - --test-cmd-name=KubeDnsBenchmark
       - --timeout=120m
+      resources:
+        requests:
+          cpu: 2
+          memory: "6Gi"
+        limits:
+          cpu: 2
+          memory: "6Gi"
 
 - name: ci-benchmark-nodelocal-dns-master
   interval: 2h
@@ -511,7 +648,7 @@ periodics:
     testgrid-tab-name: node-local-dns
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -534,6 +671,13 @@ periodics:
       - --test-cmd-args=169.254.20.10
       - --test-cmd-name=KubeDnsBenchmark
       - --timeout=120m
+      resources:
+        requests:
+          cpu: 2
+          memory: "4Gi"
+        limits:
+          cpu: 2
+          memory: "4Gi"
 
 - name: ci-benchmark-microbenchmarks
   interval: 20m
@@ -564,3 +708,10 @@ periodics:
       - ../kubernetes/vendor/k8s.io/apimachinery/...
       - ../kubernetes/vendor/k8s.io/apiserver/...
       - ../kubernetes/vendor/k8s.io/client-go/...
+      resources:
+        requests:
+          cpu: 1
+          memory: "2Gi"
+        limits:
+          cpu: 1
+          memory: "2Gi"

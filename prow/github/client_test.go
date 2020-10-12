@@ -27,6 +27,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"reflect"
 	"strconv"
 	"strings"
@@ -2417,7 +2418,7 @@ func TestAuthHeaderGetsSet(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			fake := &fakeHttpClient{}
-			c := &client{delegate: &delegate{client: fake}}
+			c := &client{delegate: &delegate{client: fake}, logger: logrus.NewEntry(logrus.New())}
 			tc.mod(c)
 			if _, err := c.doRequest("POST", "/hello", "", nil); err != nil {
 				t.Fatalf("unexpected error: %v", err)
@@ -2479,5 +2480,32 @@ func TestCreateFork(t *testing.T) {
 		if name != "other" {
 			t.Errorf("Unexpected fork name: %v", name)
 		}
+	}
+}
+
+func TestToCurl(t *testing.T) {
+	testCases := []struct {
+		name     string
+		request  *http.Request
+		expected string
+	}{
+		{
+			name:     "Authorization Header with bearer type gets masked",
+			request:  &http.Request{Method: http.MethodGet, URL: &url.URL{Scheme: "https", Host: "api.github.com"}, Header: http.Header{"Authorization": []string{"Bearer secret-token"}}},
+			expected: `curl -k -v -XGET  -H "Authorization: Bearer <masked>" 'https://api.github.com'`,
+		},
+		{
+			name:     "Authorization Header with unknown type gets masked",
+			request:  &http.Request{Method: http.MethodGet, URL: &url.URL{Scheme: "https", Host: "api.github.com"}, Header: http.Header{"Authorization": []string{"Definitely-not-valid secret-token"}}},
+			expected: `curl -k -v -XGET  -H "Authorization: <masked>" 'https://api.github.com'`,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			if result := toCurl(tc.request); result != tc.expected {
+				t.Errorf("result %s differs from expected %s", result, tc.expected)
+			}
+		})
 	}
 }

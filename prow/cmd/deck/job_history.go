@@ -33,6 +33,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/config"
 	pkgio "k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/io/providers"
 	"k8s.io/test-infra/prow/pod-utils/gcs"
@@ -75,11 +76,20 @@ type storageBucket interface {
 	readObject(ctx context.Context, key string) ([]byte, error)
 }
 
-// blobStorageBucket is our real implementation of storageBucket
+// blobStorageBucket is our real implementation of storageBucket.
+// Use `newBlobStorageBucket` to instantiate (includes bucket-level validation).
 type blobStorageBucket struct {
 	name            string
 	storageProvider string
 	pkgio.Opener
+}
+
+// newBlobStorageBucket validates the bucketName and returns a new instance of blobStorageBucket.
+func newBlobStorageBucket(bucketName, storageProvider string, config *config.Config, opener pkgio.Opener) (blobStorageBucket, error) {
+	if err := config.ValidateStorageBucket(bucketName); err != nil {
+		return blobStorageBucket{}, fmt.Errorf("could not instantiate storage bucket: %v", err)
+	}
+	return blobStorageBucket{bucketName, storageProvider, opener}, nil
 }
 
 type jobHistoryTemplate struct {
@@ -392,7 +402,7 @@ func (a int64slice) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a int64slice) Less(i, j int) bool { return a[i] < a[j] }
 
 // Gets job history from the bucket specified in config.
-func getJobHistory(ctx context.Context, url *url.URL, opener pkgio.Opener) (jobHistoryTemplate, error) {
+func getJobHistory(ctx context.Context, url *url.URL, cfg config.Getter, opener pkgio.Opener) (jobHistoryTemplate, error) {
 	start := time.Now()
 	tmpl := jobHistoryTemplate{}
 
@@ -400,9 +410,11 @@ func getJobHistory(ctx context.Context, url *url.URL, opener pkgio.Opener) (jobH
 	if err != nil {
 		return tmpl, fmt.Errorf("invalid url %s: %v", url.String(), err)
 	}
+	bucket, err := newBlobStorageBucket(bucketName, storageProvider, cfg(), opener)
+	if err != nil {
+		return tmpl, err
+	}
 	tmpl.Name = root
-	bucket := blobStorageBucket{bucketName, storageProvider, opener}
-
 	latest, err := readLatestBuild(ctx, bucket, root)
 	if err != nil {
 		return tmpl, fmt.Errorf("failed to locate build data: %v", err)

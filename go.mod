@@ -31,6 +31,7 @@ require (
 	github.com/GoogleCloudPlatform/testgrid v0.0.13
 	github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46
 	github.com/andygrunwald/go-gerrit v0.0.0-20190120104749-174420ebee6c
+	github.com/andygrunwald/go-jira v1.12.0
 	github.com/aws/aws-sdk-go v1.31.12
 	github.com/bazelbuild/buildtools v0.0.0-20190917191645-69366ca98f89
 	github.com/blang/semver v3.5.1+incompatible
@@ -52,9 +53,11 @@ require (
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/uuid v1.1.1
 	github.com/gorilla/csrf v1.6.2
+	github.com/gorilla/mux v1.7.4
 	github.com/gorilla/securecookie v1.1.1
 	github.com/gorilla/sessions v1.2.0
 	github.com/gregjones/httpcache v0.0.0-20190212212710-3befbb6ad0cc
+	github.com/hashicorp/go-retryablehttp v0.6.6
 	github.com/influxdata/influxdb v0.0.0-20161215172503-049f9b42e9a5
 	github.com/jinzhu/gorm v1.9.12
 	github.com/klauspost/pgzip v1.2.1

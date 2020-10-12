@@ -499,6 +499,9 @@ func Test_getPRHistory(t *testing.T) {
 					},
 				},
 			},
+			Deck: config.Deck{
+				AllKnownStorageBuckets: sets.NewString("kubernetes-jenkins"),
+			},
 		},
 	}
 	objects := []fakestorage.Object{

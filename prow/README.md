@@ -48,6 +48,10 @@ To see common Prow usage and interactions flow, see the pull request interaction
 
 ## Useful Talks
 
+### Kuecon 2020 EU virtual
+
+ - [Going Beyond CI/CD with Prow](https://youtu.be/qQvoImxHydk)
+
 ### KubeCon 2018 EU
 
 - [Automation and the Kubernetes Contributor Experience](https://www.youtube.com/watch?v=BsIC7gPkH5M)
@@ -74,9 +78,9 @@ To see common Prow usage and interactions flow, see the pull request interaction
 
 Prow is used by the following organizations and projects:
 - [Kubernetes](https://prow.k8s.io)
-  - This includes [kubernetes](https://github.com/kubernetes), [kubernetes-client](https://github.com/kubernetes-client), [kubernetes-csi](https://github.com/kubernetes-csi), [kubernetes-incubator](https://github.com/kubernetes-incubator), and [kubernetes-sigs](https://github.com/kubernetes-sigs).
+  - This includes [kubernetes](https://github.com/kubernetes), [kubernetes-client](https://github.com/kubernetes-client), [kubernetes-csi](https://github.com/kubernetes-csi), and [kubernetes-sigs](https://github.com/kubernetes-sigs).
 - [OpenShift](https://prow.svc.ci.openshift.org/)
-  - This includes [openshift](https://github.com/openshift), [openshift-s2i](https://github.com/openshift-s2i), [operator-framework](https://github.com/operator-framework), and some repos in [kubernetes-incubator](https://github.com/kubernetes-incubator), [containers](https://github.com/containers) and [heketi](https://github.com/heketi).
+  - This includes [openshift](https://github.com/openshift), [openshift-s2i](https://github.com/openshift-s2i), [operator-framework](https://github.com/operator-framework), and some repos in [containers](https://github.com/containers) and [heketi](https://github.com/heketi).
 - [Istio](https://prow.istio.io/)
 - [Knative](https://prow.knative.dev/)
 - [Jetstack](https://prow.build-infra.jetstack.net/)

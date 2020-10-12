@@ -1,7 +1,7 @@
 # periodic jobs
 
 periodics:
-- name: ci-kubernetes-e2e-kubeadm-kinder-patches-master
+- name: ci-kubernetes-e2e-kubeadm-kinder-patches-latest
   interval: 2h
   decorate: true
   labels:
@@ -9,7 +9,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kubeadm
-    testgrid-tab-name: kubeadm-kinder-patches-master
+    testgrid-tab-name: kubeadm-kinder-patches-latest
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com
     description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster with patches on static Pod manifests"
     testgrid-num-columns-recent: "20"
@@ -28,12 +28,12 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-master
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"
       args:
-      - "patches-master"
+      - "patches-latest"
       securityContext:
         privileged: true
       resources:
@@ -69,7 +69,7 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-1.19
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-1.19
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"

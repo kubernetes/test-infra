@@ -50,7 +50,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200903-fd282bc-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-experimental
         command:
         - ./hack/verify-file-perms.sh
     annotations:
@@ -73,12 +73,13 @@ presubmits:
       testgrid-dashboards: presubmits-test-infra
       testgrid-tab-name: verify-yaml
 
+  # Please keep this in sync with the `ci-test-infra-prow-checkconfig` job
   - name: pull-test-infra-prow-checkconfig
     decorate: true
     run_if_changed: '^(config/prow/(config|plugins).yaml$|config/jobs/.*.yaml$)'
     spec:
       containers:
-      - image: gcr.io/k8s-prow/checkconfig:v20200908-94d8b4dfcd
+      - image: gcr.io/k8s-prow/checkconfig:v20201012-f0efae8e46
         command:
         - /checkconfig
         args:

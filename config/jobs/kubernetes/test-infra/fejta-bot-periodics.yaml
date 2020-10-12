@@ -9,7 +9,7 @@ periodics:
     testgrid-tab-name: api-review-help
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20200908-94d8b4dfcd
+    - image: gcr.io/k8s-prow/commenter:v20201012-f0efae8e46
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -55,14 +55,13 @@ periodics:
     testgrid-tab-name: cla
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20200908-94d8b4dfcd
+    - image: gcr.io/k8s-prow/commenter:v20201012-f0efae8e46
       command:
       - /app/robots/commenter/app.binary
       args:
       - |-
         --query=org:kubernetes
         org:kubernetes-sigs
-        org:kubernetes-incubator
         org:kubernetes-client
         org:kubernetes-csi
         is:pr
@@ -95,14 +94,13 @@ periodics:
     testgrid-tab-name: close
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20200908-94d8b4dfcd
+    - image: gcr.io/k8s-prow/commenter:v20201012-f0efae8e46
       command:
       - /app/robots/commenter/app.binary
       args:
       - |-
         --query=org:kubernetes
         org:kubernetes-sigs
-        org:kubernetes-incubator
         org:kubernetes-client
         org:kubernetes-csi
         -label:lifecycle/frozen
@@ -136,7 +134,7 @@ periodics:
     description: Automatically /retest for approved PRs that failed retesting
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20200908-94d8b4dfcd
+    - image: gcr.io/k8s-prow/commenter:v20201012-f0efae8e46
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -192,14 +190,13 @@ periodics:
     testgrid-tab-name: rotten
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20200908-94d8b4dfcd
+    - image: gcr.io/k8s-prow/commenter:v20201012-f0efae8e46
       command:
       - /app/robots/commenter/app.binary
       args:
       - |-
         --query=org:kubernetes
         org:kubernetes-sigs
-        org:kubernetes-incubator
         org:kubernetes-client
         org:kubernetes-csi
         -label:lifecycle/frozen
@@ -236,14 +233,13 @@ periodics:
     testgrid-tab-name: stale
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20200908-94d8b4dfcd
+    - image: gcr.io/k8s-prow/commenter:v20201012-f0efae8e46
       command:
       - /app/robots/commenter/app.binary
       args:
       - |-
         --query=org:kubernetes
         org:kubernetes-sigs
-        org:kubernetes-incubator
         org:kubernetes-client
         org:kubernetes-csi
         -label:lifecycle/frozen
@@ -281,7 +277,7 @@ periodics:
     description: Creates github issues based on data from various 'IssueSource's.
   spec:
     containers:
-    - image: gcr.io/k8s-prow/issue-creator:v20200908-94d8b4dfcd
+    - image: gcr.io/k8s-prow/issue-creator:v20201012-f0efae8e46
       command:
       - /app/robots/issue-creator/app.binary
       args:
@@ -310,7 +306,7 @@ periodics:
     testgrid-tab-name: enhancements-unfreeze
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20200908-94d8b4dfcd
+    - image: gcr.io/k8s-prow/commenter:v20201012-f0efae8e46
       command:
       - /app/robots/commenter/app.binary
       args:

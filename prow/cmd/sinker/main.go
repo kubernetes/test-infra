@@ -151,7 +151,7 @@ func main() {
 		if err := mgr.Add(buildManager); err != nil {
 			logrus.WithError(err).Fatal("Failed to add build cluster manager to main manager")
 		}
-		buildClusterClients[clusterName] = mgr.GetClient()
+		buildClusterClients[clusterName] = buildManager.GetClient()
 	}
 
 	c := controller{
@@ -462,11 +462,14 @@ func (c *controller) deletePod(log *logrus.Entry, pod *corev1api.Pod, reason str
 	if err := client.Delete(c.ctx, pod); err == nil {
 		log.WithFields(logrus.Fields{"pod": name, "reason": reason}).Info("Deleted old completed pod.")
 		m.podsRemoved[reason]++
-	} else if !k8serrors.IsNotFound(err) {
-		log.WithField("pod", name).WithError(err).Error("Error deleting pod.")
+	} else {
 		m.podRemovalErrors[string(k8serrors.ReasonForError(err))]++
+		if k8serrors.IsNotFound(err) {
+			log.WithField("pod", name).WithError(err).Info("Could not delete missing pod.")
+		} else {
+			log.WithField("pod", name).WithError(err).Error("Error deleting pod.")
+		}
 	}
-
 }
 
 func (c *controller) isPodOrphaned(log *logrus.Entry, pod *corev1api.Pod, prowJobName string) bool {

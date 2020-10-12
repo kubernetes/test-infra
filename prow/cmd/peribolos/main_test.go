@@ -24,7 +24,9 @@ import (
 	"sort"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"k8s.io/apimachinery/pkg/util/diff"
+
 	"k8s.io/test-infra/prow/config/org"
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
@@ -188,7 +190,7 @@ func TestOptions(t *testing.T) {
 		case err != nil && tc.expected != nil:
 			t.Errorf("%s: unexpected error: %v", tc.name, err)
 		case tc.expected != nil && !reflect.DeepEqual(*tc.expected, actual):
-			t.Errorf("%s: got incorrect options: %v", tc.name, diff.ObjectReflectDiff(actual, *tc.expected))
+			t.Errorf("%s: got incorrect options: %v", tc.name, cmp.Diff(actual, *tc.expected))
 		}
 	}
 }
@@ -2271,22 +2273,23 @@ func (c *fakeTeamRepoClient) ListTeamRepos(id int) ([]github.Repo, error) {
 	return c.repos[id], nil
 }
 
-func (c *fakeTeamRepoClient) UpdateTeamRepo(id int, org, repo string, permission github.RepoPermissionLevel) error {
+func (c *fakeTeamRepoClient) UpdateTeamRepo(id int, org, repo string, permission github.TeamPermission) error {
 	if c.failUpdate {
 		return errors.New("injected failure to UpdateTeamRepos")
 	}
 
+	permissions := github.PermissionsFromTeamPermission(permission)
 	updated := false
 	for i, repository := range c.repos[id] {
 		if repository.Name == repo {
-			c.repos[id][i].Permissions = github.PermissionsFromLevel(permission)
+			c.repos[id][i].Permissions = permissions
 			updated = true
 			break
 		}
 	}
 
 	if !updated {
-		c.repos[id] = append(c.repos[id], github.Repo{Name: repo, Permissions: github.PermissionsFromLevel(permission)})
+		c.repos[id] = append(c.repos[id], github.Repo{Name: repo, Permissions: permissions})
 	}
 
 	return nil
@@ -2517,7 +2520,7 @@ func TestConfigureTeamRepos(t *testing.T) {
 			t.Errorf("%s: expected no error but got one: %v", testCase.name, err)
 		}
 		if actual, expected := client.repos, testCase.expected; !reflect.DeepEqual(actual, expected) {
-			t.Errorf("%s: got incorrect team repos: %v", testCase.name, diff.ObjectReflectDiff(actual, expected))
+			t.Errorf("%s: got incorrect team repos: %v", testCase.name, cmp.Diff(actual, expected))
 		}
 	}
 }
@@ -2961,7 +2964,7 @@ func TestConfigureRepos(t *testing.T) {
 				t.Fatalf("%s: unexpected GetRepos error: %v", tc.description, err)
 			}
 			if !reflect.DeepEqual(reposAfter, tc.expectedRepos) {
-				t.Errorf("%s: unexpected repos after configureRepos():\n%s", tc.description, diff.ObjectReflectDiff(reposAfter, tc.expectedRepos))
+				t.Errorf("%s: unexpected repos after configureRepos():\n%s", tc.description, cmp.Diff(reposAfter, tc.expectedRepos))
 			}
 		})
 	}
@@ -3099,7 +3102,7 @@ func TestNewRepoUpdateRequest(t *testing.T) {
 		t.Run(tc.description, func(t *testing.T) {
 			update := newRepoUpdateRequest(tc.current, tc.name, tc.newState)
 			if !reflect.DeepEqual(tc.expected, update) {
-				t.Errorf("%s: update request differs from expected:%s", tc.description, diff.ObjectReflectDiff(tc.expected, update))
+				t.Errorf("%s: update request differs from expected:%s", tc.description, cmp.Diff(tc.expected, update))
 			}
 		})
 	}

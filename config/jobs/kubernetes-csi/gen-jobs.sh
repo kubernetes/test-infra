@@ -20,15 +20,34 @@
 
 base="$(dirname $0)"
 
-# The latest stable Kubernetes version for testing alpha repos
-latest_stable_k8s_version="1.18.0"
-latest_stable_k8s_minor_version="1.18"
+# All the Kubernetes versions we're testing.
+# Must have pre-built kind images (see https://hub.docker.com/r/kindest/node/tags)
+k8s_versions="
+1.17.0
+1.18.0
+1.19.1
+"
+
+# All the deployment versions we're testing.
+# Must have a deploy/kubernetes-<version> dir in csi-driver-host-path
+deployment_versions="
+1.17
+1.18
+1.19
+"
+
+# Experimental versions to make tests optional
+experimental_k8s_version="1.19.1"
+
+# The latest stable Kubernetes version for testing alpha jobs
+latest_stable_k8s_version="1.19.1"
+latest_stable_k8s_minor_version="1.19"
 
 # Tag of the hostpath driver we should use for sidecar pull jobs
-hostpath_driver_version="v1.4.0-rc4"
+hostpath_driver_version="v1.4.0"
 
 # We need this image because it has Docker in Docker and go.
-dind_image="gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master"
+dind_image="gcr.io/k8s-testimages/kubekins-e2e:v20200916-8dd1247-master"
 
 # All kubernetes-csi repos which are part of the hostpath driver example.
 # For these repos we generate the full test matrix. For each entry here
@@ -241,10 +260,9 @@ pull_optional() {
 
     if [ "$tests" == "alpha" ]; then
         echo "true"
-    elif [ "$kubernetes" == "1.19.0" ]; then
-        # Testing 1.19 may require updates to release-tools.
-        # Once that is done, and tests are passing,
-        # this can be set to the next k8s version
+    elif [ "$kubernetes" == "$experimental_k8s_version" ]; then
+        # New k8s versions may require updates to kind or release-tools.
+        # Make tests optional until everything is updated.
         echo "true"
     else
         echo "false"
@@ -269,8 +287,8 @@ presubmits:
 EOF
 
     for tests in non-alpha alpha; do
-        for deployment in 1.16 1.17 1.18; do # must have a deploy/kubernetes-<version> dir in csi-driver-host-path
-            for kubernetes in 1.16.2 1.17.0 1.18.0; do # these versions must have pre-built kind images (see https://hub.docker.com/r/kindest/node/tags)
+        for deployment in $deployment_versions; do
+            for kubernetes in $k8s_versions; do
                 # We could generate these pre-submit jobs for all combinations, but to save resources in the Prow
                 # cluster we only do it for those cases where the deployment matches the Kubernetes version.
                 # Once we have more than two supported Kubernetes releases we should limit this to the most
@@ -495,8 +513,8 @@ periodics:
 EOF
 
 for tests in non-alpha alpha; do
-    for deployment in 1.16 1.17 1.18; do
-        for kubernetes in 1.16 1.17 1.18 master; do
+    for deployment in $deployment_versions; do
+        for kubernetes in $deployment_versions master; do # these tests run against top of release-1.X instead of a specific release version
             if [ "$tests" = "alpha" ]; then
                 # No version skew testing of alpha features, deployment has to match Kubernetes.
                 if ! echo "$kubernetes" | grep -q "^$deployment"; then
@@ -559,7 +577,7 @@ done
 # The canary builds use the latest sidecars from master and run them on
 # specific Kubernetes versions, using the default deployment for that Kubernetes
 # release.
-for kubernetes in 1.16.2 1.17.0 1.18.0 master; do
+for kubernetes in $k8s_versions master; do
     actual="${kubernetes/master/latest}"
 
     for tests in non-alpha alpha; do

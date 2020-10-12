@@ -8,6 +8,21 @@ load("//def:configmap.bzl", "k8s_configmap")
 
 release(
     "staging",
+    component(
+        "boskos",
+        MULTI_KIND,
+        cluster = BUILD_CLUSTER,
+    ),
+    component(
+        "boskos-janitor",
+        MULTI_KIND,
+        cluster = BUILD_CLUSTER,
+    ),
+    component(
+        "boskos-reaper",
+        "deployment",
+        cluster = BUILD_CLUSTER,
+    ),
     component("crier", "deployment", "rbac"),
     component("deck", "service", "deployment", "rbac"),
     component("gce-ssd-retain", "storageclass"),

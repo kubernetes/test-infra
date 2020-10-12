@@ -57,11 +57,11 @@ aliases:
     - mrbobbytables
     - nikhita
   sig-docs-leads:
+    - irvifa
     - jimangel
     - kbarnard10
     - kbhawkey
     - sftim
-    - zacharysarah
   sig-instrumentation-leads:
     - brancz
     - ehashman
@@ -210,18 +210,19 @@ aliases:
 
   # copied from git.k8s.io/kubernetes/OWNERS_ALIASES
   release-engineering-approvers:
-    - calebamiles # subproject owner
-    - justaugustus # subproject owner / Release Manager
-    - tpepper # subproject owner / Release Manager
+    - alejandrox1 # SIG Technical Lead
+    - justaugustus # SIG Chair
+    - saschagrunert # SIG Technical Lead
+    - tpepper # SIG Chair
   release-engineering-reviewers:
-    - calebamiles # subproject owner
     - cpanato # Release Manager
     - feiskyer # Release Manager
     - hasheddan # Release Manager
     - hoegaarden # Release Manager
-    - justaugustus # subproject owner / Release Manager
-    - saschagrunert # Release Manager
-    - tpepper # subproject owner / Release Manager
+    - justaugustus # SIG Chair / Release Manager
+    - saschagrunert # SIG Technical Lead / Release Manager
+    - tpepper # SIG Chair / Release Manager
+    - xmudrii # Release Manager
 
   # copied from git.k8s.io/enhancements/OWNERS_ALIASES
   enhancements-approvers:

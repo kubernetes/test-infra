@@ -222,7 +222,7 @@ func (c *Controller) Sync() error {
 		return k8sJobs[i].CreationTimestamp.Before(&k8sJobs[j].CreationTimestamp)
 	})
 
-	if err := c.terminateDupes(k8sJobs, pm); err != nil {
+	if err := c.terminateDupes(k8sJobs); err != nil {
 		syncErrs = append(syncErrs, err)
 	}
 
@@ -268,21 +268,8 @@ func (c *Controller) SyncMetrics() {
 
 // terminateDupes aborts presubmits that have a newer version. It modifies pjs
 // in-place when it aborts.
-// TODO: Dry this out - need to ensure we can abstract children cancellation first.
-func (c *Controller) terminateDupes(pjs []prowapi.ProwJob, pm map[string]corev1.Pod) error {
-	log := c.log.WithField("aborter", "pod")
-	return pjutil.TerminateOlderJobs(c.prowJobClient, log, pjs, func(toCancel prowapi.ProwJob) error {
-		// Abort presubmit jobs for commits that have been superseded by newer commits
-		if pod, exists := pm[toCancel.ObjectMeta.Name]; exists {
-			c.log.WithField("name", pod.ObjectMeta.Name).Debug("Delete Pod.")
-			if client, ok := c.buildClients[toCancel.ClusterAlias()]; !ok {
-				return fmt.Errorf("unknown cluster alias %q", toCancel.ClusterAlias())
-			} else if err := client.Delete(c.ctx, &pod); err != nil {
-				return fmt.Errorf("deleting pod: %v", err)
-			}
-		}
-		return nil
-	})
+func (c *Controller) terminateDupes(pjs []prowapi.ProwJob) error {
+	return pjutil.TerminateOlderJobs(c.prowJobClient, c.log.WithField("aborter", "pod"), pjs)
 }
 
 // TODO: Dry this out
@@ -348,6 +335,14 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]corev1.Pod
 				return fmt.Errorf("unknown pod %s: unknown cluster alias %q", pod.Name, pj.ClusterAlias())
 			}
 
+			if finalizers := sets.NewString(pod.Finalizers...); finalizers.Has(kubernetesreporterapi.FinalizerName) {
+				// We want the end user to not see this, so we have to remove the finalizer, otherwise the pod hangs
+				oldPod := pod.DeepCopy()
+				pod.Finalizers = finalizers.Delete(kubernetesreporterapi.FinalizerName).UnsortedList()
+				if err := client.Patch(c.ctx, &pod, ctrlruntimeclient.MergeFrom(oldPod)); err != nil {
+					return fmt.Errorf("failed to patch pod trying to remove %s finalizer: %w", kubernetesreporterapi.FinalizerName, err)
+				}
+			}
 			c.log.WithField("name", pj.ObjectMeta.Name).Debug("Delete Pod.")
 			return client.Delete(c.ctx, &pod)
 
@@ -431,6 +426,9 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]corev1.Pod
 				return nil
 			}
 		case corev1.PodRunning:
+			if pod.DeletionTimestamp != nil {
+				break
+			}
 			maxPodRunning := c.config().Plank.PodRunningTimeout.Duration
 			if pod.Status.StartTime.IsZero() || time.Since(pod.Status.StartTime.Time) < maxPodRunning {
 				// Pod is still running. Do nothing.
@@ -455,12 +453,33 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]corev1.Pod
 		}
 	}
 
+	// This can happen in any phase and means the node got evicted after it became unresponsive. Delete the finalizer so the pod
+	// vanishes and we will silently re-create it in the next iteration.
+	if pod.DeletionTimestamp != nil && pod.Status.Reason == "NodeLost" {
+		c.log.WithFields(pjutil.ProwJobFields(&pj)).Info("Pods Node got lost, deleting & restarting pod")
+		client, ok := c.buildClients[pj.ClusterAlias()]
+		if !ok {
+			return fmt.Errorf("unknown pod %s: unknown cluster alias %q", pod.Name, pj.ClusterAlias())
+		}
+
+		if finalizers := sets.NewString(pod.Finalizers...); finalizers.Has(kubernetesreporterapi.FinalizerName) {
+			// We want the end user to not see this, so we have to remove the finalizer, otherwise the pod hangs
+			oldPod := pod.DeepCopy()
+			pod.Finalizers = finalizers.Delete(kubernetesreporterapi.FinalizerName).UnsortedList()
+			if err := client.Patch(c.ctx, &pod, ctrlruntimeclient.MergeFrom(oldPod)); err != nil {
+				return fmt.Errorf("failed to patch pod trying to remove %s finalizer: %w", kubernetesreporterapi.FinalizerName, err)
+			}
+		}
+
+		return nil
+	}
+
 	// If a pod gets deleted unexpectedly, it might be in any phase and will stick around until
 	// we complete the job if the kubernetes reporter is used, because it sets a finalizer.
 	if !pj.Complete() && pod.DeletionTimestamp != nil {
 		pj.SetComplete()
 		pj.Status.State = prowapi.ErrorState
-		pj.Status.Description = "Pod got deleteted unexpectedly"
+		pj.Status.Description = "Pod got deleted unexpectedly"
 	}
 
 	var err error

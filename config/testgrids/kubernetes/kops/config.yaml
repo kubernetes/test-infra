@@ -18,7 +18,6 @@ dashboard_groups:
   - kops-distro-u1604
   - kops-distro-u1804
   - kops-distro-u2004
-  - kops-k8s-1.16
   - kops-k8s-1.17
   - kops-k8s-1.18
   - kops-k8s-1.19
@@ -42,8 +41,11 @@ dashboards:
 - name: kops-distro-u1604
 - name: kops-distro-u1804
 - name: kops-distro-u2004
-- name: kops-k8s-1.16
 - name: kops-k8s-1.17
+  days_of_results: 90
 - name: kops-k8s-1.18
+  days_of_results: 90
 - name: kops-k8s-1.19
+  days_of_results: 90
 - name: kops-k8s-latest
+  days_of_results: 90

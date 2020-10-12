@@ -30,14 +30,13 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime \
     python3-pip \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip3 install requests google-cloud-pubsub==0.25.0 google-cloud-bigquery==0.24.0 influxdb ruamel.yaml==0.16
+RUN pip3 install requests google-cloud-pubsub==0.25.0 google-cloud-bigquery==0.27.0 influxdb ruamel.yaml==0.16
 
 RUN curl -fsSL https://downloads.python.org/pypy/pypy3.6-v7.3.1-linux64.tar.bz2 | tar xj -C opt  && \
-    ln -s /opt/pypy*/bin/pypy /usr/bin
+    ln -s /opt/pypy*/bin/pypy3 /usr/bin
 
-RUN curl -o installer https://sdk.cloud.google.com && \
-    bash installer --disable-prompts --install-dir=/ && \
-    rm installer && \
+RUN curl https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-294.0.0-linux-x86_64.tar.gz | tar xfz - -C . && \
+    ./google-cloud-sdk/install.sh -q && \
     ln -s /google-cloud-sdk/bin/* /bin/
 
 ADD *.py schema.json runner.sh buckets.yaml /kettle/

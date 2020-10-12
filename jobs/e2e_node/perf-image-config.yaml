@@ -1,7 +1,7 @@
 ---
 images:
   cos-stable1:
-    image: cos-81-12871-119-0 # docker 19.03.6, current latest LTS.
+    image_family: cos-85-lts # Current latest LTS, deprecated after 2021-12-17.
     project: cos-cloud
     machine: n1-standard-16
     metadata: "user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled"

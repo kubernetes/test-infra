@@ -25,6 +25,21 @@ dashboards:
       description: Runs conformance tests using kubetest against kubernetes from the release-1.16 branch with cloud-provider-openstack
       test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.16
 
+    - name: Gardener, v1.19 AWS
+      description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Amazon Web Services (AWS)"
+      test_group_name: ci-gardener-e2e-conformance-aws-v1.19
+    - name: Gardener, v1.19 GCE
+      description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Google Cloud Engine (GCE)"
+      test_group_name: ci-gardener-e2e-conformance-gce-v1.19
+    - name: Gardener, v1.19 OpenStack
+      description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Openstack"
+      test_group_name: ci-gardener-e2e-conformance-openstack-v1.19
+    - name: Gardener, v1.19 Azure
+      description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Microsoft Azure"
+      test_group_name: ci-gardener-e2e-conformance-azure-v1.19
+    - name: Gardener, v1.19 Alibaba Cloud
+      description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Alibaba Cloud"
+      test_group_name: ci-gardener-e2e-conformance-alicloud-v1.19
     - name: Gardener, v1.18 AWS
       description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Amazon Web Services (AWS)"
       test_group_name: ci-gardener-e2e-conformance-aws-v1.18
@@ -134,6 +149,31 @@ dashboards:
 # Gardener Conformance Dashboard
 - name: conformance-gardener
   dashboard_tab:
+    - name: Gardener, v1.19 AWS
+      description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Amazon Web Services (AWS)"
+      test_group_name: ci-gardener-e2e-conformance-aws-v1.19
+      alert_options:
+        alert_mail_to_addresses: gardener-oq@listserv.sap.com
+    - name: Gardener, v1.19 GCE
+      description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Google Cloud Engine (GCE)"
+      test_group_name: ci-gardener-e2e-conformance-gce-v1.19
+      alert_options:
+        alert_mail_to_addresses: gardener-oq@listserv.sap.com
+    - name: Gardener, v1.19 OpenStack
+      description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Openstack"
+      test_group_name: ci-gardener-e2e-conformance-openstack-v1.19
+      alert_options:
+        alert_mail_to_addresses: gardener-oq@listserv.sap.com
+    - name: Gardener, v1.19 Azure
+      description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Microsoft Azure"
+      test_group_name: ci-gardener-e2e-conformance-azure-v1.19
+      alert_options:
+        alert_mail_to_addresses: gardener-oq@listserv.sap.com
+    - name: Gardener, v1.19 Alibaba Cloud
+      description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Alibaba Cloud"
+      test_group_name: ci-gardener-e2e-conformance-alicloud-v1.19
+      alert_options:
+        alert_mail_to_addresses: gardener-oq@listserv.sap.com
     - name: Gardener, v1.18 AWS
       description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Amazon Web Services (AWS)"
       test_group_name: ci-gardener-e2e-conformance-aws-v1.18
@@ -235,21 +275,6 @@ test_groups:
 - name: cloud-provider-huaweicloud-e2e-conformance-release-v1.17
   gcs_prefix: k8s-conform-huaweicloud/cloud-provider-huaweicloud/e2e-conformance-release-v1.17
 
-# Docker node conformance test group
-- name: ce18.09-ubuntu16.04-k8s1.13.x-conformance
-  gcs_prefix: k8s-conformance-docker/ci-kube-node-e2e-docker/ce18.09-ubuntu16.04-k8s1.13.x
-- name: ce19.03-ubuntu16.04-k8s1.14.x-conformance
-  gcs_prefix: k8s-conformance-docker/ci-kube-node-e2e-docker/ce19.03-ubuntu16.04-k8s1.14.x
-- name: ee17.06-rhel7.5-k8s1.12.x-conformance
-  gcs_prefix: k8s-conformance-docker/ci-kube-node-e2e-docker/ee17.06-rhel7.5-k8s1.12.x
-- name: ee17.06-ubuntu16.04-k8s1.12.x-conformance
-  gcs_prefix: k8s-conformance-docker/ci-kube-node-e2e-docker/ee17.06-ubuntu16.04-k8s1.12.x
-- name: ee18.09-rhel7.5-k8s1.13.x-conformance
-  gcs_prefix: k8s-conformance-docker/ci-kube-node-e2e-docker/ee18.09-rhel7.5-k8s1.13.x
-- name: ee18.09-ubuntu16.04-k8s1.14.x-conformance
-  gcs_prefix: k8s-conformance-docker/ci-kube-node-e2e-docker/ee18.09-ubuntu16.04-k8s1.14.x
-- name: ee19.03-ubuntu16.04-k8s1.14.x-conformance
-  gcs_prefix: k8s-conformance-docker/ci-kube-node-e2e-docker/ee19.03-ubuntu16.04-k8s1.14.x
 
 # CEL Conformance Tests
 - name: cel-go-conformance-tests
