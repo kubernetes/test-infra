@@ -38,7 +38,7 @@ def call(cmd):
 
 
 def main():
-    call('time python3 make_db.py --buckets buckets.yaml --junit --threads 32')
+    call('time python3 make_db.py --buckets buckets.yaml --junit --threads 32 --buildlimit ' + os.getenv('BUILD_LIMIT', '0'))
 
     bq_cmd = 'bq load --source_format=NEWLINE_DELIMITED_JSON --max_bad_records=1000'
     mj_cmd = 'pypy3 make_json.py'
