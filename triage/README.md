@@ -197,7 +197,7 @@ Triage runs as static HTML hosted in GCS that is updated as part of a [Prow Peri
 
 To update the triage image run `make push` from `./triage` which will trigger a [cloudbuild](https://cloud.google.com/cloud-build) using [`//images/builder`](https://github.com/kubernetes/test-infra/tree/master/images/builder). This will result in a fresh triage image within the cloud image registry of the `k8s-testimages` project. (See Container Registry -> Images)
 
-To update Triage frontend in Production or Staging run `make push-static` or `make push-staging` respectively.
+To update Triage frontend in Production or Staging manually run `make push-static` or `make push-staging` respectively. Otherwise it is updated on postsubmit via [post-test-infra-upload-triage](https://github.com/kubernetes/test-infra/blob/392370e6453cd4e5d57e01d0b0d22b960b9209f1/config/jobs/kubernetes/test-infra/test-infra-trusted.yaml#L616).
 
 ### Staging
    To acces staging see [Triage Staging](https://storage.googleapis.com/k8s-gubernator/triage/staging).
