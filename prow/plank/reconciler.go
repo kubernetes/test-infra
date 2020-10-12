@@ -264,7 +264,7 @@ func (r *reconciler) syncPendingJob(pj *prowv1.ProwJob) error {
 			}
 			pj.Status.State = prowv1.ErrorState
 			pj.SetComplete()
-			pj.Status.Description = "Job cannot be processed."
+			pj.Status.Description = fmt.Sprintf("Pod can not be created: %v", err)
 			r.log.WithFields(pjutil.ProwJobFields(pj)).WithError(err).Warning("Unprocessable pod.")
 		} else {
 			pj.Status.BuildID = id
@@ -479,7 +479,7 @@ func (r *reconciler) syncTriggeredJob(pj *prowv1.ProwJob) (*reconcile.Result, er
 			}
 			pj.Status.State = prowv1.ErrorState
 			pj.SetComplete()
-			pj.Status.Description = "Job cannot be processed."
+			pj.Status.Description = fmt.Sprintf("Pod can not be created: %v", err)
 			logrus.WithField("job", pj.Spec.Job).WithError(err).Warning("Unprocessable pod.")
 		}
 	}
