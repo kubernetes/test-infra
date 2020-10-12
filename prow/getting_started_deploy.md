@@ -354,14 +354,14 @@ Now run the following to update the configmap.
 
 ```sh
 $ kubectl create configmap config \
-  --from-file=config.yaml=path/to/config.yaml --dry-run -o yaml | kubectl replace configmap config -f -
+  --from-file=config.yaml=path/to/config.yaml --dry-run=server -o yaml | kubectl replace configmap config -f -
 ```
 
 We create a `make` rule:
 
 ```Make
 update-config: get-cluster-credentials
-    kubectl create configmap config --from-file=config.yaml=config.yaml --dry-run -o yaml | kubectl replace configmap config -f -
+    kubectl create configmap config --from-file=config.yaml=config.yaml --dry-run=server -o yaml | kubectl replace configmap config -f -
 ```
 
 Presubmits and postsubmits are triggered by the `trigger` plugin. Be sure to
