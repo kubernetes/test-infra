@@ -244,16 +244,67 @@ presubmits:
         - --aksengine-deploy-custom-k8s
         - --aksengine-location=westus2
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
-        - --aksengine-template-url=https://gist.githubusercontent.com/aramase/21c3bdb44509c0f70f71389903d49c67/raw/1a9957626edc2b5c7913c741b9487fde123d0570/dualstack-prow.json
-        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
+        - --aksengine-template-url=https://raw.githubusercontent.com/aramase/manifests/main/dualstack/ipvs-kubenet.json
+        - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.55.4/aks-engine-v0.55.4-linux-amd64.tar.gz
         # Specific test args
-        - --test_args=--ginkgo.focus=\[Feature:IPv6DualStackAlphaFeature\]|\[Conformance\]
+        - --test_args=--ginkgo.focus=\[Feature:IPv6DualStackAlphaFeature\]|\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]
         - --ginkgo-parallel=20
         securityContext:
           privileged: true
     annotations:
       testgrid-dashboards: sig-network-dualstack-azure-e2e, provider-azure-dualstack, provider-azure-presubmit
-      testgrid-tab-name: pr-dualstack-e2e
+      testgrid-tab-name: pr-dualstack-e2e-ipvs
       testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
-      description: Run e2e tests for dualstack on azure
+      description: Run e2e tests for dualstack on azure in ipvs mode
+      testgrid-num-columns-recent: '30'
+  - name: pull-kubernetes-e2e-iptables-azure-dualstack
+    decorate: true
+    decoration_config:
+      timeout: 2h
+    always_run: false
+    optional: true
+    path_alias: k8s.io/kubernetes
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+      preset-azure-cred: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-master
+        command:
+        - runner.sh
+        - kubetest
+        args:
+        # Generic e2e test args
+        - --test
+        - --up
+        - --down
+        - --build=quick
+        - --dump=$(ARTIFACTS)
+        # Azure-specific test args
+        - --provider=skeleton
+        - --deployment=aksengine
+        - --aksengine-agentpoolcount=2
+        - --aksengine-admin-username=azureuser
+        - --aksengine-creds=$(AZURE_CREDENTIALS)
+        - --aksengine-orchestratorRelease=1.19
+        - --aksengine-mastervmsize=Standard_DS2_v2
+        - --aksengine-agentvmsize=Standard_D4s_v3
+        - --aksengine-deploy-custom-k8s
+        - --aksengine-location=westus2
+        - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
+        - --aksengine-template-url=https://raw.githubusercontent.com/aramase/manifests/main/dualstack/iptables-kubenet.json
+        - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.55.4/aks-engine-v0.55.4-linux-amd64.tar.gz
+        # Specific test args
+        - --test_args=--ginkgo.focus=\[Feature:IPv6DualStackAlphaFeature\]|\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]
+        - --ginkgo-parallel=20
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-network-dualstack-azure-e2e, provider-azure-dualstack, provider-azure-presubmit
+      testgrid-tab-name: pr-dualstack-e2e-iptables
+      testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+      description: Run e2e tests for dualstack on azure in iptables mode
       testgrid-num-columns-recent: '30'
